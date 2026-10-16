@@ -49,6 +49,28 @@ Then style the hooks in the host stylesheet:
 }
 ```
 
+The styling contract is [specs/HOOK-CONTRACT.md](specs/HOOK-CONTRACT.md). Each component's spec under [specs/](specs/) lists its hooks in a `## Hooks` table.
+
+### Provider
+
+Components work without any setup. `UiProvider` replaces the defaults when a host needs to ([specs/PROVIDER.md](specs/PROVIDER.md)):
+
+```tsx
+import { UiProvider, createSafeStorage } from '@flamboyantengineer/ui-components';
+import { BoltIcon } from '@heroicons/react/24/outline';
+
+<UiProvider
+  icons={{ close: BoltIcon }} // replace one built-in glyph
+  strings={{ close: 'Fermer' }} // replace built-in text
+  locale="fr-FR" // React Aria formatting and direction
+  renderLink={(props) => <RouterLink to={props.href} {...props} />} // library links
+  navigate={router.navigate} // React Aria links, menu items and tabs with href
+  storage={createSafeStorage(window.localStorage)} // persisted layout state
+>
+  <App />
+</UiProvider>;
+```
+
 ## Labs
 
 ```sh
