@@ -1,0 +1,23 @@
+# Agent Instructions
+
+This repository is a standalone React component library. Read [README.md](README.md) and [CONTRIBUTING.md](CONTRIBUTING.md) before changing it.
+
+## Gates
+
+Run these before every commit; all must pass:
+
+```sh
+npm run check       # lint, format, typecheck, no-reference, specs, labs, unit tests, build, labs build, package
+npm run test:labs   # Playwright against the built labs (needs `npm run build:labs` first)
+```
+
+Run `npm run format` to fix formatting. Never weaken a lint rule, the denylist or a check to get green.
+
+## Rules
+
+- Components emit hooks only (`specs/HOOK-CONTRACT.md`): hook classes, data attributes and documented `--ui-*` measured properties. No CSS, no visual inline styles, no styling dependency.
+- Build on React Aria Components wherever it has a matching behaviour.
+- Never name a host application or its domain terms anywhere in the repository, including commit messages and pull request text. Use neutral sample data in labs and tests.
+- Every behaviour change updates the component's spec (`specs/`), its tests (which name the `UIC-` IDs) and its lab.
+- Hooks are public API: renaming or removing one is a major change. Add a changeset to every pull request that changes the package.
+- Persisted state goes through the provider storage adapter; never touch `localStorage` from library source.

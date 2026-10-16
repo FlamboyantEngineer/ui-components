@@ -1,0 +1,227 @@
+// Local lint rules that keep library source hooks-only (specs/HOOK-CONTRACT.md).
+
+const STYLE_FILE = /\.(css|scss|sass|less|styl|stylus|pcss|postcss)(\?.*)?$/i;
+
+// Inline style properties the library may set because it computes them at runtime:
+// positions, measured sizes, layout tracks, layering and interaction locks.
+export const FUNCTIONAL_STYLE_PROPERTIES = new Set([
+  'position',
+  'top',
+  'right',
+  'bottom',
+  'left',
+  'inset',
+  'insetBlock',
+  'insetBlockStart',
+  'insetBlockEnd',
+  'insetInline',
+  'insetInlineStart',
+  'insetInlineEnd',
+  'width',
+  'height',
+  'minWidth',
+  'minHeight',
+  'maxWidth',
+  'maxHeight',
+  'blockSize',
+  'inlineSize',
+  'minBlockSize',
+  'minInlineSize',
+  'maxBlockSize',
+  'maxInlineSize',
+  'transform',
+  'transformOrigin',
+  'translate',
+  'scale',
+  'rotate',
+  'gridTemplateColumns',
+  'gridTemplateRows',
+  'gridColumn',
+  'gridColumnStart',
+  'gridColumnEnd',
+  'gridRow',
+  'gridRowStart',
+  'gridRowEnd',
+  'flexBasis',
+  'zIndex',
+  'pointerEvents',
+  'visibility',
+  'userSelect',
+  'touchAction',
+  'willChange',
+  'contain',
+]);
+
+const CUSTOM_PROPERTY = /^--ui-[a-z0-9-]+$/;
+const HOOK_CLASS = /^ui-[a-z0-9]+(?:-[a-z0-9]+)*(?:__[a-z0-9]+(?:-[a-z0-9]+)*)?$/;
+
+function propertyName(node) {
+  if (node.type === 'Identifier') return node.name;
+  if (node.type === 'Literal' && typeof node.value === 'string') return node.value;
+  return null;
+}
+
+function toCamelCase(name) {
+  if (name.startsWith('--')) return name;
+  return name.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
+}
+
+function isAllowedStyleProperty(name) {
+  return CUSTOM_PROPERTY.test(name) || FUNCTIONAL_STYLE_PROPERTIES.has(toCamelCase(name));
+}
+
+const noCssImport = {
+  meta: {
+    type: 'problem',
+    docs: { description: 'Forbid stylesheet imports in library source.' },
+    messages: {
+      cssImport:
+        'Library source must not import stylesheets ({{source}}). The host page loads all CSS.',
+    },
+    schema: [],
+  },
+  create(context) {
+    function check(node, source) {
+      if (typeof source === 'string' && STYLE_FILE.test(source)) {
+        context.report({ node, messageId: 'cssImport', data: { source } });
+      }
+    }
+    return {
+      ImportDeclaration(node) {
+        check(node, node.source.value);
+      },
+      ImportExpression(node) {
+        if (node.source.type === 'Literal') check(node, node.source.value);
+      },
+      ExportAllDeclaration(node) {
+        check(node, node.source.value);
+      },
+      ExportNamedDeclaration(node) {
+        if (node.source) check(node, node.source.value);
+      },
+      CallExpression(node) {
+        if (
+          node.callee.type === 'Identifier' &&
+          node.callee.name === 'require' &&
+          node.arguments[0]?.type === 'Literal'
+        ) {
+          check(node, node.arguments[0].value);
+        }
+      },
+    };
+  },
+};
+
+const noStaticInlineStyle = {
+  meta: {
+    type: 'problem',
+    docs: {
+      description:
+        'Allow only functional inline styles (positions, measured sizes, --ui-* properties).',
+    },
+    messages: {
+      visualStyle:
+        "Inline style '{{name}}' is visual. Expose a hook (class or data attribute) and let the host stylesheet style it.",
+    },
+    schema: [],
+  },
+  create(context) {
+    function checkObject(objectNode) {
+      for (const property of objectNode.properties) {
+        if (property.type !== 'Property' || property.computed) continue;
+        const name = propertyName(property.key);
+        if (name !== null && !isAllowedStyleProperty(name)) {
+          context.report({ node: property, messageId: 'visualStyle', data: { name } });
+        }
+      }
+    }
+    return {
+      JSXAttribute(node) {
+        if (node.name.type !== 'JSXIdentifier' || node.name.name !== 'style') return;
+        const expression =
+          node.value?.type === 'JSXExpressionContainer' ? node.value.expression : null;
+        if (expression?.type === 'ObjectExpression') checkObject(expression);
+      },
+      AssignmentExpression(node) {
+        const target = node.left;
+        if (
+          target.type === 'MemberExpression' &&
+          !target.computed &&
+          target.object.type === 'MemberExpression' &&
+          !target.object.computed &&
+          target.object.property.type === 'Identifier' &&
+          target.object.property.name === 'style' &&
+          target.property.type === 'Identifier' &&
+          !isAllowedStyleProperty(target.property.name)
+        ) {
+          context.report({ node, messageId: 'visualStyle', data: { name: target.property.name } });
+        }
+      },
+      CallExpression(node) {
+        const callee = node.callee;
+        if (
+          callee.type === 'MemberExpression' &&
+          !callee.computed &&
+          callee.property.type === 'Identifier' &&
+          callee.property.name === 'setProperty' &&
+          callee.object.type === 'MemberExpression' &&
+          callee.object.property.type === 'Identifier' &&
+          callee.object.property.name === 'style' &&
+          node.arguments[0]?.type === 'Literal' &&
+          typeof node.arguments[0].value === 'string' &&
+          !isAllowedStyleProperty(node.arguments[0].value)
+        ) {
+          context.report({
+            node,
+            messageId: 'visualStyle',
+            data: { name: node.arguments[0].value },
+          });
+        }
+      },
+    };
+  },
+};
+
+const hookClassNames = {
+  meta: {
+    type: 'problem',
+    docs: { description: 'Literal class names must be hook classes (ui-<component>[__<slot>]).' },
+    messages: {
+      notHook:
+        "Class '{{token}}' is not a hook class. Library markup only emits ui-<component> and ui-<component>__<slot> classes.",
+    },
+    schema: [],
+  },
+  create(context) {
+    function checkLiteral(node, value) {
+      for (const token of value.split(/\s+/).filter(Boolean)) {
+        if (!HOOK_CLASS.test(token)) {
+          context.report({ node, messageId: 'notHook', data: { token } });
+        }
+      }
+    }
+    return {
+      JSXAttribute(node) {
+        if (node.name.type !== 'JSXIdentifier' || node.name.name !== 'className') return;
+        if (node.value?.type === 'Literal' && typeof node.value.value === 'string') {
+          checkLiteral(node, node.value.value);
+        } else if (
+          node.value?.type === 'JSXExpressionContainer' &&
+          node.value.expression.type === 'Literal' &&
+          typeof node.value.expression.value === 'string'
+        ) {
+          checkLiteral(node, node.value.expression.value);
+        }
+      },
+    };
+  },
+};
+
+export default {
+  meta: { name: 'ui-local' },
+  rules: {
+    'no-css-import': noCssImport,
+    'no-static-inline-style': noStaticInlineStyle,
+    'hook-class-names': hookClassNames,
+  },
+};
