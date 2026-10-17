@@ -1,0 +1,84 @@
+/*
+ * Reference stylesheet base: theme variables, the document and the lab matrix.
+ * Theme: set data-theme="dark" on the root element.
+ */
+
+:root {
+  --ref-font: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --ref-mono: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  --ref-text: #1f2328;
+  --ref-muted: #59636e;
+  --ref-canvas: #ffffff;
+  --ref-surface: #f6f8fa;
+  --ref-raised: #ffffff;
+  --ref-border: #d1d9e0;
+  --ref-border-strong: #818b98;
+  --ref-hover: rgb(31 35 40 / 0.06);
+  --ref-pressed: rgb(31 35 40 / 0.12);
+  --ref-selected: rgb(9 105 218 / 0.12);
+  --ref-accent: #0969da;
+  --ref-accent-text: #ffffff;
+  --ref-accent-ink: #0969da;
+  --ref-danger: #cf222e;
+  --ref-warning: #9a6700;
+  --ref-success: #1a7f37;
+  --ref-success-fill: #1a7f37;
+  /* A danger background under white text; it keeps its contrast in both themes. */
+  --ref-danger-fill: #cf222e;
+  --ref-info: #0969da;
+  --ref-focus: #0969da;
+  --ref-shadow: 0 8px 24px rgb(66 74 83 / 0.2);
+  --ref-radius: 6px;
+
+  color-scheme: light;
+  font: 14px/1.5 var(--ref-font);
+  color: var(--ref-text);
+  background: var(--ref-canvas);
+}
+
+:root[data-theme='dark'] {
+  --ref-text: #f0f6fc;
+  --ref-muted: #9198a1;
+  --ref-canvas: #0d1117;
+  --ref-surface: #151b23;
+  --ref-raised: #212830;
+  --ref-border: #3d444d;
+  --ref-border-strong: #656c76;
+  --ref-hover: rgb(240 246 252 / 0.08);
+  --ref-pressed: rgb(240 246 252 / 0.14);
+  --ref-selected: rgb(56 139 253 / 0.2);
+  --ref-accent: #1f6feb;
+  --ref-accent-ink: #4493f8;
+  --ref-danger: #ff7b72;
+  --ref-warning: #d29922;
+  --ref-success: #3fb950;
+  --ref-info: #4493f8;
+  --ref-focus: #4493f8;
+  --ref-shadow: 0 8px 24px rgb(1 4 9 / 0.6);
+
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+}
+
+#lab-root,
+#lab-index {
+  padding: 16px 24px 48px;
+}
+
+#lab-root table[data-lab-matrix] {
+  border-collapse: collapse;
+}
+
+#lab-root table[data-lab-matrix] > * > tr > :is(th, td) {
+  border: 1px solid var(--ref-border);
+  text-align: start;
+  vertical-align: middle;
+}
+
+#lab-root table[data-lab-matrix] > * > tr > th {
+  color: var(--ref-muted);
+  font-weight: 500;
+}

@@ -1,0 +1,9 @@
+/* Dropdown Menu. The trigger is a Button or Icon Button. */
+
+.ui-dropdown-menu__caret {
+  transition: transform 0.1s;
+}
+
+.ui-dropdown-menu[data-open] .ui-dropdown-menu__caret {
+  transform: rotate(180deg);
+}

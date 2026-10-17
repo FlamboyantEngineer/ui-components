@@ -1,0 +1,55 @@
+/* Shortcut */
+
+.ui-shortcut {
+  font: inherit;
+  white-space: nowrap;
+}
+
+.ui-shortcut__keys {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  vertical-align: baseline;
+}
+
+.ui-shortcut__key {
+  min-width: 1.5em;
+  padding: 0 4px;
+  border: 1px solid var(--ref-border);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  background: var(--ref-surface);
+  color: var(--ref-text);
+  font: 12px/16px var(--ref-mono);
+  text-align: center;
+}
+
+.ui-shortcut[data-platform='mac'] .ui-shortcut__key {
+  font-family: var(--ref-font);
+}
+
+.ui-shortcut__text {
+  white-space: nowrap;
+}
+
+/* A shortcut in a tooltip, such as a button's, takes the tooltip's colours. */
+
+.ui-tooltip .ui-shortcut__key {
+  border-color: currentColor;
+  background: transparent;
+  color: inherit;
+}
+
+/* Key hints */
+
+.ui-key-hints__hint {
+  white-space: nowrap;
+}
+
+.ui-key-hints .ui-shortcut + .ui-shortcut {
+  margin-inline-start: 2px;
+}
+
+.ui-key-hints__action {
+  color: var(--ref-muted);
+}

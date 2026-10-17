@@ -1,0 +1,43 @@
+/* Zoom Control */
+
+.ui-zoom-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ui-zoom-control__zoom-out,
+.ui-zoom-control__zoom-in,
+.ui-zoom-control__presets,
+.ui-zoom-control__reset {
+  flex: none;
+}
+
+.ui-zoom-control__slider {
+  width: 96px;
+  margin: 0 4px;
+  accent-color: var(--ref-accent);
+}
+
+.ui-zoom-control[data-size='xs'] .ui-zoom-control__slider {
+  width: 72px;
+}
+
+.ui-zoom-control[data-size='lg'] .ui-zoom-control__slider {
+  width: 128px;
+}
+
+.ui-zoom-control__value {
+  min-width: 6ch;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+}
+
+.ui-zoom-control[data-size='lg'] .ui-zoom-control__value {
+  font-size: 14px;
+}
+
+.ui-zoom-control[data-disabled] .ui-zoom-control__value {
+  color: var(--ref-muted);
+}

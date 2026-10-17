@@ -1,0 +1,9 @@
+/* Confirm Dialog, on top of Modal */
+
+.ui-confirm-dialog .ui-modal__body {
+  padding-top: 4px;
+}
+
+.ui-confirm-dialog__message {
+  margin: 0;
+}

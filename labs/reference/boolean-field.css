@@ -1,0 +1,181 @@
+/* Boolean Field: a switch with a sliding thumb and a toggle button; the checkbox, segments and
+   dropdown use their own sheets. */
+
+/* The control keeps its own size, so a label after it sits right beside it. */
+.ui-boolean-field .ui-field__control {
+  flex: 0 1 auto;
+}
+
+/* Equal segments never clip their names. */
+.ui-boolean-field .ui-segmented-choice__segment {
+  flex: 1 0 auto;
+}
+
+.ui-boolean-field__switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 24px;
+  cursor: pointer;
+}
+
+.ui-boolean-field__track {
+  position: relative;
+  display: inline-block;
+  flex: none;
+  box-sizing: border-box;
+  width: 30px;
+  height: 18px;
+  border: 1px solid var(--ref-border-strong);
+  border-radius: 9px;
+  background: var(--ref-surface);
+}
+
+.ui-boolean-field__thumb {
+  position: absolute;
+  top: 3px;
+  inset-inline-start: 3px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--ref-border-strong);
+  transition: inset-inline-start 0.1s;
+}
+
+.ui-boolean-field__switch[data-selected] .ui-boolean-field__track {
+  border-color: var(--ref-accent);
+  background: var(--ref-accent);
+}
+
+.ui-boolean-field__switch[data-selected] .ui-boolean-field__thumb {
+  inset-inline-start: 15px;
+  background: var(--ref-accent-text);
+}
+
+.ui-boolean-field__switch[data-focus-visible] .ui-boolean-field__track {
+  outline: 2px solid var(--ref-focus);
+  outline-offset: 2px;
+}
+
+.ui-boolean-field__switch[data-readonly] {
+  cursor: default;
+}
+
+.ui-boolean-field__switch[data-readonly] .ui-boolean-field__track {
+  border-style: dashed;
+}
+
+.ui-boolean-field__switch[data-disabled] {
+  cursor: not-allowed;
+}
+
+.ui-boolean-field__caption {
+  color: var(--ref-text);
+}
+
+.ui-boolean-field__toggle-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-canvas);
+  color: var(--ref-text);
+  font: inherit;
+  cursor: pointer;
+  outline: none;
+}
+
+/* The caption keeps the width of the widest name, so the button never resizes. */
+.ui-boolean-field__toggle-button .ui-boolean-field__caption {
+  display: inline-block;
+  min-width: var(--ui-boolean-field-caption-width, auto);
+  color: inherit;
+  text-align: center;
+}
+
+.ui-boolean-field__toggle-button[data-hovered] {
+  border-color: var(--ref-border-strong);
+}
+
+.ui-boolean-field__toggle-button[data-pressed] {
+  background: var(--ref-pressed);
+}
+
+.ui-boolean-field__toggle-button[data-selected] {
+  border-color: var(--ref-accent);
+  background: var(--ref-accent);
+  color: var(--ref-accent-text);
+}
+
+.ui-boolean-field__toggle-button[data-focus-visible] {
+  outline: 2px solid var(--ref-focus);
+  outline-offset: 2px;
+}
+
+.ui-boolean-field__toggle-button[data-disabled] {
+  cursor: not-allowed;
+}
+
+.ui-boolean-field[data-readonly] .ui-boolean-field__toggle-button {
+  border-style: dashed;
+  cursor: default;
+}
+
+/* A read-only button that is on keeps a tint, so its dashed edge still shows. */
+.ui-boolean-field[data-readonly] .ui-boolean-field__toggle-button[data-selected] {
+  background: var(--ref-selected);
+  color: var(--ref-text);
+}
+
+.ui-boolean-field[data-validation='warning'] .ui-boolean-field__toggle-button {
+  border-color: var(--ref-warning);
+}
+
+.ui-boolean-field__previous {
+  align-self: center;
+  margin-inline-end: 4px;
+  font-size: 12px;
+}
+
+/* The dropdown is the select field's control; its field states live on this root. */
+.ui-boolean-field[data-readonly] .ui-select-field__trigger {
+  border-style: dashed;
+  cursor: default;
+}
+
+.ui-boolean-field[data-validation='warning'] .ui-select-field__trigger {
+  border-color: var(--ref-warning);
+}
+
+.ui-boolean-field[data-dirty] .ui-select-field__trigger {
+  border-inline-start: 3px solid var(--ref-info);
+}
+
+.ui-boolean-field__form-value {
+  display: none;
+}
+
+.ui-boolean-field[data-validation='invalid']
+  :is(
+    .ui-boolean-field__track,
+    .ui-checkbox__box,
+    .ui-segmented-choice,
+    .ui-boolean-field__toggle-button
+  ) {
+  border-color: var(--ref-danger);
+}
+
+.ui-boolean-field[data-dirty]
+  :is(.ui-boolean-field__track, .ui-checkbox__box, .ui-boolean-field__toggle-button) {
+  box-shadow: 0 0 0 2px var(--ref-info);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-boolean-field__thumb {
+    transition: none;
+  }
+}

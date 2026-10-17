@@ -1,0 +1,125 @@
+/* Relative Date Field: a framed preset trigger followed by the absolute date. */
+
+/* A disabled field dims its trigger only; the date after it keeps full contrast. */
+.ui-relative-date-field[data-disabled] {
+  opacity: 1;
+}
+
+.ui-relative-date-field[data-disabled] .ui-relative-date-field__trigger {
+  opacity: 0.55;
+}
+
+.ui-relative-date-field .ui-field__control {
+  align-items: center;
+  gap: 8px;
+}
+
+.ui-relative-date-field__select {
+  display: flex;
+  min-width: 0;
+}
+
+.ui-relative-date-field__trigger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  box-sizing: border-box;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-canvas);
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  outline: none;
+}
+
+.ui-relative-date-field__trigger[data-hovered] {
+  border-color: var(--ref-border-strong);
+}
+
+.ui-relative-date-field__trigger[data-focus-visible],
+.ui-relative-date-field__select[data-open] .ui-relative-date-field__trigger {
+  border-color: var(--ref-focus);
+  box-shadow: 0 0 0 1px var(--ref-focus);
+}
+
+.ui-relative-date-field__select[data-invalid] .ui-relative-date-field__trigger {
+  border-color: var(--ref-danger);
+}
+
+.ui-relative-date-field[data-validation='warning'] .ui-relative-date-field__trigger {
+  border-color: var(--ref-warning);
+}
+
+.ui-relative-date-field[data-dirty] .ui-relative-date-field__trigger {
+  border-inline-start: 3px solid var(--ref-info);
+}
+
+.ui-relative-date-field[data-readonly] .ui-relative-date-field__trigger {
+  border-style: dashed;
+  cursor: default;
+}
+
+.ui-relative-date-field__trigger[data-disabled] {
+  cursor: not-allowed;
+}
+
+.ui-relative-date-field__value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-relative-date-field__value[data-placeholder] {
+  color: var(--ref-muted);
+}
+
+.ui-relative-date-field__chevron {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  color: var(--ref-muted);
+}
+
+.ui-relative-date-field__popover {
+  box-sizing: border-box;
+  min-width: var(--trigger-width);
+  overflow: auto;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-raised);
+  color: var(--ref-text);
+  box-shadow: var(--ref-shadow);
+  font: 13px/1.3 var(--ref-font);
+}
+
+.ui-relative-date-field__listbox {
+  display: grid;
+  gap: 1px;
+  padding: 4px;
+  outline: none;
+}
+
+.ui-relative-date-field__option {
+  display: flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  cursor: default;
+  outline: none;
+}
+
+.ui-relative-date-field__option[data-focused] {
+  background: var(--ref-hover);
+}
+
+.ui-relative-date-field__preview {
+  color: var(--ref-muted);
+  font-size: 12px;
+  white-space: nowrap;
+}

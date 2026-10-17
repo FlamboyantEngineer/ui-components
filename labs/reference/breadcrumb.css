@@ -1,0 +1,76 @@
+/* Breadcrumb */
+
+.ui-breadcrumb {
+  display: flex;
+  min-width: 0;
+  max-width: 100%;
+  font-size: 13px;
+  line-height: 24px;
+}
+.ui-breadcrumb[data-size='xs'] {
+  font-size: 11px;
+  line-height: 16px;
+}
+.ui-breadcrumb[data-size='sm'] {
+  font-size: 12px;
+  line-height: 20px;
+}
+.ui-breadcrumb[data-size='lg'] {
+  font-size: 14px;
+  line-height: 28px;
+}
+
+.ui-breadcrumb__list {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow: hidden;
+}
+
+.ui-breadcrumb__item {
+  display: flex;
+  flex: 0 1 auto;
+  align-items: center;
+  min-width: 0;
+}
+
+.ui-breadcrumb__link {
+  min-width: 0;
+  border-radius: 3px;
+  color: var(--ref-accent-ink);
+  text-decoration: none;
+  cursor: pointer;
+  outline: none;
+}
+
+/* A block label fills its shrinking link, ellipsizes there and keeps the link's underline. */
+.ui-breadcrumb__link > .ui-breadcrumb__label {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ui-breadcrumb__link[data-hovered] {
+  text-decoration: underline;
+}
+.ui-breadcrumb__link[data-focus-visible] {
+  box-shadow: 0 0 0 2px var(--ref-focus);
+}
+.ui-breadcrumb__link[data-disabled] {
+  color: var(--ref-muted);
+  text-decoration: none;
+  cursor: default;
+}
+.ui-breadcrumb__link[data-current] {
+  color: var(--ref-text);
+  font-weight: 600;
+}
+
+.ui-breadcrumb__separator {
+  flex: none;
+  margin: 0 4px;
+  color: var(--ref-muted);
+}

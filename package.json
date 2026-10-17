@@ -1,0 +1,109 @@
+{
+  "name": "@flamboyantengineer/ui-components",
+  "version": "0.0.0",
+  "description": "Unstyled, accessible React components that expose stable styling hooks for a host stylesheet.",
+  "license": "UNLICENSED",
+  "private": false,
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FlamboyantEngineer/ui-components.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "restricted"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./core": {
+      "types": "./dist/core/index.d.ts",
+      "import": "./dist/core/index.js"
+    },
+    "./*": {
+      "types": "./dist/components/*/index.d.ts",
+      "import": "./dist/components/*/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.test.*",
+    "labs/*.html",
+    "labs/*.css",
+    "labs/reference",
+    "labs/build",
+    "!labs/build/vendor",
+    "specs",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "node scripts/clean.mjs dist && tsc -p tsconfig.build.json",
+    "build:labs": "node scripts/build-labs.mjs",
+    "labs": "node scripts/serve-labs.mjs",
+    "lint": "eslint . --max-warnings=0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:labs": "playwright test",
+    "check:references": "node scripts/check-references.mjs",
+    "check:specs": "node scripts/check-specs.mjs",
+    "check:labs": "node scripts/check-labs.mjs",
+    "check:package": "node scripts/check-package.mjs",
+    "check": "npm run lint && npm run format:check && npm run typecheck && npm run check:references && npm run check:specs && npm run check:labs && npm run check:structure && npm test && npm run build && npm run build:labs && npm run check:package",
+    "new:lab": "node scripts/new-lab.mjs",
+    "changeset": "changeset",
+    "release": "npm run build && npm run build:labs && npm run check:package && changeset publish",
+    "check:structure": "node scripts/check-structure.mjs"
+  },
+  "peerDependencies": {
+    "pdfjs-dist": "^6.2.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "peerDependenciesMeta": {
+    "pdfjs-dist": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "@heroicons/react": "^2.2.0",
+    "@internationalized/date": "^3.12.4",
+    "react-aria-components": "^1.22.1"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
+    "@changesets/cli": "^3.0.3",
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.61.1",
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.8",
+    "@types/node": "^22.20.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "emojibase-data": "^17.0.0",
+    "esbuild": "^0.28.1",
+    "eslint": "^10.13.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.13.0",
+    "jsdom": "^29.1.1",
+    "pdfjs-dist": "^6.4.299",
+    "playwright-core": "1.61.1",
+    "prettier": "^3.8.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "typescript": "^6.0.2",
+    "typescript-eslint": "^8.71.2",
+    "vitest": "^4.1.11"
+  }
+}

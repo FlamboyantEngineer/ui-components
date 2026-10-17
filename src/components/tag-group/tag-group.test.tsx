@@ -1,0 +1,290 @@
+import { act, render, screen, waitFor, within } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
+import { useState } from 'react';
+import type { Key, Selection } from 'react-aria-components';
+import { describe, expect, it, vi } from 'vitest';
+import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { UiProvider } from '../../core/provider.js';
+import { Tag, TagGroup } from './tag-group.js';
+
+interface Fruit {
+  id: string;
+  name: string;
+}
+
+const fruit: Fruit[] = [
+  { id: 'apple', name: 'Apple' },
+  { id: 'pear', name: 'Pear' },
+  { id: 'plum', name: 'Plum' },
+];
+
+function Basket({ onRemove }: { onRemove?: (keys: Set<Key>) => void }) {
+  const [items, setItems] = useState(fruit);
+  return (
+    <TagGroup
+      aria-label="Basket"
+      items={items}
+      onRemove={(keys) => {
+        onRemove?.(keys);
+        setItems((current) => current.filter((item) => !keys.has(item.id)));
+      }}
+    >
+      {(item) => <Tag id={item.id}>{item.name}</Tag>}
+    </TagGroup>
+  );
+}
+
+function tag(name: string) {
+  return screen.getByRole('row', { name });
+}
+
+describe('TagGroup', () => {
+  it('UIC-TAG-GROUP-1.1 renders a named grid of tag rows', () => {
+    const { container } = render(
+      <TagGroup aria-label="Basket">
+        <Tag id="apple">Apple</Tag>
+        <Tag id="pear" textValue="Pear, ripe">
+          <strong>Pear</strong>
+        </Tag>
+      </TagGroup>,
+    );
+    const root = container.querySelector('.ui-tag-group');
+    const grid = screen.getByRole('grid', { name: 'Basket' });
+    expect(root?.tagName).toBe('DIV');
+    expect(grid).toHaveClass('ui-tag-group__list');
+    expect(within(grid).getAllByRole('row')).toHaveLength(2);
+    expect(tag('Apple')).toHaveClass('ui-tag-group__tag');
+    expect(tag('Pear, ripe').querySelector('.ui-tag-group__label strong')).toHaveTextContent(
+      'Pear',
+    );
+    expectHooksMatchSpec(container, 'TAG-GROUP', { slots: ['list', 'tag', 'label'] });
+  });
+
+  it('UIC-TAG-GROUP-1.2 renders tags from items and follows new items', () => {
+    const { rerender } = render(
+      <TagGroup aria-label="Basket" items={fruit}>
+        {(item) => <Tag id={item.id}>{item.name}</Tag>}
+      </TagGroup>,
+    );
+    expect(screen.getAllByRole('row').map((row) => row.textContent)).toEqual([
+      'Apple',
+      'Pear',
+      'Plum',
+    ]);
+    expect(tag('Pear')).toHaveAttribute('data-key', 'pear');
+    rerender(
+      <TagGroup aria-label="Basket" items={[{ id: 'pear', name: 'Conference pear' }]}>
+        {(item) => <Tag id={item.id}>{item.name}</Tag>}
+      </TagGroup>,
+    );
+    expect(screen.getAllByRole('row')).toHaveLength(1);
+    expect(tag('Conference pear')).toHaveAttribute('data-key', 'pear');
+  });
+
+  it('UIC-TAG-GROUP-1.3 publishes its size on the root', () => {
+    const { container, rerender } = render(
+      <TagGroup aria-label="Basket">
+        <Tag id="apple">Apple</Tag>
+      </TagGroup>,
+    );
+    const root = () => container.querySelector('.ui-tag-group');
+    expect(root()).toHaveAttribute('data-size', 'md');
+    for (const size of ['sm', 'lg'] as const) {
+      rerender(
+        <TagGroup aria-label="Basket" size={size}>
+          <Tag id="apple">Apple</Tag>
+        </TagGroup>,
+      );
+      expect(root()).toHaveAttribute('data-size', size);
+    }
+    expectHooksMatchSpec(container, 'TAG-GROUP');
+  });
+
+  it('UIC-TAG-GROUP-1.4 tones every tag from the group unless the tag sets its own', () => {
+    const { container, rerender } = render(
+      <TagGroup aria-label="Basket" items={fruit}>
+        {(item) => (
+          <Tag id={item.id} tone={item.id === 'plum' ? 'danger' : undefined}>
+            {item.name}
+          </Tag>
+        )}
+      </TagGroup>,
+    );
+    expect(tag('Apple')).toHaveAttribute('data-tone', 'neutral');
+    expect(tag('Plum')).toHaveAttribute('data-tone', 'danger');
+    rerender(
+      <TagGroup aria-label="Basket" items={fruit} tone="success" size="sm">
+        {(item) => (
+          <Tag id={item.id} tone={item.id === 'plum' ? 'danger' : undefined}>
+            {item.name}
+          </Tag>
+        )}
+      </TagGroup>,
+    );
+    expect(tag('Apple')).toHaveAttribute('data-tone', 'success');
+    expect(tag('Plum')).toHaveAttribute('data-tone', 'danger');
+    expectHooksMatchSpec(container, 'TAG-GROUP');
+  });
+
+  it('UIC-TAG-GROUP-1.5 shows the empty state while it holds no tag', () => {
+    const { container, rerender } = render(
+      <TagGroup<Fruit> aria-label="Basket" items={[]} renderEmptyState={() => 'Nothing picked'}>
+        {(item) => <Tag id={item.id}>{item.name}</Tag>}
+      </TagGroup>,
+    );
+    const list = container.querySelector('.ui-tag-group__list');
+    expect(list).toHaveAttribute('data-empty', 'true');
+    expect(container.querySelector('.ui-tag-group__empty')).toHaveTextContent('Nothing picked');
+    expectHooksMatchSpec(container, 'TAG-GROUP', { slots: ['empty'] });
+    rerender(
+      <TagGroup<Fruit> aria-label="Basket" items={[]}>
+        {(item) => <Tag id={item.id}>{item.name}</Tag>}
+      </TagGroup>,
+    );
+    expect(container.querySelector('.ui-tag-group__empty')).toBeNull();
+    expect(list).toBeEmptyDOMElement();
+  });
+
+  it('UIC-TAG-GROUP-1.6 forwards class names, ids and data attributes', () => {
+    const { container } = render(
+      <TagGroup
+        aria-label="Basket"
+        id="basket"
+        className="compact"
+        data-test="basket"
+        data-size="xl"
+      >
+        <Tag id="apple" className="fresh" data-change="added" data-tone="loud">
+          Apple
+        </Tag>
+      </TagGroup>,
+    );
+    const root = container.querySelector('.ui-tag-group');
+    expect(root).toHaveAttribute('id', 'basket');
+    expect(root).toHaveClass('ui-tag-group', 'compact');
+    expect(root).toHaveAttribute('data-test', 'basket');
+    expect(root).toHaveAttribute('data-size', 'md');
+    expect(tag('Apple')).toHaveClass('ui-tag-group__tag', 'fresh');
+    expect(tag('Apple')).toHaveAttribute('data-change', 'added');
+    expect(tag('Apple')).toHaveAttribute('data-tone', 'neutral');
+    expectHooksMatchSpec(container, 'TAG-GROUP', {
+      callerAttributes: ['data-test', 'data-change'],
+    });
+  });
+
+  it('UIC-TAG-GROUP-2.1 is one tab stop that the arrow keys move through', async () => {
+    const user = userEvent.setup();
+    render(
+      <>
+        <TagGroup aria-label="Basket" items={fruit}>
+          {(item) => (
+            <Tag id={item.id} isDisabled={item.id === 'pear'}>
+              {item.name}
+            </Tag>
+          )}
+        </TagGroup>
+        <button type="button">After</button>
+      </>,
+    );
+    await user.tab();
+    expect(tag('Apple')).toHaveFocus();
+    await user.keyboard('{ArrowRight}');
+    expect(tag('Plum')).toHaveFocus();
+    await user.keyboard('{Home}');
+    expect(tag('Apple')).toHaveFocus();
+    await user.keyboard('{End}');
+    expect(tag('Plum')).toHaveFocus();
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'After' })).toHaveFocus();
+  });
+
+  it('UIC-TAG-GROUP-2.2 removes a tag by its button and by Delete or Backspace', async () => {
+    const user = userEvent.setup();
+    const onRemove = vi.fn();
+    const { container } = render(<Basket onRemove={onRemove} />);
+    expect(tag('Apple')).toHaveAttribute('data-allows-removing', 'true');
+    expectHooksMatchSpec(container, 'TAG-GROUP', { slots: ['remove'] });
+    await user.click(screen.getByRole('button', { name: 'Remove Pear' }));
+    expect(onRemove).toHaveBeenLastCalledWith(new Set(['pear']));
+    act(() => tag('Apple').focus());
+    await user.keyboard('{Delete}');
+    expect(onRemove).toHaveBeenLastCalledWith(new Set(['apple']));
+    await waitFor(() => expect(tag('Plum')).toHaveFocus());
+    await user.keyboard('{Backspace}');
+    expect(onRemove).toHaveBeenLastCalledWith(new Set(['plum']));
+    expect(screen.queryAllByRole('row')).toHaveLength(0);
+  });
+
+  it('UIC-TAG-GROUP-2.2 names the remove button from the provider strings', () => {
+    render(
+      <UiProvider strings={{ remove: 'Drop' }}>
+        <Basket />
+      </UiProvider>,
+    );
+    expect(screen.getByRole('button', { name: 'Drop Apple' })).toHaveClass(
+      'ui-tag-group__remove',
+      'ui-icon-button',
+    );
+  });
+
+  it('UIC-TAG-GROUP-2.2 keeps tags readable and focusable without onRemove', async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <TagGroup aria-label="Basket" items={fruit}>
+        {(item) => <Tag id={item.id}>{item.name}</Tag>}
+      </TagGroup>,
+    );
+    expect(screen.queryByRole('button')).toBeNull();
+    expect(tag('Apple')).not.toHaveAttribute('data-allows-removing');
+    await user.tab();
+    await user.keyboard('{Delete}{Backspace}');
+    expect(screen.getAllByRole('row')).toHaveLength(3);
+    expect(tag('Apple')).toHaveFocus();
+    expectHooksMatchSpec(container, 'TAG-GROUP');
+  });
+
+  it('UIC-TAG-GROUP-2.3 leaves disabled tags out of focus and removal', () => {
+    const { container } = render(
+      <TagGroup aria-label="Basket" items={fruit} disabledKeys={['plum']} onRemove={() => {}}>
+        {(item) => (
+          <Tag id={item.id} isDisabled={item.id === 'pear'}>
+            {item.name}
+          </Tag>
+        )}
+      </TagGroup>,
+    );
+    for (const name of ['Pear', 'Plum']) {
+      expect(tag(name)).toHaveAttribute('data-disabled', 'true');
+      expect(tag(name)).toHaveAttribute('tabindex', '-1');
+    }
+    expect(
+      screen.getAllByRole('button').map((button) => button.getAttribute('aria-label')),
+    ).toEqual(['Remove']);
+    expectHooksMatchSpec(container, 'TAG-GROUP');
+  });
+
+  it('UIC-TAG-GROUP-2.4 passes React Aria selection through', async () => {
+    const user = userEvent.setup();
+    const onSelectionChange = vi.fn((keys: Selection) => keys);
+    const { container } = render(
+      <TagGroup
+        aria-label="Basket"
+        items={fruit}
+        selectionMode="multiple"
+        defaultSelectedKeys={['apple']}
+        onSelectionChange={onSelectionChange}
+      >
+        {(item) => <Tag id={item.id}>{item.name}</Tag>}
+      </TagGroup>,
+    );
+    expect(tag('Apple')).toHaveAttribute('aria-selected', 'true');
+    expect(tag('Apple')).toHaveAttribute('data-selected', 'true');
+    await user.click(tag('Pear'));
+    expect([...(onSelectionChange.mock.results.at(-1)?.value as Set<Key>)]).toEqual([
+      'apple',
+      'pear',
+    ]);
+    expect(tag('Pear')).toHaveAttribute('data-selection-mode', 'multiple');
+    expectHooksMatchSpec(container, 'TAG-GROUP');
+  });
+});

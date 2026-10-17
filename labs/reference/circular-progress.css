@@ -1,0 +1,58 @@
+/* Circular Progress */
+
+.ui-circular-progress {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ui-circular-progress__ring {
+  flex: none;
+  width: 24px;
+  height: 24px;
+}
+
+.ui-circular-progress[data-size='sm'] .ui-circular-progress__ring {
+  width: 16px;
+  height: 16px;
+}
+
+.ui-circular-progress[data-size='lg'] .ui-circular-progress__ring {
+  width: 32px;
+  height: 32px;
+}
+
+.ui-circular-progress__track {
+  stroke: var(--ref-border);
+  stroke-width: 4;
+}
+
+.ui-circular-progress__fill {
+  stroke: var(--ref-accent);
+  stroke-width: 4;
+  transition: stroke-dashoffset 0.2s;
+}
+
+.ui-circular-progress[data-indeterminate] .ui-circular-progress__ring {
+  animation: ref-spin 1s linear infinite;
+}
+
+.ui-circular-progress__label {
+  font-size: 13px;
+}
+
+.ui-circular-progress__value {
+  color: var(--ref-muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-circular-progress__fill {
+    transition: none;
+  }
+
+  .ui-circular-progress[data-indeterminate] .ui-circular-progress__ring {
+    animation: none;
+  }
+}

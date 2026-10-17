@@ -1,0 +1,9 @@
+/* SVG Markup. Inside an Icon the drawing fills the icon box (see Icon). */
+
+.ui-svg-markup {
+  display: inline-block;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  vertical-align: middle;
+}

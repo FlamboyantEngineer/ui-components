@@ -1,0 +1,228 @@
+/* PDF Viewer */
+
+.ui-pdf-viewer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  overflow: hidden;
+  background: var(--ref-canvas);
+}
+
+.ui-pdf-viewer__toolbar {
+  flex: none;
+  border-block-end: 1px solid var(--ref-border);
+}
+
+.ui-pdf-viewer__group,
+.ui-pdf-viewer__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding-inline-start: 8px;
+  border-inline-start: 1px solid var(--ref-border);
+}
+
+.ui-pdf-viewer__actions {
+  margin-inline-start: auto;
+}
+
+.ui-pdf-viewer__leading-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding-inline-end: 8px;
+  border-inline-end: 1px solid var(--ref-border);
+}
+
+/* Starts its own group: the zoom control after it has no group border of its own. */
+.ui-pdf-viewer__leading-actions + * {
+  margin-inline-start: 4px;
+}
+
+.ui-pdf-viewer__page-field,
+.ui-pdf-viewer__search-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ui-pdf-viewer__page-label,
+.ui-pdf-viewer__page-total,
+.ui-pdf-viewer__search-status {
+  color: var(--ref-muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.ui-pdf-viewer__search-status {
+  min-width: 7ch;
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-pdf-viewer__page-input,
+.ui-pdf-viewer__search-input {
+  box-sizing: border-box;
+  height: 26px;
+  padding: 0 6px;
+  border: 1px solid var(--ref-border-strong);
+  border-radius: var(--ref-radius);
+  color: var(--ref-text);
+  background: var(--ref-raised);
+  font: inherit;
+  font-size: 12px;
+}
+
+.ui-pdf-viewer__page-input {
+  width: 48px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-pdf-viewer__search-input {
+  width: 160px;
+}
+
+.ui-pdf-viewer__search-input::-webkit-search-cancel-button {
+  appearance: none;
+}
+
+:is(.ui-pdf-viewer__page-input, .ui-pdf-viewer__search-input)[data-focus-visible] {
+  outline: 2px solid var(--ref-focus);
+  outline-offset: 1px;
+}
+
+:is(.ui-pdf-viewer__page-input, .ui-pdf-viewer__search-input)[data-disabled] {
+  color: var(--ref-muted);
+  background: var(--ref-surface);
+}
+
+.ui-pdf-viewer__search-clear {
+  display: inline-flex;
+  padding: 2px;
+  border: 0;
+  border-radius: var(--ref-radius);
+  color: var(--ref-muted);
+  background: transparent;
+  cursor: pointer;
+}
+
+.ui-pdf-viewer__search-clear[data-hovered] {
+  background: var(--ref-hover);
+}
+
+.ui-pdf-viewer__search-field[data-empty] .ui-pdf-viewer__search-clear {
+  visibility: hidden;
+}
+
+.ui-pdf-viewer__stage {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.ui-pdf-viewer__scroller {
+  position: absolute;
+  inset: 0;
+  overflow: auto;
+  scrollbar-gutter: stable;
+  background: var(--ref-surface);
+}
+
+.ui-pdf-viewer__scroller:focus-visible {
+  outline: 2px solid var(--ref-focus);
+  outline-offset: -2px;
+}
+
+.ui-pdf-viewer__pages {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: max-content;
+  min-width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+}
+
+.ui-pdf-viewer__page {
+  flex: none;
+  background: #ffffff;
+  box-shadow: 0 0 0 1px var(--ref-border);
+}
+
+.ui-pdf-viewer__canvas {
+  display: block;
+}
+
+/* Caller content stays on its page. */
+.ui-pdf-viewer__overlay {
+  overflow: hidden;
+}
+
+.ui-pdf-viewer__stage > .ui-inline-error {
+  position: absolute;
+  inset: 16px 16px auto;
+}
+
+/* The engine positions each text run as a percentage of the page and sets its font height, stretch
+   and rotation in custom properties; these rules turn them into transparent, selectable text over
+   the bitmap. */
+.ui-pdf-viewer__text-layer {
+  --total-scale-factor: var(--ui-pdf-viewer-scale);
+  --scale-round-x: 1px;
+  --scale-round-y: 1px;
+
+  overflow: clip;
+  line-height: 1;
+  text-align: initial;
+  letter-spacing: normal;
+  word-spacing: normal;
+  text-size-adjust: none;
+  forced-color-adjust: none;
+  transform-origin: 0 0;
+}
+
+.ui-pdf-viewer__text-layer[data-main-rotation='90'] {
+  transform: rotate(90deg) translateY(-100%);
+}
+
+.ui-pdf-viewer__text-layer[data-main-rotation='180'] {
+  transform: rotate(180deg) translate(-100%, -100%);
+}
+
+.ui-pdf-viewer__text-layer[data-main-rotation='270'] {
+  transform: rotate(270deg) translateX(-100%);
+}
+
+.ui-pdf-viewer__text-layer [role='presentation'] {
+  position: absolute;
+  color: transparent;
+  white-space: pre;
+  cursor: text;
+  transform-origin: 0 0;
+  font-size: calc(var(--total-scale-factor) * var(--min-font-size) * var(--font-height, 0px));
+  transform: rotate(var(--rotate, 0deg)) scaleX(var(--scale-x, 1))
+    scale(calc(1 / var(--min-font-size)));
+}
+
+.ui-pdf-viewer__text-layer span:not([role], .ui-pdf-viewer__match) {
+  display: contents;
+}
+
+.ui-pdf-viewer__text-layer ::selection {
+  color: transparent;
+  background: rgb(9 105 218 / 0.3);
+}
+
+.ui-pdf-viewer__match {
+  margin: -1px;
+  padding: 1px;
+  border-radius: 3px;
+  background: rgb(255 196 0 / 0.45);
+}
+
+.ui-pdf-viewer__match[data-current] {
+  background: rgb(255 120 0 / 0.6);
+}

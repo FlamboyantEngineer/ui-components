@@ -1,0 +1,166 @@
+import { fireEvent, render, screen, within } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
+import { describe, expect, it, vi } from 'vitest';
+import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { JsonEditor } from './json-editor.js';
+
+function field(container: HTMLElement) {
+  return container.querySelector<HTMLElement>('.ui-field');
+}
+
+function editor() {
+  return screen.getByRole('textbox', { name: 'Settings' });
+}
+
+describe('JsonEditor', () => {
+  it('UIC-JSON-EDITOR-1.1 is a field whose control is a numbered code editor named by the label', () => {
+    const { container } = render(
+      <JsonEditor
+        label="Settings"
+        defaultValue={'{\n  "a": 1\n}'}
+        placeholder="{}"
+        id="settings"
+        className="caller"
+        data-testid="probe"
+      />,
+    );
+    const root = field(container);
+    expect(root).toHaveClass('ui-field', 'ui-json-editor', 'caller');
+    expect(root).toHaveAttribute('id', 'settings');
+    expect(root).toHaveAttribute('data-testid', 'probe');
+    const input = editor();
+    expect(input).toHaveAttribute('id', 'settings-control');
+    expect(input).toHaveAttribute('placeholder', '{}');
+    expect(input).toHaveAttribute('wrap', 'off');
+    const code = container.querySelector('.ui-code-editor');
+    expect(code).toHaveAttribute('data-size', 'md');
+    expect(code?.querySelectorAll('.ui-code-editor__line')).toHaveLength(3);
+    expectHooksMatchSpec(container, 'JSON-EDITOR', {
+      slots: ['format'],
+      callerAttributes: ['data-testid'],
+    });
+  });
+
+  it('UIC-JSON-EDITOR-1.1 takes a size and can hide the line numbers', () => {
+    const { container } = render(
+      <JsonEditor label="Settings" size="lg" lineNumbers={false} defaultValue="1" />,
+    );
+    expect(container.querySelector('.ui-code-editor')).toHaveAttribute('data-size', 'lg');
+    expect(container.querySelector('.ui-code-editor__gutter')).toBeNull();
+  });
+
+  it('UIC-JSON-EDITOR-1.2 highlights the JSON tokens', () => {
+    const { container } = render(<JsonEditor label="Settings" defaultValue={'{"a": true}'} />);
+    const tokens = [...container.querySelectorAll('.ui-code-editor__token')].map((token) =>
+      token.getAttribute('data-token'),
+    );
+    expect(tokens).toEqual(['punctuation', 'key', 'punctuation', 'literal', 'punctuation']);
+  });
+
+  it('UIC-JSON-EDITOR-2.1 reports text that does not parse with where it stops', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<JsonEditor label="Settings" defaultValue={'{"a": 1}'} />);
+    expect(field(container)).toHaveAttribute('data-validation', 'valid');
+    await user.click(editor());
+    await user.keyboard('{End}{Backspace}');
+    expect(field(container)).toHaveAttribute('data-validation', 'invalid');
+    expect(container.querySelector('.ui-field__message')).toHaveTextContent(
+      /^Enter valid JSON: check line 1, column \d+\.$/,
+    );
+    expect(editor()).toHaveAttribute('aria-invalid', 'true');
+    expect(container.querySelector('.ui-code-editor')).toHaveAttribute('data-invalid', 'true');
+    expectHooksMatchSpec(container, 'JSON-EDITOR');
+  });
+
+  it("UIC-JSON-EDITOR-2.1 accepts blank text unless required, before the caller's check", () => {
+    const validate = vi.fn(() => ({ severity: 'warning' as const, message: 'Check the keys.' }));
+    const { container, rerender } = render(<JsonEditor label="Settings" validate={validate} />);
+    expect(field(container)).toHaveAttribute('data-validation', 'warning');
+    rerender(<JsonEditor label="Settings" isRequired />);
+    expect(container.querySelector('.ui-field__message')).toHaveTextContent('A value is required.');
+    rerender(<JsonEditor label="Settings" value="{" validate={validate} />);
+    expect(container.querySelector('.ui-field__message')).toHaveTextContent(/^Enter valid JSON/);
+  });
+
+  it('UIC-JSON-EDITOR-3.1 formats valid text, commits it and is disabled when there is nothing to do', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    const { container } = render(
+      <JsonEditor label="Settings" defaultValue={'{"a":[1]}'} indent={4} onCommit={onCommit} />,
+    );
+    const format = screen.getByRole('button', { name: 'Format' });
+    expect(format).toHaveClass('ui-json-editor__format', 'ui-button');
+    expect(container.querySelector('.ui-code-editor__toolbar')).toContainElement(format);
+    await user.click(format);
+    expect(editor()).toHaveValue('{\n    "a": [\n        1\n    ]\n}');
+    expect(onCommit).toHaveBeenCalledWith('{\n    "a": [\n        1\n    ]\n}');
+    expect(format).toBeDisabled();
+    fireEvent.change(editor(), { target: { value: '{"a":' } });
+    expect(format).toBeDisabled();
+    fireEvent.change(editor(), { target: { value: '' } });
+    expect(format).toBeDisabled();
+    fireEvent.change(editor(), { target: { value: '[1,2]' } });
+    expect(format).toBeEnabled();
+  });
+
+  it('UIC-JSON-EDITOR-3.1 indents by two spaces by default and shows no button while locked', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<JsonEditor label="Settings" defaultValue="[1]" />);
+    await user.click(screen.getByRole('button', { name: 'Format' }));
+    expect(editor()).toHaveValue('[\n  1\n]');
+    rerender(<JsonEditor label="Settings" defaultValue="[1]" isReadOnly />);
+    expect(screen.queryByRole('button', { name: 'Format' })).toBeNull();
+  });
+
+  it('UIC-JSON-EDITOR-4.1 commits on blur and restores the committed text while dirty', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    const { container } = render(
+      <JsonEditor label="Settings" committedValue="[1]" onCommit={onCommit} />,
+    );
+    await user.click(editor());
+    await user.keyboard('{End}{ArrowLeft},2');
+    expect(field(container)).toHaveAttribute('data-dirty', 'true');
+    const restore = screen.getByRole('button', { name: 'Restore Settings' });
+    await user.click(restore);
+    expect(editor()).toHaveValue('[1]');
+    expect(field(container)).not.toHaveAttribute('data-dirty');
+    await user.keyboard('{End} ');
+    await user.tab();
+    expect(onCommit).toHaveBeenLastCalledWith('[1] ');
+  });
+
+  it('UIC-JSON-EDITOR-4.2 undoes and redoes with the field chords and runs menu actions', async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <JsonEditor label="Settings" defaultValue="[]" menu={['clear', 'set-default']} />,
+    );
+    await user.click(editor());
+    await user.keyboard('{End}{ArrowLeft}1');
+    expect(editor()).toHaveValue('[1]');
+    await user.keyboard('{Control>}z{/Control}');
+    expect(editor()).toHaveValue('[]');
+    await user.keyboard('{Control>}{Shift>}z{/Shift}{/Control}');
+    expect(editor()).toHaveValue('[1]');
+    await user.click(screen.getByRole('button', { name: 'Settings actions' }));
+    await user.click(within(screen.getByRole('menu')).getByRole('menuitem', { name: 'Clear' }));
+    expect(editor()).toHaveValue('');
+    await user.click(screen.getByRole('button', { name: 'Settings actions' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Set to default' }));
+    expect(editor()).toHaveValue('[]');
+    expectHooksMatchSpec(container, 'JSON-EDITOR');
+  });
+
+  it('UIC-JSON-EDITOR-4.3 keeps a locked editor visible, unchanged and never dirty', () => {
+    const { container, rerender } = render(
+      <JsonEditor label="Settings" committedValue="[1]" value="[2]" isReadOnly />,
+    );
+    expect(editor()).toHaveAttribute('readonly');
+    expect(field(container)).not.toHaveAttribute('data-dirty');
+    expect(container.querySelector('.ui-code-editor__gutter')).not.toBeNull();
+    rerender(<JsonEditor label="Settings" committedValue="[1]" value="[2]" isDisabled />);
+    expect(editor()).toBeDisabled();
+    expect(field(container)).toHaveAttribute('data-disabled', 'true');
+    expectHooksMatchSpec(container, 'JSON-EDITOR');
+  });
+});

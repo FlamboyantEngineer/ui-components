@@ -1,0 +1,112 @@
+import { act, render, screen, waitFor } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
+import { describe, expect, it, vi } from 'vitest';
+import { MenuButton, actionKeys, fruitEntries, openMenu } from '../../../test/menu-fixtures.js';
+import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { UiProvider } from '../../core/provider.js';
+import { PortalContainerProvider } from '../portal/portal.js';
+import { Menu, MenuItem, MenuPopover, SubmenuTrigger } from './menu.js';
+
+describe('MenuPopover and SubmenuTrigger', () => {
+  it('UIC-MENU-4.3 places the popover against its trigger and closes on an outside press', async () => {
+    const user = userEvent.setup();
+    render(<MenuButton items={fruitEntries} aria-label="Fruit" />);
+    await openMenu(user);
+    const popover = document.querySelector('.ui-menu-popover');
+    expect(popover).toHaveAttribute('data-placement', 'bottom');
+    expect(popover).toHaveAttribute('data-trigger', 'MenuTrigger');
+    expect(popover).toContainElement(screen.getByRole('menu'));
+    expectHooksMatchSpec(document.body, 'MENU');
+    await user.click(document.body);
+    expect(document.querySelector('.ui-menu-popover')).toBeNull();
+  });
+
+  it('UIC-MENU-4.4 stacks the popover on its layer, honouring provider z-indexes', async () => {
+    const user = userEvent.setup();
+    const { unmount } = render(<MenuButton items={fruitEntries} aria-label="Fruit" />);
+    await openMenu(user);
+    let popover = document.querySelector<HTMLElement>('.ui-menu-popover');
+    expect(popover).toHaveAttribute('data-layer', 'dropdown');
+    expect(popover?.style.zIndex).toBe('130');
+    await user.keyboard('{End}{ArrowRight}');
+    const popovers = document.querySelectorAll<HTMLElement>('.ui-menu-popover');
+    expect(popovers).toHaveLength(2);
+    expect(popovers[1]).toHaveAttribute('data-layer', 'dropdown');
+    expect(popovers[1]).toHaveAttribute('data-trigger', 'SubmenuTrigger');
+    unmount();
+
+    render(
+      <PortalContainerProvider layerZIndex={{ 'context-menu': 900 }}>
+        <MenuButton items={fruitEntries} aria-label="Fruit" layer="context-menu" />
+      </PortalContainerProvider>,
+    );
+    await openMenu(user);
+    popover = document.querySelector<HTMLElement>('.ui-menu-popover');
+    expect(popover).toHaveAttribute('data-layer', 'context-menu');
+    expect(popover?.style.zIndex).toBe('900');
+    await user.keyboard('{End}{ArrowRight}');
+    expect(document.querySelectorAll<HTMLElement>('.ui-menu-popover')[1]?.style.zIndex).toBe('900');
+  });
+
+  it('UIC-MENU-4.5 opens submenus by keyboard and closes only the submenu with ArrowLeft or Escape', async () => {
+    const user = userEvent.setup();
+    const onAction = vi.fn();
+    render(
+      <MenuButton aria-label="File" onAction={onAction}>
+        <MenuItem id="open">Open</MenuItem>
+        <SubmenuTrigger>
+          <MenuItem id="share">Share</MenuItem>
+          <MenuPopover>
+            <Menu onAction={onAction}>
+              <MenuItem id="mail">Mail</MenuItem>
+              <MenuItem id="chat">Chat</MenuItem>
+            </Menu>
+          </MenuPopover>
+        </SubmenuTrigger>
+      </MenuButton>,
+    );
+    const trigger = screen.getByRole('button', { name: 'Actions' });
+    trigger.focus();
+    await user.keyboard('{ArrowDown}{ArrowDown}');
+    const share = screen.getByRole('menuitem', { name: 'Share' });
+    expect(share).toHaveFocus();
+    expect(share).toHaveAttribute('aria-expanded', 'false');
+    await user.keyboard('{ArrowRight}');
+    expect(share).toHaveAttribute('aria-expanded', 'true');
+    expect(share).toHaveAttribute('data-open', 'true');
+    expect(share).toHaveAttribute('data-has-submenu', 'true');
+    expect(screen.getByRole('menuitem', { name: 'Mail' })).toHaveFocus();
+    await user.keyboard('{ArrowLeft}');
+    expect(share).toHaveFocus();
+    expect(screen.queryByRole('menuitem', { name: 'Mail' })).toBeNull();
+    await user.keyboard('{ArrowRight}{Escape}');
+    expect(share).toHaveFocus();
+    expect(screen.getAllByRole('menu')).toHaveLength(1);
+    await user.keyboard('{ArrowRight}{ArrowDown}{Enter}');
+    expect(actionKeys(onAction)).toEqual(['chat']);
+    expect(screen.queryByRole('menu')).toBeNull();
+    await waitFor(() => expect(trigger).toHaveFocus());
+  });
+
+  it('UIC-MENU-4.5 opens submenus on hover and mirrors the keys in right-to-left text', async () => {
+    const user = userEvent.setup();
+    render(
+      <UiProvider locale="he-IL">
+        <MenuButton items={fruitEntries} aria-label="Fruit" />
+      </UiProvider>,
+    );
+    await openMenu(user);
+    const more = screen.getByRole('menuitem', { name: 'More fruit' });
+    await user.hover(more);
+    await waitFor(() => expect(screen.getByRole('menuitem', { name: 'Cherry' })).toBeVisible());
+    await user.unhover(more);
+    act(() => more.focus());
+    await user.keyboard('{Escape}');
+    await openMenu(user);
+    act(() => screen.getByRole('menuitem', { name: 'More fruit' }).focus());
+    await user.keyboard('{ArrowLeft}');
+    expect(screen.getByRole('menuitem', { name: 'Cherry' })).toHaveFocus();
+    await user.keyboard('{ArrowRight}');
+    expect(screen.getByRole('menuitem', { name: 'More fruit' })).toHaveFocus();
+  });
+});
