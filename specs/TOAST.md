@@ -1,6 +1,6 @@
 # Toast
 
-A toast is a transient, non-blocking message about something that just happened, built on React Aria's toast region and queue. The host creates one queue with `createToastQueue`, renders it once in a `ToastRegion` and adds toasts whenever its own logic decides to. A toast shows a tone glyph, a title, an optional description, an optional action and a dismiss button, and never asks a question it waits on; a decision belongs in a modal dialog and a field's problem stays beside the field. `ToastList` draws a queue in place, for previews.
+A toast is a transient, non-blocking message about something that just happened, built on React Aria's toast region and queue. The host creates one queue with `createToastQueue`, renders it once in a `ToastRegion` and adds toasts whenever its own logic decides to. A toast shows a tone glyph (or a busy indicator while pending), a title, an optional description, an optional action and a dismiss button, changes in place as work progresses, and never asks a question it waits on; a decision belongs in a modal dialog and a field's problem stays beside the field. `ToastList` draws a queue in place, for previews.
 
 ## UIC-TOAST-1 - Queue
 
@@ -13,24 +13,38 @@ Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`
 
 ### UIC-TOAST-1.2 - Lifetime
 
-A toast shall close itself after `timeout` milliseconds, defaulting to the queue's `defaultTimeout` (5000 unless set); a `timeout` of 0 keeps it until it is dismissed. A toast's timer runs only while it is shown. Hovering the region or moving focus into it shall pause every visible toast's timer, and leaving resumes each with the time that remained. Closing a toast calls its `onClose`.
+A toast shall close itself after `timeout` milliseconds, defaulting to the queue's `defaultTimeout` (5000 unless set), or to 0 for a pending toast ([UIC-TOAST-3.6](#uic-toast-36---pending)); a `timeout` of 0 keeps it until it is dismissed. A toast's timer runs only while it is shown. Hovering the region or moving focus into it shall pause every visible toast's timer, and leaving resumes each with the time that remained. Closing a toast calls its `onClose`.
 
 Implementation: `src/components/toast/toast.tsx`
 Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`
 
 ### UIC-TOAST-1.3 - Replacement
 
-Adding a toast with the `id` of one still queued shall replace it: the old toast leaves without calling its `onClose`, and the new one takes the newest position with a fresh lifetime.
+Adding a toast with the `id` of one still queued shall replace it: the old toast leaves (playing its exit) without calling its `onClose`, and the new one takes the newest position with a fresh lifetime. A toast that should change without moving is updated instead ([UIC-TOAST-1.5](#uic-toast-15---in-place-update)).
 
 Implementation: `src/components/toast/toast.tsx`
 Verification: `src/components/toast/toast.test.tsx`
 
 ### UIC-TOAST-1.4 - Closing early
 
-`close(key)` shall remove one toast and `clear()` every toast; `clear` does not call `onClose`.
+`close(key)` shall close one toast, which plays its exit ([UIC-TOAST-4.1](#uic-toast-41---entering-and-exiting)) and is then removed, calling its `onClose`; a toast that is not shown is removed at once. `clear()` removes every toast at once without calling `onClose`.
 
 Implementation: `src/components/toast/toast.tsx`
 Verification: `src/components/toast/toast.test.tsx`
+
+### UIC-TOAST-1.5 - In-place update
+
+`update(key, content, options)` shall change a queued toast's content where it is: it keeps its position in the stack, its element and its live region, which announces the new text, and its timer keeps running with the time that remained. `options.timeout` gives it a new lifetime counted from the update (`0` keeps it until dismissed). A toast that becomes pending stops its timer, and one that stops pending gets the queue's `defaultTimeout` unless the update sets one. Updating a key that is closing or gone does nothing.
+
+Implementation: `src/components/toast/toast-queue.ts`, `src/components/toast/use-toast-lifecycle.ts`
+Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`
+
+### UIC-TOAST-1.6 - Promise toasts
+
+`promise(promise, { pending, success, error }, options)` shall add the `pending` content as a pending toast with no timeout and return its key. When the promise resolves, the same toast updates in place to `success` (content, or a function of the resolved value; tone `success` unless it sets one); when it rejects, to `error` (content, or a function of the reason; tone `danger` unless it sets one). The settled toast then lives for `options.timeout`, or the queue's `defaultTimeout`. A toast closed before the promise settles stays closed.
+
+Implementation: `src/components/toast/toast-queue.ts`
+Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`
 
 ## UIC-TOAST-2 - Region
 
@@ -92,6 +106,36 @@ Toasts, regions and lists shall carry the hooks below. `Toast`, `ToastRegion` an
 Implementation: `src/components/toast/toast.tsx`
 Verification: `src/components/toast/toast.test.tsx`
 
+### UIC-TOAST-3.6 - Pending
+
+`isPending` in a toast's content shall replace its glyph with a decorative `ui-toast__spinner` slot hidden from assistive technology and publish `data-pending`; added without a `timeout`, a pending toast stays until it is updated, closed or dismissed. Its live region still announces its title, so the work in progress is heard.
+
+Implementation: `src/components/toast/toast.tsx`, `src/components/toast/toast-queue.ts`, `labs/reference/toast.css`
+Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`
+
+## UIC-TOAST-4 - Motion
+
+### UIC-TOAST-4.1 - Entering and exiting
+
+Each toast shall publish `data-entering` while it appears and `data-exiting` while it leaves, timed by [`useEnterExit`](ENTER-EXIT.md) from the toast's own element. Every close (its timer, its dismiss button, its action, a swipe or the queue's `close`) keeps a shown toast in the stack, exiting, until its exit animations end, then removes it; focus moves on as React Aria moves it when the toast is removed. Without a running animation a toast leaves at once.
+
+Implementation: `src/components/toast/toast.tsx`, `src/components/toast/toast-queue.ts`, `src/utils/use-enter-exit.ts`, `labs/reference/toast.css`
+Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`
+
+### UIC-TOAST-4.2 - Swipe to dismiss
+
+A pointer that starts on a toast outside its buttons (whose presses stay theirs) and drags it more than 8 pixels toward the region's `swipeDirection` (`right` by default, or `left`, `up` or `down`, published on each toast as `data-swipe-direction`) shall make it swiping: it publishes `data-swiping` and its travel as `--ui-toast-swipe-x` (left and right, negative to the left) or `--ui-toast-swipe-y` (up and down, negative upwards). Releasing it after at least `swipeThreshold` pixels (50 by default) closes it and keeps the travel for its exit; a shorter release or a cancelled pointer returns it to rest. The click that ends a swipe is swallowed, so a swipe that ends on a link does not follow it. Keyboard users dismiss with the dismiss button.
+
+Implementation: `src/components/toast/use-toast-swipe.ts`, `src/components/toast/toast.tsx`, `labs/reference/toast.css`
+Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`
+
+### UIC-TOAST-4.3 - Stack position and expansion
+
+Each toast shall publish its place in the stack as `--ui-toast-index` (0 for the newest visible toast, unitless) and `--ui-toast-offset` (the summed measured height of the newer visible toasts, in pixels), so the stylesheet can pile toasts and spread them out. A `ToastRegion` publishes `data-expanded` while the pointer is over it or focus is inside it, the same moments its timers pause, so the stylesheet can spread a pile while the reader works with it.
+
+Implementation: `src/components/toast/toast-stack.ts`, `src/components/toast/toast.tsx`, `labs/reference/toast.css`
+Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`
+
 ## Hooks
 
 | Hook                    | Kind      | Values                                 | Description                                       |
@@ -100,12 +144,23 @@ Verification: `src/components/toast/toast.test.tsx`
 | `ui-toast-list`         | root      |                                        | The ordered list of toasts.                       |
 | `ui-toast`              | root      |                                        | One toast (`role="alertdialog"`).                 |
 | `ui-toast__icon`        | slot      |                                        | The tone glyph or custom icon (also `ui-icon`).   |
+| `ui-toast__spinner`     | slot      |                                        | The decorative busy indicator while pending.      |
 | `ui-toast__content`     | slot      |                                        | The live region holding title and description.    |
 | `ui-toast__title`       | slot      |                                        | The title.                                        |
 | `ui-toast__description` | slot      |                                        | The description, when set.                        |
 | `ui-toast__action`      | slot      |                                        | The action button (also `ui-button`).             |
 | `ui-toast__close`       | slot      |                                        | The dismiss button (also `ui-icon-button`).       |
 | `data-tone`             | attribute | `info`, `success`, `warning`, `danger` | The toast's tone.                                 |
+| `data-swipe-direction`  | attribute | `up`, `down`, `left`, `right`          | The direction that dismisses the toast.           |
+| `data-pending`          | state     | `true`                                 | Work in progress.                                 |
+| `data-entering`         | state     | `true`                                 | The toast is playing its enter animation.         |
+| `data-exiting`          | state     | `true`                                 | The toast is playing its exit before removal.     |
+| `data-swiping`          | state     | `true`                                 | A pointer is dragging the toast.                  |
+| `data-expanded`         | state     | `true`                                 | Pointer over the region or focus in it.           |
+| `--ui-toast-index`      | property  |                                        | Place in the stack, 0 for the newest (unitless).  |
+| `--ui-toast-offset`     | property  |                                        | Summed height of the newer toasts, in pixels.     |
+| `--ui-toast-swipe-x`    | property  |                                        | Horizontal swipe travel, in pixels.               |
+| `--ui-toast-swipe-y`    | property  |                                        | Vertical swipe travel, in pixels.                 |
 | `data-hovered`          | state     | `true`                                 | Pointer over the region (React Aria).             |
 | `data-focused`          | state     | `true`                                 | Focus in the region or on the toast (React Aria). |
 | `data-focus-visible`    | state     | `true`                                 | Keyboard focus (React Aria).                      |

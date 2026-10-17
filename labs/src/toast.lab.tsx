@@ -45,6 +45,68 @@ function previewContent(tone: ToastTone, content: (typeof contents)[number]): To
 
 const liveQueue = createToastQueue({ maxVisibleToasts: 4 });
 
+function ProgressControls() {
+  const upload = useRef<{ key: string; step: number } | null>(null);
+  const settle = useRef<{ resolve: () => void; reject: () => void } | null>(null);
+  return (
+    <p>
+      <Button
+        size="sm"
+        data-lab-push="pending"
+        onPress={() => {
+          upload.current = {
+            step: 1,
+            key: liveQueue.add({ title: 'Uploading 1 of 3', isPending: true }),
+          };
+        }}
+      >
+        Push pending
+      </Button>{' '}
+      <Button
+        size="sm"
+        data-lab-action="advance"
+        onPress={() => {
+          const current = upload.current;
+          if (!current) return;
+          current.step += 1;
+          liveQueue.update(
+            current.key,
+            current.step < 3
+              ? { title: `Uploading ${current.step} of 3`, isPending: true }
+              : { tone: 'success', title: 'Three files uploaded' },
+          );
+        }}
+      >
+        Advance upload
+      </Button>{' '}
+      <Button
+        size="sm"
+        data-lab-push="promise"
+        onPress={() => {
+          liveQueue.promise(
+            new Promise<number>((resolve, reject) => {
+              settle.current = { resolve: () => resolve(12), reject: () => reject(new Error()) };
+            }),
+            {
+              pending: { title: 'Saving recipes' },
+              success: (count) => ({ title: `${count} recipes saved` }),
+              error: { title: 'Recipes not saved', description: 'Check your connection.' },
+            },
+          );
+        }}
+      >
+        Push promise
+      </Button>{' '}
+      <Button size="sm" data-lab-action="resolve" onPress={() => settle.current?.resolve()}>
+        Resolve
+      </Button>{' '}
+      <Button size="sm" data-lab-action="reject" onPress={() => settle.current?.reject()}>
+        Reject
+      </Button>
+    </p>
+  );
+}
+
 function LiveDemo() {
   const progress = useRef(0);
   return (
@@ -101,6 +163,7 @@ function LiveDemo() {
           Clear all
         </Button>
       </p>
+      <ProgressControls />
       <ToastRegion queue={liveQueue} data-lab-region="live" />
     </div>
   );
@@ -123,7 +186,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Live region"
-      description="Push toasts into the region at the end of the page. Hover or focus the stack to pause their five-second lifetime."
+      description="Push toasts into the region at the end of the page: they pile up, and hovering or focusing the pile spreads it out and pauses their five-second lifetime. Pending toasts update in place, promise toasts settle into success or error, and a drag to the right swipes a toast away."
     >
       <LiveDemo />
     </LabSection>
