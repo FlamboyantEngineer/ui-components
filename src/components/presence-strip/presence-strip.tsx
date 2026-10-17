@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { withStableOccurrenceKeys } from '../../utils/stable-keys.js';
+import { assignOccurrenceKeys } from '../../utils/stable-keys.js';
 import { resolveAvatarColor, type AvatarIdentity } from '../avatar/avatar.js';
 import { PresenceAvatar, type PresenceAvatarSize } from '../presence-avatar/presence-avatar.js';
 
@@ -69,7 +69,7 @@ export function PresenceStrip({
     maxVisible === undefined || !Number.isFinite(maxVisible)
       ? people.length
       : wholeCount(maxVisible);
-  const keyed = withStableOccurrenceKeys(people, (person) => person.id);
+  const keyed = assignOccurrenceKeys(people, (person) => person.id);
   const visible = keyed.slice(0, limit);
   const hidden = keyed.slice(limit);
   const overflow = hidden.length + wholeCount(overflowCount);

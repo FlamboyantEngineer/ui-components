@@ -1,6 +1,6 @@
 import { useCallback, useId, useMemo, useState } from 'react';
 import { splitMatchTerms, textMatchesTerms } from '../../src/components/text-match/match-ranges.js';
-import { TextMatch, TextMatchScope } from '../../src/components/text-match/text-match.js';
+import { TextMatch, TextMatchProvider } from '../../src/components/text-match/text-match.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const sample = 'Go to the top of the Line-height list to add Favorites';
@@ -46,7 +46,7 @@ function FilterDemo() {
           Match words
         </label>
       </p>
-      <TextMatchScope query={query} matchWords={matchWords} registerText={registerText}>
+      <TextMatchProvider query={query} matchWords={matchWords} registerText={registerText}>
         <ul>
           {cities.map((city) => (
             <li key={city}>
@@ -54,7 +54,7 @@ function FilterDemo() {
             </li>
           ))}
         </ul>
-      </TextMatchScope>
+      </TextMatchProvider>
       <p data-lab-filter-status>
         {matching} of {shown.length} labels contain every term
       </p>
@@ -71,15 +71,18 @@ mountLab(
       <StateMatrix
         axes={{ query: queries, matching: ['substring', 'words'] }}
         render={({ query, matching }) => (
-          <TextMatchScope query={query === '(none)' ? '' : query} matchWords={matching === 'words'}>
+          <TextMatchProvider
+            query={query === '(none)' ? '' : query}
+            matchWords={matching === 'words'}
+          >
             <TextMatch>{sample}</TextMatch>
-          </TextMatchScope>
+          </TextMatchProvider>
         )}
       />
     </LabSection>
     <LabSection
       title="Filtering"
-      description="Type a query. Every label marks it as you type, and the scope counts the labels that registered."
+      description="Type a query. Every label marks it as you type, and the provider counts the labels that registered."
     >
       <FilterDemo />
     </LabSection>

@@ -28,10 +28,13 @@ mountLab(
     </LabSection>
     <LabSection
       title="Options"
-      description="Each option in a 180px column. Hidden text keeps only the icon."
+      description="Each option in a 180px column. Hide label keeps only the icon; hidden removes the whole label; live announces changes."
     >
       <StateMatrix
-        axes={{ option: ['default', 'truncate', 'grow', 'hide label', 'collapsible'], size: sizes }}
+        axes={{
+          option: ['default', 'truncate', 'grow', 'hide label', 'collapsible', 'live', 'hidden'],
+          size: sizes,
+        }}
         render={({ option, size }) => (
           <div data-lab-column="180" style={{ width: 180 }}>
             <IconLabel
@@ -42,6 +45,8 @@ mountLab(
               grow={option === 'grow'}
               hideLabel={option === 'hide label'}
               collapsible={option === 'collapsible'}
+              live={option === 'live' ? 'polite' : undefined}
+              hidden={option === 'hidden'}
             />
           </div>
         )}

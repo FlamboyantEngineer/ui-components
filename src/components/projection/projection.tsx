@@ -8,6 +8,25 @@ import {
   type ReactNode,
 } from 'react';
 
+export interface ProjectionProviderProps {
+  /** The content that publishes to and renders the slots. */
+  children?: ReactNode;
+}
+
+export interface ProjectionContentProps {
+  /** The slot name an outlet renders. */
+  slot: string;
+  /** The content the slot's outlet renders. */
+  children?: ReactNode;
+}
+
+export interface ProjectionOutletProps {
+  /** The slot name to render. */
+  slot: string;
+  /** Rendered while the slot has no content. */
+  fallback?: ReactNode;
+}
+
 interface ProjectionEntry {
   readonly content: ReactNode;
   readonly owner: object;
@@ -24,10 +43,6 @@ interface ProjectionActions {
 // Two contexts: publishing re-renders the outlets, never the components that publish.
 const ProjectionActionsContext = createContext<ProjectionActions | null>(null);
 const ProjectionStateContext = createContext<ProjectionState | null>(null);
-
-export interface ProjectionProviderProps {
-  children?: ReactNode;
-}
 
 /** Owns the named slots that `ProjectionContent` publishes to and `ProjectionOutlet` renders. */
 export function ProjectionProvider({ children }: ProjectionProviderProps) {
@@ -68,12 +83,6 @@ export function ProjectionProvider({ children }: ProjectionProviderProps) {
   );
 }
 
-export interface ProjectionContentProps {
-  /** The slot name an outlet renders. */
-  slot: string;
-  children?: ReactNode;
-}
-
 /**
  * Declares content for a named slot. It renders nothing in place: the slot's outlet renders it.
  * Without a provider above, it renders its children in place.
@@ -94,13 +103,6 @@ export function ProjectionContent({ slot, children }: ProjectionContentProps) {
   }, [actions, owner, slot, children]);
 
   return actions ? null : <>{children}</>;
-}
-
-export interface ProjectionOutletProps {
-  /** The slot name to render. */
-  slot: string;
-  /** Rendered while the slot has no content. */
-  fallback?: ReactNode;
 }
 
 /** Renders the content of the most recently mounted `ProjectionContent` for its slot. */

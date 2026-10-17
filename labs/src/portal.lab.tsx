@@ -1,7 +1,7 @@
 import { useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { Button, Dialog, DialogTrigger, Heading, Modal, ModalOverlay } from 'react-aria-components';
 import { overlayLayers } from '../../src/components/portal/layers.js';
-import { Portal, PortalHost } from '../../src/components/portal/portal.js';
+import { Portal, PortalContainerProvider, PortalHost } from '../../src/components/portal/portal.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 // Lab-only presentation for the content placed in portals; the library draws none of it.
@@ -15,6 +15,10 @@ const card: CSSProperties = {
   background: 'Canvas',
   color: 'CanvasText',
 };
+
+const colours = ['Teal', 'Plum', 'Amber'] as const;
+
+const topLayerOf = { default: undefined, on: true, off: false } as const;
 
 function Stage({ children, height = 72 }: { children: ReactNode; height?: number }) {
   return (
@@ -42,6 +46,44 @@ function Stack({ order }: { order: 'lowest first' | 'highest first' }) {
         );
       })}
     </Stage>
+  );
+}
+
+/** A host whose backdrop layer is raised above the toast layer. */
+function RaisedBackdrop() {
+  return (
+    <div data-lab-stage="" style={{ position: 'relative', width: 240, height: 80 }}>
+      <PortalHost layerZIndex={{ backdrop: 170 }}>
+        <Portal layer="toast">
+          <div data-lab-card="toast" style={{ ...card, position: 'absolute' }}>
+            toast
+          </div>
+        </Portal>
+        <Portal layer="backdrop">
+          <div
+            data-lab-card="backdrop"
+            style={{ ...card, position: 'absolute', left: 24, top: 16 }}
+          >
+            backdrop, raised
+          </div>
+        </Portal>
+      </PortalHost>
+    </div>
+  );
+}
+
+/** Portals rendered into a container the caller chooses, which mounts after them. */
+function ChosenContainer() {
+  const [target, setTarget] = useState<HTMLDivElement | null>(null);
+  return (
+    <div data-lab-stage="" style={{ position: 'relative', width: 240, height: 72 }}>
+      <PortalContainerProvider container={target}>
+        <Portal layer="tooltip">
+          <div style={card}>In the chosen container</div>
+        </Portal>
+      </PortalContainerProvider>
+      <div ref={setTarget} data-lab-target="" />
+    </div>
   );
 }
 
@@ -75,8 +117,6 @@ function BodyNotice() {
     </>
   );
 }
-
-const colours = ['Teal', 'Plum', 'Amber'] as const;
 
 function ColourDialog() {
   const [listOpen, setListOpen] = useState(false);
@@ -167,6 +207,34 @@ mountLab(
       <StateMatrix
         axes={{ order: ['lowest first', 'highest first'] }}
         render={({ order }) => <Stack order={order} />}
+      />
+    </LabSection>
+    <LabSection
+      title="Containers and z-indexes"
+      description="A provider's chosen container, and a host that raises one layer's z-index above the others."
+    >
+      <StateMatrix
+        axes={{ override: ['container', 'layer z-index'] }}
+        render={({ override }) =>
+          override === 'container' ? <ChosenContainer /> : <RaisedBackdrop />
+        }
+      />
+    </LabSection>
+    <LabSection
+      title="Top layer"
+      description="Layers above modal are React Aria top layers by default; topLayer turns the mark on or off for any layer."
+    >
+      <StateMatrix
+        axes={{ topLayer: ['default', 'on', 'off'], layer: ['modal', 'toast'] }}
+        render={({ topLayer, layer }) => (
+          <Stage>
+            <Portal layer={layer} topLayer={topLayerOf[topLayer]}>
+              <div style={card}>
+                {layer}, {topLayer}
+              </div>
+            </Portal>
+          </Stage>
+        )}
       />
     </LabSection>
     <LabSection

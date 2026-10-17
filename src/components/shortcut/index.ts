@@ -15,4 +15,5 @@ export type {
   ShortcutModifier,
   ShortcutPlatform,
   ShortcutPlatformSource,
+  ShortcutTextOptions,
 } from './shortcut-format.js';

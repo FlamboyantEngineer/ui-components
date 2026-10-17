@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import type { GlyphComponentProps } from '../../core/glyphs.js';
-import { Icon, isGlyphName, toIconProps } from './icon.js';
+import { Icon, isGlyphName, toIconProps, toImageProps } from './icon.js';
 
 describe('Icon', () => {
   it('UIC-ICON-1.1 draws a built-in glyph in the glyph slot', () => {
@@ -61,6 +61,8 @@ describe('Icon', () => {
     const image = screen.getByRole('img', { name: 'Information' });
     expect(image).not.toHaveAttribute('aria-hidden');
     expect(image.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
+    expect(toImageProps('Information')).toEqual({ role: 'img', 'aria-label': 'Information' });
+    expect(toImageProps('')).toEqual({ 'aria-hidden': true });
   });
 
   it('UIC-ICON-1.4 appends the caller class and forwards id and data attributes', () => {

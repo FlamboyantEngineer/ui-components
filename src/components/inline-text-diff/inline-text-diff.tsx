@@ -1,21 +1,19 @@
 import { Fragment } from 'react';
 import { createHooks } from '../../core/hooks.js';
+import type { BaseProps } from '../../core/props.js';
 import type { InlineTextDiffSegment } from './text-diff.js';
 
-export interface InlineTextDiffProps {
+export interface InlineTextDiffProps extends BaseProps {
   /** Runs in reading order. Build them with `createInlineTextDiffExcerpt(before, after)`. */
   segments: readonly InlineTextDiffSegment[];
-  className?: string | undefined;
-  id?: string | undefined;
-  [data: `data-${string}`]: string | number | boolean | undefined;
 }
 
 const hooks = createHooks('inline-text-diff', ['removed', 'added']);
 
 /** A change to a text value, inline: unchanged context, the removed run and the added run. */
-export function InlineTextDiff({ segments, className, id, ...rest }: InlineTextDiffProps) {
+export function InlineTextDiff({ segments, className, ...rest }: InlineTextDiffProps) {
   return (
-    <span {...hooks.root({ className, props: rest })} id={id}>
+    <span {...rest} {...hooks.root({ className })}>
       {segments.map((segment, index) => {
         if (segment.kind === 'removed') {
           return (

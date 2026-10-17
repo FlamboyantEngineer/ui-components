@@ -32,7 +32,7 @@ describe('SectionHeader', () => {
   });
 
   it('UIC-SECTION-HEADER-1.1 renders no description or actions slot for empty values', () => {
-    for (const empty of [undefined, null, false, '']) {
+    for (const empty of [undefined, null, false, true, '']) {
       const { container, unmount } = render(
         <SectionHeader title="Orchard" description={empty} actions={empty} />,
       );
