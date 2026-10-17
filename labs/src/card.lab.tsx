@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { Heading } from 'react-aria-components';
+import { Badge } from '../../src/components/badge/badge.js';
 import { Card, type CardDensity, type CardVariant } from '../../src/components/card/card.js';
 import { Button } from '../../src/components/button/button.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
@@ -51,13 +53,24 @@ mountLab(
     </LabSection>
     <LabSection
       title="Header composition"
-      description="A title, a description and actions compose the header; custom header content replaces them."
+      description="A title, a description and actions compose the header; custom header content replaces them, and a React Aria Heading with the title slot in it becomes the card title."
     >
       <StateMatrix
-        axes={{ header: ['title', 'description', 'actions', 'custom', 'none'] }}
+        axes={{ header: ['title', 'description', 'actions', 'custom', 'slotted title', 'none'] }}
         render={({ header }) => (
           <div style={{ width: 240 }}>
-            {header === 'custom' ? (
+            {header === 'slotted title' ? (
+              <Card
+                header={
+                  <>
+                    <Heading slot="title">Seed swap</Heading>
+                    <Badge size="sm">New</Badge>
+                  </>
+                }
+              >
+                The slotted heading names the card.
+              </Card>
+            ) : header === 'custom' ? (
               <Card header={<strong>Custom header</strong>} aria-label="Custom header card">
                 Body text.
               </Card>

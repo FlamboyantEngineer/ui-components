@@ -18,6 +18,10 @@ export interface UiStrings {
   previous: string;
   next: string;
   copy: string;
+  /** Announces that a copy reached the clipboard. */
+  copied: string;
+  /** Announces that a copy did not reach the clipboard. */
+  copyFailed: string;
   resize: string;
   /** Names the search box that narrows a table's rows. */
   filterRows: string;
@@ -235,6 +239,8 @@ export const defaultStrings: UiStrings = {
   previous: 'Previous',
   next: 'Next',
   copy: 'Copy',
+  copied: 'Copied',
+  copyFailed: 'Copy failed',
   resize: 'Resize',
   filterRows: 'Filter rows',
   rowActions: 'Actions',

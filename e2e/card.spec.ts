@@ -56,6 +56,30 @@ test.describe('Card lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-CARD-1.4 names a card by the slotted title of its custom header', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('card');
+    const region = page.getByRole('region', { name: 'Seed swap', exact: true });
+    await expect(region).toBeVisible();
+    const slotted = region.getByRole('heading', { name: 'Seed swap' });
+    await expect(slotted).toHaveClass(/ui-card__title/);
+    await expect(region).toHaveAttribute(
+      'aria-labelledby',
+      (await slotted.getAttribute('id')) ?? '',
+    );
+    const own = page
+      .getByRole('region', { name: 'Notifications (title)', exact: true })
+      .locator('.ui-card__title');
+    const font = (locator: typeof own) =>
+      locator.evaluate(
+        (node) => `${getComputedStyle(node).fontSize} ${getComputedStyle(node).fontWeight}`,
+      );
+    expect(await font(slotted)).toBe(await font(own));
+    await lab.expectAccessible();
+  });
+
   test('UIC-CARD-2.3 draws the selection edge on the chosen card', async ({ page, lab }) => {
     await lab.open('card');
     const demo = page.locator('[data-lab-demo="select"]');

@@ -34,6 +34,13 @@ Verification: `src/components/portal/portal.test.tsx`, `e2e/portal.spec.ts`
 Implementation: `src/components/portal/portal.tsx`
 Verification: `src/components/portal/portal.test.tsx`
 
+### UIC-PORTAL-1.5 - Rendering in place
+
+`inPlace` shall render the portal's wrapper where the portal is declared instead of in the container, with the same hooks, layer, z-index and top-layer mark, so an overlay can stay inline for tests or an embedded host while it keeps its layer. A portal in place also renders on the server, since it needs no container.
+
+Implementation: `src/components/portal/portal.tsx`
+Verification: `src/components/portal/portal.test.tsx`, `e2e/portal.spec.ts`
+
 ## UIC-PORTAL-2 - Layers
 
 ### UIC-PORTAL-2.1 - Layer order
@@ -54,7 +61,7 @@ Verification: `src/components/portal/portal.test.tsx`, `e2e/portal.spec.ts`
 
 ### UIC-PORTAL-3.1 - No semantics of its own
 
-The portal wrapper and the portal host shall add no role, accessible name, tab stop or focus management. The overlay inside owns them; because the container follows the page in document order, an overlay that belongs to a trigger references it by id (`aria-controls`, `aria-describedby`) and manages its own focus.
+The portal wrapper and the portal host shall add no role, accessible name, tab stop or focus management, unless `preserveTabOrder` asks for focus guards ([UIC-PORTAL-3.4](#uic-portal-34---preserved-tab-order)). The overlay inside owns them; because the container follows the page in document order, an overlay that belongs to a trigger references it by id (`aria-controls`, `aria-describedby`) and manages its own focus.
 
 Implementation: `src/components/portal/portal.tsx`
 Verification: `src/components/portal/portal.test.tsx`, `e2e/portal.spec.ts`
@@ -64,6 +71,13 @@ Verification: `src/components/portal/portal.test.tsx`, `e2e/portal.spec.ts`
 A portal on a layer above `modal` (`dropdown`, `context-menu`, `tooltip`, `toast`) shall be marked as a top layer for React Aria (`data-react-aria-top-layer`), so that while a React Aria modal is open its content is not hidden from assistive technology or made inert, focus can move into it from the modal, and using it does not dismiss React Aria overlays. `topLayer` turns the mark on or off for any layer. A portal opened while a modal is open stays reachable as long as its container is not inside content the modal has hidden; the document body never is.
 
 Implementation: `src/components/portal/portal.tsx`
+Verification: `src/components/portal/portal.test.tsx`, `e2e/portal.spec.ts`
+
+### UIC-PORTAL-3.4 - Preserved tab order
+
+With `preserveTabOrder`, Tab shall move into the portal's content and out of it as if the content sat where the portal is declared: from the element before that place to the content's first tab stop, from its last tab stop to the element after that place, and back the same way with Shift+Tab. Content without a tab stop is passed over, and the content is skipped when the document's own order reaches it at the container. The portal renders this with two empty focus guards where it is declared and one at each end of its wrapper; each moves focus on as soon as it receives it. A portal in place keeps the document's order without guards.
+
+Implementation: `src/components/portal/portal.tsx`, `src/components/portal/tab-order.tsx`
 Verification: `src/components/portal/portal.test.tsx`, `e2e/portal.spec.ts`
 
 ### UIC-PORTAL-3.3 - Hooks and caller attributes

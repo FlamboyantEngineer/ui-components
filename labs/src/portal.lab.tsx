@@ -183,6 +183,37 @@ function ColourDialog() {
   );
 }
 
+function TabOrderDemo({ preserveTabOrder }: { preserveTabOrder: boolean }) {
+  const [open, setOpen] = useState(false);
+  const name = preserveTabOrder ? 'Kept order' : 'Document order';
+  return (
+    <div data-lab-demo={preserveTabOrder ? 'tab-order' : 'document-order'}>
+      <button type="button" onClick={() => setOpen((value) => !value)}>
+        {open ? `Hide ${name} tools` : `Show ${name} tools`}
+      </button>{' '}
+      {open ? (
+        <Portal layer="dropdown" preserveTabOrder={preserveTabOrder}>
+          <div
+            role="group"
+            aria-label={`${name} tools`}
+            style={{
+              ...card,
+              position: 'fixed',
+              left: preserveTabOrder ? 16 : 232,
+              bottom: 16,
+              width: 200,
+              height: 'auto',
+            }}
+          >
+            <button type="button">Cut</button> <button type="button">Copy</button>
+          </div>
+        </Portal>
+      ) : null}
+      <button type="button">{name} next</button>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -236,6 +267,27 @@ mountLab(
           </Stage>
         )}
       />
+    </LabSection>
+    <LabSection
+      title="In place"
+      description="inPlace keeps the wrapper where the portal is declared, with its layer, z-index and top-layer mark."
+    >
+      <div
+        data-lab-stage=""
+        data-lab-in-place=""
+        style={{ position: 'relative', width: 240, height: 72 }}
+      >
+        <Portal layer="tooltip" inPlace>
+          <div style={card}>tooltip, in place</div>
+        </Portal>
+      </div>
+    </LabSection>
+    <LabSection
+      title="Tab order"
+      description="Tools in a portal at the end of the document. With preserveTabOrder, Tab reaches them right after their toggle and leaves them to the button after it; without it, they come last."
+    >
+      <TabOrderDemo preserveTabOrder />
+      <TabOrderDemo preserveTabOrder={false} />
     </LabSection>
     <LabSection
       title="Document body"

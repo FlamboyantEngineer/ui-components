@@ -154,6 +154,9 @@ describe('measuring', () => {
       align: 'start',
       constrained: true,
       constrainedWidth: false,
+      availableWidth: 484,
+      availableHeight: 266,
+      transformOrigin: '40px 0px',
     });
 
     const parent = attach(document.createElement('div'));
@@ -177,6 +180,40 @@ describe('measuring', () => {
     expect(fromData).toMatchObject({ left: 36, top: 106 });
   });
 
+  it('UIC-OVERLAY-POSITION-3.3 UIC-OVERLAY-POSITION-1.6 caps a side overlay by its room and keeps the cap', () => {
+    vi.stubGlobal('innerWidth', 500);
+    vi.stubGlobal('innerHeight', 400);
+    let width = 200;
+    let height = 60;
+    let cap: number | null = null;
+    const shown = () => (cap === null ? width : Math.min(width, cap));
+    const panel = attach(document.createElement('div'));
+    panel.getBoundingClientRect = () => DOMRect.fromRect({ width: shown(), height });
+    const anchor = attach(document.createElement('button'));
+    anchor.getBoundingClientRect = () =>
+      DOMRect.fromRect({ x: 300, y: 100, width: 80, height: 20 });
+    const resolve = () => resolveOverlayGeometry(panel, anchor, { side: 'right', align: 'center' });
+
+    expect(resolve()).toMatchObject({
+      side: 'left',
+      left: 94,
+      top: 80,
+      maxWidth: null,
+      constrainedWidth: false,
+      availableWidth: 286,
+      transformOrigin: '200px 30px',
+    });
+
+    width = 400;
+    const capped = resolve();
+    expect(capped).toMatchObject({ side: 'left', left: 8, maxWidth: 286, constrainedWidth: true });
+    cap = capped.maxWidth;
+    expect(resolve()).toEqual(capped);
+
+    height = 500;
+    expect(resolve()).toMatchObject({ maxHeight: 384, constrained: true, top: 8 });
+  });
+
   it('UIC-OVERLAY-POSITION-3.4 compares geometries', () => {
     const geometry: OverlayGeometry = {
       strategy: 'fixed',
@@ -188,8 +225,14 @@ describe('measuring', () => {
       align: 'start',
       constrained: true,
       constrainedWidth: false,
+      availableWidth: 300,
+      availableHeight: 40,
+      transformOrigin: '20px 0px',
     };
     expect(isSameOverlayGeometry(geometry, { ...geometry })).toBe(true);
+    expect(isSameOverlayGeometry(geometry, { ...geometry, transformOrigin: '0px 0px' })).toBe(
+      false,
+    );
     expect(isSameOverlayGeometry(geometry, { ...geometry, top: 3 })).toBe(false);
     expect(isSameOverlayGeometry(geometry, { ...geometry, align: 'end' })).toBe(false);
     expect(isSameOverlayGeometry(null, null)).toBe(true);

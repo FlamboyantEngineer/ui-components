@@ -55,4 +55,42 @@ test.describe('Load More lab', () => {
     await expect(demo.locator('[data-lab-output="done"]')).toBeVisible();
     await expect(button).toHaveCount(0);
   });
+
+  test('UIC-LOAD-MORE-1.7 UIC-MEASUREMENT-4.1 UIC-COLLECTIONS-1.3 loads the next page as the control scrolls into view', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('load-more');
+    const demo = page.locator('[data-lab-demo="endless"]');
+    const scroller = demo.locator('[data-lab-scroller]');
+    const items = demo.locator('[data-lab-output="cities"] li');
+    const button = demo.locator('.ui-load-more');
+    const deliver = demo.locator('[data-lab-action="deliver-cities"]');
+    const scrollToEnd = () =>
+      scroller.evaluate((node) => {
+        node.scrollTop = node.scrollHeight;
+      });
+
+    await scroller.scrollIntoViewIfNeeded();
+    await expect(items).toHaveCount(8);
+    await expect(scroller).toBeInViewport();
+    await expect(button).not.toBeInViewport();
+    await expect(button).not.toHaveAttribute('data-pending');
+    await expect(deliver).toBeDisabled();
+
+    for (const count of [16, 24]) {
+      await scrollToEnd();
+      await expect(button).toHaveAttribute('data-pending', 'true');
+      await expect(button).not.toBeFocused();
+      await deliver.click();
+      await expect(items).toHaveCount(count);
+      if (count < 24) {
+        await expect(button).not.toHaveAttribute('data-pending');
+        await expect(button).toHaveText(`Load more (${24 - count} remaining)`);
+      }
+    }
+    await expect(demo.locator('[data-lab-output="done"]')).toBeVisible();
+    await expect(button).toHaveCount(0);
+    await lab.expectAccessible();
+  });
 });

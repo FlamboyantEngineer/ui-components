@@ -11,6 +11,7 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { omitUndefined } from '../../utils/omit-undefined.js';
 import { defaultLayerZIndex, isLayerAbove, type OverlayLayer } from './layers.js';
+import { usePreservedTabOrder } from './tab-order.js';
 
 export type LayerZIndex = Partial<Record<OverlayLayer, number>>;
 
@@ -37,6 +38,10 @@ export interface PortalProps extends BaseProps {
   layer?: OverlayLayer | undefined;
   /** Keep the content usable while a React Aria modal is open. Defaults to true above `modal`. */
   topLayer?: boolean | undefined;
+  /** Render the wrapper where the portal is declared instead of in the container, keeping its layer. */
+  inPlace?: boolean | undefined;
+  /** Give the content the tab order of the place the portal is declared. */
+  preserveTabOrder?: boolean | undefined;
 }
 
 interface PortalContextValue {
@@ -109,24 +114,37 @@ export function Portal({
   children,
   layer = 'dropdown',
   topLayer,
+  inPlace = false,
+  preserveTabOrder = false,
   className,
   ...rest
 }: PortalProps) {
   const { container, zIndex } = useContext(PortalContext);
   const isClient = useIsClient();
-  if (!isClient) return null;
-  const target = container === undefined ? document.body : container;
-  if (!target) return null;
+  const tabOrder = usePreservedTabOrder();
+  const keepsTabOrder = preserveTabOrder && !inPlace;
   const isTopLayer = topLayer ?? isLayerAbove(layer, 'modal');
-  return createPortal(
+  const wrapper = (
     <div
       {...rest}
       {...hooks.root({ className, data: { layer } })}
       {...(isTopLayer ? { 'data-react-aria-top-layer': 'true' } : {})}
+      ref={keepsTabOrder ? tabOrder.wrapperRef : undefined}
       style={{ position: 'absolute', top: 0, left: 0, zIndex: zIndex[layer] }}
     >
+      {keepsTabOrder ? tabOrder.startGuard : null}
       {children}
-    </div>,
-    target,
+      {keepsTabOrder ? tabOrder.endGuard : null}
+    </div>
+  );
+  if (inPlace) return wrapper;
+  if (!isClient) return null;
+  const target = container === undefined ? document.body : container;
+  if (!target) return null;
+  return (
+    <>
+      {keepsTabOrder ? tabOrder.placeGuards : null}
+      {createPortal(wrapper, target)}
+    </>
   );
 }

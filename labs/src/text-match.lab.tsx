@@ -5,6 +5,8 @@ import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const sample = 'Go to the top of the Line-height list to add Favorites';
 const queries = ['(none)', 'to', 'fav', 'line height', 'pear'] as const;
+const dessertMenu = 'Café crème, crème brûlée and a café au lait';
+const dessertQueries = ['cafe', 'café', 'creme brulee', 'lait creme cafe'] as const;
 const cities = [
   'Lisbon',
   'Porto',
@@ -76,6 +78,19 @@ mountLab(
             matchWords={matching === 'words'}
           >
             <TextMatch>{sample}</TextMatch>
+          </TextMatchProvider>
+        )}
+      />
+    </LabSection>
+    <LabSection
+      title="Accents and terms"
+      description={`The text "${dessertMenu}". With ignoreAccents an unaccented query marks accented letters; each mark names its term in data-term, which the reference sheet tints per term.`}
+    >
+      <StateMatrix
+        axes={{ query: dessertQueries, accents: ['exact', 'ignored'] }}
+        render={({ query, accents }) => (
+          <TextMatchProvider query={query} ignoreAccents={accents === 'ignored'}>
+            <TextMatch>{dessertMenu}</TextMatch>
           </TextMatchProvider>
         )}
       />

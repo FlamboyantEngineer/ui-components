@@ -1,6 +1,6 @@
 # Overlay Position
 
-Placement utilities for floating panels a component positions itself (menus, suggestion lists, fly-out submenus), anchored to an element or to a point such as the pointer. The solvers in `src/utils/overlay-position.ts` are pure functions over rects; the measuring helpers in `src/utils/overlay-geometry.ts` only read layout. Callers render the result as functional inline styles (`position`, `left`, `top`, `max-width`, `max-height`). React Aria overlays position themselves and do not need these utilities.
+Placement utilities for floating panels a component positions itself (menus, suggestion lists, fly-out submenus), anchored to an element or to a point such as the pointer. The solvers in `src/utils/overlay-position.ts` (with the one-axis steps in `src/utils/overlay-axis.ts`) are pure functions over rects; the measuring helpers in `src/utils/overlay-geometry.ts` only read layout, and `src/utils/overlay-auto-update.ts` tells the caller when to solve again. Callers render the result as functional inline styles (`position`, `left`, `top`, `max-width`, `max-height`, `transform-origin`) and may publish the available size as documented `--ui-*` properties. React Aria overlays position themselves and do not need these utilities.
 
 ## UIC-OVERLAY-POSITION-1 - Anchored placement
 
@@ -8,7 +8,7 @@ Placement utilities for floating panels a component positions itself (menus, sug
 
 `resolveOverlayPlacement` shall place the overlay below its anchor, `gap` pixels away (6 by default), when it fits there; above it when only that fits; and otherwise on the side with more room. The result reports the `side` (`bottom` or `top`) and the room on each side.
 
-Implementation: `src/utils/overlay-position.ts`
+Implementation: `src/utils/overlay-position.ts`, `src/utils/overlay-axis.ts`
 Verification: `src/utils/overlay-position.test.ts`
 
 ### UIC-OVERLAY-POSITION-1.2 - Height constraint
@@ -38,6 +38,27 @@ Verification: `src/utils/overlay-position.test.ts`
 
 Implementation: `src/utils/overlay-position.ts`
 Verification: `src/utils/overlay-position.test.ts`
+
+### UIC-OVERLAY-POSITION-1.6 - Preferred side
+
+`side` shall choose the side the overlay prefers: `bottom` (the default), `top`, `left` or `right`. It opens there when it fits, on the opposite side when only that fits, and otherwise on the roomier of the two (the preferred one on a tie), constrained to it: `maxHeight` above or below the anchor, `maxWidth` beside it, with `constrained` set. Beside the anchor, `gap` separates them horizontally, `start` and `end` line the overlay up with the anchor's top and bottom edges, the overlay is clamped into the horizontal boundary, and it is clamped vertically in `viewport` mode only.
+
+Implementation: `src/utils/overlay-position.ts`, `src/utils/overlay-axis.ts`, `src/utils/overlay-geometry.ts`
+Verification: `src/utils/overlay-position.test.ts`, `src/utils/overlay-geometry.test.ts`
+
+### UIC-OVERLAY-POSITION-1.7 - Centre alignment and cross offset
+
+`align: 'center'` shall centre the overlay on the anchor along the anchor's edge, without flipping. `crossOffset` shall then move the overlay along that edge by its value in pixels (rightward above or below the anchor, downward beside it) before it is clamped.
+
+Implementation: `src/utils/overlay-position.ts`, `src/utils/overlay-axis.ts`
+Verification: `src/utils/overlay-position.test.ts`
+
+### UIC-OVERLAY-POSITION-1.8 - Available size and anchor point
+
+The result shall report `availableWidth` and `availableHeight`, the room the overlay may take: on its side of the anchor along the side's axis, and the boundary's extent along the other axis. `transformOrigin` shall be the point of the overlay's edge that faces the anchor nearest the anchor's middle, clamped into the overlay, as a CSS `transform-origin` in whole pixels (`30px 0px` for an overlay below), so an overlay can grow out of its anchor. `resolveOverlayGeometry` returns the same three values.
+
+Implementation: `src/utils/overlay-position.ts`, `src/utils/overlay-axis.ts`, `src/utils/overlay-geometry.ts`
+Verification: `src/utils/overlay-position.test.ts`, `src/utils/overlay-geometry.test.ts`
 
 ## UIC-OVERLAY-POSITION-2 - Submenus
 
@@ -73,7 +94,7 @@ Verification: `src/utils/overlay-geometry.test.ts`
 
 ### UIC-OVERLAY-POSITION-3.3 - Measured geometry
 
-`resolveOverlayGeometry` shall measure an overlay's natural size and solve its placement against an anchor element or rect. An overlay wider than the boundary gets a `maxWidth` of the boundary width, kept while its remeasured width equals that limit so a wrapped overlay settles instead of oscillating, and released when the boundary grows. A constrained overlay gets a whole-pixel `maxHeight` and is placed at that height. Coordinates are whole pixels relative to the viewport for the `fixed` strategy, or to `offsetParent` (an element, or its rect and scroll offsets) for `absolute`.
+`resolveOverlayGeometry` shall measure an overlay's natural size and solve its placement against an anchor element or rect, taking the solver's `side`, `align` and `crossOffset`. Above or below the anchor, an overlay wider than the boundary gets a `maxWidth` of the boundary width; beside it, an overlay wider than the room on its side gets a `maxWidth` of that room, and one taller than the boundary a `maxHeight` of the boundary height. A width limit is kept while the remeasured width equals it, so a wrapped overlay settles instead of oscillating, and released when the room grows. A constrained overlay gets a whole-pixel `maxHeight` and is placed at that height. Coordinates are whole pixels relative to the viewport for the `fixed` strategy, or to `offsetParent` (an element, or its rect and scroll offsets) for `absolute`.
 
 Implementation: `src/utils/overlay-geometry.ts`
 Verification: `src/utils/overlay-geometry.test.ts`
@@ -84,3 +105,10 @@ Verification: `src/utils/overlay-geometry.test.ts`
 
 Implementation: `src/utils/overlay-geometry.ts`
 Verification: `src/utils/overlay-geometry.test.ts`
+
+### UIC-OVERLAY-POSITION-3.5 - Auto-update
+
+`autoUpdateOverlay({ anchor, overlay, update })` shall call `update` at once and then, at most once per animation frame, after any scroll in the anchor's document, a resize of its window, or a size change of the anchor or the overlay, from the timers and observers of the anchor's own window. `everyFrame` also compares the anchor's box every animation frame and calls `update` when it moved. The returned function removes every listener, observer and pending frame.
+
+Implementation: `src/utils/overlay-auto-update.ts`
+Verification: `src/utils/overlay-auto-update.test.ts`

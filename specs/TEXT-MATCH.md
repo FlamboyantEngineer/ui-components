@@ -13,7 +13,7 @@ Verification: `src/components/text-match/text-match.test.tsx`
 
 ### UIC-TEXT-MATCH-1.2 - Ranges
 
-`findTermRanges(text, terms)` shall return every occurrence of every non-empty term as `{ start, end }` ranges into the original text, sorted, with overlapping or touching ranges merged into one. No terms, or only empty terms, give no ranges. `textMatchesTerms(text, terms)` shall report whether every term occurs; no terms means no filter, so every text matches, while an empty term matches nothing.
+`findTermRanges(text, terms)` shall return every occurrence of every non-empty term as `{ start, end, term }` ranges into the original text, where `term` is the index of the matching term in `terms`, sorted, with overlapping or touching ranges merged into one that keeps the `term` of the range that starts first. A range that ends right before a combining mark extends over it, so a letter is never split from its accent. No terms, or only empty terms, give no ranges. `textMatchesTerms(text, terms)` shall report whether every term occurs; no terms means no filter, so every text matches, while an empty term matches nothing.
 
 Implementation: `src/components/text-match/match-ranges.ts`
 Verification: `src/components/text-match/text-match.test.tsx`
@@ -21,6 +21,13 @@ Verification: `src/components/text-match/text-match.test.tsx`
 ### UIC-TEXT-MATCH-1.3 - Word matching
 
 With `matchWords`, a term shall match only where a word starts (the previous character is not a letter or digit), and shall end the word unless it has three or more characters, so `to` marks the word "to" but not "top" or "separator", while `fav` marks the start of "Favorites". `isWordMatchAt` and `findWordMatches` expose the same rule. Terms are text, never patterns. Without `matchWords` a term matches anywhere, as a filter box needs.
+
+Implementation: `src/components/text-match/match-ranges.ts`, `src/components/text-match/text-match.tsx`
+Verification: `src/components/text-match/text-match.test.tsx`, `e2e/text-match.spec.ts`
+
+### UIC-TEXT-MATCH-1.4 - Accent-insensitive matching
+
+With `ignoreAccents` (on `TextMatchProvider`, or in the options of `normalizeMatchText`, `splitMatchTerms`, `findTermRanges` and `textMatchesTerms`), matching shall fold each accented letter to its base letter, so `cafe` matches `Café` and `CAFÉ` matches `cafe`. In the text, a character folds only when its base letter has the same length, keeping indexes aligned; a combining mark written as its own character stays. In a query, every accent is dropped. Without `ignoreAccents`, accents count.
 
 Implementation: `src/components/text-match/match-ranges.ts`, `src/components/text-match/text-match.tsx`
 Verification: `src/components/text-match/text-match.test.tsx`, `e2e/text-match.spec.ts`
@@ -55,8 +62,16 @@ A mark shall only split the label's text: the text, its accessible name and the 
 Implementation: `src/components/text-match/text-match.tsx`
 Verification: `src/components/text-match/text-match.test.tsx`, `e2e/text-match.spec.ts`
 
+### UIC-TEXT-MATCH-2.5 - Term hook
+
+Each mark shall publish `data-term`, the index of the query term it matched (`0` for the first term), so a stylesheet can tell the terms of a multi-term query apart. A mark merged from several terms publishes the term that starts first.
+
+Implementation: `src/components/text-match/text-match.tsx`, `labs/reference/text-match.css`
+Verification: `src/components/text-match/text-match.test.tsx`, `e2e/text-match.spec.ts`
+
 ## Hooks
 
-| Hook            | Kind | Values | Description                                               |
-| --------------- | ---- | ------ | --------------------------------------------------------- |
-| `ui-text-match` | root |        | Each `<mark>` around a hit. The component has no wrapper. |
+| Hook            | Kind      | Values | Description                                               |
+| --------------- | --------- | ------ | --------------------------------------------------------- |
+| `ui-text-match` | root      |        | Each `<mark>` around a hit. The component has no wrapper. |
+| `data-term`     | attribute |        | The index of the query term the mark matched.             |

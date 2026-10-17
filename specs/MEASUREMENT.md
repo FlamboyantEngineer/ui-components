@@ -1,6 +1,6 @@
 # Measurement
 
-Three hooks measure for components and hosts: `useResizeObserver` observes elements' sizes, `useElementSize` reads one element's size into state, and `useWidestTextWidth` measures the widest of several texts in an element's font. The first two use the observer and animation frames of the element's own window, so content rendered into an iframe is measured there.
+Four hooks measure for components and hosts: `useResizeObserver` observes elements' sizes, `useElementSize` reads one element's size into state, `useWidestTextWidth` measures the widest of several texts in an element's font, and `useInView` reports whether an element is visible. The first two use the observer and animation frames of the element's own window, so content rendered into an iframe is measured there.
 
 ## UIC-MEASUREMENT-1 - Resize observer
 
@@ -70,3 +70,19 @@ Verification: `src/utils/use-element-size.test.ts`
 
 Implementation: `src/utils/use-widest-text-width.ts`
 Verification: `src/utils/use-widest-text-width.test.ts`
+
+## UIC-MEASUREMENT-4 - Visibility
+
+### UIC-MEASUREMENT-4.1 - In view
+
+`useInView(target)` shall return whether any part of the target element is visible in the viewport after clipping by the scrolling ancestors it sits in, from the `IntersectionObserver` of the element's own window: false until the first report, then each report for that element. Unmounting disconnects the observer. Components use it to load more content as it scrolls into view ([Load More](LOAD-MORE.md#uic-load-more-17---loading-on-view)) and hosts to render content lazily.
+
+Implementation: `src/utils/use-in-view.ts`
+Verification: `src/utils/use-in-view.test.ts`, `e2e/load-more.spec.ts`
+
+### UIC-MEASUREMENT-4.2 - Targets, disabled and unsupported
+
+The target shall be an element or a ref whose element is stable. With `enabled={false}`, without an element, or in a window without `IntersectionObserver`, the hook shall return false and observe nothing; disabling disconnects, and re-enabling starts out of view until the next report.
+
+Implementation: `src/utils/use-in-view.ts`
+Verification: `src/utils/use-in-view.test.ts`

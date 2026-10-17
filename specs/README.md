@@ -8,6 +8,8 @@ Each file in this directory specifies one component, one family of components, o
 | ------------------------------------ | -------------------------------------------------------------------------------------- |
 | [HOOK-CONTRACT.md](HOOK-CONTRACT.md) | The rules every hook follows: class and attribute naming, inline styles, caller hooks. |
 | [PROVIDER.md](PROVIDER.md)           | `UiProvider`: glyphs, strings, locale, links and storage.                              |
+| [COMPOSITION.md](COMPOSITION.md)     | Swapping elements with `render`, merging props, and slot props.                        |
+| [COLLECTIONS.md](COLLECTIONS.md)     | Virtualized and incrementally loaded collections.                                      |
 | `<COMPONENT>.md`                     | One component's behaviour and **its hook list**, in the `## Hooks` table.              |
 
 A component's hooks are listed only in its own spec. A family spec (for example a menu with items and sections) lists the hooks of every component in the family. No hook is declared in two specs.

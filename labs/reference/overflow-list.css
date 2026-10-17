@@ -1,0 +1,19 @@
+/* Overflow List. The row stays on one line; items keep their natural width so the row can measure them. */
+
+.ui-overflow-list {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.ui-overflow-list__item,
+.ui-overflow-list__overflow {
+  display: flex;
+  flex: none;
+  align-items: center;
+}
+
+.ui-overflow-list[data-overflowing] > .ui-overflow-list__overflow {
+  color: var(--ref-muted);
+}

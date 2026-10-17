@@ -25,6 +25,13 @@ A card with a `title` shall be named by it through `aria-labelledby` and a headi
 Implementation: `src/components/card/card.tsx`
 Verification: `src/components/card/card.test.tsx`, `e2e/card.spec.ts`
 
+### UIC-CARD-1.4 - Slotted title in a custom header
+
+Custom `header` content shall receive the title's props through React Aria's `HeadingContext` under the `title` slot ([COMPOSITION.md](COMPOSITION.md#uic-composition-31---slot-props)): a React Aria `Heading` with `slot="title"`, or a host component that reads `useSlottedContext(HeadingContext, 'title')`, gets the title's `id`, the `ui-card__title` class and a `ref`. Once that element renders, the card is named by it as by its own title ([UIC-CARD-1.3](#uic-card-13---region-name-and-roles)); without one the card has no name of its own, and a caller's `aria-label` or `aria-labelledby` still wins. A `Heading` without a slot gets nothing.
+
+Implementation: `src/components/card/card.tsx`
+Verification: `src/components/card/card.test.tsx`, `e2e/card.spec.ts`
+
 ## UIC-CARD-2 - Options
 
 ### UIC-CARD-2.1 - Variants

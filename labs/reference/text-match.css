@@ -5,3 +5,12 @@
   background: var(--ref-selected);
   color: inherit;
 }
+
+/* Terms after the first get their own tint, so a multi-term query reads term by term. */
+.ui-text-match[data-term='1'] {
+  background: color-mix(in srgb, var(--ref-success) 22%, transparent);
+}
+
+.ui-text-match[data-term='2'] {
+  background: color-mix(in srgb, var(--ref-warning) 24%, transparent);
+}

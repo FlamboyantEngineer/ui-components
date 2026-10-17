@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Banner, type BannerTone } from '../../src/components/banner/banner.js';
 import { Button } from '../../src/components/button/button.js';
+import { useEnterExit } from '../../src/utils/use-enter-exit.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const tones: BannerTone[] = ['neutral', 'info', 'success', 'warning', 'danger'];
@@ -11,6 +12,29 @@ const messages: Record<BannerTone, string> = {
   warning: 'The template changed since this file was created.',
   danger: 'Could not save. Check your connection.',
 };
+
+function EnterExitDemo() {
+  const [isOpen, setOpen] = useState(false);
+  const ref = useRef<HTMLElement>(null);
+  const { isMounted, isEntering, isExiting } = useEnterExit(ref, isOpen);
+  return (
+    <div data-lab-demo="enter-exit">
+      <Button size="sm" onPress={() => setOpen((open) => !open)}>
+        {isOpen ? 'Hide notice' : 'Show notice'}
+      </Button>
+      {isMounted ? (
+        <Banner
+          ref={ref}
+          tone="success"
+          description="Report.pdf uploaded."
+          isEntering={isEntering}
+          isExiting={isExiting}
+          onDismiss={() => setOpen(false)}
+        />
+      ) : null}
+    </div>
+  );
+}
 
 function LiveDemo() {
   const [tone, setTone] = useState<BannerTone>('info');
@@ -119,6 +143,12 @@ mountLab(
           return presentation === 'inline' ? <p>Status: {banner} for Report.pdf</p> : banner;
         }}
       />
+    </LabSection>
+    <LabSection
+      title="Enter and exit"
+      description="useEnterExit keeps the banner mounted while its exit transition plays and publishes entering while its enter animation plays; the caller only says whether it is open."
+    >
+      <EnterExitDemo />
     </LabSection>
     <LabSection
       title="Live updates"
