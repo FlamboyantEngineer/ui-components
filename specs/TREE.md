@@ -15,14 +15,14 @@ Verification: `src/components/tree/tree.test.tsx`, `e2e/tree.spec.ts`
 
 Every row shall have the same anatomy: the drag handle (a [DragHandle](DRAG-HANDLE.md)) when the tree is reorderable, the expand button (or a spacer of the same slot when the row has no children), the selection checkbox with `checkboxSelection`, the icon from `getIcon` (a built-in glyph name or icon node, drawn as a decorative `Icon`), the label from `renderLabel` (the text value by default), the metadata from `renderMeta`, a load error and the controls from `renderActions`. Empty callbacks render no slot. The callbacks receive the item and the row's state: `isExpanded`, `hasChildItems`, `level`, `isSelected`, `isDisabled`, `isFocusVisible` and `isCurrent`. Each row publishes its depth as `--ui-tree-level`, from which the stylesheet indents it.
 
-Implementation: `src/components/tree/tree-item.tsx`, `labs/reference/tree.css`
+Implementation: `src/components/tree/tree-item.tsx`, `labs/reference/tree.css`, `src/components/tree/tree-row.tsx`
 Verification: `src/components/tree/tree.test.tsx`, `e2e/tree.spec.ts`
 
 ### UIC-TREE-1.3 - Expand glyphs
 
 The expand button shall draw built-in glyphs: `chevron-right` when collapsed and `chevron-down` when expanded, or `plus` and `minus` with `expandGlyph="plus-minus"`. The root publishes the choice as `data-expand-glyph`.
 
-Implementation: `src/components/tree/tree.tsx`, `src/components/tree/tree-item.tsx`
+Implementation: `src/components/tree/tree.tsx`, `src/components/tree/tree-item.tsx`, `src/components/tree/tree-row.tsx`
 Verification: `src/components/tree/tree.test.tsx`
 
 ## UIC-TREE-2 - Expansion
@@ -31,7 +31,7 @@ Verification: `src/components/tree/tree.test.tsx`
 
 A row with children shall expand and collapse from its expand button, named by the provider's `expand` or `collapse` string together with the row's label, and from ArrowRight and ArrowLeft (React Aria). Pressing a branch row also toggles it when the tree has no selection, no `onAction` and the row no link. Expansion is controlled with `expandedKeys` and `onExpandedChange`, or uncontrolled from `defaultExpandedKeys`.
 
-Implementation: `src/components/tree/tree.tsx`, `src/components/tree/tree-item.tsx`, `src/components/tree/use-tree-expansion.ts`
+Implementation: `src/components/tree/tree.tsx`, `src/components/tree/tree-item.tsx`, `src/components/tree/use-tree-expansion.ts`, `src/components/tree/tree-row.tsx`
 Verification: `src/components/tree/tree.test.tsx`, `e2e/tree.spec.ts`
 
 ### UIC-TREE-2.2 - Children not loaded yet

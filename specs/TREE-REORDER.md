@@ -8,7 +8,7 @@ A [Tree](TREE.md) with `reorder` lets the reader move rows: by pointer drag and 
 
 A tree without `reorder` shall render no drag affordance: no `draggable` row, no drag handle and no `aria-keyshortcuts`. With `reorder`, a row that can move (`canMove` accepts it, every row by default, and it is not disabled) shall be draggable as a whole, carry an enabled drag handle (a [DragHandle](DRAG-HANDLE.md), named after the row and outside the tab sequence) and announce its keyboard moves in `aria-keyshortcuts`: `Alt+ArrowUp Alt+ArrowDown`, plus `Alt+ArrowLeft Alt+ArrowRight` when `canMoveInto` is set. A row that cannot move is not draggable, has a disabled drag handle and announces nothing. Turning `reorder` on or off remounts the rows.
 
-Implementation: `src/components/tree/tree.tsx`, `src/components/tree/tree-item.tsx`, `src/components/tree/use-tree-reorder.tsx`
+Implementation: `src/components/tree/tree.tsx`, `src/components/tree/tree-item.tsx`, `src/components/tree/use-tree-reorder.tsx`, `src/components/tree/tree-row.tsx`
 Verification: `src/components/tree/use-tree-reorder.test.tsx`, `e2e/tree-reorder.spec.ts`
 
 ### UIC-TREE-REORDER-1.2 - Drag and drop
