@@ -6,22 +6,22 @@ const isBlocked = (locator: Locator) =>
   locator.evaluate((node) => node.closest('[inert], [aria-hidden="true"]') !== null);
 
 test.describe('Modal Controller lab', () => {
-  test('UIC-MODAL-CONTROLLER-1.2 UIC-MODAL-CONTROLLER-2.1 opens each variant and size through the host', async ({
+  test('UIC-MODAL-CONTROLLER-1.2 UIC-MODAL-CONTROLLER-2.1 opens each tone and size through the host', async ({
     page,
     lab,
   }) => {
     await lab.open('modal-controller');
-    for (const variant of ['default', 'danger']) {
+    for (const tone of ['neutral', 'danger']) {
       for (const size of ['sm', 'md', 'lg', 'xl', 'full']) {
-        const button = page.locator(`[data-lab-cell="variant=${variant} size=${size}"] button`);
+        const button = page.locator(`[data-lab-cell="tone=${tone} size=${size}"] button`);
         await button.click();
-        const overlay = page.locator(`.ui-modal[data-lab-modal="${variant}-${size}"]`);
+        const overlay = page.locator(`.ui-modal[data-lab-modal="${tone}-${size}"]`);
         await expect(overlay).toHaveAttribute('data-size', size);
-        await expect(overlay).toHaveAttribute('data-variant', variant);
+        await expect(overlay).toHaveAttribute('data-tone', tone);
         await expect(page.getByRole('dialog')).toHaveAccessibleName(
-          `Report.pdf (${variant}, ${size})`,
+          `Report.pdf (${tone}, ${size})`,
         );
-        await page.getByRole('button', { name: variant === 'danger' ? 'Delete' : 'Apply' }).click();
+        await page.getByRole('button', { name: tone === 'danger' ? 'Delete' : 'Apply' }).click();
         await expect(overlay).toHaveCount(0);
         await expect(button).toBeFocused();
       }

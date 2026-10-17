@@ -23,22 +23,22 @@ async function topmostAt(page: Page, target: Locator, attribute: string) {
 }
 
 test.describe('Modal lab', () => {
-  test('UIC-MODAL-1.1 UIC-MODAL-1.4 UIC-MODAL-3.3 opens every variant and size and returns focus to its button', async ({
+  test('UIC-MODAL-1.1 UIC-MODAL-1.4 UIC-MODAL-3.3 opens every tone and size and returns focus to its button', async ({
     page,
     lab,
   }) => {
     await lab.open('modal');
     const viewport = page.viewportSize();
-    for (const variant of ['default', 'danger']) {
+    for (const tone of ['neutral', 'danger']) {
       for (const [size, width] of [...sizes, ['full', (viewport?.width ?? 0) - 32] as const]) {
-        const button = page.locator(`[data-lab-cell="variant=${variant} size=${size}"] button`);
+        const button = page.locator(`[data-lab-cell="tone=${tone} size=${size}"] button`);
         await button.click();
-        const overlay = page.locator(`.ui-modal[data-lab-modal="${variant}-${size}"]`);
-        await expect(overlay).toHaveAttribute('data-variant', variant);
+        const overlay = page.locator(`.ui-modal[data-lab-modal="${tone}-${size}"]`);
+        await expect(overlay).toHaveAttribute('data-tone', tone);
         await expect(overlay).toHaveAttribute('data-size', size);
         const dialog = page.getByRole('dialog');
         await expect(dialog).toHaveAccessibleName(
-          `${variant === 'danger' ? 'Delete' : 'Rename'} Report.pdf`,
+          `${tone === 'danger' ? 'Delete' : 'Rename'} Report.pdf`,
         );
         const panel = await overlay.locator('.ui-modal__panel').boundingBox();
         expect(panel?.width).toBeCloseTo(width, 0);
@@ -76,18 +76,24 @@ test.describe('Modal lab', () => {
     await expect(save).toHaveAttribute('data-pending', 'true');
     await page.keyboard.press('Control+Enter');
     await save.click({ force: true });
-    await expect(page.getByRole('dialog')).toHaveCount(0, { timeout: 3000 });
+    await expect(page.locator('[data-lab-output="saved"]')).toHaveText('none');
+    await page.locator('[data-lab-action="finish"]').click();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
     await expect(page.locator('[data-lab-output="saved"]')).toHaveText('Lisbon');
     await expect(opener).toBeFocused();
   });
 
   test('UIC-MODAL-5.3 keeps a failed save open with the error', async ({ page, lab }) => {
     await lab.open('modal');
-    await page.getByRole('checkbox', { name: 'Make the save fail' }).check();
     await page.locator('[data-lab-open="save"]').click();
     await page.getByRole('textbox', { name: 'City' }).fill('Kyoto');
     await page.getByRole('button', { name: 'Save' }).click();
-    await expect(page.getByRole('alert')).toHaveText('The list is full.', { timeout: 3000 });
+    await expect(page.getByRole('button', { name: 'Save' })).toHaveAttribute(
+      'data-pending',
+      'true',
+    );
+    await page.locator('[data-lab-action="fail"]').click();
+    await expect(page.getByRole('alert')).toHaveText('The list is full.');
     await expect(page.getByRole('dialog')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Save' })).not.toHaveAttribute('data-pending');
     await lab.expectAccessible('.ui-modal');
@@ -171,7 +177,7 @@ test.describe('Modal lab', () => {
     lab,
   }) => {
     await lab.open('modal');
-    await page.locator('[data-lab-cell="state=error variant=danger"] button').click();
+    await page.locator('[data-lab-cell="state=error tone=danger"] button').click();
     await expect(page.getByRole('alert')).toHaveText('Lisbon is not available.');
     const buttons = page.locator('.ui-modal__actions button');
     await expect(buttons).toHaveText(['Cancel', 'Apply']);
@@ -179,15 +185,25 @@ test.describe('Modal lab', () => {
     await lab.expectAccessible('.ui-modal');
     await page.keyboard.press('Escape');
 
-    await page.locator('[data-lab-cell="state=secondary action variant=default"] button').click();
+    await page.locator('[data-lab-cell="state=secondary action tone=neutral"] button').click();
     await expect(buttons).toHaveText(['Cancel', 'Discard', 'Save']);
     await page.getByRole('button', { name: 'Discard' }).click();
     await expect(page.getByRole('dialog')).toHaveCount(0);
+
+    await page.locator('[data-lab-cell="state=action variant tone=neutral"] button').click();
+    await expect(page.getByRole('button', { name: 'Remove' })).toHaveAttribute(
+      'data-variant',
+      'danger',
+    );
+    await expect(page.getByRole('button', { name: 'Keep' })).toHaveAttribute(
+      'data-variant',
+      'primary',
+    );
   });
 
   test('UIC-MODAL-1.1 works without a stylesheet', async ({ page, lab }) => {
     await lab.open('modal', { stylesheet: 'none' });
-    const button = page.locator('[data-lab-cell="variant=default size=md"] button');
+    const button = page.locator('[data-lab-cell="tone=neutral size=md"] button');
     await button.click();
     await expect(page.getByRole('dialog', { name: 'Rename Report.pdf' })).toBeVisible();
     await page.keyboard.press('Escape');
@@ -200,11 +216,11 @@ test.describe('Modal lab', () => {
   }) => {
     await lab.open('modal', { theme: 'dark' });
     await lab.expectAccessible();
-    await page.locator('[data-lab-cell="state=error variant=danger"] button').click();
+    await page.locator('[data-lab-cell="state=error tone=danger"] button').click();
     await expect(page.getByRole('alert')).toHaveText('Lisbon is not available.');
     await lab.expectAccessible('.ui-modal');
     await page.keyboard.press('Escape');
-    await page.locator('[data-lab-cell="state=status variant=default"] button').click();
+    await page.locator('[data-lab-cell="state=status tone=neutral"] button').click();
     await expect(page.locator('.ui-modal').getByRole('status')).toHaveText('Choose a city.');
     await lab.expectAccessible('.ui-modal');
   });

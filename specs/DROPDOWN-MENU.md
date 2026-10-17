@@ -13,7 +13,7 @@ Verification: `src/components/dropdown-menu/dropdown-menu.test.tsx`, `e2e/dropdo
 
 ### UIC-DROPDOWN-MENU-1.2 - Icon trigger
 
-With `iconOnly`, `DropdownMenu` shall draw an `IconButton` ([ICON-BUTTON.md](ICON-BUTTON.md)) showing `icon` (`more` by default), named by `label`, which must then be text, with `variant` `ghost` by default and no caret unless `showCaret` is set.
+With `iconOnly`, `DropdownMenu` shall draw an `IconButton` ([ICON-BUTTON.md](ICON-BUTTON.md)) showing `icon` (`more` by default), named by `label`, which must then be text, with `variant` `ghost` by default and no caret.
 
 Implementation: `src/components/dropdown-menu/dropdown-menu.tsx`
 Verification: `src/components/dropdown-menu/dropdown-menu.test.tsx`, `e2e/dropdown-menu.spec.ts`

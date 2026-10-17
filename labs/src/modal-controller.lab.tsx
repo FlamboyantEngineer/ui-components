@@ -8,7 +8,7 @@ import {
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const controller = createModalController();
-const variants = ['default', 'danger'] as const;
+const tones = ['neutral', 'danger'] as const;
 const sizes = ['sm', 'md', 'lg', 'xl', 'full'] as const;
 const colours = ['Teal', 'Plum', 'Amber'] as const;
 
@@ -110,23 +110,23 @@ function Results() {
 mountLab(
   <>
     <LabSection
-      title="Variants and sizes"
-      description="Each cell opens a modal through the controller with that variant and size."
+      title="Tones and sizes"
+      description="Each cell opens a modal through the controller with that tone and size."
     >
       <StateMatrix
-        axes={{ variant: variants, size: sizes }}
-        render={({ variant, size }) => (
+        axes={{ tone: tones, size: sizes }}
+        render={({ tone, size }) => (
           <Button
             size="sm"
             onPress={() =>
               controller.open({
-                title: `Report.pdf (${variant}, ${size})`,
-                variant,
+                title: `Report.pdf (${tone}, ${size})`,
+                tone,
                 size,
-                'data-lab-modal': `${variant}-${size}`,
+                'data-lab-modal': `${tone}-${size}`,
                 content: <p>Opened through the controller.</p>,
                 primaryAction: {
-                  label: variant === 'danger' ? 'Delete' : 'Apply',
+                  label: tone === 'danger' ? 'Delete' : 'Apply',
                   onPress: (close) => close(),
                 },
               })

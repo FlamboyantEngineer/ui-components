@@ -1,5 +1,6 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import type { Key } from 'react-aria-components';
+import { Button } from '../../src/components/button/button.js';
 import {
   Combobox,
   type ComboboxItem,
@@ -58,32 +59,48 @@ function Picking() {
   );
 }
 
+/** Suggestions for `query`, as a server would return them. */
+function findCities(query: string): ComboboxOption[] {
+  const needle = query.toLowerCase();
+  return cities.filter((city) => city.label.toLowerCase().includes(needle));
+}
+
+/** Each keystroke asks for suggestions; they arrive only when the reader delivers them. */
 function Remote() {
   const [query, setQuery] = useState('');
   const [items, setItems] = useState<ComboboxOption[]>(cities);
-  const [pending, setPending] = useState(false);
-  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const [request, setRequest] = useState<string | null>(null);
   return (
-    <Combobox
-      label="City"
-      variant="search"
-      placeholder="Search cities"
-      description="Suggestions arrive after a short delay."
-      items={items}
-      inputValue={query}
-      isPending={pending}
-      allowsCustomValue
-      onInputChange={(value) => {
-        setQuery(value);
-        setPending(true);
-        clearTimeout(timer.current);
-        timer.current = setTimeout(() => {
-          const needle = value.toLowerCase();
-          setItems(cities.filter((city) => city.label.toLowerCase().includes(needle)));
-          setPending(false);
-        }, 300);
-      }}
-    />
+    <div>
+      <Combobox
+        label="City"
+        variant="search"
+        placeholder="Search cities"
+        description="Suggestions wait for Deliver suggestions."
+        items={items}
+        inputValue={query}
+        isPending={request !== null}
+        allowsCustomValue
+        onInputChange={(value) => {
+          setQuery(value);
+          setRequest(value);
+        }}
+      />
+      <p>
+        <Button
+          size="sm"
+          data-lab-action="deliver"
+          isDisabled={request === null}
+          onPress={() => {
+            setItems(findCities(request ?? ''));
+            setRequest(null);
+          }}
+        >
+          Deliver suggestions
+        </Button>{' '}
+        Waiting for: <output data-lab-output="request">{request ?? 'nothing'}</output>
+      </p>
+    </div>
   );
 }
 
@@ -117,7 +134,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Asynchronous suggestions"
-      description="The lab filters the cities itself after a delay, marking the field busy meanwhile; any typed city is kept."
+      description="Typing asks for cities and marks the field busy until you deliver the suggestions; any typed city is kept."
     >
       <Remote />
     </LabSection>

@@ -25,11 +25,11 @@ While a modal is open, the content outside it shall be hidden from assistive tec
 Implementation: `src/components/modal/modal.tsx`
 Verification: `src/components/modal/modal.test.tsx`, `e2e/modal.spec.ts`
 
-### UIC-MODAL-1.4 - Variants, sizes and body layout
+### UIC-MODAL-1.4 - Tones, sizes and body layout
 
-The overlay shall publish `data-variant` (`default`, the default, or `danger` for a destructive decision), `data-size` (`sm`, `md`, the default, `lg`, `xl`, or `full` for a dialog that fills the viewport) and `data-body-layout` (`block`, the default, or `column`, which lays the body out as a vertical stack so one child can take the remaining height). The host stylesheet maps them to widths and layouts; the reference sheet uses 400, 560, 800, 1120 pixels and the viewport less 16 pixels per side.
+The overlay shall publish `data-tone` (`neutral`, the default, or `danger` for a destructive decision), `data-size` (`sm`, `md`, the default, `lg`, `xl`, or `full` for a dialog that fills the viewport) and `data-body-layout` (`block`, the default, or `column`, which lays the body out as a vertical stack so one child can take the remaining height). The host stylesheet maps them to widths and layouts; the reference sheet uses 400, 560, 800, 1120 pixels and the viewport less 16 pixels per side.
 
-Implementation: `src/components/modal/modal.tsx`, `labs/reference.css`
+Implementation: `src/components/modal/modal.tsx`, `labs/reference/modal.css`
 Verification: `src/components/modal/modal.test.tsx`, `e2e/modal.spec.ts`
 
 ## UIC-MODAL-2 - Dismissal
@@ -61,7 +61,7 @@ Verification: `src/components/modal/modal.test.tsx`
 
 When the modal opens, focus shall move to the element inside it that has `autoFocus` (including a footer action with `autoFocus`); otherwise, with `initialFocus="first"` (the default), to the first focusable element of the body, then of the footer, then of the header; otherwise to the dialog element. `initialFocus="dialog"` focuses the dialog element.
 
-Implementation: `src/components/modal/modal.tsx`
+Implementation: `src/components/modal/modal.tsx`, `src/components/modal/modal-focus.tsx`
 Verification: `src/components/modal/modal.test.tsx`, `e2e/modal.spec.ts`
 
 ### UIC-MODAL-3.2 - Containment
@@ -84,14 +84,14 @@ Verification: `src/components/modal/modal.test.tsx`, `e2e/modal.spec.ts`
 
 `title` shall render as the dialog's level-2 heading and name the dialog, unless `aria-label` names it instead. `description`, when given, shall render under the title and describe the dialog through `aria-describedby`; without it the caller's `aria-describedby` applies. `role="alertdialog"` marks a decision that interrupts the reader.
 
-Implementation: `src/components/modal/modal.tsx`
+Implementation: `src/components/modal/modal.tsx`, `src/components/modal/modal-header.tsx`
 Verification: `src/components/modal/modal.test.tsx`, `e2e/modal.spec.ts`
 
 ### UIC-MODAL-4.2 - Header actions and close button
 
 `headerActions` shall render at the end of the header row, after the title, without changing the dialog's name. `showCloseButton` shall add a close button named by the provider's `close` string that closes the modal like Escape.
 
-Implementation: `src/components/modal/modal.tsx`
+Implementation: `src/components/modal/modal-header.tsx`
 Verification: `src/components/modal/modal.test.tsx`
 
 ### UIC-MODAL-4.3 - Body
@@ -105,37 +105,37 @@ Verification: `src/components/modal/modal.test.tsx`
 
 ### UIC-MODAL-5.1 - Built-in action bar
 
-The footer shall draw, in order, Cancel, the `secondaryAction` and the `primaryAction`, so the primary action is rightmost, all as [Buttons](BUTTON.md) of size `md`. Cancel shall show by default when there is a primary or secondary action, show alone when `cancelAction` is given, and hide when `cancelAction` is `null`; it is labelled by `cancelAction.label` or the provider's `cancel` string and closes the modal. The primary action's variant defaults to `primary`, or `danger` in a `danger` modal; the secondary action's to `secondary`. Each action forwards its `id`, `data-*` attributes, `autoFocus` and `focusableWhenDisabled` to its button. `actions` shall replace the built-in buttons with the caller's own, and `footerContent` shall render at the start of the footer.
+The footer shall draw, in order, Cancel, the `secondaryAction` and the `primaryAction`, so the primary action is rightmost, all as [Buttons](BUTTON.md) of size `md`. Cancel shall show by default when there is a primary or secondary action, show alone when `cancelAction` is given, and hide when `cancelAction` is `null`; it is labelled by `cancelAction.label` or the provider's `cancel` string and closes the modal. The primary action's variant defaults to `primary`, or `danger` in a modal of tone `danger`; the secondary action's to `secondary`; an action's `variant` overrides its default. Each action forwards its `id`, `data-*` attributes, `autoFocus` and `focusableWhenDisabled` to its button, and appends its `className` after the button's hook classes. `actions` shall replace the built-in buttons with the caller's own, and `footerContent` shall render at the start of the footer.
 
-Implementation: `src/components/modal/modal.tsx`
+Implementation: `src/components/modal/modal-footer.tsx`
 Verification: `src/components/modal/modal.test.tsx`, `e2e/modal.spec.ts`
 
 ### UIC-MODAL-5.2 - Action lifecycle
 
 Pressing an action shall call its `onPress` with `close`, which closes this opening of the modal. When `onPress` returns a promise, its button shall be pending ([Action Button](ACTION-BUTTON.md)'s lifecycle: spinner named by `pendingLabel`, `data-pending`, repeat presses refused, even before the pending state renders) until it settles, the other action shall be disabled meanwhile, and Cancel shall stay available. An action with `isDisabled` never runs; `isPending` holds it pending from outside.
 
-Implementation: `src/components/modal/modal.tsx`
+Implementation: `src/components/modal/modal-footer.tsx`, `src/components/modal/use-modal-actions.ts`
 Verification: `src/components/modal/modal.test.tsx`, `e2e/modal.spec.ts`
 
 ### UIC-MODAL-5.3 - Failed actions
 
 When an action's promise rejects, the modal shall stay open, the button shall return to idle, and the footer shall announce the error's message, or the provider's `actionFailed` string when it has none, as an alert. The next attempt clears it.
 
-Implementation: `src/components/modal/modal.tsx`
+Implementation: `src/components/modal/use-modal-actions.ts`, `src/components/modal/modal-footer.tsx`
 Verification: `src/components/modal/modal.test.tsx`, `e2e/modal.spec.ts`
 
 ### UIC-MODAL-5.4 - Separate openings
 
 Closing the modal shall clear its pending state and its failure. An action from an earlier opening that settles later shall not announce an error, release the pending state or close a later opening.
 
-Implementation: `src/components/modal/modal.tsx`
+Implementation: `src/components/modal/use-modal-actions.ts`
 Verification: `src/components/modal/modal.test.tsx`
 
 ### UIC-MODAL-5.5 - Footer message
 
-The footer shall show one message: `error`, else an action's failure, as an alert (`role="alert"`, `data-tone="error"`), else `status` as a polite status (`role="status"`, `data-tone="status"`). Switching between the two shall insert a fresh element, so the new role is announced.
+The footer shall show one message: `error`, else an action's failure, as an alert (`role="alert"`, `data-tone="danger"`), else `status` as a polite status (`role="status"`, `data-tone="neutral"`). Switching between the two shall insert a fresh element, so the new role is announced.
 
-Implementation: `src/components/modal/modal.tsx`
+Implementation: `src/components/modal/modal-footer.tsx`
 Verification: `src/components/modal/modal.test.tsx`
 
 ## UIC-MODAL-6 - Keyboard primary action
@@ -144,7 +144,7 @@ Verification: `src/components/modal/modal.test.tsx`
 
 Enter with exactly one of Control or Command and no other modifier, pressed anywhere in the modal's content (including a popover opened from it), shall run the primary action through the same lifecycle as a press. It shall do nothing while the primary action is disabled or pending, for plain Enter, for a repeated key or text composition, for a key press already handled, from a multiline editor (a `textarea`, an editable element or a multiline textbox) and when `actions` replaces the built-in buttons. A modal opened from another handles its own key presses. `isModalPrimaryShortcut` exposes the key test.
 
-Implementation: `src/components/modal/modal.tsx`
+Implementation: `src/components/modal/modal.tsx`, `src/components/modal/modal-shortcut.ts`
 Verification: `src/components/modal/modal.test.tsx`, `e2e/modal.spec.ts`
 
 ## UIC-MODAL-7 - Hooks
@@ -178,9 +178,8 @@ Verification: `src/components/modal/modal.test.tsx`
 | `ui-modal__secondary`      | slot      |                                | The secondary action (also `ui-button`).                             |
 | `ui-modal__primary`        | slot      |                                | The primary action (also `ui-button`).                               |
 | `data-layer`               | attribute | `modal`                        | The overlay layer; the overlay's z-index is set inline from it.      |
-| `data-variant`             | attribute | `default`, `danger`            | Emphasis of the decision.                                            |
+| `data-tone`                | attribute | `neutral`, `danger`            | On the overlay, emphasis; on the message, `danger` for an error.     |
 | `data-size`                | attribute | `sm`, `md`, `lg`, `xl`, `full` | Dialog width.                                                        |
 | `data-body-layout`         | attribute | `block`, `column`              | Body layout.                                                         |
-| `data-tone`                | attribute | `status`, `error`              | On the message: which message shows.                                 |
 | `data-entering`            | state     | `true`                         | On the overlay and panel while an entry animation runs (React Aria). |
 | `data-exiting`             | state     | `true`                         | On the overlay and panel while an exit animation runs (React Aria).  |

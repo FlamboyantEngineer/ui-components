@@ -45,12 +45,12 @@ async function openHarness(props: Parameters<typeof Harness>[0] = {}) {
 
 describe('ConfirmDialog', () => {
   it('UIC-CONFIRM-DIALOG-1.1 renders an alert dialog with its message and two actions', async () => {
-    const { dialog } = await openHarness();
+    const { dialog } = await openHarness({ children: <p>Shared with 3 people.</p> });
     expect(dialog).toHaveAccessibleName('Delete Report.pdf?');
     expect(dialog).toHaveAccessibleDescription('The file moves to the bin.');
-    expect(screen.getByText('The file moves to the bin.')).toHaveClass(
-      'ui-confirm-dialog__message',
-    );
+    const message = screen.getByText('The file moves to the bin.');
+    expect(message).toHaveClass('ui-confirm-dialog__message');
+    expect(message.nextElementSibling).toHaveTextContent('Shared with 3 people.');
     expect(document.querySelector('.ui-modal')).toHaveClass('ui-confirm-dialog');
     const buttons = [...document.querySelectorAll('.ui-modal__actions button')];
     expect(buttons.map((button) => button.textContent)).toEqual(['Cancel', 'Confirm']);
@@ -148,12 +148,12 @@ describe('ConfirmDialog', () => {
     expect(screen.getByRole('button', { name: 'Delete' })).toHaveFocus();
   });
 
-  it('UIC-CONFIRM-DIALOG-1.4 marks a destructive decision with the danger variant', () => {
+  it('UIC-CONFIRM-DIALOG-1.4 marks a destructive decision with the danger tone', () => {
     const { rerender } = render(<ConfirmDialog title="Keep?" isOpen confirmLabel="Keep" />);
-    expect(document.querySelector('.ui-modal')).toHaveAttribute('data-variant', 'default');
+    expect(document.querySelector('.ui-modal')).toHaveAttribute('data-tone', 'neutral');
     expect(screen.getByRole('button', { name: 'Keep' })).toHaveAttribute('data-variant', 'primary');
-    rerender(<ConfirmDialog title="Delete?" isOpen variant="danger" confirmLabel="Delete" />);
-    expect(document.querySelector('.ui-modal')).toHaveAttribute('data-variant', 'danger');
+    rerender(<ConfirmDialog title="Delete?" isOpen tone="danger" confirmLabel="Delete" />);
+    expect(document.querySelector('.ui-modal')).toHaveAttribute('data-tone', 'danger');
     expect(screen.getByRole('button', { name: 'Delete' })).toHaveAttribute(
       'data-variant',
       'danger',
@@ -179,7 +179,7 @@ describe('ConfirmDialog', () => {
         title: 'Delete Report.pdf?',
         message: 'This cannot be undone.',
         confirmLabel: 'Delete',
-        variant: 'danger',
+        tone: 'danger',
         onConfirm,
       });
     });

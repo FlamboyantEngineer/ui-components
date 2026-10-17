@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { ConfirmDialog, confirm } from '../../src/components/confirm-dialog/confirm-dialog.js';
 import {
@@ -8,18 +8,16 @@ import {
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const controller = createModalController();
-const variants = ['default', 'danger'] as const;
+const tones = ['neutral', 'danger'] as const;
 const sizes = ['sm', 'md', 'lg'] as const;
 const focus = ['cancel', 'confirm'] as const;
 
-const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
-
 function Declarative({
-  variant,
+  tone,
   size,
   autoFocusConfirm,
 }: {
-  variant: (typeof variants)[number];
+  tone: (typeof tones)[number];
   size: (typeof sizes)[number];
   autoFocusConfirm: boolean;
 }) {
@@ -28,23 +26,23 @@ function Declarative({
   return (
     <>
       <Button size="sm" onPress={() => setOpen(true)}>
-        {variant === 'danger' ? 'Delete' : 'Archive'}
+        {tone === 'danger' ? 'Delete' : 'Archive'}
       </Button>{' '}
       <output data-lab-output="answer">{answer}</output>
       <ConfirmDialog
         isOpen={open}
         onOpenChange={setOpen}
-        variant={variant}
+        tone={tone}
         size={size}
         autoFocusConfirm={autoFocusConfirm}
-        title={variant === 'danger' ? 'Delete Report.pdf?' : 'Archive Report.pdf?'}
+        title={tone === 'danger' ? 'Delete Report.pdf?' : 'Archive Report.pdf?'}
         message={
-          variant === 'danger'
+          tone === 'danger'
             ? 'The file is removed for everyone. This cannot be undone.'
             : 'The file moves to the archive.'
         }
-        confirmLabel={variant === 'danger' ? 'Delete' : 'Archive'}
-        data-lab-modal={`${variant}-${size}`}
+        confirmLabel={tone === 'danger' ? 'Delete' : 'Archive'}
+        data-lab-modal={`${tone}-${size}`}
         onConfirm={() => setAnswer('confirmed')}
         onCancel={() => setAnswer('cancelled')}
       />
@@ -54,12 +52,17 @@ function Declarative({
 
 function Awaited() {
   const [answer, setAnswer] = useState('none');
-  const [slow, setSlow] = useState(false);
+  const [isHeld, setIsHeld] = useState(false);
+  const finish = useRef<(() => void) | null>(null);
   return (
     <div>
       <label>
-        <input type="checkbox" checked={slow} onChange={(event) => setSlow(event.target.checked)} />{' '}
-        Take 600 ms to delete
+        <input
+          type="checkbox"
+          checked={isHeld}
+          onChange={(event) => setIsHeld(event.target.checked)}
+        />{' '}
+        Hold the delete until I finish it
       </label>{' '}
       <Button
         size="sm"
@@ -70,10 +73,21 @@ function Awaited() {
             message: 'Its 4 stops are removed.',
             confirmLabel: 'Delete',
             pendingLabel: 'Deleting',
-            variant: 'danger',
+            tone: 'danger',
             'data-lab-modal': 'await',
-            onConfirm: slow ? () => wait(600) : undefined,
+            children: isHeld ? (
+              <Button size="sm" data-lab-action="finish" onPress={() => finish.current?.()}>
+                Finish delete
+              </Button>
+            ) : undefined,
+            onConfirm: isHeld
+              ? () =>
+                  new Promise<void>((resolve) => {
+                    finish.current = resolve;
+                  })
+              : undefined,
           });
+          finish.current = null;
           setAnswer(confirmed ? 'true' : 'false');
         }}
       >
@@ -89,19 +103,19 @@ function Awaited() {
 mountLab(
   <>
     <LabSection
-      title="Variants, sizes and focus"
+      title="Tones, sizes and focus"
       description="Each cell opens a confirm dialog. Focus starts on Cancel, or on the confirm action in the confirm column."
     >
       <StateMatrix
-        axes={{ variant: variants, size: sizes, focus }}
-        render={({ variant, size, focus: target }) => (
-          <Declarative variant={variant} size={size} autoFocusConfirm={target === 'confirm'} />
+        axes={{ tone: tones, size: sizes, focus }}
+        render={({ tone, size, focus: target }) => (
+          <Declarative tone={tone} size={size} autoFocusConfirm={target === 'confirm'} />
         )}
       />
     </LabSection>
     <LabSection
       title="Awaited through a controller"
-      description="confirm(controller, options) resolves true on Delete and false on Cancel or Escape."
+      description="confirm(controller, options) resolves true on Delete and false on Cancel or Escape; a held delete stays pending until Finish delete."
     >
       <Awaited />
     </LabSection>

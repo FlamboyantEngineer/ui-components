@@ -25,9 +25,9 @@ When the dialog opens, focus shall land on Cancel, the safe choice, or on the co
 Implementation: `src/components/confirm-dialog/confirm-dialog.tsx`
 Verification: `src/components/confirm-dialog/confirm-dialog.test.tsx`, `e2e/confirm-dialog.spec.ts`
 
-### UIC-CONFIRM-DIALOG-1.4 - Destructive variant
+### UIC-CONFIRM-DIALOG-1.4 - Destructive tone
 
-`variant="danger"` shall mark a destructive or irreversible decision: the modal publishes `data-variant="danger"` and the confirm action uses the `danger` button variant. The default is `default`.
+`tone="danger"` shall mark a destructive or irreversible decision: the modal publishes `data-tone="danger"` and the confirm action uses the `danger` button variant. The default is `neutral`.
 
 Implementation: `src/components/confirm-dialog/confirm-dialog.tsx`
 Verification: `src/components/confirm-dialog/confirm-dialog.test.tsx`, `e2e/confirm-dialog.spec.ts`
