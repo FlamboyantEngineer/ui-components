@@ -1,6 +1,7 @@
 import { Fragment, type ReactNode, type Ref } from 'react';
 import { createHooks, measuredProperty } from '../../core/hooks.js';
 import type { FieldSeverity } from '../field/field.js';
+import type { CodeSegment } from './code-segments.js';
 
 /** A run of source text. `type` names its kind (`keyword`, `string`, …) for the stylesheet. */
 export interface CodeToken {
@@ -16,14 +17,17 @@ export interface CodeDiagnostic {
   message: string;
   line?: number | undefined;
   column?: number | undefined;
+  /** Where the marked range ends, counted from 1 and exclusive. Defaults to `line`. */
+  endLine?: number | undefined;
+  /** Where the marked range ends, counted from 1 and exclusive. Without it the word at `column` is marked. */
+  endColumn?: number | undefined;
   /** Defaults to `error`. */
   severity?: FieldSeverity | undefined;
 }
 
 export interface CodeHighlightProps {
-  tokens: readonly CodeToken[];
-  /** Where to place the caret marker, which anchors the completion list; `null` places none. */
-  caret: number | null;
+  /** The tokens cut at the decorations, with the caret marker (`null`) that anchors popovers. */
+  segments: ReadonlyArray<CodeSegment | null>;
   caretRef: Ref<HTMLSpanElement>;
   highlightRef: Ref<HTMLPreElement>;
 }
@@ -52,49 +56,38 @@ export const codeEditorHooks = createHooks('code-editor', [
   'code',
   'highlight',
   'token',
+  'mark',
+  'match',
+  'bracket',
   'caret',
   'input',
   'diagnostics',
   'diagnostic',
+  'announcement',
+  'tooltip',
   'popover',
   'completions',
   'completion',
   'completion-label',
   'completion-description',
+  'completion-documentation',
+  'search',
+  'search-input',
+  'replace-input',
+  'search-status',
 ]);
 
 const hooks = codeEditorHooks;
 
-/** Source tokens with the caret marker (`null`) placed at `caret`. */
-function placeCaret(tokens: readonly CodeToken[], caret: number): Array<CodeToken | null> {
-  const parts: Array<CodeToken | null> = [];
-  let offset = 0;
-  let placed = false;
-  for (const token of tokens) {
-    const end = offset + token.text.length;
-    if (!placed && caret <= end) {
-      const cut = caret - offset;
-      if (cut > 0) parts.push({ ...token, text: token.text.slice(0, cut) });
-      parts.push(null);
-      if (cut < token.text.length) parts.push({ ...token, text: token.text.slice(cut) });
-      placed = true;
-    } else {
-      parts.push(token);
-    }
-    offset = end;
-  }
-  if (!placed) parts.push(null);
-  return parts;
-}
-
-function renderToken(token: CodeToken | null, index: number, caretRef: Ref<HTMLSpanElement>) {
-  if (token === null) return <span key={index} {...hooks.slot('caret')} ref={caretRef} />;
-  if (!token.type) return <Fragment key={index}>{token.text}</Fragment>;
-  return (
-    <span key={index} {...hooks.slot('token', { token: token.type })}>
-      {token.text}
-    </span>
-  );
+function renderSegment(segment: CodeSegment | null, index: number, caretRef: Ref<HTMLSpanElement>) {
+  if (segment === null) return <span key={index} {...hooks.slot('caret')} ref={caretRef} />;
+  const { text, type, severity, match, bracket } = segment;
+  let node: ReactNode = type ? <span {...hooks.slot('token', { token: type })}>{text}</span> : text;
+  if (bracket)
+    node = <span {...hooks.slot('bracket', { unmatched: bracket.isUnmatched })}>{node}</span>;
+  if (match) node = <span {...hooks.slot('match', { current: match.isCurrent })}>{node}</span>;
+  if (severity) node = <span {...hooks.slot('mark', { severity })}>{node}</span>;
+  return <Fragment key={index}>{node}</Fragment>;
 }
 
 function formatLocation({ line, column }: CodeDiagnostic): string {
@@ -106,11 +99,10 @@ function formatLocation({ line, column }: CodeDiagnostic): string {
  * The highlighted copy of the source behind the input. A final line break keeps its last line as
  * tall as the input's, so the two scroll to the same extent.
  */
-export function CodeHighlight({ tokens, caret, caretRef, highlightRef }: CodeHighlightProps) {
-  const parts = caret === null ? tokens : placeCaret(tokens, caret);
+export function CodeHighlight({ segments, caretRef, highlightRef }: CodeHighlightProps) {
   return (
     <pre {...hooks.slot('highlight')} ref={highlightRef} aria-hidden="true">
-      {parts.map((token, index) => renderToken(token, index, caretRef))}
+      {segments.map((segment, index) => renderSegment(segment, index, caretRef))}
       {'\n'}
     </pre>
   );

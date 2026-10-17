@@ -61,6 +61,14 @@ export interface UiStrings {
   folderDepthLimit: (depth: number) => string;
   /** Names a code editor's list of completions. */
   suggestions: string;
+  /** Names a code editor's find box. */
+  find: string;
+  /** Names a code editor's replacement box. */
+  replaceWith: string;
+  /** Replaces the current match. */
+  replace: string;
+  /** Replaces every match. */
+  replaceAll: string;
   /** Rewrites a value, such as JSON text, with standard indentation. */
   format: string;
   /** The message of text that is not valid JSON. */
@@ -251,6 +259,10 @@ export const defaultStrings: UiStrings = {
   folderDepthLimit: (depth) =>
     depth === 1 ? 'Folders cannot be nested.' : `Folders nest at most ${depth} levels deep.`,
   suggestions: 'Suggestions',
+  find: 'Find',
+  replaceWith: 'Replace with',
+  replace: 'Replace',
+  replaceAll: 'Replace all',
   format: 'Format',
   invalidJson: 'Enter valid JSON.',
   invalidJsonAt: (line, column) => `Enter valid JSON: check line ${line}, column ${column}.`,

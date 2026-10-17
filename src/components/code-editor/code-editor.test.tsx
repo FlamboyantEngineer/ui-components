@@ -3,7 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { createRef, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import { findCompletionQuery, matchCompletions } from './code-completion.js';
+import { findCompletionQuery, matchCompletions } from './completion-match.js';
 import {
   CodeEditor,
   type CodeCompletion,
@@ -270,7 +270,9 @@ describe('CodeEditor', () => {
       'fruit.apricot',
     ]);
     expect(matchCompletions(vocabulary, 'city')).toEqual([]);
-    expect(matchCompletions(vocabulary, '')).toEqual([]);
+    expect(matchCompletions(vocabulary, 'frba').map(({ label }) => label)).toEqual([
+      'fruit.banana',
+    ]);
   });
 
   it('UIC-CODE-EDITOR-4.2 opens the completion list as the reader types and ties it to the input', async () => {
@@ -289,6 +291,7 @@ describe('CodeEditor', () => {
     expect(options.map((option) => option.textContent)).toEqual([
       'fruit.appleA crisp fruit',
       'fruit.apricot',
+      'fruit.banana',
     ]);
     expect(options[0]).toHaveAttribute('aria-selected', 'true');
     expect(options[0]).toHaveAttribute('data-focused', 'true');

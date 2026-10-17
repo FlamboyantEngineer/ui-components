@@ -158,10 +158,158 @@ test.describe('Code Editor lab', () => {
       'let total = fruit.ripe',
     );
     await page.keyboard.type(' and b');
-    await expect(list.getByRole('option')).toHaveText(['basketThe chosen basket']);
+    await expect(list.getByRole('option')).toHaveText([
+      'basketThe chosen basket',
+      'fruit.bruisedWhether any fruit is bruised',
+    ]);
     await page.keyboard.press('Escape');
     await expect(list).toBeHidden();
     await expect(input).toHaveValue('let total = fruit.ripe and b');
+  });
+
+  test('UIC-CODE-EDITOR-6.1 UIC-CODE-EDITOR-6.2 UIC-CODE-EDITOR-6.3 UIC-CODE-EDITOR-6.4 UIC-CODE-EDITOR-6.5 edits with indentation, pairs and undo', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('code-editor');
+    const editing = editor(page, 'editing');
+    const input = editing.getByRole('textbox', { name: 'Editable source' });
+    const start = 'let basket = pick(fruit.ripe, "pears", "plums")\nif (fruit.count > 12) {\n';
+    await input.click();
+    await page.keyboard.press('Control+End');
+    await page.keyboard.press('ArrowUp');
+    await page.keyboard.press('End');
+    await page.keyboard.press('Enter');
+    await expect(input).toHaveValue(`${start}  return basket\n  \n}`);
+    await page.keyboard.press('Control+z');
+    await expect(input).toHaveValue(`${start}  return basket\n}`);
+    await page.keyboard.press('Control+End');
+    await page.keyboard.press('Enter');
+    await page.keyboard.type('pick(');
+    await expect(input).toHaveValue(`${start}  return basket\n}\npick()`);
+    await expect(editing.locator('.ui-code-editor__bracket')).toHaveText(['(', ')']);
+    await page.keyboard.type('"a")');
+    await expect(input).toHaveValue(`${start}  return basket\n}\npick("a")`);
+    await page.keyboard.press('Home');
+    await page.keyboard.press('Tab');
+    await expect(input).toHaveValue(`${start}  return basket\n}\n  pick("a")`);
+    await page.keyboard.press('Shift+Tab');
+    await expect(input).toHaveValue(`${start}  return basket\n}\npick("a")`);
+    await expect(input).toBeFocused();
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('Tab');
+    await expect(page.locator('[data-lab-after="editing"]')).toBeFocused();
+  });
+
+  test('UIC-CODE-EDITOR-4.6 UIC-CODE-EDITOR-4.7 UIC-CODE-EDITOR-4.8 completes from a source with kinds, documentation and snippets', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('code-editor');
+    const editing = editor(page, 'editing');
+    const input = editing.getByRole('textbox', { name: 'Editable source' });
+    await input.click();
+    await page.keyboard.press('Control+End');
+    await page.keyboard.press('Enter');
+    await page.keyboard.type('let n = fruit.');
+    const list = page.getByRole('listbox', { name: 'Suggestions' });
+    await expect(list.getByRole('option')).toHaveCount(4);
+    await expect(list.getByRole('option').first()).toHaveAttribute('data-kind', 'property');
+    const documentation = page.locator('.ui-code-editor__completion-documentation');
+    await expect(documentation).toHaveText(/How many fruit are in the basket/);
+    await expect(list.getByRole('option').first()).toHaveAccessibleDescription(/How many fruit/);
+    await page.keyboard.type('we');
+    await expect(list.getByRole('option')).toHaveText(['weighweigh(unit)']);
+    await page.keyboard.press('Enter');
+    await page.keyboard.type('kg');
+    await expect(input).toHaveValue(/\nlet n = fruit\.weigh\(kg\)$/);
+    await page.keyboard.press('Control+End');
+    await page.keyboard.press('Enter');
+    await page.keyboard.press('Control+Space');
+    await expect(list.getByRole('option')).toHaveCount(4);
+    await page.keyboard.type('pi');
+    await page.keyboard.press('Enter');
+    await expect(input).toHaveValue(/\npick\(test, yes, no\)$/);
+    await page.keyboard.type('ripe');
+    await page.keyboard.press('Tab');
+    await page.keyboard.type('1');
+    await page.keyboard.press('Tab');
+    await page.keyboard.type('2');
+    await expect(input).toHaveValue(/\npick\(ripe, 1, 2\)$/);
+    await lab.expectAccessible();
+  });
+
+  test('UIC-CODE-EDITOR-7.1 UIC-CODE-EDITOR-7.2 UIC-CODE-EDITOR-7.3 UIC-CODE-EDITOR-7.4 finds and replaces in the source', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('code-editor');
+    const editing = editor(page, 'editing');
+    const input = editing.getByRole('textbox', { name: 'Editable source' });
+    await input.click();
+    await page.keyboard.press('Control+Home');
+    await page.keyboard.press('Control+f');
+    const find = editing.getByRole('textbox', { name: 'Find' });
+    await expect(find).toBeFocused();
+    await page.keyboard.type('BASKET');
+    const status = editing.locator('.ui-code-editor__search-status');
+    await expect(status).toHaveText('1 of 2');
+    await expect(editing.locator('.ui-code-editor__match')).toHaveCount(2);
+    await expect(editing.locator('.ui-code-editor__match[data-current]')).toHaveCSS(
+      'outline-style',
+      'solid',
+    );
+    await page.keyboard.press('Enter');
+    await expect(status).toHaveText('2 of 2');
+    await lab.expectAccessible();
+    await editing.getByRole('textbox', { name: 'Replace with' }).fill('crate');
+    await editing.getByRole('button', { name: 'Replace all' }).click();
+    await expect(input).toHaveValue(/^let crate = [^]*return crate\n\}$/);
+    await expect(status).toHaveText('No results');
+    await find.press('Escape');
+    await expect(editing.locator('.ui-code-editor__search')).toHaveCount(0);
+    await expect(input).toBeFocused();
+  });
+
+  test('UIC-CODE-EDITOR-3.4 UIC-CODE-EDITOR-3.5 UIC-CODE-EDITOR-3.6 underlines problems with hover tips and F8', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('code-editor');
+    const problems = editor(page, 'problems');
+    const input = problems.getByRole('textbox', { name: 'Source with problems' });
+    const marks = problems.locator('.ui-code-editor__mark');
+    await expect(marks).toHaveText(['"apples"', 'baskit']);
+    await problems.scrollIntoViewIfNeeded();
+    await expect(marks.nth(1)).toHaveCSS('text-decoration-style', 'wavy');
+    const mark = await box(marks.nth(1));
+    await page.mouse.move(mark.x + mark.width / 2, mark.y + mark.height / 2);
+    const tip = page.getByRole('tooltip');
+    await expect(tip).toHaveText('Unknown name "baskit". Did you mean "basket"?');
+    const popover = await box(page.locator('.ui-code-editor__tooltip'));
+    expect(popover.y + popover.height).toBeLessThanOrEqual(mark.y + 1);
+    await lab.expectAccessible();
+    const word = await box(problems.locator('.ui-code-editor__token', { hasText: /^basket$/ }));
+    await page.mouse.move(word.x + 4, word.y + word.height / 2);
+    await expect(tip).toHaveText('basket: the chosen basket, a text.');
+    await page.mouse.move(0, 0);
+    await expect(tip).toBeHidden();
+    await input.click({ position: { x: 4, y: 4 } });
+    await page.keyboard.press('F8');
+    await expect(problems.locator('.ui-code-editor__announcement')).toHaveText(
+      'A text is always true.',
+    );
+    await expect(tip).toHaveText('A text is always true.');
+    const selected = await input.evaluate((element: HTMLTextAreaElement) =>
+      element.value.slice(element.selectionStart, element.selectionEnd),
+    );
+    expect(selected).toBe('"apples"');
+    await page.keyboard.press('F8');
+    await expect(tip).toHaveText(/Unknown name "baskit"/);
+    await page.keyboard.press('Escape');
+    await expect(tip).toBeHidden();
+    await page.keyboard.type('x');
+    await expect(problems.locator('.ui-code-editor__mark')).toHaveCount(0);
   });
 
   test('UIC-CODE-EDITOR-1.1 passes axe in the dark theme', async ({ page, lab }) => {
