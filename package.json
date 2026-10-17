@@ -39,6 +39,7 @@
     "labs/*.css",
     "labs/reference",
     "labs/build",
+    "!labs/build/vendor",
     "specs",
     "CHANGELOG.md"
   ],
@@ -64,8 +65,14 @@
     "check:structure": "node scripts/check-structure.mjs"
   },
   "peerDependencies": {
+    "pdfjs-dist": "^6.2.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
+  },
+  "peerDependenciesMeta": {
+    "pdfjs-dist": {
+      "optional": true
+    }
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",

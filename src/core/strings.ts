@@ -55,6 +55,22 @@ export interface UiStrings {
   countOrMore: (count: number) => string;
   /** A step counter such as `2 of 5`. */
   stepOfTotal: (current: number, total: number) => string;
+  /** Default name of a document view. */
+  document: string;
+  /** Name of the toolbar for a named view (`Report.pdf controls`). */
+  controlsFor: (name: string) => string;
+  fitWidth: string;
+  fitPage: string;
+  page: string;
+  /** The total after a page field (`of 12`). */
+  ofTotal: (total: number) => string;
+  previousPage: string;
+  nextPage: string;
+  findInDocument: string;
+  searching: string;
+  previousMatch: string;
+  nextMatch: string;
+  documentFailed: string;
 }
 
 const spokenKeyNames: Readonly<Record<string, string>> = {
@@ -120,4 +136,17 @@ export const defaultStrings: UiStrings = {
   remainingCount: (count) => `${count} remaining`,
   countOrMore: (count) => `${count} or more`,
   stepOfTotal: (current, total) => `${current} of ${total}`,
+  document: 'Document',
+  controlsFor: (name) => `${name} controls`,
+  fitWidth: 'Fit page width',
+  fitPage: 'Fit whole page',
+  page: 'Page',
+  ofTotal: (total) => `of ${total}`,
+  previousPage: 'Previous page',
+  nextPage: 'Next page',
+  findInDocument: 'Find in document',
+  searching: 'Searching…',
+  previousMatch: 'Previous match',
+  nextMatch: 'Next match',
+  documentFailed: 'The document could not be opened.',
 };

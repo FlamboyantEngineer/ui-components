@@ -4,11 +4,13 @@ import {
   ArrowUpIcon,
   ArrowUturnLeftIcon,
   ArrowUturnRightIcon,
+  ArrowsRightLeftIcon,
   ArrowsPointingInIcon,
   ArrowsPointingOutIcon,
   ArrowsUpDownIcon,
   CheckCircleIcon,
   CheckIcon,
+  DocumentIcon,
   ChevronDoubleLeftIcon,
   ChevronDoubleRightIcon,
   ChevronDownIcon,
@@ -74,6 +76,8 @@ export const defaultGlyphs = {
   save: CheckIcon,
   delete: TrashIcon,
   users: UsersIcon,
+  'fit-width': ArrowsRightLeftIcon,
+  'fit-page': DocumentIcon,
 } satisfies Record<string, GlyphComponent>;
 
 export type GlyphName = keyof typeof defaultGlyphs;

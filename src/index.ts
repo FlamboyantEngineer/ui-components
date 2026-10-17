@@ -48,3 +48,4 @@ export * from './components/avatar/index.js';
 export * from './components/user-identity/index.js';
 export * from './components/presence-avatar/index.js';
 export * from './components/presence-strip/index.js';
+export * from './components/pdf-viewer/index.js';
