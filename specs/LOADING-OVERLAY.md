@@ -45,14 +45,14 @@ Verification: `src/components/loading-overlay/loading-overlay.test.tsx`, `e2e/lo
 
 `LoadingOverlay` shall render a `ui-loading-overlay` element that the stylesheet stretches over its positioned parent, holding a `LoadingCard` built from the same props. It has no resting state: the host mounts it while the work runs and removes it when the work settles.
 
-Implementation: `src/components/loading-overlay/loading-overlay.tsx`, `labs/reference.css`
+Implementation: `src/components/loading-overlay/loading-overlay.tsx`, `labs/reference/loading-overlay.css`
 Verification: `src/components/loading-overlay/loading-overlay.test.tsx`, `e2e/loading-overlay.spec.ts`
 
 ### UIC-LOADING-OVERLAY-2.2 - Presentation
 
 `presentation` shall publish `data-presentation`: `card` (the default) or `scrim`. A scrim draws the cover alone, without card, progress bar or status, and is hidden from assistive technology, so secondary regions that load together with a primary one share its look without repeating the announcement.
 
-Implementation: `src/components/loading-overlay/loading-overlay.tsx`, `labs/reference.css`
+Implementation: `src/components/loading-overlay/loading-overlay.tsx`, `labs/reference/loading-overlay.css`
 Verification: `src/components/loading-overlay/loading-overlay.test.tsx`, `e2e/loading-overlay.spec.ts`
 
 ## UIC-LOADING-OVERLAY-3 - Region
@@ -61,7 +61,7 @@ Verification: `src/components/loading-overlay/loading-overlay.test.tsx`, `e2e/lo
 
 While `isLoading` is true, `LoadingRegion` shall set `aria-busy="true"` and `data-loading` on its root, make its `ui-loading-region__content` inert (no pointer, focus or assistive-technology access) and render a `LoadingOverlay` with the given label, description, hint, progress, step and presentation beside the content. When loading ends, busy, inert and the overlay are removed and the content is usable again.
 
-Implementation: `src/components/loading-overlay/loading-overlay.tsx`, `labs/reference.css`
+Implementation: `src/components/loading-overlay/loading-overlay.tsx`, `labs/reference/loading-overlay.css`
 Verification: `src/components/loading-overlay/loading-overlay.test.tsx`, `e2e/loading-overlay.spec.ts`
 
 ## UIC-LOADING-OVERLAY-4 - Hooks

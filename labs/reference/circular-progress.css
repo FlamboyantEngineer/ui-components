@@ -46,3 +46,13 @@
   font-size: 12px;
   font-variant-numeric: tabular-nums;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-circular-progress__fill {
+    transition: none;
+  }
+
+  .ui-circular-progress[data-indeterminate] .ui-circular-progress__ring {
+    animation: none;
+  }
+}

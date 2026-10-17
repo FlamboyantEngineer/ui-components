@@ -3,7 +3,11 @@ import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
-import { ToastList, ToastQueue, ToastRegion } from './toast.js';
+import { UNSTABLE_ToastRegion as AriaToastRegion } from 'react-aria-components';
+import { Toast, ToastList, ToastRegion, createToastQueue } from './toast.js';
+
+const tones = ['info', 'success', 'warning', 'danger'] as const;
+const toneGlyphs = { info: 'info', success: 'success', warning: 'warning', danger: 'error' };
 
 const titles = () =>
   [...document.querySelectorAll('.ui-toast__title')].map((node) => node.textContent);
@@ -20,7 +24,7 @@ describe('ToastQueue', () => {
   });
 
   it('UIC-TOAST-1.1 adds toasts newest first and limits how many show', async () => {
-    const queue = new ToastQueue({ maxVisibleToasts: 2, defaultTimeout: 0 });
+    const queue = createToastQueue({ maxVisibleToasts: 2, defaultTimeout: 0 });
     render(<ToastRegion queue={queue} />);
     let firstKey = '';
     act(() => {
@@ -31,14 +35,14 @@ describe('ToastQueue', () => {
     expect(typeof firstKey).toBe('string');
     expect(firstKey).not.toBe('');
     expect(titles()).toEqual(['Plum saved', 'Pear saved']);
-    act(() => queue.close(queue.visibleToasts[0]?.key ?? ''));
+    act(() => queue.close(queue.ariaQueue.visibleToasts[0]?.key ?? ''));
     expect(titles()).toEqual(['Pear saved', 'Apple saved']);
   });
 
   it('UIC-TOAST-1.2 closes after the default or given timeout, or never with zero', async () => {
     vi.useFakeTimers();
     const onClose = vi.fn();
-    const queue = new ToastQueue();
+    const queue = createToastQueue();
     expect(queue.defaultTimeout).toBe(5000);
     render(<ToastRegion queue={queue} />);
     act(() => {
@@ -59,7 +63,7 @@ describe('ToastQueue', () => {
 
   it('UIC-TOAST-1.2 pauses every timer while the region is hovered or focused', async () => {
     vi.useFakeTimers();
-    const queue = new ToastQueue({ defaultTimeout: 5000 });
+    const queue = createToastQueue({ defaultTimeout: 5000 });
     render(
       <>
         <button type="button">Outside</button>
@@ -97,7 +101,7 @@ describe('ToastQueue', () => {
   it('UIC-TOAST-1.3 replaces a toast with the same id without closing it', async () => {
     vi.useFakeTimers();
     const replacedClose = vi.fn();
-    const queue = new ToastQueue();
+    const queue = createToastQueue();
     render(<ToastRegion queue={queue} />);
     act(() => {
       queue.add({ title: 'Upload 1 of 3' }, { id: 'upload', onClose: replacedClose });
@@ -117,7 +121,7 @@ describe('ToastQueue', () => {
 
   it('UIC-TOAST-1.4 closes one toast or clears all without onClose', () => {
     const onClose = vi.fn();
-    const queue = new ToastQueue({ defaultTimeout: 0 });
+    const queue = createToastQueue({ defaultTimeout: 0 });
     render(<ToastRegion queue={queue} />);
     let key = '';
     act(() => {
@@ -141,7 +145,7 @@ describe('ToastQueue', () => {
 
 describe('ToastRegion', () => {
   it('UIC-TOAST-2.1 portals a named landmark only while it has toasts and keeps focus', () => {
-    const queue = new ToastQueue({ defaultTimeout: 0 });
+    const queue = createToastQueue({ defaultTimeout: 0 });
     const { container } = render(
       <>
         <button type="button">Keep</button>
@@ -168,7 +172,7 @@ describe('ToastRegion', () => {
   });
 
   it('UIC-TOAST-2.1 takes a caller landmark name', () => {
-    const queue = new ToastQueue({ defaultTimeout: 0 });
+    const queue = createToastQueue({ defaultTimeout: 0 });
     render(<ToastRegion queue={queue} aria-label="Messages" />);
     act(() => {
       queue.add({ title: 'Saved' });
@@ -177,13 +181,13 @@ describe('ToastRegion', () => {
   });
 
   it('UIC-TOAST-2.2 makes each toast a labelled alertdialog with a tone-dependent live region', () => {
-    const queue = new ToastQueue({ defaultTimeout: 0 });
+    const queue = createToastQueue({ defaultTimeout: 0 });
     render(<ToastRegion queue={queue} />);
     act(() => {
       queue.add({ tone: 'info', title: 'Draft saved', description: 'Saved to Report.pdf' });
       queue.add({ tone: 'success', title: 'Sent' });
       queue.add({ tone: 'warning', title: 'Almost full' });
-      queue.add({ tone: 'error', title: 'Upload failed' });
+      queue.add({ tone: 'danger', title: 'Upload failed' });
     });
     const info = screen.getByRole('alertdialog', { name: 'Draft saved' });
     expect(info).toHaveAttribute('aria-modal', 'false');
@@ -199,7 +203,7 @@ describe('ToastRegion', () => {
   });
 
   it('UIC-TOAST-2.2 moves focus to the next toast when a focused toast closes', () => {
-    const queue = new ToastQueue({ defaultTimeout: 0 });
+    const queue = createToastQueue({ defaultTimeout: 0 });
     render(<ToastRegion queue={queue} />);
     act(() => {
       queue.add({ title: 'Older' });
@@ -209,12 +213,12 @@ describe('ToastRegion', () => {
       fireEvent.keyDown(document.body, { key: 'Tab' });
       screen.getByRole('alertdialog', { name: 'Newer' }).focus();
     });
-    act(() => queue.close(queue.visibleToasts[0]?.key ?? ''));
+    act(() => queue.close(queue.ariaQueue.visibleToasts[0]?.key ?? ''));
     expect(screen.getByRole('alertdialog', { name: 'Older' })).toHaveFocus();
   });
 
   it('UIC-TOAST-2.3 draws a queue in place without a landmark', () => {
-    const queue = new ToastQueue({ defaultTimeout: 0 });
+    const queue = createToastQueue({ defaultTimeout: 0 });
     queue.add({ tone: 'warning', title: 'Disk almost full' });
     const { container } = render(
       <ToastList queue={queue} className="caller" data-testid="stack" />,
@@ -225,7 +229,7 @@ describe('ToastRegion', () => {
     expect(list).toHaveAttribute('data-testid', 'stack');
     expect(screen.queryByRole('region')).toBeNull();
     expect(within(list).getByRole('alertdialog', { name: 'Disk almost full' })).toBeInTheDocument();
-    act(() => queue.close(queue.visibleToasts[0]?.key ?? ''));
+    act(() => queue.close(queue.ariaQueue.visibleToasts[0]?.key ?? ''));
     expect(within(list).queryByRole('alertdialog')).toBeNull();
     expectHooksMatchSpec(container, 'TOAST');
   });
@@ -233,22 +237,22 @@ describe('ToastRegion', () => {
 
 describe('Toast', () => {
   it('UIC-TOAST-3.1 publishes the tone and draws its glyph or a custom icon', () => {
-    const queue = new ToastQueue({ defaultTimeout: 0 });
-    for (const tone of ['info', 'success', 'warning', 'error'] as const) {
+    const queue = createToastQueue({ defaultTimeout: 0 });
+    for (const tone of tones) {
       queue.add({ tone, title: `${tone} title` });
     }
     queue.add({ title: 'Default tone' });
     queue.add({ title: 'Custom', icon: <svg data-testid="custom-icon" /> });
     queue.add({ title: 'Glyph', icon: 'help' });
     render(<ToastList queue={queue} />);
-    for (const tone of ['info', 'success', 'warning', 'error'] as const) {
+    for (const tone of tones) {
       const toast = screen.getByRole('alertdialog', { name: `${tone} title` });
       expect(toast).toHaveClass('ui-toast');
       expect(toast).toHaveAttribute('data-tone', tone);
       const icon = toast.querySelector('.ui-toast__icon');
       expect(icon).toHaveClass('ui-icon');
       expect(icon).toHaveAttribute('aria-hidden', 'true');
-      expect(icon).toHaveAttribute('data-glyph', tone);
+      expect(icon).toHaveAttribute('data-glyph', toneGlyphs[tone]);
     }
     expect(screen.getByRole('alertdialog', { name: 'Default tone' })).toHaveAttribute(
       'data-tone',
@@ -262,7 +266,7 @@ describe('Toast', () => {
   });
 
   it('UIC-TOAST-3.2 shows the title and an optional description', () => {
-    const queue = new ToastQueue({ defaultTimeout: 0 });
+    const queue = createToastQueue({ defaultTimeout: 0 });
     queue.add({ title: 'Only title' });
     queue.add({ title: 'With description', description: 'Moved to Lisbon' });
     render(<ToastList queue={queue} />);
@@ -276,7 +280,7 @@ describe('Toast', () => {
 
   it('UIC-TOAST-3.3 runs the action and then closes the toast', async () => {
     const onAction = vi.fn();
-    const queue = new ToastQueue({ defaultTimeout: 0 });
+    const queue = createToastQueue({ defaultTimeout: 0 });
     render(<ToastRegion queue={queue} />);
     act(() => {
       queue.add({ title: 'Row deleted', action: { label: 'Undo', onAction } });
@@ -291,7 +295,7 @@ describe('Toast', () => {
 
   it('UIC-TOAST-3.4 dismisses with a named icon button', async () => {
     const onClose = vi.fn();
-    const queue = new ToastQueue({ defaultTimeout: 0 });
+    const queue = createToastQueue({ defaultTimeout: 0 });
     render(
       <UiProvider strings={{ dismiss: 'Close message' }}>
         <ToastRegion queue={queue} />
@@ -308,7 +312,7 @@ describe('Toast', () => {
   });
 
   it('UIC-TOAST-3.5 forwards caller classes, ids and data attributes and publishes interaction states', async () => {
-    const queue = new ToastQueue({ defaultTimeout: 0 });
+    const queue = createToastQueue({ defaultTimeout: 0 });
     render(<ToastRegion queue={queue} className="caller" id="messages" data-testid="region" />);
     act(() => {
       queue.add({ title: 'Saved' });
@@ -327,5 +331,32 @@ describe('Toast', () => {
     expect(toast).toHaveAttribute('data-focused', 'true');
     expect(toast).toHaveAttribute('data-focus-visible', 'true');
     expectHooksMatchSpec(document.body, 'TOAST');
+  });
+
+  it('UIC-TOAST-3.5 lets a host draw toasts of a queue in its own region with caller attributes', () => {
+    const queue = createToastQueue({ defaultTimeout: 0 });
+    render(
+      <AriaToastRegion queue={queue.ariaQueue}>
+        {({ toast }) => <Toast toast={toast} className="caller" id="saved" data-testid="toast" />}
+      </AriaToastRegion>,
+    );
+    act(() => {
+      queue.add({ tone: 'success', title: 'Saved' });
+    });
+    const toast = screen.getByTestId('toast');
+    expect(toast).toHaveClass('ui-toast', 'caller');
+    expect(toast).toHaveAttribute('id', 'saved');
+    expect(toast).toHaveAttribute('data-tone', 'success');
+    expect(screen.getByRole('alertdialog', { name: 'Saved' })).toBe(toast);
+    expectHooksMatchSpec(document.body, 'TOAST');
+  });
+
+  it('UIC-TOAST-3.5 forwards a list id and data attributes', () => {
+    const queue = createToastQueue({ defaultTimeout: 0 });
+    queue.add({ title: 'Saved' });
+    const { container } = render(<ToastList queue={queue} id="preview" data-testid="list" />);
+    const list = container.firstElementChild as HTMLElement;
+    expect(list).toHaveAttribute('id', 'preview');
+    expect(list).toHaveAttribute('data-testid', 'list');
   });
 });

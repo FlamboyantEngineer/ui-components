@@ -36,6 +36,7 @@ function PagedList() {
           data-lab-action="load"
           itemLabel="fruit"
           remainingCount={remaining}
+          pendingLabel="Loading fruit"
           onLoadMore={() =>
             new Promise<void>((resolve) => {
               deliver.current = () => {

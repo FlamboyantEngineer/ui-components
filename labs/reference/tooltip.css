@@ -1,4 +1,4 @@
-/* Tooltip and Truncation Tooltip */
+/* Tooltip */
 
 .ui-tooltip {
   box-sizing: border-box;
@@ -65,28 +65,7 @@
   overflow-wrap: anywhere;
 }
 
-.ui-truncation-tooltip {
-  display: inline-block;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  vertical-align: bottom;
-}
-
-.ui-truncation-tooltip__panel {
-  white-space: normal;
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .ui-progress-bar__fill,
-  .ui-circular-progress__fill {
-    transition: none;
-  }
-
-  .ui-progress-bar[data-indeterminate] .ui-progress-bar__fill,
-  .ui-circular-progress[data-indeterminate] .ui-circular-progress__ring,
-  .ui-spinner,
   .ui-tooltip[data-entering],
   .ui-tooltip[data-exiting] {
     animation: none;

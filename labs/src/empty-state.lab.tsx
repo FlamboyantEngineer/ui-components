@@ -41,6 +41,7 @@ function ReloadDemo() {
         </ul>
       ) : (
         <EmptyState
+          headingLevel={2}
           variant={phase === 'loading' ? 'loading' : 'empty'}
           title={phase === 'loading' ? undefined : 'No cities'}
           description={phase === 'loading' ? 'Loading cities...' : 'Press Reload to fetch them.'}

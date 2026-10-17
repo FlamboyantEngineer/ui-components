@@ -9,15 +9,19 @@ import {
   UNSTABLE_ToastStateContext as ToastStateContext,
   type QueuedToast,
   type ToastOptions as AriaToastOptions,
+  type ToastRegionProps as AriaToastRegionProps,
   type ToastState,
 } from 'react-aria-components';
-import type { GlyphName } from '../../core/glyphs.js';
 import { createHooks, pickDataAttributes } from '../../core/hooks.js';
+import type { BaseProps, Tone } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { Button, ButtonIcon } from '../button/button.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { getToneGlyph } from '../banner/banner.js';
+import { Button } from '../button/button.js';
 import { IconButton } from '../icon-button/icon-button.js';
+import { Icon, toIconProps, type IconSource } from '../icon/icon.js';
 
-export type ToastTone = 'info' | 'success' | 'warning' | 'error';
+export type ToastTone = Extract<Tone, 'info' | 'success' | 'warning' | 'danger'>;
 
 /** An inline action. Pressing it runs `onAction`, then dismisses the toast. */
 export interface ToastAction {
@@ -27,12 +31,12 @@ export interface ToastAction {
 
 /** What a toast shows. */
 export interface ToastContent {
-  /** Defaults to `info`. `warning` and `error` are announced assertively, the others politely. */
+  /** Defaults to `info`. `warning` and `danger` are announced assertively, the others politely. */
   tone?: ToastTone | undefined;
   title: ReactNode;
   description?: ReactNode;
   /** Replaces the tone's glyph: a built-in glyph name or any icon node. */
-  icon?: GlyphName | ReactNode;
+  icon?: IconSource;
   action?: ToastAction | undefined;
 }
 
@@ -51,79 +55,44 @@ export interface ToastQueueOptions {
   maxVisibleToasts?: number | undefined;
   /** Timeout for toasts added without one, in milliseconds. Defaults to 5000; `0` disables it. */
   defaultTimeout?: number | undefined;
-  /** Wraps each update, for example in `document.startViewTransition`. */
-  wrapUpdate?: ((update: () => void, action: 'add' | 'remove' | 'clear') => void) | undefined;
 }
-
-/** The default lifetime of a toast, in milliseconds. */
-export const TOAST_DEFAULT_TIMEOUT = 5000;
 
 /**
- * The toasts to show, newest first. The host creates one queue, renders it in a `ToastRegion` and
- * calls `add` whenever something happened; `close` and `clear` remove toasts early.
+ * The toasts to show, newest first. The host creates one with `createToastQueue`, renders it in a
+ * `ToastRegion` and calls `add` whenever something happened; `close` and `clear` remove toasts early.
  */
-export class ToastQueue extends AriaToastQueue<ToastContent> {
-  readonly defaultTimeout: number;
-  private readonly keysById = new Map<string, string>();
-  private readonly replacedKeys = new Set<string>();
-
-  constructor({ defaultTimeout = TOAST_DEFAULT_TIMEOUT, ...options }: ToastQueueOptions = {}) {
-    super({
-      ...(options.maxVisibleToasts === undefined
-        ? {}
-        : { maxVisibleToasts: options.maxVisibleToasts }),
-      ...(options.wrapUpdate ? { wrapUpdate: options.wrapUpdate } : {}),
-    });
-    this.defaultTimeout = defaultTimeout;
-  }
-
+export interface ToastQueue {
   /** Adds a toast and returns its key. */
-  override add(content: ToastContent, options: ToastAddOptions = {}): string {
-    const { id, onClose, timeout = this.defaultTimeout } = options;
-    const previous = id === undefined ? undefined : this.keysById.get(id);
-    if (previous !== undefined) {
-      this.replacedKeys.add(previous);
-      this.close(previous);
-    }
-    let key = '';
-    key = super.add(content, {
-      ...(timeout > 0 ? { timeout } : {}),
-      onClose: () => {
-        if (id !== undefined && this.keysById.get(id) === key) this.keysById.delete(id);
-        if (this.replacedKeys.delete(key)) return;
-        onClose?.();
-      },
-    });
-    if (id !== undefined) this.keysById.set(id, key);
-    return key;
-  }
-
+  add: (content: ToastContent, options?: ToastAddOptions) => string;
+  /** Removes one toast, calling its `onClose`. */
+  close: (key: string) => void;
   /** Removes every toast without calling their `onClose`. */
-  override clear(): void {
-    this.keysById.clear();
-    this.replacedKeys.clear();
-    super.clear();
-  }
+  clear: () => void;
+  /** The timeout of toasts added without one, in milliseconds. */
+  readonly defaultTimeout: number;
+  /** The React Aria queue that holds the visible toasts; regions and lists render it. */
+  readonly ariaQueue: AriaToastQueue<ToastContent>;
 }
 
-export interface ToastProps {
+export interface ToastProps extends BaseProps {
+  /** The queued toast to draw. */
   toast: QueuedToast<ToastContent>;
-  className?: string | undefined;
 }
 
-export interface ToastRegionProps {
+export interface ToastRegionProps
+  extends
+    Omit<
+      AriaToastRegionProps<ToastContent>,
+      'queue' | 'children' | 'className' | 'style' | 'render'
+    >,
+    BaseProps {
+  /** The queue whose toasts the region shows. */
   queue: ToastQueue;
-  /** Names the landmark. Defaults to React Aria's localised count of notifications. */
-  'aria-label'?: string | undefined;
-  className?: string | undefined;
-  id?: string | undefined;
-  [data: `data-${string}`]: string | number | boolean | undefined;
 }
 
-export interface ToastListProps {
+export interface ToastListProps extends BaseProps {
+  /** The queue whose toasts the list draws. */
   queue: ToastQueue;
-  className?: string | undefined;
-  [data: `data-${string}`]: string | number | boolean | undefined;
 }
 
 const toastHooks = createHooks('toast', [
@@ -137,55 +106,107 @@ const toastHooks = createHooks('toast', [
 const regionHooks = createHooks('toast-region');
 const listHooks = createHooks('toast-list');
 
-const TONE_GLYPHS: Readonly<Record<ToastTone, GlyphName>> = {
-  info: 'info',
-  success: 'success',
-  warning: 'warning',
-  error: 'error',
-};
+const defaultToastTimeout = 5000;
 
 function isAssertive(tone: ToastTone): boolean {
-  return tone === 'warning' || tone === 'error';
+  return tone === 'warning' || tone === 'danger';
+}
+
+function renderToast({ toast }: { toast: QueuedToast<ToastContent> }) {
+  return <Toast toast={toast} />;
+}
+
+/** The toast's live region: its title and, when set, its description. */
+function ToastText({
+  tone,
+  title,
+  description,
+}: Pick<ToastContent, 'title' | 'description'> & { tone: ToastTone }) {
+  return (
+    <AriaToastContent {...toastHooks.slot('content')} role={isAssertive(tone) ? 'alert' : 'status'}>
+      <Text slot="title" className={toastHooks.slotClass('title')}>
+        {title}
+      </Text>
+      {isEmptyNode(description) ? null : (
+        <Text slot="description" className={toastHooks.slotClass('description')}>
+          {description}
+        </Text>
+      )}
+    </AriaToastContent>
+  );
+}
+
+/** The action button: runs the action, then closes the toast through its region's state. */
+function ToastActionButton({ action, toastKey }: { action: ToastAction; toastKey: string }) {
+  const state = useContext(ToastStateContext);
+  return (
+    <Button
+      variant="tertiary"
+      size="sm"
+      className={toastHooks.slotClass('action')}
+      onPress={() => {
+        action.onAction();
+        state?.close(toastKey);
+      }}
+    >
+      {action.label}
+    </Button>
+  );
+}
+
+/**
+ * Creates a toast queue over React Aria's queue, adding a default timeout and replacement by `id`:
+ * a toast added with the `id` of one still queued replaces it without calling its `onClose`.
+ */
+export function createToastQueue({
+  maxVisibleToasts,
+  defaultTimeout = defaultToastTimeout,
+}: ToastQueueOptions = {}): ToastQueue {
+  const ariaQueue = new AriaToastQueue<ToastContent>({ maxVisibleToasts });
+  const keysById = new Map<string, string>();
+  const replacedKeys = new Set<string>();
+
+  function add(
+    content: ToastContent,
+    { id, onClose, timeout = defaultTimeout }: ToastAddOptions = {},
+  ) {
+    const previous = id === undefined ? undefined : keysById.get(id);
+    if (previous !== undefined) {
+      replacedKeys.add(previous);
+      ariaQueue.close(previous);
+    }
+    const key = ariaQueue.add(content, {
+      timeout: timeout > 0 ? timeout : undefined,
+      onClose: () => {
+        if (id !== undefined && keysById.get(id) === key) keysById.delete(id);
+        if (!replacedKeys.delete(key)) onClose?.();
+      },
+    });
+    if (id !== undefined) keysById.set(id, key);
+    return key;
+  }
+
+  function clear() {
+    keysById.clear();
+    replacedKeys.clear();
+    ariaQueue.clear();
+  }
+
+  return { add, close: (key) => ariaQueue.close(key), clear, defaultTimeout, ariaQueue };
 }
 
 /**
  * One toast: tone glyph, title, optional description, optional action and a dismiss button. It
  * renders inside a `ToastRegion` or `ToastList`, which supply its queue.
  */
-export function Toast({ toast, className }: ToastProps) {
+export function Toast({ toast, className, ...rest }: ToastProps) {
   const strings = useUiStrings();
-  const state = useContext(ToastStateContext);
   const { tone = 'info', title, description, icon, action } = toast.content;
-  const hasDescription = description != null && description !== false && description !== '';
   return (
-    <AriaToast toast={toast} {...toastHooks.root({ className, data: { tone } })}>
-      <ButtonIcon icon={icon ?? TONE_GLYPHS[tone]} className={toastHooks.slotClass('icon')} />
-      <AriaToastContent
-        {...toastHooks.slot('content')}
-        role={isAssertive(tone) ? 'alert' : 'status'}
-      >
-        <Text slot="title" className={toastHooks.slotClass('title')}>
-          {title}
-        </Text>
-        {hasDescription ? (
-          <Text slot="description" className={toastHooks.slotClass('description')}>
-            {description}
-          </Text>
-        ) : null}
-      </AriaToastContent>
-      {action ? (
-        <Button
-          variant="tertiary"
-          size="sm"
-          className={toastHooks.slotClass('action')}
-          onPress={() => {
-            action.onAction();
-            state?.close(toast.key);
-          }}
-        >
-          {action.label}
-        </Button>
-      ) : null}
+    <AriaToast {...rest} toast={toast} {...toastHooks.root({ className, data: { tone } })}>
+      <Icon {...toIconProps(icon ?? getToneGlyph(tone))} className={toastHooks.slotClass('icon')} />
+      <ToastText tone={tone} title={title} description={description} />
+      {action ? <ToastActionButton action={action} toastKey={toast.key} /> : null}
       <IconButton
         slot="close"
         icon="close"
@@ -197,17 +218,13 @@ export function Toast({ toast, className }: ToastProps) {
   );
 }
 
-function renderToast({ toast }: { toast: QueuedToast<ToastContent> }) {
-  return <Toast toast={toast} />;
-}
-
 /**
  * The live region for a queue: a landmark (reachable with F6) portalled into the document body
  * while it has toasts, pausing every timer while it is hovered or holds focus.
  */
 export function ToastRegion({ queue, className, ...rest }: ToastRegionProps) {
   return (
-    <AriaToastRegion queue={queue} {...rest} {...regionHooks.root({ className, props: rest })}>
+    <AriaToastRegion {...rest} queue={queue.ariaQueue} {...regionHooks.root({ className })}>
       <AriaToastList className={listHooks.className}>{renderToast}</AriaToastList>
     </AriaToastRegion>
   );
@@ -217,28 +234,29 @@ export function ToastRegion({ queue, className, ...rest }: ToastRegionProps) {
  * Draws a queue's toasts where it is rendered, without the region's portal, landmark and pausing:
  * for previews and pages that place a static stack themselves.
  */
-export function ToastList({ queue, className, ...rest }: ToastListProps) {
+export function ToastList({ queue: { ariaQueue }, className, ...rest }: ToastListProps) {
   const visibleToasts = useSyncExternalStore(
-    (onChange) => queue.subscribe(onChange),
-    () => queue.visibleToasts,
-    () => queue.visibleToasts,
+    (onChange) => ariaQueue.subscribe(onChange),
+    () => ariaQueue.visibleToasts,
+    () => ariaQueue.visibleToasts,
   );
   const state = useMemo<ToastState<ToastContent>>(
     () => ({
       visibleToasts,
-      add: (content, options) => queue.add(content, options),
-      close: (key) => queue.close(key),
-      pauseAll: () => queue.pauseAll(),
-      resumeAll: () => queue.resumeAll(),
+      add: (content, options) => ariaQueue.add(content, options),
+      close: (key) => ariaQueue.close(key),
+      pauseAll: () => ariaQueue.pauseAll(),
+      resumeAll: () => ariaQueue.resumeAll(),
     }),
-    [queue, visibleToasts],
+    [ariaQueue, visibleToasts],
   );
-  const data = pickDataAttributes(rest);
+  // React Aria's list forwards no DOM props, so the caller's id and data attributes go through render.
+  const attributes = { ...pickDataAttributes(rest), id: rest.id };
   return (
     <ToastStateContext.Provider value={state}>
       <AriaToastList
         className={listHooks.root({ className }).className}
-        render={(props) => <ol {...props} {...data} />}
+        render={(props) => <ol {...props} {...attributes} />}
       >
         {renderToast}
       </AriaToastList>

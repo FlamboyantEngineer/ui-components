@@ -15,28 +15,28 @@ Verification: `src/components/badge/badge.test.tsx`, `e2e/badge.spec.ts`
 
 `variant` shall publish `data-variant`: `subtle` (the default, a tinted pill), `solid` (a filled token) or `status` (a tone dot before the label). A count badge publishes `count`.
 
-Implementation: `src/components/badge/badge.tsx`, `labs/reference.css`
+Implementation: `src/components/badge/badge.tsx`, `labs/reference/badge.css`
 Verification: `src/components/badge/badge.test.tsx`, `e2e/badge.spec.ts`
 
 ### UIC-BADGE-1.3 - Tones
 
 `tone` shall publish `data-tone`: `neutral` (the default, a value with no tone), `info`, `success`, `warning` or `danger`. The tone is never the only signal: the label states the value.
 
-Implementation: `src/components/badge/badge.tsx`, `labs/reference.css`
+Implementation: `src/components/badge/badge.tsx`, `labs/reference/badge.css`
 Verification: `src/components/badge/badge.test.tsx`, `e2e/badge.spec.ts`
 
 ### UIC-BADGE-1.4 - Sizes
 
 `size` shall publish `data-size`: `sm`, `md` (the default) or `lg`, shared by every variant and by count badges. The reference sheet draws 18, 22 and 26 pixel heights.
 
-Implementation: `src/components/badge/badge.tsx`, `labs/reference.css`
+Implementation: `src/components/badge/badge.tsx`, `labs/reference/badge.css`
 Verification: `src/components/badge/badge.test.tsx`, `e2e/badge.spec.ts`
 
 ### UIC-BADGE-1.5 - Bare
 
 `bare` shall publish `data-bare` so the stylesheet drops the pill for a badge inside chrome that already draws its own edge, keeping its tone, dot and text scale.
 
-Implementation: `src/components/badge/badge.tsx`, `labs/reference.css`
+Implementation: `src/components/badge/badge.tsx`, `labs/reference/badge.css`
 Verification: `src/components/badge/badge.test.tsx`
 
 ### UIC-BADGE-1.6 - Hooks and caller attributes
@@ -75,7 +75,7 @@ Verification: `src/components/badge/badge.test.tsx`, `e2e/badge.spec.ts`
 
 `placement` shall publish `data-placement` on a count badge: `inline` (the default) or `overlay`, which the stylesheet pins to the upper trailing corner of a positioned host without changing the host's size or catching pointer events.
 
-Implementation: `src/components/badge/badge.tsx`, `labs/reference.css`
+Implementation: `src/components/badge/badge.tsx`, `labs/reference/badge.css`
 Verification: `src/components/badge/badge.test.tsx`, `e2e/badge.spec.ts`
 
 ## Hooks

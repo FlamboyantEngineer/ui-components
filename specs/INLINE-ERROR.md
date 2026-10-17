@@ -22,7 +22,7 @@ Verification: `src/components/inline-error/inline-error.test.tsx`
 
 With `onRetry`, the error shall draw a small secondary [Button](BUTTON.md) in the `ui-inline-error__retry` slot, labelled `retryLabel` or the provider's `retry` string. It is a native `type="button"` that never submits an enclosing form and calls `onRetry` on pointer, Enter and Space activation. Without `onRetry` no button renders. The reference sheet moves the button below the message when a narrow container cannot fit both.
 
-Implementation: `src/components/inline-error/inline-error.tsx`, `labs/reference.css`
+Implementation: `src/components/inline-error/inline-error.tsx`, `labs/reference/inline-error.css`
 Verification: `src/components/inline-error/inline-error.test.tsx`, `e2e/inline-error.spec.ts`
 
 ### UIC-INLINE-ERROR-1.4 - Disabled and pending recovery

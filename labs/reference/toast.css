@@ -53,7 +53,7 @@
   border-inline-start-color: var(--ref-warning);
 }
 
-.ui-toast[data-tone='error'] {
+.ui-toast[data-tone='danger'] {
   border-inline-start-color: var(--ref-danger);
 }
 
@@ -70,7 +70,7 @@
   color: var(--ref-warning);
 }
 
-.ui-toast[data-tone='error'] .ui-toast__icon {
+.ui-toast[data-tone='danger'] .ui-toast__icon {
   color: var(--ref-danger);
 }
 

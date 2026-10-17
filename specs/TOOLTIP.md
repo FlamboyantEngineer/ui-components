@@ -34,7 +34,7 @@ Verification: `src/components/tooltip/tooltip.test.tsx`
 
 ### UIC-TOOLTIP-1.5 - Placement
 
-`placement` (`top` by default, or any React Aria placement such as `bottom`, `start` or `end top`) shall choose the preferred side; the panel flips to the opposite side when it does not fit (unless `shouldFlip` is false) and stays `containerPadding` pixels inside the viewport. `offset` (8 pixels by default, room for the arrow) and `crossOffset` move it. The panel and its `ui-tooltip__arrow` publish the resolved side in `data-placement`.
+`placement` (`top` by default, or any React Aria placement such as `bottom`, `start` or `end top`) shall choose the preferred side; the panel flips to the opposite side when it does not fit and stays inside the viewport, 8 pixels from the trigger to leave room for the arrow. The panel and its `ui-tooltip__arrow` publish the resolved side in `data-placement`.
 
 Implementation: `src/components/tooltip/tooltip.tsx`
 Verification: `src/components/tooltip/tooltip.test.tsx`, `e2e/tooltip.spec.ts`
@@ -43,7 +43,7 @@ Verification: `src/components/tooltip/tooltip.test.tsx`, `e2e/tooltip.spec.ts`
 
 `variant` shall publish `data-variant` on the panel: `default` (the hint for a control) or `info` (a softer explanatory note beside content).
 
-Implementation: `src/components/tooltip/tooltip.tsx`, `labs/reference.css`
+Implementation: `src/components/tooltip/tooltip.tsx`, `labs/reference/tooltip.css`
 Verification: `src/components/tooltip/tooltip.test.tsx`, `e2e/tooltip.spec.ts`
 
 ### UIC-TOOLTIP-1.7 - Controlled state
@@ -55,7 +55,7 @@ Verification: `src/components/tooltip/tooltip.test.tsx`
 
 ### UIC-TOOLTIP-1.8 - Hooks and caller attributes
 
-The panel shall carry the hooks below, append the caller's `className` and forward caller `data-*` attributes. It publishes React Aria's `data-entering` and `data-exiting` during its transitions.
+The panel shall carry the hooks below, append the caller's `className` and forward caller `data-*` attributes. Its `id` stays React Aria's, which describes the trigger by it. It publishes React Aria's `data-entering` and `data-exiting` during its transitions.
 
 Implementation: `src/components/tooltip/tooltip.tsx`
 Verification: `src/components/tooltip/tooltip.test.tsx`

@@ -8,7 +8,7 @@
 
 `TruncationTooltip` shall render its children in a `ui-truncation-tooltip` `<span>`, adding no role, tab stop or accessible name. The stylesheet decides how the text is cut; the full text always stays in the page.
 
-Implementation: `src/components/truncation-tooltip/truncation-tooltip.tsx`, `labs/reference.css`
+Implementation: `src/components/truncation-tooltip/truncation-tooltip.tsx`, `labs/reference/truncation-tooltip.css`
 Verification: `src/components/truncation-tooltip/truncation-tooltip.test.tsx`, `e2e/truncation-tooltip.spec.ts`
 
 ### UIC-TRUNCATION-TOOLTIP-1.2 - Only when cut
