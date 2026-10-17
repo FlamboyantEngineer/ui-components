@@ -3,6 +3,7 @@ import {
   applyTreeMove,
   getVisibleTreeRows,
   resolveTreeDrop,
+  resolveTreeDropMany,
   resolveTreeKeyboardMove,
   resolveTreeMove,
   type TreeMoveRules,
@@ -248,6 +249,90 @@ describe('resolveTreeDrop', () => {
       resolveTreeDrop(rows, { key: 'bottle', targetKey: 'box-c', position: 'inside' }, cellarRules)
         ?.position,
     ).toBe('inside');
+  });
+});
+
+describe('resolveTreeDropMany', () => {
+  it('UIC-TREE-REORDER-2.6 lands the rows together in order, the first where the drop says', () => {
+    const rows = pantryRows();
+    const moves = resolveTreeDropMany(rows, {
+      keys: ['kiwi', 'apple'],
+      targetKey: 'berries',
+      position: 'before',
+    });
+    expect(moves).toEqual([
+      { key: 'apple', targetKey: 'berries', position: 'before' },
+      { key: 'kiwi', targetKey: 'apple', position: 'after' },
+    ]);
+    const applied = (moves ?? []).reduce<readonly Shelf[]>(applyTreeMove, PANTRY);
+    expect(applied[0]?.children?.map((item) => item.id)).toEqual([
+      'pear',
+      'plum',
+      'fig',
+      'apple',
+      'kiwi',
+      'berries',
+    ]);
+    // Rows inside another dragged row move with it.
+    expect(
+      resolveTreeDropMany(rows, {
+        keys: ['berries', 'currant'],
+        targetKey: 'apple',
+        position: 'before',
+      }),
+    ).toEqual([{ key: 'berries', targetKey: 'apple', position: 'before' }]);
+  });
+
+  it('UIC-TREE-REORDER-2.6 refuses the whole drop when one row cannot go there', () => {
+    const rows = pantryRows();
+    expect(
+      resolveTreeDropMany(rows, { keys: ['apple', 'plum'], targetKey: 'kiwi', position: 'after' }),
+    ).toBeNull();
+    expect(
+      resolveTreeDropMany(rows, { keys: ['apple', 'pear'], targetKey: 'apple', position: 'after' }),
+    ).toBeNull();
+    expect(
+      resolveTreeDropMany(rows, {
+        keys: ['apple', 'pear'],
+        targetKey: 'currant',
+        position: 'before',
+      }),
+    ).toBeNull();
+    expect(
+      resolveTreeDropMany(rows, {
+        keys: ['apple', 'pear'],
+        targetKey: 'berries',
+        position: 'after',
+      }),
+    ).toBeNull();
+    // Rows already together at that spot change nothing.
+    expect(
+      resolveTreeDropMany(rows, { keys: ['apple', 'pear'], targetKey: 'plum', position: 'before' }),
+    ).toBeNull();
+    expect(
+      resolveTreeDropMany(rows, { keys: [], targetKey: 'kiwi', position: 'after' }),
+    ).toBeNull();
+  });
+
+  it('UIC-TREE-REORDER-2.6 moves rows to another parent when the owner lets each one go', () => {
+    const rows = cellarRows();
+    expect(
+      resolveTreeDropMany(
+        rows,
+        { keys: ['bottle', 'flask'], targetKey: 'box-b', position: 'inside' },
+        cellarRules,
+      ),
+    ).toEqual([
+      { key: 'bottle', targetKey: 'box-b', position: 'inside' },
+      { key: 'flask', targetKey: 'bottle', position: 'after' },
+    ]);
+    expect(
+      resolveTreeDropMany(
+        rows,
+        { keys: ['bottle', 'box-c'], targetKey: 'box-b', position: 'inside' },
+        cellarRules,
+      ),
+    ).toBeNull();
   });
 });
 

@@ -1,6 +1,6 @@
 # Tree
 
-`Tree` draws a hierarchy of rows (folders and entries, categories and items) on React Aria's `Tree`. Items are plain data; render callbacks draw each row's icon, label, metadata and actions. The tree expands and collapses rows, selects, navigates by keyboard, follows links, can persist its expansion, shows loading and empty notices through [EmptyState](EMPTY-STATE.md), and can let the reader reorder rows ([TREE-REORDER.md](TREE-REORDER.md)).
+`Tree` draws a hierarchy of rows (folders and entries, categories and items) on React Aria's `Tree`. Items are plain data; render callbacks draw each row's icon, label, metadata and actions. The tree expands and collapses rows, selects (with checkboxes and propagation when asked), navigates by keyboard, follows links, can persist its expansion, loads children on demand, filters its rows by text, renames rows in place, shows loading and empty notices through [EmptyState](EMPTY-STATE.md), and can let the reader reorder rows ([TREE-REORDER.md](TREE-REORDER.md)).
 
 ## UIC-TREE-1 - Rows
 
@@ -13,7 +13,7 @@ Verification: `src/components/tree/tree.test.tsx`, `e2e/tree.spec.ts`
 
 ### UIC-TREE-1.2 - Row anatomy
 
-Every row shall have the same anatomy: the drag handle (a [DragHandle](DRAG-HANDLE.md)) when the tree is reorderable, the expand button (or a spacer of the same slot when the row has no children), the icon from `getIcon` (a built-in glyph name or icon node, drawn as a decorative `Icon`), the label from `renderLabel` (the text value by default), the metadata from `renderMeta` and the controls from `renderActions`. Empty callbacks render no slot. The callbacks receive the item and the row's state: `isExpanded`, `hasChildItems`, `level`, `isSelected`, `isDisabled`, `isFocusVisible` and `isCurrent`. Each row publishes its depth as `--ui-tree-level`, from which the stylesheet indents it.
+Every row shall have the same anatomy: the drag handle (a [DragHandle](DRAG-HANDLE.md)) when the tree is reorderable, the expand button (or a spacer of the same slot when the row has no children), the selection checkbox with `checkboxSelection`, the icon from `getIcon` (a built-in glyph name or icon node, drawn as a decorative `Icon`), the label from `renderLabel` (the text value by default), the metadata from `renderMeta`, a load error and the controls from `renderActions`. Empty callbacks render no slot. The callbacks receive the item and the row's state: `isExpanded`, `hasChildItems`, `level`, `isSelected`, `isDisabled`, `isFocusVisible` and `isCurrent`. Each row publishes its depth as `--ui-tree-level`, from which the stylesheet indents it.
 
 Implementation: `src/components/tree/tree-item.tsx`, `labs/reference/tree.css`
 Verification: `src/components/tree/tree.test.tsx`, `e2e/tree.spec.ts`
@@ -47,6 +47,13 @@ With `persistKey`, uncontrolled expansion shall be read from and written to the 
 
 Implementation: `src/components/tree/use-tree-expansion.ts`
 Verification: `src/components/tree/tree.test.tsx`, `e2e/tree.spec.ts`
+
+### UIC-TREE-2.4 - Loading children on demand
+
+With `onLoadChildren`, the loading row of an expanded row that has children but none loaded shall ask for them once it comes into view (React Aria's loading sentinel), calling `onLoadChildren` with the item; the owner adds the children to its items. While a returned promise is pending the loading row shows, as for `isItemPending`. A rejection shall show its message (or the provider's `actionFailed` string) in the row as an [InlineError](INLINE-ERROR.md) (`ui-tree__load-error`) whose retry button asks again; the row does not ask again on its own after a failure or a success.
+
+Implementation: `src/components/tree/use-tree-loads.ts`, `src/components/tree/tree-item.tsx`, `src/components/tree/tree-row.tsx`, `src/components/tree/tree.tsx`
+Verification: `src/components/tree/use-tree-loads.test.tsx`, `e2e/tree.spec.ts`
 
 ## UIC-TREE-3 - Interaction
 
@@ -129,45 +136,83 @@ Verification: `src/components/tree/tree.test.tsx`
 Implementation: `src/components/tree/tree.tsx`, `labs/reference/tree.css`
 Verification: `src/components/tree/tree.test.tsx`, `e2e/tree.spec.ts`
 
+## UIC-TREE-5 - Checkbox selection
+
+### UIC-TREE-5.1 - Selection checkboxes
+
+`checkboxSelection` shall draw a [Checkbox](CHECKBOX.md) in the `ui-tree__checkbox` slot of each row, after the expand button, while the tree selects (`selectionMode` is not `none`). The checkbox reports the row's selection and toggles it (React Aria's `selection` slot); a tree that does not select draws none.
+
+Implementation: `src/components/tree/tree-row.tsx`, `src/components/tree/tree-item.tsx`, `labs/reference/tree.css`
+Verification: `src/components/tree/use-tree-selection.test.tsx`, `e2e/tree.spec.ts`
+
+### UIC-TREE-5.2 - Selection propagation
+
+With `selectionPropagation` and multiple selection, selecting or deselecting a row shall select or deselect its loaded descendants that are not disabled, and then each branch shall be selected exactly when all its enabled children are. A row that is not selected while a descendant is publishes `data-indeterminate` and its checkbox shows mixed. The tree holds the selection from `defaultSelectedKeys` unless `selectedKeys` controls it, and reports every change to `onSelectionChange` as a set of keys.
+
+Implementation: `src/components/tree/use-tree-selection.ts`, `src/components/tree/tree-item.tsx`, `src/components/tree/tree.tsx`
+Verification: `src/components/tree/use-tree-selection.test.tsx`, `e2e/tree.spec.ts`
+
+## UIC-TREE-6 - Filtering
+
+### UIC-TREE-6.1 - Filtered rows
+
+While `filterText` is not blank, the tree shall show only the loaded rows whose text value matches it, their ancestors and their descendants. Ancestors of a match open to show it; expanding and collapsing then changes an expansion of the filter's own, and the reader's expansion returns once the filter clears. A row matches while its text value holds every term of `filterText`, split as [Text Match](TEXT-MATCH.md) does, or while `filter(textValue, filterText)` returns true when the caller sets one. Default labels mark the terms through `TextMatch`.
+
+Implementation: `src/components/tree/use-tree-filter.ts`, `src/components/tree/tree-row.tsx`, `src/components/tree/tree.tsx`
+Verification: `src/components/tree/use-tree-filter.test.tsx`, `e2e/tree.spec.ts`
+
+## UIC-TREE-7 - Renaming
+
+### UIC-TREE-7.1 - Renaming in place
+
+With `onRename`, F2 on a row that `canRename` accepts (every row by default) shall replace its label with a text field (`ui-tree__rename-input`) named by the provider's `renameItem` string, holding the row's text value selected. Keys typed in the field edit it and never reach the tree. Enter, and focus leaving the field, call `onRename` with the item and the trimmed name when it is not blank and differs from the text value; Escape abandons the edit. Enter and Escape return focus to the row.
+
+Implementation: `src/components/tree/use-tree-rename.tsx`, `src/components/tree/use-tree-key-down.ts`, `src/components/tree/tree-row.tsx`
+Verification: `src/components/tree/use-tree-rename.test.tsx`, `e2e/tree.spec.ts`
+
 ## Hooks
 
-| Hook                      | Kind      | Values                  | Description                                                           |
-| ------------------------- | --------- | ----------------------- | --------------------------------------------------------------------- |
-| `ui-tree`                 | root      |                         | The tree grid element.                                                |
-| `ui-tree__item`           | slot      |                         | A row.                                                                |
-| `ui-tree__drag-handle`    | slot      |                         | The row's drag handle, in a reorderable tree (also `ui-drag-handle`). |
-| `ui-tree__expand`         | slot      |                         | The expand button of a row with children.                             |
-| `ui-tree__expand-spacer`  | slot      |                         | Holds the expand button's place in a row without children.            |
-| `ui-tree__icon`           | slot      |                         | The row icon (also `ui-icon`).                                        |
-| `ui-tree__label`          | slot      |                         | The row label.                                                        |
-| `ui-tree__meta`           | slot      |                         | Secondary text after the label.                                       |
-| `ui-tree__actions`        | slot      |                         | The row's trailing controls.                                          |
-| `ui-tree__drop-indicator` | slot      |                         | The line where a dragged row would land, between rows.                |
-| `ui-tree__loader`         | slot      |                         | The loading row below an expanded row whose children are loading.     |
-| `ui-tree__empty`          | slot      |                         | The empty tree's notice (also `ui-empty-state`).                      |
-| `data-size`               | attribute | `sm`, `md`, `lg`        | Row spacing.                                                          |
-| `data-variant`            | attribute | `default`, `picker`     | Navigation tree or picker.                                            |
-| `data-expand-glyph`       | attribute | `chevron`, `plus-minus` | The expand button's glyphs.                                           |
-| `data-wrap`               | state     | `true`                  | Labels may wrap.                                                      |
-| `data-virtualized`        | state     | `true`                  | Only the rows in view render.                                         |
-| `data-pending`            | state     | `true`                  | Items are loading.                                                    |
-| `data-current`            | state     | `true`                  | The current row.                                                      |
-| `data-position`           | attribute | `before`, `after`       | Which side of its row a drop indicator stands for.                    |
-| `--ui-tree-level`         | property  |                         | A row's (or loading row's) depth, from 1, for indentation.            |
-| `data-empty`              | state     | `true`                  | The tree has no items (React Aria).                                   |
-| `data-focused`            | state     | `true`                  | The tree, a row or a button has focus (React Aria).                   |
-| `data-focus-visible`      | state     | `true`                  | Keyboard focus (React Aria).                                          |
-| `data-selection-mode`     | state     | `single`, `multiple`    | The selection mode (React Aria).                                      |
-| `data-allows-dragging`    | state     | `true`                  | The tree or row allows dragging (React Aria).                         |
-| `data-drop-target`        | state     | `true`                  | The tree, a row or a drop indicator is the current drop target.       |
-| `data-expanded`           | state     | `true`                  | An expanded row (React Aria).                                         |
-| `data-has-child-items`    | state     | `true`                  | A row with children (React Aria).                                     |
-| `data-level`              | state     |                         | A row's depth, from 1 (React Aria).                                   |
-| `data-selected`           | state     | `true`                  | A selected row (React Aria).                                          |
-| `data-disabled`           | state     | `true`                  | A disabled row or button (React Aria).                                |
-| `data-hovered`            | state     | `true`                  | Pointer over a row or button (React Aria).                            |
-| `data-pressed`            | state     | `true`                  | A row or button is pressed (React Aria).                              |
-| `data-dragging`           | state     | `true`                  | The row being dragged (React Aria).                                   |
-| `data-href`               | state     |                         | A link row's destination (React Aria).                                |
-| `data-key`                | state     |                         | React Aria's key for a row; not for styling.                          |
-| `data-collection`         | state     |                         | React Aria's collection id on the tree and its rows; not for styling. |
+| Hook                      | Kind      | Values                  | Description                                                                   |
+| ------------------------- | --------- | ----------------------- | ----------------------------------------------------------------------------- |
+| `ui-tree`                 | root      |                         | The tree grid element.                                                        |
+| `ui-tree__item`           | slot      |                         | A row.                                                                        |
+| `ui-tree__drag-handle`    | slot      |                         | The row's drag handle, in a reorderable tree (also `ui-drag-handle`).         |
+| `ui-tree__expand`         | slot      |                         | The expand button of a row with children.                                     |
+| `ui-tree__expand-spacer`  | slot      |                         | Holds the expand button's place in a row without children.                    |
+| `ui-tree__checkbox`       | slot      |                         | The row's selection checkbox (also `ui-checkbox`).                            |
+| `ui-tree__icon`           | slot      |                         | The row icon (also `ui-icon`).                                                |
+| `ui-tree__label`          | slot      |                         | The row label.                                                                |
+| `ui-tree__rename-input`   | slot      |                         | The name field of a row being renamed, inside its label.                      |
+| `ui-tree__meta`           | slot      |                         | Secondary text after the label.                                               |
+| `ui-tree__load-error`     | slot      |                         | Why the row's children failed to load, with a retry (also `ui-inline-error`). |
+| `ui-tree__actions`        | slot      |                         | The row's trailing controls.                                                  |
+| `ui-tree__drop-indicator` | slot      |                         | The line where a dragged row would land, between rows.                        |
+| `ui-tree__loader`         | slot      |                         | The loading row below an expanded row whose children are loading.             |
+| `ui-tree__empty`          | slot      |                         | The empty tree's notice (also `ui-empty-state`).                              |
+| `data-size`               | attribute | `sm`, `md`, `lg`        | Row spacing.                                                                  |
+| `data-variant`            | attribute | `default`, `picker`     | Navigation tree or picker.                                                    |
+| `data-expand-glyph`       | attribute | `chevron`, `plus-minus` | The expand button's glyphs.                                                   |
+| `data-wrap`               | state     | `true`                  | Labels may wrap.                                                              |
+| `data-virtualized`        | state     | `true`                  | Only the rows in view render.                                                 |
+| `data-pending`            | state     | `true`                  | Items are loading.                                                            |
+| `data-current`            | state     | `true`                  | The current row.                                                              |
+| `data-indeterminate`      | state     | `true`                  | A row that is not selected while some of its descendants are.                 |
+| `data-position`           | attribute | `before`, `after`       | Which side of its row a drop indicator stands for.                            |
+| `--ui-tree-level`         | property  |                         | A row's (or loading row's) depth, from 1, for indentation.                    |
+| `data-empty`              | state     | `true`                  | The tree has no items (React Aria).                                           |
+| `data-focused`            | state     | `true`                  | The tree, a row or a button has focus (React Aria).                           |
+| `data-focus-visible`      | state     | `true`                  | Keyboard focus (React Aria).                                                  |
+| `data-selection-mode`     | state     | `single`, `multiple`    | The selection mode (React Aria).                                              |
+| `data-allows-dragging`    | state     | `true`                  | The tree or row allows dragging (React Aria).                                 |
+| `data-drop-target`        | state     | `true`                  | The tree, a row or a drop indicator is the current drop target.               |
+| `data-expanded`           | state     | `true`                  | An expanded row (React Aria).                                                 |
+| `data-has-child-items`    | state     | `true`                  | A row with children (React Aria).                                             |
+| `data-level`              | state     |                         | A row's depth, from 1 (React Aria).                                           |
+| `data-selected`           | state     | `true`                  | A selected row (React Aria).                                                  |
+| `data-disabled`           | state     | `true`                  | A disabled row or button (React Aria).                                        |
+| `data-hovered`            | state     | `true`                  | Pointer over a row or button (React Aria).                                    |
+| `data-pressed`            | state     | `true`                  | A row or button is pressed (React Aria).                                      |
+| `data-dragging`           | state     | `true`                  | The row being dragged (React Aria).                                           |
+| `data-href`               | state     |                         | A link row's destination (React Aria).                                        |
+| `data-key`                | state     |                         | React Aria's key for a row; not for styling.                                  |
+| `data-collection`         | state     |                         | React Aria's collection id on the tree and its rows; not for styling.         |

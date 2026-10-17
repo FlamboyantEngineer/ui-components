@@ -95,6 +95,7 @@ export {
   applyTreeMove,
   getVisibleTreeRows,
   resolveTreeDrop,
+  resolveTreeDropMany,
   resolveTreeKeyboardMove,
   resolveTreeMove,
 } from './tree-reorder.js';
@@ -107,6 +108,7 @@ export type {
   TreeMoveItem,
   TreeMoveRow,
   TreeMoveRules,
+  TreeMultipleMove,
   VisibleTreeRowsOptions,
 } from './tree-reorder.js';
 export { getColorIndex } from './color-index.js';

@@ -114,7 +114,7 @@ Verification: `src/components/folder-manager/folder-manager.test.tsx`
 
 A folder with `hasChildren` and no `children` shall start collapsed with an expand button (UIC-TREE-2.2). Expanding it calls `onLoadChildren` with its key, which may return a promise, and the tree shows its loading row below the folder while the promise is pending; the owner adds the subfolders to `folders`, and the folder stays expanded. A rejection shows its message, or the provider string `actionFailed`, in an `InlineError` alert (`ui-folder-manager__load-error`) in the folder's row, whose Retry button loads again.
 
-Implementation: `src/components/folder-manager/use-folder-loads.ts`, `src/components/folder-manager/use-folder-tree.ts`, `src/components/folder-manager/folder-tree.tsx`, `src/components/folder-manager/folder-model.ts`
+Implementation: `src/components/tree/use-tree-loads.ts`, `src/components/folder-manager/use-folder-tree.ts`, `src/components/folder-manager/folder-tree.tsx`, `src/components/folder-manager/folder-model.ts`
 Verification: `src/components/folder-manager/folder-manager.test.tsx`, `src/components/folder-manager/folder-model.test.ts`, `e2e/folder-manager.spec.ts`
 
 ## UIC-FOLDER-MANAGER-6 - Several folders

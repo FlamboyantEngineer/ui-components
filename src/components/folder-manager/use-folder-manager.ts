@@ -2,6 +2,7 @@ import { useCallback, useId, useMemo, useRef, useState, type RefObject } from 'r
 import type { Key } from 'react-aria-components';
 import type { TreeMove } from '../../utils/tree-reorder.js';
 import { splitMatchTerms } from '../text-match/text-match.js';
+import { useTreeLoads, type TreeLoads } from '../tree/tree.js';
 import {
   buildFolderNodes,
   collectBranchKeys,
@@ -18,7 +19,6 @@ import {
   type FolderActions,
   type FolderCallbacks,
 } from './use-folder-actions.js';
-import { useFolderLoads, type FolderLoads } from './use-folder-loads.js';
 import {
   useFolderExpansion,
   useFolderSelection,
@@ -51,7 +51,7 @@ export interface FolderManagerModel<T extends FolderItem> {
   select(keys: Key[]): void;
   expansion: FolderExpansion;
   actions: FolderActions<T>;
-  loads: FolderLoads;
+  loads: TreeLoads;
   /** The selected folders, topmost first, in tree order. */
   selection: T[];
   /** The one selected folder and its ancestors, outermost first; empty with none or several. */
@@ -119,7 +119,7 @@ export function useFolderManager<T extends FolderItem>(
   });
   const clearFocusRequest = useCallback(() => setFocusRequest(null), []);
   useRowFocus(regionRef, focusRequest, clearFocusRequest);
-  const loads = useFolderLoads(options.onLoadChildren);
+  const loads = useTreeLoads(options.onLoadChildren);
   const { edit } = actions;
   const draftParentKey = edit?.kind === 'create' ? edit.key : undefined;
   const filter = useFolderQuery(folders);
