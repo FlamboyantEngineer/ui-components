@@ -15,7 +15,7 @@ test.describe('Date Time Field lab', () => {
   test('UIC-DATE-TIME-FIELD-1.1 draws each mode in every state', async ({ page, lab }) => {
     await lab.open('date-time-field');
     const cells = page.locator('table[data-lab-matrix="state mode"] td[data-lab-cell]');
-    expect(await cells.count()).toBe(8 * 4);
+    expect(await cells.count()).toBe(8 * 5);
     const date = cell(page, 'resting', 'date');
     await expect(date.getByRole('group', { name: 'Due' })).toHaveCSS('height', '28px');
     await expect(date.getByRole('spinbutton', { name: /^month/ })).toHaveText('4');
@@ -102,5 +102,96 @@ test.describe('Date Time Field lab', () => {
       .click();
     await expect(page.getByRole('grid')).toHaveCount(2);
     await lab.expectAccessible('.ui-date-time-field__popover');
+  });
+
+  test('UIC-DATE-TIME-FIELD-3.1 UIC-DATE-TIME-FIELD-3.2 refuses unavailable days and offers presets', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('date-time-field');
+    const picked = page.locator('[data-lab-output="Picked"]');
+    const availability = field(page, 'availability');
+    await availability.getByRole('button', { name: /Calendar/ }).click();
+    const dialog = page.getByRole('dialog');
+    const saturday = dialog.getByRole('button', { name: /Saturday, April 18, 2026/ });
+    await expect(saturday).toHaveCSS('text-decoration-line', 'line-through');
+    const presets = dialog.locator('.ui-date-time-field__presets');
+    const calendar = dialog.locator('.ui-date-time-field__calendar');
+    expect((await presets.boundingBox())!.x).toBeLessThan((await calendar.boundingBox())!.x);
+    await expect(dialog.getByRole('button', { name: 'A Saturday' })).toBeDisabled();
+    await expect(dialog.getByRole('button', { name: 'Last year' })).toBeDisabled();
+    await lab.expectAccessible('.ui-date-time-field__popover');
+    await dialog.getByRole('button', { name: 'Start of April' }).click();
+    await expect(dialog).toBeHidden();
+    await expect(picked).toHaveText('"2026-04-01"');
+    const day = availability.getByRole('spinbutton', { name: /^day/ });
+    await day.focus();
+    await page.keyboard.type('04');
+    await expect(availability.locator('.ui-field__message')).toHaveText(
+      'Choose an available date.',
+    );
+    await expect(picked).toHaveText('"2026-04-01"');
+
+    await field(page, 'range-presets')
+      .getByRole('button', { name: /Calendar/ })
+      .click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Easter week' }).click();
+    await expect(picked).toHaveText('{"start":"2026-04-06","end":"2026-04-12"}');
+  });
+
+  test('UIC-DATE-TIME-FIELD-3.3 jumps to a month and a year from the heading selects', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('date-time-field');
+    await field(page, 'heading')
+      .getByRole('button', { name: /Calendar/ })
+      .click();
+    const dialog = page.getByRole('dialog');
+    const month = dialog.locator('.ui-date-time-field__calendar-select[data-unit="month"] button');
+    await month.click();
+    await page.getByRole('option', { name: 'Dec' }).click();
+    await expect(dialog.getByRole('grid', { name: /December 2026/ })).toBeVisible();
+    const year = dialog.locator('.ui-date-time-field__calendar-select[data-unit="year"] button');
+    await year.focus();
+    await page.keyboard.press('Enter');
+    await page.getByRole('option', { name: '2028' }).click();
+    await expect(dialog.getByRole('grid', { name: /December 2028/ })).toBeVisible();
+    await expect(dialog).toBeVisible();
+    await lab.expectAccessible('.ui-date-time-field__popover');
+    await dialog.getByRole('button', { name: /December 1, 2028/ }).click();
+    await expect(field(page, 'heading').getByRole('spinbutton', { name: /^year/ })).toHaveText(
+      '2028',
+    );
+  });
+
+  test('UIC-DATE-TIME-FIELD-4.1 UIC-DATE-TIME-FIELD-4.2 UIC-DATE-TIME-FIELD-4.3 edits seconds, zones and time ranges', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('date-time-field');
+    const zonedOutput = page.locator('[data-lab-output="Zoned"]');
+    const seconds = field(page, 'seconds');
+    await expect(seconds.getByRole('spinbutton', { name: /^hour/ })).toHaveText('06');
+    await expect(seconds.getByRole('spinbutton', { name: /^second/ })).toHaveText('15');
+    await seconds.getByRole('spinbutton', { name: /^second/ }).focus();
+    await page.keyboard.press('ArrowUp');
+    await expect(zonedOutput).toHaveText('"06:30:16"');
+
+    const zoned = field(page, 'zoned');
+    await expect(zoned.getByRole('spinbutton', { name: /^hour/ })).toHaveText('12');
+    await expect(zoned.locator('[data-type="timeZoneName"]')).toHaveText(/GMT\+9/);
+    await zoned.getByRole('spinbutton', { name: /^hour/ }).focus();
+    await page.keyboard.press('ArrowUp');
+    await expect(zonedOutput).toHaveText('"2026-04-13T04:00:00.000Z"');
+
+    const range = field(page, 'time-range');
+    await expect(range.locator('[data-type="timeZoneName"]')).toHaveCount(0);
+    await range.getByRole('spinbutton', { name: /^hour/ }).nth(1).focus();
+    await page.keyboard.press('ArrowDown');
+    await expect(zonedOutput).toHaveText(
+      '{"start":"2026-04-13T09:00:00.000Z","end":"2026-04-13T16:00:00.000Z"}',
+    );
+    await lab.expectAccessible();
   });
 });

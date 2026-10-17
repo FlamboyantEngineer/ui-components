@@ -9,31 +9,61 @@ import {
   type FieldIssue,
   type FieldState,
 } from '../field/field.js';
-import { DateControl, DateRangeControl, TimeControl } from './date-time-pickers.js';
+import type { DateTimeFieldCalendarHeading, DateTimeFieldPreset } from './date-time-calendar.js';
+import { DateFormInputs } from './date-time-form.js';
+import {
+  DateControl,
+  DateRangeControl,
+  TimeControl,
+  type DateControlSettings,
+} from './date-time-pickers.js';
 import {
   findBoundIssue,
   formatDateValue,
+  isUnavailableValue,
   type DateFieldValue,
   type DateRangeValue,
+  type DateTimeFieldGranularity,
   type DateTimeFieldMode,
 } from './date-values.js';
 
-/** A `YYYY-MM-DD`, `HH:mm` or UTC ISO text for a single mode, a date range for `date-range`. */
-export type DateTimeFieldValue<M extends DateTimeFieldMode = 'date'> = M extends 'date-range'
+/** A `YYYY-MM-DD`, `HH:mm` or UTC ISO text for a single mode, a `{ start, end }` range for a range. */
+export type DateTimeFieldValue<M extends DateTimeFieldMode = 'date'> = M extends
+  | 'date-range'
+  | 'date-time-range'
   ? DateRangeValue | null
   : string | null;
 
 export interface DateTimeFieldProps<M extends DateTimeFieldMode = 'date'>
   extends
     FieldInputProps<DateTimeFieldValue<M>>,
-    Pick<AriaDatePickerProps<DateValue>, 'isOpen' | 'defaultOpen' | 'onOpenChange'> {
-  /** `date` (the default), `time`, `date-time` or `date-range`. */
+    Pick<
+      AriaDatePickerProps<DateValue>,
+      'isOpen' | 'defaultOpen' | 'onOpenChange' | 'isDateUnavailable' | 'hourCycle' | 'hideTimeZone'
+    > {
+  /** `date` (the default), `time`, `date-time`, `date-range` or `date-time-range`. */
   mode?: M | undefined;
-  /** The earliest value allowed, in the mode's format (a date for `date-range`). */
+  /** The earliest value allowed, in the mode's format (a date or an instant for a range). */
   minValue?: string | undefined;
-  /** The latest value allowed, in the mode's format (a date for `date-range`). */
+  /** The latest value allowed, in the mode's format (a date or an instant for a range). */
   maxValue?: string | undefined;
+  /** The smallest part of a time the segments edit. Defaults to `minute`. */
+  granularity?: DateTimeFieldGranularity | undefined;
+  /** The IANA time zone the date and time modes edit instants in, instead of the local one. */
+  timeZone?: string | undefined;
+  /** Named values offered beside the calendar, such as `Last 7 days`. */
+  presets?: readonly DateTimeFieldPreset<NonNullable<DateTimeFieldValue<M>>>[] | undefined;
+  /** How the calendar heading shows its month. Defaults to `text`; `select` jumps by month and year. */
+  calendarHeading?: DateTimeFieldCalendarHeading | undefined;
+  /** The form name of a single value, submitted as its canonical text. */
+  name?: string | undefined;
+  /** The form name of a range's start. */
+  startName?: string | undefined;
+  /** The form name of a range's end. */
+  endName?: string | undefined;
 }
+
+type AnyDateTimeFieldProps = DateTimeFieldProps<DateTimeFieldMode>;
 
 const hooks = createHooks('date-time-field');
 
@@ -41,40 +71,76 @@ const controls = {
   date: DateControl,
   'date-time': DateControl,
   'date-range': DateRangeControl,
+  'date-time-range': DateRangeControl,
   time: TimeControl,
 };
 
 /**
- * A field for a date, a time of day, a date and time, or a date range (React Aria `DatePicker`,
- * `TimeField` and `DateRangePicker`), with the field base's label, validation, dirty state,
- * restore, undo and menu. A value outside `minValue` and `maxValue` stays on screen, invalid and
- * uncommitted, until it is corrected.
+ * The field's own check: a value outside the bounds, or on a date `isDateUnavailable` refuses, is
+ * invalid with a message naming the reason.
  */
-export function DateTimeField<M extends DateTimeFieldMode = 'date'>(props: DateTimeFieldProps<M>) {
+function useDateCheck(props: AnyDateTimeFieldProps, mode: DateTimeFieldMode) {
   const strings = useUiStrings();
   const { locale } = useLocale();
-  const mode: DateTimeFieldMode = props.mode ?? 'date';
-  const bounds = { minValue: props.minValue, maxValue: props.maxValue };
-  const checkBounds = (value: DateTimeFieldValue<M>): FieldIssue | null => {
-    const issue = findBoundIssue(value, mode, bounds);
-    if (!issue) return null;
-    const limit = formatDateValue(issue.limit, mode, locale);
-    const message =
-      issue.bound === 'min' ? strings.dateTooEarly(limit) : strings.dateTooLate(limit);
-    return { severity: 'error', message };
+  const options = { timeZone: props.timeZone, granularity: props.granularity };
+  return (value: DateFieldValue): FieldIssue | null => {
+    const issue = findBoundIssue(value, mode, props);
+    if (issue) {
+      const limit = formatDateValue(issue.limit, mode, { ...options, locale });
+      const message =
+        issue.bound === 'min' ? strings.dateTooEarly(limit) : strings.dateTooLate(limit);
+      return { severity: 'error', message };
+    }
+    const isDateUnavailable = props.isDateUnavailable;
+    if (isUnavailableValue(value, mode, { ...options, isDateUnavailable })) {
+      return { severity: 'error', message: strings.dateUnavailable };
+    }
+    return null;
   };
+}
+
+function toSettings(
+  props: AnyDateTimeFieldProps,
+  isPickable: (value: DateFieldValue) => boolean,
+): DateControlSettings {
+  return {
+    timeZone: props.timeZone,
+    granularity: props.granularity,
+    hourCycle: props.hourCycle,
+    hideTimeZone: props.hideTimeZone,
+    isDateUnavailable: props.isDateUnavailable,
+    presets: props.presets ?? [],
+    calendarHeading: props.calendarHeading ?? 'text',
+    isPickable,
+  };
+}
+
+/**
+ * A field for a date, a time of day, a date and time, or a range of dates or of dates and times
+ * (React Aria `DatePicker`, `TimeField` and `DateRangePicker`), with the field base's label,
+ * validation, dirty state, restore, undo and menu. A value outside `minValue` and `maxValue`, or on
+ * an unavailable date, stays on screen, invalid and uncommitted, until it is corrected.
+ */
+export function DateTimeField<M extends DateTimeFieldMode = 'date'>(props: DateTimeFieldProps<M>) {
+  const { locale } = useLocale();
+  const all = props as AnyDateTimeFieldProps;
+  const mode: DateTimeFieldMode = props.mode ?? 'date';
+  const check = useDateCheck(all, mode);
   const empty = null as DateTimeFieldValue<M>;
-  const { state, field, rest } = useFieldControl<DateTimeFieldValue<M>, DateTimeFieldProps<M>>(
-    props,
-    { initialValue: empty, emptyValue: empty, check: checkBounds },
-  );
-  const { mode: _mode, minValue: _min, maxValue: _max, ...open } = rest;
+  const { state, field } = useFieldControl<DateTimeFieldValue<M>, DateTimeFieldProps<M>>(props, {
+    initialValue: empty,
+    emptyValue: empty,
+    check,
+  });
   const committed = state.committedValue;
-  const previous = state.isDirty && committed ? formatDateValue(committed, mode, locale) : null;
+  const previous =
+    state.isDirty && committed
+      ? formatDateValue(committed, mode, { locale, timeZone: props.timeZone })
+      : null;
   const Control = controls[mode];
   const pick = (value: DateFieldValue) => {
     state.setValue(value as DateTimeFieldValue<M>);
-    if (!findBoundIssue(value, mode, bounds)) state.commit();
+    if (!check(value)) state.commit();
   };
   return (
     <Field
@@ -83,18 +149,25 @@ export function DateTimeField<M extends DateTimeFieldMode = 'date'>(props: DateT
       state={state}
     >
       {(control) => (
-        <Control
-          {...open}
-          control={control}
-          state={state as unknown as FieldState<DateFieldValue>}
-          mode={mode}
-          bounds={bounds}
-          previous={previous}
-          onPick={pick}
-        />
+        <>
+          <Control
+            isOpen={props.isOpen}
+            defaultOpen={props.defaultOpen}
+            onOpenChange={props.onOpenChange}
+            control={control}
+            state={state as unknown as FieldState<DateFieldValue>}
+            mode={mode}
+            bounds={props}
+            settings={toSettings(all, (value) => !check(value))}
+            previous={previous}
+            onPick={pick}
+          />
+          <DateFormInputs value={state.value} names={props} isDisabled={state.isDisabled} />
+        </>
       )}
     </Field>
   );
 }
 
-export type { DateRangeValue, DateTimeFieldMode } from './date-values.js';
+export type { DateTimeFieldCalendarHeading, DateTimeFieldPreset } from './date-time-calendar.js';
+export type { DateRangeValue, DateTimeFieldGranularity, DateTimeFieldMode } from './date-values.js';

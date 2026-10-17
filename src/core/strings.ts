@@ -144,6 +144,8 @@ export interface UiStrings {
   dateTooEarly: (minValue: string) => string;
   /** The message of a date or time later than the field allows. */
   dateTooLate: (maxValue: string) => string;
+  /** The message of a date the field does not offer, such as a holiday. */
+  dateUnavailable: string;
   /** Names the mark of a group holding a value that overrides an inherited one. */
   containsOverrides: string;
   /** Names a search box that filters a panel, from the panel's label. */
@@ -307,6 +309,7 @@ export const defaultStrings: UiStrings = {
   now: 'Now',
   dateTooEarly: (minValue) => `Choose a value on or after ${minValue}.`,
   dateTooLate: (maxValue) => `Choose a value on or before ${maxValue}.`,
+  dateUnavailable: 'Choose an available date.',
   containsOverrides: 'Contains overridden values',
   filterLabel: (label) => `Filter ${label.toLocaleLowerCase()}`,
   noPropertyMatches: (query) => `No properties match “${query}”.`,

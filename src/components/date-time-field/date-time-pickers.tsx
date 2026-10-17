@@ -1,4 +1,4 @@
-import type { CalendarDateTime } from '@internationalized/date';
+import { now, type DateValue, type Time } from '@internationalized/date';
 import { useMemo, type ReactNode } from 'react';
 import {
   Button as AriaButton,
@@ -10,7 +10,6 @@ import {
   Group,
   RangeCalendar,
   TimeField,
-  type DateValue,
 } from 'react-aria-components';
 import { createHooks } from '../../core/hooks.js';
 import { Glyph } from '../../core/provider.js';
@@ -20,19 +19,39 @@ import {
   type FieldControlProps,
   type FieldState,
 } from '../field/field.js';
-import { CalendarBody, CalendarPopover } from './date-time-calendar.js';
 import {
-  fromDateTimeValue,
+  CalendarBody,
+  CalendarPopover,
+  type DateTimeFieldCalendarHeading,
+  type DateTimeFieldPreset,
+} from './date-time-calendar.js';
+import {
+  fromPickerValue,
   fromTimeValue,
-  toCalendarDateValue,
-  toDateTimeValue,
+  toPickerValue,
   toRangeValue,
+  toSingleMode,
   toTimeValue,
   type DateBounds,
   type DateFieldValue,
   type DateRangeValue,
   type DateTimeFieldMode,
+  type DateValueOptions,
 } from './date-values.js';
+
+/** How the pickers edit and offer values, beyond the value itself. */
+export interface DateControlSettings extends DateValueOptions {
+  /** Shows the hours of a day in 12 or 24 (React Aria `hourCycle`). */
+  hourCycle?: 12 | 24 | undefined;
+  /** Leaves the time zone out of a zoned value's segments (React Aria `hideTimeZone`). */
+  hideTimeZone?: boolean | undefined;
+  /** Refuses dates in the calendar and marks typed ones invalid (React Aria). */
+  isDateUnavailable?: ((date: DateValue) => boolean) | undefined;
+  presets: readonly DateTimeFieldPreset<DateFieldValue>[];
+  calendarHeading: DateTimeFieldCalendarHeading;
+  /** Whether the field would take a value, so the presets it refuses are disabled. */
+  isPickable: (value: DateFieldValue) => boolean;
+}
 
 /** What every picker of a date-time field receives. */
 export interface DatePickerControlProps {
@@ -40,6 +59,7 @@ export interface DatePickerControlProps {
   state: FieldState<DateFieldValue>;
   mode: DateTimeFieldMode;
   bounds: DateBounds;
+  settings: DateControlSettings;
   /** The committed value as text, shown before the input while the field is dirty. */
   previous: string | null;
   /** Sets a value the reader picked or typed. */
@@ -60,12 +80,47 @@ const hooks = createHooks('date-time-field', [
   'calendar',
 ]);
 
-function pickerProps({ control }: DatePickerControlProps) {
-  return { ...toAriaControlProps(control), className: hooks.slotClass('picker') };
+function pickerProps({ control, settings }: DatePickerControlProps) {
+  return {
+    ...toAriaControlProps(control),
+    className: hooks.slotClass('picker'),
+    hourCycle: settings.hourCycle,
+  };
 }
 
-function openProps({ isOpen, defaultOpen, onOpenChange }: DatePickerControlProps) {
-  return { isOpen, defaultOpen, onOpenChange };
+/** The props the date pickers share: open state, the time settings and unavailable dates. */
+function datePickerProps(props: DatePickerControlProps) {
+  const { isOpen, defaultOpen, onOpenChange, settings, mode } = props;
+  const hasTime = toSingleMode(mode) === 'date-time';
+  return {
+    ...pickerProps(props),
+    isOpen,
+    defaultOpen,
+    onOpenChange,
+    granularity: hasTime ? (settings.granularity ?? 'minute') : ('day' as const),
+    hideTimeZone: settings.hideTimeZone,
+    isDateUnavailable: settings.isDateUnavailable,
+  };
+}
+
+/** A zoned starting point, so an empty date-time field in a time zone types zoned values. */
+function usePlaceholderValue({ mode, settings }: DatePickerControlProps) {
+  const zone = toSingleMode(mode) === 'date-time' ? settings.timeZone : undefined;
+  return useMemo(
+    () => (zone ? now(zone).set({ hour: 0, minute: 0, second: 0, millisecond: 0 }) : undefined),
+    [zone],
+  );
+}
+
+function useBoundValues({ mode, bounds, settings }: DatePickerControlProps) {
+  const single = toSingleMode(mode);
+  const { timeZone } = settings;
+  const { minValue, maxValue } = bounds;
+  return useMemo(() => {
+    const read = (text: string | undefined) =>
+      toPickerValue(text, single, { timeZone }) as DateValue | null;
+    return { minValue: read(minValue), maxValue: read(maxValue) };
+  }, [single, timeZone, minValue, maxValue]);
 }
 
 function PreviousValue({ previous }: { previous: string | null }) {
@@ -104,60 +159,59 @@ function CalendarButton() {
   );
 }
 
-/** A date, or a date and time to the minute, typed in segments or picked from a calendar. */
+/** A date, or a date and time, typed in segments or picked from a calendar. */
 export function DateControl(props: DatePickerControlProps) {
-  const { state, mode, bounds, onPick } = props;
-  const isDateTime = mode === 'date-time';
+  const { state, mode, settings, onPick } = props;
+  const single = toSingleMode(mode);
   const text = typeof state.value === 'string' ? state.value : null;
-  const toValue = isDateTime ? toDateTimeValue : toCalendarDateValue;
-  const value = useMemo(() => toValue(text), [toValue, text]);
-  const minValue = useMemo(() => toValue(bounds.minValue), [toValue, bounds.minValue]);
-  const maxValue = useMemo(() => toValue(bounds.maxValue), [toValue, bounds.maxValue]);
+  const { timeZone, granularity } = settings;
+  const value = useMemo(
+    () => toPickerValue(text, single, { timeZone }) as DateValue | null,
+    [text, single, timeZone],
+  );
   return (
     <DatePicker<DateValue>
-      {...pickerProps(props)}
-      {...openProps(props)}
+      {...datePickerProps(props)}
+      {...useBoundValues(props)}
+      placeholderValue={usePlaceholderValue(props)}
       value={value}
-      minValue={minValue}
-      maxValue={maxValue}
-      granularity={isDateTime ? 'minute' : 'day'}
-      onChange={(next) => {
-        if (!next) return onPick(null);
-        onPick(isDateTime ? fromDateTimeValue(next as CalendarDateTime) : next.toString());
-      }}
+      onChange={(next) => onPick(next ? fromPickerValue(next, single, { granularity }) : null)}
     >
       <DateGroup {...props}>
         <Segments />
         <CalendarButton />
       </DateGroup>
-      <CalendarPopover mode={mode} onPick={onPick}>
+      <CalendarPopover mode={mode} settings={settings} onPick={onPick}>
         <Calendar className={hooks.slotClass('calendar')}>
-          <CalendarBody months={1} />
+          <CalendarBody months={1} heading={settings.calendarHeading} />
         </Calendar>
       </CalendarPopover>
     </DatePicker>
   );
 }
 
-/** A range of dates, typed in two segment groups or picked from a two-month calendar. */
+/** A range of dates, or of dates and times, typed in two segment groups or picked from a calendar. */
 export function DateRangeControl(props: DatePickerControlProps) {
-  const { state, bounds, onPick } = props;
+  const { state, mode, settings, onPick } = props;
+  const single = toSingleMode(mode);
   const range = typeof state.value === 'object' ? state.value : null;
   const start = range?.start;
   const end = range?.end;
-  const value = useMemo(() => toRangeValue(start && end ? { start, end } : null), [start, end]);
-  const minValue = useMemo(() => toCalendarDateValue(bounds.minValue), [bounds.minValue]);
-  const maxValue = useMemo(() => toCalendarDateValue(bounds.maxValue), [bounds.maxValue]);
+  const { timeZone, granularity } = settings;
+  const value = useMemo(
+    () => toRangeValue(start && end ? { start, end } : null, mode, { timeZone }),
+    [start, end, mode, timeZone],
+  );
+  const toText = (date: DateValue) => fromPickerValue(date, single, { granularity });
   return (
-    <DateRangePicker
-      {...pickerProps(props)}
-      {...openProps(props)}
+    <DateRangePicker<DateValue>
+      {...datePickerProps(props)}
+      {...useBoundValues(props)}
+      placeholderValue={usePlaceholderValue(props)}
       value={value}
-      minValue={minValue}
-      maxValue={maxValue}
       onChange={(next) => {
         const picked: DateRangeValue | null = next
-          ? { start: next.start.toString(), end: next.end.toString() }
+          ? { start: toText(next.start), end: toText(next.end) }
           : null;
         onPick(picked);
       }}
@@ -170,9 +224,9 @@ export function DateRangeControl(props: DatePickerControlProps) {
         <Segments slot="end" />
         <CalendarButton />
       </DateGroup>
-      <CalendarPopover mode="date-range" onPick={onPick}>
+      <CalendarPopover mode={mode} settings={settings} onPick={onPick}>
         <RangeCalendar className={hooks.slotClass('calendar')} visibleDuration={{ months: 2 }}>
-          <CalendarBody months={2} />
+          <CalendarBody months={2} heading={settings.calendarHeading} />
         </RangeCalendar>
       </CalendarPopover>
     </DateRangePicker>
@@ -181,7 +235,8 @@ export function DateRangeControl(props: DatePickerControlProps) {
 
 /** A time of day typed in segments, with no picker. */
 export function TimeControl(props: DatePickerControlProps) {
-  const { state, bounds, onPick } = props;
+  const { state, bounds, settings, onPick } = props;
+  const granularity = settings.granularity ?? 'minute';
   const text = typeof state.value === 'string' ? state.value : null;
   const value = useMemo(() => toTimeValue(text), [text]);
   const minValue = useMemo(() => toTimeValue(bounds.minValue), [bounds.minValue]);
@@ -189,10 +244,11 @@ export function TimeControl(props: DatePickerControlProps) {
   return (
     <TimeField
       {...pickerProps(props)}
+      granularity={granularity}
       value={value}
       minValue={minValue}
       maxValue={maxValue}
-      onChange={(next) => onPick(next ? fromTimeValue(next) : null)}
+      onChange={(next: Time | null) => onPick(next ? fromTimeValue(next, granularity) : null)}
     >
       <div {...hooks.slot('group')} ref={props.control.ref}>
         <PreviousValue previous={props.previous} />
