@@ -1,12 +1,12 @@
 # User Card
 
-`UserCard` is the identity card of a person or a group: their avatar, name and secondary line, an optional status row, detail rows and actions such as sending a message or opening a profile. It takes plain data and reports actions through a callback. `UserCardTrigger` makes any content, such as an avatar, a name or a [User Identity](USER-IDENTITY.md) row, a button that opens a card in a popover; [Presence Avatar](PRESENCE-AVATAR.md) and [Presence Strip](PRESENCE-STRIP.md) open cards through it.
+`UserCard` is the identity card of a person or a group: their avatar, name and secondary line, an optional status row, detail rows and actions such as sending a message or opening a profile. It takes plain data and reports actions through a callback. `UserCardTrigger` makes any content, such as an avatar, a name or a [User Identity](USER-IDENTITY.md) row, a button that opens a card in a popover, on press or on hover and focus; [Presence Avatar](PRESENCE-AVATAR.md) and [Presence Strip](PRESENCE-STRIP.md) open cards through it.
 
 ## UIC-USER-CARD-1 - Card
 
 ### UIC-USER-CARD-1.1 - Identity
 
-`UserCard` shall draw a `UserIdentity` in the `ui-user-card__identity` slot with the card's `name`, `description`, `src`, `initials`, `colorKey`, `colorIndex`, `colorCount` and `kind`, so the card follows the identity row's name, secondary line, picture fallback, initials, colour slot and group glyph rules ([USER-IDENTITY.md](USER-IDENTITY.md)). A blank `name` reads as the provider's `unnamed` string. Text is rendered as text, never as markup.
+`UserCard` shall draw a `UserIdentity` in the `ui-user-card__identity` slot with the card's `name`, `description`, `src`, `imageProps`, `initials`, `colorKey`, `colorIndex`, `colorCount`, `kind` and `shape`, so the card follows the identity row's name, secondary line, picture fallback, initials, colour slot and group glyph rules ([USER-IDENTITY.md](USER-IDENTITY.md)). A blank `name` reads as the provider's `unnamed` string. Text is rendered as text, never as markup.
 
 Implementation: `src/components/user-card/user-card.tsx`
 Verification: `src/components/user-card/user-card.test.tsx`, `e2e/user-card.spec.ts`
@@ -39,6 +39,13 @@ The card shall be a `role="dialog"` named by the display name, or by the caller'
 Implementation: `src/components/user-card/user-card.tsx`
 Verification: `src/components/user-card/user-card.test.tsx`, `e2e/user-card.spec.ts`
 
+### UIC-USER-CARD-1.7 - Loading
+
+While `isLoading`, the card shall publish `data-loading`, set `aria-busy="true"` and draw a decorative `ui-user-card__skeleton` slot, hidden from assistive technology, in place of its status row, details and actions, so a card opened before its profile has loaded keeps its size. The identity row stays. Without it neither attribute renders.
+
+Implementation: `src/components/user-card/user-card.tsx`, `labs/reference/user-card.css`
+Verification: `src/components/user-card/user-card.test.tsx`, `e2e/user-card.spec.ts`
+
 ### UIC-USER-CARD-1.6 - Hooks and caller attributes
 
 `UserCard` shall carry the hooks below, append the caller's `className`, and forward caller `data-*` attributes and `id` to its root.
@@ -62,27 +69,43 @@ A click, Enter or Space on the trigger shall open its `card` in a popover in the
 Implementation: `src/components/user-card/user-card.tsx`
 Verification: `src/components/user-card/user-card.test.tsx`, `e2e/user-card.spec.ts`
 
+### UIC-USER-CARD-2.3 - Opening on hover and focus
+
+With `trigger="hover"`, the trigger shall be a React Aria `PreviewTrigger`: the card opens `delay` milliseconds (600 by default) after the pointer rests on the trigger or keyboard focus reaches it, or on a long press, without moving focus; the popover publishes `data-trigger="PreviewTrigger"`. The trigger carries `aria-haspopup="dialog"` and `aria-expanded` and, while the card is open, is described by it. Tab from the trigger moves into the open card. The card stays open while the pointer travels between the trigger and the card, and closes `closeDelay` milliseconds (200 by default) after the pointer and focus have left both, or on Escape, keeping or returning focus to the trigger. Pressing the trigger runs `onPress` and does not toggle the card. A disabled trigger opens nothing.
+
+Implementation: `src/components/user-card/user-card.tsx`
+Verification: `src/components/user-card/user-card.test.tsx`, `e2e/user-card.spec.ts`
+
+### UIC-USER-CARD-2.4 - Controlled open state
+
+`isOpen` with `onOpenChange` shall control whether the card is open, and `defaultOpen` shall open it at first when uncontrolled, in either trigger mode. `onOpenChange` reports each change the reader asks for, such as a press, Escape or the hover delays running out.
+
+Implementation: `src/components/user-card/user-card.tsx`
+Verification: `src/components/user-card/user-card.test.tsx`, `e2e/user-card.spec.ts`
+
 ## Hooks
 
-| Hook                         | Kind      | Values                           | Description                                                    |
-| ---------------------------- | --------- | -------------------------------- | -------------------------------------------------------------- |
-| `ui-user-card`               | root      |                                  | The card (`role="dialog"`).                                    |
-| `ui-user-card__identity`     | slot      |                                  | The avatar, name and secondary line (also `ui-user-identity`). |
-| `ui-user-card__status`       | slot      |                                  | The status row, when there is a status label.                  |
-| `ui-user-card__indicator`    | slot      |                                  | The decorative status indicator.                               |
-| `ui-user-card__status-label` | slot      |                                  | The status label.                                              |
-| `ui-user-card__details`      | slot      |                                  | The detail rows (also `ui-description-list`).                  |
-| `ui-user-card__actions`      | slot      |                                  | The group of action buttons.                                   |
-| `ui-user-card__action`       | slot      |                                  | One action (also `ui-button`).                                 |
-| `ui-user-card__trigger`      | slot      |                                  | The trigger button around the caller's content.                |
-| `ui-user-card__popover`      | slot      |                                  | The popover holding an open card.                              |
-| `data-status`                | attribute |                                  | The caller's status word, on the card.                         |
-| `data-hovered`               | state     | `true`                           | Pointer over the trigger (React Aria).                         |
-| `data-pressed`               | state     | `true`                           | The trigger is being pressed (React Aria).                     |
-| `data-focused`               | state     | `true`                           | The trigger has focus (React Aria).                            |
-| `data-focus-visible`         | state     | `true`                           | The trigger has keyboard focus (React Aria).                   |
-| `data-disabled`              | state     | `true`                           | A disabled trigger (React Aria).                               |
-| `data-placement`             | state     | `top`, `bottom`, `left`, `right` | The popover's resolved side (React Aria).                      |
-| `data-trigger`               | state     | `DialogTrigger`                  | Which React Aria trigger opened the popover.                   |
-| `data-entering`              | state     | `true`                           | The popover is opening (React Aria).                           |
-| `data-exiting`               | state     | `true`                           | The popover is closing (React Aria).                           |
+| Hook                         | Kind      | Values                            | Description                                                    |
+| ---------------------------- | --------- | --------------------------------- | -------------------------------------------------------------- |
+| `ui-user-card`               | root      |                                   | The card (`role="dialog"`).                                    |
+| `ui-user-card__identity`     | slot      |                                   | The avatar, name and secondary line (also `ui-user-identity`). |
+| `ui-user-card__status`       | slot      |                                   | The status row, when there is a status label.                  |
+| `ui-user-card__indicator`    | slot      |                                   | The decorative status indicator.                               |
+| `ui-user-card__status-label` | slot      |                                   | The status label.                                              |
+| `ui-user-card__details`      | slot      |                                   | The detail rows (also `ui-description-list`).                  |
+| `ui-user-card__actions`      | slot      |                                   | The group of action buttons.                                   |
+| `ui-user-card__action`       | slot      |                                   | One action (also `ui-button`).                                 |
+| `ui-user-card__trigger`      | slot      |                                   | The trigger button around the caller's content.                |
+| `ui-user-card__popover`      | slot      |                                   | The popover holding an open card.                              |
+| `ui-user-card__skeleton`     | slot      |                                   | The decorative placeholder while the profile loads.            |
+| `data-status`                | attribute |                                   | The caller's status word, on the card.                         |
+| `data-loading`               | state     | `true`                            | The card's profile is loading.                                 |
+| `data-hovered`               | state     | `true`                            | Pointer over the trigger (React Aria).                         |
+| `data-pressed`               | state     | `true`                            | The trigger is being pressed (React Aria).                     |
+| `data-focused`               | state     | `true`                            | The trigger has focus (React Aria).                            |
+| `data-focus-visible`         | state     | `true`                            | The trigger has keyboard focus (React Aria).                   |
+| `data-disabled`              | state     | `true`                            | A disabled trigger (React Aria).                               |
+| `data-placement`             | state     | `top`, `bottom`, `left`, `right`  | The popover's resolved side (React Aria).                      |
+| `data-trigger`               | state     | `DialogTrigger`, `PreviewTrigger` | Which React Aria trigger opened the popover.                   |
+| `data-entering`              | state     | `true`                            | The popover is opening (React Aria).                           |
+| `data-exiting`               | state     | `true`                            | The popover is closing (React Aria).                           |

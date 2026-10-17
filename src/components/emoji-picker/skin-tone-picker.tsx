@@ -1,34 +1,36 @@
 import { Radio, RadioGroup } from 'react-aria-components';
 import { createHooks } from '../../core/hooks.js';
+import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { skinTones, withSkinTone, type SkinTone } from './emoji-catalog.js';
+import { useEmojiPickerContext } from './emoji-picker-context.js';
 
-export interface SkinTonePickerProps {
-  value: SkinTone;
-  onChange: (tone: SkinTone) => void;
-}
+/** The skin tone part: caller attributes and class go on the radio group. */
+export type EmojiPickerSkinTonesProps = BaseProps;
 
 const hooks = createHooks('emoji-picker', ['skin-tones', 'skin-tone']);
 
-/** A row of raised-hand swatches, one radio per skin tone. */
-export function SkinTonePicker({ value, onChange }: SkinTonePickerProps) {
+/** A row of raised-hand swatches, one radio per skin tone, for the enclosing picker. */
+export function EmojiPickerSkinTones({ className, ...rest }: EmojiPickerSkinTonesProps) {
   const strings = useUiStrings();
+  const { tone, setTone } = useEmojiPickerContext();
   return (
     <RadioGroup
-      className={hooks.slotClass('skin-tones')}
+      {...rest}
+      {...hooks.slot('skin-tones', undefined, className)}
       aria-label={strings.skinTone}
       orientation="horizontal"
-      value={value}
-      onChange={(tone) => onChange(tone as SkinTone)}
+      value={tone}
+      onChange={(value) => setTone(value as SkinTone)}
     >
-      {skinTones.map((tone) => (
+      {skinTones.map((item) => (
         <Radio
-          key={tone}
-          value={tone}
+          key={item}
+          value={item}
           className={hooks.slotClass('skin-tone')}
-          aria-label={strings.skinToneName(tone)}
+          aria-label={strings.skinToneName(item)}
         >
-          <span aria-hidden="true">{withSkinTone('✋', tone)}</span>
+          <span aria-hidden="true">{withSkinTone('✋', item)}</span>
         </Radio>
       ))}
     </RadioGroup>

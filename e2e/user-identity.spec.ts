@@ -40,7 +40,9 @@ test.describe('User Identity lab', () => {
   test('UIC-USER-IDENTITY-1.5 adds no tab stop and passes axe', async ({ page, lab }) => {
     await lab.open('user-identity');
     await expect(
-      page.locator('#lab-root .ui-user-identity :is([tabindex], [role], button, a)'),
+      page.locator(
+        '#lab-root .ui-user-identity :is([tabindex], [role]:not(.ui-user-identity__indicator), button, a)',
+      ),
     ).toHaveCount(0);
     await page.getByRole('button', { name: 'Break the picture' }).click();
     await expect(page.locator('[data-lab-identity="fallback"] .ui-avatar__initials')).toHaveText(
@@ -49,5 +51,30 @@ test.describe('User Identity lab', () => {
     await lab.expectAccessible();
     await lab.open('user-identity', { theme: 'dark' });
     await lab.expectAccessible();
+  });
+
+  test('UIC-USER-IDENTITY-1.7 badges the avatar corner and reads the status after the name', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('user-identity');
+    for (const size of ['xs', 'sm', 'md', 'lg']) {
+      const cell = page.locator(`[data-lab-cell="status=away size=${size}"]`);
+      const avatar = await cell.locator('.ui-user-identity__avatar').boundingBox();
+      const badge = await cell.locator('.ui-user-identity__indicator').boundingBox();
+      expect(avatar && badge).toBeTruthy();
+      if (avatar && badge) {
+        expect(badge.x).toBeGreaterThan(avatar.x + avatar.width / 2);
+        expect(badge.x + badge.width).toBeLessThanOrEqual(avatar.x + avatar.width + 2);
+        expect(badge.y).toBeGreaterThan(avatar.y + avatar.height / 2);
+        expect(badge.y + badge.height).toBeLessThanOrEqual(avatar.y + avatar.height + 2);
+      }
+    }
+    const row = page.locator('[data-lab-cell="status=busy size=md"] .ui-user-identity');
+    await expect(row).toHaveAttribute('data-status', 'busy');
+    await expect(row.getByRole('img')).toHaveAccessibleName('Busy');
+    expect(await row.evaluate((node) => node.lastElementChild?.className)).toBe(
+      'ui-user-identity__indicator',
+    );
   });
 });

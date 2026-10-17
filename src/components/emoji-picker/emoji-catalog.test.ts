@@ -4,7 +4,6 @@ import {
   applySkinTone,
   getEmojiKey,
   getEmojiLabel,
-  loadEmojiData,
   parseEmojiData,
   resolveEmojiKeys,
   searchEmoji,
@@ -16,6 +15,7 @@ import {
   type EmojiEntry,
   type NativeEmoji,
 } from './emoji-catalog.js';
+import { loadEmojiData } from './emoji-locale.js';
 
 const fixture = [
   'smileys',

@@ -1,14 +1,14 @@
 # Emoji Picker
 
-`EmojiPicker` chooses a standard or custom emoji: a search field, category tabs, a two-dimensional grid of emoji, the recently used emoji and a skin tone choice. It bundles the standard emoji (generated from Emojibase) and takes everything host-specific as data: recent emoji in and out, custom emoji as image URLs with shortcodes, and the skin tone as a controlled value. `EmojiPickerTrigger` opens it in a popover from a button. A list of commands belongs in a menu, and a field's own values in that field's picker.
+`EmojiPicker` chooses a standard or custom emoji: a search field, category tabs, a two-dimensional grid of emoji, the recently used emoji and a skin tone choice. It bundles the standard emoji (generated from Emojibase, with their names in 28 languages), leaves out what the platform cannot draw, and takes everything host-specific as data: recent emoji in and out, custom emoji as image URLs with shortcodes, the skin tone as a controlled value, and which categories and emoji to offer. Its parts can be laid out by the caller. `EmojiPickerTrigger` opens it in a popover from a button. A list of commands belongs in a menu, and a field's own values in that field's picker.
 
 ## UIC-EMOJI-PICKER-1 - Browsing and choosing
 
 ### UIC-EMOJI-PICKER-1.1 - Loading
 
-`EmojiPicker` shall load the standard emoji through `loadEmoji`, by default the bundled English set, which loads as a separate chunk once for every picker. While loading, the root shall carry `data-loading` and the body shall read the provider's `loading` string in a `role="status"` message; a failed load shall read the `emojiLoadFailed` string.
+`EmojiPicker` shall load the standard emoji through `loadEmoji`, by default the bundled set in the language of the React Aria locale ([UIC-EMOJI-PICKER-4.4](#uic-emoji-picker-44---bundled-locales)), which loads as a separate chunk once for every picker. While it is the default, a change of locale loads that locale's set. While loading, the root shall carry `data-loading` and the body shall read the provider's `loading` string in a `role="status"` message; a failed load shall read the `emojiLoadFailed` string.
 
-Implementation: `src/components/emoji-picker/emoji-picker.tsx`, `src/components/emoji-picker/emoji-picker-body.tsx`, `src/components/emoji-picker/emoji-picker-state.ts`, `src/components/emoji-picker/emoji-catalog.ts`
+Implementation: `src/components/emoji-picker/emoji-picker.tsx`, `src/components/emoji-picker/emoji-picker-body.tsx`, `src/components/emoji-picker/emoji-picker-state.ts`, `src/components/emoji-picker/emoji-locale.ts`
 Verification: `src/components/emoji-picker/emoji-picker.test.tsx`, `e2e/emoji-picker.spec.ts`
 
 ### UIC-EMOJI-PICKER-1.2 - Categories
@@ -96,10 +96,10 @@ Verification: `src/components/emoji-picker/emoji-picker.test.tsx`
 
 ### UIC-EMOJI-PICKER-4.1 - Bundled set
 
-The bundled set shall hold every standard emoji of the Emojibase English dataset in the nine categories, without skin tone components and lone regional indicators, each with its glyph, hexcode, label, shortcodes, keywords and, for an emoji that takes a skin tone, its five toned glyphs. `scripts/generate-emoji-data.mjs` regenerates it in a compact text form that `loadEmojiData` parses.
+The bundled set shall hold every standard emoji of the Emojibase English dataset in the nine categories, without skin tone components and lone regional indicators, each with its glyph, hexcode, label, shortcodes, keywords, the Emoji version that introduced it (`version`) and, for an emoji that takes a skin tone, its five toned glyphs. `scripts/generate-emoji-data.mjs` regenerates it in a compact text form that `loadEmojiData` parses.
 
 Implementation: `src/components/emoji-picker/emoji-catalog.ts`, `src/components/emoji-picker/emoji-data.ts`, `scripts/generate-emoji-data.mjs`
-Verification: `src/components/emoji-picker/emoji-catalog.test.ts`
+Verification: `src/components/emoji-picker/emoji-catalog.test.ts`, `src/components/emoji-picker/emoji-filter.test.ts`
 
 ### UIC-EMOJI-PICKER-4.2 - Search ranking
 
@@ -114,6 +114,59 @@ A skin tone shall apply only to an emoji that takes one; any other emoji keeps i
 
 Implementation: `src/components/emoji-picker/emoji-catalog.ts`
 Verification: `src/components/emoji-picker/emoji-catalog.test.ts`
+
+### UIC-EMOJI-PICKER-4.4 - Bundled locales
+
+`loadEmojiData(locale)` shall load the bundled standard emoji with their labels and keywords in the bundled Emojibase locale that a BCP 47 tag resolves to: the language with its region (`es-MX`, `en-GB`), with its script (`zh-Hant`, which `zh-TW` and `zh-HK` maximize to), or alone (`fr` for `fr-CA`), and English for any other tag. The bundled locales are `bn`, `da`, `de`, `en`, `en-gb`, `es`, `es-mx`, `et`, `fi`, `fr`, `hi`, `hu`, `it`, `ja`, `ko`, `lt`, `ms`, `nb`, `nl`, `pl`, `pt`, `ru`, `sv`, `th`, `uk`, `vi`, `zh` and `zh-hant`. Each loads once, as its own chunk beside the English set, so only the locales a page uses are fetched; a chunk that fails to load is fetched again next time. A label or keyword list a locale lacks stays English, and shortcodes stay the English Emojibase ones. They come from the same generation as the English set (`scripts/generate-emoji-data.mjs`), one compact line per emoji in the English order. The picker's strings (category names, messages) still come from the provider.
+
+Implementation: `src/components/emoji-picker/emoji-locale.ts`, `src/components/emoji-picker/emoji-locales.ts`, `src/components/emoji-picker/emoji-picker-state.ts`, `scripts/generate-emoji-data.mjs`
+Verification: `src/components/emoji-picker/emoji-locale.test.ts`, `src/components/emoji-picker/emoji-picker.test.tsx`, `e2e/emoji-picker.spec.ts`
+
+## UIC-EMOJI-PICKER-5 - Offered emoji
+
+### UIC-EMOJI-PICKER-5.1 - Platform support
+
+Unless `renderEmoji` draws the glyphs, the picker shall leave out the standard emoji the platform cannot draw as text: before the first paint it draws one probe emoji per Emoji version, newest first, on an `OffscreenCanvas` in the picker's computed font, and takes the newest one that draws as a single colour glyph (unchanged by the fill colour, and no wider than one emoji) as the newest version the platform draws; it also leaves out the country flags (pairs of regional indicators) when a flag draws as letters. The result is kept per font family. When the platform has no canvas or draws no colour emoji at all, nothing is left out. Custom emoji are never left out.
+
+Implementation: `src/components/emoji-picker/emoji-support.ts`, `src/components/emoji-picker/emoji-filter.ts`, `src/components/emoji-picker/emoji-picker-state.ts`
+Verification: `src/components/emoji-picker/emoji-support.test.tsx`, `src/components/emoji-picker/emoji-filter.test.ts`, `e2e/emoji-picker.spec.ts`
+
+### UIC-EMOJI-PICKER-5.2 - Emoji version
+
+`emojiVersion` shall leave out the standard emoji newer than that Emoji version (`14`), in place of the version the platform draws, for a host that knows its emoji font. Emoji without a version always stay.
+
+Implementation: `src/components/emoji-picker/emoji-filter.ts`, `src/components/emoji-picker/emoji-picker-state.ts`
+Verification: `src/components/emoji-picker/emoji-filter.test.ts`, `src/components/emoji-picker/emoji-support.test.tsx`, `e2e/emoji-picker.spec.ts`
+
+### UIC-EMOJI-PICKER-5.3 - Categories
+
+`categories` shall choose the standard categories the picker offers, in the order given, for their tabs and for search; the recently used and custom tabs keep their place first. Without it every category is offered in browsing order.
+
+Implementation: `src/components/emoji-picker/emoji-filter.ts`, `src/components/emoji-picker/emoji-picker-state.ts`
+Verification: `src/components/emoji-picker/emoji-filter.test.ts`, `src/components/emoji-picker/emoji-picker.test.tsx`, `e2e/emoji-picker.spec.ts`
+
+### UIC-EMOJI-PICKER-5.4 - Exclusions
+
+`filterEmoji` shall keep the standard emoji for which it returns `true`: the others are offered nowhere, neither in their category, the search results nor the recently used emoji.
+
+Implementation: `src/components/emoji-picker/emoji-filter.ts`, `src/components/emoji-picker/emoji-picker-state.ts`
+Verification: `src/components/emoji-picker/emoji-filter.test.ts`, `src/components/emoji-picker/emoji-picker.test.tsx`, `e2e/emoji-picker.spec.ts`
+
+## UIC-EMOJI-PICKER-6 - Parts
+
+### UIC-EMOJI-PICKER-6.1 - Composed layout
+
+With `children`, the picker shall render them inside its dialog instead of its default layout, so the caller can arrange, wrap or leave out its parts, which read the enclosing picker's state: `EmojiPickerSearch` (the search field), `EmojiPickerBody` (the loading, failure or no-results message, the category tabs or the search results), `EmojiPickerPreview` (the preview of the active emoji) and `EmojiPickerSkinTones` (the skin tone radio group). Each part keeps its hooks and behaviour, and takes the caller's `className`, `id` and `data-*` attributes on its root (for the body, the element it shows). The default layout is the search field, the body and a `ui-emoji-picker__footer` holding the preview and, unless `hideSkinTones`, the skin tones. A part rendered outside a picker throws.
+
+Implementation: `src/components/emoji-picker/emoji-picker.tsx`, `src/components/emoji-picker/emoji-picker-parts.tsx`, `src/components/emoji-picker/emoji-picker-body.tsx`, `src/components/emoji-picker/skin-tone-picker.tsx`, `src/components/emoji-picker/emoji-picker-context.ts`
+Verification: `src/components/emoji-picker/emoji-picker.test.tsx`, `e2e/emoji-picker.spec.ts`
+
+### UIC-EMOJI-PICKER-6.2 - Active emoji
+
+`useActiveEmoji()`, called in a component inside a picker, shall return the emoji last hovered or focused as the selection choosing it would report, in the current skin tone, or `null` before any, for a caller's own preview.
+
+Implementation: `src/components/emoji-picker/emoji-picker-context.ts`
+Verification: `src/components/emoji-picker/emoji-picker.test.tsx`, `e2e/emoji-picker.spec.ts`
 
 ## Hooks
 

@@ -60,6 +60,26 @@ function Following() {
   );
 }
 
+function OverflowMenu() {
+  const [chosen, setChosen] = useState('nobody');
+  return (
+    <div>
+      <PresenceStrip
+        people={samplePeople}
+        maxVisible={3}
+        overflowCount={1}
+        hiddenNames={['Ines Duarte']}
+        overflow="menu"
+        data-lab-strip="menu"
+        onAction={(id) => setChosen(samplePeople.find((person) => person.id === id)?.name ?? id)}
+      />
+      <p>
+        Chosen: <output data-lab-output="menu">{chosen}</output>
+      </p>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -109,6 +129,35 @@ mountLab(
           <UserCard name={person.name} src={person.src} statusLabel={person.statusLabel} />
         )}
       />
+    </LabSection>
+    <LabSection
+      title="Overflow menu"
+      description="Press the count, or Tab to it and press Enter: a menu lists the hidden people with their status; choosing one reports them."
+    >
+      <OverflowMenu />
+    </LabSection>
+    <LabSection
+      title="Name tooltips and hover cards"
+      description="Rest the pointer on a person or Tab to them: the first strip shows names in tooltips, the second opens each card after a short delay."
+    >
+      <p>
+        <PresenceStrip people={samplePeople.slice(0, 4)} nameTooltip data-lab-strip="tooltips" />
+      </p>
+      <p>
+        <PresenceStrip
+          people={samplePeople.slice(0, 4)}
+          cardTrigger="hover"
+          data-lab-strip="hover-cards"
+          renderCard={(person) => (
+            <UserCard
+              name={person.name}
+              src={person.src}
+              status={person.status}
+              statusLabel={person.statusLabel}
+            />
+          )}
+        />
+      </p>
     </LabSection>
   </>,
 );

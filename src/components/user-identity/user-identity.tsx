@@ -3,6 +3,7 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Size } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { toImageProps } from '../icon/icon.js';
 import {
   Avatar,
   getDisplayName,
@@ -21,21 +22,38 @@ export interface UserIdentityProps
   nameSuffix?: ReactNode;
   /** Selects the avatar size. Defaults to `md`. */
   size?: UserIdentitySize | undefined;
+  /** What the person is doing, as any word the host stylesheet knows (`active`, `away`, …). */
+  status?: string | undefined;
+  /** Human-readable status, which names the status badge for assistive technology. */
+  statusLabel?: string | undefined;
 }
 
-const hooks = createHooks('user-identity', ['avatar', 'content', 'title', 'name', 'description']);
+const hooks = createHooks('user-identity', [
+  'avatar',
+  'content',
+  'title',
+  'name',
+  'description',
+  'indicator',
+]);
 
 function isBlankNode(node: ReactNode): boolean {
   return isEmptyNode(node) || (typeof node === 'string' && node.trim() === '');
 }
 
-/** A decorative avatar, a display name and an optional secondary line, for rows that name a person. */
+/**
+ * A decorative avatar, a display name, an optional secondary line and an optional status badge, for
+ * rows that name a person.
+ */
 export function UserIdentity(props: UserIdentityProps) {
-  const [identity, { description, nameSuffix, size = 'md', colorCount, className, ...rest }] =
-    splitAvatarIdentity(props);
+  const [
+    identity,
+    { description, nameSuffix, size = 'md', colorCount, status, statusLabel, className, ...rest },
+  ] = splitAvatarIdentity(props);
   const strings = useUiStrings();
+  const statusValue = status?.trim() || undefined;
   return (
-    <span {...rest} {...hooks.root({ className, data: { size } })}>
+    <span {...rest} {...hooks.root({ className, data: { size, status: statusValue } })}>
       <Avatar
         {...identity}
         colorCount={colorCount}
@@ -52,6 +70,14 @@ export function UserIdentity(props: UserIdentityProps) {
           <span {...hooks.slot('description')}>{description}</span>
         )}
       </span>
+      {/* After the text and a space, so the status is read after the name; the stylesheet places it
+      on the avatar. */}
+      {statusValue ? (
+        <>
+          {' '}
+          <span {...hooks.slot('indicator')} {...toImageProps(statusLabel?.trim() || undefined)} />
+        </>
+      ) : null}
     </span>
   );
 }
