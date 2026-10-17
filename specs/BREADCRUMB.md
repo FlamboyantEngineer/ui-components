@@ -1,12 +1,12 @@
 # Breadcrumb
 
-`Breadcrumb` is a location trail: one ordered row of crumbs from the outermost container to the current page, in which every crumb before the current one leads to its destination. It is built on React Aria's `Breadcrumbs`, `Breadcrumb` and `Link`, and draws its links through the provider's link renderer. Switching between sibling views of one page is [Tabs](TABS.md); a single location string is a [Path](PATH.md).
+`Breadcrumb` is a location trail: one ordered row of crumbs from the outermost container to the current page, in which every crumb before the current one leads to its destination. It is built on React Aria's `Breadcrumbs`, `Breadcrumb` and `Link`, draws its links through the provider's link renderer and shows a cut label whole in a tooltip. Switching between sibling views of one page is [Tabs](TABS.md); a single location string is a [Path](PATH.md).
 
 ## UIC-BREADCRUMB-1 - Structure
 
 ### UIC-BREADCRUMB-1.1 - Trail
 
-`Breadcrumb` shall render a `nav` landmark (the `ui-breadcrumb` root) around an ordered list (`ui-breadcrumb__list`) with one `ui-breadcrumb__item` per entry of `items`, in order. Each crumb's `label` renders in its `ui-breadcrumb__link` element.
+`Breadcrumb` shall render a `nav` landmark (the `ui-breadcrumb` root) around an ordered list (`ui-breadcrumb__list`) with one `ui-breadcrumb__item` per entry of `items`, in order. Each crumb's `label` renders in the `ui-breadcrumb__label` slot of its `ui-breadcrumb__link` element.
 
 Implementation: `src/components/breadcrumb/breadcrumb.tsx`
 Verification: `src/components/breadcrumb/breadcrumb.test.tsx`, `e2e/breadcrumb.spec.ts`
@@ -34,7 +34,7 @@ Verification: `src/components/breadcrumb/breadcrumb.test.tsx`, `e2e/breadcrumb.s
 
 ### UIC-BREADCRUMB-1.5 - Sizes and truncation
 
-`size` (`xs`, `sm`, `md` by default, `lg`) shall publish `data-size` on the root; the reference sheet uses 11, 12, 13 and 14 pixel type on 16, 20, 24 and 28 pixel lines. The full label text stays in the DOM, so a stylesheet that bounds the root and list to the host's width can ellipsize a label only when the row runs out of room.
+`size` (`xs`, `sm`, `md` by default, `lg`) shall publish `data-size` on the root; the reference sheet uses 11, 12, 13 and 14 pixel type on 16, 20, 24 and 28 pixel lines. The full label text stays in the DOM, so a stylesheet that bounds the root and list to the host's width can ellipsize a label (the `ui-breadcrumb__label`) only when the row runs out of room.
 
 Implementation: `src/components/breadcrumb/breadcrumb.tsx`, `labs/reference/breadcrumb.css`
 Verification: `src/components/breadcrumb/breadcrumb.test.tsx`, `e2e/breadcrumb.spec.ts`
@@ -76,6 +76,13 @@ Crumb links shall publish React Aria's states: `data-hovered`, `data-pressed`, `
 Implementation: `src/components/breadcrumb/breadcrumb.tsx`
 Verification: `src/components/breadcrumb/breadcrumb.test.tsx`, `e2e/breadcrumb.spec.ts`
 
+### UIC-BREADCRUMB-2.5 - Full-label tooltip
+
+Each crumb's label shall be a [Truncation Tooltip](TRUNCATION-TOOLTIP.md): while the stylesheet cuts it, resting a mouse or pen on it, or keyboard focus reaching its crumb (by Tab or the arrow keys), shows the whole label in a tooltip, the current crumb's included. A label that fits shows none. The tooltip is visual only: the label already names the crumb, so it adds no description and never moves focus.
+
+Implementation: `src/components/breadcrumb/breadcrumb.tsx`, `src/components/truncation-tooltip/truncation-tooltip.tsx`
+Verification: `src/components/breadcrumb/breadcrumb.test.tsx`, `e2e/breadcrumb.spec.ts`
+
 ## Hooks
 
 | Hook                       | Kind      | Values                 | Description                                                     |
@@ -84,6 +91,7 @@ Verification: `src/components/breadcrumb/breadcrumb.test.tsx`, `e2e/breadcrumb.s
 | `ui-breadcrumb__list`      | slot      |                        | The ordered list (`<ol>`).                                      |
 | `ui-breadcrumb__item`      | slot      |                        | One crumb (`<li>`).                                             |
 | `ui-breadcrumb__link`      | slot      |                        | A crumb's link (`<a>`), or text (`<span>`) for the current one. |
+| `ui-breadcrumb__label`     | slot      |                        | A crumb's label text (also `ui-truncation-tooltip`).            |
 | `ui-breadcrumb__separator` | slot      |                        | The decorative separator after a crumb (also `ui-icon`).        |
 | `data-size`                | attribute | `xs`, `sm`, `md`, `lg` | Type scale.                                                     |
 | `data-current`             | state     | `true`                 | The current crumb's item and link (React Aria).                 |

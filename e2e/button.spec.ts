@@ -53,4 +53,34 @@ test.describe('Button lab', () => {
     await expect(focusable).toBeFocused();
     await lab.expectAccessible();
   });
+
+  for (const theme of ['light', 'dark']) {
+    test(`UIC-BUTTON-1.7 shows the hint and shortcut in the tooltip and publishes aria-keyshortcuts in the ${theme} theme`, async ({
+      page,
+      lab,
+    }) => {
+      await lab.open('button', { theme });
+      const cell = (hint: string, state: string) =>
+        page.locator(`[data-lab-cell="hint=${hint} state=${state}"] .ui-button`);
+      const both = cell('tooltip and shortcut', 'default');
+      await expect(both).toHaveAttribute('aria-keyshortcuts', 'Control+Shift+S');
+      await expect(cell('tooltip', 'default')).not.toHaveAttribute('aria-keyshortcuts');
+      await cell('shortcut', 'pending').focus();
+      await page.keyboard.press('Tab');
+      await expect(both).toBeFocused();
+      const tooltip = page.getByRole('tooltip', { name: /Save every change/ });
+      await expect(tooltip).toBeVisible();
+      await expect(tooltip.locator('.ui-shortcut__key')).toHaveText(['Ctrl', 'Shift', 'S']);
+      await expect(both).toHaveAccessibleDescription('Save every change Control Shift S');
+      await expect(tooltip).toHaveText(/^Save every change Ctrl\+Shift\+S/);
+      await lab.expectAccessible();
+
+      await page.keyboard.press('Control+Shift+S');
+      await expect(both).toBeFocused();
+      await expect(both).not.toHaveAttribute('data-pending');
+      const alone = cell('shortcut', 'focusable disabled');
+      await alone.focus();
+      await expect(page.getByRole('tooltip', { name: 'Control Shift S' })).toBeVisible();
+    });
+  }
 });

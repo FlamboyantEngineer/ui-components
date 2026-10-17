@@ -1,6 +1,6 @@
 # Section Header
 
-`SectionHeader` titles a section: a heading, optional supporting text and optional trailing actions or status. `Section` renders a `<section>` region named by the same header, followed by its content in a `Stack`.
+`SectionHeader` titles a section: a heading, optional supporting text and optional trailing actions or status. `Section` renders a `<section>` region named by the same header, followed by its content in a `Stack`. A framed section is a [Card](CARD.md), whose title block is the same header.
 
 ## UIC-SECTION-HEADER-1 - Contract
 
@@ -45,6 +45,13 @@ In the reference stylesheet the actions shall follow the text on one row and wra
 
 Implementation: `labs/reference/section-header.css`
 Verification: `e2e/section-header.spec.ts`
+
+### UIC-SECTION-HEADER-1.7 - Framed sections
+
+A framed section shall be a [Card](CARD.md) given the same `title`, `description`, `actions` and `headingLevel`; there is no card variant of `SectionHeader`. The card's single `<header>` holds the same parts in the same order (the title heading and the description grouped in `ui-card__heading`, then `ui-card__actions`) without nesting a second header, names the card's region by the title only through a heading id unique per instance and stable across rerenders, keeps the actions' own behaviour and disabled state, and keeps Card's `variant`, `density` and other options. In the reference stylesheet the card's title and description use the same type, line height and spacing as a section header's.
+
+Implementation: `src/components/card/card.tsx`, `labs/reference/card.css`
+Verification: `src/components/section-header/section-header.test.tsx`, `e2e/section-header.spec.ts`
 
 ## Hooks
 

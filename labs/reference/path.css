@@ -14,3 +14,8 @@
 .ui-path__text {
   unicode-bidi: isolate;
 }
+
+/* A long path without spaces still wraps inside its tooltip. */
+.ui-tooltip .ui-path__text {
+  overflow-wrap: anywhere;
+}

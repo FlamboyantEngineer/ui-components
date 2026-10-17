@@ -39,6 +39,13 @@ Verification: `src/components/shortcut/shortcut-format.test.ts`
 Implementation: `src/components/shortcut/shortcut-format.ts`
 Verification: `src/components/shortcut/shortcut-format.test.ts`
 
+### UIC-SHORTCUT-1.6 - Key shortcuts attribute
+
+`formatAriaKeyShortcuts(chord, platform)` shall return the chord as an `aria-keyshortcuts` value for the platform: the modifiers in the same order as `Control`, `Alt`, `Shift` and `Meta` (so `Ctrl` is `Meta` on `mac`), then the key, joined by `+`. A single-character key is upper-cased; `+` is `Plus`, a space is `Space`, the arrow symbols are `ArrowUp`, `ArrowDown`, `ArrowLeft` and `ArrowRight`, and named keys such as `Enter` or `F2` stay as written. A chord with an empty key yields empty text. [Button](BUTTON.md) publishes it for its `shortcut`.
+
+Implementation: `src/components/shortcut/shortcut-format.ts`
+Verification: `src/components/shortcut/shortcut-format.test.ts`
+
 ## UIC-SHORTCUT-2 - Shortcut
 
 ### UIC-SHORTCUT-2.1 - Keycaps

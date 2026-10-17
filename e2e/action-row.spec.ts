@@ -60,16 +60,37 @@ test.describe('Action Row lab', () => {
     await expect(reason).toHaveAttribute('aria-disabled', 'true');
   });
 
-  test('UIC-ACTION-ROW-1.6 opens the more menu from a wrapped verb', async ({ page, lab }) => {
-    await lab.open('action-row');
-    const row = page.locator('[data-lab-case="more-menu"]');
-    const more = row.getByRole('button', { name: 'More actions' });
-    await more.click();
-    await expect(more).toHaveAttribute('aria-expanded', 'true');
-    await page.getByRole('menuitem', { name: 'Export' }).click();
-    await expect(row.locator('[data-lab-output="last"]')).toHaveText('export');
-    await expect(page.getByRole('menu')).toHaveCount(0);
-    await expect(more).toHaveAttribute('aria-expanded', 'false');
-    await lab.expectAccessible();
-  });
+  for (const theme of ['light', 'dark']) {
+    test(`UIC-ACTION-ROW-1.6 opens menus of typed items from actions in the ${theme} theme`, async ({
+      page,
+      lab,
+    }) => {
+      await lab.open('action-row', { theme });
+      const row = page.locator('[data-lab-case="more-menu"]');
+      const more = row.getByRole('button', { name: 'More actions' });
+      await more.click();
+      await expect(more).toHaveAttribute('aria-expanded', 'true');
+      const menu = page.getByRole('menu', { name: 'More actions' });
+      await expect(menu.getByRole('menuitem')).toHaveCount(5);
+      const [button, list] = await Promise.all([more.boundingBox(), menu.boundingBox()]);
+      // The menu aligns with the button's end, flipping above it when there is no room below.
+      expect(Math.abs(list!.x + list!.width - (button!.x + button!.width))).toBeLessThanOrEqual(1);
+      await lab.expectAccessible('[role="menu"]');
+      await menu.getByRole('menuitem', { name: /Export/ }).click();
+      await expect(row.locator('[data-lab-output="last"]')).toHaveText('export');
+      await expect(page.getByRole('menu')).toHaveCount(0);
+      await expect(more).toHaveAttribute('aria-expanded', 'false');
+      await expect(more).toBeFocused();
+
+      const sort = row.getByRole('button', { name: 'Sort' });
+      await sort.focus();
+      await page.keyboard.press('ArrowDown');
+      await expect(page.getByRole('menuitem', { name: 'Name' })).toBeFocused();
+      await page.keyboard.press('ArrowDown');
+      await page.keyboard.press('Enter');
+      await expect(row.locator('[data-lab-output="last"]')).toHaveText('sort date');
+      await expect(sort).toBeFocused();
+      await lab.expectAccessible();
+    });
+  }
 });

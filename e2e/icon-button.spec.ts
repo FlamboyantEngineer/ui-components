@@ -36,4 +36,30 @@ test.describe('Icon Button lab', () => {
     ).toHaveAttribute('aria-pressed', 'true');
     await lab.expectAccessible();
   });
+
+  for (const theme of ['light', 'dark']) {
+    test(`UIC-ICON-BUTTON-1.6 names the command before its shortcut in the tooltip in the ${theme} theme`, async ({
+      page,
+      lab,
+    }) => {
+      await lab.open('icon-button', { theme });
+      const undo = page.locator('[data-lab-cell="hint=shortcut size=md"] .ui-icon-button');
+      await expect(undo).toHaveAttribute('aria-keyshortcuts', 'Control+Z');
+      // React Aria opens a tooltip on keyboard focus, so arrive with Tab.
+      await page.locator('[data-lab-cell="hint=shortcut size=sm"] .ui-icon-button').focus();
+      await page.keyboard.press('Tab');
+      await expect(undo).toBeFocused();
+      const tooltip = page.getByRole('tooltip', { name: 'Undo Control Z' });
+      await expect(tooltip).toBeVisible();
+      await expect(tooltip.locator('.ui-shortcut__key')).toHaveText(['Ctrl', 'Z']);
+      await expect(undo).toHaveAccessibleName('Undo');
+      await lab.expectAccessible();
+      await page
+        .locator('[data-lab-cell="hint=tooltip and shortcut size=md"] .ui-icon-button')
+        .focus();
+      await expect(
+        page.getByRole('tooltip', { name: 'Undo the last edit Control Z' }),
+      ).toBeVisible();
+    });
+  }
 });

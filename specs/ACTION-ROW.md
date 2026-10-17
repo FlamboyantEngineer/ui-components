@@ -1,6 +1,6 @@
 # Action Row
 
-`ActionRow` draws a row of actions described as data, each as an [Icon Button](ICON-BUTTON.md) with a tooltip. Standard verbs carry a fixed glyph, label and place; custom actions name their own icon and label. Optional lead content (a title, a filter, a status line) sits before the actions.
+`ActionRow` draws a row of actions described as data, each as an [Icon Button](ICON-BUTTON.md) with a tooltip. Standard verbs carry a fixed glyph, label and place; custom actions name their own icon and label. Any action can open a [Menu](MENU.md) of typed items. Optional lead content (a title, a filter, a status line) sits before the actions.
 
 ## UIC-ACTION-ROW-1 - Actions
 
@@ -39,11 +39,11 @@ Verification: `src/components/action-row/action-row.test.tsx`, `e2e/action-row.s
 Implementation: `src/components/action-row/action-row.tsx`
 Verification: `src/components/action-row/action-row.test.tsx`
 
-### UIC-ACTION-ROW-1.6 - Wrapping an action
+### UIC-ACTION-ROW-1.6 - Menu actions
 
-An action's `wrap` shall receive the button with its tooltip and return the element the row renders in its place, so a caller can put the action in a React Aria `MenuTrigger` (the `more` verb's menu), `DialogTrigger` or other trigger, which then drives the button's popup attributes and presses.
+An action with non-empty `items` shall open a [Menu](MENU.md) of those entries (items with their `icon`, `description`, `shortcut`, `tone`, `isDisabled` and submenus, sections and separators, as `Menu` takes them as data) in a `MenuPopover` at the button's bottom end, from its button: on press, Enter or Space, and on Arrow Down or Arrow Up, which focus the first or last item. The menu is labelled by the button and takes the row's size (`sm` for `xs`). The button keeps its tooltip and states, carries React Aria's `aria-haspopup`, `aria-expanded` and, while open, `aria-controls`, which replace the action's own `isExpanded` and `aria-haspopup`, and never calls the action's `onPress`. Choosing an item calls the item's `onAction` and the action's `onAction` with the item's `id`, closes the menu and returns focus to the button. A disabled or pending action does not open its menu. Without items the action is a plain button. This is the `more` verb's menu.
 
-Implementation: `src/components/action-row/action-row.tsx`
+Implementation: `src/components/action-row/action-row.tsx`, `src/components/menu/menu.tsx`
 Verification: `src/components/action-row/action-row.test.tsx`, `e2e/action-row.spec.ts`
 
 ## UIC-ACTION-ROW-2 - Row

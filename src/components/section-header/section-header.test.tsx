@@ -1,7 +1,8 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { Card } from '../card/card.js';
 import { Section, SectionHeader, type HeadingLevel } from './section-header.js';
 
 const levels: HeadingLevel[] = [1, 2, 3, 4, 5, 6];
@@ -182,5 +183,64 @@ describe('SectionHeader', () => {
     expect(section).toHaveAttribute('data-owner', 'field');
     expect(section).toHaveAttribute('data-space', '2xl');
     expectHooksMatchSpec(container, 'SECTION-HEADER', { callerAttributes: ['data-owner'] });
+  });
+
+  it('UIC-SECTION-HEADER-1.7 frames a section as a Card with the same header parts and name', async () => {
+    const user = userEvent.setup();
+    const onAdd = vi.fn();
+    const frame = (title: string, description: string | null, disabled: boolean) => ({
+      title,
+      description,
+      headingLevel: 4 as const,
+      actions: (
+        <button type="button" disabled={disabled} onClick={onAdd}>
+          Add trip
+        </button>
+      ),
+    });
+    const tree = (title: string, description: string | null, disabled: boolean) => (
+      <>
+        <Section {...frame('Cities', 'Places to visit', false)}>
+          <p>Lisbon</p>
+        </Section>
+        <Card {...frame(title, description, disabled)} variant="panel" density="compact">
+          <input aria-label="Plans" />
+        </Card>
+      </>
+    );
+    const { rerender } = render(tree('Trips', 'Planned journeys', false));
+    const card = screen.getByRole('region', { name: 'Trips' });
+    const section = screen.getByRole('region', { name: 'Cities' });
+    expect(card).toHaveAccessibleName('Trips');
+    expect(card).toHaveAttribute('data-variant', 'panel');
+    expect(card).toHaveAttribute('data-density', 'compact');
+    expect(card.querySelectorAll('header')).toHaveLength(1);
+    const header = card.querySelector('header')!;
+    expect(Array.from(header.children, (part) => part.className)).toEqual([
+      'ui-card__heading',
+      'ui-card__actions',
+    ]);
+    const heading = within(card).getByRole('heading', { level: 4, name: 'Trips' });
+    expect(Array.from(heading.parentElement!.children, (part) => part.className)).toEqual([
+      'ui-card__title',
+      'ui-card__description',
+    ]);
+    expect(within(section).getByRole('heading', { level: 4 }).id).not.toBe(heading.id);
+    expect(card).toHaveAttribute('aria-labelledby', heading.id);
+    await user.click(within(card).getByRole('button', { name: 'Add trip' }));
+    expect(onAdd).toHaveBeenCalledTimes(1);
+    await user.type(screen.getByRole('textbox', { name: 'Plans' }), 'Kyoto');
+
+    rerender(tree('Trips (2)', null, true));
+    const renamed = screen.getByRole('region', { name: 'Trips (2)' });
+    expect(renamed).toBe(card);
+    expect(within(renamed).getByRole('heading', { level: 4 }).id).toBe(heading.id);
+    expect(renamed.querySelector('.ui-card__description')).toBeNull();
+    expect(screen.getByRole('textbox', { name: 'Plans' })).toHaveValue('Kyoto');
+    const add = within(renamed).getByRole('button', { name: 'Add trip' });
+    expect(add).toBeDisabled();
+    await user.click(add);
+    expect(onAdd).toHaveBeenCalledTimes(1);
+    expectHooksMatchSpec(card, 'CARD', { slots: ['header', 'heading', 'title', 'actions'] });
   });
 });

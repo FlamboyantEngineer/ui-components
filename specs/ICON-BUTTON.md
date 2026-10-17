@@ -39,6 +39,13 @@ Verification: `src/components/icon-button/icon-button.test.tsx`
 Implementation: `src/components/icon-button/icon-button.tsx`, `src/components/tooltip/tooltip.tsx`
 Verification: `src/components/icon-button/icon-button.test.tsx`, `e2e/tooltip.spec.ts`
 
+### UIC-ICON-BUTTON-1.6 - Keyboard shortcut
+
+`shortcut` shall work as on [Button](BUTTON.md): `aria-keyshortcuts` and a [Shortcut](SHORTCUT.md) after the hint in the tooltip, never a listener. Because the button shows no text, a shortcut without a `tooltip` shows the `label` before the chord.
+
+Implementation: `src/components/icon-button/icon-button.tsx`, `src/components/button/button.tsx`
+Verification: `src/components/icon-button/icon-button.test.tsx`, `e2e/icon-button.spec.ts`
+
 ## Hooks
 
 | Hook                      | Kind      | Values                                                                                  | Description                     |

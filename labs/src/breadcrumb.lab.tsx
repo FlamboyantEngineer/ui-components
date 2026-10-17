@@ -80,7 +80,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="States and truncation"
-      description="Labels ellipsize only when the bounded row runs out of width. Focus a crumb and use the arrow keys, Home and End."
+      description="Labels ellipsize only when the bounded row runs out of width; rest the pointer on a cut label, or move focus to its crumb, to read it whole. Focus a crumb and use the arrow keys, Home and End."
     >
       <StateMatrix
         axes={{ state: ['default', 'disabled'], width: ['auto', '240px'] }}

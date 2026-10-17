@@ -162,6 +162,56 @@ describe('Button', () => {
     expect(screen.getByRole('tooltip')).toHaveTextContent('Locked');
   });
 
+  it('UIC-BUTTON-1.7 shows its shortcut after the hint and publishes aria-keyshortcuts', async () => {
+    const user = userEvent.setup();
+    const onPress = vi.fn();
+    const { rerender } = render(
+      <>
+        <Button tooltip="Save every change" shortcut="Ctrl+Shift+S" onPress={onPress}>
+          Save
+        </Button>
+        <Button shortcut={{ key: 'P', modifiers: ['primary'] }}>Print</Button>
+      </>,
+    );
+    const save = screen.getByRole('button', { name: 'Save' });
+    expect(save).toHaveAttribute('aria-keyshortcuts', 'Control+Shift+S');
+    await user.tab();
+    const tooltip = screen.getByRole('tooltip');
+    expect(tooltip.querySelector('.ui-tooltip__content')?.firstChild?.textContent).toBe(
+      'Save every change',
+    );
+    const keys = tooltip.querySelector('.ui-shortcut');
+    expect(keys?.querySelector('.ui-shortcut__keys')).toHaveTextContent('Ctrl+Shift+S');
+    expect(save).toHaveAccessibleDescription('Save every change Control Shift S');
+    expectHooksMatchSpec(document.body, 'SHORTCUT', { slots: ['keys', 'key', 'text'] });
+    await user.keyboard('{Control>}{Shift>}s{/Shift}{/Control}');
+    expect(onPress).not.toHaveBeenCalled();
+
+    await user.tab();
+    const print = screen.getByRole('button', { name: 'Print' });
+    expect(print).toHaveAttribute('aria-keyshortcuts', 'Control+P');
+    expect(screen.getByRole('tooltip')).toHaveTextContent(/^Ctrl\+PControl P$/);
+    expect(print).toHaveAccessibleDescription('Control P');
+
+    rerender(
+      <Button tooltip="Save every change" shortcut="Ctrl+">
+        Save
+      </Button>,
+    );
+    expect(screen.getByRole('button', { name: 'Save' })).not.toHaveAttribute('aria-keyshortcuts');
+  });
+
+  it('UIC-BUTTON-1.7 keeps a role and its states beside the shortcut', () => {
+    render(
+      <Button role="menuitemcheckbox" aria-checked shortcut="Ctrl+B">
+        Bold
+      </Button>,
+    );
+    const bold = screen.getByRole('menuitemcheckbox', { name: 'Bold' });
+    expect(bold).toHaveAttribute('aria-checked', 'true');
+    expect(bold).toHaveAttribute('aria-keyshortcuts', 'Control+B');
+  });
+
   it('UIC-BUTTON-2.1 disables natively, or keeps focus while refusing activation', async () => {
     const onPress = vi.fn();
     const onSubmit = vi.fn((event: React.FormEvent) => event.preventDefault());

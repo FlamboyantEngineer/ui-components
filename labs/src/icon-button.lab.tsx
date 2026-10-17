@@ -42,5 +42,22 @@ mountLab(
         )}
       />
     </LabSection>
+    <LabSection
+      title="Hint and shortcut"
+      description="Without a hint, the tooltip names the command before its shortcut, since the button shows no text."
+    >
+      <StateMatrix
+        axes={{ hint: ['shortcut', 'tooltip and shortcut'], size: sizes }}
+        render={({ hint, size }) => (
+          <IconButton
+            icon="undo"
+            label="Undo"
+            size={size}
+            shortcut="Ctrl+Z"
+            {...(hint === 'shortcut' ? {} : { tooltip: 'Undo the last edit' })}
+          />
+        )}
+      />
+    </LabSection>
   </>,
 );

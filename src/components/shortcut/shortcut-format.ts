@@ -60,6 +60,23 @@ const spokenModifiers: Readonly<Record<'mac' | 'other', Record<PhysicalModifier,
   other: { control: 'Control', alt: 'Alt', shift: 'Shift', meta: 'Meta' },
 };
 
+/** Modifier names in `aria-keyshortcuts`, which follow the keyboard event key values. */
+const ariaModifiers: Readonly<Record<PhysicalModifier, string>> = {
+  control: 'Control',
+  alt: 'Alt',
+  shift: 'Shift',
+  meta: 'Meta',
+};
+/** Keys `aria-keyshortcuts` names differently from how a chord writes them. */
+const ariaKeys: Readonly<Record<string, string>> = {
+  '+': 'Plus',
+  ' ': 'Space',
+  '↑': 'ArrowUp',
+  '↓': 'ArrowDown',
+  '←': 'ArrowLeft',
+  '→': 'ArrowRight',
+};
+
 let detected: ShortcutPlatform | undefined;
 
 function getBrowserSource(): ShortcutPlatformSource | undefined {
@@ -145,6 +162,20 @@ export function formatShortcutAccessibleText(
   if (!key) return '';
   const names = spokenModifiers[platform === 'mac' ? 'mac' : 'other'];
   return [...modifiers.map((modifier) => names[modifier]), key].map(keyName).join(' ');
+}
+
+/**
+ * A chord as an `aria-keyshortcuts` value for the platform: `Meta+Shift+K` on macOS,
+ * `Control+Shift+K` elsewhere. An empty key yields empty text.
+ */
+export function formatAriaKeyShortcuts(
+  chord: ShortcutChord,
+  platform: ShortcutPlatform = getShortcutPlatform(),
+): string {
+  const { key, modifiers } = resolveChord(chord, platform);
+  if (!key) return '';
+  const name = ariaKeys[key] ?? (key.length === 1 ? key.toUpperCase() : key);
+  return [...modifiers.map((modifier) => ariaModifiers[modifier]), name].join('+');
 }
 
 /** Tooltip text with the chord after the label: `Save (⌘S)`. Without a chord, the label alone. */

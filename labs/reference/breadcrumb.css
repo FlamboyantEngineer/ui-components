@@ -39,14 +39,19 @@
 
 .ui-breadcrumb__link {
   min-width: 0;
-  overflow: hidden;
   border-radius: 3px;
   color: var(--ref-accent-ink);
   text-decoration: none;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   cursor: pointer;
   outline: none;
+}
+
+/* A block label fills its shrinking link, ellipsizes there and keeps the link's underline. */
+.ui-breadcrumb__link > .ui-breadcrumb__label {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .ui-breadcrumb__link[data-hovered] {
   text-decoration: underline;

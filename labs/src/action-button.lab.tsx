@@ -74,5 +74,23 @@ mountLab(
         )}
       />
     </LabSection>
+    <LabSection
+      title="Hint and shortcut"
+      description="Button's tooltip and shortcut pass through and stay while the action runs."
+    >
+      <StateMatrix
+        axes={{ state: ['idle', 'pending'], size: ['sm', 'md', 'lg'] }}
+        render={({ state, size }) => (
+          <ActionButton
+            size={size}
+            isPending={state === 'pending'}
+            tooltip="Publish the draft"
+            shortcut="Ctrl+Enter"
+          >
+            Publish
+          </ActionButton>
+        )}
+      />
+    </LabSection>
   </>,
 );

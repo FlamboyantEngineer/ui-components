@@ -86,3 +86,6 @@ export function KeyHints({ hints, platform, className, ...rest }: KeyHintsProps)
     />
   );
 }
+
+export { formatAriaKeyShortcuts } from './shortcut-format.js';
+export type { ShortcutChord } from './shortcut-format.js';

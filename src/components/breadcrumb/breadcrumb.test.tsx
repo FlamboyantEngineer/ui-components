@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { I18nProvider } from 'react-aria-components';
 import { describe, expect, it, vi } from 'vitest';
@@ -26,6 +26,19 @@ function crumb(label: string): HTMLElement {
   ).find((node) => node.textContent === label);
   if (!element) throw new Error(`No crumb ${label}`);
   return element;
+}
+
+/** jsdom has no layout: give a label the box of cut (or whole) text. */
+function setBox(element: HTMLElement, { cut }: { cut: boolean }) {
+  Object.defineProperty(element, 'clientWidth', { configurable: true, value: 100 });
+  Object.defineProperty(element, 'scrollWidth', { configurable: true, value: cut ? 240 : 100 });
+}
+
+async function rest(element: HTMLElement) {
+  fireEvent.pointerEnter(element, { pointerType: 'mouse' });
+  await act(async () => {
+    vi.advanceTimersByTime(500);
+  });
 }
 
 async function press(from: HTMLElement, key: string): Promise<string | null> {
@@ -249,5 +262,51 @@ describe('Breadcrumb', () => {
     expect(home).toHaveAttribute('data-focus-visible', 'true');
     expect(home).toHaveAttribute('data-focused', 'true');
     expectHooksMatchSpec(container, 'BREADCRUMB');
+  });
+
+  it('UIC-BREADCRUMB-2.5 shows a cut label whole in a tooltip on hover and keyboard focus', async () => {
+    const long = 'Seasonal recipes from the coast';
+    const current = 'Tables, figures and captions for the printed edition';
+    vi.useFakeTimers();
+    try {
+      render(
+        <Breadcrumb
+          items={[
+            { label: 'Home', href: '/home' },
+            { label: long, href: '/seasonal' },
+            { label: current },
+          ]}
+        />,
+      );
+      const labels = Array.from(document.querySelectorAll<HTMLElement>('.ui-breadcrumb__label'));
+      expect(labels.map((label) => label.textContent)).toEqual(['Home', long, current]);
+      for (const label of labels) expect(label).toHaveClass('ui-truncation-tooltip');
+      const [home, seasonal, last] = labels as [HTMLElement, HTMLElement, HTMLElement];
+      setBox(home, { cut: false });
+      setBox(seasonal, { cut: true });
+      setBox(last, { cut: true });
+      const tooltip = () => document.querySelector<HTMLElement>('[role="tooltip"]');
+
+      await rest(home);
+      expect(tooltip()).toBeNull();
+      await rest(last);
+      expect(tooltip()).toHaveTextContent(current);
+      expect(tooltip()).toHaveClass('ui-truncation-tooltip__panel');
+      expect(crumb(current)).not.toHaveAttribute('aria-describedby');
+      expectHooksMatchSpec(document.body, 'BREADCRUMB', { slots: ['label'] });
+      fireEvent.pointerLeave(last, { pointerType: 'mouse' });
+      expect(tooltip()).toBeNull();
+
+      await act(async () => {
+        fireEvent.keyDown(document.body, { key: 'Tab' });
+        crumb(long).focus();
+      });
+      expect(tooltip()).toHaveTextContent(long);
+      expect(crumb(long)).toHaveAccessibleName(long);
+      await act(async () => crumb('Home').focus());
+      expect(tooltip()).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

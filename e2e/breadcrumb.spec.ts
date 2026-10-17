@@ -75,7 +75,7 @@ test.describe('Breadcrumb lab', () => {
     const clipped = (name: string) =>
       page
         .getByRole('navigation', { name })
-        .locator('[aria-current="page"]')
+        .locator('[aria-current="page"] .ui-breadcrumb__label')
         .evaluate((node) => node.scrollWidth > node.clientWidth);
     expect(await clipped('Long trail, default, auto')).toBe(false);
     expect(await clipped('Long trail, default, 240px')).toBe(true);
@@ -107,4 +107,44 @@ test.describe('Breadcrumb lab', () => {
     await expect(page.getByText('Activated home')).toBeVisible();
     await lab.expectAccessible();
   });
+
+  for (const theme of ['light', 'dark']) {
+    test(`UIC-BREADCRUMB-2.5 shows a cut label whole in a tooltip on hover and keyboard focus in the ${theme} theme`, async ({
+      page,
+      lab,
+    }) => {
+      const current = 'Tables, figures and captions for the printed edition';
+      const seasonal = 'Seasonal recipes from the coast';
+      await lab.open('breadcrumb', { theme });
+      const label = (name: string, text: string) =>
+        page
+          .getByRole('navigation', { name })
+          .locator('.ui-breadcrumb__label')
+          .filter({ hasText: text });
+
+      await label('Long trail, default, auto', current).hover();
+      await page.waitForTimeout(800);
+      await expect(page.getByRole('tooltip')).toHaveCount(0);
+
+      await label('Long trail, default, 240px', current).hover();
+      const panel = page.getByRole('tooltip');
+      await expect(panel).toHaveText(current);
+      await expect(panel).toHaveClass(/ui-truncation-tooltip__panel/);
+      await lab.expectAccessible();
+      await page.mouse.move(0, 0);
+      await expect(panel).toHaveCount(0);
+
+      const narrow = page.getByRole('navigation', { name: 'Long trail, default, 240px' });
+      await narrow.getByRole('link', { name: 'Home' }).focus();
+      await expect(page.getByRole('tooltip')).toHaveText('Home');
+      await page.keyboard.press('ArrowRight');
+      const link = narrow.getByRole('link', { name: seasonal });
+      await expect(link).toBeFocused();
+      // The previous crumb's panel may still be fading out.
+      await expect(page.getByRole('tooltip', { name: seasonal })).toBeVisible();
+      await expect(link).not.toHaveAttribute('aria-describedby');
+      await page.keyboard.press('Tab');
+      await expect(page.getByRole('tooltip')).toHaveCount(0);
+    });
+  }
 });

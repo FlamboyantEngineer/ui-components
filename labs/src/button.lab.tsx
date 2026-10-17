@@ -14,6 +14,7 @@ const variants: ButtonVariant[] = [
 ];
 const sizes = ['xs', 'sm', 'md', 'lg'] as const;
 const states = ['default', 'selected', 'disabled', 'focusable disabled', 'pending'] as const;
+const hints = ['tooltip', 'shortcut', 'tooltip and shortcut'] as const;
 
 mountLab(
   <>
@@ -57,6 +58,26 @@ mountLab(
             {...(icons !== 'start' ? { endIcon: 'chevron-down' as const } : {})}
           >
             New
+          </Button>
+        )}
+      />
+    </LabSection>
+    <LabSection
+      title="Hint and shortcut"
+      description="Hover or tab to a button: its tooltip shows the hint, then the keyboard shortcut in the reader's notation. The button publishes aria-keyshortcuts and never listens for the keys."
+    >
+      <StateMatrix
+        axes={{ hint: hints, state: ['default', 'focusable disabled', 'pending'] }}
+        render={({ hint, state }) => (
+          <Button
+            startIcon="save"
+            isDisabled={state === 'focusable disabled'}
+            focusableWhenDisabled
+            isPending={state === 'pending'}
+            {...(hint === 'shortcut' ? {} : { tooltip: 'Save every change' })}
+            {...(hint === 'tooltip' ? {} : { shortcut: 'Ctrl+Shift+S' })}
+          >
+            Save
           </Button>
         )}
       />

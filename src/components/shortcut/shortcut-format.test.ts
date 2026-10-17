@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   detectShortcutPlatform,
+  formatAriaKeyShortcuts,
   formatShortcut,
   formatShortcutAccessibleText,
   formatShortcutDescription,
@@ -152,5 +153,32 @@ describe('platform detection', () => {
     expect(fresh.formatShortcutAccessibleText('Ctrl+C')).toBe('Command C');
     expect(fresh.getShortcutPlatform()).toBe('mac');
     expect(reads).toBe(1);
+  });
+});
+
+describe('aria-keyshortcuts values', () => {
+  it('UIC-SHORTCUT-1.6 writes chords as aria-keyshortcuts values for the platform', () => {
+    const chords: Array<[ShortcutChord, string, string]> = [
+      ['Ctrl+Shift+K', 'Shift+Meta+K', 'Control+Shift+K'],
+      ['Shift+Ctrl+Alt+k', 'Alt+Shift+Meta+K', 'Control+Alt+Shift+K'],
+      ['Control+Meta+P', 'Control+Meta+P', 'Control+Meta+P'],
+      [{ key: 's', modifiers: ['primary'] }, 'Meta+S', 'Control+S'],
+      ['Ctrl++', 'Meta+Plus', 'Control+Plus'],
+      [{ key: ' ', modifiers: ['shift'] }, 'Shift+Space', 'Shift+Space'],
+      ['Alt+↑', 'Alt+ArrowUp', 'Alt+ArrowUp'],
+      ['Ctrl+↓', 'Meta+ArrowDown', 'Control+ArrowDown'],
+      ['←', 'ArrowLeft', 'ArrowLeft'],
+      ['Shift+→', 'Shift+ArrowRight', 'Shift+ArrowRight'],
+      ['Ctrl+Enter', 'Meta+Enter', 'Control+Enter'],
+      ['F2', 'F2', 'F2'],
+      ['Ctrl+.', 'Meta+.', 'Control+.'],
+      ['', '', ''],
+      ['Ctrl+', '', ''],
+    ];
+    for (const [chord, mac, other] of chords) {
+      expect(formatAriaKeyShortcuts(chord, 'mac')).toBe(mac);
+      expect(formatAriaKeyShortcuts(chord, 'windows')).toBe(other);
+      expect(formatAriaKeyShortcuts(chord, 'linux')).toBe(other);
+    }
   });
 });

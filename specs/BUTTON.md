@@ -46,6 +46,13 @@ Verification: `src/components/button/button.test.tsx`
 Implementation: `src/components/button/button.tsx`, `src/components/tooltip/tooltip.tsx`
 Verification: `src/components/button/button.test.tsx`, `e2e/tooltip.spec.ts`
 
+### UIC-BUTTON-1.7 - Keyboard shortcut
+
+`shortcut` shall report a keyboard chord that runs the same command elsewhere (`Ctrl+S`, or `{ key, modifiers }`, as [Shortcut](SHORTCUT.md) writes it). The button publishes it as `aria-keyshortcuts` (`formatAriaKeyShortcuts` for the reader's platform), and its tooltip draws it as a [Shortcut](SHORTCUT.md) after the `tooltip` hint, separated by a space, or alone without a hint, with the chord's readable words in the description the open tooltip gives the button. The button never registers or listens for the chord; the host binds it. A chord with an empty key adds nothing.
+
+Implementation: `src/components/button/button.tsx`, `src/components/shortcut/shortcut.tsx`
+Verification: `src/components/button/button.test.tsx`, `e2e/button.spec.ts`
+
 ## UIC-BUTTON-2 - States
 
 ### UIC-BUTTON-2.1 - Disabled

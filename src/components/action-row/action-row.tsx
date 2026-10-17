@@ -1,4 +1,4 @@
-import type { ReactElement, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { Tooltip, TooltipTrigger } from 'react-aria-components';
 import type { GlyphName } from '../../core/glyphs.js';
 import { createHooks, pickDataAttributes } from '../../core/hooks.js';
@@ -9,6 +9,14 @@ import { isEmptyNode } from '../../utils/is-empty-node.js';
 import type { ButtonSize } from '../button/button.js';
 import type { IconSource } from '../icon/icon.js';
 import { IconButton, type IconButtonProps } from '../icon-button/icon-button.js';
+import {
+  Menu,
+  MenuPopover,
+  MenuTrigger,
+  type MenuEntry,
+  type MenuProps,
+  type MenuSize,
+} from '../menu/menu.js';
 
 type StringKey = {
   [K in keyof UiStrings]: UiStrings[K] extends string ? K : never;
@@ -52,8 +60,14 @@ interface ActionRowActionBase
   tooltip?: string | undefined;
   /** A disclosure's state, published as `aria-expanded`. */
   isExpanded?: boolean | undefined;
-  /** Wraps the rendered button (with its tooltip), for example in a React Aria `MenuTrigger`. */
-  wrap?: ((button: ReactElement) => ReactElement) | undefined;
+  /**
+   * The entries of a menu the action opens, as `Menu` takes them: items (with icons, descriptions,
+   * shortcuts, tones and submenus), sections and separators. The button then opens the menu
+   * instead of calling `onPress`, and the menu owns its popup attributes.
+   */
+  items?: readonly MenuEntry[] | undefined;
+  /** Called with the id of the menu item chosen. */
+  onAction?: MenuProps['onAction'];
 }
 
 /** A standard verb with its fixed glyph, label and place. */
@@ -102,6 +116,37 @@ function useActionContent(action: ActionRowAction): ActionContent {
   };
 }
 
+/** An action without a menu presses and states its own popup; a menu trigger leaves both to the menu. */
+function toPressProps(action: ActionRowAction, hasMenu: boolean): Partial<IconButtonProps> {
+  if (hasMenu) return {};
+  return {
+    'aria-expanded': action.isExpanded,
+    'aria-haspopup': action['aria-haspopup'],
+    onPress: action.onPress,
+  };
+}
+
+/** The action's menu, opened by its button (with the button's tooltip) at the button's end. */
+function ActionRowMenu({
+  action,
+  size,
+  children,
+}: {
+  action: ActionRowAction;
+  size: ButtonSize;
+  children: ReactNode;
+}) {
+  const menuSize: MenuSize = size === 'xs' ? 'sm' : size;
+  return (
+    <MenuTrigger>
+      {children}
+      <MenuPopover placement="bottom end">
+        <Menu items={action.items} onAction={action.onAction} size={menuSize} />
+      </MenuPopover>
+    </MenuTrigger>
+  );
+}
+
 /** A custom action's ref and toggle state, which report `aria-pressed` either way once set. */
 function toCustomButtonProps(action: ActionRowAction): Partial<IconButtonProps> {
   if (action.verb !== 'custom') return {};
@@ -111,11 +156,13 @@ function toCustomButtonProps(action: ActionRowAction): Partial<IconButtonProps> 
 
 function ActionRowButton({ action, size }: { action: ActionRowAction; size: ButtonSize }) {
   const { icon, label, pendingLabel } = useActionContent(action);
+  const hasMenu = Boolean(action.items?.length);
   const button = (
     <IconButton
       {...pickDataAttributes(action)}
       {...hooks.slot('action', { verb: action.verb })}
       {...toCustomButtonProps(action)}
+      {...toPressProps(action, hasMenu)}
       id={action.id}
       icon={icon}
       label={label}
@@ -125,10 +172,7 @@ function ActionRowButton({ action, size }: { action: ActionRowAction; size: Butt
       focusableWhenDisabled={action.tooltip !== undefined}
       isPending={action.isPending}
       pendingLabel={pendingLabel}
-      aria-expanded={action.isExpanded}
       aria-controls={action['aria-controls']}
-      aria-haspopup={action['aria-haspopup']}
-      onPress={action.onPress}
     />
   );
   const withTooltip = (
@@ -137,7 +181,12 @@ function ActionRowButton({ action, size }: { action: ActionRowAction; size: Butt
       <Tooltip className={hooks.slotClass('tooltip')}>{action.tooltip ?? label}</Tooltip>
     </TooltipTrigger>
   );
-  return action.wrap ? action.wrap(withTooltip) : withTooltip;
+  if (!hasMenu) return withTooltip;
+  return (
+    <ActionRowMenu action={action} size={size}>
+      {withTooltip}
+    </ActionRowMenu>
+  );
 }
 
 /** Custom actions in their given order, then the standard verbs in their fixed order. */

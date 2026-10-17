@@ -117,4 +117,28 @@ describe('ActionButton', () => {
     rerender(<ActionButton isPending={false}>Export</ActionButton>);
     expect(screen.queryByRole('progressbar')).toBeNull();
   });
+
+  it('UIC-ACTION-BUTTON-1.6 keeps its hint and shortcut while the action runs', async () => {
+    const user = userEvent.setup();
+    const task = deferred();
+    render(
+      <ActionButton tooltip="Publish the draft" shortcut="Ctrl+Enter" onPress={() => task.promise}>
+        Publish
+      </ActionButton>,
+    );
+    const button = screen.getByRole('button', { name: 'Publish' });
+    expect(button).toHaveAttribute('aria-keyshortcuts', 'Control+Enter');
+    await user.tab();
+    expect(button).toHaveAccessibleDescription('Publish the draft Control Enter');
+    await user.keyboard('{Enter}');
+    expect(button).toHaveAttribute('data-pending', 'true');
+    expect(button).toHaveAttribute('aria-keyshortcuts', 'Control+Enter');
+    // Pressing closes the tooltip; focus that returns to the pending button opens it again.
+    await user.tab();
+    await user.tab();
+    expect(button).toHaveFocus();
+    expect(button).toHaveAccessibleDescription('Publish the draft Control Enter');
+    await act(async () => task.resolve());
+    expect(button).not.toHaveAttribute('data-pending');
+  });
 });

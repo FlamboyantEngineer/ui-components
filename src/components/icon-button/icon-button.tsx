@@ -47,6 +47,7 @@ export function IconButton({
         <Icon {...toIconProps(icon)} className={hooks.slotClass('icon')} />
       )}
     </AriaButton>,
-    tooltip,
+    // The button shows no text, so a shortcut's tooltip names the command too.
+    { tooltip: tooltip ?? (rest.shortcut ? label : undefined), shortcut: rest.shortcut },
   );
 }

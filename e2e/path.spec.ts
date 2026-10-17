@@ -74,4 +74,40 @@ test.describe('Path lab', () => {
     await expect(labels).toHaveText('Recipes/https://example.test/lemon-tart/Step 3');
     await lab.expectAccessible();
   });
+
+  for (const theme of ['light', 'dark']) {
+    test(`UIC-PATH-2.5 shows a cut path whole in a tooltip on hover and keyboard focus in the ${theme} theme`, async ({
+      page,
+      lab,
+    }) => {
+      await lab.open('path', { theme });
+      const cut = page.locator('[data-lab-path="cut"]');
+      const whole = page.locator('[data-lab-path="whole"]');
+      expect(await cut.evaluate((node) => node.scrollWidth > node.clientWidth)).toBe(true);
+      await whole.hover();
+      await page.waitForTimeout(800);
+      await expect(page.getByRole('tooltip')).toHaveCount(0);
+
+      await cut.hover();
+      const panel = page.getByRole('tooltip');
+      await expect(panel).toHaveText(longPath);
+      await expect(panel).toHaveClass(/ui-truncation-tooltip__panel/);
+      await expect(cut).not.toHaveAttribute('aria-describedby');
+      const fits = await panel.evaluate((node) => {
+        const box = node.getBoundingClientRect();
+        return box.right <= window.innerWidth && node.scrollWidth <= node.clientWidth + 1;
+      });
+      expect(fits).toBe(true);
+      await lab.expectAccessible();
+      await page.mouse.move(0, 0);
+      await expect(panel).toHaveCount(0);
+
+      await whole.click();
+      await page.keyboard.press('Tab');
+      await expect(page.locator('[data-lab-path="link"]')).toBeFocused();
+      await expect(page.getByRole('tooltip')).toHaveText(longPath);
+      await page.keyboard.press('Tab');
+      await expect(page.getByRole('tooltip')).toHaveCount(0);
+    });
+  }
 });
