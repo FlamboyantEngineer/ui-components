@@ -11,6 +11,7 @@
 
 @import url('reference/base.css');
 @import url('reference/action-row.css');
+@import url('reference/avatar.css');
 @import url('reference/badge.css');
 @import url('reference/banner.css');
 @import url('reference/breadcrumb.css');
@@ -32,6 +33,8 @@
 @import url('reference/modal.css');
 @import url('reference/path.css');
 @import url('reference/portal.css');
+@import url('reference/presence-avatar.css');
+@import url('reference/presence-strip.css');
 @import url('reference/progress-bar.css');
 @import url('reference/prose-table.css');
 @import url('reference/provider.css');
@@ -46,4 +49,5 @@
 @import url('reference/toast.css');
 @import url('reference/toolbar-scroller.css');
 @import url('reference/tooltip.css');
+@import url('reference/user-identity.css');
 @import url('reference/zoom-control.css');

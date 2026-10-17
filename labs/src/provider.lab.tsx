@@ -24,6 +24,8 @@ const replacedStrings: Partial<UiStrings> = {
 const sampleArguments: Partial<Record<keyof UiStrings, readonly unknown[]>> = {
   shortcutKeyName: ['↑'],
   stepOfTotal: [3, 5],
+  nameWithStatus: ['Maria Santos', 'Away'],
+  morePeople: [3, ['Jon Berg', 'Lena Ortiz', 'Sam Okafor']],
 };
 
 function sampleString(strings: UiStrings, name: keyof UiStrings): string {

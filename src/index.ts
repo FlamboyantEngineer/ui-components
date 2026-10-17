@@ -44,3 +44,7 @@ export * from './components/toast/index.js';
 export * from './components/modal/index.js';
 export * from './components/modal-controller/index.js';
 export * from './components/confirm-dialog/index.js';
+export * from './components/avatar/index.js';
+export * from './components/user-identity/index.js';
+export * from './components/presence-avatar/index.js';
+export * from './components/presence-strip/index.js';

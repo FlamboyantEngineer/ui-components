@@ -26,6 +26,7 @@ import {
   PlusIcon,
   QuestionMarkCircleIcon,
   TrashIcon,
+  UsersIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
 import type { ComponentType } from 'react';
@@ -72,6 +73,7 @@ export const defaultGlyphs = {
   edit: PencilSquareIcon,
   save: CheckIcon,
   delete: TrashIcon,
+  users: UsersIcon,
 } satisfies Record<string, GlyphComponent>;
 
 export type GlyphName = keyof typeof defaultGlyphs;

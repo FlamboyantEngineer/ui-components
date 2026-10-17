@@ -64,3 +64,5 @@ export { PATH_SEPARATOR, formatFolderPath, formatPath } from './path.js';
 export type { FormatPathOptions, PathFolder } from './path.js';
 export { formatCount, normalizeCount } from './count.js';
 export type { FormatCountOptions } from './count.js';
+export { getColorIndex } from './color-index.js';
+export { getInitials } from './initials.js';
