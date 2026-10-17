@@ -14,6 +14,14 @@ export type {
   HookProps,
   RootHookOptions,
 } from './hooks.js';
+export type {
+  BaseProps,
+  DataAttributeValue,
+  NativeProps,
+  Orientation,
+  Size,
+  Tone,
+} from './props.js';
 export { defaultGlyphs, glyphNames } from './glyphs.js';
 export type { GlyphComponent, GlyphComponentProps, GlyphMap, GlyphName } from './glyphs.js';
 export { defaultStrings } from './strings.js';

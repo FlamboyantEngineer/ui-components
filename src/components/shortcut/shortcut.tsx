@@ -1,43 +1,54 @@
 import { Fragment, type ReactNode } from 'react';
 import { Keyboard, VisuallyHidden } from 'react-aria-components';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
+import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { MetaLine } from '../meta-line/meta-line.js';
 import {
   formatShortcutAccessibleText,
   formatShortcutKeys,
   getShortcutPlatform,
-  shortcutKeySeparator,
+  getShortcutKeySeparator,
   type ShortcutChord,
   type ShortcutPlatform,
 } from './shortcut-format.js';
 
-export interface ShortcutProps {
+export interface ShortcutProps extends BaseProps {
   /** The chord, such as `Ctrl+Shift+K` (`Ctrl` is Command on macOS) or `{ key, modifiers }`. */
   chord: ShortcutChord;
   /** The notation to draw. Defaults to the detected platform; set it for deterministic output. */
   platform?: ShortcutPlatform | undefined;
-  /**
-   * Draw the keycaps only, without readable text, when the surrounding control already
-   * describes the chord (for example through its accessible description).
-   */
+  /** Draw only the keycaps, for a control that already describes the chord. */
   decorative?: boolean | undefined;
-  className?: string | undefined;
-  id?: string | undefined;
-  [data: `data-${string}`]: string | number | boolean | undefined;
+}
+
+/** One entry of a key legend: the keys, then what they do. */
+export interface KeyHint {
+  /** The chords that trigger the action, drawn side by side. */
+  keys: readonly ShortcutChord[];
+  /** What the keys do. */
+  action: ReactNode;
+}
+
+export interface KeyHintsProps extends BaseProps {
+  /** The legend's entries, in order. */
+  hints: readonly KeyHint[];
+  /** The notation of every shortcut. Defaults to the detected platform. */
+  platform?: ShortcutPlatform | undefined;
 }
 
 const hooks = createHooks('shortcut', ['keys', 'key', 'text']);
+const hintHooks = createHooks('key-hints', ['hint', 'action']);
 
 /** A keyboard chord in the reader's platform notation, with readable text for assistive technology. */
-export function Shortcut({ chord, platform, decorative, className, id, ...rest }: ShortcutProps) {
+export function Shortcut({ chord, platform, decorative, className, ...rest }: ShortcutProps) {
   const strings = useUiStrings();
   const resolved = platform ?? getShortcutPlatform();
   const keys = formatShortcutKeys(chord, resolved);
   if (keys.length === 0) return null;
-  const separator = shortcutKeySeparator(resolved);
+  const separator = getShortcutKeySeparator(resolved);
   return (
-    <Keyboard {...hooks.root({ className, props: rest, data: { platform: resolved } })} id={id}>
+    <Keyboard {...rest} {...hooks.root({ className, data: { platform: resolved } })}>
       <span {...hooks.slot('keys')} aria-hidden="true">
         {keys.map((label, index) => (
           <Fragment key={index}>
@@ -48,36 +59,22 @@ export function Shortcut({ chord, platform, decorative, className, id, ...rest }
       </span>
       {decorative ? null : (
         <VisuallyHidden elementType="span" className={hooks.slotClass('text')}>
-          {formatShortcutAccessibleText(chord, resolved, strings.shortcutKeyName)}
+          {formatShortcutAccessibleText(chord, {
+            platform: resolved,
+            keyName: strings.shortcutKeyName,
+          })}
         </VisuallyHidden>
       )}
     </Keyboard>
   );
 }
 
-/** One entry of a key legend: the keys, then what they do. */
-export interface KeyHint {
-  keys: readonly ShortcutChord[];
-  action: ReactNode;
-}
-
-export interface KeyHintsProps {
-  hints: readonly KeyHint[];
-  platform?: ShortcutPlatform | undefined;
-  className?: string | undefined;
-  id?: string | undefined;
-  [data: `data-${string}`]: string | number | boolean | undefined;
-}
-
-const hintHooks = createHooks('key-hints', ['hint', 'action']);
-
 /** A key legend such as `↑↓ move · Enter select`, drawn on one metadata line. */
-export function KeyHints({ hints, platform, className, id, ...rest }: KeyHintsProps) {
+export function KeyHints({ hints, platform, className, ...rest }: KeyHintsProps) {
   return (
     <MetaLine
       {...rest}
       className={mergeClassNames(hintHooks.className, className)}
-      id={id}
       items={hints.map((hint, index) => (
         <span key={index} {...hintHooks.slot('hint')}>
           {hint.keys.map((key, keyIndex) => (

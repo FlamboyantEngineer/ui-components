@@ -37,6 +37,8 @@ jobs:
         run: npm run check:specs
       - name: Labs complete
         run: npm run check:labs
+      - name: Structure
+        run: npm run check:structure
       - name: Unit tests
         run: npm test
       - name: Build

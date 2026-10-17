@@ -1,15 +1,11 @@
-import { render, screen } from '@testing-library/react';
-import { userEvent } from '@testing-library/user-event';
+import { render } from '@testing-library/react';
 import { createRef } from 'react';
 import { describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import {
   Cluster,
-  Contents,
-  EmbeddedFrame,
   FlexRow,
   Grid,
-  InlineContents,
   InlineField,
   Page,
   Stack,
@@ -18,6 +14,7 @@ import {
   type LayoutSpace,
 } from './layout.js';
 import { ToolbarRow } from './toolbar-row.js';
+import { Contents, EmbeddedFrame, InlineContents } from './wrappers.js';
 
 const spaces: LayoutSpace[] = [
   'none',
@@ -154,7 +151,9 @@ describe('Layout primitives', () => {
     expect(root).toHaveAttribute('data-space', 'md');
     expectHooksMatchSpec(container, 'LAYOUT');
   });
+});
 
+describe('Layout options', () => {
   it('UIC-LAYOUT-2.1 publishes every spacing step and each primitive default', () => {
     const { container, rerender } = render(
       <>
@@ -309,81 +308,9 @@ describe('Layout primitives', () => {
       expectHooksMatchSpec(container, 'LAYOUT');
     }
   });
+});
 
-  it('UIC-LAYOUT-3.1 hides transparent wrappers without unmounting their children', () => {
-    const { container, rerender } = render(
-      <>
-        <Contents>
-          <input defaultValue="draft" />
-        </Contents>
-        <InlineContents>Kiwi</InlineContents>
-      </>,
-    );
-    const input = container.querySelector('input')!;
-    rerender(
-      <>
-        <Contents hidden>
-          <input defaultValue="draft" />
-        </Contents>
-        <InlineContents hidden>Kiwi</InlineContents>
-      </>,
-    );
-    const [contents, inline] = Array.from(container.children) as HTMLElement[];
-    expect(contents!.hidden).toBe(true);
-    expect(inline!.hidden).toBe(true);
-    expect(container.querySelector('input')).toBe(input);
-    expectHooksMatchSpec(container, 'LAYOUT');
-  });
-
-  it('UIC-LAYOUT-3.2 sandboxes the embedded frame unless permissions are granted and names it by title', () => {
-    const { container, rerender } = render(<EmbeddedFrame title="Report.pdf" src="about:blank" />);
-    const frame = () => container.querySelector('iframe')!;
-    expect(frame()).toHaveAttribute('sandbox', '');
-    expect(frame()).toHaveAttribute('title', 'Report.pdf');
-    rerender(<EmbeddedFrame title="Report.pdf" sandbox="allow-scripts" />);
-    expect(frame()).toHaveAttribute('sandbox', 'allow-scripts');
-    expectHooksMatchSpec(container, 'LAYOUT');
-  });
-
-  it('UIC-LAYOUT-3.3 renders a toolbar with arrow-key focus, a group or no role, and a variant', async () => {
-    const user = userEvent.setup();
-    const { container, rerender } = render(
-      <>
-        <button type="button">Before</button>
-        <ToolbarRow aria-label="Fruit actions">
-          <button type="button">Peel</button>
-          <button type="button">Slice</button>
-        </ToolbarRow>
-      </>,
-    );
-    const toolbar = screen.getByRole('toolbar', { name: 'Fruit actions' });
-    expect(toolbar).toHaveClass('ui-toolbar-row');
-    expect(toolbar).toHaveAttribute('data-variant', 'plain');
-    expect(toolbar).toHaveAttribute('data-orientation', 'horizontal');
-    expectHooksMatchSpec(container, 'LAYOUT');
-
-    await user.click(screen.getByRole('button', { name: 'Peel' }));
-    await user.keyboard('{ArrowRight}');
-    expect(screen.getByRole('button', { name: 'Slice' })).toHaveFocus();
-    await user.keyboard('{ArrowLeft}');
-    expect(screen.getByRole('button', { name: 'Peel' })).toHaveFocus();
-    await user.tab({ shift: true });
-    expect(screen.getByRole('button', { name: 'Before' })).toHaveFocus();
-
-    rerender(
-      <ToolbarRow role="group" variant="band" aria-label="Fruit actions">
-        <button type="button">Peel</button>
-      </ToolbarRow>,
-    );
-    const group = screen.getByRole('group', { name: 'Fruit actions' });
-    expect(group).toHaveAttribute('data-variant', 'band');
-    expect(group).not.toHaveAttribute('data-orientation');
-    expectHooksMatchSpec(container, 'LAYOUT');
-
-    rerender(<ToolbarRow role="none">Text</ToolbarRow>);
-    expect(container.firstElementChild).not.toHaveAttribute('role');
-  });
-
+describe('StatusBar', () => {
   it('UIC-LAYOUT-3.4 renders the status bar as a footer band', () => {
     const { container } = render(
       <StatusBar aria-label="Status">

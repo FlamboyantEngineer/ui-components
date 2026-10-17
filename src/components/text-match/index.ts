@@ -1,5 +1,5 @@
-export { TextMatch, TextMatchScope } from './text-match.js';
-export type { TextMatchProps, TextMatchRegister, TextMatchScopeProps } from './text-match.js';
+export { TextMatch, TextMatchProvider } from './text-match.js';
+export type { TextMatchProps, TextMatchProviderProps, TextMatchRegister } from './text-match.js';
 export {
   findTermRanges,
   findWordMatches,

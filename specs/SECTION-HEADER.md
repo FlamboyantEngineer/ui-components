@@ -6,7 +6,7 @@
 
 ### UIC-SECTION-HEADER-1.1 - Parts
 
-`SectionHeader` shall render a `<header>` holding a `ui-section-header__content` with the title heading (`ui-section-header__title`) and, when given, the `ui-section-header__description`, followed by the `ui-section-header__actions` when given. A description or actions that are `null`, `undefined`, `false` or an empty string render no slot.
+`SectionHeader` shall render a `<header>` holding a `ui-section-header__content` with the title heading (`ui-section-header__title`) and, when given, the `ui-section-header__description`, followed by the `ui-section-header__actions` when given. A description or actions that are `null`, `undefined`, a boolean or an empty string render no slot.
 
 Implementation: `src/components/section-header/section-header.tsx`
 Verification: `src/components/section-header/section-header.test.tsx`, `e2e/section-header.spec.ts`
