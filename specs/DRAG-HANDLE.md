@@ -1,6 +1,6 @@
 # Drag Handle
 
-`DragHandle` draws the drag button of a row in a React Aria collection that reorders by drag and drop, such as [Tree](TREE.md) and [Table](TABLE.md). The collection names the button after its row and starts the row's keyboard drag from it; collections that draw handles render this one rather than their own.
+`DragHandle` draws the drag button of a row in a React Aria collection that reorders by drag and drop, such as [Tree](TREE.md) and [Table](TABLE.md). The collection names the button after its row and starts the row's keyboard drag from it; collections that draw handles render this one rather than their own. `armHandleDrag` lets a collection drag rows by their handles only, and a collection can draw its own drag preview ([Table](TABLE.md#uic-table-56---drag-preview) does).
 
 ## UIC-DRAG-HANDLE-1 - Drag handle
 
@@ -31,6 +31,15 @@ Verification: `src/components/drag-handle/drag-handle.test.tsx`, `e2e/drag-handl
 
 Implementation: `src/components/drag-handle/drag-handle.tsx`
 Verification: `src/components/drag-handle/drag-handle.test.tsx`
+
+## UIC-DRAG-HANDLE-2 - Pointer drags
+
+### UIC-DRAG-HANDLE-2.1 - Dragging by the handle only
+
+`armHandleDrag(event)`, called on a pointer press inside a collection whose rows render without `draggable`, shall make the pressed row draggable when a primary press lands on that row's own enabled handle, until the press ends or the drag it starts ends. A press elsewhere in the row, a press with another button or a press on a disabled handle leaves the row as it is, so only the handle starts a pointer drag. React Aria keeps the handle out of pointer hit testing so that pressing it never sorts or selects, so the press is matched to the handle by position.
+
+Implementation: `src/components/drag-handle/drag-handle.tsx`
+Verification: `src/components/drag-handle/drag-handle.test.tsx`, `e2e/drag-handle.spec.ts`
 
 ## Hooks
 

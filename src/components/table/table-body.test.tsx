@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -123,5 +123,47 @@ describe('Table notices', { timeout: 15_000 }, () => {
     expect(screen.queryAllByRole('columnheader')).toHaveLength(0);
     expect(screen.queryAllByRole('row')).toHaveLength(0);
     expect(container.querySelector('.ui-table__body')).toBeEmptyDOMElement();
+  });
+
+  it('UIC-TABLE-12.2 asks for more rows at the end and shows a loading row meanwhile', () => {
+    const observed: Element[] = [];
+    let report: IntersectionObserverCallback = () => {};
+    vi.stubGlobal(
+      'IntersectionObserver',
+      class {
+        constructor(callback: IntersectionObserverCallback) {
+          report = callback;
+        }
+        observe(element: Element) {
+          observed.push(element);
+        }
+        unobserve() {}
+        disconnect() {}
+      },
+    );
+    const onLoadMore = vi.fn();
+    const { container, rerender } = renderCities({ onLoadMore, isLoading: false });
+    expect(container.querySelector('.ui-table__loader')).toBeNull();
+    act(() => report([{ isIntersecting: true, target: observed[0] } as never], {} as never));
+    expect(onLoadMore).toHaveBeenCalledTimes(1);
+    rerender(
+      <Table
+        aria-label="Cities"
+        rows={cities}
+        columns={[
+          { id: 'name', header: 'Name' },
+          { id: 'country', header: 'Country' },
+        ]}
+        onLoadMore={onLoadMore}
+        isLoading
+      />,
+    );
+    const loader = container.querySelector('.ui-table__loader') as HTMLElement;
+    expect(loader).toHaveTextContent('Loading');
+    expect(loader.querySelector('[role="rowheader"]')).toHaveAttribute('colspan', '2');
+    expect(container.querySelector('.ui-table__body')?.lastElementChild).toBe(loader);
+    expect(screen.getAllByRole('rowheader').map((cell) => cell.textContent)).toContain('Oslo');
+    expectHooksMatchSpec(container, 'TABLE', { slots: ['loader'] });
+    vi.unstubAllGlobals();
   });
 });

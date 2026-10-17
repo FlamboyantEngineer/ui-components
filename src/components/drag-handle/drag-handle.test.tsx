@@ -1,9 +1,9 @@
-import { render, screen } from '@testing-library/react';
+import { createEvent, fireEvent, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { GridList, GridListItem, useDragAndDrop } from 'react-aria-components';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import { DragHandle } from './drag-handle.js';
+import { armHandleDrag, DragHandle } from './drag-handle.js';
 
 const FRUIT = [
   { id: 'apple', name: 'Apple' },
@@ -26,6 +26,51 @@ function FruitList() {
       )}
     </GridList>
   );
+}
+
+/** Rows that render without `draggable`, so only their handles start pointer drags. */
+function HandleRows() {
+  return (
+    <div onPointerDownCapture={armHandleDrag}>
+      <div role="row" data-testid="apple">
+        <DragHandle aria-label="Drag Apple" />
+        Apple
+        <div role="row" data-testid="seed">
+          <span>Seed</span>
+        </div>
+      </div>
+      <div role="row" data-testid="fig">
+        <DragHandle aria-label="Drag Fig" isDisabled />
+        Fig
+      </div>
+    </div>
+  );
+}
+
+/** A primary or other press at a position, which jsdom's plain events do not carry. */
+function press(target: Element, { x, button = 0 }: { x: number; button?: number }) {
+  const event = createEvent.pointerDown(target);
+  Object.defineProperties(event, {
+    clientX: { value: x },
+    clientY: { value: 5 },
+    button: { value: button },
+  });
+  fireEvent(target, event);
+}
+
+function placeHandles() {
+  for (const handle of document.querySelectorAll('.ui-drag-handle')) {
+    vi.spyOn(handle, 'getBoundingClientRect').mockReturnValue({
+      left: 0,
+      right: 20,
+      top: 0,
+      bottom: 20,
+      width: 20,
+      height: 20,
+      x: 0,
+      y: 0,
+    } as DOMRect);
+  }
 }
 
 // Keyboard drag and drop in a full React Aria collection is slow in jsdom on a busy machine.
@@ -74,5 +119,27 @@ describe('DragHandle', { timeout: 15_000 }, () => {
     expect(handle).toHaveAttribute('id', 'handle');
     expect(handle).toHaveAttribute('data-row', 'apple');
     expectHooksMatchSpec(container, 'DRAG-HANDLE', { callerAttributes: ['data-row'] });
+  });
+
+  it('UIC-DRAG-HANDLE-2.1 makes a row draggable only while its own enabled handle is pressed', () => {
+    render(<HandleRows />);
+    placeHandles();
+    const apple = screen.getByTestId('apple');
+    press(apple, { x: 60 });
+    expect(apple).not.toHaveAttribute('draggable');
+    press(apple, { x: 10, button: 2 });
+    expect(apple).not.toHaveAttribute('draggable');
+    press(apple, { x: 10 });
+    expect(apple).toHaveAttribute('draggable', 'true');
+    fireEvent.pointerUp(document);
+    expect(apple).not.toHaveAttribute('draggable');
+    press(apple, { x: 10 });
+    apple.dispatchEvent(new Event('dragend'));
+    expect(apple).not.toHaveAttribute('draggable');
+    press(screen.getByText('Seed'), { x: 10 });
+    expect(screen.getByTestId('seed')).not.toHaveAttribute('draggable');
+    expect(apple).not.toHaveAttribute('draggable');
+    press(screen.getByTestId('fig'), { x: 10 });
+    expect(screen.getByTestId('fig')).not.toHaveAttribute('draggable');
   });
 });

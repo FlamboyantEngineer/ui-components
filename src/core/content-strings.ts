@@ -85,6 +85,8 @@ export interface ContentStrings {
   rangeFrom: string;
   /** Names the upper bound of a range filter. */
   rangeTo: string;
+  /** Names a table's summary row. */
+  summary: string;
 }
 
 const emojiCategoryNames: Readonly<Record<string, string>> = {
@@ -158,4 +160,5 @@ export const contentStrings: ContentStrings = {
   contains: 'Contains',
   rangeFrom: 'From',
   rangeTo: 'To',
+  summary: 'Summary',
 };

@@ -1,2 +1,2 @@
-export { DragHandle } from './drag-handle.js';
+export { armHandleDrag, DragHandle } from './drag-handle.js';
 export type { DragHandleProps } from './drag-handle.js';

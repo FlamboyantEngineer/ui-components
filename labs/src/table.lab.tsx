@@ -3,11 +3,8 @@ import type { Key, Selection, SortDescriptor } from 'react-aria-components';
 import { Button } from '../../src/components/button/button.js';
 import { IconButton } from '../../src/components/icon-button/icon-button.js';
 import { Table, type TableProps } from '../../src/components/table/table.js';
-import {
-  applyTableMove,
-  sortTableRows,
-  type TableColumn,
-} from '../../src/components/table/table-rows.js';
+import { applyTableMove, type TableColumn } from '../../src/components/table/table-rows.js';
+import { sortTableRows } from '../../src/components/table/table-sort.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 interface Fruit {

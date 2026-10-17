@@ -1,4 +1,12 @@
-import { useLayoutEffect, useMemo, useRef, type JSX, type KeyboardEvent } from 'react';
+import {
+  createElement,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type JSX,
+  type KeyboardEvent,
+} from 'react';
 import {
   useDragAndDrop,
   type DragAndDropHooks,
@@ -6,6 +14,9 @@ import {
   type DropTarget,
   type Key,
 } from 'react-aria-components';
+
+/** A dragged item: its data by media type. */
+export type ReorderDragItem = Record<string, string>;
 
 /** How a reorderable collection turns drops into moves. */
 export interface ReorderDragAndDropOptions<Move> {
@@ -17,6 +28,11 @@ export interface ReorderDragAndDropOptions<Move> {
   getTextValue: (key: Key) => string;
   /** Draws the collection's drop indicator between items. */
   renderDropIndicator: (target: DropTarget) => JSX.Element;
+  /**
+   * Draws the image that follows the pointer during a drag, from the dragged items, instead of the
+   * browser's picture of the dragged element. Read when the hook first renders.
+   */
+  renderDragPreview?: ((items: ReorderDragItem[]) => JSX.Element) | undefined;
 }
 
 /** Whether a keydown holds Alt and no other modifier, as a collection's keyboard moves do. */
@@ -38,6 +54,8 @@ export function useReorderDragAndDrop<T, Move>(
   });
   const dragging = useRef<ReadonlySet<Key>>(new Set());
   const { renderDropIndicator } = options;
+  // React Aria reads whether a preview exists once, so only its content follows later renders.
+  const [hasPreview] = useState(options.renderDragPreview !== undefined);
   const dragAndDrop = useMemo<DragAndDropOptions<T>>(
     () => ({
       getItems: (keys) =>
@@ -56,8 +74,14 @@ export function useReorderDragAndDrop<T, Move>(
         if (move) latest.current.onMove(move);
       },
       renderDropIndicator,
+      ...(hasPreview
+        ? {
+            renderDragPreview: (items: ReorderDragItem[]) =>
+              latest.current.renderDragPreview?.(items) ?? createElement('span'),
+          }
+        : {}),
     }),
-    [renderDropIndicator],
+    [renderDropIndicator, hasPreview],
   );
   return useDragAndDrop<T>(dragAndDrop).dragAndDropHooks;
 }

@@ -1,3 +1,4 @@
+import type { PointerEvent } from 'react';
 import { Button as AriaButton, type ButtonProps as AriaButtonProps } from 'react-aria-components';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
@@ -9,6 +10,41 @@ export interface DragHandleProps
     BaseProps {}
 
 const hooks = createHooks('drag-handle');
+
+/** The enabled drag handle drawn in `row` itself, not in a collection nested inside it. */
+function findRowHandle(row: Element): Element | undefined {
+  return [...row.querySelectorAll(`.${hooks.className}`)].find(
+    (handle) => handle.closest('[role="row"]') === row && !handle.hasAttribute('disabled'),
+  );
+}
+
+function isInside(box: DOMRect, event: PointerEvent): boolean {
+  const { clientX: x, clientY: y } = event;
+  return x >= box.left && x <= box.right && y >= box.top && y <= box.bottom;
+}
+
+/**
+ * Lets only the handle start a row's pointer drag. Call it on a pointer press inside a collection
+ * whose rows render without `draggable`: a primary press on a row's enabled handle makes that row
+ * draggable until the press or the drag ends, so a press elsewhere in the row never drags it. React
+ * Aria keeps the handle itself out of pointer hit testing, so the press is matched by position.
+ */
+export function armHandleDrag(event: PointerEvent<Element>): void {
+  const row = event.target instanceof Element ? event.target.closest('[role="row"]') : null;
+  const handle = row ? findRowHandle(row) : undefined;
+  if (event.button !== 0 || !row || !handle || !isInside(handle.getBoundingClientRect(), event)) {
+    return;
+  }
+  const document = row.ownerDocument;
+  row.setAttribute('draggable', 'true');
+  const disarm = () => {
+    row.removeAttribute('draggable');
+    document.removeEventListener('pointerup', disarm, true);
+    row.removeEventListener('dragend', disarm);
+  };
+  document.addEventListener('pointerup', disarm, true);
+  row.addEventListener('dragend', disarm);
+}
 
 /**
  * The drag button of a row in a React Aria collection that reorders by drag and drop. The collection
