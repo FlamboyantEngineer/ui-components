@@ -1,0 +1,83 @@
+import { render, screen } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
+import { describe, expect, it, vi } from 'vitest';
+import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { IconSelectField, type IconSelectFieldOption } from './icon-select-field.js';
+
+const symbols: IconSelectFieldOption[] = [
+  { id: 'star', label: 'Star', icon: <svg data-testid="star-icon" /> },
+  { id: 'check', label: 'Check', icon: 'check' },
+  { id: 'info', label: 'Info', icon: 'info' },
+];
+
+const many: IconSelectFieldOption[] = Array.from({ length: 14 }, (_, index) => ({
+  id: `symbol-${index}`,
+  label: `Symbol ${index}`,
+  icon: 'plus',
+}));
+
+describe('IconSelectField', () => {
+  it('UIC-ICON-SELECT-FIELD-1.1 shows the chosen icon in the trigger and icons on every option', async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <IconSelectField label="Symbol" options={symbols} defaultValue="check" />,
+    );
+    const trigger = screen.getByRole('button', { name: 'Check Symbol' });
+    expect(trigger.querySelector('.ui-select-field__value-icon')).toHaveAttribute(
+      'data-glyph',
+      'check',
+    );
+    expect(container.querySelector('.ui-select-field')).toHaveAttribute(
+      'data-selection-mode',
+      'single',
+    );
+    await user.click(trigger);
+    const icons = screen
+      .getAllByRole('option')
+      .map((option) => option.querySelector('.ui-select-field__option-icon'));
+    expect(icons.every(Boolean)).toBe(true);
+    expect(screen.getByTestId('star-icon').closest('.ui-select-field__option-icon')).not.toBeNull();
+    expect(screen.getByRole('listbox')).not.toHaveAttribute('aria-multiselectable');
+  });
+
+  it('UIC-ICON-SELECT-FIELD-1.2 draws no filter unless asked', async () => {
+    const user = userEvent.setup();
+    const { unmount } = render(<IconSelectField label="Symbol" options={many} />);
+    await user.click(screen.getByRole('button', { name: /Symbol$/ }));
+    expect(screen.queryByRole('searchbox')).toBeNull();
+    await user.keyboard('{Escape}');
+    unmount();
+    render(<IconSelectField label="Symbol" options={many} filterable />);
+    await user.click(screen.getByRole('button', { name: /Symbol$/ }));
+    expect(screen.getByRole('searchbox')).toBeInTheDocument();
+  });
+
+  it('UIC-ICON-SELECT-FIELD-1.3 keeps a no-icon choice that commits null', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    render(
+      <IconSelectField
+        label="Symbol"
+        options={symbols}
+        defaultValue="star"
+        emptyLabel="No icon"
+        onCommit={onCommit}
+      />,
+    );
+    await user.click(screen.getByRole('button', { name: 'Star Symbol' }));
+    expect(screen.getAllByRole('option')[0]).toHaveTextContent('No icon');
+    await user.click(screen.getByRole('option', { name: 'No icon' }));
+    expect(onCommit).toHaveBeenCalledWith(null);
+    expect(screen.getByRole('button', { name: 'No icon Symbol' })).toBeInTheDocument();
+  });
+
+  it('UIC-ICON-SELECT-FIELD-1.4 adds its root hook before the caller class', () => {
+    const { container } = render(
+      <IconSelectField label="Symbol" options={symbols} className="caller" data-testid="probe" />,
+    );
+    const root = container.querySelector('.ui-field');
+    expect(root?.className).toBe('ui-field ui-select-field ui-icon-select-field caller');
+    expect(root).toHaveAttribute('data-testid', 'probe');
+    expectHooksMatchSpec(container, 'ICON-SELECT-FIELD', { callerAttributes: ['data-testid'] });
+  });
+});

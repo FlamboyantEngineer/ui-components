@@ -1,0 +1,305 @@
+/* Select Field: a framed trigger as wide as its widest option, capped at the control slot. */
+
+/* A disabled select dims its trigger only; its chips keep full contrast. */
+.ui-select-field[data-disabled] {
+  opacity: 1;
+}
+
+.ui-select-field[data-disabled] .ui-select-field__trigger {
+  opacity: 0.55;
+}
+
+.ui-select-field .ui-field__control {
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.ui-select-field__select {
+  display: flex;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.ui-select-field__frame {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.ui-select-field__trigger {
+  display: flex;
+  flex: 0 1 auto;
+  align-items: center;
+  gap: 6px;
+  /* The widest label, 8px padding each side, a 6px gap, the 16px chevron and the border. */
+  width: calc(var(--ui-select-field-label-width, 96px) + 40px);
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-canvas);
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  outline: none;
+}
+
+/* Room for an option icon and its gap, whichever option is chosen. */
+.ui-select-field[data-icons] .ui-select-field__trigger {
+  width: calc(var(--ui-select-field-label-width, 96px) + 62px);
+}
+
+.ui-select-field__trigger[data-hovered] {
+  border-color: var(--ref-border-strong);
+}
+
+.ui-select-field__trigger[data-focus-visible],
+.ui-select-field__select[data-open] .ui-select-field__trigger {
+  border-color: var(--ref-focus);
+  box-shadow: 0 0 0 1px var(--ref-focus);
+}
+
+.ui-select-field__select[data-invalid] .ui-select-field__trigger {
+  border-color: var(--ref-danger);
+}
+
+.ui-select-field[data-validation='warning'] .ui-select-field__trigger {
+  border-color: var(--ref-warning);
+}
+
+.ui-select-field[data-dirty] .ui-select-field__trigger {
+  border-inline-start: 3px solid var(--ref-info);
+}
+
+.ui-select-field[data-readonly] .ui-select-field__trigger {
+  border-style: dashed;
+  cursor: default;
+}
+
+.ui-select-field__trigger[data-disabled] {
+  cursor: not-allowed;
+}
+
+.ui-select-field__previous {
+  flex: 0 1 auto;
+  min-width: 0;
+  font-size: 12px;
+}
+
+.ui-select-field__value {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.ui-select-field__value-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-select-field__value[data-placeholder] {
+  color: var(--ref-muted);
+}
+
+.ui-select-field__value[data-missing],
+.ui-select-field__chip[data-missing] {
+  font-style: italic;
+}
+
+.ui-select-field__chevron {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  color: var(--ref-muted);
+}
+
+.ui-select-field__popover {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  min-width: var(--trigger-width);
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-raised);
+  color: var(--ref-text);
+  box-shadow: var(--ref-shadow);
+  font: 13px/1.3 var(--ref-font);
+}
+
+.ui-select-field__search {
+  display: flex;
+  padding: 4px;
+  border-bottom: 1px solid var(--ref-border);
+}
+
+.ui-select-field__search-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  box-sizing: border-box;
+  height: 26px;
+  padding: 0 6px;
+  border: 1px solid var(--ref-border);
+  border-radius: 4px;
+  background: var(--ref-canvas);
+  color: inherit;
+  font: inherit;
+  outline: none;
+}
+
+.ui-select-field__search-input[data-focused] {
+  border-color: var(--ref-focus);
+}
+
+.ui-select-field__loading {
+  padding: 4px 8px;
+  color: var(--ref-muted);
+  font-style: italic;
+}
+
+/* Long lists scroll inside the popover. */
+.ui-select-field__listbox {
+  display: grid;
+  gap: 1px;
+  max-height: 20rem;
+  padding: 4px;
+  overflow: auto;
+  outline: none;
+}
+
+.ui-select-field__option {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 8px;
+  min-height: 28px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  cursor: default;
+  outline: none;
+}
+
+.ui-select-field__option[data-focused] {
+  background: var(--ref-hover);
+}
+
+.ui-select-field__option[data-selected] {
+  background: var(--ref-selected);
+}
+
+.ui-select-field__option[data-disabled] {
+  opacity: 0.5;
+}
+
+.ui-select-field__option-check {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  box-sizing: border-box;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--ref-border-strong);
+  border-radius: 3px;
+}
+
+.ui-select-field__option[data-selected] .ui-select-field__option-check {
+  border-color: var(--ref-accent);
+  background: var(--ref-accent);
+  color: var(--ref-accent-text);
+}
+
+.ui-select-field__option-check .ui-glyph {
+  width: 12px;
+  height: 12px;
+}
+
+.ui-select-field__option-icon {
+  flex: none;
+}
+
+.ui-select-field__option-label {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ui-select-field__option-description {
+  order: 1;
+  flex-basis: 100%;
+  color: var(--ref-muted);
+  font-size: 12px;
+}
+
+.ui-select-field__empty {
+  display: block;
+  padding: 4px 8px;
+  color: var(--ref-muted);
+}
+
+/* Chips wrap on their own row below the trigger. */
+.ui-select-field__chips {
+  flex: 0 0 100%;
+}
+
+.ui-select-field__chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  outline: none;
+}
+
+.ui-select-field__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  box-sizing: border-box;
+  max-width: 100%;
+  height: 22px;
+  padding: 0 4px 0 8px;
+  border: 1px solid var(--ref-border);
+  border-radius: 999px;
+  background: var(--ref-surface);
+  font-size: 12px;
+  outline: none;
+}
+
+.ui-select-field__chip:not([data-allows-removing]) {
+  padding-inline-end: 8px;
+}
+
+.ui-select-field__chip[data-focus-visible] {
+  box-shadow: 0 0 0 2px var(--ref-focus);
+}
+
+.ui-select-field__chip[data-change='added'] {
+  border-color: var(--ref-success);
+}
+
+.ui-select-field__chip-icon {
+  width: 12px;
+  height: 12px;
+}
+
+.ui-select-field__chip-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-select-field__chip-remove.ui-icon-button {
+  width: 16px;
+  min-height: 16px;
+  border-radius: 50%;
+}
+
+.ui-select-field__removed {
+  flex: none;
+  font-size: 12px;
+}

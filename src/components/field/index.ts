@@ -1,10 +1,21 @@
-export { Field, FieldRestoreButton, getFieldUndo, useFieldState, validateString } from './field.js';
+export {
+  Field,
+  FieldPreviousValue,
+  FieldRestoreButton,
+  getFieldUndo,
+  useFieldControl,
+  useFieldState,
+  validateString,
+} from './field.js';
 export type {
+  FieldControl,
   FieldControlProps,
   FieldIssue,
   FieldLabelLayout,
+  FieldLayoutProps,
   FieldMenuAction,
   FieldMenuEntry,
+  FieldPreviousValueProps,
   FieldProps,
   FieldRestoreButtonProps,
   FieldSeverity,
@@ -13,6 +24,7 @@ export type {
   FieldStatus,
   FieldUndo,
   FieldValidation,
+  FieldValueProps,
   StringRuleMessages,
   StringRules,
 } from './field.js';

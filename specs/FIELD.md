@@ -226,25 +226,52 @@ With `trim`, the rules shall check the text without its leading and trailing whi
 Implementation: `src/components/field/string-rules.ts`
 Verification: `src/components/field/string-rules.test.ts`
 
+## UIC-FIELD-8 - Previous values
+
+### UIC-FIELD-8.1 - Marker
+
+`FieldPreviousValue` shall mark a value the edit replaced or removed, so a control can show it beside the current value: a `<span>` (`ui-field-previous-value`) holding the value content (text, or an icon and its label) in a `<del>` element (`ui-field-previous-value__value`), which the reference sheet strikes through. The value stays readable to assistive technology. It appends the caller's `className` and forwards caller `data-*` attributes and `id`.
+
+Implementation: `src/components/field/field-previous-value.tsx`, `labs/reference/field.css`
+Verification: `src/components/field/field-previous-value.test.tsx`
+
+### UIC-FIELD-8.2 - Restoring a previous value
+
+With `onRestore`, the marker shall end with a `FieldRestoreButton` named from `restoreLabel` (or the text content) that calls `onRestore` once per press, keeps pointer focus where it was and is disabled while `isDisabled`. Without `onRestore` the marker only shows the value.
+
+Implementation: `src/components/field/field-previous-value.tsx`
+Verification: `src/components/field/field-previous-value.test.tsx`
+
+## UIC-FIELD-9 - Field controls
+
+### UIC-FIELD-9.1 - Shared control props
+
+Every field control's props shall extend `FieldValueProps<T>`, the `Field` props without `state` and `children` together with the `useFieldState` options. `useFieldControl(props)` splits such props into the field state, which it creates, the `Field` props (caller `className`, `id` and `data-*` attributes included) and the control's own props, so each control renders `<Field {...field} state={state}>` around its own control.
+
+Implementation: `src/components/field/field-control.ts`
+Verification: `src/components/field/field-control.test.tsx`
+
 ## Hooks
 
-| Hook                      | Kind      | Values                                                                  | Description                                                      |
-| ------------------------- | --------- | ----------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| `ui-field`                | root      |                                                                         | The field's `<div>`.                                             |
-| `ui-field__label`         | slot      |                                                                         | The `<label>`; the `control-only` layout draws none.             |
-| `ui-field__required`      | slot      |                                                                         | The asterisk of a required field, inside the label.              |
-| `ui-field__colon`         | slot      |                                                                         | The colon of the `label-colon-control` layout, inside the label. |
-| `ui-field__control`       | slot      |                                                                         | Holds the control.                                               |
-| `ui-field__help`          | slot      |                                                                         | The help button (also `ui-icon-button`).                         |
-| `ui-field__menu`          | slot      |                                                                         | The menu button (also `ui-dropdown-menu` and `ui-icon-button`).  |
-| `ui-field__decoration`    | slot      |                                                                         | The host's badges and marks.                                     |
-| `ui-field__description`   | slot      |                                                                         | The description.                                                 |
-| `ui-field__message`       | slot      |                                                                         | The validation message; empty while valid.                       |
-| `data-label-layout`       | attribute | `label-control`, `control-label`, `label-colon-control`, `control-only` | Where the label sits.                                            |
-| `data-validation`         | state     | `valid`, `invalid`, `warning`, `pending`                                | Validation status.                                               |
-| `data-dirty`              | state     | `true`                                                                  | The value differs from the committed value.                      |
-| `data-required`           | state     | `true`                                                                  | A value is required.                                             |
-| `data-readonly`           | state     | `true`                                                                  | Read-only.                                                       |
-| `data-disabled`           | state     | `true`                                                                  | Disabled.                                                        |
-| `data-severity`           | state     | `error`, `warning`                                                      | On the message: the severity of the message shown.               |
-| `ui-field-restore-button` | root      |                                                                         | A restore button (also `ui-icon-button`).                        |
+| Hook                             | Kind      | Values                                                                  | Description                                                      |
+| -------------------------------- | --------- | ----------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `ui-field`                       | root      |                                                                         | The field's `<div>`.                                             |
+| `ui-field__label`                | slot      |                                                                         | The `<label>`; the `control-only` layout draws none.             |
+| `ui-field__required`             | slot      |                                                                         | The asterisk of a required field, inside the label.              |
+| `ui-field__colon`                | slot      |                                                                         | The colon of the `label-colon-control` layout, inside the label. |
+| `ui-field__control`              | slot      |                                                                         | Holds the control.                                               |
+| `ui-field__help`                 | slot      |                                                                         | The help button (also `ui-icon-button`).                         |
+| `ui-field__menu`                 | slot      |                                                                         | The menu button (also `ui-dropdown-menu` and `ui-icon-button`).  |
+| `ui-field__decoration`           | slot      |                                                                         | The host's badges and marks.                                     |
+| `ui-field__description`          | slot      |                                                                         | The description.                                                 |
+| `ui-field__message`              | slot      |                                                                         | The validation message; empty while valid.                       |
+| `data-label-layout`              | attribute | `label-control`, `control-label`, `label-colon-control`, `control-only` | Where the label sits.                                            |
+| `data-validation`                | state     | `valid`, `invalid`, `warning`, `pending`                                | Validation status.                                               |
+| `data-dirty`                     | state     | `true`                                                                  | The value differs from the committed value.                      |
+| `data-required`                  | state     | `true`                                                                  | A value is required.                                             |
+| `data-readonly`                  | state     | `true`                                                                  | Read-only.                                                       |
+| `data-disabled`                  | state     | `true`                                                                  | Disabled.                                                        |
+| `data-severity`                  | state     | `error`, `warning`                                                      | On the message: the severity of the message shown.               |
+| `ui-field-restore-button`        | root      |                                                                         | A restore button (also `ui-icon-button`).                        |
+| `ui-field-previous-value`        | root      |                                                                         | A previous-value marker.                                         |
+| `ui-field-previous-value__value` | slot      |                                                                         | The previous value, in a `<del>` element.                        |
