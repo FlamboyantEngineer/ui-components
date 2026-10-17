@@ -11,6 +11,7 @@ import { useControllableState } from '../../core/controllable-state.js';
 import { createHooks, measuredProperty } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
+import { useWidestTextWidth } from '../../utils/use-widest-text-width.js';
 import type { FieldControlProps, FieldState } from '../field/field.js';
 import { SelectChips } from './select-chips.js';
 import { SelectList } from './select-list.js';
@@ -25,7 +26,6 @@ import {
 } from './select-options.js';
 import { useSelectSearch, type SelectFieldLoader, type SelectSearch } from './select-search.js';
 import { SelectTrigger } from './select-trigger.js';
-import { useWidestTextWidth } from './select-width.js';
 
 /** A select field's value with its selection mode erased. */
 export type SelectKeysValue = Key | Key[] | null;
@@ -36,8 +36,8 @@ export interface SelectConfig {
   emptyLabel?: string | undefined;
   filterable?: boolean | undefined;
   loadOptions?: SelectFieldLoader | undefined;
-  minSearchLength: number;
-  searchDelay: number;
+  minSearchLength?: number | undefined;
+  searchDelay?: number | undefined;
   isOpen?: boolean | undefined;
   defaultOpen?: boolean | undefined;
   onOpenChange?: ((isOpen: boolean) => void) | undefined;
@@ -58,10 +58,10 @@ const FILTER_THRESHOLD = 10;
 
 const hooks = createHooks('select-field', ['select']);
 
-function emptyMessage(search: SelectSearch | null, strings: UiStrings, minSearchLength: number) {
+function emptyMessage(search: SelectSearch | null, strings: UiStrings) {
   if (search?.isLoading) return strings.loading;
   if (search?.hasFailed) return strings.searchFailed;
-  if (search?.isTooShort) return strings.typeToSearch(minSearchLength);
+  if (search?.isTooShort) return strings.typeToSearch(search.minSearchLength);
   return strings.noResults;
 }
 
@@ -190,7 +190,7 @@ function useTrigger(control: FieldControlProps, config: SelectConfig, model: Sel
  * multiple select, the chips. Every pick, chip removal and restore commits at once.
  */
 export function SelectControl({ control, label, ...props }: SelectControlProps) {
-  const { state, isMultiple, options, minSearchLength } = props;
+  const { state, isMultiple, options } = props;
   const strings = useUiStrings();
   const model = useSelectModel(state, props, isMultiple);
   const isFilterable =
@@ -234,7 +234,7 @@ export function SelectControl({ control, label, ...props }: SelectControlProps) 
           filterText={actions.filterText}
           onFilterTextChange={actions.changeFilter}
           isLoading={Boolean(model.search?.isLoading)}
-          emptyMessage={emptyMessage(model.search, strings, minSearchLength)}
+          emptyMessage={emptyMessage(model.search, strings)}
         />
       </AriaSelect>
       {isMultiple ? (

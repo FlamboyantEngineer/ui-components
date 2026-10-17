@@ -1,6 +1,6 @@
 # Badge
 
-`Badge` is a compact, non-interactive value a reader scans rather than operates: a tag, a type, a role, a state or a count. Its `variant` chooses the shape, `tone` the colour family, and `size` the scale. Passing `count` instead of children makes it a count badge that formats the number itself ([COUNT.md](COUNT.md)). A token the reader presses is a [Button](BUTTON.md) with the `chip` variant, not a badge.
+`Badge` is a compact, non-interactive value a reader scans rather than operates: a tag, a type, a role, a state or a count. Its `variant` chooses the shape, `tone` the colour family, and `size` the scale. Passing `count` instead of children makes it a count badge that formats the number itself ([COUNT.md](COUNT.md)). A token the reader presses is a [Button](BUTTON.md) with the `chip` variant, not a badge. A set of values the reader moves through or removes is a [Tag Group](TAG-GROUP.md).
 
 ## UIC-BADGE-1 - Contract
 

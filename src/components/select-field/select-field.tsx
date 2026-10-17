@@ -3,7 +3,7 @@ import { createHooks } from '../../core/hooks.js';
 import { Field, useFieldControl, type FieldInputProps, type FieldState } from '../field/field.js';
 import { SelectControl, type SelectKeysValue } from './select-control.js';
 import type { SelectFieldOption } from './select-options.js';
-import { DEFAULT_SEARCH_DELAY, type SelectFieldLoader } from './select-search.js';
+import type { SelectFieldLoader } from './select-search.js';
 
 export type SelectFieldSelectionMode = 'single' | 'multiple';
 
@@ -53,12 +53,7 @@ export function SelectField<M extends SelectFieldSelectionMode = 'single'>(
     initialValue: empty,
     emptyValue: empty,
   });
-  const {
-    selectionMode = 'single',
-    minSearchLength = 1,
-    searchDelay = DEFAULT_SEARCH_DELAY,
-    ...config
-  } = rest;
+  const { selectionMode = 'single', ...config } = rest;
   return (
     <Field
       {...field}
@@ -76,13 +71,13 @@ export function SelectField<M extends SelectFieldSelectionMode = 'single'>(
           state={state as unknown as FieldState<SelectKeysValue>}
           label={field.label}
           isMultiple={isMultiple}
-          minSearchLength={minSearchLength}
-          searchDelay={searchDelay}
         />
       )}
     </Field>
   );
 }
 
+export { SelectControl } from './select-control.js';
+export type { SelectKeysValue } from './select-control.js';
 export type { SelectFieldOption } from './select-options.js';
 export type { SelectFieldLoader } from './select-search.js';

@@ -1,6 +1,6 @@
 # Select Field
 
-`SelectField` chooses one value, or several, from a list the caller defines. It is a field control: it composes the field base ([FIELD.md](FIELD.md)) for its label, layout, description, help, validation, dirty state, restore, undo and menu, around React Aria's `Select`, `ListBox` and, for filterable lists, `Autocomplete` and `SearchField`. The closed field is a framed trigger showing the chosen option (its icon and label) or a placeholder; the options open in a popover. A multiple select keeps its trigger and shows its choices as removable chips below it (React Aria `TagGroup`). Long lists filter inside the open list, and `loadOptions` replaces the local filter with the caller's asynchronous search. A select commits only values its options define; a list whose typed text may itself become the value is a [Combobox](COMBOBOX.md).
+`SelectField` chooses one value, or several, from a list the caller defines. It is a field control: it composes the field base ([FIELD.md](FIELD.md)) for its label, layout, description, help, validation, dirty state, restore, undo and menu, around React Aria's `Select`, `ListBox` and, for filterable lists, `Autocomplete` and `SearchField`. The closed field is a framed trigger showing the chosen option (its icon and label) or a placeholder; the options open in a popover. A multiple select keeps its trigger and shows its choices as removable chips below it (React Aria `TagGroup`). Long lists filter inside the open list, and `loadOptions` replaces the local filter with the caller's asynchronous search. A select commits only values its options define; a list whose typed text may itself become the value is a [Combobox](COMBOBOX.md). The [Boolean Field](BOOLEAN-FIELD.md)'s `dropdown` variant draws the same control, bound to its own field state.
 
 ## UIC-SELECT-FIELD-1 - Field
 
@@ -52,7 +52,7 @@ Verification: `src/components/select-field/select-field.test.tsx`, `e2e/select-f
 
 The select shall measure the widest of its options' labels and its placeholder (or empty label) in the trigger's font on a canvas and publish it, in pixels, as `--ui-select-field-label-width` on `ui-select-field__select`; its root publishes `data-icons` when any option has an icon. It measures once per set of labels and again when the document's fonts finish loading; opening, filtering and search results never change it. The reference sheet sizes the trigger to that width plus its padding, chevron and, with `data-icons`, an icon, capped at the width of the field's control slot, so the trigger keeps its width as the choice changes.
 
-Implementation: `src/components/select-field/select-width.ts`, `src/components/select-field/select-control.tsx`, `labs/reference/select-field.css`
+Implementation: `src/utils/use-widest-text-width.ts`, `src/components/select-field/select-control.tsx`, `labs/reference/select-field.css`
 Verification: `src/components/select-field/select-field.test.tsx`, `e2e/select-field.spec.ts`
 
 ### UIC-SELECT-FIELD-2.3 - Previous value

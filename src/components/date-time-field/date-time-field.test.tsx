@@ -94,9 +94,16 @@ describe('DateTimeField field', () => {
   it('UIC-DATE-TIME-FIELD-1.3 commits typed dates, times and date-times in canonical form', async () => {
     const user = userEvent.setup();
     const onCommit = vi.fn();
-    const { unmount } = renderInLocale(<DateTimeField label="Due" onCommit={onCommit} />);
+    const onChange = vi.fn();
+    const { unmount } = renderInLocale(
+      <DateTimeField label="Due" onChange={onChange} onCommit={onCommit} />,
+    );
     act(() => segment(/^month/).focus());
-    await user.keyboard('5142026');
+    await user.keyboard('514');
+    expect(segment(/^day/)).toHaveTextContent('14');
+    expect(onChange).not.toHaveBeenCalled();
+    expect(onCommit).not.toHaveBeenCalled();
+    await user.keyboard('2026');
     expect(onCommit).toHaveBeenLastCalledWith('2026-05-14');
     unmount();
     const time = vi.fn();

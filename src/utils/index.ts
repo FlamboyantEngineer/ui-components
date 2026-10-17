@@ -41,6 +41,7 @@ export type {
 export { useResizeObserver } from './use-resize-observer.js';
 export type { ResizeObserverTarget, ResizeObserverTargets } from './use-resize-observer.js';
 export { useElementSize } from './use-element-size.js';
+export { useWidestTextWidth } from './use-widest-text-width.js';
 export type {
   ElementSize,
   ElementSizeBox,

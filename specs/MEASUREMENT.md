@@ -1,6 +1,6 @@
 # Measurement
 
-Two hooks measure elements for components and hosts: `useResizeObserver` observes elements' sizes, and `useElementSize` reads one element's size into state. Both use the observer and animation frames of the element's own window, so content rendered into an iframe is measured there.
+Three hooks measure for components and hosts: `useResizeObserver` observes elements' sizes, `useElementSize` reads one element's size into state, and `useWidestTextWidth` measures the widest of several texts in an element's font. The first two use the observer and animation frames of the element's own window, so content rendered into an iframe is measured there.
 
 ## UIC-MEASUREMENT-1 - Resize observer
 
@@ -61,3 +61,12 @@ An element held in state (through a callback ref) shall be measured when it moun
 
 Implementation: `src/utils/use-element-size.ts`
 Verification: `src/utils/use-element-size.test.ts`
+
+## UIC-MEASUREMENT-3 - Text width
+
+### UIC-MEASUREMENT-3.1 - Widest text
+
+`useWidestTextWidth(ref, texts)` shall return the width, in whole pixels rounded up, of the widest of `texts` drawn in the computed font of the ref's element, measured on an offscreen canvas after the element mounts. It measures again when the set of texts changes and once the document's fonts finish loading, never for a fresh array holding the same texts, and returns `null` where no offscreen canvas is available. Components publish the result as a measured property so a control keeps its width as the shown text changes.
+
+Implementation: `src/utils/use-widest-text-width.ts`
+Verification: `src/utils/use-widest-text-width.test.ts`
