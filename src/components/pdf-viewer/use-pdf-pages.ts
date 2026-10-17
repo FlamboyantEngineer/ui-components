@@ -8,13 +8,26 @@ export interface UsePdfPagesOptions {
   pageCount: number;
 }
 
+/** A rectangle on a page in CSS pixels from the top-left corner of its bitmap. */
+export interface PagePixelRect {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+}
+
 export interface PdfPagesController {
   /** Pages within a screen of the view, which render; `null` when every page renders. */
   nearPages: ReadonlySet<number> | null;
   /** The page that fills most of the view, zero-based. */
   currentPage: number;
+  /** Every page element, by page index. */
+  elements: NearPages['elements'];
   registerPage(pageIndex: number, element: HTMLElement | null): void;
-  scrollToPage(pageIndex: number): void;
+  /**
+   * Scrolls a page, or a rectangle on it, to where the first page sits when the view is at the top.
+   */
+  scrollToPage(pageIndex: number, rect?: PagePixelRect): void;
   /** Scrolls an element inside a page into the middle of the view unless it is fully visible. */
   revealElement(element: HTMLElement): void;
   /** Call from the scroller's scroll handler. */
@@ -78,15 +91,24 @@ function scrollToAnchor(scroller: HTMLElement, page: HTMLElement, anchor: Scroll
   scroller.scrollLeft = anchor.centre * scroller.scrollWidth - scroller.clientWidth / 2;
 }
 
+/** The scroll position that shows a span, centred, unless the view already shows all of it. */
+function revealSpan(start: number, size: number, view: { start: number; size: number }): number {
+  if (start >= view.start && start + size <= view.start + view.size) return view.start;
+  return start + size / 2 - view.size / 2;
+}
+
 function revealInScroller(scroller: HTMLElement, element: HTMLElement) {
   const view = scroller.getBoundingClientRect();
   const box = element.getBoundingClientRect();
-  if (box.top < view.top || box.bottom > view.bottom) {
-    scroller.scrollTop += box.top - view.top - (view.height - box.height) / 2;
-  }
-  if (box.left < view.left || box.right > view.right) {
-    scroller.scrollLeft += box.left - view.left - (view.width - box.width) / 2;
-  }
+  const { scrollTop, scrollLeft } = scroller;
+  scroller.scrollTop = revealSpan(scrollTop + box.top - view.top, box.height, {
+    start: scrollTop,
+    size: view.height,
+  });
+  scroller.scrollLeft = revealSpan(scrollLeft + box.left - view.left, box.width, {
+    start: scrollLeft,
+    size: view.width,
+  });
 }
 
 /**
@@ -155,17 +177,31 @@ export function usePdfPages({
   );
   const anchor = useScrollAnchor({ scrollerRef, document, elements, onPageChange: setCurrentPage });
 
-  // A page lands where the first page sits when the view is at the top.
+  // A page lands where the first page sits when the view is at the top. The position is recorded
+  // at once, so a zoom applied before the scroll event keeps it.
+  const { captureAnchor } = anchor;
   const scrollToPage = useCallback(
-    (pageIndex: number) => {
+    (pageIndex: number, rect?: PagePixelRect) => {
       const scroller = scrollerRef.current;
       const page = elements.current.get(pageIndex);
       const first = elements.current.get(0);
       if (!scroller || !page || !first) return;
-      scroller.scrollTop = page.offsetTop - first.offsetTop;
+      const inset = rect ? page.clientTop + rect.top : 0;
+      scroller.scrollTop = page.offsetTop - first.offsetTop + inset;
+      if (rect) {
+        scroller.scrollLeft = revealSpan(
+          page.offsetLeft + page.clientLeft + rect.left,
+          rect.width,
+          {
+            start: scroller.scrollLeft,
+            size: scroller.clientWidth,
+          },
+        );
+      }
+      captureAnchor();
       setCurrentPage(pageIndex);
     },
-    [elements, scrollerRef, setCurrentPage],
+    [captureAnchor, elements, scrollerRef, setCurrentPage],
   );
 
   const revealElement = useCallback(
@@ -179,6 +215,7 @@ export function usePdfPages({
     ...anchor,
     nearPages,
     currentPage: Math.min(position.currentPage, Math.max(0, pageCount - 1)),
+    elements,
     registerPage,
     scrollToPage,
     revealElement,

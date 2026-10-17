@@ -29,6 +29,19 @@
   margin-inline-start: auto;
 }
 
+.ui-pdf-viewer__leading-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding-inline-end: 8px;
+  border-inline-end: 1px solid var(--ref-border);
+}
+
+/* Starts its own group: the zoom control after it has no group border of its own. */
+.ui-pdf-viewer__leading-actions + * {
+  margin-inline-start: 4px;
+}
+
 .ui-pdf-viewer__page-field,
 .ui-pdf-viewer__search-field {
   display: inline-flex;
@@ -141,6 +154,11 @@
 
 .ui-pdf-viewer__canvas {
   display: block;
+}
+
+/* Caller content stays on its page. */
+.ui-pdf-viewer__overlay {
+  overflow: hidden;
 }
 
 .ui-pdf-viewer__stage > .ui-inline-error {

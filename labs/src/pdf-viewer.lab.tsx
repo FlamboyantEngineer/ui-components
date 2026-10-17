@@ -1,15 +1,16 @@
-import type * as Pdfjs from 'pdfjs-dist';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { PdfViewer, type PdfViewerProps } from '../../src/components/pdf-viewer/pdf-viewer.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import {
+  AnnotatedReader,
+  CallerOwnedFind,
+  ProjectedToolbar,
+  loadEngine,
+  sampleUrl,
+  workerSrc,
+} from './pdf-viewer-cases.js';
 
-// The labs build copies the sample, the engine and its worker next to the bundles
-// (scripts/build-labs.mjs); the engine is loaded by URL, as a host would load its own copy.
-const sampleUrl = 'build/samples/seasonal-report.pdf';
-const workerSrc = 'build/vendor/pdf.worker.min.mjs';
-const engineUrl = new URL('build/vendor/pdf.min.mjs', document.baseURI).href;
-const loadEngine = () => import(engineUrl) as Promise<typeof Pdfjs>;
 const notAPdf = new TextEncoder().encode('This file is not a PDF.');
 
 const states = ['loading', 'ready', 'error'] as const;
@@ -148,6 +149,24 @@ mountLab(
       description="The bytes are fetched first: the viewer loads while the source is null, then opens its own copy."
     >
       <BytesSource />
+    </LabSection>
+    <LabSection
+      title="Overlays and context menu"
+      description="Marks drawn over the pages in page coordinates. Right-click selected text to copy it or mark it, right-click a mark to remove it, and reveal a mark from the list."
+    >
+      <AnnotatedReader />
+    </LabSection>
+    <LabSection
+      title="Caller-owned find"
+      description="The caller holds the query and the current match and draws its own find controls in the toolbar."
+    >
+      <CallerOwnedFind />
+    </LabSection>
+    <LabSection
+      title="Toolbar elsewhere"
+      description="The toolbar is projected above a contents panel beside the document, with a leading action; the contents set the page and follow the reader."
+    >
+      <ProjectedToolbar />
     </LabSection>
   </>,
 );

@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, type ReactNode } from 'react';
 import { highlightTextRuns } from './highlights.js';
+import type { PdfPageGeometry } from './page-geometry.js';
 import { pdfViewerHooks as hooks } from './styling-hooks.js';
 import type { PdfMatchRange } from './pdf-search.js';
 import type { PdfTextContent, PdfTextLayer, PdfViewport } from './pdf-engine.js';
@@ -19,6 +20,8 @@ export interface PdfViewerPageProps<
   ranges: readonly PdfMatchRange[];
   revealKey: number;
   pages: Pick<PdfPagesController, 'registerPage' | 'revealElement'>;
+  /** The caller's content over the page. */
+  renderOverlay?: ((page: PdfPageGeometry<V>) => ReactNode) | undefined;
 }
 
 interface UseMatchHighlightsOptions {
@@ -60,6 +63,7 @@ export function PdfViewerPage<V extends PdfViewport, C extends PdfTextContent>({
   ranges,
   revealKey,
   pages,
+  renderOverlay,
 }: PdfViewerPageProps<V, C>) {
   const { registerPage, revealElement } = pages;
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -74,6 +78,7 @@ export function PdfViewerPage<V extends PdfViewport, C extends PdfTextContent>({
   const width = size.width * scale;
   const height = size.height * scale;
   const pixels = isNear ? measureCanvasPixels(width, height) : { width: 0, height: 0 };
+  const viewport = isNear ? loaded.getViewport(pageIndex, scale) : undefined;
   return (
     <div {...hooks.slot('page')} ref={pageRef} style={{ position: 'relative', width, height }}>
       <canvas
@@ -89,6 +94,15 @@ export function PdfViewerPage<V extends PdfViewport, C extends PdfTextContent>({
         ref={layerRef}
         style={{ position: 'absolute', inset: 0 }}
       />
+      {renderOverlay && viewport ? (
+        // Transparent to the pointer, so text under the caller's content can still be selected.
+        <div
+          {...hooks.slot('overlay')}
+          style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
+        >
+          {renderOverlay({ pageIndex, viewport })}
+        </div>
+      ) : null}
     </div>
   );
 }

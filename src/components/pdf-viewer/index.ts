@@ -1,5 +1,14 @@
-export { PdfViewer } from './pdf-viewer.js';
-export type { PdfViewerProps } from './pdf-viewer.js';
+export { PdfViewer, findBoxAtPoint } from './pdf-viewer.js';
+export type {
+  PdfPageGeometry,
+  PdfPagePoint,
+  PdfPageRect,
+  PdfPoint,
+  PdfRect,
+  PdfSearchControls,
+  PdfSelection,
+  PdfViewerProps,
+} from './pdf-viewer.js';
 export type {
   PdfDocumentParams,
   PdfEngine,

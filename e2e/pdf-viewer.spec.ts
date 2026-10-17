@@ -3,13 +3,21 @@ import { expect, test } from './fixtures.js';
 
 const pageWidthAt100 = 420 * (96 / 72);
 
-async function openReader(page: Page, lab: { open(name: string): Promise<void> }) {
+type LabOpener = { open(name: string): Promise<void> };
+
+/** Opens the lab and waits until the case's first page shows its text. */
+async function openCase(page: Page, lab: LabOpener, name: string) {
   await lab.open('pdf-viewer');
-  const reader = page.locator('[data-lab-case="reader"]');
+  const root = page.locator(`[data-lab-case="${name}"]`);
+  // The lab opens nine documents at once, each with its own engine worker.
   await expect(
-    reader.locator('.ui-pdf-viewer__text-layer [role="presentation"]').first(),
-  ).toBeVisible();
-  return reader;
+    root.locator('.ui-pdf-viewer__text-layer [role="presentation"]').first(),
+  ).toBeVisible({ timeout: 30_000 });
+  return root;
+}
+
+function openReader(page: Page, lab: LabOpener) {
+  return openCase(page, lab, 'reader');
 }
 
 function box(locator: Locator) {
@@ -17,6 +25,21 @@ function box(locator: Locator) {
     if (!value) throw new Error('element has no box');
     return value;
   });
+}
+
+function expectNear(actual: number, expected: number, tolerance = 1.5) {
+  expect(Math.abs(actual - expected), `${actual} is near ${expected}`).toBeLessThan(tolerance);
+}
+
+/** Selects a text run with the pointer, from its first to its last character. */
+async function selectRun(page: Page, run: Locator) {
+  await run.scrollIntoViewIfNeeded();
+  const bounds = await box(run);
+  await page.mouse.move(bounds.x + 1, bounds.y + bounds.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(bounds.x + bounds.width - 1, bounds.y + bounds.height / 2, { steps: 10 });
+  await page.mouse.up();
+  return bounds;
 }
 
 test.describe('PDF Viewer lab', () => {
@@ -105,12 +128,7 @@ test.describe('PDF Viewer lab', () => {
       .locator('.ui-pdf-viewer__page')
       .first()
       .locator('[role="presentation"]', { hasText: 'Orchards across' });
-    await line.scrollIntoViewIfNeeded();
-    const bounds = await box(line);
-    await page.mouse.move(bounds.x + 1, bounds.y + bounds.height / 2);
-    await page.mouse.down();
-    await page.mouse.move(bounds.x + bounds.width - 1, bounds.y + bounds.height / 2, { steps: 10 });
-    await page.mouse.up();
+    await selectRun(page, line);
     expect(await page.evaluate(() => String(window.getSelection()))).toBe(
       'Orchards across the valley had a strong year.',
     );
@@ -208,6 +226,156 @@ test.describe('PDF Viewer lab', () => {
 
     await reader.getByRole('button', { name: 'Download' }).click();
     await expect(reader.locator('[data-lab-output="downloads"]')).toHaveText('1');
+  });
+
+  test('UIC-PDF-VIEWER-7.1 UIC-PDF-VIEWER-7.2 UIC-PDF-VIEWER-7.3 UIC-PDF-VIEWER-7.4 draws marks on their pages in page coordinates and reveals them', async ({
+    page,
+    lab,
+  }) => {
+    const annotated = await openCase(page, lab, 'annotated');
+    const mark = annotated.locator('[data-lab-mark="heading"]');
+    const third = annotated.locator('.ui-pdf-viewer__page').nth(2);
+    await annotated.getByRole('button', { name: 'Reveal Markets heading' }).click();
+    await expect(annotated.getByLabel('Page', { exact: true })).toHaveValue('3');
+    await expect(mark).toBeVisible();
+    await expect(annotated.locator('[data-lab-output="viewports"]')).toContainText('3');
+
+    const scroller = await box(annotated.locator('.ui-pdf-viewer__scroller'));
+    const firstPage = await box(annotated.locator('.ui-pdf-viewer__page').first());
+    expect(firstPage.y).toBeLessThan(scroller.y);
+    expectNear((await box(mark)).y - scroller.y, 12);
+
+    const expectOnPage = async () => {
+      const pageBox = await box(third);
+      const markBox = await box(mark);
+      const scale = pageBox.width / 420;
+      expectNear(markBox.x - pageBox.x, 44 * scale);
+      expectNear(markBox.y - pageBox.y, 56 * scale);
+      expectNear(markBox.width, 92 * scale);
+      const heading = await box(third.locator('[role="presentation"]', { hasText: 'Markets' }));
+      expect(heading.x).toBeGreaterThan(markBox.x);
+      expect(heading.y + heading.height / 2).toBeLessThan(markBox.y + markBox.height);
+      expect(heading.y + heading.height / 2).toBeGreaterThan(markBox.y);
+    };
+    await expectOnPage();
+    await expect(third.locator('.ui-pdf-viewer__overlay')).toHaveCSS('pointer-events', 'none');
+    await annotated.getByRole('button', { name: 'Zoom out' }).click();
+    await expectOnPage();
+    // A narrower column moves the pages, and the marks with them.
+    const pageX = (await box(third)).x;
+    await annotated
+      .locator('> div')
+      .first()
+      .evaluate((frame: HTMLElement) => {
+        frame.style.maxWidth = '520px';
+      });
+    await expect.poll(async () => (await box(third)).x).toBeLessThan(pageX - 10);
+    await expectOnPage();
+  });
+
+  test('UIC-PDF-VIEWER-8.1 UIC-PDF-VIEWER-8.2 UIC-PDF-VIEWER-8.3 UIC-PDF-VIEWER-8.4 copies, marks and removes from the context menu', async ({
+    page,
+    context,
+    lab,
+  }) => {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+    const annotated = await openCase(page, lab, 'annotated');
+    const first = annotated.locator('.ui-pdf-viewer__page').first();
+    const blank = await box(first);
+    const prevented = await first.evaluate(
+      (element, point) =>
+        !element.dispatchEvent(
+          new MouseEvent('contextmenu', { bubbles: true, cancelable: true, ...point }),
+        ),
+      { clientX: blank.x + blank.width - 10, clientY: blank.y + blank.height - 10 },
+    );
+    expect(prevented).toBe(true);
+    await expect(page.locator('.ui-menu-popover')).toHaveCount(0);
+
+    const line = first.locator('[role="presentation"]', { hasText: 'Orchards across' });
+    const lineBox = await selectRun(page, line);
+    const menu = page.getByRole('menu', { name: 'Context menu' });
+    await page.mouse.click(lineBox.x + 20, lineBox.y + lineBox.height / 2, { button: 'right' });
+    await expect(menu.getByRole('menuitem')).toHaveText(['Copy', 'Mark selection']);
+    await lab.expectAccessible('.ui-menu-popover');
+    await menu.getByRole('menuitem', { name: 'Copy' }).click();
+    await expect(menu).toHaveCount(0);
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(
+      'Orchards across the valley had a strong year.',
+    );
+
+    await selectRun(page, line);
+    await page.mouse.click(lineBox.x + 20, lineBox.y + lineBox.height / 2, { button: 'right' });
+    await menu.getByRole('menuitem', { name: 'Mark selection' }).click();
+    const mark = annotated.locator('[data-lab-mark="mark-1"]');
+    const markBox = await box(mark);
+    expectNear(markBox.x, lineBox.x, 3);
+    expectNear(markBox.y, lineBox.y, 3);
+    expectNear(markBox.width, lineBox.width, 6);
+
+    await page.mouse.click(blank.x + blank.width - 10, blank.y + blank.height - 10);
+    expect(await page.evaluate(() => String(window.getSelection()))).toBe('');
+    await page.mouse.click(markBox.x + 10, markBox.y + markBox.height / 2, { button: 'right' });
+    await expect(menu.getByRole('menuitem')).toHaveText(['Remove mark']);
+    await menu.getByRole('menuitem', { name: 'Remove mark' }).click();
+    await expect(mark).toHaveCount(0);
+  });
+
+  test('UIC-PDF-VIEWER-5.4 UIC-PDF-VIEWER-5.5 UIC-PDF-VIEWER-5.6 lets the caller own the find', async ({
+    page,
+    lab,
+  }) => {
+    const find = await openCase(page, lab, 'find');
+    await expect(find.getByRole('searchbox', { name: 'Find in document' })).toHaveCount(0);
+    const field = find.getByRole('searchbox', { name: 'Find everywhere' });
+    const matches = find.locator('[data-lab-output="matches"]');
+    await field.fill('harvest');
+    await expect(find.locator('[data-lab-output="query"]')).toHaveText('harvest');
+    await expect(matches).toHaveText('1 of 4');
+    await expect(find.locator('.ui-pdf-viewer__match[data-current]')).toHaveText('harvest');
+    await find.getByRole('button', { name: 'Forward', exact: true }).click();
+    await find.getByRole('button', { name: 'Forward', exact: true }).click();
+    await expect(matches).toHaveText('3 of 4');
+    await expect(find.locator('[data-lab-output="match"]')).toHaveText('2');
+    await expect(find.getByLabel('Page', { exact: true })).toHaveValue('2');
+    await find.getByRole('button', { name: 'Back', exact: true }).click();
+    await expect(matches).toHaveText('2 of 4');
+
+    await find.getByRole('button', { name: 'Find pears' }).click();
+    await expect(field).toHaveValue('pear');
+    await expect(matches).toHaveText(/of 2$/);
+  });
+
+  test('UIC-PDF-VIEWER-6.3 UIC-PDF-VIEWER-6.1 UIC-PDF-VIEWER-4.3 projects the toolbar above a panel and follows the contents', async ({
+    page,
+    lab,
+  }) => {
+    const projected = await openCase(page, lab, 'projected');
+    const band = projected.locator('[data-lab-band]');
+    const toolbar = band.getByRole('toolbar', { name: 'Report beside its contents controls' });
+    await expect(toolbar).toBeVisible();
+    await expect(projected.locator('.ui-pdf-viewer .ui-pdf-viewer__toolbar')).toHaveCount(0);
+    expectNear((await box(toolbar)).x, (await box(projected)).x);
+    const leading = toolbar.locator('.ui-pdf-viewer__leading-actions').getByRole('button');
+    await expect(leading).toHaveText('Hide contents');
+
+    const output = page.locator('[data-lab-section="Toolbar elsewhere"] [data-lab-output="page"]');
+    const field = band.getByLabel('Page', { exact: true });
+    await projected.getByRole('button', { name: 'Markets' }).click();
+    await expect(field).toHaveValue('3');
+    await expect(output).toHaveText('3');
+    const scroller = projected.locator('.ui-pdf-viewer__scroller');
+    await scroller.evaluate((element) => element.scrollTo({ top: 0 }));
+    await expect(output).toHaveText('1');
+    await expect(field).toHaveValue('1');
+
+    const firstPage = projected.locator('.ui-pdf-viewer__page').first();
+    const before = (await box(firstPage)).width;
+    await toolbar.getByRole('button', { name: 'Zoom in' }).click();
+    await expect.poll(async () => (await box(firstPage)).width).toBeGreaterThan(before);
+    await leading.click();
+    await expect(projected.getByRole('navigation', { name: 'Contents' })).toHaveCount(0);
+    await expect(leading).toHaveText('Show contents');
   });
 
   test('UIC-PDF-VIEWER-6.1 is accessible with matches highlighted', async ({ page, lab }) => {

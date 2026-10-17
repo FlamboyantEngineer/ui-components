@@ -3,102 +3,18 @@ import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import {
-  isTextItem,
-  type PdfDocumentParams,
-  type PdfEngine,
-  type PdfTextContent,
-  type PdfTextLayer,
-  type PdfTextLayerOptions,
-} from './pdf-engine.js';
-import { PdfViewer, type PdfViewerProps } from './pdf-viewer.js';
-
-const sampleLines = [
-  ['Seasonal Report', 'The apple harvest began', 'and the pear harvest followed.'],
-  ['Varieties', 'Pear: a short harvest window.'],
-  ['Markets', 'Next year the harvest grows.'],
-];
-
-const pointsToPixels = 96 / 72;
-
-function createTextContent(lines: readonly string[]): PdfTextContent {
-  return { items: lines.map((str) => ({ str, hasEOL: true })) };
-}
-
-function createTextLayer({ textContentSource, container }: PdfTextLayerOptions): PdfTextLayer {
-  const texts = textContentSource.items.filter(isTextItem).map((item) => item.str);
-  const runs = texts.map((text) => {
-    const run = document.createElement('span');
-    run.setAttribute('role', 'presentation');
-    run.textContent = text;
-    return run;
-  });
-  return {
-    textDivs: runs,
-    textContentItemsStr: texts,
-    render: async () => container.append(...runs),
-    cancel: vi.fn(),
-  };
-}
-
-function createEngine({
-  lines = sampleLines,
-  failure,
-}: { lines?: string[][]; failure?: Error } = {}) {
-  const render = vi.fn(() => ({ promise: Promise.resolve(), cancel: vi.fn() }));
-  const pages = lines.map((pageLines) => ({
-    getViewport: ({ scale }: { scale: number }) => ({
-      width: 420 * scale,
-      height: 595 * scale,
-      scale,
-    }),
-    render,
-    getTextContent: vi.fn(async () => createTextContent(pageLines)),
-  }));
-  const pdf = {
-    numPages: pages.length,
-    getPage: async (pageNumber: number) => pages[pageNumber - 1]!,
-  };
-  const destroy = vi.fn(async () => undefined);
-  const getDocument = vi.fn((_params: PdfDocumentParams) => ({
-    promise: failure ? Promise.reject(failure) : Promise.resolve(pdf),
-    destroy,
-  }));
-  const TextLayer = vi.fn(function (options: PdfTextLayerOptions) {
-    return createTextLayer(options);
-  });
-  const engine: PdfEngine = {
-    getDocument,
-    GlobalWorkerOptions: { workerSrc: '' },
-    TextLayer: TextLayer as unknown as PdfEngine['TextLayer'],
-    AnnotationMode: { DISABLE: 0 },
-  };
-  return { engine, render, getDocument, destroy, TextLayer, loadEngine: vi.fn(async () => engine) };
-}
-
-function renderViewer(
-  props: Partial<PdfViewerProps> = {},
-  engine: ReturnType<typeof createEngine> = createEngine(),
-) {
-  const view = render(
-    <PdfViewer
-      aria-label="Report"
-      source="/files/Report.pdf"
-      loadEngine={engine.loadEngine}
-      {...props}
-    />,
-  );
-  return { ...view, engine, root: view.container.firstElementChild as HTMLElement };
-}
-
-async function renderReady(props: Partial<PdfViewerProps> = {}) {
-  const view = renderViewer(props);
-  await waitFor(() =>
-    expect(view.container.querySelectorAll('[role="presentation"]')).toHaveLength(7),
-  );
-  return view;
-}
-
-const status = () => document.querySelector('.ui-pdf-viewer__search-status');
+  createEngine,
+  createTextContent,
+  pointsToPixels,
+  renderReady,
+  renderViewer,
+  sampleLines,
+  searchStatus as status,
+  stubIntersectionObserver,
+  stubLayout,
+} from '../../../test/pdf-fixtures.js';
+import { ProjectionOutlet, ProjectionProvider } from '../projection/projection.js';
+import { PdfViewer } from './pdf-viewer.js';
 
 describe('PdfViewer', () => {
   afterEach(() => {
@@ -180,28 +96,16 @@ describe('PdfViewer', () => {
   });
 
   it('UIC-PDF-VIEWER-2.1 renders only the pages near the view', async () => {
-    const observers: Array<(entries: Array<Partial<IntersectionObserverEntry>>) => void> = [];
-    const observed: Element[] = [];
-    vi.stubGlobal(
-      'IntersectionObserver',
-      vi.fn(function (callback: (entries: Array<Partial<IntersectionObserverEntry>>) => void) {
-        observers.push(callback);
-        return {
-          observe: (element: Element) => observed.push(element),
-          unobserve: vi.fn(),
-          disconnect: vi.fn(),
-        };
-      }),
-    );
+    const observer = stubIntersectionObserver();
     const { container, engine } = renderViewer();
-    await waitFor(() => expect(observed).toHaveLength(3));
+    await waitFor(() => expect(observer.observed).toHaveLength(3));
     expect(engine.render).not.toHaveBeenCalled();
-    act(() => observers[0]?.([{ target: observed[1]!, isIntersecting: true }]));
+    act(() => observer.report([1], true));
     await waitFor(() => expect(engine.render).toHaveBeenCalledTimes(1));
     const canvases = container.querySelectorAll('canvas');
     expect(canvases[0]).toHaveAttribute('width', '0');
     expect(canvases[1]).not.toHaveAttribute('width', '0');
-    act(() => observers[0]?.([{ target: observed[1]!, isIntersecting: false }]));
+    act(() => observer.report([1], false));
     expect(canvases[1]).toHaveAttribute('width', '0');
     expect(container.querySelectorAll('[role="presentation"]')).toHaveLength(0);
   });
@@ -263,11 +167,8 @@ describe('PdfViewer', () => {
   });
 
   it('UIC-PDF-VIEWER-4.1 UIC-PDF-VIEWER-4.2 shows the page and goes to other pages', async () => {
-    const { container } = await renderReady();
-    const pages = container.querySelectorAll<HTMLElement>('.ui-pdf-viewer__page');
-    pages.forEach((page, index) =>
-      Object.defineProperty(page, 'offsetTop', { value: 12 + index * 800 }),
-    );
+    stubLayout();
+    const { container } = await renderReady({ defaultZoom: 100 });
     const scroller = screen.getByRole('document');
     const field = screen.getByLabelText('Page');
     expect(field).toHaveValue('1');
@@ -337,10 +238,18 @@ describe('PdfViewer', () => {
 
   it('UIC-PDF-VIEWER-6.1 orders the toolbar and keeps caret keys in its text fields', async () => {
     const download = vi.fn();
-    await renderReady({ actions: <button onClick={download}>Download</button> });
+    await renderReady({
+      actions: <button onClick={download}>Download</button>,
+      leadingActions: <button>Outline</button>,
+      renderPageOverlay: () => null,
+    });
     const toolbar = screen.getByRole('toolbar', { name: 'Report controls' });
     const controls = [...toolbar.querySelectorAll('button:not([hidden]), input')].map(
       (control) => control.getAttribute('aria-label') ?? control.textContent,
+    );
+    expect(controls[0]).toBe('Outline');
+    expect(screen.getByRole('button', { name: 'Outline' }).parentElement).toHaveClass(
+      'ui-pdf-viewer__leading-actions',
     );
     expect(controls.indexOf('Zoom level')).toBeLessThan(controls.indexOf('Fit page width'));
     expect(controls.indexOf('Fit whole page')).toBeLessThan(controls.indexOf('Previous page'));
@@ -371,5 +280,74 @@ describe('PdfViewer', () => {
     expectHooksMatchSpec(container, 'PDF-VIEWER', {
       slots: ['toolbar', 'group', 'page-field', 'page', 'canvas', 'text-layer'],
     });
+  });
+
+  it('UIC-PDF-VIEWER-6.3 renders the toolbar at a projection outlet', async () => {
+    const engine = createEngine();
+    const viewer = (
+      <PdfViewer aria-label="Report" source="/files/Report.pdf" loadEngine={engine.loadEngine} />
+    );
+    const { container, unmount } = render(
+      <ProjectionProvider>
+        <header data-testid="band">
+          <ProjectionOutlet slot="document-tools" />
+        </header>
+        <PdfViewer
+          aria-label="Report"
+          source="/files/Report.pdf"
+          loadEngine={engine.loadEngine}
+          toolbarSlot="document-tools"
+          defaultZoom={100}
+        />
+      </ProjectionProvider>,
+    );
+    const band = screen.getByTestId('band');
+    const toolbar = await within(band).findByRole('toolbar', { name: 'Report controls' });
+    expect(container.querySelector('.ui-pdf-viewer .ui-pdf-viewer__toolbar')).toBeNull();
+    await waitFor(() => expect(within(toolbar).getByRole('slider')).not.toBeDisabled());
+    await userEvent.click(within(toolbar).getByRole('button', { name: 'Zoom in' }));
+    const page = container.querySelector<HTMLElement>('.ui-pdf-viewer__page');
+    expect(Number.parseFloat(page?.style.width ?? '')).toBeCloseTo(420 * 1.25 * pointsToPixels);
+    unmount();
+
+    const alone = render(<PdfViewer {...viewer.props} toolbarSlot="document-tools" />);
+    expect(
+      alone.container.querySelector('.ui-pdf-viewer > .ui-pdf-viewer__toolbar'),
+    ).not.toBeNull();
+  });
+
+  it('UIC-PDF-VIEWER-7.1 draws caller content over each page with its viewport', async () => {
+    const renderPageOverlay = vi.fn(({ pageIndex, viewport }) => (
+      <span data-testid={`mark-${pageIndex}`}>{`${viewport.width} at ${viewport.scale}`}</span>
+    ));
+    const { container } = await renderReady({ defaultZoom: 75, renderPageOverlay });
+    const overlays = container.querySelectorAll<HTMLElement>('.ui-pdf-viewer__overlay');
+    expect(overlays).toHaveLength(3);
+    const first = overlays[0]!;
+    expect(first.parentElement).toHaveClass('ui-pdf-viewer__page');
+    expect(first.previousElementSibling).toHaveClass('ui-pdf-viewer__text-layer');
+    expect(first.style).toMatchObject({
+      position: 'absolute',
+      inset: '0px',
+      pointerEvents: 'none',
+    });
+    expect(within(first).getByTestId('mark-0')).toHaveTextContent('420 at 1');
+    expectHooksMatchSpec(container, 'PDF-VIEWER', { slots: ['overlay'] });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Zoom in' }));
+    expect(screen.getByTestId('mark-2')).toHaveTextContent(
+      `${420 * pointsToPixels} at ${pointsToPixels}`,
+    );
+  });
+
+  it('UIC-PDF-VIEWER-7.1 draws overlays only over the pages that render', async () => {
+    const observer = stubIntersectionObserver();
+    const { container } = renderViewer({ renderPageOverlay: () => <span>Mark</span> });
+    await waitFor(() => expect(observer.observed).toHaveLength(3));
+    expect(container.querySelectorAll('.ui-pdf-viewer__overlay')).toHaveLength(0);
+    act(() => observer.report([2], true));
+    const overlays = container.querySelectorAll('.ui-pdf-viewer__overlay');
+    expect(overlays).toHaveLength(1);
+    expect(overlays[0]?.closest('.ui-pdf-viewer__page')).toBe(observer.observed[2]);
   });
 });
