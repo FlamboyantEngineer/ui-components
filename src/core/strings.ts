@@ -51,6 +51,24 @@ export interface UiStrings {
   countOrMore: (count: number) => string;
   /** A step counter such as `2 of 5`. */
   stepOfTotal: (current: number, total: number) => string;
+  /** A field menu action that puts the field's default value back. */
+  setDefault: string;
+  /** The message of a required field left empty. */
+  valueRequired: string;
+  /** The message of a field whose value is being checked. */
+  validating: string;
+  /** The message of a text shorter than its minimum length. */
+  tooShort: (minLength: number) => string;
+  /** The message of a text longer than its maximum length. */
+  tooLong: (maxLength: number) => string;
+  /** The message of a text that does not match its expected format. */
+  patternMismatch: string;
+  /** Names a button that puts a field's committed value back, from the field's label. */
+  restoreValue: (label: string) => string;
+  /** Names a field's help button, from the field's label. */
+  fieldHelp: (label: string) => string;
+  /** Names a field's menu, from the field's label. */
+  fieldActions: (label: string) => string;
 }
 
 const spokenKeyNames: Readonly<Record<string, string>> = {
@@ -113,4 +131,15 @@ export const defaultStrings: UiStrings = {
   remainingCount: (count) => `${count} remaining`,
   countOrMore: (count) => `${count} or more`,
   stepOfTotal: (current, total) => `${current} of ${total}`,
+  setDefault: 'Set to default',
+  valueRequired: 'A value is required.',
+  validating: 'Validating',
+  tooShort: (minLength) =>
+    minLength === 1 ? 'Use at least 1 character.' : `Use at least ${minLength} characters.`,
+  tooLong: (maxLength) =>
+    maxLength === 1 ? 'Use 1 character or fewer.' : `Use ${maxLength} characters or fewer.`,
+  patternMismatch: 'Enter a value in the expected format.',
+  restoreValue: (label) => `Restore ${label}`,
+  fieldHelp: (label) => `Help for ${label}`,
+  fieldActions: (label) => `${label} actions`,
 };

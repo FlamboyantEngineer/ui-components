@@ -1,0 +1,121 @@
+/* Field: label, control and buttons on one wrapping row; description and message below. */
+
+.ui-field {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 6px;
+  box-sizing: border-box;
+  width: 280px;
+  max-width: 100%;
+  font-size: 13px;
+}
+
+/* Stacked by default: the label takes its own line above the control. */
+.ui-field__label {
+  flex: 0 0 100%;
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.ui-field:is([data-label-layout='label-colon-control'], [data-label-layout='control-label'])
+  .ui-field__label {
+  flex: 0 0 auto;
+  margin-bottom: 0;
+}
+
+.ui-field__required {
+  margin-inline-start: 2px;
+  color: var(--ref-danger);
+}
+
+.ui-field__colon {
+  margin-inline-start: 1px;
+}
+
+.ui-field__control {
+  display: flex;
+  flex: 1 1 120px;
+  min-width: 0;
+}
+
+/* A plain input or text area placed in the control slot. */
+.ui-field__control > :is(input, textarea) {
+  flex: 1 1 auto;
+  min-width: 0;
+  box-sizing: border-box;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-canvas);
+  color: inherit;
+  font: inherit;
+}
+
+.ui-field__control > :is(input, textarea):focus-visible {
+  border-color: var(--ref-focus);
+  outline: 1px solid var(--ref-focus);
+}
+
+.ui-field[data-dirty] .ui-field__control > :is(input, textarea) {
+  border-inline-start: 3px solid var(--ref-info);
+}
+
+.ui-field[data-validation='invalid'] .ui-field__control > :is(input, textarea) {
+  border-color: var(--ref-danger);
+}
+
+.ui-field[data-validation='warning'] .ui-field__control > :is(input, textarea) {
+  border-color: var(--ref-warning);
+}
+
+.ui-field[data-readonly] .ui-field__control > :is(input, textarea) {
+  border-style: dashed;
+}
+
+.ui-field[data-disabled] {
+  opacity: 0.55;
+}
+
+.ui-field__help,
+.ui-field__menu,
+.ui-field-restore-button {
+  flex: none;
+}
+
+.ui-field__decoration {
+  display: inline-flex;
+  flex: none;
+  gap: 4px;
+}
+
+.ui-field__description {
+  flex: 0 0 100%;
+  margin-top: 4px;
+  color: var(--ref-muted);
+  font-size: 12px;
+}
+
+/* The message stays in the document as a live region; empty, it takes no room. */
+.ui-field__message {
+  flex: 0 0 100%;
+  font-size: 12px;
+}
+
+.ui-field__message:not(:empty) {
+  margin-top: 4px;
+}
+
+.ui-field__message[data-severity='error'] {
+  color: var(--ref-danger);
+}
+
+.ui-field__message[data-severity='warning'] {
+  color: var(--ref-warning);
+}
+
+.ui-field[data-validation='pending'] .ui-field__message {
+  color: var(--ref-muted);
+  font-style: italic;
+}
