@@ -115,7 +115,7 @@ function MatrixField({
       selectionMode={mode}
       options={fruit}
       {...props}
-      {...(controlled as object)}
+      {...controlled}
     />
   );
 }

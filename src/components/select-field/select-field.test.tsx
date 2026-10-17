@@ -148,16 +148,10 @@ describe('SelectField field', () => {
     expect(trigger('Apple Fruit')).toBeDisabled();
   });
 
-  it('UIC-SELECT-FIELD-1.4 restores the committed value, undoes picks and clears from the menu', async () => {
+  it('UIC-SELECT-FIELD-1.4 restores the committed value', async () => {
     const user = userEvent.setup();
     const { container } = render(
-      <SelectField
-        label="Fruit"
-        options={fruit}
-        committedValue="apple"
-        defaultValue="pear"
-        menu={['clear', 'set-default']}
-      />,
+      <SelectField label="Fruit" options={fruit} committedValue="apple" />,
     );
     await user.click(trigger('Apple Fruit'));
     await user.click(screen.getByRole('option', { name: 'Fig' }));
@@ -165,7 +159,11 @@ describe('SelectField field', () => {
     await user.click(screen.getByRole('button', { name: 'Restore Fruit' }));
     expect(trigger('Apple Fruit')).toHaveFocus();
     expect(root(container)).not.toHaveAttribute('data-dirty');
+  });
 
+  it('UIC-SELECT-FIELD-1.4 undoes and redoes picks from the keyboard', async () => {
+    const user = userEvent.setup();
+    render(<SelectField label="Fruit" options={fruit} defaultValue="apple" />);
     await user.click(trigger('Apple Fruit'));
     await user.click(screen.getByRole('option', { name: 'Pear' }));
     await waitFor(() => expect(trigger('Pear Fruit')).toHaveFocus());
@@ -173,7 +171,18 @@ describe('SelectField field', () => {
     expect(trigger('Apple Fruit')).toBeInTheDocument();
     await user.keyboard('{Control>}{Shift>}z{/Shift}{/Control}');
     expect(trigger('Pear Fruit')).toBeInTheDocument();
+  });
 
+  it('UIC-SELECT-FIELD-1.4 clears and sets the default from the field menu', async () => {
+    const user = userEvent.setup();
+    render(
+      <SelectField
+        label="Fruit"
+        options={fruit}
+        defaultValue="pear"
+        menu={['clear', 'set-default']}
+      />,
+    );
     await user.click(screen.getByRole('button', { name: 'Fruit actions' }));
     await user.click(screen.getByRole('menuitem', { name: 'Clear' }));
     expect(trigger('Select an option Fruit')).toBeInTheDocument();

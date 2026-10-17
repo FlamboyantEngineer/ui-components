@@ -4,3 +4,8 @@
   width: 18px;
   height: 18px;
 }
+
+/* The larger icon needs 2px more than the select field reserves. */
+.ui-icon-select-field[data-icons] .ui-select-field__trigger {
+  width: calc(var(--ui-select-field-label-width, 96px) + 64px);
+}

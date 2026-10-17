@@ -142,29 +142,37 @@ describe('SelectField list', () => {
     await user.clear(search);
     await user.keyboard('plum');
     expect(optionNames()).toEqual(['damson']);
+    expectHooksMatchSpec(document.body, 'SELECT-FIELD', { slots: ['search', 'search-input'] });
     await user.keyboard('{ArrowDown}{Enter}');
     expect(onCommit).toHaveBeenCalledWith('damson');
+  });
+
+  it('UIC-SELECT-FIELD-3.5 reopens with an empty filter and says when nothing matches', async () => {
+    const user = userEvent.setup();
+    render(<SelectField label="Fruit" options={orchard} defaultValue="damson" />);
     await user.click(trigger('Damson Fruit'));
     expect(screen.getByRole('searchbox')).toHaveValue('');
     await user.keyboard('xyz');
     expect(screen.getByText('No results')).toHaveClass('ui-select-field__empty');
-    expectHooksMatchSpec(document.body, 'SELECT-FIELD', {
-      slots: ['search', 'search-input', 'empty'],
-    });
+    expectHooksMatchSpec(document.body, 'SELECT-FIELD', { slots: ['empty'] });
+    // Leave the filter as it opened, so its unmount does not trigger a late change event.
+    await user.clear(screen.getByRole('searchbox'));
   });
 
-  it('UIC-SELECT-FIELD-3.5 filters short lists only when asked, and never long ones when told not to', async () => {
+  it('UIC-SELECT-FIELD-3.5 draws no filter for a short list unless asked', async () => {
     const user = userEvent.setup();
     const { unmount } = render(<SelectField label="Fruit" options={fruit} />);
     await user.click(trigger());
     expect(screen.queryByRole('searchbox')).toBeNull();
     await user.keyboard('{Escape}');
     unmount();
-    const short = render(<SelectField label="Fruit" options={fruit} filterable />);
+    render(<SelectField label="Fruit" options={fruit} filterable />);
     await user.click(trigger());
     expect(screen.getByRole('searchbox')).toBeInTheDocument();
-    await user.keyboard('{Escape}');
-    short.unmount();
+  });
+
+  it('UIC-SELECT-FIELD-3.5 draws no filter for a long list told not to filter', async () => {
+    const user = userEvent.setup();
     render(<SelectField label="Fruit" options={orchard} filterable={false} />);
     await user.click(trigger());
     expect(screen.queryByRole('searchbox')).toBeNull();
