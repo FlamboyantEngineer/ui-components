@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { PresenceStrip } from '../../src/components/presence-strip/presence-strip.js';
+import { UserCard } from '../../src/components/user-card/user-card.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { SAMPLE_PEOPLE } from './people-samples.js';
 
@@ -96,6 +97,18 @@ mountLab(
       <Button aria-label="Sheet 1, 3 people here">
         Sheet 1 <PresenceStrip people={SAMPLE_PEOPLE.slice(0, 3)} variant="dots" />
       </Button>
+    </LabSection>
+    <LabSection
+      title="Person cards"
+      description="Pressing a person opens the card renderCard returns for them."
+    >
+      <PresenceStrip
+        people={SAMPLE_PEOPLE.slice(0, 3)}
+        data-lab-strip="cards"
+        renderCard={(person) => (
+          <UserCard name={person.name} src={person.src} statusLabel={person.statusLabel} />
+        )}
+      />
     </LabSection>
   </>,
 );

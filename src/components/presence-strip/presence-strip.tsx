@@ -1,4 +1,6 @@
+import type { ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
+import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { withStableOccurrenceKeys } from '../../utils/stable-keys.js';
 import { resolveAvatarColor, type AvatarIdentity } from '../avatar/avatar.js';
@@ -17,7 +19,7 @@ export interface PresencePerson extends AvatarIdentity {
 /** `avatars` draws named avatars; `dots` draws decorative colour dots for use inside another control. */
 export type PresenceStripVariant = 'avatars' | 'dots';
 
-export interface PresenceStripProps {
+export interface PresenceStripProps extends BaseProps {
   /** The people present, in the order to show them. */
   people: readonly PresencePerson[];
   /** Show at most this many people; the rest join the overflow count. Defaults to all of them. */
@@ -34,11 +36,10 @@ export interface PresenceStripProps {
   colorCount?: number | undefined;
   /** Makes each avatar a button that reports the person's id. */
   onAction?: ((id: string) => void) | undefined;
+  /** A card about a visible person, usually a `UserCard`, that pressing their avatar opens. */
+  renderCard?: ((person: PresencePerson) => ReactNode) | undefined;
   /** Names the group. Defaults to the names of everyone present. */
   'aria-label'?: string | undefined;
-  className?: string | undefined;
-  id?: string | undefined;
-  [data: `data-${string}`]: string | number | boolean | undefined;
 }
 
 const hooks = createHooks('presence-strip', ['person', 'dot', 'overflow']);
@@ -57,6 +58,7 @@ export function PresenceStrip({
   size = 'md',
   colorCount,
   onAction,
+  renderCard,
   'aria-label': ariaLabel,
   className,
   id,
@@ -115,6 +117,7 @@ export function PresenceStrip({
           size={size}
           colorCount={colorCount}
           onPress={onAction ? () => onAction(person.id) : undefined}
+          card={renderCard?.(person)}
         />
       ))}
       {overflow > 0 ? (

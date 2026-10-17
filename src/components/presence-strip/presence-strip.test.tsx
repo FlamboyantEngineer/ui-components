@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { getColorIndex } from '../../utils/color-index.js';
+import { UserCard } from '../user-card/user-card.js';
 import { PresenceStrip, type PresencePerson } from './presence-strip.js';
 
 const names = ['Maria Santos', 'Jon Berg', 'Lena Ortiz', 'Sam Okafor', 'Priya Nair', 'Tom Li'];
@@ -149,6 +150,31 @@ describe('PresenceStrip', () => {
     rerender(<PresenceStrip people={people.slice(0, 3)} maxVisible={2} />);
     expect(screen.queryByRole('button')).toBeNull();
     expect(container.querySelector('[tabindex]')).toBeNull();
+  });
+
+  it('UIC-PRESENCE-STRIP-1.5 opens the person card that renderCard returns', async () => {
+    const onAction = vi.fn();
+    const { container } = render(
+      <PresenceStrip
+        people={people.slice(0, 3)}
+        onAction={onAction}
+        renderCard={(person) =>
+          person.id === 'p2' ? null : <UserCard name={person.name} description={person.id} />
+        }
+      />,
+    );
+    const persons = container.querySelectorAll('.ui-presence-strip__person');
+    expect(persons[0]).toHaveClass('ui-user-card__trigger');
+    expect(persons[2]).not.toHaveClass('ui-user-card__trigger');
+    await userEvent.click(screen.getByRole('button', { name: 'Jon Berg' }));
+    expect(onAction).toHaveBeenCalledWith('p1');
+    const card = await screen.findByRole('dialog', { name: 'Jon Berg' });
+    expect(card).toHaveTextContent('p1');
+    await userEvent.keyboard('{Escape}');
+    await userEvent.click(screen.getByRole('button', { name: 'Lena Ortiz' }));
+    expect(onAction).toHaveBeenLastCalledWith('p2');
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expectHooksMatchSpec(container, 'PRESENCE-STRIP', { slots: ['person'] });
   });
 
   it('UIC-PRESENCE-STRIP-2.1 draws decorative colour dots inside another control', () => {

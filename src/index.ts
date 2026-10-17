@@ -48,3 +48,5 @@ export * from './components/avatar/index.js';
 export * from './components/user-identity/index.js';
 export * from './components/presence-avatar/index.js';
 export * from './components/presence-strip/index.js';
+export * from './components/user-card/index.js';
+export * from './components/emoji-picker/index.js';

@@ -32,6 +32,13 @@ With `onAction`, each person shall be a pressable presence avatar that calls `on
 Implementation: `src/components/presence-strip/presence-strip.tsx`, `src/components/presence-avatar/presence-avatar.tsx`
 Verification: `src/components/presence-strip/presence-strip.test.tsx`, `e2e/presence-strip.spec.ts`
 
+### UIC-PRESENCE-STRIP-1.5 - Person cards
+
+With `renderCard`, each visible person for whom it returns content shall be a presence avatar whose `card` is that content, usually a `UserCard`, so pressing the person opens it ([PRESENCE-AVATAR.md](PRESENCE-AVATAR.md)); `onAction` is still called. A person for whom it returns nothing opens no card.
+
+Implementation: `src/components/presence-strip/presence-strip.tsx`, `src/components/presence-avatar/presence-avatar.tsx`
+Verification: `src/components/presence-strip/presence-strip.test.tsx`, `e2e/presence-strip.spec.ts`
+
 ## UIC-PRESENCE-STRIP-2 - Presentation
 
 ### UIC-PRESENCE-STRIP-2.1 - Variants

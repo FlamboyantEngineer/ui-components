@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { PresenceAvatar } from '../../src/components/presence-avatar/presence-avatar.js';
+import { UserCard } from '../../src/components/user-card/user-card.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { PICTURE } from './people-samples.js';
 
@@ -67,6 +68,19 @@ mountLab(
       description="Click the avatar, or Tab to it and press Enter or Space; holding a key presses once."
     >
       <PressCounter />
+    </LabSection>
+    <LabSection
+      title="Person card"
+      description="Pressing the avatar opens a card about the person; Escape returns to the avatar."
+    >
+      <PresenceAvatar
+        name="Jon Berg"
+        src={PICTURE}
+        status="away"
+        statusLabel="Away"
+        data-lab-avatar="card"
+        card={<UserCard name="Jon Berg" src={PICTURE} status="away" statusLabel="Away" />}
+      />
     </LabSection>
   </>,
 );

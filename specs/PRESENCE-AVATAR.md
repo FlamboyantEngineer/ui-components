@@ -20,7 +20,7 @@ Verification: `src/components/presence-avatar/presence-avatar.test.tsx`, `e2e/pr
 
 ### UIC-PRESENCE-AVATAR-1.3 - Pressing
 
-With `onPress`, the root shall be a React Aria button: one tab stop that calls `onPress` once for a click, Enter or Space, takes focus when clicked, does not repeat for a held key, and publishes React Aria's `data-hovered`, `data-pressed`, `data-focused` and `data-focus-visible` states. Without `onPress` the root is a plain `<span>` with no tab stop.
+With `onPress`, the root shall be a React Aria button: one tab stop that calls `onPress` once for a click, Enter or Space, takes focus when clicked, does not repeat for a held key, and publishes React Aria's `data-hovered`, `data-pressed`, `data-focused` and `data-focus-visible` states. Without `onPress` or `card` the root is a plain `<span>` with no tab stop.
 
 Implementation: `src/components/presence-avatar/presence-avatar.tsx`
 Verification: `src/components/presence-avatar/presence-avatar.test.tsx`, `e2e/presence-avatar.spec.ts`
@@ -39,11 +39,18 @@ Verification: `src/components/presence-avatar/presence-avatar.test.tsx`, `e2e/pr
 Implementation: `src/components/presence-avatar/presence-avatar.tsx`
 Verification: `src/components/presence-avatar/presence-avatar.test.tsx`
 
+### UIC-PRESENCE-AVATAR-1.6 - Person card
+
+With `card`, the root shall be a `UserCardTrigger` ([USER-CARD.md](USER-CARD.md)), also carrying the `ui-user-card__trigger` class: a button that opens the card in a popover for a click, Enter or Space, still calls `onPress`, keeps the hooks and the accessible name above, and returns focus to the avatar when the card closes.
+
+Implementation: `src/components/presence-avatar/presence-avatar.tsx`, `src/components/user-card/user-card.tsx`
+Verification: `src/components/presence-avatar/presence-avatar.test.tsx`, `e2e/presence-avatar.spec.ts`
+
 ## Hooks
 
 | Hook                            | Kind      | Values                 | Description                                                |
 | ------------------------------- | --------- | ---------------------- | ---------------------------------------------------------- |
-| `ui-presence-avatar`            | root      |                        | The `<button>` with `onPress`, otherwise a `<span>`.       |
+| `ui-presence-avatar`            | root      |                        | The `<button>` with `onPress` or `card`, else a `<span>`.  |
 | `ui-presence-avatar__avatar`    | slot      |                        | The named avatar image (also `ui-avatar`).                 |
 | `ui-presence-avatar__indicator` | slot      |                        | The decorative status badge, when there is a status.       |
 | `data-size`                     | attribute | `xs`, `sm`, `md`, `lg` | Avatar size.                                               |

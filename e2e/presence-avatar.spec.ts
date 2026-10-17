@@ -70,4 +70,22 @@ test.describe('Presence Avatar lab', () => {
     await lab.open('presence-avatar', { theme: 'dark' });
     await lab.expectAccessible();
   });
+
+  test('UIC-PRESENCE-AVATAR-1.6 opens the person card from the keyboard and returns focus', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('presence-avatar');
+    const avatar = page.locator('[data-lab-avatar="card"]');
+    await expect(avatar).toHaveClass(/ui-user-card__trigger/);
+    await avatar.focus();
+    await page.keyboard.press('Enter');
+    const card = page.getByRole('dialog', { name: 'Jon Berg' });
+    await expect(card).toBeVisible();
+    await expect(card).toContainText('Away');
+    await lab.expectAccessible('.ui-user-card__popover');
+    await page.keyboard.press('Escape');
+    await expect(card).toHaveCount(0);
+    await expect(avatar).toBeFocused();
+  });
 });

@@ -55,6 +55,15 @@ export interface UiStrings {
   countOrMore: (count: number) => string;
   /** A step counter such as `2 of 5`. */
   stepOfTotal: (current: number, total: number) => string;
+  emojiPicker: string;
+  searchEmoji: string;
+  emojiCategories: string;
+  /** Name of an emoji category (`smileys`, `flags`, …), recently used (`recent`), custom emoji or search results. */
+  emojiCategory: (category: string) => string;
+  emojiLoadFailed: string;
+  skinTone: string;
+  /** Name of a skin tone (`default`, `light`, `medium-light`, …). */
+  skinToneName: (tone: string) => string;
 }
 
 const spokenKeyNames: Readonly<Record<string, string>> = {
@@ -67,6 +76,21 @@ const spokenKeyNames: Readonly<Record<string, string>> = {
   '\\': 'Backslash',
   '+': 'Plus',
   ' ': 'Space',
+};
+
+const emojiCategoryNames: Readonly<Record<string, string>> = {
+  recent: 'Recently used',
+  custom: 'Custom',
+  search: 'Search results',
+  smileys: 'Smileys & Emotion',
+  people: 'People & Body',
+  nature: 'Animals & Nature',
+  food: 'Food & Drink',
+  travel: 'Travel & Places',
+  activities: 'Activities',
+  objects: 'Objects',
+  symbols: 'Symbols',
+  flags: 'Flags',
 };
 
 export const defaultStrings: UiStrings = {
@@ -120,4 +144,11 @@ export const defaultStrings: UiStrings = {
   remainingCount: (count) => `${count} remaining`,
   countOrMore: (count) => `${count} or more`,
   stepOfTotal: (current, total) => `${current} of ${total}`,
+  emojiPicker: 'Emoji picker',
+  searchEmoji: 'Search emoji',
+  emojiCategories: 'Emoji categories',
+  emojiCategory: (category) => emojiCategoryNames[category] ?? category,
+  emojiLoadFailed: 'Emoji could not be loaded.',
+  skinTone: 'Skin tone',
+  skinToneName: (tone) => `${tone.charAt(0).toUpperCase()}${tone.slice(1)}`,
 };

@@ -93,4 +93,14 @@ test.describe('Presence Strip lab', () => {
     await lab.open('presence-strip', { theme: 'dark' });
     await lab.expectAccessible();
   });
+
+  test('UIC-PRESENCE-STRIP-1.5 opens the card of the pressed person', async ({ page, lab }) => {
+    await lab.open('presence-strip');
+    const strip = page.locator('[data-lab-strip="cards"]');
+    await strip.getByRole('button', { name: 'Lena Ortiz, Busy' }).click();
+    const card = page.getByRole('dialog', { name: 'Lena Ortiz' });
+    await expect(card).toContainText('Busy');
+    await page.mouse.click(5, 5);
+    await expect(card).toHaveCount(0);
+  });
 });

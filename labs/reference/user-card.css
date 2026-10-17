@@ -1,0 +1,112 @@
+/* User Card */
+
+.ui-user-card {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: max-content;
+  min-width: 200px;
+  max-width: min(280px, calc(100vw - 24px));
+  padding: 12px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-raised);
+  color: var(--ref-text);
+  outline: none;
+}
+
+.ui-user-card__popover .ui-user-card {
+  box-shadow: var(--ref-shadow);
+}
+
+.ui-user-card__identity {
+  max-width: 100%;
+}
+
+.ui-user-card__status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.ui-user-card__indicator {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ref-muted);
+}
+
+.ui-user-card[data-status='active'] .ui-user-card__indicator {
+  background: var(--ref-success);
+}
+
+.ui-user-card[data-status='away'] .ui-user-card__indicator {
+  background: var(--ref-warning);
+}
+
+.ui-user-card[data-status='busy'] .ui-user-card__indicator {
+  background: var(--ref-danger);
+}
+
+.ui-user-card__status-label {
+  min-width: 0;
+  color: var(--ref-muted);
+}
+
+.ui-user-card__details {
+  padding-top: 8px;
+  border-top: 1px solid var(--ref-border);
+}
+
+.ui-user-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ui-user-card__action {
+  flex: 1 1 auto;
+}
+
+.ui-user-card__trigger {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  vertical-align: middle;
+  cursor: pointer;
+  outline: none;
+}
+
+.ui-user-card__trigger[data-hovered]:not(.ui-presence-avatar) {
+  text-decoration: underline;
+}
+
+.ui-user-card__trigger[data-focus-visible] {
+  box-shadow:
+    0 0 0 2px var(--ref-canvas),
+    0 0 0 4px var(--ref-focus);
+}
+
+.ui-user-card__trigger[data-disabled] {
+  cursor: default;
+  text-decoration: none;
+  opacity: 0.6;
+}
+
+.ui-user-card__popover[data-entering] {
+  animation: ref-fade 0.12s ease-out;
+}
+
+.ui-user-card__popover[data-exiting] {
+  animation: ref-fade 0.12s ease-in reverse;
+}

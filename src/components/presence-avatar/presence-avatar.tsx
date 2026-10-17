@@ -1,11 +1,14 @@
+import type { ReactNode } from 'react';
 import { Button as AriaButton, type PressEvent } from 'react-aria-components';
 import { createHooks } from '../../core/hooks.js';
+import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Avatar, type AvatarIdentity } from '../avatar/avatar.js';
+import { UserCardTrigger } from '../user-card/user-card.js';
 
 export type PresenceAvatarSize = 'xs' | 'sm' | 'md' | 'lg';
 
-export interface PresenceAvatarProps extends AvatarIdentity {
+export interface PresenceAvatarProps extends AvatarIdentity, BaseProps {
   /** What the person is doing, as any word the host stylesheet knows (`active`, `away`, `idle`, …). */
   status?: string | undefined;
   /** Human-readable status, added to the accessible name (`Maria Santos, Away`). */
@@ -16,9 +19,8 @@ export interface PresenceAvatarProps extends AvatarIdentity {
   colorCount?: number | undefined;
   /** Makes the avatar a button that runs this on click, Enter or Space. */
   onPress?: ((event: PressEvent) => void) | undefined;
-  className?: string | undefined;
-  id?: string | undefined;
-  [data: `data-${string}`]: string | number | boolean | undefined;
+  /** A card about the person, usually a `UserCard`, that pressing the avatar opens in a popover. */
+  card?: ReactNode;
 }
 
 const hooks = createHooks('presence-avatar', ['avatar', 'indicator']);
@@ -40,6 +42,7 @@ export function PresenceAvatar({
   size = 'md',
   colorCount,
   onPress,
+  card,
   className,
   id,
   ...rest
@@ -68,6 +71,13 @@ export function PresenceAvatar({
     </>
   );
 
+  if (card) {
+    return (
+      <UserCardTrigger {...rootProps} id={id} card={card} onPress={onPress}>
+        {content}
+      </UserCardTrigger>
+    );
+  }
   if (onPress) {
     return (
       <AriaButton {...rootProps} id={id} onPress={onPress}>

@@ -1,9 +1,10 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { getColorIndex } from '../../utils/color-index.js';
+import { UserCard } from '../user-card/user-card.js';
 import { PresenceAvatar } from './presence-avatar.js';
 
 function root(container: HTMLElement): HTMLElement {
@@ -148,5 +149,32 @@ describe('PresenceAvatar', () => {
     expect(element).toHaveAttribute('data-person', '7');
     expect(element).toHaveAttribute('data-status', 'idle');
     expectHooksMatchSpec(container, 'PRESENCE-AVATAR', { callerAttributes: ['data-person'] });
+  });
+
+  it('UIC-PRESENCE-AVATAR-1.6 opens its person card from the avatar and still presses', async () => {
+    const onPress = vi.fn();
+    const { container } = render(
+      <PresenceAvatar
+        name="Maria Santos"
+        status="away"
+        statusLabel="Away"
+        size="sm"
+        onPress={onPress}
+        card={<UserCard name="Maria Santos" statusLabel="Away" />}
+      />,
+    );
+    const trigger = screen.getByRole('button', { name: 'Maria Santos, Away' });
+    expect(trigger).toBe(root(container));
+    expect(trigger).toHaveClass('ui-presence-avatar', 'ui-user-card__trigger');
+    expect(trigger).toHaveAttribute('data-size', 'sm');
+    expect(trigger).toHaveAttribute('data-status', 'away');
+    await userEvent.click(trigger);
+    expect(onPress).toHaveBeenCalledTimes(1);
+    const card = await screen.findByRole('dialog', { name: 'Maria Santos' });
+    expect(card).toHaveClass('ui-user-card');
+    expectHooksMatchSpec(container, 'PRESENCE-AVATAR', { slots: ['avatar', 'indicator'] });
+    await userEvent.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog')).toBeNull();
+    await waitFor(() => expect(trigger).toHaveFocus());
   });
 });
