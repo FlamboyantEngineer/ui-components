@@ -8,7 +8,7 @@ import { ZoomControl } from '../zoom-control/zoom-control.js';
 import { pdfViewerHooks as hooks } from './styling-hooks.js';
 import { pdfZoomLevels } from './pdf-zoom.js';
 import { PdfViewerSearch } from './pdf-viewer-search.js';
-import type { PdfSearchState } from './use-pdf-search.js';
+import type { PdfSearchControls, PdfSearchState } from './use-pdf-search.js';
 import type { PdfZoomState } from './use-pdf-zoom.js';
 
 export interface PdfViewerToolbarProps {
@@ -20,6 +20,9 @@ export interface PdfViewerToolbarProps {
   onPageChange(pageIndex: number): void;
   search: PdfSearchState;
   actions?: ReactNode;
+  leadingActions?: ReactNode;
+  /** Draws the find controls in place of the viewer's own. */
+  renderSearch?: ((search: PdfSearchControls) => ReactNode) | undefined;
 }
 
 type PdfViewerPageNavProps = Pick<
@@ -53,6 +56,12 @@ function keepCaretKeys(event: KeyboardEvent<HTMLElement>) {
   if ((event.key === 'ArrowLeft' && !atStart) || (event.key === 'ArrowRight' && !atEnd)) {
     event.stopPropagation();
   }
+}
+
+/** The find state a caller's controls receive, without the viewer's highlight bookkeeping. */
+function pickSearchControls(search: PdfSearchControls): PdfSearchControls {
+  const { query, setQuery, isPending, total, current, findNext, findPrevious } = search;
+  return { query, setQuery, isPending, total, current, findNext, findPrevious };
 }
 
 function PdfViewerPageNav({
@@ -98,19 +107,25 @@ function PdfViewerPageNav({
   );
 }
 
-/** Zoom with its fit modes, page navigation, find and the caller's actions, in one toolbar. */
+/**
+ * The caller's leading actions, zoom with its fit modes, page navigation, find and the caller's
+ * actions, in one toolbar.
+ */
 export function PdfViewerToolbar({
   label,
   isReady,
   zoom,
   search,
   actions,
+  leadingActions,
+  renderSearch,
   ...page
 }: PdfViewerToolbarProps) {
   const strings = useUiStrings();
   return (
     <div {...hooks.slot('toolbar')} onKeyDownCapture={keepCaretKeys}>
       <ToolbarScroller aria-label={strings.controlsFor(label)}>
+        {leadingActions ? <div {...hooks.slot('leading-actions')}>{leadingActions}</div> : null}
         <ZoomControl
           levels={pdfZoomLevels}
           value={zoom.percent}
@@ -130,7 +145,11 @@ export function PdfViewerToolbar({
           />
         ))}
         <PdfViewerPageNav isReady={isReady} {...page} />
-        <PdfViewerSearch search={search} />
+        {renderSearch ? (
+          renderSearch(pickSearchControls(search))
+        ) : (
+          <PdfViewerSearch search={search} />
+        )}
         {actions ? <div {...hooks.slot('actions')}>{actions}</div> : null}
       </ToolbarScroller>
     </div>

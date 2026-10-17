@@ -24,6 +24,8 @@ export interface LoadedPdf<
   sizes: PdfSize[];
   /** A page's text content, fetched once and shared by its text layer and the search. */
   getTextContent(pageIndex: number): Promise<C>;
+  /** A page's viewport at a scale, shared by everything drawn at that scale. */
+  getViewport(pageIndex: number, scale: number): V | undefined;
 }
 
 export interface UsePdfDocumentOptions<
@@ -73,6 +75,23 @@ function createTextCache<V extends PdfViewport, C extends PdfTextContent>(
   };
 }
 
+// Only the applied scale is worth keeping: every part of a page asks for the same one.
+function createViewportCache<V extends PdfViewport, C extends PdfTextContent>(
+  pages: readonly PdfPage<V, C>[],
+): LoadedPdf<V, C>['getViewport'] {
+  const cache = new Map<number, V>();
+  let cachedScale = Number.NaN;
+  return (pageIndex, scale) => {
+    if (scale !== cachedScale) {
+      cache.clear();
+      cachedScale = scale;
+    }
+    const viewport = cache.get(pageIndex) ?? pages[pageIndex]?.getViewport({ scale });
+    if (viewport) cache.set(pageIndex, viewport);
+    return viewport;
+  };
+}
+
 async function loadPdf<V extends PdfViewport, C extends PdfTextContent>(
   { source, loadEngine, workerSrc }: UsePdfDocumentOptions<V, C> & { source: PdfSource },
   control: LoadControl,
@@ -90,7 +109,13 @@ async function loadPdf<V extends PdfViewport, C extends PdfTextContent>(
     const { width, height } = page.getViewport({ scale: 1 });
     return { width, height };
   });
-  return { engine, pages, sizes, getTextContent: createTextCache(pages) };
+  return {
+    engine,
+    pages,
+    sizes,
+    getTextContent: createTextCache(pages),
+    getViewport: createViewportCache(pages),
+  };
 }
 
 function toError(cause: unknown): Error {

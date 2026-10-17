@@ -1,9 +1,11 @@
-import type { RefObject } from 'react';
+import type { MouseEvent, ReactNode, RefObject } from 'react';
 import { useUiStrings } from '../../core/provider.js';
+import { ContextMenu, type ContextMenuProps } from '../context-menu/context-menu.js';
 import { InlineError } from '../inline-error/inline-error.js';
 import { LoadingOverlay } from '../loading-overlay/loading-overlay.js';
 import { pdfViewerHooks as hooks } from './styling-hooks.js';
 import type { PdfTextContent, PdfViewport } from './pdf-engine.js';
+import type { PdfPageGeometry } from './page-geometry.js';
 import type { PdfMatchRange } from './pdf-search.js';
 import { PdfViewerPage } from './pdf-viewer-page.js';
 import type { PdfDocumentResult } from './use-pdf-document.js';
@@ -21,6 +23,11 @@ export interface PdfViewerStageProps<
   search: Pick<PdfSearchState, 'rangesByPage' | 'revealKey'>;
   scrollerRef: RefObject<HTMLDivElement | null>;
   pagesRef: RefObject<HTMLDivElement | null>;
+  menu: {
+    controller: ContextMenuProps['controller'];
+    onContextMenu(event: MouseEvent<HTMLElement>): void;
+  };
+  renderOverlay?: ((page: PdfPageGeometry<V>) => ReactNode) | undefined;
 }
 
 const noRanges: readonly PdfMatchRange[] = [];
@@ -34,6 +41,8 @@ export function PdfViewerStage<V extends PdfViewport, C extends PdfTextContent>(
   search,
   scrollerRef,
   pagesRef,
+  menu,
+  renderOverlay,
 }: PdfViewerStageProps<V, C>) {
   const strings = useUiStrings();
   const { status, loaded, retry } = pdf;
@@ -46,6 +55,7 @@ export function PdfViewerStage<V extends PdfViewport, C extends PdfTextContent>(
         aria-label={label}
         tabIndex={0}
         onScroll={pages.handleScroll}
+        onContextMenu={menu.onContextMenu}
       >
         <div {...hooks.slot('pages')} ref={pagesRef} style={{ position: 'relative' }}>
           {loaded?.pages.map((_, pageIndex) => (
@@ -58,9 +68,12 @@ export function PdfViewerStage<V extends PdfViewport, C extends PdfTextContent>(
               ranges={search.rangesByPage.get(pageIndex) ?? noRanges}
               revealKey={search.revealKey}
               pages={pages}
+              renderOverlay={renderOverlay}
             />
           ))}
         </div>
+        {/* Inside the scroller, so scrolling the document closes a menu left at the pointer. */}
+        <ContextMenu controller={menu.controller} />
       </div>
       {status === 'loading' ? <LoadingOverlay /> : null}
       {status === 'error' ? (

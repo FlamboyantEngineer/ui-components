@@ -110,8 +110,9 @@ export function usePageRender<V extends PdfViewport, C extends PdfTextContent>({
     const canvas = canvasRef.current;
     const container = layerRef.current;
     const page = loaded.pages[pageIndex];
-    if (!isNear || !canvas || !container || !page) return undefined;
-    const drawing = { loaded, page, pageIndex, viewport: page.getViewport({ scale }) };
+    const viewport = loaded.getViewport(pageIndex, scale);
+    if (!isNear || !canvas || !container || !page || !viewport) return undefined;
+    const drawing = { loaded, page, pageIndex, viewport };
     const cancelCanvas = drawCanvas(drawing, canvas);
     const cancelText = buildTextLayer(drawing, container, setTextLayer);
     return () => {

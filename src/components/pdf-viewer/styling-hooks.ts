@@ -3,6 +3,7 @@ import { createHooks } from '../../core/hooks.js';
 /** The viewer's hook classes, shared by the modules that draw its parts. */
 export const pdfViewerHooks = createHooks('pdf-viewer', [
   'toolbar',
+  'leading-actions',
   'group',
   'page-field',
   'page-label',
@@ -19,5 +20,6 @@ export const pdfViewerHooks = createHooks('pdf-viewer', [
   'page',
   'canvas',
   'text-layer',
+  'overlay',
   'match',
 ]);

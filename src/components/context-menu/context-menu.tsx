@@ -20,6 +20,8 @@ import {
 } from './menu-controller.js';
 import { useCloseOnSecondaryPress, useRootMenuState } from './menu-state.js';
 
+export { useMenuController } from './menu-controller.js';
+
 export interface ContextMenuProps extends BaseProps {
   /** Holds the open state and anchor; open, move and close the menu through it. */
   controller: MenuController;
