@@ -49,6 +49,8 @@ test.describe('Folder Manager lab', () => {
     page,
     lab,
   }) => {
+    // The lab answers after 300 ms; a paused clock keeps the pending state observable under load.
+    await page.clock.install();
     await lab.open('folder-manager');
     const manager = managed(page);
     await row(manager, 'Vegetables').click();
@@ -58,10 +60,12 @@ test.describe('Folder Manager lab', () => {
     await expect(
       manager.getByRole('row').filter({ has: page.getByRole('textbox') }),
     ).toHaveAttribute('aria-level', '2');
+    await page.clock.pauseAt(Date.now() + 1000);
     await page.keyboard.type('Leeks');
     await page.keyboard.press('Enter');
     await page.keyboard.press('Enter');
     await expect(input).toHaveAttribute('aria-busy', 'true');
+    await page.clock.runFor(300);
     await expect(row(manager, 'Leeks')).toBeFocused();
     await expect(row(manager, 'Leeks')).toHaveAttribute('aria-selected', 'true');
     await expect(manager.getByRole('row', { name: 'Leeks' })).toHaveCount(1);
