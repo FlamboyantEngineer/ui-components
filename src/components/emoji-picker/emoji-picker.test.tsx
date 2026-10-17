@@ -5,7 +5,11 @@ import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { parseEmojiData, type CustomEmoji, type NativeEmoji } from './emoji-catalog.js';
+import { EmojiPickerBody } from './emoji-picker-body.js';
+import { useActiveEmoji } from './emoji-picker-context.js';
+import { EmojiPickerPreview, EmojiPickerSearch } from './emoji-picker-parts.js';
 import { EmojiPicker, EmojiPickerTrigger } from './emoji-picker.js';
+import { EmojiPickerSkinTones } from './skin-tone-picker.js';
 
 const fixture = parseEmojiData(
   [
@@ -44,7 +48,8 @@ beforeAll(() => {
   }
 });
 
-describe('EmojiPicker', () => {
+// The bundled sets are large modules, so loading them is slow on a busy machine.
+describe('EmojiPicker', { timeout: 15_000 }, () => {
   it('UIC-EMOJI-PICKER-1.1 shows the loading state until the emoji load, and a failure', async () => {
     let resolve: (emoji: readonly NativeEmoji[]) => void = () => {};
     const pending = new Promise<readonly NativeEmoji[]>((done) => (resolve = done));
@@ -68,7 +73,11 @@ describe('EmojiPicker', () => {
 
   it('UIC-EMOJI-PICKER-1.1 loads the bundled set by default', async () => {
     render(<EmojiPicker />);
-    const grid = await screen.findByRole('grid', { name: 'Smileys & Emotion' });
+    const grid = await screen.findByRole(
+      'grid',
+      { name: 'Smileys & Emotion' },
+      { timeout: 10_000 },
+    );
     expect(cells(grid)[0]).toBe('grinning face');
   });
 
@@ -348,5 +357,116 @@ describe('EmojiPicker', () => {
     expect(root).toHaveAttribute('id', 'picker-1');
     expect(root).toHaveAttribute('data-testid', 'probe');
     expectHooksMatchSpec(container, 'EMOJI-PICKER');
+  });
+
+  it('UIC-EMOJI-PICKER-4.4 loads the bundled set in the language of the React Aria locale', async () => {
+    render(
+      <UiProvider locale="fr-FR">
+        <EmojiPicker />
+      </UiProvider>,
+    );
+    const grid = await screen.findByRole(
+      'grid',
+      { name: 'Smileys & Emotion' },
+      { timeout: 10_000 },
+    );
+    expect(cells(grid)[0]).toBe('visage rieur');
+    await userEvent.type(screen.getByRole('searchbox'), 'pomme');
+    expect(cells(screen.getByRole('grid', { name: 'Search results' }))).toContain('pomme rouge');
+  });
+
+  it('UIC-EMOJI-PICKER-5.3 offers the chosen categories in the chosen order', async () => {
+    await renderPicker({ categories: ['food', 'smileys'], recentEmoji: ['👋', '🍎'] });
+    const tabs = within(screen.getByRole('tablist')).getAllByRole('tab');
+    expect(tabs.map((tab) => tab.textContent)).toEqual([
+      '🕘Recently used',
+      '🍔Food & Drink',
+      '😀Smileys & Emotion',
+    ]);
+    expect(cells(screen.getByRole('grid', { name: 'Recently used' }))).toEqual(['red apple']);
+    await userEvent.type(screen.getByRole('searchbox'), 'wave');
+    expect(screen.getByRole('status')).toHaveTextContent('No results');
+  });
+
+  it('UIC-EMOJI-PICKER-5.4 leaves filtered emoji out of the categories, search and recent emoji', async () => {
+    const filterEmoji = (emoji: NativeEmoji) => !emoji.keywords.includes('fruit');
+    await renderPicker({ filterEmoji, recentEmoji: ['🍎', '😀'], customEmoji: [parrot] });
+    expect(cells(screen.getByRole('grid', { name: 'Recently used' }))).toEqual(['grinning face']);
+    expect(screen.queryByRole('tab', { name: 'Food & Drink' })).toBeNull();
+    await userEvent.type(screen.getByRole('searchbox'), 'a');
+    const results = cells(screen.getByRole('grid', { name: 'Search results' }));
+    expect(results).toContain(':party_parrot:');
+    expect(results).not.toContain('banana');
+  });
+
+  it('UIC-EMOJI-PICKER-6.1 lays out the parts the caller composes', async () => {
+    const onSelect = vi.fn();
+    const { container } = render(
+      <EmojiPicker loadEmoji={loadFixture} onSelect={onSelect} recentEmoji={['🍎']}>
+        <EmojiPickerSkinTones className="tones" data-part="tones" />
+        <EmojiPickerBody className="body" id="body-1" />
+        <EmojiPickerSearch className="search" data-part="search" />
+        <EmojiPickerPreview className="preview" data-part="preview" />
+      </EmojiPicker>,
+    );
+    await screen.findByRole('grid');
+    const root = container.querySelector('.ui-emoji-picker') as HTMLElement;
+    const parts = Array.from(root.querySelectorAll(':scope > [class*="ui-emoji-picker__"]'));
+    expect(parts[0]).toHaveClass('ui-emoji-picker__skin-tones', 'tones');
+    expect(parts[0]).toHaveAttribute('data-part', 'tones');
+    expect(parts[1]).toHaveClass('ui-emoji-picker__categories', 'body');
+    expect(parts[1]).toHaveAttribute('id', 'body-1');
+    expect(parts[2]).toHaveClass('ui-emoji-picker__search', 'search');
+    expect(parts[3]).toHaveClass('ui-emoji-picker__preview', 'preview');
+    expect(root.querySelector('.ui-emoji-picker__footer')).toBeNull();
+    expectHooksMatchSpec(container, 'EMOJI-PICKER', {
+      slots: ['skin-tones', 'categories', 'search', 'preview'],
+      callerAttributes: ['data-part'],
+    });
+
+    await userEvent.click(screen.getByRole('radio', { name: 'Dark' }));
+    await userEvent.type(screen.getByRole('searchbox'), 'a');
+    expect(container.querySelector('.ui-emoji-picker__section')).toHaveClass('body');
+    const rows = within(screen.getByRole('grid', { name: 'Search results' })).getAllByRole('row');
+    expect(rows.length).toBeGreaterThan(1);
+    await userEvent.keyboard('{ArrowDown}');
+    expect(rows[0]).toHaveFocus();
+    await userEvent.click(screen.getByRole('searchbox'));
+    await userEvent.keyboard('{Backspace}ban{Enter}');
+    expect(onSelect).toHaveBeenCalledWith(expect.objectContaining({ unicode: '🍌' }));
+  });
+
+  it('UIC-EMOJI-PICKER-6.1 puts the caller class on the message part while loading', () => {
+    const { container } = render(
+      <EmojiPicker loadEmoji={() => new Promise<readonly NativeEmoji[]>(() => {})}>
+        <EmojiPickerBody className="body" />
+      </EmojiPicker>,
+    );
+    expect(container.querySelector('.ui-emoji-picker__message')).toHaveClass('body');
+    expect(() => render(<EmojiPickerSearch />)).toThrow('inside an EmojiPicker');
+  });
+
+  it('UIC-EMOJI-PICKER-6.2 reports the active emoji to a part of the caller', async () => {
+    function Active() {
+      const active = useActiveEmoji();
+      if (!active) return <output>none</output>;
+      return (
+        <output>
+          {active.kind === 'native'
+            ? `${active.unicode} ${active.emoji.label}`
+            : active.emoji.shortcode}
+        </output>
+      );
+    }
+    render(
+      <EmojiPicker loadEmoji={loadFixture} recentEmoji={['👋']} skinTone="dark">
+        <EmojiPickerBody />
+        <Active />
+      </EmojiPicker>,
+    );
+    await screen.findByRole('grid');
+    expect(screen.getByText('none')).toBeInTheDocument();
+    await userEvent.hover(screen.getByRole('row', { name: 'waving hand' }));
+    expect(screen.getByText('👋🏿 waving hand')).toBeInTheDocument();
   });
 });

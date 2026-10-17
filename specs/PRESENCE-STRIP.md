@@ -1,6 +1,6 @@
 # Presence Strip
 
-`PresenceStrip` shows the people currently present as one row of presence avatars, with a `+N` count for the people it has no room for. It takes plain data: the caller decides who is present, in what order and with which status, and handles what pressing a person does.
+`PresenceStrip` shows the people currently present as one row of presence avatars, with a `+N` count, or a menu, for the people it has no room for. It takes plain data: the caller decides who is present, in what order and with which status, and handles what pressing a person does.
 
 ## UIC-PRESENCE-STRIP-1 - People
 
@@ -27,7 +27,7 @@ Verification: `src/components/presence-strip/presence-strip.test.tsx`, `e2e/pres
 
 ### UIC-PRESENCE-STRIP-1.4 - Pressing a person
 
-With `onAction`, each person shall be a pressable presence avatar that calls `onAction` with the person's `id` once per click, Enter or Space. Without it each person is a named image and the strip has no tab stop.
+With `onAction`, each person shall be a pressable presence avatar that calls `onAction` with the person's `id` once per click, Enter or Space. Without it each person is a named image and the strip has no tab stop, unless name tooltips or an overflow menu add one.
 
 Implementation: `src/components/presence-strip/presence-strip.tsx`, `src/components/presence-avatar/presence-avatar.tsx`
 Verification: `src/components/presence-strip/presence-strip.test.tsx`, `e2e/presence-strip.spec.ts`
@@ -35,6 +35,20 @@ Verification: `src/components/presence-strip/presence-strip.test.tsx`, `e2e/pres
 ### UIC-PRESENCE-STRIP-1.5 - Person cards
 
 With `renderCard`, each visible person for whom it returns content shall be a presence avatar whose `card` is that content, usually a `UserCard`, so pressing the person opens it ([PRESENCE-AVATAR.md](PRESENCE-AVATAR.md)); `onAction` is still called. A person for whom it returns nothing opens no card.
+
+Implementation: `src/components/presence-strip/presence-strip.tsx`, `src/components/presence-avatar/presence-avatar.tsx`
+Verification: `src/components/presence-strip/presence-strip.test.tsx`, `e2e/presence-strip.spec.ts`
+
+### UIC-PRESENCE-STRIP-1.6 - Overflow menu
+
+`overflow` shall publish `data-overflow`: `count` (the default) keeps the `+N` count an image, and `menu` makes it, while it hides people from `people`, a React Aria menu button (still `ui-presence-strip__overflow`, named by the same `morePeople` text) that opens a `Menu` ([MENU.md](MENU.md)) in the `ui-presence-strip__menu` slot, named by the count alone. The menu lists the people past `maxVisible` in order, each as a `MenuItem` showing a small `UserIdentity` row with their avatar fields, `status` and `statusLabel` ([USER-IDENTITY.md](USER-IDENTITY.md)), so it is named by their name and then their status label. Arrow keys and typing a name move through it; choosing a person closes the menu, returns focus to the count and calls `onAction` with their `id`. People counted only by `overflowCount` stay in the count's name. A `dots` strip keeps its plain count.
+
+Implementation: `src/components/presence-strip/presence-strip.tsx`, `src/components/presence-strip/presence-overflow-menu.tsx`, `labs/reference/presence-strip.css`
+Verification: `src/components/presence-strip/presence-strip.test.tsx`, `e2e/presence-strip.spec.ts`
+
+### UIC-PRESENCE-STRIP-1.7 - Name tooltips and hover cards
+
+`nameTooltip` and `cardTrigger` shall reach every visible person's presence avatar, so each shows its name in a tooltip ([UIC-PRESENCE-AVATAR-1.7](PRESENCE-AVATAR.md#uic-presence-avatar-17---name-tooltip)) and opens the card `renderCard` returns on hover and focus ([UIC-PRESENCE-AVATAR-1.8](PRESENCE-AVATAR.md#uic-presence-avatar-18---card-on-hover)).
 
 Implementation: `src/components/presence-strip/presence-strip.tsx`, `src/components/presence-avatar/presence-avatar.tsx`
 Verification: `src/components/presence-strip/presence-strip.test.tsx`, `e2e/presence-strip.spec.ts`
@@ -64,12 +78,18 @@ Verification: `src/components/presence-strip/presence-strip.test.tsx`
 
 ## Hooks
 
-| Hook                          | Kind      | Values                 | Description                                                     |
-| ----------------------------- | --------- | ---------------------- | --------------------------------------------------------------- |
-| `ui-presence-strip`           | root      |                        | The strip (`<span>`).                                           |
-| `ui-presence-strip__person`   | slot      |                        | Each visible person's presence avatar (`avatars` variant).      |
-| `ui-presence-strip__dot`      | slot      |                        | Each visible person's dot (`dots` variant).                     |
-| `ui-presence-strip__overflow` | slot      |                        | The `+N` count.                                                 |
-| `data-variant`                | attribute | `avatars`, `dots`      | Avatars or decorative dots.                                     |
-| `data-size`                   | attribute | `xs`, `sm`, `md`, `lg` | Avatar size.                                                    |
-| `data-color`                  | attribute |                        | A dot's colour slot, as on the avatar ([AVATAR.md](AVATAR.md)). |
+| Hook                          | Kind      | Values                 | Description                                                      |
+| ----------------------------- | --------- | ---------------------- | ---------------------------------------------------------------- |
+| `ui-presence-strip`           | root      |                        | The strip (`<span>`).                                            |
+| `ui-presence-strip__person`   | slot      |                        | Each visible person's presence avatar (`avatars` variant).       |
+| `ui-presence-strip__dot`      | slot      |                        | Each visible person's dot (`dots` variant).                      |
+| `ui-presence-strip__overflow` | slot      |                        | The `+N` count; a `<button>` with an overflow menu.              |
+| `ui-presence-strip__menu`     | slot      |                        | The menu of hidden people (also `ui-menu`).                      |
+| `data-variant`                | attribute | `avatars`, `dots`      | Avatars or decorative dots.                                      |
+| `data-overflow`               | attribute | `count`, `menu`        | What the `+N` count does.                                        |
+| `data-size`                   | attribute | `xs`, `sm`, `md`, `lg` | Avatar size.                                                     |
+| `data-color`                  | attribute |                        | A dot's colour slot, as on the avatar ([AVATAR.md](AVATAR.md)).  |
+| `data-hovered`                | state     | `true`                 | Pointer over the overflow button (React Aria).                   |
+| `data-pressed`                | state     | `true`                 | The overflow button is pressed or its menu is open (React Aria). |
+| `data-focused`                | state     | `true`                 | The overflow button has focus (React Aria).                      |
+| `data-focus-visible`          | state     | `true`                 | The overflow button has keyboard focus (React Aria).             |

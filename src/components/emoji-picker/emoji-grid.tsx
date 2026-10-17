@@ -1,6 +1,7 @@
-import { useId, type ReactNode, type Ref } from 'react';
+import { useId, type KeyboardEvent, type ReactNode, type Ref } from 'react';
 import { GridList, GridListItem, type Key } from 'react-aria-components';
 import { createHooks } from '../../core/hooks.js';
+import type { BaseProps } from '../../core/props.js';
 import {
   applySkinTone,
   getEmojiKey,
@@ -9,7 +10,7 @@ import {
   type SkinTone,
 } from './emoji-catalog.js';
 
-export interface EmojiGridProps {
+export interface EmojiGridProps extends BaseProps {
   /** The visible label that names the grid. */
   label: string;
   entries: readonly EmojiEntry[];
@@ -22,7 +23,7 @@ export interface EmojiGridProps {
 }
 
 /** The grid props a picker shares between every grid it draws. */
-export type EmojiGridOptions = Omit<EmojiGridProps, 'label' | 'entries'>;
+export type EmojiGridOptions = Omit<EmojiGridProps, 'label' | 'entries' | keyof BaseProps>;
 
 const hooks = createHooks('emoji-picker', ['section', 'label', 'grid', 'cell', 'image']);
 // Grid keys stay inside the picker, even at the grid's edges where React Aria lets them bubble,
@@ -39,6 +40,10 @@ const gridKeys = new Set([
   'Enter',
   ' ',
 ]);
+
+function stopGridKeys(event: KeyboardEvent) {
+  if (gridKeys.has(event.key)) event.stopPropagation();
+}
 
 export function EmojiContent({
   entry,
@@ -63,6 +68,8 @@ export function EmojiGrid({
   onActiveChange,
   renderEmoji,
   gridRef,
+  className,
+  ...rest
 }: EmojiGridProps) {
   const labelId = useId();
   const byKey = new Map(entries.map((entry) => [getEmojiKey(entry), entry]));
@@ -72,14 +79,13 @@ export function EmojiGrid({
   };
   return (
     <div
-      {...hooks.slot('section')}
+      {...rest}
+      {...hooks.slot('section', undefined, className)}
       onFocus={(event) => {
         const entry = byKey.get((event.target as HTMLElement).dataset.key ?? '');
         if (entry) onActiveChange(entry);
       }}
-      onKeyDown={(event) => {
-        if (gridKeys.has(event.key)) event.stopPropagation();
-      }}
+      onKeyDown={stopGridKeys}
     >
       <div {...hooks.slot('label')} id={labelId}>
         {label}

@@ -44,6 +44,23 @@
   font-size: 14px;
 }
 
+.ui-avatar[data-shape='rounded'] {
+  border-radius: 25%;
+}
+
+.ui-avatar[data-shape='square'] {
+  border-radius: 0;
+}
+
+/* A placeholder until the picture has loaded. */
+.ui-avatar[data-loading] {
+  background: var(--ref-border);
+}
+
+.ui-avatar[data-loading] .ui-avatar__image {
+  opacity: 0;
+}
+
 /* Eight colour slots, each legible under white initials in both themes. */
 :is(.ui-avatar, .ui-presence-strip__dot)[data-color='0'] {
   --ref-avatar-color: #1d4ed8;

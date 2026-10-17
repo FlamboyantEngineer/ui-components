@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { StrictMode } from 'react';
+import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { getColorIndex } from '../../utils/color-index.js';
@@ -129,6 +130,93 @@ describe('Avatar', () => {
     expect(container.querySelector('img')).toHaveAttribute('src', '/new.png');
   });
 
+  it('UIC-AVATAR-1.5 reports the loading status once per change and marks the root while loading', () => {
+    const statuses: string[] = [];
+    const onLoadingStatusChange = (status: string) => statuses.push(status);
+    const { container, rerender } = render(
+      <StrictMode>
+        <Avatar
+          name="Maria Santos"
+          src="/maria.png"
+          onLoadingStatusChange={onLoadingStatusChange}
+        />
+      </StrictMode>,
+    );
+    const avatar = (src?: string, kind?: 'group') => (
+      <StrictMode>
+        <Avatar
+          name="Maria Santos"
+          src={src}
+          kind={kind}
+          size="lg"
+          onLoadingStatusChange={onLoadingStatusChange}
+        />
+      </StrictMode>
+    );
+    expect(statuses).toEqual(['loading']);
+    expect(root(container)).toHaveAttribute('data-loading', 'true');
+    expectHooksMatchSpec(container, 'AVATAR', { slots: ['image'] });
+
+    rerender(avatar('/maria.png'));
+    expect(statuses).toEqual(['loading']);
+    fireEvent.load(container.querySelector('img') as HTMLImageElement);
+    expect(statuses).toEqual(['loading', 'loaded']);
+    expect(root(container)).not.toHaveAttribute('data-loading');
+
+    rerender(avatar('/gone.png'));
+    fireEvent.error(container.querySelector('img') as HTMLImageElement);
+    expect(statuses).toEqual(['loading', 'loaded', 'loading', 'error']);
+    expect(container.querySelector('.ui-avatar__initials')).toHaveTextContent('MS');
+
+    rerender(avatar('  '));
+    rerender(avatar('/team.png', 'group'));
+    expect(statuses).toEqual(['loading', 'loaded', 'loading', 'error', 'idle']);
+    expect(root(container)).not.toHaveAttribute('data-loading');
+  });
+
+  it('UIC-AVATAR-1.5 counts a picture the browser already holds as loaded', () => {
+    const complete = vi.spyOn(HTMLImageElement.prototype, 'complete', 'get').mockReturnValue(true);
+    const width = vi.spyOn(HTMLImageElement.prototype, 'naturalWidth', 'get').mockReturnValue(32);
+    const onLoadingStatusChange = vi.fn();
+    const { container } = render(
+      <Avatar
+        name="Maria Santos"
+        src="/cached.png"
+        onLoadingStatusChange={onLoadingStatusChange}
+      />,
+    );
+    expect(onLoadingStatusChange).toHaveBeenLastCalledWith('loaded');
+    expect(root(container)).not.toHaveAttribute('data-loading');
+    expect(container.querySelector('img')).toHaveAttribute('src', '/cached.png');
+    complete.mockRestore();
+    width.mockRestore();
+  });
+
+  it('UIC-AVATAR-1.6 sets the picture attributes on the image only', () => {
+    const imageProps = {
+      srcSet: '/maria-2x.png 2x',
+      sizes: '40px',
+      crossOrigin: 'anonymous',
+      referrerPolicy: 'no-referrer',
+      loading: 'lazy',
+    } as const;
+    const { container, rerender } = render(
+      <Avatar name="Maria Santos" src="/maria.png" imageProps={imageProps} />,
+    );
+    const image = container.querySelector('img');
+    expect(image).toHaveAttribute('srcset', '/maria-2x.png 2x');
+    expect(image).toHaveAttribute('sizes', '40px');
+    expect(image).toHaveAttribute('crossorigin', 'anonymous');
+    expect(image).toHaveAttribute('referrerpolicy', 'no-referrer');
+    expect(image).toHaveAttribute('loading', 'lazy');
+    expect(image).toHaveAttribute('alt', '');
+    expect(image).toHaveClass('ui-avatar__image');
+    expectHooksMatchSpec(container, 'AVATAR', { slots: ['image'] });
+
+    rerender(<Avatar name="Maria Santos" imageProps={imageProps} />);
+    expect(container.querySelector('img, [srcset]')).toBeNull();
+  });
+
   it('UIC-AVATAR-2.1 publishes the size, medium by default', () => {
     const { container, rerender } = render(<Avatar name="Maria Santos" />);
     expect(root(container)).toHaveAttribute('data-size', 'md');
@@ -146,6 +234,18 @@ describe('Avatar', () => {
     rerender(<Avatar name="Maria Santos" variant="outlined" />);
     expect(root(container)).toHaveAttribute('data-variant', 'outlined');
     expectHooksMatchSpec(container, 'AVATAR');
+  });
+
+  it('UIC-AVATAR-2.3 publishes the shape, a circle by default', () => {
+    const { container, rerender } = render(<Avatar name="Maria Santos" />);
+    expect(root(container)).toHaveAttribute('data-shape', 'circle');
+    for (const shape of ['circle', 'rounded', 'square'] as const) {
+      rerender(<Avatar name="Build bot" shape={shape} />);
+      expect(root(container)).toHaveAttribute('data-shape', shape);
+      expectHooksMatchSpec(container, 'AVATAR');
+    }
+    rerender(<Avatar name="Design team" kind="group" shape="square" />);
+    expect(root(container)).toHaveAttribute('data-shape', 'square');
   });
 
   it('UIC-AVATAR-3.1 is an image named by the name, or decorative on request', () => {
@@ -191,10 +291,12 @@ describe('Avatar', () => {
     expect(identity).toEqual({
       name: 'Maria Santos',
       src: '/maria.png',
+      imageProps: undefined,
       initials: undefined,
       colorKey: 'user-1',
       colorIndex: undefined,
       kind: 'person',
+      shape: undefined,
     });
     expect(rest).toEqual({ className: 'caller', 'data-person': '42' });
   });

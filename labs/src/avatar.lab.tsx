@@ -1,12 +1,18 @@
 import { useState, type ReactNode } from 'react';
-import { Avatar, type AvatarSize } from '../../src/components/avatar/avatar.js';
+import {
+  Avatar,
+  type AvatarLoadingStatus,
+  type AvatarSize,
+} from '../../src/components/avatar/avatar.js';
 import { Button } from '../../src/components/button/button.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
-import { brokenPicture, samplePicture } from './people-samples.js';
+import { brokenPicture, otherPicture, samplePicture } from './people-samples.js';
 
 const sizes = ['xs', 'sm', 'md', 'lg', 'fill'] as const;
 const variants = ['filled', 'outlined'] as const;
 const slots = ['0', '1', '2', '3', '4', '5', '6', '7'] as const;
+const shapes = ['circle', 'rounded', 'square'] as const;
+const pictures = { none: undefined, working: samplePicture, broken: brokenPicture } as const;
 
 /** A `fill` avatar takes the box its container gives it; the lab gives it 48 pixels. */
 function Box({ size, children }: { size: AvatarSize; children: ReactNode }) {
@@ -39,6 +45,37 @@ function PictureFallback() {
       </p>
       <p>
         Picture address: <output data-lab-output="picture">{broken ? 'broken' : 'working'}</output>
+      </p>
+    </div>
+  );
+}
+
+function LoadingStatus() {
+  const [picture, setPicture] = useState<keyof typeof pictures>('none');
+  const [log, setLog] = useState<AvatarLoadingStatus[]>([]);
+  return (
+    <div>
+      <Avatar
+        name="Lena Ortiz"
+        size="lg"
+        src={pictures[picture]}
+        data-lab-avatar="status"
+        onLoadingStatusChange={(status) => setLog((entries) => [...entries, status])}
+      />
+      <p>
+        {(['working', 'broken', 'none'] as const).map((choice) => (
+          <Button
+            key={choice}
+            size="sm"
+            isDisabled={picture === choice}
+            onPress={() => setPicture(choice)}
+          >
+            {choice === 'none' ? 'Remove the picture' : `Load a ${choice} picture`}
+          </Button>
+        ))}
+      </p>
+      <p>
+        Statuses: <output data-lab-output="status">{log.join(', ')}</output>
       </p>
     </div>
   );
@@ -93,6 +130,48 @@ mountLab(
           />
         )}
       />
+    </LabSection>
+    <LabSection
+      title="Shapes"
+      description="Circles for people; rounded and square corners for bots, organisations and groups."
+    >
+      <StateMatrix
+        axes={{ shape: shapes, content: ['picture', 'initials', 'group'], variant: variants }}
+        render={({ shape, content, variant }) => (
+          <Avatar
+            name={content === 'group' ? 'Design team' : 'Build bot'}
+            kind={content === 'group' ? 'group' : 'person'}
+            src={content === 'picture' ? samplePicture : undefined}
+            shape={shape}
+            variant={variant}
+            size="lg"
+          />
+        )}
+      />
+    </LabSection>
+    <LabSection
+      title="Picture attributes"
+      description="A picture with a 2x source, lazy loading, no referrer and an anonymous cross-origin request."
+    >
+      <Avatar
+        name="Jon Berg"
+        size="lg"
+        src={samplePicture}
+        imageProps={{
+          srcSet: `${samplePicture} 1x, ${otherPicture} 2x`,
+          sizes: '40px',
+          loading: 'lazy',
+          referrerPolicy: 'no-referrer',
+          crossOrigin: 'anonymous',
+        }}
+        data-lab-avatar="attributes"
+      />
+    </LabSection>
+    <LabSection
+      title="Loading status"
+      description="Each status the avatar reports, in order: idle without a picture, loading, then loaded or error."
+    >
+      <LoadingStatus />
     </LabSection>
     <LabSection
       title="Picture fallback"

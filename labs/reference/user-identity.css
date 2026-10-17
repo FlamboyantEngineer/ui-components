@@ -21,6 +21,59 @@
   flex: none;
 }
 
+.ui-user-identity[data-status] {
+  position: relative;
+}
+
+/* On the corner of the vertically centred avatar, whatever the row's height. */
+.ui-user-identity__indicator {
+  --ref-identity-avatar: 32px;
+  --ref-identity-badge: 10px;
+
+  position: absolute;
+  inset-inline-start: calc(var(--ref-identity-avatar) - var(--ref-identity-badge) + 1px);
+  top: calc(50% + var(--ref-identity-avatar) / 2 - var(--ref-identity-badge) + 1px);
+  box-sizing: border-box;
+  width: var(--ref-identity-badge);
+  height: var(--ref-identity-badge);
+  border: 2px solid var(--ref-canvas);
+  border-radius: 50%;
+  background: var(--ref-muted);
+}
+
+.ui-user-identity[data-size='xs'] .ui-user-identity__indicator {
+  --ref-identity-avatar: 20px;
+  --ref-identity-badge: 8px;
+
+  border-width: 1.5px;
+}
+
+.ui-user-identity[data-size='sm'] .ui-user-identity__indicator {
+  --ref-identity-avatar: 24px;
+}
+
+.ui-user-identity[data-size='lg'] .ui-user-identity__indicator {
+  --ref-identity-avatar: 40px;
+  --ref-identity-badge: 12px;
+}
+
+.ui-user-identity[data-status='active'] .ui-user-identity__indicator {
+  background: var(--ref-success);
+}
+
+.ui-user-identity[data-status='away'] .ui-user-identity__indicator {
+  background: var(--ref-warning);
+}
+
+.ui-user-identity[data-status='busy'] .ui-user-identity__indicator {
+  background: var(--ref-danger);
+}
+
+.ui-user-identity[data-status='idle'] .ui-user-identity__indicator {
+  border-color: var(--ref-muted);
+  background: var(--ref-canvas);
+}
+
 .ui-user-identity__content {
   display: flex;
   flex-direction: column;

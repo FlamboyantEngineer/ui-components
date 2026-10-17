@@ -32,6 +32,20 @@ When the picture fails to load, `Avatar` shall show the initials instead of a br
 Implementation: `src/components/avatar/avatar.tsx`
 Verification: `src/components/avatar/avatar.test.tsx`, `e2e/avatar.spec.ts`
 
+### UIC-AVATAR-1.5 - Loading status
+
+`Avatar` shall track its picture's loading status: `idle` when there is no picture to load (a blank `src` or a group), `loading` from a new `src` until it loads or fails, then `loaded` or `error`. `onLoadingStatusChange` shall be called with the status once on mount and once each time it changes. While the picture loads, the root shall carry `data-loading`, so the stylesheet can draw a placeholder. A picture the browser already holds counts as loaded.
+
+Implementation: `src/components/avatar/avatar.tsx`
+Verification: `src/components/avatar/avatar.test.tsx`, `e2e/avatar.spec.ts`
+
+### UIC-AVATAR-1.6 - Picture attributes
+
+`imageProps` shall set the picture's `srcSet`, `sizes`, `crossOrigin`, `referrerPolicy` and `loading` attributes, for responsive, cross-origin and lazily loaded pictures. They apply only while `src` draws a picture.
+
+Implementation: `src/components/avatar/avatar.tsx`
+Verification: `src/components/avatar/avatar.test.tsx`, `e2e/avatar.spec.ts`
+
 ## UIC-AVATAR-2 - Presentation
 
 ### UIC-AVATAR-2.1 - Sizes
@@ -44,6 +58,13 @@ Verification: `src/components/avatar/avatar.test.tsx`, `e2e/avatar.spec.ts`
 ### UIC-AVATAR-2.2 - Variants
 
 `variant` shall publish `data-variant`: `filled` (the default), where the initials sit on the colour slot, or `outlined`, where the circle is ringed and the initials sit on the container's own ground.
+
+Implementation: `src/components/avatar/avatar.tsx`, `labs/reference/avatar.css`
+Verification: `src/components/avatar/avatar.test.tsx`, `e2e/avatar.spec.ts`
+
+### UIC-AVATAR-2.3 - Shapes
+
+`shape` shall publish `data-shape`: `circle` (the default) for people, or `rounded` or `square` for bots, organisations and groups. The reference sheet rounds the corners of a `rounded` avatar and leaves a `square` one square. Like the other identity fields, `shape` reaches the avatar of every component that draws one.
 
 Implementation: `src/components/avatar/avatar.tsx`, `labs/reference/avatar.css`
 Verification: `src/components/avatar/avatar.test.tsx`, `e2e/avatar.spec.ts`
@@ -68,11 +89,13 @@ Verification: `src/components/avatar/avatar.test.tsx`
 
 | Hook                  | Kind      | Values                         | Description                                               |
 | --------------------- | --------- | ------------------------------ | --------------------------------------------------------- |
-| `ui-avatar`           | root      |                                | The circle (`<span>`).                                    |
+| `ui-avatar`           | root      |                                | The avatar (`<span>`).                                    |
 | `ui-avatar__image`    | slot      |                                | The picture (`<img>`), while it loads or has loaded.      |
 | `ui-avatar__initials` | slot      |                                | The initials, without a picture or after it failed.       |
 | `ui-avatar__glyph`    | slot      |                                | The group glyph's `<svg>` (also `ui-glyph`).              |
 | `data-size`           | attribute | `xs`, `sm`, `md`, `lg`, `fill` | Circle size.                                              |
 | `data-variant`        | attribute | `filled`, `outlined`           | Filled circle or ring.                                    |
 | `data-kind`           | attribute | `person`, `group`              | Whether the avatar draws a person or a group.             |
+| `data-shape`          | attribute | `circle`, `rounded`, `square`  | The avatar's corners.                                     |
 | `data-color`          | attribute |                                | The colour slot, an integer from `0` to `colorCount - 1`. |
+| `data-loading`        | state     | `true`                         | While the picture loads.                                  |

@@ -1,37 +1,20 @@
-import { useRef, useState, type ReactNode, type RefObject } from 'react';
-import {
-  Button as AriaButton,
-  Dialog,
-  DialogTrigger,
-  Input,
-  Popover,
-  SearchField,
-  type DialogProps,
-  type KeyboardEvent as AriaKeyboardEvent,
-} from 'react-aria-components';
+import { useRef, type ReactNode } from 'react';
+import { Dialog, DialogTrigger, Popover, type DialogProps } from 'react-aria-components';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
-import { Glyph, useUiStrings } from '../../core/provider.js';
+import { useUiStrings } from '../../core/provider.js';
+import { EmojiPickerBody } from './emoji-picker-body.js';
+import { EmojiPickerContext } from './emoji-picker-context.js';
+import { EmojiPickerPreview, EmojiPickerSearch } from './emoji-picker-parts.js';
 import {
-  getEmojiLabel,
-  loadEmojiData,
-  type EmojiEntry,
-  type NativeEmoji,
-} from './emoji-catalog.js';
-import { EmojiBody } from './emoji-picker-body.js';
-import { EmojiContent, type EmojiGridOptions } from './emoji-grid.js';
-import {
-  useChooseEmoji,
-  useEmojiData,
-  useEmojiSearch,
-  useEmojiTabs,
-  useSkinTone,
+  useEmojiPickerState,
+  type EmojiChoiceFilters,
   type EmojiChoiceHandlers,
-  type EmojiSearchState,
+  type EmojiPickerStateOptions,
   type EmojiSources,
   type SkinToneState,
 } from './emoji-picker-state.js';
-import { SkinTonePicker } from './skin-tone-picker.js';
+import { EmojiPickerSkinTones } from './skin-tone-picker.js';
 
 export interface EmojiPickerProps
   extends
@@ -39,6 +22,8 @@ export interface EmojiPickerProps
     SkinToneState,
     EmojiSources,
     EmojiChoiceHandlers,
+    EmojiChoiceFilters,
+    Pick<EmojiPickerStateOptions, 'loadEmoji' | 'renderEmoji'>,
     BaseProps {
   /** Hide the skin tone choice, for a host that sets the tone elsewhere. */
   hideSkinTones?: boolean | undefined;
@@ -46,77 +31,31 @@ export interface EmojiPickerProps
   onSearchChange?: ((value: string) => void) | undefined;
   /** Focus the search field when the picker mounts. */
   autoFocus?: boolean | undefined;
-  /** Loads the standard emoji. Defaults to the bundled English set, loaded once on first use. */
-  loadEmoji?: (() => Promise<readonly NativeEmoji[]>) | undefined;
-  /** Draws a standard emoji glyph, for example as an image. Defaults to the text glyph. */
-  renderEmoji?: ((unicode: string) => ReactNode) | undefined;
+  /**
+   * The picker's parts (`EmojiPickerSearch`, `EmojiPickerBody`, `EmojiPickerPreview`,
+   * `EmojiPickerSkinTones`) in a layout of the caller's own, instead of the default one.
+   */
+  children?: ReactNode;
 }
 
-export interface EmojiPickerTriggerProps extends EmojiPickerProps {
+export interface EmojiPickerTriggerProps extends Omit<EmojiPickerProps, 'children'> {
   /** The button that opens the picker, such as a `Button` or `IconButton`. */
   children: ReactNode;
 }
 
-interface EmojiSearchFieldProps {
-  search: EmojiSearchState;
-  /** Chooses the first emoji shown, for Enter in the field. */
-  onSubmit(): void;
-  autoFocus: boolean | undefined;
-  gridRef: RefObject<HTMLDivElement | null>;
-}
+const hooks = createHooks('emoji-picker', ['popover', 'footer']);
 
-const hooks = createHooks('emoji-picker', [
-  'popover',
-  'search',
-  'search-input',
-  'search-clear',
-  'footer',
-  'preview',
-  'preview-emoji',
-  'preview-label',
-]);
-
-// Down moves from the search field into the grid. The field's keys stay inside the picker, except
-// Escape, which React Aria still stops while it clears a non-empty field.
-function moveToGrid(event: AriaKeyboardEvent, gridRef: RefObject<HTMLDivElement | null>) {
-  if (event.key === 'Escape') event.continuePropagation();
-  if (event.key !== 'ArrowDown') return;
-  event.preventDefault();
-  gridRef.current?.focus();
-}
-
-function EmojiSearchField({ search, onSubmit, autoFocus, gridRef }: EmojiSearchFieldProps) {
-  const strings = useUiStrings();
+/** The search field, the body and a footer with the preview and the skin tones. */
+function EmojiPickerLayout({ hideSkinTones }: Pick<EmojiPickerProps, 'hideSkinTones'>) {
   return (
-    <SearchField
-      className={hooks.slotClass('search')}
-      aria-label={strings.searchEmoji}
-      value={search.query}
-      autoFocus={autoFocus}
-      onChange={search.setQuery}
-      onSubmit={onSubmit}
-      onKeyDown={(event) => moveToGrid(event, gridRef)}
-    >
-      <Input className={hooks.slotClass('search-input')} placeholder={strings.searchEmoji} />
-      <AriaButton className={hooks.slotClass('search-clear')}>
-        <Glyph name="close" />
-      </AriaButton>
-    </SearchField>
-  );
-}
-
-function EmojiPreview({ entry, grid }: { entry: EmojiEntry | null; grid: EmojiGridOptions }) {
-  return (
-    <div {...hooks.slot('preview')} aria-hidden="true">
-      {entry ? (
-        <>
-          <span {...hooks.slot('preview-emoji')}>
-            <EmojiContent entry={entry} skinTone={grid.skinTone} renderEmoji={grid.renderEmoji} />
-          </span>
-          <span {...hooks.slot('preview-label')}>{getEmojiLabel(entry)}</span>
-        </>
-      ) : null}
-    </div>
+    <>
+      <EmojiPickerSearch />
+      <EmojiPickerBody />
+      <div {...hooks.slot('footer')}>
+        <EmojiPickerPreview />
+        {hideSkinTones ? null : <EmojiPickerSkinTones />}
+      </div>
+    </>
   );
 }
 
@@ -135,53 +74,44 @@ export function EmojiPicker({
   customEmoji,
   onSearchChange,
   autoFocus,
-  loadEmoji = loadEmojiData,
+  loadEmoji,
   renderEmoji,
+  categories,
+  emojiVersion,
+  filterEmoji,
+  children,
   className,
   ...rest
 }: EmojiPickerProps) {
   const strings = useUiStrings();
-  const data = useEmojiData(loadEmoji);
-  const [tone, setTone] = useSkinTone({ skinTone, defaultSkinTone, onSkinToneChange });
-  const { tabs, all } = useEmojiTabs(data.emoji, { recentEmoji, customEmoji });
-  const search = useEmojiSearch(all, onSearchChange);
-  const choose = useChooseEmoji({ tone, recentEmoji, onSelect, onRecentEmojiChange });
-  const [tabId, setTabId] = useState<string>();
-  const [active, setActive] = useState<EmojiEntry | null>(null);
-  const gridRef = useRef<HTMLDivElement>(null);
-  const tab = tabs.find((item) => item.id === tabId) ?? tabs[0];
-  const first = search.isSearching ? search.results[0] : tab?.entries[0];
-  const grid: EmojiGridOptions = {
-    skinTone: tone,
-    onSelect: choose,
-    onActiveChange: setActive,
+  const rootRef = useRef<HTMLElement>(null);
+  const state = useEmojiPickerState({
+    onSelect,
+    skinTone,
+    defaultSkinTone,
+    onSkinToneChange,
+    recentEmoji,
+    onRecentEmojiChange,
+    customEmoji,
+    onSearchChange,
+    autoFocus,
+    loadEmoji,
     renderEmoji,
-    gridRef,
-  };
+    categories,
+    emojiVersion,
+    filterEmoji,
+    rootRef,
+  });
   return (
     <Dialog
       {...rest}
-      {...hooks.root({ className, data: { loading: !data.emoji && !data.failed } })}
+      ref={rootRef}
+      {...hooks.root({ className, data: { loading: !state.data.emoji && !state.data.failed } })}
       aria-label={rest['aria-label'] ?? strings.emojiPicker}
     >
-      <EmojiSearchField
-        search={search}
-        onSubmit={() => (first ? choose(first) : undefined)}
-        autoFocus={autoFocus}
-        gridRef={gridRef}
-      />
-      <EmojiBody
-        data={data}
-        search={search}
-        tabs={tabs}
-        tab={tab}
-        onTabChange={setTabId}
-        grid={grid}
-      />
-      <div {...hooks.slot('footer')}>
-        <EmojiPreview entry={active} grid={grid} />
-        {hideSkinTones ? null : <SkinTonePicker value={tone} onChange={setTone} />}
-      </div>
+      <EmojiPickerContext.Provider value={state}>
+        {children ?? <EmojiPickerLayout hideSkinTones={hideSkinTones} />}
+      </EmojiPickerContext.Provider>
     </Dialog>
   );
 }

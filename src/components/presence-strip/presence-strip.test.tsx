@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -175,6 +175,93 @@ describe('PresenceStrip', () => {
     expect(onAction).toHaveBeenLastCalledWith('p2');
     expect(screen.queryByRole('dialog')).toBeNull();
     expectHooksMatchSpec(container, 'PRESENCE-STRIP', { slots: ['person'] });
+  });
+
+  it('UIC-PRESENCE-STRIP-1.6 opens a menu of the hidden people from the count', async () => {
+    const user = userEvent.setup();
+    const onAction = vi.fn();
+    const statuses: PresencePerson[] = people.map((person, index) =>
+      index === 4 ? { ...person, status: 'away', statusLabel: 'Away', colorIndex: 3 } : person,
+    );
+    const { container } = render(
+      <PresenceStrip
+        people={statuses}
+        maxVisible={4}
+        overflowCount={1}
+        hiddenNames={['Ines Duarte']}
+        overflow="menu"
+        onAction={onAction}
+      />,
+    );
+    expect(root(container)).toHaveAttribute('data-overflow', 'menu');
+    const count = screen.getByRole('button', {
+      name: '3 more people: Priya Nair, Tom Li, Ines Duarte',
+    });
+    expect(count).toHaveClass('ui-presence-strip__overflow');
+    expect(count).toHaveTextContent('+3');
+    expect(count).toHaveAttribute('aria-haspopup', 'true');
+    count.focus();
+    await user.keyboard('{Enter}');
+    const menu = await screen.findByRole('menu', { name: '3 more people' });
+    expect(menu).toHaveClass('ui-menu', 'ui-presence-strip__menu');
+    const items = within(menu).getAllByRole('menuitem');
+    expect(items[0]).toHaveAccessibleName('Priya Nair Away');
+    expect(items[1]).toHaveAccessibleName('Tom Li');
+    const row = items[0]?.querySelector('.ui-user-identity') as HTMLElement;
+    expect(row).toHaveAttribute('data-size', 'sm');
+    expect(row).toHaveAttribute('data-status', 'away');
+    expect(row.querySelector('.ui-avatar')).toHaveAttribute('data-color', '3');
+    expectHooksMatchSpec(document.body, 'PRESENCE-STRIP', { slots: ['overflow', 'menu'] });
+
+    expect(items[0]).toHaveFocus();
+    await user.keyboard('{ArrowDown}');
+    expect(items[1]).toHaveFocus();
+    await user.keyboard('{Enter}');
+    expect(onAction).toHaveBeenCalledWith('p5');
+    expect(screen.queryByRole('menu')).toBeNull();
+    await waitFor(() => expect(count).toHaveFocus());
+  });
+
+  it('UIC-PRESENCE-STRIP-1.6 keeps a plain count without hidden people, for dots and by default', async () => {
+    const { container, rerender } = render(
+      <PresenceStrip people={[]} overflowCount={2} overflow="menu" />,
+    );
+    expect(screen.getByRole('img', { name: '2 more people' })).toHaveTextContent('+2');
+    expect(screen.queryByRole('button')).toBeNull();
+
+    rerender(<PresenceStrip people={people} maxVisible={2} variant="dots" overflow="menu" />);
+    expect(container.querySelector('.ui-presence-strip__overflow')?.tagName).toBe('SPAN');
+    expect(container.querySelector('button, [role]')).toBeNull();
+
+    rerender(<PresenceStrip people={people} maxVisible={2} />);
+    expect(root(container)).toHaveAttribute('data-overflow', 'count');
+    expect(screen.getByRole('img', { name: /^4 more people/ })).toBeInTheDocument();
+
+    const repeated = [people[0], people[0], people[0]] as PresencePerson[];
+    rerender(<PresenceStrip people={repeated} maxVisible={1} overflow="menu" />);
+    await userEvent.click(screen.getByRole('button', { name: /^2 more people/ }));
+    expect(await screen.findAllByRole('menuitem')).toHaveLength(2);
+  });
+
+  it('UIC-PRESENCE-STRIP-1.7 gives every person a name tooltip or a card on hover', () => {
+    const { container, rerender } = render(
+      <PresenceStrip people={people.slice(0, 2)} nameTooltip />,
+    );
+    const persons = container.querySelectorAll('.ui-presence-strip__person');
+    expect(persons[0]).toHaveAttribute('tabindex', '0');
+    expect(persons[0]).toHaveAttribute('role', 'img');
+    expect(persons[1]).toHaveAccessibleName('Jon Berg');
+
+    rerender(
+      <PresenceStrip
+        people={people.slice(0, 2)}
+        cardTrigger="hover"
+        renderCard={(person) => <UserCard name={person.name} />}
+      />,
+    );
+    for (const person of container.querySelectorAll('.ui-presence-strip__person')) {
+      expect(person).toHaveAttribute('aria-haspopup', 'dialog');
+    }
   });
 
   it('UIC-PRESENCE-STRIP-2.1 draws decorative colour dots inside another control', () => {

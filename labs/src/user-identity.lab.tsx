@@ -74,6 +74,23 @@ mountLab(
         )}
       />
     </LabSection>
+    <LabSection
+      title="Presence"
+      description="A status badge on the avatar's corner, named by the status label and read after the name."
+    >
+      <StateMatrix
+        axes={{ status: ['active', 'away', 'busy', 'idle'], size: sizes }}
+        render={({ status, size }) => (
+          <UserIdentity
+            name="Lena Ortiz"
+            description="Research"
+            status={status}
+            statusLabel={status.charAt(0).toUpperCase() + status.slice(1)}
+            size={size}
+          />
+        )}
+      />
+    </LabSection>
     <LabSection title="Picture fallback" description="Break the picture: the initials replace it.">
       <PictureFallback />
     </LabSection>

@@ -103,4 +103,63 @@ test.describe('Presence Strip lab', () => {
     await page.mouse.click(5, 5);
     await expect(card).toHaveCount(0);
   });
+
+  test('UIC-PRESENCE-STRIP-1.6 lists the hidden people in a menu from the count', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('presence-strip');
+    const strip = page.locator('[data-lab-strip="menu"]');
+    await expect(strip).toHaveAttribute('data-overflow', 'menu');
+    const count = strip.getByRole('button', {
+      name: '4 more people: Sam Okafor, Priya Nair, Tom Li, Ines Duarte',
+    });
+    await expect(count).toHaveText('+4');
+    await count.click();
+    const menu = page.getByRole('menu', { name: '4 more people' });
+    await expect(menu.locator('.ui-user-identity__name')).toHaveText([
+      'Sam Okafor',
+      'Priya Nair',
+      'Tom Li',
+    ]);
+    await expect(menu.getByRole('menuitem').first()).toHaveAccessibleName('Sam Okafor Idle');
+    await expect(menu.locator('.ui-user-identity__indicator').first()).toBeVisible();
+    await lab.expectAccessible('.ui-menu-popover');
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('ArrowDown');
+    await expect(menu.getByRole('menuitem').nth(1)).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(menu).toHaveCount(0);
+    await expect(page.locator('[data-lab-output="menu"]')).toHaveText('Priya Nair');
+    await expect(count).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(menu.getByRole('menuitem').first()).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(menu).toHaveCount(0);
+    await expect(count).toBeFocused();
+  });
+
+  test('UIC-PRESENCE-STRIP-1.7 shows names in tooltips and opens cards on hover', async ({
+    page,
+    lab,
+  }) => {
+    await page.clock.install();
+    await lab.open('presence-strip');
+    await page.clock.pauseAt(Date.now() + 1000);
+    const tooltips = page.locator('[data-lab-strip="tooltips"]');
+    const persons = tooltips.locator('.ui-presence-strip__person');
+    await persons.first().focus();
+    await page.keyboard.press('Tab');
+    await expect(persons.nth(1)).toBeFocused();
+    await expect(page.getByRole('tooltip')).toHaveText('Jon Berg, Away');
+    await persons.nth(1).blur();
+    await page.clock.runFor(1000);
+
+    const cards = page.locator('[data-lab-strip="hover-cards"]');
+    await page.mouse.move(5, 5);
+    await cards.getByRole('button', { name: 'Lena Ortiz, Busy' }).hover();
+    await page.clock.runFor(600);
+    await expect(page.getByRole('dialog', { name: 'Lena Ortiz' })).toContainText('Busy');
+    await page.clock.resume();
+  });
 });

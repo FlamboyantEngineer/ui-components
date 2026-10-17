@@ -1,6 +1,6 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { getColorIndex } from '../../utils/color-index.js';
@@ -176,5 +176,120 @@ describe('PresenceAvatar', () => {
     await userEvent.keyboard('{Escape}');
     expect(screen.queryByRole('dialog')).toBeNull();
     await waitFor(() => expect(trigger).toHaveFocus());
+  });
+});
+
+function hover(element: Element) {
+  fireEvent.pointerMove(element, { pointerType: 'mouse' });
+  fireEvent.pointerEnter(element, { pointerType: 'mouse' });
+  fireEvent.mouseEnter(element);
+}
+
+async function advance(ms: number) {
+  await act(async () => {
+    vi.advanceTimersByTime(ms);
+  });
+}
+
+const tooltip = () => document.querySelector<HTMLElement>('[role="tooltip"]');
+
+describe('PresenceAvatar tooltips and hover cards', () => {
+  afterEach(async () => {
+    // Let React Aria's global warm-up and cool-down timers settle between tests.
+    if (vi.isFakeTimers()) await advance(5000);
+    vi.useRealTimers();
+  });
+
+  it('UIC-PRESENCE-AVATAR-1.7 makes a static avatar a focusable image with a name tooltip', async () => {
+    vi.useFakeTimers();
+    const { container } = render(
+      <PresenceAvatar name="Maria Santos" status="away" statusLabel="Away" nameTooltip />,
+    );
+    const image = screen.getByRole('img', { name: 'Maria Santos, Away' });
+    expect(image).toBe(root(container));
+    expect(image).toHaveClass('ui-presence-avatar');
+    expect(image).toHaveAttribute('tabindex', '0');
+    expect(image.querySelector('.ui-avatar')).toHaveAttribute('aria-hidden', 'true');
+    expect(screen.getAllByRole('img')).toHaveLength(1);
+    hover(image);
+    await advance(500);
+    expect(tooltip()).toHaveTextContent('Maria Santos, Away');
+    expect(image.getAttribute('aria-describedby') ?? '').toBe('');
+    expectHooksMatchSpec(container, 'PRESENCE-AVATAR', { slots: ['avatar', 'indicator'] });
+    fireEvent.pointerLeave(image, { pointerType: 'mouse' });
+    fireEvent.mouseLeave(image);
+    await advance(1000);
+    expect(tooltip()).toBeNull();
+
+    act(() => {
+      fireEvent.keyDown(document.body, { key: 'Tab' });
+      image.focus();
+    });
+    expect(tooltip()).toHaveTextContent('Maria Santos, Away');
+  });
+
+  it('UIC-PRESENCE-AVATAR-1.7 shows the name of a pressable avatar without renaming it', async () => {
+    vi.useFakeTimers();
+    const onPress = vi.fn();
+    render(
+      <>
+        <PresenceAvatar name="Jon Berg" nameTooltip onPress={onPress} />
+        <PresenceAvatar
+          name="Lena Ortiz"
+          statusLabel="Busy"
+          nameTooltip
+          card={<UserCard name="Lena Ortiz" />}
+        />
+      </>,
+    );
+    const button = screen.getByRole('button', { name: 'Jon Berg' });
+    expect(button).not.toHaveAttribute('aria-label');
+    act(() => {
+      fireEvent.keyDown(document.body, { key: 'Tab' });
+      button.focus();
+    });
+    expect(tooltip()).toHaveTextContent('Jon Berg');
+    expect(button).toHaveAttribute('aria-describedby', '');
+    act(() => button.blur());
+    await advance(1000);
+
+    const cardTrigger = screen.getByRole('button', { name: 'Lena Ortiz, Busy' });
+    hover(cardTrigger);
+    await advance(500);
+    expect(tooltip()).toHaveTextContent('Lena Ortiz, Busy');
+    expect(cardTrigger).toHaveAttribute('aria-describedby', '');
+  });
+
+  it('UIC-PRESENCE-AVATAR-1.8 opens its card on hover and focus instead of showing a tooltip', async () => {
+    vi.useFakeTimers();
+    const onPress = vi.fn();
+    const { container } = render(
+      <PresenceAvatar
+        name="Maria Santos"
+        statusLabel="Away"
+        nameTooltip
+        cardTrigger="hover"
+        onPress={onPress}
+        card={<UserCard name="Maria Santos" statusLabel="Away" />}
+      />,
+    );
+    const trigger = screen.getByRole('button', { name: 'Maria Santos, Away' });
+    expect(trigger).toBe(root(container));
+    expect(trigger).toHaveClass('ui-presence-avatar', 'ui-user-card__trigger');
+    expect(trigger).toHaveAttribute('aria-haspopup', 'dialog');
+    hover(trigger);
+    await advance(600);
+    const card = screen.getByRole('dialog', { name: 'Maria Santos' });
+    expect(card.closest('.ui-user-card__popover')).toHaveAttribute(
+      'data-trigger',
+      'PreviewTrigger',
+    );
+    expect(tooltip()).toBeNull();
+    expect(card.contains(document.activeElement)).toBe(false);
+    fireEvent.click(trigger);
+    expect(onPress).toHaveBeenCalledTimes(1);
+    fireEvent.keyDown(trigger, { key: 'Escape' });
+    await advance(1000);
+    expect(screen.queryByRole('dialog')).toBeNull();
   });
 });

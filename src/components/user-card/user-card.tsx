@@ -1,12 +1,14 @@
-import { useContext, type ReactNode } from 'react';
+import { createContext, useContext, type ReactNode } from 'react';
 import {
   Button as AriaButton,
   Dialog,
   DialogTrigger,
   OverlayTriggerStateContext,
   Popover,
+  PreviewTrigger,
   type ButtonProps as AriaButtonProps,
   type DialogProps,
+  type PreviewTriggerProps,
 } from 'react-aria-components';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
@@ -51,14 +53,28 @@ export interface UserCardProps
   actions?: readonly UserCardAction[] | undefined;
   /** Called with an action's `id` when it is pressed. Inside a card trigger, the card closes first. */
   onAction?: ((id: string) => void) | undefined;
+  /** The profile is loading: the status, details and actions give way to a decorative skeleton. */
+  isLoading?: boolean | undefined;
 }
 
+/** `press` opens the card on a click, Enter or Space; `hover` on hover, keyboard focus or long press. */
+export type UserCardTriggerType = 'press' | 'hover';
+
 export interface UserCardTriggerProps
-  extends Omit<AriaButtonProps, 'className' | 'style' | 'children' | 'render'>, BaseProps {
+  extends
+    Omit<AriaButtonProps, 'className' | 'style' | 'children' | 'render'>,
+    Pick<PreviewTriggerProps, 'isOpen' | 'defaultOpen' | 'onOpenChange' | 'delay' | 'closeDelay'>,
+    BaseProps {
   /** The card to open, usually a `UserCard`. */
   card: ReactNode;
   /** What the trigger shows: an avatar, a name or a user identity row. */
   children: ReactNode;
+  /**
+   * `press` (the default) opens the card on a click, Enter or Space. `hover` opens it `delay`
+   * milliseconds after hover or keyboard focus, or on a long press, without moving focus, and closes
+   * it `closeDelay` milliseconds after the pointer and focus leave; pressing then runs `onPress` only.
+   */
+  trigger?: UserCardTriggerType | undefined;
 }
 
 const hooks = createHooks('user-card', [
@@ -71,7 +87,11 @@ const hooks = createHooks('user-card', [
   'action',
   'trigger',
   'popover',
+  'skeleton',
 ]);
+
+/** Set inside a hover card's popover, where the card must not take focus as a dialog would. */
+const UserCardPreviewContext = createContext(false);
 
 function CardStatus({ statusLabel }: Pick<UserCardProps, 'statusLabel'>) {
   const text = statusLabel?.trim();
@@ -121,6 +141,35 @@ function CardActions({ actions, onAction }: Pick<UserCardProps, 'actions' | 'onA
 }
 
 /**
+ * The card's dialog. React Aria's Dialog takes focus and contains it within its overlay, which a
+ * card shown on hover must not do, so there it is a plain dialog element.
+ */
+function UserCardRoot({
+  isLoading,
+  children,
+  ...props
+}: Omit<DialogProps, 'children'> & { isLoading: boolean; children: ReactNode }) {
+  const isPreview = useContext(UserCardPreviewContext);
+  if (isPreview) {
+    const { slot: _slot, isEntering: _isEntering, role = 'dialog', ...section } = props;
+    return (
+      <section {...section} role={role} aria-busy={isLoading || undefined}>
+        {children}
+      </section>
+    );
+  }
+  return (
+    // React Aria's Dialog forwards no `aria-busy`.
+    <Dialog
+      {...props}
+      render={isLoading ? (dialog) => <section {...dialog} aria-busy="true" /> : undefined}
+    >
+      {children}
+    </Dialog>
+  );
+}
+
+/**
  * The identity card of a person or group: avatar, name, a secondary line, an optional status row,
  * detail rows and actions. A dialog named by the person, usually opened by a `UserCardTrigger`.
  */
@@ -134,16 +183,21 @@ export function UserCard(props: UserCardProps) {
     details,
     actions,
     onAction,
+    isLoading = false,
     className,
     'aria-label': ariaLabel,
     ...rest
   } = cardProps;
   const strings = useUiStrings();
   return (
-    <Dialog
+    <UserCardRoot
       {...rest}
-      {...hooks.root({ className, data: { status: status?.trim() || undefined } })}
+      {...hooks.root({
+        className,
+        data: { status: status?.trim() || undefined, loading: isLoading },
+      })}
       aria-label={ariaLabel ?? getDisplayName(identity.name, strings.unnamed)}
+      isLoading={isLoading}
     >
       <UserIdentity
         {...identity}
@@ -151,23 +205,60 @@ export function UserCard(props: UserCardProps) {
         description={description}
         className={hooks.slotClass('identity')}
       />
-      <CardStatus statusLabel={statusLabel} />
-      <CardDetails details={details} />
-      <CardActions actions={actions} onAction={onAction} />
-    </Dialog>
+      {isLoading ? (
+        <div {...hooks.slot('skeleton')} aria-hidden="true" />
+      ) : (
+        <>
+          <CardStatus statusLabel={statusLabel} />
+          <CardDetails details={details} />
+          <CardActions actions={actions} onAction={onAction} />
+        </>
+      )}
+    </UserCardRoot>
   );
 }
 
 /**
  * Makes its content (an avatar, a name, a user identity row) a button that opens `card` in a
- * popover. Escape, a press outside and the card's actions close it, returning focus to the trigger.
+ * popover, on press or, with `trigger="hover"`, on hover and keyboard focus (React Aria
+ * `PreviewTrigger`). Escape and the card's actions close it, returning focus to the trigger.
  */
-export function UserCardTrigger({ card, children, className, ...rest }: UserCardTriggerProps) {
+export function UserCardTrigger({
+  card,
+  children,
+  trigger = 'press',
+  isOpen,
+  defaultOpen,
+  onOpenChange,
+  delay,
+  closeDelay,
+  className,
+  ...rest
+}: UserCardTriggerProps) {
+  const openState = { isOpen, defaultOpen, onOpenChange };
+  const button = (
+    <AriaButton {...rest} {...hooks.slot('trigger', undefined, className)}>
+      {children}
+    </AriaButton>
+  );
+  if (trigger === 'hover') {
+    return (
+      <PreviewTrigger
+        {...openState}
+        delay={delay}
+        closeDelay={closeDelay}
+        isDisabled={rest.isDisabled}
+      >
+        {button}
+        <Popover className={hooks.slotClass('popover')}>
+          <UserCardPreviewContext.Provider value>{card}</UserCardPreviewContext.Provider>
+        </Popover>
+      </PreviewTrigger>
+    );
+  }
   return (
-    <DialogTrigger>
-      <AriaButton {...rest} {...hooks.slot('trigger', undefined, className)}>
-        {children}
-      </AriaButton>
+    <DialogTrigger {...openState}>
+      {button}
       <Popover className={hooks.slotClass('popover')}>{card}</Popover>
     </DialogTrigger>
   );

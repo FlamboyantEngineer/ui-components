@@ -1,5 +1,13 @@
-import { useContext, useEffect, useMemo, useState } from 'react';
-import { OverlayTriggerStateContext } from 'react-aria-components';
+import {
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+  type RefObject,
+} from 'react';
+import { OverlayTriggerStateContext, useLocale } from 'react-aria-components';
 import {
   addRecentEmoji,
   getEmojiKey,
@@ -9,9 +17,14 @@ import {
   type CustomEmoji,
   type EmojiEntry,
   type EmojiSelection,
+  type EmojiCategory,
   type NativeEmoji,
   type SkinTone,
 } from './emoji-catalog.js';
+import { filterNativeEmoji } from './emoji-filter.js';
+import type { EmojiGridOptions } from './emoji-grid.js';
+import { loadEmojiData, resolveEmojiLocale } from './emoji-locale.js';
+import { useEmojiSupport } from './emoji-support.js';
 
 export interface EmojiData {
   emoji: readonly NativeEmoji[] | null;
@@ -41,6 +54,19 @@ export interface EmojiSources {
   customEmoji?: readonly CustomEmoji[] | undefined;
 }
 
+/** Which standard emoji the picker offers. */
+export interface EmojiChoiceFilters {
+  /** The standard categories to offer, in order. Defaults to all nine. */
+  categories?: readonly EmojiCategory[] | undefined;
+  /**
+   * Leaves out emoji newer than this Emoji version (`14`), in place of the newest version the
+   * platform draws, which the picker otherwise finds itself.
+   */
+  emojiVersion?: number | undefined;
+  /** Keeps the standard emoji for which it returns `true`; the others are offered nowhere. */
+  filterEmoji?: ((emoji: NativeEmoji) => boolean) | undefined;
+}
+
 /** What choosing an emoji reports to the host. */
 export interface EmojiChoiceHandlers {
   /** Called with the chosen emoji. Inside a dialog trigger, choosing also closes the overlay. */
@@ -60,6 +86,39 @@ export interface EmojiSearchState {
 
 interface ChooseEmojiOptions extends EmojiChoiceHandlers, Pick<EmojiSources, 'recentEmoji'> {
   tone: SkinTone;
+}
+
+/** Everything the picker's parts read. */
+export interface EmojiPickerState {
+  /** The offered standard emoji, `null` while they load or the platform is being measured. */
+  data: EmojiData;
+  search: EmojiSearchState;
+  tabs: EmojiTab[];
+  /** The selected category tab. */
+  tab: EmojiTab | undefined;
+  setTabId(id: string): void;
+  /** The options every grid shares. */
+  grid: EmojiGridOptions;
+  /** The grid shown, which Down in the search field moves to. */
+  gridRef: RefObject<HTMLDivElement | null>;
+  tone: SkinTone;
+  setTone(tone: SkinTone): void;
+  /** The emoji last hovered or focused. */
+  active: EmojiEntry | null;
+  /** Chooses the first emoji shown, for Enter in the search field. */
+  chooseFirst(): void;
+  autoFocus: boolean | undefined;
+}
+
+/** The picker props its state comes from. */
+export interface EmojiPickerStateOptions
+  extends SkinToneState, EmojiSources, EmojiChoiceHandlers, EmojiChoiceFilters {
+  onSearchChange?: ((value: string) => void) | undefined;
+  autoFocus?: boolean | undefined;
+  loadEmoji?: (() => Promise<readonly NativeEmoji[]>) | undefined;
+  renderEmoji?: ((unicode: string) => ReactNode) | undefined;
+  /** The picker element, whose font the platform support is measured in. */
+  rootRef: RefObject<HTMLElement | null>;
 }
 
 const searchLimit = 60;
@@ -158,5 +217,75 @@ export function useChooseEmoji({
     onSelect?.(toEmojiSelection(entry, tone));
     onRecentEmojiChange?.(addRecentEmoji(recentEmoji, getEmojiKey(entry), recentLimit));
     overlay?.close();
+  };
+}
+
+/** The standard emoji from `loadEmoji`, or the bundled set in the React Aria locale's language. */
+function useLocalizedEmojiData(loadEmoji: EmojiPickerStateOptions['loadEmoji']): EmojiData {
+  const emojiLocale = resolveEmojiLocale(useLocale().locale);
+  const loadLocalized = useMemo(() => () => loadEmojiData(emojiLocale), [emojiLocale]);
+  return useEmojiData(loadEmoji ?? loadLocalized);
+}
+
+/**
+ * The offered standard emoji: the loaded ones filtered by category, version and `filterEmoji`, and,
+ * for text glyphs, by what the platform draws, measured in the picker's font.
+ */
+function useOfferedEmoji({
+  loadEmoji,
+  renderEmoji,
+  categories,
+  emojiVersion,
+  filterEmoji,
+  rootRef,
+}: EmojiPickerStateOptions): EmojiData {
+  const loaded = useLocalizedEmojiData(loadEmoji);
+  const support = useEmojiSupport(rootRef, !renderEmoji);
+  const emoji = useMemo(
+    () =>
+      loaded.emoji && support
+        ? filterNativeEmoji(loaded.emoji, {
+            categories,
+            maxVersion: emojiVersion ?? support.version,
+            hideCountryFlags: !support.countryFlags,
+            filterEmoji,
+          })
+        : null,
+    [loaded.emoji, support, categories, emojiVersion, filterEmoji],
+  );
+  return { emoji, failed: loaded.failed };
+}
+
+/** The state every part of a picker reads, from the picker's props. */
+export function useEmojiPickerState(options: EmojiPickerStateOptions): EmojiPickerState {
+  const data = useOfferedEmoji(options);
+  const [tone, setTone] = useSkinTone(options);
+  const { tabs, all } = useEmojiTabs(data.emoji, options);
+  const search = useEmojiSearch(all, options.onSearchChange);
+  const choose = useChooseEmoji({ ...options, tone });
+  const [tabId, setTabId] = useState<string>();
+  const [active, setActive] = useState<EmojiEntry | null>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
+  const tab = tabs.find((item) => item.id === tabId) ?? tabs[0];
+  const first = search.isSearching ? search.results[0] : tab?.entries[0];
+  return {
+    data,
+    search,
+    tabs,
+    tab,
+    setTabId,
+    grid: {
+      skinTone: tone,
+      onSelect: choose,
+      onActiveChange: setActive,
+      renderEmoji: options.renderEmoji,
+      gridRef,
+    },
+    gridRef,
+    tone,
+    setTone,
+    active,
+    chooseFirst: () => (first ? choose(first) : undefined),
+    autoFocus: options.autoFocus,
   };
 }
