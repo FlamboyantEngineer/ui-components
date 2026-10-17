@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Scaffolds a lab and regenerates labs/index.html.
 //   npm run new:lab -- <name> --title "Button" --group "Actions and navigation" --description "…"
-//   npm run new:lab -- --sync     rewrite every lab page from its metadata and regenerate the index
+//   npm run new:lab -- --sync     rewrite every lab page from its metadata, regenerate the index
+//                                 and the reference stylesheet's import list
 
 import { existsSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -12,6 +13,7 @@ import {
   labSourceDir,
   renderIndex,
   renderLabPage,
+  renderReferenceIndex,
 } from './lib/labs.mjs';
 
 const args = process.argv.slice(2);
@@ -29,7 +31,8 @@ function sync() {
     }
   }
   writeFileSync(join(labsDir, 'index.html'), renderIndex(collectLabs()));
-  console.log(`Synced ${labs.length} lab pages and labs/index.html.`);
+  writeFileSync(join(labsDir, 'reference.css'), renderReferenceIndex());
+  console.log(`Synced ${labs.length} lab pages, labs/index.html and labs/reference.css.`);
 }
 
 if (args.includes('--sync')) {

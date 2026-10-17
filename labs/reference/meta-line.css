@@ -1,0 +1,9 @@
+/* Meta Line */
+
+.ui-meta-line {
+  color: var(--ref-muted);
+}
+
+.ui-meta-line__separator {
+  color: var(--ref-muted);
+}

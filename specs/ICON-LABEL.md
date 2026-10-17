@@ -15,14 +15,14 @@ Verification: `src/components/icon-label/icon-label.test.tsx`, `e2e/icon-label.s
 
 `size` (`sm`, `md` by default, `lg`) shall size the icon and publish `data-size` on the root, from which the stylesheet sets the gap. The reference sheet uses 12/4, 16/8 and 20/12 pixel icon and gap pairs.
 
-Implementation: `src/components/icon-label/icon-label.tsx`, `labs/reference.css`
+Implementation: `src/components/icon-label/icon-label.tsx`, `labs/reference/icon-label.css`
 Verification: `src/components/icon-label/icon-label.test.tsx`, `e2e/icon-label.spec.ts`
 
 ### UIC-ICON-LABEL-1.3 - Layout options
 
 `truncate` shall publish `data-truncate` so the stylesheet keeps the label on one line and ellipsizes it, while the full text stays in the DOM. `grow` shall publish `data-grow` so the label takes the host row's free width. `collapsible` shall publish `data-collapsible`, marking text the stylesheet may hide in narrow containers.
 
-Implementation: `src/components/icon-label/icon-label.tsx`, `labs/reference.css`
+Implementation: `src/components/icon-label/icon-label.tsx`, `labs/reference/icon-label.css`
 Verification: `src/components/icon-label/icon-label.test.tsx`, `e2e/icon-label.spec.ts`
 
 ### UIC-ICON-LABEL-1.4 - Visibility and announcements

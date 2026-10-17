@@ -11,8 +11,10 @@ import {
   labSourceDir,
   listLabPages,
   listLabSources,
+  listReferencePartials,
   renderIndex,
   renderLabPage,
+  renderReferenceIndex,
   root,
 } from './lib/labs.mjs';
 
@@ -48,6 +50,20 @@ const index = existsSync(join(labsDir, 'index.html'))
   : '';
 if (index !== renderIndex(labs)) {
   problems.push('labs/index.html is out of date (run npm run new:lab -- --sync)');
+}
+
+const reference = existsSync(join(labsDir, 'reference.css'))
+  ? readFileSync(join(labsDir, 'reference.css'), 'utf8')
+  : '';
+if (reference !== renderReferenceIndex()) {
+  problems.push('labs/reference.css is out of date (run npm run new:lab -- --sync)');
+}
+for (const partial of listReferencePartials()) {
+  if (partial !== 'base' && !existsSync(join(root, 'specs', `${partial.toUpperCase()}.md`))) {
+    problems.push(
+      `labs/reference/${partial}.css is not named after a spec (specs/${partial.toUpperCase()}.md)`,
+    );
+  }
 }
 
 const componentsDir = join(root, 'src', 'components');

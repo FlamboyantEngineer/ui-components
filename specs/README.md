@@ -48,7 +48,7 @@ A component's hooks are listed only in its own spec. A family spec (for example 
   - `property`: a measured `--ui-*` custom property set inline.
   - `Values` lists the allowed values in backticks; empty means free text (an ID, a count).
 
-`npm run check:specs` enforces this format, the existence of every listed path, that the listed tests name each ID, that every component directory is implemented by some spec, and that `labs/reference.css` styles every root and slot hook. The test helper `expectHooksMatchSpec` in `test/hooks.ts` fails a test when rendered markup carries a hook its spec does not declare.
+`npm run check:specs` enforces this format, the existence of every listed path, that the listed tests name each ID, that every component directory is implemented by some spec, and that the reference stylesheet partials (`labs/reference/`) style every root and slot hook. The test helper `expectHooksMatchSpec` in `test/hooks.ts` fails a test when rendered markup carries a hook its spec does not declare.
 
 ## Host requirement IDs
 

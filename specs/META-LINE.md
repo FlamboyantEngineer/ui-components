@@ -15,7 +15,7 @@ Verification: `src/components/meta-line/meta-line.test.tsx`, `e2e/meta-line.spec
 
 Each separator shall be a spaced middot: a space, the `·` glyph in the `ui-meta-line__separator` slot hidden from assistive technology, and a space. The spaces stay readable, so adjacent entries keep a word boundary in an accessible name.
 
-Implementation: `src/components/meta-line/meta-line.tsx`, `labs/reference.css`
+Implementation: `src/components/meta-line/meta-line.tsx`, `labs/reference/meta-line.css`
 Verification: `src/components/meta-line/meta-line.test.tsx`, `e2e/meta-line.spec.ts`
 
 ### UIC-META-LINE-1.3 - Nodes keep their identity

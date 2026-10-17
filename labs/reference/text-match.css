@@ -1,0 +1,7 @@
+/* Text Match */
+
+.ui-text-match {
+  border-radius: 2px;
+  background: var(--ref-selected);
+  color: inherit;
+}

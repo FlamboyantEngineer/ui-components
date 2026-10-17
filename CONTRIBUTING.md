@@ -24,7 +24,7 @@ The release workflow runs on `main`. Pending changesets open a **Version package
 
 ## Source rules
 
-These are enforced by lint and CI:
+Code follows [docs/CODING-GUIDELINES.md](docs/CODING-GUIDELINES.md): naming, structure, composition and simplicity rules, most of them enforced by lint and `npm run check:structure`. In addition, these are enforced by lint and CI:
 
 - **No styles in source.** No stylesheet imports and no styling dependency (CSS-in-JS, utility frameworks, component kits). Literal class names are hook classes only.
 - **Functional inline styles only:** positions, measured sizes, layout tracks, layering and interaction locks, plus documented `--ui-*` custom properties for measured values. Colours, spacing, borders, fonts and other visual properties belong in the host stylesheet.
@@ -35,4 +35,5 @@ These are enforced by lint and CI:
 
 - Each component has a spec in `specs/` in the format of [specs/README.md](specs/README.md): `UIC-` requirement IDs, `Implementation:` and `Verification:` lines, and the component's hook table. `npm run check:specs` validates them.
 - Unit tests (Vitest, jsdom, Testing Library) sit next to the source as `*.test.ts(x)` and name the requirement IDs they verify.
+- The reference stylesheet is split into partials: `labs/reference/base.css` for the theme and document, and `labs/reference/<spec>.css` for the hooks each spec declares. `labs/reference.css` only imports them; `npm run new:lab -- --sync` regenerates it.
 - Each component has a lab that renders its full variant, size and state matrix with `StateMatrix`, and Playwright coverage in `e2e/` through the `lab` fixture (`e2e/fixtures.ts`), including an axe check. Create one with `npm run new:lab -- <name> --title <Title> --group <Group> --description <text>`; it writes `labs/<name>.html`, `labs/src/<name>.lab.tsx` and regenerates `labs/index.html`. Lab pages are generated: change their metadata and run `npm run new:lab -- --sync` rather than editing the markup.

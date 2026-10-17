@@ -9,7 +9,8 @@ async function ruleIds(code: string, filePath = 'src/components/probe/probe.tsx'
   return (result?.messages ?? []).map((message) => message.ruleId);
 }
 
-describe('library source lint rules', () => {
+// Loading the ESLint config and TypeScript parser is slow on a busy machine.
+describe('library source lint rules', { timeout: 30_000 }, () => {
   it('UIC-HOOKS-3.1 rejects stylesheet imports', async () => {
     expect(await ruleIds("import './probe.css';\nexport {};\n")).toContain('ui/no-css-import');
     expect(await ruleIds("export * from './theme.scss';\n")).toContain('ui/no-css-import');

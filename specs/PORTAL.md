@@ -24,7 +24,7 @@ Verification: `src/components/portal/portal.test.tsx`
 
 `PortalHost` shall render its children followed by one container element carrying `ui-portal-host`, and make that element the container of every portal below it, so overlays stay in the host's part of the page (a themed preview, an embedded frame) and inherit what the stylesheet sets there. Removing the `PortalHost` removes its container and every portal in it. A `PortalHost` nested inside another is the container for the portals below it.
 
-Implementation: `src/components/portal/portal.tsx`, `labs/reference.css`
+Implementation: `src/components/portal/portal.tsx`, `labs/reference/portal.css`
 Verification: `src/components/portal/portal.test.tsx`, `e2e/portal.spec.ts`
 
 ### UIC-PORTAL-1.4 - Server rendering and hydration

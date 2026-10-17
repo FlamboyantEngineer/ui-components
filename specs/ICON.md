@@ -6,7 +6,7 @@
 
 ### UIC-ICON-1.1 - Sources
 
-`Icon` shall draw the built-in glyph named by `glyph` (through the provider, [PROVIDER.md](PROVIDER.md)) or, without `glyph`, its children (an SVG element, an image or any node). A glyph renders in the `ui-icon__glyph` slot.
+`Icon` shall draw the built-in glyph named by `glyph` (through the provider, [PROVIDER.md](PROVIDER.md)) or, without `glyph`, its children (an SVG element, an image or any node). A glyph renders in the `ui-icon__glyph` slot. Components that take an icon accept an `IconSource` (a glyph name or a node) and draw it with `toIconProps`.
 
 Implementation: `src/components/icon/icon.tsx`
 Verification: `src/components/icon/icon.test.tsx`, `e2e/icon.spec.ts`
@@ -15,7 +15,7 @@ Verification: `src/components/icon/icon.test.tsx`, `e2e/icon.spec.ts`
 
 `Icon` shall publish its box size in `data-size`: `sm`, `md` (the default) or `lg`. The host stylesheet maps each size to a box; the reference sheet uses 12, 16 and 20 pixels. A glyph or child fills the box.
 
-Implementation: `src/components/icon/icon.tsx`, `labs/reference.css`
+Implementation: `src/components/icon/icon.tsx`, `labs/reference/icon.css`
 Verification: `src/components/icon/icon.test.tsx`, `e2e/icon.spec.ts`
 
 ### UIC-ICON-1.3 - Accessibility
