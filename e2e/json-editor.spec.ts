@@ -101,4 +101,67 @@ test.describe('JSON Editor lab', () => {
     await lab.open('json-editor', { theme: 'dark' });
     await lab.expectAccessible();
   });
+
+  test('UIC-JSON-EDITOR-2.3 marks where the text stops parsing in the editor', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('json-editor');
+    const invalid = cell(page, 'invalid', 'label-control');
+    await expect(invalid.locator('.ui-code-editor__mark')).toHaveText(['}']);
+    await expect(invalid.locator('.ui-code-editor__mark')).toHaveCSS(
+      'text-decoration-style',
+      'wavy',
+    );
+    await expect(invalid.locator('.ui-code-editor__line').nth(2)).toHaveAttribute(
+      'data-severity',
+      'error',
+    );
+    await expect(invalid.locator('.ui-code-editor__diagnostics')).toHaveCount(0);
+  });
+
+  test('UIC-JSON-EDITOR-5.1 UIC-JSON-EDITOR-5.5 marks schema problems and documents keys on hover', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('json-editor');
+    const recipe = page.locator('[data-lab-editor="recipe"]');
+    await recipe.scrollIntoViewIfNeeded();
+    await expect(recipe.locator('.ui-field__message')).toHaveText(
+      'Line 3, column 15: Enter 8 or less.',
+    );
+    await expect(recipe.locator('.ui-code-editor__mark')).toHaveText(['12', '"brunch"']);
+    const key = await box(recipe.locator('.ui-code-editor__token', { hasText: '"servings"' }));
+    await page.mouse.move(key.x + key.width / 2, key.y + key.height / 2);
+    const tip = page.getByRole('tooltip');
+    await expect(tip).toHaveText('How many people it feeds.');
+    const value = await box(recipe.locator('.ui-code-editor__mark').first());
+    await page.mouse.move(value.x + value.width / 2, value.y + value.height / 2);
+    await expect(tip).toHaveText('Enter 8 or less.How many people it feeds.');
+    await lab.expectAccessible();
+  });
+
+  test('UIC-JSON-EDITOR-5.2 UIC-JSON-EDITOR-6.1 completes keys from the schema with paired quotes', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('json-editor');
+    const recipe = page.locator('[data-lab-editor="recipe"]');
+    const input = recipe.getByRole('textbox', { name: 'Recipe' });
+    await input.click();
+    await page.keyboard.press('Control+End');
+    await page.keyboard.press('ArrowUp');
+    await page.keyboard.press('End');
+    await page.keyboard.type(',');
+    await page.keyboard.press('Enter');
+    await page.keyboard.type('"');
+    const list = page.getByRole('listbox', { name: 'Suggestions' });
+    await expect(list.getByRole('option')).toHaveText(['"vegetarian"boolean', '"tags"array']);
+    await page.keyboard.type('ve');
+    await page.keyboard.press('Enter');
+    await expect(input).toHaveValue(/"course": "brunch",\n {2}"vegetarian": false\n\}$/);
+    await page.keyboard.type('true');
+    await expect(input).toHaveValue(/"vegetarian": true\n\}$/);
+    await expect(recipe.locator('.ui-code-editor__bracket')).toHaveCount(0);
+  });
 });

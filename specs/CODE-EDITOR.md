@@ -68,7 +68,7 @@ Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/code-edito
 
 ### UIC-CODE-EDITOR-3.1 - Diagnostics list
 
-`diagnostics` shall render below the source as a polite live list (`ui-code-editor__diagnostics`) of `ui-code-editor__diagnostic` items reading `line:column message` (or `line message`, or the message alone), each with `data-severity` (`error` by default, or `warning`). While the list has items its id is the last reference of the text area's `aria-describedby`, after the caller's.
+`diagnostics` shall render below the source as a polite live list (`ui-code-editor__diagnostics`) of `ui-code-editor__diagnostic` items reading `line:column message` (or `line message`, or the message alone), each with `data-severity` (`error` by default, or `warning`). While the list has items its id is the last reference of the text area's `aria-describedby`, after the caller's. With `listDiagnostics` set to `false` there is no list, and the marks, the gutter, the hover tips and F8 remain.
 
 Implementation: `src/components/code-editor/code-layers.tsx`, `src/components/code-editor/code-editor.tsx`
 Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/code-editor.spec.ts`

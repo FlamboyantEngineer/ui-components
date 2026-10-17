@@ -75,6 +75,20 @@ export interface UiStrings {
   invalidJson: string;
   /** The message of text that is not valid JSON, with where the problem starts. */
   invalidJsonAt: (line: number, column: number) => string;
+  /** A JSON value of a type its schema does not allow, given the allowed types. */
+  jsonTypeMismatch: (types: readonly string[]) => string;
+  /** A JSON value its schema does not list, given the allowed values as JSON. */
+  jsonValueMismatch: (values: readonly string[]) => string;
+  /** A JSON object without a property its schema requires. */
+  jsonMissingProperty: (name: string) => string;
+  /** A JSON property its schema does not allow. */
+  jsonUnknownProperty: (name: string) => string;
+  /** A JSON array with fewer items than its schema asks for. */
+  jsonTooFewItems: (count: number) => string;
+  /** A JSON array with more items than its schema allows. */
+  jsonTooManyItems: (count: number) => string;
+  /** A problem in JSON text, with where it is. */
+  jsonProblemAt: (line: number, column: number, message: string) => string;
   itemCount: (count: number) => string;
   /** Stands in for a person or group whose name is blank. */
   unnamed: string;
@@ -266,6 +280,16 @@ export const defaultStrings: UiStrings = {
   format: 'Format',
   invalidJson: 'Enter valid JSON.',
   invalidJsonAt: (line, column) => `Enter valid JSON: check line ${line}, column ${column}.`,
+  jsonTypeMismatch: (types) => `Expected ${types.join(' or ')}.`,
+  jsonValueMismatch: (values) =>
+    values.length === 1 ? `Expected ${values[0]}.` : `Expected one of ${values.join(', ')}.`,
+  jsonMissingProperty: (name) => `Missing property "${name}".`,
+  jsonUnknownProperty: (name) => `Property "${name}" is not allowed.`,
+  jsonTooFewItems: (count) =>
+    count === 1 ? 'Use at least 1 item.' : `Use at least ${count} items.`,
+  jsonTooManyItems: (count) =>
+    count === 1 ? 'Use 1 item or fewer.' : `Use ${count} items or fewer.`,
+  jsonProblemAt: (line, column, message) => `Line ${line}, column ${column}: ${message}`,
   itemCount: (count) => (count === 1 ? '1 item' : `${count} items`),
   unnamed: 'Unnamed',
   nameWithStatus: (name, status) => `${name}, ${status}`,

@@ -216,6 +216,26 @@ describe('CodeEditor', () => {
     expect(screen.getByRole('textbox')).not.toHaveAttribute('aria-describedby');
   });
 
+  it('UIC-CODE-EDITOR-3.1 leaves the list out with listDiagnostics false and keeps the marks', () => {
+    const { container } = render(
+      <CodeEditor
+        aria-label="Source"
+        value="x = y"
+        lineNumbers
+        listDiagnostics={false}
+        diagnostics={[{ message: 'Unknown name.', line: 1, column: 5 }]}
+      />,
+    );
+    expect(container.querySelector('.ui-code-editor__diagnostics')).toBeNull();
+    expect(screen.getByRole('textbox')).not.toHaveAttribute('aria-describedby');
+    expect(container.querySelector('.ui-code-editor__mark')).toHaveTextContent('y');
+    expect(container.querySelector('.ui-code-editor__line')).toHaveAttribute(
+      'data-severity',
+      'error',
+    );
+    expect(container.querySelector('.ui-code-editor__announcement')).not.toBeNull();
+  });
+
   it('UIC-CODE-EDITOR-3.2 is invalid while an error is reported, by a diagnostic or the caller', () => {
     const { container, rerender } = render(
       <CodeEditor aria-label="Source" value="x" diagnostics={[{ message: 'Bad.' }]} />,

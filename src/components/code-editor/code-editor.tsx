@@ -44,6 +44,8 @@ export interface CodeEditorProps extends TextAreaPassThrough, BaseProps {
   tokenize?: CodeTokenizer | undefined;
   /** Problems to list below the editor, mark in the source and the gutter. An error makes it invalid. */
   diagnostics?: readonly CodeDiagnostic[] | undefined;
+  /** Lists the diagnostics below the source. Defaults to `true`; marks and tips stay without it. */
+  listDiagnostics?: boolean | undefined;
   /** A vocabulary for the word before the caret, or a source that completes the place at the caret. */
   completions?: readonly CodeCompletion[] | CodeCompletionSource | undefined;
   /** Information for the hover tip at a source offset, shown with the problems marked there. */
@@ -187,15 +189,33 @@ function useInputProps(
   };
 }
 
-/** The diagnostics list and the status that reads a problem out after F8. */
+/** The problems' state: the reported ones, whether one is an error, and what describes the input. */
+function describeProblems(
+  { diagnostics, listDiagnostics = true }: Pick<CodeEditorProps, 'diagnostics' | 'listDiagnostics'>,
+  props: TextAreaPassThrough,
+  id: string,
+) {
+  const shown = diagnostics ?? [];
+  const isListed = diagnostics !== undefined && listDiagnostics;
+  return {
+    shown,
+    isListed,
+    isInvalid:
+      shown.some(({ severity = 'error' }) => severity === 'error') || isTrue(props['aria-invalid']),
+    describedBy: joinIds(props['aria-describedby'], isListed && shown.length > 0 && id),
+  };
+}
+
+/** The diagnostics list, when listed, and the status that reads a problem out after F8. */
 function CodeProblems(props: {
   id: string;
   diagnostics: readonly CodeDiagnostic[];
+  isListed: boolean;
   announcement: string;
 }) {
   return (
     <>
-      <CodeDiagnostics id={props.id} diagnostics={props.diagnostics} />
+      {props.isListed ? <CodeDiagnostics id={props.id} diagnostics={props.diagnostics} /> : null}
       <VisuallyHidden elementType="span" className={hooks.slotClass('announcement')} role="status">
         {props.announcement}
       </VisuallyHidden>
@@ -240,6 +260,7 @@ export function CodeEditor({
   onChange,
   tokenize,
   diagnostics,
+  listDiagnostics,
   completions,
   renderHover,
   size = 'md',
@@ -257,7 +278,9 @@ export function CodeEditor({
 }: CodeEditorProps) {
   const [dataProps, props] = splitDataAttributes(rest);
   const baseId = useId();
-  const shown = diagnostics ?? [];
+  const diagnosticsId = `${baseId}-diagnostics`;
+  const problems = describeProblems({ diagnostics, listDiagnostics }, props, diagnosticsId);
+  const { shown, isInvalid } = problems;
   const isLocked = Boolean(props.readOnly || props.disabled);
   const model = useCodeEditor({
     ...{ value, onChange, tokenize, completions, renderHover, indent, indentWithTab },
@@ -267,9 +290,6 @@ export function CodeEditor({
   const inputRef = useMergedRef(layers.input, ref);
   const caretRef = useRef<HTMLSpanElement>(null);
   const textWidth = useElementSize(layers.input, { box: 'client', enabled: lineNumbers })?.width;
-  const isInvalid =
-    shown.some(({ severity = 'error' }) => severity === 'error') || isTrue(props['aria-invalid']);
-  const diagnosticsId = `${baseId}-diagnostics`;
   const listId = completions ? `${baseId}-completions` : undefined;
 
   useLayoutEffect(() => alignLayers(layers), [layers, value, wrap, lineNumbers, textWidth]);
@@ -291,13 +311,14 @@ export function CodeEditor({
         ) : null}
         <CodeArea
           {...{ model, value, onChange, wrap, id, props, inputRef, caretRef, isInvalid, listId }}
-          describedBy={joinIds(props['aria-describedby'], shown.length > 0 && diagnosticsId)}
+          describedBy={problems.describedBy}
         />
       </div>
       {diagnostics ? (
         <CodeProblems
           id={diagnosticsId}
           diagnostics={diagnostics}
+          isListed={problems.isListed}
           announcement={model.announcement}
         />
       ) : null}
