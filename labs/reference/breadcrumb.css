@@ -74,3 +74,18 @@
   margin: 0 4px;
   color: var(--ref-muted);
 }
+
+/* A trail collapsing into a menu keeps every crumb at its natural width, so it can measure them. */
+.ui-breadcrumb[data-overflow='menu'] .ui-breadcrumb__item {
+  flex: none;
+}
+
+.ui-breadcrumb__overflow {
+  color: var(--ref-muted);
+}
+
+.ui-breadcrumb__menu {
+  flex: none;
+  margin-inline-start: 2px;
+  color: var(--ref-muted);
+}

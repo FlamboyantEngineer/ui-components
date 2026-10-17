@@ -60,7 +60,7 @@ afterEach(() => {
 });
 
 describe('TabList', () => {
-  it('UIC-TABS-2.6 collapses the tabs that do not fit into a menu after the list', async () => {
+  it('UIC-TABS-2.6 UIC-OVERFLOW-LIST-1.7 collapses the tabs that do not fit into a menu after the list', async () => {
     stubBar(160);
     const { container } = render(<Fruit overflow="menu" />);
     // Apple (50) and Banana (60) fit beside the menu; the others go into it.

@@ -29,7 +29,7 @@ import {
 } from '../../utils/use-scroll-strip-overflow.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import { IconButton } from '../icon-button/icon-button.js';
-import { VisibleTabs } from './tab-collection.js';
+import { VisibleCollection } from '../overflow-list/overflow-list.js';
 import { tabsHooks as hooks } from './tab-hooks.js';
 import { useCenterSelectedTab, useListOverflow } from './tab-list-overflow.js';
 
@@ -259,14 +259,14 @@ export function TabList<T extends object>({
   const overflowing = isMenu ? menu.hiddenItems.length > 0 : scrollOverflowing;
   const list = (
     <TabRemoveContext.Provider value={onRemove}>
-      <VisibleTabs keys={menu.visibleKeys}>
+      <VisibleCollection keys={menu.visibleKeys}>
         <AriaTabList
           {...mergeProps(rest, { onScroll: hasButtons ? strip.syncOverflow : undefined })}
           render={onRemove ? renderRemoveKeys(rest.render, onRemoveKey) : rest.render}
           ref={elementRef}
           {...hooks.slot('list', { overflowing }, className)}
         />
-      </VisibleTabs>
+      </VisibleCollection>
     </TabRemoveContext.Provider>
   );
   if (!isMenu && !hasButtons && !onAdd) return list;

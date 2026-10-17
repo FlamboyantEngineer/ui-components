@@ -87,7 +87,7 @@ Verification: `src/components/tabs/tabs.test.tsx`, `e2e/tabs.spec.ts`
 
 With `overflow="menu"` a horizontal list shall sit in a `ui-tabs__bar` element (with `data-overflow="menu"`) and render only the tabs that fit, as [`useOverflowItems`](OVERFLOW-LIST.md) measures them in the bar beside a `ui-tabs__overflow` element after the list. The selected tab, then the tab with keyboard focus, always stay; the others fit from the start. The rest stay in React Aria's collection, so panels, selection and keyboard navigation still reach them: an arrow key, Home or End that moves focus to a hidden tab shows it. The overflow element holds an icon-only [Dropdown Menu](DROPDOWN-MENU.md) named by the provider's `moreItems` text with the count, listing the hidden tabs by their text (`textValue`, or a plain-text label) with their disabled state and links; choosing one selects it. The list publishes `data-overflowing` while tabs are hidden. A vertical list scrolls.
 
-Implementation: `src/components/tabs/tab-list.tsx`, `src/components/tabs/tab-collection.tsx`, `src/utils/use-overflow-items.ts`, `labs/reference/tabs.css`
+Implementation: `src/components/tabs/tab-list.tsx`, `src/components/overflow-list/visible-collection.tsx`, `src/utils/use-overflow-items.ts`, `labs/reference/tabs.css`
 Verification: `src/components/tabs/tab-list.test.tsx`, `e2e/tabs.spec.ts`
 
 ### UIC-TABS-2.7 - Scroll buttons

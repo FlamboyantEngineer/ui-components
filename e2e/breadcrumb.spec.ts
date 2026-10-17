@@ -147,4 +147,55 @@ test.describe('Breadcrumb lab', () => {
       await expect(page.getByRole('tooltip')).toHaveCount(0);
     });
   }
+
+  test('UIC-BREADCRUMB-1.7 keeps the first and current crumbs and collapses the middle ones', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('breadcrumb');
+    const trail = (width: string) => page.getByRole('navigation', { name: `Deep trail, ${width}` });
+    const crumbs = (width: string) =>
+      trail(width).locator('.ui-breadcrumb__item:not(.ui-breadcrumb__overflow)');
+    await expect(crumbs('wide')).toHaveCount(6);
+    await expect(trail('wide').locator('.ui-breadcrumb__overflow')).toHaveCount(0);
+    for (const width of ['medium', 'narrow']) {
+      const shown = await crumbs(width).allTextContents();
+      expect(shown.length).toBeLessThan(6);
+      expect(shown[0]).toBe('Home');
+      expect(shown.at(-1)).toBe('Lemon tart');
+      const items = trail(width).locator('.ui-breadcrumb__item');
+      await expect(items.nth(1)).toHaveClass(/ui-breadcrumb__overflow/);
+      const list = await trail(width).locator('.ui-breadcrumb__list').boundingBox();
+      const last = await items.last().boundingBox();
+      expect((last?.x ?? 0) + (last?.width ?? 0)).toBeLessThanOrEqual(
+        (list?.x ?? 0) + (list?.width ?? 0) + 0.5,
+      );
+    }
+    const medium = trail('medium');
+    const hidden = 6 - (await crumbs('medium').count());
+    await medium.getByRole('button', { name: `${hidden} more items` }).click();
+    await expect(page.getByRole('menuitem', { name: 'Recipes' })).toBeVisible();
+    await page.getByRole('menuitem', { name: 'Recipes' }).click();
+    await expect(page).toHaveURL(/#recipes$/);
+    await lab.expectAccessible();
+  });
+
+  test('UIC-BREADCRUMB-1.8 opens the places beside a crumb from the button after it', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('breadcrumb');
+    const demo = page.locator('[data-lab-demo="siblings"]');
+    const button = demo.getByRole('button', { name: 'Places beside Recipes' });
+    await demo.getByRole('link', { name: 'Home' }).focus();
+    await page.keyboard.press('Tab');
+    await expect(demo.getByRole('link', { name: 'Recipes' })).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(button).toBeFocused();
+    await page.keyboard.press('Enter');
+    await page.getByRole('menuitem', { name: 'Menus' }).click();
+    await expect(demo.locator('[data-lab-output="sibling"]')).toHaveText('Picked Menus');
+    await expect(button).toBeFocused();
+    await lab.expectAccessible();
+  });
 });

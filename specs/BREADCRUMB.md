@@ -1,6 +1,6 @@
 # Breadcrumb
 
-`Breadcrumb` is a location trail: one ordered row of crumbs from the outermost container to the current page, in which every crumb before the current one leads to its destination. It is built on React Aria's `Breadcrumbs`, `Breadcrumb` and `Link`, draws its links through the provider's link renderer and shows a cut label whole in a tooltip. Switching between sibling views of one page is [Tabs](TABS.md); a single location string is a [Path](PATH.md).
+`Breadcrumb` is a location trail: one ordered row of crumbs from the outermost container to the current page, in which every crumb before the current one leads to its destination. It is built on React Aria's `Breadcrumbs`, `Breadcrumb` and `Link`, draws its links through the provider's link renderer and shows a cut label whole in a tooltip. A trail that runs out of room can collapse its middle crumbs into a menu, and a crumb can offer the places beside it in a menu. Switching between sibling views of one page is [Tabs](TABS.md); a single location string is a [Path](PATH.md).
 
 ## UIC-BREADCRUMB-1 - Structure
 
@@ -46,6 +46,20 @@ Verification: `src/components/breadcrumb/breadcrumb.test.tsx`, `e2e/breadcrumb.s
 Implementation: `src/components/breadcrumb/breadcrumb.tsx`
 Verification: `src/components/breadcrumb/breadcrumb.test.tsx`
 
+### UIC-BREADCRUMB-1.7 - Overflow menu
+
+With `overflow="menu"` a trail of three crumbs or more shall render only the crumbs that fit in its list, as [`useOverflowItems`](OVERFLOW-LIST.md) measures them: the first crumb and the current one always stay, then as many as fit from the current end, at their natural width. While crumbs are hidden, an overflow crumb (`ui-breadcrumb__item` and `ui-breadcrumb__overflow`, an `<li>` followed by a separator) after the first crumb holds an icon-only [Dropdown Menu](DROPDOWN-MENU.md) named by the provider's `moreItems` text with the count, listing the hidden crumbs by their text (`textValue`, or a plain-text label) with their links; choosing one navigates to its link and calls `onAction` with its `id`. Hidden crumbs stay in React Aria's collection. `overflow` publishes `data-overflow` (`truncate` by default, or `menu`) on the root.
+
+Implementation: `src/components/breadcrumb/breadcrumb.tsx`, `src/components/breadcrumb/crumb-overflow.tsx`, `src/components/overflow-list/visible-collection.tsx`, `labs/reference/breadcrumb.css`
+Verification: `src/components/breadcrumb/breadcrumb.test.tsx`, `e2e/breadcrumb.spec.ts`
+
+### UIC-BREADCRUMB-1.8 - Menus of nearby places
+
+A crumb with a non-empty `menu` shall draw, after its link, an icon-only [Dropdown Menu](DROPDOWN-MENU.md) in the `ui-breadcrumb__menu` slot (a `chevron-down` trigger named by the provider's `placesBeside` text with the crumb's text) whose entries, as [Menu](MENU.md) takes them, list the places beside it: siblings to jump to, with their own links and actions. The menu button is its own tab stop; the arrow keys move between crumb links only.
+
+Implementation: `src/components/breadcrumb/breadcrumb.tsx`
+Verification: `src/components/breadcrumb/breadcrumb.test.tsx`, `e2e/breadcrumb.spec.ts`
+
 ## UIC-BREADCRUMB-2 - Behaviour
 
 ### UIC-BREADCRUMB-2.1 - Landmark name
@@ -85,18 +99,21 @@ Verification: `src/components/breadcrumb/breadcrumb.test.tsx`, `e2e/breadcrumb.s
 
 ## Hooks
 
-| Hook                       | Kind      | Values                 | Description                                                     |
-| -------------------------- | --------- | ---------------------- | --------------------------------------------------------------- |
-| `ui-breadcrumb`            | root      |                        | The `<nav>` landmark.                                           |
-| `ui-breadcrumb__list`      | slot      |                        | The ordered list (`<ol>`).                                      |
-| `ui-breadcrumb__item`      | slot      |                        | One crumb (`<li>`).                                             |
-| `ui-breadcrumb__link`      | slot      |                        | A crumb's link (`<a>`), or text (`<span>`) for the current one. |
-| `ui-breadcrumb__label`     | slot      |                        | A crumb's label text (also `ui-truncation-tooltip`).            |
-| `ui-breadcrumb__separator` | slot      |                        | The decorative separator after a crumb (also `ui-icon`).        |
-| `data-size`                | attribute | `xs`, `sm`, `md`, `lg` | Type scale.                                                     |
-| `data-current`             | state     | `true`                 | The current crumb's item and link (React Aria).                 |
-| `data-disabled`            | state     | `true`                 | A crumb that cannot be activated, including the current one.    |
-| `data-hovered`             | state     | `true`                 | Pointer over a link.                                            |
-| `data-pressed`             | state     | `true`                 | A link is being pressed.                                        |
-| `data-focused`             | state     | `true`                 | A link is focused.                                              |
-| `data-focus-visible`       | state     | `true`                 | A link has keyboard focus.                                      |
+| Hook                       | Kind      | Values                 | Description                                                       |
+| -------------------------- | --------- | ---------------------- | ----------------------------------------------------------------- |
+| `ui-breadcrumb`            | root      |                        | The `<nav>` landmark.                                             |
+| `ui-breadcrumb__list`      | slot      |                        | The ordered list (`<ol>`).                                        |
+| `ui-breadcrumb__item`      | slot      |                        | One crumb (`<li>`).                                               |
+| `ui-breadcrumb__link`      | slot      |                        | A crumb's link (`<a>`), or text (`<span>`) for the current one.   |
+| `ui-breadcrumb__label`     | slot      |                        | A crumb's label text (also `ui-truncation-tooltip`).              |
+| `ui-breadcrumb__menu`      | slot      |                        | A crumb's menu of nearby places (also `ui-dropdown-menu`).        |
+| `ui-breadcrumb__overflow`  | slot      |                        | The overflow crumb holding the menu of hidden crumbs (an `<li>`). |
+| `ui-breadcrumb__separator` | slot      |                        | The decorative separator after a crumb (also `ui-icon`).          |
+| `data-size`                | attribute | `xs`, `sm`, `md`, `lg` | Type scale.                                                       |
+| `data-overflow`            | attribute | `truncate`, `menu`     | What a trail that runs out of room does.                          |
+| `data-current`             | state     | `true`                 | The current crumb's item and link (React Aria).                   |
+| `data-disabled`            | state     | `true`                 | A crumb that cannot be activated, including the current one.      |
+| `data-hovered`             | state     | `true`                 | Pointer over a link.                                              |
+| `data-pressed`             | state     | `true`                 | A link is being pressed.                                          |
+| `data-focused`             | state     | `true`                 | A link is focused.                                                |
+| `data-focus-visible`       | state     | `true`                 | A link has keyboard focus.                                        |

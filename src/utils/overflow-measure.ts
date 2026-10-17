@@ -32,6 +32,9 @@ export interface RenderedLayout {
   collapseFrom: OverflowCollapseFrom;
 }
 
+/** Sub-pixel slack, so rounding never hides an item that fits. */
+export const tolerance = 0.5;
+
 function readPixels(value: string | undefined): number {
   const pixels = Number.parseFloat(value ?? '');
   return Number.isFinite(pixels) ? pixels : 0;
@@ -129,4 +132,100 @@ export function readParts(
   }
   const indicator = findIndicator(children, layout, fromStart ? children[0] : children.at(-1));
   return { items: children.filter((child) => child !== indicator), indicator, fixed: [] };
+}
+
+export interface OverflowCountInput {
+  /** Each item's outer inline size, margins included. */
+  sizes: readonly number[];
+  /** The container's content-box inline size. */
+  available: number;
+  /** The space between neighbouring items and before the indicator. */
+  gap: number;
+  /** The indicator's outer inline size. */
+  indicatorSize: number;
+  collapseFrom?: OverflowCollapseFrom | undefined;
+}
+
+export interface MeasureCache {
+  sizes: number[];
+  indicatorSize: number;
+  /** The container's content box at the last measurement. */
+  room: { width: number; height: number };
+  /** Border-box widths of the observed elements, to ignore reports that change nothing. */
+  observed: WeakMap<Element, number>;
+  /** Consecutive corrections; a guard against a renderer whose indicator never settles. */
+  corrections: number;
+  /** The last commit's elements did not match its items yet; their renderer commits later. */
+  isAwaitingChildren: boolean;
+}
+
+export interface RenderedItems<T> {
+  visibleItems: readonly T[];
+  hiddenItems: readonly T[];
+  /** The positions in `items` of the visible items. */
+  visibleIndices: readonly number[];
+}
+
+/**
+ * How many items fit in a row of `available` pixels: all of them when they fit together, otherwise
+ * as many as fit from the kept end beside the indicator.
+ */
+export function resolveOverflowCount(input: OverflowCountInput): number {
+  const { sizes, available, gap, indicatorSize } = input;
+  const total = sizes.reduce((sum, size) => sum + size, 0) + gap * Math.max(0, sizes.length - 1);
+  if (total <= available + tolerance) return sizes.length;
+  const ordered = input.collapseFrom === 'start' ? [...sizes].reverse() : sizes;
+  const room = available - indicatorSize - gap + tolerance;
+  let used = 0;
+  let count = 0;
+  for (const size of ordered) {
+    used += size + (count > 0 ? gap : 0);
+    if (used > room) break;
+    count += 1;
+  }
+  return count;
+}
+
+interface CommitMeasurement<T> {
+  element: HTMLElement;
+  itemContainer: HTMLElement | null;
+  indicator: HTMLElement | null;
+  measured: MeasureCache;
+  items: readonly T[];
+  rendered: RenderedItems<T>;
+  order: readonly number[];
+  collapseFrom: OverflowCollapseFrom;
+  isStale: boolean;
+}
+
+function recordSize(measured: MeasureCache, element: Element): number {
+  measured.observed.set(element, element.getBoundingClientRect().width);
+  return measureOuterSize(element);
+}
+
+/** Measures what this commit rendered and returns the visible count it leads to. */
+export function measureCommit<T>(input: CommitMeasurement<T>): number | null {
+  const { element, itemContainer, measured, rendered, collapseFrom } = input;
+  const parts = readParts(element, itemContainer, {
+    hasIndicator: rendered.hiddenItems.length > 0,
+    indicator: input.indicator,
+    collapseFrom,
+  });
+  if (parts.items.length !== rendered.visibleItems.length) return null;
+  if (input.isStale) measured.sizes = input.items.map(() => 0);
+  for (const [index, child] of parts.items.entries()) {
+    measured.sizes[rendered.visibleIndices[index] ?? index] = recordSize(measured, child);
+  }
+  for (const part of parts.fixed) recordSize(measured, part);
+  const room = measureRoom(element, itemContainer, parts.fixed);
+  if (parts.indicator) {
+    measured.indicatorSize = recordSize(measured, parts.indicator) + room.indicatorGap - room.gap;
+  }
+  measured.room = { width: room.width, height: room.height };
+  return resolveOverflowCount({
+    sizes: input.order.map((index) => measured.sizes[index] ?? 0),
+    available: room.available,
+    gap: room.gap,
+    indicatorSize: measured.indicatorSize,
+  });
 }

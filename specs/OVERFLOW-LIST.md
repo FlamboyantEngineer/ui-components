@@ -29,7 +29,7 @@ Verification: `src/components/overflow-list/overflow-list.test.tsx`, `e2e/overfl
 
 An item's size shall be its border-box width plus its inline margins, and the root's `column-gap` separates neighbouring items and the last kept item from the indicator. `resolveOverflowCount({ sizes, available, gap, indicatorSize, collapseFrom })` returns how many items fit: all of them when they fit together, otherwise as many as fit from the kept end beside the indicator, possibly none. `useOverflowItems({ items, collapseFrom })` returns `visibleItems`, `hiddenItems` and the `containerRef` for a container whose element children are the rendered items, one element each and in order, plus the indicator at the collapsing end while `hiddenItems` is not empty.
 
-Implementation: `src/utils/use-overflow-items.ts`
+Implementation: `src/utils/use-overflow-items.ts`, `src/utils/overflow-measure.ts`
 Verification: `src/components/overflow-list/overflow-list.test.tsx`
 
 ### UIC-OVERFLOW-LIST-1.5 - Priorities and indicator placement
@@ -45,6 +45,13 @@ When the returned `itemContainerRef` is on a child of the container (a list with
 
 Implementation: `src/utils/use-overflow-items.ts`, `src/utils/overflow-measure.ts`
 Verification: `src/utils/use-overflow-items.test.tsx`
+
+### UIC-OVERFLOW-LIST-1.7 - React Aria collections
+
+When the container's children are committed by a renderer that runs after the hook's own commit (a React Aria collection fills in its items one render later), `useOverflowItems` shall measure again as soon as they arrive, before the browser paints. `VisibleCollection` (internal to the library) renders only the top-level items whose keys it is given of the React Aria collection component inside it, such as a tab list or a breadcrumb trail, while every item stays in the component's collection, so selection, panels and keyboard navigation still reach hidden items; collections inside the items render as usual.
+
+Implementation: `src/utils/use-overflow-items.ts`, `src/components/overflow-list/visible-collection.tsx`
+Verification: `src/components/tabs/tab-list.test.tsx`, `src/components/breadcrumb/breadcrumb.test.tsx`
 
 ## UIC-OVERFLOW-LIST-2 - Composition
 
