@@ -3,12 +3,21 @@ import type { Key, Selection, SortDescriptor } from 'react-aria-components';
 import { Button } from '../../src/components/button/button.js';
 import { IconButton } from '../../src/components/icon-button/icon-button.js';
 import { Table, type TableProps } from '../../src/components/table/table.js';
-import {
-  applyTableMove,
-  sortTableRows,
-  type TableColumn,
-} from '../../src/components/table/table-rows.js';
+import { applyTableMove, type TableColumn } from '../../src/components/table/table-rows.js';
+import { sortTableRows } from '../../src/components/table/table-sort.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import {
+  CallerFilter,
+  ColumnFilters,
+  ColumnLayout,
+  DetailRows,
+  Editing,
+  LoadingMore,
+  MultipleSort,
+  NestedRows,
+  Pages,
+  Summary,
+} from './table-cases.js';
 
 interface Fruit {
   id: string;
@@ -169,6 +178,31 @@ function Reordering() {
   );
 }
 
+function HandleReordering() {
+  const [rows, setRows] = useState(fruit.slice(0, 5));
+  const [last, setLast] = useState('None');
+  return (
+    <div data-lab="handle-reorder">
+      <Table
+        aria-label="Fruit, dragged by handle"
+        rows={rows}
+        columns={columns.slice(0, 3)}
+        selectionMode="multiple"
+        reorder={{
+          dragTrigger: 'handle',
+          renderDragPreview: (dragged) =>
+            dragged.length === 1 ? dragged[0]?.name : `${dragged.length} fruit`,
+          onMove: (move) => {
+            setRows((current) => applyTableMove(current, move));
+            setLast(`${move.keys.join(', ')} ${move.position} ${String(move.targetKey)}`);
+          },
+        }}
+      />
+      <output data-lab-output>{`Last move: ${last}`}</output>
+    </div>
+  );
+}
+
 function Notices() {
   const [mode, setMode] = useState<'rows' | 'loading' | 'error'>('error');
   const [retries, setRetries] = useState(0);
@@ -237,6 +271,12 @@ mountLab(
       <Reordering />
     </LabSection>
     <LabSection
+      title="Dragging by the handle"
+      description="Only the handle starts a pointer drag; selected rows drag together under a count."
+    >
+      <HandleReordering />
+    </LabSection>
+    <LabSection
       title="Notices"
       description="Loading and error replace the rows; retry is a real button."
     >
@@ -256,6 +296,53 @@ mountLab(
           defaultSortDescriptor={{ column: 'name', direction: 'ascending' }}
         />
       </div>
+    </LabSection>
+    <LabSection
+      title="Sorting by several columns"
+      description="Shift with a header press adds a column to the sort; headers show their priority."
+    >
+      <MultipleSort />
+    </LabSection>
+    <LabSection
+      title="Column filters"
+      description="Text, set, number and date filters from each header, beside the search box."
+    >
+      <ColumnFilters />
+      <h3>Filtered by the caller</h3>
+      <CallerFilter />
+    </LabSection>
+    <LabSection
+      title="Column layout"
+      description="Pinned name and price, groups, a columns menu and draggable headers, persisted across remounts."
+    >
+      <ColumnLayout />
+    </LabSection>
+    <LabSection
+      title="Nested rows"
+      description="Expand with the chevron or ArrowRight; the filter keeps the places above a match."
+    >
+      <NestedRows />
+    </LabSection>
+    <LabSection title="Detail rows" description="An expanded row shows a full-width detail.">
+      <DetailRows />
+    </LabSection>
+    <LabSection title="Pagination" description="Three rows per page, by the table or the caller.">
+      <Pages />
+    </LabSection>
+    <LabSection
+      title="Editing"
+      description="F2, Enter or a double click opens a cell's editor; Enter commits and Escape cancels."
+    >
+      <Editing />
+    </LabSection>
+    <LabSection title="Summary row" description="Totals of every row the filter keeps.">
+      <Summary />
+    </LabSection>
+    <LabSection
+      title="Loading more"
+      description="Scrolling to the end asks for the next twenty rows."
+    >
+      <LoadingMore />
     </LabSection>
     <LabSection title="Virtualized" description="10,000 rows; only those in view are rendered.">
       <div data-lab="virtualized" style={{ height: 320 }}>

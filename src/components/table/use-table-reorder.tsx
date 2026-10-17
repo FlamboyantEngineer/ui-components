@@ -1,11 +1,23 @@
-import { useCallback, type DragEvent, type KeyboardEvent } from 'react';
+import {
+  useCallback,
+  useMemo,
+  type DragEvent,
+  type KeyboardEvent,
+  type PointerEvent,
+  type ReactNode,
+} from 'react';
 import {
   DropIndicator,
   type DragAndDropHooks,
   type DropTarget,
   type Key,
 } from 'react-aria-components';
-import { isMoveChord, useReorderDragAndDrop } from '../../utils/use-reorder-drag-and-drop.js';
+import {
+  isMoveChord,
+  useReorderDragAndDrop,
+  type ReorderDragItem,
+} from '../../utils/use-reorder-drag-and-drop.js';
+import { armHandleDrag, keepHandleCellDraggable } from '../drag-handle/drag-handle.js';
 import { tableHooks } from './table-hooks.js';
 import { isEffectiveTableMove, type TableMove, type TableRow } from './table-rows.js';
 
@@ -15,7 +27,17 @@ export interface TableReorderOptions<T> {
   canMove?: ((row: T) => boolean) | undefined;
   /** Reports one move. The table never reorders its rows itself: apply the move and re-render. */
   onMove: (move: TableMove) => void;
+  /**
+   * What starts a pointer drag: anywhere on the row (`row`, the default), or only its drag handle
+   * (`handle`), which leaves presses elsewhere in the row to the row.
+   */
+  dragTrigger?: TableDragTrigger | undefined;
+  /** The image that follows the pointer during a drag, from the dragged rows. */
+  renderDragPreview?: ((rows: T[]) => ReactNode) | undefined;
 }
+
+/** What starts a row's pointer drag. */
+export type TableDragTrigger = 'row' | 'handle';
 
 export interface TableReorder<T> {
   dragAndDropHooks: DragAndDropHooks<T>;
@@ -24,6 +46,7 @@ export interface TableReorder<T> {
   rootProps: {
     onKeyDownCapture: (event: KeyboardEvent<HTMLElement>) => void;
     onDragStartCapture: (event: DragEvent<HTMLElement>) => void;
+    onPointerDownCapture: (event: PointerEvent<HTMLElement>) => void;
   };
 }
 
@@ -34,11 +57,11 @@ interface ReorderSnapshot<T> {
 
 const moveKeys: Readonly<Record<string, -1 | 1>> = { ArrowUp: -1, ArrowDown: 1 };
 
-/** The key of the row of this table that holds `target`, or null. */
+/** The key of the body or footer row of this table that holds `target`, or null. */
 function findRowKey(target: EventTarget, root: Element): string | null {
   const row = target instanceof Element ? target.closest('[role="row"]') : null;
   if (!row || row.closest(`.${tableHooks.className}`) !== root) return null;
-  return row.getAttribute('data-key');
+  return row.closest('thead') ? null : row.getAttribute('data-key');
 }
 
 function canMoveRow<T>(reorder: TableReorderOptions<T> | undefined, row: T): boolean {
@@ -80,6 +103,17 @@ function getKeyText(key: Key): string {
   return String(key);
 }
 
+/** The drag preview: the caller's content for the dragged rows, in the table's preview slot. */
+function createDragPreview<T extends TableRow>(snapshot: ReorderSnapshot<T>) {
+  const render = snapshot.reorder?.renderDragPreview;
+  if (!render) return undefined;
+  return (items: ReorderDragItem[]) => {
+    const keys = new Set(items.map((item) => item['text/plain']));
+    const rows = snapshot.rows.filter((row) => keys.has(getKeyText(row.id)));
+    return <div {...tableHooks.slot('drag-preview', { count: rows.length })}>{render(rows)}</div>;
+  };
+}
+
 /**
  * Reordering for a table: pointer and keyboard drag and drop through React Aria, plus Alt+Arrow
  * moves of the focused row. Every check reads the rows last rendered.
@@ -91,8 +125,14 @@ export function useTableReorder<T extends TableRow>(snapshot: ReorderSnapshot<T>
     onMove: (move) => reorder?.onMove(move),
     getTextValue: getKeyText,
     renderDropIndicator,
+    renderDragPreview: createDragPreview(snapshot),
   });
-  const isMovable = useCallback((row: T) => canMoveRow(reorder, row), [reorder]);
+  // Only the top-level rows of the page move, so nested rows draw disabled handles.
+  const topLevel = useMemo(() => new Set(snapshot.rows), [snapshot.rows]);
+  const isMovable = useCallback(
+    (row: T) => topLevel.has(row) && canMoveRow(reorder, row),
+    [topLevel, reorder],
+  );
 
   const onKeyDownCapture = (event: KeyboardEvent<HTMLElement>) => {
     const step = moveKeys[event.key];
@@ -110,9 +150,14 @@ export function useTableReorder<T extends TableRow>(snapshot: ReorderSnapshot<T>
     if (key !== null && !findMovableRow(snapshot, key)) event.preventDefault();
   };
 
+  const isHandleTrigger = reorder?.dragTrigger === 'handle';
   return {
     dragAndDropHooks,
     isMovable,
-    rootProps: { onKeyDownCapture, onDragStartCapture },
+    rootProps: {
+      onKeyDownCapture,
+      onDragStartCapture,
+      onPointerDownCapture: isHandleTrigger ? armHandleDrag : keepHandleCellDraggable,
+    },
   };
 }
