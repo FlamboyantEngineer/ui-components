@@ -78,7 +78,7 @@ Verification: `src/components/breadcrumb/breadcrumb.test.tsx`, `e2e/breadcrumb.s
 
 ### UIC-BREADCRUMB-2.3 - Disabled
 
-`isDisabled` shall disable every crumb: each renders as text with `aria-disabled="true"` and React Aria's `data-disabled` on its item and link, leaves the tab order and ignores activation.
+`isDisabled` shall disable every crumb: each renders as text with `aria-disabled="true"` and React Aria's `data-disabled` on its item and link, leaves the tab order and ignores activation. The overflow menu and the crumbs' menus of nearby places are disabled too.
 
 Implementation: `src/components/breadcrumb/breadcrumb.tsx`
 Verification: `src/components/breadcrumb/breadcrumb.test.tsx`

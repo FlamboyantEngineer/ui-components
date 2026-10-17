@@ -89,13 +89,13 @@ function useTabOverflow(state: TabListState<object> | null, isMenu: boolean) {
   return { ...overflow, visibleKeys: isMenu ? visibleKeys : null };
 }
 
-function TabScrollButton({
-  edge,
-  isHidden,
-  onPress,
-}: { edge: Edge; isHidden: boolean } & {
+interface TabScrollButtonProps {
+  edge: Edge;
+  isHidden: boolean;
   onPress: (edge: Edge) => void;
-}) {
+}
+
+function TabScrollButton({ edge, isHidden, onPress }: TabScrollButtonProps) {
   const strings = useUiStrings();
   const pointsLeft = (edge === 'start') !== (useLocale().direction === 'rtl');
   return (

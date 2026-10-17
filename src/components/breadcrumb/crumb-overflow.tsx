@@ -30,6 +30,7 @@ interface OverflowCrumbProps {
   menuRef: RefCallback<HTMLElement>;
   items: readonly MenuEntry[];
   onAction: ((key: Key) => void) | undefined;
+  isDisabled: boolean | undefined;
   separator: ReactNode;
 }
 
@@ -76,7 +77,8 @@ export function useCrumbOverflow(items: readonly CrumbEntry[], isMenu: boolean):
 }
 
 /** The crumb that stands for the hidden ones: a "more" menu of them, then a separator. */
-export function OverflowCrumb({ id, menuRef, items, onAction, separator }: OverflowCrumbProps) {
+export function OverflowCrumb(props: OverflowCrumbProps) {
+  const { id, menuRef, items, onAction, isDisabled, separator } = props;
   const strings = useUiStrings();
   return (
     <AriaBreadcrumb
@@ -89,6 +91,7 @@ export function OverflowCrumb({ id, menuRef, items, onAction, separator }: Overf
         size="xs"
         variant="ghost"
         label={strings.moreItems(items.length)}
+        isDisabled={isDisabled}
         items={items}
         onAction={(key) => onAction?.(key)}
       />

@@ -406,4 +406,18 @@ describe('Breadcrumb', () => {
     await userEvent.click(screen.getByRole('menuitem', { name: 'Drinks' }));
     expect(onSibling).toHaveBeenCalledTimes(1);
   });
+
+  it('UIC-BREADCRUMB-2.3 disables the menus of a disabled trail', () => {
+    render(
+      <Breadcrumb
+        isDisabled
+        items={[
+          trail[0] as BreadcrumbItem,
+          { label: 'Recipes', href: '/recipes', menu: [{ id: 'drinks', label: 'Drinks' }] },
+          trail[2] as BreadcrumbItem,
+        ]}
+      />,
+    );
+    expect(screen.getByRole('button', { name: 'Places beside Recipes' })).toBeDisabled();
+  });
 });
