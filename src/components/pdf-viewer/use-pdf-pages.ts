@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
+import { useNearPages, type NearPages } from './use-near-pages.js';
 
 export interface UsePdfPagesOptions {
   scrollerRef: RefObject<HTMLElement | null>;
@@ -33,6 +34,12 @@ interface ScrollAnchor {
   centre: number;
 }
 
+interface ScrollAnchorOptions extends Pick<UsePdfPagesOptions, 'scrollerRef' | 'document'> {
+  elements: NearPages['elements'];
+  /** Reports the page the reader is on whenever the anchor is recorded. */
+  onPageChange(pageIndex: number): void;
+}
+
 function visibleHeight(element: HTMLElement, view: DOMRect): number {
   const box = element.getBoundingClientRect();
   return Math.max(0, Math.min(box.bottom, view.bottom) - Math.max(box.top, view.top));
@@ -64,6 +71,13 @@ function measureAnchor(scroller: HTMLElement, page: HTMLElement, pageIndex: numb
   };
 }
 
+function scrollToAnchor(scroller: HTMLElement, page: HTMLElement, anchor: ScrollAnchor) {
+  const box = page.getBoundingClientRect();
+  scroller.scrollTop +=
+    box.top - scroller.getBoundingClientRect().top + anchor.fraction * box.height;
+  scroller.scrollLeft = anchor.centre * scroller.scrollWidth - scroller.clientWidth / 2;
+}
+
 function revealInScroller(scroller: HTMLElement, element: HTMLElement) {
   const view = scroller.getBoundingClientRect();
   const box = element.getBoundingClientRect();
@@ -75,76 +89,13 @@ function revealInScroller(scroller: HTMLElement, element: HTMLElement) {
   }
 }
 
-/** Tracks which pages are near the view with an `IntersectionObserver` rooted at the scroller. */
-function useNearPages(scrollerRef: RefObject<HTMLElement | null>) {
-  const elements = useRef(new Map<number, HTMLElement>());
-  const indexes = useRef(new WeakMap<Element, number>());
-  const observer = useRef<IntersectionObserver | null>(null);
-  const [nearPages, setNearPages] = useState<ReadonlySet<number> | null>(() =>
-    typeof IntersectionObserver === 'undefined' ? null : new Set(),
-  );
-
-  useEffect(() => {
-    const root = scrollerRef.current;
-    if (!root || typeof IntersectionObserver === 'undefined') return undefined;
-    const created = new IntersectionObserver(
-      (entries) =>
-        setNearPages((previous) => {
-          const next = new Set(previous);
-          for (const entry of entries) {
-            const pageIndex = indexes.current.get(entry.target);
-            if (pageIndex === undefined) continue;
-            if (entry.isIntersecting) next.add(pageIndex);
-            else next.delete(pageIndex);
-          }
-          return next;
-        }),
-      { root, rootMargin: '100% 0px' },
-    );
-    for (const element of elements.current.values()) created.observe(element);
-    observer.current = created;
-    return () => {
-      created.disconnect();
-      observer.current = null;
-    };
-  }, [scrollerRef]);
-
-  const registerPage = useCallback((pageIndex: number, element: HTMLElement | null) => {
-    const previous = elements.current.get(pageIndex);
-    if (previous) observer.current?.unobserve(previous);
-    if (element) {
-      elements.current.set(pageIndex, element);
-      indexes.current.set(element, pageIndex);
-      observer.current?.observe(element);
-    } else {
-      elements.current.delete(pageIndex);
-    }
-  }, []);
-
-  return { elements, nearPages, registerPage };
-}
-
 /**
- * The page elements of a viewer: which are near the view, which one the reader is on, scrolling to a
- * page or an element, and keeping the reader's place when the zoom changes.
+ * The reader's place: recorded on scroll (once per frame) and before a zoom, restored after it, and
+ * reset to the top for a new document.
  */
-export function usePdfPages({
-  scrollerRef,
-  document,
-  pageCount,
-}: UsePdfPagesOptions): PdfPagesController {
-  const { elements, nearPages, registerPage } = useNearPages(scrollerRef);
-  const [position, setPosition] = useState({ document, currentPage: 0 });
+function useScrollAnchor({ scrollerRef, document, elements, onPageChange }: ScrollAnchorOptions) {
   const anchor = useRef<ScrollAnchor | null>(null);
   const frame = useRef(0);
-  if (position.document !== document) setPosition({ document, currentPage: 0 });
-  const setCurrentPage = useCallback(
-    (currentPage: number) =>
-      setPosition((previous) =>
-        previous.currentPage === currentPage ? previous : { ...previous, currentPage },
-      ),
-    [],
-  );
 
   useLayoutEffect(() => {
     anchor.current = null;
@@ -160,8 +111,15 @@ export function usePdfPages({
     const pageIndex = findMostVisiblePage(elements.current, scroller.getBoundingClientRect());
     const page = elements.current.get(pageIndex);
     if (page) anchor.current = measureAnchor(scroller, page, pageIndex);
-    if (pageIndex >= 0) setCurrentPage(pageIndex);
-  }, [elements, scrollerRef, setCurrentPage]);
+    if (pageIndex >= 0) onPageChange(pageIndex);
+  }, [elements, onPageChange, scrollerRef]);
+
+  const restoreAnchor = useCallback(() => {
+    const scroller = scrollerRef.current;
+    const saved = anchor.current;
+    const page = saved ? elements.current.get(saved.pageIndex) : undefined;
+    if (scroller && saved && page) scrollToAnchor(scroller, page, saved);
+  }, [elements, scrollerRef]);
 
   const handleScroll = useCallback(() => {
     if (frame.current) return;
@@ -173,16 +131,29 @@ export function usePdfPages({
 
   useEffect(() => () => cancelAnimationFrame(frame.current), []);
 
-  const restoreAnchor = useCallback(() => {
-    const scroller = scrollerRef.current;
-    const saved = anchor.current;
-    const page = saved ? elements.current.get(saved.pageIndex) : undefined;
-    if (!scroller || !saved || !page) return;
-    const box = page.getBoundingClientRect();
-    scroller.scrollTop +=
-      box.top - scroller.getBoundingClientRect().top + saved.fraction * box.height;
-    scroller.scrollLeft = saved.centre * scroller.scrollWidth - scroller.clientWidth / 2;
-  }, [elements, scrollerRef]);
+  return { captureAnchor, restoreAnchor, handleScroll };
+}
+
+/**
+ * The page elements of a viewer: which are near the view, which one the reader is on, scrolling to a
+ * page or an element, and keeping the reader's place when the zoom changes.
+ */
+export function usePdfPages({
+  scrollerRef,
+  document,
+  pageCount,
+}: UsePdfPagesOptions): PdfPagesController {
+  const { elements, nearPages, registerPage } = useNearPages(scrollerRef);
+  const [position, setPosition] = useState({ document, currentPage: 0 });
+  if (position.document !== document) setPosition({ document, currentPage: 0 });
+  const setCurrentPage = useCallback(
+    (currentPage: number) =>
+      setPosition((previous) =>
+        previous.currentPage === currentPage ? previous : { ...previous, currentPage },
+      ),
+    [],
+  );
+  const anchor = useScrollAnchor({ scrollerRef, document, elements, onPageChange: setCurrentPage });
 
   // A page lands where the first page sits when the view is at the top.
   const scrollToPage = useCallback(
@@ -205,13 +176,11 @@ export function usePdfPages({
   );
 
   return {
+    ...anchor,
     nearPages,
     currentPage: Math.min(position.currentPage, Math.max(0, pageCount - 1)),
     registerPage,
     scrollToPage,
     revealElement,
-    handleScroll,
-    captureAnchor,
-    restoreAnchor,
   };
 }

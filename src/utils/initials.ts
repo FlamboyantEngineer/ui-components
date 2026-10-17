@@ -2,13 +2,13 @@ interface GraphemeSegmenter {
   segment(input: string): Iterable<{ segment: string }>;
 }
 
+const segmenter = createSegmenter();
+
 function createSegmenter(): GraphemeSegmenter | null {
   return typeof Intl.Segmenter === 'function'
     ? new Intl.Segmenter(undefined, { granularity: 'grapheme' })
     : null;
 }
-
-const segmenter = createSegmenter();
 
 /** Splits text into user-perceived characters, or code points where the runtime cannot segment. */
 function graphemes(text: string): string[] {

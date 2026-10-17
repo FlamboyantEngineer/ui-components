@@ -2,7 +2,7 @@ import type { RefObject } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { InlineError } from '../inline-error/inline-error.js';
 import { LoadingOverlay } from '../loading-overlay/loading-overlay.js';
-import { pdfViewerHooks as hooks } from './parts.js';
+import { pdfViewerHooks as hooks } from './styling-hooks.js';
 import type { PdfTextContent, PdfViewport } from './pdf-engine.js';
 import type { PdfMatchRange } from './pdf-search.js';
 import { PdfViewerPage } from './pdf-viewer-page.js';

@@ -21,6 +21,9 @@ export interface EmojiGridProps {
   gridRef?: Ref<HTMLDivElement> | undefined;
 }
 
+/** The grid props a picker shares between every grid it draws. */
+export type EmojiGridOptions = Omit<EmojiGridProps, 'label' | 'entries'>;
+
 const hooks = createHooks('emoji-picker', ['section', 'label', 'grid', 'cell', 'image']);
 // Grid keys stay inside the picker, even at the grid's edges where React Aria lets them bubble,
 // so they never reach shortcuts of the surface that owns it.

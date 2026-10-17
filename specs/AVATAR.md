@@ -22,7 +22,7 @@ Verification: `src/components/avatar/avatar.test.tsx`
 
 `Avatar` shall publish a colour slot in `data-color`: the explicit `colorIndex` truncated and wrapped into the palette when it is a finite number, otherwise `getColorIndex(colorKey, colorCount)` ([COLOR-INDEX.md](COLOR-INDEX.md)), with `name` standing in for a blank or missing `colorKey`. `colorCount` is the number of slots the host stylesheet defines, `8` by default; an invalid count uses the default. The same key keeps the same slot whatever the name, so a renamed person keeps their colour. A group publishes no slot unless it has an explicit `colorIndex`. The avatar sets no inline colour.
 
-Implementation: `src/components/avatar/avatar.tsx`, `src/utils/color-index.ts`, `labs/reference.css`
+Implementation: `src/components/avatar/avatar.tsx`, `src/utils/color-index.ts`, `labs/reference/avatar.css`
 Verification: `src/components/avatar/avatar.test.tsx`, `e2e/avatar.spec.ts`
 
 ### UIC-AVATAR-1.4 - Picture fallback
@@ -38,14 +38,14 @@ Verification: `src/components/avatar/avatar.test.tsx`, `e2e/avatar.spec.ts`
 
 `size` shall publish `data-size`: `xs`, `sm`, `md` (the default), `lg`, or `fill`, which takes the whole box its container gives it. The avatar has no interactive states; a pressable or selected avatar belongs to its container. The reference sheet draws circles of 20, 24, 32 and 40 pixels.
 
-Implementation: `src/components/avatar/avatar.tsx`, `labs/reference.css`
+Implementation: `src/components/avatar/avatar.tsx`, `labs/reference/avatar.css`
 Verification: `src/components/avatar/avatar.test.tsx`, `e2e/avatar.spec.ts`
 
 ### UIC-AVATAR-2.2 - Variants
 
 `variant` shall publish `data-variant`: `filled` (the default), where the initials sit on the colour slot, or `outlined`, where the circle is ringed and the initials sit on the container's own ground.
 
-Implementation: `src/components/avatar/avatar.tsx`, `labs/reference.css`
+Implementation: `src/components/avatar/avatar.tsx`, `labs/reference/avatar.css`
 Verification: `src/components/avatar/avatar.test.tsx`, `e2e/avatar.spec.ts`
 
 ## UIC-AVATAR-3 - Accessibility and hooks

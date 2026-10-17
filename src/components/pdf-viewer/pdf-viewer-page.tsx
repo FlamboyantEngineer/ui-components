@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { highlightTextRuns } from './highlights.js';
-import { pdfViewerHooks as hooks } from './parts.js';
+import { pdfViewerHooks as hooks } from './styling-hooks.js';
 import type { PdfMatchRange } from './pdf-search.js';
 import type { PdfTextContent, PdfTextLayer, PdfViewport } from './pdf-engine.js';
 import { measureCanvasPixels, usePageRender } from './use-page-render.js';

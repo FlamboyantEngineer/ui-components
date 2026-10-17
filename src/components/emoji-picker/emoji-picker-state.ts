@@ -1,8 +1,14 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
+import { OverlayTriggerStateContext } from 'react-aria-components';
 import {
+  addRecentEmoji,
+  getEmojiKey,
   resolveEmojiKeys,
+  searchEmoji,
+  toEmojiSelection,
   type CustomEmoji,
   type EmojiEntry,
+  type EmojiSelection,
   type NativeEmoji,
   type SkinTone,
 } from './emoji-catalog.js';
@@ -23,6 +29,7 @@ export interface SkinToneState {
   skinTone?: SkinTone | undefined;
   /** The initial skin tone when uncontrolled. Defaults to `default`. */
   defaultSkinTone?: SkinTone | undefined;
+  /** Called with the tone the reader picks. */
   onSkinToneChange?: ((tone: SkinTone) => void) | undefined;
 }
 
@@ -32,6 +39,49 @@ export interface EmojiSources {
   recentEmoji?: readonly string[] | undefined;
   /** Image emoji, shown under their own category and in search results. */
   customEmoji?: readonly CustomEmoji[] | undefined;
+}
+
+/** What choosing an emoji reports to the host. */
+export interface EmojiChoiceHandlers {
+  /** Called with the chosen emoji. Inside a dialog trigger, choosing also closes the overlay. */
+  onSelect?: ((selection: EmojiSelection) => void) | undefined;
+  /** Called after a choice with the updated recent list, most recent first, for the host to keep. */
+  onRecentEmojiChange?: ((recent: string[]) => void) | undefined;
+}
+
+export interface EmojiSearchState {
+  query: string;
+  /** Whether the query is not blank, so results replace the categories. */
+  isSearching: boolean;
+  /** The best matches for the query. */
+  results: EmojiEntry[];
+  setQuery(query: string): void;
+}
+
+interface ChooseEmojiOptions extends EmojiChoiceHandlers, Pick<EmojiSources, 'recentEmoji'> {
+  tone: SkinTone;
+}
+
+const searchLimit = 60;
+const recentLimit = 24;
+const noKeys: readonly string[] = [];
+const noCustomEmoji: readonly CustomEmoji[] = [];
+
+function buildTabs(emoji: readonly NativeEmoji[], recent: EmojiEntry[], custom: EmojiEntry[]) {
+  const tabs: EmojiTab[] = [];
+  if (recent.length > 0) tabs.push({ id: 'recent', entries: recent });
+  if (custom.length > 0) tabs.push({ id: 'custom', entries: custom });
+  const byCategory = new Map<string, EmojiTab>();
+  for (const item of emoji) {
+    let tab = byCategory.get(item.category);
+    if (!tab) {
+      tab = { id: item.category, entries: [] };
+      byCategory.set(item.category, tab);
+      tabs.push(tab);
+    }
+    tab.entries.push({ kind: 'native', emoji: item });
+  }
+  return tabs;
 }
 
 export function useEmojiData(loadEmoji: () => Promise<readonly NativeEmoji[]>): EmojiData {
@@ -65,26 +115,9 @@ export function useSkinTone({
   return [skinTone ?? own, change] as const;
 }
 
-function buildTabs(emoji: readonly NativeEmoji[], recent: EmojiEntry[], custom: EmojiEntry[]) {
-  const tabs: EmojiTab[] = [];
-  if (recent.length > 0) tabs.push({ id: 'recent', entries: recent });
-  if (custom.length > 0) tabs.push({ id: 'custom', entries: custom });
-  const byCategory = new Map<string, EmojiTab>();
-  for (const item of emoji) {
-    let tab = byCategory.get(item.category);
-    if (!tab) {
-      tab = { id: item.category, entries: [] };
-      byCategory.set(item.category, tab);
-      tabs.push(tab);
-    }
-    tab.entries.push({ kind: 'native', emoji: item });
-  }
-  return tabs;
-}
-
 export function useEmojiTabs(
   emoji: readonly NativeEmoji[] | null,
-  { recentEmoji = [], customEmoji = [] }: EmojiSources,
+  { recentEmoji = noKeys, customEmoji = noCustomEmoji }: EmojiSources,
 ) {
   return useMemo(() => {
     const native = emoji ?? [];
@@ -93,4 +126,37 @@ export function useEmojiTabs(
     const all = [...custom, ...native.map((item): EmojiEntry => ({ kind: 'native', emoji: item }))];
     return { tabs: buildTabs(native, recent, custom), all };
   }, [emoji, recentEmoji, customEmoji]);
+}
+
+/** The search query and its best matches; every change is reported to `onSearchChange`. */
+export function useEmojiSearch(
+  entries: readonly EmojiEntry[],
+  onSearchChange: ((value: string) => void) | undefined,
+): EmojiSearchState {
+  const [query, setQuery] = useState('');
+  const results = useMemo(() => searchEmoji(entries, query, searchLimit), [entries, query]);
+  return {
+    query,
+    isSearching: query.trim() !== '',
+    results,
+    setQuery: (value) => {
+      setQuery(value);
+      onSearchChange?.(value);
+    },
+  };
+}
+
+/** Reports a chosen emoji and the updated recent list, then closes the overlay around the picker. */
+export function useChooseEmoji({
+  tone,
+  recentEmoji = noKeys,
+  onSelect,
+  onRecentEmojiChange,
+}: ChooseEmojiOptions) {
+  const overlay = useContext(OverlayTriggerStateContext);
+  return (entry: EmojiEntry) => {
+    onSelect?.(toEmojiSelection(entry, tone));
+    onRecentEmojiChange?.(addRecentEmoji(recentEmoji, getEmojiKey(entry), recentLimit));
+    overlay?.close();
+  };
 }

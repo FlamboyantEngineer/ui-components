@@ -1,22 +1,26 @@
 import { Button, Input, SearchField } from 'react-aria-components';
 import { useUiStrings } from '../../core/provider.js';
+import type { UiStrings } from '../../core/strings.js';
 import { Icon } from '../icon/icon.js';
 import { IconButton } from '../icon-button/icon-button.js';
-import { pdfViewerHooks as hooks } from './parts.js';
+import { pdfViewerHooks as hooks } from './styling-hooks.js';
 import type { PdfSearchState } from './use-pdf-search.js';
 
 export interface PdfViewerSearchProps {
   search: PdfSearchState;
 }
 
+/** What the result count reads: searching, no results, the current match of the total, or nothing. */
+function describeSearchStatus(search: PdfSearchState, strings: UiStrings): string {
+  if (search.isPending) return strings.searching;
+  if (search.total > 0) return strings.stepOfTotal(search.current + 1, search.total);
+  return search.query.trim() ? strings.noResults : '';
+}
+
 /** The find box, the result count and the previous and next match buttons. */
 export function PdfViewerSearch({ search }: PdfViewerSearchProps) {
   const strings = useUiStrings();
   const hasMatches = search.total > 0;
-  let status = '';
-  if (search.isPending) status = strings.searching;
-  else if (search.query.trim() && !hasMatches) status = strings.noResults;
-  else if (hasMatches) status = strings.stepOfTotal(search.current + 1, search.total);
   return (
     <div {...hooks.slot('group')}>
       <SearchField
@@ -36,7 +40,7 @@ export function PdfViewerSearch({ search }: PdfViewerSearchProps) {
         </Button>
       </SearchField>
       <span {...hooks.slot('search-status')} role="status">
-        {status}
+        {describeSearchStatus(search, strings)}
       </span>
       <IconButton
         icon="chevron-left"

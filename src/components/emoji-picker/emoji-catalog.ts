@@ -19,10 +19,13 @@ export interface NativeEmoji {
   unicode: string;
   /** The glyph's code points in hex, joined by `-`, without variation selectors. */
   hexcode: string;
+  /** Accessible name, such as `grinning face`. */
   label: string;
+  /** The category the emoji is browsed under. */
   category: EmojiCategory;
   /** Short names without colons (`thumbsup`). */
   shortcodes: readonly string[];
+  /** Further words the search matches. */
   keywords: readonly string[];
   /** The glyph in each skin tone from `light` to `dark`, for an emoji that takes one. */
   skins?: readonly string[] | undefined;
@@ -36,6 +39,7 @@ export interface CustomEmoji {
   src: string;
   /** Accessible name. Defaults to `:shortcode:`. */
   label?: string | undefined;
+  /** Further words the search matches. */
   keywords?: readonly string[] | undefined;
 }
 
@@ -69,13 +73,6 @@ const searchWeights = {
 
 let parsedDefault: Promise<readonly NativeEmoji[]> | undefined;
 
-/** The code points of a glyph in upper-case hex, joined by `-`, without variation selectors. */
-export function toHexcode(unicode: string): string {
-  return Array.from(unicode.replace(variationSelector, ''), (point) =>
-    (point.codePointAt(0) ?? 0).toString(16).toUpperCase(),
-  ).join('-');
-}
-
 function toneSkins(unicode: string, rule: string): string[] | undefined {
   if (rule !== '1' && rule !== '2') return undefined;
   const [first = '', ...rest] = Array.from(unicode);
@@ -96,6 +93,45 @@ function parseLine(line: string, category: EmojiCategory): NativeEmoji {
     keywords: keywords ? keywords.split(',') : [],
     skins: toneSkins(unicode, rule),
   };
+}
+
+function plainGlyph(key: string): string {
+  return key.replace(anyToneModifier, '').replace(variationSelector, '');
+}
+
+function bestScore(values: readonly string[], query: string, weights: readonly number[]): number {
+  const [exact = 0, prefix = 0, contains = 0] = weights;
+  let best = 0;
+  for (const value of values) {
+    const text = value.toLowerCase();
+    if (text === query) return exact;
+    if (text.startsWith(query)) best = Math.max(best, prefix);
+    else if (text.includes(query)) best = Math.max(best, contains);
+  }
+  return best;
+}
+
+function scoreEntry(entry: EmojiEntry, query: string): number {
+  const fields =
+    entry.kind === 'native'
+      ? entry.emoji
+      : {
+          shortcodes: [entry.emoji.shortcode],
+          label: getEmojiLabel(entry),
+          keywords: entry.emoji.keywords ?? [],
+        };
+  return Math.max(
+    bestScore(fields.shortcodes, query, searchWeights.shortcodes),
+    bestScore([fields.label], query, searchWeights.label),
+    bestScore(fields.keywords, query, searchWeights.keywords),
+  );
+}
+
+/** The code points of a glyph in upper-case hex, joined by `-`, without variation selectors. */
+export function toHexcode(unicode: string): string {
+  return Array.from(unicode.replace(variationSelector, ''), (point) =>
+    (point.codePointAt(0) ?? 0).toString(16).toUpperCase(),
+  ).join('-');
 }
 
 /** Reads the compact emoji format that `scripts/generate-emoji-data.mjs` writes. */
@@ -151,10 +187,6 @@ export function getEmojiKey(entry: EmojiEntry): string {
   return entry.kind === 'native' ? entry.emoji.unicode : `:${entry.emoji.shortcode}:`;
 }
 
-function plainGlyph(key: string): string {
-  return key.replace(anyToneModifier, '').replace(variationSelector, '');
-}
-
 /** The entries for stored keys, skipping keys that match no emoji. Tone modifiers are ignored. */
 export function resolveEmojiKeys(
   keys: readonly string[],
@@ -173,34 +205,6 @@ export function resolveEmojiKeys(
 /** `recent` with `key` moved to the front, without duplicates and at most `limit` long. */
 export function addRecentEmoji(recent: readonly string[], key: string, limit: number): string[] {
   return [key, ...recent.filter((item) => item !== key)].slice(0, limit);
-}
-
-function bestScore(values: readonly string[], query: string, weights: readonly number[]): number {
-  const [exact = 0, prefix = 0, contains = 0] = weights;
-  let best = 0;
-  for (const value of values) {
-    const text = value.toLowerCase();
-    if (text === query) return exact;
-    if (text.startsWith(query)) best = Math.max(best, prefix);
-    else if (text.includes(query)) best = Math.max(best, contains);
-  }
-  return best;
-}
-
-function scoreEntry(entry: EmojiEntry, query: string): number {
-  const fields =
-    entry.kind === 'native'
-      ? entry.emoji
-      : {
-          shortcodes: [entry.emoji.shortcode],
-          label: getEmojiLabel(entry),
-          keywords: entry.emoji.keywords ?? [],
-        };
-  return Math.max(
-    bestScore(fields.shortcodes, query, searchWeights.shortcodes),
-    bestScore([fields.label], query, searchWeights.label),
-    bestScore(fields.keywords, query, searchWeights.keywords),
-  );
 }
 
 /**

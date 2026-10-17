@@ -29,7 +29,7 @@ Verification: `src/components/presence-avatar/presence-avatar.test.tsx`, `e2e/pr
 
 `size` (`xs`, `sm`, `md` by default, `lg`) shall publish `data-size` on the root and size the avatar to match.
 
-Implementation: `src/components/presence-avatar/presence-avatar.tsx`, `labs/reference.css`
+Implementation: `src/components/presence-avatar/presence-avatar.tsx`, `labs/reference/presence-avatar.css`
 Verification: `src/components/presence-avatar/presence-avatar.test.tsx`, `e2e/presence-avatar.spec.ts`
 
 ### UIC-PRESENCE-AVATAR-1.5 - Hooks and caller attributes

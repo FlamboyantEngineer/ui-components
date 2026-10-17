@@ -1,4 +1,4 @@
-import { pdfViewerHooks } from './parts.js';
+import { pdfViewerHooks } from './styling-hooks.js';
 import type { PdfMatchRange } from './pdf-search.js';
 
 export interface HighlightTextRunsOptions {

@@ -2,7 +2,7 @@ import { useState, type ReactNode } from 'react';
 import { Avatar, type AvatarSize } from '../../src/components/avatar/avatar.js';
 import { Button } from '../../src/components/button/button.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
-import { BROKEN_PICTURE, PICTURE } from './people-samples.js';
+import { brokenPicture, samplePicture } from './people-samples.js';
 
 const sizes = ['xs', 'sm', 'md', 'lg', 'fill'] as const;
 const variants = ['filled', 'outlined'] as const;
@@ -26,7 +26,7 @@ function PictureFallback() {
       <Avatar
         name="Jon Berg"
         size="lg"
-        src={broken ? BROKEN_PICTURE : PICTURE}
+        src={broken ? brokenPicture : samplePicture}
         data-lab-avatar="fallback"
       />
       <p>
@@ -57,7 +57,7 @@ mountLab(
             <Avatar
               name={content === 'group' ? 'Design team' : 'Maria Santos'}
               kind={content === 'group' ? 'group' : 'person'}
-              src={content === 'picture' ? PICTURE : undefined}
+              src={content === 'picture' ? samplePicture : undefined}
               variant={variant}
               size={size}
             />

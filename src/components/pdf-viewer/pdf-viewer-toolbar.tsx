@@ -1,10 +1,11 @@
 import type { KeyboardEvent, ReactNode } from 'react';
 import { Input, Label, NumberField } from 'react-aria-components';
+import type { GlyphName } from '../../core/glyphs.js';
 import { useUiStrings } from '../../core/provider.js';
 import { IconButton } from '../icon-button/icon-button.js';
 import { ToolbarScroller } from '../toolbar-scroller/toolbar-scroller.js';
 import { ZoomControl } from '../zoom-control/zoom-control.js';
-import { pdfViewerHooks as hooks } from './parts.js';
+import { pdfViewerHooks as hooks } from './styling-hooks.js';
 import { pdfZoomLevels } from './pdf-zoom.js';
 import { PdfViewerSearch } from './pdf-viewer-search.js';
 import type { PdfSearchState } from './use-pdf-search.js';
@@ -26,7 +27,18 @@ type PdfViewerPageNavProps = Pick<
   'isReady' | 'pageCount' | 'currentPage' | 'onPageChange'
 >;
 
+interface PdfFitMode {
+  zoom: 'page-width' | 'page-fit';
+  glyph: GlyphName;
+  /** The provider string that names the button. */
+  stringKey: 'fitWidth' | 'fitPage';
+}
+
 const wholePercent: Intl.NumberFormatOptions = { maximumFractionDigits: 0 };
+const fitModes: readonly PdfFitMode[] = [
+  { zoom: 'page-width', glyph: 'fit-width', stringKey: 'fitWidth' },
+  { zoom: 'page-fit', glyph: 'fit-page', stringKey: 'fitPage' },
+];
 
 /**
  * The toolbar moves focus with the left and right arrow keys; a text field inside it keeps them for
@@ -106,22 +118,17 @@ export function PdfViewerToolbar({
           formatOptions={wholePercent}
           isDisabled={!isReady}
         />
-        <IconButton
-          icon="fit-width"
-          label={strings.fitWidth}
-          size="sm"
-          isSelected={zoom.zoom === 'page-width'}
-          isDisabled={!isReady}
-          onPress={() => zoom.setZoom('page-width')}
-        />
-        <IconButton
-          icon="fit-page"
-          label={strings.fitPage}
-          size="sm"
-          isSelected={zoom.zoom === 'page-fit'}
-          isDisabled={!isReady}
-          onPress={() => zoom.setZoom('page-fit')}
-        />
+        {fitModes.map(({ zoom: fit, glyph, stringKey }) => (
+          <IconButton
+            key={fit}
+            icon={glyph}
+            label={strings[stringKey]}
+            size="sm"
+            isSelected={zoom.zoom === fit}
+            isDisabled={!isReady}
+            onPress={() => zoom.setZoom(fit)}
+          />
+        ))}
         <PdfViewerPageNav isReady={isReady} {...page} />
         <PdfViewerSearch search={search} />
         {actions ? <div {...hooks.slot('actions')}>{actions}</div> : null}

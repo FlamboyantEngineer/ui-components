@@ -22,7 +22,7 @@ Verification: `src/components/user-identity/user-identity.test.tsx`
 
 `size` (`xs`, `sm`, `md` by default, `lg`) shall publish `data-size` on the root and size the avatar to match. The reference sheet keeps the name and the secondary line on one line each and ellipsizes them independently while the full text stays in the DOM.
 
-Implementation: `src/components/user-identity/user-identity.tsx`, `labs/reference.css`
+Implementation: `src/components/user-identity/user-identity.tsx`, `labs/reference/user-identity.css`
 Verification: `src/components/user-identity/user-identity.test.tsx`, `e2e/user-identity.spec.ts`
 
 ### UIC-USER-IDENTITY-1.4 - Avatar identity

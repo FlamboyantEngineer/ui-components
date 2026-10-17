@@ -8,14 +8,14 @@
 
 `EmojiPicker` shall load the standard emoji through `loadEmoji`, by default the bundled English set, which loads as a separate chunk once for every picker. While loading, the root shall carry `data-loading` and the body shall read the provider's `loading` string in a `role="status"` message; a failed load shall read the `emojiLoadFailed` string.
 
-Implementation: `src/components/emoji-picker/emoji-picker.tsx`, `src/components/emoji-picker/emoji-picker-state.ts`, `src/components/emoji-picker/emoji-catalog.ts`
+Implementation: `src/components/emoji-picker/emoji-picker.tsx`, `src/components/emoji-picker/emoji-picker-body.tsx`, `src/components/emoji-picker/emoji-picker-state.ts`, `src/components/emoji-picker/emoji-catalog.ts`
 Verification: `src/components/emoji-picker/emoji-picker.test.tsx`, `e2e/emoji-picker.spec.ts`
 
 ### UIC-EMOJI-PICKER-1.2 - Categories
 
 Without a search, the picker shall show a `Tabs` element in the `ui-emoji-picker__categories` slot ([TABS.md](TABS.md)) whose tab list is named by the `emojiCategories` string: a tab for the recently used emoji when there are any, one for custom emoji when there are any, then one per standard category in order (smileys, people, nature, food, travel, activities, objects, symbols, flags). Each tab shows a representative emoji as its icon and the `emojiCategory` name as its label; the selected tab's panel shows that category's grid. The first tab is selected at first.
 
-Implementation: `src/components/emoji-picker/emoji-picker.tsx`, `src/core/strings.ts`
+Implementation: `src/components/emoji-picker/emoji-picker-body.tsx`, `src/components/emoji-picker/emoji-picker-state.ts`, `src/core/strings.ts`
 Verification: `src/components/emoji-picker/emoji-picker.test.tsx`, `e2e/emoji-picker.spec.ts`
 
 ### UIC-EMOJI-PICKER-1.3 - Grid
@@ -29,7 +29,7 @@ Verification: `src/components/emoji-picker/emoji-picker.test.tsx`, `e2e/emoji-pi
 
 Choosing an emoji shall call `onSelect` once with the selection: for a standard emoji its record, the glyph and hexcode in the current skin tone and the tone actually applied (`default` for an emoji that takes none); for a custom emoji its record. It shall then call `onRecentEmojiChange` with `recentEmoji` updated: the chosen emoji's key first, without duplicates, at most 24 long. Inside a dialog trigger, choosing closes the overlay.
 
-Implementation: `src/components/emoji-picker/emoji-picker.tsx`, `src/components/emoji-picker/emoji-catalog.ts`
+Implementation: `src/components/emoji-picker/emoji-picker.tsx`, `src/components/emoji-picker/emoji-picker-state.ts`, `src/components/emoji-picker/emoji-catalog.ts`
 Verification: `src/components/emoji-picker/emoji-picker.test.tsx`, `e2e/emoji-picker.spec.ts`
 
 ### UIC-EMOJI-PICKER-1.5 - Preview
@@ -45,7 +45,7 @@ Verification: `src/components/emoji-picker/emoji-picker.test.tsx`
 
 The picker shall have a React Aria search field in the `ui-emoji-picker__search` slot, named and hinted by the `searchEmoji` string, with its input in `ui-emoji-picker__search-input` and its clear button in `ui-emoji-picker__search-clear`. A non-blank query shall replace the tabs with one grid labelled `emojiCategory('search')`, holding the best 60 standard and custom matches by shortcode, label and keyword (surrounding colons ignored), or the `noResults` string in `ui-emoji-picker__message` when nothing matches. `onSearchChange` reports each change. From the field, Down moves to the first emoji, Enter chooses the first emoji shown, and Escape clears the field and, when it is already empty, closes an overlay around the picker.
 
-Implementation: `src/components/emoji-picker/emoji-picker.tsx`, `src/components/emoji-picker/emoji-catalog.ts`
+Implementation: `src/components/emoji-picker/emoji-picker.tsx`, `src/components/emoji-picker/emoji-picker-body.tsx`, `src/components/emoji-picker/emoji-picker-state.ts`, `src/components/emoji-picker/emoji-catalog.ts`
 Verification: `src/components/emoji-picker/emoji-picker.test.tsx`, `e2e/emoji-picker.spec.ts`
 
 ### UIC-EMOJI-PICKER-2.2 - Recently used emoji

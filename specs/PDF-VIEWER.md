@@ -38,14 +38,14 @@ Verification: `src/components/pdf-viewer/pdf-viewer.test.tsx`, `e2e/pdf-viewer.s
 
 Each page shall be a `ui-pdf-viewer__page` element sized to the page at the applied zoom, where 100% shows the page at its printed size (96 CSS pixels per inch), holding a `ui-pdf-viewer__canvas` the engine draws into at the device pixel ratio, capped at 2²⁵ device pixels per page. Annotations and form fields shall not be drawn. Only pages within one screen of the view render; a page further away keeps its size but releases its bitmap and text layer, and every rendering page is drawn again when the zoom changes.
 
-Implementation: `src/components/pdf-viewer/pdf-viewer-page.tsx`, `src/components/pdf-viewer/use-page-render.ts`, `src/components/pdf-viewer/use-pdf-pages.ts`
+Implementation: `src/components/pdf-viewer/pdf-viewer-page.tsx`, `src/components/pdf-viewer/use-page-render.ts`, `src/components/pdf-viewer/use-near-pages.ts`
 Verification: `src/components/pdf-viewer/pdf-viewer.test.tsx`, `src/components/pdf-viewer/use-page-render.test.ts`, `e2e/pdf-viewer.spec.ts`
 
 ### UIC-PDF-VIEWER-2.2 - Text layer
 
 Over each rendered page the engine shall build its text layer in `ui-pdf-viewer__text-layer`, from the same text content the find searches, so the page's text can be selected and copied where it appears on the canvas. The root publishes the scale, in CSS pixels per point, as `--ui-pdf-viewer-scale`. The engine positions each text run (an element with `role="presentation"`) as a percentage of the layer and sets its font height, horizontal stretch and rotation in the `--font-height`, `--scale-x` and `--rotate` custom properties, and the layer's `--min-font-size` and `data-main-rotation`; the host stylesheet turns these into transparent text over the canvas, as the reference sheet's text-layer rules do. The library loads no stylesheet for it.
 
-Implementation: `src/components/pdf-viewer/use-page-render.ts`, `src/components/pdf-viewer/pdf-viewer.tsx`, `labs/reference/pdf-viewer.css`
+Implementation: `src/components/pdf-viewer/use-page-render.ts`, `src/components/pdf-viewer/pdf-engine.ts`, `src/components/pdf-viewer/pdf-viewer.tsx`, `labs/reference/pdf-viewer.css`
 Verification: `src/components/pdf-viewer/pdf-viewer.test.tsx`, `e2e/pdf-viewer.spec.ts`
 
 ### UIC-PDF-VIEWER-2.3 - Page scroller
@@ -137,7 +137,7 @@ Verification: `src/components/pdf-viewer/pdf-viewer.test.tsx`, `e2e/pdf-viewer.s
 
 `PdfViewer` shall carry the hooks below, append the caller's `className`, and forward caller `data-*` attributes and `id` to its root.
 
-Implementation: `src/components/pdf-viewer/pdf-viewer.tsx`, `src/components/pdf-viewer/parts.ts`
+Implementation: `src/components/pdf-viewer/pdf-viewer.tsx`, `src/components/pdf-viewer/styling-hooks.ts`
 Verification: `src/components/pdf-viewer/pdf-viewer.test.tsx`
 
 ## Hooks

@@ -45,14 +45,14 @@ Verification: `src/components/presence-strip/presence-strip.test.tsx`, `e2e/pres
 
 `variant` shall publish `data-variant`: `avatars` (the default), or `dots`, which draws each visible person as a `ui-presence-strip__dot` carrying the person's colour slot in `data-color` and the overflow as plain `+N` text, for use inside another control. The `dots` strip is hidden from assistive technology, with no group role, name, button or tab stop; the containing control describes who is present.
 
-Implementation: `src/components/presence-strip/presence-strip.tsx`, `labs/reference.css`
+Implementation: `src/components/presence-strip/presence-strip.tsx`, `labs/reference/presence-strip.css`
 Verification: `src/components/presence-strip/presence-strip.test.tsx`, `e2e/presence-strip.spec.ts`
 
 ### UIC-PRESENCE-STRIP-2.2 - Sizes
 
 `size` (`xs`, `sm`, `md` by default, `lg`) shall publish `data-size` on the root and size every presence avatar. `colorCount` reaches every avatar and dot.
 
-Implementation: `src/components/presence-strip/presence-strip.tsx`, `labs/reference.css`
+Implementation: `src/components/presence-strip/presence-strip.tsx`, `labs/reference/presence-strip.css`
 Verification: `src/components/presence-strip/presence-strip.test.tsx`, `e2e/presence-strip.spec.ts`
 
 ### UIC-PRESENCE-STRIP-2.3 - Hooks and caller attributes

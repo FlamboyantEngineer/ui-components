@@ -104,3 +104,11 @@ export function toDocumentParams(source: PdfSource): PdfDocumentParams {
 export function isTextItem(item: PdfTextItem | { type: string }): item is PdfTextItem {
   return 'str' in item;
 }
+
+/** The engine's text layer for a page; the one place the viewer constructs an engine object. */
+export function createTextLayer<V extends PdfViewport, C extends PdfTextContent>(
+  engine: PdfEngine<V, C>,
+  options: PdfTextLayerOptions<V, C>,
+): PdfTextLayer {
+  return new engine.TextLayer(options);
+}

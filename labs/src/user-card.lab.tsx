@@ -4,7 +4,7 @@ import { PresenceStrip } from '../../src/components/presence-strip/presence-stri
 import { UserCard, UserCardTrigger } from '../../src/components/user-card/user-card.js';
 import { UserIdentity } from '../../src/components/user-identity/user-identity.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
-import { PICTURE, SAMPLE_PEOPLE } from './people-samples.js';
+import { samplePicture, samplePeople } from './people-samples.js';
 
 const contents = ['name only', 'secondary line', 'status', 'details and actions'] as const;
 const actions = [
@@ -46,7 +46,7 @@ function Triggers() {
           <Avatar name="Maria Santos" size="sm" />
         </UserCardTrigger>{' '}
         <UserCardTrigger card={card('Jon Berg')} data-lab-trigger="identity">
-          <UserIdentity name="Jon Berg" src={PICTURE} description="Research team" size="sm" />
+          <UserIdentity name="Jon Berg" src={samplePicture} description="Research team" size="sm" />
         </UserCardTrigger>{' '}
         Written by{' '}
         <UserCardTrigger card={card('Lena Ortiz')} data-lab-trigger="name">
@@ -59,7 +59,7 @@ function Triggers() {
       </p>
       <p>
         <PresenceStrip
-          people={SAMPLE_PEOPLE}
+          people={samplePeople}
           maxVisible={4}
           size="sm"
           data-lab-strip="cards"
@@ -85,7 +85,7 @@ mountLab(
           <UserCard
             name={avatar === 'group' ? 'Design team' : 'Maria Santos'}
             kind={avatar === 'group' ? 'group' : 'person'}
-            src={avatar === 'picture' ? PICTURE : undefined}
+            src={avatar === 'picture' ? samplePicture : undefined}
             {...contentProps(content)}
           />
         )}

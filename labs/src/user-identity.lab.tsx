@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { UserIdentity } from '../../src/components/user-identity/user-identity.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
-import { BROKEN_PICTURE, PICTURE } from './people-samples.js';
+import { brokenPicture, samplePicture } from './people-samples.js';
 
 const sizes = ['xs', 'sm', 'md', 'lg'] as const;
 
@@ -13,7 +13,7 @@ function PictureFallback() {
       <UserIdentity
         name="Jon Berg"
         description="jon@example.com"
-        src={broken ? BROKEN_PICTURE : PICTURE}
+        src={broken ? brokenPicture : samplePicture}
         data-lab-identity="fallback"
       />
       <p>
@@ -41,7 +41,7 @@ mountLab(
           <UserIdentity
             name={kind === 'group' ? 'Design team' : 'Maria Santos'}
             kind={kind === 'group' ? 'group' : 'person'}
-            src={kind === 'picture' ? PICTURE : undefined}
+            src={kind === 'picture' ? samplePicture : undefined}
             size={size}
             description={
               content === 'secondary line'

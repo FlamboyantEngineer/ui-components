@@ -3,7 +3,13 @@ import { describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { getColorIndex } from '../../utils/color-index.js';
-import { Avatar, DEFAULT_AVATAR_COLOR_COUNT, resolveAvatarColor } from './avatar.js';
+import {
+  Avatar,
+  DEFAULT_AVATAR_COLOR_COUNT,
+  getDisplayName,
+  resolveAvatarColor,
+  splitAvatarIdentity,
+} from './avatar.js';
 
 function root(container: HTMLElement): HTMLElement {
   return container.firstElementChild as HTMLElement;
@@ -166,6 +172,31 @@ describe('Avatar', () => {
       </UiProvider>,
     );
     expect(screen.getByRole('img', { name: 'Sans nom' })).toBeInTheDocument();
+  });
+
+  it('UIC-AVATAR-3.1 shares one display name rule with the components that name a person', () => {
+    expect(getDisplayName('  Maria Santos ', 'Unnamed')).toBe('Maria Santos');
+    expect(getDisplayName('   ', 'Unnamed')).toBe('Unnamed');
+  });
+
+  it('UIC-AVATAR-3.2 splits the identity a wrapper hands to its avatar from its own props', () => {
+    const [identity, rest] = splitAvatarIdentity({
+      name: 'Maria Santos',
+      src: '/maria.png',
+      kind: 'person' as const,
+      colorKey: 'user-1',
+      className: 'caller',
+      'data-person': '42',
+    });
+    expect(identity).toEqual({
+      name: 'Maria Santos',
+      src: '/maria.png',
+      initials: undefined,
+      colorKey: 'user-1',
+      colorIndex: undefined,
+      kind: 'person',
+    });
+    expect(rest).toEqual({ className: 'caller', 'data-person': '42' });
   });
 
   it('UIC-AVATAR-3.2 appends the caller class and forwards id and data attributes', () => {

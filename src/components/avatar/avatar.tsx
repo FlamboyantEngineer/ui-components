@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { createHooks } from '../../core/hooks.js';
+import type { BaseProps, Size } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { getColorIndex } from '../../utils/color-index.js';
 import { getInitials } from '../../utils/initials.js';
+import { toImageProps } from '../icon/icon.js';
 
 /** Circle size. `fill` takes the whole box its container gives it. */
-export type AvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'fill';
+export type AvatarSize = Extract<Size, 'xs' | 'sm' | 'md' | 'lg'> | 'fill';
 
 /** `filled` sets initials on the colour slot; `outlined` rings the circle and leaves the ground to the host. */
 export type AvatarVariant = 'filled' | 'outlined';
@@ -13,10 +15,7 @@ export type AvatarVariant = 'filled' | 'outlined';
 /** A group draws a decorative group glyph instead of a picture or initials. */
 export type AvatarKind = 'person' | 'group';
 
-/** The number of colour slots a derived colour is spread over unless `colorCount` says otherwise. */
-export const DEFAULT_AVATAR_COLOR_COUNT = 8;
-
-/** The identity fields every component that draws an avatar accepts. */
+/** The identity fields every component that draws an avatar accepts and hands to it unchanged. */
 export interface AvatarIdentity {
   /** Display name. The initials, the derived colour and the accessible name come from it. */
   name: string;
@@ -32,7 +31,7 @@ export interface AvatarIdentity {
   kind?: AvatarKind | undefined;
 }
 
-export interface AvatarProps extends AvatarIdentity {
+export interface AvatarProps extends AvatarIdentity, BaseProps {
   /** Defaults to `md`. */
   size?: AvatarSize | undefined;
   /** Defaults to `filled`. */
@@ -43,10 +42,10 @@ export interface AvatarProps extends AvatarIdentity {
   label?: string | undefined;
   /** Hide the avatar from assistive technology when visible text next to it already names the person. */
   decorative?: boolean | undefined;
-  className?: string | undefined;
-  id?: string | undefined;
-  [data: `data-${string}`]: string | number | boolean | undefined;
 }
+
+/** The number of colour slots a derived colour is spread over unless `colorCount` says otherwise. */
+export const DEFAULT_AVATAR_COLOR_COUNT = 8;
 
 const hooks = createHooks('avatar', ['image', 'initials', 'glyph']);
 
@@ -54,6 +53,36 @@ function paletteSize(colorCount: number | undefined): number {
   return colorCount !== undefined && Number.isFinite(colorCount) && colorCount >= 1
     ? Math.trunc(colorCount)
     : DEFAULT_AVATAR_COLOR_COUNT;
+}
+
+/** The group glyph, the picture, or the initials once the picture has failed to load. */
+function AvatarContent({ name, src, initials, kind }: AvatarIdentity) {
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const picture = src?.trim() ?? '';
+  if (kind === 'group') return <Glyph name="users" className={hooks.slotClass('glyph')} />;
+  if (picture !== '' && failedSrc !== picture) {
+    return (
+      <img {...hooks.slot('image')} src={picture} alt="" onError={() => setFailedSrc(picture)} />
+    );
+  }
+  return (
+    <span {...hooks.slot('initials')} aria-hidden="true">
+      {initials?.trim() || getInitials(name)}
+    </span>
+  );
+}
+
+/** The name a person is shown and announced by: the trimmed `name`, or `unnamed` when it is blank. */
+export function getDisplayName(name: string, unnamed: string): string {
+  return name.trim() || unnamed;
+}
+
+/** Splits a component's props into the avatar identity fields, to hand to an avatar, and the rest. */
+export function splitAvatarIdentity<P extends AvatarIdentity>(
+  props: P,
+): [AvatarIdentity, Omit<P, keyof AvatarIdentity>] {
+  const { name, src, initials, colorKey, colorIndex, kind, ...rest } = props;
+  return [{ name, src, initials, colorKey, colorIndex, kind }, rest];
 }
 
 /**
@@ -75,53 +104,24 @@ export function resolveAvatarColor(
 }
 
 /** A person's picture, or their initials on a stable colour slot; a group glyph for a group. */
-export function Avatar({
-  name,
-  src,
-  initials,
-  colorKey,
-  colorIndex,
-  kind = 'person',
-  size = 'md',
-  variant = 'filled',
-  colorCount,
-  label,
-  decorative = false,
-  className,
-  id,
-  ...rest
-}: AvatarProps) {
+export function Avatar(props: AvatarProps) {
+  const [
+    identity,
+    { size = 'md', variant = 'filled', colorCount, label, decorative, className, ...rest },
+  ] = splitAvatarIdentity(props);
   const strings = useUiStrings();
-  const [failedSrc, setFailedSrc] = useState<string | null>(null);
-  const picture = src?.trim() ?? '';
-  const color = resolveAvatarColor({ name, colorKey, colorIndex, kind }, colorCount);
-  const showPicture = kind !== 'group' && picture !== '' && failedSrc !== picture;
-  const text = initials?.trim() || getInitials(name);
-
-  let content;
-  if (kind === 'group') {
-    content = <Glyph name="users" className={hooks.slotClass('glyph')} />;
-  } else if (showPicture) {
-    content = (
-      <img {...hooks.slot('image')} src={picture} alt="" onError={() => setFailedSrc(picture)} />
-    );
-  } else {
-    content = (
-      <span {...hooks.slot('initials')} aria-hidden="true">
-        {text}
-      </span>
-    );
-  }
-
+  const color = resolveAvatarColor(identity, colorCount);
+  const accessibleName = label?.trim() || getDisplayName(identity.name, strings.unnamed);
   return (
     <span
-      {...hooks.root({ className, props: rest, data: { size, variant, kind, color } })}
-      id={id}
-      {...(decorative
-        ? { 'aria-hidden': true }
-        : { role: 'img', 'aria-label': label?.trim() || name.trim() || strings.unnamed })}
+      {...rest}
+      {...hooks.root({
+        className,
+        data: { size, variant, kind: identity.kind ?? 'person', color },
+      })}
+      {...toImageProps(decorative ? undefined : accessibleName)}
     >
-      {content}
+      <AvatarContent {...identity} />
     </span>
   );
 }

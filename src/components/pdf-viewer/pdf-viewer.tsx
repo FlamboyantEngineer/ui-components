@@ -2,7 +2,7 @@ import { useRef, type ReactNode } from 'react';
 import { measuredProperty } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { pdfViewerHooks as hooks } from './parts.js';
+import { pdfViewerHooks as hooks } from './styling-hooks.js';
 import type { PdfEngine, PdfSource, PdfTextContent, PdfViewport } from './pdf-engine.js';
 import { PdfViewerStage } from './pdf-viewer-stage.js';
 import { PdfViewerToolbar } from './pdf-viewer-toolbar.js';
@@ -18,10 +18,7 @@ export interface PdfViewerProps<
 > extends BaseProps {
   /** The document's URL or bytes; `null` while the bytes are on their way. A new array is a new document. */
   source: PdfSource | null;
-  /**
-   * Loads the PDF engine, for example `() => import('pdfjs-dist')`. Read when a document starts
-   * loading; the library never imports the engine itself.
-   */
+  /** Loads the PDF engine when a document starts loading, for example `() => import('pdfjs-dist')`. */
   loadEngine: () => Promise<PdfEngine<V, C>>;
   /** URL of the engine's worker script, set on the engine before it opens a document. */
   workerSrc?: string | undefined;

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { PresenceAvatar } from '../../src/components/presence-avatar/presence-avatar.js';
 import { UserCard } from '../../src/components/user-card/user-card.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
-import { PICTURE } from './people-samples.js';
+import { samplePicture } from './people-samples.js';
 
 const sizes = ['xs', 'sm', 'md', 'lg'] as const;
 const statuses = ['none', 'active', 'away', 'busy', 'idle'] as const;
@@ -55,7 +55,7 @@ mountLab(
           <PresenceAvatar
             name={content === 'group' ? 'Design team' : 'Jon Berg'}
             kind={content === 'group' ? 'group' : 'person'}
-            src={content === 'picture' ? PICTURE : undefined}
+            src={content === 'picture' ? samplePicture : undefined}
             status="away"
             statusLabel="Away"
             size={size}
@@ -75,11 +75,11 @@ mountLab(
     >
       <PresenceAvatar
         name="Jon Berg"
-        src={PICTURE}
+        src={samplePicture}
         status="away"
         statusLabel="Away"
         data-lab-avatar="card"
-        card={<UserCard name="Jon Berg" src={PICTURE} status="away" statusLabel="Away" />}
+        card={<UserCard name="Jon Berg" src={samplePicture} status="away" statusLabel="Away" />}
       />
     </LabSection>
   </>,

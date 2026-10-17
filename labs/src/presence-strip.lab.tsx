@@ -3,7 +3,7 @@ import { Button } from '../../src/components/button/button.js';
 import { PresenceStrip } from '../../src/components/presence-strip/presence-strip.js';
 import { UserCard } from '../../src/components/user-card/user-card.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
-import { SAMPLE_PEOPLE } from './people-samples.js';
+import { samplePeople } from './people-samples.js';
 
 const sizes = ['xs', 'sm', 'md', 'lg'] as const;
 const windows = ['all', 'max 4', 'max 4, 2 left out', 'left out only', 'one person'] as const;
@@ -11,12 +11,12 @@ const windows = ['all', 'max 4', 'max 4, 2 left out', 'left out only', 'one pers
 function windowProps(setup: (typeof windows)[number]) {
   switch (setup) {
     case 'all':
-      return { people: SAMPLE_PEOPLE };
+      return { people: samplePeople };
     case 'max 4':
-      return { people: SAMPLE_PEOPLE, maxVisible: 4 };
+      return { people: samplePeople, maxVisible: 4 };
     case 'max 4, 2 left out':
       return {
-        people: SAMPLE_PEOPLE,
+        people: samplePeople,
         maxVisible: 4,
         overflowCount: 2,
         hiddenNames: ['Ines Duarte', 'Kofi Mensah'],
@@ -24,7 +24,7 @@ function windowProps(setup: (typeof windows)[number]) {
     case 'left out only':
       return { people: [], overflowCount: 3 };
     case 'one person':
-      return { people: SAMPLE_PEOPLE.slice(0, 1) };
+      return { people: samplePeople.slice(0, 1) };
   }
 }
 
@@ -34,11 +34,11 @@ function Following() {
   return (
     <div>
       <PresenceStrip
-        people={SAMPLE_PEOPLE.slice(0, 4)}
+        people={samplePeople.slice(0, 4)}
         overflowCount={leftOut}
         hiddenNames={Array.from({ length: leftOut }, (_, index) => `Guest ${index + 1}`)}
         data-lab-strip="following"
-        onAction={(id) => setFollowed(SAMPLE_PEOPLE.find((person) => person.id === id)?.name ?? id)}
+        onAction={(id) => setFollowed(samplePeople.find((person) => person.id === id)?.name ?? id)}
       />
       <p>
         Following: <output data-lab-output="following">{followed}</output>
@@ -69,7 +69,7 @@ mountLab(
       <StateMatrix
         axes={{ variant: ['avatars', 'dots'], size: sizes }}
         render={({ variant, size }) => (
-          <PresenceStrip people={SAMPLE_PEOPLE} maxVisible={4} variant={variant} size={size} />
+          <PresenceStrip people={samplePeople} maxVisible={4} variant={variant} size={size} />
         )}
       />
     </LabSection>
@@ -95,7 +95,7 @@ mountLab(
       description="Dots inside a button; the button's own label says who is present."
     >
       <Button aria-label="Sheet 1, 3 people here">
-        Sheet 1 <PresenceStrip people={SAMPLE_PEOPLE.slice(0, 3)} variant="dots" />
+        Sheet 1 <PresenceStrip people={samplePeople.slice(0, 3)} variant="dots" />
       </Button>
     </LabSection>
     <LabSection
@@ -103,7 +103,7 @@ mountLab(
       description="Pressing a person opens the card renderCard returns for them."
     >
       <PresenceStrip
-        people={SAMPLE_PEOPLE.slice(0, 3)}
+        people={samplePeople.slice(0, 3)}
         data-lab-strip="cards"
         renderCard={(person) => (
           <UserCard name={person.name} src={person.src} statusLabel={person.statusLabel} />
