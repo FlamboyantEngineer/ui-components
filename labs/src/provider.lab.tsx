@@ -12,13 +12,11 @@ const replacedStrings: Partial<UiStrings> = {
   itemCount: (count) => `${count} éléments`,
 };
 
-<<<<<<< HEAD
 // Arguments for strings that are functions; anything not listed is shown for a count of 3.
 const sampleArguments: Partial<Record<keyof UiStrings, readonly unknown[]>> = {
   shortcutKeyName: ['↑'],
   stepOfTotal: [3, 5],
 };
-=======
 const stringNames = Object.keys(defaultStrings) as Array<keyof UiStrings>;
 
 function SquareGlyph(props: GlyphComponentProps) {
@@ -28,7 +26,6 @@ function SquareGlyph(props: GlyphComponentProps) {
     </svg>
   );
 }
->>>>>>> claude/port-actions-navigation
 
 function sampleString(strings: UiStrings, name: keyof UiStrings): string {
   const value = strings[name];
