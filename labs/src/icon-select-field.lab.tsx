@@ -106,5 +106,14 @@ mountLab(
     <LabSection title="Filtering" description="Filtering is off unless asked.">
       <IconSelectField label="Filtered symbol" options={symbols} filterable />
     </LabSection>
+    <LabSection title="Clearing" description="The select field's clear button passes through.">
+      <IconSelectField
+        label="Clearable symbol"
+        options={symbols}
+        defaultValue="star"
+        isClearable
+        data-lab-field="clearable"
+      />
+    </LabSection>
   </>,
 );

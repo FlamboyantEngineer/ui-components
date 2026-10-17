@@ -1,6 +1,6 @@
 # Select Field
 
-`SelectField` chooses one value, or several, from a list the caller defines. It is a field control: it composes the field base ([FIELD.md](FIELD.md)) for its label, layout, description, help, validation, dirty state, restore, undo and menu, around React Aria's `Select`, `ListBox` and, for filterable lists, `Autocomplete` and `SearchField`. The closed field is a framed trigger showing the chosen option (its icon and label) or a placeholder; the options open in a popover. A multiple select keeps its trigger and shows its choices as removable chips below it (React Aria `TagGroup`). Long lists filter inside the open list, and `loadOptions` replaces the local filter with the caller's asynchronous search. A select commits only values its options define; a list whose typed text may itself become the value is a [Combobox](COMBOBOX.md). The [Boolean Field](BOOLEAN-FIELD.md)'s `dropdown` variant draws the same control, bound to its own field state.
+`SelectField` chooses one value, or several, from a list the caller defines. It is a field control: it composes the field base ([FIELD.md](FIELD.md)) for its label, layout, description, help, validation, dirty state, restore, undo and menu, around React Aria's `Select`, `ListBox` and, for filterable lists, `Autocomplete` and `SearchField`. The closed field is a framed trigger showing the chosen option (its icon and label) or a placeholder; the options open in a popover. A multiple select keeps its trigger and shows its choices as removable chips below it (React Aria `TagGroup`). Options may be grouped under headings, drawn by the caller and virtualized for very long lists. Long lists filter inside the open list, and `loadOptions` replaces the local filter with the caller's asynchronous search, page by page as the list scrolls. A clear button and a maximum number of values are optional. A select commits only values its options define; a list whose typed text may itself become the value is a [Combobox](COMBOBOX.md). The [Boolean Field](BOOLEAN-FIELD.md)'s `dropdown` variant draws the same control, bound to its own field state.
 
 ## UIC-SELECT-FIELD-1 - Field
 
@@ -152,6 +152,13 @@ Every option a search returns shall stay known while the field is mounted, so a 
 Implementation: `src/components/select-field/select-search.ts`, `src/components/select-field/select-control.tsx`
 Verification: `src/components/select-field/select-search.test.tsx`
 
+### UIC-SELECT-FIELD-5.4 - Paged results
+
+`loadOptions` may return a page, `{ options, cursor }`, instead of a list. While the latest results have a `cursor`, the list shall end with React Aria's load-more row (`ui-select-field__load-more`); when it scrolls into view the select calls `loadOptions(query, signal, cursor)` without waiting for `searchDelay`, appends that page's options (remembered as in UIC-SELECT-FIELD-5.3) and, while the page loads, shows the provider string `loading` in the row. A page without a `cursor` ends the list. A first page is asked for with the query and signal alone, and a loader that returns a list has one page.
+
+Implementation: `src/components/select-field/select-search.ts`, `src/components/select-field/select-list.tsx`, `src/components/select-field/select-control.tsx`
+Verification: `src/components/select-field/select-search.test.tsx`, `e2e/select-field.spec.ts`
+
 ## UIC-SELECT-FIELD-6 - Forms
 
 ### UIC-SELECT-FIELD-6.1 - Form values
@@ -161,6 +168,45 @@ With `name`, the select shall publish its chosen ids to its form through React A
 Implementation: `src/components/select-field/select-control.tsx`
 Verification: `src/components/select-field/select-field.test.tsx`
 
+## UIC-SELECT-FIELD-7 - Groups, option content and long lists
+
+### UIC-SELECT-FIELD-7.1 - Option groups
+
+`options` may hold groups, `{ id, label, options }`, among plain options. Each group shall render, in order, as a React Aria section (`ui-select-field__section`, `role="group"`) led by its `label` in a heading (`ui-select-field__section-header`) that names the group, and holding its options; a group without a `label` is a section without a heading, which the reference sheet sets apart from its neighbours with a rule. Grouped options take part like any other in the value order, the measured width, the arrow keys and the filter, which hides a section none of whose options match. Group ids must differ from option ids.
+
+Implementation: `src/components/select-field/select-option.tsx`, `src/components/select-field/select-options.ts`, `src/components/select-field/select-list.tsx`, `labs/reference/select-field.css`
+Verification: `src/components/select-field/select-option.test.tsx`, `src/components/select-field/select-options.test.ts`, `e2e/select-field.spec.ts`
+
+### UIC-SELECT-FIELD-7.2 - Custom option content
+
+`renderOption(option, state)` shall draw the content of each option row instead of its icon, label and description, receiving the option and React Aria's item render state (`isSelected`, `isFocused`, `isDisabled` and the rest). The row keeps its `option` role, its check slot in a multiple select and its label as the text that type-to-select and the filter match; the trigger and the chips keep drawing the option's icon and label.
+
+Implementation: `src/components/select-field/select-option.tsx`
+Verification: `src/components/select-field/select-option.test.tsx`, `e2e/select-field.spec.ts`
+
+### UIC-SELECT-FIELD-7.3 - Virtualized list
+
+With `virtualized`, the list shall render through React Aria's `Virtualizer` with a list layout: only the options in and near view are in the document, placed by the virtualizer's inline offsets, and scrolling or moving focus with the arrow keys, Home and End brings the others in. The reference sheet caps the listbox's height so it scrolls.
+
+Implementation: `src/components/select-field/select-list.tsx`, `labs/reference/select-field.css`
+Verification: `src/components/select-field/select-list.test.tsx`, `e2e/select-field.spec.ts`
+
+## UIC-SELECT-FIELD-8 - Clearing and limits
+
+### UIC-SELECT-FIELD-8.1 - Clear button
+
+With `isClearable`, while the field can be cleared (editable, not required and holding a value, UIC-FIELD-2.5) the frame shall end with a clear button (`ui-select-field__clear`, an `IconButton` with the `close` glyph named by the provider string `clearValue` from the label, `Clear Fruit`) outside the trigger. Pressing it sets the empty value (`null`, or an empty list for a multiple select) and commits it without opening the list, then moves focus to the trigger.
+
+Implementation: `src/components/select-field/select-trigger.tsx`, `src/components/select-field/select-control.tsx`, `src/core/strings.ts`
+Verification: `src/components/select-field/select-trigger.test.tsx`, `e2e/select-field.spec.ts`
+
+### UIC-SELECT-FIELD-8.2 - Maximum values
+
+`maxValues` shall cap a multiple select's value: once it holds that many values, every option it has not chosen is disabled (`aria-disabled`, passed over by the arrow keys and refusing a press) and the restore buttons of removed committed values are disabled, until a value is removed. A single select ignores it.
+
+Implementation: `src/components/select-field/select-model.ts`, `src/components/select-field/select-option.tsx`, `src/components/select-field/select-chips.tsx`
+Verification: `src/components/select-field/select-model.test.tsx`, `e2e/select-field.spec.ts`
+
 ## Hooks
 
 | Hook                                  | Kind      | Values                                     | Description                                                              |
@@ -169,6 +215,7 @@ Verification: `src/components/select-field/select-field.test.tsx`
 | `ui-select-field__select`             | slot      |                                            | React Aria's select wrapper; carries the measured label width.           |
 | `ui-select-field__frame`              | slot      |                                            | Holds the previous value and the trigger.                                |
 | `ui-select-field__trigger`            | slot      |                                            | The trigger button.                                                      |
+| `ui-select-field__clear`              | slot      |                                            | The clear button after the trigger (also `ui-icon-button`).              |
 | `ui-select-field__previous`           | slot      |                                            | A single select's previous value (also `ui-field-previous-value`).       |
 | `ui-select-field__value`              | slot      |                                            | The chosen option or the placeholder; names the trigger.                 |
 | `ui-select-field__value-icon`         | slot      |                                            | The chosen (or previous) option's icon (also `ui-icon`).                 |
@@ -179,12 +226,15 @@ Verification: `src/components/select-field/select-field.test.tsx`
 | `ui-select-field__search`             | slot      |                                            | The filter's search field.                                               |
 | `ui-select-field__search-input`       | slot      |                                            | The filter input.                                                        |
 | `ui-select-field__listbox`            | slot      |                                            | The `role="listbox"` list.                                               |
+| `ui-select-field__section`            | slot      |                                            | A group of options (`role="group"`).                                     |
+| `ui-select-field__section-header`     | slot      |                                            | A group's heading.                                                       |
 | `ui-select-field__option`             | slot      |                                            | One `role="option"` row.                                                 |
 | `ui-select-field__option-check`       | slot      |                                            | A multiple select's selection indicator.                                 |
 | `ui-select-field__option-icon`        | slot      |                                            | An option's icon (also `ui-icon`).                                       |
 | `ui-select-field__option-label`       | slot      |                                            | An option's label.                                                       |
 | `ui-select-field__option-description` | slot      |                                            | An option's description.                                                 |
 | `ui-select-field__empty`              | slot      |                                            | The empty-list message.                                                  |
+| `ui-select-field__load-more`          | slot      |                                            | The row that loads the next page of results, showing the loading text.   |
 | `ui-select-field__chips`              | slot      |                                            | The tag group of a multiple select's chips.                              |
 | `ui-select-field__chip-list`          | slot      |                                            | The list of chips.                                                       |
 | `ui-select-field__chip`               | slot      |                                            | One chosen value.                                                        |

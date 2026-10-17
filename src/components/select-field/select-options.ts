@@ -16,9 +16,29 @@ export interface SelectFieldOption {
   isDisabled?: boolean | undefined;
 }
 
+/** A headed section of a select field's options; a group without a label only sets them apart. */
+export interface SelectFieldGroup {
+  id: Key;
+  /** The section's heading, which names its options' group. */
+  label?: string | undefined;
+  options: readonly SelectFieldOption[];
+}
+
+/** An entry of a select field's options: one option or a group of them. */
+export type SelectFieldItem = SelectFieldOption | SelectFieldGroup;
+
 /** The option the field shows for a chosen key; a key no option names is shown as itself. */
 export interface ChosenSelectOption extends SelectFieldOption {
   isMissing: boolean;
+}
+
+export function isSelectFieldGroup(item: SelectFieldItem): item is SelectFieldGroup {
+  return 'options' in item && Array.isArray(item.options);
+}
+
+/** The options of a list of options and groups, in display order. */
+export function flattenSelectItems(items: readonly SelectFieldItem[]): SelectFieldOption[] {
+  return items.flatMap((item) => (isSelectFieldGroup(item) ? item.options : [item]));
 }
 
 /** The chosen keys of a single (`Key | null`) or multiple (`Key[]`) value, without repeats. */

@@ -209,4 +209,35 @@ describe('SelectField list', () => {
     expect(screen.queryByRole('listbox')).toBeNull();
     expect(onCommit).toHaveBeenCalledWith('fig');
   });
+
+  it('UIC-SELECT-FIELD-7.3 renders only the options in view of a virtualized list', async () => {
+    vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(160);
+    vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(200);
+    // jsdom lays nothing out; rows measure as 32 pixels high, as the reference sheet draws them.
+    vi.spyOn(HTMLElement.prototype, 'scrollHeight', 'get').mockReturnValue(32);
+    vi.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockReturnValue(200);
+    const user = userEvent.setup();
+    const many: SelectFieldOption[] = Array.from({ length: 1000 }, (_, index) => ({
+      id: `item-${index}`,
+      label: `Item ${index}`,
+    }));
+    render(
+      <SelectField
+        label="Fruit"
+        options={many}
+        filterable={false}
+        virtualized
+        defaultValue="item-0"
+      />,
+    );
+    await user.click(trigger('Item 0 Fruit'));
+    const rendered = screen.getAllByRole('option');
+    expect(rendered.length).toBeGreaterThan(0);
+    expect(rendered.length).toBeLessThan(50);
+    expect(rendered[0]).toHaveAttribute('aria-setsize', '1000');
+    expect(rendered[0]?.parentElement?.style.position).toBe('absolute');
+    await user.keyboard('{End}');
+    expect(screen.getByRole('option', { name: 'Item 999' })).toHaveFocus();
+    expectHooksMatchSpec(document.body, 'SELECT-FIELD', { slots: ['listbox', 'option'] });
+  });
 });

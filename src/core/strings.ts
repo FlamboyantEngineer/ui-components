@@ -126,6 +126,8 @@ export interface UiStrings {
   pickScreenColor: string;
   /** Names the button that removes a chosen value, read with the value it removes. */
   remove: string;
+  /** Names the button that clears a field's value in one press, from the field's label. */
+  clearValue: (label: string) => string;
   /** The text of a select that has no value and no placeholder of its own. */
   selectPlaceholder: string;
   /** Names the group of a multiple select's chosen values, from the field's label. */
@@ -295,6 +297,7 @@ export const defaultStrings: UiStrings = {
   colorPicker: (label) => `${label} picker`,
   pickScreenColor: 'Pick a color from the screen',
   remove: 'Remove',
+  clearValue: (label) => `Clear ${label}`,
   selectPlaceholder: 'Select an option',
   selectedValues: (label) => `${label} selected values`,
   typeToSearch: (minLength) =>
