@@ -2,7 +2,9 @@ export { SplitView, resolveInitialSplitSize, resolveSplitBounds } from './split-
 export type {
   FixedSplitViewProps,
   ResizableSplitViewProps,
+  SplitViewHandle,
   SplitViewPane,
+  SplitViewPaneUnit,
   SplitViewProps,
   SplitViewRatio,
 } from './split-view.js';

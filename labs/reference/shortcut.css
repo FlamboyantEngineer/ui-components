@@ -12,6 +12,16 @@
   vertical-align: baseline;
 }
 
+.ui-shortcut__keys:has(> .ui-shortcut__chord) {
+  gap: 6px;
+}
+
+.ui-shortcut__chord {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
 .ui-shortcut__key {
   min-width: 1.5em;
   padding: 0 4px;

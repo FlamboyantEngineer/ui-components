@@ -1,15 +1,16 @@
-import { useId, useState, type ReactNode } from 'react';
-import { createHooks } from '../../core/hooks.js';
+import type { ReactNode, Ref } from 'react';
 import type { BaseProps, NativeProps, Orientation } from '../../core/props.js';
-import { usePersistentState, useUiStrings, type PersistCodec } from '../../core/provider.js';
 import { clamp } from '../../utils/clamp.js';
-import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import {
   resolveContainment,
   type LayoutContainmentProps,
   type LayoutSpace,
 } from '../layout/layout.js';
-import { ResizeHandle } from './resize-handle.js';
+import { ResizableSplitView } from './resizable-split-view.js';
+import { resolveSplitSeparator, type SplitViewPane } from './split-layout.js';
+import { splitViewHooks as hooks } from './styling-hooks.js';
+
+export type { SplitViewPane, SplitViewPaneUnit } from './split-layout.js';
 
 /**
  * Fixed track sizes: `equal` halves, `main-sidebar` a flexible main track and a bounded sidebar,
@@ -23,14 +24,14 @@ export type SplitViewRatio =
   | 'content-main'
   | 'main-content';
 
-/** One pane of a resizable split. Sizes are percentages of the split. */
-export interface SplitViewPane {
-  /** The pane element's id, named by the separator's `aria-controls`. Generated when omitted. */
-  id?: string | undefined;
-  /** The pane's smallest size. */
-  minSize?: number | undefined;
-  /** The pane's largest size. */
-  maxSize?: number | undefined;
+/** Collapses, opens and resizes the panes of a resizable split. */
+export interface SplitViewHandle {
+  /** Collapses pane `index` if it is collapsible. */
+  collapse: (index: number) => void;
+  /** Opens collapsed pane `index` at the size it had before collapsing. */
+  expand: (index: number) => void;
+  /** Sets every pane's size in its unit, fitted to the bounds. */
+  resize: (sizes: readonly number[]) => void;
 }
 
 interface SplitViewBaseProps
@@ -51,172 +52,51 @@ export interface FixedSplitViewProps extends SplitViewBaseProps {
 }
 
 export interface ResizableSplitViewProps extends SplitViewBaseProps {
-  /** The two panes and their size bounds. Passing panes makes the split resizable. */
-  panes: readonly [SplitViewPane, SplitViewPane];
-  /** The first pane's size in percent (controlled). */
+  /** Two or more panes and their size bounds. Passing panes makes the split resizable. */
+  panes: readonly SplitViewPane[];
+  /** Every pane's size in its unit (controlled). */
+  sizes?: readonly number[] | undefined;
+  /** Every pane's initial size. Defaults to equal shares for percent panes. */
+  defaultSizes?: readonly number[] | undefined;
+  /** Every pane's new sizes, during a drag and on each key step. */
+  onSizesChange?: ((sizes: number[]) => void) | undefined;
+  /** Every pane's sizes after a drag, a key step, a collapse or a resize. */
+  onSizesChangeEnd?: ((sizes: number[]) => void) | undefined;
+  /** The first pane's size in percent (controlled), for two panes. */
   size?: number | undefined;
-  /** The first pane's initial size in percent. Defaults to 50. */
+  /** The first pane's initial size in percent, for two panes. Defaults to 50. */
   defaultSize?: number | undefined;
   /** Each new size of the first pane, during a drag and on each key step. */
   onSizeChange?: ((size: number) => void) | undefined;
   /** The first pane's size after a drag ends or a key step. */
   onSizeChangeEnd?: ((size: number) => void) | undefined;
-  /** Restores and saves the uncontrolled size through the provider storage under this key. */
+  /** Restores and saves the uncontrolled sizes through the provider storage under this key. */
   persistKey?: string | undefined;
-  /** The separator's accessible name. Defaults to the provider's `resize` string. */
-  separatorLabel?: string | undefined;
-  /** The first and second pane's content. */
-  children: readonly [ReactNode, ReactNode];
+  /** The separators' accessible name, or one per separator by index. Defaults to `resize`. */
+  separatorLabel?: string | ((index: number) => string) | undefined;
+  /** Called with a pane's index when it collapses. */
+  onCollapse?: ((index: number) => void) | undefined;
+  /** Called with a pane's index when it opens after being collapsed. */
+  onExpand?: ((index: number) => void) | undefined;
+  /** Receives `collapse`, `expand` and `resize`. */
+  handleRef?: Ref<SplitViewHandle> | undefined;
+  /** Each pane's content, in pane order. */
+  children: readonly ReactNode[];
 }
 
 export type SplitViewProps = FixedSplitViewProps | ResizableSplitViewProps;
-
-type SplitSizeOptions = Pick<
-  ResizableSplitViewProps,
-  'panes' | 'size' | 'defaultSize' | 'persistKey' | 'onSizeChange' | 'onSizeChangeEnd'
->;
-
-const defaultMinSize = 10;
-const defaultMaxSize = 90;
-
-const sizeCodec: PersistCodec<number> = {
-  parse(raw) {
-    const size = Number.parseFloat(raw);
-    if (!Number.isFinite(size)) throw new Error('Stored split size is not a number');
-    return size;
-  },
-  stringify: (size) => String(size),
-};
-
-const hooks = createHooks('split-view', ['pane']);
 
 function isResizable(props: SplitViewProps): props is ResizableSplitViewProps {
   return props.panes !== undefined;
 }
 
-/**
- * The first pane's size: the controlled `size`, else the live size during a drag, else the committed
- * size, which persists. Live sizes stay out of storage until the drag or key step ends.
- */
-function useSplitSize({
-  panes,
-  size,
-  defaultSize,
-  persistKey,
-  onSizeChange,
-  onSizeChangeEnd,
-}: SplitSizeOptions) {
-  const { min, max } = resolveSplitBounds(panes);
-  const controlled = size !== undefined;
-  const [committed, setCommitted] = usePersistentState<number>(
-    controlled ? undefined : persistKey,
-    () => resolveInitialSplitSize(panes, defaultSize),
-    sizeCodec,
-  );
-  const [live, setLive] = useState<number | null>(null);
-  return {
-    min,
-    max,
-    current: clamp(size ?? live ?? committed, min, max),
-    onChange(next: number) {
-      if (!controlled) setLive(next);
-      onSizeChange?.(next);
-    },
-    onChangeEnd(next: number) {
-      if (!controlled) {
-        setCommitted(next);
-        setLive(null);
-      }
-      onSizeChangeEnd?.(next);
-    },
-  };
-}
-
-function ResizableSplitView({
-  children,
-  className,
-  orientation = 'horizontal',
-  panes,
-  size,
-  defaultSize,
-  onSizeChange,
-  onSizeChangeEnd,
-  persistKey,
-  separatorLabel,
-  grow,
-  fill,
-  clip,
-  ref,
-  ...rest
-}: ResizableSplitViewProps) {
-  const strings = useUiStrings();
-  const generatedId = useId();
-  const firstId = panes[0].id ?? `${generatedId}-first`;
-  const secondId = panes[1].id ?? `${generatedId}-second`;
-  const split = useSplitSize({
-    panes,
-    size,
-    defaultSize,
-    persistKey,
-    onSizeChange,
-    onSizeChangeEnd,
-  });
-  const [isResizing, setResizing] = useState(false);
-  const [root, setRoot] = useForwardedRef(ref);
-  const horizontal = orientation === 'horizontal';
-  // Percentages resolve against the split's inner size.
-  const getUnitsPerPixel = () => {
-    const length = (horizontal ? root.current?.clientWidth : root.current?.clientHeight) ?? 0;
-    return length > 0 ? 100 / length : 0;
-  };
-  const containment = resolveContainment({ grow, fill, clip }, { fill: true, clip: true });
-  const data = { orientation, resizable: true, resizing: isResizing, ...containment };
-
-  return (
-    <div {...rest} ref={setRoot} {...hooks.root({ className, data })}>
-      <div
-        {...hooks.slot('pane', { pane: 'first' })}
-        id={firstId}
-        style={{ flexBasis: `${split.current}%` }}
-      >
-        {children[0]}
-      </div>
-      <ResizeHandle
-        orientation={horizontal ? 'vertical' : 'horizontal'}
-        value={split.current}
-        minValue={split.min}
-        maxValue={split.max}
-        getUnitsPerPixel={getUnitsPerPixel}
-        aria-label={separatorLabel ?? strings.resize}
-        aria-controls={`${firstId} ${secondId}`}
-        onResizingChange={setResizing}
-        onChange={split.onChange}
-        onChangeEnd={split.onChangeEnd}
-      />
-      <div {...hooks.slot('pane', { pane: 'second' })} id={secondId}>
-        {children[1]}
-      </div>
-    </div>
-  );
-}
-
-/** The first pane's size bounds, combining both panes' constraints. */
+/** The first of two percent panes' size bounds, combining both panes' constraints. */
 export function resolveSplitBounds(panes: readonly [SplitViewPane, SplitViewPane]): {
   min: number;
   max: number;
 } {
-  const [first, second] = panes;
-  const lowest = Math.max(
-    first.minSize ?? defaultMinSize,
-    second.maxSize === undefined ? defaultMinSize : 100 - second.maxSize,
-  );
-  const highest = Math.min(
-    first.maxSize ?? defaultMaxSize,
-    second.minSize === undefined ? defaultMaxSize : 100 - second.minSize,
-  );
-  const min = clamp(lowest, 0, 100);
-  const max = clamp(highest, 0, 100);
-  return min <= max ? { min, max } : { min: max, max };
+  const { min, max } = resolveSplitSeparator(panes, [50, 50], { index: 0, available: 0 });
+  return { min, max };
 }
 
 /** The first pane's starting size: a stored size, else the default, else half, within the bounds. */
@@ -230,8 +110,9 @@ export function resolveInitialSplitSize(
 }
 
 /**
- * Two panes side by side or stacked. With `ratio` the stylesheet sizes fixed tracks; with `panes` a
- * window splitter between them resizes the first pane by pointer and keyboard.
+ * Panes side by side or stacked. With `ratio` the stylesheet sizes two fixed tracks; with `panes`
+ * a window splitter between each pair resizes them by pointer and keyboard, and collapsible panes
+ * collapse and open again.
  */
 export function SplitView(props: SplitViewProps) {
   if (isResizable(props)) return <ResizableSplitView {...props} />;

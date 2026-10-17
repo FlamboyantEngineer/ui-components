@@ -1,9 +1,10 @@
-import { useRef, type CSSProperties } from 'react';
+import { useRef, useState, type CSSProperties } from 'react';
 import {
   ScrollRegion,
   useScrollRegionHeaderRef,
   type ScrollRegionProps,
 } from '../../src/components/scroll-region/scroll-region.js';
+import { useScrollSpy } from '../../src/components/scroll-region/use-scroll-spy.js';
 import { useScrollStripOverflow } from '../../src/utils/use-scroll-strip-overflow.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
@@ -92,6 +93,92 @@ function StickyTable() {
         ))}
       </tbody>
     </table>
+  );
+}
+
+// Lab-only fade: the edges the content reaches past fade out, by the published distances.
+const fadeStyle = `
+[data-lab-fade] > .ui-scroll-region__viewport {
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 min(var(--ui-scroll-region-overflow-y-start), 24px),
+    #000 calc(100% - min(var(--ui-scroll-region-overflow-y-end), 24px)),
+    transparent 100%
+  );
+}`;
+
+const chapters = ['Orchards', 'Vineyards', 'Meadows', 'Forests'];
+
+function Log() {
+  const [lines, setLines] = useState(() => cities.slice(0, 8));
+  const [earlier, setEarlier] = useState(0);
+  const [bottomCount, setBottomCount] = useState(0);
+  return (
+    <div style={{ display: 'grid', gap: 8, width: 360 }}>
+      <div style={frame(360, 140)} data-lab-region="log">
+        <ScrollRegion
+          stickToBottom
+          onTopReached={() => setEarlier((count) => count + 1)}
+          onBottomReached={() => setBottomCount((count) => count + 1)}
+          role="log"
+          aria-label="Arrivals"
+          tabIndex={0}
+        >
+          <ol style={{ margin: 0 }}>
+            {lines.map((line, index) => (
+              <li key={`${line}-${index}`}>Train from {line}</li>
+            ))}
+          </ol>
+        </ScrollRegion>
+      </div>
+      <p>
+        <button
+          type="button"
+          onClick={() =>
+            setLines((current) => [...current, cities[current.length % cities.length]!])
+          }
+        >
+          Add arrival
+        </button>{' '}
+        Top reached: <output data-lab-output="top">{earlier}</output>, bottom reached:{' '}
+        <output data-lab-output="bottom">{bottomCount}</output>
+      </p>
+    </div>
+  );
+}
+
+function Chapters() {
+  const ref = useRef<HTMLDivElement>(null);
+  const ids = chapters.map((chapter) => `chapter-${chapter.toLowerCase()}`);
+  const active = useScrollSpy(ref, { ids, offset: 8 });
+  return (
+    <div style={{ display: 'flex', gap: 16 }}>
+      <nav aria-label="Chapters" data-lab-toc="">
+        <ul style={{ margin: 0, paddingInlineStart: 16 }}>
+          {chapters.map((chapter, index) => (
+            <li key={chapter}>
+              <a
+                href={`#${ids[index]}`}
+                aria-current={active === ids[index] ? 'location' : undefined}
+              >
+                {chapter}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+      <div style={frame(280, 160)} data-lab-region="spy">
+        <ScrollRegion ref={ref} role="region" aria-label="Chapters text" tabIndex={0}>
+          {chapters.map((chapter, index) => (
+            <section key={chapter} id={ids[index]} style={{ minHeight: 180 }}>
+              <h3 style={{ margin: 0 }}>{chapter}</h3>
+              <p>{cities.slice(index * 4, index * 4 + 4).join(', ')}.</p>
+            </section>
+          ))}
+        </ScrollRegion>
+      </div>
+    </div>
   );
 }
 
@@ -253,6 +340,73 @@ mountLab(
           </div>
         )}
       />
+    </LabSection>
+    <LabSection
+      title="Scrollbar visibility"
+      description="Overlay scrollbars shown when the axis overflows, always, while scrolling or while hovered, for long and short content."
+    >
+      <StateMatrix
+        axes={{
+          content: ['long', 'short'],
+          visibility: ['auto', 'always', 'scroll', 'hover'] as const,
+        }}
+        render={({ content, visibility }) => (
+          <div style={frame(200, 110)}>
+            <ScrollRegion
+              scrollbar="overlay"
+              scrollbarVisibility={visibility}
+              role="region"
+              aria-label={`Cities, ${content}, ${visibility} scrollbars`}
+              data-lab-visibility={`${content} ${visibility}`}
+            >
+              <ol style={{ margin: 0 }}>
+                {cities.slice(0, content === 'long' ? 12 : 2).map((city) => (
+                  <li key={city}>{city}</li>
+                ))}
+              </ol>
+            </ScrollRegion>
+          </div>
+        )}
+      />
+    </LabSection>
+    <LabSection
+      title="Edge distances"
+      description="The edges the content reaches past fade out, from the distances the region publishes, with native and overlay scrollbars."
+    >
+      <style>{fadeStyle}</style>
+      <StateMatrix
+        axes={{ scrollbar: ['native', 'overlay'] as const }}
+        render={({ scrollbar }) => (
+          <div style={frame(220, 120)}>
+            <ScrollRegion
+              scrollbar={scrollbar}
+              role="region"
+              aria-label={`Faded cities, ${scrollbar}`}
+              tabIndex={0}
+              data-lab-fade=""
+              data-lab-edges={scrollbar}
+            >
+              <ol style={{ margin: 0 }}>
+                {cities.map((city) => (
+                  <li key={city}>{city}</li>
+                ))}
+              </ol>
+            </ScrollRegion>
+          </div>
+        )}
+      />
+    </LabSection>
+    <LabSection
+      title="Stick to bottom and edge callbacks"
+      description="A log that follows new arrivals while scrolled to the bottom; scroll up to stop following. Reaching the top and bottom is counted."
+    >
+      <Log />
+    </LabSection>
+    <LabSection
+      title="Scroll spy"
+      description="The table of contents marks the chapter at the top of the scrolled text."
+    >
+      <Chapters />
     </LabSection>
     <LabSection
       title="Scrolling strip"

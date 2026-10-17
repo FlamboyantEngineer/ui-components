@@ -69,4 +69,49 @@ test.describe('Description List lab', () => {
     );
     await lab.expectAccessible();
   });
+
+  test('UIC-DESCRIPTION-LIST-1.3 UIC-DESCRIPTION-LIST-1.4 lays out wider columns and spanning rows', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('description-list');
+    for (const layout of ['inline', 'stacked'] as const) {
+      const list = page.locator(
+        `[data-lab-cell="layout=${layout} columns=4"] .ui-description-list`,
+      );
+      const rows = (await rects(list.locator('.ui-description-list__row'))) as DOMRect[];
+      const listBox = (await list.boundingBox())!;
+      expect(new Set(rows.slice(0, 4).map((box) => Math.round(box.top))).size).toBe(1);
+      const [single, pair, full] = [rows[0]!, rows[4]!, rows[5]!];
+      expect(pair.width).toBeGreaterThan(single.width * 1.8);
+      expect(Math.round(full.width)).toBe(Math.round(listBox.width));
+      expect(full.top).toBeGreaterThan(pair.top);
+    }
+    const three = page.locator('[data-lab-cell="layout=inline columns=3"] .ui-description-list');
+    const rows = (await rects(three.locator('.ui-description-list__row'))) as DOMRect[];
+    expect(rows[3]!.top).toBeGreaterThan(rows[0]!.top);
+  });
+
+  test('UIC-DESCRIPTION-LIST-1.5 formats values for the provider locale', async ({ page, lab }) => {
+    await lab.open('description-list');
+    const values = (locale: string) =>
+      page.locator(`[data-lab-locale="${locale}"] .ui-description-list__value`);
+    const expected = await page.evaluate(() => {
+      const picked = new Date(2024, 8, 14);
+      const shipped = new Date(2024, 8, 21);
+      const date = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' });
+      return [
+        '1,234.5',
+        '€9.50',
+        date.format(picked),
+        'Apples, pears, and plums',
+        new Intl.NumberFormat('en-US').formatRange(3, 7),
+        date.formatRange(picked, shipped),
+      ];
+    });
+    await expect(values('en-US')).toHaveText(expected);
+    await expect(values('de-DE').first()).toHaveText('1.234,5');
+    await expect(values('de-DE').nth(3)).toHaveText('Apples, pears und plums');
+    await lab.expectAccessible();
+  });
 });

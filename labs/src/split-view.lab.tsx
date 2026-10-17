@@ -1,7 +1,7 @@
-import { useState, type CSSProperties, type ReactNode } from 'react';
+import { useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { UiProvider } from '../../src/core/provider.js';
 import { ResizeHandle } from '../../src/components/split-view/resize-handle.js';
-import { SplitView } from '../../src/components/split-view/split-view.js';
+import { SplitView, type SplitViewHandle } from '../../src/components/split-view/split-view.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 // Lab-only frames so the panes are visible with or without a stylesheet.
@@ -38,6 +38,47 @@ function ControlledSplit() {
           separatorLabel="Resize controlled panes"
         >
           {[<Pane key="a">Controlled list</Pane>, <Pane key="b">Controlled detail</Pane>]}
+        </SplitView>
+      </div>
+    </div>
+  );
+}
+
+const columns = ['Folders', 'Messages', 'Reading'];
+
+function CollapsibleSplit() {
+  const handle = useRef<SplitViewHandle>(null);
+  const [log, setLog] = useState('Nothing yet');
+  return (
+    <div style={{ display: 'grid', gap: 8 }}>
+      <p>
+        <button type="button" onClick={() => handle.current?.collapse(2)}>
+          Collapse preview
+        </button>{' '}
+        <button type="button" onClick={() => handle.current?.expand(2)}>
+          Expand preview
+        </button>{' '}
+        <button type="button" onClick={() => handle.current?.resize([25, 45, 30])}>
+          Reset sizes
+        </button>{' '}
+        <output data-lab-output="collapse">{log}</output>
+      </p>
+      <div style={frame(600, 160)} data-lab-split="collapsible">
+        <SplitView
+          handleRef={handle}
+          panes={[
+            { id: 'collapsible-nav', collapsible: true, minSize: 15, collapsedSize: 4 },
+            { id: 'collapsible-list' },
+            { id: 'collapsible-preview', collapsible: true, minSize: 20 },
+          ]}
+          defaultSizes={[25, 45, 30]}
+          separatorLabel={(index) => `Resize ${columns[index]}`}
+          onCollapse={(index) => setLog(`Collapsed ${columns[index]}`)}
+          onExpand={(index) => setLog(`Expanded ${columns[index]}`)}
+        >
+          {columns.map((name) => (
+            <Pane key={name}>{name}</Pane>
+          ))}
         </SplitView>
       </div>
     </div>
@@ -128,6 +169,61 @@ mountLab(
           {[<Pane key="a">Cities</Pane>, <Pane key="b">Lisbon, Oslo, Kyoto</Pane>]}
         </SplitView>
       </div>
+    </LabSection>
+    <LabSection
+      title="Several panes"
+      description="Three panes with a separator between each pair; each separator resizes only its two neighbours."
+    >
+      <StateMatrix
+        axes={{ orientation: ['horizontal', 'vertical'] }}
+        render={({ orientation }) => (
+          <div style={frame(480, 200)}>
+            <SplitView
+              orientation={orientation}
+              panes={columns.map((name) => ({ id: `${orientation}-${name.toLowerCase()}` }))}
+              defaultSizes={[25, 35, 40]}
+              separatorLabel={(index) => `Resize ${columns[index]}, ${orientation}`}
+            >
+              {columns.map((name) => (
+                <Pane key={name}>{name}</Pane>
+              ))}
+            </SplitView>
+          </div>
+        )}
+      />
+    </LabSection>
+    <LabSection
+      title="Pixel panes"
+      description="A tool rail of 160 pixels (between 120 and 280) keeps its width as the split resizes; the percent panes share the rest."
+    >
+      <StateMatrix
+        axes={{ width: ['480', '720'] }}
+        render={({ width }) => (
+          <div style={frame(Number(width), 140)} data-lab-split={`pixel ${width}`}>
+            <SplitView
+              panes={[
+                { id: `pixel-${width}-rail`, unit: 'pixel', minSize: 120, maxSize: 280 },
+                { id: `pixel-${width}-canvas` },
+                { id: `pixel-${width}-inspector`, unit: 'pixel', minSize: 100 },
+              ]}
+              defaultSizes={[160, 100, 120]}
+              separatorLabel={(index) => `Resize ${index === 0 ? 'rail' : 'canvas'}, ${width}px`}
+            >
+              {[
+                <Pane key="a">Tools</Pane>,
+                <Pane key="b">Canvas</Pane>,
+                <Pane key="c">Inspector</Pane>,
+              ]}
+            </SplitView>
+          </div>
+        )}
+      />
+    </LabSection>
+    <LabSection
+      title="Collapsible panes"
+      description="Drag a pane below half its smallest size to collapse it, or press Enter on its separator; Enter again restores it. The navigation collapses to a 4% rail. The buttons use the imperative handle."
+    >
+      <CollapsibleSplit />
     </LabSection>
     <LabSection title="Controlled" description="The size lives in the lab's state.">
       <ControlledSplit />

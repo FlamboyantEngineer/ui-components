@@ -1,10 +1,21 @@
-import { useId, type ReactNode } from 'react';
+import { useContext, useId, type ComponentPropsWithRef, type ReactNode } from 'react';
+import {
+  Button as AriaButton,
+  Disclosure,
+  DisclosurePanel,
+  DisclosureStateContext,
+  type DisclosureProps,
+} from 'react-aria-components';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
+import { Glyph } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { useExpandGlyph } from '../expand-toggle/expand-toggle.js';
 import { Stack, type LayoutContainmentProps, type LayoutSpace } from '../layout/layout.js';
+import { HeadingLevelContext, useHeadingLevel, type HeadingLevel } from './heading-level.js';
 
-export type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
+export { HeadingLevelContext, useHeadingLevel } from './heading-level.js';
+export type { HeadingLevel } from './heading-level.js';
 
 export interface SectionHeaderProps extends BaseProps {
   /** The heading text. */
@@ -13,15 +24,21 @@ export interface SectionHeaderProps extends BaseProps {
   description?: ReactNode;
   /** Trailing actions or status, after the text. */
   actions?: ReactNode;
-  /** The heading element's level. Defaults to 3. */
+  /** The heading element's level. Defaults to one below the enclosing section's, else 3. */
   headingLevel?: HeadingLevel | undefined;
 }
 
-export interface SectionProps extends SectionHeaderProps, LayoutContainmentProps {
+export interface SectionProps
+  extends
+    SectionHeaderProps,
+    LayoutContainmentProps,
+    Pick<DisclosureProps, 'isExpanded' | 'defaultExpanded' | 'onExpandedChange'> {
   /** The section's content, after its header. */
   children?: ReactNode;
   /** Gap between the header and the content. Defaults to `md`. */
   space?: LayoutSpace | undefined;
+  /** The title toggles the content (React Aria `Disclosure`). Expanded by default. */
+  collapsible?: boolean | undefined;
 }
 
 type HeaderContentProps = Pick<SectionHeaderProps, 'title' | 'description' | 'actions'> & {
@@ -29,8 +46,15 @@ type HeaderContentProps = Pick<SectionHeaderProps, 'title' | 'description' | 'ac
   headingId: string;
 };
 
-const headerHooks = createHooks('section-header', ['content', 'title', 'description', 'actions']);
-const sectionHooks = createHooks('section');
+const headerHooks = createHooks('section-header', [
+  'content',
+  'title',
+  'trigger',
+  'chevron',
+  'description',
+  'actions',
+]);
+const sectionHooks = createHooks('section', ['panel']);
 
 function HeaderContent({
   title,
@@ -55,44 +79,122 @@ function HeaderContent({
   );
 }
 
+/** The trigger's chevron, following the enclosing disclosure's state. */
+function SectionChevron() {
+  const state = useContext(DisclosureStateContext);
+  const glyph = useExpandGlyph(state?.isExpanded ?? false);
+  return <Glyph name={glyph} className={headerHooks.slotClass('chevron')} />;
+}
+
+/**
+ * A section whose title is a disclosure trigger: the section stays a `Stack` named by its heading,
+ * and its content collapses in a React Aria `DisclosurePanel`.
+ */
+function CollapsibleSection({
+  title,
+  description,
+  actions,
+  headingLevel,
+  children,
+  space = '2xl',
+  className,
+  isExpanded,
+  defaultExpanded = true,
+  onExpandedChange,
+  grow,
+  fill,
+  clip,
+  collapsible: _collapsible,
+  ...rest
+}: SectionProps) {
+  const headingId = useId();
+  const level = useHeadingLevel(headingLevel);
+  const trigger = (
+    <AriaButton slot="trigger" className={headerHooks.slotClass('trigger')}>
+      <SectionChevron />
+      {title}
+    </AriaButton>
+  );
+  return (
+    <Disclosure
+      isExpanded={isExpanded}
+      defaultExpanded={defaultExpanded}
+      onExpandedChange={onExpandedChange}
+      // React Aria keeps `id` and naming props off its element; the section takes them here.
+      render={(domProps) => (
+        <Stack
+          as="section"
+          {...(domProps as ComponentPropsWithRef<'section'>)}
+          {...rest}
+          className={mergeClassNames(sectionHooks.className, className)}
+          data-collapsible="true"
+          space={space}
+          grow={grow}
+          fill={fill}
+          clip={clip}
+          aria-labelledby={headingId}
+        />
+      )}
+    >
+      <header {...headerHooks.root()}>
+        <HeaderContent
+          title={trigger}
+          description={description}
+          actions={actions}
+          headingLevel={level}
+          headingId={headingId}
+        />
+      </header>
+      <DisclosurePanel className={sectionHooks.slotClass('panel')}>
+        <HeadingLevelContext value={level}>
+          <Stack space={space}>{children}</Stack>
+        </HeadingLevelContext>
+      </DisclosurePanel>
+    </Disclosure>
+  );
+}
+
 /** A section title with optional supporting text and trailing actions, in a `<header>`. */
 export function SectionHeader({
   title,
   description,
   actions,
-  headingLevel = 3,
+  headingLevel,
   className,
   ...rest
 }: SectionHeaderProps) {
   const headingId = useId();
+  const level = useHeadingLevel(headingLevel);
   return (
     <header {...rest} {...headerHooks.root({ className })}>
       <HeaderContent
         title={title}
         description={description}
         actions={actions}
-        headingLevel={headingLevel}
+        headingLevel={level}
         headingId={headingId}
       />
     </header>
   );
 }
 
-/**
- * A `<section>` region named by its header's title, followed by its content in a `Stack`. The
- * description and actions stay out of the region's name.
- */
-export function Section({
+/** A section whose content always shows. */
+function PlainSection({
   title,
   description,
   actions,
-  headingLevel = 3,
+  headingLevel,
   children,
   space = '2xl',
   className,
+  isExpanded: _isExpanded,
+  defaultExpanded: _defaultExpanded,
+  onExpandedChange: _onExpandedChange,
+  collapsible: _collapsible,
   ...rest
 }: SectionProps) {
   const headingId = useId();
+  const level = useHeadingLevel(headingLevel);
   return (
     <Stack
       as="section"
@@ -106,11 +208,20 @@ export function Section({
           title={title}
           description={description}
           actions={actions}
-          headingLevel={headingLevel}
+          headingLevel={level}
           headingId={headingId}
         />
       </header>
-      {children}
+      <HeadingLevelContext value={level}>{children}</HeadingLevelContext>
     </Stack>
   );
+}
+
+/**
+ * A `<section>` region named by its header's title, followed by its content in a `Stack`. The
+ * description and actions stay out of the region's name. Sections nested in its content take the
+ * next heading level, and a `collapsible` section's title toggles its content.
+ */
+export function Section(props: SectionProps) {
+  return props.collapsible ? <CollapsibleSection {...props} /> : <PlainSection {...props} />;
 }

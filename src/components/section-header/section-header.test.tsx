@@ -3,7 +3,18 @@ import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Card } from '../card/card.js';
-import { Section, SectionHeader, type HeadingLevel } from './section-header.js';
+import {
+  HeadingLevelContext,
+  Section,
+  SectionHeader,
+  useHeadingLevel,
+  type HeadingLevel,
+} from './section-header.js';
+
+function HostHeading({ children }: { children: string }) {
+  const Heading = `h${useHeadingLevel(undefined)}` as const;
+  return <Heading>{children}</Heading>;
+}
 
 const levels: HeadingLevel[] = [1, 2, 3, 4, 5, 6];
 
@@ -242,5 +253,144 @@ describe('SectionHeader', () => {
     await user.click(add);
     expect(onAdd).toHaveBeenCalledTimes(1);
     expectHooksMatchSpec(card, 'CARD', { slots: ['header', 'heading', 'title', 'actions'] });
+  });
+
+  it('UIC-SECTION-HEADER-2.1 steps nested sections, headers and cards down one level', () => {
+    render(
+      <Section title="Garden">
+        <Section title="Orchard">
+          <SectionHeader title="Apples" />
+          <Card title="Pears">
+            <Section title="Varieties">
+              <Section title="Conference">
+                <Section title="Seeds">
+                  <Section title="Deepest">Leaf</Section>
+                </Section>
+              </Section>
+            </Section>
+          </Card>
+          <Card>
+            <SectionHeader title="Untitled card content" />
+          </Card>
+        </Section>
+        <Section title="Meadow" headingLevel={5}>
+          <SectionHeader title="Grass" />
+        </Section>
+      </Section>,
+    );
+    const level = (name: string) => Number(screen.getByRole('heading', { name }).tagName.slice(1));
+    expect(level('Garden')).toBe(3);
+    expect(level('Orchard')).toBe(4);
+    expect(level('Apples')).toBe(5);
+    expect(level('Pears')).toBe(5);
+    expect(level('Varieties')).toBe(6);
+    expect(level('Conference')).toBe(6);
+    expect(level('Deepest')).toBe(6);
+    expect(level('Untitled card content')).toBe(5);
+    expect(level('Meadow')).toBe(5);
+    expect(level('Grass')).toBe(6);
+  });
+
+  it('UIC-SECTION-HEADER-2.1 starts from a host level and lets host headings follow', () => {
+    render(
+      <HeadingLevelContext value={1}>
+        <Section title="Summary">
+          <HostHeading>Host heading</HostHeading>
+        </Section>
+        <HostHeading>Beside</HostHeading>
+      </HeadingLevelContext>,
+    );
+    expect(screen.getByRole('heading', { name: 'Summary' }).tagName).toBe('H2');
+    expect(screen.getByRole('heading', { name: 'Host heading' }).tagName).toBe('H3');
+    expect(screen.getByRole('heading', { name: 'Beside' }).tagName).toBe('H2');
+  });
+
+  it('UIC-SECTION-HEADER-2.2 toggles a collapsible section from its title', async () => {
+    const user = userEvent.setup();
+    const onExpandedChange = vi.fn();
+    const onAction = vi.fn();
+    const { container } = render(
+      <Section
+        title="Orchard"
+        description="Apples and pears"
+        actions={
+          <button type="button" onClick={onAction}>
+            Add tree
+          </button>
+        }
+        collapsible
+        onExpandedChange={onExpandedChange}
+        space="sm"
+        id="orchard"
+        data-owner="garden"
+      >
+        <p>Twelve trees</p>
+      </Section>,
+    );
+    const region = screen.getByRole('region', { name: 'Orchard' });
+    expect(region.tagName).toBe('SECTION');
+    expect(region).toHaveAttribute('id', 'orchard');
+    expect(region).toHaveAttribute('data-owner', 'garden');
+    expect(region).toHaveClass('ui-section', 'ui-stack');
+    expect(region).toHaveAttribute('data-collapsible', 'true');
+    expect(region).toHaveAttribute('data-expanded', 'true');
+    const heading = screen.getByRole('heading', { level: 3, name: 'Orchard' });
+    const trigger = within(heading).getByRole('button', { name: 'Orchard' });
+    expect(trigger).toHaveClass('ui-section-header__trigger');
+    expect(trigger.querySelector('.ui-section-header__chevron')).toHaveAttribute(
+      'data-glyph',
+      'chevron-down',
+    );
+    const panel = container.querySelector('.ui-section__panel') as HTMLElement;
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    expect(trigger).toHaveAttribute('aria-controls', panel.id);
+    expect(panel.firstElementChild).toHaveClass('ui-stack');
+    expect(panel.firstElementChild).toHaveAttribute('data-space', 'sm');
+    expect(panel).toHaveTextContent('Twelve trees');
+    expectHooksMatchSpec(container, 'SECTION-HEADER', {
+      slots: ['trigger', 'chevron', 'panel'],
+      callerAttributes: ['data-owner'],
+    });
+
+    await user.click(screen.getByRole('button', { name: 'Add tree' }));
+    expect(onAction).toHaveBeenCalledTimes(1);
+    expect(onExpandedChange).not.toHaveBeenCalled();
+
+    await user.click(trigger);
+    expect(onExpandedChange).toHaveBeenLastCalledWith(false);
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    expect(region).not.toHaveAttribute('data-expanded');
+    expect(panel).toHaveAttribute('hidden');
+    expect(trigger.querySelector('.ui-section-header__chevron')).toHaveAttribute(
+      'data-glyph',
+      'chevron-right',
+    );
+    trigger.focus();
+    await user.keyboard('{Enter}');
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    expectHooksMatchSpec(container, 'SECTION-HEADER', { callerAttributes: ['data-owner'] });
+  });
+
+  it('UIC-SECTION-HEADER-2.2 starts collapsed or follows a controlled state', async () => {
+    const user = userEvent.setup();
+    const onExpandedChange = vi.fn();
+    const { rerender } = render(
+      <Section title="Orchard" collapsible defaultExpanded={false}>
+        Trees
+      </Section>,
+    );
+    const trigger = screen.getByRole('button', { name: 'Orchard' });
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    rerender(
+      <Section title="Orchard" collapsible isExpanded onExpandedChange={onExpandedChange}>
+        Trees
+      </Section>,
+    );
+    await user.click(screen.getByRole('button', { name: 'Orchard' }));
+    expect(onExpandedChange).toHaveBeenCalledWith(false);
+    expect(screen.getByRole('button', { name: 'Orchard' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
   });
 });

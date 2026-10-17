@@ -20,7 +20,7 @@ Verification: `src/components/prose-table/prose-table.test.tsx`
 
 ### UIC-PROSE-TABLE-1.3 - Native semantics
 
-The table shall keep native table semantics, so a screen reader announces each cell with its column heading: no grid role, no row headers, no keyboard interaction or tab stop of its own. Controls inside cells keep their own semantics and focus. It has no name unless the caller passes `aria-label` or `aria-labelledby`; the surrounding text usually introduces it.
+The table shall keep native table semantics, so a screen reader announces each cell with its column heading: no grid role, no keyboard interaction or tab stop of its own, and row headers only for a column marked as one ([UIC-PROSE-TABLE-2.3](#uic-prose-table-23---row-headers)). Controls inside cells keep their own semantics and focus. It has no name unless it has a `caption` or the caller passes `aria-label` or `aria-labelledby`; the surrounding text usually introduces it.
 
 Implementation: `src/components/prose-table/prose-table.tsx`
 Verification: `src/components/prose-table/prose-table.test.tsx`, `e2e/prose-table.spec.ts`
@@ -32,8 +32,48 @@ Verification: `src/components/prose-table/prose-table.test.tsx`, `e2e/prose-tabl
 Implementation: `src/components/prose-table/prose-table.tsx`
 Verification: `src/components/prose-table/prose-table.test.tsx`
 
+## UIC-PROSE-TABLE-2 - Table parts
+
+### UIC-PROSE-TABLE-2.1 - Caption
+
+`caption` shall render as the table's first child, a `<caption>` in the `ui-prose-table__caption` slot, which names the table. Nullish, boolean and empty-string captions render none.
+
+Implementation: `src/components/prose-table/prose-table.tsx`, `labs/reference/prose-table.css`
+Verification: `src/components/prose-table/prose-table.test.tsx`, `e2e/prose-table.spec.ts`
+
+### UIC-PROSE-TABLE-2.2 - Footer rows
+
+`footer` rows, such as totals, shall render after the body in a `<tfoot>`, built and padded like body rows. Without footer rows there is no `<tfoot>`.
+
+Implementation: `src/components/prose-table/prose-table.tsx`, `labs/reference/prose-table.css`
+Verification: `src/components/prose-table/prose-table.test.tsx`, `e2e/prose-table.spec.ts`
+
+### UIC-PROSE-TABLE-2.3 - Row headers
+
+The cells of a column whose heading sets `isRowHeader` shall render as `<th scope="row">` in body and footer rows, so a screen reader announces each cell with its row's name as well as its column heading.
+
+Implementation: `src/components/prose-table/prose-table.tsx`, `labs/reference/prose-table.css`
+Verification: `src/components/prose-table/prose-table.test.tsx`, `e2e/prose-table.spec.ts`
+
+### UIC-PROSE-TABLE-2.4 - Column alignment
+
+A heading's `align` (`start`, `center` or `end`, as in Markdown's `:---`, `:---:` and `---:`) shall be published in `data-align` on the heading and on every body and footer cell of its column, padding cells included. A column without `align` publishes nothing and the stylesheet aligns it; the reference sheet aligns `end` columns' figures with tabular numerals.
+
+Implementation: `src/components/prose-table/prose-table.tsx`, `labs/reference/prose-table.css`
+Verification: `src/components/prose-table/prose-table.test.tsx`, `e2e/prose-table.spec.ts`
+
+### UIC-PROSE-TABLE-2.5 - Sticky header and scrolling
+
+`stickyHeader` shall publish `data-sticky-header`, from which the stylesheet keeps the heading row at the top of the nearest scrolling ancestor while the rows scroll under it. A table that needs its own scroll area, because it is tall or wider than the text column, is placed in a [Scroll Region](SCROLL-REGION.md); the table renders no scroll container of its own.
+
+Implementation: `src/components/prose-table/prose-table.tsx`, `labs/reference/prose-table.css`
+Verification: `src/components/prose-table/prose-table.test.tsx`, `e2e/prose-table.spec.ts`
+
 ## Hooks
 
-| Hook             | Kind | Values | Description    |
-| ---------------- | ---- | ------ | -------------- |
-| `ui-prose-table` | root |        | The `<table>`. |
+| Hook                      | Kind      | Values                   | Description                                                  |
+| ------------------------- | --------- | ------------------------ | ------------------------------------------------------------ |
+| `ui-prose-table`          | root      |                          | The `<table>`.                                               |
+| `ui-prose-table__caption` | slot      |                          | The `<caption>`, when given.                                 |
+| `data-align`              | attribute | `start`, `center`, `end` | On a heading and its column's cells, when the column aligns. |
+| `data-sticky-header`      | state     | `true`                   | The heading row sticks to the top of a scrolling ancestor.   |

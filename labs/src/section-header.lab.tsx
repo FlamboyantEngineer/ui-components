@@ -1,6 +1,10 @@
 import { useState, type CSSProperties } from 'react';
 import { Card } from '../../src/components/card/card.js';
-import { Section, SectionHeader } from '../../src/components/section-header/section-header.js';
+import {
+  HeadingLevelContext,
+  Section,
+  SectionHeader,
+} from '../../src/components/section-header/section-header.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const column = (width: number): CSSProperties => ({ width, outline: '1px dotted currentColor' });
@@ -135,6 +139,46 @@ mountLab(
             </div>
           );
         }}
+      />
+    </LabSection>
+    <LabSection
+      title="Nested levels"
+      description="Sections, headers and a card nested without heading levels step down one level each, from a host level of 1."
+    >
+      <div style={column(420)} data-lab-nested>
+        <HeadingLevelContext value={1}>
+          <Section title="Garden" space="md">
+            <Section title="Orchard" space="md">
+              <SectionHeader title="Apples" description="Twelve trees" />
+              <Card title="Pears" density="compact">
+                <SectionHeader title="Conference" />
+              </Card>
+            </Section>
+          </Section>
+        </HeadingLevelContext>
+      </div>
+    </LabSection>
+    <LabSection
+      title="Collapsible sections"
+      description="The title toggles the content; the description and actions stay outside the trigger. Expanded and collapsed, at 420px and 220px."
+    >
+      <StateMatrix
+        axes={{ state: ['expanded', 'collapsed'], width: ['420', '220'] }}
+        render={({ state, width }) => (
+          <div style={column(Number(width))}>
+            <Section
+              title={`Vineyard, ${state} ${width}`}
+              description="Rows of grapes on the hill"
+              actions={<Actions />}
+              collapsible
+              defaultExpanded={state === 'expanded'}
+              space="md"
+              data-lab-collapsible={`${state} ${width}`}
+            >
+              <p style={{ margin: 0 }}>Merlot, Syrah and Grenache.</p>
+            </Section>
+          </div>
+        )}
       />
     </LabSection>
     <LabSection

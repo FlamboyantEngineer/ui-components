@@ -6,6 +6,7 @@ import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { MIN_THUMB_SIZE, THUMB_ARROW_STEP } from './overlay-scrollbars.js';
 import { ScrollRegion, useScrollRegionHeaderRef } from './scroll-region.js';
+import { readScrollEdges } from './use-scroll-edges.js';
 
 interface Geometry {
   clientHeight: number;
@@ -84,6 +85,25 @@ function flushFrames() {
 function resizeAll() {
   act(() => resizeCallbacks.forEach((callback) => callback()));
   flushFrames();
+}
+
+/** jsdom keeps no scroll position: give a viewport one that its scroll range clamps. */
+function trackScrollTop(viewport: HTMLElement) {
+  let top = 0;
+  Object.defineProperty(viewport, 'scrollTop', {
+    configurable: true,
+    get: () => top,
+    set(value: number) {
+      top = Math.max(0, Math.min(value, viewport.scrollHeight - viewport.clientHeight));
+    },
+  });
+}
+
+function scrollTo(viewport: HTMLElement, top: number) {
+  act(() => {
+    viewport.scrollTop = top;
+  });
+  fireEvent.scroll(viewport);
 }
 
 function thumb(viewportId: string, orientation = 'vertical') {
@@ -230,7 +250,7 @@ describe('ScrollRegion', () => {
     expect(root).not.toHaveAttribute('data-overflow-x');
     const track = container.querySelector<HTMLElement>('.ui-scroll-region__track')!;
     expect(track).toHaveAttribute('data-orientation', 'vertical');
-    expect(track.style.pointerEvents).toBe('none');
+    expect(track.style.pointerEvents).toBe('');
     const vertical = thumb('region')!;
     expect(vertical).toHaveClass('ui-scroll-region__thumb');
     expect(vertical.style.pointerEvents).toBe('auto');
@@ -558,5 +578,341 @@ describe('ScrollRegion', () => {
         '--ui-scroll-region-overview-image',
       ),
     ).toContain('color-mix(in srgb, red 50%, blue) 0% 2%');
+  });
+
+  it('UIC-SCROLL-REGION-2.8 shows scroll-mode tracks while scrolling and for the hide delay', () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    try {
+      viewports.set('log', {
+        clientHeight: 100,
+        scrollHeight: 300,
+        clientWidth: 120,
+        scrollWidth: 120,
+      });
+      const { container } = render(
+        <ScrollRegion
+          id="log"
+          scrollbar="overlay"
+          scrollbarVisibility="scroll"
+          scrollbarHideDelay={400}
+        >
+          Lines
+        </ScrollRegion>,
+      );
+      flushFrames();
+      const root = container.firstElementChild!;
+      expect(root).toHaveAttribute('data-scrollbar-visibility', 'scroll');
+      expect(root).toHaveAttribute('data-overflow-y', 'true');
+      expect(container.querySelector('.ui-scroll-region__track')).toBeNull();
+      fireEvent.scroll(document.getElementById('log')!);
+      expect(container.querySelector('.ui-scroll-region__track')).not.toBeNull();
+      act(() => vi.advanceTimersByTime(399));
+      fireEvent.scroll(document.getElementById('log')!);
+      act(() => vi.advanceTimersByTime(399));
+      expect(container.querySelector('.ui-scroll-region__track')).not.toBeNull();
+      act(() => vi.advanceTimersByTime(1));
+      expect(container.querySelector('.ui-scroll-region__track')).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('UIC-SCROLL-REGION-2.8 shows hover-mode tracks while hovered, lingering, or with a focused thumb', () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    try {
+      viewports.set('menu', {
+        clientHeight: 100,
+        scrollHeight: 300,
+        clientWidth: 120,
+        scrollWidth: 120,
+      });
+      const { container } = render(
+        <ScrollRegion id="menu" scrollbar="overlay" scrollbarVisibility="hover">
+          Dishes
+        </ScrollRegion>,
+      );
+      flushFrames();
+      const root = container.firstElementChild!;
+      const track = () => container.querySelector('.ui-scroll-region__track');
+      expect(track()).toBeNull();
+      fireEvent.pointerEnter(root, { pointerType: 'touch' });
+      expect(track()).toBeNull();
+      fireEvent.pointerEnter(root, { pointerType: 'mouse' });
+      expect(root).toHaveAttribute('data-hovering', 'true');
+      expect(track()).not.toBeNull();
+      fireEvent.pointerLeave(root, { pointerType: 'mouse' });
+      expect(root).not.toHaveAttribute('data-hovering');
+      act(() => vi.advanceTimersByTime(599));
+      expect(track()).not.toBeNull();
+      act(() => vi.advanceTimersByTime(1));
+      expect(track()).toBeNull();
+
+      fireEvent.pointerEnter(root, { pointerType: 'pen' });
+      flushFrames();
+      act(() => thumb('menu')!.focus());
+      fireEvent.pointerLeave(root, { pointerType: 'pen' });
+      act(() => vi.advanceTimersByTime(1000));
+      expect(track()).not.toBeNull();
+      act(() => thumb('menu')!.blur());
+      expect(track()).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('UIC-SCROLL-REGION-2.8 keeps a leaving track mounted through its exit animation', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    let finish = () => {};
+    let animate = false;
+    Object.defineProperty(Element.prototype, 'getAnimations', {
+      configurable: true,
+      value: () =>
+        animate ? [{ finished: new Promise<void>((resolve) => (finish = resolve)) }] : [],
+    });
+    try {
+      viewports.set('feed', {
+        clientHeight: 100,
+        scrollHeight: 300,
+        clientWidth: 120,
+        scrollWidth: 120,
+      });
+      const { container } = render(
+        <ScrollRegion id="feed" scrollbar="overlay" scrollbarVisibility="scroll">
+          Posts
+        </ScrollRegion>,
+      );
+      flushFrames();
+      animate = true;
+      fireEvent.scroll(document.getElementById('feed')!);
+      const track = container.querySelector('.ui-scroll-region__track')!;
+      expect(track).toHaveAttribute('data-entering', 'true');
+      await act(async () => finish());
+      expect(track).not.toHaveAttribute('data-entering');
+      act(() => vi.advanceTimersByTime(600));
+      expect(track).toHaveAttribute('data-exiting', 'true');
+      expectHooksMatchSpec(container, 'SCROLL-REGION', { slots: ['viewport', 'track', 'thumb'] });
+      await act(async () => finish());
+      expect(container.querySelector('.ui-scroll-region__track')).toBeNull();
+    } finally {
+      delete (Element.prototype as Partial<Element>).getAnimations;
+      vi.useRealTimers();
+    }
+  });
+
+  it('UIC-SCROLL-REGION-2.8 draws always-mode tracks on fitting axes with a thumb out of the tab order', () => {
+    viewports.set('note', {
+      clientHeight: 100,
+      scrollHeight: 100,
+      clientWidth: 120,
+      scrollWidth: 120,
+    });
+    const { container } = render(
+      <ScrollRegion id="note" axis="both" scrollbar="overlay" scrollbarVisibility="always">
+        Short
+      </ScrollRegion>,
+    );
+    flushFrames();
+    flushFrames();
+    expect(container.firstElementChild).not.toHaveAttribute('data-overflow-y');
+    const vertical = thumb('note')!;
+    expect(vertical).toHaveAttribute('tabindex', '-1');
+    expect(vertical).toHaveAttribute('aria-valuemax', '0');
+    expect(vertical.style.height).toBe(`${tracks.vertical}px`);
+    expect(thumb('note', 'horizontal')).toHaveAttribute('tabindex', '-1');
+  });
+
+  it('UIC-SCROLL-REGION-2.9 pages toward a press on the track beside the thumb', () => {
+    viewports.set('long', {
+      clientHeight: 100,
+      scrollHeight: 400,
+      clientWidth: 120,
+      scrollWidth: 120,
+    });
+    const { container } = render(
+      <ScrollRegion id="long" scrollbar="overlay">
+        Chapters
+      </ScrollRegion>,
+    );
+    flushFrames();
+    flushFrames();
+    const viewport = document.getElementById('long')!;
+    trackScrollTop(viewport);
+    const track = container.querySelector<HTMLElement>('.ui-scroll-region__track')!;
+    const vertical = thumb('long')!;
+    vertical.getBoundingClientRect = () => ({ top: 40, left: 0, bottom: 60 }) as DOMRect;
+    fireEvent.pointerDown(track, { button: 0, clientY: 90 });
+    expect(viewport.scrollTop).toBe(100);
+    fireEvent.pointerDown(track, { button: 0, clientY: 90 });
+    fireEvent.pointerDown(track, { button: 0, clientY: 90 });
+    fireEvent.pointerDown(track, { button: 0, clientY: 90 });
+    expect(viewport.scrollTop).toBe(300);
+    fireEvent.pointerDown(track, { button: 0, clientY: 10 });
+    expect(viewport.scrollTop).toBe(200);
+    fireEvent.pointerDown(track, { button: 2, clientY: 10 });
+    fireEvent.pointerDown(vertical, { button: 0, clientY: 10 });
+    expect(viewport.scrollTop).toBe(200);
+  });
+
+  it('UIC-SCROLL-REGION-4.1 publishes edge distances in native mode and none without an axis', () => {
+    viewports.set('edges', {
+      clientHeight: 100,
+      scrollHeight: 300,
+      clientWidth: 120,
+      scrollWidth: 120,
+    });
+    const { container, rerender } = render(<ScrollRegion id="edges">Rows</ScrollRegion>);
+    const root = container.firstElementChild as HTMLElement;
+    const viewport = document.getElementById('edges')!;
+    trackScrollTop(viewport);
+    expect(root).not.toHaveAttribute('data-overflow-y-start');
+    expect(root).toHaveAttribute('data-overflow-y-end', 'true');
+    expect(root.style.getPropertyValue('--ui-scroll-region-overflow-y-end')).toBe('200px');
+    scrollTo(viewport, 60);
+    expect(frames.size).toBe(0);
+    expect(root).toHaveAttribute('data-overflow-y-start', 'true');
+    expect(root.style.getPropertyValue('--ui-scroll-region-overflow-y-start')).toBe('60px');
+    expect(root.style.getPropertyValue('--ui-scroll-region-overflow-y-end')).toBe('140px');
+    expect(root.style.getPropertyValue('--ui-scroll-region-overflow-x-start')).toBe('0px');
+    expect(root.style.getPropertyValue('--ui-scroll-region-overflow-x-end')).toBe('0px');
+    expectHooksMatchSpec(container, 'SCROLL-REGION');
+    scrollTo(viewport, 200);
+    expect(root).not.toHaveAttribute('data-overflow-y-end');
+
+    rerender(
+      <ScrollRegion id="edges" axis="none">
+        Rows
+      </ScrollRegion>,
+    );
+    expect(root).not.toHaveAttribute('data-overflow-y-start');
+    expect(root.style.getPropertyValue('--ui-scroll-region-overflow-y-start')).toBe('');
+  });
+
+  it('UIC-SCROLL-REGION-4.1 measures horizontal edges from the inline start', () => {
+    const element = (scrollLeft: number, direction: string) =>
+      ({
+        scrollTop: 0,
+        scrollLeft,
+        scrollWidth: 300,
+        clientWidth: 100,
+        scrollHeight: 50,
+        clientHeight: 50,
+        ownerDocument: { defaultView: { getComputedStyle: () => ({ direction }) } },
+      }) as unknown as HTMLElement;
+    expect(readScrollEdges(element(50, 'ltr'))).toEqual({
+      yStart: 0,
+      yEnd: 0,
+      xStart: 50,
+      xEnd: 150,
+    });
+    expect(readScrollEdges(element(-50, 'rtl'))).toEqual({
+      yStart: 0,
+      yEnd: 0,
+      xStart: 50,
+      xEnd: 150,
+    });
+    expect(readScrollEdges(element(0.4, 'ltr')).xStart).toBe(0);
+  });
+
+  it('UIC-SCROLL-REGION-4.1 follows resizes and child changes', async () => {
+    const geometry = { clientHeight: 100, scrollHeight: 100, clientWidth: 120, scrollWidth: 120 };
+    viewports.set('grow', geometry);
+    const { container } = render(<ScrollRegion id="grow">Rows</ScrollRegion>);
+    const root = container.firstElementChild!;
+    expect(root).not.toHaveAttribute('data-overflow-y-end');
+    geometry.scrollHeight = 180;
+    resizeAll();
+    expect(root).toHaveAttribute('data-overflow-y-end', 'true');
+    geometry.scrollHeight = 100;
+    await act(async () => document.getElementById('grow')!.append(document.createElement('p')));
+    expect(root).not.toHaveAttribute('data-overflow-y-end');
+  });
+
+  it('UIC-SCROLL-REGION-4.2 publishes scrolling and hovering', () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    try {
+      viewports.set('busy', {
+        clientHeight: 100,
+        scrollHeight: 300,
+        clientWidth: 120,
+        scrollWidth: 120,
+      });
+      const { container } = render(
+        <ScrollRegion id="busy" scrollbarHideDelay={200}>
+          Rows
+        </ScrollRegion>,
+      );
+      const root = container.firstElementChild!;
+      fireEvent.scroll(document.getElementById('busy')!);
+      expect(root).toHaveAttribute('data-scrolling', 'true');
+      act(() => vi.advanceTimersByTime(200));
+      expect(root).not.toHaveAttribute('data-scrolling');
+      fireEvent.pointerEnter(root, { pointerType: 'mouse' });
+      expect(root).toHaveAttribute('data-hovering', 'true');
+      expectHooksMatchSpec(container, 'SCROLL-REGION');
+      fireEvent.pointerLeave(root, { pointerType: 'mouse' });
+      expect(root).not.toHaveAttribute('data-hovering');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('UIC-SCROLL-REGION-4.3 calls the edge callbacks when scrolling reaches the top or bottom', () => {
+    viewports.set('feed', {
+      clientHeight: 100,
+      scrollHeight: 300,
+      clientWidth: 120,
+      scrollWidth: 120,
+    });
+    const onTopReached = vi.fn();
+    const onBottomReached = vi.fn();
+    render(
+      <ScrollRegion id="feed" onTopReached={onTopReached} onBottomReached={onBottomReached}>
+        Posts
+      </ScrollRegion>,
+    );
+    const viewport = document.getElementById('feed')!;
+    trackScrollTop(viewport);
+    expect(onTopReached).not.toHaveBeenCalled();
+    scrollTo(viewport, 120);
+    scrollTo(viewport, 200);
+    expect(onBottomReached).toHaveBeenCalledTimes(1);
+    scrollTo(viewport, 200);
+    expect(onBottomReached).toHaveBeenCalledTimes(1);
+    scrollTo(viewport, 0);
+    expect(onTopReached).toHaveBeenCalledTimes(1);
+  });
+
+  it('UIC-SCROLL-REGION-4.4 follows new content at the bottom until the reader scrolls up', () => {
+    const geometry = { clientHeight: 100, scrollHeight: 300, clientWidth: 120, scrollWidth: 120 };
+    viewports.set('chat', geometry);
+    const onBottomReached = vi.fn();
+    const { rerender } = render(
+      <ScrollRegion id="chat" stickToBottom onBottomReached={onBottomReached}>
+        Messages
+      </ScrollRegion>,
+    );
+    const viewport = document.getElementById('chat')!;
+    trackScrollTop(viewport);
+    rerender(
+      <ScrollRegion id="chat" stickToBottom onBottomReached={onBottomReached}>
+        Messages
+      </ScrollRegion>,
+    );
+    resizeAll();
+    expect(viewport.scrollTop).toBe(200);
+    fireEvent.scroll(viewport);
+    geometry.scrollHeight = 400;
+    resizeAll();
+    expect(viewport.scrollTop).toBe(300);
+    fireEvent.scroll(viewport);
+    expect(onBottomReached).not.toHaveBeenCalled();
+    scrollTo(viewport, 120);
+    geometry.scrollHeight = 500;
+    resizeAll();
+    expect(viewport.scrollTop).toBe(120);
+    scrollTo(viewport, 400);
+    geometry.scrollHeight = 600;
+    resizeAll();
+    expect(viewport.scrollTop).toBe(500);
   });
 });

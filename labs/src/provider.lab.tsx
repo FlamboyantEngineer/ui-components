@@ -15,6 +15,7 @@ const replacedStrings: Partial<UiStrings> = {
 // Arguments for strings that are functions; anything not listed is shown for a count of 3.
 const sampleArguments: Partial<Record<keyof UiStrings, readonly unknown[]>> = {
   shortcutKeyName: ['↑'],
+  shortcutSequence: [['G', 'I']],
   stepOfTotal: [3, 5],
   filterLabel: ['Page Settings'],
   noPropertyMatches: ['zinc'],

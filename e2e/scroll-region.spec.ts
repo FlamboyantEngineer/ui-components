@@ -211,4 +211,138 @@ test.describe('Scroll Region lab', () => {
     await page.mouse.wheel(0, 5000);
     await expect(page.locator('[data-lab-output="end"]')).toHaveText('no');
   });
+
+  test('UIC-SCROLL-REGION-2.8 shows scrollbars by their visibility mode', async ({ page, lab }) => {
+    await page.clock.install();
+    await lab.open('scroll-region');
+    const region = (id: string) => page.locator(`[data-lab-visibility="${id}"]`);
+    const track = (id: string) => region(id).locator('.ui-scroll-region__track');
+    await expect(track('long auto')).toHaveCount(1);
+    await expect(track('short auto')).toHaveCount(0);
+    await expect(track('short always')).toHaveCount(1);
+    await expect(region('short always').getByRole('scrollbar')).toHaveAttribute('tabindex', '-1');
+    await expect(track('long scroll')).toHaveCount(0);
+    await expect(track('long hover')).toHaveCount(0);
+
+    await region('long hover').hover();
+    await expect(region('long hover')).toHaveAttribute('data-hovering', 'true');
+    await expect(track('long hover')).toHaveCount(1);
+    await page.mouse.move(0, 0);
+    await expect(region('long hover')).not.toHaveAttribute('data-hovering');
+    await expect(track('long hover')).toHaveCount(0);
+
+    await page.clock.pauseAt(Date.now() + 60_000);
+    await region('long scroll')
+      .locator('.ui-scroll-region__viewport')
+      .evaluate((node) => {
+        node.scrollTop = 40;
+      });
+    await expect(region('long scroll')).toHaveAttribute('data-scrolling', 'true');
+    await expect(track('long scroll')).toHaveCount(1);
+    await page.clock.runFor(700);
+    await expect(region('long scroll')).not.toHaveAttribute('data-scrolling');
+    await expect(track('long scroll')).toHaveCount(0);
+    await page.clock.resume();
+    await lab.expectAccessible();
+  });
+
+  test('UIC-SCROLL-REGION-2.9 pages toward a press on the track', async ({ page, lab }) => {
+    await lab.open('scroll-region');
+    const host = page.locator('[data-lab-region="overlay"]');
+    await host.scrollIntoViewIfNeeded();
+    const viewport = host.locator('.ui-scroll-region__viewport');
+    const track = await box(host.locator('.ui-scroll-region__track[data-orientation="vertical"]'));
+    const { clientHeight } = await metrics(viewport);
+    await page.mouse.click(track.x + track.width / 2, track.y + track.height - 4);
+    await expect.poll(async () => (await metrics(viewport)).scrollTop).toBe(clientHeight);
+    const thumb = await box(host.locator('.ui-scroll-region__thumb[aria-orientation="vertical"]'));
+    await page.mouse.click(track.x + track.width / 2, thumb.y - 2);
+    await expect.poll(async () => (await metrics(viewport)).scrollTop).toBe(0);
+  });
+
+  test('UIC-SCROLL-REGION-4.1 publishes the edge distances in both scrollbar modes', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('scroll-region');
+    for (const scrollbar of ['native', 'overlay']) {
+      const root = page.locator(`[data-lab-edges="${scrollbar}"]`);
+      const viewport = root.locator('.ui-scroll-region__viewport');
+      await expect(root).not.toHaveAttribute('data-overflow-y-start');
+      await expect(root).toHaveAttribute('data-overflow-y-end', 'true');
+      await viewport.evaluate((node) => {
+        node.scrollTop = 30;
+      });
+      await expect(root).toHaveAttribute('data-overflow-y-start', 'true');
+      await expect
+        .poll(() =>
+          root.evaluate((node) =>
+            (node as HTMLElement).style.getPropertyValue('--ui-scroll-region-overflow-y-start'),
+          ),
+        )
+        .toBe('30px');
+      const { scrollHeight, clientHeight } = await metrics(viewport);
+      expect(
+        await root.evaluate((node) =>
+          (node as HTMLElement).style.getPropertyValue('--ui-scroll-region-overflow-y-end'),
+        ),
+      ).toBe(`${scrollHeight - clientHeight - 30}px`);
+      await viewport.evaluate((node) => {
+        node.scrollTop = node.scrollHeight;
+      });
+      await expect(root).not.toHaveAttribute('data-overflow-y-end');
+    }
+  });
+
+  test('UIC-SCROLL-REGION-4.3 UIC-SCROLL-REGION-4.4 follows new lines at the bottom and counts the edges', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('scroll-region');
+    const viewport = page.getByRole('log', { name: 'Arrivals' });
+    const atBottom = async () => {
+      const { scrollTop, scrollHeight, clientHeight } = await metrics(viewport);
+      return scrollHeight - clientHeight - scrollTop <= 1;
+    };
+    await expect.poll(atBottom).toBe(true);
+    const add = page.getByRole('button', { name: 'Add arrival' });
+    await add.click();
+    await add.click();
+    await expect.poll(atBottom).toBe(true);
+    await expect(page.locator('[data-lab-output="bottom"]')).toHaveText('0');
+
+    await viewport.evaluate((node) => {
+      node.scrollTop = 0;
+    });
+    await expect(page.locator('[data-lab-output="top"]')).toHaveText('1');
+    await add.click();
+    await expect(viewport.locator('li')).toHaveCount(11);
+    expect(await atBottom()).toBe(false);
+    await viewport.evaluate((node) => {
+      node.scrollTop = node.scrollHeight;
+    });
+    await expect(page.locator('[data-lab-output="bottom"]')).toHaveText('1');
+    await add.click();
+    await expect.poll(atBottom).toBe(true);
+  });
+
+  test('UIC-SCROLL-REGION-4.5 marks the chapter at the top of the scrolled text', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('scroll-region');
+    const toc = page.getByRole('navigation', { name: 'Chapters' });
+    await expect(toc.locator('[aria-current="location"]')).toHaveText('Orchards');
+    const viewport = page.getByRole('region', { name: 'Chapters text' });
+    await viewport.evaluate((node) => {
+      const target = node.querySelector('#chapter-meadows')!;
+      node.scrollTop += target.getBoundingClientRect().top - node.getBoundingClientRect().top;
+    });
+    await expect(toc.locator('[aria-current="location"]')).toHaveText('Meadows');
+    await viewport.evaluate((node) => {
+      node.scrollTop = node.scrollHeight;
+    });
+    await expect(toc.locator('[aria-current="location"]')).toHaveText('Forests');
+    await expect(toc.locator('[aria-current]')).toHaveCount(1);
+  });
 });

@@ -1,6 +1,6 @@
 # Section Header
 
-`SectionHeader` titles a section: a heading, optional supporting text and optional trailing actions or status. `Section` renders a `<section>` region named by the same header, followed by its content in a `Stack`. A framed section is a [Card](CARD.md), whose title block is the same header.
+`SectionHeader` titles a section: a heading, optional supporting text and optional trailing actions or status. `Section` renders a `<section>` region named by the same header, followed by its content in a `Stack`; nested sections take the next heading level, and a collapsible section's title toggles its content. A framed section is a [Card](CARD.md), whose title block is the same header.
 
 ## UIC-SECTION-HEADER-1 - Contract
 
@@ -13,7 +13,7 @@ Verification: `src/components/section-header/section-header.test.tsx`, `e2e/sect
 
 ### UIC-SECTION-HEADER-1.2 - Heading
 
-The title shall render in a heading of `headingLevel` 1 to 6, 3 by default, with an id generated per instance that stays the same across rerenders and differs between instances with the same title.
+The title shall render in a heading of `headingLevel` 1 to 6, by default the automatic level ([UIC-SECTION-HEADER-2.1](#uic-section-header-21---automatic-heading-levels)), with an id generated per instance that stays the same across rerenders and differs between instances with the same title.
 
 Implementation: `src/components/section-header/section-header.tsx`
 Verification: `src/components/section-header/section-header.test.tsx`
@@ -53,13 +53,39 @@ A framed section shall be a [Card](CARD.md) given the same `title`, `description
 Implementation: `src/components/card/card.tsx`, `labs/reference/card.css`
 Verification: `src/components/section-header/section-header.test.tsx`, `e2e/section-header.spec.ts`
 
+## UIC-SECTION-HEADER-2 - Nesting and collapsing
+
+### UIC-SECTION-HEADER-2.1 - Automatic heading levels
+
+A `SectionHeader`, `Section` or titled [Card](CARD.md) without `headingLevel` shall take one level below the nearest enclosing `Section` or titled card, down to 6, and level 3 outside any. A `Section` or titled card publishes its own level to its content, so nesting follows the document outline without counting levels; an explicit `headingLevel` sets the level of that heading and of the levels below it. A host sets the level of top-level sections by providing `HeadingLevelContext` (the level of the heading above them), and its own headings follow with `useHeadingLevel(level)`, which returns `level` when given and the automatic level otherwise.
+
+Implementation: `src/components/section-header/heading-level.ts`, `src/components/section-header/section-header.tsx`, `src/components/card/card.tsx`
+Verification: `src/components/section-header/section-header.test.tsx`, `e2e/section-header.spec.ts`
+
+### UIC-SECTION-HEADER-2.2 - Collapsible section
+
+A `collapsible` section shall be a React Aria `Disclosure` whose title is the trigger: the heading holds a `ui-section-header__trigger` button with the title after a `ui-section-header__chevron` glyph (pointing to the inline end while collapsed, down while expanded), whose `aria-expanded` and `aria-controls` name the content's `ui-section__panel` (React Aria `DisclosurePanel`, holding the content in a `Stack` with the section's `space`). The section stays a `<section>` named by its title, publishes `data-collapsible` and, while open, `data-expanded`; the description and actions stay outside the trigger and never toggle it. `isExpanded` controls the state, `defaultExpanded` (true by default) starts it, and `onExpandedChange` receives each request. The panel keeps React Aria's `hidden="until-found"` while collapsed, so find-in-page opens it, and React Aria's `--disclosure-panel-height` and `--disclosure-panel-width` for animating it.
+
+Implementation: `src/components/section-header/section-header.tsx`, `labs/reference/section-header.css`
+Verification: `src/components/section-header/section-header.test.tsx`, `e2e/section-header.spec.ts`
+
 ## Hooks
 
-| Hook                             | Kind | Values | Description                                                              |
-| -------------------------------- | ---- | ------ | ------------------------------------------------------------------------ |
-| `ui-section-header`              | root |        | The `<header>`.                                                          |
-| `ui-section-header__content`     | slot |        | Title and description.                                                   |
-| `ui-section-header__title`       | slot |        | The heading.                                                             |
-| `ui-section-header__description` | slot |        | Supporting text.                                                         |
-| `ui-section-header__actions`     | slot |        | Trailing actions or status.                                              |
-| `ui-section`                     | root |        | `Section`'s `<section>`, also a `Stack` (`ui-stack` and its attributes). |
+| Hook                             | Kind  | Values | Description                                                                |
+| -------------------------------- | ----- | ------ | -------------------------------------------------------------------------- |
+| `ui-section-header`              | root  |        | The `<header>`.                                                            |
+| `ui-section-header__content`     | slot  |        | Title and description.                                                     |
+| `ui-section-header__title`       | slot  |        | The heading.                                                               |
+| `ui-section-header__trigger`     | slot  |        | A collapsible section's title button, inside the heading.                  |
+| `ui-section-header__chevron`     | slot  |        | The trigger's expand glyph.                                                |
+| `ui-section-header__description` | slot  |        | Supporting text.                                                           |
+| `ui-section-header__actions`     | slot  |        | Trailing actions or status.                                                |
+| `ui-section`                     | root  |        | `Section`'s `<section>`, also a `Stack` (`ui-stack` and its attributes).   |
+| `ui-section__panel`              | slot  |        | A collapsible section's content region (React Aria `DisclosurePanel`).     |
+| `data-collapsible`               | state | `true` | On `ui-section`: the title toggles the content.                            |
+| `data-expanded`                  | state | `true` | On a collapsible `ui-section`: the content shows (React Aria).             |
+| `data-focus-visible-within`      | state | `true` | On a collapsible section or its panel: keyboard focus inside (React Aria). |
+| `data-hovered`                   | state | `true` | On the trigger (React Aria).                                               |
+| `data-pressed`                   | state | `true` | On the trigger (React Aria).                                               |
+| `data-focused`                   | state | `true` | On the trigger (React Aria).                                               |
+| `data-focus-visible`             | state | `true` | On the trigger, focused by keyboard (React Aria).                          |

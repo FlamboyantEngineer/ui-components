@@ -11,7 +11,17 @@ import {
   type GridColumns,
   type LayoutGrow,
 } from '../../src/components/layout/layout.js';
-import { ToolbarRow } from '../../src/components/layout/toolbar-row.js';
+import { AspectRatio } from '../../src/components/layout/aspect-ratio.js';
+import {
+  GridItem,
+  type GridItemOffset,
+  type GridItemSpan,
+} from '../../src/components/layout/grid-item.js';
+import {
+  ToolbarRow,
+  ToolbarRowGroup,
+  ToolbarRowSeparator,
+} from '../../src/components/layout/toolbar-row.js';
 import { Contents, EmbeddedFrame, InlineContents } from '../../src/components/layout/wrappers.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
@@ -143,6 +153,72 @@ mountLab(
       />
     </LabSection>
     <LabSection
+      title="Grid items"
+      description="A cell's span against its offset in a 12-column grid 360px wide, followed by single-column cells."
+    >
+      <StateMatrix
+        axes={{ span: ['2', '4', '6', 'full'], offset: ['0', '3', '6'] }}
+        render={({ span, offset }) => (
+          <div style={frameStyle(360)}>
+            <Grid columns={12} space="xs">
+              <GridItem
+                span={(span === 'full' ? 'full' : Number(span)) as GridItemSpan}
+                offset={Number(offset) as GridItemOffset}
+                data-lab-item="sized"
+              >
+                <Box>Wide</Box>
+              </GridItem>
+              <GridItem>
+                <Box>1</Box>
+              </GridItem>
+              <GridItem>
+                <Box>2</Box>
+              </GridItem>
+            </Grid>
+          </div>
+        )}
+      />
+    </LabSection>
+    <LabSection
+      title="Dividers"
+      description="Divided stacks and clusters at three gaps; the dividers are decorative."
+    >
+      <StateMatrix
+        axes={{ primitive: ['stack', 'cluster'], space: ['xs', 'md', '2xl'] }}
+        render={({ primitive, space }) => (
+          <div style={frameStyle(240)}>
+            {primitive === 'stack' ? (
+              <Stack divided space={space}>
+                {boxes(3)}
+              </Stack>
+            ) : (
+              <Cluster divided space={space}>
+                {boxes(3)}
+              </Cluster>
+            )}
+          </div>
+        )}
+      />
+    </LabSection>
+    <LabSection
+      title="Aspect ratio"
+      description="Each proportion in a 120px wide host, holding a picture that covers the box."
+    >
+      <StateMatrix
+        axes={{ ratio: ['1-1', '4-3', '3-2', '16-9', '21-9', '3-4', '2-3', '9-16'] as const }}
+        render={({ ratio }) => (
+          <div style={frameStyle(120)}>
+            <AspectRatio ratio={ratio}>
+              <svg viewBox="0 0 40 40" role="img" aria-label={`Orchard, ${ratio}`}>
+                <rect width="40" height="40" fill="currentColor" opacity="0.15" />
+                <circle cx="20" cy="20" r="10" fill="currentColor" opacity="0.4" />
+              </svg>
+            </AspectRatio>
+          </div>
+        )}
+      />
+    </LabSection>
+    <LabSection
       title="Page"
       description="Widths against gutters in a 320px host, then each width across the lab."
     >
@@ -225,6 +301,33 @@ mountLab(
               <button type="button">Peel</button>
               <button type="button">Slice</button>
               <button type="button">Juice</button>
+            </ToolbarRow>
+          </div>
+        )}
+      />
+    </LabSection>
+    <LabSection
+      title="Toolbar orientation and groups"
+      description="Horizontal and vertical rows of named groups split by separators. A vertical toolbar moves focus with Up and Down."
+    >
+      <StateMatrix
+        axes={{ orientation: ['horizontal', 'vertical'], role: ['toolbar', 'group'] }}
+        render={({ orientation, role }) => (
+          <div style={frameStyle(orientation === 'vertical' ? 120 : 340)}>
+            <ToolbarRow
+              role={role}
+              orientation={orientation}
+              justify="start"
+              aria-label={`Kitchen tools ${orientation} ${role}`}
+            >
+              <ToolbarRowGroup aria-label={`Knives ${orientation} ${role}`}>
+                <button type="button">Peel</button>
+                <button type="button">Slice</button>
+              </ToolbarRowGroup>
+              <ToolbarRowSeparator />
+              <ToolbarRowGroup aria-label={`Machines ${orientation} ${role}`}>
+                <button type="button">Juice</button>
+              </ToolbarRowGroup>
             </ToolbarRow>
           </div>
         )}

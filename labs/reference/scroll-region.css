@@ -166,3 +166,31 @@
   background-image: var(--ui-scroll-region-overview-image);
   opacity: 0.5;
 }
+
+/* Tracks shown by scrolling or hovering fade in and out. */
+
+.ui-scroll-region__track[data-entering] {
+  animation: ref-scroll-region-track-in 0.15s ease-out;
+}
+
+.ui-scroll-region__track[data-exiting] {
+  animation: ref-scroll-region-track-out 0.2s ease-in forwards;
+}
+
+@keyframes ref-scroll-region-track-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes ref-scroll-region-track-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-scroll-region__track:is([data-entering], [data-exiting]) {
+    animation: none;
+  }
+}

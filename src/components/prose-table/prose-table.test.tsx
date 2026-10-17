@@ -87,4 +87,77 @@ describe('ProseTable', () => {
     expect(screen.getByRole('table', { name: 'Fruit colours' })).toBe(table);
     expectHooksMatchSpec(container, 'PROSE-TABLE');
   });
+
+  it('UIC-PROSE-TABLE-2.1 names the table with its caption', () => {
+    const { container, rerender } = render(
+      <ProseTable header={header} rows={rows} caption="Fruit by colour" />,
+    );
+    const table = screen.getByRole('table', { name: 'Fruit by colour' });
+    expect(table.firstElementChild?.tagName).toBe('CAPTION');
+    expect(table.firstElementChild).toHaveClass('ui-prose-table__caption');
+    expectHooksMatchSpec(container, 'PROSE-TABLE', { slots: ['caption'] });
+    for (const empty of [undefined, null, false, '']) {
+      rerender(<ProseTable header={header} rows={rows} caption={empty} />);
+      expect(container.querySelector('caption')).toBeNull();
+    }
+  });
+
+  it('UIC-PROSE-TABLE-2.2 renders padded footer rows after the body', () => {
+    const { container, rerender } = render(
+      <ProseTable
+        header={header}
+        rows={rows}
+        footer={[{ key: 'total', cells: [{ key: 'fruit', content: 'Two fruits' }] }]}
+      />,
+    );
+    const table = container.querySelector('table')!;
+    expect(table.lastElementChild?.tagName).toBe('TFOOT');
+    const cells = table.querySelectorAll('tfoot td');
+    expect([...cells].map((cell) => cell.textContent)).toEqual(['Two fruits', '']);
+    rerender(<ProseTable header={header} rows={rows} footer={[]} />);
+    expect(container.querySelector('tfoot')).toBeNull();
+  });
+
+  it('UIC-PROSE-TABLE-2.3 renders the cells of a row header column as row headers', () => {
+    render(
+      <ProseTable
+        header={[{ ...header[0]!, isRowHeader: true }, header[1]!]}
+        rows={rows}
+        footer={[{ key: 'total', cells: [{ key: 'fruit', content: 'Total' }] }]}
+      />,
+    );
+    const table = screen.getByRole('table');
+    const rowHeaders = within(table).getAllByRole('rowheader');
+    expect(rowHeaders.map((cell) => cell.textContent)).toEqual(['Apple', 'Pear', 'Total']);
+    expect(rowHeaders.every((cell) => cell.getAttribute('scope') === 'row')).toBe(true);
+    expect(within(table).getAllByRole('cell')).toHaveLength(3);
+  });
+
+  it('UIC-PROSE-TABLE-2.4 publishes a column alignment on its heading and cells', () => {
+    const { container } = render(
+      <ProseTable
+        header={[header[0]!, { key: 'weight', content: 'Weight', align: 'end' }]}
+        rows={[...rows, { key: 'plum', cells: [{ key: 'fruit', content: 'Plum' }] }]}
+        footer={[{ key: 'total', cells: [{ key: 'fruit', content: 'Total' }] }]}
+      />,
+    );
+    const aligned = [...container.querySelectorAll('[data-align]')];
+    expect(aligned.map((cell) => cell.getAttribute('data-align'))).toEqual(Array(5).fill('end'));
+    expect(aligned.map((cell) => cell.tagName)).toEqual(['TH', 'TD', 'TD', 'TD', 'TD']);
+    expect(container.querySelector('thead th')).not.toHaveAttribute('data-align');
+    for (const align of ['start', 'center'] as const) {
+      const { container: other } = render(
+        <ProseTable header={[{ ...header[0]!, align }]} rows={rows} />,
+      );
+      expect(other.querySelector('tbody td')).toHaveAttribute('data-align', align);
+    }
+  });
+
+  it('UIC-PROSE-TABLE-2.5 publishes a sticky header', () => {
+    const { container, rerender } = render(<ProseTable header={header} rows={rows} />);
+    expect(container.querySelector('table')).not.toHaveAttribute('data-sticky-header');
+    rerender(<ProseTable header={header} rows={rows} stickyHeader />);
+    expect(container.querySelector('table')).toHaveAttribute('data-sticky-header', 'true');
+    expectHooksMatchSpec(container, 'PROSE-TABLE');
+  });
 });

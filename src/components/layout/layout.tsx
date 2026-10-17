@@ -1,6 +1,7 @@
 import { createElement, type ComponentPropsWithRef, type ReactElement } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps, Size } from '../../core/props.js';
+import { interleaveDividers } from './dividers.js';
 
 /** A closed scale of spacing steps, smallest to largest. The stylesheet maps each step to a length. */
 export type LayoutSpace = 'none' | '3xs' | '2xs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
@@ -72,6 +73,8 @@ export interface StackOwnProps extends BaseProps, LayoutContainmentProps {
   space?: LayoutSpace | undefined;
   /** Cross-axis alignment. Defaults to `stretch`. */
   align?: LayoutAlign | undefined;
+  /** Draw a decorative divider between children. */
+  divided?: boolean | undefined;
 }
 
 export type StackProps<E extends LayoutElement = 'div'> = PolymorphicLayoutProps<E, StackOwnProps>;
@@ -87,6 +90,8 @@ export interface ClusterOwnProps extends BaseProps, LayoutContainmentProps {
   wrap?: LayoutWrap | undefined;
   /** Flow inline with surrounding text instead of as a block. */
   inline?: boolean | undefined;
+  /** Draw a decorative divider between children. */
+  divided?: boolean | undefined;
 }
 
 export type ClusterProps<E extends LayoutElement = 'div'> = PolymorphicLayoutProps<
@@ -135,8 +140,8 @@ export interface StatusBarProps extends NativeProps<'footer'>, BaseProps, Layout
 
 const viewHooks = createHooks('view');
 const pageHooks = createHooks('page');
-const stackHooks = createHooks('stack');
-const clusterHooks = createHooks('cluster');
+const stackHooks = createHooks('stack', ['divider']);
+const clusterHooks = createHooks('cluster', ['divider']);
 const gridHooks = createHooks('grid');
 const flexRowHooks = createHooks('flex-row');
 const inlineFieldHooks = createHooks('inline-field');
@@ -220,13 +225,18 @@ export function Stack<E extends LayoutElement = 'div'>({
   className,
   space = '2xl',
   align = 'stretch',
+  divided = false,
   grow,
   fill,
   clip,
   ...rest
 }: StackProps<E>) {
-  const data = { space, align, ...resolveContainment({ grow, fill, clip }) };
-  return renderAs(as ?? 'div', { ...rest, ...stackHooks.root({ className, data }) }, children);
+  const element = as ?? 'div';
+  const data = { space, align, divided, ...resolveContainment({ grow, fill, clip }) };
+  const content = divided
+    ? interleaveDividers(children, { parent: element, className: stackHooks.slotClass('divider') })
+    : children;
+  return renderAs(element, { ...rest, ...stackHooks.root({ className, data }) }, content);
 }
 
 /** Children in a row that wraps, with a gap. */
@@ -239,13 +249,22 @@ export function Cluster<E extends LayoutElement = 'div'>({
   justify = 'start',
   wrap = 'wrap',
   inline = false,
+  divided = false,
   grow,
   fill,
   clip,
   ...rest
 }: ClusterProps<E>) {
-  const data = { space, align, justify, wrap, inline, ...resolveContainment({ grow, fill, clip }) };
-  return renderAs(as ?? 'div', { ...rest, ...clusterHooks.root({ className, data }) }, children);
+  const element = as ?? 'div';
+  const containment = resolveContainment({ grow, fill, clip });
+  const data = { space, align, justify, wrap, inline, divided, ...containment };
+  const content = divided
+    ? interleaveDividers(children, {
+        parent: element,
+        className: clusterHooks.slotClass('divider'),
+      })
+    : children;
+  return renderAs(element, { ...rest, ...clusterHooks.root({ className, data }) }, content);
 }
 
 /** Children in a grid of columns with a gap. */

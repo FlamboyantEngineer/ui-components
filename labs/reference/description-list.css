@@ -1,8 +1,9 @@
 /* Description List */
 
 .ui-description-list {
+  --ref-description-columns: 1;
   display: grid;
-  grid-template-columns: max-content minmax(0, 1fr);
+  grid-template-columns: repeat(var(--ref-description-columns), max-content minmax(0, 1fr));
   gap: 4px 8px;
   margin: 0;
   font-size: 12px;
@@ -10,14 +11,44 @@
 }
 
 .ui-description-list[data-columns='2'] {
-  grid-template-columns: repeat(2, max-content minmax(0, 1fr));
+  --ref-description-columns: 2;
+}
+
+.ui-description-list[data-columns='3'] {
+  --ref-description-columns: 3;
+}
+
+.ui-description-list[data-columns='4'] {
+  --ref-description-columns: 4;
 }
 
 .ui-description-list__row {
+  --ref-description-span: 1;
   display: grid;
-  grid-column: span 2;
+  grid-column: span calc(2 * var(--ref-description-span));
   grid-template-columns: subgrid;
   align-items: baseline;
+}
+
+.ui-description-list__row[data-span='2'] {
+  --ref-description-span: 2;
+}
+
+.ui-description-list__row[data-span='3'] {
+  --ref-description-span: 3;
+}
+
+.ui-description-list__row[data-span='4'] {
+  --ref-description-span: 4;
+}
+
+/* A row covering the whole line, or more columns than the list has, spans the full line. */
+.ui-description-list__row[data-span='full'],
+.ui-description-list[data-columns='1'] .ui-description-list__row:not([data-span='1']),
+.ui-description-list[data-columns='2']
+  .ui-description-list__row:is([data-span='3'], [data-span='4']),
+.ui-description-list[data-columns='3'] .ui-description-list__row[data-span='4'] {
+  grid-column: 1 / -1;
 }
 
 .ui-description-list__label {
@@ -28,41 +59,48 @@
 
 .ui-description-list__value,
 .ui-description-list__secondary {
+  grid-column: 2 / -1;
   min-width: 0;
   margin: 0;
   overflow-wrap: anywhere;
 }
 
 .ui-description-list__secondary {
-  grid-column: 2;
   color: var(--ref-muted);
 }
 
 .ui-description-list[data-layout='stacked'] {
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: repeat(var(--ref-description-columns), minmax(0, 1fr));
   gap: 12px;
 }
 
-.ui-description-list[data-layout='stacked'][data-columns='2'] {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
 .ui-description-list[data-layout='stacked'] .ui-description-list__row {
-  grid-column: auto;
+  grid-column: span var(--ref-description-span);
   grid-template-columns: minmax(0, 1fr);
   gap: 4px;
 }
 
-.ui-description-list[data-layout='stacked'] .ui-description-list__secondary {
+.ui-description-list[data-layout='stacked'] .ui-description-list__row[data-span='full'],
+.ui-description-list[data-layout='stacked'][data-columns='1']
+  .ui-description-list__row:not([data-span='1']),
+.ui-description-list[data-layout='stacked'][data-columns='2']
+  .ui-description-list__row:is([data-span='3'], [data-span='4']),
+.ui-description-list[data-layout='stacked'][data-columns='3']
+  .ui-description-list__row[data-span='4'] {
+  grid-column: 1 / -1;
+}
+
+.ui-description-list[data-layout='stacked']
+  :is(.ui-description-list__value, .ui-description-list__secondary) {
   grid-column: auto;
 }
 
 @media (max-width: 44rem) {
-  .ui-description-list[data-columns='2'] {
-    grid-template-columns: max-content minmax(0, 1fr);
+  .ui-description-list.ui-description-list {
+    --ref-description-columns: 1;
   }
 
-  .ui-description-list[data-layout='stacked'][data-columns='2'] {
-    grid-template-columns: minmax(0, 1fr);
+  .ui-description-list .ui-description-list__row.ui-description-list__row {
+    grid-column: 1 / -1;
   }
 }

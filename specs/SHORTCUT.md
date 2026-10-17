@@ -1,6 +1,6 @@
 # Shortcut
 
-`Shortcut` shows a keyboard chord in the notation of the reader's platform: symbols without separators on macOS (`⇧⌘K`), key names joined by `+` elsewhere (`Ctrl+Shift+K`). Callers write one canonical chord; the formatting functions give the same text for tooltips and descriptions. `KeyHints` composes shortcuts into a key legend on one metadata line ([META-LINE.md](META-LINE.md)). A shortcut only reports a binding; it never registers or activates one.
+`Shortcut` shows a keyboard chord, or a sequence of chords, in the notation of the reader's platform: symbols without separators on macOS (`⇧⌘K`), key names joined by `+` elsewhere (`Ctrl+Shift+K`). Callers write one canonical chord; the formatting functions give the same text for tooltips and descriptions. `KeyHints` composes shortcuts into a key legend on one metadata line ([META-LINE.md](META-LINE.md)). A shortcut only reports a binding; it never registers or activates one.
 
 ## UIC-SHORTCUT-1 - Formatting
 
@@ -46,6 +46,13 @@ Verification: `src/components/shortcut/shortcut-format.test.ts`
 Implementation: `src/components/shortcut/shortcut-format.ts`
 Verification: `src/components/shortcut/shortcut-format.test.ts`
 
+### UIC-SHORTCUT-1.7 - Key sequences
+
+A sequence shall be an array of chords pressed one after another, such as `['G', 'I']` or `['Ctrl+K', 'Ctrl+C']`. `formatShortcut` shall draw each chord in platform notation and join them with a space (`G I`, `⌘K ⌘C`), and `formatShortcutAccessibleText` shall join the chords' readable words with the provider string `shortcutSequence` (`G, then I`), which the `sequence` option replaces for one call. Chords with an empty key are skipped, a sequence of one chord reads as that chord, and `formatShortcutTooltip` and `formatShortcutDescription` take sequences too. `formatAriaKeyShortcuts` takes single chords only, because `aria-keyshortcuts` cannot express a sequence.
+
+Implementation: `src/components/shortcut/shortcut-format.ts`, `src/core/common-strings.ts`
+Verification: `src/components/shortcut/shortcut-format.test.ts`
+
 ## UIC-SHORTCUT-2 - Shortcut
 
 ### UIC-SHORTCUT-2.1 - Keycaps
@@ -69,6 +76,13 @@ Verification: `src/components/shortcut/shortcut.test.tsx`, `e2e/shortcut.spec.ts
 Implementation: `src/components/shortcut/shortcut.tsx`
 Verification: `src/components/shortcut/shortcut.test.tsx`
 
+### UIC-SHORTCUT-2.4 - Sequences
+
+`Shortcut` given a sequence of two or more chords shall draw each chord's keycaps in a `ui-shortcut__chord` slot inside `ui-shortcut__keys`, the chords separated by a space, so its text equals `formatShortcut`; its readable text is the sequence's ([UIC-SHORTCUT-1.7](#uic-shortcut-17---key-sequences)). A single chord draws its keycaps directly in `ui-shortcut__keys`. `KeyHints` accepts sequences among a hint's keys.
+
+Implementation: `src/components/shortcut/shortcut.tsx`, `labs/reference/shortcut.css`
+Verification: `src/components/shortcut/shortcut.test.tsx`, `e2e/shortcut.spec.ts`
+
 ## UIC-SHORTCUT-3 - Key hints
 
 ### UIC-SHORTCUT-3.1 - Legend
@@ -91,6 +105,7 @@ Verification: `src/components/shortcut/shortcut.test.tsx`
 | ---------------------- | --------- | ------------------------- | ------------------------------------------------------------- |
 | `ui-shortcut`          | root      |                           | The chord's `<kbd>` (React Aria `Keyboard`).                  |
 | `ui-shortcut__keys`    | slot      |                           | The keycaps and separators, hidden from assistive technology. |
+| `ui-shortcut__chord`   | slot      |                           | One chord's keycaps in a sequence.                            |
 | `ui-shortcut__key`     | slot      |                           | One keycap `<kbd>`.                                           |
 | `ui-shortcut__text`    | slot      |                           | The readable text, visually hidden. Absent when `decorative`. |
 | `data-platform`        | attribute | `mac`, `windows`, `linux` | The notation drawn.                                           |

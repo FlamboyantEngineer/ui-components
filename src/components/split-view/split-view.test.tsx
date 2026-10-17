@@ -15,8 +15,25 @@ import {
   SplitView,
   resolveInitialSplitSize,
   resolveSplitBounds,
+  type SplitViewHandle,
   type SplitViewPane,
 } from './split-view.js';
+
+const fruit = ['Apples', 'Bananas', 'Cherries'];
+
+function threePanes(extra: Partial<Parameters<typeof SplitView>[0]> = {}) {
+  return (
+    <SplitView
+      panes={[{ id: 'a' }, { id: 'b' }, { id: 'c' }]}
+      defaultSizes={[20, 30, 50]}
+      {...extra}
+    >
+      {fruit.map((name) => (
+        <p key={name}>{name}</p>
+      ))}
+    </SplitView>
+  );
+}
 
 const panes: [SplitViewPane, SplitViewPane] = [
   { id: 'list', minSize: 10, maxSize: 80 },
@@ -245,6 +262,210 @@ describe('SplitView', () => {
     storage.setItem('fruit.split', 'wide');
     render(<UiProvider storage={storage}>{resizable({ persistKey: 'fruit.split' })}</UiProvider>);
     expect(screen.getByRole('separator')).toHaveAttribute('aria-valuenow', '30');
+  });
+});
+
+describe('SplitView panes', () => {
+  it('UIC-SPLIT-VIEW-2.1 UIC-SPLIT-VIEW-2.2 lays out three panes with a separator between each pair', async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      threePanes({ separatorLabel: (index: number) => `Resize ${fruit[index]}` }),
+    );
+    const root = container.firstElementChild!;
+    expect(Array.from(root.children, (child) => child.getAttribute('role') ?? child.id)).toEqual([
+      'a',
+      'separator',
+      'b',
+      'separator',
+      'c',
+    ]);
+    const [a, b, c] = ['a', 'b', 'c'].map((id) => document.getElementById(id)!);
+    expect(a).toHaveAttribute('data-pane', 'first');
+    expect(b).toHaveAttribute('data-pane', 'second');
+    expect(c).not.toHaveAttribute('data-pane');
+    expect(c).toHaveAttribute('data-flexible', 'true');
+    expect(a).not.toHaveAttribute('data-flexible');
+    expect(a!.style.flexBasis).toBe('20%');
+    expect(b!.style.flexBasis).toBe('30%');
+    expect(c!.style.flexBasis).toBe('');
+    const first = screen.getByRole('separator', { name: 'Resize Apples' });
+    const second = screen.getByRole('separator', { name: 'Resize Bananas' });
+    expect(first).toHaveAttribute('aria-controls', 'a b');
+    expect(second).toHaveAttribute('aria-controls', 'b c');
+    expect(second).toHaveAttribute('aria-valuenow', '30');
+    expect(second).toHaveAttribute('aria-valuemax', '70');
+    expectHooksMatchSpec(container, 'SPLIT-VIEW', { slots: ['pane', 'grip'] });
+
+    second.focus();
+    await user.keyboard('{End}');
+    expect(b!.style.flexBasis).toBe('70%');
+    expect(a!.style.flexBasis).toBe('20%');
+    expect(first).toHaveAttribute('aria-valuemax', '80');
+  });
+
+  it('UIC-SPLIT-VIEW-2.3 controls every pane size and reports the sizes', async () => {
+    const user = userEvent.setup();
+    const onSizesChangeEnd = vi.fn();
+    function Controlled() {
+      const [sizes, setSizes] = useState<readonly number[]>([20, 30, 50]);
+      return threePanes({ sizes, onSizesChange: setSizes, onSizesChangeEnd });
+    }
+    render(<Controlled />);
+    const separator = screen.getAllByRole('separator')[0]!;
+    separator.focus();
+    await user.keyboard('{ArrowRight}');
+    expect(onSizesChangeEnd).toHaveBeenLastCalledWith([25, 25, 50]);
+    expect(separator).toHaveAttribute('aria-valuenow', '25');
+    expect(document.getElementById('b')!.style.flexBasis).toBe('25%');
+  });
+
+  it('UIC-SPLIT-VIEW-2.4 saves the sizes of three panes as a list and ignores ones that do not fit', async () => {
+    const user = userEvent.setup();
+    const storage = createMemoryStorage({ trio: '[40,20,40]' });
+    const { unmount } = render(
+      <UiProvider storage={storage}>{threePanes({ persistKey: 'trio' })}</UiProvider>,
+    );
+    expect(screen.getAllByRole('separator')[0]).toHaveAttribute('aria-valuenow', '40');
+    screen.getAllByRole('separator')[1]!.focus();
+    await user.keyboard('{ArrowRight}');
+    expect(storage.getItem('trio')).toBe('[40,25,35]');
+    unmount();
+    storage.setItem('trio', '[40,60]');
+    render(<UiProvider storage={storage}>{threePanes({ persistKey: 'trio' })}</UiProvider>);
+    expect(screen.getAllByRole('separator')[0]).toHaveAttribute('aria-valuenow', '20');
+  });
+
+  it('UIC-SPLIT-VIEW-2.5 keeps a pixel pane in pixels and drags it pixel for pixel', async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <SplitView
+        panes={[{ id: 'rail', unit: 'pixel', minSize: 100, maxSize: 400 }, { id: 'main' }]}
+        defaultSizes={[240]}
+      >
+        {[<p key="a">Tools</p>, <p key="b">Canvas</p>]}
+      </SplitView>,
+    );
+    const rail = document.getElementById('rail')!;
+    const main = document.getElementById('main')!;
+    expect(rail.style.flexBasis).toBe('240px');
+    expect(main).toHaveAttribute('data-flexible', 'true');
+    const { handle } = prepareDrag(container);
+    expect(handle).toHaveAttribute('aria-valuenow', '240');
+    expect(handle).toHaveAttribute('aria-valuemin', '100');
+    pointer('pointerDown', handle, { clientX: 240 });
+    pointer('pointerMove', handle, { clientX: 300 });
+    pointer('pointerUp', handle, { clientX: 300 });
+    expect(rail.style.flexBasis).toBe('300px');
+    handle.focus();
+    await user.keyboard('{ArrowLeft}');
+    expect(handle).toHaveAttribute('aria-valuenow', '295');
+
+    render(
+      <SplitView
+        panes={[{ id: 'list' }, { id: 'aside', unit: 'pixel', minSize: 120 }]}
+        defaultSizes={[100, 200]}
+      >
+        {[<p key="a">List</p>, <p key="b">Aside</p>]}
+      </SplitView>,
+    );
+    const list = document.getElementById('list')!;
+    expect(list).toHaveAttribute('data-flexible', 'true');
+    expect(document.getElementById('aside')!.style.flexBasis).toBe('200px');
+    const trailing = screen.getAllByRole('separator')[1]!;
+    expect(trailing).toHaveAttribute('aria-valuenow', '200');
+    trailing.focus();
+    await user.keyboard('{ArrowRight}');
+    expect(trailing).toHaveAttribute('aria-valuenow', '195');
+  });
+
+  it('UIC-SPLIT-VIEW-2.6 collapses a pane by drag, Enter and Home and reports it', async () => {
+    const user = userEvent.setup();
+    const onCollapse = vi.fn();
+    const onExpand = vi.fn();
+    const { container } = render(
+      <SplitView
+        panes={[{ id: 'list' }, { id: 'detail', collapsible: true, minSize: 20 }]}
+        defaultSize={60}
+        onCollapse={onCollapse}
+        onExpand={onExpand}
+      >
+        {[<p key="a">List</p>, <button key="b">Detail</button>]}
+      </SplitView>,
+    );
+    const detail = document.getElementById('detail')!;
+    const { handle } = prepareDrag(container);
+    expect(handle).toHaveAttribute('aria-valuemax', '100');
+    pointer('pointerDown', handle, { clientX: 600 });
+    pointer('pointerMove', handle, { clientX: 880 });
+    expect(handle).toHaveAttribute('aria-valuenow', '80');
+    expect(detail).not.toHaveAttribute('data-collapsed');
+    pointer('pointerMove', handle, { clientX: 920 });
+    expect(handle).toHaveAttribute('aria-valuenow', '100');
+    expect(detail).toHaveAttribute('data-collapsed', 'true');
+    expect(detail).toHaveAttribute('inert');
+    expect(onCollapse).toHaveBeenLastCalledWith(1);
+    pointer('pointerUp', handle, { clientX: 920 });
+    expectHooksMatchSpec(container, 'SPLIT-VIEW', { slots: ['pane', 'grip'] });
+
+    handle.focus();
+    await user.keyboard('{Enter}');
+    expect(onExpand).toHaveBeenLastCalledWith(1);
+    expect(detail).not.toHaveAttribute('data-collapsed');
+    expect(detail).not.toHaveAttribute('inert');
+    expect(handle).toHaveAttribute('aria-valuenow', '80');
+    await user.keyboard('{Enter}');
+    expect(detail).toHaveAttribute('data-collapsed', 'true');
+    expect(onCollapse).toHaveBeenCalledTimes(2);
+    await user.keyboard('{Enter}');
+    await user.keyboard('{End}');
+    expect(detail).toHaveAttribute('data-collapsed', 'true');
+    expect(onCollapse).toHaveBeenCalledTimes(3);
+    await user.keyboard('{Home}');
+    expect(handle).toHaveAttribute('aria-valuenow', '10');
+    expect(onExpand).toHaveBeenCalledTimes(3);
+  });
+
+  it('UIC-SPLIT-VIEW-2.6 keeps a collapsed pane with a size usable', async () => {
+    const user = userEvent.setup();
+    render(
+      <SplitView
+        panes={[{ id: 'rail', collapsible: true, collapsedSize: 5, minSize: 20 }, { id: 'main' }]}
+        defaultSize={30}
+      >
+        {[<p key="a">Rail</p>, <p key="b">Main</p>]}
+      </SplitView>,
+    );
+    const separator = screen.getByRole('separator');
+    expect(separator).toHaveAttribute('aria-valuemin', '5');
+    separator.focus();
+    await user.keyboard('{Home}');
+    const rail = document.getElementById('rail')!;
+    expect(rail).toHaveAttribute('data-collapsed', 'true');
+    expect(rail).not.toHaveAttribute('inert');
+    expect(rail.style.flexBasis).toBe('5%');
+  });
+
+  it('UIC-SPLIT-VIEW-2.7 collapses, opens and resizes through the handle', () => {
+    const handleRef = createRef<SplitViewHandle>();
+    const onSizesChangeEnd = vi.fn();
+    render(
+      threePanes({
+        panes: [{ id: 'a' }, { id: 'b', collapsible: true }, { id: 'c' }],
+        handleRef,
+        onSizesChangeEnd,
+      }),
+    );
+    const [first, second] = screen.getAllByRole('separator');
+    act(() => handleRef.current!.collapse(1));
+    expect(document.getElementById('b')).toHaveAttribute('data-collapsed', 'true');
+    expect(onSizesChangeEnd).toHaveBeenLastCalledWith([20, 0, 80]);
+    act(() => handleRef.current!.collapse(0));
+    expect(onSizesChangeEnd).toHaveBeenCalledTimes(1);
+    act(() => handleRef.current!.expand(1));
+    expect(onSizesChangeEnd).toHaveBeenLastCalledWith([20, 30, 50]);
+    act(() => handleRef.current!.resize([50, 25, 25]));
+    expect(first).toHaveAttribute('aria-valuenow', '50');
+    expect(second).toHaveAttribute('aria-valuenow', '25');
   });
 });
 
