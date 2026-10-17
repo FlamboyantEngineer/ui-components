@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import {
   LoadingCard,
@@ -53,6 +53,46 @@ function RegionDemo() {
   );
 }
 
+function DelayDemo() {
+  const [isLoading, setLoading] = useState(false);
+  return (
+    <div data-lab-demo="delay">
+      <p>
+        <Button onPress={() => setLoading((value) => !value)}>
+          {isLoading ? 'Stop searching' : 'Start searching'}
+        </Button>
+      </p>
+      <LoadingRegion isLoading={isLoading} delay={500} label="Searching recipes">
+        <div style={{ width: 320, height: 160 }}>
+          <p>Soups, salads and stews.</p>
+          <Button>Open recipe</Button>
+        </div>
+      </LoadingRegion>
+    </div>
+  );
+}
+
+function FullscreenDemo() {
+  const [isLoading, setLoading] = useState(false);
+  useEffect(() => {
+    if (!isLoading) return undefined;
+    // Lab-only stand-in for the work finishing: Escape ends it.
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setLoading(false);
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [isLoading]);
+  return (
+    <div data-lab-demo="fullscreen">
+      <Button onPress={() => setLoading(true)}>Open the cookbook</Button>
+      {isLoading ? (
+        <LoadingOverlay fullscreen label="Opening the cookbook" data-lab-overlay="fullscreen" />
+      ) : null}
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -100,9 +140,21 @@ mountLab(
     </LabSection>
     <LabSection
       title="Blocking a form"
-      description="Start loading to block the form, then stop it."
+      description="Start loading to block the form, then stop it. The cover fades in and out with useEnterExit."
     >
       <RegionDemo />
+    </LabSection>
+    <LabSection
+      title="Show delay"
+      description="With delay={500}, the region blocks only once a search has run for half a second; stop it sooner and nothing flashes."
+    >
+      <DelayDemo />
+    </LabSection>
+    <LabSection
+      title="Full screen"
+      description="A full-screen overlay covers the viewport from the overlay layer until you press Escape."
+    >
+      <FullscreenDemo />
     </LabSection>
   </>,
 );

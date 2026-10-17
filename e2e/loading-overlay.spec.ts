@@ -80,4 +80,83 @@ test.describe('Loading Overlay lab', () => {
     await expect(input).toBeFocused();
     await lab.expectAccessible();
   });
+
+  test('UIC-LOADING-OVERLAY-2.4 UIC-ENTER-EXIT-1.3 fades the region cover out before removing it', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('loading-overlay');
+    // Slow the reference transitions so each phase holds until the test finishes it.
+    await page.addStyleTag({
+      content:
+        '[data-lab-demo="region"] .ui-loading-overlay { animation-duration: 60s !important; transition-duration: 60s !important; }',
+    });
+    const demo = page.locator('[data-lab-demo="region"]');
+    const cover = demo.locator('.ui-loading-overlay');
+    const finish = () =>
+      cover.evaluate((node) => {
+        const running = node.getAnimations();
+        for (const animation of running) animation.finish();
+        return running.length;
+      });
+    await demo.getByRole('button', { name: 'Start loading' }).click();
+    await expect(cover).toHaveAttribute('data-entering', 'true');
+    expect(await finish()).toBeGreaterThan(0);
+    await expect(cover).not.toHaveAttribute('data-entering');
+    await demo.getByRole('button', { name: 'Stop loading' }).click();
+    await expect(cover).toHaveAttribute('data-exiting', 'true');
+    await expect(demo.locator('.ui-loading-region')).not.toHaveAttribute('aria-busy');
+    expect(await cover.evaluate((node) => getComputedStyle(node).pointerEvents)).toBe('none');
+    expect(await finish()).toBeGreaterThan(0);
+    await expect(cover).toHaveCount(0);
+  });
+
+  test('UIC-LOADING-OVERLAY-3.2 blocks only once a search outlasts the delay', async ({
+    page,
+    lab,
+  }) => {
+    await page.clock.install();
+    await lab.open('loading-overlay');
+    // A paused clock keeps each step observable on a busy machine.
+    await page.clock.pauseAt(Date.now() + 1000);
+    const demo = page.locator('[data-lab-demo="delay"]');
+    const region = demo.locator('.ui-loading-region');
+    await demo.getByRole('button', { name: 'Start searching' }).click();
+    await page.clock.runFor(400);
+    await expect(region).not.toHaveAttribute('aria-busy');
+    await expect(region.locator('.ui-loading-overlay')).toHaveCount(0);
+    await demo.getByRole('button', { name: 'Stop searching' }).click();
+    await page.clock.runFor(1000);
+    await expect(region.locator('.ui-loading-overlay')).toHaveCount(0);
+
+    await demo.getByRole('button', { name: 'Start searching' }).click();
+    await page.clock.runFor(500);
+    await expect(region).toHaveAttribute('aria-busy', 'true');
+    await expect(region.getByRole('status')).toContainText('Searching recipes');
+    await expect(region.locator('.ui-loading-region__content')).toHaveAttribute('inert', '');
+    // Axe times itself with timers, so the clock runs again before checking.
+    await page.clock.resume();
+    await lab.expectAccessible();
+  });
+
+  test('UIC-LOADING-OVERLAY-2.3 covers the whole viewport in full-screen mode', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('loading-overlay');
+    const demo = page.locator('[data-lab-demo="fullscreen"]');
+    await demo.getByRole('button', { name: 'Open the cookbook' }).click();
+    const cover = page.locator('[data-lab-overlay="fullscreen"]');
+    await expect(cover).toHaveAttribute('data-fullscreen', 'true');
+    await expect(demo.locator('.ui-loading-overlay')).toHaveCount(0);
+    const viewport = page.viewportSize();
+    const box = await cover.boundingBox();
+    expect(box).toEqual({ x: 0, y: 0, width: viewport?.width, height: viewport?.height });
+    await expect(
+      page.getByRole('status').filter({ hasText: 'Opening the cookbook' }),
+    ).toBeVisible();
+    await lab.expectAccessible('.ui-loading-overlay[data-fullscreen]');
+    await page.keyboard.press('Escape');
+    await expect(cover).toHaveCount(0);
+  });
 });

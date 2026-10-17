@@ -104,7 +104,7 @@ test.describe('Load More lab', () => {
     const button = demo.locator('.ui-load-more');
     await scroller.scrollIntoViewIfNeeded();
     await expect(button).not.toHaveAttribute('data-pending');
-    const gap = await scroller.evaluate((node) => {
+    const gap = await scroller.evaluate((node: HTMLElement) => {
       const control = node.querySelector('.ui-load-more') as HTMLElement;
       node.scrollTop = control.offsetTop - node.offsetTop - node.clientHeight - 60;
       return control.getBoundingClientRect().top - node.getBoundingClientRect().bottom;
