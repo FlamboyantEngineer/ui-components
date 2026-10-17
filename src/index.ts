@@ -82,3 +82,4 @@ export * from './components/presence-strip/index.js';
 export * from './components/user-card/index.js';
 export * from './components/emoji-picker/index.js';
 export * from './components/pdf-viewer/index.js';
+export * from './components/tag-group/index.js';

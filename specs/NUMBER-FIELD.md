@@ -43,7 +43,7 @@ Verification: `src/components/number-field/number-field.test.tsx`
 
 ### UIC-NUMBER-FIELD-2.1 - Commit
 
-`NumberField` shall keep the text being typed apart from its value: the text becomes the value, through `onChange`, and commits, through `onCommit`, only when the input loses focus, when Enter is pressed and on each step. Intermediate text such as `-` or `1.` never becomes a value.
+`NumberField` shall keep the text being typed apart from its value: the text becomes the value, through `onChange`, and commits, through `onCommit`, only when the input loses focus, when Enter is pressed and on each step. Intermediate text such as `-` or `1.` never becomes a value. A value set from outside the input (a controlled value, restore, undo or a menu action) replaces the text.
 
 Implementation: `src/components/number-field/number-field.tsx`
 Verification: `src/components/number-field/number-field.test.tsx`, `e2e/number-field.spec.ts`

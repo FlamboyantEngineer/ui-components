@@ -15,6 +15,8 @@ const variants = [
   'checkbox',
   'switch',
   'segmented',
+  'dropdown',
+  'toggle-button',
 ] as const satisfies readonly BooleanFieldVariant[];
 
 function Output({ name, children }: { name: string; children: ReactNode }) {
@@ -62,6 +64,22 @@ function Labels() {
         trueLabel="Portrait"
         falseLabel="Landscape"
       />
+      <BooleanField
+        label="Delivery"
+        variant="dropdown"
+        defaultValue
+        trueLabel="Express"
+        falseLabel="Standard"
+        data-lab-field="dropdown-labels"
+      />
+      <BooleanField
+        label="Night mode"
+        variant="toggle-button"
+        defaultValue={false}
+        trueLabel="Enabled"
+        falseLabel="Off"
+        data-lab-field="toggle-labels"
+      />
     </>
   );
 }
@@ -89,25 +107,38 @@ function Unset() {
 }
 
 function Saved() {
-  const [saved, setSaved] = useState(false);
+  const [saved, setSaved] = useState({ ripe: false, fresh: false });
   return (
     <form
       data-lab-form
       onSubmit={(event) => {
         event.preventDefault();
-        setSaved(new FormData(event.currentTarget).get('ripe') === 'true');
+        const data = new FormData(event.currentTarget);
+        setSaved({ ripe: data.get('ripe') === 'true', fresh: data.get('fresh') === 'true' });
       }}
     >
       <BooleanField
         label="Ripe"
         name="ripe"
-        committedValue={saved}
+        committedValue={saved.ripe}
         defaultValue={false}
         description="Toggle, then undo with Ctrl+Z, restore, or save."
         data-lab-field="dirty"
       />
+      <BooleanField
+        label="Fresh"
+        name="fresh"
+        variant="toggle-button"
+        committedValue={saved.fresh}
+        defaultValue={false}
+        trueLabel="Fresh"
+        falseLabel="Stale"
+        menu={['set-default']}
+        data-lab-field="dirty-toggle"
+      />
       <button type="submit">Save</button>
-      <Output name="Saved">{String(saved)}</Output>
+      <Output name="Saved">{String(saved.ripe)}</Output>
+      <Output name="Saved fresh">{String(saved.fresh)}</Output>
     </form>
   );
 }
@@ -125,12 +156,15 @@ mountLab(
         )}
       />
     </LabSection>
-    <LabSection title="Labels" description="Switch captions and segment names.">
+    <LabSection
+      title="Labels"
+      description="Switch captions, segment and option names, and a toggle button that keeps the width of its widest name."
+    >
       <Labels />
     </LabSection>
     <LabSection
       title="Returning to unset"
-      description="With allowsUnset the checkbox and switch cycle unset, true and false; pressing the selected segment clears it."
+      description="With allowsUnset the checkbox, switch and toggle button cycle unset, true and false; pressing the selected segment clears it; the dropdown lists an unset option."
     >
       <Unset />
     </LabSection>

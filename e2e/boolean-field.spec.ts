@@ -106,4 +106,108 @@ test.describe('Boolean Field lab', () => {
     );
     await lab.expectAccessible();
   });
+  test('UIC-BOOLEAN-FIELD-3.1 UIC-BOOLEAN-FIELD-3.4 picks from the dropdown with the keyboard', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('boolean-field');
+    const resting = cell(page, 'dropdown', 'resting');
+    const trigger = resting.getByRole('button', { name: 'True Ripe' });
+    await expect(trigger).toHaveCSS('height', '28px');
+    await trigger.focus();
+    await page.keyboard.press('Enter');
+    const listbox = page.getByRole('listbox');
+    await expect(listbox.getByRole('option')).toHaveText(['True', 'False']);
+    await lab.expectAccessible('.ui-select-field__popover');
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('Enter');
+    await expect(listbox).toBeHidden();
+    await expect(resting.locator('.ui-field')).toHaveAttribute('data-value', 'false');
+    await expect(resting.getByRole('button', { name: 'False Ripe' })).toBeFocused();
+    await expect(
+      cell(page, 'dropdown', 'dirty').locator('.ui-select-field__previous del'),
+    ).toHaveText('True');
+    await expect(
+      cell(page, 'dropdown', 'read-only').locator('.ui-select-field__trigger'),
+    ).toHaveCSS('border-top-style', 'dashed');
+
+    await field(page, 'unset-dropdown').getByRole('button').first().click();
+    await expect(listbox.getByRole('option')).toHaveText(['Inherited', 'True', 'False']);
+    await listbox.getByRole('option', { name: 'True' }).click();
+    await expect(output(page, 'Value')).toHaveText('true');
+    await expect(field(page, 'dropdown-labels').getByRole('button').first()).toHaveAccessibleName(
+      'Express Delivery',
+    );
+  });
+
+  test('UIC-BOOLEAN-FIELD-3.2 UIC-BOOLEAN-FIELD-3.3 presses the toggle button at a fixed width', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('boolean-field');
+    const toggle = field(page, 'toggle-labels').locator('.ui-boolean-field__toggle-button');
+    await expect(toggle).toHaveAccessibleName('Off Night mode');
+    await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+    await expect(toggle).toHaveText('Off');
+    await expect(toggle.locator('.ui-boolean-field__caption')).toHaveCSS(
+      '--ui-boolean-field-caption-width',
+      /\d+px/,
+    );
+    const before = await toggle.boundingBox();
+    await toggle.focus();
+    await page.keyboard.press('Space');
+    await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+    await expect(toggle).toHaveText('Enabled');
+    const after = await toggle.boundingBox();
+    expect(Math.abs((after?.width ?? 0) - (before?.width ?? 0))).toBeLessThan(0.5);
+    await page.keyboard.press('Enter');
+    await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+
+    const cycling = field(page, 'unset-toggle-button').getByRole('button').first();
+    await expect(cycling).toHaveText('Inherited');
+    await cycling.click();
+    await expect(output(page, 'Value')).toHaveText('true');
+    const locked = cell(page, 'toggle-button', 'read-only').getByRole('button', {
+      name: 'True Ripe',
+    });
+    await locked.click();
+    await expect(locked).toHaveAttribute('aria-pressed', 'true');
+    await expect(
+      cell(page, 'toggle-button', 'disabled').getByRole('button', { name: 'True Ripe' }),
+    ).toBeDisabled();
+  });
+
+  test('UIC-BOOLEAN-FIELD-2.3 UIC-BOOLEAN-FIELD-3.4 shows, restores and saves a dirty toggle button', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('boolean-field');
+    const dirty = field(page, 'dirty-toggle');
+    const toggle = dirty.locator('.ui-boolean-field__toggle-button');
+    await expect(toggle).toHaveAccessibleName('Stale Fresh');
+    await toggle.click();
+    await expect(dirty).toHaveAttribute('data-dirty', 'true');
+    await expect(dirty.locator('.ui-boolean-field__previous del')).toHaveText('Stale');
+    await page.keyboard.press('ControlOrMeta+z');
+    await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+    await page.keyboard.press('ControlOrMeta+Shift+z');
+    await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+    await page.getByRole('button', { name: 'Save' }).click();
+    await expect(output(page, 'Saved fresh')).toHaveText('true');
+    await expect(dirty).not.toHaveAttribute('data-dirty');
+    await lab.expectAccessible();
+  });
+
+  test('UIC-BOOLEAN-FIELD-3.1 UIC-BOOLEAN-FIELD-3.2 pass axe in the dark theme, with the list open', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('boolean-field', { theme: 'dark' });
+    await expect(
+      field(page, 'toggle-labels').locator('.ui-boolean-field__toggle-button'),
+    ).toHaveCSS('border-top-style', 'solid');
+    await cell(page, 'dropdown', 'resting').getByRole('button', { name: 'True Ripe' }).click();
+    await expect(page.getByRole('listbox')).toBeVisible();
+    await lab.expectAccessible('.ui-select-field__popover');
+  });
 });

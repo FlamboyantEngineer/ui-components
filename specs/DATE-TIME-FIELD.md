@@ -20,7 +20,7 @@ Verification: `src/components/date-time-field/date-values.test.ts`, `src/compone
 
 ### UIC-DATE-TIME-FIELD-1.3 - Commit
 
-Every complete change, typed into the segments, picked from the calendar or set by a quick action, shall set the value and commit it, unless the value is out of bounds (UIC-DATE-TIME-FIELD-1.4). Clearing the segments sets `null`.
+Every complete change, typed into the segments, picked from the calendar or set by a quick action, shall set the value and commit it, unless the value is out of bounds (UIC-DATE-TIME-FIELD-1.4). An incomplete entry, with some segments still empty, stays in the segments as typed without changing the value. Clearing the segments sets `null`.
 
 Implementation: `src/components/date-time-field/date-time-field.tsx`, `src/components/date-time-field/date-time-pickers.tsx`
 Verification: `src/components/date-time-field/date-time-field.test.tsx`, `e2e/date-time-field.spec.ts`

@@ -135,6 +135,16 @@ describe('NumberField', () => {
     expect(onCommit).toHaveBeenLastCalledWith(-1);
   });
 
+  it('UIC-NUMBER-FIELD-2.1 replaces the text with a value set from outside the input', () => {
+    const { rerender } = render(<NumberField label="Weight" value={4} />);
+    const input = screen.getByRole('textbox');
+    expect(input).toHaveValue('4');
+    rerender(<NumberField label="Weight" value={7} />);
+    expect(input).toHaveValue('7');
+    rerender(<NumberField label="Weight" value={null} />);
+    expect(input).toHaveValue('');
+  });
+
   it('UIC-NUMBER-FIELD-2.2 clamps and snaps by default', async () => {
     const user = userEvent.setup();
     const onCommit = vi.fn();

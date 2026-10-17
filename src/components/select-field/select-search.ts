@@ -10,10 +10,10 @@ export type SelectFieldLoader = (
 
 export interface SelectSearchOptions {
   loadOptions?: SelectFieldLoader | undefined;
-  /** Shortest trimmed query that runs a search. */
-  minSearchLength: number;
-  /** Milliseconds to wait after the last keystroke before searching. */
-  searchDelay: number;
+  /** Shortest trimmed query that runs a search. Defaults to 1. */
+  minSearchLength?: number | undefined;
+  /** Milliseconds to wait after the last keystroke before searching. Defaults to 240. */
+  searchDelay?: number | undefined;
 }
 
 export interface SelectSearch {
@@ -25,10 +25,12 @@ export interface SelectSearch {
   hasFailed: boolean;
   /** The query is too short to search. */
   isTooShort: boolean;
+  /** The shortest query that searches. */
+  minSearchLength: number;
   search(query: string): void;
 }
 
-export const DEFAULT_SEARCH_DELAY = 240;
+const defaultSearchDelay = 240;
 
 function wait(milliseconds: number, signal: AbortSignal): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -50,8 +52,8 @@ function wait(milliseconds: number, signal: AbortSignal): Promise<void> {
  */
 export function useSelectSearch({
   loadOptions,
-  minSearchLength,
-  searchDelay,
+  minSearchLength = 1,
+  searchDelay = defaultSearchDelay,
 }: SelectSearchOptions): SelectSearch {
   const [seen, setSeen] = useState<readonly SelectFieldOption[]>([]);
   const list = useAsyncList<SelectFieldOption>({
@@ -71,6 +73,7 @@ export function useSelectSearch({
     isLoading: Boolean(loadOptions) && isLoading && !isTooShort,
     hasFailed: list.loadingState === 'error',
     isTooShort,
+    minSearchLength,
     search: (query) => {
       if (loadOptions) list.setFilterText(query);
     },
