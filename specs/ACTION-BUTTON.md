@@ -23,7 +23,7 @@ Verification: `src/components/action-button/action-button.test.tsx`, `e2e/action
 After the action resolves or rejects, the button shall return to its idle state. A rejection shall reach `onError`; without `onError` it is rethrown rather than swallowed.
 
 Implementation: `src/components/action-button/action-button.tsx`
-Verification: `src/components/action-button/action-button.test.tsx`
+Verification: `src/components/action-button/action-button.test.tsx`, `e2e/action-button.spec.ts`
 
 ### UIC-ACTION-BUTTON-1.4 - Disabled
 

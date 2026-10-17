@@ -21,9 +21,11 @@
   --ref-selected: rgb(9 105 218 / 0.12);
   --ref-accent: #0969da;
   --ref-accent-text: #ffffff;
+  --ref-accent-ink: #0969da;
   --ref-danger: #cf222e;
   --ref-warning: #9a6700;
   --ref-success: #1a7f37;
+  --ref-success-fill: #1a7f37;
   --ref-info: #0969da;
   --ref-focus: #0969da;
   --ref-shadow: 0 8px 24px rgb(66 74 83 / 0.2);
@@ -47,7 +49,8 @@
   --ref-pressed: rgb(240 246 252 / 0.14);
   --ref-selected: rgb(56 139 253 / 0.2);
   --ref-accent: #1f6feb;
-  --ref-danger: #f85149;
+  --ref-accent-ink: #4493f8;
+  --ref-danger: #ff7b72;
   --ref-warning: #d29922;
   --ref-success: #3fb950;
   --ref-info: #4493f8;
@@ -251,8 +254,8 @@ body {
   color: var(--ref-accent-text);
 }
 :is(.ui-button, .ui-icon-button)[data-variant='accent'] {
-  background: var(--ref-success);
-  border-color: var(--ref-success);
+  background: var(--ref-success-fill);
+  border-color: var(--ref-success-fill);
 }
 :is(.ui-button, .ui-icon-button):is(
     [data-variant='primary'],
@@ -262,7 +265,7 @@ body {
 }
 :is(.ui-button, .ui-icon-button)[data-variant='tertiary'] {
   background: transparent;
-  color: var(--ref-accent);
+  color: var(--ref-accent-ink);
 }
 :is(.ui-button, .ui-icon-button)[data-variant='danger'] {
   border-color: var(--ref-danger);
@@ -291,7 +294,7 @@ body {
   padding: 0;
   border: 0;
   background: none;
-  color: var(--ref-accent);
+  color: var(--ref-accent-ink);
   font-weight: inherit;
 }
 :is(.ui-button, .ui-icon-button)[data-variant='link']:is([data-hovered], [data-focus-visible]) {

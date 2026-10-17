@@ -1,36 +1,48 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { ActionButton } from '../../src/components/action-button/action-button.js';
+import { Button } from '../../src/components/button/button.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
-
-const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 function Counter() {
   const [runs, setRuns] = useState(0);
   const [error, setError] = useState('');
+  const release = useRef<(() => void) | null>(null);
+  const fail = useRef<((reason: Error) => void) | null>(null);
   return (
     <div>
       <ActionButton
         data-lab-action="save"
-        onPress={async () => {
-          await wait(800);
-          setRuns((value) => value + 1);
-        }}
+        onPress={() =>
+          new Promise<void>((resolve) => {
+            release.current = resolve;
+          }).then(() => setRuns((value) => value + 1))
+        }
       >
-        Save (800 ms)
+        Save
       </ActionButton>{' '}
       <ActionButton
         variant="secondary"
         data-lab-action="fail"
-        onPress={async () => {
-          await wait(400);
-          throw new Error('The request failed');
-        }}
+        onPress={() =>
+          new Promise<void>((_resolve, reject) => {
+            fail.current = reject;
+          })
+        }
         onError={(reason) => setError(String(reason))}
       >
-        Fail (400 ms)
-      </ActionButton>
+        Upload
+      </ActionButton>{' '}
+      <Button data-lab-action="finish" onPress={() => release.current?.()}>
+        Finish save
+      </Button>{' '}
+      <Button
+        data-lab-action="reject"
+        onPress={() => fail.current?.(new Error('The request failed'))}
+      >
+        Fail upload
+      </Button>
       <p>
-        Completed runs: <output data-lab-output="runs">{runs}</output>
+        Completed saves: <output data-lab-output="runs">{runs}</output>
       </p>
       <p>
         Last error: <output data-lab-output="error">{error || 'none'}</output>
@@ -43,7 +55,7 @@ mountLab(
   <>
     <LabSection
       title="Lifecycle"
-      description="Press repeatedly: each action runs once until it settles."
+      description="Each action stays pending until you finish or fail it; repeated presses are refused."
     >
       <Counter />
     </LabSection>
