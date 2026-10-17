@@ -78,7 +78,7 @@ export function renderLabPage({ name, title, group, description }) {
     <script type="module" src="build/${name}.js"></script>
   </head>
   <body>
-    <div id="lab-chrome"></div>
+    <header id="lab-chrome"></header>
     <main id="lab-root"></main>
   </body>
 </html>
@@ -115,7 +115,7 @@ ${items}
     <script type="module" src="build/index.js"></script>
   </head>
   <body>
-    <div id="lab-chrome"></div>
+    <header id="lab-chrome"></header>
     <main id="lab-index">
       <h1>Labs</h1>
 ${sections}    </main>

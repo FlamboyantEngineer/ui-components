@@ -54,8 +54,8 @@ Verification: `src/core/hooks.test.ts`
 
 The package shall ship no CSS, import no stylesheet, depend on no styling package, and define or require no CSS custom property. A component renders correctly unstyled, with only browser defaults.
 
-Implementation: `eslint.config.js`, `eslint-rules/index.js`, `scripts/check-package.mjs`
-Verification: `test/lint-rules.test.ts`
+Implementation: `eslint.config.js`, `eslint-rules/index.js`, `scripts/check-package.mjs`, `package.json`
+Verification: `test/lint-rules.test.ts`, `test/package.test.ts`
 
 ### UIC-HOOKS-3.2 - Functional inline styles only
 

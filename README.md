@@ -78,7 +78,13 @@ npm run build:labs   # bundle labs/src/*.lab.tsx into labs/build/
 npm run labs         # serve labs/ at http://127.0.0.1:4173/
 ```
 
-Labs are static HTML files; any static file server works. The published package contains the built labs in `labs/`.
+Labs are static HTML files; any static file server works. In a lab, the toolbar's stylesheet picker switches between no styles, the neutral reference sheet (`labs/reference.css`) and any stylesheet URL, and writes a theme value to a root attribute (`data-theme` by default). `?stylesheet=`, `?theme=` and `?themeAttribute=` preselect them, so a host can open a lab with its own stylesheet and theme:
+
+```text
+labs/provider.html?stylesheet=/assets/app.css&theme=dark
+```
+
+The published package contains the built labs in `labs/` ([specs/LABS.md](specs/LABS.md)).
 
 ## Develop
 

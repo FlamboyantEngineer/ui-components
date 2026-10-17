@@ -4,6 +4,7 @@ import { userEvent } from '@testing-library/user-event';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { Link, useLocale } from 'react-aria-components';
 import { describe, expect, it, vi } from 'vitest';
+import { expectHooksMatchSpec } from '../../test/hooks.js';
 import type { GlyphComponentProps } from './glyphs.js';
 import {
   Glyph,
@@ -29,9 +30,14 @@ function glyphMarkup(container: HTMLElement, slot: string) {
   return container.querySelector(`.ui-probe__${slot}`)?.outerHTML;
 }
 
-function heroicon(Component: typeof XMarkIcon, className: string) {
+function heroicon(Component: typeof XMarkIcon, name: string, slot: string) {
   return renderToStaticMarkup(
-    <Component className={className} aria-hidden="true" focusable="false" />,
+    <Component
+      className={`ui-glyph ui-probe__${slot}`}
+      data-glyph={name}
+      aria-hidden="true"
+      focusable="false"
+    />,
   );
 }
 
@@ -43,15 +49,17 @@ describe('UiProvider defaults', () => {
   it('UIC-PROVIDER-1.1 works without a provider using Heroicons and English strings', () => {
     const { container } = render(<Probe />);
     expect(screen.getByRole('button', { name: 'Close' })).toHaveAttribute('data-count', '2 items');
-    expect(glyphMarkup(container, 'close')).toBe(heroicon(XMarkIcon, 'ui-probe__close'));
-    expect(glyphMarkup(container, 'check')).toBe(heroicon(CheckIcon, 'ui-probe__check'));
+    expect(glyphMarkup(container, 'close')).toBe(heroicon(XMarkIcon, 'close', 'close'));
+    expect(glyphMarkup(container, 'check')).toBe(heroicon(CheckIcon, 'check', 'check'));
   });
 
-  it('UIC-PROVIDER-2.1 draws glyphs as decoration', () => {
-    const { container } = render(<Probe />);
-    const svg = container.querySelector('.ui-probe__close');
+  it('UIC-PROVIDER-2.1 draws glyphs as decoration with the glyph hooks', () => {
+    const { container } = render(<Glyph name="close" />);
+    const svg = container.querySelector('svg');
     expect(svg).toHaveAttribute('aria-hidden', 'true');
     expect(svg).toHaveAttribute('focusable', 'false');
+    expect(svg).toHaveAttribute('data-glyph', 'close');
+    expectHooksMatchSpec(container, 'PROVIDER');
   });
 });
 
@@ -65,7 +73,7 @@ describe('glyph replacement', () => {
     const close = container.querySelector('.ui-probe__close');
     expect(close).toHaveAttribute('data-glyph', 'star');
     expect(close).toHaveAttribute('aria-hidden', 'true');
-    expect(glyphMarkup(container, 'check')).toBe(heroicon(CheckIcon, 'ui-probe__check'));
+    expect(glyphMarkup(container, 'check')).toBe(heroicon(CheckIcon, 'check', 'check'));
   });
 });
 

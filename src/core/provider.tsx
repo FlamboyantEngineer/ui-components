@@ -15,6 +15,7 @@ import {
 } from 'react';
 import { I18nProvider, RouterProvider } from 'react-aria-components';
 import { defaultGlyphs, type GlyphComponent, type GlyphMap, type GlyphName } from './glyphs.js';
+import { mergeClassNames } from './hooks.js';
 import { createMemoryStorage, type UiStorage } from './storage.js';
 import { defaultStrings, type UiStrings } from './strings.js';
 
@@ -138,7 +139,14 @@ export interface GlyphProps {
 /** Draws a built-in glyph as decoration (hidden from assistive technology). */
 export function Glyph({ name, className }: GlyphProps) {
   const Component = useGlyph(name);
-  return <Component className={className} aria-hidden="true" focusable="false" />;
+  return (
+    <Component
+      className={mergeClassNames('ui-glyph', className)}
+      data-glyph={name}
+      aria-hidden="true"
+      focusable="false"
+    />
+  );
 }
 
 export interface PersistCodec<T> {

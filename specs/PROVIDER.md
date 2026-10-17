@@ -22,7 +22,7 @@ Verification: `src/core/provider.test.tsx`
 
 ### UIC-PROVIDER-2.1 - Built-in glyphs
 
-The library shall draw its built-in glyphs (`chevron-down`, `chevron-up`, `chevron-left`, `chevron-right`, `chevron-double-left`, `chevron-double-right`, `close`, `check`, `more`, `more-vertical`, `sort-ascending`, `sort-descending`, `sort-none`, `expand`, `collapse`, `search`, `info`, `warning`, `error`, `success`, `help`, `plus`, `minus`, `undo`, `redo`, `restore`) from a glyph map whose defaults are Heroicons 24px outline icons. A glyph is decorative: it renders with `aria-hidden="true"`, and its host component supplies the accessible name.
+The library shall draw its built-in glyphs (`chevron-down`, `chevron-up`, `chevron-left`, `chevron-right`, `chevron-double-left`, `chevron-double-right`, `close`, `check`, `more`, `more-vertical`, `sort-ascending`, `sort-descending`, `sort-none`, `expand`, `collapse`, `search`, `info`, `warning`, `error`, `success`, `help`, `plus`, `minus`, `undo`, `redo`, `restore`) from a glyph map whose defaults are Heroicons 24px outline icons. A glyph is decorative: it renders with `aria-hidden="true"`, and its host component supplies the accessible name. Every glyph carries the `ui-glyph` class and `data-glyph` with its name, so a host can size and colour glyphs without knowing which component drew them.
 
 Implementation: `src/core/glyphs.tsx`, `src/core/provider.tsx`
 Verification: `src/core/provider.test.tsx`
@@ -83,3 +83,10 @@ A stored value that cannot be parsed shall fall back to the component's initial 
 
 Implementation: `src/core/provider.tsx`, `src/core/storage.ts`
 Verification: `src/core/provider.test.tsx`
+
+## Hooks
+
+| Hook         | Kind      | Values | Description                                                                                       |
+| ------------ | --------- | ------ | ------------------------------------------------------------------------------------------------- |
+| `ui-glyph`   | root      |        | Every built-in glyph's `<svg>`, alongside the slot class of the component that draws it.          |
+| `data-glyph` | attribute |        | The glyph name (`close`, `chevron-down`, …), also passed to replacement glyphs from the provider. |

@@ -31,6 +31,7 @@ import type { ComponentType } from 'react';
 /** Props the library passes to a glyph component. Any SVG icon component that accepts them works. */
 export interface GlyphComponentProps {
   className?: string;
+  'data-glyph'?: string;
   'aria-hidden'?: boolean | 'true' | 'false';
   focusable?: boolean | 'true' | 'false';
 }
