@@ -10,6 +10,7 @@ export * from './components/description-list/index.js';
 export * from './components/prose-table/index.js';
 export * from './components/portal/index.js';
 export * from './components/projection/index.js';
+export * from './components/overflow-list/index.js';
 export * from './components/svg-markup/index.js';
 export * from './components/layout/index.js';
 export * from './components/split-view/index.js';

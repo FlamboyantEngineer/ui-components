@@ -1,6 +1,10 @@
 export { clamp } from './clamp.js';
 export { assignOccurrenceKeys } from './stable-keys.js';
 export type { KeyedValue } from './stable-keys.js';
+export { mergeProps, mergeRefs } from './merge-props.js';
+export type { MergedProps } from './merge-props.js';
+export { renderElement } from './render-element.js';
+export type { ElementRender, RenderElementOptions } from './render-element.js';
 export { copyRichText, copyText } from './clipboard.js';
 export type { ClipboardWriter, CopyOptions, RichCopyOptions, RichCopyResult } from './clipboard.js';
 export { DOWNLOAD_URL_LIFETIME, downloadBlob, downloadUrl } from './download.js';
@@ -60,6 +64,13 @@ export type {
   ScrollOverviewSegment,
 } from './scroll-overview.js';
 export { useScrollStripOverflow } from './use-scroll-strip-overflow.js';
+export { resolveOverflowCount, useOverflowItems } from './use-overflow-items.js';
+export type {
+  OverflowCollapseFrom,
+  OverflowCountInput,
+  OverflowItems,
+  OverflowItemsOptions,
+} from './use-overflow-items.js';
 export type {
   ScrollStripOptions,
   ScrollStripOverflow,
