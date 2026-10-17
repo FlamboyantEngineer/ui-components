@@ -7,6 +7,7 @@ import {
   ArrowsPointingInIcon,
   ArrowsPointingOutIcon,
   ArrowsUpDownIcon,
+  Bars2Icon,
   CheckCircleIcon,
   CheckIcon,
   ChevronDoubleLeftIcon,
@@ -66,6 +67,7 @@ export const defaultGlyphs = {
   undo: ArrowUturnLeftIcon,
   redo: ArrowUturnRightIcon,
   restore: ArrowPathIcon,
+  'drag-handle': Bars2Icon,
 } satisfies Record<string, GlyphComponent>;
 
 export type GlyphName = keyof typeof defaultGlyphs;
