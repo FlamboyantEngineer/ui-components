@@ -30,7 +30,7 @@ function checkBasket(value: string): FieldIssue | null {
 
 const stateProps: Record<(typeof states)[number], Partial<JsonEditorProps>> = {
   resting: { defaultValue: basket },
-  required: { defaultValue: '', isRequired: true },
+  required: { defaultValue: '', isRequired: true, placeholder: '{ "fruit": "…" }' },
   dirty: { committedValue: basket },
   invalid: { defaultValue: '{\n  "fruit": \n}' },
   warning: { defaultValue: '{\n  "count": 12\n}' },
@@ -117,10 +117,19 @@ mountLab(
         )}
       />
     </LabSection>
-    <LabSection title="Sizes" description="The starting height of each size.">
+    <LabSection
+      title="Sizes and line numbers"
+      description="The starting height of each size, with and without line numbers."
+    >
       <StateMatrix
-        axes={{ size: sizes }}
-        render={({ size }) => <Sample size={size as CodeEditorSize} defaultValue={basket} />}
+        axes={{ numbers: ['on', 'off'], size: sizes }}
+        render={({ numbers, size }) => (
+          <Sample
+            size={size as CodeEditorSize}
+            lineNumbers={numbers === 'on'}
+            defaultValue={basket}
+          />
+        )}
       />
     </LabSection>
     <LabSection

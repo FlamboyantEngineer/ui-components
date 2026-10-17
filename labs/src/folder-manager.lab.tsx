@@ -96,6 +96,7 @@ function MatrixCell({ state, root }: { state: string; root: string }) {
       aria-label="Folders"
       folders={state === 'loading' ? [] : folders}
       rootLabel={root === 'root' ? 'All folders' : undefined}
+      defaultSelectedKey="citrus"
       isPending={state === 'loading'}
       getDeleteBlockedReason={blockedReason}
       {...(state === 'editable' ? callbacks : {})}

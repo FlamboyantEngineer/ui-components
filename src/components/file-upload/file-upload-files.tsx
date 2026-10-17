@@ -19,6 +19,14 @@ export interface FileUploadItem {
   error?: string | undefined;
 }
 
+export interface FileUploadFilesProps {
+  /** Names the list. */
+  label: string;
+  files: readonly FileUploadItem[];
+  locale: string;
+  onRemove: ((id: Key) => void) | undefined;
+}
+
 /** Where a listed file stands, from its progress and error. */
 type FileUploadStatus = 'selected' | 'uploading' | 'complete' | 'error';
 
@@ -86,14 +94,6 @@ function FileRow({
       ) : null}
     </li>
   );
-}
-
-export interface FileUploadFilesProps {
-  /** Names the list. */
-  label: string;
-  files: readonly FileUploadItem[];
-  locale: string;
-  onRemove: ((id: Key) => void) | undefined;
 }
 
 /** The listed files, each with its size, upload progress or error, and a remove button. */

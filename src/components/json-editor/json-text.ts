@@ -8,10 +8,21 @@ export interface JsonErrorLocation {
   column: number;
 }
 
+interface PlacedToken {
+  text: string;
+  type: string;
+  offset: number;
+}
+
 const WHITESPACE = /^\s+/;
+
 const NUMBER = /^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?/;
+
 const LITERAL = /^(?:true|false|null)\b/;
+
 const PUNCTUATION = new Set(['{', '}', '[', ']', ':', ',']);
+
+const SCALARS = new Set(['key', 'string', 'number', 'literal']);
 
 /** The end of the string token starting at `start` (a double quote), past its closing quote. */
 function endOfString(source: string, start: number): number {
@@ -45,32 +56,10 @@ function readToken(source: string, index: number): CodeToken {
   return { text: character, type: PUNCTUATION.has(character) ? 'punctuation' : 'invalid' };
 }
 
-/**
- * Splits JSON text into highlighting tokens that cover it exactly: object keys, strings, numbers,
- * literals (`true`, `false`, `null`), punctuation and characters JSON does not allow.
- */
-export function tokenizeJson(source: string): CodeToken[] {
-  const tokens: CodeToken[] = [];
-  for (let index = 0; index < source.length; ) {
-    const token = readToken(source, index);
-    tokens.push(token);
-    index += token.text.length;
-  }
-  return tokens;
-}
-
 function locationAt(source: string, offset: number): JsonErrorLocation {
   const before = source.slice(0, offset).split('\n');
   return { line: before.length, column: (before.at(-1)?.length ?? 0) + 1 };
 }
-
-interface PlacedToken {
-  text: string;
-  type: string;
-  offset: number;
-}
-
-const SCALARS = new Set(['key', 'string', 'number', 'literal']);
 
 function placeTokens(source: string): PlacedToken[] {
   const placed: PlacedToken[] = [];
@@ -121,6 +110,20 @@ function findGrammarError(source: string): number | null {
   const grammar = createGrammar(tokens);
   if (grammar.value() && grammar.stop() === tokens.length) return null;
   return tokens[grammar.stop()]?.offset ?? source.length;
+}
+
+/**
+ * Splits JSON text into highlighting tokens that cover it exactly: object keys, strings, numbers,
+ * literals (`true`, `false`, `null`), punctuation and characters JSON does not allow.
+ */
+export function tokenizeJson(source: string): CodeToken[] {
+  const tokens: CodeToken[] = [];
+  for (let index = 0; index < source.length; ) {
+    const token = readToken(source, index);
+    tokens.push(token);
+    index += token.text.length;
+  }
+  return tokens;
 }
 
 /**

@@ -45,6 +45,19 @@ export interface FileUploadProps
   onRemove?: ((id: Key) => void) | undefined;
 }
 
+type IntakeOptions = FileRules & Pick<FileUploadProps, 'allowsMultiple' | 'onSelect' | 'onReject'>;
+
+interface CommandProps {
+  label: string;
+  /** The description element, if any. */
+  hint: ReactNode;
+  hintId: string | undefined;
+  isDisabled: boolean;
+  /** Wraps a button so pressing it opens the system file chooser. */
+  withChooser: (button: ReactElement) => ReactElement;
+  receive: (files: readonly File[]) => void;
+}
+
 function defaultDescription(rules: FileRules, strings: UiStrings, locale: string): string {
   const size = rules.maxSize ? strings.fileSizeLimit(formatBytes(rules.maxSize, locale)) : '';
   return formatMetaLine([rules.acceptedFileTypes?.join(', '), size]);
@@ -62,8 +75,6 @@ async function readDroppedFiles(items: readonly DropItem[]): Promise<File[]> {
   return Promise.all(items.filter(isFileDropItem).map((item) => item.getFile()));
 }
 
-type IntakeOptions = FileRules & Pick<FileUploadProps, 'allowsMultiple' | 'onSelect' | 'onReject'>;
-
 /** Checks offered files, reports the refusals and hands on the accepted ones. */
 function useFileIntake({ allowsMultiple, onSelect, onReject, ...rules }: IntakeOptions) {
   const [rejections, setRejections] = useState<FileRejection[]>([]);
@@ -74,17 +85,6 @@ function useFileIntake({ allowsMultiple, onSelect, onReject, ...rules }: IntakeO
     if (result.accepted.length > 0) onSelect(result.accepted);
   };
   return { rejections, receive };
-}
-
-interface CommandProps {
-  label: string;
-  /** The description element, if any. */
-  hint: ReactNode;
-  hintId: string | undefined;
-  isDisabled: boolean;
-  /** Wraps a button so pressing it opens the system file chooser. */
-  withChooser: (button: ReactElement) => ReactElement;
-  receive: (files: readonly File[]) => void;
 }
 
 function ButtonCommand({ label, hint, hintId, isDisabled, withChooser }: CommandProps) {
@@ -192,4 +192,5 @@ export function FileUpload({
 }
 
 export type { FileRejection, FileRejectionReason } from './file-rules.js';
+
 export type { FileUploadItem } from './file-upload-files.js';

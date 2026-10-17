@@ -5,6 +5,29 @@ import { useUiStrings } from '../../core/provider.js';
 import { IconButton } from '../icon-button/icon-button.js';
 import type { FolderEdit } from './use-folder-actions.js';
 
+export interface FolderNameInputProps {
+  edit: FolderEdit;
+  /** The message that describes the field while an attempt was refused. */
+  messageId: string | undefined;
+  inputRef: Ref<HTMLInputElement>;
+  onBlur: (name: string) => void;
+}
+
+/** A toolbar action: the button is drawn only when the action is offered. */
+export interface FolderToolAction {
+  isOffered: boolean;
+  isDisabled: boolean;
+  /** Why the action is unavailable, shown as the button's tooltip. */
+  reason?: string | null | undefined;
+  onPress: () => void;
+}
+
+export interface FolderToolbarProps {
+  create: FolderToolAction;
+  rename: FolderToolAction;
+  remove: FolderToolAction;
+}
+
 export const folderManagerHooks = createHooks('folder-manager', [
   'toolbar',
   'tree',
@@ -14,12 +37,27 @@ export const folderManagerHooks = createHooks('folder-manager', [
 
 const hooks = folderManagerHooks;
 
-export interface FolderNameInputProps {
-  edit: FolderEdit;
-  /** The message that describes the field while an attempt was refused. */
-  messageId: string | undefined;
-  inputRef: Ref<HTMLInputElement>;
-  onBlur: (name: string) => void;
+function ToolButton({
+  action,
+  icon,
+  label,
+}: {
+  action: FolderToolAction;
+  icon: 'plus' | 'edit' | 'delete';
+  label: string;
+}) {
+  if (!action.isOffered) return null;
+  return (
+    <IconButton
+      icon={icon}
+      label={label}
+      size="sm"
+      isDisabled={action.isDisabled}
+      focusableWhenDisabled={Boolean(action.reason)}
+      tooltip={action.reason ?? label}
+      onPress={action.onPress}
+    />
+  );
 }
 
 /**
@@ -43,44 +81,6 @@ export function FolderNameInput({ edit, messageId, inputRef, onBlur }: FolderNam
       autoFocus
       onFocus={(event) => event.currentTarget.select()}
       onBlur={(event) => onBlur(event.currentTarget.value)}
-    />
-  );
-}
-
-/** A toolbar action: the button is drawn only when the action is offered. */
-export interface FolderToolAction {
-  isOffered: boolean;
-  isDisabled: boolean;
-  /** Why the action is unavailable, shown as the button's tooltip. */
-  reason?: string | null | undefined;
-  onPress: () => void;
-}
-
-export interface FolderToolbarProps {
-  create: FolderToolAction;
-  rename: FolderToolAction;
-  remove: FolderToolAction;
-}
-
-function ToolButton({
-  action,
-  icon,
-  label,
-}: {
-  action: FolderToolAction;
-  icon: 'plus' | 'edit' | 'delete';
-  label: string;
-}) {
-  if (!action.isOffered) return null;
-  return (
-    <IconButton
-      icon={icon}
-      label={label}
-      size="sm"
-      isDisabled={action.isDisabled}
-      focusableWhenDisabled={Boolean(action.reason)}
-      tooltip={action.reason ?? label}
-      onPress={action.onPress}
     />
   );
 }

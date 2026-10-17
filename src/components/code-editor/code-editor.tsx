@@ -34,11 +34,6 @@ export type CodeEditorSize = Extract<Size, 'sm' | 'md' | 'lg'>;
 /** `soft` wraps long lines; `off` scrolls them sideways. */
 export type CodeEditorWrap = 'soft' | 'off';
 
-type TextAreaPassThrough = Omit<
-  AriaTextAreaProps,
-  'className' | 'style' | 'render' | 'children' | 'value' | 'defaultValue' | 'onChange' | 'wrap'
->;
-
 export interface CodeEditorProps extends TextAreaPassThrough, BaseProps {
   /** The source text, controlled. */
   value: string;
@@ -61,10 +56,33 @@ export interface CodeEditorProps extends TextAreaPassThrough, BaseProps {
   ref?: Ref<HTMLTextAreaElement> | undefined;
 }
 
+type TextAreaPassThrough = Omit<
+  AriaTextAreaProps,
+  'className' | 'style' | 'render' | 'children' | 'value' | 'defaultValue' | 'onChange' | 'wrap'
+>;
+
 interface Layers {
   input: RefObject<HTMLTextAreaElement | null>;
   highlight: RefObject<HTMLPreElement | null>;
   gutter: RefObject<HTMLDivElement | null>;
+}
+
+interface CodeAreaProps {
+  value: string;
+  onChange: ((value: string) => void) | undefined;
+  tokenize: CodeTokenizer | undefined;
+  wrap: CodeEditorWrap;
+  id: string | undefined;
+  /** The caller's text area props, without data attributes. */
+  props: TextAreaPassThrough;
+  inputRef: Ref<HTMLTextAreaElement>;
+  layers: Layers;
+  caretRef: RefObject<HTMLSpanElement | null>;
+  completion: CodeCompletionModel;
+  isInvalid: boolean;
+  describedBy: string | undefined;
+  /** The completion list's id, when the editor offers completions. */
+  listId: string | undefined;
 }
 
 function joinIds(...ids: Array<string | false | undefined>): string | undefined {
@@ -151,24 +169,6 @@ function useInputProps(
       props.onScroll?.(event);
     },
   };
-}
-
-interface CodeAreaProps {
-  value: string;
-  onChange: ((value: string) => void) | undefined;
-  tokenize: CodeTokenizer | undefined;
-  wrap: CodeEditorWrap;
-  id: string | undefined;
-  /** The caller's text area props, without data attributes. */
-  props: TextAreaPassThrough;
-  inputRef: Ref<HTMLTextAreaElement>;
-  layers: Layers;
-  caretRef: RefObject<HTMLSpanElement | null>;
-  completion: CodeCompletionModel;
-  isInvalid: boolean;
-  describedBy: string | undefined;
-  /** The completion list's id, when the editor offers completions. */
-  listId: string | undefined;
 }
 
 /** The highlighted copy and the text area over it. */
@@ -297,4 +297,5 @@ export function CodeEditor({
 }
 
 export type { CodeCompletion } from './code-completion.js';
+
 export type { CodeDiagnostic, CodeToken, CodeTokenizer } from './code-layers.js';

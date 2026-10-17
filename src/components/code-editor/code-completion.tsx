@@ -49,6 +49,13 @@ export interface CodeCompletionModel {
   handleKeyUp(event: KeyboardEvent<HTMLTextAreaElement>): void;
 }
 
+export interface CodeCompletionListProps {
+  model: CodeCompletionModel;
+  id: string;
+  inputRef: RefObject<HTMLTextAreaElement | null>;
+  caretRef: RefObject<HTMLSpanElement | null>;
+}
+
 interface CompletionState {
   caret: number;
   activeIndex: number;
@@ -59,23 +66,6 @@ interface CompletionState {
 const WORD_BEFORE_CARET = /[A-Za-z_$][\w$.]*$/;
 
 const NAVIGATION_KEYS = new Set(['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End']);
-
-/** The identifier-like word that ends at `caret`, or `''`. */
-export function findCompletionQuery(value: string, caret: number): string {
-  return WORD_BEFORE_CARET.exec(value.slice(0, caret))?.[0] ?? '';
-}
-
-/** The completions that extend `query`, ignoring case; none for an empty query. */
-export function matchCompletions(
-  completions: readonly CodeCompletion[],
-  query: string,
-): CodeCompletion[] {
-  if (!query) return [];
-  const prefix = query.toLowerCase();
-  return completions.filter(
-    ({ label }) => label !== query && label.toLowerCase().startsWith(prefix),
-  );
-}
 
 function step(index: number, delta: number, count: number): number {
   return (index + delta + count) % count;
@@ -106,6 +96,23 @@ function useInsertion(
     pendingCaret.current = start + text.length;
     onChange?.(`${input.value.slice(0, start)}${text}${input.value.slice(caret)}`);
   };
+}
+
+/** The identifier-like word that ends at `caret`, or `''`. */
+export function findCompletionQuery(value: string, caret: number): string {
+  return WORD_BEFORE_CARET.exec(value.slice(0, caret))?.[0] ?? '';
+}
+
+/** The completions that extend `query`, ignoring case; none for an empty query. */
+export function matchCompletions(
+  completions: readonly CodeCompletion[],
+  query: string,
+): CodeCompletion[] {
+  if (!query) return [];
+  const prefix = query.toLowerCase();
+  return completions.filter(
+    ({ label }) => label !== query && label.toLowerCase().startsWith(prefix),
+  );
 }
 
 /**
@@ -187,13 +194,6 @@ export function useCodeCompletion({
     handleKeyDown,
     handleKeyUp,
   };
-}
-
-export interface CodeCompletionListProps {
-  model: CodeCompletionModel;
-  id: string;
-  inputRef: RefObject<HTMLTextAreaElement | null>;
-  caretRef: RefObject<HTMLSpanElement | null>;
 }
 
 /**

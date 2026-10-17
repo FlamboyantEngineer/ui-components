@@ -20,6 +20,28 @@ export interface CodeDiagnostic {
   severity?: FieldSeverity | undefined;
 }
 
+export interface CodeHighlightProps {
+  tokens: readonly CodeToken[];
+  /** Where to place the caret marker, which anchors the completion list; `null` places none. */
+  caret: number | null;
+  caretRef: Ref<HTMLSpanElement>;
+  highlightRef: Ref<HTMLPreElement>;
+}
+
+export interface CodeGutterProps {
+  lines: readonly string[];
+  /** The worst severity reported on each line, by line number. */
+  severities: ReadonlyMap<number, FieldSeverity>;
+  /** The input's text width, so each hidden line copy wraps where the input wraps. */
+  textWidth: number | undefined;
+  gutterRef: Ref<HTMLDivElement>;
+}
+
+export interface CodeDiagnosticsProps {
+  id: string;
+  diagnostics: readonly CodeDiagnostic[];
+}
+
 export const codeEditorHooks = createHooks('code-editor', [
   'toolbar',
   'surface',
@@ -75,12 +97,9 @@ function renderToken(token: CodeToken | null, index: number, caretRef: Ref<HTMLS
   );
 }
 
-export interface CodeHighlightProps {
-  tokens: readonly CodeToken[];
-  /** Where to place the caret marker, which anchors the completion list; `null` places none. */
-  caret: number | null;
-  caretRef: Ref<HTMLSpanElement>;
-  highlightRef: Ref<HTMLPreElement>;
+function formatLocation({ line, column }: CodeDiagnostic): string {
+  if (line === undefined) return '';
+  return column === undefined ? `${line} ` : `${line}:${column} `;
 }
 
 /**
@@ -95,15 +114,6 @@ export function CodeHighlight({ tokens, caret, caretRef, highlightRef }: CodeHig
       {'\n'}
     </pre>
   );
-}
-
-export interface CodeGutterProps {
-  lines: readonly string[];
-  /** The worst severity reported on each line, by line number. */
-  severities: ReadonlyMap<number, FieldSeverity>;
-  /** The input's text width, so each hidden line copy wraps where the input wraps. */
-  textWidth: number | undefined;
-  gutterRef: Ref<HTMLDivElement>;
 }
 
 /**
@@ -130,11 +140,6 @@ export function CodeGutter({ lines, severities, textWidth, gutterRef }: CodeGutt
   );
 }
 
-function formatLocation({ line, column }: CodeDiagnostic): string {
-  if (line === undefined) return '';
-  return column === undefined ? `${line} ` : `${line}:${column} `;
-}
-
 /** The worst severity on each line that a diagnostic points at. */
 export function severitiesByLine(
   diagnostics: readonly CodeDiagnostic[],
@@ -145,11 +150,6 @@ export function severitiesByLine(
     lines.set(line, severity);
   }
   return lines;
-}
-
-export interface CodeDiagnosticsProps {
-  id: string;
-  diagnostics: readonly CodeDiagnostic[];
 }
 
 /** The diagnostics list. It stays in the document so new diagnostics are announced politely. */

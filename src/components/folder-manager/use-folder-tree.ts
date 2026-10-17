@@ -8,6 +8,18 @@ export interface FolderSelectionOptions {
   onSelectionChange?: ((key: Key | null) => void) | undefined;
 }
 
+export interface FolderExpansion {
+  expandedKeys: Key[];
+  onExpandedChange: (keys: Set<Key>) => void;
+  /** Expands these rows, so a draft row below them is in view. */
+  reveal: (keys: readonly Key[]) => void;
+}
+
+function findRow(region: HTMLElement, key: Key): HTMLElement | undefined {
+  const rows = region.querySelectorAll<HTMLElement>('[role="row"]');
+  return Array.from(rows).find((element) => element.dataset.key === String(key));
+}
+
 /** The selected folder (`null`: no folder), controlled or held here. */
 export function useFolderSelection({
   selectedKey,
@@ -22,13 +34,6 @@ export function useFolderSelection({
     onSelectionChange?.(key);
   };
   return [selected, select];
-}
-
-export interface FolderExpansion {
-  expandedKeys: Key[];
-  onExpandedChange: (keys: Set<Key>) => void;
-  /** Expands these rows, so a draft row below them is in view. */
-  reveal: (keys: readonly Key[]) => void;
 }
 
 /**
@@ -46,11 +51,6 @@ export function useFolderExpansion<T extends FolderItem>(
     reveal: (keys) =>
       setCollapsed((current) => new Set([...current].filter((key) => !keys.includes(key)))),
   };
-}
-
-function findRow(region: HTMLElement, key: Key): HTMLElement | undefined {
-  const rows = region.querySelectorAll<HTMLElement>('[role="row"]');
-  return Array.from(rows).find((element) => element.dataset.key === String(key));
 }
 
 /**
