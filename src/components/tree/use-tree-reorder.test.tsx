@@ -358,6 +358,52 @@ describe('Tree reordering', { timeout: 20_000 }, () => {
     expect(onMove).not.toHaveBeenCalled();
   });
 
+  it('UIC-TREE-REORDER-1.4 drags the selected rows together when the owner takes several moves', async () => {
+    const onMove = vi.fn();
+    const onMoveMany = vi.fn<(moves: readonly TreeMove[]) => void>();
+    render(
+      <ShelfTree
+        selectionMode="multiple"
+        defaultSelectedKeys={['apple', 'pear']}
+        reorder={{ canMove: (item) => item.id !== 'plum', onMove, onMoveMany }}
+      />,
+    );
+    const transfer = startDrag('Apple');
+    dragOver(transfer, 'Kiwi', 0.9);
+    expect(dropTargets()).toHaveLength(1);
+    await drop(transfer, 'Apple', 'Kiwi', 0.9);
+    expect(onMove).not.toHaveBeenCalled();
+    expect(onMoveMany).toHaveBeenCalledTimes(1);
+    const moves = onMoveMany.mock.lastCall?.[0] ?? [];
+    expect(moves.map((move) => move.key)).toEqual(['apple', 'pear']);
+    expect(moves[1]).toEqual({ key: 'pear', targetKey: 'apple', position: 'after' });
+    const applied = moves.reduce<readonly Shelf[]>(applyTreeMove, PANTRY);
+    expect(applied[0]?.children?.map((item) => item.id)).toEqual([
+      'plum',
+      'fig',
+      'kiwi',
+      'apple',
+      'pear',
+      'berries',
+    ]);
+  });
+
+  it('UIC-TREE-REORDER-1.4 refuses a drop of several rows where one of them cannot go', async () => {
+    const onMoveMany = vi.fn();
+    render(
+      <ShelfTree
+        selectionMode="multiple"
+        defaultSelectedKeys={['apple', 'kiwi']}
+        reorder={{ canMove: (item) => item.id !== 'kiwi', onMove: vi.fn(), onMoveMany }}
+      />,
+    );
+    const transfer = startDrag('Apple');
+    dragOver(transfer, 'Pear', 0.9);
+    expect(dropTargets()).toEqual([]);
+    await drop(transfer, 'Apple', 'Pear', 0.9);
+    expect(onMoveMany).not.toHaveBeenCalled();
+  });
+
   it('UIC-TREE-REORDER-1.2 moves one row at a time', async () => {
     const onMove = vi.fn();
     render(

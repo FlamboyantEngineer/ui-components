@@ -48,13 +48,19 @@ mountLab(
         )}
       />
     </LabSection>
-    <LabSection title="Content" description="Initials, a picture and a group, each with a status.">
+    <LabSection
+      title="Content"
+      description="Initials, a picture, a group and a square bot, each with a status."
+    >
       <StateMatrix
-        axes={{ content: ['initials', 'picture', 'group'], size: sizes }}
+        axes={{ content: ['initials', 'picture', 'group', 'square'], size: sizes }}
         render={({ content, size }) => (
           <PresenceAvatar
-            name={content === 'group' ? 'Design team' : 'Jon Berg'}
+            name={
+              content === 'group' ? 'Design team' : content === 'square' ? 'Build bot' : 'Jon Berg'
+            }
             kind={content === 'group' ? 'group' : 'person'}
+            shape={content === 'square' ? 'square' : undefined}
             src={content === 'picture' ? samplePicture : undefined}
             status="away"
             statusLabel="Away"
@@ -80,6 +86,50 @@ mountLab(
         statusLabel="Away"
         data-lab-avatar="card"
         card={<UserCard name="Jon Berg" src={samplePicture} status="away" statusLabel="Away" />}
+      />
+    </LabSection>
+    <LabSection
+      title="Name tooltip"
+      description="Rest the pointer on an avatar or Tab to it: a tooltip shows the name and status. The static avatar takes focus for it."
+    >
+      <p>
+        <PresenceAvatar
+          name="Maria Santos"
+          status="active"
+          statusLabel="Active"
+          nameTooltip
+          data-lab-avatar="tooltip-image"
+        />{' '}
+        <PresenceAvatar
+          name="Priya Nair"
+          src={samplePicture}
+          status="away"
+          statusLabel="Away"
+          nameTooltip
+          onPress={() => {}}
+          data-lab-avatar="tooltip-button"
+        />{' '}
+        <PresenceAvatar
+          name="Lena Ortiz"
+          status="busy"
+          statusLabel="Busy"
+          nameTooltip
+          card={<UserCard name="Lena Ortiz" status="busy" statusLabel="Busy" />}
+          data-lab-avatar="tooltip-card"
+        />
+      </p>
+    </LabSection>
+    <LabSection
+      title="Card on hover"
+      description="Rest the pointer on the avatar or Tab to it: after a short delay its card opens without taking focus."
+    >
+      <PresenceAvatar
+        name="Sam Okafor"
+        status="idle"
+        statusLabel="Idle"
+        cardTrigger="hover"
+        data-lab-avatar="hover-card"
+        card={<UserCard name="Sam Okafor" status="idle" statusLabel="Idle" description="Design" />}
       />
     </LabSection>
   </>,

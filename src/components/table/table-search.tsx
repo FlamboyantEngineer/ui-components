@@ -3,7 +3,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { Icon } from '../icon/icon.js';
 import { tableHooks as hooks } from './table-hooks.js';
 
-export interface TableFilterProps {
+export interface TableSearchProps {
   /** Accessible name and placeholder. */
   label: string;
   value: string;
@@ -11,7 +11,7 @@ export interface TableFilterProps {
 }
 
 /** The search box above a filterable table. Escape or the clear button empties it. */
-export function TableFilter({ label, value, onChange }: TableFilterProps) {
+export function TableSearch({ label, value, onChange }: TableSearchProps) {
   const strings = useUiStrings();
   return (
     <SearchField

@@ -24,7 +24,9 @@ describe('UserIdentity', () => {
     expect(container.querySelector('.ui-user-identity__description')).toHaveTextContent(
       'maria@example.com',
     );
-    expectHooksMatchSpec(container, 'USER-IDENTITY', { slots: 'all' });
+    expectHooksMatchSpec(container, 'USER-IDENTITY', {
+      slots: ['avatar', 'content', 'title', 'name', 'description'],
+    });
   });
 
   it('UIC-USER-IDENTITY-1.1 renders text as text and reads a blank name as unnamed', () => {
@@ -102,6 +104,49 @@ describe('UserIdentity', () => {
     expect(container.querySelector('[role], [tabindex], [aria-label]')).toBeNull();
     expect(screen.queryByRole('img')).toBeNull();
     expect(screen.getByText('Sam Okafor')).toBeVisible();
+  });
+
+  it('UIC-USER-IDENTITY-1.7 publishes the status with a badge named by its label after the text', () => {
+    const { container, rerender } = render(
+      <UserIdentity
+        name="Lena Ortiz"
+        description="Research"
+        status=" away "
+        statusLabel=" Away "
+      />,
+    );
+    const element = root(container);
+    expect(element).toHaveAttribute('data-status', 'away');
+    const badge = element.lastElementChild as HTMLElement;
+    expect(badge).toHaveClass('ui-user-identity__indicator');
+    expect(badge).toBe(screen.getByRole('img', { name: 'Away' }));
+    expect(element.querySelector('.ui-avatar')).toHaveAttribute('aria-hidden', 'true');
+    expectHooksMatchSpec(container, 'USER-IDENTITY', { slots: 'all' });
+
+    rerender(<UserIdentity name="Lena Ortiz" status="busy" />);
+    expect(container.querySelector('.ui-user-identity__indicator')).toHaveAttribute(
+      'aria-hidden',
+      'true',
+    );
+    expect(screen.queryByRole('img')).toBeNull();
+
+    rerender(<UserIdentity name="Lena Ortiz" status="  " statusLabel="Away" />);
+    expect(root(container)).not.toHaveAttribute('data-status');
+    expect(container.querySelector('.ui-user-identity__indicator')).toBeNull();
+  });
+
+  it('UIC-USER-IDENTITY-1.4 passes the picture attributes and shape to the avatar', () => {
+    const { container } = render(
+      <UserIdentity
+        name="Build bot"
+        src="/bot.png"
+        shape="rounded"
+        imageProps={{ loading: 'lazy', srcSet: '/bot-2x.png 2x' }}
+      />,
+    );
+    expect(container.querySelector('.ui-avatar')).toHaveAttribute('data-shape', 'rounded');
+    expect(container.querySelector('img')).toHaveAttribute('loading', 'lazy');
+    expect(container.querySelector('img')).toHaveAttribute('srcset', '/bot-2x.png 2x');
   });
 
   it('UIC-USER-IDENTITY-1.6 appends the caller class and forwards id and data attributes', () => {

@@ -1,6 +1,7 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { useState } from 'react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { Avatar } from '../avatar/avatar.js';
@@ -123,6 +124,34 @@ describe('UserCard', () => {
     expect(screen.getByRole('dialog', { name: 'Profile of Priya Nair' })).toBeInTheDocument();
   });
 
+  it('UIC-USER-CARD-1.7 shows a skeleton and is busy while the profile loads', () => {
+    const { container, rerender } = render(
+      <UserCard
+        name="Lena Ortiz"
+        description="Research"
+        statusLabel="Away"
+        details={[{ label: 'Team', value: 'Research' }]}
+        actions={actions}
+        isLoading
+      />,
+    );
+    const root = card(container);
+    expect(root).toHaveAttribute('data-loading', 'true');
+    expect(root).toHaveAttribute('aria-busy', 'true');
+    expect(root.querySelector('.ui-user-card__skeleton')).toHaveAttribute('aria-hidden', 'true');
+    expect(root.querySelector('.ui-user-identity__name')).toHaveTextContent('Lena Ortiz');
+    expect(
+      root.querySelector('.ui-user-card__status, .ui-user-card__details, .ui-user-card__actions'),
+    ).toBeNull();
+    expectHooksMatchSpec(container, 'USER-CARD', { slots: ['identity', 'skeleton'] });
+
+    rerender(<UserCard name="Lena Ortiz" statusLabel="Away" />);
+    expect(card(container)).not.toHaveAttribute('data-loading');
+    expect(card(container)).not.toHaveAttribute('aria-busy');
+    expect(container.querySelector('.ui-user-card__skeleton')).toBeNull();
+    expect(container.querySelector('.ui-user-card__status')).not.toBeNull();
+  });
+
   it('UIC-USER-CARD-1.6 appends the caller class and forwards id and data attributes', () => {
     const { container } = render(
       <UserCard
@@ -217,5 +246,156 @@ describe('UserCardTrigger', () => {
     expect(onAction).toHaveBeenCalledWith('message');
     expect(screen.queryByRole('dialog')).toBeNull();
     await waitFor(() => expect(trigger).toHaveFocus());
+  });
+});
+
+function hover(element: Element) {
+  fireEvent.pointerMove(element, { pointerType: 'mouse' });
+  fireEvent.pointerEnter(element, { pointerType: 'mouse' });
+  fireEvent.mouseEnter(element);
+}
+
+async function advance(ms: number) {
+  await act(async () => {
+    vi.advanceTimersByTime(ms);
+  });
+}
+
+describe('UserCardTrigger opening', () => {
+  afterEach(async () => {
+    // Let React Aria's global warm-up and cool-down timers settle between tests.
+    if (vi.isFakeTimers()) await advance(5000);
+    vi.useRealTimers();
+  });
+
+  function renderHoverTrigger(props: Partial<Parameters<typeof UserCardTrigger>[0]> = {}) {
+    return render(
+      <>
+        <button type="button">Before</button>
+        <UserCardTrigger
+          trigger="hover"
+          card={<UserCard name="Maria Santos" actions={actions} />}
+          {...props}
+        >
+          <Avatar name="Maria Santos" size="sm" />
+        </UserCardTrigger>
+      </>,
+    );
+  }
+
+  it('UIC-USER-CARD-2.3 opens on hover after the delay without taking focus, then closes', async () => {
+    vi.useFakeTimers();
+    const onPress = vi.fn();
+    renderHoverTrigger({ delay: 300, closeDelay: 100, onPress });
+    const trigger = screen.getByRole('button', { name: 'Maria Santos' });
+    expect(trigger).toHaveAttribute('aria-haspopup', 'dialog');
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    hover(trigger);
+    await advance(299);
+    expect(screen.queryByRole('dialog')).toBeNull();
+    await advance(1);
+    const dialog = screen.getByRole('dialog', { name: 'Maria Santos' });
+    expect(dialog.closest('.ui-user-card__popover')).toHaveAttribute(
+      'data-trigger',
+      'PreviewTrigger',
+    );
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    await advance(1000);
+    expect(dialog.contains(document.activeElement)).toBe(false);
+    expectHooksMatchSpec(document.body, 'USER-CARD', { slots: ['trigger', 'popover'] });
+
+    fireEvent.click(trigger);
+    expect(onPress).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    fireEvent.keyDown(trigger, { key: 'Escape' });
+    await advance(100);
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('UIC-USER-CARD-2.3 opens on keyboard focus after the delay and Tab moves into the card', async () => {
+    vi.useFakeTimers();
+    renderHoverTrigger({ delay: 300 });
+    const trigger = screen.getByRole('button', { name: 'Maria Santos' });
+    act(() => {
+      fireEvent.keyDown(document.body, { key: 'Tab' });
+      trigger.focus();
+    });
+    expect(screen.queryByRole('dialog')).toBeNull();
+    await advance(300);
+    expect(screen.getByRole('dialog', { name: 'Maria Santos' })).toBeInTheDocument();
+    expect(trigger).toHaveFocus();
+    fireEvent.keyDown(trigger, { key: 'Escape' });
+    await advance(1000);
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(trigger).toHaveFocus();
+
+    act(() => {
+      trigger.blur();
+      fireEvent.keyDown(document.body, { key: 'Tab' });
+      trigger.focus();
+    });
+    await advance(300);
+    const dialog = screen.getByRole('dialog', { name: 'Maria Santos' });
+    act(() => {
+      fireEvent.keyDown(trigger, { key: 'Tab' });
+    });
+    expect(dialog.contains(document.activeElement)).toBe(true);
+    expect(document.activeElement).toHaveClass('ui-user-card__action');
+  });
+
+  it('UIC-USER-CARD-2.3 stays closed while disabled', async () => {
+    vi.useFakeTimers();
+    renderHoverTrigger({ isDisabled: true, delay: 0 });
+    hover(screen.getByRole('button', { name: 'Maria Santos' }));
+    await advance(1000);
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('UIC-USER-CARD-2.4 follows a controlled open state in either mode', async () => {
+    const onOpenChange = vi.fn();
+    function Controlled({ trigger }: { trigger: 'press' | 'hover' }) {
+      const [isOpen, setOpen] = useState(true);
+      return (
+        <>
+          <button type="button" onClick={() => setOpen(!isOpen)}>
+            Toggle
+          </button>
+          <UserCardTrigger
+            trigger={trigger}
+            isOpen={isOpen}
+            onOpenChange={(open) => {
+              onOpenChange(open);
+              setOpen(open);
+            }}
+            card={<UserCard name="Maria Santos" />}
+          >
+            Maria Santos
+          </UserCardTrigger>
+        </>
+      );
+    }
+    const { unmount } = render(<Controlled trigger="press" />);
+    expect(screen.getByRole('dialog', { name: 'Maria Santos' })).toBeInTheDocument();
+    await userEvent.keyboard('{Escape}');
+    expect(onOpenChange).toHaveBeenLastCalledWith(false);
+    expect(screen.queryByRole('dialog')).toBeNull();
+    await userEvent.click(screen.getByRole('button', { name: 'Maria Santos' }));
+    expect(onOpenChange).toHaveBeenLastCalledWith(true);
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+    unmount();
+
+    render(<Controlled trigger="hover" />);
+    expect(screen.getByRole('dialog', { name: 'Maria Santos' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Toggle', hidden: true }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+  });
+
+  it('UIC-USER-CARD-2.4 opens at first with defaultOpen', () => {
+    render(
+      <UserCardTrigger defaultOpen card={<UserCard name="Maria Santos" />}>
+        Maria Santos
+      </UserCardTrigger>,
+    );
+    expect(screen.getByRole('dialog', { name: 'Maria Santos' })).toBeInTheDocument();
   });
 });

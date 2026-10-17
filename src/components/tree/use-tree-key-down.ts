@@ -3,6 +3,7 @@ import { useLocale } from 'react-aria-components';
 import type { TreeMoveDirection } from '../../utils/tree-reorder.js';
 import { isMoveChord } from '../../utils/use-reorder-drag-and-drop.js';
 import type { TreeItemData, TreeProps } from './tree.js';
+import type { TreeRename } from './use-tree-rename.js';
 import type { TreeReorder } from './use-tree-reorder.js';
 
 export interface TreeKeyDownOptions<T extends TreeItemData> extends Pick<
@@ -11,6 +12,8 @@ export interface TreeKeyDownOptions<T extends TreeItemData> extends Pick<
 > {
   /** Reordering, while the tree is reorderable. */
   reordering: TreeReorder<T> | null;
+  /** In-place renaming, while the owner takes renames. */
+  rename: TreeRename<T> | null;
 }
 
 /** The tree's handling of keys pressed in its rows, ahead of React Aria's. */
@@ -37,12 +40,14 @@ function toMoveDirection(key: string, isRightToLeft: boolean): TreeMoveDirection
 }
 
 /**
- * Keys pressed in a row: the owner's `onItemKeyDown` sees each first and may claim it, then Alt+Arrow
- * chords move the row when the tree is reorderable. Keys typed in editable elements are left alone.
+ * Keys pressed in a row: the owner's `onItemKeyDown` sees each first and may claim it, then F2
+ * renames the row when the owner takes renames and Alt+Arrow chords move it when the tree is
+ * reorderable. Keys typed in the rename field go to it alone; other editable elements are left alone.
  */
 export function useTreeKeyDown<T extends TreeItemData>({
   onItemKeyDown,
   reordering,
+  rename,
 }: TreeKeyDownOptions<T>): TreeKeyDown<T> {
   const { direction } = useLocale();
   const rowItems = useRef(new WeakMap<Element, T>());
@@ -54,11 +59,17 @@ export function useTreeKeyDown<T extends TreeItemData>({
     if (!reordering || !moveDirection || !isMoveChord(event)) return false;
     return reordering.moveByKeyboard({ key: item.id, direction: moveDirection });
   };
+  const renameByKey = (item: T, event: KeyboardEvent<HTMLElement>) =>
+    event.key === 'F2' && rename !== null && rename.start(item);
   const onKeyDownCapture = (event: KeyboardEvent<HTMLElement>) => {
+    if (rename?.isEditorEvent(event)) {
+      rename.onEditorKeyDown(event);
+      return;
+    }
     const row = findRow(event.target);
     const item = row ? rowItems.current.get(row) : undefined;
     if (!item) return;
-    if (onItemKeyDown?.(item, event) || moveByChord(item, event)) {
+    if (onItemKeyDown?.(item, event) || renameByKey(item, event) || moveByChord(item, event)) {
       event.preventDefault();
       event.stopPropagation();
     }

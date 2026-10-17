@@ -42,4 +42,49 @@ test.describe('Four Side Property Strip lab', () => {
     await lab.open('four-side-property-strip', { theme: 'dark' });
     await lab.expectAccessible();
   });
+
+  test('UIC-FOUR-SIDE-PROPERTY-STRIP-1.5 links opposite sides or all four from the toggle', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('four-side-property-strip');
+    const pairs = page.locator('[data-lab-cell="link=pairs"]');
+    const side = (area: typeof pairs, link: string, name: string) =>
+      area.getByRole('textbox', { name: `Padding ${link} ${name}` });
+    const toggle = pairs.getByRole('button', { name: 'Link opposite sides' });
+    await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+    await expect(pairs.locator('.ui-four-side-property-strip')).toHaveAttribute(
+      'data-linked',
+      'true',
+    );
+    await side(pairs, 'pairs', 'left').fill('20');
+    await expect(side(pairs, 'pairs', 'right')).toHaveValue('20');
+    await expect(side(pairs, 'pairs', 'top')).toHaveValue('8');
+
+    const all = page.locator('[data-lab-cell="link=all"]');
+    await side(all, 'all', 'bottom').fill('6');
+    for (const name of ['top', 'left', 'right']) {
+      await expect(side(all, 'all', name)).toHaveValue('6');
+    }
+    await lab.expectAccessible();
+  });
+
+  test('UIC-FOUR-SIDE-PROPERTY-STRIP-1.4 orders flow-relative sides by the reading direction', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('four-side-property-strip');
+    const xOf = (direction: string, name: string) =>
+      page
+        .getByRole('textbox', { name: `Inset ${direction} ${name}` })
+        .evaluate((element) => element.getBoundingClientRect().x);
+    const rtl = page.locator('[data-lab-cell="direction=rtl"]');
+    await expect(rtl.locator('.ui-property-strip-cell__letter')).toHaveText(['T', 'B', 'S', 'E']);
+    expect(await xOf('rtl', 'inline-start')).toBeGreaterThan(await xOf('rtl', 'inline-end'));
+    expect(await xOf('ltr', 'inline-start')).toBeLessThan(await xOf('ltr', 'inline-end'));
+    await expect(rtl.locator('[data-side="inline-start"]')).toHaveCount(1);
+    await lab.expectAccessible();
+  });
 });

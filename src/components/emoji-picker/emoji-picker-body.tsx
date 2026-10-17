@@ -1,21 +1,13 @@
 import type { ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
+import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Tab, TabList, TabPanel, Tabs } from '../tabs/tabs.js';
-import { EmojiGrid, type EmojiGridOptions } from './emoji-grid.js';
-import type { EmojiData, EmojiSearchState, EmojiTab } from './emoji-picker-state.js';
+import { useEmojiPickerContext } from './emoji-picker-context.js';
+import { EmojiGrid } from './emoji-grid.js';
 
-export interface EmojiTabsProps {
-  tabs: EmojiTab[];
-  tab: EmojiTab | undefined;
-  onTabChange(id: string): void;
-  grid: EmojiGridOptions;
-}
-
-export interface EmojiBodyProps extends EmojiTabsProps {
-  data: EmojiData;
-  search: EmojiSearchState;
-}
+/** The body part: caller attributes and class go on the element it shows. */
+export type EmojiPickerBodyProps = BaseProps;
 
 const hooks = createHooks('emoji-picker', ['categories', 'message']);
 const categoryIcons: Readonly<Record<string, string>> = {
@@ -32,22 +24,24 @@ const categoryIcons: Readonly<Record<string, string>> = {
   flags: '🏁',
 };
 
-function EmojiMessage({ children }: { children: ReactNode }) {
+function EmojiMessage({ children, className, ...rest }: BaseProps & { children: ReactNode }) {
   return (
-    <div {...hooks.slot('message')} role="status">
+    <div {...rest} {...hooks.slot('message', undefined, className)} role="status">
       {children}
     </div>
   );
 }
 
-function EmojiTabs({ tabs, tab, onTabChange, grid }: EmojiTabsProps) {
+function EmojiTabs({ className, ...rest }: BaseProps) {
   const strings = useUiStrings();
+  const { tabs, tab, setTabId, grid } = useEmojiPickerContext();
   return (
     <Tabs
+      {...rest}
       size="sm"
-      className={hooks.slotClass('categories')}
+      className={hooks.slot('categories', undefined, className).className}
       selectedKey={tab?.id}
-      onSelectionChange={(key) => onTabChange(String(key))}
+      onSelectionChange={(key) => setTabId(String(key))}
     >
       <TabList aria-label={strings.emojiCategories}>
         {tabs.map(({ id }) => (
@@ -66,13 +60,21 @@ function EmojiTabs({ tabs, tab, onTabChange, grid }: EmojiTabsProps) {
 }
 
 /** The loading or failure message, the category tabs, or the search results. */
-export function EmojiBody({ data, search, ...tabs }: EmojiBodyProps) {
+export function EmojiPickerBody(props: EmojiPickerBodyProps) {
   const strings = useUiStrings();
-  if (data.failed) return <EmojiMessage>{strings.emojiLoadFailed}</EmojiMessage>;
-  if (!data.emoji) return <EmojiMessage>{strings.loading}</EmojiMessage>;
-  if (!search.isSearching) return <EmojiTabs {...tabs} />;
-  if (search.results.length === 0) return <EmojiMessage>{strings.noResults}</EmojiMessage>;
+  const { data, search, grid } = useEmojiPickerContext();
+  if (data.failed) return <EmojiMessage {...props}>{strings.emojiLoadFailed}</EmojiMessage>;
+  if (!data.emoji) return <EmojiMessage {...props}>{strings.loading}</EmojiMessage>;
+  if (!search.isSearching) return <EmojiTabs {...props} />;
+  if (search.results.length === 0) {
+    return <EmojiMessage {...props}>{strings.noResults}</EmojiMessage>;
+  }
   return (
-    <EmojiGrid {...tabs.grid} label={strings.emojiCategory('search')} entries={search.results} />
+    <EmojiGrid
+      {...grid}
+      {...props}
+      label={strings.emojiCategory('search')}
+      entries={search.results}
+    />
   );
 }

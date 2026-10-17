@@ -1,4 +1,4 @@
-/** Strings of the folder manager, code and JSON editors, emoji picker and PDF viewer. */
+/** Strings of the folder manager, code and JSON editors, emoji picker, PDF viewer and data tables. */
 export interface ContentStrings {
   newFolder: string;
   /** Names the field that names a new folder. */
@@ -71,6 +71,43 @@ export interface ContentStrings {
   previousMatch: string;
   nextMatch: string;
   documentFailed: string;
+  /** Names a document view's panel of page thumbnails and outline, and its toggle. */
+  sidebar: string;
+  /** Names a document's page thumbnails. */
+  pages: string;
+  /** Names a document's outline (its bookmarks). */
+  outline: string;
+  /** Names one page of a document or a page navigation (`Page 3`). */
+  pageNumber: (pageNumber: number) => string;
+  rotateClockwise: string;
+  rotateCounterclockwise: string;
+  print: string;
+  download: string;
+  findOptions: string;
+  highlightAll: string;
+  matchCase: string;
+  ignoreAccents: string;
+  wholeWords: string;
+  password: string;
+  /** Asks for the password of a protected document. */
+  passwordRequired: string;
+  passwordIncorrect: string;
+  /** Opens a protected document with the password typed. */
+  openDocument: string;
+  /** Default name of a page navigation. */
+  pagination: string;
+  /** Names the page navigation of a named view (`Fruit pagination`). */
+  paginationOf: (name: string) => string;
+  /** Opens the menu that shows and hides a table's columns. */
+  columns: string;
+  /** Names the text a column filter keeps rows containing. */
+  contains: string;
+  /** Names the lower bound of a range filter. */
+  rangeFrom: string;
+  /** Names the upper bound of a range filter. */
+  rangeTo: string;
+  /** Names a table's summary row. */
+  summary: string;
 }
 
 const emojiCategoryNames: Readonly<Record<string, string>> = {
@@ -137,4 +174,28 @@ export const contentStrings: ContentStrings = {
   previousMatch: 'Previous match',
   nextMatch: 'Next match',
   documentFailed: 'The document could not be opened.',
+  sidebar: 'Sidebar',
+  pages: 'Pages',
+  outline: 'Outline',
+  pageNumber: (pageNumber) => `Page ${pageNumber}`,
+  rotateClockwise: 'Rotate clockwise',
+  rotateCounterclockwise: 'Rotate counterclockwise',
+  print: 'Print',
+  download: 'Download',
+  findOptions: 'Find options',
+  highlightAll: 'Highlight all',
+  matchCase: 'Match case',
+  ignoreAccents: 'Ignore accents',
+  wholeWords: 'Whole words',
+  password: 'Password',
+  passwordRequired: 'This document is protected. Enter its password to open it.',
+  passwordIncorrect: 'The password is incorrect. Try again.',
+  openDocument: 'Open',
+  pagination: 'Pagination',
+  paginationOf: (name) => `${name} pagination`,
+  columns: 'Columns',
+  contains: 'Contains',
+  rangeFrom: 'From',
+  rangeTo: 'To',
+  summary: 'Summary',
 };

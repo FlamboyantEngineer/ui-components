@@ -1,7 +1,8 @@
-import type { KeyboardEvent, ReactNode } from 'react';
+import type { KeyboardEvent, ReactNode, RefObject } from 'react';
 import { Input, Label, NumberField } from 'react-aria-components';
 import type { GlyphName } from '../../core/glyphs.js';
 import { useUiStrings } from '../../core/provider.js';
+import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import { IconButton } from '../icon-button/icon-button.js';
 import { ToolbarScroller } from '../toolbar-scroller/toolbar-scroller.js';
 import { ZoomControl } from '../zoom-control/zoom-control.js';
@@ -11,6 +12,13 @@ import { PdfViewerSearch } from './pdf-viewer-search.js';
 import type { PdfSearchControls, PdfSearchState } from './use-pdf-search.js';
 import type { PdfZoomState } from './use-pdf-zoom.js';
 
+/** The document commands of the toolbar's menu. */
+export interface PdfCommands {
+  rotate(degrees: 90 | -90): void;
+  print(): void;
+  download(): void;
+}
+
 export interface PdfViewerToolbarProps {
   label: string;
   isReady: boolean;
@@ -19,6 +27,12 @@ export interface PdfViewerToolbarProps {
   currentPage: number;
   onPageChange(pageIndex: number): void;
   search: PdfSearchState;
+  /** The viewer's own find field. */
+  findFieldRef: RefObject<HTMLInputElement | null>;
+  sidebar: { isOpen: boolean; setOpen(isOpen: boolean): void };
+  commands: PdfCommands;
+  /** The viewer's keyboard shortcuts. */
+  onKeyDown(event: KeyboardEvent<HTMLElement>): void;
   actions?: ReactNode;
   leadingActions?: ReactNode;
   /** Draws the find controls in place of the viewer's own. */
@@ -60,8 +74,48 @@ function keepCaretKeys(event: KeyboardEvent<HTMLElement>) {
 
 /** The find state a caller's controls receive, without the viewer's highlight bookkeeping. */
 function pickSearchControls(search: PdfSearchControls): PdfSearchControls {
-  const { query, setQuery, isPending, total, current, findNext, findPrevious } = search;
-  return { query, setQuery, isPending, total, current, findNext, findPrevious };
+  const { query, setQuery, options, setOptions, isPending, total, current } = search;
+  const { findNext, findPrevious } = search;
+  return {
+    query,
+    setQuery,
+    options,
+    setOptions,
+    isPending,
+    total,
+    current,
+    findNext,
+    findPrevious,
+  };
+}
+
+/** The menu of document commands: rotating the pages, printing them and saving the file. */
+function PdfViewerCommands({ isReady, commands }: { isReady: boolean; commands: PdfCommands }) {
+  const strings = useUiStrings();
+  return (
+    <DropdownMenu
+      iconOnly
+      icon="more-vertical"
+      label={strings.moreOptions}
+      size="sm"
+      isDisabled={!isReady}
+      items={[
+        {
+          id: 'rotate-clockwise',
+          label: strings.rotateClockwise,
+          onAction: () => commands.rotate(90),
+        },
+        {
+          id: 'rotate-counterclockwise',
+          label: strings.rotateCounterclockwise,
+          onAction: () => commands.rotate(-90),
+        },
+        { type: 'separator', id: 'output' },
+        { id: 'print', label: strings.print, onAction: commands.print },
+        { id: 'download', label: strings.download, onAction: commands.download },
+      ]}
+    />
+  );
 }
 
 function PdfViewerPageNav({
@@ -108,14 +162,18 @@ function PdfViewerPageNav({
 }
 
 /**
- * The caller's leading actions, zoom with its fit modes, page navigation, find and the caller's
- * actions, in one toolbar.
+ * The caller's leading actions, the sidebar toggle, zoom with its fit modes, page navigation, find,
+ * the document commands and the caller's actions, in one toolbar.
  */
 export function PdfViewerToolbar({
   label,
   isReady,
   zoom,
   search,
+  findFieldRef,
+  sidebar,
+  commands,
+  onKeyDown,
   actions,
   leadingActions,
   renderSearch,
@@ -123,9 +181,17 @@ export function PdfViewerToolbar({
 }: PdfViewerToolbarProps) {
   const strings = useUiStrings();
   return (
-    <div {...hooks.slot('toolbar')} onKeyDownCapture={keepCaretKeys}>
+    <div {...hooks.slot('toolbar')} onKeyDownCapture={keepCaretKeys} onKeyDown={onKeyDown}>
       <ToolbarScroller aria-label={strings.controlsFor(label)}>
         {leadingActions ? <div {...hooks.slot('leading-actions')}>{leadingActions}</div> : null}
+        <IconButton
+          icon="sidebar"
+          label={strings.sidebar}
+          size="sm"
+          isSelected={sidebar.isOpen}
+          isDisabled={!isReady}
+          onPress={() => sidebar.setOpen(!sidebar.isOpen)}
+        />
         <ZoomControl
           levels={pdfZoomLevels}
           value={zoom.percent}
@@ -148,8 +214,9 @@ export function PdfViewerToolbar({
         {renderSearch ? (
           renderSearch(pickSearchControls(search))
         ) : (
-          <PdfViewerSearch search={search} />
+          <PdfViewerSearch search={search} fieldRef={findFieldRef} />
         )}
+        <PdfViewerCommands isReady={isReady} commands={commands} />
         {actions ? <div {...hooks.slot('actions')}>{actions}</div> : null}
       </ToolbarScroller>
     </div>

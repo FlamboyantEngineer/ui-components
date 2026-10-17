@@ -5,6 +5,7 @@ test.describe('Tree lab', () => {
     page,
     lab,
   }) => {
+    test.slow(); // axe walks every tree of the lab
     await lab.open('tree');
     const tree = page.getByRole('treegrid', { name: 'Persisted folders' });
     const row = (name: string) => tree.getByRole('row', { name });
@@ -91,5 +92,97 @@ test.describe('Tree lab', () => {
     await expect(tree.getByRole('row', { name: 'Crate 1', exact: true })).toHaveCount(0);
     expect(await tree.getByRole('row').count()).toBeLessThan(60);
     await lab.expectAccessible('[data-lab-tree="virtualized"]');
+  });
+
+  test('UIC-TREE-5.1 UIC-TREE-5.2 cascades checkbox selection through branches', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('tree');
+    const area = page.locator('[data-lab-checkbox]');
+    const tree = area.getByRole('treegrid', { name: 'Destinations' });
+    const row = (label: string) => tree.getByRole('row', { name: label, exact: true });
+    await expect(row('Portugal')).toHaveAttribute('data-indeterminate', 'true');
+    await expect(row('Europe')).toHaveAttribute('data-indeterminate', 'true');
+    await row('Portugal').locator('.ui-tree__checkbox').click();
+    await expect(area.locator('[data-lab-output]')).toHaveText('Selected: lisbon, porto, portugal');
+    await expect(row('Portugal')).toHaveAttribute('aria-selected', 'true');
+    await row('Oslo').focus();
+    await page.keyboard.press('Space');
+    // Bergen is disabled: Oslo completes Norway, and with it Europe.
+    await expect(area.locator('[data-lab-output]')).toHaveText(
+      'Selected: europe, lisbon, norway, oslo, porto, portugal',
+    );
+    await expect(row('Europe')).toHaveAttribute('aria-selected', 'true');
+    await expect(row('Europe')).not.toHaveAttribute('data-indeterminate');
+    await expect(row('Bergen')).toHaveAttribute('aria-disabled', 'true');
+    await expect(row('Bergen')).not.toHaveAttribute('aria-selected', 'true');
+    await lab.expectAccessible('[data-lab-checkbox]');
+  });
+
+  test('UIC-TREE-6.1 filters rows by text and opens the way to each match', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('tree');
+    const area = page.locator('[data-lab-filter]');
+    const tree = area.getByRole('treegrid', { name: 'Filtered places' });
+    const names = () =>
+      tree
+        .getByRole('row')
+        .evaluateAll((rows) => rows.map((row) => row.getAttribute('aria-label')));
+    expect(await names()).toEqual(['Europe', 'Norway', 'Oslo', 'Asia', 'Japan', 'Osaka']);
+    await expect(tree.getByRole('row', { name: 'Oslo' }).locator('mark')).toHaveText('Os');
+    const field = area.getByRole('searchbox', { name: 'Filter places' });
+    await field.fill('ghana');
+    expect(await names()).toEqual(['Africa', 'Ghana']);
+    await tree.getByRole('row', { name: 'Ghana' }).focus();
+    await page.keyboard.press('ArrowRight');
+    expect(await names()).toEqual(['Africa', 'Ghana', 'Accra']);
+    await field.fill('zzz');
+    await expect(tree).toContainText('No places match');
+    await field.fill('');
+    expect(await names()).toEqual(['Europe', 'Asia', 'Africa']);
+    await lab.expectAccessible('[data-lab-filter]');
+  });
+
+  test('UIC-TREE-2.4 loads an opened branch and retries a failed load from the row', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('tree');
+    const tree = page.getByRole('treegrid', { name: 'Regions' });
+    await tree.getByRole('row', { name: 'North' }).focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(tree.getByRole('row', { name: 'North town 3' })).toBeVisible();
+    await tree.getByRole('row', { name: 'South' }).focus();
+    await page.keyboard.press('ArrowRight');
+    const error = tree.locator('.ui-tree__load-error');
+    await expect(error).toContainText('South is unreachable right now.');
+    await error.getByRole('button', { name: 'Retry' }).click();
+    await expect(tree.getByRole('row', { name: 'South town 1' })).toBeVisible();
+    await expect(error).toHaveCount(0);
+    await lab.expectAccessible('[data-lab-loading]');
+  });
+
+  test('UIC-TREE-7.1 renames a row in place with F2', async ({ page, lab }) => {
+    await lab.open('tree');
+    const tree = page.getByRole('treegrid', { name: 'Rename places' });
+    const portugal = tree.getByRole('row', { name: 'Portugal' });
+    await portugal.focus();
+    await page.keyboard.press('F2');
+    const field = tree.getByRole('textbox', { name: 'Rename Portugal' });
+    await expect(field).toBeFocused();
+    await page.keyboard.type('Lusitania');
+    await page.keyboard.press('Enter');
+    const renamed = tree.getByRole('row', { name: 'Lusitania' });
+    await expect(renamed).toBeFocused();
+    await page.keyboard.press('F2');
+    await page.keyboard.type('Elsewhere');
+    await page.keyboard.press('Escape');
+    await expect(renamed).toBeFocused();
+    await tree.getByRole('row', { name: 'Europe' }).focus();
+    await page.keyboard.press('F2');
+    await expect(tree.getByRole('textbox')).toHaveCount(0);
   });
 });

@@ -162,3 +162,25 @@
   height: 240px;
   overflow: auto;
 }
+
+.ui-tree__checkbox {
+  flex: none;
+}
+
+.ui-tree__rename-input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding: 1px 4px;
+  border: 1px solid var(--ref-accent);
+  border-radius: 4px;
+  background: var(--ref-canvas);
+  color: inherit;
+  font: inherit;
+}
+
+.ui-tree__load-error {
+  flex: 0 1 auto;
+  min-width: 0;
+  font-size: 12px;
+}

@@ -1,25 +1,38 @@
-import { useState, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import {
   ResizableTableContainer,
   Table as AriaTable,
   TableLayout,
   Virtualizer,
-  type Key,
-  type SortDescriptor,
   type TableProps as AriaTableProps,
 } from 'react-aria-components';
 import { splitDataAttributes } from '../../core/hooks.js';
 import type { BaseProps, Size } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { Pagination } from '../pagination/pagination.js';
 import type { TableColumnWidths } from './column-sizing.js';
-import { stateRowId, TableBody } from './table-body.js';
-import { TableFilter } from './table-filter.js';
-import { TableHeader } from './table-header.js';
+import { TableBody } from './table-body.js';
+import { TableColumnFilter } from './table-column-filter.js';
+import { getColumnText } from './table-column.js';
+import type { TableColumnGroup, TableColumnLayout } from './table-columns.js';
+import { TableSearch } from './table-search.js';
+import { isEmptyFilterValue, setColumnFilter, type TableFilter } from './table-filters.js';
+import { hasTableFooter, TableFooter } from './table-footer.js';
+import {
+  hasGroupRow,
+  renderTableWithTracks,
+  TableHeader,
+  type TableHeaderModel,
+} from './table-header.js';
 import { tableHooks as hooks } from './table-hooks.js';
 import type { TableColumn, TableRow } from './table-rows.js';
-import { useColumnWidths } from './use-column-widths.js';
+import { TableToolbar } from './table-toolbar.js';
+import type { TableChildRows } from './table-tree.js';
+import type { TableCellEdit } from './use-cell-editing.js';
 import { useTableGrid, type TableGrid } from './use-table-grid.js';
 import type { TableReorderOptions } from './use-table-reorder.js';
+import type { TablePagination } from './use-table-rows.js';
+import type { TableSortOptions } from './use-table-sort.js';
 
 export type TableSize = Extract<Size, 'sm' | 'md'>;
 
@@ -36,21 +49,45 @@ export interface TableProps<T extends TableRow>
       | 'onSortChange'
       | 'dragAndDropHooks'
     >,
+    TableSortOptions,
     BaseProps {
-  /** The data columns, in display order. */
+  /** The data columns, in declared order. */
   columns: readonly TableColumn<T>[];
-  /** The rows, each with an `id` unique in the table. */
+  /** The rows, each with an `id` unique in the table, nested rows included. */
   rows: readonly T[];
-  /** Controlled sort. The caller supplies `rows` in that order; the header reports it. */
-  sortDescriptor?: SortDescriptor | null | undefined;
-  /** Initial sort while the table owns the sort and orders `rows` itself. */
-  defaultSortDescriptor?: SortDescriptor | null | undefined;
-  /** Called on each header press: ascending, descending, then `null` for unsorted. */
-  onSortChange?: ((descriptor: SortDescriptor | null) => void) | undefined;
   /** Draws a search box that keeps the rows whose text contains every term. */
   filterable?: boolean | undefined;
   /** The search box's name. Defaults to the provider's `filterRows` string. */
   filterLabel?: string | undefined;
+  /**
+   * Controlled filter: the search query and the column filter values. The caller supplies `rows`
+   * filtered; `filterTableRows` filters them as the table does.
+   */
+  filter?: TableFilter | undefined;
+  /** Initial filter while the table owns the filter and filters `rows` itself. */
+  defaultFilter?: TableFilter | undefined;
+  /** Called with the whole filter after each change to the search box or a column filter. */
+  onFilterChange?: ((filter: TableFilter) => void) | undefined;
+  /** Group headers drawn above runs of the columns they name. */
+  columnGroups?: readonly TableColumnGroup[] | undefined;
+  /** Controlled column order and hidden columns. */
+  columnLayout?: TableColumnLayout | undefined;
+  /** Initial column order and hidden columns while the table owns them and none are stored. */
+  defaultColumnLayout?: TableColumnLayout | undefined;
+  /** Called with the layout after a column moves, hides or shows. */
+  onColumnLayoutChange?: ((layout: TableColumnLayout) => void) | undefined;
+  /** A row's child rows, drawn under it once it is expanded. */
+  getChildRows?: TableChildRows<T>;
+  /** Content of a full-width detail row under a row, drawn once the row is expanded. */
+  renderRowDetail?: ((row: T) => ReactNode) | undefined;
+  /** Reports a finished cell edit. The table never changes its rows itself. */
+  onCellEdit?: ((edit: TableCellEdit<T>) => void) | undefined;
+  /** Shows the rows one page at a time under a page navigation. */
+  pagination?: TablePagination | undefined;
+  /** Asks for more rows when the end of the rows scrolls into view. */
+  onLoadMore?: (() => void) | undefined;
+  /** More rows are loading: a loading row follows the rows. */
+  isLoading?: boolean | undefined;
   /** The rows are loading: a loading notice replaces them. */
   isPending?: boolean | undefined;
   /** The loading notice. Defaults to the provider's `loading` string. */
@@ -67,7 +104,7 @@ export interface TableProps<T extends TableRow>
   actionsColumnWidth?: number | undefined;
   /** Turns on row reordering by drag and drop and Alt+Arrow keys. */
   reorder?: TableReorderOptions<T> | undefined;
-  /** Storage key under which resized column widths persist. */
+  /** Storage key under which resized widths, column order and hidden columns persist. */
   persistKey?: string | undefined;
   /** Called once when a column resize ends, with the data columns' widths. */
   onColumnWidthsChange?: ((widths: TableColumnWidths) => void) | undefined;
@@ -83,52 +120,94 @@ export interface TableProps<T extends TableRow>
 
 const virtualRowHeights: Readonly<Record<TableSize, number>> = { md: 40, sm: 32 };
 
-function TableGridElement<T extends TableRow>({ grid }: { grid: TableGrid<T> }) {
-  const { ariaProps, view, reorder, reordering, onRowAction, body } = grid;
+/** What the header row shows, from the grid and the table's own props. */
+function createHeaderModel<T extends TableRow>(
+  grid: TableGrid<T>,
+  options: Pick<TableProps<T>, 'rows' | 'columnGroups'>,
+): TableHeaderModel<T> {
+  const { view } = grid;
+  const values = view.filter.columns ?? {};
+  return {
+    widths: grid.widths.widths,
+    groups: options.columnGroups ?? [],
+    pinOffsets: grid.pinOffsets,
+    onPinOffsets: grid.onPinOffsets,
+    sort: view.sort.descriptors,
+    isMultipleSort: view.sort.isMultiple,
+    dropTarget: grid.columnReorder.dropTarget,
+    isFiltered: (column) => !isEmptyFilterValue(values[column.id]),
+    renderFilter: (column) =>
+      column.filter ? (
+        <TableColumnFilter
+          column={column}
+          label={getColumnText(column)}
+          value={values[column.id]}
+          rows={options.rows}
+          onChange={(value) => view.onFilterChange(setColumnFilter(view.filter, column.id, value))}
+        />
+      ) : null,
+  };
+}
+
+function TableGridElement<T extends TableRow>({
+  grid,
+  options,
+}: {
+  grid: TableGrid<T>;
+  options: Pick<TableProps<T>, 'rows' | 'columnGroups'>;
+}) {
+  const { ariaProps, view, reordering, onRowAction, body, structure } = grid;
+  const header = createHeaderModel(grid, options);
   return (
     <AriaTable
       {...ariaProps}
       // React Aria keeps drag and drop hooks for a table's lifetime: remount when reorder toggles.
-      key={reorder ? 'reorder' : 'static'}
+      key={reordering ? 'reorder' : 'static'}
       className={hooks.slotClass('grid')}
-      sortDescriptor={view.sortDescriptor ?? undefined}
-      onSortChange={view.onSortChange}
-      onRowAction={onRowAction && ((key: Key) => key !== stateRowId && onRowAction(key))}
-      dragAndDropHooks={reorder ? reordering.dragAndDropHooks : undefined}
+      render={hasGroupRow(structure, header.groups) ? renderTableWithTracks : undefined}
+      treeColumn={structure.treeColumn ?? undefined}
+      sortDescriptor={view.sort.descriptors[0]}
+      onSortChange={view.sort.onSortChange}
+      onRowAction={onRowAction}
+      dragAndDropHooks={reordering?.dragAndDropHooks}
     >
-      <TableHeader structure={body.structure} widths={grid.widths} />
+      <TableHeader structure={structure} model={header} />
       <TableBody {...body} />
+      {body.status === null && hasTableFooter(structure) ? (
+        <TableFooter structure={structure} rows={view.presentedRows} pinOffsets={grid.pinOffsets} />
+      ) : null}
     </AriaTable>
   );
 }
 
 /**
- * A data table on React Aria's Table: columns and rows as plain data with render callbacks,
- * sorting, filtering, selection, resizable columns, row reordering, loading, empty and error
- * notices, and optional virtualization for long lists.
+ * A data table on React Aria's Table: columns and rows as plain data with render callbacks;
+ * sorting by one or several columns; a search box and column filters; selection; resizable,
+ * reorderable, hideable, pinned and grouped columns; nested and detail rows; cell editing; a
+ * summary row; row reordering; pagination, loading more and virtualization; and loading, empty and
+ * error notices.
  */
 export function Table<T extends TableRow>({
   size = 'md',
   stickyHeader,
-  virtualized,
   rowHeight,
   filterable,
   filterLabel,
-  persistKey,
-  onColumnWidthsChange,
   className,
   id,
   ...rest
 }: TableProps<T>) {
   const strings = useUiStrings();
-  const [query, setQuery] = useState('');
   const [dataAttributes, gridProps] = splitDataAttributes(rest);
-  const sizing = useColumnWidths({ columns: rest.columns, persistKey, onColumnWidthsChange });
-  const grid = useTableGrid({ ...gridProps, query, widths: sizing.widths });
+  const grid = useTableGrid(gridProps);
+  const { view, layout } = grid;
+  const { virtualized } = rest;
   const height = rowHeight ?? virtualRowHeights[size];
-  const element = <TableGridElement grid={grid} />;
+  const element = <TableGridElement grid={grid} options={rest} />;
+  const label = rest['aria-label'];
   return (
     <div
+      {...grid.rootProps}
       {...hooks.root({
         className,
         props: dataAttributes,
@@ -136,15 +215,24 @@ export function Table<T extends TableRow>({
       })}
       id={id}
       aria-busy={grid.body.status === 'loading' || undefined}
-      {...(grid.reorder ? grid.reordering.rootProps : {})}
     >
-      {filterable ? (
-        <TableFilter label={filterLabel ?? strings.filterRows} value={query} onChange={setQuery} />
-      ) : null}
+      <TableToolbar
+        filter={
+          filterable ? (
+            <TableSearch
+              label={filterLabel ?? strings.filterRows}
+              value={view.filter.query ?? ''}
+              onChange={(query) => view.onFilterChange({ ...view.filter, query })}
+            />
+          ) : null
+        }
+        columns={rest.columns}
+        layout={layout}
+      />
       <ResizableTableContainer
         className={hooks.slotClass('scroll')}
-        onResize={sizing.onResize}
-        onResizeEnd={sizing.onResizeEnd}
+        onResize={grid.widths.onResize}
+        onResizeEnd={grid.widths.onResizeEnd}
       >
         {virtualized ? (
           <Virtualizer
@@ -157,6 +245,15 @@ export function Table<T extends TableRow>({
           element
         )}
       </ResizableTableContainer>
+      {view.pages ? (
+        <Pagination
+          className={hooks.slotClass('pagination')}
+          aria-label={label ? strings.paginationOf(label) : undefined}
+          pageCount={view.pages.pageCount}
+          page={view.pages.page}
+          onPageChange={view.pages.onPageChange}
+        />
+      ) : null}
     </div>
   );
 }

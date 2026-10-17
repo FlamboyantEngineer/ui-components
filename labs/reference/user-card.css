@@ -61,6 +61,13 @@
   border-top: 1px solid var(--ref-border);
 }
 
+.ui-user-card__skeleton {
+  height: 72px;
+  border-radius: 4px;
+  background: repeating-linear-gradient(to bottom, var(--ref-border) 0 10px, transparent 10px 20px);
+  mask-image: linear-gradient(to right, #000 75%, transparent);
+}
+
 .ui-user-card__actions {
   display: flex;
   flex-wrap: wrap;

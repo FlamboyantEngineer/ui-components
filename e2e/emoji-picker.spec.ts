@@ -124,4 +124,124 @@ test.describe('Emoji Picker lab', () => {
     await page.keyboard.press('Escape');
     await lab.expectAccessible();
   });
+
+  test('UIC-EMOJI-PICKER-4.4 names and finds emoji in the language of the locale', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('emoji-picker');
+    const french = page.locator('[data-lab-picker="fr-FR"]');
+    const smileys = french.getByRole('grid', { name: 'Smileys & Emotion' });
+    await expect(smileys.getByRole('row').first()).toHaveAccessibleName('visage rieur');
+    await french.getByRole('searchbox').fill('pomme');
+    await expect(
+      french
+        .getByRole('grid', { name: 'Search results' })
+        .getByRole('row', { name: 'pomme rouge' }),
+    ).toBeVisible();
+    const japanese = page.locator('[data-lab-picker="ja-JP"]');
+    await expect(
+      japanese.getByRole('grid', { name: 'Smileys & Emotion' }).getByRole('row').first(),
+    ).toHaveAccessibleName('にっこり笑う');
+  });
+
+  test('UIC-EMOJI-PICKER-5.2 UIC-EMOJI-PICKER-5.3 UIC-EMOJI-PICKER-5.4 offers the chosen categories and emoji', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('emoji-picker');
+    const picker = page.locator('[data-lab-picker="offered"]');
+    await expect(picker.getByRole('tab')).toHaveText([
+      /Food & Drink$/,
+      /Animals & Nature$/,
+      /Smileys & Emotion$/,
+    ]);
+    await expect(picker.getByRole('grid', { name: 'Food & Drink' })).toBeVisible();
+    await expect(picker.getByRole('row', { name: 'red apple' })).toBeVisible();
+    await expect(picker.getByRole('row', { name: 'hamburger' })).toHaveCount(0);
+    const search = picker.getByRole('searchbox');
+    await search.fill('melting');
+    await expect(picker.getByRole('status')).toHaveText('No results');
+    await search.fill('smiling face with tear');
+    await expect(picker.getByRole('row').first()).toHaveAccessibleName('smiling face with tear');
+    await search.fill('rocket');
+    await expect(picker.getByRole('status')).toHaveText('No results');
+  });
+
+  test('UIC-EMOJI-PICKER-5.1 leaves out the emoji and flags the platform cannot draw', async ({
+    page,
+    lab,
+  }) => {
+    // A platform whose canvas draws Emoji 13.1 at most, and country flags as letters.
+    await page.addInitScript(() => {
+      const unsupported = (glyph: string) =>
+        (glyph.codePointAt(0) ?? 0) >= 0x1fae0 ||
+        glyph === '\u{1F642}\u200D\u2194\uFE0F' ||
+        /^[\u{1F1E6}-\u{1F1FF}]{2}$/u.test(glyph);
+      function FakeCanvas() {
+        const context = {
+          font: '',
+          textBaseline: '',
+          fillStyle: '',
+          glyph: '',
+          clearRect() {},
+          fillText(glyph: string) {
+            context.glyph = glyph;
+          },
+          getImageData() {
+            if (!unsupported(context.glyph))
+              return { data: Uint8ClampedArray.from([9, 9, 9, 255]) };
+            const red = context.fillStyle === '#ff0000';
+            return { data: Uint8ClampedArray.from([red ? 255 : 0, 0, red ? 0 : 255, 255]) };
+          },
+          measureText: () => ({ width: 16 }),
+        };
+        return { getContext: () => context };
+      }
+      Object.defineProperty(window, 'OffscreenCanvas', { value: FakeCanvas });
+    });
+    const picker = await openPopover(page, lab);
+    await picker.getByRole('tab', { name: 'Flags' }).click();
+    const flags = picker.getByRole('grid', { name: 'Flags' });
+    await expect(flags.getByRole('row', { name: 'chequered flag' })).toBeVisible();
+    await expect(flags.getByRole('row', { name: 'flag: Japan' })).toHaveCount(0);
+    await picker.getByRole('searchbox').fill('melting');
+    await expect(picker.getByRole('status')).toHaveText('No results');
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('Escape');
+    await expect(picker).toHaveCount(0);
+
+    const drawn = page.locator('[data-lab-picker="custom"]');
+    await drawn.getByRole('tab', { name: 'Flags' }).click();
+    await expect(drawn.getByRole('row', { name: 'flag: Japan' })).toHaveText('JP');
+  });
+
+  test('UIC-EMOJI-PICKER-5.1 keeps the emoji a colour emoji font draws', async ({ page, lab }) => {
+    const picker = await openPopover(page, lab);
+    await picker.getByRole('tab', { name: 'Flags' }).click();
+    await expect(picker.getByRole('row', { name: 'flag: Japan' })).toBeVisible();
+    await picker.getByRole('searchbox').fill('melting');
+    await expect(picker.getByRole('row', { name: 'melting face' })).toBeVisible();
+  });
+
+  test('UIC-EMOJI-PICKER-6.1 UIC-EMOJI-PICKER-6.2 works in a layout the page composes', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('emoji-picker');
+    const picker = page.locator('[data-lab-picker="parts"]');
+    const tones = picker.locator('.ui-emoji-picker__skin-tones');
+    const search = picker.locator('.ui-emoji-picker__search');
+    expect((await tones.boundingBox())?.y).toBeLessThan((await search.boundingBox())?.y ?? 0);
+    await expect(picker.locator('.ui-emoji-picker__footer')).toHaveCount(0);
+    await tones.getByRole('radio', { name: 'Dark', exact: true }).click({ force: true });
+    await picker.getByRole('tab', { name: 'People & Body' }).click();
+    await picker.getByRole('row', { name: 'waving hand' }).hover();
+    await expect(picker.locator('[data-lab-output="active"]')).toHaveText('👋🏿 waving hand (dark)');
+    await picker.getByRole('searchbox').fill('banana');
+    await expect(picker.getByRole('grid', { name: 'Search results' })).toBeVisible();
+    await page.keyboard.press('ArrowDown');
+    await expect(picker.getByRole('row', { name: 'banana' })).toBeFocused();
+    await expect(picker.locator('[data-lab-output="active"]')).toHaveText('🍌 banana (default)');
+  });
 });

@@ -139,4 +139,55 @@ test.describe('Property Panel lab', () => {
     await lab.open('property-panel', { theme: 'dark' });
     await lab.expectAccessible();
   });
+
+  test('UIC-PROPERTY-PANEL-1.4 opens sections one at a time or all together', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('property-panel');
+    const accordion = page.locator('[data-lab-grouped="accordion"]');
+    const trigger = (area: Locator, title: string) =>
+      area.getByRole('button', { name: new RegExp(`^${title}`) });
+    await expect(trigger(accordion, 'Page')).toHaveAttribute('aria-expanded', 'true');
+    await trigger(accordion, 'Text').click();
+    await expect(trigger(accordion, 'Text')).toHaveAttribute('aria-expanded', 'true');
+    await expect(trigger(accordion, 'Page')).toHaveAttribute('aria-expanded', 'false');
+    await expect(accordion.getByRole('textbox', { name: 'Paper size' })).toBeHidden();
+    await page.keyboard.press('Enter');
+    await expect(accordion.locator('[data-lab-output]')).toHaveText('Open: none');
+
+    const all = page.locator('[data-lab-grouped="all"]');
+    await all.getByRole('button', { name: 'Expand all' }).click();
+    for (const title of ['Page', 'Text', 'Print']) {
+      await expect(trigger(all, title)).toHaveAttribute('aria-expanded', 'true');
+    }
+    await all.getByRole('button', { name: 'Collapse all' }).click();
+    await expect(all.locator('.ui-property-section[data-expanded]')).toHaveCount(0);
+    await expect(all.locator('[data-lab-output]')).toHaveText('Open: none');
+    await lab.expectAccessible('[data-lab-grouped="all"]');
+  });
+
+  test('UIC-PROPERTY-PANEL-1.5 locks every field of a disabled or read-only panel', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('property-panel');
+    const disabled = page.locator('[data-lab-cell="lock=disabled"]');
+    await expect(disabled.locator('.ui-property-panel')).toHaveAttribute('data-disabled', 'true');
+    await expect(disabled.getByRole('textbox', { name: 'Width' })).toBeDisabled();
+    const readOnly = page.locator('[data-lab-cell="lock=read-only"]');
+    const height = readOnly.getByRole('textbox', { name: 'Height' });
+    await expect(height).toHaveAttribute('readonly', '');
+    await height.focus();
+    await page.keyboard.type('9');
+    await expect(height).toHaveValue('200');
+    const frame = readOnly.getByRole('button', { name: /^Frame/ });
+    await frame.click();
+    await expect(frame).toHaveAttribute('aria-expanded', 'false');
+    const editable = page.locator('[data-lab-cell="lock=editable"]').getByRole('textbox', {
+      name: 'Width',
+    });
+    await expect(editable).toBeEditable();
+    await lab.expectAccessible();
+  });
 });

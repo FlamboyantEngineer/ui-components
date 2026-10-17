@@ -88,4 +88,55 @@ test.describe('Presence Avatar lab', () => {
     await expect(card).toHaveCount(0);
     await expect(avatar).toBeFocused();
   });
+
+  test('UIC-PRESENCE-AVATAR-1.7 shows the name in a tooltip on hover and keyboard focus', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('presence-avatar');
+    const image = page.locator('[data-lab-avatar="tooltip-image"]');
+    await expect(image).toHaveAttribute('role', 'img');
+    await expect(image).toHaveAccessibleName('Maria Santos, Active');
+    await page.mouse.move(5, 5);
+    await image.hover();
+    const tooltip = page.getByRole('tooltip');
+    await expect(tooltip).toHaveText('Maria Santos, Active');
+    await page.mouse.move(5, 5);
+    await expect(tooltip).toHaveCount(0);
+
+    const button = page.locator('[data-lab-avatar="tooltip-button"]');
+    await image.focus();
+    await page.keyboard.press('Tab');
+    await expect(button).toBeFocused();
+    await expect(tooltip).toHaveText('Priya Nair, Away');
+    await expect(button).toHaveAccessibleName('Priya Nair, Away');
+    await expect(button).toHaveAccessibleDescription('');
+    await page.keyboard.press('Shift+Tab');
+    await expect(image).toBeFocused();
+    await expect(tooltip).toHaveText('Maria Santos, Active');
+    await lab.expectAccessible();
+  });
+
+  test('UIC-PRESENCE-AVATAR-1.8 opens the card on hover without taking focus', async ({
+    page,
+    lab,
+  }) => {
+    await page.clock.install();
+    await lab.open('presence-avatar');
+    await page.clock.pauseAt(Date.now() + 1000);
+    const avatar = page.locator('[data-lab-avatar="hover-card"]');
+    await page.mouse.move(5, 5);
+    await avatar.hover();
+    await page.clock.runFor(599);
+    const card = page.getByRole('dialog', { name: 'Sam Okafor' });
+    await expect(card).toHaveCount(0);
+    await page.clock.runFor(1);
+    await expect(card).toContainText('Idle');
+    await expect(page.getByRole('tooltip')).toHaveCount(0);
+    await expect(card.locator(':focus')).toHaveCount(0);
+    await page.mouse.move(5, 5);
+    await page.clock.runFor(1000);
+    await expect(card).toHaveCount(0);
+    await page.clock.resume();
+  });
 });

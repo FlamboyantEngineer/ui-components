@@ -39,6 +39,8 @@ export interface FieldScope {
   validationErrors?: FieldValidationErrors | undefined;
   /** Disables every field inside. */
   isDisabled?: boolean | undefined;
+  /** Makes every field inside read-only. */
+  isReadOnly?: boolean | undefined;
   /** Registers a field for submit validation and returns the function that removes it. */
   register?: ((field: FieldRegistration) => () => void) | undefined;
 }

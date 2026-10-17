@@ -1,12 +1,17 @@
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { EmojiPicker, EmojiPickerTrigger } from '../../src/components/emoji-picker/emoji-picker.js';
-import type {
-  CustomEmoji,
-  EmojiSelection,
-  NativeEmoji,
-  SkinTone,
+import {
+  EmojiPickerBody,
+  EmojiPickerSearch,
+  EmojiPickerSkinTones,
+  useActiveEmoji,
+  type CustomEmoji,
+  type EmojiSelection,
+  type NativeEmoji,
+  type SkinTone,
 } from '../../src/components/emoji-picker/index.js';
+import { UiProvider } from '../../src/core/provider.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const loaders = {
@@ -40,6 +45,13 @@ function describe(selection: EmojiSelection | null): string {
   if (!selection) return 'nothing yet';
   if (selection.kind === 'custom') return `:${selection.emoji.shortcode}:`;
   return `${selection.unicode} ${selection.emoji.label} (${selection.skinTone})`;
+}
+
+const fastFood = new Set(['🍔', '🍟', '🌭', '🍕']);
+
+function ActiveCaption() {
+  const active = useActiveEmoji();
+  return <output data-lab-output="active">{describe(active)}</output>;
 }
 
 function Reactions() {
@@ -120,6 +132,44 @@ mountLab(
           return code ? <span data-lab-region={code}>{code}</span> : unicode;
         }}
       />
+    </LabSection>
+    <LabSection
+      title="Languages"
+      description="Emoji names and search keywords follow the provider's locale; here French and Japanese."
+    >
+      <StateMatrix
+        axes={{ locale: ['fr-FR', 'ja-JP'] }}
+        render={({ locale }) => (
+          <UiProvider locale={locale}>
+            <EmojiPicker data-lab-picker={locale} aria-label={`Emoji picker, ${locale}`} />
+          </UiProvider>
+        )}
+      />
+    </LabSection>
+    <LabSection
+      title="Offered emoji"
+      description="Three categories in a chosen order, emoji up to Emoji 13 and no fast food."
+    >
+      <EmojiPicker
+        data-lab-picker="offered"
+        aria-label="Emoji picker with chosen emoji"
+        categories={['food', 'nature', 'smileys']}
+        emojiVersion={13}
+        filterEmoji={(emoji) => !fastFood.has(emoji.unicode)}
+      />
+    </LabSection>
+    <LabSection
+      title="Composed parts"
+      description="The skin tones on top, the search field at the bottom and a caption of the active emoji of the page's own."
+    >
+      <EmojiPicker data-lab-picker="parts" aria-label="Emoji picker with composed parts">
+        <EmojiPickerSkinTones />
+        <EmojiPickerBody />
+        <p>
+          Active: <ActiveCaption />
+        </p>
+        <EmojiPickerSearch />
+      </EmojiPicker>
     </LabSection>
   </>,
 );

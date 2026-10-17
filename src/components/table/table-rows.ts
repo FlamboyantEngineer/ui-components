@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
-import type { Key, SortDescriptor } from 'react-aria-components';
+import type { Key } from 'react-aria-components';
 import type { TableColumnSizing } from './column-sizing.js';
+import type { TableColumnFilter } from './table-filters.js';
 
 /** A value a cell sorts and filters on. */
 export type TableCellValue = string | number | boolean | Date | null | undefined;
@@ -12,6 +13,21 @@ export interface TableRow {
 }
 
 export type TableColumnAlign = 'start' | 'center' | 'end';
+
+/** The edge a column stays at while the table scrolls sideways. */
+export type TableColumnPin = 'start' | 'end';
+
+/** What a custom cell editor receives. */
+export interface TableCellEditor {
+  /** The cell's value when editing started. */
+  value: TableCellValue;
+  /** The column's accessible name, for the editor's label. */
+  label: string;
+  /** Ends editing and reports `value` as the cell's new value. */
+  commit: (value: TableCellValue) => void;
+  /** Ends editing without a change. */
+  cancel: () => void;
+}
 
 /** One data column: its header, how its cells read and render, and how it sorts and sizes. */
 export interface TableColumn<T> extends TableColumnSizing {
@@ -31,6 +47,20 @@ export interface TableColumn<T> extends TableColumnSizing {
   allowsResizing?: boolean | undefined;
   /** Names the row for assistive technology. Defaults to the first column. */
   isRowHeader?: boolean | undefined;
+  /** Keeps the column in view at the start or end of the table while it scrolls sideways. */
+  pin?: TableColumnPin | undefined;
+  /** Whether the columns menu lists the column, so the reader can hide and show it. */
+  allowsHiding?: boolean | undefined;
+  /** Whether the reader can move the column by dragging its header or with Alt+Arrow keys. */
+  allowsReordering?: boolean | undefined;
+  /** Draws a filter button in the header that filters the rows by this column's values. */
+  filter?: TableColumnFilter | undefined;
+  /** Whether the reader can edit the column's cells: F2, Enter or a double click opens an editor. */
+  allowsEditing?: boolean | undefined;
+  /** A cell's editor, instead of the default text input. */
+  renderEditor?: ((row: T, editor: TableCellEditor) => ReactNode) | undefined;
+  /** The column's cell in a summary row under the rows, from every row the table presents. */
+  renderFooter?: ((rows: readonly T[]) => ReactNode) | undefined;
 }
 
 /** A reorder request: move `keys` before or after the row `targetKey`. */
@@ -56,7 +86,8 @@ function isCellValue(value: unknown): value is TableCellValue {
   );
 }
 
-function isTextValue(value: TableCellValue): value is string | number {
+/** Whether a cell value reads as text: a string or a number. */
+export function isTextValue(value: TableCellValue): value is string | number {
   return typeof value === 'string' || typeof value === 'number';
 }
 
@@ -85,57 +116,6 @@ export function compareCellValues(left: TableCellValue, right: TableCellValue): 
 export function getRowText<T extends TableRow>(row: T, columns: readonly ValueColumn<T>[]): string {
   const parts = columns.map((column) => getCellValue(row, column)).filter(isTextValue);
   return parts.length > 0 ? parts.join(' ') : String(row.id);
-}
-
-/**
- * The rows ordered by the descriptor's column, each value read once. Rows the column cannot
- * separate keep their given order. Without a descriptor or a matching column the rows are returned
- * unchanged; the input array is never modified.
- */
-export function sortTableRows<T extends TableRow>(
-  rows: readonly T[],
-  columns: readonly ValueColumn<T>[],
-  descriptor: SortDescriptor | null | undefined,
-): readonly T[] {
-  const column = columns.find((candidate) => candidate.id === String(descriptor?.column));
-  if (!descriptor || !column) return rows;
-  const sign = descriptor.direction === 'descending' ? -1 : 1;
-  return rows
-    .map((row, index) => ({ row, index, value: getCellValue(row, column) }))
-    .sort(
-      (left, right) =>
-        compareCellValues(left.value, right.value) * sign || left.index - right.index,
-    )
-    .map((entry) => entry.row);
-}
-
-/** The rows whose text contains every whitespace-separated term of `query`, ignoring case. */
-export function filterTableRows<T extends TableRow>(
-  rows: readonly T[],
-  columns: readonly ValueColumn<T>[],
-  query: string,
-): readonly T[] {
-  const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
-  if (terms.length === 0) return rows;
-  return rows.filter((row) => {
-    const text = getRowText(row, columns).toLowerCase();
-    return terms.every((term) => text.includes(term));
-  });
-}
-
-/**
- * The sort after a header press, given what React Aria requests: ascending, then descending, then
- * unsorted again.
- */
-export function nextSortDescriptor(
-  current: SortDescriptor | null,
-  requested: SortDescriptor,
-): SortDescriptor | null {
-  const restarts =
-    current?.column === requested.column &&
-    current.direction === 'descending' &&
-    requested.direction === 'ascending';
-  return restarts ? null : requested;
 }
 
 /** A copy of `rows` with the moved rows, in their current order, placed beside the target. */

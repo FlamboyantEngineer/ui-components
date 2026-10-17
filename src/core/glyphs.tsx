@@ -29,7 +29,9 @@ import {
   EyeIcon,
   EyeSlashIcon,
   FolderIcon,
+  FunnelIcon,
   InformationCircleIcon,
+  LinkIcon,
   MagnifyingGlassIcon,
   MinusIcon,
   PencilSquareIcon,
@@ -37,6 +39,7 @@ import {
   QuestionMarkCircleIcon,
   TrashIcon,
   UsersIcon,
+  ViewColumnsIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
 import type { ComponentType } from 'react';
@@ -77,6 +80,7 @@ export const defaultGlyphs = {
   expand: ArrowsPointingOutIcon,
   collapse: ArrowsPointingInIcon,
   search: MagnifyingGlassIcon,
+  filter: FunnelIcon,
   info: InformationCircleIcon,
   warning: ExclamationTriangleIcon,
   error: ExclamationCircleIcon,
@@ -103,6 +107,8 @@ export const defaultGlyphs = {
   eye: EyeIcon,
   'eye-slash': EyeSlashIcon,
   scrub: ArrowsRightLeftIcon,
+  link: LinkIcon,
+  sidebar: ViewColumnsIcon,
 } satisfies Record<string, GlyphComponent>;
 
 export const glyphNames = Object.keys(defaultGlyphs) as GlyphName[];

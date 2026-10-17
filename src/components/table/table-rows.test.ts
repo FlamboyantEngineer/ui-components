@@ -1,15 +1,14 @@
 import { describe, expect, it, vi } from 'vitest';
+import { filterTableRows } from './table-filters.js';
 import {
   applyTableMove,
   compareCellValues,
-  filterTableRows,
   getCellValue,
   getRowText,
   isEffectiveTableMove,
-  nextSortDescriptor,
-  sortTableRows,
   type TableColumn,
 } from './table-rows.js';
+import { nextSortDescriptor, sortTableRows } from './table-sort.js';
 
 interface Fruit {
   id: string;
@@ -88,9 +87,11 @@ describe('table row helpers', () => {
     expect(getRowText({ id: 7, name: '', weight: Number.NaN, tags: [] }, [{ id: 'tags' }])).toBe(
       '7',
     );
-    expect(filterTableRows(fruit, columns, 'an 12').map((row) => row.id)).toEqual(['banana']);
-    expect(filterTableRows(fruit, columns, 'CHER')).toEqual([fruit[2]]);
-    expect(filterTableRows(fruit, columns, '   ')).toBe(fruit);
+    expect(filterTableRows(fruit, columns, { query: 'an 12' }).map((row) => row.id)).toEqual([
+      'banana',
+    ]);
+    expect(filterTableRows(fruit, columns, { query: 'CHER' })).toEqual([fruit[2]]);
+    expect(filterTableRows(fruit, columns, { query: '   ' })).toBe(fruit);
   });
 
   it('UIC-TABLE-2.1 cycles ascending, descending, then unsorted', () => {

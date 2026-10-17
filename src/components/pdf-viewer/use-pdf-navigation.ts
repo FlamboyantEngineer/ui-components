@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, type RefObject } from 'react';
 import { useResizeObserver } from '../../utils/use-resize-observer.js';
 import { clamp } from '../../utils/clamp.js';
+import type { PdfTarget } from './pdf-destination.js';
 import type { PdfTextContent, PdfViewport } from './pdf-engine.js';
 import type { PdfPageRect, PdfRect } from './page-geometry.js';
 import type { LoadedPdf } from './use-pdf-document.js';
@@ -11,6 +12,10 @@ export interface UsePdfNavigationOptions {
   /** The page the caller wants the reader on, zero-based; `undefined` leaves the viewer in charge. */
   page?: number | undefined;
   onPageChange?: ((pageIndex: number) => void) | undefined;
+  /** The page a document opens at when `page` is not set, zero-based. */
+  defaultPage?: number | undefined;
+  /** The open document; a new one opens at `defaultPage`. */
+  document: object | null;
   /** A rectangle to bring into view, in points. */
   revealRect?: PdfPageRect | null | undefined;
   isReady: boolean;
@@ -29,12 +34,6 @@ export interface UsePageViewportsOptions<
   nearPages: ReadonlySet<number> | null;
   scale: number;
   onPageViewports?: ((viewports: ReadonlyMap<number, V>) => void) | undefined;
-}
-
-/** Where a request sends the reader: a page, or a rectangle on it in points. */
-interface NavigationRequest {
-  pageIndex: number;
-  rect: PdfRect | null;
 }
 
 function toRectKey(rect: PdfPageRect | null | undefined): string {
@@ -64,14 +63,26 @@ function consumeEcho(reported: number[], page: number): boolean {
   return true;
 }
 
-/** Turns changes of `page` and `revealRect` into one pending request each. */
+/**
+ * Turns a new document with `defaultPage`, and changes of `page` and `revealRect`, into one pending
+ * request each.
+ */
 function useNavigationRequests(
-  options: Pick<UsePdfNavigationOptions, 'page' | 'revealRect' | 'pages'>,
+  options: Pick<
+    UsePdfNavigationOptions,
+    'page' | 'defaultPage' | 'document' | 'revealRect' | 'pages'
+  >,
   reported: RefObject<number[]>,
-): RefObject<NavigationRequest | null> {
-  const { page, revealRect } = options;
-  const pending = useRef<NavigationRequest | null>(null);
+): RefObject<PdfTarget | null> {
+  const { page, revealRect, document } = options;
+  const pending = useRef<PdfTarget | null>(null);
   const latest = useLatest(options);
+  useLayoutEffect(() => {
+    const { defaultPage, page: current } = latest.current;
+    if (document && defaultPage !== undefined && current === undefined) {
+      pending.current = { pageIndex: defaultPage, rect: null };
+    }
+  }, [document, latest]);
   useLayoutEffect(() => {
     if (page === undefined || consumeEcho(reported.current, page)) return;
     if (page !== latest.current.pages.currentPage)
@@ -88,9 +99,11 @@ function useNavigationRequests(
 /**
  * Going to a page or a rectangle on request, once per request: a request waits until the document
  * has opened, its page is laid out and the viewer is shown, and is then carried out. The page the
- * reader is on is reported whenever it changes.
+ * reader is on is reported whenever it changes. `goTo` makes a request of the viewer's own.
  */
-export function usePdfNavigation(options: UsePdfNavigationOptions): void {
+export function usePdfNavigation(options: UsePdfNavigationOptions): {
+  goTo(target: PdfTarget): void;
+} {
   const { isReady, scale, pageCount, scrollerRef, pages } = options;
   const { currentPage, elements, scrollToPage } = pages;
   const reported = useRef<number[]>([]);
@@ -119,6 +132,15 @@ export function usePdfNavigation(options: UsePdfNavigationOptions): void {
     if (page !== undefined) reported.current.push(currentPage);
     onPageChange?.(currentPage);
   }, [currentPage, isReady, latest, pending]);
+
+  const goTo = useCallback(
+    (target: PdfTarget) => {
+      pending.current = target;
+      serve();
+    },
+    [pending, serve],
+  );
+  return { goTo };
 }
 
 /** Reports the viewports of the pages that render whenever that set or the zoom changes. */

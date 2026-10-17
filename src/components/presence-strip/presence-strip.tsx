@@ -15,6 +15,7 @@ import {
   type PresenceAvatarProps,
   type PresenceAvatarSize,
 } from '../presence-avatar/presence-avatar.js';
+import { PresenceOverflowMenu } from './presence-overflow-menu.js';
 
 /** One person in a presence strip. */
 export interface PresencePerson
@@ -26,7 +27,14 @@ export interface PresencePerson
 /** `avatars` draws named avatars; `dots` draws decorative colour dots for use inside another control. */
 export type PresenceStripVariant = 'avatars' | 'dots';
 
-export interface PresenceStripProps extends Pick<AvatarProps, 'colorCount'>, BaseProps {
+/** `count` shows the `+N` count only; `menu` makes it a button listing the people it hides. */
+export type PresenceStripOverflow = 'count' | 'menu';
+
+export interface PresenceStripProps
+  extends
+    Pick<AvatarProps, 'colorCount'>,
+    Pick<PresenceAvatarProps, 'nameTooltip' | 'cardTrigger'>,
+    BaseProps {
   /** The people present, in the order to show them. */
   people: readonly PresencePerson[];
   /** Show at most this many people; the rest join the overflow count. Defaults to all of them. */
@@ -41,8 +49,10 @@ export interface PresenceStripProps extends Pick<AvatarProps, 'colorCount'>, Bas
   size?: PresenceAvatarSize | undefined;
   /** Makes each avatar a button that reports the person's id. */
   onAction?: ((id: string) => void) | undefined;
-  /** A card about a visible person, usually a `UserCard`, that pressing their avatar opens. */
+  /** A card about a visible person, usually a `UserCard`, that their avatar opens. */
   renderCard?: ((person: PresencePerson) => ReactNode) | undefined;
+  /** What the `+N` count does: `count` (the default) or `menu`, a menu of the people past `maxVisible`. */
+  overflow?: PresenceStripOverflow | undefined;
   /** Names the group. Defaults to the names of everyone present. */
   'aria-label'?: string | undefined;
 }
@@ -50,7 +60,7 @@ export interface PresenceStripProps extends Pick<AvatarProps, 'colorCount'>, Bas
 /** The people a strip shows and how many more it counts. */
 interface PresenceWindow {
   visible: Array<KeyedValue<PresencePerson>>;
-  hidden: readonly PresencePerson[];
+  hidden: Array<KeyedValue<PresencePerson>>;
   overflow: number;
 }
 
@@ -63,14 +73,17 @@ interface PresenceLabelOptions
 
 interface PresenceStripPersonProps extends Pick<
   PresenceStripProps,
-  'size' | 'colorCount' | 'onAction' | 'renderCard'
+  'size' | 'colorCount' | 'onAction' | 'renderCard' | 'nameTooltip' | 'cardTrigger'
 > {
   person: PresencePerson;
 }
 
-interface PresenceStripOverflowProps {
-  count: number;
-  /** Names the count as an image; without one the count is plain text. */
+interface PresenceStripOverflowProps extends Pick<
+  PresenceStripProps,
+  'overflow' | 'colorCount' | 'onAction'
+> {
+  presence: PresenceWindow;
+  /** Names the count as an image or button; without one the count is plain text. */
   label?: string | undefined;
 }
 
@@ -89,9 +102,10 @@ function windowPeople({
     maxVisible === undefined || !Number.isFinite(maxVisible)
       ? people.length
       : wholeCount(maxVisible);
-  const hidden = people.slice(limit);
+  const keyed = assignOccurrenceKeys(people, (person) => person.id);
+  const hidden = keyed.slice(limit);
   return {
-    visible: assignOccurrenceKeys(people.slice(0, limit), (person) => person.id),
+    visible: keyed.slice(0, limit),
     hidden,
     overflow: hidden.length + wholeCount(overflowCount),
   };
@@ -111,25 +125,26 @@ function usePresenceLabels({
   const allNames = [...people.map(displayName), ...extraNames];
   return {
     group: ariaLabel?.trim() || allNames.join(', ') || strings.morePeople(overflow, []),
-    overflow: strings.morePeople(overflow, [...hidden.map(displayName), ...extraNames]),
+    overflow: strings.morePeople(overflow, [
+      ...hidden.map(({ value }) => displayName(value)),
+      ...extraNames,
+    ]),
   };
 }
 
 function PresenceStripPerson({
   person,
-  size,
-  colorCount,
   onAction,
   renderCard,
+  ...avatar
 }: PresenceStripPersonProps) {
   const [identity] = splitAvatarIdentity(person);
   return (
     <PresenceAvatar
       {...identity}
+      {...avatar}
       status={person.status}
       statusLabel={person.statusLabel}
-      size={size}
-      colorCount={colorCount}
       className={hooks.slotClass('person')}
       onPress={onAction ? () => onAction(person.id) : undefined}
       card={renderCard?.(person)}
@@ -137,8 +152,25 @@ function PresenceStripPerson({
   );
 }
 
-function PresenceStripOverflow({ count, label }: PresenceStripOverflowProps) {
+function PresenceStripOverflow({
+  presence: { overflow: count, hidden },
+  label,
+  overflow,
+  colorCount,
+  onAction,
+}: PresenceStripOverflowProps) {
   if (count === 0) return null;
+  if (label && overflow === 'menu' && hidden.length > 0) {
+    return (
+      <PresenceOverflowMenu
+        count={count}
+        label={label}
+        hidden={hidden}
+        colorCount={colorCount}
+        onAction={onAction}
+      />
+    );
+  }
   return (
     <span {...hooks.slot('overflow')} {...(label ? { role: 'img', 'aria-label': label } : {})}>
       {`+${count}`}
@@ -157,18 +189,28 @@ export function PresenceStrip({
   colorCount,
   onAction,
   renderCard,
+  overflow = 'count',
+  nameTooltip,
+  cardTrigger,
   'aria-label': ariaLabel,
   className,
   ...rest
 }: PresenceStripProps) {
-  const { visible, hidden, overflow } = windowPeople({ people, maxVisible, overflowCount });
-  const labels = usePresenceLabels({ people, hiddenNames, ariaLabel, hidden, overflow });
-  if (visible.length === 0 && overflow === 0) return null;
+  const presence = windowPeople({ people, maxVisible, overflowCount });
+  const { visible, hidden } = presence;
+  const labels = usePresenceLabels({
+    people,
+    hiddenNames,
+    ariaLabel,
+    hidden,
+    overflow: presence.overflow,
+  });
+  if (visible.length === 0 && presence.overflow === 0) return null;
   const isDots = variant === 'dots';
   return (
     <span
       {...rest}
-      {...hooks.root({ className, data: { variant, size } })}
+      {...hooks.root({ className, data: { variant, size, overflow } })}
       {...(isDots ? { 'aria-hidden': true } : { role: 'group', 'aria-label': labels.group })}
     >
       {visible.map(({ key, value }) =>
@@ -185,10 +227,18 @@ export function PresenceStrip({
             colorCount={colorCount}
             onAction={onAction}
             renderCard={renderCard}
+            nameTooltip={nameTooltip}
+            cardTrigger={cardTrigger}
           />
         ),
       )}
-      <PresenceStripOverflow count={overflow} label={isDots ? undefined : labels.overflow} />
+      <PresenceStripOverflow
+        presence={presence}
+        label={isDots ? undefined : labels.overflow}
+        overflow={overflow}
+        colorCount={colorCount}
+        onAction={onAction}
+      />
     </span>
   );
 }

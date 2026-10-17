@@ -29,6 +29,30 @@
   line-height: 1;
 }
 
+button.ui-presence-strip__overflow {
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+}
+
+button.ui-presence-strip__overflow[data-hovered] {
+  border-color: var(--ref-border-strong);
+}
+
+button.ui-presence-strip__overflow[data-pressed] {
+  background: var(--ref-pressed);
+}
+
+button.ui-presence-strip__overflow[data-focus-visible] {
+  box-shadow:
+    0 0 0 2px var(--ref-canvas),
+    0 0 0 4px var(--ref-focus);
+}
+
+.ui-presence-strip__menu {
+  min-width: 180px;
+}
+
 .ui-presence-strip[data-size='xs'] .ui-presence-strip__overflow {
   min-width: 20px;
   height: 20px;

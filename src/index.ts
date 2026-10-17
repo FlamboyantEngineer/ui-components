@@ -25,6 +25,7 @@ export * from './components/copy-button/index.js';
 export * from './components/segmented-choice/index.js';
 export * from './components/tabs/index.js';
 export * from './components/breadcrumb/index.js';
+export * from './components/pagination/index.js';
 export * from './components/path/index.js';
 export * from './utils/index.js';
 export * from './components/toolbar-scroller/index.js';

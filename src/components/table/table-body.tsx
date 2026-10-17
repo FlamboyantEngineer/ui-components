@@ -1,80 +1,40 @@
 import type { ReactNode } from 'react';
-import { Cell, Row, TableBody as AriaTableBody } from 'react-aria-components';
-import { DragHandle } from '../drag-handle/drag-handle.js';
+import {
+  Cell,
+  Collection,
+  Row,
+  TableBody as AriaTableBody,
+  TableLoadMoreItem,
+} from 'react-aria-components';
+import { useUiStrings } from '../../core/provider.js';
 import { EmptyState } from '../empty-state/empty-state.js';
 import { InlineError } from '../inline-error/inline-error.js';
-import {
-  countTableColumns,
-  getRowHeaderColumns,
-  TableCheckbox,
-  type TableStructure,
-} from './table-header.js';
 import { tableHooks as hooks } from './table-hooks.js';
-import { getCellValue, getRowText, type TableColumn, type TableRow } from './table-rows.js';
+import { TableDataRow, type TableRowModel } from './table-row.js';
+import type { TableRow } from './table-rows.js';
+import { countTableColumns } from './table-structure.js';
+import type { TableNode } from './table-tree.js';
 
 /** The notice a table shows in place of its rows. */
 export type TableStatus = 'loading' | 'empty' | 'error';
 
 /** The rows, or the notice that replaces them. */
 export interface TableBodyProps<T> {
-  rows: readonly T[];
-  structure: TableStructure<T>;
+  /** The rows of the current page, with their child rows. */
+  nodes: readonly TableNode<T>[];
+  model: TableRowModel<T>;
   status: TableStatus | null;
   /** The notice's text or content. */
   message: ReactNode;
   onRetry?: (() => void | Promise<unknown>) | undefined;
-  renderRowActions?: ((row: T) => ReactNode) | undefined;
-  /** Draws drag handles; `isMovable` tells which are enabled. */
-  isReorderable: boolean;
-  isMovable: (row: T) => boolean;
+  /** Asks for more rows when the end of the rows scrolls into view. */
+  onLoadMore?: (() => void) | undefined;
+  /** More rows are loading: a loading row follows the rows. */
+  isLoading?: boolean | undefined;
 }
 
 /** The key of the notice row, kept out of row actions. */
 export const stateRowId = 'ui-table-state-row';
-
-function renderCellContent<T extends TableRow>(row: T, column: TableColumn<T>): ReactNode {
-  if (column.renderCell) return column.renderCell(row);
-  const value = getCellValue(row, column);
-  return typeof value === 'string' || typeof value === 'number' ? value : null;
-}
-
-function TableDataRow<T extends TableRow>({ row, props }: { row: T; props: TableBodyProps<T> }) {
-  const { structure, renderRowActions, isReorderable } = props;
-  return (
-    <Row
-      id={row.id}
-      textValue={getRowText(row, getRowHeaderColumns(structure.columns))}
-      className={hooks.slotClass('row')}
-    >
-      {structure.hasSelection ? (
-        <Cell {...hooks.slot('cell', { kind: 'selection' })}>
-          <TableCheckbox />
-        </Cell>
-      ) : null}
-      {structure.columns.map((column, index) => (
-        <Cell
-          key={column.id}
-          {...hooks.slot('cell', {
-            kind: 'data',
-            align: column.align ?? 'start',
-            column: column.id,
-          })}
-        >
-          {isReorderable && index === 0 ? (
-            <DragHandle
-              className={hooks.slotClass('drag-handle')}
-              isDisabled={!props.isMovable(row)}
-            />
-          ) : null}
-          {renderCellContent(row, column)}
-        </Cell>
-      ))}
-      {renderRowActions ? (
-        <Cell {...hooks.slot('cell', { kind: 'actions' })}>{renderRowActions(row)}</Cell>
-      ) : null}
-    </Row>
-  );
-}
 
 function TableStateRow<T>({ status, props }: { status: TableStatus; props: TableBodyProps<T> }) {
   const { message, onRetry } = props;
@@ -87,7 +47,10 @@ function TableStateRow<T>({ status, props }: { status: TableStatus; props: Table
       disabledBehavior="selection"
       {...hooks.slot('state-row', { variant: status })}
     >
-      <Cell colSpan={countTableColumns(props.structure)} className={hooks.slotClass('state-cell')}>
+      <Cell
+        colSpan={countTableColumns(props.model.structure)}
+        className={hooks.slotClass('state-cell')}
+      >
         {status === 'error' ? (
           <InlineError onRetry={onRetry}>{message}</InlineError>
         ) : (
@@ -98,10 +61,29 @@ function TableStateRow<T>({ status, props }: { status: TableStatus; props: Table
   );
 }
 
-/** The table body: one row per item, or one full-width notice row. */
+/** The loading row after the rows, which asks for more as it scrolls into view. */
+function TableLoader({
+  onLoadMore,
+  isLoading,
+}: Pick<TableBodyProps<unknown>, 'onLoadMore' | 'isLoading'>) {
+  const strings = useUiStrings();
+  return (
+    <TableLoadMoreItem
+      className={hooks.slotClass('loader')}
+      onLoadMore={onLoadMore}
+      isLoading={isLoading}
+    >
+      <EmptyState variant="loading" size="sm" description={strings.loading} />
+    </TableLoadMoreItem>
+  );
+}
+
+/** The table body: one row per item with its child rows, or one full-width notice row. */
 export function TableBody<T extends TableRow>(props: TableBodyProps<T>) {
-  const { status, rows, structure, renderRowActions, isReorderable, isMovable } = props;
-  if (structure.columns.length === 0) return <AriaTableBody className={hooks.slotClass('body')} />;
+  const { status, nodes, model, onLoadMore, isLoading } = props;
+  if (model.structure.columns.length === 0) {
+    return <AriaTableBody className={hooks.slotClass('body')} />;
+  }
   if (status) {
     return (
       <AriaTableBody className={hooks.slotClass('body')}>
@@ -110,12 +92,13 @@ export function TableBody<T extends TableRow>(props: TableBodyProps<T>) {
     );
   }
   return (
-    <AriaTableBody
-      className={hooks.slotClass('body')}
-      items={rows}
-      dependencies={[structure, renderRowActions, isReorderable, isMovable]}
-    >
-      {(row) => <TableDataRow row={row} props={props} />}
+    <AriaTableBody className={hooks.slotClass('body')}>
+      <Collection items={nodes} dependencies={[model]}>
+        {(node) => <TableDataRow node={node} model={model} />}
+      </Collection>
+      {onLoadMore || isLoading ? (
+        <TableLoader onLoadMore={onLoadMore} isLoading={isLoading} />
+      ) : null}
     </AriaTableBody>
   );
 }

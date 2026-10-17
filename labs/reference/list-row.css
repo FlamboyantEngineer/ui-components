@@ -128,3 +128,119 @@
   color: var(--ref-muted);
   font-size: 12px;
 }
+
+/* List view: the same rows on a grid list. */
+
+/* Block layout: a virtualizer sizes its content box, which a flex column would shrink. */
+.ui-list-view {
+  display: block;
+  position: relative;
+  box-sizing: border-box;
+  max-height: 100%;
+  overflow: auto;
+  outline: none;
+}
+
+.ui-list-view[data-focus-visible] {
+  box-shadow: inset 0 0 0 2px var(--ref-focus);
+}
+
+.ui-list-view[data-empty] {
+  padding: 12px 8px;
+  color: var(--ref-muted);
+  font-style: italic;
+}
+
+.ui-list-view[data-drop-target] {
+  box-shadow: inset 0 0 0 2px var(--ref-accent);
+}
+
+.ui-list-view-item {
+  box-sizing: border-box;
+  min-height: 40px;
+  padding: 4px 8px;
+  border-radius: var(--ref-radius);
+  outline: none;
+  cursor: default;
+}
+
+.ui-list-view-item > [role='gridcell'] {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.ui-list-view[data-divided] .ui-list-view-item + .ui-list-view-item {
+  border-top: 1px solid var(--ref-border);
+}
+
+.ui-list-view-item:is([data-hovered], [data-pressed]) {
+  background: var(--ref-hover);
+}
+
+.ui-list-view-item[data-selected] {
+  background: var(--ref-selected);
+}
+
+.ui-list-view-item[data-focus-visible] {
+  box-shadow: inset 0 0 0 2px var(--ref-focus);
+}
+
+.ui-list-view-item[data-disabled] {
+  color: var(--ref-muted);
+  cursor: not-allowed;
+}
+
+.ui-list-view-item[data-dragging] {
+  opacity: 0.5;
+}
+
+.ui-list-view-item[data-drop-target] {
+  box-shadow: inset 0 0 0 2px var(--ref-accent);
+}
+
+.ui-list-view-item[data-tone='danger'] .ui-list-row-content__meta {
+  color: var(--ref-danger);
+}
+
+.ui-list-view-item__drag-handle,
+.ui-list-view-item__checkbox {
+  flex: none;
+}
+
+.ui-list-view-item__trailing {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+}
+
+.ui-list-view__drop-indicator {
+  height: 0;
+  outline: 1px solid var(--ref-accent);
+  outline-offset: -1px;
+}
+
+.ui-list-view__drop-indicator[data-drop-target] {
+  outline-width: 2px;
+}
+
+.ui-list-view-section {
+  display: block;
+}
+
+.ui-list-view-section__header {
+  padding: 6px 8px 2px;
+  background: var(--ref-canvas);
+  color: var(--ref-muted);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.ui-list-view[data-sticky-headers] .ui-list-view-section__header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}

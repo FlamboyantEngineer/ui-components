@@ -1,6 +1,11 @@
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { userEvent } from '@testing-library/user-event';
+import { useState } from 'react';
+import { Input, type Key } from 'react-aria-components';
+import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { Field, Fieldset, useFieldState } from '../field/field.js';
+import { PropertyScope } from '../property-scope/property-scope.js';
 import {
   PropertyCard,
   PropertyGroup,
@@ -143,5 +148,144 @@ describe('PropertyPanel', () => {
     );
     expect(group).toHaveAttribute('data-variant', 'segmented');
     expectHooksMatchSpec(container, 'PROPERTY-PANEL');
+  });
+
+  it('UIC-PROPERTY-PANEL-1.4 opens one section at a time as an accordion', async () => {
+    const onExpandedChange = vi.fn<(keys: Set<Key>) => void>();
+    render(
+      <PropertyPanel
+        aria-label="Shape"
+        allowsMultipleExpanded={false}
+        defaultExpandedKeys={['fill']}
+        onExpandedChange={onExpandedChange}
+      >
+        <PropertySection id="fill" title="Fill" persistKey="ignored.fill">
+          <PropertyRow label="Colour">red</PropertyRow>
+        </PropertySection>
+        <PropertySection id="stroke" title="Stroke">
+          <PropertyCard name="Dash">
+            <PropertyRow label="Gap">2</PropertyRow>
+          </PropertyCard>
+        </PropertySection>
+      </PropertyPanel>,
+    );
+    const panel = screen.getByRole('region', { name: 'Shape' });
+    expect(panel.querySelector('.ui-property-panel__body')).toHaveClass('ui-property-panel__body');
+    const fill = screen.getByRole('button', { name: /Fill/ });
+    const stroke = screen.getByRole('button', { name: /Stroke/ });
+    expect(fill).toHaveAttribute('aria-expanded', 'true');
+    expect(stroke).toHaveAttribute('aria-expanded', 'false');
+    await userEvent.click(stroke);
+    expect(stroke).toHaveAttribute('aria-expanded', 'true');
+    expect(fill).toHaveAttribute('aria-expanded', 'false');
+    expect(onExpandedChange).toHaveBeenLastCalledWith(new Set(['stroke']));
+    // Cards keep their own state inside the panel's group.
+    const dash = screen.getByRole('button', { name: /Dash/ });
+    await userEvent.click(dash);
+    expect(dash).toHaveAttribute('aria-expanded', 'true');
+    expect(stroke).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  it('UIC-PROPERTY-PANEL-1.4 expands and collapses every section from controlled keys, a query still opening matches', async () => {
+    function Controlled() {
+      const [keys, setKeys] = useState<Set<Key>>(new Set());
+      const [query, setQuery] = useState('');
+      return (
+        <>
+          <button type="button" onClick={() => setKeys(new Set(['fill', 'stroke']))}>
+            Expand all
+          </button>
+          <button type="button" onClick={() => setKeys(new Set())}>
+            Collapse all
+          </button>
+          <button type="button" onClick={() => setQuery(query ? '' : 'width')}>
+            Search
+          </button>
+          <PropertyPanel aria-label="Shape" expandedKeys={keys} onExpandedChange={setKeys}>
+            <PropertyScope query={query}>
+              <PropertySection id="fill" title="Fill">
+                <PropertyRow label="Colour">red</PropertyRow>
+              </PropertySection>
+              <PropertySection id="stroke" title="Stroke">
+                <PropertyRow label="Width">1</PropertyRow>
+              </PropertySection>
+            </PropertyScope>
+          </PropertyPanel>
+        </>
+      );
+    }
+    render(<Controlled />);
+    const triggers = () => screen.queryAllByRole('button', { expanded: true });
+    expect(triggers()).toHaveLength(0);
+    await userEvent.click(screen.getByRole('button', { name: 'Expand all' }));
+    expect(triggers()).toHaveLength(2);
+    await userEvent.click(screen.getByRole('button', { name: /Fill/ }));
+    expect(screen.getByRole('button', { name: /Fill/ })).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.getByRole('button', { name: /Stroke/ })).toHaveAttribute('aria-expanded', 'true');
+    await userEvent.click(screen.getByRole('button', { name: 'Collapse all' }));
+    expect(triggers()).toHaveLength(0);
+    await userEvent.click(screen.getByRole('button', { name: 'Search' }));
+    expect(screen.getByRole('button', { name: /Stroke/ })).toHaveAttribute('aria-expanded', 'true');
+    await userEvent.click(screen.getByRole('button', { name: 'Search' }));
+    expect(screen.getByRole('button', { name: /Stroke/ })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
+  });
+
+  it('UIC-PROPERTY-PANEL-1.5 disables or locks every field inside and keeps sections browsable', async () => {
+    function Name() {
+      const state = useFieldState<string>({ defaultValue: 'Plum' });
+      return (
+        <Field state={state} label="Name">
+          {(control) => (
+            <Input
+              {...control}
+              value={state.value}
+              onChange={(event) => state.setValue(event.target.value)}
+            />
+          )}
+        </Field>
+      );
+    }
+    const content = (
+      <PropertySection title="General">
+        <PropertyRow label="Name row">
+          <Name />
+        </PropertyRow>
+      </PropertySection>
+    );
+    const { container, rerender } = render(
+      <PropertyPanel aria-label="Shape" isDisabled>
+        {content}
+      </PropertyPanel>,
+    );
+    const panel = screen.getByRole('region', { name: 'Shape' });
+    expect(panel).toHaveAttribute('data-disabled', 'true');
+    expect(screen.getByRole('textbox', { name: 'Name' })).toBeDisabled();
+    expectHooksMatchSpec(container, 'PROPERTY-PANEL');
+    const trigger = screen.getByRole('button', { name: /General/ });
+    await userEvent.click(trigger);
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await userEvent.click(trigger);
+
+    rerender(
+      <PropertyPanel aria-label="Shape" isReadOnly>
+        {content}
+      </PropertyPanel>,
+    );
+    expect(panel).toHaveAttribute('data-readonly', 'true');
+    expect(panel).not.toHaveAttribute('data-disabled');
+    const input = screen.getByRole('textbox', { name: 'Name' });
+    expect(input).toHaveAttribute('readonly');
+    await userEvent.type(input, 'x');
+    expect(input).toHaveValue('Plum');
+
+    rerender(
+      <Fieldset legend="Locked" isDisabled>
+        <PropertyPanel aria-label="Shape">{content}</PropertyPanel>
+      </Fieldset>,
+    );
+    expect(screen.getByRole('textbox', { name: 'Name' })).toBeDisabled();
   });
 });

@@ -4,4 +4,5 @@ export type {
   UserCardDetail,
   UserCardProps,
   UserCardTriggerProps,
+  UserCardTriggerType,
 } from './user-card.js';

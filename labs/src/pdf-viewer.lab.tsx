@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { PdfViewer, type PdfViewerProps } from '../../src/components/pdf-viewer/pdf-viewer.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
@@ -6,78 +6,57 @@ import {
   AnnotatedReader,
   CallerOwnedFind,
   ProjectedToolbar,
+  SidebarReader,
   loadEngine,
+  lockedUrl,
   sampleUrl,
   workerSrc,
 } from './pdf-viewer-cases.js';
 
 const notAPdf = new TextEncoder().encode('This file is not a PDF.');
 
-const states = ['loading', 'ready', 'error'] as const;
+const states = ['loading', 'ready', 'error', 'locked'] as const;
 const zooms = ['page-width', 'page-fit', '50%'] as const;
 
 const stateSource: Record<(typeof states)[number], PdfViewerProps['source']> = {
   loading: null,
   ready: sampleUrl,
   error: notAPdf,
+  locked: lockedUrl,
 };
 
 function Frame({ height = 360, children }: { height?: number; children: ReactNode }) {
   return <div style={{ width: 340, height }}>{children}</div>;
 }
 
+// Sent with the sample's requests, as a host would send its credentials.
+const documentOptions = { httpHeaders: { 'X-Lab-Sample': 'seasonal-report' } };
+
 function Reader() {
   const [zoom, setZoom] = useState<number | null>(null);
-  const [downloads, setDownloads] = useState(0);
+  const [shares, setShares] = useState(0);
   return (
     <div data-lab-case="reader">
-      <div style={{ height: 560, maxWidth: 820 }}>
+      <div style={{ height: 560, maxWidth: 1000 }}>
         <PdfViewer
           aria-label="Seasonal report"
           source={sampleUrl}
           loadEngine={loadEngine}
           workerSrc={workerSrc}
+          documentOptions={documentOptions}
           onZoomChange={setZoom}
           actions={
-            <Button size="sm" variant="ghost" onPress={() => setDownloads((count) => count + 1)}>
-              Download
+            <Button size="sm" variant="ghost" onPress={() => setShares((count) => count + 1)}>
+              Share
             </Button>
           }
         />
       </div>
       <p>
         Applied zoom:{' '}
-        <output data-lab-output="zoom">{zoom === null ? '—' : Math.round(zoom)}</output>; downloads:{' '}
-        <output data-lab-output="downloads">{downloads}</output>
+        <output data-lab-output="zoom">{zoom === null ? '—' : Math.round(zoom)}</output>; shares:{' '}
+        <output data-lab-output="shares">{shares}</output>
       </p>
-    </div>
-  );
-}
-
-function BytesSource() {
-  const [bytes, setBytes] = useState<ArrayBuffer | null>(null);
-  useEffect(() => {
-    let isCurrent = true;
-    void fetch(sampleUrl)
-      .then((response) => response.arrayBuffer())
-      .then((buffer) => {
-        if (isCurrent) setBytes(buffer);
-      });
-    return () => {
-      isCurrent = false;
-    };
-  }, []);
-  return (
-    <div data-lab-case="bytes">
-      <Frame height={420}>
-        <PdfViewer
-          aria-label="Report from bytes"
-          source={bytes}
-          loadEngine={loadEngine}
-          workerSrc={workerSrc}
-          defaultZoom="page-fit"
-        />
-      </Frame>
     </div>
   );
 }
@@ -102,7 +81,7 @@ mountLab(
   <>
     <LabSection
       title="States"
-      description="A pending source stays loading; a file the engine cannot open shows the error with a retry."
+      description="A pending source stays loading; a file the engine cannot open shows the error with a retry; a protected file asks for its password (orchard)."
     >
       <StateMatrix
         axes={{ state: states }}
@@ -140,15 +119,15 @@ mountLab(
     </LabSection>
     <LabSection
       title="Reader"
-      description="Zoom (buttons, slider, Ctrl + wheel), fit modes, page navigation, find with Enter and Shift + Enter, text selection, and a caller action at the end of the toolbar."
+      description="Zoom (buttons, slider, Ctrl + wheel, Ctrl + plus, minus and 0, pinch), fit modes, page navigation (Home, End), find with Enter and Shift + Enter, Ctrl + F and the find options, text selection, links on the first page, rotating, printing and saving from the menu, and a caller action at the end of the toolbar. The sample is requested with a header of the caller's."
     >
       <Reader />
     </LabSection>
     <LabSection
-      title="Bytes source"
-      description="The bytes are fetched first: the viewer loads while the source is null, then opens its own copy."
+      title="Bytes source, sidebar and destinations"
+      description="The bytes are fetched first: the viewer loads while the source is null, then opens its own copy at its second page. The sidebar opens on the outline beside thumbnails, and the buttons go to destinations the document names."
     >
-      <BytesSource />
+      <SidebarReader />
     </LabSection>
     <LabSection
       title="Overlays and context menu"

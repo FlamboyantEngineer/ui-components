@@ -29,6 +29,8 @@ export interface NativeEmoji {
   keywords: readonly string[];
   /** The glyph in each skin tone from `light` to `dark`, for an emoji that takes one. */
   skins?: readonly string[] | undefined;
+  /** The Emoji version that introduced it (`15.1`). An emoji without one is never left out by version. */
+  version?: number | undefined;
 }
 
 /** An emoji the caller supplies as an image. */
@@ -71,8 +73,6 @@ const searchWeights = {
   keywords: [30, 25, 10],
 } as const;
 
-let parsedDefault: Promise<readonly NativeEmoji[]> | undefined;
-
 function toneSkins(unicode: string, rule: string): string[] | undefined {
   if (rule !== '1' && rule !== '2') return undefined;
   const [first = '', ...rest] = Array.from(unicode);
@@ -83,7 +83,7 @@ function toneSkins(unicode: string, rule: string): string[] | undefined {
 }
 
 function parseLine(line: string, category: EmojiCategory): NativeEmoji {
-  const [unicode = '', rule = '', label = '', codes = '', keywords = ''] = line.split('|');
+  const [unicode = '', rule = '', label = '', codes = '', keywords = '', version] = line.split('|');
   return {
     unicode,
     hexcode: toHexcode(unicode),
@@ -92,6 +92,7 @@ function parseLine(line: string, category: EmojiCategory): NativeEmoji {
     shortcodes: codes ? codes.split(',') : [],
     keywords: keywords ? keywords.split(',') : [],
     skins: toneSkins(unicode, rule),
+    version: version ? Number(version) : undefined,
   };
 }
 
@@ -143,14 +144,6 @@ export function parseEmojiData(text: string): NativeEmoji[] {
     else if (line) category = line as EmojiCategory;
   }
   return emoji;
-}
-
-/** Loads the bundled standard emoji, once, as a separate chunk. */
-export function loadEmojiData(): Promise<readonly NativeEmoji[]> {
-  parsedDefault ??= import('./emoji-data.js').then((module) =>
-    parseEmojiData(module.compactEmojiData),
-  );
-  return parsedDefault;
 }
 
 /** A single-code-point glyph followed by the modifier for a skin tone (`default` adds none). */

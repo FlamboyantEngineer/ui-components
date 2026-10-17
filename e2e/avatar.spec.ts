@@ -100,6 +100,51 @@ test.describe('Avatar lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-AVATAR-2.3 rounds or squares the corners by shape', async ({ page, lab }) => {
+    await lab.open('avatar');
+    const radius = async (shape: string, content: string) =>
+      page
+        .locator(`[data-lab-cell="shape=${shape} content=${content} variant=filled"] .ui-avatar`)
+        .evaluate((node) => getComputedStyle(node).borderTopLeftRadius);
+    for (const content of ['picture', 'initials', 'group']) {
+      expect(await radius('circle', content)).toBe('50%');
+      expect(await radius('rounded', content)).toBe('25%');
+      expect(await radius('square', content)).toBe('0px');
+    }
+    await expect(
+      page.locator('[data-lab-cell="shape=square content=picture variant=filled"] .ui-avatar'),
+    ).toHaveAttribute('data-shape', 'square');
+  });
+
+  test('UIC-AVATAR-1.5 UIC-AVATAR-1.6 reports each loading status and keeps picture attributes', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('avatar');
+    const statuses = page.locator('[data-lab-output="status"]');
+    const avatar = page.locator('[data-lab-avatar="status"]');
+    await expect(statuses).toHaveText('idle');
+    await page.getByRole('button', { name: 'Load a working picture' }).click();
+    await expect(statuses).toHaveText('idle, loading, loaded');
+    await expect(avatar.locator('img')).toBeVisible();
+    await expect(avatar).not.toHaveAttribute('data-loading');
+    await page.getByRole('button', { name: 'Load a broken picture' }).click();
+    await expect(statuses).toHaveText('idle, loading, loaded, loading, error');
+    await expect(avatar.locator('.ui-avatar__initials')).toHaveText('LO');
+    await page.getByRole('button', { name: 'Remove the picture' }).click();
+    await expect(statuses).toHaveText('idle, loading, loaded, loading, error, idle');
+
+    const picture = page.locator('[data-lab-avatar="attributes"] img');
+    await expect(picture).toHaveAttribute('srcset', /1x, data:image\/svg\+xml,.* 2x$/);
+    await expect(picture).toHaveAttribute('referrerpolicy', 'no-referrer');
+    await expect(picture).toHaveAttribute('crossorigin', 'anonymous');
+    await expect(picture).toHaveAttribute('loading', 'lazy');
+    await picture.scrollIntoViewIfNeeded();
+    await expect
+      .poll(() => picture.evaluate((image: HTMLImageElement) => image.naturalWidth))
+      .toBeGreaterThan(0);
+  });
+
   test('UIC-AVATAR-2.1 renders unstyled without errors', async ({ page, lab }) => {
     await lab.open('avatar', { stylesheet: 'none' });
     await expect(page.locator('.ui-avatar').first()).toBeVisible();

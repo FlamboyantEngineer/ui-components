@@ -1,5 +1,6 @@
-import { useId, type ReactNode } from 'react';
-import { Input } from 'react-aria-components';
+import { useId, useState, type ReactNode } from 'react';
+import { Input, type Key } from 'react-aria-components';
+import { Button } from '../../src/components/button/button.js';
 import { Field, useFieldState } from '../../src/components/field/field.js';
 import { IconButton } from '../../src/components/icon-button/icon-button.js';
 import {
@@ -183,6 +184,45 @@ function StripSample({ variant, name }: { variant: 'separate' | 'segmented'; nam
   );
 }
 
+const panelLocks = ['editable', 'disabled', 'read-only'] as const;
+
+/** Three sections opened by the panel: one at a time, or all at once from the buttons. */
+function GroupedSections({ isAccordion }: { isAccordion: boolean }) {
+  const [keys, setKeys] = useState<Set<Key>>(new Set(['page']));
+  const name = isAccordion ? 'Accordion' : 'Expand all';
+  return (
+    <div data-lab-grouped={isAccordion ? 'accordion' : 'all'} style={{ width: widths.wide }}>
+      {isAccordion ? null : (
+        <div data-lab-toolbar>
+          <Button size="sm" onPress={() => setKeys(new Set(['page', 'text', 'print']))}>
+            Expand all
+          </Button>{' '}
+          <Button size="sm" onPress={() => setKeys(new Set())}>
+            Collapse all
+          </Button>
+        </div>
+      )}
+      <PropertyPanel
+        aria-label={name}
+        allowsMultipleExpanded={!isAccordion}
+        expandedKeys={keys}
+        onExpandedChange={setKeys}
+      >
+        <PropertySection id="page" title="Page">
+          <TextSetting label="Paper size" value="A4" />
+        </PropertySection>
+        <PropertySection id="text" title="Text">
+          <TextSetting label="Font" value="Serif" />
+        </PropertySection>
+        <PropertySection id="print" title="Print">
+          <TextSetting label="Copies" value="2" />
+        </PropertySection>
+      </PropertyPanel>
+      <p data-lab-output>Open: {[...keys].join(', ') || 'none'}</p>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -263,6 +303,37 @@ mountLab(
           </PropertySection>
         </PropertyPanel>
       </div>
+    </LabSection>
+    <LabSection
+      title="Sections opened together"
+      description="Left, an accordion: opening a section closes the other. Right, the panel's open sections are controlled, so buttons open or close them all."
+    >
+      <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
+        <GroupedSections isAccordion />
+        <GroupedSections isAccordion={false} />
+      </div>
+    </LabSection>
+    <LabSection
+      title="Locked panels"
+      description="A panel whose fields are all disabled or all read-only; its sections still open and close."
+    >
+      <StateMatrix
+        axes={{ lock: panelLocks }}
+        render={({ lock }) => (
+          <div data-lab-column={widths.wide} style={{ width: widths.wide }}>
+            <PropertyPanel
+              aria-label={`Lock ${lock}`}
+              isDisabled={lock === 'disabled'}
+              isReadOnly={lock === 'read-only'}
+            >
+              <PropertySection title="Frame">
+                <TextSetting label="Width" value="320" unit="px" />
+                <TextSetting label="Height" value="200" unit="px" />
+              </PropertySection>
+            </PropertyPanel>
+          </div>
+        )}
+      />
     </LabSection>
   </>,
 );
