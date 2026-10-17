@@ -52,3 +52,7 @@ export * from './components/field/index.js';
 export * from './components/table/index.js';
 export * from './components/list-row/index.js';
 export * from './components/tree/index.js';
+export * from './components/code-editor/index.js';
+export * from './components/json-editor/index.js';
+export * from './components/file-upload/index.js';
+export * from './components/folder-manager/index.js';

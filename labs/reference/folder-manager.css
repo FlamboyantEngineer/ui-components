@@ -1,0 +1,55 @@
+/* Folder Manager: a toolbar above the tree, and the message below it. */
+
+.ui-folder-manager {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-sizing: border-box;
+  width: 300px;
+  max-width: 100%;
+  font-size: 13px;
+}
+
+.ui-folder-manager[data-pending] .ui-folder-manager__tree {
+  cursor: progress;
+}
+
+.ui-folder-manager__toolbar {
+  display: flex;
+  gap: 2px;
+}
+
+.ui-folder-manager__tree {
+  overflow: auto;
+  max-height: 260px;
+  padding: 2px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-canvas);
+}
+
+.ui-folder-manager__name-input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 120px;
+  height: 22px;
+  padding: 0 4px;
+  border: 1px solid var(--ref-focus);
+  border-radius: 4px;
+  background: var(--ref-canvas);
+  color: inherit;
+  font: inherit;
+  outline: none;
+}
+
+.ui-folder-manager__name-input[data-invalid] {
+  border-color: var(--ref-danger);
+}
+
+.ui-folder-manager__name-input[readonly] {
+  border-style: dashed;
+}
+
+.ui-folder-manager__message {
+  font-size: 12px;
+}

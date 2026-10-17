@@ -226,6 +226,15 @@ With `trim`, the rules shall check the text without its leading and trailing whi
 Implementation: `src/components/field/string-rules.ts`
 Verification: `src/components/field/string-rules.test.ts`
 
+## UIC-FIELD-8 - Field controls
+
+### UIC-FIELD-8.1 - Shared control props
+
+`FieldInputProps<T>` shall be the props every field control shares: the `useFieldState` options and the `Field` layout props (label, layout, description, help, decoration, menu, class, id and caller `data-*` attributes). `useFieldControl(props, { initialValue, emptyValue, check })` splits a control's props into its field state, the props it hands to `Field` and the props left for the control itself. The field starts at `initialValue` and clears to `emptyValue` unless the caller gives a default or an empty value, and the control's own `check` runs before the caller's `validate`.
+
+Implementation: `src/components/field/field-control.ts`
+Verification: `src/components/field/field-control.test.tsx`
+
 ## Hooks
 
 | Hook                      | Kind      | Values                                                                  | Description                                                      |

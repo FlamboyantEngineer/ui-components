@@ -127,6 +127,13 @@ export function Field<T>({
 }
 
 export type { FieldControlProps, FieldLabelLayout } from './field-parts.js';
+export { useFieldControl } from './field-control.js';
+export type {
+  FieldControl,
+  FieldControlOptions,
+  FieldInputProps,
+  FieldLayoutProps,
+} from './field-control.js';
 export type { FieldMenuAction, FieldMenuEntry } from './field-menu.js';
 export { FieldRestoreButton } from './field-restore-button.js';
 export type { FieldRestoreButtonProps } from './field-restore-button.js';

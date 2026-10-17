@@ -46,6 +46,32 @@ export interface UiStrings {
   resetZoom: string;
   scrollBackward: string;
   scrollForward: string;
+  /** Opens a file chooser. */
+  browse: string;
+  /** Names a button that removes a listed item, from the item's name. */
+  removeItem: (name: string) => string;
+  /** States a size limit, from the formatted size. */
+  fileSizeLimit: (size: string) => string;
+  /** Counts chosen files refused because their type is not accepted. */
+  rejectedFileType: (count: number) => string;
+  /** Counts chosen files refused because they are larger than the size limit. */
+  rejectedFileSize: (count: number) => string;
+  newFolder: string;
+  /** Names the field that names a new folder. */
+  newFolderName: string;
+  rename: string;
+  /** Names the field that renames an item, from its current name. */
+  renameItem: (name: string) => string;
+  /** Why a folder takes no new folder: it is at the deepest level allowed. */
+  folderDepthLimit: (depth: number) => string;
+  /** Names a code editor's list of completions. */
+  suggestions: string;
+  /** Rewrites a value, such as JSON text, with standard indentation. */
+  format: string;
+  /** The message of text that is not valid JSON. */
+  invalidJson: string;
+  /** The message of text that is not valid JSON, with where the problem starts. */
+  invalidJsonAt: (line: number, column: number) => string;
   itemCount: (count: number) => string;
   /** Spoken name of a keyboard key or modifier (`↑` → `Up Arrow`); other keys are read as written. */
   shortcutKeyName: (key: string) => string;
@@ -130,6 +156,23 @@ export const defaultStrings: UiStrings = {
   resetZoom: 'Reset zoom',
   scrollBackward: 'Scroll backward',
   scrollForward: 'Scroll forward',
+  browse: 'Browse',
+  removeItem: (name) => `Remove ${name}`,
+  fileSizeLimit: (size) => `Up to ${size}`,
+  rejectedFileType: (count) =>
+    count === 1 ? '1 file is not an accepted type.' : `${count} files are not an accepted type.`,
+  rejectedFileSize: (count) =>
+    count === 1 ? '1 file is too large.' : `${count} files are too large.`,
+  newFolder: 'New folder',
+  newFolderName: 'New folder name',
+  rename: 'Rename',
+  renameItem: (name) => `Rename ${name}`,
+  folderDepthLimit: (depth) =>
+    depth === 1 ? 'Folders cannot be nested.' : `Folders nest at most ${depth} levels deep.`,
+  suggestions: 'Suggestions',
+  format: 'Format',
+  invalidJson: 'Enter valid JSON.',
+  invalidJsonAt: (line, column) => `Enter valid JSON: check line ${line}, column ${column}.`,
   itemCount: (count) => (count === 1 ? '1 item' : `${count} items`),
   shortcutKeyName: (key) => spokenKeyNames[key] ?? key,
   retry: 'Retry',

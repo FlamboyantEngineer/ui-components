@@ -1,0 +1,157 @@
+// JSON text helpers for the JSON editor: highlighting tokens, parse checks and formatting.
+
+import type { CodeToken } from '../code-editor/code-editor.js';
+
+/** Where a JSON text stops parsing, counted from 1. */
+export interface JsonErrorLocation {
+  line: number;
+  column: number;
+}
+
+const WHITESPACE = /^\s+/;
+const NUMBER = /^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?/;
+const LITERAL = /^(?:true|false|null)\b/;
+const PUNCTUATION = new Set(['{', '}', '[', ']', ':', ',']);
+
+/** The end of the string token starting at `start` (a double quote), past its closing quote. */
+function endOfString(source: string, start: number): number {
+  let index = start + 1;
+  while (index < source.length) {
+    const character = source[index];
+    if (character === '\\') index += 2;
+    else if (character === '"') return index + 1;
+    else index += 1;
+  }
+  return source.length;
+}
+
+function isKey(source: string, end: number): boolean {
+  return /^\s*:/.test(source.slice(end));
+}
+
+function readToken(source: string, index: number): CodeToken {
+  const rest = source.slice(index);
+  const space = WHITESPACE.exec(rest)?.[0];
+  if (space) return { text: space };
+  if (rest.startsWith('"')) {
+    const end = endOfString(source, index);
+    return { text: source.slice(index, end), type: isKey(source, end) ? 'key' : 'string' };
+  }
+  const number = NUMBER.exec(rest)?.[0];
+  if (number) return { text: number, type: 'number' };
+  const literal = LITERAL.exec(rest)?.[0];
+  if (literal) return { text: literal, type: 'literal' };
+  const character = rest.charAt(0);
+  return { text: character, type: PUNCTUATION.has(character) ? 'punctuation' : 'invalid' };
+}
+
+/**
+ * Splits JSON text into highlighting tokens that cover it exactly: object keys, strings, numbers,
+ * literals (`true`, `false`, `null`), punctuation and characters JSON does not allow.
+ */
+export function tokenizeJson(source: string): CodeToken[] {
+  const tokens: CodeToken[] = [];
+  for (let index = 0; index < source.length; ) {
+    const token = readToken(source, index);
+    tokens.push(token);
+    index += token.text.length;
+  }
+  return tokens;
+}
+
+function locationAt(source: string, offset: number): JsonErrorLocation {
+  const before = source.slice(0, offset).split('\n');
+  return { line: before.length, column: (before.at(-1)?.length ?? 0) + 1 };
+}
+
+interface PlacedToken {
+  text: string;
+  type: string;
+  offset: number;
+}
+
+const SCALARS = new Set(['key', 'string', 'number', 'literal']);
+
+function placeTokens(source: string): PlacedToken[] {
+  const placed: PlacedToken[] = [];
+  let offset = 0;
+  for (const { text, type } of tokenizeJson(source)) {
+    if (type) placed.push({ text, type, offset });
+    offset += text.length;
+  }
+  return placed;
+}
+
+/** Walks the tokens through JSON's grammar; `index` stops at the first token that breaks it. */
+function createGrammar(tokens: readonly PlacedToken[]) {
+  let index = 0;
+  const take = (text: string) => {
+    if (tokens[index]?.text !== text) return false;
+    index += 1;
+    return true;
+  };
+  const list = (close: string, item: () => boolean): boolean => {
+    index += 1;
+    if (take(close)) return true;
+    do {
+      if (!item()) return false;
+    } while (take(','));
+    return take(close);
+  };
+  const value = (): boolean => {
+    const token = tokens[index];
+    if (token?.text === '{') return list('}', member);
+    if (token?.text === '[') return list(']', value);
+    if (!token || !SCALARS.has(token.type)) return false;
+    index += 1;
+    return true;
+  };
+  const member = (): boolean => {
+    const type = tokens[index]?.type;
+    if (type !== 'key' && type !== 'string') return false;
+    index += 1;
+    return take(':') && value();
+  };
+  return { value, stop: () => index };
+}
+
+/** Where the tokens stop following JSON's grammar, or `null` when they follow it. */
+function findGrammarError(source: string): number | null {
+  const tokens = placeTokens(source);
+  const grammar = createGrammar(tokens);
+  if (grammar.value() && grammar.stop() === tokens.length) return null;
+  return tokens[grammar.stop()]?.offset ?? source.length;
+}
+
+/**
+ * Where the text fails to parse, read from the parser's message when it says (`line 3 column 5`
+ * or `position 12`); `null` when the message gives no place.
+ */
+export function locateJsonError(source: string, message: string): JsonErrorLocation | null {
+  const lineColumn = /line (\d+) column (\d+)/.exec(message);
+  if (lineColumn) return { line: Number(lineColumn[1]), column: Number(lineColumn[2]) };
+  const position = /position (\d+)/.exec(message);
+  return position ? locationAt(source, Number(position[1])) : null;
+}
+
+/**
+ * The parse error of a JSON text, or `null` when it parses. Blank text parses as nothing. The
+ * location is the first token that breaks JSON's grammar, or else the place the parser reports.
+ */
+export function findJsonError(source: string): { location: JsonErrorLocation | null } | null {
+  if (source.trim() === '') return null;
+  try {
+    JSON.parse(source);
+    return null;
+  } catch (error) {
+    const offset = findGrammarError(source);
+    if (offset !== null) return { location: locationAt(source, offset) };
+    return { location: locateJsonError(source, error instanceof Error ? error.message : '') };
+  }
+}
+
+/** The text rewritten with `indent` spaces per level, or `null` when it is blank or not JSON. */
+export function formatJson(source: string, indent: number): string | null {
+  if (findJsonError(source) !== null || source.trim() === '') return null;
+  return JSON.stringify(JSON.parse(source), null, indent);
+}
