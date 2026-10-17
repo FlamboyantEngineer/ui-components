@@ -36,12 +36,15 @@ export interface ModalEntryRenderProps<T = unknown> {
   isOpen: boolean;
   /** Pass to the modal's `onOpenChange`; closing it dismisses the entry. */
   onOpenChange: (isOpen: boolean) => void;
+  /** Closes the entry with a result, like `handle.close`. */
   close: (result?: T) => void;
+  /** The entry's handle. */
   handle: ModalHandle<T>;
 }
 
 /** Options for a modal the caller draws itself. */
 export interface ModalRenderOptions<T = unknown> {
+  /** Draws the modal; it renders while the entry is open. */
   render: (props: ModalEntryRenderProps<T>) => ReactNode;
 }
 
@@ -53,8 +56,11 @@ export type ModalUpdateOptions<T = unknown> =
 
 /** An open modal as the controller lists it, in opening order. */
 export interface ModalEntry {
+  /** The handle's id. */
   readonly id: string;
+  /** The options given to `open`, merged with every update. */
   readonly options: ModalOpenOptions<never>;
+  /** The handle `open` returned. */
   readonly handle: ModalHandle<never>;
 }
 
@@ -68,6 +74,31 @@ export interface ModalController {
   getSnapshot(): readonly ModalEntry[];
   /** Calls `listener` after every change; returns the unsubscribe function. */
   subscribe(listener: () => void): () => void;
+}
+
+export interface ModalHostProps {
+  /** The controller whose open modals the host renders. */
+  controller: ModalController;
+}
+
+function ModalHostEntry({ entry }: { entry: ModalEntry }) {
+  const handle = entry.handle as ModalHandle<unknown>;
+  const onOpenChange = useCallback(
+    (isOpen: boolean) => {
+      if (!isOpen) handle.close();
+    },
+    [handle],
+  );
+  const options = entry.options as ModalOpenOptions<unknown>;
+  if ('render' in options) {
+    return options.render({ isOpen: true, onOpenChange, close: handle.close, handle });
+  }
+  const { content, ...modalProps } = options;
+  return (
+    <Modal {...modalProps} isOpen onOpenChange={onOpenChange}>
+      {typeof content === 'function' ? content(handle) : content}
+    </Modal>
+  );
 }
 
 /**
@@ -141,30 +172,6 @@ export function createModalController(): ModalController {
       };
     },
   };
-}
-
-function ModalHostEntry({ entry }: { entry: ModalEntry }) {
-  const handle = entry.handle as ModalHandle<unknown>;
-  const onOpenChange = useCallback(
-    (isOpen: boolean) => {
-      if (!isOpen) handle.close();
-    },
-    [handle],
-  );
-  const options = entry.options as ModalOpenOptions<unknown>;
-  if ('render' in options) {
-    return options.render({ isOpen: true, onOpenChange, close: handle.close, handle });
-  }
-  const { content, ...modalProps } = options;
-  return (
-    <Modal {...modalProps} isOpen onOpenChange={onOpenChange}>
-      {typeof content === 'function' ? content(handle) : content}
-    </Modal>
-  );
-}
-
-export interface ModalHostProps {
-  controller: ModalController;
 }
 
 /** Renders a controller's open modals, the most recently opened on top. Render it once. */

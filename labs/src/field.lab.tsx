@@ -15,7 +15,7 @@ import {
   type FieldStateOptions,
 } from '../../src/components/field/field.js';
 import { IconButton } from '../../src/components/icon-button/icon-button.js';
-import { TextMatchScope } from '../../src/components/text-match/text-match.js';
+import { TextMatchProvider } from '../../src/components/text-match/text-match.js';
 import { useUiStrings } from '../../src/core/provider.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
@@ -201,10 +201,10 @@ function Highlighting() {
       <label>
         Filter labels <input value={query} onChange={(event) => setQuery(event.target.value)} />
       </label>
-      <TextMatchScope query={query}>
+      <TextMatchProvider query={query}>
         <SampleField label="Banana" options={{ defaultValue: '' }} />
         <SampleField label="Mango" options={{ defaultValue: '' }} />
-      </TextMatchScope>
+      </TextMatchProvider>
     </>
   );
 }

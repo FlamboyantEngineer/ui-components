@@ -6,7 +6,13 @@ import { Portal } from '../../src/components/portal/portal.js';
 import { Shortcut } from '../../src/components/shortcut/shortcut.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
-const variants = ['default', 'danger'] as const;
+/** A save the lab holds until the reader finishes or fails it. */
+interface PendingRequest {
+  finish: () => void;
+  fail: (reason: Error) => void;
+}
+
+const tones = ['neutral', 'danger'] as const;
 const sizes = ['sm', 'md', 'lg', 'xl', 'full'] as const;
 const states = [
   'idle',
@@ -15,11 +21,10 @@ const states = [
   'status',
   'error',
   'secondary action',
+  'action variant',
   'custom actions',
   'dismiss disabled',
 ] as const;
-
-const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 /** A trigger button and an uncontrolled modal it opens. */
 function Opener({ label = 'Open', ...props }: Omit<ModalProps, 'isOpen'> & { label?: string }) {
@@ -50,6 +55,11 @@ function stateProps(state: (typeof states)[number]): Partial<ModalProps> {
         secondaryAction: { label: 'Discard', onPress: (close) => close() },
         primaryAction: { label: 'Save', onPress: (close) => close() },
       };
+    case 'action variant':
+      return {
+        secondaryAction: { label: 'Remove', variant: 'danger', onPress: (close) => close() },
+        primaryAction: { label: 'Keep', onPress: (close) => close() },
+      };
     case 'custom actions':
       return {
         cancelAction: null,
@@ -74,14 +84,10 @@ function stateProps(state: (typeof states)[number]): Partial<ModalProps> {
 function SaveForm() {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
-  const [fail, setFail] = useState(false);
+  const [request, setRequest] = useState<PendingRequest | null>(null);
   const [saved, setSaved] = useState<string[]>([]);
   return (
     <div>
-      <label>
-        <input type="checkbox" checked={fail} onChange={(event) => setFail(event.target.checked)} />{' '}
-        Make the save fail
-      </label>{' '}
       <Button size="sm" data-lab-open="save" onPress={() => setOpen(true)}>
         Add a city
       </Button>
@@ -90,22 +96,44 @@ function SaveForm() {
       </p>
       <Modal
         isOpen={open}
-        onOpenChange={setOpen}
+        onOpenChange={(next) => {
+          setOpen(next);
+          setRequest(null);
+        }}
         title="Add a city"
         description="The city joins your travel list."
         data-lab-modal="save"
         footerContent={
-          <span>
-            <Shortcut chord="Ctrl+Enter" /> saves
-          </span>
+          <>
+            <Shortcut chord="Ctrl+Enter" /> saves.{' '}
+            <Button
+              size="sm"
+              data-lab-action="finish"
+              isDisabled={!request}
+              onPress={() => request?.finish()}
+            >
+              Finish request
+            </Button>{' '}
+            <Button
+              size="sm"
+              data-lab-action="fail"
+              isDisabled={!request}
+              onPress={() => request?.fail(new Error('The list is full.'))}
+            >
+              Fail request
+            </Button>
+          </>
         }
         primaryAction={{
           label: 'Save',
           pendingLabel: 'Saving',
           isDisabled: name.trim() === '',
           onPress: async (close) => {
-            await wait(600);
-            if (fail) throw new Error('The list is full.');
+            try {
+              await new Promise<void>((finish, fail) => setRequest({ finish, fail }));
+            } finally {
+              setRequest(null);
+            }
             setSaved((list) => [...list, name.trim()]);
             setName('');
             close();
@@ -174,20 +202,20 @@ function Stacking() {
 mountLab(
   <>
     <LabSection
-      title="Variants and sizes"
-      description="Each cell opens a modal with that variant and size. Escape or Cancel closes it and focus returns to the button."
+      title="Tones and sizes"
+      description="Each cell opens a modal with that tone and size. Escape or Cancel closes it and focus returns to the button."
     >
       <StateMatrix
-        axes={{ variant: variants, size: sizes }}
-        render={({ variant, size }) => (
+        axes={{ tone: tones, size: sizes }}
+        render={({ tone, size }) => (
           <Opener
-            variant={variant}
+            tone={tone}
             size={size}
-            title={`${variant === 'danger' ? 'Delete' : 'Rename'} Report.pdf`}
-            description={`A ${variant} modal of size ${size}.`}
-            data-lab-modal={`${variant}-${size}`}
+            title={`${tone === 'danger' ? 'Delete' : 'Rename'} Report.pdf`}
+            description={`A ${tone} modal of size ${size}.`}
+            data-lab-modal={`${tone}-${size}`}
             primaryAction={{
-              label: variant === 'danger' ? 'Delete' : 'Apply',
+              label: tone === 'danger' ? 'Delete' : 'Apply',
               onPress: (close) => close(),
             }}
           >
@@ -198,15 +226,15 @@ mountLab(
     </LabSection>
     <LabSection
       title="Footer states"
-      description="Primary disabled, pending, status and error messages, a secondary action, a custom action bar and refused dismissal."
+      description="Primary disabled, pending, status and error messages, a secondary action, an action with its own variant, a custom action bar and refused dismissal."
     >
       <StateMatrix
-        axes={{ state: states, variant: variants }}
-        render={({ state, variant }) => (
+        axes={{ state: states, tone: tones }}
+        render={({ state, tone }) => (
           <Opener
-            variant={variant}
+            tone={tone}
             title="Choose a city"
-            data-lab-modal={`${state}-${variant}`}
+            data-lab-modal={`${state}-${tone}`}
             {...stateProps(state)}
           >
             <p>Lisbon, Oslo or Kyoto.</p>
@@ -216,7 +244,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Asynchronous primary action"
-      description="Save waits 600 ms, refuses repeat presses meanwhile and closes when done; a failure stays open with the error in the footer."
+      description="Save stays pending until Finish request or Fail request in the footer, refusing repeat presses meanwhile; a finished save closes and a failure stays open with the error."
     >
       <SaveForm />
     </LabSection>

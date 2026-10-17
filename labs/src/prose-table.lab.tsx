@@ -8,13 +8,6 @@ const header = [
   { key: 'season', content: 'Season' },
 ];
 
-function row(key: string, cells: ReactNode[]): ProseTableRow {
-  return {
-    key,
-    cells: cells.map((content, index) => ({ key: header[index]?.key ?? String(index), content })),
-  };
-}
-
 const contents: Record<string, readonly ProseTableRow[]> = {
   text: [row('apple', ['Apple', 'Red', 'Autumn']), row('pear', ['Pear', 'Green', 'Late summer'])],
   'inline markup': [
@@ -33,6 +26,13 @@ const contents: Record<string, readonly ProseTableRow[]> = {
   ],
   'short rows': [row('apple', ['Apple', 'Red']), row('plum', ['Plum'])],
 };
+
+function row(key: string, cells: ReactNode[]): ProseTableRow {
+  return {
+    key,
+    cells: cells.map((content, index) => ({ key: header[index]?.key ?? String(index), content })),
+  };
+}
 
 mountLab(
   <>

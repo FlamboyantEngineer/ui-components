@@ -17,20 +17,6 @@ export interface LabFixture {
   errors: string[];
 }
 
-export function labUrl(name: string, options: OpenLabOptions = {}): string {
-  const query = new URLSearchParams();
-  query.set('stylesheet', options.stylesheet ?? 'reference');
-  if (options.theme) query.set('theme', options.theme);
-  if (options.themeAttribute) query.set('themeAttribute', options.themeAttribute);
-  return `${name}.html?${query.toString()}`;
-}
-
-export async function waitForLab(page: Page): Promise<void> {
-  const root = page.locator('html');
-  await expect(root).toHaveAttribute('data-lab-ready', 'true');
-  await expect(root).toHaveAttribute('data-lab-stylesheet-state', /^(none|loaded)$/);
-}
-
 export const test = base.extend<{ lab: LabFixture }>({
   lab: async ({ page }, use) => {
     const errors: string[] = [];
@@ -41,7 +27,7 @@ export const test = base.extend<{ lab: LabFixture }>({
     await use({
       errors,
       async open(name, options) {
-        await page.goto(labUrl(name, options));
+        await page.goto(formatLabUrl(name, options));
         await waitForLab(page);
       },
       async expectAccessible(selector = '#lab-root') {
@@ -54,5 +40,19 @@ export const test = base.extend<{ lab: LabFixture }>({
     expect(errors, 'page and console errors').toEqual([]);
   },
 });
+
+export function formatLabUrl(name: string, options: OpenLabOptions = {}): string {
+  const query = new URLSearchParams();
+  query.set('stylesheet', options.stylesheet ?? 'reference');
+  if (options.theme) query.set('theme', options.theme);
+  if (options.themeAttribute) query.set('themeAttribute', options.themeAttribute);
+  return `${name}.html?${query.toString()}`;
+}
+
+export async function waitForLab(page: Page): Promise<void> {
+  const root = page.locator('html');
+  await expect(root).toHaveAttribute('data-lab-ready', 'true');
+  await expect(root).toHaveAttribute('data-lab-stylesheet-state', /^(none|loaded)$/);
+}
 
 export { expect };

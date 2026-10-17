@@ -27,7 +27,7 @@ export interface DropdownMenuProps
   icon?: IconSource;
   /** Draws the trigger as an `IconButton` showing only `icon` (`more` by default). */
   iconOnly?: boolean | undefined;
-  /** Draws a caret after the label. Defaults to true, and to false when `iconOnly`. */
+  /** Draws a caret after the label of a button trigger. Defaults to true. */
   showCaret?: boolean | undefined;
   /** Menu row density. Defaults to the trigger size (`sm` for an `xs` trigger). */
   menuSize?: MenuSize | undefined;
@@ -62,7 +62,7 @@ function DropdownMenuTrigger({
   label,
   icon,
   iconOnly = false,
-  showCaret = !iconOnly,
+  showCaret = true,
   variant,
   className,
   ...rest

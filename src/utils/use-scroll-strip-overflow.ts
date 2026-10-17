@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useReducer, useRef, useState, type RefObject } from 'react';
+import type { Orientation } from '../core/props.js';
 import { useResizeObserver } from './use-resize-observer.js';
 
 /** Whether content is hidden past each edge of a scrolling strip, including a partly visible item. */
@@ -9,7 +10,7 @@ export interface ScrollStripOverflow {
 
 export interface ScrollStripOptions {
   /** The strip's scrolling axis. A horizontal strip also scrolls with the vertical wheel. */
-  orientation?: 'horizontal' | 'vertical' | undefined;
+  orientation?: Orientation | undefined;
   /** Called after wheel input scrolled the strip. */
   onWheelScroll?: (() => void) | undefined;
 }
@@ -21,10 +22,10 @@ export interface ScrollStripState {
 }
 
 // Popups opened inside a strip scroll themselves, so their wheel input is left alone.
-const POPUP_SELECTOR = '[role="menu"], [role="listbox"], [role="dialog"]';
-const LINE_HEIGHT = 16;
+const popupSelector = '[role="menu"], [role="listbox"], [role="dialog"]';
+const wheelLineHeight = 16;
 
-function frameApi(element: Element | null) {
+function getFrameApi(element: Element | null) {
   const view = element?.ownerDocument.defaultView ?? window;
   return {
     request: (callback: FrameRequestCallback) => view.requestAnimationFrame(callback),
@@ -35,6 +36,58 @@ function frameApi(element: Element | null) {
 function isRtl(element: Element): boolean {
   const view = element.ownerDocument.defaultView;
   return view ? view.getComputedStyle(element).direction === 'rtl' : false;
+}
+
+/** Whether wheel input reached the strip itself rather than a modified wheel or a popup inside it. */
+function isStripWheel(strip: HTMLElement, event: WheelEvent): boolean {
+  if (event.ctrlKey || event.metaKey) return false;
+  const path = event.composedPath();
+  const index = path.indexOf(strip);
+  if (index < 0) return false;
+  return !path
+    .slice(0, index)
+    .some((node) => node instanceof Element && node.matches(popupSelector));
+}
+
+/** The strip's next scroll position for wheel input along its dominant axis, or null for none. */
+function resolveWheelScrollPosition(strip: HTMLElement, event: WheelEvent): number | null {
+  const delta = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
+  const range = Math.max(0, strip.scrollWidth - strip.clientWidth);
+  if (delta === 0 || range === 0) return null;
+  const unit =
+    event.deltaMode === 1 ? wheelLineHeight : event.deltaMode === 2 ? strip.clientWidth : 1;
+  // Right-to-left scroll positions run from 0 down to -range.
+  const rtl = isRtl(strip);
+  const offset = (rtl ? -delta : delta) * unit;
+  const next = Math.min(rtl ? 0 : range, Math.max(rtl ? -range : 0, strip.scrollLeft + offset));
+  return next === strip.scrollLeft ? null : next;
+}
+
+/** Lets the vertical wheel scroll a horizontal strip. */
+function useWheelScrolling(
+  stripRef: RefObject<HTMLElement | null>,
+  horizontal: boolean,
+  onWheelScroll: (() => void) | undefined,
+): void {
+  const onWheelScrollRef = useRef(onWheelScroll);
+  useEffect(() => {
+    onWheelScrollRef.current = onWheelScroll;
+  }, [onWheelScroll]);
+
+  useEffect(() => {
+    const strip = stripRef.current;
+    if (!strip || !horizontal) return undefined;
+    const onWheel = (event: WheelEvent) => {
+      if (!isStripWheel(strip, event)) return;
+      const next = resolveWheelScrollPosition(strip, event);
+      if (next === null) return;
+      event.preventDefault();
+      strip.scrollLeft = next;
+      onWheelScrollRef.current?.();
+    };
+    strip.addEventListener('wheel', onWheel, { capture: true, passive: false });
+    return () => strip.removeEventListener('wheel', onWheel, { capture: true });
+  }, [horizontal, stripRef]);
 }
 
 /**
@@ -49,17 +102,13 @@ export function useScrollStripOverflow(
   { orientation = 'horizontal', onWheelScroll }: ScrollStripOptions = {},
 ): ScrollStripState {
   const horizontal = orientation === 'horizontal';
-  const onWheelScrollRef = useRef(onWheelScroll);
-  useEffect(() => {
-    onWheelScrollRef.current = onWheelScroll;
-  }, [onWheelScroll]);
-
+  useWheelScrolling(stripRef, horizontal, onWheelScroll);
   const [overflow, setOverflow] = useState<ScrollStripOverflow>({ start: false, end: false });
   const pending = useRef<{ id: number; cancel: (id: number) => void } | null>(null);
 
   const syncOverflow = useCallback(() => {
     if (pending.current) return;
-    const frames = frameApi(stripRef.current);
+    const frames = getFrameApi(stripRef.current);
     const id = frames.request(() => {
       pending.current = null;
       const strip = stripRef.current;
@@ -102,37 +151,6 @@ export function useScrollStripOverflow(
     mutations.observe(strip, { childList: true });
     return () => mutations.disconnect();
   }, [stripRef, syncOverflow]);
-
-  useEffect(() => {
-    const strip = stripRef.current;
-    if (!strip || !horizontal) return undefined;
-    const onWheel = (event: WheelEvent) => {
-      if (event.ctrlKey || event.metaKey) return;
-      const path = event.composedPath();
-      const index = path.indexOf(strip);
-      if (index < 0) return;
-      const insidePopup = path
-        .slice(0, index)
-        .some((node) => node instanceof Element && node.matches(POPUP_SELECTOR));
-      if (insidePopup) return;
-      const delta = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
-      if (delta === 0) return;
-      const range = Math.max(0, strip.scrollWidth - strip.clientWidth);
-      if (range === 0) return;
-      const unit =
-        event.deltaMode === 1 ? LINE_HEIGHT : event.deltaMode === 2 ? strip.clientWidth : 1;
-      // Right-to-left scroll positions run from 0 down to -range.
-      const rtl = isRtl(strip);
-      const offset = (rtl ? -delta : delta) * unit;
-      const next = Math.min(rtl ? 0 : range, Math.max(rtl ? -range : 0, strip.scrollLeft + offset));
-      if (next === strip.scrollLeft) return;
-      event.preventDefault();
-      strip.scrollLeft = next;
-      onWheelScrollRef.current?.();
-    };
-    strip.addEventListener('wheel', onWheel, { capture: true, passive: false });
-    return () => strip.removeEventListener('wheel', onWheel, { capture: true });
-  }, [horizontal, stripRef]);
 
   return { overflow, syncOverflow };
 }

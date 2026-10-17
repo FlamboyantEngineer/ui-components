@@ -11,12 +11,12 @@ export interface FindTermRangesOptions {
 }
 
 /** Terms at least this long also match the start of a longer word. */
-const WORD_PREFIX_MIN_LENGTH = 3;
-const WORD_CHARACTER = /[\p{L}\p{N}]/u;
-const SEPARATOR = /[/_-]/g;
+const wordPrefixMinLength = 3;
+const wordCharacter = /[\p{L}\p{N}]/u;
+const separators = /[/_-]/g;
 
 function isWordCharacter(character: string | undefined): boolean {
-  return character !== undefined && WORD_CHARACTER.test(character);
+  return character !== undefined && wordCharacter.test(character);
 }
 
 /**
@@ -26,7 +26,7 @@ function isWordCharacter(character: string | undefined): boolean {
  */
 export function isWordMatchAt(text: string, index: number, term: string): boolean {
   if (index < 0 || isWordCharacter(text[index - 1])) return false;
-  return term.length >= WORD_PREFIX_MIN_LENGTH || !isWordCharacter(text[index + term.length]);
+  return term.length >= wordPrefixMinLength || !isWordCharacter(text[index + term.length]);
 }
 
 /** Every index at which `term` is a word match in `text`. */
@@ -48,7 +48,7 @@ export function normalizeMatchText(text: string): string {
   let normalized = '';
   for (const character of text) {
     const lower = character.toLowerCase();
-    normalized += (lower.length === character.length ? lower : character).replace(SEPARATOR, ' ');
+    normalized += (lower.length === character.length ? lower : character).replace(separators, ' ');
   }
   return normalized;
 }

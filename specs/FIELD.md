@@ -6,7 +6,7 @@ The field base every field control is built on. `useFieldState` is the controlle
 
 ### UIC-FIELD-1.1 - Label and control
 
-`Field` shall draw its `label` text in a `<label>` element (`ui-field__label`) for the control, and call its `children` with the control's props: an `id` the label points at, `aria-labelledby` naming the label (`aria-label` in the `control-only` layout), the description and state attributes below, and a `ref` through which the control publishes its element. The control's accessible name is the label text; pressing the label focuses the control. The label text is drawn through `TextMatch`, so a `TextMatchScope` above the field highlights matching label text without changing the name.
+`Field` shall draw its `label` text in a `<label>` element (`ui-field__label`) for the control, and call its `children` with the control's props: an `id` the label points at, `aria-labelledby` naming the label (`aria-label` in the `control-only` layout), the description and state attributes below, and a `ref` through which the control publishes its element. The control's accessible name is the label text; pressing the label focuses the control. The label text is drawn through `TextMatch`, so a `TextMatchProvider` above the field highlights matching label text without changing the name.
 
 Implementation: `src/components/field/field.tsx`, `src/components/field/field-parts.tsx`
 Verification: `src/components/field/field.test.tsx`, `e2e/field.spec.ts`

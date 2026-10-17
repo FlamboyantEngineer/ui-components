@@ -16,25 +16,30 @@ import {
   type LabSettings,
 } from './settings.js';
 
-const STATE_PREFIX = 'ui-labs-state:';
+export interface MountLabOptions {
+  /** Provider props for the lab content, e.g. replaced glyphs or strings. */
+  provider?: Omit<UiProviderProps, 'children'>;
+}
+
+const statePrefix = 'ui-labs-state:';
 
 /** Persisted lab component state lives in localStorage under its own prefix. */
-function labUiStorage(): UiStorage {
+function createLabUiStorage(): UiStorage {
   const storage = labStorage();
   if (!storage) return createMemoryStorage();
   const safe = createSafeStorage(storage);
   return {
-    getItem: (key) => safe.getItem(STATE_PREFIX + key),
-    setItem: (key, value) => safe.setItem(STATE_PREFIX + key, value),
-    removeItem: (key) => safe.removeItem(STATE_PREFIX + key),
+    getItem: (key) => safe.getItem(statePrefix + key),
+    setItem: (key, value) => safe.setItem(statePrefix + key, value),
+    removeItem: (key) => safe.removeItem(statePrefix + key),
   };
 }
 
-function pageTitle(): string {
+function readPageTitle(): string {
   return document.title.replace(/ · Labs$/, '');
 }
 
-function pageDescription(): string {
+function readPageDescription(): string {
   return document.querySelector('meta[name="description"]')?.getAttribute('content') ?? '';
 }
 
@@ -78,7 +83,7 @@ function mountChrome(
   createRoot(container).render(
     <StrictMode>
       <LabChrome
-        title={index ? 'Labs' : pageTitle()}
+        title={index ? 'Labs' : readPageTitle()}
         initial={initial}
         indexHref={index ? null : (settings) => `index.html${settingsSearch(settings)}`}
         onChange={change}
@@ -92,11 +97,6 @@ function Ready({ children }: { children: ReactNode }) {
   return children;
 }
 
-export interface MountLabOptions {
-  /** Provider props for the lab content, e.g. replaced glyphs or strings. */
-  provider?: Omit<UiProviderProps, 'children'>;
-}
-
 /** Applies the stylesheet and theme, mounts the chrome, and renders the lab content into #lab-root. */
 export function mountLab(content: ReactNode, options: MountLabOptions = {}): void {
   const settings = readSettings(location.search, labStorage());
@@ -105,12 +105,12 @@ export function mountLab(content: ReactNode, options: MountLabOptions = {}): voi
 
   const root = document.getElementById('lab-root');
   if (!root) throw new Error('Lab page is missing #lab-root');
-  const description = pageDescription();
+  const description = readPageDescription();
   createRoot(root).render(
     <StrictMode>
-      <UiProvider storage={labUiStorage()} {...options.provider}>
+      <UiProvider storage={createLabUiStorage()} {...options.provider}>
         <Ready>
-          <h1>{pageTitle()}</h1>
+          <h1>{readPageTitle()}</h1>
           {description ? <p>{description}</p> : null}
           {content}
         </Ready>

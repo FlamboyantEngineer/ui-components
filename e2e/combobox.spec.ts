@@ -129,13 +129,29 @@ test.describe('Combobox lab', () => {
     lab,
   }) => {
     await lab.open('combobox');
-    const input = section(page, 'Asynchronous suggestions').getByRole('combobox', { name: 'City' });
+    const area = section(page, 'Asynchronous suggestions');
+    const input = area.getByRole('combobox', { name: 'City' });
+    const deliver = area.locator('[data-lab-action="deliver"]');
+    const request = area.locator('[data-lab-output="request"]');
     await input.click();
     await page.keyboard.type('li');
+    await expect(request).toHaveText('li');
     await expect(input).toHaveAttribute('aria-busy', 'true');
-    await expect(page.getByRole('listbox').getByRole('option')).toHaveText(['Lima', 'Lisbon']);
+    await expect(area.locator('.ui-combobox__spinner')).toBeVisible();
+
+    await deliver.click();
+    await expect(request).toHaveText('nothing');
     await expect(input).not.toHaveAttribute('aria-busy');
+    await expect(area.locator('.ui-combobox__spinner')).toHaveCount(0);
+    await input.focus();
+    await page.keyboard.press('ArrowDown');
+    await expect(page.getByRole('listbox').getByRole('option')).toHaveText(['Lima', 'Lisbon']);
+
     await page.keyboard.type('mo');
+    await expect(request).toHaveText('limo');
+    await deliver.click();
+    await input.focus();
+    await page.keyboard.press('ArrowDown');
     await expect(page.locator('.ui-combobox__empty')).toBeVisible();
     await page.keyboard.press('Tab');
     await expect(input).toHaveValue('limo');

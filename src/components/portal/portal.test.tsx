@@ -6,7 +6,7 @@ import { renderToString } from 'react-dom/server';
 import { Dialog, Modal, ModalOverlay } from 'react-aria-components';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import { defaultLayerZIndex, overlayLayers, type OverlayLayer } from './layers.js';
+import { defaultLayerZIndex, isLayerAbove, overlayLayers, type OverlayLayer } from './layers.js';
 import { Portal, PortalContainerProvider, PortalHost, useLayerZIndex } from './portal.js';
 
 function wrappers(root: ParentNode = document.body): HTMLElement[] {
@@ -170,6 +170,9 @@ describe('Portal', () => {
     const [first, ...rest] = wrappers();
     expect(first).toHaveAttribute('data-layer', 'dropdown');
     expect(rest.map((wrapper) => wrapper.dataset.layer)).toEqual([...overlayLayers]);
+    expect(isLayerAbove('toast', 'modal')).toBe(true);
+    expect(isLayerAbove('backdrop', 'drawer')).toBe(false);
+    expect(isLayerAbove('modal', 'modal')).toBe(false);
     expectHooksMatchSpec(document.body, 'PORTAL');
   });
 

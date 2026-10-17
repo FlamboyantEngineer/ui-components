@@ -47,11 +47,19 @@ describe('shortcut formatting', () => {
   });
 
   it('UIC-SHORTCUT-1.3 reads chords as words with named symbol keys', () => {
-    expect(formatShortcutAccessibleText('Ctrl+Shift+K', 'mac')).toBe('Shift Command K');
-    expect(formatShortcutAccessibleText('Control+Alt+K', 'mac')).toBe('Control Option K');
-    expect(formatShortcutAccessibleText('Ctrl+Alt+Meta+K', 'windows')).toBe('Control Alt Meta K');
-    expect(formatShortcutAccessibleText('Ctrl+Shift+↑', 'linux')).toBe('Control Shift Up Arrow');
-    expect(formatShortcutAccessibleText('Ctrl++', 'linux')).toBe('Control Plus');
+    expect(formatShortcutAccessibleText('Ctrl+Shift+K', { platform: 'mac' })).toBe(
+      'Shift Command K',
+    );
+    expect(formatShortcutAccessibleText('Control+Alt+K', { platform: 'mac' })).toBe(
+      'Control Option K',
+    );
+    expect(formatShortcutAccessibleText('Ctrl+Alt+Meta+K', { platform: 'windows' })).toBe(
+      'Control Alt Meta K',
+    );
+    expect(formatShortcutAccessibleText('Ctrl+Shift+↑', { platform: 'linux' })).toBe(
+      'Control Shift Up Arrow',
+    );
+    expect(formatShortcutAccessibleText('Ctrl++', { platform: 'linux' })).toBe('Control Plus');
     for (const [key, name] of [
       ['↓', 'Down Arrow'],
       ['←', 'Left Arrow'],
@@ -61,18 +69,18 @@ describe('shortcut formatting', () => {
       ['\\', 'Backslash'],
       [' ', 'Space'],
     ] as const) {
-      expect(formatShortcutAccessibleText({ key }, 'linux')).toBe(name);
+      expect(formatShortcutAccessibleText({ key }, { platform: 'linux' })).toBe(name);
     }
-    expect(formatShortcutAccessibleText('', 'mac')).toBe('');
+    expect(formatShortcutAccessibleText('', { platform: 'mac' })).toBe('');
   });
 
   it('UIC-SHORTCUT-1.3 takes replacement key names', () => {
     const names: Record<string, string> = { Command: 'Commande', Shift: 'Maj', '↑': 'Flèche haut' };
     const keyName = (key: string) => names[key] ?? key;
-    expect(formatShortcutAccessibleText('Ctrl+Shift+↑', 'mac', keyName)).toBe(
+    expect(formatShortcutAccessibleText('Ctrl+Shift+↑', { platform: 'mac', keyName })).toBe(
       'Maj Commande Flèche haut',
     );
-    expect(formatShortcutDescription('Monte', 'Ctrl+↑', 'mac', keyName)).toBe(
+    expect(formatShortcutDescription('Monte', 'Ctrl+↑', { platform: 'mac', keyName })).toBe(
       'Monte. Commande Flèche haut',
     );
   });
@@ -83,14 +91,18 @@ describe('shortcut formatting', () => {
     expect(formatShortcutTooltip(undefined, 'Ctrl+S', 'linux')).toBe('Ctrl+S');
     expect(formatShortcutTooltip('Save', undefined, 'linux')).toBe('Save');
     expect(formatShortcutTooltip('Save', '', 'linux')).toBe('Save');
-    expect(formatShortcutDescription('Unsaved changes', 'Ctrl+Shift+K', 'mac')).toBe(
+    expect(formatShortcutDescription('Unsaved changes', 'Ctrl+Shift+K', { platform: 'mac' })).toBe(
       'Unsaved changes. Shift Command K',
     );
-    expect(formatShortcutDescription(undefined, 'Ctrl+Shift+K', 'linux')).toBe('Control Shift K');
-    expect(formatShortcutDescription('Unsaved changes', undefined, 'linux')).toBe(
+    expect(formatShortcutDescription(undefined, 'Ctrl+Shift+K', { platform: 'linux' })).toBe(
+      'Control Shift K',
+    );
+    expect(formatShortcutDescription('Unsaved changes', undefined, { platform: 'linux' })).toBe(
       'Unsaved changes',
     );
-    expect(formatShortcutDescription(undefined, { key: '' }, 'linux')).toBeUndefined();
+    expect(
+      formatShortcutDescription(undefined, { key: '' }, { platform: 'linux' }),
+    ).toBeUndefined();
   });
 });
 
@@ -131,7 +143,7 @@ describe('platform detection', () => {
     });
     expect(reads).toBe(0);
     expect(fresh.formatShortcut('Ctrl+K', 'linux')).toBe('Ctrl+K');
-    expect(fresh.formatShortcutAccessibleText('Ctrl+K', 'windows')).toBe('Control K');
+    expect(fresh.formatShortcutAccessibleText('Ctrl+K', { platform: 'windows' })).toBe('Control K');
     expect(reads).toBe(0);
     expect(fresh.formatShortcutTooltip('Open', 'Ctrl+K')).toBe('Open (⌘K)');
     expect(fresh.formatShortcutDescription('Open menu', 'Ctrl+K')).toBe('Open menu. Command K');

@@ -11,7 +11,7 @@ export interface StateMatrixProps<A extends Axes> {
   caption?: string;
 }
 
-function product(axes: Array<[string, readonly string[]]>): Array<Record<string, string>> {
+function multiplyAxes(axes: Array<[string, readonly string[]]>): Array<Record<string, string>> {
   return axes.reduce<Array<Record<string, string>>>(
     (rows, [name, values]) =>
       rows.flatMap((row) => values.map((value) => ({ ...row, [name]: value }))),
@@ -19,7 +19,7 @@ function product(axes: Array<[string, readonly string[]]>): Array<Record<string,
   );
 }
 
-function cellId(cell: Record<string, string>): string {
+function formatCellId(cell: Record<string, string>): string {
   return Object.entries(cell)
     .map(([name, value]) => `${name}=${value}`)
     .join(' ');
@@ -36,7 +36,7 @@ export function StateMatrix<const A extends Axes>({ axes, render, caption }: Sta
   if (!columnAxis) return null;
   const [columnName, columnValues] = columnAxis;
   const rowAxes = entries.slice(0, -1);
-  const rows = product(rowAxes);
+  const rows = multiplyAxes(rowAxes);
   const rowLabel = rowAxes.map(([name]) => name).join(' · ');
 
   return (
@@ -54,14 +54,14 @@ export function StateMatrix<const A extends Axes>({ axes, render, caption }: Sta
       </thead>
       <tbody>
         {rows.map((row) => {
-          const id = cellId(row);
+          const id = formatCellId(row);
           return (
             <tr key={id || 'row'}>
               <th scope="row">{Object.values(row).join(' · ') || '—'}</th>
               {columnValues.map((value) => {
                 const cell = { ...row, [columnName]: value };
                 return (
-                  <td key={value} data-lab-cell={cellId(cell)}>
+                  <td key={value} data-lab-cell={formatCellId(cell)}>
                     <Fragment>{render(cell as MatrixCell<A>)}</Fragment>
                   </td>
                 );

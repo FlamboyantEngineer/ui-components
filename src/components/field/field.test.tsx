@@ -3,7 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { TextField } from '../../../test/field-fixtures.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import { TextMatchScope } from '../text-match/text-match.js';
+import { TextMatchProvider } from '../text-match/text-match.js';
 import type { FieldLabelLayout } from './field.js';
 
 function root(container: HTMLElement) {
@@ -33,9 +33,9 @@ describe('Field', () => {
 
   it('UIC-FIELD-1.1 highlights the label text under a text match scope', () => {
     render(
-      <TextMatchScope query="ap">
+      <TextMatchProvider query="ap">
         <TextField label="Grape" />
-      </TextMatchScope>,
+      </TextMatchProvider>,
     );
     expect(screen.getByText('ap').tagName).toBe('MARK');
     expect(screen.getByRole('textbox', { name: 'Grape' })).toBeInTheDocument();

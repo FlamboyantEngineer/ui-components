@@ -4,6 +4,7 @@ import { createRef, type ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
+import { MIN_THUMB_SIZE, THUMB_ARROW_STEP } from './overlay-scrollbars.js';
 import { ScrollRegion, useScrollRegionHeaderRef } from './scroll-region.js';
 
 interface Geometry {
@@ -13,14 +14,14 @@ interface Geometry {
   scrollWidth: number;
 }
 
-const KEYS = ['clientHeight', 'clientWidth', 'scrollHeight', 'scrollWidth'] as const;
+const geometryKeys = ['clientHeight', 'clientWidth', 'scrollHeight', 'scrollWidth'] as const;
 const viewports = new Map<string, Geometry>();
 const tracks = { vertical: 80, horizontal: 110 };
 let frames: Map<number, FrameRequestCallback>;
 let resizeCallbacks: Array<() => void>;
 let disconnects: number;
 
-function geometryOf(element: HTMLElement, key: (typeof KEYS)[number]): number {
+function geometryOf(element: HTMLElement, key: (typeof geometryKeys)[number]): number {
   if (element.classList.contains('ui-scroll-region__viewport')) {
     return viewports.get(element.id)?.[key] ?? 0;
   }
@@ -57,7 +58,7 @@ beforeEach(() => {
   });
   vi.stubGlobal('cancelAnimationFrame', (id: number) => frames.delete(id));
   vi.stubGlobal('ResizeObserver', FakeResizeObserver);
-  for (const key of KEYS) {
+  for (const key of geometryKeys) {
     Object.defineProperty(HTMLElement.prototype, key, {
       configurable: true,
       get(this: HTMLElement) {
@@ -68,7 +69,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  for (const key of KEYS) Reflect.deleteProperty(HTMLElement.prototype, key);
+  for (const key of geometryKeys) Reflect.deleteProperty(HTMLElement.prototype, key);
   vi.unstubAllGlobals();
 });
 
@@ -305,7 +306,7 @@ describe('ScrollRegion', () => {
     expect(vertical).toHaveAttribute('aria-valuemax', '200');
     expect(vertical).toHaveAttribute('aria-valuenow', '0');
     expect(vertical).toHaveAttribute('tabindex', '0');
-    expect(vertical.style.height).toBe('24px');
+    expect(vertical.style.height).toBe(`${MIN_THUMB_SIZE}px`);
 
     vertical.focus();
     await user.keyboard('{End}');
@@ -319,7 +320,7 @@ describe('ScrollRegion', () => {
     await user.keyboard('{PageUp}');
     expect(first.scrollTop).toBe(120);
     await user.keyboard('{ArrowUp}');
-    expect(first.scrollTop).toBe(80);
+    expect(first.scrollTop).toBe(120 - THUMB_ARROW_STEP);
     await user.keyboard('{ArrowLeft}');
     expect(first.scrollTop).toBe(80);
     await user.keyboard('{Home}');

@@ -1,11 +1,8 @@
 import type { CSSProperties, ReactNode } from 'react';
 import {
   Cluster,
-  Contents,
-  EmbeddedFrame,
   FlexRow,
   Grid,
-  InlineContents,
   InlineField,
   Page,
   Stack,
@@ -15,6 +12,7 @@ import {
   type LayoutGrow,
 } from '../../src/components/layout/layout.js';
 import { ToolbarRow } from '../../src/components/layout/toolbar-row.js';
+import { Contents, EmbeddedFrame, InlineContents } from '../../src/components/layout/wrappers.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const spaces = [
@@ -29,6 +27,7 @@ const spaces = [
   'md',
   'lg',
 ] as const;
+
 const fruit = ['Apple', 'Banana', 'Cherry', 'Damson', 'Elderberry', 'Fig', 'Grape', 'Huckleberry'];
 
 // Lab-only outlines so the arrangement is visible with or without a stylesheet.
@@ -39,11 +38,23 @@ const boxStyle: CSSProperties = {
   borderRadius: 4,
   whiteSpace: 'nowrap',
 };
+
 const frameStyle = (width: number | string, height?: number): CSSProperties => ({
   width,
   height,
   outline: '1px dotted currentColor',
 });
+
+const orchardDocument =
+  "<!doctype html><html lang='en'><title>Orchard map</title>" +
+  "<main aria-label='Orchard map'><h1 style='font: 14px sans-serif'>Orchard map</h1></main></html>";
+
+const growValues: Record<string, LayoutGrow> = {
+  false: false,
+  true: true,
+  auto: 'auto',
+  none: 'none',
+};
 
 function Box({ children, tall }: { children: ReactNode; tall?: boolean }) {
   return (
@@ -60,17 +71,6 @@ function boxes(count: number) {
     </Box>
   ));
 }
-
-const orchardDocument =
-  "<!doctype html><html lang='en'><title>Orchard map</title>" +
-  "<main aria-label='Orchard map'><h1 style='font: 14px sans-serif'>Orchard map</h1></main></html>";
-
-const growValues: Record<string, LayoutGrow> = {
-  false: false,
-  true: true,
-  auto: 'auto',
-  none: 'none',
-};
 
 mountLab(
   <>

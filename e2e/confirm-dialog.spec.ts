@@ -6,25 +6,23 @@ test.describe('Confirm Dialog lab', () => {
     lab,
   }) => {
     await lab.open('confirm-dialog');
-    for (const variant of ['default', 'danger']) {
+    for (const tone of ['neutral', 'danger']) {
       for (const size of ['sm', 'md', 'lg']) {
         for (const focus of ['cancel', 'confirm']) {
-          const cell = page.locator(
-            `[data-lab-cell="variant=${variant} size=${size} focus=${focus}"]`,
-          );
+          const cell = page.locator(`[data-lab-cell="tone=${tone} size=${size} focus=${focus}"]`);
           const button = cell.getByRole('button');
           await button.click();
           const dialog = page.getByRole('alertdialog');
-          const verb = variant === 'danger' ? 'Delete' : 'Archive';
+          const verb = tone === 'danger' ? 'Delete' : 'Archive';
           await expect(dialog).toHaveAccessibleName(`${verb} Report.pdf?`);
           await expect(page.locator('.ui-modal.ui-confirm-dialog')).toHaveAttribute(
-            'data-variant',
-            variant,
+            'data-tone',
+            tone,
           );
           const confirmButton = dialog.getByRole('button', { name: verb });
           await expect(confirmButton).toHaveAttribute(
             'data-variant',
-            variant === 'danger' ? 'danger' : 'primary',
+            tone === 'danger' ? 'danger' : 'primary',
           );
           await expect(
             focus === 'cancel' ? dialog.getByRole('button', { name: 'Cancel' }) : confirmButton,
@@ -44,7 +42,7 @@ test.describe('Confirm Dialog lab', () => {
     lab,
   }) => {
     await lab.open('confirm-dialog');
-    const cell = page.locator('[data-lab-cell="variant=danger size=md focus=cancel"]');
+    const cell = page.locator('[data-lab-cell="tone=danger size=md focus=cancel"]');
     await cell.getByRole('button').click();
     await expect(page.getByRole('alertdialog')).toHaveAccessibleDescription(
       'The file is removed for everyone. This cannot be undone.',
@@ -68,14 +66,15 @@ test.describe('Confirm Dialog lab', () => {
     await page.keyboard.press('Escape');
     await expect(output).toHaveText('false');
 
-    await page.getByRole('checkbox', { name: 'Take 600 ms to delete' }).check();
+    await page.getByRole('checkbox', { name: 'Hold the delete until I finish it' }).check();
     await opener.click();
-    const remove = page
-      .getByRole('alertdialog')
-      .getByRole('button', { name: 'Delete', exact: true });
+    const dialog = page.getByRole('alertdialog');
+    const remove = dialog.getByRole('button', { name: 'Delete', exact: true });
     await remove.click();
     await expect(remove).toHaveAttribute('data-pending', 'true');
-    await expect(page.getByRole('alertdialog')).toHaveCount(0, { timeout: 3000 });
+    await expect(output).toHaveText('false');
+    await dialog.locator('[data-lab-action="finish"]').click();
+    await expect(dialog).toHaveCount(0);
     await expect(output).toHaveText('true');
     await expect(opener).toBeFocused();
   });
@@ -86,7 +85,7 @@ test.describe('Confirm Dialog lab', () => {
   }) => {
     await lab.open('confirm-dialog', { theme: 'dark' });
     await lab.expectAccessible();
-    await page.locator('[data-lab-cell="variant=danger size=md focus=cancel"] button').click();
+    await page.locator('[data-lab-cell="tone=danger size=md focus=cancel"] button').click();
     await expect(page.getByRole('alertdialog')).toBeVisible();
     await lab.expectAccessible('.ui-modal');
   });

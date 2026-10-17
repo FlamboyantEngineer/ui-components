@@ -1,8 +1,8 @@
-import type { ComponentPropsWithRef } from 'react';
 import { Toolbar } from 'react-aria-components';
 import { createHooks } from '../../core/hooks.js';
+import type { BaseProps, NativeProps } from '../../core/props.js';
 import {
-  layoutGrowValue,
+  resolveContainment,
   type LayoutContainmentProps,
   type LayoutJustify,
   type LayoutSpace,
@@ -13,13 +13,8 @@ export type ToolbarRowRole = 'toolbar' | 'group' | 'none';
 export type ToolbarRowVariant = 'plain' | 'band';
 
 export interface ToolbarRowProps
-  extends
-    Omit<ComponentPropsWithRef<'div'>, 'className' | 'style' | 'role'>,
-    LayoutContainmentProps {
-  /**
-   * `toolbar` (the default) is a React Aria toolbar: arrow keys move focus between its controls and
-   * Tab leaves it. `group` keeps every control a tab stop; `none` adds no role.
-   */
+  extends Omit<NativeProps<'div'>, 'role'>, BaseProps, LayoutContainmentProps {
+  /** `toolbar` (default) moves focus by arrow keys, `group` keeps tab stops, `none` has no role. */
   role?: ToolbarRowRole | undefined;
   /** `band` asks the stylesheet for a surface behind the row. Defaults to `plain`. */
   variant?: ToolbarRowVariant | undefined;
@@ -29,7 +24,6 @@ export interface ToolbarRowProps
   justify?: LayoutJustify | undefined;
   /** Whether controls wrap. Defaults to `wrap`. */
   wrap?: LayoutWrap | undefined;
-  className?: string | undefined;
 }
 
 const hooks = createHooks('toolbar-row');
@@ -44,13 +38,13 @@ export function ToolbarRow({
   justify = 'end',
   wrap = 'wrap',
   grow,
-  fill = false,
-  clip = false,
+  fill,
+  clip,
   ...rest
 }: ToolbarRowProps) {
   const hookProps = hooks.root({
     className,
-    data: { variant, space, justify, wrap, grow: layoutGrowValue(grow, false), fill, clip },
+    data: { variant, space, justify, wrap, ...resolveContainment({ grow, fill, clip }) },
   });
   if (role === 'toolbar') {
     return (

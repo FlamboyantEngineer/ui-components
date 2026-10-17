@@ -8,7 +8,7 @@ The layout primitives arrange content: `View` and `Page` for a view and its read
 
 Each primitive shall render one element with its root class: `View` and `Page` a `<section>`, `Stack`, `Cluster` and `Grid` a `<div>` unless `as` says otherwise, `FlexRow` and `Contents` a `<div>`, `InlineField` a `<label>`, `ToolbarRow` a `<div>`, `StatusBar` a `<footer>`, `InlineContents` a `<span>` and `EmbeddedFrame` an `<iframe>`. Children render in DOM order; no primitive reorders them.
 
-Implementation: `src/components/layout/layout.tsx`, `src/components/layout/toolbar-row.tsx`
+Implementation: `src/components/layout/layout.tsx`, `src/components/layout/toolbar-row.tsx`, `src/components/layout/wrappers.tsx`
 Verification: `src/components/layout/layout.test.tsx`, `e2e/layout.spec.ts`
 
 ### UIC-LAYOUT-1.2 - Semantic elements
@@ -22,7 +22,7 @@ Verification: `src/components/layout/layout.test.tsx`
 
 Every primitive shall carry the hooks below, append the caller's `className`, and forward native props, `ref` and caller `data-*` attributes to its element. Where a caller attribute has the name of a hook attribute, the primitive's value wins.
 
-Implementation: `src/components/layout/layout.tsx`, `src/components/layout/toolbar-row.tsx`
+Implementation: `src/components/layout/layout.tsx`, `src/components/layout/toolbar-row.tsx`, `src/components/layout/wrappers.tsx`
 Verification: `src/components/layout/layout.test.tsx`
 
 ## UIC-LAYOUT-2 - Options
@@ -59,7 +59,7 @@ Verification: `src/components/layout/layout.test.tsx`, `e2e/layout.spec.ts`
 
 `grow` shall publish growth inside a flex parent in `data-grow`: `true` fills the free space from a zero basis, `auto` grows from the content size, `none` neither grows nor shrinks, and `false` publishes nothing. `fill` (take the containing block's full block size) and `clip` (clip overflowing content) publish `data-fill` and `data-clip`. `View`, `Page`, `FlexRow` and `EmbeddedFrame` grow by default, and `View` and `EmbeddedFrame` also fill and clip by default; the other primitives do none of these unless asked.
 
-Implementation: `src/components/layout/layout.tsx`, `src/components/layout/toolbar-row.tsx`, `labs/reference/layout.css`
+Implementation: `src/components/layout/layout.tsx`, `src/components/layout/toolbar-row.tsx`, `src/components/layout/wrappers.tsx`, `labs/reference/layout.css`
 Verification: `src/components/layout/layout.test.tsx`, `e2e/layout.spec.ts`
 
 ## UIC-LAYOUT-3 - Wrappers and bands
@@ -68,22 +68,22 @@ Verification: `src/components/layout/layout.test.tsx`, `e2e/layout.spec.ts`
 
 `Contents` and `InlineContents` shall add no box of their own (the stylesheet gives them `display: contents`), for event capture, adapters and portals. `hidden` removes them and their children from layout without unmounting the children.
 
-Implementation: `src/components/layout/layout.tsx`, `labs/reference/layout.css`
-Verification: `src/components/layout/layout.test.tsx`, `e2e/layout.spec.ts`
+Implementation: `src/components/layout/wrappers.tsx`, `labs/reference/layout.css`
+Verification: `src/components/layout/wrappers.test.tsx`, `e2e/layout.spec.ts`
 
 ### UIC-LAYOUT-3.2 - Embedded frame
 
 `EmbeddedFrame` shall require a `title`, which names the frame, and render fully sandboxed (`sandbox=""`) unless the caller grants permissions through `sandbox`.
 
-Implementation: `src/components/layout/layout.tsx`
-Verification: `src/components/layout/layout.test.tsx`
+Implementation: `src/components/layout/wrappers.tsx`
+Verification: `src/components/layout/wrappers.test.tsx`
 
 ### UIC-LAYOUT-3.3 - Toolbar row
 
 `ToolbarRow` shall line up controls in a centred row. With `role="toolbar"` (the default) it is a React Aria toolbar: arrow keys move focus between its controls and Tab leaves the row; `role="group"` renders a group whose controls are each a tab stop, and `role="none"` adds no role. `variant` publishes `data-variant`: `plain` (the default) or `band`, a row the stylesheet draws on a surface.
 
 Implementation: `src/components/layout/toolbar-row.tsx`, `labs/reference/layout.css`
-Verification: `src/components/layout/layout.test.tsx`, `e2e/layout.spec.ts`
+Verification: `src/components/layout/toolbar-row.test.tsx`, `e2e/layout.spec.ts`
 
 ### UIC-LAYOUT-3.4 - Status bar
 

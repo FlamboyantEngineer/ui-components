@@ -160,23 +160,23 @@ describe('Modal', () => {
       await waitFor(() => expect(container.closest('[aria-hidden="true"], [inert]')).toBeNull());
     });
 
-    it('UIC-MODAL-1.4 publishes variant, size and body layout with defaults', () => {
+    it('UIC-MODAL-1.4 publishes tone, size and body layout with defaults', () => {
       const { rerender } = render(
         <Modal title="Plain" isOpen>
           Body
         </Modal>,
       );
-      expect(overlay()).toHaveAttribute('data-variant', 'default');
+      expect(overlay()).toHaveAttribute('data-tone', 'neutral');
       expect(overlay()).toHaveAttribute('data-size', 'md');
       expect(overlay()).toHaveAttribute('data-body-layout', 'block');
       for (const size of ['sm', 'md', 'lg', 'xl', 'full'] as const) {
         rerender(
-          <Modal title="Sized" isOpen size={size} variant="danger" bodyLayout="column">
+          <Modal title="Sized" isOpen size={size} tone="danger" bodyLayout="column">
             Body
           </Modal>,
         );
         expect(overlay()).toHaveAttribute('data-size', size);
-        expect(overlay()).toHaveAttribute('data-variant', 'danger');
+        expect(overlay()).toHaveAttribute('data-tone', 'danger');
         expect(overlay()).toHaveAttribute('data-body-layout', 'column');
         expectHooksMatchSpec(document.body, 'MODAL');
       }
@@ -472,11 +472,15 @@ describe('Modal', () => {
         <Modal
           title="Settings"
           isOpen
-          variant="danger"
+          tone="danger"
           footerContent={<span>Unsaved changes</span>}
-          secondaryAction={{ label: 'Discard' }}
+          secondaryAction={{ label: 'Discard', className: 'caller-discard' }}
           primaryAction={{ label: 'Save', id: 'save-action', 'data-command': 'save' }}
-          cancelAction={{ id: 'cancel-action', 'data-command': 'cancel' }}
+          cancelAction={{
+            id: 'cancel-action',
+            className: 'caller-cancel',
+            'data-command': 'cancel',
+          }}
         >
           Body
         </Modal>,
@@ -486,10 +490,10 @@ describe('Modal', () => {
       ).getAllByRole('button');
       expect(buttons.map((button) => button.textContent)).toEqual(['Cancel', 'Discard', 'Save']);
       const [cancel, discard, save] = buttons as [HTMLElement, HTMLElement, HTMLElement];
-      expect(cancel).toHaveClass('ui-button', 'ui-modal__cancel');
+      expect(cancel).toHaveClass('ui-button', 'ui-modal__cancel', 'caller-cancel');
       expect(cancel).toHaveAttribute('data-variant', 'secondary');
       expect(cancel).toHaveAttribute('id', 'cancel-action');
-      expect(discard).toHaveClass('ui-modal__secondary');
+      expect(discard).toHaveClass('ui-modal__secondary', 'caller-discard');
       expect(discard).toHaveAttribute('data-variant', 'secondary');
       expect(save).toHaveClass('ui-modal__primary');
       expect(save).toHaveAttribute('data-variant', 'danger');
@@ -507,12 +511,21 @@ describe('Modal', () => {
 
       render(
         <UiProvider strings={{ cancel: 'Back' }}>
-          <Modal title="Plain" isOpen primaryAction={{ label: 'Apply' }} />
+          <Modal
+            title="Plain"
+            isOpen
+            secondaryAction={{ label: 'Remove', variant: 'danger' }}
+            primaryAction={{ label: 'Apply' }}
+          />
         </UiProvider>,
       );
       expect(screen.getByRole('button', { name: 'Apply' })).toHaveAttribute(
         'data-variant',
         'primary',
+      );
+      expect(screen.getByRole('button', { name: 'Remove' })).toHaveAttribute(
+        'data-variant',
+        'danger',
       );
       expect(screen.getByRole('button', { name: 'Back' })).toBeInTheDocument();
     });
@@ -774,7 +787,7 @@ describe('Modal', () => {
       const status = screen.getByRole('status');
       expect(status).toHaveTextContent('Choose a destination.');
       expect(status).toHaveClass('ui-modal__message');
-      expect(status).toHaveAttribute('data-tone', 'status');
+      expect(status).toHaveAttribute('data-tone', 'neutral');
       rerender(
         <Modal
           title="Save"
@@ -787,7 +800,7 @@ describe('Modal', () => {
       const alert = screen.getByRole('alert');
       expect(status.isConnected).toBe(false);
       expect(alert).toHaveTextContent('Save failed. Try again.');
-      expect(alert).toHaveAttribute('data-tone', 'error');
+      expect(alert).toHaveAttribute('data-tone', 'danger');
       expect(screen.queryByRole('status')).toBeNull();
       expectHooksMatchSpec(document.body, 'MODAL', { slots: ['message'] });
       rerender(
@@ -914,7 +927,7 @@ describe('Modal', () => {
         className="caller"
         id="hooks-dialog"
         data-testid="modal-root"
-        data-variant="loud"
+        data-tone="loud"
         data-category="spreadsheet"
       >
         Body
@@ -922,7 +935,7 @@ describe('Modal', () => {
     );
     const root = screen.getByTestId('modal-root');
     expect(root).toHaveClass('ui-modal', 'caller');
-    expect(root).toHaveAttribute('data-variant', 'default');
+    expect(root).toHaveAttribute('data-tone', 'neutral');
     expect(root).toHaveAttribute('data-category', 'spreadsheet');
     expect(screen.getByRole('dialog')).toHaveAttribute('id', 'hooks-dialog');
     expectHooksMatchSpec(document.body, 'MODAL', { callerAttributes: ['data-category'] });

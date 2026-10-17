@@ -61,7 +61,7 @@
   max-height: none;
 }
 
-.ui-modal[data-variant='danger'] .ui-modal__panel {
+.ui-modal[data-tone='danger'] .ui-modal__panel {
   border-top: 3px solid var(--ref-danger);
 }
 
@@ -151,11 +151,11 @@
   font-size: 13px;
 }
 
-.ui-modal__message[data-tone='error'] {
+.ui-modal__message[data-tone='danger'] {
   color: var(--ref-danger);
 }
 
-:root[data-theme='dark'] .ui-modal__message[data-tone='error'] {
+:root[data-theme='dark'] .ui-modal__message[data-tone='danger'] {
   color: color-mix(in srgb, var(--ref-danger), white 20%);
 }
 

@@ -24,9 +24,8 @@ export interface MenuControllerSnapshot {
 }
 
 /**
- * Open state and anchor of one menu, readable and drivable from outside React. A `ControlledMenu`
- * (or a `ContextMenuTrigger` given the controller) renders the menu; anything else may open, move
- * or close it and subscribe to its state.
+ * Open state and anchor of one menu, readable and drivable from outside React. A `ContextMenu`
+ * renders the menu; anything else may open, move or close it and subscribe to its state.
  */
 export interface MenuController {
   /** Opens the menu at a point or below an element. Opening an open menu moves it instead. */

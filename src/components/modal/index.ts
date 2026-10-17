@@ -7,5 +7,5 @@ export type {
   ModalProps,
   ModalRenderProps,
   ModalSize,
-  ModalVariant,
+  ModalTone,
 } from './modal.js';

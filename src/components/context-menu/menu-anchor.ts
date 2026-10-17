@@ -1,6 +1,6 @@
 import { useMemo, useState, type RefObject } from 'react';
 import { useLocale, type Placement } from 'react-aria-components';
-import { overlayPointRect } from '../../utils/overlay-position.js';
+import { createOverlayPointRect } from '../../utils/overlay-position.js';
 import type { MenuPopoverProps } from '../menu/menu.js';
 import { isElementAnchor, type MenuAnchor } from './menu-controller.js';
 
@@ -21,7 +21,7 @@ const pointGap = 2;
 
 /** A zero-size rect at a viewport point, in the shape React Aria's positioning reads. */
 function toPointRect(x: number, y: number): DOMRect {
-  const rect = overlayPointRect(x, y);
+  const rect = createOverlayPointRect(x, y);
   return { ...rect, x, y, toJSON: () => rect };
 }
 

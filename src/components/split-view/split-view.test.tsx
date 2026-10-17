@@ -5,7 +5,12 @@ import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { createMemoryStorage } from '../../core/storage.js';
-import { ResizeHandle, resolveResizeKeyboardValue } from './resize-handle.js';
+import {
+  RESIZE_KEYBOARD_FINE_STEP,
+  RESIZE_KEYBOARD_STEP,
+  ResizeHandle,
+  resolveResizeKeyboardValue,
+} from './resize-handle.js';
 import {
   SplitView,
   resolveInitialSplitSize,
@@ -297,6 +302,7 @@ describe('ResizeHandle', () => {
       maxValue: 640,
       extent: 800,
     };
+    expect([RESIZE_KEYBOARD_STEP, RESIZE_KEYBOARD_FINE_STEP]).toEqual([5, 1]);
     expect(resolveResizeKeyboardValue({ key: 'ArrowDown', shiftKey: false }, pixels)).toBe(340);
     expect(resolveResizeKeyboardValue({ key: 'ArrowUp', shiftKey: true }, pixels)).toBe(292);
     expect(resolveResizeKeyboardValue({ key: 'Home', shiftKey: false }, pixels)).toBe(120);
