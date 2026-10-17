@@ -24,6 +24,7 @@ import {
   MinusIcon,
   PlusIcon,
   QuestionMarkCircleIcon,
+  UsersIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
 import type { ComponentType } from 'react';
@@ -66,6 +67,7 @@ export const defaultGlyphs = {
   undo: ArrowUturnLeftIcon,
   redo: ArrowUturnRightIcon,
   restore: ArrowPathIcon,
+  users: UsersIcon,
 } satisfies Record<string, GlyphComponent>;
 
 export type GlyphName = keyof typeof defaultGlyphs;

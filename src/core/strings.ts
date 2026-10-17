@@ -21,6 +21,12 @@ export interface UiStrings {
   sortAscending: string;
   sortDescending: string;
   itemCount: (count: number) => string;
+  /** Stands in for a person or group whose name is blank. */
+  unnamed: string;
+  /** Accessible name of a person shown with a status (`Maria Santos, Away`). */
+  nameWithStatus: (name: string, status: string) => string;
+  /** Accessible name of an overflow count, with the names it hides when known. */
+  morePeople: (count: number, names: readonly string[]) => string;
   /** Spoken name of a keyboard key or modifier (`↑` → `Up Arrow`); other keys are read as written. */
   shortcutKeyName: (key: string) => string;
 }
@@ -59,5 +65,9 @@ export const defaultStrings: UiStrings = {
   sortAscending: 'Sort ascending',
   sortDescending: 'Sort descending',
   itemCount: (count) => (count === 1 ? '1 item' : `${count} items`),
+  unnamed: 'Unnamed',
+  nameWithStatus: (name, status) => `${name}, ${status}`,
+  morePeople: (count, names) =>
+    `${count === 1 ? '1 more person' : `${count} more people`}${names.length > 0 ? `: ${names.join(', ')}` : ''}`,
   shortcutKeyName: (key) => spokenKeyNames[key] ?? key,
 };

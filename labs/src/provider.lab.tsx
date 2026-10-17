@@ -22,6 +22,8 @@ const replacedStrings: Partial<UiStrings> = {
 
 function sampleString(strings: UiStrings, name: keyof UiStrings): string {
   if (name === 'shortcutKeyName') return strings.shortcutKeyName('↑');
+  if (name === 'nameWithStatus') return strings.nameWithStatus('Maria Santos', 'Away');
+  if (name === 'morePeople') return strings.morePeople(3, ['Jon Berg', 'Lena Ortiz', 'Sam Okafor']);
   const value = strings[name];
   return typeof value === 'function' ? value(3) : value;
 }

@@ -12,3 +12,7 @@ export * from './utils/index.js';
 export * from './components/button/index.js';
 export * from './components/icon-button/index.js';
 export * from './components/action-button/index.js';
+export * from './components/avatar/index.js';
+export * from './components/user-identity/index.js';
+export * from './components/presence-avatar/index.js';
+export * from './components/presence-strip/index.js';
