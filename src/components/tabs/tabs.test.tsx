@@ -120,7 +120,9 @@ describe('Tabs', () => {
     expect(spam).not.toHaveAttribute('aria-describedby');
     const archive = screen.getByRole('tab', { name: 'Archive 99+' });
     expect(archive).toHaveAccessibleDescription('older than a year 250 items');
-    expectHooksMatchSpec(container, 'TABS', { slots: 'all' });
+    expectHooksMatchSpec(container, 'TABS', {
+      slots: ['list', 'tab', 'indicator', 'icon', 'label', 'count', 'panel'],
+    });
   });
 
   it('UIC-TABS-1.3 puts the selection indicator in the selected tab only', async () => {

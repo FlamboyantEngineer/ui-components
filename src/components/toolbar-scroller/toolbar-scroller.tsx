@@ -3,8 +3,11 @@ import { Toolbar, useLocale, type ToolbarProps as AriaToolbarProps } from 'react
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { clamp } from '../../utils/clamp.js';
-import { useScrollStripOverflow } from '../../utils/use-scroll-strip-overflow.js';
+import {
+  scrollStripPage,
+  scrollStripTo,
+  useScrollStripOverflow,
+} from '../../utils/use-scroll-strip-overflow.js';
 import { IconButton } from '../icon-button/icon-button.js';
 
 export interface ToolbarScrollerProps
@@ -23,19 +26,7 @@ interface ScrollButtonProps {
   onPress: (edge: Edge) => void;
 }
 
-/** Fraction of the visible width a scroll button moves the strip. */
-const pageFraction = 0.8;
-
 const hooks = createHooks('toolbar-scroller', ['strip', 'fade', 'scroll-button']);
-
-/**
- * Scrolls to a physical `scrollLeft`. `auto` follows the stylesheet's `scroll-behavior`; `instant`
- * skips any smooth scrolling, for focus that must land at once.
- */
-function scrollStripTo(strip: HTMLElement, left: number, behavior: ScrollBehavior) {
-  if (typeof strip.scrollTo === 'function') strip.scrollTo({ left, behavior });
-  else strip.scrollLeft = left;
-}
 
 /** How far the visible overlays (scroll buttons, fades) cover each side of the strip, in pixels. */
 function measureCoveredInsets(strip: HTMLElement, overlays: readonly Element[]) {
@@ -65,14 +56,6 @@ function revealTool(strip: HTMLElement, tool: Element) {
   if (item.left < visibleLeft) delta = item.left - visibleLeft;
   else if (item.right > visibleRight) delta = item.right - visibleRight;
   if (delta !== 0) scrollStripTo(strip, strip.scrollLeft + delta, 'instant');
-}
-
-/** Scrolls the strip by most of its visible width toward `edge`. Right-to-left offsets are negative. */
-function scrollPage(strip: HTMLElement, { edge, rtl }: { edge: Edge; rtl: boolean }) {
-  const step = Math.max(1, strip.clientWidth * pageFraction);
-  const range = Math.max(0, strip.scrollWidth - strip.clientWidth);
-  const next = clamp(Math.abs(strip.scrollLeft) + (edge === 'end' ? step : -step), 0, range);
-  scrollStripTo(strip, rtl ? -next : next, 'auto');
 }
 
 function ScrollButton({ edge, isHidden, onPress }: ScrollButtonProps) {
@@ -109,7 +92,7 @@ export function ToolbarScroller({
 
   const pageToward = (edge: Edge) => {
     if (!stripRef.current) return;
-    scrollPage(stripRef.current, { edge, rtl });
+    scrollStripPage(stripRef.current, { edge, rtl });
     syncOverflow();
   };
   const onFocus = (event: FocusEvent<HTMLDivElement>) => {
