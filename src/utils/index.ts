@@ -62,3 +62,5 @@ export type {
 } from './use-scroll-strip-overflow.js';
 export { PATH_SEPARATOR, formatFolderPath, formatPath } from './path.js';
 export type { FormatPathOptions, PathFolder } from './path.js';
+export { formatCount, normalizeCount } from './count.js';
+export type { FormatCountOptions } from './count.js';

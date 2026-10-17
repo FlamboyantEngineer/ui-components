@@ -1,0 +1,27 @@
+/* Inline Error */
+
+.ui-inline-error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 4px 8px;
+  color: var(--ref-danger);
+}
+.ui-inline-error__icon {
+  margin-block-start: 0.15em;
+}
+.ui-inline-error__message {
+  flex: 1 1 12rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.ui-inline-error__message > p {
+  margin: 0;
+}
+.ui-inline-error__message > :is(ul, ol) {
+  margin: 0;
+  padding-inline-start: 1.25em;
+}
+.ui-inline-error__retry {
+  flex: none;
+}

@@ -40,6 +40,10 @@ export interface UiStrings {
   itemCount: (count: number) => string;
   /** Spoken name of a keyboard key or modifier (`↑` → `Up Arrow`); other keys are read as written. */
   shortcutKeyName: (key: string) => string;
+  retry: string;
+  loadMore: string;
+  remainingCount: (count: number) => string;
+  countOrMore: (count: number) => string;
 }
 
 const spokenKeyNames: Readonly<Record<string, string>> = {
@@ -94,4 +98,8 @@ export const defaultStrings: UiStrings = {
   scrollForward: 'Scroll forward',
   itemCount: (count) => (count === 1 ? '1 item' : `${count} items`),
   shortcutKeyName: (key) => spokenKeyNames[key] ?? key,
+  retry: 'Retry',
+  loadMore: 'Load more',
+  remainingCount: (count) => `${count} remaining`,
+  countOrMore: (count) => `${count} or more`,
 };
