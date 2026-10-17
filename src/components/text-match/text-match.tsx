@@ -11,6 +11,8 @@ export interface TextMatchProviderProps {
   query?: string | undefined;
   /** Match terms as words: never inside one, and as a word's start only from three characters. */
   matchWords?: boolean | undefined;
+  /** Fold accented letters to their base letter, so `cafe` marks `café`. */
+  ignoreAccents?: boolean | undefined;
   /** Called with each text rendered by a `TextMatch` below; returns its cleanup. */
   registerText?: TextMatchRegister | undefined;
   /** The content whose `TextMatch` labels highlight the query. */
@@ -26,6 +28,7 @@ export interface TextMatchProps extends Omit<BaseProps, 'id'> {
 interface TextMatchContextValue {
   terms: readonly string[];
   matchWords: boolean;
+  ignoreAccents: boolean;
   registerText: TextMatchRegister | undefined;
 }
 
@@ -34,6 +37,7 @@ const noTerms: readonly string[] = Object.freeze([]);
 const TextMatchContext = createContext<TextMatchContextValue>({
   terms: noTerms,
   matchWords: false,
+  ignoreAccents: false,
   registerText: undefined,
 });
 
@@ -43,36 +47,40 @@ const hooks = createHooks('text-match');
 export function TextMatchProvider({
   query = '',
   matchWords = false,
+  ignoreAccents = false,
   registerText,
   children,
 }: TextMatchProviderProps) {
-  const terms = useMemo(() => splitMatchTerms(query), [query]);
+  const terms = useMemo(() => splitMatchTerms(query, { ignoreAccents }), [query, ignoreAccents]);
   const value = useMemo(
-    () => ({ terms, matchWords, registerText }),
-    [terms, matchWords, registerText],
+    () => ({ terms, matchWords, ignoreAccents, registerText }),
+    [terms, matchWords, ignoreAccents, registerText],
   );
   return <TextMatchContext.Provider value={value}>{children}</TextMatchContext.Provider>;
 }
 
 /**
- * Shows a text with each occurrence of the nearest provider's terms wrapped in a `<mark>`.
- * Without a provider, terms or a hit it returns the plain text, with no element of its own.
+ * Shows a text with each occurrence of the nearest provider's terms wrapped in a `<mark>` that
+ * names the term it matched in `data-term`. Without a provider, terms or a hit it returns the plain
+ * text, with no element of its own.
  */
 export function TextMatch({ children: text, className, ...rest }: TextMatchProps) {
-  const { terms, matchWords, registerText } = useContext(TextMatchContext);
+  const { terms, matchWords, ignoreAccents, registerText } = useContext(TextMatchContext);
   useEffect(() => registerText?.(text), [registerText, text]);
 
   if (terms.length === 0) return text;
-  const ranges = findTermRanges(text, terms, { matchWords });
+  const ranges = findTermRanges(text, terms, { matchWords, ignoreAccents });
   if (ranges.length === 0) return text;
 
-  const markProps = hooks.root({ className, props: rest });
   const parts: ReactNode[] = [];
   let cursor = 0;
   for (const range of ranges) {
     if (range.start > cursor) parts.push(text.slice(cursor, range.start));
     parts.push(
-      <mark key={range.start} {...markProps}>
+      <mark
+        key={range.start}
+        {...hooks.root({ className, props: rest, data: { term: range.term } })}
+      >
         {text.slice(range.start, range.end)}
       </mark>,
     );

@@ -11,3 +11,4 @@ Add shared composition, layout and animation building blocks:
 - `useInView` reports whether an element is visible (`UIC-MEASUREMENT-4`). `LoadMore` gains `autoLoad`, which requests the next page each time the control comes into view (`UIC-LOAD-MORE-1.7`); the reference sheet sets `overflow-anchor: none` on it.
 - `specs/COLLECTIONS.md` documents how collection components take React Aria's `Virtualizer` and loading sentinels; `Menu` is verified with both.
 - `Portal` gains `inPlace`, which keeps the wrapper where the portal is declared with its layer (also on the server), and `preserveTabOrder`, which moves Tab into and out of the content as if it sat there.
+- `TextMatch`: `ignoreAccents` on `TextMatchProvider` and in the matching helpers' options folds accents (`cafe` matches `café`); each mark publishes `data-term`, the index of the term it matched, and `findTermRanges` ranges carry `term`. A range now extends over a trailing combining mark.

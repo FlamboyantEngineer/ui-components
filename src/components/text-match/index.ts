@@ -8,4 +8,4 @@ export {
   splitMatchTerms,
   textMatchesTerms,
 } from './match-ranges.js';
-export type { FindTermRangesOptions, TextMatchRange } from './match-ranges.js';
+export type { FindTermRangesOptions, MatchTextOptions, TextMatchRange } from './match-ranges.js';
