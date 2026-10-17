@@ -458,4 +458,36 @@ describe('Tree', () => {
     expect(ref.current).toBe(tree);
     expectHooksMatchSpec(container, 'TREE');
   });
+
+  it('UIC-TREE-4.5 renders only the fixed-height rows in view when virtualized', () => {
+    // React Aria's virtualizer treats an unmocked test DOM as infinitely large.
+    const sizes = { clientWidth: 300, clientHeight: 200 };
+    for (const [name, value] of Object.entries(sizes)) {
+      Object.defineProperty(HTMLElement.prototype, name, { configurable: true, get: () => value });
+    }
+    const many = Array.from({ length: 400 }, (_, index) => ({
+      id: `fruit-${index}`,
+      name: `Fruit ${index + 1}`,
+    }));
+    try {
+      const { container } = render(
+        <Tree
+          aria-label="Many"
+          items={many}
+          getTextValue={(item) => item.name}
+          virtualized
+          size="md"
+        />,
+      );
+      const tree = screen.getByRole('treegrid', { name: 'Many' });
+      expect(tree).toHaveAttribute('data-virtualized', 'true');
+      const rows = screen.getAllByRole('row');
+      expect(rows.length).toBeGreaterThan(5);
+      expect(rows.length).toBeLessThan(40);
+      expect(rows[0]?.parentElement?.style.height).toBe('32px');
+      expectHooksMatchSpec(container, 'TREE', { slots: ['item', 'label'] });
+    } finally {
+      for (const name of Object.keys(sizes)) Reflect.deleteProperty(HTMLElement.prototype, name);
+    }
+  });
 });

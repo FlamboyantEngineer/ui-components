@@ -3,7 +3,11 @@ import type { Key } from 'react-aria-components';
 import { Button } from '../../src/components/button/button.js';
 import type { CodeEditorSize } from '../../src/components/code-editor/code-editor.js';
 import type { FieldIssue, FieldLabelLayout } from '../../src/components/field/field.js';
-import { JsonEditor, type JsonEditorProps } from '../../src/components/json-editor/json-editor.js';
+import {
+  JsonEditor,
+  type JsonEditorProps,
+  type JsonSchema,
+} from '../../src/components/json-editor/json-editor.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const layouts = ['label-control', 'control-label', 'label-colon-control', 'control-only'] as const;
@@ -84,6 +88,40 @@ function SavedEditor() {
   );
 }
 
+const recipeSchema: JsonSchema = {
+  type: 'object',
+  required: ['name', 'servings'],
+  additionalProperties: false,
+  properties: {
+    name: { type: 'string', minLength: 3, description: 'What the dish is called.' },
+    servings: { type: 'integer', minimum: 1, maximum: 8, description: 'How many people it feeds.' },
+    course: {
+      enum: ['starter', 'main', 'dessert'],
+      description: 'When the dish is served.',
+    },
+    vegetarian: { type: 'boolean', description: 'Whether the dish has no meat or fish.' },
+    tags: { type: 'array', maxItems: 3, items: { type: 'string' } },
+  },
+};
+
+const recipe = '{\n  "name": "Soup",\n  "servings": 12,\n  "course": "brunch"\n}';
+
+/** A recipe checked against a schema, with completions and hover documentation from it. */
+function RecipeEditor() {
+  const [value, setValue] = useState(recipe);
+  return (
+    <JsonEditor
+      label="Recipe"
+      description="Checked against a recipe schema. Type a quote for keys or a colon for values, or press Ctrl+Space."
+      schema={recipeSchema}
+      autoCloseBrackets
+      value={value}
+      onChange={setValue}
+      data-lab-editor="recipe"
+    />
+  );
+}
+
 const longJson = JSON.stringify(
   Array.from({ length: 30 }, (_, index) => ({ row: index + 1, fruit: index % 2 ? 'Pear' : 'Fig' })),
   null,
@@ -137,6 +175,12 @@ mountLab(
       description="Format rewrites the text with four spaces per level and commits it; the field menu clears or sets the default."
     >
       <SavedEditor />
+    </LabSection>
+    <LabSection
+      title="Schema"
+      description="Problems are underlined where they are and the first one is the field's message; rest the pointer on a key for its description, or press F8. Brackets and quotes pair up."
+    >
+      <RecipeEditor />
     </LabSection>
     <LabSection
       title="Long text"

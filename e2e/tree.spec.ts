@@ -73,4 +73,23 @@ test.describe('Tree lab', () => {
         .getByRole('row', { name: 'Travel' }),
     ).toHaveAttribute('aria-expanded', 'true');
   });
+
+  test('UIC-TREE-4.5 renders only the rows in view of a virtualized tree', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('tree');
+    const tree = page.getByRole('treegrid', { name: 'Many folders' });
+    await expect(tree).toHaveAttribute('data-virtualized', 'true');
+    await expect(tree.getByRole('row', { name: 'Crate 1', exact: true })).toBeVisible();
+    const rendered = await tree.getByRole('row').count();
+    expect(rendered).toBeGreaterThan(5);
+    expect(rendered).toBeLessThan(60);
+    await tree.evaluate((node) => node.scrollTo({ top: node.scrollHeight }));
+    await tree.scrollIntoViewIfNeeded();
+    await expect(tree.getByRole('row', { name: 'Apple 1980.txt' })).toBeInViewport();
+    await expect(tree.getByRole('row', { name: 'Crate 1', exact: true })).toHaveCount(0);
+    expect(await tree.getByRole('row').count()).toBeLessThan(60);
+    await lab.expectAccessible('[data-lab-tree="virtualized"]');
+  });
 });

@@ -178,6 +178,111 @@ test.describe('Folder Manager lab', () => {
     await expect(page.locator('[data-lab-output="Chosen"]')).toHaveText('citrus');
   });
 
+  test('UIC-FOLDER-MANAGER-6.1 UIC-FOLDER-MANAGER-6.2 UIC-FOLDER-MANAGER-6.3 selects several folders, moves and deletes them together', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('folder-manager');
+    const manager = page.locator('[data-lab-manager="multiple"]');
+    await expect(row(manager, 'Citrus')).toHaveAttribute('aria-selected', 'true');
+    await expect(row(manager, 'Herbs')).toHaveAttribute('aria-selected', 'true');
+    await row(manager, 'Berries').click({ modifiers: ['ControlOrMeta'] });
+    await expect(page.locator('[data-lab-output="Selection"]')).toHaveText(
+      'citrus, herbs, berries',
+    );
+    await expect(manager.getByRole('button', { name: 'Rename' })).toBeDisabled();
+    await row(manager, 'Herbs').click({ button: 'right' });
+    const menu = page.getByRole('menu');
+    await menu.getByRole('menuitem', { name: 'Move to' }).click();
+    const places = page.getByRole('menu').last();
+    await expect(places.getByRole('menuitem')).toHaveText(['Top level', 'Fruit', 'Vegetables']);
+    await places.getByRole('menuitem', { name: 'Vegetables' }).click();
+    await expect
+      .poll(() => rowNames(manager))
+      .toEqual(['Fruit', 'Vegetables', 'Citrus', 'Lemons', 'Berries', 'Herbs']);
+    await lab.expectAccessible();
+    await row(manager, 'Citrus').click();
+    await row(manager, 'Herbs').click({ modifiers: ['Shift'] });
+    await expect(page.locator('[data-lab-output="Selection"]')).toHaveText(
+      'citrus, lemons, berries, herbs',
+    );
+    await page.keyboard.press('Delete');
+    await expect(page.locator('[data-lab-output="Bulk action"]')).toHaveText('deleted herbs');
+    await expect.poll(() => rowNames(manager)).toEqual(['Fruit', 'Vegetables']);
+    await expect(page.locator('[data-lab-output="Selection"]')).toHaveText('vegetables');
+  });
+
+  test('UIC-FOLDER-MANAGER-5.1 loads subfolders on demand and retries a failed load', async ({
+    page,
+    lab,
+  }) => {
+    await page.clock.install();
+    await lab.open('folder-manager');
+    const manager = page.locator('[data-lab-manager="lazy"]');
+    await expect(row(manager, 'Pantry')).toHaveAttribute('aria-expanded', 'false');
+    await page.clock.pauseAt(Date.now() + 1000);
+    await manager.getByRole('button', { name: 'Expand Pantry' }).click();
+    await expect(manager.locator('.ui-tree__loader')).toHaveText('Loading');
+    await page.clock.runFor(300);
+    await expect(manager.getByRole('row', { name: /^Shelf/ })).toHaveCount(3);
+    await expect(row(manager, 'Pantry')).toHaveAttribute('aria-expanded', 'true');
+    await manager.getByRole('button', { name: 'Expand Cellar' }).click();
+    await page.clock.runFor(300);
+    const error = row(manager, 'Cellar').getByRole('alert');
+    await expect(error).toHaveText(/The cellar is locked\./);
+    await error.getByRole('button', { name: 'Retry' }).click();
+    await page.clock.runFor(300);
+    await expect(manager.getByRole('row', { name: /^Shelf/ })).toHaveCount(6);
+    await expect(manager.getByRole('alert')).toHaveCount(0);
+    // Axe runs on timers, so the clock runs again for it.
+    await page.clock.resume();
+    await lab.expectAccessible();
+  });
+
+  test('UIC-FOLDER-MANAGER-7.1 filters the folders and marks the matches', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('folder-manager');
+    const manager = page.locator('[data-lab-manager="filter"]');
+    const search = manager.getByRole('searchbox', { name: 'Filter orchard folders' });
+    await search.fill('late plu');
+    expect(await rowNames(manager)).toEqual([
+      'North orchard',
+      'Plums',
+      'Late plums',
+      'South orchard',
+      'Plums',
+      'Late plums',
+      'East orchard',
+      'Plums',
+      'Late plums',
+      'West orchard',
+      'Plums',
+      'Late plums',
+    ]);
+    await expect(manager.locator('mark').first()).toHaveText('Plu');
+    await lab.expectAccessible();
+    await search.fill('quince');
+    await expect(manager.locator('.ui-tree__empty')).toHaveText('No results');
+    await search.fill('');
+    await expect(manager.getByRole('row')).toHaveCount(4 + 16 + 32);
+  });
+
+  test('UIC-FOLDER-MANAGER-8.1 renders only the rows in view of a large tree', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('folder-manager');
+    const tree = page.getByRole('treegrid', { name: 'Warehouse folders' });
+    await expect(tree).toHaveAttribute('data-virtualized', 'true');
+    expect(await tree.getByRole('row').count()).toBeLessThan(60);
+    await tree.evaluate((node) => node.scrollTo({ top: node.scrollHeight }));
+    await tree.scrollIntoViewIfNeeded();
+    await expect(tree.getByRole('row', { name: 'Bin 2000' })).toBeInViewport();
+    expect(await tree.getByRole('row').count()).toBeLessThan(60);
+  });
+
   test('UIC-FOLDER-MANAGER-1.1 passes axe in the dark theme', async ({ page, lab }) => {
     await lab.open('folder-manager', { theme: 'dark' });
     await managed(page).getByRole('button', { name: 'New folder' }).click();

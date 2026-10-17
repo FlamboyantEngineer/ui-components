@@ -6,8 +6,11 @@ import {
   folderDraftKey,
   folderRootKey,
   getFolderHeight,
+  listFolderDestinations,
+  listTopmostFolders,
   type FolderItem,
 } from './folder-model.js';
+import { planFolderMoves } from './folder-moves.js';
 
 const folders: FolderItem[] = [
   {
@@ -59,5 +62,61 @@ describe('folder model', () => {
     expect(findFolderPath(folders, null)).toEqual([]);
     expect(getFolderHeight(folders[0] as FolderItem)).toBe(3);
     expect(getFolderHeight(folders[1] as FolderItem)).toBe(1);
+  });
+
+  it('UIC-FOLDER-MANAGER-5.1 marks folders whose subfolders are not loaded yet', () => {
+    const nodes = buildFolderNodes(
+      [
+        { id: 'pantry', name: 'Pantry', hasChildren: true },
+        {
+          id: 'cellar',
+          name: 'Cellar',
+          hasChildren: true,
+          children: [{ id: 'wine', name: 'Wine' }],
+        },
+      ],
+      {},
+    );
+    expect(nodes.map(({ id, isLazy }) => [id, isLazy])).toEqual([
+      ['pantry', true],
+      ['cellar', false],
+    ]);
+  });
+
+  it('UIC-FOLDER-MANAGER-6.2 lists the topmost selected folders and where they may move', () => {
+    const keys = new Set(['citrus', 'lemons', 'vegetables']);
+    expect(listTopmostFolders(folders, keys).map(({ id }) => id)).toEqual(['citrus', 'vegetables']);
+    const destinations = listFolderDestinations(folders, new Set(['citrus']));
+    expect(destinations.map(({ folder, path }) => [folder?.id ?? null, path])).toEqual([
+      [null, []],
+      ['fruit', ['Fruit']],
+      ['vegetables', ['Vegetables']],
+    ]);
+  });
+
+  it('UIC-FOLDER-MANAGER-6.3 plans the moves that put folders into a destination in their order', () => {
+    const citrus = folders[0]?.children?.[0] as FolderItem;
+    const vegetables = folders[1] as FolderItem;
+    const lemons = citrus.children?.[0] as FolderItem;
+    expect(planFolderMoves(folders, [lemons, vegetables], citrus)).toEqual([
+      { key: 'vegetables', targetKey: 'citrus', position: 'inside' },
+    ]);
+    expect(planFolderMoves(folders, [citrus, lemons], null)).toEqual([
+      { key: 'citrus', targetKey: 'vegetables', position: 'after' },
+      { key: 'lemons', targetKey: 'citrus', position: 'after' },
+    ]);
+    expect(planFolderMoves(folders, [vegetables], null)).toEqual([]);
+  });
+
+  it('UIC-FOLDER-MANAGER-7.1 keeps the folders that match every term, with their ancestors', () => {
+    const names = (terms: string[]) => {
+      const visit = (nodes: ReturnType<typeof buildFolderNodes>): string[] =>
+        nodes.flatMap((node) => [node.name, ...visit(node.children ?? [])]);
+      return visit(buildFolderNodes(folders, { terms }));
+    };
+    expect(names(['lem'])).toEqual(['Fruit', 'Citrus', 'Lemons']);
+    expect(names(['veg'])).toEqual(['Vegetables']);
+    expect(names(['plum'])).toEqual([]);
+    expect(names([])).toHaveLength(4);
   });
 });

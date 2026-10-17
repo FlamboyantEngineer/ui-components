@@ -9,7 +9,7 @@ function field(container: HTMLElement) {
 }
 
 function editor() {
-  return screen.getByRole('textbox', { name: 'Settings' });
+  return screen.getByRole<HTMLTextAreaElement>('textbox', { name: 'Settings' });
 }
 
 describe('JsonEditor', () => {
@@ -162,5 +162,91 @@ describe('JsonEditor', () => {
     expect(editor()).toBeDisabled();
     expect(field(container)).toHaveAttribute('data-disabled', 'true');
     expectHooksMatchSpec(container, 'JSON-EDITOR');
+  });
+
+  it('UIC-JSON-EDITOR-2.3 marks where the text stops parsing in the editor, without a second list', () => {
+    const { container } = render(<JsonEditor label="Settings" defaultValue={'{\n  "a": ,\n}'} />);
+    const mark = container.querySelector('.ui-code-editor__mark');
+    expect(mark).toHaveTextContent(',');
+    expect(mark).toHaveAttribute('data-severity', 'error');
+    const lines = [...container.querySelectorAll('.ui-code-editor__line')];
+    expect(lines.map((line) => line.getAttribute('data-severity'))).toEqual([null, 'error', null]);
+    expect(container.querySelector('.ui-code-editor__diagnostics')).toBeNull();
+    expect(container.querySelector('.ui-field__message')).toHaveTextContent(
+      'Enter valid JSON: check line 2, column 8.',
+    );
+    expect(editor()).toHaveAttribute('aria-invalid', 'true');
+    expectHooksMatchSpec(container, 'JSON-EDITOR');
+  });
+
+  it('UIC-JSON-EDITOR-5.1 checks parsed text against the schema and reports the first problem with its place', async () => {
+    const user = userEvent.setup();
+    const schema = {
+      type: 'object' as const,
+      properties: {
+        servings: { type: 'integer' as const, maximum: 8 },
+        name: { type: 'string' as const },
+      },
+    };
+    const validate = vi.fn(() => null);
+    const { container } = render(
+      <JsonEditor
+        label="Settings"
+        schema={schema}
+        validate={validate}
+        defaultValue={'{"name": 3, "servings": 12}'}
+      />,
+    );
+    expect(field(container)).toHaveAttribute('data-validation', 'invalid');
+    expect(container.querySelector('.ui-field__message')).toHaveTextContent(
+      'Line 1, column 10: Expected string.',
+    );
+    const marks = [...container.querySelectorAll('.ui-code-editor__mark')];
+    expect(marks.map((mark) => mark.textContent)).toEqual(['3', '12']);
+    expect(validate).not.toHaveBeenCalled();
+    await user.click(editor());
+    await user.keyboard('{Control>}a{/Control}{{"name": "Soup"}');
+    expect(field(container)).toHaveAttribute('data-validation', 'valid');
+    expect(validate).toHaveBeenCalled();
+    expect(container.querySelector('.ui-code-editor__mark')).toBeNull();
+  });
+
+  it('UIC-JSON-EDITOR-5.2 UIC-JSON-EDITOR-5.3 completes keys and values from the schema', async () => {
+    const user = userEvent.setup();
+    const schema = {
+      type: 'object' as const,
+      properties: {
+        name: { type: 'string' as const, description: 'What the dish is called.' },
+        course: { enum: ['starter', 'main'] },
+      },
+    };
+    render(<JsonEditor label="Settings" schema={schema} />);
+    await user.click(editor());
+    await user.keyboard('{{"na');
+    const option = screen.getByRole('option', { name: /^"name"/ });
+    expect(option).toHaveAttribute('data-kind', 'property');
+    expect(option).toHaveAccessibleDescription('What the dish is called.');
+    await user.keyboard('{Enter}');
+    expect(editor()).toHaveValue('{"name": ""');
+    await user.keyboard('Soup{End}, "c{Enter}');
+    expect(editor()).toHaveValue('{"name": "Soup", "course": "starter"');
+    expect(editor().value.slice(editor().selectionStart, editor().selectionEnd)).toBe('"starter"');
+    await user.keyboard('{Control>} {/Control}');
+    expect(screen.getAllByRole('option').map((entry) => entry.textContent)).toEqual([
+      '"starter"',
+      '"main"',
+    ]);
+  });
+
+  it('UIC-JSON-EDITOR-6.1 pairs brackets when asked and keeps the indentation on Enter', async () => {
+    const user = userEvent.setup();
+    render(<JsonEditor label="Settings" indent={4} autoCloseBrackets />);
+    await user.click(editor());
+    await user.keyboard('[[');
+    expect(editor()).toHaveValue('[]');
+    await user.keyboard('{Enter}');
+    expect(editor()).toHaveValue('[\n    \n]');
+    await user.keyboard('{{');
+    expect(editor()).toHaveValue('[\n    {}\n]');
   });
 });

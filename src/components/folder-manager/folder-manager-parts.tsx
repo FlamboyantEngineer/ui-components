@@ -30,9 +30,11 @@ export interface FolderToolbarProps {
 
 export const folderManagerHooks = createHooks('folder-manager', [
   'toolbar',
+  'filter',
   'tree',
   'name-input',
   'message',
+  'load-error',
 ]);
 
 const hooks = folderManagerHooks;

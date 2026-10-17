@@ -263,3 +263,108 @@
 .ui-code-editor__completion[data-focused] .ui-code-editor__completion-description {
   color: inherit;
 }
+
+/* Marks in the copy change no metrics: colours, underlines and outlines only. */
+.ui-code-editor__mark[data-severity='error'] {
+  text-decoration: wavy underline var(--ref-danger);
+  text-decoration-skip-ink: none;
+}
+
+.ui-code-editor__mark[data-severity='warning'] {
+  text-decoration: wavy underline var(--ref-warning);
+  text-decoration-skip-ink: none;
+}
+
+.ui-code-editor__match {
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--ref-warning) 22%, transparent);
+}
+
+.ui-code-editor__match[data-current] {
+  background: color-mix(in srgb, var(--ref-warning) 45%, transparent);
+  outline: 1px solid var(--ref-warning);
+}
+
+.ui-code-editor__bracket {
+  border-radius: 2px;
+  background: var(--ref-selected);
+  outline: 1px solid var(--ref-border-strong);
+}
+
+.ui-code-editor__bracket[data-unmatched] {
+  background: color-mix(in srgb, var(--ref-danger) 18%, transparent);
+  outline-color: var(--ref-danger);
+}
+
+.ui-code-editor__announcement {
+  white-space: nowrap;
+}
+
+.ui-code-editor__tooltip {
+  box-sizing: border-box;
+  max-width: min(360px, calc(100vw - 16px));
+  padding: 6px 8px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-raised);
+  box-shadow: var(--ref-shadow);
+  color: var(--ref-text);
+  font-size: 12px;
+}
+
+.ui-code-editor__tooltip .ui-code-editor__diagnostic + * {
+  margin-top: 4px;
+}
+
+.ui-code-editor__completion-documentation {
+  max-width: 320px;
+  margin-top: 4px;
+  padding: 6px 8px 2px;
+  border-top: 1px solid var(--ref-border);
+  color: var(--ref-muted);
+  font-size: 12px;
+  white-space: pre-wrap;
+}
+
+.ui-code-editor__completion[data-kind]::before {
+  content: attr(data-kind);
+  min-width: 56px;
+  color: var(--ref-muted);
+  font-size: 11px;
+}
+
+.ui-code-editor__search {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--ref-border);
+  background: var(--ref-surface);
+  font-size: 12px;
+}
+
+.ui-code-editor__search-input,
+.ui-code-editor__replace-input {
+  box-sizing: border-box;
+  flex: 1 1 120px;
+  min-width: 0;
+  height: 26px;
+  padding: 0 6px;
+  border: 1px solid var(--ref-border-strong);
+  border-radius: 4px;
+  background: var(--ref-canvas);
+  color: var(--ref-text);
+  font: 12px var(--ref-mono);
+}
+
+.ui-code-editor__search-input[data-focus-visible],
+.ui-code-editor__replace-input[data-focus-visible] {
+  outline: 2px solid var(--ref-focus);
+  outline-offset: -1px;
+}
+
+.ui-code-editor__search-status {
+  min-width: 56px;
+  color: var(--ref-muted);
+}

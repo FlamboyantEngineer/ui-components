@@ -1,0 +1,146 @@
+/** Strings shared by actions, navigation, overlays, collections and people. */
+export interface CommonStrings {
+  close: string;
+  dismiss: string;
+  confirm: string;
+  /** Shown when an action fails without a message of its own. */
+  actionFailed: string;
+  more: string;
+  /** Default accessible name of a context menu. */
+  contextMenu: string;
+  loading: string;
+  clear: string;
+  help: string;
+  expand: string;
+  collapse: string;
+  search: string;
+  noResults: string;
+  previous: string;
+  next: string;
+  copy: string;
+  /** Announces that a copy reached the clipboard. */
+  copied: string;
+  /** Announces that a copy did not reach the clipboard. */
+  copyFailed: string;
+  resize: string;
+  /** Names the search box that narrows a table's rows. */
+  filterRows: string;
+  /** Names a table's row actions column. */
+  rowActions: string;
+  scrollVertically: string;
+  scrollHorizontally: string;
+  add: string;
+  refresh: string;
+  edit: string;
+  delete: string;
+  save: string;
+  saving: string;
+  cancel: string;
+  zoom: string;
+  zoomLevel: string;
+  zoomIn: string;
+  zoomOut: string;
+  resetZoom: string;
+  /** Names the button that opens a zoom control's preset menu. */
+  zoomPresets: string;
+  scrollBackward: string;
+  scrollForward: string;
+  /** Names a button that removes a listed item, from the item's name. */
+  removeItem: (name: string) => string;
+  itemCount: (count: number) => string;
+  /** Stands in for a person or group whose name is blank. */
+  unnamed: string;
+  /** Accessible name of a person shown with a status (`Maria Santos, Away`). */
+  nameWithStatus: (name: string, status: string) => string;
+  /** Accessible name of an overflow count, with the names it hides when known. */
+  morePeople: (count: number, names: readonly string[]) => string;
+  /** Spoken name of a keyboard key or modifier (`↑` → `Up Arrow`); other keys are read as written. */
+  shortcutKeyName: (key: string) => string;
+  retry: string;
+  loadMore: string;
+  remainingCount: (count: number) => string;
+  countOrMore: (count: number) => string;
+  /** A step counter such as `2 of 5`. */
+  stepOfTotal: (current: number, total: number) => string;
+  /** Names the mark of a group holding a value that overrides an inherited one. */
+  containsOverrides: string;
+  /** Names a search box that filters a panel, from the panel's label. */
+  filterLabel: (label: string) => string;
+  /** The message of a filter no property matches, from the trimmed query. */
+  noPropertyMatches: (query: string) => string;
+  clearFilter: string;
+  /** The name of one side of a box, such as a margin. */
+  boxSide: (side: 'top' | 'right' | 'bottom' | 'left') => string;
+}
+
+const spokenKeyNames: Readonly<Record<string, string>> = {
+  '↑': 'Up Arrow',
+  '↓': 'Down Arrow',
+  '←': 'Left Arrow',
+  '→': 'Right Arrow',
+  '.': 'Period',
+  ',': 'Comma',
+  '\\': 'Backslash',
+  '+': 'Plus',
+  ' ': 'Space',
+};
+
+const boxSideNames = { top: 'Top', right: 'Right', bottom: 'Bottom', left: 'Left' } as const;
+
+export const commonStrings: CommonStrings = {
+  close: 'Close',
+  dismiss: 'Dismiss',
+  confirm: 'Confirm',
+  actionFailed: 'The action could not be completed.',
+  more: 'More',
+  contextMenu: 'Context menu',
+  loading: 'Loading',
+  clear: 'Clear',
+  help: 'Help',
+  expand: 'Expand',
+  collapse: 'Collapse',
+  search: 'Search',
+  noResults: 'No results',
+  previous: 'Previous',
+  next: 'Next',
+  copy: 'Copy',
+  copied: 'Copied',
+  copyFailed: 'Copy failed',
+  resize: 'Resize',
+  filterRows: 'Filter rows',
+  rowActions: 'Actions',
+  scrollVertically: 'Scroll vertically',
+  scrollHorizontally: 'Scroll horizontally',
+  add: 'Add',
+  refresh: 'Refresh',
+  edit: 'Edit',
+  delete: 'Delete',
+  save: 'Save',
+  saving: 'Saving',
+  cancel: 'Cancel',
+  zoom: 'Zoom',
+  zoomLevel: 'Zoom level',
+  zoomIn: 'Zoom in',
+  zoomOut: 'Zoom out',
+  resetZoom: 'Reset zoom',
+  zoomPresets: 'Zoom presets',
+  scrollBackward: 'Scroll backward',
+  scrollForward: 'Scroll forward',
+  removeItem: (name) => `Remove ${name}`,
+  itemCount: (count) => (count === 1 ? '1 item' : `${count} items`),
+  unnamed: 'Unnamed',
+  nameWithStatus: (name, status) => `${name}, ${status}`,
+  morePeople: (count, names) =>
+    `${count === 1 ? '1 more person' : `${count} more people`}${names.length > 0 ? `: ${names.join(', ')}` : ''}`,
+  shortcutKeyName: (key) => spokenKeyNames[key] ?? key,
+  retry: 'Retry',
+  loadMore: 'Load more',
+  remainingCount: (count) => `${count} remaining`,
+  countOrMore: (count) => `${count} or more`,
+  stepOfTotal: (current, total) => `${current} of ${total}`,
+  containsOverrides: 'Contains overridden values',
+  filterLabel: (label) => `Filter ${label.toLocaleLowerCase()}`,
+  noPropertyMatches: (query) => `No properties match “${query}”.`,
+  clearFilter: 'Clear filter',
+  boxSide: (side) => boxSideNames[side],
+};

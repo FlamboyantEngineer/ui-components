@@ -8,7 +8,8 @@ export interface JsonErrorLocation {
   column: number;
 }
 
-interface PlacedToken {
+/** A typed token and where it starts. */
+export interface PlacedJsonToken {
   text: string;
   type: string;
   offset: number;
@@ -61,8 +62,9 @@ function locationAt(source: string, offset: number): JsonErrorLocation {
   return { line: before.length, column: (before.at(-1)?.length ?? 0) + 1 };
 }
 
-function placeTokens(source: string): PlacedToken[] {
-  const placed: PlacedToken[] = [];
+/** The typed tokens of JSON text (whitespace left out), with their offsets. */
+export function placeJsonTokens(source: string): PlacedJsonToken[] {
+  const placed: PlacedJsonToken[] = [];
   let offset = 0;
   for (const { text, type } of tokenizeJson(source)) {
     if (type) placed.push({ text, type, offset });
@@ -72,7 +74,7 @@ function placeTokens(source: string): PlacedToken[] {
 }
 
 /** Walks the tokens through JSON's grammar; `index` stops at the first token that breaks it. */
-function createGrammar(tokens: readonly PlacedToken[]) {
+function createGrammar(tokens: readonly PlacedJsonToken[]) {
   let index = 0;
   const take = (text: string) => {
     if (tokens[index]?.text !== text) return false;
@@ -106,7 +108,7 @@ function createGrammar(tokens: readonly PlacedToken[]) {
 
 /** Where the tokens stop following JSON's grammar, or `null` when they follow it. */
 function findGrammarError(source: string): number | null {
-  const tokens = placeTokens(source);
+  const tokens = placeJsonTokens(source);
   const grammar = createGrammar(tokens);
   if (grammar.value() && grammar.stop() === tokens.length) return null;
   return tokens[grammar.stop()]?.offset ?? source.length;

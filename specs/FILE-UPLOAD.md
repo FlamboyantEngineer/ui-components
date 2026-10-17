@@ -1,6 +1,6 @@
 # File Upload
 
-`FileUpload` chooses files: from the system file chooser through React Aria's `FileTrigger`, and by drag and drop or paste through React Aria's `DropZone`. It checks each file against the accepted types and the size limit, hands the accepted files to its owner and reports the refused ones. It holds no files itself: the owner performs any upload and passes the files back as data to list them, each with its size, its upload progress or its error and a remove button. Sizes are written with [formatBytes](FORMAT-BYTES.md).
+`FileUpload` chooses files or folders: from the system file chooser through React Aria's `FileTrigger`, and by drag and drop or paste through React Aria's `DropZone`. It checks each file against the accepted types, the size and count limits and the owner's own check, hands the accepted files to its owner and reports the refused ones; a drag says before the drop whether its files would be accepted. It holds no files itself: the owner performs any upload and passes the files back as data to list them, each with an image thumbnail, its size, its upload progress or its error and a remove button. In a form it submits the listed files under a name and can be required. Sizes are written with [formatBytes](FORMAT-BYTES.md).
 
 ## UIC-FILE-UPLOAD-1 - Command
 
@@ -13,7 +13,7 @@ Verification: `src/components/file-upload/file-upload.test.tsx`, `e2e/file-uploa
 
 ### UIC-FILE-UPLOAD-1.2 - Description
 
-`description` shall render in `ui-file-upload__description` and describe the button. Without one, the description lists the accepted types and the size limit (provider string `fileSizeLimit` with the size from `formatBytes`) on one metadata line; with neither, there is no description.
+`description` shall render in `ui-file-upload__description` and describe the button. Without one, the description lists the accepted types, the size limit (provider string `fileSizeLimit` with the size from `formatBytes`) and the count limit (provider string `fileCountLimit`) on one metadata line; with none of them, there is no description.
 
 Implementation: `src/components/file-upload/file-upload.tsx`, `src/core/strings.ts`
 Verification: `src/components/file-upload/file-upload.test.tsx`
@@ -30,6 +30,13 @@ Verification: `src/components/file-upload/file-upload.test.tsx`, `e2e/file-uploa
 `isDisabled` shall disable the buttons and the drop zone, which refuses drops, and publish `data-disabled` on the root.
 
 Implementation: `src/components/file-upload/file-upload.tsx`
+Verification: `src/components/file-upload/file-upload.test.tsx`, `e2e/file-upload.spec.ts`
+
+### UIC-FILE-UPLOAD-1.5 - Folders
+
+With `acceptDirectory`, the system chooser shall pick a folder (React Aria's `FileTrigger`) and every file in it is offered, as with `allowsMultiple`; a folder dropped on the drop zone is read, through its subfolders, for its files. Without it a dropped folder is ignored.
+
+Implementation: `src/components/file-upload/file-upload.tsx`, `src/components/file-upload/file-upload-drop.tsx`
 Verification: `src/components/file-upload/file-upload.test.tsx`, `e2e/file-upload.spec.ts`
 
 ## UIC-FILE-UPLOAD-2 - Checking files
@@ -50,17 +57,45 @@ Verification: `src/components/file-upload/file-rules.test.ts`, `src/components/f
 
 ### UIC-FILE-UPLOAD-2.3 - Refusals
 
-`onReject` shall receive each refused file with its reason (`type` or `size`), and an `InlineError` alert (`ui-file-upload__rejections`) below the command counts the refusals of each reason (provider strings `rejectedFileType` and `rejectedFileSize`). The next offer of files replaces the message, and one whose files all pass removes it.
+`onReject` shall receive each refused file with its reason (`type`, `size`, `min-size`, `count`, or `invalid` with the owner's `message`), and an `InlineError` alert (`ui-file-upload__rejections`) below the command counts the refusals of each reason (provider strings `rejectedFileType`, `rejectedFileSize`, `rejectedFileSmall` and `rejectedFileCount`) and gives each `invalid` file's name and message (`rejectedFileReason`). The next offer of files replaces the message, and one whose files all pass removes it.
 
 Implementation: `src/components/file-upload/file-upload.tsx`, `src/core/strings.ts`
 Verification: `src/components/file-upload/file-upload.test.tsx`, `e2e/file-upload.spec.ts`
 
 ### UIC-FILE-UPLOAD-2.4 - Dropping
 
-Files dropped or pasted on the drop zone shall go through the same checks; dropped items that are not files are ignored. While a drag is over the drop zone it carries `data-drop-target`.
+Files dropped or pasted on the drop zone shall go through the same checks; dropped items that are not files are ignored (folders, unless UIC-FILE-UPLOAD-1.5). While a drag is over the drop zone it carries `data-drop-target`.
 
 Implementation: `src/components/file-upload/file-upload.tsx`
 Verification: `src/components/file-upload/file-upload.test.tsx`, `e2e/file-upload.spec.ts`
+
+### UIC-FILE-UPLOAD-2.5 - Minimum size
+
+A file smaller than `minSize` bytes shall be refused with the reason `min-size`.
+
+Implementation: `src/components/file-upload/file-rules.ts`
+Verification: `src/components/file-upload/file-rules.test.ts`, `src/components/file-upload/file-upload.test.tsx`
+
+### UIC-FILE-UPLOAD-2.6 - Count limit
+
+With `maxFiles`, the upload shall hold at most that many files, counting the listed `files`: offered files that pass the other checks are accepted in order until the limit, and the rest are refused with the reason `count`.
+
+Implementation: `src/components/file-upload/file-rules.ts`, `src/components/file-upload/file-upload.tsx`, `src/core/strings.ts`
+Verification: `src/components/file-upload/file-rules.test.ts`, `src/components/file-upload/file-upload.test.tsx`, `e2e/file-upload.spec.ts`
+
+### UIC-FILE-UPLOAD-2.7 - Owner's check
+
+`validate` shall check each offered file that matches the types and fits the size limits, given the files of the same offer accepted before it, so it can refuse names, duplicates or image dimensions: a message it returns refuses the file with the reason `invalid` and that message. It may answer with a promise; the offer is then handed on once every answer has come. The checks run in this order: type, size, `validate`, count.
+
+Implementation: `src/components/file-upload/file-rules.ts`, `src/components/file-upload/file-upload.tsx`, `src/core/strings.ts`
+Verification: `src/components/file-upload/file-rules.test.ts`, `src/components/file-upload/file-upload.test.tsx`, `e2e/file-upload.spec.ts`
+
+### UIC-FILE-UPLOAD-2.8 - Drag feedback
+
+While a drag is over the drop zone, it shall carry `data-drop-accept` when the dragged files would pass the checks a drag allows (their count against `maxFiles`, their MIME types against the MIME rules of `acceptedFileTypes`) and `data-drop-reject` otherwise. Extensions, sizes and `validate` need the dropped files, so a file only they could refuse counts as passing until the drop.
+
+Implementation: `src/components/file-upload/file-rules.ts`, `src/components/file-upload/file-upload-drop.tsx`, `src/components/file-upload/file-upload.tsx`
+Verification: `src/components/file-upload/file-rules.test.ts`, `src/components/file-upload/file-upload.test.tsx`, `e2e/file-upload.spec.ts`
 
 ## UIC-FILE-UPLOAD-3 - Listed files
 
@@ -92,6 +127,13 @@ With `onRemove`, each file shall have an `IconButton` (`ui-file-upload__file-rem
 Implementation: `src/components/file-upload/file-upload-files.tsx`, `src/core/strings.ts`
 Verification: `src/components/file-upload/file-upload.test.tsx`, `e2e/file-upload.spec.ts`
 
+### UIC-FILE-UPLOAD-3.5 - Image previews
+
+A listed file whose `file` is an image (`image/*`) shall show a thumbnail (`ui-file-upload__file-preview`, an `<img>` with an empty `alt`, since its name is beside it) from a temporary URL the upload revokes when the file changes or leaves the list; a file without one shows its `previewUrl` instead.
+
+Implementation: `src/components/file-upload/file-upload-files.tsx`
+Verification: `src/components/file-upload/file-upload.test.tsx`, `e2e/file-upload.spec.ts`
+
 ## UIC-FILE-UPLOAD-4 - Attributes
 
 ### UIC-FILE-UPLOAD-4.1 - Hooks and caller attributes
@@ -100,6 +142,13 @@ Verification: `src/components/file-upload/file-upload.test.tsx`, `e2e/file-uploa
 
 Implementation: `src/components/file-upload/file-upload.tsx`
 Verification: `src/components/file-upload/file-upload.test.tsx`
+
+### UIC-FILE-UPLOAD-4.2 - Forms
+
+With `name` or `isRequired`, the upload shall render a hidden file input that holds the listed files' `file`s, so a native form submit or `FormData` carries them under `name` (in browsers that can set an input's files). While `isRequired` and no file is listed, a form submit is refused: the upload shows the provider string `valueRequired` in an `InlineError` alert (`ui-file-upload__error`) that describes the command, publishes `data-invalid`, and moves focus to the command; listing a file clears it. `isRequired` publishes `data-required`. `isInvalid` likewise shows the owner's `errorMessage` there and publishes `data-invalid`.
+
+Implementation: `src/components/file-upload/file-upload-form.tsx`, `src/components/file-upload/file-upload.tsx`
+Verification: `src/components/file-upload/file-upload.test.tsx`, `e2e/file-upload.spec.ts`
 
 ## Hooks
 
@@ -112,8 +161,10 @@ Verification: `src/components/file-upload/file-upload.test.tsx`
 | `ui-file-upload__description`   | slot      |                                              | The description.                                             |
 | `ui-file-upload__browse`        | slot      |                                              | The drop zone's Browse button (also `ui-button`).            |
 | `ui-file-upload__rejections`    | slot      |                                              | The refusal message (also `ui-inline-error`).                |
+| `ui-file-upload__error`         | slot      |                                              | The required or invalid message (also `ui-inline-error`).    |
 | `ui-file-upload__files`         | slot      |                                              | The list of files.                                           |
 | `ui-file-upload__file`          | slot      |                                              | A listed file.                                               |
+| `ui-file-upload__file-preview`  | slot      |                                              | A file's image thumbnail.                                    |
 | `ui-file-upload__file-name`     | slot      |                                              | A file's name.                                               |
 | `ui-file-upload__file-size`     | slot      |                                              | A file's size.                                               |
 | `ui-file-upload__file-progress` | slot      |                                              | A file's upload progress (also `ui-progress-bar`).           |
@@ -122,6 +173,10 @@ Verification: `src/components/file-upload/file-upload.test.tsx`
 | `data-variant`                  | attribute | `button`, `dropzone`                         | The command.                                                 |
 | `data-status`                   | state     | `selected`, `uploading`, `complete`, `error` | On a listed file: where its upload stands.                   |
 | `data-disabled`                 | state     | `true`                                       | Disabled (root, and the drop zone through React Aria).       |
+| `data-required`                 | state     | `true`                                       | A form needs a file (root).                                  |
+| `data-invalid`                  | state     | `true`                                       | The required or invalid message shows (root).                |
+| `data-drop-accept`              | state     | `true`                                       | A drag over the drop zone would be accepted.                 |
+| `data-drop-reject`              | state     | `true`                                       | A drag over the drop zone would be refused.                  |
 | `data-drop-target`              | state     | `true`                                       | A drag is over the drop zone (React Aria).                   |
 | `data-hovered`                  | state     | `true`                                       | Pointer over the drop zone (React Aria).                     |
 | `data-focused`                  | state     | `true`                                       | The drop zone's keyboard drop target has focus (React Aria). |

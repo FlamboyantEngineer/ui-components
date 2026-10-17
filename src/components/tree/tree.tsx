@@ -1,6 +1,8 @@
 import { useMemo, type KeyboardEvent, type ReactNode, type Ref } from 'react';
 import {
   Tree as AriaTree,
+  ListLayout,
+  Virtualizer,
   type TreeItemContentRenderProps,
   type TreeProps as AriaTreeProps,
 } from 'react-aria-components';
@@ -83,6 +85,10 @@ export interface TreeProps<T extends TreeItemData>
   wrap?: boolean | undefined;
   /** Opt-in reordering by drag and drop and Alt+Arrow keys. Turning it on or off remounts the rows. */
   reorder?: TreeReorderOptions<T> | undefined;
+  /** Renders only the rows in view; the stylesheet must bound the tree's height. */
+  virtualized?: boolean | undefined;
+  /** Row height in pixels for a virtualized tree. Defaults to 28, 32 or 40 by size. */
+  rowHeight?: number | undefined;
   /** Sees each keydown in a row before the tree does; return `true` to claim the key. */
   onItemKeyDown?: ((item: T, event: KeyboardEvent<HTMLElement>) => boolean) | undefined;
   /** The tree grid element. */
@@ -90,6 +96,8 @@ export interface TreeProps<T extends TreeItemData>
 }
 
 const noDependencies: readonly unknown[] = [];
+
+const virtualRowHeights: Readonly<Record<TreeSize, number>> = { sm: 28, md: 32, lg: 40 };
 
 /** Separates the props that draw rows, the expansion, the root's own and React Aria's. */
 function splitTreeProps<T extends TreeItemData>({
@@ -117,6 +125,8 @@ function splitTreeProps<T extends TreeItemData>({
   wrap = false,
   reorder,
   onItemKeyDown,
+  virtualized = false,
+  rowHeight,
   className,
   ref,
   disabledKeys,
@@ -138,7 +148,13 @@ function splitTreeProps<T extends TreeItemData>({
   };
   const expansion = { expandedKeys, defaultExpandedKeys, onExpandedChange, persistKey };
   const state = { items, isPending, emptyMessage, reorder, onItemKeyDown, disabledKeys };
-  const root = { className, ref, data: { size, variant, expandGlyph, wrap, pending: isPending } };
+  const data = { size, variant, expandGlyph, wrap, pending: isPending, virtualized };
+  const root = {
+    className,
+    ref,
+    data,
+    rowHeight: virtualized ? (rowHeight ?? virtualRowHeights[size]) : null,
+  };
   return { row, expansion, state, root, aria };
 }
 
@@ -167,7 +183,7 @@ export function Tree<T extends TreeItemData>(props: TreeProps<T>) {
     [renderItem, row.dependencies],
   );
   const hasEmptyState = isPending || !isEmptyNode(emptyMessage);
-  return (
+  const tree = (
     <AriaTree
       // React Aria keeps drag and drop hooks for the tree's lifetime: remount when reordering toggles.
       key={reordering ? 'reorderable' : 'fixed'}
@@ -198,5 +214,11 @@ export function Tree<T extends TreeItemData>(props: TreeProps<T>) {
     >
       {renderItem}
     </AriaTree>
+  );
+  if (root.rowHeight === null) return tree;
+  return (
+    <Virtualizer layout={ListLayout} layoutOptions={{ rowHeight: root.rowHeight }}>
+      {tree}
+    </Virtualizer>
   );
 }
