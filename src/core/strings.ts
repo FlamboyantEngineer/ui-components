@@ -73,6 +73,12 @@ export interface UiStrings {
   /** The message of text that is not valid JSON, with where the problem starts. */
   invalidJsonAt: (line: number, column: number) => string;
   itemCount: (count: number) => string;
+  /** Stands in for a person or group whose name is blank. */
+  unnamed: string;
+  /** Accessible name of a person shown with a status (`Maria Santos, Away`). */
+  nameWithStatus: (name: string, status: string) => string;
+  /** Accessible name of an overflow count, with the names it hides when known. */
+  morePeople: (count: number, names: readonly string[]) => string;
   /** Spoken name of a keyboard key or modifier (`↑` → `Up Arrow`); other keys are read as written. */
   shortcutKeyName: (key: string) => string;
   retry: string;
@@ -144,6 +150,31 @@ export interface UiStrings {
   clearFilter: string;
   /** The name of one side of a box, such as a margin. */
   boxSide: (side: 'top' | 'right' | 'bottom' | 'left') => string;
+  emojiPicker: string;
+  searchEmoji: string;
+  emojiCategories: string;
+  /** Name of an emoji category (`smileys`, `flags`, …), recently used (`recent`), custom emoji or search results. */
+  emojiCategory: (category: string) => string;
+  emojiLoadFailed: string;
+  skinTone: string;
+  /** Name of a skin tone (`default`, `light`, `medium-light`, …). */
+  skinToneName: (tone: string) => string;
+  /** Default name of a document view. */
+  document: string;
+  /** Name of the toolbar for a named view (`Report.pdf controls`). */
+  controlsFor: (name: string) => string;
+  fitWidth: string;
+  fitPage: string;
+  page: string;
+  /** The total after a page field (`of 12`). */
+  ofTotal: (total: number) => string;
+  previousPage: string;
+  nextPage: string;
+  findInDocument: string;
+  searching: string;
+  previousMatch: string;
+  nextMatch: string;
+  documentFailed: string;
 }
 
 const spokenKeyNames: Readonly<Record<string, string>> = {
@@ -159,6 +190,20 @@ const spokenKeyNames: Readonly<Record<string, string>> = {
 };
 
 const boxSideNames = { top: 'Top', right: 'Right', bottom: 'Bottom', left: 'Left' } as const;
+const emojiCategoryNames: Readonly<Record<string, string>> = {
+  recent: 'Recently used',
+  custom: 'Custom',
+  search: 'Search results',
+  smileys: 'Smileys & Emotion',
+  people: 'People & Body',
+  nature: 'Animals & Nature',
+  food: 'Food & Drink',
+  travel: 'Travel & Places',
+  activities: 'Activities',
+  objects: 'Objects',
+  symbols: 'Symbols',
+  flags: 'Flags',
+};
 
 export const defaultStrings: UiStrings = {
   close: 'Close',
@@ -221,6 +266,10 @@ export const defaultStrings: UiStrings = {
   invalidJson: 'Enter valid JSON.',
   invalidJsonAt: (line, column) => `Enter valid JSON: check line ${line}, column ${column}.`,
   itemCount: (count) => (count === 1 ? '1 item' : `${count} items`),
+  unnamed: 'Unnamed',
+  nameWithStatus: (name, status) => `${name}, ${status}`,
+  morePeople: (count, names) =>
+    `${count === 1 ? '1 more person' : `${count} more people`}${names.length > 0 ? `: ${names.join(', ')}` : ''}`,
   shortcutKeyName: (key) => spokenKeyNames[key] ?? key,
   retry: 'Retry',
   loadMore: 'Load more',
@@ -262,4 +311,24 @@ export const defaultStrings: UiStrings = {
   noPropertyMatches: (query) => `No properties match “${query}”.`,
   clearFilter: 'Clear filter',
   boxSide: (side) => boxSideNames[side],
+  emojiPicker: 'Emoji picker',
+  searchEmoji: 'Search emoji',
+  emojiCategories: 'Emoji categories',
+  emojiCategory: (category) => emojiCategoryNames[category] ?? category,
+  emojiLoadFailed: 'Emoji could not be loaded.',
+  skinTone: 'Skin tone',
+  skinToneName: (tone) => `${tone.charAt(0).toUpperCase()}${tone.slice(1)}`,
+  document: 'Document',
+  controlsFor: (name) => `${name} controls`,
+  fitWidth: 'Fit page width',
+  fitPage: 'Fit whole page',
+  page: 'Page',
+  ofTotal: (total) => `of ${total}`,
+  previousPage: 'Previous page',
+  nextPage: 'Next page',
+  findInDocument: 'Find in document',
+  searching: 'Searching…',
+  previousMatch: 'Previous match',
+  nextMatch: 'Next match',
+  documentFailed: 'The document could not be opened.',
 };

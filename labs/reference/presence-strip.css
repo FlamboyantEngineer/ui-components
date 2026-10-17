@@ -1,0 +1,72 @@
+/* Presence Strip */
+
+.ui-presence-strip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  vertical-align: middle;
+}
+
+.ui-presence-strip__person {
+  flex: none;
+}
+
+.ui-presence-strip__overflow {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 4px;
+  border: 1px solid var(--ref-border);
+  border-radius: 999px;
+  background: var(--ref-surface);
+  color: var(--ref-text);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.ui-presence-strip[data-size='xs'] .ui-presence-strip__overflow {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 2px;
+  font-size: 9px;
+}
+
+.ui-presence-strip[data-size='sm'] .ui-presence-strip__overflow {
+  min-width: 24px;
+  height: 24px;
+  font-size: 10px;
+}
+
+.ui-presence-strip[data-size='lg'] .ui-presence-strip__overflow {
+  min-width: 40px;
+  height: 40px;
+  font-size: 13px;
+}
+
+.ui-presence-strip[data-variant='dots'] {
+  gap: 3px;
+}
+
+.ui-presence-strip__dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ref-avatar-color, var(--ref-muted));
+}
+
+.ui-presence-strip[data-variant='dots'] .ui-presence-strip__overflow {
+  min-width: 0;
+  height: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ref-muted);
+  font-size: 11px;
+  font-weight: 500;
+}

@@ -20,6 +20,10 @@ const sampleArguments: Partial<Record<keyof UiStrings, readonly unknown[]>> = {
   noPropertyMatches: ['zinc'],
   boxSide: ['top'],
   invalidJsonAt: [3, 5],
+  nameWithStatus: ['Maria Santos', 'Away'],
+  morePeople: [3, ['Jon Berg', 'Lena Ortiz', 'Sam Okafor']],
+  emojiCategory: ['smileys'],
+  skinToneName: ['medium-light'],
 };
 
 const stringNames = Object.keys(defaultStrings) as Array<keyof UiStrings>;

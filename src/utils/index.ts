@@ -89,3 +89,5 @@ export type {
   TreeMoveRules,
   VisibleTreeRowsOptions,
 } from './tree-reorder.js';
+export { getColorIndex } from './color-index.js';
+export { getInitials } from './initials.js';

@@ -5,6 +5,7 @@ import {
   ArrowUpTrayIcon,
   ArrowUturnLeftIcon,
   ArrowUturnRightIcon,
+  ArrowsRightLeftIcon,
   ArrowsPointingInIcon,
   ArrowsPointingOutIcon,
   ArrowsUpDownIcon,
@@ -12,6 +13,7 @@ import {
   CalendarIcon,
   CheckCircleIcon,
   CheckIcon,
+  DocumentIcon,
   ChevronDoubleLeftIcon,
   ChevronDoubleRightIcon,
   ChevronDownIcon,
@@ -30,6 +32,7 @@ import {
   PlusIcon,
   QuestionMarkCircleIcon,
   TrashIcon,
+  UsersIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
 import type { ComponentType } from 'react';
@@ -88,6 +91,9 @@ export const defaultGlyphs = {
   'drag-handle': Bars2Icon,
   upload: ArrowUpTrayIcon,
   folder: FolderIcon,
+  users: UsersIcon,
+  'fit-width': ArrowsRightLeftIcon,
+  'fit-page': DocumentIcon,
 } satisfies Record<string, GlyphComponent>;
 
 export const glyphNames = Object.keys(defaultGlyphs) as GlyphName[];
