@@ -143,4 +143,107 @@ test.describe('Split View lab', () => {
     await page.keyboard.press('ArrowLeft');
     await expect(separator).toHaveAttribute('aria-valuenow', '45');
   });
+
+  test('UIC-SPLIT-VIEW-2.1 UIC-SPLIT-VIEW-2.2 resizes three panes pair by pair', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('split-view');
+    const cell = page.locator('[data-lab-cell="orientation=horizontal"]');
+    const split = cell.locator('.ui-split-view');
+    await expect(split.getByRole('separator')).toHaveCount(2);
+    const width = await innerWidth(split);
+    const share = async (id: string) =>
+      Math.round(((await box(page.locator(`#${id}`))).width / width) * 100);
+    expect(await share('horizontal-folders')).toBe(25);
+    expect(await share('horizontal-messages')).toBe(35);
+    const second = page.getByRole('separator', { name: 'Resize Messages, horizontal' });
+    await expect(second).toHaveAttribute('aria-controls', 'horizontal-messages horizontal-reading');
+    await second.focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(second).toHaveAttribute('aria-valuenow', '40');
+    expect(await share('horizontal-messages')).toBe(40);
+    expect(await share('horizontal-folders')).toBe(25);
+    await expect(page.locator('#horizontal-reading')).toHaveAttribute('data-flexible', 'true');
+    await lab.expectAccessible();
+  });
+
+  test('UIC-SPLIT-VIEW-2.5 keeps pixel panes at their width and drags them pixel for pixel', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('split-view');
+    for (const width of [480, 720]) {
+      expect((await box(page.locator(`#pixel-${width}-rail`))).width).toBe(160);
+      expect((await box(page.locator(`#pixel-${width}-inspector`))).width).toBe(120);
+    }
+    const narrow = (await box(page.locator('#pixel-480-canvas'))).width;
+    const wide = (await box(page.locator('#pixel-720-canvas'))).width;
+    expect(Math.round(wide - narrow)).toBe(240);
+
+    const separator = page.getByRole('separator', { name: 'Resize rail, 720px' });
+    await separator.scrollIntoViewIfNeeded();
+    await expect(separator).toHaveAttribute('aria-valuenow', '160');
+    await expect(separator).toHaveAttribute('aria-valuemax', '280');
+    const handle = await box(separator);
+    const x = handle.x + handle.width / 2;
+    const y = handle.y + handle.height / 2;
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(x + 50, y, { steps: 3 });
+    await page.mouse.up();
+    await expect(separator).toHaveAttribute('aria-valuenow', '210');
+    expect((await box(page.locator('#pixel-720-rail'))).width).toBe(210);
+    const inspector = page.getByRole('separator', { name: 'Resize canvas, 720px' });
+    await inspector.focus();
+    await page.keyboard.press('ArrowLeft');
+    await expect(inspector).toHaveAttribute('aria-valuenow', '156');
+  });
+
+  test('UIC-SPLIT-VIEW-2.6 UIC-SPLIT-VIEW-2.7 collapses panes by drag, Enter and the handle', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('split-view');
+    const host = page.locator('[data-lab-split="collapsible"]');
+    await host.scrollIntoViewIfNeeded();
+    const log = page.locator('[data-lab-output="collapse"]');
+    const preview = page.locator('#collapsible-preview');
+    const separator = host.getByRole('separator', { name: 'Resize Messages', exact: true });
+    const handle = await box(separator);
+    const x = handle.x + handle.width / 2;
+    const y = handle.y + handle.height / 2;
+    const split = host.locator('.ui-split-view');
+    const width = await innerWidth(split);
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(x + width * 0.25, y, { steps: 4 });
+    await page.mouse.up();
+    await expect(preview).toHaveAttribute('data-collapsed', 'true');
+    await expect(preview).toHaveAttribute('inert', '');
+    await expect(log).toHaveText('Collapsed Reading');
+    expect((await box(preview)).width).toBeLessThanOrEqual(1);
+
+    await separator.focus();
+    await page.keyboard.press('Enter');
+    await expect(preview).not.toHaveAttribute('data-collapsed');
+    await expect(log).toHaveText('Expanded Reading');
+    expect((await box(preview)).width).toBeGreaterThan(width * 0.15);
+
+    const nav = page.locator('#collapsible-nav');
+    const navSeparator = host.getByRole('separator', { name: 'Resize Folders', exact: true });
+    await navSeparator.focus();
+    await page.keyboard.press('Home');
+    await expect(nav).toHaveAttribute('data-collapsed', 'true');
+    expect(Math.round(((await box(nav)).width / width) * 100)).toBe(4);
+
+    await page.getByRole('button', { name: 'Collapse preview' }).click();
+    await expect(preview).toHaveAttribute('data-collapsed', 'true');
+    await page.getByRole('button', { name: 'Expand preview' }).click();
+    await expect(preview).not.toHaveAttribute('data-collapsed');
+    await page.getByRole('button', { name: 'Reset sizes' }).click();
+    await expect(nav).not.toHaveAttribute('data-collapsed');
+    await expect(navSeparator).toHaveAttribute('aria-valuenow', '25');
+    await lab.expectAccessible();
+  });
 });

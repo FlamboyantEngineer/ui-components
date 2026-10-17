@@ -57,17 +57,18 @@
 }
 
 .ui-split-view__pane {
+  flex: none;
   min-width: 0;
   min-height: 0;
   overflow: auto;
 }
 
-.ui-split-view__pane[data-pane='first'] {
-  flex: none;
+.ui-split-view__pane[data-flexible] {
+  flex: 1 1 0%;
 }
 
-.ui-split-view__pane[data-pane='second'] {
-  flex: 1 1 0%;
+.ui-split-view__pane[data-collapsed] {
+  overflow: hidden;
 }
 
 .ui-resize-handle {
