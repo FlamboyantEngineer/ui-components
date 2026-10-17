@@ -1,5 +1,6 @@
 export {
   Field,
+  FieldPreviousValue,
   FieldRestoreButton,
   getFieldUndo,
   toAriaControlProps,
@@ -17,6 +18,7 @@ export type {
   FieldLayoutProps,
   FieldMenuAction,
   FieldMenuEntry,
+  FieldPreviousValueProps,
   FieldProps,
   FieldRestoreButtonProps,
   FieldSeverity,

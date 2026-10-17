@@ -87,6 +87,24 @@ export interface UiStrings {
   noColor: string;
   /** Names the hexadecimal input of a colour picker. */
   hexColor: string;
+  /** Names the button that removes a chosen value, read with the value it removes. */
+  remove: string;
+  /** The text of a select that has no value and no placeholder of its own. */
+  selectPlaceholder: string;
+  /** Names the group of a multiple select's chosen values, from the field's label. */
+  selectedValues: (label: string) => string;
+  /** The message of a search that needs a longer query before it runs. */
+  typeToSearch: (minLength: number) => string;
+  /** The message of a search that failed. */
+  searchFailed: string;
+  /** A date field action that picks the current date. */
+  today: string;
+  /** A date field action that picks the current date and time. */
+  now: string;
+  /** The message of a date or time earlier than the field allows. */
+  dateTooEarly: (minValue: string) => string;
+  /** The message of a date or time later than the field allows. */
+  dateTooLate: (maxValue: string) => string;
 }
 
 const spokenKeyNames: Readonly<Record<string, string>> = {
@@ -169,4 +187,14 @@ export const defaultStrings: UiStrings = {
   valueUnset: 'Unset',
   noColor: 'No color',
   hexColor: 'Hex color',
+  remove: 'Remove',
+  selectPlaceholder: 'Select an option',
+  selectedValues: (label) => `${label} selected values`,
+  typeToSearch: (minLength) =>
+    minLength === 1 ? 'Type to search.' : `Type at least ${minLength} characters to search.`,
+  searchFailed: 'Search is unavailable.',
+  today: 'Today',
+  now: 'Now',
+  dateTooEarly: (minValue) => `Choose a value on or after ${minValue}.`,
+  dateTooLate: (maxValue) => `Choose a value on or before ${maxValue}.`,
 };

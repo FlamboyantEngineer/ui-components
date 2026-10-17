@@ -119,3 +119,33 @@
   color: var(--ref-muted);
   font-style: italic;
 }
+
+/* A previous value: struck through in a dashed frame, distinct from current chips. */
+.ui-field-previous-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.ui-field-previous-value__value {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  box-sizing: border-box;
+  height: 22px;
+  padding: 0 4px;
+  border: 1px dashed var(--ref-danger);
+  border-radius: 3px;
+  color: var(--ref-danger);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-field-previous-value .ui-field-restore-button {
+  width: 22px;
+  min-height: 22px;
+}

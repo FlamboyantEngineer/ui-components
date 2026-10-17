@@ -7,6 +7,7 @@ import {
   ArrowsPointingInIcon,
   ArrowsPointingOutIcon,
   ArrowsUpDownIcon,
+  CalendarIcon,
   CheckCircleIcon,
   CheckIcon,
   ChevronDoubleLeftIcon,
@@ -80,6 +81,7 @@ export const defaultGlyphs = {
   edit: PencilSquareIcon,
   save: CheckIcon,
   delete: TrashIcon,
+  calendar: CalendarIcon,
 } satisfies Record<string, GlyphComponent>;
 
 export const glyphNames = Object.keys(defaultGlyphs) as GlyphName[];

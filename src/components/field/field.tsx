@@ -135,6 +135,8 @@ export type {
   FieldLayoutProps,
 } from './field-control.js';
 export type { FieldMenuAction, FieldMenuEntry } from './field-menu.js';
+export { FieldPreviousValue } from './field-previous-value.js';
+export type { FieldPreviousValueProps } from './field-previous-value.js';
 export { FieldRestoreButton } from './field-restore-button.js';
 export type { FieldRestoreButtonProps } from './field-restore-button.js';
 export { useFieldState } from './field-state.js';
