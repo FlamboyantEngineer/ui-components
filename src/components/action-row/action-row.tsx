@@ -1,11 +1,14 @@
-import type { ReactElement, ReactNode, Ref } from 'react';
+import type { ReactElement, ReactNode } from 'react';
 import { Tooltip, TooltipTrigger } from 'react-aria-components';
 import type { GlyphName } from '../../core/glyphs.js';
 import { createHooks, pickDataAttributes } from '../../core/hooks.js';
+import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 import type { ButtonSize } from '../button/button.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import type { IconSource } from '../icon/icon.js';
+import { IconButton, type IconButtonProps } from '../icon-button/icon-button.js';
 
 type StringKey = {
   [K in keyof UiStrings]: UiStrings[K] extends string ? K : never;
@@ -37,32 +40,20 @@ export const actionVerbs = {
 
 export type ActionVerb = keyof typeof actionVerbs;
 
-interface ActionRowActionBase {
-  /** A stable id for the button, also used as its React key. */
-  id?: string | undefined;
+// An action describes its button, which carries the row's slot class, so it takes no class name.
+interface ActionRowActionBase
+  extends
+    Omit<BaseProps, 'className'>,
+    Pick<
+      IconButtonProps,
+      'isDisabled' | 'isPending' | 'aria-controls' | 'aria-haspopup' | 'onPress'
+    > {
   /** Tooltip text when it says more than the label (a shortcut, why the action is disabled). */
   tooltip?: string | undefined;
-  isDisabled?: boolean | undefined;
-  /** The action is running: the button shows a busy indicator and refuses presses. */
-  isPending?: boolean | undefined;
   /** A disclosure's state, published as `aria-expanded`. */
   isExpanded?: boolean | undefined;
-  /** The id of the region the action acts on. */
-  'aria-controls'?: string | undefined;
-  'aria-haspopup'?:
-    | boolean
-    | 'menu'
-    | 'listbox'
-    | 'tree'
-    | 'grid'
-    | 'dialog'
-    | 'true'
-    | 'false'
-    | undefined;
   /** Wraps the rendered button (with its tooltip), for example in a React Aria `MenuTrigger`. */
   wrap?: ((button: ReactElement) => ReactElement) | undefined;
-  onPress?: (() => void) | undefined;
-  [data: `data-${string}`]: string | number | boolean | undefined;
 }
 
 /** A standard verb with its fixed glyph, label and place. */
@@ -73,66 +64,67 @@ export interface ActionRowVerbAction extends ActionRowActionBase {
 }
 
 /** An action of the caller's own, drawn before the standard verbs in the order given. */
-export interface ActionRowCustomAction extends ActionRowActionBase {
+export interface ActionRowCustomAction
+  extends ActionRowActionBase, Pick<IconButtonProps, 'icon' | 'label' | 'isSelected' | 'ref'> {
   verb: 'custom';
-  /** A built-in glyph name or icon node. */
-  icon: GlyphName | ReactNode;
-  label: string;
-  /** A toggle's state, published as `aria-pressed` and `data-selected`. */
-  isSelected?: boolean | undefined;
-  ref?: Ref<HTMLButtonElement> | undefined;
 }
 
 export type ActionRowAction = ActionRowVerbAction | ActionRowCustomAction;
 
-export interface ActionRowProps {
+export interface ActionRowProps extends BaseProps {
   /** The actions, drawn as icon buttons: custom actions in their order, then the verbs in theirs. */
   actions: readonly ActionRowAction[];
   /** Content at the start of the row, before the actions (a title, a filter, a status line). */
   lead?: ReactNode;
   /** Size of every action button. Defaults to `md`. */
   size?: ButtonSize | undefined;
-  className?: string | undefined;
-  id?: string | undefined;
-  [data: `data-${string}`]: string | number | boolean | undefined;
 }
 
-const VERB_ORDER: readonly string[] = ['custom', ...Object.keys(actionVerbs)];
+interface ActionContent {
+  icon: IconSource;
+  label: string;
+  pendingLabel?: string | undefined;
+}
+
+const verbOrder: readonly string[] = ['custom', ...Object.keys(actionVerbs)];
 
 const hooks = createHooks('action-row', ['lead', 'actions', 'action', 'tooltip']);
 
-/** Custom actions in their given order, then the standard verbs in their fixed order. */
-export function orderActions<A extends ActionRowAction>(actions: readonly A[]): A[] {
-  return actions
-    .map((action, index) => ({ action, index, rank: VERB_ORDER.indexOf(action.verb) }))
-    .sort((left, right) => left.rank - right.rank || left.index - right.index)
-    .map(({ action }) => action);
+/** A custom action's own icon and label, or a verb's glyph and provider strings. */
+function useActionContent(action: ActionRowAction): ActionContent {
+  const strings = useUiStrings();
+  if (action.verb === 'custom') return { icon: action.icon, label: action.label };
+  const verb: VerbDefinition = actionVerbs[action.verb];
+  return {
+    icon: verb.glyph,
+    label: action.label ?? strings[verb.label],
+    pendingLabel: verb.pendingLabel ? strings[verb.pendingLabel] : undefined,
+  };
+}
+
+/** A custom action's ref and toggle state, which report `aria-pressed` either way once set. */
+function toCustomButtonProps(action: ActionRowAction): Partial<IconButtonProps> {
+  if (action.verb !== 'custom') return {};
+  if (action.isSelected === undefined) return { ref: action.ref };
+  return { ref: action.ref, isSelected: action.isSelected, 'aria-pressed': action.isSelected };
 }
 
 function ActionRowButton({ action, size }: { action: ActionRowAction; size: ButtonSize }) {
-  const strings = useUiStrings();
-  const custom = action.verb === 'custom' ? action : undefined;
-  const verb: VerbDefinition | undefined =
-    action.verb === 'custom' ? undefined : actionVerbs[action.verb];
-  const label = custom?.label ?? action.label ?? (verb ? strings[verb.label] : '');
-  const isDisabled = action.isDisabled ?? false;
+  const { icon, label, pendingLabel } = useActionContent(action);
   const button = (
     <IconButton
       {...pickDataAttributes(action)}
       {...hooks.slot('action', { verb: action.verb })}
-      ref={custom?.ref}
+      {...toCustomButtonProps(action)}
       id={action.id}
-      icon={custom ? custom.icon : verb?.glyph}
+      icon={icon}
       label={label}
       size={size}
-      isDisabled={isDisabled}
+      isDisabled={action.isDisabled}
       // A disabled action that explains itself in its tooltip stays focusable so the reason can be read.
-      focusableWhenDisabled={isDisabled && action.tooltip !== undefined}
-      isPending={action.isPending ?? false}
-      pendingLabel={verb?.pendingLabel ? strings[verb.pendingLabel] : undefined}
-      {...(custom?.isSelected === undefined
-        ? {}
-        : { isSelected: custom.isSelected, 'aria-pressed': custom.isSelected })}
+      focusableWhenDisabled={action.tooltip !== undefined}
+      isPending={action.isPending}
+      pendingLabel={pendingLabel}
       aria-expanded={action.isExpanded}
       aria-controls={action['aria-controls']}
       aria-haspopup={action['aria-haspopup']}
@@ -148,17 +140,23 @@ function ActionRowButton({ action, size }: { action: ActionRowAction; size: Butt
   return action.wrap ? action.wrap(withTooltip) : withTooltip;
 }
 
+/** Custom actions in their given order, then the standard verbs in their fixed order. */
+export function orderActions<A extends ActionRowAction>(actions: readonly A[]): A[] {
+  return actions
+    .map((action, index) => ({ action, index, rank: verbOrder.indexOf(action.verb) }))
+    .sort((left, right) => left.rank - right.rank || left.index - right.index)
+    .map(({ action }) => action);
+}
+
 /**
  * A row of icon-button actions described as data: standard verbs with fixed glyphs, labels and
  * places, and custom actions, each with a tooltip. Renders nothing without actions or lead content.
  */
-export function ActionRow({ actions, lead, size = 'md', className, id, ...rest }: ActionRowProps) {
-  if (actions.length === 0 && (lead === undefined || lead === null || lead === false)) return null;
+export function ActionRow({ actions, lead, size = 'md', className, ...rest }: ActionRowProps) {
+  if (actions.length === 0 && isEmptyNode(lead)) return null;
   return (
-    <div {...hooks.root({ className, props: rest, data: { size } })} id={id}>
-      {lead === undefined || lead === null || lead === false ? null : (
-        <div {...hooks.slot('lead')}>{lead}</div>
-      )}
+    <div {...rest} {...hooks.root({ className, props: rest, data: { size } })}>
+      {isEmptyNode(lead) ? null : <div {...hooks.slot('lead')}>{lead}</div>}
       {actions.length > 0 ? (
         <div {...hooks.slot('actions')}>
           {orderActions(actions).map((action, index) => (

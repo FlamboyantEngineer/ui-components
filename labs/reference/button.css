@@ -1,7 +1,6 @@
-/* Button and Icon Button */
+/* Button */
 
-.ui-button,
-.ui-icon-button {
+.ui-button {
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -27,11 +26,6 @@
     border-color 0.1s;
 }
 
-.ui-icon-button {
-  width: 32px;
-  padding: 0;
-}
-
 .ui-button[data-size='xs'] {
   min-height: 22px;
   padding: 0 6px;
@@ -47,77 +41,62 @@
   padding: 0 16px;
   font-size: 14px;
 }
-.ui-icon-button[data-size='xs'] {
-  width: 22px;
-  min-height: 22px;
-}
-.ui-icon-button[data-size='sm'] {
-  width: 26px;
-  min-height: 26px;
-}
-.ui-icon-button[data-size='lg'] {
-  width: 38px;
-  min-height: 38px;
-}
 
-:is(.ui-button, .ui-icon-button)[data-hovered] {
+.ui-button[data-hovered] {
   background: color-mix(in srgb, var(--ref-surface), var(--ref-text) 6%);
 }
-:is(.ui-button, .ui-icon-button)[data-pressed] {
+.ui-button[data-pressed] {
   background: color-mix(in srgb, var(--ref-surface), var(--ref-text) 12%);
 }
-:is(.ui-button, .ui-icon-button)[data-focus-visible] {
+.ui-button[data-focus-visible] {
   box-shadow:
     0 0 0 2px var(--ref-canvas),
     0 0 0 4px var(--ref-focus);
 }
-:is(.ui-button, .ui-icon-button)[data-selected] {
+.ui-button[data-selected] {
   background: var(--ref-selected);
   border-color: var(--ref-accent);
 }
 
-:is(.ui-button, .ui-icon-button):is([data-variant='primary'], [data-variant='accent']) {
+.ui-button:is([data-variant='primary'], [data-variant='accent']) {
   background: var(--ref-accent);
   border-color: var(--ref-accent);
   color: var(--ref-accent-text);
 }
-:is(.ui-button, .ui-icon-button)[data-variant='accent'] {
+.ui-button[data-variant='accent'] {
   background: var(--ref-success-fill);
   border-color: var(--ref-success-fill);
 }
-:is(.ui-button, .ui-icon-button):is(
-    [data-variant='primary'],
-    [data-variant='accent']
-  )[data-hovered] {
+.ui-button:is([data-variant='primary'], [data-variant='accent'])[data-hovered] {
   filter: brightness(1.08);
 }
-:is(.ui-button, .ui-icon-button)[data-variant='tertiary'] {
+.ui-button[data-variant='tertiary'] {
   background: transparent;
   color: var(--ref-accent-ink);
 }
-:is(.ui-button, .ui-icon-button)[data-variant='danger'] {
+.ui-button[data-variant='danger'] {
   border-color: var(--ref-danger);
   color: var(--ref-danger);
 }
-:is(.ui-button, .ui-icon-button)[data-variant='danger'][data-hovered] {
+.ui-button[data-variant='danger'][data-hovered] {
   background: var(--ref-danger);
   color: var(--ref-accent-text);
 }
-:is(.ui-button, .ui-icon-button)[data-variant='ghost'] {
+.ui-button[data-variant='ghost'] {
   border-color: transparent;
   background: transparent;
 }
-:is(.ui-button, .ui-icon-button)[data-variant='ghost']:is([data-hovered], [data-selected]) {
+.ui-button[data-variant='ghost']:is([data-hovered], [data-selected]) {
   background: var(--ref-hover);
 }
-:is(.ui-button, .ui-icon-button)[data-variant='chip'] {
+.ui-button[data-variant='chip'] {
   min-height: 22px;
   padding: 0 8px;
   border-radius: 999px;
   font-size: 12px;
   font-weight: 400;
 }
-:is(.ui-button, .ui-icon-button)[data-variant='link'] {
+.ui-button[data-variant='link'] {
   min-height: 0;
   padding: 0;
   border: 0;
@@ -125,10 +104,10 @@
   color: var(--ref-accent-ink);
   font-weight: inherit;
 }
-:is(.ui-button, .ui-icon-button)[data-variant='link']:is([data-hovered], [data-focus-visible]) {
+.ui-button[data-variant='link']:is([data-hovered], [data-focus-visible]) {
   text-decoration: underline;
 }
-:is(.ui-button, .ui-icon-button)[data-variant='bare'] {
+.ui-button[data-variant='bare'] {
   min-height: 0;
   padding: 0;
   border: 0;
@@ -137,7 +116,7 @@
   font-weight: inherit;
 }
 
-:is(.ui-button, .ui-icon-button):is([data-disabled], [data-pending]) {
+.ui-button:is([data-disabled], [data-pending]) {
   opacity: 0.55;
   cursor: not-allowed;
   filter: none;
@@ -164,13 +143,11 @@
   overflow: visible;
 }
 .ui-button__start-icon,
-.ui-button__end-icon,
-.ui-icon-button__icon {
+.ui-button__end-icon {
   flex: none;
 }
 
-.ui-button__spinner,
-.ui-icon-button__spinner {
+.ui-button__spinner {
   width: 12px;
   height: 12px;
   border: 2px solid currentColor;

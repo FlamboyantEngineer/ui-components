@@ -36,7 +36,7 @@ Verification: `src/components/expand-toggle/expand-toggle.test.tsx`, `e2e/expand
 
 With `isExpandable={false}` the toggle shall render an empty `<span>` carrying the same root class, `data-leaf` and `data-size`, hidden from assistive technology, and no button, so the stylesheet gives it the toggle's box.
 
-Implementation: `src/components/expand-toggle/expand-toggle.tsx`, `labs/reference.css`
+Implementation: `src/components/expand-toggle/expand-toggle.tsx`, `labs/reference/expand-toggle.css`
 Verification: `src/components/expand-toggle/expand-toggle.test.tsx`, `e2e/expand-toggle.spec.ts`
 
 ### UIC-EXPAND-TOGGLE-1.6 - Size, hooks and caller attributes

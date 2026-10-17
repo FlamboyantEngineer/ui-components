@@ -1,13 +1,13 @@
-import { isValidElement, type ReactNode, type Ref } from 'react';
+import type { ReactNode } from 'react';
 import {
   Button as AriaButton,
   ProgressBar,
   type ButtonProps as AriaButtonProps,
 } from 'react-aria-components';
-import type { GlyphName } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
+import type { BaseProps, NativeProps, Size } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { Icon } from '../icon/icon.js';
+import { Icon, toIconProps, type IconSource } from '../icon/icon.js';
 
 export type ButtonVariant =
   | 'primary'
@@ -20,33 +20,33 @@ export type ButtonVariant =
   | 'link'
   | 'bare';
 
-export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg';
+export type ButtonSize = Extract<Size, 'xs' | 'sm' | 'md' | 'lg'>;
 
 /** `label` wraps children in one label slot; `parts` lays them out directly; `sentence` lets a prose label wrap. */
 export type ButtonContent = 'label' | 'parts' | 'sentence';
 
 export type ButtonAlign = 'center' | 'start';
 
-export interface ButtonProps extends Omit<
-  AriaButtonProps,
-  'className' | 'style' | 'children' | 'render'
-> {
+export interface ButtonProps
+  extends
+    Omit<AriaButtonProps, 'className' | 'style' | 'children' | 'render'>,
+    Pick<NativeProps<'button'>, 'ref' | 'role' | 'aria-checked' | 'aria-selected'>,
+    BaseProps {
   /** Emphasis and chrome. Defaults to `secondary`. */
   variant?: ButtonVariant | undefined;
   /** Block size. Defaults to `md`. */
   size?: ButtonSize | undefined;
+  /** The label, or the parts of the content with `content="parts"`. */
   children?: ReactNode;
+  /** How the children are laid out. Defaults to `label`. */
   content?: ButtonContent | undefined;
   /** Where content sits on the button's width. Defaults to `center`. */
   align?: ButtonAlign | undefined;
-  /** A built-in glyph name or icon node before the label. Replaced by the spinner while pending. */
-  startIcon?: GlyphName | ReactNode;
-  /** A built-in glyph name or icon node after the label. Hidden while pending. */
-  endIcon?: GlyphName | ReactNode;
-  /**
-   * The button is the current choice. Publishes `data-selected` and, unless the caller states toggle
-   * semantics itself (`aria-pressed`, `aria-checked` or a `role`), `aria-pressed="true"`.
-   */
+  /** An icon before the label. Replaced by the spinner while pending. */
+  startIcon?: IconSource;
+  /** An icon after the label. Hidden while pending. */
+  endIcon?: IconSource;
+  /** The current choice: `data-selected`, and `aria-pressed` unless the caller states toggle semantics. */
   isSelected?: boolean | undefined;
   /** Names the busy indicator while pending. Defaults to the provider's `loading` string. */
   pendingLabel?: string | undefined;
@@ -54,30 +54,32 @@ export interface ButtonProps extends Omit<
   focusableWhenDisabled?: boolean | undefined;
   /** Take the full width of the container. */
   fullWidth?: boolean | undefined;
-  role?: string | undefined;
-  'aria-checked'?: boolean | 'true' | 'false' | 'mixed' | undefined;
-  'aria-selected'?: boolean | 'true' | 'false' | undefined;
-  className?: string | undefined;
-  ref?: Ref<HTMLButtonElement> | undefined;
-  [data: `data-${string}`]: string | number | boolean | undefined;
 }
+
+export interface ButtonSpinnerProps extends Pick<BaseProps, 'className'> {
+  /** Names the busy indicator. Defaults to the provider's `loading` string. */
+  label?: string | undefined;
+}
+
+/** The props of the states Button shares with IconButton. */
+type ButtonStateProps = Omit<
+  ButtonProps,
+  'variant' | 'size' | 'children' | 'content' | 'align' | 'startIcon' | 'endIcon' | 'fullWidth'
+>;
+
+type ButtonPartsProps = Pick<
+  ButtonProps,
+  'children' | 'content' | 'startIcon' | 'endIcon' | 'isPending' | 'pendingLabel'
+>;
 
 const hooks = createHooks('button', ['spinner', 'start-icon', 'label', 'end-icon']);
 
-function isGlyphName(icon: unknown): icon is GlyphName {
-  return typeof icon === 'string' && !isValidElement(icon);
-}
-
 /**
- * Attributes React Aria's Button does not forward (a `role` and its states) and the `data-disabled`
- * of a focusable disabled button, applied through its `render` hook.
+ * Applies what React Aria's Button does not forward (a `role` and its states) and the `data-disabled`
+ * of a focusable disabled button, through its `render` hook.
  */
-export function domPassThrough(
-  attributes: {
-    role?: string | undefined;
-    'aria-checked'?: ButtonProps['aria-checked'];
-    'aria-selected'?: ButtonProps['aria-selected'];
-  },
+function renderPassThrough(
+  attributes: Pick<ButtonProps, 'role' | 'aria-checked' | 'aria-selected'>,
   focusableDisabled: boolean,
 ): Pick<AriaButtonProps, 'render'> {
   const extra: Record<string, unknown> = Object.fromEntries(
@@ -88,32 +90,71 @@ export function domPassThrough(
   return { render: (props) => <button {...props} {...extra} /> };
 }
 
+/**
+ * React Aria Button props for the states Button and IconButton share: a focusable disabled button
+ * stays in the focus order but refuses activation and never submits, and `isSelected` adds
+ * `aria-pressed` unless the caller states toggle semantics with `aria-pressed`, `aria-checked` or a
+ * `role`.
+ */
+export function toAriaButtonProps({
+  isSelected = false,
+  isDisabled = false,
+  focusableWhenDisabled = false,
+  pendingLabel: _pendingLabel,
+  type = 'button',
+  onPress,
+  role,
+  'aria-checked': ariaChecked,
+  'aria-selected': ariaSelected,
+  ...rest
+}: ButtonStateProps): AriaButtonProps & Pick<NativeProps<'button'>, 'ref'> {
+  const focusableDisabled = isDisabled && focusableWhenDisabled;
+  const statesToggle =
+    rest['aria-pressed'] !== undefined || ariaChecked !== undefined || role !== undefined;
+  return {
+    ...rest,
+    type: focusableDisabled ? 'button' : type,
+    isDisabled: isDisabled && !focusableWhenDisabled,
+    onPress: focusableDisabled ? undefined : onPress,
+    ...(isSelected && !statesToggle ? { 'aria-pressed': true } : {}),
+    ...(focusableDisabled ? { 'aria-disabled': true } : {}),
+    ...renderPassThrough(
+      { role, 'aria-checked': ariaChecked, 'aria-selected': ariaSelected },
+      focusableDisabled,
+    ),
+  };
+}
+
 /** The busy indicator of a pending button: an indeterminate progress bar React Aria announces. */
-export function ButtonSpinner({
-  className,
-  label,
-}: {
-  className: string;
-  label?: string | undefined;
-}) {
+export function ButtonSpinner({ className, label }: ButtonSpinnerProps) {
   const strings = useUiStrings();
   return (
     <ProgressBar isIndeterminate aria-label={label ?? strings.loading} className={className} />
   );
 }
 
-/** Renders a glyph name or icon node as a decorative icon in a button slot. */
-export function ButtonIcon({
-  icon,
-  className,
-}: {
-  icon: GlyphName | ReactNode;
-  className: string;
-}) {
-  return isGlyphName(icon) ? (
-    <Icon glyph={icon} className={className} />
-  ) : (
-    <Icon className={className}>{icon}</Icon>
+/** The spinner while pending, else the icons, around the label. */
+function ButtonParts({
+  children,
+  content,
+  startIcon,
+  endIcon,
+  isPending,
+  pendingLabel,
+}: ButtonPartsProps) {
+  return (
+    <>
+      {isPending ? (
+        <ButtonSpinner className={hooks.slotClass('spinner')} label={pendingLabel} />
+      ) : null}
+      {!isPending && startIcon ? (
+        <Icon {...toIconProps(startIcon)} className={hooks.slotClass('start-icon')} />
+      ) : null}
+      {content === 'parts' ? children : <span {...hooks.slot('label')}>{children}</span>}
+      {!isPending && endIcon ? (
+        <Icon {...toIconProps(endIcon)} className={hooks.slotClass('end-icon')} />
+      ) : null}
+    </>
   );
 }
 
@@ -126,61 +167,28 @@ export function Button({
   align = 'center',
   startIcon,
   endIcon,
-  isSelected = false,
-  isDisabled = false,
-  isPending = false,
-  pendingLabel,
-  focusableWhenDisabled = false,
   fullWidth = false,
   className,
-  onPress,
-  type = 'button',
-  role,
-  'aria-checked': ariaChecked,
-  'aria-selected': ariaSelected,
   ...rest
 }: ButtonProps) {
-  const focusableDisabled = isDisabled && focusableWhenDisabled;
-  const statesToggle =
-    rest['aria-pressed'] !== undefined || ariaChecked !== undefined || role !== undefined;
-  const label = content === 'parts' ? children : <span {...hooks.slot('label')}>{children}</span>;
-
   return (
     <AriaButton
-      {...rest}
+      {...toAriaButtonProps(rest)}
       {...hooks.root({
         className,
         props: rest,
-        data: {
-          variant,
-          size,
-          content,
-          align,
-          selected: isSelected,
-          fullWidth,
-        },
+        data: { variant, size, content, align, selected: rest.isSelected, fullWidth },
       })}
-      type={focusableDisabled ? 'button' : type}
-      isDisabled={isDisabled && !focusableWhenDisabled}
-      isPending={isPending}
-      onPress={focusableDisabled ? undefined : onPress}
-      {...(isSelected && !statesToggle ? { 'aria-pressed': true } : {})}
-      {...(focusableDisabled ? { 'aria-disabled': true } : {})}
-      {...domPassThrough(
-        { role, 'aria-checked': ariaChecked, 'aria-selected': ariaSelected },
-        focusableDisabled,
-      )}
     >
-      {isPending ? (
-        <ButtonSpinner className={hooks.slotClass('spinner')} label={pendingLabel} />
-      ) : null}
-      {!isPending && startIcon ? (
-        <ButtonIcon icon={startIcon} className={hooks.slotClass('start-icon')} />
-      ) : null}
-      {label}
-      {!isPending && endIcon ? (
-        <ButtonIcon icon={endIcon} className={hooks.slotClass('end-icon')} />
-      ) : null}
+      <ButtonParts
+        content={content}
+        startIcon={startIcon}
+        endIcon={endIcon}
+        isPending={rest.isPending}
+        pendingLabel={rest.pendingLabel}
+      >
+        {children}
+      </ButtonParts>
     </AriaButton>
   );
 }

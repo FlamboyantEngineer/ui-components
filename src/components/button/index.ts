@@ -1,4 +1,4 @@
-export { Button, ButtonIcon } from './button.js';
+export { Button } from './button.js';
 export type {
   ButtonAlign,
   ButtonContent,

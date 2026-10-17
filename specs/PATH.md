@@ -38,19 +38,19 @@ Verification: `src/components/path/path.test.tsx`, `e2e/path.spec.ts`
 
 The root shall be one line that inherits the host's font and colour. The reference sheet clips an overflowing path at its start with an ellipsis, keeping the final label visible, and lets it shrink beside sibling actions in a row; a path that fits is not clipped.
 
-Implementation: `src/components/path/path.tsx`, `labs/reference.css`
+Implementation: `src/components/path/path.tsx`, `labs/reference/path.css`
 Verification: `e2e/path.spec.ts`
 
 ### UIC-PATH-2.3 - Visibility and announcements
 
-`hidden` shall hide the path with the native `hidden` attribute. `live` (`polite` or `assertive`) shall announce changes to the path; by default it is quiet.
+`hidden` shall hide the path with the native `hidden` attribute. The path is quiet by default; a caller's `aria-live` (`polite` or `assertive`) announces changes to it.
 
 Implementation: `src/components/path/path.tsx`
 Verification: `src/components/path/path.test.tsx`
 
 ### UIC-PATH-2.4 - Hooks and caller attributes
 
-`Path` shall carry the hooks below, append the caller's `className`, and forward caller `data-*` attributes and `id` to its root.
+`Path` shall carry the hooks below, append the caller's `className`, and forward caller `data-*` attributes, `id`, `ref` and the other native `<span>` attributes to its root.
 
 Implementation: `src/components/path/path.tsx`
 Verification: `src/components/path/path.test.tsx`

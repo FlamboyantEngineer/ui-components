@@ -15,14 +15,14 @@ Verification: `src/components/icon-button/icon-button.test.tsx`, `e2e/icon-butto
 
 `variant` (Button's variants, `ghost` by default) and `size` (`xs`, `sm`, `md` by default, `lg`) shall publish `data-variant` and `data-size`. The reference sheet draws square 22, 26, 32 and 38 pixel boxes.
 
-Implementation: `src/components/icon-button/icon-button.tsx`, `labs/reference.css`
+Implementation: `src/components/icon-button/icon-button.tsx`, `labs/reference/icon-button.css`
 Verification: `src/components/icon-button/icon-button.test.tsx`, `e2e/icon-button.spec.ts`
 
 ### UIC-ICON-BUTTON-1.3 - States
 
-`IconButton` shall offer Button's states with the same semantics: `isDisabled` with optional `focusableWhenDisabled`, `isPending` (an indeterminate progress bar named by `pendingLabel` replaces the icon in the `ui-icon-button__spinner` slot), `isSelected` with toggle semantics, and React Aria's interaction states.
+`IconButton` shall offer Button's states with the same semantics, through the same React Aria wiring: `isDisabled` with optional `focusableWhenDisabled`, `isPending` (an indeterminate progress bar named by `pendingLabel` replaces the icon in the `ui-icon-button__spinner` slot), `isSelected` with toggle semantics, and React Aria's interaction states.
 
-Implementation: `src/components/icon-button/icon-button.tsx`
+Implementation: `src/components/icon-button/icon-button.tsx`, `src/components/button/button.tsx`
 Verification: `src/components/icon-button/icon-button.test.tsx`, `e2e/icon-button.spec.ts`
 
 ### UIC-ICON-BUTTON-1.4 - Hooks and caller attributes

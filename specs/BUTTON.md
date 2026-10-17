@@ -15,21 +15,21 @@ Verification: `src/components/button/button.test.tsx`, `e2e/button.spec.ts`
 
 `variant` shall publish `data-variant`: `secondary` (the default, a neutral command), `primary` (the one action a surface is for), `tertiary` (low emphasis), `danger` (destructive), `ghost` (no resting fill, for dense rows and toolbars), `accent` (a highlighted creation action), `chip` (a compact bordered token among many), `link` (reads as a link in running text) or `bare` (no chrome; the host surface styles it).
 
-Implementation: `src/components/button/button.tsx`, `labs/reference.css`
+Implementation: `src/components/button/button.tsx`, `labs/reference/button.css`
 Verification: `src/components/button/button.test.tsx`, `e2e/button.spec.ts`
 
 ### UIC-BUTTON-1.3 - Sizes
 
 `size` shall publish `data-size`: `xs`, `sm`, `md` (the default) or `lg`. The reference sheet draws 22, 26, 32 and 38 pixel blocks.
 
-Implementation: `src/components/button/button.tsx`, `labs/reference.css`
+Implementation: `src/components/button/button.tsx`, `labs/reference/button.css`
 Verification: `src/components/button/button.test.tsx`, `e2e/button.spec.ts`
 
 ### UIC-BUTTON-1.4 - Content and alignment
 
 By default (`content="label"`) the children shall sit in one `ui-button__label` slot. With `content="parts"` they sit directly in the button so the caller lays out its own parts; with `content="sentence"` a prose label may wrap. `content`, `align` (`center` by default, or `start` for scannable rows) and `fullWidth` publish `data-content`, `data-align` and `data-full-width`.
 
-Implementation: `src/components/button/button.tsx`, `labs/reference.css`
+Implementation: `src/components/button/button.tsx`, `labs/reference/button.css`
 Verification: `src/components/button/button.test.tsx`
 
 ### UIC-BUTTON-1.5 - Icons

@@ -8,11 +8,11 @@ import { IconButton } from '../icon-button/icon-button.js';
 import {
   ZoomControl,
   defaultZoomLevels,
-  nearestZoomLevelIndex,
-  nextZoomLevel,
+  findNearestZoomLevelIndex,
+  findNextZoomLevel,
 } from './zoom-control.js';
 
-const LEVELS = [50, 75, 100, 125, 150];
+const levels = [50, 75, 100, 125, 150];
 
 function slider() {
   return screen.getByRole('slider', { name: 'Zoom level' });
@@ -24,7 +24,7 @@ function value(container: HTMLElement) {
 
 describe('ZoomControl', () => {
   it('UIC-ZOOM-CONTROL-1.1 orders zoom out, slider, zoom in and value in a named group', () => {
-    const { container } = render(<ZoomControl levels={LEVELS} defaultValue={100} />);
+    const { container } = render(<ZoomControl levels={levels} defaultValue={100} />);
     const group = screen.getByRole('group', { name: 'Zoom' });
     expect(Array.from(group.children, (child) => child.className.split(' ').at(-1))).toEqual([
       'ui-zoom-control__zoom-out',
@@ -89,21 +89,21 @@ describe('ZoomControl', () => {
 
   it('UIC-ZOOM-CONTROL-1.3 steps to the neighbouring level, also from a value between levels', async () => {
     const onChange = vi.fn();
-    render(<ZoomControl levels={LEVELS} value={137.5} onChange={onChange} />);
+    render(<ZoomControl levels={levels} value={137.5} onChange={onChange} />);
     await userEvent.click(screen.getByRole('button', { name: 'Zoom in' }));
     await userEvent.click(screen.getByRole('button', { name: 'Zoom out' }));
     expect(onChange.mock.calls).toEqual([[150], [125]]);
-    expect(nextZoomLevel(LEVELS, 100, 1)).toBe(125);
-    expect(nextZoomLevel(LEVELS, 100, -1)).toBe(75);
-    expect(nextZoomLevel(LEVELS, 150, 1)).toBeUndefined();
-    expect(nextZoomLevel(LEVELS, 50, -1)).toBeUndefined();
-    expect(nextZoomLevel(LEVELS, 10, 1)).toBe(50);
+    expect(findNextZoomLevel(levels, 100, 1)).toBe(125);
+    expect(findNextZoomLevel(levels, 100, -1)).toBe(75);
+    expect(findNextZoomLevel(levels, 150, 1)).toBeUndefined();
+    expect(findNextZoomLevel(levels, 50, -1)).toBeUndefined();
+    expect(findNextZoomLevel(levels, 10, 1)).toBe(50);
   });
 
   it('UIC-ZOOM-CONTROL-1.3 disables a step at the last level but keeps it focusable', async () => {
     function Controlled() {
       const [zoom, setZoom] = useState(125);
-      return <ZoomControl levels={LEVELS} value={zoom} onChange={setZoom} />;
+      return <ZoomControl levels={levels} value={zoom} onChange={setZoom} />;
     }
     const { container } = render(<Controlled />);
     const zoomIn = screen.getByRole('button', { name: 'Zoom in' });
@@ -120,9 +120,9 @@ describe('ZoomControl', () => {
     expectHooksMatchSpec(container, 'ZOOM-CONTROL');
 
     for (const index of [0, 2, 4]) {
-      const level = LEVELS[index] as number;
+      const level = levels[index] as number;
       const { container: control, unmount } = render(
-        <ZoomControl levels={LEVELS} value={level} aria-label={`At ${level}`} />,
+        <ZoomControl levels={levels} value={level} aria-label={`At ${level}`} />,
       );
       const out = control.querySelector('.ui-zoom-control__zoom-out');
       const into = control.querySelector('.ui-zoom-control__zoom-in');
@@ -134,7 +134,7 @@ describe('ZoomControl', () => {
 
   it('UIC-ZOOM-CONTROL-1.4 is a native range over the level indices that requests the chosen level', () => {
     const onChange = vi.fn();
-    render(<ZoomControl levels={LEVELS} value={137.5} onChange={onChange} />);
+    render(<ZoomControl levels={levels} value={137.5} onChange={onChange} />);
     const range = slider();
     expect(range.tagName).toBe('INPUT');
     expect(range).toHaveAttribute('type', 'range');
@@ -145,13 +145,13 @@ describe('ZoomControl', () => {
     expect(range).toHaveAttribute('aria-valuetext', '137.5%');
     fireEvent.change(range, { target: { value: '0' } });
     expect(onChange).toHaveBeenLastCalledWith(50);
-    expect(nearestZoomLevelIndex(LEVELS, 87.5)).toBe(1);
-    expect(nearestZoomLevelIndex(LEVELS, 90)).toBe(2);
-    expect(nearestZoomLevelIndex(LEVELS, 1000)).toBe(4);
+    expect(findNearestZoomLevelIndex(levels, 87.5)).toBe(1);
+    expect(findNearestZoomLevelIndex(levels, 90)).toBe(2);
+    expect(findNearestZoomLevelIndex(levels, 1000)).toBe(4);
   });
 
   it('UIC-ZOOM-CONTROL-1.5 shows the percentage without rounding and keeps the value node mounted', () => {
-    const { container, rerender } = render(<ZoomControl levels={LEVELS} value={0} />);
+    const { container, rerender } = render(<ZoomControl levels={levels} value={0} />);
     const output = value(container);
     expect(output?.tagName).toBe('OUTPUT');
     expect(output).toHaveAttribute('for', slider().id);
@@ -162,15 +162,15 @@ describe('ZoomControl', () => {
       [33.333, '33.333%'],
       [1000, '1,000%'],
     ] as const) {
-      rerender(<ZoomControl levels={LEVELS} value={zoom} />);
+      rerender(<ZoomControl levels={levels} value={zoom} />);
       expect(value(container)).toBe(output);
       expect(output).toHaveTextContent(text);
     }
-    rerender(<ZoomControl levels={LEVELS} value={1000} formatOptions={{ useGrouping: false }} />);
+    rerender(<ZoomControl levels={levels} value={1000} formatOptions={{ useGrouping: false }} />);
     expect(output).toHaveTextContent('1000%');
     rerender(
       <UiProvider locale="fr-FR">
-        <ZoomControl levels={LEVELS} value={137.5} />
+        <ZoomControl levels={levels} value={137.5} />
       </UiProvider>,
     );
     expect(value(container)?.textContent).toMatch(/^137,5\s%$/u);
@@ -178,23 +178,23 @@ describe('ZoomControl', () => {
 
   it('UIC-ZOOM-CONTROL-1.6 resets to the reset value and disables reset there', async () => {
     const onChange = vi.fn();
-    const { container, rerender } = render(<ZoomControl levels={LEVELS} value={150} />);
+    const { container, rerender } = render(<ZoomControl levels={levels} value={150} />);
     expect(container.querySelector('.ui-zoom-control__reset')).toBeNull();
-    rerender(<ZoomControl levels={LEVELS} value={150} resetValue={100} onChange={onChange} />);
+    rerender(<ZoomControl levels={levels} value={150} resetValue={100} onChange={onChange} />);
     const reset = screen.getByRole('button', { name: 'Reset zoom' });
     expect(reset).toHaveClass('ui-icon-button', 'ui-zoom-control__reset');
     expect(reset.querySelector('[data-glyph]')).toHaveAttribute('data-glyph', 'restore');
     expect(screen.getByRole('group').lastElementChild).toBe(reset);
     await userEvent.click(reset);
     expect(onChange).toHaveBeenLastCalledWith(100);
-    rerender(<ZoomControl levels={LEVELS} value={100} resetValue={100} onChange={onChange} />);
+    rerender(<ZoomControl levels={levels} value={100} resetValue={100} onChange={onChange} />);
     expect(reset).toHaveAttribute('aria-disabled', 'true');
     expectHooksMatchSpec(container, 'ZOOM-CONTROL', { slots: 'all' });
   });
 
   it('UIC-ZOOM-CONTROL-1.7 disables the slider and built-in buttons', () => {
     const { container } = render(
-      <ZoomControl levels={LEVELS} value={100} resetValue={50} isDisabled />,
+      <ZoomControl levels={levels} value={100} resetValue={50} isDisabled />,
     );
     expect(container.firstElementChild).toHaveAttribute('data-disabled', 'true');
     expect(slider()).toBeDisabled();
@@ -207,7 +207,7 @@ describe('ZoomControl', () => {
   it('UIC-ZOOM-CONTROL-1.8 puts caller step buttons in the built-in positions', () => {
     const { container } = render(
       <ZoomControl
-        levels={LEVELS}
+        levels={levels}
         value={100}
         zoomOutButton={<IconButton icon="minus" label="Shrink" id="shrink" />}
         zoomInButton={<IconButton icon="plus" label="Grow" id="grow" />}

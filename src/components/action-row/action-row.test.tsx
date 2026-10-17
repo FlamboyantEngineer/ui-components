@@ -252,7 +252,12 @@ describe('ActionRow', () => {
     expect(container.querySelector('.ui-action-row__actions')).toBeNull();
     expect(container.querySelector('.ui-action-row__lead')).toHaveTextContent('Working');
 
+    rerender(<ActionRow lead="" actions={[{ verb: 'refresh', onPress: noop }]} />);
+    expect(container.querySelector('.ui-action-row__lead')).toBeNull();
+
     rerender(<ActionRow actions={[]} />);
+    expect(container).toBeEmptyDOMElement();
+    rerender(<ActionRow lead={false} actions={[]} />);
     expect(container).toBeEmptyDOMElement();
   });
 
