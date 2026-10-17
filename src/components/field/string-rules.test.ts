@@ -1,12 +1,27 @@
 import { describe, expect, it } from 'vitest';
 import { defaultStrings } from '../../core/strings.js';
-import { validateString } from './string-rules.js';
+import { countCodePoints, validateString } from './string-rules.js';
 
 describe('validateString', () => {
+  it('UIC-FIELD-7.4 names the broken rule and counts length with getLength', () => {
+    expect(validateString('abcd', { maxLength: 3 }, defaultStrings)?.validity).toBe('tooLong');
+    expect(validateString('a1', { pattern: /[a-z]+/ }, defaultStrings)?.validity).toBe(
+      'patternMismatch',
+    );
+    const family = '\u{1F468}\u200D\u{1F469}\u200D\u{1F467}';
+    expect(countCodePoints(family)).toBe(5);
+    expect(validateString(family, { maxLength: 1 }, defaultStrings)?.validity).toBe('tooLong');
+    const segmenter = new Intl.Segmenter('en', { granularity: 'grapheme' });
+    const getLength = (text: string) => [...segmenter.segment(text)].length;
+    expect(validateString(family, { maxLength: 1, getLength }, defaultStrings)).toBeNull();
+    expect(validateString('ab', { minLength: 3, getLength: () => 3 }, defaultStrings)).toBeNull();
+  });
+
   it('UIC-FIELD-7.1 reports texts outside the length range, counting characters', () => {
     expect(validateString('ab', { minLength: 3 }, defaultStrings)).toEqual({
       severity: 'error',
       message: 'Use at least 3 characters.',
+      validity: 'tooShort',
     });
     expect(validateString('abcd', { maxLength: 3 }, defaultStrings)?.message).toBe(
       'Use 3 characters or fewer.',

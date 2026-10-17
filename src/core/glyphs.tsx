@@ -25,6 +25,8 @@ import {
   ExclamationCircleIcon,
   ExclamationTriangleIcon,
   EyeDropperIcon,
+  EyeIcon,
+  EyeSlashIcon,
   FolderIcon,
   InformationCircleIcon,
   MagnifyingGlassIcon,
@@ -96,6 +98,9 @@ export const defaultGlyphs = {
   'fit-width': ArrowsRightLeftIcon,
   'fit-page': DocumentIcon,
   'eye-dropper': EyeDropperIcon,
+  eye: EyeIcon,
+  'eye-slash': EyeSlashIcon,
+  scrub: ArrowsRightLeftIcon,
 } satisfies Record<string, GlyphComponent>;
 
 export const glyphNames = Object.keys(defaultGlyphs) as GlyphName[];

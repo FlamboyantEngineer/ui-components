@@ -42,7 +42,6 @@ export function BooleanField({
   falseLabel,
   unsetLabel,
   allowsUnset = false,
-  name,
   ...props
 }: BooleanFieldProps) {
   const strings = useUiStrings();
@@ -67,7 +66,7 @@ export function BooleanField({
           label={field.label}
           labels={labels}
           allowsUnset={allowsUnset}
-          name={name}
+          name={props.name}
         />
       )}
     </Field>

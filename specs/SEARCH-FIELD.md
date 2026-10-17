@@ -1,6 +1,6 @@
 # Search Field
 
-`SearchField` is a search or filter box on React Aria's `SearchField`: a search glyph, the query input and a clear button while it holds text. The query filters or finds; it is not a stored value, so the search box has no field around it (no label layout, dirty state or field menu). A value that is stored is a [Text Field](TEXT-FIELD.md); text completed from suggestions the control shows is a [Combobox](COMBOBOX.md).
+`SearchField` is a search or filter box on React Aria's `SearchField`: a search glyph, the query input, a spinner while results load and a clear button while it holds text. The query filters or finds; it is not a stored value, so the search box has no field around it (no dirty state, undo or field menu), but it can draw its label, a description and an error message around the box. A value that is stored is a [Text Field](TEXT-FIELD.md); text completed from suggestions the control shows is a [Combobox](COMBOBOX.md).
 
 ## UIC-SEARCH-FIELD-1 - Contract
 
@@ -39,20 +39,51 @@ Verification: `src/components/search-field/search-field.test.tsx`, `e2e/search-f
 Implementation: `src/components/search-field/search-field.tsx`
 Verification: `src/components/search-field/search-field.test.tsx`
 
+## UIC-SEARCH-FIELD-2 - Label, messages and loading
+
+### UIC-SEARCH-FIELD-2.1 - Label layout
+
+`labelLayout` shall publish `data-label-layout`. In the `control-only` layout (the default) the root is the box, and `label` names the input through `aria-label`. In the `label-control` layout the root holds React Aria's label (`ui-search-field__label`, a `<label>` that names the input), then a group (`ui-search-field__group`, role `presentation`) around the glyph, the input, the spinner and the clear button, which the reference sheet frames as the box, then the description and the error message.
+
+Implementation: `src/components/search-field/search-field.tsx`, `labs/reference/search-field.css`
+Verification: `src/components/search-field/search-field.test.tsx`, `e2e/search-field.spec.ts`
+
+### UIC-SEARCH-FIELD-2.2 - Description and error message
+
+In the `label-control` layout, `description` shall render below the box in React Aria's description (`ui-search-field__description`), which describes the input, and React Aria's field error (`ui-search-field__error`) shall show while the query is invalid: `errorMessage` (text, or a function of the validation), or else the messages of React Aria's `validate`. The error message describes the input after the description.
+
+Implementation: `src/components/search-field/search-field.tsx`
+Verification: `src/components/search-field/search-field.test.tsx`, `e2e/search-field.spec.ts`
+
+### UIC-SEARCH-FIELD-2.3 - Busy indicator
+
+While `isPending`, the box shall publish `data-pending` on its root and show an indeterminate progress bar (`ui-search-field__spinner`, named by the provider string `loading`) after the input, before the clear button. The query stays editable.
+
+Implementation: `src/components/search-field/search-field.tsx`, `src/components/button/button.tsx`, `labs/reference/search-field.css`
+Verification: `src/components/search-field/search-field.test.tsx`, `e2e/search-field.spec.ts`
+
 ## Hooks
 
-| Hook                     | Kind      | Values     | Description                                               |
-| ------------------------ | --------- | ---------- | --------------------------------------------------------- |
-| `ui-search-field`        | root      |            | The search box (`<div>`).                                 |
-| `ui-search-field__glyph` | slot      |            | The search glyph (also `ui-glyph`).                       |
-| `ui-search-field__input` | slot      |            | The `<input type="search">`.                              |
-| `ui-search-field__clear` | slot      |            | The clear button (also `ui-icon-button`, or `ui-button`). |
-| `data-size`              | attribute | `sm`, `md` | On the root: box size.                                    |
-| `data-empty`             | state     | `true`     | On the root: the query is empty (React Aria).             |
-| `data-disabled`          | state     | `true`     | On the root and the input: disabled (React Aria).         |
-| `data-readonly`          | state     | `true`     | On the root: read-only (React Aria).                      |
-| `data-invalid`           | state     | `true`     | On the root and the input: invalid (React Aria).          |
-| `data-required`          | state     | `true`     | On the root: a query is required (React Aria).            |
-| `data-hovered`           | state     | `true`     | On the input: under the pointer (React Aria).             |
-| `data-focused`           | state     | `true`     | On the input: focused (React Aria).                       |
-| `data-focus-visible`     | state     | `true`     | On the input: focused from the keyboard (React Aria).     |
+| Hook                           | Kind      | Values                          | Description                                                         |
+| ------------------------------ | --------- | ------------------------------- | ------------------------------------------------------------------- |
+| `ui-search-field`              | root      |                                 | The search box (`<div>`).                                           |
+| `ui-search-field__label`       | slot      |                                 | The visible `<label>` of the `label-control` layout.                |
+| `ui-search-field__group`       | slot      |                                 | The box of the `label-control` layout.                              |
+| `ui-search-field__glyph`       | slot      |                                 | The search glyph (also `ui-glyph`).                                 |
+| `ui-search-field__input`       | slot      |                                 | The `<input type="search">`.                                        |
+| `ui-search-field__spinner`     | slot      |                                 | The busy indicator.                                                 |
+| `ui-search-field__clear`       | slot      |                                 | The clear button (also `ui-icon-button`, or `ui-button`).           |
+| `ui-search-field__description` | slot      |                                 | The description of the `label-control` layout.                      |
+| `ui-search-field__error`       | slot      |                                 | The error message of the `label-control` layout.                    |
+| `data-size`                    | attribute | `sm`, `md`                      | On the root: box size.                                              |
+| `data-label-layout`            | attribute | `control-only`, `label-control` | On the root: where the label sits.                                  |
+| `data-pending`                 | state     | `true`                          | On the root: results are loading.                                   |
+| `data-empty`                   | state     | `true`                          | On the root: the query is empty (React Aria).                       |
+| `data-disabled`                | state     | `true`                          | On the root, the group and the input: disabled (React Aria).        |
+| `data-readonly`                | state     | `true`                          | On the root: read-only (React Aria).                                |
+| `data-invalid`                 | state     | `true`                          | On the root, the group and the input: invalid (React Aria).         |
+| `data-required`                | state     | `true`                          | On the root: a query is required (React Aria).                      |
+| `data-hovered`                 | state     | `true`                          | On the group and the input: under the pointer (React Aria).         |
+| `data-focus-within`            | state     | `true`                          | On the group: focus is inside it (React Aria).                      |
+| `data-focused`                 | state     | `true`                          | On the input: focused (React Aria).                                 |
+| `data-focus-visible`           | state     | `true`                          | On the group and the input: focused from the keyboard (React Aria). |

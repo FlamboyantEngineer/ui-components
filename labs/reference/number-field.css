@@ -97,3 +97,48 @@
   border-style: dashed;
   background: var(--ref-surface);
 }
+
+/* The scrub handle drags sideways; literal affixes sit beside the number. */
+.ui-number-field__scrubber {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  color: var(--ref-muted);
+  cursor: ew-resize;
+}
+
+.ui-number-field__scrubber .ui-glyph {
+  width: 14px;
+  height: 14px;
+}
+
+.ui-number-field:is([data-readonly], [data-disabled]) .ui-number-field__scrubber {
+  cursor: default;
+}
+
+.ui-number-field__start,
+.ui-number-field__end {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  color: var(--ref-muted);
+  font-size: 12px;
+}
+
+.ui-number-field__start {
+  padding-inline-start: 8px;
+}
+
+.ui-number-field__end {
+  padding-inline-end: 8px;
+}
+
+.ui-number-field__start + .ui-number-field__input {
+  padding-inline-start: 4px;
+}
+
+.ui-number-field__input:has(+ .ui-number-field__end) {
+  padding-inline-end: 4px;
+}
