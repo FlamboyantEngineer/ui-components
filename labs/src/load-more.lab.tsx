@@ -204,9 +204,9 @@ mountLab(
     </LabSection>
     <LabSection
       title="Loading ahead"
-      description="With scrollOffset={1}, the last eight cities are requested once the control is within one frame height below the visible area, before it scrolls into view."
+      description="With scrollOffset={0.5}, the last eight cities are requested once the control is within half a frame height below the visible area, before it scrolls into view."
     >
-      <EndlessList demo="ahead" scrollOffset={1} initial={cityPage * 2} />
+      <EndlessList demo="ahead" scrollOffset={0.5} initial={cityPage * 2} />
     </LabSection>
   </>,
 );

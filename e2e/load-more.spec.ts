@@ -110,7 +110,7 @@ test.describe('Load More lab', () => {
       return control.getBoundingClientRect().top - node.getBoundingClientRect().bottom;
     });
     expect(gap).toBeGreaterThan(0);
-    expect(gap).toBeLessThan(160);
+    expect(gap).toBeLessThan(80);
     await expect(button).toHaveAttribute('data-pending', 'true');
     await expect(button).not.toBeInViewport();
     await demo.locator('[data-lab-action="deliver-cities"]').click();

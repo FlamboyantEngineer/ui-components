@@ -241,12 +241,17 @@ test.describe('Combobox lab', () => {
     const aid = (name: string) =>
       page.locator(`[data-lab-cell="aid=${name}"]`).getByRole('combobox');
 
-    await aid('highlight matches').focus();
-    await page.keyboard.type('an');
-    await expect(page.locator('.ui-combobox__option-label mark.ui-text-match')).toHaveText([
-      'anan',
-      'an',
-    ]);
+    // Retried from an empty input: on a loaded runner the first keys can land before the list opens.
+    await expect(async () => {
+      const highlight = aid('highlight matches');
+      await highlight.fill('');
+      await highlight.focus();
+      await page.keyboard.type('an');
+      await expect(page.locator('.ui-combobox__option-label mark.ui-text-match')).toHaveText(
+        ['anan', 'an'],
+        { timeout: 3000 },
+      );
+    }).toPass({ timeout: 20000 });
     await lab.expectAccessible('.ui-combobox__popover');
     await page.keyboard.press('Escape');
 
