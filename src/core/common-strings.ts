@@ -56,6 +56,8 @@ export interface CommonStrings {
   morePeople: (count: number, names: readonly string[]) => string;
   /** Spoken name of a keyboard key or modifier (`↑` → `Up Arrow`); other keys are read as written. */
   shortcutKeyName: (key: string) => string;
+  /** Joins the readable chords of a key sequence (`G, then I`). */
+  shortcutSequence: (steps: readonly string[]) => string;
   retry: string;
   loadMore: string;
   remainingCount: (count: number) => string;
@@ -133,6 +135,7 @@ export const commonStrings: CommonStrings = {
   morePeople: (count, names) =>
     `${count === 1 ? '1 more person' : `${count} more people`}${names.length > 0 ? `: ${names.join(', ')}` : ''}`,
   shortcutKeyName: (key) => spokenKeyNames[key] ?? key,
+  shortcutSequence: (steps) => steps.join(', then '),
   retry: 'Retry',
   loadMore: 'Load more',
   remainingCount: (count) => `${count} remaining`,

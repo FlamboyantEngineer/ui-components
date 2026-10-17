@@ -1,2 +1,8 @@
 export { ProseTable } from './prose-table.js';
-export type { ProseTableCell, ProseTableProps, ProseTableRow } from './prose-table.js';
+export type {
+  ProseTableAlign,
+  ProseTableCell,
+  ProseTableColumn,
+  ProseTableProps,
+  ProseTableRow,
+} from './prose-table.js';

@@ -51,13 +51,36 @@ test.describe('Shortcut lab', () => {
     await lab.open('shortcut');
     const legend = page.locator('[data-lab-cell="platform=windows"] .ui-key-hints');
     await expect(legend).toHaveClass(/ui-meta-line/);
-    await expect(legend.locator('.ui-key-hints__hint')).toHaveCount(3);
-    await expect(legend.locator('.ui-meta-line__separator')).toHaveCount(2);
+    await expect(legend.locator('.ui-key-hints__hint')).toHaveCount(4);
+    await expect(legend.locator('.ui-meta-line__separator')).toHaveCount(3);
     const lineHeight = await legend.evaluate((node) =>
       Number.parseFloat(getComputedStyle(node.parentElement as Element).lineHeight),
     );
     const box = await legend.boundingBox();
     expect(box?.height ?? 0).toBeLessThan(lineHeight * 1.8);
     expect(await legend.ariaSnapshot()).toContain('Up Arrow');
+  });
+
+  test('UIC-SHORTCUT-2.4 draws a key sequence chord by chord', async ({ page, lab }) => {
+    await lab.open('shortcut');
+    for (const [platform, text] of [
+      ['mac', '⌘K ⌘C'],
+      ['windows', 'Ctrl+K Ctrl+C'],
+    ] as const) {
+      const cell = page.locator(`[data-lab-cell="sequence=Ctrl+K Ctrl+C platform=${platform}"]`);
+      await expect(cell.locator('.ui-shortcut__keys')).toHaveText(text);
+      const chords = cell.locator('.ui-shortcut__chord');
+      await expect(chords).toHaveCount(2);
+      const [first, second] = await chords.evaluateAll((nodes) =>
+        nodes.map((node) => node.getBoundingClientRect().toJSON() as DOMRect),
+      );
+      expect(Math.round(first!.top)).toBe(Math.round(second!.top));
+      expect(second!.left - first!.right).toBeGreaterThanOrEqual(4);
+    }
+    const snapshot = await page
+      .locator('[data-lab-cell="sequence=G I platform=linux"]')
+      .ariaSnapshot();
+    expect(snapshot).toContain('G, then I');
+    await lab.expectAccessible();
   });
 });

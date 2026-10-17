@@ -1,5 +1,5 @@
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { act, fireEvent, render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { IconLabel } from './icon-label.js';
 
@@ -41,6 +41,33 @@ describe('IconLabel', () => {
     expect(root).toHaveAttribute('data-collapsible', 'true');
     expect(root).toHaveTextContent(text);
     expectHooksMatchSpec(container, 'ICON-LABEL');
+  });
+
+  it('UIC-ICON-LABEL-1.6 shows a cut label whole in a tooltip', async () => {
+    vi.useFakeTimers();
+    try {
+      const text = 'A long label that the stylesheet cuts';
+      const { container } = render(<IconLabel icon="info" label={text} truncate />);
+      const label = container.querySelector<HTMLElement>('.ui-icon-label__label')!;
+      expect(label).toHaveClass('ui-truncation-tooltip');
+      Object.defineProperty(label, 'clientWidth', { configurable: true, value: 80 });
+      Object.defineProperty(label, 'scrollWidth', { configurable: true, value: 240 });
+      fireEvent.pointerEnter(label, { pointerType: 'mouse' });
+      await act(async () => {
+        vi.advanceTimersByTime(500);
+      });
+      expect(document.querySelector('[role="tooltip"]')).toHaveTextContent(text);
+      expectHooksMatchSpec(container, 'ICON-LABEL', { slots: ['icon', 'label'] });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('UIC-ICON-LABEL-1.6 keeps a plain label without truncate', () => {
+    const { container } = render(<IconLabel icon="info" label="Short" />);
+    expect(container.querySelector('.ui-icon-label__label')).not.toHaveClass(
+      'ui-truncation-tooltip',
+    );
   });
 
   it('UIC-ICON-LABEL-1.4 hides the whole label or only its text, and announces when asked', () => {

@@ -1,10 +1,18 @@
 import type { HTMLAttributes, ReactNode } from 'react';
+import { useLocale } from 'react-aria-components';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import {
+  formatDescriptionValue,
+  type DescriptionFormatOptions,
+  type DescriptionValue,
+} from './format-description-value.js';
 
 export type DescriptionListLayout = 'inline' | 'stacked';
-export type DescriptionListColumns = 1 | 2;
+export type DescriptionListColumns = 1 | 2 | 3 | 4;
+/** How many of the list's columns a row covers; `full` covers the whole line. */
+export type DescriptionRowSpan = DescriptionListColumns | 'full';
 
 export interface DescriptionListProps
   extends
@@ -14,7 +22,7 @@ export interface DescriptionListProps
   children?: ReactNode;
   /** `inline` puts labels and values on shared tracks; `stacked` puts values below labels. Defaults to `inline`. */
   layout?: DescriptionListLayout | undefined;
-  /** How many columns of rows the stylesheet may lay out. Defaults to 1. */
+  /** How many columns of rows the stylesheet may lay out, from 1 to 4. Defaults to 1. */
   columns?: DescriptionListColumns | undefined;
 }
 
@@ -36,8 +44,14 @@ export interface DescriptionRowProps extends BaseProps, RowAttributes {
   label: ReactNode;
   /** The value. Zero and empty values are shown as given. */
   children?: ReactNode;
+  /** A value to format for the provider's locale, shown when there are no children. */
+  value?: DescriptionValue | undefined;
+  /** `Intl` options for formatting `value` as a number, a date or a list. */
+  formatOptions?: DescriptionFormatOptions | undefined;
   /** A second definition below the value. Nullish, boolean and empty-string values add none. */
   secondary?: ReactNode;
+  /** How many of the list's columns the row covers. Defaults to 1. */
+  span?: DescriptionRowSpan | undefined;
 }
 
 const hooks = createHooks('description-list', ['row', 'label', 'value', 'secondary']);
@@ -61,14 +75,22 @@ export function DescriptionList({
 export function DescriptionRow({
   label,
   children,
+  value,
+  formatOptions,
   secondary,
+  span = 1,
   className,
   ...rest
 }: DescriptionRowProps) {
+  const { locale } = useLocale();
+  const shown =
+    children === undefined && value !== undefined
+      ? formatDescriptionValue(value, { locale, formatOptions })
+      : children;
   return (
-    <div {...rest} {...hooks.slot('row', undefined, className)}>
+    <div {...rest} {...hooks.slot('row', { span }, className)}>
       <dt {...hooks.slot('label')}>{label}</dt>
-      <dd {...hooks.slot('value')}>{children}</dd>
+      <dd {...hooks.slot('value')}>{shown}</dd>
       {isEmptyNode(secondary) ? null : <dd {...hooks.slot('secondary')}>{secondary}</dd>}
     </div>
   );

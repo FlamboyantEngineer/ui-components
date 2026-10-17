@@ -38,6 +38,17 @@ test.describe('Icon lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-ICON-1.5 sizes an inherited icon from the surrounding font', async ({ page, lab }) => {
+    await lab.open('icon');
+    for (const fontSize of [12, 16, 24]) {
+      const icon = page.locator(`[data-lab-cell="fontSize=${fontSize} glyph=info"] .ui-icon`);
+      await expect(icon).toHaveAttribute('data-size', 'inherit');
+      const box = await icon.boundingBox();
+      expect(box?.width).toBe(fontSize);
+      expect(box?.height).toBe(fontSize);
+    }
+  });
+
   test('UIC-ICON-1.2 renders unstyled without errors', async ({ page, lab }) => {
     await lab.open('icon', { stylesheet: 'none' });
     await expect(page.locator('.ui-icon').first()).toBeVisible();

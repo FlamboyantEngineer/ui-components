@@ -21,6 +21,11 @@ const legend = [
   { keys: ['Enter'], action: 'select' },
   { keys: ['Escape'], action: 'close' },
 ];
+const sequences = {
+  'G I': ['G', 'I'],
+  'Ctrl+K Ctrl+C': ['Ctrl+K', 'Ctrl+C'],
+  'Ctrl+K Shift+↑': ['Ctrl+K', 'Shift+↑'],
+} as const;
 
 mountLab(
   <>
@@ -44,10 +49,29 @@ mountLab(
         )}
       />
     </LabSection>
+    <LabSection
+      title="Key sequences"
+      description="Chords pressed one after another, drawn chord by chord and read as G, then I."
+    >
+      <StateMatrix
+        axes={{
+          sequence: Object.keys(sequences) as Array<keyof typeof sequences>,
+          platform: platforms,
+        }}
+        render={({ sequence, platform }) => (
+          <Shortcut chord={sequences[sequence]} platform={platform} />
+        )}
+      />
+    </LabSection>
     <LabSection title="Key legends" description="Hints of keys and actions on one metadata line.">
       <StateMatrix
         axes={{ platform: platforms }}
-        render={({ platform }) => <KeyHints hints={legend} platform={platform} />}
+        render={({ platform }) => (
+          <KeyHints
+            hints={[...legend, { keys: [sequences['G I']], action: 'go to inbox' }]}
+            platform={platform}
+          />
+        )}
       />
     </LabSection>
     <LabSection

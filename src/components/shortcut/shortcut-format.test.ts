@@ -107,6 +107,41 @@ describe('shortcut formatting', () => {
   });
 });
 
+describe('key sequences', () => {
+  it('UIC-SHORTCUT-1.7 formats a sequence of chords in each notation and as words', () => {
+    expect(formatShortcut(['G', 'I'], 'linux')).toBe('G I');
+    expect(formatShortcut(['Ctrl+K', 'Ctrl+C'], 'mac')).toBe('⌘K ⌘C');
+    expect(formatShortcut(['Ctrl+K', { key: 'C', modifiers: ['shift'] }], 'windows')).toBe(
+      'Ctrl+K Shift+C',
+    );
+    expect(formatShortcutAccessibleText(['G', 'I'], { platform: 'linux' })).toBe('G, then I');
+    expect(formatShortcutAccessibleText(['Ctrl+K', 'Ctrl+C'], { platform: 'mac' })).toBe(
+      'Command K, then Command C',
+    );
+    expect(
+      formatShortcutAccessibleText(['G', 'I'], {
+        platform: 'linux',
+        sequence: (steps) => steps.join(' puis '),
+      }),
+    ).toBe('G puis I');
+  });
+
+  it('UIC-SHORTCUT-1.7 skips empty chords and reads a one-chord sequence as the chord', () => {
+    expect(formatShortcut(['G', '', { key: '' }, 'I'], 'linux')).toBe('G I');
+    expect(formatShortcut(['Ctrl+K'], 'linux')).toBe('Ctrl+K');
+    expect(formatShortcut([], 'linux')).toBe('');
+    expect(formatShortcutAccessibleText(['', 'Ctrl+K'], { platform: 'linux' })).toBe('Control K');
+    expect(formatShortcutAccessibleText([], { platform: 'linux' })).toBe('');
+  });
+
+  it('UIC-SHORTCUT-1.7 puts sequences in tooltip and description text', () => {
+    expect(formatShortcutTooltip('Go to inbox', ['G', 'I'], 'linux')).toBe('Go to inbox (G I)');
+    expect(formatShortcutDescription('Opens the inbox', ['G', 'I'], { platform: 'linux' })).toBe(
+      'Opens the inbox. G, then I',
+    );
+  });
+});
+
 describe('platform detection', () => {
   it('UIC-SHORTCUT-1.4 prefers the client hint, then the platform, then the user agent', () => {
     const cases: Array<[Parameters<typeof detectShortcutPlatform>[0], string]> = [
