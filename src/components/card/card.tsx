@@ -3,7 +3,11 @@ import { DEFAULT_SLOT, HeadingContext, Provider } from 'react-aria-components';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps } from '../../core/props.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
-import type { HeadingLevel } from '../section-header/section-header.js';
+import {
+  HeadingLevelContext,
+  useHeadingLevel,
+  type HeadingLevel,
+} from '../section-header/section-header.js';
 
 /** `default`: content on the page. `panel`: a chrome region on a muted surface. */
 export type CardVariant = 'default' | 'panel';
@@ -25,7 +29,7 @@ export interface CardProps
   description?: ReactNode;
   /** Trailing controls or status in the header. */
   actions?: ReactNode;
-  /** The title's heading level. Defaults to 3. */
+  /** The title's heading level. Defaults to one below the enclosing section's, else 3. */
   headingLevel?: HeadingLevel | undefined;
   /**
    * Custom header content, in place of the title, description and actions. A React Aria `Heading`
@@ -131,7 +135,7 @@ export function Card({
   title,
   description,
   actions,
-  headingLevel = 3,
+  headingLevel,
   header,
   children,
   footer,
@@ -144,6 +148,7 @@ export function Card({
   ...rest
 }: CardProps) {
   const titleId = useId();
+  const level = useHeadingLevel(headingLevel);
   const [slottedTitle, setSlottedTitle] = useState<HTMLElement | null>(null);
   const data = { variant, density, selected: isSelected, interactive, flush, fill, fullWidth };
   const labelledBy = toLabelledBy(
@@ -158,11 +163,17 @@ export function Card({
         title={title}
         description={description}
         actions={actions}
-        headingLevel={headingLevel}
+        headingLevel={level}
         titleId={titleId}
         titleRef={setSlottedTitle}
       />
-      <div {...hooks.slot('body')}>{children}</div>
+      <div {...hooks.slot('body')}>
+        {isEmptyNode(title) ? (
+          children
+        ) : (
+          <HeadingLevelContext value={level}>{children}</HeadingLevelContext>
+        )}
+      </div>
       {isEmptyNode(footer) ? null : <footer {...hooks.slot('footer')}>{footer}</footer>}
     </section>
   );

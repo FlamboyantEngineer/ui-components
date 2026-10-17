@@ -102,4 +102,50 @@ test.describe('Section Header lab', () => {
       await lab.expectAccessible();
     });
   }
+
+  test('UIC-SECTION-HEADER-2.1 steps nested headings down from the host level', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('section-header');
+    const nested = page.locator('[data-lab-nested]');
+    for (const [name, level] of [
+      ['Garden', 2],
+      ['Orchard', 3],
+      ['Apples', 4],
+      ['Pears', 4],
+      ['Conference', 5],
+    ] as const) {
+      await expect(nested.getByRole('heading', { name, level, exact: true })).toBeVisible();
+    }
+  });
+
+  test('UIC-SECTION-HEADER-2.2 toggles a collapsible section by pointer and keyboard', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('section-header');
+    const section = page.locator('[data-lab-collapsible="expanded 420"]');
+    const trigger = section.getByRole('button', { name: 'Vineyard, expanded 420' });
+    const content = section.getByText('Merlot, Syrah and Grenache.');
+    await expect(section).toHaveRole('region');
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    await expect(content).toBeVisible();
+    await section.getByRole('button', { name: 'Add city' }).click();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    await trigger.click();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await expect(content).toBeHidden();
+    await expect(section).not.toHaveAttribute('data-expanded');
+    await trigger.focus();
+    await page.keyboard.press('Enter');
+    await expect(content).toBeVisible();
+    await page.keyboard.press('Space');
+    await expect(content).toBeHidden();
+
+    const collapsed = page.locator('[data-lab-collapsible="collapsed 220"]');
+    await expect(collapsed.getByText('Merlot, Syrah and Grenache.')).toBeHidden();
+    expect(await collapsed.evaluate((node) => node.scrollWidth <= node.clientWidth)).toBe(true);
+    await lab.expectAccessible();
+  });
 });

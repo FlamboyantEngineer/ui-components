@@ -13,7 +13,7 @@ Verification: `src/components/card/card.test.tsx`, `e2e/card.spec.ts`
 
 ### UIC-CARD-1.2 - Title block
 
-The header shall hold the `title` as a heading (level 3 unless `headingLevel` chooses 1 to 6) in the `ui-card__title` slot and the `description` in the `ui-card__description` slot, both inside a `ui-card__heading` group, followed by `actions` in the `ui-card__actions` slot. Empty values (`undefined`, `null`, `false` or `""`) render no slot. `header` replaces the title block and actions with the caller's own content.
+The header shall hold the `title` as a heading (the level `headingLevel` chooses, 1 to 6, else the automatic level of [Section Header](SECTION-HEADER.md#uic-section-header-21---automatic-heading-levels)) in the `ui-card__title` slot and the `description` in the `ui-card__description` slot, both inside a `ui-card__heading` group, followed by `actions` in the `ui-card__actions` slot. Empty values (`undefined`, `null`, `false` or `""`) render no slot. `header` replaces the title block and actions with the caller's own content.
 
 Implementation: `src/components/card/card.tsx`
 Verification: `src/components/card/card.test.tsx`, `e2e/card.spec.ts`
