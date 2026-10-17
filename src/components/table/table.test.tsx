@@ -137,11 +137,11 @@ describe('Table', { timeout: 15_000 }, () => {
     expect(root).toHaveClass('ui-table', 'caller');
     expect(root).toHaveAttribute('id', 'fruit-table');
     expect(root).toHaveAttribute('data-testid', 'probe');
-    expect(root).toHaveAttribute('data-density', 'regular');
+    expect(root).toHaveAttribute('data-size', 'md');
     expect(screen.getByRole('grid')).toHaveAttribute('aria-describedby', 'fruit-help');
     expect(screen.getByRole('grid')).not.toHaveAttribute('data-testid');
-    rerender(<Table aria-label="Fruit" rows={fruit} columns={columns} density="compact" />);
-    expect(container.firstElementChild).toHaveAttribute('data-density', 'compact');
+    rerender(<Table aria-label="Fruit" rows={fruit} columns={columns} size="sm" />);
+    expect(container.firstElementChild).toHaveAttribute('data-size', 'sm');
     expectHooksMatchSpec(container, 'TABLE');
   });
 

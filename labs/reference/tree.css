@@ -25,11 +25,11 @@
   outline: none;
 }
 
-.ui-tree[data-density='normal'] .ui-tree__item {
+.ui-tree[data-size='md'] .ui-tree__item {
   padding-block: 4px;
 }
 
-.ui-tree[data-density='spaced'] .ui-tree__item {
+.ui-tree[data-size='lg'] .ui-tree__item {
   padding-block: 7px;
 }
 
@@ -79,7 +79,6 @@
   outline-color: transparent;
 }
 
-.ui-tree__drag-handle,
 .ui-tree__expand {
   display: inline-flex;
   flex: none;
@@ -95,21 +94,12 @@
   outline: none;
 }
 
-.ui-tree__drag-handle {
-  cursor: grab;
-}
-
 .ui-tree__drag-handle[data-disabled] {
   visibility: hidden;
 }
 
-.ui-tree__expand[data-hovered],
-.ui-tree__drag-handle[data-focus-visible] {
+.ui-tree__expand[data-hovered] {
   background: var(--ref-hover);
-}
-
-.ui-tree__drag-handle[data-focus-visible] {
-  box-shadow: 0 0 0 2px var(--ref-focus);
 }
 
 .ui-tree__expand-spacer {
@@ -154,25 +144,14 @@
   padding-inline-start: calc((var(--ui-tree-level, 1) - 1) * var(--ref-tree-indent) + 24px);
 }
 
-.ui-tree__loader,
-.ui-tree__empty {
+.ui-tree__loader .ui-empty-state,
+.ui-tree .ui-tree__empty {
   display: flex;
   align-items: center;
   gap: 6px;
   min-height: 26px;
-  color: var(--ref-muted);
 }
 
-.ui-tree__empty {
+.ui-tree .ui-tree__empty {
   padding-inline: 6px;
-  font-style: italic;
-}
-
-.ui-tree__spinner {
-  width: 10px;
-  height: 10px;
-  border: 2px solid currentColor;
-  border-right-color: transparent;
-  border-radius: 50%;
-  animation: ref-spin 0.8s linear infinite;
 }

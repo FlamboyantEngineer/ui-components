@@ -6,7 +6,7 @@ import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { createMemoryStorage } from '../../core/storage.js';
 import { IconButton } from '../icon-button/icon-button.js';
-import { Tree, type TreeProps } from './tree.js';
+import { Tree, type TreeItemState, type TreeProps } from './tree.js';
 
 interface Food {
   id: string;
@@ -107,6 +107,35 @@ describe('Tree', () => {
     });
   });
 
+  it('UIC-TREE-1.2 passes each row state to the render callbacks', () => {
+    const states = new Map<string, TreeItemState>();
+    render(
+      <FoodTree
+        defaultExpandedKeys={['fruit']}
+        selectionMode="single"
+        defaultSelectedKeys={['apple']}
+        disabledKeys={['pear']}
+        isItemCurrent={(item) => item.id === 'nuts'}
+        renderMeta={(item, state) => {
+          states.set(item.id, state);
+          return null;
+        }}
+      />,
+    );
+    expect(states.get('fruit')).toEqual({
+      isExpanded: true,
+      hasChildItems: true,
+      level: 1,
+      isSelected: false,
+      isDisabled: false,
+      isFocusVisible: false,
+      isCurrent: false,
+    });
+    expect(states.get('apple')).toMatchObject({ level: 2, isSelected: true, hasChildItems: false });
+    expect(states.get('pear')).toMatchObject({ isDisabled: true });
+    expect(states.get('nuts')).toMatchObject({ isCurrent: true, isExpanded: false });
+  });
+
   it('UIC-TREE-1.3 draws chevrons or plus and minus as expand glyphs', () => {
     const { container, rerender } = render(<FoodTree defaultExpandedKeys={['fruit']} />);
     const glyphs = () =>
@@ -158,13 +187,9 @@ describe('Tree', () => {
   });
 
   it('UIC-TREE-2.2 offers expansion for children that are not loaded yet, with a loading row', async () => {
-    vi.stubGlobal(
-      'IntersectionObserver',
-      class {
-        observe() {}
-        disconnect() {}
-      },
-    );
+    vi.stubGlobal('IntersectionObserver', function createObserver() {
+      return { observe() {}, disconnect() {} };
+    });
     const user = userEvent.setup();
     const onExpandedChange = vi.fn();
     const { container, rerender } = render(
@@ -185,8 +210,9 @@ describe('Tree', () => {
     const loader = container.querySelector('.ui-tree__loader') as HTMLElement;
     expect(loader).toHaveAttribute('role', 'row');
     expect(loader).toHaveTextContent('Loading');
+    expect(within(loader).getByRole('status')).toHaveClass('ui-empty-state');
     expect(loader.style.getPropertyValue('--ui-tree-level')).toBe('2');
-    expectHooksMatchSpec(container, 'TREE', { slots: ['loader', 'spinner'] });
+    expectHooksMatchSpec(container, 'TREE', { slots: ['loader'] });
     vi.unstubAllGlobals();
   });
 
@@ -370,10 +396,11 @@ describe('Tree', () => {
     expect(tree).toHaveAttribute('aria-busy', 'true');
     expect(tree).toHaveAttribute('data-pending', 'true');
     const empty = container.querySelector('.ui-tree__empty');
-    expect(empty).toHaveAttribute('data-pending', 'true');
+    expect(empty).toHaveClass('ui-empty-state');
+    expect(empty).toHaveAttribute('data-variant', 'loading');
+    expect(empty).toHaveAttribute('role', 'status');
     expect(empty).toHaveTextContent('Loading');
-    expect(empty?.querySelector('.ui-tree__spinner')).toHaveAttribute('aria-hidden', 'true');
-    expectHooksMatchSpec(container, 'TREE', { slots: ['empty', 'spinner'] });
+    expectHooksMatchSpec(container, 'TREE', { slots: ['empty'] });
 
     rerender(<FoodTree isPending />);
     expect(screen.getByRole('treegrid')).toHaveAttribute('aria-busy', 'true');
@@ -386,21 +413,21 @@ describe('Tree', () => {
     const { container, rerender } = render(<FoodTree items={[]} />);
     expect(screen.getByRole('treegrid')).toHaveAttribute('data-empty', 'true');
     expect(container.querySelector('.ui-tree__empty')).toBeNull();
-    rerender(<FoodTree items={[]} renderEmptyState={() => 'Nothing here'} />);
+    rerender(<FoodTree items={[]} emptyMessage="Nothing here" />);
     const empty = container.querySelector('.ui-tree__empty');
     expect(empty).toHaveTextContent('Nothing here');
-    expect(empty).not.toHaveAttribute('data-pending');
+    expect(empty).toHaveAttribute('data-variant', 'empty');
     expectHooksMatchSpec(container, 'TREE', { slots: ['empty'] });
   });
 
-  it('UIC-TREE-4.3 publishes density, variant and wrap', () => {
+  it('UIC-TREE-4.3 publishes size, variant and wrap', () => {
     const { container, rerender } = render(<FoodTree />);
     const tree = screen.getByRole('treegrid');
-    expect(tree).toHaveAttribute('data-density', 'compact');
+    expect(tree).toHaveAttribute('data-size', 'sm');
     expect(tree).toHaveAttribute('data-variant', 'default');
     expect(tree).not.toHaveAttribute('data-wrap');
-    rerender(<FoodTree density="spaced" variant="picker" wrap />);
-    expect(tree).toHaveAttribute('data-density', 'spaced');
+    rerender(<FoodTree size="lg" variant="picker" wrap />);
+    expect(tree).toHaveAttribute('data-size', 'lg');
     expect(tree).toHaveAttribute('data-variant', 'picker');
     expect(tree).toHaveAttribute('data-wrap', 'true');
     expectHooksMatchSpec(container, 'TREE');
@@ -419,7 +446,7 @@ describe('Tree', () => {
           id="food"
           ref={ref}
           data-testid="tree"
-          data-density="x"
+          data-size="x"
         />
       );
     }
@@ -427,7 +454,7 @@ describe('Tree', () => {
     const tree = screen.getByTestId('tree');
     expect(tree).toHaveClass('ui-tree', 'caller');
     expect(tree).toHaveAttribute('id', 'food');
-    expect(tree).toHaveAttribute('data-density', 'compact');
+    expect(tree).toHaveAttribute('data-size', 'sm');
     expect(ref.current).toBe(tree);
     expectHooksMatchSpec(container, 'TREE');
   });

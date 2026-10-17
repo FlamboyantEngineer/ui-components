@@ -7,19 +7,19 @@ const names = (table: Locator) =>
 const width = async (locator: Locator) => Math.round((await locator.boundingBox())?.width ?? 0);
 
 test.describe('Table lab', () => {
-  test('UIC-TABLE-1.1 UIC-TABLE-1.3 UIC-TABLE-7.1 draws grids at two densities', async ({
+  test('UIC-TABLE-1.1 UIC-TABLE-1.3 UIC-TABLE-7.1 draws grids at two row sizes', async ({
     page,
     lab,
   }) => {
     await lab.open('table');
-    const regular = page.getByRole('grid', { name: 'Fruit, rows, regular' });
-    const compact = page.getByRole('grid', { name: 'Fruit, rows, compact' });
-    await expect(regular.getByRole('columnheader')).toHaveCount(4);
-    await expect(regular.getByRole('row')).toHaveCount(4);
+    const medium = page.getByRole('grid', { name: 'Fruit, rows, md' });
+    const small = page.getByRole('grid', { name: 'Fruit, rows, sm' });
+    await expect(medium.getByRole('columnheader')).toHaveCount(4);
+    await expect(medium.getByRole('row')).toHaveCount(4);
     const height = async (grid: Locator) =>
       (await grid.getByRole('row', { name: 'Apple' }).boundingBox())?.height;
-    expect(await height(regular)).toBe(40);
-    expect(await height(compact)).toBe(32);
+    expect(await height(medium)).toBe(40);
+    expect(await height(small)).toBe(32);
     await lab.expectAccessible();
   });
 

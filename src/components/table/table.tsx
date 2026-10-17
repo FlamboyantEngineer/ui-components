@@ -9,7 +9,7 @@ import {
   type TableProps as AriaTableProps,
 } from 'react-aria-components';
 import { splitDataAttributes } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, Size } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { TableColumnWidths } from './column-sizing.js';
 import { stateRowId, TableBody } from './table-body.js';
@@ -21,7 +21,7 @@ import { useColumnWidths } from './use-column-widths.js';
 import { useTableGrid, type TableGrid } from './use-table-grid.js';
 import type { TableReorderOptions } from './use-table-reorder.js';
 
-export type TableDensity = 'regular' | 'compact';
+export type TableSize = Extract<Size, 'sm' | 'md'>;
 
 export interface TableProps<T extends TableRow>
   extends
@@ -37,7 +37,9 @@ export interface TableProps<T extends TableRow>
       | 'dragAndDropHooks'
     >,
     BaseProps {
+  /** The data columns, in display order. */
   columns: readonly TableColumn<T>[];
+  /** The rows, each with an `id` unique in the table. */
   rows: readonly T[];
   /** Controlled sort. The caller supplies `rows` in that order; the header reports it. */
   sortDescriptor?: SortDescriptor | null | undefined;
@@ -49,8 +51,8 @@ export interface TableProps<T extends TableRow>
   filterable?: boolean | undefined;
   /** The search box's name. Defaults to the provider's `filterRows` string. */
   filterLabel?: string | undefined;
-  /** Replaces the rows with a loading notice. */
-  isLoading?: boolean | undefined;
+  /** The rows are loading: a loading notice replaces them. */
+  isPending?: boolean | undefined;
   /** The loading notice. Defaults to the provider's `loading` string. */
   loadingMessage?: ReactNode;
   /** Replaces the rows with an error notice; wins over loading. */
@@ -69,17 +71,17 @@ export interface TableProps<T extends TableRow>
   persistKey?: string | undefined;
   /** Called once when a column resize ends, with the data columns' widths. */
   onColumnWidthsChange?: ((widths: TableColumnWidths) => void) | undefined;
-  /** Row spacing. Defaults to `regular`. */
-  density?: TableDensity | undefined;
+  /** Row size. Defaults to `md`. */
+  size?: TableSize | undefined;
   /** Keeps the header in view while the table scrolls. */
   stickyHeader?: boolean | undefined;
   /** Renders only the rows in view; the stylesheet must bound the scroll area's height. */
   virtualized?: boolean | undefined;
-  /** Row height in pixels for a virtualized table. Defaults to 40, or 32 when compact. */
+  /** Row height in pixels for a virtualized table. Defaults to 40, or 32 at size `sm`. */
   rowHeight?: number | undefined;
 }
 
-const virtualRowHeights: Readonly<Record<TableDensity, number>> = { regular: 40, compact: 32 };
+const virtualRowHeights: Readonly<Record<TableSize, number>> = { md: 40, sm: 32 };
 
 function TableGridElement<T extends TableRow>({ grid }: { grid: TableGrid<T> }) {
   const { ariaProps, view, reorder, reordering, onRowAction, body } = grid;
@@ -105,29 +107,32 @@ function TableGridElement<T extends TableRow>({ grid }: { grid: TableGrid<T> }) 
  * sorting, filtering, selection, resizable columns, row reordering, loading, empty and error
  * notices, and optional virtualization for long lists.
  */
-export function Table<T extends TableRow>(props: TableProps<T>) {
-  const {
-    density = 'regular',
-    stickyHeader,
-    virtualized,
-    rowHeight,
-    filterable,
-    filterLabel,
-  } = props;
-  const { persistKey, onColumnWidthsChange, className, id, ...rest } = props;
+export function Table<T extends TableRow>({
+  size = 'md',
+  stickyHeader,
+  virtualized,
+  rowHeight,
+  filterable,
+  filterLabel,
+  persistKey,
+  onColumnWidthsChange,
+  className,
+  id,
+  ...rest
+}: TableProps<T>) {
   const strings = useUiStrings();
   const [query, setQuery] = useState('');
   const [dataAttributes, gridProps] = splitDataAttributes(rest);
-  const sizing = useColumnWidths({ columns: props.columns, persistKey, onColumnWidthsChange });
+  const sizing = useColumnWidths({ columns: rest.columns, persistKey, onColumnWidthsChange });
   const grid = useTableGrid({ ...gridProps, query, widths: sizing.widths });
-  const height = rowHeight ?? virtualRowHeights[density];
+  const height = rowHeight ?? virtualRowHeights[size];
   const element = <TableGridElement grid={grid} />;
   return (
     <div
       {...hooks.root({
         className,
         props: dataAttributes,
-        data: { density, stickyHeader, virtualized },
+        data: { size, stickyHeader, virtualized },
       })}
       id={id}
       aria-busy={grid.body.status === 'loading' || undefined}

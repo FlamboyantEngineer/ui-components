@@ -36,7 +36,7 @@ const stateRow = (container: HTMLElement) =>
 describe('Table notices', { timeout: 15_000 }, () => {
   it('UIC-TABLE-6.1 UIC-TABLE-6.2 replaces stale rows with a spanning loading notice', () => {
     const { container } = renderCities({
-      isLoading: true,
+      isPending: true,
       loadingMessage: 'Fetching cities',
       selectionMode: 'multiple',
       renderRowActions: () => null,
@@ -52,7 +52,7 @@ describe('Table notices', { timeout: 15_000 }, () => {
   });
 
   it('UIC-TABLE-6.2 reads the provider loading string by default', () => {
-    renderCities({ isLoading: true });
+    renderCities({ isPending: true });
     expect(screen.getByRole('status')).toHaveTextContent('Loading');
   });
 
@@ -78,7 +78,7 @@ describe('Table notices', { timeout: 15_000 }, () => {
     const onRowAction = vi.fn();
     const onSelectionChange = vi.fn();
     const { container } = renderCities({
-      isLoading: true,
+      isPending: true,
       errorMessage: 'Cities are unavailable',
       onRetry,
       onRowAction,
@@ -117,7 +117,7 @@ describe('Table notices', { timeout: 15_000 }, () => {
       columns: [],
       selectionMode: 'multiple',
       renderRowActions: () => null,
-      isLoading: true,
+      isPending: true,
     });
     expect(screen.getByRole('grid', { name: 'Cities' })).toBeInTheDocument();
     expect(screen.queryAllByRole('columnheader')).toHaveLength(0);

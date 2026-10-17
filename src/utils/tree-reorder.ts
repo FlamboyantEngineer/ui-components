@@ -9,19 +9,32 @@ export type TreeDropPosition = 'before' | 'after' | 'inside';
 
 /** One move: the row `key` takes the slot before or after `targetKey`, or goes inside it. */
 export interface TreeMove {
+  /** The moved row. */
   key: TreeKey;
+  /** The row the moved row lands beside or inside. */
   targetKey: TreeKey;
+  /** Where the moved row lands relative to the target. */
   position: TreeDropPosition;
 }
 
 /** The direction of a keyboard move: past a sibling, into the sibling above, or out of the parent. */
 export type TreeMoveDirection = 'up' | 'down' | 'in' | 'out';
 
+/** A keyboard chord on a row: which row, and which way it asks to move. */
+export interface TreeKeyboardMove {
+  /** The focused row. */
+  key: TreeKey;
+  /** The direction the chord asks for. */
+  direction: TreeMoveDirection;
+}
+
 /** A visible row as the move rules see it. */
 export interface TreeMoveRow<T> {
+  /** The row's key. */
   key: TreeKey;
   /** The parent row's key; `null` at the top level. */
   parentKey: TreeKey | null;
+  /** The caller's item. */
   item: T;
   /** Whether the row can be moved and can take a moved row right now. */
   isMovable: boolean;
@@ -40,7 +53,9 @@ export interface TreeMoveRules<T> {
 
 /** The minimal shape of nested tree data: a key and optional children of the same shape. */
 export interface TreeMoveItem<T> {
+  /** The item's key, unique in the tree. */
   id: TreeKey;
+  /** The item's children. */
   children?: readonly T[] | undefined;
 }
 
@@ -53,7 +68,108 @@ export interface VisibleTreeRowsOptions<T> {
   isMovable?: ((item: T) => boolean) | undefined;
 }
 
-function defaultChildren<T>(item: T): readonly T[] | undefined {
+type RowIndex<T> = ReadonlyMap<TreeKey, TreeMoveRow<T>>;
+
+/** A row placed beside or inside a target row. */
+interface Placement<T> {
+  source: TreeMoveRow<T>;
+  target: TreeMoveRow<T>;
+  position: TreeDropPosition;
+}
+
+function indexRows<T>(rows: readonly TreeMoveRow<T>[]): RowIndex<T> {
+  return new Map(rows.map((row) => [row.key, row]));
+}
+
+function findSiblings<T>(rows: readonly TreeMoveRow<T>[], row: TreeMoveRow<T>): TreeMoveRow<T>[] {
+  return rows.filter((entry) => entry.parentKey === row.parentKey);
+}
+
+/** Whether the row `key`, or one of its ancestors, is `ancestor`. */
+function isWithin<T>(index: RowIndex<T>, key: TreeKey | null, ancestor: TreeKey): boolean {
+  for (let current = key; current !== null; current = index.get(current)?.parentKey ?? null) {
+    if (current === ancestor) return true;
+  }
+  return false;
+}
+
+/** Whether a placement among the row's own siblings leaves it where it is. */
+function isSameSlot<T>(rows: readonly TreeMoveRow<T>[], placement: Placement<T>): boolean {
+  const { source, target, position } = placement;
+  if (position === 'inside') return true;
+  const siblings = findSiblings(rows, source);
+  const offset = siblings.indexOf(target) - siblings.indexOf(source);
+  return offset === (position === 'before' ? 1 : -1);
+}
+
+/** Whether the owner lets the row leave its siblings for `parentKey`'s children. */
+function canEnter<T>(
+  index: RowIndex<T>,
+  { source, parentKey }: { source: TreeMoveRow<T>; parentKey: TreeKey | null },
+  rules: TreeMoveRules<T>,
+): boolean {
+  const parent = parentKey === null ? null : index.get(parentKey);
+  if (parent === undefined || !rules.canMoveInto) return false;
+  return rules.canMoveInto(source.item, parent ? parent.item : null);
+}
+
+function findSiblingAbove<T>(rows: readonly TreeMoveRow<T>[], row: TreeMoveRow<T>) {
+  const siblings = findSiblings(rows, row);
+  return siblings[siblings.indexOf(row) - 1];
+}
+
+function findParent<T>(rows: readonly TreeMoveRow<T>[], row: TreeMoveRow<T>) {
+  return row.parentKey === null ? undefined : rows.find((entry) => entry.key === row.parentKey);
+}
+
+/** The move past the neighbouring movable sibling, or `null` at either end. */
+function resolveSiblingStep<T>(
+  rows: readonly TreeMoveRow<T>[],
+  row: TreeMoveRow<T>,
+  direction: 'up' | 'down',
+): TreeMove | null {
+  const movable = findSiblings(rows, row).filter((entry) => entry.isMovable);
+  const target = movable[movable.indexOf(row) + (direction === 'up' ? -1 : 1)];
+  if (!target) return null;
+  return { key: row.key, targetKey: target.key, position: direction === 'up' ? 'before' : 'after' };
+}
+
+function findItem<T extends TreeMoveItem<T>>(items: readonly T[], key: TreeKey): T | undefined {
+  for (const item of items) {
+    if (item.id === key) return item;
+    const found = item.children ? findItem(item.children, key) : undefined;
+    if (found) return found;
+  }
+  return undefined;
+}
+
+/**
+ * `items` with each item that `place` answers replaced by the items it returns, searching the
+ * children of the others. Subtrees with no replacement keep their identity.
+ */
+function replaceItems<T extends TreeMoveItem<T>>(
+  items: readonly T[],
+  place: (item: T) => readonly T[] | null,
+): readonly T[] {
+  let changed = false;
+  const next = items.flatMap((item) => {
+    const placed = place(item);
+    const children = placed || !item.children ? item.children : replaceItems(item.children, place);
+    if (!placed && children === item.children) return [item];
+    changed = true;
+    return placed ?? [{ ...item, children }];
+  });
+  return changed ? next : items;
+}
+
+function placeAround<T extends TreeMoveItem<T>>(target: T, moved: T, position: TreeDropPosition) {
+  if (position === 'before') return [moved, target];
+  if (position === 'after') return [target, moved];
+  return [{ ...target, children: [...(target.children ?? []), moved] }];
+}
+
+/** An item's `children` property, the children trees read by default. */
+export function readTreeChildren<T>(item: T): readonly T[] | undefined {
   return (item as TreeMoveItem<T>).children;
 }
 
@@ -62,7 +178,7 @@ export function getVisibleTreeRows<T extends { id: TreeKey }>(
   items: readonly T[],
   {
     expandedKeys,
-    getChildren = defaultChildren,
+    getChildren = readTreeChildren,
     isMovable = () => true,
   }: VisibleTreeRowsOptions<T>,
 ): TreeMoveRow<T>[] {
@@ -81,41 +197,26 @@ export function getVisibleTreeRows<T extends { id: TreeKey }>(
 }
 
 /**
- * The move that puts row `key` at `position` relative to `targetKey`, or `null` when it is not
- * allowed or changes nothing. Both rows must be movable. A row never lands inside or beside its own
- * descendants, inside the parent it is already in, or in the slot it already holds. A different
- * parent needs the owner's `canMoveInto`.
+ * `move`, or `null` when it is not allowed or changes nothing. Both rows must be movable. A row never
+ * lands inside or beside its own descendants, inside the parent it is already in, or in the slot it
+ * already holds. A different parent needs the owner's `canMoveInto`.
  */
 export function resolveTreeMove<T>(
   rows: readonly TreeMoveRow<T>[],
-  key: TreeKey,
-  targetKey: TreeKey,
-  position: TreeDropPosition,
+  move: TreeMove,
   rules: TreeMoveRules<T> = {},
 ): TreeMove | null {
-  const byKey = new Map(rows.map((row) => [row.key, row]));
-  const source = byKey.get(key);
-  const target = byKey.get(targetKey);
-  if (!source || !target || source === target || !source.isMovable || !target.isMovable) {
-    return null;
-  }
-  for (let ancestor = target.parentKey; ancestor !== null; ) {
-    if (ancestor === source.key) return null;
-    ancestor = byKey.get(ancestor)?.parentKey ?? null;
-  }
-  const parentKey = position === 'inside' ? target.key : target.parentKey;
-  if (parentKey === source.parentKey) {
-    if (position === 'inside') return null;
-    const siblings = rows.filter((row) => row.parentKey === source.parentKey);
-    const offset = siblings.indexOf(target) - siblings.indexOf(source);
-    if (offset === (position === 'before' ? 1 : -1)) return null;
-  } else {
-    const parent = parentKey === null ? null : byKey.get(parentKey);
-    if (parent === undefined || !rules.canMoveInto?.(source.item, parent ? parent.item : null)) {
-      return null;
-    }
-  }
-  return { key, targetKey, position };
+  const index = indexRows(rows);
+  const source = index.get(move.key);
+  const target = index.get(move.targetKey);
+  if (!source?.isMovable || !target?.isMovable || source === target) return null;
+  if (isWithin(index, target.parentKey, source.key)) return null;
+  const parentKey = move.position === 'inside' ? target.key : target.parentKey;
+  const isAllowed =
+    parentKey === source.parentKey
+      ? !isSameSlot(rows, { source, target, position: move.position })
+      : canEnter(index, { source, parentKey }, rules);
+  return isAllowed ? move : null;
 }
 
 /**
@@ -124,19 +225,18 @@ export function resolveTreeMove<T>(
  */
 export function resolveTreeDrop<T>(
   rows: readonly TreeMoveRow<T>[],
-  key: TreeKey,
-  targetKey: TreeKey,
-  position: TreeDropPosition,
+  move: TreeMove,
   rules: TreeMoveRules<T> = {},
 ): TreeMove | null {
-  if (position === 'after' && rows.find((row) => row.key === targetKey)?.isExpanded) return null;
-  return resolveTreeMove(rows, key, targetKey, position, rules);
+  const target = rows.find((row) => row.key === move.targetKey);
+  if (move.position === 'after' && target?.isExpanded) return null;
+  return resolveTreeMove(rows, move, rules);
 }
 
 /**
- * The move a keyboard chord makes on row `key`. `up` and `down` pass the neighbouring movable
- * sibling. With `canMoveInto`, `in` moves the row into the sibling above it as its last child and
- * `out` moves it to just after its parent.
+ * The move a keyboard chord makes. `up` and `down` pass the neighbouring movable sibling. With
+ * `canMoveInto`, `in` moves the row into the sibling above it as its last child and `out` moves it
+ * to just after its parent.
  *
  * Returns `undefined` when the chord is not a move for this row (the row cannot move, or `in`/`out`
  * without `canMoveInto`), so the caller can treat the key as ordinary navigation; `null` when the
@@ -144,80 +244,17 @@ export function resolveTreeDrop<T>(
  */
 export function resolveTreeKeyboardMove<T>(
   rows: readonly TreeMoveRow<T>[],
-  key: TreeKey,
-  direction: TreeMoveDirection,
+  { key, direction }: TreeKeyboardMove,
   rules: TreeMoveRules<T> = {},
 ): TreeMove | null | undefined {
   const row = rows.find((entry) => entry.key === key);
   if (!row?.isMovable) return undefined;
-  const siblings = rows.filter((entry) => entry.parentKey === row.parentKey);
-  if (direction === 'up' || direction === 'down') {
-    const movable = siblings.filter((entry) => entry.isMovable);
-    const target = movable[movable.indexOf(row) + (direction === 'up' ? -1 : 1)];
-    if (!target) return null;
-    return { key, targetKey: target.key, position: direction === 'up' ? 'before' : 'after' };
-  }
+  if (direction === 'up' || direction === 'down') return resolveSiblingStep(rows, row, direction);
   if (!rules.canMoveInto) return undefined;
-  if (direction === 'in') {
-    const above = siblings[siblings.indexOf(row) - 1];
-    return above ? resolveTreeMove(rows, key, above.key, 'inside', rules) : null;
-  }
-  const parent = row.parentKey === null ? undefined : rows.find((e) => e.key === row.parentKey);
-  return parent ? resolveTreeMove(rows, key, parent.key, 'after', rules) : null;
-}
-
-function findItem<T extends TreeMoveItem<T>>(items: readonly T[], key: TreeKey): T | undefined {
-  for (const item of items) {
-    if (item.id === key) return item;
-    const found = item.children ? findItem(item.children, key) : undefined;
-    if (found) return found;
-  }
-  return undefined;
-}
-
-function withoutItem<T extends TreeMoveItem<T>>(items: readonly T[], key: TreeKey): readonly T[] {
-  let changed = false;
-  const next: T[] = [];
-  for (const item of items) {
-    if (item.id === key) {
-      changed = true;
-      continue;
-    }
-    const children = item.children ? withoutItem(item.children, key) : undefined;
-    if (children !== item.children) {
-      changed = true;
-      next.push({ ...item, children });
-    } else {
-      next.push(item);
-    }
-  }
-  return changed ? next : items;
-}
-
-function withItem<T extends TreeMoveItem<T>>(
-  items: readonly T[],
-  moved: T,
-  move: TreeMove,
-): readonly T[] {
-  let changed = false;
-  const next: T[] = [];
-  for (const item of items) {
-    if (item.id === move.targetKey) {
-      changed = true;
-      if (move.position === 'before') next.push(moved, item);
-      else if (move.position === 'after') next.push(item, moved);
-      else next.push({ ...item, children: [...(item.children ?? []), moved] });
-      continue;
-    }
-    const children = item.children ? withItem(item.children, moved, move) : undefined;
-    if (children !== item.children) {
-      changed = true;
-      next.push({ ...item, children });
-    } else {
-      next.push(item);
-    }
-  }
-  return changed ? next : items;
+  const target = direction === 'in' ? findSiblingAbove(rows, row) : findParent(rows, row);
+  if (!target) return null;
+  const position = direction === 'in' ? 'inside' : 'after';
+  return resolveTreeMove(rows, { key, targetKey: target.key, position }, rules);
 }
 
 /**
@@ -230,12 +267,10 @@ export function applyTreeMove<T extends TreeMoveItem<T>>(
   move: TreeMove,
 ): readonly T[] {
   const moved = findItem(items, move.key);
-  if (!moved || move.key === move.targetKey) return items;
-  if (
-    !findItem(items, move.targetKey) ||
-    (moved.children && findItem(moved.children, move.targetKey))
-  ) {
-    return items;
-  }
-  return withItem(withoutItem(items, move.key), moved, move);
+  if (!moved || move.key === move.targetKey || !findItem(items, move.targetKey)) return items;
+  if (moved.children && findItem(moved.children, move.targetKey)) return items;
+  const remaining = replaceItems(items, (item) => (item.id === move.key ? [] : null));
+  return replaceItems(remaining, (item) =>
+    item.id === move.targetKey ? placeAround(item, moved, move.position) : null,
+  );
 }

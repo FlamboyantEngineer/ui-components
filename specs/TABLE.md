@@ -126,9 +126,9 @@ Verification: `src/components/table/column-sizing.test.ts`
 
 ### UIC-TABLE-5.1 - Drag and drop
 
-With `reorder`, the first cell of each row shall start with a React Aria drag handle (`ui-table__drag-handle`, named `Drag <row>` by React Aria). Dragging a row by pointer, or from the keyboard with Enter on its handle, the arrow keys and Enter, shall report one `reorder.onMove({ keys, targetKey, position })` with `position` `before` or `after`, while a `ui-table__drop-indicator` row marks the drop position. Drop positions that would leave the order unchanged are refused. The table never reorders its rows itself.
+With `reorder`, the first cell of each row shall start with a [DragHandle](DRAG-HANDLE.md) (`ui-table__drag-handle`, named `Drag <row>` by React Aria). Dragging a row by pointer, or from the keyboard with Enter on its handle, the arrow keys and Enter, shall report one `reorder.onMove({ keys, targetKey, position })` with `position` `before` or `after`, while a `ui-table__drop-indicator` row marks the drop position. Drop positions that would leave the order unchanged are refused. The table never reorders its rows itself.
 
-Implementation: `src/components/table/use-table-reorder.tsx`, `src/components/table/table-body.tsx`
+Implementation: `src/components/table/use-table-reorder.tsx`, `src/utils/use-reorder-drag-and-drop.ts`, `src/components/table/table-body.tsx`
 Verification: `src/components/table/use-table-reorder.test.tsx`, `e2e/table.spec.ts`
 
 ### UIC-TABLE-5.2 - Fixed rows
@@ -142,7 +142,7 @@ Verification: `src/components/table/use-table-reorder.test.tsx`
 
 Alt+ArrowUp and Alt+ArrowDown with focus on a movable row, or inside it, shall report a move of that row before the previous row or after the next one. At either end the keys are claimed and nothing moves.
 
-Implementation: `src/components/table/use-table-reorder.tsx`
+Implementation: `src/components/table/use-table-reorder.tsx`, `src/utils/use-reorder-drag-and-drop.ts`
 Verification: `src/components/table/use-table-reorder.test.tsx`, `e2e/table.spec.ts`
 
 ### UIC-TABLE-5.4 - Move helper
@@ -163,7 +163,7 @@ Verification: `src/components/table/table-body.test.tsx`, `e2e/table.spec.ts`
 
 ### UIC-TABLE-6.2 - Loading
 
-`isLoading` shall show the library's loading `EmptyState` (a polite status) reading `loadingMessage`, the provider's `loading` string by default, and mark the table root `aria-busy`.
+`isPending` shall show the library's loading `EmptyState` (a polite status) reading `loadingMessage`, the provider's `loading` string by default, and mark the table root `aria-busy`.
 
 Implementation: `src/components/table/table-body.tsx`, `src/components/table/table.tsx`
 Verification: `src/components/table/table-body.test.tsx`
@@ -184,9 +184,9 @@ Verification: `src/components/table/table-body.test.tsx`, `e2e/table.spec.ts`
 
 ## UIC-TABLE-7 - Layout
 
-### UIC-TABLE-7.1 - Density
+### UIC-TABLE-7.1 - Size
 
-`density` (`regular` by default, or `compact`) shall publish `data-density` on the root, from which the stylesheet sets row spacing.
+`size` (`md` by default, or `sm`) shall publish `data-size` on the root, from which the stylesheet sets the row height.
 
 Implementation: `src/components/table/table.tsx`
 Verification: `src/components/table/table.test.tsx`, `e2e/table.spec.ts`
@@ -200,7 +200,7 @@ Verification: `src/components/table/table.test.tsx`, `e2e/table.spec.ts`
 
 ### UIC-TABLE-7.3 - Virtualization
 
-`virtualized` shall render the grid through React Aria's `Virtualizer` with its table layout and publish `data-virtualized` on the root: only the rows in view of the scroll area, plus a small buffer, are in the document, at `rowHeight` pixels each (40 by default, 32 when compact), and scrolling reaches the last row. The stylesheet bounds the scroll area's height.
+`virtualized` shall render the grid through React Aria's `Virtualizer` with its table layout and publish `data-virtualized` on the root: only the rows in view of the scroll area, plus a small buffer, are in the document, at `rowHeight` pixels each (40 by default, 32 at size `sm`), and scrolling reaches the last row. The stylesheet bounds the scroll area's height.
 
 Implementation: `src/components/table/table.tsx`, `src/components/table/use-table-grid.ts`
 Verification: `src/components/table/table.test.tsx`, `e2e/table.spec.ts`
@@ -226,11 +226,11 @@ Verification: `src/components/table/table.test.tsx`, `e2e/table.spec.ts`
 | `ui-table__cell`                | slot      |                                | One data row cell.                                                   |
 | `ui-table__checkbox`            | slot      |                                | A selection checkbox (`<label>` around a visually hidden input).     |
 | `ui-table__checkbox-box`        | slot      |                                | The checkbox's box, holding the check or minus glyph.                |
-| `ui-table__drag-handle`         | slot      |                                | A row's drag handle button.                                          |
+| `ui-table__drag-handle`         | slot      |                                | A row's drag handle (also `ui-drag-handle`).                         |
 | `ui-table__drop-indicator`      | slot      |                                | The row marking a drop position while dragging.                      |
 | `ui-table__state-row`           | slot      |                                | The full-width notice row.                                           |
 | `ui-table__state-cell`          | slot      |                                | The notice row's spanning cell.                                      |
-| `data-density`                  | attribute | `regular`, `compact`           | Row spacing, on the root.                                            |
+| `data-size`                     | attribute | `sm`, `md`                     | Row height, on the root.                                             |
 | `data-kind`                     | attribute | `data`, `selection`, `actions` | What a column header or cell holds.                                  |
 | `data-align`                    | attribute | `start`, `center`, `end`       | A data column's alignment, on its header and cells.                  |
 | `data-column`                   | attribute |                                | A data column's id, on its header and cells.                         |

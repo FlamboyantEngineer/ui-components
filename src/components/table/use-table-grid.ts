@@ -16,7 +16,7 @@ import { useTableRows, type TableRowsView } from './use-table-rows.js';
 /** The props that shape the grid; the root, filter and widths are the table's own. */
 export interface TableGridOptions<T extends TableRow> extends Omit<
   TableProps<T>,
-  | 'density'
+  | 'size'
   | 'stickyHeader'
   | 'virtualized'
   | 'rowHeight'
@@ -46,12 +46,12 @@ export interface TableGrid<T> {
 
 type StatusProps = Pick<
   TableProps<TableRow>,
-  'errorMessage' | 'isLoading' | 'loadingMessage' | 'emptyMessage'
+  'errorMessage' | 'isPending' | 'loadingMessage' | 'emptyMessage'
 >;
 
 function resolveStatus(props: StatusProps, isEmpty: boolean): TableStatus | null {
   if (props.errorMessage !== undefined && props.errorMessage !== null) return 'error';
-  if (props.isLoading) return 'loading';
+  if (props.isPending) return 'loading';
   return isEmpty ? 'empty' : null;
 }
 
@@ -72,7 +72,7 @@ export function useTableGrid<T extends TableRow>(options: TableGridOptions<T>): 
     sortDescriptor,
     defaultSortDescriptor,
     onSortChange,
-    isLoading,
+    isPending,
     loadingMessage,
     errorMessage,
     emptyMessage,
@@ -92,7 +92,7 @@ export function useTableGrid<T extends TableRow>(options: TableGridOptions<T>): 
     onSortChange,
   });
   const reordering = useTableReorder({ rows: view.rows, reorder });
-  const status = resolveStatus({ errorMessage, isLoading }, view.rows.length === 0);
+  const status = resolveStatus({ errorMessage, isPending }, view.rows.length === 0);
   const message = useStatusMessage({ errorMessage, loadingMessage, emptyMessage }, status);
   // React Aria needs a data column to name rows: without one, draw no other column or row.
   const hasColumns = columns.length > 0;

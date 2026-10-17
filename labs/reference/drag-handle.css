@@ -1,0 +1,32 @@
+/* Drag Handle */
+
+.ui-drag-handle {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--ref-muted);
+  vertical-align: middle;
+  cursor: grab;
+  outline: none;
+}
+
+.ui-drag-handle[data-hovered] {
+  background: var(--ref-hover);
+}
+
+.ui-drag-handle[data-focus-visible] {
+  box-shadow: 0 0 0 2px var(--ref-focus);
+}
+
+.ui-drag-handle[data-disabled] {
+  cursor: default;
+  opacity: 0.35;
+}

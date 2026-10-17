@@ -31,7 +31,7 @@ test.describe('Tree lab', () => {
 
   test('UIC-TREE-1.2 indents rows by their depth', async ({ page, lab }) => {
     await lab.open('tree');
-    const cell = page.locator('[data-lab-cell="variant=default density=compact"]');
+    const cell = page.locator('[data-lab-cell="variant=default size=sm"]');
     const x = async (name: string) =>
       (await cell.getByRole('row', { name }).locator('.ui-tree__label').boundingBox())?.x ?? 0;
     const top = await x('Budget.xlsx');
@@ -43,22 +43,18 @@ test.describe('Tree lab', () => {
     );
   });
 
-  test('UIC-TREE-4.3 spaces rows by density', async ({ page, lab }) => {
+  test('UIC-TREE-4.3 spaces rows by size', async ({ page, lab }) => {
     await lab.open('tree');
-    const height = async (density: string) =>
+    const height = async (size: string) =>
       (
         await page
-          .locator(`[data-lab-cell="variant=default density=${density}"]`)
+          .locator(`[data-lab-cell="variant=default size=${size}"]`)
           .getByRole('row', { name: 'Budget.xlsx' })
           .boundingBox()
       )?.height ?? 0;
-    const [compact, normal, spaced] = [
-      await height('compact'),
-      await height('normal'),
-      await height('spaced'),
-    ];
-    expect(normal - compact).toBe(6);
-    expect(spaced - normal).toBe(6);
+    const [small, medium, large] = [await height('sm'), await height('md'), await height('lg')];
+    expect(medium - small).toBe(6);
+    expect(large - medium).toBe(6);
   });
 
   test('UIC-TREE-2.3 restores persisted expansion after a reload', async ({ page, lab }) => {

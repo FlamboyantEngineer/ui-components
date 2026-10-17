@@ -7,6 +7,7 @@ export type TableCellValue = string | number | boolean | Date | null | undefined
 
 /** A table row: any object with a stable `id`. */
 export interface TableRow {
+  /** The row's key, unique in the table. */
   id: Key;
 }
 
@@ -14,6 +15,7 @@ export type TableColumnAlign = 'start' | 'center' | 'end';
 
 /** One data column: its header, how its cells read and render, and how it sorts and sizes. */
 export interface TableColumn<T> extends TableColumnSizing {
+  /** The header content. */
   header: ReactNode;
   /** Accessible name when the header is not plain text. */
   textValue?: string | undefined;
@@ -23,7 +25,9 @@ export interface TableColumn<T> extends TableColumnSizing {
   renderCell?: ((row: T) => ReactNode) | undefined;
   /** Alignment of the header and cells. Defaults to `start`. */
   align?: TableColumnAlign | undefined;
+  /** Whether a header press sorts by this column. */
   allowsSorting?: boolean | undefined;
+  /** Whether the column draws a resizer. */
   allowsResizing?: boolean | undefined;
   /** Names the row for assistive technology. Defaults to the first column. */
   isRowHeader?: boolean | undefined;
@@ -31,8 +35,11 @@ export interface TableColumn<T> extends TableColumnSizing {
 
 /** A reorder request: move `keys` before or after the row `targetKey`. */
 export interface TableMove {
+  /** The moved rows. */
   keys: Key[];
+  /** The row the moved rows land beside. */
   targetKey: Key;
+  /** Which side of the target they land on. */
   position: 'before' | 'after';
 }
 

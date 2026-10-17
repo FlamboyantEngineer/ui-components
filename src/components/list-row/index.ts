@@ -3,7 +3,6 @@ export type {
   ListHandle,
   ListProps,
   ListRowContentProps,
-  ListRowKind,
   ListRowProps,
   ListRowTone,
 } from './list-row.js';

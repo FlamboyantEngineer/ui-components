@@ -49,7 +49,7 @@ const stateProps: Record<(typeof states)[number], Partial<TableProps<Fruit>>> = 
   rows: {},
   selected: { selectionMode: 'multiple', defaultSelectedKeys: ['banana'] },
   'disabled row': { selectionMode: 'multiple', disabledKeys: ['banana'] },
-  loading: { isLoading: true },
+  loading: { isPending: true },
   empty: { rows: [], emptyMessage: 'No fruit yet' },
   error: { errorMessage: 'The fruit could not be loaded.', onRetry: () => {} },
 };
@@ -184,7 +184,7 @@ function Notices() {
         columns={columns}
         selectionMode="multiple"
         onRowAction={setActivated}
-        isLoading={mode === 'loading'}
+        isPending={mode === 'loading'}
         loadingMessage="Loading fruit"
         errorMessage={mode === 'error' ? 'The fruit could not be loaded.' : undefined}
         onRetry={() => setRetries((value) => value + 1)}
@@ -198,15 +198,15 @@ function Notices() {
 
 mountLab(
   <>
-    <LabSection title="States" description="Each state at both densities.">
+    <LabSection title="States" description="Each state at both row sizes.">
       <StateMatrix
-        axes={{ state: states, density: ['regular', 'compact'] }}
-        render={({ state, density }) => (
+        axes={{ state: states, size: ['md', 'sm'] }}
+        render={({ state, size }) => (
           <Table
-            aria-label={`Fruit, ${state}, ${density}`}
+            aria-label={`Fruit, ${state}, ${size}`}
             rows={fruit.slice(0, 3)}
             columns={columns}
-            density={density}
+            size={size}
             {...stateProps[state]}
           />
         )}
@@ -252,7 +252,7 @@ mountLab(
           rows={[...fruit, ...fruit.map((row) => ({ ...row, id: `${row.id}-2` }))]}
           columns={columns}
           stickyHeader
-          density="compact"
+          size="sm"
           defaultSortDescriptor={{ column: 'name', direction: 'ascending' }}
         />
       </div>

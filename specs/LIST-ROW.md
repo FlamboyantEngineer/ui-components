@@ -15,40 +15,40 @@ Verification: `src/components/list-row/list-row.test.tsx`, `e2e/list-row.spec.ts
 
 Exactly one enabled row's primary control shall be in the tab sequence: the first row until focus enters the list, then the row that last held focus, including focus on one of its trailing controls. Moving focus between rows shall re-render only the row losing the tab stop and the row taking it.
 
-Implementation: `src/components/list-row/list-row.tsx`
+Implementation: `src/components/list-row/list-row.tsx`, `src/components/list-row/use-list-navigation.ts`
 Verification: `src/components/list-row/list-row.test.tsx`, `e2e/list-row.spec.ts`
 
 ### UIC-LIST-ROW-1.3 - Arrow navigation
 
 ArrowDown and ArrowUp on a primary control shall move focus to the next or previous enabled row in document order, and Home and End to the first or last, without wrapping and without activating anything. Disabled rows are skipped. Keys pressed with a modifier, and keys pressed in trailing controls, keep their ordinary behaviour.
 
-Implementation: `src/components/list-row/list-row.tsx`
+Implementation: `src/components/list-row/list-row.tsx`, `src/components/list-row/use-list-navigation.ts`
 Verification: `src/components/list-row/list-row.test.tsx`, `e2e/list-row.spec.ts`
 
 ### UIC-LIST-ROW-1.4 - Boundary and requested focus
 
 ArrowUp on the first row shall call `onNavigatePastStart` when it is set, so an associated search field can take focus back. `handleRef` shall receive `focusFirst()`, which focuses the first enabled row in the current document order, after keyed reorders included.
 
-Implementation: `src/components/list-row/list-row.tsx`
+Implementation: `src/components/list-row/list-row.tsx`, `src/components/list-row/use-list-navigation.ts`
 Verification: `src/components/list-row/list-row.test.tsx`
 
 ### UIC-LIST-ROW-1.5 - Focus recovery
 
 When the row holding focus is removed, focus shall move to the nearest remaining row, preferring the next row at equal distance. A row whose primary control is replaced (an action row becoming read-only while it is renamed, and back) keeps focus on its new primary control. Focus that has left the list, including a blur with no related target, cancels the recovery. A removed tab-stop row leaves a remaining row in the tab sequence.
 
-Implementation: `src/components/list-row/list-row.tsx`
+Implementation: `src/components/list-row/list-row.tsx`, `src/components/list-row/use-list-navigation.ts`
 Verification: `src/components/list-row/list-row.test.tsx`
 
 ### UIC-LIST-ROW-1.6 - Pending and dividers
 
 `isPending` shall set `aria-busy="true"` and `data-pending` on the list. `divided` shall publish `data-divided`, from which the stylesheet draws dividers between rows.
 
-Implementation: `src/components/list-row/list-row.tsx`, `labs/reference.css`
+Implementation: `src/components/list-row/list-row.tsx`, `labs/reference/list-row.css`
 Verification: `src/components/list-row/list-row.test.tsx`, `e2e/list-row.spec.ts`
 
 ### UIC-LIST-ROW-1.7 - List hooks and caller attributes
 
-`List` shall carry the hooks below, append the caller's `className`, and forward `id`, `ref` and caller `data-*` attributes to the `<ul>`.
+`List` shall carry the hooks below, append the caller's `className`, and forward `id`, `ref`, caller `data-*` attributes and the other native list props to the `<ul>`. A caller's key and blur handlers run before the list's own; arrow navigation skips a key whose default the caller prevented.
 
 Implementation: `src/components/list-row/list-row.tsx`
 Verification: `src/components/list-row/list-row.test.tsx`
@@ -99,14 +99,14 @@ Verification: `src/components/list-row/list-row.test.tsx`
 
 ### UIC-LIST-ROW-2.7 - Tone
 
-`tone` (`default`, `danger`) shall publish `data-tone` on the row, `default` when unset, for semantic emphasis such as an overdue item.
+`tone` (`neutral`, `danger`) shall publish `data-tone` on the row, `neutral` when unset, for semantic emphasis such as an overdue item.
 
-Implementation: `src/components/list-row/list-row.tsx`, `labs/reference.css`
+Implementation: `src/components/list-row/list-row.tsx`, `labs/reference/list-row.css`
 Verification: `src/components/list-row/list-row.test.tsx`
 
 ### UIC-LIST-ROW-2.8 - Row hooks and caller attributes
 
-`ListRow` and `ListRowContent` shall carry the hooks below, append the caller's `className`, and forward caller `data-*` attributes (and `id` for `ListRow`) to their root. The component's own attributes win over caller attributes of the same name.
+`ListRow` and `ListRowContent` shall carry the hooks below, append the caller's `className`, and forward `id`, caller `data-*` attributes and the other native props to their root. The component's own attributes win over caller attributes of the same name.
 
 Implementation: `src/components/list-row/list-row.tsx`
 Verification: `src/components/list-row/list-row.test.tsx`
@@ -115,7 +115,7 @@ Verification: `src/components/list-row/list-row.test.tsx`
 
 The reference sheet shall keep the title and the meta on one line each, ellipsized, and move trailing content below the text when the row is too narrow for both.
 
-Implementation: `labs/reference.css`
+Implementation: `labs/reference/list-row.css`
 Verification: `e2e/list-row.spec.ts`
 
 ## Hooks
@@ -129,7 +129,7 @@ Verification: `e2e/list-row.spec.ts`
 | `ui-list-row__primary`         | slot      |                            | The link, button or read-only body holding the row text.      |
 | `ui-list-row__trailing`        | slot      |                            | Trailing controls, after the primary control.                 |
 | `data-kind`                    | attribute | `link`, `action`, `static` | What the primary control is.                                  |
-| `data-tone`                    | attribute | `default`, `danger`        | Semantic emphasis.                                            |
+| `data-tone`                    | attribute | `neutral`, `danger`        | Semantic emphasis.                                            |
 | `data-current`                 | state     | `true`                     | The current row.                                              |
 | `data-disabled`                | state     | `true`                     | Disabled row, or the disabled action button (React Aria).     |
 | `data-hovered`                 | state     | `true`                     | Pointer over an action row's button (React Aria).             |

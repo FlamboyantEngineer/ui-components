@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
-import { Button as AriaButton, Cell, Row, TableBody as AriaTableBody } from 'react-aria-components';
+import { Cell, Row, TableBody as AriaTableBody } from 'react-aria-components';
+import { DragHandle } from '../drag-handle/drag-handle.js';
 import { EmptyState } from '../empty-state/empty-state.js';
-import { Icon } from '../icon/icon.js';
 import { InlineError } from '../inline-error/inline-error.js';
 import {
   countTableColumns,
@@ -61,13 +61,10 @@ function TableDataRow<T extends TableRow>({ row, props }: { row: T; props: Table
           })}
         >
           {isReorderable && index === 0 ? (
-            <AriaButton
-              slot="drag"
+            <DragHandle
               className={hooks.slotClass('drag-handle')}
               isDisabled={!props.isMovable(row)}
-            >
-              <Icon glyph="drag-handle" size="sm" />
-            </AriaButton>
+            />
           ) : null}
           {renderCellContent(row, column)}
         </Cell>

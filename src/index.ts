@@ -47,3 +47,4 @@ export * from './components/confirm-dialog/index.js';
 export * from './components/table/index.js';
 export * from './components/list-row/index.js';
 export * from './components/tree/index.js';
+export * from './components/drag-handle/index.js';

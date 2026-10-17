@@ -64,52 +64,53 @@ function ShelfTree(props: Partial<TreeProps<Shelf>>) {
 
 const row = (name: string) => screen.getByRole('row', { name });
 
-class TransferItem {
-  kind = 'string';
-  constructor(
-    public type: string,
-    public data: string,
-  ) {}
-  getAsString(callback: (value: string) => void) {
-    callback(this.data);
-  }
-  getAsFile() {
-    return null;
-  }
+interface TransferItem {
+  kind: 'string';
+  type: string;
+  data: string;
+  getAsString: (callback: (value: string) => void) => void;
+  getAsFile: () => null;
 }
 
-class TransferItems extends Array<TransferItem> {
-  add(data: string, type: string) {
-    this.push(new TransferItem(type, data));
-  }
-  clear() {
-    this.length = 0;
-  }
+function createTransferItem(type: string, data: string): TransferItem {
+  return {
+    kind: 'string',
+    type,
+    data,
+    getAsString: (callback) => callback(data),
+    getAsFile: () => null,
+  };
 }
 
 /** A minimal DataTransfer: jsdom has none. */
-class Transfer {
-  dropEffect = 'none';
-  effectAllowed = 'all';
-  items = new TransferItems();
-  files: File[] = [];
-  dragImages = 0;
-  get types() {
-    return this.items.map((item) => item.type);
-  }
-  getData(type: string) {
-    return this.items.find((item) => item.type === type)?.data ?? '';
-  }
-  setData(type: string, data: string) {
-    this.items.add(data, type);
-  }
-  clearData() {
-    this.items.clear();
-  }
-  setDragImage() {
-    this.dragImages += 1;
-  }
+function createTransfer() {
+  const items: TransferItem[] = [];
+  const list = Object.assign(items, {
+    add: (data: string, type: string) => items.push(createTransferItem(type, data)),
+    clear: () => {
+      items.length = 0;
+    },
+  });
+  const transfer = {
+    dropEffect: 'none',
+    effectAllowed: 'all',
+    items: list,
+    files: [] as File[],
+    dragImages: 0,
+    get types() {
+      return items.map((item) => item.type);
+    },
+    getData: (type: string) => items.find((item) => item.type === type)?.data ?? '',
+    setData: (type: string, data: string) => list.add(data, type),
+    clearData: () => list.clear(),
+    setDragImage: () => {
+      transfer.dragImages += 1;
+    },
+  };
+  return transfer;
 }
+
+type Transfer = ReturnType<typeof createTransfer>;
 
 const ROW_HEIGHT = 20;
 
@@ -153,7 +154,7 @@ function fire(type: string, target: Element, transfer: Transfer, y = 0) {
 
 const entered = new Set<Element>();
 
-function startDrag(name: string, transfer = new Transfer()) {
+function startDrag(name: string, transfer = createTransfer()) {
   layout();
   fire('dragstart', row(name), transfer, pointOn(name, 0.5));
   return transfer;
@@ -333,7 +334,7 @@ describe('Tree reordering', { timeout: 20_000 }, () => {
     expect(row('Apple')).not.toHaveAttribute('data-dragging');
 
     // A drag that did not start in this tree is not a reorder.
-    const foreign = new Transfer();
+    const foreign = createTransfer();
     foreign.setData('text/plain', 'Elsewhere');
     dragOver(foreign, 'Kiwi', 0.9);
     expect(dropTargets()).toEqual([]);

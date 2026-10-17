@@ -78,6 +78,7 @@ export {
 export type {
   TreeDropPosition,
   TreeKey,
+  TreeKeyboardMove,
   TreeMove,
   TreeMoveDirection,
   TreeMoveItem,

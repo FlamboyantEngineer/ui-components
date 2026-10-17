@@ -244,6 +244,39 @@ describe('List', () => {
     expect(ref.current).toBe(list);
     expectHooksMatchSpec(container, 'LIST-ROW');
   });
+
+  it('UIC-LIST-ROW-1.7 runs caller key handlers first and leaves claimed keys to them', async () => {
+    const user = userEvent.setup();
+    const onBlurCapture = vi.fn();
+    const { container } = render(
+      <>
+        <List
+          aria-label="Fruit"
+          aria-describedby="fruit-help"
+          onBlurCapture={onBlurCapture}
+          onKeyDown={(event) => {
+            if (event.key === 'End') event.preventDefault();
+          }}
+        >
+          <ListRow title="Apple" onPress={() => {}} />
+          <ListRow title="Pear" onPress={() => {}} />
+          <ListRow title="Plum" onPress={() => {}} />
+        </List>
+        <button type="button">After</button>
+      </>,
+    );
+    await flush();
+    expect(screen.getByRole('list')).toHaveAttribute('aria-describedby', 'fruit-help');
+    const [apple, pear] = primaries(container);
+    await user.tab();
+    await user.keyboard('{End}');
+    expect(apple).toHaveFocus();
+    await user.keyboard('{ArrowDown}');
+    expect(pear).toHaveFocus();
+    await user.tab();
+    await user.tab();
+    expect(onBlurCapture).toHaveBeenCalled();
+  });
 });
 
 describe('ListRow', () => {
@@ -401,7 +434,7 @@ describe('ListRow', () => {
     expectHooksMatchSpec(container, 'LIST-ROW');
   });
 
-  it('UIC-LIST-ROW-2.7 publishes the tone, default when unset', () => {
+  it('UIC-LIST-ROW-2.7 publishes the tone, neutral when unset', () => {
     const { container } = render(
       <List aria-label="Tasks">
         <ListRow title="Due" />
@@ -409,7 +442,7 @@ describe('ListRow', () => {
       </List>,
     );
     expect([...container.querySelectorAll('li')].map((row) => row.dataset.tone)).toEqual([
-      'default',
+      'neutral',
       'danger',
     ]);
   });
@@ -421,12 +454,20 @@ describe('ListRow', () => {
     };
     const { container } = render(
       <Harness>
-        <ListRow title="Report.pdf" className="caller" id="row-1" data-row="report" data-kind="x" />
+        <ListRow
+          title="Report.pdf"
+          className="caller"
+          id="row-1"
+          data-row="report"
+          data-kind="x"
+          aria-setsize={1}
+        />
       </Harness>,
     );
     const row = container.querySelector('li') as HTMLElement;
     expect(row).toHaveClass('ui-list-row', 'caller');
     expect(row).toHaveAttribute('id', 'row-1');
+    expect(row).toHaveAttribute('aria-setsize', '1');
     expect(row).toHaveAttribute('data-row', 'report');
     expect(row).toHaveAttribute('data-kind', 'static');
     expectHooksMatchSpec(container, 'LIST-ROW', { callerAttributes: ['data-row'] });

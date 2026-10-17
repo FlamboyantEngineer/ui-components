@@ -1,19 +1,22 @@
 import { useCallback, useLayoutEffect, useMemo, useRef } from 'react';
 import {
   DropIndicator,
-  useDragAndDrop,
   type DragAndDropHooks,
-  type DragAndDropOptions,
   type DropTarget,
   type Key,
 } from 'react-aria-components';
 import {
+  getVisibleTreeRows,
   resolveTreeDrop,
   resolveTreeKeyboardMove,
+  type TreeKeyboardMove,
   type TreeMove,
-  type TreeMoveDirection,
   type TreeMoveRow,
 } from '../../utils/tree-reorder.js';
+import { useReorderDragAndDrop } from '../../utils/use-reorder-drag-and-drop.js';
+import type { TreeItemData } from './tree.js';
+import { treeHooks as hooks } from './tree-hooks.js';
+import type { TreeExpansion } from './use-tree-expansion.js';
 
 /** The owner's half of a reorderable tree: which rows move, where they may go, and what to do. */
 export interface TreeReorderOptions<T> {
@@ -28,128 +31,124 @@ export interface TreeReorderOptions<T> {
   onMove: (move: TreeMove) => void;
 }
 
-export interface UseTreeReorderOptions<T> {
-  /** The visible rows, in order, with their movability. */
-  rows: readonly TreeMoveRow<T>[];
-  /** Reordering options; without them the hook reports nothing. */
+/** What reordering reads from the tree. */
+export interface TreeReorderSource<T extends TreeItemData> {
+  items: readonly T[];
   reorder: TreeReorderOptions<T> | undefined;
-  /** Shows a row's children, so a row moved inside a collapsed row stays in view. */
-  expand: (key: Key) => void;
-  /** The text a dragged row carries for other drop targets. */
+  disabledKeys: Iterable<Key> | undefined;
+  expansion: TreeExpansion;
+  getChildren: (item: T) => readonly T[] | undefined;
   getTextValue: (item: T) => string;
-  /** The hook class of the drop indicator drawn between rows. */
-  dropIndicatorClassName: string;
 }
 
-export interface TreeReorder {
-  /** React Aria drag and drop hooks for the `Tree`. */
-  dragAndDropHooks: DragAndDropHooks;
+/** A reorderable tree's drag and drop hooks and keyboard moves. */
+export interface TreeReorder<T> {
+  dragAndDropHooks: DragAndDropHooks<T>;
   /** Whether the visible row `key` can be moved. */
-  isMovable(key: Key): boolean;
-  /** The row's `aria-keyshortcuts` value for the keyboard moves. */
+  isMovable: (key: Key) => boolean;
+  /** The `aria-keyshortcuts` value of a movable row. */
   keyShortcuts: string;
-  /** Reports the keyboard move of row `key`; returns whether the chord belongs to reordering. */
-  moveByKeyboard(key: Key, direction: TreeMoveDirection): boolean;
+  /** Reports the move a chord makes; returns whether the chord belongs to reordering. */
+  moveByKeyboard: (request: TreeKeyboardMove) => boolean;
 }
 
-const SIBLING_SHORTCUTS = 'Alt+ArrowUp Alt+ArrowDown';
-const PARENT_SHORTCUTS = 'Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight';
+const siblingShortcuts = 'Alt+ArrowUp Alt+ArrowDown';
+const parentShortcuts = 'Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight';
 
-function onlyKey(keys: Set<Key>): Key | null {
+function findOnlyKey(keys: ReadonlySet<Key>): Key | null {
   if (keys.size !== 1) return null;
   const [key] = keys;
   return key ?? null;
 }
 
-/**
- * Reordering for a React Aria `Tree`: pointer and keyboard drag and drop through `useDragAndDrop`,
- * plus Alt+Arrow moves. Every check reads the rows the tree last rendered, so a drop is validated
- * against the current items rather than the ones the drag started on.
- */
-export function useTreeReorder<T>({
-  rows,
-  reorder,
-  expand,
-  getTextValue,
-  dropIndicatorClassName,
-}: UseTreeReorderOptions<T>): TreeReorder {
-  const latest = useRef({ rows, reorder, expand, getTextValue });
-  useLayoutEffect(() => {
-    latest.current = { rows, reorder, expand, getTextValue };
-  });
-  const dragging = useRef<Key | null>(null);
+/** The move a drop of one row on `target` makes; React Aria's `on` position is `inside`. */
+function resolveDropMove<T>(
+  rows: readonly TreeMoveRow<T>[],
+  reorder: TreeReorderOptions<T> | undefined,
+  { target, keys }: { target: DropTarget; keys: ReadonlySet<Key> },
+): TreeMove | null {
+  const key = findOnlyKey(keys);
+  if (!reorder || key === null || target.type !== 'item') return null;
+  const position = target.dropPosition === 'on' ? 'inside' : target.dropPosition;
+  return resolveTreeDrop(rows, { key, targetKey: target.key, position }, reorder);
+}
 
-  const report = useCallback((move: TreeMove) => {
-    if (move.position === 'inside') latest.current.expand(move.targetKey);
-    latest.current.reorder?.onMove(move);
-  }, []);
-
-  const resolveTarget = useCallback((target: DropTarget, key: Key | null): TreeMove | null => {
-    const { rows: current, reorder: owner } = latest.current;
-    if (!owner || key === null || target.type !== 'item') return null;
-    const position = target.dropPosition === 'on' ? 'inside' : target.dropPosition;
-    return resolveTreeDrop(current, key, target.key, position, owner);
-  }, []);
-
-  const options = useMemo<DragAndDropOptions<T>>(
-    () => ({
-      getItems: (keys) =>
-        [...keys].map((key) => {
-          const row = latest.current.rows.find((entry) => entry.key === key);
-          return { 'text/plain': row ? latest.current.getTextValue(row.item) : String(key) };
-        }),
-      getAllowedDropOperations: () => ['move'],
-      onDragStart: (event) => {
-        // One row moves at a time; dragging several selected rows offers no drop.
-        dragging.current = onlyKey(event.keys);
-      },
-      onDragEnd: () => {
-        dragging.current = null;
-      },
-      getDropOperation: (target) => (resolveTarget(target, dragging.current) ? 'move' : 'cancel'),
-      onMove: (event) => {
-        const move = resolveTarget(event.target, onlyKey(event.keys));
-        if (move) report(move);
-      },
-      renderDropIndicator: (target) => (
-        <DropIndicator
-          target={target}
-          className={dropIndicatorClassName}
-          render={(props) => (
-            <div
-              {...props}
-              data-position={target.type === 'item' ? target.dropPosition : undefined}
-            />
-          )}
-        />
-      ),
-    }),
-    [report, resolveTarget, dropIndicatorClassName],
+function renderDropIndicator(target: DropTarget) {
+  return (
+    <DropIndicator
+      target={target}
+      className={hooks.slotClass('drop-indicator')}
+      render={(props) => (
+        <div {...props} data-position={target.type === 'item' ? target.dropPosition : undefined} />
+      )}
+    />
   );
-  const { dragAndDropHooks } = useDragAndDrop<T>(options);
+}
 
+/** The visible rows with their movability, while the tree is reorderable. */
+function useMoveRows<T extends TreeItemData>(source: TreeReorderSource<T>) {
+  const { items, reorder, disabledKeys, expansion, getChildren } = source;
+  const canMove = reorder?.canMove;
+  const hasReorder = reorder !== undefined;
+  const disabled = useMemo(() => new Set<Key>(disabledKeys ?? []), [disabledKeys]);
+  const { expandedKeys } = expansion;
+  return useMemo(
+    () =>
+      hasReorder
+        ? getVisibleTreeRows(items, {
+            expandedKeys,
+            getChildren,
+            isMovable: (item) => !disabled.has(item.id) && (canMove?.(item) ?? true),
+          })
+        : [],
+    [hasReorder, canMove, items, expandedKeys, getChildren, disabled],
+  );
+}
+
+/**
+ * Reordering for the tree: pointer and keyboard drag and drop, plus Alt+Arrow moves, each checked
+ * against the rows the tree last rendered. `null` while the tree is not reorderable.
+ */
+export function useTreeReorder<T extends TreeItemData>(
+  source: TreeReorderSource<T>,
+): TreeReorder<T> | null {
+  const rows = useMoveRows(source);
+  const latest = useRef({ rows, source });
+  useLayoutEffect(() => {
+    latest.current = { rows, source };
+  });
+  const report = useCallback((move: TreeMove) => {
+    const { expansion, reorder } = latest.current.source;
+    if (move.position === 'inside') expansion.expand(move.targetKey);
+    reorder?.onMove(move);
+  }, []);
+  const dragAndDropHooks = useReorderDragAndDrop<T, TreeMove>({
+    resolveMove: (target, keys) => resolveDropMove(rows, source.reorder, { target, keys }),
+    onMove: report,
+    getTextValue: (key) => {
+      const row = rows.find((entry) => entry.key === key);
+      return row ? source.getTextValue(row.item) : String(key);
+    },
+    renderDropIndicator,
+  });
   const moveByKeyboard = useCallback(
-    (key: Key, direction: TreeMoveDirection): boolean => {
-      const { rows: current, reorder: owner } = latest.current;
-      if (!owner) return false;
-      const move = resolveTreeKeyboardMove(current, key, direction, owner);
-      if (move === undefined) return false;
+    (request: TreeKeyboardMove) => {
+      const { rows: current, source: owner } = latest.current;
+      const move = owner.reorder && resolveTreeKeyboardMove(current, request, owner.reorder);
       if (move) report(move);
-      return true;
+      return move !== undefined;
     },
     [report],
   );
-
   const movable = useMemo(
     () => new Set(rows.filter((row) => row.isMovable).map((row) => row.key)),
     [rows],
   );
   const isMovable = useCallback((key: Key) => movable.has(key), [movable]);
-
-  return {
-    dragAndDropHooks: dragAndDropHooks as DragAndDropHooks,
-    isMovable,
-    keyShortcuts: reorder?.canMoveInto ? PARENT_SHORTCUTS : SIBLING_SHORTCUTS,
-    moveByKeyboard,
-  };
+  const hasReorder = source.reorder !== undefined;
+  const keyShortcuts = source.reorder?.canMoveInto ? parentShortcuts : siblingShortcuts;
+  return useMemo(
+    () => (hasReorder ? { dragAndDropHooks, isMovable, keyShortcuts, moveByKeyboard } : null),
+    [hasReorder, dragAndDropHooks, isMovable, keyShortcuts, moveByKeyboard],
+  );
 }

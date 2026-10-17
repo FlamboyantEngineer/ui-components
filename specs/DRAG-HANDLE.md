@@ -1,0 +1,44 @@
+# Drag Handle
+
+`DragHandle` draws the drag button of a row in a React Aria collection that reorders by drag and drop, such as [Tree](TREE.md) and [Table](TABLE.md). The collection names the button after its row and starts the row's keyboard drag from it; collections that draw handles render this one rather than their own.
+
+## UIC-DRAG-HANDLE-1 - Drag handle
+
+### UIC-DRAG-HANDLE-1.1 - Drag button
+
+`DragHandle` shall render a React Aria button in the row's `drag` slot holding the decorative built-in `drag-handle` glyph. In a draggable row the collection names it `Drag <row>`, and Enter on it starts the row's keyboard drag and drop.
+
+Implementation: `src/components/drag-handle/drag-handle.tsx`
+Verification: `src/components/drag-handle/drag-handle.test.tsx`, `e2e/drag-handle.spec.ts`
+
+### UIC-DRAG-HANDLE-1.2 - Outside the tab sequence
+
+The handle shall stay out of the tab sequence, since a collection reaches it with the arrow keys from its row; `excludeFromTabOrder={false}` puts it back.
+
+Implementation: `src/components/drag-handle/drag-handle.tsx`
+Verification: `src/components/drag-handle/drag-handle.test.tsx`, `e2e/drag-handle.spec.ts`
+
+### UIC-DRAG-HANDLE-1.3 - Rows that cannot move
+
+`isDisabled` shall disable the button and publish `data-disabled`, for a row that cannot move.
+
+Implementation: `src/components/drag-handle/drag-handle.tsx`
+Verification: `src/components/drag-handle/drag-handle.test.tsx`, `e2e/drag-handle.spec.ts`
+
+### UIC-DRAG-HANDLE-1.4 - Hooks and caller attributes
+
+`DragHandle` shall carry the hooks below, append the caller's `className` (a collection adds its own slot class this way), and forward `id`, caller `data-*` attributes and the other React Aria button props.
+
+Implementation: `src/components/drag-handle/drag-handle.tsx`
+Verification: `src/components/drag-handle/drag-handle.test.tsx`
+
+## Hooks
+
+| Hook                 | Kind  | Values | Description                                 |
+| -------------------- | ----- | ------ | ------------------------------------------- |
+| `ui-drag-handle`     | root  |        | The drag button.                            |
+| `data-hovered`       | state | `true` | Pointer over the button (React Aria).       |
+| `data-pressed`       | state | `true` | The button is pressed (React Aria).         |
+| `data-focused`       | state | `true` | The button has focus (React Aria).          |
+| `data-focus-visible` | state | `true` | The button has keyboard focus (React Aria). |
+| `data-disabled`      | state | `true` | The row cannot move (React Aria).           |

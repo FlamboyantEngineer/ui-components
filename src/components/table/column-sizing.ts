@@ -6,6 +6,7 @@ export type TableColumnWidths = Readonly<Record<string, TableColumnSize>>;
 
 /** What a column declares about its width. */
 export interface TableColumnSizing {
+  /** The column's id, unique in the table. */
   id: string;
   /** Initial width. Defaults to `1fr`: columns without one share the width the others leave. */
   width?: TableColumnSize | undefined;
@@ -17,7 +18,9 @@ export interface TableColumnSizing {
 
 /** A column's pixel bounds. */
 export interface TableColumnBounds {
+  /** Narrowest width in pixels. */
   minWidth?: number | undefined;
+  /** Widest width in pixels, never below `minWidth`. */
   maxWidth?: number | undefined;
 }
 
@@ -28,7 +31,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-function entriesOf(source: unknown): Iterable<[unknown, unknown]> {
+function listEntries(source: unknown): Iterable<[unknown, unknown]> {
   if (source instanceof Map) return source.entries();
   return isRecord(source) ? Object.entries(source) : [];
 }
@@ -73,7 +76,7 @@ export function pickColumnWidths(
 ): TableColumnWidths {
   const byId = new Map(columns.map((column) => [column.id, column]));
   const widths: Record<string, TableColumnSize> = {};
-  for (const [key, value] of entriesOf(source)) {
+  for (const [key, value] of listEntries(source)) {
     const column = byId.get(String(key));
     if (column && isColumnSize(value)) widths[column.id] = clampColumnWidth(value, column);
   }

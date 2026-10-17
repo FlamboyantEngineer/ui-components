@@ -1,32 +1,17 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useId,
-  useImperativeHandle,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-  useSyncExternalStore,
-  type KeyboardEvent,
-  type MouseEvent,
-  type ReactNode,
-  type Ref,
-} from 'react';
+import type { MouseEvent, ReactNode, Ref } from 'react';
 import { Button as AriaButton } from 'react-aria-components';
-import type { GlyphName } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
+import type { BaseProps, NativeProps, Tone } from '../../core/props.js';
 import { UiLink } from '../../core/provider.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { IconLabel } from '../icon-label/icon-label.js';
-
-const listHooks = createHooks('list');
-const rowHooks = createHooks('list-row', ['primary', 'trailing']);
-const contentHooks = createHooks('list-row-content', ['leading', 'text', 'title', 'meta']);
-
-const NAVIGATION_KEYS = new Set(['ArrowDown', 'ArrowUp', 'Home', 'End']);
-
-type DataProps = { [data: `data-${string}`]: string | number | boolean | undefined };
+import type { IconSource } from '../icon/icon.js';
+import {
+  RowRegistryContext,
+  useListNavigation,
+  useRowTabStop,
+  type RowTabStop,
+} from './use-list-navigation.js';
 
 /** Imperative access to a `List`. */
 export interface ListHandle {
@@ -34,12 +19,7 @@ export interface ListHandle {
   focusFirst(): void;
 }
 
-export interface ListProps extends DataProps {
-  /** `ListRow` elements, directly or inside wrappers. */
-  children?: ReactNode;
-  /** Names the list. A list needs `aria-label` or `aria-labelledby`. */
-  'aria-label'?: string | undefined;
-  'aria-labelledby'?: string | undefined;
+export interface ListProps extends NativeProps<'ul'>, BaseProps {
   /** The rows are being loaded or updated: publishes `aria-busy` and `data-pending`. */
   isPending?: boolean | undefined;
   /** Ask the stylesheet for dividers between rows. */
@@ -48,61 +28,118 @@ export interface ListProps extends DataProps {
   onNavigatePastStart?: (() => void) | undefined;
   /** Receives `focusFirst()`, e.g. for a search field that hands focus to the results. */
   handleRef?: Ref<ListHandle> | undefined;
-  className?: string | undefined;
-  id?: string | undefined;
-  ref?: Ref<HTMLUListElement> | undefined;
 }
 
-interface ListContextValue {
-  register(id: string, node: HTMLElement): () => void;
-  subscribe(id: string, listener: () => void): () => void;
-  getActiveId(): string | null;
-  activate(id: string): void;
+export interface ListRowContentProps
+  extends Omit<NativeProps<'span'>, 'title' | 'children'>, BaseProps {
+  /** The row's main text. */
+  title: ReactNode;
+  /** Secondary text below the title, such as a `MetaLine`. */
+  meta?: ReactNode;
+  /** A built-in glyph name or icon node beside the title and meta, drawn through `IconLabel`. */
+  icon?: IconSource;
+  /** Decorative leading media (an avatar, a thumbnail). Ignored when `icon` is set. */
+  leading?: ReactNode;
 }
 
-const ListContext = createContext<ListContextValue | null>(null);
+export type ListRowTone = Extract<Tone, 'neutral' | 'danger'>;
 
-/** Which row holds the single tab stop. Rows subscribe by id, so a move re-renders only two rows. */
-function createActiveRowStore() {
-  let activeId: string | null = null;
-  const listeners = new Map<string, Set<() => void>>();
-  const notify = (id: string | null) => {
-    if (id === null) return;
-    for (const listener of listeners.get(id) ?? []) listener();
-  };
-  return {
-    getActiveId: () => activeId,
-    subscribe(id: string, listener: () => void) {
-      const set = listeners.get(id) ?? new Set<() => void>();
-      listeners.set(id, set);
-      set.add(listener);
-      return () => {
-        set.delete(listener);
-        if (set.size === 0) listeners.delete(id);
-      };
-    },
-    setActiveId(next: string | null) {
-      if (next === activeId) return;
-      const previous = activeId;
-      activeId = next;
-      notify(previous);
-      notify(next);
-    },
-  };
+export interface ListRowProps
+  extends
+    Omit<NativeProps<'li'>, 'title' | 'children'>,
+    BaseProps,
+    Pick<ListRowContentProps, 'title' | 'meta' | 'icon' | 'leading'> {
+  /** Makes the row's primary control a link, rendered through the provider's link renderer. */
+  href?: string | undefined;
+  /** Link target. `_blank` adds `rel="noopener noreferrer"` unless `rel` is given. */
+  target?: string | undefined;
+  /** The link's relationship to the current page. */
+  rel?: string | undefined;
+  /** Without `href`, makes the primary control a button. With `href`, runs when the link is followed. */
+  onPress?: (() => void) | undefined;
+  /** Runs on a middle-button click of a link row. */
+  onAuxPress?: (() => void) | undefined;
+  /** Controls after the primary control, such as an action button. They are never inside the link. */
+  trailing?: ReactNode;
+  /** The row is the current page or item: `aria-current` on its primary control. */
+  isCurrent?: boolean | undefined;
+  /** The row cannot be activated and is skipped by keyboard navigation. */
+  isDisabled?: boolean | undefined;
+  /** Semantic emphasis, such as an overdue or failed item. Defaults to `neutral`. */
+  tone?: ListRowTone | undefined;
 }
 
-/** Neighbours of `id` in `order`, nearest first, the next one before the previous at equal distance. */
-function neighboursOf(order: readonly string[], id: string): string[] {
-  const index = order.indexOf(id);
-  if (index < 0) return [];
-  const result: string[] = [];
-  for (let distance = 1; distance < order.length; distance += 1) {
-    const after = order[index + distance];
-    if (after !== undefined) result.push(after);
-    const before = index - distance >= 0 ? order[index - distance] : undefined;
-    if (before !== undefined) result.push(before);
+/** What the row's primary control is. */
+type ListRowKind = 'link' | 'action' | 'static';
+
+type PrimaryOptions = Pick<
+  ListRowProps,
+  'href' | 'target' | 'rel' | 'onPress' | 'onAuxPress' | 'isCurrent' | 'isDisabled'
+>;
+
+const listHooks = createHooks('list');
+const rowHooks = createHooks('list-row', ['primary', 'trailing']);
+const contentHooks = createHooks('list-row-content', ['leading', 'text', 'title', 'meta']);
+
+function resolveKind({ href, onPress }: PrimaryOptions): ListRowKind {
+  if (href !== undefined) return 'link';
+  return onPress ? 'action' : 'static';
+}
+
+/** The row's primary control: a link, a React Aria button or a focusable read-only body. */
+function ListRowPrimary(props: {
+  kind: ListRowKind;
+  options: PrimaryOptions;
+  tabStop: RowTabStop;
+  children: ReactNode;
+}) {
+  const { kind, tabStop, children } = props;
+  const { href, target, rel, onPress, onAuxPress, isCurrent, isDisabled } = props.options;
+  const className = rowHooks.slotClass('primary');
+  const tabIndex = isDisabled ? undefined : tabStop.isActive ? 0 : -1;
+  if (kind === 'link' && href !== undefined && !isDisabled) {
+    return (
+      <UiLink
+        ref={tabStop.setPrimary}
+        href={href}
+        target={target}
+        rel={rel ?? (target === '_blank' ? 'noopener noreferrer' : undefined)}
+        className={className}
+        tabIndex={tabIndex}
+        aria-current={isCurrent ? 'page' : undefined}
+        onClick={() => onPress?.()}
+        onAuxClick={(event: MouseEvent<HTMLAnchorElement>) => {
+          if (event.button === 1) onAuxPress?.();
+        }}
+      >
+        {children}
+      </UiLink>
+    );
   }
-  return result;
+  if (kind === 'action') {
+    return (
+      <AriaButton
+        ref={tabStop.setPrimary}
+        className={className}
+        isDisabled={isDisabled}
+        excludeFromTabOrder={!tabStop.isActive}
+        onPress={onPress}
+        {...(isCurrent ? { 'aria-current': true } : {})}
+      >
+        {children}
+      </AriaButton>
+    );
+  }
+  return (
+    <div
+      ref={tabStop.setPrimary}
+      className={className}
+      tabIndex={tabIndex}
+      aria-current={isCurrent || undefined}
+    >
+      {children}
+    </div>
+  );
 }
 
 /**
@@ -111,163 +148,39 @@ function neighboursOf(order: readonly string[], id: string): string[] {
  * ordinary roles.
  */
 export function List({
-  children,
-  'aria-label': ariaLabel,
-  'aria-labelledby': ariaLabelledBy,
   isPending = false,
   divided = false,
   onNavigatePastStart,
   handleRef,
   className,
-  id,
   ref,
+  onKeyDown,
+  onBlurCapture,
+  children,
   ...rest
 }: ListProps) {
-  const listRef = useRef<HTMLUListElement | null>(null);
-  const nodes = useRef(new Map<string, HTMLElement>());
-  const order = useRef<string[]>([]);
-  const focusedId = useRef<string | null>(null);
-  const [store] = useState(createActiveRowStore);
-
-  /** Registered primaries in document order; also refreshes the order snapshot used for recovery. */
-  const ordered = useCallback((): Array<[string, HTMLElement]> => {
-    const list = listRef.current;
-    if (!list) return [];
-    const ids = new Map<HTMLElement, string>();
-    for (const [rowId, node] of nodes.current) ids.set(node, rowId);
-    const rows: Array<[string, HTMLElement]> = [];
-    for (const node of list.querySelectorAll<HTMLElement>(`.${rowHooks.slotClass('primary')}`)) {
-      const rowId = ids.get(node);
-      if (rowId !== undefined) rows.push([rowId, node]);
-    }
-    order.current = rows.map(([rowId]) => rowId);
-    return rows;
-  }, []);
-
-  const register = useCallback(
-    (rowId: string, node: HTMLElement) => {
-      nodes.current.set(rowId, node);
-      if (store.getActiveId() === null) store.setActiveId(rowId);
-      queueMicrotask(ordered);
-      return () => {
-        // The order snapshot still holds the row: compute its neighbours before it is gone.
-        const neighbours = neighboursOf(order.current, rowId);
-        if (nodes.current.get(rowId) === node) nodes.current.delete(rowId);
-        queueMicrotask(() => {
-          if (!listRef.current?.isConnected) return;
-          // The same row may register a replacement primary (an action becoming a link).
-          const nextId =
-            [rowId, ...neighbours].find((candidate) => nodes.current.has(candidate)) ??
-            ordered()[0]?.[0] ??
-            null;
-          if (store.getActiveId() === rowId) store.setActiveId(nextId);
-          const doc = node.ownerDocument;
-          if (focusedId.current !== rowId) return;
-          if (doc.activeElement !== null && doc.activeElement !== doc.body) return;
-          if (nextId === null) focusedId.current = null;
-          else nodes.current.get(nextId)?.focus();
-        });
-      };
-    },
-    [store, ordered],
-  );
-
-  // Keyed moves and inserts change the order without any registration.
-  useLayoutEffect(() => {
-    const list = listRef.current;
-    const Observer = list?.ownerDocument.defaultView?.MutationObserver;
-    if (!list || !Observer) return;
-    const observer = new Observer(() => ordered());
-    observer.observe(list, { childList: true, subtree: true });
-    ordered();
-    return () => observer.disconnect();
-  }, [ordered]);
-
-  useImperativeHandle(handleRef, () => ({ focusFirst: () => ordered()[0]?.[1].focus() }), [
-    ordered,
-  ]);
-
-  const activate = useCallback(
-    (rowId: string) => {
-      focusedId.current = rowId;
-      store.setActiveId(rowId);
-    },
-    [store],
-  );
-
-  const context = useMemo<ListContextValue>(
-    () => ({ register, subscribe: store.subscribe, getActiveId: store.getActiveId, activate }),
-    [register, store, activate],
-  );
-
-  const setRef = useCallback(
-    (node: HTMLUListElement | null) => {
-      listRef.current = node;
-      if (typeof ref === 'function') return ref(node);
-      if (ref) ref.current = node;
-    },
-    [ref],
-  );
-
-  const onKeyDown = (event: KeyboardEvent<HTMLUListElement>) => {
-    if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
-    if (event.defaultPrevented || !NAVIGATION_KEYS.has(event.key)) return;
-    const rows = ordered();
-    const index = rows.findIndex(([, node]) => node === event.target);
-    // Keys typed in trailing controls (inputs, menus) keep their own behaviour.
-    if (index < 0) return;
-    event.preventDefault();
-    if (index === 0 && event.key === 'ArrowUp' && onNavigatePastStart) {
-      onNavigatePastStart();
-      return;
-    }
-    const last = rows.length - 1;
-    const next =
-      event.key === 'Home'
-        ? 0
-        : event.key === 'End'
-          ? last
-          : Math.max(0, Math.min(last, index + (event.key === 'ArrowDown' ? 1 : -1)));
-    rows[next]?.[1].focus();
-  };
-
+  const primaryClass = rowHooks.slotClass('primary');
+  const navigation = useListNavigation({ primaryClass, onNavigatePastStart, handleRef, ref });
   return (
-    <ListContext value={context}>
+    <RowRegistryContext value={navigation.registry}>
       <ul
+        {...rest}
         {...listHooks.root({ className, props: rest, data: { divided, pending: isPending } })}
-        ref={setRef}
-        id={id}
-        aria-label={ariaLabel}
-        aria-labelledby={ariaLabelledBy}
+        ref={navigation.setRef}
         aria-busy={isPending || undefined}
-        onKeyDown={onKeyDown}
+        onKeyDown={(event) => {
+          onKeyDown?.(event);
+          navigation.onKeyDown(event);
+        }}
         onBlurCapture={(event) => {
-          const next = event.relatedTarget;
-          if (!(next instanceof Node) || !event.currentTarget.contains(next)) {
-            focusedId.current = null;
-          }
+          onBlurCapture?.(event);
+          navigation.onBlurCapture(event);
         }}
       >
         {children}
       </ul>
-    </ListContext>
+    </RowRegistryContext>
   );
-}
-
-export interface ListRowContentProps extends DataProps {
-  /** The row's main text. */
-  title: ReactNode;
-  /** Secondary text below the title, such as a `MetaLine`. */
-  meta?: ReactNode;
-  /** A built-in glyph name or icon node beside the title and meta, drawn through `IconLabel`. */
-  icon?: GlyphName | ReactNode;
-  /** Decorative leading media (an avatar, a thumbnail). Ignored when `icon` is set. */
-  leading?: ReactNode;
-  className?: string | undefined;
-}
-
-function hasContent(node: ReactNode): boolean {
-  return node !== null && node !== undefined && typeof node !== 'boolean' && node !== '';
 }
 
 /**
@@ -285,50 +198,26 @@ export function ListRowContent({
   const text = (
     <span {...contentHooks.slot('text')}>
       <span {...contentHooks.slot('title')}>{title}</span>
-      {hasContent(meta) ? <span {...contentHooks.slot('meta')}>{meta}</span> : null}
+      {isEmptyNode(meta) ? null : <span {...contentHooks.slot('meta')}>{meta}</span>}
+    </span>
+  );
+  const media = isEmptyNode(leading) ? null : (
+    <span {...contentHooks.slot('leading')} aria-hidden="true">
+      {leading}
     </span>
   );
   return (
-    <span {...contentHooks.root({ className, props: rest })}>
-      {hasContent(icon) ? (
-        <IconLabel icon={icon} label={text} grow />
-      ) : (
+    <span {...rest} {...contentHooks.root({ className, props: rest })}>
+      {isEmptyNode(icon) ? (
         <>
-          {hasContent(leading) ? (
-            <span {...contentHooks.slot('leading')} aria-hidden="true">
-              {leading}
-            </span>
-          ) : null}
+          {media}
           {text}
         </>
+      ) : (
+        <IconLabel icon={icon} label={text} grow />
       )}
     </span>
   );
-}
-
-export type ListRowTone = 'default' | 'danger';
-export type ListRowKind = 'link' | 'action' | 'static';
-
-export interface ListRowProps extends Omit<ListRowContentProps, 'className'> {
-  /** Makes the row's primary control a link, rendered through the provider's link renderer. */
-  href?: string | undefined;
-  /** Link target. `_blank` adds `rel="noopener noreferrer"` unless `rel` is given. */
-  target?: string | undefined;
-  rel?: string | undefined;
-  /** Without `href`, makes the primary control a button. With `href`, runs when the link is followed. */
-  onPress?: (() => void) | undefined;
-  /** Runs on a middle-button click of a link row. */
-  onAuxPress?: (() => void) | undefined;
-  /** Controls after the primary control, such as an action button. They are never inside the link. */
-  trailing?: ReactNode;
-  /** The row is the current page or item: `aria-current` on its primary control. */
-  isCurrent?: boolean | undefined;
-  /** The row cannot be activated and is skipped by keyboard navigation. */
-  isDisabled?: boolean | undefined;
-  /** Semantic emphasis, such as an overdue or failed item. Defaults to `default`. */
-  tone?: ListRowTone | undefined;
-  className?: string | undefined;
-  id?: string | undefined;
 }
 
 /**
@@ -349,95 +238,28 @@ export function ListRow({
   trailing,
   isCurrent = false,
   isDisabled = false,
-  tone = 'default',
+  tone = 'neutral',
   className,
-  id,
+  onFocusCapture,
   ...rest
 }: ListRowProps) {
-  const rowId = useId();
-  const context = useContext(ListContext);
-  const subscribe = useCallback(
-    (listener: () => void) => context?.subscribe(rowId, listener) ?? (() => {}),
-    [context, rowId],
-  );
-  const getActive = useCallback(
-    () => !context || context.getActiveId() === rowId,
-    [context, rowId],
-  );
-  const isActive = useSyncExternalStore(subscribe, getActive, getActive);
-  const primaryRef = useRef<HTMLElement | null>(null);
-  const kind: ListRowKind = href !== undefined ? 'link' : onPress ? 'action' : 'static';
-  const register = context?.register;
-
-  useLayoutEffect(() => {
-    if (!register || !primaryRef.current || isDisabled) return;
-    return register(rowId, primaryRef.current);
-  }, [register, rowId, isDisabled, kind]);
-
-  const setPrimary = (node: HTMLElement | null) => {
-    primaryRef.current = node;
-  };
-  const tabIndex = isDisabled ? undefined : isActive ? 0 : -1;
-  const content = <ListRowContent title={title} meta={meta} icon={icon} leading={leading} />;
-  const primaryClass = rowHooks.slotClass('primary');
-
-  let primary: ReactNode;
-  if (kind === 'link' && href !== undefined && !isDisabled) {
-    primary = (
-      <UiLink
-        ref={setPrimary}
-        href={href}
-        target={target}
-        rel={rel ?? (target === '_blank' ? 'noopener noreferrer' : undefined)}
-        className={primaryClass}
-        tabIndex={tabIndex}
-        aria-current={isCurrent ? 'page' : undefined}
-        onClick={() => onPress?.()}
-        onAuxClick={(event: MouseEvent<HTMLAnchorElement>) => {
-          if (event.button === 1) onAuxPress?.();
-        }}
-      >
-        {content}
-      </UiLink>
-    );
-  } else if (kind === 'action') {
-    primary = (
-      <AriaButton
-        ref={setPrimary}
-        className={primaryClass}
-        isDisabled={isDisabled}
-        excludeFromTabOrder={!isActive}
-        onPress={onPress}
-        {...(isCurrent ? { 'aria-current': true } : {})}
-      >
-        {content}
-      </AriaButton>
-    );
-  } else {
-    primary = (
-      <div
-        ref={setPrimary}
-        className={primaryClass}
-        tabIndex={tabIndex}
-        aria-current={isCurrent || undefined}
-      >
-        {content}
-      </div>
-    );
-  }
-
+  const options = { href, target, rel, onPress, onAuxPress, isCurrent, isDisabled };
+  const kind = resolveKind(options);
+  const tabStop = useRowTabStop(isDisabled, kind);
+  const data = { kind, tone, current: isCurrent, disabled: isDisabled };
   return (
     <li
-      {...rowHooks.root({
-        className,
-        props: rest,
-        data: { kind, tone, current: isCurrent, disabled: isDisabled },
-      })}
-      id={id}
-      onFocusCapture={() => context?.activate(rowId)}
+      {...rest}
+      {...rowHooks.root({ className, props: rest, data })}
+      onFocusCapture={(event) => {
+        onFocusCapture?.(event);
+        tabStop.activate();
+      }}
     >
-      {primary}
-      {hasContent(trailing) ? <div {...rowHooks.slot('trailing')}>{trailing}</div> : null}
+      <ListRowPrimary kind={kind} options={options} tabStop={tabStop}>
+        <ListRowContent title={title} meta={meta} icon={icon} leading={leading} />
+      </ListRowPrimary>
+      {isEmptyNode(trailing) ? null : <div {...rowHooks.slot('trailing')}>{trailing}</div>}
     </li>
   );
 }

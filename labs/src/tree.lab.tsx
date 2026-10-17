@@ -58,7 +58,7 @@ const icon = (entry: Entry) => (entry.children ? <FolderIcon /> : <FileIcon />);
 const sizeOf = (entry: Entry) => (entry.children ? `${entry.children.length} items` : null);
 
 const variants = ['default', 'picker'] as const;
-const densities = ['compact', 'normal', 'spaced'] as const;
+const sizes = ['sm', 'md', 'lg'] as const;
 const states = ['default', 'selected', 'current', 'disabled'] as const;
 
 function StatesTree({ state }: { state: (typeof states)[number] }) {
@@ -132,6 +132,50 @@ function LazyTree() {
   );
 }
 
+function renameEntry(entries: readonly Entry[], id: string, newName: string): Entry[] {
+  return entries.map((entry) => ({
+    ...entry,
+    ...(entry.id === id ? { name: newName } : {}),
+    ...(entry.children ? { children: renameEntry(entry.children, id, newName) } : {}),
+  }));
+}
+
+function RenameTree() {
+  const [items, setItems] = useState<Entry[]>(LIBRARY);
+  const [renaming, setRenaming] = useState<string | null>(null);
+  const renameField = (entry: Entry) => (
+    <input
+      aria-label={`Rename ${entry.name}`}
+      defaultValue={entry.name}
+      autoFocus
+      onBlur={() => setRenaming(null)}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter')
+          setItems((current) => renameEntry(current, entry.id, event.currentTarget.value));
+        if (event.key === 'Enter' || event.key === 'Escape') setRenaming(null);
+      }}
+    />
+  );
+  return (
+    <div data-lab-rename>
+      <Tree
+        aria-label="Rename with F2"
+        items={items}
+        getTextValue={name}
+        getChildren={(entry) => entry.children}
+        getIcon={icon}
+        defaultExpandedKeys={['recipes']}
+        renderLabel={(entry) => (entry.id === renaming ? renameField(entry) : entry.name)}
+        onItemKeyDown={(entry, event) => {
+          if (event.key !== 'F2') return false;
+          setRenaming(entry.id);
+          return true;
+        }}
+      />
+    </div>
+  );
+}
+
 /** Folders take files and folders; the top level takes only folders. */
 const canMoveInto = (entry: Entry, parent: Entry | null) =>
   parent === null ? Boolean(entry.children) : Boolean(parent.children);
@@ -172,20 +216,20 @@ const stateNote = (state: TreeItemState) => (state.isExpanded ? 'open' : null);
 mountLab(
   <>
     <LabSection
-      title="Variants and densities"
-      description="Each variant at each density. Archive.zip is disabled: the picker greys it out, the default variant keeps its text."
+      title="Variants and sizes"
+      description="Each variant at each row size. Archive.zip is disabled: the picker greys it out, the default variant keeps its text."
     >
       <StateMatrix
-        axes={{ variant: variants, density: densities }}
-        render={({ variant, density }) => (
+        axes={{ variant: variants, size: sizes }}
+        render={({ variant, size }) => (
           <div data-lab-column="240" style={{ width: 240 }}>
             <Tree
-              aria-label={`${variant} ${density}`}
+              aria-label={`${variant} ${size}`}
               items={LIBRARY}
               getTextValue={name}
               getIcon={icon}
               variant={variant}
-              density={density}
+              size={size}
               defaultExpandedKeys={['recipes']}
               disabledKeys={['archive']}
             />
@@ -246,6 +290,12 @@ mountLab(
       />
     </LabSection>
     <LabSection
+      title="Owner labels and keys"
+      description="The owner draws labels and sees each key first: F2 on a row swaps its label for a rename field, whose keys stay out of the tree's navigation. Enter keeps the name, Escape drops it."
+    >
+      <RenameTree />
+    </LabSection>
+    <LabSection
       title="Persisted expansion"
       description="Expansion is stored through the provider's storage: expand a folder and reload the page."
     >
@@ -273,7 +323,7 @@ mountLab(
               items={[]}
               getTextValue={name}
               isPending={state === 'loading'}
-              renderEmptyState={() => 'No files yet'}
+              emptyMessage="No files yet"
             />
           )
         }

@@ -123,7 +123,7 @@ mountLab(
                 icon="info"
                 isCurrent={state === 'current'}
                 isDisabled={state === 'disabled'}
-                tone={state === 'danger' ? 'danger' : 'default'}
+                tone={state === 'danger' ? 'danger' : 'neutral'}
               />
             </List>
           </div>
