@@ -285,5 +285,22 @@ describe('Tooltip', () => {
     });
     expect(tooltip()).toHaveTextContent('Italic');
     expect(italic).toHaveAccessibleDescription('Slanted text');
+    act(() => italic.blur());
+    await advance(3000);
+  });
+
+  it('UIC-TOOLTIP-1.9 describes the trigger when the hint is not a string', async () => {
+    render(
+      <Tooltip relationship="label" content={<strong>Underline</strong>}>
+        <AriaButton aria-label="U">U</AriaButton>
+      </Tooltip>,
+    );
+    const trigger = screen.getByRole('button', { name: 'U' });
+    act(() => {
+      fireEvent.keyDown(document.body, { key: 'Tab' });
+      trigger.focus();
+    });
+    expect(trigger).toHaveAccessibleName('U');
+    expect(trigger).toHaveAccessibleDescription('Underline');
   });
 });

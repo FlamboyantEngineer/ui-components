@@ -19,31 +19,22 @@ export type TooltipRelationship = 'description' | 'label';
 /** Caller props for the panel. Its `id` belongs to React Aria, which describes the trigger by it. */
 type TooltipPanelBaseProps = Omit<BaseProps, 'id'>;
 
-interface TooltipCommonProps
+export interface TooltipProps
   extends Omit<TooltipTriggerComponentProps, 'children'>, TooltipPanelBaseProps {
+  /** The hint. Plain text or inline content; never interactive. */
+  content: ReactNode;
   /** The trigger: a React Aria focusable such as `Button`, `IconButton` or `Link`. */
   children: ReactNode;
   /** `default` for a hint on a control, `info` for a softer explanatory note. Defaults to `default`. */
   variant?: TooltipVariant | undefined;
   /** Preferred side of the trigger. Defaults to `top`; the tooltip flips when it does not fit. */
   placement?: TooltipPlacement | undefined;
+  /**
+   * `description` (the default) describes the trigger by the open hint. `label` makes string
+   * content the trigger's accessible name, open or not, as for an icon-only control.
+   */
+  relationship?: TooltipRelationship | undefined;
 }
-
-export interface TooltipDescriptionProps extends TooltipCommonProps {
-  /** The hint. Plain text or inline content; never interactive. */
-  content: ReactNode;
-  /** The hint describes the trigger while it is open. The default. */
-  relationship?: 'description' | undefined;
-}
-
-export interface TooltipLabelProps extends TooltipCommonProps {
-  /** The trigger's name, also shown as the hint. */
-  content: string;
-  /** The hint is the trigger's accessible name, open or not, as for an icon-only control. */
-  relationship: 'label';
-}
-
-export type TooltipProps = TooltipDescriptionProps | TooltipLabelProps;
 
 /** The naming props a labelled trigger receives. */
 interface TriggerLabelProps {
