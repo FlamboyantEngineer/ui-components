@@ -53,7 +53,7 @@ test.describe('Property Filter lab', () => {
     const frame = panel(page);
     const search = frame.getByRole('searchbox');
     await search.fill('margins');
-    await frame.getByRole('button', { name: 'Clear', exact: true }).click();
+    await frame.getByRole('button', { name: 'Clear search' }).click();
     await expect(search).toHaveValue('');
     await expect(search).toBeFocused();
 

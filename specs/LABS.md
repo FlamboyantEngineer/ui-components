@@ -70,3 +70,10 @@ The Playwright fixture `lab` shall open a lab with a given stylesheet and theme,
 
 Implementation: `e2e/fixtures.ts`
 Verification: `e2e/lab-harness.spec.ts`
+
+### UIC-LABS-3.4 - Accessible in both themes
+
+Every lab shall pass axe with the reference stylesheet in its light theme and in `?theme=dark`, so a lab never ships a state that assistive technology cannot reach and the reference palette keeps its contrast in both themes.
+
+Implementation: `labs/reference/base.css`
+Verification: `e2e/accessibility.spec.ts`

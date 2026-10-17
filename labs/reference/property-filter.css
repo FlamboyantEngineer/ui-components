@@ -1,49 +1,10 @@
-/* Property Filter: one framed search box in the panel header. */
+/* Property Filter: the search field fills the panel header. */
 
 .ui-property-filter .ui-property-panel__header {
   padding: 10px;
 }
 
 .ui-property-filter__search {
-  display: flex;
   flex: 1 1 auto;
-  align-items: center;
-  gap: 6px;
-  box-sizing: border-box;
-  height: 32px;
-  padding: 0 4px 0 8px;
-  border: 1px solid var(--ref-border);
-  border-radius: var(--ref-radius);
-  background: var(--ref-canvas);
-}
-
-.ui-property-filter__search:focus-within {
-  border-color: var(--ref-focus);
-  outline: 1px solid var(--ref-focus);
-}
-
-.ui-property-filter__icon {
-  flex: none;
-  width: 14px;
-  height: 14px;
-  color: var(--ref-muted);
-}
-
-.ui-property-filter__input {
-  flex: 1 1 auto;
-  min-width: 0;
-  padding: 0;
-  border: 0;
-  outline: none;
-  background: none;
-  color: inherit;
-  font: inherit;
-}
-
-.ui-property-filter__input::-webkit-search-cancel-button {
-  appearance: none;
-}
-
-.ui-property-filter__clear {
-  flex: none;
+  width: auto;
 }

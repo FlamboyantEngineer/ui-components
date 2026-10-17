@@ -1,10 +1,9 @@
 import { useRef, useState } from 'react';
-import { Input, SearchField } from 'react-aria-components';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
-import { Glyph, useUiStrings } from '../../core/provider.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { useUiStrings } from '../../core/provider.js';
 import { PropertyPanel, type PropertyPanelProps } from '../property-panel/property-panel.js';
 import { PropertyScope } from '../property-scope/property-scope.js';
+import { SearchField } from '../search-field/search-field.js';
 
 export interface PropertyFilterProps extends Omit<
   PropertyPanelProps,
@@ -16,11 +15,11 @@ export interface PropertyFilterProps extends Omit<
   placeholder?: string | undefined;
 }
 
-const hooks = createHooks('property-filter', ['search', 'icon', 'input', 'clear']);
+const hooks = createHooks('property-filter', ['search']);
 
 /**
- * A property panel whose header holds a search box (React Aria `SearchField`) that filters every
- * section, group, card and row in the panel through a `PropertyScope`.
+ * A property panel whose header holds a `SearchField` that filters every section, group, card and
+ * row in the panel through a `PropertyScope`.
  */
 export function PropertyFilter({
   'aria-label': label,
@@ -45,22 +44,12 @@ export function PropertyFilter({
       header={
         <SearchField
           className={hooks.slotClass('search')}
-          aria-label={strings.filterLabel(label)}
+          label={strings.filterLabel(label)}
+          placeholder={placeholder}
           value={query}
           onChange={setQuery}
-        >
-          <Glyph name="search" className={hooks.slotClass('icon')} />
-          <Input ref={inputRef} className={hooks.slotClass('input')} placeholder={placeholder} />
-          {query ? (
-            <IconButton
-              icon="close"
-              label={strings.clear}
-              variant="ghost"
-              size="sm"
-              className={hooks.slotClass('clear')}
-            />
-          ) : null}
-        </SearchField>
+          inputRef={inputRef}
+        />
       }
     >
       <PropertyScope query={query} onClear={clearQuery}>

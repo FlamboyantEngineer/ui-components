@@ -6,7 +6,7 @@
 
 ### UIC-SEARCH-FIELD-1.1 - Search box
 
-`SearchField` shall render a React Aria search field (`ui-search-field`) holding a decorative `search` glyph (`ui-search-field__glyph`) and an `<input type="search">` (`ui-search-field__input`) named by `label`, with `placeholder` shown while it is empty. React Aria's search field props pass through: `value`, `defaultValue` and `onChange`, `onSubmit`, `onClear`, `name`, `autoFocus`, `isDisabled`, `isReadOnly`, `onKeyDown` and the others.
+`SearchField` shall render a React Aria search field (`ui-search-field`) holding a decorative `search` glyph (`ui-search-field__glyph`) and an `<input type="search">` (`ui-search-field__input`) named by `label`, with `placeholder` shown while it is empty. `inputRef` receives the input, so a caller can move focus to it. React Aria's search field props pass through: `value`, `defaultValue` and `onChange`, `onSubmit`, `onClear`, `name`, `autoFocus`, `isDisabled`, `isReadOnly`, `onKeyDown` and the others.
 
 Implementation: `src/components/search-field/search-field.tsx`, `labs/reference/search-field.css`
 Verification: `src/components/search-field/search-field.test.tsx`, `e2e/search-field.spec.ts`

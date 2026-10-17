@@ -7,6 +7,7 @@ import {
   type KeyboardEvent,
 } from 'react';
 import { Select as AriaSelect, type Key } from 'react-aria-components';
+import { useControllableState } from '../../core/controllable-state.js';
 import { createHooks, measuredProperty } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
@@ -118,13 +119,15 @@ function useSelectActions(
   model: SelectModel,
   isFilterable: boolean,
 ) {
-  const [ownOpen, setOwnOpen] = useState(Boolean(config.defaultOpen));
+  const [open, setOwnOpen] = useControllableState(
+    config.isOpen,
+    Boolean(config.defaultOpen),
+    config.onOpenChange,
+  );
   const [filterText, setFilterText] = useState('');
-  const isOpen = !state.isReadOnly && (config.isOpen ?? ownOpen);
+  const isOpen = !state.isReadOnly && open;
   const setOpen = (next: boolean) => {
-    if (next && state.isReadOnly) return;
-    if (config.isOpen === undefined) setOwnOpen(next);
-    config.onOpenChange?.(next);
+    if (!next || !state.isReadOnly) setOwnOpen(next);
   };
   const changeFilter = (text: string) => {
     setFilterText(text);

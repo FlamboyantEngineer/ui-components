@@ -79,7 +79,7 @@
   color: var(--ref-danger);
 }
 .ui-button[data-variant='danger'][data-hovered] {
-  background: var(--ref-danger);
+  background: var(--ref-danger-fill);
   color: var(--ref-accent-text);
 }
 .ui-button[data-variant='ghost'] {

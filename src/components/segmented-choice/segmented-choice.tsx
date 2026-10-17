@@ -1,10 +1,10 @@
-import { useState } from 'react';
 import {
   ToggleButton,
   ToggleButtonGroup,
   type Key,
   type ToggleButtonGroupProps as AriaToggleButtonGroupProps,
 } from 'react-aria-components';
+import { useControllableState } from '../../core/controllable-state.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps, Size } from '../../core/props.js';
 import { Icon, toIconProps, type IconSource } from '../icon/icon.js';
@@ -76,13 +76,7 @@ function useChoiceSelection({
   isClearable,
   isReadOnly,
 }: SelectionOptions) {
-  const [internalValue, setInternalValue] = useState<string | null>(defaultValue);
-  const current = value === undefined ? internalValue : value;
-
-  const commit = (next: string | null) => {
-    if (value === undefined) setInternalValue(next);
-    onChange?.(next);
-  };
+  const [current, commit] = useControllableState(value, defaultValue, onChange);
 
   // React Aria reports an empty selection when the selected segment is picked again.
   const onSelectionChange = (keys: Set<Key>) => {

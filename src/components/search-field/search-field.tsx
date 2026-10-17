@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, type RefObject } from 'react';
 import {
   ButtonContext,
   Input,
@@ -27,6 +27,8 @@ export interface SearchFieldProps
   clearText?: string | undefined;
   /** Box size. Defaults to `md`. */
   size?: SearchFieldSize | undefined;
+  /** Receives the input, so a caller can move focus to it. */
+  inputRef?: RefObject<HTMLInputElement | null> | undefined;
 }
 
 const hooks = createHooks('search-field', ['glyph', 'input', 'clear']);
@@ -60,12 +62,14 @@ export function SearchField({
   clearLabel,
   clearText,
   size = 'md',
+  inputRef,
   className,
   onClear,
   ...rest
 }: SearchFieldProps) {
   const strings = useUiStrings();
-  const input = useRef<HTMLInputElement>(null);
+  const ownInput = useRef<HTMLInputElement>(null);
+  const input = inputRef ?? ownInput;
   return (
     <AriaSearchField
       {...rest}

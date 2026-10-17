@@ -41,7 +41,7 @@
   min-width: 0;
   overflow: hidden;
   border-radius: 3px;
-  color: var(--ref-accent);
+  color: var(--ref-accent-ink);
   text-decoration: none;
   text-overflow: ellipsis;
   white-space: nowrap;

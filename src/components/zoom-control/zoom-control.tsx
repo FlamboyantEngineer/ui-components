@@ -1,5 +1,6 @@
-import { useId, useMemo, useState, type ReactNode } from 'react';
+import { useId, useMemo, type ReactNode } from 'react';
 import { useLocale } from 'react-aria-components';
+import { useControllableState } from '../../core/controllable-state.js';
 import type { GlyphName } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps } from '../../core/props.js';
@@ -165,14 +166,9 @@ export function ZoomControl({
 }: ZoomControlProps) {
   const strings = useUiStrings();
   const sliderId = useId();
-  const [internalValue, setInternalValue] = useState(defaultValue);
-  const current = value ?? internalValue;
+  const [current, request] = useControllableState(value, defaultValue, onChange);
   const sorted = useMemo(() => sortLevels(levels), [levels]);
   const valueText = useZoomFormatter(formatOptions).format(current);
-  const request = (next: number) => {
-    if (value === undefined) setInternalValue(next);
-    onChange?.(next);
-  };
   const buttonProps = { size, isDisabled, onRequest: request };
   const atReset = resetValue === undefined || Math.abs(current - resetValue) < tolerance;
 

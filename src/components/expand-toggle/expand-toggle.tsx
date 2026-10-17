@@ -1,5 +1,5 @@
-import { useState } from 'react';
 import { useLocale } from 'react-aria-components';
+import { useControllableState } from '../../core/controllable-state.js';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
 import type { GlyphName } from '../../core/glyphs.js';
 import type { BaseProps } from '../../core/props.js';
@@ -51,8 +51,11 @@ export function ExpandToggle({
   ...rest
 }: ExpandToggleProps) {
   const strings = useUiStrings();
-  const [internalExpanded, setInternalExpanded] = useState(defaultExpanded);
-  const expanded = isExpanded ?? internalExpanded;
+  const [expanded, setExpanded] = useControllableState(
+    isExpanded,
+    defaultExpanded,
+    onExpandedChange,
+  );
   const glyph = useExpandGlyph(expanded);
 
   if (!isExpandable) {
@@ -74,10 +77,7 @@ export function ExpandToggle({
       label={label ?? (expanded ? strings.collapse : strings.expand)}
       size={size}
       aria-expanded={expanded}
-      onPress={() => {
-        if (isExpanded === undefined) setInternalExpanded(!expanded);
-        onExpandedChange?.(!expanded);
-      }}
+      onPress={() => setExpanded(!expanded)}
     />
   );
 }

@@ -23,6 +23,8 @@
   --ref-warning: #9a6700;
   --ref-success: #1a7f37;
   --ref-success-fill: #1a7f37;
+  /* A danger background under white text; it keeps its contrast in both themes. */
+  --ref-danger-fill: #cf222e;
   --ref-info: #0969da;
   --ref-focus: #0969da;
   --ref-shadow: 0 8px 24px rgb(66 74 83 / 0.2);

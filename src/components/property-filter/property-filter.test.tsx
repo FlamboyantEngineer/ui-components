@@ -28,26 +28,17 @@ describe('PropertyFilter', () => {
     expect(panel).toHaveClass('ui-property-panel', 'ui-property-filter');
     const header = panel.querySelector('.ui-property-panel__header') as HTMLElement;
     const search = header.querySelector('.ui-property-filter__search') as HTMLElement;
+    expect(search).toHaveClass('ui-search-field');
     expect(search).toHaveAttribute('data-empty', 'true');
-    expect(search.firstElementChild).toHaveClass('ui-glyph', 'ui-property-filter__icon');
-    expect(search.firstElementChild).toHaveAttribute('aria-hidden', 'true');
     const input = within(header).getByRole('searchbox', { name: 'Filter fruit settings' });
-    expect(input).toHaveClass('ui-property-filter__input');
     expect(input).toHaveAttribute('placeholder', 'Filter fruit');
     expect(panel.querySelector('.ui-property-panel__body > .ui-property-scope')).not.toBeNull();
-    expectHooksMatchSpec(container, 'PROPERTY-FILTER', {
-      slots: [
-        'ui-property-filter__search',
-        'ui-property-filter__icon',
-        'ui-property-filter__input',
-      ],
-    });
+    expectHooksMatchSpec(container, 'PROPERTY-FILTER', { slots: 'all' });
 
     await userEvent.type(input, 'pea');
     expect(search).not.toHaveAttribute('data-empty');
     expect(rowOf('Apple')).toHaveAttribute('hidden');
     expect(screen.getByText('Pea').closest('.ui-property-row')).not.toHaveAttribute('hidden');
-    expectHooksMatchSpec(container, 'PROPERTY-FILTER', { slots: 'all' });
   });
 
   it('UIC-PROPERTY-FILTER-1.1 names the search box through the provider', () => {
@@ -62,15 +53,13 @@ describe('PropertyFilter', () => {
   it('UIC-PROPERTY-FILTER-1.2 clears the query from its clear button and from Escape, keeping focus in the input', async () => {
     render(<Fruit />);
     const input = screen.getByRole('searchbox');
-    expect(document.querySelector('.ui-property-filter__clear')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Clear search' })).toBeNull();
     await userEvent.type(input, 'apple');
-    const clear = screen.getByRole('button', { name: 'Clear' });
-    expect(clear).toHaveClass('ui-icon-button', 'ui-property-filter__clear');
-    await userEvent.click(clear);
+    await userEvent.click(screen.getByRole('button', { name: 'Clear search' }));
     expect(input).toHaveValue('');
     expect(input).toHaveFocus();
     expect(rowOf('Pear')).not.toHaveAttribute('hidden');
-    expect(document.querySelector('.ui-property-filter__clear')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Clear search' })).toBeNull();
 
     await userEvent.type(input, 'pear{Escape}');
     expect(input).toHaveValue('');

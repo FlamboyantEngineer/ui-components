@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import type { SortDescriptor } from 'react-aria-components';
+import { useControllableState } from '../../core/controllable-state.js';
 import {
   filterTableRows,
   nextSortDescriptor,
@@ -31,20 +32,20 @@ export interface TableRowsView<T> {
 /** The rows a table presents: its own or the caller's sort, then the filter query. */
 export function useTableRows<T extends TableRow>(options: TableRowsOptions<T>): TableRowsView<T> {
   const { rows, columns, query, sortDescriptor, defaultSortDescriptor, onSortChange } = options;
-  const [ownSort, setOwnSort] = useState<SortDescriptor | null>(defaultSortDescriptor ?? null);
+  const [current, setSort] = useControllableState(
+    sortDescriptor,
+    defaultSortDescriptor ?? null,
+    onSortChange,
+  );
+  // A controlled sort is the caller's to apply, so its rows arrive already ordered.
   const isControlled = sortDescriptor !== undefined;
-  const current = isControlled ? sortDescriptor : ownSort;
 
   const presented = useMemo(() => {
-    const ordered = isControlled ? rows : sortTableRows(rows, columns, ownSort);
+    const ordered = isControlled ? rows : sortTableRows(rows, columns, current);
     return filterTableRows(ordered, columns, query);
-  }, [rows, columns, query, isControlled, ownSort]);
+  }, [rows, columns, query, isControlled, current]);
 
-  const changeSort = (requested: SortDescriptor) => {
-    const next = nextSortDescriptor(current, requested);
-    if (!isControlled) setOwnSort(next);
-    onSortChange?.(next);
-  };
+  const changeSort = (requested: SortDescriptor) => setSort(nextSortDescriptor(current, requested));
 
   return { rows: presented, sortDescriptor: current, onSortChange: changeSort };
 }

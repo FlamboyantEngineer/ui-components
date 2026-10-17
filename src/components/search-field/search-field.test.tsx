@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
+import { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { SearchField } from './search-field.js';
@@ -21,6 +22,12 @@ describe('SearchField', () => {
     await user.type(input, 'ap');
     expect(onChange.mock.calls.map(([value]) => value)).toEqual(['a', 'ap']);
     expectHooksMatchSpec(container, 'SEARCH-FIELD', { slots: 'all' });
+  });
+
+  it('UIC-SEARCH-FIELD-1.1 hands its input to inputRef', () => {
+    const inputRef = createRef<HTMLInputElement>();
+    render(<SearchField label="Filter fruit" inputRef={inputRef} />);
+    expect(inputRef.current).toBe(screen.getByRole('searchbox', { name: 'Filter fruit' }));
   });
 
   it('UIC-SEARCH-FIELD-1.2 publishes its size', () => {
