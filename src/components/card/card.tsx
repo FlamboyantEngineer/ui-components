@@ -4,6 +4,12 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps } from '../../core/props.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import type { HeadingLevel } from '../section-header/section-header.js';
+import {
+  CardActionSlots,
+  CardActionTitle,
+  useCardAction,
+  type CardActionOptions,
+} from './card-action.js';
 
 /** `default`: content on the page. `panel`: a chrome region on a muted surface. */
 export type CardVariant = 'default' | 'panel';
@@ -14,6 +20,7 @@ export type CardDensity = 'default' | 'comfortable' | 'compact' | 'tight';
 export interface CardProps
   extends
     BaseProps,
+    CardActionOptions,
     Pick<NativeProps<'section'>, 'hidden' | 'role' | 'aria-label' | 'aria-labelledby'> {
   /** Surface. Defaults to `default`. */
   variant?: CardVariant | undefined;
@@ -29,9 +36,14 @@ export interface CardProps
   headingLevel?: HeadingLevel | undefined;
   /**
    * Custom header content, in place of the title, description and actions. A React Aria `Heading`
-   * with `slot="title"` in it becomes the card's title and names the card.
+   * with `slot="title"` in it becomes the card's title and names the card, and a React Aria `Link`
+   * or `Button` with `slot="action"` becomes the card's action.
    */
   header?: ReactNode;
+  /** Full-bleed media before the header, such as a cover image or a preview. */
+  media?: ReactNode;
+  /** The content is loading: the body shows a decorative skeleton and the card is busy. */
+  isLoading?: boolean | undefined;
   /** The body. */
   children?: ReactNode;
   /** Closing content, such as a timestamp or secondary actions, in a `<footer>`. */
@@ -53,15 +65,24 @@ type CardHeaderProps = Pick<CardProps, 'title' | 'description' | 'actions' | 'he
   titleId: string;
   /** Receives the custom header's slotted title element. */
   titleRef: (element: HTMLElement | null) => void;
+  /** The whole-card action, if any, and the ref that registers its element. */
+  action: {
+    options: CardActionOptions;
+    isActionable: boolean;
+    ref: (node: HTMLElement | null) => void;
+  };
 };
 
 const hooks = createHooks('card', [
+  'media',
   'header',
   'heading',
   'title',
+  'action',
   'description',
   'actions',
   'body',
+  'skeleton',
   'footer',
 ]);
 
@@ -85,6 +106,7 @@ function CardHeading({
   description,
   headingLevel,
   titleId,
+  action,
 }: Omit<CardHeaderProps, 'actions' | 'header' | 'titleRef'>) {
   const Heading = `h${headingLevel}` as const;
   if (isEmptyNode(title) && isEmptyNode(description)) return null;
@@ -92,7 +114,17 @@ function CardHeading({
     <div {...hooks.slot('heading')}>
       {isEmptyNode(title) ? null : (
         <Heading {...hooks.slot('title')} id={titleId}>
-          {title}
+          {action.isActionable ? (
+            <CardActionTitle
+              options={action.options}
+              actionRef={action.ref}
+              className={hooks.slotClass('action')}
+            >
+              {title}
+            </CardActionTitle>
+          ) : (
+            title
+          )}
         </Heading>
       )}
       {isEmptyNode(description) ? null : <div {...hooks.slot('description')}>{description}</div>}
@@ -107,10 +139,17 @@ function CardHeading({
 function CardHeader({ header, actions, titleRef, ...heading }: CardHeaderProps) {
   if (!isEmptyNode(header)) {
     const title = { id: heading.titleId, className: hooks.slotClass('title'), ref: titleRef };
+    const { action } = heading;
     return (
       <header {...hooks.slot('header')}>
         <Provider values={[[HeadingContext, { slots: { [DEFAULT_SLOT]: {}, title } }]]}>
-          {header}
+          <CardActionSlots
+            options={action.options}
+            actionRef={action.ref}
+            className={hooks.slotClass('action')}
+          >
+            {header}
+          </CardActionSlots>
         </Provider>
       </header>
     );
@@ -124,7 +163,11 @@ function CardHeader({ header, actions, titleRef, ...heading }: CardHeaderProps) 
   );
 }
 
-/** A framed container for a self-contained group of content: an optional header, a body and a footer. */
+/**
+ * A framed container for a self-contained group of content: optional media, an optional header, a
+ * body and a footer. With `href` or `onAction` the whole card is a link or press target whose title
+ * is the action, while the controls inside it keep their own behaviour.
+ */
 export function Card({
   variant = 'default',
   density = 'default',
@@ -133,26 +176,50 @@ export function Card({
   actions,
   headingLevel = 3,
   header,
+  media,
   children,
   footer,
   isSelected,
+  isLoading = false,
   interactive,
   flush,
   fill,
   fullWidth,
+  href,
+  target,
+  rel,
+  onAction,
   className,
   ...rest
 }: CardProps) {
   const titleId = useId();
   const [slottedTitle, setSlottedTitle] = useState<HTMLElement | null>(null);
-  const data = { variant, density, selected: isSelected, interactive, flush, fill, fullWidth };
+  const options = { href, target, rel, onAction };
+  const { isActionable, actionRef, onClick } = useCardAction(options);
+  const data = {
+    variant,
+    density,
+    selected: isSelected,
+    loading: isLoading,
+    interactive: interactive || isActionable,
+    flush,
+    fill,
+    fullWidth,
+  };
   const labelledBy = toLabelledBy(
     { title, header, ...rest },
     { id: titleId, hasSlottedTitle: slottedTitle !== null },
   );
 
   return (
-    <section {...rest} {...hooks.root({ className, data })} aria-labelledby={labelledBy}>
+    <section
+      {...rest}
+      {...hooks.root({ className, data })}
+      aria-labelledby={labelledBy}
+      aria-busy={isLoading || undefined}
+      onClick={isActionable ? onClick : undefined}
+    >
+      {isEmptyNode(media) ? null : <div {...hooks.slot('media')}>{media}</div>}
       <CardHeader
         header={header}
         title={title}
@@ -161,8 +228,11 @@ export function Card({
         headingLevel={headingLevel}
         titleId={titleId}
         titleRef={setSlottedTitle}
+        action={{ options, isActionable, ref: actionRef }}
       />
-      <div {...hooks.slot('body')}>{children}</div>
+      <div {...hooks.slot('body')}>
+        {isLoading ? <div {...hooks.slot('skeleton')} aria-hidden="true" /> : children}
+      </div>
       {isEmptyNode(footer) ? null : <footer {...hooks.slot('footer')}>{footer}</footer>}
     </section>
   );
