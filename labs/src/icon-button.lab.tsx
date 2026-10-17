@@ -59,5 +59,25 @@ mountLab(
         )}
       />
     </LabSection>
+    <LabSection
+      title="Tooltip as the name"
+      description="A tooltip that repeats the label names the button, so it is announced once; a longer tooltip describes it."
+    >
+      <div data-lab-demo="tooltip-name">
+        <IconButton icon="edit" label="Rename" tooltip="Rename" />{' '}
+        <IconButton icon="delete" label="Delete" tooltip="Delete the selected rows" />
+      </div>
+    </LabSection>
+    <LabSection title="Toggles and links">
+      <div data-lab-demo="toggle-link">
+        <IconButton
+          icon="eye"
+          label="Show hidden files"
+          tooltip="Show hidden files"
+          defaultSelected={false}
+        />{' '}
+        <IconButton icon="help" label="Open help" tooltip="Open help" href="#help" />
+      </div>
+    </LabSection>
   </>,
 );

@@ -83,4 +83,44 @@ test.describe('Button lab', () => {
       await expect(page.getByRole('tooltip', { name: 'Control Shift S' })).toBeVisible();
     });
   }
+
+  test('UIC-BUTTON-1.9 draws a link as a button and leaves a disabled one as text', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('button');
+    const link = page.locator('[data-lab-cell="variant=primary link=enabled"] a.ui-button');
+    await expect(link).toHaveAttribute('href', '#reports');
+    await expect(link).toHaveAttribute('data-variant', 'primary');
+    const disabled = page.locator('[data-lab-cell="variant=primary link=disabled"] .ui-button');
+    await expect(disabled).toHaveJSProperty('tagName', 'SPAN');
+    await expect(disabled).toHaveAttribute('aria-disabled', 'true');
+    const box = await link.boundingBox();
+    expect(box?.height).toBe(32);
+    await link.focus();
+    await expect(link).toHaveAttribute('data-focus-visible', 'true');
+    await page.keyboard.press('Enter');
+    await expect(page).toHaveURL(/#reports$/);
+    await lab.expectAccessible();
+  });
+
+  test('UIC-BUTTON-2.6 toggles its own state or reports it to its caller', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('button');
+    const demo = page.locator('[data-lab-demo="toggles"]');
+    const grid = demo.getByRole('button', { name: 'Show grid' });
+    await expect(grid).toHaveAttribute('aria-pressed', 'true');
+    await grid.focus();
+    await page.keyboard.press('Space');
+    await expect(grid).toHaveAttribute('aria-pressed', 'false');
+    await expect(grid).not.toHaveAttribute('data-selected');
+    const pin = demo.getByRole('button', { name: 'Pin panel' });
+    await expect(pin).toHaveAttribute('aria-pressed', 'false');
+    await pin.click();
+    await expect(pin).toHaveAttribute('aria-pressed', 'true');
+    await expect(demo.locator('[data-lab-output="pinned"]')).toHaveText('Pinned: yes');
+    await expect(page.locator('[data-lab-swapped]')).toHaveClass(/ui-button/);
+  });
 });

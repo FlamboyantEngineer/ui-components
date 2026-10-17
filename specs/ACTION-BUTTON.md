@@ -45,3 +45,10 @@ Verification: `src/components/action-button/action-button.test.tsx`
 
 Implementation: `src/components/action-button/action-button.tsx`, `src/components/button/button.tsx`
 Verification: `src/components/action-button/action-button.test.tsx`, `e2e/action-button.spec.ts`
+
+### UIC-ACTION-BUTTON-1.7 - Pending delay
+
+`pendingDelay` (milliseconds, 0 by default) shall hold back the pending state, internal or controlled, until the action has run that long, so an action that settles sooner never flashes the spinner. The button refuses repeat presses from the first press either way. An action button is never a link, so it takes no `href`.
+
+Implementation: `src/components/action-button/action-button.tsx`
+Verification: `src/components/action-button/action-button.test.tsx`, `e2e/action-button.spec.ts`

@@ -3,6 +3,8 @@ import { userEvent } from '@testing-library/user-event';
 import { Dialog, DialogTrigger, Popover } from 'react-aria-components';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { UiProvider } from '../../core/provider.js';
+import { mergeProps } from '../../utils/merge-props.js';
 import { Button } from './button.js';
 
 describe('Button', () => {
@@ -314,5 +316,134 @@ describe('Button', () => {
     expect(button).toHaveAttribute('data-variant', 'secondary');
     expect(ref.current).toBe(button);
     expectHooksMatchSpec(document.body, 'BUTTON');
+  });
+
+  it('UIC-BUTTON-1.8 renders through the caller element with its hooks, states and ref', async () => {
+    const onPress = vi.fn();
+    const ref = { current: null as HTMLButtonElement | HTMLAnchorElement | null };
+    const states: boolean[] = [];
+    render(
+      <Button
+        ref={ref}
+        variant="primary"
+        role="menuitemcheckbox"
+        aria-checked
+        shortcut="Ctrl+B"
+        onPress={onPress}
+        render={(props, state) => {
+          states.push(state.isHovered);
+          return <button {...mergeProps(props, { 'data-testid': 'caller' })} />;
+        }}
+      >
+        Bold
+      </Button>,
+    );
+    const button = screen.getByTestId('caller');
+    expect(button).toBe(ref.current);
+    expect(button).toHaveClass('ui-button');
+    expect(button).toHaveAttribute('data-variant', 'primary');
+    expect(button).toHaveAttribute('role', 'menuitemcheckbox');
+    expect(button).toHaveAttribute('aria-keyshortcuts', 'Control+B');
+    await userEvent.click(button);
+    expect(onPress).toHaveBeenCalledTimes(1);
+    expect(states).toContain(false);
+    expectHooksMatchSpec(document.body, 'BUTTON', { callerAttributes: ['data-testid'] });
+  });
+
+  it('UIC-BUTTON-1.9 renders a link through the provider link renderer with its hooks', async () => {
+    const onPress = vi.fn();
+    const renderLink = vi.fn((props: React.ComponentProps<'a'>) => (
+      <a {...props} data-router="yes" />
+    ));
+    const ref = { current: null as HTMLButtonElement | HTMLAnchorElement | null };
+    render(
+      <UiProvider renderLink={renderLink}>
+        <Button
+          ref={ref}
+          href="/reports/new"
+          variant="primary"
+          startIcon="plus"
+          shortcut="Ctrl+N"
+          onPress={onPress}
+        >
+          New report
+        </Button>
+        <Button href="https://example.com/help" target="_blank">
+          Help
+        </Button>
+      </UiProvider>,
+    );
+    const link = screen.getByRole('link', { name: 'New report' });
+    expect(link.tagName).toBe('A');
+    expect(link).toBe(ref.current);
+    expect(link).toHaveAttribute('href', '/reports/new');
+    expect(link).toHaveAttribute('data-router', 'yes');
+    expect(link).toHaveClass('ui-button');
+    expect(link).toHaveAttribute('data-variant', 'primary');
+    expect(link).toHaveAttribute('aria-keyshortcuts', 'Control+N');
+    expect(link).not.toHaveAttribute('type');
+    expect(link.querySelector('.ui-button__start-icon')).not.toBeNull();
+    expect(screen.getByRole('link', { name: 'Help' })).toHaveAttribute(
+      'rel',
+      'noopener noreferrer',
+    );
+    link.addEventListener('click', (event) => event.preventDefault());
+    await userEvent.click(link);
+    expect(onPress).toHaveBeenCalledTimes(1);
+    expectHooksMatchSpec(document.body, 'BUTTON', {
+      slots: ['label', 'start-icon'],
+      callerAttributes: ['data-router'],
+    });
+  });
+
+  it('UIC-BUTTON-1.9 draws a disabled link as text that cannot be activated', async () => {
+    const onPress = vi.fn();
+    render(
+      <Button href="/reports" isDisabled onPress={onPress}>
+        Reports
+      </Button>,
+    );
+    const link = screen.getByRole('link', { name: 'Reports' });
+    expect(link.tagName).toBe('SPAN');
+    expect(link).toHaveAttribute('aria-disabled', 'true');
+    expect(link).toHaveAttribute('data-disabled', 'true');
+    await userEvent.click(link);
+    expect(onPress).not.toHaveBeenCalled();
+  });
+
+  it('UIC-BUTTON-2.6 toggles its own state from defaultSelected and reports each change', async () => {
+    const onChange = vi.fn();
+    render(
+      <Button defaultSelected={false} onChange={onChange}>
+        Bold
+      </Button>,
+    );
+    const button = screen.getByRole('button', { name: 'Bold' });
+    expect(button).toHaveAttribute('aria-pressed', 'false');
+    expect(button).not.toHaveAttribute('data-selected');
+    await userEvent.click(button);
+    expect(button).toHaveAttribute('aria-pressed', 'true');
+    expect(button).toHaveAttribute('data-selected', 'true');
+    expect(onChange).toHaveBeenLastCalledWith(true);
+    button.focus();
+    await userEvent.keyboard(' ');
+    expect(button).toHaveAttribute('aria-pressed', 'false');
+    expect(onChange).toHaveBeenLastCalledWith(false);
+    expectHooksMatchSpec(document.body, 'BUTTON');
+  });
+
+  it('UIC-BUTTON-2.6 leaves a controlled toggle to its caller', async () => {
+    const onChange = vi.fn();
+    const onPress = vi.fn();
+    render(
+      <Button isSelected onChange={onChange} onPress={onPress}>
+        Italic
+      </Button>,
+    );
+    const button = screen.getByRole('button', { name: 'Italic' });
+    await userEvent.click(button);
+    expect(onPress).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith(false);
+    expect(button).toHaveAttribute('aria-pressed', 'true');
   });
 });

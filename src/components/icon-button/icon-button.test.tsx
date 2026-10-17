@@ -119,4 +119,54 @@ describe('IconButton', () => {
     expect(redo).toHaveAccessibleDescription('Redo the last edit Control Shift Z');
     expectHooksMatchSpec(document.body, 'ICON-BUTTON');
   });
+
+  it('UIC-ICON-BUTTON-1.7 lets a tooltip that repeats the label name the button without describing it', async () => {
+    const user = userEvent.setup();
+    render(
+      <>
+        <IconButton icon="edit" label="Rename" tooltip="Rename" />
+        <IconButton icon="delete" label="Delete" tooltip="Delete the selected rows" />
+      </>,
+    );
+    await user.tab();
+    const rename = screen.getByRole('button', { name: 'Rename' });
+    expect(rename).toHaveFocus();
+    expect(screen.getByRole('tooltip')).toHaveTextContent('Rename');
+    expect(rename).not.toHaveAttribute('aria-describedby');
+    expect(rename).not.toHaveAccessibleDescription();
+    await user.tab();
+    const remove = screen.getByRole('button', { name: 'Delete' });
+    expect(screen.getByRole('tooltip')).toHaveTextContent('Delete the selected rows');
+    expect(remove).toHaveAccessibleDescription('Delete the selected rows');
+  });
+
+  it('UIC-ICON-BUTTON-1.8 toggles, renders as a link and swaps its element as Button does', async () => {
+    const onChange = vi.fn();
+    render(
+      <>
+        <IconButton icon="eye" label="Show hidden" defaultSelected={false} onChange={onChange} />
+        <IconButton icon="help" label="Help" href="/help" />
+        <IconButton
+          icon="copy"
+          label="Copy"
+          render={(props) => <button {...props} data-testid="swapped" />}
+        />
+      </>,
+    );
+    const toggle = screen.getByRole('button', { name: 'Show hidden' });
+    expect(toggle).toHaveAttribute('aria-pressed', 'false');
+    await userEvent.click(toggle);
+    expect(toggle).toHaveAttribute('aria-pressed', 'true');
+    expect(toggle).toHaveAttribute('data-selected', 'true');
+    expect(onChange).toHaveBeenCalledWith(true);
+    const link = screen.getByRole('link', { name: 'Help' });
+    expect(link).toHaveAttribute('href', '/help');
+    expect(link).toHaveClass('ui-icon-button');
+    expect(link.querySelector('.ui-icon-button__icon')).not.toBeNull();
+    expect(screen.getByTestId('swapped')).toHaveClass('ui-icon-button');
+    expectHooksMatchSpec(document.body, 'ICON-BUTTON', {
+      slots: ['icon'],
+      callerAttributes: ['data-testid'],
+    });
+  });
 });
