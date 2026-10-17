@@ -7,6 +7,8 @@ const labNames = readdirSync('labs')
   .sort();
 
 test.describe('every lab', () => {
+  // A whole-lab axe scan of the largest labs can outlast the default budget on a loaded machine.
+  test.slow();
   for (const name of labNames) {
     for (const theme of ['light', 'dark']) {
       test(`UIC-LABS-3.4 ${name} passes axe in the ${theme} theme`, async ({ lab }) => {
