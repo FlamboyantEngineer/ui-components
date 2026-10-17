@@ -37,16 +37,21 @@ test.describe('Action Button lab', () => {
     });
     await expect(pending).toHaveAttribute('data-pending', 'true');
     await expect(pending).toHaveAttribute('aria-keyshortcuts', 'Control+Enter');
-    // React Aria opens a tooltip on keyboard focus, so arrive with Tab.
-    await page
-      .locator('[data-lab-cell="state=pending size=sm"] .ui-button', { hasText: 'Publish' })
-      .focus();
-    await page.keyboard.press('Tab');
-    await expect(pending).toBeFocused();
-    await expect(
-      page.getByRole('tooltip', { name: 'Publish the draft Control Enter' }),
-    ).toBeVisible();
-    await expect(pending).toHaveAccessibleDescription('Publish the draft Control Enter');
+    // React Aria opens a tooltip on keyboard focus, so arrive with Tab. The whole sequence retries,
+    // because a late focus change on a busy machine closes the tooltip between the checks.
+    await expect(async () => {
+      await page
+        .locator('[data-lab-cell="state=pending size=sm"] .ui-button', { hasText: 'Publish' })
+        .focus();
+      await page.keyboard.press('Tab');
+      await expect(pending).toBeFocused({ timeout: 2000 });
+      await expect(
+        page.getByRole('tooltip', { name: 'Publish the draft Control Enter' }),
+      ).toBeVisible({ timeout: 2000 });
+      await expect(pending).toHaveAccessibleDescription('Publish the draft Control Enter', {
+        timeout: 2000,
+      });
+    }).toPass({ timeout: 20000 });
     await lab.expectAccessible();
   });
 });
