@@ -80,4 +80,34 @@ test.describe('Search Field lab', () => {
     );
     await lab.expectAccessible();
   });
+
+  test('UIC-SEARCH-FIELD-2.1 UIC-SEARCH-FIELD-2.2 draws its label above the box and its messages below', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('search-field');
+    const labelled = page.locator('[data-lab-field="labelled"]');
+    const input = labelled.getByRole('searchbox', { name: 'Find a city' });
+    const label = await labelled.locator('.ui-search-field__label').boundingBox();
+    const group = await labelled.locator('.ui-search-field__group').boundingBox();
+    expect((label?.y ?? 0) + (label?.height ?? 0)).toBeLessThanOrEqual(group?.y ?? 0);
+    expect(group?.height).toBe(32);
+    await expect(input).toHaveAccessibleDescription('Type at least three letters.');
+    await input.fill('Os');
+    await expect(labelled.locator('.ui-search-field__error')).toHaveText('Too short.');
+    await expect(input).toHaveAccessibleDescription('Type at least three letters. Too short.');
+    await input.fill('Oslo');
+    await expect(labelled.locator('.ui-search-field__error')).toHaveCount(0);
+    await lab.expectAccessible();
+  });
+
+  test('UIC-SEARCH-FIELD-2.3 shows a spinner while results load', async ({ page, lab }) => {
+    await lab.open('search-field');
+    const loading = page.locator('[data-lab-field="loading"]');
+    await expect(loading).toHaveAttribute('data-pending', 'true');
+    await expect(loading.getByRole('progressbar', { name: 'Loading' })).toBeVisible();
+    await page.locator('.ui-switch__label', { hasText: 'Loading' }).click();
+    await expect(loading).not.toHaveAttribute('data-pending');
+    await expect(loading.getByRole('progressbar')).toHaveCount(0);
+  });
 });

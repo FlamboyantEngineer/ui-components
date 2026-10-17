@@ -3,6 +3,7 @@ import { Button } from '../../src/components/button/button.js';
 import {
   CodeEditor,
   type CodeCompletion,
+  type CodeCompletionSource,
   type CodeDiagnostic,
   type CodeEditorProps,
   type CodeEditorSize,
@@ -53,6 +54,70 @@ const vocabulary: CodeCompletion[] = [
   { label: 'basket', description: 'The chosen basket' },
   { label: 'market.city', description: 'Where the market is held' },
 ];
+
+const fruitFields: CodeCompletion[] = [
+  {
+    label: 'count',
+    kind: 'property',
+    description: 'number',
+    documentation: 'How many fruit are in the basket, counted when the basket is packed.',
+  },
+  {
+    label: 'ripe',
+    kind: 'property',
+    description: 'boolean',
+    documentation: 'Whether the fruit is ripe.',
+  },
+  { label: 'bruised', kind: 'property', description: 'boolean' },
+  { label: 'weigh', kind: 'function', description: 'weigh(unit)', insertText: 'weigh(${unit})' },
+];
+
+const statements: CodeCompletion[] = [
+  {
+    label: 'if',
+    kind: 'snippet',
+    description: 'if … return',
+    documentation: 'A condition and the value returned when it holds.',
+    insertText: 'if (${condition}) return ${value}',
+  },
+  {
+    label: 'pick',
+    kind: 'function',
+    description: 'pick(test, yes, no)',
+    insertText: 'pick(${test}, ${yes}, ${no})',
+  },
+  { label: 'let', kind: 'keyword', insertText: 'let ${name} = ${value}' },
+  { label: 'basket', kind: 'variable', description: 'The chosen basket' },
+];
+
+/** Fields after `fruit.`, statements elsewhere: the source reads the text before the caret. */
+const completeSample: CodeCompletionSource = ({ value, caret, query, isExplicit }) => {
+  const field = /fruit\.(\w*)$/.exec(value.slice(0, caret));
+  if (field) return { from: caret - (field[1]?.length ?? 0), options: fruitFields };
+  return (query || isExplicit) && !query.includes('.') ? statements : [];
+};
+
+const hoverNotes: Record<string, string> = {
+  basket: 'basket: the chosen basket, a text.',
+  pick: 'pick(test, yes, no): yes when the test holds, else no.',
+};
+
+/** The note on the word under an offset, for the hover tip. */
+function describeWordAt(source: string, offset: number) {
+  const start = source.slice(0, offset + 1).search(/\w+$/);
+  const word = start === -1 ? '' : (/^\w+/.exec(source.slice(start))?.[0] ?? '');
+  return hoverNotes[word] ?? null;
+}
+
+/** An unknown name on the second line, and a warning on the first line's text. */
+function checkProblems(source: string): CodeDiagnostic[] {
+  const column = (source.split('\n')[1] ?? '').indexOf('baskit') + 1;
+  if (column === 0) return [];
+  return [
+    { message: 'Unknown name "baskit". Did you mean "basket"?', line: 2, column },
+    { message: 'A text is always true.', line: 1, column: 14, endColumn: 22, severity: 'warning' },
+  ];
+}
 
 const sizes = ['sm', 'md', 'lg'] as const;
 const states = ['resting', 'numbered', 'invalid', 'warning', 'read-only', 'disabled'] as const;
@@ -152,6 +217,55 @@ function CompletingEditor() {
   );
 }
 
+function EditingEditor() {
+  const [value, setValue] = useState(
+    'let basket = pick(fruit.ripe, "pears", "plums")\nif (fruit.count > 12) {\n  return basket\n}',
+  );
+  return (
+    <>
+      <CodeEditor
+        aria-label="Editable source"
+        data-lab-editor="editing"
+        tokenize={tokenize}
+        lineNumbers
+        wrap="off"
+        indentWithTab
+        indent={4}
+        autoCloseBrackets
+        allowsSearch
+        completions={completeSample}
+        value={value}
+        onChange={setValue}
+      />
+      <p>
+        Value: <output data-lab-output="editing">{value}</output>
+      </p>
+      <button type="button" data-lab-after="editing">
+        After the editor
+      </button>
+    </>
+  );
+}
+
+function ProblemsEditor() {
+  const [value, setValue] = useState(
+    'let basket = "apples"\nreturn pick(fruit.ripe, baskit, "pears")',
+  );
+  return (
+    <CodeEditor
+      aria-label="Source with problems"
+      data-lab-editor="problems"
+      tokenize={tokenize}
+      lineNumbers
+      wrap="off"
+      value={value}
+      onChange={setValue}
+      diagnostics={checkProblems(value)}
+      renderHover={(offset) => describeWordAt(value, offset)}
+    />
+  );
+}
+
 const longSource = Array.from(
   { length: 60 },
   (_, index) =>
@@ -192,6 +306,18 @@ mountLab(
       description="Type fruit. or b: the list opens at the caret. Arrow keys move, Enter or Tab inserts, Escape closes."
     >
       <CompletingEditor />
+    </LabSection>
+    <LabSection
+      title="Editing keys, search and completion sources"
+      description="Tab and Shift+Tab indent by four spaces, Escape then Tab leaves; brackets and quotes pair up; Enter keeps the indentation; the bracket at the caret and its partner are marked. Ctrl+F finds and replaces. Typing or Ctrl+Space asks the source: statements with snippets (Tab moves between fields), or fields after fruit."
+    >
+      <EditingEditor />
+    </LabSection>
+    <LabSection
+      title="Problems and hover tips"
+      description="Problems are underlined; rest the pointer on one, or on basket or pick, for a tip. F8 and Shift+F8 move between problems."
+    >
+      <ProblemsEditor />
     </LabSection>
     <LabSection
       title="Long source"

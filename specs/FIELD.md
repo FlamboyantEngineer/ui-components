@@ -1,6 +1,6 @@
 # Field
 
-The field base every field control is built on. `useFieldState` is the controller: it holds or relays a field's value, knows its committed value, validates it, tracks dirty state and keeps a per-field undo history. `Field` lays a field out around its control: the label, the control, the restore, help and menu buttons, a decoration slot for the host's badges, the description and the validation message. It hands the control the ids and ARIA attributes it needs through a render function, so any control (a React Aria `Input`, a select trigger, a custom widget) becomes a field. `getFieldUndo` lets a host's shortcut handler undo or redo the focused field, and `FieldRestoreButton` restores a value wherever a control offers one. `validateString` checks text against length and format rules. Field controls (a text field, a number field) share their props through `FieldInputProps` and build on `useFieldControl` and `toAriaControlProps`. `FieldPreviousValue` shows a value an edit replaced or removed, beside the current one.
+The field base every field control is built on. `useFieldState` is the controller: it holds or relays a field's value, knows its committed value, validates it, tracks dirty state and keeps a per-field undo history. `Field` lays a field out around its control: the label, the control, the restore, help and menu buttons, a decoration slot for the host's badges, the description and the validation message. It hands the control the ids and ARIA attributes it needs through a render function, so any control (a React Aria `Input`, a select trigger, a custom widget) becomes a field. `getFieldUndo` lets a host's shortcut handler undo or redo the focused field, and `FieldRestoreButton` restores a value wherever a control offers one. `validateString` checks text against length and format rules. Field controls (a text field, a number field) share their props through `FieldInputProps` and build on `useFieldControl` and `toAriaControlProps`. `FieldPreviousValue` shows a value an edit replaced or removed, beside the current one. A field shows its validation when its validation mode allows, can check its value asynchronously, shows external errors by name, and can report its error to the browser's constraint validation; the nearest [Form](FORM.md) or `Fieldset` hands it defaults through the field scope. `Fieldset` groups fields under a legend and disables them together.
 
 ## UIC-FIELD-1 - Layout
 
@@ -59,6 +59,13 @@ Verification: `src/components/field/field.test.tsx`, `src/components/field/field
 
 Implementation: `src/components/field/field.tsx`, `src/components/field/field-parts.tsx`
 Verification: `src/components/field/field.test.tsx`
+
+### UIC-FIELD-1.9 - Interaction states
+
+`Field` shall publish on its root `data-focused` while focus is inside the field (its control, its buttons and the popovers they open, which React's focus events reach through portals), `data-touched` once focus has left the field (`state.touch()`, also when the focused part unmounts) and `data-filled` while the value is not empty (UIC-FIELD-3.1), so a stylesheet can wait for interaction.
+
+Implementation: `src/components/field/field.tsx`, `src/components/field/field-form.ts`, `src/components/field/field-state.ts`
+Verification: `src/components/field/field-form.test.tsx`
 
 ## UIC-FIELD-2 - Value and commit
 
@@ -126,6 +133,48 @@ The message element shall stay in the document while empty, as a polite atomic l
 
 Implementation: `src/components/field/field-parts.tsx`
 Verification: `src/components/field/field.test.tsx`
+
+### UIC-FIELD-3.5 - Several issues
+
+`validate` shall return no issue, one, or a list of them. `state.issues` lists every issue the field shows, errors first, and the message is the first error's (or warning's). An issue may name the validity state it matches in `validity`, as the browser's `ValidityState` names them: a required field left empty gives `valueMissing`, the string rules `tooShort`, `tooLong` and `patternMismatch` (UIC-FIELD-7.4), a number field's range and step rules `rangeUnderflow`, `rangeOverflow` and `stepMismatch`, and external errors `customError`.
+
+Implementation: `src/components/field/field-validation.ts`, `src/components/field/field-state.ts`
+Verification: `src/components/field/field-validation.test.tsx`
+
+### UIC-FIELD-3.6 - Rendering the message
+
+`renderMessage(validation, issues)` shall render the content of the message element while it shows a message, so a host can word a message per validity state or list every issue; without it the element shows the message. The element stays the polite live region of UIC-FIELD-3.4.
+
+Implementation: `src/components/field/field.tsx`, `src/components/field/field-parts.tsx`
+Verification: `src/components/field/field.test.tsx`
+
+### UIC-FIELD-3.7 - Validation mode
+
+`validationMode` shall choose when a field shows its validation: `immediate` from the start, `change` once its value changes through the field or focus leaves it, `blur` once focus leaves it, `submit` once its form shows it (`revealValidation()`, which a form calls on submit). Until then `validation` is `valid`, with no message, ARIA or issues; once shown it follows the value. `realtimeValidation` is always the current value's validation, shown or not. A field without a mode takes the mode of the nearest form and is otherwise `immediate`.
+
+Implementation: `src/components/field/field-validation.ts`, `src/components/field/field-state.ts`, `src/components/field/field-scope.ts`
+Verification: `src/components/field/field-validation.test.tsx`, `src/components/field/field-form.test.tsx`
+
+### UIC-FIELD-3.8 - Asynchronous validation
+
+`validateAsync(value, signal)` shall run once the value has stayed unchanged for `validationDebounce` milliseconds (0 by default), unless the value already has an error. Until its result for the current value arrives the field is `pending`; its issues then join the field's, and a check that rejects reports none. A newer value aborts the older check through `signal`, and a result counts only for the value it checked.
+
+Implementation: `src/components/field/field-async.ts`, `src/components/field/field-state.ts`
+Verification: `src/components/field/field-async.test.tsx`
+
+### UIC-FIELD-3.9 - External errors
+
+A field with a `name` shall show the nearest form's `validationErrors` for that name (a message or a list) as errors with the validity `customError`, first among its issues and whatever its validation mode. They clear once the value differs from the value they were given for; a new errors object shows them again.
+
+Implementation: `src/components/field/field-validation.ts`, `src/components/field/field-state.ts`
+Verification: `src/components/field/field-validation.test.tsx`, `src/components/field/field-control.test.tsx`
+
+### UIC-FIELD-3.10 - Native constraint validation
+
+`validationBehavior` (the nearest form's, else `aria`) shall decide whether the browser sees the field's validation. In the `native` behavior, while the value has an error or is being checked, the field gives its control element, when it takes part in constraint validation (an input, a text area), the message as its custom validity, and clears it otherwise, so `checkValidity()` fails and the browser blocks a native submit. An `invalid` event at the control shows the field's validation; inside a form the field prevents the browser's own message. In the `aria` behavior the field leaves the control's validity alone.
+
+Implementation: `src/components/field/field-form.ts`, `src/components/field/field-state.ts`
+Verification: `src/components/field/field-form.test.tsx`
 
 ## UIC-FIELD-4 - Restore
 
@@ -226,11 +275,18 @@ With `trim`, the rules shall check the text without its leading and trailing whi
 Implementation: `src/components/field/string-rules.ts`
 Verification: `src/components/field/string-rules.test.ts`
 
+### UIC-FIELD-7.4 - Counting and naming
+
+`getLength` shall count a text's length for `minLength` and `maxLength`, in place of code points (`countCodePoints`), so a grapheme counter counts a combined emoji once. Each error names its rule in `validity`: `tooShort`, `tooLong` or `patternMismatch`.
+
+Implementation: `src/components/field/string-rules.ts`
+Verification: `src/components/field/string-rules.test.ts`
+
 ## UIC-FIELD-8 - Field controls
 
 ### UIC-FIELD-8.1 - Control props
 
-Every field control shall take the field's props through one type, `FieldInputProps<T>`: the `useFieldState` options (value, default, committed and empty values, `onChange`, `onCommit`, `validate`, `isRequired`, `isReadOnly`, `isDisabled`, `isPending`) and the `Field` props but its state and render function (label, layout, description, help, decoration, menu, `onMenuAction`, `className`, `id` and caller `data-*`). `useFieldControl(props, options)` shall split a control's props into the field state, the props for `Field` and the control's own props. A field with no value, committed value or default starts at the control's `initialValue`, which is then also its default; a field with no `emptyValue` clears to the control's `emptyValue`; the control's `check` runs before the caller's `validate`, and its error wins.
+Every field control shall take the field's props through one type, `FieldInputProps<T>`: the `useFieldState` options (value, default, committed and empty values, `onChange`, `onCommit`, `validate`, `validateAsync`, `validationDebounce`, `validationMode`, `validationBehavior`, `name`, `isRequired`, `isReadOnly`, `isDisabled`, `isPending`) and the `Field` props but its state and render function (label, layout, description, help, decoration, menu, `onMenuAction`, `renderMessage`, `className`, `id` and caller `data-*`). `useFieldControl(props, options)` shall split a control's props into the field state, the props for `Field` and the control's own props. A field with no value, committed value or default starts at the control's `initialValue`, which is then also its default; a field with no `emptyValue` clears to the control's `emptyValue`; the control's `check` runs before the caller's `validate`, and its error wins. The form `name` goes to both the field state (UIC-FIELD-3.9) and the control's own props, so the control still submits under it.
 
 Implementation: `src/components/field/field-control.ts`
 Verification: `src/components/field/field-control.test.tsx`
@@ -258,6 +314,22 @@ With `onRestore`, the marker shall end with a `FieldRestoreButton` named from `r
 Implementation: `src/components/field/field-previous-value.tsx`
 Verification: `src/components/field/field-previous-value.test.tsx`
 
+## UIC-FIELD-10 - Fieldset
+
+### UIC-FIELD-10.1 - Legend and group
+
+`Fieldset` shall render a native `<fieldset>` (`ui-fieldset`) around its children, with `legend` in a `<legend>` (`ui-fieldset__legend`) that names the group. It appends the caller's `className` and forwards caller `data-*` attributes, `id` and the native fieldset props (`name`, `form`, `aria-*`).
+
+Implementation: `src/components/field/fieldset.tsx`, `labs/reference/field.css`
+Verification: `src/components/field/fieldset.test.tsx`, `e2e/form.spec.ts`
+
+### UIC-FIELD-10.2 - Shared disabled state
+
+`isDisabled` shall disable the fieldset natively, which disables its native controls, publish `data-disabled` and disable every field inside through the field scope: their state refuses every change (UIC-FIELD-2.4), their controls are disabled and they never block a form's submit. A fieldset inside a disabled one publishes `data-disabled` too.
+
+Implementation: `src/components/field/fieldset.tsx`, `src/components/field/field-scope.ts`, `src/components/field/field-state.ts`
+Verification: `src/components/field/fieldset.test.tsx`, `src/components/field/field-validation.test.tsx`, `e2e/form.spec.ts`
+
 ## Hooks
 
 | Hook                             | Kind      | Values                                                                  | Description                                                      |
@@ -278,7 +350,12 @@ Verification: `src/components/field/field-previous-value.test.tsx`
 | `data-required`                  | state     | `true`                                                                  | A value is required.                                             |
 | `data-readonly`                  | state     | `true`                                                                  | Read-only.                                                       |
 | `data-disabled`                  | state     | `true`                                                                  | Disabled.                                                        |
+| `data-touched`                   | state     | `true`                                                                  | Focus has left the field at least once.                          |
+| `data-filled`                    | state     | `true`                                                                  | The value is not empty.                                          |
+| `data-focused`                   | state     | `true`                                                                  | Focus is inside the field, popovers it opens included.           |
 | `data-severity`                  | state     | `error`, `warning`                                                      | On the message: the severity of the message shown.               |
 | `ui-field-restore-button`        | root      |                                                                         | A restore button (also `ui-icon-button`).                        |
 | `ui-field-previous-value`        | root      |                                                                         | A previous-value marker.                                         |
 | `ui-field-previous-value__value` | slot      |                                                                         | The previous value, in a `<del>` element.                        |
+| `ui-fieldset`                    | root      |                                                                         | A fieldset's `<fieldset>`.                                       |
+| `ui-fieldset__legend`            | slot      |                                                                         | The fieldset's `<legend>`.                                       |

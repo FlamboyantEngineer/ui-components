@@ -67,6 +67,90 @@ function PagedList() {
   );
 }
 
+const cities = [
+  'Amsterdam',
+  'Athens',
+  'Berlin',
+  'Bogota',
+  'Cairo',
+  'Dublin',
+  'Hanoi',
+  'Havana',
+  'Lima',
+  'Lisbon',
+  'Madrid',
+  'Nairobi',
+  'Oslo',
+  'Paris',
+  'Prague',
+  'Quito',
+  'Riga',
+  'Rome',
+  'Seoul',
+  'Tokyo',
+  'Tunis',
+  'Vienna',
+  'Warsaw',
+  'Zagreb',
+];
+const cityPage = 8;
+
+function EndlessList() {
+  const [loaded, setLoaded] = useState(cityPage);
+  const [waiting, setWaiting] = useState(false);
+  const deliver = useRef<(() => void) | null>(null);
+  const remaining = cities.length - loaded;
+  return (
+    <div data-lab-demo="endless">
+      {/* Lab-only scrolling frame; the control loads when it scrolls into view inside it. */}
+      <div
+        data-lab-scroller=""
+        role="region"
+        aria-label="Cities"
+        tabIndex={0}
+        style={{ height: 160, overflow: 'auto', border: '1px solid' }}
+      >
+        <ul data-lab-output="cities">
+          {cities.slice(0, loaded).map((name) => (
+            <li key={name}>{name}</li>
+          ))}
+        </ul>
+        {remaining > 0 ? (
+          <LoadMore
+            autoLoad
+            itemLabel="cities"
+            remainingCount={remaining}
+            onLoadMore={() =>
+              new Promise<void>((resolve) => {
+                deliver.current = () => {
+                  setLoaded((count) => Math.min(cities.length, count + cityPage));
+                  resolve();
+                };
+                setWaiting(true);
+              })
+            }
+          />
+        ) : (
+          <p data-lab-output="done">All cities loaded.</p>
+        )}
+      </div>
+      <Button
+        size="sm"
+        variant="tertiary"
+        data-lab-action="deliver-cities"
+        isDisabled={!waiting}
+        onPress={() => {
+          deliver.current?.();
+          deliver.current = null;
+          setWaiting(false);
+        }}
+      >
+        Deliver page
+      </Button>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -102,6 +186,12 @@ mountLab(
       description="Each press requests four more fruit and stays pending until Deliver page answers the request; the control disappears when the list is complete."
     >
       <PagedList />
+    </LabSection>
+    <LabSection
+      title="Loading on view"
+      description="With autoLoad, scrolling the control into view inside the frame requests the next eight cities; it stays pending until Deliver page answers, and remains a button for keyboard users."
+    >
+      <EndlessList />
     </LabSection>
   </>,
 );

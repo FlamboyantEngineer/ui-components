@@ -135,7 +135,15 @@ function severityOf({ status }: FieldValidation): FieldSeverity | null {
 }
 
 /** The message region. It stays in the document so assistive technology announces new messages. */
-export function FieldMessage({ id, validation }: { id: string; validation: FieldValidation }) {
+export function FieldMessage({
+  id,
+  validation,
+  children,
+}: {
+  id: string;
+  validation: FieldValidation;
+  children: ReactNode;
+}) {
   return (
     <div
       {...fieldHooks.slot('message', { severity: severityOf(validation) })}
@@ -143,7 +151,7 @@ export function FieldMessage({ id, validation }: { id: string; validation: Field
       aria-live="polite"
       aria-atomic="true"
     >
-      {validation.message}
+      {validation.message ? children : null}
     </div>
   );
 }

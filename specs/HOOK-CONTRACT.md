@@ -25,6 +25,13 @@ Every component shall accept `className` and append it after its root class. A c
 Implementation: `src/core/hooks.ts`
 Verification: `src/core/hooks.test.ts`
 
+### UIC-HOOKS-1.4 - Swapped elements
+
+When a caller swaps the element a component renders through a `render` prop ([COMPOSITION.md](COMPOSITION.md)), the props the component hands to `render` shall carry that element's hook classes and data attributes, so the caller's element keeps every hook once it spreads them.
+
+Implementation: `src/utils/render-element.ts`
+Verification: `src/utils/render-element.test.tsx`
+
 ## UIC-HOOKS-2 - Data attributes
 
 ### UIC-HOOKS-2.1 - Options

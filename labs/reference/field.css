@@ -149,3 +149,26 @@
   width: 22px;
   min-height: 22px;
 }
+
+/* A fieldset: a framed group under its legend. */
+.ui-fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  margin: 0;
+  padding: 10px 14px 14px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+}
+
+.ui-fieldset__legend {
+  padding: 0 4px;
+  color: var(--ref-text);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.ui-fieldset[data-disabled] {
+  border-style: dashed;
+}

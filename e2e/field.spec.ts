@@ -185,4 +185,61 @@ test.describe('Field lab', () => {
     );
     await lab.expectAccessible();
   });
+
+  test('UIC-FIELD-3.7 UIC-FIELD-1.9 shows a required field message when its mode allows', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('field');
+    const mode = (name: string) => page.locator(`[data-lab-cell="mode=${name}"]`);
+    await expect(mode('immediate').getByRole('textbox')).toHaveAttribute('aria-invalid', 'true');
+    const blur = mode('blur');
+    await blur.getByRole('textbox').focus();
+    await expect(blur.locator('.ui-field')).toHaveAttribute('data-focused', 'true');
+    await expect(blur.getByRole('textbox')).not.toHaveAttribute('aria-invalid');
+    await page.keyboard.press('Tab');
+    await expect(blur.locator('.ui-field')).toHaveAttribute('data-touched', 'true');
+    await expect(blur.getByRole('textbox')).toHaveAttribute('aria-invalid', 'true');
+    const submit = mode('submit');
+    await submit.getByRole('textbox').fill('a');
+    await expect(submit.locator('.ui-field')).toHaveAttribute('data-filled', 'true');
+    await submit.getByRole('textbox').fill('');
+    await expect(submit.getByRole('textbox')).not.toHaveAttribute('aria-invalid');
+    await submit.getByRole('button', { name: 'Show messages' }).click();
+    await expect(submit.getByRole('textbox')).toHaveAttribute('aria-invalid', 'true');
+  });
+
+  test('UIC-FIELD-3.5 UIC-FIELD-3.6 lists every issue in the message', async ({ page, lab }) => {
+    await lab.open('field');
+    const issues = field(page, 'issues');
+    await expect(issues.locator('.ui-field__message li')).toHaveText([
+      'Use 8 characters or more.',
+      'Add a digit.',
+      'A capital helps.',
+    ]);
+    await issues.getByRole('textbox').fill('abcdefgh1');
+    await expect(issues.locator('.ui-field__message li')).toHaveText(['A capital helps.']);
+    await expect(issues).toHaveAttribute('data-validation', 'warning');
+  });
+
+  test('UIC-FIELD-3.8 checks a value once it settles and reports the answer', async ({
+    page,
+    lab,
+  }) => {
+    // The check waits 300 ms and answers after 500 ms; a paused clock keeps each step observable.
+    await page.clock.install();
+    await lab.open('field');
+    const handle = field(page, 'async');
+    const input = handle.getByRole('textbox', { name: 'Handle' });
+    await expect(handle).toHaveAttribute('data-validation', 'valid');
+    await page.clock.pauseAt(Date.now() + 1000);
+    await input.fill('ada');
+    await expect(handle).toHaveAttribute('data-validation', 'pending');
+    await expect(handle.locator('.ui-field__message')).toHaveText('Validating');
+    await page.clock.runFor(799);
+    await expect(handle).toHaveAttribute('data-validation', 'pending');
+    await page.clock.runFor(1);
+    await expect(handle).toHaveAttribute('data-validation', 'invalid');
+    await expect(handle.locator('.ui-field__message')).toHaveText('ada is taken.');
+  });
 });

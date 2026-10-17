@@ -1,6 +1,6 @@
 # Text Field
 
-`TextField` is a [field](FIELD.md) for a plain string, on one line or several. It is built on React Aria's `TextField` with an `Input` or a `TextArea`, and takes the field's props (`FieldInputProps<string>`), so it has a label and layout, validation, dirty state and restore, undo and redo, and the field menu. It commits on blur and on Enter, reverts an edit on Escape, and checks length and format with the field's string rules. A query that filters or finds is a [Search Field](SEARCH-FIELD.md), and a number is a [Number Field](NUMBER-FIELD.md).
+`TextField` is a [field](FIELD.md) for a plain string, on one line or several. It is built on React Aria's `TextField` with an `Input` or a `TextArea`, and takes the field's props (`FieldInputProps<string>`), so it has a label and layout, validation, dirty state and restore, undo and redo, and the field menu. It commits on blur and on Enter, reverts an edit on Escape, and checks length and format with the field's string rules. Adornments and a reveal button for masked text sit inside the input's frame, a text area can grow with its text, and a counter shows the text's length. A query that filters or finds is a [Search Field](SEARCH-FIELD.md), and a number is a [Number Field](NUMBER-FIELD.md).
 
 ## UIC-TEXT-FIELD-1 - Contract
 
@@ -62,18 +62,55 @@ Verification: `src/components/text-field/text-field.test.tsx`
 Implementation: `src/components/text-field/text-field.tsx`, `src/components/field/field.tsx`
 Verification: `src/components/text-field/text-field.test.tsx`, `e2e/text-field.spec.ts`
 
+## UIC-TEXT-FIELD-3 - Frame and helpers
+
+### UIC-TEXT-FIELD-3.1 - Adornments
+
+`startAdornment` and `endAdornment` shall render the caller's content (an icon, a unit, a button) before and after the text, in `ui-text-field__start` and `ui-text-field__end`, inside a React Aria group (`ui-text-field__group`, role `presentation`) around the input, which the reference sheet frames as one box. Adornments are not part of the value or the control's name. A field without adornments or a reveal button draws no group, so the input is its own frame.
+
+Implementation: `src/components/text-field/text-field.tsx`, `src/components/text-field/text-field-parts.tsx`, `labs/reference/text-field.css`
+Verification: `src/components/text-field/text-field.test.tsx`, `e2e/text-field.spec.ts`
+
+### UIC-TEXT-FIELD-3.2 - Revealing masked text
+
+With `allowsReveal` and `type="password"`, the field shall draw a toggle button (`ui-text-field__reveal`, an `IconButton` in the group) after the text, named by the provider string `revealValue` from the label (`Show <label>`). While pressed (`aria-pressed="true"`, the `eye-slash` glyph) the input shows its text (`type="text"`); otherwise it masks it (the `eye` glyph). A pointer press keeps focus in the input; the button is reached by Tab and works from the keyboard. A disabled field disables it.
+
+Implementation: `src/components/text-field/text-field.tsx`, `src/components/text-field/text-field-parts.tsx`, `src/core/strings.ts`, `src/core/glyphs.tsx`
+Verification: `src/components/text-field/text-field.test.tsx`, `e2e/text-field.spec.ts`
+
+### UIC-TEXT-FIELD-3.3 - Growing text area
+
+A multiline field with `minRows` or `maxRows` shall publish `data-autosize` on its root and set its text area's height (a measured size) to its text's, between `minRows` (one by default) and `maxRows` (no limit by default) rows of its line height, as the text changes; past `maxRows` the text area scrolls. `minRows` is also the text area's `rows`. Without either the text area keeps the stylesheet's height.
+
+Implementation: `src/components/text-field/text-field.tsx`, `src/components/text-field/text-field-parts.tsx`, `labs/reference/text-field.css`
+Verification: `src/components/text-field/text-field.test.tsx`, `e2e/text-field.spec.ts`
+
+### UIC-TEXT-FIELD-3.4 - Character count
+
+With `showCount`, the field shall show the text's length after its description, in `ui-text-field__count` inside the field's description, which describes the control: the provider string `characterCount` (`12/100` against `maxLength`, `12` without one). The count and the length rules count with `getLength` (code points by default, UIC-FIELD-7.4), so a grapheme counter counts a combined emoji once in both.
+
+Implementation: `src/components/text-field/text-field.tsx`, `src/components/text-field/text-field-parts.tsx`, `src/core/strings.ts`
+Verification: `src/components/text-field/text-field.test.tsx`, `e2e/text-field.spec.ts`
+
 ## Hooks
 
-| Hook                   | Kind  | Values | Description                                             |
-| ---------------------- | ----- | ------ | ------------------------------------------------------- |
-| `ui-text-field`        | root  |        | The field's root (also `ui-field`).                     |
-| `ui-text-field__box`   | slot  |        | The React Aria text field element around the control.   |
-| `ui-text-field__input` | slot  |        | The `<input>` or `<textarea>`.                          |
-| `data-multiline`       | state | `true` | On the root: the field edits several lines.             |
-| `data-invalid`         | state | `true` | On the box and the control: invalid (React Aria).       |
-| `data-required`        | state | `true` | On the box: a value is required (React Aria).           |
-| `data-readonly`        | state | `true` | On the box: read-only (React Aria).                     |
-| `data-disabled`        | state | `true` | On the box and the control: disabled (React Aria).      |
-| `data-hovered`         | state | `true` | On the control: under the pointer (React Aria).         |
-| `data-focused`         | state | `true` | On the control: focused (React Aria).                   |
-| `data-focus-visible`   | state | `true` | On the control: focused from the keyboard (React Aria). |
+| Hook                    | Kind  | Values | Description                                                           |
+| ----------------------- | ----- | ------ | --------------------------------------------------------------------- |
+| `ui-text-field`         | root  |        | The field's root (also `ui-field`).                                   |
+| `ui-text-field__box`    | slot  |        | The React Aria text field element around the control.                 |
+| `ui-text-field__group`  | slot  |        | The frame around adornments, the input and reveal.                    |
+| `ui-text-field__start`  | slot  |        | The start adornment.                                                  |
+| `ui-text-field__input`  | slot  |        | The `<input>` or `<textarea>`.                                        |
+| `ui-text-field__end`    | slot  |        | The end adornment.                                                    |
+| `ui-text-field__reveal` | slot  |        | The reveal button (also `ui-icon-button`).                            |
+| `ui-text-field__count`  | slot  |        | The character count, inside the field's description.                  |
+| `data-multiline`        | state | `true` | On the root: the field edits several lines.                           |
+| `data-autosize`         | state | `true` | On the root: the text area grows with its text.                       |
+| `data-invalid`          | state | `true` | On the box, the group and the control: invalid (React Aria).          |
+| `data-required`         | state | `true` | On the box: a value is required (React Aria).                         |
+| `data-readonly`         | state | `true` | On the box: read-only (React Aria).                                   |
+| `data-disabled`         | state | `true` | On the box, the group and the control: disabled (React Aria).         |
+| `data-hovered`          | state | `true` | On the group and the control: under the pointer (React Aria).         |
+| `data-focus-within`     | state | `true` | On the group: focus is inside it (React Aria).                        |
+| `data-focused`          | state | `true` | On the control: focused (React Aria).                                 |
+| `data-focus-visible`    | state | `true` | On the group and the control: focused from the keyboard (React Aria). |

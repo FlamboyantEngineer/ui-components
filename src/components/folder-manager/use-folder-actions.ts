@@ -19,6 +19,7 @@ export interface FolderCallbacks<T extends FolderItem> {
   /** Creates a folder. It may resolve to the new folder's key, which is then selected. */
   onCreate?: ((folder: { name: string; parentKey: Key | null }) => unknown) | undefined;
   onRename?: ((folder: { key: Key; name: string }) => unknown) | undefined;
+  /** Deletes a folder; deleting several selected folders calls it for each, one after another. */
   onDelete?: ((key: Key) => unknown) | undefined;
   /** Why a folder cannot be deleted, or nothing when it can. */
   getDeleteBlockedReason?: ((folder: T) => string | null | undefined) | undefined;
@@ -42,7 +43,8 @@ export interface FolderActions<T extends FolderItem> {
   /** Ends the edit with `name`: a blank or unchanged name abandons it. */
   submit(name: string): Promise<void>;
   cancel(): void;
-  remove(folder: T): Promise<void>;
+  /** Deletes the folders, in order, stopping at the first refusal. */
+  remove(folders: readonly T[]): Promise<void>;
 }
 
 function messageOf(error: unknown, fallback: string): string {
@@ -111,14 +113,14 @@ export function useFolderActions<T extends FolderItem>({
     }
   };
 
-  const remove = async (folder: T) => {
-    const reason = getDeleteBlockedReason?.(folder);
+  const remove = async (targets: readonly T[]) => {
+    const reason = targets.map((folder) => getDeleteBlockedReason?.(folder)).find(Boolean);
     if (reason) return setMessage(reason);
-    const parentKey = findFolderPath(folders, folder.id).at(-2)?.id ?? null;
+    const parentKey = findFolderPath(folders, targets[0]?.id ?? null).at(-2)?.id ?? null;
     setDeleting(true);
     setMessage(null);
     try {
-      await onDelete?.(folder.id);
+      for (const folder of targets) await onDelete?.(folder.id);
       select(parentKey);
       onSettle(parentKey);
     } catch (error) {

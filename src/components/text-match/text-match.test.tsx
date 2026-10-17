@@ -21,13 +21,13 @@ describe('text matching helpers', () => {
   });
 
   it('UIC-TEXT-MATCH-1.2 finds sorted, merged ranges and requires every term', () => {
-    expect(findTermRanges('Apple Orchards', ['orchard'])).toEqual([{ start: 6, end: 13 }]);
+    expect(findTermRanges('Apple Orchards', ['orchard'])).toEqual([{ start: 6, end: 13, term: 0 }]);
     expect(findTermRanges('Before and After', ['fore', 'before', 'after'])).toEqual([
-      { start: 0, end: 6 },
-      { start: 11, end: 16 },
+      { start: 0, end: 6, term: 1 },
+      { start: 11, end: 16, term: 2 },
     ]);
-    expect(findTermRanges('aaa', ['aa'])).toEqual([{ start: 0, end: 2 }]);
-    expect(findTermRanges('pear plum', ['pe', 'ar'])).toEqual([{ start: 0, end: 4 }]);
+    expect(findTermRanges('aaa', ['aa'])).toEqual([{ start: 0, end: 2, term: 0 }]);
+    expect(findTermRanges('pear plum', ['pe', 'ar'])).toEqual([{ start: 0, end: 4, term: 0 }]);
     expect(findTermRanges('Page size', [])).toEqual([]);
     expect(findTermRanges('Page size', [''])).toEqual([]);
     expect(textMatchesTerms('Page orientation', ['page', 'orient'])).toBe(true);
@@ -40,11 +40,13 @@ describe('text matching helpers', () => {
   it('UIC-TEXT-MATCH-1.3 matches whole words, and word starts only for longer terms', () => {
     const text = 'Go to the top separator to add Favorites';
     expect(findTermRanges(text, ['to'], { matchWords: true })).toEqual([
-      { start: 3, end: 5 },
-      { start: 24, end: 26 },
+      { start: 3, end: 5, term: 0 },
+      { start: 24, end: 26, term: 0 },
     ]);
     expect(findTermRanges(text, ['to'])).toHaveLength(4);
-    expect(findTermRanges(text, ['fav'], { matchWords: true })).toEqual([{ start: 31, end: 34 }]);
+    expect(findTermRanges(text, ['fav'], { matchWords: true })).toEqual([
+      { start: 31, end: 34, term: 0 },
+    ]);
     expect(findTermRanges(text, ['avor'], { matchWords: true })).toEqual([]);
     const normalized = normalizeMatchText(text);
     expect(findWordMatches(normalized, 'to')).toEqual([3, 24]);
@@ -56,6 +58,33 @@ describe('text matching helpers', () => {
   });
 });
 
+describe('accent-insensitive matching', () => {
+  it('UIC-TEXT-MATCH-1.4 folds accents in the text and the query, keeping indexes aligned', () => {
+    const options = { ignoreAccents: true };
+    expect(normalizeMatchText('Café Señor Über', options)).toBe('cafe senor uber');
+    expect(normalizeMatchText('Café', options)).toHaveLength('Café'.length);
+    expect(normalizeMatchText('İstanbul', options)).toBe('istanbul');
+    expect(normalizeMatchText('Café')).toBe('café');
+    expect(splitMatchTerms('CAFÉ  crème', options)).toEqual(['cafe', 'creme']);
+    expect(splitMatchTerms('cafe\u0301', options)).toEqual(['cafe']);
+    expect(findTermRanges('Café crème', ['cafe'], options)).toEqual([
+      { start: 0, end: 4, term: 0 },
+    ]);
+    expect(findTermRanges('Café crème', ['cafe'])).toEqual([]);
+    expect(textMatchesTerms('Crème brûlée', ['creme', 'brulee'], options)).toBe(true);
+    expect(textMatchesTerms('Crème brûlée', ['creme'])).toBe(false);
+  });
+
+  it('UIC-TEXT-MATCH-1.2 never ends a range between a letter and its combining mark', () => {
+    const decomposed = 'cafe\u0301 noir';
+    expect(findTermRanges(decomposed, ['cafe'])).toEqual([{ start: 0, end: 5, term: 0 }]);
+    expect(findTermRanges(decomposed, ['cafe', 'noir'], { ignoreAccents: true })).toEqual([
+      { start: 0, end: 5, term: 0 },
+      { start: 6, end: 10, term: 1 },
+    ]);
+  });
+});
+
 describe('TextMatch', () => {
   it('UIC-TEXT-MATCH-2.1 marks every hit of the provider terms', () => {
     const { container, rerender } = render(
@@ -63,7 +92,7 @@ describe('TextMatch', () => {
         <TextMatch>Page size</TextMatch>
       </TextMatchProvider>,
     );
-    expect(container.innerHTML).toBe('Page <mark class="ui-text-match">size</mark>');
+    expect(container.innerHTML).toBe('Page <mark data-term="0" class="ui-text-match">size</mark>');
     expectHooksMatchSpec(container, 'TEXT-MATCH');
 
     rerender(
@@ -72,7 +101,7 @@ describe('TextMatch', () => {
       </TextMatchProvider>,
     );
     expect(container.innerHTML).toBe(
-      'Pag<mark class="ui-text-match">e</mark> siz<mark class="ui-text-match">e</mark>',
+      'Pag<mark data-term="0" class="ui-text-match">e</mark> siz<mark data-term="0" class="ui-text-match">e</mark>',
     );
 
     rerender(
@@ -81,7 +110,7 @@ describe('TextMatch', () => {
       </TextMatchProvider>,
     );
     expect(container.innerHTML).toBe(
-      '<mark class="ui-text-match">Line</mark>-<mark class="ui-text-match">Height</mark>',
+      '<mark data-term="0" class="ui-text-match">Line</mark>-<mark data-term="1" class="ui-text-match">Height</mark>',
     );
   });
 
@@ -91,7 +120,7 @@ describe('TextMatch', () => {
         <TextMatch>top to</TextMatch>
       </TextMatchProvider>,
     );
-    expect(container.innerHTML).toBe('top <mark class="ui-text-match">to</mark>');
+    expect(container.innerHTML).toBe('top <mark data-term="0" class="ui-text-match">to</mark>');
   });
 
   it('UIC-TEXT-MATCH-2.1 appends the caller class and data attributes to every mark', () => {
@@ -107,6 +136,40 @@ describe('TextMatch', () => {
     expect(marks[0]).toHaveClass('ui-text-match', 'caller');
     expect(marks[0]).toHaveAttribute('data-testid', 'hit');
     expect(marks[0]).toHaveTextContent('anan');
+    expectHooksMatchSpec(container, 'TEXT-MATCH');
+  });
+
+  it('UIC-TEXT-MATCH-1.4 marks accented text from an unaccented query on request', () => {
+    const { container, rerender } = render(
+      <TextMatchProvider query="creme" ignoreAccents>
+        <TextMatch>Crème brûlée</TextMatch>
+      </TextMatchProvider>,
+    );
+    expect(container.querySelector('mark')).toHaveTextContent('Crème');
+    rerender(
+      <TextMatchProvider query="creme">
+        <TextMatch>Crème brûlée</TextMatch>
+      </TextMatchProvider>,
+    );
+    expect(container.querySelector('mark')).toBeNull();
+  });
+
+  it('UIC-TEXT-MATCH-2.5 names the matched term on each mark', () => {
+    const { container } = render(
+      <TextMatchProvider query="apple pie">
+        <TextMatch>Pie with apple, and apple pie</TextMatch>
+      </TextMatchProvider>,
+    );
+    const marks = Array.from(container.querySelectorAll('mark'), (mark) => [
+      mark.textContent,
+      mark.getAttribute('data-term'),
+    ]);
+    expect(marks).toEqual([
+      ['Pie', '1'],
+      ['apple', '0'],
+      ['apple', '0'],
+      ['pie', '1'],
+    ]);
     expectHooksMatchSpec(container, 'TEXT-MATCH');
   });
 

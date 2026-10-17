@@ -1,2 +1,6 @@
-export { ColorSwatch } from './color-swatch.js';
-export type { ColorSwatchProps } from './color-swatch.js';
+export { ColorSwatch, ColorSwatchPicker, ColorSwatchPickerItem } from './color-swatch.js';
+export type {
+  ColorSwatchPickerItemProps,
+  ColorSwatchPickerProps,
+  ColorSwatchProps,
+} from './color-swatch.js';

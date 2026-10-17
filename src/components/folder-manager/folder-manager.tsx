@@ -1,14 +1,22 @@
+import type { Key } from 'react-aria-components';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { InlineError } from '../inline-error/inline-error.js';
 import type { MenuEntry } from '../menu/menu.js';
+import { SearchField } from '../search-field/search-field.js';
 import {
   FolderToolbar,
   folderManagerHooks as hooks,
   type FolderToolbarProps,
 } from './folder-manager-parts.js';
-import type { FolderItem } from './folder-model.js';
+import {
+  findFolderPath,
+  getFolderHeight,
+  listFolderDestinations,
+  type FolderDestination,
+  type FolderItem,
+} from './folder-model.js';
 import { FolderTree } from './folder-tree.js';
 import {
   useFolderManager,
@@ -21,6 +29,12 @@ export interface FolderManagerProps<T extends FolderItem>
   /** Names the folder tree. */
   'aria-label'?: string | undefined;
   'aria-labelledby'?: string | undefined;
+  /** Draws a search box that keeps the folders whose name holds every term, with their ancestors. */
+  filterable?: boolean | undefined;
+  /** Renders only the rows in view; the stylesheet must bound the tree's height. */
+  virtualized?: boolean | undefined;
+  /** Row height in pixels for a virtualized tree. */
+  rowHeight?: number | undefined;
 }
 
 interface ToolContext<T extends FolderItem> {
@@ -35,10 +49,19 @@ interface Availability {
   deleteReason: string | null | undefined;
 }
 
+/** The key of a Move to entry for a destination: its folder's key, or the top level. */
+const moveKeyPrefix = 'move-to:';
+
 function availabilityOf<T extends FolderItem>({ model, props }: ToolContext<T>): Availability {
-  const deleteReason = model.folder ? props.getDeleteBlockedReason?.(model.folder) : null;
-  const canRename = model.folder !== null && !model.isBusy;
-  return { canRename, canDelete: canRename && !deleteReason, deleteReason };
+  const deleteReason = model.selection
+    .map((folder) => props.getDeleteBlockedReason?.(folder))
+    .find(Boolean);
+  const isFree = !model.isBusy;
+  return {
+    canRename: model.folder !== null && isFree,
+    canDelete: model.selection.length > 0 && isFree && !deleteReason,
+    deleteReason: model.selection.length > 0 && isFree ? deleteReason : null,
+  };
 }
 
 function toolbarOf<T extends FolderItem>(
@@ -49,7 +72,7 @@ function toolbarOf<T extends FolderItem>(
   return {
     create: {
       isOffered: Boolean(props.onCreate),
-      isDisabled: model.isBusy || atLimit,
+      isDisabled: model.isBusy || atLimit || model.selection.length > 1,
       reason: atLimit ? strings.folderDepthLimit(props.maxDepth ?? 0) : null,
       onPress: model.startCreate,
     },
@@ -61,16 +84,41 @@ function toolbarOf<T extends FolderItem>(
     remove: {
       isOffered: Boolean(props.onDelete),
       isDisabled: !canDelete,
-      reason: canRename ? deleteReason : null,
+      reason: deleteReason,
       onPress: model.remove,
     },
   };
 }
 
+/** Where the selected folders may move: not into themselves, and within the depth limit. */
+function destinationsOf<T extends FolderItem>({ model, props }: ToolContext<T>) {
+  const moving = new Set(model.selection.map((folder) => folder.id));
+  const height = Math.max(0, ...model.selection.map(getFolderHeight));
+  const fits = ({ folder }: FolderDestination<T>) =>
+    props.maxDepth === undefined ||
+    (folder ? findFolderPath(props.folders, folder.id).length : 0) + height <= props.maxDepth;
+  return listFolderDestinations(props.folders, moving).filter(fits);
+}
+
+function moveEntryOf<T extends FolderItem>(context: ToolContext<T>): MenuEntry {
+  const { model, props, strings } = context;
+  const topLevel = props.rootLabel ?? strings.topLevel;
+  return {
+    id: 'move',
+    label: strings.moveTo,
+    isDisabled: model.selection.length === 0 || model.isBusy,
+    items: destinationsOf(context).map(({ folder, path }) => ({
+      id: `${moveKeyPrefix}${folder === null ? '' : String(folder.id)}`,
+      label: path.length > 0 ? path.join(' / ') : topLevel,
+    })),
+  };
+}
+
 function menuOf<T extends FolderItem>(
-  { props, strings }: ToolContext<T>,
+  context: ToolContext<T>,
   { canRename, canDelete, deleteReason }: Availability,
 ): MenuEntry[] {
+  const { props, strings } = context;
   const entries: MenuEntry[] = [];
   if (props.onRename) {
     entries.push({ id: 'rename', label: strings.rename, icon: 'edit', isDisabled: !canRename });
@@ -85,39 +133,59 @@ function menuOf<T extends FolderItem>(
       description: deleteReason ?? undefined,
     });
   }
+  // Drag and drop and Alt+Arrow keys move one folder; Move to moves a multiple selection.
+  if (props.onMove && props.selectionMode === 'multiple') entries.push(moveEntryOf(context));
   return entries;
 }
 
+function runMenuAction<T extends FolderItem>({ model, props }: ToolContext<T>, key: Key) {
+  const id = String(key);
+  if (id === 'rename') return model.startRename();
+  if (id === 'delete') return model.remove();
+  if (!id.startsWith(moveKeyPrefix)) return undefined;
+  const target = id.slice(moveKeyPrefix.length);
+  const destination = listFolderDestinations(props.folders, new Set()).find(
+    ({ folder }) => folder !== null && String(folder.id) === target,
+  );
+  return model.moveTo(destination?.folder ?? null);
+}
+
 /**
- * Manages a folder tree on the library `Tree`: select a folder, create one under it, rename it in
- * place, delete it, and reorder or nest folders by drag and drop or Alt+Arrow keys. The folders are
- * data and every change goes to a callback, which may return a promise; a rejected promise keeps an
- * edit open with its reason. New folder, Rename and Delete appear only when their callback is set.
+ * Manages a folder tree on the library `Tree`: select one folder or several, create one under the
+ * selected folder, rename it in place, delete the selected folders, and move them by drag and drop,
+ * Alt+Arrow keys or the context menu's Move to. Subfolders can load on demand and a search box can
+ * filter the folders. The folders are data and every change goes to a callback, which may return a
+ * promise; a rejected promise keeps an edit open with its reason. Actions appear only when their
+ * callback is set.
  */
 export function FolderManager<T extends FolderItem>(props: FolderManagerProps<T>) {
-  const context = { model: useFolderManager(props), props, strings: useUiStrings() };
+  const strings = useUiStrings();
+  const context = { model: useFolderManager(props), props, strings };
   const { model } = context;
   const availability = availabilityOf(context);
   const { message } = model.actions;
-  const {
-    className,
-    id,
-    folders,
-    rootLabel,
-    maxDepth,
-    isPending = false,
-    onMove,
-    'aria-label': ariaLabel,
-    'aria-labelledby': ariaLabelledBy,
-  } = props;
+  const { className, id, folders, rootLabel, maxDepth, isPending = false, onMove } = props;
+  const { selectionMode = 'single', virtualized, rowHeight } = props;
+  const label = props['aria-label'];
   return (
     <div {...hooks.root({ className, props, data: { pending: model.isBusy } })} id={id}>
       <FolderToolbar {...toolbarOf(context, availability)} />
+      {props.filterable ? (
+        <SearchField
+          className={hooks.slotClass('filter')}
+          label={strings.filterLabel(label ?? strings.search)}
+          size="sm"
+          value={model.query}
+          onChange={model.setQuery}
+        />
+      ) : null}
       <FolderTree
-        {...{ model, folders, rootLabel, maxDepth, isPending, onMove }}
-        aria-label={ariaLabel}
-        aria-labelledby={ariaLabelledBy}
+        {...{ model, folders, rootLabel, maxDepth, isPending, onMove, selectionMode }}
+        {...{ virtualized, rowHeight }}
+        aria-label={label}
+        aria-labelledby={props['aria-labelledby']}
         menuEntries={menuOf(context, availability)}
+        onMenuAction={(key) => runMenuAction(context, key)}
       />
       {message ? (
         <InlineError id={model.messageId} className={hooks.slotClass('message')}>

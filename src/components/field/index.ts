@@ -2,6 +2,7 @@ export {
   Field,
   FieldPreviousValue,
   FieldRestoreButton,
+  Fieldset,
   getFieldUndo,
   toAriaControlProps,
   useFieldControl,
@@ -9,11 +10,13 @@ export {
   validateString,
 } from './field.js';
 export type {
+  FieldAsyncValidate,
   FieldControl,
   FieldControlOptions,
   FieldControlProps,
   FieldInputProps,
   FieldIssue,
+  FieldIssues,
   FieldLabelLayout,
   FieldLayoutProps,
   FieldMenuAction,
@@ -27,6 +30,11 @@ export type {
   FieldStatus,
   FieldUndo,
   FieldValidation,
+  FieldValidationBehavior,
+  FieldValidationErrors,
+  FieldValidationMode,
+  FieldValidity,
+  FieldsetProps,
   StringRuleMessages,
   StringRules,
 } from './field.js';

@@ -123,6 +123,52 @@ function SavedField() {
   );
 }
 
+function Affixes() {
+  return (
+    <>
+      <NumberField
+        label="Rent"
+        defaultValue={1250}
+        startAdornment="$"
+        endAdornment="/mo"
+        hideStepper
+        data-lab-field="rent"
+      />
+      <UiProvider locale="en-IN">
+        <NumberField
+          label="Budget"
+          defaultValue={1250000}
+          startAdornment="₹"
+          hideStepper
+          data-lab-field="lakh"
+        />
+      </UiProvider>
+    </>
+  );
+}
+
+function FastSteps() {
+  const [committed, setCommitted] = useState<number | null>(40);
+  return (
+    <>
+      <NumberField
+        label="Opacity"
+        description="Shift steps by 10, Alt by 0.1; drag the handle sideways to scrub."
+        defaultValue={40}
+        minValue={0}
+        maxValue={100}
+        smallStep={0.1}
+        largeStep={10}
+        showScrubber
+        endAdornment="%"
+        onCommit={setCommitted}
+        data-lab-field="fast"
+      />
+      <Output name="Opacity">{committed === null ? 'empty' : committed}</Output>
+    </>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -147,6 +193,15 @@ mountLab(
       description="Step the value, then restore, undo with Ctrl+Z, or use the field menu."
     >
       <SavedField />
+    </LabSection>
+    <LabSection
+      title="Literal affixes"
+      description="A prefix and suffix the locale cannot format, and the Indian lakh grouping of the en-IN locale."
+    >
+      <Affixes />
+    </LabSection>
+    <LabSection title="Fast steps" description="Modifier steps and a scrub handle.">
+      <FastSteps />
     </LabSection>
   </>,
 );

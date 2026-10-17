@@ -442,4 +442,168 @@ describe('FolderManager', () => {
     expect(root).toHaveAttribute('data-testid', 'probe');
     expectHooksMatchSpec(container, 'FOLDER-MANAGER', { callerAttributes: ['data-testid'] });
   });
+
+  it('UIC-FOLDER-MANAGER-5.1 loads subfolders when a folder that has some is expanded', async () => {
+    // The loading row watches its visibility; the test DOM has no observer of its own.
+    vi.stubGlobal('IntersectionObserver', function createObserver() {
+      return { observe() {}, disconnect() {} };
+    });
+    const user = userEvent.setup();
+    const answers: Array<{ resolve: () => void; reject: (error: Error) => void }> = [];
+    function Lazy() {
+      const [folders, setFolders] = useState<readonly Folder[]>([
+        { id: 'pantry', name: 'Pantry', hasChildren: true },
+        { id: 'cellar', name: 'Cellar' },
+      ]);
+      const onLoadChildren = vi.fn(
+        (key: Key) =>
+          new Promise<void>((resolve, reject) => {
+            answers.push({
+              resolve: () => {
+                setFolders((current) =>
+                  mapFolders(current, (folder) =>
+                    folder.id === key
+                      ? { ...folder, children: [{ id: 'jars', name: 'Jars' }] }
+                      : folder,
+                  ),
+                );
+                resolve();
+              },
+              reject,
+            });
+          }),
+      );
+      return (
+        <FolderManager aria-label="Folders" folders={folders} onLoadChildren={onLoadChildren} />
+      );
+    }
+    const { container } = render(<Lazy />);
+    expect(row('Pantry')).toHaveAttribute('aria-expanded', 'false');
+    await user.click(within(row('Pantry')).getByRole('button', { name: 'Expand Pantry' }));
+    expect(answers).toHaveLength(1);
+    expect(container.querySelector('.ui-tree__loader')).not.toBeNull();
+    await act(async () => answers[0]?.reject(new Error('The pantry is locked.')));
+    const error = within(row('Pantry')).getByRole('alert');
+    expect(error).toHaveClass('ui-folder-manager__load-error', 'ui-inline-error');
+    expect(error).toHaveTextContent('The pantry is locked.');
+    expectHooksMatchSpec(container, 'FOLDER-MANAGER', { slots: ['load-error'] });
+    await user.click(within(error).getByRole('button', { name: 'Retry' }));
+    expect(answers).toHaveLength(2);
+    await act(async () => answers[1]?.resolve());
+    expect(rowNames()).toEqual(['Pantry', 'Jars', 'Cellar']);
+    expect(row('Pantry')).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.queryByRole('alert')).toBeNull();
+    vi.unstubAllGlobals();
+  });
+
+  it('UIC-FOLDER-MANAGER-6.1 selects several folders and offers only what applies to them', async () => {
+    const user = userEvent.setup();
+    const onSelectedKeysChange = vi.fn();
+    render(
+      <Manager
+        selectionMode="multiple"
+        defaultSelectedKeys={['citrus']}
+        onSelectedKeysChange={onSelectedKeysChange}
+      />,
+    );
+    expect(row('Citrus')).toHaveAttribute('aria-selected', 'true');
+    await user.keyboard('{Control>}');
+    await user.click(row('Vegetables'));
+    await user.keyboard('{/Control}');
+    expect(onSelectedKeysChange).toHaveBeenLastCalledWith(['citrus', 'vegetables']);
+    expect(row('Vegetables')).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('button', { name: 'Rename' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'New folder' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Delete' })).toBeEnabled();
+    await user.click(row('Berries'));
+    expect(onSelectedKeysChange).toHaveBeenLastCalledWith(['berries']);
+    expect(screen.getByRole('button', { name: 'Rename' })).toBeEnabled();
+  });
+
+  it('UIC-FOLDER-MANAGER-6.2 deletes every selected folder, one after another', async () => {
+    const user = userEvent.setup();
+    const deleted: Key[] = [];
+    render(
+      <Manager
+        selectionMode="multiple"
+        defaultSelectedKeys={['citrus', 'fruit', 'vegetables']}
+        onDelete={(key) => {
+          deleted.push(key);
+        }}
+      />,
+    );
+    await user.click(screen.getByRole('button', { name: 'Delete' }));
+    expect(deleted).toEqual(['fruit', 'vegetables']);
+  });
+
+  it('UIC-FOLDER-MANAGER-6.2 refuses to delete a selection holding a blocked folder', () => {
+    render(
+      <Manager
+        selectionMode="multiple"
+        defaultSelectedKeys={['citrus', 'fruit']}
+        getDeleteBlockedReason={(folder) => (folder.children ? 'Empty the folder first.' : null)}
+      />,
+    );
+    expect(screen.getByRole('button', { name: 'Delete' })).toHaveAttribute('aria-disabled', 'true');
+  });
+
+  it('UIC-FOLDER-MANAGER-6.3 moves the selected folders to a place chosen in the context menu', async () => {
+    const user = userEvent.setup();
+    const onMove = vi.fn();
+    render(
+      <Manager selectionMode="multiple" defaultSelectedKeys={['citrus', 'berries']} maxDepth={2} />,
+    );
+    fireEvent.contextMenu(row('Citrus'));
+    const menu = await screen.findByRole('menu');
+    expect(
+      within(menu)
+        .getAllByRole('menuitem')
+        .map((item) => item.textContent),
+    ).toEqual(['Rename', 'Delete', 'Move to']);
+    await user.click(within(menu).getByRole('menuitem', { name: 'Move to' }));
+    const places = await screen.findAllByRole('menu');
+    const submenu = places.at(-1) as HTMLElement;
+    expect(
+      within(submenu)
+        .getAllByRole('menuitem')
+        .map((item) => item.textContent),
+    ).toEqual(['Top level', 'Fruit', 'Vegetables']);
+    await user.click(within(submenu).getByRole('menuitem', { name: 'Vegetables' }));
+    expect(rowNames()).toEqual(['Fruit', 'Vegetables', 'Citrus', 'Berries']);
+    expect(row('Vegetables')).toHaveAttribute('aria-expanded', 'true');
+    expect(onMove).not.toHaveBeenCalled();
+  });
+
+  it('UIC-FOLDER-MANAGER-7.1 filters the folders by name and highlights the matches', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<Manager filterable />);
+    const search = screen.getByRole('searchbox', { name: 'Filter folders' });
+    expect(container.querySelector('.ui-folder-manager__filter')).toContainElement(search);
+    await user.click(within(row('Fruit')).getByRole('button', { name: 'Collapse Fruit' }));
+    await user.type(search, 'ber');
+    expect(rowNames()).toEqual(['Fruit', 'Berries']);
+    expect(row('Berries').querySelector('mark')).toHaveTextContent('Ber');
+    expectHooksMatchSpec(container, 'FOLDER-MANAGER', { slots: ['filter'] });
+    await user.clear(search);
+    await user.type(search, 'plum');
+    expect(screen.queryAllByRole('row').map((element) => element.textContent)).toEqual([
+      'No results',
+    ]);
+    await user.clear(search);
+    expect(rowNames()).toEqual(['Fruit', 'Citrus', 'Berries', 'Vegetables']);
+  });
+
+  it('UIC-FOLDER-MANAGER-7.1 clears the filter to create a folder', async () => {
+    const user = userEvent.setup();
+    render(<Manager filterable defaultSelectedKey="vegetables" />);
+    await user.type(screen.getByRole('searchbox', { name: 'Filter folders' }), 'cit');
+    await user.click(screen.getByRole('button', { name: 'New folder' }));
+    expect(screen.getByRole('searchbox', { name: 'Filter folders' })).toHaveValue('');
+    expect(screen.getByRole('textbox', { name: 'New folder name' })).toHaveFocus();
+  });
+
+  it('UIC-FOLDER-MANAGER-8.1 renders a virtualized tree', () => {
+    const { container } = render(<Manager virtualized rowHeight={30} />);
+    expect(container.querySelector('.ui-tree')).toHaveAttribute('data-virtualized', 'true');
+  });
 });

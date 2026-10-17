@@ -36,3 +36,6 @@ export function ColorSwatch({
     />
   );
 }
+
+export { ColorSwatchPicker, ColorSwatchPickerItem } from './color-swatch-picker.js';
+export type { ColorSwatchPickerItemProps, ColorSwatchPickerProps } from './color-swatch-picker.js';

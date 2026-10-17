@@ -122,6 +122,13 @@ Verification: `src/components/tree/tree.test.tsx`, `e2e/tree.spec.ts`
 Implementation: `src/components/tree/tree.tsx`
 Verification: `src/components/tree/tree.test.tsx`
 
+### UIC-TREE-4.5 - Virtualization
+
+`virtualized` shall render the tree through React Aria's `Virtualizer` with its list layout and publish `data-virtualized` on the tree: only the visible rows in view of the tree, plus a small buffer, are in the document, at `rowHeight` pixels each (28, 32 or 40 by default at size `sm`, `md` or `lg`), and scrolling the tree reaches the last row. The stylesheet bounds the tree's height.
+
+Implementation: `src/components/tree/tree.tsx`, `labs/reference/tree.css`
+Verification: `src/components/tree/tree.test.tsx`, `e2e/tree.spec.ts`
+
 ## Hooks
 
 | Hook                      | Kind      | Values                  | Description                                                           |
@@ -142,6 +149,7 @@ Verification: `src/components/tree/tree.test.tsx`
 | `data-variant`            | attribute | `default`, `picker`     | Navigation tree or picker.                                            |
 | `data-expand-glyph`       | attribute | `chevron`, `plus-minus` | The expand button's glyphs.                                           |
 | `data-wrap`               | state     | `true`                  | Labels may wrap.                                                      |
+| `data-virtualized`        | state     | `true`                  | Only the rows in view render.                                         |
 | `data-pending`            | state     | `true`                  | Items are loading.                                                    |
 | `data-current`            | state     | `true`                  | The current row.                                                      |
 | `data-position`           | attribute | `before`, `after`       | Which side of its row a drop indicator stands for.                    |

@@ -1,5 +1,6 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
+import { Collection, ListLayout, MenuLoadMoreItem, Virtualizer } from 'react-aria-components';
 import { describe, expect, it, vi } from 'vitest';
 import { MenuButton, actionKeys, fruitEntries, openMenu } from '../../../test/menu-fixtures.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -193,5 +194,55 @@ describe('Menu', () => {
     await user.click(document.body);
     expect(screen.queryByRole('menu')).toBeNull();
     await waitFor(() => expect(trigger).toHaveFocus());
+  });
+
+  it('UIC-COLLECTIONS-1.1 UIC-COLLECTIONS-1.2 renders virtualized and loads more through React Aria', async () => {
+    vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(200);
+    vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(100);
+    const observed: Element[] = [];
+    let report: IntersectionObserverCallback = () => {};
+    vi.stubGlobal(
+      'IntersectionObserver',
+      class {
+        constructor(callback: IntersectionObserverCallback) {
+          report = callback;
+        }
+        observe(element: Element) {
+          observed.push(element);
+        }
+        unobserve() {}
+        disconnect() {}
+      },
+    );
+    const cities = Array.from({ length: 500 }, (_, index) => ({
+      id: index,
+      name: `City ${index}`,
+    }));
+    const onLoadMore = vi.fn();
+    const user = userEvent.setup();
+    render(
+      <Virtualizer layout={ListLayout} layoutOptions={{ rowHeight: 25 }}>
+        <Menu aria-label="Cities">
+          <Collection items={cities}>
+            {(city) => <MenuItem id={city.id}>{city.name}</MenuItem>}
+          </Collection>
+          <MenuLoadMoreItem onLoadMore={onLoadMore} isLoading={false} />
+        </Menu>
+      </Virtualizer>,
+    );
+    const rows = screen.getAllByRole('menuitem');
+    expect(rows.length).toBeGreaterThan(0);
+    expect(rows.length).toBeLessThan(20);
+    expect(rows[0]).toHaveClass('ui-menu-item');
+    expect(rows[0]).toHaveAttribute('aria-setsize', '500');
+    expect(screen.getByRole('menu')).toHaveClass('ui-menu');
+
+    await user.tab();
+    await user.keyboard('{End}');
+    expect(screen.getByRole('menuitem', { name: 'City 499' })).toHaveFocus();
+
+    act(() => report([{ isIntersecting: true, target: observed[0] } as never], {} as never));
+    expect(onLoadMore).toHaveBeenCalledTimes(1);
+    vi.unstubAllGlobals();
   });
 });

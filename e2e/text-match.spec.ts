@@ -39,4 +39,28 @@ test.describe('Text Match lab', () => {
     await expect(filter.getByRole('listitem').filter({ hasText: 'Tokyo' })).toHaveText('Tokyo');
     await lab.expectAccessible();
   });
+
+  test('UIC-TEXT-MATCH-1.4 UIC-TEXT-MATCH-2.5 ignores accents on request and tints each term', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('text-match');
+    const marks = (query: string, accents: string) =>
+      page.locator(`[data-lab-cell="query=${query} accents=${accents}"] mark.ui-text-match`);
+    await expect(marks('cafe', 'exact')).toHaveCount(0);
+    await expect(marks('cafe', 'ignored')).toHaveText(['Café', 'café']);
+    await expect(marks('café', 'exact')).toHaveText(['Café', 'café']);
+    const terms = marks('lait creme cafe', 'ignored');
+    await expect(terms).toHaveText(['Café', 'crème', 'crème', 'café', 'lait']);
+    const termOf = (index: number) => terms.nth(index).getAttribute('data-term');
+    expect(await Promise.all([0, 1, 2, 3, 4].map(termOf))).toEqual(['2', '1', '1', '2', '0']);
+    const tint = (index: number) =>
+      terms.nth(index).evaluate((node) => getComputedStyle(node).backgroundColor);
+    const [lait, creme, cafe] = await Promise.all([tint(4), tint(1), tint(0)]);
+    expect(new Set([lait, creme, cafe]).size).toBe(3);
+    await expect(
+      page.locator('[data-lab-cell="query=lait creme cafe accents=ignored"]'),
+    ).toHaveText('Café crème, crème brûlée and a café au lait');
+    await lab.expectAccessible();
+  });
 });

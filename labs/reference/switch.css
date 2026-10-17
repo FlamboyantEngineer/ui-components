@@ -1,0 +1,78 @@
+/* Switch: a 30 by 18 pixel track with a sliding thumb, before its label. */
+
+.ui-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 24px;
+  font-size: 13px;
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+.ui-switch + .ui-switch {
+  margin-inline-start: 16px;
+}
+
+.ui-switch__track {
+  position: relative;
+  display: inline-block;
+  flex: none;
+  box-sizing: border-box;
+  width: 30px;
+  height: 18px;
+  border: 1px solid var(--ref-border-strong);
+  border-radius: 9px;
+  background: var(--ref-surface);
+}
+
+.ui-switch__thumb {
+  position: absolute;
+  top: 3px;
+  inset-inline-start: 3px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--ref-border-strong);
+  transition: inset-inline-start 0.1s;
+}
+
+.ui-switch[data-selected] .ui-switch__track {
+  border-color: var(--ref-accent);
+  background: var(--ref-accent);
+}
+
+.ui-switch[data-selected] .ui-switch__thumb {
+  inset-inline-start: 15px;
+  background: var(--ref-accent-text);
+}
+
+.ui-switch[data-hovered] .ui-switch__track {
+  border-color: var(--ref-accent-ink);
+}
+
+.ui-switch[data-pressed] .ui-switch__thumb {
+  width: 12px;
+}
+
+.ui-switch[data-focus-visible] .ui-switch__track {
+  outline: 2px solid var(--ref-focus);
+  outline-offset: 2px;
+}
+
+.ui-switch[data-readonly] {
+  cursor: default;
+}
+
+.ui-switch[data-readonly] .ui-switch__track {
+  border-style: dashed;
+}
+
+.ui-switch[data-disabled] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.ui-switch__label {
+  color: var(--ref-text);
+}

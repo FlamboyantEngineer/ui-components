@@ -104,6 +104,26 @@
   outline: none;
 }
 
+/* A calendar sits beside the presets, which keep their own column. */
+.ui-relative-date-field__popover:has(> .ui-relative-date-field__calendar) {
+  display: flex;
+  align-items: flex-start;
+}
+
+.ui-relative-date-field__popover:has(> .ui-relative-date-field__calendar)
+  .ui-relative-date-field__listbox {
+  align-self: stretch;
+  min-width: 112px;
+  border-inline-end: 1px solid var(--ref-border);
+}
+
+.ui-relative-date-field__calendar {
+  display: grid;
+  gap: 4px;
+  padding: 8px;
+  outline: none;
+}
+
 .ui-relative-date-field__option {
   display: flex;
   align-items: center;
@@ -116,6 +136,11 @@
 
 .ui-relative-date-field__option[data-focused] {
   background: var(--ref-hover);
+}
+
+.ui-relative-date-field__option[data-disabled] {
+  color: var(--ref-muted);
+  text-decoration: line-through;
 }
 
 .ui-relative-date-field__preview {

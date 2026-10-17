@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import { useUiStrings } from '../../core/provider.js';
-import type { UiStrings } from '../../core/strings.js';
+import { useAsyncCheck, type FieldAsyncValidate } from './field-async.js';
 import {
   canStepFieldHistory,
   createFieldHistory,
@@ -8,23 +8,38 @@ import {
   stepFieldHistory,
   type FieldHistory,
 } from './field-history.js';
-import { isFieldValueEmpty, isFieldValueEqual } from './field-value.js';
+import {
+  useFieldScope,
+  type FieldScope,
+  type FieldValidationBehavior,
+  type FieldValidationMode,
+} from './field-scope.js';
+import {
+  checkFieldValue,
+  resolveFieldValidation,
+  selectShownValidation,
+  useExternalIssues,
+  useFieldReveal,
+  type FieldIssue,
+  type FieldIssues,
+  type FieldValidation,
+} from './field-validation.js';
+import { isFieldValueEqual } from './field-value.js';
 
-export type FieldSeverity = 'error' | 'warning';
-
-export type FieldStatus = 'valid' | 'invalid' | 'warning' | 'pending';
-
-/** A problem with a field's value: an `error` makes the field invalid, a `warning` only advises. */
-export interface FieldIssue {
-  severity: FieldSeverity;
-  message: string;
-}
-
-/** A field's validation result: its status and the message it shows (none while valid). */
-export interface FieldValidation {
-  status: FieldStatus;
-  message?: string | undefined;
-}
+export type { FieldAsyncValidate } from './field-async.js';
+export type {
+  FieldValidationBehavior,
+  FieldValidationErrors,
+  FieldValidationMode,
+} from './field-scope.js';
+export type {
+  FieldIssue,
+  FieldIssues,
+  FieldSeverity,
+  FieldStatus,
+  FieldValidation,
+  FieldValidity,
+} from './field-validation.js';
 
 export interface FieldStateOptions<T> {
   /** The current value, controlled. */
@@ -39,10 +54,21 @@ export interface FieldStateOptions<T> {
   /** Called when the field commits a value that differs from its committed value. */
   onCommit?: ((value: T) => void) | undefined;
   /** Checks a value during render, after the required check. It must be pure. */
-  validate?: ((value: T) => FieldIssue | null | undefined) | undefined;
+  validate?: ((value: T) => FieldIssues) | undefined;
+  /** A check that may wait (for a server). It runs once the value settles; the field is pending meanwhile. */
+  validateAsync?: FieldAsyncValidate<T> | undefined;
+  /** How long the value must stay unchanged before `validateAsync` runs, in milliseconds. Defaults to 0. */
+  validationDebounce?: number | undefined;
+  /** When the field shows its validation. Defaults to the enclosing form's mode, else `immediate`. */
+  validationMode?: FieldValidationMode | undefined;
+  /** How the field reports validation to the browser. Defaults to the enclosing form's, else `aria`. */
+  validationBehavior?: FieldValidationBehavior | undefined;
+  /** The form name. Errors an enclosing form gives for it show until the value changes. */
+  name?: string | undefined;
   /** An empty value is an error, and the field cannot be cleared. */
   isRequired?: boolean | undefined;
   isReadOnly?: boolean | undefined;
+  /** Refuses every change. An enclosing disabled fieldset disables the field too. */
   isDisabled?: boolean | undefined;
   /** A check of the value is in progress: `pending` status unless the value has an error. */
   isPending?: boolean | undefined;
@@ -52,12 +78,20 @@ export interface FieldStateOptions<T> {
 export interface FieldState<T> {
   value: T;
   committedValue: T;
+  /** The validation the field shows, which waits for its validation mode. */
   validation: FieldValidation;
+  /** The validation of the current value, shown or not: what a form checks before it submits. */
+  realtimeValidation: FieldValidation;
+  /** Every issue the field shows, errors first. */
+  issues: readonly FieldIssue[];
   /** The value differs from the committed value (never while read-only or disabled). */
   isDirty: boolean;
+  /** Focus has left the field at least once. */
+  isTouched: boolean;
   isRequired: boolean;
   isReadOnly: boolean;
   isDisabled: boolean;
+  validationBehavior: FieldValidationBehavior;
   canUndo: boolean;
   canRedo: boolean;
   canClear: boolean;
@@ -72,25 +106,14 @@ export interface FieldState<T> {
   setToDefault(): void;
   undo(): void;
   redo(): void;
+  /** Records that focus left the field, which shows a `blur` mode field's validation. */
+  touch(): void;
+  /** Shows the validation now, whatever the validation mode. */
+  revealValidation(): void;
 }
 
 function firstDefined<T>(...values: Array<T | undefined>): T {
   return values.find((value) => value !== undefined) as T;
-}
-
-function resolveValidation<T>(
-  value: T,
-  options: FieldStateOptions<T>,
-  strings: UiStrings,
-): FieldValidation {
-  if (options.isRequired && isFieldValueEmpty(value)) {
-    return { status: 'invalid', message: strings.valueRequired };
-  }
-  const issue = options.validate?.(value);
-  if (issue?.severity === 'error') return { status: 'invalid', message: issue.message };
-  if (options.isPending) return { status: 'pending', message: strings.validating };
-  if (issue) return { status: 'warning', message: issue.message };
-  return { status: 'valid' };
 }
 
 /** Whether a menu action has something to do: the field is editable and the target differs. */
@@ -113,11 +136,40 @@ function useOwnValues<T>({ value, committedValue, defaultValue }: FieldStateOpti
   return { draft, setDraft, committed, setCommitted, history, setHistory };
 }
 
-/** The latest value, committed value and options, so actions in one event see each other. */
-function useLatest<T>(snapshot: { value: T; committedValue: T; options: FieldStateOptions<T> }) {
+/** The latest value, committed value, options and lock, so actions in one event see each other. */
+function useLatest<T>(snapshot: {
+  value: T;
+  committedValue: T;
+  options: FieldStateOptions<T>;
+  isLocked: boolean;
+}) {
   const latest = useRef(snapshot);
   latest.current = snapshot;
   return latest;
+}
+
+/**
+ * The validation of the value: external errors for the field's name, the required check, `validate`
+ * and the debounced `validateAsync`, shown as the validation mode allows.
+ */
+function useFieldValidation<T>(value: T, options: FieldStateOptions<T>, scope: FieldScope) {
+  const strings = useUiStrings();
+  const reveal = useFieldReveal(options.validationMode ?? scope.validationMode ?? 'immediate');
+  const external = useExternalIssues(scope.validationErrors, options.name, value);
+  const own = [...external, ...checkFieldValue(value, options, strings)];
+  const check = useAsyncCheck(value, {
+    validateAsync: options.validateAsync,
+    debounce: options.validationDebounce ?? 0,
+    isSkipped: own.some((issue) => issue.severity === 'error'),
+  });
+  const isPending = Boolean(options.isPending) || check.isRunning;
+  const realtime = resolveFieldValidation([...own, ...check.issues], isPending, strings);
+  const shown = selectShownValidation(
+    realtime,
+    { external, isRevealed: reveal.isRevealed },
+    strings,
+  );
+  return { reveal, realtime, shown };
 }
 
 /**
@@ -126,12 +178,15 @@ function useLatest<T>(snapshot: { value: T; committedValue: T; options: FieldSta
  * A read-only or disabled field refuses every change.
  */
 export function useFieldState<T>(options: FieldStateOptions<T>): FieldState<T> {
-  const strings = useUiStrings();
+  const scope = useFieldScope();
   const { draft, setDraft, committed, setCommitted, ...own } = useOwnValues(options);
   const value = options.value !== undefined ? options.value : draft;
   const committedValue = options.committedValue !== undefined ? options.committedValue : committed;
-  const isLocked = Boolean(options.isReadOnly || options.isDisabled);
-  const latest = useLatest({ value, committedValue, options });
+  const isDisabled = Boolean(options.isDisabled || scope.isDisabled);
+  const isLocked = Boolean(options.isReadOnly) || isDisabled;
+  const latest = useLatest({ value, committedValue, options, isLocked });
+  const { reveal, realtime, shown } = useFieldValidation(value, options, scope);
+  const { markChanged } = reveal;
 
   let history = own.history;
   if (!isFieldValueEqual(history.entries[history.index], value)) {
@@ -142,16 +197,17 @@ export function useFieldState<T>(options: FieldStateOptions<T>): FieldState<T> {
   const setValue = useCallback(
     (next: T) => {
       const current = latest.current;
-      if (current.options.isReadOnly || current.options.isDisabled) return;
+      if (current.isLocked) return;
       current.value = next;
+      markChanged();
       if (current.options.value === undefined) setDraft(next);
       current.options.onChange?.(next);
     },
-    [latest, setDraft],
+    [latest, setDraft, markChanged],
   );
   const commit = useCallback(() => {
     const current = latest.current;
-    if (current.options.isReadOnly || current.options.isDisabled) return;
+    if (current.isLocked) return;
     if (isFieldValueEqual(current.value, current.committedValue)) return;
     current.committedValue = current.value;
     if (current.options.committedValue === undefined) setCommitted(current.value);
@@ -174,11 +230,15 @@ export function useFieldState<T>(options: FieldStateOptions<T>): FieldState<T> {
   return {
     value,
     committedValue,
-    validation: resolveValidation(value, options, strings),
+    validation: shown.validation,
+    realtimeValidation: realtime.validation,
+    issues: shown.issues,
     isDirty: canApply(value, committedValue, isLocked),
+    isTouched: reveal.isTouched,
     isRequired: Boolean(options.isRequired),
     isReadOnly: Boolean(options.isReadOnly),
-    isDisabled: Boolean(options.isDisabled),
+    isDisabled,
+    validationBehavior: options.validationBehavior ?? scope.validationBehavior ?? 'aria',
     canUndo: !isLocked && canStepFieldHistory(history, -1),
     canRedo: !isLocked && canStepFieldHistory(history, 1),
     canClear,
@@ -190,5 +250,7 @@ export function useFieldState<T>(options: FieldStateOptions<T>): FieldState<T> {
     setToDefault: () => apply(options.defaultValue),
     undo: () => step(-1),
     redo: () => step(1),
+    touch: reveal.touch,
+    revealValidation: reveal.revealValidation,
   };
 }

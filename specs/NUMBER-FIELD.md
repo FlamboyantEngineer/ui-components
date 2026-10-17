@@ -1,6 +1,6 @@
 # Number Field
 
-`NumberField` is a [field](FIELD.md) for a number, built on React Aria's `NumberField`. It parses and formats the number for the locale with `Intl.NumberFormat` options (decimals, grouping, currency, percent, units), steps it with buttons and the arrow keys, and reports a value outside its range or off its step. It takes the field's props (`FieldInputProps<number | null>`): an empty field holds `null`, never zero. What a number means (units, currencies, derived values) is the caller's: the field edits a plain number.
+`NumberField` is a [field](FIELD.md) for a number, built on React Aria's `NumberField`. It parses and formats the number for the locale with `Intl.NumberFormat` options (decimals, grouping, currency, percent, units), steps it with buttons and the arrow keys, and reports a value outside its range or off its step. It takes the field's props (`FieldInputProps<number | null>`): an empty field holds `null`, never zero. What a number means (units, currencies, derived values) is the caller's: the field edits a plain number. Literal affixes sit inside its frame as adornments, Shift and Alt step by larger and smaller amounts, and a scrub handle steps the value by dragging.
 
 ## UIC-NUMBER-FIELD-1 - Contract
 
@@ -62,6 +62,29 @@ Verification: `src/components/number-field/number-field.test.tsx`, `e2e/number-f
 Implementation: `src/components/number-field/number-field.tsx`, `src/components/field/field.tsx`
 Verification: `src/components/number-field/number-field.test.tsx`, `e2e/number-field.spec.ts`
 
+## UIC-NUMBER-FIELD-3 - Affixes and fast steps
+
+### UIC-NUMBER-FIELD-3.1 - Literal affixes
+
+`startAdornment` and `endAdornment` shall render the caller's content in `ui-number-field__start` and `ui-number-field__end`, inside the group, around the input and within the step buttons, so a literal the locale formats cannot produce (`$ 1,000 /mo`) frames the number without becoming part of its text. The locale's own formats (currency, units, grouping such as the `en-IN` lakh) stay `formatOptions`' and the locale's.
+
+Implementation: `src/components/number-field/number-field.tsx`, `labs/reference/number-field.css`
+Verification: `src/components/number-field/number-field.test.tsx`, `e2e/number-field.spec.ts`
+
+### UIC-NUMBER-FIELD-3.2 - Modifier steps
+
+With `largeStep`, Shift with Arrow Up or Arrow Down shall step the value by `largeStep`; with `smallStep`, Alt with the arrows steps it by `smallStep`. Each step keeps the value within `minValue` and `maxValue`, rounds it to the precision of the value and the step, prevents the key's default and commits. An empty value steps to the minimum, or zero. A read-only or disabled field refuses the steps, and without the matching prop a modified arrow does nothing.
+
+Implementation: `src/components/number-field/number-field.tsx`, `src/components/number-field/number-field-parts.tsx`
+Verification: `src/components/number-field/number-field.test.tsx`, `e2e/number-field.spec.ts`
+
+### UIC-NUMBER-FIELD-3.3 - Scrub handle
+
+`showScrubber` shall draw a scrub handle (`ui-number-field__scrubber`, holding the `scrub` glyph, hidden from assistive technology, which steps with the arrow keys) after the decrement button. Pressing it with the primary pointer button and dragging sideways steps the value once every 4 pixels toward the end of the line (rightward in left-to-right text, leftward in right-to-left text) by `step`, or by `largeStep` with Shift and `smallStep` with Alt, within the range; the field's value follows the drag through `onChange` and commits once when the drag ends. The handle captures the pointer and opts out of touch panning (`touch-action: none`). A read-only or disabled field refuses the drag.
+
+Implementation: `src/components/number-field/number-field.tsx`, `src/components/number-field/number-field-parts.tsx`, `src/core/glyphs.tsx`, `labs/reference/number-field.css`
+Verification: `src/components/number-field/number-field.test.tsx`, `e2e/number-field.spec.ts`
+
 ## Hooks
 
 | Hook                         | Kind  | Values | Description                                                    |
@@ -70,7 +93,10 @@ Verification: `src/components/number-field/number-field.test.tsx`, `e2e/number-f
 | `ui-number-field__box`       | slot  |        | The React Aria number field element.                           |
 | `ui-number-field__group`     | slot  |        | The group around the input and the step buttons.               |
 | `ui-number-field__decrement` | slot  |        | The decrement button.                                          |
+| `ui-number-field__scrubber`  | slot  |        | The scrub handle.                                              |
+| `ui-number-field__start`     | slot  |        | The start adornment.                                           |
 | `ui-number-field__input`     | slot  |        | The text input.                                                |
+| `ui-number-field__end`       | slot  |        | The end adornment.                                             |
 | `ui-number-field__increment` | slot  |        | The increment button.                                          |
 | `data-hide-stepper`          | state | `true` | On the root: the step buttons are left out.                    |
 | `data-invalid`               | state | `true` | On the box, the group and the input: invalid (React Aria).     |

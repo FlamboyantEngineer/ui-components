@@ -38,11 +38,11 @@ Every file in `src/`, `labs/src/`, `test/` and `e2e/` follows these rules. They 
 
 **I1. Function components only.** No classes in library source, including subclasses of third-party classes: wrap or compose them instead. **(enforced)**
 
-**I2. Props inherit, they are not redeclared.** Every component that renders an element has props that extend `BaseProps` (`className`, `id`, caller `data-*`). A component that wraps a React Aria component extends that component's props, omitting only what the library replaces (`className`, `style`, `render`, `children` when it changes their type):
+**I2. Props inherit, they are not redeclared.** Every component that renders an element has props that extend `BaseProps` (`className`, `id`, caller `data-*`). A component that wraps a React Aria component extends that component's props, omitting only what the library replaces (`className`, `style`, `children` when it changes their type). It keeps React Aria's `render` so the caller can swap the element ([specs/COMPOSITION.md](../specs/COMPOSITION.md)); it omits `render` only where swapping would break the component's own markup, and says why in a comment:
 
 ```ts
 export interface ButtonProps
-  extends Omit<AriaButtonProps, 'className' | 'style' | 'children' | 'render'>, BaseProps {
+  extends Omit<AriaButtonProps, 'className' | 'style' | 'children'>, BaseProps {
   variant?: ButtonVariant | undefined;
 }
 ```

@@ -190,6 +190,44 @@ describe('Field', () => {
     expectHooksMatchSpec(container, 'FIELD');
   });
 
+  it('UIC-FIELD-3.6 renders the message from the validation and its issues', () => {
+    const validate = (value: string) =>
+      value.length > 3
+        ? [
+            { severity: 'error' as const, message: 'Too long.', validity: 'tooLong' as const },
+            { severity: 'error' as const, message: 'Use capitals.' },
+          ]
+        : null;
+    const { container, rerender } = render(
+      <TextField
+        id="f"
+        options={{ value: 'Plum!', validate }}
+        renderMessage={(validation, issues) => (
+          <ul data-status={validation.status}>
+            {issues.map((issue) => (
+              <li key={issue.message}>
+                {issue.validity === 'tooLong' ? 'Four letters at most.' : issue.message}
+              </li>
+            ))}
+          </ul>
+        )}
+      />,
+    );
+    const message = container.querySelector('.ui-field__message');
+    expect(message?.querySelector('ul')).toHaveAttribute('data-status', 'invalid');
+    expect([...(message?.querySelectorAll('li') ?? [])].map((item) => item.textContent)).toEqual([
+      'Four letters at most.',
+      'Use capitals.',
+    ]);
+    expect(screen.getByRole('textbox')).toHaveAccessibleDescription(
+      'Four letters at most. Use capitals.',
+    );
+    rerender(
+      <TextField id="f" options={{ value: 'Fig', validate }} renderMessage={() => 'Unused'} />,
+    );
+    expect(message).toBeEmptyDOMElement();
+  });
+
   it('UIC-FIELD-3.4 keeps one polite live region for the messages', async () => {
     const user = userEvent.setup();
     const { container } = render(<TextField options={{ isRequired: true, defaultValue: 'Fig' }} />);

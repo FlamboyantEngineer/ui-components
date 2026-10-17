@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   diffSelectKeys,
+  flattenSelectItems,
+  isSelectFieldGroup,
   mergeSelectOptions,
   orderSelectKeys,
   resolveSelectOptions,
@@ -14,6 +16,19 @@ const fruit = [
 ];
 
 describe('select options', () => {
+  it('UIC-SELECT-FIELD-7.1 flattens groups into their options in display order', () => {
+    const group = { id: 'stone', label: 'Stone fruit', options: [{ id: 'plum', label: 'Plum' }] };
+    expect(isSelectFieldGroup(group)).toBe(true);
+    expect(isSelectFieldGroup({ id: 'apple', label: 'Apple' })).toBe(false);
+    expect(
+      flattenSelectItems([{ id: 'apple', label: 'Apple' }, group, { id: 'pear', label: 'Pear' }]),
+    ).toEqual([
+      { id: 'apple', label: 'Apple' },
+      { id: 'plum', label: 'Plum' },
+      { id: 'pear', label: 'Pear' },
+    ]);
+  });
+
   it('UIC-SELECT-FIELD-1.2 reads single and multiple values as keys without repeats', () => {
     expect(toSelectKeys(null)).toEqual([]);
     expect(toSelectKeys(undefined)).toEqual([]);

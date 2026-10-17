@@ -1,3 +1,4 @@
+import { getDayOfWeek, type DateValue } from '@internationalized/date';
 import { useState } from 'react';
 import type { FieldLabelLayout } from '../../src/components/field/field.js';
 import {
@@ -9,7 +10,7 @@ import {
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const layouts = ['label-control', 'control-label', 'label-colon-control', 'control-only'] as const;
-const modes = ['date', 'time', 'date-time', 'date-range'] as const;
+const modes = ['date', 'time', 'date-time', 'date-range', 'date-time-range'] as const;
 const states = [
   'resting',
   'required',
@@ -34,7 +35,19 @@ const samples: Record<DateTimeFieldMode, { value: AnyValue; committed: AnyValue 
     value: { start: '2026-04-13', end: '2026-04-17' },
     committed: { start: '2026-04-06', end: '2026-04-10' },
   },
+  'date-time-range': {
+    value: {
+      start: new Date(2026, 3, 13, 9, 0).toISOString(),
+      end: new Date(2026, 3, 13, 17, 30).toISOString(),
+    },
+    committed: {
+      start: new Date(2026, 3, 10, 9, 0).toISOString(),
+      end: new Date(2026, 3, 10, 12, 0).toISOString(),
+    },
+  },
 };
+
+const isWeekend = (date: DateValue) => getDayOfWeek(date, 'en-US') % 6 === 0;
 
 function stateProps(
   state: State,
@@ -123,6 +136,108 @@ function Range() {
   );
 }
 
+function Availability() {
+  const [committed, setCommitted] = useState<AnyValue>(null);
+  return (
+    <>
+      <DateTimeField
+        label="Appointment"
+        defaultValue="2026-04-15"
+        minValue="2026-04-01"
+        isDateUnavailable={isWeekend}
+        presets={[
+          { label: 'Start of April', value: '2026-04-01' },
+          { label: 'Mid April', value: '2026-04-15' },
+          { label: 'A Saturday', value: '2026-04-18' },
+          { label: 'Last year', value: '2025-04-15' },
+        ]}
+        description="Weekends are unavailable; presets the field refuses are disabled."
+        onCommit={setCommitted}
+        data-lab-field="availability"
+      />
+      <DateTimeField
+        label="Holiday"
+        mode="date-range"
+        presets={[
+          { label: 'Easter week', value: { start: '2026-04-06', end: '2026-04-12' } },
+          { label: 'May', value: { start: '2026-05-01', end: '2026-05-31' } },
+        ]}
+        onCommit={setCommitted}
+        data-lab-field="range-presets"
+      />
+      <p>
+        Committed: <output data-lab-output="Picked">{JSON.stringify(committed)}</output>
+      </p>
+    </>
+  );
+}
+
+function Zones() {
+  const [committed, setCommitted] = useState<AnyValue>(null);
+  return (
+    <>
+      <DateTimeField
+        label="Alarm"
+        mode="time"
+        granularity="second"
+        hourCycle={24}
+        defaultValue="06:30:15"
+        onCommit={setCommitted}
+        data-lab-field="seconds"
+      />
+      <DateTimeField
+        label="Call in Tokyo"
+        mode="date-time"
+        timeZone="Asia/Tokyo"
+        defaultValue="2026-04-13T03:00:00.000Z"
+        description="Edits Tokyo wall time; the value stays a UTC instant."
+        onCommit={setCommitted}
+        data-lab-field="zoned"
+      />
+      <DateTimeField
+        label="Shift"
+        mode="date-time-range"
+        timeZone="UTC"
+        hideTimeZone
+        defaultValue={{ start: '2026-04-13T09:00:00.000Z', end: '2026-04-13T17:00:00.000Z' }}
+        onCommit={setCommitted}
+        data-lab-field="time-range"
+      />
+      <p>
+        Committed: <output data-lab-output="Zoned">{JSON.stringify(committed)}</output>
+      </p>
+    </>
+  );
+}
+
+function Form() {
+  const [entries, setEntries] = useState('none');
+  return (
+    <form
+      onSubmit={(event) => {
+        event.preventDefault();
+        const data = new FormData(event.currentTarget);
+        setEntries(
+          [...data.entries()].map(([name, entry]) => `${name}=${String(entry)}`).join(' '),
+        );
+      }}
+    >
+      <DateTimeField label="Due date" name="due" defaultValue="2026-04-13" />
+      <DateTimeField
+        label="Trip"
+        mode="date-range"
+        startName="from"
+        endName="to"
+        defaultValue={{ start: '2026-04-06', end: '2026-04-10' }}
+      />
+      <button type="submit">Submit</button>
+      <p>
+        Form: <output data-lab-output="Form">{entries}</output>
+      </p>
+    </form>
+  );
+}
+
 mountLab(
   <>
     <LabSection title="Modes and states" description="Each mode in every state.">
@@ -150,6 +265,32 @@ mountLab(
     </LabSection>
     <LabSection title="Range" description="One range calendar of two months.">
       <Range />
+    </LabSection>
+    <LabSection
+      title="Unavailable dates and presets"
+      description="Weekends refused in the calendar and when typed; named values beside the calendar."
+    >
+      <Availability />
+    </LabSection>
+    <LabSection
+      title="Month and year selects"
+      description="The calendar heading jumps straight to a month or a year."
+    >
+      <DateTimeField
+        label="Anniversary"
+        defaultValue="2026-04-13"
+        calendarHeading="select"
+        data-lab-field="heading"
+      />
+    </LabSection>
+    <LabSection
+      title="Seconds, hour cycle, time zones and date-time ranges"
+      description="A 24-hour time to the second, a date and time in Tokyo, and a range of instants."
+    >
+      <Zones />
+    </LabSection>
+    <LabSection title="Forms" description="Named fields submit their canonical values.">
+      <Form />
     </LabSection>
   </>,
 );

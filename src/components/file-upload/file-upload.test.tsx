@@ -1,8 +1,10 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import type { DropItem } from 'react-aria-components';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
+import { readDroppedFiles } from './file-upload-drop.js';
 import { FileUpload, type FileUploadItem } from './file-upload.js';
 
 function file(name: string, type: string, size = 10): File {
@@ -318,5 +320,233 @@ describe('FileUpload', () => {
     expect(element).toHaveAttribute('data-testid', 'probe');
     expect(element).toHaveAttribute('data-variant', 'button');
     expectHooksMatchSpec(container, 'FILE-UPLOAD');
+  });
+
+  it('UIC-FILE-UPLOAD-1.2 lists the count limit in the default description', () => {
+    const { container } = render(
+      <FileUpload label="Attach" maxSize={1024} maxFiles={3} onSelect={() => {}} />,
+    );
+    expect(container.querySelector('.ui-file-upload__description')).toHaveTextContent(
+      'Up to 1.0 KB · Up to 3 files',
+    );
+  });
+
+  it('UIC-FILE-UPLOAD-1.5 picks a folder and offers every file in it', async () => {
+    const user = userEvent.setup();
+    const onSelect = vi.fn();
+    const { container } = render(
+      <FileUpload label="Attach folder" acceptDirectory onSelect={onSelect} />,
+    );
+    const input = chooser(container);
+    expect(input).toHaveAttribute('webkitdirectory');
+    const a = file('a.txt', 'text/plain');
+    const b = file('b.txt', 'text/plain');
+    await user.upload(input, [a, b]);
+    expect(onSelect).toHaveBeenCalledWith([a, b]);
+  });
+
+  it('UIC-FILE-UPLOAD-1.5 reads dropped folders through their subfolders only when asked', async () => {
+    const a = file('a.txt', 'text/plain');
+    const b = file('b.txt', 'text/plain');
+    const c = file('c.txt', 'text/plain');
+    const fileItem = (entry: File) => ({
+      kind: 'file',
+      type: entry.type,
+      name: entry.name,
+      getFile: async () => entry,
+      getText: async () => '',
+    });
+    async function* inner() {
+      yield fileItem(c);
+    }
+    async function* outer() {
+      yield fileItem(b);
+      yield { kind: 'directory', name: 'inner', getEntries: inner };
+    }
+    const items = [
+      fileItem(a),
+      { kind: 'directory', name: 'outer', getEntries: outer },
+    ] as unknown as DropItem[];
+    expect(await readDroppedFiles(items, true)).toEqual([a, b, c]);
+    expect(await readDroppedFiles(items, false)).toEqual([a]);
+  });
+
+  it('UIC-FILE-UPLOAD-2.5 UIC-FILE-UPLOAD-2.6 refuses small files and files past the count limit', async () => {
+    const user = userEvent.setup();
+    const onReject = vi.fn();
+    const onSelect = vi.fn();
+    const { container } = render(
+      <FileUpload
+        label="Attach"
+        allowsMultiple
+        minSize={2}
+        maxFiles={3}
+        files={[{ id: 'listed', name: 'Listed.txt' }]}
+        onSelect={onSelect}
+        onReject={onReject}
+      />,
+    );
+    const tiny = file('tiny.txt', 'text/plain', 1);
+    const [a, b, c] = ['a.txt', 'b.txt', 'c.txt'].map((name) => file(name, 'text/plain'));
+    await user.upload(chooser(container), [tiny, a, b, c] as File[]);
+    expect(onSelect).toHaveBeenCalledWith([a, b]);
+    expect(onReject).toHaveBeenCalledWith([
+      { file: tiny, reason: 'min-size' },
+      { file: c, reason: 'count' },
+    ]);
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      '1 file is too small. 1 file is over the file limit.',
+    );
+  });
+
+  it('UIC-FILE-UPLOAD-2.7 refuses files the owner check rejects, also later, with its message', async () => {
+    const user = userEvent.setup({ applyAccept: false });
+    const onSelect = vi.fn();
+    const onReject = vi.fn();
+    const validate = async (candidate: File) =>
+      candidate.name.startsWith('wide') ? null : 'Images must be at least 200 pixels wide.';
+    const { container } = render(
+      <FileUpload
+        label="Attach"
+        allowsMultiple
+        validate={validate}
+        onSelect={onSelect}
+        onReject={onReject}
+      />,
+    );
+    const wide = file('wide.png', 'image/png');
+    const narrow = file('narrow.png', 'image/png');
+    await user.upload(chooser(container), [wide, narrow]);
+    await waitFor(() => expect(onSelect).toHaveBeenCalledWith([wide]));
+    expect(onReject).toHaveBeenCalledWith([
+      { file: narrow, reason: 'invalid', message: 'Images must be at least 200 pixels wide.' },
+    ]);
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'narrow.png: Images must be at least 200 pixels wide.',
+    );
+  });
+
+  it('UIC-FILE-UPLOAD-2.8 says during a drag whether the dragged files would be accepted', () => {
+    const { container } = render(
+      <FileUpload
+        variant="dropzone"
+        label="Drop images"
+        acceptedFileTypes={['image/*']}
+        allowsMultiple
+        maxFiles={2}
+        onSelect={() => {}}
+      />,
+    );
+    const zone = container.querySelector<HTMLElement>('.ui-file-upload__dropzone');
+    if (!zone) throw new Error('no drop zone');
+    const photo = file('photo.png', 'image/png');
+    act(() => {
+      fireEvent.dragEnter(zone, { dataTransfer: filesTransfer([photo]) });
+    });
+    expect(zone).toHaveAttribute('data-drop-accept', 'true');
+    expect(zone).not.toHaveAttribute('data-drop-reject');
+    expectHooksMatchSpec(container, 'FILE-UPLOAD');
+    act(() => {
+      fireEvent.dragLeave(zone, { dataTransfer: filesTransfer([photo]) });
+    });
+    expect(zone).not.toHaveAttribute('data-drop-accept');
+    const notes = file('notes.txt', 'text/plain');
+    act(() => {
+      fireEvent.dragEnter(zone, { dataTransfer: filesTransfer([photo, notes]) });
+    });
+    expect(zone).toHaveAttribute('data-drop-reject', 'true');
+    act(() => {
+      fireEvent.dragLeave(zone, { dataTransfer: filesTransfer([photo, notes]) });
+    });
+    act(() => {
+      fireEvent.dragEnter(zone, { dataTransfer: filesTransfer([photo, photo, photo]) });
+    });
+    expect(zone).toHaveAttribute('data-drop-reject', 'true');
+    expectHooksMatchSpec(container, 'FILE-UPLOAD');
+  });
+
+  describe('previews', () => {
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    it('UIC-FILE-UPLOAD-3.5 shows image thumbnails and revokes their temporary URLs', () => {
+      const createObjectURL = vi.fn(() => 'blob:photo');
+      const revokeObjectURL = vi.fn();
+      vi.stubGlobal('URL', Object.assign(URL, { createObjectURL, revokeObjectURL }));
+      const photo = file('photo.png', 'image/png');
+      const listed: FileUploadItem[] = [
+        { id: 'photo', name: 'photo.png', file: photo },
+        { id: 'notes', name: 'notes.txt', file: file('notes.txt', 'text/plain') },
+        { id: 'old', name: 'old.png', previewUrl: '/thumbs/old.png' },
+      ];
+      const { container, unmount } = render(
+        <FileUpload label="Attachments" files={listed} onSelect={() => {}} />,
+      );
+      const previews = [
+        ...container.querySelectorAll<HTMLImageElement>('.ui-file-upload__file-preview'),
+      ];
+      expect(previews.map((image) => image.getAttribute('src'))).toEqual([
+        'blob:photo',
+        '/thumbs/old.png',
+      ]);
+      expect(previews[0]).toHaveAttribute('alt', '');
+      expect(createObjectURL).toHaveBeenCalledWith(photo);
+      expectHooksMatchSpec(container, 'FILE-UPLOAD', { slots: ['file-preview'] });
+      unmount();
+      expect(revokeObjectURL).toHaveBeenCalledWith('blob:photo');
+    });
+  });
+
+  it('UIC-FILE-UPLOAD-4.2 takes part in a form: named, required and invalid', async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn((event: SubmitEvent) => event.preventDefault());
+    const { container, rerender } = render(
+      <form onSubmit={(event) => onSubmit(event.nativeEvent as SubmitEvent)}>
+        <FileUpload label="Attach" name="attachments" isRequired onSelect={() => {}} />
+        <button type="submit">Send</button>
+      </form>,
+    );
+    const root = container.querySelector('.ui-file-upload');
+    expect(root).toHaveAttribute('data-required', 'true');
+    const hidden = container.querySelector<HTMLInputElement>('input[name="attachments"]');
+    expect(hidden).toHaveAttribute('type', 'file');
+    expect(hidden).toHaveAttribute('hidden');
+    expect(hidden).toBeRequired();
+    await user.click(screen.getByRole('button', { name: 'Send' }));
+    expect(onSubmit).not.toHaveBeenCalled();
+    const error = container.querySelector('.ui-file-upload__error');
+    expect(error).toHaveTextContent('A value is required.');
+    expect(root).toHaveAttribute('data-invalid', 'true');
+    const command = screen.getByRole('button', { name: 'Attach' });
+    expect(command).toHaveFocus();
+    expect(command).toHaveAccessibleDescription('A value is required.');
+    expectHooksMatchSpec(container, 'FILE-UPLOAD', { slots: ['error'] });
+    rerender(
+      <form>
+        <FileUpload
+          label="Attach"
+          name="attachments"
+          isRequired
+          files={[{ id: 'a', name: 'a.txt' }]}
+          onSelect={() => {}}
+        />
+      </form>,
+    );
+    expect(container.querySelector('.ui-file-upload__error')).toBeNull();
+    expect(container.querySelector('input[name="attachments"]')).not.toBeRequired();
+    rerender(
+      <FileUpload
+        label="Attach"
+        isInvalid
+        errorMessage="Attach the signed form."
+        onSelect={() => {}}
+      />,
+    );
+    expect(container.querySelector('.ui-file-upload__error')).toHaveTextContent(
+      'Attach the signed form.',
+    );
+    expect(container.querySelector('.ui-file-upload')).toHaveAttribute('data-invalid', 'true');
+    expect(container.querySelector('input[type="file"][hidden]')).toBeNull();
   });
 });

@@ -103,4 +103,52 @@ test.describe('Portal lab', () => {
     await page.keyboard.press('Escape');
     await expect(dialog).toHaveCount(0);
   });
+
+  test('UIC-PORTAL-1.5 renders in place with its layer', async ({ page, lab }) => {
+    await lab.open('portal');
+    const stage = page.locator('[data-lab-in-place]');
+    const wrapper = stage.locator(':scope > .ui-portal');
+    await expect(wrapper).toHaveAttribute('data-layer', 'tooltip');
+    await expect(wrapper).toHaveAttribute('data-react-aria-top-layer', 'true');
+    await expect(wrapper).toHaveCSS('z-index', '150');
+    await expect(wrapper).toHaveCSS('position', 'absolute');
+    const stageBox = await stage.boundingBox();
+    const box = await wrapper.boundingBox();
+    expect(box?.x).toBeCloseTo(stageBox?.x ?? -1, 0);
+    expect(box?.y).toBeCloseTo(stageBox?.y ?? -1, 0);
+  });
+
+  test('UIC-PORTAL-3.4 keeps portalled tools in the tab order of their toggle', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('portal');
+    const toggle = page.getByRole('button', { name: 'Show Kept order tools' });
+    await toggle.click();
+    const tools = page.getByRole('group', { name: 'Kept order tools' });
+    await expect(tools).toBeVisible();
+    expect(await tools.evaluate((node) => node.closest('.ui-portal')?.parentElement?.tagName)).toBe(
+      'BODY',
+    );
+    const hide = page.getByRole('button', { name: 'Hide Kept order tools' });
+    await expect(hide).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(tools.getByRole('button', { name: 'Cut' })).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(tools.getByRole('button', { name: 'Copy' })).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(page.getByRole('button', { name: 'Kept order next' })).toBeFocused();
+    await page.keyboard.press('Shift+Tab');
+    await expect(tools.getByRole('button', { name: 'Copy' })).toBeFocused();
+    await page.keyboard.press('Shift+Tab');
+    await page.keyboard.press('Shift+Tab');
+    await expect(hide).toBeFocused();
+    await lab.expectAccessible();
+
+    const other = page.getByRole('button', { name: 'Show Document order tools' });
+    await other.click();
+    await expect(page.getByRole('group', { name: 'Document order tools' })).toBeVisible();
+    await page.keyboard.press('Tab');
+    await expect(page.getByRole('button', { name: 'Document order next' })).toBeFocused();
+  });
 });

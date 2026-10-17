@@ -3,7 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { createRef, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import { findCompletionQuery, matchCompletions } from './code-completion.js';
+import { findCompletionQuery, matchCompletions } from './completion-match.js';
 import {
   CodeEditor,
   type CodeCompletion,
@@ -216,6 +216,26 @@ describe('CodeEditor', () => {
     expect(screen.getByRole('textbox')).not.toHaveAttribute('aria-describedby');
   });
 
+  it('UIC-CODE-EDITOR-3.1 leaves the list out with listDiagnostics false and keeps the marks', () => {
+    const { container } = render(
+      <CodeEditor
+        aria-label="Source"
+        value="x = y"
+        lineNumbers
+        listDiagnostics={false}
+        diagnostics={[{ message: 'Unknown name.', line: 1, column: 5 }]}
+      />,
+    );
+    expect(container.querySelector('.ui-code-editor__diagnostics')).toBeNull();
+    expect(screen.getByRole('textbox')).not.toHaveAttribute('aria-describedby');
+    expect(container.querySelector('.ui-code-editor__mark')).toHaveTextContent('y');
+    expect(container.querySelector('.ui-code-editor__line')).toHaveAttribute(
+      'data-severity',
+      'error',
+    );
+    expect(container.querySelector('.ui-code-editor__announcement')).not.toBeNull();
+  });
+
   it('UIC-CODE-EDITOR-3.2 is invalid while an error is reported, by a diagnostic or the caller', () => {
     const { container, rerender } = render(
       <CodeEditor aria-label="Source" value="x" diagnostics={[{ message: 'Bad.' }]} />,
@@ -270,7 +290,9 @@ describe('CodeEditor', () => {
       'fruit.apricot',
     ]);
     expect(matchCompletions(vocabulary, 'city')).toEqual([]);
-    expect(matchCompletions(vocabulary, '')).toEqual([]);
+    expect(matchCompletions(vocabulary, 'frba').map(({ label }) => label)).toEqual([
+      'fruit.banana',
+    ]);
   });
 
   it('UIC-CODE-EDITOR-4.2 opens the completion list as the reader types and ties it to the input', async () => {
@@ -289,6 +311,7 @@ describe('CodeEditor', () => {
     expect(options.map((option) => option.textContent)).toEqual([
       'fruit.appleA crisp fruit',
       'fruit.apricot',
+      'fruit.banana',
     ]);
     expect(options[0]).toHaveAttribute('aria-selected', 'true');
     expect(options[0]).toHaveAttribute('data-focused', 'true');

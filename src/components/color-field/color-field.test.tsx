@@ -60,7 +60,23 @@ describe('ColorField', () => {
     expect(within(dialog).getByRole('textbox', { name: 'Hex color' })).toHaveValue('#336699');
     expect(within(dialog).getByRole('button', { name: 'Clear' })).toBeEnabled();
     expect(dialog.contains(document.activeElement)).toBe(true);
-    expectHooksMatchSpec(document.body, 'COLOR-FIELD', { slots: 'all' });
+    expectHooksMatchSpec(document.body, 'COLOR-FIELD', {
+      slots: [
+        'trigger',
+        'swatch',
+        'value',
+        'popover',
+        'dialog',
+        'area',
+        'slider',
+        'track',
+        'thumb',
+        'channels',
+        'hex',
+        'input',
+        'clear',
+      ],
+    });
     await user.keyboard('{Escape}');
     expect(screen.queryByRole('dialog')).toBeNull();
     await waitFor(() => expect(trigger()).toHaveFocus());

@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { ReactNode, Ref } from 'react';
 import type { GlyphName } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps, Tone } from '../../core/props.js';
@@ -26,10 +26,14 @@ export interface BannerProps extends BaseProps, Pick<NativeProps<'div'>, 'hidden
   dismissLabel?: string | undefined;
   /** Work is in progress: a decorative spinner replaces the glyph and the region is busy. */
   isPending?: boolean | undefined;
+  /** The banner has just appeared; publishes `data-entering` for an enter animation. */
+  isEntering?: boolean | undefined;
   /** The banner is on its way out; publishes `data-exiting` for an exit transition. */
   isExiting?: boolean | undefined;
   /** Render as phrasing content (`<span>`s) for a message set inside running text. */
   inline?: boolean | undefined;
+  /** The root element, for example for `useEnterExit`. */
+  ref?: Ref<HTMLElement> | undefined;
 }
 
 const hooks = createHooks('banner', [
@@ -109,18 +113,22 @@ export function Banner({
   onDismiss,
   dismissLabel,
   isPending = false,
+  isEntering = false,
   isExiting = false,
   inline = false,
   className,
+  ref,
   ...rest
 }: BannerProps) {
   const Element = inline ? 'span' : 'div';
   const isUrgent = tone === 'danger';
-  const data = { tone, inline, pending: isPending, exiting: isExiting };
+  const data = { tone, inline, pending: isPending, entering: isEntering, exiting: isExiting };
 
   return (
     <Element
       {...rest}
+      // The root is a `<div>` or a `<span>`; either is the `HTMLElement` the caller's ref expects.
+      ref={ref as Ref<HTMLDivElement> | undefined}
       {...hooks.root({ className, data })}
       role={isUrgent ? 'alert' : 'status'}
       aria-live={isUrgent ? 'assertive' : 'polite'}

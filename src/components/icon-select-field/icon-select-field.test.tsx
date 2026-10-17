@@ -80,4 +80,20 @@ describe('IconSelectField', () => {
     expect(root).toHaveAttribute('data-testid', 'probe');
     expectHooksMatchSpec(container, 'ICON-SELECT-FIELD', { callerAttributes: ['data-testid'] });
   });
+
+  it('UIC-ICON-SELECT-FIELD-1.4 passes the select field options through, such as a clear button', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    render(
+      <IconSelectField
+        label="Symbol"
+        options={symbols}
+        defaultValue="star"
+        isClearable
+        onCommit={onCommit}
+      />,
+    );
+    await user.click(screen.getByRole('button', { name: 'Clear Symbol' }));
+    expect(onCommit).toHaveBeenCalledWith(null);
+  });
 });

@@ -213,6 +213,16 @@ function ReorderTree({ betweenParents }: { betweenParents: boolean }) {
 
 const stateNote = (state: TreeItemState) => (state.isExpanded ? 'open' : null);
 
+const manyFolders: Entry[] = Array.from({ length: 20 }, (_, group) =>
+  folder(
+    `crate-${group + 1}`,
+    `Crate ${group + 1}`,
+    Array.from({ length: 99 }, (_, index) =>
+      file(`crate-${group + 1}-${index + 1}`, `Apple ${group * 99 + index + 1}.txt`),
+    ),
+  ),
+);
+
 mountLab(
   <>
     <LabSection
@@ -327,6 +337,20 @@ mountLab(
             />
           )
         }
+      />
+    </LabSection>
+    <LabSection
+      title="Virtualized"
+      description="Two thousand rows in twenty folders: only the rows in view are in the document."
+    >
+      <Tree
+        aria-label="Many folders"
+        items={manyFolders}
+        getTextValue={name}
+        getIcon={icon}
+        defaultExpandedKeys={manyFolders.map((entry) => entry.id)}
+        virtualized
+        data-lab-tree="virtualized"
       />
     </LabSection>
     <LabSection

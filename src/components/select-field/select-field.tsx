@@ -2,7 +2,12 @@ import type { Key, SelectProps as AriaSelectProps } from 'react-aria-components'
 import { createHooks } from '../../core/hooks.js';
 import { Field, useFieldControl, type FieldInputProps, type FieldState } from '../field/field.js';
 import { SelectControl, type SelectKeysValue } from './select-control.js';
-import type { SelectFieldOption } from './select-options.js';
+import type { SelectFieldOptionRenderer } from './select-option.js';
+import {
+  flattenSelectItems,
+  type SelectFieldItem,
+  type SelectFieldOption,
+} from './select-options.js';
 import type { SelectFieldLoader } from './select-search.js';
 
 export type SelectFieldSelectionMode = 'single' | 'multiple';
@@ -19,8 +24,11 @@ export interface SelectFieldProps<M extends SelectFieldSelectionMode = 'single'>
       AriaSelectProps<SelectFieldOption, M>,
       'isOpen' | 'defaultOpen' | 'onOpenChange' | 'name' | 'autoFocus'
     > {
-  /** The choices, in display order; a multiple value follows this order. */
-  options: readonly SelectFieldOption[];
+  /**
+   * The choices, in display order, and groups of them shown as headed sections; a multiple value
+   * follows this order. Group ids must differ from option ids.
+   */
+  options: readonly SelectFieldItem[];
   /** `single` (the default) or `multiple`. */
   selectionMode?: M | undefined;
   /** The trigger's text while nothing is chosen. Defaults to the provider string. */
@@ -35,6 +43,14 @@ export interface SelectFieldProps<M extends SelectFieldSelectionMode = 'single'>
   minSearchLength?: number | undefined;
   /** Milliseconds to wait after a keystroke before running `loadOptions`. Defaults to 240. */
   searchDelay?: number | undefined;
+  /** Draws a button after the trigger that clears the value in one press. */
+  isClearable?: boolean | undefined;
+  /** The most values a multiple select takes; once reached, the other options are disabled. */
+  maxValues?: number | undefined;
+  /** Draws each option's content in the list instead of its icon, label and description. */
+  renderOption?: SelectFieldOptionRenderer | undefined;
+  /** Renders only the options in view, for very long lists. */
+  virtualized?: boolean | undefined;
 }
 
 const hooks = createHooks('select-field');
@@ -60,7 +76,10 @@ export function SelectField<M extends SelectFieldSelectionMode = 'single'>(
       {...hooks.root({
         className: field.className,
         props: field,
-        data: { selectionMode, icons: config.options.some((option) => option.icon) },
+        data: {
+          selectionMode,
+          icons: flattenSelectItems(config.options).some((option) => option.icon),
+        },
       })}
       state={state}
     >
@@ -79,5 +98,6 @@ export function SelectField<M extends SelectFieldSelectionMode = 'single'>(
 
 export { SelectControl } from './select-control.js';
 export type { SelectKeysValue } from './select-control.js';
-export type { SelectFieldOption } from './select-options.js';
-export type { SelectFieldLoader } from './select-search.js';
+export type { SelectFieldOptionRenderer } from './select-option.js';
+export type { SelectFieldGroup, SelectFieldItem, SelectFieldOption } from './select-options.js';
+export type { SelectFieldLoader, SelectFieldPage } from './select-search.js';

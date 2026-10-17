@@ -18,9 +18,11 @@ import {
   type FieldControlProps,
   type FieldLabelLayout,
 } from './field-parts.js';
+import { useFieldFocus, useFieldFormBinding } from './field-form.js';
 import { FieldRestoreButton } from './field-restore-button.js';
-import type { FieldState } from './field-state.js';
+import type { FieldIssue, FieldState, FieldValidation } from './field-state.js';
 import { useFieldUndo } from './field-undo.js';
+import { isFieldValueEmpty } from './field-value.js';
 
 export interface FieldProps<T> extends BaseProps {
   /** The field's controller, from `useFieldState`. */
@@ -39,14 +41,36 @@ export interface FieldProps<T> extends BaseProps {
   menu?: readonly FieldMenuEntry[] | undefined;
   /** Called with the id of the chosen menu entry, after a built-in action has run. */
   onMenuAction?: ((key: Key) => void) | undefined;
+  /**
+   * Renders the message the field shows, from its validation and every issue behind it (each with
+   * its `validity`), to word a message per validity state or list every issue. Defaults to the
+   * validation's message.
+   */
+  renderMessage?:
+    | ((validation: FieldValidation, issues: readonly FieldIssue[]) => ReactNode)
+    | undefined;
   /** Renders the control with the props that name, describe and lock it. */
   children: (control: FieldControlProps) => ReactNode;
+}
+
+/** The states the root publishes from the field state. */
+function toFieldStates(state: FieldState<unknown>) {
+  return {
+    validation: state.validation.status,
+    dirty: state.isDirty,
+    required: state.isRequired,
+    readonly: state.isReadOnly,
+    disabled: state.isDisabled,
+    touched: state.isTouched,
+    filled: !isFieldValueEmpty(state.value),
+  };
 }
 
 /**
  * Lays out a field around its control: the label, the control, the restore, help and menu buttons,
  * the host's decoration, the description and the validation message. It gives the control its ids
- * and ARIA, applies undo and redo chords pressed inside it and registers its undo for `getFieldUndo`.
+ * and ARIA, applies undo and redo chords pressed inside it, registers its undo for `getFieldUndo`
+ * and takes part in an enclosing form.
  */
 export function Field<T>({
   state,
@@ -57,6 +81,7 @@ export function Field<T>({
   decoration,
   menu = [],
   onMenuAction,
+  renderMessage,
   children,
   className,
   id,
@@ -66,6 +91,8 @@ export function Field<T>({
   const [slots] = useState(() => createSlotRegistry<'root' | 'control'>());
   const getRoot = useCallback(() => slots.read('root'), [slots]);
   const onKeyDown = useFieldUndo(getRoot, state);
+  const focus = useFieldFocus({ touch: state.touch, getRoot, isDirty: state.isDirty });
+  useFieldFormBinding(state as FieldState<unknown>, slots);
   const menuModel = useFieldMenu(state, label, { menu, onMenuAction });
   const hasLabel = labelLayout !== 'control-only';
   const control = toFieldControlProps(state, ids, {
@@ -84,11 +111,8 @@ export function Field<T>({
   };
   const data = {
     labelLayout,
-    validation: state.validation.status,
-    dirty: state.isDirty,
-    required: state.isRequired,
-    readonly: state.isReadOnly,
-    disabled: state.isDisabled,
+    ...toFieldStates(state as FieldState<unknown>),
+    focused: focus.isFocused,
   };
   return (
     <FieldContextMenu model={menuModel}>
@@ -97,6 +121,8 @@ export function Field<T>({
         id={id}
         ref={slots.ref('root')}
         onKeyDown={onKeyDown}
+        onFocus={focus.onFocus}
+        onBlur={focus.onBlur}
       >
         {labelLayout === 'control-label' ? null : labelElement}
         <div {...hooks.slot('control')}>{children(control)}</div>
@@ -120,7 +146,9 @@ export function Field<T>({
             {description}
           </div>
         ) : null}
-        <FieldMessage id={ids.message} validation={state.validation} />
+        <FieldMessage id={ids.message} validation={state.validation}>
+          {renderMessage ? renderMessage(state.validation, state.issues) : state.validation.message}
+        </FieldMessage>
       </div>
     </FieldContextMenu>
   );
@@ -141,14 +169,24 @@ export { FieldRestoreButton } from './field-restore-button.js';
 export type { FieldRestoreButtonProps } from './field-restore-button.js';
 export { useFieldState } from './field-state.js';
 export type {
+  FieldAsyncValidate,
   FieldIssue,
+  FieldIssues,
   FieldSeverity,
   FieldState,
   FieldStateOptions,
   FieldStatus,
   FieldValidation,
+  FieldValidationBehavior,
+  FieldValidationErrors,
+  FieldValidationMode,
+  FieldValidity,
 } from './field-state.js';
+export { FieldScopeContext, useFieldScope } from './field-scope.js';
+export type { FieldRegistration, FieldScope } from './field-scope.js';
+export { Fieldset } from './fieldset.js';
+export type { FieldsetProps } from './fieldset.js';
 export { getFieldUndo } from './field-undo.js';
 export type { FieldUndo } from './field-undo.js';
-export { validateString } from './string-rules.js';
+export { countCodePoints, validateString } from './string-rules.js';
 export type { StringRuleMessages, StringRules } from './string-rules.js';

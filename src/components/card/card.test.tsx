@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import { Heading, HeadingContext, useSlottedContext } from 'react-aria-components';
 import { describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Card } from './card.js';
@@ -78,6 +79,54 @@ describe('Card', () => {
     expect(container.textContent).not.toContain('Ignored');
     expect(container.querySelector('.ui-card__title, .ui-card__actions')).toBeNull();
     expect(container.firstElementChild).not.toHaveAttribute('aria-labelledby');
+  });
+
+  it('UIC-CARD-1.4 UIC-COMPOSITION-3.1 names a card by the slotted title of a custom header', () => {
+    const { container } = render(
+      <Card
+        header={
+          <>
+            <Heading slot="title" level={2}>
+              Garden plan
+            </Heading>
+            <Heading>Spring</Heading>
+          </>
+        }
+      >
+        Body
+      </Card>,
+    );
+    const region = screen.getByRole('region', { name: 'Garden plan' });
+    const title = screen.getByRole('heading', { level: 2, name: 'Garden plan' });
+    expect(title).toHaveClass('ui-card__title');
+    expect(region).toHaveAttribute('aria-labelledby', title.id);
+    expect(screen.getByRole('heading', { name: 'Spring' })).not.toHaveAttribute('id');
+    expectHooksMatchSpec(container, 'CARD', { slots: ['header', 'title', 'body'] });
+  });
+
+  it('UIC-CARD-1.4 UIC-COMPOSITION-3.1 hands the title props to a host component', () => {
+    function HostTitle({ children }: { children: string }) {
+      const slot = useSlottedContext(HeadingContext, 'title');
+      return (
+        <p id={slot?.id} className={slot?.className} ref={slot?.ref}>
+          {children}
+        </p>
+      );
+    }
+    const { rerender } = render(<Card header={<HostTitle>Seed list</HostTitle>}>Body</Card>);
+    expect(screen.getByRole('region', { name: 'Seed list' })).toBeInTheDocument();
+    expect(screen.getByText('Seed list')).toHaveClass('ui-card__title');
+
+    rerender(<Card header={<strong>Seed list</strong>}>Body</Card>);
+    expect(screen.queryByRole('region')).toBeNull();
+    expect(document.querySelector('section')).not.toHaveAttribute('aria-labelledby');
+
+    rerender(
+      <Card header={<HostTitle>Seed list</HostTitle>} aria-label="Seeds">
+        Body
+      </Card>,
+    );
+    expect(screen.getByRole('region', { name: 'Seeds' })).not.toHaveAttribute('aria-labelledby');
   });
 
   it('UIC-CARD-1.3 names a titled card by its heading with a unique, stable id', () => {

@@ -1,8 +1,10 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
+import { useRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
+import { useEnterExit } from '../../utils/use-enter-exit.js';
 import { Banner, type BannerTone } from './banner.js';
 
 const tones: BannerTone[] = ['neutral', 'info', 'success', 'warning', 'danger'];
@@ -178,6 +180,42 @@ describe('Banner', () => {
     expect(root).not.toHaveAttribute('data-exiting');
     rerender(<Banner description="Saved" />);
     expect(root.hidden).toBe(false);
+  });
+
+  it('UIC-BANNER-3.2 publishes entering, and with useEnterExit stays mounted through its exit', async () => {
+    const { container, rerender } = render(<Banner description="Saved" isEntering />);
+    expect(container.firstElementChild).toHaveAttribute('data-entering', 'true');
+    expectHooksMatchSpec(container, 'BANNER');
+
+    let finishFade = () => {};
+    const fade = new Promise<void>((resolve) => {
+      finishFade = resolve;
+    });
+    Object.defineProperty(Element.prototype, 'getAnimations', {
+      configurable: true,
+      value(this: Element) {
+        return this.hasAttribute('data-exiting') ? [{ finished: fade }] : [];
+      },
+    });
+    function Notice({ isOpen }: { isOpen: boolean }) {
+      const ref = useRef<HTMLElement>(null);
+      const { isMounted, isEntering, isExiting } = useEnterExit(ref, isOpen);
+      return isMounted ? (
+        <Banner ref={ref} description="Saved" isEntering={isEntering} isExiting={isExiting} />
+      ) : null;
+    }
+    try {
+      rerender(<Notice isOpen />);
+      const root = screen.getByRole('status');
+      expect(root).not.toHaveAttribute('data-entering');
+      rerender(<Notice isOpen={false} />);
+      expect(screen.getByRole('status')).toBe(root);
+      expect(root).toHaveAttribute('data-exiting', 'true');
+      await act(async () => finishFade());
+      expect(screen.queryByRole('status')).toBeNull();
+    } finally {
+      delete (Element.prototype as Partial<Element>).getAnimations;
+    }
   });
 
   it('UIC-BANNER-3.3 appends the caller class and forwards id and data attributes', () => {

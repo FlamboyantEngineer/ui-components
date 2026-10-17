@@ -9,7 +9,17 @@ import {
   type FieldStateName,
 } from './field-states.js';
 
-const formats = ['hex', 'rgb', 'hsl', 'hsb'] as const satisfies readonly ColorFieldFormat[];
+const formats = [
+  'hex',
+  'hexa',
+  'rgb',
+  'rgba',
+  'hsl',
+  'hsla',
+  'hsb',
+  'hsba',
+] as const satisfies readonly ColorFieldFormat[];
+const swatches = ['#cc3300', '#e69500', '#2e8b57', '#336699', '#7b4fa0', '#4d4d4d'];
 
 function Output({ name, children }: { name: string; children: ReactNode }) {
   return (
@@ -22,9 +32,11 @@ function Output({ name, children }: { name: string; children: ReactNode }) {
 function Sample({
   state,
   layout,
+  allowsTyping,
 }: {
   state: FieldStateName;
   layout: (typeof fieldLayouts)[number];
+  allowsTyping?: boolean;
 }) {
   const props = useLabFieldState<string | null>(state, {
     value: '#336699',
@@ -33,7 +45,7 @@ function Sample({
     warning: '#ffff00',
     empty: null,
   });
-  return <ColorField label="Accent" labelLayout={layout} {...props} />;
+  return <ColorField label="Accent" labelLayout={layout} allowsTyping={allowsTyping} {...props} />;
 }
 
 function Picking() {
@@ -53,6 +65,73 @@ function Picking() {
       <ColorField label="Border" placeholder="Same as the text" data-lab-field="placeholder" />
       <Output name="Changed">{changed}</Output>
       <Output name="Committed">{committed}</Output>
+    </>
+  );
+}
+
+function Formats() {
+  const [format, setFormat] = useState<ColorFieldFormat>('rgba');
+  const [committed, setCommitted] = useState('none');
+  return (
+    <>
+      <ColorField
+        label="Overlay"
+        defaultValue="rgba(51, 102, 153, 0.5)"
+        format={format}
+        onFormatChange={setFormat}
+        formats={['hex', 'hexa', 'rgb', 'rgba', 'hsla']}
+        description="Switch the format in the picker; the value keeps its alpha as #rrggbbaa."
+        onCommit={(value) => setCommitted(value ?? 'empty')}
+        data-lab-field="formats"
+      />
+      <ColorField
+        label="Ink"
+        defaultValue="rgb(51, 102, 153)"
+        defaultFormat="hsl"
+        formats={['hsl', 'hsb']}
+        valueFormat="rgb"
+        description="Edits in HSL or HSB and stores rgb() text."
+        onCommit={(value) => setCommitted(value ?? 'empty')}
+        data-lab-field="value-format"
+      />
+      <Output name="Format">{format}</Output>
+      <Output name="Format committed">{committed}</Output>
+    </>
+  );
+}
+
+function Presets() {
+  const [committed, setCommitted] = useState('none');
+  return (
+    <>
+      <ColorField
+        label="Label colour"
+        defaultValue="#336699"
+        swatches={swatches}
+        allowsEyeDropper
+        description="Pick a preset swatch, or sample the screen where the browser can."
+        onCommit={(value) => setCommitted(value ?? 'empty')}
+        data-lab-field="presets"
+      />
+      <Output name="Preset committed">{committed}</Output>
+    </>
+  );
+}
+
+function Typing() {
+  const [committed, setCommitted] = useState('none');
+  return (
+    <>
+      <ColorField
+        label="Text colour"
+        defaultValue="#2e8b57"
+        allowsTyping
+        swatches={swatches}
+        description="Type hex, rgb() or hsl(); Enter or leaving the input commits."
+        onCommit={(value) => setCommitted(value ?? 'empty')}
+        data-lab-field="typing"
+      />
+      <Output name="Typed committed">{committed}</Output>
     </>
   );
 }
@@ -86,13 +165,41 @@ mountLab(
         render={({ state, layout }) => <Sample state={state} layout={layout} />}
       />
     </LabSection>
-    <LabSection title="Formats" description="The colour text in each format.">
+    <LabSection
+      title="Typing across states"
+      description="A swatch button and a text input instead of the text trigger."
+    >
+      <StateMatrix
+        axes={{ state: fieldStates }}
+        render={({ state }) => <Sample state={state} layout="label-control" allowsTyping />}
+      />
+    </LabSection>
+    <LabSection
+      title="Formats"
+      description="The colour text in each format, with or without alpha."
+    >
       <StateMatrix
         axes={{ format: formats }}
         render={({ format }) => (
-          <ColorField label={`Accent, ${format}`} format={format} defaultValue="#336699" />
+          <ColorField
+            label={`Accent, ${format}`}
+            format={format}
+            defaultValue="rgba(51, 102, 153, 0.75)"
+          />
         )}
       />
+    </LabSection>
+    <LabSection
+      title="Format choice and stored format"
+      description="The picker's format choice, channel inputs and alpha slider."
+    >
+      <Formats />
+    </LabSection>
+    <LabSection title="Preset swatches and eye dropper" description="Presets beside the picker.">
+      <Presets />
+    </LabSection>
+    <LabSection title="Typing a colour" description="The closed field takes typed colours.">
+      <Typing />
     </LabSection>
     <LabSection title="Picking and clearing" description="Backspace on the trigger clears too.">
       <Picking />

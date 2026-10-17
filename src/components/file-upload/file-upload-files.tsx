@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import type { Key } from 'react-aria-components';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -17,6 +18,10 @@ export interface FileUploadItem {
   progress?: number | undefined;
   /** Why the upload failed. */
   error?: string | undefined;
+  /** The chosen file: an image shows as a thumbnail, and a form submits it under the upload's `name`. */
+  file?: File | undefined;
+  /** A thumbnail for a file that has no `file` here, such as one uploaded earlier. */
+  previewUrl?: string | undefined;
 }
 
 export interface FileUploadFilesProps {
@@ -37,8 +42,10 @@ export const fileUploadHooks = createHooks('file-upload', [
   'description',
   'browse',
   'rejections',
+  'error',
   'files',
   'file',
+  'file-preview',
   'file-name',
   'file-size',
   'file-progress',
@@ -55,6 +62,27 @@ function getFileUploadStatus({ progress, error }: FileUploadItem): FileUploadSta
   return progress >= 100 ? 'complete' : 'uploading';
 }
 
+/** A temporary URL for an image file, revoked when the file changes or the row goes. */
+function useImageUrl(file: File | undefined): string | undefined {
+  const [url, setUrl] = useState<string | undefined>(undefined);
+  useEffect(() => {
+    if (!file?.type.startsWith('image/') || typeof URL.createObjectURL !== 'function') {
+      setUrl(undefined);
+      return undefined;
+    }
+    const created = URL.createObjectURL(file);
+    setUrl(created);
+    return () => URL.revokeObjectURL(created);
+  }, [file]);
+  return url;
+}
+
+/** The thumbnail of an image file, beside its name, so it is decorative. */
+function FilePreview({ item }: { item: FileUploadItem }) {
+  const url = useImageUrl(item.file) ?? item.previewUrl;
+  return url ? <img {...hooks.slot('file-preview')} src={url} alt="" /> : null;
+}
+
 function FileRow({
   item,
   locale,
@@ -68,6 +96,7 @@ function FileRow({
   const status = getFileUploadStatus(item);
   return (
     <li {...hooks.slot('file', { status })}>
+      <FilePreview item={item} />
       <span {...hooks.slot('file-name')}>{item.name}</span>
       {item.size === undefined ? null : (
         <span {...hooks.slot('file-size')}>{formatBytes(item.size, locale)}</span>

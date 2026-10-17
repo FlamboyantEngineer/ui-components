@@ -3,9 +3,9 @@ import {
   Button as AriaButton,
   ColorPicker,
   DialogTrigger,
-  parseColor,
   type Color,
 } from 'react-aria-components';
+import { useControllableState } from '../../core/controllable-state.js';
 import { useUiStrings } from '../../core/provider.js';
 import { ColorSwatch } from '../color-swatch/color-swatch.js';
 import {
@@ -15,14 +15,39 @@ import {
   type FieldInputProps,
   type FieldState,
 } from '../field/field.js';
+import { ColorEntry } from './color-field-entry.js';
 import { ColorFieldPanel, colorFieldHooks as hooks } from './color-field-panel.js';
-
-/** How the colour is written beside the swatch. */
-export type ColorFieldFormat = 'hex' | 'rgb' | 'hsl' | 'hsb';
+import {
+  formatColor,
+  hasAlpha,
+  toColor,
+  toStoredValue,
+  type ColorFieldFormat,
+} from './color-values.js';
 
 export interface ColorFieldProps extends FieldInputProps<string | null> {
-  /** How the colour is written beside the swatch. Defaults to `hex`. */
+  /**
+   * How the colour is written beside the swatch and edited in the picker (controlled). An alpha
+   * format (`hexa`, `rgba`, `hsla`, `hsba`) adds an alpha slider and input.
+   */
   format?: ColorFieldFormat | undefined;
+  /** The initial format when uncontrolled. Defaults to `hex`. */
+  defaultFormat?: ColorFieldFormat | undefined;
+  /** Called with the format chosen in the picker. */
+  onFormatChange?: ((format: ColorFieldFormat) => void) | undefined;
+  /** The formats the picker offers to switch between; two or more draw a format choice. */
+  formats?: readonly ColorFieldFormat[] | undefined;
+  /**
+   * How the value is stored. Defaults to lowercase hex: `#rrggbb`, or `#rrggbbaa` while the format
+   * has alpha.
+   */
+  valueFormat?: ColorFieldFormat | undefined;
+  /** Preset colours the picker offers as swatches. */
+  swatches?: readonly string[] | undefined;
+  /** Adds a picker button that samples a colour from the screen, where the browser can. */
+  allowsEyeDropper?: boolean | undefined;
+  /** Draws a text input to type a colour into beside a swatch button, instead of a text trigger. */
+  allowsTyping?: boolean | undefined;
   /** The text shown while no colour is set. Defaults to the provider's `noColor`. */
   placeholder?: string | undefined;
 }
@@ -36,20 +61,6 @@ interface ColorTriggerProps {
 
 // The picker needs a colour to show while the value is empty.
 const emptyPickerColor = '#808080';
-
-function toColor(value: string | null): Color | null {
-  if (!value) return null;
-  try {
-    return parseColor(value);
-  } catch {
-    return null;
-  }
-}
-
-/** The stored form of a colour: lowercase `#rrggbb`. */
-function toStoredValue(color: Color): string {
-  return color.toString('hex').toLowerCase();
-}
 
 /**
  * The trigger is named by the field label and the colour text. Backspace or Delete clears an optional
@@ -81,28 +92,70 @@ function ColorTrigger({ control, state, color, text }: ColorTriggerProps) {
 }
 
 /**
- * A field for a colour value, stored as lowercase `#rrggbb` or `null`. Its trigger shows a swatch
- * and the colour text and opens a picker: a saturation and brightness area, a hue slider, a hex
- * input and, unless required, a Clear button. The picked colour commits when the picker closes.
+ * A field for a colour value, stored as lowercase hex (or in `valueFormat`) or `null`. Its trigger
+ * shows a swatch and the colour text (or, with `allowsTyping`, a swatch button and a text input) and
+ * opens a picker: a format choice, a saturation and brightness area, hue and alpha sliders, the
+ * format's inputs, an eye dropper, preset swatches and, unless required, a Clear button. The picked
+ * colour commits when the picker closes.
  */
-export function ColorField({ format = 'hex', placeholder, ...props }: ColorFieldProps) {
+export function ColorField({
+  format,
+  defaultFormat = 'hex',
+  onFormatChange,
+  formats = [],
+  valueFormat,
+  swatches = [],
+  allowsEyeDropper = false,
+  allowsTyping = false,
+  placeholder,
+  ...props
+}: ColorFieldProps) {
   const strings = useUiStrings();
   const { state, field } = useFieldControl(props, { initialValue: null, emptyValue: null });
+  const [shownFormat, setFormat] = useControllableState(format, defaultFormat, onFormatChange);
+  const storedFormat = valueFormat ?? (hasAlpha(shownFormat) ? 'hexa' : 'hex');
   const color = toColor(state.value);
-  const text = color ? color.toString(format) : (placeholder ?? strings.noColor);
+  const shownPlaceholder = placeholder ?? strings.noColor;
   return (
     <Field {...field} {...hooks.root({ className: field.className })} state={state}>
       {(control) => (
         <ColorPicker
           value={color ?? emptyPickerColor}
-          onChange={(next) => state.setValue(toStoredValue(next))}
+          onChange={(next) => state.setValue(toStoredValue(next, storedFormat))}
         >
           <DialogTrigger onOpenChange={(isOpen) => (isOpen ? undefined : state.commit())}>
-            <ColorTrigger control={control} state={state} color={color} text={text} />
-            <ColorFieldPanel label={field.label} state={state} />
+            {allowsTyping ? (
+              <ColorEntry
+                control={control}
+                state={state}
+                label={field.label}
+                color={color}
+                format={shownFormat}
+                valueFormat={storedFormat}
+                placeholder={shownPlaceholder}
+              />
+            ) : (
+              <ColorTrigger
+                control={control}
+                state={state}
+                color={color}
+                text={color ? formatColor(color, shownFormat) : shownPlaceholder}
+              />
+            )}
+            <ColorFieldPanel
+              label={field.label}
+              state={state}
+              format={shownFormat}
+              formats={formats}
+              onFormatChange={setFormat}
+              swatches={swatches}
+              allowsEyeDropper={allowsEyeDropper}
+            />
           </DialogTrigger>
         </ColorPicker>
       )}
     </Field>
   );
 }
+
+export type { ColorFieldFormat } from './color-values.js';

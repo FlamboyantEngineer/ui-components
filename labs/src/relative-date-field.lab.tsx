@@ -3,6 +3,7 @@ import type { FieldLabelLayout } from '../../src/components/field/field.js';
 import {
   RelativeDateField,
   type RelativeDateFieldProps,
+  type RelativeDateRange,
 } from '../../src/components/relative-date-field/relative-date-field.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
@@ -71,6 +72,64 @@ function Presets() {
   );
 }
 
+/** The last day of the clock's month, as `YYYY-MM-DD`. */
+function endOfMonth(now: Date): string {
+  const last = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  const pad = (part: number) => String(part).padStart(2, '0');
+  return `${last.getFullYear()}-${pad(last.getMonth() + 1)}-${pad(last.getDate())}`;
+}
+
+function Extras() {
+  const [committed, setCommitted] = useState('none');
+  const show = (value: string | RelativeDateRange | null) =>
+    setCommitted(value === null ? 'none' : JSON.stringify(value));
+  return (
+    <>
+      <RelativeDateField
+        label="Review"
+        getNow={getNow}
+        defaultValue="2026-04-21"
+        showCalendar
+        description="Pick a preset, or Tab into the calendar for any day."
+        onCommit={show}
+        data-lab-field="calendar"
+      />
+      <RelativeDateField
+        label="Deadline"
+        getNow={getNow}
+        presets={[
+          { amount: 2, unit: 'week', label: 'In a fortnight' },
+          { label: 'End of month', getValue: endOfMonth },
+        ]}
+        onCommit={show}
+        data-lab-field="labelled"
+      />
+      <RelativeDateField
+        label="Report period"
+        valueKind="date-range"
+        getNow={getNow}
+        showCalendar
+        onCommit={show}
+        data-lab-field="range"
+      />
+      <RelativeDateField
+        label="Delivery"
+        getNow={getNow}
+        defaultValue="2026-04-21"
+        minValue="2026-04-20"
+        maxValue="2026-04-25"
+        showCalendar
+        description="Only 20 to 25 April 2026; presets outside are disabled."
+        onCommit={show}
+        data-lab-field="bounded"
+      />
+      <p>
+        Committed: <output data-lab-output="Extra">{committed}</output>
+      </p>
+    </>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -114,6 +173,12 @@ mountLab(
         ]}
         data-lab-field="custom"
       />
+    </LabSection>
+    <LabSection
+      title="Calendar, labels, ranges and bounds"
+      description="A calendar beside the presets, caller-named and computed presets, relative ranges and bounds."
+    >
+      <Extras />
     </LabSection>
   </>,
 );

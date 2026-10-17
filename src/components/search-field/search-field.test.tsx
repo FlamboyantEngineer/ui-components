@@ -21,7 +21,7 @@ describe('SearchField', () => {
     expect(glyph).toHaveAttribute('aria-hidden', 'true');
     await user.type(input, 'ap');
     expect(onChange.mock.calls.map(([value]) => value)).toEqual(['a', 'ap']);
-    expectHooksMatchSpec(container, 'SEARCH-FIELD', { slots: 'all' });
+    expectHooksMatchSpec(container, 'SEARCH-FIELD', { slots: ['glyph', 'input', 'clear'] });
   });
 
   it('UIC-SEARCH-FIELD-1.1 hands its input to inputRef', () => {
@@ -110,5 +110,80 @@ describe('SearchField', () => {
     expect(root).toHaveAttribute('data-test', 'find');
     expect(root).toHaveAttribute('data-empty', 'true');
     expectHooksMatchSpec(container, 'SEARCH-FIELD', { callerAttributes: ['data-test'] });
+  });
+
+  it('UIC-SEARCH-FIELD-2.1 draws its label above the box in the label-control layout', () => {
+    const hidden = render(<SearchField label="Find a city" />);
+    const plain = hidden.container.querySelector('.ui-search-field');
+    expect(plain).toHaveAttribute('data-label-layout', 'control-only');
+    expect(hidden.container.querySelector('.ui-search-field__label')).toBeNull();
+    expect(hidden.container.querySelector('.ui-search-field__group')).toBeNull();
+    hidden.unmount();
+    const { container } = render(
+      <SearchField label="Find a city" labelLayout="label-control" defaultValue="Os" />,
+    );
+    expect(container.querySelector('.ui-search-field')).toHaveAttribute(
+      'data-label-layout',
+      'label-control',
+    );
+    const label = container.querySelector('.ui-search-field__label');
+    expect(label?.tagName).toBe('LABEL');
+    const input = screen.getByRole('searchbox', { name: 'Find a city' });
+    expect(input).not.toHaveAttribute('aria-label');
+    const group = container.querySelector('.ui-search-field__group');
+    expect(group).toHaveAttribute('role', 'presentation');
+    expect(
+      [...(group?.children ?? [])].map((node) => node.getAttribute('class')?.split(' ')[0]),
+    ).toEqual(['ui-glyph', 'ui-search-field__input', 'ui-icon-button']);
+    expectHooksMatchSpec(container, 'SEARCH-FIELD', { slots: ['label', 'group'] });
+  });
+
+  it('UIC-SEARCH-FIELD-2.2 describes the input and shows its error message below the box', async () => {
+    const user = userEvent.setup();
+    const { container, rerender } = render(
+      <SearchField
+        label="Find a city"
+        labelLayout="label-control"
+        description="Type at least three letters."
+        validationBehavior="aria"
+        validate={(value) => (value.length > 0 && value.length < 3 ? 'Too short.' : null)}
+      />,
+    );
+    const input = screen.getByRole('searchbox', { name: 'Find a city' });
+    expect(container.querySelector('.ui-search-field__description')).toHaveTextContent(
+      'Type at least three letters.',
+    );
+    expect(input).toHaveAccessibleDescription('Type at least three letters.');
+    expect(container.querySelector('.ui-search-field__error')).toBeNull();
+    await user.type(input, 'Os');
+    expect(container.querySelector('.ui-search-field__error')).toHaveTextContent('Too short.');
+    expect(container.querySelector('.ui-search-field')).toHaveAttribute('data-invalid', 'true');
+    expect(input).toHaveAccessibleDescription('Type at least three letters. Too short.');
+    expectHooksMatchSpec(container, 'SEARCH-FIELD', { slots: ['description', 'error'] });
+    rerender(
+      <SearchField
+        label="Find a city"
+        labelLayout="label-control"
+        isInvalid
+        errorMessage="No such city."
+      />,
+    );
+    expect(container.querySelector('.ui-search-field__error')).toHaveTextContent('No such city.');
+    expect(container.querySelector('.ui-search-field__description')).toBeNull();
+  });
+
+  it('UIC-SEARCH-FIELD-2.3 shows a busy indicator while results load', () => {
+    const { container, rerender } = render(
+      <SearchField label="Find" defaultValue="fig" isPending />,
+    );
+    const root = container.querySelector('.ui-search-field');
+    expect(root).toHaveAttribute('data-pending', 'true');
+    const spinner = screen.getByRole('progressbar', { name: 'Loading' });
+    expect(spinner).toHaveClass('ui-search-field__spinner');
+    expect(screen.getByRole('button', { name: 'Clear search' })).toBeInTheDocument();
+    expectHooksMatchSpec(container, 'SEARCH-FIELD', { slots: ['spinner'] });
+    rerender(<SearchField label="Find" defaultValue="fig" />);
+    expect(root).not.toHaveAttribute('data-pending');
+    expect(screen.queryByRole('progressbar')).toBeNull();
   });
 });

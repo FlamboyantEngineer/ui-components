@@ -1,0 +1,181 @@
+import { useState, type FormEvent, type ReactNode } from 'react';
+import { BooleanField } from '../../src/components/boolean-field/boolean-field.js';
+import { Button } from '../../src/components/button/button.js';
+import { CheckboxGroup } from '../../src/components/checkbox-group/checkbox-group.js';
+import { Fieldset, type FieldValidationMode } from '../../src/components/field/field.js';
+import { Form } from '../../src/components/form/form.js';
+import { NumberField } from '../../src/components/number-field/number-field.js';
+import { Switch } from '../../src/components/switch/switch.js';
+import { TextField } from '../../src/components/text-field/text-field.js';
+import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+
+const modes = [
+  'immediate',
+  'change',
+  'blur',
+  'submit',
+] as const satisfies readonly FieldValidationMode[];
+
+const courses = [
+  { value: 'starter', label: 'Starter' },
+  { value: 'main', label: 'Main' },
+  { value: 'dessert', label: 'Dessert' },
+];
+
+function Output({ name, children }: { name: string; children: ReactNode }) {
+  return (
+    <p>
+      {name}: <output data-lab-output={name}>{children}</output>
+    </p>
+  );
+}
+
+/** The submitted entries, as `name=value` pairs. */
+function readEntries(event: FormEvent<HTMLFormElement>): string {
+  event.preventDefault();
+  const entries = [...new FormData(event.currentTarget).entries()];
+  return entries.map(([name, value]) => `${name}=${String(value)}`).join(', ') || 'nothing';
+}
+
+/** Every field is required: a submit shows their messages and focuses the first invalid one. */
+function Booking() {
+  const [submitted, setSubmitted] = useState('none');
+  return (
+    <Form
+      aria-label="Booking"
+      validationBehavior="aria"
+      onSubmit={(event) => setSubmitted(readEntries(event))}
+      data-lab-form="booking"
+    >
+      <TextField label="Name" name="name" isRequired />
+      <NumberField
+        label="Guests"
+        name="guests"
+        isRequired
+        minValue={1}
+        maxValue={8}
+        commitBehavior="validate"
+      />
+      <CheckboxGroup label="Courses" name="courses" isRequired options={courses} />
+      <BooleanField
+        label="Accept the house rules"
+        name="rules"
+        validate={(value) =>
+          value === true ? null : { severity: 'error', message: 'Accept the house rules to book.' }
+        }
+      />
+      <Button type="submit" variant="primary">
+        Book
+      </Button>
+      <Output name="Booking">{submitted}</Output>
+    </Form>
+  );
+}
+
+/** The server rejects the name ada; its error shows until the name changes. */
+function SignUp() {
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [status, setStatus] = useState('none');
+  const submit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const name = String(new FormData(event.currentTarget).get('username'));
+    const isTaken = name.trim().toLowerCase() === 'ada';
+    setErrors(isTaken ? { username: 'This username is taken.' } : {});
+    setStatus(isTaken ? 'rejected' : `created ${name}`);
+  };
+  return (
+    <Form
+      aria-label="Sign up"
+      validationBehavior="aria"
+      validationErrors={errors}
+      onSubmit={submit}
+    >
+      <TextField
+        label="Username"
+        name="username"
+        isRequired
+        description="The server says ada is taken."
+        data-lab-field="username"
+      />
+      <Button type="submit">Sign up</Button>
+      <Output name="Sign up">{status}</Output>
+    </Form>
+  );
+}
+
+/** The browser's constraint validation blocks the submit; the fields show their own messages. */
+function Newsletter() {
+  const [submitted, setSubmitted] = useState('none');
+  return (
+    <Form aria-label="Newsletter" onSubmit={(event) => setSubmitted(readEntries(event))}>
+      <TextField label="Email" name="email" type="email" isRequired data-lab-field="email" />
+      <Button type="submit">Subscribe</Button>
+      <Output name="Newsletter">{submitted}</Output>
+    </Form>
+  );
+}
+
+/** Picking up in store disables the address fieldset, whose fields then never block. */
+function Delivery() {
+  const [isPickup, setIsPickup] = useState(false);
+  const [submitted, setSubmitted] = useState('none');
+  return (
+    <Form
+      aria-label="Delivery"
+      validationBehavior="aria"
+      onSubmit={(event) => setSubmitted(readEntries(event))}
+    >
+      <Switch isSelected={isPickup} onChange={setIsPickup}>
+        Pick up in store
+      </Switch>
+      <Fieldset legend="Delivery address" isDisabled={isPickup} data-lab-field="address">
+        <TextField label="Street" name="street" isRequired />
+        <TextField label="City" name="city" isRequired />
+      </Fieldset>
+      <Button type="submit">Continue</Button>
+      <Output name="Delivery">{submitted}</Output>
+    </Form>
+  );
+}
+
+mountLab(
+  <>
+    <LabSection
+      title="Submit validation"
+      description="Book with empty fields: every field shows its message and the first invalid one takes focus."
+    >
+      <Booking />
+    </LabSection>
+    <LabSection
+      title="Validation modes"
+      description="The form's mode decides when a required field shows its message: at once, after an edit, after leaving it, or after a submit."
+    >
+      <StateMatrix
+        axes={{ mode: modes }}
+        render={({ mode }) => (
+          <Form
+            aria-label={`City, ${mode}`}
+            validationMode={mode}
+            validationBehavior="aria"
+            onSubmit={(event) => event.preventDefault()}
+          >
+            <TextField label="City" isRequired />
+            <Button type="submit">Check</Button>
+          </Form>
+        )}
+      />
+    </LabSection>
+    <LabSection title="Server errors" description="Submit ada, then edit the name.">
+      <SignUp />
+    </LabSection>
+    <LabSection
+      title="Native validation"
+      description="The browser blocks the submit through the field's custom validity, and checks the email format itself."
+    >
+      <Newsletter />
+    </LabSection>
+    <LabSection title="Fieldset" description="A fieldset groups fields and disables them together.">
+      <Delivery />
+    </LabSection>
+  </>,
+);

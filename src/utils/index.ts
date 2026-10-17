@@ -1,8 +1,14 @@
 export { clamp } from './clamp.js';
 export { assignOccurrenceKeys } from './stable-keys.js';
 export type { KeyedValue } from './stable-keys.js';
+export { mergeProps, mergeRefs } from './merge-props.js';
+export type { MergedProps } from './merge-props.js';
+export { renderElement } from './render-element.js';
+export type { ElementRender, RenderElementOptions } from './render-element.js';
 export { copyRichText, copyText } from './clipboard.js';
 export type { ClipboardWriter, CopyOptions, RichCopyOptions, RichCopyResult } from './clipboard.js';
+export { DEFAULT_COPY_TIMEOUT, useClipboard } from './use-clipboard.js';
+export type { ClipboardOptions, ClipboardState, CopyStatus } from './use-clipboard.js';
 export { DOWNLOAD_URL_LIFETIME, downloadBlob, downloadUrl } from './download.js';
 export {
   DEFAULT_OVERLAY_GAP,
@@ -32,6 +38,8 @@ export {
   isSameOverlayGeometry,
   resolveOverlayGeometry,
 } from './overlay-geometry.js';
+export { autoUpdateOverlay } from './overlay-auto-update.js';
+export type { OverlayAutoUpdateOptions } from './overlay-auto-update.js';
 export type {
   OverlayBoundary,
   OverlayGeometry,
@@ -42,6 +50,10 @@ export { useResizeObserver } from './use-resize-observer.js';
 export type { ResizeObserverTarget, ResizeObserverTargets } from './use-resize-observer.js';
 export { useElementSize } from './use-element-size.js';
 export { useWidestTextWidth } from './use-widest-text-width.js';
+export { useEnterExit } from './use-enter-exit.js';
+export type { EnterExitState } from './use-enter-exit.js';
+export { useInView } from './use-in-view.js';
+export type { InViewOptions, InViewTarget } from './use-in-view.js';
 export type {
   ElementSize,
   ElementSizeBox,
@@ -60,6 +72,13 @@ export type {
   ScrollOverviewSegment,
 } from './scroll-overview.js';
 export { useScrollStripOverflow } from './use-scroll-strip-overflow.js';
+export { resolveOverflowCount, useOverflowItems } from './use-overflow-items.js';
+export type {
+  OverflowCollapseFrom,
+  OverflowCountInput,
+  OverflowItems,
+  OverflowItemsOptions,
+} from './use-overflow-items.js';
 export type {
   ScrollStripOptions,
   ScrollStripOverflow,

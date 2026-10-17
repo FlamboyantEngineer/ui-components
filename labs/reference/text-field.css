@@ -56,3 +56,94 @@
 .ui-text-field__input[data-disabled] {
   cursor: not-allowed;
 }
+
+/* With adornments or a reveal button, the group is the frame and the input sits inside it. */
+.ui-text-field__group {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  box-sizing: border-box;
+  height: 28px;
+  padding: 0 2px 0 8px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-canvas);
+}
+
+.ui-text-field .ui-text-field__group .ui-text-field__input {
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  outline: none;
+}
+
+.ui-text-field__group[data-focus-within] {
+  border-color: var(--ref-focus);
+  outline: 1px solid var(--ref-focus);
+}
+
+.ui-text-field[data-dirty] .ui-text-field__group {
+  border-inline-start: 3px solid var(--ref-info);
+}
+
+.ui-text-field[data-validation='invalid'] .ui-text-field__group {
+  border-color: var(--ref-danger);
+}
+
+.ui-text-field[data-validation='warning'] .ui-text-field__group {
+  border-color: var(--ref-warning);
+}
+
+.ui-text-field[data-readonly] .ui-text-field__group {
+  border-style: dashed;
+  background: var(--ref-surface);
+}
+
+.ui-text-field__start,
+.ui-text-field__end {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+  color: var(--ref-muted);
+  font-size: 12px;
+}
+
+.ui-text-field__start .ui-glyph,
+.ui-text-field__end .ui-glyph {
+  width: 14px;
+  height: 14px;
+}
+
+.ui-text-field__end:last-child {
+  padding-inline-end: 6px;
+}
+
+.ui-text-field__reveal {
+  flex: none;
+}
+
+/* A growing text area takes its height from its text. */
+.ui-text-field[data-autosize] .ui-text-field__input {
+  min-height: 0;
+  resize: none;
+}
+
+/* The count sits at the end of the description line. */
+.ui-text-field .ui-field__description {
+  display: flex;
+  gap: 8px;
+}
+
+.ui-text-field__count {
+  margin-inline-start: auto;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.ui-text-field[data-validation='invalid'] .ui-text-field__count {
+  color: var(--ref-danger);
+}
