@@ -93,4 +93,28 @@ test.describe('Load More lab', () => {
     await expect(button).toHaveCount(0);
     await lab.expectAccessible();
   });
+
+  test('UIC-LOAD-MORE-1.8 UIC-MEASUREMENT-4.3 requests the next page ahead of the scroll position', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('load-more');
+    const demo = page.locator('[data-lab-demo="ahead"]');
+    const scroller = demo.locator('[data-lab-scroller]');
+    const button = demo.locator('.ui-load-more');
+    await scroller.scrollIntoViewIfNeeded();
+    await expect(button).not.toHaveAttribute('data-pending');
+    const gap = await scroller.evaluate((node) => {
+      const control = node.querySelector('.ui-load-more') as HTMLElement;
+      node.scrollTop = control.offsetTop - node.offsetTop - node.clientHeight - 60;
+      return control.getBoundingClientRect().top - node.getBoundingClientRect().bottom;
+    });
+    expect(gap).toBeGreaterThan(0);
+    expect(gap).toBeLessThan(160);
+    await expect(button).toHaveAttribute('data-pending', 'true');
+    await expect(button).not.toBeInViewport();
+    await demo.locator('[data-lab-action="deliver-cities"]').click();
+    await expect(demo.locator('[data-lab-output="cities"] li')).toHaveCount(24);
+    await expect(demo.locator('[data-lab-output="done"]')).toBeAttached();
+  });
 });
