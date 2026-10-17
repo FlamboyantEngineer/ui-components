@@ -37,6 +37,7 @@ import {
   QuestionMarkCircleIcon,
   TrashIcon,
   UsersIcon,
+  ViewColumnsIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
 import type { ComponentType } from 'react';
@@ -103,6 +104,7 @@ export const defaultGlyphs = {
   eye: EyeIcon,
   'eye-slash': EyeSlashIcon,
   scrub: ArrowsRightLeftIcon,
+  sidebar: ViewColumnsIcon,
 } satisfies Record<string, GlyphComponent>;
 
 export const glyphNames = Object.keys(defaultGlyphs) as GlyphName[];

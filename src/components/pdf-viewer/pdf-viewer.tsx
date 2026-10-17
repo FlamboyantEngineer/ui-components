@@ -1,21 +1,23 @@
-import { useRef, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { measuredProperty } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
-import { useUiStrings } from '../../core/provider.js';
 import type { MenuEntry } from '../menu/menu.js';
 import { ProjectionContent } from '../projection/projection.js';
 import { pdfViewerHooks as hooks } from './styling-hooks.js';
 import type { PdfPageGeometry, PdfPagePoint, PdfPageRect, PdfSelection } from './page-geometry.js';
-import type { PdfEngine, PdfSource, PdfTextContent, PdfViewport } from './pdf-engine.js';
+import type {
+  PdfDocumentOptions,
+  PdfEngine,
+  PdfSource,
+  PdfTextContent,
+  PdfViewport,
+} from './pdf-engine.js';
+import type { PdfSearchOptions } from './pdf-search.js';
 import { PdfViewerStage } from './pdf-viewer-stage.js';
 import { PdfViewerToolbar } from './pdf-viewer-toolbar.js';
-import type { PdfSize, PdfZoom } from './pdf-zoom.js';
-import { usePdfContextMenu } from './use-pdf-context-menu.js';
-import { usePdfDocument } from './use-pdf-document.js';
-import { usePageViewports, usePdfNavigation } from './use-pdf-navigation.js';
-import { usePdfPages } from './use-pdf-pages.js';
-import { usePdfSearch, type PdfSearchControls } from './use-pdf-search.js';
-import { usePdfZoom } from './use-pdf-zoom.js';
+import type { PdfZoom } from './pdf-zoom.js';
+import type { PdfSearchControls } from './use-pdf-search.js';
+import { usePdfViewer } from './use-pdf-viewer.js';
 
 export { findBoxAtPoint } from './page-geometry.js';
 export type {
@@ -26,6 +28,7 @@ export type {
   PdfRect,
   PdfSelection,
 } from './page-geometry.js';
+export type { PdfSearchOptions } from './pdf-search.js';
 export type { PdfSearchControls } from './use-pdf-search.js';
 
 export interface PdfViewerProps<
@@ -38,6 +41,8 @@ export interface PdfViewerProps<
   loadEngine: () => Promise<PdfEngine<V, C>>;
   /** URL of the engine's worker script, set on the engine before it opens a document. */
   workerSrc?: string | undefined;
+  /** Options the engine opens a document with: request headers, credentials, character maps, fonts. */
+  documentOptions?: PdfDocumentOptions | undefined;
   /** Names the document; the toolbar is named after it. Defaults to the provider's `document` string. */
   'aria-label'?: string | undefined;
   /** The zoom the viewer opens at. Defaults to `page-width`. */
@@ -50,12 +55,18 @@ export interface PdfViewerProps<
   leadingActions?: ReactNode;
   /** Draws the toolbar at the `ProjectionOutlet` of this slot instead of above the pages. */
   toolbarSlot?: string | undefined;
+  /** Opens the sidebar of page thumbnails and outline. */
+  defaultSidebarOpen?: boolean | undefined;
   /** Called when the engine or the document cannot be opened. */
   onError?: ((error: Error) => void) | undefined;
   /** The page the reader is on, zero-based: the viewer goes to it when it changes. */
   page?: number | undefined;
+  /** The page a document opens at when `page` is not set, zero-based. */
+  defaultPage?: number | undefined;
   /** Called with the page the reader is on, zero-based, whenever it changes. */
   onPageChange?: ((pageIndex: number) => void) | undefined;
+  /** A destination the document defines by name, gone to each time it changes. */
+  destination?: string | null | undefined;
   /** A rectangle on a page, in points, brought into view each time it changes. */
   revealRect?: PdfPageRect | null | undefined;
   /** Draws content over each page that renders, positioned with the page's viewport. */
@@ -66,6 +77,10 @@ export interface PdfViewerProps<
   searchQuery?: string | undefined;
   /** Called with the query typed into the find controls. */
   onSearchQueryChange?: ((query: string) => void) | undefined;
+  /** How the find matches the query; the caller owns the options when set. */
+  searchOptions?: PdfSearchOptions | undefined;
+  /** Called with the find options chosen in the find controls. */
+  onSearchOptionsChange?: ((options: PdfSearchOptions) => void) | undefined;
   /** The current match, zero-based and taken modulo the number of matches; the caller owns it when set. */
   matchIndex?: number | undefined;
   /** Called with the match a step or a new query moves to. */
@@ -78,49 +93,31 @@ export interface PdfViewerProps<
   getPageMenuItems?: ((target: PdfPagePoint<V>) => readonly MenuEntry[]) | undefined;
 }
 
-const noSizes: readonly PdfSize[] = [];
-
 /**
- * A PDF reader: pages drawn on canvas with selectable text, zoom with fit modes, page navigation,
- * find and a context menu, over a PDF engine the host injects, with caller content over the pages.
+ * A PDF reader: pages drawn on canvas with selectable text and working links, zoom with fit modes,
+ * rotation, page navigation, a sidebar of thumbnails and outline, find, printing and saving, and a
+ * context menu, over a PDF engine the host injects, with caller content over the pages.
  */
 export function PdfViewer<
   V extends PdfViewport = PdfViewport,
   C extends PdfTextContent = PdfTextContent,
 >(props: PdfViewerProps<V, C>) {
-  const { source, loadEngine, workerSrc, onError, className, id, toolbarSlot } = props;
-  const strings = useUiStrings();
-  const label = props['aria-label'] ?? strings.document;
-  const scrollerRef = useRef<HTMLDivElement | null>(null);
-  const pagesRef = useRef<HTMLDivElement | null>(null);
-  const pdf = usePdfDocument({ source, loadEngine, workerSrc, onError });
-  const { status, loaded } = pdf;
-  const isReady = status === 'ready';
-  const pageCount = loaded?.pages.length ?? 0;
-  const pages = usePdfPages({ scrollerRef, document: loaded, pageCount });
-  const zoom = usePdfZoom({
-    defaultZoom: props.defaultZoom ?? 'page-width',
-    sizes: loaded?.sizes ?? noSizes,
-    scrollerRef,
-    pagesRef,
-    pages,
-    onZoomChange: props.onZoomChange,
-  });
-  const { scale } = zoom;
-  const search = usePdfSearch({ ...props, loaded, pages });
-  usePdfNavigation({ ...props, isReady, scale, pageCount, scrollerRef, pages });
-  usePageViewports({ ...props, loaded, nearPages: pages.nearPages, scale });
-  const { elements } = pages;
-  const menu = usePdfContextMenu({ ...props, loaded, scale, scrollerRef, elements });
+  const { className, id, toolbarSlot } = props;
+  const viewer = usePdfViewer(props);
+  const { pdf, pages, zoom, search, keyboard, refs } = viewer;
   const toolbar = (
     <PdfViewerToolbar
-      label={label}
-      isReady={isReady}
+      label={viewer.label}
+      isReady={viewer.isReady}
       zoom={zoom}
-      pageCount={pageCount}
+      pageCount={viewer.pageCount}
       currentPage={pages.currentPage}
       onPageChange={pages.scrollToPage}
       search={search}
+      findFieldRef={refs.findFieldRef}
+      sidebar={viewer.sidebar}
+      commands={viewer.commands}
+      onKeyDown={keyboard.onViewerKeyDown}
       actions={props.actions}
       leadingActions={props.leadingActions}
       renderSearch={props.renderSearch}
@@ -131,22 +128,31 @@ export function PdfViewer<
       {...hooks.root({
         className,
         props,
-        data: { loading: status === 'loading', error: status === 'error' },
+        data: {
+          loading: pdf.status === 'loading',
+          locked: pdf.status === 'password',
+          error: pdf.status === 'error',
+        },
       })}
       id={id}
-      aria-busy={status === 'loading' || undefined}
-      style={measuredProperty('pdf-viewer-scale', String(scale))}
+      aria-busy={pdf.status === 'loading' || undefined}
+      style={measuredProperty('pdf-viewer-scale', String(zoom.scale))}
     >
       {toolbarSlot ? <ProjectionContent slot={toolbarSlot}>{toolbar}</ProjectionContent> : toolbar}
       <PdfViewerStage
-        label={label}
+        label={viewer.label}
         pdf={pdf}
-        scale={scale}
+        view={viewer.view}
+        scale={zoom.scale}
         pages={pages}
         search={search}
-        scrollerRef={scrollerRef}
-        pagesRef={pagesRef}
-        menu={menu}
+        scrollerRef={refs.scrollerRef}
+        pagesRef={refs.pagesRef}
+        menu={viewer.menu}
+        links={viewer.links}
+        isSidebarOpen={viewer.sidebar.isOpen}
+        onKeyDown={keyboard.onViewerKeyDown}
+        onScrollerKeyDown={keyboard.onScrollerKeyDown}
         renderOverlay={props.renderPageOverlay}
       />
     </div>

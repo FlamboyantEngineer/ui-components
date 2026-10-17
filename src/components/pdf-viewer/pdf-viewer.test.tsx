@@ -79,7 +79,7 @@ describe('PdfViewer', () => {
     expect(onError).toHaveBeenCalledTimes(2);
   });
 
-  it('UIC-PDF-VIEWER-2.1 sizes pages to the zoom and draws them without annotations', async () => {
+  it('UIC-PDF-VIEWER-2.1 sizes pages to the zoom and draws them with their annotations', async () => {
     const { container, engine } = await renderReady({ defaultZoom: 100 });
     const page = container.querySelector<HTMLElement>('.ui-pdf-viewer__page');
     expect(page?.style.width).toBe(`${420 * pointsToPixels}px`);
@@ -88,7 +88,7 @@ describe('PdfViewer', () => {
     expect(canvas).toHaveAttribute('width', '560');
     expect(canvas).toHaveAttribute('aria-hidden', 'true');
     expect(engine.render).toHaveBeenCalledWith(
-      expect.objectContaining({ canvas, annotationMode: 0, transform: undefined }),
+      expect.objectContaining({ canvas, annotationMode: 1, transform: undefined }),
     );
     await userEvent.click(screen.getByRole('button', { name: 'Zoom in' }));
     expect(Number.parseFloat(page?.style.width ?? '')).toBeCloseTo(420 * 1.25 * pointsToPixels);
@@ -242,18 +242,21 @@ describe('PdfViewer', () => {
       actions: <button onClick={download}>Download</button>,
       leadingActions: <button>Outline</button>,
       renderPageOverlay: () => null,
+      defaultSidebarOpen: true,
     });
     const toolbar = screen.getByRole('toolbar', { name: 'Report controls' });
     const controls = [...toolbar.querySelectorAll('button:not([hidden]), input')].map(
       (control) => control.getAttribute('aria-label') ?? control.textContent,
     );
     expect(controls[0]).toBe('Outline');
+    expect(controls[1]).toBe('Sidebar');
     expect(screen.getByRole('button', { name: 'Outline' }).parentElement).toHaveClass(
       'ui-pdf-viewer__leading-actions',
     );
     expect(controls.indexOf('Zoom level')).toBeLessThan(controls.indexOf('Fit page width'));
     expect(controls.indexOf('Fit whole page')).toBeLessThan(controls.indexOf('Previous page'));
     expect(controls.indexOf('Next page')).toBeLessThan(controls.indexOf('Find in document'));
+    expect(controls.indexOf('Find options')).toBeLessThan(controls.indexOf('More options'));
     expect(controls.at(-1)).toBe('Download');
 
     const field = screen.getByRole('searchbox');
@@ -265,6 +268,26 @@ describe('PdfViewer', () => {
     expect(screen.getByRole('button', { name: 'Next page' })).toHaveFocus();
     await userEvent.click(screen.getByRole('button', { name: 'Download' }));
     expect(download).toHaveBeenCalled();
+
+    // The password form and the outline show in viewers of their own.
+    const outline = [{ title: 'Markets', dest: 'markets', url: null, items: [] }];
+    render(
+      <>
+        <PdfViewer
+          aria-label="Locked"
+          source="/files/Locked.pdf"
+          loadEngine={createEngine({ password: 'orchard' }).loadEngine}
+        />
+        <PdfViewer
+          aria-label="Outlined"
+          source="/files/Report.pdf"
+          loadEngine={createEngine({ outline }).loadEngine}
+          defaultSidebarOpen
+        />
+      </>,
+    );
+    await screen.findByLabelText('Password');
+    await screen.findByRole('treegrid', { name: 'Outline' });
     expectHooksMatchSpec(document.body, 'PDF-VIEWER', { slots: 'all' });
   });
 
@@ -325,7 +348,10 @@ describe('PdfViewer', () => {
     expect(overlays).toHaveLength(3);
     const first = overlays[0]!;
     expect(first.parentElement).toHaveClass('ui-pdf-viewer__page');
-    expect(first.previousElementSibling).toHaveClass('ui-pdf-viewer__text-layer');
+    expect(first.previousElementSibling).toHaveClass('ui-pdf-viewer__annotation-layer');
+    expect(first.previousElementSibling?.previousElementSibling).toHaveClass(
+      'ui-pdf-viewer__text-layer',
+    );
     expect(first.style).toMatchObject({
       position: 'absolute',
       inset: '0px',

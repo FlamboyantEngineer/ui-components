@@ -6,10 +6,12 @@ export type {
   PdfPoint,
   PdfRect,
   PdfSearchControls,
+  PdfSearchOptions,
   PdfSelection,
   PdfViewerProps,
 } from './pdf-viewer.js';
 export type {
+  PdfDocumentOptions,
   PdfDocumentParams,
   PdfEngine,
   PdfSource,

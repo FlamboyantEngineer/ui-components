@@ -10,6 +10,7 @@ import {
   type PdfPagePoint,
   type PdfPageRect,
   type PdfSearchControls,
+  type PdfSearchOptions,
   type PdfSelection,
 } from '../../src/components/pdf-viewer/pdf-viewer.js';
 import {
@@ -21,6 +22,8 @@ import { SearchField } from '../../src/components/search-field/search-field.js';
 // The labs build copies the sample, the engine and its worker next to the bundles
 // (scripts/build-labs.mjs); the engine is loaded by URL, as a host would load its own copy.
 export const sampleUrl = 'build/samples/seasonal-report.pdf';
+/** The same sample behind the password `orchard`. */
+export const lockedUrl = 'build/samples/seasonal-report-locked.pdf';
 export const workerSrc = 'build/vendor/pdf.worker.min.mjs';
 const engineUrl = new URL('build/vendor/pdf.min.mjs', document.baseURI).href;
 export const loadEngine = () => import(engineUrl) as Promise<typeof Pdfjs>;
@@ -85,7 +88,7 @@ export function AnnotatedReader() {
   };
   return (
     <div data-lab-case="annotated">
-      <div style={{ height: 480, maxWidth: 820 }}>
+      <div style={{ height: 480, maxWidth: 1000 }}>
         <PdfViewer
           aria-label="Annotated report"
           source={sampleUrl}
@@ -132,6 +135,7 @@ function describeMatches(search: PdfSearchControls): string {
 }
 
 function CallerFindControls({ search }: { search: PdfSearchControls }) {
+  const { options, setOptions } = search;
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
       <SearchField
@@ -155,6 +159,14 @@ function CallerFindControls({ search }: { search: PdfSearchControls }) {
       <Button size="sm" variant="ghost" isDisabled={search.total === 0} onPress={search.findNext}>
         Forward
       </Button>
+      <Button
+        size="sm"
+        variant="ghost"
+        isSelected={options.matchCase}
+        onChange={(matchCase) => setOptions({ ...options, matchCase })}
+      >
+        Same case
+      </Button>
     </span>
   );
 }
@@ -163,6 +175,7 @@ function CallerFindControls({ search }: { search: PdfSearchControls }) {
 export function CallerOwnedFind() {
   const [query, setQuery] = useState('');
   const [matchIndex, setMatchIndex] = useState(0);
+  const [searchOptions, setSearchOptions] = useState<PdfSearchOptions>({});
   return (
     <div data-lab-case="find">
       <p>
@@ -170,9 +183,10 @@ export function CallerOwnedFind() {
           Find pears
         </Button>{' '}
         Query: <output data-lab-output="query">{query}</output>; match:{' '}
-        <output data-lab-output="match">{matchIndex}</output>
+        <output data-lab-output="match">{matchIndex}</output>; case:{' '}
+        <output data-lab-output="case">{searchOptions.matchCase ? 'same' : 'any'}</output>
       </p>
-      <div style={{ height: 420, maxWidth: 820 }}>
+      <div style={{ height: 420, maxWidth: 1000 }}>
         <PdfViewer
           aria-label="Report with its own find"
           source={sampleUrl}
@@ -182,6 +196,8 @@ export function CallerOwnedFind() {
           onSearchQueryChange={setQuery}
           matchIndex={matchIndex}
           onMatchIndexChange={setMatchIndex}
+          searchOptions={searchOptions}
+          onSearchOptionsChange={setSearchOptions}
           renderSearch={(search) => <CallerFindControls search={search} />}
         />
       </div>
@@ -201,7 +217,7 @@ export function ProjectedToolbar() {
           display: 'grid',
           gridTemplateColumns: isContentsOpen ? '160px minmax(0, 1fr)' : 'minmax(0, 1fr)',
           gridTemplateRows: 'auto 420px',
-          maxWidth: 820,
+          maxWidth: 1000,
         }}
       >
         <div data-lab-band="" style={{ gridColumn: '1 / -1' }}>
@@ -239,5 +255,40 @@ export function ProjectedToolbar() {
         Page: <output data-lab-output="page">{page + 1}</output>
       </p>
     </ProjectionProvider>
+  );
+}
+
+/** The sidebar open on the outline, a document opening at its second page, and named destinations. */
+export function SidebarReader() {
+  const [destination, setDestination] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
+  return (
+    <div data-lab-case="sidebar">
+      <p>
+        <Button size="sm" onPress={() => setDestination('markets')}>
+          Go to markets
+        </Button>{' '}
+        <Button size="sm" onPress={() => setDestination('varieties')}>
+          Go to varieties
+        </Button>{' '}
+        Page: <output data-lab-output="page">{page + 1}</output>
+      </p>
+      <div style={{ height: 460, maxWidth: 1000 }}>
+        <PdfViewer
+          aria-label="Report with its outline"
+          source={sampleUrl}
+          loadEngine={loadEngine}
+          workerSrc={workerSrc}
+          defaultSidebarOpen
+          defaultPage={1}
+          destination={destination}
+          onPageChange={(pageIndex) => {
+            setPage(pageIndex);
+            // A reader who moves on may ask for the same destination again.
+            setDestination(null);
+          }}
+        />
+      </div>
+    </div>
   );
 }

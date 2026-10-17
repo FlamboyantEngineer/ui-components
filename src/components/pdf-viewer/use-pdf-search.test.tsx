@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from '@testing-library/react';
+import { act, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { renderReady, searchStatus as status } from '../../../test/pdf-fixtures.js';
@@ -87,5 +87,72 @@ describe('PdfViewer find owned by the caller', () => {
     await waitFor(() =>
       expect(view.container.querySelectorAll('.ui-pdf-viewer__match')).toHaveLength(4),
     );
+  });
+
+  it('UIC-PDF-VIEWER-5.7 toggles the find options from their menu', async () => {
+    const onSearchOptionsChange = vi.fn();
+    const view = await renderReady({ onSearchOptionsChange });
+    await userEvent.type(screen.getByRole('searchbox'), 'Pear');
+    expect(status()).toHaveTextContent('1 of 2');
+    expect(view.container.querySelectorAll('.ui-pdf-viewer__match')).toHaveLength(2);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Find options' }));
+    const menu = screen.getByRole('menu');
+    const options = within(menu).getAllByRole('menuitemcheckbox');
+    expect(options.map((option) => option.textContent)).toEqual([
+      'Highlight all',
+      'Match case',
+      'Ignore accents',
+      'Whole words',
+    ]);
+    expect(options.map((option) => option.getAttribute('aria-checked'))).toEqual([
+      'true',
+      'false',
+      'false',
+      'false',
+    ]);
+    await userEvent.click(within(menu).getByRole('menuitemcheckbox', { name: 'Match case' }));
+    expect(onSearchOptionsChange).toHaveBeenLastCalledWith({
+      highlightAll: true,
+      matchCase: true,
+      ignoreAccents: false,
+      wholeWords: false,
+    });
+    expect(status()).toHaveTextContent('1 of 1');
+    await userEvent.click(within(menu).getByRole('menuitemcheckbox', { name: 'Highlight all' }));
+    await userEvent.keyboard('{Escape}');
+    // Focus goes back to the menu button once the menu has closed.
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Find options' })).toHaveFocus());
+    await userEvent.clear(screen.getByRole('searchbox'));
+    await userEvent.type(screen.getByRole('searchbox'), 'harvest');
+    expect(status()).toHaveTextContent('1 of 4');
+    const matches = view.container.querySelectorAll('.ui-pdf-viewer__match');
+    expect(matches).toHaveLength(1);
+    expect(matches[0]).toHaveAttribute('data-current', 'true');
+  });
+
+  it('UIC-PDF-VIEWER-5.7 UIC-PDF-VIEWER-5.6 lets the caller own the find options', async () => {
+    const onSearchOptionsChange = vi.fn();
+    const seen: PdfSearchControls[] = [];
+    const renderSearch = (search: PdfSearchControls) => {
+      seen.push(search);
+      return <CallerFind search={search} />;
+    };
+    const props = { searchQuery: 'pear', onSearchOptionsChange, renderSearch };
+    const view = await renderReady({ ...props, searchOptions: { matchCase: true } });
+    const matches = within(screen.getByRole('toolbar')).getByRole('status', { name: 'Matches' });
+    await waitFor(() => expect(matches).toHaveTextContent('1/1'));
+    expect(seen.at(-1)?.options).toEqual({
+      highlightAll: true,
+      matchCase: true,
+      ignoreAccents: false,
+      wholeWords: false,
+    });
+    act(() => seen.at(-1)?.setOptions({ wholeWords: true }));
+    expect(onSearchOptionsChange).toHaveBeenLastCalledWith({ wholeWords: true });
+    expect(matches).toHaveTextContent('1/1');
+
+    view.update({ ...props, searchOptions: { wholeWords: true } });
+    await waitFor(() => expect(matches).toHaveTextContent('1/2'));
   });
 });
