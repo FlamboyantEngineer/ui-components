@@ -1,0 +1,66 @@
+import { expect, test } from './fixtures.js';
+
+test.describe('Expand Toggle lab', () => {
+  test('UIC-EXPAND-TOGGLE-1.5 gives a leaf the toggle box at every size', async ({ page, lab }) => {
+    await lab.open('expand-toggle');
+    for (const [size, edge] of [
+      ['xs', 22],
+      ['sm', 26],
+      ['md', 32],
+      ['lg', 38],
+    ] as const) {
+      const toggle = await page
+        .locator(`[data-lab-cell="state=collapsed size=${size}"] .ui-expand-toggle`)
+        .boundingBox();
+      const leaf = await page
+        .locator(`[data-lab-cell="state=leaf size=${size}"] .ui-expand-toggle`)
+        .boundingBox();
+      expect(toggle?.width).toBe(edge);
+      expect(leaf?.width).toBe(edge);
+      expect(leaf?.height).toBe(edge);
+    }
+  });
+
+  test('UIC-EXPAND-TOGGLE-1.1 UIC-EXPAND-TOGGLE-1.3 UIC-EXPAND-TOGGLE-1.5 expands a row without opening it and keeps leaves aligned', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('expand-toggle');
+    const tree = page.locator('[data-lab-case="tree"]');
+    const citrus = tree.locator('[data-lab-row="Citrus"]');
+    const toggle = citrus.getByRole('button', { name: 'Expand' });
+    await toggle.click();
+    await expect(citrus.getByRole('button', { name: 'Collapse' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+    await expect(tree.locator('[data-lab-row="Lemon"]')).toBeVisible();
+    await expect(tree.locator('[data-lab-output="opened"]')).toHaveText('none');
+    await citrus.getByText('Citrus').click();
+    await expect(tree.locator('[data-lab-output="opened"]')).toHaveText('Citrus');
+
+    const citrusLabel = await citrus.getByText('Citrus').boundingBox();
+    const bananaLabel = await tree
+      .locator('[data-lab-row="Banana"]')
+      .getByText('Banana')
+      .boundingBox();
+    expect(bananaLabel?.x).toBe(citrusLabel?.x);
+  });
+
+  test('UIC-EXPAND-TOGGLE-1.4 toggles from the keyboard and stays accessible', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('expand-toggle');
+    const berries = page.locator('[data-lab-row="Berries"]');
+    await berries.getByRole('button', { name: 'Expand' }).focus();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('[data-lab-row="Strawberry"]')).toBeVisible();
+    await page.keyboard.press(' ');
+    await expect(page.locator('[data-lab-row="Strawberry"]')).toHaveCount(0);
+    await expect(
+      page.locator('[data-lab-cell="state=disabled size=md"]').getByRole('button'),
+    ).toBeDisabled();
+    await lab.expectAccessible();
+  });
+});

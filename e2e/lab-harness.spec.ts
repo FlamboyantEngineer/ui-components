@@ -85,7 +85,7 @@ test.describe('lab harness', () => {
   test('UIC-LABS-3.2 the state matrix addresses every cell', async ({ page, lab }) => {
     await lab.open('provider');
     const cells = page.locator('table[data-lab-matrix="glyph source"] td[data-lab-cell]');
-    expect(await cells.count()).toBe(26 * 2);
+    expect(await cells.count()).toBe(30 * 2);
     await expect(
       page.locator('[data-lab-cell="glyph=check source=replaced"] svg[data-glyph="check"] rect'),
     ).toHaveCount(1);
