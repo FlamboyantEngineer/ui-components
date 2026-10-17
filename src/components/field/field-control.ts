@@ -1,3 +1,4 @@
+import type { FieldControlProps } from './field-parts.js';
 import {
   useFieldState,
   type FieldIssue,
@@ -78,7 +79,7 @@ function splitFieldProps(props: object) {
  * caller's `validate`), the props for `Field`, and the props left for the control itself.
  */
 export function useFieldControl<T, P extends FieldInputProps<T>>(
-  props: P,
+  props: P & FieldInputProps<T>,
   options: FieldControlOptions<T>,
 ): FieldControl<T, Omit<P, keyof FieldInputProps<T>>> {
   const buckets = splitFieldProps(props);
@@ -94,5 +95,24 @@ export function useFieldControl<T, P extends FieldInputProps<T>>(
     state,
     field: buckets.field as unknown as FieldLayoutProps,
     rest: buckets.rest as Omit<P, keyof FieldInputProps<T>>,
+  };
+}
+
+/**
+ * The control props in React Aria's terms: its id, name, description and states. Controls validate
+ * through the field, so React Aria only reports the field's status (`validationBehavior="aria"`).
+ */
+export function toAriaControlProps(control: FieldControlProps) {
+  return {
+    id: control.id,
+    'aria-label': control['aria-label'],
+    'aria-labelledby': control['aria-labelledby'],
+    'aria-describedby': control['aria-describedby'],
+    'aria-errormessage': control['aria-errormessage'],
+    isInvalid: control['aria-invalid'] === true,
+    isRequired: control['aria-required'] === true,
+    isReadOnly: control.readOnly,
+    isDisabled: control.disabled,
+    validationBehavior: 'aria' as const,
   };
 }

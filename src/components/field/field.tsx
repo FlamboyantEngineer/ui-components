@@ -127,7 +127,7 @@ export function Field<T>({
 }
 
 export type { FieldControlProps, FieldLabelLayout } from './field-parts.js';
-export { useFieldControl } from './field-control.js';
+export { toAriaControlProps, useFieldControl } from './field-control.js';
 export type {
   FieldControl,
   FieldControlOptions,

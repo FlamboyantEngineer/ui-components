@@ -1,6 +1,6 @@
 # Field
 
-The field base every field control is built on. `useFieldState` is the controller: it holds or relays a field's value, knows its committed value, validates it, tracks dirty state and keeps a per-field undo history. `Field` lays a field out around its control: the label, the control, the restore, help and menu buttons, a decoration slot for the host's badges, the description and the validation message. It hands the control the ids and ARIA attributes it needs through a render function, so any control (a React Aria `Input`, a select trigger, a custom widget) becomes a field. `getFieldUndo` lets a host's shortcut handler undo or redo the focused field, and `FieldRestoreButton` restores a value wherever a control offers one. `validateString` checks text against length and format rules.
+The field base every field control is built on. `useFieldState` is the controller: it holds or relays a field's value, knows its committed value, validates it, tracks dirty state and keeps a per-field undo history. `Field` lays a field out around its control: the label, the control, the restore, help and menu buttons, a decoration slot for the host's badges, the description and the validation message. It hands the control the ids and ARIA attributes it needs through a render function, so any control (a React Aria `Input`, a select trigger, a custom widget) becomes a field. `getFieldUndo` lets a host's shortcut handler undo or redo the focused field, and `FieldRestoreButton` restores a value wherever a control offers one. `validateString` checks text against length and format rules. Field controls (a text field, a number field) share their props through `FieldInputProps` and build on `useFieldControl` and `toAriaControlProps`.
 
 ## UIC-FIELD-1 - Layout
 
@@ -228,9 +228,16 @@ Verification: `src/components/field/string-rules.test.ts`
 
 ## UIC-FIELD-8 - Field controls
 
-### UIC-FIELD-8.1 - Shared control props
+### UIC-FIELD-8.1 - Control props
 
-`FieldInputProps<T>` shall be the props every field control shares: the `useFieldState` options and the `Field` layout props (label, layout, description, help, decoration, menu, class, id and caller `data-*` attributes). `useFieldControl(props, { initialValue, emptyValue, check })` splits a control's props into its field state, the props it hands to `Field` and the props left for the control itself. The field starts at `initialValue` and clears to `emptyValue` unless the caller gives a default or an empty value, and the control's own `check` runs before the caller's `validate`.
+Every field control shall take the field's props through one type, `FieldInputProps<T>`: the `useFieldState` options (value, default, committed and empty values, `onChange`, `onCommit`, `validate`, `isRequired`, `isReadOnly`, `isDisabled`, `isPending`) and the `Field` props but its state and render function (label, layout, description, help, decoration, menu, `onMenuAction`, `className`, `id` and caller `data-*`). `useFieldControl(props, options)` shall split a control's props into the field state, the props for `Field` and the control's own props. A field with no value, committed value or default starts at the control's `initialValue`, which is then also its default; a field with no `emptyValue` clears to the control's `emptyValue`; the control's `check` runs before the caller's `validate`, and its error wins.
+
+Implementation: `src/components/field/field-control.ts`
+Verification: `src/components/field/field-control.test.tsx`
+
+### UIC-FIELD-8.2 - React Aria control props
+
+`toAriaControlProps(control)` shall give a React Aria control the field's id, `aria-label`, `aria-labelledby`, `aria-describedby` and `aria-errormessage`, and its states as `isInvalid`, `isRequired`, `isReadOnly` and `isDisabled`, with `validationBehavior="aria"` so the field alone validates and React Aria only reports the status.
 
 Implementation: `src/components/field/field-control.ts`
 Verification: `src/components/field/field-control.test.tsx`

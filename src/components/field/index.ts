@@ -2,6 +2,7 @@ export {
   Field,
   FieldRestoreButton,
   getFieldUndo,
+  toAriaControlProps,
   useFieldControl,
   useFieldState,
   validateString,
