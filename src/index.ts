@@ -9,3 +9,6 @@ export * from './components/meta-line/index.js';
 export * from './components/description-list/index.js';
 export * from './components/prose-table/index.js';
 export * from './utils/index.js';
+export * from './components/button/index.js';
+export * from './components/icon-button/index.js';
+export * from './components/action-button/index.js';
