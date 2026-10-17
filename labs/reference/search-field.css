@@ -1,0 +1,73 @@
+/* Search Field: glyph, input and clear button in one frame. */
+
+.ui-search-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-sizing: border-box;
+  width: 240px;
+  max-width: 100%;
+  height: 32px;
+  padding: 0 4px 0 8px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-canvas);
+  font-size: 14px;
+  vertical-align: middle;
+}
+
+.ui-search-field[data-size='sm'] {
+  height: 26px;
+  border-radius: 13px;
+  font-size: 12px;
+}
+
+.ui-search-field:focus-within {
+  border-color: var(--ref-focus);
+  box-shadow: 0 0 0 1px var(--ref-focus);
+}
+
+.ui-search-field[data-readonly] {
+  border-style: dashed;
+  background: var(--ref-surface);
+}
+
+.ui-search-field[data-disabled] {
+  opacity: 0.55;
+}
+
+.ui-search-field__glyph {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  color: var(--ref-muted);
+}
+
+.ui-search-field[data-size='sm'] .ui-search-field__glyph {
+  width: 14px;
+  height: 14px;
+}
+
+.ui-search-field__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  outline: none;
+}
+
+.ui-search-field__input::placeholder {
+  color: var(--ref-muted);
+}
+
+.ui-search-field__input::-webkit-search-cancel-button {
+  appearance: none;
+}
+
+.ui-search-field__clear {
+  flex: none;
+}

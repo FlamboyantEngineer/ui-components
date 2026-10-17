@@ -1,0 +1,40 @@
+/* Color Swatch: a rounded square; an empty one shows a checkerboard. */
+
+.ui-color-swatch {
+  display: inline-block;
+  flex: none;
+  box-sizing: border-box;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 1px var(--ref-border-strong);
+  vertical-align: middle;
+}
+
+.ui-color-swatch[data-size='xs'] {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}
+
+.ui-color-swatch[data-size='sm'] {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+}
+
+.ui-color-swatch[data-size='lg'] {
+  width: 24px;
+  height: 24px;
+}
+
+.ui-color-swatch[data-size='xl'] {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+}
+
+.ui-color-swatch[data-empty] {
+  background-image: repeating-conic-gradient(var(--ref-border) 0 25%, var(--ref-canvas) 0 50%);
+  background-size: 8px 8px;
+}

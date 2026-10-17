@@ -1,8 +1,20 @@
-export { Field, FieldRestoreButton, getFieldUndo, useFieldState, validateString } from './field.js';
+export {
+  Field,
+  FieldRestoreButton,
+  getFieldUndo,
+  toAriaControlProps,
+  useFieldControl,
+  useFieldState,
+  validateString,
+} from './field.js';
 export type {
+  FieldControl,
+  FieldControlOptions,
   FieldControlProps,
+  FieldInputProps,
   FieldIssue,
   FieldLabelLayout,
+  FieldLayoutProps,
   FieldMenuAction,
   FieldMenuEntry,
   FieldProps,

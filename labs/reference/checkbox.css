@@ -1,0 +1,70 @@
+/* Checkbox: a 16 pixel box before its label. */
+
+.ui-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 24px;
+  font-size: 13px;
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+.ui-checkbox + .ui-checkbox {
+  margin-inline-start: 16px;
+}
+
+.ui-checkbox__box {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--ref-border-strong);
+  border-radius: 4px;
+  background: var(--ref-canvas);
+  color: var(--ref-accent-text);
+}
+
+.ui-checkbox:is([data-selected], [data-indeterminate]) .ui-checkbox__box {
+  border-color: var(--ref-accent);
+  background: var(--ref-accent);
+}
+
+.ui-checkbox__glyph {
+  width: 12px;
+  height: 12px;
+  stroke-width: 2.5;
+}
+
+.ui-checkbox[data-hovered] .ui-checkbox__box {
+  border-color: var(--ref-accent-ink);
+}
+
+.ui-checkbox[data-focus-visible] .ui-checkbox__box {
+  outline: 2px solid var(--ref-focus);
+  outline-offset: 2px;
+}
+
+.ui-checkbox[data-invalid] .ui-checkbox__box {
+  border-color: var(--ref-danger);
+}
+
+.ui-checkbox[data-readonly] {
+  cursor: default;
+}
+
+.ui-checkbox[data-readonly] .ui-checkbox__box {
+  border-style: dashed;
+}
+
+.ui-checkbox[data-disabled] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.ui-checkbox__label {
+  color: var(--ref-text);
+}
