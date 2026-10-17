@@ -169,6 +169,69 @@
   background: var(--ref-border);
 }
 
+/* A filterable menu leads with its search field, which stays in view while the items scroll. */
+
+.ui-menu__search {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: block;
+  margin: -4px -4px 4px;
+  padding: 4px;
+  border-bottom: 1px solid var(--ref-border);
+  background: var(--ref-raised);
+}
+
+.ui-menu__search-input {
+  box-sizing: border-box;
+  width: 100%;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--ref-border);
+  border-radius: 4px;
+  background: var(--ref-canvas);
+  color: var(--ref-text);
+  font: inherit;
+  outline: none;
+}
+
+.ui-menu__search-input:focus {
+  border-color: var(--ref-focus);
+  box-shadow: 0 0 0 1px var(--ref-focus);
+}
+
+.ui-menu__search-input::placeholder {
+  color: var(--ref-muted);
+}
+
+.ui-menu__empty {
+  display: block;
+  padding: 4px 8px;
+  color: var(--ref-muted);
+}
+
+/* The loading row at the end of a menu that loads more as it scrolls. */
+
+.ui-menu__load-more {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 28px;
+  padding: 2px 8px;
+  color: var(--ref-muted);
+}
+
+.ui-menu__load-more-spinner {
+  box-sizing: border-box;
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: ref-menu-spin 0.8s linear infinite;
+}
+
 /* Context menus use the menu hooks; their popover sits on the context-menu layer. */
 
 .ui-menu-popover[data-layer='context-menu'] {

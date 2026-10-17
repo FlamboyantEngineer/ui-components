@@ -285,6 +285,71 @@ describe('Modal', () => {
       await userEvent.click(screen.getByRole('button', { name: 'Finish' }));
       expect(onOpenChange).toHaveBeenCalledWith(false);
     });
+    it('UIC-MODAL-2.4 lets the caller refuse an Escape or an outside press', async () => {
+      const onOpenChange = vi.fn();
+      let keep = true;
+      const shouldCloseOnEscape = vi.fn(() => !keep);
+      const shouldCloseOnInteractOutside = vi.fn(() => !keep);
+      render(
+        <>
+          <button type="button" data-testid="outside">
+            Outside
+          </button>
+          <Modal
+            title="Draft"
+            isOpen
+            isDismissable
+            onOpenChange={onOpenChange}
+            shouldCloseOnEscape={shouldCloseOnEscape}
+            shouldCloseOnInteractOutside={shouldCloseOnInteractOutside}
+          >
+            <input aria-label="Text" />
+          </Modal>
+        </>,
+      );
+      await userEvent.keyboard('{Escape}');
+      expect(shouldCloseOnEscape).toHaveBeenCalledTimes(1);
+      await userEvent.click(overlay() as HTMLElement);
+      expect(shouldCloseOnInteractOutside).toHaveBeenCalledWith(overlay());
+      expect(onOpenChange).not.toHaveBeenCalled();
+      keep = false;
+      screen.getByRole('textbox', { name: 'Text' }).focus();
+      await userEvent.keyboard('{Escape}');
+      expect(onOpenChange).toHaveBeenCalledWith(false);
+    });
+
+    it('UIC-MODAL-2.4 asks nothing while a dismissal is refused anyway', async () => {
+      const shouldCloseOnEscape = vi.fn(() => true);
+      render(
+        <Modal
+          title="Sticky"
+          isOpen
+          isKeyboardDismissDisabled
+          shouldCloseOnEscape={shouldCloseOnEscape}
+        >
+          <input aria-label="Text" />
+        </Modal>,
+      );
+      await userEvent.keyboard('{Escape}');
+      expect(shouldCloseOnEscape).not.toHaveBeenCalled();
+      expect(screen.getByRole('dialog', { name: 'Sticky' })).toBeInTheDocument();
+    });
+  });
+
+  describe('exit', () => {
+    it('UIC-MODAL-1.5 calls onExitComplete once the dialog has closed, not when removed open', async () => {
+      const onExitComplete = vi.fn();
+      await openHarness({ onExitComplete });
+      expect(onExitComplete).not.toHaveBeenCalled();
+      await userEvent.keyboard('{Escape}');
+      expect(screen.queryByRole('dialog')).toBeNull();
+      expect(onExitComplete).toHaveBeenCalledTimes(1);
+
+      const removed = vi.fn();
+      const { unmount } = render(<Modal title="Open" isOpen onExitComplete={removed} />);
+      unmount();
+      expect(removed).not.toHaveBeenCalled();
+    });
   });
 
   describe('focus', () => {

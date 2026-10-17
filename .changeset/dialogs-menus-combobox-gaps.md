@@ -1,0 +1,13 @@
+---
+'@flamboyantengineer/ui-components': minor
+---
+
+Close gaps in the dialogs, menus and combobox.
+
+- `Modal`: `isNonModal` floats the dialog over a page it does not block (no focus trap, no hidden or inert content, outside presses go through); `placement` opens it as a React Aria popover against its `DialogTrigger`'s trigger on the `dropdown` layer; `initialFocus` also takes a ref or a function, and `finalFocus` chooses where focus goes on close; `shouldCloseOnEscape` and React Aria's `shouldCloseOnInteractOutside` can refuse a dismissal; `onExitComplete` fires once the dialog has closed and its exit animation ended; `tone` also takes `info`, `success` and `warning` (`ModalTone` is now `Tone`). New hooks: `data-non-modal`, and `data-placement`, `data-trigger` and `data-layer="dropdown"` on an anchored dialog. New type: `ModalFocusTarget`.
+- `ConfirmDialog`: `secondaryActionLabel` with `onSecondaryAction` adds a third action between Cancel and the confirm action; `tone` takes `info`, `success` and `warning`, which lead the title with their glyph, and `icon` replaces or (`null`) removes it; `cancelLabel={null}` leaves Cancel out; `placement` anchors the confirmation to its trigger. New hook: `ui-confirm-dialog__icon`. New type: `ConfirmDialogTone`.
+- `alert(controller, options)` and `prompt(controller, options)` open an acknowledgement and a request for one line of text through a modal controller and resolve when they close (`AlertOptions`, `PromptOptions`).
+- `Menu`: `filterable` leads it with a search field (React Aria `Autocomplete`) that narrows the items while focus stays in it; `onLoadMore` and `isLoading` end it with React Aria's `MenuLoadMoreItem` and a loading row; menus given as data render virtualized inside a React Aria `Virtualizer`. New hooks: `ui-menu__search`, `__search-input`, `__empty`, `__load-more`, `__load-more-spinner`.
+- `DropdownMenu`: `onPress` makes a split button, an action beside a chevron that opens the menu; `filterable` passes to the menu. New hooks: `ui-dropdown-menu__action`, `__toggle`, `data-split`.
+- `Combobox`: `selectionMode="multiple"` with React Aria's `value`, `defaultValue` and `onChange`, its choices shown as removable chips in the library `TagGroup`; `virtualized`; `onLoadMore` and `isLoading`; `onCreateOption` adds an "Add" row for unmatched text; `highlightMatches` marks the typed text; `autoHighlight` keeps the first match highlighted; `completesInline` completes the typed text in the input; `renderOption` draws custom option content. New hooks: `ui-combobox__chips`, `__create`, `__load-more`, and `data-selection-mode="multiple"`. New types: `ComboboxSelectionMode`, `ComboboxOptionRenderer`.
+- Provider strings: `ok`, `moreOptions` and `createOption`.

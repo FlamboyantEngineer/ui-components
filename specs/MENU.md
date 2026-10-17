@@ -1,6 +1,6 @@
 # Menu
 
-The menu family lists actions or options a reader can choose: `Menu` (the list), `MenuItem`, `MenuSection`, `MenuSeparator`, `MenuPopover` (the floating surface), `MenuTrigger` (opens a menu from a button) and `SubmenuTrigger` (opens a nested menu from an item). It is built on React Aria's `Menu`, `MenuItem`, `MenuSection`, `Header`, `Separator`, `Popover`, `MenuTrigger` and `SubmenuTrigger`, which own the roles, focus and keyboard behaviour. A menu takes its entries as JSX children or as data. [DROPDOWN-MENU.md](DROPDOWN-MENU.md) composes a button and a menu; [CONTEXT-MENU.md](CONTEXT-MENU.md) opens menus at the pointer or from a controller.
+The menu family lists actions or options a reader can choose: `Menu` (the list), `MenuItem`, `MenuSection`, `MenuSeparator`, `MenuPopover` (the floating surface), `MenuTrigger` (opens a menu from a button) and `SubmenuTrigger` (opens a nested menu from an item). It is built on React Aria's `Menu`, `MenuItem`, `MenuSection`, `Header`, `Separator`, `Popover`, `MenuTrigger` and `SubmenuTrigger`, which own the roles, focus and keyboard behaviour. A menu takes its entries as JSX children or as data. Long menus filter from a search field (React Aria `Autocomplete`), load more entries as they scroll (`MenuLoadMoreItem`) and render only the rows in view inside a React Aria `Virtualizer` ([COLLECTIONS.md](COLLECTIONS.md)). [DROPDOWN-MENU.md](DROPDOWN-MENU.md) composes a button and a menu; [CONTEXT-MENU.md](CONTEXT-MENU.md) opens menus at the pointer or from a controller.
 
 ## UIC-MENU-1 - Menu
 
@@ -136,13 +136,41 @@ Every component of the family that draws an element shall carry the hooks below,
 Implementation: `src/components/menu/menu.tsx`, `src/components/menu/menu-item.tsx`, `src/components/menu/menu-popover.tsx`
 Verification: `src/components/menu/menu-item.test.tsx`
 
+## UIC-MENU-5 - Long menus
+
+### UIC-MENU-5.1 - Filterable menu
+
+With `filterable`, the menu shall be led by a React Aria search field (`ui-menu__search`, its input `ui-menu__search-input`, named and hinted by the provider's `search` string) inside a React Aria `Autocomplete`, which keeps only the items whose text contains the typed text, ignoring case and accents. Focus stays in the field: the first match is highlighted as the reader types (the field's `aria-activedescendant`), Arrow Down and Arrow Up move the highlight, Enter activates the highlighted item, and Escape clears the text, then closes the menu. A menu opened from a trigger focuses the field on open; a standalone menu leaves focus where it is. While nothing matches, the menu shows the provider's `noResults` string in `ui-menu__empty`, unless the caller's `renderEmptyState` says otherwise.
+
+Implementation: `src/components/menu/menu.tsx`
+Verification: `src/components/menu/menu.test.tsx`, `e2e/menu.spec.ts`
+
+### UIC-MENU-5.2 - Loading more
+
+`onLoadMore` or `isLoading` shall end the menu, children or data, with React Aria's `MenuLoadMoreItem` ([UIC-COLLECTIONS-1.2](COLLECTIONS.md#uic-collections-12---loading-more-inside-a-collection)), which calls `onLoadMore` when it scrolls into view while `isLoading` is false. While `isLoading`, it draws a row (`ui-menu__load-more`) holding a decorative busy indicator (`ui-menu__load-more-spinner`) and the provider's `loading` string; an empty menu then shows that row alone, without its empty state.
+
+Implementation: `src/components/menu/menu.tsx`
+Verification: `src/components/menu/menu.test.tsx`, `e2e/menu.spec.ts`
+
+### UIC-MENU-5.3 - Virtualized menu
+
+A menu given as children or as data shall render inside a React Aria `Virtualizer` with a `ListLayout` ([UIC-COLLECTIONS-1.1](COLLECTIONS.md#uic-collections-11---virtualized-rendering)), drawing only the rows in view of its scroll container (its `MenuPopover`, or the page), while keyboard navigation reaches every item and each row keeps its hooks, `aria-setsize` and `aria-posinset`. Filtering and loading more work the same in a virtualized menu.
+
+Implementation: `src/components/menu/menu.tsx`
+Verification: `src/components/menu/menu.test.tsx`, `e2e/menu.spec.ts`
+
 ## Hooks
 
 | Hook                              | Kind      | Values                                                                        | Description                                                         |
 | --------------------------------- | --------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------- |
 | `ui-menu`                         | root      |                                                                               | The `role="menu"` list.                                             |
 | `data-size`                       | attribute | `sm`, `md`, `lg`                                                              | Row density.                                                        |
-| `data-empty`                      | state     | `true`                                                                        | The menu has no items (React Aria).                                 |
+| `data-empty`                      | state     | `true`                                                                        | The menu has no items, or the search field no text (React Aria).    |
+| `ui-menu__search`                 | slot      |                                                                               | The search field of a filterable menu.                              |
+| `ui-menu__search-input`           | slot      |                                                                               | Its text input (`role="searchbox"`).                                |
+| `ui-menu__empty`                  | slot      |                                                                               | The no-match message of a filterable menu.                          |
+| `ui-menu__load-more`              | slot      |                                                                               | The loading row at the end of the menu.                             |
+| `ui-menu__load-more-spinner`      | slot      |                                                                               | The busy indicator of the loading row.                              |
 | `data-collection`                 | state     |                                                                               | React Aria's collection marker, on the menu and its items.          |
 | `ui-menu-item`                    | root      |                                                                               | One item (`menuitem`, `menuitemradio` or `menuitemcheckbox`).       |
 | `ui-menu-item__check`             | slot      |                                                                               | Selection check, in selectable menus; holds the glyph when checked. |

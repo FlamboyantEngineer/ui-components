@@ -1,41 +1,34 @@
-import { useContext, useRef, type ReactNode, type Ref, type RefObject } from 'react';
+import { useCallback, useRef, useState, type ReactNode, type Ref } from 'react';
 import {
-  Button as AriaButton,
   ComboBox as AriaComboBox,
-  ComboBoxStateContext,
   FieldError,
-  Group,
-  Input,
   Label,
   Text,
+  useFilter,
   type ComboBoxProps as AriaComboBoxProps,
+  type ListBoxLoadMoreItemProps,
 } from 'react-aria-components';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Size } from '../../core/props.js';
-import { Glyph, useUiStrings } from '../../core/provider.js';
-import { IconButton } from '../icon-button/icon-button.js';
-import { ComboboxSuggestions, type ComboboxItem } from './combobox-suggestions.js';
+import { ComboboxField } from './combobox-field.js';
+import { flattenOptions, type ComboboxCompletion, type ComboboxItem } from './combobox-options.js';
+import { ComboboxSuggestions, type ComboboxOptionRenderer } from './combobox-suggestions.js';
 
 export type ComboboxSize = Extract<Size, 'sm' | 'md' | 'lg'>;
 
 /** `search` leads the field with a search glyph, for a query completed from suggestions. */
 export type ComboboxVariant = 'default' | 'search';
 
-export interface ComboboxProps
+/** `single` picks one option; `multiple` picks several, shown as chips. */
+export type ComboboxSelectionMode = 'single' | 'multiple';
+
+export interface ComboboxProps<M extends ComboboxSelectionMode = 'single'>
   extends
     Omit<
-      AriaComboBoxProps<ComboboxItem>,
-      | 'children'
-      | 'className'
-      | 'style'
-      | 'items'
-      | 'defaultItems'
-      | 'selectionMode'
-      | 'value'
-      | 'defaultValue'
-      | 'onChange'
-      | 'render'
+      AriaComboBoxProps<ComboboxItem, M>,
+      'children' | 'className' | 'style' | 'items' | 'defaultItems' | 'render'
     >,
+    Pick<ListBoxLoadMoreItemProps, 'onLoadMore' | 'isLoading'>,
     BaseProps {
   /** A visible label. Without one, pass `aria-label`. */
   label?: ReactNode;
@@ -54,48 +47,78 @@ export interface ComboboxProps
   variant?: ComboboxVariant | undefined;
   /** Field size. Defaults to `md`. */
   size?: ComboboxSize | undefined;
+  /** Renders only the options in view, for very long lists. */
+  virtualized?: boolean | undefined;
+  /** Ends the list with an "Add" row for typed text no option has as label; runs with the text. */
+  onCreateOption?: ((text: string) => void) | undefined;
+  /** Marks the typed text in option labels. */
+  highlightMatches?: boolean | undefined;
+  /** Keeps the first enabled option highlighted while the list is open, so Enter picks it. */
+  autoHighlight?: boolean | undefined;
+  /** Completes typed text in the input with the first option that starts with it. */
+  completesInline?: boolean | undefined;
+  /** Draws each option's content in the list instead of its icon, label and description. */
+  renderOption?: ComboboxOptionRenderer | undefined;
   ref?: Ref<HTMLDivElement> | undefined;
 }
 
-const hooks = createHooks('combobox', [
-  'label',
-  'field',
-  'search-icon',
-  'input',
-  'spinner',
-  'clear',
-  'button',
-  'description',
-  'error',
-]);
+const hooks = createHooks('combobox', ['label', 'description', 'error']);
 
-/** Empties the input and the selection, then returns focus to the input. */
-function ClearButton({ inputRef }: { inputRef: RefObject<HTMLInputElement | null> }) {
-  const state = useContext(ComboBoxStateContext);
-  const strings = useUiStrings();
-  if (!state || state.inputValue === '') return null;
-  return (
-    <IconButton
-      slot={null}
-      icon="close"
-      label={strings.clear}
-      variant="bare"
-      size="sm"
-      className={hooks.slotClass('clear')}
-      onPress={() => {
-        state.setSelectedKey(null);
-        state.setInputValue('');
-        inputRef.current?.focus();
-      }}
-    />
+/** The text naming the combobox, for the group of its chips. */
+function toLabelText(label: ReactNode, ariaLabel: string | undefined): string {
+  return typeof label === 'string' ? label : (ariaLabel ?? '');
+}
+
+/**
+ * Inline completion: the completion the input shows, and a filter that matches options against what
+ * the reader typed rather than that completion, with the caller's filter or React Aria's accent- and
+ * case-insensitive `contains`. Off, it hands the caller's filter through untouched.
+ */
+function useInlineCompletionState({
+  completesInline = false,
+  defaultFilter,
+  suggestions,
+}: Pick<ComboboxProps, 'completesInline' | 'defaultFilter'> & {
+  suggestions: Iterable<ComboboxItem>;
+}) {
+  const [completion, setCompletion] = useState<ComboboxCompletion | null>(null);
+  const { contains } = useFilter({ sensitivity: 'base' });
+  const filter = defaultFilter ?? contains;
+  const completionFilter = useCallback(
+    (text: string, input: string) =>
+      filter(text, completion?.text === input ? completion.typed : input),
+    [filter, completion],
   );
+  if (!completesInline) return { defaultFilter, completion: null, field: null };
+  return {
+    defaultFilter: completionFilter,
+    completion,
+    field: { options: flattenOptions(suggestions), onComplete: setCompletion },
+  };
+}
+
+/**
+ * The input's text as the caller controls it or as the reader typed it. The suggestion list is a
+ * collection React Aria builds before its state exists, so the add row reads the text from here.
+ */
+function useInputText({
+  inputValue,
+  defaultInputValue,
+  onInputChange,
+}: Pick<ComboboxProps, 'inputValue' | 'defaultInputValue' | 'onInputChange'>) {
+  const [typed, setTyped] = useState(defaultInputValue ?? '');
+  const onChange = (text: string) => {
+    setTyped(text);
+    onInputChange?.(text);
+  };
+  return { text: inputValue ?? typed, onInputChange: onChange };
 }
 
 /**
  * A text input with a list of suggestions (React Aria `ComboBox`): typed freely when
- * `allowsCustomValue`, or completed from the list.
+ * `allowsCustomValue`, or completed from the list; several options may be picked as chips.
  */
-export function Combobox({
+export function Combobox<M extends ComboboxSelectionMode = 'single'>({
   label,
   description,
   errorMessage,
@@ -109,45 +132,67 @@ export function Combobox({
   allowsEmptyCollection = true,
   isDisabled,
   isReadOnly,
+  defaultFilter,
+  completesInline,
+  virtualized,
+  onCreateOption,
+  highlightMatches,
+  autoHighlight,
+  renderOption,
+  onLoadMore,
+  isLoading,
   ...rest
-}: ComboboxProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const editable = !isDisabled && !isReadOnly;
+}: ComboboxProps<M>) {
+  const suggestions = items ?? defaultItems ?? [];
+  const inline = useInlineCompletionState({ completesInline, defaultFilter, suggestions });
+  const input = useInputText(rest);
+  const createdRef = useRef<string | null>(null);
+  const list = { virtualized, onCreateOption, highlightMatches, autoHighlight, renderOption };
   return (
-    <AriaComboBox<ComboboxItem>
+    <AriaComboBox<ComboboxItem, M>
       {...rest}
       {...hooks.root({ className, props: rest, data: { variant, size, pending: isPending } })}
-      {...(items ? { items } : { defaultItems: defaultItems ?? [] })}
+      {...(items ? { items } : { defaultItems: suggestions })}
+      defaultFilter={inline.defaultFilter}
+      onInputChange={input.onInputChange}
       isDisabled={isDisabled}
       isReadOnly={isReadOnly}
       allowsEmptyCollection={allowsEmptyCollection}
     >
       {label ? <Label className={hooks.slotClass('label')}>{label}</Label> : null}
-      <Group className={hooks.slotClass('field')}>
-        {variant === 'search' ? (
-          <Glyph name="search" className={hooks.slotClass('search-icon')} />
-        ) : null}
-        <Input
-          ref={inputRef}
-          className={hooks.slotClass('input')}
-          placeholder={placeholder}
-          aria-busy={isPending || undefined}
-        />
-        {isPending ? <span {...hooks.slot('spinner')} aria-hidden="true" /> : null}
-        {editable ? <ClearButton inputRef={inputRef} /> : null}
-        <AriaButton className={hooks.slotClass('button')}>
-          <Glyph name="chevron-down" />
-        </AriaButton>
-      </Group>
+      <ComboboxField
+        variant={variant}
+        size={size}
+        placeholder={placeholder}
+        isPending={isPending}
+        isEditable={!isDisabled && !isReadOnly}
+        chips={
+          rest.selectionMode === 'multiple'
+            ? {
+                label: toLabelText(label, rest['aria-label']),
+                options: flattenOptions(suggestions),
+              }
+            : null
+        }
+        completion={inline.field}
+      />
       {description ? (
         <Text slot="description" className={hooks.slotClass('description')}>
           {description}
         </Text>
       ) : null}
       <FieldError className={hooks.slotClass('error')}>{errorMessage}</FieldError>
-      <ComboboxSuggestions />
+      <ComboboxSuggestions
+        {...list}
+        items={suggestions}
+        loading={{ onLoadMore, isLoading }}
+        inputText={input.text}
+        completion={inline.completion}
+        createdRef={createdRef}
+      />
     </AriaComboBox>
   );
 }
 
-export type { ComboboxItem, ComboboxOption, ComboboxSection } from './combobox-suggestions.js';
+export type { ComboboxItem, ComboboxOption, ComboboxSection } from './combobox-options.js';
+export type { ComboboxOptionRenderer } from './combobox-suggestions.js';

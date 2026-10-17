@@ -1,6 +1,6 @@
 # Combobox
 
-`Combobox` is a text input with a list of suggestions, built on React Aria's `ComboBox`, `Label`, `Group`, `Input`, `Button`, `Popover` and `ListBox`. The reader types freely (with `allowsCustomValue`) or completes the text from the list. The combobox filters its own suggestions (`defaultItems`), or the caller filters them, synchronously or asynchronously, from `onInputChange` (`items`). React Aria owns the roles, the virtual focus in the list and the keyboard behaviour; its props pass through unchanged.
+`Combobox` is a text input with a list of suggestions, built on React Aria's `ComboBox`, `Label`, `Group`, `Input`, `Button`, `Popover` and `ListBox`. The reader types freely (with `allowsCustomValue`) or completes the text from the list, and may pick several options, shown as chips in a [Tag Group](TAG-GROUP.md). The combobox filters its own suggestions (`defaultItems`), or the caller filters them, synchronously or asynchronously, from `onInputChange` (`items`). Long lists render virtualized and load more as they scroll ([COLLECTIONS.md](COLLECTIONS.md)); typed text can add a new option, highlight its matches, complete itself inline, and keep the first match highlighted. React Aria owns the roles, the virtual focus in the list and the keyboard behaviour; its props pass through unchanged.
 
 ## UIC-COMBOBOX-1 - Field
 
@@ -90,51 +90,114 @@ Verification: `src/components/combobox/combobox-suggestions.test.tsx`, `e2e/comb
 Implementation: `src/components/combobox/combobox.tsx`, `src/components/combobox/combobox-suggestions.tsx`
 Verification: `src/components/combobox/combobox.test.tsx`, `src/components/combobox/combobox-suggestions.test.tsx`
 
+## UIC-COMBOBOX-3 - Picking and entering
+
+### UIC-COMBOBOX-3.1 - Multiple selection with chips
+
+`selectionMode="multiple"` shall let the reader pick several options, with React Aria's `value`, `defaultValue` and `onChange` holding the list of ids: picking an option toggles it, keeps the list open (`aria-multiselectable` on the listbox) and clears the typed text. The chosen options shall show, in value order, as chips in the library's `TagGroup` (`ui-combobox__chips`, also `ui-tag-group`, sized like the field) at the start of the field group, named by the provider's `selectedValues` string from the label text (or `aria-label`). A chip shows its option's label, or the label it had when last listed if the suggestions no longer list it, or its id. On an editable combobox each chip offers the tag group's remove button, and Delete or Backspace on a focused chip removes it; a disabled or read-only one offers no removal. React Aria hides everything but the input and the list from assistive technology while the list is open.
+
+Implementation: `src/components/combobox/combobox.tsx`, `src/components/combobox/combobox-chips.tsx`, `src/components/combobox/combobox-field.tsx`
+Verification: `src/components/combobox/combobox-chips.test.tsx`, `e2e/combobox.spec.ts`
+
+### UIC-COMBOBOX-3.2 - Adding an option
+
+`onCreateOption` shall end the options, while the trimmed typed text is not empty and no option has it as its label (ignoring case), with an action row (`ui-combobox__create`, `role="option"`) reading the provider's `createOption` string with the text ("Add “Kiwi”"). Enter on the highlighted row or a press on it shall call `onCreateOption` with the text and close the list without selecting anything; the caller adds the option, and may select it.
+
+Implementation: `src/components/combobox/combobox-suggestions.tsx`, `src/components/combobox/combobox.tsx`, `src/core/field-strings.ts`
+Verification: `src/components/combobox/combobox-suggestions.test.tsx`, `e2e/combobox.spec.ts`
+
+### UIC-COMBOBOX-3.3 - Highlighting the first match
+
+With `autoHighlight`, while the list is open and no option is highlighted, the first enabled option (or the add row when nothing else matches) shall be highlighted after each change of the text, so Enter or Tab picks it. Arrow Down and Arrow Up move the highlight from there.
+
+Implementation: `src/components/combobox/combobox-effects.ts`, `src/components/combobox/combobox-options.ts`
+Verification: `src/components/combobox/combobox-field.test.tsx`, `e2e/combobox.spec.ts`
+
+### UIC-COMBOBOX-3.4 - Inline completion
+
+With `completesInline`, typing that inserts text shall complete it in the input with the rest of the label of the first enabled option, in list order, whose label starts with the typed text (ignoring case), keeping the typed characters as typed and selecting the added part, so the next keystroke replaces it; that option is highlighted, so Enter or Tab picks it. Deleting text never completes it again until the next insertion, and text composition is left alone. The list stays filtered by the typed text rather than the completion; the input publishes `aria-autocomplete="both"`.
+
+Implementation: `src/components/combobox/combobox-field.tsx`, `src/components/combobox/combobox.tsx`, `src/components/combobox/combobox-effects.ts`, `src/components/combobox/combobox-options.ts`
+Verification: `src/components/combobox/combobox-field.test.tsx`, `e2e/combobox.spec.ts`
+
+## UIC-COMBOBOX-4 - Long lists and option content
+
+### UIC-COMBOBOX-4.1 - Virtualized list
+
+With `virtualized`, the listbox shall render inside a React Aria `Virtualizer` with a `ListLayout` ([UIC-COLLECTIONS-1.1](COLLECTIONS.md#uic-collections-11---virtualized-rendering)) that measures each row, drawing only the options in view of the listbox, positioned absolutely, while the keyboard reaches every option and each keeps its hooks, `aria-setsize` and `aria-posinset`. Filtering, sections, the add row and the loading row work the same.
+
+Implementation: `src/components/combobox/combobox-suggestions.tsx`
+Verification: `src/components/combobox/combobox-suggestions.test.tsx`, `e2e/combobox.spec.ts`
+
+### UIC-COMBOBOX-4.2 - Loading more
+
+`onLoadMore` or `isLoading` shall end the list with React Aria's `ListBoxLoadMoreItem` ([UIC-COLLECTIONS-1.2](COLLECTIONS.md#uic-collections-12---loading-more-inside-a-collection)), which calls `onLoadMore` when it scrolls into the list's view while `isLoading` is false; while `isLoading`, it draws a row (`ui-combobox__load-more`) reading the provider's `loading` string, alone in place of the empty state when no option is listed. `isPending` still marks the field busy while the first suggestions load.
+
+Implementation: `src/components/combobox/combobox-suggestions.tsx`
+Verification: `src/components/combobox/combobox-suggestions.test.tsx`, `e2e/combobox.spec.ts`
+
+### UIC-COMBOBOX-4.3 - Match highlighting
+
+With `highlightMatches`, each option label shall mark the terms of the typed text (not an inline completion) with [Text Match](TEXT-MATCH.md) marks (`ui-text-match`), ignoring case and accents.
+
+Implementation: `src/components/combobox/combobox-suggestions.tsx`
+Verification: `src/components/combobox/combobox-suggestions.test.tsx`, `e2e/combobox.spec.ts`
+
+### UIC-COMBOBOX-4.4 - Custom option content
+
+`renderOption(option, state)` shall draw the content of each option row instead of its icon, label and description, receiving the option and React Aria's item render state (`isFocused`, `isSelected`, `isDisabled` and the rest). The row keeps its `option` role, its hook and its label as the text that the filter matches and the input shows once picked.
+
+Implementation: `src/components/combobox/combobox-suggestions.tsx`
+Verification: `src/components/combobox/combobox-suggestions.test.tsx`, `e2e/combobox.spec.ts`
+
 ## Hooks
 
-| Hook                              | Kind      | Values                                     | Description                                               |
-| --------------------------------- | --------- | ------------------------------------------ | --------------------------------------------------------- |
-| `ui-combobox`                     | root      |                                            | The combobox wrapper.                                     |
-| `ui-combobox__label`              | slot      |                                            | The visible label.                                        |
-| `ui-combobox__field`              | slot      |                                            | The group framing the input and its buttons.              |
-| `ui-combobox__search-icon`        | slot      |                                            | Leading search glyph of the `search` variant.             |
-| `ui-combobox__input`              | slot      |                                            | The text input (`role="combobox"`).                       |
-| `ui-combobox__spinner`            | slot      |                                            | Busy indicator while pending.                             |
-| `ui-combobox__clear`              | slot      |                                            | The clear button (also `ui-icon-button`).                 |
-| `ui-combobox__button`             | slot      |                                            | The button that opens the list.                           |
-| `ui-combobox__description`        | slot      |                                            | Help text.                                                |
-| `ui-combobox__error`              | slot      |                                            | Error message while invalid.                              |
-| `ui-combobox__popover`            | slot      |                                            | The list's floating surface.                              |
-| `ui-combobox__listbox`            | slot      |                                            | The `role="listbox"` list.                                |
-| `ui-combobox__section`            | slot      |                                            | A group of options.                                       |
-| `ui-combobox__section-header`     | slot      |                                            | A section title.                                          |
-| `ui-combobox__option`             | slot      |                                            | One `role="option"` row.                                  |
-| `ui-combobox__option-icon`        | slot      |                                            | An option's icon (also `ui-icon`).                        |
-| `ui-combobox__option-label`       | slot      |                                            | An option's label.                                        |
-| `ui-combobox__option-description` | slot      |                                            | An option's secondary text.                               |
-| `ui-combobox__empty`              | slot      |                                            | The empty-list message.                                   |
-| `data-variant`                    | attribute | `default`, `search`                        | Variant.                                                  |
-| `data-size`                       | attribute | `sm`, `md`, `lg`                           | Field size.                                               |
-| `data-layer`                      | attribute | `dropdown`                                 | The popover's overlay layer.                              |
-| `data-pending`                    | state     | `true`                                     | Suggestions are loading.                                  |
-| `data-focused`                    | state     | `true`                                     | Focused (React Aria; root, input and highlighted option). |
-| `data-open`                       | state     | `true`                                     | The list is open.                                         |
-| `data-disabled`                   | state     | `true`                                     | Disabled (root, field, input, button, option).            |
-| `data-readonly`                   | state     | `true`                                     | Read-only (root).                                         |
-| `data-invalid`                    | state     | `true`                                     | Invalid (root, field and input).                          |
-| `data-required`                   | state     | `true`                                     | Required.                                                 |
-| `data-hovered`                    | state     | `true`                                     | Pointer over the field, input, button or option.          |
-| `data-focus-within`               | state     | `true`                                     | Focus inside the field.                                   |
-| `data-focus-visible`              | state     | `true`                                     | Keyboard focus.                                           |
-| `data-pressed`                    | state     | `true`                                     | The button while the list is open, or a pressed option.   |
-| `data-selected`                   | state     | `true`                                     | The chosen option.                                        |
-| `data-selection-mode`             | state     | `single`                                   | Selection of the options.                                 |
-| `data-placement`                  | state     | `top`, `bottom`, `left`, `right`, `center` | Side of the field the popover opened on.                  |
-| `data-trigger`                    | state     | `ComboBox`                                 | What opened the popover (React Aria).                     |
-| `data-entering`                   | state     | `true`                                     | Popover entry animation.                                  |
-| `data-exiting`                    | state     | `true`                                     | Popover exit animation.                                   |
-| `data-empty`                      | state     | `true`                                     | The list has no options.                                  |
-| `data-collection`                 | state     |                                            | React Aria's collection marker, on the list and options.  |
-| `data-key`                        | state     |                                            | An option's `id` (React Aria).                            |
-| `data-layout`                     | state     | `stack`                                    | Listbox layout (React Aria).                              |
-| `data-orientation`                | state     | `vertical`                                 | Listbox orientation (React Aria).                         |
+| Hook                              | Kind      | Values                                     | Description                                                         |
+| --------------------------------- | --------- | ------------------------------------------ | ------------------------------------------------------------------- |
+| `ui-combobox`                     | root      |                                            | The combobox wrapper.                                               |
+| `ui-combobox__label`              | slot      |                                            | The visible label.                                                  |
+| `ui-combobox__field`              | slot      |                                            | The group framing the input and its buttons.                        |
+| `ui-combobox__search-icon`        | slot      |                                            | Leading search glyph of the `search` variant.                       |
+| `ui-combobox__input`              | slot      |                                            | The text input (`role="combobox"`).                                 |
+| `ui-combobox__spinner`            | slot      |                                            | Busy indicator while pending.                                       |
+| `ui-combobox__clear`              | slot      |                                            | The clear button (also `ui-icon-button`).                           |
+| `ui-combobox__button`             | slot      |                                            | The button that opens the list.                                     |
+| `ui-combobox__description`        | slot      |                                            | Help text.                                                          |
+| `ui-combobox__error`              | slot      |                                            | Error message while invalid.                                        |
+| `ui-combobox__popover`            | slot      |                                            | The list's floating surface.                                        |
+| `ui-combobox__listbox`            | slot      |                                            | The `role="listbox"` list.                                          |
+| `ui-combobox__section`            | slot      |                                            | A group of options.                                                 |
+| `ui-combobox__section-header`     | slot      |                                            | A section title.                                                    |
+| `ui-combobox__option`             | slot      |                                            | One `role="option"` row.                                            |
+| `ui-combobox__option-icon`        | slot      |                                            | An option's icon (also `ui-icon`).                                  |
+| `ui-combobox__option-label`       | slot      |                                            | An option's label.                                                  |
+| `ui-combobox__option-description` | slot      |                                            | An option's secondary text.                                         |
+| `ui-combobox__empty`              | slot      |                                            | The empty-list message.                                             |
+| `ui-combobox__chips`              | slot      |                                            | The tag group of a multiple combobox's chips (also `ui-tag-group`). |
+| `ui-combobox__create`             | slot      |                                            | The action row that adds the typed text as an option.               |
+| `ui-combobox__load-more`          | slot      |                                            | The loading row at the end of the list.                             |
+| `data-variant`                    | attribute | `default`, `search`                        | Variant.                                                            |
+| `data-size`                       | attribute | `sm`, `md`, `lg`                           | Field size.                                                         |
+| `data-layer`                      | attribute | `dropdown`                                 | The popover's overlay layer.                                        |
+| `data-pending`                    | state     | `true`                                     | Suggestions are loading.                                            |
+| `data-focused`                    | state     | `true`                                     | Focused (React Aria; root, input and highlighted option).           |
+| `data-open`                       | state     | `true`                                     | The list is open.                                                   |
+| `data-disabled`                   | state     | `true`                                     | Disabled (root, field, input, button, option).                      |
+| `data-readonly`                   | state     | `true`                                     | Read-only (root).                                                   |
+| `data-invalid`                    | state     | `true`                                     | Invalid (root, field and input).                                    |
+| `data-required`                   | state     | `true`                                     | Required.                                                           |
+| `data-hovered`                    | state     | `true`                                     | Pointer over the field, input, button or option.                    |
+| `data-focus-within`               | state     | `true`                                     | Focus inside the field.                                             |
+| `data-focus-visible`              | state     | `true`                                     | Keyboard focus.                                                     |
+| `data-pressed`                    | state     | `true`                                     | The button while the list is open, or a pressed option.             |
+| `data-selected`                   | state     | `true`                                     | The chosen option.                                                  |
+| `data-selection-mode`             | state     | `single`, `multiple`                       | Selection of the options.                                           |
+| `data-placement`                  | state     | `top`, `bottom`, `left`, `right`, `center` | Side of the field the popover opened on.                            |
+| `data-trigger`                    | state     | `ComboBox`                                 | What opened the popover (React Aria).                               |
+| `data-entering`                   | state     | `true`                                     | Popover entry animation.                                            |
+| `data-exiting`                    | state     | `true`                                     | Popover exit animation.                                             |
+| `data-empty`                      | state     | `true`                                     | The list has no options.                                            |
+| `data-collection`                 | state     |                                            | React Aria's collection marker, on the list and options.            |
+| `data-key`                        | state     |                                            | An option's `id` (React Aria).                                      |
+| `data-layout`                     | state     | `stack`                                    | Listbox layout (React Aria).                                        |
+| `data-orientation`                | state     | `vertical`                                 | Listbox orientation (React Aria).                                   |

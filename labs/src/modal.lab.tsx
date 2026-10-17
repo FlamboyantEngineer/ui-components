@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { DialogTrigger } from 'react-aria-components';
 import { Button } from '../../src/components/button/button.js';
 import { Modal, type ModalProps } from '../../src/components/modal/modal.js';
@@ -12,7 +12,8 @@ interface PendingRequest {
   fail: (reason: Error) => void;
 }
 
-const tones = ['neutral', 'danger'] as const;
+const tones = ['neutral', 'info', 'success', 'warning', 'danger'] as const;
+const footerTones = ['neutral', 'danger'] as const;
 const sizes = ['sm', 'md', 'lg', 'xl', 'full'] as const;
 const states = [
   'idle',
@@ -148,6 +149,94 @@ function SaveForm() {
   );
 }
 
+/** Focus targets, a guard against losing a draft, and a count of finished exits. */
+function GuardedNote() {
+  const [open, setOpen] = useState(false);
+  const [draft, setDraft] = useState('');
+  const [exits, setExits] = useState(0);
+  const [refused, setRefused] = useState('nothing');
+  const cityRef = useRef<HTMLInputElement>(null);
+  const afterRef = useRef<HTMLButtonElement>(null);
+  const keepDraft = (dismissal: string) => {
+    if (draft.trim() === '') return true;
+    setRefused(dismissal);
+    return false;
+  };
+  return (
+    <div>
+      <Button size="sm" data-lab-open="guarded" onPress={() => setOpen(true)}>
+        Write a postcard
+      </Button>{' '}
+      <Button size="sm" ref={afterRef} data-lab-after="">
+        After the postcard
+      </Button>
+      <p>
+        Exits: <output data-lab-output="exits">{exits}</output>, last refused:{' '}
+        <output data-lab-output="refused">{refused}</output>
+      </p>
+      <Modal
+        isOpen={open}
+        onOpenChange={setOpen}
+        title="Postcard"
+        description="Escape and outside presses keep the dialog open while the message has text."
+        data-lab-modal="guarded"
+        isDismissable
+        initialFocus={cityRef}
+        finalFocus={afterRef}
+        shouldCloseOnEscape={() => keepDraft('Escape')}
+        shouldCloseOnInteractOutside={() => keepDraft('outside press')}
+        onExitComplete={() => setExits((count) => count + 1)}
+        primaryAction={{
+          label: 'Send',
+          onPress: (close) => {
+            setDraft('');
+            close();
+          },
+        }}
+      >
+        <label>
+          Name <input />
+        </label>{' '}
+        <label>
+          City <input ref={cityRef} />
+        </label>
+        <label style={{ display: 'block', marginTop: 8 }}>
+          Message <input value={draft} onChange={(event) => setDraft(event.target.value)} />
+        </label>
+      </Modal>
+    </div>
+  );
+}
+
+/** A floating dialog beside a page that stays usable. */
+function FloatingNotes() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div>
+      <Button size="sm" data-lab-open="floating" onPress={() => setOpen(!open)}>
+        {open ? 'Hide notes' : 'Show notes'}
+      </Button>{' '}
+      <label>
+        Page field <input data-lab-page-field="" />
+      </label>
+      <Modal
+        isNonModal
+        isOpen={open}
+        onOpenChange={setOpen}
+        title="Notes"
+        size="sm"
+        showCloseButton
+        data-lab-modal="floating"
+        cancelAction={null}
+      >
+        <label>
+          Note <input />
+        </label>
+      </Modal>
+    </div>
+  );
+}
+
 function Stacking() {
   const [outer, setOuter] = useState(false);
   const [inner, setInner] = useState(false);
@@ -229,7 +318,7 @@ mountLab(
       description="Primary disabled, pending, status and error messages, a secondary action, an action with its own variant, a custom action bar and refused dismissal."
     >
       <StateMatrix
-        axes={{ state: states, tone: tones }}
+        axes={{ state: states, tone: footerTones }}
         render={({ state, tone }) => (
           <Opener
             tone={tone}
@@ -277,6 +366,38 @@ mountLab(
       description="A modal opened from a modal stacks above it; a toast-layer notice stays above both."
     >
       <Stacking />
+    </LabSection>
+    <LabSection
+      title="Focus targets and guarded dismissal"
+      description="Focus starts in City and moves to the button after the postcard on close. While the message has text, Escape and outside presses are refused; each finished exit is counted."
+    >
+      <GuardedNote />
+    </LabSection>
+    <LabSection
+      title="Non-modal dialog"
+      description="Notes float at the corner without a backdrop; the page field stays usable while they are open, and Escape inside them closes them."
+    >
+      <FloatingNotes />
+    </LabSection>
+    <LabSection
+      title="Anchored dialog"
+      description="The dialog opens as a popover below its button, on the dropdown layer."
+    >
+      <DialogTrigger>
+        <Button size="sm" data-lab-open="anchored">
+          Rename Report.pdf
+        </Button>
+        <Modal
+          placement="bottom start"
+          title="Rename"
+          data-lab-modal="anchored"
+          primaryAction={{ label: 'Rename', onPress: (close) => close() }}
+        >
+          <label>
+            Name <input defaultValue="Report.pdf" />
+          </label>
+        </Modal>
+      </DialogTrigger>
     </LabSection>
   </>,
 );

@@ -228,4 +228,72 @@ test.describe('Menu lab', () => {
     await expect(popovers(page)).toHaveCount(1);
     await lab.expectAccessible('.ui-menu-popover');
   });
+
+  test('UIC-MENU-5.1 filters a menu from its search field', async ({ page, lab }) => {
+    await lab.open('menu');
+    const area = section(page, 'Filterable menu');
+    await area.getByRole('button', { name: 'Move to' }).click();
+    const search = popovers(page).getByRole('searchbox', { name: 'Search' });
+    await expect(search).toBeFocused();
+    await page.keyboard.type('li');
+    await expect(popovers(page).getByRole('menuitem')).toHaveText([
+      'Lima 2',
+      'Lima 11',
+      'Lima 20',
+      'Lima 29',
+      'Lima 38',
+    ]);
+    await expect(search).toBeFocused();
+    await expect(item(page, /^Lima 2$/)).toHaveAttribute('data-focused', 'true');
+    await page.keyboard.press('ArrowDown');
+    await expect(item(page, /^Lima 11$/)).toHaveAttribute('data-focused', 'true');
+    await lab.expectAccessible('.ui-menu-popover');
+    await page.keyboard.press('Enter');
+    await expect(popovers(page)).toHaveCount(0);
+    await expect(area.locator('[data-lab-output="Move action"]')).toHaveText('city-11');
+    const cellSearch = page.locator('[data-lab-cell="state=no match size=md"] .ui-menu__empty');
+    await expect(cellSearch).toHaveText('No results');
+  });
+
+  test('UIC-MENU-5.2 loads more entries as the end of the menu comes into view', async ({
+    page,
+    lab,
+  }) => {
+    await page.clock.install();
+    await lab.open('menu');
+    await page.clock.pauseAt(Date.now() + 1000);
+    const area = section(page, 'Loading more');
+    await area.getByRole('button', { name: 'Paged cities' }).click();
+    await expect(item(page, /^Paris 1$/)).toBeVisible();
+    await popovers(page).evaluate((popover) => {
+      popover.scrollTop = popover.scrollHeight;
+    });
+    const loading = popovers(page).locator('.ui-menu__load-more');
+    await expect(loading).toBeVisible();
+    await expect(loading).toHaveText('Loading');
+    await expect(loading.locator('.ui-menu__load-more-spinner')).toBeVisible();
+    await page.clock.runFor(500);
+    await expect(area.locator('[data-lab-output="Loaded"]')).toHaveText('40');
+    await expect(item(page, /^Quito 23$/)).toBeAttached();
+    await page.clock.resume();
+    await expect(
+      page.locator('[data-lab-cell="state=loading size=md"] .ui-menu__load-more'),
+    ).toHaveText('Loading');
+  });
+
+  test('UIC-MENU-5.3 renders a long menu virtualized', async ({ page, lab }) => {
+    await lab.open('menu');
+    const trigger = section(page, 'Virtualized menu').getByRole('button', { name: '5000 cities' });
+    await trigger.focus();
+    await page.keyboard.press('ArrowDown');
+    const menu = page.getByRole('menu', { name: '5000 cities' });
+    await expect(item(page, /^Paris 1$/)).toBeFocused();
+    expect(await menu.getByRole('menuitem').count()).toBeLessThan(100);
+    await expect(item(page, /^Paris 1$/)).toHaveAttribute('aria-setsize', '5000');
+    await page.keyboard.press('End');
+    await expect(item(page, /^Quito 5000$/)).toBeFocused();
+    await expect(item(page, /^Quito 5000$/)).toHaveAttribute('aria-posinset', '5000');
+    expect(await menu.getByRole('menuitem').count()).toBeLessThan(100);
+    await lab.expectAccessible('.ui-menu-popover');
+  });
 });

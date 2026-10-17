@@ -3,9 +3,13 @@ export interface CommonStrings {
   close: string;
   dismiss: string;
   confirm: string;
+  /** Acknowledges an alert. */
+  ok: string;
   /** Shown when an action fails without a message of its own. */
   actionFailed: string;
   more: string;
+  /** Names the menu half of a split button. */
+  moreOptions: string;
   /** Default accessible name of a context menu. */
   contextMenu: string;
   loading: string;
@@ -91,8 +95,10 @@ export const commonStrings: CommonStrings = {
   close: 'Close',
   dismiss: 'Dismiss',
   confirm: 'Confirm',
+  ok: 'OK',
   actionFailed: 'The action could not be completed.',
   more: 'More',
+  moreOptions: 'More options',
   contextMenu: 'Context menu',
   loading: 'Loading',
   clear: 'Clear',

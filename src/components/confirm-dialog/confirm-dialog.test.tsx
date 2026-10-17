@@ -1,9 +1,11 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
+import { DialogTrigger } from 'react-aria-components';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
+import { Button } from '../button/button.js';
 import { ModalHost, createModalController } from '../modal-controller/modal-controller.js';
 import { ConfirmDialog, confirm, type ConfirmDialogProps } from './confirm-dialog.js';
 
@@ -54,7 +56,7 @@ describe('ConfirmDialog', () => {
     expect(document.querySelector('.ui-modal')).toHaveClass('ui-confirm-dialog');
     const buttons = [...document.querySelectorAll('.ui-modal__actions button')];
     expect(buttons.map((button) => button.textContent)).toEqual(['Cancel', 'Confirm']);
-    expectHooksMatchSpec(document.body, 'CONFIRM-DIALOG', { slots: 'all' });
+    expectHooksMatchSpec(document.body, 'CONFIRM-DIALOG', { slots: ['message'] });
     expectHooksMatchSpec(document.body, 'MODAL', { slots: ['cancel', 'primary'] });
   });
 
@@ -168,6 +170,87 @@ describe('ConfirmDialog', () => {
     expect(screen.getByText('Delete <img src=x onerror="boom()"> now?')).toBeInTheDocument();
   });
 
+  it('UIC-CONFIRM-DIALOG-1.6 offers a third action that closes without cancelling', async () => {
+    const onSecondaryAction = vi.fn();
+    const onConfirm = vi.fn();
+    const onCancel = vi.fn();
+    await openHarness({
+      title: 'Save changes to Report.pdf?',
+      confirmLabel: 'Save',
+      secondaryActionLabel: "Don't save",
+      onSecondaryAction,
+      onConfirm,
+      onCancel,
+    });
+    const buttons = [...document.querySelectorAll('.ui-modal__actions button')];
+    expect(buttons.map((button) => button.textContent)).toEqual(['Cancel', "Don't save", 'Save']);
+    expect(screen.getByRole('button', { name: "Don't save" })).toHaveClass('ui-modal__secondary');
+    await userEvent.click(screen.getByRole('button', { name: "Don't save" }));
+    expect(onSecondaryAction).toHaveBeenCalledTimes(1);
+    expect(onConfirm).not.toHaveBeenCalled();
+    expect(onCancel).not.toHaveBeenCalled();
+    expect(screen.queryByRole('alertdialog')).toBeNull();
+  });
+
+  it('UIC-CONFIRM-DIALOG-1.7 draws the glyph of a news tone, or the caller icon, before the title', () => {
+    const { rerender } = render(<ConfirmDialog title="Saved" isOpen tone="success" />);
+    const overlay = () => document.querySelector('.ui-modal');
+    const icon = () => document.querySelector('.ui-confirm-dialog__icon');
+    expect(overlay()).toHaveAttribute('data-tone', 'success');
+    expect(icon()).toHaveAttribute('data-glyph', 'success');
+    expect(icon()?.closest('h2')).toHaveClass('ui-modal__title');
+    expect(screen.getByRole('alertdialog')).toHaveAccessibleName('Saved');
+    expectHooksMatchSpec(document.body, 'CONFIRM-DIALOG', { slots: ['icon'] });
+    for (const tone of ['info', 'warning'] as const) {
+      rerender(<ConfirmDialog title="Note" isOpen tone={tone} />);
+      expect(icon()).toHaveAttribute('data-glyph', tone);
+    }
+    rerender(<ConfirmDialog title="Delete?" isOpen tone="danger" />);
+    expect(icon()).toBeNull();
+    rerender(<ConfirmDialog title="Upload failed" isOpen tone="danger" icon="error" />);
+    expect(icon()).toHaveAttribute('data-glyph', 'error');
+    rerender(<ConfirmDialog title="Plain" isOpen tone="info" icon={null} />);
+    expect(icon()).toBeNull();
+  });
+
+  it('UIC-CONFIRM-DIALOG-1.8 leaves Cancel out and focuses the action of an acknowledgement', async () => {
+    const onCancel = vi.fn();
+    await openHarness({ cancelLabel: null, confirmLabel: 'Got it', onCancel });
+    expect(screen.queryByRole('button', { name: 'Cancel' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Got it' })).toHaveFocus();
+    await userEvent.keyboard('{Escape}');
+    expect(onCancel).toHaveBeenCalledTimes(1);
+  });
+
+  it('UIC-CONFIRM-DIALOG-1.9 anchors the confirmation to its trigger', async () => {
+    const onConfirm = vi.fn();
+    render(
+      <DialogTrigger>
+        <Button>Remove</Button>
+        <ConfirmDialog
+          title="Remove Lima?"
+          message="It leaves the list."
+          placement="top"
+          confirmLabel="Remove"
+          onConfirm={onConfirm}
+        />
+      </DialogTrigger>,
+    );
+    const trigger = screen.getByRole('button', { name: 'Remove' });
+    await userEvent.click(trigger);
+    const dialog = await screen.findByRole('dialog', { name: 'Remove Lima?' });
+    expect(dialog).toHaveAccessibleDescription('It leaves the list.');
+    const root = document.querySelector('.ui-confirm-dialog');
+    expect(root).toHaveClass('ui-modal');
+    expect(root).toHaveAttribute('data-trigger', 'DialogTrigger');
+    expect(root).toHaveAttribute('data-layer', 'dropdown');
+    expect(screen.getByRole('button', { name: 'Cancel' })).toHaveFocus();
+    await userEvent.click(screen.getByRole('button', { name: 'Remove', hidden: false }));
+    expect(onConfirm).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('dialog')).toBeNull();
+    await waitFor(() => expect(trigger).toHaveFocus());
+  });
+
   it('UIC-CONFIRM-DIALOG-2.1 resolves true after confirming and false otherwise', async () => {
     const controller = createModalController();
     render(<ModalHost controller={controller} />);
@@ -208,6 +291,18 @@ describe('ConfirmDialog', () => {
     await screen.findByRole('alertdialog');
     await userEvent.keyboard('{Escape}');
     await expect(answer).resolves.toBe(false);
+
+    const onSecondaryAction = vi.fn();
+    act(() => {
+      answer = confirm(controller, {
+        title: 'Save?',
+        secondaryActionLabel: "Don't save",
+        onSecondaryAction,
+      });
+    });
+    await userEvent.click(await screen.findByRole('button', { name: "Don't save" }));
+    await expect(answer).resolves.toBe(false);
+    expect(onSecondaryAction).toHaveBeenCalledTimes(1);
 
     act(() => {
       answer = confirm(controller, { title: 'Close all?' });

@@ -5,7 +5,39 @@ import { describe, expect, it, vi } from 'vitest';
 import { MenuButton, actionKeys, fruitEntries, openMenu } from '../../../test/menu-fixtures.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Button } from '../button/button.js';
-import { Menu, MenuItem, MenuPopover, MenuSection, MenuSeparator, MenuTrigger } from './menu.js';
+import {
+  Menu,
+  MenuItem,
+  MenuPopover,
+  MenuSection,
+  MenuSeparator,
+  MenuTrigger,
+  type MenuEntry,
+} from './menu.js';
+
+/** Stubs IntersectionObserver and returns a function that reports the first observed element in view. */
+function stubIntersections() {
+  const observed: Element[] = [];
+  let report: IntersectionObserverCallback = () => {};
+  vi.stubGlobal(
+    'IntersectionObserver',
+    class {
+      constructor(callback: IntersectionObserverCallback) {
+        report = callback;
+      }
+      observe(element: Element) {
+        observed.push(element);
+      }
+      unobserve() {}
+      disconnect() {}
+    },
+  );
+  return () =>
+    act(() => report([{ isIntersecting: true, target: observed[0] } as never], {} as never));
+}
+
+const cityNames = ['Paris', 'Lima', 'Oslo', 'Lisbon', 'Cairo'];
+const cityEntries: MenuEntry[] = cityNames.map((name) => ({ id: name.toLowerCase(), label: name }));
 
 describe('Menu', () => {
   it('UIC-MENU-1.1 draws entries from data like the matching children', async () => {
@@ -244,5 +276,117 @@ describe('Menu', () => {
     act(() => report([{ isIntersecting: true, target: observed[0] } as never], {} as never));
     expect(onLoadMore).toHaveBeenCalledTimes(1);
     vi.unstubAllGlobals();
+  });
+
+  it('UIC-MENU-5.1 filters the items from a search field that keeps focus', async () => {
+    const user = userEvent.setup();
+    const onAction = vi.fn();
+    render(<MenuButton items={cityEntries} filterable aria-label="Cities" onAction={onAction} />);
+    await openMenu(user);
+    const search = screen.getByRole('searchbox', { name: 'Search' });
+    expect(search).toHaveFocus();
+    expect(search).toHaveClass('ui-menu__search-input');
+    expect(search.closest('.ui-menu__search')).not.toBeNull();
+    expect(search).toHaveAttribute('placeholder', 'Search');
+    await user.keyboard('li');
+    expect(screen.getAllByRole('menuitem').map((item) => item.textContent)).toEqual([
+      'Lima',
+      'Lisbon',
+    ]);
+    expect(search).toHaveFocus();
+    // The first match is highlighted as the reader types.
+    await waitFor(() =>
+      expect(search).toHaveAttribute(
+        'aria-activedescendant',
+        screen.getByRole('menuitem', { name: 'Lima' }).id,
+      ),
+    );
+    await user.keyboard('{ArrowDown}');
+    await waitFor(() =>
+      expect(search).toHaveAttribute(
+        'aria-activedescendant',
+        screen.getByRole('menuitem', { name: 'Lisbon' }).id,
+      ),
+    );
+    expectHooksMatchSpec(document.body, 'MENU', { slots: ['search', 'search-input'] });
+    await user.keyboard('{Enter}');
+    expect(actionKeys(onAction)).toEqual(['lisbon']);
+    expect(screen.queryByRole('menu')).toBeNull();
+  });
+
+  it('UIC-MENU-5.1 says when nothing matches and leaves a standalone menu unfocused', async () => {
+    const user = userEvent.setup();
+    render(<Menu items={cityEntries} filterable aria-label="Cities" />);
+    const search = screen.getByRole('searchbox', { name: 'Search' });
+    expect(search).not.toHaveFocus();
+    await user.type(search, 'zz');
+    expect(
+      screen.queryAllByRole('menuitem').filter((row) => row.textContent !== 'No results'),
+    ).toHaveLength(0);
+    expect(document.querySelector('.ui-menu__empty')).toHaveTextContent('No results');
+    expect(screen.getByRole('menu')).toHaveAttribute('data-empty', 'true');
+    expectHooksMatchSpec(document.body, 'MENU', { slots: ['search', 'search-input', 'empty'] });
+  });
+
+  it('UIC-MENU-5.2 ends the items with a loading row and asks for more as it comes into view', () => {
+    const reportInView = stubIntersections();
+    const onLoadMore = vi.fn();
+    const { rerender } = render(
+      <Menu aria-label="Cities" items={cityEntries} onLoadMore={onLoadMore} isLoading={false} />,
+    );
+    expect(document.querySelector('.ui-menu__load-more')).toBeNull();
+    reportInView();
+    expect(onLoadMore).toHaveBeenCalledTimes(1);
+    rerender(<Menu aria-label="Cities" items={cityEntries} onLoadMore={onLoadMore} isLoading />);
+    const row = document.querySelector('.ui-menu__load-more');
+    expect(row).toHaveTextContent('Loading');
+    expect(row?.querySelector('.ui-menu__load-more-spinner')).toHaveAttribute(
+      'aria-hidden',
+      'true',
+    );
+    expect(screen.getByRole('menu').lastElementChild).toBe(row);
+    expectHooksMatchSpec(document.body, 'MENU', { slots: ['load-more', 'load-more-spinner'] });
+    vi.unstubAllGlobals();
+  });
+
+  it('UIC-MENU-5.2 shows only the loading row while an empty menu loads', () => {
+    stubIntersections();
+    const { rerender } = render(
+      <Menu aria-label="Cities" items={[]} isLoading renderEmptyState={() => 'Nothing yet'} />,
+    );
+    expect(screen.getByRole('menu')).toHaveAttribute('data-empty', 'true');
+    expect(screen.getByRole('menu')).toHaveTextContent(/^\s*Loading$/);
+    rerender(
+      <Menu
+        aria-label="Cities"
+        items={[]}
+        isLoading={false}
+        renderEmptyState={() => 'Nothing yet'}
+      />,
+    );
+    expect(screen.getByRole('menu')).toHaveTextContent('Nothing yet');
+    vi.unstubAllGlobals();
+  });
+
+  it('UIC-MENU-5.3 renders a long data menu virtualized, reaching every item by keyboard', async () => {
+    vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(200);
+    vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(100);
+    const user = userEvent.setup();
+    const entries: MenuEntry[] = Array.from({ length: 1000 }, (_, index) => ({
+      id: index,
+      label: `City ${index}`,
+    }));
+    render(
+      <Virtualizer layout={ListLayout} layoutOptions={{ rowHeight: 25 }}>
+        <Menu aria-label="Cities" items={entries} />
+      </Virtualizer>,
+    );
+    const rows = screen.getAllByRole('menuitem');
+    expect(rows.length).toBeLessThan(20);
+    expect(rows[0]).toHaveAttribute('aria-setsize', '1000');
+    await user.tab();
+    await user.keyboard('{End}');
+    expect(screen.getByRole('menuitem', { name: 'City 999' })).toHaveFocus();
+    vi.restoreAllMocks();
   });
 });

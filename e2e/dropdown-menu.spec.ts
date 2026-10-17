@@ -124,4 +124,55 @@ test.describe('Dropdown Menu lab', () => {
     await expect(popovers(page)).toHaveCount(1);
     await lab.expectAccessible('.ui-menu-popover');
   });
+
+  test('UIC-DROPDOWN-MENU-1.7 draws joined split buttons that run an action or open the menu', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('dropdown-menu');
+    for (const [size, height] of [
+      ['xs', 22],
+      ['sm', 26],
+      ['md', 32],
+      ['lg', 38],
+    ] as const) {
+      const root = page.locator(`[data-lab-cell="action=primary size=${size}"] .ui-dropdown-menu`);
+      await expect(root).toHaveAttribute('data-split', 'true');
+      await expect(root).toHaveAttribute('role', 'group');
+      const action = await root.locator('.ui-dropdown-menu__action').boundingBox();
+      const toggle = await root.locator('.ui-dropdown-menu__toggle').boundingBox();
+      if (!action || !toggle) throw new Error('split button not rendered');
+      expect(action.height).toBe(height);
+      expect(toggle.height).toBe(height);
+      expect(toggle.y).toBe(action.y);
+      expect(toggle.x).toBeCloseTo(action.x + action.width - 1, 0);
+    }
+
+    const area = section(page, 'Split action');
+    const output = area.locator('[data-lab-output="split"]');
+    await area.getByRole('button', { name: 'Save', exact: true }).click();
+    await expect(output).toHaveText('save');
+    await expect(popovers(page)).toHaveCount(0);
+    const toggle = area.getByRole('button', { name: 'More options' });
+    await toggle.focus();
+    await page.keyboard.press('ArrowDown');
+    await expect(popovers(page).getByRole('menuitem', { name: 'Save a copy' })).toBeFocused();
+    await expect(area.locator('.ui-dropdown-menu')).toHaveAttribute('data-open', 'true');
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await page.keyboard.press('Enter');
+    await expect(output).toHaveText('save-copy');
+    await expect(toggle).toBeFocused();
+    await lab.expectAccessible();
+  });
+
+  test('UIC-DROPDOWN-MENU-1.4 opens a filterable menu', async ({ page, lab }) => {
+    await lab.open('dropdown-menu');
+    const area = section(page, 'Filterable');
+    await area.getByRole('button', { name: 'Move to' }).click();
+    await expect(popovers(page).getByRole('searchbox', { name: 'Search' })).toBeFocused();
+    await page.keyboard.type('os');
+    await expect(popovers(page).getByRole('menuitem')).toHaveText(['Oslo']);
+    await page.keyboard.press('Enter');
+    await expect(area.locator('[data-lab-output="moved"]')).toHaveText('oslo');
+  });
 });

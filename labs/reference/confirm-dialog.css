@@ -7,3 +7,24 @@
 .ui-confirm-dialog__message {
   margin: 0;
 }
+
+.ui-confirm-dialog__icon {
+  margin-inline-end: 4px;
+  vertical-align: -3px;
+}
+
+.ui-confirm-dialog[data-tone='info'] .ui-confirm-dialog__icon {
+  color: var(--ref-info);
+}
+
+.ui-confirm-dialog[data-tone='success'] .ui-confirm-dialog__icon {
+  color: var(--ref-success);
+}
+
+.ui-confirm-dialog[data-tone='warning'] .ui-confirm-dialog__icon {
+  color: var(--ref-warning);
+}
+
+.ui-confirm-dialog[data-tone='danger'] .ui-confirm-dialog__icon {
+  color: var(--ref-danger);
+}

@@ -70,6 +70,8 @@ export interface FieldStrings {
   selectPlaceholder: string;
   /** Names the group of a multiple select's chosen values, from the field's label. */
   selectedValues: (label: string) => string;
+  /** The action row of a combobox that adds the typed text as a new option. */
+  createOption: (text: string) => string;
   /** The message of a search that needs a longer query before it runs. */
   typeToSearch: (minLength: number) => string;
   /** The message of a search that failed. */
@@ -133,6 +135,7 @@ export const fieldStrings: FieldStrings = {
   clearValue: (label) => `Clear ${label}`,
   selectPlaceholder: 'Select an option',
   selectedValues: (label) => `${label} selected values`,
+  createOption: (text) => `Add “${text}”`,
   typeToSearch: (minLength) =>
     minLength === 1 ? 'Type to search.' : `Type at least ${minLength} characters to search.`,
   searchFailed: 'Search is unavailable.',
