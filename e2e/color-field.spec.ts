@@ -120,6 +120,111 @@ test.describe('Color Field lab', () => {
     await expect(output(page, 'Saved')).toHaveText('#000000');
   });
 
+  test('UIC-COLOR-FIELD-3.1 UIC-COLOR-FIELD-3.2 UIC-COLOR-FIELD-3.3 switches formats and edits channels', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('color-field');
+    await expect(page.locator('[data-lab-cell="format=hexa"] .ui-color-field__value')).toHaveText(
+      '#336699BF',
+    );
+    const formats = field(page, 'formats');
+    const trigger = formats.locator('.ui-color-field__trigger');
+    await expect(trigger).toHaveAccessibleName('Overlay rgba(51, 102, 153, 0.5)');
+    await trigger.click();
+    const dialog = page.getByRole('dialog', { name: 'Overlay' });
+    await expect(dialog.getByRole('radio', { name: 'RGBA' })).toBeChecked();
+    const channels = dialog.locator('.ui-color-field__channel');
+    await expect(channels).toHaveCount(4);
+    const boxes = await channels.evaluateAll((nodes) =>
+      nodes.map((node) => node.getBoundingClientRect().top),
+    );
+    expect(new Set(boxes).size).toBe(1);
+    await expect(dialog.getByRole('slider', { name: 'Alpha' })).toBeVisible();
+    await lab.expectAccessible('.ui-color-field__popover');
+    const red = dialog.getByRole('textbox', { name: 'Red' });
+    await red.fill('255');
+    await red.press('Enter');
+    await expect(trigger).toHaveAccessibleName('Overlay rgba(255, 102, 153, 0.5)');
+    await dialog.getByRole('radio', { name: 'HSLA' }).click();
+    await expect(output(page, 'Format')).toHaveText('hsla');
+    await expect(dialog.getByRole('textbox', { name: 'Lightness' })).toBeVisible();
+    await dialog.getByRole('radio', { name: 'HEX', exact: true }).click();
+    await expect(dialog.getByRole('slider', { name: 'Alpha' })).toHaveCount(0);
+    await expect(dialog.getByRole('textbox', { name: 'Hex color' })).toHaveValue('#FF6699');
+    await page.keyboard.press('Escape');
+    await expect(output(page, 'Format committed')).toHaveText('#ff669980');
+    await expect(trigger).toHaveAccessibleName('Overlay #FF6699');
+  });
+
+  test('UIC-COLOR-FIELD-3.4 stores the value in its value format', async ({ page, lab }) => {
+    await lab.open('color-field');
+    const trigger = field(page, 'value-format').locator('.ui-color-field__trigger');
+    await expect(trigger).toHaveAccessibleName('Ink hsl(210, 50%, 40%)');
+    await trigger.click();
+    const hue = page.getByRole('dialog').getByRole('textbox', { name: 'Hue' });
+    await hue.fill('0');
+    await hue.press('Enter');
+    await page.keyboard.press('Escape');
+    await expect(output(page, 'Format committed')).toHaveText('rgb(153, 51, 51)');
+  });
+
+  test('UIC-COLOR-FIELD-4.1 UIC-COLOR-FIELD-4.2 picks a preset swatch and samples the screen', async ({
+    page,
+    lab,
+  }) => {
+    await page.addInitScript(() => {
+      Object.assign(window, {
+        EyeDropper: function EyeDropper() {
+          return { open: () => Promise.resolve({ sRGBHex: '#e69500' }) };
+        },
+      });
+    });
+    await lab.open('color-field');
+    const trigger = field(page, 'presets').locator('.ui-color-field__trigger');
+    await trigger.click();
+    const dialog = page.getByRole('dialog', { name: 'Label colour' });
+    const swatches = dialog.getByRole('listbox', { name: 'Color swatches' });
+    await expect(swatches.getByRole('option').nth(3)).toHaveAttribute('aria-selected', 'true');
+    await swatches.getByRole('option').nth(3).focus();
+    await page.keyboard.press('ArrowRight');
+    await page.keyboard.press('Enter');
+    await expect(trigger).toHaveAccessibleName('Label colour #7B4FA0');
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole('button', { name: 'Pick a color from the screen' }).click();
+    await expect(trigger).toHaveAccessibleName('Label colour #E69500');
+    await lab.expectAccessible('.ui-color-field__popover');
+    await page.keyboard.press('Escape');
+    await expect(output(page, 'Preset committed')).toHaveText('#e69500');
+  });
+
+  test('UIC-COLOR-FIELD-4.3 types a colour into the closed field', async ({ page, lab }) => {
+    await lab.open('color-field');
+    const typing = field(page, 'typing');
+    const input = typing.getByRole('textbox', { name: 'Text colour' });
+    await expect(input).toHaveValue('#2E8B57');
+    const button = typing.getByRole('button', { name: 'Text colour picker' });
+    const frame = await typing.locator('.ui-color-field__group').boundingBox();
+    expect(frame?.height).toBe(28);
+    expect((await button.boundingBox())?.y).toBeGreaterThanOrEqual(frame?.y ?? 0);
+    await input.fill('hsl(0, 100%, 50%)');
+    await input.press('Enter');
+    await expect(output(page, 'Typed committed')).toHaveText('#ff0000');
+    await expect(input).toHaveValue('#FF0000');
+    await expect(input).toBeFocused();
+    await input.fill('nonsense');
+    await input.press('Tab');
+    await expect(input).toHaveValue('#FF0000');
+    await input.focus();
+    await page.keyboard.press('ControlOrMeta+z');
+    await expect(input).toHaveValue('#2E8B57');
+    await button.click();
+    await expect(page.getByRole('dialog', { name: 'Text colour' })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(button).toBeFocused();
+    await lab.expectAccessible();
+  });
+
   test('UIC-COLOR-FIELD-1.3 passes axe in the dark theme', async ({ page, lab }) => {
     await lab.open('color-field', { theme: 'dark' });
     await field(page, 'picking').locator('.ui-color-field__trigger').click();

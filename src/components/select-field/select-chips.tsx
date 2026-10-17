@@ -17,6 +17,8 @@ export interface SelectChipsProps {
   removed: readonly ChosenSelectOption[];
   /** Chips offer a remove button and answer Delete and Backspace. */
   isEditable: boolean;
+  /** The select holds its `maxValues`: removed values cannot be put back. */
+  isFull: boolean;
   onRemove: (keys: Set<Key>) => void;
   onRestore: (key: Key) => void;
 }
@@ -48,6 +50,7 @@ export function SelectChips({
   added,
   removed,
   isEditable,
+  isFull,
   onRemove,
   onRestore,
 }: SelectChipsProps) {
@@ -97,6 +100,7 @@ export function SelectChips({
           className={hooks.slotClass('removed')}
           restoreLabel={option.label}
           onRestore={() => onRestore(option.id)}
+          isDisabled={isFull}
         >
           <ChipIcon option={option} />
           {option.label}

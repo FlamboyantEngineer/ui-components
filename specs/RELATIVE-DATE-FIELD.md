@@ -1,12 +1,12 @@
 # Relative Date Field
 
-`RelativeDateField` sets a date from presets that read relative to now, such as Today, Tomorrow or In 3 days. It is a field control: it composes the field base ([FIELD.md](FIELD.md)) for its label, layout, description, help, validation, dirty state, restore, undo and menu, around React Aria's `Select`. The trigger reads the value relative to now, and a `<time>` element after it gives the absolute date; every text is formatted through `Intl` for the reader's locale. Picking a preset commits the concrete date it stands for. A date typed or picked from a calendar is a [Date Time Field](DATE-TIME-FIELD.md).
+`RelativeDateField` sets a date, an instant or a range of dates from presets that read relative to now, such as Today, Tomorrow, In 3 days or Last 7 days, and optionally from a calendar beside them. It is a field control: it composes the field base ([FIELD.md](FIELD.md)) for its label, layout, description, help, validation, dirty state, restore, undo and menu, around React Aria's `Select`. The trigger reads the value relative to now, and a `<time>` element after it gives the absolute date; every text is formatted through `Intl` for the reader's locale. Picking a preset commits the concrete date it stands for; bounds disable the presets they refuse. A date typed into segments is a [Date Time Field](DATE-TIME-FIELD.md), whose calendar parts this field draws.
 
 ## UIC-RELATIVE-DATE-FIELD-1 - Field
 
 ### UIC-RELATIVE-DATE-FIELD-1.1 - Structure
 
-`RelativeDateField` shall render a `Field` whose root also carries `ui-relative-date-field`, publishes `data-value-kind` (`date` by default, or `date-time`) and, while the value is a date, `data-relation` (`past`, `present` or `future`). Its control is React Aria's `Select` (`ui-relative-date-field__select`) with a trigger button (`ui-relative-date-field__trigger`) that carries the control's id and is named by its value element (`ui-relative-date-field__value`) followed by the field's label, and ends with a chevron glyph (`ui-relative-date-field__chevron`). After the select, a `<time>` element (`ui-relative-date-field__preview`) carries the value in its `datetime` attribute and shows it as an absolute, localized date (with the time for an instant).
+`RelativeDateField` shall render a `Field` whose root also carries `ui-relative-date-field`, publishes `data-value-kind` (`date` by default, `date-time` or `date-range`) and, while the value is a date, `data-relation` (`past`, `present` or `future`). Its control is React Aria's `Select` (`ui-relative-date-field__select`) with a trigger button (`ui-relative-date-field__trigger`) that carries the control's id and is named by its value element (`ui-relative-date-field__value`) followed by the field's label, and ends with a chevron glyph (`ui-relative-date-field__chevron`). After the select, a `<time>` element (`ui-relative-date-field__preview`) carries the value in its `datetime` attribute and shows it as an absolute, localized date (with the time for an instant); for a range the preview is a `<span>` holding a `<time>` element per end.
 
 Implementation: `src/components/relative-date-field/relative-date-field.tsx`
 Verification: `src/components/relative-date-field/relative-date-field.test.tsx`, `e2e/relative-date-field.spec.ts`
@@ -39,38 +39,69 @@ Verification: `src/components/relative-date-field/relative-date-field.test.tsx`
 Implementation: `src/components/relative-date-field/relative-date-field.tsx`
 Verification: `src/components/relative-date-field/relative-date-field.test.tsx`
 
+## UIC-RELATIVE-DATE-FIELD-2 - Calendar, labels, ranges and bounds
+
+### UIC-RELATIVE-DATE-FIELD-2.1 - Calendar beside the presets
+
+With `showCalendar`, the popover shall hold, after the presets, a React Aria calendar (`ui-relative-date-field__calendar`) drawn with the [Date Time Field](DATE-TIME-FIELD.md)'s calendar parts (`ui-date-time-field__calendar-header` to `ui-date-time-field__calendar-cell`, with previous and next buttons named by the provider strings `previous` and `next`), showing the value's day. Tab moves from the presets into the calendar. Picking a day commits it, a `YYYY-MM-DD` date or, with `valueKind="date-time"`, that day at the current time of day, then closes the popover; for `date-range` a range calendar commits the picked range.
+
+Implementation: `src/components/relative-date-field/relative-date-calendar.tsx`, `src/components/relative-date-field/relative-date-field.tsx`, `src/components/date-time-field/date-time-calendar.tsx`
+Verification: `src/components/relative-date-field/relative-date-calendar.test.tsx`, `e2e/relative-date-field.spec.ts`
+
+### UIC-RELATIVE-DATE-FIELD-2.2 - Preset labels and computed presets
+
+A `{ amount, unit }` preset with a `label` shall be listed under that label instead of the generated one. A preset `{ label, getValue }` is listed under its label and commits the value `getValue(now)` returns from the field's clock, such as the end of the quarter.
+
+Implementation: `src/components/relative-date-field/relative-date-field.tsx`, `src/components/relative-date-field/relative-date.ts`
+Verification: `src/components/relative-date-field/relative-date-select.test.tsx`, `src/components/relative-date-field/relative-date.test.ts`, `e2e/relative-date-field.spec.ts`
+
+### UIC-RELATIVE-DATE-FIELD-2.3 - Relative ranges
+
+With `valueKind="date-range"`, the value shall be a `{ start, end }` range of `YYYY-MM-DD` dates. A `{ amount, unit }` preset runs from that point to today when the amount is negative and from today to it when positive, labelled by the provider strings `lastPeriod` and `nextPeriod` from the count in the locale's words (`Last 7 days`, `Next 2 weeks`), or by the relative word for an amount of zero (`Today`). The default presets are today, the last 7 days, the last 30 days and the next 7 days. The trigger reads each end relative to now (`3 days ago – Today`), each end farther than `fallbackAfterDays` as its date, and `data-relation` is `past` once the range ends before today, `future` while it starts after, and `present` around it.
+
+Implementation: `src/components/relative-date-field/relative-date-field.tsx`, `src/components/relative-date-field/relative-date.ts`, `src/core/strings.ts`
+Verification: `src/components/relative-date-field/relative-date-select.test.tsx`, `src/components/relative-date-field/relative-date.test.ts`, `e2e/relative-date-field.spec.ts`
+
+### UIC-RELATIVE-DATE-FIELD-2.4 - Bounds
+
+`minValue` and `maxValue`, `YYYY-MM-DD` dates, shall disable the presets whose value (either end of a range) falls outside them, and the calendar refuses the days outside. A value outside them is invalid with the provider string `dateTooEarly` or `dateTooLate` naming the localized bound.
+
+Implementation: `src/components/relative-date-field/relative-date-field.tsx`, `src/components/relative-date-field/relative-date.ts`, `src/components/relative-date-field/relative-date-calendar.tsx`
+Verification: `src/components/relative-date-field/relative-date-select.test.tsx`, `src/components/relative-date-field/relative-date.test.ts`, `e2e/relative-date-field.spec.ts`
+
 ## Hooks
 
-| Hook                              | Kind      | Values                                     | Description                                             |
-| --------------------------------- | --------- | ------------------------------------------ | ------------------------------------------------------- |
-| `ui-relative-date-field`          | root      |                                            | The field root (also `ui-field`).                       |
-| `ui-relative-date-field__select`  | slot      |                                            | React Aria's select wrapper.                            |
-| `ui-relative-date-field__trigger` | slot      |                                            | The trigger button.                                     |
-| `ui-relative-date-field__value`   | slot      |                                            | The relative text or placeholder; names the trigger.    |
-| `ui-relative-date-field__chevron` | slot      |                                            | The trigger's chevron glyph.                            |
-| `ui-relative-date-field__popover` | slot      |                                            | The presets' floating surface.                          |
-| `ui-relative-date-field__listbox` | slot      |                                            | The `role="listbox"` list of presets.                   |
-| `ui-relative-date-field__option`  | slot      |                                            | One preset.                                             |
-| `ui-relative-date-field__preview` | slot      |                                            | The `<time>` element with the absolute date.            |
-| `data-value-kind`                 | attribute | `date`, `date-time`                        | What a preset commits.                                  |
-| `data-layer`                      | attribute | `dropdown`                                 | The popover's overlay layer.                            |
-| `data-relation`                   | state     | `past`, `present`, `future`                | Where the value lies against now.                       |
-| `data-placeholder`                | state     | `true`                                     | On the value: there is no date to read.                 |
-| `data-open`                       | state     | `true`                                     | The presets are open (React Aria).                      |
-| `data-focused`                    | state     | `true`                                     | Focused (React Aria).                                   |
-| `data-focus-visible`              | state     | `true`                                     | Keyboard focus (React Aria).                            |
-| `data-hovered`                    | state     | `true`                                     | Pointer over the element (React Aria).                  |
-| `data-pressed`                    | state     | `true`                                     | Pressed (React Aria).                                   |
-| `data-disabled`                   | state     | `true`                                     | Disabled (React Aria).                                  |
-| `data-invalid`                    | state     | `true`                                     | Invalid (React Aria).                                   |
-| `data-required`                   | state     | `true`                                     | Required (React Aria).                                  |
-| `data-selection-mode`             | state     | `single`                                   | Selection of the presets (React Aria).                  |
-| `data-placement`                  | state     | `top`, `bottom`, `left`, `right`, `center` | Side of the trigger the popover opened on (React Aria). |
-| `data-trigger`                    | state     | `Select`                                   | What opened the popover (React Aria).                   |
-| `data-entering`                   | state     | `true`                                     | Popover entry animation (React Aria).                   |
-| `data-exiting`                    | state     | `true`                                     | Popover exit animation (React Aria).                    |
-| `data-collection`                 | state     |                                            | React Aria's collection marker.                         |
-| `data-key`                        | state     |                                            | A preset's key (React Aria).                            |
-| `data-layout`                     | state     | `stack`                                    | Listbox layout (React Aria).                            |
-| `data-orientation`                | state     | `vertical`                                 | Listbox orientation (React Aria).                       |
-| `data-empty`                      | state     | `true`                                     | An empty list (React Aria).                             |
+| Hook                               | Kind      | Values                                     | Description                                                                     |
+| ---------------------------------- | --------- | ------------------------------------------ | ------------------------------------------------------------------------------- |
+| `ui-relative-date-field`           | root      |                                            | The field root (also `ui-field`).                                               |
+| `ui-relative-date-field__select`   | slot      |                                            | React Aria's select wrapper.                                                    |
+| `ui-relative-date-field__trigger`  | slot      |                                            | The trigger button.                                                             |
+| `ui-relative-date-field__value`    | slot      |                                            | The relative text or placeholder; names the trigger.                            |
+| `ui-relative-date-field__chevron`  | slot      |                                            | The trigger's chevron glyph.                                                    |
+| `ui-relative-date-field__popover`  | slot      |                                            | The presets' floating surface.                                                  |
+| `ui-relative-date-field__listbox`  | slot      |                                            | The `role="listbox"` list of presets.                                           |
+| `ui-relative-date-field__option`   | slot      |                                            | One preset.                                                                     |
+| `ui-relative-date-field__preview`  | slot      |                                            | The `<time>` element with the absolute date; a `<span>` of two for a range.     |
+| `ui-relative-date-field__calendar` | slot      |                                            | The calendar beside the presets (holding the Date Time Field's calendar parts). |
+| `data-value-kind`                  | attribute | `date`, `date-time`, `date-range`          | What a preset commits.                                                          |
+| `data-layer`                       | attribute | `dropdown`                                 | The popover's overlay layer.                                                    |
+| `data-relation`                    | state     | `past`, `present`, `future`                | Where the value lies against now.                                               |
+| `data-placeholder`                 | state     | `true`                                     | On the value: there is no date to read.                                         |
+| `data-open`                        | state     | `true`                                     | The presets are open (React Aria).                                              |
+| `data-focused`                     | state     | `true`                                     | Focused (React Aria).                                                           |
+| `data-focus-visible`               | state     | `true`                                     | Keyboard focus (React Aria).                                                    |
+| `data-hovered`                     | state     | `true`                                     | Pointer over the element (React Aria).                                          |
+| `data-pressed`                     | state     | `true`                                     | Pressed (React Aria).                                                           |
+| `data-disabled`                    | state     | `true`                                     | Disabled (React Aria).                                                          |
+| `data-invalid`                     | state     | `true`                                     | Invalid (React Aria).                                                           |
+| `data-required`                    | state     | `true`                                     | Required (React Aria).                                                          |
+| `data-selection-mode`              | state     | `single`                                   | Selection of the presets (React Aria).                                          |
+| `data-placement`                   | state     | `top`, `bottom`, `left`, `right`, `center` | Side of the trigger the popover opened on (React Aria).                         |
+| `data-trigger`                     | state     | `Select`                                   | What opened the popover (React Aria).                                           |
+| `data-entering`                    | state     | `true`                                     | Popover entry animation (React Aria).                                           |
+| `data-exiting`                     | state     | `true`                                     | Popover exit animation (React Aria).                                            |
+| `data-collection`                  | state     |                                            | React Aria's collection marker.                                                 |
+| `data-key`                         | state     |                                            | A preset's key (React Aria).                                                    |
+| `data-layout`                      | state     | `stack`                                    | Listbox layout (React Aria).                                                    |
+| `data-orientation`                 | state     | `vertical`                                 | Listbox orientation (React Aria).                                               |
+| `data-empty`                       | state     | `true`                                     | An empty list (React Aria).                                                     |

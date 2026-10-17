@@ -196,4 +196,111 @@ test.describe('Select Field lab', () => {
     await page.getByRole('menuitem', { name: 'Set to default' }).click();
     await expect(area.getByRole('button', { name: 'Pear Fruit' })).toBeVisible();
   });
+
+  test('UIC-SELECT-FIELD-7.1 lists grouped options under headings and filters them', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('select-field');
+    const trigger = field(page, 'groups').locator('.ui-select-field__trigger');
+    await trigger.click();
+    const listbox = page.getByRole('listbox');
+    const groups = listbox.getByRole('group');
+    await expect(groups).toHaveCount(3);
+    await expect(groups.nth(0)).toHaveAccessibleName('Fruit');
+    await expect(groups.nth(1)).toHaveAccessibleName('Vegetables');
+    await expect(groups.nth(1)).toHaveCSS('border-top-style', 'solid');
+    await expect(listbox.getByRole('option', { name: 'Kale Leafy' })).toBeFocused();
+    await page.keyboard.press('ArrowUp');
+    await expect(listbox.getByRole('option', { name: 'Pear' })).toBeFocused();
+    await lab.expectAccessible('.ui-select-field__popover');
+    await page.keyboard.press('Enter');
+    await expect(output(page, 'Group committed')).toHaveText('pear');
+    await field(page, 'groups-filter').locator('.ui-select-field__trigger').click();
+    await page.keyboard.type('sal');
+    await expect(page.getByRole('listbox').getByRole('option')).toHaveText(['Salt']);
+    await expect(page.getByRole('listbox').getByRole('group')).toHaveCount(1);
+    await page.keyboard.press('Escape');
+  });
+
+  test('UIC-SELECT-FIELD-7.2 draws options through renderOption', async ({ page, lab }) => {
+    await lab.open('select-field');
+    const trigger = field(page, 'custom').locator('.ui-select-field__trigger');
+    await expect(trigger).toHaveAccessibleName('Jon Berg Owner');
+    await trigger.click();
+    const option = page.getByRole('option', { name: /Lena Ortiz — Support/ });
+    await expect(option.locator('[data-lab-option="lena"] strong')).toHaveText('LO');
+    await expect(page.getByRole('option', { name: /Jon Berg/ })).toContainText('✓');
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('Enter');
+    await expect(trigger).toHaveAccessibleName('Lena Ortiz Owner');
+    await lab.expectAccessible();
+  });
+
+  test('UIC-SELECT-FIELD-7.3 virtualizes a long list and reaches its end from the keyboard', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('select-field');
+    const trigger = field(page, 'virtualized').locator('.ui-select-field__trigger');
+    await trigger.click();
+    const listbox = page.getByRole('listbox');
+    await expect(listbox.getByRole('option', { name: 'Item 1', exact: true })).toBeVisible();
+    expect(await listbox.getByRole('option').count()).toBeLessThan(60);
+    await expect(listbox.getByRole('option', { name: 'Item 1', exact: true })).toBeFocused();
+    await page.keyboard.press('End');
+    const last = listbox.getByRole('option', { name: 'Item 5000' });
+    await expect(last).toBeFocused();
+    await expect(last).toBeInViewport();
+    expect(await listbox.getByRole('option').count()).toBeLessThan(60);
+    await lab.expectAccessible('.ui-select-field__popover');
+    await page.keyboard.press('Enter');
+    await expect(trigger).toHaveAccessibleName('Item 5000 Number');
+  });
+
+  test('UIC-SELECT-FIELD-8.1 UIC-SELECT-FIELD-8.2 clears in one press and caps the values', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('select-field');
+    const clearable = field(page, 'clearable');
+    await clearable.getByRole('button', { name: 'Clear Snack' }).click();
+    const trigger = clearable.locator('.ui-select-field__trigger');
+    await expect(trigger).toHaveAccessibleName('Select an option Snack');
+    await expect(trigger).toBeFocused();
+    await expect(clearable.getByRole('button', { name: 'Clear Snack' })).toHaveCount(0);
+    await expect(page.getByRole('listbox')).toHaveCount(0);
+
+    const limited = field(page, 'limited');
+    await limited.locator('.ui-select-field__trigger').click();
+    await page.getByRole('option', { name: 'Pear' }).click();
+    await expect(output(page, 'Basket')).toHaveText('apple, pear');
+    const fig = page.getByRole('option', { name: 'Fig' });
+    await expect(fig).toHaveAttribute('aria-disabled', 'true');
+    await fig.click({ force: true });
+    await expect(output(page, 'Basket')).toHaveText('apple, pear');
+    await page.keyboard.press('Escape');
+    await limited.getByRole('button', { name: 'Clear Two fruits' }).click();
+    await expect(output(page, 'Basket')).toHaveText('none');
+    await lab.expectAccessible();
+  });
+
+  test('UIC-SELECT-FIELD-5.4 loads the next page of results at the end of the list', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('select-field');
+    await field(page, 'paged').locator('.ui-select-field__trigger').click();
+    const listbox = page.getByRole('listbox');
+    await expect(listbox.getByRole('option')).toHaveCount(20);
+    await expect(output(page, 'Pages')).toHaveText('1');
+    await listbox.evaluate((node) => node.scrollTo(0, node.scrollHeight));
+    await expect(listbox.getByRole('option')).toHaveCount(40);
+    await listbox.evaluate((node) => node.scrollTo(0, node.scrollHeight));
+    await expect(listbox.getByRole('option')).toHaveCount(60);
+    await listbox.evaluate((node) => node.scrollTo(0, node.scrollHeight));
+    await expect(output(page, 'Pages')).toHaveText('3');
+    await page.keyboard.type('1');
+    await expect(listbox.getByRole('option')).toHaveCount(15);
+  });
 });

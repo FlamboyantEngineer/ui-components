@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -146,5 +146,51 @@ describe('SelectField search', () => {
     expect(within(chips).getByRole('row', { name: 'Budget.xlsx' })).not.toHaveAttribute(
       'data-missing',
     );
+  });
+
+  it('UIC-SELECT-FIELD-5.4 loads the next page when the end of the list scrolls into view', async () => {
+    const observers: Array<(entries: Array<{ isIntersecting: boolean }>) => void> = [];
+    vi.stubGlobal(
+      'IntersectionObserver',
+      function createObserver(callback: (entries: Array<{ isIntersecting: boolean }>) => void) {
+        observers.push(callback);
+        return { observe() {}, disconnect() {} };
+      },
+    );
+    const user = userEvent.setup();
+    let releasePage: () => void = () => {};
+    const loadOptions = vi.fn<SelectFieldLoader>(async (query, _signal, cursor) => {
+      if (cursor === undefined) return { options: catalogue.slice(0, 2), cursor: 'page-2' };
+      await new Promise<void>((resolve) => {
+        releasePage = resolve;
+      });
+      return { options: catalogue.slice(2) };
+    });
+    render(
+      <SelectField
+        label="Files"
+        options={[]}
+        loadOptions={loadOptions}
+        minSearchLength={0}
+        searchDelay={0}
+      />,
+    );
+    await user.click(trigger());
+    await waitFor(() => expect(optionKeys()).toEqual(['r1', 'r2']));
+    expect(loadOptions).toHaveBeenCalledWith('', expect.any(AbortSignal));
+    const observe = observers.at(-1);
+    act(() => observe?.([{ isIntersecting: true }]));
+    await waitFor(() =>
+      expect(loadOptions).toHaveBeenLastCalledWith('', expect.any(AbortSignal), 'page-2'),
+    );
+    const more = await screen.findByText('Loading');
+    expect(more).toHaveClass('ui-select-field__load-more');
+    expectHooksMatchSpec(document.body, 'SELECT-FIELD', { slots: ['load-more'] });
+    act(() => releasePage());
+    await waitFor(() => expect(optionKeys()).toEqual(['r1', 'r2', 'b1']));
+    expect(screen.queryByText('Loading')).toBeNull();
+    act(() => observers.at(-1)?.([{ isIntersecting: true }]));
+    expect(loadOptions).toHaveBeenCalledTimes(2);
+    vi.unstubAllGlobals();
   });
 });

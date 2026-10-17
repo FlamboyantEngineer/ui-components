@@ -24,6 +24,7 @@ import {
   EllipsisVerticalIcon,
   ExclamationCircleIcon,
   ExclamationTriangleIcon,
+  EyeDropperIcon,
   FolderIcon,
   InformationCircleIcon,
   MagnifyingGlassIcon,
@@ -94,6 +95,7 @@ export const defaultGlyphs = {
   users: UsersIcon,
   'fit-width': ArrowsRightLeftIcon,
   'fit-page': DocumentIcon,
+  'eye-dropper': EyeDropperIcon,
 } satisfies Record<string, GlyphComponent>;
 
 export const glyphNames = Object.keys(defaultGlyphs) as GlyphName[];

@@ -1,8 +1,14 @@
 import type { KeyboardEvent, Ref } from 'react';
-import { Button as AriaButton, SelectValueContext, useSlottedContext } from 'react-aria-components';
+import {
+  Button as AriaButton,
+  ButtonContext,
+  SelectValueContext,
+  useSlottedContext,
+} from 'react-aria-components';
 import { createHooks } from '../../core/hooks.js';
 import { Glyph } from '../../core/provider.js';
 import { FieldPreviousValue } from '../field/field.js';
+import { IconButton } from '../icon-button/icon-button.js';
 import { Icon, toIconProps } from '../icon/icon.js';
 import type { ChosenSelectOption } from './select-options.js';
 
@@ -13,6 +19,9 @@ export interface SelectTriggerProps {
   /** The committed option a single select's edit replaced, shown before the current one. */
   previous: ChosenSelectOption | null;
   placeholder: string;
+  /** Names the clear button after the trigger; `null` draws none. */
+  clearLabel: string | null;
+  onClear: () => void;
   /** Handles keys before the select does, to open the filter from a printable key. */
   onKeyDownCapture: (event: KeyboardEvent<HTMLElement>) => void;
 }
@@ -25,6 +34,7 @@ const hooks = createHooks('select-field', [
   'value-icon',
   'value-label',
   'chevron',
+  'clear',
 ]);
 
 function OptionIcon({ option, slot }: { option: ChosenSelectOption; slot: 'value-icon' }) {
@@ -35,7 +45,7 @@ function OptionIcon({ option, slot }: { option: ChosenSelectOption; slot: 'value
 
 /**
  * The frame of a select field: the previous value while a single select is dirty, then the trigger
- * with the chosen option's icon and label (or the placeholder) and a chevron. The value element is
+ * with the chosen option's icon and label (or the placeholder) and a chevron, then the clear button. The value element is
  * the one React Aria names the trigger with, so the trigger reads as its value and the field's
  * label; the previous value stays outside the button, readable on its own.
  */
@@ -44,6 +54,8 @@ export function SelectTrigger({
   chosen,
   previous,
   placeholder,
+  clearLabel,
+  onClear,
   onKeyDownCapture,
 }: SelectTriggerProps) {
   const valueProps = useSlottedContext(SelectValueContext);
@@ -65,6 +77,19 @@ export function SelectTrigger({
         </span>
         <Glyph name="chevron-down" className={hooks.slotClass('chevron')} />
       </AriaButton>
+      {clearLabel ? (
+        // Inside the select every button would otherwise take the trigger's props.
+        <ButtonContext.Provider value={null}>
+          <IconButton
+            className={hooks.slotClass('clear')}
+            icon="close"
+            label={clearLabel}
+            variant="bare"
+            size="xs"
+            onPress={onClear}
+          />
+        </ButtonContext.Provider>
+      ) : null}
     </div>
   );
 }

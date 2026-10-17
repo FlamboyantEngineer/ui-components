@@ -15,7 +15,26 @@ import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { IconButton } from '../icon-button/icon-button.js';
 import { useLayerZIndex } from '../portal/portal.js';
+import { CalendarHeadingSelects } from './date-time-calendar-heading.js';
+import type { DateControlSettings } from './date-time-pickers.js';
 import { currentDateValue, type DateFieldValue, type DateTimeFieldMode } from './date-values.js';
+
+/** A named value offered beside the calendar, such as `Last 7 days`. */
+export interface DateTimeFieldPreset<V> {
+  label: string;
+  /** The value the preset sets, in the field's format. */
+  value: V;
+}
+
+/** How the calendar heading shows its month: as text, or as month and year selects. */
+export type DateTimeFieldCalendarHeading = 'text' | 'select';
+
+interface CalendarPopoverProps {
+  mode: DateTimeFieldMode;
+  settings: DateControlSettings;
+  onPick: (value: DateFieldValue) => void;
+  children: ReactNode;
+}
 
 const hooks = createHooks('date-time-field', [
   'popover',
@@ -29,16 +48,25 @@ const hooks = createHooks('date-time-field', [
   'calendar-weekday',
   'calendar-body',
   'calendar-cell',
+  'presets',
+  'preset',
   'actions',
   'action',
 ]);
 
-/** The heading with month navigation and one grid per visible month. */
-export function CalendarBody({ months }: { months: number }) {
+/** The heading (text or selects) with month navigation, and one grid per visible month. */
+export function CalendarBody({
+  months,
+  heading,
+}: {
+  months: number;
+  heading: DateTimeFieldCalendarHeading;
+}) {
   const strings = useUiStrings();
   return (
     <>
-      <header {...hooks.slot('calendar-header')}>
+      {/* The month navigation is no page banner, wherever the calendar is drawn. */}
+      <header {...hooks.slot('calendar-header')} role="none">
         <IconButton
           slot="previous"
           icon="chevron-left"
@@ -46,7 +74,11 @@ export function CalendarBody({ months }: { months: number }) {
           size="sm"
           className={hooks.slotClass('calendar-nav')}
         />
-        <Heading className={hooks.slotClass('calendar-heading')} />
+        {heading === 'select' ? (
+          <CalendarHeadingSelects />
+        ) : (
+          <Heading className={hooks.slotClass('calendar-heading')} />
+        )}
         <IconButton
           slot="next"
           icon="chevron-right"
@@ -79,23 +111,44 @@ export function CalendarBody({ months }: { months: number }) {
   );
 }
 
+/** Picks a value and closes the picker. */
+function usePick(onPick: (value: DateFieldValue) => void) {
+  const overlay = useContext(OverlayTriggerStateContext);
+  return (value: DateFieldValue) => {
+    onPick(value);
+    overlay?.close();
+  };
+}
+
+/** The caller's presets beside the calendar; one the field would refuse is disabled. */
+function DatePresets({ settings, onPick }: Pick<CalendarPopoverProps, 'settings' | 'onPick'>) {
+  const pick = usePick(onPick);
+  if (settings.presets.length === 0) return null;
+  return (
+    <div {...hooks.slot('presets')}>
+      {settings.presets.map((preset) => (
+        <Button
+          key={preset.label}
+          variant="ghost"
+          size="sm"
+          className={hooks.slotClass('preset')}
+          isDisabled={!settings.isPickable(preset.value)}
+          onPress={() => pick(preset.value)}
+        >
+          {preset.label}
+        </Button>
+      ))}
+    </div>
+  );
+}
+
 /**
  * The picker's quick actions: Today for a date, Now for a date and time, and Clear. Each picks its
  * value and closes the picker.
  */
-function DateActions({
-  mode,
-  onPick,
-}: {
-  mode: DateTimeFieldMode;
-  onPick: (value: DateFieldValue) => void;
-}) {
+function DateActions({ mode, settings, onPick }: Omit<CalendarPopoverProps, 'children'>) {
   const strings = useUiStrings();
-  const overlay = useContext(OverlayTriggerStateContext);
-  const pick = (value: DateFieldValue) => {
-    onPick(value);
-    overlay?.close();
-  };
+  const pick = usePick(onPick);
   const action = (label: string, value: DateFieldValue) => (
     <Button
       variant="ghost"
@@ -108,23 +161,18 @@ function DateActions({
   );
   return (
     <div {...hooks.slot('actions')}>
-      {mode === 'date' ? action(strings.today, currentDateValue('date')) : null}
-      {mode === 'date-time' ? action(strings.now, currentDateValue('date-time')) : null}
+      {mode === 'date' ? action(strings.today, currentDateValue('date', settings)) : null}
+      {mode === 'date-time' ? action(strings.now, currentDateValue('date-time', settings)) : null}
       {action(strings.clear, null)}
     </div>
   );
 }
 
-/** The picker's popover on the `dropdown` layer: a dialog holding the calendar and the actions. */
-export function CalendarPopover({
-  mode,
-  onPick,
-  children,
-}: {
-  mode: DateTimeFieldMode;
-  onPick: (value: DateFieldValue) => void;
-  children: ReactNode;
-}) {
+/**
+ * The picker's popover on the `dropdown` layer: a dialog holding the presets, the calendar and the
+ * actions.
+ */
+export function CalendarPopover({ mode, settings, onPick, children }: CalendarPopoverProps) {
   const zIndex = useLayerZIndex('dropdown');
   return (
     <Popover
@@ -134,8 +182,9 @@ export function CalendarPopover({
       style={{ zIndex }}
     >
       <Dialog className={hooks.slotClass('dialog')}>
+        <DatePresets settings={settings} onPick={onPick} />
         {children}
-        <DateActions mode={mode} onPick={onPick} />
+        <DateActions mode={mode} settings={settings} onPick={onPick} />
       </Dialog>
     </Popover>
   );

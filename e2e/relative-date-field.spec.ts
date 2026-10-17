@@ -53,4 +53,84 @@ test.describe('Relative Date Field lab', () => {
     ]);
     await lab.expectAccessible('.ui-relative-date-field__popover');
   });
+
+  test('UIC-RELATIVE-DATE-FIELD-2.1 picks any day from the calendar beside the presets', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('relative-date-field');
+    const extra = page.locator('[data-lab-output="Extra"]');
+    const calendarField = field(page, 'calendar');
+    const trigger = calendarField.getByRole('button', { name: 'Tomorrow Review' });
+    await trigger.focus();
+    await page.keyboard.press('Enter');
+    const popover = page.locator('.ui-relative-date-field__popover');
+    const listbox = popover.getByRole('listbox');
+    const calendar = popover.locator('.ui-relative-date-field__calendar');
+    await expect(calendar.getByRole('grid', { name: /April 2026/ })).toBeVisible();
+    expect((await calendar.boundingBox())!.x).toBeGreaterThan((await listbox.boundingBox())!.x);
+    await lab.expectAccessible('.ui-relative-date-field__popover');
+    await page.keyboard.press('Tab');
+    await expect(calendar.getByRole('button', { name: 'Previous' })).toBeFocused();
+    await calendar.getByRole('button', { name: /April 24, 2026/ }).click();
+    await expect(popover).toHaveCount(0);
+    await expect(extra).toHaveText('"2026-04-24"');
+    await expect(calendarField.getByRole('button', { name: 'In 4 days Review' })).toBeFocused();
+  });
+
+  test('UIC-RELATIVE-DATE-FIELD-2.2 UIC-RELATIVE-DATE-FIELD-2.3 UIC-RELATIVE-DATE-FIELD-2.4 lists named, range and bounded presets', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('relative-date-field');
+    const extra = page.locator('[data-lab-output="Extra"]');
+    await field(page, 'labelled')
+      .getByRole('button', { name: /Deadline$/ })
+      .click();
+    await expect(page.getByRole('listbox').getByRole('option')).toHaveText([
+      'In a fortnight',
+      'End of month',
+    ]);
+    await page.getByRole('option', { name: 'End of month' }).click();
+    await expect(extra).toHaveText('"2026-04-30"');
+
+    const range = field(page, 'range');
+    await range.getByRole('button', { name: /Report period$/ }).click();
+    await expect(page.getByRole('listbox').getByRole('option')).toHaveText([
+      'Today',
+      'Last 7 days',
+      'Last 30 days',
+      'Next 7 days',
+    ]);
+    await page.getByRole('option', { name: 'Next 7 days' }).click();
+    await expect(extra).toHaveText('{"start":"2026-04-20","end":"2026-04-27"}');
+    await expect(
+      range.getByRole('button', { name: 'Today – Apr 27, 2026 Report period' }),
+    ).toBeVisible();
+    await expect(range.locator('.ui-relative-date-field__preview time')).toHaveCount(2);
+
+    const bounded = field(page, 'bounded');
+    await bounded.getByRole('button', { name: /Delivery$/ }).click();
+    const options = page.getByRole('listbox').getByRole('option');
+    await expect(page.getByRole('option', { name: 'Yesterday' })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+    await expect(page.getByRole('option', { name: 'Next week' })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+    await expect(options.filter({ hasText: 'Yesterday' })).toHaveCSS(
+      'text-decoration-line',
+      'line-through',
+    );
+    await expect(
+      page
+        .locator('.ui-relative-date-field__calendar')
+        .getByRole('button', { name: /April 26, 2026/ }),
+    ).toHaveAttribute('aria-disabled', 'true');
+    await lab.expectAccessible('.ui-relative-date-field__popover');
+    await page.keyboard.press('Escape');
+    await lab.expectAccessible();
+  });
 });

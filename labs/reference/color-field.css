@@ -78,9 +78,29 @@
 
 .ui-color-field__dialog {
   display: grid;
+  grid-template-columns: 1fr auto;
   gap: 10px;
   width: 192px;
   outline: none;
+}
+
+/* Every part spans the dialog; the eye dropper and Clear share the last row. */
+.ui-color-field__dialog > * {
+  grid-column: 1 / -1;
+}
+
+.ui-color-field__dialog > .ui-color-field__eye-dropper {
+  grid-column: 2;
+  grid-row: 99;
+}
+
+.ui-color-field__dialog > .ui-color-field__clear {
+  grid-column: 1;
+  grid-row: 99;
+}
+
+.ui-color-field__format {
+  justify-self: start;
 }
 
 .ui-color-field__area {
@@ -118,8 +138,26 @@
   height: 20px;
 }
 
+.ui-color-field__channels {
+  display: flex;
+  gap: 4px;
+}
+
 .ui-color-field__hex {
   display: flex;
+  flex: 2 1 0;
+  min-width: 0;
+}
+
+.ui-color-field__channel {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.ui-color-field__channel .ui-color-field__input {
+  padding: 0 4px;
+  text-align: center;
 }
 
 .ui-color-field__input {
@@ -146,4 +184,69 @@
 
 .ui-color-field__clear {
   justify-self: start;
+}
+
+.ui-color-field__swatches {
+  gap: 2px;
+}
+
+/* Typing: the swatch button and the input sit in one frame. */
+.ui-color-field__group {
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  height: 28px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-canvas);
+}
+
+.ui-color-field__group:focus-within {
+  border-color: var(--ref-focus);
+  outline: 1px solid var(--ref-focus);
+}
+
+/* The extra class outweighs the trigger's state borders, which the frame draws instead. */
+.ui-color-field .ui-color-field__group .ui-color-field__trigger {
+  height: 26px;
+  padding: 0 6px;
+  border: none;
+  border-inline-end: 1px solid var(--ref-border);
+  border-start-end-radius: 0;
+  border-end-end-radius: 0;
+  background: transparent;
+}
+
+.ui-color-field .ui-color-field__group .ui-color-field__trigger[data-focus-visible] {
+  outline: 2px solid var(--ref-focus);
+  outline-offset: -2px;
+}
+
+.ui-color-field__entry {
+  display: flex;
+}
+
+.ui-color-field__entry .ui-color-field__input {
+  width: 13ch;
+  height: 26px;
+  border: none;
+  background: transparent;
+  outline: none;
+}
+
+.ui-color-field[data-readonly] .ui-color-field__group {
+  border-style: dashed;
+  background: var(--ref-surface);
+}
+
+.ui-color-field[data-dirty] .ui-color-field__group {
+  border-inline-start: 3px solid var(--ref-info);
+}
+
+.ui-color-field[data-validation='invalid'] .ui-color-field__group {
+  border-color: var(--ref-danger);
+}
+
+.ui-color-field[data-validation='warning'] .ui-color-field__group {
+  border-color: var(--ref-warning);
 }

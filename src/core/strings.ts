@@ -118,8 +118,16 @@ export interface UiStrings {
   noColor: string;
   /** Names the hexadecimal input of a colour picker. */
   hexColor: string;
+  /** Names a colour picker's choice of format (hex, RGB, HSL). */
+  colorFormat: string;
+  /** Names the button that opens a colour field's picker, from the field's label. */
+  colorPicker: (label: string) => string;
+  /** Names the button that samples a colour from the screen. */
+  pickScreenColor: string;
   /** Names the button that removes a chosen value, read with the value it removes. */
   remove: string;
+  /** Names the button that clears a field's value in one press, from the field's label. */
+  clearValue: (label: string) => string;
   /** The text of a select that has no value and no placeholder of its own. */
   selectPlaceholder: string;
   /** Names the group of a multiple select's chosen values, from the field's label. */
@@ -136,6 +144,12 @@ export interface UiStrings {
   dateTooEarly: (minValue: string) => string;
   /** The message of a date or time later than the field allows. */
   dateTooLate: (maxValue: string) => string;
+  /** The message of a date the field does not offer, such as a holiday. */
+  dateUnavailable: string;
+  /** A preset of the dates up to today, from a count of units such as `7 days`. */
+  lastPeriod: (period: string) => string;
+  /** A preset of the dates from today, from a count of units such as `7 days`. */
+  nextPeriod: (period: string) => string;
   /** Names the mark of a group holding a value that overrides an inherited one. */
   containsOverrides: string;
   /** Names a search box that filters a panel, from the panel's label. */
@@ -285,7 +299,11 @@ export const defaultStrings: UiStrings = {
   valueUnset: 'Unset',
   noColor: 'No color',
   hexColor: 'Hex color',
+  colorFormat: 'Color format',
+  colorPicker: (label) => `${label} picker`,
+  pickScreenColor: 'Pick a color from the screen',
   remove: 'Remove',
+  clearValue: (label) => `Clear ${label}`,
   selectPlaceholder: 'Select an option',
   selectedValues: (label) => `${label} selected values`,
   typeToSearch: (minLength) =>
@@ -295,6 +313,9 @@ export const defaultStrings: UiStrings = {
   now: 'Now',
   dateTooEarly: (minValue) => `Choose a value on or after ${minValue}.`,
   dateTooLate: (maxValue) => `Choose a value on or before ${maxValue}.`,
+  dateUnavailable: 'Choose an available date.',
+  lastPeriod: (period) => `Last ${period}`,
+  nextPeriod: (period) => `Next ${period}`,
   containsOverrides: 'Contains overridden values',
   filterLabel: (label) => `Filter ${label.toLocaleLowerCase()}`,
   noPropertyMatches: (query) => `No properties match “${query}”.`,

@@ -3,6 +3,8 @@ import type { Key } from 'react-aria-components';
 import type { FieldLabelLayout, FieldMenuEntry } from '../../src/components/field/field.js';
 import {
   SelectField,
+  type SelectFieldItem,
+  type SelectFieldLoader,
   type SelectFieldOption,
   type SelectFieldProps,
   type SelectFieldSelectionMode,
@@ -61,6 +63,46 @@ const cities: SelectFieldOption[] = [
   'Ottawa',
   'Nairobi',
 ].map((name) => ({ id: name.toLowerCase(), label: name, description: 'City' }));
+
+const produce: SelectFieldItem[] = [
+  { id: 'any', label: 'Anything in season' },
+  {
+    id: 'fruit',
+    label: 'Fruit',
+    options: [
+      { id: 'apple', label: 'Apple', icon: 'plus' },
+      { id: 'pear', label: 'Pear', icon: 'minus' },
+      { id: 'plum', label: 'Plum', isDisabled: true },
+    ],
+  },
+  {
+    id: 'vegetables',
+    label: 'Vegetables',
+    options: [
+      { id: 'kale', label: 'Kale', description: 'Leafy' },
+      { id: 'leek', label: 'Leek' },
+      { id: 'beet', label: 'Beet' },
+    ],
+  },
+  { id: 'pantry', options: [{ id: 'salt', label: 'Salt' }] },
+];
+
+const people: SelectFieldOption[] = [
+  { id: 'maria', label: 'Maria Santos', description: 'Design' },
+  { id: 'jon', label: 'Jon Berg', description: 'Research' },
+  { id: 'lena', label: 'Lena Ortiz', description: 'Support' },
+  { id: 'sam', label: 'Sam Okafor', description: 'Finance' },
+];
+
+const numbered: SelectFieldOption[] = Array.from({ length: 5000 }, (_, index) => ({
+  id: `item-${index + 1}`,
+  label: `Item ${index + 1}`,
+}));
+
+const towns = Array.from({ length: 60 }, (_, index) => ({
+  id: `town-${index + 1}`,
+  label: `Town ${String(index + 1).padStart(2, '0')}`,
+}));
 
 function Output({ name, children }: { name: string; children: ReactNode }) {
   return (
@@ -183,6 +225,111 @@ function Search() {
   );
 }
 
+function Groups() {
+  const [committed, setCommitted] = useState('none');
+  return (
+    <>
+      <SelectField
+        label="Produce"
+        options={produce}
+        defaultValue="kale"
+        description="Options under headings; the last group has no heading."
+        onCommit={(value) => setCommitted(value === null ? 'none' : String(value))}
+        data-lab-field="groups"
+      />
+      <SelectField
+        label="Pantry"
+        selectionMode="multiple"
+        options={produce}
+        filterable
+        description="Filtering hides the groups that no longer match."
+        data-lab-field="groups-filter"
+      />
+      <Output name="Group committed">{committed}</Output>
+    </>
+  );
+}
+
+function Custom() {
+  return (
+    <SelectField
+      label="Owner"
+      options={people}
+      defaultValue="jon"
+      description="Each option draws initials and two lines of text."
+      renderOption={(option, { isSelected }) => (
+        <span data-lab-option={String(option.id)}>
+          <strong aria-hidden="true">
+            {option.label
+              .split(' ')
+              .map((part) => part[0])
+              .join('')}
+          </strong>{' '}
+          {option.label} — {option.description}
+          {isSelected ? ' ✓' : ''}
+        </span>
+      )}
+      data-lab-field="custom"
+    />
+  );
+}
+
+function Limits() {
+  const [basket, setBasket] = useState<Key[]>(['apple']);
+  return (
+    <>
+      <SelectField
+        label="Snack"
+        options={fruit}
+        defaultValue="pear"
+        isClearable
+        description="The cross clears the value in one press."
+        data-lab-field="clearable"
+      />
+      <SelectField
+        label="Two fruits"
+        selectionMode="multiple"
+        options={fruit}
+        value={basket}
+        onChange={setBasket}
+        maxValues={2}
+        isClearable
+        description="At most two; the other options disable once two are chosen."
+        data-lab-field="limited"
+      />
+      <Output name="Basket">{basket.join(', ') || 'none'}</Output>
+    </>
+  );
+}
+
+function Paged() {
+  const [pages, setPages] = useState(0);
+  const loadOptions: SelectFieldLoader = async (query, _signal, cursor) => {
+    setPages((count) => count + 1);
+    const matches = towns.filter((town) => town.label.toLowerCase().includes(query.toLowerCase()));
+    const start = Number(cursor ?? 0);
+    const end = start + 20;
+    return {
+      options: matches.slice(start, end),
+      cursor: end < matches.length ? String(end) : undefined,
+    };
+  };
+  return (
+    <>
+      <SelectField
+        label="Town"
+        options={[]}
+        loadOptions={loadOptions}
+        minSearchLength={0}
+        searchDelay={0}
+        description="Twenty towns a page; scrolling to the end loads the next page."
+        data-lab-field="paged"
+      />
+      <Output name="Pages">{pages}</Output>
+    </>
+  );
+}
+
 const menu: FieldMenuEntry[] = ['clear', 'set-default', 'help'];
 
 function Form() {
@@ -283,6 +430,34 @@ mountLab(
         menu={menu}
         help="Right-click the field or use its menu button."
       />
+    </LabSection>
+    <LabSection title="Groups" description="Headed sections of options.">
+      <Groups />
+    </LabSection>
+    <LabSection title="Custom options" description="renderOption draws each option's content.">
+      <Custom />
+    </LabSection>
+    <LabSection title="Clearing and limits" description="A clear button and a maximum of values.">
+      <Limits />
+    </LabSection>
+    <LabSection
+      title="Virtualized"
+      description="5,000 options; only those in view render, and the arrow keys, Home and End reach any."
+    >
+      <SelectField
+        label="Number"
+        options={numbered}
+        virtualized
+        filterable={false}
+        defaultValue="item-1"
+        data-lab-field="virtualized"
+      />
+    </LabSection>
+    <LabSection
+      title="Paged search"
+      description="Results load a page at a time as the list scrolls."
+    >
+      <Paged />
     </LabSection>
     <LabSection title="Forms" description="A named select publishes its values to its form.">
       <Form />

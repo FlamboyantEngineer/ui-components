@@ -27,7 +27,7 @@ Verification: `src/components/icon-select-field/icon-select-field.test.tsx`, `e2
 
 ### UIC-ICON-SELECT-FIELD-1.4 - Hooks and caller attributes
 
-The field root shall carry `ui-icon-select-field` beside the select field's hooks, followed by the caller's `className`; every other prop reaches the select field.
+The field root shall carry `ui-icon-select-field` beside the select field's hooks, followed by the caller's `className`; every other prop reaches the select field, so `isClearable`, `renderOption` and `virtualized` work as there.
 
 Implementation: `src/components/icon-select-field/icon-select-field.tsx`
 Verification: `src/components/icon-select-field/icon-select-field.test.tsx`
