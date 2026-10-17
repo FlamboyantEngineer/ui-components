@@ -70,6 +70,49 @@ function Choice() {
   );
 }
 
+const saveEntries: MenuEntry[] = [
+  { id: 'save-copy', label: 'Save a copy' },
+  { id: 'save-template', label: 'Save as template' },
+];
+
+function Split() {
+  const [last, setLast] = useState('none');
+  return (
+    <>
+      <DropdownMenu
+        label="Save"
+        icon="save"
+        variant="primary"
+        items={saveEntries}
+        onPress={() => setLast('save')}
+        onAction={(key: Key) => setLast(String(key))}
+      />
+      <p>
+        Last split action: <output data-lab-output="split">{last}</output>
+      </p>
+    </>
+  );
+}
+
+const cityNames = ['Paris', 'Lima', 'Oslo', 'Cairo', 'Quito', 'Hanoi', 'Dakar', 'Perth', 'Turin'];
+
+function Filterable() {
+  const [last, setLast] = useState('none');
+  return (
+    <>
+      <DropdownMenu
+        label="Move to"
+        filterable
+        items={cityNames.map((name) => ({ id: name.toLowerCase(), label: name }))}
+        onAction={(key: Key) => setLast(String(key))}
+      />
+      <p>
+        Moved to: <output data-lab-output="moved">{last}</output>
+      </p>
+    </>
+  );
+}
+
 function Controlled() {
   const [open, setOpen] = useState(false);
   return (
@@ -116,6 +159,35 @@ mountLab(
       description="Press, Enter, Space or Arrow Down open the menu; Arrow Up opens it on the last item. The icon-only menu aligns to the trigger's end."
     >
       <Actions />
+    </LabSection>
+    <LabSection
+      title="Split buttons"
+      description="The labelled button runs its own action; the chevron beside it opens the menu."
+    >
+      <StateMatrix
+        axes={{ action: variants, size: sizes }}
+        render={({ action, size }) => (
+          <DropdownMenu
+            label="Save"
+            variant={action}
+            size={size}
+            items={saveEntries}
+            onPress={() => {}}
+          />
+        )}
+      />
+    </LabSection>
+    <LabSection
+      title="Split action"
+      description="Save runs at once; More options opens Save a copy and Save as template."
+    >
+      <Split />
+    </LabSection>
+    <LabSection
+      title="Filterable"
+      description="The menu leads with a search field that narrows the cities."
+    >
+      <Filterable />
     </LabSection>
     <LabSection title="Choice" description="A single choice shown in the trigger label.">
       <Choice />

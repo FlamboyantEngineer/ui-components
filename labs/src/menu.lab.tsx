@@ -1,5 +1,5 @@
 import { useState, type CSSProperties, type ReactNode } from 'react';
-import type { Key, Selection } from 'react-aria-components';
+import { ListLayout, Virtualizer, type Key, type Selection } from 'react-aria-components';
 import { Button } from '../../src/components/button/button.js';
 import { IconButton } from '../../src/components/icon-button/icon-button.js';
 import {
@@ -208,6 +208,69 @@ const cityEntries: MenuEntry[] = Array.from({ length: 45 }, (_, index) => ({
   label: `${cities[index % cities.length]} ${index + 1}`,
 }));
 
+function FilterableMenu() {
+  const [last, setLast] = useState('none');
+  return (
+    <>
+      <MenuButton
+        label="Move to"
+        filterable
+        items={cityEntries}
+        onAction={(key) => setLast(String(key))}
+      />
+      <Feedback name="Move action">{last}</Feedback>
+    </>
+  );
+}
+
+const pageSize = 20;
+
+/** A menu that loads 20 more cities, after a short wait, each time its end scrolls into view. */
+function PagedMenu() {
+  const [count, setCount] = useState(pageSize);
+  const [isLoading, setIsLoading] = useState(false);
+  const entries = Array.from({ length: count }, (_, index) => ({
+    id: `paged-${index + 1}`,
+    label: `${cities[index % cities.length]} ${index + 1}`,
+  }));
+  return (
+    <>
+      <MenuButton
+        label="Paged cities"
+        items={entries}
+        isLoading={isLoading}
+        onLoadMore={() => {
+          if (isLoading || count >= 100) return;
+          setIsLoading(true);
+          setTimeout(() => {
+            setCount((current) => current + pageSize);
+            setIsLoading(false);
+          }, 500);
+        }}
+      />
+      <Feedback name="Loaded">{count}</Feedback>
+    </>
+  );
+}
+
+const manyCities: MenuEntry[] = Array.from({ length: 5000 }, (_, index) => ({
+  id: `many-${index + 1}`,
+  label: `${cities[index % cities.length]} ${index + 1}`,
+}));
+
+function VirtualizedMenu() {
+  return (
+    <MenuTrigger>
+      <Button endIcon="chevron-down">5000 cities</Button>
+      <MenuPopover>
+        <Virtualizer layout={ListLayout} layoutOptions={{ rowHeight: 28 }}>
+          <Menu aria-label="5000 cities" items={manyCities} />
+        </Virtualizer>
+      </MenuPopover>
+    </MenuTrigger>
+  );
+}
+
 function Layering() {
   return (
     <div data-lab-stage="" style={{ position: 'relative', width: 320, height: 220 }}>
@@ -291,6 +354,44 @@ mountLab(
       description="A menu opened from a panel on the modal layer stacks above the panel and below the tooltip layer."
     >
       <Layering />
+    </LabSection>
+    <LabSection
+      title="Search and loading states"
+      description="A filterable menu with and without a match, and a menu loading its first entries."
+    >
+      <StateMatrix
+        axes={{ state: ['filterable', 'no match', 'loading'], size: sizes }}
+        render={({ state, size }) =>
+          state === 'loading' ? (
+            <Menu aria-label="Loading menu" size={size} items={[]} isLoading />
+          ) : (
+            <Menu
+              aria-label={`${state} menu`}
+              size={size}
+              filterable
+              items={state === 'no match' ? [] : cityEntries.slice(0, 3)}
+            />
+          )
+        }
+      />
+    </LabSection>
+    <LabSection
+      title="Filterable menu"
+      description="Typing in the search field narrows the cities while focus stays in it; Arrow Down moves the highlight and Enter picks."
+    >
+      <FilterableMenu />
+    </LabSection>
+    <LabSection
+      title="Loading more"
+      description="Scrolling to the end shows a loading row, then 20 more cities, up to 100."
+    >
+      <PagedMenu />
+    </LabSection>
+    <LabSection
+      title="Virtualized menu"
+      description="5000 cities in a React Aria Virtualizer: only the rows in view render, and End reaches the last."
+    >
+      <VirtualizedMenu />
     </LabSection>
   </>,
 );

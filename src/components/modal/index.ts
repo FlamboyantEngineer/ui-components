@@ -3,6 +3,7 @@ export type {
   ModalAction,
   ModalBodyLayout,
   ModalCancelAction,
+  ModalFocusTarget,
   ModalInitialFocus,
   ModalProps,
   ModalRenderProps,

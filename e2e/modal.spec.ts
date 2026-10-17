@@ -226,4 +226,87 @@ test.describe('Modal lab', () => {
     await expect(page.locator('.ui-modal').getByRole('status')).toHaveText('Choose a city.');
     await lab.expectAccessible('.ui-modal');
   });
+
+  test('UIC-MODAL-1.4 opens the news tones', async ({ page, lab }) => {
+    await lab.open('modal');
+    for (const tone of ['info', 'success', 'warning']) {
+      await page.locator(`[data-lab-cell="tone=${tone} size=md"] button`).click();
+      const overlay = page.locator(`.ui-modal[data-lab-modal="${tone}-md"]`);
+      await expect(overlay).toHaveAttribute('data-tone', tone);
+      await expect(overlay.locator('.ui-modal__panel')).toHaveCSS('border-top-width', '3px');
+      await page.keyboard.press('Escape');
+      await expect(overlay).toHaveCount(0);
+    }
+  });
+
+  test('UIC-MODAL-2.4 UIC-MODAL-3.4 UIC-MODAL-1.5 guards a draft and moves focus to chosen targets', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('modal');
+    const outputs = (name: string) => page.locator(`[data-lab-output="${name}"]`);
+    await page.locator('[data-lab-open="guarded"]').click();
+    const dialog = page.getByRole('dialog', { name: 'Postcard' });
+    await expect(dialog.getByRole('textbox', { name: 'City' })).toBeFocused();
+    await dialog.getByRole('textbox', { name: 'Message' }).fill('Greetings from Oslo');
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeVisible();
+    await expect(outputs('refused')).toHaveText('Escape');
+    await page.mouse.click(4, 4);
+    await expect(dialog).toBeVisible();
+    await expect(outputs('refused')).toHaveText('outside press');
+    await expect(outputs('exits')).toHaveText('0');
+    await lab.expectAccessible('.ui-modal');
+    await dialog.getByRole('textbox', { name: 'Message' }).fill('');
+    await page.keyboard.press('Escape');
+    await expect(dialog).toHaveCount(0);
+    await expect(page.locator('[data-lab-after]')).toBeFocused();
+    await expect(outputs('exits')).toHaveText('1');
+  });
+
+  test('UIC-MODAL-8.1 floats a non-modal dialog beside a usable page', async ({ page, lab }) => {
+    await lab.open('modal');
+    const opener = page.locator('[data-lab-open="floating"]');
+    await opener.click();
+    const overlay = page.locator('.ui-modal[data-lab-modal="floating"]');
+    await expect(overlay).toHaveAttribute('data-non-modal', 'true');
+    await expect(overlay).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+    const note = page.getByRole('dialog', { name: 'Notes' }).getByRole('textbox', { name: 'Note' });
+    await expect(note).toBeFocused();
+    // The page around the panel takes pointer presses and typing while the dialog is open.
+    const field = page.locator('[data-lab-page-field]');
+    await field.click();
+    await page.keyboard.type('Lima');
+    await expect(field).toHaveValue('Lima');
+    await expect(field).toBeFocused();
+    await expect(overlay).toBeVisible();
+    await lab.expectAccessible();
+    await note.click();
+    await page.keyboard.press('Escape');
+    await expect(overlay).toHaveCount(0);
+    await expect(opener).toBeFocused();
+  });
+
+  test('UIC-MODAL-8.2 opens an anchored dialog against its button', async ({ page, lab }) => {
+    await lab.open('modal');
+    const opener = page.locator('[data-lab-open="anchored"]');
+    await opener.click();
+    const popover = page.locator('.ui-modal[data-lab-modal="anchored"]');
+    await expect(popover).toHaveAttribute('data-layer', 'dropdown');
+    await expect(popover).toHaveCSS('z-index', '130');
+    // Below the button, or above it when the viewport has no room below.
+    const placement = await popover.getAttribute('data-placement');
+    const button = await opener.boundingBox();
+    const box = await popover.boundingBox();
+    if (!button || !box) throw new Error('not rendered');
+    if (placement === 'bottom') expect(box.y).toBeGreaterThanOrEqual(button.y + button.height);
+    else expect(box.y + box.height).toBeLessThanOrEqual(button.y);
+    expect(box.x).toBeCloseTo(button.x, 0);
+    await expect(page.getByRole('dialog', { name: 'Rename' })).toBeVisible();
+    await expect(popover.getByRole('textbox', { name: 'Name' })).toBeFocused();
+    await lab.expectAccessible('.ui-modal');
+    await page.keyboard.press('Escape');
+    await expect(popover).toHaveCount(0);
+    await expect(opener).toBeFocused();
+  });
 });

@@ -1,24 +1,20 @@
-import { useId, useRef, type KeyboardEvent, type ReactNode, type RefObject } from 'react';
-import {
-  Dialog,
-  Modal as AriaModal,
-  ModalOverlay,
-  type DialogProps,
-  type ModalOverlayProps,
-} from 'react-aria-components';
+import type { ReactNode } from 'react';
+import type { DialogProps, ModalOverlayProps, Placement } from 'react-aria-components';
 import { createHooks, splitDataAttributes } from '../../core/hooks.js';
 import type { BaseProps, Size, Tone } from '../../core/props.js';
-import { isEmptyNode } from '../../utils/is-empty-node.js';
 import type { ButtonProps, ButtonVariant } from '../button/button.js';
-import { useLayerZIndex } from '../portal/portal.js';
-import { ModalFooter } from './modal-footer.js';
-import { InitialFocus } from './modal-focus.js';
-import { ModalHeader } from './modal-header.js';
-import { claimPrimaryShortcut } from './modal-shortcut.js';
-import { useModalActions } from './use-modal-actions.js';
+import { ModalDialog } from './modal-dialog.js';
+import type { ModalFocusTarget } from './modal-focus.js';
+import {
+  AnchoredModal,
+  BlockingModal,
+  FloatingModal,
+  resolveDismissal,
+  useModalOpenState,
+} from './modal-presentations.js';
 
-/** Emphasis of the decision: `danger` marks a destructive one. */
-export type ModalTone = Extract<Tone, 'neutral' | 'danger'>;
+/** Emphasis of the dialog: `danger` marks a destructive decision; the others its kind of news. */
+export type ModalTone = Tone;
 
 /** Dialog width, which the host stylesheet maps to a length; `full` fills the viewport. */
 export type ModalSize = Extract<Size, 'sm' | 'md' | 'lg' | 'xl'> | 'full';
@@ -26,8 +22,11 @@ export type ModalSize = Extract<Size, 'sm' | 'md' | 'lg' | 'xl'> | 'full';
 /** `column` lays the body out as a vertical stack so one child can take the remaining height. */
 export type ModalBodyLayout = 'block' | 'column';
 
-/** `first` focuses the first focusable element on open; `dialog` focuses the dialog itself. */
-export type ModalInitialFocus = 'first' | 'dialog';
+/**
+ * `first` focuses the first focusable element on open, `dialog` the dialog itself, and a ref or a
+ * function returning an element focuses that element.
+ */
+export type ModalInitialFocus = 'first' | 'dialog' | ModalFocusTarget;
 
 /** A footer action: the primary action (rightmost) or the secondary action (between Cancel and it). */
 export interface ModalAction
@@ -61,7 +60,12 @@ export interface ModalProps
   extends
     Pick<
       ModalOverlayProps,
-      'isOpen' | 'defaultOpen' | 'onOpenChange' | 'isDismissable' | 'isKeyboardDismissDisabled'
+      | 'isOpen'
+      | 'defaultOpen'
+      | 'onOpenChange'
+      | 'isDismissable'
+      | 'isKeyboardDismissDisabled'
+      | 'shouldCloseOnInteractOutside'
     >,
     Pick<DialogProps, 'role' | 'aria-label' | 'aria-describedby'>,
     BaseProps {
@@ -97,103 +101,28 @@ export interface ModalProps
   size?: ModalSize | undefined;
   /** Defaults to `block`. */
   bodyLayout?: ModalBodyLayout | undefined;
-  /** Where focus goes on open when no element has `autoFocus`. Defaults to `first`. */
+  /** Where focus goes on open: an element given here wins over `autoFocus`. Defaults to `first`. */
   initialFocus?: ModalInitialFocus | undefined;
+  /** Where focus goes on close, instead of the element focused when the dialog opened. */
+  finalFocus?: ModalFocusTarget | undefined;
+  /** Asked when Escape would close the dialog; returning false keeps it open. */
+  shouldCloseOnEscape?: (() => boolean) | undefined;
+  /** Called once the dialog has closed and its exit animation has ended. */
+  onExitComplete?: (() => void) | undefined;
+  /** Floats the dialog over the page without blocking it: no focus trap, the page stays usable. */
+  isNonModal?: boolean | undefined;
+  /** Anchors the dialog to its `DialogTrigger`'s trigger as a popover at this placement. */
+  placement?: Placement | undefined;
 }
 
-type ModalDialogProps = Omit<
-  ModalProps,
-  | 'isOpen'
-  | 'defaultOpen'
-  | 'onOpenChange'
-  | 'isDismissable'
-  | 'isKeyboardDismissDisabled'
-  | 'size'
-  | 'bodyLayout'
-  | 'className'
-> &
-  Required<Pick<ModalProps, 'tone' | 'initialFocus' | 'isDismissDisabled'>>;
-
-const hooks = createHooks('modal', ['panel', 'dialog', 'body']);
-
-function ModalBody({
-  children,
-  close,
-  ref,
-}: Pick<ModalProps, 'children'> & { close: () => void; ref: RefObject<HTMLDivElement | null> }) {
-  if (children === undefined || children === null) return null;
-  return (
-    <div ref={ref} {...hooks.slot('body')}>
-      {typeof children === 'function' ? children({ close }) : children}
-    </div>
-  );
-}
-
-function ModalDialog({
-  title,
-  description,
-  headerActions,
-  showCloseButton,
-  children,
-  initialFocus,
-  isDismissDisabled,
-  role,
-  id,
-  'aria-label': ariaLabel,
-  'aria-describedby': ariaDescribedby,
-  ...footer
-}: ModalDialogProps) {
-  const descriptionId = useId();
-  const dialogRef = useRef<HTMLElement>(null);
-  const bodyRef = useRef<HTMLDivElement>(null);
-  const footerRef = useRef<HTMLDivElement>(null);
-  const actionState = useModalActions(footer);
-  const onKeyDown = (event: KeyboardEvent<HTMLElement>) => {
-    if (!claimPrimaryShortcut(event) || footer.actions !== undefined) return;
-    if (!actionState.canRun('primary')) return;
-    event.preventDefault();
-    actionState.run('primary');
-  };
-  return (
-    <Dialog
-      ref={dialogRef}
-      id={id}
-      role={role}
-      className={hooks.slotClass('dialog')}
-      aria-label={ariaLabel}
-      aria-describedby={isEmptyNode(description) ? ariaDescribedby : descriptionId}
-      // React Aria's Dialog forwards no keyboard handlers, so the listener goes on its element.
-      render={(props) => <section {...props} onKeyDown={onKeyDown} />}
-    >
-      <ModalHeader
-        title={title}
-        description={description}
-        descriptionId={descriptionId}
-        headerActions={headerActions}
-        showCloseButton={showCloseButton}
-        isDismissDisabled={isDismissDisabled}
-        onClose={actionState.close}
-      />
-      <ModalBody ref={bodyRef} close={actionState.close}>
-        {children}
-      </ModalBody>
-      <ModalFooter
-        {...footer}
-        ref={footerRef}
-        actionState={actionState}
-        isDismissDisabled={isDismissDisabled}
-      />
-      {initialFocus === 'first' ? (
-        <InitialFocus dialogRef={dialogRef} bodyRef={bodyRef} footerRef={footerRef} />
-      ) : null}
-    </Dialog>
-  );
-}
+const hooks = createHooks('modal');
 
 /**
  * A blocking dialog over the page: title, body and a footer with Cancel, secondary and primary
  * actions. Focus moves in on open, stays inside while open and returns to where it was on close.
- * Escape closes it, and Control+Enter (or Command+Enter) runs the primary action.
+ * Escape closes it, and Control+Enter (or Command+Enter) runs the primary action. It can also float
+ * over the page without blocking it (`isNonModal`) or open as a popover against its trigger
+ * (`placement`).
  */
 export function Modal({
   isOpen,
@@ -202,6 +131,9 @@ export function Modal({
   isDismissable = false,
   isKeyboardDismissDisabled = false,
   isDismissDisabled = false,
+  shouldCloseOnInteractOutside,
+  isNonModal = false,
+  placement,
   tone = 'neutral',
   size = 'md',
   bodyLayout = 'block',
@@ -209,29 +141,58 @@ export function Modal({
   className,
   ...rest
 }: ModalProps) {
-  const zIndex = useLayerZIndex('modal');
+  const ownState = useModalOpenState({ isOpen, defaultOpen, onOpenChange });
   const [, dialogProps] = splitDataAttributes(rest);
+  const isFloating = isNonModal && !placement;
+  const rootProps = hooks.root({
+    className,
+    props: rest,
+    data: { layer: placement ? 'dropdown' : 'modal', tone, size, bodyLayout, nonModal: isFloating },
+  });
+  const dismissal = resolveDismissal({
+    isDismissable,
+    isKeyboardDismissDisabled,
+    isDismissDisabled,
+    shouldCloseOnInteractOutside,
+  });
+  const dialog = (
+    <ModalDialog
+      {...dialogProps}
+      // React Aria's popover takes the dialog role itself unless it holds a `role="dialog"`.
+      role={placement ? 'dialog' : dialogProps.role}
+      tone={tone}
+      initialFocus={initialFocus}
+      isDismissDisabled={isDismissDisabled}
+      canEscape={!dismissal.isKeyboardDismissDisabled}
+      isFloating={isFloating}
+    />
+  );
+  if (placement) {
+    return (
+      <AnchoredModal {...dismissal} state={ownState} rootProps={rootProps} placement={placement}>
+        {dialog}
+      </AnchoredModal>
+    );
+  }
+  if (isFloating) {
+    return (
+      <FloatingModal state={ownState} rootProps={rootProps}>
+        {dialog}
+      </FloatingModal>
+    );
+  }
   return (
-    <ModalOverlay
-      // Inside a DialogTrigger an explicit `undefined` would override the trigger's open state.
-      {...(isOpen !== undefined ? { isOpen } : {})}
-      {...(defaultOpen !== undefined ? { defaultOpen } : {})}
+    <BlockingModal
+      {...dismissal}
+      isOpen={isOpen}
+      defaultOpen={defaultOpen}
       onOpenChange={onOpenChange}
-      isDismissable={isDismissable && !isDismissDisabled}
-      isKeyboardDismissDisabled={isKeyboardDismissDisabled || isDismissDisabled}
-      {...hooks.root({ className, props: rest, data: { layer: 'modal', tone, size, bodyLayout } })}
-      style={{ position: 'fixed', inset: 0, zIndex }}
+      rootProps={rootProps}
     >
-      <AriaModal className={hooks.slotClass('panel')}>
-        <ModalDialog
-          {...dialogProps}
-          tone={tone}
-          initialFocus={initialFocus}
-          isDismissDisabled={isDismissDisabled}
-        />
-      </AriaModal>
-    </ModalOverlay>
+      {dialog}
+    </BlockingModal>
   );
 }
 
 export { isModalPrimaryShortcut } from './modal-shortcut.js';
+export type { ModalFocusTarget } from './modal-focus.js';

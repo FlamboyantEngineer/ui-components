@@ -175,4 +175,160 @@ test.describe('Combobox lab', () => {
     await expect(page.getByRole('listbox')).toBeVisible();
     await lab.expectAccessible('.ui-combobox__popover');
   });
+
+  test('UIC-COMBOBOX-3.1 picks several cities as removable chips', async ({ page, lab }) => {
+    await lab.open('combobox');
+    const area = section(page, 'Multiple selection');
+    const output = area.locator('[data-lab-output="cities"]');
+    const chips = area.getByRole('grid', { name: 'Cities selected values' });
+    await expect(chips.getByRole('row')).toHaveText(['Lima', 'Oslo']);
+    const input = area.getByRole('combobox', { name: 'Cities' });
+    await input.focus();
+    await page.keyboard.type('par');
+    await page.getByRole('option', { name: 'Paris' }).click();
+    await expect(output).toHaveText('lima, oslo, paris');
+    await expect(input).toHaveValue('');
+    await expect(page.getByRole('listbox')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(chips.getByRole('row')).toHaveText(['Lima', 'Oslo', 'Paris']);
+    const field = await area.locator('.ui-combobox__field').boundingBox();
+    const group = await area.locator('.ui-combobox__chips').boundingBox();
+    if (!field || !group) throw new Error('not rendered');
+    expect(group.y).toBeGreaterThanOrEqual(field.y);
+    expect(group.y + group.height).toBeLessThanOrEqual(field.y + field.height);
+    await lab.expectAccessible();
+    await chips.getByRole('row', { name: 'Lima' }).getByRole('button').click();
+    await expect(output).toHaveText('oslo, paris');
+    await chips.getByRole('row', { name: 'Oslo' }).focus();
+    await page.keyboard.press('Backspace');
+    await expect(output).toHaveText('paris');
+  });
+
+  test('UIC-COMBOBOX-3.2 adds a city that is not listed', async ({ page, lab }) => {
+    await lab.open('combobox');
+    const area = section(page, 'Adding an option');
+    const input = area.getByRole('combobox', { name: 'Destination' });
+    await input.focus();
+    await page.keyboard.type('Kyoto');
+    const create = page.getByRole('option', { name: 'Add “Kyoto”' });
+    await expect(create).toHaveClass(/ui-combobox__create/);
+    await lab.expectAccessible('.ui-combobox__popover');
+    // The row ends the list: Arrow Up from no highlight reaches it.
+    await page.keyboard.press('ArrowUp');
+    await expect(create).toHaveAttribute('data-focused', 'true');
+    await page.keyboard.press('Enter');
+    await expect(area.locator('[data-lab-output="destination"]')).toHaveText('kyoto');
+    await expect(input).toHaveValue('Kyoto');
+    await expect(page.getByRole('listbox')).toHaveCount(0);
+    await page.keyboard.press('Control+A');
+    await page.keyboard.type('ky');
+    await expect(page.getByRole('option')).toHaveText([
+      'Paris',
+      'Lima',
+      'Oslo',
+      'Cairo',
+      'Quito',
+      'Kyoto',
+      'Add “ky”',
+    ]);
+  });
+
+  test('UIC-COMBOBOX-3.3 UIC-COMBOBOX-3.4 UIC-COMBOBOX-4.3 highlights, completes and marks typed text', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('combobox');
+    const aid = (name: string) =>
+      page.locator(`[data-lab-cell="aid=${name}"]`).getByRole('combobox');
+
+    await aid('highlight matches').focus();
+    await page.keyboard.type('an');
+    await expect(page.locator('.ui-combobox__option-label mark.ui-text-match')).toHaveText([
+      'anan',
+      'an',
+    ]);
+    await lab.expectAccessible('.ui-combobox__popover');
+    await page.keyboard.press('Escape');
+
+    const autoHighlight = aid('auto highlight');
+    await autoHighlight.focus();
+    await page.keyboard.type('an');
+    await expect(page.getByRole('option', { name: 'Banana' })).toHaveAttribute(
+      'data-focused',
+      'true',
+    );
+    await page.keyboard.press('Enter');
+    await expect(autoHighlight).toHaveValue('Banana');
+
+    const inline = aid('inline completion');
+    await inline.focus();
+    await page.keyboard.type('ch');
+    await expect(inline).toHaveValue('cherry');
+    expect(
+      await inline.evaluate((node: HTMLInputElement) => [node.selectionStart, node.selectionEnd]),
+    ).toEqual([2, 6]);
+    await expect(inline).toHaveAttribute('aria-autocomplete', 'both');
+    await page.keyboard.press('Enter');
+    await expect(inline).toHaveValue('Cherry');
+  });
+
+  test('UIC-COMBOBOX-4.1 renders a long list virtualized', async ({ page, lab }) => {
+    await lab.open('combobox');
+    const input = section(page, 'Virtualized list').getByRole('combobox', { name: 'Any city' });
+    await input.scrollIntoViewIfNeeded();
+    await input.focus();
+    await page.keyboard.press('ArrowDown');
+    const listbox = page.getByRole('listbox');
+    await expect(listbox.getByRole('option', { name: 'Paris 1', exact: true })).toHaveAttribute(
+      'aria-setsize',
+      '5000',
+    );
+    for (let step = 0; step < 24; step += 1) await page.keyboard.press('ArrowDown');
+    // The highlight scrolls the list, which renders only the options near the view.
+    const reached = listbox.getByRole('option', { name: 'Paris 25', exact: true });
+    await expect(reached).toHaveAttribute('data-focused', 'true');
+    await expect(reached).toBeInViewport();
+    expect(await listbox.getByRole('option').count()).toBeLessThan(100);
+    await expect(listbox.getByRole('option', { name: 'Paris 1', exact: true })).toHaveCount(0);
+    await page.keyboard.type('5000');
+    await expect(listbox.getByRole('option')).toHaveText(['Perth 5000']);
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('Enter');
+    await expect(input).toHaveValue('Perth 5000');
+  });
+
+  test('UIC-COMBOBOX-4.2 loads more cities as the end of the list comes into view', async ({
+    page,
+    lab,
+  }) => {
+    await page.clock.install();
+    await lab.open('combobox');
+    await page.clock.pauseAt(Date.now() + 1000);
+    const area = section(page, 'Loading more');
+    await area.getByRole('combobox', { name: 'Paged city' }).focus();
+    await page.keyboard.press('ArrowDown');
+    await expect(page.getByRole('option', { name: 'Paris 1', exact: true })).toBeVisible();
+    await page.locator('.ui-combobox__listbox').evaluate((listbox) => {
+      listbox.scrollTop = listbox.scrollHeight;
+    });
+    await expect(page.locator('.ui-combobox__load-more')).toHaveText('Loading');
+    await page.clock.runFor(500);
+    await expect(area.locator('[data-lab-output="loaded"]')).toHaveText('40');
+    await expect(page.getByRole('option', { name: 'Hanoi 30', exact: true })).toBeAttached();
+    await page.clock.resume();
+  });
+
+  test('UIC-COMBOBOX-4.4 draws custom option content', async ({ page, lab }) => {
+    await lab.open('combobox');
+    const input = section(page, 'Custom options').getByRole('combobox', { name: 'Capital' });
+    await input.scrollIntoViewIfNeeded();
+    await input.focus();
+    await page.keyboard.press('ArrowDown');
+    const paris = page.getByRole('option', { name: /^Paris · France/ });
+    await expect(paris).toHaveClass(/ui-combobox__option/);
+    await expect(paris.locator('[data-lab-option] strong')).toHaveText('Paris');
+    await expect(paris).toContainText('←');
+    await page.keyboard.press('Enter');
+    await expect(input).toHaveValue('Paris');
+  });
 });
