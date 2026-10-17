@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
 import {
   toDocumentParams,
+  type PdfDocument,
+  type PdfDocumentOptions,
   type PdfEngine,
   type PdfLoadingTask,
+  type PdfOutlineNode,
   type PdfPage,
   type PdfSource,
   type PdfTextContent,
@@ -11,7 +14,7 @@ import {
 import type { PdfSize } from './pdf-zoom.js';
 import { useLatest } from './use-latest.js';
 
-export type PdfDocumentStatus = 'loading' | 'ready' | 'error';
+export type PdfDocumentStatus = 'loading' | 'password' | 'ready' | 'error';
 
 /** An opened document: the engine that opened it, its pages and their text. */
 export interface LoadedPdf<
@@ -19,8 +22,13 @@ export interface LoadedPdf<
   C extends PdfTextContent = PdfTextContent,
 > {
   engine: PdfEngine<V, C>;
+  document: PdfDocument<V, C>;
   pages: PdfPage<V, C>[];
-  /** Each page's size at 100% zoom, in points. */
+  /** The outline's top-level entries; empty when the document has none. */
+  outline: PdfOutlineNode[];
+  /** The reader's rotation of every page, in degrees clockwise. */
+  rotation: number;
+  /** Each page's size at 100% zoom and the reader's rotation, in points. */
   sizes: PdfSize[];
   /** A page's text content, fetched once and shared by its text layer and the search. */
   getTextContent(pageIndex: number): Promise<C>;
@@ -35,7 +43,17 @@ export interface UsePdfDocumentOptions<
   source: PdfSource | null;
   loadEngine: () => Promise<PdfEngine<V, C>>;
   workerSrc?: string | undefined;
+  documentOptions?: PdfDocumentOptions | undefined;
   onError?: ((error: Error) => void) | undefined;
+}
+
+/** The engine waits for the document's password. */
+export interface PdfPasswordRequest {
+  /** How many passwords the engine has turned down. */
+  failures: number;
+  /** A submitted password is being checked. */
+  isChecking: boolean;
+  submit(password: string): void;
 }
 
 export interface PdfDocumentResult<
@@ -44,23 +62,28 @@ export interface PdfDocumentResult<
 > {
   status: PdfDocumentStatus;
   loaded: LoadedPdf<V, C> | null;
+  password: PdfPasswordRequest | null;
   retry(): void;
 }
 
 interface LoadControl {
   isCancelled: boolean;
   task: Pick<PdfLoadingTask, 'destroy'> | null;
+  onPassword(update: (password: string) => void, isIncorrect: boolean): void;
+}
+
+/** The load an outcome belongs to: a source, and how many times it was retried. */
+interface LoadKey {
+  source: PdfSource;
+  attempt: number;
 }
 
 /** The outcome of one load: the opened document, or `null` when it could not be opened. */
-interface LoadResult<
-  V extends PdfViewport = PdfViewport,
-  C extends PdfTextContent = PdfTextContent,
-> {
-  source: PdfSource;
-  attempt: number;
+interface LoadResult<V extends PdfViewport, C extends PdfTextContent> extends LoadKey {
   loaded: LoadedPdf<V, C> | null;
 }
+
+type PasswordState = LoadKey & PdfPasswordRequest;
 
 function createTextCache<V extends PdfViewport, C extends PdfTextContent>(
   pages: readonly PdfPage<V, C>[],
@@ -75,9 +98,78 @@ function createTextCache<V extends PdfViewport, C extends PdfTextContent>(
   };
 }
 
-// Only the applied scale is worth keeping: every part of a page asks for the same one.
-function createViewportCache<V extends PdfViewport, C extends PdfTextContent>(
+async function loadPdf<V extends PdfViewport, C extends PdfTextContent>(
+  { source, loadEngine, workerSrc, documentOptions }: UsePdfDocumentOptions<V, C> & LoadKey,
+  control: LoadControl,
+): Promise<LoadedPdf<V, C> | null> {
+  const engine = await loadEngine();
+  if (control.isCancelled) return null;
+  if (workerSrc) engine.GlobalWorkerOptions.workerSrc = workerSrc;
+  const task = engine.getDocument({ ...documentOptions, ...toDocumentParams(source) });
+  control.task = task;
+  task.onPassword = (update: (password: string) => void, reason: number) =>
+    control.onPassword(update, reason === engine.PasswordResponses.INCORRECT_PASSWORD);
+  const document = await task.promise;
+  const [pages, outline] = await Promise.all([
+    Promise.all(
+      Array.from({ length: document.numPages }, (_, index) => document.getPage(index + 1)),
+    ),
+    document.getOutline().catch(() => null),
+  ]);
+  const sizes = pages.map((page) => {
+    const { width, height } = page.getViewport({ scale: 1 });
+    return { width, height };
+  });
+  return {
+    engine,
+    document,
+    pages,
+    outline: outline ?? [],
+    rotation: 0,
+    sizes,
+    getTextContent: createTextCache(pages),
+    getViewport: createViewportCache(pages, 0),
+  };
+}
+
+function toError(cause: unknown): Error {
+  return cause instanceof Error ? cause : new Error(String(cause));
+}
+
+function isCurrent(key: LoadKey | null, source: PdfSource | null, attempt: number): boolean {
+  return key?.source === source && key.attempt === attempt;
+}
+
+/** The password request of a load: counts the passwords turned down and marks one being checked. */
+function createPasswordHandler(
+  key: LoadKey,
+  control: Pick<LoadControl, 'isCancelled'>,
+  setPassword: (update: (previous: PasswordState | null) => PasswordState | null) => void,
+): LoadControl['onPassword'] {
+  let failures = 0;
+  return (update, isIncorrect) => {
+    if (control.isCancelled) return;
+    if (isIncorrect) failures += 1;
+    const submit = (password: string) => {
+      setPassword((previous) => previous && { ...previous, isChecking: true });
+      update(password);
+    };
+    setPassword(() => ({ ...key, failures, isChecking: false, submit }));
+  };
+}
+
+/** The rotation a page shows at: its own, turned further by the reader's, in degrees. */
+export function toPageRotation(page: Pick<PdfPage, 'rotate'>, rotation: number): number {
+  return (((page.rotate + rotation) % 360) + 360) % 360;
+}
+
+/**
+ * Viewports at the reader's rotation. Only the applied scale is worth keeping: every part of a page
+ * asks for the same one.
+ */
+export function createViewportCache<V extends PdfViewport, C extends PdfTextContent>(
   pages: readonly PdfPage<V, C>[],
+  rotation: number,
 ): LoadedPdf<V, C>['getViewport'] {
   const cache = new Map<number, V>();
   let cachedScale = Number.NaN;
@@ -86,46 +178,19 @@ function createViewportCache<V extends PdfViewport, C extends PdfTextContent>(
       cache.clear();
       cachedScale = scale;
     }
-    const viewport = cache.get(pageIndex) ?? pages[pageIndex]?.getViewport({ scale });
+    const page = pages[pageIndex];
+    const viewport =
+      cache.get(pageIndex) ??
+      page?.getViewport({ scale, rotation: toPageRotation(page, rotation) });
     if (viewport) cache.set(pageIndex, viewport);
     return viewport;
   };
 }
 
-async function loadPdf<V extends PdfViewport, C extends PdfTextContent>(
-  { source, loadEngine, workerSrc }: UsePdfDocumentOptions<V, C> & { source: PdfSource },
-  control: LoadControl,
-): Promise<LoadedPdf<V, C> | null> {
-  const engine = await loadEngine();
-  if (control.isCancelled) return null;
-  if (workerSrc) engine.GlobalWorkerOptions.workerSrc = workerSrc;
-  const task = engine.getDocument(toDocumentParams(source));
-  control.task = task;
-  const document = await task.promise;
-  const pages = await Promise.all(
-    Array.from({ length: document.numPages }, (_, index) => document.getPage(index + 1)),
-  );
-  const sizes = pages.map((page) => {
-    const { width, height } = page.getViewport({ scale: 1 });
-    return { width, height };
-  });
-  return {
-    engine,
-    pages,
-    sizes,
-    getTextContent: createTextCache(pages),
-    getViewport: createViewportCache(pages),
-  };
-}
-
-function toError(cause: unknown): Error {
-  return cause instanceof Error ? cause : new Error(String(cause));
-}
-
 /**
  * Opens `source` with the injected engine and keeps it open until the source changes or the viewer
  * unmounts, when the engine's loading task (and its worker) is destroyed. A `null` source stays
- * loading. A new array is a new document.
+ * loading. A new array is a new document. A document that needs its password waits for it.
  */
 export function usePdfDocument<V extends PdfViewport, C extends PdfTextContent>(
   options: UsePdfDocumentOptions<V, C>,
@@ -133,18 +198,21 @@ export function usePdfDocument<V extends PdfViewport, C extends PdfTextContent>(
   const { source } = options;
   const [attempt, setAttempt] = useState(0);
   const [result, setResult] = useState<LoadResult<V, C> | null>(null);
+  const [password, setPassword] = useState<PasswordState | null>(null);
   const latest = useLatest(options);
 
   useEffect(() => {
     if (source === null) return undefined;
-    const control: LoadControl = { isCancelled: false, task: null };
-    loadPdf({ ...latest.current, source }, control).then(
+    const key = { source, attempt };
+    const control: LoadControl = { isCancelled: false, task: null, onPassword: () => undefined };
+    control.onPassword = createPasswordHandler(key, control, setPassword);
+    loadPdf({ ...latest.current, ...key }, control).then(
       (loaded) => {
-        if (!control.isCancelled && loaded) setResult({ source, attempt, loaded });
+        if (!control.isCancelled && loaded) setResult({ ...key, loaded });
       },
       (cause: unknown) => {
         if (control.isCancelled) return;
-        setResult({ source, attempt, loaded: null });
+        setResult({ ...key, loaded: null });
         latest.current.onError?.(toError(cause));
       },
     );
@@ -154,12 +222,14 @@ export function usePdfDocument<V extends PdfViewport, C extends PdfTextContent>(
     };
   }, [source, attempt, latest]);
 
-  const current = result?.source === source && result.attempt === attempt ? result : null;
-  let status: PdfDocumentStatus = 'loading';
+  const current = isCurrent(result, source, attempt) ? result : null;
+  const request = !current && isCurrent(password, source, attempt) ? password : null;
+  let status: PdfDocumentStatus = request ? 'password' : 'loading';
   if (current) status = current.loaded ? 'ready' : 'error';
   return {
     status,
     loaded: current?.loaded ?? null,
+    password: request,
     retry: () => setAttempt((count) => count + 1),
   };
 }

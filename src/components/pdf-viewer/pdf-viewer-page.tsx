@@ -3,7 +3,7 @@ import { highlightTextRuns } from './highlights.js';
 import type { PdfPageGeometry } from './page-geometry.js';
 import { pdfViewerHooks as hooks } from './styling-hooks.js';
 import type { PdfMatchRange } from './pdf-search.js';
-import type { PdfTextContent, PdfTextLayer, PdfViewport } from './pdf-engine.js';
+import type { PdfLinkService, PdfTextContent, PdfTextLayer, PdfViewport } from './pdf-engine.js';
 import { measureCanvasPixels, usePageRender } from './use-page-render.js';
 import type { LoadedPdf } from './use-pdf-document.js';
 import type { PdfPagesController } from './use-pdf-pages.js';
@@ -20,6 +20,8 @@ export interface PdfViewerPageProps<
   ranges: readonly PdfMatchRange[];
   revealKey: number;
   pages: Pick<PdfPagesController, 'registerPage' | 'revealElement'>;
+  /** Follows the page's links. */
+  linkService: PdfLinkService;
   /** The caller's content over the page. */
   renderOverlay?: ((page: PdfPageGeometry<V>) => ReactNode) | undefined;
 }
@@ -54,7 +56,9 @@ function useMatchHighlights({
   }, [ranges, revealElement, revealKey, textLayer]);
 }
 
-/** One page: its bitmap with the selectable text layer over it, sized to the zoom. */
+/**
+ * One page: its bitmap with the selectable text layer and the links over it, sized to the zoom.
+ */
 export function PdfViewerPage<V extends PdfViewport, C extends PdfTextContent>({
   loaded,
   pageIndex,
@@ -63,16 +67,27 @@ export function PdfViewerPage<V extends PdfViewport, C extends PdfTextContent>({
   ranges,
   revealKey,
   pages,
+  linkService,
   renderOverlay,
 }: PdfViewerPageProps<V, C>) {
   const { registerPage, revealElement } = pages;
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const layerRef = useRef<HTMLDivElement | null>(null);
+  const annotationLayerRef = useRef<HTMLDivElement | null>(null);
   const pageRef = useCallback(
     (element: HTMLDivElement | null) => registerPage(pageIndex, element),
     [pageIndex, registerPage],
   );
-  const textLayer = usePageRender({ loaded, pageIndex, scale, isNear, canvasRef, layerRef });
+  const textLayer = usePageRender({
+    loaded,
+    pageIndex,
+    scale,
+    isNear,
+    canvasRef,
+    layerRef,
+    annotationLayerRef,
+    linkService,
+  });
   useMatchHighlights({ textLayer, ranges, revealKey, revealElement });
   const size = loaded.sizes[pageIndex] ?? { width: 0, height: 0 };
   const width = size.width * scale;
@@ -93,6 +108,12 @@ export function PdfViewerPage<V extends PdfViewport, C extends PdfTextContent>({
         {...hooks.slot('text-layer')}
         ref={layerRef}
         style={{ position: 'absolute', inset: 0 }}
+      />
+      {/* Transparent to the pointer between its links, so the text under it stays selectable. */}
+      <div
+        {...hooks.slot('annotation-layer')}
+        ref={annotationLayerRef}
+        style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
       />
       {renderOverlay && viewport ? (
         // Transparent to the pointer, so text under the caller's content can still be selected.

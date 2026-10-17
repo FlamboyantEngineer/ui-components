@@ -71,6 +71,29 @@ export interface ContentStrings {
   previousMatch: string;
   nextMatch: string;
   documentFailed: string;
+  /** Names a document view's panel of page thumbnails and outline, and its toggle. */
+  sidebar: string;
+  /** Names a document's page thumbnails. */
+  pages: string;
+  /** Names a document's outline (its bookmarks). */
+  outline: string;
+  /** Names one page of a document (`Page 3`). */
+  pageNumber: (pageNumber: number) => string;
+  rotateClockwise: string;
+  rotateCounterclockwise: string;
+  print: string;
+  download: string;
+  findOptions: string;
+  highlightAll: string;
+  matchCase: string;
+  ignoreAccents: string;
+  wholeWords: string;
+  password: string;
+  /** Asks for the password of a protected document. */
+  passwordRequired: string;
+  passwordIncorrect: string;
+  /** Opens a protected document with the password typed. */
+  openDocument: string;
 }
 
 const emojiCategoryNames: Readonly<Record<string, string>> = {
@@ -137,4 +160,21 @@ export const contentStrings: ContentStrings = {
   previousMatch: 'Previous match',
   nextMatch: 'Next match',
   documentFailed: 'The document could not be opened.',
+  sidebar: 'Sidebar',
+  pages: 'Pages',
+  outline: 'Outline',
+  pageNumber: (pageNumber) => `Page ${pageNumber}`,
+  rotateClockwise: 'Rotate clockwise',
+  rotateCounterclockwise: 'Rotate counterclockwise',
+  print: 'Print',
+  download: 'Download',
+  findOptions: 'Find options',
+  highlightAll: 'Highlight all',
+  matchCase: 'Match case',
+  ignoreAccents: 'Ignore accents',
+  wholeWords: 'Whole words',
+  password: 'Password',
+  passwordRequired: 'This document is protected. Enter its password to open it.',
+  passwordIncorrect: 'The password is incorrect. Try again.',
+  openDocument: 'Open',
 };

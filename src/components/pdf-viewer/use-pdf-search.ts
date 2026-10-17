@@ -7,6 +7,7 @@ import {
   type PdfMatch,
   type PdfMatchRange,
   type PdfPageText,
+  type PdfSearchOptions,
 } from './pdf-search.js';
 import type { LoadedPdf } from './use-pdf-document.js';
 import { useLatest } from './use-latest.js';
@@ -21,12 +22,18 @@ export interface UsePdfSearchOptions {
   /** The caller's current match, taken modulo the number of matches; `undefined` keeps it in the viewer. */
   matchIndex?: number | undefined;
   onMatchIndexChange?: ((index: number) => void) | undefined;
+  /** The caller's find options; `undefined` keeps them in the viewer. */
+  searchOptions?: PdfSearchOptions | undefined;
+  onSearchOptionsChange?: ((options: PdfSearchOptions) => void) | undefined;
 }
 
 /** What find controls read and do: the query, the result count and stepping through matches. */
 export interface PdfSearchControls {
   query: string;
   setQuery(query: string): void;
+  /** The find options in effect, each one set. */
+  options: Required<PdfSearchOptions>;
+  setOptions(options: PdfSearchOptions): void;
   /** A query is waiting for the document or its text. */
   isPending: boolean;
   total: number;
@@ -52,6 +59,17 @@ interface OwnSelection {
 }
 
 const emptyText: PdfPageText = { text: '', starts: [], lengths: [] };
+const noOptions: PdfSearchOptions = {};
+
+/** Every find option, with its default where it is not set. */
+function resolveSearchOptions(options: PdfSearchOptions): Required<PdfSearchOptions> {
+  return {
+    highlightAll: options.highlightAll ?? true,
+    matchCase: options.matchCase ?? false,
+    ignoreAccents: options.ignoreAccents ?? false,
+    wholeWords: options.wholeWords ?? false,
+  };
+}
 
 /** Extracts every page's text once per document, while a query needs it. */
 function usePageTexts(
@@ -122,10 +140,26 @@ function useCurrentMatch(options: UsePdfSearchOptions, matches: readonly PdfMatc
   return { current, revealKey, step };
 }
 
+/** The find options, kept by the viewer or by the caller. */
+function useSearchOptions({ searchOptions, onSearchOptionsChange }: UsePdfSearchOptions) {
+  const [own, setOwn] = useState(noOptions);
+  const resolved = resolveSearchOptions(searchOptions ?? own);
+  const { highlightAll, matchCase, ignoreAccents, wholeWords } = resolved;
+  const options = useMemo(
+    () => ({ highlightAll, matchCase, ignoreAccents, wholeWords }),
+    [highlightAll, matchCase, ignoreAccents, wholeWords],
+  );
+  const setOptions = (next: PdfSearchOptions) => {
+    if (searchOptions === undefined) setOwn(next);
+    onSearchOptionsChange?.(next);
+  };
+  return { options, setOptions };
+}
+
 /**
  * Find in the document: every match highlighted, one current match the reader steps through, and
- * the count. A query typed while the document loads runs once its text is available. The query and
- * the current match are each the viewer's own unless the caller passes them.
+ * the count. A query typed while the document loads runs once its text is available. The query,
+ * the options and the current match are each the viewer's own unless the caller passes them.
  */
 export function usePdfSearch(options: UsePdfSearchOptions): PdfSearchState {
   const { loaded, pages, onSearchQueryChange } = options;
@@ -134,7 +168,12 @@ export function usePdfSearch(options: UsePdfSearchOptions): PdfSearchState {
   const query = options.searchQuery ?? ownQuery;
   const isSearching = query.trim() !== '';
   const texts = usePageTexts(loaded, isSearching);
-  const matches = useMemo(() => (texts ? findTextMatches(texts, query) : []), [texts, query]);
+  const search = useSearchOptions(options);
+  const { matchCase, ignoreAccents, wholeWords, highlightAll } = search.options;
+  const matches = useMemo(
+    () => (texts ? findTextMatches(texts, query, { matchCase, ignoreAccents, wholeWords }) : []),
+    [texts, query, matchCase, ignoreAccents, wholeWords],
+  );
   const { current, revealKey, step } = useCurrentMatch(options, matches);
 
   // A match on a page that is not rendered yet is reached by scrolling to its page first.
@@ -149,10 +188,11 @@ export function usePdfSearch(options: UsePdfSearchOptions): PdfSearchState {
   }, [currentMatch, nearPages, scrollToPage, revealKey]);
 
   const rangesByPage = useMemo(
-    () => groupMatchRanges(texts ?? [], matches, current),
-    [texts, matches, current],
+    () => groupMatchRanges(texts ?? [], matches, { current, highlightAll }),
+    [texts, matches, current, highlightAll],
   );
   return {
+    ...search,
     query,
     setQuery(next) {
       if (options.searchQuery === undefined) setOwnQuery(next);

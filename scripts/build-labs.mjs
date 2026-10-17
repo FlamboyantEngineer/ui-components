@@ -27,6 +27,7 @@ const staticFiles = {
   'vendor/pdf.min.mjs': resolvePackage('pdfjs-dist/build/pdf.min.mjs'),
   'vendor/pdf.worker.min.mjs': resolvePackage('pdfjs-dist/build/pdf.worker.min.mjs'),
   'samples/seasonal-report.pdf': join(labsDir, 'samples', 'seasonal-report.pdf'),
+  'samples/seasonal-report-locked.pdf': join(labsDir, 'samples', 'seasonal-report-locked.pdf'),
 };
 for (const [target, source] of Object.entries(staticFiles)) {
   mkdirSync(dirname(join(outdir, target)), { recursive: true });

@@ -122,4 +122,37 @@ describe('PdfViewer navigation', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Zoom in' }));
     expect(onPageViewports.mock.lastCall?.[0].get(1)?.scale).toBeCloseTo(1.25 * pointsToPixels);
   });
+
+  it('UIC-PDF-VIEWER-4.4 opens a document at the default page, within its pages', async () => {
+    stubLayout();
+    const onPageChange = vi.fn();
+    const view = renderViewer({ defaultZoom: 100, defaultPage: 1, onPageChange });
+    await waitFor(() => expect(pageField()).toHaveValue('2'));
+    expect(scroller().scrollTop).toBe(800);
+    expect(onPageChange).toHaveBeenLastCalledWith(1);
+
+    view.update({ defaultZoom: 100, defaultPage: 7, source: new Uint8Array([1]), onPageChange });
+    await waitFor(() => expect(pageField()).toHaveValue('3'));
+    expect(scroller().scrollTop).toBe(1600);
+  });
+
+  it('UIC-PDF-VIEWER-4.5 goes to a named destination each time it changes', async () => {
+    stubLayout();
+    const engine = createEngine({
+      destinations: {
+        markets: [{ num: 2, gen: 0 }, { name: 'XYZ' }, null, 545, null],
+        varieties: [{ num: 1, gen: 0 }, { name: 'Fit' }],
+      },
+    });
+    const view = await renderReady({ defaultZoom: 100, destination: 'markets' }, engine);
+    await waitFor(() => expect(pageField()).toHaveValue('3'));
+    expect(scroller().scrollTop).toBeCloseTo(1600 + 50 * pointsToPixels);
+
+    view.update({ defaultZoom: 100, destination: 'varieties' });
+    await waitFor(() => expect(scroller().scrollTop).toBe(800));
+    view.update({ defaultZoom: 100, destination: 'orchards' });
+    await waitFor(() => expect(engine.pdf.getDestination).toHaveBeenLastCalledWith('orchards'));
+    expect(scroller().scrollTop).toBe(800);
+    expect(pageField()).toHaveValue('2');
+  });
 });
