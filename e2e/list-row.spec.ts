@@ -98,4 +98,95 @@ test.describe('List Row lab', () => {
       (widePrimary?.x ?? 0) + (widePrimary?.width ?? 0) - 1,
     );
   });
+
+  test('UIC-LIST-ROW-3.1 UIC-LIST-ROW-3.2 UIC-LIST-ROW-3.3 selects list view rows by keyboard, checkbox and typing', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('list-row');
+    const list = page.getByRole('grid', { name: 'Fruit multiple' });
+    const row = (name: string) => list.getByRole('row', { name: new RegExp(`^${name}`) });
+    await expect(row('Banana')).toHaveAttribute('aria-selected', 'true');
+    await row('Apple').focus();
+    await page.keyboard.press('ArrowDown');
+    await expect(row('Banana')).toBeFocused();
+    await page.keyboard.press('Space');
+    await expect(row('Banana')).toHaveAttribute('aria-selected', 'false');
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('ArrowDown');
+    await expect(row('Elderberry')).toBeFocused();
+    await page.keyboard.press('c');
+    await expect(row('Cherry')).toBeFocused();
+    await row('Apple').locator('.ui-list-view-item__checkbox').click();
+    await expect(row('Apple')).toHaveAttribute('aria-selected', 'true');
+    await expect(row('Damson')).toHaveAttribute('aria-disabled', 'true');
+
+    const replace = page.getByRole('grid', { name: 'Fruit replace' });
+    await expect(replace.getByRole('checkbox')).toHaveCount(0);
+    await replace.getByRole('row', { name: /^Cherry/ }).click();
+    await expect(replace.locator('[aria-selected="true"]')).toHaveCount(1);
+    await lab.expectAccessible();
+  });
+
+  test('UIC-LIST-ROW-3.4 keeps a section header in view while its rows scroll', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('list-row');
+    const list = page.getByRole('grid', { name: 'Produce' });
+    await expect(list.getByRole('rowgroup')).toHaveCount(3);
+    await list.evaluate((element) => {
+      element.scrollTop = 120;
+    });
+    const header = list.locator('.ui-list-view-section__header').first();
+    const listBox = await list.boundingBox();
+    const headerBox = await header.boundingBox();
+    expect(Math.abs((headerBox?.y ?? 0) - (listBox?.y ?? 0))).toBeLessThan(2);
+    await list.getByRole('row', { name: /^Elderberry/ }).focus();
+    await page.keyboard.press('ArrowDown');
+    await expect(list.getByRole('row', { name: /^Leek/ })).toBeFocused();
+  });
+
+  test('UIC-LIST-ROW-3.5 reorders list view rows by keyboard drag and drop', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('list-row');
+    const reorder = page.locator('[data-lab-reorder]');
+    await reorder.getByRole('row', { name: /^Apple/ }).focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(reorder.locator('.ui-list-view-item__drag-handle').first()).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(reorder.locator('.ui-list-view__drop-indicator[data-drop-target]')).toHaveCount(1);
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('Enter');
+    await expect(reorder.locator('[data-lab-output]')).toHaveText(
+      'Order: Banana, Apple, Cherry, Damson, Elderberry',
+    );
+  });
+
+  test('UIC-LIST-ROW-3.6 renders only the rows in view and loads pages as the end scrolls in', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('list-row');
+    const long = page.locator('[data-lab-long]');
+    await long.getByRole('button', { name: 'Show recipes' }).click();
+    const list = long.getByRole('grid', { name: 'Recipes' });
+    expect(await list.getByRole('row').count()).toBeLessThan(20);
+    await list.evaluate((element) => {
+      element.scrollTop = element.scrollHeight;
+    });
+    await expect(long.locator('[data-lab-output]')).toHaveText('Loaded 100 of 200');
+    await list.evaluate((element) => {
+      element.scrollTop = element.scrollHeight;
+    });
+    await expect(long.locator('[data-lab-output]')).toHaveText('Loaded 150 of 200');
+    expect(await list.getByRole('row').count()).toBeLessThan(20);
+  });
+
+  test('UIC-LIST-ROW-3.1 passes axe in the dark theme', async ({ lab }) => {
+    await lab.open('list-row', { theme: 'dark' });
+    await lab.expectAccessible();
+  });
 });
