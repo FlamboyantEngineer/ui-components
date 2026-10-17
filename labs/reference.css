@@ -17,6 +17,7 @@
 @import url('reference/button.css');
 @import url('reference/card.css');
 @import url('reference/circular-progress.css');
+@import url('reference/confirm-dialog.css');
 @import url('reference/description-list.css');
 @import url('reference/empty-state.css');
 @import url('reference/expand-toggle.css');
@@ -28,6 +29,7 @@
 @import url('reference/load-more.css');
 @import url('reference/loading-overlay.css');
 @import url('reference/meta-line.css');
+@import url('reference/modal.css');
 @import url('reference/path.css');
 @import url('reference/portal.css');
 @import url('reference/progress-bar.css');

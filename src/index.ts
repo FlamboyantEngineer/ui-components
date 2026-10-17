@@ -41,3 +41,6 @@ export * from './components/tooltip/index.js';
 export * from './components/truncation-tooltip/index.js';
 export * from './components/loading-overlay/index.js';
 export * from './components/toast/index.js';
+export * from './components/modal/index.js';
+export * from './components/modal-controller/index.js';
+export * from './components/confirm-dialog/index.js';
