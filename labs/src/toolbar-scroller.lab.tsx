@@ -26,11 +26,18 @@ function Scrolled({ to, children }: { to: 'start' | 'middle' | 'end'; children: 
   const ref = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     const strip = ref.current?.querySelector<HTMLElement>('.ui-toolbar-scroller__strip');
-    if (!strip) return;
-    const max = strip.scrollWidth - strip.clientWidth;
-    const rtl = getComputedStyle(strip).direction === 'rtl';
-    const offset = to === 'start' ? 0 : to === 'end' ? max : max / 2;
-    strip.scrollLeft = rtl ? -offset : offset;
+    if (!strip) return undefined;
+    const scroll = () => {
+      const max = strip.scrollWidth - strip.clientWidth;
+      const rtl = getComputedStyle(strip).direction === 'rtl';
+      const offset = to === 'start' ? 0 : to === 'end' ? max : max / 2;
+      strip.scrollLeft = rtl ? -offset : offset;
+    };
+    scroll();
+    // The stylesheet can load after the lab mounts; scroll again once it lays the strip out.
+    const observer = new ResizeObserver(scroll);
+    observer.observe(strip);
+    return () => observer.disconnect();
   }, [to]);
   return (
     <div ref={ref} style={{ width: 260 }}>

@@ -22,14 +22,14 @@ Verification: `src/components/tabs/tabs.test.tsx`, `e2e/tabs.spec.ts`
 
 The selected tab shall contain React Aria's selection indicator in the `ui-tabs__indicator` slot. When the selection moves, React Aria animates the indicator from the previous tab's position through any `translate` or size transition the stylesheet declares, so one bar appears to slide between tabs.
 
-Implementation: `src/components/tabs/tabs.tsx`, `labs/reference.css`
+Implementation: `src/components/tabs/tabs.tsx`, `labs/reference/tabs.css`
 Verification: `src/components/tabs/tabs.test.tsx`, `e2e/tabs.spec.ts`
 
 ### UIC-TABS-1.4 - Orientation and sizes
 
 `orientation` (`horizontal` by default, or `vertical`) shall lay the tabs out in a row or a column and publish React Aria's `data-orientation` on the root and the list. `size` (`sm`, `md` by default, `lg`) shall publish `data-size` on the root; the reference sheet draws 30, 36 and 42 pixel tabs.
 
-Implementation: `src/components/tabs/tabs.tsx`, `labs/reference.css`
+Implementation: `src/components/tabs/tabs.tsx`, `labs/reference/tabs.css`
 Verification: `src/components/tabs/tabs.test.tsx`, `e2e/tabs.spec.ts`
 
 ### UIC-TABS-1.5 - Hooks and caller attributes
@@ -66,7 +66,7 @@ Verification: `src/components/tabs/tabs.test.tsx`, `e2e/tabs.spec.ts`
 
 While its tabs do not fit, the list shall publish `data-overflowing`, re-measured when the list resizes or its tabs change. Whenever the selection changes, and on first render, an overflowing list shall scroll the selected tab toward its middle, clamped to the list's scroll range so the last tab ends flush with the list's end, smoothly unless the reader prefers reduced motion.
 
-Implementation: `src/components/tabs/tabs.tsx`, `labs/reference.css`
+Implementation: `src/components/tabs/tabs.tsx`, `src/components/tabs/tab-list-overflow.ts`, `labs/reference/tabs.css`
 Verification: `src/components/tabs/tabs.test.tsx`, `e2e/tabs.spec.ts`
 
 ### UIC-TABS-2.5 - Interaction states

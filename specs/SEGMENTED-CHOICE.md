@@ -22,14 +22,14 @@ Verification: `src/components/segmented-choice/segmented-choice.test.tsx`
 
 `size` (`sm`, `md` by default, `lg`) shall publish `data-size`; the reference sheet draws 24, 28 and 32 pixel segments. `sizing` shall publish `data-sizing`: `equal` (the default) divides the available width evenly between segments, `content` sizes each segment to its label. The label slot publishes its text in `data-label`, so a stylesheet can reserve the width of a heavier selected weight and selecting a segment never resizes it.
 
-Implementation: `src/components/segmented-choice/segmented-choice.tsx`, `labs/reference.css`
+Implementation: `src/components/segmented-choice/segmented-choice.tsx`, `labs/reference/segmented-choice.css`
 Verification: `src/components/segmented-choice/segmented-choice.test.tsx`, `e2e/segmented-choice.spec.ts`
 
 ### UIC-SEGMENTED-CHOICE-1.4 - Orientation
 
 `orientation` (`horizontal` by default, or `vertical`) shall lay the segments out in a row or a column and publish React Aria's `data-orientation` on the root.
 
-Implementation: `src/components/segmented-choice/segmented-choice.tsx`, `labs/reference.css`
+Implementation: `src/components/segmented-choice/segmented-choice.tsx`, `labs/reference/segmented-choice.css`
 Verification: `src/components/segmented-choice/segmented-choice.test.tsx`, `e2e/segmented-choice.spec.ts`
 
 ### UIC-SEGMENTED-CHOICE-1.5 - Hooks and caller attributes

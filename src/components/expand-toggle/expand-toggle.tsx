@@ -1,11 +1,14 @@
-import { useState, type Ref } from 'react';
+import { useState } from 'react';
 import { useLocale } from 'react-aria-components';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
+import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import type { ButtonSize } from '../button/button.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { IconButton, type IconButtonProps } from '../icon-button/icon-button.js';
 
-export interface ExpandToggleProps {
+export interface ExpandToggleProps
+  extends
+    Pick<IconButtonProps, 'isDisabled' | 'excludeFromTabOrder' | 'aria-controls' | 'ref'>,
+    BaseProps {
   /** Whether the controlled region is expanded (controlled). */
   isExpanded?: boolean | undefined;
   /** Initial expanded state (uncontrolled). */
@@ -20,16 +23,7 @@ export interface ExpandToggleProps {
   /** A constant accessible name. Defaults to the provider's `expand` or `collapse` string, by state. */
   label?: string | undefined;
   /** Box size. Defaults to `sm`. */
-  size?: ButtonSize | undefined;
-  isDisabled?: boolean | undefined;
-  /** Keep the toggle out of the tab order, for rows that hold focus and expand with the arrow keys. */
-  excludeFromTabOrder?: boolean | undefined;
-  /** The id of the region the toggle shows and hides. */
-  'aria-controls'?: string | undefined;
-  className?: string | undefined;
-  id?: string | undefined;
-  ref?: Ref<HTMLButtonElement> | undefined;
-  [data: `data-${string}`]: string | number | boolean | undefined;
+  size?: IconButtonProps['size'];
 }
 
 const hooks = createHooks('expand-toggle');
@@ -39,53 +33,43 @@ const hooks = createHooks('expand-toggle');
  * collapsed and down while expanded, and its presses never reach the row around it.
  */
 export function ExpandToggle({
-  isExpanded: controlledExpanded,
+  isExpanded,
   defaultExpanded = false,
   onExpandedChange,
   isExpandable = true,
   label,
   size = 'sm',
-  isDisabled = false,
-  excludeFromTabOrder = false,
-  'aria-controls': ariaControls,
   className,
-  id,
-  ref,
   ...rest
 }: ExpandToggleProps) {
   const strings = useUiStrings();
   const { direction } = useLocale();
   const [internalExpanded, setInternalExpanded] = useState(defaultExpanded);
-  const expanded = controlledExpanded ?? internalExpanded;
+  const expanded = isExpanded ?? internalExpanded;
 
   if (!isExpandable) {
     return (
       <span
         {...hooks.root({ className, props: rest, data: { size, leaf: true } })}
-        id={id}
+        id={rest.id}
         aria-hidden="true"
       />
     );
   }
 
+  const collapsedGlyph = direction === 'rtl' ? 'chevron-left' : 'chevron-right';
   return (
     <IconButton
       {...rest}
       data-expanded={expanded || undefined}
       className={mergeClassNames(hooks.className, className)}
-      ref={ref}
-      id={id}
-      icon={expanded ? 'chevron-down' : direction === 'rtl' ? 'chevron-left' : 'chevron-right'}
+      icon={expanded ? 'chevron-down' : collapsedGlyph}
       label={label ?? (expanded ? strings.collapse : strings.expand)}
       size={size}
-      isDisabled={isDisabled}
-      excludeFromTabOrder={excludeFromTabOrder}
       aria-expanded={expanded}
-      aria-controls={ariaControls}
       onPress={() => {
-        const next = !expanded;
-        if (controlledExpanded === undefined) setInternalExpanded(next);
-        onExpandedChange?.(next);
+        if (isExpanded === undefined) setInternalExpanded(!expanded);
+        onExpandedChange?.(!expanded);
       }}
     />
   );

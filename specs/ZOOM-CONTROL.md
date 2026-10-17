@@ -20,14 +20,14 @@ Verification: `src/components/zoom-control/zoom-control.test.tsx`
 
 ### UIC-ZOOM-CONTROL-1.3 - Stepping
 
-Zoom in shall request the first level above the current value and zoom out the last level below it, so a value between levels steps to the neighbouring level on that side. With no level beyond the value on its side, a step button is disabled but stays focusable (`aria-disabled="true"`, `data-disabled`), so focus is not lost when a step reaches the first or last level. `nextZoomLevel` exposes the same rule.
+Zoom in shall request the first level above the current value and zoom out the last level below it, so a value between levels steps to the neighbouring level on that side. With no level beyond the value on its side, a step button is disabled but stays focusable (`aria-disabled="true"`, `data-disabled`), so focus is not lost when a step reaches the first or last level. `findNextZoomLevel` exposes the same rule.
 
 Implementation: `src/components/zoom-control/zoom-control.tsx`
 Verification: `src/components/zoom-control/zoom-control.test.tsx`, `e2e/zoom-control.spec.ts`
 
 ### UIC-ZOOM-CONTROL-1.4 - Slider
 
-The slider shall be a native `<input type="range">` over the level indices, from `0` to the last index in steps of one, whose value is the index of the level nearest the current value (`nearestZoomLevelIndex`, the lower level on a tie). It is named by the provider's `zoomLevel` string and announces the formatted value through `aria-valuetext`. Moving it with the pointer, the arrow keys, Home or End requests the level at the new index.
+The slider shall be a native `<input type="range">` over the level indices, from `0` to the last index in steps of one, whose value is the index of the level nearest the current value (`findNearestZoomLevelIndex`, the lower level on a tie). It is named by the provider's `zoomLevel` string and announces the formatted value through `aria-valuetext`. Moving it with the pointer, the arrow keys, Home or End requests the level at the new index.
 
 Implementation: `src/components/zoom-control/zoom-control.tsx`
 Verification: `src/components/zoom-control/zoom-control.test.tsx`, `e2e/zoom-control.spec.ts`
@@ -64,7 +64,7 @@ Verification: `src/components/zoom-control/zoom-control.test.tsx`
 
 `size` (`xs`, `sm` by default, `md` or `lg`) shall size the built-in buttons and publish `data-size` on the root. The control carries the hooks below, appends the caller's `className`, and forwards caller `data-*` attributes and `id` to its root.
 
-Implementation: `src/components/zoom-control/zoom-control.tsx`, `labs/reference.css`
+Implementation: `src/components/zoom-control/zoom-control.tsx`, `labs/reference/zoom-control.css`
 Verification: `src/components/zoom-control/zoom-control.test.tsx`, `e2e/zoom-control.spec.ts`
 
 ## Hooks

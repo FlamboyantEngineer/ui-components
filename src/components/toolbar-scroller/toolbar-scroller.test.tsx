@@ -51,6 +51,13 @@ function parts(container: HTMLElement) {
   return { root, strip, fade, button };
 }
 
+/** Lets the strip's pending overflow measurement run; measurements wait for an animation frame. */
+async function nextFrame() {
+  await act(async () => {
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+  });
+}
+
 function wheel(target: Element, init: WheelEventInit) {
   const event = new WheelEvent('wheel', { bubbles: true, cancelable: true, ...init });
   act(() => {
@@ -148,7 +155,7 @@ describe('ToolbarScroller', () => {
     });
   });
 
-  it('UIC-TOOLBAR-SCROLLER-2.1 UIC-TOOLBAR-SCROLLER-2.2 UIC-TOOLBAR-SCROLLER-2.3 publishes each hidden edge with its fade and scroll button', () => {
+  it('UIC-TOOLBAR-SCROLLER-2.1 UIC-TOOLBAR-SCROLLER-2.2 UIC-TOOLBAR-SCROLLER-2.3 publishes each hidden edge with its fade and scroll button', async () => {
     const { container } = render(
       <ToolbarScroller aria-label="Format">
         <Tools />
@@ -165,6 +172,7 @@ describe('ToolbarScroller', () => {
 
     stubStrip(strip, 400, 100);
     fireEvent.scroll(strip);
+    await nextFrame();
     expect(root).not.toHaveAttribute('data-overflow-start');
     expect(root).toHaveAttribute('data-overflow-end', 'true');
     expect(fade('start')?.hidden).toBe(true);
@@ -174,18 +182,21 @@ describe('ToolbarScroller', () => {
 
     stubStrip(strip, 400, 100, 120);
     fireEvent.scroll(strip);
+    await nextFrame();
     expect(root).toHaveAttribute('data-overflow-start', 'true');
     expect(root).toHaveAttribute('data-overflow-end', 'true');
     expectHooksMatchSpec(container, 'TOOLBAR-SCROLLER', { slots: 'all' });
 
     stubStrip(strip, 400, 100, 300);
     fireEvent.scroll(strip);
+    await nextFrame();
     expect(root).toHaveAttribute('data-overflow-start', 'true');
     expect(root).not.toHaveAttribute('data-overflow-end');
     expect(button('end')?.hidden).toBe(true);
 
     stubStrip(strip, 400, 100, -120);
     fireEvent.scroll(strip);
+    await nextFrame();
     expect(root).toHaveAttribute('data-overflow-start', 'true');
     expect(root).toHaveAttribute('data-overflow-end', 'true');
   });
@@ -223,21 +234,25 @@ describe('ToolbarScroller', () => {
     const { root, strip } = parts(container);
     stubStrip(strip, 100, 100);
     fireEvent.scroll(strip);
+    await nextFrame();
     expect(root).not.toHaveAttribute('data-overflow-end');
 
     stubStrip(strip, 160, 100);
     await act(async () => show(true));
+    await nextFrame();
     const late = strip.querySelector('[data-late]');
     expect(late && observed.has(late)).toBe(true);
     expect(root).toHaveAttribute('data-overflow-end', 'true');
 
     stubStrip(strip, 100, 100);
     await act(async () => show(false));
+    await nextFrame();
     expect(late && observed.has(late)).toBe(false);
     expect(root).not.toHaveAttribute('data-overflow-end');
 
     stubStrip(strip, 300, 100);
     act(() => resizeCallback([], {} as ResizeObserver));
+    await nextFrame();
     expect(root).toHaveAttribute('data-overflow-end', 'true');
   });
 
@@ -254,6 +269,7 @@ describe('ToolbarScroller', () => {
     });
     strip.scrollTo = scrollTo as typeof strip.scrollTo;
     fireEvent.scroll(strip);
+    await nextFrame();
     const end = button('end') as HTMLButtonElement;
     expect(end).toHaveAccessibleName('Scroll forward');
     expect(end).toHaveAttribute('tabindex', '-1');
@@ -262,10 +278,12 @@ describe('ToolbarScroller', () => {
     await userEvent.click(end);
     expect(strip.scrollLeft).toBe(80);
     expect(scrollTo).toHaveBeenLastCalledWith({ left: 80, behavior: 'auto' });
+    await nextFrame();
     expect(button('start')?.hidden).toBe(false);
     expect(button('start')).toHaveAccessibleName('Scroll backward');
     await userEvent.click(button('start') as HTMLButtonElement);
     expect(strip.scrollLeft).toBe(0);
+    await nextFrame();
     expect(button('start')?.hidden).toBe(true);
 
     rerender(
@@ -288,6 +306,7 @@ describe('ToolbarScroller', () => {
     const { strip, button } = parts(container);
     stubStrip(strip, 400, 100);
     fireEvent.scroll(strip);
+    await nextFrame();
     expect(button('end')?.querySelector('[data-glyph]')).toHaveAttribute(
       'data-glyph',
       'chevron-left',
@@ -300,7 +319,7 @@ describe('ToolbarScroller', () => {
     expect(strip.scrollLeft).toBe(-80);
   });
 
-  it('UIC-TOOLBAR-SCROLLER-2.4 turns a vertical wheel into horizontal scroll only while the strip can move', () => {
+  it('UIC-TOOLBAR-SCROLLER-2.4 turns wheel input into horizontal scroll only while the strip can move', () => {
     const { container } = render(
       <ToolbarScroller aria-label="Format">
         <Tools />
@@ -318,9 +337,11 @@ describe('ToolbarScroller', () => {
     wheel(strip, { deltaY: -1, deltaMode: 2 });
     expect(strip.scrollLeft).toBe(52);
 
-    expect(wheel(strip, { deltaX: 80, deltaY: 10 }).defaultPrevented).toBe(false);
+    expect(wheel(strip, { deltaX: 80, deltaY: 10 }).defaultPrevented).toBe(true);
+    expect(strip.scrollLeft).toBe(132);
     expect(wheel(strip, { deltaY: 50, ctrlKey: true }).defaultPrevented).toBe(false);
-    expect(strip.scrollLeft).toBe(52);
+    expect(wheel(strip, { deltaY: 50, metaKey: true }).defaultPrevented).toBe(false);
+    expect(strip.scrollLeft).toBe(132);
 
     stubStrip(strip, 400, 100, 300);
     expect(wheel(strip, { deltaY: 50 }).defaultPrevented).toBe(false);
@@ -363,11 +384,13 @@ describe('ToolbarScroller', () => {
     );
     const { strip } = parts(container);
     stubStrip(strip, 400, 100);
+    // jsdom computes no direction from the locale's stylesheet, so the strip states it inline.
+    strip.style.direction = 'rtl';
     wheel(strip, { deltaY: 120 });
     expect(strip.scrollLeft).toBe(-120);
   });
 
-  it('UIC-TOOLBAR-SCROLLER-2.5 scrolls a focused tool clear of the covering scroll button', () => {
+  it('UIC-TOOLBAR-SCROLLER-2.5 scrolls a focused tool clear of the covering scroll button', async () => {
     const { container } = render(
       <ToolbarScroller aria-label="Format">
         <Tools />
@@ -376,6 +399,7 @@ describe('ToolbarScroller', () => {
     const { strip, button, fade } = parts(container);
     stubStrip(strip, 400, 100);
     fireEvent.scroll(strip);
+    await nextFrame();
     strip.getBoundingClientRect = () => rect(0, 100);
     (button('end') as HTMLElement).getBoundingClientRect = () => rect(76, 24);
     (fade('end') as HTMLElement).getBoundingClientRect = () => rect(84, 16);
@@ -386,6 +410,7 @@ describe('ToolbarScroller', () => {
 
     stubStrip(strip, 400, 100, 50);
     fireEvent.scroll(strip);
+    await nextFrame();
     (button('start') as HTMLElement).getBoundingClientRect = () => rect(0, 24);
     const bold = screen.getByRole('button', { name: 'Bold' });
     bold.getBoundingClientRect = () => rect(10, 30);
