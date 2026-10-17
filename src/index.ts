@@ -49,3 +49,6 @@ export * from './components/context-menu/index.js';
 export * from './components/dropdown-menu/index.js';
 export * from './components/combobox/index.js';
 export * from './components/field/index.js';
+export * from './components/table/index.js';
+export * from './components/list-row/index.js';
+export * from './components/tree/index.js';

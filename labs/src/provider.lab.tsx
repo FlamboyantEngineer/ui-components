@@ -17,6 +17,7 @@ const sampleArguments: Partial<Record<keyof UiStrings, readonly unknown[]>> = {
   shortcutKeyName: ['↑'],
   stepOfTotal: [3, 5],
 };
+
 const stringNames = Object.keys(defaultStrings) as Array<keyof UiStrings>;
 
 function SquareGlyph(props: GlyphComponentProps) {
