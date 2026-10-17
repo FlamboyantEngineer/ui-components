@@ -118,6 +118,12 @@ export interface UiStrings {
   noColor: string;
   /** Names the hexadecimal input of a colour picker. */
   hexColor: string;
+  /** Names a colour picker's choice of format (hex, RGB, HSL). */
+  colorFormat: string;
+  /** Names the button that opens a colour field's picker, from the field's label. */
+  colorPicker: (label: string) => string;
+  /** Names the button that samples a colour from the screen. */
+  pickScreenColor: string;
   /** Names the button that removes a chosen value, read with the value it removes. */
   remove: string;
   /** The text of a select that has no value and no placeholder of its own. */
@@ -285,6 +291,9 @@ export const defaultStrings: UiStrings = {
   valueUnset: 'Unset',
   noColor: 'No color',
   hexColor: 'Hex color',
+  colorFormat: 'Color format',
+  colorPicker: (label) => `${label} picker`,
+  pickScreenColor: 'Pick a color from the screen',
   remove: 'Remove',
   selectPlaceholder: 'Select an option',
   selectedValues: (label) => `${label} selected values`,
