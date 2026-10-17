@@ -1,6 +1,6 @@
 # Progress Bar
 
-`ProgressBar` shows how much of a known amount of work is done, or that unmeasured work is under way, built on React Aria's `ProgressBar`. It is read-only output: it has no interactive states and announces nothing on its own; a host whose progress should be heard places it in its own status region. `Spinner` is the decorative busy glyph for unmeasured work too small for a bar. A compact ratio uses [Circular Progress](CIRCULAR-PROGRESS.md); a surface that must not be used until work finishes uses a [Loading Overlay](LOADING-OVERLAY.md).
+`ProgressBar` shows how much of a known amount of work is done, or that unmeasured work is under way, built on React Aria's `ProgressBar`. It is read-only output: it has no interactive states and announces nothing on its own; a host whose progress should be heard places it in its own status region. `Spinner` is the busy glyph for unmeasured work too small for a bar: decorative at the start of a busy line, or a named indicator on its own. A compact ratio uses [Circular Progress](CIRCULAR-PROGRESS.md); a surface that must not be used until work finishes uses a [Loading Overlay](LOADING-OVERLAY.md).
 
 ## UIC-PROGRESS-BAR-1 - Progress bar
 
@@ -53,6 +53,13 @@ Verification: `src/components/progress-bar/progress-bar.test.tsx`, `e2e/progress
 Implementation: `src/components/progress-bar/progress-bar.tsx`
 Verification: `src/components/progress-bar/progress-bar.test.tsx`
 
+### UIC-PROGRESS-BAR-1.8 - Completion and status
+
+A determinate bar whose bounded value equals its maximum, in a range that is not empty, shall publish `data-complete`; an indeterminate bar and an empty range never do. `tone` shall publish `data-tone`: `neutral` (the default, work running normally), `success`, `warning` or `danger`, so the stylesheet colours a bar that finished, needs attention or failed. The tone is never the only signal: the label or value text states the outcome.
+
+Implementation: `src/components/progress-bar/progress-bar.tsx`, `labs/reference/progress-bar.css`
+Verification: `src/components/progress-bar/progress-bar.test.tsx`, `e2e/progress-bar.spec.ts`
+
 ## UIC-PROGRESS-BAR-2 - Spinner
 
 ### UIC-PROGRESS-BAR-2.1 - Decorative busy glyph
@@ -62,15 +69,24 @@ Verification: `src/components/progress-bar/progress-bar.test.tsx`
 Implementation: `src/components/progress-bar/progress-bar.tsx`, `labs/reference/progress-bar.css`
 Verification: `src/components/progress-bar/progress-bar.test.tsx`, `e2e/progress-bar.spec.ts`
 
+### UIC-PROGRESS-BAR-2.2 - Standalone spinner
+
+A `Spinner` given `label` shall stand alone: the same `ui-spinner` `<span>`, with its size, becomes React Aria's indeterminate progress bar (`role="progressbar"`, no `aria-valuenow`) named by the label, and is no longer hidden from assistive technology. Use it where no surrounding text states the busy status; a spinner that leads such a line stays decorative.
+
+Implementation: `src/components/progress-bar/progress-bar.tsx`
+Verification: `src/components/progress-bar/progress-bar.test.tsx`, `e2e/progress-bar.spec.ts`
+
 ## Hooks
 
-| Hook                     | Kind      | Values           | Description                                                  |
-| ------------------------ | --------- | ---------------- | ------------------------------------------------------------ |
-| `ui-progress-bar`        | root      |                  | The progress bar (`role="progressbar"`).                     |
-| `ui-progress-bar__label` | slot      |                  | The visible label, when `label` is set.                      |
-| `ui-progress-bar__value` | slot      |                  | The visible value text, when determinate and shown.          |
-| `ui-progress-bar__track` | slot      |                  | The track.                                                   |
-| `ui-progress-bar__fill`  | slot      |                  | The fill; inline `width` is the percentage when determinate. |
-| `ui-spinner`             | root      |                  | The decorative busy glyph (`<span>`).                        |
-| `data-size`              | attribute | `sm`, `md`, `lg` | Track thickness, or the spinner's box size.                  |
-| `data-indeterminate`     | state     | `true`           | Unmeasured progress.                                         |
+| Hook                     | Kind      | Values                                    | Description                                                  |
+| ------------------------ | --------- | ----------------------------------------- | ------------------------------------------------------------ |
+| `ui-progress-bar`        | root      |                                           | The progress bar (`role="progressbar"`).                     |
+| `ui-progress-bar__label` | slot      |                                           | The visible label, when `label` is set.                      |
+| `ui-progress-bar__value` | slot      |                                           | The visible value text, when determinate and shown.          |
+| `ui-progress-bar__track` | slot      |                                           | The track.                                                   |
+| `ui-progress-bar__fill`  | slot      |                                           | The fill; inline `width` is the percentage when determinate. |
+| `ui-spinner`             | root      |                                           | The decorative busy glyph (`<span>`).                        |
+| `data-size`              | attribute | `sm`, `md`, `lg`                          | Track thickness, or the spinner's box size.                  |
+| `data-tone`              | attribute | `neutral`, `success`, `warning`, `danger` | The work's status.                                           |
+| `data-indeterminate`     | state     | `true`                                    | Unmeasured progress.                                         |
+| `data-complete`          | state     | `true`                                    | Measured progress reached the maximum.                       |

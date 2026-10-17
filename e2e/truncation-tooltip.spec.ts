@@ -72,4 +72,30 @@ test.describe('Truncation Tooltip lab', () => {
     expect(panelBox?.y ?? 0).toBeGreaterThanOrEqual((textBox?.y ?? 0) + (textBox?.height ?? 0) - 1);
     await lab.expectAccessible();
   });
+
+  test('UIC-TRUNCATION-TOOLTIP-2.1 shows cut text whole in place by keyboard and cuts it again', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('truncation-tooltip');
+    const cell = page.locator('[data-lab-cell="expandable=cut"]');
+    const text = cell.locator('.ui-truncation-tooltip');
+    const more = cell.getByRole('button', { name: 'Show more' });
+    await expect(
+      page.locator('[data-lab-cell="expandable=whole"]').getByRole('button'),
+    ).toHaveCount(0);
+    const cutHeight = (await text.boundingBox())?.height ?? 0;
+    expect(await text.evaluate((node) => node.scrollWidth > node.clientWidth)).toBe(true);
+    await more.focus();
+    await page.keyboard.press('Enter');
+    await expect(text).toHaveAttribute('data-expanded', 'true');
+    const less = cell.getByRole('button', { name: 'Show less' });
+    await expect(less).toBeFocused();
+    await expect(less).toHaveAttribute('aria-expanded', 'true');
+    expect((await text.boundingBox())?.height ?? 0).toBeGreaterThan(cutHeight * 2);
+    await lab.expectAccessible();
+    await page.keyboard.press('Enter');
+    await expect(text).not.toHaveAttribute('data-expanded');
+    await expect(cell.getByRole('button', { name: 'Show more' })).toBeFocused();
+  });
 });

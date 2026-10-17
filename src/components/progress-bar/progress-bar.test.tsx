@@ -136,4 +136,39 @@ describe('Spinner', () => {
     expect(screen.queryByRole('progressbar')).toBeNull();
     expectHooksMatchSpec(container, 'PROGRESS-BAR');
   });
+
+  it('UIC-PROGRESS-BAR-1.8 publishes completion and the tone', () => {
+    const { container, rerender } = render(<ProgressBar aria-label="Copying" value={40} />);
+    const bar = screen.getByRole('progressbar');
+    expect(bar).toHaveAttribute('data-tone', 'neutral');
+    expect(bar).not.toHaveAttribute('data-complete');
+    rerender(<ProgressBar aria-label="Copying" value={4} maxValue={4} tone="success" />);
+    expect(bar).toHaveAttribute('data-complete', 'true');
+    expect(bar).toHaveAttribute('data-tone', 'success');
+    rerender(<ProgressBar aria-label="Copying" value={140} tone="danger" />);
+    expect(bar).toHaveAttribute('data-complete', 'true');
+    expect(bar).toHaveAttribute('data-tone', 'danger');
+    rerender(<ProgressBar aria-label="Copying" value={0} maxValue={0} />);
+    expect(bar).not.toHaveAttribute('data-complete');
+    rerender(<ProgressBar aria-label="Copying" value={100} isIndeterminate tone="warning" />);
+    expect(bar).not.toHaveAttribute('data-complete');
+    expect(bar).toHaveAttribute('data-tone', 'warning');
+    expectHooksMatchSpec(container, 'PROGRESS-BAR', { slots: ['track', 'fill'] });
+  });
+
+  it('UIC-PROGRESS-BAR-2.2 names a standalone spinner as an indeterminate progress bar', () => {
+    const { container, rerender } = render(<Spinner label="Loading recipes" size="lg" />);
+    const spinner = screen.getByRole('progressbar', { name: 'Loading recipes' });
+    expect(spinner.tagName).toBe('SPAN');
+    expect(spinner).toHaveClass('ui-spinner');
+    expect(spinner).toHaveAttribute('data-size', 'lg');
+    expect(spinner).not.toHaveAttribute('aria-hidden');
+    expect(spinner).not.toHaveAttribute('aria-valuenow');
+    expect(spinner).toBeEmptyDOMElement();
+    expectHooksMatchSpec(container, 'PROGRESS-BAR');
+
+    rerender(<Spinner label="" />);
+    expect(screen.queryByRole('progressbar')).toBeNull();
+    expect(container.querySelector('.ui-spinner')).toHaveAttribute('aria-hidden', 'true');
+  });
 });

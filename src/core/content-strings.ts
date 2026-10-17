@@ -23,6 +23,10 @@ export interface ContentStrings {
   /** Replaces every match. */
   replaceAll: string;
   /** Rewrites a value, such as JSON text, with standard indentation. */
+  /** Shows cut text whole, in place. */
+  showMore: string;
+  /** Cuts text that was shown whole again. */
+  showLess: string;
   format: string;
   /** The message of text that is not valid JSON. */
   invalidJson: string;
@@ -98,6 +102,8 @@ export const contentStrings: ContentStrings = {
   replaceWith: 'Replace with',
   replace: 'Replace',
   replaceAll: 'Replace all',
+  showMore: 'Show more',
+  showLess: 'Show less',
   format: 'Format',
   invalidJson: 'Enter valid JSON.',
   invalidJsonAt: (line, column) => `Enter valid JSON: check line ${line}, column ${column}.`,

@@ -27,10 +27,17 @@ Verification: `src/components/tooltip/tooltip.test.tsx`, `e2e/tooltip.spec.ts`
 
 ### UIC-TOOLTIP-1.4 - Description
 
-While the panel is open, the trigger shall be described by it through `aria-describedby`, and the reference shall be removed when it closes. The trigger keeps its own accessible name. A trigger that sets its own `aria-describedby` keeps that value instead (React Aria gives the trigger's props precedence).
+While the panel is open, the trigger shall be described by it through `aria-describedby` (unless the hint is its label, [UIC-TOOLTIP-1.9](#uic-tooltip-19---label-relationship)), and the reference shall be removed when it closes. The trigger keeps its own accessible name. A trigger that sets its own `aria-describedby` keeps that value instead (React Aria gives the trigger's props precedence).
 
 Implementation: `src/components/tooltip/tooltip.tsx`
 Verification: `src/components/tooltip/tooltip.test.tsx`
+
+### UIC-TOOLTIP-1.9 - Label relationship
+
+With `relationship="label"` and string `content`, the hint shall be the trigger's accessible name whether the panel is open or not: the trigger element receives the content as its `aria-label` (it must forward `aria-label` to its focusable element, as `Button`, React Aria's `Button` and `Link` do). The open panel then describes nothing, so the name is read once; a trigger's own `aria-describedby` still wins. Use it for a control whose only label is its hint, such as an icon-only button.
+
+Implementation: `src/components/tooltip/tooltip.tsx`
+Verification: `src/components/tooltip/tooltip.test.tsx`, `e2e/tooltip.spec.ts`
 
 ### UIC-TOOLTIP-1.5 - Placement
 

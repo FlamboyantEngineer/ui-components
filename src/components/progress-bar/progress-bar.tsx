@@ -6,10 +6,13 @@ import {
   type ProgressBarRenderProps,
 } from 'react-aria-components';
 import { createHooks, type ComponentHooks } from '../../core/hooks.js';
-import type { BaseProps, Size } from '../../core/props.js';
+import type { BaseProps, Size, Tone } from '../../core/props.js';
 import { clamp } from '../../utils/clamp.js';
 
 export type ProgressBarSize = Extract<Size, 'sm' | 'md' | 'lg'>;
+
+/** The work's status: `neutral` while it runs normally, else how it went or is going. */
+export type ProgressBarTone = Extract<Tone, 'neutral' | 'success' | 'warning' | 'danger'>;
 
 export interface ProgressBarProps
   extends Omit<AriaProgressBarProps, 'className' | 'style' | 'children' | 'render'>, BaseProps {
@@ -19,6 +22,8 @@ export interface ProgressBarProps
   showValueLabel?: boolean | undefined;
   /** Track thickness. Defaults to `md`. */
   size?: ProgressBarSize | undefined;
+  /** The work's status, such as `success` once done or `danger` when it failed. Defaults to `neutral`. */
+  tone?: ProgressBarTone | undefined;
   /** The root element. */
   ref?: Ref<HTMLDivElement> | undefined;
 }
@@ -28,6 +33,8 @@ export type SpinnerSize = Extract<Size, 'sm' | 'md' | 'lg'>;
 export interface SpinnerProps extends BaseProps {
   /** Box size. Defaults to `md`. */
   size?: SpinnerSize | undefined;
+  /** Names a standalone spinner, which then is an indeterminate progress bar. Without it, decorative. */
+  label?: string | undefined;
 }
 
 /** A progress indicator's root: React Aria's progress bar, its bounded range and the indicator's hooks. */
@@ -69,10 +76,16 @@ export function resolveProgressRange(
   return { value: clamp(toFinite(range.value, minValue), minValue, maxValue), minValue, maxValue };
 }
 
+/** Whether measured progress reached the end of a range that has one. */
+function isComplete(range: ReturnType<typeof resolveProgressRange>): boolean {
+  return range.maxValue > range.minValue && range.value === range.maxValue;
+}
+
 /** The root both progress indicators render; `children` draws the indicator. */
 export function ProgressRoot({
   hooks: rootHooks,
   size,
+  tone = 'neutral',
   isIndeterminate = false,
   value,
   minValue,
@@ -80,11 +93,14 @@ export function ProgressRoot({
   className,
   ...rest
 }: ProgressRootProps) {
+  const range = resolveProgressRange({ value, minValue, maxValue });
+  const complete = !isIndeterminate && isComplete(range);
+  const data = { size, tone, indeterminate: isIndeterminate, complete };
   return (
     <AriaProgressBar
       {...rest}
-      {...rootHooks.root({ className, data: { size, indeterminate: isIndeterminate } })}
-      {...resolveProgressRange({ value, minValue, maxValue })}
+      {...rootHooks.root({ className, data })}
+      {...range}
       isIndeterminate={isIndeterminate}
     />
   );
@@ -137,11 +153,21 @@ export function ProgressBar({
 }
 
 /**
- * A decorative busy indicator for unmeasured work too small for a bar, such as the start of a
- * busy line. It is hidden from assistive technology; the surrounding text carries the status.
+ * A busy indicator for unmeasured work too small for a bar. Without `label` it is decorative, such
+ * as the start of a busy line whose text carries the status; with one it stands alone as an
+ * indeterminate progress bar named by the label.
  */
-export function Spinner({ size = 'md', className, ...rest }: SpinnerProps) {
+export function Spinner({ size = 'md', label, className, ...rest }: SpinnerProps) {
+  const hookProps = spinnerHooks.root({ className, data: { size } });
+  if (!label) return <span {...rest} {...hookProps} aria-hidden="true" />;
   return (
-    <span {...rest} {...spinnerHooks.root({ className, data: { size } })} aria-hidden="true" />
+    <AriaProgressBar
+      {...rest}
+      {...hookProps}
+      aria-label={label}
+      isIndeterminate
+      // The glyph stays a `<span>`, so a named spinner still sits inside a line of text.
+      render={(props) => <span {...props} />}
+    />
   );
 }

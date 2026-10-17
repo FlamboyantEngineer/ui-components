@@ -1,7 +1,9 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
 import { createRef } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { UiProvider } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { Tooltip } from '../tooltip/tooltip.js';
 import { TruncationTooltip } from './truncation-tooltip.js';
@@ -223,5 +225,68 @@ describe('TruncationTooltip', () => {
     rest(text);
     await advance(500);
     expect(tooltip()).toHaveTextContent(FULL_TEXT);
+  });
+
+  it('UIC-TRUNCATION-TOOLTIP-2.1 shows cut text whole in place and cuts it again', async () => {
+    vi.useRealTimers();
+    // Text measures as cut until it is shown whole, as the reference sheet draws it.
+    vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(100);
+    vi.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      return this.hasAttribute('data-expanded') ? 100 : 240;
+    });
+    const onExpandedChange = vi.fn();
+    const { container } = render(
+      <>
+        <TruncationTooltip expandable onExpandedChange={onExpandedChange}>
+          {FULL_TEXT}
+        </TruncationTooltip>
+        <TruncationTooltip>{FULL_TEXT}</TruncationTooltip>
+      </>,
+    );
+    const [text] = Array.from(container.querySelectorAll('.ui-truncation-tooltip'));
+    const more = screen.getByRole('button', { name: 'Show more' });
+    expect(screen.getAllByRole('button')).toHaveLength(1);
+    expect(more).toHaveClass('ui-button', 'ui-truncation-tooltip__toggle');
+    expect(more).toHaveAttribute('aria-expanded', 'false');
+    expect(more).toHaveAttribute('aria-controls', text?.id);
+    expect(text?.nextElementSibling).toBe(more);
+    expect(text).not.toHaveAttribute('data-expanded');
+    expectHooksMatchSpec(container, 'TRUNCATION-TOOLTIP', { slots: ['toggle'] });
+
+    await userEvent.click(more);
+    expect(onExpandedChange).toHaveBeenLastCalledWith(true);
+    expect(text).toHaveAttribute('data-expanded', 'true');
+    const less = screen.getByRole('button', { name: 'Show less' });
+    expect(less).toHaveAttribute('aria-expanded', 'true');
+    fireEvent.pointerEnter(text as Element, { pointerType: 'mouse' });
+    await act(() => new Promise((resolve) => setTimeout(resolve, 600)));
+    expect(tooltip()).toBeNull();
+
+    await userEvent.click(less);
+    expect(onExpandedChange).toHaveBeenLastCalledWith(false);
+    expect(text).not.toHaveAttribute('data-expanded');
+    expect(screen.getByRole('button', { name: 'Show more' })).toBeInTheDocument();
+    vi.restoreAllMocks();
+  });
+
+  it('UIC-TRUNCATION-TOOLTIP-2.1 draws no control for text that fits and follows controlled state', () => {
+    const { rerender } = render(
+      <TruncationTooltip expandable id="notes">
+        Fits
+      </TruncationTooltip>,
+    );
+    expect(screen.queryByRole('button')).toBeNull();
+    rerender(
+      <UiProvider strings={{ showLess: 'Moins' }}>
+        <TruncationTooltip expandable id="notes" isExpanded>
+          Fits
+        </TruncationTooltip>
+      </UiProvider>,
+    );
+    const less = screen.getByRole('button', { name: 'Moins' });
+    expect(less).toHaveAttribute('aria-controls', 'notes');
+    expect(document.getElementById('notes')).toHaveAttribute('data-expanded', 'true');
   });
 });

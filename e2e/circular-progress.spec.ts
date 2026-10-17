@@ -62,4 +62,26 @@ test.describe('Circular Progress lab', () => {
     ).toBeVisible();
     await lab.expectAccessible();
   });
+
+  test('UIC-CIRCULAR-PROGRESS-1.7 colours each status and marks a full ring complete', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('circular-progress');
+    const ring = (tone: string, progress: string) =>
+      page.locator(`[data-lab-cell="tone=${tone} progress=${progress}"] .ui-circular-progress`);
+    const stroke = (tone: string, progress: string) =>
+      ring(tone, progress)
+        .locator('.ui-circular-progress__fill')
+        .evaluate((node) => getComputedStyle(node).stroke);
+    await expect(ring('warning', '100%')).toHaveAttribute('data-complete', 'true');
+    await expect(ring('warning', '60%')).toHaveAttribute('data-tone', 'warning');
+    const colours = new Set(
+      await Promise.all(
+        ['neutral', 'success', 'warning', 'danger'].map((tone) => stroke(tone, '60%')),
+      ),
+    );
+    expect(colours.size).toBe(4);
+    await lab.expectAccessible();
+  });
 });
