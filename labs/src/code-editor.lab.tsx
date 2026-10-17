@@ -230,6 +230,7 @@ function EditingEditor() {
         lineNumbers
         wrap="off"
         indentWithTab
+        indent={4}
         autoCloseBrackets
         allowsSearch
         completions={completeSample}
@@ -308,7 +309,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Editing keys, search and completion sources"
-      description="Tab and Shift+Tab indent, Escape then Tab leaves; brackets and quotes pair up; Enter keeps the indentation; the bracket at the caret and its partner are marked. Ctrl+F finds and replaces. Typing or Ctrl+Space asks the source: statements with snippets (Tab moves between fields), or fields after fruit."
+      description="Tab and Shift+Tab indent by four spaces, Escape then Tab leaves; brackets and quotes pair up; Enter keeps the indentation; the bracket at the caret and its partner are marked. Ctrl+F finds and replaces. Typing or Ctrl+Space asks the source: statements with snippets (Tab moves between fields), or fields after fruit."
     >
       <EditingEditor />
     </LabSection>

@@ -192,7 +192,7 @@ test.describe('Code Editor lab', () => {
     await expect(input).toHaveValue(`${start}  return basket\n}\npick("a")`);
     await page.keyboard.press('Home');
     await page.keyboard.press('Tab');
-    await expect(input).toHaveValue(`${start}  return basket\n}\n  pick("a")`);
+    await expect(input).toHaveValue(`${start}  return basket\n}\n    pick("a")`);
     await page.keyboard.press('Shift+Tab');
     await expect(input).toHaveValue(`${start}  return basket\n}\npick("a")`);
     await expect(input).toBeFocused();

@@ -298,6 +298,7 @@ mountLab(
         aria-label="Warehouse folders"
         folders={warehouse}
         virtualized
+        rowHeight={28}
         data-lab-manager="virtualized"
       />
     </LabSection>

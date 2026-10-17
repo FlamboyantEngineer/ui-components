@@ -111,6 +111,7 @@ function Uploads({ variant }: { variant: FileUploadVariant | 'rules' }) {
         acceptedFileTypes={variant === 'dropzone' ? ['image/*'] : undefined}
         maxSize={variant === 'dropzone' ? 1024 * 1024 : undefined}
         maxFiles={{ button: undefined, dropzone: 3, rules: 4 }[variant]}
+        minSize={variant === 'rules' ? 1 : undefined}
         validate={variant === 'rules' ? refuseDuplicates(upload.files) : undefined}
         allowsMultiple
         files={upload.files}
@@ -194,7 +195,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Count limit and the host's check"
-      description="The upload holds four files, and the host refuses a name already chosen."
+      description="The upload holds four files, refuses empty files, and the host refuses a name already chosen."
     >
       <Uploads variant="rules" />
     </LabSection>
