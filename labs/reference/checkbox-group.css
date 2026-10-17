@@ -1,0 +1,30 @@
+/* Checkbox Group: the options stacked in the field's control slot, the parent box above a rule. */
+
+.ui-checkbox-group__box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 2px 0;
+}
+
+.ui-checkbox-group__box > .ui-checkbox + .ui-checkbox {
+  margin-inline-start: 0;
+}
+
+.ui-checkbox-group__select-all {
+  align-self: stretch;
+  margin-bottom: 2px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--ref-border);
+  font-weight: 500;
+}
+
+.ui-checkbox-group[data-dirty] .ui-checkbox-group__box {
+  padding-inline-start: 6px;
+  border-inline-start: 3px solid var(--ref-info);
+}
+
+.ui-checkbox-group__box[data-readonly] .ui-checkbox {
+  cursor: default;
+}

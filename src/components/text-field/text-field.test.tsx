@@ -241,4 +241,111 @@ describe('TextField', () => {
     expect(input).toHaveValue('Apple');
     expect(onCommit).toHaveBeenLastCalledWith('Apple');
   });
+
+  it('UIC-TEXT-FIELD-3.1 frames adornments with the input', () => {
+    const { container, rerender } = render(
+      <TextField
+        label="Price"
+        startAdornment="€"
+        endAdornment={<button type="button">Convert</button>}
+      />,
+    );
+    const group = container.querySelector('.ui-text-field__group');
+    expect(group).toHaveAttribute('role', 'presentation');
+    expect([...(group?.children ?? [])].map((node) => node.className.split(' ')[0])).toEqual([
+      'ui-text-field__start',
+      'ui-text-field__input',
+      'ui-text-field__end',
+    ]);
+    expect(container.querySelector('.ui-text-field__start')).toHaveTextContent('€');
+    expect(screen.getByRole('button', { name: 'Convert' })).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'Price' })).toBeInTheDocument();
+    expectHooksMatchSpec(container, 'TEXT-FIELD', { slots: ['box', 'group', 'start', 'end'] });
+    rerender(<TextField label="Price" />);
+    expect(container.querySelector('.ui-text-field__group')).toBeNull();
+  });
+
+  it('UIC-TEXT-FIELD-3.2 reveals a masked value from a toggle button', async () => {
+    const user = userEvent.setup();
+    const { container, rerender } = render(
+      <TextField label="Password" type="password" allowsReveal defaultValue="s3cret" />,
+    );
+    const input = container.querySelector('input') as HTMLInputElement;
+    const reveal = screen.getByRole('button', { name: 'Show Password' });
+    expect(input).toHaveAttribute('type', 'password');
+    expect(reveal).toHaveAttribute('aria-pressed', 'false');
+    expect(reveal).toHaveClass('ui-text-field__reveal', 'ui-icon-button');
+    expect(reveal.querySelector('[data-glyph="eye"]')).not.toBeNull();
+    await user.click(input);
+    await user.click(reveal);
+    expect(input).toHaveAttribute('type', 'text');
+    expect(reveal).toHaveAttribute('aria-pressed', 'true');
+    expect(reveal.querySelector('[data-glyph="eye-slash"]')).not.toBeNull();
+    expect(input).toHaveFocus();
+    await user.tab();
+    expect(reveal).toHaveFocus();
+    await user.keyboard(' ');
+    expect(input).toHaveAttribute('type', 'password');
+    expectHooksMatchSpec(container, 'TEXT-FIELD', { slots: ['group', 'reveal'] });
+    rerender(<TextField label="Password" type="password" allowsReveal isDisabled />);
+    expect(screen.getByRole('button', { name: 'Show Password' })).toBeDisabled();
+    rerender(<TextField label="Password" type="password" />);
+    expect(screen.queryByRole('button', { name: 'Show Password' })).toBeNull();
+    rerender(<TextField label="Password" allowsReveal />);
+    expect(screen.queryByRole('button', { name: 'Show Password' })).toBeNull();
+  });
+
+  it('UIC-TEXT-FIELD-3.3 grows a text area with its text between its row limits', async () => {
+    const user = userEvent.setup();
+    const { container, rerender } = render(
+      <TextField label="Notes" multiline minRows={2} maxRows={4} />,
+    );
+    const area = screen.getByRole<HTMLTextAreaElement>('textbox', { name: 'Notes' });
+    expect(area).toHaveAttribute('rows', '2');
+    expect(root(container)).toHaveAttribute('data-autosize', 'true');
+    area.style.lineHeight = '20px';
+    area.style.padding = '0px';
+    Object.defineProperty(area, 'scrollHeight', {
+      configurable: true,
+      get: () => area.value.split('\n').length * 20,
+    });
+    await user.type(area, 'One');
+    expect(area.style.height).toBe('40px');
+    await user.type(area, '{Enter}Two{Enter}Three');
+    expect(area.style.height).toBe('60px');
+    await user.type(area, '{Enter}Four{Enter}Five{Enter}Six');
+    expect(area.style.height).toBe('80px');
+    expectHooksMatchSpec(container, 'TEXT-FIELD');
+    rerender(<TextField label="Notes" multiline />);
+    expect(root(container)).not.toHaveAttribute('data-autosize');
+  });
+
+  it('UIC-TEXT-FIELD-3.4 counts the text in the description, as the length rules count it', async () => {
+    const user = userEvent.setup();
+    const segmenter = new Intl.Segmenter('en', { granularity: 'grapheme' });
+    const { container, rerender } = render(
+      <TextField label="Status" description="Shown to everyone." maxLength={10} showCount />,
+    );
+    const input = screen.getByRole('textbox', { name: 'Status' });
+    const count = container.querySelector('.ui-field__description .ui-text-field__count');
+    expect(count).toHaveTextContent('0/10');
+    await user.type(input, 'Away');
+    expect(count).toHaveTextContent('4/10');
+    expect(input).toHaveAccessibleDescription('Shown to everyone. 4/10');
+    expectHooksMatchSpec(container, 'TEXT-FIELD', { slots: ['count'] });
+    const family = '\u{1F468}\u200D\u{1F469}\u200D\u{1F467}';
+    rerender(
+      <TextField
+        label="Status"
+        value={family}
+        maxLength={1}
+        showCount
+        getLength={(text) => [...segmenter.segment(text)].length}
+      />,
+    );
+    expect(container.querySelector('.ui-text-field__count')).toHaveTextContent('1/1');
+    expect(root(container)).toHaveAttribute('data-validation', 'valid');
+    rerender(<TextField label="Status" value="Away" showCount />);
+    expect(container.querySelector('.ui-text-field__count')).toHaveTextContent('4');
+  });
 });

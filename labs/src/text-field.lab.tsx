@@ -1,6 +1,8 @@
 import { useState, type ReactNode } from 'react';
 import { Button } from '../../src/components/button/button.js';
+import { IconButton } from '../../src/components/icon-button/icon-button.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
+import { Glyph } from '../../src/core/provider.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import {
   fieldLayouts,
@@ -89,6 +91,33 @@ function DirtyAndRestore() {
   );
 }
 
+const graphemes = new Intl.Segmenter('en', { granularity: 'grapheme' });
+
+/** Counts what a reader sees as one character, so a combined emoji counts once. */
+function countGraphemes(text: string): number {
+  return [...graphemes.segment(text)].length;
+}
+
+/** Adornments inside the frame: a glyph, a unit and a button. */
+function Adornments() {
+  const [copied, setCopied] = useState('none');
+  return (
+    <>
+      <TextField
+        label="Website"
+        defaultValue="example.com"
+        startAdornment="https://"
+        endAdornment={
+          <IconButton icon="plus" label="Copy address" size="xs" onPress={() => setCopied('yes')} />
+        }
+        data-lab-field="website"
+      />
+      <TextField label="Weight note" startAdornment={<Glyph name="info" />} endAdornment="kg" />
+      <Output name="Copied">{copied}</Output>
+    </>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -127,6 +156,45 @@ mountLab(
       description="Edit, then restore, undo with Ctrl+Z, or use the field menu."
     >
       <DirtyAndRestore />
+    </LabSection>
+    <LabSection title="Adornments" description="Content inside the input's frame.">
+      <Adornments />
+    </LabSection>
+    <LabSection
+      title="Password"
+      description="The toggle button shows the text while pressed and keeps the caret in place."
+    >
+      <TextField
+        label="Password"
+        type="password"
+        allowsReveal
+        defaultValue="correct horse"
+        autoComplete="new-password"
+        data-lab-field="password"
+      />
+    </LabSection>
+    <LabSection title="Growing notes" description="Grows from 2 to 5 rows, then scrolls.">
+      <TextField label="Notes" multiline minRows={2} maxRows={5} data-lab-field="grow" />
+    </LabSection>
+    <LabSection
+      title="Character count"
+      description="The second field counts what a reader sees, so a combined emoji counts once."
+    >
+      <TextField
+        label="Status"
+        description="Shown on your profile."
+        maxLength={20}
+        showCount
+        data-lab-field="count"
+      />
+      <TextField
+        label="Reaction"
+        maxLength={3}
+        showCount
+        getLength={countGraphemes}
+        defaultValue={'\u{1F44D}\u{1F3FD}'}
+        data-lab-field="graphemes"
+      />
     </LabSection>
   </>,
 );

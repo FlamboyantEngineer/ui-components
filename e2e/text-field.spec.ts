@@ -107,4 +107,79 @@ test.describe('Text Field lab', () => {
     );
     await lab.expectAccessible();
   });
+
+  test('UIC-TEXT-FIELD-3.1 frames adornments with the input as one box', async ({ page, lab }) => {
+    await lab.open('text-field');
+    const website = field(page, 'website');
+    const group = await website.locator('.ui-text-field__group').boundingBox();
+    const start = await website.locator('.ui-text-field__start').boundingBox();
+    const input = await website.getByRole('textbox', { name: 'Website' }).boundingBox();
+    const end = await website.locator('.ui-text-field__end').boundingBox();
+    expect(group?.height).toBe(28);
+    expect((start?.x ?? 0) + (start?.width ?? 0)).toBeLessThanOrEqual(input?.x ?? 0);
+    expect(end?.x ?? 0).toBeGreaterThanOrEqual((input?.x ?? 0) + (input?.width ?? 0));
+    await expect(website.locator('.ui-text-field__input')).toHaveCSS('border-top-width', '0px');
+    await website.getByRole('button', { name: 'Copy address' }).click();
+    await expect(output(page, 'Copied')).toHaveText('yes');
+    await lab.expectAccessible();
+  });
+
+  test('UIC-TEXT-FIELD-3.2 reveals a password from a toggle button that keeps the caret', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('text-field');
+    const password = field(page, 'password');
+    const input = password.locator('input');
+    const reveal = password.getByRole('button', { name: 'Show Password' });
+    await expect(input).toHaveAttribute('type', 'password');
+    await input.click();
+    await reveal.click();
+    await expect(input).toHaveAttribute('type', 'text');
+    await expect(reveal).toHaveAttribute('aria-pressed', 'true');
+    await expect(input).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(reveal).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(input).toHaveAttribute('type', 'password');
+    await expect(reveal).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  test('UIC-TEXT-FIELD-3.3 grows the notes from two to five rows, then scrolls', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('text-field');
+    const grow = field(page, 'grow');
+    const area = grow.getByRole('textbox', { name: 'Notes' });
+    await expect(grow).toHaveAttribute('data-autosize', 'true');
+    const height = async () => (await area.boundingBox())?.height ?? 0;
+    const empty = await height();
+    await area.fill('One');
+    expect(await height()).toBe(empty);
+    await area.fill('One\nTwo\nThree\nFour');
+    const four = await height();
+    expect(four).toBeGreaterThan(empty);
+    await area.fill('One\nTwo\nThree\nFour\nFive\nSix\nSeven\nEight');
+    const full = await height();
+    expect(full).toBeGreaterThan(four);
+    expect(await area.evaluate((node) => node.scrollHeight > node.clientHeight)).toBe(true);
+    await area.fill('One');
+    expect(await height()).toBe(empty);
+  });
+
+  test('UIC-TEXT-FIELD-3.4 counts the text in the description as it is typed', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('text-field');
+    const count = field(page, 'count');
+    const input = count.getByRole('textbox', { name: 'Status' });
+    await expect(count.locator('.ui-text-field__count')).toHaveText('0/20');
+    await input.fill('Away');
+    await expect(count.locator('.ui-text-field__count')).toHaveText('4/20');
+    await expect(input).toHaveAccessibleDescription('Shown on your profile. 4/20');
+    await expect(field(page, 'graphemes').locator('.ui-text-field__count')).toHaveText('1/3');
+    await expect(field(page, 'graphemes')).toHaveAttribute('data-validation', 'valid');
+  });
 });

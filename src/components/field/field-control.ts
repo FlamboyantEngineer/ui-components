@@ -41,6 +41,10 @@ const stateKeys = new Set<string>([
   'onChange',
   'onCommit',
   'validate',
+  'validateAsync',
+  'validationDebounce',
+  'validationMode',
+  'validationBehavior',
   'isRequired',
   'isReadOnly',
   'isDisabled',
@@ -55,6 +59,7 @@ const layoutKeys = new Set<string>([
   'decoration',
   'menu',
   'onMenuAction',
+  'renderMessage',
   'className',
   'id',
 ]);
@@ -64,15 +69,22 @@ function bucketOf(key: string): 'state' | 'field' | 'rest' {
   return layoutKeys.has(key) || key.startsWith('data-') ? 'field' : 'rest';
 }
 
+// The form name is the field's (for external errors) and the control's (to submit its value).
 function splitFieldProps(props: object) {
   const buckets: Record<'state' | 'field' | 'rest', Record<string, unknown>> = {
     state: {},
     field: {},
     rest: {},
   };
-  for (const [key, value] of Object.entries(props)) buckets[bucketOf(key)][key] = value;
+  for (const [key, value] of Object.entries(props)) {
+    if (key === 'name') buckets.state[key] = value;
+    buckets[bucketOf(key)][key] = value;
+  }
   return buckets;
 }
+
+/** The control's own props: everything the field does not take, and the form name, which both use. */
+type FieldControlRest<T, P> = Omit<P, Exclude<keyof FieldInputProps<T>, 'name'>>;
 
 /**
  * Builds a field control from its props: the field state (with the control's own check before the
@@ -81,7 +93,7 @@ function splitFieldProps(props: object) {
 export function useFieldControl<T, P extends FieldInputProps<T>>(
   props: P & FieldInputProps<T>,
   options: FieldControlOptions<T>,
-): FieldControl<T, Omit<P, keyof FieldInputProps<T>>> {
+): FieldControl<T, FieldControlRest<T, P>> {
   const buckets = splitFieldProps(props);
   const own = buckets.state as FieldStateOptions<T>;
   const { check } = options;
@@ -94,7 +106,7 @@ export function useFieldControl<T, P extends FieldInputProps<T>>(
   return {
     state,
     field: buckets.field as unknown as FieldLayoutProps,
-    rest: buckets.rest as Omit<P, keyof FieldInputProps<T>>,
+    rest: buckets.rest as FieldControlRest<T, P>,
   };
 }
 

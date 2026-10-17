@@ -9,10 +9,12 @@ import {
   useFieldState,
   validateString,
   type FieldIssue,
+  type FieldIssues,
   type FieldLabelLayout,
   type FieldMenuEntry,
   type FieldProps,
   type FieldStateOptions,
+  type FieldValidationMode,
 } from '../../src/components/field/field.js';
 import { IconButton } from '../../src/components/icon-button/icon-button.js';
 import { TextMatchProvider } from '../../src/components/text-match/text-match.js';
@@ -30,6 +32,36 @@ const states = [
   'read-only',
   'disabled',
 ] as const;
+
+const modes = [
+  'immediate',
+  'change',
+  'blur',
+  'submit',
+] as const satisfies readonly FieldValidationMode[];
+
+const takenHandles = ['ada', 'grace'];
+
+/** A server check that answers after 500 ms: ada and grace are taken. */
+function checkHandle(value: string, signal: AbortSignal): Promise<FieldIssues> {
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => {
+      const isTaken = takenHandles.includes(value.trim().toLowerCase());
+      resolve(isTaken ? { severity: 'error', message: `${value.trim()} is taken.` } : null);
+    }, 500);
+    signal.addEventListener('abort', () => clearTimeout(timer));
+  });
+}
+
+/** A password's rules, all reported at once, each tagged with its validity state when it has one. */
+function checkPassword(value: string): FieldIssue[] {
+  const issues: FieldIssue[] = [];
+  if (value.length < 8)
+    issues.push({ severity: 'error', message: 'Too short.', validity: 'tooShort' });
+  if (!/\d/.test(value)) issues.push({ severity: 'error', message: 'Add a digit.' });
+  if (!/[A-Z]/.test(value)) issues.push({ severity: 'warning', message: 'A capital helps.' });
+  return issues;
+}
 
 function checkFruit(value: string): FieldIssue | null {
   if (value === 'Stone') return { severity: 'error', message: 'A stone is not a fruit.' };
@@ -194,6 +226,27 @@ function NameField() {
   );
 }
 
+/** The mode decides when the required field shows its message; Show messages reveals it. */
+function ModeField({ mode }: { mode: FieldValidationMode }) {
+  const state = useFieldState<string>({ defaultValue: '', isRequired: true, validationMode: mode });
+  return (
+    <>
+      <Field state={state} label="City">
+        {(control) => (
+          <Input
+            {...control}
+            value={state.value}
+            onChange={(event) => state.setValue(event.target.value)}
+          />
+        )}
+      </Field>
+      <Button size="sm" onPress={() => state.revealValidation()}>
+        Show messages
+      </Button>
+    </>
+  );
+}
+
 function Highlighting() {
   const [query, setQuery] = useState('an');
   return (
@@ -269,6 +322,45 @@ mountLab(
     </LabSection>
     <LabSection title="Label highlighting" description="A text match scope highlights label text.">
       <Highlighting />
+    </LabSection>
+    <LabSection
+      title="Validation modes"
+      description="Immediate shows the message at once, change after an edit, blur after leaving the field, submit after Show messages."
+    >
+      <StateMatrix axes={{ mode: modes }} render={({ mode }) => <ModeField mode={mode} />} />
+    </LabSection>
+    <LabSection
+      title="Several issues"
+      description="Every issue is listed, errors first; the too-short error is reworded from its validity state."
+    >
+      <SampleField
+        label="Password"
+        options={{ defaultValue: 'abc', validate: checkPassword }}
+        renderMessage={(validation, issues) => (
+          <ul data-lab-status={validation.status}>
+            {issues.map((issue) => (
+              <li key={issue.message}>
+                {issue.validity === 'tooShort' ? 'Use 8 characters or more.' : issue.message}
+              </li>
+            ))}
+          </ul>
+        )}
+        data-lab-field="issues"
+      />
+    </LabSection>
+    <LabSection
+      title="Asynchronous check"
+      description="Checked 300 ms after typing stops and answered after 500 ms; ada and grace are taken."
+    >
+      <SampleField
+        label="Handle"
+        options={{
+          defaultValue: 'lin',
+          validateAsync: checkHandle,
+          validationDebounce: 300,
+        }}
+        data-lab-field="async"
+      />
     </LabSection>
   </>,
 );

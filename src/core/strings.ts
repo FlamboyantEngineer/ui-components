@@ -108,6 +108,10 @@ export interface UiStrings {
   stepMismatch: (step: string) => string;
   /** Names a search box's clear button. */
   clearSearch: string;
+  /** Names the toggle button that shows a masked text field's value, from the field's label. */
+  revealValue: (label: string) => string;
+  /** A text's length, against its maximum length when it has one (`12/100`). */
+  characterCount: (count: number, maxLength?: number) => string;
   /** The default label of a true value. */
   valueTrue: string;
   /** The default label of a false value. */
@@ -280,6 +284,9 @@ export const defaultStrings: UiStrings = {
   rangeOverflow: (maximum) => `Enter ${maximum} or less.`,
   stepMismatch: (step) => `Enter a value in steps of ${step}.`,
   clearSearch: 'Clear search',
+  revealValue: (label) => `Show ${label}`,
+  characterCount: (count, maxLength) =>
+    maxLength === undefined ? String(count) : `${count}/${maxLength}`,
   valueTrue: 'True',
   valueFalse: 'False',
   valueUnset: 'Unset',

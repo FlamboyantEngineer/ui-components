@@ -129,4 +129,62 @@ test.describe('Number Field lab', () => {
     );
     await lab.expectAccessible();
   });
+
+  test('UIC-NUMBER-FIELD-3.1 frames literal affixes and keeps the locale grouping', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('number-field');
+    const rent = field(page, 'rent');
+    const input = rent.getByRole('textbox', { name: 'Rent' });
+    await expect(input).toHaveValue('1,250');
+    const start = await rent.locator('.ui-number-field__start').boundingBox();
+    const box = await input.boundingBox();
+    const end = await rent.locator('.ui-number-field__end').boundingBox();
+    expect((start?.x ?? 0) + (start?.width ?? 0)).toBeLessThanOrEqual(box?.x ?? 0);
+    expect(end?.x ?? 0).toBeGreaterThanOrEqual((box?.x ?? 0) + (box?.width ?? 0));
+    await expect(rent.locator('.ui-number-field__end')).toHaveText('/mo');
+    await expect(field(page, 'lakh').getByRole('textbox')).toHaveValue('12,50,000');
+    await lab.expectAccessible();
+  });
+
+  test('UIC-NUMBER-FIELD-3.2 steps by larger and smaller amounts with Shift and Alt', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('number-field');
+    const input = field(page, 'fast').getByRole('textbox', { name: 'Opacity' });
+    await input.focus();
+    await page.keyboard.press('Shift+ArrowUp');
+    await expect(input).toHaveValue('50');
+    await expect(output(page, 'Opacity')).toHaveText('50');
+    await page.keyboard.press('Alt+ArrowDown');
+    await expect(input).toHaveValue('49.9');
+    await page.keyboard.press('ArrowUp');
+    await expect(input).toHaveValue('50');
+  });
+
+  test('UIC-NUMBER-FIELD-3.3 scrubs the value by dragging its handle sideways', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('number-field');
+    const fast = field(page, 'fast');
+    const input = fast.getByRole('textbox', { name: 'Opacity' });
+    const scrubber = fast.locator('.ui-number-field__scrubber');
+    await scrubber.scrollIntoViewIfNeeded();
+    const handle = await scrubber.boundingBox();
+    if (!handle) throw new Error('not rendered');
+    const x = handle.x + handle.width / 2;
+    const y = handle.y + handle.height / 2;
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(x + 20, y, { steps: 4 });
+    await expect(input).toHaveValue('45');
+    await expect(output(page, 'Opacity')).toHaveText('40');
+    await page.mouse.move(x - 4, y, { steps: 2 });
+    await expect(input).toHaveValue('39');
+    await page.mouse.up();
+    await expect(output(page, 'Opacity')).toHaveText('39');
+  });
 });
