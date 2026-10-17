@@ -1,8 +1,14 @@
 import { describe, expect, it } from 'vitest';
+import { parseDate } from '@internationalized/date';
 import {
   describeRelativeDate,
+  describeRelativeRange,
+  findRelativeBoundIssue,
+  formatRelativePeriod,
   formatRelativePreset,
+  resolvePickedDate,
   resolveRelativePreset,
+  resolveRelativeRange,
 } from './relative-date.js';
 
 const now = new Date(2026, 4, 23, 10, 30, 0);
@@ -67,5 +73,59 @@ describe('relative date', () => {
     expect(resolveRelativePreset({ amount: 1, unit: 'day' }, { now, kind: 'date-time' })).toBe(
       at(2026, 4, 24, 10, 30),
     );
+  });
+
+  it('UIC-RELATIVE-DATE-FIELD-2.2 prefers a preset label to the generated one', () => {
+    expect(formatRelativePreset({ amount: 2, unit: 'week', label: 'Soon' }, 'en-US')).toBe('Soon');
+  });
+
+  it('UIC-RELATIVE-DATE-FIELD-2.3 resolves, counts and describes relative ranges', () => {
+    expect(resolveRelativeRange({ amount: -7, unit: 'day' }, now)).toEqual({
+      start: '2026-05-16',
+      end: '2026-05-23',
+    });
+    expect(resolveRelativeRange({ amount: 1, unit: 'month' }, now)).toEqual({
+      start: '2026-05-23',
+      end: '2026-06-23',
+    });
+    expect(formatRelativePeriod({ amount: -30, unit: 'day' }, 'en-US')).toBe('30 days');
+    expect(formatRelativePeriod({ amount: 2, unit: 'week' }, 'en-US')).toBe('2 weeks');
+    expect(
+      describeRelativeRange({ start: '2026-05-16', end: '2026-05-23' }, options),
+    ).toMatchObject({ relative: 'May 16, 2026 – Today', relation: 'present' });
+    expect(
+      describeRelativeRange({ start: '2026-05-20', end: '2026-05-23' }, options),
+    ).toMatchObject({
+      relative: '3 days ago – Today',
+      absolute: expect.stringMatching(/^May 20\s–\s23, 2026$/),
+    });
+    expect(
+      describeRelativeRange({ start: '2026-05-25', end: '2026-05-26' }, options),
+    ).toMatchObject({ relative: 'In 2 days – In 3 days', relation: 'future' });
+    expect(
+      describeRelativeRange({ start: '2026-05-01', end: '2026-05-02' }, options)?.relation,
+    ).toBe('past');
+    expect(describeRelativeRange({ start: 'soon', end: '2026-05-02' }, options)).toBeNull();
+    expect(resolvePickedDate(parseDate('2026-05-30'), { now, kind: 'date' })).toBe('2026-05-30');
+    expect(resolvePickedDate(parseDate('2026-05-30'), { now, kind: 'date-time' })).toBe(
+      at(2026, 4, 30, 10, 30),
+    );
+  });
+
+  it('UIC-RELATIVE-DATE-FIELD-2.4 finds the bound a value or a range end breaks', () => {
+    const bounds = { minValue: '2026-05-01', maxValue: '2026-05-31' };
+    expect(findRelativeBoundIssue('2026-05-15', bounds)).toBeNull();
+    expect(findRelativeBoundIssue('2026-04-30', bounds)).toEqual({
+      bound: 'min',
+      limit: '2026-05-01',
+    });
+    expect(findRelativeBoundIssue(at(2026, 5, 1, 9, 0), bounds)).toEqual({
+      bound: 'max',
+      limit: '2026-05-31',
+    });
+    expect(findRelativeBoundIssue({ start: '2026-05-20', end: '2026-06-02' }, bounds)?.bound).toBe(
+      'max',
+    );
+    expect(findRelativeBoundIssue(null, bounds)).toBeNull();
   });
 });

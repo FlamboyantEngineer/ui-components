@@ -169,5 +169,6 @@ export function DateTimeField<M extends DateTimeFieldMode = 'date'>(props: DateT
   );
 }
 
+export { CalendarBody } from './date-time-calendar.js';
 export type { DateTimeFieldCalendarHeading, DateTimeFieldPreset } from './date-time-calendar.js';
 export type { DateRangeValue, DateTimeFieldGranularity, DateTimeFieldMode } from './date-values.js';

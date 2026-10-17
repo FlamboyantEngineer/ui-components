@@ -65,7 +65,8 @@ export function CalendarBody({
   const strings = useUiStrings();
   return (
     <>
-      <header {...hooks.slot('calendar-header')}>
+      {/* The month navigation is no page banner, wherever the calendar is drawn. */}
+      <header {...hooks.slot('calendar-header')} role="none">
         <IconButton
           slot="previous"
           icon="chevron-left"
