@@ -79,6 +79,13 @@ function section(title: string) {
   return part('ui-property-section', 'title', title);
 }
 
+/** The row whose label reads `label`, whatever marks split its text. */
+function rowByLabel(label: string) {
+  return [...document.querySelectorAll('.ui-property-row')].find(
+    (row) => row.querySelector('.ui-property-row__label')?.textContent === label,
+  );
+}
+
 describe('PropertyScope', () => {
   it('UIC-PROPERTY-SCOPE-1.1 hides rows whose path, label and keywords miss a term, keeping them mounted', async () => {
     const { rerender } = render(<Settings query="" />);
@@ -239,5 +246,27 @@ describe('PropertyScope', () => {
     expect(root).toHaveAttribute('id', 'scope-1');
     expect(root).toHaveAttribute('data-probe', 'scope');
     expectHooksMatchSpec(container, 'PROPERTY-SCOPE', { callerAttributes: ['data-probe'] });
+  });
+
+  it('UIC-PROPERTY-SCOPE-1.6 matches rows through the caller’s filter', () => {
+    const startsWith = (text: string, query: string) =>
+      text
+        .toLowerCase()
+        .split(' ')
+        .some((word) => word.startsWith(query.trim().toLowerCase()));
+    render(
+      <PropertyScope query="ap" filter={startsWith}>
+        <PropertySection title="Orchard">
+          <PropertyRow label="Apple">red</PropertyRow>
+          <PropertyRow label="Grape">green</PropertyRow>
+          <PropertyCard name="Apricot tree">
+            <PropertyRow label="Height">3 m</PropertyRow>
+          </PropertyCard>
+        </PropertySection>
+      </PropertyScope>,
+    );
+    expect(rowByLabel('Apple')).not.toHaveAttribute('hidden');
+    expect(rowByLabel('Grape')).toHaveAttribute('hidden');
+    expect(document.querySelector('.ui-property-card')).not.toHaveAttribute('hidden');
   });
 });

@@ -1,6 +1,7 @@
 import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { useState } from 'react';
+import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { PropertyRow, PropertySection } from '../property-panel/property-panel.js';
@@ -19,6 +20,13 @@ function Fruit(props: Partial<Parameters<typeof PropertyFilter>[0]>) {
 
 function rowOf(text: string) {
   return screen.getByText(text).closest('.ui-property-row') as HTMLElement;
+}
+
+/** The row whose label reads `label`, whatever marks split its text. */
+function rowByLabel(label: string) {
+  return [...document.querySelectorAll('.ui-property-row')].find(
+    (row) => row.querySelector('.ui-property-row__label')?.textContent === label,
+  );
 }
 
 describe('PropertyFilter', () => {
@@ -88,5 +96,37 @@ describe('PropertyFilter', () => {
     expect(panel).toHaveAttribute('data-probe', 'filter');
     expect(panel).toHaveAttribute('data-label-layout', 'inline');
     expectHooksMatchSpec(container, 'PROPERTY-FILTER', { callerAttributes: ['data-probe'] });
+  });
+
+  it('UIC-PROPERTY-FILTER-1.4 follows a controlled query and reports every change', async () => {
+    const onQueryChange = vi.fn();
+    function Controlled() {
+      const [query, setQuery] = useState('pear');
+      return (
+        <Fruit
+          query={query}
+          onQueryChange={(next) => {
+            onQueryChange(next);
+            setQuery(next);
+          }}
+        />
+      );
+    }
+    render(<Controlled />);
+    const input = screen.getByRole('searchbox', { name: 'Filter fruit settings' });
+    expect(input).toHaveValue('pear');
+    expect(rowOf('Apple')).toHaveAttribute('hidden');
+    await userEvent.clear(input);
+    expect(onQueryChange).toHaveBeenLastCalledWith('');
+    expect(rowOf('Apple')).not.toHaveAttribute('hidden');
+    await userEvent.type(input, 'a');
+    expect(onQueryChange).toHaveBeenLastCalledWith('a');
+  });
+
+  it('UIC-PROPERTY-FILTER-1.4 starts from a default query and matches through the filter', () => {
+    render(<Fruit defaultQuery="APP" filter={(text, query) => text.startsWith(query)} />);
+    expect(screen.getByRole('searchbox')).toHaveValue('APP');
+    expect(rowByLabel('Apple')).toHaveAttribute('hidden');
+    expect(rowByLabel('Pear')).toHaveAttribute('hidden');
   });
 });

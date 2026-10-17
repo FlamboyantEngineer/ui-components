@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Input } from 'react-aria-components';
+import { I18nProvider, Input } from 'react-aria-components';
 import {
   FourSidePropertyStrip,
   type BoxSide,
+  type FourSidePropertyStripLink,
 } from '../../src/components/four-side-property-strip/four-side-property-strip.js';
 import { PropertyPanel } from '../../src/components/property-panel/property-panel.js';
 import { PropertyScope } from '../../src/components/property-scope/property-scope.js';
@@ -50,6 +51,57 @@ function Filtered() {
   );
 }
 
+/** A strip holding its values, whose link toggle sets all four sides or each opposite pair. */
+function Linked({ link }: { link: FourSidePropertyStripLink }) {
+  return (
+    <FourSidePropertyStrip
+      label="Padding"
+      unit="px"
+      link={link}
+      defaultLinked={link === 'all'}
+      defaultValue={{ top: '8', bottom: '8', left: '12', right: '12' }}
+      renderSide={(side, field) => (
+        <Input
+          aria-label={`Padding ${link} ${side}`}
+          value={field.value ?? ''}
+          size={3}
+          onChange={(event) => field.onChange(event.target.value)}
+        />
+      )}
+    />
+  );
+}
+
+/** Flow-relative sides in a right-to-left panel: the start cell edits the right side. */
+function Logical({ direction }: { direction: 'ltr' | 'rtl' }) {
+  return (
+    <I18nProvider locale={direction === 'rtl' ? 'ar-EG' : 'en-US'}>
+      <div dir={direction} data-lab-direction={direction}>
+        <PropertyPanel aria-label={`Logical ${direction}`}>
+          <FourSidePropertyStrip
+            label="Inset"
+            sides="logical"
+            defaultValue={{
+              'block-start': '4',
+              'block-end': '4',
+              'inline-start': '16',
+              'inline-end': '0',
+            }}
+            renderSide={(side, field) => (
+              <Input
+                aria-label={`Inset ${direction} ${side}`}
+                value={field.value ?? ''}
+                size={3}
+                onChange={(event) => field.onChange(event.target.value)}
+              />
+            )}
+          />
+        </PropertyPanel>
+      </div>
+    </I18nProvider>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -77,6 +129,34 @@ mountLab(
       <div data-lab-filtered style={{ width: 400 }}>
         <Filtered />
       </div>
+    </LabSection>
+    <LabSection
+      title="Linked sides"
+      description="The toggle links the sides: pairs link top with bottom and left with right; all links the four. The right strip starts linked."
+    >
+      <StateMatrix
+        axes={{ link: ['pairs', 'all'] }}
+        render={({ link }) => (
+          <div data-lab-column="400" style={{ width: 400 }}>
+            <PropertyPanel aria-label={`Linked ${link}`}>
+              <Linked link={link} />
+            </PropertyPanel>
+          </div>
+        )}
+      />
+    </LabSection>
+    <LabSection
+      title="Logical sides"
+      description="Top, bottom, start and end, left to right and right to left: the start cell comes first in the reading direction."
+    >
+      <StateMatrix
+        axes={{ direction: ['ltr', 'rtl'] }}
+        render={({ direction }) => (
+          <div data-lab-column="400" style={{ width: 400 }}>
+            <Logical direction={direction} />
+          </div>
+        )}
+      />
     </LabSection>
   </>,
 );

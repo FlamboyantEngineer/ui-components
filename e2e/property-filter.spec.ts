@@ -79,4 +79,26 @@ test.describe('Property Filter lab', () => {
     await panel(page).getByRole('searchbox').fill('zinc');
     await lab.expectAccessible();
   });
+
+  test('UIC-PROPERTY-FILTER-1.4 follows a host query and matches through its filter', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('property-filter');
+    const shared = page.locator('[data-lab-shared]');
+    const search = shared.getByRole('searchbox');
+    await expect(search).toHaveValue('font');
+    await shared.getByRole('button', { name: 'Show paper settings' }).click();
+    await expect(search).toHaveValue('paper');
+    await expect(shared.getByRole('textbox', { name: 'Paper size' })).toBeVisible();
+    await expect(shared.getByRole('textbox', { name: 'Font' })).toBeHidden();
+    await search.fill('size');
+    await expect(shared.locator('[data-lab-output]')).toHaveText('Query: size');
+
+    const words = page.locator('[data-lab-word-start]');
+    await words.getByRole('searchbox').fill('or');
+    await expect(words.getByRole('textbox', { name: 'Orientation' })).toBeVisible();
+    await expect(words.getByRole('textbox', { name: 'Paper size' })).toBeHidden();
+    await lab.expectAccessible('[data-lab-word-start]');
+  });
 });

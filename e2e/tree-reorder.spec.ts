@@ -114,4 +114,30 @@ test.describe('Tree reordering', () => {
     await expect(tart).toHaveAttribute('aria-level', '3');
     await expect(tart).toBeFocused();
   });
+
+  test('UIC-TREE-REORDER-1.4 drags the selected rows together', async ({ page, lab }) => {
+    await lab.open('tree');
+    const tree = page.locator('[data-lab-reorder="multiple"]');
+    await expect(
+      tree.getByRole('row', { name: 'Porto' }).locator('.ui-tree__drag-handle'),
+    ).toHaveAccessibleName(/2/);
+    await tree
+      .getByRole('row', { name: 'Porto' })
+      .dragTo(tree.getByRole('row', { name: 'Norway' }), { targetPosition: { x: 120, y: 12 } });
+    await expect(tree.locator('[data-lab-output]')).toHaveText(
+      'Last moves: lisbon inside norway; porto after lisbon',
+    );
+    expect(await order(tree)).toEqual([
+      'Europe',
+      'Portugal',
+      'Norway',
+      'Oslo',
+      'Bergen',
+      'Lisbon',
+      'Porto',
+      'Asia',
+      'Africa',
+    ]);
+    await expect(tree.locator('[data-dragging], [data-drop-target]')).toHaveCount(0);
+  });
 });

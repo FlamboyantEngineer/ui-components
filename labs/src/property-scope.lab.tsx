@@ -12,9 +12,17 @@ import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const queries = { none: '', title: 'colour', label: 'height', card: 'shadow', 'no match': 'zinc' };
 
-function Swatches({ query, onClear }: { query: string; onClear?: () => void }) {
+function Swatches({
+  query,
+  onClear,
+  filter,
+}: {
+  query: string;
+  onClear?: () => void;
+  filter?: (text: string, query: string) => boolean;
+}) {
   return (
-    <PropertyScope query={query} onClear={onClear}>
+    <PropertyScope query={query} onClear={onClear} filter={filter}>
       <PropertySection title="Colours">
         <PropertyRow label="Fill">Teal</PropertyRow>
         <PropertyRow label="Stroke" isOverridden>
@@ -57,6 +65,26 @@ function HostSearch() {
   );
 }
 
+/** Matches a setting's own words exactly, so “width” finds Width but “wid” finds nothing. */
+const wholeWord = (text: string, query: string) =>
+  text.toLocaleLowerCase().split(/\s+/).includes(query.trim().toLocaleLowerCase());
+
+function WholeWords() {
+  const [query, setQuery] = useState('wid');
+  return (
+    <PropertyPanel
+      aria-label="Whole words"
+      header={
+        <SearchField value={query} onChange={setQuery}>
+          <Label>Find a whole word</Label> <Input />
+        </SearchField>
+      }
+    >
+      <Swatches query={query} filter={wholeWord} onClear={() => setQuery('')} />
+    </PropertyPanel>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -83,6 +111,14 @@ mountLab(
     >
       <div data-lab-host-search style={{ width: 360 }}>
         <HostSearch />
+      </div>
+    </LabSection>
+    <LabSection
+      title="Custom matching"
+      description="The host's filter matches whole words only: “wid” matches nothing, “width” keeps Width."
+    >
+      <div data-lab-whole-words style={{ width: 360 }}>
+        <WholeWords />
       </div>
     </LabSection>
   </>,

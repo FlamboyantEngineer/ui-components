@@ -17,6 +17,16 @@ export interface TreeMove {
   position: TreeDropPosition;
 }
 
+/** A drop of several rows: the rows `keys` land together before or after `targetKey`, or inside it. */
+export interface TreeMultipleMove {
+  /** The dragged rows. */
+  keys: Iterable<TreeKey>;
+  /** The row the dragged rows land beside or inside. */
+  targetKey: TreeKey;
+  /** Where the dragged rows land relative to the target. */
+  position: TreeDropPosition;
+}
+
 /** The direction of a keyboard move: past a sibling, into the sibling above, or out of the parent. */
 export type TreeMoveDirection = 'up' | 'down' | 'in' | 'out';
 
@@ -85,12 +95,21 @@ function findSiblings<T>(rows: readonly TreeMoveRow<T>[], row: TreeMoveRow<T>): 
   return rows.filter((entry) => entry.parentKey === row.parentKey);
 }
 
-/** Whether the row `key`, or one of its ancestors, is `ancestor`. */
-function isWithin<T>(index: RowIndex<T>, key: TreeKey | null, ancestor: TreeKey): boolean {
+/** Whether the row `key`, or one of its ancestors, is one of `ancestors`. */
+function isWithinAny<T>(
+  index: RowIndex<T>,
+  key: TreeKey | null,
+  ancestors: ReadonlySet<TreeKey>,
+): boolean {
   for (let current = key; current !== null; current = index.get(current)?.parentKey ?? null) {
-    if (current === ancestor) return true;
+    if (ancestors.has(current)) return true;
   }
   return false;
+}
+
+/** Whether the row `key`, or one of its ancestors, is `ancestor`. */
+function isWithin<T>(index: RowIndex<T>, key: TreeKey | null, ancestor: TreeKey): boolean {
+  return isWithinAny(index, key, new Set([ancestor]));
 }
 
 /** Whether a placement among the row's own siblings leaves it where it is. */
@@ -231,6 +250,58 @@ export function resolveTreeDrop<T>(
   const target = rows.find((row) => row.key === move.targetKey);
   if (move.position === 'after' && target?.isExpanded) return null;
   return resolveTreeMove(rows, move, rules);
+}
+
+/** The dragged rows in the order shown, leaving out rows inside another dragged row. */
+function findOutermostRows<T>(rows: readonly TreeMoveRow<T>[], keys: ReadonlySet<TreeKey>) {
+  const index = indexRows(rows);
+  return rows.filter((row) => keys.has(row.key) && !isWithinAny(index, row.parentKey, keys));
+}
+
+/** Whether the rows already sit together in this order at the spot a drop of them names. */
+function isSameArrangement<T>(
+  rows: readonly TreeMoveRow<T>[],
+  { moved, first }: { moved: readonly TreeMoveRow<T>[]; first: Placement<T> },
+): boolean {
+  if (first.position === 'inside' || first.target.parentKey !== first.source.parentKey)
+    return false;
+  const siblings = findSiblings(rows, first.source);
+  const start = siblings.indexOf(first.source);
+  const isRun = moved.every((row, offset) => siblings[start + offset] === row);
+  const after = siblings[start + moved.length];
+  const before = siblings[start - 1];
+  return isRun && (first.position === 'before' ? after : before) === first.target;
+}
+
+/**
+ * The moves a drop of several rows makes, in the order they apply: the first row lands where the
+ * drop says and each other row just after the row before it, so the rows keep their order. Rows
+ * inside another dragged row move with it. `null` when one of the rows cannot go there under the
+ * rules of `resolveTreeDrop`, or when the drop leaves every row where it is.
+ */
+export function resolveTreeDropMany<T>(
+  rows: readonly TreeMoveRow<T>[],
+  { keys, targetKey, position }: TreeMultipleMove,
+  rules: TreeMoveRules<T> = {},
+): TreeMove[] | null {
+  const index = indexRows(rows);
+  const dragged = new Set(keys);
+  const moved = findOutermostRows(rows, dragged);
+  const target = index.get(targetKey);
+  const [source] = moved;
+  if (!source || !target?.isMovable || isWithinAny(index, target.key, dragged)) return null;
+  if (position === 'after' && target.isExpanded) return null;
+  const parentKey = position === 'inside' ? target.key : target.parentKey;
+  const canGo = (row: TreeMoveRow<T>) =>
+    row.isMovable &&
+    (row.parentKey === parentKey || canEnter(index, { source: row, parentKey }, rules));
+  if (!moved.every(canGo)) return null;
+  if (isSameArrangement(rows, { moved, first: { source, target, position } })) return null;
+  return moved.map((row, offset) =>
+    offset === 0
+      ? { key: row.key, targetKey, position }
+      : { key: row.key, targetKey: moved[offset - 1]?.key ?? targetKey, position: 'after' },
+  );
 }
 
 /**

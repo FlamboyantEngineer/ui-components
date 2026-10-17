@@ -8,6 +8,13 @@ import {
 } from '../../src/components/list-row/list-row.js';
 import { MetaLine } from '../../src/components/meta-line/meta-line.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import {
+  LongListCase,
+  ReorderCase,
+  SectionsCase,
+  SelectionCase,
+  selections,
+} from './list-view-cases.js';
 
 const kinds = ['link', 'action', 'static'] as const;
 const states = ['default', 'current', 'disabled', 'danger'] as const;
@@ -190,6 +197,43 @@ mountLab(
         <ListRow title="Photos.zip" meta="Uploading" />
         <ListRow title="Notes.txt" meta="Waiting" />
       </List>
+    </LabSection>
+    <LabSection
+      title="List view selection"
+      description="A List View in each selection mode: checkboxes while it selects with toggles, a press replaces the selection in replace mode. Damson is disabled; typing a letter moves to the matching row."
+    >
+      <StateMatrix
+        axes={{ selection: selections }}
+        render={({ selection }) => (
+          <div data-lab-column="300" style={{ width: 300 }}>
+            <SelectionCase selection={selection} />
+          </div>
+        )}
+      />
+    </LabSection>
+    <LabSection
+      title="List view sections"
+      description="Sections under header rows; the headers stay in view while their rows scroll."
+    >
+      <div style={{ width: 300 }}>
+        <SectionsCase />
+      </div>
+    </LabSection>
+    <LabSection
+      title="List view reordering"
+      description="Drag a row, or press Enter on its drag handle and use the arrow keys, to reorder."
+    >
+      <div style={{ width: 300 }}>
+        <ReorderCase />
+      </div>
+    </LabSection>
+    <LabSection
+      title="Long list view"
+      description="Show the list: only the rows in view render, and the next page loads as the end of the list scrolls into view."
+    >
+      <div style={{ width: 300 }}>
+        <LongListCase />
+      </div>
     </LabSection>
   </>,
 );

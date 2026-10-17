@@ -1,6 +1,6 @@
 # List Row
 
-`List` and `ListRow` draw a native list of rows for generic lists: search results, recent items, notifications, file lists. Each row has one primary control (a link, a button or a focusable read-only body) holding its text, and optional trailing controls beside it. The list keeps a single tab stop and moves focus between rows with the arrow keys. `ListRowContent` draws a row's text alone, for an element that is itself the link.
+`List` and `ListRow` draw a native list of rows for generic lists: search results, recent items, notifications, file lists. Each row has one primary control (a link, a button or a focusable read-only body) holding its text, and optional trailing controls beside it. The list keeps a single tab stop and moves focus between rows with the arrow keys. `ListRowContent` draws a row's text alone, for an element that is itself the link. `ListView` with `ListViewItem` and `ListViewSection` draws the same rows on React Aria's grid list, for collections the reader selects, reorders, searches by typing or scrolls through at length.
 
 ## UIC-LIST-ROW-1 - List
 
@@ -118,26 +118,91 @@ The reference sheet shall keep the title and the meta on one line each, ellipsiz
 Implementation: `labs/reference/list-row.css`
 Verification: `e2e/list-row.spec.ts`
 
+## UIC-LIST-ROW-3 - List view
+
+### UIC-LIST-ROW-3.1 - Grid list of rows
+
+`ListView` shall render React Aria's `GridList` in its `stack` layout with the `ui-list-view` root, named by its `aria-label` or `aria-labelledby`, and `ListViewItem` a `GridListItem` (`ui-list-view-item`) whose cell holds the row text drawn by `ListRowContent` (`title`, `meta`, `icon`, `leading`) followed by `trailing` controls in the `ui-list-view-item__trailing` slot. The list is one tab stop: ArrowDown and ArrowUp move between rows, Home and End to the first and last, and Enter or a press runs `onAction` or follows the item's `href` (React Aria). A string `title` is the item's `textValue` unless one is given. `divided` publishes `data-divided` and the item's `tone` (`neutral` by default, `danger`) `data-tone`, as on `List` and `ListRow`.
+
+Implementation: `src/components/list-row/list-view.tsx`, `labs/reference/list-row.css`
+Verification: `src/components/list-row/list-view.test.tsx`, `e2e/list-row.spec.ts`
+
+### UIC-LIST-ROW-3.2 - Typeahead
+
+Typing printable characters while a row has focus shall move focus to the next row whose text value starts with the typed text (React Aria).
+
+Implementation: `src/components/list-row/list-view.tsx`
+Verification: `src/components/list-row/list-view.test.tsx`, `e2e/list-row.spec.ts`
+
+### UIC-LIST-ROW-3.3 - Selection
+
+React Aria's selection props (`selectionMode`, `selectionBehavior`, `selectedKeys`, `defaultSelectedKeys`, `onSelectionChange`, `disallowEmptySelection`, `disabledKeys`) shall pass through: selected rows carry `aria-selected` and `data-selected`, and a multiple-selection list `aria-multiselectable`. While the list selects with toggles (`selectionBehavior="toggle"`, the default), each row draws a selection [Checkbox](CHECKBOX.md) before its text in the `ui-list-view-item__checkbox` slot, which reports and toggles the row's selection; with `replace` no checkbox draws and a press replaces the selection.
+
+Implementation: `src/components/list-row/list-view.tsx`, `labs/reference/list-row.css`
+Verification: `src/components/list-row/list-view.test.tsx`, `e2e/list-row.spec.ts`
+
+### UIC-LIST-ROW-3.4 - Sections and sticky headers
+
+`ListViewSection` shall render a React Aria `GridListSection` (`ui-list-view-section`, a `rowgroup` named by its header) whose first row is a `GridListHeader` holding its `title` (`ui-list-view-section__header`), followed by its children or its `items` with a render function. Arrow keys move across sections from row to row, skipping headers. `stickyHeaders` shall publish `data-sticky-headers` on the list, from which the stylesheet keeps the header of the section in view at the top of the scrolling list; the reference sheet does so.
+
+Implementation: `src/components/list-row/list-view.tsx`, `labs/reference/list-row.css`
+Verification: `src/components/list-row/list-view.test.tsx`, `e2e/list-row.spec.ts`
+
+### UIC-LIST-ROW-3.5 - Drag and drop
+
+`ListView` shall pass React Aria's `dragAndDropHooks` (from `useDragAndDrop`) through, so the reader reorders rows or drops them elsewhere by pointer, or by keyboard from a row's drag handle. While the list lets the reader drag, each row draws a [DragHandle](DRAG-HANDLE.md) in the `ui-list-view-item__drag-handle` slot first and publishes `data-allows-dragging`; the dragged row carries `data-dragging`. Unless the caller draws its own, the landing spot between rows is a `ui-list-view__drop-indicator` row with `data-position` (`before`, `after`) and `data-drop-target`.
+
+Implementation: `src/components/list-row/list-view.tsx`, `labs/reference/list-row.css`
+Verification: `src/components/list-row/list-view.test.tsx`, `e2e/list-row.spec.ts`
+
+### UIC-LIST-ROW-3.6 - Long and incrementally loaded lists
+
+`ListView` shall pass its collection children through ([COLLECTIONS.md](COLLECTIONS.md)): inside a React Aria `Virtualizer` with `ListLayout` only the rows in view render, and a `GridListLoadMoreItem` after the items calls `onLoadMore` as it scrolls into view while `isLoading` is false. `renderEmptyState` draws the empty list, which publishes `data-empty`.
+
+Implementation: `src/components/list-row/list-view.tsx`
+Verification: `src/components/list-row/list-view.test.tsx`, `e2e/list-row.spec.ts`
+
 ## Hooks
 
-| Hook                           | Kind      | Values                     | Description                                                   |
-| ------------------------------ | --------- | -------------------------- | ------------------------------------------------------------- |
-| `ui-list`                      | root      |                            | The `<ul>`.                                                   |
-| `data-divided`                 | state     | `true`                     | Dividers between rows requested.                              |
-| `data-pending`                 | state     | `true`                     | Rows are loading or updating.                                 |
-| `ui-list-row`                  | root      |                            | The `<li>`.                                                   |
-| `ui-list-row__primary`         | slot      |                            | The link, button or read-only body holding the row text.      |
-| `ui-list-row__trailing`        | slot      |                            | Trailing controls, after the primary control.                 |
-| `data-kind`                    | attribute | `link`, `action`, `static` | What the primary control is.                                  |
-| `data-tone`                    | attribute | `neutral`, `danger`        | Semantic emphasis.                                            |
-| `data-current`                 | state     | `true`                     | The current row.                                              |
-| `data-disabled`                | state     | `true`                     | Disabled row, or the disabled action button (React Aria).     |
-| `data-hovered`                 | state     | `true`                     | Pointer over an action row's button (React Aria).             |
-| `data-pressed`                 | state     | `true`                     | An action row's button is pressed (React Aria).               |
-| `data-focused`                 | state     | `true`                     | An action row's button has focus (React Aria).                |
-| `data-focus-visible`           | state     | `true`                     | An action row's button has keyboard focus (React Aria).       |
-| `ui-list-row-content`          | root      |                            | The row text: leading media or icon, title and meta.          |
-| `ui-list-row-content__leading` | slot      |                            | Decorative leading media.                                     |
-| `ui-list-row-content__text`    | slot      |                            | The title and meta lines (the `IconLabel` label with `icon`). |
-| `ui-list-row-content__title`   | slot      |                            | The title line.                                               |
-| `ui-list-row-content__meta`    | slot      |                            | The meta line.                                                |
+| Hook                             | Kind      | Values                     | Description                                                   |
+| -------------------------------- | --------- | -------------------------- | ------------------------------------------------------------- |
+| `ui-list`                        | root      |                            | The `<ul>`.                                                   |
+| `data-divided`                   | state     | `true`                     | Dividers between rows requested.                              |
+| `data-pending`                   | state     | `true`                     | Rows are loading or updating.                                 |
+| `ui-list-row`                    | root      |                            | The `<li>`.                                                   |
+| `ui-list-row__primary`           | slot      |                            | The link, button or read-only body holding the row text.      |
+| `ui-list-row__trailing`          | slot      |                            | Trailing controls, after the primary control.                 |
+| `data-kind`                      | attribute | `link`, `action`, `static` | What the primary control is.                                  |
+| `data-tone`                      | attribute | `neutral`, `danger`        | Semantic emphasis.                                            |
+| `data-current`                   | state     | `true`                     | The current row.                                              |
+| `data-disabled`                  | state     | `true`                     | Disabled row, or the disabled action button (React Aria).     |
+| `data-hovered`                   | state     | `true`                     | Pointer over an action row's button (React Aria).             |
+| `data-pressed`                   | state     | `true`                     | An action row's button is pressed (React Aria).               |
+| `data-focused`                   | state     | `true`                     | An action row's button has focus (React Aria).                |
+| `data-focus-visible`             | state     | `true`                     | An action row's button has keyboard focus (React Aria).       |
+| `ui-list-row-content`            | root      |                            | The row text: leading media or icon, title and meta.          |
+| `ui-list-row-content__leading`   | slot      |                            | Decorative leading media.                                     |
+| `ui-list-row-content__text`      | slot      |                            | The title and meta lines (the `IconLabel` label with `icon`). |
+| `ui-list-row-content__title`     | slot      |                            | The title line.                                               |
+| `ui-list-row-content__meta`      | slot      |                            | The meta line.                                                |
+| `ui-list-view`                   | root      |                            | The grid list (`role="grid"`).                                |
+| `ui-list-view__drop-indicator`   | slot      |                            | Where dragged rows would land, between rows.                  |
+| `data-sticky-headers`            | state     | `true`                     | Section headers stay in view while their rows scroll.         |
+| `data-position`                  | attribute | `before`, `after`          | Which side of its row a drop indicator stands for.            |
+| `ui-list-view-item`              | root      |                            | A row (`role="row"`).                                         |
+| `ui-list-view-item__drag-handle` | slot      |                            | The row's drag handle (also `ui-drag-handle`).                |
+| `ui-list-view-item__checkbox`    | slot      |                            | The selection checkbox (also `ui-checkbox`).                  |
+| `ui-list-view-item__trailing`    | slot      |                            | Trailing controls, after the row text.                        |
+| `ui-list-view-section`           | root      |                            | A section of rows (`role="rowgroup"`).                        |
+| `ui-list-view-section__header`   | slot      |                            | The section's header row.                                     |
+| `data-selected`                  | state     | `true`                     | A selected row (React Aria).                                  |
+| `data-selection-mode`            | state     | `single`, `multiple`       | The list's selection mode, on rows (React Aria).              |
+| `data-allows-dragging`           | state     | `true`                     | A row the reader can drag (React Aria).                       |
+| `data-dragging`                  | state     | `true`                     | A row being dragged (React Aria).                             |
+| `data-drop-target`               | state     | `true`                     | The list, a row or a drop indicator is the drop target.       |
+| `data-focus-visible-within`      | state     | `true`                     | Keyboard focus inside a row (React Aria).                     |
+| `data-layout`                    | state     | `stack`                    | The list's layout (React Aria).                               |
+| `data-orientation`               | state     | `vertical`                 | The list's orientation (React Aria).                          |
+| `data-empty`                     | state     | `true`                     | The list has no rows (React Aria).                            |
+| `data-collection`                | state     |                            | React Aria's collection marker, on the list and its rows.     |
+| `data-key`                       | state     |                            | A row's `id` (React Aria).                                    |

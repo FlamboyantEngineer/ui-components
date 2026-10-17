@@ -82,4 +82,15 @@ test.describe('Property Scope lab', () => {
     await lab.open('property-scope', { theme: 'dark' });
     await lab.expectAccessible();
   });
+
+  test('UIC-PROPERTY-SCOPE-1.6 matches through the host’s filter', async ({ page, lab }) => {
+    await lab.open('property-scope');
+    const area = page.locator('[data-lab-whole-words]');
+    const search = area.getByRole('searchbox', { name: 'Find a whole word' });
+    await expect(area.locator('.ui-property-scope__status')).toContainText('No properties match');
+    await search.fill('width');
+    await expect(row(area, 'Width')).toBeVisible();
+    await expect(row(area, 'Height')).toBeHidden();
+    await lab.expectAccessible('[data-lab-whole-words]');
+  });
 });

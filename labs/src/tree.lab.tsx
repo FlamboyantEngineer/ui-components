@@ -4,6 +4,13 @@ import { IconButton } from '../../src/components/icon-button/icon-button.js';
 import { Tree, type TreeItemState } from '../../src/components/tree/tree.js';
 import { applyTreeMove, type TreeMove } from '../../src/utils/tree-reorder.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import {
+  CheckboxTree,
+  FilterTree,
+  InPlaceRenameTree,
+  LoadingTree,
+  MultipleReorderTree,
+} from './tree-cases.js';
 
 interface Entry {
   id: string;
@@ -361,6 +368,36 @@ mountLab(
         <ReorderTree betweenParents={false} />
         <ReorderTree betweenParents />
       </div>
+    </LabSection>
+    <LabSection
+      title="Reordering several rows"
+      description="Lisbon and Porto are selected: drag either to move both, in order. Cities may move to another country."
+    >
+      <MultipleReorderTree />
+    </LabSection>
+    <LabSection
+      title="Checkbox selection"
+      description="Checking a country checks its cities; a country with only some cities checked shows a mixed box. Bergen is disabled and left alone."
+    >
+      <CheckboxTree />
+    </LabSection>
+    <LabSection
+      title="Filtering"
+      description="Matching places show with their ancestors opened and the match marked; a matching country keeps its cities to open."
+    >
+      <FilterTree />
+    </LabSection>
+    <LabSection
+      title="Loading on demand"
+      description="Opening a region loads its towns. South fails the first time: its row shows why, with a retry."
+    >
+      <LoadingTree />
+    </LabSection>
+    <LabSection
+      title="Renaming in place"
+      description="F2 renames the focused country or city; Enter or leaving the field keeps the name, Escape drops it. Continents cannot be renamed."
+    >
+      <InPlaceRenameTree />
     </LabSection>
   </>,
 );

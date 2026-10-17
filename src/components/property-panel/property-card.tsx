@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import {
   Button as AriaButton,
   Disclosure,
+  DisclosureGroupStateContext,
   DisclosurePanel,
   type DisclosureProps,
 } from 'react-aria-components';
@@ -82,27 +83,30 @@ export function PropertyCard({
   const glyph = useExpandGlyph(expansion.isExpanded);
 
   return (
-    <Disclosure
-      {...rest}
-      {...expansion}
-      {...hooks.root({ className, data: { overridden } })}
-      hidden={hidden || !isMatch}
-    >
-      <div {...hooks.slot('header')}>
-        {/* Spaces between the parts keep the trigger's accessible name readable. */}
-        <AriaButton slot="trigger" className={hooks.slotClass('trigger')}>
-          <Glyph name={glyph} className={hooks.slotClass('chevron')} />
-          <span {...hooks.slot('name')}>
-            <TextMatch>{name}</TextMatch>
-          </span>{' '}
-          {isEmptyNode(summary) ? null : <span {...hooks.slot('summary')}>{summary}</span>}{' '}
-          {overridden ? <OverrideMark className={hooks.slotClass('override')} /> : null}
-        </AriaButton>
-        {isEmptyNode(actions) ? null : <div {...hooks.slot('actions')}>{actions}</div>}
-      </div>
-      <DisclosurePanel className={hooks.slotClass('body')}>
-        <PropertyScopeContext value={level.value}>{children}</PropertyScopeContext>
-      </DisclosurePanel>
-    </Disclosure>
+    // A card keeps its own state inside a panel that opens and closes its sections.
+    <DisclosureGroupStateContext value={null}>
+      <Disclosure
+        {...rest}
+        {...expansion}
+        {...hooks.root({ className, data: { overridden } })}
+        hidden={hidden || !isMatch}
+      >
+        <div {...hooks.slot('header')}>
+          {/* Spaces between the parts keep the trigger's accessible name readable. */}
+          <AriaButton slot="trigger" className={hooks.slotClass('trigger')}>
+            <Glyph name={glyph} className={hooks.slotClass('chevron')} />
+            <span {...hooks.slot('name')}>
+              <TextMatch>{name}</TextMatch>
+            </span>{' '}
+            {isEmptyNode(summary) ? null : <span {...hooks.slot('summary')}>{summary}</span>}{' '}
+            {overridden ? <OverrideMark className={hooks.slotClass('override')} /> : null}
+          </AriaButton>
+          {isEmptyNode(actions) ? null : <div {...hooks.slot('actions')}>{actions}</div>}
+        </div>
+        <DisclosurePanel className={hooks.slotClass('body')}>
+          <PropertyScopeContext value={level.value}>{children}</PropertyScopeContext>
+        </DisclosurePanel>
+      </Disclosure>
+    </DisclosureGroupStateContext>
   );
 }

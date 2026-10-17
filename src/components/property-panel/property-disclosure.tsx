@@ -1,5 +1,7 @@
 // What the collapsible parts of a property panel (sections and cards) share.
 
+import { useContext, useId } from 'react';
+import { DisclosureGroupStateContext, type Key } from 'react-aria-components';
 import { usePersistentState, useUiStrings } from '../../core/provider.js';
 
 export interface ScopedExpansionOptions {
@@ -44,6 +46,32 @@ export function useScopedExpansion({
       onExpandedChange?.(next);
     },
   };
+}
+
+/**
+ * A section's disclosure state: while the panel opens and closes its sections (React Aria's
+ * disclosure group), the panel's state for the key `id` (a generated key without one), which a
+ * query still overrides; otherwise the section's own, as `useScopedExpansion` keeps it.
+ */
+export function useSectionExpansion({
+  id,
+  isExpanded,
+  onExpandedChange,
+  persistKey,
+  ...options
+}: ScopedExpansionOptions & { id: Key | undefined }): ScopedExpansion {
+  const group = useContext(DisclosureGroupStateContext);
+  const generatedId = useId();
+  const key = id ?? generatedId;
+  return useScopedExpansion({
+    ...options,
+    isExpanded: group ? group.expandedKeys.has(key) : isExpanded,
+    onExpandedChange(next) {
+      group?.toggleKey(key);
+      onExpandedChange?.(next);
+    },
+    persistKey: group ? undefined : persistKey,
+  });
 }
 
 /** The mark of a section or card that holds a property overriding an inherited value. */

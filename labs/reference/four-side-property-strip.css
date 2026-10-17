@@ -12,3 +12,12 @@
 .ui-four-side-property-strip .ui-four-side-property-strip__side > input {
   width: 40px;
 }
+
+.ui-four-side-property-strip__link {
+  flex: none;
+  margin-inline-start: 2px;
+}
+
+.ui-four-side-property-strip[data-linked] .ui-four-side-property-strip__side > input {
+  border-style: dashed;
+}

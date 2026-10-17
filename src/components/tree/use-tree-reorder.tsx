@@ -8,6 +8,7 @@ import {
 import {
   getVisibleTreeRows,
   resolveTreeDrop,
+  resolveTreeDropMany,
   resolveTreeKeyboardMove,
   type TreeKeyboardMove,
   type TreeMove,
@@ -29,6 +30,11 @@ export interface TreeReorderOptions<T> {
   canMoveInto?: ((item: T, parent: T | null) => boolean) | undefined;
   /** Reports one move. The tree never reorders its own items: apply the move and render the result. */
   onMove: (move: TreeMove) => void;
+  /**
+   * Reports the moves of several selected rows dragged together, in the order they apply. Without
+   * it, a drag of several rows reports nothing.
+   */
+  onMoveMany?: ((moves: readonly TreeMove[]) => void) | undefined;
 }
 
 /** What reordering reads from the tree. */
@@ -55,22 +61,24 @@ export interface TreeReorder<T> {
 const siblingShortcuts = 'Alt+ArrowUp Alt+ArrowDown';
 const parentShortcuts = 'Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight';
 
-function findOnlyKey(keys: ReadonlySet<Key>): Key | null {
-  if (keys.size !== 1) return null;
-  const [key] = keys;
-  return key ?? null;
-}
-
-/** The move a drop of one row on `target` makes; React Aria's `on` position is `inside`. */
-function resolveDropMove<T>(
+/**
+ * The moves a drop on `target` makes: one for a single row, or one per row for several rows when
+ * the owner takes them. React Aria's `on` position is `inside`.
+ */
+function resolveDropMoves<T>(
   rows: readonly TreeMoveRow<T>[],
   reorder: TreeReorderOptions<T> | undefined,
   { target, keys }: { target: DropTarget; keys: ReadonlySet<Key> },
-): TreeMove | null {
-  const key = findOnlyKey(keys);
-  if (!reorder || key === null || target.type !== 'item') return null;
+): readonly TreeMove[] | null {
+  const [key] = keys;
+  if (!reorder || key === undefined || target.type !== 'item') return null;
   const position = target.dropPosition === 'on' ? 'inside' : target.dropPosition;
-  return resolveTreeDrop(rows, { key, targetKey: target.key, position }, reorder);
+  if (keys.size > 1) {
+    if (!reorder.onMoveMany) return null;
+    return resolveTreeDropMany(rows, { keys, targetKey: target.key, position }, reorder);
+  }
+  const move = resolveTreeDrop(rows, { key, targetKey: target.key, position }, reorder);
+  return move ? [move] : null;
 }
 
 function renderDropIndicator(target: DropTarget) {
@@ -117,13 +125,15 @@ export function useTreeReorder<T extends TreeItemData>(
   useLayoutEffect(() => {
     latest.current = { rows, source };
   });
-  const report = useCallback((move: TreeMove) => {
+  const report = useCallback((moves: readonly TreeMove[]) => {
     const { expansion, reorder } = latest.current.source;
-    if (move.position === 'inside') expansion.expand(move.targetKey);
-    reorder?.onMove(move);
+    const [first] = moves;
+    if (first?.position === 'inside') expansion.expand(first.targetKey);
+    if (moves.length > 1) reorder?.onMoveMany?.(moves);
+    else if (first) reorder?.onMove(first);
   }, []);
-  const dragAndDropHooks = useReorderDragAndDrop<T, TreeMove>({
-    resolveMove: (target, keys) => resolveDropMove(rows, source.reorder, { target, keys }),
+  const dragAndDropHooks = useReorderDragAndDrop<T, readonly TreeMove[]>({
+    resolveMove: (target, keys) => resolveDropMoves(rows, source.reorder, { target, keys }),
     onMove: report,
     getTextValue: (key) => {
       const row = rows.find((entry) => entry.key === key);
@@ -135,7 +145,7 @@ export function useTreeReorder<T extends TreeItemData>(
     (request: TreeKeyboardMove) => {
       const { rows: current, source: owner } = latest.current;
       const move = owner.reorder && resolveTreeKeyboardMove(current, request, owner.reorder);
-      if (move) report(move);
+      if (move) report([move]);
       return move !== undefined;
     },
     [report],
