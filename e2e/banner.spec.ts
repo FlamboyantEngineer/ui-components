@@ -72,4 +72,39 @@ test.describe('Banner lab', () => {
     await expect(banner).toBeVisible();
     await expect(banner).toHaveAttribute('data-lab-mark', 'same');
   });
+
+  test('UIC-BANNER-3.2 UIC-ENTER-EXIT-1.2 UIC-ENTER-EXIT-1.3 enters and exits with useEnterExit', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('banner');
+    // Slow the reference animations so each phase holds until the test finishes it.
+    await page.addStyleTag({
+      content:
+        '[data-lab-demo="enter-exit"] .ui-banner { animation-duration: 60s !important; transition-duration: 60s !important; }',
+    });
+    const demo = page.locator('[data-lab-demo="enter-exit"]');
+    const banner = demo.locator('.ui-banner');
+    const finishAnimations = () =>
+      banner.evaluate((node) => {
+        const running = node.getAnimations();
+        for (const animation of running) animation.finish();
+        return running.length;
+      });
+    await expect(banner).toHaveCount(0);
+
+    await demo.getByRole('button', { name: 'Show notice' }).click();
+    await expect(banner).toHaveAttribute('data-entering', 'true');
+    expect(await finishAnimations()).toBeGreaterThan(0);
+    await expect(banner).not.toHaveAttribute('data-entering');
+    await expect(banner).toHaveText('Report.pdf uploaded.');
+
+    await banner.getByRole('button', { name: 'Dismiss' }).click();
+    await expect(banner).toHaveAttribute('data-exiting', 'true');
+    await expect(banner).toBeVisible();
+    expect(await finishAnimations()).toBeGreaterThan(0);
+    await expect(banner).toHaveCount(0);
+    await expect(demo.getByRole('button', { name: 'Show notice' })).toBeVisible();
+    await lab.expectAccessible();
+  });
 });

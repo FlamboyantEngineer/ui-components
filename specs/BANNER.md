@@ -57,16 +57,16 @@ Verification: `src/components/banner/banner.test.tsx`, `e2e/banner.spec.ts`
 Implementation: `src/components/banner/banner.tsx`, `labs/reference/banner.css`
 Verification: `src/components/banner/banner.test.tsx`
 
-### UIC-BANNER-3.2 - Exiting and hidden
+### UIC-BANNER-3.2 - Entering, exiting and hidden
 
-`isExiting` shall publish `data-exiting` while the caller plays an exit transition before removing the banner. `hidden` shall hide the banner with the native `hidden` attribute while keeping the same element mounted.
+`isEntering` shall publish `data-entering` while an enter animation plays, and `isExiting` shall publish `data-exiting` while an exit transition plays before the banner is removed. [`useEnterExit`](ENTER-EXIT.md) times both from the banner's `ref` and keeps it mounted through its exit, so the caller only says whether the banner is open. `hidden` shall hide the banner with the native `hidden` attribute while keeping the same element mounted.
 
 Implementation: `src/components/banner/banner.tsx`, `labs/reference/banner.css`
-Verification: `src/components/banner/banner.test.tsx`
+Verification: `src/components/banner/banner.test.tsx`, `e2e/banner.spec.ts`
 
 ### UIC-BANNER-3.3 - Hooks and caller attributes
 
-`Banner` shall carry the hooks below, append the caller's `className`, forward caller `data-*` attributes, `id` and `aria-label` to its root, and keep its own hook values over caller attributes of the same name.
+`Banner` shall carry the hooks below, append the caller's `className`, forward caller `data-*` attributes, `id`, `aria-label` and `ref` to its root, and keep its own hook values over caller attributes of the same name.
 
 Implementation: `src/components/banner/banner.tsx`
 Verification: `src/components/banner/banner.test.tsx`
@@ -86,4 +86,5 @@ Verification: `src/components/banner/banner.test.tsx`
 | `data-tone`              | attribute | `neutral`, `info`, `success`, `warning`, `danger` | Tone and urgency.                              |
 | `data-inline`            | state     | `true`                                            | Rendered as phrasing content.                  |
 | `data-pending`           | state     | `true`                                            | Work in progress.                              |
+| `data-entering`          | state     | `true`                                            | Playing an enter animation.                    |
 | `data-exiting`           | state     | `true`                                            | Playing an exit transition before removal.     |
