@@ -63,4 +63,40 @@ test.describe('Expand Toggle lab', () => {
     ).toBeDisabled();
     await lab.expectAccessible();
   });
+
+  test('UIC-EXPAND-TOGGLE-1.7 triggers a React Aria disclosure panel', async ({ page, lab }) => {
+    await lab.open('expand-toggle');
+    const demo = page.locator('[data-lab-case="disclosure"]');
+    const toggle = demo.getByRole('button', { name: 'Citrus details' });
+    const panel = demo.getByText('Lemon, orange and lime grow in warm climates.');
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(panel).toBeHidden();
+    const controls = await toggle.getAttribute('aria-controls');
+    expect(controls).toBeTruthy();
+    await toggle.focus();
+    await page.keyboard.press('Enter');
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await expect(toggle).toHaveAttribute('data-expanded', 'true');
+    await expect(panel).toBeVisible();
+    await expect(page.locator(`[id="${controls}"]`)).toContainText('Lemon');
+    await lab.expectAccessible();
+  });
+
+  test('UIC-EXPAND-TOGGLE-1.8 shows a busy indicator while children load', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('expand-toggle');
+    const demo = page.locator('[data-lab-case="lazy"]');
+    const toggle = demo.locator('.ui-expand-toggle');
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('data-pending', 'true');
+    await expect(demo.getByRole('progressbar', { name: 'Loading stone fruit' })).toBeVisible();
+    await expect(toggle).toBeFocused();
+    await demo.locator('[data-lab-action="finish"]').click();
+    await expect(toggle).not.toHaveAttribute('data-pending');
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await expect(demo.getByRole('listitem')).toHaveText(['Cherry', 'Peach', 'Plum']);
+    await lab.expectAccessible();
+  });
 });

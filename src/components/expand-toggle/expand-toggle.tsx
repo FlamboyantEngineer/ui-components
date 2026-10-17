@@ -1,4 +1,5 @@
-import { useLocale } from 'react-aria-components';
+import { useContext } from 'react';
+import { DisclosureStateContext, useLocale } from 'react-aria-components';
 import { useControllableState } from '../../core/controllable-state.js';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
 import type { GlyphName } from '../../core/glyphs.js';
@@ -8,7 +9,10 @@ import { IconButton, type IconButtonProps } from '../icon-button/icon-button.js'
 
 export interface ExpandToggleProps
   extends
-    Pick<IconButtonProps, 'isDisabled' | 'excludeFromTabOrder' | 'aria-controls' | 'ref'>,
+    Pick<
+      IconButtonProps,
+      'isDisabled' | 'isPending' | 'pendingLabel' | 'excludeFromTabOrder' | 'aria-controls' | 'ref'
+    >,
     BaseProps {
   /** Whether the controlled region is expanded (controlled). */
   isExpanded?: boolean | undefined;
@@ -38,7 +42,8 @@ export function useExpandGlyph(isExpanded: boolean): GlyphName {
 
 /**
  * A chevron button that expands and collapses a row or region. It points to the inline end while
- * collapsed and down while expanded, and its presses never reach the row around it.
+ * collapsed and down while expanded, and its presses never reach the row around it. Inside a React
+ * Aria `Disclosure` it is the disclosure's trigger, wired to its panel.
  */
 export function ExpandToggle({
   isExpanded,
@@ -51,12 +56,14 @@ export function ExpandToggle({
   ...rest
 }: ExpandToggleProps) {
   const strings = useUiStrings();
-  const [expanded, setExpanded] = useControllableState(
-    isExpanded,
-    defaultExpanded,
-    onExpandedChange,
-  );
+  // A disclosure owns the state, the panel's id and the press that toggles it.
+  const disclosure = useContext(DisclosureStateContext);
+  const [own, setOwn] = useControllableState(isExpanded, defaultExpanded, onExpandedChange);
+  const expanded = disclosure ? disclosure.isExpanded : own;
   const glyph = useExpandGlyph(expanded);
+  const toggleProps = disclosure
+    ? { slot: 'trigger', onPress: () => onExpandedChange?.(!expanded) }
+    : { 'aria-expanded': expanded, onPress: () => setOwn(!own) };
 
   if (!isExpandable) {
     return (
@@ -76,8 +83,7 @@ export function ExpandToggle({
       icon={glyph}
       label={label ?? (expanded ? strings.collapse : strings.expand)}
       size={size}
-      aria-expanded={expanded}
-      onPress={() => setExpanded(!expanded)}
+      {...toggleProps}
     />
   );
 }

@@ -1,6 +1,6 @@
 # Expand Toggle
 
-`ExpandToggle` is the chevron button that expands and collapses a row or region, built on [Icon Button](ICON-BUTTON.md). In a list of rows where only some can expand, the others keep an empty box of the same size so their labels stay aligned.
+`ExpandToggle` is the chevron button that expands and collapses a row or region, built on [Icon Button](ICON-BUTTON.md). In a list of rows where only some can expand, the others keep an empty box of the same size so their labels stay aligned. Inside a React Aria `Disclosure` it is the disclosure's trigger, paired with its panel.
 
 ## UIC-EXPAND-TOGGLE-1 - Contract
 
@@ -45,6 +45,20 @@ Verification: `src/components/expand-toggle/expand-toggle.test.tsx`, `e2e/expand
 
 Implementation: `src/components/expand-toggle/expand-toggle.tsx`
 Verification: `src/components/expand-toggle/expand-toggle.test.tsx`
+
+### UIC-EXPAND-TOGGLE-1.7 - Disclosure trigger
+
+Inside a React Aria `Disclosure` the toggle shall be the disclosure's trigger (`slot="trigger"`): it shows and toggles the disclosure's expanded state, and React Aria gives it `aria-expanded`, its id and `aria-controls` naming the `DisclosurePanel`, which React Aria labels by the toggle and sizes with its own measured panel height for animation. `isExpanded` and `defaultExpanded` give way to the disclosure's state; `onExpandedChange` still reports each press. Its chevron, name and `data-expanded` follow the disclosure.
+
+Implementation: `src/components/expand-toggle/expand-toggle.tsx`
+Verification: `src/components/expand-toggle/expand-toggle.test.tsx`, `e2e/expand-toggle.spec.ts`
+
+### UIC-EXPAND-TOGGLE-1.8 - Loading children
+
+`isPending` shall show Icon Button's busy indicator in place of the chevron, named by `pendingLabel` or the provider's `loading` string, while children load; the toggle keeps its name and focus, publishes `data-pending` and `aria-disabled="true"`, and refuses presses until the caller clears it.
+
+Implementation: `src/components/expand-toggle/expand-toggle.tsx`
+Verification: `src/components/expand-toggle/expand-toggle.test.tsx`, `e2e/expand-toggle.spec.ts`
 
 ## Hooks
 
