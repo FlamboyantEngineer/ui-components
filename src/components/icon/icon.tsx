@@ -1,11 +1,15 @@
-import type { ReactNode } from 'react';
+import { isValidElement, type ReactNode } from 'react';
 import type { GlyphName } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
+import type { BaseProps, Size } from '../../core/props.js';
 import { Glyph } from '../../core/provider.js';
 
-export type IconSize = 'sm' | 'md' | 'lg';
+export type IconSize = Extract<Size, 'sm' | 'md' | 'lg'>;
 
-export interface IconProps {
+/** An icon given as a built-in glyph name or as any icon node. Components take icons in this form. */
+export type IconSource = GlyphName | ReactNode;
+
+export interface IconProps extends BaseProps {
   /** A built-in glyph, drawn from the provider's glyph map. */
   glyph?: GlyphName | undefined;
   /** Any icon node (an SVG element, an image), used when no `glyph` is given. */
@@ -14,12 +18,18 @@ export interface IconProps {
   size?: IconSize | undefined;
   /** Accessible name. Without one the icon is decorative and hidden from assistive technology. */
   label?: string | undefined;
-  className?: string | undefined;
-  id?: string | undefined;
-  [data: `data-${string}`]: string | number | boolean | undefined;
 }
 
 const hooks = createHooks('icon', ['glyph']);
+
+export function isGlyphName(source: IconSource): source is GlyphName {
+  return typeof source === 'string' && !isValidElement(source);
+}
+
+/** The `Icon` props that draw an icon source: `{ glyph }` for a glyph name, `{ children }` for a node. */
+export function toIconProps(source: IconSource): Pick<IconProps, 'glyph' | 'children'> {
+  return isGlyphName(source) ? { glyph: source } : { children: source };
+}
 
 /** One icon box: a built-in glyph or any icon node, decorative unless it has a label. */
 export function Icon({ glyph, children, size = 'md', label, className, id, ...rest }: IconProps) {

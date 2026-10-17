@@ -6,6 +6,8 @@ export interface UiStrings {
   /** Shown when an action fails without a message of its own. */
   actionFailed: string;
   more: string;
+  /** Default accessible name of a context menu. */
+  contextMenu: string;
   loading: string;
   clear: string;
   restore: string;
@@ -69,6 +71,7 @@ export const defaultStrings: UiStrings = {
   confirm: 'Confirm',
   actionFailed: 'The action could not be completed.',
   more: 'More',
+  contextMenu: 'Context menu',
   loading: 'Loading',
   clear: 'Clear',
   restore: 'Restore',

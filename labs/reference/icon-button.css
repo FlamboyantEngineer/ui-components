@@ -1,0 +1,19 @@
+/* Icon Button: a square box on the shared Button rules (labs/reference/button.css). */
+
+.ui-icon-button {
+  width: 32px;
+  padding: 0;
+}
+
+.ui-icon-button[data-size='xs'] {
+  width: 22px;
+  min-height: 22px;
+}
+.ui-icon-button[data-size='sm'] {
+  width: 26px;
+  min-height: 26px;
+}
+.ui-icon-button[data-size='lg'] {
+  width: 38px;
+  min-height: 38px;
+}
