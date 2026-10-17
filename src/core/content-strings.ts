@@ -1,4 +1,4 @@
-/** Strings of the folder manager, code and JSON editors, emoji picker and PDF viewer. */
+/** Strings of the folder manager, code and JSON editors, emoji picker, PDF viewer and data tables. */
 export interface ContentStrings {
   newFolder: string;
   /** Names the field that names a new folder. */
@@ -71,6 +71,20 @@ export interface ContentStrings {
   previousMatch: string;
   nextMatch: string;
   documentFailed: string;
+  /** Default name of a page navigation. */
+  pagination: string;
+  /** Names the page navigation of a named view (`Fruit pagination`). */
+  paginationOf: (name: string) => string;
+  /** Names the button of one page (`Page 3`). */
+  pageNumber: (page: number) => string;
+  /** Opens the menu that shows and hides a table's columns. */
+  columns: string;
+  /** Names the text a column filter keeps rows containing. */
+  contains: string;
+  /** Names the lower bound of a range filter. */
+  rangeFrom: string;
+  /** Names the upper bound of a range filter. */
+  rangeTo: string;
 }
 
 const emojiCategoryNames: Readonly<Record<string, string>> = {
@@ -137,4 +151,11 @@ export const contentStrings: ContentStrings = {
   previousMatch: 'Previous match',
   nextMatch: 'Next match',
   documentFailed: 'The document could not be opened.',
+  pagination: 'Pagination',
+  paginationOf: (name) => `${name} pagination`,
+  pageNumber: (page) => `Page ${page}`,
+  columns: 'Columns',
+  contains: 'Contains',
+  rangeFrom: 'From',
+  rangeTo: 'To',
 };
