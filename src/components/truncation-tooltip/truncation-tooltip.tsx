@@ -14,10 +14,15 @@ import {
   type TooltipTriggerState,
 } from 'react-aria-components';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, NativeProps } from '../../core/props.js';
+import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import { TOOLTIP_DELAY, TooltipPanel, type TooltipPlacement } from '../tooltip/tooltip.js';
 
-export interface TruncationTooltipProps extends BaseProps {
+/** The pointer handlers the component owns on its text. */
+type TruncationPointerHandler = 'onPointerEnter' | 'onPointerLeave' | 'onPointerDown';
+
+export interface TruncationTooltipProps
+  extends Omit<NativeProps<'span'>, 'children' | TruncationPointerHandler>, BaseProps {
   /** The text. The stylesheet cuts it (ellipsis or line clamp); the tooltip shows it whole. */
   children: ReactNode;
   /** Preferred side of the text. Defaults to `top`; the tooltip flips when it does not fit. */
@@ -148,9 +153,10 @@ export function TruncationTooltip({
   placement = 'top',
   delay = TOOLTIP_DELAY,
   className,
+  ref: callerRef,
   ...rest
 }: TruncationTooltipProps) {
-  const ref = useRef<HTMLSpanElement>(null);
+  const [ref, setRef] = useForwardedRef(callerRef);
   const pressed = useRef(false);
   const state = useTruncationState(ref);
   useFocusReveal(ref, pressed, state);
@@ -159,7 +165,7 @@ export function TruncationTooltip({
 
   return (
     <>
-      <span {...rest} {...hooks.root({ className })} {...pointerHandlers} ref={ref}>
+      <span {...rest} {...hooks.root({ className })} {...pointerHandlers} ref={setRef}>
         {children}
       </span>
       {/* Isolate the panel from an enclosing tooltip trigger, such as a button with a hint. */}

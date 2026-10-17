@@ -7,6 +7,7 @@ import type { BaseProps, NativeProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { ButtonSize } from '../button/button.js';
 import { IconButton } from '../icon-button/icon-button.js';
+import { ZoomPresetMenu, type ZoomPreset } from './zoom-presets.js';
 
 export interface ZoomControlProps
   extends Pick<NativeProps<'div'>, 'aria-label' | 'aria-labelledby'>, BaseProps {
@@ -30,6 +31,13 @@ export interface ZoomControlProps
   formatOptions?: Intl.NumberFormatOptions | undefined;
   /** Size of the built-in buttons, published for the stylesheet. Defaults to `sm`. */
   size?: ButtonSize | undefined;
+  /**
+   * The entries of a preset menu after the value, in order: percentages, which request that zoom,
+   * and named presets, which call `onPresetAction`. Without it the control has no preset menu.
+   */
+  presets?: readonly (number | ZoomPreset)[] | undefined;
+  /** Called with the id of the named preset chosen in the preset menu. */
+  onPresetAction?: ((id: string) => void) | undefined;
 }
 
 interface ZoomButtonProps {
@@ -58,7 +66,14 @@ export const defaultZoomLevels: readonly number[] = [25, 50, 75, 100, 125, 150, 
 // Levels and values are compared with a tolerance, so floating-point zoom values match their level.
 const tolerance = 1e-9;
 
-const hooks = createHooks('zoom-control', ['zoom-out', 'slider', 'zoom-in', 'value', 'reset']);
+const hooks = createHooks('zoom-control', [
+  'zoom-out',
+  'slider',
+  'zoom-in',
+  'value',
+  'presets',
+  'reset',
+]);
 
 function sortLevels(levels: readonly number[]): number[] {
   return [...new Set(levels)].filter(Number.isFinite).sort((a, b) => a - b);
@@ -160,6 +175,8 @@ export function ZoomControl({
   zoomInButton,
   formatOptions,
   size = 'sm',
+  presets,
+  onPresetAction,
   'aria-label': ariaLabel,
   className,
   ...rest
@@ -168,7 +185,8 @@ export function ZoomControl({
   const sliderId = useId();
   const [current, request] = useControllableState(value, defaultValue, onChange);
   const sorted = useMemo(() => sortLevels(levels), [levels]);
-  const valueText = useZoomFormatter(formatOptions).format(current);
+  const formatter = useZoomFormatter(formatOptions);
+  const valueText = formatter.format(current);
   const buttonProps = { size, isDisabled, onRequest: request };
   const atReset = resetValue === undefined || Math.abs(current - resetValue) < tolerance;
 
@@ -208,6 +226,13 @@ export function ZoomControl({
       <output {...hooks.slot('value')} htmlFor={sliderId}>
         {valueText}
       </output>
+      <ZoomPresetMenu
+        {...buttonProps}
+        className={hooks.slotClass('presets')}
+        presets={presets}
+        onPresetAction={onPresetAction}
+        formatter={formatter}
+      />
       {resetValue === undefined ? null : (
         <ZoomButton
           {...buttonProps}
@@ -220,3 +245,5 @@ export function ZoomControl({
     </div>
   );
 }
+
+export type { ZoomPreset } from './zoom-presets.js';

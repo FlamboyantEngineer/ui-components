@@ -77,4 +77,47 @@ test.describe('Zoom Control lab', () => {
     ).toHaveAttribute('aria-disabled', 'true');
     await lab.expectAccessible();
   });
+
+  for (const theme of ['light', 'dark']) {
+    test(`UIC-ZOOM-CONTROL-1.10 requests preset percentages and reports named presets in the ${theme} theme`, async ({
+      page,
+      lab,
+    }) => {
+      await lab.open('zoom-control', { theme });
+      const control = page.locator('[data-lab-case="presets"]');
+      const trigger = control.getByRole('button', { name: 'Zoom presets' });
+      const value = await control.locator('output.ui-zoom-control__value').boundingBox();
+      const triggerBox = await trigger.boundingBox();
+      expect(triggerBox!.x).toBeGreaterThan(value!.x);
+      expect(triggerBox!.width).toBe(26);
+
+      await trigger.click();
+      const menu = page.getByRole('menu', { name: 'Zoom presets' });
+      await expect(menu.getByRole('menuitem')).toHaveText([
+        'Fit width',
+        'Fit page',
+        '50%',
+        '100%',
+        '200%',
+      ]);
+      await lab.expectAccessible('[role="menu"]');
+      await menu.getByRole('menuitem', { name: 'Fit width' }).click();
+      await expect(control.locator('[data-lab-output="last"]')).toHaveText('fit-width');
+      await expect(control.locator('output.ui-zoom-control__value')).toHaveText('137.5%');
+      await expect(trigger).toBeFocused();
+
+      await page.keyboard.press('Enter');
+      await expect(menu).toBeVisible();
+      await page.keyboard.press('ArrowDown');
+      await page.keyboard.press('ArrowDown');
+      await page.keyboard.press('Enter');
+      await expect(control.locator('[data-lab-output="zoom"]')).toHaveText('50');
+      await expect(menu).toHaveCount(0);
+      await expect(trigger).toBeFocused();
+      await expect(
+        page.locator('[data-lab-cell="state=disabled size=md"] .ui-zoom-control__presets'),
+      ).toBeDisabled();
+      await lab.expectAccessible();
+    });
+  }
 });

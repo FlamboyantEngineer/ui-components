@@ -32,6 +32,14 @@
   white-space: nowrap;
 }
 
+/* A shortcut in a tooltip, such as a button's, takes the tooltip's colours. */
+
+.ui-tooltip .ui-shortcut__key {
+  border-color: currentColor;
+  background: transparent;
+  color: inherit;
+}
+
 /* Key hints */
 
 .ui-key-hints__hint {

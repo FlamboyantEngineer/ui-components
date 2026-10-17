@@ -1,7 +1,6 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createRef } from 'react';
-import { Menu, MenuItem, MenuTrigger, Popover } from 'react-aria-components';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
@@ -200,40 +199,112 @@ describe('ActionRow', () => {
     expectHooksMatchSpec(container, 'ACTION-ROW', { callerAttributes: ['data-section'] });
   });
 
-  it('UIC-ACTION-ROW-1.6 wraps the more verb in a menu trigger', async () => {
+  it('UIC-ACTION-ROW-1.6 opens a menu of typed items from an action', async () => {
+    const user = userEvent.setup();
     const onAction = vi.fn();
+    const onPress = vi.fn();
+    const onArchive = vi.fn();
     render(
       <ActionRow
+        size="xs"
         actions={[
           {
             verb: 'more',
             id: 'more',
-            wrap: (button) => (
-              <MenuTrigger>
-                {button}
-                <Popover>
-                  <Menu aria-label="More" onAction={onAction}>
-                    <MenuItem id="export">Export</MenuItem>
-                    <MenuItem id="archive">Archive</MenuItem>
-                  </Menu>
-                </Popover>
-              </MenuTrigger>
-            ),
+            label: 'More actions',
+            onPress,
+            onAction,
+            items: [
+              { id: 'export', label: 'Export', icon: 'upload', shortcut: 'Ctrl+E' },
+              { id: 'archive', label: 'Archive', onAction: onArchive },
+              { id: 'locked', label: 'Rename', isDisabled: true },
+              { type: 'separator', id: 'rule' },
+              {
+                type: 'section',
+                id: 'danger',
+                title: 'Danger zone',
+                items: [{ id: 'delete', label: 'Delete', icon: 'delete', tone: 'danger' }],
+              },
+            ],
           },
         ]}
       />,
     );
-    const more = screen.getByRole('button', { name: 'More' });
+    const more = screen.getByRole('button', { name: 'More actions' });
     expect(more).toHaveAttribute('aria-haspopup', 'true');
     expect(more).toHaveAttribute('aria-expanded', 'false');
-    await userEvent.click(more);
+    await user.click(more);
+    expect(onPress).not.toHaveBeenCalled();
     expect(more).toHaveAttribute('aria-expanded', 'true');
-    const menu = await screen.findByRole('menu');
+    const menu = screen.getByRole('menu', { name: 'More actions' });
     expect(more).toHaveAttribute('aria-controls', menu.id);
-    await userEvent.click(within(menu).getByRole('menuitem', { name: 'Export' }));
-    expect(onAction.mock.calls[0]?.[0]).toBe('export');
+    expect(menu).toHaveAttribute('data-size', 'sm');
+    expect(
+      within(menu)
+        .getAllByRole('menuitem')
+        .map((item) => item.dataset.key),
+    ).toEqual(['export', 'archive', 'locked', 'delete']);
+    expect(within(menu).getByRole('menuitem', { name: /Rename/ })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+    expect(within(menu).getByRole('group', { name: 'Danger zone' })).toBeInTheDocument();
+    expect(within(menu).getByRole('menuitem', { name: 'Delete' })).toHaveAttribute(
+      'data-tone',
+      'danger',
+    );
+    expect(within(menu).getByRole('separator')).toBeInTheDocument();
+    await user.click(within(menu).getByRole('menuitem', { name: /Export/ }));
+    expect(onAction.mock.calls.map(([key]) => key)).toEqual(['export']);
     expect(screen.queryByRole('menu')).toBeNull();
     expect(more).toHaveAttribute('aria-expanded', 'false');
+    await waitFor(() => expect(more).toHaveFocus());
+
+    await user.keyboard('{ArrowDown}');
+    expect(screen.getByRole('menuitem', { name: /Export/ })).toHaveFocus();
+    await user.keyboard('{ArrowDown}{Enter}');
+    expect(onArchive).toHaveBeenCalledTimes(1);
+    expect(onAction.mock.calls.map(([key]) => key)).toEqual(['export', 'archive']);
+    expect(onPress).not.toHaveBeenCalled();
+  });
+
+  it('UIC-ACTION-ROW-1.6 keeps the tooltip of a menu action and presses plainly without items', async () => {
+    const user = userEvent.setup();
+    const onPress = vi.fn();
+    const { rerender } = render(
+      <ActionRow
+        actions={[
+          {
+            verb: 'custom',
+            id: 'sort',
+            icon: 'sort-ascending',
+            label: 'Sort',
+            tooltip: 'Sort the list',
+            isExpanded: true,
+            'aria-haspopup': 'dialog',
+            items: [{ id: 'name', label: 'By name' }],
+          },
+          { verb: 'more', id: 'more', isDisabled: true, items: [{ id: 'x', label: 'Export' }] },
+        ]}
+      />,
+    );
+    await user.tab();
+    const sort = screen.getByRole('button', { name: 'Sort' });
+    expect(sort).toHaveAttribute('data-verb', 'custom');
+    expect(sort).toHaveAttribute('aria-expanded', 'false');
+    expect(sort).toHaveAttribute('aria-haspopup', 'true');
+    expect(screen.getByRole('tooltip')).toHaveTextContent('Sort the list');
+    const more = screen.getByRole('button', { name: 'More' });
+    expect(more).toBeDisabled();
+    await user.click(more);
+    expect(screen.queryByRole('menu')).toBeNull();
+
+    rerender(<ActionRow actions={[{ verb: 'more', id: 'more', items: [], onPress }]} />);
+    const plain = screen.getByRole('button', { name: 'More' });
+    expect(plain).not.toHaveAttribute('aria-haspopup');
+    await user.click(plain);
+    expect(onPress).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('menu')).toBeNull();
   });
 
   it('UIC-ACTION-ROW-2.1 puts lead content before the actions and renders nothing when empty', () => {

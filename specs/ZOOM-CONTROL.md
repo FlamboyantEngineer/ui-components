@@ -1,6 +1,6 @@
 # Zoom Control
 
-`ZoomControl` shows a zoom percentage and requests other zoom levels from its caller: a zoom-out button, a slider over a ladder of zoom levels, a zoom-in button and the current percentage, in that order, in one named group, with an optional reset button after them.
+`ZoomControl` shows a zoom percentage and requests other zoom levels from its caller: a zoom-out button, a slider over a ladder of zoom levels, a zoom-in button and the current percentage, in that order, in one named group, with an optional preset menu and reset button after them.
 
 ## UIC-ZOOM-CONTROL-1 - Contract
 
@@ -67,6 +67,13 @@ Verification: `src/components/zoom-control/zoom-control.test.tsx`
 Implementation: `src/components/zoom-control/zoom-control.tsx`, `labs/reference/zoom-control.css`
 Verification: `src/components/zoom-control/zoom-control.test.tsx`, `e2e/zoom-control.spec.ts`
 
+### UIC-ZOOM-CONTROL-1.10 - Preset menu
+
+With non-empty `presets`, the control shall render a [Dropdown Menu](DROPDOWN-MENU.md) icon trigger after the value and before the reset button (`ui-zoom-control__presets`, `chevron-down` glyph, named by the provider's `zoomPresets` string, sized by `size` and disabled by `isDisabled`) whose menu, labelled by the trigger and opening at its bottom end, lists the presets in the order given. A number is a percentage shown like the value (`50%`, with `formatOptions`) that requests that zoom through `onChange`; a named preset `{ id, label }`, such as fit to width, shows its `label` and calls `onPresetAction` with its `id`, for the caller to resolve. Choosing an item closes the menu and returns focus to the trigger.
+
+Implementation: `src/components/zoom-control/zoom-control.tsx`, `src/components/zoom-control/zoom-presets.tsx`, `src/core/strings.ts`
+Verification: `src/components/zoom-control/zoom-control.test.tsx`, `e2e/zoom-control.spec.ts`
+
 ## Hooks
 
 | Hook                        | Kind      | Values                 | Description                                           |
@@ -76,6 +83,7 @@ Verification: `src/components/zoom-control/zoom-control.test.tsx`, `e2e/zoom-con
 | `ui-zoom-control__slider`   | slot      |                        | The `<input type="range">` over the levels.           |
 | `ui-zoom-control__zoom-in`  | slot      |                        | The built-in zoom-in button (also `ui-icon-button`).  |
 | `ui-zoom-control__value`    | slot      |                        | The `<output>` showing the percentage.                |
+| `ui-zoom-control__presets`  | slot      |                        | The preset menu trigger (also `ui-dropdown-menu`).    |
 | `ui-zoom-control__reset`    | slot      |                        | The reset button (also `ui-icon-button`).             |
 | `data-size`                 | attribute | `xs`, `sm`, `md`, `lg` | Size of the built-in buttons.                         |
 | `data-disabled`             | state     | `true`                 | The whole control is disabled.                        |

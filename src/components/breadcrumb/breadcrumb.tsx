@@ -12,6 +12,7 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps, Size } from '../../core/props.js';
 import { UiLink } from '../../core/provider.js';
 import { Icon, toIconProps, type IconSource } from '../icon/icon.js';
+import { TruncationTooltip } from '../truncation-tooltip/truncation-tooltip.js';
 
 export type BreadcrumbSize = Extract<Size, 'xs' | 'sm' | 'md' | 'lg'>;
 
@@ -57,7 +58,7 @@ interface CrumbProps {
   separator: IconSource;
 }
 
-const hooks = createHooks('breadcrumb', ['list', 'item', 'link', 'separator']);
+const hooks = createHooks('breadcrumb', ['list', 'item', 'link', 'label', 'separator']);
 
 /** Crumbs that navigate render through the provider's link renderer; the others stay spans. */
 function renderCrumbLink(props: LinkRenderProps): ReactElement {
@@ -100,7 +101,7 @@ function Crumb({ item, index, isLast, separator }: CrumbProps) {
         href={isLast ? undefined : item.href}
         render={renderCrumbLink}
       >
-        {item.label}
+        <TruncationTooltip className={hooks.slotClass('label')}>{item.label}</TruncationTooltip>
       </AriaLink>
       {isLast ? null : (
         <Icon {...toIconProps(separator)} size="sm" className={hooks.slotClass('separator')} />

@@ -1,4 +1,5 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
+import { createRef } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Button } from '../button/button.js';
@@ -197,15 +198,30 @@ describe('TruncationTooltip', () => {
     expect(tooltip()).toHaveAttribute('data-placement', 'bottom');
   });
 
-  it('UIC-TRUNCATION-TOOLTIP-1.6 appends the caller class and forwards id and data attributes', () => {
+  it('UIC-TRUNCATION-TOOLTIP-1.6 appends the caller class and forwards id, ref, native and data attributes', async () => {
+    const ref = createRef<HTMLSpanElement>();
     render(
-      <TruncationTooltip className="caller" id="name" data-testid="probe">
+      <TruncationTooltip
+        className="caller"
+        id="name"
+        ref={ref}
+        aria-live="polite"
+        dir="ltr"
+        data-testid="probe"
+      >
         {FULL_TEXT}
       </TruncationTooltip>,
     );
     const text = screen.getByTestId('probe');
+    expect(ref.current).toBe(text);
     expect(text).toHaveClass('ui-truncation-tooltip', 'caller');
     expect(text).toHaveAttribute('id', 'name');
+    expect(text).toHaveAttribute('aria-live', 'polite');
+    expect(text).toHaveAttribute('dir', 'ltr');
     expectHooksMatchSpec(document.body, 'TRUNCATION-TOOLTIP');
+    setBox(text, { cut: true });
+    rest(text);
+    await advance(500);
+    expect(tooltip()).toHaveTextContent(FULL_TEXT);
   });
 });

@@ -29,4 +29,24 @@ test.describe('Action Button lab', () => {
     await expect(upload).not.toHaveAttribute('data-pending', 'true');
     await expect(page.locator('[data-lab-output="error"]')).toHaveText('Error: The request failed');
   });
+
+  test('UIC-ACTION-BUTTON-1.6 keeps its hint and shortcut while pending', async ({ page, lab }) => {
+    await lab.open('action-button');
+    const pending = page.locator('[data-lab-cell="state=pending size=md"] .ui-button', {
+      hasText: 'Publish',
+    });
+    await expect(pending).toHaveAttribute('data-pending', 'true');
+    await expect(pending).toHaveAttribute('aria-keyshortcuts', 'Control+Enter');
+    // React Aria opens a tooltip on keyboard focus, so arrive with Tab.
+    await page
+      .locator('[data-lab-cell="state=pending size=sm"] .ui-button', { hasText: 'Publish' })
+      .focus();
+    await page.keyboard.press('Tab');
+    await expect(pending).toBeFocused();
+    await expect(
+      page.getByRole('tooltip', { name: 'Publish the draft Control Enter' }),
+    ).toBeVisible();
+    await expect(pending).toHaveAccessibleDescription('Publish the draft Control Enter');
+    await lab.expectAccessible();
+  });
 });

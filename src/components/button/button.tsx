@@ -8,6 +8,7 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps, Size } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Icon, toIconProps, type IconSource } from '../icon/icon.js';
+import { Shortcut, formatAriaKeyShortcuts, type ShortcutChord } from '../shortcut/shortcut.js';
 import { Tooltip } from '../tooltip/tooltip.js';
 
 export type ButtonVariant =
@@ -60,6 +61,11 @@ export interface ButtonProps
    * it; use `focusableWhenDisabled` to explain why a command is unavailable.
    */
   tooltip?: ReactNode;
+  /**
+   * A keyboard chord that runs the same command, such as `Ctrl+S`: drawn after the hint in the
+   * tooltip and published as `aria-keyshortcuts`. The button never listens for it.
+   */
+  shortcut?: ShortcutChord | undefined;
 }
 
 export interface ButtonSpinnerProps extends Pick<BaseProps, 'className'> {
@@ -81,6 +87,15 @@ type ButtonStateProps = Omit<
   | 'tooltip'
 >;
 
+/** What a button shows in its tooltip: the hint, then the keyboard shortcut. */
+type ButtonHint = Pick<ButtonProps, 'tooltip' | 'shortcut'>;
+
+/** Attributes React Aria's Button does not forward, applied through its `render` hook. */
+type PassThroughAttributes = Pick<
+  NativeProps<'button'>,
+  'role' | 'aria-checked' | 'aria-selected' | 'aria-keyshortcuts'
+>;
+
 type ButtonPartsProps = Pick<
   ButtonProps,
   'children' | 'content' | 'startIcon' | 'endIcon' | 'isPending' | 'pendingLabel'
@@ -88,12 +103,17 @@ type ButtonPartsProps = Pick<
 
 const hooks = createHooks('button', ['spinner', 'start-icon', 'label', 'end-icon']);
 
+/** A chord's `aria-keyshortcuts` value, or `undefined` without a chord or for an empty key. */
+function toKeyShortcuts(shortcut: ShortcutChord | undefined): string | undefined {
+  return shortcut ? formatAriaKeyShortcuts(shortcut) || undefined : undefined;
+}
+
 /**
  * Applies what React Aria's Button does not forward (a `role` and its states) and the `data-disabled`
  * of a focusable disabled button, through its `render` hook.
  */
 function renderPassThrough(
-  attributes: Pick<ButtonProps, 'role' | 'aria-checked' | 'aria-selected'>,
+  attributes: PassThroughAttributes,
   focusableDisabled: boolean,
 ): Pick<AriaButtonProps, 'render'> {
   const extra: Record<string, unknown> = Object.fromEntries(
@@ -108,7 +128,7 @@ function renderPassThrough(
  * React Aria Button props for the states Button and IconButton share: a focusable disabled button
  * stays in the focus order but refuses activation and never submits, and `isSelected` adds
  * `aria-pressed` unless the caller states toggle semantics with `aria-pressed`, `aria-checked` or a
- * `role`.
+ * `role`. A `shortcut` becomes `aria-keyshortcuts`.
  */
 export function toAriaButtonProps({
   isSelected = false,
@@ -117,6 +137,7 @@ export function toAriaButtonProps({
   pendingLabel: _pendingLabel,
   type = 'button',
   onPress,
+  shortcut,
   role,
   'aria-checked': ariaChecked,
   'aria-selected': ariaSelected,
@@ -133,7 +154,12 @@ export function toAriaButtonProps({
     ...(isSelected && !statesToggle ? { 'aria-pressed': true } : {}),
     ...(focusableDisabled ? { 'aria-disabled': true } : {}),
     ...renderPassThrough(
-      { role, 'aria-checked': ariaChecked, 'aria-selected': ariaSelected },
+      {
+        role,
+        'aria-checked': ariaChecked,
+        'aria-selected': ariaSelected,
+        'aria-keyshortcuts': toKeyShortcuts(shortcut),
+      },
       focusableDisabled,
     ),
   };
@@ -172,9 +198,19 @@ function ButtonParts({
   );
 }
 
-/** Wraps a button in a `Tooltip` when it has a hint. */
-export function withTooltip(button: ReactNode, tooltip: ReactNode) {
-  return isEmptyHint(tooltip) ? button : <Tooltip content={tooltip}>{button}</Tooltip>;
+/** Wraps a button in a `Tooltip` when it has a hint or a shortcut, which follows the hint. */
+export function withTooltip(button: ReactNode, { tooltip, shortcut }: ButtonHint) {
+  const keys = shortcut && toKeyShortcuts(shortcut) ? <Shortcut chord={shortcut} /> : null;
+  const hint = isEmptyHint(tooltip) ? null : tooltip;
+  if (hint === null && keys === null) return button;
+  const content = (
+    <>
+      {hint}
+      {hint !== null && keys !== null ? ' ' : null}
+      {keys}
+    </>
+  );
+  return <Tooltip content={content}>{button}</Tooltip>;
 }
 
 function isEmptyHint(tooltip: ReactNode): boolean {
@@ -214,6 +250,6 @@ export function Button({
         {children}
       </ButtonParts>
     </AriaButton>,
-    tooltip,
+    { tooltip, shortcut: rest.shortcut },
   );
 }

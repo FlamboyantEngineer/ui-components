@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { IconButton } from '../../src/components/icon-button/icon-button.js';
-import { ZoomControl } from '../../src/components/zoom-control/zoom-control.js';
+import { ZoomControl, type ZoomPreset } from '../../src/components/zoom-control/zoom-control.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const levels = [50, 75, 100, 125, 150, 200];
@@ -11,8 +11,17 @@ const states = [
   'last level',
   'between levels',
   'reset',
+  'presets',
   'disabled',
 ] as const;
+
+const fitPresets: readonly ZoomPreset[] = [
+  { id: 'fit-width', label: 'Fit width' },
+  { id: 'fit-page', label: 'Fit page' },
+];
+
+/** What the lab's stage would need to fit its page, in percent. */
+const fitZoom: Record<string, number> = { 'fit-width': 137.5, 'fit-page': 82 };
 
 const startValue: Record<(typeof states)[number], number> = {
   default: 100,
@@ -20,6 +29,7 @@ const startValue: Record<(typeof states)[number], number> = {
   'last level': 200,
   'between levels': 137.5,
   reset: 150,
+  presets: 100,
   disabled: 100,
 };
 
@@ -41,6 +51,33 @@ function Requested() {
       <p>
         Applied zoom: <output data-lab-output="zoom">{zoom}</output>; requests:{' '}
         <output data-lab-output="log">{log.join(', ') || 'none'}</output>
+      </p>
+    </div>
+  );
+}
+
+function Presets() {
+  const [zoom, setZoom] = useState(100);
+  const [last, setLast] = useState('none');
+  return (
+    <div data-lab-case="presets">
+      <ZoomControl
+        aria-label="Page zoom with presets"
+        levels={levels}
+        value={zoom}
+        presets={[...fitPresets, 50, 100, 200]}
+        onChange={(next) => {
+          setZoom(next);
+          setLast(`${next}%`);
+        }}
+        onPresetAction={(id) => {
+          setZoom(fitZoom[id] ?? 100);
+          setLast(id);
+        }}
+      />
+      <p>
+        Applied zoom: <output data-lab-output="zoom">{zoom}</output>; last choice:{' '}
+        <output data-lab-output="last">{last}</output>
       </p>
     </div>
   );
@@ -104,6 +141,7 @@ mountLab(
             size={size}
             isDisabled={state === 'disabled'}
             {...(state === 'reset' ? { resetValue: 100 } : {})}
+            {...(state === 'presets' || state === 'disabled' ? { presets: [50, 100, 200] } : {})}
           />
         )}
       />
@@ -113,6 +151,12 @@ mountLab(
       description="A controlled control: the buttons, the slider (arrow keys, Home, End) and reset request levels that the lab applies."
     >
       <Requested />
+    </LabSection>
+    <LabSection
+      title="Preset menu"
+      description="The menu after the value requests a percentage or reports a named preset, which the lab resolves to the zoom that fits its stage."
+    >
+      <Presets />
     </LabSection>
     <LabSection
       title="Caller step buttons"

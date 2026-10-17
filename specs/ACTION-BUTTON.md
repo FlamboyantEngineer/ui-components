@@ -38,3 +38,10 @@ A caller's `isPending` shall override the internal pending state. While pending 
 
 Implementation: `src/components/action-button/action-button.tsx`
 Verification: `src/components/action-button/action-button.test.tsx`
+
+### UIC-ACTION-BUTTON-1.6 - Hint and shortcut
+
+`ActionButton` shall pass Button's `tooltip` and `shortcut` through ([BUTTON.md](BUTTON.md)): the tooltip shows the hint and the chord, the button publishes `aria-keyshortcuts`, and both stay while the action is pending. A host that binds the chord runs the action through `runPendingAction`.
+
+Implementation: `src/components/action-button/action-button.tsx`, `src/components/button/button.tsx`
+Verification: `src/components/action-button/action-button.test.tsx`, `e2e/action-button.spec.ts`

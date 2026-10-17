@@ -44,6 +44,8 @@ export interface UiStrings {
   zoomIn: string;
   zoomOut: string;
   resetZoom: string;
+  /** Names the button that opens a zoom control's preset menu. */
+  zoomPresets: string;
   scrollBackward: string;
   scrollForward: string;
   /** Opens a file chooser. */
@@ -246,6 +248,7 @@ export const defaultStrings: UiStrings = {
   zoomIn: 'Zoom in',
   zoomOut: 'Zoom out',
   resetZoom: 'Reset zoom',
+  zoomPresets: 'Zoom presets',
   scrollBackward: 'Scroll backward',
   scrollForward: 'Scroll forward',
   browse: 'Browse',

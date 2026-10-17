@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -187,8 +187,17 @@ describe('ZoomControl', () => {
     expect(screen.getByRole('group').lastElementChild).toBe(reset);
     await userEvent.click(reset);
     expect(onChange).toHaveBeenLastCalledWith(100);
-    rerender(<ZoomControl levels={levels} value={100} resetValue={100} onChange={onChange} />);
+    rerender(
+      <ZoomControl
+        levels={levels}
+        value={100}
+        resetValue={100}
+        presets={[100]}
+        onChange={onChange}
+      />,
+    );
     expect(reset).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByRole('group').lastElementChild).toBe(reset);
     expectHooksMatchSpec(container, 'ZOOM-CONTROL', { slots: 'all' });
   });
 
@@ -239,5 +248,64 @@ describe('ZoomControl', () => {
     expect(root).toHaveAttribute('data-testid', 'probe');
     expect(root).toHaveAttribute('data-size', 'sm');
     expectHooksMatchSpec(container, 'ZOOM-CONTROL');
+  });
+
+  it('UIC-ZOOM-CONTROL-1.10 requests a preset percentage and reports a named preset', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const onPresetAction = vi.fn();
+    const { container } = render(
+      <ZoomControl
+        levels={[50, 100, 200]}
+        resetValue={100}
+        defaultValue={150}
+        formatOptions={{ minimumFractionDigits: 1 }}
+        presets={[{ id: 'fit-width', label: 'Fit width' }, 50, 125]}
+        onChange={onChange}
+        onPresetAction={onPresetAction}
+      />,
+    );
+    const trigger = screen.getByRole('button', { name: 'Zoom presets' });
+    expect(trigger).toHaveClass('ui-zoom-control__presets', 'ui-dropdown-menu', 'ui-icon-button');
+    expect(trigger).toHaveAttribute('data-size', 'sm');
+    expect(trigger.querySelector('[data-glyph]')).toHaveAttribute('data-glyph', 'chevron-down');
+    const order = Array.from(container.querySelectorAll('.ui-zoom-control > *'), (part) =>
+      [...part.classList].find((name) => name.startsWith('ui-zoom-control__')),
+    );
+    expect(order.slice(-3)).toEqual([
+      'ui-zoom-control__value',
+      'ui-zoom-control__presets',
+      'ui-zoom-control__reset',
+    ]);
+
+    await user.click(trigger);
+    const menu = screen.getByRole('menu', { name: 'Zoom presets' });
+    expect(
+      Array.from(menu.querySelectorAll('[role="menuitem"]'), (item) => item.textContent),
+    ).toEqual(['Fit width', '50.0%', '125.0%']);
+    expectHooksMatchSpec(document.body, 'ZOOM-CONTROL', { slots: ['presets'] });
+    await user.click(screen.getByRole('menuitem', { name: '125.0%' }));
+    expect(onChange).toHaveBeenLastCalledWith(125);
+    expect(screen.getByText('125.0%', { selector: 'output' })).toBeInTheDocument();
+    expect(screen.queryByRole('menu')).toBeNull();
+    await waitFor(() => expect(trigger).toHaveFocus());
+
+    await user.keyboard('{ArrowDown}');
+    await user.keyboard('{Enter}');
+    expect(onPresetAction).toHaveBeenCalledWith('fit-width');
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+
+  it('UIC-ZOOM-CONTROL-1.10 draws no preset menu without presets and disables it with the control', () => {
+    const { rerender } = render(<ZoomControl presets={[]} />);
+    expect(screen.queryByRole('button', { name: 'Zoom presets' })).toBeNull();
+    rerender(
+      <UiProvider strings={{ zoomPresets: 'Preset zooms' }}>
+        <ZoomControl presets={[100]} size="lg" isDisabled />
+      </UiProvider>,
+    );
+    const trigger = screen.getByRole('button', { name: 'Preset zooms' });
+    expect(trigger).toBeDisabled();
+    expect(trigger).toHaveAttribute('data-size', 'lg');
   });
 });

@@ -1,8 +1,23 @@
-import { render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { createRef } from 'react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Path } from './path.js';
+
+const tooltip = () => document.querySelector<HTMLElement>('[role="tooltip"]');
+
+/** jsdom has no layout: give the path the box of a cut (or whole) line. */
+function setBox(element: HTMLElement, { cut }: { cut: boolean }) {
+  Object.defineProperty(element, 'clientWidth', { configurable: true, value: 100 });
+  Object.defineProperty(element, 'scrollWidth', { configurable: true, value: cut ? 240 : 100 });
+}
+
+async function hover(element: HTMLElement) {
+  fireEvent.pointerEnter(element, { pointerType: 'mouse' });
+  await act(async () => {
+    vi.advanceTimersByTime(500);
+  });
+}
 
 describe('Path', () => {
   it('UIC-PATH-2.1 renders the formatted text in a left-to-right isolate without semantics', () => {
@@ -59,5 +74,35 @@ describe('Path', () => {
     expect(root).toHaveAttribute('title', 'Garden');
     expect(root).toHaveAttribute('data-probe', 'yes');
     expectHooksMatchSpec(container, 'PATH', { callerAttributes: ['data-probe'] });
+  });
+
+  it('UIC-PATH-2.5 shows the whole path in a tooltip only while it is cut', async () => {
+    vi.useFakeTimers();
+    try {
+      render(
+        <>
+          <Path path="/Garden/Vegetable beds/North side/Tomatoes" data-testid="long" />
+          <Path path="/Garden" data-testid="short" />
+        </>,
+      );
+      const long = screen.getByTestId('long');
+      const short = screen.getByTestId('short');
+      expect(long).toHaveClass('ui-path', 'ui-truncation-tooltip');
+      setBox(long, { cut: true });
+      setBox(short, { cut: false });
+      await hover(short);
+      expect(tooltip()).toBeNull();
+      await hover(long);
+      const panel = tooltip();
+      expect(panel).toHaveTextContent('/Garden/Vegetable beds/North side/Tomatoes');
+      expect(panel).toHaveClass('ui-truncation-tooltip__panel');
+      expect(panel?.querySelector('bdi')).toHaveAttribute('dir', 'ltr');
+      expect(long).not.toHaveAttribute('aria-describedby');
+      expectHooksMatchSpec(document.body, 'PATH', { slots: 'all' });
+      fireEvent.pointerLeave(long, { pointerType: 'mouse' });
+      expect(tooltip()).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

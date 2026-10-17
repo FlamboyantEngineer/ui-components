@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Menu, MenuItem, MenuTrigger, Popover } from 'react-aria-components';
 import { ActionRow, type ActionRowAction } from '../../src/components/action-row/action-row.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
@@ -34,18 +33,32 @@ function MoreMenu() {
           {
             verb: 'more',
             label: 'More actions',
-            wrap: (button) => (
-              <MenuTrigger>
-                {button}
-                <Popover>
-                  <Menu aria-label="More actions" onAction={(key) => setLast(String(key))}>
-                    <MenuItem id="rename">Rename</MenuItem>
-                    <MenuItem id="duplicate">Duplicate</MenuItem>
-                    <MenuItem id="export">Export</MenuItem>
-                  </Menu>
-                </Popover>
-              </MenuTrigger>
-            ),
+            onAction: (key) => setLast(String(key)),
+            items: [
+              { id: 'rename', label: 'Rename', icon: 'edit', shortcut: 'F2' },
+              { id: 'duplicate', label: 'Duplicate' },
+              { id: 'export', label: 'Export', icon: 'upload', description: 'As PDF' },
+              { id: 'share', label: 'Share', isDisabled: true },
+              { type: 'separator', id: 'rule' },
+              { id: 'delete', label: 'Delete', icon: 'delete', tone: 'danger' },
+            ],
+          },
+          {
+            verb: 'custom',
+            icon: 'sort-ascending',
+            label: 'Sort',
+            onAction: (key) => setLast(`sort ${String(key)}`),
+            items: [
+              {
+                type: 'section',
+                id: 'order',
+                title: 'Order by',
+                items: [
+                  { id: 'name', label: 'Name' },
+                  { id: 'date', label: 'Date modified' },
+                ],
+              },
+            ],
           },
           { verb: 'refresh', onPress: () => setLast('refresh') },
         ]}
@@ -96,8 +109,8 @@ mountLab(
       </div>
     </LabSection>
     <LabSection
-      title="Menu and disabled reason"
-      description="The more verb is wrapped in a menu trigger. The disabled delete keeps focus so its tooltip can explain why."
+      title="Menus and disabled reason"
+      description="The more verb and the custom sort action open menus of typed items. The disabled delete keeps focus so its tooltip can explain why."
     >
       <MoreMenu />
       <div data-lab-case="disabled-reason">

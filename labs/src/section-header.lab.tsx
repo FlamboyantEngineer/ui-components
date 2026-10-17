@@ -1,4 +1,5 @@
 import { useState, type CSSProperties } from 'react';
+import { Card } from '../../src/components/card/card.js';
 import { Section, SectionHeader } from '../../src/components/section-header/section-header.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
@@ -104,6 +105,36 @@ mountLab(
             </Section>
           </div>
         )}
+      />
+    </LabSection>
+    <LabSection
+      title="Framed sections"
+      description="A framed section is a Card given the same title, description, actions and heading level: the same header parts, named by the title, at 420px and 220px."
+    >
+      <StateMatrix
+        axes={{ frame: ['section', 'card'], width: ['420', '220'] }}
+        render={({ frame, width }) => {
+          const props = {
+            title: `Harbour, ${frame} ${width}`,
+            description: 'Boats moored along the quay',
+            actions: <Actions />,
+            headingLevel: 3 as const,
+            'data-lab-frame': `${frame} ${width}`,
+          };
+          return (
+            <div style={column(Number(width))}>
+              {frame === 'card' ? (
+                <Card {...props}>
+                  <p style={{ margin: 0 }}>Ferries leave every hour.</p>
+                </Card>
+              ) : (
+                <Section {...props}>
+                  <p style={{ margin: 0 }}>Ferries leave every hour.</p>
+                </Section>
+              )}
+            </div>
+          );
+        }}
       />
     </LabSection>
     <LabSection

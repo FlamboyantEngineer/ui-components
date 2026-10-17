@@ -24,6 +24,18 @@ mountLab(
       />
     </LabSection>
     <LabSection
+      title="Full path in a tooltip"
+      description="Rest the pointer on a cut path, or tab to the link that holds one, to read it whole. A path that fits shows no tooltip."
+    >
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, width: 200 }}>
+        <Path path={paths['long'] ?? ''} data-lab-path="cut" />
+        <Path path={paths['short'] ?? ''} data-lab-path="whole" />
+        <a href="#final-notes" data-lab-path="link">
+          <Path path={paths['long'] ?? ''} />
+        </a>
+      </div>
+    </LabSection>
+    <LabSection
       title="Beside an action"
       description="A 280px row: the path shrinks and the action stays whole."
     >

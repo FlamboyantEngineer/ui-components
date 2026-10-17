@@ -98,4 +98,25 @@ describe('IconButton', () => {
     expect(screen.queryByRole('tooltip')).toBeNull();
     expect(button).toHaveFocus();
   });
+
+  it('UIC-ICON-BUTTON-1.6 shows its label and shortcut in the tooltip and publishes aria-keyshortcuts', async () => {
+    const user = userEvent.setup();
+    render(
+      <>
+        <IconButton icon="undo" label="Undo" shortcut="Ctrl+Z" />
+        <IconButton icon="redo" label="Redo" tooltip="Redo the last edit" shortcut="Ctrl+Shift+Z" />
+      </>,
+    );
+    const undo = screen.getByRole('button', { name: 'Undo' });
+    expect(undo).toHaveAttribute('aria-keyshortcuts', 'Control+Z');
+    await user.tab();
+    expect(screen.getByRole('tooltip')).toHaveTextContent(/^Undo Ctrl\+ZControl Z$/);
+    expect(undo).toHaveAccessibleName('Undo');
+    expect(undo).toHaveAccessibleDescription('Undo Control Z');
+    await user.tab();
+    const redo = screen.getByRole('button', { name: 'Redo' });
+    expect(redo).toHaveAttribute('aria-keyshortcuts', 'Control+Shift+Z');
+    expect(redo).toHaveAccessibleDescription('Redo the last edit Control Shift Z');
+    expectHooksMatchSpec(document.body, 'ICON-BUTTON');
+  });
 });

@@ -1,6 +1,6 @@
 # Card
 
-`Card` is a framed container for a self-contained group of content: a settings section, a dashboard widget, a record tile or a tool panel. It draws an optional header (a title block with a description and actions, or custom header content), a body and an optional footer. Grouping without a frame belongs to layout; a region with nothing to show is an [Empty State](EMPTY-STATE.md).
+`Card` is a framed container for a self-contained group of content: a settings section, a dashboard widget, a record tile or a tool panel. It draws an optional header (a title block with a description and actions, or custom header content), a body and an optional footer. Grouping without a frame belongs to layout, or to a [Section](SECTION-HEADER.md) whose header matches a card's title block; a region with nothing to show is an [Empty State](EMPTY-STATE.md).
 
 ## UIC-CARD-1 - Structure
 
