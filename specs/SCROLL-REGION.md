@@ -1,6 +1,6 @@
 # Scroll Region
 
-`ScrollRegion` is an area that scrolls on its own. Its root frames a native scroll viewport, so content overflow, wheel, touch and keyboard scrolling stay with the browser. Optional overlay scrollbars replace the native ones with thumbs that take no layout space, and optional markers paint a decorative overview of the content beside the native vertical scrollbar. A component that already scrolls on its own is not wrapped in a second region.
+`ScrollRegion` is an area that scrolls on its own. Its root frames a native scroll viewport, so content overflow, wheel, touch and keyboard scrolling stay with the browser. Optional overlay scrollbars replace the native ones with thumbs that take no layout space and show by a visibility mode, optional markers paint a decorative overview of the content beside the native vertical scrollbar, and the root publishes how far the content reaches past each edge and whether the region is scrolling or hovered. A component that already scrolls on its own is not wrapped in a second region.
 
 ## UIC-SCROLL-REGION-1 - Structure
 
@@ -13,7 +13,7 @@ Verification: `src/components/scroll-region/scroll-region.test.tsx`, `e2e/scroll
 
 ### UIC-SCROLL-REGION-1.2 - Options
 
-`ScrollRegion` shall publish `data-axis` (`x`, `y` by default, `both`, `none`), `data-overscroll` (`contain` by default, `auto`) and `data-scrollbar` (`native` by default, `overlay`). It grows by default (`data-grow`), clips only for `axis="none"` unless `clip` says otherwise, and with `fill` covers its nearest positioned ancestor (`data-fill`). With `columns` it lays the children out in a grid and publishes `data-columns`, `data-min-column-width` (for `fit`), `data-space` and `data-align` as `Grid` does ([LAYOUT.md](LAYOUT.md)).
+`ScrollRegion` shall publish `data-axis` (`x`, `y` by default, `both`, `none`), `data-overscroll` (`contain` by default, `auto`), `data-scrollbar` (`native` by default, `overlay`) and `data-scrollbar-visibility` ([UIC-SCROLL-REGION-2.8](#uic-scroll-region-28---scrollbar-visibility)). It grows by default (`data-grow`), clips only for `axis="none"` unless `clip` says otherwise, and with `fill` covers its nearest positioned ancestor (`data-fill`). With `columns` it lays the children out in a grid and publishes `data-columns`, `data-min-column-width` (for `fit`), `data-space` and `data-align` as `Grid` does ([LAYOUT.md](LAYOUT.md)).
 
 Implementation: `src/components/scroll-region/scroll-region.tsx`, `labs/reference/scroll-region.css`
 Verification: `src/components/scroll-region/scroll-region.test.tsx`, `e2e/scroll-region.spec.ts`
@@ -22,7 +22,7 @@ Verification: `src/components/scroll-region/scroll-region.test.tsx`, `e2e/scroll
 
 ### UIC-SCROLL-REGION-2.1 - Overlay mode
 
-With `scrollbar="overlay"` the stylesheet shall hide the native scrollbars, the viewport shall be focusable (`tabIndex` 0 unless the caller sets one), and each axis that overflows shall get a `ui-scroll-region__track` (`data-orientation` `vertical` or `horizontal`) holding one `ui-scroll-region__thumb`. The root publishes `data-overflow-y` and `data-overflow-x` for the overflowing axes. Tracks let pointer input through to the content; thumbs take it.
+With `scrollbar="overlay"` the stylesheet shall hide the native scrollbars, the viewport shall be focusable (`tabIndex` 0 unless the caller sets one), and each axis that overflows shall get a `ui-scroll-region__track` (`data-orientation` `vertical` or `horizontal`) holding one `ui-scroll-region__thumb`. The root publishes `data-overflow-y` and `data-overflow-x` for the overflowing axes. Tracks and thumbs take pointer input ([UIC-SCROLL-REGION-2.9](#uic-scroll-region-29---track-presses)).
 
 Implementation: `src/components/scroll-region/scroll-region.tsx`, `src/components/scroll-region/overlay-scrollbars.tsx`, `labs/reference/scroll-region.css`
 Verification: `src/components/scroll-region/scroll-region.test.tsx`, `e2e/scroll-region.spec.ts`
@@ -69,6 +69,20 @@ Overlay geometry shall refresh when the viewport, its children, the headers or t
 Implementation: `src/components/scroll-region/use-overlay-metrics.ts`, `src/components/scroll-region/observe-viewport.ts`, `src/components/scroll-region/overlay-scrollbars.tsx`
 Verification: `src/components/scroll-region/scroll-region.test.tsx`
 
+### UIC-SCROLL-REGION-2.8 - Scrollbar visibility
+
+`scrollbarVisibility` shall choose when overlay tracks show: `auto` (the default) while their axis overflows; `always` on every axis that scrolls, even when the content fits, where the thumb spans its track and leaves the tab order; `scroll` from a scroll until `scrollbarHideDelay` milliseconds (600 by default) pass without one; `hover` while a mouse or pen pointer is over the region, for the delay after it leaves, and while scrolling as in `scroll`. A focused thumb keeps its tracks shown. A track that shows or hides follows [Enter and Exit](ENTER-EXIT.md): it publishes `data-entering` while it appears and `data-exiting` while it leaves, and stays mounted until its exit animations end.
+
+Implementation: `src/components/scroll-region/scroll-region.tsx`, `src/components/scroll-region/use-scroll-activity.ts`, `src/components/scroll-region/overlay-scrollbars.tsx`, `labs/reference/scroll-region.css`
+Verification: `src/components/scroll-region/scroll-region.test.tsx`, `e2e/scroll-region.spec.ts`
+
+### UIC-SCROLL-REGION-2.9 - Track presses
+
+A primary press on an overlay track beside its thumb shall scroll the viewport one visible length toward the pointer, within the scroll range, as a native scrollbar track does. Presses on the thumb start a drag instead ([UIC-SCROLL-REGION-2.4](#uic-scroll-region-24---thumb-pointer-and-wheel)).
+
+Implementation: `src/components/scroll-region/overlay-scrollbars.tsx`
+Verification: `src/components/scroll-region/scroll-region.test.tsx`, `e2e/scroll-region.spec.ts`
+
 ## UIC-SCROLL-REGION-3 - Overview
 
 ### UIC-SCROLL-REGION-3.1 - Overview paint
@@ -92,29 +106,79 @@ Verification: `src/utils/scroll-overview.test.ts`
 Implementation: `src/utils/scroll-overview.ts`, `src/components/scroll-region/use-scroll-overview.ts`
 Verification: `src/utils/scroll-overview.test.ts`
 
+## UIC-SCROLL-REGION-4 - Scroll state
+
+### UIC-SCROLL-REGION-4.1 - Edge distances
+
+A region that scrolls on some axis shall publish, in either scrollbar mode, how far the content reaches past each edge of the viewport in whole pixels: `--ui-scroll-region-overflow-y-start` (scrolled past the top), `--ui-scroll-region-overflow-y-end` (left below the bottom), `--ui-scroll-region-overflow-x-start` and `--ui-scroll-region-overflow-x-end` (past the inline start and end, so the right edge is the start right to left), with `data-overflow-y-start`, `data-overflow-y-end`, `data-overflow-x-start` and `data-overflow-x-end` while each is above zero, for the stylesheet to fade or shadow the edges. They update when the viewport scrolls, resizes or its children change, without waiting for an animation frame. A region with `axis="none"` publishes none.
+
+Implementation: `src/components/scroll-region/scroll-region.tsx`, `src/components/scroll-region/use-scroll-edges.ts`, `labs/reference/scroll-region.css`
+Verification: `src/components/scroll-region/scroll-region.test.tsx`, `e2e/scroll-region.spec.ts`
+
+### UIC-SCROLL-REGION-4.2 - Scrolling and hovering
+
+The root shall publish `data-scrolling` from a scroll until `scrollbarHideDelay` milliseconds pass without one, and `data-hovering` while a mouse or pen pointer is over the region, in either scrollbar mode, so the stylesheet can fade thumbs or edges in while the reader scrolls.
+
+Implementation: `src/components/scroll-region/scroll-region.tsx`, `src/components/scroll-region/use-scroll-activity.ts`
+Verification: `src/components/scroll-region/scroll-region.test.tsx`, `e2e/scroll-region.spec.ts`
+
+### UIC-SCROLL-REGION-4.3 - Edge callbacks
+
+`onTopReached` shall be called when a scroll brings the viewport to the top from below it, and `onBottomReached` when a scroll brings it to the bottom from above it, for loading more content. Mounting, resizing and the region's own scrolling to the bottom call neither. The viewport's `onScroll` still reports every scroll with its position.
+
+Implementation: `src/components/scroll-region/use-scroll-edges.ts`
+Verification: `src/components/scroll-region/scroll-region.test.tsx`, `e2e/scroll-region.spec.ts`
+
+### UIC-SCROLL-REGION-4.4 - Stick to bottom
+
+With `stickToBottom`, the viewport shall start scrolled to the bottom and stay there when its content or size changes while the reader is at the bottom (within a pixel), as a log or a conversation does. Scrolling up releases it, and scrolling back to the bottom pins it again.
+
+Implementation: `src/components/scroll-region/use-scroll-edges.ts`
+Verification: `src/components/scroll-region/scroll-region.test.tsx`, `e2e/scroll-region.spec.ts`
+
+### UIC-SCROLL-REGION-4.5 - Scroll spy
+
+`useScrollSpy(viewportRef, { ids, offset })` shall return the id of the current section of a scrolling viewport, such as a region's (its `ref`): the last of `ids` whose top has reached `offset` pixels (0 by default) below the viewport's top, the first before any has, and the last once the viewport is scrolled to its end. Ids without an element are skipped. It updates as the viewport scrolls or resizes and when the ids or the offset change, for a table of contents to mark its current entry; `resolveScrollSpy(viewport, options)` exposes the rule.
+
+Implementation: `src/components/scroll-region/use-scroll-spy.ts`
+Verification: `src/components/scroll-region/use-scroll-spy.test.tsx`, `e2e/scroll-region.spec.ts`
+
 ## Hooks
 
-| Hook                                | Kind      | Values                                                           | Description                                                |
-| ----------------------------------- | --------- | ---------------------------------------------------------------- | ---------------------------------------------------------- |
-| `ui-scroll-region`                  | root      |                                                                  | The frame.                                                 |
-| `ui-scroll-region__viewport`        | slot      |                                                                  | The scrolling element.                                     |
-| `ui-scroll-region__overview`        | slot      |                                                                  | Decorative overview layer.                                 |
-| `ui-scroll-region__track`           | slot      |                                                                  | Overlay track of one axis, placed by the stylesheet.       |
-| `ui-scroll-region__thumb`           | slot      |                                                                  | Overlay thumb.                                             |
-| `data-axis`                         | attribute | `x`, `y`, `both`, `none`                                         | Scrolling axes.                                            |
-| `data-overscroll`                   | attribute | `contain`, `auto`                                                | Scroll chaining.                                           |
-| `data-scrollbar`                    | attribute | `native`, `overlay`                                              | Scrollbar mode.                                            |
-| `data-columns`                      | attribute | `1`, `2`, `3`, `4`, `6`, `12`, `fit`, `none`                     | Grid columns of the children.                              |
-| `data-min-column-width`             | attribute | `sm`, `md`, `lg`, `xl`                                           | Smallest column of `columns="fit"`.                        |
-| `data-space`                        | attribute | `none`, `3xs`, `2xs`, `xs`, `sm`, `md`, `lg`, `xl`, `2xl`, `3xl` | Grid gap.                                                  |
-| `data-align`                        | attribute | `start`, `center`, `end`, `stretch`, `baseline`                  | Grid cell alignment.                                       |
-| `data-orientation`                  | attribute | `vertical`, `horizontal`                                         | Track and thumb axis.                                      |
-| `data-grow`                         | state     | `true`, `auto`, `none`                                           | Growth inside a flex parent.                               |
-| `data-fill`                         | state     | `true`                                                           | Covers the nearest positioned ancestor.                    |
-| `data-clip`                         | state     | `true`                                                           | Clips the content.                                         |
-| `data-overflow-x`                   | state     | `true`                                                           | Overlay mode: the content overflows horizontally.          |
-| `data-overflow-y`                   | state     | `true`                                                           | Overlay mode: the content overflows vertically.            |
-| `data-overview`                     | state     | `true`                                                           | The overview paints.                                       |
-| `--ui-scroll-region-overview-image` | property  |                                                                  | The overview image (`linear-gradient`).                    |
-| `--ui-scroll-region-header-size`    | property  |                                                                  | Overlay mode: height of the registered headers, in pixels. |
-| `--ui-scroll-region-content-lift`   | property  |                                                                  | Overlay mode: empty height below short content, in pixels. |
+| Hook                                  | Kind      | Values                                                           | Description                                                |
+| ------------------------------------- | --------- | ---------------------------------------------------------------- | ---------------------------------------------------------- |
+| `ui-scroll-region`                    | root      |                                                                  | The frame.                                                 |
+| `ui-scroll-region__viewport`          | slot      |                                                                  | The scrolling element.                                     |
+| `ui-scroll-region__overview`          | slot      |                                                                  | Decorative overview layer.                                 |
+| `ui-scroll-region__track`             | slot      |                                                                  | Overlay track of one axis, placed by the stylesheet.       |
+| `ui-scroll-region__thumb`             | slot      |                                                                  | Overlay thumb.                                             |
+| `data-axis`                           | attribute | `x`, `y`, `both`, `none`                                         | Scrolling axes.                                            |
+| `data-overscroll`                     | attribute | `contain`, `auto`                                                | Scroll chaining.                                           |
+| `data-scrollbar`                      | attribute | `native`, `overlay`                                              | Scrollbar mode.                                            |
+| `data-scrollbar-visibility`           | attribute | `auto`, `always`, `scroll`, `hover`                              | When overlay tracks show.                                  |
+| `data-columns`                        | attribute | `1`, `2`, `3`, `4`, `6`, `12`, `fit`, `none`                     | Grid columns of the children.                              |
+| `data-min-column-width`               | attribute | `sm`, `md`, `lg`, `xl`                                           | Smallest column of `columns="fit"`.                        |
+| `data-space`                          | attribute | `none`, `3xs`, `2xs`, `xs`, `sm`, `md`, `lg`, `xl`, `2xl`, `3xl` | Grid gap.                                                  |
+| `data-align`                          | attribute | `start`, `center`, `end`, `stretch`, `baseline`                  | Grid cell alignment.                                       |
+| `data-orientation`                    | attribute | `vertical`, `horizontal`                                         | Track and thumb axis.                                      |
+| `data-grow`                           | state     | `true`, `auto`, `none`                                           | Growth inside a flex parent.                               |
+| `data-fill`                           | state     | `true`                                                           | Covers the nearest positioned ancestor.                    |
+| `data-clip`                           | state     | `true`                                                           | Clips the content.                                         |
+| `data-overflow-x`                     | state     | `true`                                                           | Overlay mode: the content overflows horizontally.          |
+| `data-overflow-y`                     | state     | `true`                                                           | Overlay mode: the content overflows vertically.            |
+| `data-overview`                       | state     | `true`                                                           | The overview paints.                                       |
+| `data-overflow-y-start`               | state     | `true`                                                           | The content reaches above the viewport.                    |
+| `data-overflow-y-end`                 | state     | `true`                                                           | The content reaches below the viewport.                    |
+| `data-overflow-x-start`               | state     | `true`                                                           | The content reaches past the inline start.                 |
+| `data-overflow-x-end`                 | state     | `true`                                                           | The content reaches past the inline end.                   |
+| `data-scrolling`                      | state     | `true`                                                           | The viewport is scrolling, until the hide delay passes.    |
+| `data-hovering`                       | state     | `true`                                                           | A mouse or pen pointer is over the region.                 |
+| `data-entering`                       | state     | `true`                                                           | An overlay track is appearing.                             |
+| `data-exiting`                        | state     | `true`                                                           | An overlay track is leaving.                               |
+| `--ui-scroll-region-overview-image`   | property  |                                                                  | The overview image (`linear-gradient`).                    |
+| `--ui-scroll-region-header-size`      | property  |                                                                  | Overlay mode: height of the registered headers, in pixels. |
+| `--ui-scroll-region-content-lift`     | property  |                                                                  | Overlay mode: empty height below short content, in pixels. |
+| `--ui-scroll-region-overflow-y-start` | property  |                                                                  | Distance scrolled past the top, in pixels.                 |
+| `--ui-scroll-region-overflow-y-end`   | property  |                                                                  | Distance left below the bottom, in pixels.                 |
+| `--ui-scroll-region-overflow-x-start` | property  |                                                                  | Distance scrolled past the inline start, in pixels.        |
+| `--ui-scroll-region-overflow-x-end`   | property  |                                                                  | Distance left beyond the inline end, in pixels.            |
