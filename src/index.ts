@@ -11,4 +11,8 @@ export * from './components/prose-table/index.js';
 export * from './components/portal/index.js';
 export * from './components/projection/index.js';
 export * from './components/svg-markup/index.js';
+export * from './components/layout/index.js';
+export * from './components/split-view/index.js';
+export * from './components/scroll-region/index.js';
+export * from './components/section-header/index.js';
 export * from './utils/index.js';

@@ -20,6 +20,9 @@ export interface UiStrings {
   copied: string;
   sortAscending: string;
   sortDescending: string;
+  resize: string;
+  scrollVertically: string;
+  scrollHorizontally: string;
   itemCount: (count: number) => string;
   /** Spoken name of a keyboard key or modifier (`↑` → `Up Arrow`); other keys are read as written. */
   shortcutKeyName: (key: string) => string;
@@ -58,6 +61,9 @@ export const defaultStrings: UiStrings = {
   copied: 'Copied',
   sortAscending: 'Sort ascending',
   sortDescending: 'Sort descending',
+  resize: 'Resize',
+  scrollVertically: 'Scroll vertically',
+  scrollHorizontally: 'Scroll horizontally',
   itemCount: (count) => (count === 1 ? '1 item' : `${count} items`),
   shortcutKeyName: (key) => spokenKeyNames[key] ?? key,
 };
