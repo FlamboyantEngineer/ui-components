@@ -22,7 +22,7 @@ Verification: `src/components/progress-bar/progress-bar.test.tsx`, `e2e/progress
 
 With `isIndeterminate` the bar shall publish `data-indeterminate`, expose no `aria-valuenow` or `aria-valuetext`, show no value text and give the fill no width, so the stylesheet animates it without claiming a level.
 
-Implementation: `src/components/progress-bar/progress-bar.tsx`, `labs/reference.css`
+Implementation: `src/components/progress-bar/progress-bar.tsx`, `labs/reference/progress-bar.css`
 Verification: `src/components/progress-bar/progress-bar.test.tsx`, `e2e/progress-bar.spec.ts`
 
 ### UIC-PROGRESS-BAR-1.4 - Value text
@@ -43,7 +43,7 @@ Verification: `src/components/progress-bar/progress-bar.test.tsx`
 
 `size` shall publish `data-size`: `sm`, `md` (the default) or `lg`. The reference sheet draws 4, 6 and 8 pixel tracks.
 
-Implementation: `src/components/progress-bar/progress-bar.tsx`, `labs/reference.css`
+Implementation: `src/components/progress-bar/progress-bar.tsx`, `labs/reference/progress-bar.css`
 Verification: `src/components/progress-bar/progress-bar.test.tsx`, `e2e/progress-bar.spec.ts`
 
 ### UIC-PROGRESS-BAR-1.7 - Hooks and caller attributes
@@ -59,7 +59,7 @@ Verification: `src/components/progress-bar/progress-bar.test.tsx`
 
 `Spinner` shall render a `ui-spinner` element hidden from assistive technology (`aria-hidden="true"`), publish `data-size` (`sm`, `md` by default, `lg`; the reference sheet draws 12, 16 and 20 pixel boxes), append the caller's `className` and forward `id` and `data-*` attributes. The line it leads carries the status text and any `aria-busy`.
 
-Implementation: `src/components/progress-bar/progress-bar.tsx`, `labs/reference.css`
+Implementation: `src/components/progress-bar/progress-bar.tsx`, `labs/reference/progress-bar.css`
 Verification: `src/components/progress-bar/progress-bar.test.tsx`, `e2e/progress-bar.spec.ts`
 
 ## Hooks

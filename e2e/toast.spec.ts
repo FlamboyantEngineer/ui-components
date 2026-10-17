@@ -8,10 +8,11 @@ test.describe('Toast lab', () => {
     await lab.open('toast');
     const cells = page.locator('table[data-lab-matrix="tone content"] td[data-lab-cell]');
     expect(await cells.count()).toBe(4 * 4);
-    for (const tone of ['info', 'success', 'warning', 'error']) {
+    const glyphs = { info: 'info', success: 'success', warning: 'warning', danger: 'error' };
+    for (const [tone, glyph] of Object.entries(glyphs)) {
       const toast = page.locator(`[data-lab-cell="tone=${tone} content=description"] .ui-toast`);
       await expect(toast).toHaveAttribute('data-tone', tone);
-      await expect(toast.locator('.ui-toast__icon')).toHaveAttribute('data-glyph', tone);
+      await expect(toast.locator('.ui-toast__icon')).toHaveAttribute('data-glyph', glyph);
     }
     await expect(page.locator('.ui-toast-region')).toHaveCount(0);
     await lab.expectAccessible();
@@ -31,7 +32,7 @@ test.describe('Toast lab', () => {
     const viewport = page.viewportSize();
     const box = await region.boundingBox();
     expect(Math.round((box?.x ?? 0) + (box?.width ?? 0))).toBe((viewport?.width ?? 0) - 16);
-    await page.locator('[data-lab-push="error"]').click();
+    await page.locator('[data-lab-push="danger"]').click();
     await expect(page.getByRole('region', { name: /^2 notifications/ })).toBeVisible();
     const titles = region.locator('.ui-toast__title');
     await expect(titles).toHaveText(['Upload failed', 'Draft saved']);

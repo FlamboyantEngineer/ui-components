@@ -1,5 +1,8 @@
 import { useId, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
+import type { BaseProps, NativeProps } from '../../core/props.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
+import type { HeadingLevel } from '../section-header/section-header.js';
 
 /** `default`: content on the page. `panel`: a chrome region on a muted surface. */
 export type CardVariant = 'default' | 'panel';
@@ -7,7 +10,10 @@ export type CardVariant = 'default' | 'panel';
 /** `default` keeps each part's own inset; the others give the card one interior padding. */
 export type CardDensity = 'default' | 'comfortable' | 'compact' | 'tight';
 
-export interface CardProps {
+export interface CardProps
+  extends
+    BaseProps,
+    Pick<NativeProps<'section'>, 'hidden' | 'role' | 'aria-label' | 'aria-labelledby'> {
   /** Surface. Defaults to `default`. */
   variant?: CardVariant | undefined;
   /** Interior padding. Defaults to `default`. */
@@ -19,11 +25,12 @@ export interface CardProps {
   /** Trailing controls or status in the header. */
   actions?: ReactNode;
   /** The title's heading level. Defaults to 3. */
-  headingLevel?: 1 | 2 | 3 | 4 | 5 | 6 | undefined;
+  headingLevel?: HeadingLevel | undefined;
   /** Custom header content, in place of the title, description and actions. */
   header?: ReactNode;
   /** The body. */
   children?: ReactNode;
+  /** Closing content, such as a timestamp or secondary actions, in a `<footer>`. */
   footer?: ReactNode;
   /** The card is the current one, such as a selected record. */
   isSelected?: boolean | undefined;
@@ -35,15 +42,12 @@ export interface CardProps {
   fill?: boolean | undefined;
   /** Take the full width of the container. */
   fullWidth?: boolean | undefined;
-  /** The role a surrounding collection gives its items. */
-  role?: string | undefined;
-  id?: string | undefined;
-  hidden?: boolean | undefined;
-  className?: string | undefined;
-  'aria-label'?: string | undefined;
-  'aria-labelledby'?: string | undefined;
-  [data: `data-${string}`]: string | number | boolean | undefined;
 }
+
+type CardHeaderProps = Pick<CardProps, 'title' | 'description' | 'actions' | 'header'> & {
+  headingLevel: HeadingLevel;
+  titleId: string;
+};
 
 const hooks = createHooks('card', [
   'header',
@@ -55,8 +59,47 @@ const hooks = createHooks('card', [
   'footer',
 ]);
 
-function present(node: ReactNode): boolean {
-  return node !== undefined && node !== null && node !== false && node !== '';
+/** The card's `aria-labelledby`: the caller's, else its own title's unless the caller names it. */
+function toLabelledBy(
+  props: Pick<CardProps, 'title' | 'header' | 'aria-label' | 'aria-labelledby'>,
+  titleId: string,
+): string | undefined {
+  if (props['aria-labelledby'] !== undefined || props['aria-label'] !== undefined) {
+    return props['aria-labelledby'];
+  }
+  return isEmptyNode(props.header) && !isEmptyNode(props.title) ? titleId : undefined;
+}
+
+function CardHeading({
+  title,
+  description,
+  headingLevel,
+  titleId,
+}: Omit<CardHeaderProps, 'actions' | 'header'>) {
+  const Heading = `h${headingLevel}` as const;
+  if (isEmptyNode(title) && isEmptyNode(description)) return null;
+  return (
+    <div {...hooks.slot('heading')}>
+      {isEmptyNode(title) ? null : (
+        <Heading {...hooks.slot('title')} id={titleId}>
+          {title}
+        </Heading>
+      )}
+      {isEmptyNode(description) ? null : <div {...hooks.slot('description')}>{description}</div>}
+    </div>
+  );
+}
+
+/** The `<header>`: custom content, or the title block and actions; nothing when all are empty. */
+function CardHeader({ header, actions, ...heading }: CardHeaderProps) {
+  if (!isEmptyNode(header)) return <header {...hooks.slot('header')}>{header}</header>;
+  if ([heading.title, heading.description, actions].every(isEmptyNode)) return null;
+  return (
+    <header {...hooks.slot('header')}>
+      <CardHeading {...heading} />
+      {isEmptyNode(actions) ? null : <div {...hooks.slot('actions')}>{actions}</div>}
+    </header>
+  );
 }
 
 /** A framed container for a self-contained group of content: an optional header, a body and a footer. */
@@ -70,58 +113,33 @@ export function Card({
   header,
   children,
   footer,
-  isSelected = false,
-  interactive = false,
-  flush = false,
-  fill = false,
-  fullWidth = false,
-  role,
-  id,
-  hidden,
+  isSelected,
+  interactive,
+  flush,
+  fill,
+  fullWidth,
   className,
-  'aria-label': ariaLabel,
-  'aria-labelledby': ariaLabelledBy,
   ...rest
 }: CardProps) {
   const titleId = useId();
-  const custom = present(header);
-  const hasTitle = !custom && present(title);
-  const hasDescription = !custom && present(description);
-  const hasActions = !custom && present(actions);
-  const Heading = `h${headingLevel}` as const;
-  const named = ariaLabel !== undefined || ariaLabelledBy !== undefined;
+  const data = { variant, density, selected: isSelected, interactive, flush, fill, fullWidth };
 
   return (
     <section
-      {...hooks.root({
-        className,
-        props: rest,
-        data: { variant, density, selected: isSelected, interactive, flush, fill, fullWidth },
-      })}
-      id={id}
-      hidden={hidden}
-      role={role}
-      aria-label={ariaLabel}
-      aria-labelledby={ariaLabelledBy ?? (hasTitle && !named ? titleId : undefined)}
+      {...rest}
+      {...hooks.root({ className, data })}
+      aria-labelledby={toLabelledBy({ title, header, ...rest }, titleId)}
     >
-      {custom || hasTitle || hasDescription || hasActions ? (
-        <header {...hooks.slot('header')}>
-          {custom ? header : null}
-          {hasTitle || hasDescription ? (
-            <div {...hooks.slot('heading')}>
-              {hasTitle ? (
-                <Heading {...hooks.slot('title')} id={titleId}>
-                  {title}
-                </Heading>
-              ) : null}
-              {hasDescription ? <div {...hooks.slot('description')}>{description}</div> : null}
-            </div>
-          ) : null}
-          {hasActions ? <div {...hooks.slot('actions')}>{actions}</div> : null}
-        </header>
-      ) : null}
+      <CardHeader
+        header={header}
+        title={title}
+        description={description}
+        actions={actions}
+        headingLevel={headingLevel}
+        titleId={titleId}
+      />
       <div {...hooks.slot('body')}>{children}</div>
-      {present(footer) ? <footer {...hooks.slot('footer')}>{footer}</footer> : null}
+      {isEmptyNode(footer) ? null : <footer {...hooks.slot('footer')}>{footer}</footer>}
     </section>
   );
 }

@@ -1,30 +1,28 @@
 import type { ReactNode } from 'react';
 import { VisuallyHidden } from 'react-aria-components';
 import { createHooks } from '../../core/hooks.js';
+import type { BaseProps, NativeProps, Size, Tone } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import type { UiStrings } from '../../core/strings.js';
 import { formatCount, normalizeCount } from '../../utils/count.js';
 
-export type BadgeTone = 'neutral' | 'info' | 'success' | 'warning' | 'danger';
+export type BadgeTone = Tone;
 
-export type BadgeSize = 'sm' | 'md' | 'lg';
+export type BadgeSize = Extract<Size, 'sm' | 'md' | 'lg'>;
 
 /** `subtle` is a tinted pill, `solid` a filled token, `status` a tone dot before the label. */
 export type BadgeVariant = 'subtle' | 'solid' | 'status';
 
 export type BadgePlacement = 'inline' | 'overlay';
 
-interface BadgeCommonProps {
+interface BadgeCommonProps
+  extends BaseProps, Pick<NativeProps<'span'>, 'hidden' | 'aria-hidden' | 'aria-label'> {
   /** The value's tone. Defaults to `neutral`. */
   tone?: BadgeTone | undefined;
   /** Scale. Defaults to `md`. */
   size?: BadgeSize | undefined;
   /** Drop the pill inside chrome that already draws its own edge; tone and dot stay. */
   bare?: boolean | undefined;
-  id?: string | undefined;
-  hidden?: boolean | undefined;
-  className?: string | undefined;
-  'aria-hidden'?: boolean | 'true' | 'false' | undefined;
-  [data: `data-${string}`]: string | number | boolean | undefined;
 }
 
 export interface BadgeLabelProps extends BadgeCommonProps {
@@ -32,8 +30,6 @@ export interface BadgeLabelProps extends BadgeCommonProps {
   variant?: BadgeVariant | undefined;
   /** The short value the badge shows. */
   children: ReactNode;
-  /** Replacement accessible text. */
-  'aria-label'?: string | undefined;
   /** A `status` badge is a polite live region unless this is `false`. */
   announce?: boolean | undefined;
   /** Soften only the status dot, keeping the label's contrast. */
@@ -53,8 +49,6 @@ export interface BadgeCountProps extends BadgeCommonProps {
   more?: boolean | undefined;
   /** `overlay` pins the count to the upper trailing corner of a positioned host. Defaults to `inline`. */
   placement?: BadgePlacement | undefined;
-  /** Replacement accessible text, for example "12 unread messages". */
-  'aria-label'?: string | undefined;
   variant?: never;
   children?: never;
   announce?: never;
@@ -69,6 +63,17 @@ function isCountBadge(props: BadgeProps): props is BadgeCountProps {
   return typeof props.count === 'number';
 }
 
+/** The text a count is read as: the caller's label, else the uncapped count ("12 or more" with `more`). */
+function describeCount(
+  { count, more, 'aria-label': ariaLabel }: Pick<BadgeCountProps, 'count' | 'more' | 'aria-label'>,
+  strings: UiStrings,
+): string {
+  if (ariaLabel !== undefined) return ariaLabel;
+  const exact = normalizeCount(count);
+  if (exact === undefined) return '';
+  return more ? strings.countOrMore(exact) : String(exact);
+}
+
 function CountBadge({
   count,
   max,
@@ -77,36 +82,23 @@ function CountBadge({
   tone = 'neutral',
   size = 'md',
   bare = false,
-  id,
-  hidden,
   className,
-  'aria-hidden': ariaHidden,
   'aria-label': ariaLabel,
   ...rest
 }: BadgeCountProps) {
   const strings = useUiStrings();
   const visible = formatCount(count, { max, more });
-  const exact = normalizeCount(count);
-  const spoken =
-    ariaLabel ?? (exact === undefined ? '' : more ? strings.countOrMore(exact) : String(exact));
-  const hiddenFromReaders = ariaHidden === true || ariaHidden === 'true';
-  const separate = !hiddenFromReaders && spoken !== visible;
+  const spoken = describeCount({ count, more, 'aria-label': ariaLabel }, strings);
+  const isHidden = rest['aria-hidden'] === true || rest['aria-hidden'] === 'true';
+  const isSeparate = !isHidden && spoken !== visible;
+  const data = { variant: 'count', tone, size, placement, bare };
 
   return (
-    <span
-      {...hooks.root({
-        className,
-        props: rest,
-        data: { variant: 'count', tone, size, placement, bare },
-      })}
-      id={id}
-      hidden={hidden}
-      aria-hidden={ariaHidden}
-    >
-      <span {...hooks.slot('label')} aria-hidden={separate || undefined}>
+    <span {...rest} {...hooks.root({ className, data })}>
+      <span {...hooks.slot('label')} aria-hidden={isSeparate || undefined}>
         {visible}
       </span>
-      {separate ? (
+      {isSeparate ? (
         <VisuallyHidden elementType="span" className={hooks.slotClass('accessible-label')}>
           {spoken}
         </VisuallyHidden>
@@ -123,26 +115,16 @@ function LabelBadge({
   tone = 'neutral',
   size = 'md',
   bare = false,
-  id,
-  hidden,
   className,
-  'aria-hidden': ariaHidden,
-  'aria-label': ariaLabel,
   ...rest
 }: BadgeLabelProps) {
   const isStatus = variant === 'status';
+  const data = { variant, tone, size, bare, mutedDot: isStatus && mutedDot };
   return (
     <span
-      {...hooks.root({
-        className,
-        props: rest,
-        data: { variant, tone, size, bare, mutedDot: isStatus && mutedDot },
-      })}
-      id={id}
-      hidden={hidden}
+      {...rest}
+      {...hooks.root({ className, data })}
       role={isStatus && announce ? 'status' : undefined}
-      aria-label={ariaLabel}
-      aria-hidden={ariaHidden}
     >
       {isStatus ? <span {...hooks.slot('dot')} aria-hidden="true" /> : null}
       <span {...hooks.slot('label')}>{children}</span>

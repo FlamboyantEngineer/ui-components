@@ -78,3 +78,14 @@
   width: 20px;
   height: 20px;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-progress-bar__fill {
+    transition: none;
+  }
+
+  .ui-progress-bar[data-indeterminate] .ui-progress-bar__fill,
+  .ui-spinner {
+    animation: none;
+  }
+}

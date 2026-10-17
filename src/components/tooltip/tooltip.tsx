@@ -6,72 +6,60 @@ import {
   type Placement,
   type TooltipTriggerComponentProps,
 } from 'react-aria-components';
-import { createHooks, splitDataAttributes, type DataAttributes } from '../../core/hooks.js';
+import { createHooks, splitDataAttributes } from '../../core/hooks.js';
+import type { BaseProps } from '../../core/props.js';
 
 export type TooltipVariant = 'default' | 'info';
 
 export type TooltipPlacement = Placement;
 
-/** Where a tooltip sits and how it keeps inside the viewport (React Aria's overlay positioning). */
-export interface TooltipPositionProps {
-  /** Preferred side of the trigger. Defaults to `top`; the tooltip flips when it does not fit. */
-  placement?: TooltipPlacement | undefined;
-  /** Gap from the trigger along the placement axis, in pixels. Defaults to 8, room for an arrow. */
-  offset?: number | undefined;
-  /** Shift along the cross axis, in pixels. */
-  crossOffset?: number | undefined;
-  /** Flip to the opposite side when the preferred side does not fit. Defaults to `true`. */
-  shouldFlip?: boolean | undefined;
-  /** Minimum distance kept from the viewport edge, in pixels. */
-  containerPadding?: number | undefined;
-}
+/** Caller props for the panel. Its `id` belongs to React Aria, which describes the trigger by it. */
+type TooltipPanelBaseProps = Omit<BaseProps, 'id'>;
 
 export interface TooltipProps
-  extends Omit<TooltipTriggerComponentProps, 'children'>, TooltipPositionProps {
+  extends Omit<TooltipTriggerComponentProps, 'children'>, TooltipPanelBaseProps {
   /** The hint. Plain text or inline content; never interactive. */
   content: ReactNode;
   /** The trigger: a React Aria focusable such as `Button`, `IconButton` or `Link`. */
   children: ReactNode;
   /** `default` for a hint on a control, `info` for a softer explanatory note. Defaults to `default`. */
   variant?: TooltipVariant | undefined;
-  /** Class names for the tooltip panel. */
-  className?: string | undefined;
-  [data: `data-${string}`]: string | number | boolean | undefined;
+  /** Preferred side of the trigger. Defaults to `top`; the tooltip flips when it does not fit. */
+  placement?: TooltipPlacement | undefined;
 }
 
-const hooks = createHooks('tooltip', ['arrow', 'content']);
+/** The tooltip panel, inside a `TooltipTrigger` or driven through `TooltipTriggerStateContext`. */
+export interface TooltipPanelProps extends Pick<TooltipProps, 'placement'>, TooltipPanelBaseProps {
+  /** The panel's look. */
+  variant: TooltipVariant;
+  /** The hint. */
+  children: ReactNode;
+  /** For a panel driven through `TooltipTriggerStateContext`: the element it is positioned against. */
+  triggerRef?: RefObject<Element | null> | undefined;
+}
 
 /** The hover delay before a tooltip opens, in milliseconds. */
 export const TOOLTIP_DELAY = 500;
 
-/** The gap between a tooltip and its trigger, in pixels. */
-export const TOOLTIP_OFFSET = 8;
+const hooks = createHooks('tooltip', ['arrow', 'content']);
 
-export interface TooltipPanelProps extends TooltipPositionProps {
-  variant: TooltipVariant;
-  children: ReactNode;
-  className?: string | undefined;
-  data?: DataAttributes | undefined;
-  /** For a panel driven through `TooltipTriggerStateContext`: the element it is positioned against. */
-  triggerRef?: RefObject<Element | null> | undefined;
-}
+/** The gap between the panel and its trigger, room for the arrow, in pixels. */
+const tooltipOffset = 8;
 
 /** The tooltip panel with its hooks; inside a `TooltipTrigger` or standalone with `triggerRef`. */
 export function TooltipPanel({
   variant,
   children,
   className,
-  data,
   placement = 'top',
-  offset = TOOLTIP_OFFSET,
-  ...props
+  ...rest
 }: TooltipPanelProps) {
   return (
     <AriaTooltip
-      {...props}
+      {...rest}
       placement={placement}
-      offset={offset}
-      {...hooks.root({ className, props: data, data: { variant } })}
+      offset={tooltipOffset}
+      {...hooks.root({ className, data: { variant } })}
     >
       <OverlayArrow className={hooks.slotClass('arrow')} />
       <span {...hooks.slot('content')}>{children}</span>
@@ -88,10 +76,6 @@ export function Tooltip({
   children,
   variant = 'default',
   placement,
-  offset,
-  crossOffset,
-  shouldFlip,
-  containerPadding,
   className,
   delay = TOOLTIP_DELAY,
   ...rest
@@ -100,16 +84,7 @@ export function Tooltip({
   return (
     <TooltipTrigger {...triggerProps} delay={delay}>
       {children}
-      <TooltipPanel
-        variant={variant}
-        className={className}
-        data={data}
-        placement={placement}
-        offset={offset}
-        crossOffset={crossOffset}
-        shouldFlip={shouldFlip}
-        containerPadding={containerPadding}
-      >
+      <TooltipPanel {...data} variant={variant} className={className} placement={placement}>
         {content}
       </TooltipPanel>
     </TooltipTrigger>

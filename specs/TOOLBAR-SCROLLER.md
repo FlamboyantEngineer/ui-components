@@ -8,7 +8,7 @@
 
 `ToolbarScroller` shall render its children as direct children of one strip element (`ui-toolbar-scroller__strip`), in their order and at their natural size. The stylesheet makes the strip scroll horizontally; the reference sheet hides its scrollbar and keeps every tool at its natural width. Wrapping is not an option: a row of tools that should wrap does not use the scroller.
 
-Implementation: `src/components/toolbar-scroller/toolbar-scroller.tsx`, `labs/reference.css`
+Implementation: `src/components/toolbar-scroller/toolbar-scroller.tsx`, `labs/reference/toolbar-scroller.css`
 Verification: `src/components/toolbar-scroller/toolbar-scroller.test.tsx`, `e2e/toolbar-scroller.spec.ts`
 
 ### UIC-TOOLBAR-SCROLLER-1.2 - Toolbar semantics and keyboard
@@ -29,16 +29,16 @@ Verification: `src/components/toolbar-scroller/toolbar-scroller.test.tsx`
 
 ### UIC-TOOLBAR-SCROLLER-2.1 - Overflow edges
 
-The root shall publish `data-overflow-start` while content lies more than one pixel past the strip's start edge and `data-overflow-end` while content lies past its end edge, in either writing direction. Both are recomputed when the strip scrolls, when the strip or one of its direct children resizes, and when a direct child mounts or unmounts.
+The root shall publish `data-overflow-start` while content lies more than one pixel past the strip's start edge and `data-overflow-end` while content lies past its end edge, in either writing direction, as the [scroll strip hook](SCROLL-STRIP.md) measures them. Both are recomputed, within an animation frame, when the strip scrolls, when a scroll button moves it, when the strip or one of its direct children resizes, and when a direct child mounts or unmounts.
 
-Implementation: `src/components/toolbar-scroller/toolbar-scroller.tsx`
+Implementation: `src/components/toolbar-scroller/toolbar-scroller.tsx`, `src/utils/use-scroll-strip-overflow.ts`
 Verification: `src/components/toolbar-scroller/toolbar-scroller.test.tsx`, `e2e/toolbar-scroller.spec.ts`
 
 ### UIC-TOOLBAR-SCROLLER-2.2 - Edge fades
 
 The scroller shall render one decorative fade per edge (`ui-toolbar-scroller__fade` with `data-edge` `start` or `end`), hidden from assistive technology, and hide each with the native `hidden` attribute while its edge hides nothing. The reference sheet draws each fade over the strip's edge without taking pointer input.
 
-Implementation: `src/components/toolbar-scroller/toolbar-scroller.tsx`, `labs/reference.css`
+Implementation: `src/components/toolbar-scroller/toolbar-scroller.tsx`, `labs/reference/toolbar-scroller.css`
 Verification: `src/components/toolbar-scroller/toolbar-scroller.test.tsx`, `e2e/toolbar-scroller.spec.ts`
 
 ### UIC-TOOLBAR-SCROLLER-2.3 - Scroll buttons
@@ -50,9 +50,9 @@ Verification: `src/components/toolbar-scroller/toolbar-scroller.test.tsx`, `e2e/
 
 ### UIC-TOOLBAR-SCROLLER-2.4 - Wheel input
 
-A vertical wheel over the strip shall scroll it along the row (downward toward the end edge), converting line and page deltas to pixels, and prevent the page from scrolling only while the strip moves. A strip at its bound, or one that fits, leaves the wheel to the page. Horizontal wheel input and wheel input with Control or Meta held are left to the browser. A wheel over a menu, listbox, dialog, tree or grid open inside the strip keeps scrolling that popup.
+Wheel input over the strip shall scroll it along the row by the dominant wheel axis (downward toward the end edge, mirrored right to left), converting line and page deltas to pixels, as the [scroll strip hook](SCROLL-STRIP.md) does, and prevent the page from scrolling only while the strip moves. A strip at its bound, or one that fits, leaves the wheel to the page. Wheel input with Control or Meta held is left to the browser, and a wheel over a menu, listbox or dialog open inside the strip keeps scrolling that popup.
 
-Implementation: `src/components/toolbar-scroller/toolbar-scroller.tsx`
+Implementation: `src/components/toolbar-scroller/toolbar-scroller.tsx`, `src/utils/use-scroll-strip-overflow.ts`
 Verification: `src/components/toolbar-scroller/toolbar-scroller.test.tsx`
 
 ### UIC-TOOLBAR-SCROLLER-2.5 - Focused tool stays in view

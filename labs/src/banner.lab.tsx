@@ -52,6 +52,7 @@ function LiveDemo() {
             </Button>
           ) : null
         }
+        dismissLabel="Dismiss the save message"
         onDismiss={() => {
           setDismissed((count) => count + 1);
           setVisible(false);

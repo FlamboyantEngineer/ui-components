@@ -1,12 +1,12 @@
 # Toast
 
-A toast is a transient, non-blocking message about something that just happened, built on React Aria's toast region and queue. The host creates one `ToastQueue`, renders it once in a `ToastRegion` and adds toasts whenever its own logic decides to. A toast shows a tone glyph, a title, an optional description, an optional action and a dismiss button, and never asks a question it waits on; a decision belongs in a modal dialog and a field's problem stays beside the field. `ToastList` draws a queue in place, for previews.
+A toast is a transient, non-blocking message about something that just happened, built on React Aria's toast region and queue. The host creates one queue with `createToastQueue`, renders it once in a `ToastRegion` and adds toasts whenever its own logic decides to. A toast shows a tone glyph, a title, an optional description, an optional action and a dismiss button, and never asks a question it waits on; a decision belongs in a modal dialog and a field's problem stays beside the field. `ToastList` draws a queue in place, for previews.
 
 ## UIC-TOAST-1 - Queue
 
 ### UIC-TOAST-1.1 - Adding toasts
 
-`ToastQueue.add(content, options)` shall add a toast and return its key. Visible toasts are ordered newest first. `maxVisibleToasts` limits how many show at once; the others wait and appear as visible toasts close.
+`createToastQueue(options)` shall return a plain queue object that wraps React Aria's toast queue (exposed as `ariaQueue`, which regions and lists render). Its `add(content, options)` shall add a toast and return its key. Visible toasts are ordered newest first. `maxVisibleToasts` limits how many show at once; the others wait and appear as visible toasts close.
 
 Implementation: `src/components/toast/toast.tsx`
 Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`
@@ -43,7 +43,7 @@ Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`
 
 ### UIC-TOAST-2.2 - Toast semantics
 
-Each toast shall be a non-modal `alertdialog` in the tab order, labelled by its title and described by its description. Its `ui-toast__content` is an atomic live region: `role="status"` (polite) for `info` and `success`, `role="alert"` (assertive) for `warning` and `error`. When a focused toast closes, focus moves to the next toast, or back to where it was before the region.
+Each toast shall be a non-modal `alertdialog` in the tab order, labelled by its title and described by its description. Its `ui-toast__content` is an atomic live region: `role="status"` (polite) for `info` and `success`, `role="alert"` (assertive) for `warning` and `danger`. When a focused toast closes, focus moves to the next toast, or back to where it was before the region.
 
 Implementation: `src/components/toast/toast.tsx`
 Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`
@@ -59,9 +59,9 @@ Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`
 
 ### UIC-TOAST-3.1 - Tones
 
-`tone` shall publish `data-tone` on the toast: `info` (the default; neutral news), `success` (the requested work finished), `warning` (it finished with a caveat, or something needs attention soon) or `error` (it failed). The toast draws the tone's built-in glyph (`info`, `success`, `warning`, `error`), or the caller's `icon` (a glyph name or any icon node), as a decorative [Icon](ICON.md) in the `ui-toast__icon` slot.
+`tone` shall publish `data-tone` on the toast: `info` (the default; neutral news), `success` (the requested work finished), `warning` (it finished with a caveat, or something needs attention soon) or `danger` (it failed). The toast draws the tone's built-in glyph (`info`, `success`, `warning`, and `error` for `danger`), or the caller's `icon` (a glyph name or any icon node), as a decorative [Icon](ICON.md) in the `ui-toast__icon` slot.
 
-Implementation: `src/components/toast/toast.tsx`, `labs/reference.css`
+Implementation: `src/components/toast/toast.tsx`, `src/components/banner/banner.tsx`, `labs/reference/toast.css`
 Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`
 
 ### UIC-TOAST-3.2 - Title and description
@@ -87,25 +87,25 @@ Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`
 
 ### UIC-TOAST-3.5 - Hooks and caller attributes
 
-Toasts, regions and lists shall carry the hooks below. `ToastRegion` and `ToastList` append the caller's `className` and forward caller `data-*` attributes (and, for the region, `id`) to their root. React Aria's interaction states are published on the region and on each toast.
+Toasts, regions and lists shall carry the hooks below. `Toast`, `ToastRegion` and `ToastList` append the caller's `className` and forward caller `data-*` attributes and `id` to their root, so a host may also draw a queue's toasts with `Toast` in its own React Aria region. React Aria's interaction states are published on the region and on each toast.
 
 Implementation: `src/components/toast/toast.tsx`
 Verification: `src/components/toast/toast.test.tsx`
 
 ## Hooks
 
-| Hook                    | Kind      | Values                                | Description                                       |
-| ----------------------- | --------- | ------------------------------------- | ------------------------------------------------- |
-| `ui-toast-region`       | root      |                                       | The landmark (`role="region"`), portalled.        |
-| `ui-toast-list`         | root      |                                       | The ordered list of toasts.                       |
-| `ui-toast`              | root      |                                       | One toast (`role="alertdialog"`).                 |
-| `ui-toast__icon`        | slot      |                                       | The tone glyph or custom icon (also `ui-icon`).   |
-| `ui-toast__content`     | slot      |                                       | The live region holding title and description.    |
-| `ui-toast__title`       | slot      |                                       | The title.                                        |
-| `ui-toast__description` | slot      |                                       | The description, when set.                        |
-| `ui-toast__action`      | slot      |                                       | The action button (also `ui-button`).             |
-| `ui-toast__close`       | slot      |                                       | The dismiss button (also `ui-icon-button`).       |
-| `data-tone`             | attribute | `info`, `success`, `warning`, `error` | The toast's tone.                                 |
-| `data-hovered`          | state     | `true`                                | Pointer over the region (React Aria).             |
-| `data-focused`          | state     | `true`                                | Focus in the region or on the toast (React Aria). |
-| `data-focus-visible`    | state     | `true`                                | Keyboard focus (React Aria).                      |
+| Hook                    | Kind      | Values                                 | Description                                       |
+| ----------------------- | --------- | -------------------------------------- | ------------------------------------------------- |
+| `ui-toast-region`       | root      |                                        | The landmark (`role="region"`), portalled.        |
+| `ui-toast-list`         | root      |                                        | The ordered list of toasts.                       |
+| `ui-toast`              | root      |                                        | One toast (`role="alertdialog"`).                 |
+| `ui-toast__icon`        | slot      |                                        | The tone glyph or custom icon (also `ui-icon`).   |
+| `ui-toast__content`     | slot      |                                        | The live region holding title and description.    |
+| `ui-toast__title`       | slot      |                                        | The title.                                        |
+| `ui-toast__description` | slot      |                                        | The description, when set.                        |
+| `ui-toast__action`      | slot      |                                        | The action button (also `ui-button`).             |
+| `ui-toast__close`       | slot      |                                        | The dismiss button (also `ui-icon-button`).       |
+| `data-tone`             | attribute | `info`, `success`, `warning`, `danger` | The toast's tone.                                 |
+| `data-hovered`          | state     | `true`                                 | Pointer over the region (React Aria).             |
+| `data-focused`          | state     | `true`                                 | Focus in the region or on the toast (React Aria). |
+| `data-focus-visible`    | state     | `true`                                 | Keyboard focus (React Aria).                      |

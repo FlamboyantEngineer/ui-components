@@ -2,21 +2,22 @@ import { useRef } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import {
   ToastList,
-  ToastQueue,
   ToastRegion,
+  createToastQueue,
   type ToastContent,
+  type ToastQueue,
   type ToastTone,
 } from '../../src/components/toast/toast.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
-const tones: ToastTone[] = ['info', 'success', 'warning', 'error'];
+const tones: ToastTone[] = ['info', 'success', 'warning', 'danger'];
 const contents = ['title', 'description', 'action', 'custom icon'] as const;
 
 const titles: Record<ToastTone, string> = {
   info: 'Draft saved',
   success: 'Report.pdf uploaded',
   warning: 'Storage almost full',
-  error: 'Upload failed',
+  danger: 'Upload failed',
 };
 
 const previewQueues = new Map<string, ToastQueue>();
@@ -25,7 +26,7 @@ const previewQueues = new Map<string, ToastQueue>();
 function previewQueue(key: string, content: ToastContent): ToastQueue {
   let queue = previewQueues.get(key);
   if (!queue) {
-    queue = new ToastQueue({ defaultTimeout: 0 });
+    queue = createToastQueue({ defaultTimeout: 0 });
     queue.add(content);
     previewQueues.set(key, queue);
   }
@@ -42,7 +43,7 @@ function previewContent(tone: ToastTone, content: (typeof contents)[number]): To
   };
 }
 
-const liveQueue = new ToastQueue({ maxVisibleToasts: 4 });
+const liveQueue = createToastQueue({ maxVisibleToasts: 4 });
 
 function LiveDemo() {
   const progress = useRef(0);

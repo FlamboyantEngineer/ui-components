@@ -1,13 +1,15 @@
-import { isValidElement, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import type { GlyphName } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
+import type { BaseProps, NativeProps, Tone } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { IconButton } from '../icon-button/icon-button.js';
-import { Icon } from '../icon/icon.js';
+import { Icon, toIconProps, type IconSource } from '../icon/icon.js';
 
-export type BannerTone = 'neutral' | 'info' | 'success' | 'warning' | 'danger';
+export type BannerTone = Tone;
 
-export interface BannerProps {
+export interface BannerProps extends BaseProps, Pick<NativeProps<'div'>, 'hidden' | 'aria-label'> {
   /** The message's tone; it also chooses the announcement. Defaults to `neutral`. */
   tone?: BannerTone | undefined;
   /** A short summary before the description. */
@@ -17,7 +19,7 @@ export interface BannerProps {
   /** Controls for the reader's next step, after the message. */
   actions?: ReactNode;
   /** A built-in glyph name or icon node. Omit for the tone's glyph; `null` draws none. */
-  icon?: GlyphName | ReactNode;
+  icon?: IconSource;
   /** Draws a dismiss button that calls this once per activation. */
   onDismiss?: (() => void) | undefined;
   /** Names the dismiss button. Defaults to the provider's `dismiss` string. */
@@ -28,11 +30,6 @@ export interface BannerProps {
   isExiting?: boolean | undefined;
   /** Render as phrasing content (`<span>`s) for a message set inside running text. */
   inline?: boolean | undefined;
-  id?: string | undefined;
-  hidden?: boolean | undefined;
-  className?: string | undefined;
-  'aria-label'?: string | undefined;
-  [data: `data-${string}`]: string | number | boolean | undefined;
 }
 
 const hooks = createHooks('banner', [
@@ -45,7 +42,7 @@ const hooks = createHooks('banner', [
   'dismiss',
 ]);
 
-const toneGlyphs: Record<BannerTone, GlyphName | null> = {
+const toneGlyphs: Readonly<Record<Tone, GlyphName | null>> = {
   neutral: null,
   info: 'info',
   success: 'success',
@@ -53,12 +50,50 @@ const toneGlyphs: Record<BannerTone, GlyphName | null> = {
   danger: 'error',
 };
 
-function isGlyphName(icon: unknown): icon is GlyphName {
-  return typeof icon === 'string' && !isValidElement(icon);
+type BannerSlot = Parameters<typeof hooks.slot>[0];
+
+/** A slot that renders only when its content renders something. */
+function BannerPart({
+  as: Element,
+  slot,
+  children,
+}: {
+  as: 'div' | 'span';
+  slot: BannerSlot;
+  children: ReactNode;
+}) {
+  return isEmptyNode(children) ? null : <Element {...hooks.slot(slot)}>{children}</Element>;
 }
 
-function present(node: ReactNode): boolean {
-  return node !== undefined && node !== null && node !== false && node !== '';
+/** The decorative lead: a spinner while pending, else the icon, if any. */
+function BannerLead({ icon, isPending }: { icon: IconSource; isPending: boolean }) {
+  if (isPending) return <span {...hooks.slot('spinner')} aria-hidden="true" />;
+  if (isEmptyNode(icon)) return null;
+  return <Icon {...toIconProps(icon)} className={hooks.slotClass('icon')} />;
+}
+
+function BannerDismiss({
+  label,
+  onDismiss,
+}: {
+  label?: string | undefined;
+  onDismiss: () => void;
+}) {
+  const strings = useUiStrings();
+  return (
+    <IconButton
+      icon="close"
+      label={label ?? strings.dismiss}
+      size="sm"
+      className={hooks.slotClass('dismiss')}
+      onPress={() => onDismiss()}
+    />
+  );
+}
+
+/** The built-in glyph that introduces a message of `tone`; none for `neutral`. */
+export function getToneGlyph(tone: Tone): GlyphName | null {
+  return toneGlyphs[tone];
 }
 
 /**
@@ -76,53 +111,35 @@ export function Banner({
   isPending = false,
   isExiting = false,
   inline = false,
-  id,
-  hidden,
   className,
-  'aria-label': ariaLabel,
   ...rest
 }: BannerProps) {
-  const strings = useUiStrings();
-  const Part = inline ? 'span' : 'div';
-  const urgent = tone === 'danger';
-  const glyph = icon === undefined ? toneGlyphs[tone] : icon;
+  const Element = inline ? 'span' : 'div';
+  const isUrgent = tone === 'danger';
+  const data = { tone, inline, pending: isPending, exiting: isExiting };
 
   return (
-    <Part
-      {...hooks.root({
-        className,
-        props: rest,
-        data: { tone, inline, pending: isPending, exiting: isExiting },
-      })}
-      id={id}
-      hidden={hidden}
-      role={urgent ? 'alert' : 'status'}
-      aria-live={urgent ? 'assertive' : 'polite'}
+    <Element
+      {...rest}
+      {...hooks.root({ className, data })}
+      role={isUrgent ? 'alert' : 'status'}
+      aria-live={isUrgent ? 'assertive' : 'polite'}
       aria-atomic="true"
       aria-busy={isPending || undefined}
-      aria-label={ariaLabel}
     >
-      {isPending ? (
-        <span {...hooks.slot('spinner')} aria-hidden="true" />
-      ) : isGlyphName(glyph) ? (
-        <Icon glyph={glyph} className={hooks.slotClass('icon')} />
-      ) : present(glyph) ? (
-        <Icon className={hooks.slotClass('icon')}>{glyph}</Icon>
-      ) : null}
-      <Part {...hooks.slot('content')}>
-        {present(title) ? <Part {...hooks.slot('title')}>{title}</Part> : null}
-        {present(description) ? <Part {...hooks.slot('description')}>{description}</Part> : null}
-      </Part>
-      {present(actions) ? <Part {...hooks.slot('actions')}>{actions}</Part> : null}
-      {onDismiss ? (
-        <IconButton
-          icon="close"
-          label={dismissLabel ?? strings.dismiss}
-          size="sm"
-          className={hooks.slotClass('dismiss')}
-          onPress={() => onDismiss()}
-        />
-      ) : null}
-    </Part>
+      <BannerLead icon={icon === undefined ? getToneGlyph(tone) : icon} isPending={isPending} />
+      <Element {...hooks.slot('content')}>
+        <BannerPart as={Element} slot="title">
+          {title}
+        </BannerPart>
+        <BannerPart as={Element} slot="description">
+          {description}
+        </BannerPart>
+      </Element>
+      <BannerPart as={Element} slot="actions">
+        {actions}
+      </BannerPart>
+      {onDismiss ? <BannerDismiss label={dismissLabel} onDismiss={onDismiss} /> : null}
+    </Element>
   );
 }

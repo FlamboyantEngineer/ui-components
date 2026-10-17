@@ -1,8 +1,14 @@
 import { useId, useMemo, type ReactNode } from 'react';
 import { useLocale } from 'react-aria-components';
 import { createHooks, splitDataAttributes } from '../../core/hooks.js';
+import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { ProgressBar, boundedRange, type ProgressBarProps } from '../progress-bar/progress-bar.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
+import {
+  ProgressBar,
+  resolveProgressRange,
+  type ProgressBarProps,
+} from '../progress-bar/progress-bar.js';
 import { TruncationTooltip } from '../truncation-tooltip/truncation-tooltip.js';
 
 /** Measured progress for the card's bar. Without it, or when indeterminate, the bar has no level. */
@@ -23,18 +29,17 @@ export interface LoadingStep {
   total: number;
 }
 
-export interface LoadingCardProps {
+export interface LoadingCardProps extends BaseProps {
   /** What is loading; the card announces it politely. Defaults to the provider's `loading` string. */
   label?: ReactNode;
   /** A longer explanation under the bar. */
   description?: ReactNode;
   /** The current piece of work, kept out of the announcement; cut text keeps a tooltip. */
   hint?: ReactNode;
+  /** Measured progress; omit for an indeterminate bar. */
   progress?: LoadingProgress | undefined;
+  /** The current phase, shown as "current of total". */
   step?: LoadingStep | undefined;
-  className?: string | undefined;
-  id?: string | undefined;
-  [data: `data-${string}`]: string | number | boolean | undefined;
 }
 
 export type LoadingOverlayPresentation = 'card' | 'scrim';
@@ -47,12 +52,11 @@ export interface LoadingOverlayProps extends LoadingCardProps {
   presentation?: LoadingOverlayPresentation | undefined;
 }
 
-export interface LoadingRegionProps extends Omit<LoadingOverlayProps, 'className' | 'id'> {
+export interface LoadingRegionProps extends LoadingOverlayProps {
   /** While true the region is busy, its content is inert and the overlay covers it. */
   isLoading?: boolean | undefined;
+  /** The region's content. */
   children?: ReactNode;
-  className?: string | undefined;
-  id?: string | undefined;
 }
 
 const cardHooks = createHooks('loading-card', [
@@ -72,13 +76,70 @@ function isMeasured(progress: LoadingProgress | undefined): progress is LoadingP
   return progress !== undefined && !progress.isIndeterminate;
 }
 
-function validStep(step: LoadingStep | undefined): step is LoadingStep {
+function isValidStep(step: LoadingStep | undefined): step is LoadingStep {
   return (
     step !== undefined &&
     Number.isInteger(step.current) &&
     Number.isInteger(step.total) &&
     step.current > 0 &&
     step.current <= step.total
+  );
+}
+
+/** The bounded share of measured progress that is done, from 0 to 1. */
+function toRatio(progress: LoadingProgress): number {
+  const { value, minValue, maxValue } = resolveProgressRange(progress);
+  return maxValue > minValue ? (value - minValue) / (maxValue - minValue) : 0;
+}
+
+/** The whole, locale-formatted percentage, hidden from assistive technology (the bar has it). */
+function LoadingCardValue({ progress }: { progress: LoadingProgress }) {
+  const { locale } = useLocale();
+  const percent = useMemo(
+    () => new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 0 }),
+    [locale],
+  );
+  return (
+    <span {...cardHooks.slot('value')} aria-hidden="true">
+      {percent.format(toRatio(progress))}
+    </span>
+  );
+}
+
+/** The one progress bar, quiet, named by the progress label or else by the card's label. */
+function LoadingCardBar({
+  progress,
+  labelId,
+}: {
+  progress: LoadingProgress | undefined;
+  labelId: string;
+}) {
+  const { 'aria-label': progressLabel, ...range } = isMeasured(progress) ? progress : {};
+  return (
+    <div {...cardHooks.slot('progress')} aria-live="off">
+      <ProgressBar
+        {...range}
+        isIndeterminate={!isMeasured(progress)}
+        size="md"
+        showValueLabel={false}
+        {...(progressLabel ? { 'aria-label': progressLabel } : { 'aria-labelledby': labelId })}
+      />
+    </div>
+  );
+}
+
+/** The quiet footer pairing the hint with the step counter; nothing when both are absent. */
+function LoadingCardFooter({ hint, step }: Pick<LoadingCardProps, 'hint' | 'step'>) {
+  const strings = useUiStrings();
+  const stepLabel = isValidStep(step) ? strings.stepOfTotal(step.current, step.total) : null;
+  if (isEmptyNode(hint) && stepLabel === null) return null;
+  return (
+    <div {...cardHooks.slot('footer')} aria-live="off">
+      {isEmptyNode(hint) ? null : (
+        <TruncationTooltip className={cardHooks.slotClass('hint')}>{hint}</TruncationTooltip>
+      )}
+      {stepLabel === null ? null : <span {...cardHooks.slot('step')}>{stepLabel}</span>}
+    </div>
   );
 }
 
@@ -94,31 +155,16 @@ export function LoadingCard({
   progress,
   step,
   className,
-  id,
   ...rest
 }: LoadingCardProps) {
   const strings = useUiStrings();
-  const { locale } = useLocale();
   const labelId = useId();
-  const measured = isMeasured(progress);
-  const percent = useMemo(
-    () => new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 0 }),
-    [locale],
-  );
-  let ratio = 0;
-  if (measured) {
-    const range = boundedRange(progress);
-    const span = range.maxValue - range.minValue;
-    ratio = span > 0 ? (range.value - range.minValue) / span : 0;
-  }
-  const stepLabel = validStep(step) ? strings.stepOfTotal(step.current, step.total) : null;
-  const hasHint = hint != null && hint !== false && hint !== '';
-  const { 'aria-label': progressLabel, ...progressRange } = progress ?? {};
+  const isDeterminate = isMeasured(progress);
 
   return (
     <div
-      {...cardHooks.root({ className, props: rest, data: { determinate: measured } })}
-      id={id}
+      {...rest}
+      {...cardHooks.root({ className, data: { determinate: isDeterminate } })}
       role="status"
       aria-live="polite"
     >
@@ -126,32 +172,11 @@ export function LoadingCard({
         <p {...cardHooks.slot('label')} id={labelId}>
           {label ?? strings.loading}
         </p>
-        {measured ? (
-          <span {...cardHooks.slot('value')} aria-hidden="true">
-            {percent.format(ratio)}
-          </span>
-        ) : null}
+        {isDeterminate ? <LoadingCardValue progress={progress} /> : null}
       </div>
-      <div {...cardHooks.slot('progress')} aria-live="off">
-        <ProgressBar
-          {...(measured ? progressRange : {})}
-          isIndeterminate={!measured}
-          size="md"
-          showValueLabel={false}
-          {...(progressLabel ? { 'aria-label': progressLabel } : { 'aria-labelledby': labelId })}
-        />
-      </div>
-      {description != null && description !== false && description !== '' ? (
-        <p {...cardHooks.slot('description')}>{description}</p>
-      ) : null}
-      {hasHint || stepLabel ? (
-        <div {...cardHooks.slot('footer')} aria-live="off">
-          {hasHint ? (
-            <TruncationTooltip className={cardHooks.slotClass('hint')}>{hint}</TruncationTooltip>
-          ) : null}
-          {stepLabel ? <span {...cardHooks.slot('step')}>{stepLabel}</span> : null}
-        </div>
-      ) : null}
+      <LoadingCardBar progress={progress} labelId={labelId} />
+      {isEmptyNode(description) ? null : <p {...cardHooks.slot('description')}>{description}</p>}
+      <LoadingCardFooter hint={hint} step={step} />
     </div>
   );
 }
@@ -167,10 +192,11 @@ export function LoadingOverlay({
   ...rest
 }: LoadingOverlayProps) {
   const isScrim = presentation === 'scrim';
-  const [, cardProps] = splitDataAttributes(rest);
+  const [data, cardProps] = splitDataAttributes(rest);
   return (
     <div
-      {...overlayHooks.root({ className, props: rest, data: { presentation } })}
+      {...data}
+      {...overlayHooks.root({ className, data: { presentation } })}
       id={id}
       aria-hidden={isScrim || undefined}
     >
@@ -190,10 +216,11 @@ export function LoadingRegion({
   id,
   ...rest
 }: LoadingRegionProps) {
-  const [, overlayProps] = splitDataAttributes(rest);
+  const [data, overlayProps] = splitDataAttributes(rest);
   return (
     <div
-      {...regionHooks.root({ className, props: rest, data: { loading: isLoading } })}
+      {...data}
+      {...regionHooks.root({ className, data: { loading: isLoading } })}
       id={id}
       aria-busy={isLoading || undefined}
     >

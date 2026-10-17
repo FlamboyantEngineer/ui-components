@@ -36,7 +36,7 @@ Verification: `src/components/breadcrumb/breadcrumb.test.tsx`, `e2e/breadcrumb.s
 
 `size` (`xs`, `sm`, `md` by default, `lg`) shall publish `data-size` on the root; the reference sheet uses 11, 12, 13 and 14 pixel type on 16, 20, 24 and 28 pixel lines. The full label text stays in the DOM, so a stylesheet that bounds the root and list to the host's width can ellipsize a label only when the row runs out of room.
 
-Implementation: `src/components/breadcrumb/breadcrumb.tsx`, `labs/reference.css`
+Implementation: `src/components/breadcrumb/breadcrumb.tsx`, `labs/reference/breadcrumb.css`
 Verification: `src/components/breadcrumb/breadcrumb.test.tsx`, `e2e/breadcrumb.spec.ts`
 
 ### UIC-BREADCRUMB-1.6 - Hooks and caller attributes

@@ -15,7 +15,7 @@ Verification: `src/components/banner/banner.test.tsx`, `e2e/banner.spec.ts`
 
 `tone` shall publish `data-tone`: `neutral` (the default), `info`, `success`, `warning` or `danger`. Without `icon`, the banner draws the tone's built-in glyph (`info`, `success`, `warning` and `error`; none for `neutral`) as a decorative [Icon](ICON.md) in the `ui-banner__icon` slot. `icon` replaces it with another glyph name or any icon node, and `icon={null}` draws none.
 
-Implementation: `src/components/banner/banner.tsx`, `labs/reference.css`
+Implementation: `src/components/banner/banner.tsx`, `labs/reference/banner.css`
 Verification: `src/components/banner/banner.test.tsx`, `e2e/banner.spec.ts`
 
 ### UIC-BANNER-1.3 - Dismiss
@@ -29,7 +29,7 @@ Verification: `src/components/banner/banner.test.tsx`, `e2e/banner.spec.ts`
 
 `inline` shall render the banner and its parts as `<span>` elements, publishing `data-inline`, so a message can sit inside phrasing content (a heading, a sentence, a toolbar label) with the same announcement semantics.
 
-Implementation: `src/components/banner/banner.tsx`, `labs/reference.css`
+Implementation: `src/components/banner/banner.tsx`, `labs/reference/banner.css`
 Verification: `src/components/banner/banner.test.tsx`
 
 ## UIC-BANNER-2 - Announcements
@@ -54,14 +54,14 @@ Verification: `src/components/banner/banner.test.tsx`, `e2e/banner.spec.ts`
 
 `isPending` shall replace the glyph with a decorative `ui-banner__spinner` slot, set `aria-busy="true"` and publish `data-pending`. Without it neither attribute renders.
 
-Implementation: `src/components/banner/banner.tsx`, `labs/reference.css`
+Implementation: `src/components/banner/banner.tsx`, `labs/reference/banner.css`
 Verification: `src/components/banner/banner.test.tsx`
 
 ### UIC-BANNER-3.2 - Exiting and hidden
 
 `isExiting` shall publish `data-exiting` while the caller plays an exit transition before removing the banner. `hidden` shall hide the banner with the native `hidden` attribute while keeping the same element mounted.
 
-Implementation: `src/components/banner/banner.tsx`, `labs/reference.css`
+Implementation: `src/components/banner/banner.tsx`, `labs/reference/banner.css`
 Verification: `src/components/banner/banner.test.tsx`
 
 ### UIC-BANNER-3.3 - Hooks and caller attributes

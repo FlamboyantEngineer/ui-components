@@ -63,7 +63,7 @@ test.describe('Banner lab', () => {
     await expect(banner).toContainText('All changes saved');
     await expect(banner).toHaveAttribute('data-lab-mark', 'same');
 
-    const dismiss = banner.getByRole('button', { name: 'Dismiss' });
+    const dismiss = banner.getByRole('button', { name: 'Dismiss the save message' });
     await dismiss.focus();
     await page.keyboard.press('Enter');
     await expect(banner).toBeHidden();

@@ -13,7 +13,7 @@ function SelectableCards() {
     <div role="group" aria-label="Destination" data-lab-demo="select">
       {['Lisbon', 'Oslo', 'Nairobi'].map((city) => (
         <div key={city} style={{ width: 220 }}>
-          <Card title={city} isSelected={city === selected} interactive>
+          <Card title={city} headingLevel={2} isSelected={city === selected} interactive fullWidth>
             <Button size="sm" isSelected={city === selected} onPress={() => setSelected(city)}>
               Choose {city}
             </Button>
@@ -94,7 +94,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Selection"
-      description="The control inside each card exposes the choice; the card draws the selected edge."
+      description="The control inside each card exposes the choice; the card draws the selected edge. These cards fill their frame's width and use level 2 headings."
     >
       <SelectableCards />
     </LabSection>

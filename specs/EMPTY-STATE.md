@@ -15,14 +15,14 @@ Verification: `src/components/empty-state/empty-state.test.tsx`, `e2e/empty-stat
 
 `variant` shall publish `data-variant`: `empty` (the default: loaded, nothing to show), `loading` (being fetched) or `error` (could not load). `empty` and `error` share one structure, so the copy carries the difference: the title names what is absent or what failed, and the description says what would fill it or what the reader can do next.
 
-Implementation: `src/components/empty-state/empty-state.tsx`, `labs/reference.css`
+Implementation: `src/components/empty-state/empty-state.tsx`, `labs/reference/empty-state.css`
 Verification: `src/components/empty-state/empty-state.test.tsx`, `e2e/empty-state.spec.ts`
 
 ### UIC-EMPTY-STATE-1.3 - Sizes
 
 `size` shall publish `data-size`: `md` (the default, centred with generous padding in the reference sheet) or `sm` (start-aligned with 4 pixel vertical padding, for dense panels and tables).
 
-Implementation: `src/components/empty-state/empty-state.tsx`, `labs/reference.css`
+Implementation: `src/components/empty-state/empty-state.tsx`, `labs/reference/empty-state.css`
 Verification: `src/components/empty-state/empty-state.test.tsx`, `e2e/empty-state.spec.ts`
 
 ### UIC-EMPTY-STATE-1.4 - Loading

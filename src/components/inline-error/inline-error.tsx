@@ -1,10 +1,11 @@
 import type { ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
+import type { BaseProps, NativeProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { ActionButton } from '../action-button/action-button.js';
 import { Icon } from '../icon/icon.js';
 
-export interface InlineErrorProps {
+export interface InlineErrorProps extends BaseProps, Pick<NativeProps<'div'>, 'hidden'> {
   /** The failure or validation message: text, a paragraph or a list. */
   children: ReactNode;
   /** Draws a recovery button. When it returns a promise, the button is pending until it settles. */
@@ -15,10 +16,6 @@ export interface InlineErrorProps {
   retryLabel?: string | undefined;
   /** Refuse recovery while the retry cannot run. */
   isRetryDisabled?: boolean | undefined;
-  id?: string | undefined;
-  hidden?: boolean | undefined;
-  className?: string | undefined;
-  [data: `data-${string}`]: string | number | boolean | undefined;
 }
 
 const hooks = createHooks('inline-error', ['icon', 'message', 'retry']);
@@ -30,17 +27,14 @@ export function InlineError({
   onRetryError,
   retryLabel,
   isRetryDisabled = false,
-  id,
-  hidden,
   className,
   ...rest
 }: InlineErrorProps) {
   const strings = useUiStrings();
   return (
     <div
-      {...hooks.root({ className, props: rest })}
-      id={id}
-      hidden={hidden}
+      {...rest}
+      {...hooks.root({ className })}
       role="alert"
       aria-live="assertive"
       aria-atomic="true"

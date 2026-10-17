@@ -31,28 +31,28 @@ Verification: `src/components/card/card.test.tsx`, `e2e/card.spec.ts`
 
 `variant` shall publish `data-variant`: `default` (content on the page) or `panel` (a chrome region, on a muted surface in the reference sheet).
 
-Implementation: `src/components/card/card.tsx`, `labs/reference.css`
+Implementation: `src/components/card/card.tsx`, `labs/reference/card.css`
 Verification: `src/components/card/card.test.tsx`, `e2e/card.spec.ts`
 
 ### UIC-CARD-2.2 - Densities
 
 `density` shall publish `data-density`: `default` (the header, body and footer keep their own insets), `comfortable`, `compact` or `tight`, which give the card one interior padding instead, so a host never layers padding around the parts. The reference sheet uses 10, 8 and 4 pixel interiors.
 
-Implementation: `src/components/card/card.tsx`, `labs/reference.css`
+Implementation: `src/components/card/card.tsx`, `labs/reference/card.css`
 Verification: `src/components/card/card.test.tsx`, `e2e/card.spec.ts`
 
 ### UIC-CARD-2.3 - Selected
 
 `isSelected` shall publish `data-selected` for the current card, such as a selected record, so the stylesheet draws a selection edge. The card offers no disabled, loading or invalid state; the control that selects a card exposes the selection to assistive technology.
 
-Implementation: `src/components/card/card.tsx`, `labs/reference.css`
+Implementation: `src/components/card/card.tsx`, `labs/reference/card.css`
 Verification: `src/components/card/card.test.tsx`, `e2e/card.spec.ts`
 
 ### UIC-CARD-2.4 - Layout options
 
 `interactive` shall publish `data-interactive` (a hover affordance for a card inside a link or button), `flush` `data-flush` (set into a surrounding frame), `fill` `data-fill` (the body is a canvas that grows to the card's height and owns its interior) and `fullWidth` `data-full-width`.
 
-Implementation: `src/components/card/card.tsx`, `labs/reference.css`
+Implementation: `src/components/card/card.tsx`, `labs/reference/card.css`
 Verification: `src/components/card/card.test.tsx`
 
 ### UIC-CARD-2.5 - Hooks and caller attributes

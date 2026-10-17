@@ -15,7 +15,7 @@ Verification: `src/components/circular-progress/circular-progress.test.tsx`, `e2
 
 The ring shall hold a `ui-circular-progress__track` circle and a `ui-circular-progress__fill` circle whose path length is normalised to 100 and whose `stroke-dashoffset` is 100 minus the percentage, starting at the top. These are SVG geometry attributes computed from the value; the stylesheet chooses stroke colour and width.
 
-Implementation: `src/components/circular-progress/circular-progress.tsx`, `labs/reference.css`
+Implementation: `src/components/circular-progress/circular-progress.tsx`, `labs/reference/circular-progress.css`
 Verification: `src/components/circular-progress/circular-progress.test.tsx`, `e2e/circular-progress.spec.ts`
 
 ### UIC-CIRCULAR-PROGRESS-1.3 - Truthful values
@@ -29,14 +29,14 @@ Verification: `src/components/circular-progress/circular-progress.test.tsx`
 
 With `isIndeterminate` the ring shall publish `data-indeterminate`, expose no `aria-valuenow` or `aria-valuetext`, and draw a fixed quarter arc that the stylesheet may spin.
 
-Implementation: `src/components/circular-progress/circular-progress.tsx`, `labs/reference.css`
+Implementation: `src/components/circular-progress/circular-progress.tsx`, `labs/reference/circular-progress.css`
 Verification: `src/components/circular-progress/circular-progress.test.tsx`, `e2e/circular-progress.spec.ts`
 
 ### UIC-CIRCULAR-PROGRESS-1.5 - Sizes and value text
 
 `size` shall publish `data-size`: `sm`, `md` (the default) or `lg`; the reference sheet draws 16, 24 and 32 pixel rings. `showValueLabel` shows the value text in the `ui-circular-progress__value` slot beside the ring; it is off by default.
 
-Implementation: `src/components/circular-progress/circular-progress.tsx`, `labs/reference.css`
+Implementation: `src/components/circular-progress/circular-progress.tsx`, `labs/reference/circular-progress.css`
 Verification: `src/components/circular-progress/circular-progress.test.tsx`, `e2e/circular-progress.spec.ts`
 
 ### UIC-CIRCULAR-PROGRESS-1.6 - Hooks and caller attributes

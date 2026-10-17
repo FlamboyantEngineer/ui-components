@@ -1,14 +1,14 @@
 import { useId, useMemo, useState, type ReactNode } from 'react';
 import { useLocale } from 'react-aria-components';
+import type { GlyphName } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
+import type { BaseProps, NativeProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { ButtonSize } from '../button/button.js';
 import { IconButton } from '../icon-button/icon-button.js';
 
-/** The zoom levels, in percent, a control steps through when the caller gives none. */
-export const defaultZoomLevels: readonly number[] = [25, 50, 75, 100, 125, 150, 200, 300, 400];
-
-export interface ZoomControlProps {
+export interface ZoomControlProps
+  extends Pick<NativeProps<'div'>, 'aria-label' | 'aria-labelledby'>, BaseProps {
   /** The zoom levels in percent (`100` means 100%). Sorted ascending; duplicates are ignored. */
   levels?: readonly number[] | undefined;
   /** The current zoom in percent (controlled). It may lie between levels, for example a fit-to-width value. */
@@ -29,75 +29,43 @@ export interface ZoomControlProps {
   formatOptions?: Intl.NumberFormatOptions | undefined;
   /** Size of the built-in buttons, published for the stylesheet. Defaults to `sm`. */
   size?: ButtonSize | undefined;
-  /** Names the group. Defaults to the provider's `zoom` string. */
-  'aria-label'?: string | undefined;
-  'aria-labelledby'?: string | undefined;
-  className?: string | undefined;
-  id?: string | undefined;
-  [data: `data-${string}`]: string | number | boolean | undefined;
 }
 
-const EPSILON = 1e-9;
+interface ZoomButtonProps {
+  slot: 'zoom-out' | 'zoom-in' | 'reset';
+  icon: GlyphName;
+  label: string;
+  /** The zoom the button requests, or `undefined` while it has none to request. */
+  target: number | undefined;
+  size: ButtonSize;
+  isDisabled: boolean;
+  onRequest: (value: number) => void;
+}
+
+interface ZoomSliderProps {
+  id: string;
+  levels: readonly number[];
+  value: number;
+  valueText: string;
+  isDisabled: boolean;
+  onRequest: (value: number) => void;
+}
+
+/** The zoom levels, in percent, a control steps through when the caller gives none. */
+export const defaultZoomLevels: readonly number[] = [25, 50, 75, 100, 125, 150, 200, 300, 400];
+
+// Levels and values are compared with a tolerance, so floating-point zoom values match their level.
+const tolerance = 1e-9;
 
 const hooks = createHooks('zoom-control', ['zoom-out', 'slider', 'zoom-in', 'value', 'reset']);
 
-function ladderOf(levels: readonly number[]): number[] {
+function sortLevels(levels: readonly number[]): number[] {
   return [...new Set(levels)].filter(Number.isFinite).sort((a, b) => a - b);
 }
 
-/** Index of the level closest to `value`; the lower level wins a tie. */
-export function nearestZoomLevelIndex(levels: readonly number[], value: number): number {
-  const ladder = ladderOf(levels);
-  let best = 0;
-  ladder.forEach((level, index) => {
-    if (Math.abs(level - value) < Math.abs((ladder[best] ?? level) - value) - EPSILON) best = index;
-  });
-  return best;
-}
-
-/**
- * The next level above (`1`) or below (`-1`) `value`, or `undefined` past the last or first level.
- * A value between levels steps to the neighbouring level on that side.
- */
-export function nextZoomLevel(
-  levels: readonly number[],
-  value: number,
-  direction: 1 | -1,
-): number | undefined {
-  const ladder = ladderOf(levels);
-  return direction === 1
-    ? ladder.find((level) => level > value + EPSILON)
-    : ladder.findLast((level) => level < value - EPSILON);
-}
-
-/**
- * Zoom out, a slider over the zoom levels, zoom in and the current percentage, in one named group,
- * with an optional reset button.
- */
-export function ZoomControl({
-  levels = defaultZoomLevels,
-  value: controlledValue,
-  defaultValue = 100,
-  onChange,
-  resetValue,
-  isDisabled = false,
-  zoomOutButton,
-  zoomInButton,
-  formatOptions,
-  size = 'sm',
-  'aria-label': ariaLabel,
-  'aria-labelledby': ariaLabelledBy,
-  className,
-  id,
-  ...rest
-}: ZoomControlProps) {
-  const strings = useUiStrings();
+function useZoomFormatter(formatOptions: Intl.NumberFormatOptions | undefined) {
   const { locale } = useLocale();
-  const sliderId = useId();
-  const [internalValue, setInternalValue] = useState(defaultValue);
-  const value = controlledValue ?? internalValue;
-  const ladder = useMemo(() => ladderOf(levels), [levels]);
-  const formatter = useMemo(
+  return useMemo(
     () =>
       new Intl.NumberFormat(locale, {
         style: 'unit',
@@ -107,79 +75,152 @@ export function ZoomControl({
       }),
     [locale, formatOptions],
   );
+}
 
+/** A built-in button that requests its target zoom, disabled but focusable while it has none. */
+function ZoomButton({ slot, icon, label, target, size, isDisabled, onRequest }: ZoomButtonProps) {
+  return (
+    <IconButton
+      className={hooks.slotClass(slot)}
+      icon={icon}
+      label={label}
+      size={size}
+      isDisabled={isDisabled || target === undefined}
+      focusableWhenDisabled={!isDisabled}
+      onPress={() => {
+        if (target !== undefined) onRequest(target);
+      }}
+    />
+  );
+}
+
+/** A native range input over the level indices. */
+function ZoomSlider({ id, levels, value, valueText, isDisabled, onRequest }: ZoomSliderProps) {
+  const strings = useUiStrings();
+  return (
+    <input
+      {...hooks.slot('slider')}
+      id={id}
+      type="range"
+      min={0}
+      max={Math.max(0, levels.length - 1)}
+      step={1}
+      value={findNearestZoomLevelIndex(levels, value)}
+      disabled={isDisabled}
+      aria-label={strings.zoomLevel}
+      aria-valuetext={valueText}
+      onChange={(event) => {
+        const level = levels[Number.parseInt(event.currentTarget.value, 10)];
+        if (level !== undefined) onRequest(level);
+      }}
+    />
+  );
+}
+
+/** Index of the level closest to `value`; the lower level wins a tie. */
+export function findNearestZoomLevelIndex(levels: readonly number[], value: number): number {
+  const sorted = sortLevels(levels);
+  let best = 0;
+  sorted.forEach((level, index) => {
+    if (Math.abs(level - value) < Math.abs((sorted[best] ?? level) - value) - tolerance) {
+      best = index;
+    }
+  });
+  return best;
+}
+
+/**
+ * The next level above (`1`) or below (`-1`) `value`, or `undefined` past the last or first level.
+ * A value between levels steps to the neighbouring level on that side.
+ */
+export function findNextZoomLevel(
+  levels: readonly number[],
+  value: number,
+  direction: 1 | -1,
+): number | undefined {
+  const sorted = sortLevels(levels);
+  return direction === 1
+    ? sorted.find((level) => level > value + tolerance)
+    : sorted.findLast((level) => level < value - tolerance);
+}
+
+/**
+ * Zoom out, a slider over the zoom levels, zoom in and the current percentage, in one named group,
+ * with an optional reset button.
+ */
+export function ZoomControl({
+  levels = defaultZoomLevels,
+  value,
+  defaultValue = 100,
+  onChange,
+  resetValue,
+  isDisabled = false,
+  zoomOutButton,
+  zoomInButton,
+  formatOptions,
+  size = 'sm',
+  'aria-label': ariaLabel,
+  className,
+  ...rest
+}: ZoomControlProps) {
+  const strings = useUiStrings();
+  const sliderId = useId();
+  const [internalValue, setInternalValue] = useState(defaultValue);
+  const current = value ?? internalValue;
+  const sorted = useMemo(() => sortLevels(levels), [levels]);
+  const valueText = useZoomFormatter(formatOptions).format(current);
   const request = (next: number) => {
-    if (controlledValue === undefined) setInternalValue(next);
+    if (value === undefined) setInternalValue(next);
     onChange?.(next);
   };
-  const below = nextZoomLevel(ladder, value, -1);
-  const above = nextZoomLevel(ladder, value, 1);
-  const text = formatter.format(value);
+  const buttonProps = { size, isDisabled, onRequest: request };
+  const atReset = resetValue === undefined || Math.abs(current - resetValue) < tolerance;
 
   return (
     <div
+      {...rest}
       {...hooks.root({ className, props: rest, data: { size, disabled: isDisabled } })}
-      id={id}
       role="group"
-      aria-label={ariaLabel ?? (ariaLabelledBy ? undefined : strings.zoom)}
-      aria-labelledby={ariaLabelledBy}
+      aria-label={ariaLabel ?? (rest['aria-labelledby'] ? undefined : strings.zoom)}
     >
       {zoomOutButton ?? (
-        <IconButton
-          className={hooks.slotClass('zoom-out')}
+        <ZoomButton
+          {...buttonProps}
+          slot="zoom-out"
           icon="minus"
           label={strings.zoomOut}
-          size={size}
-          isDisabled={isDisabled || below === undefined}
-          focusableWhenDisabled={!isDisabled}
-          onPress={() => {
-            if (below !== undefined) request(below);
-          }}
+          target={findNextZoomLevel(sorted, current, -1)}
         />
       )}
-      <input
-        {...hooks.slot('slider')}
+      <ZoomSlider
         id={sliderId}
-        type="range"
-        min={0}
-        max={Math.max(0, ladder.length - 1)}
-        step={1}
-        value={nearestZoomLevelIndex(ladder, value)}
-        disabled={isDisabled}
-        aria-label={strings.zoomLevel}
-        aria-valuetext={text}
-        onChange={(event) => {
-          const level = ladder[Number.parseInt(event.currentTarget.value, 10)];
-          if (level !== undefined) request(level);
-        }}
+        levels={sorted}
+        value={current}
+        valueText={valueText}
+        isDisabled={isDisabled}
+        onRequest={request}
       />
       {zoomInButton ?? (
-        <IconButton
-          className={hooks.slotClass('zoom-in')}
+        <ZoomButton
+          {...buttonProps}
+          slot="zoom-in"
           icon="plus"
           label={strings.zoomIn}
-          size={size}
-          isDisabled={isDisabled || above === undefined}
-          focusableWhenDisabled={!isDisabled}
-          onPress={() => {
-            if (above !== undefined) request(above);
-          }}
+          target={findNextZoomLevel(sorted, current, 1)}
         />
       )}
       <output {...hooks.slot('value')} htmlFor={sliderId}>
-        {text}
+        {valueText}
       </output>
-      {resetValue !== undefined ? (
-        <IconButton
-          className={hooks.slotClass('reset')}
+      {resetValue === undefined ? null : (
+        <ZoomButton
+          {...buttonProps}
+          slot="reset"
           icon="restore"
           label={strings.resetZoom}
-          size={size}
-          isDisabled={isDisabled || Math.abs(value - resetValue) < EPSILON}
-          focusableWhenDisabled={!isDisabled}
-          onPress={() => request(resetValue)}
+          target={atReset ? undefined : resetValue}
         />
-      ) : null}
+      )}
     </div>
   );
 }
