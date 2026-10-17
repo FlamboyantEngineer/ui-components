@@ -146,6 +146,8 @@ test.describe('Modal lab', () => {
     await expect(page.getByRole('dialog', { name: 'Edit dates' })).toHaveCount(0);
     await page.mouse.click(8, 8);
     await expect(page.getByRole('dialog', { name: 'Trip to Oslo' })).toBeVisible();
+    // An outside press keeps focus in the dialog, so Escape still reaches it.
+    await expect(page.getByRole('button', { name: 'Edit dates' })).toBeFocused();
     await page.keyboard.press('Escape');
     await expect(outer).toHaveCount(0);
     await expect(opener).toBeFocused();
