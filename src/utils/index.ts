@@ -70,3 +70,21 @@ export { formatCount, normalizeCount } from './count.js';
 export type { FormatCountOptions } from './count.js';
 export { createSlotRegistry } from './slot-registry.js';
 export type { SlotRef, SlotRegistry } from './slot-registry.js';
+export {
+  applyTreeMove,
+  getVisibleTreeRows,
+  resolveTreeDrop,
+  resolveTreeKeyboardMove,
+  resolveTreeMove,
+} from './tree-reorder.js';
+export type {
+  TreeDropPosition,
+  TreeKey,
+  TreeKeyboardMove,
+  TreeMove,
+  TreeMoveDirection,
+  TreeMoveItem,
+  TreeMoveRow,
+  TreeMoveRules,
+  VisibleTreeRowsOptions,
+} from './tree-reorder.js';

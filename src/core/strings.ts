@@ -26,6 +26,10 @@ export interface UiStrings {
   sortAscending: string;
   sortDescending: string;
   resize: string;
+  /** Names the search box that narrows a table's rows. */
+  filterRows: string;
+  /** Names a table's row actions column. */
+  rowActions: string;
   scrollVertically: string;
   scrollHorizontally: string;
   add: string;
@@ -144,6 +148,8 @@ export const defaultStrings: UiStrings = {
   sortAscending: 'Sort ascending',
   sortDescending: 'Sort descending',
   resize: 'Resize',
+  filterRows: 'Filter rows',
+  rowActions: 'Actions',
   scrollVertically: 'Scroll vertically',
   scrollHorizontally: 'Scroll horizontally',
   add: 'Add',
