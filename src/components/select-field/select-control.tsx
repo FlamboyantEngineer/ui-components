@@ -197,6 +197,8 @@ export function SelectControl({ control, label, ...props }: SelectControlProps) 
     props.filterable ?? (Boolean(model.search) || options.length > FILTER_THRESHOLD);
   const actions = useSelectActions(props, model, isFilterable);
   const trigger = useTrigger(control, props, model);
+  // React Aria would submit the empty option's generated key; submit an empty entry instead.
+  const submitsEmpty = Boolean(props.name) && model.empty !== null && model.single === model.empty;
   return (
     <>
       <AriaSelect<SelectFieldOption, 'single' | 'multiple'>
@@ -216,7 +218,7 @@ export function SelectControl({ control, label, ...props }: SelectControlProps) 
         isInvalid={state.validation.status === 'invalid'}
         validationBehavior="aria"
         allowsEmptyCollection
-        name={props.name}
+        name={submitsEmpty ? undefined : props.name}
         autoFocus={props.autoFocus}
       >
         <SelectTrigger
@@ -237,6 +239,9 @@ export function SelectControl({ control, label, ...props }: SelectControlProps) 
           emptyMessage={emptyMessage(model.search, strings)}
         />
       </AriaSelect>
+      {submitsEmpty ? (
+        <input type="hidden" name={props.name} value="" disabled={state.isDisabled} />
+      ) : null}
       {isMultiple ? (
         <SelectChips
           label={label}

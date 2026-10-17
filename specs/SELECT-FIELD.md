@@ -156,7 +156,7 @@ Verification: `src/components/select-field/select-search.test.tsx`
 
 ### UIC-SELECT-FIELD-6.1 - Form values
 
-With `name`, the select shall publish its chosen ids to its form through React Aria's hidden select: one entry for a single select's choice and one per chosen id for a multiple select.
+With `name`, the select shall publish its chosen ids to its form through React Aria's hidden select: one entry for a single select's choice and one per chosen id for a multiple select. A single select showing its `emptyLabel` option publishes one empty entry, as a native select's empty option does, never that option's generated key.
 
 Implementation: `src/components/select-field/select-control.tsx`
 Verification: `src/components/select-field/select-field.test.tsx`

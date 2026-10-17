@@ -354,4 +354,20 @@ describe('SelectField forms', () => {
     expect(data.getAll('fruit')).toEqual(['pear']);
     expect(data.getAll('basket')).toEqual(['apple', 'fig']);
   });
+
+  it('UIC-SELECT-FIELD-6.1 publishes an empty entry while the empty option stands for no value', () => {
+    const { container, rerender } = render(
+      <form>
+        <SelectField label="Fruit" name="fruit" options={fruit} emptyLabel="None" value={null} />
+      </form>,
+    );
+    const form = container.querySelector('form') as HTMLFormElement;
+    expect(new FormData(form).getAll('fruit')).toEqual(['']);
+    rerender(
+      <form>
+        <SelectField label="Fruit" name="fruit" options={fruit} emptyLabel="None" value="fig" />
+      </form>,
+    );
+    expect(new FormData(form).getAll('fruit')).toEqual(['fig']);
+  });
 });
