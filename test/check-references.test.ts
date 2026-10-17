@@ -49,7 +49,7 @@ describe('no-reference check', () => {
   });
 
   it('allows library requirement IDs and license identifiers', () => {
-    const result = scan({ 'SPEC.md': 'UIC-BUTTON-1.2 and CC-BY-4.0\n' });
+    const result = scan({ 'SPEC.md': 'UIC-BUTTON-1.2, UIC-ICON-LABEL-1.2 and CC-BY-4.0\n' });
     expect(result.status).toBe(0);
   });
 });

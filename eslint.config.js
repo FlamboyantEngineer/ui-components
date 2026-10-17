@@ -45,6 +45,7 @@ export default tseslint.config(
   },
   {
     files: ['src/**/*.{ts,tsx}'],
+    ignores: ['src/**/*.test.{ts,tsx}'],
     plugins: { ui: local },
     rules: {
       'ui/no-css-import': 'error',

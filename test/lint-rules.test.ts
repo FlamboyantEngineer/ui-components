@@ -45,6 +45,13 @@ describe('library source lint rules', () => {
     expect(ids).toContain('no-restricted-globals');
   });
 
+  it('does not apply library markup rules to tests', async () => {
+    const code = `export function Probe() {\n  return <div className="caller" style={{ color: 'red' }} />;\n}\n`;
+    const ids = await ruleIds(code, 'src/components/probe/probe.test.tsx');
+    expect(ids).not.toContain('ui/hook-class-names');
+    expect(ids).not.toContain('ui/no-static-inline-style');
+  });
+
   it('does not apply library rules outside src', async () => {
     expect(
       await ruleIds("import './chrome.css';\nexport {};\n", 'labs/src/probe.ts'),
