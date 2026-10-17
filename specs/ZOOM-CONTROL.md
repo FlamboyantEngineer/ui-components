@@ -1,0 +1,81 @@
+# Zoom Control
+
+`ZoomControl` shows a zoom percentage and requests other zoom levels from its caller: a zoom-out button, a slider over a ladder of zoom levels, a zoom-in button and the current percentage, in that order, in one named group, with an optional reset button after them.
+
+## UIC-ZOOM-CONTROL-1 - Contract
+
+### UIC-ZOOM-CONTROL-1.1 - Parts and order
+
+`ZoomControl` shall render a `role="group"` element named by `aria-label`, `aria-labelledby` or the provider's `zoom` string, holding in order: the zoom-out button (`ui-zoom-control__zoom-out`), the slider (`ui-zoom-control__slider`), the zoom-in button (`ui-zoom-control__zoom-in`) and the value (`ui-zoom-control__value`). The built-in buttons are [Icon Buttons](ICON-BUTTON.md) drawing the `minus` and `plus` glyphs, named by the provider's `zoomOut` and `zoomIn` strings.
+
+Implementation: `src/components/zoom-control/zoom-control.tsx`
+Verification: `src/components/zoom-control/zoom-control.test.tsx`, `e2e/zoom-control.spec.ts`
+
+### UIC-ZOOM-CONTROL-1.2 - Levels and value
+
+`levels` shall give the zoom levels in percent (`100` means 100%), used sorted ascending without duplicates; without it the control uses `defaultZoomLevels`. The current zoom is `value` (controlled) or `defaultValue` (uncontrolled, `100` by default), and every request reaches `onChange` with the requested percentage; an uncontrolled control also applies it. The value may lie between levels, for example a fit-to-width zoom.
+
+Implementation: `src/components/zoom-control/zoom-control.tsx`
+Verification: `src/components/zoom-control/zoom-control.test.tsx`
+
+### UIC-ZOOM-CONTROL-1.3 - Stepping
+
+Zoom in shall request the first level above the current value and zoom out the last level below it, so a value between levels steps to the neighbouring level on that side. With no level beyond the value on its side, a step button is disabled but stays focusable (`aria-disabled="true"`, `data-disabled`), so focus is not lost when a step reaches the first or last level. `nextZoomLevel` exposes the same rule.
+
+Implementation: `src/components/zoom-control/zoom-control.tsx`
+Verification: `src/components/zoom-control/zoom-control.test.tsx`, `e2e/zoom-control.spec.ts`
+
+### UIC-ZOOM-CONTROL-1.4 - Slider
+
+The slider shall be a native `<input type="range">` over the level indices, from `0` to the last index in steps of one, whose value is the index of the level nearest the current value (`nearestZoomLevelIndex`, the lower level on a tie). It is named by the provider's `zoomLevel` string and announces the formatted value through `aria-valuetext`. Moving it with the pointer, the arrow keys, Home or End requests the level at the new index.
+
+Implementation: `src/components/zoom-control/zoom-control.tsx`
+Verification: `src/components/zoom-control/zoom-control.test.tsx`, `e2e/zoom-control.spec.ts`
+
+### UIC-ZOOM-CONTROL-1.5 - Value display
+
+The value shall be an `<output>` for the slider showing the current value formatted for the locale as a percentage, without rounding (`137.5` shows `137.5%`), whether or not it is one of the levels. `formatOptions` changes the number format; it applies to the percentage itself. The element stays mounted as the value changes.
+
+Implementation: `src/components/zoom-control/zoom-control.tsx`
+Verification: `src/components/zoom-control/zoom-control.test.tsx`, `e2e/zoom-control.spec.ts`
+
+### UIC-ZOOM-CONTROL-1.6 - Reset
+
+With `resetValue`, the control shall render a reset [Icon Button](ICON-BUTTON.md) after the value (`ui-zoom-control__reset`, `restore` glyph, named by the provider's `resetZoom` string) that requests `resetValue`. It is disabled but focusable while the value equals `resetValue`.
+
+Implementation: `src/components/zoom-control/zoom-control.tsx`
+Verification: `src/components/zoom-control/zoom-control.test.tsx`
+
+### UIC-ZOOM-CONTROL-1.7 - Disabled
+
+`isDisabled` shall natively disable the slider and the built-in buttons and publish `data-disabled` on the root.
+
+Implementation: `src/components/zoom-control/zoom-control.tsx`
+Verification: `src/components/zoom-control/zoom-control.test.tsx`, `e2e/zoom-control.spec.ts`
+
+### UIC-ZOOM-CONTROL-1.8 - Caller-supplied step buttons
+
+`zoomOutButton` and `zoomInButton` shall replace the built-in step buttons in their positions, for callers whose zoom steps are commands of their own. The control keeps the slider and the value display.
+
+Implementation: `src/components/zoom-control/zoom-control.tsx`
+Verification: `src/components/zoom-control/zoom-control.test.tsx`
+
+### UIC-ZOOM-CONTROL-1.9 - Size, hooks and caller attributes
+
+`size` (`xs`, `sm` by default, `md` or `lg`) shall size the built-in buttons and publish `data-size` on the root. The control carries the hooks below, appends the caller's `className`, and forwards caller `data-*` attributes and `id` to its root.
+
+Implementation: `src/components/zoom-control/zoom-control.tsx`, `labs/reference.css`
+Verification: `src/components/zoom-control/zoom-control.test.tsx`, `e2e/zoom-control.spec.ts`
+
+## Hooks
+
+| Hook                        | Kind      | Values                 | Description                                           |
+| --------------------------- | --------- | ---------------------- | ----------------------------------------------------- |
+| `ui-zoom-control`           | root      |                        | The `role="group"` `<div>`.                           |
+| `ui-zoom-control__zoom-out` | slot      |                        | The built-in zoom-out button (also `ui-icon-button`). |
+| `ui-zoom-control__slider`   | slot      |                        | The `<input type="range">` over the levels.           |
+| `ui-zoom-control__zoom-in`  | slot      |                        | The built-in zoom-in button (also `ui-icon-button`).  |
+| `ui-zoom-control__value`    | slot      |                        | The `<output>` showing the percentage.                |
+| `ui-zoom-control__reset`    | slot      |                        | The reset button (also `ui-icon-button`).             |
+| `data-size`                 | attribute | `xs`, `sm`, `md`, `lg` | Size of the built-in buttons.                         |
+| `data-disabled`             | state     | `true`                 | The whole control is disabled.                        |

@@ -10,3 +10,7 @@ export * from './components/tabs/index.js';
 export * from './components/breadcrumb/index.js';
 export * from './components/path/index.js';
 export * from './utils/index.js';
+export * from './components/toolbar-scroller/index.js';
+export * from './components/zoom-control/index.js';
+export * from './components/action-row/index.js';
+export * from './components/expand-toggle/index.js';

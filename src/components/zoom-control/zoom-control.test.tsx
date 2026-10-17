@@ -1,0 +1,243 @@
+import { fireEvent, render, screen } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
+import { useState } from 'react';
+import { describe, expect, it, vi } from 'vitest';
+import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { UiProvider } from '../../core/provider.js';
+import { IconButton } from '../icon-button/icon-button.js';
+import {
+  ZoomControl,
+  defaultZoomLevels,
+  nearestZoomLevelIndex,
+  nextZoomLevel,
+} from './zoom-control.js';
+
+const LEVELS = [50, 75, 100, 125, 150];
+
+function slider() {
+  return screen.getByRole('slider', { name: 'Zoom level' });
+}
+
+function value(container: HTMLElement) {
+  return container.querySelector('.ui-zoom-control__value');
+}
+
+describe('ZoomControl', () => {
+  it('UIC-ZOOM-CONTROL-1.1 orders zoom out, slider, zoom in and value in a named group', () => {
+    const { container } = render(<ZoomControl levels={LEVELS} defaultValue={100} />);
+    const group = screen.getByRole('group', { name: 'Zoom' });
+    expect(Array.from(group.children, (child) => child.className.split(' ').at(-1))).toEqual([
+      'ui-zoom-control__zoom-out',
+      'ui-zoom-control__slider',
+      'ui-zoom-control__zoom-in',
+      'ui-zoom-control__value',
+    ]);
+    const zoomOut = screen.getByRole('button', { name: 'Zoom out' });
+    const zoomIn = screen.getByRole('button', { name: 'Zoom in' });
+    expect(zoomOut).toHaveClass('ui-icon-button');
+    expect(zoomOut.querySelector('[data-glyph]')).toHaveAttribute('data-glyph', 'minus');
+    expect(zoomIn.querySelector('[data-glyph]')).toHaveAttribute('data-glyph', 'plus');
+    expect(value(container)).toHaveTextContent('100%');
+    expectHooksMatchSpec(container, 'ZOOM-CONTROL', {
+      slots: ['zoom-out', 'slider', 'zoom-in', 'value'],
+    });
+  });
+
+  it('UIC-ZOOM-CONTROL-1.1 takes its group name from the caller or the provider', () => {
+    const { rerender } = render(<ZoomControl aria-label="Page zoom" />);
+    expect(screen.getByRole('group', { name: 'Page zoom' })).toBeInTheDocument();
+    rerender(
+      <>
+        <span id="zoom-heading">Canvas</span>
+        <ZoomControl aria-labelledby="zoom-heading" />
+      </>,
+    );
+    expect(screen.getByRole('group', { name: 'Canvas' })).toBeInTheDocument();
+    rerender(
+      <UiProvider strings={{ zoom: 'Agrandissement', zoomIn: 'Agrandir' }}>
+        <ZoomControl />
+      </UiProvider>,
+    );
+    expect(screen.getByRole('group', { name: 'Agrandissement' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Agrandir' })).toBeInTheDocument();
+  });
+
+  it('UIC-ZOOM-CONTROL-1.2 is uncontrolled from 100% by default and reports every request', async () => {
+    const onChange = vi.fn();
+    const { container } = render(<ZoomControl onChange={onChange} />);
+    expect(value(container)).toHaveTextContent('100%');
+    expect(slider()).toHaveAttribute('max', String(defaultZoomLevels.length - 1));
+    await userEvent.click(screen.getByRole('button', { name: 'Zoom in' }));
+    expect(onChange).toHaveBeenLastCalledWith(125);
+    expect(value(container)).toHaveTextContent('125%');
+  });
+
+  it('UIC-ZOOM-CONTROL-1.2 follows a controlled value and sorts and deduplicates the levels', async () => {
+    const onChange = vi.fn();
+    const { container, rerender } = render(
+      <ZoomControl levels={[150, 50, 100, 100, 75]} value={75} onChange={onChange} />,
+    );
+    expect(slider()).toHaveAttribute('max', '3');
+    expect(slider()).toHaveValue('1');
+    await userEvent.click(screen.getByRole('button', { name: 'Zoom in' }));
+    expect(onChange).toHaveBeenLastCalledWith(100);
+    expect(value(container)).toHaveTextContent('75%');
+    rerender(<ZoomControl levels={[150, 50, 100, 100, 75]} value={100} onChange={onChange} />);
+    expect(value(container)).toHaveTextContent('100%');
+    expect(slider()).toHaveValue('2');
+  });
+
+  it('UIC-ZOOM-CONTROL-1.3 steps to the neighbouring level, also from a value between levels', async () => {
+    const onChange = vi.fn();
+    render(<ZoomControl levels={LEVELS} value={137.5} onChange={onChange} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Zoom in' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Zoom out' }));
+    expect(onChange.mock.calls).toEqual([[150], [125]]);
+    expect(nextZoomLevel(LEVELS, 100, 1)).toBe(125);
+    expect(nextZoomLevel(LEVELS, 100, -1)).toBe(75);
+    expect(nextZoomLevel(LEVELS, 150, 1)).toBeUndefined();
+    expect(nextZoomLevel(LEVELS, 50, -1)).toBeUndefined();
+    expect(nextZoomLevel(LEVELS, 10, 1)).toBe(50);
+  });
+
+  it('UIC-ZOOM-CONTROL-1.3 disables a step at the last level but keeps it focusable', async () => {
+    function Controlled() {
+      const [zoom, setZoom] = useState(125);
+      return <ZoomControl levels={LEVELS} value={zoom} onChange={setZoom} />;
+    }
+    const { container } = render(<Controlled />);
+    const zoomIn = screen.getByRole('button', { name: 'Zoom in' });
+    zoomIn.focus();
+    await userEvent.keyboard('{Enter}');
+    expect(value(container)).toHaveTextContent('150%');
+    expect(zoomIn).toHaveFocus();
+    expect(zoomIn).toHaveAttribute('aria-disabled', 'true');
+    expect(zoomIn).toHaveAttribute('data-disabled', 'true');
+    expect(zoomIn).not.toHaveAttribute('disabled');
+    await userEvent.keyboard('{Enter}');
+    expect(value(container)).toHaveTextContent('150%');
+    expect(screen.getByRole('button', { name: 'Zoom out' })).not.toHaveAttribute('aria-disabled');
+    expectHooksMatchSpec(container, 'ZOOM-CONTROL');
+
+    for (const index of [0, 2, 4]) {
+      const level = LEVELS[index] as number;
+      const { container: control, unmount } = render(
+        <ZoomControl levels={LEVELS} value={level} aria-label={`At ${level}`} />,
+      );
+      const out = control.querySelector('.ui-zoom-control__zoom-out');
+      const into = control.querySelector('.ui-zoom-control__zoom-in');
+      expect(out?.getAttribute('aria-disabled') === 'true').toBe(index === 0);
+      expect(into?.getAttribute('aria-disabled') === 'true').toBe(index === 4);
+      unmount();
+    }
+  });
+
+  it('UIC-ZOOM-CONTROL-1.4 is a native range over the level indices that requests the chosen level', () => {
+    const onChange = vi.fn();
+    render(<ZoomControl levels={LEVELS} value={137.5} onChange={onChange} />);
+    const range = slider();
+    expect(range.tagName).toBe('INPUT');
+    expect(range).toHaveAttribute('type', 'range');
+    expect(range).toHaveAttribute('min', '0');
+    expect(range).toHaveAttribute('max', '4');
+    expect(range).toHaveAttribute('step', '1');
+    expect(range).toHaveValue('3');
+    expect(range).toHaveAttribute('aria-valuetext', '137.5%');
+    fireEvent.change(range, { target: { value: '0' } });
+    expect(onChange).toHaveBeenLastCalledWith(50);
+    expect(nearestZoomLevelIndex(LEVELS, 87.5)).toBe(1);
+    expect(nearestZoomLevelIndex(LEVELS, 90)).toBe(2);
+    expect(nearestZoomLevelIndex(LEVELS, 1000)).toBe(4);
+  });
+
+  it('UIC-ZOOM-CONTROL-1.5 shows the percentage without rounding and keeps the value node mounted', () => {
+    const { container, rerender } = render(<ZoomControl levels={LEVELS} value={0} />);
+    const output = value(container);
+    expect(output?.tagName).toBe('OUTPUT');
+    expect(output).toHaveAttribute('for', slider().id);
+    for (const [zoom, text] of [
+      [0, '0%'],
+      [50, '50%'],
+      [137.5, '137.5%'],
+      [33.333, '33.333%'],
+      [1000, '1,000%'],
+    ] as const) {
+      rerender(<ZoomControl levels={LEVELS} value={zoom} />);
+      expect(value(container)).toBe(output);
+      expect(output).toHaveTextContent(text);
+    }
+    rerender(<ZoomControl levels={LEVELS} value={1000} formatOptions={{ useGrouping: false }} />);
+    expect(output).toHaveTextContent('1000%');
+    rerender(
+      <UiProvider locale="fr-FR">
+        <ZoomControl levels={LEVELS} value={137.5} />
+      </UiProvider>,
+    );
+    expect(value(container)?.textContent).toMatch(/^137,5\s%$/u);
+  });
+
+  it('UIC-ZOOM-CONTROL-1.6 resets to the reset value and disables reset there', async () => {
+    const onChange = vi.fn();
+    const { container, rerender } = render(<ZoomControl levels={LEVELS} value={150} />);
+    expect(container.querySelector('.ui-zoom-control__reset')).toBeNull();
+    rerender(<ZoomControl levels={LEVELS} value={150} resetValue={100} onChange={onChange} />);
+    const reset = screen.getByRole('button', { name: 'Reset zoom' });
+    expect(reset).toHaveClass('ui-icon-button', 'ui-zoom-control__reset');
+    expect(reset.querySelector('[data-glyph]')).toHaveAttribute('data-glyph', 'restore');
+    expect(screen.getByRole('group').lastElementChild).toBe(reset);
+    await userEvent.click(reset);
+    expect(onChange).toHaveBeenLastCalledWith(100);
+    rerender(<ZoomControl levels={LEVELS} value={100} resetValue={100} onChange={onChange} />);
+    expect(reset).toHaveAttribute('aria-disabled', 'true');
+    expectHooksMatchSpec(container, 'ZOOM-CONTROL', { slots: 'all' });
+  });
+
+  it('UIC-ZOOM-CONTROL-1.7 disables the slider and built-in buttons', () => {
+    const { container } = render(
+      <ZoomControl levels={LEVELS} value={100} resetValue={50} isDisabled />,
+    );
+    expect(container.firstElementChild).toHaveAttribute('data-disabled', 'true');
+    expect(slider()).toBeDisabled();
+    for (const name of ['Zoom out', 'Zoom in', 'Reset zoom']) {
+      expect(screen.getByRole('button', { name })).toBeDisabled();
+    }
+    expectHooksMatchSpec(container, 'ZOOM-CONTROL');
+  });
+
+  it('UIC-ZOOM-CONTROL-1.8 puts caller step buttons in the built-in positions', () => {
+    const { container } = render(
+      <ZoomControl
+        levels={LEVELS}
+        value={100}
+        zoomOutButton={<IconButton icon="minus" label="Shrink" id="shrink" />}
+        zoomInButton={<IconButton icon="plus" label="Grow" id="grow" />}
+      />,
+    );
+    const group = screen.getByRole('group');
+    expect(Array.from(group.children, (child) => child.id || child.tagName)).toEqual([
+      'shrink',
+      slider().id,
+      'grow',
+      'OUTPUT',
+    ]);
+    expect(container.querySelector('.ui-zoom-control__zoom-in')).toBeNull();
+    expect(value(container)).toHaveTextContent('100%');
+  });
+
+  it('UIC-ZOOM-CONTROL-1.9 publishes the size and forwards caller hooks', () => {
+    const { container, rerender } = render(<ZoomControl />);
+    const root = container.firstElementChild;
+    expect(root).toHaveAttribute('data-size', 'sm');
+    for (const size of ['xs', 'sm', 'md', 'lg'] as const) {
+      rerender(<ZoomControl size={size} />);
+      expect(root).toHaveAttribute('data-size', size);
+      expect(screen.getByRole('button', { name: 'Zoom in' })).toHaveAttribute('data-size', size);
+    }
+    rerender(<ZoomControl className="caller" id="zoom" data-testid="probe" data-size="huge" />);
+    expect(root).toHaveClass('ui-zoom-control', 'caller');
+    expect(root).toHaveAttribute('id', 'zoom');
+    expect(root).toHaveAttribute('data-testid', 'probe');
+    expect(root).toHaveAttribute('data-size', 'sm');
+    expectHooksMatchSpec(container, 'ZOOM-CONTROL');
+  });
+});

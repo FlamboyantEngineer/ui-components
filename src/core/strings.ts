@@ -20,6 +20,20 @@ export interface UiStrings {
   copied: string;
   sortAscending: string;
   sortDescending: string;
+  add: string;
+  refresh: string;
+  edit: string;
+  delete: string;
+  save: string;
+  saving: string;
+  cancel: string;
+  zoom: string;
+  zoomLevel: string;
+  zoomIn: string;
+  zoomOut: string;
+  resetZoom: string;
+  scrollBackward: string;
+  scrollForward: string;
   itemCount: (count: number) => string;
 }
 
@@ -44,5 +58,19 @@ export const defaultStrings: UiStrings = {
   copied: 'Copied',
   sortAscending: 'Sort ascending',
   sortDescending: 'Sort descending',
+  add: 'Add',
+  refresh: 'Refresh',
+  edit: 'Edit',
+  delete: 'Delete',
+  save: 'Save',
+  saving: 'Saving',
+  cancel: 'Cancel',
+  zoom: 'Zoom',
+  zoomLevel: 'Zoom level',
+  zoomIn: 'Zoom in',
+  zoomOut: 'Zoom out',
+  resetZoom: 'Reset zoom',
+  scrollBackward: 'Scroll backward',
+  scrollForward: 'Scroll forward',
   itemCount: (count) => (count === 1 ? '1 item' : `${count} items`),
 };
