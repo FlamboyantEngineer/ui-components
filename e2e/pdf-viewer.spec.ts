@@ -395,6 +395,8 @@ test.describe('PDF Viewer lab', () => {
     page,
     lab,
   }) => {
+    // A dozen documents open at once, each with its own engine worker, before axe runs.
+    test.slow();
     await lab.open('pdf-viewer');
     const cell = page.locator('[data-lab-cell="state=locked"]');
     const field = cell.getByLabel('Password');
@@ -472,6 +474,8 @@ test.describe('PDF Viewer lab', () => {
     page,
     lab,
   }) => {
+    // A dozen documents open at once, each with its own engine worker, before axe runs.
+    test.slow();
     const reader = await openReader(page, lab);
     const status = reader.locator('.ui-pdf-viewer__search-status');
     await reader.getByRole('searchbox', { name: 'Find in document' }).fill('pear');
@@ -490,7 +494,8 @@ test.describe('PDF Viewer lab', () => {
     await page.keyboard.press('Escape');
     await expect(menu).toHaveCount(0);
 
-    const find = await openCase(page, lab, 'find');
+    // The lab is already open: the caller's find controls are in another case.
+    const find = page.locator('[data-lab-case="find"]');
     await find.getByRole('searchbox', { name: 'Find everywhere' }).fill('Pear');
     await expect(find.locator('[data-lab-output="matches"]')).toHaveText('1 of 2');
     await find.getByRole('button', { name: 'Same case' }).click();
@@ -502,7 +507,9 @@ test.describe('PDF Viewer lab', () => {
     page,
     lab,
   }) => {
-    const reader = await openCase(page, lab, 'sidebar');
+    // A dozen documents open at once, each with its own engine worker, before axe runs.
+    test.slow();
+    const reader = await openCase(page, lab, 'bytes');
     const field = reader.getByLabel('Page', { exact: true });
     await expect(field).toHaveValue('2');
     const tree = reader.getByRole('treegrid', { name: 'Outline' });
@@ -513,7 +520,7 @@ test.describe('PDF Viewer lab', () => {
       'Plum',
       'Markets',
     ]);
-    await lab.expectAccessible('[data-lab-case="sidebar"]');
+    await lab.expectAccessible('[data-lab-case="bytes"]');
 
     await tree.getByRole('row', { name: 'Markets' }).click();
     await expect(field).toHaveValue('3');

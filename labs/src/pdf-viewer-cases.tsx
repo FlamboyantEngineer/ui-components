@@ -2,7 +2,7 @@
 // entries, navigation, find and toolbar placement. Lab-only presentation is inline.
 
 import type * as Pdfjs from 'pdfjs-dist';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import {
   PdfViewer,
@@ -258,12 +258,27 @@ export function ProjectedToolbar() {
   );
 }
 
-/** The sidebar open on the outline, a document opening at its second page, and named destinations. */
+/**
+ * A source fetched as bytes, opening at its second page with the sidebar open on the outline, and
+ * named destinations.
+ */
 export function SidebarReader() {
+  const [bytes, setBytes] = useState<ArrayBuffer | null>(null);
   const [destination, setDestination] = useState<string | null>(null);
   const [page, setPage] = useState(0);
+  useEffect(() => {
+    let isCurrent = true;
+    void fetch(sampleUrl)
+      .then((response) => response.arrayBuffer())
+      .then((buffer) => {
+        if (isCurrent) setBytes(buffer);
+      });
+    return () => {
+      isCurrent = false;
+    };
+  }, []);
   return (
-    <div data-lab-case="sidebar">
+    <div data-lab-case="bytes">
       <p>
         <Button size="sm" onPress={() => setDestination('markets')}>
           Go to markets
@@ -275,8 +290,8 @@ export function SidebarReader() {
       </p>
       <div style={{ height: 460, maxWidth: 1000 }}>
         <PdfViewer
-          aria-label="Report with its outline"
-          source={sampleUrl}
+          aria-label="Report from bytes"
+          source={bytes}
           loadEngine={loadEngine}
           workerSrc={workerSrc}
           defaultSidebarOpen

@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { PdfViewer, type PdfViewerProps } from '../../src/components/pdf-viewer/pdf-viewer.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
@@ -57,34 +57,6 @@ function Reader() {
         <output data-lab-output="zoom">{zoom === null ? '—' : Math.round(zoom)}</output>; shares:{' '}
         <output data-lab-output="shares">{shares}</output>
       </p>
-    </div>
-  );
-}
-
-function BytesSource() {
-  const [bytes, setBytes] = useState<ArrayBuffer | null>(null);
-  useEffect(() => {
-    let isCurrent = true;
-    void fetch(sampleUrl)
-      .then((response) => response.arrayBuffer())
-      .then((buffer) => {
-        if (isCurrent) setBytes(buffer);
-      });
-    return () => {
-      isCurrent = false;
-    };
-  }, []);
-  return (
-    <div data-lab-case="bytes">
-      <Frame height={420}>
-        <PdfViewer
-          aria-label="Report from bytes"
-          source={bytes}
-          loadEngine={loadEngine}
-          workerSrc={workerSrc}
-          defaultZoom="page-fit"
-        />
-      </Frame>
     </div>
   );
 }
@@ -152,16 +124,10 @@ mountLab(
       <Reader />
     </LabSection>
     <LabSection
-      title="Sidebar and destinations"
-      description="The sidebar opens on the outline beside thumbnails; the document opens at its second page, and the buttons go to destinations the document names."
+      title="Bytes source, sidebar and destinations"
+      description="The bytes are fetched first: the viewer loads while the source is null, then opens its own copy at its second page. The sidebar opens on the outline beside thumbnails, and the buttons go to destinations the document names."
     >
       <SidebarReader />
-    </LabSection>
-    <LabSection
-      title="Bytes source"
-      description="The bytes are fetched first: the viewer loads while the source is null, then opens its own copy."
-    >
-      <BytesSource />
     </LabSection>
     <LabSection
       title="Overlays and context menu"
