@@ -38,7 +38,7 @@ Verification: `src/components/portal/portal.test.tsx`
 
 ### UIC-PORTAL-2.1 - Layer order
 
-The library shall define seven overlay layers, lowest to highest: `backdrop`, `drawer`, `modal`, `dropdown`, `context-menu`, `tooltip` and `toast`, exported in that order as `overlayLayers`. `Portal` shall publish its `layer` in `data-layer`; the default is `dropdown`.
+The library shall define seven overlay layers, lowest to highest: `backdrop`, `drawer`, `modal`, `dropdown`, `context-menu`, `tooltip` and `toast`, exported in that order as `overlayLayers`; `isLayerAbove(layer, other)` reports whether one layer stacks above another. `Portal` shall publish its `layer` in `data-layer`; the default is `dropdown`.
 
 Implementation: `src/components/portal/layers.ts`, `src/components/portal/portal.tsx`
 Verification: `src/components/portal/portal.test.tsx`, `e2e/portal.spec.ts`

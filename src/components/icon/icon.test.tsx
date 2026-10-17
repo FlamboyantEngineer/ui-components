@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import type { GlyphComponentProps } from '../../core/glyphs.js';
-import { Icon } from './icon.js';
+import { Icon, isGlyphName, toIconProps, toImageProps } from './icon.js';
 
 describe('Icon', () => {
   it('UIC-ICON-1.1 draws a built-in glyph in the glyph slot', () => {
@@ -34,6 +34,14 @@ describe('Icon', () => {
     expect(screen.getByTestId('dot')).toHaveClass('ui-icon__glyph');
   });
 
+  it('UIC-ICON-1.1 turns an icon source into Icon props', () => {
+    const node = <svg />;
+    expect(isGlyphName('close')).toBe(true);
+    expect(isGlyphName(node)).toBe(false);
+    expect(toIconProps('close')).toEqual({ glyph: 'close' });
+    expect(toIconProps(node)).toEqual({ children: node });
+  });
+
   it('UIC-ICON-1.2 publishes the size, medium by default', () => {
     const { container, rerender } = render(<Icon glyph="plus" />);
     expect(container.firstElementChild).toHaveAttribute('data-size', 'md');
@@ -53,6 +61,8 @@ describe('Icon', () => {
     const image = screen.getByRole('img', { name: 'Information' });
     expect(image).not.toHaveAttribute('aria-hidden');
     expect(image.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
+    expect(toImageProps('Information')).toEqual({ role: 'img', 'aria-label': 'Information' });
+    expect(toImageProps('')).toEqual({ 'aria-hidden': true });
   });
 
   it('UIC-ICON-1.4 appends the caller class and forwards id and data attributes', () => {

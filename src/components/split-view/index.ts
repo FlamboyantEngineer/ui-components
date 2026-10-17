@@ -2,7 +2,6 @@ export { SplitView, resolveInitialSplitSize, resolveSplitBounds } from './split-
 export type {
   FixedSplitViewProps,
   ResizableSplitViewProps,
-  SplitViewOrientation,
   SplitViewPane,
   SplitViewProps,
   SplitViewRatio,
@@ -14,7 +13,6 @@ export {
   resolveResizeKeyboardValue,
 } from './resize-handle.js';
 export type {
-  ResizeHandleOrientation,
   ResizeHandleProps,
   ResizeHandleSizedPane,
   ResizeKeyboardInput,

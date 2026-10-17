@@ -25,6 +25,7 @@ interface Observation {
 }
 
 type Wanted = Map<OwnerWindow, Map<ResizeObserverBoxOptions, Set<Element>>>;
+type Observations = Map<OwnerWindow, Map<ResizeObserverBoxOptions, Observation>>;
 
 function resolveTarget(
   target: NonNullable<ResizeObserverTarget>,
@@ -34,20 +35,96 @@ function resolveTarget(
   return [target, 'content-box'];
 }
 
-function collect(targets: ResizeObserverTargets): Wanted {
+function getOrCreate<K, V>(map: Map<K, V>, key: K, create: () => V): V {
+  let value = map.get(key);
+  if (value === undefined) map.set(key, (value = create()));
+  return value;
+}
+
+function collectTargets(targets: ResizeObserverTargets): Wanted {
   const wanted: Wanted = new Map();
   for (const target of typeof targets === 'function' ? targets() : targets) {
     if (!target) continue;
     const [element, box] = resolveTarget(target);
     const view = element?.ownerDocument.defaultView as OwnerWindow | null | undefined;
     if (!element || !view || typeof view.ResizeObserver !== 'function') continue;
-    let boxes = wanted.get(view);
-    if (!boxes) wanted.set(view, (boxes = new Map()));
-    let elements = boxes.get(box);
-    if (!elements) boxes.set(box, (elements = new Set()));
-    elements.add(element);
+    getOrCreate(
+      getOrCreate(wanted, view, () => new Map()),
+      box,
+      () => new Set(),
+    ).add(element);
   }
   return wanted;
+}
+
+function release(observation: Observation): void {
+  observation.active = false;
+  observation.observer.disconnect();
+}
+
+/** Stops watching elements that are no longer wanted, and drops observers left with none. */
+function releaseUnwanted(current: Observations, wanted: Wanted): void {
+  for (const [view, boxes] of current) {
+    for (const [box, observation] of boxes) {
+      const elements = wanted.get(view)?.get(box);
+      if (elements) {
+        unobserveMissing(observation, elements);
+      } else {
+        release(observation);
+        boxes.delete(box);
+      }
+    }
+    if (boxes.size === 0) current.delete(view);
+  }
+}
+
+function unobserveMissing(observation: Observation, elements: Set<Element>): void {
+  for (const element of observation.elements) {
+    if (elements.has(element)) continue;
+    observation.observer.unobserve(element);
+    observation.elements.delete(element);
+  }
+}
+
+function observeMissing(
+  observation: Observation,
+  elements: Set<Element>,
+  box: ResizeObserverBoxOptions,
+): void {
+  for (const element of elements) {
+    if (observation.elements.has(element)) continue;
+    observation.elements.add(element);
+    observation.observer.observe(element, { box });
+  }
+}
+
+function createObservation(
+  view: OwnerWindow,
+  callback: RefObject<ResizeObserverCallback>,
+): Observation {
+  const observation: Observation = {
+    observer: new view.ResizeObserver((entries, observer) => {
+      if (observation.active) callback.current(entries, observer);
+    }),
+    elements: new Set(),
+    active: true,
+  };
+  return observation;
+}
+
+/** Starts watching newly wanted elements, sharing one observer per window and box. */
+function observeWanted(
+  current: Observations,
+  wanted: Wanted,
+  callback: RefObject<ResizeObserverCallback>,
+): void {
+  for (const [view, boxes] of wanted) {
+    const byBox = getOrCreate(current, view, () => new Map());
+    for (const [box, elements] of boxes) {
+      const observation = getOrCreate(byBox, box, () => createObservation(view, callback));
+      observeMissing(observation, elements, box);
+    }
+  }
 }
 
 /**
@@ -61,67 +138,22 @@ export function useResizeObserver(
   onResize: ResizeObserverCallback,
 ): void {
   const callback = useRef(onResize);
-  const observations = useRef(new Map<OwnerWindow, Map<ResizeObserverBoxOptions, Observation>>());
+  const observations = useRef<Observations>(new Map());
 
   useLayoutEffect(() => {
     callback.current = onResize;
   }, [onResize]);
 
   useLayoutEffect(() => {
-    const wanted = collect(targets);
-    const current = observations.current;
-
-    for (const [view, boxes] of current) {
-      for (const [box, observation] of boxes) {
-        const elements = wanted.get(view)?.get(box);
-        if (!elements) {
-          observation.active = false;
-          observation.observer.disconnect();
-          boxes.delete(box);
-          continue;
-        }
-        for (const element of observation.elements) {
-          if (elements.has(element)) continue;
-          observation.observer.unobserve(element);
-          observation.elements.delete(element);
-        }
-      }
-      if (boxes.size === 0) current.delete(view);
-    }
-
-    for (const [view, boxes] of wanted) {
-      let byBox = current.get(view);
-      if (!byBox) current.set(view, (byBox = new Map()));
-      for (const [box, elements] of boxes) {
-        let observation = byBox.get(box);
-        if (!observation) {
-          const created: Observation = {
-            observer: new view.ResizeObserver((entries, observer) => {
-              if (created.active) callback.current(entries, observer);
-            }),
-            elements: new Set(),
-            active: true,
-          };
-          byBox.set(box, (observation = created));
-        }
-        for (const element of elements) {
-          if (observation.elements.has(element)) continue;
-          observation.elements.add(element);
-          observation.observer.observe(element, { box });
-        }
-      }
-    }
+    const wanted = collectTargets(targets);
+    releaseUnwanted(observations.current, wanted);
+    observeWanted(observations.current, wanted, callback);
   });
 
   useLayoutEffect(() => {
     const current = observations.current;
     return () => {
-      for (const boxes of current.values()) {
-        for (const observation of boxes.values()) {
-          observation.active = false;
-          observation.observer.disconnect();
-        }
-      }
+      for (const boxes of current.values()) boxes.forEach(release);
       current.clear();
     };
   }, []);

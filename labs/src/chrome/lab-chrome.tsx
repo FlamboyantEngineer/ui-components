@@ -16,115 +16,8 @@ export interface LabChromeProps {
 
 type Kind = StylesheetChoice['kind'];
 
-/** The lab toolbar: back to the index, stylesheet picker and theme attribute. */
-export function LabChrome({ title, initial, indexHref, onChange }: LabChromeProps) {
-  const [settings, setSettings] = useState(initial);
-  const [kind, setKind] = useState<Kind>(initial.stylesheet.kind);
-  const [url, setUrl] = useState(
-    initial.stylesheet.kind === 'custom' ? initial.stylesheet.url : '',
-  );
-  const [attribute, setAttribute] = useState(initial.themeAttribute);
-  const ids = { stylesheet: useId(), url: useId(), theme: useId(), attribute: useId() };
-
-  const commit = (next: LabSettings) => {
-    setSettings(next);
-    onChange(next);
-  };
-
-  const chooseKind = (next: Kind) => {
-    setKind(next);
-    if (next === 'custom') {
-      if (url.trim()) commit({ ...settings, stylesheet: { kind: 'custom', url: url.trim() } });
-      return;
-    }
-    commit({ ...settings, stylesheet: { kind: next } });
-  };
-
-  const commitUrl = (event: FormEvent) => {
-    event.preventDefault();
-    const trimmed = url.trim();
-    if (trimmed) commit({ ...settings, stylesheet: { kind: 'custom', url: trimmed } });
-  };
-
-  const commitAttribute = () => {
-    const name = attribute.trim() || DEFAULT_THEME_ATTRIBUTE;
-    if (!isValidThemeAttribute(name)) {
-      setAttribute(settings.themeAttribute);
-      return;
-    }
-    setAttribute(name);
-    if (name !== settings.themeAttribute) commit({ ...settings, themeAttribute: name });
-  };
-
-  return (
-    <div className="bar">
-      <div className="title">
-        {indexHref ? (
-          <a className="back" href={indexHref(settings)}>
-            All labs
-          </a>
-        ) : null}
-        <span className="name">{title}</span>
-      </div>
-      <form className="controls" onSubmit={commitUrl}>
-        <label htmlFor={ids.stylesheet}>Stylesheet</label>
-        <select
-          id={ids.stylesheet}
-          value={kind}
-          onChange={(event) => chooseKind(event.target.value as Kind)}
-        >
-          <option value="none">Unstyled</option>
-          <option value="reference">Reference</option>
-          <option value="custom">Custom URL</option>
-        </select>
-        {kind === 'custom' ? (
-          <>
-            <label htmlFor={ids.url} className="visually-hidden">
-              Stylesheet URL
-            </label>
-            <input
-              id={ids.url}
-              type="text"
-              inputMode="url"
-              placeholder="https://… or /path/app.css"
-              value={url}
-              onChange={(event) => setUrl(event.target.value)}
-              onBlur={commitUrl}
-            />
-            <button type="submit">Apply</button>
-          </>
-        ) : null}
-        <label htmlFor={ids.theme}>Theme</label>
-        <input
-          id={ids.theme}
-          type="text"
-          placeholder="none"
-          value={settings.theme}
-          onChange={(event) => commit({ ...settings, theme: event.target.value.trim() })}
-        />
-        <label htmlFor={ids.attribute}>on</label>
-        <input
-          id={ids.attribute}
-          type="text"
-          className="attribute"
-          value={attribute}
-          aria-describedby={`${ids.attribute}-hint`}
-          onChange={(event) => setAttribute(event.target.value)}
-          onBlur={commitAttribute}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter') {
-              event.preventDefault();
-              commitAttribute();
-            }
-          }}
-        />
-        <span id={`${ids.attribute}-hint`} className="visually-hidden">
-          Root element attribute that receives the theme value
-        </span>
-      </form>
-    </div>
-  );
-}
+/** The chrome's draft values and the actions that commit them. */
+type ChromeState = ReturnType<typeof useChromeState>;
 
 export const chromeStyles = `
 :host {
@@ -183,3 +76,142 @@ input.attribute { width: 12ch; }
   input[inputmode='url'] { width: 100%; }
 }
 `;
+
+/** The settings the chrome has committed, plus the stylesheet kind, URL and attribute being edited. */
+function useChromeState(initial: LabSettings, onChange: (settings: LabSettings) => void) {
+  const [settings, setSettings] = useState(initial);
+  const [kind, setKind] = useState<Kind>(initial.stylesheet.kind);
+  const [url, setUrl] = useState(
+    initial.stylesheet.kind === 'custom' ? initial.stylesheet.url : '',
+  );
+  const [attribute, setAttribute] = useState(initial.themeAttribute);
+
+  const commit = (next: LabSettings) => {
+    setSettings(next);
+    onChange(next);
+  };
+  const commitUrl = () => {
+    const trimmed = url.trim();
+    if (trimmed) commit({ ...settings, stylesheet: { kind: 'custom', url: trimmed } });
+  };
+  return {
+    settings,
+    kind,
+    url,
+    attribute,
+    setUrl,
+    setAttribute,
+    commit,
+    commitUrl,
+    chooseKind(next: Kind) {
+      setKind(next);
+      if (next === 'custom') commitUrl();
+      else commit({ ...settings, stylesheet: { kind: next } });
+    },
+    commitAttribute() {
+      const name = attribute.trim() || DEFAULT_THEME_ATTRIBUTE;
+      if (!isValidThemeAttribute(name)) {
+        setAttribute(settings.themeAttribute);
+        return;
+      }
+      setAttribute(name);
+      if (name !== settings.themeAttribute) commit({ ...settings, themeAttribute: name });
+    },
+  };
+}
+
+function StylesheetFields({ chrome }: { chrome: ChromeState }) {
+  const ids = { stylesheet: useId(), url: useId() };
+  return (
+    <>
+      <label htmlFor={ids.stylesheet}>Stylesheet</label>
+      <select
+        id={ids.stylesheet}
+        value={chrome.kind}
+        onChange={(event) => chrome.chooseKind(event.target.value as Kind)}
+      >
+        <option value="none">Unstyled</option>
+        <option value="reference">Reference</option>
+        <option value="custom">Custom URL</option>
+      </select>
+      {chrome.kind === 'custom' ? (
+        <>
+          <label htmlFor={ids.url} className="visually-hidden">
+            Stylesheet URL
+          </label>
+          <input
+            id={ids.url}
+            type="text"
+            inputMode="url"
+            placeholder="https://… or /path/app.css"
+            value={chrome.url}
+            onChange={(event) => chrome.setUrl(event.target.value)}
+            onBlur={chrome.commitUrl}
+          />
+          <button type="submit">Apply</button>
+        </>
+      ) : null}
+    </>
+  );
+}
+
+function ThemeFields({ chrome }: { chrome: ChromeState }) {
+  const ids = { theme: useId(), attribute: useId() };
+  return (
+    <>
+      <label htmlFor={ids.theme}>Theme</label>
+      <input
+        id={ids.theme}
+        type="text"
+        placeholder="none"
+        value={chrome.settings.theme}
+        onChange={(event) =>
+          chrome.commit({ ...chrome.settings, theme: event.target.value.trim() })
+        }
+      />
+      <label htmlFor={ids.attribute}>on</label>
+      <input
+        id={ids.attribute}
+        type="text"
+        className="attribute"
+        value={chrome.attribute}
+        aria-describedby={`${ids.attribute}-hint`}
+        onChange={(event) => chrome.setAttribute(event.target.value)}
+        onBlur={chrome.commitAttribute}
+        onKeyDown={(event) => {
+          if (event.key !== 'Enter') return;
+          event.preventDefault();
+          chrome.commitAttribute();
+        }}
+      />
+      <span id={`${ids.attribute}-hint`} className="visually-hidden">
+        Root element attribute that receives the theme value
+      </span>
+    </>
+  );
+}
+
+/** The lab toolbar: back to the index, stylesheet picker and theme attribute. */
+export function LabChrome({ title, initial, indexHref, onChange }: LabChromeProps) {
+  const chrome = useChromeState(initial, onChange);
+  const submit = (event: FormEvent) => {
+    event.preventDefault();
+    chrome.commitUrl();
+  };
+  return (
+    <div className="bar">
+      <div className="title">
+        {indexHref ? (
+          <a className="back" href={indexHref(chrome.settings)}>
+            All labs
+          </a>
+        ) : null}
+        <span className="name">{title}</span>
+      </div>
+      <form className="controls" onSubmit={submit}>
+        <StylesheetFields chrome={chrome} />
+        <ThemeFields chrome={chrome} />
+      </form>
+    </div>
+  );
+}

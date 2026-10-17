@@ -27,7 +27,7 @@ export interface RichCopyOptions extends CopyOptions {
 /** How a rich copy reached the clipboard: both formats, plain text only, or not at all. */
 export type RichCopyResult = 'rich' | 'text' | 'failed';
 
-function defaultClipboard(options: CopyOptions): ClipboardWriter | null {
+function getDefaultClipboard(options: CopyOptions): ClipboardWriter | null {
   if (options.clipboard !== undefined) return options.clipboard;
   return typeof navigator === 'undefined' ? null : (navigator.clipboard ?? null);
 }
@@ -102,7 +102,7 @@ function copyWithSelection(formats: Record<string, string>): boolean {
  */
 export async function copyText(text: string, options: CopyOptions = {}): Promise<boolean> {
   if (!text) return false;
-  if (await writeText(defaultClipboard(options), text)) return true;
+  if (await writeText(getDefaultClipboard(options), text)) return true;
   return options.fallback === false ? false : copyWithSelection({ 'text/plain': text });
 }
 
@@ -117,7 +117,7 @@ export async function copyRichText(
 ): Promise<RichCopyResult> {
   const { text, html } = content;
   if (!text && !html) return 'failed';
-  const clipboard = defaultClipboard(options);
+  const clipboard = getDefaultClipboard(options);
   const Item =
     options.ClipboardItem ??
     (typeof ClipboardItem === 'undefined'

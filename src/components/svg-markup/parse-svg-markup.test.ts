@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { parseSvgMarkup, type SvgElementNode, type SvgNode } from './parse-svg-markup.js';
 
-const PLUS =
+const plusMarkup =
   '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">\n' +
   '  <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14M5 12h14"/>\n' +
   '</svg>';
@@ -13,7 +13,7 @@ function element(node: SvgNode | undefined): SvgElementNode {
 
 describe('parseSvgMarkup', () => {
   it('UIC-SVG-MARKUP-1.1 returns the root svg as a frozen element tree', () => {
-    const tree = parseSvgMarkup(PLUS);
+    const tree = parseSvgMarkup(plusMarkup);
     expect(tree.tag).toBe('svg');
     expect(tree.attributes).toEqual({
       xmlns: 'http://www.w3.org/2000/svg',
@@ -90,10 +90,10 @@ describe('parseSvgMarkup', () => {
   });
 
   it('UIC-SVG-MARKUP-1.3 caches trees by markup, keeping the most recently used', () => {
-    const first = parseSvgMarkup(PLUS);
-    expect(parseSvgMarkup(PLUS)).toBe(first);
+    const first = parseSvgMarkup(plusMarkup);
+    expect(parseSvgMarkup(plusMarkup)).toBe(first);
     for (let index = 0; index < 255; index += 1) parseSvgMarkup(`<svg data-index="${index}"/>`);
-    expect(parseSvgMarkup(PLUS)).toBe(first);
+    expect(parseSvgMarkup(plusMarkup)).toBe(first);
     const early = parseSvgMarkup('<svg data-index="0"/>');
     for (let index = 255; index < 600; index += 1) parseSvgMarkup(`<svg data-index="${index}"/>`);
     expect(parseSvgMarkup('<svg data-index="0"/>')).not.toBe(early);

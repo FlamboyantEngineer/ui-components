@@ -28,9 +28,17 @@ export interface ShortcutPlatformSource {
 /** Turns a canonical key name into the text read to assistive technology. */
 export type ShortcutKeyNamer = (key: string) => string;
 
+/** How a chord becomes readable words. */
+export interface ShortcutTextOptions {
+  /** The notation. Defaults to the detected platform. */
+  platform?: ShortcutPlatform | undefined;
+  /** Names each key. Defaults to the built-in English key names. */
+  keyName?: ShortcutKeyNamer | undefined;
+}
+
 type PhysicalModifier = Exclude<ShortcutModifier, 'primary'>;
 
-const ALIASES: Readonly<Record<string, ShortcutModifier>> = {
+const aliases: Readonly<Record<string, ShortcutModifier>> = {
   Ctrl: 'primary',
   Control: 'control',
   Alt: 'alt',
@@ -38,22 +46,46 @@ const ALIASES: Readonly<Record<string, ShortcutModifier>> = {
   Meta: 'meta',
   Cmd: 'meta',
 };
-const MODIFIER_PREFIX = /^(Ctrl|Control|Alt|Shift|Meta|Cmd)\s*\+\s*/;
-const ORDER: readonly PhysicalModifier[] = ['control', 'alt', 'shift', 'meta'];
-const MAC = /mac|iphone|ipad|ipod/i;
-const WINDOWS = /win/i;
+const modifierPrefix = /^(Ctrl|Control|Alt|Shift|Meta|Cmd)\s*\+\s*/;
+const modifierOrder: readonly PhysicalModifier[] = ['control', 'alt', 'shift', 'meta'];
+const macPlatform = /mac|iphone|ipad|ipod/i;
+const windowsPlatform = /win/i;
 
-const KEYCAPS: Readonly<Record<'mac' | 'other', Record<PhysicalModifier, string>>> = {
+const keycaps: Readonly<Record<'mac' | 'other', Record<PhysicalModifier, string>>> = {
   mac: { control: '⌃', alt: '⌥', shift: '⇧', meta: '⌘' },
   other: { control: 'Ctrl', alt: 'Alt', shift: 'Shift', meta: 'Meta' },
 };
-const SPOKEN: Readonly<Record<'mac' | 'other', Record<PhysicalModifier, string>>> = {
+const spokenModifiers: Readonly<Record<'mac' | 'other', Record<PhysicalModifier, string>>> = {
   mac: { control: 'Control', alt: 'Option', shift: 'Shift', meta: 'Command' },
   other: { control: 'Control', alt: 'Alt', shift: 'Shift', meta: 'Meta' },
 };
 
-function browserSource(): ShortcutPlatformSource | undefined {
+let detected: ShortcutPlatform | undefined;
+
+function getBrowserSource(): ShortcutPlatformSource | undefined {
   return typeof navigator === 'undefined' ? undefined : (navigator as ShortcutPlatformSource);
+}
+
+function parseChord(chord: ShortcutChord): { key: string; modifiers: readonly ShortcutModifier[] } {
+  if (typeof chord !== 'string') return { key: chord.key, modifiers: chord.modifiers ?? [] };
+  const modifiers: ShortcutModifier[] = [];
+  let key = chord.trim();
+  for (let match = modifierPrefix.exec(key); match; match = modifierPrefix.exec(key)) {
+    const alias = aliases[match[1] ?? ''];
+    if (alias) modifiers.push(alias);
+    key = key.slice(match[0].length);
+  }
+  return { key, modifiers };
+}
+
+function resolveChord(chord: ShortcutChord, platform: ShortcutPlatform) {
+  const { key, modifiers } = parseChord(chord);
+  const held = new Set<PhysicalModifier>(
+    modifiers.map((modifier) =>
+      modifier === 'primary' ? (platform === 'mac' ? 'meta' : 'control') : modifier,
+    ),
+  );
+  return { key, modifiers: modifierOrder.filter((modifier) => held.has(modifier)) };
 }
 
 /**
@@ -61,14 +93,12 @@ function browserSource(): ShortcutPlatformSource | undefined {
  * platform, then its legacy platform, then its user agent. Without a browser it reports `linux`.
  */
 export function detectShortcutPlatform(
-  source: ShortcutPlatformSource | undefined = browserSource(),
+  source: ShortcutPlatformSource | undefined = getBrowserSource(),
 ): ShortcutPlatform {
   const hint = source?.userAgentData?.platform || source?.platform || source?.userAgent || '';
-  if (MAC.test(hint)) return 'mac';
-  return WINDOWS.test(hint) ? 'windows' : 'linux';
+  if (macPlatform.test(hint)) return 'mac';
+  return windowsPlatform.test(hint) ? 'windows' : 'linux';
 }
-
-let detected: ShortcutPlatform | undefined;
 
 /** The current browser's platform, detected on first use and then reused. */
 export function getShortcutPlatform(): ShortcutPlatform {
@@ -76,30 +106,8 @@ export function getShortcutPlatform(): ShortcutPlatform {
   return detected;
 }
 
-function parse(chord: ShortcutChord): { key: string; modifiers: readonly ShortcutModifier[] } {
-  if (typeof chord !== 'string') return { key: chord.key, modifiers: chord.modifiers ?? [] };
-  const modifiers: ShortcutModifier[] = [];
-  let key = chord.trim();
-  for (let match = MODIFIER_PREFIX.exec(key); match; match = MODIFIER_PREFIX.exec(key)) {
-    const alias = ALIASES[match[1] ?? ''];
-    if (alias) modifiers.push(alias);
-    key = key.slice(match[0].length);
-  }
-  return { key, modifiers };
-}
-
-function resolve(chord: ShortcutChord, platform: ShortcutPlatform) {
-  const { key, modifiers } = parse(chord);
-  const held = new Set<PhysicalModifier>(
-    modifiers.map((modifier) =>
-      modifier === 'primary' ? (platform === 'mac' ? 'meta' : 'control') : modifier,
-    ),
-  );
-  return { key, modifiers: ORDER.filter((modifier) => held.has(modifier)) };
-}
-
 /** The separator drawn between keycaps: none on macOS, `+` elsewhere. */
-export function shortcutKeySeparator(platform: ShortcutPlatform): string {
+export function getShortcutKeySeparator(platform: ShortcutPlatform): string {
   return platform === 'mac' ? '' : '+';
 }
 
@@ -111,9 +119,9 @@ export function formatShortcutKeys(
   chord: ShortcutChord,
   platform: ShortcutPlatform = getShortcutPlatform(),
 ): string[] {
-  const { key, modifiers } = resolve(chord, platform);
+  const { key, modifiers } = resolveChord(chord, platform);
   if (!key) return [];
-  const names = KEYCAPS[platform === 'mac' ? 'mac' : 'other'];
+  const names = keycaps[platform === 'mac' ? 'mac' : 'other'];
   return [...modifiers.map((modifier) => names[modifier]), key];
 }
 
@@ -122,18 +130,20 @@ export function formatShortcut(
   chord: ShortcutChord,
   platform: ShortcutPlatform = getShortcutPlatform(),
 ): string {
-  return formatShortcutKeys(chord, platform).join(shortcutKeySeparator(platform));
+  return formatShortcutKeys(chord, platform).join(getShortcutKeySeparator(platform));
 }
 
 /** A chord as readable words, such as `Shift Command K`. */
 export function formatShortcutAccessibleText(
   chord: ShortcutChord,
-  platform: ShortcutPlatform = getShortcutPlatform(),
-  keyName: ShortcutKeyNamer = defaultStrings.shortcutKeyName,
+  {
+    platform = getShortcutPlatform(),
+    keyName = defaultStrings.shortcutKeyName,
+  }: ShortcutTextOptions = {},
 ): string {
-  const { key, modifiers } = resolve(chord, platform);
+  const { key, modifiers } = resolveChord(chord, platform);
   if (!key) return '';
-  const names = SPOKEN[platform === 'mac' ? 'mac' : 'other'];
+  const names = spokenModifiers[platform === 'mac' ? 'mac' : 'other'];
   return [...modifiers.map((modifier) => names[modifier]), key].map(keyName).join(' ');
 }
 
@@ -152,11 +162,10 @@ export function formatShortcutTooltip(
 export function formatShortcutDescription(
   description: string | undefined,
   chord: ShortcutChord | undefined,
-  platform: ShortcutPlatform = getShortcutPlatform(),
-  keyName: ShortcutKeyNamer = defaultStrings.shortcutKeyName,
+  options: ShortcutTextOptions = {},
 ): string | undefined {
   if (!chord) return description;
-  const text = [description, formatShortcutAccessibleText(chord, platform, keyName)]
+  const text = [description, formatShortcutAccessibleText(chord, options)]
     .filter(Boolean)
     .join('. ');
   return text || undefined;

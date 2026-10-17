@@ -21,6 +21,14 @@ export interface TextDiffExcerptOptions {
   run?: number | undefined;
 }
 
+function shorten(value: string, limit: number, keepEnd: boolean): string {
+  const characters = Array.from(value);
+  if (characters.length <= limit) return value;
+  return keepEnd
+    ? `…${characters.slice(-limit).join('')}`
+    : `${characters.slice(0, limit).join('')}…`;
+}
+
 /**
  * Splits two values around their one contiguous change: the longest common prefix and suffix are
  * kept, and the middle of each value is what was removed and added. Compares by code point.
@@ -44,14 +52,6 @@ export function splitTextDiff(before: string, after: string): TextDiffParts {
     added: right.slice(start, right.length - end).join(''),
     suffix: end > 0 ? right.slice(-end).join('') : '',
   };
-}
-
-function shorten(value: string, limit: number, keepEnd: boolean): string {
-  const characters = Array.from(value);
-  if (characters.length <= limit) return value;
-  return keepEnd
-    ? `…${characters.slice(-limit).join('')}`
-    : `${characters.slice(0, limit).join('')}…`;
 }
 
 /**

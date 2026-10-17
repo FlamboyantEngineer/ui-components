@@ -33,7 +33,7 @@ function resolveElement(target: ElementSizeTarget, parent: boolean): Element | n
   return (parent ? element?.parentElement : element) ?? null;
 }
 
-function sameSize(current: ElementSize | null, next: ElementSize): boolean {
+function isSameSize(current: ElementSize | null, next: ElementSize): boolean {
   return current !== null && current.width === next.width && current.height === next.height;
 }
 
@@ -71,7 +71,7 @@ export function useElementSize(
       return undefined;
     }
     const commit = (next: ElementSize) =>
-      setSize((current) => (sameSize(current, next) ? current : next));
+      setSize((current) => (isSameSize(current, next) ? current : next));
     let measured = false;
     let frame: number | null = null;
     let pending: ElementSize | null = null;
