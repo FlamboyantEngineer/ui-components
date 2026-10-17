@@ -49,6 +49,16 @@ export interface CommonStrings {
   zoomPresets: string;
   scrollBackward: string;
   scrollForward: string;
+  /** Names the menu button that holds the items of a row that do not fit. */
+  moreItems: (count: number) => string;
+  /** Names the button that adds a tab. */
+  addTab: string;
+  /** Names a collection's selected count (`3 selected`). */
+  selectedCount: (count: number) => string;
+  /** Clears a collection's selection. */
+  clearSelection: string;
+  /** Names a button that opens a menu of the places beside one, from its name. */
+  placesBeside: (name: string) => string;
   /** Names a button that removes a listed item, from the item's name. */
   removeItem: (name: string) => string;
   itemCount: (count: number) => string;
@@ -134,6 +144,11 @@ export const commonStrings: CommonStrings = {
   zoomPresets: 'Zoom presets',
   scrollBackward: 'Scroll backward',
   scrollForward: 'Scroll forward',
+  moreItems: (count) => (count === 1 ? '1 more item' : `${count} more items`),
+  addTab: 'Add tab',
+  selectedCount: (count) => `${count} selected`,
+  clearSelection: 'Clear selection',
+  placesBeside: (name) => `Places beside ${name}`,
   removeItem: (name) => `Remove ${name}`,
   itemCount: (count) => (count === 1 ? '1 item' : `${count} items`),
   unnamed: 'Unnamed',

@@ -174,4 +174,84 @@ test.describe('Tabs lab', () => {
     expect(page.url()).toBe(url);
     await lab.expectAccessible();
   });
+
+  test('UIC-TABS-2.6 keeps the tabs that fit and lists the others in a menu', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('tabs');
+    const frame = page.locator('[data-lab-overflow="menu"]');
+    const bar = frame.locator('.ui-tabs__bar');
+    await expect(bar).toHaveAttribute('data-overflow', 'menu');
+    const list = frame.getByRole('tablist', { name: 'Destinations with a menu' });
+    await expect(list).toHaveAttribute('data-overflowing', 'true');
+    const tabs = list.getByRole('tab');
+    const shown = await tabs.count();
+    expect(shown).toBeGreaterThan(0);
+    expect(shown).toBeLessThan(10);
+    const more = frame.getByRole('button', { name: `${10 - shown} more items` });
+    const barBox = await bar.boundingBox();
+    const moreBox = await more.boundingBox();
+    expect((moreBox?.x ?? 0) + (moreBox?.width ?? 0)).toBeLessThanOrEqual(
+      (barBox?.x ?? 0) + (barBox?.width ?? 0) + 0.5,
+    );
+    await more.click();
+    await page.getByRole('menuitem', { name: 'Lisbon trams' }).click();
+    const lisbon = list.getByRole('tab', { name: 'Lisbon trams' });
+    await expect(lisbon).toHaveAttribute('aria-selected', 'true');
+    await expect(frame.getByRole('tabpanel')).toHaveText('Notes on lisbon trams.');
+    await lisbon.focus();
+    await page.keyboard.press('Home');
+    await expect(list.getByRole('tab', { name: 'Amsterdam canals' })).toBeFocused();
+    await page.keyboard.press('ArrowLeft');
+    await expect(lisbon).toBeFocused();
+    await expect(lisbon).toHaveAttribute('aria-selected', 'true');
+    await lab.expectAccessible();
+  });
+
+  test('UIC-TABS-2.7 pages the list with scroll buttons that stay out of the tab order', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('tabs');
+    const frame = page.locator('[data-lab-overflow="buttons"]');
+    const back = frame.getByRole('button', { name: 'Scroll backward', includeHidden: true });
+    const forward = frame.getByRole('button', { name: 'Scroll forward' });
+    await expect(back).toBeHidden();
+    await expect(forward).toBeVisible();
+    const list = frame.getByRole('tablist');
+    await forward.click();
+    await expect.poll(() => list.evaluate((node) => node.scrollLeft)).toBeGreaterThan(0);
+    await expect(back).toBeVisible();
+    await frame.getByRole('tab', { selected: true }).focus();
+    await page.keyboard.press('Shift+Tab');
+    await expect(back).not.toBeFocused();
+    await lab.expectAccessible();
+  });
+
+  test('UIC-TABS-2.8 removes tabs by close mark or Delete and adds new ones', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('tabs');
+    const demo = page.locator('[data-lab-demo="editable"]');
+    const output = demo.locator('[data-lab-output="notes"]');
+    const recipes = demo.getByRole('tab', { name: 'Recipes' });
+    await expect(recipes).toHaveAttribute('aria-keyshortcuts', 'Delete');
+    await recipes.locator('.ui-tabs__remove').click();
+    await expect(output).toHaveText('Notes: Groceries, Travel');
+    const groceries = demo.getByRole('tab', { name: 'Groceries' });
+    await expect(groceries).toHaveAttribute('aria-selected', 'true');
+    await groceries.focus();
+    await page.keyboard.press('Delete');
+    await expect(output).toHaveText('Notes: Travel');
+    await expect(demo.getByRole('tab', { name: 'Travel' })).toBeFocused();
+    await demo.getByRole('button', { name: 'Add tab' }).click();
+    await expect(output).toHaveText('Notes: Travel, Note 2');
+    await expect(demo.getByRole('tab', { name: 'Note 2' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+    await lab.expectAccessible();
+  });
 });

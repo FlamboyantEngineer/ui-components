@@ -54,4 +54,24 @@ test.describe('Action Button lab', () => {
     }).toPass({ timeout: 20000 });
     await lab.expectAccessible();
   });
+
+  test('UIC-ACTION-BUTTON-1.7 shows the pending state only once the delay has passed', async ({
+    page,
+    lab,
+  }) => {
+    await page.clock.install();
+    await lab.open('action-button');
+    await page.clock.pauseAt(Date.now() + 1000);
+    const publish = page.locator('[data-lab-action="delayed"]');
+    await publish.focus();
+    await page.keyboard.press('Enter');
+    await expect(publish).not.toHaveAttribute('data-pending');
+    await page.clock.runFor(999);
+    await expect(publish).not.toHaveAttribute('data-pending');
+    await page.clock.runFor(1);
+    await expect(publish).toHaveAttribute('data-pending', 'true');
+    await page.locator('[data-lab-action="release"]').click();
+    await expect(publish).not.toHaveAttribute('data-pending');
+    await page.clock.resume();
+  });
 });

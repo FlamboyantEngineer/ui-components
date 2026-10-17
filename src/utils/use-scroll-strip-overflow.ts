@@ -21,6 +21,9 @@ export interface ScrollStripState {
   syncOverflow: () => void;
 }
 
+/** Fraction of the visible width a page scroll moves a strip. */
+const pageFraction = 0.8;
+
 // Popups opened inside a strip scroll themselves, so their wheel input is left alone.
 const popupSelector = '[role="menu"], [role="listbox"], [role="dialog"]';
 const wheelLineHeight = 16;
@@ -88,6 +91,30 @@ function useWheelScrolling(
     strip.addEventListener('wheel', onWheel, { capture: true, passive: false });
     return () => strip.removeEventListener('wheel', onWheel, { capture: true });
   }, [horizontal, stripRef]);
+}
+
+/**
+ * Scrolls a strip to a physical `scrollLeft`. `auto` follows the stylesheet's `scroll-behavior`;
+ * `instant` skips any smooth scrolling, for focus that must land at once.
+ */
+export function scrollStripTo(strip: HTMLElement, left: number, behavior: ScrollBehavior): void {
+  if (typeof strip.scrollTo === 'function') strip.scrollTo({ left, behavior });
+  else strip.scrollLeft = left;
+}
+
+/**
+ * Scrolls a horizontal strip by most of its visible width toward its `start` or `end` edge, as a
+ * scroll button does. Right-to-left strips (`rtl`, from the locale) scroll with negative offsets.
+ */
+export function scrollStripPage(
+  strip: HTMLElement,
+  { edge, rtl }: { edge: 'start' | 'end'; rtl: boolean },
+): void {
+  const step = Math.max(1, strip.clientWidth * pageFraction);
+  const range = Math.max(0, strip.scrollWidth - strip.clientWidth);
+  const position = Math.abs(strip.scrollLeft) + (edge === 'end' ? step : -step);
+  const next = Math.min(range, Math.max(0, position));
+  scrollStripTo(strip, rtl ? -next : next, 'auto');
 }
 
 /**

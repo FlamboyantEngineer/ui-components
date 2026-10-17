@@ -93,4 +93,60 @@ test.describe('Action Row lab', () => {
       await lab.expectAccessible();
     });
   }
+
+  test('UIC-ACTION-ROW-2.4 UIC-ACTION-ROW-2.5 is one toolbar that moves hidden actions into a menu', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('action-row');
+    const wide = page.getByRole('toolbar', { name: 'File actions, wide' });
+    await expect(wide.locator('.ui-action-row__action')).toHaveCount(5);
+    await expect(wide.locator('.ui-action-row__overflow')).toHaveCount(0);
+    const narrow = page.getByRole('toolbar', { name: 'File actions, narrow' });
+    const kept = await narrow.locator('.ui-action-row__action').count();
+    expect(kept).toBeLessThan(5);
+    const more = narrow.getByRole('button', { name: `${5 - kept} more items` });
+    await expect(more).toBeVisible();
+    const box = await narrow.boundingBox();
+    const moreBox = await more.boundingBox();
+    expect((moreBox?.x ?? 0) + (moreBox?.width ?? 0)).toBeLessThanOrEqual(
+      (box?.x ?? 0) + (box?.width ?? 0) + 0.5,
+    );
+
+    await wide.locator('.ui-action-row__action').first().focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(wide.getByRole('button', { name: 'Add note' })).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(wide.getByRole('button', { name: 'Add note' })).not.toBeFocused();
+
+    await narrow.locator('.ui-action-row__action').first().focus();
+    for (let step = 0; step < kept; step += 1) await page.keyboard.press('ArrowRight');
+    await expect(more).toBeFocused();
+    await page.keyboard.press('Enter');
+    await page.getByRole('menuitem', { name: 'Delete' }).click();
+    await expect(page.locator('[data-lab-row="narrow"] [data-lab-output="last"]')).toHaveText(
+      'delete',
+    );
+    await lab.expectAccessible();
+  });
+
+  test('UIC-ACTION-ROW-3.1 shows the selection count and clears it', async ({ page, lab }) => {
+    await lab.open('action-row');
+    const demo = page.locator('[data-lab-case="selection"]');
+    const status = demo.getByRole('status');
+    await expect(status).toHaveText('2 selected');
+    await demo.getByLabel('Banana').check();
+    await expect(status).toHaveText('3 selected');
+    await demo.getByRole('button', { name: 'Edit selected' }).focus();
+    // The first Escape may close the focused action's tooltip; the next reaches the row.
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('Escape');
+    await expect(demo.locator('.ui-action-row')).toHaveCount(0);
+    await demo.getByLabel('Apple').check();
+    await expect(status).toHaveText('1 selected');
+    await demo.getByRole('button', { name: 'Clear selection' }).click();
+    await expect(demo.locator('.ui-action-row')).toHaveCount(0);
+    await demo.getByLabel('Cherry').check();
+    await lab.expectAccessible();
+  });
 });

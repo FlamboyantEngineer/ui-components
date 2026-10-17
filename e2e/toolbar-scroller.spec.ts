@@ -118,4 +118,37 @@ test.describe('Toolbar Scroller lab', () => {
     await expect(tools.last()).toBeFocused();
     await lab.expectAccessible();
   });
+
+  test('UIC-TOOLBAR-SCROLLER-3.2 keeps high-priority tools and lists the rest in a menu', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('toolbar-scroller');
+    const toolbar = (width: string) => page.getByRole('toolbar', { name: `Editing, ${width}` });
+    await expect(toolbar('wide').locator('.ui-toolbar-scroller__item')).toHaveCount(9);
+    await expect(toolbar('wide').locator('.ui-toolbar-scroller__overflow')).toHaveCount(0);
+    const narrow = toolbar('narrow');
+    const kept = await narrow.locator('.ui-toolbar-scroller__item').allTextContents();
+    expect(kept.length).toBeLessThan(9);
+    expect(kept).toContain('Save');
+    await expect(narrow.locator(':scope > :last-child')).toHaveClass(
+      /ui-toolbar-scroller__overflow/,
+    );
+    const box = await narrow.boundingBox();
+    const more = narrow.getByRole('button', { name: `${9 - kept.length} more items` });
+    const moreBox = await more.boundingBox();
+    expect((moreBox?.x ?? 0) + (moreBox?.width ?? 0)).toBeLessThanOrEqual(
+      (box?.x ?? 0) + (box?.width ?? 0) + 0.5,
+    );
+    await narrow.getByRole('button', { name: kept[0] }).focus();
+    for (let step = 1; step < kept.length; step += 1) await page.keyboard.press('ArrowRight');
+    await page.keyboard.press('ArrowRight');
+    await expect(more).toBeFocused();
+    await page.keyboard.press('Enter');
+    await page.getByRole('menuitem', { name: 'Code' }).click();
+    await expect(page.locator('[data-lab-menu="narrow"] [data-lab-output="last"]')).toHaveText(
+      'Last tool: Code',
+    );
+    await lab.expectAccessible();
+  });
 });

@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Tab, TabList, TabPanel, Tabs } from '../../src/components/tabs/tabs.js';
+import type { Key } from 'react-aria-components';
+import { Tab, TabList, TabPanel, Tabs, type TabListProps } from '../../src/components/tabs/tabs.js';
 import { UiProvider } from '../../src/core/provider.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
@@ -89,6 +90,61 @@ function LinkTabs() {
   );
 }
 
+function CityTabs({ label, ...list }: { label: string } & Partial<TabListProps<object>>) {
+  return (
+    <Tabs>
+      <TabList aria-label={label} {...list}>
+        {cities.map((city) => (
+          <Tab key={city} id={city}>
+            {city}
+          </Tab>
+        ))}
+      </TabList>
+      {cities.map((city) => (
+        <TabPanel key={city} id={city}>
+          Notes on {city.toLowerCase()}.
+        </TabPanel>
+      ))}
+    </Tabs>
+  );
+}
+
+function EditableTabs() {
+  const [notes, setNotes] = useState(['Groceries', 'Recipes', 'Travel']);
+  const [selected, setSelected] = useState<Key>('Groceries');
+  return (
+    <div data-lab-demo="editable" style={{ width: 420 }}>
+      <Tabs selectedKey={selected} onSelectionChange={setSelected}>
+        <TabList
+          aria-label="Notes"
+          onRemove={(keys) => {
+            const remaining = notes.filter((note) => !keys.has(note));
+            setNotes(remaining);
+            if (keys.has(selected) && remaining[0]) setSelected(remaining[0]);
+          }}
+          onAdd={() => {
+            const name = `Note ${notes.length + 1}`;
+            setNotes([...notes, name]);
+            setSelected(name);
+          }}
+        >
+          {notes.map((note) => (
+            <Tab key={note} id={note}>
+              {note}
+            </Tab>
+          ))}
+        </TabList>
+        {notes.map((note) => (
+          <TabPanel key={note} id={note}>
+            The {note.toLowerCase()} note.
+          </TabPanel>
+        ))}
+      </Tabs>
+      <p data-lab-output="notes">Notes: {notes.join(', ')}</p>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection title="Orientation and sizes">
@@ -131,21 +187,30 @@ mountLab(
       description="Ten long tabs in a 360px column. Selecting a tab scrolls it toward the middle of the strip."
     >
       <div data-lab-overflow="" style={{ width: 360 }}>
-        <Tabs>
-          <TabList aria-label="Cities">
-            {cities.map((city) => (
-              <Tab key={city} id={city}>
-                {city}
-              </Tab>
-            ))}
-          </TabList>
-          {cities.map((city) => (
-            <TabPanel key={city} id={city}>
-              Notes on {city.toLowerCase()}.
-            </TabPanel>
-          ))}
-        </Tabs>
+        <CityTabs label="Cities" />
       </div>
+    </LabSection>
+    <LabSection
+      title="Overflow menu"
+      description="The same tabs with overflow menu: the selected tab and as many others as fit stay, and a menu after the list holds the rest."
+    >
+      <div data-lab-overflow="menu" style={{ width: 360 }}>
+        <CityTabs label="Destinations with a menu" overflow="menu" />
+      </div>
+    </LabSection>
+    <LabSection
+      title="Scroll buttons"
+      description="Previous and next buttons appear at an edge that hides tabs and page the list."
+    >
+      <div data-lab-overflow="buttons" style={{ width: 360 }}>
+        <CityTabs label="Destinations with scroll buttons" scrollButtons />
+      </div>
+    </LabSection>
+    <LabSection
+      title="Removable and added tabs"
+      description="Press a tab's close mark, or Delete on a focused tab, to remove it; the add button appends one."
+    >
+      <EditableTabs />
     </LabSection>
     <LabSection
       title="Links"

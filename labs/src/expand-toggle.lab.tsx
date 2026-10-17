@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import { Disclosure, DisclosurePanel } from 'react-aria-components';
 import { ExpandToggle } from '../../src/components/expand-toggle/expand-toggle.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const sizes = ['xs', 'sm', 'md', 'lg'] as const;
-const states = ['collapsed', 'expanded', 'disabled', 'leaf'] as const;
+const states = ['collapsed', 'expanded', 'disabled', 'leaf', 'pending'] as const;
 
 interface FruitNode {
   name: string;
@@ -68,6 +69,48 @@ function FruitTree() {
   );
 }
 
+function LazyRow() {
+  const [children, setChildren] = useState<string[] | null>(null);
+  const [isPending, setPending] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const finish = useRef<(() => void) | null>(null);
+  return (
+    <div data-lab-case="lazy">
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+        <ExpandToggle
+          isExpanded={expanded}
+          isPending={isPending}
+          pendingLabel="Loading stone fruit"
+          aria-controls="lazy-children"
+          onExpandedChange={(next) => {
+            if (!next || children) {
+              setExpanded(next);
+              return;
+            }
+            setPending(true);
+            finish.current = () => {
+              setChildren(['Cherry', 'Peach', 'Plum']);
+              setPending(false);
+              setExpanded(true);
+            };
+          }}
+        />
+        <span>Stone fruit</span>{' '}
+        <button type="button" data-lab-action="finish" onClick={() => finish.current?.()}>
+          Finish loading
+        </button>
+      </div>
+      {expanded && children ? (
+        <ul id="lazy-children">
+          {children.map((child) => (
+            <li key={child}>{child}</li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection title="Sizes and states" description="A leaf keeps an empty box of the same size.">
@@ -79,6 +122,7 @@ mountLab(
             defaultExpanded={state === 'expanded'}
             isDisabled={state === 'disabled'}
             isExpandable={state !== 'leaf'}
+            isPending={state === 'pending'}
           />
         )}
       />
@@ -88,6 +132,26 @@ mountLab(
       description="Clicking a row's label counts as opening it; its toggle expands it without opening it. Leaves stay aligned with their siblings."
     >
       <FruitTree />
+    </LabSection>
+    <LabSection
+      title="Disclosure"
+      description="Inside a React Aria Disclosure the toggle is its trigger: React Aria wires its expanded state and aria-controls to the panel."
+    >
+      <div data-lab-case="disclosure">
+        <Disclosure>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <ExpandToggle label="Citrus details" />
+            <span>Citrus</span>
+          </div>
+          <DisclosurePanel>Lemon, orange and lime grow in warm climates.</DisclosurePanel>
+        </Disclosure>
+      </div>
+    </LabSection>
+    <LabSection
+      title="Loading children"
+      description="Expanding a row whose children are not loaded yet shows a busy indicator in the toggle until they arrive."
+    >
+      <LazyRow />
     </LabSection>
   </>,
 );

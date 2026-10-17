@@ -59,7 +59,9 @@ describe('Breadcrumb', () => {
     const items = within(list).getAllByRole('listitem');
     expect(items.map((item) => item.textContent)).toEqual(['Home', 'Recipes', 'Lemon tart']);
     for (const item of items) expect(item).toHaveClass('ui-breadcrumb__item');
-    expectHooksMatchSpec(container, 'BREADCRUMB', { slots: 'all' });
+    expectHooksMatchSpec(container, 'BREADCRUMB', {
+      slots: ['list', 'item', 'link', 'label', 'separator'],
+    });
   });
 
   it('UIC-BREADCRUMB-1.2 marks the last crumb current, as unfocusable text', async () => {
@@ -308,5 +310,114 @@ describe('Breadcrumb', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  it('UIC-BREADCRUMB-1.7 UIC-OVERFLOW-LIST-1.7 collapses middle crumbs into a menu after the first crumb', async () => {
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      const width = this.tagName === 'LI' ? (this.textContent ?? '').length * 10 : 0;
+      return new DOMRect(0, 0, width, 24);
+    });
+    vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      return this.tagName === 'OL' ? 250 : 0;
+    });
+    const navigate = vi.fn();
+    const onAction = vi.fn();
+    const long: BreadcrumbItem[] = [
+      { id: 'home', label: 'Home', href: '/home' },
+      { id: 'recipes', label: 'Recipes', href: '/recipes' },
+      { id: 'desserts', label: <em>Desserts</em>, textValue: 'Desserts', href: '/desserts' },
+      { id: 'tarts', label: 'Tarts', href: '/tarts' },
+      { id: 'lemon', label: 'Lemon tart' },
+    ];
+    try {
+      const { container } = render(
+        <UiProvider navigate={navigate}>
+          <Breadcrumb items={long} overflow="menu" onAction={onAction} />
+        </UiProvider>,
+      );
+      // React Aria fills the trail's collection one render later; the row measures it then.
+      await act(async () => {
+        await Promise.resolve();
+      });
+      const nav = screen.getByRole('navigation');
+      expect(nav).toHaveAttribute('data-overflow', 'menu');
+      const items = within(nav).getAllByRole('listitem');
+      // Home and the current crumb stay; Tarts (50) fits from the end; the rest are hidden.
+      expect(items.map((item) => item.textContent)).toEqual(['Home', '', 'Tarts', 'Lemon tart']);
+      expect(items[1]).toHaveClass('ui-breadcrumb__item', 'ui-breadcrumb__overflow');
+      expect(crumb('Lemon tart')).toHaveAttribute('aria-current', 'page');
+      expectHooksMatchSpec(container, 'BREADCRUMB', {
+        slots: ['list', 'item', 'link', 'label', 'overflow', 'separator'],
+      });
+
+      await userEvent.click(within(nav).getByRole('button', { name: '2 more items' }));
+      const menu = screen.getByRole('menu');
+      expect(
+        within(menu)
+          .getAllByRole('menuitem')
+          .map((item) => item.textContent),
+      ).toEqual(['Recipes', 'Desserts']);
+      await userEvent.click(within(menu).getByRole('menuitem', { name: 'Desserts' }));
+      expect(onAction).toHaveBeenCalledWith('desserts');
+      expect(navigate.mock.calls[0]?.[0]).toBe('/desserts');
+    } finally {
+      vi.restoreAllMocks();
+    }
+  });
+
+  it('UIC-BREADCRUMB-1.7 keeps every crumb of a trail that fits, or of a short trail', () => {
+    const { rerender } = render(<Breadcrumb items={trail} overflow="menu" />);
+    expect(screen.getAllByRole('listitem')).toHaveLength(3);
+    expect(screen.queryByRole('button')).toBeNull();
+    rerender(<Breadcrumb items={trail.slice(1)} overflow="menu" />);
+    expect(screen.getAllByRole('listitem')).toHaveLength(2);
+  });
+
+  it('UIC-BREADCRUMB-1.8 offers the places beside a crumb in a menu after its link', async () => {
+    const onSibling = vi.fn();
+    const { container } = render(
+      <Breadcrumb
+        items={[
+          trail[0] as BreadcrumbItem,
+          {
+            label: 'Recipes',
+            href: '/recipes',
+            menu: [
+              { id: 'drinks', label: 'Drinks', onAction: onSibling },
+              { id: 'menus', label: 'Menus' },
+            ],
+          },
+          trail[2] as BreadcrumbItem,
+        ]}
+      />,
+    );
+    const button = screen.getByRole('button', { name: 'Places beside Recipes' });
+    expect(button).toHaveClass('ui-breadcrumb__menu');
+    expect(button.closest('li')).toBe(crumb('Recipes').closest('li'));
+    expectHooksMatchSpec(container, 'BREADCRUMB', {
+      slots: ['list', 'item', 'link', 'label', 'menu', 'separator'],
+    });
+    expect(await press(crumb('Home'), '{ArrowRight}')).toBe('Recipes');
+    await userEvent.click(button);
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Drinks' }));
+    expect(onSibling).toHaveBeenCalledTimes(1);
+  });
+
+  it('UIC-BREADCRUMB-2.3 disables the menus of a disabled trail', () => {
+    render(
+      <Breadcrumb
+        isDisabled
+        items={[
+          trail[0] as BreadcrumbItem,
+          { label: 'Recipes', href: '/recipes', menu: [{ id: 'drinks', label: 'Drinks' }] },
+          trail[2] as BreadcrumbItem,
+        ]}
+      />,
+    );
+    expect(screen.getByRole('button', { name: 'Places beside Recipes' })).toBeDisabled();
   });
 });

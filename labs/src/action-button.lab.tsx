@@ -51,6 +51,28 @@ function Counter() {
   );
 }
 
+function DelayedPending() {
+  const release = useRef<(() => void) | null>(null);
+  return (
+    <div>
+      <ActionButton
+        pendingDelay={1000}
+        data-lab-action="delayed"
+        onPress={() =>
+          new Promise<void>((resolve) => {
+            release.current = resolve;
+          })
+        }
+      >
+        Publish
+      </ActionButton>{' '}
+      <Button data-lab-action="release" onPress={() => release.current?.()}>
+        Finish publishing
+      </Button>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -58,6 +80,12 @@ mountLab(
       description="Each action stays pending until you finish or fail it; repeated presses are refused."
     >
       <Counter />
+    </LabSection>
+    <LabSection
+      title="Pending delay"
+      description="With pendingDelay={1000} the spinner appears only once the action has run for a second, so a quick action never flashes it."
+    >
+      <DelayedPending />
     </LabSection>
     <LabSection title="States">
       <StateMatrix

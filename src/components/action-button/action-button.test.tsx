@@ -141,4 +141,62 @@ describe('ActionButton', () => {
     await act(async () => task.resolve());
     expect(button).not.toHaveAttribute('data-pending');
   });
+
+  it('UIC-ACTION-BUTTON-1.7 shows the pending state only after the pending delay', async () => {
+    vi.useFakeTimers();
+    try {
+      const task = deferred();
+      const onPress = vi.fn(() => task.promise);
+      render(
+        <ActionButton pendingDelay={400} onPress={onPress}>
+          Save
+        </ActionButton>,
+      );
+      const button = screen.getByRole('button', { name: 'Save' });
+      act(() => button.click());
+      expect(onPress).toHaveBeenCalledTimes(1);
+      expect(button).not.toHaveAttribute('data-pending');
+      expect(button).not.toHaveAttribute('aria-disabled');
+      act(() => button.click());
+      expect(onPress).toHaveBeenCalledTimes(1);
+      await act(async () => {
+        vi.advanceTimersByTime(400);
+      });
+      expect(button).toHaveAttribute('data-pending', 'true');
+      await act(async () => {
+        task.resolve();
+        await task.promise;
+      });
+      expect(button).not.toHaveAttribute('data-pending');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('UIC-ACTION-BUTTON-1.7 never shows a pending state for an action faster than the delay', async () => {
+    vi.useFakeTimers();
+    try {
+      const { rerender } = render(
+        <ActionButton pendingDelay={400} isPending>
+          Apply
+        </ActionButton>,
+      );
+      const controlled = screen.getByRole('button', { name: 'Apply' });
+      await act(async () => {
+        vi.advanceTimersByTime(200);
+      });
+      expect(controlled).not.toHaveAttribute('data-pending');
+      rerender(
+        <ActionButton pendingDelay={400} isPending={false}>
+          Apply
+        </ActionButton>,
+      );
+      await act(async () => {
+        vi.advanceTimersByTime(400);
+      });
+      expect(controlled).not.toHaveAttribute('data-pending');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });

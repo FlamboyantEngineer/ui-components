@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { Button, type ButtonVariant } from '../../src/components/button/button.js';
+import { mergeProps } from '../../src/utils/merge-props.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const variants: ButtonVariant[] = [
@@ -15,6 +17,21 @@ const variants: ButtonVariant[] = [
 const sizes = ['xs', 'sm', 'md', 'lg'] as const;
 const states = ['default', 'selected', 'disabled', 'focusable disabled', 'pending'] as const;
 const hints = ['tooltip', 'shortcut', 'tooltip and shortcut'] as const;
+
+function Toggles() {
+  const [pinned, setPinned] = useState(false);
+  return (
+    <div data-lab-demo="toggles">
+      <Button startIcon="eye" defaultSelected>
+        Show grid
+      </Button>{' '}
+      <Button isSelected={pinned} onChange={setPinned}>
+        Pin panel
+      </Button>
+      <p data-lab-output="pinned">Pinned: {pinned ? 'yes' : 'no'}</p>
+    </div>
+  );
+}
 
 mountLab(
   <>
@@ -107,6 +124,41 @@ mountLab(
           </div>
         )}
       />
+    </LabSection>
+    <LabSection
+      title="Links"
+      description="With href the button is a link drawn through the provider's link renderer, with the same hooks. A disabled link is text."
+    >
+      <StateMatrix
+        axes={{ variant: ['primary', 'secondary', 'link'], link: ['enabled', 'disabled'] }}
+        render={({ variant, link }) => (
+          <Button
+            href="#reports"
+            variant={variant}
+            endIcon="chevron-right"
+            isDisabled={link === 'disabled'}
+          >
+            Open reports
+          </Button>
+        )}
+      />
+    </LabSection>
+    <LabSection
+      title="Toggles"
+      description="A button with defaultSelected keeps its own pressed state; one with isSelected and onChange leaves it to its caller."
+    >
+      <Toggles />
+    </LabSection>
+    <LabSection
+      title="Swapped element"
+      description="The render prop replaces the button element; the caller's element keeps every hook."
+    >
+      <Button
+        variant="primary"
+        render={(props) => <button {...mergeProps(props, { 'data-lab-swapped': '' })} />}
+      >
+        Swapped
+      </Button>
     </LabSection>
   </>,
 );

@@ -62,4 +62,36 @@ test.describe('Icon Button lab', () => {
       ).toBeVisible();
     });
   }
+
+  test('UIC-ICON-BUTTON-1.7 names the button with a tooltip that repeats its label', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('icon-button');
+    const demo = page.locator('[data-lab-demo="tooltip-name"]');
+    const rename = demo.getByRole('button', { name: 'Rename' });
+    const remove = demo.getByRole('button', { name: 'Delete' });
+    await remove.focus();
+    await page.keyboard.press('Shift+Tab');
+    await expect(rename).toBeFocused();
+    await expect(page.getByRole('tooltip')).toHaveText('Rename');
+    await expect(rename).not.toHaveAttribute('aria-describedby');
+    await page.keyboard.press('Tab');
+    await expect(page.getByRole('tooltip')).toHaveText('Delete the selected rows');
+    await expect(remove).toHaveAccessibleDescription('Delete the selected rows');
+    await lab.expectAccessible();
+  });
+
+  test('UIC-ICON-BUTTON-1.8 toggles its state and renders an icon link', async ({ page, lab }) => {
+    await lab.open('icon-button');
+    const demo = page.locator('[data-lab-demo="toggle-link"]');
+    const toggle = demo.getByRole('button', { name: 'Show hidden files' });
+    await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+    await expect(toggle).toHaveAttribute('data-selected', 'true');
+    const link = demo.getByRole('link', { name: 'Open help' });
+    await expect(link).toHaveAttribute('href', '#help');
+    await expect(link).toHaveClass(/ui-icon-button/);
+  });
 });

@@ -1,7 +1,10 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { IconButton } from '../../src/components/icon-button/icon-button.js';
-import { ToolbarScroller } from '../../src/components/toolbar-scroller/toolbar-scroller.js';
+import {
+  ToolbarScroller,
+  type ToolbarScrollerItem,
+} from '../../src/components/toolbar-scroller/toolbar-scroller.js';
 import { UiProvider } from '../../src/core/provider.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
@@ -47,6 +50,30 @@ function Scrolled({ to, children }: { to: 'start' | 'middle' | 'end'; children: 
 }
 
 const positions = ['fits', 'start', 'middle', 'end'] as const;
+const menuWidths = { wide: 640, medium: 360, narrow: 200 } as const;
+
+function MenuTools({ width }: { width: keyof typeof menuWidths }) {
+  const [last, setLast] = useState('none');
+  const tools: ToolbarScrollerItem[] = [
+    ...manyTools.map((name) => ({ id: name, label: name, onAction: () => setLast(name) })),
+    { id: 'save', label: 'Save', icon: 'save', priority: 1, onAction: () => setLast('Save') },
+  ];
+  return (
+    <div style={{ width: menuWidths[width] }} data-lab-menu={width}>
+      <ToolbarScroller
+        aria-label={`Editing, ${width}`}
+        overflow="menu"
+        items={tools}
+        renderItem={(tool) => (
+          <Button variant="ghost" size="sm" onPress={() => setLast(tool.label)}>
+            {tool.label}
+          </Button>
+        )}
+      />
+      <p data-lab-output="last">Last tool: {last}</p>
+    </div>
+  );
+}
 
 mountLab(
   <>
@@ -81,6 +108,15 @@ mountLab(
           <Tools names={[...manyTools, 'Subscript', 'Superscript', 'Clear']} />
         </ToolbarScroller>
       </div>
+    </LabSection>
+    <LabSection
+      title="Overflow menu"
+      description="With overflow menu the tools that do not fit move into a menu at the end of the toolbar; Save has a higher priority and stays."
+    >
+      <StateMatrix
+        axes={{ width: ['wide', 'medium', 'narrow'] }}
+        render={({ width }) => <MenuTools width={width} />}
+      />
     </LabSection>
   </>,
 );
