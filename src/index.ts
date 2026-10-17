@@ -12,3 +12,6 @@ export * from './components/portal/index.js';
 export * from './components/projection/index.js';
 export * from './components/svg-markup/index.js';
 export * from './utils/index.js';
+export * from './components/button/index.js';
+export * from './components/icon-button/index.js';
+export * from './components/action-button/index.js';
