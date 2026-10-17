@@ -19,7 +19,9 @@ const sampleArguments: Partial<Record<keyof UiStrings, readonly unknown[]>> = {
   filterLabel: ['Page Settings'],
   noPropertyMatches: ['zinc'],
   boxSide: ['top'],
+  invalidJsonAt: [3, 5],
 };
+
 const stringNames = Object.keys(defaultStrings) as Array<keyof UiStrings>;
 
 function SquareGlyph(props: GlyphComponentProps) {

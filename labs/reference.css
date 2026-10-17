@@ -19,6 +19,7 @@
 @import url('reference/card.css');
 @import url('reference/checkbox.css');
 @import url('reference/circular-progress.css');
+@import url('reference/code-editor.css');
 @import url('reference/color-field.css');
 @import url('reference/color-swatch.css');
 @import url('reference/combobox.css');
@@ -30,6 +31,8 @@
 @import url('reference/empty-state.css');
 @import url('reference/expand-toggle.css');
 @import url('reference/field.css');
+@import url('reference/file-upload.css');
+@import url('reference/folder-manager.css');
 @import url('reference/four-side-property-strip.css');
 @import url('reference/icon.css');
 @import url('reference/icon-button.css');
@@ -37,6 +40,7 @@
 @import url('reference/icon-select-field.css');
 @import url('reference/inline-error.css');
 @import url('reference/inline-text-diff.css');
+@import url('reference/json-editor.css');
 @import url('reference/layout.css');
 @import url('reference/list-row.css');
 @import url('reference/load-more.css');

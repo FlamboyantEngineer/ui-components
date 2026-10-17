@@ -2,6 +2,7 @@ import {
   ArrowDownIcon,
   ArrowPathIcon,
   ArrowUpIcon,
+  ArrowUpTrayIcon,
   ArrowUturnLeftIcon,
   ArrowUturnRightIcon,
   ArrowsPointingInIcon,
@@ -21,6 +22,7 @@ import {
   EllipsisVerticalIcon,
   ExclamationCircleIcon,
   ExclamationTriangleIcon,
+  FolderIcon,
   InformationCircleIcon,
   MagnifyingGlassIcon,
   MinusIcon,
@@ -84,6 +86,8 @@ export const defaultGlyphs = {
   delete: TrashIcon,
   calendar: CalendarIcon,
   'drag-handle': Bars2Icon,
+  upload: ArrowUpTrayIcon,
+  folder: FolderIcon,
 } satisfies Record<string, GlyphComponent>;
 
 export const glyphNames = Object.keys(defaultGlyphs) as GlyphName[];
