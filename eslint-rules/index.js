@@ -217,11 +217,50 @@ const hookClassNames = {
   },
 };
 
+const COMPONENT_FILE = /\/src\/components\/([^/]+)\//;
+const SIBLING_COMPONENT_IMPORT = /^\.\.\/([^/]+)\/([^/]+)\.js$/;
+
+const componentImports = {
+  meta: {
+    type: 'problem',
+    docs: { description: 'Import another component through its main module, not its helpers.' },
+    messages: {
+      helperImport:
+        "Import '{{component}}' through its main module '../{{component}}/{{component}}.js', not '{{source}}'.",
+    },
+    schema: [],
+  },
+  create(context) {
+    const own = context.filename.match(COMPONENT_FILE)?.[1];
+    if (!own) return {};
+    function check(node, source) {
+      const match = typeof source === 'string' ? source.match(SIBLING_COMPONENT_IMPORT) : null;
+      if (!match) return;
+      const [, component, module] = match;
+      if (component !== own && module !== component) {
+        context.report({ node, messageId: 'helperImport', data: { component, source } });
+      }
+    }
+    return {
+      ImportDeclaration(node) {
+        check(node, node.source.value);
+      },
+      ExportNamedDeclaration(node) {
+        if (node.source) check(node, node.source.value);
+      },
+      ExportAllDeclaration(node) {
+        check(node, node.source.value);
+      },
+    };
+  },
+};
+
 export default {
   meta: { name: 'ui-local' },
   rules: {
     'no-css-import': noCssImport,
     'no-static-inline-style': noStaticInlineStyle,
     'hook-class-names': hookClassNames,
+    'component-imports': componentImports,
   },
 };

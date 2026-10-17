@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import type { GlyphComponentProps } from '../../core/glyphs.js';
-import { Icon } from './icon.js';
+import { Icon, isGlyphName, toIconProps } from './icon.js';
 
 describe('Icon', () => {
   it('UIC-ICON-1.1 draws a built-in glyph in the glyph slot', () => {
@@ -32,6 +32,14 @@ describe('Icon', () => {
       </UiProvider>,
     );
     expect(screen.getByTestId('dot')).toHaveClass('ui-icon__glyph');
+  });
+
+  it('UIC-ICON-1.1 turns an icon source into Icon props', () => {
+    const node = <svg />;
+    expect(isGlyphName('close')).toBe(true);
+    expect(isGlyphName(node)).toBe(false);
+    expect(toIconProps('close')).toEqual({ glyph: 'close' });
+    expect(toIconProps(node)).toEqual({ children: node });
   });
 
   it('UIC-ICON-1.2 publishes the size, medium by default', () => {
