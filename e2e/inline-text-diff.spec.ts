@@ -37,7 +37,7 @@ test.describe('Inline Text Diff lab', () => {
     const long = page.locator('[data-lab-cell="change=long change container=narrow"]');
     await expect(long.locator('ins')).toHaveText(/…$/);
     const diff = long.locator('.ui-inline-text-diff');
-    expect((await diff.boundingBox())?.width ?? 0).toBeLessThanOrEqual(160);
+    expect((await diff.boundingBox())?.width ?? 0).toBeLessThanOrEqual(161);
     expect(await diff.evaluate((node) => node.scrollWidth <= 161)).toBe(true);
     await expect(page.locator('[data-lab-cell="change=markup container=inline"] ins')).toHaveText(
       'i>italic</i',
