@@ -1,0 +1,16 @@
+/* Path */
+
+.ui-path {
+  display: inline-block;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  direction: rtl;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+
+.ui-path__text {
+  unicode-bidi: isolate;
+}

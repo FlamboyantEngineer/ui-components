@@ -1,0 +1,44 @@
+/* Action Row */
+
+.ui-action-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.ui-action-row__lead {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--ref-muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-action-row__actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 2px;
+  margin-inline-start: auto;
+}
+
+.ui-action-row[data-size='lg'] .ui-action-row__actions {
+  gap: 4px;
+}
+
+.ui-action-row__action {
+  flex: none;
+}
+
+.ui-action-row__tooltip {
+  max-width: 240px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: var(--ref-text);
+  box-shadow: var(--ref-shadow);
+  color: var(--ref-canvas);
+  font-size: 12px;
+  line-height: 1.4;
+}

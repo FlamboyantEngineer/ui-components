@@ -23,6 +23,20 @@ export interface UiStrings {
   resize: string;
   scrollVertically: string;
   scrollHorizontally: string;
+  add: string;
+  refresh: string;
+  edit: string;
+  delete: string;
+  save: string;
+  saving: string;
+  cancel: string;
+  zoom: string;
+  zoomLevel: string;
+  zoomIn: string;
+  zoomOut: string;
+  resetZoom: string;
+  scrollBackward: string;
+  scrollForward: string;
   itemCount: (count: number) => string;
   /** Spoken name of a keyboard key or modifier (`↑` → `Up Arrow`); other keys are read as written. */
   shortcutKeyName: (key: string) => string;
@@ -64,6 +78,20 @@ export const defaultStrings: UiStrings = {
   resize: 'Resize',
   scrollVertically: 'Scroll vertically',
   scrollHorizontally: 'Scroll horizontally',
+  add: 'Add',
+  refresh: 'Refresh',
+  edit: 'Edit',
+  delete: 'Delete',
+  save: 'Save',
+  saving: 'Saving',
+  cancel: 'Cancel',
+  zoom: 'Zoom',
+  zoomLevel: 'Zoom level',
+  zoomIn: 'Zoom in',
+  zoomOut: 'Zoom out',
+  resetZoom: 'Reset zoom',
+  scrollBackward: 'Scroll backward',
+  scrollForward: 'Scroll forward',
   itemCount: (count) => (count === 1 ? '1 item' : `${count} items`),
   shortcutKeyName: (key) => spokenKeyNames[key] ?? key,
 };

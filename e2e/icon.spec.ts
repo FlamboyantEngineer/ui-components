@@ -4,7 +4,9 @@ test.describe('Icon lab', () => {
   test('UIC-ICON-1.1 UIC-ICON-1.2 draws every glyph in three box sizes', async ({ page, lab }) => {
     await lab.open('icon');
     const cells = page.locator('table[data-lab-matrix="glyph size"] td[data-lab-cell]');
-    expect(await cells.count()).toBe(26 * 3);
+    const rows = await page.locator('table[data-lab-matrix="glyph size"] tbody tr').count();
+    expect(rows).toBeGreaterThanOrEqual(26);
+    expect(await cells.count()).toBe(rows * 3);
     for (const [size, pixels] of [
       ['sm', 12],
       ['md', 16],

@@ -1,0 +1,27 @@
+/* Expand Toggle */
+
+.ui-expand-toggle {
+  flex: none;
+}
+
+.ui-expand-toggle[data-leaf] {
+  display: inline-block;
+  width: 26px;
+  height: 26px;
+  vertical-align: middle;
+}
+
+.ui-expand-toggle[data-leaf][data-size='xs'] {
+  width: 22px;
+  height: 22px;
+}
+
+.ui-expand-toggle[data-leaf][data-size='md'] {
+  width: 32px;
+  height: 32px;
+}
+
+.ui-expand-toggle[data-leaf][data-size='lg'] {
+  width: 38px;
+  height: 38px;
+}

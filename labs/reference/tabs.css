@@ -1,0 +1,131 @@
+/* Tabs */
+
+.ui-tabs {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.ui-tabs[data-orientation='vertical'] {
+  flex-direction: row;
+}
+
+.ui-tabs__list {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  border-bottom: 1px solid var(--ref-border);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.ui-tabs__list[data-orientation='vertical'] {
+  flex-direction: column;
+  flex: none;
+  border-bottom: 0;
+  border-inline-end: 1px solid var(--ref-border);
+  overflow: hidden auto;
+}
+
+.ui-tabs__tab {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  box-sizing: border-box;
+  height: 36px;
+  padding: 0 12px;
+  color: var(--ref-muted);
+  font-size: 13px;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  outline: none;
+}
+.ui-tabs[data-size='sm'] .ui-tabs__tab {
+  height: 30px;
+  padding: 0 10px;
+  font-size: 12px;
+}
+.ui-tabs[data-size='lg'] .ui-tabs__tab {
+  height: 42px;
+  padding: 0 16px;
+  font-size: 14px;
+}
+.ui-tabs__tab[data-hovered] {
+  background: var(--ref-hover);
+  color: var(--ref-text);
+}
+.ui-tabs__tab[data-selected] {
+  color: var(--ref-text);
+  font-weight: 600;
+}
+.ui-tabs__tab[data-focus-visible] {
+  box-shadow: inset 0 0 0 2px var(--ref-focus);
+}
+.ui-tabs__tab[data-disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ui-tabs__indicator {
+  position: absolute;
+  inset-inline: 0;
+  bottom: -1px;
+  height: 2px;
+  background: var(--ref-accent);
+  transition:
+    translate 0.2s,
+    width 0.2s;
+}
+.ui-tabs__list[data-orientation='vertical'] .ui-tabs__indicator {
+  inset-block: 0;
+  inset-inline: auto 0;
+  width: 2px;
+  height: auto;
+  transition:
+    translate 0.2s,
+    height 0.2s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-tabs__indicator {
+    transition: none;
+  }
+}
+
+.ui-tabs__icon {
+  flex: none;
+}
+
+/* The label reserves the width of its selected weight, so selecting never resizes a tab. */
+.ui-tabs__label {
+  display: inline-grid;
+}
+.ui-tabs__label[data-label]::after {
+  content: attr(data-label);
+  height: 0;
+  font-weight: 600;
+  visibility: hidden;
+  overflow: hidden;
+}
+
+.ui-tabs__count {
+  box-sizing: border-box;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--ref-danger);
+  color: var(--ref-accent-text);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 18px;
+  text-align: center;
+}
+
+.ui-tabs__panel {
+  padding: 12px;
+  outline: none;
+}
+.ui-tabs__panel[data-focus-visible] {
+  box-shadow: inset 0 0 0 2px var(--ref-focus);
+}
