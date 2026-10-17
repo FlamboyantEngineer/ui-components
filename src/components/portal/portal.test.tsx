@@ -338,4 +338,99 @@ describe('Portal', () => {
     expect(host).toHaveAttribute('data-region', 'main');
     expectHooksMatchSpec(document.body, 'PORTAL', { callerAttributes: ['data-region'] });
   });
+
+  it('UIC-PORTAL-1.5 renders in place with its layer, also on the server', () => {
+    const markup = renderToString(
+      <section>
+        <Portal inPlace layer="tooltip">
+          Tip
+        </Portal>
+      </section>,
+    );
+    expect(markup).toContain('class="ui-portal"');
+    expect(markup).toContain('data-layer="tooltip"');
+
+    const { container } = render(
+      <section>
+        <Portal inPlace layer="tooltip" data-testid="tip">
+          Tip
+        </Portal>
+      </section>,
+    );
+    const wrapper = screen.getByTestId('tip');
+    expect(wrapper.parentElement).toBe(container.querySelector('section'));
+    expect(wrapper).toHaveAttribute('data-layer', 'tooltip');
+    expect(wrapper).toHaveAttribute('data-react-aria-top-layer', 'true');
+    expect(wrapper.style.zIndex).toBe(String(defaultLayerZIndex.tooltip));
+    expect(wrapper.style.position).toBe('absolute');
+    expect(document.body.querySelector(':scope > .ui-portal')).toBeNull();
+    expectHooksMatchSpec(container, 'PORTAL', { callerAttributes: ['data-testid'] });
+  });
+
+  it('UIC-PORTAL-3.4 tabs into and out of the content as if it sat where it is declared', async () => {
+    const user = userEvent.setup();
+    render(
+      <>
+        <button type="button">Before</button>
+        <Portal preserveTabOrder>
+          <button type="button">Plum</button>
+          <button type="button" disabled>
+            Pear
+          </button>
+          <button type="button">Fig</button>
+        </Portal>
+        <button type="button">After</button>
+      </>,
+    );
+    const button = (name: string) => screen.getByRole('button', { name });
+    expect(wrappers()[0]?.parentElement).toBe(document.body);
+
+    button('Before').focus();
+    await user.tab();
+    expect(button('Plum')).toHaveFocus();
+    await user.tab();
+    expect(button('Fig')).toHaveFocus();
+    await user.tab();
+    expect(button('After')).toHaveFocus();
+
+    await user.tab({ shift: true });
+    expect(button('Fig')).toHaveFocus();
+    await user.tab({ shift: true });
+    expect(button('Plum')).toHaveFocus();
+    await user.tab({ shift: true });
+    expect(button('Before')).toHaveFocus();
+  });
+
+  it('UIC-PORTAL-3.4 skips content without tab stops and content reached at the document end', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(
+      <>
+        <button type="button">Before</button>
+        <Portal preserveTabOrder>
+          <p>Notes</p>
+        </Portal>
+        <button type="button">After</button>
+      </>,
+    );
+    screen.getByRole('button', { name: 'Before' }).focus();
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'After' })).toHaveFocus();
+    await user.tab({ shift: true });
+    expect(screen.getByRole('button', { name: 'Before' })).toHaveFocus();
+
+    rerender(
+      <>
+        <button type="button">Before</button>
+        <Portal preserveTabOrder>
+          <button type="button">Plum</button>
+        </Portal>
+        <button type="button">After</button>
+      </>,
+    );
+    screen.getByRole('button', { name: 'After' }).focus();
+    // The next stop in document order is the wrapper's first guard, after the page: it was visited.
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'Plum' })).not.toHaveFocus();
+    expect(document.activeElement).toBe(document.body);
+  });
 });
