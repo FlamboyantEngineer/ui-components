@@ -1,0 +1,80 @@
+import { expect, test } from './fixtures.js';
+
+test.describe('Tree lab', () => {
+  test('UIC-TREE-1.1 UIC-TREE-2.1 UIC-TREE-3.1 navigates, expands and collapses by keyboard', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('tree');
+    const tree = page.getByRole('treegrid', { name: 'Persisted folders' });
+    const row = (name: string) => tree.getByRole('row', { name });
+    await row('Recipes').focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(row('Recipes')).toHaveAttribute('aria-expanded', 'true');
+    await page.keyboard.press('ArrowDown');
+    await expect(row('Tomato soup.txt')).toBeFocused();
+    await expect(row('Tomato soup.txt')).toHaveAttribute('aria-level', '2');
+    await page.keyboard.press('End');
+    await expect(row('Archive.zip')).toBeFocused();
+    await page.keyboard.press('Home');
+    await expect(row('Recipes')).toBeFocused();
+    await page.keyboard.press('ArrowLeft');
+    await expect(row('Recipes')).toHaveAttribute('aria-expanded', 'false');
+    await page.keyboard.press('b');
+    await expect(row('Budget.xlsx')).toBeFocused();
+    await expect(tree.locator('[role="row"][tabindex="0"]')).toHaveCount(1);
+    await tree.getByRole('button', { name: 'Expand Travel' }).click();
+    await expect(row('Travel')).toHaveAttribute('aria-expanded', 'true');
+    await expect(row('Lisbon.pdf')).toBeVisible();
+    await lab.expectAccessible();
+  });
+
+  test('UIC-TREE-1.2 indents rows by their depth', async ({ page, lab }) => {
+    await lab.open('tree');
+    const cell = page.locator('[data-lab-cell="variant=default density=compact"]');
+    const x = async (name: string) =>
+      (await cell.getByRole('row', { name }).locator('.ui-tree__label').boundingBox())?.x ?? 0;
+    const top = await x('Budget.xlsx');
+    const second = await x('Tomato soup.txt');
+    expect(second - top).toBe(20);
+    await expect(cell.getByRole('row', { name: 'Tomato soup.txt' })).toHaveCSS(
+      '--ui-tree-level',
+      '2',
+    );
+  });
+
+  test('UIC-TREE-4.3 spaces rows by density', async ({ page, lab }) => {
+    await lab.open('tree');
+    const height = async (density: string) =>
+      (
+        await page
+          .locator(`[data-lab-cell="variant=default density=${density}"]`)
+          .getByRole('row', { name: 'Budget.xlsx' })
+          .boundingBox()
+      )?.height ?? 0;
+    const [compact, normal, spaced] = [
+      await height('compact'),
+      await height('normal'),
+      await height('spaced'),
+    ];
+    expect(normal - compact).toBe(6);
+    expect(spaced - normal).toBe(6);
+  });
+
+  test('UIC-TREE-2.3 restores persisted expansion after a reload', async ({ page, lab }) => {
+    await lab.open('tree');
+    const tree = page.getByRole('treegrid', { name: 'Persisted folders' });
+    await tree.getByRole('button', { name: 'Expand Travel' }).click();
+    await expect(tree.getByRole('row', { name: 'Travel' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+    await page.reload();
+    await expect(page.locator('html')).toHaveAttribute('data-lab-ready', 'true');
+    await expect(
+      page
+        .getByRole('treegrid', { name: 'Persisted folders' })
+        .getByRole('row', { name: 'Travel' }),
+    ).toHaveAttribute('aria-expanded', 'true');
+  });
+});

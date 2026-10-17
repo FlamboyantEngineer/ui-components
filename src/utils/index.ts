@@ -64,3 +64,20 @@ export { PATH_SEPARATOR, formatFolderPath, formatPath } from './path.js';
 export type { FormatPathOptions, PathFolder } from './path.js';
 export { formatCount, normalizeCount } from './count.js';
 export type { FormatCountOptions } from './count.js';
+export {
+  applyTreeMove,
+  getVisibleTreeRows,
+  resolveTreeDrop,
+  resolveTreeKeyboardMove,
+  resolveTreeMove,
+} from './tree-reorder.js';
+export type {
+  TreeDropPosition,
+  TreeKey,
+  TreeMove,
+  TreeMoveDirection,
+  TreeMoveItem,
+  TreeMoveRow,
+  TreeMoveRules,
+  VisibleTreeRowsOptions,
+} from './tree-reorder.js';

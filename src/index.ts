@@ -45,3 +45,5 @@ export * from './components/modal/index.js';
 export * from './components/modal-controller/index.js';
 export * from './components/confirm-dialog/index.js';
 export * from './components/table/index.js';
+export * from './components/list-row/index.js';
+export * from './components/tree/index.js';

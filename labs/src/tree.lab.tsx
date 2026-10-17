@@ -1,0 +1,292 @@
+import { useState } from 'react';
+import type { Key } from 'react-aria-components';
+import { IconButton } from '../../src/components/icon-button/icon-button.js';
+import { Tree, type TreeItemState } from '../../src/components/tree/tree.js';
+import { applyTreeMove, type TreeMove } from '../../src/utils/tree-reorder.js';
+import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+
+interface Entry {
+  id: string;
+  name: string;
+  href?: string;
+  children?: Entry[];
+}
+
+const folder = (id: string, name: string, children: Entry[] = []): Entry => ({
+  id,
+  name,
+  children,
+});
+const file = (id: string, name: string, href?: string): Entry => ({
+  id,
+  name,
+  ...(href ? { href } : {}),
+});
+
+const LIBRARY: Entry[] = [
+  folder('recipes', 'Recipes', [
+    file('soup', 'Tomato soup.txt'),
+    file('bread', 'Sourdough bread with a long overnight rise.txt'),
+    folder('desserts', 'Desserts', [file('tart', 'Lemon tart.txt'), file('flan', 'Flan.txt')]),
+  ]),
+  folder('travel', 'Travel', [file('lisbon', 'Lisbon.pdf'), file('oslo', 'Oslo.pdf')]),
+  file('budget', 'Budget.xlsx'),
+  file('archive', 'Archive.zip'),
+];
+
+const ALL_FOLDERS = ['recipes', 'desserts', 'travel'];
+
+function FolderIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+      <path d="M3 7.5V18a1.5 1.5 0 0 0 1.5 1.5h15A1.5 1.5 0 0 0 21 18V9a1.5 1.5 0 0 0-1.5-1.5h-7.1L10.5 5H4.5A1.5 1.5 0 0 0 3 6.5Z" />
+    </svg>
+  );
+}
+
+function FileIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+      <path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8Z" />
+      <path d="M14 3v5h5" />
+    </svg>
+  );
+}
+
+const name = (entry: Entry) => entry.name;
+const icon = (entry: Entry) => (entry.children ? <FolderIcon /> : <FileIcon />);
+const sizeOf = (entry: Entry) => (entry.children ? `${entry.children.length} items` : null);
+
+const variants = ['default', 'picker'] as const;
+const densities = ['compact', 'normal', 'spaced'] as const;
+const states = ['default', 'selected', 'current', 'disabled'] as const;
+
+function StatesTree({ state }: { state: (typeof states)[number] }) {
+  return (
+    <Tree
+      aria-label={`${state} rows`}
+      items={LIBRARY}
+      getTextValue={name}
+      getIcon={icon}
+      defaultExpandedKeys={['travel']}
+      selectionMode={state === 'selected' ? 'single' : 'none'}
+      defaultSelectedKeys={state === 'selected' ? ['lisbon'] : undefined}
+      isItemCurrent={state === 'current' ? (entry) => entry.id === 'lisbon' : undefined}
+      disabledKeys={state === 'disabled' ? ['lisbon'] : undefined}
+    />
+  );
+}
+
+function SelectionTree() {
+  const [selected, setSelected] = useState('none');
+  const [action, setAction] = useState('none');
+  return (
+    <div data-lab-selection>
+      <Tree
+        aria-label="Pick a file"
+        items={LIBRARY}
+        getTextValue={name}
+        getIcon={icon}
+        defaultExpandedKeys={ALL_FOLDERS}
+        selectionMode="single"
+        selectionBehavior="replace"
+        onSelectionChange={(keys) => setSelected(keys === 'all' ? 'all' : [...keys].join(', '))}
+        onAction={(key) => setAction(String(key))}
+        renderMeta={sizeOf}
+        renderActions={(entry) => (
+          <IconButton icon="more" size="sm" label={`More for ${entry.name}`} />
+        )}
+      />
+      <p data-lab-output>
+        Selected: {selected} · Opened: {action}
+      </p>
+    </div>
+  );
+}
+
+function LazyTree() {
+  const [loaded, setLoaded] = useState<Entry[] | null>(null);
+  const [pending, setPending] = useState(false);
+  const items: Entry[] = [
+    { id: 'remote', name: 'Shared drive', ...(loaded ? { children: loaded } : {}) },
+    file('local', 'Local notes.txt'),
+  ];
+  return (
+    <Tree
+      aria-label="Drives"
+      items={items}
+      getTextValue={name}
+      getIcon={(entry) => (entry.id === 'local' ? <FileIcon /> : <FolderIcon />)}
+      hasChildItems={(entry) => entry.id === 'remote'}
+      isItemPending={() => pending}
+      onExpandedChange={(keys) => {
+        if (keys.has('remote') && !loaded && !pending) {
+          setPending(true);
+          setTimeout(() => {
+            setLoaded([file('plans', 'Plans.pdf'), file('photos', 'Photos.zip')]);
+            setPending(false);
+          }, 600);
+        }
+      }}
+    />
+  );
+}
+
+/** Folders take files and folders; the top level takes only folders. */
+const canMoveInto = (entry: Entry, parent: Entry | null) =>
+  parent === null ? Boolean(entry.children) : Boolean(parent.children);
+
+function ReorderTree({ betweenParents }: { betweenParents: boolean }) {
+  const [items, setItems] = useState<readonly Entry[]>(LIBRARY);
+  const [expanded, setExpanded] = useState<Set<Key>>(new Set(ALL_FOLDERS));
+  const [last, setLast] = useState<TreeMove | null>(null);
+  const label = betweenParents ? 'Reorder between folders' : 'Reorder among siblings';
+  return (
+    <div data-lab-reorder={betweenParents ? 'parents' : 'siblings'}>
+      <Tree
+        aria-label={label}
+        items={items}
+        getTextValue={name}
+        getIcon={icon}
+        expandedKeys={expanded}
+        onExpandedChange={setExpanded}
+        disabledKeys={['archive']}
+        reorder={{
+          canMove: (entry) => entry.id !== 'budget',
+          canMoveInto: betweenParents ? canMoveInto : undefined,
+          onMove: (move) => {
+            setLast(move);
+            setItems((current) => applyTreeMove(current, move));
+          },
+        }}
+      />
+      <p data-lab-output>
+        Last move: {last ? `${last.key} ${last.position} ${last.targetKey}` : 'none'}
+      </p>
+    </div>
+  );
+}
+
+const stateNote = (state: TreeItemState) => (state.isExpanded ? 'open' : null);
+
+mountLab(
+  <>
+    <LabSection
+      title="Variants and densities"
+      description="Each variant at each density. Archive.zip is disabled: the picker greys it out, the default variant keeps its text."
+    >
+      <StateMatrix
+        axes={{ variant: variants, density: densities }}
+        render={({ variant, density }) => (
+          <div data-lab-column="240" style={{ width: 240 }}>
+            <Tree
+              aria-label={`${variant} ${density}`}
+              items={LIBRARY}
+              getTextValue={name}
+              getIcon={icon}
+              variant={variant}
+              density={density}
+              defaultExpandedKeys={['recipes']}
+              disabledKeys={['archive']}
+            />
+          </div>
+        )}
+      />
+    </LabSection>
+    <LabSection
+      title="Row states"
+      description="Lisbon.pdf selected, current or disabled, beside a row in its ordinary state."
+    >
+      <StateMatrix
+        axes={{ state: states }}
+        render={({ state }) => (
+          <div data-lab-column="220" style={{ width: 220 }}>
+            <StatesTree state={state} />
+          </div>
+        )}
+      />
+    </LabSection>
+    <LabSection
+      title="Expand glyphs and wrapping"
+      description="Chevrons or plus and minus; labels on one line or wrapping in a 200px column."
+    >
+      <StateMatrix
+        axes={{ glyph: ['chevron', 'plus-minus'], wrap: ['nowrap', 'wrap'] }}
+        render={({ glyph, wrap }) => (
+          <div data-lab-column="200" style={{ width: 200 }}>
+            <Tree
+              aria-label={`${glyph} ${wrap}`}
+              items={LIBRARY}
+              getTextValue={name}
+              getIcon={icon}
+              renderMeta={(entry, state) => stateNote(state) ?? sizeOf(entry)}
+              expandGlyph={glyph}
+              wrap={wrap === 'wrap'}
+              defaultExpandedKeys={['recipes']}
+            />
+          </div>
+        )}
+      />
+    </LabSection>
+    <LabSection
+      title="Selection, actions and links"
+      description="Click selects, double-click or Enter opens; each row has a trailing action. Below, link rows navigate to in-page anchors and the current one is marked."
+    >
+      <SelectionTree />
+      <Tree
+        aria-label="Travel links"
+        items={[
+          file('lisbon-link', 'Lisbon', '#lisbon'),
+          file('oslo-link', 'Oslo', '#oslo'),
+          file('kyoto-link', 'Kyoto', '#kyoto'),
+        ]}
+        getTextValue={name}
+        getHref={(entry) => entry.href}
+        isItemCurrent={(entry) => entry.id === 'oslo-link'}
+      />
+    </LabSection>
+    <LabSection
+      title="Persisted expansion"
+      description="Expansion is stored through the provider's storage: expand a folder and reload the page."
+    >
+      <Tree
+        aria-label="Persisted folders"
+        items={LIBRARY}
+        getTextValue={name}
+        getIcon={icon}
+        persistKey="tree-lab-expansion"
+        data-lab-persisted
+      />
+    </LabSection>
+    <LabSection
+      title="Loading and empty"
+      description="A tree loading its items, an empty tree, and a folder whose children load when it is first expanded."
+    >
+      <StateMatrix
+        axes={{ state: ['loading', 'empty', 'lazy'] }}
+        render={({ state }) =>
+          state === 'lazy' ? (
+            <LazyTree />
+          ) : (
+            <Tree
+              aria-label={`${state} tree`}
+              items={[]}
+              getTextValue={name}
+              isPending={state === 'loading'}
+              renderEmptyState={() => 'No files yet'}
+            />
+          )
+        }
+      />
+    </LabSection>
+    <LabSection
+      title="Reordering"
+      description="Drag a row, use its drag handle with the keyboard, or press Alt+Arrow keys. Budget.xlsx is fixed and Archive.zip disabled. On the right, rows also move between folders, and folders to the top level."
+    >
+      <div data-lab-row style={{ display: 'flex', gap: 32 }}>
+        <ReorderTree betweenParents={false} />
+        <ReorderTree betweenParents />
+      </div>
+    </LabSection>
+  </>,
+);
