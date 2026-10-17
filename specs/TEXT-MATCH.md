@@ -1,6 +1,6 @@
 # Text Match
 
-`TextMatch` highlights a query inside a text label. A host that filters or searches a view wraps it in a `TextMatchScope` holding the query; every `TextMatch` below marks each occurrence of the query's terms with a native `<mark>`. Text Match hides nothing and announces nothing: filtering rows and reporting results stay with the host. The pure helpers it uses are exported for hosts that match text themselves.
+`TextMatch` highlights a query inside a text label. A host that filters or searches a view wraps it in a `TextMatchProvider` holding the query; every `TextMatch` below marks each occurrence of the query's terms with a native `<mark>`. Text Match hides nothing and announces nothing: filtering rows and reporting results stay with the host. The pure helpers it uses are exported for hosts that match text themselves.
 
 ## UIC-TEXT-MATCH-1 - Matching
 
@@ -29,21 +29,21 @@ Verification: `src/components/text-match/text-match.test.tsx`, `e2e/text-match.s
 
 ### UIC-TEXT-MATCH-2.1 - Marks
 
-`TextMatch` shall render its string child with each range of the nearest `TextMatchScope`'s terms wrapped in a `<mark>` carrying the `ui-text-match` class, the text between marks staying plain. It draws no wrapper element, so each mark carries the root hook, the caller's `className` and caller `data-*` attributes.
+`TextMatch` shall render its string child with each range of the nearest `TextMatchProvider`'s terms wrapped in a `<mark>` carrying the `ui-text-match` class, the text between marks staying plain. It draws no wrapper element, so each mark carries the root hook, the caller's `className` and caller `data-*` attributes.
 
 Implementation: `src/components/text-match/text-match.tsx`, `labs/reference/text-match.css`
 Verification: `src/components/text-match/text-match.test.tsx`, `e2e/text-match.spec.ts`
 
 ### UIC-TEXT-MATCH-2.2 - Plain without a hit
 
-Without a scope, with an empty query, or when no term occurs, `TextMatch` shall return the plain string, with no mark and no element, so a label that is never filtered keeps the same markup.
+Without a provider, with an empty query, or when no term occurs, `TextMatch` shall return the plain string, with no mark and no element, so a label that is never filtered keeps the same markup.
 
 Implementation: `src/components/text-match/text-match.tsx`
 Verification: `src/components/text-match/text-match.test.tsx`
 
 ### UIC-TEXT-MATCH-2.3 - Registration
 
-When the scope has `registerText`, each `TextMatch` shall register its text with it on mount, re-register when its text changes and unregister on unmount, through the cleanup function `registerText` returns, so the host can tell which groups hold a match. The scope renders no element.
+When the provider has `registerText`, each `TextMatch` shall register its text with it on mount, re-register when its text changes and unregister on unmount, through the cleanup function `registerText` returns, so the host can tell which groups hold a match. The provider renders no element.
 
 Implementation: `src/components/text-match/text-match.tsx`
 Verification: `src/components/text-match/text-match.test.tsx`

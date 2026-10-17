@@ -7,17 +7,17 @@ import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Icon } from '../icon/icon.js';
 import { SvgMarkup } from './svg-markup.js';
 
-const OUTLINE =
+const outlineMarkup =
   '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="source" width="24" height="24" style="color: red" id="source" role="presentation" focusable="true" tabindex="0">' +
   '<path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14M5 12h14"/>' +
   '</svg>';
 
-const SOLID =
+const solidMarkup =
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">' +
   '<path fill-rule="evenodd" clip-rule="evenodd" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Z"/>' +
   '</svg>';
 
-const GRADIENT =
+const gradientMarkup =
   '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 10 10">' +
   '<title>Badge</title>' +
   '<defs><linearGradient id="fade" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#fa0" stop-opacity="0.5"/></linearGradient></defs>' +
@@ -27,7 +27,7 @@ const GRADIENT =
 
 describe('SvgMarkup', () => {
   it('UIC-SVG-MARKUP-2.1 renders markup as React elements with converted attributes', () => {
-    const outline = renderToStaticMarkup(<SvgMarkup markup={OUTLINE} />);
+    const outline = renderToStaticMarkup(<SvgMarkup markup={outlineMarkup} />);
     expect(outline).toMatch(/^<svg/);
     expect(outline).toMatch(/viewBox="0 0 24 24"/);
     expect(outline).toMatch(/stroke-width="1.5"/);
@@ -35,7 +35,7 @@ describe('SvgMarkup', () => {
       /<path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14M5 12h14"/,
     );
 
-    const solid = renderToStaticMarkup(<SvgMarkup markup={SOLID} />);
+    const solid = renderToStaticMarkup(<SvgMarkup markup={solidMarkup} />);
     expect(solid).toMatch(/fill="currentColor"/);
     expect(solid).toMatch(/fill-rule="evenodd"/);
     expect(solid).toMatch(/clip-rule="evenodd"/);
@@ -43,7 +43,7 @@ describe('SvgMarkup', () => {
 
   it('UIC-SVG-MARKUP-2.1 renders namespaced attributes, style text, classes and text in the DOM', () => {
     const errors = vi.spyOn(console, 'error');
-    const { container } = render(<SvgMarkup markup={GRADIENT} />);
+    const { container } = render(<SvgMarkup markup={gradientMarkup} />);
     const svg = container.querySelector('svg') as SVGSVGElement;
     expect(svg.querySelector('title')).toHaveTextContent('Badge');
     expect(document.head.querySelector('title')).toBeNull();
@@ -72,7 +72,7 @@ describe('SvgMarkup', () => {
   });
 
   it('UIC-SVG-MARKUP-2.2 keeps drawing attributes and drops the attributes the component owns', () => {
-    const { container } = render(<SvgMarkup markup={OUTLINE} />);
+    const { container } = render(<SvgMarkup markup={outlineMarkup} />);
     const svg = container.firstElementChild as SVGSVGElement;
     expect(svg.getAttribute('viewBox')).toBe('0 0 24 24');
     expect(svg).toHaveAttribute('fill', 'none');
@@ -86,13 +86,13 @@ describe('SvgMarkup', () => {
   });
 
   it('UIC-SVG-MARKUP-2.3 is decorative without a label and an image with one', () => {
-    const { container, rerender } = render(<SvgMarkup markup={OUTLINE} />);
+    const { container, rerender } = render(<SvgMarkup markup={outlineMarkup} />);
     const svg = container.firstElementChild;
     expect(svg).toHaveAttribute('aria-hidden', 'true');
     expect(svg).toHaveAttribute('focusable', 'false');
     expect(svg).not.toHaveAttribute('role');
 
-    rerender(<SvgMarkup markup={OUTLINE} label="Add" />);
+    rerender(<SvgMarkup markup={outlineMarkup} label="Add" />);
     const image = screen.getByRole('img', { name: 'Add' });
     expect(image).not.toHaveAttribute('aria-hidden');
     expect(image).toHaveAttribute('focusable', 'false');
@@ -101,7 +101,7 @@ describe('SvgMarkup', () => {
   it('UIC-SVG-MARKUP-2.3 fills an Icon, which owns the name and size', () => {
     const { container } = render(
       <Icon size="lg" label="Add" data-icon="plus">
-        <SvgMarkup markup={OUTLINE} />
+        <SvgMarkup markup={outlineMarkup} />
       </Icon>,
     );
     const icon = screen.getByRole('img', { name: 'Add' });
@@ -121,7 +121,7 @@ describe('SvgMarkup', () => {
 
   it('UIC-SVG-MARKUP-2.5 appends the caller class and forwards id and data attributes', () => {
     const { container } = render(
-      <SvgMarkup markup={SOLID} className="caller" id="mark" data-testid="probe" />,
+      <SvgMarkup markup={solidMarkup} className="caller" id="mark" data-testid="probe" />,
     );
     const svg = screen.getByTestId('probe');
     expect(svg).toHaveClass('ui-svg-markup', 'caller');

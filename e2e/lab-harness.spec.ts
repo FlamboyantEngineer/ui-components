@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test';
-import { expect, labUrl, test, waitForLab } from './fixtures.js';
+import { expect, formatLabUrl, test, waitForLab } from './fixtures.js';
 
-const CUSTOM_SHEET = 'data:text/css,html%7Bbackground-color%3Argb(1%2C%202%2C%203)%7D';
+const customSheet = 'data:text/css,html%7Bbackground-color%3Argb(1%2C%202%2C%203)%7D';
 
 async function background(page: Page) {
   return page.evaluate(() => getComputedStyle(document.documentElement).backgroundColor);
@@ -23,7 +23,7 @@ test.describe('lab harness', () => {
     const glyph = page.locator('[data-lab-cell="glyph=close source=default"] .ui-glyph');
     expect((await glyph.boundingBox())?.width).toBeLessThan(40);
 
-    await lab.open('provider', { stylesheet: CUSTOM_SHEET });
+    await lab.open('provider', { stylesheet: customSheet });
     expect(await background(page)).toBe('rgb(1, 2, 3)');
     expect(unstyled).not.toBe('rgb(1, 2, 3)');
   });
@@ -52,11 +52,11 @@ test.describe('lab harness', () => {
     await lab.open('provider', { stylesheet: 'reference' });
     const chrome = page.locator('#lab-chrome');
     await chrome.getByLabel('Stylesheet', { exact: true }).selectOption('custom');
-    await chrome.getByLabel('Stylesheet URL').fill(CUSTOM_SHEET);
+    await chrome.getByLabel('Stylesheet URL').fill(customSheet);
     await chrome.getByRole('button', { name: 'Apply' }).click();
     await expect(page.locator('html')).toHaveAttribute('data-lab-stylesheet-state', 'loaded');
     expect(await background(page)).toBe('rgb(1, 2, 3)');
-    expect(new URL(page.url()).searchParams.get('stylesheet')).toBe(CUSTOM_SHEET);
+    expect(new URL(page.url()).searchParams.get('stylesheet')).toBe(customSheet);
 
     await chrome.getByLabel('Theme').fill('dark');
     expect(new URL(page.url()).searchParams.get('theme')).toBe('dark');
@@ -70,7 +70,7 @@ test.describe('lab harness', () => {
   test('UIC-LABS-1.1 the index lists every lab and carries the settings into it', async ({
     page,
   }) => {
-    await page.goto(labUrl('index', { stylesheet: 'none', theme: 'dark' }));
+    await page.goto(formatLabUrl('index', { stylesheet: 'none', theme: 'dark' }));
     await waitForLab(page);
     const link = page.getByRole('link', { name: 'Provider' });
     await expect(link).toHaveAttribute('href', 'provider.html?stylesheet=none&theme=dark');

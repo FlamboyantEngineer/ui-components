@@ -1,5 +1,6 @@
-import type { ReactNode } from 'react';
+import type { ReactNode, TableHTMLAttributes } from 'react';
 import { createHooks } from '../../core/hooks.js';
+import type { BaseProps } from '../../core/props.js';
 
 export interface ProseTableCell {
   /** Stable within its row or heading list. */
@@ -13,37 +14,20 @@ export interface ProseTableRow {
   cells: readonly ProseTableCell[];
 }
 
-export interface ProseTableProps {
+export interface ProseTableProps
+  extends BaseProps, Pick<TableHTMLAttributes<HTMLTableElement>, 'aria-label' | 'aria-labelledby'> {
   /** Column headings, one per column. */
   header: readonly ProseTableCell[];
   /** Body rows. A row with fewer cells than headings is padded with empty cells. */
   rows: readonly ProseTableRow[];
-  className?: string | undefined;
-  id?: string | undefined;
-  'aria-label'?: string | undefined;
-  'aria-labelledby'?: string | undefined;
-  [data: `data-${string}`]: string | number | boolean | undefined;
 }
 
 const hooks = createHooks('prose-table');
 
 /** A static table inside running text: column headings and body rows, nothing interactive. */
-export function ProseTable({
-  header,
-  rows,
-  className,
-  id,
-  'aria-label': ariaLabel,
-  'aria-labelledby': ariaLabelledBy,
-  ...rest
-}: ProseTableProps) {
+export function ProseTable({ header, rows, className, ...rest }: ProseTableProps) {
   return (
-    <table
-      {...hooks.root({ className, props: rest })}
-      id={id}
-      aria-label={ariaLabel}
-      aria-labelledby={ariaLabelledBy}
-    >
+    <table {...rest} {...hooks.root({ className })}>
       <thead>
         <tr>
           {header.map((cell) => (

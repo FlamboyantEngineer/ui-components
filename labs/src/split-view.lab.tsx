@@ -19,10 +19,12 @@ function Pane({ children }: { children: ReactNode }) {
 
 function ControlledSplit() {
   const [size, setSize] = useState(35);
+  const [committed, setCommitted] = useState(35);
   return (
     <div style={{ display: 'grid', gap: 8 }}>
       <p>
-        First pane: <output data-lab-output="controlled">{Math.round(size)}%</output>{' '}
+        First pane: <output data-lab-output="controlled">{Math.round(size)}%</output>, committed:{' '}
+        <output data-lab-output="committed">{Math.round(committed)}%</output>{' '}
         <button type="button" onClick={() => setSize(35)}>
           Reset
         </button>
@@ -32,6 +34,7 @@ function ControlledSplit() {
           panes={[{ id: 'controlled-list' }, { id: 'controlled-detail' }]}
           size={size}
           onSizeChange={setSize}
+          onSizeChangeEnd={setCommitted}
           separatorLabel="Resize controlled panes"
         >
           {[<Pane key="a">Controlled list</Pane>, <Pane key="b">Controlled detail</Pane>]}
@@ -43,8 +46,12 @@ function ControlledSplit() {
 
 function PixelHandle({ isDisabled = false, label }: { isDisabled?: boolean; label: string }) {
   const [height, setHeight] = useState(60);
+  const [status, setStatus] = useState('idle');
   return (
     <div style={{ ...frame(260, 180), justifyContent: 'flex-end' }}>
+      <output data-lab-output="handle" style={{ padding: '0 8px', marginBottom: 'auto' }}>
+        {status}
+      </output>
       <ResizeHandle
         orientation="horizontal"
         value={height}
@@ -55,6 +62,8 @@ function PixelHandle({ isDisabled = false, label }: { isDisabled?: boolean; labe
         isDisabled={isDisabled}
         aria-label={label}
         onChange={setHeight}
+        onResizingChange={(isResizing) => setStatus(isResizing ? 'dragging' : 'idle')}
+        onChangeEnd={(value) => setStatus(`committed ${value}px`)}
       />
       <div style={{ height, overflow: 'hidden', padding: '0 8px' }}>Details, {height}px tall</div>
     </div>

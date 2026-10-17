@@ -10,7 +10,7 @@ export interface KeyedValue<T> {
  * removing an entry keeps the other entries' state; swapping two equal entries is harmless because
  * they render the same content.
  */
-export function withStableOccurrenceKeys<T>(
+export function assignOccurrenceKeys<T>(
   values: readonly T[],
   identity: (value: T) => string,
 ): Array<KeyedValue<T>> {

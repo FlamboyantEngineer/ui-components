@@ -5,16 +5,18 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { Link, useLocale } from 'react-aria-components';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../test/hooks.js';
-import type { GlyphComponentProps } from './glyphs.js';
+import { defaultGlyphs, glyphNames, type GlyphComponentProps } from './glyphs.js';
 import {
   Glyph,
   UiLink,
   UiProvider,
+  useGlyph,
   usePersistentState,
   useUiStorage,
   useUiStrings,
 } from './provider.js';
 import { createMemoryStorage, createSafeStorage, type UiStorage } from './storage.js';
+import { defaultStrings } from './strings.js';
 
 function Probe() {
   const strings = useUiStrings();
@@ -60,6 +62,19 @@ describe('UiProvider defaults', () => {
     expect(svg).toHaveAttribute('focusable', 'false');
     expect(svg).toHaveAttribute('data-glyph', 'close');
     expectHooksMatchSpec(container, 'PROVIDER');
+  });
+
+  it('UIC-PROVIDER-2.1 UIC-PROVIDER-3.1 exports the default glyph map, glyph names and strings', () => {
+    expect(glyphNames).toEqual(Object.keys(defaultGlyphs));
+    expect(glyphNames).toContain('restore');
+    expect(defaultStrings.close).toBe('Close');
+    let drawn: unknown;
+    function Reader() {
+      drawn = useGlyph('check');
+      return null;
+    }
+    render(<Reader />);
+    expect(drawn).toBe(defaultGlyphs.check);
   });
 });
 

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  SCROLL_OVERVIEW_MIN_MARKER,
   buildScrollOverviewImage,
   resolveLayeredScrollOverviewSegments,
   resolveScrollOverviewSegments,
@@ -22,6 +23,7 @@ describe('scroll overview', () => {
       { top: 500, height: 2, color: 'green' },
       { top: 998, height: 2, color: 'purple' },
     ]);
+    expect(SCROLL_OVERVIEW_MIN_MARKER).toBe(2);
   });
 
   it('UIC-SCROLL-REGION-3.2 resolves shared pixels by priority whatever the marker order', () => {

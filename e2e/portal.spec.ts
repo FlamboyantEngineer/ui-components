@@ -4,7 +4,7 @@ import { expect, test } from './fixtures.js';
 const layers = ['backdrop', 'drawer', 'modal', 'dropdown', 'context-menu', 'tooltip', 'toast'];
 
 /** The card drawn topmost at an offset from the top-left of a stacking cell's stage. */
-async function topCardAt(page: Page, order: string, x: number, y: number) {
+async function topCardAt(page: Page, order: string, { x, y }: { x: number; y: number }) {
   const stage = await page
     .locator(`[data-lab-cell="order=${order}"] [data-lab-stage]`)
     .boundingBox();
@@ -45,15 +45,15 @@ test.describe('Portal lab', () => {
   }) => {
     await lab.open('portal');
     for (const order of ['lowest first', 'highest first']) {
-      expect(await topCardAt(page, order, 80, 48)).toBe('toast');
-      expect(await topCardAt(page, order, 4, 3)).toBe('backdrop');
-      expect(await topCardAt(page, order, 12, 8)).toBe('drawer');
+      expect(await topCardAt(page, order, { x: 80, y: 48 })).toBe('toast');
+      expect(await topCardAt(page, order, { x: 4, y: 3 })).toBe('backdrop');
+      expect(await topCardAt(page, order, { x: 12, y: 8 })).toBe('drawer');
     }
   });
 
   test('UIC-PORTAL-2.2 stacks by layer without any stylesheet', async ({ page, lab }) => {
     await lab.open('portal', { stylesheet: 'none' });
-    expect(await topCardAt(page, 'highest first', 80, 48)).toBe('toast');
+    expect(await topCardAt(page, 'highest first', { x: 80, y: 48 })).toBe('toast');
   });
 
   test('UIC-PORTAL-1.1 UIC-PORTAL-3.1 renders into the document body and stays keyboard operable', async ({

@@ -9,7 +9,7 @@ import {
   splitMatchTerms,
   textMatchesTerms,
 } from './match-ranges.js';
-import { TextMatch, TextMatchScope } from './text-match.js';
+import { TextMatch, TextMatchProvider } from './text-match.js';
 
 describe('text matching helpers', () => {
   it('UIC-TEXT-MATCH-1.1 normalizes case and separators without moving indexes', () => {
@@ -57,50 +57,50 @@ describe('text matching helpers', () => {
 });
 
 describe('TextMatch', () => {
-  it('UIC-TEXT-MATCH-2.1 marks every hit of the scope terms', () => {
+  it('UIC-TEXT-MATCH-2.1 marks every hit of the provider terms', () => {
     const { container, rerender } = render(
-      <TextMatchScope query="size">
+      <TextMatchProvider query="size">
         <TextMatch>Page size</TextMatch>
-      </TextMatchScope>,
+      </TextMatchProvider>,
     );
     expect(container.innerHTML).toBe('Page <mark class="ui-text-match">size</mark>');
     expectHooksMatchSpec(container, 'TEXT-MATCH');
 
     rerender(
-      <TextMatchScope query="e">
+      <TextMatchProvider query="e">
         <TextMatch>Page size</TextMatch>
-      </TextMatchScope>,
+      </TextMatchProvider>,
     );
     expect(container.innerHTML).toBe(
       'Pag<mark class="ui-text-match">e</mark> siz<mark class="ui-text-match">e</mark>',
     );
 
     rerender(
-      <TextMatchScope query="line HEIGHT">
+      <TextMatchProvider query="line HEIGHT">
         <TextMatch>Line-Height</TextMatch>
-      </TextMatchScope>,
+      </TextMatchProvider>,
     );
     expect(container.innerHTML).toBe(
       '<mark class="ui-text-match">Line</mark>-<mark class="ui-text-match">Height</mark>',
     );
   });
 
-  it('UIC-TEXT-MATCH-1.3 UIC-TEXT-MATCH-2.1 honours word matching from the scope', () => {
+  it('UIC-TEXT-MATCH-1.3 UIC-TEXT-MATCH-2.1 honours word matching from the provider', () => {
     const { container } = render(
-      <TextMatchScope query="to" matchWords>
+      <TextMatchProvider query="to" matchWords>
         <TextMatch>top to</TextMatch>
-      </TextMatchScope>,
+      </TextMatchProvider>,
     );
     expect(container.innerHTML).toBe('top <mark class="ui-text-match">to</mark>');
   });
 
   it('UIC-TEXT-MATCH-2.1 appends the caller class and data attributes to every mark', () => {
     const { container } = render(
-      <TextMatchScope query="an">
+      <TextMatchProvider query="an">
         <TextMatch className="caller" data-testid="hit">
           Banana
         </TextMatch>
-      </TextMatchScope>,
+      </TextMatchProvider>,
     );
     const marks = container.querySelectorAll('mark');
     expect(marks).toHaveLength(1);
@@ -110,7 +110,7 @@ describe('TextMatch', () => {
     expectHooksMatchSpec(container, 'TEXT-MATCH');
   });
 
-  it('UIC-TEXT-MATCH-2.2 returns the plain string without a scope, terms or a hit', () => {
+  it('UIC-TEXT-MATCH-2.2 returns the plain string without a provider, terms or a hit', () => {
     const plain = '<span>Page size</span>';
     const { container, rerender } = render(
       <span>
@@ -119,25 +119,25 @@ describe('TextMatch', () => {
     );
     expect(container.innerHTML).toBe(plain);
     rerender(
-      <TextMatchScope query="   ">
+      <TextMatchProvider query="   ">
         <span>
           <TextMatch>Page size</TextMatch>
         </span>
-      </TextMatchScope>,
+      </TextMatchProvider>,
     );
     expect(container.innerHTML).toBe(plain);
     rerender(
-      <TextMatchScope query="margin">
+      <TextMatchProvider query="margin">
         <span>
           <TextMatch>Page size</TextMatch>
         </span>
-      </TextMatchScope>,
+      </TextMatchProvider>,
     );
     expect(container.innerHTML).toBe(plain);
     expect(container.querySelector('span')?.childNodes).toHaveLength(1);
   });
 
-  it('UIC-TEXT-MATCH-2.3 registers texts with the scope and unregisters them', () => {
+  it('UIC-TEXT-MATCH-2.3 registers texts with the provider and unregisters them', () => {
     const registered = new Set<string>();
     const registerText = (text: string) => {
       registered.add(text);
@@ -146,13 +146,13 @@ describe('TextMatch', () => {
       };
     };
     const labels = (texts: string[]) => (
-      <TextMatchScope registerText={registerText}>
+      <TextMatchProvider registerText={registerText}>
         {texts.map((text) => (
           <span key={text}>
             <TextMatch>{text}</TextMatch>
           </span>
         ))}
-      </TextMatchScope>
+      </TextMatchProvider>
     );
     const { container, rerender, unmount } = render(labels(['Name', 'Key']));
     expect([...registered].sort()).toEqual(['Key', 'Name']);
@@ -170,21 +170,21 @@ describe('TextMatch', () => {
       return () => events.push(`-${text}`);
     };
     const { rerender } = render(
-      <TextMatchScope registerText={registerText}>
+      <TextMatchProvider registerText={registerText}>
         <TextMatch>Plum</TextMatch>
-      </TextMatchScope>,
+      </TextMatchProvider>,
     );
     rerender(
-      <TextMatchScope registerText={registerText}>
+      <TextMatchProvider registerText={registerText}>
         <TextMatch>Pear</TextMatch>
-      </TextMatchScope>,
+      </TextMatchProvider>,
     );
     expect(events).toEqual(['+Plum', '-Plum', '+Pear']);
   });
 
   it('UIC-TEXT-MATCH-2.4 keeps the accessible name of the labelled control', () => {
     render(
-      <TextMatchScope query="fix">
+      <TextMatchProvider query="fix">
         <label>
           <TextMatch>Prefix</TextMatch>
           <input />
@@ -192,7 +192,7 @@ describe('TextMatch', () => {
         <button type="button">
           <TextMatch>Fixed width</TextMatch>
         </button>
-      </TextMatchScope>,
+      </TextMatchProvider>,
     );
     expect(screen.getByRole('textbox', { name: 'Prefix' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Fixed width' })).toBeInTheDocument();
