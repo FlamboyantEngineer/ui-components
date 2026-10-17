@@ -57,10 +57,11 @@
     "check:specs": "node scripts/check-specs.mjs",
     "check:labs": "node scripts/check-labs.mjs",
     "check:package": "node scripts/check-package.mjs",
-    "check": "npm run lint && npm run format:check && npm run typecheck && npm run check:references && npm run check:specs && npm run check:labs && npm test && npm run build && npm run build:labs && npm run check:package",
+    "check": "npm run lint && npm run format:check && npm run typecheck && npm run check:references && npm run check:specs && npm run check:labs && npm run check:structure && npm test && npm run build && npm run build:labs && npm run check:package",
     "new:lab": "node scripts/new-lab.mjs",
     "changeset": "changeset",
-    "release": "npm run build && npm run build:labs && npm run check:package && changeset publish"
+    "release": "npm run build && npm run build:labs && npm run check:package && changeset publish",
+    "check:structure": "node scripts/check-structure.mjs"
   },
   "peerDependencies": {
     "react": "^19.0.0",

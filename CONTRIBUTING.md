@@ -24,7 +24,7 @@ The release workflow runs on `main`. Pending changesets open a **Version package
 
 ## Source rules
 
-These are enforced by lint and CI:
+Code follows [docs/CODING-GUIDELINES.md](docs/CODING-GUIDELINES.md): naming, structure, composition and simplicity rules, most of them enforced by lint and `npm run check:structure`. In addition, these are enforced by lint and CI:
 
 - **No styles in source.** No stylesheet imports and no styling dependency (CSS-in-JS, utility frameworks, component kits). Literal class names are hook classes only.
 - **Functional inline styles only:** positions, measured sizes, layout tracks, layering and interaction locks, plus documented `--ui-*` custom properties for measured values. Colours, spacing, borders, fonts and other visual properties belong in the host stylesheet.

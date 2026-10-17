@@ -79,6 +79,43 @@ export default tseslint.config(
     },
   },
   {
+    // Coding guidelines C1, I1, S3 and N3/N6 (docs/CODING-GUIDELINES.md).
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: ['src/**/*.test.{ts,tsx}'],
+    plugins: { ui: local },
+    rules: {
+      complexity: ['error', 15],
+      'max-depth': ['error', 3],
+      'max-params': ['error', 3],
+      'max-lines': ['error', { max: 300, skipBlankLines: true, skipComments: true }],
+      'max-lines-per-function': ['error', { max: 80, skipBlankLines: true, skipComments: true }],
+      'ui/component-imports': 'error',
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'ClassDeclaration',
+          message: 'Use function components and plain functions (I1).',
+        },
+        {
+          selector: 'ClassExpression',
+          message: 'Use function components and plain functions (I1).',
+        },
+        { selector: 'ExportDefaultDeclaration', message: 'Use named exports (S3).' },
+      ],
+      '@typescript-eslint/naming-convention': [
+        'error',
+        { selector: 'typeLike', format: ['PascalCase'] },
+        {
+          selector: 'variable',
+          format: ['camelCase', 'PascalCase', 'UPPER_CASE'],
+          leadingUnderscore: 'allow',
+        },
+        { selector: 'function', format: ['camelCase', 'PascalCase'] },
+        { selector: 'parameter', format: ['camelCase', 'PascalCase'], leadingUnderscore: 'allow' },
+      ],
+    },
+  },
+  {
     files: ['scripts/**/*.mjs', 'eslint-rules/**/*.js', '*.config.{js,ts}'],
     languageOptions: { globals: { ...globals.node } },
   },
