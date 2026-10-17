@@ -34,4 +34,19 @@ test.describe('Icon Label lab', () => {
     expect(await truncated.evaluate((node) => node.scrollWidth > node.clientWidth)).toBe(true);
     await lab.expectAccessible();
   });
+
+  test('UIC-ICON-LABEL-1.6 shows a cut label whole in a tooltip', async ({ page, lab }) => {
+    await lab.open('icon-label');
+    const truncated = page.locator(
+      '[data-lab-cell="option=truncate size=md"] .ui-icon-label__label',
+    );
+    await expect(truncated).toHaveClass(/ui-truncation-tooltip/);
+    await truncated.hover();
+    await expect(page.getByRole('tooltip')).toHaveText(/narrow column$/);
+    await page.mouse.move(0, 0);
+    await expect(page.getByRole('tooltip')).toHaveCount(0);
+    await expect(
+      page.locator('[data-lab-cell="option=default size=md"] .ui-icon-label__label'),
+    ).not.toHaveClass(/ui-truncation-tooltip/);
+  });
 });

@@ -1,12 +1,23 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type Ref } from 'react';
 import type { PressEvent } from 'react-aria-components';
 import { Button, type ButtonProps } from '../button/button.js';
 
-export interface ActionButtonProps extends Omit<ButtonProps, 'onPress'> {
+// An action runs work; it is never a link.
+export interface ActionButtonProps extends Omit<
+  ButtonProps,
+  'onPress' | 'href' | 'target' | 'rel' | 'ref'
+> {
   /** The action. When it returns a promise, the button is pending until the promise settles. */
   onPress?: ((event: PressEvent) => void | Promise<unknown>) | undefined;
   /** Receives a rejected action's error. Without it the rejection is rethrown. */
   onError?: ((error: unknown) => void) | undefined;
+  /**
+   * Milliseconds the button waits before it shows the pending state, so a fast action does not
+   * flash a spinner. Presses are refused from the start either way. Defaults to 0.
+   */
+  pendingDelay?: number | undefined;
+  /** The `<button>`. */
+  ref?: Ref<HTMLButtonElement> | undefined;
 }
 
 /**
@@ -35,6 +46,20 @@ export async function runPendingAction(options: {
   }
 }
 
+/** Whether `flag` has held for `delay` milliseconds; it turns false with the flag. */
+function useDelayedFlag(flag: boolean, delay: number): boolean {
+  const [elapsed, setElapsed] = useState(false);
+  useEffect(() => {
+    if (!flag || delay <= 0) return undefined;
+    const timer = setTimeout(() => setElapsed(true), delay);
+    return () => {
+      clearTimeout(timer);
+      setElapsed(false);
+    };
+  }, [flag, delay]);
+  return flag && (delay <= 0 || elapsed);
+}
+
 /** A button that runs an asynchronous action and refuses repeat presses until it settles. */
 export function ActionButton({
   variant = 'primary',
@@ -42,11 +67,13 @@ export function ActionButton({
   onError,
   isPending,
   isDisabled = false,
+  pendingDelay = 0,
   ...rest
 }: ActionButtonProps) {
   const [internalPending, setInternalPending] = useState(false);
   const running = useRef(false);
   const pending = isPending ?? internalPending;
+  const showsPending = useDelayedFlag(pending, pendingDelay);
 
   const handlePress = useCallback(
     (event: PressEvent) => {
@@ -69,7 +96,7 @@ export function ActionButton({
       {...rest}
       variant={variant}
       isDisabled={isDisabled}
-      isPending={pending}
+      isPending={showsPending}
       onPress={handlePress}
     />
   );

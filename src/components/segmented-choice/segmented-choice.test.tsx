@@ -1,8 +1,8 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { I18nProvider } from 'react-aria-components';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { SegmentedChoice, type SegmentedChoiceOption } from './segmented-choice.js';
 
@@ -11,6 +11,13 @@ const views: SegmentedChoiceOption[] = [
   { value: 'week', label: 'Week' },
   { value: 'month', label: 'Month' },
 ];
+
+beforeAll(() => {
+  // React Aria's selection indicator waits for animations, which jsdom does not implement.
+  if (typeof Element.prototype.getAnimations !== 'function') {
+    Element.prototype.getAnimations = () => [];
+  }
+});
 
 describe('SegmentedChoice', () => {
   it('UIC-SEGMENTED-CHOICE-1.1 renders one named segment per option and marks the value', () => {
@@ -330,5 +337,119 @@ describe('SegmentedChoice', () => {
     expect(day).toHaveAttribute('data-focus-visible', 'true');
     expect(day).toHaveAttribute('data-focused', 'true');
     expectHooksMatchSpec(container, 'SEGMENTED-CHOICE');
+  });
+
+  it('UIC-SEGMENTED-CHOICE-1.6 draws the selection indicator in the selected segment', async () => {
+    render(<SegmentedChoice aria-label="View" options={views} defaultValue="day" />);
+    const day = screen.getByRole('radio', { name: 'Day' });
+    expect(day.querySelector('.ui-segmented-choice__indicator')).not.toBeNull();
+    expect(document.querySelectorAll('.ui-segmented-choice__indicator')).toHaveLength(1);
+    await userEvent.click(screen.getByRole('radio', { name: 'Month' }));
+    await act(async () => {
+      await Promise.resolve();
+    });
+    const month = screen.getByRole('radio', { name: 'Month' });
+    expect(month.querySelector('.ui-segmented-choice__indicator')).not.toBeNull();
+    expectHooksMatchSpec(document.body, 'SEGMENTED-CHOICE', {
+      slots: ['segment', 'indicator', 'label'],
+    });
+  });
+
+  it('UIC-SEGMENTED-CHOICE-1.7 names icon-only segments by label and shows it in a tooltip', async () => {
+    const user = userEvent.setup();
+    render(
+      <SegmentedChoice
+        aria-label="Alignment"
+        iconOnly
+        options={[
+          { value: 'list', label: 'List view', icon: 'drag-handle' },
+          { value: 'grid', label: 'Grid view', icon: 'fit-page' },
+        ]}
+        defaultValue="list"
+      />,
+    );
+    const group = screen.getByRole('radiogroup', { name: 'Alignment' });
+    expect(group).toHaveAttribute('data-icon-only', 'true');
+    const list = screen.getByRole('radio', { name: 'List view' });
+    expect(list).toHaveAttribute('aria-label', 'List view');
+    expect(list.querySelector('.ui-segmented-choice__label')).toBeNull();
+    expect(list.querySelector('.ui-segmented-choice__icon')).not.toBeNull();
+    await user.tab();
+    expect(list).toHaveFocus();
+    expect(screen.getByRole('tooltip')).toHaveTextContent('List view');
+    expect(list).not.toHaveAttribute('aria-describedby');
+    expectHooksMatchSpec(group, 'SEGMENTED-CHOICE', { slots: ['segment', 'indicator', 'icon'] });
+  });
+
+  it('UIC-SEGMENTED-CHOICE-1.8 renders the group through the caller element', () => {
+    render(
+      <SegmentedChoice
+        aria-label="View"
+        options={views}
+        isReadOnly
+        render={(props) => <div {...props} data-swapped="yes" />}
+      />,
+    );
+    const group = screen.getByRole('radiogroup', { name: 'View' });
+    expect(group).toHaveAttribute('data-swapped', 'yes');
+    expect(group).toHaveAttribute('aria-readonly', 'true');
+    expect(group).toHaveClass('ui-segmented-choice');
+  });
+
+  it('UIC-SEGMENTED-CHOICE-2.4 presses several segments and reports them in option order', async () => {
+    const onChange = vi.fn();
+    render(
+      <SegmentedChoice
+        aria-label="Text style"
+        selectionMode="multiple"
+        options={[
+          { value: 'bold', label: 'Bold' },
+          { value: 'italic', label: 'Italic' },
+          { value: 'underline', label: 'Underline' },
+        ]}
+        defaultValue={['underline']}
+        onChange={onChange}
+      />,
+    );
+    const group = screen.getByRole('toolbar', { name: 'Text style' });
+    expect(group).toHaveAttribute('data-selection-mode', 'multiple');
+    const bold = screen.getByRole('button', { name: 'Bold' });
+    expect(bold).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByRole('button', { name: 'Underline' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    await userEvent.click(bold);
+    expect(onChange).toHaveBeenLastCalledWith(['bold', 'underline']);
+    expect(bold).toHaveAttribute('aria-pressed', 'true');
+    await userEvent.click(screen.getByRole('button', { name: 'Underline' }));
+    expect(onChange).toHaveBeenLastCalledWith(['bold']);
+    expectHooksMatchSpec(document.body, 'SEGMENTED-CHOICE', { slots: ['segment', 'label'] });
+  });
+
+  it('UIC-SEGMENTED-CHOICE-2.5 submits the selected values with a form', async () => {
+    const { container, rerender } = render(
+      <form>
+        <SegmentedChoice aria-label="View" name="view" options={views} defaultValue="week" />
+        <SegmentedChoice
+          aria-label="Days"
+          name="days"
+          selectionMode="multiple"
+          options={views}
+          defaultValue={['day', 'month']}
+        />
+      </form>,
+    );
+    const form = container.querySelector('form') as HTMLFormElement;
+    expect(new FormData(form).getAll('view')).toEqual(['week']);
+    expect(new FormData(form).getAll('days')).toEqual(['day', 'month']);
+    await userEvent.click(screen.getByRole('radio', { name: 'Month' }));
+    expect(new FormData(form).getAll('view')).toEqual(['month']);
+    rerender(
+      <form>
+        <SegmentedChoice aria-label="View" name="view" options={views} value="day" isDisabled />
+      </form>,
+    );
+    expect(new FormData(form).getAll('view')).toEqual([]);
   });
 });

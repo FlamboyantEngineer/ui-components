@@ -1,6 +1,6 @@
-import { render, screen, within } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { LoadingCard, LoadingOverlay, LoadingRegion } from './loading-overlay.js';
@@ -244,5 +244,122 @@ describe('Loading overlay hooks', () => {
     expect(region).toHaveAttribute('data-loading', 'true');
     expect(region.querySelector('[data-testid]')).toBeNull();
     expectHooksMatchSpec(document.body, 'LOADING-OVERLAY');
+  });
+});
+
+describe('LoadingOverlay presence', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+    delete (Element.prototype as Partial<Element>).getAnimations;
+  });
+
+  it('UIC-LOADING-OVERLAY-2.3 covers the viewport from a portal when fullscreen', () => {
+    const { container } = render(<LoadingOverlay fullscreen label="Opening the cookbook" />);
+    expect(container.querySelector('.ui-loading-overlay')).toBeNull();
+    const cover = document.querySelector('.ui-loading-overlay') as HTMLElement;
+    expect(cover).toHaveAttribute('data-fullscreen', 'true');
+    expect(cover.parentElement).toHaveClass('ui-portal');
+    expect(cover.parentElement).toHaveAttribute('data-layer', 'modal');
+    expect(within(cover).getByRole('status')).toHaveTextContent('Opening the cookbook');
+    expectHooksMatchSpec(document.body, 'LOADING-OVERLAY');
+  });
+
+  it('UIC-LOADING-OVERLAY-2.3 keeps a full-screen region inert while it loads', () => {
+    render(
+      <LoadingRegion isLoading fullscreen label="Loading">
+        <button type="button">Edit</button>
+      </LoadingRegion>,
+    );
+    const region = document.querySelector('.ui-loading-region') as HTMLElement;
+    expect(region.querySelector('.ui-loading-region__content')).toHaveAttribute('inert');
+    expect(region.querySelector('.ui-loading-overlay')).toBeNull();
+    expect(document.querySelector('.ui-portal .ui-loading-overlay')).toHaveAttribute(
+      'data-fullscreen',
+      'true',
+    );
+  });
+
+  it('UIC-LOADING-OVERLAY-2.4 publishes entering and exiting and keeps the region cover through its exit', async () => {
+    const { container, rerender } = render(<LoadingOverlay isEntering label="Loading" />);
+    const cover = () => container.querySelector('.ui-loading-overlay');
+    expect(cover()).toHaveAttribute('data-entering', 'true');
+    rerender(<LoadingOverlay isExiting label="Loading" />);
+    expect(cover()).toHaveAttribute('data-exiting', 'true');
+    expect(cover()).not.toHaveAttribute('data-entering');
+    expectHooksMatchSpec(container, 'LOADING-OVERLAY');
+
+    let finish = () => {};
+    const exit = new Promise<void>((resolve) => {
+      finish = resolve;
+    });
+    let animations: Array<{ finished: Promise<void> }> = [];
+    Object.defineProperty(Element.prototype, 'getAnimations', {
+      configurable: true,
+      value: () => animations,
+    });
+    rerender(
+      <LoadingRegion isLoading label="Loading">
+        Content
+      </LoadingRegion>,
+    );
+    expect(cover()).not.toHaveAttribute('data-exiting');
+    animations = [{ finished: exit }];
+    rerender(<LoadingRegion label="Loading">Content</LoadingRegion>);
+    const region = container.querySelector('.ui-loading-region');
+    expect(region).not.toHaveAttribute('aria-busy');
+    expect(region?.querySelector('.ui-loading-region__content')).not.toHaveAttribute('inert');
+    expect(cover()).toHaveAttribute('data-exiting', 'true');
+    await act(async () => {
+      finish();
+      await exit;
+    });
+    expect(cover()).toBeNull();
+  });
+
+  it('UIC-LOADING-OVERLAY-3.2 blocks only once loading outlasts the delay', () => {
+    vi.useFakeTimers();
+    const { container, rerender } = render(
+      <LoadingRegion isLoading delay={300} label="Loading">
+        <button type="button">Edit</button>
+      </LoadingRegion>,
+    );
+    const region = container.querySelector('.ui-loading-region') as HTMLElement;
+    const content = region.querySelector('.ui-loading-region__content');
+    expect(region).not.toHaveAttribute('aria-busy');
+    expect(region).not.toHaveAttribute('data-loading');
+    expect(content).not.toHaveAttribute('inert');
+    expect(region.querySelector('.ui-loading-overlay')).toBeNull();
+    act(() => vi.advanceTimersByTime(299));
+    expect(region.querySelector('.ui-loading-overlay')).toBeNull();
+    act(() => vi.advanceTimersByTime(1));
+    expect(region).toHaveAttribute('aria-busy', 'true');
+    expect(content).toHaveAttribute('inert');
+    expect(region.querySelector('.ui-loading-overlay')).not.toBeNull();
+
+    rerender(
+      <LoadingRegion delay={300} label="Loading">
+        <button type="button">Edit</button>
+      </LoadingRegion>,
+    );
+    expect(region.querySelector('.ui-loading-overlay')).toBeNull();
+    rerender(
+      <LoadingRegion isLoading delay={300} label="Loading">
+        <button type="button">Edit</button>
+      </LoadingRegion>,
+    );
+    act(() => vi.advanceTimersByTime(200));
+    rerender(
+      <LoadingRegion delay={300} label="Loading">
+        <button type="button">Edit</button>
+      </LoadingRegion>,
+    );
+    act(() => vi.advanceTimersByTime(500));
+    expect(region).not.toHaveAttribute('aria-busy');
+    expect(region.querySelector('.ui-loading-overlay')).toBeNull();
+
+    rerender(<LoadingOverlay delay={300} label="Loading" />);
+    expect(container.querySelector('.ui-loading-overlay')).toBeNull();
+    act(() => vi.advanceTimersByTime(300));
+    expect(container.querySelector('.ui-loading-overlay')).not.toBeNull();
   });
 });

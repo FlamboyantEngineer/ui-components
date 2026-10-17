@@ -1,6 +1,8 @@
 import {
+  useCallback,
   useLayoutEffect,
   useRef,
+  useState,
   type KeyboardEvent,
   type PointerEvent,
   type RefObject,
@@ -9,6 +11,7 @@ import {
 import type { Orientation } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { clamp } from '../../utils/clamp.js';
+import { useEnterExit } from '../../utils/use-enter-exit.js';
 import { scrollRegionHooks as hooks } from './styling-hooks.js';
 import type { OverlayMeasurement } from './use-overlay-metrics.js';
 
@@ -19,10 +22,12 @@ export interface OverlayScrollbarsProps {
   viewportId: string | undefined;
   /** The viewport's measured geometry and track refs. */
   measurement: OverlayMeasurement;
-  /** Draw the horizontal thumb. */
-  overflowX: boolean;
-  /** Draw the vertical thumb. */
-  overflowY: boolean;
+  /** Draw the horizontal track. */
+  drawX: boolean;
+  /** Draw the vertical track. */
+  drawY: boolean;
+  /** The visibility mode shows the tracks now; a focused thumb also keeps them shown. */
+  isVisible: boolean;
 }
 
 interface ThumbProps {
@@ -45,6 +50,10 @@ interface ThumbProps {
 
 interface TrackProps extends ThumbProps {
   trackRef: (element: HTMLElement | null) => void;
+  /** Show the track; it stays mounted through its exit. */
+  isVisible: boolean;
+  /** Called when focus enters or leaves the track's thumb. */
+  onFocusChange: (isFocused: boolean) => void;
 }
 
 interface ThumbDrag {
@@ -162,7 +171,7 @@ function OverlayThumb(props: ThumbProps) {
       aria-valuemin={0}
       aria-valuemax={Math.round(max)}
       aria-valuenow={Math.round(position)}
-      tabIndex={0}
+      tabIndex={max > 0 ? 0 : -1}
       hidden={track <= 0}
       style={{
         position: 'absolute',
@@ -187,12 +196,40 @@ function OverlayThumb(props: ThumbProps) {
   );
 }
 
-function OverlayTrack({ trackRef, ...thumb }: TrackProps) {
+/** A press on the track, beside the thumb, scrolls one visible length toward the pointer. */
+function pageTowardPointer(event: PointerEvent<HTMLDivElement>, thumb: ThumbProps) {
+  const element = event.currentTarget.firstElementChild;
+  if (event.button !== 0 || event.target !== event.currentTarget || !element) return;
+  event.preventDefault();
+  const rect = element.getBoundingClientRect();
+  const before =
+    thumb.orientation === 'vertical' ? event.clientY < rect.top : event.clientX < rect.left;
+  const current = clamp(readScrollPosition(thumb), 0, thumb.max);
+  scrollViewportTo(thumb, clamp(current + (before ? -thumb.page : thumb.page), 0, thumb.max));
+}
+
+function OverlayTrack({ trackRef, isVisible, onFocusChange, ...thumb }: TrackProps) {
+  const element = useRef<HTMLDivElement | null>(null);
+  const { isMounted, isEntering, isExiting } = useEnterExit(element, isVisible);
+  const setElement = useCallback(
+    (node: HTMLDivElement | null) => {
+      element.current = node;
+      trackRef(node);
+    },
+    [trackRef],
+  );
+  if (!isMounted) return null;
   return (
     <div
-      {...hooks.slot('track', { orientation: thumb.orientation })}
-      ref={trackRef}
-      style={{ pointerEvents: 'none' }}
+      {...hooks.slot('track', {
+        orientation: thumb.orientation,
+        entering: isEntering,
+        exiting: isExiting,
+      })}
+      ref={setElement}
+      onPointerDown={(event) => pageTowardPointer(event, thumb)}
+      onFocus={() => onFocusChange(true)}
+      onBlur={() => onFocusChange(false)}
     >
       <OverlayThumb {...thumb} />
     </div>
@@ -202,37 +239,47 @@ function OverlayTrack({ trackRef, ...thumb }: TrackProps) {
 /**
  * Overlay thumbs for a natively scrolling viewport: content, wheel and touch scrolling stay native,
  * and React draws only the thumbs, positioned with inline offsets inside tracks the stylesheet places.
+ * Tracks show and hide with the visibility mode, staying mounted through their exit.
  */
 export function OverlayScrollbars({
   viewport,
   viewportId,
   measurement,
-  overflowX,
-  overflowY,
+  drawX,
+  drawY,
+  isVisible,
 }: OverlayScrollbarsProps) {
   const { metrics, schedule, verticalTrackRef, horizontalTrackRef } = measurement;
-  const shared = { viewport, viewportId, rtl: metrics.rtl, onScrolled: schedule };
+  const [isFocused, setFocused] = useState(false);
+  const shared = {
+    viewport,
+    viewportId,
+    rtl: metrics.rtl,
+    onScrolled: schedule,
+    isVisible: isVisible || isFocused,
+    onFocusChange: setFocused,
+  };
   return (
     <>
-      {overflowY ? (
+      {drawY ? (
         <OverlayTrack
           {...shared}
           orientation="vertical"
           trackRef={verticalTrackRef}
           track={metrics.trackY}
           page={Math.max(0, metrics.height - metrics.header)}
-          max={metrics.contentHeight - metrics.height}
+          max={Math.max(0, metrics.contentHeight - metrics.height)}
           value={metrics.top}
         />
       ) : null}
-      {overflowX ? (
+      {drawX ? (
         <OverlayTrack
           {...shared}
           orientation="horizontal"
           trackRef={horizontalTrackRef}
           track={metrics.trackX}
           page={metrics.width}
-          max={metrics.contentWidth - metrics.width}
+          max={Math.max(0, metrics.contentWidth - metrics.width)}
           value={metrics.left}
         />
       ) : null}

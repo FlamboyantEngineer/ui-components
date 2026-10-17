@@ -85,6 +85,36 @@ describe('Shortcut', () => {
     expect(within(item).getByText('⌘').closest('.ui-shortcut')).toHaveAttribute('id');
   });
 
+  it('UIC-SHORTCUT-2.4 draws each chord of a sequence in its own slot', () => {
+    const { container, rerender } = render(
+      <Shortcut chord={['Ctrl+K', 'Ctrl+C']} platform="windows" />,
+    );
+    const keys = container.querySelector('.ui-shortcut__keys') as HTMLElement;
+    const chords = [...keys.querySelectorAll(':scope > .ui-shortcut__chord')];
+    expect(chords.map((chord) => chord.textContent)).toEqual(['Ctrl+K', 'Ctrl+C']);
+    expect(keys.textContent).toBe('Ctrl+K Ctrl+C');
+    expect(keys.querySelectorAll('.ui-shortcut__key')).toHaveLength(4);
+    expect(container.querySelector('.ui-shortcut__text')).toHaveTextContent(
+      'Control K, then Control C',
+    );
+    expectHooksMatchSpec(container, 'SHORTCUT', { slots: ['keys', 'chord', 'key', 'text'] });
+
+    rerender(<Shortcut chord={['G']} platform="mac" />);
+    expect(container.querySelector('.ui-shortcut__chord')).toBeNull();
+    expect(container.querySelector('.ui-shortcut__keys')).toHaveTextContent('G');
+    rerender(<Shortcut chord={['', { key: '' }]} platform="mac" />);
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  it('UIC-SHORTCUT-2.4 joins a sequence with the provider string', () => {
+    render(
+      <UiProvider strings={{ shortcutSequence: (steps) => steps.join(' puis ') }}>
+        <Shortcut chord={['G', 'I']} platform="linux" />
+      </UiProvider>,
+    );
+    expect(document.querySelector('.ui-shortcut__text')).toHaveTextContent('G puis I');
+  });
+
   it('UIC-SHORTCUT-2.3 appends the caller class and forwards id and data attributes', () => {
     const { container } = render(
       <Shortcut
@@ -126,6 +156,14 @@ describe('KeyHints', () => {
     ).toBe('↑↓·Enter');
     expectHooksMatchSpec(container, 'SHORTCUT', { slots: ['hint', 'action'] });
     expectHooksMatchSpec(container, 'META-LINE', { slots: 'all' });
+  });
+
+  it("UIC-SHORTCUT-2.4 accepts sequences among a hint's keys", () => {
+    const { container } = render(
+      <KeyHints hints={[{ keys: [['G', 'I']], action: 'inbox' }]} platform="linux" />,
+    );
+    expect(container.querySelector('.ui-key-hints__hint')).toHaveTextContent('G I');
+    expect(container.querySelectorAll('.ui-shortcut__chord')).toHaveLength(2);
   });
 
   it('UIC-SHORTCUT-3.2 appends the caller class and forwards id and data attributes', () => {

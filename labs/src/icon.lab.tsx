@@ -33,5 +33,18 @@ mountLab(
         )}
       />
     </LabSection>
+    <LabSection
+      title="Inherited size"
+      description="Icons sized inherit in text of three font sizes: each box follows the font."
+    >
+      <StateMatrix
+        axes={{ fontSize: ['12', '16', '24'], glyph: ['info', 'check'] as const }}
+        render={({ fontSize, glyph }) => (
+          <span style={{ fontSize: Number(fontSize) }}>
+            <Icon glyph={glyph} size="inherit" /> Ripe pears
+          </span>
+        )}
+      />
+    </LabSection>
   </>,
 );

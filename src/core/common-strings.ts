@@ -3,9 +3,13 @@ export interface CommonStrings {
   close: string;
   dismiss: string;
   confirm: string;
+  /** Acknowledges an alert. */
+  ok: string;
   /** Shown when an action fails without a message of its own. */
   actionFailed: string;
   more: string;
+  /** Names the menu half of a split button. */
+  moreOptions: string;
   /** Default accessible name of a context menu. */
   contextMenu: string;
   loading: string;
@@ -45,6 +49,16 @@ export interface CommonStrings {
   zoomPresets: string;
   scrollBackward: string;
   scrollForward: string;
+  /** Names the menu button that holds the items of a row that do not fit. */
+  moreItems: (count: number) => string;
+  /** Names the button that adds a tab. */
+  addTab: string;
+  /** Names a collection's selected count (`3 selected`). */
+  selectedCount: (count: number) => string;
+  /** Clears a collection's selection. */
+  clearSelection: string;
+  /** Names a button that opens a menu of the places beside one, from its name. */
+  placesBeside: (name: string) => string;
   /** Names a button that removes a listed item, from the item's name. */
   removeItem: (name: string) => string;
   itemCount: (count: number) => string;
@@ -56,6 +70,8 @@ export interface CommonStrings {
   morePeople: (count: number, names: readonly string[]) => string;
   /** Spoken name of a keyboard key or modifier (`↑` → `Up Arrow`); other keys are read as written. */
   shortcutKeyName: (key: string) => string;
+  /** Joins the readable chords of a key sequence (`G, then I`). */
+  shortcutSequence: (steps: readonly string[]) => string;
   retry: string;
   loadMore: string;
   remainingCount: (count: number) => string;
@@ -91,8 +107,10 @@ export const commonStrings: CommonStrings = {
   close: 'Close',
   dismiss: 'Dismiss',
   confirm: 'Confirm',
+  ok: 'OK',
   actionFailed: 'The action could not be completed.',
   more: 'More',
+  moreOptions: 'More options',
   contextMenu: 'Context menu',
   loading: 'Loading',
   clear: 'Clear',
@@ -126,6 +144,11 @@ export const commonStrings: CommonStrings = {
   zoomPresets: 'Zoom presets',
   scrollBackward: 'Scroll backward',
   scrollForward: 'Scroll forward',
+  moreItems: (count) => (count === 1 ? '1 more item' : `${count} more items`),
+  addTab: 'Add tab',
+  selectedCount: (count) => `${count} selected`,
+  clearSelection: 'Clear selection',
+  placesBeside: (name) => `Places beside ${name}`,
   removeItem: (name) => `Remove ${name}`,
   itemCount: (count) => (count === 1 ? '1 item' : `${count} items`),
   unnamed: 'Unnamed',
@@ -133,6 +156,7 @@ export const commonStrings: CommonStrings = {
   morePeople: (count, names) =>
     `${count === 1 ? '1 more person' : `${count} more people`}${names.length > 0 ? `: ${names.join(', ')}` : ''}`,
   shortcutKeyName: (key) => spokenKeyNames[key] ?? key,
+  shortcutSequence: (steps) => steps.join(', then '),
   retry: 'Retry',
   loadMore: 'Load more',
   remainingCount: (count) => `${count} remaining`,

@@ -39,14 +39,21 @@ Verification: `src/components/icon-label/icon-label.test.tsx`
 Implementation: `src/components/icon-label/icon-label.tsx`
 Verification: `src/components/icon-label/icon-label.test.tsx`
 
+### UIC-ICON-LABEL-1.6 - Full text of a cut label
+
+With `truncate`, the label shall be a [Truncation Tooltip](TRUNCATION-TOOLTIP.md) that also carries the `ui-icon-label__label` class: while the stylesheet cuts it, resting the pointer on it, or keyboard focus on the control holding it, shows the whole label in that component's visual-only tooltip. A label that fits shows nothing.
+
+Implementation: `src/components/icon-label/icon-label.tsx`
+Verification: `src/components/icon-label/icon-label.test.tsx`, `e2e/icon-label.spec.ts`
+
 ## Hooks
 
-| Hook                   | Kind      | Values           | Description                             |
-| ---------------------- | --------- | ---------------- | --------------------------------------- |
-| `ui-icon-label`        | root      |                  | The `<span>` holding icon and label.    |
-| `ui-icon-label__icon`  | slot      |                  | The leading `Icon` (also `ui-icon`).    |
-| `ui-icon-label__label` | slot      |                  | The label text.                         |
-| `data-size`            | attribute | `sm`, `md`, `lg` | Icon box and gap size.                  |
-| `data-truncate`        | state     | `true`           | One line, ellipsized by the stylesheet. |
-| `data-grow`            | state     | `true`           | Takes the host row's free width.        |
-| `data-collapsible`     | state     | `true`           | The stylesheet may hide the text.       |
+| Hook                   | Kind      | Values           | Description                                                    |
+| ---------------------- | --------- | ---------------- | -------------------------------------------------------------- |
+| `ui-icon-label`        | root      |                  | The `<span>` holding icon and label.                           |
+| `ui-icon-label__icon`  | slot      |                  | The leading `Icon` (also `ui-icon`).                           |
+| `ui-icon-label__label` | slot      |                  | The label text; with `truncate`, also `ui-truncation-tooltip`. |
+| `data-size`            | attribute | `sm`, `md`, `lg` | Icon box and gap size.                                         |
+| `data-truncate`        | state     | `true`           | One line, ellipsized by the stylesheet.                        |
+| `data-grow`            | state     | `true`           | Takes the host row's free width.                               |
+| `data-collapsible`     | state     | `true`           | The stylesheet may hide the text.                              |

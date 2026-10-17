@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createRef, useState } from 'react';
+import { Disclosure, DisclosurePanel } from 'react-aria-components';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
@@ -148,5 +149,46 @@ describe('ExpandToggle', () => {
     expect(toggle).toHaveAttribute('data-testid', 'probe');
     expect(toggle).not.toHaveAttribute('data-expanded');
     expectHooksMatchSpec(container, 'EXPAND-TOGGLE');
+  });
+
+  it('UIC-EXPAND-TOGGLE-1.7 is the trigger of a React Aria disclosure, wired to its panel', async () => {
+    const onDisclosureChange = vi.fn();
+    const onExpandedChange = vi.fn();
+    const { container } = render(
+      <Disclosure onExpandedChange={onDisclosureChange}>
+        <ExpandToggle onExpandedChange={onExpandedChange} />
+        <DisclosurePanel>Lemon, orange and lime.</DisclosurePanel>
+      </Disclosure>,
+    );
+    const toggle = screen.getByRole('button', { name: 'Expand' });
+    const panel = container.querySelector('[id]:not(button)') as HTMLElement;
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(toggle).toHaveAttribute('aria-controls', panel.id);
+    expect(glyph(toggle)).toBe('chevron-right');
+    await userEvent.click(toggle);
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    expect(toggle).toHaveAttribute('data-expanded', 'true');
+    expect(toggle).toHaveAccessibleName('Collapse');
+    expect(glyph(toggle)).toBe('chevron-down');
+    expect(onDisclosureChange).toHaveBeenLastCalledWith(true);
+    expect(onExpandedChange).toHaveBeenLastCalledWith(true);
+    expect(screen.getByText('Lemon, orange and lime.')).toBeVisible();
+    expectHooksMatchSpec(toggle, 'EXPAND-TOGGLE');
+  });
+
+  it('UIC-EXPAND-TOGGLE-1.8 shows a busy indicator while children load', async () => {
+    const onExpandedChange = vi.fn();
+    render(
+      <ExpandToggle isPending pendingLabel="Loading citrus" onExpandedChange={onExpandedChange} />,
+    );
+    // React Aria names a pending button by its label and its busy indicator.
+    const toggle = screen.getByRole('button', { name: /^Expand/ });
+    expect(toggle).toHaveAttribute('data-pending', 'true');
+    expect(toggle).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByRole('progressbar', { name: 'Loading citrus' })).toHaveClass(
+      'ui-icon-button__spinner',
+    );
+    await userEvent.click(toggle);
+    expect(onExpandedChange).not.toHaveBeenCalled();
   });
 });

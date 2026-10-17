@@ -370,4 +370,128 @@ describe('ActionRow', () => {
     expect(root).toHaveAttribute('data-size', 'md');
     expectHooksMatchSpec(container, 'ACTION-ROW');
   });
+
+  it('UIC-ACTION-ROW-2.4 makes the actions one toolbar with arrow-key focus', async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <>
+        <button type="button">Before</button>
+        <ActionRow
+          toolbar
+          aria-label="Note actions"
+          actions={[
+            { verb: 'edit', onPress: noop },
+            { verb: 'delete', onPress: noop },
+            { verb: 'close', onPress: noop },
+          ]}
+        />
+        <button type="button">After</button>
+      </>,
+    );
+    const toolbar = screen.getByRole('toolbar', { name: 'Note actions' });
+    expect(toolbar).toHaveClass('ui-action-row__actions');
+    expect(toolbar).toHaveAttribute('data-orientation', 'horizontal');
+    expect(toolbar.closest('.ui-action-row')).not.toHaveAttribute('aria-label');
+    await user.click(screen.getByRole('button', { name: 'Before' }));
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'Edit' })).toHaveFocus();
+    await user.keyboard('{ArrowRight}');
+    expect(screen.getByRole('button', { name: 'Delete' })).toHaveFocus();
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'After' })).toHaveFocus();
+    expectHooksMatchSpec(container, 'ACTION-ROW', { slots: ['actions', 'action'] });
+  });
+
+  it('UIC-ACTION-ROW-2.5 keeps the actions that fit and lists the others in a menu', async () => {
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      const width = this.classList.contains('ui-action-row__action') ? 30 : 0;
+      return new DOMRect(0, 0, width, 30);
+    });
+    vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      return this.classList.contains('ui-action-row__actions') ? 70 : 0;
+    });
+    const onEdit = vi.fn();
+    const onAction = vi.fn();
+    try {
+      const { container } = render(
+        <ActionRow
+          overflow="menu"
+          actions={[
+            { verb: 'add', onPress: noop },
+            { verb: 'edit', onPress: onEdit },
+            { verb: 'refresh', onPress: noop },
+            { verb: 'more', onAction, items: [{ id: 'rename', label: 'Rename' }] },
+            { verb: 'delete', isDisabled: true, onPress: noop },
+          ]}
+        />,
+      );
+      const row = container.querySelector('.ui-action-row') as HTMLElement;
+      expect(row).toHaveAttribute('data-overflow', 'menu');
+      // Two 30px actions fit in 70px; the rest go into the menu after them.
+      expect(buttons(container).map((button) => button.getAttribute('aria-label'))).toEqual([
+        'Add',
+        'Refresh',
+      ]);
+      const more = screen.getByRole('button', { name: '3 more items' });
+      expect(more.closest('.ui-action-row__overflow')).not.toBeNull();
+      expectHooksMatchSpec(container, 'ACTION-ROW', { slots: ['actions', 'action', 'overflow'] });
+
+      await userEvent.click(more);
+      expect(screen.getAllByRole('menuitem').map((item) => item.textContent)).toEqual([
+        'More',
+        'Edit',
+        'Delete',
+      ]);
+      expect(screen.getByRole('menuitem', { name: 'Delete' })).toHaveAttribute(
+        'aria-disabled',
+        'true',
+      );
+      await userEvent.click(screen.getByRole('menuitem', { name: 'Edit' }));
+      expect(onEdit).toHaveBeenCalledTimes(1);
+
+      await userEvent.click(more);
+      await userEvent.click(screen.getByRole('menuitem', { name: 'More' }));
+      await userEvent.click(await screen.findByRole('menuitem', { name: 'Rename' }));
+      expect(onAction.mock.calls[0]?.[0]).toBe('rename');
+    } finally {
+      vi.restoreAllMocks();
+    }
+  });
+
+  it('UIC-ACTION-ROW-3.1 shows the selected count with a clear button while there is a selection', async () => {
+    const onClearSelection = vi.fn();
+    const { container, rerender } = render(
+      <ActionRow
+        selectedCount={3}
+        onClearSelection={onClearSelection}
+        actions={[{ verb: 'delete', onPress: noop }]}
+      />,
+    );
+    const row = container.querySelector('.ui-action-row') as HTMLElement;
+    expect(row).toHaveAttribute('data-selection', 'true');
+    expect(screen.getByRole('status')).toHaveTextContent('3 selected');
+    expect(screen.getByRole('status')).toHaveClass('ui-action-row__count');
+    const clear = screen.getByRole('button', { name: 'Clear selection' });
+    expect(clear).toHaveClass('ui-action-row__clear');
+    expectHooksMatchSpec(container, 'ACTION-ROW', {
+      slots: ['selection', 'clear', 'count', 'actions', 'action'],
+    });
+    await userEvent.click(clear);
+    expect(onClearSelection).toHaveBeenCalledTimes(1);
+    screen.getByRole('button', { name: 'Delete' }).focus();
+    await userEvent.keyboard('{Escape}');
+    expect(onClearSelection).toHaveBeenCalledTimes(2);
+    rerender(
+      <ActionRow
+        selectedCount={0}
+        onClearSelection={onClearSelection}
+        actions={[{ verb: 'delete', onPress: noop }]}
+      />,
+    );
+    expect(container.querySelector('.ui-action-row')).toBeNull();
+  });
 });

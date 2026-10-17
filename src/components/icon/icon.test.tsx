@@ -52,6 +52,12 @@ describe('Icon', () => {
     }
   });
 
+  it('UIC-ICON-1.5 publishes an inherited size that follows the font', () => {
+    const { container } = render(<Icon glyph="plus" size="inherit" />);
+    expect(container.firstElementChild).toHaveAttribute('data-size', 'inherit');
+    expectHooksMatchSpec(container, 'ICON', { slots: 'all' });
+  });
+
   it('UIC-ICON-1.3 is decorative without a label and an image with one', () => {
     const { container, rerender } = render(<Icon glyph="info" />);
     expect(container.firstElementChild).toHaveAttribute('aria-hidden', 'true');

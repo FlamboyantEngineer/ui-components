@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { userEvent } from '@testing-library/user-event';
+import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { EmptyState } from './empty-state.js';
 
@@ -97,5 +98,50 @@ describe('EmptyState', () => {
     expect(root).toHaveAttribute('data-variant', 'empty');
     expect(root.hidden).toBe(true);
     expectHooksMatchSpec(container, 'EMPTY-STATE');
+  });
+
+  it('UIC-EMPTY-STATE-2.1 draws a decorative illustration before the heading, or the spinner while loading', () => {
+    const { container, rerender } = render(
+      <EmptyState icon="folder" title="No files" description="Upload a file to start." />,
+    );
+    const root = container.firstElementChild as HTMLElement;
+    const [icon, heading] = Array.from(root.children);
+    expect(icon).toHaveClass('ui-icon', 'ui-empty-state__icon');
+    expect(icon).toHaveAttribute('data-glyph', 'folder');
+    expect(icon).toHaveAttribute('aria-hidden', 'true');
+    expect(heading).toHaveClass('ui-empty-state__title');
+    expectHooksMatchSpec(container, 'EMPTY-STATE', { slots: ['icon', 'title', 'description'] });
+
+    rerender(<EmptyState icon={<img alt="" src="empty.svg" />} description="Nothing yet." />);
+    expect(container.querySelector('.ui-empty-state__icon img')).not.toBeNull();
+    rerender(<EmptyState variant="loading" icon="folder" description="Loading..." />);
+    expect(container.querySelector('.ui-empty-state__icon')).toBeNull();
+    expect(container.querySelector('.ui-empty-state__spinner')).not.toBeNull();
+    rerender(<EmptyState icon={null} description="Nothing yet." />);
+    expect(container.querySelector('.ui-empty-state__icon')).toBeNull();
+  });
+
+  it('UIC-EMPTY-STATE-2.2 renders calls to action after the description', async () => {
+    const onAdd = vi.fn();
+    const { container, rerender } = render(
+      <EmptyState
+        title="No cities"
+        description="Add a city to see it here."
+        actions={
+          <button type="button" onClick={onAdd}>
+            Add city
+          </button>
+        }
+      />,
+    );
+    const actions = container.querySelector('.ui-empty-state__actions');
+    expect(actions?.previousElementSibling).toHaveClass('ui-empty-state__description');
+    expect(actions?.parentElement).toBe(container.firstElementChild);
+    await userEvent.click(screen.getByRole('button', { name: 'Add city' }));
+    expect(onAdd).toHaveBeenCalledTimes(1);
+    expectHooksMatchSpec(container, 'EMPTY-STATE', { slots: ['title', 'description', 'actions'] });
+
+    rerender(<EmptyState description="Nothing yet." actions={false} />);
+    expect(container.querySelector('.ui-empty-state__actions')).toBeNull();
   });
 });

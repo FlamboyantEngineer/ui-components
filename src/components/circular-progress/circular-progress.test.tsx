@@ -101,4 +101,20 @@ describe('CircularProgress', () => {
     expect(ref.current).toBe(ring);
     expectHooksMatchSpec(document.body, 'CIRCULAR-PROGRESS');
   });
+
+  it('UIC-CIRCULAR-PROGRESS-1.7 publishes completion and the tone', () => {
+    const { container, rerender } = render(
+      <CircularProgress aria-label="Synced" value={3} maxValue={5} />,
+    );
+    const ring = screen.getByRole('progressbar');
+    expect(ring).toHaveAttribute('data-tone', 'neutral');
+    expect(ring).not.toHaveAttribute('data-complete');
+    rerender(<CircularProgress aria-label="Synced" value={5} maxValue={5} tone="success" />);
+    expect(ring).toHaveAttribute('data-complete', 'true');
+    expect(ring).toHaveAttribute('data-tone', 'success');
+    rerender(<CircularProgress aria-label="Synced" isIndeterminate tone="danger" />);
+    expect(ring).not.toHaveAttribute('data-complete');
+    expect(ring).toHaveAttribute('data-tone', 'danger');
+    expectHooksMatchSpec(container, 'CIRCULAR-PROGRESS', { slots: ['ring', 'track', 'fill'] });
+  });
 });

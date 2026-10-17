@@ -107,4 +107,22 @@ test.describe('Banner lab', () => {
     await expect(demo.getByRole('button', { name: 'Show notice' })).toBeVisible();
     await lab.expectAccessible();
   });
+
+  test('UIC-BANNER-1.5 moves keyboard focus to a newly shown critical banner', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('banner');
+    const demo = page.locator('[data-lab-demo="auto-focus"]');
+    await demo.getByRole('button', { name: 'Save recipe' }).focus();
+    await page.keyboard.press('Enter');
+    const banner = demo.getByRole('alert');
+    await expect(banner).toBeFocused();
+    await expect(banner).toHaveAttribute('tabindex', '-1');
+    await page.keyboard.press('Tab');
+    await expect(banner.getByRole('button', { name: 'Try again' })).toBeFocused();
+    await lab.expectAccessible();
+    await page.keyboard.press('Enter');
+    await expect(banner).toHaveCount(0);
+  });
 });

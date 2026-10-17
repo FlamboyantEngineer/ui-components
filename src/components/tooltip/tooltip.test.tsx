@@ -249,4 +249,58 @@ describe('Tooltip', () => {
     expect(panel).toHaveAttribute('role', 'tooltip');
     expectHooksMatchSpec(document.body, 'TOOLTIP');
   });
+
+  it('UIC-TOOLTIP-1.9 names the trigger by the hint, open or not, without describing it', async () => {
+    render(
+      <>
+        <Tooltip relationship="label" content="Bold">
+          <AriaButton>
+            <svg aria-hidden="true" />
+          </AriaButton>
+        </Tooltip>
+        <Tooltip relationship="label" content="Italic">
+          <Button aria-describedby="italic-note">I</Button>
+        </Tooltip>
+        <span id="italic-note">Slanted text</span>
+      </>,
+    );
+    const bold = screen.getByRole('button', { name: 'Bold' });
+    expect(bold).toHaveAccessibleDescription('');
+    act(() => {
+      fireEvent.keyDown(document.body, { key: 'Tab' });
+      bold.focus();
+    });
+    expect(tooltip()).toHaveTextContent('Bold');
+    expect(bold).toHaveAccessibleName('Bold');
+    expect(bold).toHaveAccessibleDescription('');
+    act(() => bold.blur());
+    await advance(3000);
+    expect(tooltip()).toBeNull();
+    expect(bold).toHaveAccessibleName('Bold');
+
+    const italic = screen.getByRole('button', { name: 'Italic' });
+    act(() => {
+      fireEvent.keyDown(document.body, { key: 'Tab' });
+      italic.focus();
+    });
+    expect(tooltip()).toHaveTextContent('Italic');
+    expect(italic).toHaveAccessibleDescription('Slanted text');
+    act(() => italic.blur());
+    await advance(3000);
+  });
+
+  it('UIC-TOOLTIP-1.9 describes the trigger when the hint is not a string', async () => {
+    render(
+      <Tooltip relationship="label" content={<strong>Underline</strong>}>
+        <AriaButton aria-label="U">U</AriaButton>
+      </Tooltip>,
+    );
+    const trigger = screen.getByRole('button', { name: 'U' });
+    act(() => {
+      fireEvent.keyDown(document.body, { key: 'Tab' });
+      trigger.focus();
+    });
+    expect(trigger).toHaveAccessibleName('U');
+    expect(trigger).toHaveAccessibleDescription('Underline');
+  });
 });

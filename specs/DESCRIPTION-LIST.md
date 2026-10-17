@@ -20,9 +20,23 @@ Verification: `src/components/description-list/description-list.test.tsx`
 
 ### UIC-DESCRIPTION-LIST-1.3 - Layout and columns
 
-`layout` (`inline` by default, or `stacked`) and `columns` (`1` by default, or `2`) shall be published as `data-layout` and `data-columns` on the root. The stylesheet aligns inline rows on shared label and value tracks, puts stacked values below their labels, and may lay rows out in two columns. The reference sheet wraps long values without clipping and reduces two columns to one on a viewport narrower than 44rem.
+`layout` (`inline` by default, or `stacked`) and `columns` (`1` by default, `2`, `3` or `4`) shall be published as `data-layout` and `data-columns` on the root. The stylesheet aligns inline rows on shared label and value tracks, puts stacked values below their labels, and may lay rows out in up to four columns. The reference sheet wraps long values without clipping and reduces several columns to one on a viewport narrower than 44rem.
 
 Implementation: `src/components/description-list/description-list.tsx`, `labs/reference/description-list.css`
+Verification: `src/components/description-list/description-list.test.tsx`, `e2e/description-list.spec.ts`
+
+### UIC-DESCRIPTION-LIST-1.4 - Row span
+
+A row's `span` (`1` by default, `2`, `3`, `4` or `full`) shall be published as `data-span` on the row, the number of the list's columns it covers, `full` covering the whole line. In the reference sheet an inline row's value and second definition stretch across the covered columns, and a span wider than the list covers the whole line.
+
+Implementation: `src/components/description-list/description-list.tsx`, `labs/reference/description-list.css`
+Verification: `src/components/description-list/description-list.test.tsx`, `e2e/description-list.spec.ts`
+
+### UIC-DESCRIPTION-LIST-1.5 - Formatted values
+
+A row without children shall show its `value` formatted for the provider's locale ([PROVIDER.md](PROVIDER.md)): a number or a `{ start, end }` number range with `Intl.NumberFormat`, a date or a date range with `Intl.DateTimeFormat` (a medium date unless `formatOptions` says otherwise), and a list of texts with `Intl.ListFormat` (a conjunction by default). `formatOptions` passes `Intl` options for the value's kind. Children, when given, are shown instead. `formatDescriptionValue(value, { locale, formatOptions })` exposes the same text.
+
+Implementation: `src/components/description-list/description-list.tsx`, `src/components/description-list/format-description-value.ts`
 Verification: `src/components/description-list/description-list.test.tsx`, `e2e/description-list.spec.ts`
 
 ## UIC-DESCRIPTION-LIST-2 - States and accessibility
@@ -50,12 +64,13 @@ Verification: `src/components/description-list/description-list.test.tsx`
 
 ## Hooks
 
-| Hook                             | Kind      | Values              | Description                                 |
-| -------------------------------- | --------- | ------------------- | ------------------------------------------- |
-| `ui-description-list`            | root      |                     | The `<dl>`.                                 |
-| `ui-description-list__row`       | slot      |                     | One row's `<div>`, from `DescriptionRow`.   |
-| `ui-description-list__label`     | slot      |                     | The row's `<dt>`.                           |
-| `ui-description-list__value`     | slot      |                     | The row's value `<dd>`.                     |
-| `ui-description-list__secondary` | slot      |                     | The row's second `<dd>`, when it has one.   |
-| `data-layout`                    | attribute | `inline`, `stacked` | Label and value arrangement.                |
-| `data-columns`                   | attribute | `1`, `2`            | Columns of rows the stylesheet may lay out. |
+| Hook                             | Kind      | Values                     | Description                                 |
+| -------------------------------- | --------- | -------------------------- | ------------------------------------------- |
+| `ui-description-list`            | root      |                            | The `<dl>`.                                 |
+| `ui-description-list__row`       | slot      |                            | One row's `<div>`, from `DescriptionRow`.   |
+| `ui-description-list__label`     | slot      |                            | The row's `<dt>`.                           |
+| `ui-description-list__value`     | slot      |                            | The row's value `<dd>`.                     |
+| `ui-description-list__secondary` | slot      |                            | The row's second `<dd>`, when it has one.   |
+| `data-layout`                    | attribute | `inline`, `stacked`        | Label and value arrangement.                |
+| `data-columns`                   | attribute | `1`, `2`, `3`, `4`         | Columns of rows the stylesheet may lay out. |
+| `data-span`                      | attribute | `1`, `2`, `3`, `4`, `full` | On a row: the list columns it covers.       |

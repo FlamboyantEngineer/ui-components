@@ -86,3 +86,10 @@ The target shall be an element or a ref whose element is stable. With `enabled={
 
 Implementation: `src/utils/use-in-view.ts`
 Verification: `src/utils/use-in-view.test.ts`
+
+### UIC-MEASUREMENT-4.3 - Scroll offset
+
+With `scrollOffset`, the hook shall observe the target against its nearest scrolling ancestor (the viewport when it has none), extended past the visible area's end and sides by that many of the container's heights or widths (React Aria's `scrollOffset`: 1 is one full height; negative values count as 0), so content can load before the reader reaches it. Without it, the hook reports actual visibility.
+
+Implementation: `src/utils/use-in-view.ts`
+Verification: `src/utils/use-in-view.test.ts`, `e2e/load-more.spec.ts`

@@ -11,7 +11,10 @@ let controlInView = false;
 class FakeIntersectionObserver {
   static instances: FakeIntersectionObserver[] = [];
   target: Element | null = null;
-  constructor(readonly callback: IntersectionObserverCallback) {
+  constructor(
+    readonly callback: IntersectionObserverCallback,
+    readonly init?: IntersectionObserverInit,
+  ) {
     FakeIntersectionObserver.instances.push(this);
   }
   observe(target: Element): void {
@@ -268,5 +271,20 @@ describe('LoadMore', () => {
     setInView(false);
     setInView(true);
     expect(onLoadMore).toHaveBeenCalledTimes(1);
+  });
+
+  it('UIC-LOAD-MORE-1.8 loads ahead within the scroll offset of its scrolling container', async () => {
+    vi.stubGlobal('IntersectionObserver', FakeIntersectionObserver);
+    const onLoadMore = vi.fn();
+    const { rerender } = render(<LoadMore autoLoad onLoadMore={onLoadMore} />);
+    expect(FakeIntersectionObserver.instances.at(-1)?.init).toBeUndefined();
+    rerender(<LoadMore autoLoad scrollOffset={1} onLoadMore={onLoadMore} />);
+    expect(FakeIntersectionObserver.instances.at(-1)?.init).toEqual({
+      root: null,
+      rootMargin: '0px 100% 100% 100%',
+    });
+    setInView(true);
+    expect(onLoadMore).toHaveBeenCalledTimes(1);
+    await act(async () => {});
   });
 });

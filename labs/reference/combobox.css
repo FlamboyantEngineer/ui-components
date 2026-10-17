@@ -18,7 +18,7 @@
   align-items: center;
   gap: 4px;
   box-sizing: border-box;
-  height: 32px;
+  min-height: 32px;
   padding: 0 4px 0 8px;
   border: 1px solid var(--ref-border);
   border-radius: var(--ref-radius);
@@ -26,12 +26,12 @@
 }
 
 .ui-combobox[data-size='sm'] .ui-combobox__field {
-  height: 26px;
+  min-height: 26px;
   font-size: 12px;
 }
 
 .ui-combobox[data-size='lg'] .ui-combobox__field {
-  height: 38px;
+  min-height: 38px;
   font-size: 14px;
 }
 
@@ -60,8 +60,8 @@
 
 .ui-combobox__input {
   flex: 1 1 auto;
+  align-self: stretch;
   min-width: 0;
-  height: 100%;
   padding: 0;
   border: 0;
   background: none;
@@ -129,10 +129,15 @@
   font-size: 12px;
 }
 
+/* The listbox scrolls inside the popover, whose height React Aria limits to the room in view. */
 .ui-combobox__popover {
+  display: flex;
+  flex-direction: column;
   box-sizing: border-box;
   min-width: var(--trigger-width);
-  overflow: auto;
+  /* Wide options wrap within this; a virtualized list, whose rows do not size it, needs it. */
+  max-width: max(var(--trigger-width), 320px);
+  overflow: hidden;
   border: 1px solid var(--ref-border);
   border-radius: var(--ref-radius);
   background: var(--ref-raised);
@@ -148,7 +153,10 @@
 }
 
 .ui-combobox__listbox {
+  flex: 1 1 auto;
+  min-height: 0;
   padding: 4px;
+  overflow: auto;
   outline: none;
 }
 
@@ -205,6 +213,46 @@
 
 .ui-combobox__option-icon ~ .ui-combobox__option-description {
   padding-inline-start: 24px;
+}
+
+/* A multiple combobox's chips sit before the input and wrap with it. */
+
+.ui-combobox:has(.ui-combobox__chips) .ui-combobox__field {
+  flex-wrap: wrap;
+  padding-block: 3px;
+}
+
+.ui-combobox__chips {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.ui-combobox:has(.ui-combobox__chips) .ui-combobox__input {
+  flex-basis: 4rem;
+  min-height: 22px;
+}
+
+.ui-combobox__create {
+  display: flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  color: var(--ref-accent-ink);
+  cursor: default;
+  outline: none;
+}
+
+.ui-combobox__create[data-focused] {
+  background: var(--ref-hover);
+}
+
+.ui-combobox__load-more {
+  display: flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 2px 8px;
+  color: var(--ref-muted);
 }
 
 .ui-combobox__empty {

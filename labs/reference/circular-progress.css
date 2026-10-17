@@ -33,6 +33,19 @@
   transition: stroke-dashoffset 0.2s;
 }
 
+.ui-circular-progress[data-complete] .ui-circular-progress__fill,
+.ui-circular-progress[data-tone='success'] .ui-circular-progress__fill {
+  stroke: var(--ref-success);
+}
+
+.ui-circular-progress[data-tone='warning'] .ui-circular-progress__fill {
+  stroke: var(--ref-warning);
+}
+
+.ui-circular-progress[data-tone='danger'] .ui-circular-progress__fill {
+  stroke: var(--ref-danger);
+}
+
 .ui-circular-progress[data-indeterminate] .ui-circular-progress__ring {
   animation: ref-spin 1s linear infinite;
 }

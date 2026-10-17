@@ -77,3 +77,15 @@
 .ui-toolbar-scroller__scroll-button[hidden] {
   display: none;
 }
+
+/* A scroller collapsing into a menu keeps every tool at its natural width so it can measure them. */
+.ui-toolbar-scroller[data-overflow='menu'] > .ui-toolbar-scroller__strip {
+  overflow: hidden;
+}
+
+.ui-toolbar-scroller__item,
+.ui-toolbar-scroller__overflow {
+  display: flex;
+  flex: none;
+  align-items: center;
+}

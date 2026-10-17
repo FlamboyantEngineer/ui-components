@@ -65,6 +65,74 @@
   border-top: 3px solid var(--ref-danger);
 }
 
+/* News tones mark the panel's top edge, as danger does. */
+
+.ui-modal[data-tone='info'] .ui-modal__panel {
+  border-top: 3px solid var(--ref-info);
+}
+
+.ui-modal[data-tone='success'] .ui-modal__panel {
+  border-top: 3px solid var(--ref-success);
+}
+
+.ui-modal[data-tone='warning'] .ui-modal__panel {
+  border-top: 3px solid var(--ref-warning);
+}
+
+/* A non-modal dialog leaves the page visible: no backdrop, and the panel floats at the end corner. */
+
+.ui-modal[data-non-modal] {
+  place-items: end;
+  background: none;
+}
+
+:root[data-theme='dark'] .ui-modal[data-non-modal] {
+  background: none;
+}
+
+.ui-modal[data-non-modal] .ui-modal__panel {
+  width: min(360px, 100%);
+}
+
+/* An anchored dialog is a popover holding the dialog directly. */
+
+.ui-modal[data-layer='dropdown'] {
+  display: flex;
+  box-sizing: border-box;
+  width: min(320px, calc(100vw - 16px));
+  padding: 0;
+  border: 1px solid var(--ref-border);
+  border-radius: 8px;
+  background: var(--ref-raised);
+  color: var(--ref-text);
+  box-shadow: var(--ref-shadow);
+  font: 14px/1.5 var(--ref-font);
+}
+
+:root[data-theme='dark'] .ui-modal[data-layer='dropdown'] {
+  background: var(--ref-raised);
+}
+
+.ui-modal[data-layer='dropdown'] .ui-modal__header {
+  padding: 12px 12px 4px;
+}
+
+.ui-modal[data-layer='dropdown'] .ui-modal__title {
+  font-size: 14px;
+}
+
+.ui-modal[data-layer='dropdown'] .ui-modal__body {
+  padding: 4px 12px 12px;
+}
+
+.ui-modal[data-layer='dropdown'] .ui-modal__footer {
+  padding: 8px 12px;
+}
+
+.ui-modal[data-layer='dropdown'] :is(.ui-modal__cancel, .ui-modal__secondary, .ui-modal__primary) {
+  min-width: 0;
+}
+
 .ui-modal__dialog {
   display: flex;
   flex: 1 1 auto;

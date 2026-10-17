@@ -5,6 +5,8 @@ import type { BaseProps, NativeProps, Size, Tone } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { formatCount, normalizeCount } from '../../utils/count.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { Icon, toIconProps, type IconSource } from '../icon/icon.js';
 
 export type BadgeTone = Tone;
 
@@ -34,10 +36,15 @@ export interface BadgeLabelProps extends BadgeCommonProps {
   announce?: boolean | undefined;
   /** Soften only the status dot, keeping the label's contrast. */
   mutedDot?: boolean | undefined;
+  /** A decorative icon before the label: a built-in glyph name or any icon node. */
+  startIcon?: IconSource;
+  /** A decorative icon after the label: a built-in glyph name or any icon node. */
+  endIcon?: IconSource;
   count?: never;
   max?: never;
   more?: never;
   placement?: never;
+  showZero?: never;
 }
 
 export interface BadgeCountProps extends BadgeCommonProps {
@@ -49,18 +56,55 @@ export interface BadgeCountProps extends BadgeCommonProps {
   more?: boolean | undefined;
   /** `overlay` pins the count to the upper trailing corner of a positioned host. Defaults to `inline`. */
   placement?: BadgePlacement | undefined;
+  /** Show a count of zero. Defaults to `true`; `false` renders nothing while the count is zero. */
+  showZero?: boolean | undefined;
   variant?: never;
   children?: never;
   announce?: never;
   mutedDot?: never;
+  startIcon?: never;
+  endIcon?: never;
 }
 
-export type BadgeProps = BadgeLabelProps | BadgeCountProps;
+export interface BadgeDotProps extends BadgeCommonProps {
+  /** A tone dot with no text, such as a corner marker on an icon or avatar. */
+  variant: 'dot';
+  /** `overlay` pins the dot to the upper trailing corner of a positioned host. Defaults to `inline`. */
+  placement?: BadgePlacement | undefined;
+  children?: never;
+  count?: never;
+  max?: never;
+  more?: never;
+  showZero?: never;
+  announce?: never;
+  mutedDot?: never;
+  startIcon?: never;
+  endIcon?: never;
+}
 
-const hooks = createHooks('badge', ['dot', 'label', 'accessible-label']);
+export type BadgeProps = BadgeLabelProps | BadgeCountProps | BadgeDotProps;
+
+const hooks = createHooks('badge', ['dot', 'start-icon', 'label', 'end-icon', 'accessible-label']);
 
 function isCountBadge(props: BadgeProps): props is BadgeCountProps {
   return typeof props.count === 'number';
+}
+
+function isDotBadge(props: BadgeProps): props is BadgeDotProps {
+  return props.variant === 'dot';
+}
+
+function isAriaHidden(value: NativeProps<'span'>['aria-hidden']): boolean {
+  return value === true || value === 'true';
+}
+
+/** Text only assistive technology reads, in place of a visible label that differs from it. */
+function AccessibleLabel({ children }: { children: string }) {
+  return (
+    <VisuallyHidden elementType="span" className={hooks.slotClass('accessible-label')}>
+      {children}
+    </VisuallyHidden>
+  );
 }
 
 /** The text a count is read as: the caller's label, else the uncapped count ("12 or more" with `more`). */
@@ -82,6 +126,7 @@ function CountBadge({
   tone = 'neutral',
   size = 'md',
   bare = false,
+  showZero = true,
   className,
   'aria-label': ariaLabel,
   ...rest
@@ -89,20 +134,39 @@ function CountBadge({
   const strings = useUiStrings();
   const visible = formatCount(count, { max, more });
   const spoken = describeCount({ count, more, 'aria-label': ariaLabel }, strings);
-  const isHidden = rest['aria-hidden'] === true || rest['aria-hidden'] === 'true';
-  const isSeparate = !isHidden && spoken !== visible;
+  const isSeparate = !isAriaHidden(rest['aria-hidden']) && spoken !== visible;
   const data = { variant: 'count', tone, size, placement, bare };
+  if (!showZero && normalizeCount(count) === 0 && !more) return null;
 
   return (
     <span {...rest} {...hooks.root({ className, data })}>
       <span {...hooks.slot('label')} aria-hidden={isSeparate || undefined}>
         {visible}
       </span>
-      {isSeparate ? (
-        <VisuallyHidden elementType="span" className={hooks.slotClass('accessible-label')}>
-          {spoken}
-        </VisuallyHidden>
-      ) : null}
+      {isSeparate ? <AccessibleLabel>{spoken}</AccessibleLabel> : null}
+    </span>
+  );
+}
+
+/** A tone dot with no text: decorative, or read as its `aria-label` from visually hidden text. */
+function DotBadge({
+  placement = 'inline',
+  tone = 'neutral',
+  size = 'md',
+  bare = false,
+  className,
+  'aria-label': ariaLabel,
+  ...rest
+}: BadgeDotProps) {
+  const isSpoken = Boolean(ariaLabel) && !isAriaHidden(rest['aria-hidden']);
+  const data = { variant: 'dot', tone, size, placement, bare };
+  return (
+    <span
+      {...rest}
+      aria-hidden={isSpoken ? rest['aria-hidden'] : true}
+      {...hooks.root({ className, data })}
+    >
+      {isSpoken && ariaLabel ? <AccessibleLabel>{ariaLabel}</AccessibleLabel> : null}
     </span>
   );
 }
@@ -112,6 +176,8 @@ function LabelBadge({
   children,
   announce = true,
   mutedDot = false,
+  startIcon,
+  endIcon,
   tone = 'neutral',
   size = 'md',
   bare = false,
@@ -127,15 +193,23 @@ function LabelBadge({
       role={isStatus && announce ? 'status' : undefined}
     >
       {isStatus ? <span {...hooks.slot('dot')} aria-hidden="true" /> : null}
+      {isEmptyNode(startIcon) ? null : (
+        <Icon {...toIconProps(startIcon)} className={hooks.slotClass('start-icon')} />
+      )}
       <span {...hooks.slot('label')}>{children}</span>
+      {isEmptyNode(endIcon) ? null : (
+        <Icon {...toIconProps(endIcon)} className={hooks.slotClass('end-icon')} />
+      )}
     </span>
   );
 }
 
 /**
  * A compact, non-interactive value a reader scans: a tag, a type, a state or a count.
- * Pass `children` for a label, or `count` for a formatted number.
+ * Pass `children` for a label, `count` for a formatted number, or `variant="dot"` for a marker.
  */
 export function Badge(props: BadgeProps) {
-  return isCountBadge(props) ? <CountBadge {...props} /> : <LabelBadge {...props} />;
+  if (isCountBadge(props)) return <CountBadge {...props} />;
+  if (isDotBadge(props)) return <DotBadge {...props} />;
+  return <LabelBadge {...props} />;
 }

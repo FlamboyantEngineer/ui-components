@@ -47,7 +47,26 @@ jobs:
         run: npm run build:labs
       - name: Package contents
         run: npm run check:package
+
+  labs:
+    # The lab browser suite runs in shards beside the check job so it fits the time budget.
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Build labs
+        run: npm run build:labs
       - name: Install Playwright browser
         run: npx playwright install --with-deps chromium
-      - name: Lab browser tests
-        run: npm run test:labs
+      - name: Lab browser tests (shard ${{ matrix.shard }} of 3)
+        run: npx playwright test --shard=${{ matrix.shard }}/3

@@ -18,6 +18,7 @@ export * from './components/scroll-region/index.js';
 export * from './components/section-header/index.js';
 export * from './utils/index.js';
 export * from './components/button/index.js';
+export * from './components/button-group/index.js';
 export * from './components/icon-button/index.js';
 export * from './components/action-button/index.js';
 export * from './components/copy-button/index.js';

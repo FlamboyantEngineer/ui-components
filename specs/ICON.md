@@ -13,7 +13,7 @@ Verification: `src/components/icon/icon.test.tsx`, `e2e/icon.spec.ts`
 
 ### UIC-ICON-1.2 - Sizes
 
-`Icon` shall publish its box size in `data-size`: `sm`, `md` (the default) or `lg`. The host stylesheet maps each size to a box; the reference sheet uses 12, 16 and 20 pixels. A glyph or child fills the box.
+`Icon` shall publish its box size in `data-size`: `sm`, `md` (the default), `lg` or `inherit` ([UIC-ICON-1.5](#uic-icon-15---inherited-size)). The host stylesheet maps each size to a box; the reference sheet uses 12, 16 and 20 pixels. A glyph or child fills the box.
 
 Implementation: `src/components/icon/icon.tsx`, `labs/reference/icon.css`
 Verification: `src/components/icon/icon.test.tsx`, `e2e/icon.spec.ts`
@@ -32,11 +32,18 @@ Verification: `src/components/icon/icon.test.tsx`, `e2e/icon.spec.ts`
 Implementation: `src/components/icon/icon.tsx`
 Verification: `src/components/icon/icon.test.tsx`
 
+### UIC-ICON-1.5 - Inherited size
+
+`size="inherit"` shall publish `data-size="inherit"`, a box as tall and wide as the surrounding font size (1em in the reference sheet), so the icon scales with the text it sits in instead of taking a fixed box.
+
+Implementation: `src/components/icon/icon.tsx`, `labs/reference/icon.css`
+Verification: `src/components/icon/icon.test.tsx`, `e2e/icon.spec.ts`
+
 ## Hooks
 
-| Hook             | Kind      | Values           | Description                                        |
-| ---------------- | --------- | ---------------- | -------------------------------------------------- |
-| `ui-icon`        | root      |                  | The icon box (`<span>`).                           |
-| `ui-icon__glyph` | slot      |                  | The built-in glyph's `<svg>`, when `glyph` is set. |
-| `data-size`      | attribute | `sm`, `md`, `lg` | Box size.                                          |
-| `data-glyph`     | attribute |                  | The built-in glyph name, when `glyph` is set.      |
+| Hook             | Kind      | Values                      | Description                                        |
+| ---------------- | --------- | --------------------------- | -------------------------------------------------- |
+| `ui-icon`        | root      |                             | The icon box (`<span>`).                           |
+| `ui-icon__glyph` | slot      |                             | The built-in glyph's `<svg>`, when `glyph` is set. |
+| `data-size`      | attribute | `sm`, `md`, `lg`, `inherit` | Box size; `inherit` follows the font size.         |
+| `data-glyph`     | attribute |                             | The built-in glyph name, when `glyph` is set.      |

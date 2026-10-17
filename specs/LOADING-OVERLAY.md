@@ -55,13 +55,34 @@ Verification: `src/components/loading-overlay/loading-overlay.test.tsx`, `e2e/lo
 Implementation: `src/components/loading-overlay/loading-overlay.tsx`, `labs/reference/loading-overlay.css`
 Verification: `src/components/loading-overlay/loading-overlay.test.tsx`, `e2e/loading-overlay.spec.ts`
 
+### UIC-LOADING-OVERLAY-2.3 - Full screen
+
+`fullscreen` shall publish `data-fullscreen` and render the cover through a [Portal](PORTAL.md) on the `modal` layer, in the overlay container, so the stylesheet can fix it over the viewport without being clipped or offset by the surrounding layout. A full-screen region keeps its own content inert while it loads, so keyboard users cannot reach what the cover hides.
+
+Implementation: `src/components/loading-overlay/loading-overlay.tsx`, `labs/reference/loading-overlay.css`
+Verification: `src/components/loading-overlay/loading-overlay.test.tsx`, `e2e/loading-overlay.spec.ts`
+
+### UIC-LOADING-OVERLAY-2.4 - Entering and exiting
+
+`isEntering` and `isExiting` shall publish `data-entering` and `data-exiting` on the cover. `LoadingRegion` times both with [`useEnterExit`](ENTER-EXIT.md) from the cover's `ref`: the cover enters when the region starts blocking and stays mounted, exiting, until its exit animations end after loading stops. A host that mounts `LoadingOverlay` itself does the same with the overlay's `ref`.
+
+Implementation: `src/components/loading-overlay/loading-overlay.tsx`, `src/utils/use-enter-exit.ts`, `labs/reference/loading-overlay.css`
+Verification: `src/components/loading-overlay/loading-overlay.test.tsx`, `e2e/loading-overlay.spec.ts`
+
 ## UIC-LOADING-OVERLAY-3 - Region
 
 ### UIC-LOADING-OVERLAY-3.1 - Blocking while loading
 
-While `isLoading` is true, `LoadingRegion` shall set `aria-busy="true"` and `data-loading` on its root, make its `ui-loading-region__content` inert (no pointer, focus or assistive-technology access) and render a `LoadingOverlay` with the given label, description, hint, progress, step and presentation beside the content. When loading ends, busy, inert and the overlay are removed and the content is usable again.
+While `isLoading` is true, `LoadingRegion` shall set `aria-busy="true"` and `data-loading` on its root, make its `ui-loading-region__content` inert (no pointer, focus or assistive-technology access) and render a `LoadingOverlay` with the given label, description, hint, progress, step and presentation beside the content. When loading ends, busy and inert are removed and the content is usable again; the overlay leaves once its exit ends ([UIC-LOADING-OVERLAY-2.4](#uic-loading-overlay-24---entering-and-exiting)).
 
 Implementation: `src/components/loading-overlay/loading-overlay.tsx`, `labs/reference/loading-overlay.css`
+Verification: `src/components/loading-overlay/loading-overlay.test.tsx`, `e2e/loading-overlay.spec.ts`
+
+### UIC-LOADING-OVERLAY-3.2 - Show delay
+
+With `delay` (milliseconds), `LoadingRegion` shall stay usable and unmarked until `isLoading` has been true for that long, then block as above; loading that ends sooner never shows the overlay, marks the region busy or makes its content inert. A `LoadingOverlay` given `delay` renders nothing until it has been mounted that long.
+
+Implementation: `src/components/loading-overlay/loading-overlay.tsx`
 Verification: `src/components/loading-overlay/loading-overlay.test.tsx`, `e2e/loading-overlay.spec.ts`
 
 ## UIC-LOADING-OVERLAY-4 - Hooks
@@ -92,3 +113,6 @@ Verification: `src/components/loading-overlay/loading-overlay.test.tsx`
 | `data-determinate`             | state     | `true`          | The card shows measured progress.                |
 | `data-presentation`            | attribute | `card`, `scrim` | Card on the scrim, or the scrim alone.           |
 | `data-loading`                 | state     | `true`          | The region is loading.                           |
+| `data-fullscreen`              | state     | `true`          | The cover is fixed over the viewport.            |
+| `data-entering`                | state     | `true`          | The cover is playing its enter animation.        |
+| `data-exiting`                 | state     | `true`          | The cover is playing its exit transition.        |

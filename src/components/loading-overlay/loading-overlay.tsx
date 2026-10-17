@@ -1,9 +1,11 @@
-import { useId, useMemo, type ReactNode } from 'react';
+import { useEffect, useId, useMemo, useRef, useState, type ReactNode, type Ref } from 'react';
 import { useLocale } from 'react-aria-components';
 import { createHooks, splitDataAttributes } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { useEnterExit } from '../../utils/use-enter-exit.js';
+import { Portal } from '../portal/portal.js';
 import {
   ProgressBar,
   resolveProgressRange,
@@ -50,10 +52,23 @@ export interface LoadingOverlayProps extends LoadingCardProps {
    * from assistive technology, for secondary regions that load together with a primary one.
    */
   presentation?: LoadingOverlayPresentation | undefined;
+  /** Milliseconds the work must last before the overlay shows, so quick work never flashes it. */
+  delay?: number | undefined;
+  /** Cover the viewport from the overlay layer instead of the positioned parent. */
+  fullscreen?: boolean | undefined;
+  /** The overlay has just appeared; publishes `data-entering` for an enter animation. */
+  isEntering?: boolean | undefined;
+  /** The overlay is on its way out; publishes `data-exiting` for an exit transition. */
+  isExiting?: boolean | undefined;
+  /** The cover element, for example for `useEnterExit`. */
+  ref?: Ref<HTMLDivElement> | undefined;
 }
 
-export interface LoadingRegionProps extends LoadingOverlayProps {
-  /** While true the region is busy, its content is inert and the overlay covers it. */
+export interface LoadingRegionProps extends Omit<
+  LoadingOverlayProps,
+  'isEntering' | 'isExiting' | 'ref'
+> {
+  /** While true (after `delay`) the region is busy, its content is inert and the overlay covers it. */
   isLoading?: boolean | undefined;
   /** The region's content. */
   children?: ReactNode;
@@ -71,6 +86,21 @@ const cardHooks = createHooks('loading-card', [
 ]);
 const overlayHooks = createHooks('loading-overlay');
 const regionHooks = createHooks('loading-region', ['content']);
+
+/** True while `isActive` has held for `delay` milliseconds (at once without a delay). */
+function useActiveAfter(isActive: boolean, delay: number): boolean {
+  const [isElapsed, setElapsed] = useState(false);
+  const isDelayed = isActive && delay > 0;
+  useEffect(() => {
+    if (!isDelayed) return undefined;
+    const timer = setTimeout(() => setElapsed(true), delay);
+    return () => {
+      clearTimeout(timer);
+      setElapsed(false);
+    };
+  }, [isDelayed, delay]);
+  return isActive && (!isDelayed || isElapsed);
+}
 
 function isMeasured(progress: LoadingProgress | undefined): progress is LoadingProgress {
   return progress !== undefined && !progress.isIndeterminate;
@@ -183,51 +213,75 @@ export function LoadingCard({
 
 /**
  * A cover for a positioned surface that is loading, with the status card centred on it. The
- * stylesheet stretches it over its positioned parent; mount it only while the work runs.
+ * stylesheet stretches it over its positioned parent, or over the viewport when `fullscreen`; mount
+ * it only while the work runs. With `delay` it shows only once the work has lasted that long.
  */
 export function LoadingOverlay({
   presentation = 'card',
+  delay = 0,
+  fullscreen = false,
+  isEntering = false,
+  isExiting = false,
   className,
   id,
+  ref,
   ...rest
 }: LoadingOverlayProps) {
+  const isShown = useActiveAfter(true, delay);
   const isScrim = presentation === 'scrim';
   const [data, cardProps] = splitDataAttributes(rest);
-  return (
+  if (!isShown) return null;
+  const hookData = { presentation, fullscreen, entering: isEntering, exiting: isExiting };
+  const cover = (
     <div
       {...data}
-      {...overlayHooks.root({ className, data: { presentation } })}
+      {...overlayHooks.root({ className, data: hookData })}
       id={id}
+      ref={ref}
       aria-hidden={isScrim || undefined}
     >
       {isScrim ? null : <LoadingCard {...cardProps} />}
     </div>
   );
+  return fullscreen ? <Portal layer="modal">{cover}</Portal> : cover;
 }
 
 /**
  * A bounded region that blocks its own content while loading: it is marked busy, its content is
- * inert (no pointer, focus or assistive-technology access) and a `LoadingOverlay` covers it.
+ * inert (no pointer, focus or assistive-technology access) and a `LoadingOverlay` covers it. With
+ * `delay` all of it waits until the work has lasted that long; the overlay stays mounted through its
+ * exit transition (`useEnterExit`).
  */
 export function LoadingRegion({
   isLoading = false,
+  delay = 0,
   children,
   className,
   id,
   ...rest
 }: LoadingRegionProps) {
+  const isBlocked = useActiveAfter(isLoading, delay);
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const { isMounted, isEntering, isExiting } = useEnterExit(overlayRef, isBlocked);
   const [data, overlayProps] = splitDataAttributes(rest);
   return (
     <div
       {...data}
-      {...regionHooks.root({ className, data: { loading: isLoading } })}
+      {...regionHooks.root({ className, data: { loading: isBlocked } })}
       id={id}
-      aria-busy={isLoading || undefined}
+      aria-busy={isBlocked || undefined}
     >
-      <div {...regionHooks.slot('content')} inert={isLoading || undefined}>
+      <div {...regionHooks.slot('content')} inert={isBlocked || undefined}>
         {children}
       </div>
-      {isLoading ? <LoadingOverlay {...overlayProps} /> : null}
+      {isMounted ? (
+        <LoadingOverlay
+          {...overlayProps}
+          ref={overlayRef}
+          isEntering={isEntering}
+          isExiting={isExiting}
+        />
+      ) : null}
     </div>
   );
 }

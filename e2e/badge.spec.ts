@@ -93,4 +93,57 @@ test.describe('Badge lab', () => {
     await expect(badge.locator('.ui-badge__label')).toHaveText('9+');
     await expect(button).toHaveAccessibleName('Messages, 13 unread');
   });
+
+  test('UIC-BADGE-1.7 UIC-BADGE-4.1 draws icons beside labels and dot markers without text', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('badge');
+    const both = page.locator('[data-lab-cell="icon=both tone=info"] .ui-badge');
+    const start = await both.locator('.ui-badge__start-icon').boundingBox();
+    const label = await both.locator('.ui-badge__label').boundingBox();
+    const end = await both.locator('.ui-badge__end-icon').boundingBox();
+    expect(start?.x ?? 0).toBeLessThan(label?.x ?? 0);
+    expect(end?.x ?? 0).toBeGreaterThan(label?.x ?? 0);
+    expect(start?.width).toBeCloseTo(14.4, 0);
+    expect((await both.boundingBox())?.height).toBe(22);
+    for (const [size, width] of [
+      ['sm', 6],
+      ['md', 8],
+      ['lg', 10],
+    ] as const) {
+      const dot = page.locator(`[data-lab-cell="dot=danger size=${size}"] .ui-badge`);
+      expect((await dot.boundingBox())?.width).toBe(width);
+      await expect(dot.locator('.ui-badge__accessible-label')).toHaveText('Sold out marker');
+    }
+    await lab.expectAccessible();
+  });
+
+  test('UIC-BADGE-3.4 UIC-BADGE-4.1 hides a count at zero and pins a dot to its host', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('badge');
+    const demo = page.locator('[data-lab-demo="zero"]');
+    const inbox = demo.locator('[data-lab-overlay-host="inbox"]');
+    const button = inbox.getByRole('button');
+    await expect(inbox.locator('.ui-badge__label')).toHaveText('2');
+    await button.click();
+    await expect(inbox.locator('.ui-badge__label')).toHaveText('1');
+    await button.click();
+    await expect(demo.locator('[data-lab-output="unread"]')).toHaveText('0');
+    await expect(inbox.locator('.ui-badge')).toHaveCount(0);
+
+    const host = demo.locator('[data-lab-overlay-host="dot"]');
+    const dot = host.locator('.ui-badge');
+    await expect(dot).toHaveAttribute('data-placement', 'overlay');
+    const hostBox = await host.boundingBox();
+    const dotBox = await dot.boundingBox();
+    expect((dotBox?.x ?? 0) + (dotBox?.width ?? 0)).toBeGreaterThan(
+      (hostBox?.x ?? 0) + (hostBox?.width ?? 0),
+    );
+    expect(dotBox?.y ?? 0).toBeLessThan(hostBox?.y ?? 0);
+    expect(hostBox?.width).toBe((await host.getByRole('button').boundingBox())?.width);
+    await lab.expectAccessible();
+  });
 });

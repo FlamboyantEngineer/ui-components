@@ -360,3 +360,280 @@ describe('Toast', () => {
     expect(list).toHaveAttribute('data-testid', 'list');
   });
 });
+
+function pointer(
+  type: 'pointerDown' | 'pointerMove' | 'pointerUp' | 'pointerCancel',
+  target: Element,
+  init: PointerEventInit,
+) {
+  fireEvent[type](target, { pointerId: 3, button: 0, isPrimary: true, ...init });
+}
+
+/** Gives every element one running animation until `finish` is called, as an exit would. */
+function holdAnimations() {
+  let finish = () => {};
+  const finished = new Promise<void>((resolve) => {
+    finish = resolve;
+  });
+  let isHolding = false;
+  Object.defineProperty(Element.prototype, 'getAnimations', {
+    configurable: true,
+    value: () => (isHolding ? [{ finished }] : []),
+  });
+  return {
+    start: () => {
+      isHolding = true;
+    },
+    finish: async () => {
+      await act(async () => {
+        finish();
+        await finished;
+      });
+    },
+  };
+}
+
+describe('Toast updates and motion', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+    delete (Element.prototype as Partial<Element>).getAnimations;
+  });
+
+  it('UIC-TOAST-1.5 updates a toast in place without moving it or restarting its timer', async () => {
+    vi.useFakeTimers();
+    const queue = createToastQueue();
+    render(<ToastRegion queue={queue} />);
+    let key = '';
+    act(() => {
+      key = queue.add({ title: 'Uploading 1 of 3' });
+      queue.add({ title: 'Draft saved' }, { timeout: 0 });
+    });
+    const toast = screen.getByRole('alertdialog', { name: 'Uploading 1 of 3' });
+    await advance(3000);
+    act(() => queue.update(key, { tone: 'success', title: 'Uploading 2 of 3' }));
+    expect(titles()).toEqual(['Draft saved', 'Uploading 2 of 3']);
+    expect(screen.getByRole('alertdialog', { name: 'Uploading 2 of 3' })).toBe(toast);
+    expect(toast).toHaveAttribute('data-tone', 'success');
+    await advance(1999);
+    expect(titles()).toContain('Uploading 2 of 3');
+    await advance(1);
+    expect(titles()).toEqual(['Draft saved']);
+
+    act(() => {
+      key = queue.add({ title: 'Copying' }, { timeout: 1000 });
+    });
+    await advance(900);
+    act(() => queue.update(key, { title: 'Still copying' }, { timeout: 1000 }));
+    await advance(900);
+    expect(titles()).toContain('Still copying');
+    await advance(100);
+    expect(titles()).toEqual(['Draft saved']);
+    act(() => queue.update(key, { title: 'Gone' }));
+    expect(titles()).toEqual(['Draft saved']);
+  });
+
+  it('UIC-TOAST-1.6 turns a pending promise toast into a success or error toast', async () => {
+    const queue = createToastQueue({ defaultTimeout: 0 });
+    render(<ToastRegion queue={queue} />);
+    let resolve: (count: number) => void = () => {};
+    let reject: (reason: Error) => void = () => {};
+    let key = '';
+    act(() => {
+      key = queue.promise(
+        new Promise<number>((settle) => {
+          resolve = settle;
+        }),
+        {
+          pending: { title: 'Saving recipes' },
+          success: (count) => ({ title: `${count} recipes saved` }),
+          error: { title: 'Not saved' },
+        },
+      );
+      queue.promise(
+        new Promise<number>((_settle, fail) => {
+          reject = fail;
+        }),
+        {
+          pending: { title: 'Sharing' },
+          success: { title: 'Shared' },
+          error: (reason) => ({ title: `Not shared: ${(reason as Error).message}` }),
+        },
+      );
+    });
+    expect(typeof key).toBe('string');
+    const saving = screen.getByRole('alertdialog', { name: 'Saving recipes' });
+    expect(saving).toHaveAttribute('data-pending', 'true');
+    await act(async () => resolve(3));
+    expect(screen.getByRole('alertdialog', { name: '3 recipes saved' })).toBe(saving);
+    expect(saving).toHaveAttribute('data-tone', 'success');
+    expect(saving).not.toHaveAttribute('data-pending');
+    await act(async () => reject(new Error('offline')));
+    const shared = screen.getByRole('alertdialog', { name: 'Not shared: offline' });
+    expect(shared).toHaveAttribute('data-tone', 'danger');
+    expect(within(shared).getByRole('alert')).toHaveTextContent('Not shared: offline');
+
+    let finish: () => void = () => {};
+    act(() => {
+      key = queue.promise(
+        new Promise<void>((settle) => {
+          finish = settle;
+        }),
+        { pending: { title: 'Syncing' }, success: { title: 'Synced' }, error: { title: 'Failed' } },
+      );
+      queue.close(key);
+    });
+    await act(async () => finish());
+    expect(titles()).not.toContain('Synced');
+  });
+
+  it('UIC-TOAST-1.6 gives a settled promise toast the default or given lifetime', async () => {
+    vi.useFakeTimers();
+    const queue = createToastQueue({ defaultTimeout: 2000 });
+    render(<ToastRegion queue={queue} />);
+    act(() => {
+      queue.promise(Promise.resolve(), {
+        pending: { title: 'Saving' },
+        success: { title: 'Saved' },
+        error: { title: 'Failed' },
+      });
+      queue.promise(
+        Promise.resolve(),
+        { pending: { title: 'Sending' }, success: { title: 'Sent' }, error: { title: 'Failed' } },
+        { timeout: 500 },
+      );
+    });
+    await advance(0);
+    expect(titles()).toEqual(['Sent', 'Saved']);
+    await advance(500);
+    expect(titles()).toEqual(['Saved']);
+    await advance(1500);
+    expect(titles()).toEqual([]);
+  });
+
+  it('UIC-TOAST-3.6 draws a pending toast with a busy indicator and no timeout', async () => {
+    vi.useFakeTimers();
+    const queue = createToastQueue();
+    render(<ToastRegion queue={queue} />);
+    let key = '';
+    act(() => {
+      key = queue.add({ title: 'Exporting report', isPending: true });
+    });
+    const toast = screen.getByRole('alertdialog', { name: 'Exporting report' });
+    expect(toast).toHaveAttribute('data-pending', 'true');
+    const spinner = toast.querySelector('.ui-toast__spinner');
+    expect(spinner).toHaveAttribute('aria-hidden', 'true');
+    expect(toast.querySelector('.ui-toast__icon')).toBeNull();
+    expect(within(toast).getByRole('status')).toHaveTextContent('Exporting report');
+    expectHooksMatchSpec(document.body, 'TOAST', { slots: ['spinner', 'content', 'title'] });
+    await advance(60000);
+    expect(titles()).toEqual(['Exporting report']);
+    act(() => queue.update(key, { tone: 'success', title: 'Report exported' }));
+    await advance(4999);
+    expect(titles()).toEqual(['Report exported']);
+    await advance(1);
+    expect(titles()).toEqual([]);
+  });
+
+  it('UIC-TOAST-4.1 publishes entering and keeps a closing toast until its exit ends', async () => {
+    const animations = holdAnimations();
+    const onClose = vi.fn();
+    const queue = createToastQueue({ defaultTimeout: 0 });
+    render(<ToastRegion queue={queue} />);
+    animations.start();
+    act(() => {
+      queue.add({ title: 'Saved' }, { onClose });
+    });
+    const toast = screen.getByRole('alertdialog', { name: 'Saved' });
+    expect(toast).toHaveAttribute('data-entering', 'true');
+    await animations.finish();
+    expect(toast).not.toHaveAttribute('data-entering');
+
+    const exit = holdAnimations();
+    exit.start();
+    await userEvent.click(within(toast).getByRole('button', { name: 'Dismiss' }));
+    expect(toast).toHaveAttribute('data-exiting', 'true');
+    expect(toast).toBeInTheDocument();
+    expect(onClose).not.toHaveBeenCalled();
+    expectHooksMatchSpec(document.body, 'TOAST');
+    act(() => queue.close(queue.ariaQueue.visibleToasts[0]?.key ?? ''));
+    await exit.finish();
+    expect(screen.queryByRole('alertdialog')).toBeNull();
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('UIC-TOAST-4.1 removes a toast that is not shown at once', () => {
+    const onClose = vi.fn();
+    const queue = createToastQueue({ defaultTimeout: 0 });
+    const key = queue.add({ title: 'Unseen' }, { onClose });
+    queue.close(key);
+    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(queue.ariaQueue.visibleToasts).toHaveLength(0);
+  });
+
+  it('UIC-TOAST-4.2 swipes a toast away past the threshold and returns it otherwise', async () => {
+    const queue = createToastQueue({ defaultTimeout: 0 });
+    const onAction = vi.fn();
+    render(<ToastRegion queue={queue} swipeDirection="left" swipeThreshold={40} />);
+    act(() => {
+      queue.add({ title: 'Row deleted', action: { label: 'Undo', onAction } });
+    });
+    const toast = screen.getByRole('alertdialog', { name: 'Row deleted' });
+    expect(toast).toHaveAttribute('data-swipe-direction', 'left');
+    pointer('pointerDown', toast, { clientX: 200, clientY: 10 });
+    pointer('pointerMove', toast, { clientX: 196, clientY: 10 });
+    expect(toast).not.toHaveAttribute('data-swiping');
+    pointer('pointerMove', toast, { clientX: 170, clientY: 10 });
+    expect(toast).toHaveAttribute('data-swiping', 'true');
+    expect(toast.style.getPropertyValue('--ui-toast-swipe-x')).toBe('-30px');
+    expectHooksMatchSpec(document.body, 'TOAST');
+    pointer('pointerUp', toast, { clientX: 170, clientY: 10 });
+    expect(toast).not.toHaveAttribute('data-swiping');
+    expect(toast.style.getPropertyValue('--ui-toast-swipe-x')).toBe('');
+    expect(screen.getByRole('alertdialog', { name: 'Row deleted' })).toBe(toast);
+
+    // Buttons keep their presses: a drag that starts on one is not a swipe.
+    const undo = within(toast).getByRole('button', { name: 'Undo' });
+    pointer('pointerDown', undo, { clientX: 200, clientY: 10, pointerType: 'mouse' });
+    pointer('pointerMove', undo, { clientX: 150, clientY: 10, pointerType: 'mouse' });
+    expect(toast).not.toHaveAttribute('data-swiping');
+    pointer('pointerCancel', undo, { clientX: 150, clientY: 10, pointerType: 'mouse' });
+
+    const title = within(toast).getByText('Row deleted');
+    pointer('pointerDown', title, { clientX: 200, clientY: 10 });
+    pointer('pointerMove', title, { clientX: 150, clientY: 10 });
+    pointer('pointerUp', title, { clientX: 150, clientY: 10 });
+    fireEvent.click(title);
+    expect(onAction).not.toHaveBeenCalled();
+    expect(screen.queryByRole('alertdialog')).toBeNull();
+  });
+
+  it('UIC-TOAST-4.3 publishes stack positions and expands the region on hover or focus', () => {
+    const queue = createToastQueue({ defaultTimeout: 0 });
+    render(
+      <>
+        <button type="button">Outside</button>
+        <ToastRegion queue={queue} />
+      </>,
+    );
+    act(() => {
+      queue.add({ title: 'Older' });
+      queue.add({ title: 'Newer' });
+    });
+    const newer = screen.getByRole('alertdialog', { name: 'Newer' });
+    const older = screen.getByRole('alertdialog', { name: 'Older' });
+    expect(newer.style.getPropertyValue('--ui-toast-index')).toBe('0');
+    expect(older.style.getPropertyValue('--ui-toast-index')).toBe('1');
+    expect(newer.style.getPropertyValue('--ui-toast-offset')).toBe('0px');
+    const region = screen.getByRole('region');
+    expect(region).not.toHaveAttribute('data-expanded');
+    fireEvent.pointerEnter(region, { pointerType: 'mouse' });
+    expect(region).toHaveAttribute('data-expanded', 'true');
+    fireEvent.pointerLeave(region, { pointerType: 'mouse' });
+    expect(region).not.toHaveAttribute('data-expanded');
+    act(() => newer.focus());
+    expect(region).toHaveAttribute('data-expanded', 'true');
+    act(() => screen.getByRole('button', { name: 'Outside' }).focus());
+    expect(region).not.toHaveAttribute('data-expanded');
+    expectHooksMatchSpec(document.body, 'TOAST');
+  });
+});

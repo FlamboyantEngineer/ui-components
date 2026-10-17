@@ -14,6 +14,10 @@
   line-height: 1.4;
   transition: opacity 0.2s;
 }
+.ui-banner:focus-visible {
+  outline: 2px solid var(--ref-focus);
+  outline-offset: 2px;
+}
 .ui-banner[data-tone='info'] {
   border-color: color-mix(in srgb, var(--ref-info) 45%, var(--ref-canvas));
   background: color-mix(in srgb, var(--ref-info) 8%, var(--ref-canvas));

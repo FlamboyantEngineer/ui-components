@@ -176,4 +176,90 @@ describe('DropdownMenu', () => {
     expect(trigger).not.toHaveAttribute('data-open');
     expectHooksMatchSpec(container, 'DROPDOWN-MENU');
   });
+
+  it('UIC-DROPDOWN-MENU-1.7 splits the trigger into an action and a chevron that opens the menu', async () => {
+    const user = userEvent.setup();
+    const onPress = vi.fn();
+    const onAction = vi.fn();
+    const ref = createRef<HTMLButtonElement>();
+    render(
+      <DropdownMenu
+        label="Save"
+        icon="save"
+        variant="primary"
+        size="sm"
+        items={[{ id: 'copy', label: 'Save a copy' }]}
+        onPress={onPress}
+        onAction={onAction}
+        className="caller"
+        id="save-action"
+        ref={ref}
+        data-purpose="save"
+      />,
+    );
+    const group = screen.getByRole('group');
+    expect(group).toHaveClass('ui-dropdown-menu', 'caller');
+    expect(group).toHaveAttribute('data-split', 'true');
+    expect(group).toHaveAttribute('data-purpose', 'save');
+    const action = screen.getByRole('button', { name: 'Save' });
+    const toggle = screen.getByRole('button', { name: 'More options' });
+    expect(action).toHaveClass('ui-button', 'ui-dropdown-menu__action');
+    expect(action).toHaveAttribute('id', 'save-action');
+    expect(ref.current).toBe(action);
+    expect(action).not.toHaveAttribute('aria-haspopup');
+    expect(toggle).toHaveClass('ui-icon-button', 'ui-dropdown-menu__toggle');
+    for (const button of [action, toggle]) {
+      expect(button).toHaveAttribute('data-variant', 'primary');
+      expect(button).toHaveAttribute('data-size', 'sm');
+    }
+    expectHooksMatchSpec(document.body, 'DROPDOWN-MENU', {
+      slots: ['action', 'toggle'],
+      callerAttributes: ['data-purpose'],
+    });
+
+    await user.click(action);
+    expect(onPress).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('menu')).toBeNull();
+
+    await user.click(toggle);
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    expect(group).toHaveAttribute('data-open', 'true');
+    expect(screen.getByRole('menu', { name: 'More options' })).toHaveAttribute('data-size', 'sm');
+    await user.click(screen.getByRole('menuitem', { name: 'Save a copy' }));
+    expect(onAction.mock.calls[0]?.[0]).toBe('copy');
+    expect(group).not.toHaveAttribute('data-open');
+    await waitFor(() => expect(toggle).toHaveFocus());
+  });
+
+  it('UIC-DROPDOWN-MENU-1.7 disables both halves and follows a controlled open state', async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    const { rerender } = render(
+      <DropdownMenu label="Save" items={items} onPress={() => {}} isDisabled />,
+    );
+    expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'More options' })).toBeDisabled();
+    rerender(
+      <DropdownMenu
+        label="Save"
+        items={items}
+        onPress={() => {}}
+        isOpen
+        onOpenChange={onOpenChange}
+      />,
+    );
+    expect(screen.getByRole('menu')).toBeInTheDocument();
+    await user.keyboard('{Escape}');
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+    expect(screen.getByRole('menu')).toBeInTheDocument();
+  });
+
+  it('UIC-DROPDOWN-MENU-1.4 passes filterable to the menu', async () => {
+    const user = userEvent.setup();
+    render(<DropdownMenu label="Move to" filterable items={items} />);
+    await user.click(screen.getByRole('button', { name: 'Move to' }));
+    expect(screen.getByRole('searchbox', { name: 'Search' })).toHaveFocus();
+    await user.keyboard('co');
+    expect(screen.getAllByRole('menuitem').map((item) => item.textContent)).toEqual(['Copy']);
+  });
 });

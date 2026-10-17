@@ -103,4 +103,77 @@ test.describe('Segmented Choice lab', () => {
     await expect(output).toHaveText('Week, set here (pick it again to inherit)');
     await lab.expectAccessible();
   });
+
+  test('UIC-SEGMENTED-CHOICE-1.6 moves the selection indicator into the picked segment', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('segmented-choice');
+    const group = page.getByRole('radiogroup', { name: 'View, equal, md' });
+    const week = group.getByRole('radio', { name: 'Week' });
+    const month = group.getByRole('radio', { name: 'Month' });
+    await expect(week.locator('.ui-segmented-choice__indicator')).toHaveCount(1);
+    await month.click();
+    await expect(month.locator('.ui-segmented-choice__indicator')).toHaveCount(1);
+    await expect(week.locator('.ui-segmented-choice__indicator')).toHaveCount(0);
+    // Once the slide settles the indicator covers the segment inside its 1px separator border.
+    await expect(async () => {
+      const indicator = await month.locator('.ui-segmented-choice__indicator').boundingBox();
+      const segment = await month.boundingBox();
+      expect(Math.abs((indicator?.x ?? 0) - (segment?.x ?? 0))).toBeLessThanOrEqual(1.5);
+      expect(Math.abs((indicator?.width ?? 0) - (segment?.width ?? 0))).toBeLessThanOrEqual(1.5);
+    }).toPass();
+    await lab.expectAccessible();
+  });
+
+  test('UIC-SEGMENTED-CHOICE-1.7 names icon-only segments and shows their labels in tooltips', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('segmented-choice');
+    const group = page.getByRole('radiogroup', { name: 'Zoom, md' });
+    await expect(group).toHaveAttribute('data-icon-only', 'true');
+    const width = group.getByRole('radio', { name: 'Fit width' });
+    await expect(width.locator('.ui-segmented-choice__label')).toHaveCount(0);
+    await page.getByRole('radiogroup', { name: 'Zoom, sm' }).getByRole('radio').first().focus();
+    await page.keyboard.press('Tab');
+    await expect(width).toBeFocused();
+    await expect(
+      page.locator('.ui-tooltip:not([data-exiting])', { hasText: 'Fit width' }),
+    ).toBeVisible();
+    await expect(width).not.toHaveAttribute('aria-describedby');
+    await page.keyboard.press('ArrowRight');
+    await expect(group.getByRole('radio', { name: 'Fit page' })).toBeFocused();
+    await expect(
+      page.locator('.ui-tooltip:not([data-exiting])', { hasText: 'Fit page' }),
+    ).toBeVisible();
+    await lab.expectAccessible();
+  });
+
+  test('UIC-SEGMENTED-CHOICE-2.4 UIC-SEGMENTED-CHOICE-2.5 presses toggles independently and submits them', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('segmented-choice');
+    const toolbar = page.getByRole('toolbar', { name: 'Text style, default' });
+    await expect(toolbar).toHaveAttribute('data-selection-mode', 'multiple');
+    const bold = toolbar.getByRole('button', { name: 'Bold' });
+    const italic = toolbar.getByRole('button', { name: 'Italic' });
+    await expect(bold).toHaveAttribute('aria-pressed', 'true');
+    await bold.focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(italic).toBeFocused();
+    await page.keyboard.press('Space');
+    await expect(italic).toHaveAttribute('aria-pressed', 'true');
+    await expect(bold).toHaveAttribute('aria-pressed', 'true');
+
+    const form = page.locator('[data-lab-demo="form"]');
+    await form.getByRole('radio', { name: 'Month' }).click();
+    await form.getByRole('button', { name: 'Italic' }).click();
+    await form.getByRole('button', { name: 'Submit' }).click();
+    await expect(form.locator('[data-lab-output="submitted"]')).toHaveText(
+      'Submitted: view=month style=bold,italic',
+    );
+    await lab.expectAccessible();
+  });
 });

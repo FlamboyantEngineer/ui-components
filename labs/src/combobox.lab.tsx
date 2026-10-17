@@ -104,6 +104,91 @@ function Remote() {
   );
 }
 
+function Multiple() {
+  const [chosen, setChosen] = useState<Key[]>(['lima', 'oslo']);
+  return (
+    <>
+      <Combobox
+        label="Cities"
+        selectionMode="multiple"
+        defaultItems={cities}
+        value={chosen}
+        onChange={setChosen}
+        description="Pick several; remove a chip with its button or Backspace."
+      />
+      <p>
+        Chosen: <output data-lab-output="cities">{chosen.map(String).join(', ') || 'none'}</output>
+      </p>
+    </>
+  );
+}
+
+function Creatable() {
+  const [options, setOptions] = useState<ComboboxOption[]>(cities.slice(0, 5));
+  const [chosen, setChosen] = useState<Key | null>(null);
+  return (
+    <>
+      <Combobox
+        label="Destination"
+        items={options}
+        selectedKey={chosen}
+        onSelectionChange={setChosen}
+        onCreateOption={(text) => {
+          const id = text.toLowerCase();
+          setOptions((current) => [...current, { id, label: text }]);
+          setChosen(id);
+        }}
+        description="Type a city that is not listed, then choose Add."
+      />
+      <p>
+        Destination:{' '}
+        <output data-lab-output="destination">{chosen === null ? 'none' : String(chosen)}</output>
+      </p>
+    </>
+  );
+}
+
+const aids = ['highlight matches', 'auto highlight', 'inline completion'] as const;
+
+const manyCities: ComboboxOption[] = Array.from({ length: 5000 }, (_, index) => ({
+  id: `city-${index + 1}`,
+  label: `${cities[index % cities.length]?.label ?? 'City'} ${index + 1}`,
+}));
+
+/** Suggestions that load 20 more, after a short wait, each time the end of the list comes into view. */
+function Paged() {
+  const [count, setCount] = useState(20);
+  const [isLoading, setIsLoading] = useState(false);
+  return (
+    <>
+      <Combobox
+        label="Paged city"
+        items={manyCities.slice(0, count)}
+        isLoading={isLoading}
+        onLoadMore={() => {
+          if (isLoading || count >= 100) return;
+          setIsLoading(true);
+          setTimeout(() => {
+            setCount((current) => current + 20);
+            setIsLoading(false);
+          }, 500);
+        }}
+      />
+      <p>
+        Loaded: <output data-lab-output="loaded">{count}</output>
+      </p>
+    </>
+  );
+}
+
+const countries: Record<string, string> = {
+  paris: 'France',
+  lima: 'Peru',
+  oslo: 'Norway',
+  cairo: 'Egypt',
+  quito: 'Ecuador',
+};
+
 mountLab(
   <>
     <LabSection title="Variants, sizes and states" description="Each cell is a live combobox.">
@@ -137,6 +222,76 @@ mountLab(
       description="Typing asks for cities and marks the field busy until you deliver the suggestions; any typed city is kept."
     >
       <Remote />
+    </LabSection>
+    <LabSection
+      title="Chips by size"
+      description="A multiple combobox shows its chosen options as chips at every size."
+    >
+      <StateMatrix
+        axes={{ size: sizes }}
+        render={({ size }) => (
+          <Combobox
+            aria-label={`Cities ${size}`}
+            size={size}
+            selectionMode="multiple"
+            defaultItems={cities}
+            defaultValue={['paris', 'lima']}
+          />
+        )}
+      />
+    </LabSection>
+    <LabSection
+      title="Multiple selection"
+      description="Picking keeps the list open and adds a chip; the chips are a tag group."
+    >
+      <Multiple />
+    </LabSection>
+    <LabSection
+      title="Adding an option"
+      description="Text that no option has as label offers an Add row, which adds the city and selects it."
+    >
+      <Creatable />
+    </LabSection>
+    <LabSection
+      title="Typing aids"
+      description="Marked matches, the first match highlighted so Enter picks it, and inline completion of the typed text."
+    >
+      <StateMatrix
+        axes={{ aid: aids }}
+        render={({ aid }) => (
+          <Combobox
+            aria-label={`Fruit with ${aid}`}
+            defaultItems={fruit}
+            highlightMatches={aid === 'highlight matches'}
+            autoHighlight={aid === 'auto highlight'}
+            completesInline={aid === 'inline completion'}
+          />
+        )}
+      />
+    </LabSection>
+    <LabSection title="Virtualized list" description="5000 cities render only the options in view.">
+      <Combobox label="Any city" defaultItems={manyCities} virtualized />
+    </LabSection>
+    <LabSection
+      title="Loading more"
+      description="Scrolling to the end of the list shows a loading row, then 20 more cities, up to 100."
+    >
+      <Paged />
+    </LabSection>
+    <LabSection
+      title="Custom options"
+      description="Each option draws its city with its country, and marks the focused one."
+    >
+      <Combobox
+        label="Capital"
+        defaultItems={cities.slice(0, 5)}
+        renderOption={(option, { isFocused }) => (
+          <span data-lab-option="">
+            <strong>{option.label}</strong> · {countries[String(option.id)]}
+            {isFocused ? ' ←' : ''}
+          </span>
+        )}
+      />
     </LabSection>
     <LabSection title="Open on focus" description="The list opens when the input takes focus.">
       <Combobox label="Fruit on focus" defaultItems={fruit} menuTrigger="focus" />

@@ -43,6 +43,22 @@
   transition: width 0.2s;
 }
 
+.ui-progress-bar[data-complete] .ui-progress-bar__fill {
+  background: var(--ref-success);
+}
+
+.ui-progress-bar[data-tone='success'] .ui-progress-bar__fill {
+  background: var(--ref-success);
+}
+
+.ui-progress-bar[data-tone='warning'] .ui-progress-bar__fill {
+  background: var(--ref-warning);
+}
+
+.ui-progress-bar[data-tone='danger'] .ui-progress-bar__fill {
+  background: var(--ref-danger);
+}
+
 .ui-progress-bar[data-indeterminate] .ui-progress-bar__fill {
   width: 40%;
   animation: ref-progress-slide 1.2s ease-in-out infinite;

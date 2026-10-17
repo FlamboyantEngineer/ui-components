@@ -59,6 +59,40 @@ function InheritedSetting() {
   );
 }
 
+const styles: SegmentedChoiceOption[] = [
+  { value: 'bold', label: 'Bold' },
+  { value: 'italic', label: 'Italic' },
+  { value: 'underline', label: 'Underline' },
+];
+
+function SubmittedChoices() {
+  const [submitted, setSubmitted] = useState('nothing yet');
+  return (
+    <form
+      data-lab-demo="form"
+      onSubmit={(event) => {
+        event.preventDefault();
+        const data = new FormData(event.currentTarget);
+        setSubmitted(
+          `view=${data.getAll('view').join(',')} style=${data.getAll('style').join(',')}`,
+        );
+      }}
+    >
+      <SegmentedChoice aria-label="View" name="view" options={views} defaultValue="week" />{' '}
+      <SegmentedChoice
+        aria-label="Text style"
+        name="style"
+        selectionMode="multiple"
+        options={styles}
+        defaultValue={['bold']}
+        sizing="content"
+      />{' '}
+      <button type="submit">Submit</button>
+      <p data-lab-output="submitted">Submitted: {submitted}</p>
+    </form>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -137,6 +171,52 @@ mountLab(
       description="The value starts inherited. Picking a segment sets it here; picking that segment again returns to the inherited value."
     >
       <InheritedSetting />
+    </LabSection>
+    <LabSection
+      title="Icon-only segments"
+      description="Each segment shows its icon, is named by its label and shows the label in a tooltip on hover and keyboard focus."
+    >
+      <StateMatrix
+        axes={{ size: sizes }}
+        render={({ size }) => (
+          <SegmentedChoice
+            aria-label={`Zoom, ${size}`}
+            iconOnly
+            size={size}
+            sizing="content"
+            defaultValue="width"
+            options={[
+              { value: 'width', label: 'Fit width', icon: 'fit-width' },
+              { value: 'page', label: 'Fit page', icon: 'fit-page' },
+              { value: 'full', label: 'Full screen', icon: 'expand' },
+            ]}
+          />
+        )}
+      />
+    </LabSection>
+    <LabSection
+      title="Multiple selection"
+      description="With selectionMode multiple the segments press independently, as a toolbar of toggles."
+    >
+      <StateMatrix
+        axes={{ state: ['default', 'disabled'] }}
+        render={({ state }) => (
+          <SegmentedChoice
+            aria-label={`Text style, ${state}`}
+            selectionMode="multiple"
+            options={styles}
+            defaultValue={['bold', 'underline']}
+            isDisabled={state === 'disabled'}
+            sizing="content"
+          />
+        )}
+      />
+    </LabSection>
+    <LabSection
+      title="Form submission"
+      description="With a name, the selected values submit with the form as hidden inputs."
+    >
+      <SubmittedChoices />
     </LabSection>
   </>,
 );

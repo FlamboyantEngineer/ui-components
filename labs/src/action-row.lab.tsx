@@ -70,6 +70,66 @@ function MoreMenu() {
   );
 }
 
+const rowWidths = { wide: 360, narrow: 180 } as const;
+
+function CollapsingRow({ width }: { width: keyof typeof rowWidths }) {
+  const [last, setLast] = useState('none');
+  const press = (name: string) => () => setLast(name);
+  return (
+    <div style={{ width: rowWidths[width] }} data-lab-row={width}>
+      <ActionRow
+        toolbar
+        overflow="menu"
+        aria-label={`File actions, ${width}`}
+        lead={<span>Report.pdf</span>}
+        actions={[
+          { verb: 'custom', icon: 'copy', label: 'Duplicate', onPress: press('duplicate') },
+          { verb: 'add', label: 'Add note', onPress: press('add') },
+          { verb: 'refresh', onPress: press('refresh') },
+          { verb: 'edit', onPress: press('edit') },
+          { verb: 'delete', onPress: press('delete') },
+        ]}
+      />
+      <p>
+        Last action: <output data-lab-output="last">{last}</output>
+      </p>
+    </div>
+  );
+}
+
+function SelectionBar() {
+  const [selected, setSelected] = useState(['Apple', 'Cherry']);
+  const fruit = ['Apple', 'Banana', 'Cherry'];
+  return (
+    <div data-lab-case="selection">
+      {fruit.map((name) => (
+        <label key={name} style={{ display: 'block' }}>
+          <input
+            type="checkbox"
+            checked={selected.includes(name)}
+            onChange={(event) =>
+              setSelected((current) =>
+                event.target.checked ? [...current, name] : current.filter((item) => item !== name),
+              )
+            }
+          />{' '}
+          {name}
+        </label>
+      ))}
+      <ActionRow
+        toolbar
+        aria-label="Bulk actions"
+        selectedCount={selected.length}
+        onClearSelection={() => setSelected([])}
+        actions={[
+          { verb: 'edit', label: 'Edit selected', onPress: noop },
+          { verb: 'delete', label: 'Delete selected', onPress: () => setSelected([]) },
+        ]}
+      />
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -125,6 +185,21 @@ mountLab(
           ]}
         />
       </div>
+    </LabSection>
+    <LabSection
+      title="Toolbar and overflow menu"
+      description="Each row is one toolbar: tab to it once and move with the arrow keys. In the 180px row the actions that do not fit move into a menu at its end."
+    >
+      <StateMatrix
+        axes={{ width: ['wide', 'narrow'] }}
+        render={({ width }) => <CollapsingRow width={width} />}
+      />
+    </LabSection>
+    <LabSection
+      title="Selection bar"
+      description="With a selected count the row shows the count and a clear button, and disappears when nothing is selected. Escape inside it clears the selection."
+    >
+      <SelectionBar />
     </LabSection>
   </>,
 );

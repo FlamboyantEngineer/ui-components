@@ -234,4 +234,48 @@ describe('Banner', () => {
     expect(root).toHaveAttribute('data-tone', 'neutral');
     expectHooksMatchSpec(container, 'BANNER');
   });
+
+  it('UIC-BANNER-1.5 moves focus to the banner once when it first renders with autoFocus', () => {
+    const { container, rerender } = render(
+      <>
+        <button type="button">Before</button>
+        <Banner tone="info" description="Saved" />
+      </>,
+    );
+    const quiet = container.querySelector('.ui-banner');
+    expect(quiet).not.toHaveAttribute('tabindex');
+    expect(document.activeElement).toBe(document.body);
+
+    rerender(
+      <>
+        <button type="button">Before</button>
+        <Banner
+          key="critical"
+          tone="danger"
+          description="Could not save"
+          autoFocus
+          actions={<button type="button">Try again</button>}
+        />
+      </>,
+    );
+    const banner = screen.getByRole('alert');
+    expect(banner).toHaveAttribute('tabindex', '-1');
+    expect(banner).toHaveFocus();
+
+    screen.getByRole('button', { name: 'Before' }).focus();
+    rerender(
+      <>
+        <button type="button">Before</button>
+        <Banner
+          key="critical"
+          tone="danger"
+          description="Still could not save"
+          autoFocus
+          actions={<button type="button">Try again</button>}
+        />
+      </>,
+    );
+    expect(screen.getByRole('button', { name: 'Before' })).toHaveFocus();
+    expectHooksMatchSpec(container, 'BANNER');
+  });
 });

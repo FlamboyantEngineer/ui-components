@@ -198,4 +198,92 @@ test.describe('Layout lab', () => {
     await lab.open('layout', { stylesheet: 'none' });
     await expect(page.locator('.ui-stack').first()).toBeVisible();
   });
+
+  test('UIC-LAYOUT-2.6 places grid items by span and offset', async ({ page, lab }) => {
+    await lab.open('layout');
+    const grid = (id: string) => page.locator(`${cell('Grid items', id)} .ui-grid`);
+    const sized = (id: string) => grid(id).locator('[data-lab-item="sized"]');
+    const column = async (id: string) => {
+      const rect = await box(grid(id));
+      return { x: rect.x, unit: (rect.width + 4) / 12 };
+    };
+    for (const [span, offset] of [
+      [2, 0],
+      [4, 3],
+      [6, 6],
+    ] as const) {
+      const id = `span=${span} offset=${offset}`;
+      const { x, unit } = await column(id);
+      const item = await box(sized(id));
+      expect(Math.round(item.x - x)).toBe(Math.round(offset * unit));
+      expect(Math.round(item.width)).toBe(Math.round(span * unit - 4));
+    }
+    const full = await box(sized('span=full offset=0'));
+    expect(Math.round(full.width)).toBe(Math.round((await box(grid('span=full offset=0'))).width));
+    const next = await box(grid('span=6 offset=6').locator('.ui-grid-item').nth(1));
+    expect(next.y).toBeGreaterThan((await box(sized('span=6 offset=6'))).y);
+  });
+
+  test('UIC-LAYOUT-2.7 draws dividers centred in the gaps', async ({ page, lab }) => {
+    await lab.open('layout');
+    const stack = page.locator(`${cell('Dividers', 'primitive=stack space=2xl')} .ui-stack`);
+    const children = stack.locator(':scope > *');
+    await expect(stack.locator('.ui-stack__divider')).toHaveCount(2);
+    const [first, divider, second] = await Promise.all([0, 1, 2].map((i) => box(children.nth(i))));
+    expect(Math.round(divider!.height)).toBe(1);
+    expect(Math.round(divider!.y - (first!.y + first!.height))).toBe(16);
+    expect(Math.round(second!.y - (divider!.y + divider!.height))).toBe(16);
+    const cluster = page.locator(`${cell('Dividers', 'primitive=cluster space=md')} .ui-cluster`);
+    const rule = await box(cluster.locator('.ui-cluster__divider').first());
+    expect(Math.round(rule.width)).toBe(1);
+    await expect(cluster.locator('.ui-cluster__divider').first()).toHaveAttribute(
+      'aria-hidden',
+      'true',
+    );
+  });
+
+  test('UIC-LAYOUT-3.5 sizes aspect-ratio boxes from their width', async ({ page, lab }) => {
+    await lab.open('layout');
+    for (const [ratio, factor] of [
+      ['1-1', 1],
+      ['16-9', 9 / 16],
+      ['9-16', 16 / 9],
+      ['4-3', 3 / 4],
+    ] as const) {
+      const rect = await box(
+        page.locator(`${cell('Aspect ratio', `ratio=${ratio}`)} .ui-aspect-ratio`),
+      );
+      expect(rect.width).toBe(120);
+      expect(Math.abs(rect.height - 120 * factor)).toBeLessThanOrEqual(1);
+    }
+  });
+
+  test('UIC-LAYOUT-3.6 UIC-LAYOUT-3.7 lays toolbar groups out along the row with separators across it', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('layout');
+    const section = 'Toolbar orientation and groups';
+    const horizontal = page.locator(cell(section, 'orientation=horizontal role=toolbar'));
+    const peel = await box(horizontal.getByRole('button', { name: 'Peel' }));
+    const juice = await box(horizontal.getByRole('button', { name: 'Juice' }));
+    expect(Math.round(juice.y)).toBe(Math.round(peel.y));
+    const rule = await box(horizontal.getByRole('separator'));
+    expect(rule.width).toBe(1);
+    expect(rule.x).toBeGreaterThan(peel.x + peel.width);
+
+    const vertical = page.locator(cell(section, 'orientation=vertical role=toolbar'));
+    const toolbar = vertical.getByRole('toolbar');
+    await expect(toolbar).toHaveAttribute('aria-orientation', 'vertical');
+    const top = await box(vertical.getByRole('button', { name: 'Peel' }));
+    const below = await box(vertical.getByRole('button', { name: 'Slice' }));
+    expect(below.y).toBeGreaterThan(top.y + top.height - 1);
+    await vertical.getByRole('button', { name: 'Peel' }).focus();
+    await page.keyboard.press('ArrowDown');
+    await expect(vertical.getByRole('button', { name: 'Slice' })).toBeFocused();
+    await page.keyboard.press('ArrowDown');
+    await expect(vertical.getByRole('button', { name: 'Juice' })).toBeFocused();
+    expect(Math.round((await box(vertical.locator('.ui-toolbar-row__separator'))).height)).toBe(1);
+    await lab.expectAccessible();
+  });
 });

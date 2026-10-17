@@ -4,7 +4,8 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Size } from '../../core/props.js';
 import { Glyph } from '../../core/provider.js';
 
-export type IconSize = Extract<Size, 'sm' | 'md' | 'lg'>;
+/** A fixed box size, or `inherit`: a 1em box that scales with the surrounding font. */
+export type IconSize = Extract<Size, 'sm' | 'md' | 'lg'> | 'inherit';
 
 /** An icon given as a built-in glyph name or as any icon node. Components take icons in this form. */
 export type IconSource = GlyphName | ReactNode;
@@ -14,7 +15,7 @@ export interface IconProps extends BaseProps {
   glyph?: GlyphName | undefined;
   /** Any icon node (an SVG element, an image), used when no `glyph` is given. */
   children?: ReactNode;
-  /** Box size. Defaults to `md`. */
+  /** Box size; `inherit` follows the surrounding font size. Defaults to `md`. */
   size?: IconSize | undefined;
   /** Accessible name. Without one the icon is decorative and hidden from assistive technology. */
   label?: string | undefined;

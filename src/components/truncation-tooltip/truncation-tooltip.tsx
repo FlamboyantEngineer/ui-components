@@ -1,6 +1,8 @@
 import {
   useCallback,
   useEffect,
+  useId,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -13,9 +15,13 @@ import {
   TooltipTriggerStateContext,
   type TooltipTriggerState,
 } from 'react-aria-components';
+import { useControllableState } from '../../core/controllable-state.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps } from '../../core/props.js';
+import { useUiStrings } from '../../core/provider.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
+import { useResizeObserver } from '../../utils/use-resize-observer.js';
+import { Button } from '../button/button.js';
 import { TOOLTIP_DELAY, TooltipPanel, type TooltipPlacement } from '../tooltip/tooltip.js';
 
 /** The pointer handlers the component owns on its text. */
@@ -29,6 +35,14 @@ export interface TruncationTooltipProps
   placement?: TooltipPlacement | undefined;
   /** Hover delay before the tooltip opens, in milliseconds. Keyboard focus opens it at once. */
   delay?: number | undefined;
+  /** Draws a "Show more" control after cut text that shows it whole in place, then "Show less". */
+  expandable?: boolean | undefined;
+  /** Whether expandable text is shown whole (controlled). */
+  isExpanded?: boolean | undefined;
+  /** Whether expandable text starts whole (uncontrolled). Defaults to `false`. */
+  defaultExpanded?: boolean | undefined;
+  /** Called with the requested state when the reader shows more or less. */
+  onExpandedChange?: ((isExpanded: boolean) => void) | undefined;
 }
 
 interface TruncationState extends TooltipTriggerState {
@@ -36,7 +50,7 @@ interface TruncationState extends TooltipTriggerState {
   schedule: (delay: number) => void;
 }
 
-const hooks = createHooks('truncation-tooltip', ['panel']);
+const hooks = createHooks('truncation-tooltip', ['panel', 'toggle']);
 
 /** Elements that take focus; keyboard focus on the nearest one holding the text reveals the tooltip. */
 const focusableSelector =
@@ -126,6 +140,45 @@ function useEscapeToClose({ isOpen, close }: TruncationState) {
   }, [isOpen, close]);
 }
 
+/**
+ * Whether the text in `ref` is cut, measured when it changes and on resize. Whole text is not
+ * measured: it keeps the value it had before it was shown whole, which it returns to when cut again.
+ */
+function useIsCut(ref: RefObject<HTMLElement | null>, children: ReactNode, isWhole: boolean) {
+  const [isCut, setCut] = useState(false);
+  const measure = useCallback(() => {
+    if (!isWhole) setCut(ref.current !== null && isTruncated(ref.current));
+  }, [ref, isWhole]);
+  useResizeObserver([ref], measure);
+  useLayoutEffect(measure, [measure, children]);
+  return isCut;
+}
+
+/** The "Show more" or "Show less" control of expandable text. */
+function ExpandControl({
+  isExpanded,
+  textId,
+  onPress,
+}: {
+  isExpanded: boolean;
+  textId: string;
+  onPress: () => void;
+}) {
+  const strings = useUiStrings();
+  return (
+    <Button
+      variant="link"
+      size="xs"
+      className={hooks.slotClass('toggle')}
+      aria-expanded={isExpanded}
+      aria-controls={textId}
+      onPress={onPress}
+    >
+      {isExpanded ? strings.showLess : strings.showMore}
+    </Button>
+  );
+}
+
 /** The text's pointer handlers: rest to open after `delay`, leave or press to close. */
 function createPointerHandlers(pressed: RefObject<boolean>, state: TruncationState, delay: number) {
   const { schedule, close } = state;
@@ -152,6 +205,10 @@ export function TruncationTooltip({
   children,
   placement = 'top',
   delay = TOOLTIP_DELAY,
+  expandable = false,
+  isExpanded,
+  defaultExpanded = false,
+  onExpandedChange,
   className,
   ref: callerRef,
   ...rest
@@ -162,12 +219,37 @@ export function TruncationTooltip({
   useFocusReveal(ref, pressed, state);
   useEscapeToClose(state);
   const pointerHandlers = createPointerHandlers(pressed, state, delay);
+  const [expanded, setExpanded] = useControllableState(
+    isExpanded,
+    defaultExpanded,
+    onExpandedChange,
+  );
+  const isWhole = expandable && expanded;
+  const isCut = useIsCut(ref, children, isWhole);
+  const textId = `${useId()}-text`;
+  const id = rest.id ?? (expandable ? textId : undefined);
 
   return (
     <>
-      <span {...rest} {...hooks.root({ className })} {...pointerHandlers} ref={setRef}>
+      <span
+        {...rest}
+        id={id}
+        {...hooks.root({ className, data: { expanded: isWhole } })}
+        {...pointerHandlers}
+        ref={setRef}
+      >
         {children}
       </span>
+      {expandable && (isWhole || isCut) ? (
+        <ExpandControl
+          isExpanded={isWhole}
+          textId={id ?? textId}
+          onPress={() => {
+            state.close();
+            setExpanded(!isWhole);
+          }}
+        />
+      ) : null}
       {/* Isolate the panel from an enclosing tooltip trigger, such as a button with a hint. */}
       <TooltipContext.Provider value={null}>
         <TooltipTriggerStateContext.Provider value={state}>

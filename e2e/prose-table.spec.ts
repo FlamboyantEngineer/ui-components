@@ -36,4 +36,42 @@ test.describe('Prose Table lab', () => {
     await expect(table.getByRole('link', { name: 'Pear' })).toBeFocused();
     await lab.expectAccessible();
   });
+
+  test('UIC-PROSE-TABLE-2.1 UIC-PROSE-TABLE-2.2 UIC-PROSE-TABLE-2.3 UIC-PROSE-TABLE-2.4 draws a caption, row headers, aligned columns and a footer', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('prose-table');
+    const cell = page.locator('[data-lab-cell="caption=with caption footer=with footer"]');
+    const table = cell.getByRole('table', { name: 'Crates picked this week' });
+    await expect(table.getByRole('rowheader')).toHaveText(['Apple', 'Pear', 'Plum', 'Total']);
+    await expect(table.locator('tfoot tr')).toHaveCount(1);
+    await expect(table.locator('tbody td[data-align="end"]').first()).toHaveCSS(
+      'text-align',
+      'end',
+    );
+    await expect(table.locator('thead th[data-align="center"]')).toHaveCSS('text-align', 'center');
+    await expect(
+      page.locator('[data-lab-cell="caption=without footer=without"] :is(caption, tfoot)'),
+    ).toHaveCount(0);
+    await lab.expectAccessible();
+  });
+
+  test('UIC-PROSE-TABLE-2.5 keeps a sticky header in view inside a scroll region', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('prose-table');
+    for (const mode of ['sticky', 'static'] as const) {
+      const region = page.locator(`[data-lab-cell="header=${mode}"] .ui-scroll-region__viewport`);
+      const heading = region.locator('thead th').first();
+      const top = (await region.boundingBox())?.y ?? 0;
+      await region.evaluate((node) => {
+        node.scrollTop = 120;
+      });
+      const headingTop = (await heading.boundingBox())?.y ?? 0;
+      if (mode === 'sticky') expect(Math.round(headingTop)).toBe(Math.round(top));
+      else expect(headingTop).toBeLessThan(top - 100);
+    }
+  });
 });

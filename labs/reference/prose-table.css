@@ -18,3 +18,37 @@
   background: var(--ref-surface);
   font-weight: 600;
 }
+
+.ui-prose-table__caption {
+  padding-block-end: 4px;
+  color: var(--ref-muted);
+  text-align: start;
+}
+
+.ui-prose-table tbody th {
+  background: transparent;
+}
+
+.ui-prose-table tfoot :is(th, td) {
+  border-top-width: 2px;
+  font-weight: 600;
+}
+
+.ui-prose-table [data-align='start'] {
+  text-align: start;
+}
+
+.ui-prose-table [data-align='center'] {
+  text-align: center;
+}
+
+.ui-prose-table [data-align='end'] {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-prose-table[data-sticky-header] thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}

@@ -49,4 +49,35 @@ test.describe('Inline Error lab', () => {
     await expect(demo.getByRole('alert')).toHaveCount(0);
     await lab.expectAccessible();
   });
+
+  test('UIC-INLINE-ERROR-2.1 UIC-INLINE-ERROR-2.2 draws tones and pending checks with their urgency', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('inline-error');
+    const cell = (tone: string, state: string) =>
+      page.locator(`[data-lab-cell="tone=${tone} state=${state}"] .ui-inline-error`);
+    await expect(cell('danger', 'settled')).toHaveAttribute('role', 'alert');
+    for (const [tone, glyph] of [
+      ['warning', 'warning'],
+      ['success', 'success'],
+    ] as const) {
+      const message = cell(tone, 'settled');
+      await expect(message).toHaveAttribute('role', 'status');
+      await expect(message).toHaveAttribute('aria-live', 'polite');
+      await expect(message.locator('.ui-inline-error__icon')).toHaveAttribute('data-glyph', glyph);
+    }
+    const colour = (tone: string) =>
+      cell(tone, 'settled').evaluate((node) => getComputedStyle(node).color);
+    expect(
+      new Set([await colour('danger'), await colour('warning'), await colour('success')]).size,
+    ).toBe(3);
+    const pending = cell('danger', 'pending');
+    await expect(pending).toHaveAttribute('role', 'status');
+    await expect(pending).toHaveAttribute('data-pending', 'true');
+    const spinner = pending.locator('.ui-inline-error__spinner');
+    await expect(spinner).toBeVisible();
+    expect(await spinner.evaluate((node) => getComputedStyle(node).width)).toBe('14px');
+    await lab.expectAccessible();
+  });
 });

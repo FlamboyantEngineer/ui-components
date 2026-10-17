@@ -32,6 +32,13 @@ Verification: `src/components/banner/banner.test.tsx`, `e2e/banner.spec.ts`
 Implementation: `src/components/banner/banner.tsx`, `labs/reference/banner.css`
 Verification: `src/components/banner/banner.test.tsx`
 
+### UIC-BANNER-1.5 - Focus on mount
+
+`autoFocus` shall make the banner focusable from script only (`tabindex="-1"`) and move focus to it once, when it first renders, so a keyboard user lands on a newly shown critical message and tabs on into its actions. Later renders never move focus again, and without `autoFocus` the banner takes no focus.
+
+Implementation: `src/components/banner/banner.tsx`
+Verification: `src/components/banner/banner.test.tsx`, `e2e/banner.spec.ts`
+
 ## UIC-BANNER-2 - Announcements
 
 ### UIC-BANNER-2.1 - Roles and urgency

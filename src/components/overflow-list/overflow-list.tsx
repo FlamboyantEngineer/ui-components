@@ -69,3 +69,6 @@ export function OverflowList<T>({
     { render, state: { isOverflowing } },
   );
 }
+
+export { VisibleCollection } from './visible-collection.js';
+export type { VisibleCollectionProps } from './visible-collection.js';

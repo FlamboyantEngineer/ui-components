@@ -38,3 +38,37 @@
   min-width: 0;
   margin: 0;
 }
+
+.ui-section-header__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-inline-start: -4px;
+  padding: 2px 4px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.ui-section-header__trigger[data-hovered] {
+  background: var(--ref-hover);
+}
+
+.ui-section-header__trigger[data-focus-visible] {
+  outline: 2px solid var(--ref-focus);
+  outline-offset: 1px;
+}
+
+.ui-section-header__chevron {
+  flex: none;
+  width: 16px;
+  height: 16px;
+}
+
+.ui-section__panel {
+  min-width: 0;
+}

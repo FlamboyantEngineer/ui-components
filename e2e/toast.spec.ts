@@ -77,4 +77,127 @@ test.describe('Toast lab', () => {
       timeout: 5000,
     });
   });
+
+  test('UIC-TOAST-1.5 UIC-TOAST-3.6 updates a pending toast in place', async ({ page, lab }) => {
+    await lab.open('toast');
+    await page.locator('[data-lab-push="pending"]').click();
+    const toast = page.locator('.ui-toast-region .ui-toast');
+    await expect(toast).toHaveAttribute('data-pending', 'true');
+    await expect(toast.locator('.ui-toast__spinner')).toBeVisible();
+    await expect(toast.locator('.ui-toast__icon')).toHaveCount(0);
+    await toast.evaluate((node) => node.setAttribute('data-lab-mark', 'same'));
+    await page.locator('[data-lab-action="advance"]').click();
+    await expect(toast.locator('.ui-toast__title')).toHaveText('Uploading 2 of 3');
+    await expect(toast).toHaveAttribute('data-lab-mark', 'same');
+    await page.locator('[data-lab-action="advance"]').click();
+    await expect(toast).toHaveAttribute('data-tone', 'success');
+    await expect(toast).not.toHaveAttribute('data-pending');
+    await expect(toast.getByRole('status')).toHaveText('Three files uploaded');
+    await expect(toast).toHaveAttribute('data-lab-mark', 'same');
+    await lab.expectAccessible('.ui-toast-region');
+  });
+
+  test('UIC-TOAST-1.6 settles a promise toast into success or error', async ({ page, lab }) => {
+    await lab.open('toast');
+    await page.locator('[data-lab-push="promise"]').click();
+    const saving = page.getByRole('alertdialog', { name: 'Saving recipes' });
+    await expect(saving).toHaveAttribute('data-pending', 'true');
+    await page.locator('[data-lab-action="resolve"]').click();
+    const saved = page.getByRole('alertdialog', { name: '12 recipes saved' });
+    await expect(saved).toHaveAttribute('data-tone', 'success');
+    await expect(saved).not.toHaveAttribute('data-pending');
+    await page.locator('[data-lab-push="promise"]').click();
+    await page.locator('[data-lab-action="reject"]').click();
+    const failed = page.getByRole('alertdialog', { name: 'Recipes not saved' });
+    await expect(failed).toHaveAttribute('data-tone', 'danger');
+    await expect(failed.getByRole('alert')).toContainText('Check your connection.');
+  });
+
+  test('UIC-TOAST-4.1 UIC-ENTER-EXIT-1.3 plays the enter and exit of a toast', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('toast');
+    // Slow the reference motion so each phase holds until the test finishes it.
+    await page.addStyleTag({
+      content:
+        '.ui-toast { animation-duration: 60s !important; transition-duration: 60s !important; }',
+    });
+    const finish = (selector: string) =>
+      page.locator(selector).evaluate((node) => {
+        const running = node.getAnimations();
+        for (const animation of running) animation.finish();
+        return running.length;
+      });
+    await page.locator('[data-lab-push="action"]').click();
+    const toast = page.getByRole('alertdialog', { name: 'Row deleted' });
+    await expect(toast).toHaveAttribute('data-entering', 'true');
+    expect(await finish('.ui-toast-region .ui-toast')).toBeGreaterThan(0);
+    await expect(toast).not.toHaveAttribute('data-entering');
+    await toast.getByRole('button', { name: 'Dismiss' }).click();
+    await expect(toast).toHaveAttribute('data-exiting', 'true');
+    await expect(toast).toBeVisible();
+    expect(await finish('.ui-toast-region .ui-toast')).toBeGreaterThan(0);
+    await expect(toast).toHaveCount(0);
+    await expect(page.locator('.ui-toast-region')).toHaveCount(0);
+  });
+
+  test('UIC-TOAST-4.2 swipes a toast away to the right', async ({ page, lab }) => {
+    await lab.open('toast');
+    await page.locator('[data-lab-push="action"]').click();
+    const toast = page.getByRole('alertdialog', { name: 'Row deleted' });
+    await expect(toast).toHaveAttribute('data-swipe-direction', 'right');
+    const title = await toast.locator('.ui-toast__title').boundingBox();
+    const startX = (title?.x ?? 0) + 10;
+    const y = (title?.y ?? 0) + (title?.height ?? 0) / 2;
+    await page.mouse.move(startX, y);
+    await page.mouse.down();
+    await page.mouse.move(startX + 20, y, { steps: 4 });
+    await expect(toast).toHaveAttribute('data-swiping', 'true');
+    await page.mouse.up();
+    await expect(toast).not.toHaveAttribute('data-swiping');
+    await expect(toast).toBeVisible();
+
+    await page.mouse.move(startX, y);
+    await page.mouse.down();
+    await page.mouse.move(startX + 90, y, { steps: 6 });
+    await expect(toast).toHaveAttribute('style', /--ui-toast-swipe-x: 90px/);
+    await page.mouse.up();
+    await expect(toast).toHaveCount(0);
+  });
+
+  test('UIC-TOAST-4.3 piles toasts and spreads them while the region is hovered', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('toast');
+    await page.locator('[data-lab-push="action"]').click();
+    await page.locator('[data-lab-push="replace"]').click();
+    const region = page.locator('.ui-toast-region');
+    const newer = region.getByRole('alertdialog', { name: 'Uploading 1 of 3' });
+    const older = region.getByRole('alertdialog', { name: 'Row deleted' });
+    await expect(older).toHaveAttribute('style', /--ui-toast-index: 1/);
+    await expect(newer).toHaveAttribute('style', /--ui-toast-index: 0/);
+    const newerHeight = (await newer.boundingBox())?.height ?? 0;
+    await expect(older).toHaveAttribute('style', new RegExp(`--ui-toast-offset: ${newerHeight}px`));
+    // Let the pile settle, then compare: piled toasts overlap; spread ones stack upwards.
+    await expect
+      .poll(async () => {
+        const top = (await older.boundingBox())?.y ?? 0;
+        const front = (await newer.boundingBox())?.y ?? 0;
+        return front - top;
+      })
+      .toBeLessThan(newerHeight);
+    await expect(region).not.toHaveAttribute('data-expanded');
+    await newer.hover();
+    await expect(region).toHaveAttribute('data-expanded', 'true');
+    await expect
+      .poll(async () => {
+        const top = await older.boundingBox();
+        const front = await newer.boundingBox();
+        return (front?.y ?? 0) - ((top?.y ?? 0) + (top?.height ?? 0));
+      })
+      .toBeGreaterThanOrEqual(7);
+    await lab.expectAccessible('.ui-toast-region');
+  });
 });

@@ -1,6 +1,6 @@
 # Modal Controller
 
-`createModalController` creates an imperative store of open modals, for code that opens a modal from outside a render tree or without owning its open state: an event handler deep in a tool, a keyboard command, a non-React module. The host creates a controller, renders `ModalHost` with it once, and hands the controller to whatever opens modals. Each opening returns a handle to close or update it and a promise of its result. The library keeps no controller of its own; every controller is an instance its host creates. Each modal is a [Modal](MODAL.md), or any modal the caller draws.
+`createModalController` creates an imperative store of open modals, for code that opens a modal from outside a render tree or without owning its open state: an event handler deep in a tool, a keyboard command, a non-React module. The host creates a controller, renders `ModalHost` with it once, and hands the controller to whatever opens modals. Each opening returns a handle to close or update it and a promise of its result. The library keeps no controller of its own; every controller is an instance its host creates. Each modal is a [Modal](MODAL.md), or any modal the caller draws. [Confirm Dialog](CONFIRM-DIALOG.md#uic-confirm-dialog-2---imperative-confirmation) builds awaitable helpers on it: `confirm` for a yes-or-no answer, `alert` for an acknowledgement and `prompt` for a line of text.
 
 ## UIC-MODAL-CONTROLLER-1 - Controller
 

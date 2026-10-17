@@ -64,6 +64,43 @@ function ActionTrail() {
   );
 }
 
+const deepTrail: BreadcrumbItem[] = [
+  { id: 'home', label: 'Home', href: '#home' },
+  { id: 'recipes', label: 'Recipes', href: '#recipes' },
+  { id: 'desserts', label: 'Desserts', href: '#desserts' },
+  { id: 'tarts', label: 'Tarts and pies', href: '#tarts' },
+  { id: 'citrus', label: 'Citrus', href: '#citrus' },
+  { id: 'lemon', label: 'Lemon tart' },
+];
+const frames = { wide: 560, medium: 320, narrow: 220 } as const;
+
+function SiblingTrail() {
+  const [picked, setPicked] = useState('(none)');
+  const sibling = (id: string, label: string) => ({ id, label, onAction: () => setPicked(label) });
+  return (
+    <div data-lab-demo="siblings">
+      <Breadcrumb
+        aria-label="Trail with nearby places"
+        items={[
+          { id: 'home', label: 'Home', href: '#home' },
+          {
+            id: 'recipes',
+            label: 'Recipes',
+            href: '#recipes',
+            menu: [sibling('drinks', 'Drinks'), sibling('menus', 'Menus')],
+          },
+          {
+            id: 'tart',
+            label: 'Lemon tart',
+            menu: [sibling('cake', 'Lemon cake'), sibling('pie', 'Key lime pie')],
+          },
+        ]}
+      />
+      <p data-lab-output="sibling">Picked {picked}</p>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection title="Trails and sizes">
@@ -103,6 +140,25 @@ mountLab(
     </LabSection>
     <LabSection title="Actions" description="Crumbs without links report their id to onAction.">
       <ActionTrail />
+    </LabSection>
+    <LabSection
+      title="Overflow menu"
+      description="Six crumbs in frames of 560, 320 and 220 pixels. The first and current crumbs stay; the middle ones that do not fit move into a menu after the first."
+    >
+      <StateMatrix
+        axes={{ width: ['wide', 'medium', 'narrow'] }}
+        render={({ width }) => (
+          <div data-lab-frame="" style={{ width: frames[width] }}>
+            <Breadcrumb aria-label={`Deep trail, ${width}`} items={deepTrail} overflow="menu" />
+          </div>
+        )}
+      />
+    </LabSection>
+    <LabSection
+      title="Nearby places"
+      description="A crumb with a menu offers the places beside it from a button after its link."
+    >
+      <SiblingTrail />
     </LabSection>
   </>,
 );
