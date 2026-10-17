@@ -15,10 +15,17 @@ export interface PropertyTally {
   isOverridden: boolean;
 }
 
+/** Whether a row's joined texts match the query, in place of holding each of its terms. */
+export type PropertyScopeFilter = (text: string, query: string) => boolean;
+
 /** What one level of a property panel hands to the parts inside it. */
 export interface PropertyScopeValue {
   /** The active query's normalized terms; empty while nothing filters. */
   terms: readonly string[];
+  /** The query as typed. */
+  query: string;
+  /** The caller's matching, when it replaces the terms'. */
+  filter: PropertyScopeFilter | undefined;
   /** The texts of the enclosing section, group and card, joined by spaces. */
   path: string;
   /** Records a part's tally under its key and returns the function that removes it. */
@@ -38,6 +45,8 @@ export interface PropertyScopeLevel {
 
 export const PropertyScopeContext = createContext<PropertyScopeValue>({
   terms: [],
+  query: '',
+  filter: undefined,
   path: '',
   report: () => () => undefined,
 });
@@ -101,19 +110,22 @@ export function useReportPropertyTally(scope: PropertyScopeValue, tally: Propert
 export function usePropertyScopeLevel(text: string | undefined): PropertyScopeLevel {
   const parent = useContext(PropertyScopeContext);
   const { report, total } = usePropertyTallies();
-  const { terms, path } = parent;
   const value = useMemo(
-    () => ({ terms, path: joinScopeText([path, text]), report }),
-    [terms, path, text, report],
+    () => ({ ...parent, path: joinScopeText([parent.path, text]), report }),
+    [parent, text, report],
   );
-  return { parent, value, total, isFiltering: terms.length > 0 };
+  return { parent, value, total, isFiltering: parent.terms.length > 0 };
 }
 
-/** Whether the scope's path followed by `texts` holds every active term; true without a query. */
+/**
+ * Whether the scope's path followed by `texts` matches the query: holds every active term, or
+ * passes the caller's filter. True without a query.
+ */
 export function matchesPropertyScope(
   scope: PropertyScopeValue,
   texts: ReadonlyArray<string | undefined>,
 ): boolean {
   if (scope.terms.length === 0) return true;
-  return textMatchesTerms(joinScopeText([scope.path, ...texts]), scope.terms);
+  const text = joinScopeText([scope.path, ...texts]);
+  return scope.filter ? scope.filter(text, scope.query) : textMatchesTerms(text, scope.terms);
 }

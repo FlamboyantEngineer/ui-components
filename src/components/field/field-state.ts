@@ -183,7 +183,8 @@ export function useFieldState<T>(options: FieldStateOptions<T>): FieldState<T> {
   const value = options.value !== undefined ? options.value : draft;
   const committedValue = options.committedValue !== undefined ? options.committedValue : committed;
   const isDisabled = Boolean(options.isDisabled || scope.isDisabled);
-  const isLocked = Boolean(options.isReadOnly) || isDisabled;
+  const isReadOnly = Boolean(options.isReadOnly || scope.isReadOnly);
+  const isLocked = isReadOnly || isDisabled;
   const latest = useLatest({ value, committedValue, options, isLocked });
   const { reveal, realtime, shown } = useFieldValidation(value, options, scope);
   const { markChanged } = reveal;
@@ -236,7 +237,7 @@ export function useFieldState<T>(options: FieldStateOptions<T>): FieldState<T> {
     isDirty: canApply(value, committedValue, isLocked),
     isTouched: reveal.isTouched,
     isRequired: Boolean(options.isRequired),
-    isReadOnly: Boolean(options.isReadOnly),
+    isReadOnly,
     isDisabled,
     validationBehavior: options.validationBehavior ?? scope.validationBehavior ?? 'aria',
     canUndo: !isLocked && canStepFieldHistory(history, -1),

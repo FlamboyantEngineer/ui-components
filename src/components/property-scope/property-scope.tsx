@@ -5,11 +5,20 @@ import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { EmptyState } from '../empty-state/empty-state.js';
 import { TextMatchProvider, splitMatchTerms } from '../text-match/text-match.js';
-import { PropertyScopeContext, usePropertyTallies } from './scope-tally.js';
+import {
+  PropertyScopeContext,
+  usePropertyTallies,
+  type PropertyScopeFilter,
+} from './scope-tally.js';
 
 export interface PropertyScopeProps extends BaseProps {
   /** The query as typed. Property rows below stay visible only while their texts hold every term. */
   query?: string | undefined;
+  /**
+   * Whether a row matches: called with the texts of its section, group and card, its label and its
+   * keywords joined by spaces, and the query. Defaults to the texts holding every term.
+   */
+  filter?: PropertyScopeFilter | undefined;
   /** Shows a clear button in the no-match message, which calls this to empty the query. */
   onClear?: (() => void) | undefined;
   /** The property sections, groups, cards and rows the query filters. */
@@ -25,6 +34,7 @@ const hooks = createHooks('property-scope', ['status']);
  */
 export function PropertyScope({
   query = '',
+  filter,
   onClear,
   children,
   className,
@@ -33,7 +43,10 @@ export function PropertyScope({
   const strings = useUiStrings();
   const terms = useMemo(() => splitMatchTerms(query), [query]);
   const { report, total } = usePropertyTallies();
-  const value = useMemo(() => ({ terms, path: '', report }), [terms, report]);
+  const value = useMemo(
+    () => ({ terms, query, filter, path: '', report }),
+    [terms, query, filter, report],
+  );
   const hasNoMatch = terms.length > 0 && total.matches === 0;
 
   return (
@@ -71,3 +84,4 @@ export {
   usePropertyScopeLevel,
   useReportPropertyTally,
 } from './scope-tally.js';
+export type { PropertyScopeFilter } from './scope-tally.js';

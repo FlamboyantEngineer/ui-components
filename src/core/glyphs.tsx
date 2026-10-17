@@ -30,6 +30,7 @@ import {
   EyeSlashIcon,
   FolderIcon,
   InformationCircleIcon,
+  LinkIcon,
   MagnifyingGlassIcon,
   MinusIcon,
   PencilSquareIcon,
@@ -103,6 +104,7 @@ export const defaultGlyphs = {
   eye: EyeIcon,
   'eye-slash': EyeSlashIcon,
   scrub: ArrowsRightLeftIcon,
+  link: LinkIcon,
 } satisfies Record<string, GlyphComponent>;
 
 export const glyphNames = Object.keys(defaultGlyphs) as GlyphName[];

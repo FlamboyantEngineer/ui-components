@@ -25,6 +25,20 @@ Every member of the family shall carry its hooks below, append the caller's `cla
 Implementation: `src/components/property-panel/property-panel.tsx`, `src/components/property-panel/property-section.tsx`, `src/components/property-panel/property-card.tsx`, `src/components/property-panel/property-row.tsx`, `src/components/property-panel/property-strip.tsx`
 Verification: `src/components/property-panel/property-panel.test.tsx`
 
+### UIC-PROPERTY-PANEL-1.4 - Sections opened together
+
+Given `expandedKeys`, `defaultExpandedKeys` or `allowsMultipleExpanded`, the panel shall open and close its sections as a group, with React Aria's `DisclosureGroup` as its body: a section is open while its `id` (a generated key without one) is among the expanded keys, pressing its trigger toggles it there, and `onExpandedChange` reports the new keys. With `allowsMultipleExpanded={false}` opening a section closes the one open before (an accordion); it defaults to `true`, so `expandedKeys` holding every section's `id` opens them all and an empty set closes them all. A section's own `isExpanded`, `defaultExpanded` and `persistKey` then give way to the panel's, while a query still opens matching sections ([UIC-PROPERTY-SCOPE-1.2](PROPERTY-SCOPE.md#uic-property-scope-12---containers)). Cards keep their own state. Without any of these props each section keeps its own state.
+
+Implementation: `src/components/property-panel/property-panel.tsx`, `src/components/property-panel/property-disclosure.tsx`, `src/components/property-panel/property-section.tsx`, `src/components/property-panel/property-card.tsx`
+Verification: `src/components/property-panel/property-panel.test.tsx`, `e2e/property-panel.spec.ts`
+
+### UIC-PROPERTY-PANEL-1.5 - Disabled and read-only panel
+
+`isDisabled` shall disable every library field inside the panel through the field scope, as a disabled [Fieldset](FIELD.md#uic-field-102---shared-disabled-state) does, and publish `data-disabled` on the panel; `isReadOnly` shall make every field inside read-only (its control is read-only and its state refuses changes) and publish `data-readonly`. Section and card triggers stay usable, so the reader can still browse a locked panel. A panel inside a disabled form or fieldset stays disabled.
+
+Implementation: `src/components/property-panel/property-panel.tsx`, `src/components/field/field-scope.ts`, `src/components/field/field-state.ts`
+Verification: `src/components/property-panel/property-panel.test.tsx`, `e2e/property-panel.spec.ts`
+
 ## UIC-PROPERTY-PANEL-2 - Sections and cards
 
 ### UIC-PROPERTY-PANEL-2.1 - Section disclosure
@@ -122,55 +136,56 @@ Verification: `src/components/property-panel/property-panel.test.tsx`, `e2e/prop
 
 ## Hooks
 
-| Hook                               | Kind      | Values                  | Description                                                            |
-| ---------------------------------- | --------- | ----------------------- | ---------------------------------------------------------------------- |
-| `ui-property-panel`                | root      |                         | The panel's `<section>`.                                               |
-| `ui-property-panel__header`        | slot      |                         | The header content.                                                    |
-| `ui-property-panel__body`          | slot      |                         | The sections, groups and rows.                                         |
-| `data-label-layout`                | attribute | `responsive`, `inline`  | Where row labels sit.                                                  |
-| `ui-property-section`              | root      |                         | A section's disclosure `<div>`.                                        |
-| `ui-property-section__header`      | slot      |                         | The heading and the actions.                                           |
-| `ui-property-section__heading`     | slot      |                         | The heading around the trigger.                                        |
-| `ui-property-section__trigger`     | slot      |                         | The trigger button.                                                    |
-| `ui-property-section__chevron`     | slot      |                         | The disclosure chevron (also `ui-glyph`).                              |
-| `ui-property-section__title`       | slot      |                         | The title.                                                             |
-| `ui-property-section__override`    | slot      |                         | The override mark.                                                     |
-| `ui-property-section__count`       | slot      |                         | The count (also `ui-badge`).                                           |
-| `ui-property-section__meta`        | slot      |                         | Passive text after the count.                                          |
-| `ui-property-section__actions`     | slot      |                         | The section's buttons.                                                 |
-| `ui-property-section__content`     | slot      |                         | The disclosure panel.                                                  |
-| `ui-property-section__description` | slot      |                         | Supporting text at the top of the content.                             |
-| `ui-property-card`                 | root      |                         | A card's disclosure `<div>`.                                           |
-| `ui-property-card__header`         | slot      |                         | The trigger and the actions.                                           |
-| `ui-property-card__trigger`        | slot      |                         | The trigger button.                                                    |
-| `ui-property-card__chevron`        | slot      |                         | The disclosure chevron (also `ui-glyph`).                              |
-| `ui-property-card__name`           | slot      |                         | The name.                                                              |
-| `ui-property-card__summary`        | slot      |                         | The summary of the values inside.                                      |
-| `ui-property-card__override`       | slot      |                         | The override mark.                                                     |
-| `ui-property-card__actions`        | slot      |                         | The card's buttons.                                                    |
-| `ui-property-card__body`           | slot      |                         | The disclosure panel.                                                  |
-| `ui-property-group`                | root      |                         | A group of rows.                                                       |
-| `ui-property-group__heading`       | slot      |                         | The group heading.                                                     |
-| `ui-property-row`                  | root      |                         | A row.                                                                 |
-| `ui-property-row__label`           | slot      |                         | The label (`<label>` with `htmlFor`).                                  |
-| `ui-property-row__required`        | slot      |                         | The asterisk of a required row.                                        |
-| `ui-property-row__control`         | slot      |                         | The control, unit and hint.                                            |
-| `ui-property-row__unit`            | slot      |                         | The unit after the control.                                            |
-| `ui-property-row__hint`            | slot      |                         | The caption under the control.                                         |
-| `ui-property-row__description`     | slot      |                         | Supporting text for the row.                                           |
-| `ui-property-row__actions`         | slot      |                         | The row's buttons.                                                     |
-| `ui-property-strip`                | root      |                         | An inline run of cells.                                                |
-| `ui-property-strip-cell`           | root      |                         | One cell of a strip.                                                   |
-| `ui-property-strip-cell__letter`   | slot      |                         | The decorative letter.                                                 |
-| `ui-property-icon-group`           | root      |                         | A named group of icon buttons.                                         |
-| `data-variant`                     | attribute | `separate`, `segmented` | On an icon group: how the buttons are framed.                          |
-| `data-overridden`                  | state     | `true`                  | A row, or a section or card holding one, overrides inherited values.   |
-| `data-required`                    | state     | `true`                  | On a row: a value is required.                                         |
-| `data-wide`                        | state     | `true`                  | On a row: the label sits above a control spanning the row.             |
-| `data-expanded`                    | state     | `true`                  | On a section or card: open (React Aria).                               |
-| `data-disabled`                    | state     | `true`                  | On a section and its trigger: disabled (React Aria).                   |
-| `data-focus-visible-within`        | state     | `true`                  | On a section, card or their panel: keyboard focus inside (React Aria). |
-| `data-hovered`                     | state     | `true`                  | On a trigger: pointer over it (React Aria).                            |
-| `data-pressed`                     | state     | `true`                  | On a trigger: being pressed (React Aria).                              |
-| `data-focused`                     | state     | `true`                  | On a trigger: focused (React Aria).                                    |
-| `data-focus-visible`               | state     | `true`                  | On a trigger: keyboard focus (React Aria).                             |
+| Hook                               | Kind      | Values                  | Description                                                                                 |
+| ---------------------------------- | --------- | ----------------------- | ------------------------------------------------------------------------------------------- |
+| `ui-property-panel`                | root      |                         | The panel's `<section>`.                                                                    |
+| `ui-property-panel__header`        | slot      |                         | The header content.                                                                         |
+| `ui-property-panel__body`          | slot      |                         | The sections, groups and rows (a disclosure group while the panel opens its sections).      |
+| `data-label-layout`                | attribute | `responsive`, `inline`  | Where row labels sit.                                                                       |
+| `ui-property-section`              | root      |                         | A section's disclosure `<div>`.                                                             |
+| `ui-property-section__header`      | slot      |                         | The heading and the actions.                                                                |
+| `ui-property-section__heading`     | slot      |                         | The heading around the trigger.                                                             |
+| `ui-property-section__trigger`     | slot      |                         | The trigger button.                                                                         |
+| `ui-property-section__chevron`     | slot      |                         | The disclosure chevron (also `ui-glyph`).                                                   |
+| `ui-property-section__title`       | slot      |                         | The title.                                                                                  |
+| `ui-property-section__override`    | slot      |                         | The override mark.                                                                          |
+| `ui-property-section__count`       | slot      |                         | The count (also `ui-badge`).                                                                |
+| `ui-property-section__meta`        | slot      |                         | Passive text after the count.                                                               |
+| `ui-property-section__actions`     | slot      |                         | The section's buttons.                                                                      |
+| `ui-property-section__content`     | slot      |                         | The disclosure panel.                                                                       |
+| `ui-property-section__description` | slot      |                         | Supporting text at the top of the content.                                                  |
+| `ui-property-card`                 | root      |                         | A card's disclosure `<div>`.                                                                |
+| `ui-property-card__header`         | slot      |                         | The trigger and the actions.                                                                |
+| `ui-property-card__trigger`        | slot      |                         | The trigger button.                                                                         |
+| `ui-property-card__chevron`        | slot      |                         | The disclosure chevron (also `ui-glyph`).                                                   |
+| `ui-property-card__name`           | slot      |                         | The name.                                                                                   |
+| `ui-property-card__summary`        | slot      |                         | The summary of the values inside.                                                           |
+| `ui-property-card__override`       | slot      |                         | The override mark.                                                                          |
+| `ui-property-card__actions`        | slot      |                         | The card's buttons.                                                                         |
+| `ui-property-card__body`           | slot      |                         | The disclosure panel.                                                                       |
+| `ui-property-group`                | root      |                         | A group of rows.                                                                            |
+| `ui-property-group__heading`       | slot      |                         | The group heading.                                                                          |
+| `ui-property-row`                  | root      |                         | A row.                                                                                      |
+| `ui-property-row__label`           | slot      |                         | The label (`<label>` with `htmlFor`).                                                       |
+| `ui-property-row__required`        | slot      |                         | The asterisk of a required row.                                                             |
+| `ui-property-row__control`         | slot      |                         | The control, unit and hint.                                                                 |
+| `ui-property-row__unit`            | slot      |                         | The unit after the control.                                                                 |
+| `ui-property-row__hint`            | slot      |                         | The caption under the control.                                                              |
+| `ui-property-row__description`     | slot      |                         | Supporting text for the row.                                                                |
+| `ui-property-row__actions`         | slot      |                         | The row's buttons.                                                                          |
+| `ui-property-strip`                | root      |                         | An inline run of cells.                                                                     |
+| `ui-property-strip-cell`           | root      |                         | One cell of a strip.                                                                        |
+| `ui-property-strip-cell__letter`   | slot      |                         | The decorative letter.                                                                      |
+| `ui-property-icon-group`           | root      |                         | A named group of icon buttons.                                                              |
+| `data-variant`                     | attribute | `separate`, `segmented` | On an icon group: how the buttons are framed.                                               |
+| `data-overridden`                  | state     | `true`                  | A row, or a section or card holding one, overrides inherited values.                        |
+| `data-required`                    | state     | `true`                  | On a row: a value is required.                                                              |
+| `data-wide`                        | state     | `true`                  | On a row: the label sits above a control spanning the row.                                  |
+| `data-expanded`                    | state     | `true`                  | On a section or card: open (React Aria).                                                    |
+| `data-disabled`                    | state     | `true`                  | On the panel: its fields are disabled. On a section and its trigger: disabled (React Aria). |
+| `data-readonly`                    | state     | `true`                  | On the panel: its fields are read-only.                                                     |
+| `data-focus-visible-within`        | state     | `true`                  | On a section, card or their panel: keyboard focus inside (React Aria).                      |
+| `data-hovered`                     | state     | `true`                  | On a trigger: pointer over it (React Aria).                                                 |
+| `data-pressed`                     | state     | `true`                  | On a trigger: being pressed (React Aria).                                                   |
+| `data-focused`                     | state     | `true`                  | On a trigger: focused (React Aria).                                                         |
+| `data-focus-visible`               | state     | `true`                  | On a trigger: keyboard focus (React Aria).                                                  |

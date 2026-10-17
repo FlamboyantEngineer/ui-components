@@ -1,7 +1,9 @@
-import { useId, type ReactNode } from 'react';
+import { useId, useMemo, type ReactNode } from 'react';
+import { DisclosureGroup, type DisclosureGroupProps } from 'react-aria-components';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps } from '../../core/props.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { FieldScopeContext, useFieldScope } from '../field/field.js';
 import {
   PropertyScopeContext,
   usePropertyScopeLevel,
@@ -16,11 +18,21 @@ export type PropertyPanelLabelLayout = 'responsive' | 'inline';
 export type PropertyIconGroupVariant = 'separate' | 'segmented';
 
 export interface PropertyPanelProps
-  extends BaseProps, Pick<NativeProps<'section'>, 'aria-label' | 'aria-labelledby'> {
+  extends
+    BaseProps,
+    Pick<NativeProps<'section'>, 'aria-label' | 'aria-labelledby'>,
+    Pick<
+      DisclosureGroupProps,
+      'expandedKeys' | 'defaultExpandedKeys' | 'onExpandedChange' | 'allowsMultipleExpanded'
+    > {
   /** Content above the body, such as a title or a search box. */
   header?: ReactNode;
   /** Where row labels sit. Defaults to `responsive`. */
   labelLayout?: PropertyPanelLabelLayout | undefined;
+  /** Disables every field inside, which then refuses changes. */
+  isDisabled?: boolean | undefined;
+  /** Makes every field inside read-only. */
+  isReadOnly?: boolean | undefined;
   /** The panel's sections, groups and rows. */
   children?: ReactNode;
 }
@@ -44,18 +56,70 @@ const panelHooks = createHooks('property-panel', ['header', 'body']);
 const groupHooks = createHooks('property-group', ['heading']);
 const iconGroupHooks = createHooks('property-icon-group');
 
-/** A panel of labelled properties of one subject, as a `<section>` with an optional header. */
+/** The body: React Aria's disclosure group while the panel opens and closes its sections. */
+function PanelBody({
+  expansion,
+  children,
+}: {
+  expansion: Pick<
+    PropertyPanelProps,
+    'expandedKeys' | 'defaultExpandedKeys' | 'onExpandedChange' | 'allowsMultipleExpanded'
+  >;
+  children: ReactNode;
+}) {
+  const { expandedKeys, defaultExpandedKeys, onExpandedChange, allowsMultipleExpanded } = expansion;
+  const isManaged =
+    expandedKeys !== undefined ||
+    defaultExpandedKeys !== undefined ||
+    allowsMultipleExpanded !== undefined;
+  if (!isManaged) return <div {...panelHooks.slot('body')}>{children}</div>;
+  return (
+    <DisclosureGroup
+      className={panelHooks.slotClass('body')}
+      expandedKeys={expandedKeys}
+      defaultExpandedKeys={defaultExpandedKeys}
+      onExpandedChange={onExpandedChange}
+      allowsMultipleExpanded={allowsMultipleExpanded ?? true}
+    >
+      {children}
+    </DisclosureGroup>
+  );
+}
+
+/**
+ * A panel of labelled properties of one subject, as a `<section>` with an optional header. It can
+ * open and close its sections as a group, and disable or lock every field inside.
+ */
 export function PropertyPanel({
   header,
   labelLayout = 'responsive',
+  isDisabled = false,
+  isReadOnly = false,
+  expandedKeys,
+  defaultExpandedKeys,
+  onExpandedChange,
+  allowsMultipleExpanded,
   children,
   className,
   ...rest
 }: PropertyPanelProps) {
+  const parent = useFieldScope();
+  const scope = useMemo(
+    () => ({
+      ...parent,
+      isDisabled: parent.isDisabled || isDisabled,
+      isReadOnly: parent.isReadOnly || isReadOnly,
+    }),
+    [parent, isDisabled, isReadOnly],
+  );
+  const expansion = { expandedKeys, defaultExpandedKeys, onExpandedChange, allowsMultipleExpanded };
+  const data = { labelLayout, disabled: isDisabled, readonly: isReadOnly };
   return (
-    <section {...rest} {...panelHooks.root({ className, data: { labelLayout } })}>
+    <section {...rest} {...panelHooks.root({ className, data })}>
       {isEmptyNode(header) ? null : <div {...panelHooks.slot('header')}>{header}</div>}
-      <div {...panelHooks.slot('body')}>{children}</div>
+      <FieldScopeContext value={scope}>
+        <PanelBody expansion={expansion}>{children}</PanelBody>
+      </FieldScopeContext>
     </section>
   );
 }

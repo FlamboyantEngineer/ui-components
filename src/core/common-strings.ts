@@ -87,6 +87,10 @@ export interface CommonStrings {
   clearFilter: string;
   /** The name of one side of a box, such as a margin. */
   boxSide: (side: 'top' | 'right' | 'bottom' | 'left') => string;
+  /** The name of one flow-relative side of a box, which follows the writing direction. */
+  logicalBoxSide: (side: 'block-start' | 'block-end' | 'inline-start' | 'inline-end') => string;
+  /** The toggle that links a box's sides, so one edit sets all four or each opposite pair. */
+  linkSides: (link: 'all' | 'pairs') => string;
 }
 
 const spokenKeyNames: Readonly<Record<string, string>> = {
@@ -102,6 +106,12 @@ const spokenKeyNames: Readonly<Record<string, string>> = {
 };
 
 const boxSideNames = { top: 'Top', right: 'Right', bottom: 'Bottom', left: 'Left' } as const;
+const logicalBoxSideNames = {
+  'block-start': 'Top',
+  'block-end': 'Bottom',
+  'inline-start': 'Start',
+  'inline-end': 'End',
+} as const;
 
 export const commonStrings: CommonStrings = {
   close: 'Close',
@@ -167,4 +177,6 @@ export const commonStrings: CommonStrings = {
   noPropertyMatches: (query) => `No properties match “${query}”.`,
   clearFilter: 'Clear filter',
   boxSide: (side) => boxSideNames[side],
+  logicalBoxSide: (side) => logicalBoxSideNames[side],
+  linkSides: (link) => (link === 'all' ? 'Link all sides' : 'Link opposite sides'),
 };
