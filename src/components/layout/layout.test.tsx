@@ -143,6 +143,75 @@ describe('Layout primitives', () => {
 });
 
 describe('Layout options', () => {
+  it('UIC-LAYOUT-2.7 draws a decorative divider between rendered children', () => {
+    const { container, rerender } = render(
+      <Stack divided>
+        <p>Apple</p>
+        {null}
+        {false}
+        <p>Pear</p>
+        Plum
+      </Stack>,
+    );
+    const stack = container.firstElementChild!;
+    expect(stack).toHaveAttribute('data-divided', 'true');
+    expect([...stack.children].map((child) => child.className || child.tagName)).toEqual([
+      'P',
+      'ui-stack__divider',
+      'P',
+      'ui-stack__divider',
+    ]);
+    expect(stack).toHaveTextContent('ApplePearPlum');
+    const dividers = stack.querySelectorAll('.ui-stack__divider');
+    expect(dividers).toHaveLength(2);
+    for (const divider of dividers) {
+      expect(divider.tagName).toBe('DIV');
+      expect(divider).toHaveAttribute('aria-hidden', 'true');
+    }
+    expectHooksMatchSpec(container, 'LAYOUT', { slots: ['ui-stack__divider'] });
+
+    rerender(
+      <Stack>
+        <p>Apple</p>
+        <p>Pear</p>
+      </Stack>,
+    );
+    expect(container.firstElementChild).not.toHaveAttribute('data-divided');
+    expect(container.querySelector('.ui-stack__divider')).toBeNull();
+  });
+
+  it('UIC-LAYOUT-2.7 picks a divider element valid in the parent and keeps keyed children', () => {
+    const { container, rerender } = render(
+      <Cluster as="ul" divided>
+        <li key="apple">Apple</li>
+        <li key="pear">Pear</li>
+      </Cluster>,
+    );
+    const pear = container.querySelector('li:last-child');
+    expect(container.querySelector('.ui-cluster__divider')?.tagName).toBe('LI');
+    expectHooksMatchSpec(container, 'LAYOUT', { slots: ['ui-cluster__divider'] });
+    rerender(
+      <Cluster as="ul" divided>
+        <li key="plum">Plum</li>
+        <li key="pear">Pear</li>
+      </Cluster>,
+    );
+    expect(container.querySelector('li:last-child')).toBe(pear);
+    rerender(
+      <Cluster as="p" divided>
+        <a href="#apple">Apple</a>
+        <a href="#pear">Pear</a>
+      </Cluster>,
+    );
+    expect(container.querySelector('.ui-cluster__divider')?.tagName).toBe('SPAN');
+    rerender(
+      <Stack as="section" divided>
+        <p>Only</p>
+      </Stack>,
+    );
+    expect(container.querySelector('.ui-stack__divider')).toBeNull();
+  });
+
   it('UIC-LAYOUT-2.1 publishes every spacing step and each primitive default', () => {
     const { container, rerender } = render(
       <>

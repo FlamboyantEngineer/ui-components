@@ -51,8 +51,8 @@ test.describe('Shortcut lab', () => {
     await lab.open('shortcut');
     const legend = page.locator('[data-lab-cell="platform=windows"] .ui-key-hints');
     await expect(legend).toHaveClass(/ui-meta-line/);
-    await expect(legend.locator('.ui-key-hints__hint')).toHaveCount(4);
-    await expect(legend.locator('.ui-meta-line__separator')).toHaveCount(3);
+    await expect(legend.locator('.ui-key-hints__hint')).toHaveCount(3);
+    await expect(legend.locator('.ui-meta-line__separator')).toHaveCount(2);
     const lineHeight = await legend.evaluate((node) =>
       Number.parseFloat(getComputedStyle(node.parentElement as Element).lineHeight),
     );
@@ -81,6 +81,12 @@ test.describe('Shortcut lab', () => {
       .locator('[data-lab-cell="sequence=G I platform=linux"]')
       .ariaSnapshot();
     expect(snapshot).toContain('G, then I');
+    const hints = page.locator('[data-lab-sequence-hints] .ui-key-hints__hint');
+    await expect(hints.locator('.ui-shortcut__keys')).toHaveText(['G I', 'G S']);
+    await expect(hints.locator('.ui-key-hints__action')).toHaveText([
+      'go to inbox',
+      'go to starred',
+    ]);
     await lab.expectAccessible();
   });
 });

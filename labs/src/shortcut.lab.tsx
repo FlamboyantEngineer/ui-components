@@ -62,16 +62,20 @@ mountLab(
           <Shortcut chord={sequences[sequence]} platform={platform} />
         )}
       />
+      <p data-lab-sequence-hints>
+        <KeyHints
+          hints={[
+            { keys: [sequences['G I']], action: 'go to inbox' },
+            { keys: [['G', 'S']], action: 'go to starred' },
+          ]}
+          platform="linux"
+        />
+      </p>
     </LabSection>
     <LabSection title="Key legends" description="Hints of keys and actions on one metadata line.">
       <StateMatrix
         axes={{ platform: platforms }}
-        render={({ platform }) => (
-          <KeyHints
-            hints={[...legend, { keys: [sequences['G I']], action: 'go to inbox' }]}
-            platform={platform}
-          />
-        )}
+        render={({ platform }) => <KeyHints hints={legend} platform={platform} />}
       />
     </LabSection>
     <LabSection
