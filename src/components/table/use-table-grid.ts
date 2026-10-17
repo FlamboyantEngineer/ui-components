@@ -76,8 +76,8 @@ function resolveTreeColumn<T>(
 }
 
 /** The columns the table draws around its data columns. React Aria needs a data column to name rows. */
-function useStructure<T>(
-  options: TableGridOptions<T & TableRow>,
+function useStructure<T extends TableRow>(
+  options: TableGridOptions<T>,
   columns: readonly TableColumn<T>[],
 ): TableStructure<T> {
   const { selectionMode, renderRowActions, actionsColumnWidth = 44, virtualized = false } = options;
@@ -100,21 +100,20 @@ function useStructure<T>(
 }
 
 /** The root handlers of the features in use, merged so each sees every event. */
-function mergeRootProps<T>(
-  options: TableGridOptions<T & TableRow>,
+function mergeRootProps<T extends TableRow>(
+  columns: readonly TableColumn<T>[],
   parts: {
     reordering: TableReorder<T> | null;
-    sortProps: object | null;
+    sort: TableRowsView<T>['sort'];
     columnReorder: ColumnReorder;
     editingProps: object;
   },
 ): object {
-  const { columns } = options;
   const hasColumnMoves = columns.some((column) => column.allowsReordering);
   const hasEditing = columns.some((column) => column.allowsEditing);
   return mergeProps(
     parts.reordering?.rootProps ?? {},
-    parts.sortProps ?? {},
+    parts.sort.isMultiple ? parts.sort.rootProps : {},
     hasColumnMoves ? parts.columnReorder.rootProps : {},
     hasEditing ? parts.editingProps : {},
   );
@@ -127,7 +126,6 @@ function mergeRootProps<T>(
 export function useTableGrid<T extends TableRow>(options: TableGridOptions<T>): TableGrid<T> {
   const {
     columns,
-    rows,
     reorder,
     onRowAction,
     renderRowActions,
@@ -138,7 +136,7 @@ export function useTableGrid<T extends TableRow>(options: TableGridOptions<T>): 
   } = options;
   const widths = useColumnWidths(options);
   const layout = useColumnLayout(options);
-  const view = useTableRows({ ...options, rows, columns });
+  const view = useTableRows(options);
   const reordering = useTableReorder({ rows: view.rows, reorder });
   const editing = useCellEditing(options);
   const columnReorder = useColumnReorder({
@@ -177,22 +175,22 @@ export function useTableGrid<T extends TableRow>(options: TableGridOptions<T>): 
       release,
     ],
   );
-  const sortProps = view.sort.isMultiple ? view.sort.rootProps : null;
+  const activeReordering = reorder ? reordering : null;
   return {
     ariaProps: pickAriaProps(options),
     view,
     structure,
     layout,
     widths,
-    reordering: reorder ? reordering : null,
+    reordering: activeReordering,
     columnReorder,
     pinOffsets,
     onPinOffsets: pinned.report,
     onRowAction: onRowAction && ((key: Key) => isDataRowKey(key) && onRowAction(key)),
     body: { nodes: view.nodes, model, status, message, onRetry, onLoadMore, isLoading },
-    rootProps: mergeRootProps(options, {
-      reordering: reorder ? reordering : null,
-      sortProps,
+    rootProps: mergeRootProps(columns, {
+      reordering: activeReordering,
+      sort: view.sort,
       columnReorder,
       editingProps: editing.rootProps,
     }),

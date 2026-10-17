@@ -24,6 +24,39 @@ function isInside(box: DOMRect, event: PointerEvent): boolean {
 }
 
 /**
+ * Keeps the browser from focusing the cell a press lands in until the next frame. React Aria moves
+ * focus from a focused cell into its first control, the handle, and a focus move during a press
+ * cancels the browser's drag.
+ */
+function holdCellFocus(target: Element): void {
+  const cell = target.closest('[role="gridcell"], [role="rowheader"]');
+  const tabIndex = cell?.getAttribute('tabindex');
+  if (!cell || tabIndex === null || tabIndex === undefined) return;
+  cell.removeAttribute('tabindex');
+  requestAnimationFrame(() => cell.setAttribute('tabindex', tabIndex));
+}
+
+/**
+ * Lets a pointer drag start from the cell that holds a row's drag handle. Call it on a pointer
+ * press inside a collection whose rows drag from anywhere: a primary press in that cell keeps
+ * focus on the row for the press, so React Aria does not move it into the handle and cancel the
+ * drag. `armHandleDrag` does this itself.
+ */
+export function keepHandleCellDraggable(event: PointerEvent<Element>): void {
+  const row = event.target instanceof Element ? event.target.closest('[role="row"]') : null;
+  const handle = row ? findRowHandle(row) : undefined;
+  const cell = handle?.closest('[role="gridcell"], [role="rowheader"]');
+  if (
+    event.button === 0 &&
+    cell &&
+    event.target instanceof Element &&
+    cell.contains(event.target)
+  ) {
+    holdCellFocus(cell);
+  }
+}
+
+/**
  * Lets only the handle start a row's pointer drag. Call it on a pointer press inside a collection
  * whose rows render without `draggable`: a primary press on a row's enabled handle makes that row
  * draggable until the press or the drag ends, so a press elsewhere in the row never drags it. React
@@ -36,6 +69,7 @@ export function armHandleDrag(event: PointerEvent<Element>): void {
     return;
   }
   const document = row.ownerDocument;
+  holdCellFocus(handle);
   row.setAttribute('draggable', 'true');
   const disarm = () => {
     row.removeAttribute('draggable');

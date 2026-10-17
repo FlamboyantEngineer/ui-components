@@ -18,7 +18,12 @@ import type { TableColumnGroup, TableColumnLayout } from './table-columns.js';
 import { TableSearch } from './table-search.js';
 import { isEmptyFilterValue, setColumnFilter, type TableFilter } from './table-filters.js';
 import { hasTableFooter, TableFooter } from './table-footer.js';
-import { TableHeader, type TableHeaderModel } from './table-header.js';
+import {
+  hasGroupRow,
+  renderTableWithTracks,
+  TableHeader,
+  type TableHeaderModel,
+} from './table-header.js';
 import { tableHooks as hooks } from './table-hooks.js';
 import type { TableColumn, TableRow } from './table-rows.js';
 import { TableToolbar } from './table-toolbar.js';
@@ -159,6 +164,7 @@ function TableGridElement<T extends TableRow>({
       // React Aria keeps drag and drop hooks for a table's lifetime: remount when reorder toggles.
       key={reordering ? 'reorder' : 'static'}
       className={hooks.slotClass('grid')}
+      render={hasGroupRow(structure, header.groups) ? renderTableWithTracks : undefined}
       treeColumn={structure.treeColumn ?? undefined}
       sortDescriptor={view.sort.descriptors[0]}
       onSortChange={view.sort.onSortChange}

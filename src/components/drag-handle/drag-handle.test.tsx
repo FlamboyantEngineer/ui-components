@@ -3,7 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { GridList, GridListItem, useDragAndDrop } from 'react-aria-components';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import { armHandleDrag, DragHandle } from './drag-handle.js';
+import { armHandleDrag, DragHandle, keepHandleCellDraggable } from './drag-handle.js';
 
 const FRUIT = [
   { id: 'apple', name: 'Apple' },
@@ -29,12 +29,17 @@ function FruitList() {
 }
 
 /** Rows that render without `draggable`, so only their handles start pointer drags. */
-function HandleRows() {
+function HandleRows({ isHandleOnly = true }: { isHandleOnly?: boolean }) {
   return (
-    <div onPointerDownCapture={armHandleDrag}>
+    <div onPointerDownCapture={isHandleOnly ? armHandleDrag : keepHandleCellDraggable}>
       <div role="row" data-testid="apple">
-        <DragHandle aria-label="Drag Apple" />
-        Apple
+        <div role="gridcell" tabIndex={-1} data-testid="apple-cell">
+          <DragHandle aria-label="Drag Apple" />
+          Apple
+        </div>
+        <div role="gridcell" tabIndex={-1} data-testid="apple-colour">
+          Red
+        </div>
         <div role="row" data-testid="seed">
           <span>Seed</span>
         </div>
@@ -141,5 +146,24 @@ describe('DragHandle', { timeout: 15_000 }, () => {
     expect(apple).not.toHaveAttribute('draggable');
     press(screen.getByTestId('fig'), { x: 10 });
     expect(screen.getByTestId('fig')).not.toHaveAttribute('draggable');
+  });
+
+  it('UIC-DRAG-HANDLE-2.2 keeps a press in the handle cell from focusing it until the next frame', async () => {
+    const nextFrame = () => new Promise((resolve) => requestAnimationFrame(resolve));
+    const { unmount } = render(<HandleRows isHandleOnly={false} />);
+    const cell = screen.getByTestId('apple-cell');
+    press(screen.getByText('Apple'), { x: 60 });
+    expect(cell).not.toHaveAttribute('tabindex');
+    press(screen.getByTestId('apple-colour'), { x: 200 });
+    expect(screen.getByTestId('apple-colour')).toHaveAttribute('tabindex', '-1');
+    await nextFrame();
+    expect(cell).toHaveAttribute('tabindex', '-1');
+    unmount();
+    render(<HandleRows />);
+    placeHandles();
+    press(screen.getByTestId('apple-cell'), { x: 10 });
+    expect(screen.getByTestId('apple-cell')).not.toHaveAttribute('tabindex');
+    await nextFrame();
+    expect(screen.getByTestId('apple-cell')).toHaveAttribute('tabindex', '-1');
   });
 });

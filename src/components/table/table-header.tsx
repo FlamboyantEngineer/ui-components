@@ -151,6 +151,40 @@ function getHeaderState<T>(
   };
 }
 
+/** Whether the header draws a group row: groups exist and the table is not virtualized. */
+export function hasGroupRow<T>(structure: TableStructure<T>, groups: readonly unknown[]): boolean {
+  return groups.length > 0 && !structure.isVirtualized;
+}
+
+/**
+ * The widths of React Aria's columns as layout tracks. A fixed table layout takes its column widths
+ * from its first row, which a group row would otherwise decide.
+ */
+function TableColumnTracks() {
+  const state = useContext(TableStateContext);
+  const layout = useContext(TableColumnResizeStateContext);
+  return (
+    <colgroup>
+      {(state?.collection.columns ?? []).map((column) => (
+        <col key={column.key} style={{ width: layout?.getColumnWidth(column.key) }} />
+      ))}
+    </colgroup>
+  );
+}
+
+/** The grid's `table` element with column tracks first, for a table with a group row. */
+export function renderTableWithTracks(
+  props: JSX.IntrinsicElements['table'] | JSX.IntrinsicElements['div'],
+) {
+  // Groups draw only in a table element, so the props are a `table`'s.
+  return (
+    <table {...(props as JSX.IntrinsicElements['table'])}>
+      <TableColumnTracks />
+      {props.children}
+    </table>
+  );
+}
+
 /** A header element that draws the group header row above React Aria's column row. */
 function createGroupedHeader<T>({ structure, model }: TableHeaderProps<T>) {
   const cells = groupColumnCells(structure.columns, model.groups, {
@@ -194,7 +228,7 @@ function createGroupedHeader<T>({ structure, model }: TableHeaderProps<T>) {
 export function TableHeader<T>(props: TableHeaderProps<T>) {
   const strings = useUiStrings();
   const { structure, model } = props;
-  const hasGroups = model.groups.length > 0 && !structure.isVirtualized;
+  const hasGroups = hasGroupRow(structure, model.groups);
   const selectionPin = getColumnPin(structure, 'selection');
   const actionsPin = getColumnPin(structure, 'actions');
   const pins = collectPins(structure);

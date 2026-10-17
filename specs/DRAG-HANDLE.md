@@ -1,6 +1,6 @@
 # Drag Handle
 
-`DragHandle` draws the drag button of a row in a React Aria collection that reorders by drag and drop, such as [Tree](TREE.md) and [Table](TABLE.md). The collection names the button after its row and starts the row's keyboard drag from it; collections that draw handles render this one rather than their own. `armHandleDrag` lets a collection drag rows by their handles only, and a collection can draw its own drag preview ([Table](TABLE.md#uic-table-56---drag-preview) does).
+`DragHandle` draws the drag button of a row in a React Aria collection that reorders by drag and drop, such as [Tree](TREE.md) and [Table](TABLE.md). The collection names the button after its row and starts the row's keyboard drag from it; collections that draw handles render this one rather than their own. `armHandleDrag` lets a collection drag rows by their handles only, `keepHandleCellDraggable` lets a drag start from the handle's cell, and a collection can draw its own drag preview ([Table](TABLE.md#uic-table-56---drag-preview) does).
 
 ## UIC-DRAG-HANDLE-1 - Drag handle
 
@@ -40,6 +40,13 @@ Verification: `src/components/drag-handle/drag-handle.test.tsx`
 
 Implementation: `src/components/drag-handle/drag-handle.tsx`
 Verification: `src/components/drag-handle/drag-handle.test.tsx`, `e2e/drag-handle.spec.ts`
+
+### UIC-DRAG-HANDLE-2.2 - Dragging from the handle's cell
+
+`keepHandleCellDraggable(event)`, called on a pointer press inside a collection whose rows drag from anywhere, shall keep a primary press in the grid cell that holds a row's handle from focusing that cell until the next frame, so the row takes focus instead. React Aria moves focus from a focused cell into its first control, the handle, and that move during a press cancels the browser's drag. `armHandleDrag` does the same for each press it arms. [Table](TABLE.md#uic-table-51---drag-and-drop) uses both.
+
+Implementation: `src/components/drag-handle/drag-handle.tsx`, `src/components/table/use-table-reorder.tsx`
+Verification: `src/components/drag-handle/drag-handle.test.tsx`, `e2e/table.spec.ts`
 
 ## Hooks
 

@@ -1,5 +1,6 @@
 import {
   useCallback,
+  useMemo,
   type DragEvent,
   type KeyboardEvent,
   type PointerEvent,
@@ -16,7 +17,7 @@ import {
   useReorderDragAndDrop,
   type ReorderDragItem,
 } from '../../utils/use-reorder-drag-and-drop.js';
-import { armHandleDrag } from '../drag-handle/drag-handle.js';
+import { armHandleDrag, keepHandleCellDraggable } from '../drag-handle/drag-handle.js';
 import { tableHooks } from './table-hooks.js';
 import { isEffectiveTableMove, type TableMove, type TableRow } from './table-rows.js';
 
@@ -45,7 +46,7 @@ export interface TableReorder<T> {
   rootProps: {
     onKeyDownCapture: (event: KeyboardEvent<HTMLElement>) => void;
     onDragStartCapture: (event: DragEvent<HTMLElement>) => void;
-    onPointerDownCapture?: (event: PointerEvent<HTMLElement>) => void;
+    onPointerDownCapture: (event: PointerEvent<HTMLElement>) => void;
   };
 }
 
@@ -126,7 +127,12 @@ export function useTableReorder<T extends TableRow>(snapshot: ReorderSnapshot<T>
     renderDropIndicator,
     renderDragPreview: createDragPreview(snapshot),
   });
-  const isMovable = useCallback((row: T) => canMoveRow(reorder, row), [reorder]);
+  // Only the top-level rows of the page move, so nested rows draw disabled handles.
+  const topLevel = useMemo(() => new Set(snapshot.rows), [snapshot.rows]);
+  const isMovable = useCallback(
+    (row: T) => topLevel.has(row) && canMoveRow(reorder, row),
+    [topLevel, reorder],
+  );
 
   const onKeyDownCapture = (event: KeyboardEvent<HTMLElement>) => {
     const step = moveKeys[event.key];
@@ -151,7 +157,7 @@ export function useTableReorder<T extends TableRow>(snapshot: ReorderSnapshot<T>
     rootProps: {
       onKeyDownCapture,
       onDragStartCapture,
-      ...(isHandleTrigger ? { onPointerDownCapture: armHandleDrag } : {}),
+      onPointerDownCapture: isHandleTrigger ? armHandleDrag : keepHandleCellDraggable,
     },
   };
 }

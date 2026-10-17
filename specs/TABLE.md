@@ -154,7 +154,7 @@ Verification: `src/components/table/column-sizing.test.ts`
 
 ### UIC-TABLE-5.1 - Drag and drop
 
-With `reorder`, the first cell of each row shall start with a [Drag Handle](DRAG-HANDLE.md) (`ui-table__drag-handle`, named `Drag <row>` by React Aria). Dragging a row by pointer, or from the keyboard with Enter on its handle, the arrow keys and Enter, shall report one `reorder.onMove({ keys, targetKey, position })` with `position` `before` or `after`, while a `ui-table__drop-indicator` row marks the drop position. Drop positions that would leave the order unchanged are refused. The table never reorders its rows itself. Reordering moves the top-level rows of the current page; nested, detail and summary rows never move and nothing lands beside them.
+With `reorder`, the first cell of each row shall start with a [Drag Handle](DRAG-HANDLE.md) (`ui-table__drag-handle`, named `Drag <row>` by React Aria). Dragging a row by pointer from anywhere on it, the handle's cell included ([UIC-DRAG-HANDLE-2.2](DRAG-HANDLE.md#uic-drag-handle-22---dragging-from-the-handles-cell)), or from the keyboard with Enter on its handle, the arrow keys and Enter, shall report one `reorder.onMove({ keys, targetKey, position })` with `position` `before` or `after`, while a `ui-table__drop-indicator` row marks the drop position. Drop positions that would leave the order unchanged are refused. The table never reorders its rows itself. Reordering moves the top-level rows of the current page; nested, detail and summary rows never move and nothing lands beside them.
 
 Implementation: `src/components/table/use-table-reorder.tsx`, `src/utils/use-reorder-drag-and-drop.ts`, `src/components/table/table-row.tsx`
 Verification: `src/components/table/use-table-reorder.test.tsx`, `e2e/table.spec.ts`
@@ -288,14 +288,14 @@ Verification: `src/components/table/use-column-reorder.test.tsx`, `e2e/table.spe
 
 A column with `pin` (`start` or `end`) shall be drawn among the first or last columns, keeping their order, and stay at its edge while the scroll area scrolls sideways: its header, cells and summary cell publish `data-pinned` and the measured `--ui-table-pin-offset`, the width of the pinned columns between it and its edge from React Aria's column widths, from which the stylesheet makes it sticky. The selection column pins with the start columns and the actions column with the end columns. Offsets follow every width React Aria lays out, live during a resize. A virtualized table positions every cell itself and pins nothing.
 
-Implementation: `src/components/table/table-columns.ts`, `src/components/table/use-pinned-offsets.ts`, `src/components/table/table-structure.ts`, `src/components/table/table-column.tsx`, `src/components/table/table-row.tsx`
+Implementation: `src/components/table/table-columns.ts`, `src/components/table/use-pinned-offsets.ts`, `src/components/table/table-header.tsx`, `src/components/table/table-structure.ts`, `src/components/table/table-column.tsx`, `src/components/table/table-row.tsx`
 Verification: `src/components/table/use-pinned-offsets.test.tsx`, `e2e/table.spec.ts`
 
 ### UIC-TABLE-8.7 - Column groups
 
-`columnGroups` (an id, a header and the ids of its columns each) shall draw a row of group headers above the column headers: one `ui-table__column-group` header cell (`scope="colgroup"`) spanning each run of neighbouring drawn columns of one group, and a cell hidden from assistive technology over ungrouped columns and the selection and actions columns, which publishes `data-ungrouped`. A group whose columns are moved apart draws over each run. A virtualized table draws no group row.
+`columnGroups` (an id, a header and the ids of its columns each) shall draw a row of group headers above the column headers: one `ui-table__column-group` header cell (`scope="colgroup"`) spanning each run of neighbouring drawn columns of one group, and a cell hidden from assistive technology over ungrouped columns and the selection and actions columns, which publishes `data-ungrouped`. A group whose columns are moved apart draws over each run. The grid then lists React Aria's column widths as column tracks first, so the fixed table layout takes them rather than the group row's. A virtualized table draws no group row.
 
-Implementation: `src/components/table/table-header.tsx`, `src/components/table/table-columns.ts`
+Implementation: `src/components/table/table-header.tsx`, `src/components/table/table.tsx`, `src/components/table/table-columns.ts`
 Verification: `src/components/table/table-header.test.tsx`, `e2e/table.spec.ts`
 
 ### UIC-TABLE-8.8 - Layout helpers
