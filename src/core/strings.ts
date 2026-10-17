@@ -3,6 +3,8 @@ export interface UiStrings {
   close: string;
   dismiss: string;
   more: string;
+  /** Default accessible name of a context menu. */
+  contextMenu: string;
   loading: string;
   clear: string;
   restore: string;
@@ -44,6 +46,7 @@ export const defaultStrings: UiStrings = {
   close: 'Close',
   dismiss: 'Dismiss',
   more: 'More',
+  contextMenu: 'Context menu',
   loading: 'Loading',
   clear: 'Clear',
   restore: 'Restore',
