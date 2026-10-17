@@ -5,4 +5,5 @@ export type {
   FileUploadItem,
   FileUploadProps,
   FileUploadVariant,
+  FileValidator,
 } from './file-upload.js';

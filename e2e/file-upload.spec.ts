@@ -91,6 +91,154 @@ test.describe('File Upload lab', () => {
     );
   });
 
+  test('UIC-FILE-UPLOAD-2.6 UIC-FILE-UPLOAD-2.7 UIC-FILE-UPLOAD-3.5 refuses duplicates and extra files and shows thumbnails', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('file-upload');
+    const target = upload(page, 'rules');
+    const chooser = target.locator('input[type="file"]');
+    const png = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+      'base64',
+    );
+    await chooser.setInputFiles([
+      { name: 'Harbour.png', mimeType: 'image/png', buffer: png },
+      { name: 'Notes.txt', mimeType: 'text/plain', buffer: Buffer.alloc(10) },
+    ]);
+    const rows = target.locator('.ui-file-upload__file');
+    await expect(rows).toHaveCount(2);
+    const preview = rows.nth(0).locator('.ui-file-upload__file-preview');
+    await expect(preview).toHaveAttribute('src', /^blob:/);
+    await expect
+      .poll(() => preview.evaluate((image: HTMLImageElement) => image.naturalWidth))
+      .toBe(1);
+    await chooser.setInputFiles([
+      { name: 'Notes.txt', mimeType: 'text/plain', buffer: Buffer.alloc(10) },
+      { name: 'One.txt', mimeType: 'text/plain', buffer: Buffer.alloc(10) },
+      { name: 'Two.txt', mimeType: 'text/plain', buffer: Buffer.alloc(10) },
+      { name: 'Three.txt', mimeType: 'text/plain', buffer: Buffer.alloc(10) },
+    ]);
+    await expect(rows).toHaveCount(4);
+    await expect(target.locator('.ui-file-upload__rejections')).toHaveText(
+      '1 file is over the file limit. Notes.txt: A file with this name is already chosen.',
+    );
+    await expect(page.locator('[data-lab-output="rules-refused"]')).toHaveText(
+      'Notes.txt (invalid), Three.txt (count)',
+    );
+  });
+
+  test('UIC-FILE-UPLOAD-2.8 shows during a drag whether the drop zone would accept the files', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('file-upload');
+    const zone = upload(page, 'dropzone').locator('.ui-file-upload__dropzone');
+    // A drop from the system carries file entries; a scripted transfer has none, so give it some.
+    await page.evaluate(() => {
+      DataTransferItem.prototype.webkitGetAsEntry = function entry() {
+        return { isFile: this.kind === 'file', isDirectory: false } as FileSystemEntry;
+      };
+    });
+    const drag = (names: Array<[string, string]>) =>
+      page.evaluateHandle((entries) => {
+        const transfer = new DataTransfer();
+        for (const [name, type] of entries) transfer.items.add(new File(['x'], name, { type }));
+        return transfer;
+      }, names);
+    const images = await drag([['Harbour.png', 'image/png']]);
+    await zone.dispatchEvent('dragenter', { dataTransfer: images });
+    await expect(zone).toHaveAttribute('data-drop-accept', 'true');
+    await expect(zone).not.toHaveAttribute('data-drop-reject');
+    await expect(zone).toHaveCSS('border-top-color', 'rgb(26, 127, 55)');
+    await zone.dispatchEvent('drop', { dataTransfer: images });
+    await expect(zone).not.toHaveAttribute('data-drop-accept');
+    const mixed = await drag([
+      ['Harbour.png', 'image/png'],
+      ['Notes.txt', 'text/plain'],
+    ]);
+    await zone.dispatchEvent('dragenter', { dataTransfer: mixed });
+    await expect(zone).toHaveAttribute('data-drop-reject', 'true');
+    await expect(zone).toHaveCSS('border-top-color', 'rgb(207, 34, 46)');
+    await zone.dispatchEvent('drop', { dataTransfer: mixed });
+    await expect(zone).not.toHaveAttribute('data-drop-reject');
+    await expect(upload(page, 'dropzone').locator('.ui-file-upload__rejections')).toHaveText(
+      '1 file is not an accepted type.',
+    );
+  });
+
+  test('UIC-FILE-UPLOAD-1.5 reads a dropped folder through its subfolders', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('file-upload');
+    const target = upload(page, 'folder');
+    await expect(target.locator('input[type="file"]')).toHaveAttribute('webkitdirectory', '');
+    // A scripted drop carries no file system entries: give the folder placeholder some.
+    await page.evaluate(() => {
+      const fileEntry = (name: string) => ({
+        isFile: true,
+        isDirectory: false,
+        name,
+        file: (resolve: (file: File) => void) =>
+          resolve(new File(['x'], name, { type: 'text/plain' })),
+      });
+      const folder = (name: string, children: unknown[]) => {
+        let read = false;
+        return {
+          isFile: false,
+          isDirectory: true,
+          name,
+          createReader: () => ({
+            readEntries: (resolve: (entries: unknown[]) => void) => {
+              resolve(read ? [] : children);
+              read = true;
+            },
+          }),
+        };
+      };
+      DataTransferItem.prototype.webkitGetAsEntry = function entry() {
+        return folder('Recipes', [
+          fileEntry('Soup.txt'),
+          folder('Desserts', [fileEntry('Tart.txt')]),
+        ]) as unknown as FileSystemEntry;
+      };
+    });
+    const dataTransfer = await page.evaluateHandle(() => {
+      const transfer = new DataTransfer();
+      transfer.items.add(new File([''], 'Recipes'));
+      return transfer;
+    });
+    const zone = target.locator('.ui-file-upload__dropzone');
+    await zone.dispatchEvent('dragenter', { dataTransfer });
+    await zone.dispatchEvent('drop', { dataTransfer });
+    await expect(target.locator('.ui-file-upload__file-name')).toHaveText(['Soup.txt', 'Tart.txt']);
+  });
+
+  test('UIC-FILE-UPLOAD-4.2 refuses an empty required upload in a form and submits the chosen files', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('file-upload');
+    const form = page.locator('[data-lab-form="upload"]');
+    await form.getByRole('button', { name: 'Send' }).click();
+    const command = form.getByRole('button', { name: 'Attach the signed form' });
+    await expect(command).toBeFocused();
+    await expect(form.locator('.ui-file-upload__error')).toHaveText('A value is required.');
+    await expect(command).toHaveAccessibleDescription('A value is required.');
+    await expect(form.locator('.ui-file-upload')).toHaveAttribute('data-invalid', 'true');
+    await expect(page.locator('[data-lab-output="form-sent"]')).toHaveText('nothing');
+    await lab.expectAccessible();
+    await form
+      .locator('input[type="file"]:not([hidden])')
+      .setInputFiles([
+        { name: 'Signed.pdf', mimeType: 'application/pdf', buffer: Buffer.alloc(64) },
+      ]);
+    await expect(form.locator('.ui-file-upload__error')).toHaveCount(0);
+    await form.getByRole('button', { name: 'Send' }).click();
+    await expect(page.locator('[data-lab-output="form-sent"]')).toHaveText('Signed.pdf');
+  });
+
   test('UIC-FILE-UPLOAD-1.1 passes axe in the dark theme', async ({ lab }) => {
     await lab.open('file-upload', { theme: 'dark' });
     await lab.expectAccessible();

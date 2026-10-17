@@ -51,6 +51,14 @@ export interface UiStrings {
   rejectedFileType: (count: number) => string;
   /** Counts chosen files refused because they are larger than the size limit. */
   rejectedFileSize: (count: number) => string;
+  /** Counts chosen files refused because they are smaller than the minimum size. */
+  rejectedFileSmall: (count: number) => string;
+  /** Counts chosen files refused because the upload holds as many files as it may. */
+  rejectedFileCount: (count: number) => string;
+  /** A chosen file refused by the host's own check, with the host's reason. */
+  rejectedFileReason: (name: string, reason: string) => string;
+  /** States how many files an upload holds at most. */
+  fileCountLimit: (count: number) => string;
   newFolder: string;
   /** Names the field that names a new folder. */
   newFolderName: string;
@@ -266,6 +274,12 @@ export const defaultStrings: UiStrings = {
     count === 1 ? '1 file is not an accepted type.' : `${count} files are not an accepted type.`,
   rejectedFileSize: (count) =>
     count === 1 ? '1 file is too large.' : `${count} files are too large.`,
+  rejectedFileSmall: (count) =>
+    count === 1 ? '1 file is too small.' : `${count} files are too small.`,
+  rejectedFileCount: (count) =>
+    count === 1 ? '1 file is over the file limit.' : `${count} files are over the file limit.`,
+  rejectedFileReason: (name, reason) => `${name}: ${reason}`,
+  fileCountLimit: (count) => (count === 1 ? 'One file' : `Up to ${count} files`),
   newFolder: 'New folder',
   newFolderName: 'New folder name',
   rename: 'Rename',
