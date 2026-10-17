@@ -5,6 +5,7 @@ test.describe('Tree lab', () => {
     page,
     lab,
   }) => {
+    test.slow(); // axe walks every tree of the lab
     await lab.open('tree');
     const tree = page.getByRole('treegrid', { name: 'Persisted folders' });
     const row = (name: string) => tree.getByRole('row', { name });
