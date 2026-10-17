@@ -31,12 +31,12 @@ describe('ToolbarRow', () => {
     expect(screen.getByRole('button', { name: 'Before' })).toHaveFocus();
 
     rerender(
-      <ToolbarRow role="group" variant="band" aria-label="Fruit actions">
+      <ToolbarRow role="group" variant="surface" aria-label="Fruit actions">
         <button type="button">Peel</button>
       </ToolbarRow>,
     );
     const group = screen.getByRole('group', { name: 'Fruit actions' });
-    expect(group).toHaveAttribute('data-variant', 'band');
+    expect(group).toHaveAttribute('data-variant', 'surface');
     expect(group).not.toHaveAttribute('data-orientation');
     expectHooksMatchSpec(container, 'LAYOUT');
 

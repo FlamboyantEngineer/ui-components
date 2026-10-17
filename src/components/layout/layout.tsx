@@ -313,7 +313,7 @@ export function InlineField({
   );
 }
 
-/** A `<footer>` band of status items along the bottom of a view. */
+/** A `<footer>` strip of status items along the bottom of a view. */
 export function StatusBar({
   children,
   className,

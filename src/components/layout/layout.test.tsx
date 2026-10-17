@@ -311,7 +311,7 @@ describe('Layout options', () => {
 });
 
 describe('StatusBar', () => {
-  it('UIC-LAYOUT-3.4 renders the status bar as a footer band', () => {
+  it('UIC-LAYOUT-3.4 renders the status bar as a footer strip', () => {
     const { container } = render(
       <StatusBar aria-label="Status">
         <span>12 words</span>

@@ -6,11 +6,11 @@ import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 const tones: BadgeTone[] = ['neutral', 'info', 'success', 'warning', 'danger'];
 const sizes = ['sm', 'md', 'lg'] as const;
 const labels: Record<BadgeTone, string> = {
-  neutral: 'Draft',
-  info: 'In review',
-  success: 'Approved',
-  warning: 'Due soon',
-  danger: 'Overdue',
+  neutral: 'Seasonal',
+  info: 'New',
+  success: 'In stock',
+  warning: 'Low stock',
+  danger: 'Sold out',
 };
 
 function OverlayDemo() {

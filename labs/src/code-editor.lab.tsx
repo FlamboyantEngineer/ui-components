@@ -11,7 +11,7 @@ import {
 } from '../../src/components/code-editor/code-editor.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
-const keywords = new Set(['let', 'if', 'else', 'return', 'when', 'and', 'or', 'not']);
+const keywords = new Set(['let', 'if', 'else', 'return', 'pick', 'and', 'or', 'not']);
 const parts = /(\/\/[^\n]*|"(?:\\.|[^"\\])*"?|\d+(?:\.\d+)?|[A-Za-z_][\w.]*|\s+|.)/g;
 
 /** A small sample language: comments, strings, numbers, keywords and names. */
@@ -43,7 +43,7 @@ const sample = [
   '// Pick a basket for the market',
   'let basket = "apples"',
   'if (fruit.count > 12) return basket',
-  'else return when(fruit.ripe and not fruit.bruised, "pears", "plums from the orchard by the river")',
+  'else return pick(fruit.ripe and not fruit.bruised, "pears", "plums from the orchard by the river")',
 ].join('\n');
 
 const vocabulary: CodeCompletion[] = [
@@ -92,7 +92,7 @@ function ToolbarEditor() {
   const lines = value.split('\n').length;
   return (
     <CodeEditor
-      aria-label="Market script"
+      aria-label="Sample source"
       data-lab-editor="toolbar"
       tokenize={tokenize}
       lineNumbers
@@ -101,7 +101,7 @@ function ToolbarEditor() {
       onChange={setValue}
       toolbar={
         <>
-          <strong>Market script</strong>
+          <strong>Sample source</strong>
           <output data-lab-output="lines">{lines === 1 ? '1 line' : `${lines} lines`}</output>
           <Button
             size="xs"

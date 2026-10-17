@@ -48,11 +48,11 @@ function Triggers() {
         <UserCardTrigger card={card('Jon Berg')} data-lab-trigger="identity">
           <UserIdentity name="Jon Berg" src={samplePicture} description="Research team" size="sm" />
         </UserCardTrigger>{' '}
-        Written by{' '}
+        Photos by{' '}
         <UserCardTrigger card={card('Lena Ortiz')} data-lab-trigger="name">
           Lena Ortiz
         </UserCardTrigger>
-        , reviewed by{' '}
+        , edited by{' '}
         <UserCardTrigger card={card('Sam Okafor')} data-lab-trigger="disabled" isDisabled>
           Sam Okafor
         </UserCardTrigger>

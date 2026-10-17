@@ -276,7 +276,7 @@
   block-size: 100%;
 }
 
-.ui-toolbar-row[data-variant='band'],
+.ui-toolbar-row[data-variant='surface'],
 .ui-status-bar {
   padding: 4px 8px;
   background: var(--ref-surface);

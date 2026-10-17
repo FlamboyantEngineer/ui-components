@@ -79,7 +79,7 @@ test.describe('Presence Strip lab', () => {
     lab,
   }) => {
     await lab.open('presence-strip');
-    const control = page.getByRole('button', { name: 'Sheet 1, 3 people here' });
+    const control = page.getByRole('button', { name: 'Photos, 3 people here' });
     const strip = control.locator('.ui-presence-strip');
     await expect(strip).toHaveAttribute('data-variant', 'dots');
     await expect(strip).toHaveAttribute('aria-hidden', 'true');

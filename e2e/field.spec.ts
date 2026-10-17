@@ -74,9 +74,9 @@ test.describe('Field lab', () => {
     await lab.open('field');
     const parts = field(page, 'parts');
     await expect(parts.getByRole('textbox', { name: 'Variety' })).toHaveAccessibleDescription(
-      'The apple variety grown in this orchard. Locked',
+      'The apple variety grown in this orchard. Imported',
     );
-    await expect(parts.locator('.ui-field__decoration .ui-badge')).toHaveText('Locked');
+    await expect(parts.locator('.ui-field__decoration .ui-badge')).toHaveText('Imported');
     // Keyboard focus opens the tooltip at once: the input, then the restore button, then help.
     await parts.getByRole('textbox').focus();
     await page.keyboard.press('Tab');

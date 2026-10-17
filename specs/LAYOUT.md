@@ -1,6 +1,6 @@
 # Layout
 
-The layout primitives arrange content: `View` and `Page` for a view and its reading column; `Stack`, `Cluster`, `Grid`, `FlexRow` and `InlineField` for content that flows in one or two dimensions; `ToolbarRow` and `StatusBar` for bands of controls; and `Contents`, `InlineContents` and `EmbeddedFrame` for transparent wrappers and embedded frames. They render the element their content needs plus hooks for their options; the stylesheet does all of the layout. `SplitView` ([SPLIT-VIEW.md](SPLIT-VIEW.md)) and `ScrollRegion` ([SCROLL-REGION.md](SCROLL-REGION.md)) complete the family.
+The layout primitives arrange content: `View` and `Page` for a view and its reading column; `Stack`, `Cluster`, `Grid`, `FlexRow` and `InlineField` for content that flows in one or two dimensions; `ToolbarRow` and `StatusBar` for rows of controls; and `Contents`, `InlineContents` and `EmbeddedFrame` for transparent wrappers and embedded frames. They render the element their content needs plus hooks for their options; the stylesheet does all of the layout. `SplitView` ([SPLIT-VIEW.md](SPLIT-VIEW.md)) and `ScrollRegion` ([SCROLL-REGION.md](SCROLL-REGION.md)) complete the family.
 
 ## UIC-LAYOUT-1 - Primitives
 
@@ -62,7 +62,7 @@ Verification: `src/components/layout/layout.test.tsx`, `e2e/layout.spec.ts`
 Implementation: `src/components/layout/layout.tsx`, `src/components/layout/toolbar-row.tsx`, `src/components/layout/wrappers.tsx`, `labs/reference/layout.css`
 Verification: `src/components/layout/layout.test.tsx`, `e2e/layout.spec.ts`
 
-## UIC-LAYOUT-3 - Wrappers and bands
+## UIC-LAYOUT-3 - Wrappers and rows
 
 ### UIC-LAYOUT-3.1 - Transparent wrappers
 
@@ -80,14 +80,14 @@ Verification: `src/components/layout/wrappers.test.tsx`
 
 ### UIC-LAYOUT-3.3 - Toolbar row
 
-`ToolbarRow` shall line up controls in a centred row. With `role="toolbar"` (the default) it is a React Aria toolbar: arrow keys move focus between its controls and Tab leaves the row; `role="group"` renders a group whose controls are each a tab stop, and `role="none"` adds no role. `variant` publishes `data-variant`: `plain` (the default) or `band`, a row the stylesheet draws on a surface.
+`ToolbarRow` shall line up controls in a centred row. With `role="toolbar"` (the default) it is a React Aria toolbar: arrow keys move focus between its controls and Tab leaves the row; `role="group"` renders a group whose controls are each a tab stop, and `role="none"` adds no role. `variant` publishes `data-variant`: `plain` (the default) or `surface`, a row the stylesheet draws on a surface.
 
 Implementation: `src/components/layout/toolbar-row.tsx`, `labs/reference/layout.css`
 Verification: `src/components/layout/toolbar-row.test.tsx`, `e2e/layout.spec.ts`
 
 ### UIC-LAYOUT-3.4 - Status bar
 
-`StatusBar` shall render a `<footer>` band of status items along the bottom of a view, spaced `xs`, justified `between` and not wrapping by default.
+`StatusBar` shall render a `<footer>` strip of status items along the bottom of a view, spaced `xs`, justified `between` and not wrapping by default.
 
 Implementation: `src/components/layout/layout.tsx`, `labs/reference/layout.css`
 Verification: `src/components/layout/layout.test.tsx`, `e2e/layout.spec.ts`
@@ -116,7 +116,7 @@ Verification: `src/components/layout/layout.test.tsx`, `e2e/layout.spec.ts`
 | `data-columns`          | attribute | `1`, `2`, `3`, `4`, `6`, `12`, `fit`, `none`                                  | `Grid` column template.                                     |
 | `data-min-column-width` | attribute | `sm`, `md`, `lg`, `xl`                                                        | Smallest column of `columns="fit"`.                         |
 | `data-width`            | attribute | `full`, `wide`, `reading`, `narrow`                                           | `Page` maximum width.                                       |
-| `data-variant`          | attribute | `plain`, `band`                                                               | `ToolbarRow` surface.                                       |
+| `data-variant`          | attribute | `plain`, `surface`                                                            | `ToolbarRow` surface.                                       |
 | `data-grow`             | state     | `true`, `auto`, `none`                                                        | Growth inside a flex parent; absent for the default sizing. |
 | `data-fill`             | state     | `true`                                                                        | Takes the containing block's full block size.               |
 | `data-clip`             | state     | `true`                                                                        | Clips overflowing content.                                  |

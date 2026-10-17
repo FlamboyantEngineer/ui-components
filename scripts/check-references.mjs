@@ -5,6 +5,7 @@
 //   node scripts/check-references.mjs              scan tracked and untracked, non-ignored files
 //   node scripts/check-references.mjs --dir <path> scan every file under <path> (e.g. an unpacked tarball)
 //   node scripts/check-references.mjs --encode <regex> [flags]   print a denylist entry
+//   --denylist <path> reads another denylist file of the same shape (the script's own tests use one)
 
 import { execFileSync } from 'node:child_process';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
@@ -12,7 +13,6 @@ import { join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
-const denylistPath = join(root, 'scripts', 'reference-denylist.json');
 
 const BINARY = /\.(png|jpe?g|gif|webp|avif|ico|pdf|woff2?|ttf|otf|eot|zip|gz|tgz|wasm|mp4|webm)$/i;
 // Generated third-party metadata, not authored content.
@@ -32,6 +32,11 @@ if (args[0] === '--encode') {
 }
 
 function loadDenylist() {
+  const listIndex = args.indexOf('--denylist');
+  const denylistPath =
+    listIndex === -1
+      ? join(root, 'scripts', 'reference-denylist.json')
+      : resolve(args[listIndex + 1] ?? '');
   const entries = JSON.parse(readFileSync(denylistPath, 'utf8'));
   return entries.map((entry, index) => ({
     index,

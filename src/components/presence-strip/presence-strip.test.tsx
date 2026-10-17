@@ -179,8 +179,8 @@ describe('PresenceStrip', () => {
 
   it('UIC-PRESENCE-STRIP-2.1 draws decorative colour dots inside another control', () => {
     const { container } = render(
-      <button type="button" aria-label="Sheet 1, 6 people here">
-        Sheet 1{' '}
+      <button type="button" aria-label="Photos, 6 people here">
+        Photos{' '}
         <PresenceStrip
           variant="dots"
           maxVisible={4}

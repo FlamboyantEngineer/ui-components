@@ -34,7 +34,7 @@ test.describe('Badge lab', () => {
     const plain = page.locator('[data-lab-cell="variant=subtle tone=info size=md"] .ui-badge');
     await expect(plain).not.toHaveAttribute('role');
     const status = page.locator('[data-lab-cell="variant=status tone=info size=md"]');
-    await expect(status.getByRole('status')).toHaveText('In review');
+    await expect(status.getByRole('status')).toHaveText('New');
     const quiet = page.locator('[data-lab-cell="option=quiet status tone=info"] .ui-badge');
     await expect(quiet).not.toHaveAttribute('role');
     await expect(quiet.locator('.ui-badge__dot')).toBeVisible();

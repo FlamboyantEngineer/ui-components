@@ -239,7 +239,7 @@ mountLab(
         help="Varieties are listed in the orchard catalogue."
         decoration={
           <Badge tone="warning" variant="status" announce={false}>
-            Locked
+            Imported
           </Badge>
         }
         menu={['clear', 'help']}

@@ -25,7 +25,7 @@ mountLab(
         <ColorSwatch color="#cc3300" colorName="Signal red" data-lab-swatch="given" /> A given name
       </p>
       <p>
-        <ColorSwatch color="#2e8b57" aria-label="Approved" data-lab-swatch="label" /> An added label
+        <ColorSwatch color="#2e8b57" aria-label="Ripe" data-lab-swatch="label" /> An added label
       </p>
     </LabSection>
   </>,

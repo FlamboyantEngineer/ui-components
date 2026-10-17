@@ -88,7 +88,7 @@ describe('UserIdentity', () => {
     expect(container.querySelector('.ui-avatar__initials')).toHaveTextContent('AI');
     expect(avatar()).toHaveAttribute('data-color', '5');
 
-    rerender(<UserIdentity name="Reviewers" kind="group" src="/ignored.png" />);
+    rerender(<UserIdentity name="Gardeners" kind="group" src="/ignored.png" />);
     expect(container.querySelector('.ui-avatar__glyph')).toBeInTheDocument();
     expect(container.querySelector('img, .ui-avatar__initials')).toBeNull();
     expect(avatar()).not.toHaveAttribute('data-color');

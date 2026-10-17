@@ -86,7 +86,7 @@ test.describe('Code Editor lab', () => {
   }) => {
     await lab.open('code-editor');
     const toolbar = editor(page, 'toolbar');
-    const input = toolbar.getByRole('textbox', { name: 'Market script' });
+    const input = toolbar.getByRole('textbox', { name: 'Sample source' });
     const gutter = toolbar.locator('.ui-code-editor__gutter');
     const width = await input.evaluate((element) => element.clientWidth);
     await expect(gutter).toHaveCSS('--ui-code-editor-text-width', `${width}px`);

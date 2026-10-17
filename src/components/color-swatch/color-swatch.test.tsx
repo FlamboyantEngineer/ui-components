@@ -11,7 +11,7 @@ describe('ColorSwatch', () => {
       <>
         <ColorSwatch color="#336699" />
         <ColorSwatch color={parseColor('rgb(255, 0, 0)')} colorName="Signal red" />
-        <ColorSwatch color="#00aa00" aria-label="Approved" />
+        <ColorSwatch color="#00aa00" aria-label="Ripe" />
       </>,
     );
     const swatch = screen.getByRole('img', { name: 'dark grayish cyan blue' });
@@ -21,7 +21,7 @@ describe('ColorSwatch', () => {
     expect(screen.getByRole('img', { name: 'Signal red' }).style.backgroundColor).toBe(
       'rgb(255, 0, 0)',
     );
-    expect(screen.getByRole('img', { name: /Approved$/ })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: /Ripe$/ })).toBeInTheDocument();
     expectHooksMatchSpec(container, 'COLOR-SWATCH');
   });
 

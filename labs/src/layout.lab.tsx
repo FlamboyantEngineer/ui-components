@@ -225,7 +225,7 @@ mountLab(
       description="Roles against variants. The toolbar role moves focus with the arrow keys."
     >
       <StateMatrix
-        axes={{ role: ['toolbar', 'group', 'none'], variant: ['plain', 'band'] }}
+        axes={{ role: ['toolbar', 'group', 'none'], variant: ['plain', 'surface'] }}
         render={({ role, variant }) => (
           <div style={frameStyle(300)}>
             <ToolbarRow

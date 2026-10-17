@@ -22,12 +22,12 @@ void [countProps, stringCount, countChildren, cappedLabel, countVariant];
 
 describe('Badge', () => {
   it('UIC-BADGE-1.1 renders a non-interactive span with its label and no states', () => {
-    const { container } = render(<Badge>Draft</Badge>);
+    const { container } = render(<Badge>Seasonal</Badge>);
     const root = container.firstElementChild as HTMLElement;
     expect(root.tagName).toBe('SPAN');
     expect(root).not.toHaveAttribute('role');
     expect(root).not.toHaveAttribute('tabindex');
-    expect(root.querySelector('.ui-badge__label')).toHaveTextContent('Draft');
+    expect(root.querySelector('.ui-badge__label')).toHaveTextContent('Seasonal');
     expect(container.querySelector('button, [tabindex]')).toBeNull();
     for (const state of ['data-pressed', 'data-selected', 'data-disabled', 'data-pending']) {
       expect(root).not.toHaveAttribute(state);

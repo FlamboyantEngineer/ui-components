@@ -179,7 +179,7 @@ mountLab(
             title="Quarterly planning notes for the garden committee"
             meta={<MetaLine items={['Shared folder', 'Edited by Grace Hopper', '3 days ago']} />}
             icon="info"
-            trailing={<span data-lab-badge>Draft</span>}
+            trailing={<span data-lab-badge>New</span>}
           />
           <ListRow title="Short title" meta="Short meta" trailing={<span>New</span>} />
         </List>

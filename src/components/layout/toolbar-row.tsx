@@ -10,13 +10,13 @@ import {
 } from './layout.js';
 
 export type ToolbarRowRole = 'toolbar' | 'group' | 'none';
-export type ToolbarRowVariant = 'plain' | 'band';
+export type ToolbarRowVariant = 'plain' | 'surface';
 
 export interface ToolbarRowProps
   extends Omit<NativeProps<'div'>, 'role'>, BaseProps, LayoutContainmentProps {
   /** `toolbar` (default) moves focus by arrow keys, `group` keeps tab stops, `none` has no role. */
   role?: ToolbarRowRole | undefined;
-  /** `band` asks the stylesheet for a surface behind the row. Defaults to `plain`. */
+  /** `surface` asks the stylesheet for a surface behind the row. Defaults to `plain`. */
   variant?: ToolbarRowVariant | undefined;
   /** Gap between controls. Defaults to `sm`. */
   space?: LayoutSpace | undefined;

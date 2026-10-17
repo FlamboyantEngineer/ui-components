@@ -68,7 +68,7 @@ describe('Field', () => {
       <TextField
         id="fruit"
         description="Pick a seasonal fruit."
-        decoration={<span>Locked</span>}
+        decoration={<span>Imported</span>}
       />,
     );
     expect(parts(container)).toEqual(['label', 'control', 'decoration', 'description', 'message']);
@@ -77,7 +77,7 @@ describe('Field', () => {
       'fruit-description fruit-decoration',
     );
     expect(screen.getByRole('textbox')).toHaveAccessibleDescription(
-      'Pick a seasonal fruit. Locked',
+      'Pick a seasonal fruit. Imported',
     );
     expectHooksMatchSpec(container, 'FIELD', { slots: ['description', 'decoration'] });
   });

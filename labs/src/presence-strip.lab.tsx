@@ -94,8 +94,8 @@ mountLab(
       title="Inside a control"
       description="Dots inside a button; the button's own label says who is present."
     >
-      <Button aria-label="Sheet 1, 3 people here">
-        Sheet 1 <PresenceStrip people={samplePeople.slice(0, 3)} variant="dots" />
+      <Button aria-label="Photos, 3 people here">
+        Photos <PresenceStrip people={samplePeople.slice(0, 3)} variant="dots" />
       </Button>
     </LabSection>
     <LabSection

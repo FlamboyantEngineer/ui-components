@@ -168,7 +168,7 @@ test.describe('Layout lab', () => {
     await expect(toolbar.getByRole('button', { name: 'Slice' })).toBeFocused();
     await page.keyboard.press('Tab');
     await expect(
-      page.getByRole('toolbar', { name: 'Fruit actions toolbar band' }).getByRole('button', {
+      page.getByRole('toolbar', { name: 'Fruit actions toolbar surface' }).getByRole('button', {
         name: 'Peel',
       }),
     ).toBeFocused();
@@ -177,10 +177,10 @@ test.describe('Layout lab', () => {
     await group.getByRole('button', { name: 'Peel' }).focus();
     await page.keyboard.press('Tab');
     await expect(group.getByRole('button', { name: 'Slice' })).toBeFocused();
-    const band = await page
-      .getByRole('group', { name: 'Fruit actions group band' })
+    const surface = await page
+      .getByRole('group', { name: 'Fruit actions group surface' })
       .evaluate((node) => getComputedStyle(node).borderTopStyle);
-    expect(band).toBe('solid');
+    expect(surface).toBe('solid');
   });
 
   test('UIC-LAYOUT-3.4 draws the status bar with items at both ends', async ({ page, lab }) => {
