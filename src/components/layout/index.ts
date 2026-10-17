@@ -1,28 +1,12 @@
-export {
-  Cluster,
-  Contents,
-  EmbeddedFrame,
-  FlexRow,
-  Grid,
-  InlineContents,
-  InlineField,
-  Page,
-  Stack,
-  StatusBar,
-  View,
-  layoutGrowValue,
-} from './layout.js';
+export { Cluster, FlexRow, Grid, InlineField, Page, Stack, StatusBar, View } from './layout.js';
 export type {
   ClusterOwnProps,
   ClusterProps,
-  ContentsProps,
-  EmbeddedFrameProps,
   FlexRowProps,
   GridColumns,
   GridMinColumnWidth,
   GridOwnProps,
   GridProps,
-  InlineContentsProps,
   InlineFieldProps,
   LayoutAlign,
   LayoutContainmentProps,
@@ -39,5 +23,7 @@ export type {
   StatusBarProps,
   ViewProps,
 } from './layout.js';
+export { Contents, EmbeddedFrame, InlineContents } from './wrappers.js';
+export type { ContentsProps, EmbeddedFrameProps, InlineContentsProps } from './wrappers.js';
 export { ToolbarRow } from './toolbar-row.js';
 export type { ToolbarRowProps, ToolbarRowRole, ToolbarRowVariant } from './toolbar-row.js';

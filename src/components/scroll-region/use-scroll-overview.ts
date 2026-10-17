@@ -5,6 +5,15 @@ import {
   type ScrollOverviewLayer,
   type ScrollOverviewMarker,
 } from '../../utils/scroll-overview.js';
+import { observeViewport } from './observe-viewport.js';
+
+export interface ScrollOverviewOptions {
+  markers: readonly ScrollOverviewMarker[] | undefined;
+  /** Named marker layers; they replace `markers`. */
+  layers: readonly ScrollOverviewLayer[] | undefined;
+  /** Paint at all; the overview belongs to native scrollbars. */
+  enabled: boolean;
+}
 
 export interface ScrollOverviewPaint {
   visible: boolean;
@@ -21,23 +30,20 @@ export interface ScrollOverviewPaint {
  */
 export function useScrollOverview(
   viewport: RefObject<HTMLDivElement | null>,
-  markers: readonly ScrollOverviewMarker[] | undefined,
-  layers: readonly ScrollOverviewLayer[] | undefined,
+  { markers, layers, enabled }: ScrollOverviewOptions,
 ): ScrollOverviewPaint {
-  const activeLayers = useMemo<readonly ScrollOverviewLayer[]>(
-    () => layers ?? (markers ? [{ name: 'markers', markers }] : []),
-    [layers, markers],
-  );
+  const activeLayers = useMemo<readonly ScrollOverviewLayer[]>(() => {
+    if (!enabled) return [];
+    return layers ?? (markers ? [{ name: 'markers', markers }] : []);
+  }, [enabled, layers, markers]);
   const hasMarkers = activeLayers.some((layer) => layer.markers.length > 0);
   const [metrics, setMetrics] = useState({ height: 0, scrollHeight: 0 });
 
   useEffect(() => {
     const element = viewport.current;
-    const owner = element?.ownerDocument.defaultView;
-    if (!element || !owner || !hasMarkers) return undefined;
-    let frame = 0;
+    const view = element?.ownerDocument.defaultView;
+    if (!element || !view || !hasMarkers) return undefined;
     const measure = () => {
-      frame = 0;
       const next = { height: element.clientHeight, scrollHeight: element.scrollHeight };
       setMetrics((previous) =>
         previous.height === next.height && previous.scrollHeight === next.scrollHeight
@@ -45,27 +51,7 @@ export function useScrollOverview(
           : next,
       );
     };
-    const schedule = () => {
-      if (!frame) frame = owner.requestAnimationFrame(measure);
-    };
-    const resize =
-      typeof owner.ResizeObserver === 'function' ? new owner.ResizeObserver(schedule) : null;
-    const observeAll = () => {
-      if (resize) {
-        resize.disconnect();
-        resize.observe(element);
-        for (const child of element.children) resize.observe(child);
-      }
-      schedule();
-    };
-    const mutations = new owner.MutationObserver(observeAll);
-    mutations.observe(element, { childList: true });
-    observeAll();
-    return () => {
-      resize?.disconnect();
-      mutations.disconnect();
-      owner.cancelAnimationFrame(frame);
-    };
+    return observeViewport(element, view, { measure }).disconnect;
   }, [activeLayers, hasMarkers, viewport]);
 
   const image = useMemo(

@@ -1,11 +1,12 @@
-import type { ReactNode } from 'react';
+import type { HTMLAttributes, ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { Icon, toIconProps, type IconSize, type IconSource } from '../icon/icon.js';
 
-export interface IconLabelProps extends BaseProps {
+export interface IconLabelProps extends BaseProps, Pick<HTMLAttributes<HTMLSpanElement>, 'hidden'> {
   /** A built-in glyph name or any icon node. The icon is decorative; the label names it. */
   icon: IconSource;
+  /** The text after the icon. */
   label: ReactNode;
   /** Icon box size; the host stylesheet sizes the gap from it. Defaults to `md`. */
   size?: IconSize | undefined;
@@ -17,7 +18,6 @@ export interface IconLabelProps extends BaseProps {
   hideLabel?: boolean | undefined;
   /** Mark the label text as one the stylesheet may hide in narrow containers. */
   collapsible?: boolean | undefined;
-  hidden?: boolean | undefined;
   /** Announce label changes. Quiet by default. */
   live?: 'polite' | 'assertive' | undefined;
 }
@@ -33,17 +33,14 @@ export function IconLabel({
   grow,
   hideLabel,
   collapsible,
-  hidden,
-  id,
   live,
   className,
   ...rest
 }: IconLabelProps) {
   return (
     <span
-      {...hooks.root({ className, props: rest, data: { size, truncate, grow, collapsible } })}
-      id={id}
-      hidden={hidden}
+      {...rest}
+      {...hooks.root({ className, data: { size, truncate, grow, collapsible } })}
       aria-live={live}
     >
       <Icon {...toIconProps(icon)} size={size} className={hooks.slotClass('icon')} />

@@ -26,20 +26,22 @@ export function isGlyphName(source: IconSource): source is GlyphName {
   return typeof source === 'string' && !isValidElement(source);
 }
 
+/** Image semantics for a drawing: an image named by `label`, or hidden from assistive technology. */
+export function toImageProps(
+  label: string | undefined,
+): { role: 'img'; 'aria-label': string } | { 'aria-hidden': true } {
+  return label ? { role: 'img', 'aria-label': label } : { 'aria-hidden': true };
+}
+
 /** The `Icon` props that draw an icon source: `{ glyph }` for a glyph name, `{ children }` for a node. */
 export function toIconProps(source: IconSource): Pick<IconProps, 'glyph' | 'children'> {
   return isGlyphName(source) ? { glyph: source } : { children: source };
 }
 
 /** One icon box: a built-in glyph or any icon node, decorative unless it has a label. */
-export function Icon({ glyph, children, size = 'md', label, className, id, ...rest }: IconProps) {
-  const named = Boolean(label);
+export function Icon({ glyph, children, size = 'md', label, className, ...rest }: IconProps) {
   return (
-    <span
-      {...hooks.root({ className, props: rest, data: { size, glyph } })}
-      id={id}
-      {...(named ? { role: 'img', 'aria-label': label } : { 'aria-hidden': true })}
-    >
+    <span {...rest} {...hooks.root({ className, data: { size, glyph } })} {...toImageProps(label)}>
       {glyph ? <Glyph name={glyph} className={hooks.slotClass('glyph')} /> : children}
     </span>
   );

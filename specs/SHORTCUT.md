@@ -20,7 +20,7 @@ Verification: `src/components/shortcut/shortcut-format.test.ts`, `e2e/shortcut.s
 
 ### UIC-SHORTCUT-1.3 - Readable text
 
-`formatShortcutAccessibleText(chord, platform)` shall return the chord as words separated by spaces, modifiers in the same order: `Control`, `Option`, `Shift`, `Command` on `mac` and `Control`, `Alt`, `Shift`, `Meta` elsewhere, then the key. Symbol keys are named (`↑` Up Arrow, `↓` Down Arrow, `←` Left Arrow, `→` Right Arrow, `.` Period, `,` Comma, `\` Backslash, `+` Plus, space Space); other keys read as written. The names come from the provider string `shortcutKeyName` ([PROVIDER.md](PROVIDER.md)), which a host replaces to translate them, and the functions accept a replacement too.
+`formatShortcutAccessibleText(chord, { platform, keyName })` shall return the chord as words separated by spaces, modifiers in the same order: `Control`, `Option`, `Shift`, `Command` on `mac` and `Control`, `Alt`, `Shift`, `Meta` elsewhere, then the key. Symbol keys are named (`↑` Up Arrow, `↓` Down Arrow, `←` Left Arrow, `→` Right Arrow, `.` Period, `,` Comma, `\` Backslash, `+` Plus, space Space); other keys read as written. The names come from the provider string `shortcutKeyName` ([PROVIDER.md](PROVIDER.md)), which a host replaces to translate them; the `keyName` option replaces them for one call.
 
 Implementation: `src/components/shortcut/shortcut-format.ts`, `src/core/strings.ts`
 Verification: `src/components/shortcut/shortcut-format.test.ts`, `src/components/shortcut/shortcut.test.tsx`
@@ -34,7 +34,7 @@ Verification: `src/components/shortcut/shortcut-format.test.ts`
 
 ### UIC-SHORTCUT-1.5 - Tooltip and description text
 
-`formatShortcutTooltip(label, chord)` shall return `Label (chord)` in platform notation, the chord alone without a label and the label alone without a chord. `formatShortcutDescription(description, chord)` shall return the description followed by `. ` and the chord's readable words, keeping an existing description, and nothing when both are empty.
+`formatShortcutTooltip(label, chord)` shall return `Label (chord)` in platform notation, the chord alone without a label and the label alone without a chord. `formatShortcutDescription(description, chord, { platform, keyName })` shall return the description followed by `. ` and the chord's readable words, keeping an existing description, and nothing when both are empty.
 
 Implementation: `src/components/shortcut/shortcut-format.ts`
 Verification: `src/components/shortcut/shortcut-format.test.ts`

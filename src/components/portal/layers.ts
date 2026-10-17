@@ -1,3 +1,6 @@
+/** One overlay layer; see `overlayLayers` for their order. */
+export type OverlayLayer = (typeof overlayLayers)[number];
+
 /** Overlay layers, lowest to highest. A portal on a later layer stacks above every earlier one. */
 export const overlayLayers = [
   'backdrop',
@@ -8,8 +11,6 @@ export const overlayLayers = [
   'tooltip',
   'toast',
 ] as const;
-
-export type OverlayLayer = (typeof overlayLayers)[number];
 
 /** The z-index each layer gets unless a `PortalContainerProvider` or `PortalHost` overrides it. */
 export const defaultLayerZIndex: Readonly<Record<OverlayLayer, number>> = Object.freeze({

@@ -3,14 +3,6 @@ import { glyphNames, type GlyphComponentProps } from '../../src/core/glyphs.js';
 import { defaultStrings, type UiStrings } from '../../src/core/strings.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
-function SquareGlyph(props: GlyphComponentProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} {...props}>
-      <rect x="5" y="5" width="14" height="14" rx="2" />
-    </svg>
-  );
-}
-
 const replacedGlyphs = Object.fromEntries(glyphNames.map((name) => [name, SquareGlyph]));
 
 const replacedStrings: Partial<UiStrings> = {
@@ -20,11 +12,23 @@ const replacedStrings: Partial<UiStrings> = {
   itemCount: (count) => `${count} éléments`,
 };
 
+<<<<<<< HEAD
 // Arguments for strings that are functions; anything not listed is shown for a count of 3.
 const sampleArguments: Partial<Record<keyof UiStrings, readonly unknown[]>> = {
   shortcutKeyName: ['↑'],
   stepOfTotal: [3, 5],
 };
+=======
+const stringNames = Object.keys(defaultStrings) as Array<keyof UiStrings>;
+
+function SquareGlyph(props: GlyphComponentProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} {...props}>
+      <rect x="5" y="5" width="14" height="14" rx="2" />
+    </svg>
+  );
+}
+>>>>>>> claude/port-actions-navigation
 
 function sampleString(strings: UiStrings, name: keyof UiStrings): string {
   const value = strings[name];
@@ -35,8 +39,6 @@ function sampleString(strings: UiStrings, name: keyof UiStrings): string {
 function StringValue({ name }: { name: keyof UiStrings }) {
   return <code>{sampleString(useUiStrings(), name)}</code>;
 }
-
-const stringNames = Object.keys(defaultStrings) as Array<keyof UiStrings>;
 
 mountLab(
   <>

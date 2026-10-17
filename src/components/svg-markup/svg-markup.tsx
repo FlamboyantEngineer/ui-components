@@ -1,20 +1,19 @@
 import { createElement, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
+import type { BaseProps } from '../../core/props.js';
+import { toImageProps } from '../icon/icon.js';
 import { parseSvgMarkup, type SvgElementNode, type SvgNode } from './parse-svg-markup.js';
 
-export interface SvgMarkupProps {
+export interface SvgMarkupProps extends BaseProps {
   /** SVG markup with a root `<svg>` element, for example an entry of a host icon registry. */
   markup: string;
   /** Accessible name. Without one the drawing is decorative and hidden from assistive technology. */
   label?: string | undefined;
-  className?: string | undefined;
-  id?: string | undefined;
-  [data: `data-${string}`]: string | number | boolean | undefined;
 }
 
 const hooks = createHooks('svg-markup');
 
-const PROP_NAMES: Readonly<Record<string, string>> = {
+const reactPropNames: Readonly<Record<string, string>> = {
   class: 'className',
   tabindex: 'tabIndex',
   crossorigin: 'crossOrigin',
@@ -22,23 +21,23 @@ const PROP_NAMES: Readonly<Record<string, string>> = {
 };
 
 /** Root attributes the component and its caller own; the markup's values are dropped. */
-const OWNED_ROOT_ATTRIBUTE =
+const ownedRootAttribute =
   /^(class|style|width|height|role|focusable|tabindex|id|aria-.+|data-.+)$/i;
 
-function camelCase(name: string): string {
+function toCamelCase(name: string): string {
   return name.replace(/[-:]([a-z])/g, (_, letter: string) => letter.toUpperCase());
 }
 
 /** The React prop for an SVG attribute: `stroke-width` → `strokeWidth`, `xlink:href` → `xlinkHref`. */
-function propName(attribute: string): string {
-  const mapped = PROP_NAMES[attribute];
+function toPropName(attribute: string): string {
+  const mapped = reactPropNames[attribute];
   if (mapped) return mapped;
   if (attribute.startsWith('data-') || attribute.startsWith('aria-')) return attribute;
-  return camelCase(attribute);
+  return toCamelCase(attribute);
 }
 
 /** A CSS declaration list as a React style object. */
-function styleObject(css: string): Record<string, string> {
+function parseStyle(css: string): Record<string, string> {
   const style: Record<string, string> = {};
   for (const declaration of css.split(';')) {
     const colon = declaration.indexOf(':');
@@ -52,19 +51,19 @@ function styleObject(css: string): Record<string, string> {
     }
     const lower = property.toLowerCase();
     const name = lower.startsWith('-ms-') ? lower.slice(1) : lower;
-    style[name.replace(/-([a-z])/g, (_, letter: string) => letter.toUpperCase())] = value;
+    style[toCamelCase(name)] = value;
   }
   return style;
 }
 
-function elementProps(
+function toElementProps(
   attributes: Readonly<Record<string, string>>,
   keep: (name: string) => boolean = () => true,
 ): Record<string, unknown> {
   const props: Record<string, unknown> = {};
   for (const [name, value] of Object.entries(attributes)) {
     if (!keep(name)) continue;
-    props[propName(name)] = name === 'style' ? styleObject(value) : value;
+    props[toPropName(name)] = name === 'style' ? parseStyle(value) : value;
   }
   return props;
 }
@@ -77,7 +76,7 @@ function renderNode(node: SvgNode, key: number): ReactNode {
   if (node.type === 'text') return node.text;
   return createElement(
     node.tag,
-    { ...elementProps(node.attributes), key },
+    { ...toElementProps(node.attributes), key },
     ...renderChildren(node),
   );
 }
@@ -95,17 +94,17 @@ function tryParse(markup: string): SvgElementNode | null {
  * attributes (`viewBox`, `fill`, `stroke`, …); the stylesheet sizes it. Decorative unless labelled.
  * Renders nothing when the markup has no `<svg>` root.
  */
-export function SvgMarkup({ markup, label, className, id, ...rest }: SvgMarkupProps) {
+export function SvgMarkup({ markup, label, className, ...rest }: SvgMarkupProps) {
   const tree = tryParse(markup);
   if (!tree) return null;
   return createElement(
     'svg',
     {
-      ...elementProps(tree.attributes, (name) => !OWNED_ROOT_ATTRIBUTE.test(name)),
-      ...hooks.root({ className, props: rest }),
-      id,
+      ...toElementProps(tree.attributes, (name) => !ownedRootAttribute.test(name)),
+      ...rest,
+      ...hooks.root({ className }),
       focusable: 'false',
-      ...(label ? { role: 'img', 'aria-label': label } : { 'aria-hidden': 'true' }),
+      ...toImageProps(label),
     },
     ...renderChildren(tree),
   );

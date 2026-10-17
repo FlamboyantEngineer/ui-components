@@ -1,43 +1,36 @@
 import { useId, type ReactNode } from 'react';
-import { createHooks, splitDataAttributes } from '../../core/hooks.js';
+import { createHooks, mergeClassNames } from '../../core/hooks.js';
+import type { BaseProps } from '../../core/props.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Stack, type LayoutContainmentProps, type LayoutSpace } from '../layout/layout.js';
 
 export type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 
-export interface SectionHeaderProps {
+export interface SectionHeaderProps extends BaseProps {
+  /** The heading text. */
   title: ReactNode;
-  /** Supporting text under the title. Omitted when null, false or empty. */
+  /** Supporting text under the title. Omitted when it renders nothing. */
   description?: ReactNode;
   /** Trailing actions or status, after the text. */
   actions?: ReactNode;
   /** The heading element's level. Defaults to 3. */
   headingLevel?: HeadingLevel | undefined;
-  className?: string | undefined;
-  id?: string | undefined;
-  [data: `data-${string}`]: string | number | boolean | undefined;
 }
 
-export interface SectionProps extends Omit<SectionHeaderProps, 'id'>, LayoutContainmentProps {
+export interface SectionProps extends SectionHeaderProps, LayoutContainmentProps {
+  /** The section's content, after its header. */
   children?: ReactNode;
   /** Gap between the header and the content. Defaults to `md`. */
   space?: LayoutSpace | undefined;
-  id?: string | undefined;
 }
+
+type HeaderContentProps = Pick<SectionHeaderProps, 'title' | 'description' | 'actions'> & {
+  headingLevel: HeadingLevel;
+  headingId: string;
+};
 
 const headerHooks = createHooks('section-header', ['content', 'title', 'description', 'actions']);
 const sectionHooks = createHooks('section');
-
-function hasContent(node: ReactNode): boolean {
-  return node !== null && node !== undefined && node !== false && node !== '';
-}
-
-interface HeaderContentProps {
-  title: ReactNode;
-  description?: ReactNode;
-  actions?: ReactNode;
-  headingLevel: HeadingLevel;
-  headingId: string;
-}
 
 function HeaderContent({
   title,
@@ -53,11 +46,11 @@ function HeaderContent({
         <Heading {...headerHooks.slot('title')} id={headingId}>
           {title}
         </Heading>
-        {hasContent(description) ? (
+        {isEmptyNode(description) ? null : (
           <div {...headerHooks.slot('description')}>{description}</div>
-        ) : null}
+        )}
       </div>
-      {hasContent(actions) ? <div {...headerHooks.slot('actions')}>{actions}</div> : null}
+      {isEmptyNode(actions) ? null : <div {...headerHooks.slot('actions')}>{actions}</div>}
     </>
   );
 }
@@ -69,12 +62,11 @@ export function SectionHeader({
   actions,
   headingLevel = 3,
   className,
-  id,
   ...rest
 }: SectionHeaderProps) {
   const headingId = useId();
   return (
-    <header {...headerHooks.root({ className, props: rest })} id={id}>
+    <header {...rest} {...headerHooks.root({ className })}>
       <HeaderContent
         title={title}
         description={description}
@@ -97,25 +89,16 @@ export function Section({
   headingLevel = 3,
   children,
   space = 'md',
-  grow,
-  fill,
-  clip,
   className,
-  id,
   ...rest
 }: SectionProps) {
   const headingId = useId();
-  const [data] = splitDataAttributes(rest);
   return (
     <Stack
       as="section"
-      {...data}
-      {...sectionHooks.root({ className })}
+      {...rest}
+      className={mergeClassNames(sectionHooks.className, className)}
       space={space}
-      grow={grow ?? false}
-      fill={fill}
-      clip={clip}
-      id={id}
       aria-labelledby={headingId}
     >
       <header {...headerHooks.root()}>
