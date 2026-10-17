@@ -1,6 +1,6 @@
 # Empty State
 
-`EmptyState` is the notice a list, table, panel or section shows in place of its content while the content loads, when there is nothing to show, or when it could not load: an optional heading over a one-line description, in the space the content would occupy. The outcome of an action the reader just took belongs in a toast or a [Banner](BANNER.md); a problem with one field belongs under that field.
+`EmptyState` is the notice a list, table, panel or section shows in place of its content while the content loads, when there is nothing to show, or when it could not load: an optional illustration, an optional heading over a one-line description and optional calls to action, in the space the content would occupy. The outcome of an action the reader just took belongs in a toast or a [Banner](BANNER.md); a problem with one field belongs under that field.
 
 ## UIC-EMPTY-STATE-1 - Contract
 
@@ -46,13 +46,31 @@ Verification: `src/components/empty-state/empty-state.test.tsx`
 Implementation: `src/components/empty-state/empty-state.tsx`
 Verification: `src/components/empty-state/empty-state.test.tsx`
 
+## UIC-EMPTY-STATE-2 - Media and actions
+
+### UIC-EMPTY-STATE-2.1 - Illustration
+
+`icon` shall draw a built-in glyph name or any node (an illustration, an image) as a decorative [Icon](ICON.md) in the `ui-empty-state__icon` slot, before the heading and hidden from assistive technology, so the text alone carries the message. A `loading` empty state draws its spinner in place of the icon, and an empty value draws no slot.
+
+Implementation: `src/components/empty-state/empty-state.tsx`, `labs/reference/empty-state.css`
+Verification: `src/components/empty-state/empty-state.test.tsx`, `e2e/empty-state.spec.ts`
+
+### UIC-EMPTY-STATE-2.2 - Actions
+
+`actions` shall render in the `ui-empty-state__actions` slot after the description, so the reader's next step (add the first item, clear the filters, try again) sits with the notice. Actions keep their own behaviour and focus; an empty value renders no slot. The reference sheet centres them in a `md` notice and aligns them to the start in a `sm` one.
+
+Implementation: `src/components/empty-state/empty-state.tsx`, `labs/reference/empty-state.css`
+Verification: `src/components/empty-state/empty-state.test.tsx`, `e2e/empty-state.spec.ts`
+
 ## Hooks
 
-| Hook                          | Kind      | Values                      | Description                                  |
-| ----------------------------- | --------- | --------------------------- | -------------------------------------------- |
-| `ui-empty-state`              | root      |                             | The `<section>`.                             |
-| `ui-empty-state__spinner`     | slot      |                             | The decorative busy indicator while loading. |
-| `ui-empty-state__title`       | slot      |                             | The heading.                                 |
-| `ui-empty-state__description` | slot      |                             | The description paragraph.                   |
-| `data-variant`                | attribute | `empty`, `loading`, `error` | What the notice stands for.                  |
-| `data-size`                   | attribute | `sm`, `md`                  | Density.                                     |
+| Hook                          | Kind      | Values                      | Description                                   |
+| ----------------------------- | --------- | --------------------------- | --------------------------------------------- |
+| `ui-empty-state`              | root      |                             | The `<section>`.                              |
+| `ui-empty-state__spinner`     | slot      |                             | The decorative busy indicator while loading.  |
+| `ui-empty-state__icon`        | slot      |                             | The decorative illustration (also `ui-icon`). |
+| `ui-empty-state__title`       | slot      |                             | The heading.                                  |
+| `ui-empty-state__description` | slot      |                             | The description paragraph.                    |
+| `ui-empty-state__actions`     | slot      |                             | The calls to action.                          |
+| `data-variant`                | attribute | `empty`, `loading`, `error` | What the notice stands for.                   |
+| `data-size`                   | attribute | `sm`, `md`                  | Density.                                      |

@@ -46,6 +46,13 @@ With `autoLoad`, the control shall also call `onLoadMore` each time it comes int
 Implementation: `src/components/load-more/load-more.tsx`, `src/utils/use-in-view.ts`, `labs/reference/load-more.css`
 Verification: `src/components/load-more/load-more.test.tsx`, `e2e/load-more.spec.ts`
 
+### UIC-LOAD-MORE-1.8 - Loading ahead
+
+With `autoLoad`, `scrollOffset` shall make the control count as in view while it is within that many heights of its scrolling container below the visible area ([UIC-MEASUREMENT-4.3](MEASUREMENT.md#uic-measurement-43---scroll-offset)), so the next page is requested before the reader reaches the end, under the same one-request and no-repeat rules. Without it the control loads only once it is actually visible.
+
+Implementation: `src/components/load-more/load-more.tsx`, `src/utils/use-in-view.ts`
+Verification: `src/components/load-more/load-more.test.tsx`, `e2e/load-more.spec.ts`
+
 ### UIC-LOAD-MORE-1.6 - Hooks and caller attributes
 
 `LoadMore` shall carry the hook below on the button alongside Button's hooks, append the caller's `className`, and forward caller `data-*` attributes, `id` and `ref` to the `<button>`.

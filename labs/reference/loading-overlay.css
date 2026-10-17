@@ -24,6 +24,34 @@
   padding: 0;
 }
 
+.ui-loading-overlay[data-fullscreen] {
+  position: fixed;
+}
+
+.ui-loading-overlay {
+  transition: opacity 0.2s;
+}
+.ui-loading-overlay[data-entering] {
+  animation: ref-loading-overlay-enter 0.2s ease-out;
+}
+.ui-loading-overlay[data-exiting] {
+  opacity: 0;
+  pointer-events: none;
+}
+@keyframes ref-loading-overlay-enter {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-loading-overlay {
+    transition: none;
+  }
+  .ui-loading-overlay[data-entering] {
+    animation: none;
+  }
+}
+
 .ui-loading-card {
   display: grid;
   gap: 8px;

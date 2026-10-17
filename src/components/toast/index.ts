@@ -4,9 +4,13 @@ export type {
   ToastAddOptions,
   ToastContent,
   ToastListProps,
+  ToastPromiseContents,
   ToastProps,
   ToastQueue,
   ToastQueueOptions,
   ToastRegionProps,
+  ToastStackSettings,
+  ToastSwipeDirection,
   ToastTone,
+  ToastUpdateOptions,
 } from './toast.js';

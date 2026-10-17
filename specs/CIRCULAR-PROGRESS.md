@@ -46,15 +46,24 @@ Verification: `src/components/circular-progress/circular-progress.test.tsx`, `e2
 Implementation: `src/components/circular-progress/circular-progress.tsx`
 Verification: `src/components/circular-progress/circular-progress.test.tsx`
 
+### UIC-CIRCULAR-PROGRESS-1.7 - Completion and status
+
+The ring shall publish `data-complete` when its bounded value reaches the maximum of a range that is not empty, and `data-tone` (`neutral` by default, `success`, `warning` or `danger`) from `tone`, as the progress bar does ([UIC-PROGRESS-BAR-1.8](PROGRESS-BAR.md#uic-progress-bar-18---completion-and-status)).
+
+Implementation: `src/components/circular-progress/circular-progress.tsx`, `src/components/progress-bar/progress-bar.tsx`, `labs/reference/circular-progress.css`
+Verification: `src/components/circular-progress/circular-progress.test.tsx`, `e2e/circular-progress.spec.ts`
+
 ## Hooks
 
-| Hook                          | Kind      | Values           | Description                                  |
-| ----------------------------- | --------- | ---------------- | -------------------------------------------- |
-| `ui-circular-progress`        | root      |                  | The progress element (`role="progressbar"`). |
-| `ui-circular-progress__ring`  | slot      |                  | The decorative `<svg>` ring.                 |
-| `ui-circular-progress__track` | slot      |                  | The full circle behind the fill.             |
-| `ui-circular-progress__fill`  | slot      |                  | The arc showing the ratio.                   |
-| `ui-circular-progress__label` | slot      |                  | The visible label, when `label` is set.      |
-| `ui-circular-progress__value` | slot      |                  | The visible value text, when shown.          |
-| `data-size`                   | attribute | `sm`, `md`, `lg` | Ring size.                                   |
-| `data-indeterminate`          | state     | `true`           | Unmeasured progress.                         |
+| Hook                          | Kind      | Values                                    | Description                                  |
+| ----------------------------- | --------- | ----------------------------------------- | -------------------------------------------- |
+| `ui-circular-progress`        | root      |                                           | The progress element (`role="progressbar"`). |
+| `ui-circular-progress__ring`  | slot      |                                           | The decorative `<svg>` ring.                 |
+| `ui-circular-progress__track` | slot      |                                           | The full circle behind the fill.             |
+| `ui-circular-progress__fill`  | slot      |                                           | The arc showing the ratio.                   |
+| `ui-circular-progress__label` | slot      |                                           | The visible label, when `label` is set.      |
+| `ui-circular-progress__value` | slot      |                                           | The visible value text, when shown.          |
+| `data-size`                   | attribute | `sm`, `md`, `lg`                          | Ring size.                                   |
+| `data-tone`                   | attribute | `neutral`, `success`, `warning`, `danger` | The work's status.                           |
+| `data-indeterminate`          | state     | `true`                                    | Unmeasured progress.                         |
+| `data-complete`               | state     | `true`                                    | Measured progress reached the maximum.       |

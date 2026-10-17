@@ -1,6 +1,6 @@
 # Badge
 
-`Badge` is a compact, non-interactive value a reader scans rather than operates: a tag, a type, a role, a state or a count. Its `variant` chooses the shape, `tone` the colour family, and `size` the scale. Passing `count` instead of children makes it a count badge that formats the number itself ([COUNT.md](COUNT.md)). A token the reader presses is a [Button](BUTTON.md) with the `chip` variant, not a badge. A set of values the reader moves through or removes is a [Tag Group](TAG-GROUP.md).
+`Badge` is a compact, non-interactive value a reader scans rather than operates: a tag, a type, a role, a state or a count. Its `variant` chooses the shape, `tone` the colour family, and `size` the scale. Passing `count` instead of children makes it a count badge that formats the number itself ([COUNT.md](COUNT.md)); `variant="dot"` makes it a marker with no text. A token the reader presses is a [Button](BUTTON.md) with the `chip` variant, not a badge. A set of values the reader moves through or removes is a [Tag Group](TAG-GROUP.md).
 
 ## UIC-BADGE-1 - Contract
 
@@ -13,7 +13,7 @@ Verification: `src/components/badge/badge.test.tsx`, `e2e/badge.spec.ts`
 
 ### UIC-BADGE-1.2 - Variants
 
-`variant` shall publish `data-variant`: `subtle` (the default, a tinted pill), `solid` (a filled token) or `status` (a tone dot before the label). A count badge publishes `count`.
+`variant` shall publish `data-variant`: `subtle` (the default, a tinted pill), `solid` (a filled token), `status` (a tone dot before the label) or `dot` (a marker with no text, [UIC-BADGE-4.1](#uic-badge-41---dot-marker)). A count badge publishes `count`.
 
 Implementation: `src/components/badge/badge.tsx`, `labs/reference/badge.css`
 Verification: `src/components/badge/badge.test.tsx`, `e2e/badge.spec.ts`
@@ -45,6 +45,13 @@ Verification: `src/components/badge/badge.test.tsx`
 
 Implementation: `src/components/badge/badge.tsx`
 Verification: `src/components/badge/badge.test.tsx`
+
+### UIC-BADGE-1.7 - Icons
+
+`startIcon` and `endIcon` shall draw a built-in glyph name or any icon node as a decorative [Icon](ICON.md) in the `ui-badge__start-icon` and `ui-badge__end-icon` slots, before and after a label badge's label (after a status badge's dot). An empty value draws no slot. Count and dot badges take no icons.
+
+Implementation: `src/components/badge/badge.tsx`, `labs/reference/badge.css`
+Verification: `src/components/badge/badge.test.tsx`, `e2e/badge.spec.ts`
 
 ## UIC-BADGE-2 - Status
 
@@ -78,17 +85,35 @@ Verification: `src/components/badge/badge.test.tsx`, `e2e/badge.spec.ts`
 Implementation: `src/components/badge/badge.tsx`, `labs/reference/badge.css`
 Verification: `src/components/badge/badge.test.tsx`, `e2e/badge.spec.ts`
 
+### UIC-BADGE-3.4 - Hiding zero
+
+`showZero={false}` shall render nothing while a count badge's normalized count is zero and `more` is not set, so a corner count disappears once everything is read; it renders again as soon as the count is above zero. `showZero` defaults to `true`, which shows `0`.
+
+Implementation: `src/components/badge/badge.tsx`
+Verification: `src/components/badge/badge.test.tsx`, `e2e/badge.spec.ts`
+
+## UIC-BADGE-4 - Dots
+
+### UIC-BADGE-4.1 - Dot marker
+
+A badge with `variant="dot"` shall render an empty marker that publishes `data-variant="dot"`, its tone, size and `data-placement` (`inline` by default, or `overlay`, pinned to the upper trailing corner of a positioned host as a count is). It takes no children, count or icons. With an `aria-label`, its text renders in the visually hidden `ui-badge__accessible-label` slot, so no generic element carries a name; without one, or with `aria-hidden`, the marker is hidden from assistive technology. It has no role and no live region.
+
+Implementation: `src/components/badge/badge.tsx`, `labs/reference/badge.css`
+Verification: `src/components/badge/badge.test.tsx`, `e2e/badge.spec.ts`
+
 ## Hooks
 
-| Hook                         | Kind      | Values                                            | Description                                           |
-| ---------------------------- | --------- | ------------------------------------------------- | ----------------------------------------------------- |
-| `ui-badge`                   | root      |                                                   | The `<span>`.                                         |
-| `ui-badge__dot`              | slot      |                                                   | The tone dot of a status badge.                       |
-| `ui-badge__label`            | slot      |                                                   | The visible label or formatted count.                 |
-| `ui-badge__accessible-label` | slot      |                                                   | Visually hidden count text, when it differs.          |
-| `data-variant`               | attribute | `subtle`, `solid`, `status`, `count`              | Shape; `count` for count badges.                      |
-| `data-tone`                  | attribute | `neutral`, `info`, `success`, `warning`, `danger` | Tone.                                                 |
-| `data-size`                  | attribute | `sm`, `md`, `lg`                                  | Scale.                                                |
-| `data-placement`             | attribute | `inline`, `overlay`                               | Count badges only: inline or pinned to a host corner. |
-| `data-bare`                  | state     | `true`                                            | No pill.                                              |
-| `data-muted-dot`             | state     | `true`                                            | A status badge's softened dot.                        |
+| Hook                         | Kind      | Values                                            | Description                                         |
+| ---------------------------- | --------- | ------------------------------------------------- | --------------------------------------------------- |
+| `ui-badge`                   | root      |                                                   | The `<span>`.                                       |
+| `ui-badge__dot`              | slot      |                                                   | The tone dot of a status badge.                     |
+| `ui-badge__start-icon`       | slot      |                                                   | The icon before a label (also `ui-icon`).           |
+| `ui-badge__label`            | slot      |                                                   | The visible label or formatted count.               |
+| `ui-badge__end-icon`         | slot      |                                                   | The icon after a label (also `ui-icon`).            |
+| `ui-badge__accessible-label` | slot      |                                                   | Visually hidden count or dot text, when it differs. |
+| `data-variant`               | attribute | `subtle`, `solid`, `status`, `count`, `dot`       | Shape; `count` for count badges, `dot` for markers. |
+| `data-tone`                  | attribute | `neutral`, `info`, `success`, `warning`, `danger` | Tone.                                               |
+| `data-size`                  | attribute | `sm`, `md`, `lg`                                  | Scale.                                              |
+| `data-placement`             | attribute | `inline`, `overlay`                               | Count and dot badges: inline or pinned to a corner. |
+| `data-bare`                  | state     | `true`                                            | No pill.                                            |
+| `data-muted-dot`             | state     | `true`                                            | A status badge's softened dot.                      |

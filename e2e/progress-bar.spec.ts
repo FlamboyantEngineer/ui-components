@@ -71,4 +71,37 @@ test.describe('Progress Bar lab', () => {
     }
     await lab.expectAccessible();
   });
+
+  test('UIC-PROGRESS-BAR-1.8 colours each status and marks a full bar complete', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('progress-bar');
+    const bar = (tone: string, progress: string) =>
+      page.locator(`[data-lab-cell="tone=${tone} progress=${progress}"] .ui-progress-bar`);
+    const fillColour = (tone: string, progress: string) =>
+      bar(tone, progress)
+        .locator('.ui-progress-bar__fill')
+        .evaluate((node) => getComputedStyle(node).backgroundColor);
+    await expect(bar('neutral', '100%')).toHaveAttribute('data-complete', 'true');
+    await expect(bar('neutral', '60%')).not.toHaveAttribute('data-complete');
+    const colours = new Set(
+      await Promise.all(
+        ['neutral', 'success', 'warning', 'danger'].map((tone) => fillColour(tone, '60%')),
+      ),
+    );
+    expect(colours.size).toBe(4);
+    expect(await fillColour('neutral', '100%')).toBe(await fillColour('success', '60%'));
+    await lab.expectAccessible();
+  });
+
+  test('UIC-PROGRESS-BAR-2.2 names a standalone spinner', async ({ page, lab }) => {
+    await lab.open('progress-bar');
+    const spinner = page.locator('[data-lab-cell="standalone=md"] .ui-spinner');
+    await expect(spinner).toHaveRole('progressbar');
+    await expect(spinner).toHaveAccessibleName('Loading recipes');
+    await expect(spinner).not.toHaveAttribute('aria-hidden');
+    expect(await spinner.evaluate((node: HTMLElement) => node.offsetWidth)).toBe(16);
+    await lab.expectAccessible();
+  });
 });

@@ -133,4 +133,21 @@ test.describe('Tooltip lab', () => {
     await expect(page.getByRole('tooltip', { name: 'Undo the last edit' })).toBeVisible();
     await expect(pending).toHaveAttribute('aria-label', 'Undo');
   });
+
+  test('UIC-TOOLTIP-1.9 names icon-only triggers by their hint', async ({ page, lab }) => {
+    await lab.open('tooltip');
+    const undo = page.locator('[data-lab-cell="label=Undo"]').getByRole('button');
+    const hint = page.getByRole('tooltip').filter({ hasText: /^Undo$/ });
+    await expect(undo).toHaveAccessibleName('Undo');
+    await expect(hint).toHaveCount(0);
+    await page.keyboard.press('Tab');
+    await undo.focus();
+    await expect(hint).toBeVisible();
+    await expect(undo).toHaveAccessibleName('Undo');
+    await expect(undo).toHaveAccessibleDescription('');
+    await lab.expectAccessible();
+    await page.keyboard.press('Escape');
+    await expect(hint).toHaveCount(0);
+    await expect(undo).toHaveAccessibleName('Undo');
+  });
 });

@@ -12,3 +12,14 @@
 .ui-truncation-tooltip__panel {
   white-space: normal;
 }
+
+.ui-truncation-tooltip[data-expanded] {
+  display: inline;
+  overflow: visible;
+  white-space: normal;
+}
+
+.ui-truncation-tooltip__toggle {
+  margin-inline-start: 4px;
+  vertical-align: bottom;
+}

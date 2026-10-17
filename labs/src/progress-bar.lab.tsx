@@ -92,6 +92,23 @@ mountLab(
         }}
       />
     </LabSection>
+    <LabSection
+      title="Status"
+      description="Each tone, measured and indeterminate; a full bar also publishes completion."
+    >
+      <StateMatrix
+        axes={{ tone: ['neutral', 'success', 'warning', 'danger'], progress: ['60%', '100%'] }}
+        render={({ tone, progress }) => (
+          <div style={{ width: 200 }}>
+            <ProgressBar
+              label={tone === 'danger' ? 'Upload failed' : 'Uploading'}
+              tone={tone}
+              value={Number.parseInt(progress, 10)}
+            />
+          </div>
+        )}
+      />
+    </LabSection>
     <LabSection title="Count progress" description="Step a count toward its total and back.">
       <CountProgress />
     </LabSection>
@@ -106,6 +123,15 @@ mountLab(
             <Spinner size={size} /> Writing a summary
           </span>
         )}
+      />
+    </LabSection>
+    <LabSection
+      title="Standalone spinner"
+      description="With a label, the spinner stands alone as a named, indeterminate progress bar."
+    >
+      <StateMatrix
+        axes={{ standalone: sizes }}
+        render={({ standalone }) => <Spinner size={standalone} label="Loading recipes" />}
       />
     </LabSection>
   </>,

@@ -36,5 +36,22 @@ mountLab(
         </TruncationTooltip>
       </div>
     </LabSection>
+    <LabSection
+      title="Show more and less"
+      description="Expandable text in a 200px column: Show more reveals cut text whole in place, Show less cuts it again. Text that fits draws no control."
+    >
+      <StateMatrix
+        axes={{ expandable: ['cut', 'whole'] }}
+        render={({ expandable }) => (
+          <div style={{ width: 200 }}>
+            <TruncationTooltip expandable data-lab-text={`expandable ${expandable}`}>
+              {expandable === 'cut'
+                ? 'Simmer the tomatoes with garlic and basil for twenty minutes, then season to taste.'
+                : shortText}
+            </TruncationTooltip>
+          </div>
+        )}
+      />
+    </LabSection>
   </>,
 );

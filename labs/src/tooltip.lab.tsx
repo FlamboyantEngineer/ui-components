@@ -1,4 +1,6 @@
+import { Button as AriaButton } from 'react-aria-components';
 import { Button } from '../../src/components/button/button.js';
+import { Icon } from '../../src/components/icon/icon.js';
 import { IconButton } from '../../src/components/icon-button/icon-button.js';
 import { Tooltip, type TooltipVariant } from '../../src/components/tooltip/tooltip.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
@@ -74,6 +76,23 @@ mountLab(
             />
           )
         }
+      />
+    </LabSection>
+    <LabSection
+      title="Label relationship"
+      description="The hint is the trigger's name, open or not: these icon-only triggers have no other label."
+    >
+      <StateMatrix
+        axes={{ label: ['Undo', 'Redo', 'Refresh'] }}
+        render={({ label }) => (
+          <div style={{ padding: 24 }}>
+            <Tooltip relationship="label" content={label}>
+              <AriaButton>
+                <Icon glyph={label === 'Undo' ? 'undo' : label === 'Redo' ? 'redo' : 'refresh'} />
+              </AriaButton>
+            </Tooltip>
+          </div>
+        )}
       />
     </LabSection>
     <LabSection

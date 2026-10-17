@@ -1,9 +1,10 @@
-import type { ReactNode, Ref } from 'react';
+import { useEffect, useRef, type ReactNode, type Ref } from 'react';
 import type { GlyphName } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps, Tone } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import { IconButton } from '../icon-button/icon-button.js';
 import { Icon, toIconProps, type IconSource } from '../icon/icon.js';
 
@@ -32,6 +33,8 @@ export interface BannerProps extends BaseProps, Pick<NativeProps<'div'>, 'hidden
   isExiting?: boolean | undefined;
   /** Render as phrasing content (`<span>`s) for a message set inside running text. */
   inline?: boolean | undefined;
+  /** Move focus to the banner when it first renders, so keyboard users land on a critical message. */
+  autoFocus?: boolean | undefined;
   /** The root element, for example for `useEnterExit`. */
   ref?: Ref<HTMLElement> | undefined;
 }
@@ -95,6 +98,14 @@ function BannerDismiss({
   );
 }
 
+/** Focuses the element once, when it first renders with `autoFocus`. */
+function useFocusOnMount(ref: { current: HTMLElement | null }, autoFocus: boolean) {
+  const shouldFocus = useRef(autoFocus);
+  useEffect(() => {
+    if (shouldFocus.current) ref.current?.focus();
+  }, [ref]);
+}
+
 /** The built-in glyph that introduces a message of `tone`; none for `neutral`. */
 export function getToneGlyph(tone: Tone): GlyphName | null {
   return toneGlyphs[tone];
@@ -116,10 +127,13 @@ export function Banner({
   isEntering = false,
   isExiting = false,
   inline = false,
+  autoFocus = false,
   className,
   ref,
   ...rest
 }: BannerProps) {
+  const [own, setRef] = useForwardedRef<HTMLElement>(ref);
+  useFocusOnMount(own, autoFocus);
   const Element = inline ? 'span' : 'div';
   const isUrgent = tone === 'danger';
   const data = { tone, inline, pending: isPending, entering: isEntering, exiting: isExiting };
@@ -128,8 +142,9 @@ export function Banner({
     <Element
       {...rest}
       // The root is a `<div>` or a `<span>`; either is the `HTMLElement` the caller's ref expects.
-      ref={ref as Ref<HTMLDivElement> | undefined}
+      ref={setRef as Ref<HTMLDivElement>}
       {...hooks.root({ className, data })}
+      tabIndex={autoFocus ? -1 : undefined}
       role={isUrgent ? 'alert' : 'status'}
       aria-live={isUrgent ? 'assertive' : 'polite'}
       aria-atomic="true"

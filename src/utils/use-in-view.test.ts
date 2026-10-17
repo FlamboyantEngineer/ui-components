@@ -6,7 +6,10 @@ class FakeIntersectionObserver {
   static instances: FakeIntersectionObserver[] = [];
   readonly elements = new Set<Element>();
   disconnected = false;
-  constructor(readonly callback: IntersectionObserverCallback) {
+  constructor(
+    readonly callback: IntersectionObserverCallback,
+    readonly init?: IntersectionObserverInit,
+  ) {
     FakeIntersectionObserver.instances.push(this);
   }
   observe(element: Element): void {
@@ -90,5 +93,30 @@ describe('useInView', () => {
     const { result: unsupported } = renderHook(() => useInView(element));
     expect(unsupported.current).toBe(false);
     expect(FakeIntersectionObserver.instances).toHaveLength(0);
+  });
+
+  it('UIC-MEASUREMENT-4.3 extends the scrolling container view by the scroll offset', () => {
+    const scroller = document.body.appendChild(document.createElement('div'));
+    scroller.style.overflowY = 'auto';
+    Object.defineProperty(scroller, 'scrollHeight', { configurable: true, value: 400 });
+    Object.defineProperty(scroller, 'clientHeight', { configurable: true, value: 100 });
+    const element = scroller.appendChild(document.createElement('div'));
+    const { result, rerender } = renderHook(
+      ({ scrollOffset }: { scrollOffset?: number }) => useInView(element, { scrollOffset }),
+      { initialProps: {} },
+    );
+    expect(latestObserver().init).toBeUndefined();
+
+    rerender({ scrollOffset: 1.5 });
+    const observer = latestObserver();
+    expect(observer.init).toEqual({ root: scroller, rootMargin: '0px 150% 150% 150%' });
+    act(() => observer.report(element, true));
+    expect(result.current).toBe(true);
+
+    scroller.remove();
+    document.body.appendChild(element);
+    rerender({ scrollOffset: -1 });
+    expect(latestObserver().init).toEqual({ root: null, rootMargin: '0px 0% 0% 0%' });
+    element.remove();
   });
 });

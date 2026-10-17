@@ -82,6 +82,38 @@ mountLab(
       />
     </LabSection>
     <LabSection
+      title="Illustration and actions"
+      description="A decorative glyph over the text and calls to action under it; loading draws its spinner in place of the glyph."
+    >
+      <StateMatrix
+        axes={{ variant: variants, size: ['md', 'sm'] }}
+        render={({ variant, size }) => (
+          <div style={{ width: 280 }}>
+            <EmptyState
+              variant={variant}
+              size={size}
+              icon={variant === 'error' ? 'warning' : 'search'}
+              title={copy[variant].title}
+              description={copy[variant].description}
+              actions={
+                variant === 'loading' ? null : (
+                  <>
+                    <Button size="sm" variant="primary">
+                      {variant === 'error' ? 'Try again' : 'Add city'}
+                    </Button>
+                    <Button size="sm" variant="tertiary">
+                      Learn more
+                    </Button>
+                  </>
+                )
+              }
+            />
+          </div>
+        )}
+        caption="With illustration and actions"
+      />
+    </LabSection>
+    <LabSection
       title="Loading then content"
       description="Reload shows the loading notice in place of the list; Finish loading replaces the notice with the content."
     >

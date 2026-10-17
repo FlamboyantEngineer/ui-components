@@ -95,18 +95,26 @@ const cities = [
 ];
 const cityPage = 8;
 
-function EndlessList() {
-  const [loaded, setLoaded] = useState(cityPage);
+function EndlessList({
+  demo,
+  scrollOffset,
+  initial = cityPage,
+}: {
+  demo: string;
+  scrollOffset?: number;
+  initial?: number;
+}) {
+  const [loaded, setLoaded] = useState(initial);
   const [waiting, setWaiting] = useState(false);
   const deliver = useRef<(() => void) | null>(null);
   const remaining = cities.length - loaded;
   return (
-    <div data-lab-demo="endless">
+    <div data-lab-demo={demo}>
       {/* Lab-only scrolling frame; the control loads when it scrolls into view inside it. */}
       <div
         data-lab-scroller=""
         role="region"
-        aria-label="Cities"
+        aria-label={scrollOffset === undefined ? 'Cities' : 'Cities loaded ahead'}
         tabIndex={0}
         style={{ height: 160, overflow: 'auto', border: '1px solid' }}
       >
@@ -118,6 +126,7 @@ function EndlessList() {
         {remaining > 0 ? (
           <LoadMore
             autoLoad
+            scrollOffset={scrollOffset}
             itemLabel="cities"
             remainingCount={remaining}
             onLoadMore={() =>
@@ -191,7 +200,13 @@ mountLab(
       title="Loading on view"
       description="With autoLoad, scrolling the control into view inside the frame requests the next eight cities; it stays pending until Deliver page answers, and remains a button for keyboard users."
     >
-      <EndlessList />
+      <EndlessList demo="endless" />
+    </LabSection>
+    <LabSection
+      title="Loading ahead"
+      description="With scrollOffset={1}, the last eight cities are requested once the control is within one frame height below the visible area, before it scrolls into view."
+    >
+      <EndlessList demo="ahead" scrollOffset={1} initial={cityPage * 2} />
     </LabSection>
   </>,
 );

@@ -33,6 +33,11 @@ export interface LoadMoreProps
   size?: ButtonSize | undefined;
   /** Also request the next page whenever the control is in view and idle, for endless scrolling. */
   autoLoad?: boolean | undefined;
+  /**
+   * With `autoLoad`, load ahead: count the control as in view while it is within this many heights
+   * of its scrolling container below the visible area, as React Aria's `scrollOffset`.
+   */
+  scrollOffset?: number | undefined;
 }
 
 const hooks = createHooks('load-more');
@@ -61,15 +66,16 @@ function useLoadRequests({
   isPending,
   isDisabled,
   autoLoad,
+  scrollOffset,
   button,
-}: Pick<LoadMoreProps, 'onLoadMore' | 'onError' | 'isPending' | 'autoLoad'> & {
+}: Pick<LoadMoreProps, 'onLoadMore' | 'onError' | 'isPending' | 'autoLoad' | 'scrollOffset'> & {
   isDisabled: boolean;
   button: HTMLButtonElement | null;
 }) {
   const [internalPending, setInternalPending] = useState(false);
   const running = useRef(false);
   const pending = isPending ?? internalPending;
-  const isInView = useInView(button, { enabled: Boolean(autoLoad) && !isDisabled });
+  const isInView = useInView(button, { enabled: Boolean(autoLoad) && !isDisabled, scrollOffset });
 
   const request = useCallback(() => {
     if (running.current || isDisabled || pending) return;
@@ -102,6 +108,7 @@ export function LoadMore({
   isPending,
   isDisabled = false,
   autoLoad = false,
+  scrollOffset,
   remainingCount,
   itemLabel,
   label,
@@ -122,6 +129,7 @@ export function LoadMore({
     isPending,
     isDisabled,
     autoLoad,
+    scrollOffset,
     button,
   });
 

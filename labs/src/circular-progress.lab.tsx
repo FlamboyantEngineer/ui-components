@@ -41,5 +41,20 @@ mountLab(
         )}
       />
     </LabSection>
+    <LabSection
+      title="Status"
+      description="Each tone on a partial ring, and a full ring that publishes completion."
+    >
+      <StateMatrix
+        axes={{ tone: ['neutral', 'success', 'warning', 'danger'], progress: ['60%', '100%'] }}
+        render={({ tone, progress }) => (
+          <CircularProgress
+            aria-label={`Synced ${progress}`}
+            tone={tone}
+            value={Number.parseInt(progress, 10)}
+          />
+        )}
+      />
+    </LabSection>
   </>,
 );

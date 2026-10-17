@@ -36,6 +36,30 @@ function EnterExitDemo() {
   );
 }
 
+function AutoFocusDemo() {
+  const [failed, setFailed] = useState(false);
+  return (
+    <div data-lab-demo="auto-focus">
+      <Button size="sm" onPress={() => setFailed(true)}>
+        Save recipe
+      </Button>
+      {failed ? (
+        <Banner
+          autoFocus
+          tone="danger"
+          title="Save failed"
+          description="The recipe could not be saved."
+          actions={
+            <Button size="sm" onPress={() => setFailed(false)}>
+              Try again
+            </Button>
+          }
+        />
+      ) : null}
+    </div>
+  );
+}
+
 function LiveDemo() {
   const [tone, setTone] = useState<BannerTone>('info');
   const [dismissed, setDismissed] = useState(0);
@@ -149,6 +173,12 @@ mountLab(
       description="useEnterExit keeps the banner mounted while its exit transition plays and publishes entering while its enter animation plays; the caller only says whether it is open."
     >
       <EnterExitDemo />
+    </LabSection>
+    <LabSection
+      title="Focus on mount"
+      description="A critical banner shown with autoFocus takes keyboard focus once, so the next Tab reaches its actions."
+    >
+      <AutoFocusDemo />
     </LabSection>
     <LabSection
       title="Live updates"
