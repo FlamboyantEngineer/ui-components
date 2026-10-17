@@ -1,37 +1,39 @@
-import { useFieldState, type FieldState, type FieldStateOptions } from './field-state.js';
+import type { FieldControlProps } from './field-parts.js';
+import {
+  useFieldState,
+  type FieldIssue,
+  type FieldState,
+  type FieldStateOptions,
+} from './field-state.js';
 import type { FieldProps } from './field.js';
 
+/** The props a control hands to `Field`: its layout, parts and caller attributes. */
+export type FieldLayoutProps = Omit<FieldProps<unknown>, 'state' | 'children'>;
+
 /**
- * The props every field control takes: the `Field` layout props (label, layout, description, help,
- * decoration, menu, class, id and caller data attributes) and the `useFieldState` options (value,
- * committed value, default, empty value, callbacks, validation and states).
+ * The props every field control shares: the field's label, layout and parts, and its value,
+ * committed value, validation and locks. A control's props extend it with the control's own options.
  */
-export interface FieldValueProps<T>
-  extends Omit<FieldProps<T>, 'state' | 'children'>, FieldStateOptions<T> {}
+export interface FieldInputProps<T> extends FieldStateOptions<T>, FieldLayoutProps {}
 
-/** The `Field` props a control passes on, without the state and the render function. */
-export type FieldLayoutProps<T> = Omit<FieldProps<T>, 'state' | 'children'>;
-
-/** A control's field state, its `Field` props and the props that are the control's own. */
-export interface FieldControl<T, Own> {
-  state: FieldState<T>;
-  field: FieldLayoutProps<T>;
-  own: Own;
+export interface FieldControlOptions<T> {
+  /** The value a field starts at, and its default, when the caller gives neither. */
+  initialValue: T;
+  /** The Clear target when the caller gives none. */
+  emptyValue?: T | undefined;
+  /** The control's own check, which runs before the caller's `validate`. */
+  check?: ((value: T) => FieldIssue | null) | undefined;
 }
 
-const layoutKeys = new Set([
-  'label',
-  'labelLayout',
-  'description',
-  'help',
-  'decoration',
-  'menu',
-  'onMenuAction',
-  'className',
-  'id',
-]);
+export interface FieldControl<T, Rest> {
+  state: FieldState<T>;
+  /** Spread on `Field`: the layout, parts and caller attributes. */
+  field: FieldLayoutProps;
+  /** The control's own props. */
+  rest: Rest;
+}
 
-const stateKeys = new Set([
+const stateKeys = new Set<string>([
   'value',
   'defaultValue',
   'committedValue',
@@ -45,25 +47,72 @@ const stateKeys = new Set([
   'isPending',
 ]);
 
+const layoutKeys = new Set<string>([
+  'label',
+  'labelLayout',
+  'description',
+  'help',
+  'decoration',
+  'menu',
+  'onMenuAction',
+  'className',
+  'id',
+]);
+
+function bucketOf(key: string): 'state' | 'field' | 'rest' {
+  if (stateKeys.has(key)) return 'state';
+  return layoutKeys.has(key) || key.startsWith('data-') ? 'field' : 'rest';
+}
+
+function splitFieldProps(props: object) {
+  const buckets: Record<'state' | 'field' | 'rest', Record<string, unknown>> = {
+    state: {},
+    field: {},
+    rest: {},
+  };
+  for (const [key, value] of Object.entries(props)) buckets[bucketOf(key)][key] = value;
+  return buckets;
+}
+
 /**
- * Splits a field control's props into the field state (created here), the `Field` props (caller
- * `data-*` attributes included) and the control's own props, so every control shares one split.
+ * Builds a field control from its props: the field state (with the control's own check before the
+ * caller's `validate`), the props for `Field`, and the props left for the control itself.
  */
-export function useFieldControl<T, P extends FieldValueProps<T>>(
-  props: P,
-): FieldControl<T, Omit<P, keyof FieldValueProps<T>>> {
-  const field: Record<string, unknown> = {};
-  const options: Record<string, unknown> = {};
-  const own: Record<string, unknown> = {};
-  for (const [key, entry] of Object.entries(props)) {
-    if (stateKeys.has(key)) options[key] = entry;
-    else if (layoutKeys.has(key) || key.startsWith('data-')) field[key] = entry;
-    else own[key] = entry;
-  }
-  const state = useFieldState<T>(options as FieldStateOptions<T>);
+export function useFieldControl<T, P extends FieldInputProps<T>>(
+  props: P & FieldInputProps<T>,
+  options: FieldControlOptions<T>,
+): FieldControl<T, Omit<P, keyof FieldInputProps<T>>> {
+  const buckets = splitFieldProps(props);
+  const own = buckets.state as FieldStateOptions<T>;
+  const { check } = options;
+  const state = useFieldState<T>({
+    ...own,
+    defaultValue: own.defaultValue !== undefined ? own.defaultValue : options.initialValue,
+    emptyValue: own.emptyValue !== undefined ? own.emptyValue : options.emptyValue,
+    validate: (value) => check?.(value) ?? own.validate?.(value) ?? null,
+  });
   return {
     state,
-    field: field as unknown as FieldLayoutProps<T>,
-    own: own as Omit<P, keyof FieldValueProps<T>>,
+    field: buckets.field as unknown as FieldLayoutProps,
+    rest: buckets.rest as Omit<P, keyof FieldInputProps<T>>,
+  };
+}
+
+/**
+ * The control props in React Aria's terms: its id, name, description and states. Controls validate
+ * through the field, so React Aria only reports the field's status (`validationBehavior="aria"`).
+ */
+export function toAriaControlProps(control: FieldControlProps) {
+  return {
+    id: control.id,
+    'aria-label': control['aria-label'],
+    'aria-labelledby': control['aria-labelledby'],
+    'aria-describedby': control['aria-describedby'],
+    'aria-errormessage': control['aria-errormessage'],
+    isInvalid: control['aria-invalid'] === true,
+    isRequired: control['aria-required'] === true,
+    isReadOnly: control.readOnly,
+    isDisabled: control.disabled,
+    validationBehavior: 'aria' as const,
   };
 }

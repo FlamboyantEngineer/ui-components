@@ -15,8 +15,8 @@ import {
   Field,
   useFieldControl,
   type FieldControlProps,
+  type FieldInputProps,
   type FieldState,
-  type FieldValueProps,
 } from '../field/field.js';
 import { useLayerZIndex } from '../portal/portal.js';
 import {
@@ -30,7 +30,7 @@ import {
 
 export interface RelativeDateFieldProps
   extends
-    FieldValueProps<string | null>,
+    FieldInputProps<string | null>,
     Pick<AriaSelectProps<object>, 'isOpen' | 'defaultOpen' | 'onOpenChange'> {
   /** What a preset commits: a `YYYY-MM-DD` date (the default) or a UTC ISO instant. */
   valueKind?: RelativeDateKind | undefined;
@@ -155,9 +155,9 @@ function PresetSelect({
 export function RelativeDateField(props: RelativeDateFieldProps) {
   const strings = useUiStrings();
   const { locale } = useLocale();
-  const { state, field, own } = useFieldControl<string | null, RelativeDateFieldProps>({
+  const { state, field, rest } = useFieldControl<string | null, RelativeDateFieldProps>(props, {
+    initialValue: null,
     emptyValue: null,
-    ...props,
   });
   const {
     valueKind = 'date',
@@ -166,7 +166,7 @@ export function RelativeDateField(props: RelativeDateFieldProps) {
     placeholder = strings.selectPlaceholder,
     fallbackAfterDays = 7,
     ...open
-  } = own;
+  } = rest;
   const value = state.value ?? null;
   const text = value
     ? describeRelativeDate(value, { now: getNow(), locale, fallbackAfterDays })

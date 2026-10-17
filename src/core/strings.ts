@@ -69,6 +69,24 @@ export interface UiStrings {
   fieldHelp: (label: string) => string;
   /** Names a field's menu, from the field's label. */
   fieldActions: (label: string) => string;
+  /** The message of a number below its minimum, given the formatted minimum. */
+  rangeUnderflow: (minimum: string) => string;
+  /** The message of a number above its maximum, given the formatted maximum. */
+  rangeOverflow: (maximum: string) => string;
+  /** The message of a number off its step, given the formatted step. */
+  stepMismatch: (step: string) => string;
+  /** Names a search box's clear button. */
+  clearSearch: string;
+  /** The default label of a true value. */
+  valueTrue: string;
+  /** The default label of a false value. */
+  valueFalse: string;
+  /** The default label of a value that is not set. */
+  valueUnset: string;
+  /** Stands for an empty colour value. */
+  noColor: string;
+  /** Names the hexadecimal input of a colour picker. */
+  hexColor: string;
   /** Names the button that removes a chosen value, read with the value it removes. */
   remove: string;
   /** The text of a select that has no value and no placeholder of its own. */
@@ -160,6 +178,15 @@ export const defaultStrings: UiStrings = {
   restoreValue: (label) => `Restore ${label}`,
   fieldHelp: (label) => `Help for ${label}`,
   fieldActions: (label) => `${label} actions`,
+  rangeUnderflow: (minimum) => `Enter ${minimum} or more.`,
+  rangeOverflow: (maximum) => `Enter ${maximum} or less.`,
+  stepMismatch: (step) => `Enter a value in steps of ${step}.`,
+  clearSearch: 'Clear search',
+  valueTrue: 'True',
+  valueFalse: 'False',
+  valueUnset: 'Unset',
+  noColor: 'No color',
+  hexColor: 'Hex color',
   remove: 'Remove',
   selectPlaceholder: 'Select an option',
   selectedValues: (label) => `${label} selected values`,

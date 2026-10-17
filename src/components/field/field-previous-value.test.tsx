@@ -5,7 +5,7 @@ import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { FieldPreviousValue } from './field.js';
 
 describe('FieldPreviousValue', () => {
-  it('UIC-FIELD-8.1 keeps the previous value readable in a del element', () => {
+  it('UIC-FIELD-9.1 keeps the previous value readable in a del element', () => {
     const { container } = render(
       <FieldPreviousValue className="caller" id="before" data-testid="marker">
         <svg data-testid="swatch" />
@@ -24,7 +24,7 @@ describe('FieldPreviousValue', () => {
     expectHooksMatchSpec(container, 'FIELD', { slots: ['ui-field-previous-value__value'] });
   });
 
-  it('UIC-FIELD-8.2 restores the value once per press and keeps pointer focus', async () => {
+  it('UIC-FIELD-9.2 restores the value once per press and keeps pointer focus', async () => {
     const user = userEvent.setup();
     const onRestore = vi.fn();
     render(
@@ -40,7 +40,7 @@ describe('FieldPreviousValue', () => {
     expect(draft).toHaveFocus();
   });
 
-  it('UIC-FIELD-8.2 names the restore button from restoreLabel and disables it when locked', async () => {
+  it('UIC-FIELD-9.2 names the restore button from restoreLabel and disables it when locked', async () => {
     const user = userEvent.setup();
     const onRestore = vi.fn();
     render(

@@ -1,6 +1,6 @@
 import type { Key, SelectProps as AriaSelectProps } from 'react-aria-components';
 import { createHooks } from '../../core/hooks.js';
-import { Field, useFieldControl, type FieldState, type FieldValueProps } from '../field/field.js';
+import { Field, useFieldControl, type FieldInputProps, type FieldState } from '../field/field.js';
 import { SelectControl, type SelectKeysValue } from './select-control.js';
 import type { SelectFieldOption } from './select-options.js';
 import { DEFAULT_SEARCH_DELAY, type SelectFieldLoader } from './select-search.js';
@@ -14,7 +14,7 @@ export type SelectFieldValue<M extends SelectFieldSelectionMode = 'single'> = M 
 
 export interface SelectFieldProps<M extends SelectFieldSelectionMode = 'single'>
   extends
-    FieldValueProps<SelectFieldValue<M>>,
+    FieldInputProps<SelectFieldValue<M>>,
     Pick<
       AriaSelectProps<SelectFieldOption, M>,
       'isOpen' | 'defaultOpen' | 'onOpenChange' | 'name' | 'autoFocus'
@@ -48,16 +48,17 @@ export function SelectField<M extends SelectFieldSelectionMode = 'single'>(
   props: SelectFieldProps<M>,
 ) {
   const isMultiple = props.selectionMode === 'multiple';
-  const { state, field, own } = useFieldControl<SelectFieldValue<M>, SelectFieldProps<M>>({
-    emptyValue: (isMultiple ? [] : null) as SelectFieldValue<M>,
-    ...props,
+  const empty = (isMultiple ? [] : null) as SelectFieldValue<M>;
+  const { state, field, rest } = useFieldControl<SelectFieldValue<M>, SelectFieldProps<M>>(props, {
+    initialValue: empty,
+    emptyValue: empty,
   });
   const {
     selectionMode = 'single',
     minSearchLength = 1,
     searchDelay = DEFAULT_SEARCH_DELAY,
     ...config
-  } = own;
+  } = rest;
   return (
     <Field
       {...field}

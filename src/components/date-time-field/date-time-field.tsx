@@ -5,9 +5,9 @@ import { useUiStrings } from '../../core/provider.js';
 import {
   Field,
   useFieldControl,
+  type FieldInputProps,
   type FieldIssue,
   type FieldState,
-  type FieldValueProps,
 } from '../field/field.js';
 import { DateControl, DateRangeControl, TimeControl } from './date-time-pickers.js';
 import {
@@ -25,7 +25,7 @@ export type DateTimeFieldValue<M extends DateTimeFieldMode = 'date'> = M extends
 
 export interface DateTimeFieldProps<M extends DateTimeFieldMode = 'date'>
   extends
-    FieldValueProps<DateTimeFieldValue<M>>,
+    FieldInputProps<DateTimeFieldValue<M>>,
     Pick<AriaDatePickerProps<DateValue>, 'isOpen' | 'defaultOpen' | 'onOpenChange'> {
   /** `date` (the default), `time`, `date-time` or `date-range`. */
   mode?: M | undefined;
@@ -57,18 +57,18 @@ export function DateTimeField<M extends DateTimeFieldMode = 'date'>(props: DateT
   const bounds = { minValue: props.minValue, maxValue: props.maxValue };
   const checkBounds = (value: DateTimeFieldValue<M>): FieldIssue | null => {
     const issue = findBoundIssue(value, mode, bounds);
-    if (!issue) return props.validate?.(value) ?? null;
+    if (!issue) return null;
     const limit = formatDateValue(issue.limit, mode, locale);
     const message =
       issue.bound === 'min' ? strings.dateTooEarly(limit) : strings.dateTooLate(limit);
     return { severity: 'error', message };
   };
-  const { state, field, own } = useFieldControl<DateTimeFieldValue<M>, DateTimeFieldProps<M>>({
-    emptyValue: null as DateTimeFieldValue<M>,
-    ...props,
-    validate: checkBounds,
-  });
-  const { mode: _mode, minValue: _min, maxValue: _max, ...open } = own;
+  const empty = null as DateTimeFieldValue<M>;
+  const { state, field, rest } = useFieldControl<DateTimeFieldValue<M>, DateTimeFieldProps<M>>(
+    props,
+    { initialValue: empty, emptyValue: empty, check: checkBounds },
+  );
+  const { mode: _mode, minValue: _min, maxValue: _max, ...open } = rest;
   const committed = state.committedValue;
   const previous = state.isDirty && committed ? formatDateValue(committed, mode, locale) : null;
   const Control = controls[mode];

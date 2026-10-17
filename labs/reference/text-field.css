@@ -1,0 +1,58 @@
+/* Text Field: a framed input or text area in the field's control slot. */
+
+.ui-text-field__box {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ui-text-field__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  box-sizing: border-box;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-canvas);
+  color: inherit;
+  font: inherit;
+}
+
+.ui-text-field[data-multiline] .ui-text-field__input {
+  height: auto;
+  min-height: 64px;
+  padding: 6px 8px;
+  resize: vertical;
+}
+
+.ui-text-field__input::placeholder {
+  color: var(--ref-muted);
+}
+
+.ui-text-field__input[data-focus-visible],
+.ui-text-field__input[data-focused] {
+  border-color: var(--ref-focus);
+  outline: 1px solid var(--ref-focus);
+}
+
+.ui-text-field[data-dirty] .ui-text-field__input {
+  border-inline-start: 3px solid var(--ref-info);
+}
+
+.ui-text-field[data-validation='invalid'] .ui-text-field__input {
+  border-color: var(--ref-danger);
+}
+
+.ui-text-field[data-validation='warning'] .ui-text-field__input {
+  border-color: var(--ref-warning);
+}
+
+.ui-text-field[data-readonly] .ui-text-field__input {
+  border-style: dashed;
+  background: var(--ref-surface);
+}
+
+.ui-text-field__input[data-disabled] {
+  cursor: not-allowed;
+}

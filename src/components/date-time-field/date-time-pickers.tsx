@@ -14,7 +14,12 @@ import {
 } from 'react-aria-components';
 import { createHooks } from '../../core/hooks.js';
 import { Glyph } from '../../core/provider.js';
-import { FieldPreviousValue, type FieldControlProps, type FieldState } from '../field/field.js';
+import {
+  FieldPreviousValue,
+  toAriaControlProps,
+  type FieldControlProps,
+  type FieldState,
+} from '../field/field.js';
 import { CalendarBody, CalendarPopover } from './date-time-calendar.js';
 import {
   fromDateTimeValue,
@@ -55,18 +60,8 @@ const hooks = createHooks('date-time-field', [
   'calendar',
 ]);
 
-function pickerProps({ control, state }: DatePickerControlProps) {
-  return {
-    className: hooks.slotClass('picker'),
-    'aria-label': control['aria-label'],
-    'aria-labelledby': control['aria-labelledby'],
-    'aria-describedby': control['aria-describedby'],
-    isDisabled: state.isDisabled,
-    isReadOnly: state.isReadOnly,
-    isRequired: state.isRequired,
-    isInvalid: state.validation.status === 'invalid',
-    validationBehavior: 'aria' as const,
-  };
+function pickerProps({ control }: DatePickerControlProps) {
+  return { ...toAriaControlProps(control), className: hooks.slotClass('picker') };
 }
 
 function openProps({ isOpen, defaultOpen, onOpenChange }: DatePickerControlProps) {
@@ -86,7 +81,7 @@ function DateGroup({
   children,
 }: DatePickerControlProps & { children: ReactNode }) {
   return (
-    <Group className={hooks.slotClass('group')} id={control.id} ref={control.ref}>
+    <Group className={hooks.slotClass('group')} ref={control.ref}>
       <PreviousValue previous={previous} />
       {children}
     </Group>
@@ -194,7 +189,6 @@ export function TimeControl(props: DatePickerControlProps) {
   return (
     <TimeField
       {...pickerProps(props)}
-      id={props.control.id}
       value={value}
       minValue={minValue}
       maxValue={maxValue}

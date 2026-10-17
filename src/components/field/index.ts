@@ -3,13 +3,16 @@ export {
   FieldPreviousValue,
   FieldRestoreButton,
   getFieldUndo,
+  toAriaControlProps,
   useFieldControl,
   useFieldState,
   validateString,
 } from './field.js';
 export type {
   FieldControl,
+  FieldControlOptions,
   FieldControlProps,
+  FieldInputProps,
   FieldIssue,
   FieldLabelLayout,
   FieldLayoutProps,
@@ -24,7 +27,6 @@ export type {
   FieldStatus,
   FieldUndo,
   FieldValidation,
-  FieldValueProps,
   StringRuleMessages,
   StringRules,
 } from './field.js';

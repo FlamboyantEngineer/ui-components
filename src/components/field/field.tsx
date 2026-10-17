@@ -126,9 +126,14 @@ export function Field<T>({
   );
 }
 
-export { useFieldControl } from './field-control.js';
-export type { FieldControl, FieldLayoutProps, FieldValueProps } from './field-control.js';
 export type { FieldControlProps, FieldLabelLayout } from './field-parts.js';
+export { toAriaControlProps, useFieldControl } from './field-control.js';
+export type {
+  FieldControl,
+  FieldControlOptions,
+  FieldInputProps,
+  FieldLayoutProps,
+} from './field-control.js';
 export type { FieldMenuAction, FieldMenuEntry } from './field-menu.js';
 export { FieldPreviousValue } from './field-previous-value.js';
 export type { FieldPreviousValueProps } from './field-previous-value.js';
