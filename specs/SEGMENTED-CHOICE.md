@@ -1,6 +1,6 @@
 # Segmented Choice
 
-`SegmentedChoice` picks one of a few mutually exclusive values of a setting, drawn as a run of segments. It is built on React Aria's `ToggleButtonGroup` and `ToggleButton` with single selection. It changes a value and shows no panel; switching which section of a surface is shown is [Tabs](TABS.md).
+`SegmentedChoice` picks one of a few mutually exclusive values of a setting, drawn as a run of segments, or with `selectionMode="multiple"` presses any number of them like a group of toggles. It is built on React Aria's `ToggleButtonGroup`, `ToggleButton` and `SelectionIndicator`. It changes a value and shows no panel; switching which section of a surface is shown is [Tabs](TABS.md).
 
 ## UIC-SEGMENTED-CHOICE-1 - Contract
 
@@ -39,6 +39,27 @@ Verification: `src/components/segmented-choice/segmented-choice.test.tsx`, `e2e/
 Implementation: `src/components/segmented-choice/segmented-choice.tsx`
 Verification: `src/components/segmented-choice/segmented-choice.test.tsx`
 
+### UIC-SEGMENTED-CHOICE-1.6 - Selection indicator
+
+Each segment shall hold React Aria's selection indicator in the `ui-segmented-choice__indicator` slot, rendered while the segment is selected. When the selection moves, React Aria animates the indicator from the previous segment's position through any `translate` or size transition the stylesheet declares, so one thumb appears to slide between segments, and publishes `data-entering` and `data-exiting` on it.
+
+Implementation: `src/components/segmented-choice/segmented-choice.tsx`, `labs/reference/segmented-choice.css`
+Verification: `src/components/segmented-choice/segmented-choice.test.tsx`, `e2e/segmented-choice.spec.ts`
+
+### UIC-SEGMENTED-CHOICE-1.7 - Icon-only segments
+
+With `iconOnly` every segment with an `icon` shall show only that icon, take its `label` as its accessible name (`aria-label`) and show the label in a [Tooltip](TOOLTIP.md) on hover and keyboard focus. The tooltip repeats the name, so it adds no description. The root publishes `data-icon-only`; a segment without an icon keeps its label.
+
+Implementation: `src/components/segmented-choice/segmented-choice.tsx`
+Verification: `src/components/segmented-choice/segmented-choice.test.tsx`, `e2e/segmented-choice.spec.ts`
+
+### UIC-SEGMENTED-CHOICE-1.8 - Swapping the root
+
+`render(props, state)` shall replace the group's `<div>` as React Aria's `render` does ([COMPOSITION.md](COMPOSITION.md)), with the hook classes, data attributes, the `aria-readonly` and `aria-invalid` the component adds, and the ref.
+
+Implementation: `src/components/segmented-choice/segmented-choice.tsx`
+Verification: `src/components/segmented-choice/segmented-choice.test.tsx`
+
 ## UIC-SEGMENTED-CHOICE-2 - Behaviour
 
 ### UIC-SEGMENTED-CHOICE-2.1 - Keyboard and accessibility
@@ -58,6 +79,20 @@ Verification: `src/components/segmented-choice/segmented-choice.test.tsx`, `e2e/
 ### UIC-SEGMENTED-CHOICE-2.3 - Inherited value
 
 `isInherited` shall publish `data-inherited` on the root while the selected segment stays marked with `data-selected`, so a stylesheet can mute an inherited value. A caller explains where the value comes from with `aria-describedby`.
+
+Implementation: `src/components/segmented-choice/segmented-choice.tsx`
+Verification: `src/components/segmented-choice/segmented-choice.test.tsx`
+
+### UIC-SEGMENTED-CHOICE-2.4 - Multiple selection
+
+With `selectionMode="multiple"` the root shall be a `toolbar` (a `group` inside another toolbar) whose segments are buttons with `aria-pressed`, each pressed or released on its own. `value` and `defaultValue` are lists of values, and `onChange` receives the pressed values in option order. The root publishes `data-selection-mode` (`single` by default, or `multiple`). `isInherited` and `isClearable` apply to single selection only.
+
+Implementation: `src/components/segmented-choice/segmented-choice.tsx`, `src/components/segmented-choice/choice-selection.ts`
+Verification: `src/components/segmented-choice/segmented-choice.test.tsx`, `e2e/segmented-choice.spec.ts`
+
+### UIC-SEGMENTED-CHOICE-2.5 - Form submission
+
+With `name`, the group shall render one hidden input with that name per selected value, so a form submits the value (nothing for an empty choice, every pressed value for a multiple one). A disabled group's inputs are disabled and submit nothing.
 
 Implementation: `src/components/segmented-choice/segmented-choice.tsx`
 Verification: `src/components/segmented-choice/segmented-choice.test.tsx`
@@ -94,23 +129,28 @@ Verification: `src/components/segmented-choice/segmented-choice.test.tsx`, `e2e/
 
 ## Hooks
 
-| Hook                           | Kind      | Values                   | Description                                       |
-| ------------------------------ | --------- | ------------------------ | ------------------------------------------------- |
-| `ui-segmented-choice`          | root      |                          | The group (`<div role="radiogroup">`).            |
-| `ui-segmented-choice__segment` | slot      |                          | One segment (`<button role="radio">`).            |
-| `ui-segmented-choice__icon`    | slot      |                          | A segment's leading icon (also `ui-icon`).        |
-| `ui-segmented-choice__label`   | slot      |                          | A segment's label text.                           |
-| `data-size`                    | attribute | `sm`, `md`, `lg`         | Segment block size.                               |
-| `data-sizing`                  | attribute | `equal`, `content`       | How segments share the width.                     |
-| `data-orientation`             | attribute | `horizontal`, `vertical` | Layout and arrow-key axis (React Aria).           |
-| `data-value`                   | attribute |                          | A segment's option value.                         |
-| `data-label`                   | attribute |                          | A label's text, for reserving its selected width. |
-| `data-inherited`               | state     | `true`                   | The value in effect is inherited.                 |
-| `data-readonly`                | state     | `true`                   | Read-only.                                        |
-| `data-invalid`                 | state     | `true`                   | Invalid.                                          |
-| `data-disabled`                | state     | `true`                   | The group or a segment is disabled (React Aria).  |
-| `data-selected`                | state     | `true`                   | The selected segment (React Aria).                |
-| `data-hovered`                 | state     | `true`                   | Pointer over a segment.                           |
-| `data-pressed`                 | state     | `true`                   | A segment is being pressed.                       |
-| `data-focused`                 | state     | `true`                   | A segment is focused.                             |
-| `data-focus-visible`           | state     | `true`                   | A segment has keyboard focus.                     |
+| Hook                             | Kind      | Values                   | Description                                         |
+| -------------------------------- | --------- | ------------------------ | --------------------------------------------------- |
+| `ui-segmented-choice`            | root      |                          | The group (`<div>`, a `radiogroup` or `toolbar`).   |
+| `ui-segmented-choice__segment`   | slot      |                          | One segment (`<button>`, role `radio` when single). |
+| `ui-segmented-choice__indicator` | slot      |                          | The selection indicator inside a selected segment.  |
+| `ui-segmented-choice__icon`      | slot      |                          | A segment's leading icon (also `ui-icon`).          |
+| `ui-segmented-choice__label`     | slot      |                          | A segment's label text.                             |
+| `data-size`                      | attribute | `sm`, `md`, `lg`         | Segment block size.                                 |
+| `data-sizing`                    | attribute | `equal`, `content`       | How segments share the width.                       |
+| `data-orientation`               | attribute | `horizontal`, `vertical` | Layout and arrow-key axis (React Aria).             |
+| `data-selection-mode`            | attribute | `single`, `multiple`     | One value, or independent toggles.                  |
+| `data-value`                     | attribute |                          | A segment's option value.                           |
+| `data-label`                     | attribute |                          | A label's text, for reserving its selected width.   |
+| `data-icon-only`                 | state     | `true`                   | Segments show only their icons.                     |
+| `data-inherited`                 | state     | `true`                   | The value in effect is inherited.                   |
+| `data-readonly`                  | state     | `true`                   | Read-only.                                          |
+| `data-invalid`                   | state     | `true`                   | Invalid.                                            |
+| `data-disabled`                  | state     | `true`                   | The group or a segment is disabled (React Aria).    |
+| `data-selected`                  | state     | `true`                   | The selected segment (React Aria).                  |
+| `data-hovered`                   | state     | `true`                   | Pointer over a segment.                             |
+| `data-pressed`                   | state     | `true`                   | A segment is being pressed.                         |
+| `data-focused`                   | state     | `true`                   | A segment is focused.                               |
+| `data-focus-visible`             | state     | `true`                   | A segment has keyboard focus.                       |
+| `data-entering`                  | state     | `true`                   | The indicator is entering (React Aria).             |
+| `data-exiting`                   | state     | `true`                   | The indicator is exiting (React Aria).              |

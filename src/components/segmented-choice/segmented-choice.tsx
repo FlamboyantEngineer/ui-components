@@ -1,13 +1,21 @@
+import type { ReactElement } from 'react';
 import {
+  SelectionIndicator,
   ToggleButton,
   ToggleButtonGroup,
-  type Key,
   type ToggleButtonGroupProps as AriaToggleButtonGroupProps,
 } from 'react-aria-components';
-import { useControllableState } from '../../core/controllable-state.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps, Size } from '../../core/props.js';
 import { Icon, toIconProps, type IconSource } from '../icon/icon.js';
+import { Tooltip } from '../tooltip/tooltip.js';
+import {
+  useChoiceSelection,
+  type SegmentedChoiceSelectionMode,
+  type SegmentedChoiceValue,
+} from './choice-selection.js';
+
+export type { SegmentedChoiceSelectionMode, SegmentedChoiceValue } from './choice-selection.js';
 
 export type SegmentedChoiceSize = Extract<Size, 'sm' | 'md' | 'lg'>;
 
@@ -18,18 +26,17 @@ export interface SegmentedChoiceOption {
   value: string;
   /** The segment's text and accessible name. */
   label: string;
-  /** A decorative icon before the label. */
+  /** A decorative icon before the label, or the whole segment with `iconOnly`. */
   icon?: IconSource;
   isDisabled?: boolean | undefined;
 }
 
-export interface SegmentedChoiceProps
+export interface SegmentedChoiceProps<M extends SegmentedChoiceSelectionMode = 'single'>
   extends
     Omit<
       AriaToggleButtonGroupProps,
       | 'className'
       | 'style'
-      | 'render'
       | 'children'
       | 'selectionMode'
       | 'disallowEmptySelection'
@@ -40,15 +47,17 @@ export interface SegmentedChoiceProps
     Pick<NativeProps<'div'>, 'ref'>,
     BaseProps {
   options: readonly SegmentedChoiceOption[];
-  /** The value in effect (controlled). `null` selects nothing. */
-  value?: string | null | undefined;
+  /** `single` (the default) picks one value; `multiple` presses any number of segments. */
+  selectionMode?: M | undefined;
+  /** The value in effect (controlled): one value or `null`, or a list with `multiple`. */
+  value?: SegmentedChoiceValue<M> | undefined;
   /** The initial value when uncontrolled. */
-  defaultValue?: string | null | undefined;
-  /** Receives the picked value, or `null` when the choice is cleared. */
-  onChange?: ((value: string | null) => void) | undefined;
-  /** The value in effect comes from elsewhere; picking its segment again commits it as explicit. */
+  defaultValue?: SegmentedChoiceValue<M> | undefined;
+  /** Receives the new value: the picked value or `null`, or the pressed values in option order. */
+  onChange?: ((value: SegmentedChoiceValue<M>) => void) | undefined;
+  /** Single selection: the value comes from elsewhere; picking its segment again commits it. */
   isInherited?: boolean | undefined;
-  /** Picking the selected segment of an explicit value again clears the choice to `null`. */
+  /** Single selection: picking the selected segment of an explicit value clears it to `null`. */
   isClearable?: boolean | undefined;
   /** Segments stay focusable but picking does nothing. */
   isReadOnly?: boolean | undefined;
@@ -58,73 +67,86 @@ export interface SegmentedChoiceProps
   size?: SegmentedChoiceSize | undefined;
   /** How segments share the width. Defaults to `equal`. */
   sizing?: SegmentedChoiceSizing | undefined;
+  /** Each segment shows only its icon, named by its label, which its tooltip shows. */
+  iconOnly?: boolean | undefined;
+  /** Submits the value with a form under this name, one hidden input per selected value. */
+  name?: string | undefined;
 }
 
-type SelectionOptions = Pick<
-  SegmentedChoiceProps,
-  'value' | 'defaultValue' | 'onChange' | 'isInherited' | 'isClearable' | 'isReadOnly'
->;
-
-const hooks = createHooks('segmented-choice', ['segment', 'icon', 'label']);
-
-/** The group's selected keys and selection handler, with the rules for picking the selected segment again. */
-function useChoiceSelection({
-  value,
-  defaultValue = null,
-  onChange,
-  isInherited,
-  isClearable,
-  isReadOnly,
-}: SelectionOptions) {
-  const [current, commit] = useControllableState(value, defaultValue, onChange);
-
-  // React Aria reports an empty selection when the selected segment is picked again.
-  const onSelectionChange = (keys: Set<Key>) => {
-    const [picked] = keys;
-    if (isReadOnly) return;
-    if (picked !== undefined) commit(String(picked));
-    else if (current !== null && isInherited) commit(current);
-    else if (current !== null && isClearable) commit(null);
-  };
-
-  return { selectedKeys: current === null ? [] : [current], onSelectionChange };
+interface SegmentProps {
+  option: SegmentedChoiceOption;
+  size: SegmentedChoiceSize;
+  iconOnly: boolean;
 }
+
+const hooks = createHooks('segmented-choice', ['segment', 'indicator', 'icon', 'label']);
 
 /** `aria-readonly` and `aria-invalid` on the group, which React Aria does not set itself. */
 function renderGroupState(
-  isReadOnly: boolean,
-  isInvalid: boolean,
+  { isReadOnly, isInvalid }: { isReadOnly: boolean; isInvalid: boolean },
+  render: AriaToggleButtonGroupProps['render'],
 ): Pick<AriaToggleButtonGroupProps, 'render'> {
-  if (!isReadOnly && !isInvalid) return {};
+  if (!isReadOnly && !isInvalid) return render ? { render } : {};
   return {
-    render: (props) => (
-      <div
-        {...props}
-        aria-readonly={isReadOnly || undefined}
-        aria-invalid={isInvalid || undefined}
-      />
-    ),
+    render: (props, state) => {
+      const merged = {
+        ...props,
+        'aria-readonly': isReadOnly || undefined,
+        'aria-invalid': isInvalid || undefined,
+      };
+      return render ? render(merged, state) : <div {...merged} />;
+    },
   };
 }
 
-function Segment({ option, size }: { option: SegmentedChoiceOption; size: SegmentedChoiceSize }) {
-  return (
+// The tooltip of an icon-only segment repeats its name, so it adds no description.
+function renderWithoutDescription(props: NativeProps<'button'>): ReactElement {
+  return <button {...props} aria-describedby={undefined} />;
+}
+
+function Segment({ option, size, iconOnly }: SegmentProps) {
+  const showsIconOnly = iconOnly && option.icon !== undefined;
+  const segment = (
     <ToggleButton
       id={option.value}
       isDisabled={option.isDisabled}
+      aria-label={showsIconOnly ? option.label : undefined}
+      render={showsIconOnly ? renderWithoutDescription : undefined}
       {...hooks.slot('segment', { value: option.value })}
     >
+      <SelectionIndicator className={hooks.slotClass('indicator')} />
       {option.icon ? (
         <Icon {...toIconProps(option.icon)} size={size} className={hooks.slotClass('icon')} />
       ) : null}
-      <span {...hooks.slot('label', { label: option.label })}>{option.label}</span>
+      {showsIconOnly ? null : (
+        <span {...hooks.slot('label', { label: option.label })}>{option.label}</span>
+      )}
     </ToggleButton>
   );
+  return showsIconOnly ? <Tooltip content={option.label}>{segment}</Tooltip> : segment;
 }
 
-/** One of a few mutually exclusive values, drawn as a run of segments. */
-export function SegmentedChoice({
+/** Hidden inputs that submit the selected values with a form. */
+function ChoiceInputs({ name, values, isDisabled }: ChoiceInputsProps) {
+  return values.map((value) => (
+    <input key={value} type="hidden" name={name} value={value} disabled={isDisabled} />
+  ));
+}
+
+interface ChoiceInputsProps {
+  name: string;
+  values: readonly string[];
+  isDisabled: boolean | undefined;
+}
+
+/**
+ * One of a few mutually exclusive values, drawn as a run of segments, or with
+ * `selectionMode="multiple"` a group of toggles that press independently. A selection indicator
+ * slides between segments as the choice moves.
+ */
+export function SegmentedChoice<M extends SegmentedChoiceSelectionMode = 'single'>({
   options,
+  selectionMode,
   value,
   defaultValue,
   onChange,
@@ -134,10 +156,15 @@ export function SegmentedChoice({
   isInvalid = false,
   size = 'md',
   sizing = 'equal',
+  iconOnly = false,
+  name,
+  render,
   className,
   ...rest
-}: SegmentedChoiceProps) {
-  const selection = useChoiceSelection({
+}: SegmentedChoiceProps<M>) {
+  const selection = useChoiceSelection<M>({
+    options,
+    selectionMode,
     value,
     defaultValue,
     onChange,
@@ -152,15 +179,27 @@ export function SegmentedChoice({
       {...hooks.root({
         className,
         props: rest,
-        data: { size, sizing, inherited: isInherited, readonly: isReadOnly, invalid: isInvalid },
+        data: {
+          size,
+          sizing,
+          selectionMode: selection.selectionMode,
+          iconOnly,
+          inherited: isInherited,
+          readonly: isReadOnly,
+          invalid: isInvalid,
+        },
       })}
-      {...selection}
-      selectionMode="single"
-      {...renderGroupState(isReadOnly, isInvalid)}
+      selectedKeys={selection.selectedKeys}
+      onSelectionChange={selection.onSelectionChange}
+      selectionMode={selection.selectionMode}
+      {...renderGroupState({ isReadOnly, isInvalid }, render)}
     >
       {options.map((option) => (
-        <Segment key={option.value} option={option} size={size} />
+        <Segment key={option.value} option={option} size={size} iconOnly={iconOnly} />
       ))}
+      {name ? (
+        <ChoiceInputs name={name} values={selection.selectedKeys} isDisabled={rest.isDisabled} />
+      ) : null}
     </ToggleButtonGroup>
   );
 }

@@ -21,6 +21,7 @@
 }
 
 .ui-segmented-choice__segment {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -67,12 +68,29 @@
   background: var(--ref-pressed);
 }
 .ui-segmented-choice__segment[data-selected] {
-  background: var(--ref-selected);
   font-weight: 600;
 }
 .ui-segmented-choice[data-inherited] .ui-segmented-choice__segment[data-selected] {
-  background: var(--ref-hover);
   color: var(--ref-muted);
+}
+
+/* One thumb slides between segments: React Aria animates it from the previous segment. */
+.ui-segmented-choice__indicator {
+  position: absolute;
+  inset: 0;
+  background: var(--ref-selected);
+  transition:
+    translate 0.2s,
+    width 0.2s,
+    height 0.2s;
+}
+.ui-segmented-choice[data-inherited] .ui-segmented-choice__indicator {
+  background: var(--ref-hover);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-segmented-choice__indicator {
+    transition: none;
+  }
 }
 .ui-segmented-choice__segment[data-focus-visible] {
   box-shadow: inset 0 0 0 2px var(--ref-focus);
@@ -86,11 +104,13 @@
 }
 
 .ui-segmented-choice__icon {
+  position: relative;
   flex: none;
 }
 
 /* The label reserves the width of its selected weight, so selecting never resizes a segment. */
 .ui-segmented-choice__label {
+  position: relative;
   display: inline-grid;
   min-width: 0;
   overflow: hidden;
