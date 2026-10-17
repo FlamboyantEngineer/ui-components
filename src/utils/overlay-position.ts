@@ -1,7 +1,7 @@
 // Placement math for floating panels (menus, suggestion lists, fly-outs) anchored to an element
 // or a point. Pure functions over rects; `overlay-geometry.ts` measures the DOM for them.
 
-import { clamp } from './clamp.js';
+import { alignCrossAxis, clampFinite, resolveAnchorPoint, solveMainAxis } from './overlay-axis.js';
 
 /** A box in viewport coordinates, like `DOMRect`. */
 export interface OverlayRect {
@@ -19,9 +19,12 @@ export interface OverlaySize {
 }
 
 /** The side of the anchor the overlay opens on. */
-export type OverlaySide = 'bottom' | 'top';
-/** Which anchor edge the overlay lines up with: `start` is the left edge in left-to-right text. */
-export type OverlayAlign = 'start' | 'end';
+export type OverlaySide = 'bottom' | 'top' | 'left' | 'right';
+/**
+ * How the overlay lines up along the anchor's edge: with its `start` edge (the left edge in
+ * left-to-right text, the top edge beside the anchor), its `end` edge, or centred on it.
+ */
+export type OverlayAlign = 'start' | 'center' | 'end';
 /** The side of its trigger row a submenu opens on. */
 export type SubmenuSide = 'right' | 'left';
 /** Which way a submenu extends from its trigger row. */
@@ -41,8 +44,12 @@ export interface OverlayPlacementInput {
   contentRect?: OverlayRect | undefined;
   /** The horizontal extent the overlay may use. Defaults to `visibleRect`. */
   horizontalRect?: OverlayRect | undefined;
-  /** Preferred alignment; flips to the other edge when only that one fits. Defaults to `start`. */
+  /** Preferred side; flips to the opposite side when only that one fits. Defaults to `bottom`. */
+  side?: OverlaySide | undefined;
+  /** Preferred alignment; `start` and `end` flip when only the other edge fits. Defaults to `start`. */
   align?: OverlayAlign | undefined;
+  /** Shift along the anchor's edge, in pixels: rightward above or below it, downward beside it. */
+  crossOffset?: number | undefined;
   /** Text direction, which decides the physical edge of `start`. Defaults to `ltr`. */
   dir?: 'ltr' | 'rtl' | undefined;
   /** Space between anchor and overlay. Defaults to 6. */
@@ -55,12 +62,20 @@ export interface OverlayPlacement {
   align: OverlayAlign;
   left: number;
   top: number;
-  /** The height limit to apply when `constrained`; the overlay's own height otherwise. */
+  /** The height to render: the room on a `top` or `bottom` side when `constrained`, else its own. */
   maxHeight: number;
+  /** The width to render: the room on a `left` or `right` side when `constrained`, else its own. */
+  maxWidth: number;
   availableAbove: number;
   availableBelow: number;
-  /** The overlay is taller than the space on its side and needs `maxHeight`. */
+  /** The width the overlay may take: the room on a `left` or `right` side, else the boundary's. */
+  availableWidth: number;
+  /** The height the overlay may take: the room on a `top` or `bottom` side, else the boundary's. */
+  availableHeight: number;
+  /** The overlay is larger than the room on its side and needs `maxHeight` (or `maxWidth` beside). */
   constrained: boolean;
+  /** The point of the overlay nearest the anchor, as a CSS `transform-origin` in pixels. */
+  transformOrigin: string;
 }
 
 export interface SubmenuPlacementInput {
@@ -95,12 +110,6 @@ export const DEFAULT_OVERLAY_GAP = 6;
 /** How far a submenu overlaps its parent menu. */
 export const DEFAULT_SUBMENU_OVERLAP = 6;
 
-/** Like `clamp`, but a non-finite bound falls back to the low bound (or 0). */
-function clampFinite(value: number, min: number, max: number): number {
-  const low = Number.isFinite(min) ? min : 0;
-  return clamp(value, low, Number.isFinite(max) ? max : low);
-}
-
 /** The rects a placement is solved in: vertical room by mode, horizontal room as given. */
 function resolveSolvingRects(input: OverlayPlacementInput | SubmenuPlacementInput) {
   const { visibleRect } = input;
@@ -116,27 +125,6 @@ function chooseVerticalSide(above: number, below: number, height: number): Overl
   if (below >= height) return 'bottom';
   if (above >= height) return 'top';
   return below >= above ? 'bottom' : 'top';
-}
-
-/** The anchor edge an overlay lines up with, flipped when only the other edge fits, and its left. */
-function alignToAnchor(
-  input: OverlayPlacementInput,
-  horizontalRect: OverlayRect,
-): { align: OverlayAlign; left: number } {
-  const { anchorRect, overlaySize } = input;
-  const rtl = input.dir === 'rtl';
-  const leftFits = anchorRect.left + overlaySize.width <= horizontalRect.right;
-  const rightFits = anchorRect.right - overlaySize.width >= horizontalRect.left;
-  const preferLeftEdge = (input.align ?? 'start') === 'start' ? !rtl : rtl;
-  const useLeftEdge = preferLeftEdge ? leftFits || !rightFits : !rightFits && leftFits;
-  return {
-    align: useLeftEdge !== rtl ? 'start' : 'end',
-    left: clampFinite(
-      useLeftEdge ? anchorRect.left : anchorRect.right - overlaySize.width,
-      horizontalRect.left,
-      horizontalRect.right - overlaySize.width,
-    ),
-  };
 }
 
 /** The side a submenu opens on: the reading side when it fits or has at least as much room. */
@@ -177,33 +165,129 @@ export function createOverlayPointRect(x: number, y: number): OverlayRect {
   return { left: x, top: y, right: x, bottom: y, width: 0, height: 0 };
 }
 
-/**
- * Places an overlay below or above its anchor, preferring below, and lines it up with the anchor's
- * start or end edge. A side that cannot fit the overlay flips to the other; when neither fits, the
- * roomier side wins and the overlay is constrained to it. In `viewport` mode the result is clamped
- * into the visible rect; horizontally it is always clamped into the horizontal rect.
- */
-export function resolveOverlayPlacement(input: OverlayPlacementInput): OverlayPlacement {
-  const gap = input.gap ?? DEFAULT_OVERLAY_GAP;
+/** The anchor point on the overlay's edge that faces the anchor, as a `transform-origin`. */
+function resolveTransformOrigin(
+  side: OverlaySide,
+  anchorRect: OverlayRect,
+  box: { left: number; top: number; width: number; height: number },
+): string {
+  if (side === 'top' || side === 'bottom') {
+    const x = resolveAnchorPoint(anchorRect.left, anchorRect.right, {
+      low: box.left,
+      size: box.width,
+    });
+    return `${x}px ${side === 'top' ? Math.round(box.height) : 0}px`;
+  }
+  const y = resolveAnchorPoint(anchorRect.top, anchorRect.bottom, {
+    low: box.top,
+    size: box.height,
+  });
+  return `${side === 'left' ? Math.round(box.width) : 0}px ${y}px`;
+}
+
+/** Places an overlay above or below its anchor, lined up horizontally. */
+function placeVertically(input: OverlayPlacementInput) {
   const { anchorRect, overlaySize, visibleRect } = input;
   const { content, verticalRect, horizontalRect } = resolveSolvingRects(input);
-
-  const availableAbove = Math.max(0, Math.floor(anchorRect.top - verticalRect.top - gap));
-  const availableBelow = Math.max(0, Math.floor(verticalRect.bottom - anchorRect.bottom - gap));
-  const side = chooseVerticalSide(availableAbove, availableBelow, overlaySize.height);
-  const available = side === 'bottom' ? availableBelow : availableAbove;
-  const constrained = overlaySize.height > available;
-  const maxHeight = Math.max(0, constrained ? available : overlaySize.height);
-
-  const top = side === 'bottom' ? anchorRect.bottom + gap : anchorRect.top - gap - maxHeight;
+  const main = solveMainAxis({
+    anchorLow: anchorRect.top,
+    anchorHigh: anchorRect.bottom,
+    size: overlaySize.height,
+    boundLow: verticalRect.top,
+    boundHigh: verticalRect.bottom,
+    gap: input.gap ?? DEFAULT_OVERLAY_GAP,
+    prefersHigh: input.side !== 'top',
+  });
+  const cross = alignCrossAxis({
+    anchorLow: anchorRect.left,
+    anchorHigh: anchorRect.right,
+    size: overlaySize.width,
+    boundLow: horizontalRect.left,
+    boundHigh: horizontalRect.right,
+    align: input.align ?? 'start',
+    startIsLow: input.dir !== 'rtl',
+    offset: input.crossOffset ?? 0,
+    clamps: true,
+  });
   return {
-    side,
-    ...alignToAnchor(input, horizontalRect),
-    top: content ? top : clampFinite(top, visibleRect.top, visibleRect.bottom - maxHeight),
-    maxHeight,
-    availableAbove,
-    availableBelow,
-    constrained,
+    main,
+    side: main.isHigh ? ('bottom' as const) : ('top' as const),
+    align: cross.align,
+    left: cross.position,
+    top: content
+      ? main.position
+      : clampFinite(main.position, visibleRect.top, visibleRect.bottom - main.size),
+    width: overlaySize.width,
+    height: main.size,
+    availableWidth: Math.floor(horizontalRect.width),
+    availableHeight: main.isHigh ? main.roomHigh : main.roomLow,
+  };
+}
+
+/** Places an overlay left or right of its anchor, lined up vertically. */
+function placeHorizontally(input: OverlayPlacementInput) {
+  const { anchorRect, overlaySize, visibleRect } = input;
+  const { content, verticalRect, horizontalRect } = resolveSolvingRects(input);
+  const main = solveMainAxis({
+    anchorLow: anchorRect.left,
+    anchorHigh: anchorRect.right,
+    size: overlaySize.width,
+    boundLow: horizontalRect.left,
+    boundHigh: horizontalRect.right,
+    gap: input.gap ?? DEFAULT_OVERLAY_GAP,
+    prefersHigh: input.side === 'right',
+  });
+  const crossRect = content ? verticalRect : visibleRect;
+  const cross = alignCrossAxis({
+    anchorLow: anchorRect.top,
+    anchorHigh: anchorRect.bottom,
+    size: overlaySize.height,
+    boundLow: crossRect.top,
+    boundHigh: crossRect.bottom,
+    align: input.align ?? 'start',
+    startIsLow: true,
+    offset: input.crossOffset ?? 0,
+    clamps: !content,
+  });
+  return {
+    main,
+    side: main.isHigh ? ('right' as const) : ('left' as const),
+    align: cross.align,
+    left: clampFinite(main.position, horizontalRect.left, horizontalRect.right - main.size),
+    top: cross.position,
+    width: main.size,
+    height: overlaySize.height,
+    availableWidth: main.isHigh ? main.roomHigh : main.roomLow,
+    availableHeight: Math.floor(crossRect.height),
+  };
+}
+
+/**
+ * Places an overlay on a side of its anchor (below unless `side` prefers another) and lines it up
+ * with the anchor's start or end edge, or its centre, shifted by `crossOffset`. A side that cannot
+ * fit the overlay flips to the opposite one; when neither fits, the roomier side wins and the
+ * overlay is constrained to it. Horizontally the result is always clamped into the horizontal
+ * rect; vertically only in `viewport` mode.
+ */
+export function resolveOverlayPlacement(input: OverlayPlacementInput): OverlayPlacement {
+  const beside = input.side === 'left' || input.side === 'right';
+  const placed = beside ? placeHorizontally(input) : placeVertically(input);
+  const { verticalRect } = resolveSolvingRects(input);
+  const gap = input.gap ?? DEFAULT_OVERLAY_GAP;
+  const { anchorRect } = input;
+  return {
+    side: placed.side,
+    align: placed.align,
+    left: placed.left,
+    top: placed.top,
+    maxHeight: placed.height,
+    maxWidth: placed.width,
+    availableAbove: Math.max(0, Math.floor(anchorRect.top - verticalRect.top - gap)),
+    availableBelow: Math.max(0, Math.floor(verticalRect.bottom - anchorRect.bottom - gap)),
+    availableWidth: placed.availableWidth,
+    availableHeight: placed.availableHeight,
+    constrained: placed.main.constrained,
+    transformOrigin: resolveTransformOrigin(placed.side, anchorRect, placed),
   };
 }
 

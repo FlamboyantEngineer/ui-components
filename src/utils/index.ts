@@ -36,6 +36,8 @@ export {
   isSameOverlayGeometry,
   resolveOverlayGeometry,
 } from './overlay-geometry.js';
+export { autoUpdateOverlay } from './overlay-auto-update.js';
+export type { OverlayAutoUpdateOptions } from './overlay-auto-update.js';
 export type {
   OverlayBoundary,
   OverlayGeometry,

@@ -169,6 +169,110 @@ describe('resolveOverlayPlacement', () => {
   });
 });
 
+describe('sides, alignment and outputs', () => {
+  const anchorRect = rect({ left: 150, top: 120, width: 60, height: 20 });
+  const overlaySize = { width: 100, height: 80 };
+
+  it('UIC-OVERLAY-POSITION-1.6 opens on a preferred side and flips to the opposite one', () => {
+    expect(
+      resolveOverlayPlacement({ anchorRect, overlaySize, visibleRect, side: 'top' }),
+    ).toMatchObject({ side: 'top', top: 34, left: 150 });
+    expect(
+      resolveOverlayPlacement({ anchorRect, overlaySize, visibleRect, side: 'right' }),
+    ).toMatchObject({ side: 'right', left: 216, top: 120, constrained: false, maxWidth: 100 });
+    expect(
+      resolveOverlayPlacement({ anchorRect, overlaySize, visibleRect, side: 'left', gap: 4 }),
+    ).toMatchObject({ side: 'left', left: 46, top: 120 });
+    const nearRight = rect({ left: 330, top: 120, width: 60, height: 20 });
+    expect(
+      resolveOverlayPlacement({ anchorRect: nearRight, overlaySize, visibleRect, side: 'right' }),
+    ).toMatchObject({ side: 'left', left: 224 });
+    const wide = resolveOverlayPlacement({
+      anchorRect: rect({ left: 250, top: 120, width: 60, height: 20 }),
+      overlaySize: { width: 300, height: 80 },
+      visibleRect,
+      side: 'right',
+    });
+    expect(wide).toMatchObject({ side: 'left', constrained: true, maxWidth: 244, left: 0 });
+    const low = rect({ left: 150, top: 260, width: 60, height: 20 });
+    expect(
+      resolveOverlayPlacement({ anchorRect: low, overlaySize, visibleRect, side: 'right' }),
+    ).toMatchObject({ side: 'right', top: 200, align: 'end' });
+  });
+
+  it('UIC-OVERLAY-POSITION-1.7 centres on the anchor and shifts by the cross offset', () => {
+    expect(
+      resolveOverlayPlacement({ anchorRect, overlaySize, visibleRect, align: 'center' }),
+    ).toMatchObject({ align: 'center', left: 130, top: 146 });
+    expect(
+      resolveOverlayPlacement({
+        anchorRect,
+        overlaySize,
+        visibleRect,
+        align: 'center',
+        crossOffset: 12,
+      }),
+    ).toMatchObject({ left: 142 });
+    expect(
+      resolveOverlayPlacement({ anchorRect, overlaySize, visibleRect, crossOffset: -8 }),
+    ).toMatchObject({ align: 'start', left: 142 });
+    expect(
+      resolveOverlayPlacement({
+        anchorRect,
+        overlaySize,
+        visibleRect,
+        side: 'right',
+        align: 'center',
+        crossOffset: 5,
+      }),
+    ).toMatchObject({ align: 'center', top: 95 });
+    expect(
+      resolveOverlayPlacement({
+        anchorRect: rect({ left: 0, top: 120, width: 20, height: 20 }),
+        overlaySize,
+        visibleRect,
+        align: 'center',
+      }),
+    ).toMatchObject({ left: 0 });
+  });
+
+  it('UIC-OVERLAY-POSITION-1.8 reports the room it may take and its anchor point', () => {
+    const below = resolveOverlayPlacement({ anchorRect, overlaySize, visibleRect });
+    expect(below).toMatchObject({
+      availableWidth: 400,
+      availableHeight: 154,
+      transformOrigin: '30px 0px',
+    });
+    const above = resolveOverlayPlacement({
+      anchorRect,
+      overlaySize,
+      visibleRect,
+      side: 'top',
+      align: 'center',
+    });
+    expect(above).toMatchObject({ availableHeight: 114, transformOrigin: '50px 80px' });
+    const beside = resolveOverlayPlacement({ anchorRect, overlaySize, visibleRect, side: 'left' });
+    expect(beside).toMatchObject({
+      availableWidth: 144,
+      availableHeight: 300,
+      transformOrigin: '100px 10px',
+    });
+    const point = resolveOverlayPlacement({
+      anchorRect: createOverlayPointRect(390, 20),
+      overlaySize,
+      visibleRect,
+    });
+    expect(point).toMatchObject({ align: 'end', left: 290, transformOrigin: '100px 0px' });
+    const shifted = resolveOverlayPlacement({
+      anchorRect,
+      overlaySize,
+      visibleRect,
+      crossOffset: 80,
+    });
+    expect(shifted).toMatchObject({ left: 230, transformOrigin: '0px 0px' });
+  });
+});
+
 describe('resolveSubmenuPlacement', () => {
   const overlaySize = { width: 120, height: 100 };
 

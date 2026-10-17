@@ -7,8 +7,10 @@ import {
   toOverlayRect,
   type OverlayAlign,
   type OverlayMode,
+  type OverlayPlacement,
   type OverlayRect,
   type OverlaySide,
+  type OverlaySize,
 } from './overlay-position.js';
 
 /** The boundary an overlay is solved against, measured by `getOverlayBoundary`. */
@@ -36,7 +38,11 @@ export interface OverlayGeometryOptions {
   /** For `absolute`: the origin the coordinates are relative to. */
   offsetParent?: OverlayOffsetParent | null | undefined;
   mode?: OverlayMode | undefined;
+  /** Preferred side. Defaults to `bottom`. */
+  side?: OverlaySide | undefined;
   align?: OverlayAlign | undefined;
+  /** Shift along the anchor's edge, in pixels. */
+  crossOffset?: number | undefined;
   dir?: 'ltr' | 'rtl' | undefined;
 }
 
@@ -55,6 +61,19 @@ export interface OverlayGeometry {
   constrained: boolean;
   /** The overlay needs `maxWidth`. */
   constrainedWidth: boolean;
+  /** The width the overlay may take, for a measured `max-width` custom property. */
+  availableWidth: number;
+  /** The height the overlay may take, for a measured `max-height` custom property. */
+  availableHeight: number;
+  /** The point of the overlay nearest the anchor, as a CSS `transform-origin` in pixels. */
+  transformOrigin: string;
+}
+
+/** A solved placement and the limits it needs, before conversion to the positioning origin. */
+interface SolvedGeometry {
+  placement: OverlayPlacement;
+  maxWidth: number | null;
+  maxHeight: number | null;
 }
 
 type Edges = Pick<OverlayRect, 'left' | 'top' | 'right' | 'bottom'>;
@@ -168,14 +187,50 @@ function resolveOffsetOrigin(parent: OverlayOffsetParent) {
   return parent;
 }
 
-/** The overlay's natural size and the width it renders at in the horizontal rect. */
-function measureOverlayWidth(overlay: HTMLElement, horizontalRect: OverlayRect) {
+function measureNaturalSize(overlay: HTMLElement): OverlaySize {
   const measured = overlay.getBoundingClientRect();
-  const naturalWidth = Math.max(overlay.scrollWidth, overlay.offsetWidth, measured.width);
-  const naturalHeight = Math.max(overlay.scrollHeight, overlay.offsetHeight, measured.height);
-  const widthLimit = Math.max(1, Math.floor(horizontalRect.width));
-  const constrainedWidth = naturalWidth > horizontalRect.width || naturalWidth >= widthLimit;
-  return { naturalHeight, constrainedWidth, width: constrainedWidth ? widthLimit : naturalWidth };
+  return {
+    width: Math.max(overlay.scrollWidth, overlay.offsetWidth, measured.width),
+    height: Math.max(overlay.scrollHeight, overlay.offsetHeight, measured.height),
+  };
+}
+
+/**
+ * The whole-pixel limit for a size that does not fit `room`, or null. A size already at the limit
+ * keeps it, so a wrapped overlay settles instead of oscillating between capped and natural sizes.
+ */
+function resolveLimit(size: number, room: number): number | null {
+  const limit = Math.max(1, Math.floor(room));
+  return size > room || size >= limit ? limit : null;
+}
+
+/** Above or below the anchor: the width is capped by the boundary, the height by the room. */
+function solveAboveOrBelow(
+  natural: OverlaySize,
+  horizontalRect: OverlayRect,
+  solve: (size: OverlaySize) => OverlayPlacement,
+): SolvedGeometry {
+  const maxWidth = resolveLimit(natural.width, horizontalRect.width);
+  const width = maxWidth ?? natural.width;
+  let placement = solve({ width, height: natural.height });
+  const maxHeight = placement.constrained ? Math.max(1, Math.floor(placement.maxHeight)) : null;
+  if (maxHeight !== null) placement = solve({ width, height: Math.min(natural.height, maxHeight) });
+  return { placement, maxWidth, maxHeight };
+}
+
+/** Left or right of the anchor: the height is capped by the boundary, the width by the room. */
+function solveBeside(
+  natural: OverlaySize,
+  crossRect: OverlayRect,
+  solve: (size: OverlaySize) => OverlayPlacement,
+): SolvedGeometry {
+  const maxHeight =
+    natural.height > crossRect.height ? Math.max(1, Math.floor(crossRect.height)) : null;
+  const height = maxHeight ?? natural.height;
+  let placement = solve({ width: natural.width, height });
+  const maxWidth = resolveLimit(natural.width, placement.availableWidth);
+  if (maxWidth !== null) placement = solve({ width: maxWidth, height });
+  return { placement, maxWidth, maxHeight };
 }
 
 /**
@@ -230,26 +285,28 @@ export function resolveOverlayGeometry(
     ownerWindow: overlay.ownerDocument.defaultView ?? undefined,
   });
   const horizontalRect = mode === 'content' ? boundary.horizontalRect : boundary.visibleRect;
-  const { naturalHeight, constrainedWidth, width } = measureOverlayWidth(overlay, horizontalRect);
+  const contentRect = mode === 'content' ? boundary.contentRect : boundary.visibleRect;
   const anchorRect =
     'getBoundingClientRect' in anchor ? toOverlayRect(anchor.getBoundingClientRect()) : anchor;
-
-  const solve = (height: number) =>
+  const solve = (overlaySize: OverlaySize) =>
     resolveOverlayPlacement({
       anchorRect,
-      overlaySize: { width, height },
+      overlaySize,
       visibleRect: boundary.visibleRect,
-      contentRect: mode === 'content' ? boundary.contentRect : boundary.visibleRect,
+      contentRect,
       horizontalRect,
+      side: options.side,
       align: options.align,
+      crossOffset: options.crossOffset,
       dir: options.dir,
       gap: options.gap,
       mode,
     });
-
-  let placement = solve(naturalHeight);
-  const maxHeight = placement.constrained ? Math.max(1, Math.floor(placement.maxHeight)) : null;
-  if (maxHeight !== null) placement = solve(Math.min(naturalHeight, maxHeight));
+  const natural = measureNaturalSize(overlay);
+  const { placement, maxWidth, maxHeight } =
+    options.side === 'left' || options.side === 'right'
+      ? solveBeside(natural, contentRect, solve)
+      : solveAboveOrBelow(natural, horizontalRect, solve);
 
   const origin =
     strategy === 'absolute' && options.offsetParent
@@ -262,12 +319,15 @@ export function resolveOverlayGeometry(
     strategy,
     left: Math.round(left),
     top: Math.round(top),
-    maxWidth: constrainedWidth ? width : null,
+    maxWidth,
     maxHeight,
     side: placement.side,
     align: placement.align,
     constrained: maxHeight !== null,
-    constrainedWidth,
+    constrainedWidth: maxWidth !== null,
+    availableWidth: placement.availableWidth,
+    availableHeight: placement.availableHeight,
+    transformOrigin: placement.transformOrigin,
   };
 }
 
