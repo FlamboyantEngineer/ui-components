@@ -187,7 +187,7 @@ describe('ScrollRegion', () => {
         overscroll="auto"
         columns="fit"
         minColumnWidth="md"
-        space="sm"
+        space="md"
         align="start"
       >
         Text
@@ -199,7 +199,7 @@ describe('ScrollRegion', () => {
     expect(root).toHaveAttribute('data-overscroll', 'auto');
     expect(root).toHaveAttribute('data-columns', 'fit');
     expect(root).toHaveAttribute('data-min-column-width', 'md');
-    expect(root).toHaveAttribute('data-space', 'sm');
+    expect(root).toHaveAttribute('data-space', 'md');
     expect(root).toHaveAttribute('data-align', 'start');
     expectHooksMatchSpec(container, 'SCROLL-REGION');
     rerender(<ScrollRegion columns={1}>Text</ScrollRegion>);

@@ -7,3 +7,5 @@ First complete release. `PropertyFilter` now builds on `SearchField`: its `icon`
 `ToolbarRow`'s `band` variant is now `surface` (`data-variant="surface"`).
 
 `SelectField` submits an empty form entry, not a generated key, while its `emptyLabel` option is shown.
+
+The layout spacing scale is now `none`, `3xs`, `2xs`, `xs`, `sm`, `md`, `lg`, `xl`, `2xl`, `3xl` (`data-space`, `data-gutter`): `compact`, `sm-plus` and `relaxed` are gone and the upper steps are renamed. Defaults keep their size: `Stack`, `Grid` and `Section` space `2xl`, `Cluster` and `ToolbarRow` `md`, `Page` gutter `3xl`.

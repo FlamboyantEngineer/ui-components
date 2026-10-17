@@ -94,27 +94,27 @@ Verification: `src/utils/scroll-overview.test.ts`
 
 ## Hooks
 
-| Hook                                | Kind      | Values                                                                        | Description                                                |
-| ----------------------------------- | --------- | ----------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| `ui-scroll-region`                  | root      |                                                                               | The frame.                                                 |
-| `ui-scroll-region__viewport`        | slot      |                                                                               | The scrolling element.                                     |
-| `ui-scroll-region__overview`        | slot      |                                                                               | Decorative overview layer.                                 |
-| `ui-scroll-region__track`           | slot      |                                                                               | Overlay track of one axis, placed by the stylesheet.       |
-| `ui-scroll-region__thumb`           | slot      |                                                                               | Overlay thumb.                                             |
-| `data-axis`                         | attribute | `x`, `y`, `both`, `none`                                                      | Scrolling axes.                                            |
-| `data-overscroll`                   | attribute | `contain`, `auto`                                                             | Scroll chaining.                                           |
-| `data-scrollbar`                    | attribute | `native`, `overlay`                                                           | Scrollbar mode.                                            |
-| `data-columns`                      | attribute | `1`, `2`, `3`, `4`, `6`, `12`, `fit`, `none`                                  | Grid columns of the children.                              |
-| `data-min-column-width`             | attribute | `sm`, `md`, `lg`, `xl`                                                        | Smallest column of `columns="fit"`.                        |
-| `data-space`                        | attribute | `none`, `3xs`, `2xs`, `xs`, `compact`, `sm`, `sm-plus`, `relaxed`, `md`, `lg` | Grid gap.                                                  |
-| `data-align`                        | attribute | `start`, `center`, `end`, `stretch`, `baseline`                               | Grid cell alignment.                                       |
-| `data-orientation`                  | attribute | `vertical`, `horizontal`                                                      | Track and thumb axis.                                      |
-| `data-grow`                         | state     | `true`, `auto`, `none`                                                        | Growth inside a flex parent.                               |
-| `data-fill`                         | state     | `true`                                                                        | Covers the nearest positioned ancestor.                    |
-| `data-clip`                         | state     | `true`                                                                        | Clips the content.                                         |
-| `data-overflow-x`                   | state     | `true`                                                                        | Overlay mode: the content overflows horizontally.          |
-| `data-overflow-y`                   | state     | `true`                                                                        | Overlay mode: the content overflows vertically.            |
-| `data-overview`                     | state     | `true`                                                                        | The overview paints.                                       |
-| `--ui-scroll-region-overview-image` | property  |                                                                               | The overview image (`linear-gradient`).                    |
-| `--ui-scroll-region-header-size`    | property  |                                                                               | Overlay mode: height of the registered headers, in pixels. |
-| `--ui-scroll-region-content-lift`   | property  |                                                                               | Overlay mode: empty height below short content, in pixels. |
+| Hook                                | Kind      | Values                                                           | Description                                                |
+| ----------------------------------- | --------- | ---------------------------------------------------------------- | ---------------------------------------------------------- |
+| `ui-scroll-region`                  | root      |                                                                  | The frame.                                                 |
+| `ui-scroll-region__viewport`        | slot      |                                                                  | The scrolling element.                                     |
+| `ui-scroll-region__overview`        | slot      |                                                                  | Decorative overview layer.                                 |
+| `ui-scroll-region__track`           | slot      |                                                                  | Overlay track of one axis, placed by the stylesheet.       |
+| `ui-scroll-region__thumb`           | slot      |                                                                  | Overlay thumb.                                             |
+| `data-axis`                         | attribute | `x`, `y`, `both`, `none`                                         | Scrolling axes.                                            |
+| `data-overscroll`                   | attribute | `contain`, `auto`                                                | Scroll chaining.                                           |
+| `data-scrollbar`                    | attribute | `native`, `overlay`                                              | Scrollbar mode.                                            |
+| `data-columns`                      | attribute | `1`, `2`, `3`, `4`, `6`, `12`, `fit`, `none`                     | Grid columns of the children.                              |
+| `data-min-column-width`             | attribute | `sm`, `md`, `lg`, `xl`                                           | Smallest column of `columns="fit"`.                        |
+| `data-space`                        | attribute | `none`, `3xs`, `2xs`, `xs`, `sm`, `md`, `lg`, `xl`, `2xl`, `3xl` | Grid gap.                                                  |
+| `data-align`                        | attribute | `start`, `center`, `end`, `stretch`, `baseline`                  | Grid cell alignment.                                       |
+| `data-orientation`                  | attribute | `vertical`, `horizontal`                                         | Track and thumb axis.                                      |
+| `data-grow`                         | state     | `true`, `auto`, `none`                                           | Growth inside a flex parent.                               |
+| `data-fill`                         | state     | `true`                                                           | Covers the nearest positioned ancestor.                    |
+| `data-clip`                         | state     | `true`                                                           | Clips the content.                                         |
+| `data-overflow-x`                   | state     | `true`                                                           | Overlay mode: the content overflows horizontally.          |
+| `data-overflow-y`                   | state     | `true`                                                           | Overlay mode: the content overflows vertically.            |
+| `data-overview`                     | state     | `true`                                                           | The overview paints.                                       |
+| `--ui-scroll-region-overview-image` | property  |                                                                  | The overview image (`linear-gradient`).                    |
+| `--ui-scroll-region-header-size`    | property  |                                                                  | Overlay mode: height of the registered headers, in pixels. |
+| `--ui-scroll-region-content-lift`   | property  |                                                                  | Overlay mode: empty height below short content, in pixels. |

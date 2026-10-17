@@ -16,18 +16,7 @@ import {
 import { ToolbarRow } from './toolbar-row.js';
 import { Contents, EmbeddedFrame, InlineContents } from './wrappers.js';
 
-const spaces: LayoutSpace[] = [
-  'none',
-  '3xs',
-  '2xs',
-  'xs',
-  'compact',
-  'sm',
-  'sm-plus',
-  'relaxed',
-  'md',
-  'lg',
-];
+const spaces: LayoutSpace[] = ['none', '3xs', '2xs', 'xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl'];
 
 // Compile-time checks: `as` chooses the element's native props and ref type.
 export function typeChecks() {
@@ -53,8 +42,8 @@ function all() {
         <InlineContents>Inline</InlineContents>
         <EmbeddedFrame title="Preview" src="about:blank" />
       </Contents>
-      <Page width="reading" gutter="sm">
-        <Stack space="lg" align="center">
+      <Page width="reading" gutter="md">
+        <Stack space="3xl" align="center">
           <FlexRow>Row</FlexRow>
           <InlineField>
             Name <input />
@@ -148,7 +137,7 @@ describe('Layout primitives', () => {
     expect(root).toHaveAttribute('id', 'fruit');
     expect(root).toHaveAttribute('aria-label', 'Fruit');
     expect(root).toHaveAttribute('data-testid', 'probe');
-    expect(root).toHaveAttribute('data-space', 'md');
+    expect(root).toHaveAttribute('data-space', '2xl');
     expectHooksMatchSpec(container, 'LAYOUT');
   });
 });
@@ -168,13 +157,13 @@ describe('Layout options', () => {
     );
     const spaceOf = (hook: string) =>
       container.querySelector(`.${hook}`)?.getAttribute('data-space');
-    expect(spaceOf('ui-stack')).toBe('md');
-    expect(spaceOf('ui-grid')).toBe('md');
-    expect(spaceOf('ui-cluster')).toBe('sm');
-    expect(spaceOf('ui-toolbar-row')).toBe('sm');
+    expect(spaceOf('ui-stack')).toBe('2xl');
+    expect(spaceOf('ui-grid')).toBe('2xl');
+    expect(spaceOf('ui-cluster')).toBe('md');
+    expect(spaceOf('ui-toolbar-row')).toBe('md');
     expect(spaceOf('ui-inline-field')).toBe('xs');
     expect(spaceOf('ui-status-bar')).toBe('xs');
-    expect(container.querySelector('.ui-page')).toHaveAttribute('data-gutter', 'lg');
+    expect(container.querySelector('.ui-page')).toHaveAttribute('data-gutter', '3xl');
     expect(container.querySelector('.ui-grid')).toHaveAttribute('data-gutter', 'none');
     for (const space of spaces) {
       rerender(

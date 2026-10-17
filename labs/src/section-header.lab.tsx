@@ -91,7 +91,7 @@ mountLab(
       description="Sections named by their title, with each spacing before the content."
     >
       <StateMatrix
-        axes={{ space: ['xs', 'sm', 'md', 'lg'], column: ['260px'] }}
+        axes={{ space: ['xs', 'md', '2xl', '3xl'], column: ['260px'] }}
         render={({ space }) => (
           <div style={column(260)}>
             <Section

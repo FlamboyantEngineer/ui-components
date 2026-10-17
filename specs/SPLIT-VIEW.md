@@ -87,20 +87,20 @@ Verification: `src/components/split-view/split-view.test.tsx`
 
 ## Hooks
 
-| Hook                       | Kind      | Values                                                                        | Description                                                |
-| -------------------------- | --------- | ----------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| `ui-split-view`            | root      |                                                                               | The split's `<div>`.                                       |
-| `ui-split-view__pane`      | slot      |                                                                               | A pane of a resizable split.                               |
-| `ui-resize-handle`         | root      |                                                                               | The separator.                                             |
-| `ui-resize-handle__grip`   | slot      |                                                                               | Decorative grip inside the separator.                      |
-| `ui-resize-handle__shield` | slot      |                                                                               | Viewport cover while dragging, a sibling of the separator. |
-| `data-orientation`         | attribute | `horizontal`, `vertical`                                                      | Split direction on the split; bar direction on the handle. |
-| `data-ratio`               | attribute | `equal`, `main-sidebar`, `main-rail`, `content-main`, `main-content`          | Fixed track sizes.                                         |
-| `data-space`               | attribute | `none`, `3xs`, `2xs`, `xs`, `compact`, `sm`, `sm-plus`, `relaxed`, `md`, `lg` | Gap between fixed tracks.                                  |
-| `data-pane`                | attribute | `first`, `second`                                                             | Which pane.                                                |
-| `data-grow`                | state     | `true`, `auto`, `none`                                                        | Growth inside a flex parent.                               |
-| `data-fill`                | state     | `true`                                                                        | Takes the containing block's full block size.              |
-| `data-clip`                | state     | `true`                                                                        | Clips overflowing content.                                 |
-| `data-resizable`           | state     | `true`                                                                        | The split has a separator.                                 |
-| `data-resizing`            | state     | `true`                                                                        | A pointer drag is in progress.                             |
-| `data-disabled`            | state     | `true`                                                                        | The handle ignores input.                                  |
+| Hook                       | Kind      | Values                                                               | Description                                                |
+| -------------------------- | --------- | -------------------------------------------------------------------- | ---------------------------------------------------------- |
+| `ui-split-view`            | root      |                                                                      | The split's `<div>`.                                       |
+| `ui-split-view__pane`      | slot      |                                                                      | A pane of a resizable split.                               |
+| `ui-resize-handle`         | root      |                                                                      | The separator.                                             |
+| `ui-resize-handle__grip`   | slot      |                                                                      | Decorative grip inside the separator.                      |
+| `ui-resize-handle__shield` | slot      |                                                                      | Viewport cover while dragging, a sibling of the separator. |
+| `data-orientation`         | attribute | `horizontal`, `vertical`                                             | Split direction on the split; bar direction on the handle. |
+| `data-ratio`               | attribute | `equal`, `main-sidebar`, `main-rail`, `content-main`, `main-content` | Fixed track sizes.                                         |
+| `data-space`               | attribute | `none`, `3xs`, `2xs`, `xs`, `sm`, `md`, `lg`, `xl`, `2xl`, `3xl`     | Gap between fixed tracks.                                  |
+| `data-pane`                | attribute | `first`, `second`                                                    | Which pane.                                                |
+| `data-grow`                | state     | `true`, `auto`, `none`                                               | Growth inside a flex parent.                               |
+| `data-fill`                | state     | `true`                                                               | Takes the containing block's full block size.              |
+| `data-clip`                | state     | `true`                                                               | Clips overflowing content.                                 |
+| `data-resizable`           | state     | `true`                                                               | The split has a separator.                                 |
+| `data-resizing`            | state     | `true`                                                               | A pointer drag is in progress.                             |
+| `data-disabled`            | state     | `true`                                                               | The handle ignores input.                                  |

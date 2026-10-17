@@ -15,18 +15,7 @@ import { ToolbarRow } from '../../src/components/layout/toolbar-row.js';
 import { Contents, EmbeddedFrame, InlineContents } from '../../src/components/layout/wrappers.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
-const spaces = [
-  'none',
-  '3xs',
-  '2xs',
-  'xs',
-  'compact',
-  'sm',
-  'sm-plus',
-  'relaxed',
-  'md',
-  'lg',
-] as const;
+const spaces = ['none', '3xs', '2xs', 'xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl'] as const;
 
 const fruit = ['Apple', 'Banana', 'Cherry', 'Damson', 'Elderberry', 'Fig', 'Grape', 'Huckleberry'];
 
@@ -129,7 +118,7 @@ mountLab(
       <StateMatrix
         axes={{
           columns: ['1', '2', '3', '4', '6', '12', 'none'],
-          space: ['none', 'sm', 'md'],
+          space: ['none', 'md', '2xl'],
         }}
         render={({ columns, space }) => (
           <div style={frameStyle(300)}>
@@ -158,7 +147,7 @@ mountLab(
       description="Widths against gutters in a 320px host, then each width across the lab."
     >
       <StateMatrix
-        axes={{ width: ['full', 'wide', 'reading', 'narrow'], gutter: ['none', 'sm', 'lg'] }}
+        axes={{ width: ['full', 'wide', 'reading', 'narrow'], gutter: ['none', 'md', '3xl'] }}
         render={({ gutter, width }) => (
           <div style={frameStyle(320)}>
             <Page width={width} gutter={gutter}>
@@ -167,7 +156,7 @@ mountLab(
           </div>
         )}
       />
-      <Stack space="sm">
+      <Stack space="md">
         {(['full', 'wide', 'reading', 'narrow'] as const).map((width) => (
           <div key={width} style={frameStyle('100%')}>
             <Page width={width} gutter="xs" data-lab-page={width}>
@@ -264,7 +253,7 @@ mountLab(
         render={({ wrapper, state }) => (
           <div style={frameStyle(300)}>
             {wrapper === 'contents' ? (
-              <Cluster space="sm" wrap="nowrap">
+              <Cluster space="md" wrap="nowrap">
                 <Box>Outside</Box>
                 <Contents hidden={state === 'hidden'}>
                   <Box>Inside one</Box>

@@ -29,7 +29,7 @@ Verification: `src/components/layout/layout.test.tsx`
 
 ### UIC-LAYOUT-2.1 - Spacing
 
-`space` (the gap between children) and `gutter` (padding) shall take one step of the closed scale `none`, `3xs`, `2xs`, `xs`, `compact`, `sm`, `sm-plus`, `relaxed`, `md`, `lg`, smallest to largest, and publish it in `data-space` and `data-gutter`. Defaults: `md` for `Stack` and `Grid`, `sm` for `Cluster` and `ToolbarRow`, `xs` for `InlineField` and `StatusBar`; `Page`'s gutter is `lg` and `Grid`'s `none`.
+`space` (the gap between children) and `gutter` (padding) shall take one step of the closed scale `none`, `3xs`, `2xs`, `xs`, `sm`, `md`, `lg`, `xl`, `2xl`, `3xl`, smallest to largest, and publish it in `data-space` and `data-gutter`. Defaults: `2xl` for `Stack` and `Grid`, `md` for `Cluster` and `ToolbarRow`, `xs` for `InlineField` and `StatusBar`; `Page`'s gutter is `3xl` and `Grid`'s `none`.
 
 Implementation: `src/components/layout/layout.tsx`, `src/components/layout/toolbar-row.tsx`, `labs/reference/layout.css`
 Verification: `src/components/layout/layout.test.tsx`, `e2e/layout.spec.ts`
@@ -94,31 +94,31 @@ Verification: `src/components/layout/layout.test.tsx`, `e2e/layout.spec.ts`
 
 ## Hooks
 
-| Hook                    | Kind      | Values                                                                        | Description                                                 |
-| ----------------------- | --------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------- |
-| `ui-view`               | root      |                                                                               | `View`'s `<section>`.                                       |
-| `ui-page`               | root      |                                                                               | `Page`'s `<section>`.                                       |
-| `ui-stack`              | root      |                                                                               | `Stack`'s element.                                          |
-| `ui-cluster`            | root      |                                                                               | `Cluster`'s element.                                        |
-| `ui-grid`               | root      |                                                                               | `Grid`'s element.                                           |
-| `ui-flex-row`           | root      |                                                                               | `FlexRow`'s `<div>`.                                        |
-| `ui-inline-field`       | root      |                                                                               | `InlineField`'s `<label>`.                                  |
-| `ui-toolbar-row`        | root      |                                                                               | `ToolbarRow`'s `<div>`.                                     |
-| `ui-status-bar`         | root      |                                                                               | `StatusBar`'s `<footer>`.                                   |
-| `ui-contents`           | root      |                                                                               | `Contents`' `<div>`.                                        |
-| `ui-inline-contents`    | root      |                                                                               | `InlineContents`' `<span>`.                                 |
-| `ui-embedded-frame`     | root      |                                                                               | `EmbeddedFrame`'s `<iframe>`.                               |
-| `data-space`            | attribute | `none`, `3xs`, `2xs`, `xs`, `compact`, `sm`, `sm-plus`, `relaxed`, `md`, `lg` | Gap between children.                                       |
-| `data-gutter`           | attribute | `none`, `3xs`, `2xs`, `xs`, `compact`, `sm`, `sm-plus`, `relaxed`, `md`, `lg` | Padding of `Page` and `Grid`.                               |
-| `data-align`            | attribute | `start`, `center`, `end`, `stretch`, `baseline`                               | Cross-axis alignment.                                       |
-| `data-justify`          | attribute | `normal`, `start`, `center`, `end`, `between`                                 | Main-axis distribution.                                     |
-| `data-wrap`             | attribute | `wrap`, `nowrap`                                                              | Whether children wrap.                                      |
-| `data-columns`          | attribute | `1`, `2`, `3`, `4`, `6`, `12`, `fit`, `none`                                  | `Grid` column template.                                     |
-| `data-min-column-width` | attribute | `sm`, `md`, `lg`, `xl`                                                        | Smallest column of `columns="fit"`.                         |
-| `data-width`            | attribute | `full`, `wide`, `reading`, `narrow`                                           | `Page` maximum width.                                       |
-| `data-variant`          | attribute | `plain`, `surface`                                                            | `ToolbarRow` surface.                                       |
-| `data-grow`             | state     | `true`, `auto`, `none`                                                        | Growth inside a flex parent; absent for the default sizing. |
-| `data-fill`             | state     | `true`                                                                        | Takes the containing block's full block size.               |
-| `data-clip`             | state     | `true`                                                                        | Clips overflowing content.                                  |
-| `data-inline`           | state     | `true`                                                                        | Flows inline with surrounding text.                         |
-| `data-orientation`      | state     | `horizontal`                                                                  | A `toolbar` row's orientation (React Aria).                 |
+| Hook                    | Kind      | Values                                                           | Description                                                 |
+| ----------------------- | --------- | ---------------------------------------------------------------- | ----------------------------------------------------------- |
+| `ui-view`               | root      |                                                                  | `View`'s `<section>`.                                       |
+| `ui-page`               | root      |                                                                  | `Page`'s `<section>`.                                       |
+| `ui-stack`              | root      |                                                                  | `Stack`'s element.                                          |
+| `ui-cluster`            | root      |                                                                  | `Cluster`'s element.                                        |
+| `ui-grid`               | root      |                                                                  | `Grid`'s element.                                           |
+| `ui-flex-row`           | root      |                                                                  | `FlexRow`'s `<div>`.                                        |
+| `ui-inline-field`       | root      |                                                                  | `InlineField`'s `<label>`.                                  |
+| `ui-toolbar-row`        | root      |                                                                  | `ToolbarRow`'s `<div>`.                                     |
+| `ui-status-bar`         | root      |                                                                  | `StatusBar`'s `<footer>`.                                   |
+| `ui-contents`           | root      |                                                                  | `Contents`' `<div>`.                                        |
+| `ui-inline-contents`    | root      |                                                                  | `InlineContents`' `<span>`.                                 |
+| `ui-embedded-frame`     | root      |                                                                  | `EmbeddedFrame`'s `<iframe>`.                               |
+| `data-space`            | attribute | `none`, `3xs`, `2xs`, `xs`, `sm`, `md`, `lg`, `xl`, `2xl`, `3xl` | Gap between children.                                       |
+| `data-gutter`           | attribute | `none`, `3xs`, `2xs`, `xs`, `sm`, `md`, `lg`, `xl`, `2xl`, `3xl` | Padding of `Page` and `Grid`.                               |
+| `data-align`            | attribute | `start`, `center`, `end`, `stretch`, `baseline`                  | Cross-axis alignment.                                       |
+| `data-justify`          | attribute | `normal`, `start`, `center`, `end`, `between`                    | Main-axis distribution.                                     |
+| `data-wrap`             | attribute | `wrap`, `nowrap`                                                 | Whether children wrap.                                      |
+| `data-columns`          | attribute | `1`, `2`, `3`, `4`, `6`, `12`, `fit`, `none`                     | `Grid` column template.                                     |
+| `data-min-column-width` | attribute | `sm`, `md`, `lg`, `xl`                                           | Smallest column of `columns="fit"`.                         |
+| `data-width`            | attribute | `full`, `wide`, `reading`, `narrow`                              | `Page` maximum width.                                       |
+| `data-variant`          | attribute | `plain`, `surface`                                               | `ToolbarRow` surface.                                       |
+| `data-grow`             | state     | `true`, `auto`, `none`                                           | Growth inside a flex parent; absent for the default sizing. |
+| `data-fill`             | state     | `true`                                                           | Takes the containing block's full block size.               |
+| `data-clip`             | state     | `true`                                                           | Clips overflowing content.                                  |
+| `data-inline`           | state     | `true`                                                           | Flows inline with surrounding text.                         |
+| `data-orientation`      | state     | `horizontal`                                                     | A `toolbar` row's orientation (React Aria).                 |

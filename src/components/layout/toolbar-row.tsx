@@ -34,7 +34,7 @@ export function ToolbarRow({
   className,
   role = 'toolbar',
   variant = 'plain',
-  space = 'sm',
+  space = 'md',
   justify = 'end',
   wrap = 'wrap',
   grow,

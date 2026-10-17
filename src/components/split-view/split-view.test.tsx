@@ -85,14 +85,14 @@ describe('SplitView', () => {
       'main-content',
     ] as const) {
       rerender(
-        <SplitView orientation="vertical" ratio={ratio} space="sm">
+        <SplitView orientation="vertical" ratio={ratio} space="md">
           <p>Apples</p>
           <p>Bananas</p>
         </SplitView>,
       );
       expect(root).toHaveAttribute('data-orientation', 'vertical');
       expect(root).toHaveAttribute('data-ratio', ratio);
-      expect(root).toHaveAttribute('data-space', 'sm');
+      expect(root).toHaveAttribute('data-space', 'md');
       expectHooksMatchSpec(container, 'SPLIT-VIEW');
     }
   });

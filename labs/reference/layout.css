@@ -41,22 +41,22 @@
   &[data-space='xs'] {
     --ref-gap: 4px;
   }
-  &[data-space='compact'] {
+  &[data-space='sm'] {
     --ref-gap: 6px;
   }
-  &[data-space='sm'] {
+  &[data-space='md'] {
     --ref-gap: 8px;
   }
-  &[data-space='sm-plus'] {
+  &[data-space='lg'] {
     --ref-gap: 10px;
   }
-  &[data-space='relaxed'] {
+  &[data-space='xl'] {
     --ref-gap: 12px;
   }
-  &[data-space='md'] {
+  &[data-space='2xl'] {
     --ref-gap: 16px;
   }
-  &[data-space='lg'] {
+  &[data-space='3xl'] {
     --ref-gap: 24px;
   }
 }
@@ -73,22 +73,22 @@
   &[data-gutter='xs'] {
     --ref-gutter: 4px;
   }
-  &[data-gutter='compact'] {
+  &[data-gutter='sm'] {
     --ref-gutter: 6px;
   }
-  &[data-gutter='sm'] {
+  &[data-gutter='md'] {
     --ref-gutter: 8px;
   }
-  &[data-gutter='sm-plus'] {
+  &[data-gutter='lg'] {
     --ref-gutter: 10px;
   }
-  &[data-gutter='relaxed'] {
+  &[data-gutter='xl'] {
     --ref-gutter: 12px;
   }
-  &[data-gutter='md'] {
+  &[data-gutter='2xl'] {
     --ref-gutter: 16px;
   }
-  &[data-gutter='lg'] {
+  &[data-gutter='3xl'] {
     --ref-gutter: 24px;
   }
 }

@@ -33,9 +33,9 @@ test.describe('Section Header lab', () => {
 
   test('UIC-SECTION-HEADER-1.3 names each section by its title only', async ({ page, lab }) => {
     await lab.open('section-header');
-    const region = page.getByRole('region', { name: 'Meadow, md gap', exact: true });
+    const region = page.getByRole('region', { name: 'Meadow, 2xl gap', exact: true });
     await expect(region).toBeVisible();
-    const heading = region.getByRole('heading', { name: 'Meadow, md gap' });
+    const heading = region.getByRole('heading', { name: 'Meadow, 2xl gap' });
     await expect(region).toHaveAttribute('aria-labelledby', (await heading.getAttribute('id'))!);
     const header = await box(region.locator('.ui-section-header'));
     const body = await box(region.locator('p'));

@@ -3,17 +3,7 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps, Size } from '../../core/props.js';
 
 /** A closed scale of spacing steps, smallest to largest. The stylesheet maps each step to a length. */
-export type LayoutSpace =
-  | 'none'
-  | '3xs'
-  | '2xs'
-  | 'xs'
-  | 'compact'
-  | 'sm'
-  | 'sm-plus'
-  | 'relaxed'
-  | 'md'
-  | 'lg';
+export type LayoutSpace = 'none' | '3xs' | '2xs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
 export type LayoutAlign = 'start' | 'center' | 'end' | 'stretch' | 'baseline';
 export type LayoutJustify = 'normal' | 'start' | 'center' | 'end' | 'between';
 export type LayoutWrap = 'wrap' | 'nowrap';
@@ -209,7 +199,7 @@ export function Page({
   children,
   className,
   width = 'wide',
-  gutter = 'lg',
+  gutter = '3xl',
   grow,
   fill,
   clip,
@@ -228,7 +218,7 @@ export function Stack<E extends LayoutElement = 'div'>({
   as,
   children,
   className,
-  space = 'md',
+  space = '2xl',
   align = 'stretch',
   grow,
   fill,
@@ -244,7 +234,7 @@ export function Cluster<E extends LayoutElement = 'div'>({
   as,
   children,
   className,
-  space = 'sm',
+  space = 'md',
   align = 'center',
   justify = 'start',
   wrap = 'wrap',
@@ -265,7 +255,7 @@ export function Grid<E extends LayoutElement = 'div'>({
   className,
   columns = 2,
   minColumnWidth = 'sm',
-  space = 'md',
+  space = '2xl',
   align = 'stretch',
   gutter = 'none',
   grow,

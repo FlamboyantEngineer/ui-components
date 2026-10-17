@@ -97,7 +97,7 @@ describe('SectionHeader', () => {
     const region = screen.getByRole('region', { name: 'Orchard' });
     expect(region.tagName).toBe('SECTION');
     expect(region).toHaveClass('ui-section', 'ui-stack');
-    expect(region).toHaveAttribute('data-space', 'md');
+    expect(region).toHaveAttribute('data-space', '2xl');
     expect(region).not.toHaveAttribute('data-grow');
     const heading = screen.getByRole('heading', { level: 2, name: 'Orchard' });
     expect(region).toHaveAttribute('aria-labelledby', heading.id);
@@ -113,12 +113,12 @@ describe('SectionHeader', () => {
 
   it('UIC-SECTION-HEADER-1.3 passes spacing and containment to the stack', () => {
     const { container } = render(
-      <Section title="Orchard" space="compact" grow fill clip>
+      <Section title="Orchard" space="sm" grow fill clip>
         Trees
       </Section>,
     );
     const region = container.firstElementChild!;
-    expect(region).toHaveAttribute('data-space', 'compact');
+    expect(region).toHaveAttribute('data-space', 'sm');
     expect(region).toHaveAttribute('data-grow', 'true');
     expect(region).toHaveAttribute('data-fill', 'true');
     expect(region).toHaveAttribute('data-clip', 'true');
@@ -180,7 +180,7 @@ describe('SectionHeader', () => {
     expect(section).toHaveClass('ui-section', 'caller-section');
     expect(section).toHaveAttribute('id', 'meadow');
     expect(section).toHaveAttribute('data-owner', 'field');
-    expect(section).toHaveAttribute('data-space', 'md');
+    expect(section).toHaveAttribute('data-space', '2xl');
     expectHooksMatchSpec(container, 'SECTION-HEADER', { callerAttributes: ['data-owner'] });
   });
 });

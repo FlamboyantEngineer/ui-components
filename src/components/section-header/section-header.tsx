@@ -88,7 +88,7 @@ export function Section({
   actions,
   headingLevel = 3,
   children,
-  space = 'md',
+  space = '2xl',
   className,
   ...rest
 }: SectionProps) {

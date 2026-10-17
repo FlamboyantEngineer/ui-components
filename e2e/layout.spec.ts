@@ -19,10 +19,10 @@ test.describe('Layout lab', () => {
     for (const [space, gap] of [
       ['none', 0],
       ['xs', 4],
-      ['compact', 6],
-      ['sm', 8],
-      ['md', 16],
-      ['lg', 24],
+      ['sm', 6],
+      ['md', 8],
+      ['2xl', 16],
+      ['3xl', 24],
     ] as const) {
       const items = page.locator(`${cell('Stack', `space=${space} align=stretch`)} .ui-stack > *`);
       const first = await box(items.nth(0));
@@ -31,7 +31,7 @@ test.describe('Layout lab', () => {
       expect(second.width).toBe(first.width);
       expect(Math.round(second.y - (first.y + first.height))).toBe(gap);
     }
-    const start = page.locator(`${cell('Stack', 'space=md align=start')} .ui-stack > *`);
+    const start = page.locator(`${cell('Stack', 'space=2xl align=start')} .ui-stack > *`);
     expect((await box(start.nth(0))).width).toBeLessThan((await box(start.nth(2))).width + 40);
     await lab.expectAccessible();
   });
@@ -71,7 +71,7 @@ test.describe('Layout lab', () => {
     lab,
   }) => {
     await lab.open('layout');
-    const three = page.locator(`${cell('Grid', 'columns=3 space=md')} .ui-grid > *`);
+    const three = page.locator(`${cell('Grid', 'columns=3 space=2xl')} .ui-grid > *`);
     const [a, b, c, d] = await Promise.all([0, 1, 2, 3].map((index) => box(three.nth(index))));
     expect(a!.y).toBe(b!.y);
     expect(b!.y).toBe(c!.y);
@@ -110,7 +110,7 @@ test.describe('Layout lab', () => {
     }
     const full = page.locator('[data-lab-page="full"]');
     expect((await box(full)).width).toBe((await box(full.locator('..'))).width);
-    const gutter = page.locator(cell('Page', 'width=full gutter=lg'));
+    const gutter = page.locator(cell('Page', 'width=full gutter=3xl'));
     const pageBox = await box(gutter.locator('.ui-page'));
     const content = await box(gutter.locator('.ui-page > *'));
     expect(Math.round(content.x - pageBox.x)).toBe(24);
