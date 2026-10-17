@@ -64,3 +64,7 @@ export * from './components/table/index.js';
 export * from './components/list-row/index.js';
 export * from './components/tree/index.js';
 export * from './components/drag-handle/index.js';
+export * from './components/property-scope/index.js';
+export * from './components/property-panel/index.js';
+export * from './components/property-filter/index.js';
+export * from './components/four-side-property-strip/index.js';
