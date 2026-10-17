@@ -2,6 +2,10 @@
 export interface UiStrings {
   close: string;
   dismiss: string;
+  cancel: string;
+  confirm: string;
+  /** Shown when an action fails without a message of its own. */
+  actionFailed: string;
   more: string;
   loading: string;
   clear: string;
@@ -40,6 +44,9 @@ const spokenKeyNames: Readonly<Record<string, string>> = {
 export const defaultStrings: UiStrings = {
   close: 'Close',
   dismiss: 'Dismiss',
+  cancel: 'Cancel',
+  confirm: 'Confirm',
+  actionFailed: 'The action could not be completed.',
   more: 'More',
   loading: 'Loading',
   clear: 'Clear',

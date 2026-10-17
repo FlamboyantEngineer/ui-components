@@ -15,3 +15,6 @@ export * from './utils/index.js';
 export * from './components/button/index.js';
 export * from './components/icon-button/index.js';
 export * from './components/action-button/index.js';
+export * from './components/modal/index.js';
+export * from './components/modal-controller/index.js';
+export * from './components/confirm-dialog/index.js';
