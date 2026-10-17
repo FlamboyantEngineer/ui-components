@@ -155,3 +155,10 @@
 .ui-tree .ui-tree__empty {
   padding-inline: 6px;
 }
+
+/* A virtualized tree scrolls itself, so it needs a bounded height. */
+.ui-tree[data-virtualized] {
+  display: block;
+  height: 240px;
+  overflow: auto;
+}

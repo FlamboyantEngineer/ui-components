@@ -1,6 +1,6 @@
 # Folder Manager
 
-`FolderManager` manages a tree of folders on the library [Tree](TREE.md): the reader selects a folder, creates one under it, renames it in place, deletes it, and reorders or nests folders by drag and drop or Alt+Arrow keys ([Tree Reorder](TREE-REORDER.md)). The folders are data and the manager never changes them: each change goes to a callback, which may return a promise, and the owner renders the result. An action is offered only when its callback is set, so a manager without callbacks is a read-only folder picker. A host that stages a choice behind Apply and Cancel composes the manager in a [Modal](MODAL.md) and reads its selection.
+`FolderManager` manages a tree of folders on the library [Tree](TREE.md): the reader selects a folder (or several), creates one under it, renames it in place, deletes the selected folders, and reorders or nests folders by drag and drop or Alt+Arrow keys ([Tree Reorder](TREE-REORDER.md)) or moves a selection with Move to. Subfolders can load when a folder is expanded, a search box can filter the folders, and a large tree can render only the rows in view. The folders are data and the manager never changes them: each change goes to a callback, which may return a promise, and the owner renders the result. An action is offered only when its callback is set, so a manager without callbacks is a read-only folder picker. A host that stages a choice behind Apply and Cancel composes the manager in a [Modal](MODAL.md) and reads its selection.
 
 ## UIC-FOLDER-MANAGER-1 - Tree
 
@@ -20,7 +20,7 @@ Verification: `src/components/folder-manager/folder-manager.test.tsx`, `src/comp
 
 ### UIC-FOLDER-MANAGER-1.3 - Selection
 
-The tree shall select one folder at a time (React Aria single selection that follows focus), controlled with `selectedKey` and `onSelectionChange` or held from `defaultSelectedKey`, where `null` is no folder.
+The tree shall select one folder at a time (React Aria single selection that follows focus), controlled with `selectedKey` and `onSelectionChange` or held from `defaultSelectedKey`, where `null` is no folder, unless `selectionMode` is `multiple` (UIC-FOLDER-MANAGER-6.1).
 
 Implementation: `src/components/folder-manager/use-folder-tree.ts`, `src/components/folder-manager/folder-tree.tsx`
 Verification: `src/components/folder-manager/folder-manager.test.tsx`, `e2e/folder-manager.spec.ts`
@@ -36,7 +36,7 @@ Verification: `src/components/folder-manager/folder-manager.test.tsx`
 
 ### UIC-FOLDER-MANAGER-2.1 - Offered actions
 
-A toolbar (`ui-folder-manager__toolbar`) shall hold New folder (`plus` glyph, provider string `newFolder`), Rename (`edit`, `rename`) and Delete (`delete`, `delete`) icon buttons, each drawn only when `onCreate`, `onRename` or `onDelete` is set. Rename and Delete act on the selected folder and are disabled without one or while the manager is busy. Without any of the three callbacks there is no toolbar.
+A toolbar (`ui-folder-manager__toolbar`) shall hold New folder (`plus` glyph, provider string `newFolder`), Rename (`edit`, `rename`) and Delete (`delete`, `delete`) icon buttons, each drawn only when `onCreate`, `onRename` or `onDelete` is set. Rename acts on the selected folder and is disabled unless exactly one folder is selected; Delete acts on the selected folders and is disabled without one; New folder is disabled while several folders are selected; all are disabled while the manager is busy. Without any of the three callbacks there is no toolbar.
 
 Implementation: `src/components/folder-manager/folder-manager-parts.tsx`, `src/components/folder-manager/folder-manager.tsx`, `src/core/strings.ts`
 Verification: `src/components/folder-manager/folder-manager.test.tsx`, `e2e/folder-manager.spec.ts`
@@ -85,7 +85,7 @@ Verification: `src/components/folder-manager/folder-manager.test.tsx`, `src/comp
 
 ### UIC-FOLDER-MANAGER-2.8 - Context menu
 
-A secondary click on a folder or root row shall select it and open a context menu holding the offered Rename and Delete entries; Shift+F10 or the Context Menu key opens it for the selected row. Entries that do not apply (the root row, a busy manager) are disabled. Without Rename and Delete the browser's own menu is left alone.
+A secondary click on a folder or root row shall select it (keeping a multiple selection it belongs to) and open a context menu holding the offered Rename and Delete entries, and Move to in multiple selection (UIC-FOLDER-MANAGER-6.3); Shift+F10 or the Context Menu key opens it for the selected row. Entries that do not apply (the root row, a busy manager) are disabled. Without Rename and Delete the browser's own menu is left alone.
 
 Implementation: `src/components/folder-manager/folder-tree.tsx`, `src/components/folder-manager/folder-manager.tsx`
 Verification: `src/components/folder-manager/folder-manager.test.tsx`, `e2e/folder-manager.spec.ts`
@@ -108,15 +108,67 @@ Verification: `src/components/folder-manager/folder-manager.test.tsx`, `e2e/fold
 Implementation: `src/components/folder-manager/folder-manager.tsx`
 Verification: `src/components/folder-manager/folder-manager.test.tsx`
 
+## UIC-FOLDER-MANAGER-5 - Subfolders on demand
+
+### UIC-FOLDER-MANAGER-5.1 - Loading subfolders
+
+A folder with `hasChildren` and no `children` shall start collapsed with an expand button (UIC-TREE-2.2). Expanding it calls `onLoadChildren` with its key, which may return a promise, and the tree shows its loading row below the folder while the promise is pending; the owner adds the subfolders to `folders`, and the folder stays expanded. A rejection shows its message, or the provider string `actionFailed`, in an `InlineError` alert (`ui-folder-manager__load-error`) in the folder's row, whose Retry button loads again.
+
+Implementation: `src/components/folder-manager/use-folder-loads.ts`, `src/components/folder-manager/use-folder-tree.ts`, `src/components/folder-manager/folder-tree.tsx`, `src/components/folder-manager/folder-model.ts`
+Verification: `src/components/folder-manager/folder-manager.test.tsx`, `src/components/folder-manager/folder-model.test.ts`, `e2e/folder-manager.spec.ts`
+
+## UIC-FOLDER-MANAGER-6 - Several folders
+
+### UIC-FOLDER-MANAGER-6.1 - Multiple selection
+
+With `selectionMode="multiple"`, the tree shall select several folders (React Aria multiple selection that replaces on press: Ctrl, Cmd or Shift with a press, and Shift with the arrow keys, extend it), controlled with `selectedKeys` and `onSelectedKeysChange` or held from `defaultSelectedKeys`. The root row stands for an empty selection.
+
+Implementation: `src/components/folder-manager/use-folder-tree.ts`, `src/components/folder-manager/folder-tree.tsx`, `src/components/folder-manager/folder-manager.tsx`
+Verification: `src/components/folder-manager/folder-manager.test.tsx`, `e2e/folder-manager.spec.ts`
+
+### UIC-FOLDER-MANAGER-6.2 - Deleting several folders
+
+Delete shall delete every selected folder except those inside another selected one, calling `onDelete` for each in tree order and waiting for each. A selected folder for which `getDeleteBlockedReason` returns a reason blocks the whole delete with that reason (UIC-FOLDER-MANAGER-2.6), and a rejection stops the deletes and shows its message. Afterwards the selection falls back to the first deleted folder's parent.
+
+Implementation: `src/components/folder-manager/use-folder-actions.ts`, `src/components/folder-manager/use-folder-manager.ts`, `src/components/folder-manager/folder-model.ts`, `src/components/folder-manager/folder-manager.tsx`
+Verification: `src/components/folder-manager/folder-manager.test.tsx`, `src/components/folder-manager/folder-model.test.ts`
+
+### UIC-FOLDER-MANAGER-6.3 - Move to
+
+With `onMove` in multiple selection, the context menu shall hold Move to (provider string `moveTo`) with a submenu of the places the selected folders may go: the top level (named by `rootLabel`, or the provider string `topLevel`), then every folder in tree order, named by its path (`Fruit / Citrus`), except the selected folders, the folders inside them and the places where a selected folder would sit below `maxDepth`. Choosing one reports a `TreeMove` for each selected folder outside another selected one, in tree order: inside the folder as its last child, or after the last top-level folder and then after the folder moved before it. A folder already there is left alone, and the destination expands.
+
+Implementation: `src/components/folder-manager/folder-moves.ts`, `src/components/folder-manager/folder-model.ts`, `src/components/folder-manager/folder-manager.tsx`, `src/components/folder-manager/use-folder-manager.ts`, `src/core/strings.ts`
+Verification: `src/components/folder-manager/folder-manager.test.tsx`, `src/components/folder-manager/folder-model.test.ts`, `e2e/folder-manager.spec.ts`
+
+## UIC-FOLDER-MANAGER-7 - Finding a folder
+
+### UIC-FOLDER-MANAGER-7.1 - Filter
+
+`filterable` shall draw a [SearchField](SEARCH-FIELD.md) (`ui-folder-manager__filter`) above the tree, named by the provider string `filterLabel` with the tree's `aria-label` (or `search`). Its query keeps the loaded folders whose name holds every term, matched as [TextMatch](TEXT-MATCH.md) matches them, with their ancestors, expands the branches that hold matches and marks the matched text with `TextMatch`; without a match the tree shows the provider string `noResults`. Starting to create or rename a folder clears the query.
+
+Implementation: `src/components/folder-manager/folder-manager.tsx`, `src/components/folder-manager/folder-model.ts`, `src/components/folder-manager/use-folder-manager.ts`, `src/components/folder-manager/folder-tree.tsx`
+Verification: `src/components/folder-manager/folder-manager.test.tsx`, `src/components/folder-manager/folder-model.test.ts`, `e2e/folder-manager.spec.ts`
+
+## UIC-FOLDER-MANAGER-8 - Large trees
+
+### UIC-FOLDER-MANAGER-8.1 - Virtualization
+
+`virtualized` and `rowHeight` shall pass to the tree, which then renders only the rows in view (UIC-TREE-4.5).
+
+Implementation: `src/components/folder-manager/folder-manager.tsx`, `src/components/folder-manager/folder-tree.tsx`
+Verification: `src/components/folder-manager/folder-manager.test.tsx`, `e2e/folder-manager.spec.ts`
+
 ## Hooks
 
 | Hook                            | Kind  | Values | Description                                               |
 | ------------------------------- | ----- | ------ | --------------------------------------------------------- |
 | `ui-folder-manager`             | root  |        | The manager's `<div>`.                                    |
 | `ui-folder-manager__toolbar`    | slot  |        | The New folder, Rename and Delete buttons.                |
+| `ui-folder-manager__filter`     | slot  |        | The filter search box (also `ui-search-field`).           |
 | `ui-folder-manager__tree`       | slot  |        | Holds the tree (`ui-tree`); the context menu's target.    |
 | `ui-folder-manager__name-input` | slot  |        | The name field of a folder being created or renamed.      |
 | `ui-folder-manager__message`    | slot  |        | Why the last action was refused (also `ui-inline-error`). |
+| `ui-folder-manager__load-error` | slot  |        | Why a folder's subfolders failed to load, in its row.     |
 | `data-pending`                  | state | `true` | Loading, deleting or naming a folder.                     |
 | `data-focused`                  | state | `true` | The name field has focus (React Aria).                    |
 | `data-focus-visible`            | state | `true` | Keyboard focus on the name field (React Aria).            |

@@ -67,6 +67,10 @@ export interface UiStrings {
   renameItem: (name: string) => string;
   /** Why a folder takes no new folder: it is at the deepest level allowed. */
   folderDepthLimit: (depth: number) => string;
+  /** Opens the list of places the selected items can move to. */
+  moveTo: string;
+  /** The top level of a tree, as a place items can move to. */
+  topLevel: string;
   /** Names a code editor's list of completions. */
   suggestions: string;
   /** Names a code editor's find box. */
@@ -286,6 +290,8 @@ export const defaultStrings: UiStrings = {
   renameItem: (name) => `Rename ${name}`,
   folderDepthLimit: (depth) =>
     depth === 1 ? 'Folders cannot be nested.' : `Folders nest at most ${depth} levels deep.`,
+  moveTo: 'Move to',
+  topLevel: 'Top level',
   suggestions: 'Suggestions',
   find: 'Find',
   replaceWith: 'Replace with',

@@ -53,3 +53,19 @@
 .ui-folder-manager__message {
   font-size: 12px;
 }
+
+.ui-folder-manager__filter {
+  width: 100%;
+}
+
+/* A branch that failed to load: the reason and its Retry button after the label. */
+.ui-folder-manager__load-error {
+  gap: 4px;
+  margin-inline-start: 6px;
+  font-size: 12px;
+}
+
+/* A virtualized tree scrolls itself inside the frame. */
+.ui-folder-manager__tree:has(> .ui-tree[data-virtualized]) {
+  overflow: hidden;
+}
