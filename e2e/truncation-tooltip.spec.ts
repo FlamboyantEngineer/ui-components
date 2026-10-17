@@ -1,0 +1,75 @@
+import { expect, test } from './fixtures.js';
+
+const FULL_TEXT = 'Quarterly report for the northern region, final edition.pdf';
+
+test.describe('Truncation Tooltip lab', () => {
+  test('UIC-TRUNCATION-TOOLTIP-1.1 UIC-TRUNCATION-TOOLTIP-1.2 shows cut text whole and leaves whole text alone', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('truncation-tooltip');
+    const cut = page.locator('[data-lab-cell="text=cut holder=plain"] .ui-truncation-tooltip');
+    const whole = page.locator('[data-lab-cell="text=whole holder=plain"] .ui-truncation-tooltip');
+    expect(await cut.evaluate((node) => node.scrollWidth > node.clientWidth)).toBe(true);
+    await expect(cut).toHaveText(FULL_TEXT);
+
+    await whole.hover();
+    await page.waitForTimeout(800);
+    await expect(page.getByRole('tooltip')).toHaveCount(0);
+
+    await cut.hover();
+    // The exact delay is covered by the unit tests; here the tooltip must not appear at once.
+    expect(await page.getByRole('tooltip').count()).toBe(0);
+    const panel = page.getByRole('tooltip');
+    await expect(panel).toHaveText(FULL_TEXT);
+    await expect(panel).toHaveClass(/ui-truncation-tooltip__panel/);
+    await expect(cut).not.toHaveAttribute('aria-describedby');
+    await page.mouse.move(0, 0);
+    await expect(panel).toHaveCount(0);
+  });
+
+  test('UIC-TRUNCATION-TOOLTIP-1.3 opens at once when keyboard focus reaches the holding link', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('truncation-tooltip');
+    const link = page.locator('[data-lab-cell="text=cut holder=link"] a');
+    await page.locator('[data-lab-cell="text=cut holder=plain"]').click();
+    await page.keyboard.press('Tab');
+    await expect(link).toBeFocused();
+    await expect(page.getByRole('tooltip')).toHaveText(FULL_TEXT);
+    await page.keyboard.press('Tab');
+    await expect(page.getByRole('tooltip')).toHaveCount(0);
+  });
+
+  test('UIC-TRUNCATION-TOOLTIP-1.4 closes on press and on Escape', async ({ page, lab }) => {
+    await lab.open('truncation-tooltip');
+    const cut = page.locator('[data-lab-cell="text=cut holder=plain"] .ui-truncation-tooltip');
+    await cut.hover();
+    await expect(page.getByRole('tooltip')).toBeVisible();
+    await page.mouse.down();
+    await expect(page.getByRole('tooltip')).toHaveCount(0);
+    await page.mouse.up();
+    await page.mouse.move(0, 0);
+    await cut.hover();
+    await expect(page.getByRole('tooltip')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('tooltip')).toHaveCount(0);
+  });
+
+  test('UIC-TRUNCATION-TOOLTIP-1.5 places the visual-only panel below the text', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('truncation-tooltip');
+    const text = page.locator('[data-lab-text="below"]');
+    await text.hover();
+    const panel = page.getByRole('tooltip');
+    await expect(panel).toBeVisible();
+    await expect(panel).toHaveAttribute('data-placement', 'bottom');
+    const textBox = await text.boundingBox();
+    const panelBox = await panel.boundingBox();
+    expect(panelBox?.y ?? 0).toBeGreaterThanOrEqual((textBox?.y ?? 0) + (textBox?.height ?? 0) - 1);
+    await lab.expectAccessible();
+  });
+});

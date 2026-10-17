@@ -2,7 +2,13 @@ import type { ReactNode } from 'react';
 import { Button as AriaButton } from 'react-aria-components';
 import type { GlyphName } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
-import { ButtonIcon, ButtonSpinner, domPassThrough, type ButtonProps } from '../button/button.js';
+import {
+  ButtonIcon,
+  ButtonSpinner,
+  domPassThrough,
+  withTooltip,
+  type ButtonProps,
+} from '../button/button.js';
 
 export interface IconButtonProps extends Omit<
   ButtonProps,
@@ -27,6 +33,7 @@ export function IconButton({
   isPending = false,
   pendingLabel,
   focusableWhenDisabled = false,
+  tooltip,
   className,
   onPress,
   type = 'button',
@@ -40,7 +47,7 @@ export function IconButton({
   const statesToggle =
     rest['aria-pressed'] !== undefined || ariaChecked !== undefined || role !== undefined;
 
-  return (
+  return withTooltip(
     <AriaButton
       {...rest}
       {...hooks.root({ className, props: rest, data: { variant, size, selected: isSelected } })}
@@ -61,6 +68,7 @@ export function IconButton({
       ) : (
         <ButtonIcon icon={icon} className={hooks.slotClass('icon')} />
       )}
-    </AriaButton>
+    </AriaButton>,
+    tooltip,
   );
 }

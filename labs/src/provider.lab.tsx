@@ -20,10 +20,16 @@ const replacedStrings: Partial<UiStrings> = {
   itemCount: (count) => `${count} éléments`,
 };
 
+// Arguments for strings that are functions; anything not listed is shown for a count of 3.
+const sampleArguments: Partial<Record<keyof UiStrings, readonly unknown[]>> = {
+  shortcutKeyName: ['↑'],
+  stepOfTotal: [3, 5],
+};
+
 function sampleString(strings: UiStrings, name: keyof UiStrings): string {
-  if (name === 'shortcutKeyName') return strings.shortcutKeyName('↑');
   const value = strings[name];
-  return typeof value === 'function' ? value(3) : value;
+  if (typeof value !== 'function') return value;
+  return (value as (...values: readonly unknown[]) => string)(...(sampleArguments[name] ?? [3]));
 }
 
 function StringValue({ name }: { name: keyof UiStrings }) {
@@ -53,7 +59,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Strings"
-      description="Built-in text. Counted strings are shown for a count of 3 and key names for the up arrow. The replaced column overrides a few keys."
+      description="Built-in text. Strings that take values are shown with sample values (a count of 3, a step of 3 of 5, the up arrow). The replaced column overrides a few keys."
     >
       <StateMatrix
         axes={{ key: stringNames, source: ['default', 'replaced'] }}

@@ -81,4 +81,21 @@ describe('IconButton', () => {
     expect(ref.current).toBe(button);
     expectHooksMatchSpec(document.body, 'ICON-BUTTON');
   });
+
+  it('UIC-ICON-BUTTON-1.5 shows a tooltip that describes the button and keeps its label', async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <IconButton icon="undo" label="Undo" tooltip="Undo the last edit" />,
+    );
+    const button = screen.getByRole('button', { name: 'Undo' });
+    expect(button.parentElement).toBe(container);
+    await user.tab();
+    const panel = screen.getByRole('tooltip');
+    expect(panel).toHaveTextContent('Undo the last edit');
+    expect(button).toHaveAccessibleName('Undo');
+    expect(button).toHaveAccessibleDescription('Undo the last edit');
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('tooltip')).toBeNull();
+    expect(button).toHaveFocus();
+  });
 });

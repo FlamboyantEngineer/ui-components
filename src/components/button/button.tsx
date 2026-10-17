@@ -8,6 +8,7 @@ import type { GlyphName } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Icon } from '../icon/icon.js';
+import { Tooltip } from '../tooltip/tooltip.js';
 
 export type ButtonVariant =
   | 'primary'
@@ -54,6 +55,11 @@ export interface ButtonProps extends Omit<
   focusableWhenDisabled?: boolean | undefined;
   /** Take the full width of the container. */
   fullWidth?: boolean | undefined;
+  /**
+   * A hint shown in a `Tooltip` on hover and keyboard focus. A natively disabled button cannot show
+   * it; use `focusableWhenDisabled` to explain why a command is unavailable.
+   */
+  tooltip?: ReactNode;
   role?: string | undefined;
   'aria-checked'?: boolean | 'true' | 'false' | 'mixed' | undefined;
   'aria-selected'?: boolean | 'true' | 'false' | undefined;
@@ -102,6 +108,15 @@ export function ButtonSpinner({
   );
 }
 
+/** Wraps a button in a `Tooltip` when it has a hint. */
+export function withTooltip(button: ReactNode, tooltip: ReactNode) {
+  return tooltip != null && tooltip !== false && tooltip !== '' ? (
+    <Tooltip content={tooltip}>{button}</Tooltip>
+  ) : (
+    button
+  );
+}
+
 /** Renders a glyph name or icon node as a decorative icon in a button slot. */
 export function ButtonIcon({
   icon,
@@ -132,6 +147,7 @@ export function Button({
   pendingLabel,
   focusableWhenDisabled = false,
   fullWidth = false,
+  tooltip,
   className,
   onPress,
   type = 'button',
@@ -145,7 +161,7 @@ export function Button({
     rest['aria-pressed'] !== undefined || ariaChecked !== undefined || role !== undefined;
   const label = content === 'parts' ? children : <span {...hooks.slot('label')}>{children}</span>;
 
-  return (
+  return withTooltip(
     <AriaButton
       {...rest}
       {...hooks.root({
@@ -181,6 +197,7 @@ export function Button({
       {!isPending && endIcon ? (
         <ButtonIcon icon={endIcon} className={hooks.slotClass('end-icon')} />
       ) : null}
-    </AriaButton>
+    </AriaButton>,
+    tooltip,
   );
 }

@@ -16,6 +16,7 @@
 @import url('reference/breadcrumb.css');
 @import url('reference/button.css');
 @import url('reference/card.css');
+@import url('reference/circular-progress.css');
 @import url('reference/description-list.css');
 @import url('reference/empty-state.css');
 @import url('reference/expand-toggle.css');
@@ -25,9 +26,11 @@
 @import url('reference/inline-text-diff.css');
 @import url('reference/layout.css');
 @import url('reference/load-more.css');
+@import url('reference/loading-overlay.css');
 @import url('reference/meta-line.css');
 @import url('reference/path.css');
 @import url('reference/portal.css');
+@import url('reference/progress-bar.css');
 @import url('reference/prose-table.css');
 @import url('reference/provider.css');
 @import url('reference/scroll-region.css');
@@ -38,5 +41,7 @@
 @import url('reference/svg-markup.css');
 @import url('reference/tabs.css');
 @import url('reference/text-match.css');
+@import url('reference/toast.css');
 @import url('reference/toolbar-scroller.css');
+@import url('reference/tooltip.css');
 @import url('reference/zoom-control.css');

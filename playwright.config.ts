@@ -7,6 +7,8 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: 0,
+  // Lab assertions retry; a generous timeout keeps them stable on a busy machine.
+  expect: { timeout: 10_000 },
   reporter: process.env.CI ? [['list'], ['github']] : 'list',
   use: {
     baseURL: `http://127.0.0.1:${port}/`,

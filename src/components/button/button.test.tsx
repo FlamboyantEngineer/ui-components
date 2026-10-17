@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { Dialog, DialogTrigger, Popover } from 'react-aria-components';
 import { describe, expect, it, vi } from 'vitest';
@@ -114,6 +114,52 @@ describe('Button', () => {
     expect(start).toHaveAttribute('aria-hidden', 'true');
     expect(screen.getByTestId('custom-end').parentElement).toHaveClass('ui-button__end-icon');
     expectHooksMatchSpec(document.body, 'BUTTON', { slots: ['label', 'start-icon', 'end-icon'] });
+  });
+
+  it('UIC-BUTTON-1.6 shows a tooltip on hover and keyboard focus without a wrapper', async () => {
+    vi.useFakeTimers();
+    try {
+      const { container } = render(
+        <Button tooltip="Save every change" isPending>
+          Save
+        </Button>,
+      );
+      const button = screen.getByRole('button', { name: /Save/ });
+      expect(button.parentElement).toBe(container);
+      fireEvent.pointerMove(button, { pointerType: 'mouse' });
+      fireEvent.pointerEnter(button, { pointerType: 'mouse' });
+      fireEvent.mouseEnter(button);
+      await act(async () => {
+        vi.advanceTimersByTime(500);
+      });
+      expect(screen.getByRole('tooltip')).toHaveTextContent('Save every change');
+      expect(button).toHaveAttribute('aria-describedby', screen.getByRole('tooltip').id);
+      expectHooksMatchSpec(document.body, 'TOOLTIP', { slots: ['content'] });
+      await act(async () => {
+        vi.advanceTimersByTime(5000);
+      });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('UIC-BUTTON-1.6 explains a focusable disabled button but not a natively disabled one', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(
+      <Button isDisabled tooltip="Locked">
+        Edit
+      </Button>,
+    );
+    await user.tab();
+    expect(screen.queryByRole('tooltip')).toBeNull();
+    rerender(
+      <Button isDisabled focusableWhenDisabled tooltip="Locked">
+        Edit
+      </Button>,
+    );
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'Edit' })).toHaveFocus();
+    expect(screen.getByRole('tooltip')).toHaveTextContent('Locked');
   });
 
   it('UIC-BUTTON-2.1 disables natively, or keeps focus while refusing activation', async () => {

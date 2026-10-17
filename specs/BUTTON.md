@@ -39,6 +39,13 @@ Verification: `src/components/button/button.test.tsx`
 Implementation: `src/components/button/button.tsx`
 Verification: `src/components/button/button.test.tsx`
 
+### UIC-BUTTON-1.6 - Tooltip
+
+`tooltip` shall show its content in a [Tooltip](TOOLTIP.md) for the button, opened by hover and keyboard focus, without wrapping the `<button>` in another element. A pending button still shows it. A natively disabled button receives no hover or focus and so shows no tooltip; with `focusableWhenDisabled` it does, which explains why a command is unavailable.
+
+Implementation: `src/components/button/button.tsx`, `src/components/tooltip/tooltip.tsx`
+Verification: `src/components/button/button.test.tsx`, `e2e/tooltip.spec.ts`
+
 ## UIC-BUTTON-2 - States
 
 ### UIC-BUTTON-2.1 - Disabled

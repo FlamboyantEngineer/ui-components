@@ -44,6 +44,8 @@ export interface UiStrings {
   loadMore: string;
   remainingCount: (count: number) => string;
   countOrMore: (count: number) => string;
+  /** A step counter such as `2 of 5`. */
+  stepOfTotal: (current: number, total: number) => string;
 }
 
 const spokenKeyNames: Readonly<Record<string, string>> = {
@@ -102,4 +104,5 @@ export const defaultStrings: UiStrings = {
   loadMore: 'Load more',
   remainingCount: (count) => `${count} remaining`,
   countOrMore: (count) => `${count} or more`,
+  stepOfTotal: (current, total) => `${current} of ${total}`,
 };
