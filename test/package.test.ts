@@ -9,6 +9,7 @@ const manifest = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'u
   sideEffects: boolean;
   dependencies: Record<string, string>;
   peerDependencies: Record<string, string>;
+  peerDependenciesMeta?: Record<string, { optional?: boolean }>;
   publishConfig: { registry: string };
 };
 
@@ -39,8 +40,13 @@ describe('package manifest', () => {
     ).toEqual([]);
   });
 
-  it('publishes to GitHub Packages with React as a peer', () => {
+  it('publishes to GitHub Packages with React as the only required peer', () => {
     expect(manifest.publishConfig.registry).toBe('https://npm.pkg.github.com');
-    expect(Object.keys(manifest.peerDependencies).sort()).toEqual(['react', 'react-dom']);
+    const isOptional = (name: string) => manifest.peerDependenciesMeta?.[name]?.optional === true;
+    expect(
+      Object.keys(manifest.peerDependencies)
+        .filter((name) => !isOptional(name))
+        .sort(),
+    ).toEqual(['react', 'react-dom']);
   });
 });

@@ -64,6 +64,22 @@ export interface UiStrings {
   skinTone: string;
   /** Name of a skin tone (`default`, `light`, `medium-light`, …). */
   skinToneName: (tone: string) => string;
+  /** Default name of a document view. */
+  document: string;
+  /** Name of the toolbar for a named view (`Report.pdf controls`). */
+  controlsFor: (name: string) => string;
+  fitWidth: string;
+  fitPage: string;
+  page: string;
+  /** The total after a page field (`of 12`). */
+  ofTotal: (total: number) => string;
+  previousPage: string;
+  nextPage: string;
+  findInDocument: string;
+  searching: string;
+  previousMatch: string;
+  nextMatch: string;
+  documentFailed: string;
 }
 
 const spokenKeyNames: Readonly<Record<string, string>> = {
@@ -151,4 +167,17 @@ export const defaultStrings: UiStrings = {
   emojiLoadFailed: 'Emoji could not be loaded.',
   skinTone: 'Skin tone',
   skinToneName: (tone) => `${tone.charAt(0).toUpperCase()}${tone.slice(1)}`,
+  document: 'Document',
+  controlsFor: (name) => `${name} controls`,
+  fitWidth: 'Fit page width',
+  fitPage: 'Fit whole page',
+  page: 'Page',
+  ofTotal: (total) => `of ${total}`,
+  previousPage: 'Previous page',
+  nextPage: 'Next page',
+  findInDocument: 'Find in document',
+  searching: 'Searching…',
+  previousMatch: 'Previous match',
+  nextMatch: 'Next match',
+  documentFailed: 'The document could not be opened.',
 };

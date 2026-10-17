@@ -50,3 +50,4 @@ export * from './components/presence-avatar/index.js';
 export * from './components/presence-strip/index.js';
 export * from './components/user-card/index.js';
 export * from './components/emoji-picker/index.js';
+export * from './components/pdf-viewer/index.js';
