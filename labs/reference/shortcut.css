@@ -34,17 +34,7 @@
   text-align: center;
 }
 
-.ui-shortcut[data-platform='mac'] .ui-shortcut__keys:has(> .ui-shortcut__chord) {
-  gap: 6px;
-}
-
-.ui-shortcut__chord {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-}
-
-.ui-shortcut__key {
+.ui-shortcut[data-platform='mac'] .ui-shortcut__key {
   font-family: var(--ref-font);
 }
 
@@ -54,17 +44,7 @@
 
 /* A shortcut in a tooltip, such as a button's, takes the tooltip's colours. */
 
-.ui-tooltip .ui-shortcut__keys:has(> .ui-shortcut__chord) {
-  gap: 6px;
-}
-
-.ui-shortcut__chord {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-}
-
-.ui-shortcut__key {
+.ui-tooltip .ui-shortcut__key {
   border-color: currentColor;
   background: transparent;
   color: inherit;
