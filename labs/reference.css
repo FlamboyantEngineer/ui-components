@@ -24,6 +24,7 @@
 @import url('reference/empty-state.css');
 @import url('reference/expand-toggle.css');
 @import url('reference/field.css');
+@import url('reference/four-side-property-strip.css');
 @import url('reference/icon.css');
 @import url('reference/icon-button.css');
 @import url('reference/icon-label.css');
@@ -38,6 +39,9 @@
 @import url('reference/path.css');
 @import url('reference/portal.css');
 @import url('reference/progress-bar.css');
+@import url('reference/property-filter.css');
+@import url('reference/property-panel.css');
+@import url('reference/property-scope.css');
 @import url('reference/prose-table.css');
 @import url('reference/provider.css');
 @import url('reference/scroll-region.css');

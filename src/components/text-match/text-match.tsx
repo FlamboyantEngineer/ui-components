@@ -81,3 +81,5 @@ export function TextMatch({ children: text, className, ...rest }: TextMatchProps
   if (cursor < text.length) parts.push(text.slice(cursor));
   return <>{parts}</>;
 }
+
+export { splitMatchTerms, textMatchesTerms } from './match-ranges.js';

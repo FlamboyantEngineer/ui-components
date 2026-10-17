@@ -1,0 +1,14 @@
+/* Four Side Property Strip: the four cells stay on one line. */
+
+.ui-four-side-property-strip .ui-property-strip {
+  flex-wrap: nowrap;
+  gap: 6px;
+}
+
+.ui-four-side-property-strip__side {
+  min-width: 0;
+}
+
+.ui-four-side-property-strip .ui-four-side-property-strip__side > input {
+  width: 40px;
+}

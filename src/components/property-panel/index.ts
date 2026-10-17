@@ -1,0 +1,22 @@
+export {
+  PropertyCard,
+  PropertyGroup,
+  PropertyIconGroup,
+  PropertyPanel,
+  PropertyRow,
+  PropertySection,
+  PropertyStrip,
+  PropertyStripCell,
+} from './property-panel.js';
+export type {
+  PropertyCardProps,
+  PropertyGroupProps,
+  PropertyIconGroupProps,
+  PropertyIconGroupVariant,
+  PropertyPanelLabelLayout,
+  PropertyPanelProps,
+  PropertyRowProps,
+  PropertySectionProps,
+  PropertyStripCellProps,
+  PropertyStripProps,
+} from './property-panel.js';

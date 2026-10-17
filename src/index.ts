@@ -49,3 +49,7 @@ export * from './components/context-menu/index.js';
 export * from './components/dropdown-menu/index.js';
 export * from './components/combobox/index.js';
 export * from './components/field/index.js';
+export * from './components/property-scope/index.js';
+export * from './components/property-panel/index.js';
+export * from './components/property-filter/index.js';
+export * from './components/four-side-property-strip/index.js';

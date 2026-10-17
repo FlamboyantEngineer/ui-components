@@ -16,6 +16,9 @@ const replacedStrings: Partial<UiStrings> = {
 const sampleArguments: Partial<Record<keyof UiStrings, readonly unknown[]>> = {
   shortcutKeyName: ['↑'],
   stepOfTotal: [3, 5],
+  filterLabel: ['Page Settings'],
+  noPropertyMatches: ['zinc'],
+  boxSide: ['top'],
 };
 const stringNames = Object.keys(defaultStrings) as Array<keyof UiStrings>;
 

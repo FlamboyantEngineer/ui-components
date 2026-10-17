@@ -69,6 +69,15 @@ export interface UiStrings {
   fieldHelp: (label: string) => string;
   /** Names a field's menu, from the field's label. */
   fieldActions: (label: string) => string;
+  /** Names the mark of a group holding a value that overrides an inherited one. */
+  containsOverrides: string;
+  /** Names a search box that filters a panel, from the panel's label. */
+  filterLabel: (label: string) => string;
+  /** The message of a filter no property matches, from the trimmed query. */
+  noPropertyMatches: (query: string) => string;
+  clearFilter: string;
+  /** The name of one side of a box, such as a margin. */
+  boxSide: (side: 'top' | 'right' | 'bottom' | 'left') => string;
 }
 
 const spokenKeyNames: Readonly<Record<string, string>> = {
@@ -82,6 +91,8 @@ const spokenKeyNames: Readonly<Record<string, string>> = {
   '+': 'Plus',
   ' ': 'Space',
 };
+
+const boxSideNames = { top: 'Top', right: 'Right', bottom: 'Bottom', left: 'Left' } as const;
 
 export const defaultStrings: UiStrings = {
   close: 'Close',
@@ -142,4 +153,9 @@ export const defaultStrings: UiStrings = {
   restoreValue: (label) => `Restore ${label}`,
   fieldHelp: (label) => `Help for ${label}`,
   fieldActions: (label) => `${label} actions`,
+  containsOverrides: 'Contains overridden values',
+  filterLabel: (label) => `Filter ${label.toLocaleLowerCase()}`,
+  noPropertyMatches: (query) => `No properties match “${query}”.`,
+  clearFilter: 'Clear filter',
+  boxSide: (side) => boxSideNames[side],
 };

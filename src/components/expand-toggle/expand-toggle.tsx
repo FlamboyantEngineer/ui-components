@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useLocale } from 'react-aria-components';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
+import type { GlyphName } from '../../core/glyphs.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { IconButton, type IconButtonProps } from '../icon-button/icon-button.js';
@@ -28,6 +29,13 @@ export interface ExpandToggleProps
 
 const hooks = createHooks('expand-toggle');
 
+/** The chevron of a disclosure: down while expanded, else pointing to the inline end. */
+export function useExpandGlyph(isExpanded: boolean): GlyphName {
+  const { direction } = useLocale();
+  if (isExpanded) return 'chevron-down';
+  return direction === 'rtl' ? 'chevron-left' : 'chevron-right';
+}
+
 /**
  * A chevron button that expands and collapses a row or region. It points to the inline end while
  * collapsed and down while expanded, and its presses never reach the row around it.
@@ -43,9 +51,9 @@ export function ExpandToggle({
   ...rest
 }: ExpandToggleProps) {
   const strings = useUiStrings();
-  const { direction } = useLocale();
   const [internalExpanded, setInternalExpanded] = useState(defaultExpanded);
   const expanded = isExpanded ?? internalExpanded;
+  const glyph = useExpandGlyph(expanded);
 
   if (!isExpandable) {
     return (
@@ -57,13 +65,12 @@ export function ExpandToggle({
     );
   }
 
-  const collapsedGlyph = direction === 'rtl' ? 'chevron-left' : 'chevron-right';
   return (
     <IconButton
       {...rest}
       data-expanded={expanded || undefined}
       className={mergeClassNames(hooks.className, className)}
-      icon={expanded ? 'chevron-down' : collapsedGlyph}
+      icon={glyph}
       label={label ?? (expanded ? strings.collapse : strings.expand)}
       size={size}
       aria-expanded={expanded}
