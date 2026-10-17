@@ -1,6 +1,6 @@
 export { ScrollRegion, useScrollRegionHeaderRef } from './scroll-region.js';
 export type {
-  ScrollAxis,
+  ScrollRegionAxis,
   ScrollRegionOverscroll,
   ScrollRegionProps,
   ScrollRegionScrollbar,

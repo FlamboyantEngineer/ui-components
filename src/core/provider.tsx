@@ -18,10 +18,13 @@ import { defaultGlyphs, type GlyphComponent, type GlyphMap, type GlyphName } fro
 import { mergeClassNames } from './hooks.js';
 import { createMemoryStorage, type UiStorage } from './storage.js';
 import { defaultStrings, type UiStrings } from './strings.js';
+import { omitUndefined } from '../utils/omit-undefined.js';
 
 /** Props a link renderer receives. It must render an element that navigates to `href`. */
 export interface UiLinkProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
+  /** Where the link navigates. */
   href: string;
+  /** The rendered anchor. */
   ref?: Ref<HTMLAnchorElement> | undefined;
 }
 
@@ -45,7 +48,20 @@ export interface UiProviderProps {
   useHref?: RouterProps['useHref'] | undefined;
   /** Where components persist layout state. Defaults to an in-memory store. */
   storage?: UiStorage | undefined;
+  /** The components that use these services. */
   children?: ReactNode;
+}
+
+export interface GlyphProps {
+  /** The built-in glyph to draw. */
+  name: GlyphName;
+  /** Usually the host component's slot class, e.g. `ui-button__icon`. */
+  className?: string | undefined;
+}
+
+export interface PersistCodec<T> {
+  parse(raw: string): T;
+  stringify(value: T): string;
 }
 
 interface UiContextValue {
@@ -66,6 +82,11 @@ const defaultContext: UiContextValue = {
 
 const UiContext = createContext<UiContextValue>(defaultContext);
 
+const jsonCodec: PersistCodec<never> = {
+  parse: (raw) => JSON.parse(raw) as never,
+  stringify: (value) => JSON.stringify(value),
+};
+
 /**
  * Supplies glyphs, strings, locale, link rendering and storage to every component below it.
  * Components work without a provider, using Heroicons, English strings and in-memory storage.
@@ -84,8 +105,8 @@ export function UiProvider({
   const parent = useContext(UiContext);
   const value = useMemo<UiContextValue>(
     () => ({
-      glyphs: icons ? { ...parent.glyphs, ...definedEntries(icons) } : parent.glyphs,
-      strings: strings ? { ...parent.strings, ...definedEntries(strings) } : parent.strings,
+      glyphs: icons ? { ...parent.glyphs, ...omitUndefined(icons) } : parent.glyphs,
+      strings: strings ? { ...parent.strings, ...omitUndefined(strings) } : parent.strings,
       renderLink: renderLink ?? parent.renderLink,
       storage: storage ?? parent.storage,
     }),
@@ -102,12 +123,6 @@ export function UiProvider({
   }
   if (locale) content = <I18nProvider locale={locale}>{content}</I18nProvider>;
   return content;
-}
-
-function definedEntries<T extends object>(values: T): Partial<T> {
-  return Object.fromEntries(
-    Object.entries(values).filter(([, entry]) => entry !== undefined),
-  ) as Partial<T>;
 }
 
 /** The glyph component for a built-in glyph name. */
@@ -130,12 +145,6 @@ export function UiLink(props: UiLinkProps) {
   return useContext(UiContext).renderLink(props);
 }
 
-export interface GlyphProps {
-  name: GlyphName;
-  /** Usually the host component's slot class, e.g. `ui-button__icon`. */
-  className?: string | undefined;
-}
-
 /** Draws a built-in glyph as decoration (hidden from assistive technology). */
 export function Glyph({ name, className }: GlyphProps) {
   const Component = useGlyph(name);
@@ -149,16 +158,6 @@ export function Glyph({ name, className }: GlyphProps) {
   );
 }
 
-export interface PersistCodec<T> {
-  parse(raw: string): T;
-  stringify(value: T): string;
-}
-
-const jsonCodec: PersistCodec<never> = {
-  parse: (raw) => JSON.parse(raw) as never,
-  stringify: (value) => JSON.stringify(value),
-};
-
 /**
  * State persisted through the provider storage adapter under `key`. Without a key it is plain state.
  * Unreadable stored values fall back to `initialValue`.
@@ -169,7 +168,8 @@ export function usePersistentState<T>(
   codec: PersistCodec<T> = jsonCodec as PersistCodec<T>,
 ): [T, Dispatch<SetStateAction<T>>] {
   const storage = useUiStorage();
-  const read = useCallback((): T => {
+  // Called only on mount and when the key changes, so initialValue is read once per key.
+  const read = (): T => {
     const fallback = () =>
       typeof initialValue === 'function' ? (initialValue as () => T)() : initialValue;
     if (key === undefined) return fallback();
@@ -180,9 +180,7 @@ export function usePersistentState<T>(
     } catch {
       return fallback();
     }
-    // initialValue is read once per key, like useState's initial value.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key, storage, codec]);
+  };
 
   const [state, setState] = useState(() => ({ key, value: read() }));
   let current = state;

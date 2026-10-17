@@ -1,5 +1,5 @@
 export { clamp } from './clamp.js';
-export { withStableOccurrenceKeys } from './stable-keys.js';
+export { assignOccurrenceKeys } from './stable-keys.js';
 export type { KeyedValue } from './stable-keys.js';
 export { copyRichText, copyText } from './clipboard.js';
 export type { ClipboardWriter, CopyOptions, RichCopyOptions, RichCopyResult } from './clipboard.js';
@@ -8,22 +8,14 @@ export {
   DEFAULT_OVERLAY_GAP,
   DEFAULT_OVERLAY_GUTTER,
   DEFAULT_SUBMENU_OVERLAP,
-  findOverlayScrollContainer,
-  getOverlayBoundary,
-  isSameOverlayGeometry,
-  overlayPointRect,
-  resolveOverlayGeometry,
+  createOverlayPointRect,
   resolveOverlayPlacement,
   resolveSubmenuPlacement,
   toOverlayRect,
 } from './overlay-position.js';
 export type {
   OverlayAlign,
-  OverlayBoundary,
-  OverlayGeometry,
-  OverlayGeometryOptions,
   OverlayMode,
-  OverlayOffsetParent,
   OverlayPlacement,
   OverlayPlacementInput,
   OverlayRect,
@@ -34,6 +26,18 @@ export type {
   SubmenuPlacementInput,
   SubmenuSide,
 } from './overlay-position.js';
+export {
+  findOverlayScrollContainer,
+  getOverlayBoundary,
+  isSameOverlayGeometry,
+  resolveOverlayGeometry,
+} from './overlay-geometry.js';
+export type {
+  OverlayBoundary,
+  OverlayGeometry,
+  OverlayGeometryOptions,
+  OverlayOffsetParent,
+} from './overlay-geometry.js';
 export { useResizeObserver } from './use-resize-observer.js';
 export type { ResizeObserverTarget, ResizeObserverTargets } from './use-resize-observer.js';
 export { useElementSize } from './use-element-size.js';

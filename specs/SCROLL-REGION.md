@@ -31,7 +31,7 @@ Verification: `src/components/scroll-region/scroll-region.test.tsx`, `e2e/scroll
 
 The library shall measure each track, which the stylesheet places, and size its thumb to the visible share of the content, at least 24 pixels and at most the track; the thumb's inline offset is the scroll position's share of the track's free length. In a right-to-left viewport the horizontal offset is measured from the left edge, so the thumb starts at the right.
 
-Implementation: `src/components/scroll-region/overlay-scrollbars.tsx`
+Implementation: `src/components/scroll-region/overlay-scrollbars.tsx`, `src/components/scroll-region/use-overlay-metrics.ts`
 Verification: `src/components/scroll-region/scroll-region.test.tsx`, `e2e/scroll-region.spec.ts`
 
 ### UIC-SCROLL-REGION-2.3 - Thumb semantics and keyboard
@@ -52,21 +52,21 @@ Verification: `src/components/scroll-region/scroll-region.test.tsx`, `e2e/scroll
 
 With `scrollbarInset="header"`, sticky headers inside the viewport that attach `useScrollRegionHeaderRef()` shall be measured, and the root publishes the tallest in `--ui-scroll-region-header-size` so the stylesheet starts the vertical track below it; Page Up and Page Down then move by the visible length below the header. Without the inset the hook returns `undefined`.
 
-Implementation: `src/components/scroll-region/scroll-region.tsx`, `src/components/scroll-region/overlay-scrollbars.tsx`
+Implementation: `src/components/scroll-region/scroll-region.tsx`, `src/components/scroll-region/use-overlay-metrics.ts`, `src/components/scroll-region/overlay-scrollbars.tsx`
 Verification: `src/components/scroll-region/scroll-region.test.tsx`
 
 ### UIC-SCROLL-REGION-2.6 - Content lift
 
 When content shorter than the viewport overflows only horizontally, the root shall publish the empty height below the content in `--ui-scroll-region-content-lift`, so the stylesheet can raise the horizontal track to sit under the content; otherwise it is 0.
 
-Implementation: `src/components/scroll-region/overlay-scrollbars.tsx`, `labs/reference/scroll-region.css`
+Implementation: `src/components/scroll-region/use-overlay-metrics.ts`, `labs/reference/scroll-region.css`
 Verification: `src/components/scroll-region/scroll-region.test.tsx`
 
 ### UIC-SCROLL-REGION-2.7 - Updates and cleanup
 
 Overlay geometry shall refresh when the viewport, its children, the headers or the tracks resize, when content mutates and when the viewport scrolls, also without `ResizeObserver`, coalesced to one read per animation frame. Regions update independently. A focused thumb that disappears because its axis stopped overflowing returns focus to the viewport. Unmounting releases every observer and pending frame.
 
-Implementation: `src/components/scroll-region/overlay-scrollbars.tsx`
+Implementation: `src/components/scroll-region/use-overlay-metrics.ts`, `src/components/scroll-region/observe-viewport.ts`, `src/components/scroll-region/overlay-scrollbars.tsx`
 Verification: `src/components/scroll-region/scroll-region.test.tsx`
 
 ## UIC-SCROLL-REGION-3 - Overview
@@ -75,7 +75,7 @@ Verification: `src/components/scroll-region/scroll-region.test.tsx`
 
 With `overview` markers (or `overviewLayers`) in native mode, a region whose content overflows its height shall publish `data-overview`, set `--ui-scroll-region-overview-image` on the root and render a decorative `ui-scroll-region__overview` (hidden from assistive technology, no pointer input) as tall as the viewport's visible height, for the stylesheet to place beside the scrollbar or to paint the scrollbar track with. Scrolling and the native scrollbar are untouched. Content that fits paints nothing. Removing the markers or unmounting releases the observers and the pending frame.
 
-Implementation: `src/components/scroll-region/scroll-region.tsx`, `src/components/scroll-region/use-scroll-overview.ts`, `labs/reference/scroll-region.css`
+Implementation: `src/components/scroll-region/scroll-region.tsx`, `src/components/scroll-region/use-scroll-overview.ts`, `src/components/scroll-region/observe-viewport.ts`, `labs/reference/scroll-region.css`
 Verification: `src/components/scroll-region/scroll-region.test.tsx`, `e2e/scroll-region.spec.ts`
 
 ### UIC-SCROLL-REGION-3.2 - Marker mapping

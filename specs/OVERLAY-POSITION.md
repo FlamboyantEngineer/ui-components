@@ -1,6 +1,6 @@
 # Overlay Position
 
-Placement utilities in `src/utils/overlay-position.ts` for floating panels a component positions itself (menus, suggestion lists, fly-out submenus), anchored to an element or to a point such as the pointer. The solvers are pure functions over rects; the measuring helpers only read layout. Callers render the result as functional inline styles (`position`, `left`, `top`, `max-width`, `max-height`). React Aria overlays position themselves and do not need these utilities.
+Placement utilities for floating panels a component positions itself (menus, suggestion lists, fly-out submenus), anchored to an element or to a point such as the pointer. The solvers in `src/utils/overlay-position.ts` are pure functions over rects; the measuring helpers in `src/utils/overlay-geometry.ts` only read layout. Callers render the result as functional inline styles (`position`, `left`, `top`, `max-width`, `max-height`). React Aria overlays position themselves and do not need these utilities.
 
 ## UIC-OVERLAY-POSITION-1 - Anchored placement
 
@@ -34,7 +34,7 @@ Verification: `src/utils/overlay-position.test.ts`
 
 ### UIC-OVERLAY-POSITION-1.5 - Point anchors
 
-`overlayPointRect(x, y)` shall return a zero-size anchor rect at a viewport point, so an overlay opened at the pointer is solved like one anchored to an element.
+`createOverlayPointRect(x, y)` shall return a zero-size anchor rect at a viewport point, so an overlay opened at the pointer is solved like one anchored to an element.
 
 Implementation: `src/utils/overlay-position.ts`
 Verification: `src/utils/overlay-position.test.ts`
@@ -61,26 +61,26 @@ Verification: `src/utils/overlay-position.test.ts`
 
 `getOverlayBoundary` shall measure the window, or the part of a boundary element visible in the window, inset by `gutter`, as `visibleRect`; the scrollable content as `contentRect`; and as `horizontalRect` the content rect when the boundary scrolls horizontally, the visible rect otherwise.
 
-Implementation: `src/utils/overlay-position.ts`
-Verification: `src/utils/overlay-position.test.ts`
+Implementation: `src/utils/overlay-geometry.ts`
+Verification: `src/utils/overlay-geometry.test.ts`
 
 ### UIC-OVERLAY-POSITION-3.2 - Scroll container
 
 `findOverlayScrollContainer` shall return the nearest ancestor below the body whose overflow is `auto`, `scroll` or `overlay` and whose content is larger than its box, passing over ancestors for which `skip` returns true, and null when the page is the boundary.
 
-Implementation: `src/utils/overlay-position.ts`
-Verification: `src/utils/overlay-position.test.ts`
+Implementation: `src/utils/overlay-geometry.ts`
+Verification: `src/utils/overlay-geometry.test.ts`
 
 ### UIC-OVERLAY-POSITION-3.3 - Measured geometry
 
 `resolveOverlayGeometry` shall measure an overlay's natural size and solve its placement against an anchor element or rect. An overlay wider than the boundary gets a `maxWidth` of the boundary width, kept while its remeasured width equals that limit so a wrapped overlay settles instead of oscillating, and released when the boundary grows. A constrained overlay gets a whole-pixel `maxHeight` and is placed at that height. Coordinates are whole pixels relative to the viewport for the `fixed` strategy, or to `offsetParent` (an element, or its rect and scroll offsets) for `absolute`.
 
-Implementation: `src/utils/overlay-position.ts`
-Verification: `src/utils/overlay-position.test.ts`
+Implementation: `src/utils/overlay-geometry.ts`
+Verification: `src/utils/overlay-geometry.test.ts`
 
 ### UIC-OVERLAY-POSITION-3.4 - Geometry equality
 
 `isSameOverlayGeometry` shall report whether two geometries render the same, so a caller can skip a state update that changes nothing.
 
-Implementation: `src/utils/overlay-position.ts`
-Verification: `src/utils/overlay-position.test.ts`
+Implementation: `src/utils/overlay-geometry.ts`
+Verification: `src/utils/overlay-geometry.test.ts`

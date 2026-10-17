@@ -2,8 +2,8 @@ import { useRef, type CSSProperties } from 'react';
 import {
   ScrollRegion,
   useScrollRegionHeaderRef,
+  type ScrollRegionProps,
 } from '../../src/components/scroll-region/scroll-region.js';
-import type { GridColumns } from '../../src/components/layout/layout.js';
 import { useScrollStripOverflow } from '../../src/utils/use-scroll-strip-overflow.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
@@ -42,6 +42,26 @@ const frame = (width: number, height: number): CSSProperties => ({
   flexDirection: 'column',
   outline: '1px dotted currentColor',
 });
+
+const markers = [
+  { top: 0, height: 20, color: '#1a7f37', priority: 1 },
+  { top: 180, height: 40, color: '#cf222e', priority: 0 },
+  { top: 400, height: 4, color: '#9a6700', priority: 2 },
+  { top: 560, height: 30, color: '#0969da', priority: 1 },
+];
+
+const layers = [
+  { name: 'changes', markers: markers.slice(0, 2) },
+  { name: 'notes', markers: [{ top: 190, height: 60, color: '#8250df', priority: 0 }] },
+];
+
+const gridOf: Record<string, Pick<ScrollRegionProps, 'columns' | 'minColumnWidth' | 'align'>> = {
+  plain: {},
+  'two columns': { columns: 2 },
+  'two columns, centred': { columns: 2, align: 'center' },
+  fit: { columns: 'fit' },
+  'fit, md minimum': { columns: 'fit', minColumnWidth: 'md' },
+};
 
 function WideList({ count = 12 }: { count?: number }) {
   return (
@@ -112,24 +132,6 @@ function Strip() {
   );
 }
 
-const markers = [
-  { top: 0, height: 20, color: '#1a7f37', priority: 1 },
-  { top: 180, height: 40, color: '#cf222e', priority: 0 },
-  { top: 400, height: 4, color: '#9a6700', priority: 2 },
-  { top: 560, height: 30, color: '#0969da', priority: 1 },
-];
-
-const layers = [
-  { name: 'changes', markers: markers.slice(0, 2) },
-  { name: 'notes', markers: [{ top: 190, height: 60, color: '#8250df', priority: 0 }] },
-];
-
-const columnsOf: Record<string, GridColumns | undefined> = {
-  plain: undefined,
-  'two columns': 2,
-  fit: 'fit',
-};
-
 mountLab(
   <>
     <LabSection
@@ -155,15 +157,15 @@ mountLab(
     </LabSection>
     <LabSection
       title="Scroll chaining and grid"
-      description="Contained and chained scrolling against plain and grid content, in a 260 by 120 pixel host."
+      description="Contained and chained scrolling against plain and grid content (columns, alignment and fit minimum), in a 260 by 120 pixel host."
     >
       <StateMatrix
-        axes={{ layout: ['plain', 'two columns', 'fit'], overscroll: ['contain', 'auto'] }}
+        axes={{ layout: Object.keys(gridOf), overscroll: ['contain', 'auto'] }}
         render={({ layout, overscroll }) => (
           <div style={frame(260, 120)}>
             <ScrollRegion
               overscroll={overscroll}
-              columns={columnsOf[layout]}
+              {...gridOf[layout]}
               space="xs"
               role="region"
               aria-label={`Cities, ${layout}, ${overscroll}`}

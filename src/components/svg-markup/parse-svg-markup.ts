@@ -24,10 +24,17 @@ interface MutableElement {
   children: Array<MutableElement | SvgTextNode>;
 }
 
-const TAG = /<(\/)?([A-Za-z_][\w:.-]*)((?:[^<>"']|"[^"]*"|'[^']*')*?)(\/)?>/y;
-const ATTRIBUTE = /([^\s=/>"']+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+)))?/g;
-const ENTITY = /&(#x[0-9a-f]+|#[0-9]+|amp|lt|gt|quot|apos);/gi;
-const NAMED_ENTITIES: Readonly<Record<string, string>> = {
+/** The parse so far: the markup, a document node holding the top-level elements, and open elements. */
+interface ParserState {
+  markup: string;
+  root: MutableElement;
+  stack: MutableElement[];
+}
+
+const tagPattern = /<(\/)?([A-Za-z_][\w:.-]*)((?:[^<>"']|"[^"]*"|'[^']*')*?)(\/)?>/y;
+const attributePattern = /([^\s=/>"']+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+)))?/g;
+const entityPattern = /&(#x[0-9a-f]+|#[0-9]+|amp|lt|gt|quot|apos);/gi;
+const namedEntities: Readonly<Record<string, string>> = {
   amp: '&',
   lt: '<',
   gt: '>',
@@ -36,19 +43,22 @@ const NAMED_ENTITIES: Readonly<Record<string, string>> = {
 };
 
 /** Elements whose whole subtree is dropped: scripts and embedded HTML. */
-const DROPPED_ELEMENTS = new Set(['script', 'foreignobject']);
-const URL_ATTRIBUTES = new Set(['href', 'xlink:href', 'src']);
+const droppedElements = new Set(['script', 'foreignobject']);
+const urlAttributes = new Set(['href', 'xlink:href', 'src']);
+
+const cacheLimit = 256;
+const cache = new Map<string, SvgElementNode>();
 
 function decodeEntities(text: string): string {
-  return text.replace(ENTITY, (match, entity: string) => {
+  return text.replace(entityPattern, (match, entity: string) => {
     const lower = entity.toLowerCase();
-    if (lower.startsWith('#x')) return codePoint(Number.parseInt(lower.slice(2), 16), match);
-    if (lower.startsWith('#')) return codePoint(Number.parseInt(lower.slice(1), 10), match);
-    return NAMED_ENTITIES[lower] ?? match;
+    if (lower.startsWith('#x')) return decodeCodePoint(Number.parseInt(lower.slice(2), 16), match);
+    if (lower.startsWith('#')) return decodeCodePoint(Number.parseInt(lower.slice(1), 10), match);
+    return namedEntities[lower] ?? match;
   });
 }
 
-function codePoint(value: number, fallback: string): string {
+function decodeCodePoint(value: number, fallback: string): string {
   try {
     return String.fromCodePoint(value);
   } catch {
@@ -69,19 +79,19 @@ function isUnsafeUrl(value: string): boolean {
 
 function parseAttributes(source: string): Record<string, string> {
   const attributes: Record<string, string> = {};
-  for (const match of source.matchAll(ATTRIBUTE)) {
+  for (const match of source.matchAll(attributePattern)) {
     const name = match[1];
     if (!name || name in attributes) continue;
     if (/^on/i.test(name)) continue;
     const value = decodeEntities(match[2] ?? match[3] ?? match[4] ?? '');
-    if (URL_ATTRIBUTES.has(name.toLowerCase()) && isUnsafeUrl(value)) continue;
+    if (urlAttributes.has(name.toLowerCase()) && isUnsafeUrl(value)) continue;
     attributes[name] = value;
   }
   return attributes;
 }
 
 /** Index just past the `>` that closes a declaration such as a doctype with an internal subset. */
-function endOfDeclaration(markup: string, start: number): number {
+function findDeclarationEnd(markup: string, start: number): number {
   let depth = 0;
   for (let index = start; index < markup.length; index += 1) {
     const char = markup[index];
@@ -92,102 +102,111 @@ function endOfDeclaration(markup: string, start: number): number {
   return markup.length;
 }
 
-function freeze(node: MutableElement | SvgTextNode): SvgNode {
+/** Index just past the next `terminator` from `from`, or the end of the markup. */
+function findIndexAfter(markup: string, terminator: string, from: number): number {
+  const end = markup.indexOf(terminator, from);
+  return end === -1 ? markup.length : end + terminator.length;
+}
+
+function freezeNode(node: MutableElement | SvgTextNode): SvgNode {
   if (node.type === 'text') return Object.freeze(node);
   return Object.freeze({
     type: 'element',
     tag: node.tag,
     attributes: Object.freeze(node.attributes),
-    children: Object.freeze(node.children.map(freeze)),
+    children: Object.freeze(node.children.map(freezeNode)),
   });
+}
+
+function currentElement(state: ParserState): MutableElement {
+  return state.stack[state.stack.length - 1] ?? state.root;
+}
+
+/** Adds text to the open element; whitespace-only text and text outside any element are dropped. */
+function addText(state: ParserState, text: string): void {
+  if (text.trim() === '' || state.stack.length === 1) return;
+  currentElement(state).children.push({ type: 'text', text });
+}
+
+/**
+ * Reads a construct that is not an element tag at `open`: a comment, processing instruction or
+ * declaration (dropped) or a CDATA section (kept as text). Returns the index after it, or null when
+ * `open` starts a tag.
+ */
+function parseNonElement(state: ParserState, open: number): number | null {
+  const { markup } = state;
+  if (markup.startsWith('<!--', open)) return findIndexAfter(markup, '-->', open + 4);
+  if (markup.startsWith('<![CDATA[', open)) {
+    const close = markup.indexOf(']]>', open + 9);
+    const end = close === -1 ? markup.length : close;
+    addText(state, markup.slice(open + 9, end));
+    return close === -1 ? end : end + 3;
+  }
+  if (markup.startsWith('<?', open)) return findIndexAfter(markup, '?>', open + 2);
+  if (markup.startsWith('<!', open)) return findDeclarationEnd(markup, open + 2);
+  return null;
+}
+
+/** Closes the nearest open element named `tag`, and any left open inside it. */
+function closeElement(state: ParserState, tag: string): void {
+  const at = state.stack.findLastIndex((element, position) => position > 0 && element.tag === tag);
+  if (at > 0) state.stack.length = at;
+}
+
+/** Index just past the closing tag of a dropped element that starts before `from`. */
+function skipElement(markup: string, tag: string, from: number): number {
+  const closer = new RegExp(`</${tag}\\s*>`, 'ig');
+  closer.lastIndex = from;
+  return closer.exec(markup) ? closer.lastIndex : markup.length;
+}
+
+/** Reads the tag at `open` into the tree and returns the index after it. */
+function parseTag(state: ParserState, open: number): number {
+  const { markup } = state;
+  tagPattern.lastIndex = open;
+  const match = tagPattern.exec(markup);
+  if (!match) {
+    addText(state, '<');
+    return open + 1;
+  }
+  const end = tagPattern.lastIndex;
+  const [, closing, tag = '', attributeSource = '', selfClosing] = match;
+  if (closing) {
+    closeElement(state, tag);
+    return end;
+  }
+  if (droppedElements.has(tag.toLowerCase())) {
+    return selfClosing ? end : skipElement(markup, tag, end);
+  }
+  const element: MutableElement = {
+    type: 'element',
+    tag,
+    attributes: parseAttributes(attributeSource),
+    children: [],
+  };
+  currentElement(state).children.push(element);
+  if (!selfClosing) state.stack.push(element);
+  return end;
 }
 
 function parseTree(markup: string): SvgElementNode {
   const root: MutableElement = { type: 'element', tag: '#document', attributes: {}, children: [] };
-  const stack: MutableElement[] = [root];
-  const current = () => stack[stack.length - 1] ?? root;
-  const addText = (text: string) => {
-    if (text.trim() === '' || stack.length === 1) return;
-    current().children.push({ type: 'text', text });
-  };
-
+  const state: ParserState = { markup, root, stack: [root] };
   let index = 0;
   while (index < markup.length) {
     const open = markup.indexOf('<', index);
-    if (open === -1) {
-      addText(decodeEntities(markup.slice(index)));
-      break;
-    }
-    if (open > index) addText(decodeEntities(markup.slice(index, open)));
-
-    if (markup.startsWith('<!--', open)) {
-      const end = markup.indexOf('-->', open + 4);
-      index = end === -1 ? markup.length : end + 3;
-      continue;
-    }
-    if (markup.startsWith('<![CDATA[', open)) {
-      const end = markup.indexOf(']]>', open + 9);
-      addText(markup.slice(open + 9, end === -1 ? markup.length : end));
-      index = end === -1 ? markup.length : end + 3;
-      continue;
-    }
-    if (markup.startsWith('<?', open)) {
-      const end = markup.indexOf('?>', open + 2);
-      index = end === -1 ? markup.length : end + 2;
-      continue;
-    }
-    if (markup.startsWith('<!', open)) {
-      index = endOfDeclaration(markup, open + 2);
-      continue;
-    }
-
-    TAG.lastIndex = open;
-    const match = TAG.exec(markup);
-    if (!match) {
-      addText('<');
-      index = open + 1;
-      continue;
-    }
-    index = TAG.lastIndex;
-    const [, closing, tag = '', attributeSource = '', selfClosing] = match;
-
-    if (closing) {
-      // Close the nearest open element with this name, and any left open inside it.
-      const at = stack.findLastIndex((element, position) => position > 0 && element.tag === tag);
-      if (at > 0) stack.length = at;
-      continue;
-    }
-
-    if (DROPPED_ELEMENTS.has(tag.toLowerCase())) {
-      if (!selfClosing) {
-        const closer = new RegExp(`</${tag}\\s*>`, 'ig');
-        closer.lastIndex = index;
-        const end = closer.exec(markup);
-        index = end ? closer.lastIndex : markup.length;
-      }
-      continue;
-    }
-
-    const element: MutableElement = {
-      type: 'element',
-      tag,
-      attributes: parseAttributes(attributeSource),
-      children: [],
-    };
-    current().children.push(element);
-    if (!selfClosing) stack.push(element);
+    const textEnd = open === -1 ? markup.length : open;
+    if (textEnd > index) addText(state, decodeEntities(markup.slice(index, textEnd)));
+    if (open === -1) break;
+    index = parseNonElement(state, open) ?? parseTag(state, open);
   }
-
   const svg = root.children.find(
     (child): child is MutableElement =>
       child.type === 'element' && child.tag.toLowerCase() === 'svg',
   );
   if (!svg) throw new Error('SVG markup must contain a root <svg> element.');
-  return freeze({ ...svg, tag: 'svg' }) as SvgElementNode;
+  return freezeNode({ ...svg, tag: 'svg' }) as SvgElementNode;
 }
-
-const CACHE_LIMIT = 256;
-const cache = new Map<string, SvgElementNode>();
 
 /**
  * Parses SVG markup into a frozen element tree rooted at its `<svg>` element. Comments, processing
@@ -204,7 +223,7 @@ export function parseSvgMarkup(markup: string): SvgElementNode {
   }
   const tree = parseTree(markup);
   cache.set(markup, tree);
-  while (cache.size > CACHE_LIMIT) {
+  while (cache.size > cacheLimit) {
     const oldest = cache.keys().next();
     if (oldest.done) break;
     cache.delete(oldest.value);

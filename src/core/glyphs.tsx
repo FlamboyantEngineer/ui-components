@@ -33,13 +33,21 @@ import type { ComponentType } from 'react';
 
 /** Props the library passes to a glyph component. Any SVG icon component that accepts them works. */
 export interface GlyphComponentProps {
+  /** The glyph and slot classes. */
   className?: string;
+  /** The glyph's built-in name. */
   'data-glyph'?: string;
+  /** Glyphs are decorative. */
   'aria-hidden'?: boolean | 'true' | 'false';
+  /** Keeps the SVG out of the tab order in browsers that focus SVG. */
   focusable?: boolean | 'true' | 'false';
 }
 
 export type GlyphComponent = ComponentType<GlyphComponentProps>;
+
+export type GlyphName = keyof typeof defaultGlyphs;
+
+export type GlyphMap = Record<GlyphName, GlyphComponent>;
 
 /** The built-in glyphs every component draws from. Hosts replace any of them through `UiProvider`. */
 export const defaultGlyphs = {
@@ -75,9 +83,5 @@ export const defaultGlyphs = {
   delete: TrashIcon,
   'drag-handle': Bars2Icon,
 } satisfies Record<string, GlyphComponent>;
-
-export type GlyphName = keyof typeof defaultGlyphs;
-
-export type GlyphMap = Record<GlyphName, GlyphComponent>;
 
 export const glyphNames = Object.keys(defaultGlyphs) as GlyphName[];

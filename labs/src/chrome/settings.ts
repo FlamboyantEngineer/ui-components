@@ -13,17 +13,20 @@ export interface LabSettings {
   themeAttribute: string;
 }
 
-export const REFERENCE_STYLESHEET = 'reference.css';
-export const DEFAULT_THEME_ATTRIBUTE = 'data-theme';
-export const STYLESHEET_LINK_ID = 'ui-lab-stylesheet';
+type StylesheetState = 'none' | 'loading' | 'loaded' | 'error';
 
-const STORAGE_KEYS = {
+export const DEFAULT_THEME_ATTRIBUTE = 'data-theme';
+
+const referenceStylesheet = 'reference.css';
+const stylesheetLinkId = 'ui-lab-stylesheet';
+
+const storageKeys = {
   stylesheet: 'ui-labs:stylesheet',
   theme: 'ui-labs:theme',
   themeAttribute: 'ui-labs:theme-attribute',
 } as const;
 
-const ATTRIBUTE_NAME = /^[a-z][a-z0-9-]*$/i;
+const attributeNamePattern = /^[a-z][a-z0-9-]*$/i;
 
 export const defaultSettings: LabSettings = {
   stylesheet: { kind: 'reference' },
@@ -31,7 +34,9 @@ export const defaultSettings: LabSettings = {
   themeAttribute: DEFAULT_THEME_ATTRIBUTE,
 };
 
-export function parseStylesheet(value: string | null | undefined): StylesheetChoice | null {
+let appliedThemeAttribute: string | null = null;
+
+function parseStylesheet(value: string | null | undefined): StylesheetChoice | null {
   if (value === null || value === undefined || value.trim() === '') return null;
   const trimmed = value.trim();
   if (trimmed === 'none') return { kind: 'none' };
@@ -39,15 +44,11 @@ export function parseStylesheet(value: string | null | undefined): StylesheetCho
   return { kind: 'custom', url: trimmed };
 }
 
-export function formatStylesheet(choice: StylesheetChoice): string {
+function formatStylesheet(choice: StylesheetChoice): string {
   return choice.kind === 'custom' ? choice.url : choice.kind;
 }
 
-export function isValidThemeAttribute(name: string): boolean {
-  return ATTRIBUTE_NAME.test(name);
-}
-
-function safeGet(storage: Storage | null, key: string): string | null {
+function getSafely(storage: Storage | null, key: string): string | null {
   try {
     return storage?.getItem(key) ?? null;
   } catch {
@@ -55,12 +56,16 @@ function safeGet(storage: Storage | null, key: string): string | null {
   }
 }
 
-function safeSet(storage: Storage | null, key: string, value: string): void {
+function setSafely(storage: Storage | null, key: string, value: string): void {
   try {
     storage?.setItem(key, value);
   } catch {
     // Remembering the choice is a convenience; private windows may refuse it.
   }
+}
+
+export function isValidThemeAttribute(name: string): boolean {
+  return attributeNamePattern.test(name);
 }
 
 /** The page's localStorage, or null when the browser refuses access. */
@@ -77,14 +82,14 @@ export function readSettings(search: string, storage: Storage | null): LabSettin
   const query = new URLSearchParams(search);
   const stylesheet =
     parseStylesheet(query.get('stylesheet')) ??
-    parseStylesheet(safeGet(storage, STORAGE_KEYS.stylesheet)) ??
+    parseStylesheet(getSafely(storage, storageKeys.stylesheet)) ??
     defaultSettings.stylesheet;
   const theme = query.has('theme')
     ? (query.get('theme') ?? '')
-    : (safeGet(storage, STORAGE_KEYS.theme) ?? defaultSettings.theme);
+    : (getSafely(storage, storageKeys.theme) ?? defaultSettings.theme);
   const attribute =
     query.get('themeAttribute') ??
-    safeGet(storage, STORAGE_KEYS.themeAttribute) ??
+    getSafely(storage, storageKeys.themeAttribute) ??
     defaultSettings.themeAttribute;
   return {
     stylesheet,
@@ -95,9 +100,9 @@ export function readSettings(search: string, storage: Storage | null): LabSettin
 
 /** Remembers a choice the reader made in the chrome. */
 export function rememberSettings(settings: LabSettings, storage: Storage | null): void {
-  safeSet(storage, STORAGE_KEYS.stylesheet, formatStylesheet(settings.stylesheet));
-  safeSet(storage, STORAGE_KEYS.theme, settings.theme);
-  safeSet(storage, STORAGE_KEYS.themeAttribute, settings.themeAttribute);
+  setSafely(storage, storageKeys.stylesheet, formatStylesheet(settings.stylesheet));
+  setSafely(storage, storageKeys.theme, settings.theme);
+  setSafely(storage, storageKeys.themeAttribute, settings.themeAttribute);
 }
 
 /** The query string for `settings`, keeping unrelated parameters from `search`. */
@@ -115,10 +120,6 @@ export function settingsSearch(settings: LabSettings, search = ''): string {
   return text ? `?${text}` : '';
 }
 
-export type StylesheetState = 'none' | 'loading' | 'loaded' | 'error';
-
-let appliedThemeAttribute: string | null = null;
-
 /**
  * Loads the chosen stylesheet and writes the theme attribute on the root element.
  * `data-lab-stylesheet-state` on the root reports none, loading, loaded or error.
@@ -130,18 +131,18 @@ export function applySettings(settings: LabSettings, doc: Document = document): 
   };
   root.dataset.labStylesheet = settings.stylesheet.kind;
 
-  let link = doc.getElementById(STYLESHEET_LINK_ID) as HTMLLinkElement | null;
+  let link = doc.getElementById(stylesheetLinkId) as HTMLLinkElement | null;
   if (settings.stylesheet.kind === 'none') {
     link?.remove();
     setState('none');
   } else {
     const href =
-      settings.stylesheet.kind === 'reference' ? REFERENCE_STYLESHEET : settings.stylesheet.url;
+      settings.stylesheet.kind === 'reference' ? referenceStylesheet : settings.stylesheet.url;
     const resolved = new URL(href, doc.baseURI).href;
     if (!link || link.href !== resolved) {
       link?.remove();
       link = doc.createElement('link');
-      link.id = STYLESHEET_LINK_ID;
+      link.id = stylesheetLinkId;
       link.rel = 'stylesheet';
       link.addEventListener('load', () => setState('loaded'));
       link.addEventListener('error', () => setState('error'));
