@@ -7,7 +7,7 @@ import {
   type LayoutSpace,
 } from '../layout/layout.js';
 import { ResizableSplitView } from './resizable-split-view.js';
-import type { SplitViewPane } from './split-layout.js';
+import { resolveSplitSeparator, type SplitViewPane } from './split-layout.js';
 import { splitViewHooks as hooks } from './styling-hooks.js';
 
 export type { SplitViewPane, SplitViewPaneUnit } from './split-layout.js';
@@ -86,9 +86,6 @@ export interface ResizableSplitViewProps extends SplitViewBaseProps {
 
 export type SplitViewProps = FixedSplitViewProps | ResizableSplitViewProps;
 
-const defaultMinSize = 10;
-const defaultMaxSize = 90;
-
 function isResizable(props: SplitViewProps): props is ResizableSplitViewProps {
   return props.panes !== undefined;
 }
@@ -98,18 +95,8 @@ export function resolveSplitBounds(panes: readonly [SplitViewPane, SplitViewPane
   min: number;
   max: number;
 } {
-  const [first, second] = panes;
-  const lowest = Math.max(
-    first.minSize ?? defaultMinSize,
-    second.maxSize === undefined ? defaultMinSize : 100 - second.maxSize,
-  );
-  const highest = Math.min(
-    first.maxSize ?? defaultMaxSize,
-    second.minSize === undefined ? defaultMaxSize : 100 - second.minSize,
-  );
-  const min = clamp(lowest, 0, 100);
-  const max = clamp(highest, 0, 100);
-  return min <= max ? { min, max } : { min: max, max };
+  const { min, max } = resolveSplitSeparator(panes, [50, 50], { index: 0, available: 0 });
+  return { min, max };
 }
 
 /** The first pane's starting size: a stored size, else the default, else half, within the bounds. */
