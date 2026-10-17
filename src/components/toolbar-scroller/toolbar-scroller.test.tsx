@@ -83,7 +83,9 @@ describe('ToolbarScroller', () => {
       'Italic',
       'Underline',
     ]);
-    expectHooksMatchSpec(container, 'TOOLBAR-SCROLLER', { slots: 'all' });
+    expectHooksMatchSpec(container, 'TOOLBAR-SCROLLER', {
+      slots: ['strip', 'fade', 'scroll-button'],
+    });
   });
 
   it('UIC-TOOLBAR-SCROLLER-1.2 is a named horizontal toolbar with arrow-key focus', async () => {
@@ -185,7 +187,9 @@ describe('ToolbarScroller', () => {
     await nextFrame();
     expect(root).toHaveAttribute('data-overflow-start', 'true');
     expect(root).toHaveAttribute('data-overflow-end', 'true');
-    expectHooksMatchSpec(container, 'TOOLBAR-SCROLLER', { slots: 'all' });
+    expectHooksMatchSpec(container, 'TOOLBAR-SCROLLER', {
+      slots: ['strip', 'fade', 'scroll-button'],
+    });
 
     stubStrip(strip, 400, 100, 300);
     fireEvent.scroll(strip);
@@ -421,5 +425,83 @@ describe('ToolbarScroller', () => {
     italic.getBoundingClientRect = () => rect(30, 20);
     act(() => italic.focus());
     expect(strip.scrollLeft).toBe(36);
+  });
+
+  it('UIC-TOOLBAR-SCROLLER-3.1 draws tools from data as direct children of the scrolling strip', () => {
+    const { container } = render(
+      <ToolbarScroller
+        aria-label="Format"
+        items={[
+          { id: 'bold', label: 'Bold' },
+          { id: 'italic', label: 'Italic' },
+        ]}
+        renderItem={(item) => <button type="button">{item.label}</button>}
+      />,
+    );
+    const { root, strip } = parts(container);
+    expect(root).toHaveAttribute('data-overflow', 'scroll');
+    expect(Array.from(strip.children, (child) => child.textContent)).toEqual(['Bold', 'Italic']);
+  });
+
+  it('UIC-TOOLBAR-SCROLLER-3.2 keeps the tools that fit by priority and lists the others in a menu', async () => {
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      const width = this.classList.contains('ui-toolbar-scroller__item')
+        ? (this.textContent ?? '').length * 10
+        : 0;
+      return new DOMRect(0, 0, width, 24);
+    });
+    vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      return this.getAttribute('role') === 'toolbar' ? 160 : 0;
+    });
+    const onLink = vi.fn();
+    try {
+      const { container } = render(
+        <ToolbarScroller
+          aria-label="Format"
+          overflow="menu"
+          items={[
+            { id: 'bold', label: 'Bold' },
+            { id: 'italic', label: 'Italic' },
+            { id: 'underline', label: 'Underline' },
+            { id: 'link', label: 'Link', icon: 'copy', priority: 1, onAction: onLink },
+            { id: 'clear', label: 'Clear', isDisabled: true },
+          ]}
+          renderItem={(item) => <button type="button">{item.label}</button>}
+        />,
+      );
+      const toolbar = screen.getByRole('toolbar', { name: 'Format' });
+      expect(toolbar.parentElement).toHaveAttribute('data-overflow', 'menu');
+      // Link (40) is kept first, then Bold (40) and Italic (60); Underline would not fit.
+      expect(
+        Array.from(
+          container.querySelectorAll('.ui-toolbar-scroller__item'),
+          (item) => item.textContent,
+        ),
+      ).toEqual(['Bold', 'Italic', 'Link']);
+      expect(toolbar.lastElementChild).toHaveClass('ui-toolbar-scroller__overflow');
+      expect(container.querySelector('.ui-toolbar-scroller__fade')).toBeNull();
+      expectHooksMatchSpec(container, 'TOOLBAR-SCROLLER', { slots: ['strip', 'item', 'overflow'] });
+
+      await userEvent.tab();
+      expect(screen.getByRole('button', { name: 'Bold' })).toHaveFocus();
+      await userEvent.keyboard('{ArrowRight}{ArrowRight}{ArrowRight}');
+      const more = screen.getByRole('button', { name: '2 more items' });
+      expect(more).toHaveFocus();
+      await userEvent.keyboard('{Enter}');
+      expect(screen.getAllByRole('menuitem').map((item) => item.textContent)).toEqual([
+        'Underline',
+        'Clear',
+      ]);
+      expect(screen.getByRole('menuitem', { name: 'Clear' })).toHaveAttribute(
+        'aria-disabled',
+        'true',
+      );
+    } finally {
+      vi.restoreAllMocks();
+    }
   });
 });

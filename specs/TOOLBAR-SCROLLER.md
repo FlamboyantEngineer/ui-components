@@ -1,6 +1,6 @@
 # Toolbar Scroller
 
-`ToolbarScroller` holds one row of tools that scrolls horizontally when it is too narrow, instead of squeezing the tools over each other. Its strip is a React Aria `Toolbar`, so the tools take arrow-key focus. At an edge past which tools are hidden it shows a decorative fade and, by default, a scroll button.
+`ToolbarScroller` holds one row of tools that scrolls horizontally when it is too narrow, instead of squeezing the tools over each other. Its strip is a React Aria `Toolbar`, so the tools take arrow-key focus. At an edge past which tools are hidden it shows a decorative fade and, by default, a scroll button. With tools described as data it can instead move the tools that do not fit into a "more" menu, by priority.
 
 ## UIC-TOOLBAR-SCROLLER-1 - Row and toolbar
 
@@ -62,15 +62,34 @@ When a tool in the strip receives focus, the strip shall scroll so that the tool
 Implementation: `src/components/toolbar-scroller/toolbar-scroller.tsx`
 Verification: `src/components/toolbar-scroller/toolbar-scroller.test.tsx`, `e2e/toolbar-scroller.spec.ts`
 
+## UIC-TOOLBAR-SCROLLER-3 - Overflow menu
+
+### UIC-TOOLBAR-SCROLLER-3.1 - Tools as data
+
+`items` (each with an `id` and a `label`) and `renderItem(item)` shall draw the tools in place of `children`, as direct children of the strip in their order. `overflow` publishes `data-overflow` on the root: `scroll` (the default), or `menu`.
+
+Implementation: `src/components/toolbar-scroller/toolbar-scroller.tsx`
+Verification: `src/components/toolbar-scroller/toolbar-scroller.test.tsx`
+
+### UIC-TOOLBAR-SCROLLER-3.2 - Collapsing into a menu by priority
+
+With `overflow="menu"` and `items`, the strip shall render only the tools that fit, each in a `ui-toolbar-scroller__item` element, as [`useOverflowItems`](OVERFLOW-LIST.md) measures them: tools with a higher `priority` stay longest, and tools of the same priority leave from the end, keeping their order. While tools are hidden, a `ui-toolbar-scroller__overflow` element at the end of the strip holds an icon-only [Dropdown Menu](DROPDOWN-MENU.md) named by the provider's `moreItems` text with the count, listing the hidden tools by `label` with their `icon` and `isDisabled`; choosing one runs its `onAction`. The menu button is part of the toolbar, so the arrow keys reach it. The strip does not scroll, so no fades or scroll buttons render.
+
+Implementation: `src/components/toolbar-scroller/toolbar-scroller.tsx`, `src/utils/use-overflow-items.ts`, `labs/reference/toolbar-scroller.css`
+Verification: `src/components/toolbar-scroller/toolbar-scroller.test.tsx`, `e2e/toolbar-scroller.spec.ts`
+
 ## Hooks
 
-| Hook                                 | Kind      | Values         | Description                                             |
-| ------------------------------------ | --------- | -------------- | ------------------------------------------------------- |
-| `ui-toolbar-scroller`                | root      |                | The `<div>` around the strip, fades and scroll buttons. |
-| `ui-toolbar-scroller__strip`         | slot      |                | The scrolling `role="toolbar"` holding the tools.       |
-| `ui-toolbar-scroller__fade`          | slot      |                | A decorative fade over one edge.                        |
-| `ui-toolbar-scroller__scroll-button` | slot      |                | A scroll button (also `ui-icon-button`).                |
-| `data-edge`                          | attribute | `start`, `end` | The edge a fade or scroll button belongs to.            |
-| `data-overflow-start`                | state     | `true`         | Content is hidden past the start edge.                  |
-| `data-overflow-end`                  | state     | `true`         | Content is hidden past the end edge.                    |
-| `data-orientation`                   | state     | `horizontal`   | The strip's orientation (React Aria).                   |
+| Hook                                 | Kind      | Values           | Description                                             |
+| ------------------------------------ | --------- | ---------------- | ------------------------------------------------------- |
+| `ui-toolbar-scroller`                | root      |                  | The `<div>` around the strip, fades and scroll buttons. |
+| `ui-toolbar-scroller__strip`         | slot      |                  | The scrolling `role="toolbar"` holding the tools.       |
+| `ui-toolbar-scroller__item`          | slot      |                  | One kept tool, with `overflow="menu"`.                  |
+| `ui-toolbar-scroller__overflow`      | slot      |                  | The element holding the menu of hidden tools.           |
+| `ui-toolbar-scroller__fade`          | slot      |                  | A decorative fade over one edge.                        |
+| `ui-toolbar-scroller__scroll-button` | slot      |                  | A scroll button (also `ui-icon-button`).                |
+| `data-edge`                          | attribute | `start`, `end`   | The edge a fade or scroll button belongs to.            |
+| `data-overflow`                      | attribute | `scroll`, `menu` | What happens to tools that do not fit.                  |
+| `data-overflow-start`                | state     | `true`           | Content is hidden past the start edge.                  |
+| `data-overflow-end`                  | state     | `true`           | Content is hidden past the end edge.                    |
+| `data-orientation`                   | state     | `horizontal`     | The strip's orientation (React Aria).                   |
