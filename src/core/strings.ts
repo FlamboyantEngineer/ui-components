@@ -10,11 +10,7 @@ export interface UiStrings {
   contextMenu: string;
   loading: string;
   clear: string;
-  restore: string;
-  undo: string;
-  redo: string;
   help: string;
-  required: string;
   expand: string;
   collapse: string;
   search: string;
@@ -22,9 +18,6 @@ export interface UiStrings {
   previous: string;
   next: string;
   copy: string;
-  copied: string;
-  sortAscending: string;
-  sortDescending: string;
   resize: string;
   /** Names the search box that narrows a table's rows. */
   filterRows: string;
@@ -216,11 +209,7 @@ export const defaultStrings: UiStrings = {
   contextMenu: 'Context menu',
   loading: 'Loading',
   clear: 'Clear',
-  restore: 'Restore',
-  undo: 'Undo',
-  redo: 'Redo',
   help: 'Help',
-  required: 'Required',
   expand: 'Expand',
   collapse: 'Collapse',
   search: 'Search',
@@ -228,9 +217,6 @@ export const defaultStrings: UiStrings = {
   previous: 'Previous',
   next: 'Next',
   copy: 'Copy',
-  copied: 'Copied',
-  sortAscending: 'Sort ascending',
-  sortDescending: 'Sort descending',
   resize: 'Resize',
   filterRows: 'Filter rows',
   rowActions: 'Actions',
