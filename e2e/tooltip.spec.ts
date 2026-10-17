@@ -1,0 +1,136 @@
+import type { Locator, Page } from '@playwright/test';
+import { expect, test } from './fixtures.js';
+
+/**
+ * Scrolling closes an open hint, so bring a trigger into view and let the scroll events settle
+ * before opening its hint.
+ */
+async function bringIntoView(page: Page, trigger: Locator) {
+  await trigger.scrollIntoViewIfNeeded();
+  await page.evaluate(
+    () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))),
+  );
+}
+
+/** Hover opens a hint only for pointer input, which React Aria learns from earlier pointer moves. */
+async function usePointer(page: Page) {
+  await page.mouse.move(2, 2);
+  await page.mouse.move(4, 4);
+}
+
+test.describe('Tooltip lab', () => {
+  test('UIC-TOOLTIP-1.1 UIC-TOOLTIP-1.2 opens after the hover delay and at once on keyboard focus', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('tooltip');
+    const trigger = page.locator('[data-lab-cell="placement=bottom"]').getByRole('button');
+    const hint = page.getByRole('tooltip', { name: 'Placed bottom' });
+    await bringIntoView(page, trigger);
+    await usePointer(page);
+    // Scrolling closed the open hints; let React Aria's warm-up window after a close expire.
+    await page.waitForTimeout(1000);
+    const box = await trigger.boundingBox();
+    if (!box) throw new Error('trigger has no box');
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    // The exact delay is covered by the unit tests; here the hint must not appear at once.
+    expect(await hint.count()).toBe(0);
+    await expect(hint).toBeVisible();
+    await expect(trigger).toHaveAttribute(
+      'aria-describedby',
+      (await hint.getAttribute('id')) ?? '',
+    );
+    await page.mouse.move(0, 0);
+    await expect(hint).toHaveCount(0);
+
+    const focusOnly = page.locator('[data-lab-cell="option=focus only"]').getByRole('button');
+    await page.locator('[data-lab-cell="option=long delay"]').getByRole('button').focus();
+    await page.keyboard.press('Tab');
+    await expect(focusOnly).toBeFocused();
+    await expect(page.getByRole('tooltip', { name: 'Hint with focus only' })).toBeVisible();
+  });
+
+  test('UIC-TOOLTIP-1.3 closes on Escape and keeps focus on the trigger', async ({ page, lab }) => {
+    await lab.open('tooltip');
+    const trigger = page.locator('[data-lab-cell="placement=top"]').getByRole('button');
+    await bringIntoView(page, trigger);
+    await page.locator('[data-lab-cell="variant=info state=open"]').getByRole('button').focus();
+    await page.keyboard.press('Tab');
+    await expect(trigger).toBeFocused();
+    const hint = page.getByRole('tooltip', { name: 'Placed top' });
+    await expect(hint).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(hint).toHaveCount(0);
+    await expect(trigger).toBeFocused();
+  });
+
+  test('UIC-TOOLTIP-1.5 places the hint on the requested side', async ({ page, lab }) => {
+    await lab.open('tooltip');
+    for (const placement of ['top', 'bottom', 'end'] as const) {
+      const trigger = page.locator(`[data-lab-cell="placement=${placement}"]`).getByRole('button');
+      await bringIntoView(page, trigger);
+      await trigger.focus();
+      const hint = page.getByRole('tooltip', { name: `Placed ${placement}` });
+      await expect(hint).toBeVisible();
+      const triggerBox = await trigger.boundingBox();
+      const hintBox = await hint.boundingBox();
+      if (!triggerBox || !hintBox) throw new Error('missing boxes');
+      if (placement === 'top') {
+        expect(hintBox.y + hintBox.height).toBeLessThanOrEqual(triggerBox.y);
+      }
+      if (placement === 'bottom') {
+        expect(Math.round(hintBox.y - (triggerBox.y + triggerBox.height))).toBe(8);
+      }
+      if (placement === 'end') {
+        expect(hintBox.x).toBeGreaterThanOrEqual(triggerBox.x + triggerBox.width);
+        await expect(hint).toHaveAttribute('data-placement', 'right');
+      }
+      await expect(hint.locator('.ui-tooltip__arrow')).toHaveAttribute(
+        'data-placement',
+        placement === 'end' ? 'right' : placement,
+      );
+      await trigger.blur();
+    }
+  });
+
+  test('UIC-TOOLTIP-1.6 draws both variants', async ({ page, lab }) => {
+    await lab.open('tooltip');
+    await expect(page.getByRole('tooltip', { name: 'Save changes' })).toHaveAttribute(
+      'data-variant',
+      'default',
+    );
+    const info = page.getByRole('tooltip', { name: 'Totals refresh every hour.' });
+    await expect(info).toHaveAttribute('data-variant', 'info');
+    const [defaultBackground, infoBackground] = await Promise.all([
+      page
+        .getByRole('tooltip', { name: 'Save changes' })
+        .evaluate((node) => getComputedStyle(node).backgroundColor),
+      info.evaluate((node) => getComputedStyle(node).backgroundColor),
+    ]);
+    expect(defaultBackground).not.toBe(infoBackground);
+    await lab.expectAccessible();
+  });
+
+  test('UIC-BUTTON-1.6 UIC-ICON-BUTTON-1.5 explains pending and focusable disabled buttons', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('tooltip');
+    const disabled = page
+      .locator('[data-lab-cell="control=button state=focusable disabled"]')
+      .getByRole('button');
+    await bringIntoView(page, disabled);
+    await disabled.focus();
+    await expect(page.getByRole('tooltip', { name: 'Only owners can publish' })).toBeVisible();
+    await expect(disabled).toHaveAttribute('aria-disabled', 'true');
+    await disabled.blur();
+
+    const pending = page
+      .locator('[data-lab-cell="control=icon button state=pending"]')
+      .getByRole('button');
+    await usePointer(page);
+    await pending.hover();
+    await expect(page.getByRole('tooltip', { name: 'Undo the last edit' })).toBeVisible();
+    await expect(pending).toHaveAttribute('aria-label', 'Undo');
+  });
+});

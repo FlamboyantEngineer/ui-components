@@ -353,3 +353,406 @@ body {
     transform: rotate(360deg);
   }
 }
+
+/* Progress Bar and Spinner */
+
+.ui-progress-bar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 4px 8px;
+  min-width: 80px;
+}
+
+.ui-progress-bar__label {
+  grid-column: 1;
+  font-size: 13px;
+}
+
+.ui-progress-bar__value {
+  grid-column: 2;
+  color: var(--ref-muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-progress-bar__track {
+  grid-column: 1 / -1;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--ref-border);
+}
+
+.ui-progress-bar[data-size='sm'] .ui-progress-bar__track {
+  height: 4px;
+}
+
+.ui-progress-bar[data-size='lg'] .ui-progress-bar__track {
+  height: 8px;
+}
+
+.ui-progress-bar__fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--ref-accent);
+  transition: width 0.2s;
+}
+
+.ui-progress-bar[data-indeterminate] .ui-progress-bar__fill {
+  width: 40%;
+  animation: ref-progress-slide 1.2s ease-in-out infinite;
+}
+
+@keyframes ref-progress-slide {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(250%);
+  }
+}
+
+.ui-spinner {
+  display: inline-block;
+  box-sizing: border-box;
+  width: 16px;
+  height: 16px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  vertical-align: -0.2em;
+  animation: ref-spin 0.8s linear infinite;
+}
+
+.ui-spinner[data-size='sm'] {
+  width: 12px;
+  height: 12px;
+}
+
+.ui-spinner[data-size='lg'] {
+  width: 20px;
+  height: 20px;
+}
+
+/* Circular Progress */
+
+.ui-circular-progress {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ui-circular-progress__ring {
+  flex: none;
+  width: 24px;
+  height: 24px;
+}
+
+.ui-circular-progress[data-size='sm'] .ui-circular-progress__ring {
+  width: 16px;
+  height: 16px;
+}
+
+.ui-circular-progress[data-size='lg'] .ui-circular-progress__ring {
+  width: 32px;
+  height: 32px;
+}
+
+.ui-circular-progress__track {
+  stroke: var(--ref-border);
+  stroke-width: 4;
+}
+
+.ui-circular-progress__fill {
+  stroke: var(--ref-accent);
+  stroke-width: 4;
+  transition: stroke-dashoffset 0.2s;
+}
+
+.ui-circular-progress[data-indeterminate] .ui-circular-progress__ring {
+  animation: ref-spin 1s linear infinite;
+}
+
+.ui-circular-progress__label {
+  font-size: 13px;
+}
+
+.ui-circular-progress__value {
+  color: var(--ref-muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Loading Overlay */
+
+.ui-loading-region {
+  position: relative;
+  display: block;
+}
+
+.ui-loading-region[data-loading] .ui-loading-region__content {
+  user-select: none;
+}
+
+.ui-loading-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  padding: 16px;
+  background: color-mix(in srgb, var(--ref-canvas) 72%, transparent);
+}
+
+.ui-loading-overlay[data-presentation='scrim'] {
+  padding: 0;
+}
+
+.ui-loading-card {
+  display: grid;
+  gap: 8px;
+  box-sizing: border-box;
+  width: min(100%, 400px);
+  padding: 16px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-raised);
+  box-shadow: var(--ref-shadow);
+}
+
+.ui-loading-card__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ui-loading-card__label {
+  margin: 0;
+  font-weight: 600;
+}
+
+.ui-loading-card__value,
+.ui-loading-card__step {
+  flex: none;
+  color: var(--ref-muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-loading-card__progress {
+  min-width: 0;
+}
+
+.ui-loading-card__description {
+  margin: 0;
+  color: var(--ref-muted);
+}
+
+.ui-loading-card__footer {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  color: var(--ref-muted);
+  font-size: 12px;
+}
+
+.ui-loading-card__hint {
+  flex: 1 1 auto;
+}
+
+/* Toast */
+
+.ui-toast-region {
+  position: fixed;
+  inset-block-end: 16px;
+  inset-inline-end: 16px;
+  z-index: 50;
+  width: min(400px, calc(100vw - 32px));
+  border-radius: var(--ref-radius);
+  outline: none;
+}
+
+.ui-toast-region[data-focus-visible] {
+  outline: 2px solid var(--ref-focus);
+  outline-offset: 4px;
+}
+
+.ui-toast-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ui-toast {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: start;
+  gap: 8px;
+  box-sizing: border-box;
+  padding: 10px 10px 10px 12px;
+  border: 1px solid var(--ref-border);
+  border-inline-start: 4px solid var(--ref-info);
+  border-radius: var(--ref-radius);
+  background: var(--ref-raised);
+  box-shadow: var(--ref-shadow);
+  outline: none;
+}
+
+.ui-toast[data-focus-visible] {
+  box-shadow:
+    0 0 0 2px var(--ref-focus),
+    var(--ref-shadow);
+}
+
+.ui-toast[data-tone='success'] {
+  border-inline-start-color: var(--ref-success);
+}
+
+.ui-toast[data-tone='warning'] {
+  border-inline-start-color: var(--ref-warning);
+}
+
+.ui-toast[data-tone='error'] {
+  border-inline-start-color: var(--ref-danger);
+}
+
+.ui-toast__icon {
+  margin-block-start: 3px;
+  color: var(--ref-info);
+}
+
+.ui-toast[data-tone='success'] .ui-toast__icon {
+  color: var(--ref-success);
+}
+
+.ui-toast[data-tone='warning'] .ui-toast__icon {
+  color: var(--ref-warning);
+}
+
+.ui-toast[data-tone='error'] .ui-toast__icon {
+  color: var(--ref-danger);
+}
+
+.ui-toast__content {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  padding-block: 1px;
+}
+
+.ui-toast__title {
+  font-weight: 600;
+}
+
+.ui-toast__description {
+  color: var(--ref-muted);
+  font-size: 13px;
+}
+
+.ui-toast__action,
+.ui-toast__close {
+  flex: none;
+}
+
+/* Tooltip and Truncation Tooltip */
+
+.ui-tooltip {
+  box-sizing: border-box;
+  max-width: min(280px, calc(100vw - 24px));
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: var(--ref-text);
+  color: var(--ref-canvas);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  box-shadow: var(--ref-shadow);
+}
+
+.ui-tooltip[data-variant='info'] {
+  border: 1px solid var(--ref-border);
+  background: var(--ref-raised);
+  color: var(--ref-text);
+  font-weight: 400;
+}
+
+.ui-tooltip[data-entering] {
+  animation: ref-fade 0.12s ease-out;
+}
+
+.ui-tooltip[data-exiting] {
+  animation: ref-fade 0.12s ease-in reverse;
+}
+
+@keyframes ref-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+.ui-tooltip__arrow {
+  width: 0;
+  height: 0;
+  border: 4px solid transparent;
+}
+
+.ui-tooltip__arrow[data-placement='top'] {
+  border-top-color: var(--ref-text);
+}
+
+.ui-tooltip__arrow[data-placement='bottom'] {
+  border-bottom-color: var(--ref-text);
+}
+
+.ui-tooltip__arrow[data-placement='left'] {
+  border-left-color: var(--ref-text);
+}
+
+.ui-tooltip__arrow[data-placement='right'] {
+  border-right-color: var(--ref-text);
+}
+
+.ui-tooltip[data-variant='info'] .ui-tooltip__arrow {
+  border-color: transparent;
+}
+
+.ui-tooltip__content {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.ui-truncation-tooltip {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+
+.ui-truncation-tooltip__panel {
+  white-space: normal;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-progress-bar__fill,
+  .ui-circular-progress__fill {
+    transition: none;
+  }
+
+  .ui-progress-bar[data-indeterminate] .ui-progress-bar__fill,
+  .ui-circular-progress[data-indeterminate] .ui-circular-progress__ring,
+  .ui-spinner,
+  .ui-tooltip[data-entering],
+  .ui-tooltip[data-exiting] {
+    animation: none;
+  }
+}

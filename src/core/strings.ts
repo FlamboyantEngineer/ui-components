@@ -21,6 +21,8 @@ export interface UiStrings {
   sortAscending: string;
   sortDescending: string;
   itemCount: (count: number) => string;
+  /** A step counter such as `2 of 5`. */
+  stepOfTotal: (current: number, total: number) => string;
 }
 
 export const defaultStrings: UiStrings = {
@@ -45,4 +47,5 @@ export const defaultStrings: UiStrings = {
   sortAscending: 'Sort ascending',
   sortDescending: 'Sort descending',
   itemCount: (count) => (count === 1 ? '1 item' : `${count} items`),
+  stepOfTotal: (current, total) => `${current} of ${total}`,
 };

@@ -22,7 +22,7 @@ const replacedStrings: Partial<UiStrings> = {
 
 function StringValue({ name }: { name: keyof UiStrings }) {
   const value = useUiStrings()[name];
-  return <code>{typeof value === 'function' ? value(3) : value}</code>;
+  return <code>{typeof value === 'function' ? value(3, 5) : value}</code>;
 }
 
 const stringNames = Object.keys(defaultStrings) as Array<keyof UiStrings>;
@@ -48,7 +48,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Strings"
-      description="Built-in text. Counted strings are shown for a count of 3. The replaced column overrides a few keys."
+      description="Built-in text. Counted strings are shown for a count of 3 (of 5 for step counters). The replaced column overrides a few keys."
     >
       <StateMatrix
         axes={{ key: stringNames, source: ['default', 'replaced'] }}

@@ -32,6 +32,13 @@ Verification: `src/components/icon-button/icon-button.test.tsx`, `e2e/icon-butto
 Implementation: `src/components/icon-button/icon-button.tsx`
 Verification: `src/components/icon-button/icon-button.test.tsx`
 
+### UIC-ICON-BUTTON-1.5 - Tooltip
+
+`tooltip` shall show its content in a [Tooltip](TOOLTIP.md) for the button with the same rules as [Button](BUTTON.md)'s `tooltip`: hover and keyboard focus open it, no wrapper element is added, and a natively disabled button shows none unless it is `focusableWhenDisabled`. The tooltip describes the button; `label` stays its accessible name.
+
+Implementation: `src/components/icon-button/icon-button.tsx`, `src/components/tooltip/tooltip.tsx`
+Verification: `src/components/icon-button/icon-button.test.tsx`, `e2e/tooltip.spec.ts`
+
 ## Hooks
 
 | Hook                      | Kind      | Values                                                                                  | Description                     |
