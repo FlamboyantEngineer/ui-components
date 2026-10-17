@@ -21,6 +21,10 @@ export interface UiStrings {
   sortAscending: string;
   sortDescending: string;
   itemCount: (count: number) => string;
+  retry: string;
+  loadMore: string;
+  remainingCount: (count: number) => string;
+  countOrMore: (count: number) => string;
 }
 
 export const defaultStrings: UiStrings = {
@@ -45,4 +49,8 @@ export const defaultStrings: UiStrings = {
   sortAscending: 'Sort ascending',
   sortDescending: 'Sort descending',
   itemCount: (count) => (count === 1 ? '1 item' : `${count} items`),
+  retry: 'Retry',
+  loadMore: 'Load more',
+  remainingCount: (count) => `${count} remaining`,
+  countOrMore: (count) => `${count} or more`,
 };
