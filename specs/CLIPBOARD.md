@@ -1,6 +1,6 @@
 # Clipboard
 
-Copy utilities in `src/utils/clipboard.ts`. They use the asynchronous Clipboard API and fall back to a selection copy where that API is missing (insecure origins, older browsers) or refuses. Callers show their own success or failure feedback from the result.
+Copy utilities in `src/utils/clipboard.ts`. They use the asynchronous Clipboard API and fall back to a selection copy where that API is missing (insecure origins, older browsers) or refuses. Callers show their own success or failure feedback from the result, or keep it for a while with `useClipboard` (`src/utils/use-clipboard.ts`), which [Copy Button](COPY-BUTTON.md) builds on.
 
 ## UIC-CLIPBOARD-1 - Copying
 
@@ -24,3 +24,19 @@ Verification: `src/utils/clipboard.test.ts`
 
 Implementation: `src/utils/clipboard.ts`
 Verification: `src/utils/clipboard.test.ts`
+
+## UIC-CLIPBOARD-2 - Copy feedback
+
+### UIC-CLIPBOARD-2.1 - Copied state with a timeout
+
+`useClipboard({ timeout })` shall return `copy(text)`, which copies with `copyText` (taking its `clipboard` and `fallback` options) and resolves whether the text reached the clipboard, and `status`: `copied` after a successful copy, until `timeout` milliseconds (2000 by default) after the last copy, then `idle`. A new copy restarts the timeout, and `reset()` returns to `idle` at once.
+
+Implementation: `src/utils/use-clipboard.ts`
+Verification: `src/utils/use-clipboard.test.ts`, `src/components/copy-button/copy-button.test.tsx`
+
+### UIC-CLIPBOARD-2.2 - Refused copies and unmounting
+
+A copy that does not reach the clipboard shall set `status` to `failed` for the same timeout. Unmounting clears the pending timeout, and a copy that settles after unmounting changes nothing.
+
+Implementation: `src/utils/use-clipboard.ts`
+Verification: `src/utils/use-clipboard.test.ts`

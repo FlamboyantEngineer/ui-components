@@ -1,0 +1,19 @@
+/* Copy Button. The live region stays visually hidden; the check mark takes the success colour. */
+
+.ui-copy-button {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+}
+
+.ui-copy-button[data-copied] > .ui-copy-button__button {
+  color: var(--ref-success);
+}
+
+.ui-copy-button[data-failed] > .ui-copy-button__button {
+  color: var(--ref-danger);
+}
+
+.ui-copy-button__status {
+  white-space: nowrap;
+}

@@ -7,6 +7,8 @@ export { renderElement } from './render-element.js';
 export type { ElementRender, RenderElementOptions } from './render-element.js';
 export { copyRichText, copyText } from './clipboard.js';
 export type { ClipboardWriter, CopyOptions, RichCopyOptions, RichCopyResult } from './clipboard.js';
+export { DEFAULT_COPY_TIMEOUT, useClipboard } from './use-clipboard.js';
+export type { ClipboardOptions, ClipboardState, CopyStatus } from './use-clipboard.js';
 export { DOWNLOAD_URL_LIFETIME, downloadBlob, downloadUrl } from './download.js';
 export {
   DEFAULT_OVERLAY_GAP,
