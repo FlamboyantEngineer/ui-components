@@ -55,7 +55,7 @@ describe('InlineError', () => {
     await userEvent.keyboard(' ');
     expect(onRetry).toHaveBeenCalledTimes(3);
     expect(onSubmit).not.toHaveBeenCalled();
-    expectHooksMatchSpec(container, 'INLINE-ERROR', { slots: 'all' });
+    expectHooksMatchSpec(container, 'INLINE-ERROR', { slots: ['icon', 'message', 'retry'] });
 
     rerender(
       <UiProvider strings={{ retry: 'Réessayer' }}>
@@ -127,5 +127,44 @@ describe('InlineError', () => {
     expect(screen.getByTestId('probe')).toBe(root);
     expect(root.hidden).toBe(true);
     expect(root).toHaveTextContent('Unavailable');
+  });
+
+  it('UIC-INLINE-ERROR-2.1 draws each tone with its glyph and urgency on one element', () => {
+    const { container, rerender } = render(<InlineError>Name is taken</InlineError>);
+    const root = container.firstElementChild as HTMLElement;
+    expect(root).toHaveAttribute('data-tone', 'danger');
+    for (const [tone, glyph, role, live] of [
+      ['warning', 'warning', 'status', 'polite'],
+      ['success', 'success', 'status', 'polite'],
+      ['danger', 'error', 'alert', 'assertive'],
+    ] as const) {
+      rerender(<InlineError tone={tone}>Message</InlineError>);
+      expect(container.firstElementChild).toBe(root);
+      expect(root).toHaveAttribute('data-tone', tone);
+      expect(root).toHaveAttribute('role', role);
+      expect(root).toHaveAttribute('aria-live', live);
+      expect(root).toHaveAttribute('aria-atomic', 'true');
+      expect(root.querySelector('.ui-inline-error__icon')).toHaveAttribute('data-glyph', glyph);
+      expect(root).not.toHaveAttribute('data-pending');
+      expectHooksMatchSpec(container, 'INLINE-ERROR', { slots: ['icon', 'message'] });
+    }
+  });
+
+  it('UIC-INLINE-ERROR-2.2 shows a pending check as a polite status with a spinner', () => {
+    const { container, rerender } = render(<InlineError isPending>Checking the name…</InlineError>);
+    const root = screen.getByRole('status');
+    expect(root).toHaveAttribute('aria-live', 'polite');
+    expect(root).toHaveAttribute('data-pending', 'true');
+    expect(root).not.toHaveAttribute('aria-busy');
+    const spinner = root.querySelector('.ui-inline-error__spinner');
+    expect(spinner).toHaveAttribute('aria-hidden', 'true');
+    expect(spinner).toBe(root.firstElementChild);
+    expect(root.querySelector('.ui-inline-error__icon')).toBeNull();
+    expectHooksMatchSpec(container, 'INLINE-ERROR', { slots: ['spinner', 'message'] });
+
+    rerender(<InlineError tone="success">The name is free</InlineError>);
+    expect(screen.getByRole('status')).toBe(root);
+    expect(root.querySelector('.ui-inline-error__spinner')).toBeNull();
+    expect(root).not.toHaveAttribute('data-pending');
   });
 });

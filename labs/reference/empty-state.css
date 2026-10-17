@@ -23,6 +23,29 @@
 .ui-empty-state__description {
   margin: 0;
 }
+.ui-empty-state .ui-empty-state__icon {
+  width: 32px;
+  height: 32px;
+  margin-block-end: 4px;
+  color: var(--ref-muted);
+}
+.ui-empty-state[data-size='sm'] .ui-empty-state__icon {
+  width: 20px;
+  height: 20px;
+  margin-block-end: 0;
+}
+.ui-empty-state__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-block-start: 8px;
+  font-style: normal;
+}
+.ui-empty-state[data-size='sm'] .ui-empty-state__actions {
+  justify-content: flex-start;
+  margin-block-start: 4px;
+}
 
 .ui-banner__spinner,
 .ui-empty-state__spinner {

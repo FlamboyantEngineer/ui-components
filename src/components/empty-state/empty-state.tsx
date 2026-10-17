@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps, Size } from '../../core/props.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { Icon, toIconProps, type IconSource } from '../icon/icon.js';
 import type { HeadingLevel } from '../section-header/section-header.js';
 
 /** `empty`: loaded with nothing to show. `loading`: being fetched. `error`: could not load. */
@@ -20,14 +21,25 @@ export interface EmptyStateProps extends BaseProps, Pick<NativeProps<'section'>,
   size?: EmptyStateSize | undefined;
   /** The title's heading level. Defaults to 3. */
   headingLevel?: HeadingLevel | undefined;
+  /** A decorative illustration or glyph over the text: a built-in glyph name or any node. */
+  icon?: IconSource;
+  /** Calls to action under the description, such as a button that adds the first item. */
+  actions?: ReactNode;
 }
 
-const hooks = createHooks('empty-state', ['spinner', 'title', 'description']);
+const hooks = createHooks('empty-state', ['spinner', 'icon', 'title', 'description', 'actions']);
 
 const loadingRegion = { role: 'status', 'aria-live': 'polite', 'aria-atomic': true } as const;
 
 function toTypographicEllipsis(node: ReactNode): ReactNode {
   return typeof node === 'string' ? node.replace(/\.{3}/g, '…') : node;
+}
+
+/** The decorative lead: the spinner while loading, else the icon, if any. */
+function EmptyStateLead({ icon, isLoading }: { icon: IconSource; isLoading: boolean }) {
+  if (isLoading) return <span {...hooks.slot('spinner')} aria-hidden="true" />;
+  if (isEmptyNode(icon)) return null;
+  return <Icon {...toIconProps(icon)} className={hooks.slotClass('icon')} />;
 }
 
 /**
@@ -40,6 +52,8 @@ export function EmptyState({
   variant = 'empty',
   size = 'md',
   headingLevel = 3,
+  icon,
+  actions,
   className,
   ...rest
 }: EmptyStateProps) {
@@ -52,11 +66,12 @@ export function EmptyState({
       {...hooks.root({ className, data: { variant, size } })}
       {...(isLoading ? loadingRegion : {})}
     >
-      {isLoading ? <span {...hooks.slot('spinner')} aria-hidden="true" /> : null}
+      <EmptyStateLead icon={icon} isLoading={isLoading} />
       {isEmptyNode(title) ? null : <Heading {...hooks.slot('title')}>{title}</Heading>}
       <p {...hooks.slot('description')}>
         {isLoading ? toTypographicEllipsis(description) : description}
       </p>
+      {isEmptyNode(actions) ? null : <div {...hooks.slot('actions')}>{actions}</div>}
     </section>
   );
 }

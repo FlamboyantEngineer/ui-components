@@ -18,7 +18,11 @@ const countChildren: BadgeProps = { count: 12, children: '12' };
 const cappedLabel: BadgeProps = { children: 'Tag', max: 9 };
 // @ts-expect-error A count badge has no shape variant.
 const countVariant: BadgeProps = { count: 3, variant: 'solid' };
-void [countProps, stringCount, countChildren, cappedLabel, countVariant];
+// @ts-expect-error A dot badge has no text.
+const dotChildren: BadgeProps = { variant: 'dot', children: 'New' };
+// @ts-expect-error A count badge takes no icons.
+const countIcon: BadgeProps = { count: 3, startIcon: 'info' };
+void [countProps, stringCount, countChildren, cappedLabel, countVariant, dotChildren, countIcon];
 
 describe('Badge', () => {
   it('UIC-BADGE-1.1 renders a non-interactive span with its label and no states', () => {
@@ -201,5 +205,71 @@ describe('Badge', () => {
     rerender(<Badge count={12} max={9} placement="overlay" tone="danger" size="sm" />);
     expect(container.firstElementChild).toHaveAttribute('data-placement', 'overlay');
     expectHooksMatchSpec(container, 'BADGE');
+  });
+
+  it('UIC-BADGE-1.7 draws decorative icons before and after the label', () => {
+    const { container, rerender } = render(
+      <Badge startIcon="check" endIcon={<svg data-testid="custom" />} tone="success">
+        Ripe
+      </Badge>,
+    );
+    const root = container.firstElementChild as HTMLElement;
+    const [start, label, end] = Array.from(root.children);
+    expect(start).toHaveClass('ui-icon', 'ui-badge__start-icon');
+    expect(start).toHaveAttribute('data-glyph', 'check');
+    expect(start).toHaveAttribute('aria-hidden', 'true');
+    expect(label).toHaveClass('ui-badge__label');
+    expect(end).toHaveClass('ui-badge__end-icon');
+    expect(screen.getByTestId('custom').parentElement).toBe(end);
+    expectHooksMatchSpec(container, 'BADGE', { slots: ['start-icon', 'label', 'end-icon'] });
+
+    rerender(
+      <Badge variant="status" startIcon="info" endIcon={null}>
+        Fresh
+      </Badge>,
+    );
+    const status = container.firstElementChild as HTMLElement;
+    expect(
+      Array.from(status.children, (node) => node.classList[node.classList.length - 1]),
+    ).toEqual(['ui-badge__dot', 'ui-badge__start-icon', 'ui-badge__label']);
+    expect(container.querySelector('.ui-badge__end-icon')).toBeNull();
+  });
+
+  it('UIC-BADGE-3.4 hides a zero count only when asked', () => {
+    const { container, rerender } = render(<Badge count={0} showZero={false} />);
+    expect(container.firstElementChild).toBeNull();
+    rerender(<Badge count={0.4} showZero={false} />);
+    expect(container.firstElementChild).toBeNull();
+    rerender(<Badge count={0} showZero={false} more />);
+    expect(container.querySelector('.ui-badge__label')).toHaveTextContent('0+');
+    rerender(<Badge count={2} showZero={false} />);
+    expect(container.querySelector('.ui-badge__label')).toHaveTextContent('2');
+    rerender(<Badge count={0} />);
+    expect(container.querySelector('.ui-badge__label')).toHaveTextContent('0');
+    expectHooksMatchSpec(container, 'BADGE');
+  });
+
+  it('UIC-BADGE-4.1 draws an empty dot marker, decorative unless labelled', () => {
+    const { container, rerender } = render(<Badge variant="dot" tone="danger" />);
+    const root = () => container.firstElementChild as HTMLElement;
+    expect(root()).toHaveAttribute('data-variant', 'dot');
+    expect(root()).toHaveAttribute('data-tone', 'danger');
+    expect(root()).toHaveAttribute('data-size', 'md');
+    expect(root()).toHaveAttribute('data-placement', 'inline');
+    expect(root()).toHaveAttribute('aria-hidden', 'true');
+    expect(root()).toBeEmptyDOMElement();
+    expectHooksMatchSpec(container, 'BADGE');
+
+    rerender(<Badge variant="dot" placement="overlay" size="sm" aria-label="New messages" />);
+    expect(root()).toHaveAttribute('data-placement', 'overlay');
+    expect(root()).not.toHaveAttribute('aria-hidden');
+    expect(root()).not.toHaveAttribute('aria-label');
+    expect(root().querySelector('.ui-badge__accessible-label')?.textContent).toBe('New messages');
+    expect(container.querySelector('[role], [aria-live]')).toBeNull();
+    expectHooksMatchSpec(container, 'BADGE', { slots: ['accessible-label'] });
+
+    rerender(<Badge variant="dot" aria-label="New messages" aria-hidden />);
+    expect(root()).toHaveAttribute('aria-hidden', 'true');
+    expect(root()).toBeEmptyDOMElement();
   });
 });

@@ -85,6 +85,27 @@ mountLab(
       />
     </LabSection>
     <LabSection
+      title="Tones and pending checks"
+      description="Danger is an assertive alert; warning, success and a check still running are polite statuses with their own glyph or spinner."
+    >
+      <StateMatrix
+        axes={{ tone: ['danger', 'warning', 'success'], state: ['settled', 'pending'] }}
+        render={({ tone, state }) => (
+          <div style={{ width: 280 }}>
+            <InlineError tone={tone} isPending={state === 'pending'}>
+              {state === 'pending'
+                ? 'Checking the name…'
+                : tone === 'danger'
+                  ? 'The name is taken.'
+                  : tone === 'warning'
+                    ? 'The name is long.'
+                    : 'The name is free.'}
+            </InlineError>
+          </div>
+        )}
+      />
+    </LabSection>
+    <LabSection
       title="Retry lifecycle"
       description="The retry button stays pending while the request runs; success replaces the error with content."
     >

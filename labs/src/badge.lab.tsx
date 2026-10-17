@@ -43,6 +43,38 @@ function OverlayDemo() {
   );
 }
 
+function ZeroDemo() {
+  const [unread, setUnread] = useState(2);
+  return (
+    <div data-lab-demo="zero">
+      <span data-lab-overlay-host="inbox" style={{ position: 'relative', display: 'inline-flex' }}>
+        <IconButton
+          icon="check"
+          label={`Mark one read, ${unread} unread`}
+          variant="secondary"
+          onPress={() => setUnread((value) => Math.max(0, value - 1))}
+        />
+        <Badge
+          count={unread}
+          showZero={false}
+          tone="danger"
+          size="sm"
+          placement="overlay"
+          aria-hidden
+        />
+      </span>{' '}
+      <span data-lab-overlay-host="dot" style={{ position: 'relative', display: 'inline-flex' }}>
+        <IconButton icon="users" label="Team, new activity" variant="secondary" />
+        <Badge variant="dot" tone="success" placement="overlay" aria-label="New activity" />
+      </span>
+      <p>
+        The count hides at zero; the dot marks news without a number. Unread:{' '}
+        <output data-lab-output="unread">{unread}</output>
+      </p>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -103,10 +135,41 @@ mountLab(
       />
     </LabSection>
     <LabSection
+      title="Icons and dots"
+      description="Leading and trailing icons beside a label, and dot markers with no text in every tone and size."
+    >
+      <StateMatrix
+        axes={{ icon: ['start', 'end', 'both', 'status and start'], tone: tones }}
+        render={({ icon, tone }) => (
+          <Badge
+            variant={icon === 'status and start' ? 'status' : 'subtle'}
+            announce={false}
+            tone={tone}
+            startIcon={icon === 'end' ? undefined : 'check'}
+            endIcon={icon === 'end' || icon === 'both' ? 'chevron-down' : undefined}
+          >
+            {labels[tone]}
+          </Badge>
+        )}
+      />
+      <StateMatrix
+        axes={{ dot: tones, size: sizes }}
+        render={({ dot, size }) => (
+          <Badge variant="dot" tone={dot} size={size} aria-label={`${labels[dot]} marker`} />
+        )}
+      />
+    </LabSection>
+    <LabSection
       title="Overlay counts"
       description="Counts pinned to the upper trailing corner of a positioned host, without resizing it."
     >
       <OverlayDemo />
+    </LabSection>
+    <LabSection
+      title="Hidden zero and dot markers"
+      description="Press the first button to read messages: its count disappears at zero. The second host carries a labelled dot."
+    >
+      <ZeroDemo />
     </LabSection>
   </>,
 );

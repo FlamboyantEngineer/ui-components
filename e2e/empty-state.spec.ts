@@ -7,7 +7,7 @@ test.describe('Empty State lab', () => {
   }) => {
     await lab.open('empty-state');
     const cells = page.locator('table[data-lab-matrix="variant size"] td[data-lab-cell]');
-    expect(await cells.count()).toBe(3 * 2 * 2);
+    expect(await cells.count()).toBe(3 * 2 * 3);
     const medium = page.locator('[data-lab-cell="variant=error size=md"] .ui-empty-state').first();
     const small = page.locator('[data-lab-cell="variant=error size=sm"] .ui-empty-state').first();
     expect(await medium.evaluate((node) => getComputedStyle(node).textAlign)).toBe('center');
@@ -40,6 +40,36 @@ test.describe('Empty State lab', () => {
     await page.locator('[data-lab-action="finish"]').click();
     await expect(demo.locator('[data-lab-output="list"] li')).toHaveCount(3);
     await expect(demo.locator('.ui-empty-state')).toHaveCount(0);
+    await lab.expectAccessible();
+  });
+
+  test('UIC-EMPTY-STATE-2.1 UIC-EMPTY-STATE-2.2 draws an illustration over the text and actions under it', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('empty-state');
+    const table = page.locator('table[data-lab-matrix="variant size"]').nth(2);
+    const notice = table.locator('[data-lab-cell="variant=empty size=md"] .ui-empty-state');
+    const icon = await notice.locator('.ui-empty-state__icon').boundingBox();
+    const title = await notice.locator('.ui-empty-state__title').boundingBox();
+    const actions = await notice.locator('.ui-empty-state__actions').boundingBox();
+    const description = await notice.locator('.ui-empty-state__description').boundingBox();
+    expect(icon?.width).toBe(32);
+    expect((icon?.y ?? 0) + (icon?.height ?? 0)).toBeLessThanOrEqual(title?.y ?? 0);
+    expect(actions?.y ?? 0).toBeGreaterThanOrEqual(
+      (description?.y ?? 0) + (description?.height ?? 0),
+    );
+    const add = notice.getByRole('button', { name: 'Add city' });
+    const addBox = await add.boundingBox();
+    const noticeBox = await notice.boundingBox();
+    expect(addBox?.x ?? 0).toBeGreaterThan(noticeBox?.x ?? 0);
+    await add.focus();
+    await expect(add).toBeFocused();
+    const small = table.locator('[data-lab-cell="variant=error size=sm"] .ui-empty-state');
+    expect((await small.locator('.ui-empty-state__icon').boundingBox())?.width).toBe(20);
+    const loading = table.locator('[data-lab-cell="variant=loading size=md"] .ui-empty-state');
+    await expect(loading.locator('.ui-empty-state__icon')).toHaveCount(0);
+    await expect(loading.locator('.ui-empty-state__spinner')).toHaveCount(1);
     await lab.expectAccessible();
   });
 });
