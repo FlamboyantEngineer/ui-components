@@ -15,7 +15,7 @@ const manifest = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'u
 describe('package manifest', () => {
   it('UIC-LABS-1.2 ships the lab pages, reference sheet and built bundles but not lab sources', () => {
     expect(manifest.files).toEqual(
-      expect.arrayContaining(['labs/*.html', 'labs/*.css', 'labs/build']),
+      expect.arrayContaining(['labs/*.html', 'labs/*.css', 'labs/reference', 'labs/build']),
     );
     expect(manifest.files.some((entry) => entry.startsWith('labs/src'))).toBe(false);
   });

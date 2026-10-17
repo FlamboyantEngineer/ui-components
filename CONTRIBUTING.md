@@ -35,4 +35,5 @@ These are enforced by lint and CI:
 
 - Each component has a spec in `specs/` in the format of [specs/README.md](specs/README.md): `UIC-` requirement IDs, `Implementation:` and `Verification:` lines, and the component's hook table. `npm run check:specs` validates them.
 - Unit tests (Vitest, jsdom, Testing Library) sit next to the source as `*.test.ts(x)` and name the requirement IDs they verify.
+- The reference stylesheet is split into partials: `labs/reference/base.css` for the theme and document, and `labs/reference/<spec>.css` for the hooks each spec declares. `labs/reference.css` only imports them; `npm run new:lab -- --sync` regenerates it.
 - Each component has a lab that renders its full variant, size and state matrix with `StateMatrix`, and Playwright coverage in `e2e/` through the `lab` fixture (`e2e/fixtures.ts`), including an axe check. Create one with `npm run new:lab -- <name> --title <Title> --group <Group> --description <text>`; it writes `labs/<name>.html`, `labs/src/<name>.lab.tsx` and regenerates `labs/index.html`. Lab pages are generated: change their metadata and run `npm run new:lab -- --sync` rather than editing the markup.

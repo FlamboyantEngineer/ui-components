@@ -1,0 +1,168 @@
+/* Scroll Region */
+
+.ui-scroll-region {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.ui-scroll-region:is([data-clip], [data-scrollbar='overlay'], [data-overview]) {
+  overflow: hidden;
+}
+
+.ui-scroll-region[data-fill] {
+  position: absolute;
+  inset: 0;
+}
+
+.ui-scroll-region__viewport {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  overscroll-behavior: contain;
+}
+
+.ui-scroll-region[data-overscroll='auto'] > .ui-scroll-region__viewport {
+  overscroll-behavior: auto;
+}
+
+.ui-scroll-region[data-axis='x'] > .ui-scroll-region__viewport {
+  overflow: auto hidden;
+}
+
+.ui-scroll-region[data-axis='y'] > .ui-scroll-region__viewport {
+  overflow: hidden auto;
+}
+
+.ui-scroll-region[data-axis='both'] > .ui-scroll-region__viewport {
+  overflow: auto;
+}
+
+.ui-scroll-region[data-axis='none'][data-clip] > .ui-scroll-region__viewport {
+  overflow: hidden;
+}
+
+.ui-scroll-region__viewport:focus-visible {
+  outline: 2px solid var(--ref-focus);
+  outline-offset: -2px;
+}
+
+.ui-scroll-region[data-columns] > .ui-scroll-region__viewport {
+  display: grid;
+  align-content: start;
+  gap: var(--ref-gap);
+}
+
+.ui-scroll-region {
+  &[data-columns='1'] > .ui-scroll-region__viewport {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  &[data-columns='2'] > .ui-scroll-region__viewport {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  &[data-columns='3'] > .ui-scroll-region__viewport {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  &[data-columns='4'] > .ui-scroll-region__viewport {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  &[data-columns='6'] > .ui-scroll-region__viewport {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+  &[data-columns='12'] > .ui-scroll-region__viewport {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+  &[data-columns='fit'] > .ui-scroll-region__viewport {
+    grid-template-columns: repeat(auto-fit, minmax(min(160px, 100%), 1fr));
+  }
+  &[data-columns='fit'][data-min-column-width='md'] > .ui-scroll-region__viewport {
+    grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
+  }
+  &[data-columns='fit'][data-min-column-width='lg'] > .ui-scroll-region__viewport {
+    grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+  }
+  &[data-columns='fit'][data-min-column-width='xl'] > .ui-scroll-region__viewport {
+    grid-template-columns: repeat(auto-fit, minmax(min(480px, 100%), 1fr));
+  }
+}
+
+.ui-scroll-region[data-align='start'] > .ui-scroll-region__viewport {
+  align-items: start;
+}
+
+.ui-scroll-region[data-align='center'] > .ui-scroll-region__viewport {
+  align-items: center;
+}
+
+.ui-scroll-region[data-align='end'] > .ui-scroll-region__viewport {
+  align-items: end;
+}
+
+.ui-scroll-region[data-scrollbar='overlay'] > .ui-scroll-region__viewport {
+  scrollbar-width: none;
+}
+
+.ui-scroll-region[data-scrollbar='overlay'] > .ui-scroll-region__viewport::-webkit-scrollbar {
+  display: none;
+}
+
+.ui-scroll-region__track {
+  position: absolute;
+}
+
+.ui-scroll-region__track[data-orientation='vertical'] {
+  top: calc(var(--ui-scroll-region-header-size, 0px) + 2px);
+  bottom: 2px;
+  inset-inline-end: 2px;
+  width: 8px;
+}
+
+.ui-scroll-region[data-overflow-x] > .ui-scroll-region__track[data-orientation='vertical'] {
+  bottom: 12px;
+}
+
+.ui-scroll-region__track[data-orientation='horizontal'] {
+  right: 2px;
+  bottom: calc(var(--ui-scroll-region-content-lift, 0px) + 2px);
+  left: 2px;
+  height: 8px;
+}
+
+.ui-scroll-region[data-overflow-y] > .ui-scroll-region__track[data-orientation='horizontal'] {
+  inset-inline-end: 12px;
+}
+
+.ui-scroll-region__thumb {
+  box-sizing: border-box;
+  border-radius: 4px;
+  background: var(--ref-border-strong);
+  opacity: 0.6;
+}
+
+.ui-scroll-region__thumb[data-orientation='vertical'] {
+  right: 0;
+  left: 0;
+}
+
+.ui-scroll-region__thumb[data-orientation='horizontal'] {
+  top: 0;
+  bottom: 0;
+}
+
+.ui-scroll-region__thumb:is(:hover, :focus-visible) {
+  opacity: 1;
+}
+
+.ui-scroll-region__thumb:focus-visible {
+  outline: 2px solid var(--ref-focus);
+  outline-offset: 1px;
+}
+
+.ui-scroll-region__overview {
+  position: absolute;
+  top: 0;
+  inset-inline-end: 0;
+  width: 6px;
+  background-image: var(--ui-scroll-region-overview-image);
+  opacity: 0.5;
+}

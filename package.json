@@ -37,6 +37,7 @@
     "!dist/**/*.test.*",
     "labs/*.html",
     "labs/*.css",
+    "labs/reference",
     "labs/build",
     "specs",
     "CHANGELOG.md"

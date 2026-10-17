@@ -15,7 +15,7 @@ Verification: `src/components/scroll-region/scroll-region.test.tsx`, `e2e/scroll
 
 `ScrollRegion` shall publish `data-axis` (`x`, `y` by default, `both`, `none`), `data-overscroll` (`contain` by default, `auto`) and `data-scrollbar` (`native` by default, `overlay`). It grows by default (`data-grow`), clips only for `axis="none"` unless `clip` says otherwise, and with `fill` covers its nearest positioned ancestor (`data-fill`). With `columns` it lays the children out in a grid and publishes `data-columns`, `data-min-column-width` (for `fit`), `data-space` and `data-align` as `Grid` does ([LAYOUT.md](LAYOUT.md)).
 
-Implementation: `src/components/scroll-region/scroll-region.tsx`, `labs/reference.css`
+Implementation: `src/components/scroll-region/scroll-region.tsx`, `labs/reference/scroll-region.css`
 Verification: `src/components/scroll-region/scroll-region.test.tsx`, `e2e/scroll-region.spec.ts`
 
 ## UIC-SCROLL-REGION-2 - Overlay scrollbars
@@ -24,7 +24,7 @@ Verification: `src/components/scroll-region/scroll-region.test.tsx`, `e2e/scroll
 
 With `scrollbar="overlay"` the stylesheet shall hide the native scrollbars, the viewport shall be focusable (`tabIndex` 0 unless the caller sets one), and each axis that overflows shall get a `ui-scroll-region__track` (`data-orientation` `vertical` or `horizontal`) holding one `ui-scroll-region__thumb`. The root publishes `data-overflow-y` and `data-overflow-x` for the overflowing axes. Tracks let pointer input through to the content; thumbs take it.
 
-Implementation: `src/components/scroll-region/scroll-region.tsx`, `src/components/scroll-region/overlay-scrollbars.tsx`, `labs/reference.css`
+Implementation: `src/components/scroll-region/scroll-region.tsx`, `src/components/scroll-region/overlay-scrollbars.tsx`, `labs/reference/scroll-region.css`
 Verification: `src/components/scroll-region/scroll-region.test.tsx`, `e2e/scroll-region.spec.ts`
 
 ### UIC-SCROLL-REGION-2.2 - Thumb geometry
@@ -59,7 +59,7 @@ Verification: `src/components/scroll-region/scroll-region.test.tsx`
 
 When content shorter than the viewport overflows only horizontally, the root shall publish the empty height below the content in `--ui-scroll-region-content-lift`, so the stylesheet can raise the horizontal track to sit under the content; otherwise it is 0.
 
-Implementation: `src/components/scroll-region/overlay-scrollbars.tsx`, `labs/reference.css`
+Implementation: `src/components/scroll-region/overlay-scrollbars.tsx`, `labs/reference/scroll-region.css`
 Verification: `src/components/scroll-region/scroll-region.test.tsx`
 
 ### UIC-SCROLL-REGION-2.7 - Updates and cleanup
@@ -75,7 +75,7 @@ Verification: `src/components/scroll-region/scroll-region.test.tsx`
 
 With `overview` markers (or `overviewLayers`) in native mode, a region whose content overflows its height shall publish `data-overview`, set `--ui-scroll-region-overview-image` on the root and render a decorative `ui-scroll-region__overview` (hidden from assistive technology, no pointer input) as tall as the viewport's visible height, for the stylesheet to place beside the scrollbar or to paint the scrollbar track with. Scrolling and the native scrollbar are untouched. Content that fits paints nothing. Removing the markers or unmounting releases the observers and the pending frame.
 
-Implementation: `src/components/scroll-region/scroll-region.tsx`, `src/components/scroll-region/use-scroll-overview.ts`, `labs/reference.css`
+Implementation: `src/components/scroll-region/scroll-region.tsx`, `src/components/scroll-region/use-scroll-overview.ts`, `labs/reference/scroll-region.css`
 Verification: `src/components/scroll-region/scroll-region.test.tsx`, `e2e/scroll-region.spec.ts`
 
 ### UIC-SCROLL-REGION-3.2 - Marker mapping

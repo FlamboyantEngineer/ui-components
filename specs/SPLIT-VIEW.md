@@ -8,7 +8,7 @@
 
 `SplitView` without `panes` shall render its children directly in its root and publish `data-orientation` (`horizontal`, the default, side by side; `vertical`, stacked), `data-ratio` and `data-space` (the gap, `none` by default, from the layout spacing scale). Ratios: `equal` (the default) halves; `main-sidebar` a flexible main track and a bounded sidebar; `main-rail` a flexible main track and a fixed-width rail; `content-main` and `main-content` a track sized to its content before or after a flexible one. It renders no separator.
 
-Implementation: `src/components/split-view/split-view.tsx`, `labs/reference.css`
+Implementation: `src/components/split-view/split-view.tsx`, `labs/reference/split-view.css`
 Verification: `src/components/split-view/split-view.test.tsx`, `e2e/split-view.spec.ts`
 
 ### UIC-SPLIT-VIEW-1.2 - Containment
@@ -31,7 +31,7 @@ Verification: `src/components/split-view/split-view.test.tsx`, `e2e/split-view.s
 
 The first pane's size shall be a percentage of the split, applied inline as its flex basis and reported as the separator's value. Its bounds combine both panes' `minSize` and `maxSize` (the first pane's bounds directly, the second pane's as their complement), 10 to 90 by default; conflicting bounds collapse to the upper one. The starting size is a stored size, else `defaultSize`, else 50, clamped to the bounds.
 
-Implementation: `src/components/split-view/split-view.tsx`, `labs/reference.css`
+Implementation: `src/components/split-view/split-view.tsx`, `labs/reference/split-view.css`
 Verification: `src/components/split-view/split-view.test.tsx`, `e2e/split-view.spec.ts`
 
 ### UIC-SPLIT-VIEW-2.3 - Controlled and uncontrolled size

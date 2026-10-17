@@ -43,7 +43,7 @@ Verification: `src/components/section-header/section-header.test.tsx`
 
 In the reference stylesheet the actions shall follow the text on one row and wrap below it in a narrow container, without horizontal overflow.
 
-Implementation: `labs/reference.css`
+Implementation: `labs/reference/section-header.css`
 Verification: `e2e/section-header.spec.ts`
 
 ## Hooks

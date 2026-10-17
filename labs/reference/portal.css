@@ -1,0 +1,15 @@
+/* Portal. Position and z-index come from the component; the host element adds no box. */
+
+.ui-portal {
+  color: var(--ref-text);
+  font: 14px/1.5 var(--ref-font);
+}
+
+.ui-portal[data-layer='tooltip'],
+.ui-portal[data-layer='toast'] {
+  font-size: 13px;
+}
+
+.ui-portal-host {
+  display: contents;
+}

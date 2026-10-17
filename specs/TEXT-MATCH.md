@@ -31,7 +31,7 @@ Verification: `src/components/text-match/text-match.test.tsx`, `e2e/text-match.s
 
 `TextMatch` shall render its string child with each range of the nearest `TextMatchScope`'s terms wrapped in a `<mark>` carrying the `ui-text-match` class, the text between marks staying plain. It draws no wrapper element, so each mark carries the root hook, the caller's `className` and caller `data-*` attributes.
 
-Implementation: `src/components/text-match/text-match.tsx`, `labs/reference.css`
+Implementation: `src/components/text-match/text-match.tsx`, `labs/reference/text-match.css`
 Verification: `src/components/text-match/text-match.test.tsx`, `e2e/text-match.spec.ts`
 
 ### UIC-TEXT-MATCH-2.2 - Plain without a hit

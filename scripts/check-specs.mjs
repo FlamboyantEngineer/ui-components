@@ -4,7 +4,7 @@
 //   - every referenced path exists, and a referenced test names the requirement ID;
 //   - Hooks tables use the hook contract's names;
 //   - every component directory is implemented by some spec;
-//   - labs/reference.css styles every root and slot hook.
+//   - the reference stylesheet partials (labs/reference/) style every root and slot hook.
 
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
@@ -173,12 +173,15 @@ if (existsSync(componentsDir)) {
   }
 }
 
-const referencePath = join(root, 'labs', 'reference.css');
-if (existsSync(referencePath)) {
-  const reference = readFileSync(referencePath, 'utf8');
+const referenceDir = join(root, 'labs', 'reference');
+if (existsSync(referenceDir)) {
+  const reference = readdirSync(referenceDir)
+    .filter((name) => name.endsWith('.css'))
+    .map((name) => readFileSync(join(referenceDir, name), 'utf8'))
+    .join('\n');
   for (const [hook, file] of classHooks) {
     if (!new RegExp(`\\.${hook}(?![a-z0-9_-])`).test(reference)) {
-      problems.push(`labs/reference.css does not style ${hook} (declared in ${file})`);
+      problems.push(`labs/reference/ does not style ${hook} (declared in ${file})`);
     }
   }
 }

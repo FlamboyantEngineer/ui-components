@@ -22,7 +22,7 @@ Verification: `src/components/description-list/description-list.test.tsx`
 
 `layout` (`inline` by default, or `stacked`) and `columns` (`1` by default, or `2`) shall be published as `data-layout` and `data-columns` on the root. The stylesheet aligns inline rows on shared label and value tracks, puts stacked values below their labels, and may lay rows out in two columns. The reference sheet wraps long values without clipping and reduces two columns to one on a viewport narrower than 44rem.
 
-Implementation: `src/components/description-list/description-list.tsx`, `labs/reference.css`
+Implementation: `src/components/description-list/description-list.tsx`, `labs/reference/description-list.css`
 Verification: `src/components/description-list/description-list.test.tsx`, `e2e/description-list.spec.ts`
 
 ## UIC-DESCRIPTION-LIST-2 - States and accessibility

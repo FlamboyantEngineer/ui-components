@@ -24,7 +24,7 @@ Verification: `src/components/inline-text-diff/inline-text-diff.test.tsx`, `e2e/
 
 `InlineTextDiff` shall render a `<span>` root holding its `segments` in order: a removed run as a native `<del>` in the `ui-inline-text-diff__removed` slot, an added run as a native `<ins>` in the `ui-inline-text-diff__added` slot and unchanged context as plain text. The change is in the markup, not only in a colour, and the diff has no role or accessible name of its own.
 
-Implementation: `src/components/inline-text-diff/inline-text-diff.tsx`, `labs/reference.css`
+Implementation: `src/components/inline-text-diff/inline-text-diff.tsx`, `labs/reference/inline-text-diff.css`
 Verification: `src/components/inline-text-diff/inline-text-diff.test.tsx`, `e2e/inline-text-diff.spec.ts`
 
 ### UIC-INLINE-TEXT-DIFF-2.2 - Text only

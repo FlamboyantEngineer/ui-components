@@ -31,6 +31,7 @@ try {
     'dist/index.d.ts',
     'labs/index.html',
     'labs/reference.css',
+    'labs/reference/base.css',
     'labs/build/index.js',
   ]) {
     if (!files.has(required)) problems.push(`tarball is missing ${required}`);
