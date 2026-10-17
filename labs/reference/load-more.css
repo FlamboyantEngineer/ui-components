@@ -3,3 +3,8 @@
 .ui-load-more {
   font-variant-numeric: tabular-nums;
 }
+
+/* New rows push the control out of view instead of scrolling to keep it, so it loads once per arrival. */
+.ui-load-more {
+  overflow-anchor: none;
+}

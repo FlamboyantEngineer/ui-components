@@ -1,9 +1,63 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { LoadMore } from './load-more.js';
+
+/** Whether the control is in view; a new observation reports it, like a real observer. */
+let controlInView = false;
+
+class FakeIntersectionObserver {
+  static instances: FakeIntersectionObserver[] = [];
+  target: Element | null = null;
+  constructor(readonly callback: IntersectionObserverCallback) {
+    FakeIntersectionObserver.instances.push(this);
+  }
+  observe(target: Element): void {
+    this.target = target;
+    queueMicrotask(() => this.report());
+  }
+  unobserve(): void {}
+  disconnect(): void {
+    this.target = null;
+  }
+  takeRecords(): IntersectionObserverEntry[] {
+    return [];
+  }
+  report(): void {
+    if (!this.target) return;
+    const entry = {
+      target: this.target,
+      isIntersecting: controlInView,
+    } as IntersectionObserverEntry;
+    this.callback([entry], this as unknown as IntersectionObserver);
+  }
+}
+
+/** Reports the control entering or leaving the view to the observers watching it. */
+function setInView(isIntersecting: boolean) {
+  controlInView = isIntersecting;
+  act(() => {
+    for (const observer of FakeIntersectionObserver.instances) observer.report();
+  });
+}
+
+function deferred() {
+  let resolve: () => void = () => {};
+  let reject: (error: unknown) => void = () => {};
+  const promise = new Promise<void>((settle, fail) => {
+    resolve = settle;
+    reject = fail;
+  });
+  return { promise, resolve, reject };
+}
+
+afterEach(() => {
+  FakeIntersectionObserver.instances = [];
+  controlInView = false;
+  vi.unstubAllGlobals();
+});
 
 describe('LoadMore', () => {
   it('UIC-LOAD-MORE-1.1 renders a small secondary button that loads without submitting', async () => {
@@ -148,5 +202,71 @@ describe('LoadMore', () => {
     expect(button).toHaveAttribute('data-size', 'sm');
     expect(ref.current).toBe(button);
     expectHooksMatchSpec(container, 'LOAD-MORE');
+  });
+
+  it('UIC-LOAD-MORE-1.7 loads each time it comes into view, one request at a time', async () => {
+    vi.stubGlobal('IntersectionObserver', FakeIntersectionObserver);
+    const requests: Array<ReturnType<typeof deferred>> = [];
+    const onLoadMore = vi.fn(() => {
+      const request = deferred();
+      requests.push(request);
+      return request.promise;
+    });
+    render(<LoadMore autoLoad onLoadMore={onLoadMore} />);
+    const button = screen.getByRole('button', { name: 'Load more' });
+    await act(async () => {});
+    expect(onLoadMore).not.toHaveBeenCalled();
+
+    setInView(true);
+    expect(onLoadMore).toHaveBeenCalledTimes(1);
+    expect(button).toHaveAttribute('data-pending', 'true');
+    expect(button).not.toHaveFocus();
+    setInView(false);
+    setInView(true);
+    expect(onLoadMore).toHaveBeenCalledTimes(1);
+    await act(async () => requests[0]?.resolve());
+    expect(button).not.toHaveAttribute('data-pending');
+    // Staying in view after the page arrived does not load again on its own.
+    expect(onLoadMore).toHaveBeenCalledTimes(1);
+
+    setInView(false);
+    setInView(true);
+    expect(onLoadMore).toHaveBeenCalledTimes(2);
+    await act(async () => requests[1]?.resolve());
+  });
+
+  it('UIC-LOAD-MORE-1.7 retries a failed request when the control comes back into view', async () => {
+    vi.stubGlobal('IntersectionObserver', FakeIntersectionObserver);
+    const onError = vi.fn();
+    const onLoadMore = vi.fn(() => Promise.reject(new Error('Offline')));
+    render(<LoadMore autoLoad onLoadMore={onLoadMore} onError={onError} />);
+    setInView(true);
+    await waitFor(() => expect(onError).toHaveBeenCalledTimes(1));
+    expect(screen.getByRole('button')).not.toHaveAttribute('data-pending');
+    expect(onLoadMore).toHaveBeenCalledTimes(1);
+
+    await userEvent.click(screen.getByRole('button'));
+    await waitFor(() => expect(onError).toHaveBeenCalledTimes(2));
+    setInView(false);
+    setInView(true);
+    await waitFor(() => expect(onError).toHaveBeenCalledTimes(3));
+  });
+
+  it('UIC-LOAD-MORE-1.7 does not observe without autoLoad or while disabled', async () => {
+    vi.stubGlobal('IntersectionObserver', FakeIntersectionObserver);
+    setInView(true);
+    const onLoadMore = vi.fn();
+    const { rerender } = render(<LoadMore onLoadMore={onLoadMore} />);
+    rerender(<LoadMore autoLoad isDisabled onLoadMore={onLoadMore} />);
+    await act(async () => {});
+    expect(FakeIntersectionObserver.instances).toHaveLength(0);
+    rerender(<LoadMore autoLoad isPending onLoadMore={onLoadMore} />);
+    await act(async () => {});
+    expect(FakeIntersectionObserver.instances).toHaveLength(1);
+    expect(onLoadMore).not.toHaveBeenCalled();
+    rerender(<LoadMore autoLoad onLoadMore={onLoadMore} />);
+    setInView(false);
+    setInView(true);
+    expect(onLoadMore).toHaveBeenCalledTimes(1);
   });
 });

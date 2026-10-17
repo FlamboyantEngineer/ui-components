@@ -1,6 +1,6 @@
 # Load More
 
-`LoadMore` is one control that fetches the next page of a collection, beside a list, a table or a conversation. The caller owns cursors, requests, errors and adding the fetched items. It is a [Button](BUTTON.md) (an [Action Button](ACTION-BUTTON.md) for promise-returning requests), so it renders Button's markup and hooks plus its own root class.
+`LoadMore` is one control that fetches the next page of a collection, beside a list, a table or a conversation, on press or as it scrolls into view. A React Aria collection loads pages with its own sentinel instead ([COLLECTIONS.md](COLLECTIONS.md)). The caller owns cursors, requests, errors and adding the fetched items. It is a [Button](BUTTON.md) (an [Action Button](ACTION-BUTTON.md) for promise-returning requests), so it renders Button's markup and hooks plus its own root class.
 
 ## UIC-LOAD-MORE-1 - Contract
 
@@ -38,6 +38,13 @@ Verification: `src/components/load-more/load-more.test.tsx`, `e2e/load-more.spec
 
 Implementation: `src/components/load-more/load-more.tsx`
 Verification: `src/components/load-more/load-more.test.tsx`
+
+### UIC-LOAD-MORE-1.7 - Loading on view
+
+With `autoLoad`, the control shall also call `onLoadMore` each time it comes into view ([`useInView`](MEASUREMENT.md#uic-measurement-41---in-view)) while it is enabled and idle, so a list loads its next page as the reader scrolls to its end. Requests go through the same pending path as a press, one at a time, and never move focus. Staying in view never loads again on its own: a page that leaves the control in view, or a failed request, waits for the reader to scroll the control back into view or press it, so a request that adds nothing never repeats endlessly. The stylesheet keeps the control from anchoring scrolling (`overflow-anchor: none`), so the rows a page adds push it out of view instead of the scroll position following it. The control stays a button, so keyboard and assistive technology users load pages the same way.
+
+Implementation: `src/components/load-more/load-more.tsx`, `src/utils/use-in-view.ts`, `labs/reference/load-more.css`
+Verification: `src/components/load-more/load-more.test.tsx`, `e2e/load-more.spec.ts`
 
 ### UIC-LOAD-MORE-1.6 - Hooks and caller attributes
 

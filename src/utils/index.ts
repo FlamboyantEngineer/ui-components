@@ -48,6 +48,8 @@ export { useElementSize } from './use-element-size.js';
 export { useWidestTextWidth } from './use-widest-text-width.js';
 export { useEnterExit } from './use-enter-exit.js';
 export type { EnterExitState } from './use-enter-exit.js';
+export { useInView } from './use-in-view.js';
+export type { InViewOptions, InViewTarget } from './use-in-view.js';
 export type {
   ElementSize,
   ElementSizeBox,
