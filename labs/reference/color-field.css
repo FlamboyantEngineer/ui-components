@@ -1,0 +1,149 @@
+/* Color Field: a swatch-and-text trigger and a picker popover. */
+
+/* The trigger keeps its own size, so a label or button after it sits right beside it. */
+.ui-color-field .ui-field__control {
+  flex: 0 1 auto;
+}
+
+.ui-color-field__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-sizing: border-box;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-canvas);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.ui-color-field__trigger[data-hovered] {
+  border-color: var(--ref-border-strong);
+}
+
+.ui-color-field__trigger[data-focus-visible] {
+  border-color: var(--ref-focus);
+  outline: 1px solid var(--ref-focus);
+}
+
+.ui-color-field__trigger[data-disabled] {
+  cursor: not-allowed;
+}
+
+.ui-color-field[data-readonly] .ui-color-field__trigger {
+  border-style: dashed;
+  background: var(--ref-surface);
+}
+
+.ui-color-field[data-dirty] .ui-color-field__trigger {
+  border-inline-start: 3px solid var(--ref-info);
+}
+
+.ui-color-field[data-validation='invalid'] .ui-color-field__trigger {
+  border-color: var(--ref-danger);
+}
+
+.ui-color-field[data-validation='warning'] .ui-color-field__trigger {
+  border-color: var(--ref-warning);
+}
+
+.ui-color-field__swatch {
+  flex: none;
+}
+
+.ui-color-field__value {
+  font-family: var(--ref-mono);
+  font-size: 12px;
+}
+
+.ui-color-field__value[data-placeholder] {
+  color: var(--ref-muted);
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.ui-color-field__popover {
+  box-sizing: border-box;
+  padding: 12px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-raised);
+  box-shadow: var(--ref-shadow);
+  color: var(--ref-text);
+  font-size: 13px;
+}
+
+.ui-color-field__dialog {
+  display: grid;
+  gap: 10px;
+  width: 192px;
+  outline: none;
+}
+
+.ui-color-field__area {
+  width: 192px;
+  height: 160px;
+  border-radius: 4px;
+}
+
+.ui-color-field__slider {
+  width: 100%;
+}
+
+.ui-color-field__track {
+  height: 16px;
+  border-radius: 4px;
+}
+
+.ui-color-field__thumb {
+  box-sizing: border-box;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 1px rgb(0 0 0 / 0.6),
+    inset 0 0 0 1px rgb(0 0 0 / 0.3);
+}
+
+.ui-color-field__track .ui-color-field__thumb {
+  top: 50%;
+}
+
+.ui-color-field__thumb[data-focus-visible] {
+  width: 20px;
+  height: 20px;
+}
+
+.ui-color-field__hex {
+  display: flex;
+}
+
+.ui-color-field__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  box-sizing: border-box;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-canvas);
+  color: inherit;
+  font: 12px var(--ref-mono);
+}
+
+.ui-color-field__input[data-focused] {
+  border-color: var(--ref-focus);
+  outline: 1px solid var(--ref-focus);
+}
+
+.ui-color-field__input[data-invalid] {
+  border-color: var(--ref-danger);
+}
+
+.ui-color-field__clear {
+  justify-self: start;
+}

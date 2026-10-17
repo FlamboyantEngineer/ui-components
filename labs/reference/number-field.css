@@ -1,0 +1,99 @@
+/* Number Field: an input between two step buttons, framed as one box. */
+
+.ui-number-field__box {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ui-number-field__group {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: stretch;
+  min-width: 0;
+  box-sizing: border-box;
+  height: 28px;
+  overflow: hidden;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-canvas);
+}
+
+.ui-number-field__group[data-focus-within] {
+  border-color: var(--ref-focus);
+  outline: 1px solid var(--ref-focus);
+}
+
+.ui-number-field__input {
+  flex: 1 1 auto;
+  width: 6em;
+  min-width: 0;
+  padding: 0 8px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  outline: none;
+}
+
+.ui-number-field__input::placeholder {
+  color: var(--ref-muted);
+}
+
+.ui-number-field__decrement,
+.ui-number-field__increment {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  padding: 0;
+  border: 0;
+  background: var(--ref-surface);
+  color: var(--ref-text);
+  cursor: pointer;
+}
+
+.ui-number-field__decrement {
+  border-inline-end: 1px solid var(--ref-border);
+}
+
+.ui-number-field__increment {
+  border-inline-start: 1px solid var(--ref-border);
+}
+
+:is(.ui-number-field__decrement, .ui-number-field__increment)[data-hovered] {
+  background: var(--ref-hover);
+}
+
+:is(.ui-number-field__decrement, .ui-number-field__increment)[data-pressed] {
+  background: var(--ref-pressed);
+}
+
+:is(.ui-number-field__decrement, .ui-number-field__increment)[data-disabled] {
+  color: var(--ref-muted);
+  cursor: default;
+}
+
+:is(.ui-number-field__decrement, .ui-number-field__increment) .ui-glyph {
+  width: 14px;
+  height: 14px;
+}
+
+.ui-number-field[data-dirty] .ui-number-field__group {
+  border-inline-start: 3px solid var(--ref-info);
+}
+
+.ui-number-field[data-validation='invalid'] .ui-number-field__group {
+  border-color: var(--ref-danger);
+}
+
+.ui-number-field[data-validation='warning'] .ui-number-field__group {
+  border-color: var(--ref-warning);
+}
+
+.ui-number-field[data-readonly] .ui-number-field__group {
+  border-style: dashed;
+  background: var(--ref-surface);
+}
