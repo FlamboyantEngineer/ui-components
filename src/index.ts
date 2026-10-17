@@ -8,4 +8,7 @@ export * from './components/inline-text-diff/index.js';
 export * from './components/meta-line/index.js';
 export * from './components/description-list/index.js';
 export * from './components/prose-table/index.js';
+export * from './components/portal/index.js';
+export * from './components/projection/index.js';
+export * from './components/svg-markup/index.js';
 export * from './utils/index.js';

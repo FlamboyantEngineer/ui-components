@@ -340,4 +340,28 @@ body {
 .ui-prose-table th {
   background: var(--ref-surface);
   font-weight: 600;
+/* Portal. Position and z-index come from the component; the host element adds no box. */
+
+.ui-portal {
+  color: var(--ref-text);
+  font: 14px/1.5 var(--ref-font);
+}
+
+.ui-portal[data-layer='tooltip'],
+.ui-portal[data-layer='toast'] {
+  font-size: 13px;
+}
+
+.ui-portal-host {
+  display: contents;
+}
+
+/* SVG Markup. Inside an Icon the drawing fills the icon box (see Icon). */
+
+.ui-svg-markup {
+  display: inline-block;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  vertical-align: middle;
 }
