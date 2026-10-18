@@ -173,12 +173,6 @@ mountLab(
       />
     </LabSection>
     <LabSection
-      title="Swapped elements"
-      description="Each radio renders its own element, marked with the state render receives."
-    >
-      <Swapped />
-    </LabSection>
-    <LabSection
       title="Descriptions and rich content"
       description="Each plan has a description; the sold-out plan is skipped by the arrow keys."
     >
@@ -192,6 +186,12 @@ mountLab(
       description="Restore, undo with Ctrl+Z and Clear from the menu."
     >
       <SavedGroup />
+    </LabSection>
+    <LabSection
+      title="Swapped elements"
+      description="Each radio renders its own element, marked with the state render receives."
+    >
+      <Swapped />
     </LabSection>
   </>,
 );
