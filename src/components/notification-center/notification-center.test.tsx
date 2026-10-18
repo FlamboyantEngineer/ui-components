@@ -108,7 +108,8 @@ describe('NotificationCenter', () => {
     await userEvent.keyboard('{Escape}');
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     expect(onOpenChange).toHaveBeenLastCalledWith(false);
-    expect(bell()).toHaveFocus();
+    // Focus goes back to the bell on the frame after the popover unmounts.
+    await waitFor(() => expect(bell()).toHaveFocus());
   });
 
   it('UIC-NOTIFICATION-CENTER-2.2 opens a drawer with a title and controlled state', async () => {
