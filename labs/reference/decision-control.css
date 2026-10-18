@@ -1,0 +1,51 @@
+/* Decision Control */
+
+.ui-decision-control {
+  max-width: 420px;
+  color: var(--ref-text);
+  font-size: 13px;
+}
+
+.ui-decision-control__form {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.ui-decision-control__label {
+  font-weight: 600;
+}
+
+.ui-decision-control__choice {
+  max-width: 100%;
+}
+
+/* The picked decision is underlined in its tone; the text keeps the segment's contrast. */
+.ui-decision-control[data-decision='approve'] .ui-segmented-choice__segment[data-selected] {
+  box-shadow: inset 0 -2px 0 var(--ref-success);
+}
+
+.ui-decision-control[data-decision='reject'] .ui-segmented-choice__segment[data-selected] {
+  box-shadow: inset 0 -2px 0 var(--ref-danger);
+}
+
+.ui-decision-control__comment {
+  align-self: stretch;
+}
+
+.ui-decision-control__error {
+  align-self: stretch;
+}
+
+.ui-decision-control__submit {
+  flex: none;
+}
+
+.ui-decision-control[data-pending] .ui-decision-control__choice {
+  cursor: progress;
+}
+
+.ui-decision-control__signature {
+  text-align: start;
+}

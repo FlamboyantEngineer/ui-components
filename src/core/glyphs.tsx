@@ -16,11 +16,15 @@ import {
   ArrowsPointingOutIcon,
   ArrowsUpDownIcon,
   Bars2Icon,
+  BellIcon,
   CalendarIcon,
   CheckCircleIcon,
   CheckIcon,
+  ClockIcon,
   DocumentDuplicateIcon,
   DocumentIcon,
+  EnvelopeIcon,
+  EnvelopeOpenIcon,
   ChevronDoubleLeftIcon,
   ChevronDoubleRightIcon,
   ChevronDownIcon,
@@ -127,6 +131,10 @@ export const defaultGlyphs = {
   'trend-flat': ArrowLongRightIcon,
   offline: SignalSlashIcon,
   lock: LockClosedIcon,
+  bell: BellIcon,
+  clock: ClockIcon,
+  envelope: EnvelopeIcon,
+  'envelope-open': EnvelopeOpenIcon,
 } satisfies Record<string, GlyphComponent>;
 
 export const glyphNames = Object.keys(defaultGlyphs) as GlyphName[];

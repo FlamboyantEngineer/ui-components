@@ -126,3 +126,6 @@ export * from './components/record-chip/index.js';
 export * from './components/steps/index.js';
 export * from './components/wizard/index.js';
 export * from './components/state-timeline/index.js';
+export * from './components/notification-center/index.js';
+export * from './components/approval-panel/index.js';
+export * from './components/decision-control/index.js';
