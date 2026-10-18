@@ -64,6 +64,21 @@ import {
   UsersIcon,
   ViewColumnsIcon,
   XMarkIcon,
+  Bars3BottomLeftIcon,
+  BoldIcon,
+  ItalicIcon,
+  UnderlineIcon,
+  StrikethroughIcon,
+  CodeBracketIcon,
+  CodeBracketSquareIcon,
+  H1Icon,
+  H2Icon,
+  H3Icon,
+  ListBulletIcon,
+  NumberedListIcon,
+  ClipboardDocumentCheckIcon,
+  ChatBubbleBottomCenterTextIcon,
+  LinkSlashIcon,
 } from '@heroicons/react/24/outline';
 import type { ComponentType } from 'react';
 
@@ -160,6 +175,21 @@ export const defaultGlyphs = {
   move: ArrowsUpDownIcon,
   table: TableCellsIcon,
   resize: ArrowsPointingOutIcon,
+  paragraph: Bars3BottomLeftIcon,
+  bold: BoldIcon,
+  italic: ItalicIcon,
+  underline: UnderlineIcon,
+  strikethrough: StrikethroughIcon,
+  code: CodeBracketIcon,
+  'code-block': CodeBracketSquareIcon,
+  'heading-1': H1Icon,
+  'heading-2': H2Icon,
+  'heading-3': H3Icon,
+  'list-bullet': ListBulletIcon,
+  'list-numbered': NumberedListIcon,
+  'list-task': ClipboardDocumentCheckIcon,
+  quote: ChatBubbleBottomCenterTextIcon,
+  unlink: LinkSlashIcon,
 } satisfies Record<string, GlyphComponent>;
 
 export const glyphNames = Object.keys(defaultGlyphs) as GlyphName[];

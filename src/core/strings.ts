@@ -11,6 +11,7 @@ import { planningStrings, type PlanningStrings } from './planning-strings.js';
 import { queryStrings, type QueryStrings } from './query-strings.js';
 import { relationStrings, type RelationStrings } from './relation-strings.js';
 import { reviewStrings, type ReviewStrings } from './review-strings.js';
+import { richTextStrings, type RichTextStrings } from './rich-text-strings.js';
 import { structureStrings, type StructureStrings } from './structure-strings.js';
 import { tableStrings, type TableStrings } from './table-strings.js';
 import { timelineStrings, type TimelineStrings } from './timeline-strings.js';
@@ -35,6 +36,7 @@ export interface UiStrings
     QueryStrings,
     RelationStrings,
     ReviewStrings,
+    RichTextStrings,
     StructureStrings,
     TableStrings,
     TimelineStrings,
@@ -54,6 +56,7 @@ export const defaultStrings: UiStrings = {
   ...queryStrings,
   ...relationStrings,
   ...reviewStrings,
+  ...richTextStrings,
   ...structureStrings,
   ...tableStrings,
   ...timelineStrings,
