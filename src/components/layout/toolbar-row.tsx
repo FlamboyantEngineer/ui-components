@@ -1,13 +1,13 @@
 import { createContext, useContext, type ReactNode } from 'react';
 import {
   Group,
-  Separator,
   Toolbar,
   type GroupProps,
-  type SeparatorProps,
+  type SeparatorProps as AriaSeparatorProps,
 } from 'react-aria-components';
-import { createHooks } from '../../core/hooks.js';
+import { createHooks, mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, NativeProps, Orientation } from '../../core/props.js';
+import { Separator } from '../separator/separator.js';
 import {
   resolveContainment,
   type LayoutContainmentProps,
@@ -42,7 +42,7 @@ export interface ToolbarRowGroupProps
 }
 
 export type ToolbarRowSeparatorProps = Omit<
-  SeparatorProps,
+  AriaSeparatorProps,
   'className' | 'style' | 'orientation' | 'elementType'
 > &
   BaseProps;
@@ -100,13 +100,13 @@ export function ToolbarRowGroup({ children, className, ...rest }: ToolbarRowGrou
   );
 }
 
-/** A divider between controls or groups of a `ToolbarRow`, across the row (React Aria `Separator`). */
+/** A divider between controls or groups of a `ToolbarRow`, across the row: a `Separator`. */
 export function ToolbarRowSeparator({ className, ...rest }: ToolbarRowSeparatorProps) {
   const orientation = useContext(ToolbarRowContext) === 'horizontal' ? 'vertical' : 'horizontal';
   return (
     <Separator
       {...rest}
-      {...hooks.slot('separator', { orientation }, className)}
+      className={mergeClassNames(hooks.slotClass('separator'), className)}
       orientation={orientation}
     />
   );

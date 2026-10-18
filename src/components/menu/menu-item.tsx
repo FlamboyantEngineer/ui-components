@@ -4,16 +4,16 @@ import {
   KeyboardContext,
   MenuItem as AriaMenuItem,
   MenuSection as AriaMenuSection,
-  Separator,
   useLocale,
   type MenuItemProps as AriaMenuItemProps,
   type MenuItemRenderProps,
   type MenuSectionProps as AriaMenuSectionProps,
 } from 'react-aria-components';
-import { createHooks } from '../../core/hooks.js';
+import { createHooks, mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, Tone } from '../../core/props.js';
 import { Glyph } from '../../core/provider.js';
 import { Icon, toIconProps, type IconSource } from '../icon/icon.js';
+import { Separator } from '../separator/separator.js';
 import { Shortcut, type ShortcutProps } from '../shortcut/shortcut.js';
 import { MenuSizeContext } from './menu-context.js';
 
@@ -168,9 +168,9 @@ export function MenuSection({ title, children, className, ...rest }: MenuSection
   );
 }
 
-/** A rule between menu items or sections. */
+/** A rule between menu items or sections: a `Separator` with the menu's hook. */
 export function MenuSeparator({ className, ...rest }: MenuSeparatorProps) {
-  return <Separator {...separatorHooks.root({ className, props: rest })} />;
+  return <Separator {...rest} className={mergeClassNames(separatorHooks.className, className)} />;
 }
 
 export type { MenuItemRenderProps };

@@ -96,7 +96,7 @@ Verification: `src/components/modal/modal.test.tsx`, `e2e/modal.spec.ts`
 
 `initialFocus` given a ref or a function returning an element shall focus that element on open, ahead of an `autoFocus` element, and fall back to `first` when it names no element in the document. `finalFocus`, a ref or a function asked at that moment, shall receive focus when the dialog leaves the page instead of the element focused when it opened, provided focus was still inside the dialog or on the body.
 
-Implementation: `src/components/modal/modal-focus.tsx`, `src/components/modal/modal-dialog.tsx`
+Implementation: `src/components/modal/modal-focus.tsx`, `src/components/modal/modal-dialog.tsx`, `src/utils/focus-target.ts`
 Verification: `src/components/modal/modal-focus.test.tsx`, `e2e/modal.spec.ts`
 
 ## UIC-MODAL-4 - Header and body
