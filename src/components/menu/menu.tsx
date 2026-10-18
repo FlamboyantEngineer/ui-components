@@ -1,6 +1,7 @@
 import { createContext, useContext, type ReactElement, type ReactNode } from 'react';
 import {
   Autocomplete,
+  AutocompleteStateContext,
   Input,
   Menu as AriaMenu,
   MenuContext,
@@ -16,6 +17,7 @@ import {
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { TextMatch, TextMatchProvider } from '../text-match/text-match.js';
 import { MenuSizeContext, type MenuSize } from './menu-context.js';
 import {
   MenuItem,
@@ -69,6 +71,8 @@ export interface MenuProps
   size?: MenuSize | undefined;
   /** Leads the menu with a search field that narrows the items while focus stays in it. */
   filterable?: boolean | undefined;
+  /** Marks the text typed in the enclosing search field (its own, or a command palette's) in the labels. */
+  highlightMatches?: boolean | undefined;
 }
 
 const hooks = createHooks('menu', [
@@ -81,20 +85,24 @@ const hooks = createHooks('menu', [
 
 const MenuActionContext = createContext<MenuProps['onAction']>(undefined);
 
-function renderEntry(entry: MenuEntry): ReactElement {
+function renderEntries(entries: readonly MenuEntry[], highlight: boolean): ReactElement[] {
+  return entries.map((entry) => renderEntry(entry, highlight));
+}
+
+function renderEntry(entry: MenuEntry, highlight: boolean): ReactElement {
   if (entry.type === 'separator') return <MenuSeparator key={entry.id} />;
   if (entry.type === 'section') {
     const { type: _type, items, ...section } = entry;
     return (
       <MenuSection key={entry.id} {...section}>
-        {items.map(renderEntry)}
+        {renderEntries(items, highlight)}
       </MenuSection>
     );
   }
   const { type: _type, label, items, renderContent, ...item } = entry;
   const element = (
     <MenuItem key={entry.id} textValue={label} {...item}>
-      {renderContent ?? label}
+      {renderContent ?? (highlight ? <TextMatch>{label}</TextMatch> : label)}
     </MenuItem>
   );
   if (!items?.length) return element;
@@ -102,7 +110,7 @@ function renderEntry(entry: MenuEntry): ReactElement {
     <SubmenuTrigger key={entry.id}>
       {element}
       <MenuPopover>
-        <Menu>{items.map(renderEntry)}</Menu>
+        <Menu>{renderEntries(items, highlight)}</Menu>
       </MenuPopover>
     </SubmenuTrigger>
   );
@@ -149,6 +157,16 @@ function MenuFilter({
   );
 }
 
+/** Hands the text typed in the enclosing React Aria `Autocomplete` to the `TextMatch` labels below. */
+function AutocompleteMatches({ children }: { children: ReactNode }) {
+  const query = useContext(AutocompleteStateContext)?.inputValue;
+  return (
+    <TextMatchProvider query={query} ignoreAccents>
+      {children}
+    </TextMatchProvider>
+  );
+}
+
 /** While loading, the loading row stands alone; a filtered menu with no match says so. */
 function useEmptyState({ renderEmptyState, isLoading, filterable }: MenuProps) {
   const strings = useUiStrings();
@@ -160,11 +178,22 @@ function useEmptyState({ renderEmptyState, isLoading, filterable }: MenuProps) {
 /**
  * A list of actions or options (React Aria `Menu`), standalone or in a `MenuPopover`. A submenu's
  * `Menu` without its own `onAction` reports to the menu that opens it. It can lead with a search
- * field that filters its items and end with a sentinel that loads more of them.
+ * field that filters its items, mark the typed text in their labels, and end with a sentinel that
+ * loads more of them.
  */
 export function Menu(props: MenuProps) {
-  const { items, children, size, className, onAction, filterable, onLoadMore, isLoading, ...rest } =
-    props;
+  const {
+    items,
+    children,
+    size,
+    className,
+    onAction,
+    filterable,
+    highlightMatches = false,
+    onLoadMore,
+    isLoading,
+    ...rest
+  } = props;
   const inheritedSize = useContext(MenuSizeContext);
   const inheritedAction = useContext(MenuActionContext);
   const trigger = useSlottedContext(MenuContext);
@@ -178,7 +207,7 @@ export function Menu(props: MenuProps) {
       onAction={action}
       renderEmptyState={renderEmptyState}
     >
-      {children ?? items?.map(renderEntry)}
+      {children ?? (items ? renderEntries(items, highlightMatches) : null)}
       {onLoadMore || isLoading ? (
         <MenuLoader onLoadMore={onLoadMore} isLoading={isLoading} />
       ) : null}
@@ -189,6 +218,7 @@ export function Menu(props: MenuProps) {
     const { 'aria-labelledby': _labelledBy, ...unlabelled } = trigger;
     menu = <MenuContext.Provider value={unlabelled}>{menu}</MenuContext.Provider>;
   }
+  if (highlightMatches) menu = <AutocompleteMatches>{menu}</AutocompleteMatches>;
   if (filterable) menu = <MenuFilter isOpenedByTrigger={Boolean(trigger)}>{menu}</MenuFilter>;
   return (
     <MenuSizeContext.Provider value={resolvedSize}>

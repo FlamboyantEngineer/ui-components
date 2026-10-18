@@ -1,10 +1,17 @@
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { Collection, ListLayout, MenuLoadMoreItem, Virtualizer } from 'react-aria-components';
+import {
+  Autocomplete,
+  Collection,
+  ListLayout,
+  MenuLoadMoreItem,
+  Virtualizer,
+} from 'react-aria-components';
 import { describe, expect, it, vi } from 'vitest';
 import { MenuButton, actionKeys, fruitEntries, openMenu } from '../../../test/menu-fixtures.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Button } from '../button/button.js';
+import { TextMatch, TextMatchProvider } from '../text-match/text-match.js';
 import {
   Menu,
   MenuItem,
@@ -12,6 +19,7 @@ import {
   MenuSection,
   MenuSeparator,
   MenuTrigger,
+  SubmenuTrigger,
   type MenuEntry,
 } from './menu.js';
 
@@ -366,6 +374,67 @@ describe('Menu', () => {
     );
     expect(screen.getByRole('menu')).toHaveTextContent('Nothing yet');
     vi.unstubAllGlobals();
+  });
+
+  it('UIC-MENU-5.4 marks the text typed in its own search field in data labels', async () => {
+    const user = userEvent.setup();
+    render(<MenuButton items={cityEntries} filterable highlightMatches aria-label="Cities" />);
+    await openMenu(user);
+    await user.keyboard('LI');
+    const marks = [...document.querySelectorAll('mark.ui-text-match')];
+    expect(marks.map((mark) => mark.textContent)).toEqual(['Li', 'Li']);
+    expect(marks[0]).toHaveAttribute('data-term', '0');
+    expect(marks[0]?.closest('.ui-menu-item__label')).not.toBeNull();
+    expect(screen.getByRole('menuitem', { name: 'Lima' })).toHaveTextContent('Lima');
+    expectHooksMatchSpec(document.body, 'MENU', { slots: ['search', 'search-input', 'label'] });
+  });
+
+  it('UIC-MENU-5.4 marks the text of an enclosing autocomplete in submenus and TextMatch children', async () => {
+    const user = userEvent.setup();
+    const { unmount } = render(
+      <Autocomplete defaultInputValue="li">
+        <Menu aria-label="Places" highlightMatches>
+          <MenuItem id="lima" textValue="Lima">
+            <TextMatch>Lima</TextMatch>
+          </MenuItem>
+          <SubmenuTrigger>
+            <MenuItem id="more">More</MenuItem>
+            <MenuPopover>
+              <Menu items={[{ id: 'lille', label: 'Lille' }]} />
+            </MenuPopover>
+          </SubmenuTrigger>
+        </Menu>
+      </Autocomplete>,
+    );
+    expect(screen.getByRole('menuitem', { name: 'Lima' }).querySelector('mark')).toHaveTextContent(
+      'Li',
+    );
+    await user.click(screen.getByRole('menuitem', { name: 'More' }));
+    expect(screen.getByRole('menuitem', { name: 'Lille' })).toHaveTextContent('Lille');
+    expect(screen.getByRole('menuitem', { name: 'Lille' }).querySelector('mark')).toBeNull();
+    unmount();
+    render(
+      <Autocomplete defaultInputValue="li">
+        <Menu
+          aria-label="Data places"
+          highlightMatches
+          items={[{ id: 'more', label: 'More', items: [{ id: 'lille', label: 'Lille' }] }]}
+        />
+      </Autocomplete>,
+    );
+    await user.click(screen.getByRole('menuitem', { name: 'More' }));
+    const lille = screen.getByRole('menuitem', { name: 'Lille' });
+    expect(lille.querySelector('mark')).toHaveTextContent('Li');
+  });
+
+  it('UIC-MENU-5.4 keeps labels plain without highlightMatches, even under a TextMatchProvider', () => {
+    render(
+      <TextMatchProvider query="li">
+        <Menu aria-label="Cities" items={cityEntries} />
+      </TextMatchProvider>,
+    );
+    expect(document.querySelector('mark')).toBeNull();
+    expect(screen.getByRole('menuitem', { name: 'Lima' })).toHaveTextContent('Lima');
   });
 
   it('UIC-MENU-5.3 renders a long data menu virtualized, reaching every item by keyboard', async () => {

@@ -223,6 +223,10 @@ function FilterableMenu() {
   );
 }
 
+function HighlightedMenu() {
+  return <MenuButton label="Highlighted cities" filterable highlightMatches items={cityEntries} />;
+}
+
 const pageSize = 20;
 
 /** A menu that loads 20 more cities, after a short wait, each time its end scrolls into view. */
@@ -380,6 +384,12 @@ mountLab(
       description="Typing in the search field narrows the cities while focus stays in it; Arrow Down moves the highlight and Enter picks."
     >
       <FilterableMenu />
+    </LabSection>
+    <LabSection
+      title="Highlighted matches"
+      description="With highlightMatches, the typed text is marked in each matching label."
+    >
+      <HighlightedMenu />
     </LabSection>
     <LabSection
       title="Loading more"

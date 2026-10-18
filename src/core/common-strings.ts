@@ -12,6 +12,10 @@ export interface CommonStrings {
   moreOptions: string;
   /** Default accessible name of a context menu. */
   contextMenu: string;
+  /** Default accessible name of a command palette. */
+  commandPalette: string;
+  /** Names and hints the search field of a command palette. */
+  searchCommands: string;
   loading: string;
   clear: string;
   help: string;
@@ -128,6 +132,8 @@ export const commonStrings: CommonStrings = {
   more: 'More',
   moreOptions: 'More options',
   contextMenu: 'Context menu',
+  commandPalette: 'Command palette',
+  searchCommands: 'Search commands',
   loading: 'Loading',
   clear: 'Clear',
   help: 'Help',
