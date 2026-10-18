@@ -70,7 +70,7 @@ describe('PresenceAvatar', () => {
       </UiProvider>,
     );
     expect(screen.getByRole('img', { name: 'Maria Santos (Absente)' })).toBeInTheDocument();
-    expect(screen.queryByRole('button')).toBeNull();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
 
   it('UIC-PRESENCE-AVATAR-1.3 presses once for a click, Enter or Space and takes focus', async () => {
@@ -174,7 +174,7 @@ describe('PresenceAvatar', () => {
     expect(card).toHaveClass('ui-user-card');
     expectHooksMatchSpec(container, 'PRESENCE-AVATAR', { slots: ['avatar', 'indicator'] });
     await userEvent.keyboard('{Escape}');
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     await waitFor(() => expect(trigger).toHaveFocus());
   });
 });
@@ -290,6 +290,6 @@ describe('PresenceAvatar tooltips and hover cards', () => {
     expect(onPress).toHaveBeenCalledTimes(1);
     fireEvent.keyDown(trigger, { key: 'Escape' });
     await advance(1000);
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 });

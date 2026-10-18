@@ -20,7 +20,7 @@ describe('FieldPreviousValue', () => {
     expect(value).toHaveTextContent('Apple');
     expect(value).not.toHaveAttribute('aria-hidden');
     expect(value).toContainElement(screen.getByTestId('swatch'));
-    expect(screen.queryByRole('button')).toBeNull();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
     expectHooksMatchSpec(container, 'FIELD', { slots: ['ui-field-previous-value__value'] });
   });
 

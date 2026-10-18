@@ -65,7 +65,7 @@ describe('QueryField', () => {
     expect(editor).toHaveClass('ui-query-field__editor');
     expect(editor).toHaveAttribute('data-single-line', 'true');
     expect(editor?.querySelector('[data-token="key"]')).toHaveTextContent('genre');
-    expect(screen.queryByRole('button', { name: 'Run query' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Run query' })).not.toBeInTheDocument();
   });
 
   it('UIC-QUERY-FIELD-1.2 completes from the grammar', async () => {

@@ -169,7 +169,9 @@ describe('VersionHistory', { timeout: 15_000 }, () => {
     const { container } = render(
       <VersionHistory versions={versions} currentKey="v5" getNow={getNow} onRestore={onRestore} />,
     );
-    expect(within(rows()[0]!).queryByRole('button', { name: /^Actions for/ })).toBeNull();
+    expect(
+      within(rows()[0]!).queryByRole('button', { name: /^Actions for/ }),
+    ).not.toBeInTheDocument();
     const trigger = within(rows()[1]!).getByRole('button', { name: 'Actions for Final draft' });
     expect(trigger.closest('.ui-version-history__actions')).not.toBeNull();
     expectHooksMatchSpec(container, 'VERSION-HISTORY', { slots: ['actions'] });
@@ -181,13 +183,13 @@ describe('VersionHistory', { timeout: 15_000 }, () => {
     expect(onRestore).toHaveBeenCalledWith('v4');
     expect(screen.getByRole('alertdialog')).toBeInTheDocument();
     settle();
-    await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull());
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
 
     await openMenu(2);
     await userEvent.click(screen.getByRole('menuitem', { name: 'Restore this version' }));
     const second = await screen.findByRole('alertdialog', { name: /^Restore Apr 18, 2026/ });
     await userEvent.click(within(second).getByRole('button', { name: 'Cancel' }));
-    await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull());
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
     expect(onRestore).toHaveBeenCalledTimes(1);
   });
 
@@ -208,7 +210,7 @@ describe('VersionHistory', { timeout: 15_000 }, () => {
     await userEvent.type(field, '  Release candidate ');
     await userEvent.click(within(dialog).getByRole('button', { name: 'Save' }));
     expect(onRename).toHaveBeenCalledWith('v5', 'Release candidate');
-    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 
     menu = await openMenu(1);
     await userEvent.click(within(menu).getByRole('menuitem', { name: 'Rename version' }));
@@ -216,7 +218,7 @@ describe('VersionHistory', { timeout: 15_000 }, () => {
     const named = within(dialog).getByRole('textbox', { name: 'Version name' });
     expect(named).toHaveValue('Final draft');
     await userEvent.click(within(dialog).getByRole('button', { name: 'Save' }));
-    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     expect(onRename).toHaveBeenCalledTimes(1);
 
     await openMenu(3);
@@ -226,7 +228,7 @@ describe('VersionHistory', { timeout: 15_000 }, () => {
     await userEvent.clear(cleared);
     await userEvent.type(cleared, '{Enter}');
     expect(onRename).toHaveBeenLastCalledWith('v2', '');
-    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   });
 
   it('UIC-VERSION-HISTORY-1.7 filters to named versions and to one person', async () => {
@@ -272,7 +274,7 @@ describe('VersionHistory', { timeout: 15_000 }, () => {
     expect(titles()).toEqual(['Final draft']);
     rerender(<VersionHistory versions={versions} showFilters={false} />);
     expect(container.querySelector('.ui-version-history__toolbar')).toBeNull();
-    expect(screen.queryByRole('switch')).toBeNull();
+    expect(screen.queryByRole('switch')).not.toBeInTheDocument();
     rerender(<VersionHistory versions={versions} showFilters={false} onCompare={() => {}} />);
     expect(container.querySelector('.ui-version-history__toolbar')).toHaveTextContent(/^Compare$/);
     rerender(
@@ -291,7 +293,9 @@ describe('VersionHistory', { timeout: 15_000 }, () => {
       />,
     );
     expect(rows()[2]).toHaveAttribute('aria-disabled', 'true');
-    expect(within(rows()[2]!).queryByRole('button', { name: /^Actions for/ })).toBeNull();
+    expect(
+      within(rows()[2]!).queryByRole('button', { name: /^Actions for/ }),
+    ).not.toBeInTheDocument();
     await userEvent.click(rows()[2]!);
     expect(rows()[2]).not.toHaveAttribute('aria-selected', 'true');
   });
@@ -310,7 +314,7 @@ describe('VersionHistory', { timeout: 15_000 }, () => {
     rerender(
       <VersionHistory versions={versions} error="The history could not load." onRetry={onRetry} />,
     );
-    expect(screen.queryByRole('grid')).toBeNull();
+    expect(screen.queryByRole('grid')).not.toBeInTheDocument();
     const error = container.querySelector('.ui-version-history__error');
     expect(error).toHaveClass('ui-empty-state');
     expect(error).toHaveAttribute('data-variant', 'error');

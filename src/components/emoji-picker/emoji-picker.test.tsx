@@ -209,7 +209,7 @@ describe('EmojiPicker', { timeout: 15_000 }, () => {
     expect(search).toHaveClass('ui-emoji-picker__search-input');
     await userEvent.type(search, 'smil');
     expect(onSearchChange).toHaveBeenLastCalledWith('smil');
-    expect(screen.queryByRole('tablist')).toBeNull();
+    expect(screen.queryByRole('tablist')).not.toBeInTheDocument();
     const results = screen.getByRole('grid', { name: 'Search results' });
     expect(cells(results)).toEqual(['slightly smiling face', 'grinning face']);
 
@@ -288,7 +288,7 @@ describe('EmojiPicker', { timeout: 15_000 }, () => {
     expect(screen.getByRole('row', { name: 'waving hand' })).toHaveTextContent('👋🏾');
 
     rerender(<EmojiPicker loadEmoji={loadFixture} hideSkinTones />);
-    expect(screen.queryByRole('radiogroup')).toBeNull();
+    expect(screen.queryByRole('radiogroup')).not.toBeInTheDocument();
   });
 
   it('UIC-EMOJI-PICKER-3.1 opens in a popover, closes on a choice, Escape or an outside press', async () => {
@@ -312,19 +312,19 @@ describe('EmojiPicker', { timeout: 15_000 }, () => {
 
     await userEvent.click(screen.getByRole('row', { name: 'grinning face' }));
     expect(onSelect).toHaveBeenCalledTimes(1);
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     await waitFor(() => expect(button).toHaveFocus());
 
     await userEvent.keyboard('{Enter}');
     await screen.findByRole('grid');
     await userEvent.keyboard('{Escape}');
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     await waitFor(() => expect(button).toHaveFocus());
 
     await userEvent.click(button);
     await screen.findByRole('grid');
     await userEvent.click(screen.getByRole('button', { name: 'Outside', hidden: true }));
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('UIC-EMOJI-PICKER-3.2 is a dialog named by its label and focuses search on request', async () => {
@@ -405,7 +405,7 @@ describe('EmojiPicker', { timeout: 15_000 }, () => {
     const filterEmoji = (emoji: NativeEmoji) => !emoji.keywords.includes('fruit');
     await renderPicker({ filterEmoji, recentEmoji: ['🍎', '😀'], customEmoji: [parrot] });
     expect(cells(screen.getByRole('grid', { name: 'Recently used' }))).toEqual(['grinning face']);
-    expect(screen.queryByRole('tab', { name: 'Food & Drink' })).toBeNull();
+    expect(screen.queryByRole('tab', { name: 'Food & Drink' })).not.toBeInTheDocument();
     await userEvent.type(screen.getByRole('searchbox'), 'a');
     const results = cells(screen.getByRole('grid', { name: 'Search results' }));
     expect(results).toContain(':party_parrot:');

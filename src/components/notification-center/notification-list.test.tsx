@@ -94,7 +94,7 @@ describe('NotificationList', () => {
 
   it('UIC-NOTIFICATION-CENTER-1.1 draws read-only rows without onAction', () => {
     render(<NotificationList items={[items[1] as NotificationItem]} getNow={getNow} />);
-    expect(within(row('Import finished')).queryByRole('button')).toBeNull();
+    expect(within(row('Import finished')).queryByRole('button')).not.toBeInTheDocument();
     expect(row('Import finished')).toHaveAttribute('data-kind', 'static');
   });
 
@@ -115,7 +115,7 @@ describe('NotificationList', () => {
       '2025-12-30',
       null,
     ]);
-    expect(screen.queryByRole('region')).toBeNull();
+    expect(screen.queryByRole('region')).not.toBeInTheDocument();
     const today = screen.getByRole('list', { name: 'Today' });
     expect(today).toHaveClass('ui-notification-list__list', 'ui-list');
     expect(today.parentElement).toBe(groups[0]);
@@ -186,7 +186,7 @@ describe('NotificationList', () => {
     await userEvent.click(unread);
     expect(onFilterChange).toHaveBeenCalledWith('unread');
     expect(container.firstElementChild).toHaveAttribute('data-filter', 'unread');
-    expect(screen.queryByText('Import finished')).toBeNull();
+    expect(screen.queryByText('Import finished')).not.toBeInTheDocument();
     expect(screen.getByText('Jon Berg replied')).toBeInTheDocument();
     rerender(<NotificationList items={items} getNow={getNow} filter="all" unreadCount={42} />);
     expect(screen.getByText('Import finished')).toBeInTheDocument();

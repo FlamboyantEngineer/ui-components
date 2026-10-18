@@ -163,7 +163,9 @@ describe('Disclosure', () => {
     expect(screen.getByRole('heading', { level: 3, name: 'Orchard' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 4, name: 'Apples' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 5, name: 'Shed' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 6, name: 'Tools', hidden: true })).toBeTruthy();
+    expect(
+      screen.getByRole('heading', { level: 6, name: 'Tools', hidden: true }),
+    ).toBeInTheDocument();
   });
 
   it('UIC-DISCLOSURE-1.6 refuses presses and focus while disabled', async () => {

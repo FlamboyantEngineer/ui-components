@@ -108,7 +108,7 @@ describe('PdfViewer', () => {
     );
     expect(engine.render).not.toHaveBeenCalledWith(expect.objectContaining({ annotationMode: 1 }));
     expect(engine.AnnotationLayer).not.toHaveBeenCalled();
-    expect(screen.queryByRole('link')).toBeNull();
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
     expect(container.querySelectorAll('[role="presentation"]').length).toBeGreaterThan(0);
 
     update({ showAnnotations: true });
@@ -117,7 +117,7 @@ describe('PdfViewer', () => {
       expect.objectContaining({ canvas, annotationMode: 1 }),
     );
     update({ showAnnotations: false });
-    await waitFor(() => expect(screen.queryByRole('link')).toBeNull());
+    await waitFor(() => expect(screen.queryByRole('link')).not.toBeInTheDocument());
   });
 
   it('UIC-PDF-VIEWER-2.1 renders only the pages near the view', async () => {
@@ -354,7 +354,7 @@ describe('PdfViewer', () => {
     const band = screen.getByTestId('band');
     const toolbar = await within(band).findByRole('toolbar', { name: 'Report controls' });
     expect(container.querySelector('.ui-pdf-viewer .ui-pdf-viewer__toolbar')).toBeNull();
-    await waitFor(() => expect(within(toolbar).getByRole('slider')).not.toBeDisabled());
+    await waitFor(() => expect(within(toolbar).getByRole('slider')).toBeEnabled());
     await userEvent.click(within(toolbar).getByRole('button', { name: 'Zoom in' }));
     const page = container.querySelector<HTMLElement>('.ui-pdf-viewer__page');
     expect(Number.parseFloat(page?.style.width ?? '')).toBeCloseTo(420 * 1.25 * pointsToPixels);

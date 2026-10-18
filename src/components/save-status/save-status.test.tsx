@@ -81,9 +81,9 @@ describe('SaveStatus', () => {
     await user.click(retry);
     expect(onRetry).toHaveBeenCalledTimes(1);
     rerender(<SaveStatus phase="offline" onRetry={onRetry} />);
-    expect(screen.queryByRole('button')).toBeNull();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
     rerender(<SaveStatus phase="error" />);
-    expect(screen.queryByRole('button')).toBeNull();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
 
   it('UIC-SAVE-STATUS-1.4 hides the saved label after the delay and restarts on change', async () => {

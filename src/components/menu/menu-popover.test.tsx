@@ -78,13 +78,13 @@ describe('MenuPopover and SubmenuTrigger', () => {
     expect(screen.getByRole('menuitem', { name: 'Mail' })).toHaveFocus();
     await user.keyboard('{ArrowLeft}');
     expect(share).toHaveFocus();
-    expect(screen.queryByRole('menuitem', { name: 'Mail' })).toBeNull();
+    expect(screen.queryByRole('menuitem', { name: 'Mail' })).not.toBeInTheDocument();
     await user.keyboard('{ArrowRight}{Escape}');
     expect(share).toHaveFocus();
     expect(screen.getAllByRole('menu')).toHaveLength(1);
     await user.keyboard('{ArrowRight}{ArrowDown}{Enter}');
     expect(actionKeys(onAction)).toEqual(['chat']);
-    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     await waitFor(() => expect(trigger).toHaveFocus());
   });
 

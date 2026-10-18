@@ -37,13 +37,13 @@ describe('MetaLine', () => {
     for (const items of lists) {
       rerender(<MetaLine items={items} />);
       const root = container.firstElementChild as HTMLElement;
-      expect(root.textContent).toBe(formatMetaLine(items));
+      expect(root).toHaveTextContent(formatMetaLine(items));
       const kept = items.filter(
         (item) => typeof item === 'number' || (typeof item === 'string' && item.trim() !== ''),
       );
       expect(root.querySelectorAll('.ui-meta-line__separator')).toHaveLength(kept.length - 1);
     }
-    expect(container.textContent).toBe('0 · Plum');
+    expect(container).toHaveTextContent('0 · Plum');
   });
 
   it('UIC-META-LINE-1.1 keeps an array or fragment entry as one entry', () => {
@@ -57,7 +57,7 @@ describe('MetaLine', () => {
         ]}
       />,
     );
-    expect(container.textContent).toBe('Red apple · 3 kg');
+    expect(container).toHaveTextContent('Red apple · 3 kg');
     expect(container.querySelectorAll('.ui-meta-line__separator')).toHaveLength(1);
   });
 
@@ -67,7 +67,7 @@ describe('MetaLine', () => {
     expect(separators).toHaveLength(2);
     for (const separator of separators) {
       expect(separator).toHaveAttribute('aria-hidden', 'true');
-      expect(separator.textContent).toBe('·');
+      expect(separator).toHaveTextContent('·');
       expect(separator.previousSibling?.textContent?.endsWith(' ')).toBe(true);
       expect(separator.nextSibling?.textContent?.startsWith(' ')).toBe(true);
     }
@@ -90,7 +90,7 @@ describe('MetaLine', () => {
     expect(button).toHaveTextContent('Count 1');
     expect(container.querySelector('time')).toHaveAttribute('datetime', '2026-10-08');
     expect(container.querySelector('time')).toHaveAttribute('title', 'October 8, 2026');
-    expect(container.textContent).toBe('Leading · Count 1 · Today');
+    expect(container).toHaveTextContent('Leading · Count 1 · Today');
     expect(container.querySelector('[role], [aria-live]')).toBeNull();
   });
 
@@ -105,7 +105,7 @@ describe('MetaLine', () => {
     const button = screen.getByRole('button');
     act(() => rerender(<MetaLine items={['Leading', control, 'Pear']} />));
     expect(screen.getByRole('button')).toBe(button);
-    expect(container.textContent).toBe('Leading · Action · Pear');
+    expect(container).toHaveTextContent('Leading · Action · Pear');
     expect(errors).not.toHaveBeenCalled();
   });
 
@@ -127,7 +127,7 @@ describe('MetaLine', () => {
     expect(root).toHaveAttribute('id', 'meta');
     expect(root).toHaveAttribute('data-testid', 'probe');
     expect(root.querySelector('text')).toBeNull();
-    expect(root.textContent).toBe('Safe <text> · Pear');
+    expect(root).toHaveTextContent('Safe <text> · Pear');
     expectHooksMatchSpec(container, 'META-LINE');
   });
 });

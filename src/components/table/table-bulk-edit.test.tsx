@@ -105,7 +105,7 @@ describe('Table selection bar and bulk edit', { timeout: 30_000 }, () => {
     const bar = container.querySelector('.ui-table__selection-bar') as HTMLElement;
     expect(bar).toHaveClass('ui-action-row');
     expect(within(bar).getByRole('status')).toHaveTextContent('2 selected');
-    expect(within(bar).queryByRole('button', { name: 'Edit selected' })).toBeNull();
+    expect(within(bar).queryByRole('button', { name: 'Edit selected' })).not.toBeInTheDocument();
     await user.click(within(bar).getByRole('button', { name: 'Delete selected' }));
     expect(onDelete).toHaveBeenCalledTimes(1);
     expectHooksMatchSpec(container, 'TABLE', { slots: ['selection-bar'] });
@@ -143,7 +143,7 @@ describe('Table selection bar and bulk edit', { timeout: 30_000 }, () => {
     expect(onCellsChange).toHaveBeenCalledWith([
       { row: items[0], columnId: 'kind', value: 'Herb' },
     ]);
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(container.querySelector('.ui-table__selection-bar')).not.toBeNull();
   });
 

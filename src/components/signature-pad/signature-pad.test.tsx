@@ -242,7 +242,7 @@ describe('SignaturePad', () => {
     expect(input).toHaveClass('ui-signature-pad__input');
     expect(input).toHaveAttribute('autocomplete', 'name');
     expect(input).toHaveAttribute('placeholder', 'Type your name');
-    expect(input).toHaveAttribute('aria-required', 'true');
+    expect(input).toBeRequired();
     await user.type(input, 'Ada L');
     expect(onChange).toHaveBeenLastCalledWith({ kind: 'typed', text: 'Ada L' });
     await user.keyboard('{Enter}');

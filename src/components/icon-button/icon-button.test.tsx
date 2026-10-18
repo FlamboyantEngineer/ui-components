@@ -95,7 +95,7 @@ describe('IconButton', () => {
     expect(button).toHaveAccessibleName('Undo');
     expect(button).toHaveAccessibleDescription('Undo the last edit');
     await user.keyboard('{Escape}');
-    expect(screen.queryByRole('tooltip')).toBeNull();
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
     expect(button).toHaveFocus();
   });
 

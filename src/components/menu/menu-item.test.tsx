@@ -89,9 +89,8 @@ describe('MenuItem, MenuSection and MenuSeparator', () => {
     screen.getByRole('button', { name: 'Actions' }).focus();
     await user.keyboard('{ArrowDown}');
     expect(screen.getByTestId('custom')).toHaveTextContent('Focused');
-    expect(
-      screen.getByTestId('custom').parentElement?.querySelector('.ui-menu-item__label'),
-    ).toBeNull();
+    const custom = screen.getByTestId('custom');
+    expect(custom.parentElement?.querySelector('.ui-menu-item__label')).toBeNull();
     await user.keyboard('p');
     expect(screen.getByRole('menuitem', { name: 'Pear' })).toHaveFocus();
     expect(screen.getByTestId('custom')).toHaveTextContent('Apple');
@@ -173,7 +172,7 @@ describe('MenuItem, MenuSection and MenuSeparator', () => {
       />,
     );
     expect(screen.getByRole('menu')).toBeInTheDocument();
-    expect(screen.queryByRole('menuitem', { name: 'Loading…' })).toBeNull();
+    expect(screen.queryByRole('menuitem', { name: 'Loading…' })).not.toBeInTheDocument();
     await user.click(screen.getByRole('menuitem', { name: 'Mail' }));
     expect(actionKeys(onAction)).toEqual(['mail']);
   });
@@ -233,7 +232,7 @@ describe('MenuItem, MenuSection and MenuSeparator', () => {
     );
     await openMenu(user);
     const name = screen.getByRole('menuitemradio', { name: 'Name' });
-    expect(name).toHaveAttribute('aria-checked', 'true');
+    expect(name).toBeChecked();
     expect(name).toHaveAttribute('data-selected', 'true');
     expect(name).toHaveAttribute('data-selection-mode', 'single');
     expect(name.querySelector('.ui-menu-item__check [data-glyph="check"]')).not.toBeNull();
@@ -241,15 +240,12 @@ describe('MenuItem, MenuSection and MenuSeparator', () => {
     expect(date.querySelector('.ui-menu-item__check')).toBeEmptyDOMElement();
     await user.click(screen.getByRole('menuitemcheckbox', { name: 'Hidden files' }));
     expect(screen.getByRole('menu')).toBeInTheDocument();
-    expect(screen.getByRole('menuitemcheckbox', { name: 'Hidden files' })).toHaveAttribute(
-      'aria-checked',
-      'true',
-    );
+    expect(screen.getByRole('menuitemcheckbox', { name: 'Hidden files' })).toBeChecked();
     expect(onSelectionChange).toHaveBeenCalledTimes(1);
     expect([...(onSelectionChange.mock.calls[0]?.[0] as Set<string>)]).toEqual(['hidden']);
     expectHooksMatchSpec(document.body, 'MENU', { slots: ['check', 'header'] });
     await user.keyboard('{ArrowDown}{Enter}');
-    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 
   it('UIC-MENU-3.3 takes a selection on a section described as data', async () => {
@@ -275,10 +271,7 @@ describe('MenuItem, MenuSection and MenuSeparator', () => {
       />,
     );
     await openMenu(user);
-    expect(screen.getByRole('menuitemradio', { name: 'Name' })).toHaveAttribute(
-      'aria-checked',
-      'true',
-    );
+    expect(screen.getByRole('menuitemradio', { name: 'Name' })).toBeChecked();
     await user.click(screen.getByRole('menuitemradio', { name: 'Date' }));
     expect([...(onSelectionChange.mock.calls[0]?.[0] as Set<string>)]).toEqual(['date']);
   });

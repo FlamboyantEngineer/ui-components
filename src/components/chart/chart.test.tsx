@@ -75,7 +75,7 @@ describe('Chart', () => {
     expect(onViewChange).toHaveBeenCalledWith('table');
     expect(toggle).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByRole('figure')).toHaveAttribute('data-view', 'table');
-    expect(screen.queryByTestId('drawing')).toBeNull();
+    expect(screen.queryByTestId('drawing')).not.toBeInTheDocument();
     const grid = screen.getByRole('table', { name: 'Harvest' });
     expect(grid).toHaveClass('ui-prose-table', 'ui-chart__table');
     expect(

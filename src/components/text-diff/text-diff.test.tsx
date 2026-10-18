@@ -178,7 +178,7 @@ describe('TextDiff', () => {
       </UiProvider>,
     );
     const oldFold = pane(container, 'old').querySelector('.ui-text-diff__fold')!;
-    expect(within(oldFold as HTMLElement).queryByRole('button')).toBeNull();
+    expect(within(oldFold as HTMLElement).queryByRole('button')).not.toBeInTheDocument();
     expect(oldFold.querySelector('[aria-hidden="true"]')).toHaveTextContent('7 hidden');
     await user.click(
       within(pane(container, 'new')).getAllByRole('button', { name: '7 hidden' })[1]!,

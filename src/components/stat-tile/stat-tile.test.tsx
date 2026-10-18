@@ -28,7 +28,7 @@ describe('StatTile', () => {
     expect(within(tile).getByRole('img', { name: 'Last seven days' }).parentElement).toBe(
       slot(tile, 'chart'),
     );
-    expect(tile.textContent).toBe('Open requests1,284+12Since last weekLow 3, high 8, last 8');
+    expect(tile).toHaveTextContent('Open requests1,284+12Since last weekLow 3, high 8, last 8');
     expectHooksMatchSpec(document.body, 'STAT-TILE', { slots: 'all' });
   });
 

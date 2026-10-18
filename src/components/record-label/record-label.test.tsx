@@ -68,7 +68,7 @@ describe('RecordLabel', () => {
     expect(external).toHaveAttribute('target', '_blank');
     expect(external).toHaveAccessibleName('REQ-12 (opens in a new tab)');
     rerender(<RecordLabel identifier="REQ-12" />);
-    expect(screen.queryByRole('link')).toBeNull();
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
     expect(root(container)).not.toHaveAttribute('tabindex');
   });
 
@@ -92,7 +92,7 @@ describe('RecordLabel', () => {
         unavailable="restricted"
       />,
     );
-    expect(screen.queryByRole('link')).toBeNull();
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
     expect(root(container)).toHaveAttribute('data-unavailable', 'restricted');
     expect(root(container)).toHaveTextContent(/^Restricted item$/);
     expect(slot(container, 'icon')?.querySelector('[data-glyph]')).toHaveAttribute(

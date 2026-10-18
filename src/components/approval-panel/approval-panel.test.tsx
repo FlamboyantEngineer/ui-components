@@ -181,11 +181,15 @@ describe('ApprovalPanel', () => {
     expect(onRemind).toHaveBeenCalledWith('jon');
     await userEvent.click(screen.getByRole('button', { name: 'Request again from Maria Santos' }));
     expect(onRequestAgain).toHaveBeenCalledWith('maria');
-    expect(within(row('Jon Berg')).queryByRole('button', { name: /Request again/ })).toBeNull();
-    expect(within(row('Maria Santos')).queryByRole('button', { name: /Remind/ })).toBeNull();
+    expect(
+      within(row('Jon Berg')).queryByRole('button', { name: /Request again/ }),
+    ).not.toBeInTheDocument();
+    expect(
+      within(row('Maria Santos')).queryByRole('button', { name: /Remind/ }),
+    ).not.toBeInTheDocument();
     expectHooksMatchSpec(container, 'APPROVAL-PANEL', { slots: ['remind', 'request-again'] });
     rerender(<ApprovalPanel approvers={approvers} />);
-    expect(screen.queryByRole('button')).toBeNull();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
 
   it('UIC-APPROVAL-PANEL-1.7 holds the reader decision in the action area', () => {
@@ -210,6 +214,6 @@ describe('ApprovalPanel', () => {
     await userEvent.tab();
     expect(document.activeElement).toHaveClass('ui-approval-panel__time');
     await userEvent.tab();
-    expect(document.activeElement).toBe(document.body);
+    expect(document.body).toHaveFocus();
   });
 });

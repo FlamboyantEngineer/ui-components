@@ -82,7 +82,7 @@ describe('Loading content', () => {
     expect(content).toHaveClass('ui-skeleton__content');
     expect(content).toHaveAttribute('inert');
     expect(content).toHaveAttribute('aria-hidden', 'true');
-    expect(screen.queryByRole('button', { name: 'Profile' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Profile' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'After' })).toBeInTheDocument();
     expectHooksMatchSpec(container, 'SKELETON', { slots: ['content'] });
   });

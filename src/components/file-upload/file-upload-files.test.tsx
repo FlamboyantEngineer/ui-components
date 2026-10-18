@@ -95,7 +95,7 @@ describe('FileUpload rows', () => {
       />,
     );
     expect(container.querySelector('.ui-file-upload')).toHaveAttribute('data-readonly', 'true');
-    expect(screen.queryByRole('button')).toBeNull();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
     expect(container.querySelector('.ui-file-upload__file-remove')).toBeNull();
     expect(screen.getAllByRole('link')).toHaveLength(3);
     expectHooksMatchSpec(container, 'FILE-UPLOAD');

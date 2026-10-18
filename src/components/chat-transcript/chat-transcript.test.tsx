@@ -106,7 +106,7 @@ describe('ChatTranscript', () => {
     geometry.scrollHeight = 300;
     const { container, rerender } = render(<Conversation count={3} />);
     await settle();
-    expect(screen.queryByRole('button', { name: 'Jump to latest' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Jump to latest' })).not.toBeInTheDocument();
     scrollLogTo(50);
     const jump = screen.getByRole('button', { name: 'Jump to latest' });
     expectHooksMatchSpec(container, 'CHAT-TRANSCRIPT', { slots: ['jump'] });
@@ -117,7 +117,7 @@ describe('ChatTranscript', () => {
     await user.click(jump);
     expect(log().scrollTop).toBe(300);
     expect(log()).toHaveFocus();
-    expect(screen.queryByRole('button', { name: 'Jump to latest' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Jump to latest' })).not.toBeInTheDocument();
     fireEvent.scroll(log());
     geometry.scrollHeight = 500;
     rerender(<Conversation count={5} />);
@@ -126,7 +126,7 @@ describe('ChatTranscript', () => {
     scrollLogTo(10);
     expect(screen.getByRole('button', { name: 'Jump to latest' })).toBeInTheDocument();
     scrollLogTo(400);
-    expect(screen.queryByRole('button', { name: 'Jump to latest' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Jump to latest' })).not.toBeInTheDocument();
   });
 
   it('UIC-CHAT-TRANSCRIPT-1.4 forwards attributes to the root and names the log', () => {

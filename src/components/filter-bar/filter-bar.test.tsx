@@ -124,7 +124,7 @@ describe('FilterBar', () => {
         .getAllByRole('menuitem')
         .map((item) => item.textContent),
     ).toEqual(['Title', 'Pages', 'Genre', 'Available']);
-    expect(within(menu).queryByRole('searchbox')).toBeNull();
+    expect(within(menu).queryByRole('searchbox')).not.toBeInTheDocument();
     await user.click(within(menu).getByRole('menuitem', { name: 'Pages' }));
     expect(onValue).toHaveBeenLastCalledWith([
       genre,
@@ -134,7 +134,7 @@ describe('FilterBar', () => {
     expect(await screen.findByRole('dialog', { name: 'Pages' })).toBeInTheDocument();
     expect(chipsInDocument()[2]).toHaveAttribute('data-open', 'true');
     await user.keyboard('{Escape}');
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(screen.getAllByRole('listitem')).toHaveLength(3);
   });
 
@@ -162,8 +162,8 @@ describe('FilterBar', () => {
     await user.click(screen.getByRole('button', { name: 'Clear all' }));
     expect(onValue).toHaveBeenLastCalledWith([]);
     expect(screen.getByRole('button', { name: 'Add filter' })).toHaveFocus();
-    expect(screen.queryByRole('list')).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Clear all' })).toBeNull();
+    expect(screen.queryByRole('list')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Clear all' })).not.toBeInTheDocument();
     expect(screen.getByRole('group')).toHaveAttribute('data-empty', 'true');
   });
 

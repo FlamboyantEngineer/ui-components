@@ -232,7 +232,7 @@ describe('Tree reordering', { timeout: 20_000 }, () => {
     for (const name of ['Apple', 'Pear', 'Kiwi', 'Berries', 'Currant', 'Garden']) {
       expect(row(name)).toHaveAttribute('draggable', 'true');
       expect(row(name)).toHaveAttribute('aria-keyshortcuts', 'Alt+ArrowUp Alt+ArrowDown');
-      expect(row(name).querySelector('.ui-tree__drag-handle')).not.toBeDisabled();
+      expect(row(name).querySelector('.ui-tree__drag-handle')).toBeEnabled();
     }
     for (const name of ['Pantry', 'Plum', 'Fig']) {
       expect(row(name)).not.toHaveAttribute('draggable');

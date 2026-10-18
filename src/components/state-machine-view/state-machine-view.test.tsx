@@ -205,7 +205,7 @@ describe('StateMachineView', () => {
       'delivered',
       'cancelled',
     ]);
-    expect(screen.queryByText('ship')).toBeNull();
+    expect(screen.queryByText('ship')).not.toBeInTheDocument();
     expect(screen.getByText('pay')).toBeInTheDocument();
   });
 });

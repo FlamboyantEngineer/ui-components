@@ -168,7 +168,7 @@ describe('Markdown', () => {
       />,
     );
     expect(screen.getByTestId('chart')).toHaveTextContent('pie');
-    expect(screen.queryByRole('img')).toBeNull();
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
     expect(screen.getByTestId('bold')).toHaveTextContent('kept');
     expect(renderNode).toHaveBeenCalledWith(expect.objectContaining({ type: 'image' }), null);
   });

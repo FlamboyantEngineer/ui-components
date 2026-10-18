@@ -181,7 +181,7 @@ describe('BarChart', () => {
         showSummary
       />,
     );
-    expect(screen.queryByRole('toolbar')).toBeNull();
+    expect(screen.queryByRole('toolbar')).not.toBeInTheDocument();
     expect(screen.getByRole('figure')).toHaveAccessibleDescription('Apples peak in February');
     expect(screen.getByText('Apples peak in February')).toHaveClass('ui-chart__summary');
   });

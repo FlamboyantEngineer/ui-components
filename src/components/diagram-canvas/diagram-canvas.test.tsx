@@ -348,7 +348,7 @@ describe('DiagramCanvas', () => {
     expect(onViewChange).toHaveBeenCalledWith('outline');
     expect(screen.getByRole('group', { name: 'Diagram' })).toHaveAttribute('data-view', 'outline');
     expect(container.querySelector('.ui-diagram-canvas__viewport')).toBeNull();
-    expect(screen.queryByRole('group', { name: 'Zoom' })).toBeNull();
+    expect(screen.queryByRole('group', { name: 'Zoom' })).not.toBeInTheDocument();
     const outline = screen.getByRole('list', { name: 'Outline' });
     const items = within(outline)
       .getAllByRole('listitem')
@@ -363,7 +363,7 @@ describe('DiagramCanvas', () => {
     );
     await userEvent.click(within(items[0]!).getByRole('button', { name: 'Valve (flow)' }));
     expect(valve).toHaveFocus();
-    expect(screen.queryByRole('button', { name: /Remove connection/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /Remove connection/ })).not.toBeInTheDocument();
     expectHooksMatchSpec(container, 'DIAGRAM-CANVAS', {
       slots: [
         'outline',

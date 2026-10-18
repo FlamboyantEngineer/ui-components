@@ -87,7 +87,7 @@ describe('Projection', () => {
     expect(screen.getByText('No tools')).toBeInTheDocument();
     rerender(<Page shown />);
     expect(screen.getByText('Ruler')).toBeInTheDocument();
-    expect(screen.queryByText('No tools')).toBeNull();
+    expect(screen.queryByText('No tools')).not.toBeInTheDocument();
     rerender(<Page shown empty />);
     expect(screen.getByText('No tools')).toBeInTheDocument();
     rerender(<Page shown={false} />);

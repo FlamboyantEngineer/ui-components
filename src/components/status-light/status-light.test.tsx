@@ -99,7 +99,7 @@ describe('StatusLight', () => {
     expect(container.querySelector('.ui-status-light__label')).toBeNull();
 
     rerender(<StatusLight aria-label="Ignored">Running</StatusLight>);
-    expect(screen.queryByRole('img')).toBeNull();
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
     expect(container.firstElementChild).not.toHaveAttribute('aria-label');
     expect(container.firstElementChild).not.toHaveAttribute('aria-hidden');
 
@@ -119,6 +119,6 @@ describe('StatusLight', () => {
     );
     await user.tab();
     expect(screen.getByRole('button', { name: 'After' })).toHaveFocus();
-    expect(screen.queryByRole('status')).toBeNull();
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
 });

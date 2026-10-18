@@ -52,13 +52,13 @@ afterEach(() => {
 describe('useEnterExit', () => {
   it('UIC-ENTER-EXIT-1.1 mounts while open and unmounts at once without animations', () => {
     const { rerender } = render(<Notice isOpen={false} />);
-    expect(screen.queryByTestId('notice')).toBeNull();
+    expect(screen.queryByTestId('notice')).not.toBeInTheDocument();
     rerender(<Notice isOpen />);
     const notice = screen.getByTestId('notice');
     expect(notice).not.toHaveAttribute('data-entering');
     expect(notice).not.toHaveAttribute('data-exiting');
     rerender(<Notice isOpen={false} />);
-    expect(screen.queryByTestId('notice')).toBeNull();
+    expect(screen.queryByTestId('notice')).not.toBeInTheDocument();
   });
 
   it('UIC-ENTER-EXIT-1.2 stays entering until the enter animations finish', async () => {
@@ -84,7 +84,7 @@ describe('useEnterExit', () => {
     await act(async () => fade.finish());
     expect(screen.getByTestId('notice')).toHaveAttribute('data-exiting', 'true');
     await act(async () => slide.finish());
-    expect(screen.queryByTestId('notice')).toBeNull();
+    expect(screen.queryByTestId('notice')).not.toBeInTheDocument();
   });
 
   it('UIC-ENTER-EXIT-1.3 finishes the exit when its animation is cancelled', async () => {
@@ -95,7 +95,7 @@ describe('useEnterExit', () => {
     animations = [fade];
     rerender(<Notice isOpen={false} />);
     await act(async () => fade.cancel());
-    expect(screen.queryByTestId('notice')).toBeNull();
+    expect(screen.queryByTestId('notice')).not.toBeInTheDocument();
   });
 
   it('UIC-ENTER-EXIT-1.4 keeps the element when it reopens during its exit', async () => {

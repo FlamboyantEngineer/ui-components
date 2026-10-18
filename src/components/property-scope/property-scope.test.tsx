@@ -228,7 +228,7 @@ describe('PropertyScope', () => {
     expectHooksMatchSpec(container, 'PROPERTY-SCOPE', { slots: 'all' });
 
     rerender(panel('colr'));
-    expect(within(status).queryByRole('button')).toBeNull();
+    expect(within(status).queryByRole('button')).not.toBeInTheDocument();
 
     rerender(panel('col'));
     expect(status).toBeEmptyDOMElement();

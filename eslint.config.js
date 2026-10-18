@@ -1,5 +1,7 @@
 import js from '@eslint/js';
+import jestDom from 'eslint-plugin-jest-dom';
 import reactHooks from 'eslint-plugin-react-hooks';
+import testingLibrary from 'eslint-plugin-testing-library';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 import local from './eslint-rules/index.js';
@@ -143,6 +145,42 @@ export default tseslint.config(
         { selector: 'function', format: ['camelCase', 'PascalCase'] },
         { selector: 'parameter', format: ['camelCase', 'PascalCase'], leadingUnderscore: 'allow' },
       ],
+    },
+  },
+  {
+    // Tests query what a reader perceives and act as a reader does (docs/TESTING-GUIDELINES.md).
+    files: ['src/**/*.test.{ts,tsx}', 'test/**/*.{ts,tsx}'],
+    ...testingLibrary.configs['flat/react'],
+    rules: {
+      ...testingLibrary.configs['flat/react'].rules,
+      'testing-library/prefer-user-event': 'error',
+      // Components emit hooks only: classes, data attributes and measured properties are their public
+      // API (specs/HOOK-CONTRACT.md), so tests read the rendered structure on purpose.
+      'testing-library/no-node-access': 'off',
+      'testing-library/no-container': 'off',
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'CallExpression[callee.property.name=/ByTestId$/]',
+          message: 'Query by role, label or text, or by a documented hook, not by test id.',
+        },
+        {
+          selector: 'CallExpression[callee.name=/ByTestId$/]',
+          message: 'Query by role, label or text, or by a documented hook, not by test id.',
+        },
+      ],
+    },
+  },
+  {
+    files: ['src/**/*.test.{ts,tsx}', 'test/**/*.{ts,tsx}'],
+    ...jestDom.configs['flat/recommended'],
+    rules: {
+      ...jestDom.configs['flat/recommended'].rules,
+      // Functional inline styles (positions, measured sizes, --ui-* properties) are hooks checked as
+      // written; toHaveStyle compares jsdom's computed style, which resolves those differently.
+      'jest-dom/prefer-to-have-style': 'off',
+      // aria-valuenow is checked as the attribute string; toHaveValue reads range roles as numbers.
+      'jest-dom/prefer-to-have-value': 'off',
     },
   },
   {

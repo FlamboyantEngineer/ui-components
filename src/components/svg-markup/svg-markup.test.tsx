@@ -74,11 +74,11 @@ describe('SvgMarkup', () => {
   it('UIC-SVG-MARKUP-2.2 keeps drawing attributes and drops the attributes the component owns', () => {
     const { container } = render(<SvgMarkup markup={outlineMarkup} />);
     const svg = container.firstElementChild as SVGSVGElement;
-    expect(svg.getAttribute('viewBox')).toBe('0 0 24 24');
+    expect(svg).toHaveAttribute('viewBox', '0 0 24 24');
     expect(svg).toHaveAttribute('fill', 'none');
     expect(svg).toHaveAttribute('stroke', 'currentColor');
     expect(svg).toHaveAttribute('stroke-width', '1.5');
-    expect(svg.getAttribute('class')).toBe('ui-svg-markup');
+    expect(svg).toHaveAttribute('class', 'ui-svg-markup');
     for (const owned of ['width', 'height', 'style', 'id', 'role', 'tabindex', 'data-slot']) {
       expect(svg).not.toHaveAttribute(owned);
     }

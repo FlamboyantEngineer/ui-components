@@ -71,7 +71,7 @@ describe('DateTimeField field', () => {
     expect(root(time.container)).toHaveAttribute('data-mode', 'time');
     expect(segment(/^hour/)).toHaveTextContent('1');
     expect(segment(/^minute/)).toHaveTextContent('45');
-    expect(screen.queryByRole('button', { name: /Calendar/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /Calendar/ })).not.toBeInTheDocument();
     expectHooksMatchSpec(time.container, 'DATE-TIME-FIELD', {
       slots: ['group', 'input', 'segment'],
     });
@@ -183,7 +183,7 @@ describe('DateTimeField field', () => {
     );
     expect(segment(/^month/)).toHaveAttribute('aria-readonly', 'true');
     await user.click(screen.getByRole('button', { name: /Calendar/ }));
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     readOnly.unmount();
     renderInLocale(<DateTimeField label="Due" defaultValue="2026-04-13" isDisabled />);
     expect(segment(/^month/)).toHaveAttribute('aria-disabled', 'true');
@@ -293,7 +293,7 @@ describe('DateTimeField calendar', () => {
     );
     await user.keyboard('{ArrowRight}{Enter}');
     expect(onCommit).toHaveBeenCalledWith('2026-04-14');
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('UIC-DATE-TIME-FIELD-2.1 refuses days outside the bounds and shows two months for a range', async () => {
@@ -339,9 +339,9 @@ describe('DateTimeField calendar', () => {
     expect(onCommit).toHaveBeenLastCalledWith(
       `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`,
     );
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /Calendar/ }));
-    expect(screen.queryByRole('button', { name: 'Now' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Now' })).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Clear' }));
     expect(onCommit).toHaveBeenLastCalledWith(null);
     unmount();

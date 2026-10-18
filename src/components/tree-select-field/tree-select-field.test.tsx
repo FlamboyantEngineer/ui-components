@@ -113,12 +113,12 @@ describe('TreeSelectField', () => {
     expect(tree()).toHaveAttribute('data-variant', 'picker');
     expect(row('Bergen')).toHaveAttribute('aria-selected', 'true');
     expect(row('Norway')).toHaveAttribute('aria-expanded', 'true');
-    expect(within(tree()).queryByRole('row', { name: 'Lisbon' })).toBeNull();
+    expect(within(tree()).queryByRole('row', { name: 'Lisbon' })).not.toBeInTheDocument();
     expectHooksMatchSpec(document.body, 'TREE-SELECT-FIELD', {
       slots: ['popover', 'dialog', 'search', 'tree'],
     });
     await user.keyboard('{Escape}');
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     await waitFor(() => expect(trigger('Place Bergen')).toHaveFocus());
   });
 
@@ -140,7 +140,7 @@ describe('TreeSelectField', () => {
     await user.click(trigger('Place Peru'));
     await user.keyboard('ber');
     await user.click(row('Bergen'));
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     await user.click(trigger('Place Bergen'));
     expect(screen.getByRole('searchbox', { name: 'Filter place' })).toHaveValue('');
     expect(row('Norway')).toHaveAttribute('aria-expanded', 'true');
@@ -152,7 +152,7 @@ describe('TreeSelectField', () => {
     const { rerender } = render(
       <TreeSelectField label="Place" items={places} getTextValue={getTextValue} isOpen={false} />,
     );
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     rerender(<TreeSelectField label="Place" items={places} getTextValue={getTextValue} isOpen />);
     expect(screen.getByRole('dialog', { name: 'Place' })).toBeInTheDocument();
   });
@@ -177,7 +177,7 @@ describe('TreeSelectField', () => {
     render(<Controlled />);
     await user.click(row('Americas'));
     expect(onCommit).toHaveBeenLastCalledWith('americas');
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     await user.click(trigger('Place Americas'));
     await user.keyboard('{ArrowDown}{ArrowDown}{Enter}');
     expect(onCommit).toHaveBeenLastCalledWith('americas');
@@ -357,7 +357,7 @@ describe('TreeSelectField', () => {
     await user.click(screen.getByRole('button', { name: 'Clear Place' }));
     expect(onCommit).toHaveBeenLastCalledWith(null);
     expect(trigger('Place Select an option')).toHaveFocus();
-    expect(screen.queryByRole('button', { name: 'Clear Place' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Clear Place' })).not.toBeInTheDocument();
     expectHooksMatchSpec(container, 'TREE-SELECT-FIELD');
     unmount();
     const readOnly = render(
@@ -371,8 +371,8 @@ describe('TreeSelectField', () => {
       />,
     );
     await user.click(trigger(/^Place /));
-    expect(screen.queryByRole('dialog')).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Remove Peru' })).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Remove Peru' })).not.toBeInTheDocument();
     readOnly.unmount();
     render(<TreeSelectField label="Place" items={places} getTextValue={getTextValue} isDisabled />);
     expect(trigger(/^Place /)).toBeDisabled();

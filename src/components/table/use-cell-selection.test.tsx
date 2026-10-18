@@ -278,7 +278,7 @@ describe('Table spreadsheet mode', { timeout: 20_000 }, () => {
     await user.keyboard('{Enter}{Shift>}{Tab}{/Shift}');
     expect(cell('Kiwi', 'name')).toHaveFocus();
     await user.keyboard(' ');
-    expect(screen.queryByRole('textbox')).toBeNull();
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
   });
 
   it('UIC-TABLE-14.7 keeps the editor open with the column message for a refused value', async () => {
@@ -295,7 +295,7 @@ describe('Table spreadsheet mode', { timeout: 20_000 }, () => {
     expect(screen.getByRole('alert')).toHaveClass('ui-table__editor-message');
     expect(onCellEdit).not.toHaveBeenCalled();
     await user.click(cell('Plum', 'note'));
-    expect(screen.queryByRole('textbox')).toBeNull();
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
     expect(onCellEdit).not.toHaveBeenCalled();
     expect(cell('Apple', 'count')).toHaveTextContent('1');
   });

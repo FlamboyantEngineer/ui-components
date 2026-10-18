@@ -100,7 +100,7 @@ describe('ColorField typing', () => {
     await user.click(screen.getByRole('button', { name: 'Accent picker' }));
     expect(await screen.findByRole('dialog', { name: 'Accent' })).toBeInTheDocument();
     await user.keyboard('{Escape}');
-    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     rerender(<ColorField label="Accent" allowsTyping value="#336699" isReadOnly />);
     expect(input()).toHaveAttribute('readonly');
     expect(screen.getByRole('button', { name: 'Accent picker' })).toBeDisabled();

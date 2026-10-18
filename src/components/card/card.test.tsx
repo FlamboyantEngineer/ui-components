@@ -87,7 +87,7 @@ describe('Card', () => {
       </Card>,
     );
     expect(container.querySelector('.ui-card__header')).toHaveTextContent('Custom');
-    expect(container.textContent).not.toContain('Ignored');
+    expect(container).not.toHaveTextContent(/Ignored/);
     expect(container.querySelector('.ui-card__title, .ui-card__actions')).toBeNull();
     expect(container.firstElementChild).not.toHaveAttribute('aria-labelledby');
   });
@@ -120,7 +120,7 @@ describe('Card', () => {
 
   it('UIC-CARD-1.4 UIC-COMPOSITION-3.1 leaves a card without CardTitle unnamed', () => {
     const { rerender } = render(<Card header={<strong>Seed list</strong>}>Body</Card>);
-    expect(screen.queryByRole('region')).toBeNull();
+    expect(screen.queryByRole('region')).not.toBeInTheDocument();
     expect(document.querySelector('section')).not.toHaveAttribute('aria-labelledby');
 
     rerender(
@@ -140,9 +140,9 @@ describe('Card', () => {
     );
     const title = screen.getByRole('heading', { name: 'Loose title' });
     expect(title.tagName).toBe('H3');
-    expect(title).toHaveAttribute('class', 'own');
+    expect(title).toHaveClass('own', { exact: true });
     expect(title).not.toHaveAttribute('id');
-    expect(screen.queryByRole('button')).toBeNull();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
     expect(screen.getByText('Loose action')).not.toHaveClass('ui-card__action');
   });
 
@@ -170,7 +170,7 @@ describe('Card', () => {
     );
     const renamed = screen.getByRole('region', { name: 'Billing and plan' });
     expect(renamed).toBe(first);
-    expect(renamed.getAttribute('aria-labelledby')).toBe(firstId);
+    expect(renamed).toHaveAttribute('aria-labelledby', firstId);
     expectHooksMatchSpec(container, 'CARD');
   });
 
@@ -580,7 +580,7 @@ describe('CardGrid', () => {
         )}
       </CardGrid>,
     );
-    expect(screen.queryByRole('checkbox')).toBeNull();
+    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
   });
 
   it('UIC-CARD-5.4 acts on a card from the grid or the item', async () => {

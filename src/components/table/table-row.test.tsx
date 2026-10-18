@@ -111,14 +111,16 @@ describe('Table nested and detail rows', { timeout: 15_000 }, () => {
         }
       />,
     );
-    expect(within(row('Iceland')).queryByRole('button', { name: /^Expand/ })).toBeNull();
+    expect(
+      within(row('Iceland')).queryByRole('button', { name: /^Expand/ }),
+    ).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Expand Portugal' }));
     const detail = container.querySelector('.ui-table__detail-row') as HTMLElement;
     expect(detail).toHaveAttribute('aria-level', '2');
     const cell = detail.querySelector('.ui-table__detail-cell');
     expect(cell).toHaveAttribute('colspan', '3');
     expect(within(detail).getByRole('button', { name: 'Portugal cities' })).toBeInTheDocument();
-    expect(within(detail).queryByRole('checkbox')).toBeNull();
+    expect(within(detail).queryByRole('checkbox')).not.toBeInTheDocument();
     await user.click(detail);
     await user.keyboard('{Enter}');
     expect(onRowAction).not.toHaveBeenCalled();

@@ -262,7 +262,7 @@ describe('Avatar', () => {
     expect(root(container)).toHaveAttribute('aria-hidden', 'true');
     expect(root(container)).not.toHaveAttribute('role');
     expect(root(container)).not.toHaveAttribute('aria-label');
-    expect(screen.queryByRole('img')).toBeNull();
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
 
     rerender(<Avatar name=" " />);
     expect(screen.getByRole('img', { name: 'Unnamed' })).toBeInTheDocument();

@@ -84,7 +84,7 @@ describe('DecisionControl', { timeout: 15_000 }, () => {
     const { rerender } = render(
       <DecisionControl onSubmit={() => {}} options={votes.slice(2)} comment="none" />,
     );
-    expect(screen.queryByRole('textbox')).toBeNull();
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
     rerender(<DecisionControl onSubmit={() => {}} options={votes.slice(2)} comment="required" />);
     expect(comment()).toBeRequired();
   });
@@ -151,7 +151,7 @@ describe('DecisionControl', { timeout: 15_000 }, () => {
     );
     expect(dialog).toHaveTextContent('Verified on the bench');
     expect(dialog).toHaveTextContent('Meaning of signature: Approve');
-    expect(within(dialog).queryByRole('textbox', { name: /Reason/ })).toBeNull();
+    expect(within(dialog).queryByRole('textbox', { name: /Reason/ })).not.toBeInTheDocument();
     expect(dialog).toHaveTextContent('Ada Park');
     expect(onSubmit).not.toHaveBeenCalled();
     await userEvent.type(
@@ -176,7 +176,7 @@ describe('DecisionControl', { timeout: 15_000 }, () => {
       'right',
     );
     await userEvent.click(within(dialog).getByRole('button', { name: 'Sign' }));
-    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     expect(comment()).toHaveValue('');
     expect(onSubmit).toHaveBeenCalledTimes(2);
   });

@@ -130,7 +130,7 @@ describe('useOverflowItems', () => {
   it('UIC-OVERFLOW-LIST-1.6 renders every nested item that fits, with no indicator', () => {
     render(<Row room={230} items={fruit} nested fixed="Add" />);
     expect(screen.getByTestId('items').children).toHaveLength(4);
-    expect(screen.queryByRole('button')).toBeNull();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
 
   it('UIC-OVERFLOW-LIST-1.6 keeps the last nested items when items collapse from the start', () => {

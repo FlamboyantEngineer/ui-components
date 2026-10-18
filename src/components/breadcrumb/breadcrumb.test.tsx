@@ -372,7 +372,7 @@ describe('Breadcrumb', () => {
   it('UIC-BREADCRUMB-1.7 keeps every crumb of a trail that fits, or of a short trail', () => {
     const { rerender } = render(<Breadcrumb items={trail} overflow="menu" />);
     expect(screen.getAllByRole('listitem')).toHaveLength(3);
-    expect(screen.queryByRole('button')).toBeNull();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
     rerender(<Breadcrumb items={trail.slice(1)} overflow="menu" />);
     expect(screen.getAllByRole('listitem')).toHaveLength(2);
   });

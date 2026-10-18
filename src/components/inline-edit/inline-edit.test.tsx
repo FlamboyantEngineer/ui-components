@@ -258,7 +258,7 @@ describe('InlineEdit', { timeout: 15_000 }, () => {
     expectHooksMatchSpec(container, 'INLINE-EDIT', { slots: ['error'] });
     save = deferred();
     fireEvent.keyDown(textbox(), { key: 'Enter' });
-    expect(screen.queryByRole('alert')).toBeNull();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     await act(async () => save.reject('nope'));
     expect(screen.getByRole('alert')).toHaveTextContent('The change could not be saved.');
     save = deferred();

@@ -76,7 +76,7 @@ describe('TruncationTooltip', () => {
     expect(panel).toHaveClass('ui-tooltip', 'ui-truncation-tooltip__panel');
     expect(panel).toHaveAttribute('data-variant', 'default');
     expect(cut).not.toHaveAttribute('aria-describedby');
-    expect(document.activeElement).toBe(document.body);
+    expect(document.body).toHaveFocus();
     expectHooksMatchSpec(document.body, 'TRUNCATION-TOOLTIP', { slots: ['panel'] });
     expectHooksMatchSpec(document.body, 'TOOLTIP', { slots: ['content'] });
   });
@@ -277,7 +277,7 @@ describe('TruncationTooltip', () => {
         Fits
       </TruncationTooltip>,
     );
-    expect(screen.queryByRole('button')).toBeNull();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
     rerender(
       <UiProvider strings={{ showLess: 'Moins' }}>
         <TruncationTooltip expandable id="notes" isExpanded>

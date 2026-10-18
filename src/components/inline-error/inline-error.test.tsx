@@ -23,7 +23,7 @@ describe('InlineError', () => {
     expect(alert.querySelectorAll('.ui-inline-error__message li')).toHaveLength(2);
     expect(screen.getAllByRole('alert')).toHaveLength(1);
     expect(alert.querySelectorAll('[aria-live], [role="status"]')).toHaveLength(0);
-    expect(screen.queryByRole('button')).toBeNull();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
     expectHooksMatchSpec(container, 'INLINE-ERROR', { slots: ['icon', 'message'] });
   });
 

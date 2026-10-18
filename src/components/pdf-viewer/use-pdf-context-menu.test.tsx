@@ -49,7 +49,7 @@ describe('PdfViewer context menu', () => {
     const { container } = await renderReady();
     const canvas = container.querySelector('canvas')!;
     expect(fireEvent.contextMenu(canvas, { clientX: 10, clientY: 10 })).toBe(false);
-    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 
   it('UIC-PDF-VIEWER-8.1 leaves a menu of caller content alone', async () => {
@@ -62,7 +62,7 @@ describe('PdfViewer context menu', () => {
     });
     fireEvent.contextMenu(screen.getByTestId('mark-0'));
     expect(getPageMenuItems).not.toHaveBeenCalled();
-    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     expect(container.querySelector('.ui-pdf-viewer__overlay')).not.toBeNull();
   });
 
@@ -92,7 +92,7 @@ describe('PdfViewer context menu', () => {
     expectHooksMatchSpec(document.body, 'PDF-VIEWER');
     await user.click(screen.getByRole('menuitem', { name: 'Copy' }));
     expect(await navigator.clipboard.readText()).toBe('apple harvest');
-    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
 
     selectText(run.firstChild!, 4, 17);
     fireEvent.contextMenu(run, { clientX: 50, clientY: 90 });
@@ -110,7 +110,7 @@ describe('PdfViewer context menu', () => {
     selectText(outside.firstChild!, 0, 5);
     const run = runOf(container, 'Markets');
     fireEvent.contextMenu(run);
-    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     expect(getPageMenuItems).toHaveBeenCalled();
     outside.remove();
 
@@ -141,7 +141,7 @@ describe('PdfViewer context menu', () => {
     await userEvent.keyboard('{Escape}');
 
     fireEvent.contextMenu(secondPage, { clientX: 400, clientY: 400 });
-    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     fireEvent.contextMenu(container.querySelector('.ui-pdf-viewer__pages')!);
     expect(getPageMenuItems).toHaveBeenCalledTimes(2);
   });

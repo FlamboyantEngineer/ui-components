@@ -110,12 +110,12 @@ describe('CheckboxGroup', () => {
     const { container } = render(<Toppings />);
     const parent = screen.getByRole<HTMLInputElement>('checkbox', { name: 'All toppings' });
     expect(parent.closest('.ui-checkbox')).toHaveClass('ui-checkbox-group__select-all');
-    expect(parent.checked).toBe(false);
+    expect(parent).not.toBeChecked();
     expect(parent.indeterminate).toBe(false);
     await user.click(screen.getByText('Olives'));
     expect(parent.indeterminate).toBe(true);
     await user.click(parent);
-    expect(parent.checked).toBe(true);
+    expect(parent).toBeChecked();
     expect(parent.indeterminate).toBe(false);
     expect(screen.getByRole('checkbox', { name: 'Peppers' })).toBeChecked();
     expect(screen.getByRole('checkbox', { name: 'Truffle' })).toBeChecked();

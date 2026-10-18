@@ -101,7 +101,7 @@ describe('StepListEditor', { timeout: 15_000 }, () => {
     expect(container.querySelector('.ui-step-list-editor__empty')).toHaveTextContent(
       'No steps yet.',
     );
-    expect(screen.queryByRole('list')).toBeNull();
+    expect(screen.queryByRole('list')).not.toBeInTheDocument();
     expectHooksMatchSpec(container, 'STEP-LIST-EDITOR', { slots: ['empty', 'add'] });
   });
 
@@ -199,7 +199,7 @@ describe('StepListEditor', { timeout: 15_000 }, () => {
     act(() => menu.focus());
     await user.keyboard('{Alt>}{ArrowDown}{/Alt}');
     expect(idsOf(onValue.mock.lastCall?.[0])).toEqual(['type', 'save', 'open']);
-    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     await user.keyboard('{Shift>}{Alt>}{ArrowUp}{/Alt}{/Shift}');
     expect(onValue).toHaveBeenCalledTimes(2);
   });

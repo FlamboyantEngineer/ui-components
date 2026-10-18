@@ -31,8 +31,8 @@ describe('FacetList', () => {
     expect(option).toHaveClass('ui-checkbox', 'ui-facet-list__option');
     expect(option?.querySelector('.ui-facet-list__count')).toHaveTextContent('96');
     expect(screen.getByText('City')).toHaveClass('ui-facet-list__label');
-    expect(screen.queryByRole('searchbox')).toBeNull();
-    expect(screen.queryByRole('button')).toBeNull();
+    expect(screen.queryByRole('searchbox')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
     expectHooksMatchSpec(document.body, 'FACET-LIST', {
       slots: ['label', 'options', 'option', 'option-label', 'count'],
     });
@@ -95,7 +95,7 @@ describe('FacetList', () => {
     expect(search.closest('.ui-search-field')).toHaveClass('ui-facet-list__search');
     await user.type(search, 'LI');
     expect(names()).toEqual(['Lisbon, 1,280', 'Lima, 61', 'Tbilisi']);
-    expect(screen.queryByRole('button', { name: /Show/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /Show/ })).not.toBeInTheDocument();
     await user.click(screen.getByRole('checkbox', { name: 'Lima, 61' }));
     expect(onChange).toHaveBeenLastCalledWith(['oslo', 'lima']);
     await user.clear(search);

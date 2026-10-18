@@ -115,8 +115,8 @@ describe('CodeEditor find and replace', () => {
     await user.click(input());
     await user.keyboard('{Control>}f{/Control}');
     expect(screen.getByRole('searchbox', { name: 'Find' })).toHaveFocus();
-    expect(screen.queryByRole('textbox', { name: 'Replace with' })).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Replace all' })).toBeNull();
+    expect(screen.queryByRole('textbox', { name: 'Replace with' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Replace all' })).not.toBeInTheDocument();
   });
 
   it('UIC-CODE-EDITOR-7.4 closes on Escape or Close and selects the current match in the text area', async () => {

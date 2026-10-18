@@ -109,7 +109,7 @@ describe('JsonEditor', () => {
     await user.click(screen.getByRole('button', { name: 'Format' }));
     expect(editor()).toHaveValue('[\n  1\n]');
     rerender(<JsonEditor label="Settings" defaultValue="[1]" isReadOnly />);
-    expect(screen.queryByRole('button', { name: 'Format' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Format' })).not.toBeInTheDocument();
   });
 
   it('UIC-JSON-EDITOR-4.1 commits on blur and restores the committed text while dirty', async () => {

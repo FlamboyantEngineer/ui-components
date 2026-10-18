@@ -128,20 +128,20 @@ describe('FindBar', () => {
     await user.click(trigger);
     const menu = screen.getByRole('menu', { name: 'Find options' });
     const words = within(menu).getByRole('menuitemcheckbox', { name: 'Whole words' });
-    expect(words).toHaveAttribute('aria-checked', 'true');
+    expect(words).toBeChecked();
     await user.click(within(menu).getByRole('menuitemcheckbox', { name: 'Match case' }));
     expect(onSelectedOptionsChange).toHaveBeenLastCalledWith(new Set<Key>(['words', 'case']));
     expect(screen.getByRole('menu')).toBeInTheDocument();
     await user.click(words);
     expect(onSelectedOptionsChange).toHaveBeenLastCalledWith(new Set<Key>(['case']));
     await user.keyboard('{Escape}');
-    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     expectHooksMatchSpec(container, 'FIND-BAR', { slots: ['options'] });
   });
 
   it('UIC-FIND-BAR-1.4 follows controlled options and shows no menu without options', () => {
     const { rerender } = render(<FindBar />);
-    expect(screen.queryByRole('button', { name: 'Find options' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Find options' })).not.toBeInTheDocument();
     rerender(
       <FindBar options={[{ id: 'case', label: 'Match case' }]} selectedOptions={['case']} />,
     );
@@ -193,10 +193,10 @@ describe('FindBar', () => {
 
   it('UIC-FIND-BAR-1.5 shows only the replace buttons asked for, with a controlled replacement', () => {
     const { rerender } = render(<FindBar matchCount={1} />);
-    expect(screen.queryByRole('textbox', { name: 'Replace with' })).toBeNull();
+    expect(screen.queryByRole('textbox', { name: 'Replace with' })).not.toBeInTheDocument();
     rerender(<FindBar matchCount={1} replacement="kiwi" onReplaceAll={() => undefined} />);
     expect(screen.getByRole('textbox', { name: 'Replace with' })).toHaveValue('kiwi');
-    expect(screen.queryByRole('button', { name: 'Replace' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Replace' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Replace all' })).toBeInTheDocument();
   });
 
@@ -224,7 +224,7 @@ describe('FindBar', () => {
     expect(onClose).toHaveBeenCalledTimes(3);
     await user.click(screen.getByRole('button', { name: 'Find options' }));
     await user.keyboard('{Escape}');
-    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     expect(onClose).toHaveBeenCalledTimes(3);
     expectHooksMatchSpec(container, 'FIND-BAR', { slots: ['close'] });
   });

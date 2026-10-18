@@ -149,7 +149,7 @@ describe('RecordChip', () => {
     for (const name of ['version', 'type', 'state', 'name', 'header', 'preview']) {
       expect(slot(container, name)).toBeNull();
     }
-    expect(screen.queryByRole('link')).toBeNull();
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Remove Missing item' })).toBeInTheDocument();
     expectHooksMatchSpec(container, 'RECORD-CHIP', { slots: ['label', 'remove'] });
   });

@@ -104,8 +104,8 @@ describe('ViewSwitcher', { timeout: 20_000 }, () => {
       <ViewSwitcher views={views} onSave={onSave} onReset={onReset} onSaveAs={() => {}} />,
     );
     await userEvent.click(actionsButton('All recipes'));
-    expect(screen.queryByRole('menuitem', { name: 'Save' })).toBeNull();
-    expect(screen.queryByRole('menuitem', { name: 'Reset changes' })).toBeNull();
+    expect(screen.queryByRole('menuitem', { name: 'Save' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('menuitem', { name: 'Reset changes' })).not.toBeInTheDocument();
     await userEvent.keyboard('{Escape}');
     rerender(
       <ViewSwitcher views={views} onSave={onSave} onReset={onReset} onSaveAs={() => {}} isDirty />,
@@ -131,7 +131,7 @@ describe('ViewSwitcher', { timeout: 20_000 }, () => {
     expect(onSaveAs).toHaveBeenCalledWith('Weeknight');
     expect(screen.getByRole('dialog')).toBeInTheDocument();
     await act(async () => save.resolve());
-    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   });
 
   it('UIC-VIEW-SWITCHER-1.6 renames a view from its actions or its tab menu', async () => {
@@ -144,7 +144,7 @@ describe('ViewSwitcher', { timeout: 20_000 }, () => {
     await userEvent.clear(field);
     await userEvent.type(field, 'Everything{Enter}');
     expect(onRename).toHaveBeenCalledWith('all', 'Everything');
-    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     fireEvent.contextMenu(tabs()[2]!);
     await userEvent.click(await screen.findByRole('menuitem', { name: 'Rename' }));
     expect(screen.getByRole('textbox', { name: /^View name/ })).toHaveValue('Baking');
@@ -168,7 +168,7 @@ describe('ViewSwitcher', { timeout: 20_000 }, () => {
     const dialog = screen.getByRole('alertdialog', { name: 'Delete All recipes?' });
     await userEvent.click(within(dialog).getByRole('button', { name: 'Delete' }));
     expect(onDelete).toHaveBeenCalledWith('all');
-    await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull());
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
     rerender(
       <ViewSwitcher
         views={views.slice(0, 1)}
@@ -178,7 +178,7 @@ describe('ViewSwitcher', { timeout: 20_000 }, () => {
       />,
     );
     await userEvent.click(actionsButton('All recipes'));
-    expect(screen.queryByRole('menuitem', { name: 'Set as default view' })).toBeNull();
+    expect(screen.queryByRole('menuitem', { name: 'Set as default view' })).not.toBeInTheDocument();
     expect(screen.getByRole('menuitem', { name: 'Delete' })).toHaveAttribute(
       'aria-disabled',
       'true',
@@ -200,7 +200,7 @@ describe('ViewSwitcher', { timeout: 20_000 }, () => {
       </ViewSwitcher>,
     );
     expect(container.firstElementChild).toHaveAttribute('data-variant', 'menu');
-    expect(screen.queryByRole('tablist')).toBeNull();
+    expect(screen.queryByRole('tablist')).not.toBeInTheDocument();
     const trigger = screen.getByRole('button', { name: 'All recipes Default view Modified' });
     expect(trigger).toHaveClass('ui-view-switcher__menu', 'ui-dropdown-menu');
     expect(container).toHaveTextContent('Rows');

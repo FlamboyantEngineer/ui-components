@@ -81,7 +81,7 @@ describe('copyText', () => {
     expect(capture.selected).toBe(text);
     expect(capture.bufferHidden).toBe(true);
     expect(document.body.children).toHaveLength(2);
-    expect(document.activeElement).toBe(field);
+    expect(field).toHaveFocus();
     const restored = document.getSelection();
     expect(restored?.rangeCount).toBe(1);
     expect(restored?.getRangeAt(0).startContainer).toBe(paragraph);

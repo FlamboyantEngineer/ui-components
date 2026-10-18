@@ -44,7 +44,7 @@ describe('IconSelectField', () => {
     const user = userEvent.setup();
     const { unmount } = render(<IconSelectField label="Symbol" options={many} />);
     await user.click(screen.getByRole('button', { name: /Symbol$/ }));
-    expect(screen.queryByRole('searchbox')).toBeNull();
+    expect(screen.queryByRole('searchbox')).not.toBeInTheDocument();
     await user.keyboard('{Escape}');
     unmount();
     render(<IconSelectField label="Symbol" options={many} filterable />);

@@ -130,7 +130,7 @@ describe('ReactionBar', () => {
       );
       expect(onToggle).toHaveBeenLastCalledWith('😀', true);
       expect(onRecentEmojiChange).toHaveBeenCalledWith(['😀']);
-      expect(screen.queryByRole('dialog')).toBeNull();
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 
       // An emoji the reader already reacted with stays as it is; a custom emoji reacts by shortcode.
       await userEvent.click(add);
@@ -146,10 +146,10 @@ describe('ReactionBar', () => {
     const { container, rerender } = render(<ReactionBar reactions={reactions} />);
     const root = container.querySelector('.ui-reaction-bar');
     expect(root).toHaveAttribute('data-readonly', 'true');
-    expect(screen.queryByRole('button', { name: 'Add reaction' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Add reaction' })).not.toBeInTheDocument();
     const thumbs = screen.getByRole('button', { name: /^👍/ });
     expect(thumbs).toHaveAttribute('aria-disabled', 'true');
-    expect(thumbs).not.toBeDisabled();
+    expect(thumbs).toBeEnabled();
     await userEvent.click(thumbs);
     expect(thumbs).toHaveAttribute('aria-pressed', 'true');
     rerender(<ReactionBar reactions={[{ emoji: '🍌', count: 0 }]} />);

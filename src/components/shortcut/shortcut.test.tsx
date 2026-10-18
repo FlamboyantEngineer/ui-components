@@ -92,7 +92,7 @@ describe('Shortcut', () => {
     const keys = container.querySelector('.ui-shortcut__keys') as HTMLElement;
     const chords = [...keys.querySelectorAll(':scope > .ui-shortcut__chord')];
     expect(chords.map((chord) => chord.textContent)).toEqual(['Ctrl+K', 'Ctrl+C']);
-    expect(keys.textContent).toBe('Ctrl+K Ctrl+C');
+    expect(keys).toHaveTextContent('Ctrl+K Ctrl+C');
     expect(keys.querySelectorAll('.ui-shortcut__key')).toHaveLength(4);
     expect(container.querySelector('.ui-shortcut__text')).toHaveTextContent(
       'Control K, then Control C',
@@ -150,7 +150,7 @@ describe('KeyHints', () => {
     expect(move?.querySelectorAll('.ui-shortcut')).toHaveLength(2);
     expect(move?.querySelector('.ui-key-hints__action')).toHaveTextContent('move');
     expect(select?.querySelector('.ui-shortcut__text')).toHaveTextContent('Enter');
-    expect(root.textContent).toBe('↑Up Arrow↓Down Arrow move · EnterEnter select');
+    expect(root).toHaveTextContent('↑Up Arrow↓Down Arrow move · EnterEnter select');
     expect(
       [...root.querySelectorAll('[aria-hidden="true"]')].map((node) => node.textContent).join(''),
     ).toBe('↑↓·Enter');

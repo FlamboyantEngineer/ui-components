@@ -168,7 +168,7 @@ describe('PeoplePicker', () => {
     expectHooksMatchSpec(document.body, 'PEOPLE-PICKER', { slots: ['person', 'you'] });
     setText('o');
     await waitFor(() => expect(loadItems).toHaveBeenCalledWith('o', expect.any(AbortSignal)));
-    await waitFor(() => expect(screen.queryByText('Recent')).toBeNull());
+    await waitFor(() => expect(screen.queryByText('Recent')).not.toBeInTheDocument());
     expect(screen.getByRole('option', { name: /Sam Rivera \(you\)/ })).toBeInTheDocument();
     setText('');
     await user.click(await screen.findByRole('option', { name: /Sam Rivera/ }));
@@ -199,7 +199,7 @@ describe('PeoplePicker', () => {
     setText('zz');
     await waitFor(() => expect(loadItems).toHaveBeenCalledTimes(2));
     act(() => release([]));
-    await waitFor(() => expect(screen.getByText('No results')).toBeInTheDocument());
+    expect(await screen.findByText('No results')).toBeInTheDocument();
     await user.keyboard('{Escape}');
     const chips = screen.getByRole('grid', { name: 'Reviewers selected values' });
     const chip = within(chips).getByRole('row', { name: 'Ada Moreno' });

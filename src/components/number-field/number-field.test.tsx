@@ -87,7 +87,7 @@ describe('NumberField', () => {
     unmount();
 
     const hidden = render(<NumberField label="Weight" defaultValue={2} step={2} hideStepper />);
-    expect(screen.queryByRole('button', { name: 'Increase Weight' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Increase Weight' })).not.toBeInTheDocument();
     expect(root(hidden.container)).toHaveAttribute('data-hide-stepper', 'true');
     await user.click(screen.getByRole('textbox'));
     await user.keyboard('{ArrowUp}');
@@ -101,7 +101,7 @@ describe('NumberField', () => {
       <NumberField id="weight" label="Weight" description="In kilograms." isRequired />,
     );
     const input = screen.getByRole('textbox', { name: 'Weight' });
-    expect(input).toHaveAttribute('aria-required', 'true');
+    expect(input).toBeRequired();
     expect(input).toHaveAttribute('aria-invalid', 'true');
     expect(input).toHaveAttribute('aria-errormessage', 'weight-message');
     expect(input).toHaveAccessibleDescription('In kilograms. A value is required.');

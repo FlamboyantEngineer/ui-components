@@ -132,12 +132,12 @@ describe('SelectField field', () => {
     );
     expect(root(container)).toHaveAttribute('data-readonly', 'true');
     const button = trigger('Apple Fruit');
-    expect(button).not.toBeDisabled();
+    expect(button).toBeEnabled();
     await user.click(button);
     expect(button).toHaveFocus();
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     await user.keyboard('{ArrowDown}');
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
   });
 
   it('UIC-SELECT-FIELD-1.3 disables the trigger of a disabled select', () => {

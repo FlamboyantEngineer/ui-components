@@ -90,7 +90,7 @@ describe('Combobox', () => {
     expect(container.querySelector('.ui-combobox__clear')).toBeNull();
     await user.click(input());
     await user.keyboard('{ArrowDown}');
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
 
     rerender(<Combobox aria-label="Fruit" defaultItems={fruit} isInvalid isRequired isPending />);
     expect(root).toHaveAttribute('data-invalid', 'true');
@@ -130,18 +130,18 @@ describe('Combobox', () => {
     const user = userEvent.setup();
     const { rerender } = render(<Combobox aria-label="Fruit" defaultItems={fruit} />);
     await user.click(input());
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     await user.keyboard('b');
     expect(screen.getByRole('listbox')).toBeInTheDocument();
     expect(input()).toHaveAttribute('aria-expanded', 'true');
     await user.tab();
     await user.tab();
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
 
     rerender(<Combobox aria-label="Fruit" defaultItems={fruit} menuTrigger="manual" />);
     await user.clear(input());
     await user.keyboard('b');
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     await user.keyboard('{ArrowDown}');
     expect(screen.getByRole('listbox')).toBeInTheDocument();
     await user.keyboard('{Escape}');
@@ -150,7 +150,7 @@ describe('Combobox', () => {
 
     rerender(<Combobox aria-label="Fruit" defaultItems={fruit} menuTrigger="focus" />);
     await user.click(document.body);
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     await user.click(input());
     expect(screen.getByRole('listbox')).toBeInTheDocument();
   });
@@ -238,7 +238,7 @@ describe('Combobox', () => {
     // React Aria hides the button from assistive technology while the list is open.
     await user.click(container.querySelector('.ui-combobox__button') as HTMLElement);
     expect(onOpenChange).toHaveBeenLastCalledWith(false);
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
   });
 
   it('UIC-COMBOBOX-5.6 holds a controlled list open or closed as isOpen says', async () => {
@@ -255,7 +255,7 @@ describe('Combobox', () => {
     await user.click(input());
     await user.keyboard('{ArrowDown}');
     expect(onOpenChange).toHaveBeenCalledWith(true);
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     rerender(
       <Combobox aria-label="Fruit" defaultItems={fruit} isOpen onOpenChange={onOpenChange} />,
     );
@@ -272,7 +272,7 @@ describe('Combobox', () => {
         onOpenChange={onOpenChange}
       />,
     );
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
   });
 
   it('UIC-COMBOBOX-5.7 hands its input to inputRef and focuses it on mount with autoFocus', () => {

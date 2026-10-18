@@ -183,7 +183,7 @@ describe('FilterConditionFields', () => {
         onChange={onChange}
       />,
     );
-    expect(screen.queryByRole('button', { name: /Condition/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /Condition/ })).not.toBeInTheDocument();
     expect(slot('value')).toHaveAttribute('data-variant', 'segmented');
     await user.click(screen.getByRole('radio', { name: 'False' }));
     expect(onChange).toHaveBeenLastCalledWith({

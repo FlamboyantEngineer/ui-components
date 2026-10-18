@@ -125,7 +125,7 @@ describe('LoadMore', () => {
     expect(screen.getByRole('button')).toHaveAttribute('aria-label', 'Load more conversations');
     rerender(<LoadMore itemLabel="messages" remainingCount={12} />);
     const button = screen.getByRole('button', { name: 'Load more (12 remaining) messages' });
-    expect(button.getAttribute('aria-label')).toContain(button.textContent ?? '');
+    expect(button).toHaveAttribute('aria-label', expect.stringContaining(button.textContent ?? ''));
     rerender(<LoadMore itemLabel="  " />);
     expect(screen.getByRole('button')).not.toHaveAttribute('aria-label');
   });
@@ -141,7 +141,7 @@ describe('LoadMore', () => {
       <LoadMore onLoadMore={onLoadMore} remainingCount={12} itemLabel="results" isPending />,
     );
     expect(button).toHaveFocus();
-    expect(button).not.toBeDisabled();
+    expect(button).toBeEnabled();
     expect(button).toHaveAttribute('aria-disabled', 'true');
     expect(button).toHaveAttribute('data-pending', 'true');
     expect(button).toHaveTextContent('Load more (12 remaining)');

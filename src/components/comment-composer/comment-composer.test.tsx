@@ -63,7 +63,7 @@ describe('CommentComposer', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Comment' }));
     const root = container.querySelector('.ui-comment-composer');
     expect(root).toHaveAttribute('data-pending', 'true');
-    expect(screen.queryByRole('button', { name: 'Cancel' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Cancel' })).not.toBeInTheDocument();
     await userEvent.keyboard('{Control>}{Enter}{/Control}');
     expect(onSubmit).toHaveBeenCalledTimes(1);
     await act(async () => settle.reject());
@@ -86,7 +86,7 @@ describe('CommentComposer', () => {
     await userEvent.type(box, 'Kiwi');
     await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
     expect(box).toHaveValue('');
-    expect(screen.queryByRole('button', { name: 'Cancel' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Cancel' })).not.toBeInTheDocument();
     await userEvent.type(box, 'Lime{Escape}');
     expect(box).toHaveValue('');
     expect(outer).not.toHaveBeenCalled();

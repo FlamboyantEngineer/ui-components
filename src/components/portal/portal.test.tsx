@@ -81,7 +81,7 @@ describe('Portal', () => {
     const { rerender } = render(<Harness ready={false} />);
     expect(screen.getByTestId('outer').parentElement).toBe(outer);
     expect(screen.getByTestId('inherited').parentElement).toBe(outer);
-    expect(screen.queryByTestId('inner')).toBeNull();
+    expect(screen.queryByTestId('inner')).not.toBeInTheDocument();
     expect(document.body.querySelector(':scope > .ui-portal')).toBeNull();
 
     rerender(<Harness ready />);
@@ -314,11 +314,11 @@ describe('Portal', () => {
     await userEvent.click(teal);
     expect(onOpenChange).not.toHaveBeenCalled();
     act(() => teal.focus());
-    expect(document.activeElement).toBe(teal);
+    expect(teal).toHaveFocus();
 
     const plum = screen.getByText('Plum');
     act(() => plum.focus());
-    expect(document.activeElement).not.toBe(plum);
+    expect(plum).not.toHaveFocus();
   });
 
   it('UIC-PORTAL-3.3 appends the caller class and forwards id and data attributes', () => {
@@ -431,6 +431,6 @@ describe('Portal', () => {
     // The next stop in document order is the wrapper's first guard, after the page: it was visited.
     await user.tab();
     expect(screen.getByRole('button', { name: 'Plum' })).not.toHaveFocus();
-    expect(document.activeElement).toBe(document.body);
+    expect(document.body).toHaveFocus();
   });
 });

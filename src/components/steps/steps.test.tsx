@@ -244,6 +244,6 @@ describe('Steps', () => {
     ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Prepare [error]' })).toBeInTheDocument();
     expect(itemOf('Review')).toHaveTextContent(/^3Review Optional$/);
-    expect(itemOf('Review').textContent).not.toContain('[');
+    expect(itemOf('Review')).not.toHaveTextContent(/\[/);
   });
 });

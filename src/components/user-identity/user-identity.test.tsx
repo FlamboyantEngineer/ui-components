@@ -102,7 +102,7 @@ describe('UserIdentity', () => {
       <UserIdentity name="Sam Okafor" description="Editor" src="/sam.png" />,
     );
     expect(container.querySelector('[role], [tabindex], [aria-label]')).toBeNull();
-    expect(screen.queryByRole('img')).toBeNull();
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
     expect(screen.getByText('Sam Okafor')).toBeVisible();
   });
 
@@ -128,7 +128,7 @@ describe('UserIdentity', () => {
       'aria-hidden',
       'true',
     );
-    expect(screen.queryByRole('img')).toBeNull();
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
 
     rerender(<UserIdentity name="Lena Ortiz" status="  " statusLabel="Away" />);
     expect(root(container)).not.toHaveAttribute('data-status');

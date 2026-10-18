@@ -131,9 +131,9 @@ describe('RelativeDateField', () => {
       <RelativeDateField label="Due" defaultValue="2026-05-24" getNow={getNow} isReadOnly />,
     );
     const trigger = screen.getByRole('button', { name: 'Tomorrow Due' });
-    expect(trigger).not.toBeDisabled();
+    expect(trigger).toBeEnabled();
     await user.click(trigger);
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     expect(container.querySelector('time')).not.toBeNull();
     unmount();
     const disabled = renderInLocale(

@@ -148,8 +148,8 @@ describe('LoadingOverlay', () => {
     expect(overlay).toHaveAttribute('data-presentation', 'scrim');
     expect(overlay).toHaveAttribute('aria-hidden', 'true');
     expect(overlay).toBeEmptyDOMElement();
-    expect(screen.queryByRole('status')).toBeNull();
-    expect(screen.queryByRole('progressbar')).toBeNull();
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
   });
 });
 
@@ -211,7 +211,7 @@ describe('LoadingRegion', () => {
       'data-presentation',
       'scrim',
     );
-    expect(screen.queryByRole('status')).toBeNull();
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
 });
 

@@ -104,7 +104,7 @@ describe('OverflowList', () => {
     expect(root).toHaveClass('ui-overflow-list');
     expect(root).toHaveAttribute('data-collapse-from', 'end');
     expect(root).not.toHaveAttribute('data-overflowing');
-    expect(screen.queryByRole('button')).toBeNull();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
     expectHooksMatchSpec(container, 'OVERFLOW-LIST', {
       slots: ['item'],
       callerAttributes: ['data-room', 'data-index'],
@@ -119,7 +119,7 @@ describe('OverflowList', () => {
     const root = screen.getByRole('group');
     expect(root).toHaveAttribute('data-overflowing', 'true');
     expect(root.lastElementChild).toHaveClass('ui-overflow-list__overflow');
-    expect(screen.queryByText('Banana')).toBeNull();
+    expect(screen.queryByText('Banana')).not.toBeInTheDocument();
     expectHooksMatchSpec(container, 'OVERFLOW-LIST', {
       slots: 'all',
       callerAttributes: ['data-room', 'data-index'],
@@ -159,7 +159,7 @@ describe('OverflowList', () => {
     expect(shownItems()).toEqual(['Kiwi', 'Lime']);
     rerender(<List room={120} items={['Kiwi', 'Lime']} />);
     expect(shownItems()).toEqual(['Kiwi', 'Lime']);
-    expect(screen.queryByRole('button')).toBeNull();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
 
   it('UIC-OVERFLOW-LIST-1.3 keeps the indicator mounted while it measures a new list', () => {

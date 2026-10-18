@@ -154,12 +154,12 @@ describe('Combobox remote search', () => {
     expect(screen.getByText('Loading')).toHaveClass('ui-combobox__empty');
     expectHooksMatchSpec(document.body, 'COMBOBOX', { slots: ['spinner', 'empty'] });
     act(() => calls[0]?.reject(new Error('offline')));
-    await waitFor(() => expect(screen.getByText('Search is unavailable.')).toBeInTheDocument());
+    expect(await screen.findByText('Search is unavailable.')).toBeInTheDocument();
     expect(input()).not.toHaveAttribute('aria-busy');
     setText('xyz');
     await waitFor(() => expect(calls).toHaveLength(2));
     act(() => calls[1]?.resolve([]));
-    await waitFor(() => expect(screen.getByText('No results')).toBeInTheDocument());
+    expect(await screen.findByText('No results')).toBeInTheDocument();
   });
 
   it('UIC-COMBOBOX-5.3 loads the next page when the end of the list scrolls into view', async () => {
@@ -191,7 +191,7 @@ describe('Combobox remote search', () => {
     expect(await screen.findByText('Loading')).toHaveClass('ui-combobox__load-more');
     act(() => releasePage());
     await waitFor(() => expect(optionLabels()).toEqual(['Paris', 'Lima', 'Oslo']));
-    expect(screen.queryByText('Loading')).toBeNull();
+    expect(screen.queryByText('Loading')).not.toBeInTheDocument();
     act(() => observers.at(-1)?.([{ isIntersecting: true }]));
     expect(loadItems).toHaveBeenCalledTimes(2);
     vi.unstubAllGlobals();
@@ -209,6 +209,6 @@ describe('Combobox remote search', () => {
     await user.type(input(), 'zz');
     const empty = screen.getByText('No city by that name');
     expect(empty.closest('.ui-combobox__empty')).not.toBeNull();
-    expect(screen.queryByText('No results')).toBeNull();
+    expect(screen.queryByText('No results')).not.toBeInTheDocument();
   });
 });

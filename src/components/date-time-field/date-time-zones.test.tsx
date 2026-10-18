@@ -28,7 +28,7 @@ describe('DateTimeField time settings, zones and ranges', () => {
       />,
     );
     expect(segment(/^hour/)).toHaveTextContent('13');
-    expect(screen.queryByRole('spinbutton', { name: /AM\/PM/ })).toBeNull();
+    expect(screen.queryByRole('spinbutton', { name: /AM\/PM/ })).not.toBeInTheDocument();
     act(() => segment(/^second/).focus());
     await user.keyboard('{ArrowUp}');
     expect(onCommit).toHaveBeenLastCalledWith('13:45:11');
@@ -36,7 +36,7 @@ describe('DateTimeField time settings, zones and ranges', () => {
     renderInLocale(
       <DateTimeField label="At" mode="date-time" granularity="hour" defaultValue={null} />,
     );
-    expect(screen.queryByRole('spinbutton', { name: /^minute/ })).toBeNull();
+    expect(screen.queryByRole('spinbutton', { name: /^minute/ })).not.toBeInTheDocument();
     expect(segment(/^hour/)).toBeInTheDocument();
   });
 
@@ -120,7 +120,7 @@ describe('DateTimeField time settings, zones and ranges', () => {
     });
     await user.click(screen.getByRole('button', { name: /Calendar/ }));
     expect(screen.getAllByRole('grid')).toHaveLength(2);
-    expect(screen.queryByRole('button', { name: 'Now' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Now' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Clear' })).toBeInTheDocument();
   });
 });

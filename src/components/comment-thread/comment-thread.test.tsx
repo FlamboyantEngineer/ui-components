@@ -64,7 +64,7 @@ describe('CommentThread', () => {
     expect(onReply).toHaveBeenCalledWith('Agreed');
     // An empty thread is a new one: its composer starts the discussion.
     rerender(<CommentThread quote="Bananas" onReply={onReply} />);
-    expect(screen.queryByRole('list')).toBeNull();
+    expect(screen.queryByRole('list')).not.toBeInTheDocument();
     expect(screen.getByRole('textbox', { name: 'Add a comment' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Comment' })).toBeInTheDocument();
     rerender(<CommentThread>{replies(1)}</CommentThread>);
@@ -81,7 +81,7 @@ describe('CommentThread', () => {
     expect(screen.getByRole('textbox', { name: 'Rich reply' }).parentElement).toHaveClass(
       'ui-comment-thread__composer',
     );
-    expect(screen.queryByRole('textbox', { name: 'Reply' })).toBeNull();
+    expect(screen.queryByRole('textbox', { name: 'Reply' })).not.toBeInTheDocument();
   });
 
   it('UIC-COMMENT-THREAD-1.4 resolves and reopens the thread', async () => {
@@ -117,7 +117,7 @@ describe('CommentThread', () => {
     render(<Controlled />);
     expect(screen.getByText('Resolved')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Reopen' }));
-    expect(screen.queryByText('Resolved')).toBeNull();
+    expect(screen.queryByText('Resolved')).not.toBeInTheDocument();
     render(<CommentThread defaultResolved>{replies(1)}</CommentThread>);
     expect(screen.getByText('Resolved')).toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: /Resolve|Reopen/ })).toHaveLength(1);
@@ -138,7 +138,7 @@ describe('CommentThread', () => {
       'Comment 5',
       'Comment 6',
     ]);
-    expect(screen.queryByRole('button', { name: /more repl/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /more repl/ })).not.toBeInTheDocument();
     expect(screen.getAllByRole('listitem')[1]).toHaveFocus();
   });
 
@@ -158,8 +158,8 @@ describe('CommentThread', () => {
     const thread = container.querySelector('.ui-comment-thread');
     expect(thread).toHaveAttribute('data-readonly', 'true');
     expect(thread).toHaveAttribute('data-selected', 'true');
-    expect(screen.queryByRole('textbox')).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Resolve' })).toBeNull();
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Resolve' })).not.toBeInTheDocument();
   });
 
   it('UIC-COMMENT-THREAD-1.7 reports an error under the comments', () => {

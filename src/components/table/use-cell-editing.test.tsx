@@ -102,7 +102,7 @@ describe('Table cell editing', { timeout: 15_000 }, () => {
     rowHeader('Pear').focus();
     await user.keyboard('{F2}');
     await user.dblClick(rowHeader('Pear'));
-    expect(screen.queryByRole('textbox')).toBeNull();
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
   });
 
   it('UIC-TABLE-11.3 draws a custom editor that commits, cancels and keys Escape', async () => {

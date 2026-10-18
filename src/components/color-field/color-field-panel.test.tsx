@@ -64,7 +64,7 @@ describe('ColorField picker', () => {
     await user.click(trigger('Accent'));
     const dialog = await screen.findByRole('dialog');
     await user.click(within(dialog).getByRole('radio', { name: 'RGBA' }));
-    expect(within(dialog).queryByRole('textbox', { name: 'Hex color' })).toBeNull();
+    expect(within(dialog).queryByRole('textbox', { name: 'Hex color' })).not.toBeInTheDocument();
     await user.click(within(dialog).getByRole('radio', { name: 'HEX' }));
     expect(within(dialog).getByRole('textbox', { name: 'Hex color' })).toBeInTheDocument();
     await user.click(within(dialog).getByRole('radio', { name: 'RGBA' }));

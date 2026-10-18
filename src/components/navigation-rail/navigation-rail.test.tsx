@@ -135,7 +135,7 @@ describe('NavigationRail', () => {
     expect(onWidthChange).toHaveBeenLastCalledWith(180);
     expectHooksMatchSpec(container, 'NAVIGATION-RAIL', { slots: ['resize-handle'] });
     await user.click(toggle());
-    expect(screen.queryByRole('separator')).toBeNull();
+    expect(screen.queryByRole('separator')).not.toBeInTheDocument();
   });
 
   it('UIC-NAVIGATION-RAIL-1.3 drags the width live and commits it when the drag ends', () => {
@@ -163,7 +163,7 @@ describe('NavigationRail', () => {
     render(<Rail />);
     expect(nav()).not.toHaveAttribute('style');
     expect(nav()).not.toHaveAttribute('data-resizable');
-    expect(screen.queryByRole('separator')).toBeNull();
+    expect(screen.queryByRole('separator')).not.toBeInTheDocument();
   });
 
   it('UIC-NAVIGATION-RAIL-1.4 restores and saves the collapsed state and width', async () => {
@@ -350,7 +350,7 @@ describe('NavigationRail', () => {
     render(<Rail />);
     await user.hover(screen.getByRole('link', { name: 'Harvest plan' }));
     await new Promise((resolve) => setTimeout(resolve, 700));
-    expect(screen.queryByRole('tooltip')).toBeNull();
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
   });
 
   it('UIC-NAVIGATION-RAIL-2.5 opens and closes a group under its button', async () => {
@@ -373,7 +373,7 @@ describe('NavigationRail', () => {
       'data-glyph',
       'chevron-right',
     );
-    expect(screen.queryByRole('link', { name: 'North field' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'North field' })).not.toBeInTheDocument();
     await user.click(trigger);
     expect(group).toHaveAttribute('data-expanded', 'true');
     expect(onExpandedChange).toHaveBeenLastCalledWith(true);

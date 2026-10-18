@@ -76,7 +76,7 @@ describe('AppFrame', () => {
       'Console',
     );
     expect(screen.getByText('Places').parentElement?.tagName).toBe('DIV');
-    expect(screen.queryByRole('group')).toBeNull();
+    expect(screen.queryByRole('group')).not.toBeInTheDocument();
   });
 
   it('UIC-APP-FRAME-1.2 names the main region and panels from labels and provider strings', () => {
@@ -121,7 +121,7 @@ describe('AppFrame', () => {
     expect(frame).toHaveAttribute('data-embedded', 'true');
     expect(screen.getByRole('group', { name: 'Workspace' })).toBe(frame);
     for (const role of ['banner', 'main', 'contentinfo', 'complementary']) {
-      expect(screen.queryByRole(role)).toBeNull();
+      expect(screen.queryByRole(role)).not.toBeInTheDocument();
     }
     for (const slot of slotOrder.slice(1)) {
       const region = frame.querySelector(`.ui-app-frame__${slot}`);

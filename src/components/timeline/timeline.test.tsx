@@ -185,7 +185,7 @@ describe('Timeline', () => {
     const { container, rerender } = renderTimeline();
     const tier = (name: string) => container.querySelector(`[data-tier="${name}"]`)!;
     expect(tier('major')).toHaveAttribute('data-unit', 'month');
-    expect(tier('major').textContent).toBe('March 2026');
+    expect(tier('major')).toHaveTextContent('March 2026');
     expect(tier('minor')).toHaveAttribute('data-unit', 'day');
     expect(tier('minor').children).toHaveLength(31);
     const fifth = tier('minor').children[4] as HTMLElement;
@@ -203,7 +203,7 @@ describe('Timeline', () => {
       <Timeline {...props} scale="quarter" range={{ start: '2026-01-01', end: '2026-12-31' }} />,
     );
     expect(tier('major')).toHaveAttribute('data-unit', 'year');
-    expect(tier('minor').textContent).toBe('Q1Q2Q3Q4');
+    expect(tier('minor')).toHaveTextContent('Q1Q2Q3Q4');
     rerender(<Timeline {...props} scale="week" range={march} />);
     expect(tier('minor')).toHaveAttribute('data-unit', 'week');
     expect(tier('minor').children[1]?.textContent).toMatch(/^Mar \d+$/);
@@ -230,13 +230,13 @@ describe('Timeline', () => {
       'false',
     );
     expect(container.querySelectorAll('.ui-timeline__row')).toHaveLength(2);
-    expect(screen.queryByRole('button', { name: 'Measure rooms' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Measure rooms' })).not.toBeInTheDocument();
     expect(container.querySelector('.ui-timeline__body')).toHaveStyle({ height: '72px' });
   });
 
   it('UIC-TIMELINE-1.4 follows controlled expanded keys', () => {
     renderTimeline({ expandedKeys: [] });
-    expect(screen.queryByRole('group', { name: 'Survey' })).toBeNull();
+    expect(screen.queryByRole('group', { name: 'Survey' })).not.toBeInTheDocument();
     expect(screen.getByRole('group', { name: 'Build' })).toBeInTheDocument();
   });
 

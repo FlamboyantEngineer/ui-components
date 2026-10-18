@@ -224,7 +224,7 @@ describe('FileUpload', () => {
     await user.upload(chooser(container), [notes, notes]);
     expect(screen.getByRole('alert')).toHaveTextContent('2 files are not an accepted type.');
     await user.upload(chooser(container), [small]);
-    expect(screen.queryByRole('alert')).toBeNull();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     expect(onSelect).not.toHaveBeenCalledWith([]);
   });
 

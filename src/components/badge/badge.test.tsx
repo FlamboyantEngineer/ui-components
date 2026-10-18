@@ -126,7 +126,7 @@ describe('Badge', () => {
         Checking
       </Badge>,
     );
-    expect(screen.queryByRole('status')).toBeNull();
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
     expect(container.querySelector('.ui-badge__dot')).toHaveAttribute('aria-hidden', 'true');
     expect(container.firstElementChild).toHaveAttribute('data-muted-dot', 'true');
     expectHooksMatchSpec(container, 'BADGE', { slots: ['dot'] });

@@ -195,10 +195,10 @@ describe('List', () => {
     await flush();
     act(() => primary('b')?.focus());
     act(() => primary('b')?.blur());
-    expect(document.activeElement).toBe(document.body);
+    expect(document.body).toHaveFocus();
     rerender(<Rows ids={['a']} />);
     await flush();
-    expect(document.activeElement).toBe(document.body);
+    expect(document.body).toHaveFocus();
     expect(primary('a')).toHaveAttribute('tabindex', '0');
 
     rerender(<Rows ids={['a', 'b']} />);
@@ -387,7 +387,7 @@ describe('ListRow', () => {
     expectHooksMatchSpec(container, 'LIST-ROW');
 
     rerender(<ListRow title="Report.pdf" icon="info" leading={<svg data-testid="media" />} />);
-    expect(screen.queryByTestId('media')).toBeNull();
+    expect(screen.queryByTestId('media')).not.toBeInTheDocument();
 
     rerender(<ListRow title="Report.pdf" meta={null} leading={<svg data-testid="media" />} />);
     expect(screen.getByTestId('media').parentElement).toHaveAttribute('aria-hidden', 'true');

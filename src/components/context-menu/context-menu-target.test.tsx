@@ -91,16 +91,16 @@ describe('ContextMenuTrigger', () => {
     fireEvent.pointerDown(target, touch);
     fireEvent.pointerMove(target, { ...touch, clientX: 70 });
     act(() => vi.advanceTimersByTime(500));
-    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     fireEvent.pointerUp(target, touch);
 
     fireEvent.pointerDown(target, { pointerType: 'mouse', pointerId: 1, clientX: 40, clientY: 40 });
     act(() => vi.advanceTimersByTime(500));
-    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
 
     fireEvent.pointerDown(target, touch);
     act(() => vi.advanceTimersByTime(499));
-    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     act(() => vi.advanceTimersByTime(1));
     expect(screen.getByRole('menu')).toBeInTheDocument();
     expect(popover()?.style.left).toBe('40px');
@@ -151,17 +151,17 @@ describe('ContextMenuTrigger', () => {
     const target = screen.getByText('Report.pdf');
     fireEvent.contextMenu(target, { clientX: 10, clientY: 10 });
     await user.keyboard('{Escape}');
-    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
 
     fireEvent.contextMenu(target, { clientX: 10, clientY: 10 });
     expect(fireEvent.contextMenu(screen.getByRole('menuitem', { name: 'Open' }))).toBe(false);
     expect(screen.getByRole('menu')).toBeInTheDocument();
     fireEvent.mouseDown(document.body, { button: 2 });
-    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
 
     fireEvent.contextMenu(target, { clientX: 10, clientY: 10 });
     await user.click(document.body);
-    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     expect(onAction).not.toHaveBeenCalled();
 
     rerender(
@@ -172,7 +172,7 @@ describe('ContextMenuTrigger', () => {
     );
     expect(fireEvent.contextMenu(target, { clientX: 10, clientY: 10 })).toBe(true);
     fireEvent.keyDown(target, { key: 'F10', shiftKey: true });
-    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 
   it('UIC-CONTEXT-MENU-1.6 keeps the target own handlers, ref and role, and names the menu', () => {

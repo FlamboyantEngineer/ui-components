@@ -67,7 +67,7 @@ describe('DashboardGrid', () => {
       'Sales content',
     );
     expect(grid).not.toHaveAttribute('data-editing');
-    expect(screen.queryByRole('button')).toBeNull();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
     expectHooksMatchSpec(document.body, 'DASHBOARD-GRID', {
       slots: ['tile', 'tile-content', 'status'],
     });
@@ -228,7 +228,7 @@ describe('DashboardGrid', () => {
     expect(grid.style.gridTemplateColumns).toBe('repeat(3, minmax(0, 1fr))');
     expect(screen.getByRole('group', { name: 'Sales' }).style.gridColumn).toBe('2 / span 2');
     expect(screen.getByRole('group', { name: 'Notes' }).style.gridColumn).toBe('1 / span 3');
-    expect(screen.queryByRole('button')).toBeNull();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
     expectHooksMatchSpec(document.body, 'DASHBOARD-GRID');
   });
 

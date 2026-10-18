@@ -31,9 +31,9 @@ describe('SegmentedChoice', () => {
       expect(segment.tagName).toBe('BUTTON');
       expect(segment).toHaveClass('ui-segmented-choice__segment');
     }
-    expect(screen.getByRole('radio', { name: 'Week' })).toHaveAttribute('aria-checked', 'true');
+    expect(screen.getByRole('radio', { name: 'Week' })).toBeChecked();
     expect(screen.getByRole('radio', { name: 'Week' })).toHaveAttribute('data-selected', 'true');
-    expect(screen.getByRole('radio', { name: 'Day' })).toHaveAttribute('aria-checked', 'false');
+    expect(screen.getByRole('radio', { name: 'Day' })).not.toBeChecked();
     expect(screen.getByRole('radio', { name: 'Month' })).toHaveAttribute('data-value', 'month');
     expect(group).not.toHaveAttribute('data-inherited');
     expectHooksMatchSpec(container, 'SEGMENTED-CHOICE', { slots: ['segment', 'label'] });
@@ -46,8 +46,8 @@ describe('SegmentedChoice', () => {
     );
     await userEvent.click(screen.getByRole('radio', { name: 'Month' }));
     expect(onChange).toHaveBeenLastCalledWith('month');
-    expect(screen.getByRole('radio', { name: 'Month' })).toHaveAttribute('aria-checked', 'true');
-    expect(screen.getByRole('radio', { name: 'Day' })).toHaveAttribute('aria-checked', 'false');
+    expect(screen.getByRole('radio', { name: 'Month' })).toBeChecked();
+    expect(screen.getByRole('radio', { name: 'Day' })).not.toBeChecked();
   });
 
   it('UIC-SEGMENTED-CHOICE-1.1 follows the controlled value and selects nothing for null', async () => {
@@ -60,9 +60,9 @@ describe('SegmentedChoice', () => {
     }
     await userEvent.click(screen.getByRole('radio', { name: 'Day' }));
     expect(onChange).toHaveBeenCalledWith('day');
-    expect(screen.getByRole('radio', { name: 'Day' })).toHaveAttribute('aria-checked', 'false');
+    expect(screen.getByRole('radio', { name: 'Day' })).not.toBeChecked();
     rerender(<SegmentedChoice aria-label="View" options={views} value="day" onChange={onChange} />);
-    expect(screen.getByRole('radio', { name: 'Day' })).toHaveAttribute('aria-checked', 'true');
+    expect(screen.getByRole('radio', { name: 'Day' })).toBeChecked();
   });
 
   it('UIC-SEGMENTED-CHOICE-1.2 draws decorative icons and names segments by label alone', () => {
@@ -83,9 +83,8 @@ describe('SegmentedChoice', () => {
     expect(icon).toHaveAttribute('aria-hidden', 'true');
     expect(icon).toHaveAttribute('data-size', 'md');
     expect(screen.getByTestId('custom').parentElement).toHaveClass('ui-segmented-choice__icon');
-    expect(
-      screen.getByRole('radio', { name: 'Unsorted' }).querySelector('.ui-segmented-choice__icon'),
-    ).toBeNull();
+    const unsorted = screen.getByRole('radio', { name: 'Unsorted' });
+    expect(unsorted.querySelector('.ui-segmented-choice__icon')).toBeNull();
     expect(container.querySelector('[role="img"]')).toBeNull();
     expectHooksMatchSpec(container, 'SEGMENTED-CHOICE', {
       slots: ['segment', 'indicator', 'icon', 'label'],
@@ -195,7 +194,7 @@ describe('SegmentedChoice', () => {
     );
     await userEvent.click(screen.getByRole('radio', { name: 'Week' }));
     expect(onChange).not.toHaveBeenCalled();
-    expect(screen.getByRole('radio', { name: 'Week' })).toHaveAttribute('aria-checked', 'true');
+    expect(screen.getByRole('radio', { name: 'Week' })).toBeChecked();
 
     rerender(
       <SegmentedChoice
@@ -246,15 +245,15 @@ describe('SegmentedChoice', () => {
 
     await userEvent.click(screen.getByRole('radio', { name: 'Month' }));
     expect(group).not.toHaveAttribute('data-inherited');
-    expect(screen.getByRole('radio', { name: 'Month' })).toHaveAttribute('aria-checked', 'true');
+    expect(screen.getByRole('radio', { name: 'Month' })).toBeChecked();
 
     await userEvent.click(screen.getByRole('radio', { name: 'Month' }));
     expect(group).toHaveAttribute('data-inherited', 'true');
-    expect(screen.getByRole('radio', { name: 'Day' })).toHaveAttribute('aria-checked', 'true');
+    expect(screen.getByRole('radio', { name: 'Day' })).toBeChecked();
 
     await userEvent.click(screen.getByRole('radio', { name: 'Day' }));
     expect(group).not.toHaveAttribute('data-inherited');
-    expect(screen.getByRole('radio', { name: 'Day' })).toHaveAttribute('aria-checked', 'true');
+    expect(screen.getByRole('radio', { name: 'Day' })).toBeChecked();
   });
 
   it('UIC-SEGMENTED-CHOICE-3.1 disables the whole group or single segments that arrows skip', async () => {
@@ -306,13 +305,13 @@ describe('SegmentedChoice', () => {
     expect(group).toHaveAttribute('aria-readonly', 'true');
     expect(group).toHaveAttribute('data-readonly', 'true');
     const day = screen.getByRole('radio', { name: 'Day' });
-    expect(day).not.toBeDisabled();
+    expect(day).toBeEnabled();
     await userEvent.click(day);
     expect(day).toHaveFocus();
     await userEvent.keyboard(' ');
     await userEvent.keyboard('{Enter}');
     expect(onChange).not.toHaveBeenCalled();
-    expect(screen.getByRole('radio', { name: 'Week' })).toHaveAttribute('aria-checked', 'true');
+    expect(screen.getByRole('radio', { name: 'Week' })).toBeChecked();
     expectHooksMatchSpec(container, 'SEGMENTED-CHOICE');
   });
 

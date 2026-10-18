@@ -73,7 +73,7 @@ describe('DateTimeField availability and presets', () => {
     expectHooksMatchSpec(document.body, 'DATE-TIME-FIELD', { slots: ['presets', 'preset'] });
     await user.click(first);
     expect(onCommit).toHaveBeenCalledWith({ start: '2026-01-01', end: '2026-01-07' });
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('UIC-DATE-TIME-FIELD-3.2 disables a preset on an unavailable date and has none for times', async () => {

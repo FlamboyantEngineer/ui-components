@@ -62,7 +62,7 @@ describe('Modal presentations', () => {
     await user.click(screen.getByRole('textbox', { name: 'Note' }));
     await user.keyboard('{Escape}');
     expect(onOpenChange).toHaveBeenCalledWith(false);
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(opener).toHaveFocus();
   });
 
@@ -86,7 +86,7 @@ describe('Modal presentations', () => {
     await user.keyboard('{Escape}');
     expect(screen.getByRole('dialog', { name: 'Palette' })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Toggle' }));
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Toggle' })).toHaveFocus();
   });
 
@@ -106,7 +106,7 @@ describe('Modal presentations', () => {
     expect(await screen.findByRole('dialog', { name: 'Details' })).toHaveFocus();
     expect(onExitComplete).not.toHaveBeenCalled();
     await user.keyboard('{Escape}');
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(onExitComplete).toHaveBeenCalledTimes(1);
     expect(trigger).toHaveFocus();
   });
@@ -140,12 +140,12 @@ describe('Modal presentations', () => {
     expectHooksMatchSpec(document.body, 'MODAL', { slots: ['dialog', 'footer'] });
 
     await user.keyboard('{Escape}');
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     await waitFor(() => expect(trigger).toHaveFocus());
     await user.click(trigger);
     await user.click(await screen.findByRole('button', { name: 'Archive', hidden: false }));
     expect(onPress).toHaveBeenCalledTimes(1);
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('UIC-MODAL-8.2 closes an anchored dialog on an outside press only when dismissable', async () => {
@@ -174,6 +174,6 @@ describe('Modal presentations', () => {
     await user.click(screen.getByRole('button', { name: 'Rename' }));
     await user.click(document.body);
     expect(onOpenChange).toHaveBeenCalledWith(false);
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 });

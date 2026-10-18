@@ -81,7 +81,7 @@ describe('Field undo and redo', () => {
     const city = screen.getByRole('textbox', { name: 'City' });
     await user.type(fruit, 's');
     await user.type(city, 'x');
-    expect(getFieldUndo(screen.getByText('Outside'))).toBeNull();
+    expect(getFieldUndo(screen.queryByText('Outside'))).toBeNull();
     expect(getFieldUndo(null)).toBeNull();
     const undo = getFieldUndo(document.activeElement);
     expect(undo?.canUndo).toBe(true);

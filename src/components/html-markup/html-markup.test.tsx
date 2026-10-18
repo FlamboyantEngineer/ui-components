@@ -69,7 +69,7 @@ describe('HtmlMarkup', () => {
       />,
     );
     expect(screen.getByRole('button', { name: '@Ana' })).toBeInTheDocument();
-    expect(screen.queryByRole('table')).toBeNull();
+    expect(screen.queryByRole('table')).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'the docs' })).toBeInTheDocument();
   });
 

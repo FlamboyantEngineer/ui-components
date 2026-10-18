@@ -72,7 +72,7 @@ describe('SelectField chips', () => {
     );
     await user.click(screen.getByRole('button', { name: 'Remove Pear' }));
     expect(onCommit).toHaveBeenLastCalledWith(['apple', 'fig']);
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     const fig = within(chips()).getByRole('row', { name: 'Fig' });
     act(() => fig.focus());
     await user.keyboard('{Delete}');
@@ -93,7 +93,7 @@ describe('SelectField chips', () => {
       );
       const apple = within(chips()).getByRole('row', { name: 'Apple' });
       expect(apple).not.toHaveAttribute('data-allows-removing');
-      expect(screen.queryByRole('button', { name: /^Remove/ })).toBeNull();
+      expect(screen.queryByRole('button', { name: /^Remove/ })).not.toBeInTheDocument();
       expect(apple).toHaveAttribute('tabindex', '0');
       unmount();
     }

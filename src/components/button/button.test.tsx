@@ -153,7 +153,7 @@ describe('Button', () => {
       </Button>,
     );
     await user.tab();
-    expect(screen.queryByRole('tooltip')).toBeNull();
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
     rerender(
       <Button isDisabled focusableWhenDisabled tooltip="Locked">
         Edit
@@ -210,7 +210,7 @@ describe('Button', () => {
       </Button>,
     );
     const bold = screen.getByRole('menuitemcheckbox', { name: 'Bold' });
-    expect(bold).toHaveAttribute('aria-checked', 'true');
+    expect(bold).toBeChecked();
     expect(bold).toHaveAttribute('aria-keyshortcuts', 'Control+B');
   });
 
@@ -234,7 +234,7 @@ describe('Button', () => {
       </form>,
     );
     const focusable = screen.getByRole('button');
-    expect(focusable).not.toBeDisabled();
+    expect(focusable).toBeEnabled();
     expect(focusable).toHaveAttribute('aria-disabled', 'true');
     expect(focusable).toHaveAttribute('data-disabled', 'true');
     await userEvent.tab();
@@ -255,7 +255,7 @@ describe('Button', () => {
       </Button>,
     );
     const button = screen.getByRole('button');
-    expect(button).not.toBeDisabled();
+    expect(button).toBeEnabled();
     expect(button).toHaveAttribute('aria-disabled', 'true');
     expect(button).toHaveAttribute('data-pending', 'true');
     expect(screen.getByRole('progressbar', { name: 'Loading' })).toHaveClass('ui-button__spinner');

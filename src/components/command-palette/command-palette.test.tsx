@@ -64,7 +64,7 @@ function Opener(props: Omit<CommandPaletteProps, 'isOpen' | 'onOpenChange'>) {
 describe('CommandPalette', () => {
   it('UIC-COMMAND-PALETTE-1.1 renders nothing while closed and the dialog parts while open', () => {
     const { rerender } = render(<CommandPalette items={commands} />);
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     rerender(<CommandPalette items={commands} isOpen />);
     const dialog = screen.getByRole('dialog', { name: 'Command palette' });
     expect(dialog).toHaveClass('ui-command-palette__dialog');
@@ -72,7 +72,7 @@ describe('CommandPalette', () => {
       'ui-command-palette',
     );
     rerender(<CommandPalette items={commands} isOpen={false} />);
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('UIC-COMMAND-PALETTE-1.1 UIC-COMMAND-PALETTE-1.4 opens controlled, closes on a press outside and restores focus', async () => {
@@ -87,7 +87,7 @@ describe('CommandPalette', () => {
     expect(screen.getByRole('dialog').contains(document.activeElement)).toBe(true);
     const overlay = document.querySelector('.ui-command-palette') as HTMLElement;
     await user.pointer({ keys: '[MouseLeft]', target: overlay });
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(screen.getByRole('status')).toHaveTextContent('closed');
     // React Aria restores focus in the next animation frame.
     await waitFor(() => expect(button).toHaveFocus());
@@ -118,7 +118,7 @@ describe('CommandPalette', () => {
     await waitFor(() => expect(search).toHaveFocus());
     fireEvent.keyDown(search, { key: 'k', ctrlKey: true });
     expect(onOpenChange).toHaveBeenLastCalledWith(false);
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('UIC-COMMAND-PALETTE-1.3 matches only the exact chord, not repeats or handled presses', () => {
@@ -131,7 +131,7 @@ describe('CommandPalette', () => {
     act(() => {
       document.body.dispatchEvent(handled);
     });
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     pressShortcut({ key: 'K', ctrlKey: true });
     expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
@@ -141,13 +141,13 @@ describe('CommandPalette', () => {
       <CommandPalette items={commands} shortcut="Ctrl+Shift+P" />,
     );
     pressShortcut();
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     pressShortcut({ key: 'P', ctrlKey: true, shiftKey: true });
     expect(screen.getByRole('dialog')).toBeInTheDocument();
     rerender(<CommandPalette items={commands} shortcut={null} isOpen={false} />);
     pressShortcut();
     pressShortcut({ key: 'P', ctrlKey: true, shiftKey: true });
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     const removed = vi.spyOn(document, 'removeEventListener');
     rerender(<CommandPalette items={commands} />);
     unmount();
@@ -198,7 +198,7 @@ describe('CommandPalette', () => {
     await user.keyboard('{Enter}');
     expect(actionKeys(onAction)).toEqual(['open']);
     expect(onOpenChange).toHaveBeenCalledWith(false);
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('UIC-COMMAND-PALETTE-2.1 runs a pressed command, skips disabled ones and can stay open', async () => {
@@ -223,7 +223,7 @@ describe('CommandPalette', () => {
     expect(screen.getByRole('group', { name: 'Files' })).toBeInTheDocument();
     await user.click(screen.getByRole('menuitem', { name: 'Rename' }));
     expect(actionKeys(onAction)).toEqual(['stay', 'rename']);
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('UIC-COMMAND-PALETTE-2.2 keeps matches ignoring case and accents and drops emptied groups', async () => {
@@ -232,14 +232,14 @@ describe('CommandPalette', () => {
     await user.keyboard('SAO');
     expect(names(screen.getAllByRole('menuitem'))).toEqual(['São Paulo']);
     expect(screen.getByRole('group', { name: 'Go to' })).toBeInTheDocument();
-    expect(screen.queryByRole('separator')).toBeNull();
+    expect(screen.queryByRole('separator')).not.toBeInTheDocument();
     await user.clear(screen.getByRole('searchbox'));
     await user.keyboard('file');
     expect(screen.getAllByRole('menuitem').map((item) => item.textContent)).toEqual([
       expect.stringContaining('New file'),
       'Lock file',
     ]);
-    expect(screen.queryByRole('group')).toBeNull();
+    expect(screen.queryByRole('group')).not.toBeInTheDocument();
   });
 
   it('UIC-COMMAND-PALETTE-2.2 takes a custom filter, or none', async () => {
@@ -266,7 +266,7 @@ describe('CommandPalette', () => {
     expect(screen.getByRole('dialog')).toBeInTheDocument();
     await user.keyboard('{Escape}');
     expect(onOpenChange).toHaveBeenCalledWith(false);
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('UIC-COMMAND-PALETTE-2.4 marks the typed text in data and TextMatch labels', async () => {

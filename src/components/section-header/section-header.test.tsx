@@ -162,7 +162,7 @@ describe('SectionHeader', () => {
 
     rerender(view('Updated settings', true));
     expect(screen.getByRole('region', { name: 'Updated settings' })).toBe(region);
-    expect(region.getAttribute('aria-labelledby')).toBe(labelledBy);
+    expect(region).toHaveAttribute('aria-labelledby', labelledBy);
     expect(screen.getByRole('textbox', { name: 'Notes' })).toBe(input);
     expect(region.querySelector('.ui-section-header__description')).toBeNull();
     await user.click(screen.getByRole('button', { name: 'Refresh' }));

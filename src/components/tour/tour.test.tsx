@@ -97,7 +97,7 @@ describe('Tour', () => {
     const onOpenChange = vi.fn();
     render(<Page onStepChange={onStepChange} onFinish={onFinish} onOpenChange={onOpenChange} />);
     await screen.findByRole('dialog', { name: 'Search' });
-    expect(screen.queryByRole('button', { name: 'Back' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Back' })).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Next' }));
     expect(await screen.findByRole('dialog', { name: 'Filters' })).toBeInTheDocument();
     expect(onStepChange).toHaveBeenLastCalledWith(1);
@@ -108,9 +108,9 @@ describe('Tour', () => {
     await user.click(await screen.findByRole('button', { name: 'Next' }));
     const last = await screen.findByRole('dialog', { name: 'Share' });
     expect(within(last).getByText('3 of 3')).toBeInTheDocument();
-    expect(within(last).queryByRole('button', { name: 'Skip' })).toBeNull();
+    expect(within(last).queryByRole('button', { name: 'Skip' })).not.toBeInTheDocument();
     await user.click(within(last).getByRole('button', { name: 'Finish' }));
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(document.querySelector('.ui-tour__spotlight')).toBeNull();
     expect(onFinish).toHaveBeenCalledTimes(1);
     expect(onOpenChange).toHaveBeenCalledWith(false);
@@ -124,14 +124,14 @@ describe('Tour', () => {
     await user.click(screen.getByRole('button', { name: 'Next' }));
     await user.click(await screen.findByRole('button', { name: 'Skip' }));
     expect(onSkip).toHaveBeenCalledWith(1);
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     unmount();
     render(<Page onSkip={onSkip} />);
     const step = await screen.findByRole('dialog', { name: 'Search' });
     await waitFor(() => expect(step).toHaveFocus());
     await user.keyboard('{Escape}');
     expect(onSkip).toHaveBeenLastCalledWith(0);
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('UIC-TOUR-2.5 moves focus to each step, keeps it inside, and returns it on close', async () => {
@@ -177,13 +177,13 @@ describe('Tour', () => {
       );
     }
     render(<Controlled />);
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Start tour' }));
     expect(await screen.findByRole('dialog', { name: 'Share' })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Back' }));
     expect(await screen.findByRole('dialog', { name: 'Filters' })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Skip' }));
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     await waitFor(() => expect(screen.getByRole('button', { name: 'Start tour' })).toHaveFocus());
   });
 

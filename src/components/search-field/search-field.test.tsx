@@ -76,7 +76,7 @@ describe('SearchField', () => {
     const onChange = vi.fn();
     const onClear = vi.fn();
     render(<SearchField label="Find" onChange={onChange} onClear={onClear} />);
-    expect(screen.queryByRole('button')).toBeNull();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
     const input = screen.getByRole('searchbox');
     await user.type(input, 'fig');
     const clear = screen.getByRole('button', { name: 'Clear search' });
@@ -89,7 +89,7 @@ describe('SearchField', () => {
     expect(onClear).toHaveBeenCalledTimes(1);
     expect(input).toHaveValue('');
     expect(input).toHaveFocus();
-    expect(screen.queryByRole('button')).toBeNull();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
 
   it('UIC-SEARCH-FIELD-1.3 shows clear text with its own name and hides it while locked', async () => {
@@ -109,9 +109,9 @@ describe('SearchField', () => {
     await user.click(clear);
     expect(screen.getByRole('searchbox')).toHaveValue('');
     rerender(<SearchField label="Find" value="fig" isReadOnly />);
-    expect(screen.queryByRole('button')).toBeNull();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
     rerender(<SearchField label="Find" value="fig" isDisabled />);
-    expect(screen.queryByRole('button')).toBeNull();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
 
   it('UIC-SEARCH-FIELD-1.4 clears on Escape and submits on Enter', async () => {
@@ -216,6 +216,6 @@ describe('SearchField', () => {
     expectHooksMatchSpec(container, 'SEARCH-FIELD', { slots: ['spinner'] });
     rerender(<SearchField label="Find" defaultValue="fig" />);
     expect(root).not.toHaveAttribute('data-pending');
-    expect(screen.queryByRole('progressbar')).toBeNull();
+    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
   });
 });

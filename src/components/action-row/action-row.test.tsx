@@ -186,7 +186,7 @@ describe('ActionRow', () => {
     const byId = (id: string) => container.querySelector<HTMLButtonElement>(`#${id}`);
     expect(byId('add')).toBeDisabled();
     expect(byId('add')).toHaveAttribute('aria-controls', 'list');
-    expect(byId('edit')).not.toBeDisabled();
+    expect(byId('edit')).toBeEnabled();
     expect(byId('edit')).toHaveAttribute('aria-disabled', 'true');
     expect(byId('save')).toHaveAttribute('data-pending', 'true');
     expect(byId('save')).toHaveAccessibleName(/^Save/);
@@ -262,7 +262,7 @@ describe('ActionRow', () => {
     expect(within(menu).getByRole('separator')).toBeInTheDocument();
     await user.click(within(menu).getByRole('menuitem', { name: /Export/ }));
     expect(onAction.mock.calls.map(([key]) => key)).toEqual(['export']);
-    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     expect(more).toHaveAttribute('aria-expanded', 'false');
     await waitFor(() => expect(more).toHaveFocus());
 
@@ -303,14 +303,14 @@ describe('ActionRow', () => {
     const more = screen.getByRole('button', { name: 'More' });
     expect(more).toBeDisabled();
     await user.click(more);
-    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
 
     rerender(<ActionRow actions={[{ verb: 'more', id: 'more', items: [], onPress }]} />);
     const plain = screen.getByRole('button', { name: 'More' });
     expect(plain).not.toHaveAttribute('aria-haspopup');
     await user.click(plain);
     expect(onPress).toHaveBeenCalledTimes(1);
-    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 
   it('UIC-ACTION-ROW-2.1 puts lead content before the actions and renders nothing when empty', () => {

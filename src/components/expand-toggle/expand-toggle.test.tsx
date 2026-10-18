@@ -120,7 +120,7 @@ describe('ExpandToggle', () => {
     expect(box).toHaveAttribute('data-size', 'md');
     expect(box).toHaveAttribute('aria-hidden', 'true');
     expect(box).toBeEmptyDOMElement();
-    expect(screen.queryByRole('button')).toBeNull();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
     expectHooksMatchSpec(container, 'EXPAND-TOGGLE');
   });
 

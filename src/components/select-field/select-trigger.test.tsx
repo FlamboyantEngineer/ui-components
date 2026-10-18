@@ -31,9 +31,9 @@ describe('SelectField clear button', () => {
     expectHooksMatchSpec(container, 'SELECT-FIELD', { slots: ['clear'] });
     await user.click(clear);
     expect(onCommit).toHaveBeenLastCalledWith(null);
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Select an option Fruit' })).toHaveFocus();
-    expect(screen.queryByRole('button', { name: 'Clear Fruit' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Clear Fruit' })).not.toBeInTheDocument();
   });
 
   it('UIC-SELECT-FIELD-8.1 clears a multiple value from the keyboard', async () => {
@@ -54,17 +54,17 @@ describe('SelectField clear button', () => {
     screen.getByRole('button', { name: 'Vider Basket' }).focus();
     await user.keyboard('{Enter}');
     expect(onCommit).toHaveBeenLastCalledWith([]);
-    expect(screen.queryByRole('row')).toBeNull();
+    expect(screen.queryByRole('row')).not.toBeInTheDocument();
   });
 
   it('UIC-SELECT-FIELD-8.1 offers no clear button when the field cannot be cleared', () => {
     const { rerender } = render(<SelectField label="Fruit" options={fruit} isClearable />);
-    expect(screen.queryByRole('button', { name: 'Clear Fruit' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Clear Fruit' })).not.toBeInTheDocument();
     rerender(<SelectField label="Fruit" options={fruit} value="pear" isClearable isRequired />);
-    expect(screen.queryByRole('button', { name: 'Clear Fruit' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Clear Fruit' })).not.toBeInTheDocument();
     rerender(<SelectField label="Fruit" options={fruit} value="pear" isClearable isReadOnly />);
-    expect(screen.queryByRole('button', { name: 'Clear Fruit' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Clear Fruit' })).not.toBeInTheDocument();
     rerender(<SelectField label="Fruit" options={fruit} value="pear" />);
-    expect(screen.queryByRole('button', { name: 'Clear Fruit' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Clear Fruit' })).not.toBeInTheDocument();
   });
 });

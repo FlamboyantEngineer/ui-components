@@ -93,7 +93,7 @@ describe('Banner', () => {
     expect(screen.getByRole('button', { name: 'Dismiss template warning' })).toBeInTheDocument();
 
     rerender(<Banner description="Note" />);
-    expect(screen.queryByRole('button')).toBeNull();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
 
   it('UIC-BANNER-1.4 renders phrasing content when inline', () => {
@@ -212,7 +212,7 @@ describe('Banner', () => {
       expect(screen.getByRole('status')).toBe(root);
       expect(root).toHaveAttribute('data-exiting', 'true');
       await act(async () => finishFade());
-      expect(screen.queryByRole('status')).toBeNull();
+      expect(screen.queryByRole('status')).not.toBeInTheDocument();
     } finally {
       delete (Element.prototype as Partial<Element>).getAnimations;
     }
@@ -244,7 +244,7 @@ describe('Banner', () => {
     );
     const quiet = container.querySelector('.ui-banner');
     expect(quiet).not.toHaveAttribute('tabindex');
-    expect(document.activeElement).toBe(document.body);
+    expect(document.body).toHaveFocus();
 
     rerender(
       <>

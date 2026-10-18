@@ -68,7 +68,7 @@ describe('CompletionList', () => {
 
   it('UIC-COMPLETION-LIST-1.1 stays closed while closed or with nothing to show', () => {
     const { rerender } = render(<Harness isOpen={false} />);
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     rerender(<Harness items={[]} />);
     expect(document.querySelector('.ui-completion-list')).toBeNull();
   });
@@ -111,7 +111,7 @@ describe('CompletionList', () => {
     expect(document.querySelector('.ui-completion-list__footer')).toHaveTextContent('3 matches');
     expectHooksMatchSpec(document.body, 'COMPLETION-LIST', { slots: ['documentation', 'footer'] });
     rerender(<Harness items={[]} renderEmptyState={() => 'No people found'} />);
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     const empty = screen.getByRole('status');
     expect(empty).toHaveTextContent('No people found');
     expect(empty).toHaveAttribute('id', 'people');

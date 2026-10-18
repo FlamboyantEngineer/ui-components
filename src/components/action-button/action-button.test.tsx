@@ -115,7 +115,7 @@ describe('ActionButton', () => {
     expect(screen.getByRole('progressbar', { name: 'Exporting' })).toBeInTheDocument();
 
     rerender(<ActionButton isPending={false}>Export</ActionButton>);
-    expect(screen.queryByRole('progressbar')).toBeNull();
+    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
   });
 
   it('UIC-ACTION-BUTTON-1.6 keeps its hint and shortcut while the action runs', async () => {

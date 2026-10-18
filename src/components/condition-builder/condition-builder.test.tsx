@@ -143,7 +143,9 @@ describe('ConditionBuilder', () => {
     render(<Controlled maxDepth={2} />);
     expect(screen.getAllByRole('button', { name: 'Add rule' })).toHaveLength(2);
     expect(screen.getAllByRole('button', { name: 'Add group' })).toHaveLength(1);
-    expect(within(rule('Group')).queryByRole('button', { name: 'Add group' })).toBeNull();
+    expect(
+      within(rule('Group')).queryByRole('button', { name: 'Add group' }),
+    ).not.toBeInTheDocument();
   });
 
   it('UIC-CONDITION-BUILDER-1.3 starts a rule over when its field changes', async () => {
@@ -209,7 +211,7 @@ describe('ConditionBuilder', () => {
       ['pages', 'genre'],
       'title',
     ]);
-    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     const moved = screen.getAllByRole('group', { name: 'Rule 2' }).at(-1)!;
     expect(within(moved).getByRole('button', { name: 'Actions' })).toHaveFocus();
   });
@@ -256,8 +258,8 @@ describe('ConditionBuilder', () => {
         }}
       />,
     );
-    expect(within(rule('Rule 1')).queryByRole('textbox')).toBeNull();
-    expect(within(rule('Rule 1')).queryByText('Enter a value.')).toBeNull();
+    expect(within(rule('Rule 1')).queryByRole('textbox')).not.toBeInTheDocument();
+    expect(within(rule('Rule 1')).queryByText('Enter a value.')).not.toBeInTheDocument();
   });
 
   it('UIC-CONDITION-BUILDER-1.7 carries caller attributes and labelling', () => {

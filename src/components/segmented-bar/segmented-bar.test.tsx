@@ -153,7 +153,8 @@ describe('SegmentedBar', () => {
     expect(bar.querySelector('.ui-segmented-bar__total')).toHaveTextContent('Summe 2.501,5 GB');
     expect(entries(bar)[0]).toMatch(/^Images 1,5\sGB 0,1\s%$/);
     rerender(<SegmentedBar aria-label="Storage" segments={results} showTotal={false} />);
-    expect(screen.getByRole('group').querySelector('.ui-segmented-bar__total')).toBeNull();
+    const group = screen.getByRole('group');
+    expect(group.querySelector('.ui-segmented-bar__total')).toBeNull();
   });
 
   it('UIC-SEGMENTED-BAR-1.6 publishes the size, medium by default', () => {

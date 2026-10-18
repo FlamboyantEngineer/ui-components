@@ -211,7 +211,7 @@ describe('ActivityFeed', () => {
     expect(screen.getByRole('list', { name: 'Activity' })).not.toHaveAttribute('aria-busy');
     rerender(<ActivityFeed items={[]} getNow={getNow} isLoading />);
     expect(screen.getByRole('status')).toHaveTextContent('Loading');
-    expect(screen.queryByRole('list')).toBeNull();
+    expect(screen.queryByRole('list')).not.toBeInTheDocument();
   });
 
   it('UIC-ACTIVITY-FEED-2.3 shows an empty state without entries', () => {

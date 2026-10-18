@@ -135,7 +135,7 @@ describe('ToastQueue', () => {
     act(() => queue.clear());
     expect(titles()).toEqual([]);
     expect(onClose).toHaveBeenCalledTimes(1);
-    expect(screen.queryByRole('region')).toBeNull();
+    expect(screen.queryByRole('region')).not.toBeInTheDocument();
     act(() => {
       queue.add({ title: 'Third again' }, { id: 'third' });
     });
@@ -152,7 +152,7 @@ describe('ToastRegion', () => {
         <ToastRegion queue={queue} />
       </>,
     );
-    expect(screen.queryByRole('region')).toBeNull();
+    expect(screen.queryByRole('region')).not.toBeInTheDocument();
     const keep = screen.getByRole('button', { name: 'Keep' });
     act(() => keep.focus());
     act(() => {
@@ -228,10 +228,10 @@ describe('ToastRegion', () => {
     expect(list.tagName).toBe('OL');
     expect(list).toHaveClass('ui-toast-list', 'caller');
     expect(list).toHaveAttribute('data-testid', 'stack');
-    expect(screen.queryByRole('region')).toBeNull();
+    expect(screen.queryByRole('region')).not.toBeInTheDocument();
     expect(within(list).getByRole('alertdialog', { name: 'Disk almost full' })).toBeInTheDocument();
     act(() => queue.close(key));
-    expect(within(list).queryByRole('alertdialog')).toBeNull();
+    expect(within(list).queryByRole('alertdialog')).not.toBeInTheDocument();
     expectHooksMatchSpec(container, 'TOAST');
   });
 });
@@ -291,7 +291,7 @@ describe('Toast', () => {
     expectHooksMatchSpec(document.body, 'TOAST', { slots: ['action'] });
     await userEvent.click(action);
     expect(onAction).toHaveBeenCalledTimes(1);
-    expect(screen.queryByRole('alertdialog')).toBeNull();
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
   });
 
   it('UIC-TOAST-3.4 dismisses with a named icon button', async () => {
@@ -309,7 +309,7 @@ describe('Toast', () => {
     expect(close).toHaveClass('ui-icon-button', 'ui-toast__close');
     await userEvent.click(close);
     expect(onClose).toHaveBeenCalledTimes(1);
-    expect(screen.queryByRole('alertdialog')).toBeNull();
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
   });
 
   it('UIC-TOAST-3.5 forwards caller classes, ids and data attributes and publishes interaction states', async () => {
@@ -561,7 +561,7 @@ describe('Toast updates and motion', () => {
     expectHooksMatchSpec(document.body, 'TOAST');
     act(() => queue.close(key));
     await exit.finish();
-    expect(screen.queryByRole('alertdialog')).toBeNull();
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
@@ -572,7 +572,7 @@ describe('Toast updates and motion', () => {
     queue.close(key);
     expect(onClose).toHaveBeenCalledTimes(1);
     render(<ToastList queue={queue} />);
-    expect(screen.queryByRole('alertdialog')).toBeNull();
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
   });
 
   it('UIC-TOAST-4.2 swipes a toast away past the threshold and returns it otherwise', async () => {
@@ -609,7 +609,7 @@ describe('Toast updates and motion', () => {
     pointer('pointerUp', title, { clientX: 150, clientY: 10 });
     fireEvent.click(title);
     expect(onAction).not.toHaveBeenCalled();
-    expect(screen.queryByRole('alertdialog')).toBeNull();
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
   });
 
   it('UIC-TOAST-4.3 publishes stack positions and expands the region on hover or focus', () => {

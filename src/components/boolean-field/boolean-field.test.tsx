@@ -61,9 +61,9 @@ describe('BooleanField', () => {
       'False',
       'True',
     ]);
-    expect(screen.getByRole('radio', { name: 'False' })).toHaveAttribute('aria-checked', 'true');
+    expect(screen.getByRole('radio', { name: 'False' })).toBeChecked();
     rerender(<BooleanField label="Ripe" variant="segmented" value={null} />);
-    expect(screen.getByRole('radio', { name: 'False' })).toHaveAttribute('aria-checked', 'false');
+    expect(screen.getByRole('radio', { name: 'False' })).not.toBeChecked();
     expectHooksMatchSpec(container, 'BOOLEAN-FIELD');
   });
 
@@ -88,7 +88,7 @@ describe('BooleanField', () => {
     );
     expect(caption()).toHaveTextContent('No');
     rerender(<BooleanField label="Notify" variant="segmented" value trueLabel="Yes" />);
-    expect(screen.getByRole('radio', { name: 'Yes' })).toHaveAttribute('aria-checked', 'true');
+    expect(screen.getByRole('radio', { name: 'Yes' })).toBeChecked();
     expect(screen.getByRole('radio', { name: 'False' })).toBeInTheDocument();
     expectHooksMatchSpec(container, 'BOOLEAN-FIELD');
   });
@@ -119,7 +119,7 @@ describe('BooleanField', () => {
     const box = screen.getByRole('checkbox', { name: 'Agree' });
     expect(box).toHaveAttribute('aria-invalid', 'true');
     expect(box).toHaveAttribute('aria-readonly', 'true');
-    expect(box).toHaveAttribute('aria-required', 'true');
+    expect(box).toBeRequired();
   });
 
   it('UIC-BOOLEAN-FIELD-1.5 submits its value in a form', () => {
@@ -326,7 +326,7 @@ describe('BooleanField', () => {
     unmount();
     render(<BooleanField label="Ripe" variant="dropdown" value isReadOnly />);
     await user.click(screen.getByRole('button', { name: 'True Ripe' }));
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
   });
 
   it('UIC-BOOLEAN-FIELD-3.1 draws the select field control with the named values', async () => {

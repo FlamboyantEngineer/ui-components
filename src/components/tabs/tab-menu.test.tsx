@@ -60,7 +60,7 @@ describe('Tab menu', { timeout: 15_000 }, () => {
     expect(within(screen.getByRole('menu')).getAllByRole('separator')).toHaveLength(2);
     await userEvent.click(screen.getByRole('menuitem', { name: 'Duplicate' }));
     expect(onDuplicate).toHaveBeenCalledWith('banana');
-    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     // The click focused the tab, so the closing menu returns focus to it.
     await act(() => new Promise((resolve) => requestAnimationFrame(resolve)));
     expect(banana).toHaveFocus();
@@ -141,11 +141,11 @@ describe('Tab menu', { timeout: 15_000 }, () => {
     );
     expect(fireEvent.contextMenu(tab('Apple'))).toBe(true);
     expect(onContextMenu).toHaveBeenCalledTimes(1);
-    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     unmount();
     render(<Fruit getMenuItems={standard} onRemove={vi.fn()} disabledKeys={['banana']} />);
     fireEvent.contextMenu(tab('Banana'));
-    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 
   it('UIC-TABS-3.6 announces the keys the list takes on each tab', () => {

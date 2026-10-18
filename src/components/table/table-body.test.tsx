@@ -43,7 +43,7 @@ describe('Table notices', { timeout: 15_000 }, () => {
     });
     expect(screen.getByRole('grid', { name: 'Cities' })).toBeInTheDocument();
     expect(screen.getAllByRole('columnheader')).toHaveLength(4);
-    expect(screen.queryByText('Lisbon')).toBeNull();
+    expect(screen.queryByText('Lisbon')).not.toBeInTheDocument();
     expect(screen.getByRole('status')).toHaveTextContent('Fetching cities');
     expect(container.firstElementChild).toHaveAttribute('aria-busy', 'true');
     expect(stateRow(container)).toHaveAttribute('data-variant', 'loading');
@@ -86,7 +86,7 @@ describe('Table notices', { timeout: 15_000 }, () => {
       onSelectionChange,
     });
     expect(screen.getByRole('alert')).toHaveTextContent('Cities are unavailable');
-    expect(screen.queryByRole('status')).toBeNull();
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
     expect(container.firstElementChild).not.toHaveAttribute('aria-busy');
     expect(stateRow(container)).toHaveAttribute('data-variant', 'error');
     expect(stateRow(container)).not.toHaveAttribute('aria-disabled');

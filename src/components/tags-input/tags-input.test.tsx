@@ -91,7 +91,7 @@ describe('TagsInput', () => {
       <TagsInput id="fruit" label="Fruit" description="Type and press Enter." isRequired />,
     );
     const input = screen.getByRole('textbox', { name: 'Fruit' });
-    expect(input).toHaveAttribute('aria-required', 'true');
+    expect(input).toBeRequired();
     expect(input).toHaveAttribute('aria-invalid', 'true');
     expect(input).toHaveAttribute('aria-errormessage', 'fruit-message');
     expect(input).toHaveAccessibleDescription('Type and press Enter. A value is required.');
@@ -365,7 +365,7 @@ describe('TagsInput', () => {
     const { rerender } = render(
       <TagsInput label="Fruit" defaultValue={['Apple', 'Pear']} isReadOnly />,
     );
-    expect(screen.queryByRole('button', { name: /^Remove/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^Remove/ })).not.toBeInTheDocument();
     await user.click(screen.getByRole('textbox', { name: 'Fruit' }));
     await user.keyboard('{Backspace}{Delete}');
     expect(screen.getByRole('row', { name: 'Pear' })).toHaveFocus();
@@ -374,7 +374,7 @@ describe('TagsInput', () => {
     for (const row of screen.getAllByRole('row')) {
       expect(row).toHaveAttribute('data-disabled', 'true');
     }
-    expect(screen.queryByRole('button', { name: /^Remove/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^Remove/ })).not.toBeInTheDocument();
   });
 
   it('UIC-TAGS-INPUT-4.3 focuses the input from a press on the frame', async () => {

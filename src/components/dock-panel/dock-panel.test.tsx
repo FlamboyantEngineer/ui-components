@@ -572,7 +572,7 @@ describe('DockPanel overlay', () => {
       'right',
     );
     expect(within(dialog).getByText('Maria Santos')).toBeInTheDocument();
-    expect(within(dialog).queryByRole('heading', { level: 3 })).toBeNull();
+    expect(within(dialog).queryByRole('heading', { level: 3 })).not.toBeInTheDocument();
     expect(people).toHaveAttribute('aria-expanded', 'true');
     expect(onExpandedChange).not.toHaveBeenCalled();
     expect(container.querySelectorAll('.ui-dock-panel__pane')).toHaveLength(0);

@@ -91,7 +91,7 @@ describe('SplitView', () => {
     expect(root).toHaveAttribute('data-ratio', 'equal');
     expect(root).toHaveAttribute('data-space', 'none');
     expect(Array.from(root.children, (child) => child.tagName)).toEqual(['P', 'P']);
-    expect(screen.queryByRole('separator')).toBeNull();
+    expect(screen.queryByRole('separator')).not.toBeInTheDocument();
     expectHooksMatchSpec(container, 'SPLIT-VIEW');
 
     for (const ratio of [

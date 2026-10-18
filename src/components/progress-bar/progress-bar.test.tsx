@@ -133,7 +133,7 @@ describe('Spinner', () => {
     }
     expect(spinner).toHaveClass('ui-spinner', 'caller');
     expect(spinner).toHaveAttribute('id', 'busy');
-    expect(screen.queryByRole('progressbar')).toBeNull();
+    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
     expectHooksMatchSpec(container, 'PROGRESS-BAR');
   });
 
@@ -168,7 +168,7 @@ describe('Spinner', () => {
     expectHooksMatchSpec(container, 'PROGRESS-BAR');
 
     rerender(<Spinner label="" />);
-    expect(screen.queryByRole('progressbar')).toBeNull();
+    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
     expect(container.querySelector('.ui-spinner')).toHaveAttribute('aria-hidden', 'true');
   });
 });

@@ -102,7 +102,7 @@ describe('HoverCard', () => {
     expect(dialog).toHaveAttribute('data-trigger', 'PreviewTrigger');
     expect(dialog.id).toContain('lisbon-card');
     expect(trigger()).toHaveAttribute('aria-expanded', 'true');
-    expect(trigger().getAttribute('aria-describedby')).toContain(dialog.id);
+    expect(trigger()).toHaveAttribute('aria-describedby', expect.stringContaining(dialog.id));
     expectHooksMatchSpec(document.body, 'HOVER-CARD', {
       slots: 'all',
       callerAttributes: ['data-lab'],
@@ -156,7 +156,7 @@ describe('HoverCard', () => {
     hover(screen.getByRole('button', { name: 'Oslo' }));
     await advance(0);
     expect(screen.getByRole('dialog', { name: 'About Oslo' })).toBeInTheDocument();
-    expect(screen.queryByRole('dialog', { name: 'About Lisbon' })).toBeNull();
+    expect(screen.queryByRole('dialog', { name: 'About Lisbon' })).not.toBeInTheDocument();
     unhover(screen.getByRole('button', { name: 'Oslo' }));
     movePointer('away');
     await advance(1000);

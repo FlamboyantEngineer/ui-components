@@ -241,7 +241,7 @@ describe('PinInput', () => {
     expect(focusedIndex()).toBe(0);
     await user.tab();
     rerender(<PinInput label="Code" length={3} value="12" onChange={() => {}} />);
-    expect(document.activeElement).toBe(document.body);
+    expect(document.body).toHaveFocus();
   });
 
   it('UIC-PIN-INPUT-2.2 erases and moves back with Backspace, closing gaps', async () => {
