@@ -46,6 +46,11 @@ export async function runPendingAction(options: {
   }
 }
 
+/** The message to show for a failed action: the error's own message, else `fallback`. */
+export function toFailureMessage(error: unknown, fallback: string): string {
+  return error instanceof Error && error.message ? error.message : fallback;
+}
+
 /** Whether `flag` has held for `delay` milliseconds; it turns false with the flag. */
 function useDelayedFlag(flag: boolean, delay: number): boolean {
   const [elapsed, setElapsed] = useState(false);

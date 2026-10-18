@@ -115,7 +115,25 @@ export interface CommonStrings {
   signature: string;
   /** Names the field for a user name. */
   userName: string;
+  /** Returns to the previous step of a multi-step task. */
+  back: string;
+  /** Completes the last step of a multi-step task. */
+  finish: string;
+  /** Passes over an optional step. */
+  skip: string;
+  /** Marks a step or entry the reader may leave out. */
+  optional: string;
+  /** Default accessible name of a list of steps. */
+  steps: string;
+  /** Read after a settled step's label (`Upload, Completed`). */
+  stepStatus: (status: 'complete' | 'error' | 'skipped') => string;
 }
+
+const stepStatusNames = {
+  complete: 'Completed',
+  error: 'Has errors',
+  skipped: 'Skipped',
+} as const;
 
 const spokenKeyNames: Readonly<Record<string, string>> = {
   '↑': 'Up Arrow',
@@ -217,4 +235,10 @@ export const commonStrings: CommonStrings = {
   signatureReason: 'Reason',
   signature: 'Signature',
   userName: 'User name',
+  back: 'Back',
+  finish: 'Finish',
+  skip: 'Skip',
+  optional: 'Optional',
+  steps: 'Steps',
+  stepStatus: (status) => stepStatusNames[status],
 };

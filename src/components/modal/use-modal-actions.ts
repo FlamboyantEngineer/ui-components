@@ -1,7 +1,7 @@
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { OverlayTriggerStateContext } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
-import { runPendingAction } from '../action-button/action-button.js';
+import { runPendingAction, toFailureMessage } from '../action-button/action-button.js';
 import type { ModalAction } from './modal.js';
 
 /** Which built-in footer action runs. */
@@ -24,10 +24,6 @@ export interface ModalActions {
   canRun: (slot: ModalActionSlot) => boolean;
   /** Runs the action, keeping it pending until its promise settles. */
   run: (slot: ModalActionSlot) => void;
-}
-
-function toFailureMessage(error: unknown, fallback: string): string {
-  return error instanceof Error && error.message ? error.message : fallback;
 }
 
 /**
