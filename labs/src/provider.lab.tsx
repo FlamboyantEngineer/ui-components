@@ -65,6 +65,14 @@ const sampleArguments: Partial<Record<keyof UiStrings, readonly unknown[]>> = {
   treeChangedRow: ['Pear', 'Pears'],
   treeMovedAwayRow: ['Fig'],
   treeMovedHereRow: ['Fig'],
+  importColumnAs: ['City'],
+  mappedColumns: [3, 5],
+  skippedColumns: [2],
+  unmappedRequiredTargets: [['Name', 'Email']],
+  duplicateTarget: ['Email', ['Contact']],
+  stepLabel: ['2'],
+  stepActions: ['2'],
+  moveStep: ['2'],
 };
 
 const stringNames = Object.keys(defaultStrings) as Array<keyof UiStrings>;

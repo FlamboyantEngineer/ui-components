@@ -157,3 +157,5 @@ export * from './components/transition-menu/index.js';
 export * from './components/record-header/index.js';
 export * from './components/view-switcher/index.js';
 export * from './components/display-options/index.js';
+export * from './components/mapping-table/index.js';
+export * from './components/step-list-editor/index.js';

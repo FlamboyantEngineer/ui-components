@@ -1,8 +1,10 @@
-import { useEffect, useId, useLayoutEffect, useRef } from 'react';
+import { useId } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { useFocusRequest } from '../../utils/use-focus-request.js';
+import { useIdFactory } from '../../utils/use-id-factory.js';
 import { createFilterCondition, type FilterField } from '../filter-bar/filter-bar.js';
 import {
   ConditionBuilderContext,
@@ -45,53 +47,16 @@ interface FocusRequest {
 
 const emptyTree: ConditionGroup = { type: 'group', id: 'root', combinator: 'and', rules: [] };
 
-/** Creates ids for new nodes, unique within the builder. */
-function useNodeIds(): () => string {
-  const base = useId();
-  const count = useRef(0);
-  return () => {
-    count.current += 1;
-    return `${base}${count.current}`;
-  };
-}
-
-/** The most frames a focus request waits for its element to take focus. */
-const FOCUS_RETRY_FRAMES = 60;
-
 function findFocusTarget({ elementId, selector }: FocusRequest): HTMLElement | null {
   const element = document.getElementById(elementId);
   const target = selector ? element?.querySelector(selector) : element;
   return target instanceof HTMLElement ? target : null;
 }
 
-/**
- * Moves focus to the requested element after the render that drew it. An edit made from a node's
- * menu runs while the menu still makes the rest of the page inert, so focus is retried on the next
- * frames until the menu has gone.
- */
-function useFocusRequest() {
-  const request = useRef<FocusRequest | null>(null);
-  const frame = useRef(0);
-  useLayoutEffect(() => {
-    const target = request.current;
-    if (!target) return;
-    request.current = null;
-    let attempts = 0;
-    const attempt = () => {
-      const element = findFocusTarget(target);
-      element?.focus();
-      attempts += 1;
-      if (element && document.activeElement !== element && attempts < FOCUS_RETRY_FRAMES) {
-        frame.current = requestAnimationFrame(attempt);
-      }
-    };
-    cancelAnimationFrame(frame.current);
-    attempt();
-  });
-  useEffect(() => () => cancelAnimationFrame(frame.current), []);
-  return (target: FocusRequest) => {
-    request.current = target;
-  };
+/** Moves focus to the requested element after the render that drew it. */
+function useNodeFocusRequest() {
+  const request = useFocusRequest();
+  return (target: FocusRequest) => request(() => findFocusTarget(target));
 }
 
 function useBuilderActions(options: {
@@ -101,8 +66,8 @@ function useBuilderActions(options: {
   elementId: (id: string, part?: 'add') => string;
 }): ConditionBuilderActions {
   const { tree, setTree, fields, elementId } = options;
-  const createId = useNodeIds();
-  const requestFocus = useFocusRequest();
+  const createId = useIdFactory();
+  const requestFocus = useNodeFocusRequest();
   const newRule = (): ConditionRule | null => {
     const field = fields[0];
     return field ? { type: 'rule', id: createId(), ...createFilterCondition(field) } : null;

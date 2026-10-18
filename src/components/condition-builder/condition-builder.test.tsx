@@ -163,7 +163,7 @@ describe('ConditionBuilder', () => {
     });
   });
 
-  it('UIC-CONDITION-BUILDER-1.5 moves, duplicates and deletes from a node’s menu', async () => {
+  it('UIC-CONDITION-BUILDER-1.5 UIC-STEP-LIST-EDITOR-4.2 moves, duplicates and deletes from a node’s menu', async () => {
     const user = userEvent.setup();
     const onValue = vi.fn();
     render(<Controlled onValue={onValue} />);
