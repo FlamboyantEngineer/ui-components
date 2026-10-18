@@ -124,3 +124,32 @@
   visibility: hidden;
   overflow: hidden;
 }
+
+.ui-segmented-choice__count {
+  position: relative;
+  flex: none;
+  min-width: 16px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--ref-hover);
+  color: var(--ref-muted);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 16px;
+  text-align: center;
+}
+.ui-segmented-choice__segment[data-selected] .ui-segmented-choice__count {
+  background: var(--ref-canvas);
+  color: var(--ref-text);
+}
+
+/* A pending change: the picked segment waits, and the group takes no picks. */
+.ui-segmented-choice[data-pending] {
+  cursor: progress;
+}
+.ui-segmented-choice[data-pending] .ui-segmented-choice__segment {
+  cursor: progress;
+}
+.ui-segmented-choice[data-pending] .ui-segmented-choice__indicator {
+  opacity: 0.6;
+}

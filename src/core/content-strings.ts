@@ -1,4 +1,7 @@
-/** Strings of the folder manager, code and JSON editors, emoji picker, PDF viewer and data tables. */
+/**
+ * Strings of the folder manager, code and JSON editors, emoji picker, PDF viewer, data tables,
+ * timestamps, save status and record labels.
+ */
 export interface ContentStrings {
   newFolder: string;
   /** Names the field that names a new folder. */
@@ -14,9 +17,9 @@ export interface ContentStrings {
   topLevel: string;
   /** Names a code editor's list of completions. */
   suggestions: string;
-  /** Names a code editor's find box. */
+  /** Names a find box. */
   find: string;
-  /** Names a code editor's replacement box. */
+  /** Names a find bar's replacement box. */
   replaceWith: string;
   /** Replaces the current match. */
   replace: string;
@@ -70,6 +73,8 @@ export interface ContentStrings {
   searching: string;
   previousMatch: string;
   nextMatch: string;
+  /** How many matches a find found, while none is current (`12 matches`). */
+  matchTotal: (total: number) => string;
   documentFailed: string;
   /** Names a document view's panel of page thumbnails and outline, and its toggle. */
   sidebar: string;
@@ -108,6 +113,18 @@ export interface ContentStrings {
   rangeTo: string;
   /** Names a table's summary row. */
   summary: string;
+  /** Describes a drawing of no values. */
+  noData: string;
+  /** Describes a series of values by its formatted lowest, highest and last values. */
+  seriesSummary: (values: { low: string; high: string; last: string }) => string;
+  /** Stands in for a timestamp that is missing or unreadable, mid-sentence. */
+  unknownTime: string;
+  /** Who did something and when, with `{time}` and `{person}` tokens. */
+  attribution: string;
+  /** An editor's save status (`Saving…`). */
+  saveStatus: (phase: 'dirty' | 'saving' | 'saved' | 'error' | 'offline') => string;
+  /** Stands in for a record the reader may not see, or that no longer exists. */
+  recordUnavailable: (reason: 'restricted' | 'missing') => string;
 }
 
 const emojiCategoryNames: Readonly<Record<string, string>> = {
@@ -124,6 +141,14 @@ const emojiCategoryNames: Readonly<Record<string, string>> = {
   symbols: 'Symbols',
   flags: 'Flags',
 };
+
+const saveStatusNames = {
+  dirty: 'Unsaved changes',
+  saving: 'Saving…',
+  saved: 'Saved',
+  error: 'Not saved',
+  offline: 'Offline',
+} as const;
 
 export const contentStrings: ContentStrings = {
   newFolder: 'New folder',
@@ -173,6 +198,7 @@ export const contentStrings: ContentStrings = {
   searching: 'Searching…',
   previousMatch: 'Previous match',
   nextMatch: 'Next match',
+  matchTotal: (total) => (total === 1 ? '1 match' : `${total} matches`),
   documentFailed: 'The document could not be opened.',
   sidebar: 'Sidebar',
   pages: 'Pages',
@@ -198,4 +224,10 @@ export const contentStrings: ContentStrings = {
   rangeFrom: 'From',
   rangeTo: 'To',
   summary: 'Summary',
+  noData: 'No data',
+  seriesSummary: ({ low, high, last }) => `Low ${low}, high ${high}, last ${last}`,
+  unknownTime: 'unknown time',
+  attribution: '{time} by {person}',
+  saveStatus: (phase) => saveStatusNames[phase],
+  recordUnavailable: (reason) => (reason === 'restricted' ? 'Restricted item' : 'Missing item'),
 };

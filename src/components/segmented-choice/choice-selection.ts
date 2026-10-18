@@ -1,5 +1,5 @@
 import type { Key } from '../../core/props.js';
-import { useControllableState } from '../../core/controllable-state.js';
+import { usePendingChange, type PendingChangeHandler } from './pending-change.js';
 
 export type SegmentedChoiceSelectionMode = 'single' | 'multiple';
 
@@ -12,7 +12,7 @@ export interface ChoiceSelectionOptions<M extends SegmentedChoiceSelectionMode> 
   selectionMode?: M | undefined;
   value?: SegmentedChoiceValue<M> | undefined;
   defaultValue?: SegmentedChoiceValue<M> | undefined;
-  onChange?: ((value: SegmentedChoiceValue<M>) => void) | undefined;
+  onChange?: PendingChangeHandler<SegmentedChoiceValue<M>> | undefined;
   isInherited: boolean;
   isClearable: boolean;
   isReadOnly: boolean;
@@ -20,6 +20,8 @@ export interface ChoiceSelectionOptions<M extends SegmentedChoiceSelectionMode> 
 
 export interface ChoiceSelection {
   selectionMode: SegmentedChoiceSelectionMode;
+  /** A change waits for the promise `onChange` returned. */
+  isPending: boolean;
   selectedKeys: string[];
   onSelectionChange: (keys: Set<Key>) => void;
 }
@@ -50,11 +52,16 @@ export function useChoiceSelection<M extends SegmentedChoiceSelectionMode>({
 }: ChoiceSelectionOptions<M>): ChoiceSelection {
   const isMultiple = selectionMode === 'multiple';
   const empty = (isMultiple ? [] : null) as SegmentedChoiceValue<M>;
-  const [current, commit] = useControllableState(value, defaultValue ?? empty, onChange);
+  const {
+    value: current,
+    isPending,
+    change: commit,
+  } = usePendingChange(value, defaultValue ?? empty, onChange);
 
   if (isMultiple) {
     return {
       selectionMode: 'multiple',
+      isPending,
       selectedKeys: [...(current as string[])],
       onSelectionChange: (keys) => {
         if (isReadOnly) return;
@@ -66,6 +73,7 @@ export function useChoiceSelection<M extends SegmentedChoiceSelectionMode>({
   const single = current as string | null;
   return {
     selectionMode: 'single',
+    isPending,
     selectedKeys: single === null ? [] : [single],
     // React Aria reports an empty selection when the selected segment is picked again.
     onSelectionChange: (keys) => {

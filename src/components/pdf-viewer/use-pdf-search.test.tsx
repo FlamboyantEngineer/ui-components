@@ -69,7 +69,7 @@ describe('PdfViewer find owned by the caller', () => {
     const view = await renderReady({ renderSearch, onSearchQueryChange });
     const toolbar = screen.getByRole('toolbar');
     expect(within(toolbar).queryByRole('searchbox')).toBeNull();
-    expect(view.container.querySelector('.ui-pdf-viewer__search-status')).toBeNull();
+    expect(view.container.querySelector('.ui-pdf-viewer .ui-find-bar__status')).toBeNull();
 
     await userEvent.click(screen.getByRole('button', { name: 'Find pears' }));
     expect(onSearchQueryChange).toHaveBeenLastCalledWith('pear');

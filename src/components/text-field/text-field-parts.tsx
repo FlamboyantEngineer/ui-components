@@ -2,6 +2,7 @@ import {
   useCallback,
   useLayoutEffect,
   useRef,
+  type CompositionEvent,
   type KeyboardEvent,
   type ReactNode,
   type RefObject,
@@ -51,8 +52,11 @@ export interface AutoGrowOptions {
 /** The input's own props: its hooks, the hint and the field's edit handlers. */
 export type TextFieldInputProps = HookProps & {
   placeholder: string | undefined;
+  onFocus: () => void;
   onBlur: () => void;
   onKeyDown: (event: KeyboardEvent<HTMLElement>) => void;
+  onCompositionStart: () => void;
+  onCompositionEnd: (event: CompositionEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
 };
 
 export interface TextFieldAreaProps extends TextFieldInputProps, AutoGrowOptions {

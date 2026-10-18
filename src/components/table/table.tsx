@@ -41,6 +41,9 @@ import type { TableSortOptions } from './use-table-sort.js';
 
 export type TableSize = Extract<Size, 'sm' | 'md'>;
 
+/** Caller `data-*` attributes for one row's element. */
+export type TableRowAttributes = Pick<BaseProps, `data-${string}`>;
+
 export interface TableProps<T extends TableRow>
   extends
     BaseProps,
@@ -99,6 +102,8 @@ export interface TableProps<T extends TableRow>
   onRetry?: (() => void | Promise<unknown>) | undefined;
   /** The notice when there are no rows. Defaults to the provider's `noResults` string. */
   emptyMessage?: ReactNode;
+  /** Caller `data-*` attributes per row, such as a change or status mark; hook values win. */
+  getRowAttributes?: ((row: T) => TableRowAttributes) | undefined;
   /** Content of a trailing actions cell per row, such as icon buttons or a menu trigger. */
   renderRowActions?: ((row: T) => ReactNode) | undefined;
   /** Width of the actions column in pixels. Defaults to 44. */

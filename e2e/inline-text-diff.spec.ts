@@ -50,6 +50,22 @@ test.describe('Inline Text Diff lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-INLINE-TEXT-DIFF-1.3 shows every changed run of words in place', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('inline-text-diff');
+    const several = page.locator('[data-lab-words="several words"]');
+    await expect(several.getByRole('deletion')).toHaveText(['pears', 'Lisbon', 'Monday']);
+    await expect(several.getByRole('insertion')).toHaveText(['plums', 'Porto', 'Friday']);
+    const joined = page.locator('[data-lab-words="joined change"]');
+    await expect(joined.getByRole('deletion')).toHaveText(['quick brown']);
+    await expect(joined.getByRole('insertion')).toHaveText(['slow red']);
+    await expect(page.locator('[data-lab-words="added sentence"] ins')).toHaveText(
+      /^ ?Label each one\.$/,
+    );
+  });
+
   test('UIC-INLINE-TEXT-DIFF-2.1 keeps readable runs in the dark theme', async ({ page, lab }) => {
     await lab.open('inline-text-diff', { theme: 'dark' });
     await expect(page.locator('.ui-inline-text-diff__added').first()).toBeVisible();

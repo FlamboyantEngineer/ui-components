@@ -308,11 +308,12 @@ test.describe('Combobox lab', () => {
   }) => {
     await page.clock.install();
     await lab.open('combobox');
-    await page.clock.pauseAt(Date.now() + 1000);
     const area = section(page, 'Loading more');
     await area.getByRole('combobox', { name: 'Paged city' }).focus();
     await page.keyboard.press('ArrowDown');
     await expect(page.getByRole('option', { name: 'Paris 1', exact: true })).toBeVisible();
+    // Pause only once the list is open: the popover needs running timers to appear.
+    await page.clock.pauseAt(Date.now() + 1000);
     await page.locator('.ui-combobox__listbox').evaluate((listbox) => {
       listbox.scrollTop = listbox.scrollHeight;
     });

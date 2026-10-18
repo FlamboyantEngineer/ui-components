@@ -57,6 +57,8 @@ export interface PdfViewerProps<
   toolbarSlot?: string | undefined;
   /** Opens the sidebar of page thumbnails and outline. */
   defaultSidebarOpen?: boolean | undefined;
+  /** Draws the pages' annotations and links. Defaults to true; `false` leaves both out. */
+  showAnnotations?: boolean | undefined;
   /** Called when the engine or the document cannot be opened. */
   onError?: ((error: Error) => void) | undefined;
   /** The page the reader is on, zero-based: the viewer goes to it when it changes. */

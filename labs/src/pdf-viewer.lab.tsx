@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { PdfViewer, type PdfViewerProps } from '../../src/components/pdf-viewer/pdf-viewer.js';
+import { Switch } from '../../src/components/switch/switch.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import {
   AnnotatedReader,
@@ -77,6 +78,28 @@ function FailingSource() {
   );
 }
 
+/** A reader whose annotations and links a switch turns on and off; they start off. */
+function AnnotationsSwitch() {
+  const [showAnnotations, setShowAnnotations] = useState(false);
+  return (
+    <div data-lab-case="annotations">
+      <Switch isSelected={showAnnotations} onChange={setShowAnnotations}>
+        Show annotations
+      </Switch>
+      <div style={{ height: 420, maxWidth: 1000 }}>
+        <PdfViewer
+          aria-label="Report without annotations"
+          source={sampleUrl}
+          loadEngine={loadEngine}
+          workerSrc={workerSrc}
+          defaultZoom={100}
+          showAnnotations={showAnnotations}
+        />
+      </div>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -122,6 +145,12 @@ mountLab(
       description="Zoom (buttons, slider, Ctrl + wheel, Ctrl + plus, minus and 0, pinch), fit modes, page navigation (Home, End), find with Enter and Shift + Enter, Ctrl + F and the find options, text selection, links on the first page, rotating, printing and saving from the menu, and a caller action at the end of the toolbar. The sample is requested with a header of the caller's."
     >
       <Reader />
+    </LabSection>
+    <LabSection
+      title="Annotations switched off"
+      description="The pages draw without their annotations and links until the switch turns them on."
+    >
+      <AnnotationsSwitch />
     </LabSection>
     <LabSection
       title="Bytes source, sidebar and destinations"

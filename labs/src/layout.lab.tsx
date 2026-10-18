@@ -24,6 +24,7 @@ import {
 } from '../../src/components/layout/toolbar-row.js';
 import { Contents, EmbeddedFrame, InlineContents } from '../../src/components/layout/wrappers.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { AttachedGroups, PendingToolbar, ToolbarOverflow } from './toolbar-row-cases.js';
 
 const spaces = ['none', '3xs', '2xs', 'xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl'] as const;
 
@@ -332,6 +333,24 @@ mountLab(
           </div>
         )}
       />
+    </LabSection>
+    <LabSection
+      title="Toolbar overflow"
+      description="In a 240px host: wrap flows the tools and their groups onto more rows, scroll keeps one row in a toolbar scroller, none keeps one row and leaves overflow to the caller."
+    >
+      <ToolbarOverflow />
+    </LabSection>
+    <LabSection
+      title="Attached toolbar groups"
+      description="An attached group joins its tools into one segmented run; each tool stays a toolbar stop."
+    >
+      <AttachedGroups />
+    </LabSection>
+    <LabSection
+      title="Pending toolbar"
+      description="While the editor starts, the row keeps its place but is not painted and its tools are inert, so the text below never moves."
+    >
+      <PendingToolbar />
     </LabSection>
     <LabSection title="Status bar" description="Distribution against wrapping in a 260px host.">
       <StateMatrix

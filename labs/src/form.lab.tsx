@@ -1,4 +1,4 @@
-import { useState, type FormEvent, type ReactNode } from 'react';
+import { useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { BooleanField } from '../../src/components/boolean-field/boolean-field.js';
 import { Button } from '../../src/components/button/button.js';
 import { CheckboxGroup } from '../../src/components/checkbox-group/checkbox-group.js';
@@ -139,6 +139,26 @@ function Delivery() {
   );
 }
 
+/** A button outside the form submits it through the form's ref, with the same validation. */
+function OutsideSubmit() {
+  const form = useRef<HTMLFormElement>(null);
+  const [submitted, setSubmitted] = useState('none');
+  return (
+    <>
+      <Form
+        aria-label="Note"
+        ref={form}
+        validationBehavior="aria"
+        onSubmit={(event) => setSubmitted(readEntries(event))}
+      >
+        <TextField label="Note" name="note" isRequired data-lab-field="note" />
+      </Form>
+      <Button onPress={() => form.current?.requestSubmit()}>Submit from outside</Button>
+      <Output name="Note">{submitted}</Output>
+    </>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -177,6 +197,12 @@ mountLab(
     </LabSection>
     <LabSection title="Fieldset" description="A fieldset groups fields and disables them together.">
       <Delivery />
+    </LabSection>
+    <LabSection
+      title="Submitting from outside"
+      description="The form's ref lets a button outside it submit it, as a dialog's footer action does."
+    >
+      <OutsideSubmit />
     </LabSection>
   </>,
 );

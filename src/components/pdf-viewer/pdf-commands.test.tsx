@@ -101,4 +101,20 @@ describe('PdfViewer commands', () => {
     expect(frame.isConnected).toBe(false);
     expect(URL.revokeObjectURL).toHaveBeenCalledTimes(3);
   });
+
+  it('UIC-PDF-VIEWER-2.5 prints the pages without their annotations when they are switched off', async () => {
+    vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation(() => undefined);
+    const engine = createEngine();
+    await renderReady({ showAnnotations: false }, engine);
+    await chooseCommand('Print');
+    await waitFor(() =>
+      expect(engine.render).toHaveBeenCalledWith(
+        expect.objectContaining({
+          viewport: expect.objectContaining({ scale: 150 / 72 }),
+          annotationMode: 0,
+        }),
+      ),
+    );
+    document.querySelector('iframe')?.remove();
+  });
 });

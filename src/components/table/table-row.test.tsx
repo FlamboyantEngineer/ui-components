@@ -125,4 +125,37 @@ describe('Table nested and detail rows', { timeout: 15_000 }, () => {
     expect(detail).toHaveAttribute('aria-selected', 'false');
     expectHooksMatchSpec(container, 'TABLE', { slots: ['detail-row', 'detail-cell'] });
   });
+
+  it('UIC-TABLE-1.5 puts caller attributes on each data row, nested rows included', () => {
+    const { container } = render(
+      <Table
+        aria-label="Places"
+        rows={places}
+        columns={columns}
+        selectionMode="multiple"
+        defaultSelectedKeys={['no']}
+        getChildRows={(place) => place.places}
+        defaultExpandedKeys={['pt']}
+        getRowAttributes={(place) => ({
+          'data-change': place.id === 'porto' ? 'added' : undefined,
+          'data-crowded': place.people > 4,
+          'data-people': place.people,
+          'data-selected': 'false',
+        })}
+      />,
+    );
+    const porto = row('Porto');
+    expect(porto).toHaveClass('ui-table__row');
+    expect(porto).toHaveAttribute('data-change', 'added');
+    expect(porto).toHaveAttribute('data-people', '2');
+    expect(porto).not.toHaveAttribute('data-crowded');
+    expect(row('Portugal')).toHaveAttribute('data-crowded', 'true');
+    expect(row('Portugal')).not.toHaveAttribute('data-change');
+    // Hook values win over caller attributes of the same name.
+    expect(row('Norway')).toHaveAttribute('data-selected', 'true');
+    expect(row('Iceland')).not.toHaveAttribute('data-selected');
+    expectHooksMatchSpec(container, 'TABLE', {
+      callerAttributes: ['data-change', 'data-crowded', 'data-people'],
+    });
+  });
 });

@@ -60,6 +60,13 @@ Verification: `src/components/segmented-choice/segmented-choice.test.tsx`, `e2e/
 Implementation: `src/components/segmented-choice/segmented-choice.tsx`
 Verification: `src/components/segmented-choice/segmented-choice.test.tsx`
 
+### UIC-SEGMENTED-CHOICE-1.9 - Counts
+
+An option's `count` shall show a positive whole number after the label in the `ui-segmented-choice__count` slot, capped at `countMax` (99 by default) as `<max>+`; zero, negative and non-finite counts show nothing. The count is hidden from assistive technology and read in the segment's accessible name instead, joined to the label by the provider's `labelWithCount` string (`Open, 3`), also for an icon-only segment.
+
+Implementation: `src/components/segmented-choice/segmented-choice.tsx`, `src/core/common-strings.ts`, `labs/reference/segmented-choice.css`
+Verification: `src/components/segmented-choice/pending-change.test.tsx`, `e2e/segmented-choice.spec.ts`
+
 ## UIC-SEGMENTED-CHOICE-2 - Behaviour
 
 ### UIC-SEGMENTED-CHOICE-2.1 - Keyboard and accessibility
@@ -96,6 +103,13 @@ With `name`, the group shall render one hidden input with that name per selected
 
 Implementation: `src/components/segmented-choice/segmented-choice.tsx`
 Verification: `src/components/segmented-choice/segmented-choice.test.tsx`
+
+### UIC-SEGMENTED-CHOICE-2.6 - Asynchronous change
+
+When `onChange` returns a promise, the group shall show the new value at once and hold it pending until the promise settles: the root publishes `data-pending` and `aria-busy="true"`, and picks wait (they are ignored) meanwhile. Once the promise fulfils, an uncontrolled group keeps the new value and a controlled one shows the caller's `value`; once it rejects, the value in effect shows again. The caller reports a failure itself, for example in an [Inline Error](INLINE-ERROR.md) beside the group. A handler that returns no promise changes the value at once.
+
+Implementation: `src/components/segmented-choice/segmented-choice.tsx`, `src/components/segmented-choice/choice-selection.ts`, `src/components/segmented-choice/pending-change.ts`
+Verification: `src/components/segmented-choice/pending-change.test.tsx`, `e2e/segmented-choice.spec.ts`
 
 ## UIC-SEGMENTED-CHOICE-3 - States
 
@@ -136,6 +150,7 @@ Verification: `src/components/segmented-choice/segmented-choice.test.tsx`, `e2e/
 | `ui-segmented-choice__indicator` | slot      |                          | The selection indicator inside a selected segment.  |
 | `ui-segmented-choice__icon`      | slot      |                          | A segment's leading icon (also `ui-icon`).          |
 | `ui-segmented-choice__label`     | slot      |                          | A segment's label text.                             |
+| `ui-segmented-choice__count`     | slot      |                          | A segment's count after its label.                  |
 | `data-size`                      | attribute | `sm`, `md`, `lg`         | Segment block size.                                 |
 | `data-sizing`                    | attribute | `equal`, `content`       | How segments share the width.                       |
 | `data-orientation`               | attribute | `horizontal`, `vertical` | Layout and arrow-key axis (React Aria).             |
@@ -146,6 +161,7 @@ Verification: `src/components/segmented-choice/segmented-choice.test.tsx`, `e2e/
 | `data-inherited`                 | state     | `true`                   | The value in effect is inherited.                   |
 | `data-readonly`                  | state     | `true`                   | Read-only.                                          |
 | `data-invalid`                   | state     | `true`                   | Invalid.                                            |
+| `data-pending`                   | state     | `true`                   | A change waits for the promise `onChange` returned. |
 | `data-disabled`                  | state     | `true`                   | The group or a segment is disabled (React Aria).    |
 | `data-selected`                  | state     | `true`                   | The selected segment (React Aria).                  |
 | `data-hovered`                   | state     | `true`                   | Pointer over a segment.                             |

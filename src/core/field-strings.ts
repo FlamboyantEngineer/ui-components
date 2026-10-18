@@ -98,6 +98,18 @@ export interface FieldStrings {
   nextPeriod: (period: string) => string;
   /** Names the start thumb of a range slider, read before the slider's label. */
   rangeMinimum: string;
+  /** Names a signature pad's choice between drawing and typing the signature. */
+  signatureMethod: string;
+  /** The signature pad's choice that draws the signature with a pointer. */
+  signatureDraw: string;
+  /** The signature pad's choice that types the signer's name instead. */
+  signatureType: string;
+  /** The hint of a signature pad's name input. */
+  signatureTypePlaceholder: string;
+  /** Describes a signature pad's drawing area by its stroke count. */
+  signatureStrokes: (count: number) => string;
+  /** Removes the last stroke of a drawn signature. */
+  undoStroke: string;
   /** Names the end thumb of a range slider, read before the slider's label. */
   rangeMaximum: string;
 }
@@ -161,5 +173,14 @@ export const fieldStrings: FieldStrings = {
   lastPeriod: (period) => `Last ${period}`,
   nextPeriod: (period) => `Next ${period}`,
   rangeMinimum: 'Minimum',
+  signatureMethod: 'Signature method',
+  signatureDraw: 'Draw',
+  signatureType: 'Type',
+  signatureTypePlaceholder: 'Type your name',
+  signatureStrokes: (count) =>
+    count === 0
+      ? 'Drawing area, empty'
+      : `Drawing area, ${count} ${count === 1 ? 'stroke' : 'strokes'}`,
+  undoStroke: 'Undo stroke',
   rangeMaximum: 'Maximum',
 };

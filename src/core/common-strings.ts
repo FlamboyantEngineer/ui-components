@@ -68,6 +68,8 @@ export interface CommonStrings {
   /** Names a button that removes a listed item, from the item's name. */
   removeItem: (name: string) => string;
   itemCount: (count: number) => string;
+  /** Accessible name of a labelled item with a count (`Open, 3`), from the label and the shown count. */
+  labelWithCount: (label: string, count: string) => string;
   /** Stands in for a person or group whose name is blank. */
   unnamed: string;
   /** Accessible name of a person shown with a status (`Maria Santos, Away`). */
@@ -86,6 +88,8 @@ export interface CommonStrings {
   countOrMore: (count: number) => string;
   /** A step counter such as `2 of 5`. */
   stepOfTotal: (current: number, total: number) => string;
+  /** A total beside the parts it sums, from the formatted total (`30 total`). */
+  totalCount: (total: string) => string;
   /** Names the mark of a group holding a value that overrides an inherited one. */
   containsOverrides: string;
   /** Names a search box that filters a panel, from the panel's label. */
@@ -99,6 +103,18 @@ export interface CommonStrings {
   logicalBoxSide: (side: 'block-start' | 'block-end' | 'inline-start' | 'inline-end') => string;
   /** The toggle that links a box's sides, so one edit sets all four or each opposite pair. */
   linkSides: (link: 'all' | 'pairs') => string;
+  /** The action that signs, in a signature dialog. */
+  sign: string;
+  /** Says who signs, from the signer's user name. */
+  signingAs: (userName: string) => string;
+  /** Names the meaning a signature gives its signer's assent: approval, review, authorship. */
+  signatureMeaning: string;
+  /** Names the field for the reason of a signature. */
+  signatureReason: string;
+  /** Names the field for a signer's drawn or typed signature. */
+  signature: string;
+  /** Names the field for a user name. */
+  userName: string;
 }
 
 const spokenKeyNames: Readonly<Record<string, string>> = {
@@ -174,6 +190,7 @@ export const commonStrings: CommonStrings = {
   placesBeside: (name) => `Places beside ${name}`,
   removeItem: (name) => `Remove ${name}`,
   itemCount: (count) => (count === 1 ? '1 item' : `${count} items`),
+  labelWithCount: (label, count) => `${label}, ${count}`,
   unnamed: 'Unnamed',
   nameWithStatus: (name, status) => `${name}, ${status}`,
   presenceStatus: (status) => presenceStatusNames[status],
@@ -186,6 +203,7 @@ export const commonStrings: CommonStrings = {
   remainingCount: (count) => `${count} remaining`,
   countOrMore: (count) => `${count} or more`,
   stepOfTotal: (current, total) => `${current} of ${total}`,
+  totalCount: (total) => `${total} total`,
   containsOverrides: 'Contains overridden values',
   filterLabel: (label) => `Filter ${label.toLocaleLowerCase()}`,
   noPropertyMatches: (query) => `No properties match “${query}”.`,
@@ -193,4 +211,10 @@ export const commonStrings: CommonStrings = {
   boxSide: (side) => boxSideNames[side],
   logicalBoxSide: (side) => logicalBoxSideNames[side],
   linkSides: (link) => (link === 'all' ? 'Link all sides' : 'Link opposite sides'),
+  sign: 'Sign',
+  signingAs: (userName) => `Signing as ${userName}`,
+  signatureMeaning: 'Meaning of signature',
+  signatureReason: 'Reason',
+  signature: 'Signature',
+  userName: 'User name',
 };

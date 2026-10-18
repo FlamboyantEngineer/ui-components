@@ -38,14 +38,14 @@ Verification: `src/components/text-field/text-field.test.tsx`
 
 `TextField` shall commit its value when the control loses focus and when Enter is pressed on a single line; Enter in a multiline field inserts a line break, and blur still commits. An Enter that confirms an input method composition does not commit. `onCommit` runs only for a value that differs from the committed value, so a repeated Enter or the blur after an Enter commits nothing again.
 
-Implementation: `src/components/text-field/text-field.tsx`
+Implementation: `src/components/text-field/text-field.tsx`, `src/components/text-field/use-text-field-input.ts`
 Verification: `src/components/text-field/text-field.test.tsx`, `e2e/text-field.spec.ts`
 
 ### UIC-TEXT-FIELD-2.2 - Escape reverts
 
 Escape pressed while the field is dirty shall put the committed value back, prevent the key's default and stop it there, so an enclosing dialog that closes on Escape stays open. With nothing to revert, Escape goes on to the enclosing surface.
 
-Implementation: `src/components/text-field/text-field.tsx`
+Implementation: `src/components/text-field/text-field.tsx`, `src/components/text-field/use-text-field-input.ts`
 Verification: `src/components/text-field/text-field.test.tsx`, `e2e/text-field.spec.ts`
 
 ### UIC-TEXT-FIELD-2.3 - Length and format
@@ -92,6 +92,22 @@ With `showCount`, the field shall show the text's length after its description, 
 Implementation: `src/components/text-field/text-field.tsx`, `src/components/text-field/text-field-parts.tsx`, `src/core/strings.ts`
 Verification: `src/components/text-field/text-field.test.tsx`, `e2e/text-field.spec.ts`
 
+## UIC-TEXT-FIELD-4 - Transformed and displayed text
+
+### UIC-TEXT-FIELD-4.1 - Input transform
+
+`transformInput(text)` shall rewrite the control's text after each typed, pasted or dropped edit before it becomes the value, so a field can refuse characters (an identifier, hexadecimal digits) or rewrite them (upper case). The caret stays after the same accepted characters: it lands at the length of the transformed text before the caret. An edit the transform reduces to the current value changes nothing, not even `onChange`. An input method composition goes through untouched and is transformed once it ends. Values set outside an edit (`value`, `defaultValue`, restore, undo, the field menu) are not transformed.
+
+Implementation: `src/components/text-field/text-field.tsx`, `src/components/text-field/use-text-field-input.ts`, `src/components/text-field/use-input-transform.ts`
+Verification: `src/components/text-field/use-input-transform.test.tsx`, `e2e/text-field.spec.ts`
+
+### UIC-TEXT-FIELD-4.2 - Display value
+
+While the control does not have focus, `displayValue` shall be the text it shows, such as a computed result or a formatted quantity, and the root publishes `data-display-value`; focusing the control shows the value for editing. The display value never changes the value, the committed value, dirty state, undo or `onCommit`.
+
+Implementation: `src/components/text-field/text-field.tsx`, `src/components/text-field/use-text-field-input.ts`
+Verification: `src/components/text-field/use-input-transform.test.tsx`, `e2e/text-field.spec.ts`
+
 ## Hooks
 
 | Hook                    | Kind  | Values | Description                                                           |
@@ -106,6 +122,7 @@ Verification: `src/components/text-field/text-field.test.tsx`, `e2e/text-field.s
 | `ui-text-field__count`  | slot  |        | The character count, inside the field's description.                  |
 | `data-multiline`        | state | `true` | On the root: the field edits several lines.                           |
 | `data-autosize`         | state | `true` | On the root: the text area grows with its text.                       |
+| `data-display-value`    | state | `true` | On the root: the control shows the display value, not the value.      |
 | `data-invalid`          | state | `true` | On the box, the group and the control: invalid (React Aria).          |
 | `data-required`         | state | `true` | On the box: a value is required (React Aria).                         |
 | `data-readonly`         | state | `true` | On the box: read-only (React Aria).                                   |

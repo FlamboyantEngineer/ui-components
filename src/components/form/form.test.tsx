@@ -1,6 +1,6 @@
 import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { useState, type FormEvent } from 'react';
+import { createRef, useState, type FormEvent } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { BooleanField } from '../boolean-field/boolean-field.js';
@@ -177,5 +177,20 @@ describe('Form', () => {
     expect(field('Quantity')).toHaveAttribute('data-validation', 'invalid');
     await user.click(screen.getByRole('button', { name: 'Send' }));
     expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it('UIC-FORM-1.6 hands its form element to a ref, which submits it with the same validation', () => {
+    const ref = createRef<HTMLFormElement>();
+    const onSubmit = vi.fn((event: FormEvent<HTMLFormElement>) => event.preventDefault());
+    render(
+      <Form aria-label="Order" ref={ref} validationBehavior="aria" onSubmit={onSubmit}>
+        <TextField label="Name" name="name" isRequired />
+      </Form>,
+    );
+    expect(ref.current).toBe(screen.getByRole('form', { name: 'Order' }));
+    act(() => ref.current?.requestSubmit());
+    expect(onSubmit).not.toHaveBeenCalled();
+    expect(screen.getByRole('textbox', { name: 'Name' })).toHaveFocus();
+    expect(field('Name')).toHaveAttribute('data-validation', 'invalid');
   });
 });

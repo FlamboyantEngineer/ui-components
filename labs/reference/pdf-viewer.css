@@ -42,28 +42,20 @@
   margin-inline-start: 4px;
 }
 
-.ui-pdf-viewer__page-field,
-.ui-pdf-viewer__search-field {
+.ui-pdf-viewer__page-field {
   display: inline-flex;
   align-items: center;
   gap: 6px;
 }
 
 .ui-pdf-viewer__page-label,
-.ui-pdf-viewer__page-total,
-.ui-pdf-viewer__search-status {
+.ui-pdf-viewer__page-total {
   color: var(--ref-muted);
   font-size: 12px;
   white-space: nowrap;
 }
 
-.ui-pdf-viewer__search-status {
-  min-width: 7ch;
-  font-variant-numeric: tabular-nums;
-}
-
-.ui-pdf-viewer__page-input,
-.ui-pdf-viewer__search-input {
+.ui-pdf-viewer__page-input {
   box-sizing: border-box;
   height: 26px;
   padding: 0 6px;
@@ -81,40 +73,23 @@
   font-variant-numeric: tabular-nums;
 }
 
-.ui-pdf-viewer__search-input {
-  width: 160px;
-}
-
-.ui-pdf-viewer__search-input::-webkit-search-cancel-button {
-  appearance: none;
-}
-
-:is(.ui-pdf-viewer__page-input, .ui-pdf-viewer__search-input)[data-focus-visible] {
+.ui-pdf-viewer__page-input[data-focus-visible] {
   outline: 2px solid var(--ref-focus);
   outline-offset: 1px;
 }
 
-:is(.ui-pdf-viewer__page-input, .ui-pdf-viewer__search-input)[data-disabled] {
+.ui-pdf-viewer__page-input[data-disabled] {
   color: var(--ref-muted);
   background: var(--ref-surface);
 }
 
-.ui-pdf-viewer__search-clear {
-  display: inline-flex;
-  padding: 2px;
-  border: 0;
-  border-radius: var(--ref-radius);
-  color: var(--ref-muted);
-  background: transparent;
-  cursor: pointer;
+/* The find row sits in the toolbar's one line: it does not wrap there. */
+.ui-pdf-viewer__group.ui-find-bar {
+  flex-wrap: nowrap;
 }
 
-.ui-pdf-viewer__search-clear[data-hovered] {
-  background: var(--ref-hover);
-}
-
-.ui-pdf-viewer__search-field[data-empty] .ui-pdf-viewer__search-clear {
-  visibility: hidden;
+.ui-pdf-viewer__group .ui-find-bar__query.ui-search-field {
+  flex-basis: 180px;
 }
 
 .ui-pdf-viewer__stage {
