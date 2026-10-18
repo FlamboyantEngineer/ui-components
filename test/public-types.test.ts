@@ -60,6 +60,7 @@ describe('public declarations', () => {
     };
     expect(check(files, 'clean').status).toBe(0);
     expect(check(files, 'leaky').status).toBe(1);
+    expect(check(files, 'leaky', 'clean').status).toBe(1);
   });
 
   it('UIC-PRIMITIVES-2.2 shapes the shared vocabulary so the building blocks accept it unchanged', () => {
