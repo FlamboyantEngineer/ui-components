@@ -1,0 +1,103 @@
+/* Version History */
+
+.ui-version-history {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 28rem;
+  min-width: 18rem;
+  color: var(--ref-text);
+}
+
+.ui-version-history__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.ui-version-history__named-only,
+.ui-version-history__person {
+  flex: none;
+  font-size: 13px;
+}
+
+.ui-version-history__compare {
+  margin-inline-start: auto;
+}
+
+.ui-version-history__list {
+  max-height: 24rem;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+}
+
+.ui-version-history__version {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 52px;
+}
+
+.ui-version-history__version .ui-list-row-content {
+  flex: 1 1 auto;
+}
+
+.ui-version-history__version .ui-list-row-content__title {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.ui-version-history__version:not([data-named]) .ui-version-history__label {
+  font-weight: 400;
+}
+
+.ui-version-history__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ui-version-history__current {
+  flex: none;
+  padding: 0 6px;
+  border: 1px solid var(--ref-accent);
+  border-radius: 999px;
+  color: var(--ref-text);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.ui-version-history__version[data-current] .ui-version-history__label {
+  font-weight: 600;
+}
+
+.ui-version-history__version .ui-list-row-content__meta {
+  display: flex;
+  flex-direction: column;
+  white-space: normal;
+}
+
+.ui-version-history__attribution {
+  color: var(--ref-muted);
+}
+
+.ui-version-history__summary {
+  overflow: hidden;
+  color: var(--ref-text);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-version-history__actions {
+  flex: none;
+}
+
+.ui-version-history[data-loading] .ui-version-history__list {
+  cursor: progress;
+}
+
+.ui-version-history__error {
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+}

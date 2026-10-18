@@ -13,6 +13,8 @@ import {
   type RowTabStop,
 } from './use-list-navigation.js';
 
+export { ListView, ListViewItem } from './list-view.js';
+
 /** Imperative access to a `List`. */
 export interface ListHandle {
   /** Moves focus to the first enabled row. */

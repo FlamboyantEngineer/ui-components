@@ -11,6 +11,7 @@
 
 @import url('reference/base.css');
 @import url('reference/action-row.css');
+@import url('reference/activity-feed.css');
 @import url('reference/app-frame.css');
 @import url('reference/attribution.css');
 @import url('reference/avatar.css');
@@ -21,6 +22,7 @@
 @import url('reference/button.css');
 @import url('reference/button-group.css');
 @import url('reference/card.css');
+@import url('reference/change-list.css');
 @import url('reference/checkbox.css');
 @import url('reference/checkbox-group.css');
 @import url('reference/circular-progress.css');
@@ -124,6 +126,7 @@
 @import url('reference/unsaved-changes-guard.css');
 @import url('reference/user-card.css');
 @import url('reference/user-identity.css');
+@import url('reference/version-history.css');
 @import url('reference/visually-hidden.css');
 @import url('reference/wizard.css');
 @import url('reference/zoom-control.css');

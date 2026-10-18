@@ -126,3 +126,6 @@ export * from './components/record-chip/index.js';
 export * from './components/steps/index.js';
 export * from './components/wizard/index.js';
 export * from './components/state-timeline/index.js';
+export * from './components/activity-feed/index.js';
+export * from './components/change-list/index.js';
+export * from './components/version-history/index.js';
