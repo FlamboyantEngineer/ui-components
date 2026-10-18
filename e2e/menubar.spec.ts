@@ -88,6 +88,7 @@ test.describe('Menubar lab', () => {
     await lab.open('menubar');
     await top(page, 'File').focus();
     await page.keyboard.press('ArrowDown');
+    await expect(page.getByRole('menu', { name: 'File' })).toBeVisible();
     await page.keyboard.press('ArrowRight');
     await expect(item(page, /^Undo/)).toBeFocused();
     await expect(popovers(page)).toHaveCount(1);
@@ -240,6 +241,8 @@ test.describe('Menubar lab', () => {
     await page.keyboard.press('ArrowLeft');
     await expect(rtl('Edit')).toBeFocused();
     await page.keyboard.press('ArrowDown');
+    // Wait for the menu to open, so the next key moves between menus rather than along the bar.
+    await expect(page.getByRole('menu', { name: 'Edit' })).toBeVisible();
     await page.keyboard.press('ArrowLeft');
     await expect(item(page, /^Guide/)).toBeFocused();
   });
