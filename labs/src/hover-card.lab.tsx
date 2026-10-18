@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from '../../src/primitives/index.js';
+import { Link } from '../../src/components/link/link.js';
 import { Button } from '../../src/components/button/button.js';
 import {
   HoverCard,

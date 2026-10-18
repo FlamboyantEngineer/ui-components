@@ -1,7 +1,6 @@
 import { useRef, useState } from 'react';
-import { DialogTrigger } from '../../src/primitives/index.js';
 import { Button } from '../../src/components/button/button.js';
-import { Modal, type ModalProps } from '../../src/components/modal/modal.js';
+import { Modal, ModalTrigger, type ModalProps } from '../../src/components/modal/modal.js';
 import { Portal } from '../../src/components/portal/portal.js';
 import { Shortcut } from '../../src/components/shortcut/shortcut.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
@@ -30,10 +29,10 @@ const states = [
 /** A trigger button and an uncontrolled modal it opens. */
 function Opener({ label = 'Open', ...props }: Omit<ModalProps, 'isOpen'> & { label?: string }) {
   return (
-    <DialogTrigger>
+    <ModalTrigger>
       <Button size="sm">{label}</Button>
       <Modal {...props} />
-    </DialogTrigger>
+    </ModalTrigger>
   );
 }
 
@@ -383,7 +382,7 @@ mountLab(
       title="Anchored dialog"
       description="The dialog opens as a popover below its button, on the dropdown layer."
     >
-      <DialogTrigger>
+      <ModalTrigger>
         <Button size="sm" data-lab-open="anchored">
           Rename Report.pdf
         </Button>
@@ -397,7 +396,7 @@ mountLab(
             Name <input defaultValue="Report.pdf" />
           </label>
         </Modal>
-      </DialogTrigger>
+      </ModalTrigger>
     </LabSection>
   </>,
 );

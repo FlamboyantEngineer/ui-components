@@ -3,5 +3,6 @@ export type {
   TooltipPlacement,
   TooltipProps,
   TooltipRelationship,
+  TooltipTriggerType,
   TooltipVariant,
 } from './tooltip.js';

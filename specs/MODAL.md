@@ -6,7 +6,7 @@
 
 ### UIC-MODAL-1.1 - Opening and closing
 
-`Modal` shall be open while `isOpen` is true (or, uncontrolled, from `defaultOpen`), report every close through `onOpenChange(false)`, and render nothing while closed. Inside a React Aria `DialogTrigger`, with neither `isOpen` nor `defaultOpen`, it shall follow the trigger's open state. While open it renders, in an overlay at the end of the document body, the `ui-modal` overlay, the `ui-modal__panel` box and the `ui-modal__dialog` element with `role="dialog"`.
+`Modal` shall be open while `isOpen` is true (or, uncontrolled, from `defaultOpen`), report every close through `onOpenChange(false)`, and render nothing while closed. Inside a `ModalTrigger` ([UIC-MODAL-1.6](#uic-modal-16---trigger)), with neither `isOpen` nor `defaultOpen`, it shall follow the trigger's open state. While open it renders, in an overlay at the end of the document body, the `ui-modal` overlay, the `ui-modal__panel` box and the `ui-modal__dialog` element with `role="dialog"`.
 
 Implementation: `src/components/modal/modal.tsx`
 Verification: `src/components/modal/modal.test.tsx`, `e2e/modal.spec.ts`
@@ -39,6 +39,13 @@ Verification: `src/components/modal/modal.test.tsx`, `e2e/modal.spec.ts`
 Implementation: `src/components/modal/modal-dialog.tsx`
 Verification: `src/components/modal/modal.test.tsx`, `src/components/modal/modal-presentations.test.tsx`, `e2e/modal.spec.ts`
 
+### UIC-MODAL-1.6 - Trigger
+
+`ModalTrigger` shall hold one pressable trigger, such as a `Button`, and a `Modal`, and add no element of its own: pressing the trigger opens the modal, which follows the trigger's open state, and closing it returns focus to the trigger. `isOpen` with `onOpenChange` on the trigger controls it, `defaultOpen` opens it at first, and `onOpenChange` reports each change the reader asks for.
+
+Implementation: `src/components/modal/modal.tsx`
+Verification: `src/components/modal/modal.test.tsx`, `src/components/modal/modal-presentations.test.tsx`
+
 ## UIC-MODAL-2 - Dismissal
 
 ### UIC-MODAL-2.1 - Escape
@@ -64,7 +71,7 @@ Verification: `src/components/modal/modal.test.tsx`
 
 ### UIC-MODAL-2.4 - Vetoing a dismissal
 
-`shouldCloseOnEscape()` shall be asked each time Escape would close the dialog, and `shouldCloseOnInteractOutside(element)` (React Aria's) each time an outside press would close a dismissable one, with the element pressed; when either returns false the dialog stays open and the press or key goes no further, so a host can keep unsaved work and ask first. Neither is asked while that dismissal is refused anyway.
+`shouldCloseOnEscape()` shall be asked each time Escape would close the dialog, and `shouldCloseOnInteractOutside(element)` each time an outside press would close a dismissable one, with the element pressed; when either returns false the dialog stays open and the press or key goes no further, so a host can keep unsaved work and ask first. Neither is asked while that dismissal is refused anyway.
 
 Implementation: `src/components/modal/modal.tsx`, `src/components/modal/modal-dialog.tsx`
 Verification: `src/components/modal/modal.test.tsx`, `e2e/modal.spec.ts`
@@ -181,14 +188,14 @@ Verification: `src/components/modal/modal.test.tsx`
 
 ### UIC-MODAL-8.1 - Non-modal dialog
 
-With `isNonModal`, the dialog shall float over a page it does not block: the overlay (fixed, zero inset, on the `modal` layer, publishing `data-non-modal`) lets pointer presses through to the page around the panel (`pointer-events` set inline on both), the page stays visible to assistive technology and reachable by Tab, and outside presses never close it. Focus moves into the dialog on open as in a modal; Escape pressed inside closes it, with the same settings and veto; when it closes, focus returns to the element focused when it opened (or `finalFocus`) only if focus was still inside the dialog or on the body. It follows `isOpen`, `defaultOpen` or an enclosing `DialogTrigger` like a modal, and publishes `data-entering` and `data-exiting` on the overlay and panel while the panel's animations run.
+With `isNonModal`, the dialog shall float over a page it does not block: the overlay (fixed, zero inset, on the `modal` layer, publishing `data-non-modal`) lets pointer presses through to the page around the panel (`pointer-events` set inline on both), the page stays visible to assistive technology and reachable by Tab, and outside presses never close it. Focus moves into the dialog on open as in a modal; Escape pressed inside closes it, with the same settings and veto; when it closes, focus returns to the element focused when it opened (or `finalFocus`) only if focus was still inside the dialog or on the body. It follows `isOpen`, `defaultOpen` or an enclosing `ModalTrigger` like a modal, and publishes `data-entering` and `data-exiting` on the overlay and panel while the panel's animations run.
 
 Implementation: `src/components/modal/modal.tsx`, `src/components/modal/modal-presentations.tsx`, `src/components/modal/modal-dialog.tsx`
 Verification: `src/components/modal/modal-presentations.test.tsx`, `e2e/modal.spec.ts`
 
 ### UIC-MODAL-8.2 - Anchored dialog
 
-With `placement`, the dialog shall open inside a React Aria `DialogTrigger` as a popover against the trigger at that placement, 8 pixels away and kept 8 pixels inside the viewport, instead of over the page. The popover carries the overlay's hooks (`ui-modal`, `data-layer="dropdown"` with that layer's z-index, tone, size and body layout) with React Aria's `data-placement`, `data-trigger`, `data-entering` and `data-exiting`, and holds the dialog directly, with no panel. The dialog element takes `role="dialog"`, which React Aria's popover needs to stay a plain container. React Aria's popover traps focus, hides the page from assistive technology and returns focus to the trigger; Escape, Cancel and the actions behave as in a modal, and an outside press closes it only when `isDismissable`. `placement` takes precedence over `isNonModal`. The popover is the [Popover](POPOVER.md)'s floating panel.
+With `placement` (a `Placement`), the dialog shall open inside a `ModalTrigger` as a popover against the trigger at that placement, 8 pixels away and kept 8 pixels inside the viewport, instead of over the page. The popover carries the overlay's hooks (`ui-modal`, `data-layer="dropdown"` with that layer's z-index, tone, size and body layout) with React Aria's `data-placement`, `data-trigger`, `data-entering` and `data-exiting`, and holds the dialog directly, with no panel. The dialog element takes `role="dialog"`, which React Aria's popover needs to stay a plain container. React Aria's popover traps focus, hides the page from assistive technology and returns focus to the trigger; Escape, Cancel and the actions behave as in a modal, and an outside press closes it only when `isDismissable`. `placement` takes precedence over `isNonModal`. The popover is the [Popover](POPOVER.md)'s floating panel.
 
 Implementation: `src/components/modal/modal.tsx`, `src/components/modal/modal-presentations.tsx`, `src/components/popover/popover.tsx`
 Verification: `src/components/modal/modal-presentations.test.tsx`, `e2e/modal.spec.ts`

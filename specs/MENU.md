@@ -1,12 +1,12 @@
 # Menu
 
-The menu family lists actions or options a reader can choose: `Menu` (the list), `MenuItem`, `MenuSection`, `MenuSeparator`, `MenuPopover` (the floating surface), `MenuTrigger` (opens a menu from a button) and `SubmenuTrigger` (opens a nested menu from an item). It is built on React Aria's `Menu`, `MenuItem`, `MenuSection`, `Header`, `Separator`, `Popover`, `MenuTrigger` and `SubmenuTrigger`, which own the roles, focus and keyboard behaviour. A menu takes its entries as JSX children or as data. Long menus filter from a search field (React Aria `Autocomplete`), load more entries as they scroll (`MenuLoadMoreItem`) and render only the rows in view inside a React Aria `Virtualizer` ([COLLECTIONS.md](COLLECTIONS.md)). [DROPDOWN-MENU.md](DROPDOWN-MENU.md) composes a button and a menu; [CONTEXT-MENU.md](CONTEXT-MENU.md) opens menus at the pointer or from a controller.
+The menu family lists actions or options a reader can choose: `Menu` (the list), `MenuItem`, `MenuSection`, `MenuSeparator`, `MenuPopover` (the floating surface), `MenuTrigger` (opens a menu from a button) and `SubmenuTrigger` (opens a nested menu from an item). It is built on React Aria's `Menu`, `MenuItem`, `MenuSection`, `Header`, `Separator`, `Popover`, `MenuTrigger` and `SubmenuTrigger`, which own the roles, focus and keyboard behaviour; every part, trigger included, is a library component, so callers import nothing from React Aria. A menu takes its entries as JSX children or as data. Long menus filter from a search field (React Aria `Autocomplete`), load more entries as they scroll (`onLoadMore`) and render only the rows in view (`virtualized`), following [COLLECTIONS.md](COLLECTIONS.md). [DROPDOWN-MENU.md](DROPDOWN-MENU.md) composes a button and a menu; [CONTEXT-MENU.md](CONTEXT-MENU.md) opens menus at the pointer or from a controller.
 
 ## UIC-MENU-1 - Menu
 
 ### UIC-MENU-1.1 - Entries as children or data
 
-`Menu` shall render a React Aria menu (`role="menu"`) from `MenuItem`, `MenuSection`, `MenuSeparator` and `SubmenuTrigger` children or, without children, from its `items` entries: item entries (`id`, `label` and the item options), section entries (`type: 'section'` with `title` and `items`) and separator entries (`type: 'separator'`). An item entry with `items` opens a submenu of those entries. Entries take the props of the component they describe.
+`Menu` shall render a `role="menu"` list from `MenuItem`, `MenuSection`, `MenuSeparator` and `SubmenuTrigger` children or, without children, from its `items` entries: item entries (`id`, `label` and the item options), section entries (`type: 'section'` with `title` and `items`) and separator entries (`type: 'separator'`). An item entry with `items` opens a submenu of those entries. Entries take the props of the component they describe.
 
 Implementation: `src/components/menu/menu.tsx`, `src/components/menu/menu-item.tsx`
 Verification: `src/components/menu/menu.test.tsx`, `e2e/menu.spec.ts`
@@ -27,7 +27,7 @@ Verification: `src/components/menu/menu.test.tsx`, `e2e/menu.spec.ts`
 
 ### UIC-MENU-1.4 - Actions
 
-Activating an enabled item shall call the item's `onAction` and the menu's `onAction` with the item's `id`, once, and then close the menu with every open submenu. A submenu's `Menu` without its own `onAction` reports to the `onAction` of the menu that opens it. `shouldCloseOnSelect={false}` on the item, its section or the menu keeps the menu open. A disabled or pending item does nothing. An item with `href` is a link and navigates (through the provider's `navigate` when set).
+Activating an enabled item shall call the item's `onAction` and the menu's `onAction` with the item's `id`, once, and then close the menu with every open submenu. A submenu's `Menu` without its own `onAction` reports to the `onAction` of the menu that opens it. `shouldCloseOnSelect={false}` on the item, its section or the menu keeps the menu open. An item's press handlers (`onPress` and the others of `PressEventProps`) receive the `PressEvent` as well. A disabled or pending item does nothing. An item with `href` is a link and navigates (through the provider's `navigate` when set).
 
 Implementation: `src/components/menu/menu.tsx`
 Verification: `src/components/menu/menu.test.tsx`, `e2e/menu.spec.ts`
@@ -43,7 +43,7 @@ Verification: `src/components/menu/menu-item.test.tsx`, `e2e/menu.spec.ts`
 
 ### UIC-MENU-2.2 - Custom content
 
-When `children` is a function, `MenuItem` shall draw what it returns instead of the default anatomy, passing it the item's state (`isFocused`, `isSelected`, `isDisabled`, `hasSubmenu` and the other React Aria item states). `textValue` (by default the label text, or the entry's `label`) is used for type-to-select. An entry's `renderContent` is the same function.
+When `children` is a function, `MenuItem` shall draw what it returns instead of the default anatomy, passing it the item's `MenuItemRenderState`: `isHovered`, `isFocused`, `isFocusVisible`, `isPressed`, `isSelected`, `isDisabled`, the `selectionMode` it belongs to, `hasSubmenu` and `isOpen` (its submenu is open). `textValue` (by default the label text, or the entry's `label`) is used for type-to-select. An entry's `renderContent` is the same function.
 
 Implementation: `src/components/menu/menu-item.tsx`
 Verification: `src/components/menu/menu-item.test.tsx`
@@ -64,7 +64,7 @@ Verification: `src/components/menu/menu-item.test.tsx`
 
 ### UIC-MENU-2.5 - Interaction states
 
-`MenuItem` shall publish React Aria's interaction states: `data-hovered` (pointer over the item), `data-focused`, `data-focus-visible` (keyboard focus) and `data-pressed`.
+`MenuItem` shall publish its interaction states: `data-hovered` (pointer over the item), `data-focused`, `data-focus-visible` (keyboard focus) and `data-pressed`.
 
 Implementation: `src/components/menu/menu-item.tsx`
 Verification: `src/components/menu/menu-item.test.tsx`, `e2e/menu.spec.ts`
@@ -96,7 +96,7 @@ Verification: `src/components/menu/menu-item.test.tsx`, `e2e/menu.spec.ts`
 
 ### UIC-MENU-4.1 - Menu trigger
 
-`MenuTrigger` shall open its `MenuPopover` from its trigger (a `Button`, an `IconButton` or another React Aria button): on press, Enter or Space, and on Arrow Down or Arrow Up, which focus the first or last item. The trigger carries `aria-haspopup`, `aria-expanded` and, while open, `aria-controls` naming the menu, which the trigger labels. `isOpen` with `onOpenChange` controls the open state and `defaultOpen` sets it uncontrolled.
+`MenuTrigger` shall hold a trigger (a `Button`, an `IconButton` or another library pressable) and a `MenuPopover`, add no element of its own, and open the popover from the trigger: on press, Enter or Space, and on Arrow Down or Arrow Up, which focus the first or last item. The trigger carries `aria-haspopup`, `aria-expanded` and, while open, `aria-controls` naming the menu, which the trigger labels. `isOpen` with `onOpenChange` controls the open state and `defaultOpen` sets it uncontrolled.
 
 Implementation: `src/components/menu/menu.tsx`
 Verification: `src/components/menu/menu.test.tsx`, `e2e/menu.spec.ts`
@@ -110,7 +110,7 @@ Verification: `src/components/menu/menu.test.tsx`, `e2e/menu.spec.ts`
 
 ### UIC-MENU-4.3 - Popover
 
-`MenuPopover` shall be a React Aria popover placed against its trigger: `placement` defaults to `bottom start`, 4 pixels away (`offset`), flipping to the other side when it does not fit and limiting its height to the room in the viewport less 8 pixels (`containerPadding`); the popover is the scroll container of a menu taller than that room. It publishes React Aria's `data-placement`, `data-trigger` (`MenuTrigger`, `SubmenuTrigger`), `data-entering` and `data-exiting`, and closes on a press outside it.
+`MenuPopover` shall be a popover placed against its trigger, taking the overlay position props: `placement` (a `Placement`) defaults to `bottom start`, 4 pixels away (`offset`), shifted by `crossOffset`, flipping to the other side when it does not fit unless `shouldFlip` is false, and limiting its height to the room in the viewport less 8 pixels (`containerPadding`); the popover is the scroll container of a menu taller than that room. It publishes `data-placement`, `data-trigger` (`MenuTrigger`, `SubmenuTrigger`), `data-entering` and `data-exiting`, and closes on a press outside it.
 
 Implementation: `src/components/menu/menu-popover.tsx`, `labs/reference/menu.css`
 Verification: `src/components/menu/menu-popover.test.tsx`, `e2e/menu.spec.ts`
@@ -124,7 +124,7 @@ Verification: `src/components/menu/menu-popover.test.tsx`, `e2e/menu.spec.ts`
 
 ### UIC-MENU-4.5 - Submenus
 
-`SubmenuTrigger` shall make its `MenuItem` a submenu trigger (`aria-haspopup="menu"`, `aria-expanded`, `data-has-submenu`, `data-open` while open) that opens its `MenuPopover` beside the item, overlapping the parent menu by 2 pixels: on hover after a short delay, on press, and on Arrow Right (Arrow Left in right-to-left text), which focuses the submenu's first item. In the submenu, Arrow Left (Arrow Right in right-to-left text) and Escape close only the submenu and return focus to its trigger item. Activating an item of a submenu closes the whole menu.
+`SubmenuTrigger`, given a `MenuItem` and a `MenuPopover`, shall make the item a submenu trigger (`aria-haspopup="menu"`, `aria-expanded`, `data-has-submenu`, `data-open` while open) that opens its `MenuPopover` beside the item, overlapping the parent menu by 2 pixels: on hover after a short delay, on press, and on Arrow Right (Arrow Left in right-to-left text), which focuses the submenu's first item. In the submenu, Arrow Left (Arrow Right in right-to-left text) and Escape close only the submenu and return focus to its trigger item. Activating an item of a submenu closes the whole menu.
 
 Implementation: `src/components/menu/menu.tsx`
 Verification: `src/components/menu/menu-popover.test.tsx`, `e2e/menu.spec.ts`
@@ -140,28 +140,28 @@ Verification: `src/components/menu/menu-item.test.tsx`
 
 ### UIC-MENU-5.1 - Filterable menu
 
-With `filterable`, the menu shall be led by a React Aria search field (`ui-menu__search`, its input `ui-menu__search-input`, named and hinted by the provider's `search` string) inside a React Aria `Autocomplete`, which keeps only the items whose text contains the typed text, ignoring case and accents. Focus stays in the field: the first match is highlighted as the reader types (the field's `aria-activedescendant`), Arrow Down and Arrow Up move the highlight, Enter activates the highlighted item, and Escape clears the text, then closes the menu. A menu opened from a trigger focuses the field on open; a standalone menu leaves focus where it is. While nothing matches, the menu shows the provider's `noResults` string in `ui-menu__empty`, unless the caller's `renderEmptyState` says otherwise.
+With `filterable`, the menu shall be led by a search field (`ui-menu__search`, its input `ui-menu__search-input`, named and hinted by the provider's `search` string), built on React Aria's `SearchField` and `Autocomplete`, which keeps only the items whose text contains the typed text, ignoring case and accents. Focus stays in the field: the first match is highlighted as the reader types (the field's `aria-activedescendant`), Arrow Down and Arrow Up move the highlight, Enter activates the highlighted item, and Escape clears the text, then closes the menu. A menu opened from a trigger focuses the field on open; a standalone menu leaves focus where it is. While nothing matches, the menu shows the provider's `noResults` string in `ui-menu__empty`, unless the caller's `renderEmptyState` says otherwise.
 
 Implementation: `src/components/menu/menu.tsx`
 Verification: `src/components/menu/menu.test.tsx`, `e2e/menu.spec.ts`
 
 ### UIC-MENU-5.2 - Loading more
 
-`onLoadMore` or `isLoading` shall end the menu, children or data, with React Aria's `MenuLoadMoreItem` ([UIC-COLLECTIONS-1.2](COLLECTIONS.md#uic-collections-12---loading-more-inside-a-collection)), which calls `onLoadMore` when it scrolls into view while `isLoading` is false. While `isLoading`, it draws a row (`ui-menu__load-more`) holding a decorative busy indicator (`ui-menu__load-more-spinner`) and the provider's `loading` string; an empty menu then shows that row alone, without its empty state.
+`onLoadMore` or `isLoading` shall end the menu, children or data, with a loading sentinel ([UIC-COLLECTIONS-1.2](COLLECTIONS.md#uic-collections-12---loading-more-inside-a-collection)), which calls `onLoadMore` when it scrolls into view while `isLoading` is false. While `isLoading`, it draws a row (`ui-menu__load-more`) holding a decorative busy indicator (`ui-menu__load-more-spinner`) and the provider's `loading` string; an empty menu then shows that row alone, without its empty state.
 
 Implementation: `src/components/menu/menu.tsx`
 Verification: `src/components/menu/menu.test.tsx`, `e2e/menu.spec.ts`
 
 ### UIC-MENU-5.3 - Virtualized menu
 
-A menu given as children or as data shall render inside a React Aria `Virtualizer` with a `ListLayout` ([UIC-COLLECTIONS-1.1](COLLECTIONS.md#uic-collections-11---virtualized-rendering)), drawing only the rows in view of its scroll container (its `MenuPopover`, or the page), while keyboard navigation reaches every item and each row keeps its hooks, `aria-setsize` and `aria-posinset`. Filtering and loading more work the same in a virtualized menu.
+With `virtualized`, a menu given as children or as data shall render through React Aria's `Virtualizer` with a list layout ([UIC-COLLECTIONS-1.1](COLLECTIONS.md#uic-collections-11---virtualized-rendering)) and publish `data-virtualized`, drawing only the rows in view of its scroll container (its `MenuPopover`, or the page), each `rowHeight` pixels high (by default 24, 28 or 32 at size `sm`, `md` or `lg`, [UIC-COLLECTIONS-1.4](COLLECTIONS.md#uic-collections-14---layout-options)), while keyboard navigation reaches every item and each row keeps its hooks, `aria-setsize` and `aria-posinset`. Filtering and loading more work the same in a virtualized menu.
 
 Implementation: `src/components/menu/menu.tsx`
 Verification: `src/components/menu/menu.test.tsx`, `e2e/menu.spec.ts`
 
 ### UIC-MENU-5.4 - Highlighted matches
 
-With `highlightMatches`, the menu shall mark the text typed in the search field of the enclosing React Aria `Autocomplete` (its own with `filterable`, or a [Command Palette](COMMAND-PALETTE.md)'s) in the labels of its data entries and their submenus, through [Text Match](TEXT-MATCH.md) ignoring case and accents, and in any `TextMatch` its children draw. Marks only split the label's text, so names, type-to-select and filtering are unchanged. Without it, labels stay plain text even inside a `TextMatchProvider`.
+With `highlightMatches`, the menu shall mark the text typed in the enclosing search field (its own with `filterable`, or a [Command Palette](COMMAND-PALETTE.md)'s) in the labels of its data entries and their submenus, through [Text Match](TEXT-MATCH.md) ignoring case and accents, and in any `TextMatch` its children draw. Marks only split the label's text, so names, type-to-select and filtering are unchanged. Without it, labels stay plain text even inside a `TextMatchProvider`.
 
 Implementation: `src/components/menu/menu.tsx`
 Verification: `src/components/menu/menu.test.tsx`, `e2e/menu.spec.ts`
@@ -173,6 +173,7 @@ Verification: `src/components/menu/menu.test.tsx`, `e2e/menu.spec.ts`
 | `ui-menu`                         | root      |                                                                               | The `role="menu"` list.                                             |
 | `data-size`                       | attribute | `sm`, `md`, `lg`                                                              | Row density.                                                        |
 | `data-empty`                      | state     | `true`                                                                        | The menu has no items, or the search field no text (React Aria).    |
+| `data-virtualized`                | state     | `true`                                                                        | Only the rows in view render.                                       |
 | `ui-menu__search`                 | slot      |                                                                               | The search field of a filterable menu.                              |
 | `ui-menu__search-input`           | slot      |                                                                               | Its text input (`role="searchbox"`).                                |
 | `ui-menu__empty`                  | slot      |                                                                               | The no-match message of a filterable menu.                          |

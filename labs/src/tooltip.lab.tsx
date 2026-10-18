@@ -1,4 +1,3 @@
-import { Button as AriaButton } from '../../src/primitives/index.js';
 import { Button } from '../../src/components/button/button.js';
 import { Icon } from '../../src/components/icon/icon.js';
 import { IconButton } from '../../src/components/icon-button/icon-button.js';
@@ -87,9 +86,9 @@ mountLab(
         render={({ label }) => (
           <div style={{ padding: 24 }}>
             <Tooltip relationship="label" content={label}>
-              <AriaButton>
+              <Button variant="ghost">
                 <Icon glyph={label === 'Undo' ? 'undo' : label === 'Redo' ? 'redo' : 'refresh'} />
-              </AriaButton>
+              </Button>
             </Tooltip>
           </div>
         )}

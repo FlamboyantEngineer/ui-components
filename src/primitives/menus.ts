@@ -13,14 +13,4 @@ export {
   SubmenuTrigger,
   useFilter,
 } from 'react-aria-components';
-export type {
-  AutocompleteProps,
-  MenuItemProps,
-  MenuItemRenderProps,
-  MenuLoadMoreItemProps,
-  MenuProps,
-  MenuSectionProps,
-  MenuTriggerProps,
-  RootMenuTriggerState,
-  SubmenuTriggerProps,
-} from 'react-aria-components';
+export type { AutocompleteProps, RootMenuTriggerState } from 'react-aria-components';

@@ -3,19 +3,20 @@ import {
   Autocomplete,
   AutocompleteStateContext,
   Input,
+  ListLayout,
   Menu as AriaMenu,
   MenuContext,
   MenuLoadMoreItem,
+  MenuTrigger as AriaMenuTrigger,
   SearchField,
-  SubmenuTrigger,
+  SubmenuTrigger as AriaSubmenuTrigger,
   useFilter,
   useSlottedContext,
-  type Key,
-  type MenuLoadMoreItemProps,
-  type MenuProps as AriaMenuProps,
+  Virtualizer,
 } from '../../primitives/index.js';
+import type { AriaLabellingProps, OpenStateProps, SelectionProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { TextMatch, TextMatchProvider } from '../text-match/text-match.js';
 import { MenuSizeContext, type MenuSize } from './menu-context.js';
@@ -24,7 +25,7 @@ import {
   MenuSection,
   MenuSeparator,
   type MenuItemProps,
-  type MenuItemRenderProps,
+  type MenuItemRenderState,
   type MenuSectionProps,
 } from './menu-item.js';
 import { MenuPopover } from './menu-popover.js';
@@ -37,7 +38,7 @@ export interface MenuItemEntry extends Omit<MenuItemProps, 'id' | 'children' | '
   label: string;
   items?: readonly MenuEntry[] | undefined;
   /** Custom content, drawn instead of the default layout. */
-  renderContent?: ((state: MenuItemRenderProps) => ReactNode) | undefined;
+  renderContent?: ((state: MenuItemRenderState) => ReactNode) | undefined;
 }
 
 /** A group of entries with an optional title and its own selection. */
@@ -55,24 +56,43 @@ export interface MenuSeparatorEntry {
 
 export type MenuEntry = MenuItemEntry | MenuSectionEntry | MenuSeparatorEntry;
 
-export interface MenuProps
-  extends
-    Omit<
-      AriaMenuProps<object>,
-      'className' | 'style' | 'children' | 'items' | 'dependencies' | 'render'
-    >,
-    Pick<MenuLoadMoreItemProps, 'onLoadMore' | 'isLoading'>,
-    BaseProps {
+export interface MenuProps extends BaseProps, AriaLabellingProps, SelectionProps {
   /** Entries as data, used when there are no `children`. */
   items?: readonly MenuEntry[] | undefined;
   /** `MenuItem`, `MenuSection`, `MenuSeparator` and `SubmenuTrigger` elements. */
   children?: ReactNode;
+  /** Called with the `id` of the item activated. A submenu without its own reports here. */
+  onAction?: ((key: Key) => void) | undefined;
+  /** Whether activating an item closes the menu. Defaults to true, except in multiple selection. */
+  shouldCloseOnSelect?: boolean | undefined;
+  /** Shown while the menu has no items. */
+  renderEmptyState?: (() => ReactNode) | undefined;
   /** Row density. Submenus inherit it. Defaults to `md`. */
   size?: MenuSize | undefined;
   /** Leads the menu with a search field that narrows the items while focus stays in it. */
   filterable?: boolean | undefined;
   /** Marks the text typed in the enclosing search field (its own, or a command palette's) in the labels. */
   highlightMatches?: boolean | undefined;
+  /** Renders only the rows in view of the scroll container, for long menus. */
+  virtualized?: boolean | undefined;
+  /** The height of every row of a virtualized menu, in pixels. Defaults to 24, 28 or 32 by `size`. */
+  rowHeight?: number | undefined;
+  /** Called when the end of the menu scrolls into view while `isLoading` is false. */
+  onLoadMore?: (() => void) | undefined;
+  /** More items are loading: the menu ends with a loading row. */
+  isLoading?: boolean | undefined;
+}
+
+/** A trigger and the `MenuPopover` it opens. */
+export interface MenuTriggerProps extends OpenStateProps {
+  /** The trigger (a `Button`, an `IconButton` or another pressable), then its `MenuPopover`. */
+  children: ReactNode;
+}
+
+/** A `MenuItem` and the submenu it opens. */
+export interface SubmenuTriggerProps {
+  /** The `MenuItem` that opens the submenu, then the submenu's `MenuPopover`. */
+  children: ReactElement[];
 }
 
 const hooks = createHooks('menu', [
@@ -84,6 +104,8 @@ const hooks = createHooks('menu', [
 ]);
 
 const MenuActionContext = createContext<MenuProps['onAction']>(undefined);
+
+const defaultRowHeights: Record<MenuSize, number> = { sm: 24, md: 28, lg: 32 };
 
 function renderEntries(entries: readonly MenuEntry[], highlight: boolean): ReactElement[] {
   return entries.map((entry) => renderEntry(entry, highlight));
@@ -175,11 +197,28 @@ function useEmptyState({ renderEmptyState, isLoading, filterable }: MenuProps) {
   return () => <span {...hooks.slot('empty')}>{strings.noResults}</span>;
 }
 
+/** Renders only the rows in view (React Aria `Virtualizer` with a list layout). */
+function MenuVirtualizer({
+  rowHeight,
+  children,
+}: {
+  rowHeight: number | undefined;
+  children: ReactElement;
+}) {
+  const size = useContext(MenuSizeContext);
+  const height = rowHeight ?? defaultRowHeights[size];
+  return (
+    <Virtualizer layout={ListLayout} layoutOptions={{ rowHeight: height, loaderHeight: height }}>
+      {children}
+    </Virtualizer>
+  );
+}
+
 /**
  * A list of actions or options (React Aria `Menu`), standalone or in a `MenuPopover`. A submenu's
  * `Menu` without its own `onAction` reports to the menu that opens it. It can lead with a search
- * field that filters its items, mark the typed text in their labels, and end with a sentinel that
- * loads more of them.
+ * field that filters its items, mark the typed text in their labels, render only the rows in view,
+ * and end with a sentinel that loads more of them.
  */
 export function Menu(props: MenuProps) {
   const {
@@ -190,20 +229,22 @@ export function Menu(props: MenuProps) {
     onAction,
     filterable,
     highlightMatches = false,
+    virtualized = false,
+    rowHeight,
     onLoadMore,
     isLoading,
     ...rest
   } = props;
   const inheritedSize = useContext(MenuSizeContext);
   const inheritedAction = useContext(MenuActionContext);
-  const trigger = useSlottedContext(MenuContext);
-  const renderEmptyState = useEmptyState(props);
   const resolvedSize = size ?? inheritedSize;
   const action = onAction ?? inheritedAction;
+  const trigger = useSlottedContext(MenuContext);
+  const renderEmptyState = useEmptyState(props);
   let menu = (
     <AriaMenu
       {...rest}
-      {...hooks.root({ className, props: rest, data: { size: resolvedSize } })}
+      {...hooks.root({ className, props: rest, data: { size: resolvedSize, virtualized } })}
       onAction={action}
       renderEmptyState={renderEmptyState}
     >
@@ -213,6 +254,7 @@ export function Menu(props: MenuProps) {
       ) : null}
     </AriaMenu>
   );
+  if (virtualized) menu = <MenuVirtualizer rowHeight={rowHeight}>{menu}</MenuVirtualizer>;
   // An explicit `aria-label` names the menu instead of the trigger that would label it.
   if (rest['aria-label'] && trigger && 'aria-labelledby' in trigger) {
     const { 'aria-labelledby': _labelledBy, ...unlabelled } = trigger;
@@ -227,17 +269,27 @@ export function Menu(props: MenuProps) {
   );
 }
 
+/**
+ * Opens its `MenuPopover` from its trigger (React Aria `MenuTrigger`): on press, Enter or Space,
+ * and on Arrow Down or Arrow Up, which focus the first or last item.
+ */
+export function MenuTrigger({ children, ...openState }: MenuTriggerProps) {
+  return <AriaMenuTrigger {...openState}>{children}</AriaMenuTrigger>;
+}
+
+/** Makes its `MenuItem` open the `MenuPopover` beside it (React Aria `SubmenuTrigger`). */
+export function SubmenuTrigger({ children }: SubmenuTriggerProps) {
+  return <AriaSubmenuTrigger>{children}</AriaSubmenuTrigger>;
+}
+
 export { MenuItem, MenuSection, MenuSeparator } from './menu-item.js';
 export type {
   MenuItemProps,
-  MenuItemRenderProps,
+  MenuItemRenderState,
   MenuItemTone,
   MenuSectionProps,
   MenuSeparatorProps,
 } from './menu-item.js';
-export { MenuPopover } from './menu-popover.js';
-export type { MenuPopoverProps } from './menu-popover.js';
+export { MenuOverlay, MenuPopover } from './menu-popover.js';
+export type { MenuOverlayProps, MenuPopoverProps } from './menu-popover.js';
 export type { MenuSize } from './menu-context.js';
-/** Opens a `MenuPopover` from a pressable trigger such as a `Button` (React Aria). */
-export { MenuTrigger, SubmenuTrigger } from '../../primitives/index.js';
-export type { MenuTriggerProps, SubmenuTriggerProps } from '../../primitives/index.js';

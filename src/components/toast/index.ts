@@ -1,11 +1,10 @@
-export { Toast, ToastList, ToastRegion, createToastQueue } from './toast.js';
+export { ToastList, ToastRegion, createToastQueue } from './toast.js';
 export type {
   ToastAction,
   ToastAddOptions,
   ToastContent,
   ToastListProps,
   ToastPromiseContents,
-  ToastProps,
   ToastQueue,
   ToastQueueOptions,
   ToastRegionProps,

@@ -1,22 +1,31 @@
-import { useContext, useRef, type ContextType, type ReactNode } from 'react';
+import { useContext, useRef, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import {
   Modal as AriaModal,
   ModalOverlay,
   OverlayTriggerStateContext,
-  type ModalOverlayProps,
-  type Placement,
 } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
+import type { OpenStateProps, OverlayDismissProps } from '../../core/events.js';
 import { createHooks, dataAttributes, type HookProps } from '../../core/hooks.js';
+import type { Placement } from '../../core/props.js';
 import { useEnterExit } from '../../utils/use-enter-exit.js';
 import { PopoverPanel } from '../popover/popover.js';
 import { useLayerZIndex } from '../portal/portal.js';
 
-/** The open state React Aria overlays share through `OverlayTriggerStateContext`. */
-export type ModalOpenState = NonNullable<ContextType<typeof OverlayTriggerStateContext>>;
+/** The open state a dialog shares with the overlays and trigger around it. */
+export interface ModalOpenState {
+  readonly isOpen: boolean;
+  setOpen: (isOpen: boolean) => void;
+  open: () => void;
+  close: () => void;
+  toggle: () => void;
+  /** Where a pointer opened it; always null for a dialog. */
+  readonly point: { x: number; y: number } | null;
+  setPoint: (point: { x: number; y: number }) => void;
+}
 
-export type ModalOpenOptions = Pick<ModalOverlayProps, 'isOpen' | 'defaultOpen' | 'onOpenChange'>;
+export type ModalOpenOptions = OpenStateProps;
 
 export interface ModalPresentationProps {
   state: ModalOpenState;
@@ -28,9 +37,9 @@ export interface ModalPresentationProps {
 
 /** How the dialog may be dismissed, already narrowed by `isDismissDisabled`. */
 export type ModalDismissal = Required<
-  Pick<ModalOverlayProps, 'isDismissable' | 'isKeyboardDismissDisabled'>
+  Pick<OverlayDismissProps, 'isDismissable' | 'isKeyboardDismissDisabled'>
 > &
-  Pick<ModalOverlayProps, 'shouldCloseOnInteractOutside'>;
+  Pick<OverlayDismissProps, 'shouldCloseOnInteractOutside'>;
 
 export interface BlockingModalProps
   extends Omit<ModalPresentationProps, 'state'>, ModalDismissal, ModalOpenOptions {}

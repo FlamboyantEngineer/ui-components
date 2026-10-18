@@ -8,20 +8,21 @@ import {
   useLayoutEffect,
   useRef,
   useState,
-  type ContextType,
   type KeyboardEvent,
   type RefObject,
 } from 'react';
-import type { RootMenuTriggerStateContext } from '../../primitives/index.js';
 import type { Orientation } from '../../core/props.js';
 import type { MenuSize } from '../menu/menu.js';
 import { resolveMenubarKey, type MenubarKeyAction, type MenubarKeyPlace } from './menubar-keys.js';
 
-/** React Aria's state of one top-level item's menu, which also tracks its open submenus. */
-type MenubarMenuState = NonNullable<ContextType<typeof RootMenuTriggerStateContext>>;
+/** Where focus goes in a menu the bar opens: its first or last item, or (`null`) the menu itself. */
+type MenuFocus = 'first' | 'last' | null;
 
-/** Where focus goes in a menu the bar opens: its first item, or (`null`) the menu itself. */
-type MenuFocus = Parameters<MenubarMenuState['open']>[0];
+/** The part of a top-level item's menu state the bar drives; closing also closes its submenus. */
+interface MenubarMenuState {
+  open: (focus: MenuFocus) => void;
+  close: () => void;
+}
 
 interface MenubarContextValue {
   orientation: Orientation;

@@ -37,7 +37,7 @@ function dismissalProps(dismissal: (typeof dismissals)[number]): Partial<DrawerP
     case 'Escape refused':
       return { isKeyboardDismissDisabled: true };
     default:
-      return { preventDismissal: true };
+      return { isDismissDisabled: true };
   }
 }
 

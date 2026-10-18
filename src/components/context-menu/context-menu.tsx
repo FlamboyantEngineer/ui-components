@@ -2,19 +2,21 @@ import {
   Children,
   cloneElement,
   isValidElement,
+  useCallback,
   useMemo,
   useRef,
+  useState,
   type ReactNode,
   type RefObject,
 } from 'react';
 import {
   MenuContext,
   RootMenuTriggerStateContext,
-  type Placement,
+  type RootMenuTriggerState,
 } from '../../primitives/index.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, Key, Placement } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { Menu, MenuPopover, type MenuPopoverProps } from '../menu/menu.js';
+import { Menu, MenuOverlay, type MenuPopoverProps } from '../menu/menu.js';
 import { useContextMenuTarget, type ContextMenuTargetProps } from './context-menu-target.js';
 import { useMenuAnchor } from './menu-anchor.js';
 import {
@@ -22,7 +24,7 @@ import {
   useMenuController,
   type MenuController,
 } from './menu-controller.js';
-import { useCloseOnSecondaryPress, useRootMenuState } from './menu-state.js';
+import { useCloseOnSecondaryPress } from './menu-state.js';
 
 export { useMenuController } from './menu-controller.js';
 
@@ -55,6 +57,42 @@ export interface ContextMenuTriggerProps extends Omit<
 }
 
 /**
+ * The root menu state React Aria reads for submenus and to close a whole menu tree, for a menu
+ * whose open state lives elsewhere. `close` empties the submenu stack, then calls `onClose`.
+ */
+function useRootMenuState(isOpen: boolean, onClose: () => void): RootMenuTriggerState {
+  const [expandedKeysStack, setExpandedKeysStack] = useState<Key[]>([]);
+  const close = useCallback(() => {
+    setExpandedKeysStack([]);
+    onClose();
+  }, [onClose]);
+  return useMemo<RootMenuTriggerState>(
+    () => ({
+      isOpen,
+      focusStrategy: 'first',
+      point: null,
+      setPoint: () => {},
+      setOpen: (open) => {
+        if (!open) close();
+      },
+      open: () => {},
+      toggle: close,
+      close,
+      expandedKeysStack,
+      openSubmenu: (triggerKey, level) =>
+        setExpandedKeysStack((stack) =>
+          level > stack.length ? stack : [...stack.slice(0, level), triggerKey],
+        ),
+      closeSubmenu: (triggerKey, level) =>
+        setExpandedKeysStack((stack) =>
+          stack[level] === triggerKey ? stack.slice(0, level) : stack,
+        ),
+    }),
+    [isOpen, close, expandedKeysStack],
+  );
+}
+
+/**
  * A menu opened, moved and closed through a `MenuController`, at a viewport point or against an
  * element. Focus enters the first item on open and returns where it was on close.
  */
@@ -82,7 +120,7 @@ export function ContextMenu({
     <>
       <span ref={fallbackRef} hidden />
       <RootMenuTriggerStateContext.Provider value={state}>
-        <MenuPopover
+        <MenuOverlay
           {...rest}
           {...anchorProps}
           aria-label={label}
@@ -94,7 +132,7 @@ export function ContextMenu({
           <MenuContext.Provider value={menuDefaults}>
             {children ?? <Menu items={items ?? []} />}
           </MenuContext.Provider>
-        </MenuPopover>
+        </MenuOverlay>
       </RootMenuTriggerStateContext.Provider>
     </>
   );

@@ -1,7 +1,8 @@
 import { useMemo, useState, type RefObject } from 'react';
-import { useLocale, type Placement } from '../../primitives/index.js';
+import { useLocale } from '../../primitives/index.js';
+import type { Placement } from '../../core/props.js';
 import { createOverlayPointRect } from '../../utils/overlay-position.js';
-import type { MenuPopoverProps } from '../menu/menu.js';
+import type { MenuOverlayProps } from '../menu/menu.js';
 import { isElementAnchor, type MenuAnchor } from './menu-controller.js';
 
 export interface MenuAnchorOptions {
@@ -13,7 +14,7 @@ export interface MenuAnchorOptions {
 }
 
 export type MenuAnchorProps = Pick<
-  MenuPopoverProps,
+  MenuOverlayProps,
   'triggerRef' | 'getTargetRect' | 'placement' | 'offset'
 >;
 

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Key, Selection } from '../../src/primitives/index.js';
+import type { Key, Selection } from '../../src/core/props.js';
 import type { ButtonVariant } from '../../src/components/button/button.js';
 import { DropdownMenu } from '../../src/components/dropdown-menu/dropdown-menu.js';
 import { MenuItem, MenuSection, type MenuEntry } from '../../src/components/menu/menu.js';

@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
-import type { DialogProps, ModalOverlayProps, Placement } from '../../primitives/index.js';
+import { DialogTrigger } from '../../primitives/index.js';
+import type { OpenStateProps, OverlayDismissProps } from '../../core/events.js';
 import { createHooks, splitDataAttributes } from '../../core/hooks.js';
-import type { BaseProps, Size, Tone } from '../../core/props.js';
+import type { BaseProps, Placement, Size, Tone } from '../../core/props.js';
 import type { ButtonProps, ButtonVariant } from '../button/button.js';
 import { ModalDialog } from './modal-dialog.js';
 import type { ModalFocusTarget } from './modal-focus.js';
@@ -56,19 +57,22 @@ export interface ModalRenderProps {
   close: () => void;
 }
 
-export interface ModalProps
-  extends
-    Pick<
-      ModalOverlayProps,
-      | 'isOpen'
-      | 'defaultOpen'
-      | 'onOpenChange'
-      | 'isDismissable'
-      | 'isKeyboardDismissDisabled'
-      | 'shouldCloseOnInteractOutside'
-    >,
-    Pick<DialogProps, 'role' | 'aria-label' | 'aria-describedby'>,
-    BaseProps {
+/** A pressable trigger and the `Modal` it opens. */
+export interface ModalTriggerProps extends OpenStateProps {
+  /** The trigger (a `Button` or another pressable), then its `Modal`. */
+  children: ReactNode;
+}
+
+/** `alertdialog` marks a decision that interrupts the reader. */
+export type ModalRole = 'dialog' | 'alertdialog';
+
+export interface ModalProps extends OpenStateProps, OverlayDismissProps, BaseProps {
+  /** Defaults to `dialog`. */
+  role?: ModalRole | undefined;
+  /** Names the dialog instead of its title. */
+  'aria-label'?: string | undefined;
+  /** Describes the dialog when it has no `description`. */
+  'aria-describedby'?: string | undefined;
   /** Refuses every way of dismissing: Cancel, the close button, Escape and outside presses. */
   isDismissDisabled?: boolean | undefined;
   /** The heading, which also names the dialog unless `aria-label` is given. */
@@ -111,7 +115,7 @@ export interface ModalProps
   onExitComplete?: (() => void) | undefined;
   /** Floats the dialog over the page without blocking it: no focus trap, the page stays usable. */
   isNonModal?: boolean | undefined;
-  /** Anchors the dialog to its `DialogTrigger`'s trigger as a popover at this placement. */
+  /** Anchors the dialog to its `ModalTrigger`'s trigger as a popover at this placement. */
   placement?: Placement | undefined;
 }
 
@@ -192,6 +196,14 @@ export function Modal({
       {dialog}
     </BlockingModal>
   );
+}
+
+/**
+ * Opens the `Modal` among its children when its trigger, such as a `Button`, is pressed, and
+ * returns focus to the trigger when it closes.
+ */
+export function ModalTrigger({ children, ...openState }: ModalTriggerProps) {
+  return <DialogTrigger {...openState}>{children}</DialogTrigger>;
 }
 
 export { isModalPrimaryShortcut } from './modal-shortcut.js';

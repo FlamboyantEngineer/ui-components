@@ -136,7 +136,7 @@ function toMenuEntry(action: ActionRowAction, key: string, strings: UiStrings): 
   };
   return action.items?.length
     ? { ...entry, items: action.items }
-    : { ...entry, onPress: action.onPress };
+    : { ...entry, onPress: action.onPress as MenuItemEntry['onPress'] };
 }
 
 interface KeyedAction {
@@ -147,9 +147,9 @@ interface KeyedAction {
 /** The menu of the actions that do not fit, at the end of the row. */
 function OverflowMenu({ keyed, size }: { keyed: readonly KeyedAction[]; size: ButtonSize }) {
   const strings = useUiStrings();
-  const onAction: NonNullable<MenuProps['onAction']> = (key, value) => {
+  const onAction: NonNullable<MenuProps['onAction']> = (key) => {
     const owner = keyed.find(({ action }) => action.items && hasMenuKey(action.items, key));
-    owner?.action.onAction?.(key, value);
+    owner?.action.onAction?.(key);
   };
   return (
     <div {...hooks.slot('overflow')}>
