@@ -28,6 +28,8 @@ export interface LoadedPdf<
   outline: PdfOutlineNode[];
   /** The reader's rotation of every page, in degrees clockwise. */
   rotation: number;
+  /** Leaves the pages' annotations and links undrawn (UIC-PDF-VIEWER-2.5). */
+  hidesAnnotations?: boolean | undefined;
   /** Each page's size at 100% zoom and the reader's rotation, in points. */
   sizes: PdfSize[];
   /** A page's text content, fetched once and shared by its text layer and the search. */

@@ -1,0 +1,63 @@
+/* Find Bar: the find box, the count and the match buttons, then options, replacement and close. */
+
+.ui-find-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.ui-find-bar__query.ui-search-field {
+  flex: 1 1 140px;
+  width: auto;
+  min-width: 100px;
+  max-width: 260px;
+}
+
+.ui-find-bar__status {
+  min-width: 7ch;
+  color: var(--ref-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.ui-find-bar[data-pending] .ui-find-bar__status {
+  font-style: italic;
+}
+
+.ui-find-bar__replacement {
+  box-sizing: border-box;
+  flex: 1 1 140px;
+  min-width: 100px;
+  max-width: 260px;
+  height: 26px;
+  padding: 0 8px;
+  border: 1px solid var(--ref-border-strong);
+  border-radius: 13px;
+  background: var(--ref-canvas);
+  color: var(--ref-text);
+  font: inherit;
+}
+
+.ui-find-bar__replacement[data-hovered] {
+  border-color: var(--ref-text);
+}
+
+.ui-find-bar__replacement[data-focus-visible] {
+  outline: 2px solid var(--ref-focus);
+  outline-offset: 1px;
+}
+
+.ui-find-bar__previous,
+.ui-find-bar__next,
+.ui-find-bar__options,
+.ui-find-bar__replace,
+.ui-find-bar__replace-all {
+  flex: none;
+}
+
+.ui-find-bar__close {
+  flex: none;
+  margin-inline-start: auto;
+}

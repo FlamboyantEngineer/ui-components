@@ -343,28 +343,3 @@
   background: var(--ref-surface);
   font-size: 12px;
 }
-
-.ui-code-editor__search-input,
-.ui-code-editor__replace-input {
-  box-sizing: border-box;
-  flex: 1 1 120px;
-  min-width: 0;
-  height: 26px;
-  padding: 0 6px;
-  border: 1px solid var(--ref-border-strong);
-  border-radius: 4px;
-  background: var(--ref-canvas);
-  color: var(--ref-text);
-  font: 12px var(--ref-mono);
-}
-
-.ui-code-editor__search-input[data-focus-visible],
-.ui-code-editor__replace-input[data-focus-visible] {
-  outline: 2px solid var(--ref-focus);
-  outline-offset: -1px;
-}
-
-.ui-code-editor__search-status {
-  min-width: 56px;
-  color: var(--ref-muted);
-}

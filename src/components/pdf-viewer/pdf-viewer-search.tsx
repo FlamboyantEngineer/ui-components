@@ -1,10 +1,7 @@
 import type { RefObject } from 'react';
-import { Button, Input, SearchField, type Selection } from '../../primitives/index.js';
+import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import type { UiStrings } from '../../core/strings.js';
-import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
-import { Icon } from '../icon/icon.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { FindBar } from '../find-bar/find-bar.js';
 import { pdfViewerHooks as hooks } from './styling-hooks.js';
 import type { PdfSearchOptions } from './pdf-search.js';
 import type { PdfSearchState } from './use-pdf-search.js';
@@ -24,82 +21,31 @@ const optionKeys: readonly SearchOptionKey[] = [
   'wholeWords',
 ];
 
-/** What the result count reads: searching, no results, the current match of the total, or nothing. */
-function describeSearchStatus(search: PdfSearchState, strings: UiStrings): string {
-  if (search.isPending) return strings.searching;
-  if (search.total > 0) return strings.stepOfTotal(search.current + 1, search.total);
-  return search.query.trim() ? strings.noResults : '';
+/** The find options the menu turns on, every other one off. */
+function toSearchOptions(keys: ReadonlySet<Key>): PdfSearchOptions {
+  return Object.fromEntries(optionKeys.map((key) => [key, keys.has(key)]));
 }
 
-/** The find options a menu selection turns on, every other one off. */
-function toSearchOptions(keys: Selection): PdfSearchOptions {
-  const isOn = (key: SearchOptionKey) => keys === 'all' || keys.has(key);
-  return Object.fromEntries(optionKeys.map((key) => [key, isOn(key)]));
-}
-
-/** A menu of the find options, each one checked while it is on. */
-function PdfViewerSearchOptions({ search }: Pick<PdfViewerSearchProps, 'search'>) {
+/** The viewer's find row, a Find Bar: the find box, the result count, the match buttons and the options. */
+export function PdfViewerSearch({ search, fieldRef }: PdfViewerSearchProps) {
   const strings = useUiStrings();
   const { options, setOptions } = search;
   return (
-    <DropdownMenu
-      iconOnly
-      icon="chevron-down"
-      label={strings.findOptions}
-      size="sm"
-      selectionMode="multiple"
-      shouldCloseOnSelect={false}
-      selectedKeys={optionKeys.filter((key) => options[key])}
-      onSelectionChange={(keys) => setOptions(toSearchOptions(keys))}
-      items={optionKeys.map((key) => ({ id: key, label: strings[key] }))}
+    <FindBar
+      className={hooks.slotClass('group')}
+      label={strings.findInDocument}
+      placeholder={strings.findInDocument}
+      query={search.query}
+      onQueryChange={search.setQuery}
+      matchCount={search.query.trim() ? search.total : undefined}
+      currentIndex={search.current}
+      isPending={search.isPending}
+      onNext={search.findNext}
+      onPrevious={search.findPrevious}
+      options={optionKeys.map((key) => ({ id: key, label: strings[key] }))}
+      selectedOptions={optionKeys.filter((key) => options[key])}
+      onSelectedOptionsChange={(keys) => setOptions(toSearchOptions(keys))}
+      inputRef={fieldRef}
     />
-  );
-}
-
-/** The find box, the result count, the previous and next match buttons and the find options. */
-export function PdfViewerSearch({ search, fieldRef }: PdfViewerSearchProps) {
-  const strings = useUiStrings();
-  const hasMatches = search.total > 0;
-  return (
-    <div {...hooks.slot('group')}>
-      <SearchField
-        className={hooks.slotClass('search-field')}
-        aria-label={strings.findInDocument}
-        value={search.query}
-        onChange={search.setQuery}
-        onKeyDown={(event) => {
-          if (event.key !== 'Enter' || !hasMatches) return;
-          if (event.shiftKey) search.findPrevious();
-          else search.findNext();
-        }}
-      >
-        <Input
-          ref={fieldRef}
-          className={hooks.slotClass('search-input')}
-          placeholder={strings.findInDocument}
-        />
-        <Button className={hooks.slotClass('search-clear')}>
-          <Icon glyph="close" size="sm" />
-        </Button>
-      </SearchField>
-      <span {...hooks.slot('search-status')} role="status">
-        {describeSearchStatus(search, strings)}
-      </span>
-      <IconButton
-        icon="chevron-left"
-        label={strings.previousMatch}
-        size="sm"
-        isDisabled={!hasMatches}
-        onPress={search.findPrevious}
-      />
-      <IconButton
-        icon="chevron-right"
-        label={strings.nextMatch}
-        size="sm"
-        isDisabled={!hasMatches}
-        onPress={search.findNext}
-      />
-      <PdfViewerSearchOptions search={search} />
-    </div>
   );
 }

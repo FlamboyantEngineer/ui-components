@@ -295,4 +295,4 @@ export function stubIntersectionObserver() {
   };
 }
 
-export const searchStatus = () => document.querySelector('.ui-pdf-viewer__search-status');
+export const searchStatus = () => document.querySelector('.ui-pdf-viewer .ui-find-bar__status');

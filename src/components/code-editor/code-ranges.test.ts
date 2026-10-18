@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { findDiagnosticRange, findMatches, matchBracket } from './code-ranges.js';
+import { findDiagnosticRange, findMatches, matchBracket, toTextLines } from './code-ranges.js';
 
 const source = 'let total = 12\n  call(fruit)\n';
 
@@ -47,5 +47,17 @@ describe('code ranges', () => {
       { start: 2, end: 4 },
     ]);
     expect(findMatches('abc', '')).toEqual([]);
+  });
+
+  it('UIC-CODE-EDITOR-2.3 counts diagnostic lines again from the text start of an excerpt', () => {
+    const diagnostics = [
+      { message: 'a', line: 41, endLine: 42 },
+      { message: 'b', column: 3 },
+    ];
+    expect(toTextLines(diagnostics, 1)).toBe(diagnostics);
+    expect(toTextLines(diagnostics, 40)).toEqual([
+      { message: 'a', line: 2, endLine: 3 },
+      { message: 'b', column: 3, line: undefined, endLine: undefined },
+    ]);
   });
 });

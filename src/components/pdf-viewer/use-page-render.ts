@@ -125,7 +125,7 @@ function buildAnnotationLayer<V extends PdfViewport, C extends PdfTextContent>(
 
 /**
  * Starts drawing a page bitmap into `canvas`, scaled from the viewport to the canvas's device
- * pixels, with its annotations' appearances.
+ * pixels, with its annotations' appearances unless the document hides them.
  */
 export function renderPageBitmap<V extends PdfViewport, C extends PdfTextContent>(
   { loaded, page, viewport }: PageBitmap<V, C>,
@@ -136,7 +136,9 @@ export function renderPageBitmap<V extends PdfViewport, C extends PdfTextContent
     canvas,
     viewport,
     transform: ratio === 1 ? undefined : [ratio, 0, 0, ratio, 0, 0],
-    annotationMode: loaded.engine.AnnotationMode.ENABLE,
+    annotationMode: loaded.hidesAnnotations
+      ? loaded.engine.AnnotationMode.DISABLE
+      : loaded.engine.AnnotationMode.ENABLE,
   });
 }
 
@@ -186,10 +188,10 @@ export function usePageRender<V extends PdfViewport, C extends PdfTextContent>({
     const cancels = [
       drawPage(drawing, canvas),
       buildTextLayer(drawing, container, setTextLayer),
-      buildAnnotationLayer(drawing, annotationLayer, linkService),
+      loaded.hidesAnnotations ? null : buildAnnotationLayer(drawing, annotationLayer, linkService),
     ];
     return () => {
-      for (const cancel of cancels) cancel();
+      for (const cancel of cancels) cancel?.();
       setTextLayer(null);
     };
   }, [annotationLayerRef, canvasRef, isNear, layerRef, linkService, loaded, pageIndex, scale]);

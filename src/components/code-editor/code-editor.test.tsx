@@ -189,6 +189,40 @@ describe('CodeEditor', () => {
     });
   });
 
+  it('UIC-CODE-EDITOR-2.3 numbers an excerpt from its first line, and diagnostics follow it', () => {
+    const { container } = render(
+      <CodeEditor
+        aria-label="Source"
+        value={'one\ntwo\nthree'}
+        lineNumbers
+        firstLineNumber={120}
+        diagnostics={[
+          { message: 'Odd.', line: 121, column: 1, severity: 'warning' },
+          { message: 'Bad.', line: 122, column: 1, endLine: 122, endColumn: 3 },
+          { message: 'Elsewhere.', line: 4 },
+        ]}
+      />,
+    );
+    const lines = [...container.querySelectorAll('.ui-code-editor__line')];
+    expect(
+      lines.map((line) => line.querySelector('.ui-code-editor__line-number')?.textContent),
+    ).toEqual(['120', '121', '122']);
+    expect(lines.map((line) => line.getAttribute('data-severity'))).toEqual([
+      null,
+      'warning',
+      'error',
+    ]);
+    const marks = [...container.querySelectorAll('.ui-code-editor__mark')];
+    expect(marks.map((mark) => mark.textContent)).toEqual(['two', 'th']);
+    const listed = [...container.querySelectorAll('.ui-code-editor__diagnostics li')];
+    expect(listed.map((item) => item.textContent)).toEqual([
+      '121:1 Odd.',
+      '122:1 Bad.',
+      '4 Elsewhere.',
+    ]);
+    expectHooksMatchSpec(container, 'CODE-EDITOR', { slots: ['line-number', 'mark'] });
+  });
+
   it("UIC-CODE-EDITOR-2.2 gives the gutter the input's text width so wrapped lines keep one number", () => {
     vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(320);
     class ReportingObserver {

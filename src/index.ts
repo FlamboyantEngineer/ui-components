@@ -84,6 +84,7 @@ export * from './components/switch/index.js';
 export * from './components/form/index.js';
 export * from './components/color-swatch/index.js';
 export * from './components/search-field/index.js';
+export * from './components/find-bar/index.js';
 export * from './components/text-field/index.js';
 export * from './components/number-field/index.js';
 export * from './components/slider/index.js';

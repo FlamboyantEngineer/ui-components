@@ -272,6 +272,33 @@ const longSource = Array.from(
     `let row${index + 1} = "orchard row ${index + 1}, past the mill and the old stone bridge" // ${index % 3 ? 'pears' : 'apples'}`,
 ).join('\n');
 
+const excerpt = [
+  'let basket = "apples"',
+  'if (fruit.count > 12) {',
+  '  return pick(fruit.ripe, baskit, "pears")',
+  '}',
+  'return basket',
+].join('\n');
+
+/** Lines 41 to 45 of a longer text, with a problem the checker reports at the text's line 43. */
+function ExcerptEditor() {
+  return (
+    <CodeEditor
+      aria-label="Excerpt"
+      data-lab-editor="excerpt"
+      tokenize={tokenize}
+      size="sm"
+      lineNumbers
+      firstLineNumber={41}
+      isReadOnly
+      value={excerpt}
+      diagnostics={[
+        { message: 'Unknown name "baskit".', line: 43, column: 27, severity: 'warning' },
+      ]}
+    />
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -318,6 +345,12 @@ mountLab(
       description="Problems are underlined; rest the pointer on one, or on basket or pick, for a tip. F8 and Shift+F8 move between problems."
     >
       <ProblemsEditor />
+    </LabSection>
+    <LabSection
+      title="Excerpt"
+      description="Lines 41 to 45 of a longer text, read-only: the gutter starts at 41 and the warning the caller reports at line 43 marks that line. F8 shows its tip."
+    >
+      <ExcerptEditor />
     </LabSection>
     <LabSection
       title="Long source"
