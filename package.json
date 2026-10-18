@@ -66,12 +66,56 @@
     "check:structure": "node scripts/check-structure.mjs"
   },
   "peerDependencies": {
+    "@handlewithcare/react-prosemirror": "^3.2.11",
     "pdfjs-dist": "^6.2.0",
+    "prosemirror-commands": "^1.7.2",
+    "prosemirror-history": "^1.5.1",
+    "prosemirror-inputrules": "^1.5.1",
+    "prosemirror-keymap": "^1.2.3",
+    "prosemirror-model": "^1.25.12",
+    "prosemirror-schema-list": "^1.5.1",
+    "prosemirror-state": "^1.4.4",
+    "prosemirror-transform": "^1.12.2",
+    "prosemirror-view": "1.42.3",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-reconciler": "^0.33.0"
   },
   "peerDependenciesMeta": {
+    "@handlewithcare/react-prosemirror": {
+      "optional": true
+    },
     "pdfjs-dist": {
+      "optional": true
+    },
+    "prosemirror-commands": {
+      "optional": true
+    },
+    "prosemirror-history": {
+      "optional": true
+    },
+    "prosemirror-inputrules": {
+      "optional": true
+    },
+    "prosemirror-keymap": {
+      "optional": true
+    },
+    "prosemirror-model": {
+      "optional": true
+    },
+    "prosemirror-schema-list": {
+      "optional": true
+    },
+    "prosemirror-state": {
+      "optional": true
+    },
+    "prosemirror-transform": {
+      "optional": true
+    },
+    "prosemirror-view": {
+      "optional": true
+    },
+    "react-reconciler": {
       "optional": true
     }
   },
@@ -85,6 +129,7 @@
     "@axe-core/playwright": "^4.14.0",
     "@changesets/cli": "^3.0.3",
     "@eslint/js": "^10.0.1",
+    "@handlewithcare/react-prosemirror": "^3.2.11",
     "@playwright/test": "^1.61.1",
     "@testing-library/dom": "^10.4.2",
     "@testing-library/jest-dom": "^7.0.1",
@@ -102,8 +147,18 @@
     "pdfjs-dist": "^6.4.299",
     "playwright-core": "1.61.1",
     "prettier": "^3.8.1",
+    "prosemirror-commands": "^1.7.2",
+    "prosemirror-history": "^1.5.1",
+    "prosemirror-inputrules": "^1.5.1",
+    "prosemirror-keymap": "^1.2.3",
+    "prosemirror-model": "^1.25.12",
+    "prosemirror-schema-list": "^1.5.1",
+    "prosemirror-state": "^1.4.4",
+    "prosemirror-transform": "^1.12.2",
+    "prosemirror-view": "1.42.3",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
+    "react-reconciler": "^0.33.0",
     "typescript": "^6.0.2",
     "typescript-eslint": "^8.71.2",
     "vitest": "^4.1.11"
