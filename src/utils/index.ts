@@ -164,3 +164,5 @@ export type { BandScale, BandScaleOptions } from './band-scale.js';
 export { addTimeUnits, createTimeScale, floorToTimeUnit } from './time-scale.js';
 export type { TimeScale, TimeScaleOptions, TimeScaleUnit, TimeTickOptions } from './time-scale.js';
 export { defaultUrlSchemes, isSafeUrl } from './safe-url.js';
+export { encodeQr } from './encode-qr.js';
+export type { QrEncodeOptions, QrErrorCorrection, QrSymbol } from './encode-qr.js';
