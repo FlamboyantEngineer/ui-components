@@ -24,15 +24,8 @@ function highlighted() {
 describe('Combobox entry', () => {
   it('UIC-COMBOBOX-3.3 keeps the first enabled match highlighted so Enter picks it', async () => {
     const user = userEvent.setup();
-    const onSelectionChange = vi.fn();
-    render(
-      <Combobox
-        aria-label="Fruit"
-        defaultItems={fruit}
-        autoHighlight
-        onSelectionChange={onSelectionChange}
-      />,
-    );
+    const onChange = vi.fn();
+    render(<Combobox aria-label="Fruit" defaultItems={fruit} autoHighlight onChange={onChange} />);
     await user.type(input(), 'ap');
     expect(highlighted()).toBe('Grape');
     await user.type(input(), 'r');
@@ -41,7 +34,7 @@ describe('Combobox entry', () => {
     await user.type(input(), '{Backspace}p');
     expect(highlighted()).toBe('Apple');
     await user.keyboard('{Enter}');
-    expect(onSelectionChange).toHaveBeenCalledWith('apple');
+    expect(onChange).toHaveBeenCalledWith('apple');
     expect(input()).toHaveValue('Apple');
   });
 
@@ -54,14 +47,9 @@ describe('Combobox entry', () => {
 
   it('UIC-COMBOBOX-3.4 completes typed text inline and selects the added part', async () => {
     const user = userEvent.setup();
-    const onSelectionChange = vi.fn();
+    const onChange = vi.fn();
     render(
-      <Combobox
-        aria-label="Fruit"
-        defaultItems={fruit}
-        completesInline
-        onSelectionChange={onSelectionChange}
-      />,
+      <Combobox aria-label="Fruit" defaultItems={fruit} completesInline onChange={onChange} />,
     );
     expect(input()).toHaveAttribute('aria-autocomplete', 'both');
     await user.type(input(), 'ap');
@@ -81,7 +69,7 @@ describe('Combobox entry', () => {
     await user.keyboard('p');
     expect(input()).toHaveValue('apple');
     await user.keyboard('{Enter}');
-    expect(onSelectionChange).toHaveBeenCalledWith('apple');
+    expect(onChange).toHaveBeenCalledWith('apple');
     expect(input()).toHaveValue('Apple');
   });
 

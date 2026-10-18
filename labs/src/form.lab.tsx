@@ -43,6 +43,7 @@ function Booking() {
   return (
     <Form
       aria-label="Booking"
+      method="post"
       validationBehavior="aria"
       onSubmit={(event) => setSubmitted(readEntries(event))}
       data-lab-form="booking"

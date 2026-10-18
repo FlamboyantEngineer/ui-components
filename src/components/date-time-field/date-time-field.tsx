@@ -1,8 +1,5 @@
-import {
-  useLocale,
-  type DatePickerProps as AriaDatePickerProps,
-  type DateValue,
-} from '../../primitives/index.js';
+import { useLocale } from '../../primitives/index.js';
+import type { OpenStateProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import {
@@ -30,7 +27,10 @@ import {
   type DateTimeFieldMode,
 } from './date-values.js';
 
-/** A `YYYY-MM-DD`, `HH:mm` or UTC ISO text for a single mode, a `{ start, end }` range for a range. */
+/**
+ * An ISO 8601 text for a single mode (`YYYY-MM-DD`, `HH:mm`, `YYYY-MM-DDTHH:mm` or a zoned date and
+ * time), a `{ start, end }` range of them for a range mode.
+ */
 export type DateTimeFieldValue<M extends DateTimeFieldMode = 'date'> = M extends
   | 'date-range'
   | 'date-time-range'
@@ -38,22 +38,23 @@ export type DateTimeFieldValue<M extends DateTimeFieldMode = 'date'> = M extends
   : string | null;
 
 export interface DateTimeFieldProps<M extends DateTimeFieldMode = 'date'>
-  extends
-    FieldInputProps<DateTimeFieldValue<M>>,
-    Pick<
-      AriaDatePickerProps<DateValue>,
-      'isOpen' | 'defaultOpen' | 'onOpenChange' | 'isDateUnavailable' | 'hourCycle' | 'hideTimeZone'
-    > {
+  extends FieldInputProps<DateTimeFieldValue<M>>, OpenStateProps {
   /** `date` (the default), `time`, `date-time`, `date-range` or `date-time-range`. */
   mode?: M | undefined;
-  /** The earliest value allowed, in the mode's format (a date or an instant for a range). */
+  /** The earliest value allowed, as one end of the mode's value (a date for a date range). */
   minValue?: string | undefined;
-  /** The latest value allowed, in the mode's format (a date or an instant for a range). */
+  /** The latest value allowed, as one end of the mode's value (a date for a date range). */
   maxValue?: string | undefined;
   /** The smallest part of a time the segments edit. Defaults to `minute`. */
   granularity?: DateTimeFieldGranularity | undefined;
-  /** The IANA time zone the date and time modes edit instants in, instead of the local one. */
+  /** An IANA time zone: the date-time modes edit zoned values in it instead of floating ones. */
   timeZone?: string | undefined;
+  /** Shows the hours of a day in a 12 or 24 hour cycle, whatever the locale's. */
+  hourCycle?: 12 | 24 | undefined;
+  /** Leaves the time zone segment out of a zoned value. */
+  hideTimeZone?: boolean | undefined;
+  /** Refuses a `YYYY-MM-DD` date, such as a weekend: the calendar skips it and a typed one is invalid. */
+  isDateUnavailable?: ((date: string) => boolean) | undefined;
   /** Named values offered beside the calendar, such as `Last 7 days`. */
   presets?: readonly DateTimeFieldPreset<NonNullable<DateTimeFieldValue<M>>>[] | undefined;
   /** How the calendar heading shows its month. Defaults to `text`; `select` jumps by month and year. */
@@ -87,7 +88,7 @@ function useDateCheck(props: AnyDateTimeFieldProps, mode: DateTimeFieldMode) {
   const { locale } = useLocale();
   const options = { timeZone: props.timeZone, granularity: props.granularity };
   return (value: DateFieldValue): FieldIssue | null => {
-    const issue = findBoundIssue(value, mode, props);
+    const issue = findBoundIssue(value, mode, { ...props, ...options });
     if (issue) {
       const limit = formatDateValue(issue.limit, mode, { ...options, locale });
       const message =

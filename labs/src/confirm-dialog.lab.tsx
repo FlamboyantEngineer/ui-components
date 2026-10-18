@@ -1,5 +1,4 @@
 import { useRef, useState } from 'react';
-import { DialogTrigger } from '../../src/primitives/index.js';
 import { Button } from '../../src/components/button/button.js';
 import {
   ConfirmDialog,
@@ -7,6 +6,7 @@ import {
   type ConfirmDialogTone,
 } from '../../src/components/confirm-dialog/confirm-dialog.js';
 import { alert, prompt } from '../../src/components/confirm-dialog/imperative-dialogs.js';
+import { ModalTrigger } from '../../src/components/modal/modal.js';
 import {
   ModalHost,
   createModalController,
@@ -161,7 +161,7 @@ function Anchored() {
   const [answer, setAnswer] = useState('none');
   return (
     <>
-      <DialogTrigger>
+      <ModalTrigger>
         <Button size="sm" data-lab-open="anchored">
           Remove Lima
         </Button>
@@ -175,7 +175,7 @@ function Anchored() {
           onConfirm={() => setAnswer('removed')}
           onCancel={() => setAnswer('kept')}
         />
-      </DialogTrigger>{' '}
+      </ModalTrigger>{' '}
       <output data-lab-output="anchored">{answer}</output>
     </>
   );

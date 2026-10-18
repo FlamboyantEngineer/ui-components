@@ -1,5 +1,5 @@
 import {
-  parseDate,
+  parseIsoDate,
   Calendar,
   RangeCalendar,
   SelectStateContext,
@@ -12,6 +12,7 @@ import {
   toValueDate,
   type RelativeDateBounds,
   type RelativeDateKind,
+  type RelativeDateRange,
   type RelativeDateValue,
 } from './relative-date.js';
 
@@ -19,22 +20,13 @@ export interface PresetCalendarProps {
   kind: RelativeDateKind;
   value: RelativeDateValue | null;
   bounds: RelativeDateBounds;
-  /** The field clock's day, which the calendar shows while there is no value. */
-  today: CalendarDate;
-  /** Receives the picked day, or the picked range of days. */
-  onPick: (picked: CalendarDate | { start: CalendarDate; end: CalendarDate }) => void;
+  /** The field clock's `YYYY-MM-DD` day, which the calendar shows while there is no value. */
+  today: string;
+  /** Receives the picked `YYYY-MM-DD` day, or the picked range of days. */
+  onPick: (picked: string | RelativeDateRange) => void;
 }
 
 const hooks = createHooks('relative-date-field', ['calendar']);
-
-function readDate(text: string | undefined): CalendarDate | null {
-  if (!text) return null;
-  try {
-    return parseDate(text);
-  } catch {
-    return null;
-  }
-}
 
 function useCalendarValues(value: RelativeDateValue | null, bounds: RelativeDateBounds) {
   const range = typeof value === 'object' ? value : null;
@@ -42,13 +34,13 @@ function useCalendarValues(value: RelativeDateValue | null, bounds: RelativeDate
   const start = range?.start;
   const end = range?.end;
   return useMemo(() => {
-    const startDate = readDate(start);
-    const endDate = readDate(end);
+    const startDate = parseIsoDate(start);
+    const endDate = parseIsoDate(end);
     return {
-      date: single ? toValueDate(single) : null,
+      date: single ? parseIsoDate(toValueDate(single)) : null,
       range: startDate && endDate ? { start: startDate, end: endDate } : null,
-      minValue: readDate(bounds.minValue),
-      maxValue: readDate(bounds.maxValue),
+      minValue: parseIsoDate(bounds.minValue),
+      maxValue: parseIsoDate(bounds.maxValue),
     };
   }, [single, start, end, bounds.minValue, bounds.maxValue]);
 }
@@ -60,14 +52,14 @@ function useCalendarValues(value: RelativeDateValue | null, bounds: RelativeDate
 export function PresetCalendar({ kind, value, bounds, today, onPick }: PresetCalendarProps) {
   const select = useContext(SelectStateContext);
   const values = useCalendarValues(value, bounds);
-  const pick: PresetCalendarProps['onPick'] = (picked) => {
+  const pick = (picked: string | RelativeDateRange) => {
     onPick(picked);
     select?.close();
   };
   const limits = {
     minValue: values.minValue,
     maxValue: values.maxValue,
-    defaultFocusedValue: today,
+    defaultFocusedValue: parseIsoDate(today),
   };
   if (kind === 'date-range') {
     return (
@@ -76,7 +68,7 @@ export function PresetCalendar({ kind, value, bounds, today, onPick }: PresetCal
         {...limits}
         value={values.range}
         onChange={(range: { start: CalendarDate; end: CalendarDate } | null) => {
-          if (range) pick(range);
+          if (range) pick({ start: range.start.toString(), end: range.end.toString() });
         }}
       >
         <CalendarBody months={1} heading="text" />
@@ -88,7 +80,7 @@ export function PresetCalendar({ kind, value, bounds, today, onPick }: PresetCal
       className={hooks.slotClass('calendar')}
       {...limits}
       value={values.date}
-      onChange={(date: CalendarDate) => pick(date)}
+      onChange={(date: CalendarDate) => pick(date.toString())}
     >
       <CalendarBody months={1} heading="text" />
     </Calendar>

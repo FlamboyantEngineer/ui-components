@@ -57,7 +57,7 @@ Verification: `src/components/tabs/tab-list.test.tsx`, `src/components/breadcrum
 
 ### UIC-OVERFLOW-LIST-2.1 - Swapping the root
 
-`render(props, state)` shall replace the root `<div>` as [COMPOSITION.md](COMPOSITION.md) describes: the caller's element receives the root's hooks, caller attributes and the ref the row measures with, and `state.isOverflowing`. A React Aria `Toolbar` rendered this way gives the visible items and the indicator arrow-key focus.
+`render(props, state)` shall replace the root `<div>` as [COMPOSITION.md](COMPOSITION.md) describes: the caller's element receives the root's hooks, caller attributes and the ref the row measures with, and `state.isOverflowing`. A [Toolbar Row](LAYOUT.md) rendered this way (starting at the inline start, without wrapping) gives the visible items and the indicator arrow-key focus.
 
 Implementation: `src/components/overflow-list/overflow-list.tsx`, `src/utils/render-element.ts`
 Verification: `src/components/overflow-list/overflow-list.test.tsx`, `e2e/overflow-list.spec.ts`

@@ -1,6 +1,5 @@
 import { useCallback, useState, type ReactNode } from 'react';
-import type { Key } from '../../primitives/index.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, Key } from '../../core/props.js';
 import { createSlotRegistry } from '../../utils/slot-registry.js';
 import {
   FieldContextMenu,
@@ -159,8 +158,10 @@ export { toAriaControlProps, useFieldControl } from './field-control.js';
 export type {
   FieldControl,
   FieldControlOptions,
+  FieldInputMode,
   FieldInputProps,
   FieldLayoutProps,
+  FieldTextInputProps,
 } from './field-control.js';
 export type { FieldMenuAction, FieldMenuEntry } from './field-menu.js';
 export { FieldPreviousValue } from './field-previous-value.js';

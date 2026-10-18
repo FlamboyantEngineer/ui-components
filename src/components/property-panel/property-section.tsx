@@ -5,11 +5,9 @@ import {
   DisclosureGroupStateContext,
   DisclosurePanel,
   Heading,
-  type DisclosureProps,
-  type Key,
 } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, Key } from '../../core/props.js';
 import { Glyph } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Badge } from '../badge/badge.js';
@@ -21,14 +19,19 @@ import {
 } from '../property-scope/property-scope.js';
 import type { HeadingLevel } from '../section-header/section-header.js';
 import { TextMatch } from '../text-match/text-match.js';
-import { OverrideMark, useSectionExpansion } from './property-disclosure.js';
+import {
+  OverrideMark,
+  useSectionExpansion,
+  type PropertyExpansionProps,
+} from './property-disclosure.js';
 
-export interface PropertySectionProps
-  extends
-    Omit<DisclosureProps, 'className' | 'style' | 'children' | 'render' | 'id'>,
-    Omit<BaseProps, 'id'> {
+export interface PropertySectionProps extends Omit<BaseProps, 'id'>, PropertyExpansionProps {
   /** The section's key among the panel's `expandedKeys`. */
   id?: Key | undefined;
+  /** Disables the trigger. */
+  isDisabled?: boolean | undefined;
+  /** Keeps the section mounted, with its rows' state, while removing it from layout and navigation. */
+  hidden?: boolean | undefined;
   /** The section's title, in its trigger. A query matches it for every row inside. */
   title: string;
   /** Supporting text at the top of the open section. */

@@ -4,12 +4,13 @@ import {
   UNSTABLE_Toast as AriaToast,
   UNSTABLE_ToastContent as AriaToastContent,
   UNSTABLE_ToastList as AriaToastList,
+  UNSTABLE_ToastQueue as AriaToastQueue,
   UNSTABLE_ToastRegion as AriaToastRegion,
   UNSTABLE_ToastStateContext as ToastStateContext,
   type QueuedToast,
-  type ToastRegionProps as AriaToastRegionProps,
   type ToastState,
 } from '../../primitives/index.js';
+import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks, measuredProperty, pickDataAttributes } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -20,10 +21,12 @@ import { Button } from '../button/button.js';
 import { IconButton } from '../icon-button/icon-button.js';
 import { Icon, toIconProps } from '../icon/icon.js';
 import {
+  createQueueOverStore,
   getToastLifecycle,
   type ToastAction,
   type ToastContent,
   type ToastQueue,
+  type ToastQueueOptions,
   type ToastTone,
 } from './toast-queue.js';
 import {
@@ -36,7 +39,6 @@ import {
 import { useToastPresence, useToastSnapshot, useToastTimer } from './use-toast-lifecycle.js';
 import { useToastSwipe } from './use-toast-swipe.js';
 
-export { createToastQueue } from './toast-queue.js';
 export type {
   ToastAction,
   ToastAddOptions,
@@ -50,19 +52,7 @@ export type {
 export type { ToastStackSettings } from './toast-stack.js';
 export type { ToastSwipeDirection } from './use-toast-swipe.js';
 
-export interface ToastProps extends BaseProps {
-  /** The queued toast to draw. */
-  toast: QueuedToast<ToastContent>;
-}
-
-export interface ToastRegionProps
-  extends
-    Omit<
-      AriaToastRegionProps<ToastContent>,
-      'queue' | 'children' | 'className' | 'style' | 'render'
-    >,
-    ToastStackSettings,
-    BaseProps {
+export interface ToastRegionProps extends ToastStackSettings, AriaLabellingProps, BaseProps {
   /** The queue whose toasts the region shows. */
   queue: ToastQueue;
 }
@@ -86,6 +76,15 @@ const listHooks = createHooks('toast-list');
 
 function isAssertive(tone: ToastTone): boolean {
   return tone === 'warning' || tone === 'danger';
+}
+
+/** The building block's queue behind each library queue. */
+const ariaQueues = new WeakMap<ToastQueue, AriaToastQueue<ToastContent>>();
+
+function getAriaQueue(queue: ToastQueue): AriaToastQueue<ToastContent> {
+  const ariaQueue = ariaQueues.get(queue);
+  if (!ariaQueue) throw new Error('A toast queue must come from createToastQueue.');
+  return ariaQueue;
 }
 
 function renderToast({ toast }: { toast: QueuedToast<ToastContent> }) {
@@ -135,11 +134,11 @@ function ToastActionButton({ action, toastKey }: { action: ToastAction; toastKey
  * action and a dismiss button. It renders inside a `ToastRegion` or `ToastList`, which supply its
  * queue; it follows in-place updates, plays its enter and exit, and can be swiped away.
  */
-export function Toast({ toast, className, ...rest }: ToastProps) {
+function Toast({ toast }: { toast: QueuedToast<ToastContent> }) {
   const strings = useUiStrings();
   const state = useContext(ToastStateContext);
   const lifecycle = getToastLifecycle(toast.content);
-  const snapshot = useToastSnapshot(toast, lifecycle);
+  const snapshot = useToastSnapshot(toast.content, lifecycle);
   const ref = useRef<HTMLDivElement>(null);
   const { isMounted, isEntering, isExiting } = useEnterExit(ref, snapshot.isOpen);
   useToastTimer(lifecycle ? toast.timer : undefined, snapshot);
@@ -168,13 +167,12 @@ export function Toast({ toast, className, ...rest }: ToastProps) {
   };
   return (
     <AriaToast
-      {...rest}
       {...swipe.swipeProps}
       ref={ref}
       // The queue's entry drives the timer (useToastTimer), so React Aria does not reset it.
       toast={lifecycle ? { ...toast, timeout: undefined } : toast}
       style={style}
-      {...toastHooks.root({ className, data })}
+      {...toastHooks.root({ data })}
     >
       {isPending ? (
         <span {...toastHooks.slot('spinner')} aria-hidden="true" />
@@ -216,7 +214,7 @@ export function ToastRegion({
       <AriaToastRegion
         {...rest}
         {...pointerHandlers}
-        queue={queue.ariaQueue}
+        queue={getAriaQueue(queue)}
         {...regionHooks.root({ className, data: { expanded: isExpanded } })}
       >
         <AriaToastList
@@ -235,12 +233,13 @@ export function ToastRegion({
  * for previews and pages that place a static stack themselves.
  */
 export function ToastList({
-  queue: { ariaQueue },
+  queue,
   swipeDirection,
   swipeThreshold,
   className,
   ...rest
 }: ToastListProps) {
+  const ariaQueue = getAriaQueue(queue);
   const stack = useToastStack({ swipeDirection, swipeThreshold });
   const visibleToasts = useSyncExternalStore(
     (onChange) => ariaQueue.subscribe(onChange),
@@ -271,4 +270,17 @@ export function ToastList({
       </ToastStateContext.Provider>
     </ToastStackProvider>
   );
+}
+
+/**
+ * Creates a toast queue: the host renders it in a `ToastRegion` (or a `ToastList`) and adds toasts
+ * to it from anywhere.
+ */
+export function createToastQueue(options: ToastQueueOptions = {}): ToastQueue {
+  const ariaQueue = new AriaToastQueue<ToastContent>({
+    maxVisibleToasts: options.maxVisibleToasts,
+  });
+  const queue = createQueueOverStore(ariaQueue, options);
+  ariaQueues.set(queue, ariaQueue);
+  return queue;
 }

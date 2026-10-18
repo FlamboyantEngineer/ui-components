@@ -20,7 +20,7 @@ Verification: `src/components/meter/meter.test.tsx`, `e2e/meter.spec.ts`
 
 ### UIC-METER-1.3 - Value text
 
-The value text shall default to React Aria's locale-formatted percentage; `formatOptions` changes the format (a unit such as gigabytes formats the value itself), and `valueLabel` replaces the text, both visibly and as `aria-valuetext`.
+The value text shall default to a locale-formatted percentage; `formatOptions` changes the format (a unit such as gigabytes formats the value itself), and `valueLabel` replaces the text, both visibly and as `aria-valuetext`.
 
 Implementation: `src/components/meter/meter.tsx`
 Verification: `src/components/meter/meter.test.tsx`, `e2e/meter.spec.ts`
@@ -55,7 +55,7 @@ Verification: `src/components/meter/meter.test.tsx`, `e2e/meter.spec.ts`
 
 ### UIC-METER-1.8 - Hooks and caller attributes
 
-`Meter` shall carry the hooks below, append the caller's `className`, forward `id`, `ref` and caller `data-*` attributes to its root, and keep React Aria's `render`; caller attributes never replace a hook attribute.
+`Meter` shall carry the hooks below, append the caller's `className`, forward `id`, `ref` and caller `data-*` attributes to its root, and take `render`, typed `ElementRender<'div', MeterRenderState>` (`percentage` and `valueText`); caller attributes never replace a hook attribute.
 
 Implementation: `src/components/meter/meter.tsx`
 Verification: `src/components/meter/meter.test.tsx`

@@ -13,7 +13,7 @@ Verification: `src/components/breadcrumb/breadcrumb.test.tsx`, `e2e/breadcrumb.s
 
 ### UIC-BREADCRUMB-1.2 - Current crumb
 
-The last crumb shall be the current page: it carries `aria-current="page"`, `aria-disabled="true"` and React Aria's `data-current` and `data-disabled`, renders as a `<span>` rather than an anchor, and is not focusable, whatever its `href`.
+The last crumb shall be the current page: it carries `aria-current="page"`, `aria-disabled="true"`, `data-current` and `data-disabled`, renders as a `<span>` rather than an anchor, and is not focusable, whatever its `href`.
 
 Implementation: `src/components/breadcrumb/breadcrumb.tsx`
 Verification: `src/components/breadcrumb/breadcrumb.test.tsx`, `e2e/breadcrumb.spec.ts`
@@ -48,7 +48,7 @@ Verification: `src/components/breadcrumb/breadcrumb.test.tsx`
 
 ### UIC-BREADCRUMB-1.7 - Overflow menu
 
-With `overflow="menu"` a trail of three crumbs or more shall render only the crumbs that fit in its list, as [`useOverflowItems`](OVERFLOW-LIST.md) measures them: the first crumb and the current one always stay, then as many as fit from the current end, at their natural width. While crumbs are hidden, an overflow crumb (`ui-breadcrumb__item` and `ui-breadcrumb__overflow`, an `<li>` followed by a separator) after the first crumb holds an icon-only [Dropdown Menu](DROPDOWN-MENU.md) named by the provider's `moreItems` text with the count, listing the hidden crumbs by their text (`textValue`, or a plain-text label) with their links; choosing one navigates to its link and calls `onAction` with its `id`. Hidden crumbs stay in React Aria's collection. `overflow` publishes `data-overflow` (`truncate` by default, or `menu`) on the root.
+With `overflow="menu"` a trail of three crumbs or more shall render only the crumbs that fit in its list, as [`useOverflowItems`](OVERFLOW-LIST.md) measures them: the first crumb and the current one always stay, then as many as fit from the current end, at their natural width. While crumbs are hidden, an overflow crumb (`ui-breadcrumb__item` and `ui-breadcrumb__overflow`, an `<li>` followed by a separator) after the first crumb holds an icon-only [Dropdown Menu](DROPDOWN-MENU.md) named by the provider's `moreItems` text with the count, listing the hidden crumbs by their text (`textValue`, or a plain-text label) with their links; choosing one navigates to its link and calls `onAction` with its `id`. Hidden crumbs stay in the trail's collection. `overflow` publishes `data-overflow` (`truncate` by default, or `menu`) on the root.
 
 Implementation: `src/components/breadcrumb/breadcrumb.tsx`, `src/components/breadcrumb/crumb-overflow.tsx`, `src/components/overflow-list/visible-collection.tsx`, `labs/reference/breadcrumb.css`
 Verification: `src/components/breadcrumb/breadcrumb.test.tsx`, `e2e/breadcrumb.spec.ts`
@@ -64,7 +64,7 @@ Verification: `src/components/breadcrumb/breadcrumb.test.tsx`, `e2e/breadcrumb.s
 
 ### UIC-BREADCRUMB-2.1 - Landmark name
 
-The `nav` shall be named by `aria-label`, or `aria-labelledby`, or else React Aria's localized "Breadcrumbs". The list itself carries no second name.
+The `nav` shall be named by `aria-label`, or `aria-labelledby`, or else a localized "Breadcrumbs". The list itself carries no second name.
 
 Implementation: `src/components/breadcrumb/breadcrumb.tsx`
 Verification: `src/components/breadcrumb/breadcrumb.test.tsx`, `e2e/breadcrumb.spec.ts`
@@ -78,14 +78,14 @@ Verification: `src/components/breadcrumb/breadcrumb.test.tsx`, `e2e/breadcrumb.s
 
 ### UIC-BREADCRUMB-2.3 - Disabled
 
-`isDisabled` shall disable every crumb: each renders as text with `aria-disabled="true"` and React Aria's `data-disabled` on its item and link, leaves the tab order and ignores activation. The overflow menu and the crumbs' menus of nearby places are disabled too.
+`isDisabled` shall disable every crumb: each renders as text with `aria-disabled="true"` and `data-disabled` on its item and link, leaves the tab order and ignores activation. The overflow menu and the crumbs' menus of nearby places are disabled too.
 
 Implementation: `src/components/breadcrumb/breadcrumb.tsx`
 Verification: `src/components/breadcrumb/breadcrumb.test.tsx`
 
 ### UIC-BREADCRUMB-2.4 - Interaction states
 
-Crumb links shall publish React Aria's states: `data-hovered`, `data-pressed`, `data-focused` and `data-focus-visible` (keyboard focus only).
+Crumb links shall publish their states: `data-hovered`, `data-pressed`, `data-focused` and `data-focus-visible` (keyboard focus only).
 
 Implementation: `src/components/breadcrumb/breadcrumb.tsx`
 Verification: `src/components/breadcrumb/breadcrumb.test.tsx`, `e2e/breadcrumb.spec.ts`

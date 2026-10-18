@@ -28,9 +28,16 @@ function OrderForm(props: Omit<FormProps, 'children'>) {
 const prevent = (event: FormEvent<HTMLFormElement>) => event.preventDefault();
 
 describe('Form', () => {
-  it('UIC-FORM-1.1 renders a React Aria form with its hooks and props', () => {
+  it('UIC-FORM-1.1 renders a form with its hooks and props', () => {
     const { container } = render(
-      <Form aria-label="Order" id="order" className="checkout" data-test="form" action="/orders">
+      <Form
+        aria-label="Order"
+        id="order"
+        className="checkout"
+        data-test="form"
+        action="/orders"
+        method="post"
+      >
         <TextField label="Name" />
       </Form>,
     );
@@ -40,6 +47,7 @@ describe('Form', () => {
     expect(form).toHaveAttribute('id', 'order');
     expect(form).toHaveAttribute('data-test', 'form');
     expect(form).toHaveAttribute('action', '/orders');
+    expect(form).toHaveAttribute('method', 'post');
     expectHooksMatchSpec(container, 'FORM', { callerAttributes: ['data-test'] });
   });
 

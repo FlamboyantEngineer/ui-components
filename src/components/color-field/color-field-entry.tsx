@@ -1,16 +1,17 @@
 import { useState } from 'react';
-import { Button as AriaButton, Input, TextField, type Color } from '../../primitives/index.js';
+import { Button as AriaButton, Input, TextField } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import { ColorSwatch } from '../color-swatch/color-swatch.js';
 import { toAriaControlProps, type FieldControlProps, type FieldState } from '../field/field.js';
 import { colorFieldHooks as hooks } from './color-field-panel.js';
-import { formatColor, toColor, toStoredValue, type ColorFieldFormat } from './color-values.js';
+import { formatColor, storeColorText, type ColorFieldFormat } from './color-values.js';
 
 export interface ColorEntryProps {
   control: FieldControlProps;
   state: FieldState<string | null>;
   label: string;
-  color: Color | null;
+  /** The value as a CSS colour, or `null` without one. */
+  color: string | null;
   format: ColorFieldFormat;
   valueFormat: ColorFieldFormat;
   placeholder: string;
@@ -35,9 +36,9 @@ export function ColorEntry({
   const finish = () => {
     if (draft === null) return;
     setDraft(null);
-    const typed = toColor(draft);
-    if (typed) {
-      state.setValue(toStoredValue(typed, valueFormat));
+    const typed = storeColorText(draft, valueFormat);
+    if (typed !== null) {
+      state.setValue(typed);
       state.commit();
     } else if (!draft.trim() && state.canClear) {
       state.clear();

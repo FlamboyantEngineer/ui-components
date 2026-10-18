@@ -30,6 +30,38 @@ describe('SearchField', () => {
     expect(inputRef.current).toBe(screen.getByRole('searchbox', { name: 'Filter fruit' }));
   });
 
+  it('UIC-SEARCH-FIELD-1.1 UIC-FIELD-8.3 hands its input props, name and locks to the input', async () => {
+    const user = userEvent.setup();
+    const events: string[] = [];
+    const { rerender } = render(
+      <SearchField
+        label="Find"
+        name="query"
+        defaultValue="fig"
+        autoComplete="off"
+        inputMode="search"
+        spellCheck={false}
+        autoFocus
+        onBlur={() => events.push('blur')}
+        onKeyDown={(event) => events.push(`key:${event.key}`)}
+      />,
+    );
+    const input = screen.getByRole('searchbox', { name: 'Find' });
+    expect(input).toHaveAttribute('name', 'query');
+    expect(input).toHaveValue('fig');
+    expect(input).toHaveAttribute('autocomplete', 'off');
+    expect(input).toHaveAttribute('inputmode', 'search');
+    expect(input).toHaveAttribute('spellcheck', 'false');
+    expect(input).toHaveFocus();
+    await user.keyboard('s');
+    await user.tab();
+    expect(events).toEqual(['key:s', 'key:Tab', 'blur']);
+    rerender(<SearchField label="Find" name="query" isReadOnly />);
+    expect(input).toHaveAttribute('readonly');
+    rerender(<SearchField label="Find" name="query" isDisabled />);
+    expect(input).toBeDisabled();
+  });
+
   it('UIC-SEARCH-FIELD-1.2 publishes its size', () => {
     const { container, rerender } = render(<SearchField label="Find" />);
     const root = container.querySelector('.ui-search-field');

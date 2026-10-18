@@ -6,7 +6,6 @@ import {
   useRef,
   useState,
   type AnchorHTMLAttributes,
-  type ComponentProps,
   type Dispatch,
   type ReactElement,
   type ReactNode,
@@ -31,21 +30,25 @@ export interface UiLinkProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
 /** Renders the links the library draws (breadcrumbs, list rows, tree items), e.g. through a router's Link. */
 export type UiLinkRenderer = (props: UiLinkProps) => ReactElement;
 
-type RouterProps = ComponentProps<typeof RouterProvider>;
+/** Navigates client-side to a router href, with the options a link or item passed. */
+export type UiNavigate = (href: string, routerOptions?: unknown) => void;
+
+/** Maps a router href to the native href a link renders. */
+export type UiHref = (href: string) => string;
 
 export interface UiProviderProps {
   /** Replaces built-in glyphs by name. Unlisted glyphs keep their default (or the outer provider's). */
   icons?: Partial<GlyphMap> | undefined;
   /** Replaces built-in strings by key. */
   strings?: Partial<UiStrings> | undefined;
-  /** BCP 47 locale for React Aria formatting, collation and direction. */
+  /** BCP 47 locale for formatting, collation and direction. */
   locale?: string | undefined;
   /** Renders library links. Defaults to a plain anchor. */
   renderLink?: UiLinkRenderer | undefined;
-  /** Client-side navigation for React Aria links, menu items and tabs with an `href`. */
-  navigate?: RouterProps['navigate'] | undefined;
-  /** Maps a router href to a native href for React Aria links. */
-  useHref?: RouterProps['useHref'] | undefined;
+  /** Client-side navigation for links, menu items and tabs with an `href`. */
+  navigate?: UiNavigate | undefined;
+  /** Maps a router href to a native href for links. */
+  useHref?: UiHref | undefined;
   /** Where components persist layout state. Defaults to an in-memory store. */
   storage?: UiStorage | undefined;
   /** The components that use these services. */

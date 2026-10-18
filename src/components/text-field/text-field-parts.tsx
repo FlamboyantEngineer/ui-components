@@ -1,6 +1,13 @@
-import { useCallback, useLayoutEffect, useRef, type ReactNode, type RefObject } from 'react';
-import { Group, TextArea, type TextAreaProps } from '../../primitives/index.js';
-import { createHooks } from '../../core/hooks.js';
+import {
+  useCallback,
+  useLayoutEffect,
+  useRef,
+  type KeyboardEvent,
+  type ReactNode,
+  type RefObject,
+} from 'react';
+import { Group, TextArea } from '../../primitives/index.js';
+import { createHooks, type HookProps } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { clamp } from '../../utils/clamp.js';
 import { useElementSize } from '../../utils/use-element-size.js';
@@ -41,8 +48,14 @@ export interface AutoGrowOptions {
   value: string;
 }
 
-export interface TextFieldAreaProps
-  extends Omit<TextAreaProps, 'ref' | 'rows' | 'value'>, AutoGrowOptions {
+/** The input's own props: its hooks, the hint and the field's edit handlers. */
+export type TextFieldInputProps = HookProps & {
+  placeholder: string | undefined;
+  onBlur: () => void;
+  onKeyDown: (event: KeyboardEvent<HTMLElement>) => void;
+};
+
+export interface TextFieldAreaProps extends TextFieldInputProps, AutoGrowOptions {
   /** Publishes the text area to the field. */
   controlRef: (node: HTMLElement | null) => void;
 }

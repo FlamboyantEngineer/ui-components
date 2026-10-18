@@ -1,12 +1,15 @@
-import type { JSX, ReactElement, Ref } from 'react';
-import {
-  Link as AriaLink,
-  composeRenderProps,
-  type LinkProps as AriaLinkProps,
-} from '../../primitives/index.js';
+import type { JSX, ReactElement, ReactNode, Ref } from 'react';
+import { Link as AriaLink } from '../../primitives/index.js';
+import type {
+  AriaLabellingProps,
+  FocusEventProps,
+  HoverEventProps,
+  PressEventProps,
+} from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, NativeProps } from '../../core/props.js';
 import { Glyph, UiLink, useUiStrings } from '../../core/provider.js';
+import type { ElementRender } from '../../utils/render-element.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 
 /** Emphasis: `primary` takes the accent colour, `secondary` the surrounding text colour. */
@@ -15,9 +18,45 @@ export type LinkVariant = 'primary' | 'secondary';
 /** When the stylesheet underlines the link. */
 export type LinkUnderline = 'always' | 'hover' | 'none';
 
-export interface LinkProps extends Omit<AriaLinkProps, 'className' | 'style'>, BaseProps {
+/** The states a link passes to `render` with its element's props. */
+export interface LinkRenderState {
+  /** The link has `aria-current`. */
+  isCurrent: boolean;
+  /** The pointer is over the link. */
+  isHovered: boolean;
+  /** The link is being pressed. */
+  isPressed: boolean;
+  /** The link has focus. */
+  isFocused: boolean;
+  /** The link has keyboard focus. */
+  isFocusVisible: boolean;
+  /** The link is disabled. */
+  isDisabled: boolean;
+}
+
+export interface LinkProps
+  extends
+    BaseProps,
+    PressEventProps,
+    HoverEventProps,
+    FocusEventProps,
+    AriaLabellingProps,
+    Pick<NativeProps<'a'>, 'target' | 'rel' | 'download' | 'aria-current'> {
   /** The `<a>`, or the `<span>` of a link without `href`. */
   ref?: Ref<HTMLAnchorElement> | undefined;
+  /** The destination. Without it the link is a pressable `<span>`. */
+  href?: string | undefined;
+  /** Options handed to the provider's `navigate` with the `href`. */
+  routerOptions?: unknown;
+  /** Refuses interaction and drops the destination. */
+  isDisabled?: boolean | undefined;
+  /** The link text. */
+  children?: ReactNode;
+  /**
+   * Replaces the provider's link renderer: receives the element's props, with an `href` when the
+   * link navigates, and the link's state.
+   */
+  render?: ElementRender<'a', LinkRenderState> | undefined;
   /** Emphasis. Defaults to `primary`. */
   variant?: LinkVariant | undefined;
   /** The link stands on its own (a "View all" link, a list of links) rather than in running text. */
@@ -28,7 +67,7 @@ export interface LinkProps extends Omit<AriaLinkProps, 'className' | 'style'>, B
   isExternal?: boolean | undefined;
 }
 
-type LinkElementProps = Parameters<NonNullable<AriaLinkProps['render']>>[0];
+type LinkElementProps = JSX.IntrinsicElements['a'] | JSX.IntrinsicElements['span'];
 
 const hooks = createHooks('link', ['external-icon', 'new-tab-label']);
 
@@ -41,20 +80,11 @@ function mergeSafeRel(rel: string | undefined): string {
 }
 
 /** A link that navigates renders through the provider's link renderer; a disabled one is a span. */
-function renderLinkElement(props: LinkElementProps): ReactElement {
+function renderLinkElement(props: JSX.IntrinsicElements['a']): ReactElement {
   if ('href' in props && typeof props.href === 'string' && props['aria-disabled'] === undefined) {
     return <UiLink {...props} href={props.href} />;
   }
-  const {
-    href: _href,
-    target: _target,
-    rel: _rel,
-    ...spanProps
-  } = props as LinkElementProps & {
-    href?: unknown;
-    target?: unknown;
-    rel?: unknown;
-  };
+  const { href: _href, target: _target, rel: _rel, ...spanProps } = props;
   return <span {...(spanProps as JSX.IntrinsicElements['span'])} />;
 }
 
@@ -76,7 +106,7 @@ function NewTabParts() {
 }
 
 /**
- * A navigation link (React Aria `Link`): it navigates through the provider's `navigate` and link
+ * A navigation link: it navigates through the provider's `navigate` and link
  * renderer, says when it opens a new tab, and without `href` is a pressable link.
  */
 export function Link({
@@ -86,6 +116,7 @@ export function Link({
   isExternal = false,
   target = isExternal ? '_blank' : undefined,
   rel,
+  routerOptions,
   children,
   render = renderLinkElement,
   className,
@@ -95,6 +126,7 @@ export function Link({
   return (
     <AriaLink
       {...rest}
+      routerOptions={routerOptions as never}
       {...hooks.root({
         className,
         props: rest,
@@ -102,14 +134,13 @@ export function Link({
       })}
       target={target}
       rel={opensNewTab ? mergeSafeRel(rel) : rel}
-      render={render}
+      // The building block draws a `<span>` without `href`; its props fit an anchor's.
+      render={(props: LinkElementProps, state) =>
+        render(props as JSX.IntrinsicElements['a'], state)
+      }
     >
-      {composeRenderProps(children, (content) => (
-        <>
-          {content}
-          {opensNewTab ? <NewTabParts /> : null}
-        </>
-      ))}
+      {children}
+      {opensNewTab ? <NewTabParts /> : null}
     </AriaLink>
   );
 }

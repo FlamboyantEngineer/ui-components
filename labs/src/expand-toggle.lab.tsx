@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Disclosure, DisclosurePanel } from '../../src/primitives/index.js';
+import { Disclosure, DisclosurePanel } from '../../src/components/disclosure/disclosure.js';
 import { ExpandToggle } from '../../src/components/expand-toggle/expand-toggle.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
@@ -135,7 +135,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Disclosure"
-      description="Inside a React Aria Disclosure the toggle is its trigger: React Aria wires its expanded state and aria-controls to the panel."
+      description="Inside a Disclosure the toggle is its trigger: the disclosure wires its expanded state and aria-controls to the panel."
     >
       <div data-lab-case="disclosure">
         <Disclosure>

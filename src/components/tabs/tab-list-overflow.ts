@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
-import type { Key } from '../../primitives/index.js';
-import type { Orientation } from '../../core/props.js';
+import type { Key, Orientation } from '../../core/props.js';
 
 interface ListScrollOptions {
   orientation: Orientation;

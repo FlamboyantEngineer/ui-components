@@ -2,7 +2,7 @@
 // row follows its children, all selected or not.
 
 import { useCallback, useMemo, useState } from 'react';
-import type { Key, Selection } from '../../primitives/index.js';
+import type { Key, Selection } from '../../core/props.js';
 import type { TreeItemData, TreeProps } from './tree.js';
 
 export interface TreeSelectionOptions<T extends TreeItemData> extends Pick<

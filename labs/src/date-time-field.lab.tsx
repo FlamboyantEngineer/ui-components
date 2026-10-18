@@ -1,4 +1,3 @@
-import { getDayOfWeek, type DateValue } from '../../src/primitives/index.js';
 import { useState } from 'react';
 import type { FieldLabelLayout } from '../../src/components/field/field.js';
 import {
@@ -27,27 +26,19 @@ type AnyValue = string | DateRangeValue | null;
 const samples: Record<DateTimeFieldMode, { value: AnyValue; committed: AnyValue }> = {
   date: { value: '2026-04-13', committed: '2026-04-10' },
   time: { value: '13:45', committed: '09:00' },
-  'date-time': {
-    value: new Date(2026, 3, 13, 13, 45).toISOString(),
-    committed: new Date(2026, 3, 10, 9, 0).toISOString(),
-  },
+  'date-time': { value: '2026-04-13T13:45', committed: '2026-04-10T09:00' },
   'date-range': {
     value: { start: '2026-04-13', end: '2026-04-17' },
     committed: { start: '2026-04-06', end: '2026-04-10' },
   },
   'date-time-range': {
-    value: {
-      start: new Date(2026, 3, 13, 9, 0).toISOString(),
-      end: new Date(2026, 3, 13, 17, 30).toISOString(),
-    },
-    committed: {
-      start: new Date(2026, 3, 10, 9, 0).toISOString(),
-      end: new Date(2026, 3, 10, 12, 0).toISOString(),
-    },
+    value: { start: '2026-04-13T09:00', end: '2026-04-13T17:30' },
+    committed: { start: '2026-04-10T09:00', end: '2026-04-10T12:00' },
   },
 };
 
-const isWeekend = (date: DateValue) => getDayOfWeek(date, 'en-US') % 6 === 0;
+// Day 0 is Sunday and day 6 Saturday; noon UTC keeps the date in every zone.
+const isWeekend = (date: string) => new Date(`${date}T12:00:00Z`).getUTCDay() % 6 === 0;
 
 function stateProps(
   state: State,
@@ -189,8 +180,8 @@ function Zones() {
         label="Call in Tokyo"
         mode="date-time"
         timeZone="Asia/Tokyo"
-        defaultValue="2026-04-13T03:00:00.000Z"
-        description="Edits Tokyo wall time; the value stays a UTC instant."
+        defaultValue="2026-04-13T12:00:00+09:00[Asia/Tokyo]"
+        description="Edits Tokyo wall time; the value is a zoned date and time."
         onCommit={setCommitted}
         data-lab-field="zoned"
       />
@@ -199,7 +190,10 @@ function Zones() {
         mode="date-time-range"
         timeZone="UTC"
         hideTimeZone
-        defaultValue={{ start: '2026-04-13T09:00:00.000Z', end: '2026-04-13T17:00:00.000Z' }}
+        defaultValue={{
+          start: '2026-04-13T09:00:00+00:00[UTC]',
+          end: '2026-04-13T17:00:00+00:00[UTC]',
+        }}
         onCommit={setCommitted}
         data-lab-field="time-range"
       />

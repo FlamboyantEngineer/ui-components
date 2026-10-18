@@ -1,17 +1,10 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import {
-  Button as AriaButton,
-  GridListLoadMoreItem,
-  Heading,
-  HeadingContext,
-  Link as AriaLink,
-  useSlottedContext,
-} from '../../primitives/index.js';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider, type UiLinkProps } from '../../core/provider.js';
 import { CardGrid, CardGridItem } from './card-grid.js';
+import { CardAction, CardTitle } from './card-parts.js';
 import { Card } from './card.js';
 
 const cities = [
@@ -99,15 +92,14 @@ describe('Card', () => {
     expect(container.firstElementChild).not.toHaveAttribute('aria-labelledby');
   });
 
-  it('UIC-CARD-1.4 UIC-COMPOSITION-3.1 names a card by the slotted title of a custom header', () => {
+  it('UIC-CARD-1.4 UIC-COMPOSITION-3.1 names a card by the CardTitle of a custom header', () => {
     const { container } = render(
       <Card
+        headingLevel={2}
         header={
           <>
-            <Heading slot="title" level={2}>
-              Garden plan
-            </Heading>
-            <Heading>Spring</Heading>
+            <CardTitle data-probe="title">Garden plan</CardTitle>
+            <h4>Spring</h4>
           </>
         }
       >
@@ -117,34 +109,41 @@ describe('Card', () => {
     const region = screen.getByRole('region', { name: 'Garden plan' });
     const title = screen.getByRole('heading', { level: 2, name: 'Garden plan' });
     expect(title).toHaveClass('ui-card__title');
+    expect(title).toHaveAttribute('data-probe', 'title');
     expect(region).toHaveAttribute('aria-labelledby', title.id);
     expect(screen.getByRole('heading', { name: 'Spring' })).not.toHaveAttribute('id');
-    expectHooksMatchSpec(container, 'CARD', { slots: ['header', 'title', 'body'] });
+    expectHooksMatchSpec(container, 'CARD', {
+      slots: ['header', 'title', 'body'],
+      callerAttributes: ['data-probe'],
+    });
   });
 
-  it('UIC-CARD-1.4 UIC-COMPOSITION-3.1 hands the title props to a host component', () => {
-    function HostTitle({ children }: { children: string }) {
-      const slot = useSlottedContext(HeadingContext, 'title');
-      return (
-        <p id={slot?.id} className={slot?.className} ref={slot?.ref}>
-          {children}
-        </p>
-      );
-    }
-    const { rerender } = render(<Card header={<HostTitle>Seed list</HostTitle>}>Body</Card>);
-    expect(screen.getByRole('region', { name: 'Seed list' })).toBeInTheDocument();
-    expect(screen.getByText('Seed list')).toHaveClass('ui-card__title');
-
-    rerender(<Card header={<strong>Seed list</strong>}>Body</Card>);
+  it('UIC-CARD-1.4 UIC-COMPOSITION-3.1 leaves a card without CardTitle unnamed', () => {
+    const { rerender } = render(<Card header={<strong>Seed list</strong>}>Body</Card>);
     expect(screen.queryByRole('region')).toBeNull();
     expect(document.querySelector('section')).not.toHaveAttribute('aria-labelledby');
 
     rerender(
-      <Card header={<HostTitle>Seed list</HostTitle>} aria-label="Seeds">
+      <Card header={<CardTitle>Seed list</CardTitle>} aria-label="Seeds">
         Body
       </Card>,
     );
     expect(screen.getByRole('region', { name: 'Seeds' })).not.toHaveAttribute('aria-labelledby');
+  });
+
+  it('UIC-COMPOSITION-3.1 renders a part outside its component without the component props', () => {
+    render(
+      <>
+        <CardTitle className="own">Loose title</CardTitle>
+        <CardAction>Loose action</CardAction>
+      </>,
+    );
+    const title = screen.getByRole('heading', { name: 'Loose title' });
+    expect(title.tagName).toBe('H3');
+    expect(title).toHaveAttribute('class', 'own');
+    expect(title).not.toHaveAttribute('id');
+    expect(screen.queryByRole('button')).toBeNull();
+    expect(screen.getByText('Loose action')).not.toHaveClass('ui-card__action');
   });
 
   it('UIC-CARD-1.3 names a titled card by its heading with a unique, stable id', () => {
@@ -356,17 +355,17 @@ describe('Card', () => {
     ]);
   });
 
-  it('UIC-CARD-3.3 UIC-COMPOSITION-3.1 hands the action to a slotted link or button in a custom header', async () => {
+  it('UIC-CARD-3.3 UIC-COMPOSITION-3.1 draws the CardAction of a custom header as the card action', async () => {
     const onAction = vi.fn();
     const { container, rerender } = render(
       <Card
         href="#garden"
         header={
           <>
-            <Heading slot="title">
-              <AriaLink slot="action">Garden plan</AriaLink>
-            </Heading>
-            <AriaButton>Menu</AriaButton>
+            <CardTitle>
+              <CardAction>Garden plan</CardAction>
+            </CardTitle>
+            <button type="button">Menu</button>
           </>
         }
       >
@@ -383,11 +382,7 @@ describe('Card', () => {
     rerender(
       <Card
         onAction={onAction}
-        header={
-          <AriaButton slot="action" aria-label="Open the seed list">
-            Seeds
-          </AriaButton>
-        }
+        header={<CardAction aria-label="Open the seed list">Seeds</CardAction>}
       >
         <p>Twelve packets</p>
       </Card>,
@@ -478,7 +473,7 @@ describe('CardGrid', () => {
     expectHooksMatchSpec(container, 'CARD');
   });
 
-  it('UIC-CARD-5.2 passes empty states and loading sentinels through', () => {
+  it('UIC-CARD-5.2 draws the empty state and a loading item while more cards load', () => {
     const onLoadMore = vi.fn();
     vi.stubGlobal(
       'IntersectionObserver',
@@ -487,24 +482,51 @@ describe('CardGrid', () => {
         disconnect() {}
       },
     );
-    const { rerender } = render(
-      <CardGrid aria-label="Cities" renderEmptyState={() => 'No cities'}>
-        {[]}
-      </CardGrid>,
+    const { container, rerender } = render(
+      <CardGrid aria-label="Cities" items={[]} renderEmptyState={() => 'No cities'} />,
     );
     expect(screen.getByRole('grid')).toHaveAttribute('data-empty', 'true');
     expect(screen.getByRole('grid')).toHaveTextContent('No cities');
     rerender(
-      <CardGrid aria-label="Cities">
+      <CardGrid aria-label="Cities" isLoading onLoadMore={onLoadMore}>
         <CardGridItem id="lisbon" textValue="Lisbon">
           <Card title="Lisbon" role="group" />
         </CardGridItem>
-        <GridListLoadMoreItem isLoading onLoadMore={onLoadMore}>
-          Loading more cities
-        </GridListLoadMoreItem>
       </CardGrid>,
     );
-    expect(screen.getByRole('grid')).toHaveTextContent('Loading more cities');
+    const loader = container.querySelector('.ui-card-grid__loader');
+    expect(within(loader as HTMLElement).getByRole('status')).toHaveTextContent('Loading');
+    expectHooksMatchSpec(container, 'CARD', { slots: ['loader'] });
+  });
+
+  // Laying out a virtual grid in jsdom is slow on a busy machine.
+  it('UIC-CARD-5.2 renders only the cards in view when virtualized', { timeout: 15_000 }, () => {
+    const sizes = { clientWidth: 600, clientHeight: 300 };
+    for (const [name, value] of Object.entries(sizes)) {
+      Object.defineProperty(HTMLElement.prototype, name, { configurable: true, get: () => value });
+    }
+    const many = Array.from({ length: 300 }, (_, index) => ({ id: index, name: `City ${index}` }));
+    try {
+      render(
+        <CardGrid
+          aria-label="Many"
+          items={many}
+          virtualized
+          minItemSize={{ width: 180, height: 100 }}
+        >
+          {(city) => (
+            <CardGridItem textValue={city.name}>
+              <Card title={city.name} role="group" />
+            </CardGridItem>
+          )}
+        </CardGrid>,
+      );
+      const rows = screen.getAllByRole('row');
+      expect(rows.length).toBeGreaterThan(3);
+      expect(rows.length).toBeLessThan(many.length / 2);
+    } finally {
+      for (const name of Object.keys(sizes)) Reflect.deleteProperty(HTMLElement.prototype, name);
+    }
   });
 
   it('UIC-CARD-5.3 selects cards with toggles and hands the state to each card', async () => {

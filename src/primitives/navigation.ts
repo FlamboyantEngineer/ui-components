@@ -15,14 +15,4 @@ export {
   Tabs,
   TabsContext,
 } from 'react-aria-components';
-export type {
-  BreadcrumbsProps,
-  DisclosureGroupProps,
-  DisclosurePanelProps,
-  DisclosureProps,
-  TabListProps,
-  TabListState,
-  TabPanelProps,
-  TabProps,
-  TabsProps,
-} from 'react-aria-components';
+export type { TabListState } from 'react-aria-components';

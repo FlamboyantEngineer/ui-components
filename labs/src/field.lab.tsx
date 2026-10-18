@@ -1,5 +1,4 @@
 import { useState, type ReactNode } from 'react';
-import { Input, type Key } from '../../src/primitives/index.js';
 import { Badge } from '../../src/components/badge/badge.js';
 import { Button } from '../../src/components/button/button.js';
 import {
@@ -18,6 +17,7 @@ import {
 } from '../../src/components/field/field.js';
 import { IconButton } from '../../src/components/icon-button/icon-button.js';
 import { TextMatchProvider } from '../../src/components/text-match/text-match.js';
+import type { Key } from '../../src/core/props.js';
 import { useUiStrings } from '../../src/core/provider.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
@@ -75,7 +75,7 @@ interface SampleFieldProps extends Omit<FieldProps<string>, 'state' | 'children'
   start?: string;
 }
 
-/** A field around a plain React Aria `Input`, which commits on blur and on Enter. */
+/** A field around a plain native `<input>`, which commits on blur and on Enter. */
 function SampleField({ options, start, ...field }: SampleFieldProps) {
   const [value, setValue] = useState(start);
   const controlled = start === undefined ? {} : { value, onChange: setValue };
@@ -83,7 +83,7 @@ function SampleField({ options, start, ...field }: SampleFieldProps) {
   return (
     <Field state={state} {...field}>
       {(control) => (
-        <Input
+        <input
           {...control}
           value={state.value}
           onChange={(event) => state.setValue(event.target.value)}
@@ -124,7 +124,7 @@ function DirtyAndRestore() {
     <>
       <Field state={state} label="Favourite fruit" description="Edit, then restore or save.">
         {(control) => (
-          <Input
+          <input
             {...control}
             value={state.value}
             onChange={(event) => state.setValue(event.target.value)}
@@ -233,7 +233,7 @@ function ModeField({ mode }: { mode: FieldValidationMode }) {
     <>
       <Field state={state} label="City">
         {(control) => (
-          <Input
+          <input
             {...control}
             value={state.value}
             onChange={(event) => state.setValue(event.target.value)}

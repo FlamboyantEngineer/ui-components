@@ -6,7 +6,7 @@
 
 ### UIC-SEPARATOR-1.1 - Element
 
-`Separator` shall render React Aria's `Separator`: an `<hr>` by default, a `<div>` when it is vertical or labelled (an `<hr>` can hold neither), or the element `elementType` names. It holds no children unless labelled.
+`Separator` shall render an `<hr>` by default, a `<div>` when it is vertical or labelled (an `<hr>` can hold neither), or the element `elementType` names (`hr`, `div` or `li`). It holds no children unless labelled.
 
 Implementation: `src/components/separator/separator.tsx`
 Verification: `src/components/separator/separator.test.tsx`, `e2e/separator.spec.ts`
@@ -27,14 +27,14 @@ Verification: `src/components/separator/separator.test.tsx`, `e2e/separator.spec
 
 ### UIC-SEPARATOR-1.4 - Hooks and caller attributes
 
-`Separator` shall carry the hooks below, append the caller's `className`, forward `id`, caller `data-*` attributes and React Aria's DOM props, and keep its own hook values over caller attributes of the same name.
+`Separator` shall carry the hooks below, append the caller's `className`, forward `id`, caller `data-*` attributes, `aria-label` and `aria-labelledby`, and keep its own hook values over caller attributes of the same name.
 
 Implementation: `src/components/separator/separator.tsx`
 Verification: `src/components/separator/separator.test.tsx`
 
 ### UIC-SEPARATOR-1.5 - Element swapping
 
-React Aria's `render` shall pass through ([COMPOSITION.md](COMPOSITION.md#uic-composition-11---react-aria-components)): it receives the element's finished props, with the hook classes and data attributes, the role and orientation (or `role="none"` when decorative) and, on a labelled separator, its lines and label as `children`.
+`render(props, state)`, typed `ElementRender<'div', SeparatorRenderState>`, shall replace the separator's element with the caller's own of the same type ([COMPOSITION.md](COMPOSITION.md#uic-composition-11---components-on-building-blocks)): it receives the element's finished props, with the hook classes and data attributes, the role and orientation (or `role="none"` when decorative) and, on a labelled separator, its lines and label as `children`, and a state holding the separator's `orientation`.
 
 Implementation: `src/components/separator/separator.tsx`
 Verification: `src/components/separator/separator.test.tsx`

@@ -1,5 +1,5 @@
 import { useId, useState, type KeyboardEvent } from 'react';
-import type { Key } from '../../primitives/index.js';
+import type { Key } from '../../core/props.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { FieldState } from '../field/field.js';
 import type { SelectFieldOptionRenderer } from './select-option.js';

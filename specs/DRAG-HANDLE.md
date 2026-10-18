@@ -1,12 +1,12 @@
 # Drag Handle
 
-`DragHandle` draws the drag button of a row in a React Aria collection that reorders by drag and drop, such as [Tree](TREE.md) and [Table](TABLE.md). The collection names the button after its row and starts the row's keyboard drag from it; collections that draw handles render this one rather than their own. `armHandleDrag` lets a collection drag rows by their handles only, `keepHandleCellDraggable` lets a drag start from the handle's cell, and a collection can draw its own drag preview ([Table](TABLE.md#uic-table-56---drag-preview) does).
+`DragHandle` draws the drag button of a row in a library collection that reorders by drag and drop, such as [Tree](TREE.md) and [Table](TABLE.md). The collection names the button after its row and starts the row's keyboard drag from it; collections that draw handles render this one rather than their own. `armHandleDrag` lets a collection drag rows by their handles only, `keepHandleCellDraggable` lets a drag start from the handle's cell, and a collection can draw its own drag preview ([Table](TABLE.md#uic-table-56---drag-preview) does).
 
 ## UIC-DRAG-HANDLE-1 - Drag handle
 
 ### UIC-DRAG-HANDLE-1.1 - Drag button
 
-`DragHandle` shall render a React Aria button in the row's `drag` slot holding the decorative built-in `drag-handle` glyph. In a draggable row the collection names it `Drag <row>`, and Enter on it starts the row's keyboard drag and drop.
+`DragHandle` shall render a button in the row's `drag` part holding the decorative built-in `drag-handle` glyph. In a draggable row the collection names it `Drag <row>`, and Enter on it starts the row's keyboard drag and drop.
 
 Implementation: `src/components/drag-handle/drag-handle.tsx`
 Verification: `src/components/drag-handle/drag-handle.test.tsx`, `e2e/drag-handle.spec.ts`
@@ -27,7 +27,7 @@ Verification: `src/components/drag-handle/drag-handle.test.tsx`, `e2e/drag-handl
 
 ### UIC-DRAG-HANDLE-1.4 - Hooks and caller attributes
 
-`DragHandle` shall carry the hooks below, append the caller's `className` (a collection adds its own slot class this way), and forward `id`, caller `data-*` attributes and the other React Aria button props.
+`DragHandle` shall carry the hooks below, append the caller's `className` (a collection adds its own slot class this way), and forward `id`, caller `data-*` attributes and the ARIA labelling attributes.
 
 Implementation: `src/components/drag-handle/drag-handle.tsx`
 Verification: `src/components/drag-handle/drag-handle.test.tsx`

@@ -1,4 +1,4 @@
-import type { Key } from '../../primitives/index.js';
+import type { Key } from '../../core/props.js';
 import { useControllableState } from '../../core/controllable-state.js';
 
 export type SegmentedChoiceSelectionMode = 'single' | 'multiple';

@@ -8,13 +8,9 @@ import {
   type ReactNode,
   type RefCallback,
 } from 'react';
-import {
-  Button as AriaButton,
-  ButtonContext,
-  DEFAULT_SLOT,
-  LinkContext,
-  Provider,
-} from '../../primitives/index.js';
+import { Button as AriaButton } from '../../primitives/index.js';
+import type { AriaLabellingProps } from '../../core/events.js';
+import type { BaseProps } from '../../core/props.js';
 import { UiLink } from '../../core/provider.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 
@@ -106,22 +102,30 @@ export function useCardAction(options: CardActionOptions): CardAction {
   return { isActionable, actionRef, onClick };
 }
 
-/** The title drawn as the card's action: a link through the provider's renderer, or a button. */
+/** What draws the card's action element. */
+interface CardActionTitleProps extends AriaLabellingProps, Omit<BaseProps, 'id' | 'className'> {
+  options: CardActionOptions;
+  actionRef: RefCallback<HTMLElement>;
+  className: string;
+  children: ReactNode;
+}
+
+/**
+ * The card's action element: a link through the provider's renderer, or a button. The card's title
+ * draws it, and so does a `CardAction` in a custom header.
+ */
 export function CardActionTitle({
   options,
   actionRef,
   className,
   children,
-}: {
-  options: CardActionOptions;
-  actionRef: RefCallback<HTMLElement>;
-  className: string;
-  children: ReactNode;
-}) {
+  ...rest
+}: CardActionTitleProps) {
   const { href, target, onAction } = options;
   if (href !== undefined) {
     return (
       <UiLink
+        {...rest}
         ref={actionRef}
         href={href}
         target={target}
@@ -134,42 +138,8 @@ export function CardActionTitle({
     );
   }
   return (
-    <AriaButton ref={actionRef} className={className} onPress={() => onAction?.()}>
+    <AriaButton {...rest} ref={actionRef} className={className} onPress={() => onAction?.()}>
       {children}
     </AriaButton>
-  );
-}
-
-/**
- * Hands a custom header's `slot="action"` React Aria `Link` (for `href`) or `Button` (for
- * `onAction`) the action's props, its hook class and the card's ref.
- */
-export function CardActionSlots({
-  options,
-  actionRef,
-  className,
-  children,
-}: {
-  options: CardActionOptions;
-  actionRef: RefCallback<HTMLElement>;
-  className: string;
-  children: ReactNode;
-}) {
-  const { href, target, onAction } = options;
-  const shared = { className, ref: actionRef };
-  const link =
-    href === undefined
-      ? {}
-      : { ...shared, href, target, rel: toLinkRel(options), onPress: onAction };
-  const button = href === undefined && onAction ? { ...shared, onPress: onAction } : {};
-  return (
-    <Provider
-      values={[
-        [LinkContext, { slots: { [DEFAULT_SLOT]: {}, action: link } }],
-        [ButtonContext, { slots: { [DEFAULT_SLOT]: {}, action: button } }],
-      ]}
-    >
-      {children}
-    </Provider>
   );
 }

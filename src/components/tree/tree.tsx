@@ -2,12 +2,15 @@ import { useMemo, type KeyboardEvent, type ReactNode, type Ref } from 'react';
 import {
   Tree as AriaTree,
   ListLayout,
+  useDragAndDrop,
   Virtualizer,
-  type Key,
-  type TreeItemContentRenderProps,
-  type TreeProps as AriaTreeProps,
 } from '../../primitives/index.js';
-import type { BaseProps, Size } from '../../core/props.js';
+import type {
+  AriaLabellingProps,
+  CollectionSelectionProps,
+  ExpansionProps,
+} from '../../core/events.js';
+import type { BaseProps, Key, Size } from '../../core/props.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { readTreeChildren, type TreeMoveItem } from '../../utils/tree-reorder.js';
 import type { IconSource } from '../icon/icon.js';
@@ -26,10 +29,17 @@ import { useTreeSelection } from './use-tree-selection.js';
 export type TreeItemData = TreeMoveItem<unknown>;
 
 /** A row's state, passed to the render callbacks. */
-export interface TreeItemState extends Pick<
-  TreeItemContentRenderProps,
-  'isExpanded' | 'hasChildItems' | 'level' | 'isSelected' | 'isDisabled' | 'isFocusVisible'
-> {
+export interface TreeItemState {
+  /** Whether the row's children are shown. */
+  isExpanded: boolean;
+  /** Whether the row has children, loaded or not. */
+  hasChildItems: boolean;
+  /** The row's depth, from 1. */
+  level: number;
+  isSelected: boolean;
+  isDisabled: boolean;
+  /** Whether the row has keyboard focus. */
+  isFocusVisible: boolean;
   /** Whether the row is the current page or item. */
   isCurrent: boolean;
 }
@@ -41,20 +51,11 @@ export type TreeSize = Extract<Size, 'sm' | 'md' | 'lg'>;
 export type TreeVariant = 'default' | 'picker';
 
 export interface TreeProps<T extends TreeItemData>
-  extends
-    Omit<
-      AriaTreeProps<T>,
-      | 'items'
-      | 'children'
-      | 'className'
-      | 'style'
-      | 'render'
-      | 'dragAndDropHooks'
-      | 'renderEmptyState'
-    >,
-    BaseProps {
+  extends BaseProps, AriaLabellingProps, CollectionSelectionProps, ExpansionProps {
   /** Top-level items. Each item's `id` must be unique in the whole tree. */
   items: readonly T[];
+  /** Called with the key of the row the reader activates. */
+  onAction?: ((key: Key) => void) | undefined;
   /** Plain text for an item: its accessible name and the text typeahead matches. */
   getTextValue: (item: T) => string;
   /** Children of an item. Defaults to its `children` property. */
@@ -122,9 +123,10 @@ export interface TreeProps<T extends TreeItemData>
   ref?: Ref<HTMLDivElement> | undefined;
 }
 
-const noDependencies: readonly unknown[] = [];
-
 const virtualRowHeights: Readonly<Record<TreeSize, number>> = { sm: 28, md: 32, lg: 40 };
+
+/** The drag and drop options of a tree that does not reorder: neither draggable nor droppable. */
+const noDragAndDrop = {};
 
 /** Separates the props that draw rows, the expansion, the root's own and React Aria's. */
 function splitTreeProps<T extends TreeItemData>({
@@ -140,7 +142,6 @@ function splitTreeProps<T extends TreeItemData>({
   renderMeta,
   renderActions,
   expandGlyph = 'chevron',
-  dependencies = noDependencies,
   expandedKeys,
   defaultExpandedKeys,
   onExpandedChange,
@@ -181,7 +182,6 @@ function splitTreeProps<T extends TreeItemData>({
     renderMeta,
     renderActions,
     expandGlyph,
-    dependencies,
   };
   const expansion = { expandedKeys, defaultExpandedKeys, onExpandedChange, persistKey };
   const state = { items, isPending, emptyMessage, reorder, onItemKeyDown, disabledKeys };
@@ -269,10 +269,7 @@ function useTreeModel<T extends TreeItemData>(props: TreeProps<T>) {
     rename,
     loads,
   });
-  const dependencies = useMemo(
-    () => [renderItem, ...row.dependencies],
-    [renderItem, row.dependencies],
-  );
+  const dependencies = useMemo(() => [renderItem], [renderItem]);
   return {
     ...parts,
     state,
@@ -297,6 +294,7 @@ export function Tree<T extends TreeItemData>(props: TreeProps<T>) {
     useTreeModel(props);
   const { isPending, emptyMessage, disabledKeys } = state;
   const hasEmptyState = isPending || !isEmptyNode(emptyMessage);
+  const { dragAndDropHooks } = useDragAndDrop<T>(reordering?.dragAndDrop ?? noDragAndDrop);
   let tree = (
     <AriaTree
       // React Aria keeps drag and drop hooks for the tree's lifetime: remount when reordering toggles.
@@ -315,7 +313,7 @@ export function Tree<T extends TreeItemData>(props: TreeProps<T>) {
           ? () => <TreeEmptyState isPending={isPending} emptyMessage={emptyMessage} />
           : undefined
       }
-      dragAndDropHooks={reordering?.dragAndDropHooks}
+      dragAndDropHooks={reordering ? dragAndDropHooks : undefined}
       render={(domProps) => (
         <div
           {...domProps}

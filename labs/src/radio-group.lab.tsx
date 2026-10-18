@@ -1,10 +1,11 @@
-import { useState, type ReactNode } from 'react';
+import { useState, type JSX, type ReactNode } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Form } from '../../src/components/form/form.js';
 import {
   Radio,
   RadioGroup,
   type RadioGroupSize,
+  type RadioRenderState,
 } from '../../src/components/radio-group/radio-group.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import {
@@ -135,6 +136,24 @@ function SavedGroup() {
   );
 }
 
+/** A radio element of the caller's own, given the radio's state. */
+function swapRadio(props: JSX.IntrinsicElements['div'], state: RadioRenderState) {
+  return <div {...props} data-lab-picked={state.isSelected ? 'yes' : 'no'} />;
+}
+
+function Swapped() {
+  return (
+    <RadioGroup label="Crate" defaultValue="small" data-lab-field="swapped">
+      <Radio value="small" render={swapRadio}>
+        Small crate
+      </Radio>
+      <Radio value="large" render={swapRadio}>
+        Large crate
+      </Radio>
+    </RadioGroup>
+  );
+}
+
 mountLab(
   <>
     <LabSection title="Layouts and states" description="Every label layout against every state.">
@@ -167,6 +186,12 @@ mountLab(
       description="Restore, undo with Ctrl+Z and Clear from the menu."
     >
       <SavedGroup />
+    </LabSection>
+    <LabSection
+      title="Swapped elements"
+      description="Each radio renders its own element, marked with the state render receives."
+    >
+      <Swapped />
     </LabSection>
   </>,
 );

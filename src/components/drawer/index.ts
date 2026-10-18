@@ -4,5 +4,6 @@ export type {
   DrawerProps,
   DrawerRenderProps,
   DrawerSize,
+  DrawerSwipeDirection,
   DrawerTriggerProps,
 } from './drawer.js';

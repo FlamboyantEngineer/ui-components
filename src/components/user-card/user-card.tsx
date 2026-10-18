@@ -4,9 +4,8 @@ import {
   Dialog,
   DialogTrigger,
   OverlayTriggerStateContext,
-  type ButtonProps as AriaButtonProps,
-  type DialogProps,
 } from '../../primitives/index.js';
+import type { OpenStateProps, PressEventProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -42,11 +41,9 @@ export interface UserCardAction {
 }
 
 export interface UserCardProps
-  extends
-    Omit<DialogProps, 'className' | 'style' | 'children' | 'render'>,
-    AvatarIdentity,
-    Pick<UserIdentityProps, 'description' | 'colorCount'>,
-    BaseProps {
+  extends AvatarIdentity, Pick<UserIdentityProps, 'description' | 'colorCount'>, BaseProps {
+  /** Names the card instead of the display name. */
+  'aria-label'?: string | undefined;
   /** What the person is doing, as any word the host stylesheet knows (`active`, `away`, …). */
   status?: string | undefined;
   /** Human-readable status, shown in the status row. */
@@ -66,9 +63,12 @@ export type UserCardTriggerType = 'press' | 'hover';
 
 export interface UserCardTriggerProps
   extends
-    Omit<AriaButtonProps, 'className' | 'style' | 'children' | 'render'>,
-    Pick<HoverCardTriggerProps, 'isOpen' | 'defaultOpen' | 'onOpenChange' | 'delay' | 'closeDelay'>,
+    OpenStateProps,
+    Pick<HoverCardTriggerProps, 'delay' | 'closeDelay'>,
+    PressEventProps,
     BaseProps {
+  /** Opens nothing and refuses presses. */
+  isDisabled?: boolean | undefined;
   /** The card to open, usually a `UserCard`. */
   card: ReactNode;
   /** What the trigger shows: an avatar, a name or a user identity row. */
@@ -152,12 +152,11 @@ function UserCardRoot({
   isLoading,
   children,
   ...props
-}: Omit<DialogProps, 'children'> & { isLoading: boolean; children: ReactNode }) {
+}: BaseProps & { 'aria-label': string; isLoading: boolean; children: ReactNode }) {
   const isPreview = useContext(UserCardPreviewContext);
   if (isPreview) {
-    const { slot: _slot, isEntering: _isEntering, role = 'dialog', ...section } = props;
     return (
-      <section {...section} role={role} aria-busy={isLoading || undefined}>
+      <section {...props} role="dialog" aria-busy={isLoading || undefined}>
         {children}
       </section>
     );

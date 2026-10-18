@@ -3,14 +3,14 @@ import {
   Autocomplete,
   Dialog,
   Input,
+  MenuContext,
   Modal as AriaModal,
   ModalOverlay,
   SearchField,
   useFilter,
-  type AutocompleteProps,
-  type ModalOverlayProps,
 } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
+import type { OpenStateProps } from '../../core/events.js';
 import { createHooks, splitDataAttributes } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
@@ -19,19 +19,27 @@ import { useLayerZIndex } from '../portal/portal.js';
 import type { ShortcutChord } from '../shortcut/shortcut.js';
 import { isChordPress, useDocumentShortcut } from './command-palette-shortcut.js';
 
+/** Whether a command whose text is `textValue` matches the typed `inputValue`. */
+export type CommandPaletteFilter = (textValue: string, inputValue: string) => boolean;
+
 export interface CommandPaletteProps
   extends
-    Pick<ModalOverlayProps, 'isOpen' | 'defaultOpen' | 'onOpenChange'>,
-    Pick<AutocompleteProps, 'inputValue' | 'defaultInputValue' | 'onInputChange'>,
+    OpenStateProps,
     Pick<MenuProps, 'items' | 'children' | 'onAction' | 'isLoading' | 'renderEmptyState'>,
     BaseProps {
   /** Names the dialog. Defaults to the provider's `commandPalette` string. */
   'aria-label'?: string | undefined;
+  /** The search field's text, controlled. */
+  inputValue?: string | undefined;
+  /** The search field's text at each opening, uncontrolled. Defaults to empty. */
+  defaultInputValue?: string | undefined;
+  /** Called with the search field's text as the reader types. */
+  onInputChange?: ((value: string) => void) | undefined;
   /**
    * Keeps the commands whose text matches what was typed. Defaults to a match anywhere in the
    * label, ignoring case and accents; `null` shows the commands as given, already filtered.
    */
-  filter?: AutocompleteProps['filter'] | null;
+  filter?: CommandPaletteFilter | null | undefined;
   /**
    * The chord that opens the palette from anywhere in the document, and closes it from inside.
    * Defaults to `Ctrl+K` (Command+K on macOS); `null` registers none.
@@ -106,14 +114,15 @@ function CommandPaletteDialog({
           <Glyph name="search" className={hooks.slotClass('search-icon')} />
           <Input className={hooks.slotClass('search-input')} placeholder={hint} />
         </SearchField>
-        <Menu
-          {...menu}
-          highlightMatches
-          onClose={close}
-          renderEmptyState={() => (
-            <span {...hooks.slot('empty')}>{renderEmptyState?.() ?? strings.noResults}</span>
-          )}
-        />
+        <MenuContext.Provider value={{ onClose: close }}>
+          <Menu
+            {...menu}
+            highlightMatches
+            renderEmptyState={() => (
+              <span {...hooks.slot('empty')}>{renderEmptyState?.() ?? strings.noResults}</span>
+            )}
+          />
+        </MenuContext.Provider>
       </Autocomplete>
     </Dialog>
   );

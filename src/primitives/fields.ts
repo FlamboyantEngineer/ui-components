@@ -30,19 +30,3 @@ export {
   TextArea,
   TextField,
 } from 'react-aria-components';
-export type {
-  CheckboxGroupProps,
-  CheckboxProps,
-  ComboBoxProps,
-  FieldErrorProps,
-  FormProps,
-  NumberFieldProps,
-  RadioFieldProps,
-  RadioGroupProps,
-  SearchFieldProps,
-  SelectProps,
-  SliderProps,
-  SwitchProps,
-  TextAreaProps,
-  TextFieldProps,
-} from 'react-aria-components';

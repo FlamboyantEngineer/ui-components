@@ -135,7 +135,7 @@ test.describe('Card lab', () => {
     await expect(demo.locator('[data-lab-output="opened"]')).toHaveText('2');
     expect(await market.evaluate((node) => getComputedStyle(node).cursor)).toBe('pointer');
 
-    await demo.getByText('A custom header whose slotted link').click();
+    await demo.getByText('A custom header whose CardAction').click();
     await expect(page).toHaveURL(/#gardens$/);
     await lab.expectAccessible();
   });

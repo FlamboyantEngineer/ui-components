@@ -306,6 +306,26 @@ test.describe('Menu lab', () => {
     await expect(item(page, /^Quito 5000$/)).toBeFocused();
     await expect(item(page, /^Quito 5000$/)).toHaveAttribute('aria-posinset', '5000');
     expect(await menu.getByRole('menuitem').count()).toBeLessThan(100);
+    await expect(menu).toHaveAttribute('data-virtualized', 'true');
     await lab.expectAccessible('.ui-menu-popover');
+  });
+
+  test('UIC-MENU-5.3 sizes virtualized rows from rowHeight and loads more as they scroll', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('menu');
+    const area = section(page, 'Virtualized and loading more');
+    await area.getByRole('button', { name: 'Tall rows' }).click();
+    const first = item(page, /^Paris 1$/);
+    await expect(first).toBeVisible();
+    const second = await item(page, /^Lima 2$/).boundingBox();
+    expect((second?.y ?? 0) - ((await first.boundingBox())?.y ?? 0)).toBe(40);
+    await expect(first).toHaveAttribute('aria-setsize', '200');
+    await first.focus();
+    await page.keyboard.press('End');
+    await expect(item(page, /^Lima 200$/)).toBeFocused();
+    await expect(area.locator('[data-lab-output="Loaded"]')).toHaveText('400');
+    await expect(item(page, /^Lima 200$/)).toHaveAttribute('aria-setsize', '400');
   });
 });

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Key, Selection, SortDescriptor } from '../../src/primitives/index.js';
+import type { Key, Selection, SortDescriptor } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
 import { IconButton } from '../../src/components/icon-button/icon-button.js';
 import { Table, type TableProps } from '../../src/components/table/table.js';

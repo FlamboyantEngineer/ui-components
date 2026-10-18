@@ -8,7 +8,7 @@ import {
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps, Orientation } from '../../core/props.js';
 import { mergeProps } from '../../utils/merge-props.js';
-import { Menu, MenuPopover, MenuTrigger, type MenuProps, type MenuSize } from '../menu/menu.js';
+import { Menu, MenuOverlay, MenuTrigger, type MenuProps, type MenuSize } from '../menu/menu.js';
 import { MenubarContext, useMenubarContext, useMenubarState } from './menubar-state.js';
 
 export interface MenubarProps
@@ -125,7 +125,7 @@ export function MenubarMenu({ items, children, onAction, ...trigger }: MenubarMe
   return (
     <MenuTrigger isOpen={isOpen} onOpenChange={(open) => bar.setOpen(key, open)}>
       <MenubarTrigger {...trigger} itemKey={key} isOpen={isOpen} />
-      <MenuPopover
+      <MenuOverlay
         ref={popoverRef}
         placement={bar.orientation === 'horizontal' ? 'bottom start' : 'end top'}
         isNonModal
@@ -134,7 +134,7 @@ export function MenubarMenu({ items, children, onAction, ...trigger }: MenubarMe
         <Menu items={items} onAction={onAction} size={bar.size}>
           {children}
         </Menu>
-      </MenuPopover>
+      </MenuOverlay>
     </MenuTrigger>
   );
 }

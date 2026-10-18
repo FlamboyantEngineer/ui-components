@@ -57,7 +57,7 @@ Verification: `src/components/user-card/user-card.test.tsx`
 
 ### UIC-USER-CARD-2.1 - Wrapping content
 
-`UserCardTrigger` shall render its children inside a React Aria button in the `ui-user-card__trigger` slot, named by that content, with `aria-expanded` reporting whether the card is open. It passes React Aria's button props through (`onPress` runs as well as opening the card), appends the caller's `className`, forwards caller `data-*` attributes and `id`, and publishes React Aria's `data-hovered`, `data-pressed`, `data-focused`, `data-focus-visible` and `data-disabled` states.
+`UserCardTrigger` shall render its children inside a button in the `ui-user-card__trigger` slot, named by that content, with `aria-expanded` reporting whether the card is open. It takes the press handlers (`onPress` runs as well as opening the card) and `isDisabled`, appends the caller's `className`, forwards caller `data-*` attributes and `id`, and publishes `data-hovered`, `data-pressed`, `data-focused`, `data-focus-visible` and `data-disabled` states.
 
 Implementation: `src/components/user-card/user-card.tsx`
 Verification: `src/components/user-card/user-card.test.tsx`, `e2e/user-card.spec.ts`

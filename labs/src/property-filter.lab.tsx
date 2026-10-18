@@ -1,5 +1,4 @@
 import { useId, useState } from 'react';
-import { Input } from '../../src/primitives/index.js';
 import { Field, useFieldState } from '../../src/components/field/field.js';
 import { PropertyFilter } from '../../src/components/property-filter/property-filter.js';
 import {
@@ -19,7 +18,7 @@ type TextSettingProps = Omit<PropertyRowProps, 'children' | 'htmlFor' | 'label'>
   value: string;
 };
 
-/** A row holding a field around a plain React Aria input, so a draft can outlive filtering. */
+/** A row holding a field around a plain native input, so a draft can outlive filtering. */
 function TextSetting({ label, value, ...row }: TextSettingProps) {
   const id = useId();
   const state = useFieldState<string>({ defaultValue: value });
@@ -27,7 +26,7 @@ function TextSetting({ label, value, ...row }: TextSettingProps) {
     <PropertyRow label={label} htmlFor={`${id}-control`} {...row}>
       <Field id={id} state={state} label={label} labelLayout="control-only">
         {(control) => (
-          <Input
+          <input
             {...control}
             value={state.value}
             onChange={(event) => state.setValue(event.target.value)}

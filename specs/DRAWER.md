@@ -50,21 +50,21 @@ Verification: `src/components/drawer/drawer.test.tsx`, `e2e/drawer.spec.ts`
 
 ### UIC-DRAWER-2.2 - Outside presses
 
-A press outside the panel, such as on the backdrop, shall close the drawer, unless `isDismissable` is false or React Aria's `shouldCloseOnInteractOutside` returns false for the element pressed.
+A press outside the panel, such as on the backdrop, shall close the drawer, unless `isDismissable` is false or `shouldCloseOnInteractOutside` returns false for the element pressed.
 
 Implementation: `src/components/drawer/drawer.tsx`
 Verification: `src/components/drawer/drawer.test.tsx`, `e2e/drawer.spec.ts`
 
 ### UIC-DRAWER-2.3 - Swiping
 
-Swiping or scrolling the panel toward its edge until it has left the viewport shall close the drawer. React Aria's `swipeDirection` chooses the direction (the drawer's edge by default, or `vertical` or `horizontal` for both ways along an axis), and publishes it in `data-swipe-direction` on the overlay, backdrop and panel.
+Swiping or scrolling the panel toward its edge until it has left the viewport shall close the drawer. `swipeDirection` chooses the direction (the drawer's edge by default, or `vertical` or `horizontal` for both ways along an axis), and the drawer publishes it in `data-swipe-direction` on the overlay, backdrop and panel.
 
 Implementation: `src/components/drawer/drawer.tsx`
 Verification: `src/components/drawer/drawer.test.tsx`, `e2e/drawer.spec.ts`
 
 ### UIC-DRAWER-2.4 - Preventing dismissal
 
-React Aria's `preventDismissal` shall refuse every way of dismissing the drawer at once: Escape, outside presses and swiping past its smallest snap point are ignored, and the close button is disabled, for a task the reader must finish. The drawer's own content can still close it.
+`isDismissDisabled` shall refuse every way of dismissing the drawer at once: Escape, outside presses and swiping past its smallest snap point are ignored, and the close button is disabled, for a task the reader must finish. The drawer's own content can still close it.
 
 Implementation: `src/components/drawer/drawer.tsx`
 Verification: `src/components/drawer/drawer.test.tsx`, `e2e/drawer.spec.ts`
@@ -105,7 +105,7 @@ Verification: `src/components/drawer/drawer.test.tsx`
 
 ### UIC-DRAWER-5.1 - Snap points
 
-React Aria's `snapPoints` shall make the panel rest at each of the given amounts of itself left visible (numbers in pixels, percentages of the panel), opening at the first; swiping moves it between them, and past the smallest one closes it unless dismissal is prevented. The overlay, backdrop and panel publish `data-expanded` while the panel is fully revealed.
+`snapPoints` shall make the panel rest at each of the given amounts of itself left visible (numbers in pixels, percentages of the panel), opening at the first; swiping moves it between them, and past the smallest one closes it unless dismissal is prevented. The overlay, backdrop and panel publish `data-expanded` while the panel is fully revealed.
 
 Implementation: `src/components/drawer/drawer.tsx`
 Verification: `src/components/drawer/drawer.test.tsx`, `e2e/drawer.spec.ts`

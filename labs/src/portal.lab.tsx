@@ -1,12 +1,6 @@
 import { useRef, useState, type CSSProperties, type ReactNode } from 'react';
-import {
-  Button,
-  Dialog,
-  DialogTrigger,
-  Heading,
-  Modal,
-  ModalOverlay,
-} from '../../src/primitives/index.js';
+import { Button } from '../../src/components/button/button.js';
+import { Modal, ModalTrigger } from '../../src/components/modal/modal.js';
 import { overlayLayers } from '../../src/components/portal/layers.js';
 import { Portal, PortalContainerProvider, PortalHost } from '../../src/components/portal/portal.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
@@ -130,63 +124,52 @@ function ColourDialog() {
   const [chosen, setChosen] = useState<string>('none');
   const toggle = useRef<HTMLButtonElement>(null);
   return (
-    <DialogTrigger>
+    <ModalTrigger>
       <Button>Choose a colour</Button>
-      <ModalOverlay
+      <Modal
+        title="Colour"
+        size="sm"
         isDismissable
-        style={{
-          position: 'fixed',
-          inset: 0,
-          display: 'grid',
-          placeItems: 'center',
-          background: 'rgb(0 0 0 / 0.3)',
-        }}
+        cancelAction={null}
+        primaryAction={{ label: 'Done', onPress: (close) => close() }}
       >
-        <Modal style={{ ...card, width: 260, height: 'auto', padding: 16 }}>
-          <Dialog>
-            <Heading slot="title" style={{ margin: '0 0 8px', fontSize: 16 }}>
-              Colour
-            </Heading>
-            <p data-lab-chosen="">Chosen: {chosen}</p>
-            <button ref={toggle} type="button" onClick={() => setListOpen((value) => !value)}>
-              {listOpen ? 'Hide colours' : 'Show colours'}
-            </button>{' '}
-            <Button slot="close">Done</Button>
-            {listOpen ? (
-              <Portal layer="dropdown" data-lab-colours="">
-                <ul
-                  aria-label="Colours"
-                  style={{
-                    ...card,
-                    position: 'fixed',
-                    left: 'calc(50% - 60px)',
-                    top: 'calc(50% + 90px)',
-                    height: 'auto',
-                    margin: 0,
-                    listStyle: 'none',
-                  }}
-                >
-                  {colours.map((colour) => (
-                    <li key={colour}>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setChosen(colour);
-                          setListOpen(false);
-                          toggle.current?.focus();
-                        }}
-                      >
-                        {colour}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </Portal>
-            ) : null}
-          </Dialog>
-        </Modal>
-      </ModalOverlay>
-    </DialogTrigger>
+        <p data-lab-chosen="">Chosen: {chosen}</p>
+        <button ref={toggle} type="button" onClick={() => setListOpen((value) => !value)}>
+          {listOpen ? 'Hide colours' : 'Show colours'}
+        </button>
+        {listOpen ? (
+          <Portal layer="dropdown" data-lab-colours="">
+            <ul
+              aria-label="Colours"
+              style={{
+                ...card,
+                position: 'fixed',
+                left: 'calc(50% - 60px)',
+                top: 'calc(50% + 90px)',
+                height: 'auto',
+                margin: 0,
+                listStyle: 'none',
+              }}
+            >
+              {colours.map((colour) => (
+                <li key={colour}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setChosen(colour);
+                      setListOpen(false);
+                      toggle.current?.focus();
+                    }}
+                  >
+                    {colour}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </Portal>
+        ) : null}
+      </Modal>
+    </ModalTrigger>
   );
 }
 
@@ -303,8 +286,8 @@ mountLab(
       <BodyNotice />
     </LabSection>
     <LabSection
-      title="With a React Aria modal"
-      description="A dropdown-layer portal opened from a React Aria modal stays usable: choosing a colour keeps the dialog open."
+      title="With a modal"
+      description="A dropdown-layer portal opened from a modal stays usable: choosing a colour keeps the dialog open."
     >
       <ColourDialog />
     </LabSection>

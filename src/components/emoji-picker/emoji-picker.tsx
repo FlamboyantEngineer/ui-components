@@ -1,5 +1,6 @@
 import { useRef, type ReactNode } from 'react';
-import { Dialog, DialogTrigger, Popover, type DialogProps } from '../../primitives/index.js';
+import { Dialog, DialogTrigger, Popover } from '../../primitives/index.js';
+import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -18,7 +19,7 @@ import { EmojiPickerSkinTones } from './skin-tone-picker.js';
 
 export interface EmojiPickerProps
   extends
-    Omit<DialogProps, 'className' | 'style' | 'children' | 'render'>,
+    AriaLabellingProps,
     SkinToneState,
     EmojiSources,
     EmojiChoiceHandlers,

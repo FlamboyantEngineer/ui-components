@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Input, Label, SearchField } from '../../src/primitives/index.js';
 import {
   PropertyCard,
   PropertyGroup,
@@ -8,6 +7,7 @@ import {
   PropertySection,
 } from '../../src/components/property-panel/property-panel.js';
 import { PropertyScope } from '../../src/components/property-scope/property-scope.js';
+import { SearchField } from '../../src/components/search-field/search-field.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const queries = { none: '', title: 'colour', label: 'height', card: 'shadow', 'no match': 'zinc' };
@@ -55,9 +55,12 @@ function HostSearch() {
     <PropertyPanel
       aria-label="Host search"
       header={
-        <SearchField value={query} onChange={setQuery}>
-          <Label>Find a setting</Label> <Input />
-        </SearchField>
+        <SearchField
+          label="Find a setting"
+          labelLayout="label-control"
+          value={query}
+          onChange={setQuery}
+        />
       }
     >
       <Swatches query={query} onClear={() => setQuery('')} />
@@ -75,9 +78,12 @@ function WholeWords() {
     <PropertyPanel
       aria-label="Whole words"
       header={
-        <SearchField value={query} onChange={setQuery}>
-          <Label>Find a whole word</Label> <Input />
-        </SearchField>
+        <SearchField
+          label="Find a whole word"
+          labelLayout="label-control"
+          value={query}
+          onChange={setQuery}
+        />
       }
     >
       <Swatches query={query} filter={wholeWord} onClear={() => setQuery('')} />

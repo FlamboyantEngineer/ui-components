@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import type { Key, Selection } from '../../src/primitives/index.js';
+import type { Key, Selection } from '../../src/core/props.js';
 import { UiProvider } from '../../src/core/provider.js';
 import {
   MenuItem,

@@ -1,6 +1,6 @@
 # Date Time Field
 
-`DateTimeField` edits a calendar date, a time of day, a date and time, or a range of dates or of dates and times. It is a field control: it composes the field base ([FIELD.md](FIELD.md)) for its label, layout, description, help, validation, dirty state, restore, undo and menu, around React Aria's `DatePicker`, `TimeField` and `DateRangePicker` with dates from `@internationalized/date`. Each part of the value is a segment the reader types into or steps with the arrow keys; the date modes also open a calendar with the caller's presets and quick actions. Values are canonical text, so they store and compare without conversion: `YYYY-MM-DD` dates, `HH:mm` times, UTC ISO instants and `{ start, end }` ranges of either. Instants edit as local wall time or in a chosen time zone, to the hour, minute or second.
+`DateTimeField` edits a calendar date, a time of day, a date and time, or a range of dates or of dates and times. It is a field control: it composes the field base ([FIELD.md](FIELD.md)) for its label, layout, description, help, validation, dirty state, restore, undo and menu, around React Aria's `DatePicker`, `TimeField` and `DateRangePicker` with dates from `@internationalized/date`. Each part of the value is a segment the reader types into or steps with the arrow keys; the date modes also open a calendar with the caller's presets and quick actions. Values are plain ISO 8601 texts, so they store, compare and serialize without conversion: `YYYY-MM-DD` dates, `HH:mm` times, floating `YYYY-MM-DDTHH:mm` dates and times, zoned `YYYY-MM-DDTHH:mm:ss±HH:MM[Zone]` dates and times in a chosen time zone, and `{ start, end }` ranges of dates or of dates and times, to the hour, minute or second. The field converts them to and from the building blocks' date objects inside its implementation.
 
 ## UIC-DATE-TIME-FIELD-1 - Field
 
@@ -13,9 +13,20 @@ Verification: `src/components/date-time-field/date-time-field.test.tsx`, `e2e/da
 
 ### UIC-DATE-TIME-FIELD-1.2 - Values
 
-The value shall be `null` or, by mode, a `YYYY-MM-DD` date, an `HH:mm` time, a UTC ISO instant whose segments edit the local wall time to the minute, a `{ start, end }` range of dates, or a `{ start, end }` range of instants (UIC-DATE-TIME-FIELD-4.3). A value the mode cannot read shows as empty segments.
+The value shall be `null` or an ISO 8601 text by mode, and the field shall write every value it sets in that mode's canonical form:
 
-Implementation: `src/components/date-time-field/date-values.ts`, `src/components/date-time-field/date-time-pickers.tsx`
+| Mode              | Canonical value                                                             | Also read                                               |
+| ----------------- | --------------------------------------------------------------------------- | ------------------------------------------------------- |
+| `date`            | `YYYY-MM-DD`                                                                |                                                         |
+| `time`            | `HH:mm` (`HH:mm:ss` at the `second` granularity)                            | `HH:mm:ss`, `HH:mm:ss.sss`                              |
+| `date-time`       | floating `YYYY-MM-DDTHH:mm` (`…:ss` at `second`)                            | a text with an offset (`Z`, `+02:00`) or a zone (`[…]`) |
+| `date-time` zoned | `YYYY-MM-DDTHH:mm:ss±HH:MM[Zone]` with `timeZone` (UIC-DATE-TIME-FIELD-4.2) | an offset or zoned text, a floating text                |
+| `date-range`      | `{ start, end }` of `date` values                                           |                                                         |
+| `date-time-range` | `{ start, end }` of `date-time` values, floating or zoned                   | as `date-time` (UIC-DATE-TIME-FIELD-4.3)                |
+
+A floating date and time has no zone: its segments edit it as written. A text with an offset or a zone given to a floating field reads as the local wall time of its instant. A text the mode cannot read (`2026-02-30`, `25:00`, a date in a date-time mode) shows as empty segments and is never rewritten until the reader sets a value.
+
+Implementation: `src/components/date-time-field/date-values.ts`, `src/components/date-time-field/date-time-pickers.tsx`, `src/primitives/date-values.ts`
 Verification: `src/components/date-time-field/date-values.test.ts`, `src/components/date-time-field/date-time-field.test.tsx`
 
 ### UIC-DATE-TIME-FIELD-1.3 - Commit
@@ -27,7 +38,7 @@ Verification: `src/components/date-time-field/date-time-field.test.tsx`, `e2e/da
 
 ### UIC-DATE-TIME-FIELD-1.4 - Bounds
 
-`minValue` and `maxValue`, in the mode's format (dates for a date range, instants for a date-time range), shall bound the value: the calendar refuses days outside them, and a value typed outside them stays on screen, uncommitted, while the field is invalid with the provider string `dateTooEarly` or `dateTooLate` naming the localized bound. A range whose end precedes its start is invalid the same way. The caller's `validate` runs on values within bounds.
+`minValue` and `maxValue`, ISO 8601 texts read as one end of the mode's value (dates for a date range, dates and times for a date-time range, compared as instants when zoned), shall bound the value: the calendar refuses days outside them, and a value typed outside them stays on screen, uncommitted, while the field is invalid with the provider string `dateTooEarly` or `dateTooLate` naming the localized bound. A range whose end precedes its start is invalid the same way. The caller's `validate` runs on values within bounds.
 
 Implementation: `src/components/date-time-field/date-time-field.tsx`, `src/components/date-time-field/date-values.ts`, `src/core/strings.ts`
 Verification: `src/components/date-time-field/date-time-field.test.tsx`, `src/components/date-time-field/date-values.test.ts`, `e2e/date-time-field.spec.ts`
@@ -71,7 +82,7 @@ Verification: `src/components/date-time-field/date-time-field.test.tsx`, `e2e/da
 
 ### UIC-DATE-TIME-FIELD-2.2 - Quick actions
 
-The popover shall end with quick actions (`ui-date-time-field__actions`, each a ghost `Button` also carrying `ui-date-time-field__action`): Today (provider string `today`) for a date, Now (`now`) for a date and time, to the minute, and Clear (`clear`) in every picker mode. Each sets its value, commits it and closes the popover.
+The popover shall end with quick actions (`ui-date-time-field__actions`, each a ghost `Button` also carrying `ui-date-time-field__action`): Today (provider string `today`) for a date, Now (`now`) for a date and time, to the minute, as a floating or (with `timeZone`) zoned value, and Clear (`clear`) in every picker mode. Each sets its value, commits it and closes the popover.
 
 Implementation: `src/components/date-time-field/date-time-calendar.tsx`, `src/components/date-time-field/date-values.ts`, `src/core/strings.ts`
 Verification: `src/components/date-time-field/date-time-field.test.tsx`, `e2e/date-time-field.spec.ts`
@@ -80,7 +91,7 @@ Verification: `src/components/date-time-field/date-time-field.test.tsx`, `e2e/da
 
 ### UIC-DATE-TIME-FIELD-3.1 - Unavailable dates
 
-`isDateUnavailable(date)`, React Aria's callback receiving the date as the React Aria value it edits as, shall refuse dates such as weekends or booked days: the calendar marks them `data-unavailable` and does not pick them, and a value typed on such a date (either end of a range) stays on screen, uncommitted, while the field is invalid with the provider string `dateUnavailable`. A value outside the bounds reports the bound instead.
+`isDateUnavailable(date)`, called with the `YYYY-MM-DD` date a day or value falls on (in the field's time zone for a zoned value), shall refuse dates such as weekends or booked days: the calendar marks them `data-unavailable` and does not pick them, and a value typed on such a date (either end of a range) stays on screen, uncommitted, while the field is invalid with the provider string `dateUnavailable`. A value outside the bounds reports the bound instead.
 
 Implementation: `src/components/date-time-field/date-time-field.tsx`, `src/components/date-time-field/date-values.ts`, `src/components/date-time-field/date-time-pickers.tsx`, `src/core/strings.ts`
 Verification: `src/components/date-time-field/date-time-presets.test.tsx`, `src/components/date-time-field/date-values.test.ts`, `e2e/date-time-field.spec.ts`
@@ -103,21 +114,21 @@ Verification: `src/components/date-time-field/date-time-calendar-heading.test.ts
 
 ### UIC-DATE-TIME-FIELD-4.1 - Granularity and hour cycle
 
-`granularity` (`hour`, `minute`, the default, or `second`) shall set the smallest time segment of the time, date-time and date-time range modes. With `second`, a time value is `HH:mm:ss`, an instant keeps its seconds and Now picks the current second; with `hour` the segments stop at the hour. `hourCycle` (`12` or `24`) shows the hours of a day in that cycle whatever the locale's (React Aria).
+`granularity` (`hour`, `minute`, the default, or `second`) shall set the smallest time segment of the time, date-time and date-time range modes. With `second`, a time value is `HH:mm:ss`, a date and time keeps its seconds and Now picks the current second; with `hour` the segments stop at the hour. Parts finer than the granularity are written as zero (`07:00` at `hour`). `hourCycle` (`12` or `24`) shows the hours of a day in that cycle whatever the locale's.
 
-Implementation: `src/components/date-time-field/date-time-pickers.tsx`, `src/components/date-time-field/date-values.ts`
+Implementation: `src/components/date-time-field/date-time-pickers.tsx`, `src/components/date-time-field/date-values.ts`, `src/primitives/date-values.ts`
 Verification: `src/components/date-time-field/date-time-zones.test.tsx`, `src/components/date-time-field/date-values.test.ts`, `e2e/date-time-field.spec.ts`
 
 ### UIC-DATE-TIME-FIELD-4.2 - Time zones
 
-With `timeZone`, an IANA zone such as `Asia/Tokyo`, the date-time modes shall edit instants as wall time in that zone instead of the local one, ending their segments with the zone (`data-type="timeZoneName"`) unless `hideTimeZone`. Values stay UTC ISO instants; the previous value, bound messages and Now read in the zone.
+With `timeZone`, an IANA zone such as `Asia/Tokyo`, the date-time modes shall edit zoned values as wall time in that zone, ending their segments with the zone (`data-type="timeZoneName"`) unless `hideTimeZone`. Values are written zoned, with seconds, offset and zone (`2026-04-13T12:00:00+09:00[Asia/Tokyo]`). A zoned text in another zone or a text with an offset (`2026-04-13T03:00:00Z`) converts to the same instant in the field's zone; a floating text reads as wall time in it, and a wall time the zone's clocks skip reads as the time after the gap. The previous value, bound messages and Now read in the zone.
 
-Implementation: `src/components/date-time-field/date-time-pickers.tsx`, `src/components/date-time-field/date-values.ts`, `src/components/date-time-field/date-time-field.tsx`
+Implementation: `src/components/date-time-field/date-time-pickers.tsx`, `src/components/date-time-field/date-values.ts`, `src/components/date-time-field/date-time-field.tsx`, `src/primitives/date-values.ts`
 Verification: `src/components/date-time-field/date-time-zones.test.tsx`, `src/components/date-time-field/date-values.test.ts`, `e2e/date-time-field.spec.ts`
 
 ### UIC-DATE-TIME-FIELD-4.3 - Date-time ranges
 
-`mode="date-time-range"` shall edit a range whose start and end inputs hold date and time segments, with the range calendar of two months and the Clear action. Its value is a `{ start, end }` of UTC ISO instants, its bounds are instants, and an end before the start is invalid as in UIC-DATE-TIME-FIELD-1.4.
+`mode="date-time-range"` shall edit a range whose start and end inputs hold date and time segments, with the range calendar of two months and the Clear action. Its value is a `{ start, end }` of `date-time` values, floating or (with `timeZone`) zoned, its bounds are dates and times, and an end before the start is invalid as in UIC-DATE-TIME-FIELD-1.4.
 
 Implementation: `src/components/date-time-field/date-time-pickers.tsx`, `src/components/date-time-field/date-values.ts`, `src/components/date-time-field/date-time-field.tsx`
 Verification: `src/components/date-time-field/date-time-zones.test.tsx`, `src/components/date-time-field/date-values.test.ts`, `e2e/date-time-field.spec.ts`

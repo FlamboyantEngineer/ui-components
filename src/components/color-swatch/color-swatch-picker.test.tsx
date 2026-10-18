@@ -40,15 +40,16 @@ describe('ColorSwatchPicker', () => {
   it('UIC-COLOR-SWATCH-2.2 moves with the arrow keys and picks with Enter or a press', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
-    render(<Palette defaultValue="#cc3300" onChange={onChange} />);
+    render(<Palette defaultValue="rgb(204, 51, 0)" onChange={onChange} />);
+    expect(screen.getAllByRole('option')[0]).toHaveAttribute('aria-selected', 'true');
     await user.tab();
     expect(screen.getAllByRole('option')[0]).toHaveFocus();
     await user.keyboard('{ArrowRight}');
     expect(screen.getAllByRole('option')[1]).toHaveFocus();
     await user.keyboard('{Enter}');
-    expect(onChange.mock.lastCall?.[0].toString('hex')).toBe('#2E8B57');
+    expect(onChange).toHaveBeenLastCalledWith('#2e8b57');
     await user.click(screen.getAllByRole('option')[2] as HTMLElement);
-    expect(onChange.mock.lastCall?.[0].toString('hex')).toBe('#336699');
+    expect(onChange).toHaveBeenLastCalledWith('#336699');
     await user.click(screen.getByRole('option', { name: 'Sunflower' }));
     expect(onChange).toHaveBeenCalledTimes(2);
   });

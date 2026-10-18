@@ -1,41 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { Key, RootMenuTriggerState } from '../../primitives/index.js';
-
-/**
- * The root menu state React Aria reads for submenus and to close a whole menu tree, for a menu
- * whose open state lives elsewhere. `close` empties the submenu stack, then calls `onClose`.
- */
-export function useRootMenuState(isOpen: boolean, onClose: () => void): RootMenuTriggerState {
-  const [expandedKeysStack, setExpandedKeysStack] = useState<Key[]>([]);
-  const close = useCallback(() => {
-    setExpandedKeysStack([]);
-    onClose();
-  }, [onClose]);
-  return useMemo<RootMenuTriggerState>(
-    () => ({
-      isOpen,
-      focusStrategy: 'first',
-      point: null,
-      setPoint: () => {},
-      setOpen: (open) => {
-        if (!open) close();
-      },
-      open: () => {},
-      toggle: close,
-      close,
-      expandedKeysStack,
-      openSubmenu: (triggerKey, level) =>
-        setExpandedKeysStack((stack) =>
-          level > stack.length ? stack : [...stack.slice(0, level), triggerKey],
-        ),
-      closeSubmenu: (triggerKey, level) =>
-        setExpandedKeysStack((stack) =>
-          stack[level] === triggerKey ? stack.slice(0, level) : stack,
-        ),
-    }),
-    [isOpen, close, expandedKeysStack],
-  );
-}
+import { useEffect } from 'react';
 
 /**
  * Closes an open menu on a secondary press (or Control-click) outside every menu popover, where the

@@ -1,14 +1,8 @@
 import { createContext, useContext, type ReactElement, type ReactNode } from 'react';
-import {
-  Tag as AriaTag,
-  TagGroup as AriaTagGroup,
-  TagList,
-  type TagGroupProps as AriaTagGroupProps,
-  type TagListProps,
-  type TagProps as AriaTagProps,
-} from '../../primitives/index.js';
+import { Tag as AriaTag, TagGroup as AriaTagGroup, TagList } from '../../primitives/index.js';
+import type { AriaLabellingProps, SelectionProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Size, Tone } from '../../core/props.js';
+import type { BaseProps, Key, Size, Tone } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { IconButton } from '../icon-button/icon-button.js';
 
@@ -17,12 +11,13 @@ export type TagGroupSize = Extract<Size, 'sm' | 'md' | 'lg'>;
 export type TagTone = Tone;
 
 export interface TagGroupProps<T extends object>
-  extends
-    Omit<AriaTagGroupProps, 'className' | 'style' | 'children' | 'render'>,
-    Pick<TagListProps<T>, 'items'>,
-    BaseProps {
+  extends BaseProps, AriaLabellingProps, SelectionProps {
+  /** The data to render a tag for each of, with `children` as a function. */
+  items?: Iterable<T> | undefined;
   /** The tags: `Tag` elements, or a function that renders the `Tag` of each of `items`. */
   children: ReactNode | ((item: T) => ReactElement);
+  /** Lets the tags be removed; called with the keys to remove. */
+  onRemove?: ((keys: Set<Key>) => void) | undefined;
   /** Scale. Defaults to `md`. */
   size?: TagGroupSize | undefined;
   /** The tone of every tag that sets none. Defaults to `neutral`. */
@@ -31,11 +26,16 @@ export interface TagGroupProps<T extends object>
   renderEmptyState?: (() => ReactNode) | undefined;
 }
 
-// A tag's `id` is React Aria's collection key, which may also be a number.
-export interface TagProps
-  extends Omit<AriaTagProps, 'className' | 'style' | 'children' | 'render'>, Omit<BaseProps, 'id'> {
+// A tag's `id` is its collection key, which may also be a number.
+export interface TagProps extends Omit<BaseProps, 'id'> {
+  /** The tag's key in the group. */
+  id?: Key | undefined;
   /** The tag's content. Give `textValue` when it is not plain text. */
   children: ReactNode;
+  /** The tag's name, when its content is not plain text. */
+  textValue?: string | undefined;
+  /** Leaves the tag out of the keyboard path and of removal. */
+  isDisabled?: boolean | undefined;
   /** The tag's tone. Defaults to the group's. */
   tone?: TagTone | undefined;
 }

@@ -4,12 +4,12 @@ import {
   TreeItem,
   TreeItemContent,
   TreeLoadMoreItem,
-  type Key,
   type TreeItemContentRenderProps,
   type TreeItemRenderProps,
   type TreeLoadMoreItemRenderProps,
 } from '../../primitives/index.js';
 import { measuredProperty } from '../../core/hooks.js';
+import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { EmptyState } from '../empty-state/empty-state.js';
 import type { TreeExpandGlyph, TreeItemData, TreeItemState, TreeProps } from './tree.js';
@@ -37,10 +37,8 @@ export interface TreeRowOptions<T extends TreeItemData> extends Pick<
   getChildren: (item: T) => readonly T[] | undefined;
   /** The expand button's glyphs. */
   expandGlyph: TreeExpandGlyph;
-  /** Values that, when they change, redraw every row. */
-  dependencies: readonly unknown[];
   /** Reordering, while the tree is reorderable. */
-  reordering: TreeReorder<T> | null;
+  reordering: TreeReorder | null;
   /** Records which item a row element draws. */
   registerRow: TreeKeyDown<T>['registerRow'];
   /** Whether rows draw a selection checkbox while the tree selects. */
@@ -182,7 +180,7 @@ export function useTreeItemRenderer<T extends TreeItemData>(
 ): (item: T) => ReactElement {
   const { getTextValue, getChildren, hasChildItems, isItemPending, getHref, isItemCurrent } =
     options;
-  const { dependencies, reordering, registerRow, loads } = options;
+  const { reordering, registerRow, loads } = options;
   const content = useRowContentOptions(options);
   const keyShortcuts = reordering?.keyShortcuts;
   return useCallback(
@@ -217,7 +215,7 @@ export function useTreeItemRenderer<T extends TreeItemData>(
           </TreeItemContent>
           {children.length > 0 ? (
             // React Aria caches rendered items until a dependency changes: the render function is one.
-            <Collection items={children} dependencies={[renderItem, ...dependencies]}>
+            <Collection items={children} dependencies={[renderItem]}>
               {renderItem}
             </Collection>
           ) : null}
@@ -235,7 +233,6 @@ export function useTreeItemRenderer<T extends TreeItemData>(
       content,
       keyShortcuts,
       registerRow,
-      dependencies,
       loads,
     ],
   );

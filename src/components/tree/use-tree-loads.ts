@@ -1,5 +1,5 @@
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
-import type { Key } from '../../primitives/index.js';
+import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 
 /** Where loading a branch's children stands: loading, loaded, or failed with a message. */

@@ -1,10 +1,6 @@
 import { useCallback, useLayoutEffect, useMemo, useRef } from 'react';
-import {
-  DropIndicator,
-  type DragAndDropHooks,
-  type DropTarget,
-  type Key,
-} from '../../primitives/index.js';
+import { DropIndicator } from '../../primitives/index.js';
+import type { Key } from '../../core/props.js';
 import {
   getVisibleTreeRows,
   resolveTreeDrop,
@@ -14,7 +10,11 @@ import {
   type TreeMove,
   type TreeMoveRow,
 } from '../../utils/tree-reorder.js';
-import { useReorderDragAndDrop } from '../../utils/use-reorder-drag-and-drop.js';
+import {
+  useReorderDragAndDrop,
+  type CollectionDragAndDropOptions,
+  type CollectionDropTarget,
+} from '../../utils/use-reorder-drag-and-drop.js';
 import type { TreeItemData } from './tree.js';
 import { treeHooks as hooks } from './tree-hooks.js';
 import type { TreeExpansion } from './use-tree-expansion.js';
@@ -47,9 +47,10 @@ export interface TreeReorderSource<T extends TreeItemData> {
   getTextValue: (item: T) => string;
 }
 
-/** A reorderable tree's drag and drop hooks and keyboard moves. */
-export interface TreeReorder<T> {
-  dragAndDropHooks: DragAndDropHooks<T>;
+/** A reorderable tree's drag and drop options and keyboard moves. */
+export interface TreeReorder {
+  /** The options the tree hands to `useDragAndDrop`. */
+  dragAndDrop: CollectionDragAndDropOptions;
   /** Whether the visible row `key` can be moved. */
   isMovable: (key: Key) => boolean;
   /** The `aria-keyshortcuts` value of a movable row. */
@@ -68,7 +69,7 @@ const parentShortcuts = 'Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight'
 function resolveDropMoves<T>(
   rows: readonly TreeMoveRow<T>[],
   reorder: TreeReorderOptions<T> | undefined,
-  { target, keys }: { target: DropTarget; keys: ReadonlySet<Key> },
+  { target, keys }: { target: CollectionDropTarget; keys: ReadonlySet<Key> },
 ): readonly TreeMove[] | null {
   const [key] = keys;
   if (!reorder || key === undefined || target.type !== 'item') return null;
@@ -81,7 +82,7 @@ function resolveDropMoves<T>(
   return move ? [move] : null;
 }
 
-function renderDropIndicator(target: DropTarget) {
+function renderDropIndicator(target: CollectionDropTarget) {
   return (
     <DropIndicator
       target={target}
@@ -119,7 +120,7 @@ function useMoveRows<T extends TreeItemData>(source: TreeReorderSource<T>) {
  */
 export function useTreeReorder<T extends TreeItemData>(
   source: TreeReorderSource<T>,
-): TreeReorder<T> | null {
+): TreeReorder | null {
   const rows = useMoveRows(source);
   const latest = useRef({ rows, source });
   useLayoutEffect(() => {
@@ -132,7 +133,7 @@ export function useTreeReorder<T extends TreeItemData>(
     if (moves.length > 1) reorder?.onMoveMany?.(moves);
     else if (first) reorder?.onMove(first);
   }, []);
-  const dragAndDropHooks = useReorderDragAndDrop<T, readonly TreeMove[]>({
+  const dragAndDrop = useReorderDragAndDrop<readonly TreeMove[]>({
     resolveMove: (target, keys) => resolveDropMoves(rows, source.reorder, { target, keys }),
     onMove: report,
     getTextValue: (key) => {
@@ -158,7 +159,7 @@ export function useTreeReorder<T extends TreeItemData>(
   const hasReorder = source.reorder !== undefined;
   const keyShortcuts = source.reorder?.canMoveInto ? parentShortcuts : siblingShortcuts;
   return useMemo(
-    () => (hasReorder ? { dragAndDropHooks, isMovable, keyShortcuts, moveByKeyboard } : null),
-    [hasReorder, dragAndDropHooks, isMovable, keyShortcuts, moveByKeyboard],
+    () => (hasReorder ? { dragAndDrop, isMovable, keyShortcuts, moveByKeyboard } : null),
+    [hasReorder, dragAndDrop, isMovable, keyShortcuts, moveByKeyboard],
   );
 }

@@ -1,8 +1,8 @@
 import { useState, type ReactNode } from 'react';
-import { Toolbar } from '../../src/primitives/index.js';
 import { Badge } from '../../src/components/badge/badge.js';
 import { Button } from '../../src/components/button/button.js';
 import { DropdownMenu } from '../../src/components/dropdown-menu/dropdown-menu.js';
+import { ToolbarRow } from '../../src/components/layout/toolbar-row.js';
 import { OverflowList } from '../../src/components/overflow-list/overflow-list.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
@@ -73,7 +73,15 @@ function ToolRow() {
       <Frame width={330}>
         <OverflowList
           items={tools}
-          render={(props) => <Toolbar {...props} aria-label="Text tools" />}
+          render={(props) => (
+            <ToolbarRow
+              {...props}
+              role="toolbar"
+              aria-label="Text tools"
+              justify="start"
+              wrap="nowrap"
+            />
+          )}
           renderItem={(tool) => (
             <Button size="sm" variant="ghost" onPress={() => setLast(tool)}>
               {tool}

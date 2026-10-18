@@ -216,14 +216,19 @@ test.describe('Modal lab', () => {
     page,
     lab,
   }) => {
+    // Contrast is checked once the reference fade has finished: mid-animation text is translucent.
+    const settled = () =>
+      expect(page.locator('.ui-modal[data-entering], .ui-modal[data-exiting]')).toHaveCount(0);
     await lab.open('modal', { theme: 'dark' });
     await lab.expectAccessible();
     await page.locator('[data-lab-cell="state=error tone=danger"] button').click();
     await expect(page.getByRole('alert')).toHaveText('Lisbon is not available.');
+    await settled();
     await lab.expectAccessible('.ui-modal');
     await page.keyboard.press('Escape');
     await page.locator('[data-lab-cell="state=status tone=neutral"] button').click();
     await expect(page.locator('.ui-modal').getByRole('status')).toHaveText('Choose a city.');
+    await settled();
     await lab.expectAccessible('.ui-modal');
   });
 

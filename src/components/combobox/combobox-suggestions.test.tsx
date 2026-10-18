@@ -1,7 +1,7 @@
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
-import type { Key } from '../../primitives/index.js';
+import type { Key } from '../../core/props.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
@@ -115,10 +115,8 @@ describe('Combobox suggestions', () => {
 
   it('UIC-COMBOBOX-2.4 highlights options by keyboard, skips disabled ones and picks with Enter', async () => {
     const user = userEvent.setup();
-    const onSelectionChange = vi.fn();
-    render(
-      <Combobox aria-label="Fruit" defaultItems={fruit} onSelectionChange={onSelectionChange} />,
-    );
+    const onChange = vi.fn();
+    render(<Combobox aria-label="Fruit" defaultItems={fruit} onChange={onChange} />);
     await user.click(input());
     await user.keyboard('l');
     // Apple, then Lemon and the disabled Lime under Citrus.
@@ -137,7 +135,7 @@ describe('Combobox suggestions', () => {
     expect(input()).toHaveFocus();
     await user.keyboard('{Enter}');
     expect(input()).toHaveValue('Lemon');
-    expect(onSelectionChange).toHaveBeenLastCalledWith('lemon');
+    expect(onChange).toHaveBeenLastCalledWith('lemon');
     expect(screen.queryByRole('listbox')).toBeNull();
     await user.keyboard('{ArrowDown}');
     expect(screen.getByRole('listbox')).toBeInTheDocument();
@@ -186,13 +184,13 @@ describe('Combobox suggestions', () => {
   it('UIC-COMBOBOX-3.2 adds an action row for typed text no option has as label', async () => {
     const user = userEvent.setup();
     const onCreateOption = vi.fn();
-    const onSelectionChange = vi.fn();
+    const onChange = vi.fn();
     render(
       <Combobox
         aria-label="Fruit"
         defaultItems={fruit}
         onCreateOption={onCreateOption}
-        onSelectionChange={onSelectionChange}
+        onChange={onChange}
       />,
     );
     await user.type(input(), 'Kiwi');
@@ -202,7 +200,7 @@ describe('Combobox suggestions', () => {
     expectHooksMatchSpec(document.body, 'COMBOBOX', { slots: ['create'] });
     await user.keyboard('{ArrowDown}{Enter}');
     expect(onCreateOption).toHaveBeenCalledWith('Kiwi');
-    expect(onSelectionChange).not.toHaveBeenCalledWith(expect.stringContaining('Kiwi'));
+    expect(onChange).not.toHaveBeenCalledWith(expect.stringContaining('Kiwi'));
 
     await user.clear(input());
     await user.type(input(), 'lemon ');
@@ -223,8 +221,8 @@ describe('Combobox suggestions', () => {
           <Combobox
             aria-label="Destination"
             items={options}
-            selectedKey={chosen}
-            onSelectionChange={setChosen}
+            value={chosen}
+            onChange={setChosen}
             onCreateOption={(text) => {
               setOptions((current) => [...current, { id: text.toLowerCase(), label: text }]);
               setChosen(text.toLowerCase());
@@ -322,21 +320,33 @@ describe('Combobox suggestions', () => {
 
   it('UIC-COMBOBOX-4.4 draws custom option content from the option and its state', async () => {
     const user = userEvent.setup();
+    const states: object[] = [];
     render(
       <Combobox
         aria-label="Fruit"
         defaultItems={fruit}
-        renderOption={(option, state) => (
-          <span data-testid={`row-${option.id}`}>
-            {option.label}
-            {state.isFocused ? ' (focused)' : ''}
-          </span>
-        )}
+        renderOption={(option, state) => {
+          states.push(state);
+          return (
+            <span data-testid={`row-${option.id}`}>
+              {option.label}
+              {state.isFocused ? ' (focused)' : ''}
+            </span>
+          );
+        }}
       />,
     );
     await user.click(input());
     await user.keyboard('{ArrowDown}');
     expect(screen.getByTestId('row-apple')).toHaveTextContent('Apple (focused)');
+    expect(Object.keys(states.at(-1) ?? {}).sort()).toEqual([
+      'isDisabled',
+      'isFocusVisible',
+      'isFocused',
+      'isHovered',
+      'isPressed',
+      'isSelected',
+    ]);
     expect(screen.getByRole('option', { name: 'Apple (focused)' })).toHaveClass(
       'ui-combobox__option',
     );

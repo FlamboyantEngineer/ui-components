@@ -8,13 +8,13 @@ import {
   DisclosurePanel as AriaDisclosurePanel,
   DisclosureStateContext,
   Heading,
-  type DisclosurePanelProps as AriaDisclosurePanelProps,
   type KeyboardEvent,
 } from '../../primitives/index.js';
 import { mergeClassNames } from '../../core/hooks.js';
 import type { GlyphName } from '../../core/glyphs.js';
 import type { BaseProps } from '../../core/props.js';
 import { Glyph } from '../../core/provider.js';
+import type { ElementRender } from '../../utils/render-element.js';
 import { useExpandGlyph } from '../expand-toggle/expand-toggle.js';
 import { HeadingLevelContext } from '../section-header/section-header.js';
 import {
@@ -34,10 +34,22 @@ export interface DisclosureTitleProps extends BaseProps {
   children?: ReactNode;
 }
 
-export interface DisclosurePanelProps
-  extends Omit<AriaDisclosurePanelProps, 'className' | 'style' | 'children'>, BaseProps {
+/** The panel's role: `group` (the default), or `region` for a landmark-worthy section. */
+export type DisclosurePanelRole = 'group' | 'region';
+
+/** The state a disclosure panel passes to `render` with its element's props. */
+export interface DisclosurePanelRenderState {
+  /** Keyboard focus is inside the panel. */
+  isFocusVisibleWithin: boolean;
+}
+
+export interface DisclosurePanelProps extends BaseProps {
+  /** The panel's role. Defaults to `group`. */
+  role?: DisclosurePanelRole | undefined;
   /** The content that the disclosure shows and hides. */
   children?: ReactNode;
+  /** Replaces the panel's `<div>` with the caller's own, given its props and state. */
+  render?: ElementRender<'div', DisclosurePanelRenderState> | undefined;
 }
 
 /** The keys that move focus between the triggers of a group, and where each one moves it. */
@@ -121,7 +133,7 @@ export function DisclosureTitle({ className, children, ...rest }: DisclosureTitl
 }
 
 /**
- * The content a disclosure shows and hides (React Aria `DisclosurePanel`). It stays mounted while
+ * The content a disclosure shows and hides. It stays mounted while
  * collapsed, and headings inside take the levels below the disclosure's title.
  */
 export function DisclosurePanel({ className, children, ...rest }: DisclosurePanelProps) {

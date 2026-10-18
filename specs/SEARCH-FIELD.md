@@ -1,12 +1,12 @@
 # Search Field
 
-`SearchField` is a search or filter box on React Aria's `SearchField`: a search glyph, the query input, a spinner while results load and a clear button while it holds text. The query filters or finds; it is not a stored value, so the search box has no field around it (no dirty state, undo or field menu), but it can draw its label, a description and an error message around the box. A value that is stored is a [Text Field](TEXT-FIELD.md); text completed from suggestions the control shows is a [Combobox](COMBOBOX.md).
+`SearchField` is a search or filter box, built on React Aria's `SearchField`: a search glyph, the query input, a spinner while results load and a clear button while it holds text. The query filters or finds; it is not a stored value, so the search box has no field around it (no dirty state, undo or field menu), but it can draw its label, a description and an error message around the box. A value that is stored is a [Text Field](TEXT-FIELD.md); text completed from suggestions the control shows is a [Combobox](COMBOBOX.md).
 
 ## UIC-SEARCH-FIELD-1 - Contract
 
 ### UIC-SEARCH-FIELD-1.1 - Search box
 
-`SearchField` shall render a React Aria search field (`ui-search-field`) holding a decorative `search` glyph (`ui-search-field__glyph`) and an `<input type="search">` (`ui-search-field__input`) named by `label`, with `placeholder` shown while it is empty. `inputRef` receives the input, so a caller can move focus to it. React Aria's search field props pass through: `value`, `defaultValue` and `onChange`, `onSubmit`, `onClear`, `name`, `autoFocus`, `isDisabled`, `isReadOnly`, `onKeyDown` and the others.
+`SearchField` shall render a search box (`ui-search-field`) holding a decorative `search` glyph (`ui-search-field__glyph`) and an `<input type="search">` (`ui-search-field__input`) named by `label`. `inputRef` receives the input, so a caller can move focus to it. The query is `value` (controlled) or `defaultValue` (uncontrolled), reported through `onChange`; `name` submits it with a form; `isDisabled` and `isReadOnly` lock it. The text input props (UIC-FIELD-8.3: `placeholder`, `autoComplete`, `inputMode`, `spellCheck`, `autoFocus`) and the focus and keyboard handlers (`onFocus`, `onBlur`, `onFocusChange`, `onKeyDown`, `onKeyUp`) reach the input.
 
 Implementation: `src/components/search-field/search-field.tsx`, `labs/reference/search-field.css`
 Verification: `src/components/search-field/search-field.test.tsx`, `e2e/search-field.spec.ts`
@@ -43,14 +43,14 @@ Verification: `src/components/search-field/search-field.test.tsx`
 
 ### UIC-SEARCH-FIELD-2.1 - Label layout
 
-`labelLayout` shall publish `data-label-layout`. In the `control-only` layout (the default) the root is the box, and `label` names the input through `aria-label`. In the `label-control` layout the root holds React Aria's label (`ui-search-field__label`, a `<label>` that names the input), then a group (`ui-search-field__group`, role `presentation`) around the glyph, the input, the spinner and the clear button, which the reference sheet frames as the box, then the description and the error message.
+`labelLayout` shall publish `data-label-layout`. In the `control-only` layout (the default) the root is the box, and `label` names the input through `aria-label`. In the `label-control` layout the root holds a label (`ui-search-field__label`, a `<label>` that names the input), then a group (`ui-search-field__group`, role `presentation`) around the glyph, the input, the spinner and the clear button, which the reference sheet frames as the box, then the description and the error message.
 
 Implementation: `src/components/search-field/search-field.tsx`, `labs/reference/search-field.css`
 Verification: `src/components/search-field/search-field.test.tsx`, `e2e/search-field.spec.ts`
 
 ### UIC-SEARCH-FIELD-2.2 - Description and error message
 
-In the `label-control` layout, `description` shall render below the box in React Aria's description (`ui-search-field__description`), which describes the input, and React Aria's field error (`ui-search-field__error`) shall show while the query is invalid: `errorMessage` (text, or a function of the validation), or else the messages of React Aria's `validate`. The error message describes the input after the description.
+In the `label-control` layout, `description` shall render below the box (`ui-search-field__description`) and describe the input, and an error message (`ui-search-field__error`) shall show while the query is invalid: `errorMessage`, or else the messages of `validate`. The query is invalid while `isInvalid` is set or `validate` (`SearchFieldValidate`) returns a message or a list of messages for it; it is valid while `validate` returns `true`, `null` or nothing. `validationBehavior` (`native` by default) also reports `validate`'s error to the browser's constraint validation; `aria` reports it through ARIA only. The error message describes the input after the description.
 
 Implementation: `src/components/search-field/search-field.tsx`
 Verification: `src/components/search-field/search-field.test.tsx`, `e2e/search-field.spec.ts`

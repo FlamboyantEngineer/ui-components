@@ -6,9 +6,8 @@ import {
   SheetContent,
   SheetOverlay,
   SheetTrigger,
-  type SheetOverlayProps,
-  type SheetTriggerProps,
 } from '../../primitives/index.js';
+import type { OpenStateProps, OverlayDismissProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Size } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -16,11 +15,17 @@ import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { IconButton } from '../icon-button/icon-button.js';
 import { useLayerZIndex } from '../portal/portal.js';
 
-/** The trigger and drawer pair: React Aria's `SheetTrigger` open state. */
-export type DrawerTriggerProps = SheetTriggerProps;
+/** A pressable trigger and the `Drawer` it opens. */
+export interface DrawerTriggerProps extends OpenStateProps {
+  /** The trigger (a `Button` or another pressable), then its `Drawer`. */
+  children: ReactNode;
+}
 
 /** The viewport edge the drawer slides in from; `start` and `end` follow the reading direction. */
 export type DrawerPosition = 'top' | 'bottom' | 'left' | 'right' | 'start' | 'end';
+
+/** The way a swipe dismisses the drawer: toward an edge, or either way along an axis. */
+export type DrawerSwipeDirection = DrawerPosition | 'vertical' | 'horizontal';
 
 /** The drawer's extent away from its edge, which the host stylesheet maps to a length. */
 export type DrawerSize = Extract<Size, 'sm' | 'md' | 'lg'>;
@@ -30,11 +35,8 @@ export interface DrawerRenderProps {
   close: () => void;
 }
 
-export interface DrawerProps
-  // The overlay holds React Aria's swipe geometry, so its element is not swappable.
-  extends
-    Omit<SheetOverlayProps, 'className' | 'style' | 'children' | 'render' | 'position'>,
-    BaseProps {
+// The overlay holds the sheet's swipe geometry, so its element is not swappable.
+export interface DrawerProps extends OpenStateProps, OverlayDismissProps, BaseProps {
   /** The edge it slides in from. Defaults to `end`. */
   position?: DrawerPosition | undefined;
   /** Defaults to `md`. */
@@ -47,10 +49,15 @@ export interface DrawerProps
   footer?: ReactNode;
   /** The body; a function receives `close`. */
   children?: ReactNode | ((renderProps: DrawerRenderProps) => ReactNode);
-  /** Whether a press outside the drawer closes it. Defaults to true. */
-  isDismissable?: boolean | undefined;
-  /** Keeps Escape from closing the drawer. */
-  isKeyboardDismissDisabled?: boolean | undefined;
+  /** The direction a swipe dismisses it. Defaults to its `position`. */
+  swipeDirection?: DrawerSwipeDirection | undefined;
+  /**
+   * Amounts of the panel left visible that it rests at, opening at the first: pixels, or
+   * percentages of the panel such as `'50%'`.
+   */
+  snapPoints?: ReadonlyArray<number | string> | undefined;
+  /** Refuses Escape, outside presses, swiping it away and the close button. */
+  isDismissDisabled?: boolean | undefined;
 }
 
 interface DrawerHeaderProps extends Pick<DrawerProps, 'title' | 'showCloseButton'> {
@@ -90,8 +97,8 @@ function DrawerHeader({ title, showCloseButton, isDisabled, onClose }: DrawerHea
 }
 
 /** Opens the `Drawer` among its children when its trigger, such as a `Button`, is pressed. */
-export function DrawerTrigger(props: DrawerTriggerProps) {
-  return <SheetTrigger {...props} />;
+export function DrawerTrigger({ children, ...openState }: DrawerTriggerProps) {
+  return <SheetTrigger {...openState}>{children}</SheetTrigger>;
 }
 
 /**
@@ -110,7 +117,8 @@ export function Drawer({
   isDismissable = true,
   isKeyboardDismissDisabled = false,
   shouldCloseOnInteractOutside,
-  preventDismissal = false,
+  isDismissDisabled = false,
+  snapPoints,
   id,
   className,
   ...rest
@@ -127,7 +135,8 @@ export function Drawer({
       {...rest}
       {...hooks.root({ className, props: rest, data: { size } })}
       position={position}
-      preventDismissal={preventDismissal}
+      snapPoints={snapPoints ? [...snapPoints] : undefined}
+      preventDismissal={isDismissDisabled}
       shouldCloseOnInteractOutside={(element) =>
         isDismissable && (shouldCloseOnInteractOutside?.(element) ?? true)
       }
@@ -146,7 +155,7 @@ export function Drawer({
               <DrawerHeader
                 title={title}
                 showCloseButton={showCloseButton}
-                isDisabled={preventDismissal}
+                isDisabled={isDismissDisabled}
                 onClose={close}
               />
               {children === undefined || children === null ? null : (

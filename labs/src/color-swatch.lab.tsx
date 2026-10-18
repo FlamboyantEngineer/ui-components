@@ -18,7 +18,7 @@ function Palette() {
       <ColorSwatchPicker
         aria-label="Palette"
         defaultValue="#2e8b57"
-        onChange={(color) => setPicked(color.toString('hex'))}
+        onChange={setPicked}
         data-lab-picker="palette"
       >
         {palette.map((color) => (

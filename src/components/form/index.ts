@@ -1,2 +1,2 @@
 export { Form } from './form.js';
-export type { FormProps } from './form.js';
+export type { FormMethod, FormProps } from './form.js';

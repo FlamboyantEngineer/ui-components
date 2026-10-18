@@ -6,21 +6,21 @@
 
 ### UIC-VISUALLY-HIDDEN-1.1 - Hidden from view
 
-`VisuallyHidden` shall render React Aria's `VisuallyHidden`: a `<div>` holding its children, hidden with React Aria's inline styles (absolutely positioned, one pixel, clipped, overflow hidden) so it takes no space in the layout and the children stay in the document and its accessibility tree.
+`VisuallyHidden` shall render a `<div>` holding its children, hidden with functional inline styles (absolutely positioned, one pixel, clipped, overflow hidden) so it takes no space in the layout and the children stay in the document and its accessibility tree.
 
 Implementation: `src/components/visually-hidden/visually-hidden.tsx`
 Verification: `src/components/visually-hidden/visually-hidden.test.tsx`, `e2e/visually-hidden.spec.ts`
 
 ### UIC-VISUALLY-HIDDEN-1.2 - Element type
 
-`elementType` shall choose the element React Aria renders, such as a `<span>` inside phrasing content (a sentence, a button label), so the markup stays valid.
+`elementType` (`div` by default, or `span`) shall choose the element it renders, a `<span>` inside phrasing content (a sentence, a button label), so the markup stays valid.
 
 Implementation: `src/components/visually-hidden/visually-hidden.tsx`
 Verification: `src/components/visually-hidden/visually-hidden.test.tsx`, `e2e/visually-hidden.spec.ts`
 
 ### UIC-VISUALLY-HIDDEN-1.3 - Hooks and caller attributes
 
-`VisuallyHidden` shall carry the hooks below, append the caller's `className`, forward `id`, caller `data-*` attributes and React Aria's DOM props (its focus handlers run beside the component's own), and keep its own hook values over caller attributes of the same name.
+`VisuallyHidden` shall carry the hooks below, append the caller's `className`, forward `id`, caller `data-*` attributes, a `role` (such as `status` for an announcement) and `onFocus` and `onBlur` (which run beside the component's own), and keep its own hook values over caller attributes of the same name.
 
 Implementation: `src/components/visually-hidden/visually-hidden.tsx`
 Verification: `src/components/visually-hidden/visually-hidden.test.tsx`
@@ -36,7 +36,7 @@ Verification: `src/components/visually-hidden/visually-hidden.test.tsx`, `e2e/vi
 
 ### UIC-VISUALLY-HIDDEN-2.2 - Shown on focus
 
-With `isFocusable`, the content shall show (React Aria drops its hiding styles) and the root publish `data-focus-within` while the root or a descendant has focus, and hide again when focus leaves, so a skip link appears when a keyboard user tabs to it and Enter follows it. Without `isFocusable`, focused content stays hidden and publishes no `data-focus-within`.
+With `isFocusable`, the content shall show (its hiding styles drop) and the root publish `data-focus-within` while the root or a descendant has focus, and hide again when focus leaves, so a skip link appears when a keyboard user tabs to it and Enter follows it. Without `isFocusable`, focused content stays hidden and publishes no `data-focus-within`.
 
 Implementation: `src/components/visually-hidden/visually-hidden.tsx`
 Verification: `src/components/visually-hidden/visually-hidden.test.tsx`, `e2e/visually-hidden.spec.ts`

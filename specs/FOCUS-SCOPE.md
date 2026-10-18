@@ -1,12 +1,12 @@
 # Focus Scope
 
-`FocusScope` manages focus for a region of content: it can keep Tab and Shift+Tab inside the region (a focus trap), move focus into it when it mounts and return focus when it unmounts. It is built on React Aria's `FocusScope` (from `react-aria`), the same scope React Aria's dialogs, popovers and menus use, so scopes nest with them. Unlike React Aria's, which renders no element, it wraps its content in one element with a hook so a host can target the region. `useFocusManager` (React Aria's) moves focus within the nearest scope, for arrow-key navigation the caller builds. [Modal](MODAL.md) manages its own focus; use a focus scope for regions that are not dialogs, such as an inline editor or a panel that takes over the keyboard while open.
+`FocusScope` manages focus for a region of content: it can keep Tab and Shift+Tab inside the region (a focus trap), move focus into it when it mounts and return focus when it unmounts. It is built on React Aria's `FocusScope` (from `react-aria`), the same scope React Aria's dialogs, popovers and menus use, so scopes nest with them. Unlike React Aria's, which renders no element, it wraps its content in one element with a hook so a host can target the region. `useFocusManager` returns a library `FocusManager` that moves focus within the nearest scope, for arrow-key navigation the caller builds. [Modal](MODAL.md) manages its own focus; use a focus scope for regions that are not dialogs, such as an inline editor or a panel that takes over the keyboard while open.
 
 ## UIC-FOCUS-SCOPE-1 - Contract
 
 ### UIC-FOCUS-SCOPE-1.1 - Root element
 
-`FocusScope` shall render React Aria's `FocusScope` around one `<div>` that holds its children, so the scope's region is that element. The `ref` reaches the `<div>`.
+`FocusScope` shall render one `<div>` that holds its children inside the building block's scope, so the scope's region is that element. The `ref` reaches the `<div>`.
 
 Implementation: `src/components/focus-scope/focus-scope.tsx`
 Verification: `src/components/focus-scope/focus-scope.test.tsx`, `e2e/focus-scope.spec.ts`
@@ -73,7 +73,7 @@ Verification: `src/components/focus-scope/focus-scope.test.tsx`, `e2e/focus-scop
 
 ### UIC-FOCUS-SCOPE-3.1 - Moving focus within a scope
 
-`useFocusManager()`, called by a component inside a scope, shall return React Aria's focus manager for the nearest scope: `focusNext`, `focusPrevious`, `focusFirst` and `focusLast` move focus among the scope's focusable (or, with `tabbable`, tabbable) elements, from the focused element or `from`, wrapping at the ends with `wrap`, and filtered by `accept`. Outside any scope it returns `undefined`.
+`useFocusManager()`, called by a component inside a scope, shall return the library's `FocusManager` for the nearest scope: `focusNext`, `focusPrevious`, `focusFirst` and `focusLast` move focus among the scope's focusable (or, with `tabbable`, tabbable) elements, from the focused element or `from`, wrapping at the ends with `wrap`, and filtered by `accept` (`FocusManagerOptions`), each returning the element it focused. Outside any scope it returns `undefined`.
 
 Implementation: `src/components/focus-scope/focus-scope.tsx`
 Verification: `src/components/focus-scope/focus-scope.test.tsx`, `e2e/focus-scope.spec.ts`

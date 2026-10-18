@@ -4,7 +4,6 @@ import {
   Disclosure,
   DisclosureGroupStateContext,
   DisclosurePanel,
-  type DisclosureProps,
 } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
@@ -18,12 +17,13 @@ import {
   useReportPropertyTally,
 } from '../property-scope/property-scope.js';
 import { TextMatch } from '../text-match/text-match.js';
-import { OverrideMark, useScopedExpansion } from './property-disclosure.js';
+import {
+  OverrideMark,
+  useScopedExpansion,
+  type PropertyExpansionProps,
+} from './property-disclosure.js';
 
-export interface PropertyCardProps
-  extends
-    Omit<DisclosureProps, 'className' | 'style' | 'children' | 'render' | 'id'>,
-    Omit<BaseProps, 'id'> {
+export interface PropertyCardProps extends Omit<BaseProps, 'id'>, PropertyExpansionProps {
   /** The card's name, in its trigger. A query matches it for every row inside. */
   name: string;
   /** A short summary of the values inside, after the name. */
@@ -59,7 +59,6 @@ export function PropertyCard({
   isExpanded,
   defaultExpanded = false,
   onExpandedChange,
-  hidden = false,
   children,
   className,
   ...rest
@@ -70,7 +69,7 @@ export function PropertyCard({
   const overridden = isOverridden || total.isOverridden;
   useReportPropertyTally(parent, {
     count: 1,
-    matches: isMatch && !hidden ? 1 : 0,
+    matches: isMatch ? 1 : 0,
     isOverridden: overridden,
   });
   const expansion = useScopedExpansion({
@@ -89,7 +88,7 @@ export function PropertyCard({
         {...rest}
         {...expansion}
         {...hooks.root({ className, data: { overridden } })}
-        hidden={hidden || !isMatch}
+        hidden={!isMatch}
       >
         <div {...hooks.slot('header')}>
           {/* Spaces between the parts keep the trigger's accessible name readable. */}

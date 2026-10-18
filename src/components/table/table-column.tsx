@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
-import { Column, ColumnResizer, type SortDirection } from '../../primitives/index.js';
+import { Column, ColumnResizer } from '../../primitives/index.js';
+import type { SortDirection } from '../../core/props.js';
 import type { GlyphName } from '../../core/glyphs.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Icon } from '../icon/icon.js';

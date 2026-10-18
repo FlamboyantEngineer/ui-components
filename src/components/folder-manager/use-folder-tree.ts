@@ -1,5 +1,5 @@
 import { useEffect, useState, type RefObject } from 'react';
-import type { Key } from '../../primitives/index.js';
+import type { Key } from '../../core/props.js';
 import {
   collectBranchKeys,
   findFolderNode,

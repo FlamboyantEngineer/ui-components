@@ -3,8 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
-import { UNSTABLE_ToastRegion as AriaToastRegion } from '../../primitives/index.js';
-import { Toast, ToastList, ToastRegion, createToastQueue } from './toast.js';
+import { ToastList, ToastRegion, createToastQueue } from './toast.js';
 
 const tones = ['info', 'success', 'warning', 'danger'] as const;
 const toneGlyphs = { info: 'info', success: 'success', warning: 'warning', danger: 'error' };
@@ -27,15 +26,16 @@ describe('ToastQueue', () => {
     const queue = createToastQueue({ maxVisibleToasts: 2, defaultTimeout: 0 });
     render(<ToastRegion queue={queue} />);
     let firstKey = '';
+    let lastKey = '';
     act(() => {
       firstKey = queue.add({ title: 'Apple saved' });
       queue.add({ title: 'Pear saved' });
-      queue.add({ title: 'Plum saved' });
+      lastKey = queue.add({ title: 'Plum saved' });
     });
     expect(typeof firstKey).toBe('string');
     expect(firstKey).not.toBe('');
     expect(titles()).toEqual(['Plum saved', 'Pear saved']);
-    act(() => queue.close(queue.ariaQueue.visibleToasts[0]?.key ?? ''));
+    act(() => queue.close(lastKey));
     expect(titles()).toEqual(['Pear saved', 'Apple saved']);
   });
 
@@ -205,21 +205,22 @@ describe('ToastRegion', () => {
   it('UIC-TOAST-2.2 moves focus to the next toast when a focused toast closes', () => {
     const queue = createToastQueue({ defaultTimeout: 0 });
     render(<ToastRegion queue={queue} />);
+    let newer = '';
     act(() => {
       queue.add({ title: 'Older' });
-      queue.add({ title: 'Newer' });
+      newer = queue.add({ title: 'Newer' });
     });
     act(() => {
       fireEvent.keyDown(document.body, { key: 'Tab' });
       screen.getByRole('alertdialog', { name: 'Newer' }).focus();
     });
-    act(() => queue.close(queue.ariaQueue.visibleToasts[0]?.key ?? ''));
+    act(() => queue.close(newer));
     expect(screen.getByRole('alertdialog', { name: 'Older' })).toHaveFocus();
   });
 
   it('UIC-TOAST-2.3 draws a queue in place without a landmark', () => {
     const queue = createToastQueue({ defaultTimeout: 0 });
-    queue.add({ tone: 'warning', title: 'Disk almost full' });
+    const key = queue.add({ tone: 'warning', title: 'Disk almost full' });
     const { container } = render(
       <ToastList queue={queue} className="caller" data-testid="stack" />,
     );
@@ -229,7 +230,7 @@ describe('ToastRegion', () => {
     expect(list).toHaveAttribute('data-testid', 'stack');
     expect(screen.queryByRole('region')).toBeNull();
     expect(within(list).getByRole('alertdialog', { name: 'Disk almost full' })).toBeInTheDocument();
-    act(() => queue.close(queue.ariaQueue.visibleToasts[0]?.key ?? ''));
+    act(() => queue.close(key));
     expect(within(list).queryByRole('alertdialog')).toBeNull();
     expectHooksMatchSpec(container, 'TOAST');
   });
@@ -333,22 +334,24 @@ describe('Toast', () => {
     expectHooksMatchSpec(document.body, 'TOAST');
   });
 
-  it('UIC-TOAST-3.5 lets a host draw toasts of a queue in its own region with caller attributes', () => {
+  it('UIC-TOAST-3.5 forwards a region class, id and data attributes', () => {
     const queue = createToastQueue({ defaultTimeout: 0 });
-    render(
-      <AriaToastRegion queue={queue.ariaQueue}>
-        {({ toast }) => <Toast toast={toast} className="caller" id="saved" data-testid="toast" />}
-      </AriaToastRegion>,
-    );
+    render(<ToastRegion queue={queue} className="caller" id="alerts" data-testid="region" />);
     act(() => {
       queue.add({ tone: 'success', title: 'Saved' });
     });
-    const toast = screen.getByTestId('toast');
-    expect(toast).toHaveClass('ui-toast', 'caller');
-    expect(toast).toHaveAttribute('id', 'saved');
-    expect(toast).toHaveAttribute('data-tone', 'success');
-    expect(screen.getByRole('alertdialog', { name: 'Saved' })).toBe(toast);
+    const region = screen.getByTestId('region');
+    expect(region).toHaveClass('ui-toast-region', 'caller');
+    expect(region).toHaveAttribute('id', 'alerts');
+    expect(region).toBe(screen.getByRole('region'));
     expectHooksMatchSpec(document.body, 'TOAST');
+  });
+
+  it('UIC-TOAST-1.1 refuses a queue that createToastQueue did not make', () => {
+    const queue = { ...createToastQueue() };
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    expect(() => render(<ToastList queue={queue} />)).toThrow(/createToastQueue/);
+    vi.restoreAllMocks();
   });
 
   it('UIC-TOAST-3.5 forwards a list id and data attributes', () => {
@@ -540,8 +543,9 @@ describe('Toast updates and motion', () => {
     const queue = createToastQueue({ defaultTimeout: 0 });
     render(<ToastRegion queue={queue} />);
     animations.start();
+    let key = '';
     act(() => {
-      queue.add({ title: 'Saved' }, { onClose });
+      key = queue.add({ title: 'Saved' }, { onClose });
     });
     const toast = screen.getByRole('alertdialog', { name: 'Saved' });
     expect(toast).toHaveAttribute('data-entering', 'true');
@@ -555,7 +559,7 @@ describe('Toast updates and motion', () => {
     expect(toast).toBeInTheDocument();
     expect(onClose).not.toHaveBeenCalled();
     expectHooksMatchSpec(document.body, 'TOAST');
-    act(() => queue.close(queue.ariaQueue.visibleToasts[0]?.key ?? ''));
+    act(() => queue.close(key));
     await exit.finish();
     expect(screen.queryByRole('alertdialog')).toBeNull();
     expect(onClose).toHaveBeenCalledTimes(1);
@@ -567,7 +571,8 @@ describe('Toast updates and motion', () => {
     const key = queue.add({ title: 'Unseen' }, { onClose });
     queue.close(key);
     expect(onClose).toHaveBeenCalledTimes(1);
-    expect(queue.ariaQueue.visibleToasts).toHaveLength(0);
+    render(<ToastList queue={queue} />);
+    expect(screen.queryByRole('alertdialog')).toBeNull();
   });
 
   it('UIC-TOAST-4.2 swipes a toast away past the threshold and returns it otherwise', async () => {

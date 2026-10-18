@@ -16,6 +16,20 @@ async function boxOf(locator: Locator) {
 }
 
 test.describe('Radio Group lab', () => {
+  test('UIC-RADIO-GROUP-1.2 renders swapped radio elements with their state', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('radio-group');
+    const crate = field(page, 'swapped');
+    const small = crate.locator('.ui-radio').filter({ hasText: 'Small crate' });
+    const large = crate.locator('.ui-radio').filter({ hasText: 'Large crate' });
+    await expect(small).toHaveAttribute('data-lab-picked', 'yes');
+    await large.getByText('Large crate').click();
+    await expect(large).toHaveAttribute('data-lab-picked', 'yes');
+    await expect(small).toHaveAttribute('data-lab-picked', 'no');
+  });
+
   test('UIC-RADIO-GROUP-2.1 UIC-RADIO-GROUP-2.2 enters on the selected radio and moves with the arrows past disabled radios', async ({
     page,
     lab,

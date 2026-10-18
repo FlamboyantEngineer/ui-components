@@ -47,7 +47,7 @@ describe('RelativeDateField calendar', () => {
     expect(screen.getByRole('button', { name: 'In 5 days Due' })).toBeInTheDocument();
   });
 
-  it('UIC-RELATIVE-DATE-FIELD-2.1 keeps the time for instants and picks ranges', async () => {
+  it('UIC-RELATIVE-DATE-FIELD-2.1 keeps the time for date-times and picks ranges', async () => {
     const user = userEvent.setup();
     const onCommit = vi.fn();
     const { unmount } = renderInLocale(
@@ -61,7 +61,7 @@ describe('RelativeDateField calendar', () => {
     );
     await user.click(screen.getByRole('button', { name: /Due$/ }));
     await user.click(screen.getByRole('button', { name: /May 30, 2026/ }));
-    expect(onCommit).toHaveBeenLastCalledWith(new Date(2026, 4, 30, 10, 30).toISOString());
+    expect(onCommit).toHaveBeenLastCalledWith('2026-05-30T10:30');
     unmount();
     renderInLocale(
       <RelativeDateField

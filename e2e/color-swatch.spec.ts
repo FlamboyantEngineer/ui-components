@@ -62,9 +62,9 @@ test.describe('Color Swatch lab', () => {
     await page.keyboard.press('ArrowRight');
     await expect(options.nth(5)).toBeFocused();
     await options.nth(0).click();
-    await expect(page.locator('[data-lab-output="picked"]')).toHaveText('#CC3300');
+    await expect(page.locator('[data-lab-output="picked"]')).toHaveText('#cc3300');
     await options.nth(6).click({ force: true });
-    await expect(page.locator('[data-lab-output="picked"]')).toHaveText('#CC3300');
+    await expect(page.locator('[data-lab-output="picked"]')).toHaveText('#cc3300');
     const stacked = page.locator('[data-lab-cell="layout=stack size=md"] .ui-color-swatch-picker');
     const items = stacked.getByRole('option');
     expect((await items.nth(1).boundingBox())?.y).toBeGreaterThan(

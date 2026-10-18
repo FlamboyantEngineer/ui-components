@@ -11,8 +11,6 @@ import {
   PopoverContext,
   useSlottedContext,
   Virtualizer,
-  type ListBoxItemRenderProps,
-  type ListBoxLoadMoreItemProps,
 } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -29,10 +27,26 @@ import {
   type ComboboxOption,
 } from './combobox-options.js';
 
-/** Draws an option's content in the list, from the option and React Aria's item state. */
+/** The state of an option row that `renderOption` draws for. */
+export interface ComboboxOptionState {
+  /** The option is picked. */
+  isSelected: boolean;
+  /** The option is highlighted, from the keyboard or the pointer. */
+  isFocused: boolean;
+  /** The option is highlighted from the keyboard. */
+  isFocusVisible: boolean;
+  /** The pointer is over the option. */
+  isHovered: boolean;
+  /** The option is being pressed. */
+  isPressed: boolean;
+  /** The option cannot be picked. */
+  isDisabled: boolean;
+}
+
+/** Draws an option's content in the list, from the option and its row's state. */
 export type ComboboxOptionRenderer = (
   option: ComboboxOption,
-  state: ListBoxItemRenderProps,
+  state: ComboboxOptionState,
 ) => ReactNode;
 
 /** How the list draws its options. */
@@ -49,8 +63,8 @@ export interface ComboboxSuggestionsProps extends ComboboxOptionDisplay {
   virtualized?: boolean | undefined;
   /** Ends the list with an action row that adds the typed text, while no option has it as label. */
   onCreateOption?: ((text: string) => void) | undefined;
-  /** React Aria's loading sentinel at the end of the list, shown when either is set. */
-  loading: Pick<ListBoxLoadMoreItemProps, 'onLoadMore' | 'isLoading'>;
+  /** The loading row at the end of the list, shown when either is set. */
+  loading: { onLoadMore?: (() => void) | undefined; isLoading?: boolean | undefined };
   /** Highlight the first enabled option while the list is open. */
   autoHighlight?: boolean | undefined;
   /** The input's text. */
@@ -119,7 +133,14 @@ function OptionRow({
     >
       {(state) =>
         display.renderOption ? (
-          display.renderOption(option, state)
+          display.renderOption(option, {
+            isSelected: state.isSelected,
+            isFocused: state.isFocused,
+            isFocusVisible: state.isFocusVisible,
+            isHovered: state.isHovered,
+            isPressed: state.isPressed,
+            isDisabled: state.isDisabled,
+          })
         ) : (
           <OptionContent option={option} highlightMatches={display.highlightMatches} />
         )

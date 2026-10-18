@@ -4,16 +4,16 @@ How a caller composes its own elements with library components: swapping the ele
 
 ## UIC-COMPOSITION-1 - Element swapping
 
-### UIC-COMPOSITION-1.1 - React Aria components
+### UIC-COMPOSITION-1.1 - Components on building blocks
 
-A library component that wraps a React Aria component and lets the caller swap its element shall pass React Aria's own `render` prop through unchanged, rather than declaring one of its own. React Aria calls it with the element's props, which already carry the library's hook classes and data attributes beside React Aria's states, handlers and ref, and the component's render props as `state`.
+A library component built on a building block from `src/primitives/` that lets the caller swap its element shall declare `render` itself, typed `ElementRender<E, State>` with a state interface the library declares, and hand it to the building block. The building block calls it with the element's props, which already carry the library's hook classes and data attributes beside the states, handlers and ref, and with the component's state.
 
 Implementation: `src/utils/render-element.ts`
 Verification: `src/utils/render-element.test.tsx`
 
 ### UIC-COMPOSITION-1.2 - Library-owned elements
 
-A library-owned element that the caller may swap shall take `render(props, state)` with React Aria's contract, typed `ElementRender<E, State>`, and render through `renderElement(type, props, { render, state })`: without `render` it renders `type` with `props`; with it, the caller returns one element of the same type with `props` and their `ref` spread on it, merging its own with `mergeProps`. `state` holds the states the component publishes. [Overflow List](OVERFLOW-LIST.md) applies it to its root.
+A library-owned element that the caller may swap shall take `render(props, state)`, typed `ElementRender<E, State>`, and render through `renderElement(type, props, { render, state })`: without `render` it renders `type` with `props`; with it, the caller returns one element of the same type with `props` and their `ref` spread on it, merging its own with `mergeProps`. `state` holds the states the component publishes. [Overflow List](OVERFLOW-LIST.md) applies it to its root.
 
 Implementation: `src/utils/render-element.ts`, `src/components/overflow-list/overflow-list.tsx`
 Verification: `src/utils/render-element.test.tsx`, `src/components/overflow-list/overflow-list.test.tsx`, `e2e/overflow-list.spec.ts`
@@ -38,7 +38,7 @@ Verification: `src/utils/merge-props.test.ts`
 
 ### UIC-COMPOSITION-3.1 - Slot props
 
-A component that lets the caller replace one of its named parts with its own content shall publish that part's props (its `id`, its hook class and a `ref` that tells the component the part rendered) through React Aria's slot contexts (`HeadingContext`, `TextContext`, `ButtonContext` and the others), under the part's slot name, with React Aria's `Provider`, and with an empty default slot so unslotted elements get nothing. React Aria components given that `slot`, and library components that wrap them, receive the props; a host component reads them with React Aria's `useSlottedContext` and spreads them on its element. [Card](CARD.md#uic-card-14---slotted-title-in-a-custom-header) applies it to the title of a custom header.
+A component that lets the caller replace one of its named parts with its own content shall export a library part for each such slot (for example `CardTitle`), which takes the props the slot needs (its `id`, its hook class and a `ref` that tells the component the part rendered) from the component through a React context the library owns, and renders the part's element with them, merging the caller's `className` and `data-*` attributes. Outside its component a part renders its element without those props. Callers never assemble slot contexts, `slot` props or a building block's providers. [Card](CARD.md#uic-card-14---slotted-title-in-a-custom-header) applies it to the title and the action of a custom header (`CardTitle`, `CardAction`).
 
-Implementation: `src/components/card/card.tsx`
+Implementation: `src/components/card/card-parts.tsx`, `src/components/card/card.tsx`
 Verification: `src/components/card/card.test.tsx`, `e2e/card.spec.ts`

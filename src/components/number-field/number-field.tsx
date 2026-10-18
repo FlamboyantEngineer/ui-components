@@ -1,11 +1,5 @@
 import type { ReactNode } from 'react';
-import {
-  Group,
-  Input,
-  NumberField as AriaNumberField,
-  useLocale,
-  type NumberFieldProps as AriaNumberFieldProps,
-} from '../../primitives/index.js';
+import { Group, Input, NumberField as AriaNumberField, useLocale } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import {
@@ -23,30 +17,23 @@ import {
   type NumberSteps,
 } from './number-field-parts.js';
 
-/** The React Aria number field props a `NumberField` takes; the field supplies the rest. */
-type AriaNumberFieldOwnProps = Omit<
-  AriaNumberFieldProps,
-  | 'className'
-  | 'style'
-  | 'children'
-  | 'render'
-  | 'id'
-  | 'value'
-  | 'defaultValue'
-  | 'onChange'
-  | 'validate'
-  | 'validationBehavior'
-  | 'isInvalid'
-  | 'isRequired'
-  | 'isReadOnly'
-  | 'isDisabled'
-  | 'aria-label'
-  | 'aria-labelledby'
-  | 'aria-describedby'
-  | 'aria-errormessage'
->;
+/**
+ * What a commit does with a value outside the range or off the step: `snap` clamps it into the
+ * range and snaps it to the nearest step; `validate` keeps it and reports an error.
+ */
+export type NumberFieldCommitBehavior = 'snap' | 'validate';
 
-export interface NumberFieldProps extends AriaNumberFieldOwnProps, FieldInputProps<number | null> {
+export interface NumberFieldProps extends FieldInputProps<number | null> {
+  /** The smallest value. */
+  minValue?: number | undefined;
+  /** The largest value. */
+  maxValue?: number | undefined;
+  /** The step of the buttons and the arrow keys, counted from `minValue` (or zero). Defaults to 1. */
+  step?: number | undefined;
+  /** How the value is formatted and parsed in the locale: decimals, grouping, currency, percent, units. */
+  formatOptions?: Intl.NumberFormatOptions | undefined;
+  /** What a commit does with a value outside the rules. Defaults to `snap`. */
+  commitBehavior?: NumberFieldCommitBehavior | undefined;
   /** A hint shown while the control is empty. */
   placeholder?: string | undefined;
   /** Leave out the decrement and increment buttons; the arrow keys still step the value. */

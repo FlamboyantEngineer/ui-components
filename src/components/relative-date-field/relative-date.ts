@@ -3,18 +3,19 @@
 
 import {
   DateFormatter,
+  formatIsoDate,
   fromDate,
   getLocalTimeZone,
-  parseAbsoluteToLocal,
-  parseDate,
+  parseIsoDate,
+  parseIsoDateTime,
   toCalendarDate,
+  toCalendarDateTime,
   type CalendarDate,
-  type ZonedDateTime,
 } from '../../primitives/index.js';
 
 /**
- * `date` values are `YYYY-MM-DD` texts, `date-time` values UTC ISO instants and `date-range` values
- * `{ start, end }` ranges of dates.
+ * `date` values are `YYYY-MM-DD` texts, `date-time` values local `YYYY-MM-DDTHH:mm` texts and
+ * `date-range` values `{ start, end }` ranges of dates.
  */
 export type RelativeDateKind = 'date' | 'date-time' | 'date-range';
 
@@ -63,24 +64,26 @@ export interface RelativeDateBounds {
 }
 
 interface ParsedValue {
-  kind: 'date' | 'date-time';
   date: CalendarDate;
-  instant: ZonedDateTime | null;
+  /** The moment a date and time stands for; `null` for a date. */
+  instant: Date | null;
 }
 
 const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
-const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
-
+/** A date, or a date and time read as local wall time (an offset or zone converts to it). */
 function parseValue(value: string): ParsedValue | null {
-  try {
-    if (DATE_ONLY.test(value)) return { kind: 'date', date: parseDate(value), instant: null };
-    const instant = parseAbsoluteToLocal(value);
-    return { kind: 'date-time', date: toCalendarDate(instant), instant };
-  } catch {
-    return null;
-  }
+  const date = parseIsoDate(value);
+  if (date) return { date, instant: null };
+  const dateTime = parseIsoDateTime(value);
+  if (!dateTime) return null;
+  return { date: toCalendarDate(dateTime), instant: dateTime.toDate(getLocalTimeZone()) };
+}
+
+/** The local calendar day of a moment. */
+function toDay(moment: Date): CalendarDate {
+  return toCalendarDate(fromDate(moment, getLocalTimeZone()));
 }
 
 /** Upper-cases the first letter, for text that starts a label. */
@@ -101,14 +104,14 @@ function relationOf(distance: number): RelativeDateRelation {
 }
 
 /** A range is past once it ends before today, future while it starts after, present around it. */
-function rangeRelation(range: RelativeDateRange, today: CalendarDate): RelativeDateRelation {
-  if (parseDate(range.end).compare(today) < 0) return 'past';
-  return parseDate(range.start).compare(today) > 0 ? 'future' : 'present';
+function rangeRelation(range: RelativeDateRange, today: string): RelativeDateRelation {
+  if (range.end < today) return 'past';
+  return range.start > today ? 'future' : 'present';
 }
 
-/** The local calendar day of a moment. */
-export function toLocalDay(now: Date): CalendarDate {
-  return toCalendarDate(fromDate(now, getLocalTimeZone()));
+/** The local calendar day of a moment, as `YYYY-MM-DD`. */
+export function toLocalDay(now: Date): string {
+  return toDay(now).toString();
 }
 
 /**
@@ -123,13 +126,13 @@ export function describeRelativeDate(
   const parsed = parseValue(value);
   if (!parsed) return null;
   const { locale, now } = options;
-  const days = parsed.date.compare(toLocalDay(now));
+  const days = parsed.date.compare(toDay(now));
   const formatter = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
   const absolute = new DateFormatter(locale, {
     dateStyle: 'medium',
     timeStyle: parsed.instant ? 'short' : undefined,
-  }).format(parsed.instant ? parsed.instant.toDate() : parsed.date.toDate(getLocalTimeZone()));
-  const offset = parsed.instant ? parsed.instant.toDate().getTime() - now.getTime() : 0;
+  }).format(parsed.instant ?? parsed.date.toDate(getLocalTimeZone()));
+  const offset = parsed.instant ? parsed.instant.getTime() - now.getTime() : 0;
   if (parsed.instant && Math.abs(offset) < DAY) {
     const [count, unit] = timeDistance(offset);
     const relative = capitalize(formatter.format(count, unit), locale);
@@ -156,12 +159,14 @@ export function describeRelativeRange(
 ): RelativeDateText | null {
   const start = describeRelativeDate(range.start, options);
   const end = describeRelativeDate(range.end, options);
-  if (!start || !end) return null;
+  const startDate = parseIsoDate(range.start);
+  const endDate = parseIsoDate(range.end);
+  if (!start || !end || !startDate || !endDate) return null;
   const zone = getLocalTimeZone();
   const today = toLocalDay(options.now);
   const absolute = new DateFormatter(options.locale, { dateStyle: 'medium' }).formatRange(
-    parseDate(range.start).toDate(zone),
-    parseDate(range.end).toDate(zone),
+    startDate.toDate(zone),
+    endDate.toDate(zone),
   );
   return {
     relative: `${start.relative} – ${end.relative}`,
@@ -187,7 +192,7 @@ export function formatRelativePeriod(preset: RelativeDatePreset, locale: string)
   return formatter.format(Math.abs(preset.amount));
 }
 
-/** The value a preset stands for, counted from `now`, as a date or a UTC ISO instant. */
+/** The value a preset stands for, counted from `now`, as a date or a local date and time. */
 export function resolveRelativePreset(
   preset: RelativeDatePreset,
   options: { now: Date; kind: 'date' | 'date-time' },
@@ -196,31 +201,32 @@ export function resolveRelativePreset(
   const moment = fromDate(options.now, getLocalTimeZone()).add(duration);
   return options.kind === 'date'
     ? toCalendarDate(moment).toString()
-    : moment.toDate().toISOString();
+    : formatIsoDate(toCalendarDateTime(moment));
 }
 
 /** The range a preset stands for: from the point it names to today, or from today to it. */
 export function resolveRelativeRange(preset: RelativeDatePreset, now: Date): RelativeDateRange {
-  const today = toLocalDay(now);
+  const today = toDay(now);
   const other = today.add({ [`${preset.unit}s`]: preset.amount }).toString();
   return preset.amount < 0
     ? { start: other, end: today.toString() }
     : { start: today.toString(), end: other };
 }
 
-/** A picked calendar day as a value: the date, or that day at the current time of day. */
+/** A picked `YYYY-MM-DD` day as a value: the date, or that day at the current time of day. */
 export function resolvePickedDate(
-  date: CalendarDate,
+  date: string,
   options: { now: Date; kind: 'date' | 'date-time' },
 ): string {
-  if (options.kind === 'date') return date.toString();
-  const moment = fromDate(options.now, getLocalTimeZone());
-  return moment.set({ year: date.year, month: date.month, day: date.day }).toDate().toISOString();
+  const day = parseIsoDate(date);
+  if (options.kind === 'date' || !day) return date;
+  const moment = toCalendarDateTime(fromDate(options.now, getLocalTimeZone()));
+  return formatIsoDate(moment.set({ year: day.year, month: day.month, day: day.day }));
 }
 
-/** The calendar date a value falls on, for a date or an instant. */
-export function toValueDate(value: string): CalendarDate | null {
-  return parseValue(value)?.date ?? null;
+/** The `YYYY-MM-DD` date a value falls on, for a date or a date and time. */
+export function toValueDate(value: string): string | null {
+  return parseValue(value)?.date.toString() ?? null;
 }
 
 /** Which bound a value, or either end of a range, breaks, with that bound's date. */
@@ -230,8 +236,8 @@ export function findRelativeBoundIssue(
 ): { bound: 'min' | 'max'; limit: string } | null {
   if (!value) return null;
   const [first, last] = typeof value === 'string' ? [value, value] : [value.start, value.end];
-  const firstDate = toValueDate(first)?.toString();
-  const lastDate = toValueDate(last)?.toString();
+  const firstDate = toValueDate(first);
+  const lastDate = toValueDate(last);
   if (minValue && firstDate && firstDate < minValue) return { bound: 'min', limit: minValue };
   if (maxValue && lastDate && lastDate > maxValue) return { bound: 'max', limit: maxValue };
   return null;

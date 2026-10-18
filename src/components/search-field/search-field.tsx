@@ -7,14 +7,17 @@ import {
   Label,
   SearchField as AriaSearchField,
   Text,
-  type FieldErrorProps,
-  type SearchFieldProps as AriaSearchFieldProps,
 } from '../../primitives/index.js';
+import type { FocusEventProps, KeyboardEventProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Size } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { Button, ButtonSpinner } from '../button/button.js';
-import type { FieldLabelLayout } from '../field/field.js';
+import type {
+  FieldLabelLayout,
+  FieldTextInputProps,
+  FieldValidationBehavior,
+} from '../field/field.js';
 import { IconButton } from '../icon-button/icon-button.js';
 
 export type SearchFieldSize = Extract<Size, 'sm' | 'md'>;
@@ -22,14 +25,33 @@ export type SearchFieldSize = Extract<Size, 'sm' | 'md'>;
 /** Where a search box's label sits: on the input only, or drawn above the box. */
 export type SearchFieldLabelLayout = Extract<FieldLabelLayout, 'label-control' | 'control-only'>;
 
+/** A query's check: an error message, or several, for an invalid query; `true` or nothing when valid. */
+export type SearchFieldValidate = (value: string) => string | string[] | true | null | undefined;
+
 export interface SearchFieldProps
-  extends
-    Omit<AriaSearchFieldProps, 'className' | 'style' | 'children' | 'render' | 'aria-label'>,
-    BaseProps {
+  extends BaseProps, FieldTextInputProps, FocusEventProps, KeyboardEventProps {
   /** The accessible name of the search box, and its visible label in the `label-control` layout. */
   label: string;
-  /** A hint shown while the box is empty. */
-  placeholder?: string | undefined;
+  /** The query, controlled. */
+  value?: string | undefined;
+  /** The query the box starts with, uncontrolled. */
+  defaultValue?: string | undefined;
+  /** Called with the query on each change. */
+  onChange?: ((value: string) => void) | undefined;
+  /** Called with the query when Enter is pressed. */
+  onSubmit?: ((value: string) => void) | undefined;
+  /** Called after Escape or the clear button empties the query. */
+  onClear?: (() => void) | undefined;
+  /** The form name the query submits under. */
+  name?: string | undefined;
+  isDisabled?: boolean | undefined;
+  isReadOnly?: boolean | undefined;
+  /** Marks the query invalid, which shows `errorMessage` in the `label-control` layout. */
+  isInvalid?: boolean | undefined;
+  /** Checks the query; its messages show while the query is invalid. */
+  validate?: SearchFieldValidate | undefined;
+  /** `native` (the default) also reports `validate`'s error to the browser's constraint validation. */
+  validationBehavior?: FieldValidationBehavior | undefined;
   /** Names the clear button. Defaults to the provider's `clearSearch`. */
   clearLabel?: string | undefined;
   /** Visible text for the clear button, which otherwise shows the `close` glyph. */
@@ -47,7 +69,7 @@ export interface SearchFieldProps
    * In the `label-control` layout, the message shown below the box while the query is invalid.
    * Defaults to the messages of `validate`.
    */
-  errorMessage?: FieldErrorProps['children'];
+  errorMessage?: ReactNode;
   /** Results are loading: a spinner shows after the input. */
   isPending?: boolean | undefined;
   /** Receives the input, so a caller can move focus to it. */
@@ -131,6 +153,7 @@ export function SearchField({
   inputRef,
   className,
   onClear,
+  spellCheck,
   ...rest
 }: SearchFieldProps) {
   const strings = useUiStrings();
@@ -143,6 +166,7 @@ export function SearchField({
       {...rest}
       {...hooks.root({ className, props: rest, data })}
       aria-label={hasLabel ? undefined : label}
+      spellCheck={spellCheck?.toString()}
       onClear={onClear}
     >
       {({ isEmpty, isDisabled, isReadOnly, state }) => {

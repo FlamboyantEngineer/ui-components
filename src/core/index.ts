@@ -17,11 +17,34 @@ export type {
 export type {
   BaseProps,
   DataAttributeValue,
+  Key,
   NativeProps,
   Orientation,
+  Placement,
+  Selection,
+  SelectionMode,
   Size,
+  SortDescriptor,
+  SortDirection,
   Tone,
 } from './props.js';
+export type {
+  AriaLabellingProps,
+  CollectionSelectionProps,
+  ExpansionProps,
+  FocusEventProps,
+  HoverEvent,
+  HoverEventProps,
+  KeyboardEventProps,
+  OpenStateProps,
+  OverlayDismissProps,
+  OverlayPositionProps,
+  PointerType,
+  PressEvent,
+  PressEventProps,
+  SelectionBehavior,
+  SelectionProps,
+} from './events.js';
 export { defaultGlyphs, glyphNames } from './glyphs.js';
 export type { GlyphComponent, GlyphComponentProps, GlyphMap, GlyphName } from './glyphs.js';
 export { defaultStrings } from './strings.js';
@@ -40,7 +63,9 @@ export {
 export type {
   GlyphProps,
   PersistCodec,
+  UiHref,
   UiLinkProps,
   UiLinkRenderer,
+  UiNavigate,
   UiProviderProps,
 } from './provider.js';

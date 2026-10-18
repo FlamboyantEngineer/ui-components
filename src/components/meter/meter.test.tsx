@@ -151,16 +151,18 @@ describe('Meter', () => {
         ref={ref}
         data-testid="probe"
         data-tone="caller"
-        render={(props) => <section {...(props as object)} />}
+        value={25}
+        render={(props, state) => <section {...props} data-share={state.percentage} />}
       />,
     );
     const meter = screen.getByTestId('probe');
     expect(meter.tagName).toBe('SECTION');
+    expect(meter).toHaveAttribute('data-share', '25');
     expect(meter).toHaveClass('ui-meter', 'caller');
     expect(meter).toHaveAttribute('id', 'probe');
     expect(meter).toHaveAttribute('data-tone', 'neutral');
     expect(ref.current).toBe(meter);
-    expectHooksMatchSpec(document.body, 'METER');
+    expectHooksMatchSpec(document.body, 'METER', { callerAttributes: ['data-share'] });
   });
 
   it('UIC-METER-2.2 takes no tab stop', async () => {

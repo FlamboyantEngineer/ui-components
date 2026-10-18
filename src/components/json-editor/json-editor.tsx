@@ -65,7 +65,16 @@ export function JsonEditor(props: JsonEditorProps) {
     <Field state={state} {...field} className={mergeClassNames(hooks.className, field.className)}>
       {(control) => (
         <CodeEditor
-          {...control}
+          id={control.id}
+          ref={control.ref}
+          aria-label={control['aria-label']}
+          aria-labelledby={control['aria-labelledby']}
+          aria-describedby={control['aria-describedby']}
+          aria-errormessage={control['aria-errormessage']}
+          isInvalid={control['aria-invalid']}
+          isRequired={control['aria-required']}
+          isReadOnly={control.readOnly}
+          isDisabled={control.disabled}
           value={state.value}
           onChange={state.setValue}
           onBlur={() => state.commit()}

@@ -5,12 +5,10 @@ import {
   MenuItem as AriaMenuItem,
   MenuSection as AriaMenuSection,
   useLocale,
-  type MenuItemProps as AriaMenuItemProps,
-  type MenuItemRenderProps,
-  type MenuSectionProps as AriaMenuSectionProps,
 } from '../../primitives/index.js';
+import type { PressEventProps, SelectionProps } from '../../core/events.js';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
-import type { BaseProps, Tone } from '../../core/props.js';
+import type { BaseProps, Key, SelectionMode, Tone } from '../../core/props.js';
 import { Glyph } from '../../core/provider.js';
 import { Icon, toIconProps, type IconSource } from '../icon/icon.js';
 import { Separator } from '../separator/separator.js';
@@ -20,12 +18,37 @@ import { MenuSizeContext } from './menu-context.js';
 /** Emphasis of a menu item: `danger` marks a destructive action. */
 export type MenuItemTone = Extract<Tone, 'neutral' | 'danger'>;
 
-export interface MenuItemProps
-  extends
-    Omit<AriaMenuItemProps<object>, 'className' | 'style' | 'children' | 'render'>,
-    Omit<BaseProps, 'id'> {
+/** The state a menu item hands to custom content (`children` as a function). */
+export interface MenuItemRenderState {
+  isHovered: boolean;
+  isFocused: boolean;
+  isFocusVisible: boolean;
+  isPressed: boolean;
+  isSelected: boolean;
+  isDisabled: boolean;
+  /** The selection of the menu or section the item belongs to. */
+  selectionMode: SelectionMode;
+  /** The item opens a submenu. */
+  hasSubmenu: boolean;
+  /** Its submenu is open. */
+  isOpen: boolean;
+}
+
+export interface MenuItemProps extends Omit<BaseProps, 'id'>, PressEventProps {
+  /** Identifies the item in `onAction`, selections and `disabledKeys`. */
+  id?: Key | undefined;
+  /** Makes the item a link to this URL, navigated through the provider's `navigate` when set. */
+  href?: string | undefined;
   /** The label, or a render function for custom content that replaces the default layout. */
-  children?: ReactNode | ((state: MenuItemRenderProps) => ReactNode);
+  children?: ReactNode | ((state: MenuItemRenderState) => ReactNode);
+  /** The text used for type-to-select. Defaults to the label when it is a string. */
+  textValue?: string | undefined;
+  /** Names the item when its content does not. */
+  'aria-label'?: string | undefined;
+  /** Called when the item is activated. */
+  onAction?: (() => void) | undefined;
+  /** Whether activating the item closes the menu. Defaults to the menu's setting. */
+  shouldCloseOnSelect?: boolean | undefined;
   /** Drawn before the label. */
   icon?: IconSource;
   /** Secondary text after the label. */
@@ -34,19 +57,22 @@ export interface MenuItemProps
   shortcut?: ShortcutProps['chord'] | undefined;
   /** Defaults to `neutral`. */
   tone?: MenuItemTone | undefined;
+  /** Keeps the item visible but out of reach. */
+  isDisabled?: boolean | undefined;
   /** Draws a busy indicator instead of the icon and refuses activation. */
   isPending?: boolean | undefined;
 }
 
 export interface MenuSectionProps
-  extends
-    Omit<
-      AriaMenuSectionProps<object>,
-      'className' | 'style' | 'children' | 'items' | 'dependencies' | 'render'
-    >,
-    Omit<BaseProps, 'id'> {
+  extends Omit<BaseProps, 'id'>, Omit<SelectionProps, 'disabledKeys'> {
+  /** Identifies the section among the menu's entries. */
+  id?: Key | undefined;
   /** A heading drawn above the section's items, which also names the group. */
   title?: ReactNode;
+  /** Names the group when it has no `title`. */
+  'aria-label'?: string | undefined;
+  /** Whether activating one of its items closes the menu. Defaults to the menu's setting. */
+  shouldCloseOnSelect?: boolean | undefined;
   children?: ReactNode;
 }
 
@@ -65,9 +91,26 @@ const sectionHooks = createHooks('menu-section', ['header']);
 const separatorHooks = createHooks('menu-separator');
 
 interface MenuItemContentProps extends Pick<MenuItemProps, 'icon' | 'description' | 'shortcut'> {
-  state: MenuItemRenderProps;
+  state: MenuItemRenderState;
   isPending: boolean;
   children: ReactNode;
+}
+
+/** The building block's item state, narrowed to the states the library publishes. */
+function toRenderState(state: MenuItemRenderState): MenuItemRenderState {
+  const { isHovered, isFocused, isFocusVisible, isPressed, isSelected, isDisabled } = state;
+  const { selectionMode, hasSubmenu, isOpen } = state;
+  return {
+    isHovered,
+    isFocused,
+    isFocusVisible,
+    isPressed,
+    isSelected,
+    isDisabled,
+    selectionMode,
+    hasSubmenu,
+    isOpen,
+  };
 }
 
 /**
@@ -141,7 +184,7 @@ export function MenuItem({
     >
       {(state) =>
         typeof children === 'function' ? (
-          children(state)
+          children(toRenderState(state))
         ) : (
           <MenuItemContent
             state={state}
@@ -172,5 +215,3 @@ export function MenuSection({ title, children, className, ...rest }: MenuSection
 export function MenuSeparator({ className, ...rest }: MenuSeparatorProps) {
   return <Separator {...rest} className={mergeClassNames(separatorHooks.className, className)} />;
 }
-
-export type { MenuItemRenderProps };

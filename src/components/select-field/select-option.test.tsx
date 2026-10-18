@@ -98,10 +98,14 @@ describe('SelectField option groups and content', () => {
     const apple = screen.getByRole('option', { name: /Apple/ });
     expect(apple).toHaveClass('ui-select-field__option');
     expect(apple.querySelector('.ui-select-field__option-label')).toBeNull();
-    expect(renderOption).toHaveBeenCalledWith(
-      expect.objectContaining({ id: 'pear' }),
-      expect.objectContaining({ isSelected: true, isDisabled: false }),
-    );
+    expect(renderOption).toHaveBeenCalledWith(expect.objectContaining({ id: 'pear' }), {
+      isSelected: true,
+      isFocused: expect.any(Boolean),
+      isFocusVisible: expect.any(Boolean),
+      isHovered: false,
+      isPressed: false,
+      isDisabled: false,
+    });
     await user.keyboard('k');
     expect(screen.getByRole('option', { name: /Kale/ })).toHaveFocus();
   });

@@ -1,14 +1,14 @@
-import { useLayoutEffect, useRef, type ReactNode } from 'react';
+import { useLayoutEffect, useRef, type ReactNode, type Ref } from 'react';
 import {
   RadioButton,
   RadioField,
   RadioGroup as AriaRadioGroup,
   Text,
-  type RadioFieldProps as AriaRadioFieldProps,
-  type RadioGroupProps as AriaRadioGroupProps,
 } from '../../primitives/index.js';
+import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Size } from '../../core/props.js';
+import type { BaseProps, Orientation, Size } from '../../core/props.js';
+import type { ElementRender } from '../../utils/render-element.js';
 import type { SlotRef } from '../../utils/slot-registry.js';
 import {
   Field,
@@ -19,53 +19,44 @@ import {
   type FieldState,
 } from '../field/field.js';
 
-/**
- * The React Aria radio group props a `RadioGroup` takes; the field supplies the rest. `render` is
- * left out because the field's `<div>` is the root and the group is one of its parts.
- */
-type AriaRadioGroupOwnProps = Omit<
-  AriaRadioGroupProps,
-  | 'className'
-  | 'style'
-  | 'children'
-  | 'render'
-  | 'id'
-  | 'value'
-  | 'defaultValue'
-  | 'onChange'
-  | 'validate'
-  | 'validationBehavior'
-  | 'isInvalid'
-  | 'isRequired'
-  | 'isReadOnly'
-  | 'isDisabled'
-  | 'aria-label'
-  | 'aria-labelledby'
-  | 'aria-describedby'
-  | 'aria-errormessage'
->;
-
 export type RadioGroupSize = Extract<Size, 'sm' | 'md' | 'lg'>;
 
-export interface RadioGroupProps extends AriaRadioGroupOwnProps, FieldInputProps<string | null> {
+export interface RadioGroupProps extends FieldInputProps<string | null> {
   /** The radios, in order: `Radio` elements. */
   children: ReactNode;
+  /** Lays the radios out in a column or a row. Defaults to `vertical`. */
+  orientation?: Orientation | undefined;
   /** Radio size. Defaults to `md`. */
   size?: RadioGroupSize | undefined;
 }
 
-export interface RadioProps
-  extends Omit<AriaRadioFieldProps, 'className' | 'style' | 'children'>, BaseProps {
+/** The states a radio hands its `render` function, which its root publishes as data attributes. */
+export interface RadioRenderState {
+  isSelected: boolean;
+  isDisabled: boolean;
+  isReadOnly: boolean;
+  isInvalid: boolean;
+  isRequired: boolean;
+}
+
+export interface RadioProps extends BaseProps, AriaLabellingProps {
+  /** The value the group takes when this radio is selected, and submits under its `name`. */
+  value: string;
+  isDisabled?: boolean | undefined;
+  /** Receives the native input. */
+  inputRef?: Ref<HTMLInputElement> | undefined;
   /** The visible label, plain or rich content. It names the radio, and pressing it selects it. */
   children?: ReactNode;
   /** Text below the label that describes the radio. */
   description?: ReactNode;
+  /** Replaces the root `<div>` with the caller's element. */
+  render?: ElementRender<'div', RadioRenderState> | undefined;
 }
 
 interface RadioBoxProps {
   state: FieldState<string | null>;
   control: FieldControlProps;
-  rest: AriaRadioGroupOwnProps;
+  rest: Pick<RadioGroupProps, 'name' | 'orientation'>;
   children: ReactNode;
 }
 
