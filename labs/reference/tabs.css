@@ -178,3 +178,69 @@
   background: var(--ref-pressed);
   color: var(--ref-text);
 }
+
+/* The name field of a tab being renamed lies over the tab; a refused name's message hangs below. */
+.ui-tabs,
+.ui-tabs__bar {
+  position: relative;
+}
+.ui-tabs__rename {
+  box-sizing: border-box;
+  display: flex;
+  min-width: 120px;
+  align-items: center;
+  padding: 0 4px;
+  background: var(--ref-canvas);
+}
+.ui-tabs__rename-input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding: 2px 6px;
+  border: 1px solid var(--ref-accent);
+  border-radius: 4px;
+  background: var(--ref-canvas);
+  color: var(--ref-text);
+  font: inherit;
+  font-size: 13px;
+}
+.ui-tabs__rename-input[data-invalid] {
+  border-color: var(--ref-danger);
+}
+.ui-tabs__rename-error {
+  position: absolute;
+  inset-inline-start: 0;
+  top: calc(100% + 4px);
+  z-index: 1;
+  padding: 4px 8px;
+  border: 1px solid var(--ref-danger);
+  border-radius: 4px;
+  background: var(--ref-raised);
+  color: var(--ref-danger);
+  font-size: 12px;
+  white-space: nowrap;
+  box-shadow: var(--ref-shadow);
+}
+
+/* A dragged tab dims; the tab it would land beside draws a bar on that side. */
+.ui-tabs__tab[data-dragging] {
+  opacity: 0.5;
+}
+.ui-tabs__tab[data-drop-position='before'] {
+  box-shadow: inset 2px 0 0 var(--ref-accent);
+}
+.ui-tabs__tab[data-drop-position='after'] {
+  box-shadow: inset -2px 0 0 var(--ref-accent);
+}
+.ui-tabs__tab[data-drop-position='before']:dir(rtl) {
+  box-shadow: inset -2px 0 0 var(--ref-accent);
+}
+.ui-tabs__tab[data-drop-position='after']:dir(rtl) {
+  box-shadow: inset 2px 0 0 var(--ref-accent);
+}
+.ui-tabs__list[data-orientation='vertical'] .ui-tabs__tab[data-drop-position='before'] {
+  box-shadow: inset 0 2px 0 var(--ref-accent);
+}
+.ui-tabs__list[data-orientation='vertical'] .ui-tabs__tab[data-drop-position='after'] {
+  box-shadow: inset 0 -2px 0 var(--ref-accent);
+}

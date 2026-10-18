@@ -254,4 +254,119 @@ test.describe('Tabs lab', () => {
     );
     await lab.expectAccessible();
   });
+
+  test('UIC-TABS-3.1 UIC-TABS-3.2 renames a tab by double click and F2, refusing a duplicate name', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('tabs');
+    const demo = page.locator('[data-lab-demo="meals"]');
+    const output = demo.locator('[data-lab-output="meals"]');
+    await demo.getByRole('tab', { name: 'Lunch' }).dblclick();
+    const field = demo.getByRole('textbox', { name: 'Rename Lunch' });
+    await expect(field).toBeFocused();
+    await page.keyboard.type('Dinner');
+    await expect(field).toHaveAttribute('aria-invalid', 'true');
+    await expect(field).toHaveAccessibleDescription('There is already a Dinner tab.');
+    await lab.expectAccessible();
+    await page.keyboard.press('Enter');
+    await expect(field).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(output).toHaveText('Tabs: Breakfast, Lunch, Dinner');
+    const lunch = demo.getByRole('tab', { name: 'Lunch' });
+    await expect(lunch).toBeFocused();
+    await page.keyboard.press('F2');
+    await page.keyboard.type('Brunch');
+    await page.keyboard.press('Enter');
+    await expect(output).toHaveText('Tabs: Breakfast, Brunch, Dinner');
+    await expect(demo.getByRole('tab', { name: 'Brunch' })).toBeFocused();
+  });
+
+  test('UIC-TABS-3.3 UIC-TABS-3.4 UIC-TABS-3.6 reorders tabs by dragging and with Alt+Arrow keys', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('tabs');
+    const demo = page.locator('[data-lab-demo="meals"]');
+    const output = demo.locator('[data-lab-output="meals"]');
+    const dinner = demo.getByRole('tab', { name: 'Dinner' });
+    await demo
+      .getByRole('tab', { name: 'Breakfast' })
+      .dragTo(dinner, { targetPosition: { x: 50, y: 10 } });
+    await expect(output).toHaveText('Tabs: Lunch, Dinner, Breakfast');
+    await dinner.click();
+    await expect(dinner).toHaveAttribute(
+      'aria-keyshortcuts',
+      'Delete F2 Alt+ArrowLeft Alt+ArrowRight Shift+F10',
+    );
+    await page.keyboard.press('Alt+ArrowLeft');
+    await expect(output).toHaveText('Tabs: Dinner, Lunch, Breakfast');
+    await expect(dinner).toBeFocused();
+    await page.keyboard.press('Alt+ArrowLeft');
+    await expect(output).toHaveText('Tabs: Dinner, Lunch, Breakfast');
+
+    const seasons = page.locator('[data-lab-demo="seasons"]');
+    await seasons.getByRole('tab', { name: 'Spring' }).click();
+    await page.keyboard.press('Alt+ArrowDown');
+    await expect(seasons.locator('[data-lab-output="seasons"]')).toHaveText(
+      'Order: Summer, Spring, Autumn, Winter',
+    );
+    await expect(seasons.getByRole('tab', { name: 'Spring' })).toBeFocused();
+  });
+
+  test('UIC-TABS-3.5 opens a tab menu that renames, duplicates, moves and deletes', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('tabs');
+    const demo = page.locator('[data-lab-demo="meals"]');
+    const output = demo.locator('[data-lab-output="meals"]');
+    await demo.getByRole('tab', { name: 'Lunch' }).click({ button: 'right' });
+    const menu = page.getByRole('menu');
+    await expect(menu.getByRole('menuitem')).toHaveText([
+      'Rename',
+      'Duplicate',
+      'Move left',
+      'Move right',
+      'Delete',
+    ]);
+    await menu.getByRole('menuitem', { name: 'Duplicate' }).click();
+    await expect(output).toHaveText('Tabs: Breakfast, Lunch, Lunch copy, Dinner');
+    const breakfast = demo.getByRole('tab', { name: 'Breakfast' });
+    await breakfast.click();
+    await page.keyboard.press('Shift+F10');
+    await expect(menu.getByRole('menuitem', { name: 'Move left' })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+    await menu.getByRole('menuitem', { name: 'Move right' }).click();
+    await expect(output).toHaveText('Tabs: Lunch, Breakfast, Lunch copy, Dinner');
+    await demo.getByRole('tab', { name: 'Lunch copy' }).click({ button: 'right' });
+    await menu.getByRole('menuitem', { name: 'Rename' }).click();
+    const field = demo.getByRole('textbox', { name: 'Rename Lunch copy' });
+    await expect(field).toBeFocused();
+    await page.keyboard.type('Supper');
+    await page.keyboard.press('Enter');
+    await expect(output).toHaveText('Tabs: Lunch, Breakfast, Supper, Dinner');
+    await demo.getByRole('tab', { name: 'Supper' }).click({ button: 'right' });
+    await menu.getByRole('menuitem', { name: 'Delete' }).click();
+    await expect(output).toHaveText('Tabs: Lunch, Breakfast, Dinner');
+    await lab.expectAccessible();
+  });
+
+  test('UIC-TABS-3.7 restores the remembered tab when the tabs mount again', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('tabs');
+    const demo = page.locator('[data-lab-demo="remembered"]');
+    await expect(demo.getByRole('tab', { selected: true })).toHaveText('Summer');
+    await demo.getByRole('tab', { name: 'Winter' }).click();
+    await demo.getByRole('button', { name: 'Remount' }).click();
+    await expect(demo.getByRole('tab', { selected: true })).toHaveText('Winter');
+    await page.reload();
+    await expect(
+      page.locator('[data-lab-demo="remembered"]').getByRole('tab', { selected: true }),
+    ).toHaveText('Winter');
+  });
 });

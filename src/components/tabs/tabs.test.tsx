@@ -5,6 +5,7 @@ import { I18nProvider } from '../../primitives/index.js';
 import type { Key } from '../../core/props.js';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { UiProvider } from '../../core/provider.js';
+import { createMemoryStorage } from '../../core/storage.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Tab, TabList, TabPanel, Tabs, type TabsProps } from './tabs.js';
 
@@ -427,5 +428,82 @@ describe('Tabs', () => {
     const panel = screen.getAllByRole('tabpanel').find((element) => !element.hasAttribute('inert'));
     expect(panel).toHaveAttribute('data-focus-visible', 'true');
     expectHooksMatchSpec(container, 'TABS');
+  });
+});
+
+describe('Tabs remembered selection', () => {
+  it('UIC-TABS-3.7 stores the selection and restores it when the tabs mount again', async () => {
+    const storage = createMemoryStorage();
+    const onSelectionChange = vi.fn();
+    const { unmount } = render(
+      <UiProvider storage={storage}>
+        <Fruit
+          persistKey="fruit-tab"
+          defaultSelectedKey="banana"
+          onSelectionChange={onSelectionChange}
+        />
+      </UiProvider>,
+    );
+    expect(selected()).toHaveTextContent('Banana');
+    await userEvent.click(screen.getByRole('tab', { name: 'Cherry' }));
+    expect(storage.getItem('fruit-tab')).toBe('"cherry"');
+    expect(onSelectionChange).toHaveBeenLastCalledWith('cherry');
+    unmount();
+    render(
+      <UiProvider storage={storage}>
+        <Fruit persistKey="fruit-tab" defaultSelectedKey="banana" />
+      </UiProvider>,
+    );
+    expect(selected()).toHaveTextContent('Cherry');
+    expect(screen.getByRole('tabpanel')).toHaveTextContent('Cherries are small.');
+  });
+
+  it('UIC-TABS-3.7 falls back on an unreadable value and replaces a key no tab has', () => {
+    const storage = createMemoryStorage({ broken: '{', stale: '"kiwi"', numbered: '[1]' });
+    const { unmount } = render(
+      <UiProvider storage={storage}>
+        <Fruit persistKey="broken" defaultSelectedKey="cherry" />
+        <Fruit persistKey="numbered" defaultSelectedKey="banana" listLabel="Numbered" />
+      </UiProvider>,
+    );
+    const lists = screen.getAllByRole('tablist');
+    expect(within(lists[0] as HTMLElement).getByRole('tab', { selected: true })).toHaveTextContent(
+      'Cherry',
+    );
+    expect(within(lists[1] as HTMLElement).getByRole('tab', { selected: true })).toHaveTextContent(
+      'Banana',
+    );
+    unmount();
+    render(
+      <UiProvider storage={storage}>
+        <Fruit persistKey="stale" />
+      </UiProvider>,
+    );
+    expect(selected()).toHaveTextContent('Apple');
+    expect(storage.getItem('stale')).toBe('"apple"');
+  });
+
+  it('UIC-TABS-3.7 restores another key and never stores a controlled selection', async () => {
+    const storage = createMemoryStorage({ first: '"banana"', second: '"cherry"' });
+    const { rerender } = render(
+      <UiProvider storage={storage}>
+        <Fruit persistKey="first" />
+      </UiProvider>,
+    );
+    expect(selected()).toHaveTextContent('Banana');
+    rerender(
+      <UiProvider storage={storage}>
+        <Fruit persistKey="second" />
+      </UiProvider>,
+    );
+    expect(selected()).toHaveTextContent('Cherry');
+    rerender(
+      <UiProvider storage={storage}>
+        <Fruit persistKey="second" selectedKey="apple" />
+      </UiProvider>,
+    );
+    expect(selected()).toHaveTextContent('Apple');
+    await userEvent.click(screen.getByRole('tab', { name: 'Banana' }));
+    expect(storage.getItem('second')).toBe('"cherry"');
   });
 });

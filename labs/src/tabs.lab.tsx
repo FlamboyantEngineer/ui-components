@@ -3,6 +3,7 @@ import type { Key } from '../../src/core/props.js';
 import { Tab, TabList, TabPanel, Tabs, type TabListProps } from '../../src/components/tabs/tabs.js';
 import { UiProvider } from '../../src/core/provider.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { MealTabs, RememberedTabs, VerticalReorderTabs } from './tabs-cases.js';
 
 const sizes = ['sm', 'md', 'lg'] as const;
 
@@ -211,6 +212,24 @@ mountLab(
       description="Press a tab's close mark, or Delete on a focused tab, to remove it; the add button appends one."
     >
       <EditableTabs />
+    </LabSection>
+    <LabSection
+      title="Rename, reorder and tab menu"
+      description="Double-click a tab or press F2 to rename it (names must be unique); drag a tab or press Alt+Arrow to move it; right-click or press Shift+F10 for its menu."
+    >
+      <MealTabs />
+    </LabSection>
+    <LabSection
+      title="Vertical reorder"
+      description="Alt+ArrowUp and Alt+ArrowDown move the focused tab of a vertical list."
+    >
+      <VerticalReorderTabs />
+    </LabSection>
+    <LabSection
+      title="Remembered selection"
+      description="The selected tab is stored through the provider's storage and restored when the tabs mount again."
+    >
+      <RememberedTabs />
     </LabSection>
     <LabSection
       title="Links"

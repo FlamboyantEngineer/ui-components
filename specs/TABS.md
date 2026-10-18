@@ -1,6 +1,6 @@
 # Tabs
 
-`Tabs` switches between peer sections of one surface. It is a family built on React Aria's `Tabs`, `TabList`, `Tab` and `TabPanel`: `Tabs` holds the selection, `TabList` the row (or column) of `Tab`s, and each `TabPanel` the content of the tab with the same `id`. A horizontal list that runs out of room scrolls, with optional scroll buttons, or collapses the tabs that do not fit into a "more" [Dropdown Menu](DROPDOWN-MENU.md) measured by [`useOverflowItems`](OVERFLOW-LIST.md); tabs can be removable and the list can add tabs. Picking one of a few values of a setting is a [Segmented Choice](SEGMENTED-CHOICE.md); showing where a page sits in a hierarchy is a [Breadcrumb](BREADCRUMB.md).
+`Tabs` switches between peer sections of one surface. It is a family built on React Aria's `Tabs`, `TabList`, `Tab` and `TabPanel`: `Tabs` holds the selection, `TabList` the row (or column) of `Tab`s, and each `TabPanel` the content of the tab with the same `id`. A horizontal list that runs out of room scrolls, with optional scroll buttons, or collapses the tabs that do not fit into a "more" [Dropdown Menu](DROPDOWN-MENU.md) measured by [`useOverflowItems`](OVERFLOW-LIST.md); tabs can be removable and the list can add tabs. A list can also rename its tabs in place, reorder them by dragging and from the keyboard, and give each tab a menu of its actions, and `Tabs` can remember its selected tab through the provider's storage. Picking one of a few values of a setting is a [Segmented Choice](SEGMENTED-CHOICE.md); showing where a page sits in a hierarchy is a [Breadcrumb](BREADCRUMB.md).
 
 ## UIC-TABS-1 - Structure
 
@@ -99,10 +99,61 @@ Verification: `src/components/tabs/tab-list.test.tsx`, `e2e/tabs.spec.ts`
 
 ### UIC-TABS-2.8 - Removable and added tabs
 
-With `onRemove` every tab with an `id` shall draw a close mark in a `ui-tabs__remove` slot and publish `aria-keyshortcuts="Delete"`. Pressing the mark with a pointer calls `onRemove` with a set holding the tab's `id`, without selecting or focusing the tab; the mark is hidden from assistive technology because Delete or Backspace on the focused tab does the same from the keyboard. The caller removes the tab, and focus moves to a neighbouring tab. With `onAdd` the list draws a `ui-tabs__add` [Icon Button](ICON-BUTTON.md) (`plus`, named by the provider's `addTab` string) after the tabs, in a `ui-tabs__bar` element, that calls it.
+With `onRemove` every tab with an `id` shall draw a close mark in a `ui-tabs__remove` slot and announce `Delete` in `aria-keyshortcuts` (UIC-TABS-3.6). Pressing the mark with a pointer calls `onRemove` with a set holding the tab's `id`, without selecting or focusing the tab; the mark is hidden from assistive technology because Delete or Backspace on the focused tab does the same from the keyboard. The caller removes the tab, and focus moves to a neighbouring tab. With `onAdd` the list draws a `ui-tabs__add` [Icon Button](ICON-BUTTON.md) (`plus`, named by the provider's `addTab` string) after the tabs, in a `ui-tabs__bar` element, that calls it.
 
 Implementation: `src/components/tabs/tabs.tsx`, `src/components/tabs/tab-list.tsx`, `labs/reference/tabs.css`
 Verification: `src/components/tabs/tab-list.test.tsx`, `e2e/tabs.spec.ts`
+
+## UIC-TABS-3 - Editing
+
+### UIC-TABS-3.1 - Renaming in place
+
+With `onRename`, double-clicking an enabled tab that has an `id`, pressing F2 on the focused tab, or choosing Rename in its menu (UIC-TABS-3.5) shall open a name field (`ui-tabs__rename-input`) named by the provider's `renameItem` string and holding the tab's text value selected; the tab publishes `data-renaming`. A tab holds no control of its own, so the field sits in a `ui-tabs__rename` element after the list, laid over the tab with an inline absolute position and the tab's measured size, re-measured as the list scrolls. Keys typed in the field never reach the list. Enter, and focus leaving the field, call `onRename` with the tab's `id` and the trimmed name when it is not blank and differs from the text value; Escape abandons the edit. Enter and Escape return focus to the tab; focus that returns to the tab from elsewhere, as a closing menu returns it, keeps the field open.
+
+Implementation: `src/components/tabs/tab-rename.tsx`, `src/components/tabs/tab-list.tsx`, `src/components/tabs/tab.tsx`, `labs/reference/tabs.css`
+Verification: `src/components/tabs/tab-rename.test.tsx`, `e2e/tabs.spec.ts`
+
+### UIC-TABS-3.2 - Name validation
+
+With `validateName`, the field shall check each trimmed name that is not blank and differs from the text value as it is typed, calling `validateName` with the tab's `id` and the name. A returned message marks the field `aria-invalid` (and `data-invalid`) and shows the message in a `ui-tabs__rename-error` element that describes the field; an empty result clears it. Enter on a refused name keeps the field open with its message; focus leaving the field abandons a refused name.
+
+Implementation: `src/components/tabs/tab-rename.tsx`, `labs/reference/tabs.css`
+Verification: `src/components/tabs/tab-rename.test.tsx`, `e2e/tabs.spec.ts`
+
+### UIC-TABS-3.3 - Reordering by dragging
+
+With `onReorder`, every enabled tab that has an `id` shall drag through React Aria's drag and drop, carrying its text value as `text/plain`, and take drops of another tab of the same list on the half of it under the pointer in reading order (the top or bottom half in a vertical list). While a drag would land beside a tab, that tab publishes `data-drop-position` (`before` or `after`), and the dragged tab publishes `data-dragging`. A drop calls `onReorder` with `{ key, targetKey, position }`; drops that would leave the tab where it is, drags from outside the list and drags of a disabled tab are refused. The list never reorders its tabs itself: the owner applies the move and renders the tabs in their new order.
+
+Implementation: `src/components/tabs/tab-reorder.ts`, `src/components/tabs/tab.tsx`, `src/primitives/drag-and-drop.ts`, `labs/reference/tabs.css`
+Verification: `src/components/tabs/tab-reorder.test.tsx`, `e2e/tabs.spec.ts`
+
+### UIC-TABS-3.4 - Reordering by keyboard
+
+With `onReorder`, Alt+ArrowLeft and Alt+ArrowRight on the focused tab of a horizontal list (mirrored in a right-to-left locale), or Alt+ArrowUp and Alt+ArrowDown in a vertical list, shall move it one place toward the start or the end, calling `onReorder` with its neighbour as `targetKey`, and keep focus on the moved tab. At either end, and on a disabled tab, the keys are claimed and nothing moves.
+
+Implementation: `src/components/tabs/tab-reorder.ts`, `src/components/tabs/tab-list.tsx`
+Verification: `src/components/tabs/tab-reorder.test.tsx`, `e2e/tabs.spec.ts`
+
+### UIC-TABS-3.5 - Tab menu
+
+With `getMenuItems`, every enabled tab that has an `id` shall open a [Context Menu](CONTEXT-MENU.md) of the entries `getMenuItems(key, standard)` returns: a secondary click focuses the tab and opens it at the pointer, a long touch opens it at the touch point, and the Context Menu key or Shift+F10 below the tab; closing it returns focus to where it was. `standard` holds an entry for each action the list takes, in groups separated by rules: `rename` (the provider's `rename` string, opening the name field), `duplicate` (`duplicate`, calling `onDuplicate` with the tab's `id`), `move-backward` and `move-forward` (`moveItem` with `left` and `right`, mirrored right to left, or `up` and `down` in a vertical list; disabled at either end; calling `onReorder`) and `delete` (`delete`, in the danger tone, calling `onRemove`). The owner returns them as they are, changed (for example disabled), reordered or with its own entries.
+
+Implementation: `src/components/tabs/tab-menu.tsx`, `src/components/tabs/tab.tsx`, `src/components/context-menu/context-menu.tsx`
+Verification: `src/components/tabs/tab-menu.test.tsx`, `e2e/tabs.spec.ts`
+
+### UIC-TABS-3.6 - Announced keys
+
+Every tab that has an `id` shall announce in `aria-keyshortcuts` the keys its list takes, in this order: `Delete` with `onRemove`, `F2` with `onRename`, `Alt+ArrowLeft Alt+ArrowRight` (or `Alt+ArrowUp Alt+ArrowDown` in a vertical list) with `onReorder`, and `Shift+F10` with `getMenuItems`.
+
+Implementation: `src/components/tabs/tab-list.tsx`, `src/components/tabs/tab.tsx`
+Verification: `src/components/tabs/tab-menu.test.tsx`, `e2e/tabs.spec.ts`
+
+### UIC-TABS-3.7 - Remembered selection
+
+With `persistKey` and no `selectedKey`, `Tabs` shall start from the selection stored under that key through the provider's storage ([PROVIDER.md](PROVIDER.md)) and store every selection, so a remounted `Tabs` restores it. With nothing stored, or an unreadable stored value, it starts from `defaultSelectedKey`; a stored key that no enabled tab has selects the first enabled tab, which is then stored. Another `persistKey` restores that key's selection. A controlled selection is never stored.
+
+Implementation: `src/components/tabs/tabs.tsx`
+Verification: `src/components/tabs/tabs.test.tsx`, `e2e/tabs.spec.ts`
 
 ## Hooks
 
@@ -120,6 +171,9 @@ Verification: `src/components/tabs/tab-list.test.tsx`, `e2e/tabs.spec.ts`
 | `ui-tabs__label`         | slot      |                          | A tab's label.                                                             |
 | `ui-tabs__count`         | slot      |                          | A tab's shown count.                                                       |
 | `ui-tabs__remove`        | slot      |                          | A removable tab's close mark.                                              |
+| `ui-tabs__rename`        | slot      |                          | The element after the list laid over a tab being renamed.                  |
+| `ui-tabs__rename-input`  | slot      |                          | The name field of a tab being renamed.                                     |
+| `ui-tabs__rename-error`  | slot      |                          | The message of a refused name.                                             |
 | `ui-tabs__panel`         | slot      |                          | One `TabPanel` (`role="tabpanel"`).                                        |
 | `data-size`              | attribute | `sm`, `md`, `lg`         | Tab block size, on the root.                                               |
 | `data-orientation`       | attribute | `horizontal`, `vertical` | Layout and arrow-key axis, on the root, the bar and the list (React Aria). |
@@ -136,5 +190,9 @@ Verification: `src/components/tabs/tab-list.test.tsx`, `e2e/tabs.spec.ts`
 | `data-focused`           | state     | `true`                   | A focused tab or panel, or focus within the root.                          |
 | `data-focus-visible`     | state     | `true`                   | Keyboard focus on a tab or panel, or within the root.                      |
 | `data-inert`             | state     | `true`                   | A force-mounted panel that is not selected.                                |
+| `data-renaming`          | state     | `true`                   | A tab being renamed.                                                       |
+| `data-dragging`          | state     | `true`                   | A tab being dragged.                                                       |
+| `data-drop-position`     | state     | `before`, `after`        | The side of a tab a dragged tab would land on, in reading order.           |
+| `data-invalid`           | state     | `true`                   | The name field holds a refused name (React Aria).                          |
 | `data-entering`          | state     | `true`                   | The indicator or a panel is entering (React Aria animation hook).          |
 | `data-exiting`           | state     | `true`                   | The indicator or a panel is exiting (React Aria animation hook).           |

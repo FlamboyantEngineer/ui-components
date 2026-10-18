@@ -13,5 +13,8 @@ export const tabsHooks = createHooks('tabs', [
   'label',
   'count',
   'remove',
+  'rename',
+  'rename-input',
+  'rename-error',
   'panel',
 ]);

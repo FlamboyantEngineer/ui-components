@@ -57,6 +57,10 @@ export interface CommonStrings {
   moreItems: (count: number) => string;
   /** Names the button that adds a tab. */
   addTab: string;
+  /** Makes a copy of an item beside it, such as a tab. */
+  duplicate: string;
+  /** Moves an item one place in a direction, such as a tab along its list. */
+  moveItem: (direction: 'left' | 'right' | 'up' | 'down') => string;
   /** Tells a reader that a link opens in a new tab or window. */
   opensInNewTab: string;
   /** Names a collection's selected count (`3 selected`). */
@@ -184,6 +188,8 @@ export const commonStrings: CommonStrings = {
   scrollForward: 'Scroll forward',
   moreItems: (count) => (count === 1 ? '1 more item' : `${count} more items`),
   addTab: 'Add tab',
+  duplicate: 'Duplicate',
+  moveItem: (direction) => `Move ${direction}`,
   opensInNewTab: '(opens in a new tab)',
   selectedCount: (count) => `${count} selected`,
   clearSelection: 'Clear selection',
