@@ -1,0 +1,114 @@
+/* Segmented Bar: drawn like a meter, so the bars read as one family. */
+
+.ui-segmented-bar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 4px 8px;
+  min-width: 80px;
+}
+
+.ui-segmented-bar__label {
+  grid-column: 1;
+  font-size: 13px;
+}
+
+.ui-segmented-bar__total {
+  grid-column: 2;
+  color: var(--ref-muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-segmented-bar__track {
+  display: flex;
+  grid-column: 1 / -1;
+  gap: 1px;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--ref-border);
+}
+
+.ui-segmented-bar[data-size='sm'] .ui-segmented-bar__track {
+  height: 4px;
+}
+
+.ui-segmented-bar[data-size='lg'] .ui-segmented-bar__track {
+  height: 12px;
+}
+
+.ui-segmented-bar__segment,
+.ui-segmented-bar__swatch {
+  background: var(--ref-border-strong);
+}
+
+.ui-segmented-bar__segment {
+  /* Shrinking by width keeps the shares proportional around the gaps. */
+  flex: 0 1 auto;
+  min-width: 2px;
+  transition: width 0.2s;
+}
+
+.ui-segmented-bar__item[data-tone='info'] .ui-segmented-bar__swatch,
+.ui-segmented-bar__segment[data-tone='info'] {
+  background: var(--ref-info);
+}
+
+.ui-segmented-bar__item[data-tone='success'] .ui-segmented-bar__swatch,
+.ui-segmented-bar__segment[data-tone='success'] {
+  background: var(--ref-success);
+}
+
+.ui-segmented-bar__item[data-tone='warning'] .ui-segmented-bar__swatch,
+.ui-segmented-bar__segment[data-tone='warning'] {
+  background: var(--ref-warning);
+}
+
+.ui-segmented-bar__item[data-tone='danger'] .ui-segmented-bar__swatch,
+.ui-segmented-bar__segment[data-tone='danger'] {
+  background: var(--ref-danger);
+}
+
+.ui-segmented-bar__legend {
+  display: flex;
+  flex-wrap: wrap;
+  grid-column: 1 / -1;
+  gap: 4px 16px;
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+}
+
+.ui-segmented-bar__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ui-segmented-bar__swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
+
+.ui-segmented-bar__item-label {
+  color: var(--ref-text);
+}
+
+.ui-segmented-bar__item-value {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-segmented-bar__item-share {
+  color: var(--ref-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-segmented-bar__segment {
+    transition: none;
+  }
+}

@@ -117,3 +117,7 @@ export { diffLines, diffWords } from './diff.js';
 export type { DiffKind, LineDiffHunk, WordDiffHunk } from './diff.js';
 export { formatOutlineNumber } from './outline-number.js';
 export type { FormatOutlineNumberOptions, OutlineNumberStyle } from './outline-number.js';
+export { createLinearScale } from './linear-scale.js';
+export type { LinearScale, LinearScaleOptions, ScaleInterval, ScaleTick } from './linear-scale.js';
+export { createTimeScale } from './time-scale.js';
+export type { TimeScale, TimeScaleOptions, TimeScaleUnit, TimeTickOptions } from './time-scale.js';

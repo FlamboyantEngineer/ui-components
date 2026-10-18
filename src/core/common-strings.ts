@@ -88,6 +88,8 @@ export interface CommonStrings {
   countOrMore: (count: number) => string;
   /** A step counter such as `2 of 5`. */
   stepOfTotal: (current: number, total: number) => string;
+  /** A total beside the parts it sums, from the formatted total (`30 total`). */
+  totalCount: (total: string) => string;
   /** Names the mark of a group holding a value that overrides an inherited one. */
   containsOverrides: string;
   /** Names a search box that filters a panel, from the panel's label. */
@@ -201,6 +203,7 @@ export const commonStrings: CommonStrings = {
   remainingCount: (count) => `${count} remaining`,
   countOrMore: (count) => `${count} or more`,
   stepOfTotal: (current, total) => `${current} of ${total}`,
+  totalCount: (total) => `${total} total`,
   containsOverrides: 'Contains overridden values',
   filterLabel: (label) => `Filter ${label.toLocaleLowerCase()}`,
   noPropertyMatches: (query) => `No properties match “${query}”.`,

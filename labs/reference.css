@@ -84,6 +84,7 @@
 @import url('reference/scroll-region.css');
 @import url('reference/search-field.css');
 @import url('reference/section-header.css');
+@import url('reference/segmented-bar.css');
 @import url('reference/segmented-choice.css');
 @import url('reference/select-field.css');
 @import url('reference/separator.css');
@@ -92,7 +93,9 @@
 @import url('reference/signature-pad.css');
 @import url('reference/skeleton.css');
 @import url('reference/slider.css');
+@import url('reference/sparkline.css');
 @import url('reference/split-view.css');
+@import url('reference/stat-tile.css');
 @import url('reference/status-light.css');
 @import url('reference/svg-markup.css');
 @import url('reference/switch.css');

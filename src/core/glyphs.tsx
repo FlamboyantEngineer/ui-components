@@ -1,7 +1,10 @@
 import {
   ArrowDownIcon,
+  ArrowLongRightIcon,
   ArrowPathIcon,
   ArrowTopRightOnSquareIcon,
+  ArrowTrendingDownIcon,
+  ArrowTrendingUpIcon,
   ArrowUpIcon,
   ArrowUpTrayIcon,
   ArrowUturnLeftIcon,
@@ -113,6 +116,9 @@ export const defaultGlyphs = {
   link: LinkIcon,
   'external-link': ArrowTopRightOnSquareIcon,
   sidebar: ViewColumnsIcon,
+  'trend-up': ArrowTrendingUpIcon,
+  'trend-down': ArrowTrendingDownIcon,
+  'trend-flat': ArrowLongRightIcon,
 } satisfies Record<string, GlyphComponent>;
 
 export const glyphNames = Object.keys(defaultGlyphs) as GlyphName[];
