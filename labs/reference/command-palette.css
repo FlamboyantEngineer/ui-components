@@ -1,0 +1,125 @@
+/* Command Palette. The overlay's position and z-index come from the component; the panel sits near the top of the viewport and scrolls, with the search field kept in view, so the scroll container holds the focused field. */
+
+.ui-command-palette {
+  display: grid;
+  place-items: start center;
+  box-sizing: border-box;
+  padding: 12vh 16px 16px;
+  background: rgb(31 35 40 / 0.45);
+}
+
+:root[data-theme='dark'] .ui-command-palette {
+  background: rgb(1 4 9 / 0.7);
+}
+
+.ui-command-palette[data-entering] {
+  animation: ref-command-palette-in 0.12s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-command-palette[data-entering] {
+    animation: none;
+  }
+}
+
+@keyframes ref-command-palette-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.ui-command-palette__panel {
+  display: flex;
+  box-sizing: border-box;
+  width: min(560px, 100%);
+  max-height: min(480px, 76vh);
+  border: 1px solid var(--ref-border);
+  border-radius: 8px;
+  background: var(--ref-raised);
+  color: var(--ref-text);
+  box-shadow: var(--ref-shadow);
+  font: 14px/1.5 var(--ref-font);
+  overflow: auto;
+}
+
+.ui-command-palette[data-size='sm'] .ui-command-palette__panel {
+  width: min(480px, 100%);
+}
+
+.ui-command-palette[data-size='lg'] .ui-command-palette__panel {
+  width: min(640px, 100%);
+}
+
+.ui-command-palette__dialog {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+  outline: none;
+}
+
+.ui-command-palette__search {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--ref-border);
+  background: var(--ref-raised);
+}
+
+.ui-command-palette__search-icon {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  color: var(--ref-muted);
+}
+
+.ui-command-palette__search-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 15px;
+  outline: none;
+}
+
+.ui-command-palette[data-size='sm'] .ui-command-palette__search-input {
+  height: 38px;
+  font-size: 14px;
+}
+
+.ui-command-palette[data-size='lg'] .ui-command-palette__search-input {
+  height: 50px;
+  font-size: 16px;
+}
+
+.ui-command-palette__search-input::placeholder {
+  color: var(--ref-muted);
+}
+
+.ui-command-palette__search-input::-webkit-search-cancel-button {
+  appearance: none;
+}
+
+/* The commands are the library menu, flowing under the search field. */
+.ui-command-palette .ui-menu {
+  flex: none;
+  border: 0;
+  border-radius: 0;
+  background: none;
+}
+
+.ui-command-palette__empty {
+  display: block;
+  padding: 16px 8px;
+  color: var(--ref-muted);
+  text-align: center;
+}

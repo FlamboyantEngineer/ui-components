@@ -26,6 +26,7 @@
 @import url('reference/color-field.css');
 @import url('reference/color-swatch.css');
 @import url('reference/combobox.css');
+@import url('reference/command-palette.css');
 @import url('reference/confirm-dialog.css');
 @import url('reference/copy-button.css');
 @import url('reference/date-time-field.css');
@@ -52,6 +53,7 @@
 @import url('reference/load-more.css');
 @import url('reference/loading-overlay.css');
 @import url('reference/menu.css');
+@import url('reference/menubar.css');
 @import url('reference/meta-line.css');
 @import url('reference/modal.css');
 @import url('reference/number-field.css');

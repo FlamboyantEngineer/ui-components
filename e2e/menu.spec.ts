@@ -255,6 +255,18 @@ test.describe('Menu lab', () => {
     await expect(cellSearch).toHaveText('No results');
   });
 
+  test('UIC-MENU-5.4 marks the typed text in the matching labels', async ({ page, lab }) => {
+    await lab.open('menu');
+    await section(page, 'Highlighted matches')
+      .getByRole('button', { name: 'Highlighted cities' })
+      .click();
+    await page.keyboard.type('qu');
+    const marks = popovers(page).locator('mark.ui-text-match');
+    await expect(marks).toHaveText(['Qu', 'Qu', 'Qu', 'Qu', 'Qu']);
+    await expect(item(page, /^Quito 5$/)).toHaveAccessibleName('Quito 5');
+    await lab.expectAccessible('.ui-menu-popover');
+  });
+
   test('UIC-MENU-5.2 loads more entries as the end of the menu comes into view', async ({
     page,
     lab,
