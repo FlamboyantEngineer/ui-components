@@ -145,7 +145,25 @@ export interface CommonStrings {
   toggleNavigation: (isCollapsed: boolean) => string;
   /** Names the handle that resizes a navigation rail. */
   resizeNavigation: string;
+  /** Returns to the previous step of a multi-step task. */
+  back: string;
+  /** Completes the last step of a multi-step task. */
+  finish: string;
+  /** Passes over an optional step. */
+  skip: string;
+  /** Marks a step or entry the reader may leave out. */
+  optional: string;
+  /** Default accessible name of a list of steps. */
+  steps: string;
+  /** Read after a settled step's label (`Upload, Completed`). */
+  stepStatus: (status: 'complete' | 'error' | 'skipped') => string;
 }
+
+const stepStatusNames = {
+  complete: 'Completed',
+  error: 'Has errors',
+  skipped: 'Skipped',
+} as const;
 
 const spokenKeyNames: Readonly<Record<string, string>> = {
   '↑': 'Up Arrow',
@@ -268,4 +286,10 @@ export const commonStrings: CommonStrings = {
   actions: 'Actions',
   toggleNavigation: (isCollapsed) => (isCollapsed ? 'Expand navigation' : 'Collapse navigation'),
   resizeNavigation: 'Resize navigation',
+  back: 'Back',
+  finish: 'Finish',
+  skip: 'Skip',
+  optional: 'Optional',
+  steps: 'Steps',
+  stepStatus: (status) => stepStatusNames[status],
 };

@@ -123,3 +123,6 @@ export * from './components/pdf-viewer/index.js';
 export * from './components/tag-group/index.js';
 export * from './components/record-label/index.js';
 export * from './components/record-chip/index.js';
+export * from './components/steps/index.js';
+export * from './components/wizard/index.js';
+export * from './components/state-timeline/index.js';
