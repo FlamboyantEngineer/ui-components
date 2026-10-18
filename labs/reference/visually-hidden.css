@@ -1,0 +1,13 @@
+/*
+ * Visually Hidden. React Aria hides the element inline; focusable content that has focus shows as a
+ * raised chip, as a skip link does.
+ */
+
+.ui-visually-hidden[data-focus-within] {
+  display: inline-block;
+  padding: 4px 8px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-raised);
+  box-shadow: var(--ref-shadow);
+}

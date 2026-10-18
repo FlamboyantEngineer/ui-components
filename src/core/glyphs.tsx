@@ -1,6 +1,7 @@
 import {
   ArrowDownIcon,
   ArrowPathIcon,
+  ArrowTopRightOnSquareIcon,
   ArrowUpIcon,
   ArrowUpTrayIcon,
   ArrowUturnLeftIcon,
@@ -108,6 +109,7 @@ export const defaultGlyphs = {
   'eye-slash': EyeSlashIcon,
   scrub: ArrowsRightLeftIcon,
   link: LinkIcon,
+  'external-link': ArrowTopRightOnSquareIcon,
   sidebar: ViewColumnsIcon,
 } satisfies Record<string, GlyphComponent>;
 

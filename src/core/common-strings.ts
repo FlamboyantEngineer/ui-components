@@ -53,6 +53,8 @@ export interface CommonStrings {
   moreItems: (count: number) => string;
   /** Names the button that adds a tab. */
   addTab: string;
+  /** Tells a reader that a link opens in a new tab or window. */
+  opensInNewTab: string;
   /** Names a collection's selected count (`3 selected`). */
   selectedCount: (count: number) => string;
   /** Clears a collection's selection. */
@@ -160,6 +162,7 @@ export const commonStrings: CommonStrings = {
   scrollForward: 'Scroll forward',
   moreItems: (count) => (count === 1 ? '1 more item' : `${count} more items`),
   addTab: 'Add tab',
+  opensInNewTab: '(opens in a new tab)',
   selectedCount: (count) => `${count} selected`,
   clearSelection: 'Clear selection',
   placesBeside: (name) => `Places beside ${name}`,

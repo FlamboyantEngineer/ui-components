@@ -1,0 +1,57 @@
+/* Link */
+
+.ui-link {
+  border-radius: 2px;
+  color: var(--ref-accent-ink);
+  text-decoration: none;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  outline: none;
+}
+
+.ui-link[data-variant='secondary'] {
+  color: inherit;
+}
+
+.ui-link[data-underline='always'],
+.ui-link[data-underline='hover']:is([data-hovered], [data-focus-visible]) {
+  text-decoration: underline;
+}
+
+.ui-link[data-standalone] {
+  font-weight: 500;
+}
+
+/* A link in running text that is not underlined keeps a cue besides colour. */
+.ui-link:not([data-standalone]):is([data-underline='hover'], [data-underline='none']) {
+  font-weight: 500;
+}
+
+.ui-link[data-focus-visible] {
+  box-shadow: 0 0 0 2px var(--ref-focus);
+}
+
+.ui-link[data-pressed] {
+  opacity: 0.8;
+}
+
+.ui-link[data-current] {
+  color: var(--ref-text);
+  font-weight: 600;
+}
+
+.ui-link[data-disabled] {
+  color: var(--ref-muted);
+  text-decoration: none;
+  cursor: default;
+}
+
+.ui-link__external-icon {
+  width: 0.9em;
+  height: 0.9em;
+  vertical-align: -0.1em;
+}
+
+.ui-link__new-tab-label {
+  white-space: nowrap;
+}
