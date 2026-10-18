@@ -43,7 +43,7 @@ Verification: `test/public-types.test.ts`
 
 ### UIC-PRIMITIVES-2.2 - A shared vocabulary the primitives satisfy
 
-The library shall declare the vocabulary its components share in `src/core/`: collection keys and selections (`Key`, `Selection`, `SelectionMode`), overlay `Placement`, sorting (`SortDescriptor`, `SortDirection`), interaction events (`PressEvent`, `HoverEvent`, `PointerType`) and the prop groups built from them (`PressEventProps`, `HoverEventProps`, `FocusEventProps`, `KeyboardEventProps`, `AriaLabellingProps`, `OpenStateProps`, `SelectionProps`), plus `ElementRender` for swapping elements. Each is shaped so that today's building blocks accept and produce it unchanged, which the tests check at compile time; a replacement adapts to the same shapes.
+The library shall declare the vocabulary its components share in `src/core/`: collection keys and selections (`Key`, `Selection`, `SelectionMode`), overlay `Placement`, sorting (`SortDescriptor`, `SortDirection`), interaction events (`PressEvent`, `HoverEvent`, `PointerType`) and the prop groups built from them (`PressEventProps`, `HoverEventProps`, `FocusEventProps`, `KeyboardEventProps`, `AriaLabellingProps`, `OpenStateProps`, `SelectionProps`, `CollectionSelectionProps`, `ExpansionProps`, `OverlayPositionProps`, `OverlayDismissProps`), plus `ElementRender` for swapping elements. Each is shaped so that today's building blocks accept and produce it unchanged, which the tests check at compile time; a replacement adapts to the same shapes.
 
 Implementation: `src/core/props.ts`, `src/core/events.ts`, `src/utils/render-element.ts`
 Verification: `test/public-types.test.ts`
