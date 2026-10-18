@@ -2,7 +2,12 @@ import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createContext, useContext, useState, type Dispatch, type SetStateAction } from 'react';
 import { describe, expect, it } from 'vitest';
-import { ProjectionContent, ProjectionOutlet, ProjectionProvider } from './projection.js';
+import {
+  ProjectionContent,
+  ProjectionOutlet,
+  ProjectionProvider,
+  useProjectedContent,
+} from './projection.js';
 
 describe('Projection', () => {
   it('UIC-PROJECTION-1.1 renders declared content at the outlet, without wrappers', () => {
@@ -167,5 +172,82 @@ describe('Projection', () => {
     expect(screen.getByTestId('origin')).toContainElement(
       screen.getByRole('button', { name: 'Zoom' }),
     );
+  });
+
+  it('UIC-PROJECTION-1.7 lets a scoped provider own its slots and pass the others up', () => {
+    function Page({ inner }: { inner: boolean }) {
+      return (
+        <ProjectionProvider>
+          <p data-testid="outer-tools">
+            <ProjectionOutlet slot="tools" fallback="none" />
+          </p>
+          <ProjectionProvider slots={['title']}>
+            <p data-testid="inner-title">
+              <ProjectionOutlet slot="title" fallback="untitled" />
+            </p>
+            <p data-testid="inner-tools">
+              <ProjectionOutlet slot="tools" fallback="none" />
+            </p>
+            {inner ? (
+              <>
+                <ProjectionContent slot="title">Harbour</ProjectionContent>
+                <ProjectionContent slot="tools">Ruler</ProjectionContent>
+              </>
+            ) : null}
+          </ProjectionProvider>
+          <p data-testid="outer-title">
+            <ProjectionOutlet slot="title" fallback="untitled" />
+          </p>
+        </ProjectionProvider>
+      );
+    }
+    const { rerender } = render(<Page inner />);
+    expect(screen.getByTestId('inner-title')).toHaveTextContent('Harbour');
+    expect(screen.getByTestId('outer-title')).toHaveTextContent('untitled');
+    expect(screen.getByTestId('outer-tools')).toHaveTextContent('Ruler');
+    expect(screen.getByTestId('inner-tools')).toHaveTextContent('Ruler');
+    rerender(<Page inner={false} />);
+    expect(screen.getByTestId('inner-title')).toHaveTextContent('untitled');
+    expect(screen.getByTestId('outer-tools')).toHaveTextContent('none');
+  });
+
+  it('UIC-PROJECTION-1.7 owns every slot without an enclosing provider', () => {
+    render(
+      <ProjectionProvider slots={['title']}>
+        <p data-testid="tools">
+          <ProjectionOutlet slot="tools" />
+        </p>
+        <ProjectionContent slot="tools">Ruler</ProjectionContent>
+      </ProjectionProvider>,
+    );
+    expect(screen.getByTestId('tools')).toHaveTextContent('Ruler');
+  });
+
+  it('UIC-PROJECTION-1.8 reads a slot, undefined while it has no content', () => {
+    const seen: unknown[] = [];
+    function Reader() {
+      const content = useProjectedContent('tools');
+      seen.push(content);
+      return content === undefined ? <span>empty</span> : <div data-testid="holder">{content}</div>;
+    }
+    function Page({ content }: { content?: string | false | null }) {
+      return (
+        <ProjectionProvider>
+          <Reader />
+          {content === undefined ? null : (
+            <ProjectionContent slot="tools">{content}</ProjectionContent>
+          )}
+        </ProjectionProvider>
+      );
+    }
+    const { rerender } = render(<Page />);
+    expect(screen.getByText('empty')).toBeInTheDocument();
+    rerender(<Page content="Ruler" />);
+    expect(screen.getByTestId('holder')).toHaveTextContent('Ruler');
+    for (const empty of [false, null, ''] as const) {
+      rerender(<Page content={empty} />);
+      expect(screen.getByText('empty')).toBeInTheDocument();
+    }
+    expect(seen.at(-1)).toBeUndefined();
   });
 });

@@ -45,3 +45,17 @@ Without a `ProjectionProvider` above, `ProjectionContent` shall render its child
 
 Implementation: `src/components/projection/projection.tsx`
 Verification: `src/components/projection/projection.test.tsx`
+
+### UIC-PROJECTION-1.7 - Scoped providers
+
+A `ProjectionProvider` given `slots` shall own only those slots: `ProjectionContent` and `ProjectionOutlet` of any other slot below it reach the enclosing provider, as if the scoped one were not there, so a component can own a few private slots without hiding the host's own. Without an enclosing provider, a scoped provider owns every slot.
+
+Implementation: `src/components/projection/projection.tsx`
+Verification: `src/components/projection/projection.test.tsx`
+
+### UIC-PROJECTION-1.8 - Reading a slot
+
+`useProjectedContent(slot)` shall return the content `ProjectionOutlet` would render for `slot` without its fallback, or `undefined` while the slot has no content (no declaration, or one whose children are `null`, `undefined`, a boolean or an empty string), so a component can leave out the element that would hold it. Its content reads context from the component that renders it, as an outlet's does.
+
+Implementation: `src/components/projection/projection.tsx`
+Verification: `src/components/projection/projection.test.tsx`

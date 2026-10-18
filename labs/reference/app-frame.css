@@ -1,0 +1,141 @@
+/* App Frame */
+
+.ui-app-frame {
+  position: relative;
+  display: grid;
+  grid-template:
+    'top top top top' auto
+    'nav start main end-panel' minmax(0, 1fr)
+    'nav start bottom end-panel' auto
+    'nav status status end-panel' auto
+    / auto auto minmax(0, 1fr) auto;
+  min-width: 0;
+  height: 100%;
+  min-height: 0;
+  background: var(--ref-canvas);
+}
+
+/* The skip link's hidden wrapper takes no grid cell; focused, it floats over the top bar. */
+.ui-app-frame > .ui-visually-hidden {
+  position: absolute;
+  inset-block-start: 8px;
+  inset-inline-start: 8px;
+  z-index: 2;
+}
+
+.ui-app-frame__skip-link {
+  color: var(--ref-accent-ink);
+  font-weight: 600;
+}
+
+.ui-app-frame__skip-link:focus-visible {
+  outline: 2px solid var(--ref-focus);
+  outline-offset: 2px;
+}
+
+.ui-app-frame__top-bar {
+  grid-area: top;
+  min-width: 0;
+  border-block-end: 1px solid var(--ref-border);
+}
+
+.ui-app-frame__navigation {
+  display: flex;
+  grid-area: nav;
+  min-height: 0;
+  border-inline-end: 1px solid var(--ref-border);
+}
+
+.ui-app-frame__start-panel,
+.ui-app-frame__end-panel,
+.ui-app-frame__bottom-panel {
+  min-width: 0;
+  min-height: 0;
+  padding: 12px 16px;
+  overflow: auto;
+  background: var(--ref-surface);
+}
+
+.ui-app-frame__start-panel {
+  grid-area: start;
+  width: 160px;
+  border-inline-end: 1px solid var(--ref-border);
+}
+
+.ui-app-frame__end-panel {
+  grid-area: end-panel;
+  width: 200px;
+  border-inline-start: 1px solid var(--ref-border);
+}
+
+.ui-app-frame__bottom-panel {
+  grid-area: bottom;
+  max-height: 40%;
+  border-block-start: 1px solid var(--ref-border);
+}
+
+.ui-app-frame__main {
+  grid-area: main;
+  min-width: 0;
+  min-height: 0;
+  padding: 16px 20px;
+  overflow: auto;
+}
+
+.ui-app-frame__main:focus-visible {
+  outline: 2px solid var(--ref-focus);
+  outline-offset: -2px;
+}
+
+.ui-app-frame__status-bar {
+  display: flex;
+  grid-area: status;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 4px 16px;
+  border-block-start: 1px solid var(--ref-border);
+  background: var(--ref-surface);
+  color: var(--ref-muted);
+  font-size: 12px;
+}
+
+/* App Frame Band */
+
+.ui-app-frame-band {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  min-height: 44px;
+  padding: 4px 12px;
+}
+
+.ui-app-frame-band__leading {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-weight: 600;
+}
+
+.ui-app-frame-band__status {
+  display: flex;
+  flex: 0 1 auto;
+  align-items: center;
+  min-width: 0;
+}
+
+.ui-app-frame-band__tools {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ui-app-frame-band__actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  margin-inline-start: auto;
+}

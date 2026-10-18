@@ -11,6 +11,7 @@
 
 @import url('reference/base.css');
 @import url('reference/action-row.css');
+@import url('reference/app-frame.css');
 @import url('reference/attribution.css');
 @import url('reference/avatar.css');
 @import url('reference/badge.css');
@@ -65,6 +66,7 @@
 @import url('reference/meta-line.css');
 @import url('reference/meter.css');
 @import url('reference/modal.css');
+@import url('reference/navigation-rail.css');
 @import url('reference/number-field.css');
 @import url('reference/outline.css');
 @import url('reference/overflow-list.css');

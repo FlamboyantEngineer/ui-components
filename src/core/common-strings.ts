@@ -133,6 +133,18 @@ export interface CommonStrings {
   discard: string;
   /** Keeps the reader where they are, with their changes. */
   stay: string;
+  /** The link that moves focus past an application frame's bars to its main content. */
+  skipToMainContent: string;
+  /** Names a side or bottom panel of an application frame. */
+  appFramePanel: (panel: 'start' | 'end' | 'bottom') => string;
+  /** Names a strip of tools. */
+  tools: string;
+  /** Names a group of actions. */
+  actions: string;
+  /** The button that collapses a navigation rail to icons, or expands it again. */
+  toggleNavigation: (isCollapsed: boolean) => string;
+  /** Names the handle that resizes a navigation rail. */
+  resizeNavigation: string;
 }
 
 const spokenKeyNames: Readonly<Record<string, string>> = {
@@ -148,6 +160,12 @@ const spokenKeyNames: Readonly<Record<string, string>> = {
 };
 
 const presenceStatusNames = { active: 'Active', away: 'Away', busy: 'Busy', idle: 'Idle' } as const;
+
+const appFramePanelNames = {
+  start: 'Start panel',
+  end: 'End panel',
+  bottom: 'Bottom panel',
+} as const;
 
 const boxSideNames = { top: 'Top', right: 'Right', bottom: 'Bottom', left: 'Left' } as const;
 const logicalBoxSideNames = {
@@ -244,4 +262,10 @@ export const commonStrings: CommonStrings = {
   discardBeforeLeaving: 'Your changes are not saved. Leave and discard them?',
   discard: 'Discard',
   stay: 'Stay',
+  skipToMainContent: 'Skip to main content',
+  appFramePanel: (panel) => appFramePanelNames[panel],
+  tools: 'Tools',
+  actions: 'Actions',
+  toggleNavigation: (isCollapsed) => (isCollapsed ? 'Expand navigation' : 'Collapse navigation'),
+  resizeNavigation: 'Resize navigation',
 };
