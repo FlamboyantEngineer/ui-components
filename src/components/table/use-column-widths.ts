@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Key } from '../../primitives/index.js';
+import type { Key } from '../../core/props.js';
 import { usePersistentState } from '../../core/provider.js';
 import {
   pickColumnWidths,

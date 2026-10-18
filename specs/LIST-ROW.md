@@ -122,7 +122,7 @@ Verification: `e2e/list-row.spec.ts`
 
 ### UIC-LIST-ROW-3.1 - Grid list of rows
 
-`ListView` shall render React Aria's `GridList` in its `stack` layout with the `ui-list-view` root, named by its `aria-label` or `aria-labelledby`, and `ListViewItem` a `GridListItem` (`ui-list-view-item`) whose cell holds the row text drawn by `ListRowContent` (`title`, `meta`, `icon`, `leading`) followed by `trailing` controls in the `ui-list-view-item__trailing` slot. The list is one tab stop: ArrowDown and ArrowUp move between rows, Home and End to the first and last, and Enter or a press runs `onAction` or follows the item's `href` (React Aria). A string `title` is the item's `textValue` unless one is given. `divided` publishes `data-divided` and the item's `tone` (`neutral` by default, `danger`) `data-tone`, as on `List` and `ListRow`.
+`ListView` shall render React Aria's `GridList` in its `stack` layout with the `ui-list-view` root, named by its `aria-label` or `aria-labelledby`, and `ListViewItem` a `GridListItem` (`ui-list-view-item`, keyed by its `id`) whose cell holds the row text drawn by `ListRowContent` (`title`, `meta`, `icon`, `leading`) followed by `trailing` controls in the `ui-list-view-item__trailing` slot. Rows come from `ListViewItem` and `ListViewSection` children, or from `items` with a function in `children` that draws one per item and redraws them when `dependencies` change. The list is one tab stop: ArrowDown and ArrowUp move between rows, Home and End to the first and last, and Enter or a press calls `onAction` with the row's key or follows the item's `href` (React Aria). A string `title` is the item's `textValue` unless one is given. `divided` publishes `data-divided` and the item's `tone` (`neutral` by default, `danger`) `data-tone`, as on `List` and `ListRow`.
 
 Implementation: `src/components/list-row/list-view.tsx`, `labs/reference/list-row.css`
 Verification: `src/components/list-row/list-view.test.tsx`, `e2e/list-row.spec.ts`
@@ -136,30 +136,30 @@ Verification: `src/components/list-row/list-view.test.tsx`, `e2e/list-row.spec.t
 
 ### UIC-LIST-ROW-3.3 - Selection
 
-React Aria's selection props (`selectionMode`, `selectionBehavior`, `selectedKeys`, `defaultSelectedKeys`, `onSelectionChange`, `disallowEmptySelection`, `disabledKeys`) shall pass through: selected rows carry `aria-selected` and `data-selected`, and a multiple-selection list `aria-multiselectable`. While the list selects with toggles (`selectionBehavior="toggle"`, the default), each row draws a selection [Checkbox](CHECKBOX.md) before its text in the `ui-list-view-item__checkbox` slot, which reports and toggles the row's selection; with `replace` no checkbox draws and a press replaces the selection.
+The selection props (`selectionMode`, `selectionBehavior`, `selectedKeys`, `defaultSelectedKeys`, `onSelectionChange` with the new `Selection`, `disallowEmptySelection`, `disabledKeys`) shall select rows: selected rows carry `aria-selected` and `data-selected`, and a multiple-selection list `aria-multiselectable`. While the list selects with toggles (`selectionBehavior="toggle"`, the default), each row draws a selection [Checkbox](CHECKBOX.md) before its text in the `ui-list-view-item__checkbox` slot, which reports and toggles the row's selection; with `replace` no checkbox draws and a press replaces the selection.
 
 Implementation: `src/components/list-row/list-view.tsx`, `labs/reference/list-row.css`
 Verification: `src/components/list-row/list-view.test.tsx`, `e2e/list-row.spec.ts`
 
 ### UIC-LIST-ROW-3.4 - Sections and sticky headers
 
-`ListViewSection` shall render a React Aria `GridListSection` (`ui-list-view-section`, a `rowgroup` named by its header) whose first row is a `GridListHeader` holding its `title` (`ui-list-view-section__header`), followed by its children or its `items` with a render function. Arrow keys move across sections from row to row, skipping headers. `stickyHeaders` shall publish `data-sticky-headers` on the list, from which the stylesheet keeps the header of the section in view at the top of the scrolling list; the reference sheet does so.
+`ListViewSection` shall render a React Aria `GridListSection` (`ui-list-view-section`, a `rowgroup` named by its header, keyed by its `id`) whose first row is a `GridListHeader` holding its `title` (`ui-list-view-section__header`), followed by its children or the rows a function in `children` draws from its `items`. Arrow keys move across sections from row to row, skipping headers. `stickyHeaders` shall publish `data-sticky-headers` on the list, from which the stylesheet keeps the header of the section in view at the top of the scrolling list; the reference sheet does so.
 
 Implementation: `src/components/list-row/list-view.tsx`, `labs/reference/list-row.css`
 Verification: `src/components/list-row/list-view.test.tsx`, `e2e/list-row.spec.ts`
 
 ### UIC-LIST-ROW-3.5 - Drag and drop
 
-`ListView` shall pass React Aria's `dragAndDropHooks` (from `useDragAndDrop`) through, so the reader reorders rows or drops them elsewhere by pointer, or by keyboard from a row's drag handle. While the list lets the reader drag, each row draws a [DragHandle](DRAG-HANDLE.md) in the `ui-list-view-item__drag-handle` slot first and publishes `data-allows-dragging`; the dragged row carries `data-dragging`. Unless the caller draws its own, the landing spot between rows is a `ui-list-view__drop-indicator` row with `data-position` (`before`, `after`) and `data-drop-target`.
+With `reorder`, the reader shall reorder rows by drag and drop, by pointer or by keyboard from a row's drag handle (React Aria's `useDragAndDrop`), and each drop shall report one `reorder.onMove({ keys, targetKey, position })` with `position` `before` or `after`. The list never reorders its rows itself: the owner applies the move and renders the new order. A drop on a row, or beside one of the dragged rows, is refused. While the list reorders, each row draws a [DragHandle](DRAG-HANDLE.md) in the `ui-list-view-item__drag-handle` slot first and publishes `data-allows-dragging`; the dragged row carries `data-dragging`, and the landing spot between rows is a `ui-list-view__drop-indicator` row with `data-position` (`before`, `after`) and `data-drop-target`. A list without `reorder` draws no drag affordance; turning it on or off remounts the rows.
 
-Implementation: `src/components/list-row/list-view.tsx`, `labs/reference/list-row.css`
+Implementation: `src/components/list-row/list-view.tsx`, `src/utils/use-reorder-drag-and-drop.ts`, `labs/reference/list-row.css`
 Verification: `src/components/list-row/list-view.test.tsx`, `e2e/list-row.spec.ts`
 
 ### UIC-LIST-ROW-3.6 - Long and incrementally loaded lists
 
-`ListView` shall pass its collection children through ([COLLECTIONS.md](COLLECTIONS.md)): inside a React Aria `Virtualizer` with `ListLayout` only the rows in view render, and a `GridListLoadMoreItem` after the items calls `onLoadMore` as it scrolls into view while `isLoading` is false. `renderEmptyState` draws the empty list, which publishes `data-empty`.
+`virtualized` shall render the list through React Aria's `Virtualizer` with its list layout: only the rows in view, plus a small buffer, are in the document, at `rowHeight` pixels each (48 by default; section headers and the loading row take the same height). `onLoadMore` shall be called when the end of the rows scrolls into view while `isLoading` is false, through React Aria's `GridListLoadMoreItem` after the rows (`ui-list-view__loader`), virtualized or not; while `isLoading`, the loading row shows a small loading [EmptyState](EMPTY-STATE.md) (a polite status) reading the provider's `loading` string. `renderEmptyState` draws the empty list, which publishes `data-empty`.
 
-Implementation: `src/components/list-row/list-view.tsx`
+Implementation: `src/components/list-row/list-view.tsx`, `labs/reference/list-row.css`
 Verification: `src/components/list-row/list-view.test.tsx`, `e2e/list-row.spec.ts`
 
 ## Hooks
@@ -187,6 +187,7 @@ Verification: `src/components/list-row/list-view.test.tsx`, `e2e/list-row.spec.t
 | `ui-list-row-content__meta`      | slot      |                            | The meta line.                                                |
 | `ui-list-view`                   | root      |                            | The grid list (`role="grid"`).                                |
 | `ui-list-view__drop-indicator`   | slot      |                            | Where dragged rows would land, between rows.                  |
+| `ui-list-view__loader`           | slot      |                            | The loading row after the rows while more load.               |
 | `data-sticky-headers`            | state     | `true`                     | Section headers stay in view while their rows scroll.         |
 | `data-position`                  | attribute | `before`, `after`          | Which side of its row a drop indicator stands for.            |
 | `ui-list-view-item`              | root      |                            | A row (`role="row"`).                                         |

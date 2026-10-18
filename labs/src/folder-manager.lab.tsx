@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import type { Key } from '../../src/primitives/index.js';
+import type { Key } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
 import {
   FolderManager,

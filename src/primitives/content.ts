@@ -3,7 +3,6 @@
 export {
   Header,
   Heading,
-  HeadingContext,
   Label,
   Meter,
   ProgressBar,

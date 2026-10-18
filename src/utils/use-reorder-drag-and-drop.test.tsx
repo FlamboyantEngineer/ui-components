@@ -1,16 +1,15 @@
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import type { KeyboardEvent } from 'react';
-import {
-  DropIndicator,
-  GridList,
-  GridListItem,
-  type DropTarget,
-  type Key,
-} from '../primitives/index.js';
+import { DropIndicator, GridList, GridListItem, useDragAndDrop } from '../primitives/index.js';
 import { describe, expect, it, vi } from 'vitest';
+import type { Key } from '../core/props.js';
 import { DragHandle } from '../components/drag-handle/drag-handle.js';
-import { isMoveChord, useReorderDragAndDrop } from './use-reorder-drag-and-drop.js';
+import {
+  isMoveChord,
+  useReorderDragAndDrop,
+  type CollectionDropTarget,
+} from './use-reorder-drag-and-drop.js';
 
 interface Move {
   keys: Key[];
@@ -19,12 +18,12 @@ interface Move {
 
 const FRUIT = [{ id: 'apple' }, { id: 'pear' }, { id: 'plum' }];
 
-const renderDropIndicator = (target: DropTarget) => (
+const renderDropIndicator = (target: CollectionDropTarget) => (
   <DropIndicator target={target} className="indicator" />
 );
 
 function Fruit({ accepts, onMove }: { accepts: boolean; onMove: (move: Move) => void }) {
-  const dragAndDropHooks = useReorderDragAndDrop<object, Move>({
+  const options = useReorderDragAndDrop<Move>({
     resolveMove: (target, keys) =>
       accepts && target.type === 'item' && target.dropPosition !== 'on'
         ? { keys: [...keys], target: target.key }
@@ -33,6 +32,7 @@ function Fruit({ accepts, onMove }: { accepts: boolean; onMove: (move: Move) => 
     getTextValue: (key) => `Fruit ${String(key)}`,
     renderDropIndicator,
   });
+  const { dragAndDropHooks } = useDragAndDrop(options);
   return (
     <GridList aria-label="Fruit" items={FRUIT} dragAndDropHooks={dragAndDropHooks}>
       {(item) => (

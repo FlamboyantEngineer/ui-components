@@ -66,14 +66,14 @@ Verification: `src/components/tree/tree.test.tsx`, `e2e/tree.spec.ts`
 
 ### UIC-TREE-3.2 - Selection and disabled rows
 
-React Aria's selection props (`selectionMode`, `selectionBehavior`, `selectedKeys`, `defaultSelectedKeys`, `onSelectionChange`) shall pass through: selected rows carry `aria-selected` and `data-selected`. Rows in `disabledKeys` carry `aria-disabled` and `data-disabled` and cannot be selected, activated or expanded.
+The selection props (`selectionMode`, `selectionBehavior`, `selectedKeys`, `defaultSelectedKeys`, `disallowEmptySelection`, and `onSelectionChange` with the new `Selection`) shall select rows: selected rows carry `aria-selected` and `data-selected`. Rows in `disabledKeys` carry `aria-disabled` and `data-disabled` and cannot be selected, activated or expanded.
 
 Implementation: `src/components/tree/tree.tsx`
 Verification: `src/components/tree/tree.test.tsx`
 
 ### UIC-TREE-3.3 - Row actions
 
-`onAction` shall run for the row the reader activates: on press, or on Enter and double-click when selection replaces on press (React Aria). Controls from `renderActions` act on their own without selecting or activating the row.
+`onAction` shall receive the key of the row the reader activates: on press, or on Enter and double-click when selection replaces on press (React Aria). Controls from `renderActions` act on their own without selecting or activating the row.
 
 Implementation: `src/components/tree/tree.tsx`
 Verification: `src/components/tree/tree.test.tsx`

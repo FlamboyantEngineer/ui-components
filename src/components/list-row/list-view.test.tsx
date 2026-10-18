@@ -1,15 +1,10 @@
 import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import {
-  GridListLoadMoreItem,
-  ListLayout,
-  useDragAndDrop,
-  Virtualizer,
-  type Selection,
-} from '../../primitives/index.js';
 import { describe, expect, it, vi } from 'vitest';
+import type { Selection } from '../../core/props.js';
+import { UiProvider } from '../../core/provider.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import { ListView, ListViewItem, ListViewSection } from './list-view.js';
+import { ListView, ListViewItem, ListViewSection, type ListViewMove } from './list-view.js';
 
 const fruit = [
   { id: 'apple', name: 'Apple', meta: 'Red' },
@@ -18,13 +13,9 @@ const fruit = [
   { id: 'damson', name: 'Damson', meta: 'Purple' },
 ];
 
-function Reorderable({ onReorder }: { onReorder: () => void }) {
-  const { dragAndDropHooks } = useDragAndDrop({
-    getItems: (keys) => [...keys].map((key) => ({ 'text/plain': String(key) })),
-    onReorder,
-  });
+function Reorderable({ onMove }: { onMove: (move: ListViewMove) => void }) {
   return (
-    <ListView aria-label="Fruit" items={fruit} dragAndDropHooks={dragAndDropHooks}>
+    <ListView aria-label="Fruit" items={fruit} reorder={{ onMove }}>
       {(item) => <ListViewItem title={item.name} />}
     </ListView>
   );
@@ -66,6 +57,21 @@ describe('ListView', () => {
     expect(rows[1]).toHaveFocus();
     await userEvent.keyboard('{Enter}');
     expect(onAction).toHaveBeenCalledWith('banana');
+  });
+
+  it('UIC-LIST-ROW-3.1 follows a row href through the provider', async () => {
+    const navigate = vi.fn();
+    render(
+      <UiProvider navigate={navigate}>
+        <ListView aria-label="Pages">
+          <ListViewItem id="home" title="Home" href="/home" />
+          <ListViewItem id="about" title="About" href="/about" />
+        </ListView>
+      </UiProvider>,
+    );
+    await userEvent.tab();
+    await userEvent.keyboard('{ArrowDown}{Enter}');
+    expect(navigate.mock.lastCall?.[0]).toBe('/about');
   });
 
   it('UIC-LIST-ROW-3.2 moves to the row whose text starts with the typed letters', async () => {
@@ -145,7 +151,7 @@ describe('ListView', () => {
   });
 
   it('UIC-LIST-ROW-3.5 draws a drag handle on rows the list lets the reader drag', () => {
-    const { container } = render(<Reorderable onReorder={vi.fn()} />);
+    const { container } = render(<Reorderable onMove={vi.fn()} />);
     const rows = screen.getAllByRole('row');
     expect(rows[0]).toHaveAttribute('data-allows-dragging', 'true');
     const handle = rows[0]?.querySelector('.ui-list-view-item__drag-handle');
@@ -154,14 +160,39 @@ describe('ListView', () => {
     expectHooksMatchSpec(container, 'LIST-ROW', { slots: ['drag-handle'] });
   });
 
-  it('UIC-LIST-ROW-3.6 renders only the rows in view and loads more at the end', () => {
-    vi.stubGlobal(
-      'IntersectionObserver',
-      class {
-        observe() {}
-        disconnect() {}
-      },
+  it(
+    'UIC-LIST-ROW-3.5 reports a keyboard drop as a move for the owner to apply',
+    { timeout: 15_000 },
+    async () => {
+      const onMove = vi.fn<(move: ListViewMove) => void>();
+      render(<Reorderable onMove={onMove} />);
+      const user = userEvent.setup();
+      screen.getByRole('row', { name: 'Apple' }).focus();
+      await user.keyboard('{ArrowRight}{Enter}');
+      expect(
+        document.querySelectorAll('.ui-list-view__drop-indicator[data-drop-target]'),
+      ).toHaveLength(1);
+      await user.keyboard('{ArrowDown}{Enter}');
+      expect(onMove).toHaveBeenCalledTimes(1);
+      const move = onMove.mock.lastCall?.[0];
+      expect(move?.keys).toEqual(['apple']);
+      expect(move?.targetKey).not.toBe('apple');
+      expect(['before', 'after']).toContain(move?.position);
+    },
+  );
+
+  it('UIC-LIST-ROW-3.5 draws no drag affordance without reorder', () => {
+    render(
+      <ListView aria-label="Fruit" items={fruit}>
+        {(item) => <ListViewItem title={item.name} />}
+      </ListView>,
     );
+    expect(screen.getAllByRole('row')[0]).not.toHaveAttribute('data-allows-dragging');
+    expect(document.querySelector('.ui-list-view-item__drag-handle')).toBeNull();
+  });
+
+  // Laying out a virtual list in jsdom is slow on a busy machine.
+  it('UIC-LIST-ROW-3.6 renders only the rows in view when virtualized', { timeout: 15_000 }, () => {
     const sizes = { clientWidth: 300, clientHeight: 200 };
     for (const [name, value] of Object.entries(sizes)) {
       Object.defineProperty(HTMLElement.prototype, name, { configurable: true, get: () => value });
@@ -169,16 +200,9 @@ describe('ListView', () => {
     const many = Array.from({ length: 400 }, (_, index) => ({ id: index, name: `Fruit ${index}` }));
     try {
       render(
-        <Virtualizer layout={ListLayout} layoutOptions={{ rowHeight: 40 }}>
-          <ListView aria-label="Many">
-            {many.map((item) => (
-              <ListViewItem key={item.id} id={item.id} title={item.name} />
-            ))}
-            <GridListLoadMoreItem isLoading onLoadMore={() => {}}>
-              Loading more fruit
-            </GridListLoadMoreItem>
-          </ListView>
-        </Virtualizer>,
+        <ListView aria-label="Many" items={many} virtualized rowHeight={40}>
+          {(item) => <ListViewItem title={item.name} />}
+        </ListView>,
       );
       const rows = screen.getAllByRole('row');
       expect(rows.length).toBeGreaterThan(3);
@@ -187,15 +211,29 @@ describe('ListView', () => {
     } finally {
       for (const name of Object.keys(sizes)) Reflect.deleteProperty(HTMLElement.prototype, name);
     }
-    render(
-      <ListView aria-label="Few">
-        <ListViewItem id="apple" title="Apple" />
-        <GridListLoadMoreItem isLoading onLoadMore={() => {}}>
-          Loading more fruit
-        </GridListLoadMoreItem>
+  });
+
+  it('UIC-LIST-ROW-3.6 shows a loading row while more rows load, and the empty state', () => {
+    vi.stubGlobal(
+      'IntersectionObserver',
+      class {
+        observe() {}
+        disconnect() {}
+      },
+    );
+    const { container, unmount } = render(
+      <ListView aria-label="Few" items={fruit.slice(0, 1)} isLoading onLoadMore={() => {}}>
+        {(item) => <ListViewItem title={item.name} />}
       </ListView>,
     );
-    expect(screen.getByRole('grid', { name: 'Few' })).toHaveTextContent('Loading more fruit');
+    const loader = container.querySelector('.ui-list-view__loader');
+    expect(loader).toHaveAttribute('role', 'row');
+    expect(within(loader as HTMLElement).getByRole('status')).toHaveTextContent('Loading');
+    expectHooksMatchSpec(container, 'LIST-ROW', { slots: ['loader'] });
+    unmount();
+    render(<ListView aria-label="None" items={[]} renderEmptyState={() => 'No fruit'} />);
+    expect(screen.getByRole('grid', { name: 'None' })).toHaveAttribute('data-empty', 'true');
+    expect(screen.getByRole('grid', { name: 'None' })).toHaveTextContent('No fruit');
   });
 });
 

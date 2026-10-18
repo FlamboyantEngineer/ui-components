@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
-import { Input, type Key } from '../../primitives/index.js';
+import type { Key } from '../../core/props.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Field, Fieldset, useFieldState } from '../field/field.js';
@@ -239,7 +239,7 @@ describe('PropertyPanel', () => {
       return (
         <Field state={state} label="Name">
           {(control) => (
-            <Input
+            <input
               {...control}
               value={state.value}
               onChange={(event) => state.setValue(event.target.value)}

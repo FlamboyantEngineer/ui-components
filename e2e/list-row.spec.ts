@@ -158,10 +158,11 @@ test.describe('List Row lab', () => {
     await expect(reorder.locator('.ui-list-view-item__drag-handle').first()).toBeFocused();
     await page.keyboard.press('Enter');
     await expect(reorder.locator('.ui-list-view__drop-indicator[data-drop-target]')).toHaveCount(1);
+    // Spots beside the dragged row would move nothing, so the first spot offered is after Banana.
     await page.keyboard.press('ArrowDown');
     await page.keyboard.press('Enter');
     await expect(reorder.locator('[data-lab-output]')).toHaveText(
-      'Order: Banana, Apple, Cherry, Damson, Elderberry',
+      'Order: Banana, Cherry, Apple, Damson, Elderberry',
     );
   });
 

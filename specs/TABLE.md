@@ -27,7 +27,7 @@ Verification: `src/components/table/table.test.tsx`, `e2e/table.spec.ts`
 
 ### UIC-TABLE-1.4 - Hooks and caller attributes
 
-`Table` shall carry the hooks below on a root element that holds the toolbar, the scroll area and the page navigation, append the caller's `className`, forward `id` and caller `data-*` attributes to that root, and pass every other React Aria table prop to the grid.
+`Table` shall carry the hooks below on a root element that holds the toolbar, the scroll area and the page navigation, append the caller's `className`, and forward `id` and caller `data-*` attributes to that root. Its labelling (`aria-label`, `aria-labelledby`, `aria-describedby`, `aria-details`), selection and expansion props go to the grid; the table takes no other building-block prop.
 
 Implementation: `src/components/table/table.tsx`, `src/components/table/use-table-grid.ts`, `src/components/table/table-props.ts`
 Verification: `src/components/table/table.test.tsx`
@@ -101,7 +101,7 @@ Verification: `src/components/table/table-filters.test.ts`
 
 ### UIC-TABLE-3.1 - Selection
 
-The table shall pass React Aria's selection props through (`selectionMode` `none`, `single` or `multiple`, `selectionBehavior`, `selectedKeys`, `defaultSelectedKeys`, `disabledKeys`, `onSelectionChange`), controlled or not. Multiple selection adds a leading checkbox column whose header checkbox selects every enabled row; each checkbox draws the `check` glyph when selected, the `minus` glyph when indeterminate and nothing otherwise, and takes React Aria's localized names. Disabled rows are never selected.
+The table shall select rows through the selection props (`selectionMode` `none`, `single` or `multiple`, `selectionBehavior` `toggle` or `replace`, `selectedKeys`, `defaultSelectedKeys`, `disabledKeys`, `disallowEmptySelection`, and `onSelectionChange` with the new `Selection`), controlled or not. Multiple selection adds a leading checkbox column whose header checkbox selects every enabled row; each checkbox draws the `check` glyph when selected, the `minus` glyph when indeterminate and nothing otherwise, and takes React Aria's localized names. Disabled rows are never selected.
 
 Implementation: `src/components/table/table-header.tsx`, `src/components/table/table-row.tsx`
 Verification: `src/components/table/table.test.tsx`, `e2e/table.spec.ts`
@@ -309,7 +309,7 @@ Verification: `src/components/table/table-columns.test.ts`
 
 ### UIC-TABLE-9.1 - Nested rows
 
-With `getChildRows`, each row's child rows shall be drawn under it while it is expanded, through React Aria's expandable rows: the grid becomes a `treegrid`, rows carry `aria-level` and, with children, `aria-expanded`, and ArrowRight and ArrowLeft on a focused row expand and collapse it. The tree column (React Aria's `treeColumn` when it is drawn, else the first drawn data column) holds an expand button (`ui-table__expand`, React Aria's `chevron` slot, which names it `Expand <row>` or `Collapse <row>`, drawing the expand toggle's chevron) for rows with children and a spacer (`ui-table__expand-spacer`) for the others, and its cells publish the measured `--ui-table-level` from 1. `expandedKeys`, `defaultExpandedKeys` and `onExpandedChange` pass to React Aria.
+With `getChildRows`, each row's child rows shall be drawn under it while it is expanded, through React Aria's expandable rows: the grid becomes a `treegrid`, rows carry `aria-level` and, with children, `aria-expanded`, and ArrowRight and ArrowLeft on a focused row expand and collapse it. The tree column (the column whose id is `treeColumn` when it is drawn, else the first drawn data column) holds an expand button (`ui-table__expand`, React Aria's `chevron` slot, which names it `Expand <row>` or `Collapse <row>`, drawing the expand toggle's chevron) for rows with children and a spacer (`ui-table__expand-spacer`) for the others, and its cells publish the measured `--ui-table-level` from 1. `expandedKeys` (controlled) or `defaultExpandedKeys` choose the expanded rows, and `onExpandedChange` receives the expanded keys after each change.
 
 Implementation: `src/components/table/table-row.tsx`, `src/components/table/use-table-grid.ts`, `src/components/table/table-tree.ts`
 Verification: `src/components/table/table-row.test.tsx`, `e2e/table.spec.ts`

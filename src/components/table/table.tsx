@@ -3,11 +3,16 @@ import {
   ResizableTableContainer,
   Table as AriaTable,
   TableLayout,
+  useDragAndDrop,
   Virtualizer,
-  type TableProps as AriaTableProps,
 } from '../../primitives/index.js';
+import type {
+  AriaLabellingProps,
+  CollectionSelectionProps,
+  ExpansionProps,
+} from '../../core/events.js';
 import { splitDataAttributes } from '../../core/hooks.js';
-import type { BaseProps, Size } from '../../core/props.js';
+import type { BaseProps, Key, Size } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Pagination } from '../pagination/pagination.js';
 import type { TableColumnWidths } from './column-sizing.js';
@@ -38,23 +43,19 @@ export type TableSize = Extract<Size, 'sm' | 'md'>;
 
 export interface TableProps<T extends TableRow>
   extends
-    Omit<
-      AriaTableProps,
-      | 'className'
-      | 'style'
-      | 'render'
-      | 'children'
-      | 'id'
-      | 'sortDescriptor'
-      | 'onSortChange'
-      | 'dragAndDropHooks'
-    >,
-    TableSortOptions,
-    BaseProps {
+    BaseProps,
+    AriaLabellingProps,
+    CollectionSelectionProps,
+    ExpansionProps,
+    TableSortOptions {
   /** The data columns, in declared order. */
   columns: readonly TableColumn<T>[];
   /** The rows, each with an `id` unique in the table, nested rows included. */
   rows: readonly T[];
+  /** Called with the key of the row the reader activates. */
+  onRowAction?: ((key: Key) => void) | undefined;
+  /** The id of the column holding nested rows' expand buttons. Defaults to the first drawn column. */
+  treeColumn?: Key | undefined;
   /** Draws a search box that keeps the rows whose text contains every term. */
   filterable?: boolean | undefined;
   /** The search box's name. Defaults to the provider's `filterRows` string. */
@@ -158,6 +159,7 @@ function TableGridElement<T extends TableRow>({
 }) {
   const { ariaProps, view, reordering, onRowAction, body, structure } = grid;
   const header = createHeaderModel(grid, options);
+  const { dragAndDropHooks } = useDragAndDrop<T>(grid.dragAndDrop);
   return (
     <AriaTable
       {...ariaProps}
@@ -169,7 +171,7 @@ function TableGridElement<T extends TableRow>({
       sortDescriptor={view.sort.descriptors[0]}
       onSortChange={view.sort.onSortChange}
       onRowAction={onRowAction}
-      dragAndDropHooks={reordering?.dragAndDropHooks}
+      dragAndDropHooks={reordering ? dragAndDropHooks : undefined}
     >
       <TableHeader structure={structure} model={header} />
       <TableBody {...body} />

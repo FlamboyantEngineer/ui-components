@@ -1,5 +1,6 @@
 import { useId, useMemo, type ReactNode } from 'react';
-import { DisclosureGroup, type DisclosureGroupProps } from '../../primitives/index.js';
+import { DisclosureGroup } from '../../primitives/index.js';
+import type { ExpansionProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps } from '../../core/props.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
@@ -21,10 +22,9 @@ export interface PropertyPanelProps
   extends
     BaseProps,
     Pick<NativeProps<'section'>, 'aria-label' | 'aria-labelledby'>,
-    Pick<
-      DisclosureGroupProps,
-      'expandedKeys' | 'defaultExpandedKeys' | 'onExpandedChange' | 'allowsMultipleExpanded'
-    > {
+    ExpansionProps {
+  /** Lets several sections be open at once; `false` makes the panel an accordion. Defaults to `true`. */
+  allowsMultipleExpanded?: boolean | undefined;
   /** Content above the body, such as a title or a search box. */
   header?: ReactNode;
   /** Where row labels sit. Defaults to `responsive`. */

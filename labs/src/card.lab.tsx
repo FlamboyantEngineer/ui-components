@@ -1,15 +1,8 @@
 import { useState } from 'react';
-import {
-  Heading,
-  Link as AriaLink,
-  Size,
-  Virtualizer,
-  WaterfallLayout,
-  type Selection,
-} from '../../src/primitives/index.js';
+import type { Selection } from '../../src/core/props.js';
 import { Badge } from '../../src/components/badge/badge.js';
 import { Card, type CardDensity, type CardVariant } from '../../src/components/card/card.js';
-import { CardGrid, CardGridItem } from '../../src/components/card/index.js';
+import { CardAction, CardGrid, CardGridItem, CardTitle } from '../../src/components/card/index.js';
 import { Button } from '../../src/components/button/button.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
@@ -91,12 +84,12 @@ function ActionDemo() {
           <Card
             href="#gardens"
             header={
-              <Heading slot="title" level={3}>
-                <AriaLink slot="action">Botanic gardens</AriaLink>
-              </Heading>
+              <CardTitle>
+                <CardAction>Botanic gardens</CardAction>
+              </CardTitle>
             }
           >
-            A custom header whose slotted link is the card action.
+            A custom header whose CardAction is the card action.
           </Card>
         </div>
       </div>
@@ -143,23 +136,20 @@ function GridDemo() {
 function WaterfallDemo() {
   return (
     <div data-lab-demo="waterfall" style={{ width: 520, height: 320 }}>
-      <Virtualizer
-        layout={WaterfallLayout}
-        layoutOptions={{ minItemSize: new Size(150, 60), minSpace: new Size(12, 12) }}
+      <CardGrid
+        aria-label="Recipes in a waterfall"
+        layout="waterfall"
+        minItemSize={{ width: 130, height: 60 }}
+        items={[...recipes, ...recipes.map((recipe) => ({ ...recipe, id: `${recipe.id}-2` }))]}
       >
-        <CardGrid
-          aria-label="Recipes in a waterfall"
-          items={[...recipes, ...recipes.map((recipe) => ({ ...recipe, id: `${recipe.id}-2` }))]}
-        >
-          {(recipe) => (
-            <CardGridItem textValue={recipe.name}>
-              <Card title={recipe.name} role="group" density="compact">
-                {recipe.text}
-              </Card>
-            </CardGridItem>
-          )}
-        </CardGrid>
-      </Virtualizer>
+        {(recipe) => (
+          <CardGridItem textValue={recipe.name}>
+            <Card title={recipe.name} role="group" density="compact">
+              {recipe.text}
+            </Card>
+          </CardGridItem>
+        )}
+      </CardGrid>
     </div>
   );
 }
@@ -191,7 +181,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Header composition"
-      description="A title, a description and actions compose the header; custom header content replaces them, and a React Aria Heading with the title slot in it becomes the card title."
+      description="A title, a description and actions compose the header; custom header content replaces them, and a CardTitle in it becomes the card title."
     >
       <StateMatrix
         axes={{ header: ['title', 'description', 'actions', 'custom', 'slotted title', 'none'] }}
@@ -201,7 +191,7 @@ mountLab(
               <Card
                 header={
                   <>
-                    <Heading slot="title">Seed swap</Heading>
+                    <CardTitle>Seed swap</CardTitle>
                     <Badge size="sm">New</Badge>
                   </>
                 }
@@ -283,7 +273,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Waterfall"
-      description="The grid inside a React Aria Virtualizer with WaterfallLayout: cards of different heights in columns, in a 320px tall frame."
+      description="The waterfall layout: cards of different heights in columns, only those in view rendered, in a 320px tall frame."
     >
       <WaterfallDemo />
     </LabSection>

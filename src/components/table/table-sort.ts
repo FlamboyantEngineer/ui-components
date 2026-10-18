@@ -1,4 +1,4 @@
-import type { Key, SortDescriptor, SortDirection } from '../../primitives/index.js';
+import type { Key, SortDescriptor, SortDirection } from '../../core/props.js';
 import {
   compareCellValues,
   getCellValue,
