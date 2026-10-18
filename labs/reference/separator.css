@@ -1,0 +1,107 @@
+/*
+ * Separator. A 1px rule in the border colour: solid rules are filled, dashed and dotted ones are a
+ * border. A labelled separator lays out a line on each side of its label. The generic rules sit in
+ * :where() so the separators of toolbar rows and menus keep the look their own partials give them.
+ */
+
+:where(.ui-separator) {
+  flex: none;
+  align-self: stretch;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  border: 0 solid var(--ref-border);
+  background: var(--ref-border);
+  color: var(--ref-muted);
+}
+
+:where(.ui-separator[data-orientation='horizontal']) {
+  block-size: 1px;
+  margin-block: 12px;
+}
+
+:where(.ui-separator[data-orientation='vertical']) {
+  inline-size: 1px;
+  min-block-size: 16px;
+  margin-inline: 8px;
+}
+
+:where(.ui-separator:is([data-variant='dashed'], [data-variant='dotted'])) {
+  background: none;
+}
+
+:where(
+  .ui-separator[data-orientation='horizontal']:is([data-variant='dashed'], [data-variant='dotted'])
+) {
+  block-size: 0;
+  border-block-start-width: 1px;
+}
+
+:where(
+  .ui-separator[data-orientation='vertical']:is([data-variant='dashed'], [data-variant='dotted'])
+) {
+  inline-size: 0;
+  border-inline-start-width: 1px;
+}
+
+:where(.ui-separator[data-variant='dashed']) {
+  border-style: dashed;
+}
+
+:where(.ui-separator[data-variant='dotted']) {
+  border-style: dotted;
+}
+
+/* Labelled separators: the lines grow; the one on the label's side keeps a short inset. */
+
+.ui-separator[data-label-position] {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  block-size: auto;
+  inline-size: auto;
+  border: 0;
+  background: none;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.ui-separator[data-label-position][data-orientation='vertical'] {
+  flex-direction: column;
+}
+
+.ui-separator__label {
+  flex: none;
+  white-space: nowrap;
+}
+
+.ui-separator__start-line,
+.ui-separator__end-line {
+  flex: 1 1 0;
+  min-inline-size: 0;
+  min-block-size: 0;
+  border: 0 solid var(--ref-border);
+}
+
+.ui-separator[data-orientation='horizontal']
+  > :is(.ui-separator__start-line, .ui-separator__end-line) {
+  border-block-start-width: 1px;
+}
+
+.ui-separator[data-orientation='vertical']
+  > :is(.ui-separator__start-line, .ui-separator__end-line) {
+  border-inline-start-width: 1px;
+}
+
+.ui-separator[data-label-position='start'] > .ui-separator__start-line,
+.ui-separator[data-label-position='end'] > .ui-separator__end-line {
+  flex: 0 0 12px;
+}
+
+.ui-separator[data-variant='dashed'] > :is(.ui-separator__start-line, .ui-separator__end-line) {
+  border-style: dashed;
+}
+
+.ui-separator[data-variant='dotted'] > :is(.ui-separator__start-line, .ui-separator__end-line) {
+  border-style: dotted;
+}

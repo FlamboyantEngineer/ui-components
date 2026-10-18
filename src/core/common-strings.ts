@@ -12,6 +12,10 @@ export interface CommonStrings {
   moreOptions: string;
   /** Default accessible name of a context menu. */
   contextMenu: string;
+  /** Default accessible name of a command palette. */
+  commandPalette: string;
+  /** Names and hints the search field of a command palette. */
+  searchCommands: string;
   loading: string;
   clear: string;
   help: string;
@@ -53,6 +57,8 @@ export interface CommonStrings {
   moreItems: (count: number) => string;
   /** Names the button that adds a tab. */
   addTab: string;
+  /** Tells a reader that a link opens in a new tab or window. */
+  opensInNewTab: string;
   /** Names a collection's selected count (`3 selected`). */
   selectedCount: (count: number) => string;
   /** Clears a collection's selection. */
@@ -66,6 +72,8 @@ export interface CommonStrings {
   unnamed: string;
   /** Accessible name of a person shown with a status (`Maria Santos, Away`). */
   nameWithStatus: (name: string, status: string) => string;
+  /** The label of a presence state on its own (`Away`). */
+  presenceStatus: (status: 'active' | 'away' | 'busy' | 'idle') => string;
   /** Accessible name of an overflow count, with the names it hides when known. */
   morePeople: (count: number, names: readonly string[]) => string;
   /** Spoken name of a keyboard key or modifier (`↑` → `Up Arrow`); other keys are read as written. */
@@ -105,6 +113,8 @@ const spokenKeyNames: Readonly<Record<string, string>> = {
   ' ': 'Space',
 };
 
+const presenceStatusNames = { active: 'Active', away: 'Away', busy: 'Busy', idle: 'Idle' } as const;
+
 const boxSideNames = { top: 'Top', right: 'Right', bottom: 'Bottom', left: 'Left' } as const;
 const logicalBoxSideNames = {
   'block-start': 'Top',
@@ -122,6 +132,8 @@ export const commonStrings: CommonStrings = {
   more: 'More',
   moreOptions: 'More options',
   contextMenu: 'Context menu',
+  commandPalette: 'Command palette',
+  searchCommands: 'Search commands',
   loading: 'Loading',
   clear: 'Clear',
   help: 'Help',
@@ -156,6 +168,7 @@ export const commonStrings: CommonStrings = {
   scrollForward: 'Scroll forward',
   moreItems: (count) => (count === 1 ? '1 more item' : `${count} more items`),
   addTab: 'Add tab',
+  opensInNewTab: '(opens in a new tab)',
   selectedCount: (count) => `${count} selected`,
   clearSelection: 'Clear selection',
   placesBeside: (name) => `Places beside ${name}`,
@@ -163,6 +176,7 @@ export const commonStrings: CommonStrings = {
   itemCount: (count) => (count === 1 ? '1 item' : `${count} items`),
   unnamed: 'Unnamed',
   nameWithStatus: (name, status) => `${name}, ${status}`,
+  presenceStatus: (status) => presenceStatusNames[status],
   morePeople: (count, names) =>
     `${count === 1 ? '1 more person' : `${count} more people`}${names.length > 0 ? `: ${names.join(', ')}` : ''}`,
   shortcutKeyName: (key) => spokenKeyNames[key] ?? key,

@@ -427,6 +427,8 @@ describe('Card', () => {
     expect(root).toHaveAttribute('aria-busy', 'true');
     const skeleton = root.querySelector('.ui-card__body > .ui-card__skeleton');
     expect(skeleton).toHaveAttribute('aria-hidden', 'true');
+    expect(skeleton).toHaveClass('ui-skeleton');
+    expect(skeleton).toHaveAttribute('data-loading', 'true');
     expect(root).not.toHaveTextContent('Sunny');
     expect(root.querySelector('.ui-card__footer')).toHaveTextContent('Updated hourly');
     expectHooksMatchSpec(container, 'CARD', { slots: ['header', 'body', 'skeleton', 'footer'] });

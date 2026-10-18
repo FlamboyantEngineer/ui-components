@@ -159,6 +159,13 @@ A menu given as children or as data shall render inside a React Aria `Virtualize
 Implementation: `src/components/menu/menu.tsx`
 Verification: `src/components/menu/menu.test.tsx`, `e2e/menu.spec.ts`
 
+### UIC-MENU-5.4 - Highlighted matches
+
+With `highlightMatches`, the menu shall mark the text typed in the search field of the enclosing React Aria `Autocomplete` (its own with `filterable`, or a [Command Palette](COMMAND-PALETTE.md)'s) in the labels of its data entries and their submenus, through [Text Match](TEXT-MATCH.md) ignoring case and accents, and in any `TextMatch` its children draw. Marks only split the label's text, so names, type-to-select and filtering are unchanged. Without it, labels stay plain text even inside a `TextMatchProvider`.
+
+Implementation: `src/components/menu/menu.tsx`
+Verification: `src/components/menu/menu.test.tsx`, `e2e/menu.spec.ts`
+
 ## Hooks
 
 | Hook                              | Kind      | Values                                                                        | Description                                                         |

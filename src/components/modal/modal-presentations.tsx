@@ -4,13 +4,13 @@ import {
   Modal as AriaModal,
   ModalOverlay,
   OverlayTriggerStateContext,
-  Popover,
   type ModalOverlayProps,
   type Placement,
 } from 'react-aria-components';
 import { useControllableState } from '../../core/controllable-state.js';
 import { createHooks, dataAttributes, type HookProps } from '../../core/hooks.js';
 import { useEnterExit } from '../../utils/use-enter-exit.js';
+import { PopoverPanel } from '../popover/popover.js';
 import { useLayerZIndex } from '../portal/portal.js';
 
 /** The open state React Aria overlays share through `OverlayTriggerStateContext`. */
@@ -134,8 +134,9 @@ export function FloatingModal({ state, rootProps, children }: ModalPresentationP
 }
 
 /**
- * A dialog anchored to the trigger of its `DialogTrigger` as a React Aria popover on the `dropdown`
- * layer, which traps focus, hides the page from assistive technology and returns focus on close.
+ * A dialog anchored to the trigger of its `DialogTrigger` in the popover panel on the `dropdown`
+ * layer (React Aria `Popover`), which traps focus, hides the page from assistive technology and
+ * returns focus on close.
  */
 export function AnchoredModal({
   state,
@@ -146,9 +147,8 @@ export function AnchoredModal({
   shouldCloseOnInteractOutside,
   children,
 }: AnchoredModalProps) {
-  const zIndex = useLayerZIndex('dropdown');
   return (
-    <Popover
+    <PopoverPanel
       {...rootProps}
       isOpen={state.isOpen}
       onOpenChange={state.setOpen}
@@ -160,11 +160,10 @@ export function AnchoredModal({
       shouldCloseOnInteractOutside={(element) =>
         isDismissable && (shouldCloseOnInteractOutside?.(element) ?? true)
       }
-      style={{ zIndex }}
     >
       <OverlayTriggerStateContext.Provider value={state}>
         {children}
       </OverlayTriggerStateContext.Provider>
-    </Popover>
+    </PopoverPanel>
   );
 }

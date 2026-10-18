@@ -126,7 +126,7 @@ export function ModalDialog({
   // A floating dialog returns focus itself, to the element focused when it opened.
   const [opener] = useState(() => (isFloating ? document.activeElement : null));
   const actionState = useModalActions(footer);
-  useFocusReturn({ dialogRef, finalFocus, fallback: opener });
+  useFocusReturn({ containerRef: dialogRef, finalFocus, fallback: opener });
   useExitComplete(onExitComplete);
   const onKeyDown = (event: KeyboardEvent<HTMLElement>) => {
     if (event.key === 'Escape') {

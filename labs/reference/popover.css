@@ -1,0 +1,102 @@
+/* Popover. The panel's position and z-index come from React Aria and the component. */
+
+.ui-popover {
+  box-sizing: border-box;
+  max-width: min(320px, calc(100vw - 24px));
+  border: 1px solid var(--ref-border);
+  border-radius: 8px;
+  background: var(--ref-raised);
+  color: var(--ref-text);
+  box-shadow: var(--ref-shadow);
+  font: 14px/1.5 var(--ref-font);
+}
+
+.ui-popover[data-entering] {
+  animation: ref-fade 0.12s ease-out;
+}
+
+.ui-popover[data-exiting] {
+  animation: ref-fade 0.12s ease-in reverse;
+}
+
+/* The arrow is a bordered square turned on its corner, half of it showing past the panel's edge. */
+
+.ui-popover__arrow {
+  width: 14px;
+  height: 7px;
+  overflow: hidden;
+}
+
+.ui-popover__arrow:is([data-placement='left'], [data-placement='right']) {
+  width: 7px;
+  height: 14px;
+}
+
+.ui-popover__arrow::before {
+  position: absolute;
+  top: 2.5px;
+  left: 2.5px;
+  box-sizing: border-box;
+  width: 9px;
+  height: 9px;
+  border: 1px solid var(--ref-border);
+  background: var(--ref-raised);
+  content: '';
+  transform: rotate(45deg);
+}
+
+.ui-popover__arrow[data-placement='top']::before {
+  top: -4.5px;
+}
+
+.ui-popover__arrow[data-placement='left']::before {
+  left: -4.5px;
+}
+
+.ui-popover__dialog {
+  outline: none;
+}
+
+.ui-popover__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px 0;
+}
+
+.ui-popover__title {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.ui-popover__close {
+  flex: none;
+  margin: -4px -6px -4px auto;
+}
+
+.ui-popover__body {
+  padding: 8px 12px 12px;
+}
+
+.ui-popover__dialog > .ui-popover__body:first-child {
+  padding-top: 12px;
+}
+
+.ui-popover__body > :first-child {
+  margin-top: 0;
+}
+
+.ui-popover__body > :last-child {
+  margin-bottom: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-popover[data-entering],
+  .ui-popover[data-exiting] {
+    animation: none;
+  }
+}

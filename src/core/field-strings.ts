@@ -76,6 +76,12 @@ export interface FieldStrings {
   typeToSearch: (minLength: number) => string;
   /** The message of a search that failed. */
   searchFailed: string;
+  /** The message of a tag refused because the field already holds it. */
+  duplicateValue: (value: string) => string;
+  /** The message of a tag refused because the field holds as many tags as it may. */
+  tooManyValues: (maxValues: number) => string;
+  /** Names one cell of a code input, from its position and the code's length. */
+  characterPosition: (position: number, length: number) => string;
   /** A date field action that picks the current date. */
   today: string;
   /** A date field action that picks the current date and time. */
@@ -90,6 +96,10 @@ export interface FieldStrings {
   lastPeriod: (period: string) => string;
   /** A preset of the dates from today, from a count of units such as `7 days`. */
   nextPeriod: (period: string) => string;
+  /** Names the start thumb of a range slider, read before the slider's label. */
+  rangeMinimum: string;
+  /** Names the end thumb of a range slider, read before the slider's label. */
+  rangeMaximum: string;
 }
 
 export const fieldStrings: FieldStrings = {
@@ -139,6 +149,10 @@ export const fieldStrings: FieldStrings = {
   typeToSearch: (minLength) =>
     minLength === 1 ? 'Type to search.' : `Type at least ${minLength} characters to search.`,
   searchFailed: 'Search is unavailable.',
+  duplicateValue: (value) => `“${value}” is already added.`,
+  tooManyValues: (maxValues) =>
+    maxValues === 1 ? 'Add up to 1 value.' : `Add up to ${maxValues} values.`,
+  characterPosition: (position, length) => `Character ${position} of ${length}`,
   today: 'Today',
   now: 'Now',
   dateTooEarly: (minValue) => `Choose a value on or after ${minValue}.`,
@@ -146,4 +160,6 @@ export const fieldStrings: FieldStrings = {
   dateUnavailable: 'Choose an available date.',
   lastPeriod: (period) => `Last ${period}`,
   nextPeriod: (period) => `Next ${period}`,
+  rangeMinimum: 'Minimum',
+  rangeMaximum: 'Maximum',
 };

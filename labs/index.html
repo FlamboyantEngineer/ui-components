@@ -15,6 +15,7 @@
         <h2>Foundations</h2>
         <ul>
           <li><a href="description-list.html">Description List</a> — Read-only label and value pairs in inline or stacked layouts, in one or two columns.</li>
+          <li><a href="focus-scope.html">Focus Scope</a> — Regions that keep Tab inside, focus an element on mount, return focus on unmount and move focus with the arrow keys.</li>
           <li><a href="icon.html">Icon</a> — Every built-in glyph at every size, labelled and decorative icons, and custom icon nodes.</li>
           <li><a href="icon-label.html">Icon Label</a> — Leading icon and text at every size, with truncate, grow, hidden text and custom icons.</li>
           <li><a href="inline-text-diff.html">Inline Text Diff</a> — A change to a text value shown inline as removed and added runs.</li>
@@ -27,10 +28,12 @@
           <li><a href="provider.html">Provider</a> — Built-in glyphs and strings, each shown with its default and a replacement from UiProvider.</li>
           <li><a href="scroll-region.html">Scroll Region</a> — A framed scroll viewport with overlay scrollbars, a marker overview and a scrolling strip.</li>
           <li><a href="section-header.html">Section Header</a> — Section titles with supporting text and actions, standalone or naming their section.</li>
+          <li><a href="separator.html">Separator</a> — Horizontal, vertical, labelled and decorative rules between groups of content, in three line styles.</li>
           <li><a href="shortcut.html">Shortcut</a> — Keyboard chords in each platform notation, with readable text and key legends.</li>
           <li><a href="split-view.html">Split View</a> — Fixed and resizable two-pane splits with a keyboard and pointer window splitter.</li>
           <li><a href="svg-markup.html">SVG Markup</a> — SVG markup strings rendered as React elements, alone and inside Icon.</li>
           <li><a href="text-match.html">Text Match</a> — Query terms highlighted inside text labels, by substring or by word.</li>
+          <li><a href="visually-hidden.html">Visually Hidden</a> — Content only assistive technology perceives: names for icon-only controls, context for short values and a skip link that shows on focus.</li>
         </ul>
       </section>
       <section>
@@ -42,8 +45,10 @@
           <li><a href="button.html">Button</a> — Every variant, size and state of the labelled command button, with icons and content layouts.</li>
           <li><a href="button-group.html">Button Group</a> — Related buttons and icon buttons in a labelled group: spaced, compact or attached, in a row or a column, and justified.</li>
           <li><a href="copy-button.html">Copy Button</a> — An icon button that copies a value and confirms it with a check mark and an announcement.</li>
+          <li><a href="disclosure.html">Disclosure</a> — Collapsible sections and accordions: a titled trigger with a start or end indicator, its panel, custom headers with actions, and groups that open one or many.</li>
           <li><a href="expand-toggle.html">Expand Toggle</a> — A chevron button that expands and collapses a row, with an aligned placeholder for leaves.</li>
           <li><a href="icon-button.html">Icon Button</a> — Every variant, size and state of the icon-only command button.</li>
+          <li><a href="link.html">Link</a> — Links in running text and on their own: emphasis, underline policy, new tabs, client-side navigation and pressable links.</li>
           <li><a href="pagination.html">Pagination</a> — Previous and next buttons around page buttons, with gaps for skipped pages.</li>
           <li><a href="path.html">Path</a> — One line of location text truncated from the start so the final label stays visible.</li>
           <li><a href="segmented-choice.html">Segmented Choice</a> — Picks one of a few mutually exclusive values of a setting from a run of segments.</li>
@@ -63,7 +68,10 @@
           <li><a href="inline-error.html">Inline Error</a> — Compact alerts for failed operations with optional recovery.</li>
           <li><a href="load-more.html">Load More</a> — A paging control with remaining counts and a pending state.</li>
           <li><a href="loading-overlay.html">Loading Overlay</a> — A status card, the cover that blocks a loading surface and a region that makes its content inert.</li>
+          <li><a href="meter.html">Meter</a> — A quantity within a known range: sizes, tones, worded values and tones judged by low, high and optimum thresholds.</li>
           <li><a href="progress-bar.html">Progress Bar</a> — Determinate and indeterminate progress bars at three sizes, plus the decorative spinner.</li>
+          <li><a href="skeleton.html">Skeleton</a> — Placeholders for loading content: blocks in each shape, text lines, and a loading region that keeps real content's layout until it loads.</li>
+          <li><a href="status-light.html">Status Light</a> — A coloured dot beside a status label: tones, sizes, presence states with default labels, a processing state and dot-only lights.</li>
           <li><a href="toast.html">Toast</a> — Transient messages in four tones, drawn in place and pushed to a live region.</li>
           <li><a href="tooltip.html">Tooltip</a> — Hover and focus hints for controls, in two variants and every placement.</li>
           <li><a href="truncation-tooltip.html">Truncation Tooltip</a> — Text that shows its full content in a tooltip only while it is cut short.</li>
@@ -73,12 +81,17 @@
         <h2>Overlays and menus</h2>
         <ul>
           <li><a href="combobox.html">Combobox</a> — A text input completed from a filtered, sectioned or asynchronous list of suggestions.</li>
+          <li><a href="command-palette.html">Command Palette</a> — A modal search field over a filtered menu of commands, opened with a document-wide shortcut.</li>
           <li><a href="confirm-dialog.html">Confirm Dialog</a> — A yes-or-no decision in an alert dialog, rendered declaratively or awaited through a controller.</li>
           <li><a href="context-menu.html">Context Menu</a> — Menus opened at the pointer, from the keyboard, by a long touch or through a controller.</li>
+          <li><a href="drawer.html">Drawer</a> — A panel sliding in from a viewport edge: positions, sizes, header and footer, dismissal options, snap points and nested drawers.</li>
           <li><a href="dropdown-menu.html">Dropdown Menu</a> — A button or icon button that opens a menu.</li>
+          <li><a href="hover-card.html">Hover Card</a> — A card of extra content shown on hover and focus of its trigger: delays, placements, arrow, interactive content and controlled state.</li>
           <li><a href="menu.html">Menu</a> — Menu items, sections, selection and submenus, standalone and opened from a button.</li>
+          <li><a href="menubar.html">Menubar</a> — A row or column of top-level items that each open a menu, with menubar keyboard and pointer behaviour.</li>
           <li><a href="modal.html">Modal</a> — A blocking dialog with a title, a body and Cancel, secondary and primary actions.</li>
           <li><a href="modal-controller.html">Modal Controller</a> — Opens, stacks, updates and closes modals imperatively through a controller and its host.</li>
+          <li><a href="popover.html">Popover</a> — A dialog floating against its trigger: placements, arrow, title and close button, non-modal, custom anchor and controlled state.</li>
         </ul>
       </section>
       <section>
@@ -103,10 +116,14 @@
           <li><a href="icon-select-field.html">Icon Select Field</a> — A single select over icon-led options with a no-icon choice.</li>
           <li><a href="json-editor.html">JSON Editor</a> — A field for JSON text with highlighting, parse errors and formatting.</li>
           <li><a href="number-field.html">Number Field</a> — A field for a locale-formatted number with steppers, range and step.</li>
+          <li><a href="pin-input.html">Pin Input</a> — A fixed-length code in single-character cells, with typing, Backspace, arrows, paste and one-time-code autofill.</li>
+          <li><a href="radio-group.html">Radio Group</a> — RadioGroup and Radio: one value picked from a list of radios, with descriptions, rich content and the field's validation.</li>
           <li><a href="relative-date-field.html">Relative Date Field</a> — A date set from presets that read relative to now.</li>
           <li><a href="search-field.html">Search Field</a> — A search or filter box with a clear button, Escape to clear and Enter to submit.</li>
           <li><a href="select-field.html">Select Field</a> — Single and multiple selection with chips, filtering and search.</li>
+          <li><a href="slider.html">Slider</a> — Slider and RangeSlider: a number or a range picked along a track, with marks, a value output and a minimum distance between range thumbs.</li>
           <li><a href="switch.html">Switch</a> — An on-off switch with a track, a thumb and an optional label, without a field around it.</li>
+          <li><a href="tags-input.html">Tags Input</a> — A free-text list field: Enter, delimiters and pasted lists add tags; duplicates, a maximum and per-tag checks refuse them.</li>
           <li><a href="text-field.html">Text Field</a> — A field for a plain string on one line or several, with string rules, commit and revert.</li>
         </ul>
       </section>

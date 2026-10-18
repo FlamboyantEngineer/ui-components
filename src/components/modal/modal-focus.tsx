@@ -1,9 +1,8 @@
-import { useEffect, useLayoutEffect, useRef, type RefObject } from 'react';
+import { useEffect, useRef, type RefObject } from 'react';
+import { resolveFocusTarget, type FocusTarget } from '../../utils/focus-target.js';
 
 /** An element to focus: a ref, or a function asked for the element when focus moves. */
-export type ModalFocusTarget =
-  | RefObject<HTMLElement | null>
-  | (() => HTMLElement | null | undefined);
+export type ModalFocusTarget = FocusTarget;
 
 export interface InitialFocusProps {
   dialogRef: RefObject<HTMLElement | null>;
@@ -11,14 +10,6 @@ export interface InitialFocusProps {
   footerRef: RefObject<HTMLElement | null>;
   /** An element chosen by the caller, focused first when it resolves to one. */
   target?: ModalFocusTarget | undefined;
-}
-
-export interface FocusReturnOptions {
-  dialogRef: RefObject<HTMLElement | null>;
-  /** The caller's choice of where focus goes on close. */
-  finalFocus?: ModalFocusTarget | undefined;
-  /** Where focus goes when the caller chose nothing; `null` leaves it to React Aria. */
-  fallback: Element | null;
 }
 
 const tabbableSelector =
@@ -33,12 +24,6 @@ function findFirstTabbable(root: Element | null): HTMLElement | null {
     return element;
   }
   return null;
-}
-
-/** The element a focus target names now, if it is still in the document. */
-export function resolveFocusTarget(target: ModalFocusTarget | undefined): HTMLElement | null {
-  const element = typeof target === 'function' ? target() : target?.current;
-  return element?.isConnected ? element : null;
 }
 
 /**
@@ -67,26 +52,4 @@ export function InitialFocus({ dialogRef, bodyRef, footerRef, target }: InitialF
   return null;
 }
 
-/**
- * When the dialog leaves the page, moves focus to `finalFocus`, else to `fallback`, provided focus
- * was still inside the dialog or on the body, so a reader who moved elsewhere keeps their place.
- * It runs while the dialog is removed, before React Aria's own restoration, which then stands down.
- */
-export function useFocusReturn({ dialogRef, finalFocus, fallback }: FocusReturnOptions) {
-  const optionsRef = useRef({ finalFocus, fallback });
-  useLayoutEffect(() => {
-    optionsRef.current = { finalFocus, fallback };
-  });
-  useLayoutEffect(() => {
-    const dialog = dialogRef.current;
-    return () => {
-      const active = document.activeElement;
-      if (active !== document.body && !dialog?.contains(active)) return;
-      const { finalFocus: chosen, fallback: opener } = optionsRef.current;
-      const target =
-        resolveFocusTarget(chosen) ??
-        (opener instanceof HTMLElement && opener.isConnected ? opener : null);
-      target?.focus();
-    };
-  }, [dialogRef]);
-}
+export { useFocusReturn } from '../../utils/focus-target.js';
