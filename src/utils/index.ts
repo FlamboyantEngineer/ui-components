@@ -114,8 +114,17 @@ export type {
 } from './tree-reorder.js';
 export { getColorIndex } from './color-index.js';
 export { getInitials } from './initials.js';
-export { diffLines, diffWords } from './diff.js';
-export type { DiffKind, LineDiffHunk, WordDiffHunk } from './diff.js';
+export { diffLines, diffSequences, diffWords } from './diff.js';
+export type { DiffKind, LineDiffHunk, SequenceDiffHunk, WordDiffHunk } from './diff.js';
+export { compareTrees } from './compare-trees.js';
+export type {
+  CompareTreeNode,
+  CompareTreesOptions,
+  ComparedTreeRow,
+  TreeChange,
+  TreeChangeCounts,
+  TreeComparison,
+} from './compare-trees.js';
 export { formatOutlineNumber } from './outline-number.js';
 export type { FormatOutlineNumberOptions, OutlineNumberStyle } from './outline-number.js';
 export { createLinearScale } from './linear-scale.js';

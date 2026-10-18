@@ -1,4 +1,4 @@
-// Line and word diffs between two texts (specs/DIFF.md): Myers' algorithm in linear space.
+// Line, word and sequence diffs (specs/DIFF.md): Myers' algorithm in linear space.
 
 /** What a hunk does to the old text: keeps, inserts or deletes its content. */
 export type DiffKind = 'equal' | 'insert' | 'delete';
@@ -18,6 +18,12 @@ export interface LineDiffHunk {
 export interface WordDiffHunk {
   kind: DiffKind;
   text: string;
+}
+
+/** A run of items that two sequences share, or that one of them adds. */
+export interface SequenceDiffHunk<T> {
+  kind: DiffKind;
+  items: T[];
 }
 
 /** An edit on token lists: a kind and the tokens it covers. */
@@ -246,5 +252,19 @@ export function diffWords(oldText: string, newText: string): WordDiffHunk[] {
   return joinSpacedChanges(toHunks(diffTokens(oldTokens, newTokens))).map(({ kind, tokens }) => ({
     kind,
     text: tokens.join(''),
+  }));
+}
+
+/**
+ * The diff of two sequences of items compared with `===`, such as ids: equal, deleted and inserted
+ * runs in order. A change deletes before it inserts.
+ */
+export function diffSequences<T>(
+  oldItems: readonly T[],
+  newItems: readonly T[],
+): Array<SequenceDiffHunk<T>> {
+  return toHunks(diffTokens(oldItems, newItems)).map(({ kind, tokens }) => ({
+    kind,
+    items: tokens,
   }));
 }

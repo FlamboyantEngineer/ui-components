@@ -60,6 +60,11 @@ const sampleArguments: Partial<Record<keyof UiStrings, readonly unknown[]>> = {
   previousRange: ['month'],
   nextRange: ['week'],
   calendarEvent: ['Design review', '10:00 AM – 11:00 AM'],
+  treeAddedRow: ['Kiwi'],
+  treeRemovedRow: ['Pecan'],
+  treeChangedRow: ['Pear', 'Pears'],
+  treeMovedAwayRow: ['Fig'],
+  treeMovedHereRow: ['Fig'],
 };
 
 const stringNames = Object.keys(defaultStrings) as Array<keyof UiStrings>;
