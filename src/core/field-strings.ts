@@ -90,6 +90,10 @@ export interface FieldStrings {
   lastPeriod: (period: string) => string;
   /** A preset of the dates from today, from a count of units such as `7 days`. */
   nextPeriod: (period: string) => string;
+  /** Names the start thumb of a range slider, read before the slider's label. */
+  rangeMinimum: string;
+  /** Names the end thumb of a range slider, read before the slider's label. */
+  rangeMaximum: string;
 }
 
 export const fieldStrings: FieldStrings = {
@@ -146,4 +150,6 @@ export const fieldStrings: FieldStrings = {
   dateUnavailable: 'Choose an available date.',
   lastPeriod: (period) => `Last ${period}`,
   nextPeriod: (period) => `Next ${period}`,
+  rangeMinimum: 'Minimum',
+  rangeMaximum: 'Maximum',
 };
