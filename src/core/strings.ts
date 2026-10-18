@@ -1,5 +1,6 @@
 import { commonStrings, type CommonStrings } from './common-strings.js';
 import { contentStrings, type ContentStrings } from './content-strings.js';
+import { dashboardStrings, type DashboardStrings } from './dashboard-strings.js';
 import { fieldStrings, type FieldStrings } from './field-strings.js';
 import { historyStrings, type HistoryStrings } from './history-strings.js';
 import { mediaStrings, type MediaStrings } from './media-strings.js';
@@ -26,7 +27,8 @@ export interface UiStrings
     QueryStrings,
     TableStrings,
     TimelineStrings,
-    ViewStrings {}
+    ViewStrings,
+    DashboardStrings {}
 
 export const defaultStrings: UiStrings = {
   ...commonStrings,
@@ -40,4 +42,5 @@ export const defaultStrings: UiStrings = {
   ...tableStrings,
   ...timelineStrings,
   ...viewStrings,
+  ...dashboardStrings,
 };

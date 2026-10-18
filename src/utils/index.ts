@@ -120,6 +120,8 @@ export { formatOutlineNumber } from './outline-number.js';
 export type { FormatOutlineNumberOptions, OutlineNumberStyle } from './outline-number.js';
 export { createLinearScale } from './linear-scale.js';
 export type { LinearScale, LinearScaleOptions, ScaleInterval, ScaleTick } from './linear-scale.js';
+export { createBandScale } from './band-scale.js';
+export type { BandScale, BandScaleOptions } from './band-scale.js';
 export { addTimeUnits, createTimeScale, floorToTimeUnit } from './time-scale.js';
 export type { TimeScale, TimeScaleOptions, TimeScaleUnit, TimeTickOptions } from './time-scale.js';
 export { defaultUrlSchemes, isSafeUrl } from './safe-url.js';

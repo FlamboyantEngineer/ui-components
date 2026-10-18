@@ -60,6 +60,14 @@ const sampleArguments: Partial<Record<keyof UiStrings, readonly unknown[]>> = {
   previousRange: ['month'],
   nextRange: ['week'],
   calendarEvent: ['Design review', '10:00 AM – 11:00 AM'],
+  chartSummary: [{ series: 2, values: 12, low: '3', high: '48' }],
+  chartValue: ['Apples', 'March', '42'],
+  donutSummary: ['120', 'Apples', '50%'],
+  donutSegment: ['Apples', '60', '50%'],
+  moveTile: ['Visitors'],
+  resizeTile: ['Visitors'],
+  tileMoved: ['Visitors', 3, 2],
+  tileResized: ['Visitors', 4, 2],
 };
 
 const stringNames = Object.keys(defaultStrings) as Array<keyof UiStrings>;

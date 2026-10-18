@@ -26,6 +26,7 @@
 @import url('reference/calendar-view.css');
 @import url('reference/card.css');
 @import url('reference/change-list.css');
+@import url('reference/chart.css');
 @import url('reference/chat-transcript.css');
 @import url('reference/checkbox.css');
 @import url('reference/checkbox-group.css');
@@ -41,6 +42,7 @@
 @import url('reference/condition-builder.css');
 @import url('reference/confirm-dialog.css');
 @import url('reference/copy-button.css');
+@import url('reference/dashboard-grid.css');
 @import url('reference/date-time-field.css');
 @import url('reference/decision-control.css');
 @import url('reference/description-list.css');
