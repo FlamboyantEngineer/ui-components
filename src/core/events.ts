@@ -1,7 +1,7 @@
 // Interaction events and the handler props that carry them (specs/PRIMITIVES.md).
 
 import type { FocusEvent, KeyboardEvent } from 'react';
-import type { Key, Selection, SelectionMode } from './props.js';
+import type { Key, Placement, Selection, SelectionMode } from './props.js';
 
 /** How an interaction was performed. */
 export type PointerType = 'mouse' | 'pen' | 'touch' | 'keyboard' | 'virtual';
@@ -84,4 +84,28 @@ export interface SelectionProps {
   disabledKeys?: Iterable<Key> | undefined;
   /** Keeps at least one item selected. */
   disallowEmptySelection?: boolean | undefined;
+}
+
+/** Where an anchored overlay opens against its anchor, and how it stays inside the viewport. */
+export interface OverlayPositionProps {
+  /** The side of the anchor it prefers, then the alignment along that side. */
+  placement?: Placement | undefined;
+  /** Distance from the anchor along the side it opens on, in pixels. */
+  offset?: number | undefined;
+  /** Shift along the anchor's side, in pixels. */
+  crossOffset?: number | undefined;
+  /** Flips to the opposite side when it does not fit. Defaults to true. */
+  shouldFlip?: boolean | undefined;
+  /** Space kept between the overlay and the edges of the viewport, in pixels. */
+  containerPadding?: number | undefined;
+}
+
+/** How a reader may dismiss an overlay from outside its own controls. Defaults vary by component. */
+export interface OverlayDismissProps {
+  /** Whether a press outside the overlay closes it. */
+  isDismissable?: boolean | undefined;
+  /** Keeps Escape from closing the overlay. */
+  isKeyboardDismissDisabled?: boolean | undefined;
+  /** Asked with the element pressed before an outside press closes the overlay; false keeps it open. */
+  shouldCloseOnInteractOutside?: ((element: Element) => boolean) | undefined;
 }

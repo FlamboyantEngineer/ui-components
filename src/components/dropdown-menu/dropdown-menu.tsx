@@ -1,8 +1,8 @@
 import { useContext, type ReactNode } from 'react';
-import { OverlayTriggerStateContext, type Placement } from '../../primitives/index.js';
+import { OverlayTriggerStateContext } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import { createHooks, mergeClassNames, splitDataAttributes } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, Placement } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { Button, type ButtonProps } from '../button/button.js';
 import type { IconSource } from '../icon/icon.js';
@@ -18,7 +18,7 @@ import {
 
 export interface DropdownMenuProps
   extends
-    Omit<MenuTriggerProps, 'children' | 'trigger'>,
+    Omit<MenuTriggerProps, 'children'>,
     DropdownMenuMenuProps,
     Pick<ButtonProps, 'variant' | 'size' | 'isDisabled' | 'ref' | 'onPress'>,
     BaseProps {

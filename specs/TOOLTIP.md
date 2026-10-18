@@ -6,7 +6,7 @@
 
 ### UIC-TOOLTIP-1.1 - Trigger and panel
 
-`Tooltip` shall wrap one trigger that is a React Aria focusable (`Button`, `IconButton`, `Link` or an element wrapped in `Focusable`) and render its `content` in the `ui-tooltip__content` slot of a panel with `role="tooltip"`, portalled to the end of the document. The panel never takes focus, holds no interactive content and adds no wrapper element around the trigger.
+`Tooltip` shall wrap one focusable trigger (a library `Button`, `IconButton` or `Link`) and render its `content` in the `ui-tooltip__content` slot of a panel with `role="tooltip"`, portalled to the end of the document. The panel never takes focus, holds no interactive content and adds no wrapper element around the trigger.
 
 Implementation: `src/components/tooltip/tooltip.tsx`
 Verification: `src/components/tooltip/tooltip.test.tsx`, `e2e/tooltip.spec.ts`
@@ -34,14 +34,14 @@ Verification: `src/components/tooltip/tooltip.test.tsx`
 
 ### UIC-TOOLTIP-1.9 - Label relationship
 
-With `relationship="label"` and string `content`, the hint shall be the trigger's accessible name whether the panel is open or not: the trigger element receives the content as its `aria-label` (it must forward `aria-label` to its focusable element, as `Button`, React Aria's `Button` and `Link` do). The open panel then describes nothing, so the name is read once; a trigger's own `aria-describedby` still wins. Use it for a control whose only label is its hint, such as an icon-only button. Content that is not a string cannot be a name, so it describes the trigger as usual.
+With `relationship="label"` and string `content`, the hint shall be the trigger's accessible name whether the panel is open or not: the trigger element receives the content as its `aria-label` (it must forward `aria-label` to its focusable element, as `Button` and `Link` do). The open panel then describes nothing, so the name is read once; a trigger's own `aria-describedby` still wins. Use it for a control whose only label is its hint, such as an icon-only button. Content that is not a string cannot be a name, so it describes the trigger as usual.
 
 Implementation: `src/components/tooltip/tooltip.tsx`
 Verification: `src/components/tooltip/tooltip.test.tsx`, `e2e/tooltip.spec.ts`
 
 ### UIC-TOOLTIP-1.5 - Placement
 
-`placement` (`top` by default, or any React Aria placement such as `bottom`, `start` or `end top`) shall choose the preferred side; the panel flips to the opposite side when it does not fit and stays inside the viewport, 8 pixels from the trigger to leave room for the arrow. The panel and its `ui-tooltip__arrow` publish the resolved side in `data-placement`.
+`placement` (`top` by default, or any `Placement` such as `bottom`, `start` or `end top`) shall choose the preferred side; the panel flips to the opposite side when it does not fit and stays inside the viewport, 8 pixels from the trigger to leave room for the arrow. The panel and its `ui-tooltip__arrow` publish the resolved side in `data-placement`.
 
 Implementation: `src/components/tooltip/tooltip.tsx`
 Verification: `src/components/tooltip/tooltip.test.tsx`, `e2e/tooltip.spec.ts`

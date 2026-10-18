@@ -50,7 +50,7 @@ Verification: `src/components/command-palette/command-palette.test.tsx`, `e2e/co
 
 ### UIC-COMMAND-PALETTE-2.2 - Filtering
 
-As the reader types, the palette shall keep the commands whose label contains the typed text, ignoring case and accents, and hide the sections and separators left without a command. `filter` replaces the test with React Aria's `(textValue, inputValue, node)` function; `filter={null}` keeps every command, for results the caller has already filtered.
+As the reader types, the palette shall keep the commands whose label contains the typed text, ignoring case and accents, and hide the sections and separators left without a command. `filter` replaces the test with a `(textValue, inputValue) => boolean` function; `filter={null}` keeps every command, for results the caller has already filtered.
 
 Implementation: `src/components/command-palette/command-palette.tsx`
 Verification: `src/components/command-palette/command-palette.test.tsx`, `e2e/command-palette.spec.ts`

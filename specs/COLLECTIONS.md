@@ -1,19 +1,19 @@
 # Collections
 
-How the library's collection components (menus, list boxes, grids, tables, trees and tag groups built on React Aria collections) render long and incrementally loaded collections. They do not virtualize or page on their own: they take React Aria's `Virtualizer` and its loading sentinels, so the same layouts, keyboard behaviour and accessibility semantics apply everywhere. A component that builds its items from data rather than from children adds `onLoadMore` and `isLoading` props with the sentinel's names and renders the sentinel itself, inside a slot hook of its own. Content that is not a React Aria collection loads more with [Load More](LOAD-MORE.md#uic-load-more-17---loading-on-view).
+The contract every library collection component (menus, list boxes, list views, card grids, tables, trees and tag groups) follows for long and incrementally loaded collections. Callers describe the collection with the component's own items (library children such as `MenuItem`, or data entries) and turn on virtualized rendering and incremental loading with props; the component renders the building block's virtualizer, layout and loading sentinel itself. A caller never imports or assembles a building block's collection parts (`Collection`, `Virtualizer`, layouts, loading sentinels), so the building block behind a component can change without touching its callers. Content that is not a collection loads more with [Load More](LOAD-MORE.md#uic-load-more-17---loading-on-view).
 
 ## UIC-COLLECTIONS-1 - Long collections
 
 ### UIC-COLLECTIONS-1.1 - Virtualized rendering
 
-A library component that renders a React Aria collection shall pass its collection children (`Collection` with `items`, sections, sentinels) through to it, so a React Aria `Virtualizer` around the component, with a layout such as `ListLayout`, `GridLayout`, `WaterfallLayout` or `TableLayout`, renders only the items in view, positioned with the layout's functional inline styles, while keyboard navigation reaches every item and each item keeps its hooks, `aria-setsize` and `aria-posinset`. The component needs no prop of its own for it. [Menu](MENU.md) does so.
+A library collection component that offers virtualized rendering shall take a `virtualized` boolean prop and, while it is set, render through the building block's virtualizer with the component's layout: only the items in view of its scroll container (plus a small buffer) are in the document, positioned with the layout's functional inline styles, while keyboard navigation reaches every item and each item keeps its hooks, `aria-setsize` and `aria-posinset`. It publishes `data-virtualized` on its root. Filtering, sections and loading more work the same virtualized or not. [Menu](MENU.md#uic-menu-53---virtualized-menu) does so.
 
 Implementation: `src/components/menu/menu.tsx`
 Verification: `src/components/menu/menu.test.tsx`
 
 ### UIC-COLLECTIONS-1.2 - Loading more inside a collection
 
-A library collection component shall accept React Aria's loading sentinel for its collection (`MenuLoadMoreItem`, `ListBoxLoadMoreItem`, `GridListLoadMoreItem`, `TableLoadMoreItem` or `TreeLoadMoreItem`) after its items, which calls `onLoadMore` when it scrolls into the collection's view while `isLoading` is false, virtualized or not.
+A library collection component that loads incrementally shall take `onLoadMore` and `isLoading` props and render the building block's loading sentinel after its items itself, in a slot hook of its own: the sentinel calls `onLoadMore` when it scrolls into the collection's view while `isLoading` is false, virtualized or not, and while `isLoading` draws a loading row reading the provider's `loading` string, alone in place of the empty state while there are no items.
 
 Implementation: `src/components/menu/menu.tsx`
 Verification: `src/components/menu/menu.test.tsx`
@@ -24,3 +24,10 @@ Content that is not a React Aria collection (a plain list, a conversation, a gri
 
 Implementation: `src/components/load-more/load-more.tsx`, `src/utils/use-in-view.ts`
 Verification: `src/components/load-more/load-more.test.tsx`, `e2e/load-more.spec.ts`
+
+### UIC-COLLECTIONS-1.4 - Layout options
+
+The geometry a virtualized layout needs shall be plain props with documented defaults: `rowHeight`, the height of every row in pixels, for a list or table layout with fixed rows (its default follows the component's `size`), or rows the layout measures itself where the component says so. A component that can lay its items out in more than one way takes a `layout` option naming them (for example `grid` or `waterfall`) rather than a building block's layout class.
+
+Implementation: `src/components/menu/menu.tsx`
+Verification: `src/components/menu/menu.test.tsx`

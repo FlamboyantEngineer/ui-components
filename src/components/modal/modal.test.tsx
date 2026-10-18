@@ -1,12 +1,13 @@
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState, type ReactNode } from 'react';
-import { Button as AriaButton, DialogTrigger } from '../../primitives/index.js';
+import { Button as AriaButton } from '../../primitives/index.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
+import { Button } from '../button/button.js';
 import { Portal, PortalContainerProvider } from '../portal/portal.js';
-import { Modal, isModalPrimaryShortcut, type ModalProps } from './modal.js';
+import { Modal, ModalTrigger, isModalPrimaryShortcut, type ModalProps } from './modal.js';
 
 function deferred() {
   let resolve!: () => void;
@@ -75,7 +76,7 @@ describe('Modal', () => {
       });
     });
 
-    it('UIC-MODAL-1.1 reports closes, opens uncontrolled from defaultOpen and follows a DialogTrigger', async () => {
+    it('UIC-MODAL-1.1 reports closes, opens uncontrolled from defaultOpen and follows a ModalTrigger', async () => {
       const onOpenChange = vi.fn();
       const { unmount } = render(
         <Modal title="Draft" defaultOpen onOpenChange={onOpenChange}>
@@ -89,17 +90,36 @@ describe('Modal', () => {
       unmount();
 
       render(
-        <DialogTrigger>
+        <ModalTrigger>
           <AriaButton>Details</AriaButton>
           <Modal title="Details" cancelAction={{ label: 'Done' }}>
             Body
           </Modal>
-        </DialogTrigger>,
+        </ModalTrigger>,
       );
       await userEvent.click(screen.getByRole('button', { name: 'Details' }));
       expect(await screen.findByRole('dialog', { name: 'Details' })).toBeInTheDocument();
       await userEvent.click(screen.getByRole('button', { name: 'Done' }));
       expect(screen.queryByRole('dialog')).toBeNull();
+    });
+
+    it('UIC-MODAL-1.6 opens from its trigger, reports changes and returns focus', async () => {
+      const onOpenChange = vi.fn();
+      render(
+        <ModalTrigger defaultOpen onOpenChange={onOpenChange}>
+          <Button>Settings</Button>
+          <Modal title="Settings">Body</Modal>
+        </ModalTrigger>,
+      );
+      expect(screen.getByRole('dialog', { name: 'Settings' })).toBeInTheDocument();
+      await userEvent.keyboard('{Escape}');
+      expect(onOpenChange).toHaveBeenLastCalledWith(false);
+      expect(screen.queryByRole('dialog')).toBeNull();
+      const trigger = screen.getByRole('button', { name: 'Settings' });
+      await userEvent.click(trigger);
+      expect(onOpenChange).toHaveBeenLastCalledWith(true);
+      await userEvent.keyboard('{Escape}');
+      await waitFor(() => expect(trigger).toHaveFocus());
     });
 
     it('UIC-MODAL-1.2 covers the viewport on the modal layer and honours provider z-indexes', async () => {

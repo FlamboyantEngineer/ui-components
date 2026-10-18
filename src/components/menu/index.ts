@@ -11,7 +11,7 @@ export type {
   MenuEntry,
   MenuItemEntry,
   MenuItemProps,
-  MenuItemRenderProps,
+  MenuItemRenderState,
   MenuItemTone,
   MenuPopoverProps,
   MenuProps,

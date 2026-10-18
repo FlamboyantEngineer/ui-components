@@ -6,7 +6,7 @@ A context menu lists actions for whatever the reader points at. `ContextMenu` sh
 
 ### UIC-CONTEXT-MENU-1.1 - Opening at the pointer
 
-A secondary click on the target (a `contextmenu` event) shall prevent the browser's own menu, keep the event from reaching enclosing context menu triggers, and open the menu below and after the pointer, 2 pixels away, flipped above or shifted along the edge when it does not fit in the viewport. The menu is a React Aria popover anchored to that point (`getTargetRect`), so it publishes `data-placement`.
+A secondary click on the target (a `contextmenu` event) shall prevent the browser's own menu, keep the event from reaching enclosing context menu triggers, and open the menu below and after the pointer, 2 pixels away, flipped above or shifted along the edge when it does not fit in the viewport. The menu is a popover anchored to that point, so it publishes `data-placement`.
 
 Implementation: `src/components/context-menu/context-menu.tsx`, `src/components/context-menu/context-menu-target.ts`, `src/components/context-menu/menu-anchor.ts`
 Verification: `src/components/context-menu/context-menu-target.test.tsx`, `e2e/context-menu.spec.ts`
@@ -57,7 +57,7 @@ Verification: `src/components/context-menu/menu-controller.test.ts`
 
 ### UIC-CONTEXT-MENU-2.2 - Controlled menu
 
-`ContextMenu` shall show its children (a `Menu`), or a `Menu` of the controller's entries, while its controller is open: below and after a point anchor, or against an element anchor with `placement` (`bottom start` by default). Focus enters the first item, and an action, Escape or a press outside closes the controller, so subscribers see the menu close.
+`ContextMenu` shall show its children (a `Menu`), or a `Menu` of the controller's entries, while its controller is open: below and after a point anchor, or against an element anchor with `placement` (a `Placement`, `bottom start` by default). Focus enters the first item, and an action, Escape or a press outside closes the controller, so subscribers see the menu close.
 
 Implementation: `src/components/context-menu/context-menu.tsx`, `src/components/context-menu/menu-state.ts`
 Verification: `src/components/context-menu/context-menu.test.tsx`, `e2e/context-menu.spec.ts`

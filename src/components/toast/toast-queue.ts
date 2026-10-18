@@ -1,11 +1,7 @@
-// The toast queue: React Aria's queue for order and visibility, plus content that updates in
+// The toast queue: a building-block queue for order and visibility, plus content that updates in
 // place, lifetimes the toasts restart, promise toasts and exits that play before removal.
 
 import type { ReactNode } from 'react';
-import {
-  UNSTABLE_ToastQueue as AriaToastQueue,
-  type ToastOptions as AriaToastOptions,
-} from '../../primitives/index.js';
 import type { Tone } from '../../core/props.js';
 import type { IconSource } from '../icon/icon.js';
 
@@ -30,13 +26,15 @@ export interface ToastContent {
   isPending?: boolean | undefined;
 }
 
-export interface ToastAddOptions extends AriaToastOptions {
+export interface ToastAddOptions {
+  /** Called once the toast has closed, unless it was replaced or cleared. */
+  onClose?: (() => void) | undefined;
   /**
    * Milliseconds before the toast closes itself; `0` keeps it until it is dismissed. Defaults to the
    * queue's `defaultTimeout`, or to `0` for a pending toast. Hovering or focusing the toasts pauses
    * every timer.
    */
-  timeout?: number;
+  timeout?: number | undefined;
   /** A caller key: adding a toast with the key of one still queued replaces it. */
   id?: string | undefined;
 }
@@ -83,8 +81,16 @@ export interface ToastQueue {
   clear: () => void;
   /** The timeout of toasts added without one, in milliseconds. */
   readonly defaultTimeout: number;
-  /** The React Aria queue that holds the visible toasts; regions and lists render it. */
-  readonly ariaQueue: AriaToastQueue<ToastContent>;
+}
+
+/**
+ * The building block's queue a library queue drives: it orders the toasts, shows the visible ones
+ * and runs their timers, all of which close through `close`.
+ */
+export interface ToastStore {
+  add: (content: ToastContent, options: { timeout: number; onClose: () => void }) => string;
+  close: (key: string) => void;
+  clear: () => void;
 }
 
 /** What a queued toast shows now, how long it lives and whether it is still open. */
@@ -193,21 +199,20 @@ function startPromiseToast<T>({
 }
 
 /**
- * Creates a toast queue over React Aria's queue, adding a default timeout, replacement by `id`,
+ * A toast queue over a building-block queue, adding a default timeout, replacement by `id`,
  * in-place updates, promise toasts and closing exits. Every close (its timer, its dismiss button,
  * its action or `close`) first lets a rendered toast play its exit, then removes it.
  */
-export function createToastQueue({
-  maxVisibleToasts,
-  defaultTimeout = defaultToastTimeout,
-}: ToastQueueOptions = {}): ToastQueue {
-  const ariaQueue = new AriaToastQueue<ToastContent>({ maxVisibleToasts });
+export function createQueueOverStore(
+  ariaQueue: ToastStore,
+  { defaultTimeout = defaultToastTimeout }: ToastQueueOptions = {},
+): ToastQueue {
   const removeNow = ariaQueue.close.bind(ariaQueue);
   const records = new Map<string, ToastRecord>();
   const keysById = new Map<string, string>();
   const replacedKeys = new Set<string>();
 
-  // React Aria's timers, dismiss buttons and state all close through the queue's `close`.
+  // The building block's timers, dismiss buttons and state all close through the queue's `close`.
   ariaQueue.close = (key) => {
     const record = records.get(key);
     if (record && record.mounted > 0) {
@@ -267,6 +272,5 @@ export function createToastQueue({
     close: (key) => ariaQueue.close(key),
     clear,
     defaultTimeout,
-    ariaQueue,
   };
 }

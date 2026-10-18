@@ -1,5 +1,5 @@
 import { useState, type CSSProperties, type ReactNode } from 'react';
-import type { Key } from '../../src/primitives/index.js';
+import type { Key } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
 import { ContextMenuTrigger, ContextMenu } from '../../src/components/context-menu/context-menu.js';
 import { useMenuController } from '../../src/components/context-menu/menu-controller.js';

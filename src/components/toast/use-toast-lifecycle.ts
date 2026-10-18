@@ -1,20 +1,22 @@
 // How a rendered toast follows its queue entry: its current content, its timer and its exit.
 
 import { useEffect, useMemo, useSyncExternalStore } from 'react';
-import type { QueuedToast } from '../../primitives/index.js';
 import type { ToastContent, ToastLifecycle, ToastSnapshot } from './toast-queue.js';
+
+/** The building block's timer of a shown toast, which region hover and focus also pause. */
+export interface ToastTimer {
+  reset: (delay: number) => void;
+  pause: () => void;
+}
 
 const subscribeToNothing = () => () => {};
 
 /** The toast's current content and lifetime: its queue entry's, or the queued values as they are. */
 export function useToastSnapshot(
-  toast: QueuedToast<ToastContent>,
+  content: ToastContent,
   lifecycle: ToastLifecycle | undefined,
 ): ToastSnapshot {
-  const fallback = useMemo(
-    () => ({ content: toast.content, timeout: 0, lifetime: 0, isOpen: true }),
-    [toast.content],
-  );
+  const fallback = useMemo(() => ({ content, timeout: 0, lifetime: 0, isOpen: true }), [content]);
   return useSyncExternalStore(
     lifecycle?.subscribe ?? subscribeToNothing,
     lifecycle?.getSnapshot ?? (() => fallback),
@@ -23,10 +25,10 @@ export function useToastSnapshot(
 }
 
 /**
- * Runs the toast's React Aria timer for its current lifetime while it is shown and open, and
+ * Runs the toast's timer for its current lifetime while it is shown and open, and
  * restarts it when an update gives a new lifetime. Region hover and focus pause the same timer.
  */
-export function useToastTimer(timer: QueuedToast<ToastContent>['timer'], snapshot: ToastSnapshot) {
+export function useToastTimer(timer: ToastTimer | undefined, snapshot: ToastSnapshot) {
   const { timeout, lifetime, isOpen } = snapshot;
   useEffect(() => {
     if (!timer || !isOpen) return undefined;

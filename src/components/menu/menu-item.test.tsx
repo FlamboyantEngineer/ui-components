@@ -5,7 +5,15 @@ import { MenuButton, actionKeys, fruitEntries, openMenu } from '../../../test/me
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { Button } from '../button/button.js';
-import { Menu, MenuItem, MenuPopover, MenuSection, MenuSeparator, MenuTrigger } from './menu.js';
+import {
+  Menu,
+  MenuItem,
+  MenuPopover,
+  MenuSection,
+  MenuSeparator,
+  MenuTrigger,
+  type MenuItemRenderState,
+} from './menu.js';
 
 describe('MenuItem, MenuSection and MenuSeparator', () => {
   it('UIC-MENU-2.1 draws check, icon, label, description, shortcut and submenu arrow', async () => {
@@ -87,6 +95,32 @@ describe('MenuItem, MenuSection and MenuSeparator', () => {
     await user.keyboard('p');
     expect(screen.getByRole('menuitem', { name: 'Pear' })).toHaveFocus();
     expect(screen.getByTestId('custom')).toHaveTextContent('Apple');
+  });
+
+  it('UIC-MENU-2.2 hands custom content the library item state only', () => {
+    const states: MenuItemRenderState[] = [];
+    render(
+      <Menu aria-label="Fruit" selectionMode="single" selectedKeys={['apple']}>
+        <MenuItem id="apple">
+          {(state) => {
+            states.push(state);
+            return 'Apple';
+          }}
+        </MenuItem>
+      </Menu>,
+    );
+    expect(Object.keys(states.at(-1) ?? {}).sort()).toEqual([
+      'hasSubmenu',
+      'isDisabled',
+      'isFocusVisible',
+      'isFocused',
+      'isHovered',
+      'isOpen',
+      'isPressed',
+      'isSelected',
+      'selectionMode',
+    ]);
+    expect(states.at(-1)).toMatchObject({ isSelected: true, selectionMode: 'single' });
   });
 
   it('UIC-MENU-2.3 publishes the tone and keeps disabled items visible but inert', async () => {

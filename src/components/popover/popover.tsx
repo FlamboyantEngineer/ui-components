@@ -1,4 +1,4 @@
-import { useContext, type ReactNode } from 'react';
+import { useContext, type ReactNode, type RefObject } from 'react';
 import {
   Dialog,
   DialogTrigger,
@@ -6,9 +6,12 @@ import {
   OverlayArrow,
   OverlayTriggerStateContext,
   Popover as AriaPopover,
-  type DialogTriggerProps,
-  type PopoverProps as AriaPopoverProps,
 } from '../../primitives/index.js';
+import type {
+  OpenStateProps,
+  OverlayDismissProps,
+  OverlayPositionProps,
+} from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -16,14 +19,27 @@ import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { IconButton } from '../icon-button/icon-button.js';
 import { useLayerZIndex } from '../portal/portal.js';
 
-/** The trigger and popover pair: React Aria's `DialogTrigger` open state. */
-export type PopoverTriggerProps = DialogTriggerProps;
+/** A pressable trigger and the `Popover` it opens. */
+export interface PopoverTriggerProps extends OpenStateProps {
+  /** The trigger (a `Button` or another pressable), then its `Popover`. */
+  children: ReactNode;
+}
 
-/** A floating panel against a trigger (React Aria `Popover`), carrying the caller's hooks. */
+/** The floating panel the library's anchored overlays share, carrying the caller's hooks. */
 export interface PopoverPanelProps
-  extends Omit<AriaPopoverProps, 'className' | 'style' | 'children'>, BaseProps {
+  extends
+    BaseProps,
+    OverlayPositionProps,
+    Omit<OverlayDismissProps, 'isDismissable'>,
+    Pick<OpenStateProps, 'isOpen' | 'onOpenChange'> {
+  /** The element it is placed against, outside a trigger or instead of the trigger. */
+  triggerRef?: RefObject<Element | null> | undefined;
+  /** Leaves the page outside reachable, visible to assistive technology and scrollable. */
+  isNonModal?: boolean | undefined;
   /** The arrow's hook class; when given, an arrow pointing at the trigger leads the panel. */
   arrowClassName?: string | undefined;
+  'aria-label'?: string | undefined;
+  'aria-labelledby'?: string | undefined;
   children: ReactNode;
 }
 
@@ -33,9 +49,21 @@ export interface PopoverRenderProps {
 }
 
 export interface PopoverProps
-  extends Omit<AriaPopoverProps, 'className' | 'style' | 'children' | 'defaultOpen'>, BaseProps {
+  extends
+    BaseProps,
+    OverlayPositionProps,
+    Omit<OverlayDismissProps, 'isDismissable'>,
+    Pick<OpenStateProps, 'isOpen' | 'onOpenChange'> {
+  /** Outside a `PopoverTrigger`, the element it is placed against; inside one, a different anchor. */
+  triggerRef?: RefObject<Element | null> | undefined;
+  /** Leaves the page outside reachable, visible to assistive technology and scrollable. */
+  isNonModal?: boolean | undefined;
   /** The heading, which also names the dialog unless `aria-label` or `aria-labelledby` is given. */
   title?: ReactNode;
+  /** Names the dialog. */
+  'aria-label'?: string | undefined;
+  /** Names the dialog by another element. */
+  'aria-labelledby'?: string | undefined;
   /** Shows a close button in the header. */
   showCloseButton?: boolean | undefined;
   /** Shows an arrow pointing at the trigger. */
@@ -74,8 +102,8 @@ function PopoverHeader({ title, showCloseButton, onClose }: PopoverHeaderProps) 
 }
 
 /** Opens the `Popover` among its children when its trigger, such as a `Button`, is pressed. */
-export function PopoverTrigger(props: PopoverTriggerProps) {
-  return <DialogTrigger {...props} />;
+export function PopoverTrigger({ children, ...openState }: PopoverTriggerProps) {
+  return <DialogTrigger {...openState}>{children}</DialogTrigger>;
 }
 
 /**

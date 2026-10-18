@@ -261,9 +261,9 @@ describe('Drawer', () => {
     expect(overlay()).toHaveAttribute('data-swipe-direction', 'horizontal');
   });
 
-  it('UIC-DRAWER-2.4 refuses every dismissal while preventDismissal is set', async () => {
+  it('UIC-DRAWER-2.4 refuses every dismissal while isDismissDisabled is set', async () => {
     render(
-      <Page preventDismissal showCloseButton>
+      <Page isDismissDisabled showCloseButton>
         {({ close }) => (
           <button type="button" onClick={close}>
             Done

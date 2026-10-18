@@ -1,11 +1,10 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
-import { DialogTrigger } from '../../primitives/index.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Button } from '../button/button.js';
-import { Modal, type ModalProps } from './modal.js';
+import { Modal, ModalTrigger, type ModalProps } from './modal.js';
 
 /** A page with a field, a button that opens a floating dialog, and the dialog. */
 function FloatingPage(props: Partial<ModalProps>) {
@@ -91,16 +90,16 @@ describe('Modal presentations', () => {
     expect(screen.getByRole('button', { name: 'Toggle' })).toHaveFocus();
   });
 
-  it('UIC-MODAL-8.1 follows a DialogTrigger and calls onExitComplete once closed', async () => {
+  it('UIC-MODAL-8.1 follows a ModalTrigger and calls onExitComplete once closed', async () => {
     const user = userEvent.setup();
     const onExitComplete = vi.fn();
     render(
-      <DialogTrigger>
+      <ModalTrigger>
         <Button>Details</Button>
         <Modal title="Details" isNonModal onExitComplete={onExitComplete}>
           <p>Body</p>
         </Modal>
-      </DialogTrigger>,
+      </ModalTrigger>,
     );
     const trigger = screen.getByRole('button', { name: 'Details' });
     await user.click(trigger);
@@ -116,7 +115,7 @@ describe('Modal presentations', () => {
     const user = userEvent.setup();
     const onPress = vi.fn();
     render(
-      <DialogTrigger>
+      <ModalTrigger>
         <Button>Archive</Button>
         <Modal
           title="Archive Report.pdf?"
@@ -124,7 +123,7 @@ describe('Modal presentations', () => {
           placement="bottom start"
           primaryAction={{ label: 'Archive', onPress: (close) => (onPress(), close()) }}
         />
-      </DialogTrigger>,
+      </ModalTrigger>,
     );
     const trigger = screen.getByRole('button', { name: 'Archive' });
     await user.click(trigger);
@@ -156,12 +155,12 @@ describe('Modal presentations', () => {
       return (
         <>
           <button type="button">Outside</button>
-          <DialogTrigger onOpenChange={onOpenChange}>
+          <ModalTrigger onOpenChange={onOpenChange}>
             <Button>Rename</Button>
             <Modal title="Rename" placement="bottom" isDismissable={isDismissable}>
               <input aria-label="Name" />
             </Modal>
-          </DialogTrigger>
+          </ModalTrigger>
         </>
       );
     }

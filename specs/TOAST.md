@@ -6,7 +6,7 @@ A toast is a transient, non-blocking message about something that just happened,
 
 ### UIC-TOAST-1.1 - Adding toasts
 
-`createToastQueue(options)` shall return a plain queue object that wraps React Aria's toast queue (exposed as `ariaQueue`, which regions and lists render). Its `add(content, options)` shall add a toast and return its key. Visible toasts are ordered newest first. `maxVisibleToasts` limits how many show at once; the others wait and appear as visible toasts close.
+`createToastQueue(options)` shall return a plain queue object declared by the library, which a `ToastRegion` or `ToastList` renders; the building block's queue behind it is not part of it, and a region or list given a queue that `createToastQueue` did not make throws. Its `add(content, options)` shall add a toast and return its key. Visible toasts are ordered newest first. `maxVisibleToasts` limits how many show at once; the others wait and appear as visible toasts close.
 
 Implementation: `src/components/toast/toast.tsx`
 Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`
@@ -101,7 +101,7 @@ Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`
 
 ### UIC-TOAST-3.5 - Hooks and caller attributes
 
-Toasts, regions and lists shall carry the hooks below. `Toast`, `ToastRegion` and `ToastList` append the caller's `className` and forward caller `data-*` attributes and `id` to their root, so a host may also draw a queue's toasts with `Toast` in its own React Aria region. React Aria's interaction states are published on the region and on each toast.
+Toasts, regions and lists shall carry the hooks below. `ToastRegion` and `ToastList` append the caller's `className` and forward caller `data-*` attributes and `id` to their root; toasts are drawn only by them. The interaction states below are published on the region and on each toast.
 
 Implementation: `src/components/toast/toast.tsx`
 Verification: `src/components/toast/toast.test.tsx`

@@ -1,12 +1,12 @@
 # Hover Card
 
-`HoverCard` shows extra content about its trigger while the reader rests the pointer on it or focuses it, such as a preview of a linked page or a person's details. Unlike a [Tooltip](TOOLTIP.md), the card may hold interactive content the reader can move into. `HoverCardTrigger` is React Aria's `PreviewTrigger`, which times the opening and closing and keeps the card open while the pointer travels into it; the card is the [Popover](POPOVER.md)'s floating panel, sharing its positioning, arrow and layer. [User Card](USER-CARD.md#uic-user-card-23---opening-on-hover-and-focus) opens its hover cards through it.
+`HoverCard` shows extra content about its trigger while the reader rests the pointer on it or focuses it, such as a preview of a linked page or a person's details. Unlike a [Tooltip](TOOLTIP.md), the card may hold interactive content the reader can move into. `HoverCardTrigger` is built on React Aria's `PreviewTrigger`, which times the opening and closing and keeps the card open while the pointer travels into it; the card is the [Popover](POPOVER.md)'s floating panel, sharing its positioning, arrow and layer. [User Card](USER-CARD.md#uic-user-card-23---opening-on-hover-and-focus) opens its hover cards through it.
 
 ## UIC-HOVER-CARD-1 - Opening and closing
 
 ### UIC-HOVER-CARD-1.1 - Trigger
 
-`HoverCardTrigger` shall hold one trigger that is a React Aria focusable (`Link`, `Button`, `IconButton` or an element wrapped in `Focusable`) and a `HoverCard`, and add no element of its own. The trigger carries `aria-haspopup="dialog"` and `aria-expanded` and, while the card is open, is described by it. Pressing the trigger runs its own action and does not toggle the card.
+`HoverCardTrigger` shall hold one focusable trigger (a library `Link`, `Button` or `IconButton`) and a `HoverCard`, and add no element of its own. The trigger carries `aria-haspopup="dialog"` and `aria-expanded` and, while the card is open, is described by it. Pressing the trigger runs its own action and does not toggle the card.
 
 Implementation: `src/components/hover-card/hover-card.tsx`
 Verification: `src/components/hover-card/hover-card.test.tsx`, `e2e/hover-card.spec.ts`
@@ -50,7 +50,7 @@ Verification: `src/components/hover-card/hover-card.test.tsx`, `e2e/hover-card.s
 
 ### UIC-HOVER-CARD-2.3 - Hooks and caller attributes
 
-`HoverCard` shall carry the hooks below, append the caller's `className`, forward caller `data-*` attributes and `id` to the card, and publish React Aria's `data-trigger="PreviewTrigger"`, and `data-entering` and `data-exiting` while its animations run.
+`HoverCard` shall carry the hooks below, append the caller's `className`, forward caller `data-*` attributes and `id` to the card, and publish `data-trigger="PreviewTrigger"`, and `data-entering` and `data-exiting` while its animations run.
 
 Implementation: `src/components/hover-card/hover-card.tsx`
 Verification: `src/components/hover-card/hover-card.test.tsx`

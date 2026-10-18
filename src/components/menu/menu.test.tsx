@@ -1,12 +1,6 @@
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import {
-  Autocomplete,
-  Collection,
-  ListLayout,
-  MenuLoadMoreItem,
-  Virtualizer,
-} from '../../primitives/index.js';
+import { Autocomplete } from '../../primitives/index.js';
 import { describe, expect, it, vi } from 'vitest';
 import { MenuButton, actionKeys, fruitEntries, openMenu } from '../../../test/menu-fixtures.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -132,9 +126,10 @@ describe('Menu', () => {
     const onAction = vi.fn();
     const onApple = vi.fn();
     const onBanana = vi.fn();
+    const onApplePress = vi.fn();
     render(
       <MenuButton aria-label="Fruit" onAction={onAction}>
-        <MenuItem id="apple" onAction={onApple}>
+        <MenuItem id="apple" onAction={onApple} onPress={onApplePress}>
           Apple
         </MenuItem>
         <MenuItem id="banana" isDisabled onAction={onBanana}>
@@ -157,6 +152,7 @@ describe('Menu', () => {
     expect(screen.getByRole('menuitem', { name: 'Fruit site' }).tagName).toBe('A');
     await user.click(screen.getByRole('menuitem', { name: /^Apple/ }));
     expect(onApple).toHaveBeenCalledTimes(1);
+    expect(onApplePress).toHaveBeenCalledWith(expect.objectContaining({ pointerType: 'mouse' }));
     expect(actionKeys(onAction)).toEqual(['keep', 'apple']);
     expect(screen.queryByRole('menu')).toBeNull();
   });
@@ -236,39 +232,25 @@ describe('Menu', () => {
     await waitFor(() => expect(trigger).toHaveFocus());
   });
 
-  it('UIC-COLLECTIONS-1.1 UIC-COLLECTIONS-1.2 renders virtualized and loads more through React Aria', async () => {
+  it('UIC-COLLECTIONS-1.1 UIC-COLLECTIONS-1.2 UIC-COLLECTIONS-1.4 renders virtualized and loads more from props', async () => {
     vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(200);
     vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(100);
-    const observed: Element[] = [];
-    let report: IntersectionObserverCallback = () => {};
-    vi.stubGlobal(
-      'IntersectionObserver',
-      class {
-        constructor(callback: IntersectionObserverCallback) {
-          report = callback;
-        }
-        observe(element: Element) {
-          observed.push(element);
-        }
-        unobserve() {}
-        disconnect() {}
-      },
-    );
-    const cities = Array.from({ length: 500 }, (_, index) => ({
+    const reportInView = stubIntersections();
+    const cities: MenuEntry[] = Array.from({ length: 500 }, (_, index) => ({
       id: index,
-      name: `City ${index}`,
+      label: `City ${index}`,
     }));
     const onLoadMore = vi.fn();
     const user = userEvent.setup();
     render(
-      <Virtualizer layout={ListLayout} layoutOptions={{ rowHeight: 25 }}>
-        <Menu aria-label="Cities">
-          <Collection items={cities}>
-            {(city) => <MenuItem id={city.id}>{city.name}</MenuItem>}
-          </Collection>
-          <MenuLoadMoreItem onLoadMore={onLoadMore} isLoading={false} />
-        </Menu>
-      </Virtualizer>,
+      <Menu
+        aria-label="Cities"
+        items={cities}
+        virtualized
+        rowHeight={25}
+        onLoadMore={onLoadMore}
+        isLoading={false}
+      />,
     );
     const rows = screen.getAllByRole('menuitem');
     expect(rows.length).toBeGreaterThan(0);
@@ -281,9 +263,26 @@ describe('Menu', () => {
     await user.keyboard('{End}');
     expect(screen.getByRole('menuitem', { name: 'City 499' })).toHaveFocus();
 
-    act(() => report([{ isIntersecting: true, target: observed[0] } as never], {} as never));
+    reportInView();
     expect(onLoadMore).toHaveBeenCalledTimes(1);
     vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it('UIC-COLLECTIONS-1.4 sizes virtualized rows by the menu size unless rowHeight is given', () => {
+    vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(200);
+    vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(112);
+    const entries: MenuEntry[] = Array.from({ length: 100 }, (_, index) => ({
+      id: index,
+      label: `City ${index}`,
+    }));
+    const { unmount } = render(<Menu aria-label="Cities" items={entries} virtualized size="md" />);
+    const md = screen.getAllByRole('menuitem').length;
+    unmount();
+    render(<Menu aria-label="Cities" items={entries} virtualized size="md" rowHeight={56} />);
+    const tall = screen.getAllByRole('menuitem').length;
+    expect(tall).toBeLessThan(md);
+    vi.restoreAllMocks();
   });
 
   it('UIC-MENU-5.1 filters the items from a search field that keeps focus', async () => {
@@ -445,11 +444,8 @@ describe('Menu', () => {
       id: index,
       label: `City ${index}`,
     }));
-    render(
-      <Virtualizer layout={ListLayout} layoutOptions={{ rowHeight: 25 }}>
-        <Menu aria-label="Cities" items={entries} />
-      </Virtualizer>,
-    );
+    render(<Menu aria-label="Cities" items={entries} virtualized rowHeight={25} />);
+    expect(screen.getByRole('menu')).toHaveAttribute('data-virtualized', 'true');
     const rows = screen.getAllByRole('menuitem');
     expect(rows.length).toBeLessThan(20);
     expect(rows[0]).toHaveAttribute('aria-setsize', '1000');

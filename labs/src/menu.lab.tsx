@@ -1,5 +1,5 @@
 import { useState, type CSSProperties, type ReactNode } from 'react';
-import { ListLayout, Virtualizer, type Key, type Selection } from '../../src/primitives/index.js';
+import type { Key, Selection } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
 import { IconButton } from '../../src/components/icon-button/icon-button.js';
 import {
@@ -267,11 +267,39 @@ function VirtualizedMenu() {
     <MenuTrigger>
       <Button endIcon="chevron-down">5000 cities</Button>
       <MenuPopover>
-        <Virtualizer layout={ListLayout} layoutOptions={{ rowHeight: 28 }}>
-          <Menu aria-label="5000 cities" items={manyCities} />
-        </Virtualizer>
+        <Menu aria-label="5000 cities" items={manyCities} virtualized />
       </MenuPopover>
     </MenuTrigger>
+  );
+}
+
+function VirtualizedPagedMenu() {
+  const [count, setCount] = useState(200);
+  const [isLoading, setIsLoading] = useState(false);
+  const entries = Array.from({ length: count }, (_, index) => ({
+    id: `tall-${index + 1}`,
+    label: `${cities[index % cities.length]} ${index + 1}`,
+  }));
+  return (
+    <>
+      <MenuButton
+        label="Tall rows"
+        aria-label="Tall rows"
+        items={entries}
+        virtualized
+        rowHeight={40}
+        isLoading={isLoading}
+        onLoadMore={() => {
+          if (isLoading || count >= 1000) return;
+          setIsLoading(true);
+          setTimeout(() => {
+            setCount((current) => current + 200);
+            setIsLoading(false);
+          }, 500);
+        }}
+      />
+      <Feedback name="Loaded">{count}</Feedback>
+    </>
   );
 }
 
@@ -399,9 +427,15 @@ mountLab(
     </LabSection>
     <LabSection
       title="Virtualized menu"
-      description="5000 cities in a React Aria Virtualizer: only the rows in view render, and End reaches the last."
+      description="5000 cities with virtualized: only the rows in view render, 28 pixels high at the md size, and End reaches the last."
     >
       <VirtualizedMenu />
+    </LabSection>
+    <LabSection
+      title="Virtualized and loading more"
+      description="rowHeight sets 40-pixel rows; scrolling to the end loads 200 more cities, up to 1000."
+    >
+      <VirtualizedPagedMenu />
     </LabSection>
   </>,
 );

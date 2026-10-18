@@ -35,6 +35,8 @@ export type {
   HoverEventProps,
   KeyboardEventProps,
   OpenStateProps,
+  OverlayDismissProps,
+  OverlayPositionProps,
   PointerType,
   PressEvent,
   PressEventProps,

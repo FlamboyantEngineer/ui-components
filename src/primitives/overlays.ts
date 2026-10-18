@@ -28,18 +28,9 @@ export {
 } from 'react-aria-components';
 export type {
   DialogProps,
-  DialogTriggerProps,
-  ModalOverlayProps,
   Placement,
-  PopoverProps,
-  PreviewTriggerProps,
   QueuedToast,
-  SheetOverlayProps,
-  SheetTriggerProps,
-  ToastOptions,
-  ToastRegionProps,
   ToastState,
-  TooltipTriggerComponentProps,
   TooltipTriggerState,
 } from 'react-aria-components';
 export { useInteractOutside } from 'react-aria';
