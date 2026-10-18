@@ -175,6 +175,13 @@ Enter with exactly one of Control or Command and no other modifier, pressed anyw
 Implementation: `src/components/modal/modal.tsx`, `src/components/modal/modal-shortcut.ts`
 Verification: `src/components/modal/modal.test.tsx`, `e2e/modal.spec.ts`
 
+### UIC-MODAL-6.2 - Caller keys
+
+`onKeyDown` shall receive each key press inside the dialog that the dialog does not handle itself (Escape, and a Control+Enter that runs the primary action), so a dialog's content can add its own shortcuts.
+
+Implementation: `src/components/modal/modal-dialog.tsx`, `src/components/modal/modal.tsx`
+Verification: `src/components/modal/modal.test.tsx`
+
 ## UIC-MODAL-7 - Hooks
 
 ### UIC-MODAL-7.1 - Hooks and caller attributes

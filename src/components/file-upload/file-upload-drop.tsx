@@ -4,18 +4,24 @@ import {
   type DragEvent,
   type ReactElement,
   type ReactNode,
-  type RefObject,
+  type Ref,
 } from 'react';
 import { DropZone } from '../../primitives/index.js';
+import type { AriaLabellingProps } from '../../core/events.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { Icon } from '../icon/icon.js';
 import type { DraggedItem } from './file-rules.js';
 import { fileUploadHooks as hooks } from './file-upload-files.js';
 
+/** How the owner names a command: the names it gives come before the command's own text. */
+export type CommandNaming = Pick<AriaLabellingProps, 'aria-label' | 'aria-labelledby'>;
+
 /** What both commands draw from: the label, the help and error ids, the chooser and the intake. */
 export interface CommandProps {
   label: string;
+  /** The owner's names for the command. */
+  naming: CommandNaming;
   /** The description element, if any. */
   hint: ReactNode;
   /** The ids that describe the command: the description and the error message. */
@@ -29,7 +35,7 @@ export interface CommandProps {
   /** Dropped folders are read for their files. */
   acceptDirectory: boolean;
   /** The button that opens the chooser, focused when a form finds the upload empty. */
-  commandRef: RefObject<HTMLButtonElement | null>;
+  commandRef: Ref<HTMLButtonElement>;
 }
 
 /** A file dropped on the upload, read on demand. */
@@ -55,6 +61,15 @@ export interface DroppedText {
 
 /** One item of a drop on the upload. */
 export type DroppedItem = DroppedFile | DroppedDirectory | DroppedText;
+
+/**
+ * The command's accessible name: the owner's labelling elements or label, then the command's own
+ * text, so the name keeps what the command shows.
+ */
+function nameCommand(naming: CommandNaming, id: string, text: string) {
+  if (naming['aria-labelledby']) return { 'aria-labelledby': `${naming['aria-labelledby']} ${id}` };
+  return naming['aria-label'] ? { 'aria-label': `${naming['aria-label']} ${text}` } : {};
+}
 
 async function readDirectory(item: DroppedDirectory): Promise<File[]> {
   const files: File[] = [];
@@ -92,6 +107,7 @@ export function DropZoneCommand(props: CommandProps) {
     props;
   const strings = useUiStrings();
   const labelId = useId();
+  const browseId = useId();
   const [isOver, setOver] = useState(false);
   return (
     <DropZone
@@ -114,7 +130,9 @@ export function DropZoneCommand(props: CommandProps) {
       {hint}
       {withChooser(
         <Button
+          {...nameCommand(props.naming, browseId, strings.browse)}
           ref={props.commandRef}
+          id={browseId}
           className={hooks.slotClass('browse')}
           size="sm"
           isDisabled={isDisabled}
@@ -124,5 +142,28 @@ export function DropZoneCommand(props: CommandProps) {
         </Button>,
       )}
     </DropZone>
+  );
+}
+
+/** The `button` command: a Button with the upload glyph that opens the chooser, then the help. */
+export function ButtonCommand(props: CommandProps) {
+  const { label, hint, describedBy, isDisabled, withChooser, commandRef } = props;
+  const id = useId();
+  return (
+    <>
+      {withChooser(
+        <Button
+          {...nameCommand(props.naming, id, label)}
+          ref={commandRef}
+          id={id}
+          startIcon="upload"
+          isDisabled={isDisabled}
+          aria-describedby={describedBy}
+        >
+          {label}
+        </Button>,
+      )}
+      {hint}
+    </>
   );
 }

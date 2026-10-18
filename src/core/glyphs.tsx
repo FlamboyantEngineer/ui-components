@@ -1,8 +1,10 @@
 import {
   ArrowDownIcon,
+  ArrowDownTrayIcon,
   ArrowLeftIcon,
   ArrowLongRightIcon,
   ArrowPathIcon,
+  ArrowPathRoundedSquareIcon,
   ArrowRightIcon,
   ArrowTopRightOnSquareIcon,
   ArrowTrendingDownIcon,
@@ -39,6 +41,7 @@ import {
   EyeIcon,
   EyeSlashIcon,
   FaceSmileIcon,
+  FilmIcon,
   FolderIcon,
   FunnelIcon,
   InformationCircleIcon,
@@ -46,8 +49,10 @@ import {
   LockClosedIcon,
   MagnifyingGlassIcon,
   MinusIcon,
+  MusicalNoteIcon,
   PencilSquareIcon,
   PaperAirplaneIcon,
+  PhotoIcon,
   PlusIcon,
   QuestionMarkCircleIcon,
   SignalSlashIcon,
@@ -141,6 +146,12 @@ export const defaultGlyphs = {
   'envelope-open': EnvelopeOpenIcon,
   send: PaperAirplaneIcon,
   stop: StopIcon,
+  download: ArrowDownTrayIcon,
+  rotate: ArrowPathRoundedSquareIcon,
+  file: DocumentIcon,
+  image: PhotoIcon,
+  video: FilmIcon,
+  audio: MusicalNoteIcon,
 } satisfies Record<string, GlyphComponent>;
 
 export const glyphNames = Object.keys(defaultGlyphs) as GlyphName[];

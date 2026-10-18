@@ -1,11 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { getFileGlyph } from '../../utils/file-glyph.js';
 import { formatBytes } from '../../utils/format-bytes.js';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { IconButton } from '../icon-button/icon-button.js';
+import { Icon } from '../icon/icon.js';
 import { InlineError } from '../inline-error/inline-error.js';
 import { ProgressBar } from '../progress-bar/progress-bar.js';
+
+/** How a listed file differs from a list the owner compares against: `added` by an edit. */
+export type FileUploadChange = 'added';
 
 /** A file the upload lists. The host performs the upload and reports its progress and error. */
 export interface FileUploadItem {
@@ -22,14 +28,26 @@ export interface FileUploadItem {
   file?: File | undefined;
   /** A thumbnail for a file that has no `file` here, such as one uploaded earlier. */
   previewUrl?: string | undefined;
+  /** The MIME type, for a file that has no `file` here; it picks the glyph of a file without a thumbnail. */
+  type?: string | undefined;
+  /** Marks a file an edit added to a list the owner compares against. */
+  change?: FileUploadChange | undefined;
 }
 
-export interface FileUploadFilesProps {
+/** What each listed file draws besides its name, size, progress and error. */
+export interface FileUploadRowOptions {
+  locale: string;
+  onRemove: ((id: Key) => void) | undefined;
+  /** Disables the remove buttons. */
+  isDisabled: boolean;
+  renderFileActions: ((file: FileUploadItem) => ReactNode) | undefined;
+  renderFilePreview: ((file: FileUploadItem) => ReactNode) | undefined;
+}
+
+export interface FileUploadFilesProps extends FileUploadRowOptions {
   /** Names the list. */
   label: string;
   files: readonly FileUploadItem[];
-  locale: string;
-  onRemove: ((id: Key) => void) | undefined;
 }
 
 /** Where a listed file stands, from its progress and error. */
@@ -46,10 +64,13 @@ export const fileUploadHooks = createHooks('file-upload', [
   'files',
   'file',
   'file-preview',
+  'file-media',
+  'file-icon',
   'file-name',
   'file-size',
   'file-progress',
   'file-error',
+  'file-actions',
   'file-remove',
 ]);
 
@@ -77,26 +98,37 @@ function useImageUrl(file: File | undefined): string | undefined {
   return url;
 }
 
-/** The thumbnail of an image file, beside its name, so it is decorative. */
-function FilePreview({ item }: { item: FileUploadItem }) {
-  const url = useImageUrl(item.file) ?? item.previewUrl;
-  return url ? <img {...hooks.slot('file-preview')} src={url} alt="" /> : null;
-}
-
-function FileRow({
+/**
+ * The caller's preview, else the thumbnail of an image file, else the glyph of the file's type. All
+ * of them sit beside the file's name, so the built-in ones are decorative.
+ */
+function FilePreview({
   item,
-  locale,
-  onRemove,
+  renderFilePreview,
 }: {
   item: FileUploadItem;
-  locale: string;
-  onRemove: ((id: Key) => void) | undefined;
+  renderFilePreview: FileUploadRowOptions['renderFilePreview'];
 }) {
-  const strings = useUiStrings();
-  const status = getFileUploadStatus(item);
+  const url = useImageUrl(item.file) ?? item.previewUrl;
+  const custom = renderFilePreview?.(item);
+  if (!isEmptyNode(custom)) return <div {...hooks.slot('file-media')}>{custom}</div>;
+  if (url) return <img {...hooks.slot('file-preview')} src={url} alt="" />;
   return (
-    <li {...hooks.slot('file', { status })}>
-      <FilePreview item={item} />
+    <Icon
+      glyph={getFileGlyph(item.type ?? item.file?.type)}
+      className={hooks.slotClass('file-icon')}
+    />
+  );
+}
+
+function FileRow({ item, options }: { item: FileUploadItem; options: FileUploadRowOptions }) {
+  const strings = useUiStrings();
+  const { locale, onRemove, renderFileActions } = options;
+  const status = getFileUploadStatus(item);
+  const actions = renderFileActions?.(item);
+  return (
+    <li {...hooks.slot('file', { status, change: item.change })}>
+      <FilePreview item={item} renderFilePreview={options.renderFilePreview} />
       <span {...hooks.slot('file-name')}>{item.name}</span>
       {item.size === undefined ? null : (
         <span {...hooks.slot('file-size')}>{formatBytes(item.size, locale)}</span>
@@ -112,12 +144,14 @@ function FileRow({
       {item.error ? (
         <InlineError className={hooks.slotClass('file-error')}>{item.error}</InlineError>
       ) : null}
+      {isEmptyNode(actions) ? null : <span {...hooks.slot('file-actions')}>{actions}</span>}
       {onRemove ? (
         <IconButton
           className={hooks.slotClass('file-remove')}
           icon="close"
           label={strings.removeItem(item.name)}
           size="sm"
+          isDisabled={options.isDisabled}
           onPress={() => onRemove(item.id)}
         />
       ) : null}
@@ -125,12 +159,12 @@ function FileRow({
   );
 }
 
-/** The listed files, each with its size, upload progress or error, and a remove button. */
-export function FileUploadFiles({ label, files, locale, onRemove }: FileUploadFilesProps) {
+/** The listed files, each with its preview, size, upload progress or error, actions and remove button. */
+export function FileUploadFiles({ label, files, ...options }: FileUploadFilesProps) {
   return (
     <ul {...hooks.slot('files')} aria-label={label}>
       {files.map((item) => (
-        <FileRow key={item.id} item={item} locale={locale} onRemove={onRemove} />
+        <FileRow key={item.id} item={item} options={options} />
       ))}
     </ul>
   );

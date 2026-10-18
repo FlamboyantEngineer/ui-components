@@ -32,6 +32,10 @@ const sampleArguments: Partial<Record<keyof UiStrings, readonly unknown[]>> = {
   emojiCategory: ['smileys'],
   skinToneName: ['medium-light'],
   reactionLabel: ['👍', 3, ['Jon Berg', 'Lena Ortiz', 'Sam Okafor']],
+  downloadFile: ['Report.pdf'],
+  mediaStage: ['Harbour.jpg'],
+  problemCount: [2, 1],
+  problemSeverity: ['warning'],
 };
 
 const stringNames = Object.keys(defaultStrings) as Array<keyof UiStrings>;
