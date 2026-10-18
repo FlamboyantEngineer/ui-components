@@ -1,0 +1,90 @@
+/* HTML Markup. Prose typography for sanitized content; links and tables use the reference tokens. */
+
+.ui-html-markup {
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.ui-html-markup > :first-child {
+  margin-top: 0;
+}
+
+.ui-html-markup > :last-child {
+  margin-bottom: 0;
+}
+
+.ui-html-markup :is(h1, h2, h3, h4, h5, h6) {
+  margin: 1.2em 0 0.5em;
+  line-height: 1.25;
+}
+
+.ui-html-markup :is(p, ul, ol, blockquote, details, table, pre) {
+  margin: 0 0 0.75em;
+}
+
+.ui-html-markup :is(ul, ol) {
+  padding-inline-start: 1.5em;
+}
+
+.ui-html-markup blockquote {
+  margin-inline: 0;
+  padding-inline-start: 12px;
+  border-inline-start: 3px solid var(--ref-border);
+  color: var(--ref-muted);
+}
+
+.ui-html-markup a {
+  color: var(--ref-accent-ink);
+}
+
+.ui-html-markup mark:not(.ui-text-match) {
+  background: color-mix(in srgb, var(--ref-warning) 30%, transparent);
+  color: inherit;
+}
+
+.ui-html-markup :is(code, kbd, pre) {
+  border-radius: var(--ref-radius);
+  background: var(--ref-surface);
+  font-family: var(--ref-mono);
+  font-size: 0.9em;
+}
+
+.ui-html-markup :is(code, kbd) {
+  padding: 0.1em 0.35em;
+}
+
+.ui-html-markup pre {
+  padding: 10px 12px;
+  overflow-x: auto;
+  border: 1px solid var(--ref-border);
+}
+
+.ui-html-markup pre code {
+  padding: 0;
+  background: none;
+}
+
+.ui-html-markup table {
+  border-collapse: collapse;
+}
+
+.ui-html-markup :is(th, td) {
+  padding: 4px 8px;
+  border: 1px solid var(--ref-border);
+  text-align: start;
+}
+
+.ui-html-markup caption {
+  color: var(--ref-muted);
+  text-align: start;
+}
+
+.ui-html-markup img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* A find mark inside a link keeps the text colour, which holds its contrast on the mark tint. */
+.ui-html-markup a .ui-text-match {
+  color: var(--ref-text);
+}
