@@ -153,7 +153,28 @@ export default tseslint.config(
     ...testingLibrary.configs['flat/react'],
     rules: {
       ...testingLibrary.configs['flat/react'].rules,
-      'testing-library/prefer-user-event': 'error',
+      // Events a reader cannot produce through user-event stay on fireEvent.
+      'testing-library/prefer-user-event': [
+        'error',
+        {
+          allowedMethods: [
+            'scroll',
+            'wheel',
+            'load',
+            'error',
+            'dragStart',
+            'dragEnter',
+            'dragOver',
+            'dragLeave',
+            'drop',
+            'dragEnd',
+            'pointerCancel',
+            'lostPointerCapture',
+            'compositionStart',
+            'compositionEnd',
+          ],
+        },
+      ],
       // Components emit hooks only: classes, data attributes and measured properties are their public
       // API (specs/HOOK-CONTRACT.md), so tests read the rendered structure on purpose.
       'testing-library/no-node-access': 'off',
