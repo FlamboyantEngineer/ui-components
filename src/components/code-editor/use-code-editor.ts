@@ -29,6 +29,8 @@ export interface CodeEditorOptions {
   indentWithTab: boolean | undefined;
   autoCloseBrackets: boolean | undefined;
   allowsSearch: boolean | undefined;
+  /** `false` leaves Enter to the caller instead of breaking the line. */
+  multiline: boolean;
   isLocked: boolean;
 }
 
@@ -176,6 +178,7 @@ export function useCodeEditor(options: CodeEditorOptions): CodeEditorModel {
     indent: options.indent ?? 2,
     indentWithTab: Boolean(options.indentWithTab),
     autoCloseBrackets: Boolean(options.autoCloseBrackets),
+    multiline: options.multiline,
     isLocked,
     onFind: options.allowsSearch ? search.open : undefined,
     onProblem: goToProblem,

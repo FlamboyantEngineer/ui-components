@@ -17,6 +17,8 @@ export interface CodeKeysOptions {
   indent: number;
   indentWithTab: boolean;
   autoCloseBrackets: boolean;
+  /** `false` leaves Enter to the caller, without a line break. */
+  multiline: boolean;
   /** A read-only or disabled editor makes no edits. */
   isLocked: boolean;
   /** Ctrl+F or Cmd+F, when the editor offers search. */
@@ -89,6 +91,10 @@ export function useCodeKeys(options: CodeKeysOptions) {
     if (handleShortcut(event)) {
       event.preventDefault();
       return true;
+    }
+    if (event.key === 'Enter' && !options.multiline) {
+      event.preventDefault();
+      return false;
     }
     const isTab = event.key === 'Tab';
     if (isLocked || hasModifier(event) || (isTab && (leaving || !options.indentWithTab))) {

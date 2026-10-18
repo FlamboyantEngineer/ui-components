@@ -1,0 +1,66 @@
+/* Facet List: a small heading over checkbox rows with right-aligned counts. */
+
+.ui-facet-list {
+  display: grid;
+  gap: 6px;
+  max-width: 100%;
+}
+
+.ui-facet-list__label {
+  color: var(--ref-muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.ui-facet-list__options {
+  display: grid;
+  gap: 2px;
+}
+
+.ui-facet-list__option {
+  display: flex;
+  width: 100%;
+}
+
+.ui-facet-list__options > .ui-checkbox + .ui-checkbox {
+  margin-inline-start: 0;
+}
+
+.ui-facet-list__option .ui-checkbox__label {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ui-facet-list__option-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-facet-list__count {
+  margin-inline-start: auto;
+  padding-inline-start: 8px;
+  color: var(--ref-muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-facet-list__empty {
+  margin: 0;
+  color: var(--ref-muted);
+  font-size: 13px;
+}
+
+.ui-facet-list__toggle {
+  justify-self: start;
+  color: var(--ref-accent-ink);
+}
+
+.ui-facet-list__search {
+  width: 100%;
+}

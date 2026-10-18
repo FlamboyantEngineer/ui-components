@@ -142,3 +142,7 @@ export * from './components/notification-center/index.js';
 export * from './components/approval-panel/index.js';
 export * from './components/decision-control/index.js';
 export * from './components/timeline/index.js';
+export * from './components/filter-bar/index.js';
+export * from './components/condition-builder/index.js';
+export * from './components/query-field/index.js';
+export * from './components/facet-list/index.js';

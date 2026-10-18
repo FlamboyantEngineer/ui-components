@@ -38,6 +38,9 @@ const sampleArguments: Partial<Record<keyof UiStrings, readonly unknown[]>> = {
   timelineDependsOn: [['Survey', 'Budget']],
   timelineKeyboardHint: ['bar'],
   timelineQuarter: [2],
+  removeFilter: ['Status is Open'],
+  filterOperator: ['any-of'],
+  filterRange: ['2', '5'],
 };
 
 const stringNames = Object.keys(defaultStrings) as Array<keyof UiStrings>;

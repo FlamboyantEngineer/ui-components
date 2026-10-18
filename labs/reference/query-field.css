@@ -1,0 +1,32 @@
+/* Query Field: a label above a one-line code editor with a run button. */
+
+.ui-query-field {
+  display: grid;
+  gap: 4px;
+  max-width: 100%;
+}
+
+.ui-query-field__label {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.ui-query-field__control {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.ui-query-field__editor {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ui-query-field__submit {
+  flex: none;
+  margin-top: 2px;
+}
+
+.ui-query-field[data-disabled] .ui-query-field__label {
+  color: var(--ref-muted);
+}

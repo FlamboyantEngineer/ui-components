@@ -48,6 +48,13 @@ An `isReadOnly` or `isDisabled` editor shall make its text area natively read-on
 Implementation: `src/components/code-editor/code-editor.tsx`, `src/components/completion-list/use-completions.ts`
 Verification: `src/components/code-editor/code-editor.test.tsx`
 
+### UIC-CODE-EDITOR-1.7 - Single line
+
+`multiline={false}` shall keep the source on one line, for a query or an expression: the text area has one row, reports `aria-multiline="false"` and never wraps (`data-wrap="off"` whatever `wrap` says), the root publishes `data-single-line`, Enter inserts no line break and reaches the caller's `onKeyDown` (after an open completion list has taken it), and line breaks typed or pasted into the text reach `onChange` as spaces. Multiple lines are the default.
+
+Implementation: `src/components/code-editor/code-editor.tsx`, `src/components/code-editor/code-area.tsx`, `src/components/code-editor/use-code-keys.ts`, `labs/reference/code-editor.css`
+Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/query-field.spec.ts`
+
 ## UIC-CODE-EDITOR-2 - Line numbers
 
 ### UIC-CODE-EDITOR-2.1 - Gutter
@@ -278,6 +285,7 @@ Verification: `src/components/code-editor/code-search.test.tsx`, `e2e/code-edito
 | `data-wrap`                    | attribute | `soft`, `off`      | Whether long lines wrap.                                                 |
 | `data-token`                   | attribute |                    | On a token: its type, from the caller's tokenizer.                       |
 | `data-numbered`                | state     | `true`             | The gutter shows.                                                        |
+| `data-single-line`             | state     | `true`             | The source stays on one line (`multiline={false}`).                      |
 | `data-invalid`                 | state     | `true`             | An error is reported (root), or the text area is invalid (React Aria).   |
 | `data-readonly`                | state     | `true`             | Read-only.                                                               |
 | `data-disabled`                | state     | `true`             | Disabled (root, and the text area through React Aria).                   |

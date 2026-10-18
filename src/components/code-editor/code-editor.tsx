@@ -53,6 +53,11 @@ export interface CodeEditorProps extends BaseProps, CodeTextAreaProps {
   size?: CodeEditorSize | undefined;
   /** Defaults to `soft`. */
   wrap?: CodeEditorWrap | undefined;
+  /**
+   * Edits several lines. Defaults to `true`; `false` keeps the source on one line that never wraps:
+   * Enter is left to the caller's `onKeyDown`, and typed or pasted line breaks become spaces.
+   */
+  multiline?: boolean | undefined;
   /** Numbers the source lines in a gutter. */
   lineNumbers?: boolean | undefined;
   /** The number of the first line, for an excerpt of a longer text; diagnostics count lines from it. Defaults to 1. */
@@ -177,7 +182,8 @@ export function CodeEditor({
   completions,
   renderHover,
   size = 'md',
-  wrap = 'soft',
+  wrap: wrapOption = 'soft',
+  multiline = true,
   lineNumbers = false,
   firstLineNumber = 1,
   toolbar,
@@ -205,8 +211,9 @@ export function CodeEditor({
   const { shown, isInvalid } = problems;
   const located = toTextLines(shown, firstLineNumber);
   const isLocked = isReadOnly || isDisabled;
+  const wrap = multiline ? wrapOption : 'off';
   const model = useCodeEditor({
-    ...{ value, onChange, tokenize, completions, renderHover, indent, indentWithTab },
+    ...{ value, onChange, tokenize, completions, renderHover, indent, indentWithTab, multiline },
     ...{ autoCloseBrackets, allowsSearch, isLocked, diagnostics: located },
   });
   const { layers, search } = model;
@@ -219,7 +226,7 @@ export function CodeEditor({
 
   const locks = { isReadOnly, isDisabled, isRequired };
   const states = { invalid: isInvalid, readonly: isReadOnly, disabled: isDisabled };
-  const data = { size, wrap, numbered: lineNumbers, ...states };
+  const data = { size, wrap, numbered: lineNumbers, singleLine: !multiline, ...states };
   return (
     <div {...hooks.root({ className, props: dataProps, data })}>
       {toolbar ? <div {...hooks.slot('toolbar')}>{toolbar}</div> : null}
@@ -235,7 +242,8 @@ export function CodeEditor({
           />
         ) : null}
         <CodeArea
-          {...{ model, value, onChange, wrap, id, props, locks, inputRef, caretRef, isInvalid }}
+          {...{ model, value, onChange, wrap, multiline, id, props, locks, inputRef, caretRef }}
+          isInvalid={isInvalid}
           listId={listId}
           describedBy={problems.describedBy}
         />
