@@ -129,6 +129,16 @@
   font-size: 12px;
 }
 
+/* Filters above the options stay put while the listbox scrolls. */
+.ui-combobox__list-header {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--ref-border);
+}
+
 /* The listbox scrolls inside the popover, whose height React Aria limits to the room in view. */
 .ui-combobox__popover {
   display: flex;
@@ -227,6 +237,22 @@
   min-width: 0;
 }
 
+/* Beats the icon partial's size, which loads after this one. */
+.ui-combobox__chip-icon.ui-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  margin-inline-end: 4px;
+  vertical-align: -2px;
+}
+
+.ui-combobox__chip-icon .ui-glyph {
+  width: 14px;
+  height: 14px;
+}
+
 .ui-combobox:has(.ui-combobox__chips) .ui-combobox__input {
   flex-basis: 4rem;
   min-height: 22px;
@@ -260,23 +286,6 @@
   padding: 4px 8px;
   color: var(--ref-muted);
 }
-@import url('reference/base.css');
-@import url('reference/description-list.css');
-@import url('reference/icon.css');
-@import url('reference/icon-label.css');
-@import url('reference/inline-text-diff.css');
-@import url('reference/layout.css');
-@import url('reference/meta-line.css');
-@import url('reference/portal.css');
-@import url('reference/prose-table.css');
-@import url('reference/provider.css');
-@import url('reference/scroll-region.css');
-@import url('reference/section-header.css');
-@import url('reference/shortcut.css');
-@import url('reference/split-view.css');
-@import url('reference/svg-markup.css');
-@import url('reference/text-match.css');
-
 @keyframes ref-combobox-spin {
   to {
     transform: rotate(360deg);

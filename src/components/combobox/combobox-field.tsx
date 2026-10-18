@@ -1,4 +1,11 @@
-import { useContext, useLayoutEffect, useRef, type ChangeEvent, type RefObject } from 'react';
+import {
+  useContext,
+  useLayoutEffect,
+  useRef,
+  type ChangeEvent,
+  type RefCallback,
+  type RefObject,
+} from 'react';
 import {
   Button as AriaButton,
   ComboBoxStateContext,
@@ -27,6 +34,8 @@ export interface ComboboxFieldProps {
   chips: Pick<ComboboxChipsProps, 'label' | 'options'> | null;
   /** Inline completion, or `null` when off. */
   completion: InlineCompletion | null;
+  /** The input element, for the combobox's own use, and the ref to put on it. */
+  input: { ref: RefObject<HTMLInputElement | null>; setRef: RefCallback<HTMLInputElement> };
 }
 
 /** What inline completion needs: the options it completes from and where it reports. */
@@ -112,9 +121,9 @@ export function ComboboxField({
   isEditable,
   chips,
   completion,
+  input,
 }: ComboboxFieldProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const onChange = useInlineCompletion(completion, inputRef);
+  const onChange = useInlineCompletion(completion, input.ref);
   return (
     <Group className={hooks.slotClass('field')}>
       {chips === null ? null : <ComboboxChips {...chips} size={size} isEditable={isEditable} />}
@@ -122,7 +131,7 @@ export function ComboboxField({
         <Glyph name="search" className={hooks.slotClass('search-icon')} />
       ) : null}
       <Input
-        ref={inputRef}
+        ref={input.setRef}
         className={hooks.slotClass('input')}
         placeholder={placeholder}
         aria-busy={isPending || undefined}
@@ -130,7 +139,7 @@ export function ComboboxField({
         onChange={onChange}
       />
       {isPending ? <span {...hooks.slot('spinner')} aria-hidden="true" /> : null}
-      {isEditable ? <ClearButton inputRef={inputRef} /> : null}
+      {isEditable ? <ClearButton inputRef={input.ref} /> : null}
       <AriaButton className={hooks.slotClass('button')}>
         <Glyph name="chevron-down" />
       </AriaButton>

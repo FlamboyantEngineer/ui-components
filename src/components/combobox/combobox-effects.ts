@@ -1,4 +1,4 @@
-import { useContext, useEffect, type RefObject } from 'react';
+import { useContext, useEffect, useLayoutEffect, type RefObject } from 'react';
 import { ComboBoxStateContext } from '../../primitives/index.js';
 import { findFirstOptionKey, type ComboboxCompletion } from './combobox-options.js';
 
@@ -43,5 +43,19 @@ export function useCreatedSelection(createdRef: RefObject<string | null>) {
     if (text === undefined) return;
     createdRef.current = null;
     if (state.inputValue !== text) state.revert();
+  });
+}
+
+/**
+ * Holds React Aria's list open or closed as the combobox's open state says. The building block keeps
+ * its own open state, so a controlled `isOpen` the reader's action did not change puts it back;
+ * closing commits the text as Escape does.
+ */
+export function useOpenState(isOpen: boolean) {
+  const state = useContext(ComboBoxStateContext);
+  useLayoutEffect(() => {
+    if (!state || state.isOpen === isOpen) return;
+    if (isOpen) state.open(null, 'manual');
+    else state.close();
   });
 }

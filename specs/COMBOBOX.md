@@ -1,6 +1,6 @@
 # Combobox
 
-`Combobox` is a text input with a list of suggestions, built on React Aria's `ComboBox`, `Label`, `Group`, `Input`, `Button`, `Popover` and `ListBox`. The reader types freely (with `allowsCustomValue`) or completes the text from the list, and may pick several options, shown as chips in a [Tag Group](TAG-GROUP.md). The combobox filters its own suggestions (`defaultItems`), or the caller filters them, synchronously or asynchronously, from `onInputChange` (`items`). Long lists render virtualized and load more as they scroll ([COLLECTIONS.md](COLLECTIONS.md)); typed text can add a new option, highlight its matches, complete itself inline, and keep the first match highlighted. React Aria provides the roles, the virtual focus in the list and the keyboard behaviour; the combobox declares its own props and hands them to it.
+`Combobox` is a text input with a list of suggestions, built on React Aria's `ComboBox`, `Label`, `Group`, `Input`, `Button`, `Popover` and `ListBox`. The reader types freely (with `allowsCustomValue`) or completes the text from the list, and may pick several options, shown as chips in a [Tag Group](TAG-GROUP.md). The combobox filters its own suggestions (`defaultItems`), the caller filters them, synchronously or asynchronously, from `onInputChange` (`items`), or the combobox searches them through the caller's loader as the reader types (`loadItems`). Long lists render virtualized and load more as they scroll ([COLLECTIONS.md](COLLECTIONS.md)); typed text can add a new option, highlight its matches, complete itself inline, and keep the first match highlighted. React Aria provides the roles, the virtual focus in the list and the keyboard behaviour; the combobox declares its own props and hands them to it.
 
 ## UIC-COMBOBOX-1 - Field
 
@@ -120,6 +120,13 @@ With `completesInline`, typing that inserts text shall complete it in the input 
 Implementation: `src/components/combobox/combobox-field.tsx`, `src/components/combobox/combobox.tsx`, `src/components/combobox/combobox-effects.ts`, `src/components/combobox/combobox-options.ts`
 Verification: `src/components/combobox/combobox-field.test.tsx`, `e2e/combobox.spec.ts`
 
+### UIC-COMBOBOX-3.5 - Chip icons
+
+A chip of a multiple combobox shall draw its option's `icon` (a built-in glyph name or a node, such as an avatar) before its label, in an `Icon` that also carries `ui-combobox__chip-icon` and is hidden from assistive technology, so the chip is named by its label alone. A chip whose option has no icon draws none.
+
+Implementation: `src/components/combobox/combobox-chips.tsx`, `labs/reference/combobox.css`
+Verification: `src/components/combobox/combobox-chips.test.tsx`, `e2e/combobox.spec.ts`
+
 ## UIC-COMBOBOX-4 - Long lists and option content
 
 ### UIC-COMBOBOX-4.1 - Virtualized list
@@ -150,6 +157,57 @@ Verification: `src/components/combobox/combobox-suggestions.test.tsx`, `e2e/comb
 Implementation: `src/components/combobox/combobox-suggestions.tsx`
 Verification: `src/components/combobox/combobox-suggestions.test.tsx`, `e2e/combobox.spec.ts`
 
+## UIC-COMBOBOX-5 - Remote search and open state
+
+### UIC-COMBOBOX-5.1 - Searching suggestions
+
+With `loadItems(query, signal)`, the combobox shall list the suggestions the loader returns for the trimmed input text instead of `items` and `defaultItems`, unfiltered, in the order returned; they may be options or sections. Only an open list searches: opening the list, or a new `loadItems` while it is open, searches the current text at once, and a change of the text searches it once `searchDelay` milliseconds (240 by default) have passed since the last keystroke. Text shorter than `minSearchLength` (1 by default; 0 also searches the empty text) runs no search; the list then shows `items` or `defaultItems` as given, unfiltered (for example recently used options), or nothing. A newer search aborts the signal of the one it replaces, whose results never show. A closed list keeps the latest results, so a picked option keeps the label the input and its chip show.
+
+Implementation: `src/components/combobox/combobox-search.ts`, `src/components/combobox/combobox-state.ts`, `src/utils/use-remote-search.ts`
+Verification: `src/components/combobox/combobox-search.test.tsx`, `src/utils/use-remote-search.test.ts`, `e2e/combobox.spec.ts`
+
+### UIC-COMBOBOX-5.2 - Search status
+
+While a search runs, the combobox shall be pending as with `isPending` (UIC-COMBOBOX-1.3): `data-pending`, `aria-busy="true"` on the input and the busy indicator, keeping the previous results listed. A list with no option says, in `ui-combobox__empty` and in order of precedence, the provider string `loading` while a search runs, `searchFailed` after the latest search rejected, `typeToSearch` while the text is shorter than `minSearchLength`, and otherwise the empty state (UIC-COMBOBOX-5.4).
+
+Implementation: `src/components/combobox/combobox-search.ts`, `src/components/combobox/combobox-state.ts`, `src/components/combobox/combobox-suggestions.tsx`, `src/core/field-strings.ts`
+Verification: `src/components/combobox/combobox-search.test.tsx`, `e2e/combobox.spec.ts`
+
+### UIC-COMBOBOX-5.3 - Paged results
+
+`loadItems` may return a page, `{ items, cursor }`, instead of a list. While the latest results have a `cursor`, the list shall end with the loading row of UIC-COMBOBOX-4.2; when it scrolls into view the combobox calls `loadItems(query, signal, cursor)` without waiting for `searchDelay` and appends that page, showing the provider string `loading` in the row while it loads. A page without a `cursor` ends the list; a first page is asked for with the query and signal alone. With `loadItems`, `onLoadMore` and `isLoading` are not used.
+
+Implementation: `src/components/combobox/combobox-search.ts`, `src/components/combobox/combobox-state.ts`, `src/utils/use-remote-search.ts`
+Verification: `src/components/combobox/combobox-search.test.tsx`, `src/utils/use-remote-search.test.ts`
+
+### UIC-COMBOBOX-5.4 - Empty state
+
+`renderEmptyState()` shall draw the content of an empty list (`ui-combobox__empty`) in place of the provider string `noResults`, for any source of suggestions, while no search status applies (UIC-COMBOBOX-5.2) and no loading row stands in for it.
+
+Implementation: `src/components/combobox/combobox-search.ts`, `src/components/combobox/combobox-suggestions.tsx`
+Verification: `src/components/combobox/combobox-search.test.tsx`, `e2e/combobox.spec.ts`
+
+### UIC-COMBOBOX-5.5 - List header
+
+`listHeader` shall draw its content at the top of the popover, above the listbox, in `ui-combobox__list-header`, for controls such as filters that change `loadItems` or `items`. Focus moving into the header keeps the list open, and after a press in the header focus returns to the input, so the reader keeps typing and moving through the options.
+
+Implementation: `src/components/combobox/combobox-suggestions.tsx`, `labs/reference/combobox.css`
+Verification: `src/components/combobox/combobox.test.tsx`, `e2e/combobox.spec.ts`
+
+### UIC-COMBOBOX-5.6 - Open state
+
+The list's open state shall be controllable: `isOpen` (controlled) or `defaultOpen` sets it, and `onOpenChange` reports each change the reader asks for (typing, the button, the arrow keys, Escape, a pick, leaving the input). A controlled list the caller does not change stays as `isOpen` says; closing it commits the text as Escape does.
+
+Implementation: `src/components/combobox/combobox-state.ts`, `src/components/combobox/combobox-effects.ts`
+Verification: `src/components/combobox/combobox.test.tsx`
+
+### UIC-COMBOBOX-5.7 - Input reference and focus on mount
+
+`inputRef` shall receive the text input element, and `autoFocus` shall focus the input when the combobox mounts.
+
+Implementation: `src/components/combobox/combobox.tsx`, `src/components/combobox/combobox-field.tsx`
+Verification: `src/components/combobox/combobox.test.tsx`
+
 ## Hooks
 
 | Hook                              | Kind      | Values                                     | Description                                                         |
@@ -176,6 +234,8 @@ Verification: `src/components/combobox/combobox-suggestions.test.tsx`, `e2e/comb
 | `ui-combobox__chips`              | slot      |                                            | The tag group of a multiple combobox's chips (also `ui-tag-group`). |
 | `ui-combobox__create`             | slot      |                                            | The action row that adds the typed text as an option.               |
 | `ui-combobox__load-more`          | slot      |                                            | The loading row at the end of the list.                             |
+| `ui-combobox__chip-icon`          | slot      |                                            | A chip's icon (also `ui-icon`).                                     |
+| `ui-combobox__list-header`        | slot      |                                            | The controls above the listbox.                                     |
 | `data-variant`                    | attribute | `default`, `search`                        | Variant.                                                            |
 | `data-size`                       | attribute | `sm`, `md`, `lg`                           | Field size.                                                         |
 | `data-layer`                      | attribute | `dropdown`                                 | The popover's overlay layer.                                        |

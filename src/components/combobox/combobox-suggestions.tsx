@@ -17,7 +17,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { Icon, toIconProps } from '../icon/icon.js';
 import { useLayerZIndex } from '../portal/portal.js';
 import { TextMatch, TextMatchProvider } from '../text-match/text-match.js';
-import { useAutoHighlight, useCreatedSelection } from './combobox-effects.js';
+import { useAutoHighlight, useCreatedSelection, useOpenState } from './combobox-effects.js';
 import {
   flattenOptions,
   hasOptionLabelled,
@@ -73,6 +73,14 @@ export interface ComboboxSuggestionsProps extends ComboboxOptionDisplay {
   completion: ComboboxCompletion | null;
   /** Holds the text the add row last created until the input shows the selected option. */
   createdRef: RefObject<string | null>;
+  /** The content of the list while it holds no option. */
+  renderEmpty: () => ReactNode;
+  /** Controls drawn above the listbox. */
+  listHeader: ReactNode;
+  /** The input, which takes focus back after a press in the list header. */
+  inputRef: RefObject<HTMLInputElement | null>;
+  /** Whether the list is open, as the combobox's open state says. */
+  isOpen: boolean;
 }
 
 const hooks = createHooks('combobox', [
@@ -87,6 +95,7 @@ const hooks = createHooks('combobox', [
   'create',
   'load-more',
   'empty',
+  'list-header',
 ]);
 
 // Estimates the virtualizer starts from; it measures each row as it renders.
@@ -194,7 +203,7 @@ function CreateRow({
 
 function OptionList(props: ComboboxSuggestionsProps & { filterText: string }) {
   const strings = useUiStrings();
-  const { items, onCreateOption, loading, inputText } = props;
+  const { items, onCreateOption, loading, inputText, renderEmpty } = props;
   const created = inputText.trim();
   const canCreate =
     onCreateOption !== undefined &&
@@ -204,9 +213,7 @@ function OptionList(props: ComboboxSuggestionsProps & { filterText: string }) {
     <ListBox<ComboboxItem>
       className={hooks.slotClass('listbox')}
       renderEmptyState={
-        loading.isLoading
-          ? undefined
-          : () => <span {...hooks.slot('empty')}>{strings.noResults}</span>
+        loading.isLoading ? undefined : () => <span {...hooks.slot('empty')}>{renderEmpty()}</span>
       }
     >
       <Collection items={items}>{renderItems(props)}</Collection>
@@ -240,9 +247,10 @@ function OptionList(props: ComboboxSuggestionsProps & { filterText: string }) {
 }
 
 /**
- * The suggestion list: a listbox of options and sections, then the add row and the loading row, or
- * the provider's `noResults` text, in a popover on the `dropdown` layer that keeps React Aria's
- * measured `--trigger-width`. It also keeps an option highlighted when asked.
+ * The suggestion list: the list header, then a listbox of options and sections, then the add row and
+ * the loading row, or the empty content, in a popover on the `dropdown` layer that keeps React Aria's
+ * measured `--trigger-width`. It also keeps an option highlighted when asked and holds the building
+ * block's open state to the combobox's.
  */
 export function ComboboxSuggestions(props: ComboboxSuggestionsProps) {
   const zIndex = useLayerZIndex('dropdown');
@@ -250,7 +258,8 @@ export function ComboboxSuggestions(props: ComboboxSuggestionsProps) {
   const contextStyle = typeof context?.style === 'object' ? (context.style as CSSProperties) : {};
   useAutoHighlight({ autoHighlight: Boolean(props.autoHighlight), completion: props.completion });
   useCreatedSelection(props.createdRef);
-  const { inputText, completion } = props;
+  useOpenState(props.isOpen);
+  const { inputText, completion, listHeader, inputRef } = props;
   const filterText = completion?.text === inputText ? completion.typed : inputText;
   return (
     <Popover
@@ -258,7 +267,17 @@ export function ComboboxSuggestions(props: ComboboxSuggestionsProps) {
       offset={4}
       containerPadding={8}
       style={{ ...contextStyle, zIndex }}
+      // Focus leaving the popover closes it, unless it returns to the input from the list header.
+      shouldCloseOnInteractOutside={(element) => element !== inputRef.current}
     >
+      {listHeader ? (
+        // Focus moved into the popover keeps the list open; giving it back to the input keeps the
+        // keyboard on the list after a filter control is pressed. Pressable controls stop the click
+        // from bubbling, so it is caught on the way down.
+        <div {...hooks.slot('list-header')} onClickCapture={() => inputRef.current?.focus()}>
+          {listHeader}
+        </div>
+      ) : null}
       <OptionList {...props} filterText={filterText} />
     </Popover>
   );
