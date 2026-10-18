@@ -14,6 +14,7 @@ export * from './components/overflow-list/index.js';
 export * from './components/svg-markup/index.js';
 export * from './components/layout/index.js';
 export * from './components/split-view/index.js';
+export * from './components/dock-panel/index.js';
 export * from './components/scroll-region/index.js';
 export * from './components/section-header/index.js';
 export * from './components/separator/index.js';

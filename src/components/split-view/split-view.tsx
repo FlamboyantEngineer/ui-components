@@ -138,3 +138,5 @@ export function SplitView(props: SplitViewProps) {
     </div>
   );
 }
+
+export { ResizeHandle } from './resize-handle.js';

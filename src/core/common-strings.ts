@@ -57,6 +57,14 @@ export interface CommonStrings {
   moreItems: (count: number) => string;
   /** Names the button that adds a tab. */
   addTab: string;
+  /** Names the toolbar of a docked panel's pane launchers, from the panel's label. */
+  panelPanes: (panel: string) => string;
+  /** Names the button that collapses a docked panel to its launchers, from the panel's label. */
+  collapsePanel: (panel: string) => string;
+  /** Names the button that expands a collapsed docked panel, from the panel's label. */
+  expandPanel: (panel: string) => string;
+  /** Names the separator that resizes a docked panel, from the panel's label. */
+  resizePanel: (panel: string) => string;
   /** Tells a reader that a link opens in a new tab or window. */
   opensInNewTab: string;
   /** Names a collection's selected count (`3 selected`). */
@@ -194,6 +202,10 @@ export const commonStrings: CommonStrings = {
   scrollForward: 'Scroll forward',
   moreItems: (count) => (count === 1 ? '1 more item' : `${count} more items`),
   addTab: 'Add tab',
+  panelPanes: (panel) => `${panel} panes`,
+  collapsePanel: (panel) => `Collapse ${panel}`,
+  expandPanel: (panel) => `Expand ${panel}`,
+  resizePanel: (panel) => `Resize ${panel}`,
   opensInNewTab: '(opens in a new tab)',
   selectedCount: (count) => `${count} selected`,
   clearSelection: 'Clear selection',
