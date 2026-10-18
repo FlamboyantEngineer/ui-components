@@ -1,0 +1,58 @@
+/* Annotation Layer */
+
+.ui-annotation-layer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(200px, 280px);
+  column-gap: 24px;
+  align-items: stretch;
+  color: var(--ref-text);
+}
+
+.ui-annotation-layer__marks {
+  z-index: 1;
+}
+
+.ui-annotation-layer__mark {
+  border-bottom: 2px solid color-mix(in srgb, var(--ref-warning) 70%, transparent);
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--ref-warning) 16%, transparent);
+}
+
+.ui-annotation-layer__mark[data-active] {
+  border-bottom-color: var(--ref-warning);
+  background: color-mix(in srgb, var(--ref-warning) 30%, transparent);
+}
+
+.ui-annotation-layer__margin {
+  min-width: 0;
+}
+
+.ui-annotation-layer__card {
+  inset-inline: 0;
+  border-radius: var(--ref-radius);
+  transition: top 120ms ease;
+}
+
+.ui-annotation-layer__card[data-active] {
+  z-index: 1;
+}
+
+.ui-annotation-layer__card[data-orphaned] {
+  outline: 1px dashed var(--ref-border-strong);
+  outline-offset: 2px;
+}
+
+.ui-annotation-layer__card:focus-visible {
+  outline: 2px solid var(--ref-focus);
+  outline-offset: 2px;
+}
+
+.ui-annotation-layer__card .ui-comment-thread {
+  max-width: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-annotation-layer__card {
+    transition: none;
+  }
+}

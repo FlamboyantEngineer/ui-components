@@ -1,5 +1,6 @@
 import { commonStrings, type CommonStrings } from './common-strings.js';
 import { contentStrings, type ContentStrings } from './content-strings.js';
+import { diffStrings, type DiffStrings } from './diff-strings.js';
 import { editingStrings, type EditingStrings } from './editing-strings.js';
 import { fieldStrings, type FieldStrings } from './field-strings.js';
 import { historyStrings, type HistoryStrings } from './history-strings.js';
@@ -19,14 +20,15 @@ import { viewStrings, type ViewStrings } from './view-strings.js';
 export interface UiStrings
   extends
     CommonStrings,
-    FieldStrings,
     ContentStrings,
+    DiffStrings,
     EditingStrings,
+    FieldStrings,
     HistoryStrings,
-    ReviewStrings,
     MediaStrings,
     PlanningStrings,
     QueryStrings,
+    ReviewStrings,
     StructureStrings,
     TableStrings,
     TimelineStrings,
@@ -34,14 +36,15 @@ export interface UiStrings
 
 export const defaultStrings: UiStrings = {
   ...commonStrings,
-  ...fieldStrings,
   ...contentStrings,
+  ...diffStrings,
   ...editingStrings,
+  ...fieldStrings,
   ...historyStrings,
-  ...reviewStrings,
   ...mediaStrings,
   ...planningStrings,
   ...queryStrings,
+  ...reviewStrings,
   ...structureStrings,
   ...tableStrings,
   ...timelineStrings,

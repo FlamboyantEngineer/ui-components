@@ -73,6 +73,8 @@ const sampleArguments: Partial<Record<keyof UiStrings, readonly unknown[]>> = {
   stepLabel: ['2'],
   stepActions: ['2'],
   moveStep: ['2'],
+  textDiffSummary: [5, 3],
+  textDiffLine: ['unchanged', 4, 6],
 };
 
 const stringNames = Object.keys(defaultStrings) as Array<keyof UiStrings>;
