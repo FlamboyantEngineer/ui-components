@@ -13,15 +13,18 @@ function renderField<T>(options: FieldStateOptions<T>) {
 describe('useFieldState', () => {
   it('UIC-FIELD-2.1 holds an uncontrolled value from the committed value, else the default', () => {
     const onChange = vi.fn();
-    const fresh = renderField({ defaultValue: 'Apple', onChange });
-    expect(fresh.result.current.value).toBe('Apple');
-    act(() => fresh.result.current.setValue('Pear'));
-    expect(fresh.result.current.value).toBe('Pear');
+    const { result: fresh } = renderField({ defaultValue: 'Apple', onChange });
+    expect(fresh.current.value).toBe('Apple');
+    act(() => fresh.current.setValue('Pear'));
+    expect(fresh.current.value).toBe('Pear');
     expect(onChange).toHaveBeenCalledWith('Pear');
-    const saved = renderField({ defaultValue: 'Apple', committedValue: 'Plum' });
-    expect(saved.result.current.value).toBe('Plum');
-    const nullable = renderField<string | null>({ defaultValue: 'Apple', committedValue: null });
-    expect(nullable.result.current.value).toBeNull();
+    const { result: saved } = renderField({ defaultValue: 'Apple', committedValue: 'Plum' });
+    expect(saved.current.value).toBe('Plum');
+    const { result: nullable } = renderField<string | null>({
+      defaultValue: 'Apple',
+      committedValue: null,
+    });
+    expect(nullable.current.value).toBeNull();
   });
 
   it('UIC-FIELD-2.1 relays a controlled value through onChange', () => {
@@ -58,9 +61,9 @@ describe('useFieldState', () => {
     expect(result.current.isDirty).toBe(true);
     rerender({ value: 'Pear', committedValue: 'Pear', onCommit });
     expect(result.current.isDirty).toBe(false);
-    const controlled = renderField({ value: 'Fig' });
-    expect(controlled.result.current.committedValue).toBe('Fig');
-    expect(controlled.result.current.isDirty).toBe(false);
+    const { result: controlled } = renderField({ value: 'Fig' });
+    expect(controlled.current.committedValue).toBe('Fig');
+    expect(controlled.current.isDirty).toBe(false);
   });
 
   it('UIC-FIELD-2.3 compares values by structure', () => {
@@ -72,8 +75,8 @@ describe('useFieldState', () => {
     expect(result.current.isDirty).toBe(false);
     rerender({ value: { tags: ['b', 'a'], name: 'Ada' }, committedValue });
     expect(result.current.isDirty).toBe(true);
-    const dates = renderField({ value: new Date(0), committedValue: new Date(0) });
-    expect(dates.result.current.isDirty).toBe(false);
+    const { result: dates } = renderField({ value: new Date(0), committedValue: new Date(0) });
+    expect(dates.current.isDirty).toBe(false);
   });
 
   it('UIC-FIELD-2.4 refuses every change while read-only or disabled', () => {
@@ -134,11 +137,8 @@ describe('useFieldState', () => {
     expect(result.current.canClear).toBe(false);
     act(() => result.current.clear());
     expect(result.current.value).toBe('Apple');
-    const bare = renderField({ value: 'Pear' });
-    expect([bare.result.current.canClear, bare.result.current.canSetDefault]).toEqual([
-      false,
-      false,
-    ]);
+    const { result: bare } = renderField({ value: 'Pear' });
+    expect([bare.current.canClear, bare.current.canSetDefault]).toEqual([false, false]);
   });
 
   it('UIC-FIELD-3.1 decides the status in order: required, error, pending, warning, valid', () => {

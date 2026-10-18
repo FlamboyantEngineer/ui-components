@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { TextField } from '../../../test/field-fixtures.js';
@@ -11,6 +11,21 @@ function TwoFields() {
       <TextField label="City" options={{ defaultValue: 'Oslo' }} />
     </>
   );
+}
+
+type User = ReturnType<typeof userEvent.setup>;
+
+/** Presses `keys` and reports whether the `z` keydown they produced was left to the browser. */
+async function pressUnhandled(user: User, keys: string): Promise<boolean> {
+  let pressed: KeyboardEvent | undefined;
+  const listen = (event: KeyboardEvent) => {
+    if (event.key.toLowerCase() === 'z') pressed = event;
+  };
+  window.addEventListener('keydown', listen, true);
+  await user.keyboard(keys);
+  window.removeEventListener('keydown', listen, true);
+  if (!pressed) throw new Error(`No z keydown for ${keys}`);
+  return !pressed.defaultPrevented;
 }
 
 function fakeUndo(log: string[], name: string): FieldUndo {
@@ -43,18 +58,23 @@ describe('Field undo and redo', () => {
     expect(city).toHaveValue('Oslox');
   });
 
-  it('UIC-FIELD-5.2 leaves chords it cannot apply to the browser and other handlers', () => {
+  it('UIC-FIELD-5.2 leaves chords it cannot apply to the browser and other handlers', async () => {
+    const user = userEvent.setup();
     render(<TwoFields />);
     const fruit = screen.getByRole('textbox', { name: 'Fruit' });
-    expect(fireEvent.keyDown(fruit, { key: 'z', ctrlKey: true })).toBe(true);
-    fireEvent.change(fruit, { target: { value: 'Figs' } });
-    expect(fireEvent.keyDown(fruit, { key: 'z', ctrlKey: true, altKey: true })).toBe(true);
-    expect(fireEvent.keyDown(fruit, { key: 'z' })).toBe(true);
+    await user.click(fruit);
+    expect(await pressUnhandled(user, '{Control>}z{/Control}')).toBe(true);
+    await user.keyboard('s');
+    expect(fruit).toHaveValue('Figs');
+    expect(await pressUnhandled(user, '{Control>}{Alt>}z{/Alt}{/Control}')).toBe(true);
+    expect(fruit).toHaveValue('Figs');
+    expect(await pressUnhandled(user, 'z')).toBe(true);
+    expect(fruit).toHaveValue('Figsz');
     const handled = new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, bubbles: true });
     handled.preventDefault();
     fruit.dispatchEvent(handled);
-    expect(fruit).toHaveValue('Figs');
-    expect(fireEvent.keyDown(fruit, { key: 'z', ctrlKey: true })).toBe(false);
+    expect(fruit).toHaveValue('Figsz');
+    expect(await pressUnhandled(user, '{Control>}z{/Control}')).toBe(false);
     expect(fruit).toHaveValue('Fig');
   });
 
@@ -62,10 +82,13 @@ describe('Field undo and redo', () => {
     const user = userEvent.setup();
     render(<TwoFields />);
     const fruit = screen.getByRole('textbox', { name: 'Fruit' });
-    fireEvent.change(fruit, { target: { value: 'Figs' } });
+    await user.type(fruit, 's');
     await user.click(screen.getByRole('button', { name: 'Fruit actions' }));
     const item = await screen.findByRole('menuitem', { name: 'Clear' });
-    fireEvent.keyDown(item, { key: 'z', ctrlKey: true });
+    const menu = screen.getByRole('menu');
+    expect(menu).toContainElement(item);
+    expect(menu.contains(document.activeElement)).toBe(true);
+    await user.keyboard('{Control>}z{/Control}');
     expect(fruit).toHaveValue('Figs');
   });
 
