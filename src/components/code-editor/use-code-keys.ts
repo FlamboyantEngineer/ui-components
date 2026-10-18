@@ -21,8 +21,6 @@ export interface CodeKeysOptions {
   isLocked: boolean;
   /** Ctrl+F or Cmd+F, when the editor offers search. */
   onFind: (() => void) | undefined;
-  /** Ctrl+Space asks for completions. */
-  onComplete: () => void;
   /** F8 and Shift+F8 go to the next and previous problem; returns whether there is one. */
   onProblem: (delta: 1 | -1) => boolean;
 }
@@ -45,8 +43,7 @@ function hasModifier(event: KeyboardEvent): boolean {
 
 /**
  * The editing keys of a code editor: Tab and Shift+Tab indentation (left by Escape then Tab), Enter
- * keeping the indentation, bracket and quote pairs, and the shortcuts for search, completion and
- * problems. Returns a handler that reports whether it used the key.
+ * keeping the indentation, bracket and quote pairs, and the shortcuts for search and problems. Returns a handler that reports whether it used the key.
  */
 export function useCodeKeys(options: CodeKeysOptions) {
   const { inputRef, applyEdit, indent, isLocked } = options;
@@ -79,9 +76,8 @@ export function useCodeKeys(options: CodeKeysOptions) {
     const isCommand = (event.ctrlKey || event.metaKey) && !event.altKey;
     if (event.key === 'F8' && !hasModifier(event))
       return options.onProblem(event.shiftKey ? -1 : 1);
-    if (event.ctrlKey && !event.metaKey && key === ' ') options.onComplete();
-    else if (isCommand && key === 'f' && options.onFind) options.onFind();
-    else return false;
+    if (!isCommand || key !== 'f' || !options.onFind) return false;
+    options.onFind();
     return true;
   };
 

@@ -147,3 +147,7 @@
 .ui-text-field[data-validation='invalid'] .ui-text-field__count {
   color: var(--ref-danger);
 }
+
+.ui-text-field__completions {
+  min-width: var(--trigger-width);
+}

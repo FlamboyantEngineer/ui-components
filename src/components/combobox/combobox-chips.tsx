@@ -3,6 +3,7 @@ import { ComboBoxStateContext } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { Icon, toIconProps } from '../icon/icon.js';
 import { Tag, TagGroup, type TagGroupSize } from '../tag-group/tag-group.js';
 import type { ComboboxOption } from './combobox-options.js';
 
@@ -16,7 +17,7 @@ export interface ComboboxChipsProps {
   isEditable: boolean;
 }
 
-const hooks = createHooks('combobox', ['chips']);
+const hooks = createHooks('combobox', ['chips', 'chip-icon']);
 
 /**
  * The chosen options, in value order. An option the suggestions no longer list (the caller filtered
@@ -42,8 +43,8 @@ function useChosenOptions(options: readonly ComboboxOption[]): ComboboxOption[] 
 }
 
 /**
- * A multiple combobox's chosen options as removable chips, in the library's `TagGroup` before the
- * input: the arrow keys move between chips, and the remove button, Delete or Backspace removes one.
+ * A multiple combobox's chosen options as removable chips, each with its option's icon, in the
+ * library's `TagGroup` before the input: the arrow keys move between chips, and the remove button, Delete or Backspace removes one.
  */
 export function ComboboxChips({ label, options, size, isEditable }: ComboboxChipsProps) {
   const state = useContext(ComboBoxStateContext);
@@ -62,6 +63,9 @@ export function ComboboxChips({ label, options, size, isEditable }: ComboboxChip
     >
       {(option) => (
         <Tag id={option.id} textValue={option.label}>
+          {option.icon ? (
+            <Icon {...toIconProps(option.icon)} className={hooks.slotClass('chip-icon')} />
+          ) : null}
           {option.label}
         </Tag>
       )}

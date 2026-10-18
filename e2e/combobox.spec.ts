@@ -256,12 +256,17 @@ test.describe('Combobox lab', () => {
     await page.keyboard.press('Escape');
 
     const autoHighlight = aid('auto highlight');
-    await autoHighlight.focus();
-    await page.keyboard.type('an');
-    await expect(page.getByRole('option', { name: 'Banana' })).toHaveAttribute(
-      'data-focused',
-      'true',
-    );
+    // Retried from an empty input for the same reason as above.
+    await expect(async () => {
+      await autoHighlight.fill('');
+      await autoHighlight.focus();
+      await page.keyboard.type('an');
+      await expect(page.getByRole('option', { name: 'Banana' })).toHaveAttribute(
+        'data-focused',
+        'true',
+        { timeout: 3000 },
+      );
+    }).toPass({ timeout: 20000 });
     await page.keyboard.press('Enter');
     await expect(autoHighlight).toHaveValue('Banana');
 
@@ -336,5 +341,63 @@ test.describe('Combobox lab', () => {
     await expect(paris).toContainText('←');
     await page.keyboard.press('Enter');
     await expect(input).toHaveValue('Paris');
+  });
+
+  test('UIC-COMBOBOX-5.1 UIC-COMBOBOX-5.2 UIC-COMBOBOX-5.5 searches remotely with filters in the list header', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('combobox');
+    const area = section(page, 'Remote search');
+    const input = area.getByRole('combobox', { name: 'Search city' });
+    await input.click();
+    await page.keyboard.press('ArrowDown');
+    const listbox = page.getByRole('listbox');
+    await expect(listbox.getByRole('group', { name: 'Recently used' })).toBeVisible();
+    await expect(listbox.getByRole('option')).toHaveText(['Paris', 'Lima']);
+    await page.keyboard.type('li');
+    await expect(listbox.getByRole('option')).toHaveText(['Lima', 'Lisbon']);
+    await expect(input).not.toHaveAttribute('aria-busy');
+    const header = page.locator('.ui-combobox__list-header');
+    await header.getByRole('button', { name: 'Americas' }).click();
+    await expect(input).toBeFocused();
+    await expect(listbox.getByRole('option')).toHaveText(['Lima']);
+    await expect(page.locator('.ui-combobox__popover')).not.toHaveAttribute('data-entering');
+    await lab.expectAccessible('.ui-combobox__popover');
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('Enter');
+    await expect(input).toHaveValue('Lima');
+    await expect(area.locator('[data-lab-output="remote"]')).toHaveText('lima');
+    await lab.expectAccessible();
+  });
+
+  test('UIC-COMBOBOX-5.1 UIC-COMBOBOX-5.2 UIC-COMBOBOX-5.4 says why a remote list is empty', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('combobox');
+    const input = section(page, 'Remote search').getByRole('combobox', { name: 'Search city' });
+    await input.click();
+    await page.keyboard.type('o');
+    const listbox = page.getByRole('listbox');
+    // Too short to search: the recently used cities stay listed.
+    await expect(listbox.getByRole('option')).toHaveText(['Paris', 'Lima']);
+    const empty = page.locator('.ui-combobox__empty');
+    await page.keyboard.type('ffline');
+    await expect(empty).toHaveText('Search is unavailable.');
+    await input.fill('zz');
+    await expect(empty).toHaveText('No city matches; try another region.');
+  });
+
+  test('UIC-COMBOBOX-3.5 draws each chip with its option icon', async ({ page, lab }) => {
+    await lab.open('combobox');
+    const chips = section(page, 'Chips with icons').getByRole('grid', {
+      name: 'Types selected values',
+    });
+    await expect(chips.getByRole('row')).toHaveText(['Notes', 'Events']);
+    const icon = chips.getByRole('row', { name: 'Events' }).locator('.ui-combobox__chip-icon');
+    await expect(icon).toBeVisible();
+    await expect(icon.locator('[data-glyph="calendar"]')).toHaveCount(1);
+    expect((await icon.boundingBox())?.width).toBe(14);
   });
 });

@@ -121,3 +121,4 @@ export { createLinearScale } from './linear-scale.js';
 export type { LinearScale, LinearScaleOptions, ScaleInterval, ScaleTick } from './linear-scale.js';
 export { createTimeScale } from './time-scale.js';
 export type { TimeScale, TimeScaleOptions, TimeScaleUnit, TimeTickOptions } from './time-scale.js';
+export { defaultUrlSchemes, isSafeUrl } from './safe-url.js';

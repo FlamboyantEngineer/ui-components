@@ -1,7 +1,7 @@
 /**
- * Strings of the folder manager, code and JSON editors, emoji picker, PDF viewer, data tables,
- * timestamps, save status, record labels and outlines.
- * timestamps, save status, record labels and state histories.
+ * Strings of the folder manager, code and JSON editors, completions, conversations, emoji picker,
+ * PDF viewer, data tables, timestamps, save status, record labels, outlines, state histories,
+ * comments and reactions.
  */
 export interface ContentStrings {
   newFolder: string;
@@ -16,8 +16,18 @@ export interface ContentStrings {
   moveTo: string;
   /** The top level of a tree, as a place items can move to. */
   topLevel: string;
-  /** Names a code editor's list of completions. */
+  /** Names a list of completions. */
   suggestions: string;
+  /** Names a message composer's text box. */
+  message: string;
+  /** Sends a composed message. */
+  send: string;
+  /** Stops a reply while it streams. */
+  stop: string;
+  /** Names a conversation log. */
+  conversation: string;
+  /** Scrolls a conversation to its latest message. */
+  jumpToLatest: string;
   /** Names a find box. */
   find: string;
   /** Names a find bar's replacement box. */
@@ -134,6 +144,35 @@ export interface ContentStrings {
   currentState: string;
   /** Marks a state not reached yet, in a history of states. */
   upcomingState: string;
+  /** Default name of a comment thread. */
+  commentThread: string;
+  /** Names the menu of one comment's actions. */
+  commentActions: string;
+  /** Names the box that starts a comment thread. */
+  addComment: string;
+  /** Posts a new comment. */
+  comment: string;
+  /** Names the box that answers a thread, and posts the answer. */
+  reply: string;
+  /** Names the box that edits a comment. */
+  editComment: string;
+  /** Marks a comment changed after it was posted. */
+  edited: string;
+  resolve: string;
+  reopen: string;
+  /** Marks a thread whose discussion is closed. */
+  resolved: string;
+  /** Reveals the replies a long thread hides. */
+  showMoreReplies: (count: number) => string;
+  /** The title and message of the confirmation before a comment is deleted. */
+  deleteComment: string;
+  deleteCommentMessage: string;
+  /** Default name of a row of reactions. */
+  reactions: string;
+  /** Opens the emoji picker that adds a reaction. */
+  addReaction: string;
+  /** Names a reaction from its emoji, its count and some of the people who reacted. */
+  reactionLabel: (emoji: string, count: number, names: readonly string[]) => string;
 }
 
 const emojiCategoryNames: Readonly<Record<string, string>> = {
@@ -150,6 +189,19 @@ const emojiCategoryNames: Readonly<Record<string, string>> = {
   symbols: 'Symbols',
   flags: 'Flags',
 };
+
+/** `A`, `A and B`, `A, B and C`. */
+function joinNames(names: readonly string[]): string {
+  if (names.length < 2) return names.join('');
+  return `${names.slice(0, -1).join(', ')} and ${names.at(-1)}`;
+}
+
+function describeReaction(emoji: string, count: number, names: readonly string[]): string {
+  if (names.length === 0) return `${emoji} ${count}`;
+  const others = count - names.length;
+  const more = others === 1 ? ['1 other'] : others > 1 ? [`${others} others`] : [];
+  return `${emoji} ${count}, reacted by ${joinNames([...names, ...more])}`;
+}
 
 const saveStatusNames = {
   dirty: 'Unsaved changes',
@@ -169,6 +221,11 @@ export const contentStrings: ContentStrings = {
   moveTo: 'Move to',
   topLevel: 'Top level',
   suggestions: 'Suggestions',
+  message: 'Message',
+  send: 'Send',
+  stop: 'Stop',
+  conversation: 'Conversation',
+  jumpToLatest: 'Jump to latest',
   find: 'Find',
   replaceWith: 'Replace with',
   replace: 'Replace',
@@ -242,5 +299,21 @@ export const contentStrings: ContentStrings = {
   stateHistory: 'State history',
   currentState: 'Current',
   upcomingState: 'Upcoming',
+  commentThread: 'Comment thread',
+  commentActions: 'Comment actions',
+  addComment: 'Add a comment',
+  comment: 'Comment',
+  reply: 'Reply',
+  editComment: 'Edit comment',
+  edited: 'Edited',
+  resolve: 'Resolve',
+  reopen: 'Reopen',
+  resolved: 'Resolved',
+  showMoreReplies: (count) => (count === 1 ? 'Show 1 more reply' : `Show ${count} more replies`),
+  deleteComment: 'Delete comment',
+  deleteCommentMessage: 'The comment will be removed from the thread.',
+  reactions: 'Reactions',
+  addReaction: 'Add reaction',
+  reactionLabel: describeReaction,
   recordUnavailable: (reason) => (reason === 'restricted' ? 'Restricted item' : 'Missing item'),
 };

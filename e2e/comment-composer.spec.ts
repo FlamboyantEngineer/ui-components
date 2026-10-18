@@ -1,0 +1,84 @@
+import { expect, test } from './fixtures.js';
+
+const cell = (id: string) => `[data-lab-cell="${id}"] .ui-comment-composer`;
+
+test.describe('Comment Composer lab', () => {
+  test('UIC-COMMENT-COMPOSER-1.1 UIC-COMMENT-COMPOSER-1.4 draws each state', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('comment-composer');
+    const empty = page.locator(cell('draft=empty state=default'));
+    await expect(empty.getByRole('textbox', { name: 'Add a comment' })).toHaveAttribute(
+      'placeholder',
+      'Add a comment',
+    );
+    await expect(empty.getByRole('button', { name: 'Comment' })).toBeDisabled();
+    await expect(empty.getByRole('button', { name: 'Cancel' })).toHaveCount(0);
+    const draft = page.locator(cell('draft=draft state=default'));
+    await expect(draft.getByRole('button', { name: 'Comment' })).toBeEnabled();
+    await expect(draft.getByRole('button', { name: 'Cancel' })).toBeVisible();
+    await expect(
+      page.locator(cell('draft=empty state=with onCancel')).getByRole('button', { name: 'Cancel' }),
+    ).toBeVisible();
+    const disabled = page.locator(cell('draft=draft state=disabled'));
+    await expect(disabled).toHaveAttribute('data-disabled', 'true');
+    await expect(disabled.getByRole('textbox')).toBeDisabled();
+    // The text box grows with its text from two rows.
+    const emptyHeight = (await empty.getByRole('textbox').boundingBox())?.height ?? 0;
+    expect(emptyHeight).toBeGreaterThan(30);
+  });
+
+  test('UIC-COMMENT-COMPOSER-1.2 UIC-COMMENT-COMPOSER-1.3 sends with the chord and keeps a failed draft', async ({
+    page,
+    lab,
+  }) => {
+    await page.clock.install();
+    await lab.open('comment-composer');
+    const composer = page.locator('[data-lab-composer="pending"]');
+    const box = composer.getByRole('textbox', { name: 'Reply' });
+    await box.fill('Pears on Monday');
+    await box.press('Enter');
+    await box.pressSequentially('please');
+    await box.press('ControlOrMeta+Enter');
+    await expect(composer).toHaveAttribute('data-pending', 'true');
+    await expect(page.locator('[data-lab-output="status"]')).toHaveText('sending');
+    await page.clock.runFor(1600);
+    await expect(composer).not.toHaveAttribute('data-pending');
+    await expect(box).toHaveValue('');
+    await expect(page.locator('[data-lab-output="posted"] li')).toHaveText([
+      'Pears on Monday\nplease',
+    ]);
+
+    await page.getByRole('switch', { name: 'Fail the next submit' }).focus();
+    await page.keyboard.press('Space');
+    await box.fill('Figs too');
+    await composer.getByRole('button', { name: 'Send' }).click();
+    await page.clock.runFor(1600);
+    await expect(page.locator('[data-lab-output="status"]')).toHaveText('failed');
+    await expect(box).toHaveValue('Figs too');
+  });
+
+  test('UIC-COMMENT-COMPOSER-1.5 UIC-COMMENT-COMPOSER-1.4 resumes a stored draft and cancels it', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('comment-composer');
+    const box = page.locator('[data-lab-composer="stored"]').getByRole('textbox');
+    await box.fill('Half-written note');
+    await page.getByRole('button', { name: 'Unmount composer' }).click();
+    await expect(box).toHaveCount(0);
+    await page.getByRole('button', { name: 'Mount composer' }).click();
+    await expect(box).toHaveValue('Half-written note');
+    await box.press('Escape');
+    await expect(box).toHaveValue('');
+    await expect(page.locator('[data-lab-output="cancelled"]')).toHaveText('1');
+  });
+
+  test('UIC-COMMENT-COMPOSER-1.7 passes axe in both themes', async ({ lab }) => {
+    await lab.open('comment-composer');
+    await lab.expectAccessible();
+    await lab.open('comment-composer', { theme: 'dark' });
+    await lab.expectAccessible();
+  });
+});

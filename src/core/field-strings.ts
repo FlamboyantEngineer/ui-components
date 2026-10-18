@@ -76,6 +76,10 @@ export interface FieldStrings {
   typeToSearch: (minLength: number) => string;
   /** The message of a search that failed. */
   searchFailed: string;
+  /** Heads the people a person picker lists before a search: those chosen recently. */
+  recentPeople: string;
+  /** Follows the name of the person using the app in a person picker. */
+  currentPerson: string;
   /** The message of a tag refused because the field already holds it. */
   duplicateValue: (value: string) => string;
   /** The message of a tag refused because the field holds as many tags as it may. */
@@ -161,6 +165,8 @@ export const fieldStrings: FieldStrings = {
   typeToSearch: (minLength) =>
     minLength === 1 ? 'Type to search.' : `Type at least ${minLength} characters to search.`,
   searchFailed: 'Search is unavailable.',
+  recentPeople: 'Recent',
+  currentPerson: '(you)',
   duplicateValue: (value) => `“${value}” is already added.`,
   tooManyValues: (maxValues) =>
     maxValues === 1 ? 'Add up to 1 value.' : `Add up to ${maxValues} values.`,

@@ -1,10 +1,5 @@
 export { CodeEditor } from './code-editor.js';
 export type {
-  CodeCompletion,
-  CodeCompletionAnswer,
-  CodeCompletionContext,
-  CodeCompletionResult,
-  CodeCompletionSource,
   CodeDiagnostic,
   CodeEditorProps,
   CodeEditorSize,

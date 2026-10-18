@@ -8,7 +8,7 @@
 
 `parseSvgMarkup` shall return the markup's root `<svg>` element as a frozen tree of elements (tag name as written, attributes with entities decoded) and text. Comments, processing instructions, doctypes and whitespace-only text are dropped, CDATA sections become text, an unmatched closing tag closes the nearest open element of that name, and markup without a root `<svg>` element throws.
 
-Implementation: `src/components/svg-markup/parse-svg-markup.ts`
+Implementation: `src/components/svg-markup/parse-svg-markup.ts`, `src/utils/markup.ts`
 Verification: `src/components/svg-markup/parse-svg-markup.test.ts`
 
 ### UIC-SVG-MARKUP-1.2 - Unsafe content

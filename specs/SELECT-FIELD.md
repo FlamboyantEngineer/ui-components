@@ -135,7 +135,7 @@ Verification: `src/components/select-field/select-chips.test.tsx`, `src/componen
 
 With `loadOptions(query, signal)`, the select shall call it with the trimmed filter text once the text is at least `minSearchLength` characters long (1 by default) and `searchDelay` milliseconds (240 by default) have passed since the last keystroke, abort the signal of a search a newer one replaces, and list the chosen options followed by the latest results, unfiltered.
 
-Implementation: `src/components/select-field/select-search.ts`, `src/components/select-field/select-control.tsx`
+Implementation: `src/components/select-field/select-search.ts`, `src/components/select-field/select-control.tsx`, `src/utils/use-remote-search.ts`
 Verification: `src/components/select-field/select-search.test.tsx`, `src/components/select-field/select-options.test.ts`
 
 ### UIC-SELECT-FIELD-5.2 - Search status

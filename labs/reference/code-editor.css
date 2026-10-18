@@ -220,48 +220,8 @@
   color: var(--ref-warning);
 }
 
-.ui-code-editor__popover {
-  box-sizing: border-box;
-  min-width: 200px;
-  max-width: min(360px, calc(100vw - 16px));
-  overflow: auto;
-  padding: 4px;
-  border: 1px solid var(--ref-border);
-  border-radius: var(--ref-radius);
-  background: var(--ref-raised);
-  box-shadow: var(--ref-shadow);
-}
-
-.ui-code-editor__completions {
-  display: flex;
-  flex-direction: column;
-  outline: none;
-}
-
-.ui-code-editor__completion {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  padding: 3px 8px;
-  border-radius: var(--ref-radius);
-  cursor: pointer;
-}
-
-.ui-code-editor__completion[data-focused] {
-  background: var(--ref-selected);
-}
-
-.ui-code-editor__completion-label {
+.ui-code-editor__popover .ui-completion-list__label {
   font-family: var(--ref-mono);
-}
-
-.ui-code-editor__completion-description {
-  color: var(--ref-muted);
-  font-size: 12px;
-}
-
-.ui-code-editor__completion[data-focused] .ui-code-editor__completion-description {
-  color: inherit;
 }
 
 /* Marks in the copy change no metrics: colours, underlines and outlines only. */
@@ -314,23 +274,6 @@
 
 .ui-code-editor__tooltip .ui-code-editor__diagnostic + * {
   margin-top: 4px;
-}
-
-.ui-code-editor__completion-documentation {
-  max-width: 320px;
-  margin-top: 4px;
-  padding: 6px 8px 2px;
-  border-top: 1px solid var(--ref-border);
-  color: var(--ref-muted);
-  font-size: 12px;
-  white-space: pre-wrap;
-}
-
-.ui-code-editor__completion[data-kind]::before {
-  content: attr(data-kind);
-  min-width: 56px;
-  color: var(--ref-muted);
-  font-size: 11px;
 }
 
 .ui-code-editor__search {

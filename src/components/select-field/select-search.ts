@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAsyncList } from '../../primitives/index.js';
+import { useRemoteSearch, type RemoteSearch } from '../../utils/use-remote-search.js';
 import { mergeSelectOptions, type SelectFieldOption } from './select-options.js';
 
 /** One page of a search's results; a `cursor` means another page follows. */
@@ -27,40 +27,9 @@ export interface SelectSearchOptions {
   searchDelay?: number | undefined;
 }
 
-export interface SelectSearch {
-  /** The options of the latest search. */
-  results: readonly SelectFieldOption[];
+export interface SelectSearch extends RemoteSearch<SelectFieldOption> {
   /** Every option a search has returned while the field is mounted, so chosen ones keep labels. */
   seen: readonly SelectFieldOption[];
-  isLoading: boolean;
-  /** The next page is loading. */
-  isLoadingMore: boolean;
-  /** The latest results have another page. */
-  hasMore: boolean;
-  hasFailed: boolean;
-  /** The query is too short to search. */
-  isTooShort: boolean;
-  /** The shortest query that searches. */
-  minSearchLength: number;
-  search(query: string): void;
-  /** Loads the next page of the latest results. */
-  loadMore(): void;
-}
-
-const defaultSearchDelay = 240;
-
-function wait(milliseconds: number, signal: AbortSignal): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(resolve, milliseconds);
-    signal.addEventListener(
-      'abort',
-      () => {
-        clearTimeout(timer);
-        reject(signal.reason);
-      },
-      { once: true },
-    );
-  });
 }
 
 function toPage(result: readonly SelectFieldOption[] | SelectFieldPage): SelectFieldPage {
@@ -68,49 +37,29 @@ function toPage(result: readonly SelectFieldOption[] | SelectFieldPage): SelectF
 }
 
 /**
- * Searches options through the caller's loader as the query changes, after a pause in typing, and
- * loads the next page of the results on request. React Aria's async list aborts a superseded
- * search, so only the latest results show.
+ * Searches options through the caller's loader with the shared remote search, remembering every
+ * option a search returns.
  */
 export function useSelectSearch({
   loadOptions,
-  minSearchLength = 1,
-  searchDelay = defaultSearchDelay,
+  minSearchLength,
+  searchDelay,
 }: SelectSearchOptions): SelectSearch {
   const [seen, setSeen] = useState<readonly SelectFieldOption[]>([]);
-  const [hasMore, setHasMore] = useState(false);
-  const list = useAsyncList<SelectFieldOption, string>({
-    async load({ signal, filterText = '', cursor }) {
-      const query = filterText.trim();
-      if (!loadOptions || query.length < minSearchLength) return { items: [] };
-      if (cursor === undefined) await wait(searchDelay, signal);
-      // A first page is asked for with the query alone, as a loader without pages expects.
-      const result =
-        cursor === undefined
-          ? await loadOptions(query, signal)
-          : await loadOptions(query, signal, cursor);
-      const page = toPage(result);
-      if (!signal.aborted) {
-        setSeen((previous) => mergeSelectOptions(page.options, previous));
-        setHasMore(Boolean(page.cursor));
-      }
-      return { items: page.options, cursor: page.cursor };
-    },
-  });
-  const isTooShort = list.filterText.trim().length < minSearchLength;
-  const isLoading = list.loadingState === 'loading' || list.loadingState === 'filtering';
-  return {
-    results: list.items,
-    seen,
-    isLoading: Boolean(loadOptions) && isLoading && !isTooShort,
-    isLoadingMore: list.loadingState === 'loadingMore',
-    hasMore: hasMore && !isTooShort,
-    hasFailed: list.loadingState === 'error',
-    isTooShort,
+  const search = useRemoteSearch<SelectFieldOption>({
+    load: loadOptions
+      ? async (query, signal, cursor) => {
+          const page = toPage(
+            cursor === undefined
+              ? await loadOptions(query, signal)
+              : await loadOptions(query, signal, cursor),
+          );
+          if (!signal.aborted) setSeen((previous) => mergeSelectOptions(page.options, previous));
+          return { items: page.options, cursor: page.cursor };
+        }
+      : undefined,
     minSearchLength,
-    search: (query) => {
-      if (loadOptions) list.setFilterText(query);
-    },
-    loadMore: () => list.loadMore(),
-  };
+    searchDelay,
+  });
+  return { ...search, seen };
 }

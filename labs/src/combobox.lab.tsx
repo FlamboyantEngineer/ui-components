@@ -1,11 +1,13 @@
-import { useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import type { Key } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
 import {
   Combobox,
   type ComboboxItem,
+  type ComboboxLoader,
   type ComboboxOption,
 } from '../../src/components/combobox/combobox.js';
+import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const sizes = ['sm', 'md', 'lg'] as const;
@@ -181,6 +183,128 @@ function Paged() {
   );
 }
 
+const regions: Record<string, string> = {
+  paris: 'europe',
+  lima: 'americas',
+  oslo: 'europe',
+  cairo: 'africa',
+  quito: 'americas',
+  hanoi: 'asia',
+  dakar: 'africa',
+  perth: 'oceania',
+  turin: 'europe',
+  lisbon: 'europe',
+  ottawa: 'americas',
+  nairobi: 'africa',
+};
+
+const regionChoices = [
+  { value: 'europe', label: 'Europe' },
+  { value: 'americas', label: 'Americas' },
+  { value: 'africa', label: 'Africa' },
+];
+
+/** Resolves after `milliseconds` unless `signal` aborts first. */
+function delay(milliseconds: number, signal: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(resolve, milliseconds);
+    signal.addEventListener('abort', () => {
+      clearTimeout(timer);
+      reject(signal.reason);
+    });
+  });
+}
+
+/**
+ * Searches cities as a server would, after 400 milliseconds, within the chosen regions; "offline"
+ * fails. Recently used cities show before typing, and the region filters sit in the list header.
+ */
+function RemoteSearch() {
+  const [filters, setFilters] = useState<string[]>([]);
+  const [chosen, setChosen] = useState<Key | null>(null);
+  const [searches, setSearches] = useState<string[]>([]);
+  const loadItems = useCallback<ComboboxLoader>(
+    async (query, signal) => {
+      setSearches((previous) => [...previous, query]);
+      await delay(400, signal);
+      if (query === 'offline') throw new Error('The server is unreachable.');
+      return findCities(query).filter(
+        (city) => filters.length === 0 || filters.includes(regions[String(city.id)] ?? ''),
+      );
+    },
+    [filters],
+  );
+  return (
+    <>
+      <Combobox
+        label="Search city"
+        variant="search"
+        description="Type at least 2 letters; filter by region in the list."
+        minSearchLength={2}
+        searchDelay={300}
+        loadItems={loadItems}
+        items={[{ id: 'recent', title: 'Recently used', options: cities.slice(0, 2) }]}
+        renderEmptyState={() => 'No city matches; try another region.'}
+        listHeader={
+          <SegmentedChoice
+            aria-label="Regions"
+            selectionMode="multiple"
+            size="sm"
+            sizing="content"
+            options={regionChoices}
+            value={filters}
+            onChange={setFilters}
+          />
+        }
+        onChange={setChosen}
+      />
+      <p>
+        Chosen:{' '}
+        <output data-lab-output="remote">{chosen === null ? 'none' : String(chosen)}</output>{' '}
+        Searches: <output data-lab-output="searches">{searches.join(', ') || 'none'}</output>
+      </p>
+    </>
+  );
+}
+
+/** The caller holds the open state; buttons outside open and close the list. */
+function ControlledOpen() {
+  const [isOpen, setIsOpen] = useState(false);
+  const input = useRef<HTMLInputElement>(null);
+  const [showFocused, setShowFocused] = useState(false);
+  return (
+    <>
+      <Combobox
+        label="Controlled fruit"
+        defaultItems={fruit}
+        isOpen={isOpen}
+        onOpenChange={setIsOpen}
+        inputRef={input}
+      />
+      <p>
+        <Button size="sm" data-lab-action="toggle-open" onPress={() => setIsOpen(!isOpen)}>
+          {isOpen ? 'Close the list' : 'Open the list'}
+        </Button>{' '}
+        <Button size="sm" data-lab-action="focus-input" onPress={() => input.current?.focus()}>
+          Focus the input
+        </Button>{' '}
+        <Button size="sm" data-lab-action="mount-focused" onPress={() => setShowFocused(true)}>
+          Add a field that focuses itself
+        </Button>{' '}
+        Open: <output data-lab-output="open">{String(isOpen)}</output>
+      </p>
+      {showFocused ? <Combobox label="Focused on mount" defaultItems={fruit} autoFocus /> : null}
+    </>
+  );
+}
+
+const fileTypes: ComboboxOption[] = [
+  { id: 'notes', label: 'Notes', icon: 'edit' },
+  { id: 'links', label: 'Links', icon: 'link' },
+  { id: 'events', label: 'Events', icon: 'calendar' },
+  { id: 'folders', label: 'Folders', icon: 'folder' },
+];
+
 const countries: Record<string, string> = {
   paris: 'France',
   lima: 'Peru',
@@ -295,6 +419,26 @@ mountLab(
     </LabSection>
     <LabSection title="Open on focus" description="The list opens when the input takes focus.">
       <Combobox label="Fruit on focus" defaultItems={fruit} menuTrigger="focus" />
+    </LabSection>
+    <LabSection
+      title="Remote search"
+      description="Recently used cities before typing; searches after a pause, with region filters in the list header. Type offline to see a failed search."
+    >
+      <RemoteSearch />
+    </LabSection>
+    <LabSection
+      title="Open state"
+      description="The list opens and closes from outside; the input can be focused through its ref."
+    >
+      <ControlledOpen />
+    </LabSection>
+    <LabSection title="Chips with icons" description="Each chip leads with its option's icon.">
+      <Combobox
+        label="Types"
+        selectionMode="multiple"
+        defaultItems={fileTypes}
+        defaultValue={['notes', 'events']}
+      />
     </LabSection>
   </>,
 );

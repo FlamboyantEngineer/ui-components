@@ -1,0 +1,169 @@
+// Builds the element tree of an HTML fragment from markup tokens, closing elements the way an HTML
+// parser implies (specs/HTML-MARKUP.md). Policy filtering happens afterwards in sanitize-html.ts.
+
+import { tokenizeMarkup, type MarkupOpenToken } from '../../utils/markup.js';
+
+export interface RawElement {
+  tag: string;
+  attributes: Readonly<Record<string, string>>;
+  children: RawNode[];
+}
+
+export type RawNode = RawElement | string;
+
+interface ImpliedEnd {
+  /** Open elements the new one closes. */
+  closes: ReadonlySet<string>;
+  /** Open elements that bound the search: nothing below them is closed. */
+  stopAt: ReadonlySet<string>;
+}
+
+/** Elements dropped with all their content, whatever the policy allows. */
+const blockedElements: ReadonlySet<string> = new Set([
+  'applet',
+  'base',
+  'embed',
+  'frame',
+  'frameset',
+  'iframe',
+  'link',
+  'math',
+  'meta',
+  'noembed',
+  'noframes',
+  'noscript',
+  'object',
+  'plaintext',
+  'script',
+  'select',
+  'style',
+  'svg',
+  'template',
+  'textarea',
+  'title',
+  'xmp',
+]);
+
+const voidElements = new Set([
+  'area',
+  'base',
+  'br',
+  'col',
+  'embed',
+  'hr',
+  'img',
+  'input',
+  'link',
+  'meta',
+  'param',
+  'source',
+  'track',
+  'wbr',
+]);
+
+/** Blocked elements with content, read as raw text so their markup is never parsed. */
+const rawTextElements = new Set([...blockedElements].filter((tag) => !voidElements.has(tag)));
+
+/** Elements whose text children are dropped, as React cannot render text there. */
+const tableStructure = new Set(['table', 'thead', 'tbody', 'tfoot', 'tr', 'colgroup']);
+
+const headings = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
+
+/** Elements that close an open paragraph. */
+const paragraphClosers = new Set([
+  ...headings,
+  ...'address article aside blockquote details div dl fieldset figcaption figure footer form header hr li main nav ol p pre section summary table ul'.split(
+    ' ',
+  ),
+]);
+
+function impliedEnd(closes: string, stopAt: string): ImpliedEnd {
+  return { closes: new Set(closes.split(' ')), stopAt: new Set(stopAt.split(' ')) };
+}
+
+const paragraphEnd = impliedEnd('p', 'table td th caption button');
+
+const impliedEnds: Readonly<Record<string, ImpliedEnd>> = {
+  li: impliedEnd('li', 'ul ol table td th'),
+  dt: impliedEnd('dt dd', 'dl table td th'),
+  dd: impliedEnd('dt dd', 'dl table td th'),
+  tr: impliedEnd('tr', 'table thead tbody tfoot'),
+  td: impliedEnd('td th', 'tr table'),
+  th: impliedEnd('td th', 'tr table'),
+  thead: impliedEnd('thead tbody tfoot', 'table'),
+  tbody: impliedEnd('thead tbody tfoot', 'table'),
+  tfoot: impliedEnd('thead tbody tfoot', 'table'),
+  a: impliedEnd('a', 'table td th'),
+  ...Object.fromEntries(headings.map((tag) => [tag, impliedEnd(headings.join(' '), 'p')])),
+};
+
+function current(stack: RawElement[]): RawElement {
+  return stack[stack.length - 1] as RawElement;
+}
+
+/** Closes the nearest open element the rule names, unless a boundary comes first. */
+function applyImpliedEnd(stack: RawElement[], rule: ImpliedEnd): void {
+  for (let index = stack.length - 1; index > 0; index -= 1) {
+    const tag = (stack[index] as RawElement).tag;
+    if (rule.closes.has(tag)) {
+      stack.length = index;
+      return;
+    }
+    if (rule.stopAt.has(tag)) return;
+  }
+}
+
+function openElement(stack: RawElement[], token: MarkupOpenToken): void {
+  const tag = token.tag.toLowerCase();
+  if (paragraphClosers.has(tag)) applyImpliedEnd(stack, paragraphEnd);
+  const rule = impliedEnds[tag];
+  if (rule) applyImpliedEnd(stack, rule);
+  if (tag === 'tr' && current(stack).tag === 'table') {
+    const body: RawElement = { tag: 'tbody', attributes: {}, children: [] };
+    current(stack).children.push(body);
+    stack.push(body);
+  }
+  const element: RawElement = { tag, attributes: token.attributes, children: [] };
+  current(stack).children.push(element);
+  if (!token.isSelfClosing && !voidElements.has(tag)) stack.push(element);
+}
+
+function closeElement(stack: RawElement[], tag: string): void {
+  const at = stack.findLastIndex((element, index) => index > 0 && element.tag === tag);
+  if (at > 0) stack.length = at;
+}
+
+function addText(stack: RawElement[], text: string): void {
+  const parent = current(stack);
+  if (tableStructure.has(parent.tag)) return;
+  const last = parent.children[parent.children.length - 1];
+  if (typeof last === 'string') parent.children[parent.children.length - 1] = last + text;
+  else parent.children.push(text);
+}
+
+/**
+ * Reads an HTML fragment into a tree of lower-case elements and text. Blocked elements are skipped
+ * with their content, void elements take no children, and an element closes the open elements an
+ * HTML parser would close (a paragraph before a block, a list item before the next one, table
+ * parts before their siblings); a stray closing tag is ignored.
+ */
+export function buildHtmlTree(markup: string): RawNode[] {
+  const root: RawElement = { tag: '#fragment', attributes: {}, children: [] };
+  const stack = [root];
+  let dropping: string | null = null;
+  for (const token of tokenizeMarkup(markup, { rawTextElements })) {
+    if (dropping !== null) {
+      if (token.type === 'close' && token.tag.toLowerCase() === dropping) dropping = null;
+    } else if (token.type === 'text') {
+      addText(stack, token.text);
+    } else if (token.type === 'close') {
+      closeElement(stack, token.tag.toLowerCase());
+    } else if (blockedElements.has(token.tag.toLowerCase())) {
+      const isVoid = token.isSelfClosing || voidElements.has(token.tag.toLowerCase());
+      dropping = isVoid ? null : token.tag.toLowerCase();
+    } else {
+      openElement(stack, token);
+    }
+  }
+  return root.children;
+}

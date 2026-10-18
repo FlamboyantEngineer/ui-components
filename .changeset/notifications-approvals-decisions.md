@@ -1,0 +1,12 @@
+---
+'@flamboyantengineer/ui-components': minor
+---
+
+Add the notification centre, the approval panel and the decision control.
+
+- `NotificationList` (new): a notification inbox. `items` (`id`, `title`, `description`, `actor`, `icon`, `time`, `href`, `isRead`) drawn as `ListRow` rows grouped by local day (`Today`, `Yesterday`, then dates), a filter between all and unread (`filter`, `defaultFilter`, `onFilterChange`, `unreadCount`), `onMarkAllRead`, toolbar `actions`, `onAction`, `onReadChange`, `onDismiss`, `renderActions`, `hasMore` with `onLoadMore` and `isLoading` (Load more that also loads on view), empty and loading states, and a polite announcement of arriving notifications. Hooks: `ui-notification-list` and its slots, `data-filter`, `data-day`, `data-unread`.
+- `NotificationCenter` (new): a bell with the unread count (`countMax`) that opens the list in a popover (`placement`) or, with `presentation="drawer"`, a drawer for narrow screens; `title`, `isOpen`, `defaultOpen`, `onOpenChange`, and every list prop. It announces arrivals whether open or not. Hooks: `ui-notification-center`, `__trigger`, `__count`, `__panel`, `__announcement`, `data-presentation`, `data-open`.
+- `ApprovalPanel` (new): approvers (people or groups) with `decision` (`pending`, `approved`, `rejected`, `abstained`), `time` and `comment`; `requiredCount` with an outcome (`data-outcome`) and a progress bar (`2 of 3 approvals`); `currentApproverId`; `onRemind` and `onRequestAgain`; the reader's decision as children. Hooks: `ui-approval-panel` and its slots, `data-outcome`, `data-decision`, `data-current`.
+- `DecisionControl` (new): approve or reject, or caller `options` such as a scored vote, with `value`, `defaultValue`, `onChange`; a `comment` that is `none`, `optional` or `required`, or required by an option's `requiresComment`; `onSubmit` with pending and error states; `signature` confirms through `SignatureDialog`. Hooks: `ui-decision-control` and its slots, `data-decision`, `data-pending`.
+- Glyphs: `bell`, `clock`, `envelope`, `envelope-open`.
+- Provider strings: `notifications`, `notificationsWithCount`, `notificationFilter`, `allNotifications`, `unread`, `markAllRead`, `markRead`, `markUnread`, `noNotifications`, `noUnreadNotifications`, `notificationsEmpty`, `unreadNotificationsEmpty`, `newNotifications`, `earlier`, `approvals`, `approvalProgress`, `approvalDecision`, `approvers`, `you`, `remindApprover`, `requestApprovalAgain`, `yourDecision`, `approve`, `reject`, `comment`, `submitDecision`, `signDecision` and `decisionFailed`.
