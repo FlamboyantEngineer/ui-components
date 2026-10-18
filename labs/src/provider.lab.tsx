@@ -92,6 +92,14 @@ const sampleArguments: Partial<Record<keyof UiStrings, readonly unknown[]>> = {
   resizeTile: ['Visitors'],
   tileMoved: ['Visitors', 3, 2],
   tileResized: ['Visitors', 4, 2],
+  diagramPortLabel: ['Pump', 'outlet'],
+  diagramOutgoing: ['Valve, Tank'],
+  diagramIncoming: ['Inlet'],
+  diagramMoved: ['Pump', 1],
+  diagramConnecting: ['Pump, outlet'],
+  diagramConnected: ['Pump', 'Valve'],
+  diagramRemoved: [2],
+  diagramRemoveConnection: ['Pump', 'Valve'],
 };
 
 const stringNames = Object.keys(defaultStrings) as Array<keyof UiStrings>;

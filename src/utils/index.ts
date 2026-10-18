@@ -136,3 +136,10 @@ export type { BandScale, BandScaleOptions } from './band-scale.js';
 export { addTimeUnits, createTimeScale, floorToTimeUnit } from './time-scale.js';
 export type { TimeScale, TimeScaleOptions, TimeScaleUnit, TimeTickOptions } from './time-scale.js';
 export { defaultUrlSchemes, isSafeUrl } from './safe-url.js';
+export { layoutLayeredGraph } from './layered-layout.js';
+export type {
+  LayeredLayoutEdge,
+  LayeredLayoutNode,
+  LayeredLayoutOptions,
+  LayeredLayoutPosition,
+} from './layered-layout.js';
