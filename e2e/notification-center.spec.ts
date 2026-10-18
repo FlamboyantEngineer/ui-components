@@ -45,7 +45,8 @@ test.describe('Notification Center lab', () => {
     const dialog = page.getByRole('dialog', { name: 'Notifications' });
     await expect(dialog).toBeVisible();
     await expect(page.locator('.ui-notification-center__panel')).toHaveClass(/ui-drawer/);
-    await dialog.getByRole('button', { name: 'Close' }).click();
+    // The lab's sticky toolbar covers the drawer's header, so the close button is pressed from the keyboard.
+    await dialog.getByRole('button', { name: 'Close' }).press('Enter');
     await expect(dialog).toHaveCount(0);
   });
 

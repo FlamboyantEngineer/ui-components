@@ -81,10 +81,13 @@ test.describe('Relative Time lab', () => {
     const live = page.locator('[data-lab-time="live"]');
     await page.getByRole('button', { name: 'Save now' }).click();
     await expect(live).toHaveText('now');
-    await page.clock.runFor(20_000);
-    await expect(live).toHaveText('20 seconds ago');
-    // Step the clock so each render can schedule the next wake on the shared timer.
-    for (let second = 0; second < 60; second += 1) await page.clock.runFor(1000);
+    // Step the clock a second at a time and wait for each render, so every render schedules its
+    // next wake on the shared timer before the clock moves on.
+    for (let second = 1; second < 60; second += 1) {
+      await page.clock.runFor(1000);
+      await expect(live).toHaveText(second === 1 ? '1 second ago' : `${second} seconds ago`);
+    }
+    for (let second = 60; second <= 80; second += 1) await page.clock.runFor(1000);
     await expect(live).toHaveText('1 minute ago');
     await page.clock.resume();
   });
