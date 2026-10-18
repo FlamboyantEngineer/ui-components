@@ -97,6 +97,14 @@ const sampleArguments: Partial<Record<keyof UiStrings, readonly unknown[]>> = {
   redlineRow: ['changed', 'Heading 2'],
   redlineTypeChange: ['Paragraph', 'Heading 2'],
   formulaInvalidReference: ['Q0'],
+  mergeViewConflictCount: [2, 3],
+  mergeViewConflict: [2, 3],
+  mergeViewConflictResult: [2],
+  mergeViewTake: ['Theirs'],
+  mergeViewLine: ['conflict', 4],
+  pivotAggregate: ['average'],
+  pivotValueLabel: ['Sum', 'Boxes'],
+  pivotAggregationOf: ['Boxes'],
 };
 
 const stringNames = Object.keys(defaultStrings) as Array<keyof UiStrings>;

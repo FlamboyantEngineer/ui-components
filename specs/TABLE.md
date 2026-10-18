@@ -385,7 +385,7 @@ Verification: `src/components/table/use-cell-editing.test.tsx`
 
 ### UIC-TABLE-12.1 - Summary row
 
-When a drawn column has `renderFooter`, a summary row shall follow the rows in React Aria's table footer (`ui-table__footer`, `ui-table__footer-row`): one `ui-table__footer-cell` per column with the column's kind, alignment, id and pin hooks, holding `renderFooter(rows)` from every row the table presents across pages, and empty under the other columns. The row can take focus but is never selected, dragged or passed to `onRowAction`, and a notice hides it.
+When a drawn column has `renderFooter`, a summary row shall follow the rows in React Aria's table footer (`ui-table__footer`, `ui-table__footer-row`): one `ui-table__footer-cell` per column with the column's kind, alignment, id and pin hooks, holding `renderFooter(rows)` from every row the table presents across pages, and empty under the other columns. The row can take focus but is never selected, dragged or passed to `onRowAction`, takes no position among nested rows (`aria-posinset`, `aria-setsize`), and a notice hides it.
 
 Implementation: `src/components/table/table-footer.tsx`, `src/components/table/table.tsx`, `src/core/content-strings.ts`
 Verification: `src/components/table/table-footer.test.tsx`, `e2e/table.spec.ts`

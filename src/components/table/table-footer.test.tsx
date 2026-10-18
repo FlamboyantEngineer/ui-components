@@ -63,6 +63,17 @@ describe('Table summary row', { timeout: 15_000 }, () => {
     expectHooksMatchSpec(container, 'TABLE', { slots: ['footer', 'footer-row', 'footer-cell'] });
   });
 
+  it('UIC-TABLE-12.1 keeps the summary row of nested rows out of the tree positions', () => {
+    const { container } = renderFruit({
+      getChildRows: (row) => (row.id === 'apple' ? [{ id: 'crab', name: 'Crab', weight: 5 }] : []),
+    });
+    expect(screen.getByRole('treegrid', { name: 'Fruit' })).toBeInTheDocument();
+    const row = container.querySelector('.ui-table__footer-row') as HTMLElement;
+    expect(row).toHaveTextContent('3 fruit');
+    expect(row).not.toHaveAttribute('aria-posinset');
+    expect(row).not.toHaveAttribute('aria-setsize');
+  });
+
   it('UIC-TABLE-12.1 draws no summary row without footers or while a notice shows', () => {
     const { container } = renderFruit({ columns: [{ id: 'name', header: 'Name' }] });
     expect(container.querySelector('.ui-table__footer')).toBeNull();

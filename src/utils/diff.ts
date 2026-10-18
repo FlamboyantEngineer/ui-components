@@ -201,7 +201,7 @@ function toHunks<T>(edits: Array<TokenEdit<T>>): Array<TokenEdit<T>> {
 }
 
 /** Splits a text into lines at `\n`, `\r\n` or `\r`; a final line break ends the last line. */
-function splitLines(text: string): string[] {
+export function splitLines(text: string): string[] {
   if (text === '') return [];
   const lines = text.split(/\r\n|\r|\n/);
   if (lines.at(-1) === '') lines.pop();
