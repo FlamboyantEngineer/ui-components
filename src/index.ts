@@ -75,6 +75,7 @@ export * from './components/dropdown-menu/index.js';
 export * from './components/menubar/index.js';
 export * from './components/command-palette/index.js';
 export * from './components/combobox/index.js';
+export * from './components/people-picker/index.js';
 export * from './components/field/index.js';
 export * from './components/select-field/index.js';
 export * from './components/icon-select-field/index.js';

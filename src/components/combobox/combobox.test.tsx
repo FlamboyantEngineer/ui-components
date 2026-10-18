@@ -196,4 +196,89 @@ describe('Combobox', () => {
     act(() => input().focus());
     expectHooksMatchSpec(container, 'COMBOBOX');
   });
+
+  it('UIC-COMBOBOX-5.5 draws the list header above the listbox and gives focus back after a press', async () => {
+    const user = userEvent.setup();
+    const onPress = vi.fn();
+    render(
+      <Combobox
+        label="Fruit"
+        defaultItems={fruit}
+        listHeader={
+          <button type="button" onClick={onPress}>
+            Only citrus
+          </button>
+        }
+      />,
+    );
+    await user.click(input());
+    await user.keyboard('{ArrowDown}');
+    const header = document.querySelector('.ui-combobox__list-header');
+    expect(header?.parentElement).toHaveClass('ui-combobox__popover');
+    expect(
+      header?.compareDocumentPosition(screen.getByRole('listbox')) ??
+        Node.DOCUMENT_POSITION_PRECEDING,
+    ).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    expectHooksMatchSpec(document.body, 'COMBOBOX', { slots: ['list-header', 'listbox'] });
+    await user.click(screen.getByRole('button', { name: 'Only citrus' }));
+    expect(onPress).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
+    expect(input()).toHaveFocus();
+    await user.keyboard('{ArrowDown}');
+    expect(input()).toHaveAttribute('aria-activedescendant');
+  });
+
+  it('UIC-COMBOBOX-5.6 opens from defaultOpen and reports the open state the reader asks for', async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    const { container } = render(
+      <Combobox aria-label="Fruit" defaultItems={fruit} defaultOpen onOpenChange={onOpenChange} />,
+    );
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
+    // React Aria hides the button from assistive technology while the list is open.
+    await user.click(container.querySelector('.ui-combobox__button') as HTMLElement);
+    expect(onOpenChange).toHaveBeenLastCalledWith(false);
+    expect(screen.queryByRole('listbox')).toBeNull();
+  });
+
+  it('UIC-COMBOBOX-5.6 holds a controlled list open or closed as isOpen says', async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    const { rerender } = render(
+      <Combobox
+        aria-label="Fruit"
+        defaultItems={fruit}
+        isOpen={false}
+        onOpenChange={onOpenChange}
+      />,
+    );
+    await user.click(input());
+    await user.keyboard('{ArrowDown}');
+    expect(onOpenChange).toHaveBeenCalledWith(true);
+    expect(screen.queryByRole('listbox')).toBeNull();
+    rerender(
+      <Combobox aria-label="Fruit" defaultItems={fruit} isOpen onOpenChange={onOpenChange} />,
+    );
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
+    onOpenChange.mockClear();
+    await user.keyboard('{Escape}');
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
+    rerender(
+      <Combobox
+        aria-label="Fruit"
+        defaultItems={fruit}
+        isOpen={false}
+        onOpenChange={onOpenChange}
+      />,
+    );
+    expect(screen.queryByRole('listbox')).toBeNull();
+  });
+
+  it('UIC-COMBOBOX-5.7 hands its input to inputRef and focuses it on mount with autoFocus', () => {
+    const inputRef = createRef<HTMLInputElement>();
+    render(<Combobox aria-label="Fruit" defaultItems={fruit} inputRef={inputRef} autoFocus />);
+    expect(inputRef.current).toBe(input());
+    expect(input()).toHaveFocus();
+  });
 });

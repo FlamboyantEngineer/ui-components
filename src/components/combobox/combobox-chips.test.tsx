@@ -127,4 +127,28 @@ describe('Combobox chips', () => {
     const chips = screen.getByRole('grid', { name: 'Cities selected values' });
     expect(within(chips).queryByRole('button')).toBeNull();
   });
+
+  it('UIC-COMBOBOX-3.5 draws each chip with its option icon', () => {
+    const { container } = render(
+      <Combobox
+        aria-label="Cities"
+        selectionMode="multiple"
+        defaultItems={[
+          { id: 'paris', label: 'Paris', icon: 'folder' },
+          { id: 'lima', label: 'Lima', icon: <svg data-testid="flag" /> },
+          { id: 'oslo', label: 'Oslo' },
+        ]}
+        defaultValue={['paris', 'lima', 'oslo']}
+      />,
+    );
+    const chips = screen.getByRole('grid', { name: 'Cities selected values' });
+    const paris = within(chips).getByRole('row', { name: 'Paris' });
+    expect(paris.querySelector('.ui-combobox__chip-icon')).toHaveAttribute('aria-hidden', 'true');
+    expect(paris.querySelector('[data-glyph="folder"]')).not.toBeNull();
+    const lima = within(chips).getByRole('row', { name: 'Lima' });
+    expect(within(lima).getByTestId('flag').closest('.ui-combobox__chip-icon')).not.toBeNull();
+    const oslo = within(chips).getByRole('row', { name: 'Oslo' });
+    expect(oslo.querySelector('.ui-combobox__chip-icon')).toBeNull();
+    expectHooksMatchSpec(container, 'COMBOBOX', { slots: ['chips', 'chip-icon'] });
+  });
 });
