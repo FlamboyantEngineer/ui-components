@@ -115,6 +115,16 @@ export interface CommonStrings {
   signature: string;
   /** Names the field for a user name. */
   userName: string;
+  /** Titles the question asked before leaving unsaved changes. */
+  unsavedChanges: string;
+  /** Asks to save unsaved changes before leaving. */
+  saveBeforeLeaving: string;
+  /** Asks to leave unsaved changes that cannot be saved from here. */
+  discardBeforeLeaving: string;
+  /** Throws unsaved changes away. */
+  discard: string;
+  /** Keeps the reader where they are, with their changes. */
+  stay: string;
 }
 
 const spokenKeyNames: Readonly<Record<string, string>> = {
@@ -217,4 +227,9 @@ export const commonStrings: CommonStrings = {
   signatureReason: 'Reason',
   signature: 'Signature',
   userName: 'User name',
+  unsavedChanges: 'Unsaved changes',
+  saveBeforeLeaving: 'Save your changes before you leave?',
+  discardBeforeLeaving: 'Your changes are not saved. Leave and discard them?',
+  discard: 'Discard',
+  stay: 'Stay',
 };
