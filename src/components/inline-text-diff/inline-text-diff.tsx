@@ -4,7 +4,7 @@ import type { BaseProps } from '../../core/props.js';
 import type { InlineTextDiffSegment } from './text-diff.js';
 
 export interface InlineTextDiffProps extends BaseProps {
-  /** Runs in reading order. Build them with `createInlineTextDiffExcerpt(before, after)`. */
+  /** Runs in reading order, from `createInlineTextDiffExcerpt` or `createInlineWordDiff`. */
   segments: readonly InlineTextDiffSegment[];
 }
 

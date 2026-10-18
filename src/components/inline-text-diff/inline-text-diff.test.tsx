@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { InlineTextDiff } from './inline-text-diff.js';
-import { createInlineTextDiffExcerpt, splitTextDiff } from './text-diff.js';
+import { createInlineTextDiffExcerpt, createInlineWordDiff, splitTextDiff } from './text-diff.js';
 
 describe('text diff helpers', () => {
   it('UIC-INLINE-TEXT-DIFF-1.1 splits around one contiguous change', () => {
@@ -53,6 +53,33 @@ describe('text diff helpers', () => {
       { kind: 'added', text: 'YYY…' },
       { kind: 'text', text: 'bb…' },
     ]);
+  });
+});
+
+describe('word changes', () => {
+  it('UIC-INLINE-TEXT-DIFF-1.3 shows every changed run of words in place, uncut', () => {
+    expect(
+      createInlineWordDiff('Ship pears to Lisbon on Monday', 'Ship plums to Porto on Monday'),
+    ).toEqual([
+      { kind: 'text', text: 'Ship ' },
+      { kind: 'removed', text: 'pears' },
+      { kind: 'added', text: 'plums' },
+      { kind: 'text', text: ' to ' },
+      { kind: 'removed', text: 'Lisbon' },
+      { kind: 'added', text: 'Porto' },
+      { kind: 'text', text: ' on Monday' },
+    ]);
+    expect(createInlineWordDiff('', 'First value')).toEqual([
+      { kind: 'added', text: 'First value' },
+    ]);
+    const long = 'word '.repeat(60);
+    expect(createInlineWordDiff('', long)).toEqual([{ kind: 'added', text: long }]);
+    const { container } = render(
+      <InlineTextDiff segments={createInlineWordDiff('red and blue', 'green and yellow')} />,
+    );
+    expect(container.firstElementChild?.innerHTML).toBe(
+      '<del class="ui-inline-text-diff__removed">red</del><ins class="ui-inline-text-diff__added">green</ins> and <del class="ui-inline-text-diff__removed">blue</del><ins class="ui-inline-text-diff__added">yellow</ins>',
+    );
   });
 });
 

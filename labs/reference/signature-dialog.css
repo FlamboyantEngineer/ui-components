@@ -1,0 +1,35 @@
+/* Signature Dialog, on top of Modal: the summary, then the entries stacked in the form. */
+
+.ui-signature-dialog .ui-modal__body {
+  padding-top: 4px;
+}
+
+.ui-signature-dialog__summary {
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  border-inline-start: 3px solid var(--ref-border-strong);
+  background: var(--ref-surface);
+}
+
+.ui-signature-dialog__summary > :first-child {
+  margin-top: 0;
+}
+
+.ui-signature-dialog__summary > :last-child {
+  margin-bottom: 0;
+}
+
+.ui-signature-dialog__form {
+  align-items: stretch;
+}
+
+.ui-signature-dialog__meaning,
+.ui-signature-dialog__signer {
+  margin: 0;
+}
+
+.ui-signature-dialog__signer {
+  padding-top: 8px;
+  border-top: 1px solid var(--ref-border);
+  color: var(--ref-muted);
+}

@@ -99,6 +99,18 @@ export interface CommonStrings {
   logicalBoxSide: (side: 'block-start' | 'block-end' | 'inline-start' | 'inline-end') => string;
   /** The toggle that links a box's sides, so one edit sets all four or each opposite pair. */
   linkSides: (link: 'all' | 'pairs') => string;
+  /** The action that signs, in a signature dialog. */
+  sign: string;
+  /** Says who signs, from the signer's user name. */
+  signingAs: (userName: string) => string;
+  /** Names the meaning a signature gives its signer's assent: approval, review, authorship. */
+  signatureMeaning: string;
+  /** Names the field for the reason of a signature. */
+  signatureReason: string;
+  /** Names the field for a signer's drawn or typed signature. */
+  signature: string;
+  /** Names the field for a user name. */
+  userName: string;
 }
 
 const spokenKeyNames: Readonly<Record<string, string>> = {
@@ -193,4 +205,10 @@ export const commonStrings: CommonStrings = {
   boxSide: (side) => boxSideNames[side],
   logicalBoxSide: (side) => logicalBoxSideNames[side],
   linkSides: (link) => (link === 'all' ? 'Link all sides' : 'Link opposite sides'),
+  sign: 'Sign',
+  signingAs: (userName) => `Signing as ${userName}`,
+  signatureMeaning: 'Meaning of signature',
+  signatureReason: 'Reason',
+  signature: 'Signature',
+  userName: 'User name',
 };

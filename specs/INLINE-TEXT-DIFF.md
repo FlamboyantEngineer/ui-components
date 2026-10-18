@@ -1,6 +1,6 @@
 # Inline Text Diff
 
-`InlineTextDiff` shows a change to a text value inline: the unchanged context as plain text, the removed run and the added run, in reading order and in the flow of the text around it. `createInlineTextDiffExcerpt` builds its segments from two values. It is read-only output with no states.
+`InlineTextDiff` shows a change to a text value inline: the unchanged context as plain text, the removed run and the added run, in reading order and in the flow of the text around it. `createInlineTextDiffExcerpt` builds its segments for one contiguous change, and `createInlineWordDiff` for every changed run of words ([Diff](DIFF.md)). It is read-only output with no states.
 
 ## UIC-INLINE-TEXT-DIFF-1 - Segments
 
@@ -16,6 +16,13 @@ Verification: `src/components/inline-text-diff/inline-text-diff.test.tsx`
 `createInlineTextDiffExcerpt(before, after)` shall return `text`, `removed`, `added` and `text` segments in that order, leaving out empty ones, so a first value is one added run and a cleared value one removed run. Context keeps at most 24 characters on each side (the characters nearest the change) and each run at most 100, a cut marked with `…`; `context` and `run` options change the limits.
 
 Implementation: `src/components/inline-text-diff/text-diff.ts`
+Verification: `src/components/inline-text-diff/inline-text-diff.test.tsx`, `e2e/inline-text-diff.spec.ts`
+
+### UIC-INLINE-TEXT-DIFF-1.3 - Word changes
+
+`createInlineWordDiff(before, after)` shall return a segment for each hunk of `diffWords(before, after)` (UIC-DIFF-2), in order and uncut: equal text as `text`, deleted text as `removed` and inserted text as `added`, so a value edited in several places shows each change in place, its removed run before its added run.
+
+Implementation: `src/components/inline-text-diff/text-diff.ts`, `src/utils/diff.ts`
 Verification: `src/components/inline-text-diff/inline-text-diff.test.tsx`, `e2e/inline-text-diff.spec.ts`
 
 ## UIC-INLINE-TEXT-DIFF-2 - Rendering
