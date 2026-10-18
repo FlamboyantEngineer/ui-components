@@ -1,0 +1,391 @@
+import { act, render, screen, waitFor, within } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
+import { useState } from 'react';
+import { describe, expect, it, vi } from 'vitest';
+import { createMemoryStorage } from '../../core/storage.js';
+import { UiProvider } from '../../core/provider.js';
+import type { Key } from '../../core/props.js';
+import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { Board, type BoardProps } from './board.js';
+import {
+  applyBoardMove,
+  applyColumnMove,
+  type BoardColumnMove,
+  type BoardMove,
+} from './board-moves.js';
+
+interface Task {
+  id: string;
+  title: string;
+  column: string;
+  lane: string;
+}
+
+const columns = [
+  { id: 'todo', title: 'To do' },
+  { id: 'doing', title: 'Doing', limit: 1 },
+  { id: 'done', title: 'Done', limit: 5 },
+];
+const lanes = [
+  { id: 'north', title: 'North team' },
+  { id: 'south', title: 'South team' },
+];
+const tasks: Task[] = [
+  { id: 'soup', title: 'Make soup', column: 'todo', lane: 'north' },
+  { id: 'bread', title: 'Bake bread', column: 'todo', lane: 'north' },
+  { id: 'jam', title: 'Boil jam', column: 'doing', lane: 'north' },
+  { id: 'tea', title: 'Brew tea', column: 'doing', lane: 'south' },
+];
+
+type TaskBoardProps = Partial<BoardProps<Task>>;
+
+function TaskBoard(props: TaskBoardProps) {
+  return (
+    <Board
+      aria-label="Kitchen"
+      columns={columns}
+      items={tasks}
+      getColumn={(task) => task.column}
+      getLane={(task) => task.lane}
+      getTextValue={(task) => task.title}
+      renderCard={(task) => <strong>{task.title}</strong>}
+      {...props}
+    />
+  );
+}
+
+/** Applies each reported move to its own tasks, as an owner does. */
+function MovingBoard({ onMove, ...props }: TaskBoardProps) {
+  const [items, setItems] = useState(tasks);
+  return (
+    <TaskBoard
+      {...props}
+      items={items}
+      onMove={(move) => {
+        onMove?.(move);
+        setItems((current) =>
+          applyBoardMove(current, move, (task, cell) => ({
+            ...task,
+            column: String(cell.column),
+            lane: String(cell.lane ?? task.lane),
+          })),
+        );
+      }}
+    />
+  );
+}
+
+const grid = (name: string) => screen.getByRole('grid', { name });
+const cardNames = (name: string) =>
+  within(grid(name))
+    .queryAllByRole('row')
+    .map((row) => row.textContent);
+
+describe('Board', () => {
+  it('UIC-BOARD-1.1 UIC-BOARD-1.8 UIC-BOARD-4.1 renders columns, cells and cards', async () => {
+    const onAction = vi.fn<(key: Key) => void>();
+    const { container } = render(
+      <TaskBoard id="kitchen" className="mine" data-test="board" onAction={onAction} />,
+    );
+    const board = screen.getByRole('group', { name: 'Kitchen' });
+    expect(board).toHaveClass('ui-board', 'mine');
+    expect(board).toHaveAttribute('id', 'kitchen');
+    expect(board).toHaveAttribute('data-test', 'board');
+    const titles = [...container.querySelectorAll('.ui-board__column-title')].map(
+      (node) => node.textContent,
+    );
+    expect(titles).toEqual(['To do', 'Doing', 'Done']);
+    expect(cardNames('To do')).toEqual(['Make soup', 'Bake bread']);
+    expect(cardNames('Doing')).toEqual(['Boil jam', 'Brew tea']);
+    expect(grid('To do')).toHaveClass('ui-board__cards');
+    expect(
+      screen
+        .getByRole('row', { name: 'Make soup' })
+        .querySelector('.ui-board__card-content strong'),
+    ).toHaveTextContent('Make soup');
+    await userEvent.click(screen.getByRole('row', { name: 'Bake bread' }));
+    expect(onAction).toHaveBeenCalledWith('bread');
+    expectHooksMatchSpec(container, 'BOARD', {
+      slots: [
+        'columns',
+        'column',
+        'column-toggle',
+        'column-title',
+        'column-count',
+        'cells',
+        'cell',
+        'cards',
+        'card',
+        'card-content',
+        'empty',
+      ],
+      callerAttributes: ['data-test'],
+    });
+  });
+
+  it('UIC-BOARD-1.2 shows counts against limits and marks columns over their limit', () => {
+    const { container } = render(<TaskBoard />);
+    const headers = [...container.querySelectorAll('.ui-board__column')];
+    const counts = headers.map((header) => header.querySelector('.ui-board__column-count'));
+    expect(counts.map((count) => count?.querySelector('[aria-hidden]')?.textContent)).toEqual([
+      '2',
+      '2/1',
+      '0/5',
+    ]);
+    expect(counts.map((count) => count?.querySelector('.ui-visually-hidden')?.textContent)).toEqual(
+      ['2 cards', '2 cards, over the limit of 1', '0 cards, limit 5'],
+    );
+    expect(headers[1]).toHaveAttribute('data-over-limit', 'true');
+    expect(headers[0]).not.toHaveAttribute('data-over-limit');
+    const cells = container.querySelectorAll('.ui-board__cell');
+    expect(cells[1]).toHaveAttribute('data-over-limit', 'true');
+  });
+
+  it('UIC-BOARD-1.3 UIC-BOARD-4.1 repeats the columns in named lanes', () => {
+    const { container } = render(<TaskBoard lanes={lanes} />);
+    const north = screen.getByRole('group', { name: 'North team' });
+    expect(north).toHaveClass('ui-board__lane');
+    expect(within(north).getByRole('grid', { name: 'To do North team' })).toBeInTheDocument();
+    expect(cardNames('Doing South team')).toEqual(['Brew tea']);
+    expect(north.querySelector('.ui-board__lane-count .ui-visually-hidden')).toHaveTextContent(
+      '3 cards',
+    );
+    expectHooksMatchSpec(container, 'BOARD', {
+      slots: ['lane', 'lane-header', 'lane-toggle', 'lane-title', 'lane-count'],
+    });
+  });
+
+  it('UIC-BOARD-1.4 collapses columns and lanes, remembering them under a persist key', async () => {
+    const storage = createMemoryStorage();
+    const user = userEvent.setup();
+    const { container, unmount } = render(
+      <UiProvider storage={storage}>
+        <TaskBoard lanes={lanes} persistKey="kitchen" />
+      </UiProvider>,
+    );
+    await user.click(screen.getByRole('button', { name: 'Collapse Doing' }));
+    const doing = container.querySelectorAll('.ui-board__column')[1];
+    expect(doing).toHaveAttribute('data-collapsed', 'true');
+    expect(screen.getByRole('button', { name: 'Expand Doing' })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
+    expect(screen.queryByRole('grid', { name: 'Doing North team' })).toBeNull();
+    expect(container.querySelectorAll('.ui-board__cell[data-collapsed]')).toHaveLength(2);
+    await user.click(screen.getByRole('button', { name: 'Collapse South team' }));
+    expect(screen.getByRole('group', { name: 'South team' })).toHaveAttribute(
+      'data-collapsed',
+      'true',
+    );
+    expect(screen.queryByRole('grid', { name: 'To do South team' })).toBeNull();
+    expect(storage.getItem('kitchen:columns')).toBe('["doing"]');
+    expect(storage.getItem('kitchen:lanes')).toBe('["south"]');
+    unmount();
+    render(
+      <UiProvider storage={storage}>
+        <TaskBoard lanes={lanes} persistKey="kitchen" />
+      </UiProvider>,
+    );
+    expect(screen.getByRole('button', { name: 'Expand Doing' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Expand South team' })).toBeInTheDocument();
+  });
+
+  it('UIC-BOARD-1.4 follows controlled collapsed columns and lanes', async () => {
+    const onCollapsedColumnsChange = vi.fn<(keys: Set<Key>) => void>();
+    const onCollapsedLanesChange = vi.fn<(keys: Set<Key>) => void>();
+    render(
+      <TaskBoard
+        lanes={lanes}
+        collapsedColumns={['todo']}
+        onCollapsedColumnsChange={onCollapsedColumnsChange}
+        defaultCollapsedLanes={['north']}
+        onCollapsedLanesChange={onCollapsedLanesChange}
+      />,
+    );
+    expect(screen.getByRole('group', { name: 'North team' })).toHaveAttribute(
+      'data-collapsed',
+      'true',
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Expand To do' }));
+    expect(onCollapsedColumnsChange).toHaveBeenCalledWith(new Set());
+    expect(screen.getByRole('button', { name: 'Expand To do' })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Expand North team' }));
+    expect(onCollapsedLanesChange).toHaveBeenCalledWith(new Set());
+    expect(screen.getByRole('group', { name: 'North team' })).not.toHaveAttribute('data-collapsed');
+  });
+
+  it('UIC-BOARD-1.5 draws an empty state in a cell without cards', () => {
+    render(<TaskBoard />);
+    const done = grid('Done');
+    expect(done).toHaveAttribute('data-empty', 'true');
+    expect(done.querySelector('.ui-board__empty')).toHaveTextContent('No cards');
+  });
+
+  it('UIC-BOARD-1.6 adds cards to the cell whose button is pressed', async () => {
+    const onAddCard = vi.fn();
+    const { container, rerender } = render(<TaskBoard lanes={lanes} onAddCard={onAddCard} />);
+    const buttons = screen.getAllByRole('button', { name: 'Add card' });
+    expect(buttons).toHaveLength(6);
+    expect(buttons[4]).toHaveClass('ui-board__add', 'ui-button');
+    expect(buttons[4]).toHaveAccessibleDescription('Doing South team');
+    await userEvent.click(buttons[4] as HTMLElement);
+    expect(onAddCard).toHaveBeenCalledWith({ column: 'doing', lane: 'south' });
+    expectHooksMatchSpec(container, 'BOARD', { slots: ['add'] });
+    rerender(<TaskBoard lanes={lanes} />);
+    expect(screen.queryByRole('button', { name: 'Add card' })).toBeNull();
+  });
+
+  // Laying out a virtual list in jsdom is slow on a busy machine.
+  it('UIC-BOARD-1.7 renders only the cards in view when virtualized', { timeout: 15_000 }, () => {
+    const sizes = { clientWidth: 300, clientHeight: 300, scrollHeight: 80 };
+    for (const [name, value] of Object.entries(sizes)) {
+      Object.defineProperty(HTMLElement.prototype, name, { configurable: true, get: () => value });
+    }
+    const many = Array.from({ length: 300 }, (_, index) => ({
+      id: `task-${index}`,
+      title: `Task ${index}`,
+      column: 'todo',
+      lane: 'north',
+    }));
+    try {
+      const { container } = render(<TaskBoard items={many} virtualized />);
+      expect(container.querySelector('.ui-board')).toHaveAttribute('data-virtualized', 'true');
+      expect(grid('To do')).toHaveAttribute('data-virtualized', 'true');
+      const rows = within(grid('To do')).getAllByRole('row');
+      expect(rows.length).toBeGreaterThan(0);
+      expect(rows.length).toBeLessThan(40);
+    } finally {
+      for (const name of Object.keys(sizes)) {
+        delete (HTMLElement.prototype as unknown as Record<string, unknown>)[name];
+      }
+    }
+  });
+
+  it('UIC-BOARD-2.2 draws drag handles only while the board takes moves', () => {
+    const { container, rerender } = render(<TaskBoard onMove={vi.fn()} />);
+    const card = screen.getByRole('row', { name: 'Make soup' });
+    expect(card).toHaveAttribute('data-allows-dragging', 'true');
+    expect(card.querySelector('.ui-board__card-handle')).toHaveClass('ui-drag-handle');
+    expectHooksMatchSpec(container, 'BOARD', { slots: ['card-handle'] });
+    rerender(<TaskBoard />);
+    expect(screen.getByRole('row', { name: 'Make soup' })).not.toHaveAttribute(
+      'data-allows-dragging',
+    );
+    expect(container.querySelector('.ui-board__card-handle')).toBeNull();
+  });
+
+  it(
+    'UIC-BOARD-2.2 moves a card to another column by keyboard drag and drop',
+    { timeout: 15_000 },
+    async () => {
+      const onMove = vi.fn<(move: BoardMove) => void>();
+      render(<MovingBoard onMove={onMove} />);
+      const user = userEvent.setup();
+      screen.getByRole('row', { name: 'Make soup' }).focus();
+      await user.keyboard('{ArrowRight}');
+      expect(screen.getByRole('button', { name: 'Drag Make soup' })).toHaveFocus();
+      await user.keyboard('{Enter}');
+      expect(document.querySelectorAll('.ui-board__drop-indicator[data-drop-target]')).toHaveLength(
+        1,
+      );
+      await user.keyboard('{Tab}{Enter}');
+      expect(onMove).toHaveBeenCalledTimes(1);
+      const move = onMove.mock.lastCall?.[0];
+      expect(move?.key).toBe('soup');
+      expect(move?.column).toBe('doing');
+      expect(cardNames('Doing')).toContain('Make soup');
+      expect(cardNames('To do')).toEqual(['Bake bread']);
+    },
+  );
+
+  it('UIC-BOARD-2.3 moves the focused card with Alt+Arrow keys and keeps focus on it', async () => {
+    const onMove = vi.fn<(move: BoardMove) => void>();
+    render(<MovingBoard lanes={lanes} onMove={onMove} />);
+    const user = userEvent.setup();
+    const soup = () => screen.getByRole('row', { name: 'Make soup' });
+    expect(soup()).toHaveAttribute(
+      'aria-keyshortcuts',
+      'Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight',
+    );
+    act(() => soup().focus());
+    await user.keyboard('{Alt>}{ArrowDown}{/Alt}');
+    expect(onMove).toHaveBeenLastCalledWith({
+      key: 'soup',
+      column: 'todo',
+      lane: 'north',
+      targetKey: 'bread',
+      position: 'after',
+    });
+    expect(cardNames('To do North team')).toEqual(['Bake bread', 'Make soup']);
+    expect(soup()).toHaveFocus();
+    await user.keyboard('{Alt>}{ArrowRight}{/Alt}');
+    expect(onMove).toHaveBeenLastCalledWith({
+      key: 'soup',
+      column: 'doing',
+      lane: 'north',
+      targetKey: 'jam',
+      position: 'after',
+    });
+    expect(cardNames('Doing North team')).toEqual(['Boil jam', 'Make soup']);
+    await waitFor(() => expect(soup()).toHaveFocus());
+    await user.keyboard('{Alt>}{ArrowDown}{/Alt}');
+    expect(onMove).toHaveBeenCalledTimes(2);
+  });
+
+  it('UIC-BOARD-2.3 mirrors keyboard moves right to left', async () => {
+    const onMove = vi.fn<(move: BoardMove) => void>();
+    render(
+      <UiProvider locale="ar-EG">
+        <TaskBoard onMove={onMove} />
+      </UiProvider>,
+    );
+    act(() => screen.getByRole('row', { name: 'Make soup' }).focus());
+    await userEvent.keyboard('{Alt>}{ArrowLeft}{/Alt}');
+    expect(onMove).toHaveBeenLastCalledWith(
+      expect.objectContaining({ key: 'soup', column: 'doing' }),
+    );
+  });
+
+  it('UIC-BOARD-3.1 offers column handles only while the board takes column moves', () => {
+    const { container, rerender } = render(<TaskBoard onColumnMove={vi.fn()} />);
+    const handle = screen.getByRole('button', { name: 'Move column Doing' });
+    expect(handle).toHaveClass('ui-board__column-handle', 'ui-icon-button');
+    expect(container.querySelector('.ui-board__column')).toHaveAttribute('draggable', 'true');
+    expectHooksMatchSpec(container, 'BOARD', { slots: ['column-handle'] });
+    rerender(<TaskBoard />);
+    expect(container.querySelector('.ui-board__column-handle')).toBeNull();
+    expect(container.querySelector('.ui-board__column')).not.toHaveAttribute('draggable');
+  });
+
+  it('UIC-BOARD-3.2 moves a column with Alt+Arrow keys on its handle', async () => {
+    const onColumnMove = vi.fn<(move: BoardColumnMove) => void>();
+    function Reordering() {
+      const [order, setOrder] = useState(columns);
+      return (
+        <TaskBoard
+          columns={order}
+          onColumnMove={(move) => {
+            onColumnMove(move);
+            setOrder((current) => applyColumnMove(current, move));
+          }}
+        />
+      );
+    }
+    const { container } = render(<Reordering />);
+    const user = userEvent.setup();
+    act(() => screen.getByRole('button', { name: 'Move column To do' }).focus());
+    await user.keyboard('{Alt>}{ArrowRight}{/Alt}');
+    expect(onColumnMove).toHaveBeenLastCalledWith({
+      key: 'todo',
+      targetKey: 'doing',
+      position: 'after',
+    });
+    const titles = () =>
+      [...container.querySelectorAll('.ui-board__column-title')].map((node) => node.textContent);
+    expect(titles()).toEqual(['Doing', 'To do', 'Done']);
+    expect(screen.getByRole('button', { name: 'Move column To do' })).toHaveFocus();
+    await user.keyboard('{Alt>}{ArrowLeft}{/Alt}{Alt>}{ArrowLeft}{/Alt}');
+    expect(titles()).toEqual(['To do', 'Doing', 'Done']);
+    expect(onColumnMove).toHaveBeenCalledTimes(2);
+  });
+});
