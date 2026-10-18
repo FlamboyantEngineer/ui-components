@@ -18,6 +18,7 @@ export const LAB_GROUPS = [
   'Field base',
   'Field controls',
   'Data views',
+  'Content',
   'Widgets',
 ];
 

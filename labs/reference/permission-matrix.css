@@ -1,0 +1,41 @@
+/* Permission Matrix: role headers with a lock for read-only roles, dashed inherited boxes and ringed dirty boxes. */
+
+.ui-permission-matrix {
+  max-width: 100%;
+}
+
+.ui-permission-matrix__role {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ui-permission-matrix__role-label {
+  font-weight: 600;
+}
+
+.ui-permission-matrix__role[data-readonly] .ui-permission-matrix__role-label {
+  color: var(--ref-muted);
+}
+
+.ui-permission-matrix__lock {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  color: var(--ref-muted);
+}
+
+.ui-permission-matrix__grant,
+.ui-permission-matrix__group-grant {
+  justify-content: center;
+}
+
+.ui-permission-matrix__grant[data-inherited]:not([data-selected]) .ui-checkbox__box {
+  border-style: dashed;
+}
+
+.ui-permission-matrix__grant[data-dirty] .ui-checkbox__box {
+  box-shadow:
+    0 0 0 2px var(--ref-canvas),
+    0 0 0 4px var(--ref-warning);
+}

@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { diffLines, diffWords, type LineDiffHunk, type WordDiffHunk } from './diff.js';
+import {
+  diffLines,
+  diffSequences,
+  diffWords,
+  type LineDiffHunk,
+  type WordDiffHunk,
+} from './diff.js';
 
 function lcsLength(a: readonly string[], b: readonly string[]): number {
   let previous = new Array<number>(b.length + 1).fill(0);
@@ -172,5 +178,24 @@ describe('diffWords', () => {
       expect(textOf(hunks, 'old')).toBe(before);
       expect(textOf(hunks, 'new')).toBe(after);
     }
+  });
+});
+
+describe('diffSequences', () => {
+  it('UIC-DIFF-3.1 returns equal, deleted and inserted runs of items compared with ===', () => {
+    expect(diffSequences(['a', 'b', 'c', 'd'], ['a', 'c', 'e', 'd'])).toEqual([
+      { kind: 'equal', items: ['a'] },
+      { kind: 'delete', items: ['b'] },
+      { kind: 'equal', items: ['c'] },
+      { kind: 'insert', items: ['e'] },
+      { kind: 'equal', items: ['d'] },
+    ]);
+    expect(diffSequences([1, 2, 3], [3, 1, 2])).toEqual([
+      { kind: 'insert', items: [3] },
+      { kind: 'equal', items: [1, 2] },
+      { kind: 'delete', items: [3] },
+    ]);
+    expect(diffSequences([], [])).toEqual([]);
+    expect(diffSequences([1, 2], [])).toEqual([{ kind: 'delete', items: [1, 2] }]);
   });
 });

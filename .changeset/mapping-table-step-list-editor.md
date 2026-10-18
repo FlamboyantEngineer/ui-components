@@ -1,0 +1,10 @@
+---
+'@flamboyantengineer/ui-components': minor
+---
+
+Add `MappingTable` and `StepListEditor`.
+
+- `MappingTable` (new): source columns with sample values mapped to target fields, one `SelectField` per column with a "Don't import" choice. `columns`, `targets` (`isRequired`), `value`/`defaultValue`/`onChange` (a plain record from column ids to target ids or `null`), `getSuggestion`, `isReadOnly`. Suggested choices are marked, a target chosen for several columns warns on each row, and a polite summary counts mapped and skipped columns and names unmapped required targets. `suggestMapping` and `summarizeMapping` return the same data for callers. Hooks: `ui-mapping-table` with `__table`, `__row`, `__column`, `__samples`, `__sample`, `__target`, `__select`, `__suggested`, `__summary`, `__counts`, `__problem`, and `data-complete`, `data-key`, `data-mapped`, `data-suggested`, `data-duplicate`.
+- `StepListEditor` (new): an ordered list of numbered steps (`formatOutlineNumber`), each a group of multi-line `TextField`s, one per caller column. `columns`, `value`/`defaultValue`/`onChange` (plain `{ id, values }` steps), `committedValue` for dirty marks on steps, fields and the list, `isReadOnly`. Steps are added, inserted above or below, duplicated, moved and deleted from their menus, moved with Alt+ArrowUp/Down with focus kept, and dragged by their handles (pointer, keyboard or screen reader). Hooks: `ui-step-list-editor` with `__header`, `__heading`, `__steps`, `__step`, `__handle`, `__number`, `__fields`, `__field`, `__actions`, `__empty`, `__add`, and `data-dirty`, `data-readonly`, `data-key`, `data-column`, `data-dragging`, `data-drop-target`, `data-position`.
+- New provider strings: `columnMapping`, `sourceColumn`, `sampleValues`, `importAs`, `importColumnAs`, `doNotImport`, `requiredTarget`, `suggestedTarget`, `mappedColumns`, `skippedColumns`, `unmappedRequiredTargets`, `duplicateTarget`, `stepLabel`, `stepActions`, `moveStep`, `addStep`, `insertStepAbove`, `insertStepBelow`, `noSteps`.
+- `ConditionBuilder` now moves focus after its edits through the shared focus request also used by `StepListEditor`; its behaviour is unchanged.

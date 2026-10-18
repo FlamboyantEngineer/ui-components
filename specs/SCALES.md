@@ -1,8 +1,8 @@
 # Scales
 
-`createLinearScale` and `createTimeScale` map data values to positions, such as pixels along an axis, and make the ticks an axis labels. [Sparkline](SPARKLINE.md) draws with a linear scale; charts and time-based views build on both. They are pure functions with no dependency on the page, so a host can use them for its own drawings.
+`createLinearScale`, `createTimeScale` and `createBandScale` map data values to positions, such as pixels along an axis, and make the ticks an axis labels. [Sparkline](SPARKLINE.md) draws with a linear scale; charts and time-based views build on them. They are pure functions with no dependency on the page, so a host can use them for its own drawings.
 
-Both return a scale whose `map` turns a value into a position, whose `invert` turns a position back into a value, whose `ticks` lists `{ value, position, label }` marks, and whose `format` writes a value as a tick label.
+The linear and time scales return a scale whose `map` turns a value into a position, whose `invert` turns a position back into a value, whose `ticks` lists `{ value, position, label }` marks, and whose `format` writes a value as a tick label. The band scale maps categories to the bands of a bar chart and ticks the middle of each band.
 
 ## UIC-SCALES-1 - Linear scale
 
@@ -84,3 +84,26 @@ Verification: `src/utils/time-scale.test.ts`
 
 Implementation: `src/utils/time-scale.ts`
 Verification: `src/utils/time-scale.test.ts`
+
+## UIC-SCALES-3 - Band scale
+
+### UIC-SCALES-3.1 - Bands
+
+`createBandScale({ domain, range, padding })` shall split the range into one equal step per category of the domain, in order, each holding a band `padding` of a step shorter (0.2 by default, kept between 0 and 1) and centred in its step, so half the padding sits at each outer edge. `map(category)` returns where the category's band starts, at its lower position, and the scale exposes its `step` and `bandwidth`. Reversed ends of the range lay the bands out from the second end. [Bar Chart](CHART.md) lays its bars out with it.
+
+Implementation: `src/utils/band-scale.ts`
+Verification: `src/utils/band-scale.test.ts`
+
+### UIC-SCALES-3.2 - Ticks
+
+`ticks()` shall return one tick per category, positioned at the middle of its band and labelled with the category.
+
+Implementation: `src/utils/band-scale.ts`
+Verification: `src/utils/band-scale.test.ts`
+
+### UIC-SCALES-3.3 - Truthful edges
+
+A category that is not in the domain shall map to `NaN`; a repeated category keeps its first band; an end of the range that is not a finite number reads as 0; an empty domain has a step and bandwidth of 0 and no ticks.
+
+Implementation: `src/utils/band-scale.ts`
+Verification: `src/utils/band-scale.test.ts`

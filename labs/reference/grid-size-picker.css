@@ -1,0 +1,54 @@
+/* Grid Size Picker: square 18 pixel cells with a gap, highlighted up to the preview. */
+
+.ui-grid-size-picker {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 4px;
+  color: var(--ref-text);
+}
+
+.ui-grid-size-picker__grid {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  outline: none;
+}
+
+.ui-grid-size-picker__row {
+  display: flex;
+  gap: 3px;
+}
+
+.ui-grid-size-picker__cell {
+  box-sizing: border-box;
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--ref-border-strong);
+  border-radius: 2px;
+  background: var(--ref-canvas);
+  cursor: pointer;
+  outline: none;
+}
+
+.ui-grid-size-picker__cell[data-in-range] {
+  border-color: var(--ref-accent);
+  background: color-mix(in srgb, var(--ref-accent) 22%, var(--ref-canvas));
+}
+
+.ui-grid-size-picker__cell:focus-visible {
+  outline: 2px solid var(--ref-focus);
+  outline-offset: 1px;
+}
+
+.ui-grid-size-picker__readout {
+  color: var(--ref-muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.ui-grid-size-picker[data-disabled] .ui-grid-size-picker__cell {
+  cursor: default;
+  opacity: 0.5;
+}

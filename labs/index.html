@@ -146,6 +146,8 @@
           <li><a href="switch.html">Switch</a> — An on-off switch with a track, a thumb and an optional label, without a field around it.</li>
           <li><a href="tags-input.html">Tags Input</a> — A free-text list field: Enter, delimiters and pasted lists add tags; duplicates, a maximum and per-tag checks refuse them.</li>
           <li><a href="text-field.html">Text Field</a> — A field for a plain string on one line or several, with string rules, commit and revert.</li>
+          <li><a href="transfer-list.html">Transfer List</a> — Move items between available and chosen lists, with filters, counts and reordering.</li>
+          <li><a href="tree-select-field.html">Tree Select Field</a> — Choose one node or several from a hierarchy in a popover tree, shown as a label, a path or chips.</li>
         </ul>
       </section>
       <section>
@@ -156,10 +158,12 @@
           <li><a href="board.html">Board</a> — Columns of cards with counts and limits, lanes, collapsing, and cards and columns moved by drag and drop or Alt+Arrow keys.</li>
           <li><a href="calendar-view.html">Calendar View</a> — Events in a month or week view: all-day bars across days, timed events on a time grid, crowded days, today and keyboard navigation between days.</li>
           <li><a href="change-list.html">Change List</a> — What changed in a record, one row per property: word diffs of text, items added to and removed from lists, and old and new values.</li>
+          <li><a href="chart.html">Chart</a> — Accessible SVG bar, line and donut charts with axes, a toggling legend, tooltips, keyboard focus on each value, a text summary and a table view.</li>
           <li><a href="chat-transcript.html">Chat Transcript</a> — A conversation log that follows the latest message, with streaming and error states and a jump to latest control.</li>
           <li><a href="comment-composer.html">Comment Composer</a> — A plain-text comment box with submit and cancel, keyboard chords, pending submits and a stored draft.</li>
           <li><a href="comment-thread.html">Comment Thread</a> — A discussion with a quoted anchor, replies, reactions, edit and delete, resolve and reopen, and collapsed long threads.</li>
           <li><a href="condition-builder.html">Condition Builder</a> — Nested all and any groups of field, operator and value rules, with reordering, a depth limit and validation.</li>
+          <li><a href="dashboard-grid.html">Dashboard Grid</a> — Tiles on a column grid that move and resize by pointer and keyboard in edit mode, push others down, and reflow onto fewer columns when narrow.</li>
           <li><a href="decision-control.html">Decision Control</a> — Approve or reject, or a scored vote, with an optional or required comment and an optional signature.</li>
           <li><a href="display-options.html">Display Options</a> — A popover choosing a collection's grouping, sort and direction, visible properties and their order, and density.</li>
           <li><a href="drag-handle.html">Drag Handle</a> — The drag button of a row in a collection that reorders by drag and drop.</li>
@@ -169,7 +173,9 @@
           <li><a href="html-markup.html">HTML Markup</a> — Renders sanitized HTML as React elements, with links through the provider and element overrides.</li>
           <li><a href="inline-edit.html">Inline Edit</a> — A value read in place that turns into its editor on a click, Enter or F2: Enter or leaving saves, Escape cancels, with pending and failed saves.</li>
           <li><a href="list-row.html">List Row</a> — Native lists of link, action and read-only rows with one tab stop and arrow-key navigation.</li>
+          <li><a href="mapping-table.html">Mapping Table</a> — Source columns with sample values mapped to target fields, with suggestions, required targets, duplicate warnings and a summary.</li>
           <li><a href="markdown.html">Markdown</a> — Renders Markdown with tables, task lists, code and links through the library's readers.</li>
+          <li><a href="permission-matrix.html">Permission Matrix</a> — Roles against permissions with checkbox cells, inherited grants, group toggles, read-only roles and dirty marks.</li>
           <li><a href="property-filter.html">Property Filter</a> — A property panel with a search box that filters its sections and rows.</li>
           <li><a href="property-panel.html">Property Panel</a> — Sections, groups, cards and rows of labelled settings for one subject.</li>
           <li><a href="property-scope.html">Property Scope</a> — Filters property sections and rows by a query the host owns.</li>
@@ -178,22 +184,35 @@
           <li><a href="record-chip.html">Record Chip</a> — An inline reference to a record with its version, kind, state, preview and remove button.</li>
           <li><a href="record-header.html">Record Header</a> — A record's title row: kind icon, identifier with copy, an editable title, status, metadata and actions.</li>
           <li><a href="record-label.html">Record Label</a> — A record's icon and identifier, which never break apart, then its name.</li>
+          <li><a href="relation-columns.html">Relation Columns</a> — Upstream and downstream columns that walk the relations of an item, with a trail of the chosen chain and counts.</li>
+          <li><a href="relation-matrix.html">Relation Matrix</a> — Row items against column items with a mark in each related cell, coverage counts, grid keyboard navigation, cell actions and windowing on both axes.</li>
           <li><a href="stat-tile.html">Stat Tile</a> — A compact metric on a card: value, delta with trend and tone, a secondary line and a chart slot.</li>
           <li><a href="state-timeline.html">State Timeline</a> — A vertical history of state changes: who moved it, when and why, with the current state marked.</li>
+          <li><a href="step-list-editor.html">Step List Editor</a> — An ordered list of numbered steps with a text field per column, added, inserted, duplicated, deleted, dragged or moved with Alt+Arrow keys, and dirty marks.</li>
           <li><a href="table.html">Table</a> — A data table with sorting, filtering, selection, resizable and persisted columns, reordering, notices and virtualization.</li>
           <li><a href="tag-group.html">Tag Group</a> — A focusable set of tags in every size and tone, with removal by button or keyboard.</li>
           <li><a href="timeline.html">Timeline</a> — A Gantt-style timeline: zoom levels, bars with progress, milestones, dependencies, a today marker, grouped rows, pointer and keyboard editing, selection and a table view.</li>
           <li><a href="tree.html">Tree</a> — Hierarchies of rows on React Aria's Tree: expansion, selection, links, persisted state and reordering.</li>
+          <li><a href="tree-compare.html">Tree Compare</a> — Two hierarchies aligned row by row: added, removed, changed and moved rows, one expansion for both sides, only differences, steps between them and a summary.</li>
           <li><a href="version-history.html">Version History</a> — Saved versions, newest first: select one to view, two to compare, restore after a confirmation, rename, and filter by name or person.</li>
           <li><a href="view-switcher.html">View Switcher</a> — Saved views of a collection as tabs or a menu, with a modified marker and save, save as, rename, reset, delete and default view actions.</li>
+        </ul>
+      </section>
+      <section>
+        <h2>Content</h2>
+        <ul>
+          <li><a href="annotation-layer.html">Annotation Layer</a> — Highlight marks anchored to content, with a margin of cards stacked beside their anchors.</li>
+          <li><a href="text-diff.html">Text Diff</a> — The line diff of two texts, unified or side by side, with word changes, folded context, line widgets and change navigation.</li>
         </ul>
       </section>
       <section>
         <h2>Widgets</h2>
         <ul>
           <li><a href="avatar.html">Avatar</a> — A picture, or initials on a stable colour slot, with a fallback when the picture fails.</li>
+          <li><a href="character-grid.html">Character Grid</a> — Search and choose symbols from categories, with recently used characters kept in storage.</li>
           <li><a href="emoji-picker.html">Emoji Picker</a> — Search, browse and choose standard or custom emoji with a skin tone, inline or in a popover.</li>
           <li><a href="find-bar.html">Find Bar</a> — A find row: the find box with the match count, previous and next match, matching options, replace and replace all, and close.</li>
+          <li><a href="grid-size-picker.html">Grid Size Picker</a> — Choose rows and columns from a growing grid, by pointer or keyboard, inline or in a popover.</li>
           <li><a href="media-viewer.html">Media Viewer</a> — A lightbox that pages through images and other files with zoom, rotation, thumbnails and keyboard navigation.</li>
           <li><a href="pdf-viewer.html">PDF Viewer</a> — Pages on canvas with selectable text, zoom, page navigation and find over an injected PDF engine.</li>
           <li><a href="presence-avatar.html">Presence Avatar</a> — One present person's avatar marked with a caller-chosen status, optionally pressable.</li>

@@ -1,0 +1,83 @@
+/* Mapping Table: a ruled table of source columns, their samples and target choices, then a summary. */
+
+.ui-mapping-table {
+  display: grid;
+  gap: 8px;
+  max-width: 100%;
+}
+
+.ui-mapping-table__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ui-mapping-table__table th,
+.ui-mapping-table__table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--ref-border);
+  text-align: start;
+  vertical-align: top;
+}
+
+.ui-mapping-table__table thead th {
+  color: var(--ref-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.ui-mapping-table__row[data-duplicate] > .ui-mapping-table__column {
+  box-shadow: inset 3px 0 0 var(--ref-warning);
+}
+
+.ui-mapping-table__column {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.ui-mapping-table__samples {
+  max-width: 240px;
+  color: var(--ref-muted);
+  font-size: 12px;
+}
+
+.ui-mapping-table__sample {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-mapping-table__target {
+  min-width: 220px;
+}
+
+.ui-mapping-table__select {
+  display: inline-block;
+  max-width: 260px;
+  vertical-align: top;
+}
+
+.ui-mapping-table__suggested {
+  margin-top: 5px;
+  margin-inline-start: 6px;
+  vertical-align: top;
+}
+
+.ui-mapping-table__summary {
+  display: grid;
+  gap: 2px;
+}
+
+.ui-mapping-table__counts,
+.ui-mapping-table__problem {
+  margin: 0;
+  font-size: 13px;
+}
+
+.ui-mapping-table__counts {
+  color: var(--ref-muted);
+}
+
+.ui-mapping-table__problem {
+  color: var(--ref-danger);
+}

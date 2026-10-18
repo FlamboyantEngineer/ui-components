@@ -114,12 +114,25 @@ export type {
 } from './tree-reorder.js';
 export { getColorIndex } from './color-index.js';
 export { getInitials } from './initials.js';
-export { diffLines, diffWords } from './diff.js';
-export type { DiffKind, LineDiffHunk, WordDiffHunk } from './diff.js';
+export { diffLines, diffSequences, diffWords } from './diff.js';
+export type { DiffKind, LineDiffHunk, SequenceDiffHunk, WordDiffHunk } from './diff.js';
+export { compareTrees } from './compare-trees.js';
+export type {
+  CompareTreeNode,
+  CompareTreesOptions,
+  ComparedTreeRow,
+  TreeChange,
+  TreeChangeCounts,
+  TreeComparison,
+} from './compare-trees.js';
+export { mapScrollOffset, useSyncedScroll } from './use-synced-scroll.js';
+export type { ScrollAnchor, SyncedScrollOptions, SyncedScrollTarget } from './use-synced-scroll.js';
 export { formatOutlineNumber } from './outline-number.js';
 export type { FormatOutlineNumberOptions, OutlineNumberStyle } from './outline-number.js';
 export { createLinearScale } from './linear-scale.js';
 export type { LinearScale, LinearScaleOptions, ScaleInterval, ScaleTick } from './linear-scale.js';
+export { createBandScale } from './band-scale.js';
+export type { BandScale, BandScaleOptions } from './band-scale.js';
 export { addTimeUnits, createTimeScale, floorToTimeUnit } from './time-scale.js';
 export type { TimeScale, TimeScaleOptions, TimeScaleUnit, TimeTickOptions } from './time-scale.js';
 export { defaultUrlSchemes, isSafeUrl } from './safe-url.js';

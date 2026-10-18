@@ -1,6 +1,6 @@
 # Diff
 
-`diffLines` and `diffWords` compare two texts and return what changed as typed hunks: runs the texts share (`equal`), runs only the old text has (`delete`) and runs only the new text has (`insert`). They are pure functions with no dependency, written on Myers' shortest-edit algorithm with a search from both ends, so time grows with the texts' length times the number of differences and memory with the length alone. [Inline Text Diff](INLINE-TEXT-DIFF.md) builds its word changes on `diffWords`; hosts use them for line diffs, change lists and summaries.
+`diffLines` and `diffWords` compare two texts, and `diffSequences` two arrays of items, and return what changed as typed hunks: runs the texts share (`equal`), runs only the old text has (`delete`) and runs only the new text has (`insert`). They are pure functions with no dependency, written on Myers' shortest-edit algorithm with a search from both ends, so time grows with the texts' length times the number of differences and memory with the length alone. [Inline Text Diff](INLINE-TEXT-DIFF.md) builds its word changes on `diffWords`; hosts use them for line diffs, change lists and summaries.
 
 ## UIC-DIFF-1 - Line diff
 
@@ -44,6 +44,15 @@ Verification: `src/utils/diff.test.ts`
 ### UIC-DIFF-2.3 - Changes joined across spaces
 
 A shared run of only spaces between two changes shall join them into one change, so `quick brown` replaced by `slow red` reads as one delete and one insert rather than two pairs around a shared space.
+
+Implementation: `src/utils/diff.ts`
+Verification: `src/utils/diff.test.ts`
+
+## UIC-DIFF-3 - Sequence diff
+
+### UIC-DIFF-3.1 - Hunks of items
+
+`diffSequences(oldItems, newItems)` shall compare two arrays of items with `===` (ids, keys, any primitive) and return the hunks (`SequenceDiffHunk`) in order, each with its `kind` and its `items`, under the rules of UIC-DIFF-1.3 applied to items: the equal and delete items joined give the old sequence, and the equal and insert items the new one. [Tree Compare](TREE-COMPARE.md) aligns sibling rows on it.
 
 Implementation: `src/utils/diff.ts`
 Verification: `src/utils/diff.test.ts`

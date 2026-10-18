@@ -1,0 +1,81 @@
+/* Transfer List: two framed sides of equal width around a column of move buttons. */
+
+.ui-transfer-list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: stretch;
+  gap: 8px;
+  max-width: 640px;
+  color: var(--ref-text);
+}
+
+.ui-transfer-list__pane {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-surface);
+}
+
+.ui-transfer-list__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ui-transfer-list__title {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.ui-transfer-list__count {
+  color: var(--ref-muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-transfer-list__list {
+  height: 220px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-canvas);
+}
+
+.ui-transfer-list__list .ui-list-view-item {
+  min-height: 32px;
+  padding: 2px 8px;
+}
+
+.ui-transfer-list__empty {
+  color: var(--ref-muted);
+  font-size: 12px;
+}
+
+.ui-transfer-list__actions {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+}
+
+.ui-transfer-list__actions .ui-transfer-list__move[data-target='chosen'][data-scope='all'] {
+  margin-bottom: 12px;
+}
+
+.ui-transfer-list__reorder {
+  display: flex;
+  gap: 4px;
+}
+
+/* The move glyphs point at the side the items move to, in either reading direction. */
+.ui-transfer-list__move:dir(rtl) .ui-icon {
+  transform: scaleX(-1);
+}
+
+.ui-transfer-list__search {
+  flex: none;
+}
