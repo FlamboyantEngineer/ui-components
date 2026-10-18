@@ -29,6 +29,8 @@ const sampleArguments: Partial<Record<keyof UiStrings, readonly unknown[]>> = {
   rejectedFileReason: ['Report.pdf', 'A file with this name is already chosen.'],
   nameWithStatus: ['Maria Santos', 'Away'],
   morePeople: [3, ['Jon Berg', 'Lena Ortiz', 'Sam Okafor']],
+  goToSlide: [2],
+  qrCodeOf: ['https://example.com'],
   emojiCategory: ['smileys'],
   gridSize: [3, 4],
   gridSizeCell: [3, 4],

@@ -53,7 +53,9 @@ import {
   MusicalNoteIcon,
   PencilSquareIcon,
   PaperAirplaneIcon,
+  PauseIcon,
   PhotoIcon,
+  PlayIcon,
   PlusIcon,
   QuestionMarkCircleIcon,
   SignalSlashIcon,
@@ -160,6 +162,8 @@ export const defaultGlyphs = {
   move: ArrowsUpDownIcon,
   table: TableCellsIcon,
   resize: ArrowsPointingOutIcon,
+  play: PlayIcon,
+  pause: PauseIcon,
 } satisfies Record<string, GlyphComponent>;
 
 export const glyphNames = Object.keys(defaultGlyphs) as GlyphName[];
