@@ -1,0 +1,418 @@
+import { fireEvent, render, screen, within } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
+import { useState } from 'react';
+import { I18nProvider } from 'react-aria-components';
+import { describe, expect, it, vi } from 'vitest';
+import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { Form } from '../form/form.js';
+import { TagsInput, type TagsInputProps } from './tags-input.js';
+
+function root(container: HTMLElement) {
+  return container.querySelector<HTMLElement>('.ui-field');
+}
+
+function tagTexts() {
+  return screen.queryAllByRole('row').map((row) => row.textContent);
+}
+
+function message(container: HTMLElement) {
+  return container.querySelector('.ui-field__message')?.textContent;
+}
+
+/** A field whose committed value is the caller's, as when a form saves it. */
+function SavedField(props: Omit<TagsInputProps, 'label'>) {
+  const [saved, setSaved] = useState(['Apple']);
+  return (
+    <>
+      <TagsInput label="Fruit" committedValue={saved} onCommit={setSaved} {...props} />
+      <output>{saved.join(', ')}</output>
+    </>
+  );
+}
+
+describe('TagsInput', () => {
+  it('UIC-TAGS-INPUT-1.1 is a field around tags and an input that starts empty', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const onCommit = vi.fn();
+    const { container } = render(
+      <TagsInput label="Fruit" onChange={onChange} onCommit={onCommit} />,
+    );
+    expect(root(container)).toHaveClass('ui-field', 'ui-tags-input');
+    expect(container.querySelector('.ui-tags-input__tags')).toBeNull();
+    expectHooksMatchSpec(container, 'TAGS-INPUT', { slots: ['group', 'input'] });
+    const input = screen.getByRole('textbox', { name: 'Fruit' });
+    await user.type(input, 'Fig{Enter}Kiwi{Enter}');
+    expect(onChange).toHaveBeenLastCalledWith(['Fig', 'Kiwi']);
+    expect(onCommit).toHaveBeenLastCalledWith(['Fig', 'Kiwi']);
+    expect(tagTexts()).toEqual(['Fig', 'Kiwi']);
+    expect(input).toHaveValue('');
+    const group = container.querySelector('.ui-tags-input__group');
+    expect(group).toHaveAttribute('role', 'presentation');
+    // React Aria builds the tag collection in a <template> beside it.
+    const parts = [...(group?.children ?? [])].filter((node) => node.localName !== 'template');
+    expect(parts.map((node) => node.className)).toEqual([
+      'ui-tag-group ui-tags-input__tags',
+      'ui-tags-input__input',
+    ]);
+    expectHooksMatchSpec(container, 'TAGS-INPUT', { slots: 'all' });
+    expectHooksMatchSpec(container, 'TAG-GROUP', { slots: ['list', 'tag', 'label', 'remove'] });
+    expectHooksMatchSpec(container, 'FIELD', { slots: ['label', 'control', 'message'] });
+  });
+
+  it('UIC-TAGS-INPUT-1.2 submits each tag under its name, and nothing while disabled', async () => {
+    const user = userEvent.setup();
+    let submitted: FormDataEntryValue[] = [];
+    const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      submitted = new FormData(event.currentTarget).getAll('fruit');
+    };
+    const { rerender } = render(
+      <Form aria-label="Order" onSubmit={onSubmit}>
+        <TagsInput label="Fruit" name="fruit" defaultValue={['Apple', 'Apple']} allowsDuplicates />
+        <button type="submit">Order</button>
+      </Form>,
+    );
+    await user.type(screen.getByRole('textbox', { name: 'Fruit' }), 'Fig{Enter}Kiwi');
+    await user.click(screen.getByRole('button', { name: 'Order' }));
+    expect(submitted).toEqual(['Apple', 'Apple', 'Fig']);
+    rerender(
+      <Form aria-label="Order" onSubmit={onSubmit}>
+        <TagsInput label="Fruit" name="fruit" defaultValue={['Apple']} isDisabled />
+        <button type="submit">Order</button>
+      </Form>,
+    );
+    await user.click(screen.getByRole('button', { name: 'Order' }));
+    expect(submitted).toEqual([]);
+  });
+
+  it('UIC-TAGS-INPUT-1.3 names and describes the input and names the tags', () => {
+    const { container, rerender } = render(
+      <TagsInput id="fruit" label="Fruit" description="Type and press Enter." isRequired />,
+    );
+    const input = screen.getByRole('textbox', { name: 'Fruit' });
+    expect(input).toHaveAttribute('aria-required', 'true');
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+    expect(input).toHaveAttribute('aria-errormessage', 'fruit-message');
+    expect(input).toHaveAccessibleDescription('Type and press Enter. A value is required.');
+    expect(container.querySelector('.ui-tags-input__group')).toHaveAttribute(
+      'data-invalid',
+      'true',
+    );
+    rerender(<TagsInput id="fruit" label="Fruit" value={['Fig']} isReadOnly />);
+    expect(screen.getByRole('grid', { name: 'Fruit selected values' })).toBeInTheDocument();
+    expect(screen.getByRole('textbox')).toHaveAttribute('readonly');
+    expect(container.querySelector('.ui-tags-input__group')).toHaveAttribute(
+      'data-readonly',
+      'true',
+    );
+    rerender(<TagsInput id="fruit" label="Fruit" value={['Fig']} isDisabled />);
+    expect(screen.getByRole('textbox')).toBeDisabled();
+    expect(container.querySelector('.ui-tags-input__group')).toHaveAttribute(
+      'data-disabled',
+      'true',
+    );
+    expectHooksMatchSpec(container, 'TAGS-INPUT', { slots: 'all' });
+  });
+
+  it('UIC-TAGS-INPUT-1.4 forwards the class name, data attributes and id to its root', () => {
+    const { container } = render(
+      <TagsInput id="fruit" label="Fruit" className="wide" data-test="fruit" />,
+    );
+    expect(root(container)).toHaveClass('ui-field', 'ui-tags-input', 'wide');
+    expect(root(container)).toHaveAttribute('data-test', 'fruit');
+    expect(root(container)).toHaveAttribute('id', 'fruit');
+    expect(screen.getByRole('textbox')).toHaveAttribute('id', 'fruit-control');
+    expectHooksMatchSpec(container, 'TAGS-INPUT', { callerAttributes: ['data-test'] });
+  });
+
+  it('UIC-TAGS-INPUT-2.1 adds tags on Enter and on each delimiter', async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn((event: React.FormEvent) => event.preventDefault());
+    render(
+      <form onSubmit={onSubmit}>
+        <TagsInput label="Fruit" delimiters={[',', ';']} />
+      </form>,
+    );
+    const input = screen.getByRole('textbox', { name: 'Fruit' });
+    await user.type(input, ' Fig {Enter}');
+    expect(onSubmit).not.toHaveBeenCalled();
+    await user.type(input, 'Kiwi,, Lime; Ma');
+    expect(tagTexts()).toEqual(['Fig', 'Kiwi', 'Lime']);
+    expect(input).toHaveValue(' Ma');
+    fireEvent.keyDown(input, { key: 'Enter', isComposing: true });
+    expect(tagTexts()).toHaveLength(3);
+    await user.clear(input);
+    await user.type(input, '  {Enter}');
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+    expect(tagTexts()).toHaveLength(3);
+  });
+
+  it('UIC-TAGS-INPUT-2.2 splits a pasted list and pastes plain text as typed', async () => {
+    const user = userEvent.setup();
+    render(<TagsInput label="Fruit" />);
+    const input = screen.getByRole<HTMLInputElement>('textbox', { name: 'Fruit' });
+    await user.type(input, 'Fi');
+    await user.paste('g, Kiwi\nLime\r\nMango');
+    expect(tagTexts()).toEqual(['Fig', 'Kiwi', 'Lime', 'Mango']);
+    expect(input).toHaveValue('');
+    await user.paste('Plum');
+    expect(input).toHaveValue('Plum');
+    expect(tagTexts()).toHaveLength(4);
+    input.setSelectionRange(0, 2);
+    await user.paste('Ap,Pl');
+    expect(tagTexts()).toEqual(['Fig', 'Kiwi', 'Lime', 'Mango', 'Ap', 'Plum']);
+  });
+
+  it('UIC-TAGS-INPUT-2.3 takes controlled text and reports every change of it', async () => {
+    const user = userEvent.setup();
+    const changes: string[] = [];
+    function Controlled() {
+      const [text, setText] = useState('Fi');
+      return (
+        <TagsInput
+          label="Fruit"
+          placeholder="Add a fruit"
+          inputValue={text}
+          onInputChange={(next) => {
+            changes.push(next);
+            setText(next);
+          }}
+        />
+      );
+    }
+    render(<Controlled />);
+    const input = screen.getByRole('textbox', { name: 'Fruit' });
+    expect(input).toHaveValue('Fi');
+    expect(input).toHaveAttribute('placeholder', 'Add a fruit');
+    await user.type(input, 'g,K');
+    expect(changes).toEqual(['Fig', '', 'K']);
+    expect(tagTexts()).toEqual(['Fig']);
+    await user.keyboard('{Enter}');
+    expect(changes.at(-1)).toBe('');
+    expect(tagTexts()).toEqual(['Fig', 'K']);
+  });
+
+  it('UIC-TAGS-INPUT-2.4 adds the typed text when focus leaves the input, with addOnBlur', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<TagsInput label="Fruit" defaultValue={['Apple']} addOnBlur />);
+    const input = screen.getByRole('textbox', { name: 'Fruit' });
+    await user.type(input, 'Fig');
+    await user.keyboard('{ArrowLeft}{ArrowLeft}{ArrowLeft}{ArrowLeft}');
+    expect(screen.getByRole('row', { name: 'Apple' })).toHaveFocus();
+    expect(tagTexts()).toEqual(['Apple']);
+    await user.click(input);
+    await user.tab();
+    expect(tagTexts()).toEqual(['Apple', 'Fig']);
+    expect(input).toHaveValue('');
+    rerender(<TagsInput label="Fruit" defaultValue={['Apple']} />);
+    await user.type(input, 'Kiwi');
+    await user.tab();
+    expect(input).toHaveValue('Kiwi');
+  });
+
+  it('UIC-TAGS-INPUT-3.1 UIC-TAGS-INPUT-3.3 keeps a duplicate in the input and shows why', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<TagsInput label="Fruit" defaultValue={['Apple', 'Pear']} />);
+    const input = screen.getByRole('textbox', { name: 'Fruit' });
+    await user.type(input, 'Apple{Enter}');
+    expect(tagTexts()).toEqual(['Apple', 'Pear']);
+    expect(input).toHaveValue('Apple');
+    expect(message(container)).toBe('“Apple” is already added.');
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+    await user.type(input, 's');
+    expect(message(container)).toBe('');
+    await user.keyboard('{Backspace}{Enter}');
+    expect(message(container)).toBe('“Apple” is already added.');
+    await user.click(screen.getAllByRole('button', { name: /^Remove/ })[0] as HTMLElement);
+    expect(tagTexts()).toEqual(['Pear']);
+    expect(message(container)).toBe('');
+    await user.keyboard('{Enter}');
+    expect(tagTexts()).toEqual(['Pear', 'Apple']);
+  });
+
+  it('UIC-TAGS-INPUT-3.1 shows a refusal whatever the mode and over the required message', async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn((event: React.FormEvent) => event.preventDefault());
+    const { container } = render(
+      <Form aria-label="Invite" validationBehavior="aria" onSubmit={onSubmit}>
+        <TagsInput
+          label="Guests"
+          isRequired
+          validateTag={(tag) => (tag.includes('@') ? null : 'Enter an address.')}
+        />
+        <button type="submit">Send</button>
+      </Form>,
+    );
+    const input = screen.getByRole('textbox', { name: 'Guests' });
+    expect(message(container)).toBe('');
+    await user.type(input, 'ada{Enter}');
+    expect(message(container)).toBe('Enter an address.');
+    await user.click(screen.getByRole('button', { name: 'Send' }));
+    expect(onSubmit).not.toHaveBeenCalled();
+    expect(input).toHaveFocus();
+    await user.clear(input);
+    expect(message(container)).toBe('A value is required.');
+    await user.type(input, 'ada@example.com{Enter}');
+    await user.click(screen.getByRole('button', { name: 'Send' }));
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+  });
+
+  it('UIC-TAGS-INPUT-3.2 refuses tags past the maximum and keeps a set value whole', async () => {
+    const user = userEvent.setup();
+    const { container, rerender } = render(
+      <TagsInput label="Fruit" defaultValue={['Apple']} maxValues={3} />,
+    );
+    const input = screen.getByRole('textbox', { name: 'Fruit' });
+    await user.click(input);
+    await user.paste('Fig,Kiwi,Lime,Mango');
+    expect(tagTexts()).toEqual(['Apple', 'Fig', 'Kiwi']);
+    expect(input).toHaveValue('Lime,Mango');
+    expect(message(container)).toBe('Add up to 3 values.');
+    rerender(<TagsInput label="Fruit" value={['A', 'B', 'C', 'D']} maxValues={3} />);
+    expect(tagTexts()).toEqual(['A', 'B', 'C', 'D']);
+  });
+
+  it('UIC-TAGS-INPUT-3.3 accepts duplicates as separate tags when allowed', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(<TagsInput label="Fruit" defaultValue={['Fig']} allowsDuplicates onChange={onChange} />);
+    const input = screen.getByRole('textbox', { name: 'Fruit' });
+    await user.type(input, 'Fig{Enter}Fig{Enter}');
+    expect(tagTexts()).toEqual(['Fig', 'Fig', 'Fig']);
+    await user.click(screen.getAllByRole('button', { name: /^Remove/ })[1] as HTMLElement);
+    expect(onChange).toHaveBeenLastCalledWith(['Fig', 'Fig']);
+  });
+
+  it('UIC-TAGS-INPUT-3.4 refuses a tag the caller rejects with its message', async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <TagsInput
+        label="Guests"
+        validateTag={(tag) => (tag.includes('@') ? null : 'Enter an address.')}
+      />,
+    );
+    const input = screen.getByRole('textbox', { name: 'Guests' });
+    await user.type(input, 'ada@example.com,lin,');
+    expect(tagTexts()).toEqual(['ada@example.com']);
+    expect(input).toHaveValue('lin');
+    expect(message(container)).toBe('Enter an address.');
+    await user.clear(input);
+    await user.paste('sam@example.com,kim,lee@example.com');
+    expect(tagTexts()).toEqual(['ada@example.com', 'sam@example.com', 'lee@example.com']);
+    expect(input).toHaveValue('kim');
+    expect(message(container)).toBe('Enter an address.');
+    expect(root(container)).toHaveAttribute('data-validation', 'invalid');
+  });
+
+  it('UIC-TAGS-INPUT-4.1 moves between the input and the tags with Backspace and the arrows', async () => {
+    const user = userEvent.setup();
+    render(<TagsInput label="Fruit" defaultValue={['Apple', 'Pear']} />);
+    const input = screen.getByRole<HTMLInputElement>('textbox', { name: 'Fruit' });
+    await user.click(input);
+    await user.keyboard('{Backspace}');
+    expect(screen.getByRole('row', { name: 'Pear' })).toHaveFocus();
+    await user.keyboard('{ArrowLeft}');
+    expect(screen.getByRole('row', { name: 'Apple' })).toHaveFocus();
+    await user.keyboard('{ArrowRight}{ArrowRight}');
+    expect(input).toHaveFocus();
+    await user.type(input, 'Fig');
+    await user.keyboard('{ArrowLeft}');
+    expect(input).toHaveFocus();
+    input.setSelectionRange(0, 0);
+    await user.keyboard('{ArrowLeft}');
+    expect(screen.getByRole('row', { name: 'Pear' })).toHaveFocus();
+    expect(tagTexts()).toEqual(['Apple', 'Pear']);
+  });
+
+  it('UIC-TAGS-INPUT-4.1 mirrors the arrow keys in a right-to-left locale', async () => {
+    const user = userEvent.setup();
+    render(
+      <I18nProvider locale="ar-EG">
+        <TagsInput label="Fruit" defaultValue={['Apple', 'Pear']} />
+      </I18nProvider>,
+    );
+    const input = screen.getByRole('textbox', { name: 'Fruit' });
+    await user.click(input);
+    await user.keyboard('{ArrowLeft}');
+    expect(input).toHaveFocus();
+    await user.keyboard('{ArrowRight}');
+    expect(screen.getByRole('row', { name: 'Pear' })).toHaveFocus();
+    await user.keyboard('{ArrowLeft}');
+    expect(input).toHaveFocus();
+  });
+
+  it('UIC-TAGS-INPUT-4.2 removes tags and returns focus to the input', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    render(<TagsInput label="Fruit" defaultValue={['Apple', 'Pear', 'Fig']} onCommit={onCommit} />);
+    const input = screen.getByRole('textbox', { name: 'Fruit' });
+    await user.click(input);
+    await user.keyboard('{Backspace}{Backspace}');
+    expect(tagTexts()).toEqual(['Apple', 'Pear']);
+    expect(onCommit).toHaveBeenLastCalledWith(['Apple', 'Pear']);
+    expect(input).toHaveFocus();
+    await user.keyboard('{Backspace}{ArrowLeft}{Delete}');
+    expect(tagTexts()).toEqual(['Pear']);
+    expect(input).toHaveFocus();
+    await user.click(screen.getByRole('button', { name: /^Remove/ }));
+    expect(tagTexts()).toEqual([]);
+    expect(input).toHaveFocus();
+  });
+
+  it('UIC-TAGS-INPUT-4.2 keeps read-only tags navigable and disables tags of a disabled field', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(
+      <TagsInput label="Fruit" defaultValue={['Apple', 'Pear']} isReadOnly />,
+    );
+    expect(screen.queryByRole('button', { name: /^Remove/ })).toBeNull();
+    await user.click(screen.getByRole('textbox', { name: 'Fruit' }));
+    await user.keyboard('{Backspace}{Delete}');
+    expect(screen.getByRole('row', { name: 'Pear' })).toHaveFocus();
+    expect(tagTexts()).toEqual(['Apple', 'Pear']);
+    rerender(<TagsInput label="Fruit" defaultValue={['Apple', 'Pear']} isDisabled />);
+    for (const row of screen.getAllByRole('row')) {
+      expect(row).toHaveAttribute('data-disabled', 'true');
+    }
+    expect(screen.queryByRole('button', { name: /^Remove/ })).toBeNull();
+  });
+
+  it('UIC-TAGS-INPUT-4.3 focuses the input from a press on the frame', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<TagsInput label="Fruit" defaultValue={['Apple']} />);
+    await user.click(container.querySelector('.ui-tags-input__group') as HTMLElement);
+    expect(screen.getByRole('textbox', { name: 'Fruit' })).toHaveFocus();
+    await user.click(screen.getByRole('row', { name: 'Apple' }));
+    expect(screen.getByRole('row', { name: 'Apple' })).toHaveFocus();
+  });
+
+  it('UIC-TAGS-INPUT-4.4 shows dirty state, restores, undoes and clears from the menu', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<SavedField menu={['clear']} />);
+    const input = screen.getByRole('textbox', { name: 'Fruit' });
+    await user.type(input, 'Fig{Enter}');
+    expect(screen.getByRole('status', { hidden: true })).toHaveTextContent('Apple, Fig');
+    expect(root(container)).not.toHaveAttribute('data-dirty');
+    const field = within(container.querySelector('.ui-field') as HTMLElement);
+    await user.keyboard('{Control>}z{/Control}');
+    expect(tagTexts()).toEqual(['Apple']);
+    await user.keyboard('{Control>}{Shift>}z{/Shift}{/Control}');
+    expect(tagTexts()).toEqual(['Apple', 'Fig']);
+    await user.click(field.getByRole('button', { name: 'Fruit actions' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Clear' }));
+    expect(tagTexts()).toEqual([]);
+    expect(screen.getByRole('status', { hidden: true })).toHaveTextContent('');
+  });
+
+  it('UIC-TAGS-INPUT-4.4 shows dirty state against a committed value the caller holds', async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <TagsInput label="Fruit" committedValue={['Apple']} defaultValue={['Apple']} />,
+    );
+    await user.type(screen.getByRole('textbox', { name: 'Fruit' }), 'Fig{Enter}');
+    expect(root(container)).toHaveAttribute('data-dirty', 'true');
+    await user.click(screen.getByRole('button', { name: 'Restore Fruit' }));
+    expect(tagTexts()).toEqual(['Apple']);
+    expect(screen.getByRole('textbox', { name: 'Fruit' })).toHaveFocus();
+  });
+});

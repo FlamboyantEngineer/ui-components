@@ -1,0 +1,61 @@
+/* Pin Input: a row of square, centred single-character cells. */
+
+.ui-pin-input__group {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ui-pin-input__cell {
+  box-sizing: border-box;
+  width: 32px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-canvas);
+  color: inherit;
+  font: inherit;
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.ui-pin-input__cell::placeholder {
+  color: var(--ref-muted);
+}
+
+.ui-pin-input__cell[data-filled] {
+  border-color: var(--ref-border-strong);
+}
+
+.ui-pin-input__cell[data-focused] {
+  border-color: var(--ref-focus);
+  outline: 1px solid var(--ref-focus);
+}
+
+.ui-pin-input[data-complete] .ui-pin-input__cell {
+  background: var(--ref-surface);
+}
+
+.ui-pin-input[data-dirty] .ui-pin-input__cell:first-child {
+  border-inline-start: 3px solid var(--ref-info);
+}
+
+.ui-pin-input__cell[data-invalid] {
+  border-color: var(--ref-danger);
+}
+
+.ui-pin-input[data-validation='warning'] .ui-pin-input__cell {
+  border-color: var(--ref-warning);
+}
+
+.ui-pin-input__group[data-readonly] .ui-pin-input__cell {
+  border-style: dashed;
+  background: var(--ref-surface);
+}
+
+.ui-pin-input__cell[data-disabled] {
+  cursor: not-allowed;
+  opacity: 0.55;
+}

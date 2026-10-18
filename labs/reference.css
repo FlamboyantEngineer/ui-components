@@ -59,6 +59,7 @@
 @import url('reference/pagination.css');
 @import url('reference/path.css');
 @import url('reference/pdf-viewer.css');
+@import url('reference/pin-input.css');
 @import url('reference/portal.css');
 @import url('reference/presence-avatar.css');
 @import url('reference/presence-strip.css');
@@ -81,6 +82,7 @@
 @import url('reference/table.css');
 @import url('reference/tabs.css');
 @import url('reference/tag-group.css');
+@import url('reference/tags-input.css');
 @import url('reference/text-field.css');
 @import url('reference/text-match.css');
 @import url('reference/toast.css');
