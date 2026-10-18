@@ -7,20 +7,16 @@ import {
   type Ref,
   type RefObject,
 } from 'react';
-import {
-  TextArea,
-  VisuallyHidden,
-  type TextAreaProps as AriaTextAreaProps,
-} from '../../primitives/index.js';
+import { VisuallyHidden } from '../../primitives/index.js';
 import { splitDataAttributes } from '../../core/hooks.js';
 import type { BaseProps, Size } from '../../core/props.js';
 import { useElementSize } from '../../utils/use-element-size.js';
+import { CodeArea, type CodeTextAreaProps } from './code-area.js';
 import { CodeCompletionList } from './code-completion.js';
 import { CodeHoverTooltip } from './code-hover.js';
 import {
   CodeDiagnostics,
   CodeGutter,
-  CodeHighlight,
   codeEditorHooks as hooks,
   severitiesByLine,
   type CodeDiagnostic,
@@ -36,7 +32,7 @@ export type CodeEditorSize = Extract<Size, 'sm' | 'md' | 'lg'>;
 /** `soft` wraps long lines; `off` scrolls them sideways. */
 export type CodeEditorWrap = 'soft' | 'off';
 
-export interface CodeEditorProps extends TextAreaPassThrough, BaseProps {
+export interface CodeEditorProps extends BaseProps, CodeTextAreaProps {
   /** The source text, controlled. */
   value: string;
   onChange?: ((value: string) => void) | undefined;
@@ -66,50 +62,22 @@ export interface CodeEditorProps extends TextAreaPassThrough, BaseProps {
   autoCloseBrackets?: boolean | undefined;
   /** Ctrl+F or Cmd+F opens a find and replace row above the source. */
   allowsSearch?: boolean | undefined;
+  /** Keeps the source readable and selectable but refuses every edit. */
+  isReadOnly?: boolean | undefined;
+  /** Refuses focus and every edit. */
+  isDisabled?: boolean | undefined;
+  /** Marks the source invalid, besides an error among the diagnostics. */
+  isInvalid?: boolean | undefined;
+  /** Reports that the source is required (`aria-required`). */
+  isRequired?: boolean | undefined;
   /** The text area. */
   ref?: Ref<HTMLTextAreaElement> | undefined;
 }
 
-type TextAreaPassThrough = Omit<
-  AriaTextAreaProps,
-  'className' | 'style' | 'render' | 'children' | 'value' | 'defaultValue' | 'onChange' | 'wrap'
->;
-
-interface CodeAreaProps {
-  model: CodeEditorModel;
-  value: string;
-  onChange: ((value: string) => void) | undefined;
-  wrap: CodeEditorWrap;
-  id: string | undefined;
-  /** The caller's text area props, without data attributes. */
-  props: TextAreaPassThrough;
-  inputRef: Ref<HTMLTextAreaElement>;
-  caretRef: RefObject<HTMLSpanElement | null>;
-  isInvalid: boolean;
-  describedBy: string | undefined;
-  /** The completion list's id, when the editor offers completions. */
-  listId: string | undefined;
-}
+type ProblemOptions = Pick<CodeEditorProps, 'diagnostics' | 'listDiagnostics' | 'isInvalid'>;
 
 function joinIds(...ids: Array<string | false | undefined>): string | undefined {
   return ids.filter(Boolean).join(' ') || undefined;
-}
-
-function isTrue(value: unknown): boolean {
-  return value === true || value === 'true';
-}
-
-/**
- * Ties the text area to its completion list: a multiline text box that autocompletes from a list,
- * with the active option as its active descendant while the list is open.
- */
-function toCompletionProps({ completion }: CodeEditorModel, listId: string): AriaTextAreaProps {
-  return {
-    'aria-autocomplete': 'list',
-    'aria-haspopup': 'listbox',
-    'aria-controls': completion.isOpen ? listId : undefined,
-    'aria-activedescendant': completion.isOpen ? `${listId}-${completion.activeIndex}` : undefined,
-  };
 }
 
 function useMergedRef<T>(own: RefObject<T | null>, caller: Ref<T> | undefined) {
@@ -123,76 +91,10 @@ function useMergedRef<T>(own: RefObject<T | null>, caller: Ref<T> | undefined) {
   );
 }
 
-/** The text area's keys: the completion list, the snippet fields, the editing keys, then the caller's. */
-function useKeyProps(model: CodeEditorModel, props: TextAreaPassThrough): AriaTextAreaProps {
-  const { completion, snippet, hover } = model;
-  return {
-    onKeyDown: (event) => {
-      if (completion.handleKeyDown(event) || snippet.handleKeyDown(event)) return;
-      if (event.key === 'Escape' && hover.tip) hover.close();
-      if (!model.handleKeyDown(event)) props.onKeyDown?.(event);
-    },
-    onKeyUp: (event) => {
-      completion.handleKeyUp(event);
-      props.onKeyUp?.(event);
-    },
-  };
-}
-
-/** The text area's props: the caller's, with the editor's handlers run first. */
-function useInputProps(
-  model: CodeEditorModel,
-  { props, onChange }: Pick<CodeAreaProps, 'props' | 'onChange'>,
-): AriaTextAreaProps {
-  const { layers, completion, hover, snippet } = model;
-  return {
-    spellCheck: false,
-    autoComplete: 'off',
-    autoCapitalize: 'off',
-    autoCorrect: 'off',
-    ...props,
-    ...useKeyProps(model, props),
-    onChange: (event) => {
-      onChange?.(event.target.value);
-      hover.close();
-      completion.track('input');
-    },
-    onClick: (event) => {
-      completion.track('move');
-      props.onClick?.(event);
-    },
-    onSelect: (event) => {
-      const input = event.currentTarget;
-      model.setCaret(input.selectionStart === input.selectionEnd ? input.selectionStart : null);
-      props.onSelect?.(event);
-    },
-    onBlur: (event) => {
-      completion.close();
-      hover.close();
-      snippet.end();
-      model.setCaret(null);
-      props.onBlur?.(event);
-    },
-    onScroll: (event) => {
-      alignLayers(layers);
-      if (completion.isOpen) completion.reposition();
-      props.onScroll?.(event);
-    },
-    onPointerMove: (event) => {
-      hover.onPointerMove(event);
-      props.onPointerMove?.(event);
-    },
-    onPointerLeave: (event) => {
-      hover.onPointerLeave();
-      props.onPointerLeave?.(event);
-    },
-  };
-}
-
 /** The problems' state: the reported ones, whether one is an error, and what describes the input. */
 function describeProblems(
-  { diagnostics, listDiagnostics = true }: Pick<CodeEditorProps, 'diagnostics' | 'listDiagnostics'>,
-  props: TextAreaPassThrough,
+  { diagnostics, listDiagnostics = true, isInvalid }: ProblemOptions,
+  props: CodeTextAreaProps,
   id: string,
 ) {
   const shown = diagnostics ?? [];
@@ -200,8 +102,7 @@ function describeProblems(
   return {
     shown,
     isListed,
-    isInvalid:
-      shown.some(({ severity = 'error' }) => severity === 'error') || isTrue(props['aria-invalid']),
+    isInvalid: shown.some(({ severity = 'error' }) => severity === 'error') || Boolean(isInvalid),
     describedBy: joinIds(props['aria-describedby'], isListed && shown.length > 0 && id),
   };
 }
@@ -223,29 +124,36 @@ function CodeProblems(props: {
   );
 }
 
-/** The highlighted copy and the text area over it. */
-function CodeArea({ model, props, onChange, ...area }: CodeAreaProps) {
-  const inputProps = useInputProps(model, { props, onChange });
-  const { listId } = area;
+/** What sits around the surface: the problems, the completion list and the hover tip. */
+function CodeEditorOverlays(props: {
+  model: CodeEditorModel;
+  diagnostics: readonly CodeDiagnostic[] | undefined;
+  diagnosticsId: string;
+  isListed: boolean;
+  listId: string | undefined;
+  caretRef: RefObject<HTMLSpanElement | null>;
+}) {
+  const { model, diagnostics, listId } = props;
   return (
-    <div {...hooks.slot('code')}>
-      <CodeHighlight
-        segments={model.segments}
-        caretRef={area.caretRef}
-        highlightRef={model.layers.highlight}
-      />
-      <TextArea
-        {...inputProps}
-        {...hooks.slot('input')}
-        id={area.id}
-        ref={area.inputRef}
-        value={area.value}
-        wrap={area.wrap}
-        aria-invalid={area.isInvalid || undefined}
-        aria-describedby={area.describedBy}
-        {...(listId === undefined ? {} : toCompletionProps(model, listId))}
-      />
-    </div>
+    <>
+      {diagnostics ? (
+        <CodeProblems
+          id={props.diagnosticsId}
+          diagnostics={diagnostics}
+          isListed={props.isListed}
+          announcement={model.announcement}
+        />
+      ) : null}
+      {listId ? (
+        <CodeCompletionList
+          model={model.completion}
+          id={listId}
+          inputRef={model.layers.input}
+          caretRef={props.caretRef}
+        />
+      ) : null}
+      <CodeHoverTooltip model={model.hover} inputRef={model.layers.input} />
+    </>
   );
 }
 
@@ -271,6 +179,10 @@ export function CodeEditor({
   indentWithTab,
   autoCloseBrackets,
   allowsSearch,
+  isReadOnly = false,
+  isDisabled = false,
+  isInvalid: isMarkedInvalid,
+  isRequired,
   className,
   id,
   ref,
@@ -279,14 +191,18 @@ export function CodeEditor({
   const [dataProps, props] = splitDataAttributes(rest);
   const baseId = useId();
   const diagnosticsId = `${baseId}-diagnostics`;
-  const problems = describeProblems({ diagnostics, listDiagnostics }, props, diagnosticsId);
+  const problems = describeProblems(
+    { diagnostics, listDiagnostics, isInvalid: isMarkedInvalid },
+    props,
+    diagnosticsId,
+  );
   const { shown, isInvalid } = problems;
-  const isLocked = Boolean(props.readOnly || props.disabled);
+  const isLocked = isReadOnly || isDisabled;
   const model = useCodeEditor({
     ...{ value, onChange, tokenize, completions, renderHover, indent, indentWithTab },
     ...{ autoCloseBrackets, allowsSearch, isLocked, diagnostics: shown },
   });
-  const { layers, completion, search } = model;
+  const { layers, search } = model;
   const inputRef = useMergedRef(layers.input, ref);
   const caretRef = useRef<HTMLSpanElement>(null);
   const textWidth = useElementSize(layers.input, { box: 'client', enabled: lineNumbers })?.width;
@@ -294,8 +210,9 @@ export function CodeEditor({
 
   useLayoutEffect(() => alignLayers(layers), [layers, value, wrap, lineNumbers, textWidth]);
 
-  const locks = { readonly: Boolean(props.readOnly), disabled: Boolean(props.disabled) };
-  const data = { size, wrap, numbered: lineNumbers, invalid: isInvalid, ...locks };
+  const locks = { isReadOnly, isDisabled, isRequired };
+  const states = { invalid: isInvalid, readonly: isReadOnly, disabled: isDisabled };
+  const data = { size, wrap, numbered: lineNumbers, ...states };
   return (
     <div {...hooks.root({ className, props: dataProps, data })}>
       {toolbar ? <div {...hooks.slot('toolbar')}>{toolbar}</div> : null}
@@ -310,27 +227,15 @@ export function CodeEditor({
           />
         ) : null}
         <CodeArea
-          {...{ model, value, onChange, wrap, id, props, inputRef, caretRef, isInvalid, listId }}
+          {...{ model, value, onChange, wrap, id, props, locks, inputRef, caretRef, isInvalid }}
+          listId={listId}
           describedBy={problems.describedBy}
         />
       </div>
-      {diagnostics ? (
-        <CodeProblems
-          id={diagnosticsId}
-          diagnostics={diagnostics}
-          isListed={problems.isListed}
-          announcement={model.announcement}
-        />
-      ) : null}
-      {listId ? (
-        <CodeCompletionList
-          model={completion}
-          id={listId}
-          inputRef={layers.input}
-          caretRef={caretRef}
-        />
-      ) : null}
-      <CodeHoverTooltip model={model.hover} inputRef={layers.input} />
+      <CodeEditorOverlays
+        {...{ model, diagnostics, diagnosticsId, listId, caretRef }}
+        isListed={problems.isListed}
+      />
     </div>
   );
 }

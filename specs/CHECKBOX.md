@@ -1,12 +1,12 @@
 # Checkbox
 
-`Checkbox` is a tick box on React Aria's `Checkbox`: a native checkbox input, visually hidden but focusable, inside a `<label>` with a drawn box and an optional visible label. It reports whether it is ticked and may show a mixed state, for a value that is inherited or differs across several items. A true-or-false value with a field around it (label layout, validation, dirty state, undo) is a [Boolean Field](BOOLEAN-FIELD.md), which draws this checkbox.
+`Checkbox` is a tick box, built on React Aria's `Checkbox`: a native checkbox input, visually hidden but focusable, inside a `<label>` with a drawn box and an optional visible label. It reports whether it is ticked and may show a mixed state, for a value that is inherited or differs across several items. A true-or-false value with a field around it (label layout, validation, dirty state, undo) is a [Boolean Field](BOOLEAN-FIELD.md), which draws this checkbox.
 
 ## UIC-CHECKBOX-1 - Contract
 
 ### UIC-CHECKBOX-1.1 - Box and label
 
-`Checkbox` shall render a `<label>` (`ui-checkbox`) around a visually hidden native checkbox input, a box (`ui-checkbox__box`, hidden from assistive technology) and its children in `ui-checkbox__label`. The box draws the `check` glyph while ticked and the `minus` glyph while mixed (`ui-checkbox__glyph`), and nothing while empty. React Aria's checkbox props pass through: `isSelected`, `defaultSelected` and `onChange`, `isIndeterminate`, `name`, `value`, `isRequired`, `isInvalid`, `isReadOnly`, `isDisabled`, `inputRef` and the others.
+`Checkbox` shall render a `<label>` (`ui-checkbox`) around a visually hidden native checkbox input, a box (`ui-checkbox__box`, hidden from assistive technology) and its children in `ui-checkbox__label`. The box draws the `check` glyph while ticked and the `minus` glyph while mixed (`ui-checkbox__glyph`), and nothing while empty. It takes `isSelected` (controlled) or `defaultSelected` (uncontrolled) with `onChange`, `isIndeterminate`, `name` and `value` (submitted while ticked, `on` by default), `isRequired`, `isInvalid`, `isReadOnly`, `isDisabled`, `validationBehavior` (`native` by default, which makes a required box a native constraint; `aria` reports through ARIA only), `inputRef` (the native input) and the labelling props.
 
 Implementation: `src/components/checkbox/checkbox.tsx`, `labs/reference/checkbox.css`
 Verification: `src/components/checkbox/checkbox.test.tsx`, `e2e/checkbox.spec.ts`
@@ -20,7 +20,7 @@ Verification: `src/components/checkbox/checkbox.test.tsx`, `e2e/checkbox.spec.ts
 
 ### UIC-CHECKBOX-1.3 - Accessibility
 
-The input shall be named by the children, or by `aria-label` or `aria-labelledby` when the box has no text, and carry the caller's `id`. A mixed box sets its input's native indeterminate state, which assistive technology reports as mixed; a read-only one reports `aria-readonly="true"`, and an invalid one `aria-invalid="true"`. Keyboard focus publishes React Aria's `data-focus-visible` on the root so the stylesheet can ring the box.
+The input shall be named by the children, or by `aria-label` or `aria-labelledby` when the box has no text, and carry the caller's `id`. A mixed box sets its input's native indeterminate state, which assistive technology reports as mixed; a read-only one reports `aria-readonly="true"`, and an invalid one `aria-invalid="true"`. Keyboard focus publishes `data-focus-visible` on the root so the stylesheet can ring the box.
 
 Implementation: `src/components/checkbox/checkbox.tsx`
 Verification: `src/components/checkbox/checkbox.test.tsx`, `e2e/checkbox.spec.ts`
@@ -28,6 +28,13 @@ Verification: `src/components/checkbox/checkbox.test.tsx`, `e2e/checkbox.spec.ts
 ### UIC-CHECKBOX-1.4 - Hooks and caller attributes
 
 `Checkbox` shall carry the hooks below, append the caller's `className` to its root and forward caller `data-*` attributes to it.
+
+Implementation: `src/components/checkbox/checkbox.tsx`
+Verification: `src/components/checkbox/checkbox.test.tsx`
+
+### UIC-CHECKBOX-1.5 - Selection checkbox
+
+With `slot="selection"`, a checkbox inside a selectable list row, tree row or card shall show and toggle that item's selection: it is ticked while the item is selected, and pressing it selects or deselects the item.
 
 Implementation: `src/components/checkbox/checkbox.tsx`
 Verification: `src/components/checkbox/checkbox.test.tsx`

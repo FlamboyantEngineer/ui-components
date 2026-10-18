@@ -20,7 +20,7 @@ function SavedField(props: Omit<NumberFieldProps, 'label'>) {
 }
 
 describe('NumberField', () => {
-  it('UIC-NUMBER-FIELD-1.1 is a field around a React Aria number field that starts empty', async () => {
+  it('UIC-NUMBER-FIELD-1.1 is a field around a number field that starts empty', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     const { container } = render(<NumberField label="Weight" onChange={onChange} />);

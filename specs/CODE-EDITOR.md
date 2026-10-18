@@ -8,7 +8,7 @@ The editor stays a text area: it does not fold code and it re-tokenizes and redr
 
 ### UIC-CODE-EDITOR-1.1 - Text area over a highlighted copy
 
-`CodeEditor` shall render its `value` in a React Aria `TextArea` (`ui-code-editor__input`), the control, with spelling, autocorrection, autocapitalization and autocomplete off unless the caller sets them, and report each edit through `onChange`. Behind it, a `<pre>` (`ui-code-editor__highlight`) hidden from assistive technology draws the same text, so a stylesheet can make the text area's text transparent and let the copy paint it. The text area takes the caller's text area props (`aria-label`, `aria-labelledby`, `placeholder`, `readOnly`, handlers).
+`CodeEditor` shall render its `value` in a `<textarea>` (`ui-code-editor__input`), the control, with spelling, autocorrection, autocapitalization and autocomplete off, and report each edit through `onChange`. Behind it, a `<pre>` (`ui-code-editor__highlight`) hidden from assistive technology draws the same text, so a stylesheet can make the text area's text transparent and let the copy paint it. The text area takes the caller's `placeholder`, labelling props (`aria-label`, `aria-labelledby`, `aria-describedby`, `aria-details`), `aria-errormessage`, `isRequired` (as `aria-required`) and its focus and keyboard handlers (`onFocus`, `onBlur`, `onKeyDown`, `onKeyUp`), which run after the editor's own.
 
 Implementation: `src/components/code-editor/code-editor.tsx`, `src/components/code-editor/code-layers.tsx`
 Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/code-editor.spec.ts`
@@ -43,7 +43,7 @@ Verification: `src/components/code-editor/code-editor.test.tsx`
 
 ### UIC-CODE-EDITOR-1.6 - Read-only and disabled
 
-A `readOnly` or `disabled` editor shall pass the lock to its text area, publish `data-readonly` or `data-disabled` on its root and offer no completions.
+An `isReadOnly` or `isDisabled` editor shall make its text area natively read-only or disabled, publish `data-readonly` or `data-disabled` on its root and offer no completions.
 
 Implementation: `src/components/code-editor/code-editor.tsx`, `src/components/code-editor/code-completion.tsx`
 Verification: `src/components/code-editor/code-editor.test.tsx`
@@ -75,7 +75,7 @@ Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/code-edito
 
 ### UIC-CODE-EDITOR-3.2 - Invalid
 
-An editor with an `error` diagnostic, or whose caller sets `aria-invalid`, shall publish `data-invalid` on its root and give its text area `aria-invalid="true"`. Warnings alone leave it valid.
+An editor with an `error` diagnostic, or whose caller sets `isInvalid`, shall publish `data-invalid` on its root and give its text area `aria-invalid="true"`. Warnings alone leave it valid.
 
 Implementation: `src/components/code-editor/code-editor.tsx`
 Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/code-editor.spec.ts`

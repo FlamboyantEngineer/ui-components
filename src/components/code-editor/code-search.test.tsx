@@ -107,7 +107,7 @@ describe('CodeEditor find and replace', () => {
 
   it('UIC-CODE-EDITOR-7.3 finds without replacing in a read-only editor', async () => {
     const user = userEvent.setup();
-    render(<Editor readOnly />);
+    render(<Editor isReadOnly />);
     await user.click(input());
     await user.keyboard('{Control>}f{/Control}');
     expect(screen.getByRole('textbox', { name: 'Find' })).toHaveFocus();

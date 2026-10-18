@@ -17,7 +17,6 @@ export {
 export type {
   ButtonProps,
   ButtonRenderProps,
-  FileTriggerProps,
   GroupProps,
   KeyboardEvent,
   LinkProps,

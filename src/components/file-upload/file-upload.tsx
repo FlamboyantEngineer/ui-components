@@ -1,6 +1,6 @@
 import { useId, useRef, useState, type DragEvent, type ReactNode } from 'react';
-import { FileTrigger, useLocale, type FileTriggerProps, type Key } from '../../primitives/index.js';
-import type { BaseProps } from '../../core/props.js';
+import { FileTrigger, useLocale } from '../../primitives/index.js';
+import type { BaseProps, Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { formatBytes } from '../../utils/format-bytes.js';
@@ -25,10 +25,13 @@ import { useFileForm } from './file-upload-form.js';
 /** `button` is one command among others; `dropzone` is a drop target that also offers Browse. */
 export type FileUploadVariant = 'button' | 'dropzone';
 
-export interface FileUploadProps
-  extends BaseProps, FileRules, Pick<FileTriggerProps, 'allowsMultiple' | 'acceptDirectory'> {
+export interface FileUploadProps extends BaseProps, FileRules {
   /** The command's text: the button label, or the drop zone's title. */
   label: string;
+  /** Takes several files at once from the chooser and a drop. */
+  allowsMultiple?: boolean | undefined;
+  /** The chooser picks a folder, and a dropped folder is read for its files; implies several files. */
+  acceptDirectory?: boolean | undefined;
   /** Help below the command. Defaults to the accepted types and the size and count limits. */
   description?: ReactNode;
   /** Defaults to `button`. */

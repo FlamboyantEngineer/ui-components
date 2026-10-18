@@ -34,7 +34,7 @@ Verification: `src/components/file-upload/file-upload.test.tsx`, `e2e/file-uploa
 
 ### UIC-FILE-UPLOAD-1.5 - Folders
 
-With `acceptDirectory`, the system chooser shall pick a folder (React Aria's `FileTrigger`) and every file in it is offered, as with `allowsMultiple`; a folder dropped on the drop zone is read, through its subfolders, for its files. Without it a dropped folder is ignored.
+With `acceptDirectory`, the system chooser shall pick a folder and every file in it is offered, as with `allowsMultiple`; a folder dropped on the drop zone is read, through its subfolders, for its files. Without it a dropped folder is ignored. The drop is read as library dropped items (`DroppedFile`, `DroppedDirectory` and `DroppedText`, which is ignored), whatever building block reports it.
 
 Implementation: `src/components/file-upload/file-upload.tsx`, `src/components/file-upload/file-upload-drop.tsx`
 Verification: `src/components/file-upload/file-upload.test.tsx`, `e2e/file-upload.spec.ts`
@@ -101,7 +101,7 @@ Verification: `src/components/file-upload/file-rules.test.ts`, `src/components/f
 
 ### UIC-FILE-UPLOAD-3.1 - File list
 
-`files` shall render as a list (`ui-file-upload__files`) named by `label`, one `ui-file-upload__file` per file with its name (`ui-file-upload__file-name`), its size when given (`ui-file-upload__file-size`, `formatBytes` in the React Aria locale) and `data-status`: `error` with an error, `uploading` while `progress` is below 100, `complete` at 100, `selected` without progress.
+`files` shall render as a list (`ui-file-upload__files`) named by `label`, one `ui-file-upload__file` per file with its name (`ui-file-upload__file-name`), its size when given (`ui-file-upload__file-size`, `formatBytes` in the `UiProvider` locale) and `data-status`: `error` with an error, `uploading` while `progress` is below 100, `complete` at 100, `selected` without progress.
 
 Implementation: `src/components/file-upload/file-upload-files.tsx`
 Verification: `src/components/file-upload/file-upload.test.tsx`, `e2e/file-upload.spec.ts`

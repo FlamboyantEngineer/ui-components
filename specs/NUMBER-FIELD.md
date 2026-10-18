@@ -6,14 +6,14 @@
 
 ### UIC-NUMBER-FIELD-1.1 - Field control
 
-`NumberField` shall render a `Field` around a React Aria number field, built with `useFieldControl`, and take the field's props. Its root element is the field's root, which carries `ui-number-field` beside `ui-field`. The value is a number or `null` while empty; a field given no value, committed value or default starts empty, and Clear empties it.
+`NumberField` shall render a `Field` around a number field element, built with `useFieldControl`, and take the field's props, its own range, step, format and commit props and `placeholder`. Its root element is the field's root, which carries `ui-number-field` beside `ui-field`. The value is a number or `null` while empty; a field given no value, committed value or default starts empty, and Clear empties it.
 
 Implementation: `src/components/number-field/number-field.tsx`, `src/components/field/field-control.ts`
 Verification: `src/components/number-field/number-field.test.tsx`
 
 ### UIC-NUMBER-FIELD-1.2 - Locale formatting and parsing
 
-`NumberField` shall show its value formatted with `formatOptions` in the locale React Aria uses (the `UiProvider` locale, [PROVIDER.md](PROVIDER.md)), and parse typed and pasted text in that locale, so `1.234,5` is a number in German. It refuses characters that cannot belong to a number in that format; text that does not parse goes back to the formatted value on commit, and emptied text gives `null`. The control is a text input (`ui-number-field__input`) with a numeric input mode, never a native number input, and `placeholder` shows while it is empty.
+`NumberField` shall show its value formatted with `formatOptions` in the `UiProvider` locale ([PROVIDER.md](PROVIDER.md)), and parse typed and pasted text in that locale, so `1.234,5` is a number in German. It refuses characters that cannot belong to a number in that format; text that does not parse goes back to the formatted value on commit, and emptied text gives `null`. The control is a text input (`ui-number-field__input`) with a numeric input mode, never a native number input, and `placeholder` shows while it is empty.
 
 Implementation: `src/components/number-field/number-field.tsx`
 Verification: `src/components/number-field/number-field.test.tsx`, `e2e/number-field.spec.ts`
@@ -50,7 +50,7 @@ Verification: `src/components/number-field/number-field.test.tsx`, `e2e/number-f
 
 ### UIC-NUMBER-FIELD-2.2 - Range and step
 
-`minValue`, `maxValue` and `step` shall bound the value. By default (`commitBehavior="snap"`, React Aria's) a committed value is clamped into the range and snapped to the nearest step. With `commitBehavior="validate"` it is kept as typed, and the field reports a value below the minimum, above the maximum or off the step (counted from the minimum, or from zero) as an error with the provider strings `rangeUnderflow`, `rangeOverflow` and `stepMismatch`, given the bound formatted like the value. Any value outside the rules, a controlled one included, reports the same way, before the caller's `validate`.
+`minValue`, `maxValue` and `step` shall bound the value. `commitBehavior` (`NumberFieldCommitBehavior`) chooses what a commit does: by default (`snap`) a committed value is clamped into the range and snapped to the nearest step. With `commitBehavior="validate"` it is kept as typed, and the field reports a value below the minimum, above the maximum or off the step (counted from the minimum, or from zero) as an error with the provider strings `rangeUnderflow`, `rangeOverflow` and `stepMismatch`, given the bound formatted like the value. Any value outside the rules, a controlled one included, reports the same way, before the caller's `validate`.
 
 Implementation: `src/components/number-field/number-field.tsx`, `src/core/strings.ts`
 Verification: `src/components/number-field/number-field.test.tsx`, `e2e/number-field.spec.ts`

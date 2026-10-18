@@ -6,7 +6,7 @@
 
 ### UIC-EMOJI-PICKER-1.1 - Loading
 
-`EmojiPicker` shall load the standard emoji through `loadEmoji`, by default the bundled set in the language of the React Aria locale ([UIC-EMOJI-PICKER-4.4](#uic-emoji-picker-44---bundled-locales)), which loads as a separate chunk once for every picker. While it is the default, a change of locale loads that locale's set. While loading, the root shall carry `data-loading` and the body shall read the provider's `loading` string in a `role="status"` message; a failed load shall read the `emojiLoadFailed` string.
+`EmojiPicker` shall load the standard emoji through `loadEmoji`, by default the bundled set in the language of the `UiProvider` locale ([UIC-EMOJI-PICKER-4.4](#uic-emoji-picker-44---bundled-locales)), which loads as a separate chunk once for every picker. While it is the default, a change of locale loads that locale's set. While loading, the root shall carry `data-loading` and the body shall read the provider's `loading` string in a `role="status"` message; a failed load shall read the `emojiLoadFailed` string.
 
 Implementation: `src/components/emoji-picker/emoji-picker.tsx`, `src/components/emoji-picker/emoji-picker-body.tsx`, `src/components/emoji-picker/emoji-picker-state.ts`, `src/components/emoji-picker/emoji-locale.ts`
 Verification: `src/components/emoji-picker/emoji-picker.test.tsx`, `e2e/emoji-picker.spec.ts`
@@ -80,7 +80,7 @@ Verification: `src/components/emoji-picker/emoji-picker.test.tsx`, `e2e/emoji-pi
 
 ### UIC-EMOJI-PICKER-3.2 - Accessibility
 
-The picker shall be a `role="dialog"` named by `aria-label` or, by default, the `emojiPicker` string. `autoFocus` focuses the search field when the picker mounts.
+The picker shall be a `role="dialog"` named by `aria-label` (or `aria-labelledby`) or, by default, the `emojiPicker` string, and described by `aria-describedby`; it takes the labelling props and its own, and no other dialog props. `autoFocus` focuses the search field when the picker mounts.
 
 Implementation: `src/components/emoji-picker/emoji-picker.tsx`
 Verification: `src/components/emoji-picker/emoji-picker.test.tsx`, `e2e/emoji-picker.spec.ts`

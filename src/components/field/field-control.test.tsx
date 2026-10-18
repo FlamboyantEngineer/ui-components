@@ -133,7 +133,7 @@ describe('useFieldControl', () => {
 });
 
 describe('toAriaControlProps', () => {
-  it('UIC-FIELD-8.2 maps the control props to React Aria props', () => {
+  it('UIC-FIELD-8.2 maps the control props to the prop vocabulary', () => {
     expect(toAriaControlProps(controlProps({}))).toEqual({
       id: 'fruit-control',
       'aria-label': undefined,

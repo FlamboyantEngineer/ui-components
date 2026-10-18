@@ -16,6 +16,34 @@ export type FieldLayoutProps = Omit<FieldProps<unknown>, 'state' | 'children'>;
  */
 export interface FieldInputProps<T> extends FieldStateOptions<T>, FieldLayoutProps {}
 
+/** The virtual keyboard a text control asks for. */
+export type FieldInputMode =
+  | 'none'
+  | 'text'
+  | 'tel'
+  | 'url'
+  | 'email'
+  | 'numeric'
+  | 'decimal'
+  | 'search';
+
+/**
+ * The native text-entry attributes a text control hands its input: the hint, autofill, the virtual
+ * keyboard, spelling and first focus. Length and format rules are `StringRules`.
+ */
+export interface FieldTextInputProps {
+  /** A hint shown while the control is empty. */
+  placeholder?: string | undefined;
+  /** The browser's autofill hint, such as `email`, `new-password` or `off`. */
+  autoComplete?: string | undefined;
+  /** The virtual keyboard to show. */
+  inputMode?: FieldInputMode | undefined;
+  /** Whether the browser checks spelling. Defaults to the browser's choice. */
+  spellCheck?: boolean | undefined;
+  /** Focuses the control when it mounts. */
+  autoFocus?: boolean | undefined;
+}
+
 export interface FieldControlOptions<T> {
   /** The value a field starts at, and its default, when the caller gives neither. */
   initialValue: T;
@@ -111,8 +139,9 @@ export function useFieldControl<T, P extends FieldInputProps<T>>(
 }
 
 /**
- * The control props in React Aria's terms: its id, name, description and states. Controls validate
- * through the field, so React Aria only reports the field's status (`validationBehavior="aria"`).
+ * The control props in the library's prop vocabulary, for a control built on a building block: its
+ * id, name, description and states. Controls validate through the field, so the building block only
+ * reports the field's status (`validationBehavior="aria"`).
  */
 export function toAriaControlProps(control: FieldControlProps) {
   return {

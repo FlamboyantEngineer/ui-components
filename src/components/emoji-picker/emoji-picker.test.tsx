@@ -339,6 +339,19 @@ describe('EmojiPicker', { timeout: 15_000 }, () => {
     expect(screen.getByRole('dialog', { name: 'Emoji' })).toBeInTheDocument();
     rerender(<EmojiPicker loadEmoji={loadFixture} aria-label="Add reaction" autoFocus />);
     expect(screen.getByRole('dialog', { name: 'Add reaction' })).toBeInTheDocument();
+    rerender(
+      <>
+        <h2 id="picker-title">React to the message</h2>
+        <p id="picker-help">Pick one emoji.</p>
+        <EmojiPicker
+          loadEmoji={loadFixture}
+          aria-labelledby="picker-title"
+          aria-describedby="picker-help"
+        />
+      </>,
+    );
+    const dialog = screen.getByRole('dialog', { name: 'React to the message' });
+    expect(dialog).toHaveAccessibleDescription('Pick one emoji.');
   });
 
   it('UIC-EMOJI-PICKER-3.2 focuses the search field on mount with autoFocus', async () => {
@@ -359,7 +372,7 @@ describe('EmojiPicker', { timeout: 15_000 }, () => {
     expectHooksMatchSpec(container, 'EMOJI-PICKER');
   });
 
-  it('UIC-EMOJI-PICKER-4.4 loads the bundled set in the language of the React Aria locale', async () => {
+  it('UIC-EMOJI-PICKER-4.4 loads the bundled set in the language of the provider locale', async () => {
     render(
       <UiProvider locale="fr-FR">
         <EmojiPicker />

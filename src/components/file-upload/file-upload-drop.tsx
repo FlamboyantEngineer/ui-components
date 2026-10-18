@@ -6,13 +6,7 @@ import {
   type ReactNode,
   type RefObject,
 } from 'react';
-import {
-  DropZone,
-  isDirectoryDropItem,
-  isFileDropItem,
-  type DirectoryDropItem,
-  type DropItem,
-} from '../../primitives/index.js';
+import { DropZone } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { Icon } from '../icon/icon.js';
@@ -38,7 +32,31 @@ export interface CommandProps {
   commandRef: RefObject<HTMLButtonElement | null>;
 }
 
-async function readDirectory(item: DirectoryDropItem): Promise<File[]> {
+/** A file dropped on the upload, read on demand. */
+export interface DroppedFile {
+  kind: 'file';
+  /** The MIME type. */
+  type: string;
+  name: string;
+  getFile(): Promise<File>;
+}
+
+/** A folder dropped on the upload, whose entries are files and folders. */
+export interface DroppedDirectory {
+  kind: 'directory';
+  name: string;
+  getEntries(): AsyncIterable<DroppedFile | DroppedDirectory>;
+}
+
+/** Something else dropped, such as text, which the upload ignores. */
+export interface DroppedText {
+  kind: 'text';
+}
+
+/** One item of a drop on the upload. */
+export type DroppedItem = DroppedFile | DroppedDirectory | DroppedText;
+
+async function readDirectory(item: DroppedDirectory): Promise<File[]> {
   const files: File[] = [];
   for await (const entry of item.getEntries()) {
     files.push(...(entry.kind === 'file' ? [await entry.getFile()] : await readDirectory(entry)));
@@ -48,13 +66,13 @@ async function readDirectory(item: DirectoryDropItem): Promise<File[]> {
 
 /** The dropped files, in order, with every file inside dropped folders when they are accepted. */
 export async function readDroppedFiles(
-  items: readonly DropItem[],
+  items: readonly DroppedItem[],
   acceptDirectory: boolean,
 ): Promise<File[]> {
   const files: File[] = [];
   for (const item of items) {
-    if (isFileDropItem(item)) files.push(await item.getFile());
-    else if (acceptDirectory && isDirectoryDropItem(item))
+    if (item.kind === 'file') files.push(await item.getFile());
+    else if (acceptDirectory && item.kind === 'directory')
       files.push(...(await readDirectory(item)));
   }
   return files;

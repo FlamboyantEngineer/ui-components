@@ -7,24 +7,53 @@ import {
   type FormEvent,
   type ReactNode,
 } from 'react';
-import { Form as AriaForm, type FormProps as AriaFormProps } from '../../primitives/index.js';
+import { Form as AriaForm } from '../../primitives/index.js';
+import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import {
   FieldScopeContext,
   useFieldScope,
   type FieldRegistration,
+  type FieldValidationBehavior,
+  type FieldValidationErrors,
   type FieldValidationMode,
 } from '../field/field.js';
 
-export interface FormProps
-  extends Omit<AriaFormProps, 'className' | 'style' | 'children' | 'render'>, BaseProps {
+/** The HTTP method a native submit uses. */
+export type FormMethod = 'get' | 'post' | 'dialog';
+
+export interface FormProps extends BaseProps, AriaLabellingProps {
   /** When the fields inside show their validation, unless a field sets its own. Defaults to `submit`. */
   validationMode?: FieldValidationMode | undefined;
+  /**
+   * `native` (the default) lets the browser's constraint validation block a submit through the
+   * fields' custom validity; `aria` reports validation through ARIA only. Fields that set none use it.
+   */
+  validationBehavior?: FieldValidationBehavior | undefined;
+  /** Errors from outside the form (a server's answer), by field name. */
+  validationErrors?: FieldValidationErrors | undefined;
+  /** Where a native submit sends the form's data. */
+  action?: string | undefined;
+  /** The HTTP method of a native submit. */
+  method?: FormMethod | undefined;
+  /** Called with the submit event once every field inside passes; prevent its default to stay. */
+  onSubmit?: ((event: FormEvent<HTMLFormElement>) => void) | undefined;
   children?: ReactNode;
 }
 
 const hooks = createHooks('form');
+
+/** The errors as the building block takes them: each list a copy it may own. */
+function toErrorLists(errors: FieldValidationErrors | undefined) {
+  if (!errors) return undefined;
+  return Object.fromEntries(
+    Object.entries(errors).map(([name, error]) => [
+      name,
+      typeof error === 'string' ? error : [...error],
+    ]),
+  );
+}
 
 function inDocumentOrder(fields: Iterable<FieldRegistration>): FieldRegistration[] {
   return [...fields].sort((left, right) => {
@@ -87,6 +116,7 @@ export function Form({
     [parent, validationMode, validationBehavior, validationErrors, register],
   );
   const form = useInvalidFocus(fields);
+  const errorLists = useMemo(() => toErrorLists(validationErrors), [validationErrors]);
   const submit = (event: FormEvent<HTMLFormElement>) => {
     const ordered = inDocumentOrder(fields);
     for (const field of ordered) field.revealValidation();
@@ -101,7 +131,7 @@ export function Form({
       {...hooks.root({ className, props: rest })}
       ref={form}
       validationBehavior={validationBehavior}
-      validationErrors={validationErrors}
+      validationErrors={errorLists}
       onSubmit={submit}
     >
       <FieldScopeContext.Provider value={scope}>{children}</FieldScopeContext.Provider>

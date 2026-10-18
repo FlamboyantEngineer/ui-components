@@ -20,7 +20,7 @@ function thumbOf(input: HTMLElement) {
 }
 
 describe('Slider', () => {
-  it('UIC-SLIDER-1.1 is a field around a React Aria slider that starts at the minimum and commits each move', async () => {
+  it('UIC-SLIDER-1.1 is a field around a slider that starts at the minimum and commits each move', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     const onCommit = vi.fn();

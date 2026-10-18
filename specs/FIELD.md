@@ -1,6 +1,6 @@
 # Field
 
-The field base every field control is built on. `useFieldState` is the controller: it holds or relays a field's value, knows its committed value, validates it, tracks dirty state and keeps a per-field undo history. `Field` lays a field out around its control: the label, the control, the restore, help and menu buttons, a decoration slot for the host's badges, the description and the validation message. It hands the control the ids and ARIA attributes it needs through a render function, so any control (a React Aria `Input`, a select trigger, a custom widget) becomes a field. `getFieldUndo` lets a host's shortcut handler undo or redo the focused field, and `FieldRestoreButton` restores a value wherever a control offers one. `validateString` checks text against length and format rules. Field controls (a text field, a number field) share their props through `FieldInputProps` and build on `useFieldControl` and `toAriaControlProps`. `FieldPreviousValue` shows a value an edit replaced or removed, beside the current one. A field shows its validation when its validation mode allows, can check its value asynchronously, shows external errors by name, and can report its error to the browser's constraint validation; the nearest [Form](FORM.md) or `Fieldset` hands it defaults through the field scope. `Fieldset` groups fields under a legend and disables them together.
+The field base every field control is built on. `useFieldState` is the controller: it holds or relays a field's value, knows its committed value, validates it, tracks dirty state and keeps a per-field undo history. `Field` lays a field out around its control: the label, the control, the restore, help and menu buttons, a decoration slot for the host's badges, the description and the validation message. It hands the control the ids and ARIA attributes it needs through a render function, so any control (a text input, a select trigger, a custom widget) becomes a field. `getFieldUndo` lets a host's shortcut handler undo or redo the focused field, and `FieldRestoreButton` restores a value wherever a control offers one. `validateString` checks text against length and format rules. Field controls (a text field, a number field) share their props through `FieldInputProps`, text controls also through `FieldTextInputProps`, and build on `useFieldControl` and `toAriaControlProps`. `FieldPreviousValue` shows a value an edit replaced or removed, beside the current one. A field shows its validation when its validation mode allows, can check its value asynchronously, shows external errors by name, and can report its error to the browser's constraint validation; the nearest [Form](FORM.md) or `Fieldset` hands it defaults through the field scope. `Fieldset` groups fields under a legend and disables them together.
 
 ## UIC-FIELD-1 - Layout
 
@@ -291,12 +291,19 @@ Every field control shall take the field's props through one type, `FieldInputPr
 Implementation: `src/components/field/field-control.ts`
 Verification: `src/components/field/field-control.test.tsx`
 
-### UIC-FIELD-8.2 - React Aria control props
+### UIC-FIELD-8.2 - Control props in the prop vocabulary
 
-`toAriaControlProps(control)` shall give a React Aria control the field's id, `aria-label`, `aria-labelledby`, `aria-describedby` and `aria-errormessage`, and its states as `isInvalid`, `isRequired`, `isReadOnly` and `isDisabled`, with `validationBehavior="aria"` so the field alone validates and React Aria only reports the status.
+`toAriaControlProps(control)` shall give a control built on a building block the field's id, `aria-label`, `aria-labelledby`, `aria-describedby` and `aria-errormessage`, and its states in the library's prop vocabulary as `isInvalid`, `isRequired`, `isReadOnly` and `isDisabled`, with `validationBehavior="aria"` so the field alone validates and the control only reports the status.
 
 Implementation: `src/components/field/field-control.ts`
 Verification: `src/components/field/field-control.test.tsx`
+
+### UIC-FIELD-8.3 - Text input props
+
+Every text control shall take the native text-entry attributes of its input through one type, `FieldTextInputProps`: `placeholder` (shown while the control is empty), `autoComplete` (the browser's autofill hint), `inputMode` (`FieldInputMode`: the virtual keyboard to show), `spellCheck` (a boolean; the browser's choice when left out) and `autoFocus` (focus the control when it mounts). The control hands them to its input as native attributes. Length and format rules stay the field's string rules (UIC-FIELD-7).
+
+Implementation: `src/components/field/field-control.ts`, `src/components/text-field/text-field.tsx`, `src/components/search-field/search-field.tsx`
+Verification: `src/components/text-field/text-field.test.tsx`, `src/components/search-field/search-field.test.tsx`
 
 ## UIC-FIELD-9 - Previous values
 

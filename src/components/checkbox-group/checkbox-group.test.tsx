@@ -18,7 +18,7 @@ function root(container: HTMLElement) {
 }
 
 describe('CheckboxGroup', () => {
-  it('UIC-CHECKBOX-GROUP-1.1 is a field around a React Aria checkbox group that starts empty', async () => {
+  it('UIC-CHECKBOX-GROUP-1.1 is a field around a checkbox group that starts empty', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     const onCommit = vi.fn();

@@ -1,19 +1,19 @@
 # Text Field
 
-`TextField` is a [field](FIELD.md) for a plain string, on one line or several. It is built on React Aria's `TextField` with an `Input` or a `TextArea`, and takes the field's props (`FieldInputProps<string>`), so it has a label and layout, validation, dirty state and restore, undo and redo, and the field menu. It commits on blur and on Enter, reverts an edit on Escape, and checks length and format with the field's string rules. Adornments and a reveal button for masked text sit inside the input's frame, a text area can grow with its text, and a counter shows the text's length. A query that filters or finds is a [Search Field](SEARCH-FIELD.md), and a number is a [Number Field](NUMBER-FIELD.md).
+`TextField` is a [field](FIELD.md) for a plain string, on one line or several. It is built on React Aria's `TextField` with an `Input` or a `TextArea`, and takes the field's props (`FieldInputProps<string>`) and text input props (`FieldTextInputProps`), so it has a label and layout, validation, dirty state and restore, undo and redo, and the field menu. It commits on blur and on Enter, reverts an edit on Escape, and checks length and format with the field's string rules. Adornments and a reveal button for masked text sit inside the input's frame, a text area can grow with its text, and a counter shows the text's length. A query that filters or finds is a [Search Field](SEARCH-FIELD.md), and a number is a [Number Field](NUMBER-FIELD.md).
 
 ## UIC-TEXT-FIELD-1 - Contract
 
 ### UIC-TEXT-FIELD-1.1 - Field control
 
-`TextField` shall render a `Field` around a React Aria text field, built with `useFieldControl`, and take the field's props: the label, layout, description, help, decoration and menu, the value, default, committed and empty values with `onChange` and `onCommit`, `validate`, `isRequired`, `isReadOnly`, `isDisabled` and `isPending`. Its root element is the field's root, which carries `ui-text-field` beside `ui-field`. Typing changes the value; a field given no value, committed value or default starts empty, and Clear empties it.
+`TextField` shall render a `Field` around a text field element, built with `useFieldControl`, and take the field's props: the label, layout, description, help, decoration and menu, the value, default, committed and empty values with `onChange` and `onCommit`, `validate`, `isRequired`, `isReadOnly`, `isDisabled` and `isPending`. Its root element is the field's root, which carries `ui-text-field` beside `ui-field`. Typing changes the value; a field given no value, committed value or default starts empty, and Clear empties it.
 
 Implementation: `src/components/text-field/text-field.tsx`, `src/components/field/field-control.ts`
 Verification: `src/components/text-field/text-field.test.tsx`
 
 ### UIC-TEXT-FIELD-1.2 - One line or several
 
-`TextField` shall edit one line in an `<input>` (`ui-text-field__input`) inside the React Aria text field element (`ui-text-field__box`). With `multiline` it shall edit several lines in a `<textarea>` instead and publish `data-multiline` on its root. `placeholder` shows while the control is empty, and React Aria's text field props (`type`, `name`, `autoComplete`, `inputMode`, `spellCheck`, `autoFocus`, `onKeyDown`, `onFocus`, `onBlur` and the others) pass through to it.
+`TextField` shall edit one line in an `<input>` (`ui-text-field__input`) inside the text field element (`ui-text-field__box`). With `multiline` it shall edit several lines in a `<textarea>` instead and publish `data-multiline` on its root. `type` (`TextFieldType`: `text` by default, `email`, `password`, `search`, `tel` or `url`) sets a single line's input type. The text input props (UIC-FIELD-8.3: `placeholder`, `autoComplete`, `inputMode`, `spellCheck`, `autoFocus`), the form `name` and the focus and keyboard handlers (`onFocus`, `onBlur`, `onFocusChange`, `onKeyDown`, `onKeyUp`) reach the control.
 
 Implementation: `src/components/text-field/text-field.tsx`, `labs/reference/text-field.css`
 Verification: `src/components/text-field/text-field.test.tsx`, `e2e/text-field.spec.ts`
@@ -66,7 +66,7 @@ Verification: `src/components/text-field/text-field.test.tsx`, `e2e/text-field.s
 
 ### UIC-TEXT-FIELD-3.1 - Adornments
 
-`startAdornment` and `endAdornment` shall render the caller's content (an icon, a unit, a button) before and after the text, in `ui-text-field__start` and `ui-text-field__end`, inside a React Aria group (`ui-text-field__group`, role `presentation`) around the input, which the reference sheet frames as one box. Adornments are not part of the value or the control's name. A field without adornments or a reveal button draws no group, so the input is its own frame.
+`startAdornment` and `endAdornment` shall render the caller's content (an icon, a unit, a button) before and after the text, in `ui-text-field__start` and `ui-text-field__end`, inside a group (`ui-text-field__group`, role `presentation`) around the input, which the reference sheet frames as one box. Adornments are not part of the value or the control's name. A field without adornments or a reveal button draws no group, so the input is its own frame.
 
 Implementation: `src/components/text-field/text-field.tsx`, `src/components/text-field/text-field-parts.tsx`, `labs/reference/text-field.css`
 Verification: `src/components/text-field/text-field.test.tsx`, `e2e/text-field.spec.ts`

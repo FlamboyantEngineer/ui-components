@@ -125,10 +125,38 @@ describe('CodeEditor', () => {
     expectHooksMatchSpec(container, 'CODE-EDITOR', { slots: ['toolbar'] });
   });
 
+  it('UIC-CODE-EDITOR-1.1 hands its text area props and handlers to the text area', async () => {
+    const user = userEvent.setup();
+    const events: string[] = [];
+    render(
+      <>
+        <p id="source-error">Fix the source.</p>
+        <Editor
+          placeholder="Write a query"
+          aria-errormessage="source-error"
+          isRequired
+          onFocus={() => events.push('focus')}
+          onBlur={() => events.push('blur')}
+          onKeyDown={(event) => events.push(`down:${event.key}`)}
+          onKeyUp={(event) => events.push(`up:${event.key}`)}
+        />
+      </>,
+    );
+    const input = screen.getByRole('textbox', { name: 'Source' });
+    expect(input).toHaveAttribute('placeholder', 'Write a query');
+    expect(input).toHaveAttribute('aria-errormessage', 'source-error');
+    expect(input).toHaveAttribute('aria-required', 'true');
+    expect(input).toHaveAttribute('spellcheck', 'false');
+    await user.click(input);
+    await user.keyboard('x');
+    await user.tab();
+    expect(events).toEqual(['focus', 'down:x', 'up:x', 'down:Tab', 'blur']);
+  });
+
   it('UIC-CODE-EDITOR-1.6 locks a read-only or disabled editor and offers no completions', async () => {
     const user = userEvent.setup();
     const { container, rerender } = render(
-      <Editor initialValue="fruit." completions={vocabulary} readOnly />,
+      <Editor initialValue="fruit." completions={vocabulary} isReadOnly />,
     );
     expect(root(container)).toHaveAttribute('data-readonly', 'true');
     const input = screen.getByRole('textbox');
@@ -136,7 +164,7 @@ describe('CodeEditor', () => {
     await user.click(input);
     await user.keyboard('{End}');
     expect(screen.queryByRole('listbox')).toBeNull();
-    rerender(<Editor initialValue="fruit." completions={vocabulary} disabled />);
+    rerender(<Editor initialValue="fruit." completions={vocabulary} isDisabled />);
     expect(root(container)).toHaveAttribute('data-disabled', 'true');
     expect(screen.getByRole('textbox')).toBeDisabled();
     expectHooksMatchSpec(container, 'CODE-EDITOR');
@@ -251,7 +279,7 @@ describe('CodeEditor', () => {
     );
     expect(root(container)).not.toHaveAttribute('data-invalid');
     expect(screen.getByRole('textbox')).not.toHaveAttribute('aria-invalid');
-    rerender(<CodeEditor aria-label="Source" value="x" aria-invalid />);
+    rerender(<CodeEditor aria-label="Source" value="x" isInvalid />);
     expect(root(container)).toHaveAttribute('data-invalid', 'true');
     expectHooksMatchSpec(container, 'CODE-EDITOR');
   });

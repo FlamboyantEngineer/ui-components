@@ -1,9 +1,6 @@
 import { useState, type KeyboardEvent, type ReactNode } from 'react';
-import {
-  Input,
-  TextField as AriaTextField,
-  type TextFieldProps as AriaTextFieldProps,
-} from '../../primitives/index.js';
+import { Input, TextField as AriaTextField } from '../../primitives/index.js';
+import type { FocusEventProps, KeyboardEventProps } from '../../core/events.js';
 import { useUiStrings } from '../../core/provider.js';
 import {
   Field,
@@ -13,6 +10,7 @@ import {
   validateString,
   type FieldInputProps,
   type FieldState,
+  type FieldTextInputProps,
   type StringRules,
 } from '../field/field.js';
 import {
@@ -21,40 +19,23 @@ import {
   isAutoGrowing,
   textFieldHooks as hooks,
   withCharacterCount,
+  type TextFieldInputProps,
 } from './text-field-parts.js';
 
-/** The React Aria text field props a `TextField` takes; the field supplies the rest. */
-type AriaTextFieldOwnProps = Omit<
-  AriaTextFieldProps,
-  | 'className'
-  | 'style'
-  | 'children'
-  | 'render'
-  | 'id'
-  | 'value'
-  | 'defaultValue'
-  | 'onChange'
-  | 'validate'
-  | 'validationBehavior'
-  | 'isInvalid'
-  | 'isRequired'
-  | 'isReadOnly'
-  | 'isDisabled'
-  | 'minLength'
-  | 'maxLength'
-  | 'pattern'
-  | 'aria-label'
-  | 'aria-labelledby'
-  | 'aria-describedby'
-  | 'aria-errormessage'
->;
+/** The kind of text a single-line field takes: the input's `type`. */
+export type TextFieldType = 'text' | 'email' | 'password' | 'search' | 'tel' | 'url';
 
 export interface TextFieldProps
-  extends AriaTextFieldOwnProps, FieldInputProps<string>, StringRules {
+  extends
+    FieldInputProps<string>,
+    StringRules,
+    FieldTextInputProps,
+    FocusEventProps,
+    KeyboardEventProps {
+  /** The kind of text on a single line, which sets the input's `type`. Defaults to `text`. */
+  type?: TextFieldType | undefined;
   /** Edit several lines in a text area instead of one line in an input. */
   multiline?: boolean | undefined;
-  /** A hint shown while the control is empty. */
-  placeholder?: string | undefined;
   /** Content inside the input's frame before the text: an icon, a unit or a button. */
   startAdornment?: ReactNode;
   /** Content inside the input's frame after the text. */
@@ -101,6 +82,7 @@ export function TextField({
   minRows,
   maxRows,
   showCount = false,
+  spellCheck,
   ...props
 }: TextFieldProps) {
   const strings = useUiStrings();
@@ -114,7 +96,7 @@ export function TextField({
   const isMasked = allowsReveal && rest.type === 'password';
   const count = showCount ? (getLength ?? countCodePoints)(state.value) : null;
   const data = { multiline, autosize: multiline && isAutoGrowing({ minRows, maxRows }) };
-  const input = {
+  const input: TextFieldInputProps = {
     ...hooks.slot('input'),
     placeholder,
     onBlur: () => state.commit(),
@@ -136,6 +118,7 @@ export function TextField({
             {...rest}
             {...toAriaControlProps(control)}
             {...hooks.slot('box')}
+            spellCheck={spellCheck?.toString()}
             type={isMasked && isRevealed ? 'text' : rest.type}
             value={state.value}
             onChange={state.setValue}
