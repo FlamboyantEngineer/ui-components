@@ -138,7 +138,10 @@ describe('UserCard', () => {
     const root = card(container);
     expect(root).toHaveAttribute('data-loading', 'true');
     expect(root).toHaveAttribute('aria-busy', 'true');
-    expect(root.querySelector('.ui-user-card__skeleton')).toHaveAttribute('aria-hidden', 'true');
+    const skeleton = root.querySelector('.ui-user-card__skeleton');
+    expect(skeleton).toHaveAttribute('aria-hidden', 'true');
+    expect(skeleton).toHaveClass('ui-skeleton');
+    expect(skeleton).toHaveAttribute('data-loading', 'true');
     expect(root.querySelector('.ui-user-identity__name')).toHaveTextContent('Lena Ortiz');
     expect(
       root.querySelector('.ui-user-card__status, .ui-user-card__details, .ui-user-card__actions'),

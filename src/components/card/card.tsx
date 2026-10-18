@@ -8,6 +8,7 @@ import {
   useHeadingLevel,
   type HeadingLevel,
 } from '../section-header/section-header.js';
+import { Skeleton } from '../skeleton/skeleton.js';
 import {
   CardActionSlots,
   CardActionTitle,
@@ -237,7 +238,7 @@ export function Card({
       />
       <div {...hooks.slot('body')}>
         {isLoading ? (
-          <div {...hooks.slot('skeleton')} aria-hidden="true" />
+          <Skeleton className={hooks.slotClass('skeleton')} />
         ) : isEmptyNode(title) ? (
           children
         ) : (

@@ -17,6 +17,7 @@ import { getDisplayName, splitAvatarIdentity, type AvatarIdentity } from '../ava
 import { Button } from '../button/button.js';
 import { DescriptionList, DescriptionRow } from '../description-list/description-list.js';
 import type { IconSource } from '../icon/icon.js';
+import { Skeleton } from '../skeleton/skeleton.js';
 import { UserIdentity, type UserIdentityProps } from '../user-identity/user-identity.js';
 
 /** One labelled fact about the person, such as a team or a local time. */
@@ -206,7 +207,7 @@ export function UserCard(props: UserCardProps) {
         className={hooks.slotClass('identity')}
       />
       {isLoading ? (
-        <div {...hooks.slot('skeleton')} aria-hidden="true" />
+        <Skeleton className={hooks.slotClass('skeleton')} />
       ) : (
         <>
           <CardStatus statusLabel={statusLabel} />
