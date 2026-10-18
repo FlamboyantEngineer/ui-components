@@ -1,6 +1,7 @@
 import type { FocusEvent, Ref, RefObject, TextareaHTMLAttributes } from 'react';
 import { TextArea } from '../../primitives/index.js';
 import type { AriaLabellingProps, KeyboardEventProps } from '../../core/events.js';
+import { toCompletionInputAttributes } from '../completion-list/completion-list.js';
 import { CodeHighlight, codeEditorHooks as hooks } from './code-layers.js';
 import { alignLayers, type CodeEditorModel } from './use-code-editor.js';
 
@@ -39,19 +40,6 @@ export interface CodeAreaProps {
 }
 
 type TextAreaAttributes = TextareaHTMLAttributes<HTMLTextAreaElement>;
-
-/**
- * Ties the text area to its completion list: a multiline text box that autocompletes from a list,
- * with the active option as its active descendant while the list is open.
- */
-function toCompletionProps({ completion }: CodeEditorModel, listId: string): TextAreaAttributes {
-  return {
-    'aria-autocomplete': 'list',
-    'aria-haspopup': 'listbox',
-    'aria-controls': completion.isOpen ? listId : undefined,
-    'aria-activedescendant': completion.isOpen ? `${listId}-${completion.activeIndex}` : undefined,
-  };
-}
 
 /** The text area's keys: the completion list, the snippet fields, the editing keys, then the caller's. */
 function useKeyProps(model: CodeEditorModel, props: CodeTextAreaProps): TextAreaAttributes {
@@ -131,7 +119,7 @@ export function CodeArea({ model, props, locks, onChange, ...area }: CodeAreaPro
         wrap={area.wrap}
         aria-invalid={area.isInvalid || undefined}
         aria-describedby={area.describedBy}
-        {...(listId === undefined ? {} : toCompletionProps(model, listId))}
+        {...(listId === undefined ? {} : toCompletionInputAttributes(model.completion, listId))}
       />
     </div>
   );

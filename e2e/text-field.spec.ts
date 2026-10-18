@@ -227,4 +227,44 @@ test.describe('Text Field lab', () => {
     await expect(input).toHaveValue('50');
     await expect(output(page, 'Value')).toHaveText('12 + 30 + 8');
   });
+
+  test('UIC-TEXT-FIELD-5.1 UIC-TEXT-FIELD-5.2 UIC-TEXT-FIELD-5.3 completes cities under the field', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('text-field');
+    const input = field(page, 'completions').getByRole('textbox', { name: 'Destinations' });
+    await input.click();
+    await input.pressSequentially('Lisbon, L');
+    const list = page.getByRole('listbox', { name: 'Suggestions' });
+    await expect(list.getByRole('option')).toHaveCount(4);
+    await expect(input).toBeFocused();
+    const box = await field(page, 'completions').locator('.ui-text-field__box').boundingBox();
+    const popover = await page.locator('.ui-text-field__completions').boundingBox();
+    expect(popover && box && popover.y >= box.y + box.height).toBe(true);
+    expect(popover && box && Math.abs(popover.x - box.x) < 2).toBe(true);
+    expect(popover && box && popover.width >= box.width - 1).toBe(true);
+    await page.keyboard.press('ArrowDown');
+    await expect(input).toHaveAttribute(
+      'aria-activedescendant',
+      (await list.getByRole('option').nth(1).getAttribute('id')) ?? '',
+    );
+    await page.keyboard.press('Enter');
+    await expect(list).toBeHidden();
+    await expect(input).toHaveValue('Lisbon, London');
+    await expect(output(page, 'completions')).toHaveText('');
+    await page.keyboard.press('Control+z');
+    await expect(input).toHaveValue('Lisbon, L');
+    await page.keyboard.press('Control+Space');
+    await expect(list.getByRole('option')).toHaveCount(4);
+    await page.keyboard.press('Escape');
+    await expect(list).toBeHidden();
+    await page.keyboard.press('Enter');
+    await expect(output(page, 'completions')).toHaveText('Lisbon, L');
+    const drawn = field(page, 'drawn-completions').getByRole('textbox');
+    await drawn.click();
+    await drawn.pressSequentially('Os');
+    await expect(list.getByRole('option')).toHaveText(['Oslo Norway']);
+    await lab.expectAccessible();
+  });
 });

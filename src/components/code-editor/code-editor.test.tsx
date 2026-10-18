@@ -3,13 +3,9 @@ import { userEvent } from '@testing-library/user-event';
 import { createRef, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import { findCompletionQuery, matchCompletions } from './completion-match.js';
-import {
-  CodeEditor,
-  type CodeCompletion,
-  type CodeEditorProps,
-  type CodeToken,
-} from './code-editor.js';
+import { matchCompletions, type Completion } from '../completion-list/completion-list.js';
+import { findCompletionQuery } from './completion-match.js';
+import { CodeEditor, type CodeEditorProps, type CodeToken } from './code-editor.js';
 
 const words = /(\s+|[a-z]+|\d+|.)/g;
 
@@ -21,7 +17,7 @@ function tokenize(source: string): CodeToken[] {
   }));
 }
 
-const vocabulary: CodeCompletion[] = [
+const vocabulary: Completion[] = [
   { label: 'fruit.apple', description: 'A crisp fruit' },
   { label: 'fruit.apricot' },
   { label: 'fruit.banana' },
@@ -380,14 +376,10 @@ describe('CodeEditor', () => {
     expect(input).toHaveAttribute('aria-activedescendant', options[0]?.id);
     expect(input).toHaveFocus();
     expectHooksMatchSpec(document.body, 'CODE-EDITOR', {
-      slots: [
-        'caret',
-        'popover',
-        'completions',
-        'completion',
-        'completion-label',
-        'completion-description',
-      ],
+      slots: ['caret', 'popover'],
+    });
+    expectHooksMatchSpec(document.body, 'COMPLETION-LIST', {
+      slots: ['listbox', 'option', 'label', 'description'],
     });
   });
 

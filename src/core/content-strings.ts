@@ -1,7 +1,6 @@
 /**
- * Strings of the folder manager, code and JSON editors, emoji picker, PDF viewer, data tables,
- * timestamps, save status, record labels and outlines.
- * timestamps, save status, record labels and state histories.
+ * Strings of the folder manager, code and JSON editors, completions, conversations, emoji picker,
+ * PDF viewer, data tables, timestamps, save status, record labels, outlines and state histories.
  */
 export interface ContentStrings {
   newFolder: string;
@@ -16,8 +15,18 @@ export interface ContentStrings {
   moveTo: string;
   /** The top level of a tree, as a place items can move to. */
   topLevel: string;
-  /** Names a code editor's list of completions. */
+  /** Names a list of completions. */
   suggestions: string;
+  /** Names a message composer's text box. */
+  message: string;
+  /** Sends a composed message. */
+  send: string;
+  /** Stops a reply while it streams. */
+  stop: string;
+  /** Names a conversation log. */
+  conversation: string;
+  /** Scrolls a conversation to its latest message. */
+  jumpToLatest: string;
   /** Names a find box. */
   find: string;
   /** Names a find bar's replacement box. */
@@ -169,6 +178,11 @@ export const contentStrings: ContentStrings = {
   moveTo: 'Move to',
   topLevel: 'Top level',
   suggestions: 'Suggestions',
+  message: 'Message',
+  send: 'Send',
+  stop: 'Stop',
+  conversation: 'Conversation',
+  jumpToLatest: 'Jump to latest',
   find: 'Find',
   replaceWith: 'Replace with',
   replace: 'Replace',

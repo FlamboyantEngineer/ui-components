@@ -1,0 +1,130 @@
+import { fireEvent, render, screen } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
+import { useRef, useState } from 'react';
+import { describe, expect, it, vi } from 'vitest';
+import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import type { Key } from '../../core/props.js';
+import {
+  CompletionList,
+  getCompletionOptionId,
+  type CompletionListItem,
+  type CompletionListProps,
+} from './completion-list.js';
+
+const people: CompletionListItem[] = [
+  { id: 'maria', label: 'Maria Santos', description: 'Design', kind: 'person' },
+  { id: 'jon', label: 'Jon Berg', documentation: 'Field research, Oslo office.' },
+  { id: 'team a', label: 'Team A', kind: 'group' },
+];
+
+type HarnessProps = Partial<Omit<CompletionListProps, 'anchorRef'>>;
+
+/** An editor stand-in that keeps focus while the list shows. */
+function Harness(props: HarnessProps) {
+  const anchorRef = useRef<HTMLInputElement>(null);
+  const [activeKey, setActiveKey] = useState<Key | null>('maria');
+  return (
+    <>
+      <input ref={anchorRef} aria-label="Message" />
+      <CompletionList
+        id="people"
+        isOpen
+        anchorRef={anchorRef}
+        items={people}
+        activeKey={activeKey}
+        onActiveKeyChange={setActiveKey}
+        onAction={() => undefined}
+        {...props}
+      />
+    </>
+  );
+}
+
+describe('CompletionList', () => {
+  it('UIC-COMPLETION-LIST-1.1 UIC-COMPLETION-LIST-1.2 shows the options in a non-modal popover', () => {
+    render(<Harness />);
+    const popover = document.querySelector<HTMLElement>('.ui-completion-list');
+    expect(popover).not.toHaveAttribute('role', 'dialog');
+    expect(popover?.style.zIndex).toBe('130');
+    const list = screen.getByRole('listbox', { name: 'Suggestions' });
+    expect(list).toHaveAttribute('id', 'people');
+    const options = screen.getAllByRole('option');
+    expect(options.map((option) => option.textContent)).toEqual([
+      'Maria SantosDesign',
+      'Jon Berg',
+      'Team A',
+    ]);
+    expect(options[0]).toHaveAttribute('id', getCompletionOptionId('people', 'maria'));
+    expect(options[2]).toHaveAttribute('id', 'people-option-team%20a');
+    expect(options[0]).toHaveAttribute('aria-selected', 'true');
+    expect(options[0]).toHaveAttribute('data-focused', 'true');
+    expect(options[0]).toHaveAttribute('data-kind', 'person');
+    expect(options[1]).toHaveAttribute('aria-selected', 'false');
+    expect(options[1]).not.toHaveAttribute('data-kind');
+    expectHooksMatchSpec(document.body, 'COMPLETION-LIST', {
+      slots: ['listbox', 'option', 'label', 'description'],
+    });
+  });
+
+  it('UIC-COMPLETION-LIST-1.1 stays closed while closed or with nothing to show', () => {
+    const { rerender } = render(<Harness isOpen={false} />);
+    expect(screen.queryByRole('listbox')).toBeNull();
+    rerender(<Harness items={[]} />);
+    expect(document.querySelector('.ui-completion-list')).toBeNull();
+  });
+
+  it('UIC-COMPLETION-LIST-1.2 draws items with renderItem and takes a caller name', () => {
+    render(
+      <Harness
+        aria-label="People"
+        renderItem={(item, { isActive }) => `${item.label}${isActive ? ' (active)' : ''}`}
+      />,
+    );
+    expect(screen.getByRole('listbox', { name: 'People' })).toBeInTheDocument();
+    expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual([
+      'Maria Santos (active)',
+      'Jon Berg',
+      'Team A',
+    ]);
+  });
+
+  it('UIC-COMPLETION-LIST-1.3 activates under the pointer and acts on press without taking focus', async () => {
+    const user = userEvent.setup();
+    const onAction = vi.fn();
+    render(<Harness onAction={onAction} />);
+    const input = screen.getByRole('textbox');
+    input.focus();
+    const jon = screen.getByRole('option', { name: 'Jon Berg' });
+    fireEvent.pointerMove(jon);
+    expect(jon).toHaveAttribute('aria-selected', 'true');
+    await user.click(jon);
+    expect(onAction).toHaveBeenCalledWith('jon');
+    expect(input).toHaveFocus();
+  });
+
+  it('UIC-COMPLETION-LIST-1.4 shows the active documentation, an empty state and a footer', () => {
+    const { rerender } = render(<Harness activeKey="jon" footer="3 matches" />);
+    const jon = screen.getByRole('option', { name: 'Jon Berg' });
+    const documentation = document.querySelector('.ui-completion-list__documentation');
+    expect(documentation).toHaveTextContent('Field research, Oslo office.');
+    expect(jon).toHaveAccessibleDescription('Field research, Oslo office.');
+    expect(document.querySelector('.ui-completion-list__footer')).toHaveTextContent('3 matches');
+    expectHooksMatchSpec(document.body, 'COMPLETION-LIST', { slots: ['documentation', 'footer'] });
+    rerender(<Harness items={[]} renderEmptyState={() => 'No people found'} />);
+    expect(screen.queryByRole('listbox')).toBeNull();
+    const empty = screen.getByRole('status');
+    expect(empty).toHaveTextContent('No people found');
+    expect(empty).toHaveAttribute('id', 'people');
+    expectHooksMatchSpec(document.body, 'COMPLETION-LIST', { slots: ['empty'] });
+  });
+
+  it('UIC-COMPLETION-LIST-1.5 puts the class and data attributes on the popover and the id on the list', () => {
+    render(<Harness className="caller" data-testid="probe" />);
+    const popover = document.querySelector('.ui-completion-list');
+    expect(popover).toHaveClass('caller');
+    expect(popover).toHaveAttribute('data-testid', 'probe');
+    expect(popover).not.toHaveAttribute('id', 'people');
+    expect(screen.getByRole('listbox')).toHaveAttribute('id', 'people');
+    expectHooksMatchSpec(document.body, 'COMPLETION-LIST', { callerAttributes: ['data-testid'] });
+  });
+});

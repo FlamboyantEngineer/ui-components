@@ -3,12 +3,8 @@ import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import {
-  CodeEditor,
-  type CodeCompletion,
-  type CodeCompletionSource,
-  type CodeEditorProps,
-} from './code-editor.js';
+import type { Completion, CompletionSource } from '../completion-list/completion-list.js';
+import { CodeEditor, type CodeEditorProps } from './code-editor.js';
 
 function Editor({
   initialValue = '',
@@ -32,7 +28,7 @@ function marked() {
   return `${value.slice(0, start)}[${value.slice(start, end)}]${value.slice(end)}`;
 }
 
-const fruit: CodeCompletion[] = [
+const fruit: Completion[] = [
   { label: 'apple', kind: 'variable', documentation: 'A crisp fruit that keeps for months.' },
   { label: 'pick', kind: 'function', insertText: 'pick(${fruit}, ${count})' },
   { label: 'basket', kind: 'keyword', insertText: 'basket {\n  ${}\n}' },
@@ -51,7 +47,7 @@ describe('CodeEditor completion sources', () => {
 
   it('UIC-CODE-EDITOR-4.6 asks a source on each edit and shows its answer for the typed text', async () => {
     const user = userEvent.setup();
-    const source = vi.fn<CodeCompletionSource>(({ value, caret }) => {
+    const source = vi.fn<CompletionSource>(({ value, caret }) => {
       const dot = value.lastIndexOf('.', caret - 1);
       const typed = value.slice(dot + 1, caret);
       return dot === -1 || !/^\w*$/.test(typed) ? [] : { from: dot + 1, options: fruit };
@@ -77,7 +73,7 @@ describe('CodeEditor completion sources', () => {
 
   it('UIC-CODE-EDITOR-4.6 replaces the range a source names and filters by the text typed in it', async () => {
     const user = userEvent.setup();
-    const source: CodeCompletionSource = ({ value, caret }) => {
+    const source: CompletionSource = ({ value, caret }) => {
       const from = value.lastIndexOf('"', caret - 1);
       return from === -1
         ? []
@@ -93,9 +89,9 @@ describe('CodeEditor completion sources', () => {
 
   it('UIC-CODE-EDITOR-4.6 shows only the latest answer of a source that answers later', async () => {
     const user = userEvent.setup();
-    const answers: Array<(options: CodeCompletion[]) => void> = [];
-    const source: CodeCompletionSource = () =>
-      new Promise<CodeCompletion[]>((resolve) => answers.push(resolve));
+    const answers: Array<(options: Completion[]) => void> = [];
+    const source: CompletionSource = () =>
+      new Promise<Completion[]>((resolve) => answers.push(resolve));
     render(<Editor completions={source} />);
     await user.click(input());
     // The click, then each typed character, asks the source.
@@ -119,14 +115,14 @@ describe('CodeEditor completion sources', () => {
     await user.keyboard('{Control>} {/Control}');
     const [apple, pick] = screen.getAllByRole('option');
     expect(apple).toHaveAttribute('data-kind', 'variable');
-    const documentation = baseElement.querySelector('.ui-code-editor__completion-documentation');
+    const documentation = baseElement.querySelector('.ui-completion-list__documentation');
     expect(documentation).toHaveTextContent('A crisp fruit that keeps for months.');
     expect(apple).toHaveAccessibleDescription('A crisp fruit that keeps for months.');
-    expectHooksMatchSpec(baseElement, 'CODE-EDITOR', { slots: ['completion-documentation'] });
+    expectHooksMatchSpec(baseElement, 'COMPLETION-LIST', { slots: ['documentation'] });
     await user.keyboard('{ArrowDown}');
     expect(pick).toHaveAttribute('data-kind', 'function');
     expect(pick).not.toHaveAttribute('aria-describedby');
-    expect(baseElement.querySelector('.ui-code-editor__completion-documentation')).toBeNull();
+    expect(baseElement.querySelector('.ui-completion-list__documentation')).toBeNull();
   });
 
   it('UIC-CODE-EDITOR-4.8 inserts a snippet, selects its first field and steps through the fields', async () => {

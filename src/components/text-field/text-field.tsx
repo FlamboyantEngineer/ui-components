@@ -1,8 +1,15 @@
 import { useState, type ReactNode } from 'react';
-import { Input, TextField as AriaTextField } from '../../primitives/index.js';
+import { TextField as AriaTextField } from '../../primitives/index.js';
 import type { FocusEventProps, KeyboardEventProps } from '../../core/events.js';
 import { useUiStrings } from '../../core/provider.js';
 import { mergeRefs } from '../../utils/merge-props.js';
+import { isAutoGrowing } from '../../utils/use-auto-grow.js';
+import {
+  ControlCompletionList,
+  type Completion,
+  type CompletionListItemState,
+  type CompletionSource,
+} from '../completion-list/completion-list.js';
 import {
   Field,
   countCodePoints,
@@ -14,13 +21,12 @@ import {
   type StringRules,
 } from '../field/field.js';
 import {
-  TextFieldArea,
+  TextFieldControl,
   TextFieldFrame,
-  isAutoGrowing,
   textFieldHooks as hooks,
   withCharacterCount,
 } from './text-field-parts.js';
-import { useTextFieldInput } from './use-text-field-input.js';
+import { useTextFieldInput, type TextFieldInput } from './use-text-field-input.js';
 
 /** The kind of text a single-line field takes: the input's `type`. */
 export type TextFieldType = 'text' | 'email' | 'password' | 'search' | 'tel' | 'url';
@@ -52,6 +58,32 @@ export interface TextFieldProps
   transformInput?: ((text: string) => string) | undefined;
   /** What the control shows while it does not have focus, such as a computed result; focus shows the value for editing. */
   displayValue?: string | undefined;
+  /** A vocabulary for the word before the caret, or a source that completes the text at the caret. */
+  completions?: readonly Completion[] | CompletionSource | undefined;
+  /** Draws a completion's content in the list instead of its label and description. */
+  renderCompletion?:
+    | ((completion: Completion, state: CompletionListItemState) => ReactNode)
+    | undefined;
+}
+
+/** The completion list under the text field element, when the field offers completions. */
+function TextFieldCompletions({
+  edit,
+  renderCompletion,
+}: {
+  edit: TextFieldInput;
+  renderCompletion: TextFieldProps['renderCompletion'];
+}) {
+  if (!edit.completion) return null;
+  return (
+    <ControlCompletionList
+      model={edit.completion.model}
+      listId={edit.completion.listId}
+      anchorRef={edit.boxRef}
+      renderCompletion={renderCompletion}
+      className={hooks.slotClass('completions')}
+    />
+  );
 }
 
 /**
@@ -76,6 +108,9 @@ export function TextField({
   spellCheck,
   transformInput,
   displayValue,
+  completions,
+  renderCompletion,
+  onKeyDown,
   ...props
 }: TextFieldProps) {
   const strings = useUiStrings();
@@ -86,14 +121,13 @@ export function TextField({
     check: (value) => validateString(value, rules, strings),
   });
   const [isRevealed, setIsRevealed] = useState(false);
-  const edit = useTextFieldInput({ state, multiline, placeholder, transformInput, displayValue });
+  const input = { placeholder, transformInput, displayValue, onKeyDown, completions };
+  const edit = useTextFieldInput({ state, multiline, ...input });
+
   const isMasked = allowsReveal && rest.type === 'password';
   const count = showCount ? (getLength ?? countCodePoints)(state.value) : null;
-  const data = {
-    multiline,
-    autosize: multiline && isAutoGrowing({ minRows, maxRows }),
-    displayValue: edit.showsDisplayValue,
-  };
+  const autosize = multiline && isAutoGrowing({ minRows, maxRows });
+  const data = { multiline, autosize, displayValue: edit.showsDisplayValue };
   const reveal = isMasked
     ? { label: field.label, isRevealed, isDisabled: state.isDisabled, onChange: setIsRevealed }
     : null;
@@ -105,33 +139,30 @@ export function TextField({
       state={state}
     >
       {(control) => (
-        <AriaTextField
-          {...rest}
-          {...toAriaControlProps(control)}
-          {...hooks.slot('box')}
-          spellCheck={spellCheck?.toString()}
-          type={isMasked && isRevealed ? 'text' : rest.type}
-          value={edit.text}
-          onChange={edit.transform.onChange}
-        >
-          <TextFieldFrame
-            startAdornment={startAdornment}
-            endAdornment={endAdornment}
-            reveal={reveal}
+        <>
+          <AriaTextField
+            {...rest}
+            {...toAriaControlProps(control)}
+            {...hooks.slot('box')}
+            ref={edit.boxRef}
+            spellCheck={spellCheck?.toString()}
+            type={isMasked && isRevealed ? 'text' : rest.type}
+            value={edit.text}
+            onChange={edit.onChange}
           >
-            {multiline ? (
-              <TextFieldArea
-                {...edit.input}
-                controlRef={mergeRefs(control.ref, edit.transform.ref)}
-                minRows={minRows}
-                maxRows={maxRows}
-                value={edit.text}
+            <TextFieldFrame
+              startAdornment={startAdornment}
+              endAdornment={endAdornment}
+              reveal={reveal}
+            >
+              <TextFieldControl
+                {...{ multiline, minRows, maxRows, input: edit.input, value: edit.text }}
+                controlRef={mergeRefs(control.ref, edit.transform.ref, edit.controlRef)}
               />
-            ) : (
-              <Input {...edit.input} ref={mergeRefs(control.ref, edit.transform.ref)} />
-            )}
-          </TextFieldFrame>
-        </AriaTextField>
+            </TextFieldFrame>
+          </AriaTextField>
+          <TextFieldCompletions edit={edit} renderCompletion={renderCompletion} />
+        </>
       )}
     </Field>
   );

@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { IconButton } from '../../src/components/icon-button/icon-button.js';
+import type { Completion } from '../../src/components/completion-list/completion-list.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
 import { Glyph } from '../../src/core/provider.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
@@ -172,6 +173,41 @@ function DisplayedSum() {
   );
 }
 
+const cities: Completion[] = [
+  { label: 'Lisbon', description: 'Portugal' },
+  { label: 'London', description: 'United Kingdom' },
+  { label: 'Lyon', description: 'France' },
+  { label: 'Ljubljana', description: 'Slovenia' },
+  { label: 'Oslo', description: 'Norway' },
+];
+
+/** A vocabulary completes the word before the caret; Enter inserts, Escape closes. */
+function CompletedCities() {
+  const [committed, setCommitted] = useState('');
+  return (
+    <>
+      <TextField
+        label="Destinations"
+        description="Separate cities with commas."
+        completions={cities}
+        onCommit={setCommitted}
+        data-lab-field="completions"
+      />
+      <TextField
+        label="Destination"
+        completions={cities}
+        renderCompletion={(city, { isActive }) => (
+          <>
+            <strong>{city.label}</strong> {isActive ? city.description : null}
+          </>
+        )}
+        data-lab-field="drawn-completions"
+      />
+      <Output name="completions">{committed}</Output>
+    </>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -255,6 +291,12 @@ mountLab(
       description="Rejected characters never enter the value and the caret stays in place, for typing and pasting."
     >
       <TransformedInput />
+    </LabSection>
+    <LabSection
+      title="Completions"
+      description="Typing a word opens matching cities under the field while the input keeps focus; Ctrl+Space opens them all. The second field draws its options."
+    >
+      <CompletedCities />
     </LabSection>
     <LabSection
       title="Display value"

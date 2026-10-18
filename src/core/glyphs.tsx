@@ -42,9 +42,11 @@ import {
   MagnifyingGlassIcon,
   MinusIcon,
   PencilSquareIcon,
+  PaperAirplaneIcon,
   PlusIcon,
   QuestionMarkCircleIcon,
   SignalSlashIcon,
+  StopIcon,
   TrashIcon,
   UsersIcon,
   ViewColumnsIcon,
@@ -127,6 +129,8 @@ export const defaultGlyphs = {
   'trend-flat': ArrowLongRightIcon,
   offline: SignalSlashIcon,
   lock: LockClosedIcon,
+  send: PaperAirplaneIcon,
+  stop: StopIcon,
 } satisfies Record<string, GlyphComponent>;
 
 export const glyphNames = Object.keys(defaultGlyphs) as GlyphName[];

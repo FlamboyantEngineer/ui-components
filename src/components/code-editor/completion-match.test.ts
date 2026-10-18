@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import {
-  indentInsertion,
-  matchCompletions,
-  parseSnippet,
-  scoreCompletion,
-} from './completion-match.js';
+import { matchCompletions, scoreCompletion } from '../completion-list/completion-list.js';
+import { indentInsertion, parseSnippet } from './completion-match.js';
 
 const labels = (query: string, names: string[]) =>
   matchCompletions(

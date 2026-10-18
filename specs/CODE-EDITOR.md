@@ -45,7 +45,7 @@ Verification: `src/components/code-editor/code-editor.test.tsx`
 
 An `isReadOnly` or `isDisabled` editor shall make its text area natively read-only or disabled, publish `data-readonly` or `data-disabled` on its root and offer no completions.
 
-Implementation: `src/components/code-editor/code-editor.tsx`, `src/components/code-editor/code-completion.tsx`
+Implementation: `src/components/code-editor/code-editor.tsx`, `src/components/completion-list/use-completions.ts`
 Verification: `src/components/code-editor/code-editor.test.tsx`
 
 ## UIC-CODE-EDITOR-2 - Line numbers
@@ -121,21 +121,21 @@ Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/code-edito
 
 The word before the caret (a letter, `_` or `$` followed by letters, digits, `_`, `$` and `.`) shall be completed with the `completions` that match it, ignoring case: first the labels that start with it, then the labels holding its characters in order from the start of a word (after a space, `.`, `_`, `-`, `/` or `:`, or at a lowercase-to-uppercase change), each group in the given order. A label equal to the word is left out. An empty word is completed with nothing unless the reader asks (UIC-CODE-EDITOR-4.2).
 
-Implementation: `src/components/code-editor/completion-match.ts`, `src/components/code-editor/use-code-completion.ts`
+Implementation: `src/components/code-editor/completion-match.ts`, `src/components/code-editor/use-code-completion.ts`, `src/components/completion-list/completion-match.ts`
 Verification: `src/components/code-editor/code-editor.test.tsx`, `src/components/code-editor/completion-match.test.ts`
 
 ### UIC-CODE-EDITOR-4.2 - Opening
 
-With `completions`, the text area shall autocomplete from a list (`aria-autocomplete="list"`, `aria-haspopup="listbox"`), and typing or moving the caret by key or pointer in an editable editor shall open the list of matches, and Ctrl+Space open it whatever the word before the caret, an empty word matching every completion, (`ui-code-editor__completions`, a listbox named by the provider string `suggestions`) with its first option active. Each option (`ui-code-editor__completion`) shows its label (`ui-code-editor__completion-label`) and description (`ui-code-editor__completion-description`). While open, `aria-controls` names the list and `aria-activedescendant` the active option, which carries `aria-selected="true"` and `data-focused`. The text area keeps its text box role, which takes no other role, and keeps focus.
+With `completions`, the text area shall autocomplete from a list (`aria-autocomplete="list"`, `aria-haspopup="listbox"`), and typing or moving the caret by key or pointer in an editable editor shall open the list of matches, and Ctrl+Space open it whatever the word before the caret, an empty word matching every completion. The list is a [Completion List](COMPLETION-LIST.md) (a listbox named by the provider string `suggestions`, with its own hooks) with its first option active, each option showing its label and description. While open, `aria-controls` names the list and `aria-activedescendant` the active option, which carries `aria-selected="true"` and `data-focused`. The text area keeps its text box role, which takes no other role, and keeps focus. The editor runs the shared completions engine ([UIC-COMPLETION-LIST-2](COMPLETION-LIST.md#uic-completion-list-2---completions-engine)).
 
-Implementation: `src/components/code-editor/code-completion.tsx`, `src/components/code-editor/use-code-completion.ts`, `src/components/code-editor/use-code-keys.ts`, `src/components/code-editor/code-editor.tsx`, `src/core/strings.ts`
+Implementation: `src/components/code-editor/use-code-completion.ts`, `src/components/code-editor/code-editor.tsx`, `src/components/code-editor/code-area.tsx`, `src/components/completion-list/completion-list.tsx`, `src/components/completion-list/use-completions.ts`, `src/core/strings.ts`
 Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/code-editor.spec.ts`
 
 ### UIC-CODE-EDITOR-4.3 - Choosing
 
 While the list is open, ArrowDown and ArrowUp shall move the active option, wrapping at either end, Enter or Tab (not Shift+Tab) insert it and Escape close the list until the next edit; those keys go no further than the editor. Moving the pointer over an option activates it and pressing it inserts it without taking focus from the text area. Losing focus closes the list.
 
-Implementation: `src/components/code-editor/code-completion.tsx`, `src/components/code-editor/use-code-completion.ts`, `src/components/code-editor/code-editor.tsx`
+Implementation: `src/components/completion-list/completion-list.tsx`, `src/components/completion-list/use-completions.ts`, `src/components/code-editor/code-editor.tsx`
 Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/code-editor.spec.ts`
 
 ### UIC-CODE-EDITOR-4.4 - Inserting
@@ -147,23 +147,23 @@ Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/code-edito
 
 ### UIC-CODE-EDITOR-4.5 - Position
 
-The list shall open in a non-modal React Aria popover (`ui-code-editor__popover`) on the `dropdown` overlay layer, at a caret marker (`ui-code-editor__caret`) placed in the highlighted copy while the list is open: below the caret line, or above it when there is more room there, kept inside the viewport. It follows the caret as the reader types and as the text area scrolls.
+The list shall open in a non-modal React Aria popover (the Completion List's root, also `ui-code-editor__popover`) on the `dropdown` overlay layer, at a caret marker (`ui-code-editor__caret`) placed in the highlighted copy while the list is open: below the caret line, or above it when there is more room there, kept inside the viewport. It follows the caret as the reader types and as the text area scrolls.
 
-Implementation: `src/components/code-editor/code-completion.tsx`, `src/components/code-editor/code-layers.tsx`
+Implementation: `src/components/completion-list/completion-list.tsx`, `src/components/code-editor/code-layers.tsx`
 Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/code-editor.spec.ts`
 
 ### UIC-CODE-EDITOR-4.6 - Completion sources
 
 `completions` may instead be a source: a function called on each edit, caret move and Ctrl+Space with the text, the caret, the word before the caret and whether the reader asked, which returns, at once or as a promise, the completions or `{ options, from, to }` naming the text they replace (from `from`, defaulting to the start of the word, to `to`, defaulting to the caret). The options are matched as in UIC-CODE-EDITOR-4.1 against the text from `from` to the caret; when that text is empty, all of them show after an edit or Ctrl+Space and none after a bare caret move. Only the latest lookup's answer shows, and closing the list discards a pending one.
 
-Implementation: `src/components/code-editor/use-code-completion.ts`
+Implementation: `src/components/code-editor/use-code-completion.ts`, `src/components/completion-list/use-completions.ts`
 Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/code-editor.spec.ts`
 
 ### UIC-CODE-EDITOR-4.7 - Kinds and documentation
 
-An option shall publish its completion's `kind` as `data-kind`. While an option with `documentation` is active, the popover shows that text in `ui-code-editor__completion-documentation` after the list, and the option is described by it (`aria-describedby`). Pressing the documentation keeps focus in the text area.
+An option shall publish its completion's `kind` as `data-kind`. While an option with `documentation` is active, the popover shows that text in `ui-completion-list__documentation` after the list, and the option is described by it (`aria-describedby`). Pressing the documentation keeps focus in the text area.
 
-Implementation: `src/components/code-editor/code-completion.tsx`, `src/components/code-editor/completion-match.ts`
+Implementation: `src/components/completion-list/completion-list.tsx`, `src/components/completion-list/completion-match.ts`
 Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/code-editor.spec.ts`
 
 ### UIC-CODE-EDITOR-4.8 - Snippets
@@ -251,49 +251,43 @@ Verification: `src/components/code-editor/code-search.test.tsx`, `e2e/code-edito
 
 ## Hooks
 
-| Hook                                       | Kind      | Values             | Description                                                              |
-| ------------------------------------------ | --------- | ------------------ | ------------------------------------------------------------------------ |
-| `ui-code-editor`                           | root      |                    | The editor's frame.                                                      |
-| `ui-code-editor__toolbar`                  | slot      |                    | The toolbar row above the source.                                        |
-| `ui-code-editor__surface`                  | slot      |                    | Holds the gutter and the code area.                                      |
-| `ui-code-editor__gutter`                   | slot      |                    | The line numbers.                                                        |
-| `ui-code-editor__line`                     | slot      |                    | A gutter row.                                                            |
-| `ui-code-editor__line-number`              | slot      |                    | A line's number.                                                         |
-| `ui-code-editor__line-text`                | slot      |                    | A hidden copy of the line that gives the row its wrapped height.         |
-| `ui-code-editor__code`                     | slot      |                    | Stacks the highlighted copy and the text area.                           |
-| `ui-code-editor__highlight`                | slot      |                    | The highlighted copy of the source.                                      |
-| `ui-code-editor__token`                    | slot      |                    | A typed token in the copy.                                               |
-| `ui-code-editor__mark`                     | slot      |                    | Source a diagnostic points at, in the copy.                              |
-| `ui-code-editor__match`                    | slot      |                    | A search match, in the copy.                                             |
-| `ui-code-editor__bracket`                  | slot      |                    | The bracket at the caret or its partner, in the copy.                    |
-| `ui-code-editor__caret`                    | slot      |                    | The empty marker at the caret while the completion list is open.         |
-| `ui-code-editor__input`                    | slot      |                    | The text area.                                                           |
-| `ui-code-editor__diagnostics`              | slot      |                    | The diagnostics list.                                                    |
-| `ui-code-editor__diagnostic`               | slot      |                    | One diagnostic, in the list or the hover tip.                            |
-| `ui-code-editor__announcement`             | slot      |                    | The visually hidden status that reads a problem out.                     |
-| `ui-code-editor__tooltip`                  | slot      |                    | The hover tip popover.                                                   |
-| `ui-code-editor__popover`                  | slot      |                    | The completion popover.                                                  |
-| `ui-code-editor__completions`              | slot      |                    | The completion listbox.                                                  |
-| `ui-code-editor__completion`               | slot      |                    | A completion option.                                                     |
-| `ui-code-editor__completion-label`         | slot      |                    | An option's label.                                                       |
-| `ui-code-editor__completion-description`   | slot      |                    | An option's description.                                                 |
-| `ui-code-editor__completion-documentation` | slot      |                    | The active option's documentation.                                       |
-| `ui-code-editor__search`                   | slot      |                    | The find and replace row, a Find Bar beside its own `ui-find-bar` hooks. |
-| `data-size`                                | attribute | `sm`, `md`, `lg`   | Starting height.                                                         |
-| `data-wrap`                                | attribute | `soft`, `off`      | Whether long lines wrap.                                                 |
-| `data-token`                               | attribute |                    | On a token: its type, from the caller's tokenizer.                       |
-| `data-kind`                                | attribute |                    | On a completion option: the completion's kind.                           |
-| `data-numbered`                            | state     | `true`             | The gutter shows.                                                        |
-| `data-invalid`                             | state     | `true`             | An error is reported (root), or the text area is invalid (React Aria).   |
-| `data-readonly`                            | state     | `true`             | Read-only.                                                               |
-| `data-disabled`                            | state     | `true`             | Disabled (root, and the text area through React Aria).                   |
-| `data-severity`                            | state     | `error`, `warning` | On a diagnostic, a mark or a gutter row: the severity.                   |
-| `data-current`                             | state     | `true`             | On a search match: the current one.                                      |
-| `data-unmatched`                           | state     | `true`             | On a bracket: it has no partner.                                         |
-| `data-focused`                             | state     | `true`             | The text area has focus (React Aria), or the active completion option.   |
-| `data-focus-visible`                       | state     | `true`             | Keyboard focus on the text area (React Aria).                            |
-| `data-hovered`                             | state     | `true`             | Pointer over the text area (React Aria).                                 |
-| `data-placement`                           | state     |                    | Where the popover sits against the caret (React Aria).                   |
-| `data-entering`                            | state     | `true`             | The popover is opening (React Aria).                                     |
-| `data-exiting`                             | state     | `true`             | The popover is closing (React Aria).                                     |
-| `--ui-code-editor-text-width`              | property  |                    | On the gutter: the text area's client width, in pixels.                  |
+| Hook                           | Kind      | Values             | Description                                                              |
+| ------------------------------ | --------- | ------------------ | ------------------------------------------------------------------------ |
+| `ui-code-editor`               | root      |                    | The editor's frame.                                                      |
+| `ui-code-editor__toolbar`      | slot      |                    | The toolbar row above the source.                                        |
+| `ui-code-editor__surface`      | slot      |                    | Holds the gutter and the code area.                                      |
+| `ui-code-editor__gutter`       | slot      |                    | The line numbers.                                                        |
+| `ui-code-editor__line`         | slot      |                    | A gutter row.                                                            |
+| `ui-code-editor__line-number`  | slot      |                    | A line's number.                                                         |
+| `ui-code-editor__line-text`    | slot      |                    | A hidden copy of the line that gives the row its wrapped height.         |
+| `ui-code-editor__code`         | slot      |                    | Stacks the highlighted copy and the text area.                           |
+| `ui-code-editor__highlight`    | slot      |                    | The highlighted copy of the source.                                      |
+| `ui-code-editor__token`        | slot      |                    | A typed token in the copy.                                               |
+| `ui-code-editor__mark`         | slot      |                    | Source a diagnostic points at, in the copy.                              |
+| `ui-code-editor__match`        | slot      |                    | A search match, in the copy.                                             |
+| `ui-code-editor__bracket`      | slot      |                    | The bracket at the caret or its partner, in the copy.                    |
+| `ui-code-editor__caret`        | slot      |                    | The empty marker at the caret while the completion list is open.         |
+| `ui-code-editor__input`        | slot      |                    | The text area.                                                           |
+| `ui-code-editor__diagnostics`  | slot      |                    | The diagnostics list.                                                    |
+| `ui-code-editor__diagnostic`   | slot      |                    | One diagnostic, in the list or the hover tip.                            |
+| `ui-code-editor__announcement` | slot      |                    | The visually hidden status that reads a problem out.                     |
+| `ui-code-editor__tooltip`      | slot      |                    | The hover tip popover.                                                   |
+| `ui-code-editor__popover`      | slot      |                    | The completion list (also `ui-completion-list`).                         |
+| `ui-code-editor__search`       | slot      |                    | The find and replace row, a Find Bar beside its own `ui-find-bar` hooks. |
+| `data-size`                    | attribute | `sm`, `md`, `lg`   | Starting height.                                                         |
+| `data-wrap`                    | attribute | `soft`, `off`      | Whether long lines wrap.                                                 |
+| `data-token`                   | attribute |                    | On a token: its type, from the caller's tokenizer.                       |
+| `data-numbered`                | state     | `true`             | The gutter shows.                                                        |
+| `data-invalid`                 | state     | `true`             | An error is reported (root), or the text area is invalid (React Aria).   |
+| `data-readonly`                | state     | `true`             | Read-only.                                                               |
+| `data-disabled`                | state     | `true`             | Disabled (root, and the text area through React Aria).                   |
+| `data-severity`                | state     | `error`, `warning` | On a diagnostic, a mark or a gutter row: the severity.                   |
+| `data-current`                 | state     | `true`             | On a search match: the current one.                                      |
+| `data-unmatched`               | state     | `true`             | On a bracket: it has no partner.                                         |
+| `data-focused`                 | state     | `true`             | The text area has focus (React Aria).                                    |
+| `data-focus-visible`           | state     | `true`             | Keyboard focus on the text area (React Aria).                            |
+| `data-hovered`                 | state     | `true`             | Pointer over the text area (React Aria).                                 |
+| `data-placement`               | state     |                    | Where the popover sits against the caret (React Aria).                   |
+| `data-entering`                | state     | `true`             | The popover is opening (React Aria).                                     |
+| `data-exiting`                 | state     | `true`             | The popover is closing (React Aria).                                     |
+| `--ui-code-editor-text-width`  | property  |                    | On the gutter: the text area's client width, in pixels.                  |

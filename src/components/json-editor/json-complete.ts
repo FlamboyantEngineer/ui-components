@@ -2,10 +2,10 @@
 // take, the values a schema lists, and each key's or value's description.
 
 import type {
-  CodeCompletion,
-  CodeCompletionResult,
-  CodeCompletionSource,
-} from '../code-editor/code-editor.js';
+  Completion,
+  CompletionResult,
+  CompletionSource,
+} from '../completion-list/completion-list.js';
 import { findSubschema, listSchemaTypes, type JsonSchema } from './json-schema.js';
 import { findJsonContext, type JsonCaretContext } from './json-tree.js';
 
@@ -30,7 +30,7 @@ function templateOf(schema: JsonSchema): string {
   return valueTemplates[listSchemaTypes(schema)[0] ?? ''] ?? '${}';
 }
 
-function keyOptions(schema: JsonSchema, context: JsonCaretContext, rest: string): CodeCompletion[] {
+function keyOptions(schema: JsonSchema, context: JsonCaretContext, rest: string): Completion[] {
   const typing = context.token?.text.replace(/^"|"$/g, '');
   const hasColon = rest.trimStart().startsWith(':');
   return Object.entries(schema.properties ?? {})
@@ -46,7 +46,7 @@ function keyOptions(schema: JsonSchema, context: JsonCaretContext, rest: string)
     }));
 }
 
-function valueOptions(schema: JsonSchema): CodeCompletion[] {
+function valueOptions(schema: JsonSchema): Completion[] {
   const types = listSchemaTypes(schema);
   const listed = schema.enum ?? ('const' in schema ? [schema.const] : []);
   const values = [
@@ -70,8 +70,8 @@ function isWanted(context: JsonCaretContext, before: string, isExplicit: boolean
  * does not have yet (inserted with a starting value); at a value, the values the schema lists or
  * allows. It answers while a key or value is typed, after a colon, and on request.
  */
-export function createJsonCompletion(schema: JsonSchema): CodeCompletionSource {
-  return ({ value, caret, isExplicit }): CodeCompletionResult | [] => {
+export function createJsonCompletion(schema: JsonSchema): CompletionSource {
+  return ({ value, caret, isExplicit }): CompletionResult | [] => {
     const context = findJsonContext(value, caret);
     if (!context || !isWanted(context, value.slice(0, caret), isExplicit)) return [];
     const target = findSubschema(schema, context.path);
