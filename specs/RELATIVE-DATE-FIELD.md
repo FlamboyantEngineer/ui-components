@@ -13,9 +13,9 @@ Verification: `src/components/relative-date-field/relative-date-field.test.tsx`,
 
 ### UIC-RELATIVE-DATE-FIELD-1.2 - Relative text
 
-The trigger shall read the value relative to `getNow()` (the current time by default) in the locale's words, starting with a capital: a date and time within a day in seconds, minutes or hours (`5 minutes ago`, `In 2 hours`), a value within `fallbackAfterDays` (7 by default) in calendar days (`Today`, `Tomorrow`, `Yesterday`, `In 3 days`, `4 days ago`), and anything farther as its absolute date. Without a value, or with a value that is not a date, the trigger shows `placeholder` (by default the provider string `selectPlaceholder`), its value element publishes `data-placeholder`, and no preview renders.
+The trigger shall read the value relative to `getNow()` (the current time by default) in the locale's words, starting with a capital: a date and time within a day in seconds, minutes or hours (`5 minutes ago`, `In 2 hours`), a value within `fallbackAfterDays` (7 by default) in calendar days (`Today`, `Tomorrow`, `Yesterday`, `In 3 days`, `4 days ago`), and anything farther as its absolute date. The words come from the shared relative time formatter that [Relative Time](RELATIVE-TIME.md#uic-relative-time-21---shared-formatter) also uses. Without a value, or with a value that is not a date, the trigger shows `placeholder` (by default the provider string `selectPlaceholder`), its value element publishes `data-placeholder`, and no preview renders.
 
-Implementation: `src/components/relative-date-field/relative-date.ts`, `src/components/relative-date-field/relative-date-field.tsx`, `src/primitives/date-values.ts`
+Implementation: `src/components/relative-date-field/relative-date.ts`, `src/components/relative-date-field/relative-date-field.tsx`, `src/utils/relative-time.ts`, `src/primitives/date-values.ts`
 Verification: `src/components/relative-date-field/relative-date.test.ts`, `src/components/relative-date-field/relative-date-field.test.tsx`
 
 ### UIC-RELATIVE-DATE-FIELD-1.3 - Presets
