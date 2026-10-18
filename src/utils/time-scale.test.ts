@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { getLocalTimeZone } from '../primitives/index.js';
-import { createTimeScale, type TimeScaleOptions } from './time-scale.js';
+import {
+  addTimeUnits,
+  createTimeScale,
+  floorToTimeUnit,
+  type TimeScaleOptions,
+} from './time-scale.js';
 
 const utc = (options: Partial<TimeScaleOptions> = {}) =>
   createTimeScale({
@@ -159,5 +164,28 @@ describe('createTimeScale', () => {
     expect(french.format('2026-03-05', 'day')).toBe('5 mars');
     const tokyo = utc({ timeZone: 'Asia/Tokyo' });
     expect(tokyo.format('2026-03-04T20:00:00Z', 'day')).toBe('Mar 5');
+  });
+});
+
+describe('floorToTimeUnit and addTimeUnits', () => {
+  it('UIC-SCALES-2.6 finds the first day of the calendar unit holding a date', () => {
+    expect(floorToTimeUnit('2026-03-18', 'day')).toBe('2026-03-18');
+    expect(floorToTimeUnit('2026-03-18', 'week', 'en-US')).toBe('2026-03-15');
+    expect(floorToTimeUnit('2026-03-18', 'week', 'en-GB')).toBe('2026-03-16');
+    expect(floorToTimeUnit('2026-03-18', 'month')).toBe('2026-03-01');
+    expect(floorToTimeUnit('2026-05-18', 'quarter')).toBe('2026-04-01');
+    expect(floorToTimeUnit('2026-05-18', 'year')).toBe('2026-01-01');
+    expect(floorToTimeUnit('soon', 'month')).toBe('');
+  });
+
+  it('UIC-SCALES-2.6 moves a date by whole calendar units, clamping month ends', () => {
+    expect(addTimeUnits('2026-03-18', 'day', -20)).toBe('2026-02-26');
+    expect(addTimeUnits('2026-03-18', 'week', 2)).toBe('2026-04-01');
+    expect(addTimeUnits('2026-01-31', 'month', 1)).toBe('2026-02-28');
+    expect(addTimeUnits('2026-11-15', 'quarter', 1)).toBe('2027-02-15');
+    expect(addTimeUnits('2024-02-29', 'year', 1)).toBe('2025-02-28');
+    expect(addTimeUnits('2026-03-18', 'day', 1.7)).toBe('2026-03-19');
+    expect(addTimeUnits('soon', 'day', 1)).toBe('');
+    expect(addTimeUnits('2026-03-18', 'day', Number.NaN)).toBe('');
   });
 });
