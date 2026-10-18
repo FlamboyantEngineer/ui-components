@@ -57,6 +57,18 @@ export interface CommonStrings {
   moreItems: (count: number) => string;
   /** Names the button that adds a tab. */
   addTab: string;
+  /** Names the toolbar of a docked panel's pane launchers, from the panel's label. */
+  panelPanes: (panel: string) => string;
+  /** Names the button that collapses a docked panel to its launchers, from the panel's label. */
+  collapsePanel: (panel: string) => string;
+  /** Names the button that expands a collapsed docked panel, from the panel's label. */
+  expandPanel: (panel: string) => string;
+  /** Names the separator that resizes a docked panel, from the panel's label. */
+  resizePanel: (panel: string) => string;
+  /** Makes a copy of an item beside it, such as a tab. */
+  duplicate: string;
+  /** Moves an item one place in a direction, such as a tab along its list. */
+  moveItem: (direction: 'left' | 'right' | 'up' | 'down') => string;
   /** Tells a reader that a link opens in a new tab or window. */
   opensInNewTab: string;
   /** Names a collection's selected count (`3 selected`). */
@@ -115,7 +127,47 @@ export interface CommonStrings {
   signature: string;
   /** Names the field for a user name. */
   userName: string;
+  /** Titles the question asked before leaving unsaved changes. */
+  unsavedChanges: string;
+  /** Asks to save unsaved changes before leaving. */
+  saveBeforeLeaving: string;
+  /** Asks to leave unsaved changes that cannot be saved from here. */
+  discardBeforeLeaving: string;
+  /** Throws unsaved changes away. */
+  discard: string;
+  /** Keeps the reader where they are, with their changes. */
+  stay: string;
+  /** The link that moves focus past an application frame's bars to its main content. */
+  skipToMainContent: string;
+  /** Names a side or bottom panel of an application frame. */
+  appFramePanel: (panel: 'start' | 'end' | 'bottom') => string;
+  /** Names a strip of tools. */
+  tools: string;
+  /** Names a group of actions. */
+  actions: string;
+  /** The button that collapses a navigation rail to icons, or expands it again. */
+  toggleNavigation: (isCollapsed: boolean) => string;
+  /** Names the handle that resizes a navigation rail. */
+  resizeNavigation: string;
+  /** Returns to the previous step of a multi-step task. */
+  back: string;
+  /** Completes the last step of a multi-step task. */
+  finish: string;
+  /** Passes over an optional step. */
+  skip: string;
+  /** Marks a step or entry the reader may leave out. */
+  optional: string;
+  /** Default accessible name of a list of steps. */
+  steps: string;
+  /** Read after a settled step's label (`Upload, Completed`). */
+  stepStatus: (status: 'complete' | 'error' | 'skipped') => string;
 }
+
+const stepStatusNames = {
+  complete: 'Completed',
+  error: 'Has errors',
+  skipped: 'Skipped',
+} as const;
 
 const spokenKeyNames: Readonly<Record<string, string>> = {
   '↑': 'Up Arrow',
@@ -130,6 +182,12 @@ const spokenKeyNames: Readonly<Record<string, string>> = {
 };
 
 const presenceStatusNames = { active: 'Active', away: 'Away', busy: 'Busy', idle: 'Idle' } as const;
+
+const appFramePanelNames = {
+  start: 'Start panel',
+  end: 'End panel',
+  bottom: 'Bottom panel',
+} as const;
 
 const boxSideNames = { top: 'Top', right: 'Right', bottom: 'Bottom', left: 'Left' } as const;
 const logicalBoxSideNames = {
@@ -184,6 +242,12 @@ export const commonStrings: CommonStrings = {
   scrollForward: 'Scroll forward',
   moreItems: (count) => (count === 1 ? '1 more item' : `${count} more items`),
   addTab: 'Add tab',
+  panelPanes: (panel) => `${panel} panes`,
+  collapsePanel: (panel) => `Collapse ${panel}`,
+  expandPanel: (panel) => `Expand ${panel}`,
+  resizePanel: (panel) => `Resize ${panel}`,
+  duplicate: 'Duplicate',
+  moveItem: (direction) => `Move ${direction}`,
   opensInNewTab: '(opens in a new tab)',
   selectedCount: (count) => `${count} selected`,
   clearSelection: 'Clear selection',
@@ -217,4 +281,21 @@ export const commonStrings: CommonStrings = {
   signatureReason: 'Reason',
   signature: 'Signature',
   userName: 'User name',
+  unsavedChanges: 'Unsaved changes',
+  saveBeforeLeaving: 'Save your changes before you leave?',
+  discardBeforeLeaving: 'Your changes are not saved. Leave and discard them?',
+  discard: 'Discard',
+  stay: 'Stay',
+  skipToMainContent: 'Skip to main content',
+  appFramePanel: (panel) => appFramePanelNames[panel],
+  tools: 'Tools',
+  actions: 'Actions',
+  toggleNavigation: (isCollapsed) => (isCollapsed ? 'Expand navigation' : 'Collapse navigation'),
+  resizeNavigation: 'Resize navigation',
+  back: 'Back',
+  finish: 'Finish',
+  skip: 'Skip',
+  optional: 'Optional',
+  steps: 'Steps',
+  stepStatus: (status) => stepStatusNames[status],
 };

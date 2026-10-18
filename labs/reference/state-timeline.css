@@ -1,0 +1,93 @@
+/* State Timeline */
+
+.ui-state-timeline {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--ref-text);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.ui-state-timeline__entry {
+  position: relative;
+  display: flex;
+  gap: 12px;
+  padding-bottom: 16px;
+}
+.ui-state-timeline__entry:last-child {
+  padding-bottom: 0;
+}
+/* The line joining each marker to the next one. */
+.ui-state-timeline__entry:not(:last-child)::before {
+  position: absolute;
+  top: 16px;
+  bottom: -4px;
+  left: 5px;
+  width: 2px;
+  background: var(--ref-border);
+  content: '';
+}
+.ui-state-timeline__entry[data-status='upcoming']:not(:last-child)::before,
+.ui-state-timeline__entry[data-status='current']:not(:last-child)::before {
+  background: repeating-linear-gradient(to bottom, var(--ref-border) 0 4px, transparent 4px 8px);
+}
+.ui-state-timeline[data-direction='descending']
+  .ui-state-timeline__entry[data-status='current']:not(:last-child)::before {
+  background: var(--ref-border);
+}
+
+.ui-state-timeline__marker {
+  position: relative;
+  flex: none;
+  box-sizing: border-box;
+  width: 12px;
+  height: 12px;
+  margin-top: 4px;
+  border: 2px solid var(--ref-border-strong);
+  border-radius: 50%;
+  background: var(--ref-canvas);
+}
+.ui-state-timeline__entry[data-status='current'] .ui-state-timeline__marker {
+  border-color: var(--ref-accent);
+  background: var(--ref-accent);
+  box-shadow: 0 0 0 3px var(--ref-selected);
+}
+.ui-state-timeline__entry[data-status='upcoming'] .ui-state-timeline__marker {
+  border-style: dashed;
+}
+
+.ui-state-timeline__body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ui-state-timeline__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+}
+
+.ui-state-timeline__current {
+  color: var(--ref-accent-ink);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.ui-state-timeline__entry[data-status='upcoming'] .ui-state-timeline__state {
+  color: var(--ref-muted);
+}
+
+.ui-state-timeline__comment {
+  padding: 6px 10px;
+  border-radius: var(--ref-radius);
+  background: var(--ref-surface);
+  overflow-wrap: anywhere;
+}
+
+.ui-state-timeline__attribution {
+  font-size: 12px;
+}

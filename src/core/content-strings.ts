@@ -1,6 +1,7 @@
 /**
  * Strings of the folder manager, code and JSON editors, emoji picker, PDF viewer, data tables,
- * timestamps, save status and record labels.
+ * timestamps, save status, record labels and outlines.
+ * timestamps, save status, record labels and state histories.
  */
 export interface ContentStrings {
   newFolder: string;
@@ -80,8 +81,10 @@ export interface ContentStrings {
   sidebar: string;
   /** Names a document's page thumbnails. */
   pages: string;
-  /** Names a document's outline (its bookmarks). */
+  /** Names a document's outline (its bookmarks or headings). */
   outline: string;
+  /** Names the toggle that shows or hides the entries under an outline entry, from its label. */
+  sectionsIn: (label: string) => string;
   /** Names one page of a document or a page navigation (`Page 3`). */
   pageNumber: (pageNumber: number) => string;
   rotateClockwise: string;
@@ -125,6 +128,12 @@ export interface ContentStrings {
   saveStatus: (phase: 'dirty' | 'saving' | 'saved' | 'error' | 'offline') => string;
   /** Stands in for a record the reader may not see, or that no longer exists. */
   recordUnavailable: (reason: 'restricted' | 'missing') => string;
+  /** Default accessible name of a history of state changes. */
+  stateHistory: string;
+  /** Marks the state something is in now, in a history of states. */
+  currentState: string;
+  /** Marks a state not reached yet, in a history of states. */
+  upcomingState: string;
 }
 
 const emojiCategoryNames: Readonly<Record<string, string>> = {
@@ -203,6 +212,7 @@ export const contentStrings: ContentStrings = {
   sidebar: 'Sidebar',
   pages: 'Pages',
   outline: 'Outline',
+  sectionsIn: (label) => `Sections in ${label}`,
   pageNumber: (pageNumber) => `Page ${pageNumber}`,
   rotateClockwise: 'Rotate clockwise',
   rotateCounterclockwise: 'Rotate counterclockwise',
@@ -229,5 +239,8 @@ export const contentStrings: ContentStrings = {
   unknownTime: 'unknown time',
   attribution: '{time} by {person}',
   saveStatus: (phase) => saveStatusNames[phase],
+  stateHistory: 'State history',
+  currentState: 'Current',
+  upcomingState: 'Upcoming',
   recordUnavailable: (reason) => (reason === 'restricted' ? 'Restricted item' : 'Missing item'),
 };

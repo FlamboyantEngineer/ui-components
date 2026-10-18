@@ -140,8 +140,11 @@ test.describe('Tooltip lab', () => {
     const hint = page.getByRole('tooltip').filter({ hasText: /^Undo$/ });
     await expect(undo).toHaveAccessibleName('Undo');
     await expect(hint).toHaveCount(0);
-    await page.keyboard.press('Tab');
+    // Arrive by keyboard, so the trigger is focus-visible and shows its hint.
     await undo.focus();
+    await page.keyboard.press('Shift+Tab');
+    await page.keyboard.press('Tab');
+    await expect(undo).toBeFocused();
     await expect(hint).toBeVisible();
     await expect(undo).toHaveAccessibleName('Undo');
     await expect(undo).toHaveAccessibleDescription('');

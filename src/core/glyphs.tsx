@@ -1,7 +1,9 @@
 import {
   ArrowDownIcon,
+  ArrowLeftIcon,
   ArrowLongRightIcon,
   ArrowPathIcon,
+  ArrowRightIcon,
   ArrowTopRightOnSquareIcon,
   ArrowTrendingDownIcon,
   ArrowTrendingUpIcon,
@@ -78,6 +80,8 @@ export const defaultGlyphs = {
   'chevron-double-right': ChevronDoubleRightIcon,
   'arrow-up': ArrowUpIcon,
   'arrow-down': ArrowDownIcon,
+  'arrow-left': ArrowLeftIcon,
+  'arrow-right': ArrowRightIcon,
   close: XMarkIcon,
   check: CheckIcon,
   more: EllipsisHorizontalIcon,

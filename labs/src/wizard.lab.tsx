@@ -1,0 +1,169 @@
+import { useState } from 'react';
+import { Button } from '../../src/components/button/button.js';
+import { Modal, ModalTrigger } from '../../src/components/modal/modal.js';
+import { TextField } from '../../src/components/text-field/text-field.js';
+import { Wizard, type WizardStep } from '../../src/components/wizard/wizard.js';
+import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+
+interface Project {
+  name: string;
+  members: string;
+}
+
+const takenNames = ['apollo', 'atlas'];
+
+/** Answers like a server would, after a short wait. */
+function checkName(name: string): Promise<true | string> {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(takenNames.includes(name.trim().toLowerCase()) ? `“${name}” is taken.` : true);
+    }, 600);
+  });
+}
+
+function projectSteps(
+  project: Project,
+  setProject: (change: Partial<Project>) => void,
+): WizardStep[] {
+  return [
+    {
+      id: 'details',
+      label: 'Details',
+      description: 'Name the project',
+      content: (
+        <TextField
+          label="Project name"
+          name="name"
+          isRequired
+          description="Apollo and Atlas are taken."
+          value={project.name}
+          onChange={(name) => setProject({ name })}
+        />
+      ),
+      validate: () => checkName(project.name),
+    },
+    {
+      id: 'members',
+      label: 'Members',
+      description: 'Invite people',
+      isOptional: true,
+      content: (
+        <TextField
+          label="Email addresses"
+          name="members"
+          value={project.members}
+          onChange={(members) => setProject({ members })}
+        />
+      ),
+    },
+    {
+      id: 'review',
+      label: 'Review',
+      content: (
+        <dl>
+          <dt>Name</dt>
+          <dd>{project.name || '—'}</dd>
+          <dt>Members</dt>
+          <dd>{project.members || 'Nobody yet'}</dd>
+        </dl>
+      ),
+    },
+  ];
+}
+
+function useProject() {
+  const [project, setProjectState] = useState<Project>({ name: '', members: '' });
+  const setProject = (change: Partial<Project>) =>
+    setProjectState((previous) => ({ ...previous, ...change }));
+  return [project, setProject] as const;
+}
+
+/** A new project, inline: an asynchronous name check, an optional step and a review. */
+function NewProject() {
+  const [project, setProject] = useProject();
+  const [created, setCreated] = useState<string | null>(null);
+  return (
+    <div data-lab-demo="inline">
+      <Wizard
+        aria-label="New project"
+        steps={projectSteps(project, setProject)}
+        finishLabel="Create project"
+        headingLevel={3}
+        onFinish={() =>
+          new Promise<void>((resolve) => setTimeout(resolve, 600)).then(() =>
+            setCreated(project.name),
+          )
+        }
+      />
+      <p data-lab-result>{created ? `Created ${created}` : 'Nothing created yet'}</p>
+    </div>
+  );
+}
+
+/** The same task in a modal: the wizard's buttons are the dialog's footer. */
+function NewProjectModal() {
+  const [project, setProject] = useProject();
+  const [created, setCreated] = useState<string | null>(null);
+  return (
+    <div data-lab-demo="modal">
+      <ModalTrigger>
+        <Button>New project</Button>
+        <Modal title="New project" size="lg">
+          {({ close }) => (
+            <Wizard
+              steps={projectSteps(project, setProject)}
+              finishLabel="Create project"
+              onCancel={close}
+              onFinish={() => {
+                setCreated(project.name);
+                close();
+              }}
+            />
+          )}
+        </Modal>
+      </ModalTrigger>
+      <p data-lab-result>{created ? `Created ${created}` : 'Nothing created yet'}</p>
+    </div>
+  );
+}
+
+const staticSteps: WizardStep[] = [
+  { id: 'one', label: 'Choose a file', content: <p>Pick the spreadsheet to read.</p> },
+  { id: 'two', label: 'Map columns', isOptional: true, content: <p>Match each column.</p> },
+  { id: 'three', label: 'Import', content: <p>Ready to import 24 rows.</p> },
+];
+
+mountLab(
+  <>
+    <LabSection
+      title="Steps and orientation"
+      description="The first, an optional middle and the last step, with the list of steps above or beside the panel. Buttons follow the step: Back after the first, Skip on an optional step, Finish on the last."
+    >
+      <StateMatrix
+        axes={{ step: ['one', 'two', 'three'], orientation: ['horizontal', 'vertical'] }}
+        render={({ step, orientation }) => (
+          <Wizard
+            aria-label={`Import at step ${step}, ${orientation}`}
+            steps={staticSteps}
+            defaultCurrentId={step}
+            orientation={orientation}
+            onCancel={() => {}}
+            headingLevel={3}
+          />
+        )}
+      />
+    </LabSection>
+    <LabSection
+      title="New project"
+      description="Next checks the required name, then asks a pretend server whether the name is free (Apollo and Atlas are taken). Members can be skipped; Finish creates the project."
+    >
+      <NewProject />
+    </LabSection>
+    <LabSection
+      title="In a modal"
+      description="The same wizard as the body of a Modal: Cancel closes it and focus stays inside as the steps change."
+    >
+      <NewProjectModal />
+    </LabSection>
+  </>,
+);

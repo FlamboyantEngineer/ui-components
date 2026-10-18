@@ -1,0 +1,72 @@
+/* Wizard */
+
+.ui-wizard {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  color: var(--ref-text);
+  font-size: 13px;
+}
+.ui-wizard[data-orientation='vertical'] {
+  display: grid;
+  grid-template-columns: minmax(140px, max-content) minmax(0, 1fr);
+  gap: 24px;
+}
+
+.ui-wizard__steps {
+  min-width: 0;
+}
+.ui-wizard[data-orientation='vertical'] > .ui-wizard__steps {
+  padding-inline-end: 16px;
+  border-inline-end: 1px solid var(--ref-border);
+}
+
+/* Wins over the form's own sheet, which keeps fields at their natural width. */
+.ui-wizard__form.ui-form {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  min-width: 0;
+}
+
+.ui-wizard__panel {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  min-height: 64px;
+}
+
+.ui-wizard__heading {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 20px;
+}
+/* Focus lands on the heading only by script, to announce the new step; it needs no ring. */
+.ui-wizard__heading:focus {
+  outline: none;
+}
+
+.ui-wizard__error {
+  align-self: flex-start;
+}
+
+.ui-wizard__footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--ref-border);
+}
+
+.ui-wizard__action[data-action='cancel'] {
+  margin-inline-end: auto;
+}
+
+.ui-wizard[data-pending] .ui-wizard__panel {
+  opacity: 0.7;
+}

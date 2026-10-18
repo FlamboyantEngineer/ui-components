@@ -318,3 +318,5 @@ export function ScrollRegion({
     </div>
   );
 }
+
+export { useScrollSpy } from './use-scroll-spy.js';

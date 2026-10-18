@@ -80,7 +80,7 @@ function mergeSafeRel(rel: string | undefined): string {
 }
 
 /** A link that navigates renders through the provider's link renderer; a disabled one is a span. */
-function renderLinkElement(props: JSX.IntrinsicElements['a']): ReactElement {
+export function renderLinkElement(props: JSX.IntrinsicElements['a']): ReactElement {
   if ('href' in props && typeof props.href === 'string' && props['aria-disabled'] === undefined) {
     return <UiLink {...props} href={props.href} />;
   }

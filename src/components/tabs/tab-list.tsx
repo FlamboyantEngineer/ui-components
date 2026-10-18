@@ -1,12 +1,12 @@
 import {
-  createContext,
   useContext,
+  useLayoutEffect,
   useMemo,
   useRef,
+  type JSX,
   type KeyboardEvent,
   type ReactNode,
   type Ref,
-  type RefObject,
 } from 'react';
 import {
   TabList as AriaTabList,
@@ -18,21 +18,27 @@ import {
 } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps, Key, Orientation } from '../../core/props.js';
-import { useUiStrings } from '../../core/provider.js';
 import { mergeProps, mergeRefs } from '../../utils/merge-props.js';
 import type { ElementRender } from '../../utils/render-element.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
-import { useOverflowItems } from '../../utils/use-overflow-items.js';
-import {
-  scrollStripPage,
-  useScrollStripOverflow,
-  type ScrollStripState,
-} from '../../utils/use-scroll-strip-overflow.js';
-import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { useScrollStripOverflow } from '../../utils/use-scroll-strip-overflow.js';
 import { VisibleCollection } from '../overflow-list/overflow-list.js';
+import { TabActionsContext, TabsSharedContext, type TabActions } from './tab-actions.js';
+import { TabBar, useTabOverflow } from './tab-bar.js';
 import { tabsHooks as hooks } from './tab-hooks.js';
 import { useCenterSelectedTab, useListOverflow } from './tab-list-overflow.js';
+import { TabMenuOverlay, useTabMenu, type TabMenuItems } from './tab-menu.js';
+import {
+  createTabRename,
+  TabRenameOverlay,
+  type TabNameValidate,
+  type TabRename,
+} from './tab-rename.js';
+import { createTabReorder, useTabReorderKeys, type TabMove } from './tab-reorder.js';
+
+export type { TabMenuItems } from './tab-menu.js';
+export type { TabNameValidate } from './tab-rename.js';
+export type { TabMove } from './tab-reorder.js';
 
 /** `scroll` lets an overflowing list scroll; `menu` collapses the tabs that do not fit into a menu. */
 export type TabListOverflow = 'scroll' | 'menu';
@@ -60,64 +66,29 @@ export interface TabListProps extends BaseProps, AriaLabellingProps {
   onRemove?: ((keys: Set<Key>) => void) | undefined;
   /** Draws an add button after the tabs. */
   onAdd?: (() => void) | undefined;
+  /** Renames a tab from the name field that a double click, F2 or its menu opens in it. */
+  onRename?: ((key: Key, name: string) => void) | undefined;
+  /** Checks a new tab name as it is typed; a returned message refuses it. */
+  validateName?: TabNameValidate | undefined;
+  /** Makes the tabs reorderable by dragging and with Alt+Arrow keys; reports each move to apply. */
+  onReorder?: ((move: TabMove) => void) | undefined;
+  /** Offers Duplicate in each tab's menu. */
+  onDuplicate?: ((key: Key) => void) | undefined;
+  /**
+   * Gives each tab a menu of its actions, opened like a context menu: the entries of the tab `key`,
+   * given the standard entries for the actions the list takes (rename, duplicate, moves, delete).
+   */
+  getMenuItems?: TabMenuItems | undefined;
 }
 
-type Edge = 'start' | 'end';
-
-/** The list's `onRemove`, for the tabs inside it. */
-export const TabRemoveContext = createContext<((keys: Set<Key>) => void) | undefined>(undefined);
-
-const noKeys: readonly Key[] = Object.freeze([]);
-
-/** The menu entries of the hidden tabs: their text, disabled state and link. */
-function toMenuEntries(state: TabListState<object>, keys: readonly Key[]) {
-  return keys.map((key) => {
-    const node = state.collection.getItem(key);
-    const props = (node?.props ?? {}) as { isDisabled?: boolean; href?: string };
-    return {
-      id: key,
-      label: node?.textValue || String(key),
-      isDisabled: state.disabledKeys.has(key) || props.isDisabled === true,
-      href: props.href,
-    };
-  });
+interface ListKeyOptions {
+  state: TabListState<object> | null;
+  onRemove: TabListProps['onRemove'];
+  rename: TabRename | null;
+  onReorderKey: ((event: KeyboardEvent<HTMLElement>) => void) | undefined;
 }
 
-/** Which tabs a menu list keeps: the selected and focused tabs first, then from the start. */
-function useTabOverflow(state: TabListState<object> | null, isMenu: boolean) {
-  const keys = isMenu && state ? [...state.collection].map((node) => node.key) : noKeys;
-  const selectedKey = state?.selectedKey ?? null;
-  const manager = state?.selectionManager;
-  const focusedKey = manager?.isFocused ? manager.focusedKey : null;
-  const overflow = useOverflowItems({
-    items: keys,
-    getPriority: (key) => (key === selectedKey ? 2 : key === focusedKey ? 1 : 0),
-  });
-  const visibleKeys = useMemo(() => new Set(overflow.visibleItems), [overflow.visibleItems]);
-  return { ...overflow, visibleKeys: isMenu ? visibleKeys : null };
-}
-
-interface TabScrollButtonProps {
-  edge: Edge;
-  isHidden: boolean;
-  onPress: (edge: Edge) => void;
-}
-
-function TabScrollButton({ edge, isHidden, onPress }: TabScrollButtonProps) {
-  const strings = useUiStrings();
-  const pointsLeft = (edge === 'start') !== (useLocale().direction === 'rtl');
-  return (
-    <IconButton
-      {...hooks.slot('scroll-button', { edge })}
-      icon={pointsLeft ? 'chevron-left' : 'chevron-right'}
-      label={edge === 'start' ? strings.scrollBackward : strings.scrollForward}
-      size="sm"
-      excludeFromTabOrder
-      hidden={isHidden}
-      onPress={() => onPress(edge)}
-    />
-  );
-}
+type ListKeyHandlers = Pick<JSX.IntrinsicElements['div'], 'onKeyDown' | 'onKeyDownCapture'>;
 
 /** Menus and scroll buttons serve horizontal lists; a vertical list scrolls. */
 function resolveParts({
@@ -136,104 +107,103 @@ function resolveParts({
   };
 }
 
-/** Adds the remove keys to the list element, which React Aria keeps its own keyboard handling on. */
-function renderRemoveKeys(
+/** Adds the list's keys to its element, which React Aria keeps its own keyboard handling on. */
+function renderListKeys(
   render: TabListProps['render'],
-  onKeyDown: (event: KeyboardEvent<HTMLDivElement>) => void,
+  handlers: ListKeyHandlers,
 ): TabListProps['render'] {
   return (props, state) => {
-    const merged = mergeProps(props, { onKeyDown });
+    const merged = mergeProps(props, handlers);
     return render ? render(merged, state) : <div {...merged} />;
   };
 }
 
-/** Delete and Backspace remove the focused tab of a removable list. */
-function useRemoveKey(state: TabListState<object> | null, onRemove: TabListProps['onRemove']) {
-  return (event: KeyboardEvent<HTMLDivElement>) => {
-    if (!onRemove || !state || (event.key !== 'Delete' && event.key !== 'Backspace')) return;
-    const key = state.selectionManager.focusedKey;
-    if (key === null || state.disabledKeys.has(key)) return;
-    event.preventDefault();
-    onRemove(new Set([key]));
-  };
+/** Whether a key went to a tab, rather than to a field inside one. */
+function isTabKey(event: KeyboardEvent<HTMLElement>) {
+  return (event.target as Element).getAttribute('role') === 'tab';
 }
 
-interface TabBarProps {
-  state: TabListState<object>;
+/**
+ * The list's keys on its focused tab: Delete and Backspace remove it, F2 renames it and Alt+Arrow
+ * moves it, each while the owner takes that action.
+ */
+function useListKeys({ state, onRemove, rename, onReorderKey }: ListKeyOptions) {
+  const focusedKey = () => {
+    const key = state?.selectionManager.focusedKey ?? null;
+    return key === null || state?.selectionManager.isDisabled(key) ? null : key;
+  };
+  const handlers: ListKeyHandlers = {};
+  if (onRemove) {
+    handlers.onKeyDown = (event) => {
+      const key = focusedKey();
+      if ((event.key !== 'Delete' && event.key !== 'Backspace') || key === null) return;
+      event.preventDefault();
+      onRemove(new Set([key]));
+    };
+  }
+  if (rename || onReorderKey) {
+    handlers.onKeyDownCapture = (event) => {
+      onReorderKey?.(event);
+      const key = focusedKey();
+      if (!rename || event.key !== 'F2' || !isTabKey(event) || key === null) return;
+      event.preventDefault();
+      rename.start(key);
+    };
+  }
+  return Object.keys(handlers).length > 0 ? handlers : null;
+}
+
+/** The chords every tab of the list announces, for the actions the owner takes. */
+function listKeyShortcuts(options: {
   orientation: Orientation;
-  isMenu: boolean;
-  hasButtons: boolean;
-  menu: ReturnType<typeof useTabOverflow>;
-  strip: ScrollStripState & { stripRef: RefObject<HTMLDivElement | null> };
-  onAdd: (() => void) | undefined;
-  children: ReactNode;
+  actions: Omit<TabActions, 'keyShortcuts'>;
+}): string | undefined {
+  const { orientation, actions } = options;
+  const moves = orientation === 'horizontal' ? 'ArrowLeft Alt+ArrowRight' : 'ArrowUp Alt+ArrowDown';
+  const chords = [
+    actions.onRemove ? 'Delete' : null,
+    actions.rename ? 'F2' : null,
+    actions.reorder ? `Alt+${moves}` : null,
+    actions.menu.isEnabled ? 'Shift+F10' : null,
+  ].filter(Boolean);
+  return chords.length > 0 ? chords.join(' ') : undefined;
 }
 
-/** The parts around a list: scroll buttons, the "more" menu of hidden tabs and the add button. */
-function TabBar({
-  state,
-  orientation,
-  isMenu,
-  hasButtons,
-  menu,
-  strip,
-  onAdd,
-  children,
-}: TabBarProps) {
-  const strings = useUiStrings();
-  const rtl = useLocale().direction === 'rtl';
-  const pageToward = (edge: Edge) => {
-    if (!strip.stripRef.current) return;
-    scrollStripPage(strip.stripRef.current, { edge, rtl });
-    strip.syncOverflow();
+/** What the list lets its tabs do: remove, rename, reorder and open a menu. */
+function useTabActions(
+  props: Pick<
+    TabListProps,
+    'onRemove' | 'onRename' | 'validateName' | 'onReorder' | 'onDuplicate' | 'getMenuItems'
+  >,
+): TabActions {
+  const shared = useContext(TabsSharedContext);
+  const isRtl = useLocale().direction === 'rtl';
+  const { onRemove, onRename, validateName, onReorder, onDuplicate, getMenuItems } = props;
+  const rename = createTabRename({ shared, onRename, validateName });
+  const reorder = createTabReorder({ shared, isRtl, onReorder });
+  const menu = useTabMenu({ shared, rename, reorder, onRemove, onDuplicate, getMenuItems });
+  const actions = { onRemove, rename, reorder, menu };
+  return {
+    ...actions,
+    keyShortcuts: listKeyShortcuts({ orientation: shared.orientation, actions }),
   };
-  const scrollButton = (edge: Edge) =>
-    hasButtons ? (
-      <TabScrollButton edge={edge} isHidden={!strip.overflow[edge]} onPress={pageToward} />
-    ) : null;
-  return (
-    <div
-      ref={isMenu ? menu.containerRef : undefined}
-      {...hooks.slot('bar', { overflow: isMenu ? 'menu' : 'scroll', orientation })}
-    >
-      {scrollButton('start')}
-      {children}
-      {scrollButton('end')}
-      {isMenu && menu.hiddenItems.length > 0 ? (
-        <div ref={menu.indicatorRef} {...hooks.slot('overflow')}>
-          <DropdownMenu
-            iconOnly
-            size="sm"
-            placement="bottom end"
-            label={strings.moreItems(menu.hiddenItems.length)}
-            items={toMenuEntries(state, menu.hiddenItems)}
-            onAction={(key) => state.setSelectedKey(key)}
-          />
-        </div>
-      ) : null}
-      {onAdd ? (
-        <IconButton
-          {...hooks.slot('add')}
-          icon="plus"
-          label={strings.addTab}
-          size="sm"
-          onPress={onAdd}
-        />
-      ) : null}
-    </div>
-  );
 }
 
 /**
  * The row (or column) of tabs. An overflowing list scrolls the selected tab toward its middle, or
  * collapses the tabs that do not fit into a "more" menu; it can draw scroll buttons, removable tabs
- * and an add button.
+ * and an add button, rename and reorder its tabs, and give each tab a menu of its actions.
  */
 export function TabList({
   overflow = 'scroll',
   scrollButtons = false,
   onRemove,
   onAdd,
+  onRename,
+  validateName,
+  onReorder,
+  onDuplicate,
+  getMenuItems,
   className,
   ref,
   ...rest
@@ -247,7 +217,16 @@ export function TabList({
   const strip = useScrollStripOverflow(stripRef);
   const scrollOverflowing = useListOverflow(listRef, orientation);
   useCenterSelectedTab(listRef, { orientation, selectedKey: state?.selectedKey ?? null });
-  const onRemoveKey = useRemoveKey(state, onRemove);
+  const actions = useTabActions({
+    ...{ onRemove, onRename, validateName },
+    ...{ onReorder, onDuplicate, getMenuItems },
+  });
+  const { stateRef } = useContext(TabsSharedContext);
+  useLayoutEffect(() => {
+    if (state) stateRef.current = state;
+  });
+  const onReorderKey = useTabReorderKeys({ state, listRef, reorder: actions.reorder });
+  const keys = useListKeys({ state, onRemove, rename: actions.rename, onReorderKey });
   const elementRef = useMemo(
     () => mergeRefs(setListRef, menu.itemContainerRef, hasButtons ? stripRef : undefined),
     [setListRef, menu.itemContainerRef, hasButtons],
@@ -255,24 +234,26 @@ export function TabList({
   // React Aria builds the collection from a hidden render of the list, which draws no parts.
   if (!state) {
     return (
-      <TabRemoveContext.Provider value={onRemove}>
+      <TabActionsContext.Provider value={actions}>
         <AriaTabList {...rest} />
-      </TabRemoveContext.Provider>
+      </TabActionsContext.Provider>
     );
   }
 
   const overflowing = isMenu ? menu.hiddenItems.length > 0 : scrollOverflowing;
   const list = (
-    <TabRemoveContext.Provider value={onRemove}>
+    <TabActionsContext.Provider value={actions}>
       <VisibleCollection keys={menu.visibleKeys}>
         <AriaTabList
           {...mergeProps(rest, { onScroll: hasButtons ? strip.syncOverflow : undefined })}
-          render={onRemove ? renderRemoveKeys(rest.render, onRemoveKey) : rest.render}
+          render={keys ? renderListKeys(rest.render, keys) : rest.render}
           ref={elementRef}
           {...hooks.slot('list', { overflowing }, className)}
         />
       </VisibleCollection>
-    </TabRemoveContext.Provider>
+      <TabRenameOverlay rename={actions.rename} state={state} listRef={listRef} />
+      <TabMenuOverlay menu={actions.menu} />
+    </TabActionsContext.Provider>
   );
   if (!isMenu && !hasButtons && !onAdd) return list;
   return (
