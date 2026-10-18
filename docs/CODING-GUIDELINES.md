@@ -12,7 +12,7 @@ Every file in `src/`, `labs/src/`, `test/` and `e2e/` follows these rules. They 
 
 **N4. Props interfaces are `<Component>Props`** and are exported next to the component. Option types are `<Component><Option>` (`ButtonVariant`) unless the component uses a shared vocabulary type directly (N7).
 
-**N5. Prop names follow React Aria.** States are `is*` booleans (`isDisabled`, `isSelected`, `isPending`, `isInvalid`, `isRequired`, `isReadOnly`, `isOpen`, `isExpanded`); options that are not states are plain words (`variant`, `size`, `orientation`, `truncate`); events are `on<Event>` (`onPress`, `onChange`, `onAction`, `onOpenChange`); controlled pairs are `value`/`defaultValue` with `onChange` (or `<thing>`/`default<Thing>` with `on<Thing>Change`); render callbacks are `render<Part>`; accessors are `get<Value>`. Props of a wrapped React Aria component pass through unrenamed.
+**N5. Prop names follow one vocabulary.** States are `is*` booleans (`isDisabled`, `isSelected`, `isPending`, `isInvalid`, `isRequired`, `isReadOnly`, `isOpen`, `isExpanded`); options that are not states are plain words (`variant`, `size`, `orientation`, `truncate`); events are `on<Event>` (`onPress`, `onChange`, `onAction`, `onOpenChange`); controlled pairs are `value`/`defaultValue` with `onChange` (or `<thing>`/`default<Thing>` with `on<Thing>Change`); render callbacks are `render<Part>`; accessors are `get<Value>`. Collection keys, selections, placements, sorting and events use the shared types in `src/core/` (`Key`, `Selection`, `Placement`, `SortDescriptor`, `PressEvent`); values are plain data (dates as ISO 8601 strings, colours as CSS colour strings).
 
 **N6. Functions say what they do.** Hooks are `use<Thing>`; pure functions start with a verb (`formatPath`, `resolveOverlayPlacement`, `createModalController`); predicates start with `is`, `has` or `can`. Module constants are `UPPER_SNAKE_CASE` only for exported primitive defaults (`DEFAULT_OVERLAY_GAP`); everything else is camelCase. **(enforced: naming convention)**
 
@@ -40,16 +40,18 @@ Every file in `src/`, `labs/src/`, `test/` and `e2e/` follows these rules. They 
 
 **I1. Function components only.** No classes in library source, including subclasses of third-party classes: wrap or compose them instead. **(enforced)**
 
-**I2. Props inherit, they are not redeclared.** Every component that renders an element has props that extend `BaseProps` (`className`, `id`, caller `data-*`). A component that wraps a React Aria component extends that component's props, omitting only what the library replaces (`className`, `style`, `children` when it changes their type). It keeps React Aria's `render` so the caller can swap the element ([specs/COMPOSITION.md](../specs/COMPOSITION.md)); it omits `render` only where swapping would break the component's own markup, and says why in a comment:
+**I2. Props are declared by the library.** Every component that renders an element has props that extend `BaseProps` (`className`, `id`, caller `data-*`) and the shared prop groups it supports (`PressEventProps`, `FocusEventProps`, `AriaLabellingProps`, `OpenStateProps`, `SelectionProps` and the others in `src/core/events.ts`), then declares its own props. It never extends or exposes a building block's props or types: a building block is how the component works today, not its API ([specs/PRIMITIVES.md](../specs/PRIMITIVES.md)). Declare only what the spec documents and the tests and lab use; inside the component, pass the props on to the building block. A component whose element the caller may swap takes `render` typed `ElementRender<E, State>` with a library-declared state ([specs/COMPOSITION.md](../specs/COMPOSITION.md)):
 
 ```ts
 export interface ButtonProps
-  extends Omit<AriaButtonProps, 'className' | 'style' | 'children'>, BaseProps {
+  extends BaseProps, PressEventProps, FocusEventProps, AriaLabellingProps {
   variant?: ButtonVariant | undefined;
+  isDisabled?: boolean | undefined;
+  render?: ElementRender<'button', ButtonRenderState> | undefined;
 }
 ```
 
-**(enforced: every exported component's props include `BaseProps`, except providers, hosts and controllers that render no element of their own)**
+**(enforced: every exported component's props include `BaseProps`, except providers, hosts and controllers that render no element of their own; `npm run check:public-types` fails on any public declaration that exposes a building block)**
 
 **I3. Specialise by composition.** A specialised component renders the general one with fixed props (`ActionButton` renders `Button`); it does not copy its markup or logic. Shared behaviour that two components need lives in one exported helper or hook, never in two copies.
 
@@ -61,7 +63,7 @@ export interface ButtonProps
 
 **C2. No speculative surface.** Every prop, export and option is exercised by a unit test and shown in the lab. Remove what nothing uses.
 
-**C3. Prefer the platform and React Aria.** Use React Aria's behaviour (press, focus, keyboard, overlays, collections) before writing your own; derive values during render instead of storing them in state; reach for an effect only to synchronise with something outside React.
+**C3. Prefer the platform and the building blocks.** Use the behaviour in `src/primitives/` (press, focus, keyboard, overlays, collections) before writing your own; derive values during render instead of storing them in state; reach for an effect only to synchronise with something outside React.
 
 **C4. Comments explain why, not what.** Document public props in one line of TSDoc; comment only non-obvious constraints and workarounds. No commented-out code, no narration, no decorative separators.
 

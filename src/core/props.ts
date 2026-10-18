@@ -7,7 +7,7 @@ export type DataAttributeValue = string | number | boolean | undefined;
 
 /**
  * Props every component that renders an element accepts. Component props interfaces extend it
- * (with React Aria's props where the component wraps one) instead of redeclaring these props.
+ * (with the shared prop groups in `events.ts`) instead of redeclaring these props.
  */
 export interface BaseProps {
   /** Class names appended after the component's hook classes. */
@@ -34,3 +34,44 @@ export type Size = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 export type Tone = 'neutral' | 'info' | 'success' | 'warning' | 'danger';
 
 export type Orientation = 'horizontal' | 'vertical';
+
+/** Identifies an item in a collection (a menu item, a row, a tab, a tag). */
+export type Key = string | number;
+
+/** Selected keys, or `'all'` when every item is selected. */
+export type Selection = 'all' | Set<Key>;
+
+export type SelectionMode = 'none' | 'single' | 'multiple';
+
+/** Where an overlay opens relative to its anchor: a side, then an alignment along it. */
+export type Placement =
+  | 'bottom'
+  | 'bottom left'
+  | 'bottom right'
+  | 'bottom start'
+  | 'bottom end'
+  | 'top'
+  | 'top left'
+  | 'top right'
+  | 'top start'
+  | 'top end'
+  | 'left'
+  | 'left top'
+  | 'left bottom'
+  | 'start'
+  | 'start top'
+  | 'start bottom'
+  | 'right'
+  | 'right top'
+  | 'right bottom'
+  | 'end'
+  | 'end top'
+  | 'end bottom';
+
+export type SortDirection = 'ascending' | 'descending';
+
+/** The column a collection is sorted by and the direction. */
+export interface SortDescriptor {
+  column: Key;
+  direction: SortDirection;
+}

@@ -43,7 +43,7 @@ Verification: `src/core/hooks.test.ts`
 
 ### UIC-HOOKS-2.2 - States
 
-A component shall publish each state as a data attribute that is present with the value `true` while the state holds and absent otherwise. Components built on React Aria keep React Aria's state attributes unchanged (`data-hovered`, `data-pressed`, `data-focused`, `data-focus-visible`, `data-selected`, `data-disabled`, `data-invalid`, `data-required`, `data-readonly`, `data-open`, `data-expanded`, `data-entering`, `data-exiting`, `data-placement` and others). States the library adds follow the same rule (`data-loading`, `data-dirty`).
+A component shall publish each state as a data attribute that is present with the value `true` while the state holds and absent otherwise. Interaction and overlay states use these names, whichever building block produces them (`data-hovered`, `data-pressed`, `data-focused`, `data-focus-visible`, `data-selected`, `data-disabled`, `data-invalid`, `data-required`, `data-readonly`, `data-open`, `data-expanded`, `data-entering`, `data-exiting`, `data-placement` and others); a building block that names a state differently is adapted in `src/primitives/` ([PRIMITIVES.md](PRIMITIVES.md)). States the library adds follow the same rule (`data-loading`, `data-dirty`).
 
 Implementation: `src/core/hooks.ts`
 Verification: `src/core/hooks.test.ts`
