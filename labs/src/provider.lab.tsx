@@ -92,6 +92,14 @@ const sampleArguments: Partial<Record<keyof UiStrings, readonly unknown[]>> = {
   resizeTile: ['Visitors'],
   tileMoved: ['Visitors', 3, 2],
   tileResized: ['Visitors', 4, 2],
+  mergeViewConflictCount: [2, 3],
+  mergeViewConflict: [2, 3],
+  mergeViewConflictResult: [2],
+  mergeViewTake: ['Theirs'],
+  mergeViewLine: ['conflict', 4],
+  pivotAggregate: ['average'],
+  pivotValueLabel: ['Sum', 'Boxes'],
+  pivotAggregationOf: ['Boxes'],
 };
 
 const stringNames = Object.keys(defaultStrings) as Array<keyof UiStrings>;

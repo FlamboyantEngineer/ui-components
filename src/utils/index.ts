@@ -116,6 +116,21 @@ export { getColorIndex } from './color-index.js';
 export { getInitials } from './initials.js';
 export { diffLines, diffSequences, diffWords } from './diff.js';
 export type { DiffKind, LineDiffHunk, SequenceDiffHunk, WordDiffHunk } from './diff.js';
+export { mergeThreeWay } from './three-way-merge.js';
+export type { MergeChunk, MergeChunkKind } from './three-way-merge.js';
+export { pivot } from './pivot.js';
+export type {
+  PivotAggregateFunction,
+  PivotAggregateName,
+  PivotAggregates,
+  PivotColumn,
+  PivotKey,
+  PivotLayout,
+  PivotRecord,
+  PivotResult,
+  PivotRow,
+  PivotValue,
+} from './pivot.js';
 export { compareTrees } from './compare-trees.js';
 export type {
   CompareTreeNode,

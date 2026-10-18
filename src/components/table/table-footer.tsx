@@ -1,3 +1,4 @@
+import type { JSX } from 'react';
 import { Cell, Row, TableFooter as AriaTableFooter } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import { tableHooks as hooks } from './table-hooks.js';
@@ -20,6 +21,21 @@ interface TableFooterProps<T> {
 
 /** The key of the summary row, kept out of row actions, selection and moves. */
 export const footerRowId = 'ui-table-footer';
+
+type RowElementProps = JSX.IntrinsicElements['tr' | 'div'];
+
+/**
+ * React Aria numbers a tree grid's summary row among the tree's rows with a negative position,
+ * which is not a valid one: the row draws without a position in the tree.
+ */
+function createFooterRow(isVirtualized: boolean) {
+  return ({ 'aria-posinset': _position, 'aria-setsize': _size, ...props }: RowElementProps) =>
+    isVirtualized ? (
+      <div {...(props as JSX.IntrinsicElements['div'])} />
+    ) : (
+      <tr {...(props as JSX.IntrinsicElements['tr'])} />
+    );
+}
 
 /** Whether any drawn column has a summary cell. */
 export function hasTableFooter<T>(structure: TableStructure<T>): boolean {
@@ -47,6 +63,7 @@ export function TableFooter<T extends TableRow>({
         isDisabled
         disabledBehavior="selection"
         className={hooks.slotClass('footer-row')}
+        render={createFooterRow(structure.isVirtualized)}
       >
         {structure.hasSelection ? (
           <Cell

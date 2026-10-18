@@ -1,0 +1,205 @@
+/* Merge View: three input panes side by side over the result, conflicts marked in amber. */
+
+.ui-merge-view {
+  display: grid;
+  min-width: 0;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-canvas);
+  color: var(--ref-text);
+  font-size: 13px;
+  overflow: hidden;
+}
+
+.ui-merge-view__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 2px 4px 2px 12px;
+  border-bottom: 1px solid var(--ref-border);
+  background: var(--ref-surface);
+}
+
+.ui-merge-view__status {
+  font-weight: 600;
+}
+
+.ui-merge-view__navigation {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.ui-merge-view__previous,
+.ui-merge-view__next {
+  flex: none;
+}
+
+.ui-merge-view__sides {
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  min-width: 0;
+  border-bottom: 1px solid var(--ref-border);
+}
+
+.ui-merge-view__side {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  min-width: 0;
+}
+
+.ui-merge-view__sides > .ui-merge-view__side + .ui-merge-view__side {
+  border-inline-start: 1px solid var(--ref-border);
+}
+
+.ui-merge-view__title {
+  padding: 4px 12px;
+  border-bottom: 1px solid var(--ref-border);
+  color: var(--ref-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.ui-merge-view__pane {
+  min-width: 0;
+  max-height: 240px;
+}
+
+.ui-merge-view__side[data-side='result'] .ui-merge-view__pane {
+  max-height: 320px;
+}
+
+.ui-merge-view__table {
+  min-width: 100%;
+  border-collapse: collapse;
+  font: 12px/20px var(--ref-mono);
+}
+
+.ui-merge-view__chunk[data-current] .ui-merge-view__line > td:first-child,
+.ui-merge-view__chunk[data-current] .ui-merge-view__filler > td:first-child {
+  box-shadow: inset 3px 0 0 var(--ref-accent);
+}
+
+.ui-merge-view__line > td,
+.ui-merge-view__filler > td {
+  height: 20px;
+  padding: 0;
+  vertical-align: top;
+}
+
+.ui-merge-view__line[data-change='changed'] {
+  background: color-mix(in srgb, var(--ref-info) 12%, transparent);
+}
+
+.ui-merge-view__line[data-change='conflict'] {
+  background: color-mix(in srgb, var(--ref-warning) 16%, transparent);
+}
+
+.ui-merge-view__filler > td {
+  background: repeating-linear-gradient(
+    -45deg,
+    transparent 0 4px,
+    color-mix(in srgb, var(--ref-border) 50%, transparent) 4px 5px
+  );
+}
+
+.ui-merge-view__number {
+  width: 1%;
+  min-width: 3ch;
+  padding: 0 8px;
+  color: var(--ref-muted);
+  text-align: end;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.ui-merge-view__marker {
+  width: 1%;
+  padding: 0 4px;
+  color: var(--ref-muted);
+  text-align: center;
+  user-select: none;
+}
+
+.ui-merge-view__content {
+  width: 100%;
+  padding: 0 12px 0 4px;
+  white-space: pre;
+}
+
+.ui-merge-view__blocks {
+  display: grid;
+  padding: 4px 0;
+}
+
+.ui-merge-view__block {
+  min-width: 0;
+}
+
+.ui-merge-view__block[data-kind='ours'],
+.ui-merge-view__block[data-kind='theirs'],
+.ui-merge-view__block[data-kind='both'] {
+  background: color-mix(in srgb, var(--ref-info) 8%, transparent);
+}
+
+.ui-merge-view__text {
+  margin: 0;
+  padding: 0 12px;
+  font: 12px/20px var(--ref-mono);
+  white-space: pre;
+}
+
+.ui-merge-view__block[data-kind='conflict'] {
+  display: grid;
+  gap: 4px;
+  margin: 4px 8px;
+  padding: 6px 8px;
+  border: 1px solid var(--ref-warning);
+  border-radius: var(--ref-radius);
+  background: color-mix(in srgb, var(--ref-warning) 8%, var(--ref-canvas));
+}
+
+.ui-merge-view__block[data-kind='conflict']:not([data-resolution='unresolved']) {
+  border-color: var(--ref-success);
+  background: color-mix(in srgb, var(--ref-success) 6%, var(--ref-canvas));
+}
+
+.ui-merge-view__block[data-current] {
+  box-shadow: 0 0 0 2px var(--ref-accent);
+}
+
+.ui-merge-view__conflict-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.ui-merge-view__conflict-title {
+  font-weight: 600;
+}
+
+.ui-merge-view__resolution {
+  color: var(--ref-muted);
+  font-size: 12px;
+}
+
+.ui-merge-view__actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-inline-start: auto;
+}
+
+.ui-merge-view__take {
+  flex: none;
+}
+
+.ui-merge-view__editor {
+  width: 100%;
+}
+
+.ui-merge-view__editor textarea {
+  font: 12px/20px var(--ref-mono);
+}
