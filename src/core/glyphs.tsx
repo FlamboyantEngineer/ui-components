@@ -59,6 +59,7 @@ import {
   SignalSlashIcon,
   StarIcon,
   StopIcon,
+  TableCellsIcon,
   TrashIcon,
   UsersIcon,
   ViewColumnsIcon,
@@ -157,6 +158,8 @@ export const defaultGlyphs = {
   star: StarIcon,
   adjustments: AdjustmentsHorizontalIcon,
   move: ArrowsUpDownIcon,
+  table: TableCellsIcon,
+  resize: ArrowsPointingOutIcon,
 } satisfies Record<string, GlyphComponent>;
 
 export const glyphNames = Object.keys(defaultGlyphs) as GlyphName[];

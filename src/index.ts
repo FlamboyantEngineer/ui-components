@@ -164,3 +164,5 @@ export * from './components/step-list-editor/index.js';
 export * from './components/relation-matrix/index.js';
 export * from './components/permission-matrix/index.js';
 export * from './components/relation-columns/index.js';
+export * from './components/chart/index.js';
+export * from './components/dashboard-grid/index.js';
