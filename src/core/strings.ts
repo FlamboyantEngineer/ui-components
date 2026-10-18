@@ -6,6 +6,7 @@ import { editingStrings, type EditingStrings } from './editing-strings.js';
 import { fieldStrings, type FieldStrings } from './field-strings.js';
 import { historyStrings, type HistoryStrings } from './history-strings.js';
 import { mediaStrings, type MediaStrings } from './media-strings.js';
+import { pickerStrings, type PickerStrings } from './picker-strings.js';
 import { planningStrings, type PlanningStrings } from './planning-strings.js';
 import { queryStrings, type QueryStrings } from './query-strings.js';
 import { relationStrings, type RelationStrings } from './relation-strings.js';
@@ -29,6 +30,7 @@ export interface UiStrings
     FieldStrings,
     HistoryStrings,
     MediaStrings,
+    PickerStrings,
     PlanningStrings,
     QueryStrings,
     RelationStrings,
@@ -47,6 +49,7 @@ export const defaultStrings: UiStrings = {
   ...fieldStrings,
   ...historyStrings,
   ...mediaStrings,
+  ...pickerStrings,
   ...planningStrings,
   ...queryStrings,
   ...relationStrings,
