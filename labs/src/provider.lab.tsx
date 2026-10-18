@@ -60,6 +60,14 @@ const sampleArguments: Partial<Record<keyof UiStrings, readonly unknown[]>> = {
   previousRange: ['month'],
   nextRange: ['week'],
   calendarEvent: ['Design review', '10:00 AM – 11:00 AM'],
+  importColumnAs: ['City'],
+  mappedColumns: [3, 5],
+  skippedColumns: [2],
+  unmappedRequiredTargets: [['Name', 'Email']],
+  duplicateTarget: ['Email', ['Contact']],
+  stepLabel: ['2'],
+  stepActions: ['2'],
+  moveStep: ['2'],
 };
 
 const stringNames = Object.keys(defaultStrings) as Array<keyof UiStrings>;
