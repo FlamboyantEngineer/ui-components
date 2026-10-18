@@ -6,7 +6,7 @@
 
 ### UIC-BUTTON-GROUP-1.1 - Labelled group
 
-`ButtonGroup` shall render its children, in order, inside one element with role `group` named by `aria-label` or `aria-labelledby`. It changes nothing about the buttons: each keeps its own variant, size, states and tab stop. The root publishes React Aria's `data-hovered`, `data-focus-within` and `data-focus-visible` while the pointer is over it or focus is inside it.
+`ButtonGroup` shall render its children, in order, inside one element with role `group` named by `aria-label` or `aria-labelledby`. It changes nothing about the buttons: each keeps its own variant, size, states and tab stop. The root publishes `data-hovered`, `data-focus-within` and `data-focus-visible` while the pointer is over it or focus is inside it.
 
 Implementation: `src/components/button-group/button-group.tsx`
 Verification: `src/components/button-group/button-group.test.tsx`, `e2e/button-group.spec.ts`
@@ -27,7 +27,7 @@ Verification: `src/components/button-group/button-group.test.tsx`, `e2e/button-g
 
 ### UIC-BUTTON-GROUP-1.4 - Hooks, caller attributes and swapping
 
-`ButtonGroup` shall carry the hooks below, append the caller's `className`, forward caller `data-*` attributes, `id`, `ref` and DOM event handlers to its root, keep its own hook values over caller attributes of the same name, and pass React Aria's `render` through so the caller can swap the root `<div>` ([COMPOSITION.md](COMPOSITION.md)).
+`ButtonGroup` shall carry the hooks below, append the caller's `className`, forward caller `data-*` attributes, `id` and `ref` to its root, keep its own hook values over caller attributes of the same name, and take `render`, typed `ElementRender<'div', ButtonGroupRenderState>`, so the caller can swap the root `<div>` ([COMPOSITION.md](COMPOSITION.md)); the state holds `isHovered`, `isFocusWithin` and `isFocusVisible`.
 
 Implementation: `src/components/button-group/button-group.tsx`
 Verification: `src/components/button-group/button-group.test.tsx`

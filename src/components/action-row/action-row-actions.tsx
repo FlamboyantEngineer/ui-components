@@ -1,12 +1,8 @@
 import type { KeyboardEvent, ReactNode } from 'react';
-import {
-  Toolbar,
-  Tooltip,
-  TooltipTrigger,
-  type Key,
-  type ToolbarProps as AriaToolbarProps,
-} from '../../primitives/index.js';
+import { Toolbar, Tooltip, TooltipTrigger } from '../../primitives/index.js';
+import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks, pickDataAttributes } from '../../core/hooks.js';
+import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { useOverflowItems } from '../../utils/use-overflow-items.js';
@@ -25,12 +21,12 @@ import {
 import { toActionContent, type ActionRowAction } from './action-verbs.js';
 
 export interface ActionRowActionsProps extends Pick<
-  AriaToolbarProps,
+  AriaLabellingProps,
   'aria-label' | 'aria-labelledby'
 > {
   actions: readonly ActionRowAction[];
   size: ButtonSize;
-  /** Draws the actions as one React Aria toolbar. */
+  /** Draws the actions as one toolbar. */
   isToolbar: boolean;
   /** Collapses the actions that do not fit into a "more" menu. */
   isCollapsing: boolean;
@@ -166,7 +162,7 @@ function OverflowMenu({ keyed, size }: { keyed: readonly KeyedAction[]; size: Bu
 }
 
 /**
- * The actions slot: the buttons, optionally as one React Aria toolbar, optionally keeping only the
+ * The actions slot: the buttons, optionally as one toolbar, optionally keeping only the
  * actions that fit and listing the others in a "more" menu at the end.
  */
 export function ActionRowActions({

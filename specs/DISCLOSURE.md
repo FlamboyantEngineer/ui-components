@@ -13,7 +13,7 @@ Verification: `src/components/disclosure/disclosure.test.tsx`, `e2e/disclosure.s
 
 ### UIC-DISCLOSURE-1.2 - Expanding and collapsing
 
-Pressing the trigger shall toggle the panel. The root publishes React Aria's `data-expanded` while the panel shows. A collapsed panel stays mounted with React Aria's `hidden="until-found"`, so its content keeps its state. React Aria sets `--disclosure-panel-height` and `--disclosure-panel-width` on the panel (the measured size while it opens or closes, `auto` once open, `0px` once closed), so the stylesheet can animate the panel's size; React Aria waits for those animations before hiding the panel.
+Pressing the trigger shall toggle the panel. The root publishes `data-expanded` while the panel shows. A collapsed panel stays mounted with `hidden="until-found"`, so its content keeps its state. The building block sets `--disclosure-panel-height` and `--disclosure-panel-width` on the panel (the measured size while it opens or closes, `auto` once open, `0px` once closed), so the stylesheet can animate the panel's size; React Aria waits for those animations before hiding the panel.
 
 Implementation: `src/components/disclosure/disclosure.tsx`, `src/components/disclosure/disclosure-parts.tsx`, `labs/reference/disclosure.css`
 Verification: `src/components/disclosure/disclosure.test.tsx`, `e2e/disclosure.spec.ts`
@@ -41,14 +41,14 @@ Verification: `src/components/disclosure/disclosure.test.tsx`, `e2e/disclosure.s
 
 ### UIC-DISCLOSURE-1.6 - Disabled
 
-`isDisabled` shall disable the trigger, so it neither toggles nor takes focus, and publish React Aria's `data-disabled` on the root and the trigger. The panel keeps its current state.
+`isDisabled` shall disable the trigger, so it neither toggles nor takes focus, and publish `data-disabled` on the root and the trigger. The panel keeps its current state.
 
 Implementation: `src/components/disclosure/disclosure.tsx`
 Verification: `src/components/disclosure/disclosure.test.tsx`, `e2e/disclosure.spec.ts`
 
 ### UIC-DISCLOSURE-1.7 - Hooks and caller attributes
 
-The disclosure parts shall carry the hooks below and append the caller's `className`. `Disclosure` forwards caller `data-*` attributes and `ref` to its root and keeps React Aria's `render`; its `id` is its key in a group, which React Aria keeps off the element. `DisclosureGroup` forwards `id`, `ref` and caller `data-*` attributes to its root and keeps React Aria's `render`. `DisclosureHeader`, `DisclosureTitle` (on its heading) and `DisclosurePanel` forward `id` and caller `data-*` attributes; caller attributes never replace a hook attribute.
+The disclosure parts shall carry the hooks below and append the caller's `className`. `Disclosure` forwards caller `data-*` attributes and `ref` to its root and takes `render`, typed `ElementRender<'div', DisclosureRenderState>` (`isExpanded`, `isFocusVisibleWithin`, `isDisabled`); its `id`, a `Key`, is its key in a group and stays off the element. `DisclosureGroup` forwards `id`, `ref` and caller `data-*` attributes to its root and takes `render`, typed `ElementRender<'div', DisclosureGroupRenderState>` (`isDisabled`). `DisclosureHeader`, `DisclosureTitle` (on its heading) and `DisclosurePanel` forward `id` and caller `data-*` attributes; caller attributes never replace a hook attribute.
 
 Implementation: `src/components/disclosure/disclosure.tsx`, `src/components/disclosure/disclosure-parts.tsx`
 Verification: `src/components/disclosure/disclosure.test.tsx`
@@ -57,7 +57,7 @@ Verification: `src/components/disclosure/disclosure.test.tsx`
 
 ### UIC-DISCLOSURE-2.1 - Title and panel parts
 
-Without `title`, a `DisclosureTitle` child shall draw the heading, trigger, indicator and title of [UIC-DISCLOSURE-1.1](#uic-disclosure-11---parts) with the disclosure's level and indicator position, and a `DisclosurePanel` child the panel (React Aria `DisclosurePanel`, keeping its `role`, `group` by default or `region`, and its `render`).
+Without `title`, a `DisclosureTitle` child shall draw the heading, trigger, indicator and title of [UIC-DISCLOSURE-1.1](#uic-disclosure-11---parts) with the disclosure's level and indicator position, and a `DisclosurePanel` child the panel, with its `role` (`group` by default, or `region`) and `render`, typed `ElementRender<'div', DisclosurePanelRenderState>` (`isFocusVisibleWithin`).
 
 Implementation: `src/components/disclosure/disclosure-parts.tsx`
 Verification: `src/components/disclosure/disclosure.test.tsx`, `e2e/disclosure.spec.ts`
@@ -73,14 +73,14 @@ Verification: `src/components/disclosure/disclosure.test.tsx`, `e2e/disclosure.s
 
 ### UIC-DISCLOSURE-3.1 - Accordion
 
-`DisclosureGroup` shall render a `ui-disclosure-group` element (React Aria `DisclosureGroup`) whose disclosures expand by their `id`: by default opening one closes the one open before, and `allowsMultipleExpanded` lets several stay open.
+`DisclosureGroup` shall render a `ui-disclosure-group` element whose disclosures expand by their `id`: by default opening one closes the one open before, and `allowsMultipleExpanded` lets several stay open.
 
 Implementation: `src/components/disclosure/disclosure.tsx`
 Verification: `src/components/disclosure/disclosure.test.tsx`, `e2e/disclosure.spec.ts`
 
 ### UIC-DISCLOSURE-3.2 - Expanded keys
 
-`expandedKeys` shall control which disclosures are open, `defaultExpandedKeys` start them, and `onExpandedChange` receive the requested set of keys after each toggle. A disclosure's own `isExpanded` and `defaultExpanded` give way to the group's keys.
+`expandedKeys` shall control which disclosures are open, `defaultExpandedKeys` start them, and `onExpandedChange` receive the requested set of keys (a `Set<Key>`) after each toggle. A disclosure's own `isExpanded` and `defaultExpanded` give way to the group's keys.
 
 Implementation: `src/components/disclosure/disclosure.tsx`
 Verification: `src/components/disclosure/disclosure.test.tsx`, `e2e/disclosure.spec.ts`
@@ -110,7 +110,7 @@ Verification: `src/components/disclosure/disclosure.test.tsx`, `e2e/disclosure.s
 
 ### UIC-DISCLOSURE-4.3 - Find in page
 
-When the browser's find in page matches text in a collapsed panel, the disclosure shall expand (React Aria's `beforematch` handling of `hidden="until-found"`), through the group's keys inside a group.
+When the browser's find in page matches text in a collapsed panel, the disclosure shall expand (the `beforematch` event of `hidden="until-found"`), through the group's keys inside a group.
 
 Implementation: `src/components/disclosure/disclosure.tsx`
 Verification: `src/components/disclosure/disclosure.test.tsx`, `e2e/disclosure.spec.ts`

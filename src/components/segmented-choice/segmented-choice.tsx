@@ -1,12 +1,9 @@
-import type { ReactElement } from 'react';
-import {
-  SelectionIndicator,
-  ToggleButton,
-  ToggleButtonGroup,
-  type ToggleButtonGroupProps as AriaToggleButtonGroupProps,
-} from '../../primitives/index.js';
+import type { ReactElement, Ref } from 'react';
+import { SelectionIndicator, ToggleButton, ToggleButtonGroup } from '../../primitives/index.js';
+import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, NativeProps, Size } from '../../core/props.js';
+import type { BaseProps, NativeProps, Orientation, Size } from '../../core/props.js';
+import type { ElementRender } from '../../utils/render-element.js';
 import { Icon, toIconProps, type IconSource } from '../icon/icon.js';
 import { Tooltip } from '../tooltip/tooltip.js';
 import {
@@ -31,21 +28,19 @@ export interface SegmentedChoiceOption {
   isDisabled?: boolean | undefined;
 }
 
+/** The states a segmented choice passes to `render` with its root's props. */
+export interface SegmentedChoiceRenderState {
+  /** How the segments are laid out. */
+  orientation: Orientation;
+  /** The whole group is disabled. */
+  isDisabled: boolean;
+}
+
 export interface SegmentedChoiceProps<M extends SegmentedChoiceSelectionMode = 'single'>
-  extends
-    Omit<
-      AriaToggleButtonGroupProps,
-      | 'className'
-      | 'style'
-      | 'children'
-      | 'selectionMode'
-      | 'disallowEmptySelection'
-      | 'selectedKeys'
-      | 'defaultSelectedKeys'
-      | 'onSelectionChange'
-    >,
-    Pick<NativeProps<'div'>, 'ref'>,
-    BaseProps {
+  extends BaseProps, AriaLabellingProps {
+  /** The group element. */
+  ref?: Ref<HTMLDivElement> | undefined;
+  /** The segments, in order. */
   options: readonly SegmentedChoiceOption[];
   /** `single` (the default) picks one value; `multiple` presses any number of segments. */
   selectionMode?: M | undefined;
@@ -63,6 +58,10 @@ export interface SegmentedChoiceProps<M extends SegmentedChoiceSelectionMode = '
   isReadOnly?: boolean | undefined;
   /** Marks the group invalid. */
   isInvalid?: boolean | undefined;
+  /** Disables every segment. */
+  isDisabled?: boolean | undefined;
+  /** Lays the segments out in a row or a column. Defaults to `horizontal`. */
+  orientation?: Orientation | undefined;
   /** Segment block size. Defaults to `md`. */
   size?: SegmentedChoiceSize | undefined;
   /** How segments share the width. Defaults to `equal`. */
@@ -71,6 +70,8 @@ export interface SegmentedChoiceProps<M extends SegmentedChoiceSelectionMode = '
   iconOnly?: boolean | undefined;
   /** Submits the value with a form under this name, one hidden input per selected value. */
   name?: string | undefined;
+  /** Replaces the root `<div>` with the caller's own, given its props and the group's state. */
+  render?: ElementRender<'div', SegmentedChoiceRenderState> | undefined;
 }
 
 interface SegmentProps {
@@ -81,11 +82,11 @@ interface SegmentProps {
 
 const hooks = createHooks('segmented-choice', ['segment', 'indicator', 'icon', 'label']);
 
-/** `aria-readonly` and `aria-invalid` on the group, which React Aria does not set itself. */
+/** `aria-readonly` and `aria-invalid` on the group, which the building block does not set itself. */
 function renderGroupState(
   { isReadOnly, isInvalid }: { isReadOnly: boolean; isInvalid: boolean },
-  render: AriaToggleButtonGroupProps['render'],
-): Pick<AriaToggleButtonGroupProps, 'render'> {
+  render: SegmentedChoiceProps['render'],
+): Pick<SegmentedChoiceProps, 'render'> {
   if (!isReadOnly && !isInvalid) return render ? { render } : {};
   return {
     render: (props, state) => {

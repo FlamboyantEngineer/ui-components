@@ -4,12 +4,10 @@ import {
   Breadcrumbs as AriaBreadcrumbs,
   Link as AriaLink,
   useLocale,
-  type BreadcrumbsProps as AriaBreadcrumbsProps,
-  type Key,
   type LinkProps as AriaLinkProps,
 } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, NativeProps, Size } from '../../core/props.js';
+import type { BaseProps, Key, NativeProps, Size } from '../../core/props.js';
 import { UiLink, useUiStrings } from '../../core/provider.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
@@ -43,16 +41,15 @@ export interface BreadcrumbItem {
   menu?: readonly MenuEntry[] | undefined;
 }
 
-// The root is a `nav` around React Aria's list, so only the props React Aria handles on the list
-// itself are taken from it; the others belong to the `nav`.
-export interface BreadcrumbProps
-  extends
-    Pick<
-      AriaBreadcrumbsProps<BreadcrumbItem>,
-      'isDisabled' | 'onAction' | 'aria-label' | 'aria-labelledby'
-    >,
-    Pick<NativeProps<'nav'>, 'ref' | 'hidden'>,
-    BaseProps {
+export interface BreadcrumbProps extends BaseProps, Pick<NativeProps<'nav'>, 'ref' | 'hidden'> {
+  /** Names the trail's landmark. */
+  'aria-label'?: string | undefined;
+  /** Names the trail's landmark by another element. */
+  'aria-labelledby'?: string | undefined;
+  /** Disables every crumb and menu. */
+  isDisabled?: boolean | undefined;
+  /** Receives the `id` (or index) of a crumb the reader activates, or one chosen from a menu. */
+  onAction?: ((key: Key) => void) | undefined;
   /** The trail, from the outermost container to the current page (the last item). */
   items: readonly BreadcrumbItem[];
   /** Type scale. Defaults to `md`. */

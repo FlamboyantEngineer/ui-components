@@ -17,7 +17,9 @@ const LEAK =
 const args = process.argv.slice(2);
 const dirIndex = args.indexOf('--dir');
 const dir = dirIndex === -1 ? join(root, 'dist') : resolve(args[dirIndex + 1]);
-const components = args.filter((arg, index) => !arg.startsWith('--') && index !== dirIndex + 1);
+const components = args.filter(
+  (arg, index) => !arg.startsWith('--') && (dirIndex === -1 || index !== dirIndex + 1),
+);
 
 function walk(path) {
   return readdirSync(path).flatMap((name) => {

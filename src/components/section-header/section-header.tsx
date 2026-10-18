@@ -4,7 +4,6 @@ import {
   Disclosure,
   DisclosurePanel,
   DisclosureStateContext,
-  type DisclosureProps,
 } from '../../primitives/index.js';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
@@ -28,17 +27,19 @@ export interface SectionHeaderProps extends BaseProps {
   headingLevel?: HeadingLevel | undefined;
 }
 
-export interface SectionProps
-  extends
-    SectionHeaderProps,
-    LayoutContainmentProps,
-    Pick<DisclosureProps, 'isExpanded' | 'defaultExpanded' | 'onExpandedChange'> {
+export interface SectionProps extends SectionHeaderProps, LayoutContainmentProps {
   /** The section's content, after its header. */
   children?: ReactNode;
   /** Gap between the header and the content. Defaults to `md`. */
   space?: LayoutSpace | undefined;
-  /** The title toggles the content (React Aria `Disclosure`). Expanded by default. */
+  /** The title toggles the content. Expanded by default. */
   collapsible?: boolean | undefined;
+  /** Whether a collapsible section's content shows (controlled). */
+  isExpanded?: boolean | undefined;
+  /** Whether a collapsible section's content shows at first. Defaults to `true`. */
+  defaultExpanded?: boolean | undefined;
+  /** Receives each requested expanded state of a collapsible section. */
+  onExpandedChange?: ((isExpanded: boolean) => void) | undefined;
 }
 
 type HeaderContentProps = Pick<SectionHeaderProps, 'title' | 'description' | 'actions'> & {
@@ -88,7 +89,7 @@ function SectionChevron() {
 
 /**
  * A section whose title is a disclosure trigger: the section stays a `Stack` named by its heading,
- * and its content collapses in a React Aria `DisclosurePanel`.
+ * and its content collapses in a disclosure panel.
  */
 function CollapsibleSection({
   title,

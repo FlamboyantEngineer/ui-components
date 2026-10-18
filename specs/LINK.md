@@ -6,7 +6,7 @@
 
 ### UIC-LINK-1.1 - Element
 
-`Link` shall render React Aria's `Link`: an `<a>` with its `href` and children, drawn through the provider's link renderer ([UIC-PROVIDER-5.1](PROVIDER.md#uic-provider-51---link-renderer)) so a host router's link component renders it. The `ref` reaches the element.
+`Link` shall render an `<a>` with its `href` and children, drawn through the provider's link renderer ([UIC-PROVIDER-5.1](PROVIDER.md#uic-provider-51---link-renderer)) so a host router's link component renders it. The `ref` reaches the element.
 
 Implementation: `src/components/link/link.tsx`
 Verification: `src/components/link/link.test.tsx`, `e2e/link.spec.ts`
@@ -34,14 +34,14 @@ Verification: `src/components/link/link.test.tsx`, `e2e/link.spec.ts`
 
 ### UIC-LINK-1.5 - Hooks and caller attributes
 
-`Link` shall carry the hooks below, append the caller's `className`, forward `id`, caller `data-*` attributes and React Aria's link props (`target`, `rel`, `download`, `ping`, `referrerPolicy`, `routerOptions`, press, hover and focus handlers), and keep its own hook values over caller attributes of the same name.
+`Link` shall carry the hooks below, append the caller's `className`, forward `id`, caller `data-*` attributes, the ARIA labelling attributes and its link props (`target`, `rel`, `download`, `routerOptions`, and the press, hover and focus handlers with the library's event types), and keep its own hook values over caller attributes of the same name.
 
 Implementation: `src/components/link/link.tsx`
 Verification: `src/components/link/link.test.tsx`
 
 ### UIC-LINK-1.6 - Element swapping
 
-React Aria's `render` shall pass through ([COMPOSITION.md](COMPOSITION.md#uic-composition-11---react-aria-components)) in place of the provider's link renderer: it receives the element's props with the hook classes and data attributes, and an `href` when the link navigates.
+`render(props, state)`, typed `ElementRender<'a', LinkRenderState>`, shall replace the provider's link renderer ([COMPOSITION.md](COMPOSITION.md#uic-composition-11---components-on-building-blocks)): it receives the element's props with the hook classes and data attributes, and an `href` when the link navigates, and a `LinkRenderState` (`isCurrent`, `isHovered`, `isPressed`, `isFocused`, `isFocusVisible`, `isDisabled`).
 
 Implementation: `src/components/link/link.tsx`
 Verification: `src/components/link/link.test.tsx`
@@ -94,7 +94,7 @@ Verification: `src/components/link/link.test.tsx`, `e2e/link.spec.ts`
 
 ### UIC-LINK-3.3 - States
 
-A link shall publish React Aria's states: `data-hovered`, `data-pressed`, `data-focused`, `data-focus-visible`, `data-disabled`, and `data-current` while it has `aria-current` (the current page in a list of links).
+A link shall publish its states: `data-hovered`, `data-pressed`, `data-focused`, `data-focus-visible`, `data-disabled`, and `data-current` while it has `aria-current` (the current page in a list of links).
 
 Implementation: `src/components/link/link.tsx`
 Verification: `src/components/link/link.test.tsx`, `e2e/link.spec.ts`

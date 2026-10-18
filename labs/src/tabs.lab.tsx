@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Key } from '../../src/primitives/index.js';
+import type { Key } from '../../src/core/props.js';
 import { Tab, TabList, TabPanel, Tabs, type TabListProps } from '../../src/components/tabs/tabs.js';
 import { UiProvider } from '../../src/core/provider.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
@@ -90,7 +90,7 @@ function LinkTabs() {
   );
 }
 
-function CityTabs({ label, ...list }: { label: string } & Partial<TabListProps<object>>) {
+function CityTabs({ label, ...list }: { label: string } & Partial<TabListProps>) {
   return (
     <Tabs>
       <TabList aria-label={label} {...list}>

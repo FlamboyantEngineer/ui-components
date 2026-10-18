@@ -71,7 +71,7 @@ Verification: `src/components/action-row/action-row.test.tsx`
 
 ### UIC-ACTION-ROW-2.4 - Toolbar
 
-With `toolbar` the actions slot shall be a React Aria `Toolbar`: `role="toolbar"` named by the row's `aria-label` or `aria-labelledby`, with React Aria's `data-orientation`. Tab enters and leaves it as one stop, Arrow Left and Arrow Right move focus between the actions (mirrored right to left), and focus returning to it goes back to the action that last had it. Without `toolbar` each action is its own tab stop and the row takes no name.
+With `toolbar` the actions slot shall be a React Aria `Toolbar`: `role="toolbar"` named by the row's `aria-label` or `aria-labelledby`, with `data-orientation`. Tab enters and leaves it as one stop, Arrow Left and Arrow Right move focus between the actions (mirrored right to left), and focus returning to it goes back to the action that last had it. Without `toolbar` each action is its own tab stop and the row takes no name.
 
 Implementation: `src/components/action-row/action-row.tsx`, `src/components/action-row/action-row-actions.tsx`
 Verification: `src/components/action-row/action-row.test.tsx`, `e2e/action-row.spec.ts`

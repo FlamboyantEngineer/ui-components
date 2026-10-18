@@ -1,10 +1,6 @@
 import type { ReactNode, Ref } from 'react';
-import {
-  Label,
-  ProgressBar as AriaProgressBar,
-  type ProgressBarProps as AriaProgressBarProps,
-  type ProgressBarRenderProps,
-} from '../../primitives/index.js';
+import { Label, ProgressBar as AriaProgressBar } from '../../primitives/index.js';
+import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks, type ComponentHooks } from '../../core/hooks.js';
 import type { BaseProps, Size, Tone } from '../../core/props.js';
 import { clamp } from '../../utils/clamp.js';
@@ -14,8 +10,23 @@ export type ProgressBarSize = Extract<Size, 'sm' | 'md' | 'lg'>;
 /** The work's status: `neutral` while it runs normally, else how it went or is going. */
 export type ProgressBarTone = Extract<Tone, 'neutral' | 'success' | 'warning' | 'danger'>;
 
-export interface ProgressBarProps
-  extends Omit<AriaProgressBarProps, 'className' | 'style' | 'children' | 'render'>, BaseProps {
+/** The range and value text a bounded indicator shares with the progress bar and the meter. */
+export interface ProgressRangeProps {
+  /** The current value. Defaults to the minimum. */
+  value?: number | undefined;
+  /** The start of the range. Defaults to 0. */
+  minValue?: number | undefined;
+  /** The end of the range. Defaults to 100. */
+  maxValue?: number | undefined;
+  /** Replaces the formatted value text, visibly and as `aria-valuetext`. */
+  valueLabel?: ReactNode;
+  /** How the value text is formatted. Defaults to a locale-formatted percentage. */
+  formatOptions?: Intl.NumberFormatOptions | undefined;
+}
+
+export interface ProgressBarProps extends BaseProps, AriaLabellingProps, ProgressRangeProps {
+  /** Work is under way but unmeasured: no value or value text. */
+  isIndeterminate?: boolean | undefined;
   /** Visible label. Without one, name the indicator with `aria-label` or `aria-labelledby`. */
   label?: ReactNode;
   /** Show the value text beside the bar. Defaults to `true`; an indeterminate bar never shows it. */
@@ -37,12 +48,21 @@ export interface SpinnerProps extends BaseProps {
   label?: string | undefined;
 }
 
-/** A progress indicator's root: React Aria's progress bar, its bounded range and the indicator's hooks. */
+/** What a progress indicator draws from: the filled share of the range and the value text. */
+export interface ProgressValues {
+  /** The value's percentage of the range; `undefined` while indeterminate. */
+  percentage: number | undefined;
+  /** The formatted value, or `valueLabel`. */
+  valueText: string | undefined;
+  isIndeterminate: boolean;
+}
+
+/** A progress indicator's root: a progress bar, its bounded range and the indicator's hooks. */
 export interface ProgressRootProps extends Omit<ProgressBarProps, 'label' | 'showValueLabel'> {
   /** The hooks of the indicator that renders the root. */
   hooks: ComponentHooks<string>;
-  /** Draws the indicator from React Aria's render values. */
-  children: (values: ProgressBarRenderProps) => ReactNode;
+  /** Draws the indicator from its values. */
+  children: (values: ProgressValues) => ReactNode;
 }
 
 /** A progress indicator's visible label and value text, in its `label` and `value` slots. */
@@ -50,8 +70,8 @@ export interface ProgressTextProps extends Pick<ProgressBarProps, 'label'> {
   hooks: ComponentHooks<'label' | 'value'>;
   /** Show the value text; an indeterminate indicator never shows it. */
   showValueLabel: boolean;
-  /** React Aria's render values. */
-  values: ProgressBarRenderProps;
+  /** The indicator's values. */
+  values: ProgressValues;
 }
 
 const hooks = createHooks('progress-bar', ['label', 'value', 'track', 'fill']);

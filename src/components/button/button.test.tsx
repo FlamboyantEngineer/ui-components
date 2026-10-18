@@ -38,7 +38,7 @@ describe('Button', () => {
     expect(onSubmit).toHaveBeenCalledTimes(1);
   });
 
-  it('UIC-BUTTON-1.1 triggers a React Aria overlay', async () => {
+  it('UIC-BUTTON-1.1 triggers an overlay', async () => {
     render(
       <DialogTrigger>
         <Button>Details</Button>
@@ -331,7 +331,7 @@ describe('Button', () => {
         shortcut="Ctrl+B"
         onPress={onPress}
         render={(props, state) => {
-          states.push(state.isHovered);
+          states.push(state.isHovered, state.isPressed, state.isFocusVisible, state.isPending);
           return <button {...mergeProps(props, { 'data-testid': 'caller' })} />;
         }}
       >
@@ -430,6 +430,56 @@ describe('Button', () => {
     expect(button).toHaveAttribute('aria-pressed', 'false');
     expect(onChange).toHaveBeenLastCalledWith(false);
     expectHooksMatchSpec(document.body, 'BUTTON');
+  });
+
+  it('UIC-BUTTON-1.10 reports press, hover, focus and key handlers and takes focus options', async () => {
+    const events: string[] = [];
+    const log = (name: string) => () => events.push(name);
+    render(
+      <>
+        <input aria-label="Query" />
+        <Button
+          autoFocus
+          onPressStart={log('press start')}
+          onPressEnd={log('press end')}
+          onPressUp={log('press up')}
+          onPressChange={(pressed) => events.push(`pressed ${pressed}`)}
+          onHoverStart={log('hover start')}
+          onHoverEnd={log('hover end')}
+          onFocusChange={(focused) => events.push(`focused ${focused}`)}
+          onKeyDown={log('key down')}
+        >
+          Report
+        </Button>
+        <Button excludeFromTabOrder preventFocusOnPress>
+          Skipped
+        </Button>
+        <Button hidden>Hidden</Button>
+      </>,
+    );
+    const report = screen.getByRole('button', { name: 'Report' });
+    expect(report).toHaveFocus();
+    await userEvent.keyboard('{Enter}');
+    expect(events).toEqual(
+      expect.arrayContaining([
+        'focused true',
+        'key down',
+        'press start',
+        'pressed true',
+        'press up',
+        'press end',
+      ]),
+    );
+    await userEvent.hover(report);
+    await userEvent.unhover(report);
+    expect(events).toEqual(expect.arrayContaining(['hover start', 'hover end']));
+    const skipped = screen.getByRole('button', { name: 'Skipped' });
+    expect(skipped).toHaveAttribute('tabindex', '-1');
+    const input = screen.getByRole('textbox', { name: 'Query' });
+    input.focus();
+    await userEvent.click(skipped);
+    expect(input).toHaveFocus();
+    expect(screen.getByText('Hidden').closest('button')).toHaveAttribute('hidden');
   });
 
   it('UIC-BUTTON-2.6 leaves a controlled toggle to its caller', async () => {

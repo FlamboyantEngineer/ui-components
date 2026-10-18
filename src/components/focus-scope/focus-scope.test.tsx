@@ -1,9 +1,14 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createRef, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import { FocusScope, useFocusManager, type FocusScopeProps } from './focus-scope.js';
+import {
+  FocusScope,
+  useFocusManager,
+  type FocusManager,
+  type FocusScopeProps,
+} from './focus-scope.js';
 
 /** A page with buttons around a scope holding two fields and a button. */
 function Page(props: Omit<FocusScopeProps, 'children'>) {
@@ -261,5 +266,28 @@ describe('FocusScope', () => {
     expect(focused('Plum')).toHaveFocus();
     await user.keyboard('{Home}');
     expect(focused('Apple')).toHaveFocus();
+  });
+
+  it('UIC-FOCUS-SCOPE-3.1 returns the focused element, and no manager outside a scope', () => {
+    const managers: (FocusManager | undefined)[] = [];
+    function Probe() {
+      managers.push(useFocusManager());
+      return <button type="button">Probe</button>;
+    }
+    render(
+      <>
+        <Probe />
+        <FocusScope>
+          <Probe />
+        </FocusScope>
+      </>,
+    );
+    expect(managers[0]).toBeUndefined();
+    let moved: Element | null | undefined;
+    act(() => {
+      moved = managers.at(-1)?.focusFirst({ tabbable: true });
+    });
+    expect(moved).toBe(screen.getAllByRole('button', { name: 'Probe' })[1]);
+    expect(moved).toHaveFocus();
   });
 });

@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { createRef, type JSX } from 'react';
+import { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
@@ -66,11 +66,19 @@ describe('Link', () => {
 
   it('UIC-LINK-1.5 appends the caller class and keeps its hooks over caller attributes', () => {
     const { container } = render(
-      <Link href="/a" className="caller" id="apples" data-variant="caller" data-owner="kitchen">
+      <Link
+        href="/a"
+        download="apples.txt"
+        className="caller"
+        id="apples"
+        data-variant="caller"
+        data-owner="kitchen"
+      >
         Apples
       </Link>,
     );
     const link = screen.getByRole('link');
+    expect(link).toHaveAttribute('download', 'apples.txt');
     expect(link).toHaveClass('ui-link', 'caller');
     expect(link).toHaveAttribute('id', 'apples');
     expect(link).toHaveAttribute('data-variant', 'primary');
@@ -78,27 +86,33 @@ describe('Link', () => {
     expectHooksMatchSpec(container, 'LINK', { callerAttributes: ['data-owner'] });
   });
 
-  it('UIC-LINK-1.6 passes React Aria render through with the hooks', () => {
+  it('UIC-LINK-1.6 renders through the caller element with the hooks and its state', () => {
     const { container } = render(
       <Link
         href="/a"
         variant="secondary"
-        render={(props) => <a {...(props as JSX.IntrinsicElements['a'])} data-swapped="true" />}
+        aria-current="page"
+        render={(props, state) => (
+          <a {...props} data-swapped="true" data-is-current={String(state.isCurrent)} />
+        )}
       >
         Apples
       </Link>,
     );
     const link = screen.getByRole('link', { name: 'Apples' });
     expect(link).toHaveAttribute('data-swapped', 'true');
+    expect(link).toHaveAttribute('data-is-current', 'true');
     expect(link).toHaveAttribute('data-variant', 'secondary');
-    expectHooksMatchSpec(container, 'LINK', { callerAttributes: ['data-swapped'] });
+    expectHooksMatchSpec(container, 'LINK', {
+      callerAttributes: ['data-swapped', 'data-is-current'],
+    });
   });
 
   it('UIC-LINK-2.1 navigates through the provider navigate with router options', async () => {
     const navigate = vi.fn();
     render(
       <UiProvider navigate={navigate} useHref={(href) => `/app${href}`}>
-        <Link href="/recipes/tart" routerOptions={{ replace: true } as never}>
+        <Link href="/recipes/tart" routerOptions={{ replace: true }}>
           Lemon tart
         </Link>
       </UiProvider>,

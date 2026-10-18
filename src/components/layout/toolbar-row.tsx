@@ -1,10 +1,6 @@
 import { createContext, useContext, type ReactNode } from 'react';
-import {
-  Group,
-  Toolbar,
-  type GroupProps,
-  type SeparatorProps as AriaSeparatorProps,
-} from '../../primitives/index.js';
+import { Group, Toolbar } from '../../primitives/index.js';
+import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, NativeProps, Orientation } from '../../core/props.js';
 import { Separator } from '../separator/separator.js';
@@ -35,17 +31,12 @@ export interface ToolbarRowProps
   wrap?: LayoutWrap | undefined;
 }
 
-export interface ToolbarRowGroupProps
-  extends Omit<GroupProps, 'className' | 'style' | 'children' | 'role'>, BaseProps {
+export interface ToolbarRowGroupProps extends BaseProps, AriaLabellingProps {
   /** The group's controls. Name the group with `aria-label` or `aria-labelledby`. */
   children?: ReactNode;
 }
 
-export type ToolbarRowSeparatorProps = Omit<
-  AriaSeparatorProps,
-  'className' | 'style' | 'orientation' | 'elementType'
-> &
-  BaseProps;
+export type ToolbarRowSeparatorProps = BaseProps;
 
 const hooks = createHooks('toolbar-row', ['group', 'separator']);
 
@@ -88,7 +79,7 @@ export function ToolbarRow({
 }
 
 /**
- * A named group of related controls inside a `ToolbarRow` (React Aria `Group`), laid out along the
+ * A named group of related controls inside a `ToolbarRow` (`role="group"`), laid out along the
  * row. In a toolbar, arrow keys still move through every control of the row.
  */
 export function ToolbarRowGroup({ children, className, ...rest }: ToolbarRowGroupProps) {

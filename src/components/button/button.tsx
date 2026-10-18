@@ -168,3 +168,4 @@ export function Button({
 }
 
 export { toAriaButtonProps, toAriaLinkProps, useButtonSelection } from './button-state.js';
+export type { ButtonRenderState } from './button-state.js';

@@ -1,7 +1,8 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
-import { I18nProvider, type Key } from '../../primitives/index.js';
+import { I18nProvider } from '../../primitives/index.js';
+import type { Key } from '../../core/props.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { HeadingLevelContext } from '../section-header/section-header.js';
@@ -195,13 +196,15 @@ describe('Disclosure', () => {
         data-testid="notes"
         data-indicator-position="caller"
         ref={ref}
-        render={(props) => <section {...(props as object)} />}
+        defaultExpanded
+        render={(props, state) => <section {...props} aria-busy={!state.isExpanded} />}
       >
         Plain text
       </Disclosure>,
     );
     const root = screen.getByTestId('notes');
     expect(root.tagName).toBe('SECTION');
+    expect(root).toHaveAttribute('aria-busy', 'false');
     expect(root).toHaveClass('ui-disclosure', 'caller');
     expect(root).toHaveAttribute('data-indicator-position', 'start');
     expect(ref.current).toBe(root);
@@ -249,7 +252,14 @@ describe('Composed disclosures', () => {
             Edit
           </button>
         </DisclosureHeader>
-        <DisclosurePanel role="region">12 Harbour Road</DisclosurePanel>
+        <DisclosurePanel
+          role="region"
+          render={(props, state) => (
+            <div {...props} aria-busy={state.isFocusVisibleWithin ? undefined : false} />
+          )}
+        >
+          12 Harbour Road
+        </DisclosurePanel>
       </Disclosure>,
     );
     const header = container.querySelector('.ui-disclosure__header') as HTMLElement;
@@ -261,9 +271,9 @@ describe('Composed disclosures', () => {
     expect(onExpandedChange).not.toHaveBeenCalled();
     await user.click(trigger);
     expect(onExpandedChange).toHaveBeenCalledWith(true);
-    expect(screen.getByRole('region', { name: 'Delivery address' })).toHaveTextContent(
-      '12 Harbour Road',
-    );
+    const region = screen.getByRole('region', { name: 'Delivery address' });
+    expect(region).toHaveTextContent('12 Harbour Road');
+    expect(region).toHaveAttribute('aria-busy', 'false');
     expectHooksMatchSpec(container, 'DISCLOSURE', { slots: ['header', 'heading', 'panel'] });
   });
 });
@@ -343,11 +353,12 @@ describe('DisclosureGroup', () => {
         ref={ref}
         id="fruits"
         data-owner="garden"
-        render={(props) => <section {...(props as object)} />}
+        render={(props, state) => <section {...props} aria-disabled={state.isDisabled} />}
       />,
     );
     const group = container.firstElementChild as HTMLElement;
     expect(group.tagName).toBe('SECTION');
+    expect(group).toHaveAttribute('aria-disabled', 'true');
     expect(ref.current).toBe(group);
     expect(group).toHaveClass('ui-disclosure-group', 'caller');
     expect(group).toHaveAttribute('id', 'fruits');

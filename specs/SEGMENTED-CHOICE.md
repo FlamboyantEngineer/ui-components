@@ -27,7 +27,7 @@ Verification: `src/components/segmented-choice/segmented-choice.test.tsx`, `e2e/
 
 ### UIC-SEGMENTED-CHOICE-1.4 - Orientation
 
-`orientation` (`horizontal` by default, or `vertical`) shall lay the segments out in a row or a column and publish React Aria's `data-orientation` on the root.
+`orientation` (`horizontal` by default, or `vertical`) shall lay the segments out in a row or a column and publish `data-orientation` on the root.
 
 Implementation: `src/components/segmented-choice/segmented-choice.tsx`, `labs/reference/segmented-choice.css`
 Verification: `src/components/segmented-choice/segmented-choice.test.tsx`, `e2e/segmented-choice.spec.ts`
@@ -41,7 +41,7 @@ Verification: `src/components/segmented-choice/segmented-choice.test.tsx`
 
 ### UIC-SEGMENTED-CHOICE-1.6 - Selection indicator
 
-Each segment shall hold React Aria's selection indicator in the `ui-segmented-choice__indicator` slot, rendered while the segment is selected. When the selection moves, React Aria animates the indicator from the previous segment's position through any `translate` or size transition the stylesheet declares, so one thumb appears to slide between segments, and publishes `data-entering` and `data-exiting` on it.
+Each segment shall hold a selection indicator in the `ui-segmented-choice__indicator` slot, rendered while the segment is selected. When the selection moves, the indicator animates from the previous segment's position through any `translate` or size transition the stylesheet declares, so one thumb appears to slide between segments, and publishes `data-entering` and `data-exiting` on it.
 
 Implementation: `src/components/segmented-choice/segmented-choice.tsx`, `labs/reference/segmented-choice.css`
 Verification: `src/components/segmented-choice/segmented-choice.test.tsx`, `e2e/segmented-choice.spec.ts`
@@ -55,7 +55,7 @@ Verification: `src/components/segmented-choice/segmented-choice.test.tsx`, `e2e/
 
 ### UIC-SEGMENTED-CHOICE-1.8 - Swapping the root
 
-`render(props, state)` shall replace the group's `<div>` as React Aria's `render` does ([COMPOSITION.md](COMPOSITION.md)), with the hook classes, data attributes, the `aria-readonly` and `aria-invalid` the component adds, and the ref.
+`render(props, state)`, typed `ElementRender<'div', SegmentedChoiceRenderState>`, shall replace the group's `<div>` ([COMPOSITION.md](COMPOSITION.md)): the caller's element receives the hook classes, data attributes, the `aria-readonly` and `aria-invalid` the component adds, and the ref, and `state` holds the group's `orientation` and `isDisabled`.
 
 Implementation: `src/components/segmented-choice/segmented-choice.tsx`
 Verification: `src/components/segmented-choice/segmented-choice.test.tsx`
@@ -101,7 +101,7 @@ Verification: `src/components/segmented-choice/segmented-choice.test.tsx`
 
 ### UIC-SEGMENTED-CHOICE-3.1 - Disabled
 
-`isDisabled` shall disable every segment natively and publish React Aria's `data-disabled` on the root and the segments. An option's `isDisabled` disables only its segment, which arrow keys then skip.
+`isDisabled` shall disable every segment natively and publish `data-disabled` on the root and the segments. An option's `isDisabled` disables only its segment, which arrow keys then skip.
 
 Implementation: `src/components/segmented-choice/segmented-choice.tsx`
 Verification: `src/components/segmented-choice/segmented-choice.test.tsx`, `e2e/segmented-choice.spec.ts`
@@ -122,7 +122,7 @@ Verification: `src/components/segmented-choice/segmented-choice.test.tsx`
 
 ### UIC-SEGMENTED-CHOICE-3.4 - Interaction states
 
-Segments shall publish React Aria's states: `data-selected`, `data-hovered`, `data-pressed`, `data-focused` and `data-focus-visible` (keyboard focus only).
+Segments shall publish their states: `data-selected`, `data-hovered`, `data-pressed`, `data-focused` and `data-focus-visible` (keyboard focus only).
 
 Implementation: `src/components/segmented-choice/segmented-choice.tsx`
 Verification: `src/components/segmented-choice/segmented-choice.test.tsx`, `e2e/segmented-choice.spec.ts`

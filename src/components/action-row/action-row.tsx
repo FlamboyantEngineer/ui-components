@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { ToolbarProps as AriaToolbarProps } from '../../primitives/index.js';
+import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -13,7 +13,7 @@ import { orderActions, type ActionRowAction } from './action-verbs.js';
 export type ActionRowOverflow = 'visible' | 'menu';
 
 export interface ActionRowProps
-  extends Pick<AriaToolbarProps, 'aria-label' | 'aria-labelledby'>, BaseProps {
+  extends Pick<AriaLabellingProps, 'aria-label' | 'aria-labelledby'>, BaseProps {
   /** The actions, drawn as icon buttons: custom actions in their order, then the verbs in theirs. */
   actions: readonly ActionRowAction[];
   /** Content at the start of the row, before the actions (a title, a filter, a status line). */
@@ -21,7 +21,7 @@ export interface ActionRowProps
   /** Size of every action button. Defaults to `md`. */
   size?: ButtonSize | undefined;
   /**
-   * Draws the actions as one React Aria toolbar, named by `aria-label` or `aria-labelledby`: one tab
+   * Draws the actions as one toolbar, named by `aria-label` or `aria-labelledby`: one tab
    * stop, with the arrow keys moving between the actions.
    */
   toolbar?: boolean | undefined;

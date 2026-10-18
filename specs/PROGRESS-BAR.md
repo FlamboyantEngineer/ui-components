@@ -27,7 +27,7 @@ Verification: `src/components/progress-bar/progress-bar.test.tsx`, `e2e/progress
 
 ### UIC-PROGRESS-BAR-1.4 - Value text
 
-The value text shall default to React Aria's locale-formatted percentage (`formatOptions` changes the format). `valueLabel` replaces it, both visibly and as `aria-valuetext`, for counts such as `2/3` or explanations such as `About a minute left`.
+The value text shall default to a locale-formatted percentage (`formatOptions` changes the format). `valueLabel` replaces it, both visibly and as `aria-valuetext`, for counts such as `2/3` or explanations such as `About a minute left`.
 
 Implementation: `src/components/progress-bar/progress-bar.tsx`
 Verification: `src/components/progress-bar/progress-bar.test.tsx`
@@ -71,7 +71,7 @@ Verification: `src/components/progress-bar/progress-bar.test.tsx`, `e2e/progress
 
 ### UIC-PROGRESS-BAR-2.2 - Standalone spinner
 
-A `Spinner` given `label` shall stand alone: the same `ui-spinner` `<span>`, with its size, becomes React Aria's indeterminate progress bar (`role="progressbar"`, no `aria-valuenow`) named by the label, and is no longer hidden from assistive technology. Use it where no surrounding text states the busy status; a spinner that leads such a line stays decorative.
+A `Spinner` given `label` shall stand alone: the same `ui-spinner` `<span>`, with its size, becomes an indeterminate progress bar (`role="progressbar"`, no `aria-valuenow`) named by the label, and is no longer hidden from assistive technology. Use it where no surrounding text states the busy status; a spinner that leads such a line stays decorative.
 
 Implementation: `src/components/progress-bar/progress-bar.tsx`
 Verification: `src/components/progress-bar/progress-bar.test.tsx`, `e2e/progress-bar.spec.ts`

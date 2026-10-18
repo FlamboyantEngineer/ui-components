@@ -77,11 +77,11 @@ describe('Separator', () => {
       <Separator
         label="or"
         variant="dashed"
-        render={(props) => <div {...props} data-swapped="true" />}
+        render={(props, state) => <div {...props} data-swapped={state.orientation} />}
       />,
     );
     const rule = screen.getByRole('separator', { name: 'or' });
-    expect(rule).toHaveAttribute('data-swapped', 'true');
+    expect(rule).toHaveAttribute('data-swapped', 'horizontal');
     expect(rule).toHaveClass('ui-separator');
     expect(rule).toHaveAttribute('data-variant', 'dashed');
     expect(rule.querySelector('.ui-separator__label')).toHaveTextContent('or');
