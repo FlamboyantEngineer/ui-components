@@ -1,7 +1,7 @@
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
-import type { Key, Selection } from '../../primitives/index.js';
+import type { Key, Selection } from '../../core/props.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
@@ -263,7 +263,7 @@ describe('TagGroup', () => {
     expectHooksMatchSpec(container, 'TAG-GROUP');
   });
 
-  it('UIC-TAG-GROUP-2.4 passes React Aria selection through', async () => {
+  it('UIC-TAG-GROUP-2.4 selects tags and reports the shared selection', async () => {
     const user = userEvent.setup();
     const onSelectionChange = vi.fn((keys: Selection) => keys);
     const { container } = render(
@@ -286,5 +286,29 @@ describe('TagGroup', () => {
     ]);
     expect(tag('Pear')).toHaveAttribute('data-selection-mode', 'multiple');
     expectHooksMatchSpec(container, 'TAG-GROUP');
+  });
+
+  it('UIC-TAG-GROUP-2.4 controls the selection and can keep one tag selected', async () => {
+    const user = userEvent.setup();
+    const onSelectionChange = vi.fn();
+    render(
+      <TagGroup
+        aria-label="Basket"
+        items={fruit}
+        selectionMode="single"
+        selectedKeys={['pear']}
+        disallowEmptySelection
+        onSelectionChange={onSelectionChange}
+      >
+        {(item) => <Tag id={item.id}>{item.name}</Tag>}
+      </TagGroup>,
+    );
+    expect(tag('Pear')).toHaveAttribute('aria-selected', 'true');
+    await user.click(tag('Pear'));
+    expect(onSelectionChange).not.toHaveBeenCalled();
+    expect(tag('Pear')).toHaveAttribute('aria-selected', 'true');
+    await user.click(tag('Apple'));
+    expect([...(onSelectionChange.mock.lastCall?.[0] as Set<Key>)]).toEqual(['apple']);
+    expect(tag('Pear')).toHaveAttribute('aria-selected', 'true');
   });
 });

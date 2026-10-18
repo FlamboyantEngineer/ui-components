@@ -1,5 +1,4 @@
 import { render, screen } from '@testing-library/react';
-import { parseColor } from '../../primitives/index.js';
 import { describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
@@ -10,7 +9,7 @@ describe('ColorSwatch', () => {
     const { container } = render(
       <>
         <ColorSwatch color="#336699" />
-        <ColorSwatch color={parseColor('rgb(255, 0, 0)')} colorName="Signal red" />
+        <ColorSwatch color="rgb(255, 0, 0)" colorName="Signal red" />
         <ColorSwatch color="#00aa00" aria-label="Ripe" />
       </>,
     );

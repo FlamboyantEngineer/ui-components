@@ -179,7 +179,7 @@ Verification: `src/components/select-field/select-option.test.tsx`, `src/compone
 
 ### UIC-SELECT-FIELD-7.2 - Custom option content
 
-`renderOption(option, state)` shall draw the content of each option row instead of its icon, label and description, receiving the option and React Aria's item render state (`isSelected`, `isFocused`, `isDisabled` and the rest). The row keeps its `option` role, its check slot in a multiple select and its label as the text that type-to-select and the filter match; the trigger and the chips keep drawing the option's icon and label.
+`renderOption(option, state)` shall draw the content of each option row instead of its icon, label and description, receiving the option and the row's state (`SelectFieldOptionState`: `isSelected`, `isFocused`, `isFocusVisible`, `isHovered`, `isPressed` and `isDisabled`). The row keeps its `option` role, its check slot in a multiple select and its label as the text that type-to-select and the filter match; the trigger and the chips keep drawing the option's icon and label.
 
 Implementation: `src/components/select-field/select-option.tsx`
 Verification: `src/components/select-field/select-option.test.tsx`, `e2e/select-field.spec.ts`

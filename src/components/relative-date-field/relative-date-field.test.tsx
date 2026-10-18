@@ -58,7 +58,7 @@ describe('RelativeDateField', () => {
           label="Due"
           getNow={getNow}
           valueKind="date-time"
-          value={new Date(2026, 4, 23, 10, 25).toISOString()}
+          value="2026-05-23T10:25"
         />
       </UiProvider>,
     );
@@ -101,7 +101,7 @@ describe('RelativeDateField', () => {
     expect(onCommit).toHaveBeenLastCalledWith('2026-05-30');
   });
 
-  it('UIC-RELATIVE-DATE-FIELD-1.3 takes custom presets and commits instants for date-times', async () => {
+  it('UIC-RELATIVE-DATE-FIELD-1.3 takes custom presets and commits local date-times', async () => {
     const user = userEvent.setup();
     const onCommit = vi.fn();
     renderInLocale(
@@ -122,7 +122,7 @@ describe('RelativeDateField', () => {
       'In 2 months',
     ]);
     await user.click(screen.getByRole('option', { name: 'In 3 days' }));
-    expect(onCommit).toHaveBeenCalledWith(new Date(2026, 4, 26, 10, 30).toISOString());
+    expect(onCommit).toHaveBeenCalledWith('2026-05-26T10:30');
   });
 
   it('UIC-RELATIVE-DATE-FIELD-1.4 keeps read-only fields closed, disables disabled ones and validates', async () => {

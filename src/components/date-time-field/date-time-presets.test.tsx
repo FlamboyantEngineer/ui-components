@@ -1,4 +1,3 @@
-import { getDayOfWeek, type DateValue } from '../../primitives/index.js';
 import { act, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import type { ReactElement } from 'react';
@@ -11,7 +10,8 @@ function renderInLocale(element: ReactElement) {
   return render(<UiProvider locale="en-US">{element}</UiProvider>);
 }
 
-const isWeekend = (date: DateValue) => getDayOfWeek(date, 'en-US') % 6 === 0;
+// Day 0 is Sunday and day 6 Saturday; noon UTC keeps the date in every zone.
+const isWeekend = (date: string) => new Date(`${date}T12:00:00Z`).getUTCDay() % 6 === 0;
 
 describe('DateTimeField availability and presets', () => {
   it('UIC-DATE-TIME-FIELD-3.1 refuses unavailable days in the calendar and when typed', async () => {

@@ -1,5 +1,10 @@
 import {
+  formatIsoDate,
   now,
+  parseIsoDate,
+  parseIsoDateTime,
+  parseIsoTime,
+  toCalendarDate,
   Button as AriaButton,
   Calendar,
   DateInput,
@@ -10,7 +15,6 @@ import {
   RangeCalendar,
   TimeField,
   type DateValue,
-  type Time,
 } from '../../primitives/index.js';
 import { useMemo, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
@@ -28,12 +32,7 @@ import {
   type DateTimeFieldPreset,
 } from './date-time-calendar.js';
 import {
-  fromPickerValue,
-  fromTimeValue,
-  toPickerValue,
-  toRangeValue,
   toSingleMode,
-  toTimeValue,
   type DateBounds,
   type DateFieldValue,
   type DateRangeValue,
@@ -43,12 +42,12 @@ import {
 
 /** How the pickers edit and offer values, beyond the value itself. */
 export interface DateControlSettings extends DateValueOptions {
-  /** Shows the hours of a day in 12 or 24 (React Aria `hourCycle`). */
+  /** Shows the hours of a day in 12 or 24, whatever the locale's. */
   hourCycle?: 12 | 24 | undefined;
-  /** Leaves the time zone out of a zoned value's segments (React Aria `hideTimeZone`). */
+  /** Leaves the time zone out of a zoned value's segments. */
   hideTimeZone?: boolean | undefined;
-  /** Refuses dates in the calendar and marks typed ones invalid (React Aria). */
-  isDateUnavailable?: ((date: DateValue) => boolean) | undefined;
+  /** Refuses `YYYY-MM-DD` dates in the calendar and marks typed ones invalid. */
+  isDateUnavailable?: ((date: string) => boolean) | undefined;
   presets: readonly DateTimeFieldPreset<DateFieldValue>[];
   calendarHeading: DateTimeFieldCalendarHeading;
   /** Whether the field would take a value, so the presets it refuses are disabled. */
@@ -82,6 +81,17 @@ const hooks = createHooks('date-time-field', [
   'calendar',
 ]);
 
+/** A date or a date and time text as the value the date pickers edit, or `null`. */
+function toPickerValue(text: string | null | undefined, mode: 'date' | 'date-time', zone?: string) {
+  return mode === 'date' ? parseIsoDate(text) : parseIsoDateTime(text, zone);
+}
+
+/** The building block's unavailable-date check, asking the caller's about the calendar date. */
+function toUnavailableCheck(isDateUnavailable: DateControlSettings['isDateUnavailable']) {
+  if (!isDateUnavailable) return undefined;
+  return (date: DateValue) => isDateUnavailable(toCalendarDate(date).toString());
+}
+
 function pickerProps({ control, settings }: DatePickerControlProps) {
   return {
     ...toAriaControlProps(control),
@@ -101,7 +111,7 @@ function datePickerProps(props: DatePickerControlProps) {
     onOpenChange,
     granularity: hasTime ? (settings.granularity ?? 'minute') : ('day' as const),
     hideTimeZone: settings.hideTimeZone,
-    isDateUnavailable: settings.isDateUnavailable,
+    isDateUnavailable: toUnavailableCheck(settings.isDateUnavailable),
   };
 }
 
@@ -115,14 +125,16 @@ function usePlaceholderValue({ mode, settings }: DatePickerControlProps) {
 }
 
 function useBoundValues({ mode, bounds, settings }: DatePickerControlProps) {
-  const single = toSingleMode(mode);
+  const single = toSingleMode(mode) === 'date' ? 'date' : 'date-time';
   const { timeZone } = settings;
   const { minValue, maxValue } = bounds;
-  return useMemo(() => {
-    const read = (text: string | undefined) =>
-      toPickerValue(text, single, { timeZone }) as DateValue | null;
-    return { minValue: read(minValue), maxValue: read(maxValue) };
-  }, [single, timeZone, minValue, maxValue]);
+  return useMemo(
+    () => ({
+      minValue: toPickerValue(minValue, single, timeZone),
+      maxValue: toPickerValue(maxValue, single, timeZone),
+    }),
+    [single, timeZone, minValue, maxValue],
+  );
 }
 
 function PreviousValue({ previous }: { previous: string | null }) {
@@ -164,20 +176,17 @@ function CalendarButton() {
 /** A date, or a date and time, typed in segments or picked from a calendar. */
 export function DateControl(props: DatePickerControlProps) {
   const { state, mode, settings, onPick } = props;
-  const single = toSingleMode(mode);
+  const single = mode === 'date' ? 'date' : 'date-time';
   const text = typeof state.value === 'string' ? state.value : null;
   const { timeZone, granularity } = settings;
-  const value = useMemo(
-    () => toPickerValue(text, single, { timeZone }) as DateValue | null,
-    [text, single, timeZone],
-  );
+  const value = useMemo(() => toPickerValue(text, single, timeZone), [text, single, timeZone]);
   return (
     <DatePicker<DateValue>
       {...datePickerProps(props)}
       {...useBoundValues(props)}
       placeholderValue={usePlaceholderValue(props)}
       value={value}
-      onChange={(next) => onPick(next ? fromPickerValue(next, single, { granularity }) : null)}
+      onChange={(next) => onPick(next ? formatIsoDate(next, granularity) : null)}
     >
       <DateGroup {...props}>
         <Segments />
@@ -195,16 +204,17 @@ export function DateControl(props: DatePickerControlProps) {
 /** A range of dates, or of dates and times, typed in two segment groups or picked from a calendar. */
 export function DateRangeControl(props: DatePickerControlProps) {
   const { state, mode, settings, onPick } = props;
-  const single = toSingleMode(mode);
+  const single = mode === 'date-range' ? 'date' : 'date-time';
   const range = typeof state.value === 'object' ? state.value : null;
   const start = range?.start;
   const end = range?.end;
   const { timeZone, granularity } = settings;
-  const value = useMemo(
-    () => toRangeValue(start && end ? { start, end } : null, mode, { timeZone }),
-    [start, end, mode, timeZone],
-  );
-  const toText = (date: DateValue) => fromPickerValue(date, single, { granularity });
+  const value = useMemo(() => {
+    const first = toPickerValue(start, single, timeZone);
+    const last = toPickerValue(end, single, timeZone);
+    return first && last ? { start: first, end: last } : null;
+  }, [start, end, single, timeZone]);
+  const toText = (date: DateValue) => formatIsoDate(date, granularity);
   return (
     <DateRangePicker<DateValue>
       {...datePickerProps(props)}
@@ -240,9 +250,9 @@ export function TimeControl(props: DatePickerControlProps) {
   const { state, bounds, settings, onPick } = props;
   const granularity = settings.granularity ?? 'minute';
   const text = typeof state.value === 'string' ? state.value : null;
-  const value = useMemo(() => toTimeValue(text), [text]);
-  const minValue = useMemo(() => toTimeValue(bounds.minValue), [bounds.minValue]);
-  const maxValue = useMemo(() => toTimeValue(bounds.maxValue), [bounds.maxValue]);
+  const value = useMemo(() => parseIsoTime(text), [text]);
+  const minValue = useMemo(() => parseIsoTime(bounds.minValue), [bounds.minValue]);
+  const maxValue = useMemo(() => parseIsoTime(bounds.maxValue), [bounds.maxValue]);
   return (
     <TimeField
       {...pickerProps(props)}
@@ -250,7 +260,7 @@ export function TimeControl(props: DatePickerControlProps) {
       value={value}
       minValue={minValue}
       maxValue={maxValue}
-      onChange={(next: Time | null) => onPick(next ? fromTimeValue(next, granularity) : null)}
+      onChange={(next) => onPick(next ? formatIsoDate(next, granularity) : null)}
     >
       <div {...hooks.slot('group')} ref={props.control.ref}>
         <PreviousValue previous={props.previous} />

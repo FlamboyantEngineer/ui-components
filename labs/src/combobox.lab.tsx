@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Key } from '../../src/primitives/index.js';
+import type { Key } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
 import {
   Combobox,
@@ -49,7 +49,7 @@ function Picking() {
         label="Fruit"
         description="Type to filter, or open the list with Arrow Down."
         defaultItems={fruit}
-        onSelectionChange={setChosen}
+        onChange={setChosen}
       />
       <p>
         Chosen:{' '}
@@ -131,8 +131,8 @@ function Creatable() {
       <Combobox
         label="Destination"
         items={options}
-        selectedKey={chosen}
-        onSelectionChange={setChosen}
+        value={chosen}
+        onChange={setChosen}
         onCreateOption={(text) => {
           const id = text.toLowerCase();
           setOptions((current) => [...current, { id, label: text }]);

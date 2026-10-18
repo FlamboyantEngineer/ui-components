@@ -1,11 +1,10 @@
 import {
   DateFormatter,
   getLocalTimeZone,
-  parseDate,
+  parseIsoDate,
   useLocale,
-  type CalendarDate,
-  type SelectProps as AriaSelectProps,
 } from '../../primitives/index.js';
+import type { OpenStateProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
@@ -36,16 +35,14 @@ import {
   type RelativeDateValue,
 } from './relative-date.js';
 
-/** A `YYYY-MM-DD` date or UTC ISO instant, or a `{ start, end }` range for `date-range`. */
+/** A `YYYY-MM-DD` date or local `YYYY-MM-DDTHH:mm` date and time, or a `{ start, end }` range of dates. */
 export type RelativeDateFieldValue<K extends RelativeDateKind = 'date'> = K extends 'date-range'
   ? RelativeDateRange | null
   : string | null;
 
 export interface RelativeDateFieldProps<K extends RelativeDateKind = 'date'>
-  extends
-    FieldInputProps<RelativeDateFieldValue<K>>,
-    Pick<AriaSelectProps<object>, 'isOpen' | 'defaultOpen' | 'onOpenChange'> {
-  /** What a preset commits: a `YYYY-MM-DD` date (the default), a UTC ISO instant or a range of dates. */
+  extends FieldInputProps<RelativeDateFieldValue<K>>, OpenStateProps {
+  /** What a preset commits: a `YYYY-MM-DD` date (the default), a date and time or a range of dates. */
   valueKind?: K | undefined;
   /**
    * The choices, in order: counts of units from now, with optional labels, or named values computed
@@ -123,6 +120,13 @@ function describeValue(value: RelativeDateValue | null, options: PresetContext &
     : describeRelativeRange(value, describe);
 }
 
+/** A `YYYY-MM-DD` date as a localized date; unreadable text is kept. */
+function formatDay(text: string, locale: string): string {
+  const date = parseIsoDate(text);
+  if (!date) return text;
+  return new DateFormatter(locale, { dateStyle: 'medium' }).format(date.toDate(getLocalTimeZone()));
+}
+
 /** The field's own check: a value outside the bounds is invalid, with the bound in the message. */
 function useBoundCheck(bounds: RelativeDateBounds) {
   const strings = useUiStrings();
@@ -130,9 +134,7 @@ function useBoundCheck(bounds: RelativeDateBounds) {
   return (value: RelativeDateValue | null): FieldIssue | null => {
     const issue = findRelativeBoundIssue(value, bounds);
     if (!issue) return null;
-    const limit = new DateFormatter(locale, { dateStyle: 'medium' }).format(
-      parseDate(issue.limit).toDate(getLocalTimeZone()),
-    );
+    const limit = formatDay(issue.limit, locale);
     const message =
       issue.bound === 'min' ? strings.dateTooEarly(limit) : strings.dateTooLate(limit);
     return { severity: 'error', message };
@@ -152,12 +154,10 @@ function Preview({ value, absolute }: { value: RelativeDateValue; absolute: stri
       </time>
     );
   }
-  const formatter = new DateFormatter(locale, { dateStyle: 'medium' });
-  const format = (text: string) => formatter.format(parseDate(text).toDate(getLocalTimeZone()));
   return (
     <span {...hooks.slot('preview')}>
-      <time dateTime={value.start}>{format(value.start)}</time> –{' '}
-      <time dateTime={value.end}>{format(value.end)}</time>
+      <time dateTime={value.start}>{formatDay(value.start, locale)}</time> –{' '}
+      <time dateTime={value.end}>{formatDay(value.end, locale)}</time>
     </span>
   );
 }
@@ -195,9 +195,9 @@ export function RelativeDateField<K extends RelativeDateKind = 'date'>(
     state.setValue(next as RelativeDateFieldValue<K>);
     state.commit();
   };
-  const pickDate = (picked: CalendarDate | { start: CalendarDate; end: CalendarDate }) => {
+  const pickDate = (picked: string | RelativeDateRange) => {
     const now = getNow();
-    if ('start' in picked) commit({ start: picked.start.toString(), end: picked.end.toString() });
+    if (typeof picked !== 'string') commit(picked);
     else commit(resolvePickedDate(picked, { now, kind: kind === 'date-time' ? kind : 'date' }));
   };
   const data = { valueKind: kind, relation: text?.relation };

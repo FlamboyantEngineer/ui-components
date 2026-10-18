@@ -103,14 +103,14 @@ describe('Combobox', () => {
 
   it('UIC-COMBOBOX-1.4 clears the text and selection and refocuses the input', async () => {
     const user = userEvent.setup();
-    const onSelectionChange = vi.fn();
+    const onChange = vi.fn();
     const { container } = render(
       <UiProvider strings={{ clear: 'Clear fruit' }}>
         <Combobox
           aria-label="Fruit"
           defaultItems={fruit}
-          defaultSelectedKey="banana"
-          onSelectionChange={onSelectionChange}
+          defaultValue="banana"
+          onChange={onChange}
         />
       </UiProvider>,
     );
@@ -121,7 +121,7 @@ describe('Combobox', () => {
     expectHooksMatchSpec(container, 'COMBOBOX', { slots: ['clear'] });
     await user.click(clear);
     expect(input()).toHaveValue('');
-    expect(onSelectionChange).toHaveBeenLastCalledWith(null);
+    expect(onChange).toHaveBeenLastCalledWith(null);
     expect(input()).toHaveFocus();
     expect(container.querySelector('.ui-combobox__clear')).toBeNull();
   });
@@ -166,7 +166,7 @@ describe('Combobox', () => {
     expect(input()).toHaveValue('Quince');
 
     rerender(
-      <Combobox key="strict" aria-label="Fruit" defaultItems={fruit} defaultSelectedKey="apple" />,
+      <Combobox key="strict" aria-label="Fruit" defaultItems={fruit} defaultValue="apple" />,
     );
     await user.click(input());
     await user.keyboard('{End}s');

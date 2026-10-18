@@ -1,5 +1,6 @@
-import { Tag, TagGroup, TagList, type Key } from '../../primitives/index.js';
+import { Tag, TagGroup, TagList } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
+import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { FieldPreviousValue } from '../field/field.js';
 import { IconButton } from '../icon-button/icon-button.js';

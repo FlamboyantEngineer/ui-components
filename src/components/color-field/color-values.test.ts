@@ -3,7 +3,8 @@ import {
   describeFormatInputs,
   formatColor,
   hasAlpha,
-  toColor,
+  storeColorText,
+  toColorText,
   toStoredValue,
 } from './color-values.js';
 
@@ -13,10 +14,10 @@ describe('color values', () => {
       true,
     );
     expect(['hex', 'rgb', 'hsl', 'hsb'].some((format) => hasAlpha(format as 'hex'))).toBe(false);
-    const color = toColor('#33669980');
-    expect(color && formatColor(color, 'rgba')).toBe('rgba(51, 102, 153, 0.5)');
-    expect(color && formatColor(color, 'hexa')).toBe('#33669980');
-    expect(color && formatColor(color, 'hex')).toBe('#336699');
+    expect(formatColor('#33669980', 'rgba')).toBe('rgba(51, 102, 153, 0.5)');
+    expect(formatColor('#33669980', 'hexa')).toBe('#33669980');
+    expect(formatColor('#33669980', 'hex')).toBe('#336699');
+    expect(formatColor('not a colour', 'hex')).toBe('not a colour');
   });
 
   it('UIC-COLOR-FIELD-3.2 lists the inputs of each format', () => {
@@ -37,18 +38,20 @@ describe('color values', () => {
   });
 
   it('UIC-COLOR-FIELD-3.4 stores hex in lower case and other formats as written', () => {
-    const color = toColor('rgba(51, 102, 153, 0.5)');
-    expect(color).not.toBeNull();
-    if (!color) return;
-    expect(toStoredValue(color, 'hex')).toBe('#336699');
-    expect(toStoredValue(color, 'hexa')).toBe('#33669980');
-    expect(toStoredValue(color, 'rgb')).toBe('rgb(51, 102, 153)');
-    expect(toStoredValue(color, 'rgba')).toBe('rgba(51, 102, 153, 0.5)');
-    expect(toStoredValue(color, 'hsl')).toBe('hsl(210, 50%, 40%)');
-    expect(toColor('336699')?.toString('hex')).toBe('#336699');
-    expect(toColor('hsl(210, 50%, 40%)')?.toString('hex')).toBe('#336699');
-    expect(toColor('not a colour')).toBeNull();
-    expect(toColor('  ')).toBeNull();
-    expect(toColor(null)).toBeNull();
+    const typed = 'rgba(51, 102, 153, 0.5)';
+    expect(storeColorText(typed, 'hex')).toBe('#336699');
+    expect(storeColorText(typed, 'hexa')).toBe('#33669980');
+    expect(storeColorText(typed, 'rgb')).toBe('rgb(51, 102, 153)');
+    expect(storeColorText(typed, 'rgba')).toBe('rgba(51, 102, 153, 0.5)');
+    expect(storeColorText(typed, 'hsl')).toBe('hsl(210, 50%, 40%)');
+    expect(storeColorText('336699', 'hex')).toBe('#336699');
+    expect(storeColorText('hsl(210, 50%, 40%)', 'hex')).toBe('#336699');
+    expect(storeColorText('not a colour', 'hex')).toBeNull();
+    expect(toStoredValue({ toString: () => '#AABBCC' }, 'hex')).toBe('#aabbcc');
+    expect(toColorText(' 336699 ')).toBe('#336699');
+    expect(toColorText('rgb(51, 102, 153)')).toBe('rgb(51, 102, 153)');
+    expect(toColorText('not a colour')).toBeNull();
+    expect(toColorText('  ')).toBeNull();
+    expect(toColorText(null)).toBeNull();
   });
 });

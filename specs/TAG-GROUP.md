@@ -71,7 +71,7 @@ Verification: `src/components/tag-group/tag-group.test.tsx`
 
 ### UIC-TAG-GROUP-2.4 - Selection
 
-React Aria's selection props shall pass through: with `selectionMode` (`single` or `multiple`), pressing a tag selects it, `selectedKeys` or `defaultSelectedKeys` with `onSelectionChange` hold the selection, and selected tags publish `data-selected` and `aria-selected`.
+With `selectionMode` (`single` or `multiple`), pressing a tag shall select it: `selectedKeys` or `defaultSelectedKeys`, tag keys or `'all'`, with `onSelectionChange`, called with the shared `Selection` (a set of keys or `'all'`), hold the selection, `disallowEmptySelection` keeps one tag selected, and selected tags publish `data-selected` and `aria-selected`.
 
 Implementation: `src/components/tag-group/tag-group.tsx`
 Verification: `src/components/tag-group/tag-group.test.tsx`

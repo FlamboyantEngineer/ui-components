@@ -77,10 +77,9 @@ describe('DateTimeField field', () => {
     });
   });
 
-  it('UIC-DATE-TIME-FIELD-1.2 edits a date-time as local wall time and shows unreadable values empty', () => {
-    const instant = new Date(2026, 3, 13, 13, 45).toISOString();
+  it('UIC-DATE-TIME-FIELD-1.2 edits a date-time as floating wall time and shows unreadable values empty', () => {
     const { unmount } = renderInLocale(
-      <DateTimeField label="When" mode="date-time" defaultValue={instant} />,
+      <DateTimeField label="When" mode="date-time" defaultValue="2026-04-13T13:45" />,
     );
     expect(segment(/^day/)).toHaveTextContent('13');
     expect(segment(/^hour/)).toHaveTextContent('1');
@@ -119,13 +118,13 @@ describe('DateTimeField field', () => {
       <DateTimeField
         label="When"
         mode="date-time"
-        defaultValue={new Date(2026, 3, 13, 13, 45).toISOString()}
+        defaultValue="2026-04-13T13:45"
         onCommit={instant}
       />,
     );
     act(() => segment(/^minute/).focus());
     await user.keyboard('{ArrowUp}');
-    expect(instant).toHaveBeenLastCalledWith(new Date(2026, 3, 13, 13, 46).toISOString());
+    expect(instant).toHaveBeenLastCalledWith('2026-04-13T13:46');
   });
 
   it('UIC-DATE-TIME-FIELD-1.4 keeps an out-of-bounds value on screen, invalid and uncommitted', async () => {
@@ -350,8 +349,9 @@ describe('DateTimeField calendar', () => {
     renderInLocale(<DateTimeField label="When" mode="date-time" onCommit={instant} />);
     await user.click(screen.getByRole('button', { name: /Calendar/ }));
     await user.click(screen.getByRole('button', { name: 'Now' }));
-    const picked = new Date(instant.mock.calls[0]?.[0] as string);
-    expect(picked.getSeconds()).toBe(0);
+    const text = instant.mock.calls[0]?.[0] as string;
+    expect(text).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/);
+    const picked = new Date(text);
     expect(Math.abs(picked.getTime() - Date.now())).toBeLessThan(61_000);
   });
 });

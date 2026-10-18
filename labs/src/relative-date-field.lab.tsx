@@ -146,14 +146,14 @@ mountLab(
     </LabSection>
     <LabSection
       title="Relative text"
-      description="Days within a week read relative to now; instants within a day in hours or minutes; older values as dates."
+      description="Days within a week read relative to now; date-times within a day in hours or minutes; older values as dates."
     >
       <RelativeDateField label="Four days ago" getNow={getNow} defaultValue="2026-04-16" />
       <RelativeDateField
         label="Minutes ago"
         valueKind="date-time"
         getNow={getNow}
-        defaultValue={new Date(2026, 3, 20, 10, 5).toISOString()}
+        defaultValue="2026-04-20T10:05"
       />
       <RelativeDateField label="Long ago" getNow={getNow} defaultValue="2026-01-02" />
     </LabSection>

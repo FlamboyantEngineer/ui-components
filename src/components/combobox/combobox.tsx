@@ -5,11 +5,10 @@ import {
   Label,
   Text,
   useFilter,
-  type ComboBoxProps as AriaComboBoxProps,
-  type ListBoxLoadMoreItemProps,
 } from '../../primitives/index.js';
+import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Size } from '../../core/props.js';
+import type { BaseProps, Key, Size } from '../../core/props.js';
 import { ComboboxField } from './combobox-field.js';
 import { flattenOptions, type ComboboxCompletion, type ComboboxItem } from './combobox-options.js';
 import { ComboboxSuggestions, type ComboboxOptionRenderer } from './combobox-suggestions.js';
@@ -22,14 +21,46 @@ export type ComboboxVariant = 'default' | 'search';
 /** `single` picks one option; `multiple` picks several, shown as chips. */
 export type ComboboxSelectionMode = 'single' | 'multiple';
 
+/** The picked option's `id` (or `null`) for a single combobox, the list of ids for a multiple one. */
+export type ComboboxValue<M extends ComboboxSelectionMode = 'single'> = M extends 'multiple'
+  ? Key[]
+  : Key | null;
+
+/** When the list opens: as the reader types, on focus, or only from the keyboard and the button. */
+export type ComboboxMenuTrigger = 'input' | 'focus' | 'manual';
+
 export interface ComboboxProps<M extends ComboboxSelectionMode = 'single'>
-  extends
-    Omit<
-      AriaComboBoxProps<ComboboxItem, M>,
-      'children' | 'className' | 'style' | 'items' | 'defaultItems' | 'render'
-    >,
-    Pick<ListBoxLoadMoreItemProps, 'onLoadMore' | 'isLoading'>,
-    BaseProps {
+  extends BaseProps, AriaLabellingProps {
+  /** `single` (the default) picks one option; `multiple` picks several, shown as chips. */
+  selectionMode?: M | undefined;
+  /** The picked option ids (controlled). */
+  value?: ComboboxValue<M> | undefined;
+  /** The picked option ids at first, when uncontrolled. */
+  defaultValue?: ComboboxValue<M> | undefined;
+  /** Called with the picked option ids. */
+  onChange?: ((value: ComboboxValue<M>) => void) | undefined;
+  /** The input's text (controlled). */
+  inputValue?: string | undefined;
+  /** The input's text at first, when uncontrolled. */
+  defaultInputValue?: string | undefined;
+  /** Called as the input's text changes. */
+  onInputChange?: ((text: string) => void) | undefined;
+  /** Keeps typed text that names no option instead of reverting it. */
+  allowsCustomValue?: boolean | undefined;
+  /** When the list opens. Defaults to `input`. */
+  menuTrigger?: ComboboxMenuTrigger | undefined;
+  /** Opens the list even when no suggestion matches, to say so. Defaults to `true`. */
+  allowsEmptyCollection?: boolean | undefined;
+  isDisabled?: boolean | undefined;
+  isReadOnly?: boolean | undefined;
+  isInvalid?: boolean | undefined;
+  isRequired?: boolean | undefined;
+  /** The form name the picked option's id is submitted under. */
+  name?: string | undefined;
+  /** Called when the end of the list scrolls into view, to load more suggestions. */
+  onLoadMore?: (() => void) | undefined;
+  /** More suggestions are loading: the list ends with a loading row. */
+  isLoading?: boolean | undefined;
   /** A visible label. Without one, pass `aria-label`. */
   label?: ReactNode;
   /** Help text under the field. */
@@ -71,25 +102,23 @@ function toLabelText(label: ReactNode, ariaLabel: string | undefined): string {
 
 /**
  * Inline completion: the completion the input shows, and a filter that matches options against what
- * the reader typed rather than that completion, with the caller's filter or React Aria's accent- and
- * case-insensitive `contains`. Off, it hands the caller's filter through untouched.
+ * the reader typed rather than that completion, with an accent- and case-insensitive `contains`. Off,
+ * the building block filters with its own default.
  */
 function useInlineCompletionState({
   completesInline = false,
-  defaultFilter,
   suggestions,
-}: Pick<ComboboxProps, 'completesInline' | 'defaultFilter'> & {
+}: Pick<ComboboxProps, 'completesInline'> & {
   suggestions: Iterable<ComboboxItem>;
 }) {
   const [completion, setCompletion] = useState<ComboboxCompletion | null>(null);
   const { contains } = useFilter({ sensitivity: 'base' });
-  const filter = defaultFilter ?? contains;
   const completionFilter = useCallback(
     (text: string, input: string) =>
-      filter(text, completion?.text === input ? completion.typed : input),
-    [filter, completion],
+      contains(text, completion?.text === input ? completion.typed : input),
+    [contains, completion],
   );
-  if (!completesInline) return { defaultFilter, completion: null, field: null };
+  if (!completesInline) return { defaultFilter: undefined, completion: null, field: null };
   return {
     defaultFilter: completionFilter,
     completion,
@@ -132,7 +161,6 @@ export function Combobox<M extends ComboboxSelectionMode = 'single'>({
   allowsEmptyCollection = true,
   isDisabled,
   isReadOnly,
-  defaultFilter,
   completesInline,
   virtualized,
   onCreateOption,
@@ -141,16 +169,18 @@ export function Combobox<M extends ComboboxSelectionMode = 'single'>({
   renderOption,
   onLoadMore,
   isLoading,
+  onChange,
   ...rest
 }: ComboboxProps<M>) {
   const suggestions = items ?? defaultItems ?? [];
-  const inline = useInlineCompletionState({ completesInline, defaultFilter, suggestions });
+  const inline = useInlineCompletionState({ completesInline, suggestions });
   const input = useInputText(rest);
   const createdRef = useRef<string | null>(null);
   const list = { virtualized, onCreateOption, highlightMatches, autoHighlight, renderOption };
   return (
-    <AriaComboBox<ComboboxItem, M>
+    <AriaComboBox<ComboboxItem, ComboboxSelectionMode>
       {...rest}
+      onChange={onChange ? (next) => onChange(next as ComboboxValue<M>) : undefined}
       {...hooks.root({ className, props: rest, data: { variant, size, pending: isPending } })}
       {...(items ? { items } : { defaultItems: suggestions })}
       defaultFilter={inline.defaultFilter}
@@ -195,4 +225,4 @@ export function Combobox<M extends ComboboxSelectionMode = 'single'>({
 }
 
 export type { ComboboxItem, ComboboxOption, ComboboxSection } from './combobox-options.js';
-export type { ComboboxOptionRenderer } from './combobox-suggestions.js';
+export type { ComboboxOptionRenderer, ComboboxOptionState } from './combobox-suggestions.js';

@@ -1,13 +1,10 @@
-import type { Key, SelectProps as AriaSelectProps } from '../../primitives/index.js';
+import type { OpenStateProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
+import type { Key } from '../../core/props.js';
 import { Field, useFieldControl, type FieldInputProps, type FieldState } from '../field/field.js';
 import { SelectControl, type SelectKeysValue } from './select-control.js';
 import type { SelectFieldOptionRenderer } from './select-option.js';
-import {
-  flattenSelectItems,
-  type SelectFieldItem,
-  type SelectFieldOption,
-} from './select-options.js';
+import { flattenSelectItems, type SelectFieldItem } from './select-options.js';
 import type { SelectFieldLoader } from './select-search.js';
 
 export type SelectFieldSelectionMode = 'single' | 'multiple';
@@ -18,12 +15,7 @@ export type SelectFieldValue<M extends SelectFieldSelectionMode = 'single'> = M 
   : Key | null;
 
 export interface SelectFieldProps<M extends SelectFieldSelectionMode = 'single'>
-  extends
-    FieldInputProps<SelectFieldValue<M>>,
-    Pick<
-      AriaSelectProps<SelectFieldOption, M>,
-      'isOpen' | 'defaultOpen' | 'onOpenChange' | 'name' | 'autoFocus'
-    > {
+  extends FieldInputProps<SelectFieldValue<M>>, OpenStateProps {
   /**
    * The choices, in display order, and groups of them shown as headed sections; a multiple value
    * follows this order. Group ids must differ from option ids.
@@ -51,6 +43,10 @@ export interface SelectFieldProps<M extends SelectFieldSelectionMode = 'single'>
   renderOption?: SelectFieldOptionRenderer | undefined;
   /** Renders only the options in view, for very long lists. */
   virtualized?: boolean | undefined;
+  /** The form name the chosen ids are submitted under. */
+  name?: string | undefined;
+  /** Focuses the trigger when the field mounts. */
+  autoFocus?: boolean | undefined;
 }
 
 const hooks = createHooks('select-field');
@@ -98,6 +94,6 @@ export function SelectField<M extends SelectFieldSelectionMode = 'single'>(
 
 export { SelectControl } from './select-control.js';
 export type { SelectKeysValue } from './select-control.js';
-export type { SelectFieldOptionRenderer } from './select-option.js';
+export type { SelectFieldOptionRenderer, SelectFieldOptionState } from './select-option.js';
 export type { SelectFieldGroup, SelectFieldItem, SelectFieldOption } from './select-options.js';
 export type { SelectFieldLoader, SelectFieldPage } from './select-search.js';

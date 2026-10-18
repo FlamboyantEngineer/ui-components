@@ -13,7 +13,7 @@ Verification: `test/primitives.test.ts`
 
 ### UIC-PRIMITIVES-1.2 - An explicit inventory by area
 
-`src/primitives/` shall re-export by name exactly the building blocks the library uses, grouped in one module per area (`core`, `i18n`, `focus`, `actions`, `content`, `navigation`, `overlays`, `menus`, `collections`, `drag-and-drop`, `fields`, `dates`, `colors`), with `index.ts` re-exporting every area. A building block is added to its area when a component first needs it and removed when nothing uses it, so the inventory is the list of what a replacement must provide.
+`src/primitives/` shall re-export by name exactly the building blocks the library uses, grouped in one module per area (`core`, `i18n`, `focus`, `actions`, `content`, `navigation`, `overlays`, `menus`, `collections`, `drag-and-drop`, `fields`, `dates`, `colors`), with `index.ts` re-exporting every area. A building block is added to its area when a component first needs it and removed when nothing uses it, so the inventory is the list of what a replacement must provide. An area may also re-export value adapters from a sibling module, such as `date-values.ts`, which reads the library's plain values (ISO 8601 date and time texts) as the building blocks' value objects and writes them back, so components convert values without exposing those objects.
 
 Implementation: `src/primitives/index.ts`
 Verification: `test/primitives.test.ts`

@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { parseDate } from '../../primitives/index.js';
 import {
   describeRelativeDate,
   describeRelativeRange,
@@ -13,8 +12,17 @@ import {
 
 const now = new Date(2026, 4, 23, 10, 30, 0);
 const options = { now, locale: 'en-US', fallbackAfterDays: 7 };
-const at = (...parts: [number, number, number, number, number, number?]) =>
-  new Date(...parts).toISOString();
+const pad = (part: number) => String(part).padStart(2, '0');
+/** A local date and time as a floating ISO text, with seconds when given. */
+const at = (
+  year: number,
+  month: number,
+  day: number,
+  hour: number,
+  minute: number,
+  second?: number,
+) =>
+  `${year}-${pad(month + 1)}-${pad(day)}T${pad(hour)}:${pad(minute)}${second === undefined ? '' : `:${pad(second)}`}`;
 
 describe('relative date', () => {
   it('UIC-RELATIVE-DATE-FIELD-1.2 reads dates in calendar days and falls back to the absolute date', () => {
@@ -43,12 +51,14 @@ describe('relative date', () => {
     expect(describeRelativeDate('whenever', options)).toBeNull();
   });
 
-  it('UIC-RELATIVE-DATE-FIELD-1.2 reads instants within a day in seconds, minutes and hours', () => {
+  it('UIC-RELATIVE-DATE-FIELD-1.2 reads date-times within a day in seconds, minutes and hours', () => {
     const plain = (text: string | undefined) => text?.replace(/\s/g, ' ');
     expect(describeRelativeDate(at(2026, 4, 23, 10, 29, 50), options)?.relative).toBe(
       '10 seconds ago',
     );
     expect(describeRelativeDate(at(2026, 4, 23, 10, 25), options)?.relative).toBe('5 minutes ago');
+    const instant = new Date(2026, 4, 23, 10, 25).toISOString();
+    expect(describeRelativeDate(instant, options)?.relative).toBe('5 minutes ago');
     expect(describeRelativeDate(at(2026, 4, 23, 12, 30), options)).toMatchObject({
       relative: 'In 2 hours',
       relation: 'future',
@@ -106,8 +116,8 @@ describe('relative date', () => {
       describeRelativeRange({ start: '2026-05-01', end: '2026-05-02' }, options)?.relation,
     ).toBe('past');
     expect(describeRelativeRange({ start: 'soon', end: '2026-05-02' }, options)).toBeNull();
-    expect(resolvePickedDate(parseDate('2026-05-30'), { now, kind: 'date' })).toBe('2026-05-30');
-    expect(resolvePickedDate(parseDate('2026-05-30'), { now, kind: 'date-time' })).toBe(
+    expect(resolvePickedDate('2026-05-30', { now, kind: 'date' })).toBe('2026-05-30');
+    expect(resolvePickedDate('2026-05-30', { now, kind: 'date-time' })).toBe(
       at(2026, 4, 30, 10, 30),
     );
   });
