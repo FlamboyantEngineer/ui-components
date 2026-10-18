@@ -117,3 +117,13 @@
 .ui-user-card__popover[data-exiting] {
   animation: ref-fade 0.12s ease-in reverse;
 }
+
+/* On hover the popover is also a hover card; the card inside draws the surface. */
+
+.ui-hover-card.ui-user-card__popover {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
