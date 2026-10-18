@@ -108,6 +108,10 @@ export interface ContentStrings {
   rangeTo: string;
   /** Names a table's summary row. */
   summary: string;
+  /** Describes a drawing of no values. */
+  noData: string;
+  /** Describes a series of values by its formatted lowest, highest and last values. */
+  seriesSummary: (values: { low: string; high: string; last: string }) => string;
 }
 
 const emojiCategoryNames: Readonly<Record<string, string>> = {
@@ -198,4 +202,6 @@ export const contentStrings: ContentStrings = {
   rangeFrom: 'From',
   rangeTo: 'To',
   summary: 'Summary',
+  noData: 'No data',
+  seriesSummary: ({ low, high, last }) => `Low ${low}, high ${high}, last ${last}`,
 };

@@ -1,0 +1,35 @@
+/* Sparkline: a thin accent line, a faint area and small dots. */
+
+.ui-sparkline {
+  display: inline-block;
+  vertical-align: middle;
+  overflow: visible;
+  color: var(--ref-accent);
+}
+
+.ui-sparkline__line {
+  stroke: currentColor;
+  stroke-width: 1.5px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.ui-sparkline__area {
+  fill: currentColor;
+  fill-opacity: 0.15;
+  stroke: none;
+}
+
+.ui-sparkline__marker {
+  fill: currentColor;
+  stroke: var(--ref-canvas);
+  stroke-width: 1px;
+}
+
+.ui-sparkline__marker[data-marker='min'] {
+  fill: var(--ref-danger);
+}
+
+.ui-sparkline__marker[data-marker='max'] {
+  fill: var(--ref-success);
+}

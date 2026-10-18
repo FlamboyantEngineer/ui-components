@@ -1,0 +1,67 @@
+/* Stat Tile: a card with a large figure and a coloured change. */
+
+.ui-stat-tile {
+  min-width: 160px;
+}
+
+.ui-stat-tile .ui-card__header {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.ui-stat-tile .ui-card__title {
+  color: var(--ref-muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.ui-stat-tile .ui-card__body {
+  display: grid;
+  gap: 4px;
+  padding: 4px 16px 12px;
+}
+
+.ui-stat-tile__value {
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-stat-tile__delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--ref-muted);
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-stat-tile[data-tone='success'] .ui-stat-tile__delta {
+  color: var(--ref-success);
+}
+
+.ui-stat-tile[data-tone='danger'] .ui-stat-tile__delta {
+  color: var(--ref-danger);
+}
+
+.ui-stat-tile__trend-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.ui-stat-tile__description {
+  color: var(--ref-muted);
+  font-size: 12px;
+}
+
+.ui-stat-tile__chart {
+  margin-top: 4px;
+}
+
+.ui-stat-tile__chart .ui-sparkline {
+  display: block;
+  width: 100%;
+  height: auto;
+}
