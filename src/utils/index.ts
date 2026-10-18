@@ -115,6 +115,8 @@ export type {
 export { getColorIndex } from './color-index.js';
 export { getInitials } from './initials.js';
 export { diffLines, diffWords } from './diff.js';
+export { mapScrollOffset, useSyncedScroll } from './use-synced-scroll.js';
+export type { ScrollAnchor, SyncedScrollOptions, SyncedScrollTarget } from './use-synced-scroll.js';
 export type { DiffKind, LineDiffHunk, WordDiffHunk } from './diff.js';
 export { formatOutlineNumber } from './outline-number.js';
 export type { FormatOutlineNumberOptions, OutlineNumberStyle } from './outline-number.js';
