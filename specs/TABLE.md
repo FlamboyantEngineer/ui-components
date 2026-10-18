@@ -1,6 +1,6 @@
 # Table
 
-`Table` shows records a reader scans, sorts, filters, selects, edits and acts on. It is built on React Aria's `Table`: columns and rows are plain data with render callbacks, and the table adds sorting by one or several columns, a search box and typed column filters, selection, resizable, reorderable, hideable, pinned and grouped columns with a persisted layout, nested rows and detail rows, cell editing, a summary row, row reordering by drag and drop or keyboard, pagination through [Pagination](PAGINATION.md), loading more rows, full-width loading, empty and error notices, and virtualization for long lists. `sortTableRows`, `filterTableRows` and `applyTableMove` are exported for callers that keep the order, the filtering or the pages of their rows themselves.
+`Table` shows records a reader scans, sorts, filters, selects, edits and acts on. It is built on React Aria's `Table`: columns and rows are plain data with render callbacks, and the table adds sorting by one or several columns, a search box and typed column filters, selection with a selection bar and bulk edit, resizable, reorderable, hideable, pinned and grouped columns with a persisted layout, row groups with aggregates, nested rows and detail rows, cell editing and a spreadsheet mode with cell ranges, the clipboard and filling, a summary row, row reordering by drag and drop or keyboard, pagination through [Pagination](PAGINATION.md), loading more rows, full-width loading, empty and error notices, and virtualization for long lists. `sortTableRows`, `filterTableRows` and `applyTableMove` are exported for callers that keep the order, the filtering or the pages of their rows themselves, and `formatTsv` and `parseTsv` for tab-separated text.
 
 ## UIC-TABLE-1 - Columns and rows
 
@@ -108,7 +108,7 @@ Verification: `src/components/table/table-filters.test.ts`
 
 ### UIC-TABLE-3.1 - Selection
 
-The table shall select rows through the selection props (`selectionMode` `none`, `single` or `multiple`, `selectionBehavior` `toggle` or `replace`, `selectedKeys`, `defaultSelectedKeys`, `disabledKeys`, `disallowEmptySelection`, and `onSelectionChange` with the new `Selection`), controlled or not. Multiple selection adds a leading checkbox column whose header checkbox selects every enabled row; each checkbox draws the `check` glyph when selected, the `minus` glyph when indeterminate and nothing otherwise, and takes React Aria's localized names. Disabled rows are never selected.
+The table shall select rows through the selection props (`selectionMode` `none`, `single` or `multiple`, `selectionBehavior` `toggle` or `replace`, `selectedKeys`, `defaultSelectedKeys`, `disabledKeys`, `disallowEmptySelection`, and `onSelectionChange` with the new `Selection`), controlled or not; without `selectedKeys` the table holds the selection itself and hands it to React Aria's grid. Multiple selection adds a leading checkbox column whose header checkbox selects every enabled row; each checkbox draws the `check` glyph when selected, the `minus` glyph when indeterminate and nothing otherwise, and takes React Aria's localized names. Disabled rows are never selected.
 
 Implementation: `src/components/table/table-header.tsx`, `src/components/table/table-row.tsx`
 Verification: `src/components/table/table.test.tsx`, `e2e/table.spec.ts`
@@ -397,6 +397,124 @@ Verification: `src/components/table/table-footer.test.tsx`, `e2e/table.spec.ts`
 Implementation: `src/components/table/table-body.tsx`
 Verification: `src/components/table/table-body.test.tsx`, `e2e/table.spec.ts`
 
+## UIC-TABLE-13 - Row groups
+
+### UIC-TABLE-13.1 - Grouping
+
+`groupBy` shall draw the rows of the current page, once filtered and sorted, under group header rows: one per value of its first entry, holding the groups of its next entry, and so on. An entry is a column id, grouping by the column's values (a hidden column included), or a computed grouping (`id`, `label` and `getValue(row)`); unknown column ids are skipped. Rows keep their order inside a group, so the table's sort orders them. Groups are ordered by value, descending when the table sorts their column descending and ascending otherwise, with the group of empty values (absent, null or empty text) last. Each group has a key unique in the table, the path of grouping ids and values under `ui-table-group:` (`ui-table-group:kind=Fruit/city=Oslo`), and the grid becomes a `treegrid` whose group rows and rows carry `aria-level`. Nested rows stay under their row.
+
+Implementation: `src/components/table/table-groups.ts`, `src/components/table/use-table-grouping.ts`, `src/components/table/use-table-grid.ts`
+Verification: `src/components/table/table-group-row.test.tsx`, `src/components/table/table-groups.test.ts`, `e2e/table.spec.ts`
+
+### UIC-TABLE-13.2 - Group header rows
+
+A group header row (`ui-table__group-row`) shall draw one cell per column: after an empty selection cell, a `ui-table__group-cell` under the first data column, with its id and pin hooks and the measured `--ui-table-level` of its group, from which the label may spill over the empty cells beside it. It holds React Aria's expand button (`ui-table__expand`), the label (`ui-table__group-label`): `renderGroupLabel(group)`, else the provider's `groupHeading` from the grouping's name and the group's value (the provider's `emptyValue` for empty values, a date as its day), and the number of rows (`ui-table__group-count`) in the provider locale, hidden from assistive technology, which reads the provider's `itemCount` instead. The row's text value is the heading with its count. A group row can take focus but is never selected, dragged or passed to `onRowAction`, and the table draws no drag handles and reorders no rows while it is grouped.
+
+Implementation: `src/components/table/table-group-row.tsx`, `src/components/table/use-table-grid.ts`, `src/core/table-strings.ts`
+Verification: `src/components/table/table-group-row.test.tsx`, `e2e/table.spec.ts`
+
+### UIC-TABLE-13.3 - Aggregates
+
+The `aggregate` of a column after the first shall fill its cell in each group header row (`ui-table__aggregate-cell`, with the column's kind, alignment, id and pin hooks) from the group's rows: `count` counts the values that are not empty, `sum`, `min` and `max` take the finite numbers and show nothing without any, each formatted for the provider locale; a function returns the cell's content. The selection and actions columns get empty aggregate cells.
+
+Implementation: `src/components/table/table-group-row.tsx`, `src/components/table/table-groups.ts`
+Verification: `src/components/table/table-group-row.test.tsx`, `src/components/table/table-groups.test.ts`, `e2e/table.spec.ts`
+
+### UIC-TABLE-13.4 - Collapsing groups
+
+Groups shall be expanded until collapsed: the expand button, or ArrowLeft and ArrowRight on a focused group row, collapses and expands it. `collapsedGroups` (controlled) or `defaultCollapsedGroups` name the collapsed group keys, and `onCollapsedGroupsChange` receives them after each change, keeping the keys of groups not drawn now, such as those of another page. Expanding nested rows still reports only through `onExpandedChange`. Groups work in a virtualized table.
+
+Implementation: `src/components/table/use-table-expansion.ts`, `src/components/table/use-table-grouping.ts`, `src/components/table/table-group-row.tsx`
+Verification: `src/components/table/table-group-row.test.tsx`, `e2e/table.spec.ts`
+
+### UIC-TABLE-13.5 - Grouping helpers
+
+The table shall group with small pure functions: resolving `groupBy` against the columns and the sort, grouping nodes level by level under unique keys with empty values last, listing group keys, listing the rows a reader sees inside expanded groups and rows, and computing the built-in aggregates.
+
+Implementation: `src/components/table/table-groups.ts`
+Verification: `src/components/table/table-groups.test.ts`
+
+## UIC-TABLE-14 - Spreadsheet mode
+
+### UIC-TABLE-14.1 - Cell selection
+
+`cellSelection` (`none` by default) shall turn on spreadsheet mode over the data cells of the rows a reader sees: `cell` selects the focused cell, and `range` also selects rectangles of cells. A press on a data cell selects and focuses it; with `range`, Shift with a press or with an arrow key (mirrored right to left) extends the selection from its anchor, and dragging over cells extends it to the cell under the pointer. Focus reaching a cell selects it unless it returns to the anchor, and focus reaching a data row moves on to its cell in the selected column, else its first data cell. Presses on data cells select cells, not rows; controls inside cells keep their presses. `selectedRange` (controlled, `null` for none) or `defaultSelectedRange` hold the selection as an anchor and a focus (`rowKey`, `columnId`), reported through `onSelectedRangeChange`. Selected cells publish `data-in-range`, `aria-selected="true"` and, on its edges, `data-range-top`, `data-range-bottom`, `data-range-start` and `data-range-end`.
+
+Implementation: `src/components/table/use-cell-selection.ts`, `src/components/table/use-cell-pointer.ts`, `src/components/table/table-row.tsx`, `src/components/table/use-table-model.ts`
+Verification: `src/components/table/use-cell-selection.test.tsx`, `e2e/table.spec.ts`
+
+### UIC-TABLE-14.2 - Copying
+
+Copying while a data cell has focus shall write the selected cells, or the focused cell, to the clipboard as tab-separated text and as an HTML table: values as text, dates in ISO 8601 and nothing as empty text.
+
+Implementation: `src/components/table/use-cell-selection.ts`, `src/components/table/table-cell-writes.ts`
+Verification: `src/components/table/use-cell-selection.test.tsx`, `src/components/table/table-cell-writes.test.ts`, `e2e/table.spec.ts`
+
+### UIC-TABLE-14.3 - Pasting
+
+Pasting tab-separated text while a data cell has focus shall write it into the selected cells: one value into every selected cell, more values from the top start cell as far as the grid reaches, then select the cells the paste covers. Each text is read by the column's `parseValue` and checked by its `validateValue`; only cells of columns with `allowsEditing` in enabled rows whose value the column accepts and that change are written, and `onCellsChange` receives them in one batch. The table never changes its rows itself.
+
+Implementation: `src/components/table/use-cell-selection.ts`, `src/components/table/table-cell-writes.ts`, `src/utils/tsv.ts`
+Verification: `src/components/table/use-cell-selection.test.tsx`, `src/components/table/table-cell-writes.test.ts`, `e2e/table.spec.ts`
+
+### UIC-TABLE-14.4 - Clearing
+
+Delete or Backspace on a data cell shall write empty text into the selected cells, reported like a paste.
+
+Implementation: `src/components/table/use-cell-selection.ts`, `src/components/table/table-cell-writes.ts`
+Verification: `src/components/table/use-cell-selection.test.tsx`, `src/components/table/table-cell-writes.test.ts`, `e2e/table.spec.ts`
+
+### UIC-TABLE-14.5 - Filling
+
+In `range` mode, the bottom end cell of a selection holding an editable cell shall draw a fill handle (`ui-table__fill-handle`, hidden from assistive technology). Dragging it down or towards the end, whichever reaches further, marks the cells it would fill with `data-fill-target` and, on release, fills them from the selected cells: each column, or each row, continues an evenly spaced run of numbers by its step and repeats anything else, then the filled cells are selected. Control or Command with D fills the selection down from its first row, and with R towards the end from its first column. Fills are reported like a paste.
+
+Implementation: `src/components/table/use-cell-pointer.ts`, `src/components/table/use-cell-selection.ts`, `src/components/table/table-cell-writes.ts`, `src/components/table/table-row.tsx`
+Verification: `src/components/table/use-cell-selection.test.tsx`, `src/components/table/table-cell-writes.test.ts`, `e2e/table.spec.ts`
+
+### UIC-TABLE-14.6 - Typing and moving
+
+In spreadsheet mode, typing a character other than Space on an editable cell shall open its editor holding that character. In the default editor Enter commits and moves focus to the cell below, Tab to the next cell along the row, and Shift with either moves back; at the edge of the rows or cells focus stays on the cell. Without spreadsheet mode Enter returns focus to the cell and Tab leaves the editor as the browser does.
+
+Implementation: `src/components/table/use-cell-editing.ts`, `src/components/table/table-cell-editor.tsx`
+Verification: `src/components/table/use-cell-selection.test.tsx`, `e2e/table.spec.ts`
+
+### UIC-TABLE-14.7 - Reading and checking values
+
+A column's `parseValue(text, row)` shall read typed, pasted and filled text as the cell's value; without it the text stays text, or becomes a number when the cell holds a number and the text reads as one. Its `validateValue(value, row)` returns a message that refuses the value. A refused value in the default editor keeps it open, marks the input `aria-invalid` and `data-invalid`, and shows the message in a `ui-table__editor-message` alert; leaving the editor then drops the text.
+
+Implementation: `src/components/table/table-cell-writes.ts`, `src/components/table/table-cell-editor.tsx`
+Verification: `src/components/table/use-cell-selection.test.tsx`, `src/components/table/table-cell-writes.test.ts`, `e2e/table.spec.ts`
+
+### UIC-TABLE-14.8 - Cell helpers
+
+The table shall select and write cells with small pure functions: a grid of the visible rows and drawn columns locates cells by row key text and column id, bounds a range from either corner, steps a cell inside the grid and places a cell on the edges of bounds; writes format values as text, read text through the column, keep only accepted changes of editable cells in enabled rows, copy, plan pastes, clears and fills, continue series and pick the direction of a dragged fill.
+
+Implementation: `src/components/table/table-cell-range.ts`, `src/components/table/table-cell-writes.ts`
+Verification: `src/components/table/table-cell-range.test.ts`, `src/components/table/table-cell-writes.test.ts`
+
+### UIC-TABLE-14.9 - Tab-separated text
+
+`formatTsv(rows)` shall join cells with tabs and rows with line breaks, quoting a cell that holds a tab, a line break or a quote and doubling its quotes; `parseTsv(text)` reads such text back, accepting Windows line breaks and a final line break, and reads empty text as no rows.
+
+Implementation: `src/utils/tsv.ts`
+Verification: `src/utils/tsv.test.ts`
+
+## UIC-TABLE-15 - Selection bar and bulk edit
+
+### UIC-TABLE-15.1 - Selection bar
+
+In multiple selection, `selectionActions`, or a drawn column with `bulkEdit`, shall draw a selection bar (`ui-table__selection-bar`, an [Action Row](ACTION-ROW.md) selection bar of size `sm`) between the toolbar and the grid while rows are selected: the number of selected rows the table presents (every enabled one for `all`), a button and Escape that clear the selection, and the caller's actions.
+
+Implementation: `src/components/table/table-bulk-edit.tsx`, `src/components/table/use-table-selection.ts`, `src/components/table/use-table-model.ts`, `src/components/table/table.tsx`
+Verification: `src/components/table/table-bulk-edit.test.tsx`, `e2e/table.spec.ts`
+
+### UIC-TABLE-15.2 - Bulk edit
+
+When a drawn column has `bulkEdit`, the selection bar shall end with an `edit` action named by the provider's `editSelected` that opens a dialog (`ui-table__bulk-edit`, a [Modal](MODAL.md)) titled by the provider's `editRows` with the count. It holds a [Select Field](SELECT-FIELD.md) named by the provider's `field` that chooses among those columns, the first by default, and the field of the chosen column's type named by the column: a [Text Field](TEXT-FIELD.md) for `text`, a [Number Field](NUMBER-FIELD.md) for `number`, a date [Date Time Field](DATE-TIME-FIELD.md) for `date` (`YYYY-MM-DD`), a [Boolean Field](BOOLEAN-FIELD.md) for `boolean` and a Select Field of `options` for `choice`. Its `apply` button sets the value in that column of every selected row, skipping values the column's `validateValue` refuses and cells that already hold the value, reports the edits in one `onCellsChange` batch and closes the dialog; each opening starts afresh.
+
+Implementation: `src/components/table/table-bulk-edit.tsx`, `src/core/table-strings.ts`
+Verification: `src/components/table/table-bulk-edit.test.tsx`, `e2e/table.spec.ts`
+
 ## Hooks
 
 | Hook                             | Kind      | Values                         | Description                                                               |
@@ -424,8 +542,15 @@ Verification: `src/components/table/table-body.test.tsx`, `e2e/table.spec.ts`
 | `ui-table__expand`               | slot      |                                | A row's expand button in the tree column (also `ui-icon` inside).         |
 | `ui-table__expand-spacer`        | slot      |                                | Holds the expand button's place on a row without nested rows.             |
 | `ui-table__editor`               | slot      |                                | The default cell editor's input.                                          |
+| `ui-table__editor-message`       | slot      |                                | The default editor's message for a refused value (`role="alert"`).        |
+| `ui-table__fill-handle`          | slot      |                                | The handle at the bottom end corner of the selected cells.                |
 | `ui-table__detail-row`           | slot      |                                | A full-width row holding a row's detail.                                  |
 | `ui-table__detail-cell`          | slot      |                                | The detail row's spanning cell.                                           |
+| `ui-table__group-row`            | slot      |                                | A group header row.                                                       |
+| `ui-table__group-cell`           | slot      |                                | A group header's first data cell: expand button, label and count.         |
+| `ui-table__group-label`          | slot      |                                | A group header's label.                                                   |
+| `ui-table__group-count`          | slot      |                                | A group header's number of rows.                                          |
+| `ui-table__aggregate-cell`       | slot      |                                | A group header's cell under a column: its aggregate, or empty.            |
 | `ui-table__checkbox`             | slot      |                                | A selection checkbox (`<label>` around a visually hidden input).          |
 | `ui-table__checkbox-box`         | slot      |                                | The checkbox's box, holding the check or minus glyph.                     |
 | `ui-table__drag-handle`          | slot      |                                | A row's drag handle (also `ui-drag-handle`).                              |
@@ -438,6 +563,8 @@ Verification: `src/components/table/table-body.test.tsx`, `e2e/table.spec.ts`
 | `ui-table__footer-row`           | slot      |                                | The summary row.                                                          |
 | `ui-table__footer-cell`          | slot      |                                | One summary cell.                                                         |
 | `ui-table__pagination`           | slot      |                                | The page navigation under a paginated grid (also `ui-pagination`).        |
+| `ui-table__selection-bar`        | slot      |                                | The bar above the grid while rows are selected (also `ui-action-row`).    |
+| `ui-table__bulk-edit`            | slot      |                                | The bulk edit dialog (also `ui-modal`).                                   |
 | `data-size`                      | attribute | `sm`, `md`                     | Row height, on the root.                                                  |
 | `data-kind`                      | attribute | `data`, `selection`, `actions` | What a column header, cell or summary cell holds.                         |
 | `data-align`                     | attribute | `start`, `center`, `end`       | A data column's alignment, on its header and cells.                       |
@@ -462,6 +589,13 @@ Verification: `src/components/table/table-body.test.tsx`, `e2e/table.spec.ts`
 | `data-filtered`                  | state     | `true`                         | A header whose column filters the rows.                                   |
 | `data-ungrouped`                 | state     | `true`                         | A group row cell over columns without a group.                            |
 | `data-editing`                   | state     | `true`                         | The cell whose editor is open.                                            |
+| `data-invalid`                   | state     | `true`                         | The default editor while the column refuses its value.                    |
+| `data-in-range`                  | state     | `true`                         | A selected cell in spreadsheet mode.                                      |
+| `data-range-top`                 | state     | `true`                         | A selected cell on the top edge of the selection.                         |
+| `data-range-bottom`              | state     | `true`                         | A selected cell on the bottom edge of the selection.                      |
+| `data-range-start`               | state     | `true`                         | A selected cell on the start edge of the selection.                       |
+| `data-range-end`                 | state     | `true`                         | A selected cell on the end edge of the selection.                         |
+| `data-fill-target`               | state     | `true`                         | A cell a dragged fill handle would fill.                                  |
 | `data-tree-column`               | state     | `true`                         | A cell of the tree column (React Aria).                                   |
 | `data-has-child-items`           | state     | `true`                         | A row with nested or detail rows, and its cells (React Aria).             |
 | `data-expanded`                  | state     | `true`                         | An expanded row and its cells (React Aria).                               |
@@ -479,4 +613,4 @@ Verification: `src/components/table/table-body.test.tsx`, `e2e/table.spec.ts`
 | `data-focus-visible-within`      | state     | `true`                         | Keyboard focus inside a row (React Aria).                                 |
 | `data-focus-visible-within-row`  | state     | `true`                         | Keyboard focus inside a cell's row, on the cell (React Aria).             |
 | `--ui-table-pin-offset`          | property  |                                | A pinned header's or cell's distance from its edge, in pixels.            |
-| `--ui-table-level`               | property  |                                | A tree column cell's nesting level, from 1.                               |
+| `--ui-table-level`               | property  |                                | A tree column or group header cell's nesting level, from 1.               |

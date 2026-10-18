@@ -519,4 +519,219 @@ test.describe('Table lab', () => {
     await page.mouse.up();
     await expect(root.locator('[data-lab-output]')).toHaveText('Last move: banana after date');
   });
+  test('UIC-TABLE-13.1 UIC-TABLE-13.2 UIC-TABLE-13.3 UIC-TABLE-13.4 groups rows and collapses groups', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('table');
+    const root = section(page, 'grouping');
+    const grid = page.getByRole('treegrid', { name: 'Stock, grouped' });
+    const output = root.locator('[data-lab-output]');
+    const labels = () =>
+      grid
+        .locator('.ui-table__group-label')
+        .evaluateAll((nodes) => nodes.map((node) => node.textContent));
+    await expect.poll(labels).toEqual(['Kind: Fruit', 'Kind: Herb', 'Kind: Vegetable']);
+    const fruit = grid.getByRole('row', { name: /Kind: Fruit 3 items$/ });
+    await expect(fruit.locator('.ui-table__aggregate-cell')).toHaveText([
+      '',
+      '',
+      '',
+      '308',
+      'max €4.50',
+    ]);
+    await fruit.getByRole('button', { name: /^Collapse/ }).click();
+    await expect(output).toHaveText('Collapsed: ui-table-group:kind=Fruit');
+    await expect(grid.getByRole('row', { name: 'Apple' })).toHaveCount(0);
+    await page.keyboard.press('ArrowRight');
+    await expect(output).toHaveText('Collapsed: none');
+    await expect(grid.getByRole('row', { name: 'Apple' })).toBeVisible();
+    await page.keyboard.press('ArrowLeft');
+    await expect(output).toHaveText('Collapsed: ui-table-group:kind=Fruit');
+    await page.keyboard.press('ArrowRight');
+
+    await root.getByRole('button', { name: 'Kind, then origin' }).click();
+    await expect(grid.getByRole('row', { name: /Origin: Lisbon 2 items$/ })).toHaveAttribute(
+      'aria-level',
+      '2',
+    );
+    await expect(grid.getByRole('row', { name: 'Cherry' })).toHaveAttribute('aria-level', '3');
+    await root.getByRole('button', { name: 'Weight class' }).click();
+    await expect.poll(labels).toEqual(['Weight class: Heavy', 'Weight class: Light']);
+    await grid.getByRole('columnheader', { name: /^Name/ }).click();
+    await page.keyboard.press('Enter');
+    await expect
+      .poll(() =>
+        grid
+          .locator('.ui-table__row [role="rowheader"]')
+          .evaluateAll((nodes) => nodes.map((node) => node.textContent)),
+      )
+      .toEqual(['Onion', 'Leek', 'Banana', 'Apple', 'Sage', 'Mint', 'Cherry', 'Carrot']);
+    await lab.expectAccessible('[data-lab="grouping"]');
+  });
+
+  test('UIC-TABLE-13.4 collapses and expands groups in a virtualized table', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('table');
+    const root = section(page, 'grouping-virtualized');
+    const grid = root.getByRole('treegrid', { name: 'Items, grouped by city' });
+    await grid
+      .getByRole('row', { name: /^Collapse Cairo/ })
+      .getByRole('button')
+      .click();
+    await grid
+      .getByRole('row', { name: /^Collapse Lisbon/ })
+      .getByRole('button')
+      .click();
+    const oslo = grid.getByRole('row', { name: /^Expand Oslo/ });
+    await expect(oslo).toHaveAttribute('aria-expanded', 'false');
+    await oslo.getByRole('button').click();
+    await expect(grid.getByRole('row', { name: /^Collapse Oslo/ })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+    await expect(grid.getByRole('row', { name: 'Item 2', exact: true })).toBeVisible();
+    await root
+      .locator('.ui-table__scroll')
+      .evaluate((node) => node.scrollTo({ top: node.scrollHeight }));
+    await expect(grid.getByRole('row', { name: 'Item 1998' })).toBeVisible();
+    expect(await grid.getByRole('row').count()).toBeLessThan(60);
+  });
+
+  test.describe('spreadsheet mode', () => {
+    test.use({ permissions: ['clipboard-read', 'clipboard-write'] });
+
+    test('UIC-TABLE-14.1 UIC-TABLE-14.2 UIC-TABLE-14.3 UIC-TABLE-14.4 selects ranges, copies, pastes and clears', async ({
+      page,
+      lab,
+    }) => {
+      await lab.open('table');
+      const root = section(page, 'spreadsheet');
+      const grid = root.getByRole('grid', { name: 'Stock, spreadsheet' });
+      const output = root.locator('[data-lab-output]');
+      const cell = (row: string, column: string) =>
+        grid.locator(`[data-key="${row}"] > [data-column="${column}"]`);
+      await cell('apple', 'name').click();
+      await expect(output).toHaveText('Range: apple.name:apple.name · Last change: none');
+      await cell('banana', 'weight').click({ modifiers: ['Shift'] });
+      await expect(output).toContainText('Range: apple.name:banana.weight');
+      await expect(grid.locator('[data-in-range]')).toHaveCount(4);
+      await page.keyboard.press('Shift+ArrowDown');
+      await expect(output).toContainText('Range: apple.name:carrot.weight');
+      await page.keyboard.press('ControlOrMeta+c');
+      expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(
+        'Apple\t180\nBanana\t120\nCarrot\t70',
+      );
+      await cell('cherry', 'name').click();
+      await page.keyboard.press('ControlOrMeta+v');
+      await expect(output).toHaveText(
+        'Range: cherry.name:mint.weight · Last change: cherry.name=Apple, cherry.weight=180, leek.name=Banana, leek.weight=120, mint.name=Carrot, mint.weight=70',
+      );
+      await page.keyboard.press('Delete');
+      await expect(output).toContainText('Last change: cherry.name=, leek.name=, mint.name=');
+
+      const start = await cell('apple', 'origin').boundingBox();
+      const end = await cell('banana', 'price').boundingBox();
+      if (!start || !end) throw new Error('no cells');
+      await page.mouse.move(start.x + 10, start.y + 10);
+      await page.mouse.down();
+      await page.mouse.move(end.x + 10, end.y + 10, { steps: 6 });
+      await page.mouse.up();
+      await expect(output).toContainText('Range: apple.origin:banana.price');
+      await expect(grid.locator('[aria-selected="true"]')).toHaveCount(4);
+      await lab.expectAccessible('[data-lab="spreadsheet"]');
+    });
+
+    test('UIC-TABLE-14.5 UIC-TABLE-14.6 UIC-TABLE-14.7 fills, types to edit and checks values', async ({
+      page,
+      lab,
+    }) => {
+      await lab.open('table');
+      const root = section(page, 'spreadsheet');
+      const grid = root.getByRole('grid', { name: 'Stock, spreadsheet' });
+      const output = root.locator('[data-lab-output]');
+      const cell = (row: string, column: string) =>
+        grid.locator(`[data-key="${row}"] > [data-column="${column}"]`);
+      await cell('apple', 'weight').click();
+      await page.keyboard.press('Shift+ArrowDown');
+      const handle = await grid.locator('.ui-table__fill-handle').boundingBox();
+      const target = await cell('leek', 'weight').boundingBox();
+      if (!handle || !target) throw new Error('no handle');
+      await page.mouse.move(handle.x + handle.width / 2, handle.y + handle.height / 2);
+      await page.mouse.down();
+      await page.mouse.move(target.x + 10, target.y + 10, { steps: 6 });
+      await expect(grid.locator('[data-fill-target]')).toHaveCount(3);
+      await page.mouse.up();
+      await expect(output).toHaveText(
+        'Range: apple.weight:leek.weight · Last change: carrot.weight=60, cherry.weight=0',
+      );
+
+      await cell('apple', 'origin').click();
+      await page.keyboard.press('Shift+ArrowDown');
+      await page.keyboard.press('Shift+ArrowDown');
+      await page.keyboard.press('ControlOrMeta+d');
+      await expect(output).toContainText('Last change: banana.origin=Lisbon, carrot.origin=Lisbon');
+
+      await cell('mint', 'name').click();
+      await page.keyboard.type('Sage');
+      await page.keyboard.press('Tab');
+      await expect(output).toContainText('Last change: mint.name=Sage');
+      await expect(cell('mint', 'weight')).toBeFocused();
+      await page.keyboard.type('-1');
+      await page.keyboard.press('Enter');
+      const message = grid.locator('.ui-table__editor-message');
+      await expect(message).toHaveText('Enter a weight of 0 or more.');
+      await expect(grid.getByRole('textbox', { name: 'Weight (g)' })).toHaveAttribute(
+        'aria-invalid',
+        'true',
+      );
+      await page.keyboard.press('ControlOrMeta+a');
+      await page.keyboard.type('45');
+      await page.keyboard.press('Shift+Enter');
+      await expect(output).toContainText('Last change: mint.weight=45');
+      await expect(cell('leek', 'weight')).toBeFocused();
+    });
+  });
+
+  test('UIC-TABLE-15.1 UIC-TABLE-15.2 edits a column across the selected rows from the selection bar', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('table');
+    const root = section(page, 'bulk-edit');
+    const grid = root.getByRole('grid', { name: 'Stock, bulk edit' });
+    const output = root.locator('[data-lab-output]');
+    await grid.getByRole('row', { name: 'Apple' }).locator('.ui-table__checkbox').click();
+    await grid.getByRole('row', { name: 'Carrot' }).locator('.ui-table__checkbox').click();
+    const bar = root.locator('.ui-table__selection-bar');
+    await expect(bar.getByRole('status')).toHaveText('2 selected');
+    await bar.getByRole('button', { name: 'Edit selected' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Edit 2 rows' });
+    await expect(dialog).toBeVisible();
+    await expect(page.locator('[data-entering]')).toHaveCount(0);
+    await lab.expectAccessible('.ui-table__bulk-edit');
+    await dialog.getByRole('button').first().click();
+    await page.getByRole('option', { name: 'Weight (g)' }).click();
+    await dialog.getByRole('textbox', { name: 'Weight (g)' }).fill('99');
+    await dialog.getByRole('button', { name: 'Apply' }).click();
+    await expect(output).toHaveText('Last change: apple.weight=99, carrot.weight=99');
+    await expect(dialog).toHaveCount(0);
+    await expect(bar.getByRole('button', { name: 'Edit selected' })).toBeFocused();
+    await bar.getByRole('button', { name: 'Edit selected' }).press('Enter');
+    await expect(dialog).toBeVisible();
+    await page.keyboard.press('Tab');
+    await page.keyboard.press('Enter');
+    await page.getByRole('option', { name: 'Herb' }).click();
+    await dialog.getByRole('button', { name: 'Apply' }).press('Enter');
+    await expect(output).toHaveText('Last change: apple.kind=Herb, carrot.kind=Herb');
+    await bar.getByRole('button', { name: 'Delete selected' }).click();
+    await expect(grid.getByRole('row', { name: 'Apple' })).toHaveCount(0);
+    await expect(bar).toHaveCount(0);
+    await grid.getByRole('row', { name: 'Banana' }).locator('.ui-table__checkbox').click();
+    await bar.getByRole('button', { name: 'Clear selection' }).click();
+    await expect(bar).toHaveCount(0);
+    await lab.expectAccessible('[data-lab="bulk-edit"]');
+  });
 });
