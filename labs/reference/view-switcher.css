@@ -1,0 +1,72 @@
+/* View Switcher */
+
+.ui-view-switcher {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 28rem;
+  color: var(--ref-text);
+}
+
+.ui-view-switcher__bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ui-view-switcher[data-variant='tabs'] .ui-view-switcher__bar {
+  border-bottom: 1px solid var(--ref-border);
+}
+
+.ui-view-switcher__tabs {
+  flex: 1 1 auto;
+  border-bottom: 0;
+}
+
+.ui-view-switcher__bar .ui-tabs__bar {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ui-view-switcher__tab {
+  gap: 6px;
+}
+
+.ui-view-switcher__menu {
+  max-width: 100%;
+}
+
+.ui-view-switcher__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ui-view-switcher__default {
+  display: inline-flex;
+  flex: none;
+  color: var(--ref-warning);
+}
+
+.ui-view-switcher__default .ui-glyph {
+  width: 1em;
+  height: 1em;
+}
+
+.ui-view-switcher__modified {
+  display: inline-block;
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ref-accent);
+}
+
+.ui-view-switcher__actions {
+  flex: none;
+}
+
+.ui-view-switcher__panel {
+  min-width: 0;
+  outline: none;
+}

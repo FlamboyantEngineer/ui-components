@@ -45,6 +45,15 @@ const sampleArguments: Partial<Record<keyof UiStrings, readonly unknown[]>> = {
   mediaStage: ['Harbour.jpg'],
   problemCount: [2, 1],
   problemSeverity: ['warning'],
+  viewActions: ['Quick meals'],
+  deleteViewTitle: ['Quick meals'],
+  sortDirectionName: ['descending'],
+  showProperty: ['Cuisine'],
+  densityName: ['compact'],
+  editValue: ['Title'],
+  copyIdentifier: ['REQ-12'],
+  stateTrigger: ['Status', 'In review'],
+  transitionTo: ['Approved'],
 };
 
 const stringNames = Object.keys(defaultStrings) as Array<keyof UiStrings>;

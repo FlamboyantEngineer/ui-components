@@ -1,4 +1,5 @@
 import {
+  AdjustmentsHorizontalIcon,
   ArrowDownIcon,
   ArrowDownTrayIcon,
   ArrowLeftIcon,
@@ -56,6 +57,7 @@ import {
   PlusIcon,
   QuestionMarkCircleIcon,
   SignalSlashIcon,
+  StarIcon,
   StopIcon,
   TrashIcon,
   UsersIcon,
@@ -152,6 +154,8 @@ export const defaultGlyphs = {
   image: PhotoIcon,
   video: FilmIcon,
   audio: MusicalNoteIcon,
+  star: StarIcon,
+  adjustments: AdjustmentsHorizontalIcon,
 } satisfies Record<string, GlyphComponent>;
 
 export const glyphNames = Object.keys(defaultGlyphs) as GlyphName[];

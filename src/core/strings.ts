@@ -6,6 +6,7 @@ import { mediaStrings, type MediaStrings } from './media-strings.js';
 import { queryStrings, type QueryStrings } from './query-strings.js';
 import { reviewStrings, type ReviewStrings } from './review-strings.js';
 import { timelineStrings, type TimelineStrings } from './timeline-strings.js';
+import { viewStrings, type ViewStrings } from './view-strings.js';
 
 /**
  * Built-in text every component draws from. Hosts override any entry through `UiProvider`. The
@@ -20,7 +21,8 @@ export interface UiStrings
     ReviewStrings,
     MediaStrings,
     QueryStrings,
-    TimelineStrings {}
+    TimelineStrings,
+    ViewStrings {}
 
 export const defaultStrings: UiStrings = {
   ...commonStrings,
@@ -31,4 +33,5 @@ export const defaultStrings: UiStrings = {
   ...mediaStrings,
   ...queryStrings,
   ...timelineStrings,
+  ...viewStrings,
 };

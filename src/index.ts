@@ -149,3 +149,8 @@ export * from './components/filter-bar/index.js';
 export * from './components/condition-builder/index.js';
 export * from './components/query-field/index.js';
 export * from './components/facet-list/index.js';
+export * from './components/inline-edit/index.js';
+export * from './components/transition-menu/index.js';
+export * from './components/record-header/index.js';
+export * from './components/view-switcher/index.js';
+export * from './components/display-options/index.js';
