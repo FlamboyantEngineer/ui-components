@@ -92,6 +92,11 @@ const sampleArguments: Partial<Record<keyof UiStrings, readonly unknown[]>> = {
   resizeTile: ['Visitors'],
   tileMoved: ['Visitors', 3, 2],
   tileResized: ['Visitors', 4, 2],
+  redlineSummary: [{ added: 2, removed: 1, changed: 3, moved: 1 }],
+  redlineBlockType: ['heading', 2],
+  redlineRow: ['changed', 'Heading 2'],
+  redlineTypeChange: ['Paragraph', 'Heading 2'],
+  formulaInvalidReference: ['Q0'],
 };
 
 const stringNames = Object.keys(defaultStrings) as Array<keyof UiStrings>;

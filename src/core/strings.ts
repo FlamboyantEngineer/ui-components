@@ -9,6 +9,7 @@ import { mediaStrings, type MediaStrings } from './media-strings.js';
 import { pickerStrings, type PickerStrings } from './picker-strings.js';
 import { planningStrings, type PlanningStrings } from './planning-strings.js';
 import { queryStrings, type QueryStrings } from './query-strings.js';
+import { redlineStrings, type RedlineStrings } from './redline-strings.js';
 import { relationStrings, type RelationStrings } from './relation-strings.js';
 import { reviewStrings, type ReviewStrings } from './review-strings.js';
 import { structureStrings, type StructureStrings } from './structure-strings.js';
@@ -33,6 +34,7 @@ export interface UiStrings
     PickerStrings,
     PlanningStrings,
     QueryStrings,
+    RedlineStrings,
     RelationStrings,
     ReviewStrings,
     StructureStrings,
@@ -52,6 +54,7 @@ export const defaultStrings: UiStrings = {
   ...pickerStrings,
   ...planningStrings,
   ...queryStrings,
+  ...redlineStrings,
   ...relationStrings,
   ...reviewStrings,
   ...structureStrings,
