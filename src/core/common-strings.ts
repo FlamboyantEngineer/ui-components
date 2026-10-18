@@ -65,6 +65,10 @@ export interface CommonStrings {
   expandPanel: (panel: string) => string;
   /** Names the separator that resizes a docked panel, from the panel's label. */
   resizePanel: (panel: string) => string;
+  /** Makes a copy of an item beside it, such as a tab. */
+  duplicate: string;
+  /** Moves an item one place in a direction, such as a tab along its list. */
+  moveItem: (direction: 'left' | 'right' | 'up' | 'down') => string;
   /** Tells a reader that a link opens in a new tab or window. */
   opensInNewTab: string;
   /** Names a collection's selected count (`3 selected`). */
@@ -242,6 +246,8 @@ export const commonStrings: CommonStrings = {
   collapsePanel: (panel) => `Collapse ${panel}`,
   expandPanel: (panel) => `Expand ${panel}`,
   resizePanel: (panel) => `Resize ${panel}`,
+  duplicate: 'Duplicate',
+  moveItem: (direction) => `Move ${direction}`,
   opensInNewTab: '(opens in a new tab)',
   selectedCount: (count) => `${count} selected`,
   clearSelection: 'Clear selection',
