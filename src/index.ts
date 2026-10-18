@@ -74,6 +74,8 @@ export * from './components/text-field/index.js';
 export * from './components/number-field/index.js';
 export * from './components/boolean-field/index.js';
 export * from './components/color-field/index.js';
+export * from './components/tags-input/index.js';
+export * from './components/pin-input/index.js';
 export * from './components/table/index.js';
 export * from './components/list-row/index.js';
 export * from './components/tree/index.js';
