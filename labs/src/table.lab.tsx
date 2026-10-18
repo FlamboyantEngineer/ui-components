@@ -178,6 +178,39 @@ function Reordering() {
   );
 }
 
+const stock: Record<string, number> = { apple: 12, banana: 0, cherry: 40, date: 3, fig: 7 };
+
+function RowMarks() {
+  const [rows, setRows] = useState(fruit.slice(0, 4));
+  const [added, setAdded] = useState<string[]>([]);
+  const addFig = () => {
+    const fig = fruit.find((row) => row.id === 'fig');
+    if (!fig || added.includes(fig.id)) return;
+    setRows((current) => [...current, fig]);
+    setAdded((current) => [...current, fig.id]);
+  };
+  return (
+    <div data-lab="row-marks">
+      <Button onPress={addFig}>Add fig</Button>
+      <Table
+        aria-label="Fruit, with row marks"
+        rows={rows}
+        columns={[
+          ...columns.slice(0, 2),
+          { id: 'stock', header: 'Stock', align: 'end', getValue: (row) => stock[row.id] ?? 0 },
+        ]}
+        getRowAttributes={(row) => {
+          const count = stock[row.id] ?? 0;
+          return {
+            'data-change': added.includes(row.id) ? 'added' : undefined,
+            'data-status': count === 0 ? 'empty' : count < 5 ? 'low' : undefined,
+          };
+        }}
+      />
+    </div>
+  );
+}
+
 function HandleReordering() {
   const [rows, setRows] = useState(fruit.slice(0, 5));
   const [last, setLast] = useState('None');
@@ -275,6 +308,12 @@ mountLab(
       description="Only the handle starts a pointer drag; selected rows drag together under a count."
     >
       <HandleReordering />
+    </LabSection>
+    <LabSection
+      title="Row marks"
+      description="getRowAttributes marks whole rows: an added row, a low stock and an empty one."
+    >
+      <RowMarks />
     </LabSection>
     <LabSection
       title="Notices"

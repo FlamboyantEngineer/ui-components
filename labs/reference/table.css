@@ -216,6 +216,17 @@
 .ui-table__row[data-dragging] {
   opacity: 0.5;
 }
+/* Caller row marks from getRowAttributes, as the table lab sets them. */
+.ui-table__row[data-change='added'] > .ui-table__cell:first-child {
+  box-shadow: inset 3px 0 0 var(--ref-success);
+}
+.ui-table__row[data-status='empty'] {
+  color: var(--ref-muted);
+  text-decoration: line-through;
+}
+.ui-table__row[data-status='low'] > .ui-table__cell:last-child {
+  box-shadow: inset -3px 0 0 var(--ref-warning);
+}
 :is(
   .ui-table__row,
   .ui-table__state-row,

@@ -3,6 +3,8 @@ import { SelectionIndicator, ToggleButton, ToggleButtonGroup } from '../../primi
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps, Orientation, Size } from '../../core/props.js';
+import { useUiStrings } from '../../core/provider.js';
+import { formatCount, normalizeCount } from '../../utils/count.js';
 import type { ElementRender } from '../../utils/render-element.js';
 import { Icon, toIconProps, type IconSource } from '../icon/icon.js';
 import { Tooltip } from '../tooltip/tooltip.js';
@@ -11,6 +13,7 @@ import {
   type SegmentedChoiceSelectionMode,
   type SegmentedChoiceValue,
 } from './choice-selection.js';
+import type { PendingChangeHandler } from './pending-change.js';
 
 export type { SegmentedChoiceSelectionMode, SegmentedChoiceValue } from './choice-selection.js';
 
@@ -25,6 +28,8 @@ export interface SegmentedChoiceOption {
   label: string;
   /** A decorative icon before the label, or the whole segment with `iconOnly`. */
   icon?: IconSource;
+  /** A count after the label, also read in the segment's name. Zero, negative and non-finite values show nothing. */
+  count?: number | null | undefined;
   isDisabled?: boolean | undefined;
 }
 
@@ -48,8 +53,11 @@ export interface SegmentedChoiceProps<M extends SegmentedChoiceSelectionMode = '
   value?: SegmentedChoiceValue<M> | undefined;
   /** The initial value when uncontrolled. */
   defaultValue?: SegmentedChoiceValue<M> | undefined;
-  /** Receives the new value: the picked value or `null`, or the pressed values in option order. */
-  onChange?: ((value: SegmentedChoiceValue<M>) => void) | undefined;
+  /**
+   * Receives the new value: the picked value or `null`, or the pressed values in option order. A
+   * returned promise keeps the choice pending until it settles; a rejection puts the value back.
+   */
+  onChange?: PendingChangeHandler<SegmentedChoiceValue<M>> | undefined;
   /** Single selection: the value comes from elsewhere; picking its segment again commits it. */
   isInherited?: boolean | undefined;
   /** Single selection: picking the selected segment of an explicit value clears it to `null`. */
@@ -68,6 +76,8 @@ export interface SegmentedChoiceProps<M extends SegmentedChoiceSelectionMode = '
   sizing?: SegmentedChoiceSizing | undefined;
   /** Each segment shows only its icon, named by its label, which its tooltip shows. */
   iconOnly?: boolean | undefined;
+  /** Option counts above this show as `<max>+`. Defaults to 99. */
+  countMax?: number | undefined;
   /** Submits the value with a form under this name, one hidden input per selected value. */
   name?: string | undefined;
   /** Replaces the root `<div>` with the caller's own, given its props and the group's state. */
@@ -78,22 +88,30 @@ interface SegmentProps {
   option: SegmentedChoiceOption;
   size: SegmentedChoiceSize;
   iconOnly: boolean;
+  countMax: number;
 }
 
-const hooks = createHooks('segmented-choice', ['segment', 'indicator', 'icon', 'label']);
+interface GroupState {
+  isReadOnly: boolean;
+  isInvalid: boolean;
+  isPending: boolean;
+}
 
-/** `aria-readonly` and `aria-invalid` on the group, which the building block does not set itself. */
+const hooks = createHooks('segmented-choice', ['segment', 'indicator', 'icon', 'label', 'count']);
+
+/** `aria-readonly`, `aria-invalid` and `aria-busy` on the group, which the building block does not set. */
 function renderGroupState(
-  { isReadOnly, isInvalid }: { isReadOnly: boolean; isInvalid: boolean },
+  { isReadOnly, isInvalid, isPending }: GroupState,
   render: SegmentedChoiceProps['render'],
 ): Pick<SegmentedChoiceProps, 'render'> {
-  if (!isReadOnly && !isInvalid) return render ? { render } : {};
+  if (!isReadOnly && !isInvalid && !isPending) return render ? { render } : {};
   return {
     render: (props, state) => {
       const merged = {
         ...props,
         'aria-readonly': isReadOnly || undefined,
         'aria-invalid': isInvalid || undefined,
+        'aria-busy': isPending || undefined,
       };
       return render ? render(merged, state) : <div {...merged} />;
     },
@@ -105,13 +123,22 @@ function renderWithoutDescription(props: NativeProps<'button'>): ReactElement {
   return <button {...props} aria-describedby={undefined} />;
 }
 
-function Segment({ option, size, iconOnly }: SegmentProps) {
+/** The shown text of a positive count, or `null` when the option shows none. */
+function formatOptionCount(count: number | null | undefined, max: number): string | null {
+  const value = normalizeCount(count);
+  return value === undefined || value === 0 ? null : formatCount(value, { max });
+}
+
+function Segment({ option, size, iconOnly, countMax }: SegmentProps) {
+  const strings = useUiStrings();
   const showsIconOnly = iconOnly && option.icon !== undefined;
+  const count = formatOptionCount(option.count, countMax);
+  const name = count === null ? option.label : strings.labelWithCount(option.label, count);
   const segment = (
     <ToggleButton
       id={option.value}
       isDisabled={option.isDisabled}
-      aria-label={showsIconOnly ? option.label : undefined}
+      aria-label={showsIconOnly || count !== null ? name : undefined}
       render={showsIconOnly ? renderWithoutDescription : undefined}
       {...hooks.slot('segment', { value: option.value })}
     >
@@ -121,6 +148,11 @@ function Segment({ option, size, iconOnly }: SegmentProps) {
       ) : null}
       {showsIconOnly ? null : (
         <span {...hooks.slot('label', { label: option.label })}>{option.label}</span>
+      )}
+      {count === null ? null : (
+        <span {...hooks.slot('count')} aria-hidden="true">
+          {count}
+        </span>
       )}
     </ToggleButton>
   );
@@ -158,6 +190,7 @@ export function SegmentedChoice<M extends SegmentedChoiceSelectionMode = 'single
   size = 'md',
   sizing = 'equal',
   iconOnly = false,
+  countMax = 99,
   name,
   render,
   className,
@@ -188,15 +221,22 @@ export function SegmentedChoice<M extends SegmentedChoiceSelectionMode = 'single
           inherited: isInherited,
           readonly: isReadOnly,
           invalid: isInvalid,
+          pending: selection.isPending,
         },
       })}
       selectedKeys={selection.selectedKeys}
       onSelectionChange={selection.onSelectionChange}
       selectionMode={selection.selectionMode}
-      {...renderGroupState({ isReadOnly, isInvalid }, render)}
+      {...renderGroupState({ isReadOnly, isInvalid, isPending: selection.isPending }, render)}
     >
       {options.map((option) => (
-        <Segment key={option.value} option={option} size={size} iconOnly={iconOnly} />
+        <Segment
+          key={option.value}
+          option={option}
+          size={size}
+          iconOnly={iconOnly}
+          countMax={countMax}
+        />
       ))}
       {name ? (
         <ChoiceInputs name={name} values={selection.selectedKeys} isDisabled={rest.isDisabled} />

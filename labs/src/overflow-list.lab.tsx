@@ -79,7 +79,7 @@ function ToolRow() {
               role="toolbar"
               aria-label="Text tools"
               justify="start"
-              wrap="nowrap"
+              overflow="none"
             />
           )}
           renderItem={(tool) => (

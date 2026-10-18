@@ -3,7 +3,9 @@ import { Group, Toolbar } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, NativeProps, Orientation } from '../../core/props.js';
+import type { ButtonGroupDensity } from '../button-group/button-group.js';
 import { Separator } from '../separator/separator.js';
+import { ToolbarScroller } from '../toolbar-scroller/toolbar-scroller.js';
 import {
   resolveContainment,
   type LayoutContainmentProps,
@@ -14,6 +16,15 @@ import {
 
 export type ToolbarRowRole = 'toolbar' | 'group' | 'none';
 export type ToolbarRowVariant = 'plain' | 'surface';
+
+/**
+ * `wrap` flows the controls, and the groups holding them, onto more rows; `scroll` keeps them on
+ * one row that scrolls in a `ToolbarScroller`; `none` keeps one row and leaves overflow to the caller.
+ */
+export type ToolbarRowOverflow = 'wrap' | 'scroll' | 'none';
+
+/** `regular` spaces a group's controls apart; `attached` joins them into one segmented run. */
+export type ToolbarRowGroupDensity = Extract<ButtonGroupDensity, 'regular' | 'attached'>;
 
 export interface ToolbarRowProps
   extends Omit<NativeProps<'div'>, 'role'>, BaseProps, LayoutContainmentProps {
@@ -27,21 +38,38 @@ export interface ToolbarRowProps
   space?: LayoutSpace | undefined;
   /** Distribution of controls. Defaults to `end`. */
   justify?: LayoutJustify | undefined;
-  /** Whether controls wrap. Defaults to `wrap`. */
-  wrap?: LayoutWrap | undefined;
+  /** What happens to controls that do not fit on one horizontal row. Defaults to `wrap`. */
+  overflow?: ToolbarRowOverflow | undefined;
+  /** The row keeps its place but its controls are inert, as while the surface they serve starts. */
+  isPending?: boolean | undefined;
 }
 
 export interface ToolbarRowGroupProps extends BaseProps, AriaLabellingProps {
   /** The group's controls. Name the group with `aria-label` or `aria-labelledby`. */
   children?: ReactNode;
+  /** How close the controls sit. Defaults to `regular`. */
+  density?: ToolbarRowGroupDensity | undefined;
 }
 
 export type ToolbarRowSeparatorProps = BaseProps;
 
 const hooks = createHooks('toolbar-row', ['group', 'separator']);
 
-/** The orientation of the enclosing row, which its groups follow and its separators cross. */
-const ToolbarRowContext = createContext<Orientation>('horizontal');
+interface ToolbarRowFlow {
+  orientation: Orientation;
+  wrap: LayoutWrap;
+}
+
+/** The direction and wrapping of the enclosing row, which its groups follow and its separators cross. */
+const ToolbarRowContext = createContext<ToolbarRowFlow>({
+  orientation: 'horizontal',
+  wrap: 'wrap',
+});
+
+/** The overflow a row applies: a vertical row is one column that never scrolls sideways. */
+function resolveOverflow(overflow: ToolbarRowOverflow, orientation: Orientation) {
+  return orientation === 'vertical' && overflow === 'scroll' ? 'none' : overflow;
+}
 
 /** A row of controls, vertically centred, with a gap; or a column of them when vertical. */
 export function ToolbarRow({
@@ -52,18 +80,43 @@ export function ToolbarRow({
   orientation = 'horizontal',
   space = 'md',
   justify = 'end',
-  wrap = 'wrap',
+  overflow: requestedOverflow = 'wrap',
+  isPending = false,
   grow,
   fill,
   clip,
   ...rest
 }: ToolbarRowProps) {
   const containment = resolveContainment({ grow, fill, clip });
-  const hookProps = hooks.root({
-    className,
-    data: { variant, orientation, space, justify, wrap, ...containment },
-  });
-  const content = <ToolbarRowContext value={orientation}>{children}</ToolbarRowContext>;
+  const overflow = resolveOverflow(requestedOverflow, orientation);
+  const wrap = overflow === 'wrap' ? 'wrap' : 'nowrap';
+  const hookProps = {
+    ...hooks.root({
+      className,
+      data: {
+        variant,
+        orientation,
+        space,
+        justify,
+        wrap,
+        overflow,
+        pending: isPending,
+        ...containment,
+      },
+    }),
+    inert: isPending || undefined,
+  };
+  const content = <ToolbarRowContext value={{ orientation, wrap }}>{children}</ToolbarRowContext>;
+  if (overflow === 'scroll') {
+    const { 'aria-label': label, 'aria-labelledby': labelledBy, ...own } = rest;
+    return (
+      <div {...own} {...hookProps}>
+        <ToolbarScroller aria-label={label} aria-labelledby={labelledBy}>
+          {content}
+        </ToolbarScroller>
+      </div>
+    );
+  }
   if (role === 'toolbar') {
     return (
       <Toolbar {...rest} {...hookProps} orientation={orientation}>
@@ -82,10 +135,15 @@ export function ToolbarRow({
  * A named group of related controls inside a `ToolbarRow` (`role="group"`), laid out along the
  * row. In a toolbar, arrow keys still move through every control of the row.
  */
-export function ToolbarRowGroup({ children, className, ...rest }: ToolbarRowGroupProps) {
-  const orientation = useContext(ToolbarRowContext);
+export function ToolbarRowGroup({
+  children,
+  className,
+  density = 'regular',
+  ...rest
+}: ToolbarRowGroupProps) {
+  const { orientation, wrap } = useContext(ToolbarRowContext);
   return (
-    <Group {...rest} {...hooks.slot('group', { orientation }, className)}>
+    <Group {...rest} {...hooks.slot('group', { orientation, wrap, density }, className)}>
       {children}
     </Group>
   );
@@ -93,7 +151,8 @@ export function ToolbarRowGroup({ children, className, ...rest }: ToolbarRowGrou
 
 /** A divider between controls or groups of a `ToolbarRow`, across the row: a `Separator`. */
 export function ToolbarRowSeparator({ className, ...rest }: ToolbarRowSeparatorProps) {
-  const orientation = useContext(ToolbarRowContext) === 'horizontal' ? 'vertical' : 'horizontal';
+  const across = useContext(ToolbarRowContext).orientation;
+  const orientation = across === 'horizontal' ? 'vertical' : 'horizontal';
   return (
     <Separator
       {...rest}

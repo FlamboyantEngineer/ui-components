@@ -176,4 +176,50 @@ test.describe('Segmented Choice lab', () => {
     );
     await lab.expectAccessible();
   });
+
+  test('UIC-SEGMENTED-CHOICE-1.9 draws counts after the labels and reads them in the names', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('segmented-choice');
+    const group = page.getByRole('radiogroup', { name: 'Notes, labels, md' });
+    const resolved = group.getByRole('radio', { name: 'Resolved, 99+' });
+    const count = resolved.locator('.ui-segmented-choice__count');
+    await expect(count).toHaveText('99+');
+    const label = await resolved.locator('.ui-segmented-choice__label').boundingBox();
+    expect((await count.boundingBox())?.x).toBeGreaterThan((label?.x ?? 0) + (label?.width ?? 0));
+    const icons = page.getByRole('radiogroup', { name: 'Notes, icons, md' });
+    await expect(icons.getByRole('radio', { name: 'Open, 3' })).toBeVisible();
+    await lab.expectAccessible('[data-lab-section="Counts"]');
+  });
+
+  test('UIC-SEGMENTED-CHOICE-2.6 holds a pick pending while it saves and reverts a failed save', async ({
+    page,
+    lab,
+  }) => {
+    await page.clock.install();
+    await lab.open('segmented-choice');
+    const demo = page.locator('[data-lab-demo="saved"]');
+    const group = demo.getByRole('radiogroup', { name: 'Notes to show' });
+    const resolved = group.getByRole('radio', { name: 'Resolved, 99+' });
+    await resolved.click();
+    await expect(resolved).toHaveAttribute('aria-checked', 'true');
+    await expect(group).toHaveAttribute('data-pending', 'true');
+    await expect(group).toHaveAttribute('aria-busy', 'true');
+    await page.clock.runFor(800);
+    await expect(group).not.toHaveAttribute('data-pending');
+    await expect(demo.locator('[data-lab-output="saved"]')).toHaveText('Saved: resolved');
+
+    await demo.getByText('Fail the next save').click();
+    await group.getByRole('radio', { name: 'All, 99+' }).click();
+    await expect(group.getByRole('radio', { name: 'All, 99+' })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+    await page.clock.runFor(800);
+    await expect(resolved).toHaveAttribute('aria-checked', 'true');
+    await expect(demo.getByRole('alert')).toContainText('could not be saved');
+    await expect(demo.locator('[data-lab-output="saved"]')).toHaveText('Saved: resolved');
+    await lab.expectAccessible('[data-lab-demo="saved"]');
+  });
 });

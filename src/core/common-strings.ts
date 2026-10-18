@@ -68,6 +68,8 @@ export interface CommonStrings {
   /** Names a button that removes a listed item, from the item's name. */
   removeItem: (name: string) => string;
   itemCount: (count: number) => string;
+  /** Accessible name of a labelled item with a count (`Open, 3`), from the label and the shown count. */
+  labelWithCount: (label: string, count: string) => string;
   /** Stands in for a person or group whose name is blank. */
   unnamed: string;
   /** Accessible name of a person shown with a status (`Maria Santos, Away`). */
@@ -186,6 +188,7 @@ export const commonStrings: CommonStrings = {
   placesBeside: (name) => `Places beside ${name}`,
   removeItem: (name) => `Remove ${name}`,
   itemCount: (count) => (count === 1 ? '1 item' : `${count} items`),
+  labelWithCount: (label, count) => `${label}, ${count}`,
   unnamed: 'Unnamed',
   nameWithStatus: (name, status) => `${name}, ${status}`,
   presenceStatus: (status) => presenceStatusNames[status],

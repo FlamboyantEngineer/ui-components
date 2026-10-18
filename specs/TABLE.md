@@ -32,6 +32,13 @@ Verification: `src/components/table/table.test.tsx`, `e2e/table.spec.ts`
 Implementation: `src/components/table/table.tsx`, `src/components/table/use-table-grid.ts`, `src/components/table/table-props.ts`
 Verification: `src/components/table/table.test.tsx`
 
+### UIC-TABLE-1.5 - Caller row attributes
+
+`getRowAttributes(row)` shall return the caller's `data-*` attributes for a data row, nested rows included, which the row element carries beside its hooks so a stylesheet can mark whole rows (for example `data-change="added"` or `data-status="missing"`). They are caller hooks the caller documents: string and number values render as given, `true` renders `"true"`, and `false` or `undefined` leave the attribute out. A hook value the table or React Aria writes on the row (such as `data-selected`) wins over a caller attribute of the same name.
+
+Implementation: `src/components/table/table.tsx`, `src/components/table/table-row.tsx`, `src/components/table/use-table-grid.ts`
+Verification: `src/components/table/table-row.test.tsx`, `e2e/table.spec.ts`
+
 ## UIC-TABLE-2 - Sorting and filtering
 
 ### UIC-TABLE-2.1 - Sort cycle
@@ -412,7 +419,7 @@ Verification: `src/components/table/table-body.test.tsx`, `e2e/table.spec.ts`
 | `ui-table__column-filter-dialog` | slot      |                                | A column filter's anchored dialog (also `ui-modal`).                      |
 | `ui-table__resizer`              | slot      |                                | A resizable column's resizer.                                             |
 | `ui-table__body`                 | slot      |                                | The body row group.                                                       |
-| `ui-table__row`                  | slot      |                                | One data row.                                                             |
+| `ui-table__row`                  | slot      |                                | One data row; it also carries the caller's `getRowAttributes`.            |
 | `ui-table__cell`                 | slot      |                                | One data row cell.                                                        |
 | `ui-table__expand`               | slot      |                                | A row's expand button in the tree column (also `ui-icon` inside).         |
 | `ui-table__expand-spacer`        | slot      |                                | Holds the expand button's place on a row without nested rows.             |

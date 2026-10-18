@@ -87,7 +87,9 @@ describe('SegmentedChoice', () => {
       screen.getByRole('radio', { name: 'Unsorted' }).querySelector('.ui-segmented-choice__icon'),
     ).toBeNull();
     expect(container.querySelector('[role="img"]')).toBeNull();
-    expectHooksMatchSpec(container, 'SEGMENTED-CHOICE', { slots: 'all' });
+    expectHooksMatchSpec(container, 'SEGMENTED-CHOICE', {
+      slots: ['segment', 'indicator', 'icon', 'label'],
+    });
   });
 
   it('UIC-SEGMENTED-CHOICE-1.3 publishes size, sizing and label text with defaults', () => {
