@@ -129,3 +129,6 @@ export * from './components/state-timeline/index.js';
 export * from './components/reaction-bar/index.js';
 export * from './components/comment-composer/index.js';
 export * from './components/comment-thread/index.js';
+export * from './components/activity-feed/index.js';
+export * from './components/change-list/index.js';
+export * from './components/version-history/index.js';
