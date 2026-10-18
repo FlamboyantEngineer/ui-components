@@ -113,3 +113,7 @@ export type {
 } from './tree-reorder.js';
 export { getColorIndex } from './color-index.js';
 export { getInitials } from './initials.js';
+export { diffLines, diffWords } from './diff.js';
+export type { DiffKind, LineDiffHunk, WordDiffHunk } from './diff.js';
+export { formatOutlineNumber } from './outline-number.js';
+export type { FormatOutlineNumberOptions, OutlineNumberStyle } from './outline-number.js';

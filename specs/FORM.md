@@ -1,6 +1,6 @@
 # Form
 
-`Form` is a form, built on React Aria's `Form`, that validates the [fields](FIELD.md) inside it when it is submitted. Fields register with the nearest form: on submit the form shows every field's validation and, while any field has an error or is still being checked, blocks the submit and focuses the first such field. It hands its fields a validation mode, a validation behavior and the external errors a server returned, by field name. It declares its own props: those three, `action`, `method`, `onSubmit`, the labelling props and `children`.
+`Form` is a form, built on React Aria's `Form`, that validates the [fields](FIELD.md) inside it when it is submitted. Fields register with the nearest form: on submit the form shows every field's validation and, while any field has an error or is still being checked, blocks the submit and focuses the first such field. It hands its fields a validation mode, a validation behavior and the external errors a server returned, by field name. It declares its own props: those three, `action`, `method`, `onSubmit`, the labelling props, `ref` and `children`.
 
 ## UIC-FORM-1 - Contract
 
@@ -38,6 +38,13 @@ Verification: `src/components/form/form.test.tsx`, `e2e/form.spec.ts`
 
 Implementation: `src/components/form/form.tsx`, `src/components/field/field-form.ts`
 Verification: `src/components/form/form.test.tsx`, `e2e/form.spec.ts`
+
+### UIC-FORM-1.6 - Form element ref
+
+`ref` shall receive the `<form>` element, so code outside the form, such as a dialog's footer action, can submit it with `requestSubmit()` and get the same submit validation (UIC-FORM-1.2) as a submit button inside it.
+
+Implementation: `src/components/form/form.tsx`
+Verification: `src/components/form/form.test.tsx`
 
 ## Hooks
 

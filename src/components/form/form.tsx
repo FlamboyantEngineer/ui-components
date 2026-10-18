@@ -6,11 +6,13 @@ import {
   useState,
   type FormEvent,
   type ReactNode,
+  type Ref,
 } from 'react';
 import { Form as AriaForm } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
+import { mergeRefs } from '../../utils/merge-props.js';
 import {
   FieldScopeContext,
   useFieldScope,
@@ -24,6 +26,8 @@ import {
 export type FormMethod = 'get' | 'post' | 'dialog';
 
 export interface FormProps extends BaseProps, AriaLabellingProps {
+  /** The `<form>` element, for code that submits it with `requestSubmit()`. */
+  ref?: Ref<HTMLFormElement> | undefined;
   /** When the fields inside show their validation, unless a field sets its own. Defaults to `submit`. */
   validationMode?: FieldValidationMode | undefined;
   /**
@@ -100,6 +104,7 @@ export function Form({
   onSubmit,
   className,
   children,
+  ref,
   ...rest
 }: FormProps) {
   const parent = useFieldScope();
@@ -116,6 +121,7 @@ export function Form({
     [parent, validationMode, validationBehavior, validationErrors, register],
   );
   const form = useInvalidFocus(fields);
+  const formRef = useMemo(() => mergeRefs(form, ref), [form, ref]);
   const errorLists = useMemo(() => toErrorLists(validationErrors), [validationErrors]);
   const submit = (event: FormEvent<HTMLFormElement>) => {
     const ordered = inDocumentOrder(fields);
@@ -129,7 +135,7 @@ export function Form({
     <AriaForm
       {...rest}
       {...hooks.root({ className, props: rest })}
-      ref={form}
+      ref={formRef}
       validationBehavior={validationBehavior}
       validationErrors={errorLists}
       onSubmit={submit}

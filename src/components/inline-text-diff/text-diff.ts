@@ -1,4 +1,6 @@
-// Pure text comparison for InlineTextDiff: one contiguous change between two values.
+// Pure text comparison for InlineTextDiff: one contiguous change, or every changed word run.
+
+import { diffWords } from '../../utils/diff.js';
 
 export interface InlineTextDiffSegment {
   kind: 'text' | 'removed' | 'added';
@@ -72,4 +74,13 @@ export function createInlineTextDiffExcerpt(
     { kind: 'text', text: shorten(parts.suffix, context, false) },
   ];
   return segments.filter((segment) => segment.text.length > 0);
+}
+
+/**
+ * Segments for `InlineTextDiff` showing every changed run of words from `before` to `after`
+ * (`diffWords`), whole and in reading order: each change's removed run before its added run.
+ */
+export function createInlineWordDiff(before: string, after: string): InlineTextDiffSegment[] {
+  const kinds = { equal: 'text', delete: 'removed', insert: 'added' } as const;
+  return diffWords(before, after).map((hunk) => ({ kind: kinds[hunk.kind], text: hunk.text }));
 }
