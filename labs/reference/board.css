@@ -1,0 +1,217 @@
+/* Board: fixed-width columns of raised cards, narrow collapsed columns and lanes under headers. */
+
+.ui-board {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 100%;
+  box-sizing: border-box;
+}
+
+.ui-board__columns,
+.ui-board__cells {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.ui-board__column,
+.ui-board__cell {
+  flex: none;
+  box-sizing: border-box;
+  width: 264px;
+}
+
+.ui-board__column[data-collapsed],
+.ui-board__cell[data-collapsed] {
+  width: 44px;
+}
+
+.ui-board__column {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 40px;
+  padding: 4px 8px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-surface);
+}
+
+.ui-board__column[data-collapsed] {
+  flex-direction: column;
+  padding: 4px 2px;
+}
+
+.ui-board__column[data-over-limit] {
+  border-color: var(--ref-danger);
+}
+
+.ui-board__column[data-dragging] {
+  opacity: 0.5;
+}
+
+.ui-board__column[data-drop-target] {
+  box-shadow: inset 0 0 0 2px var(--ref-accent);
+}
+
+.ui-board__column[data-drop-target][data-position='before'] {
+  box-shadow: inset 3px 0 0 0 var(--ref-accent);
+}
+
+.ui-board__column[data-drop-target][data-position='after'] {
+  box-shadow: inset -3px 0 0 0 var(--ref-accent);
+}
+
+.ui-board__column-title,
+.ui-board__lane-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-board__column[data-collapsed] .ui-board__column-title {
+  flex: none;
+  writing-mode: vertical-rl;
+}
+
+.ui-board__column-count,
+.ui-board__lane-count {
+  flex: none;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--ref-hover);
+  color: var(--ref-muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-board__column[data-over-limit] .ui-board__column-count {
+  background: var(--ref-danger-fill);
+  color: #fff;
+}
+
+.ui-board__column-handle {
+  cursor: grab;
+}
+
+.ui-board__lane {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ui-board__lane-header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 400px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--ref-border);
+}
+
+.ui-board__cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 96px;
+  padding: 4px;
+  border-radius: var(--ref-radius);
+  background: var(--ref-canvas);
+}
+
+.ui-board__cell[data-over-limit] {
+  box-shadow: inset 0 0 0 1px var(--ref-danger);
+}
+
+.ui-board__cards {
+  display: block;
+  position: relative;
+  flex: 1;
+  min-height: 48px;
+  border-radius: var(--ref-radius);
+  outline: none;
+}
+
+.ui-board__cards[data-virtualized] {
+  flex: none;
+  height: 360px;
+  overflow: auto;
+}
+
+.ui-board__cards[data-focus-visible] {
+  box-shadow: inset 0 0 0 2px var(--ref-focus);
+}
+
+.ui-board__cards[data-drop-target] {
+  box-shadow: inset 0 0 0 2px var(--ref-accent);
+}
+
+/* The grid cell inside a card row renders with display: contents, so the row draws the card. A
+ * transparent bottom border spaces the cards, as a virtualized cell measures borders, not margins. */
+.ui-board__card {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  box-sizing: border-box;
+  padding: 8px;
+  border-bottom: 6px solid transparent;
+  border-radius: var(--ref-radius);
+  background: var(--ref-raised);
+  background-clip: padding-box;
+  box-shadow: inset 0 0 0 1px var(--ref-border);
+  outline: none;
+  cursor: grab;
+}
+
+.ui-board__card[data-hovered] {
+  box-shadow: inset 0 0 0 1px var(--ref-border-strong);
+}
+
+.ui-board__card[data-focus-visible] {
+  box-shadow: inset 0 0 0 2px var(--ref-focus);
+}
+
+.ui-board__card[data-dragging] {
+  opacity: 0.5;
+}
+
+.ui-board__card-handle {
+  flex: none;
+}
+
+.ui-board__card-content {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 8px;
+  min-width: 0;
+}
+
+.ui-board__drop-indicator {
+  height: 0;
+  outline: 1px solid var(--ref-accent);
+  outline-offset: -1px;
+}
+
+.ui-board__drop-indicator[data-drop-target] {
+  outline-width: 2px;
+}
+
+.ui-board__empty {
+  color: var(--ref-muted);
+}
+
+.ui-board__add {
+  align-self: stretch;
+}
+
+.ui-board__column-toggle,
+.ui-board__lane-toggle {
+  flex: none;
+}

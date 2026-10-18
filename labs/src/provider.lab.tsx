@@ -55,6 +55,11 @@ const sampleArguments: Partial<Record<keyof UiStrings, readonly unknown[]>> = {
   stateTrigger: ['Status', 'In review'],
   transitionTo: ['Approved'],
   groupHeading: ['Colour', 'Red'],
+  cardCount: [6, 5],
+  moveColumn: ['In progress'],
+  previousRange: ['month'],
+  nextRange: ['week'],
+  calendarEvent: ['Design review', '10:00 AM – 11:00 AM'],
 };
 
 const stringNames = Object.keys(defaultStrings) as Array<keyof UiStrings>;

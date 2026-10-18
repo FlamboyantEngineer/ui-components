@@ -135,6 +135,8 @@ export * from './components/record-chip/index.js';
 export * from './components/steps/index.js';
 export * from './components/wizard/index.js';
 export * from './components/state-timeline/index.js';
+export * from './components/board/index.js';
+export * from './components/calendar-view/index.js';
 export * from './components/reaction-bar/index.js';
 export * from './components/comment-composer/index.js';
 export * from './components/comment-thread/index.js';
