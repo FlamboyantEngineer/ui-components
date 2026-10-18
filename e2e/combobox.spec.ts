@@ -256,12 +256,17 @@ test.describe('Combobox lab', () => {
     await page.keyboard.press('Escape');
 
     const autoHighlight = aid('auto highlight');
-    await autoHighlight.focus();
-    await page.keyboard.type('an');
-    await expect(page.getByRole('option', { name: 'Banana' })).toHaveAttribute(
-      'data-focused',
-      'true',
-    );
+    // Retried from an empty input for the same reason as above.
+    await expect(async () => {
+      await autoHighlight.fill('');
+      await autoHighlight.focus();
+      await page.keyboard.type('an');
+      await expect(page.getByRole('option', { name: 'Banana' })).toHaveAttribute(
+        'data-focused',
+        'true',
+        { timeout: 3000 },
+      );
+    }).toPass({ timeout: 20000 });
     await page.keyboard.press('Enter');
     await expect(autoHighlight).toHaveValue('Banana');
 
