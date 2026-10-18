@@ -13,7 +13,7 @@ Verification: `src/components/color-field/color-field.test.tsx`
 
 ### UIC-COLOR-FIELD-1.2 - Trigger
 
-The control shall be a React Aria button (`ui-color-field__trigger`) holding a small `ColorSwatch` of the value (`ui-color-field__swatch`) and the colour text (`ui-color-field__value`), written in `format`: `hex` (the default, in upper case: `#AABBCC`), `rgb`, `hsl` or `hsb`, or their alpha forms `hexa`, `rgba`, `hsla` and `hsba` (UIC-COLOR-FIELD-3.1), as React Aria writes them. With no colour the swatch is empty and the text is `placeholder` (the provider string `noColor` by default), with `data-placeholder` on the text. The trigger is named by the field label followed by the colour text and described by the field's parts. A read-only or disabled field's trigger is disabled.
+The control shall be a React Aria button (`ui-color-field__trigger`) holding a small `ColorSwatch` of the value (`ui-color-field__swatch`) and the colour text (`ui-color-field__value`), written in `format`: `hex` (the default, in upper case: `#AABBCC`), `rgb`, `hsl` or `hsb`, or their alpha forms `hexa`, `rgba`, `hsla` and `hsba` (UIC-COLOR-FIELD-3.1), as CSS colour text (`rgb(51, 102, 153)`, `hsl(210, 50%, 40%)`, `hsb(210, 67%, 60%)`). With no colour the swatch is empty and the text is `placeholder` (the provider string `noColor` by default), with `data-placeholder` on the text. The trigger is named by the field label followed by the colour text and described by the field's parts. A read-only or disabled field's trigger is disabled.
 
 Implementation: `src/components/color-field/color-field.tsx`, `labs/reference/color-field.css`
 Verification: `src/components/color-field/color-field.test.tsx`, `e2e/color-field.spec.ts`
@@ -80,7 +80,7 @@ Verification: `src/components/color-field/color-field-channels.test.tsx`, `e2e/c
 
 ### UIC-COLOR-FIELD-3.4 - Stored format
 
-`valueFormat` shall choose the text the value is stored as: a hex format in lower case (`#336699`, `#33669980`) and the other formats as React Aria writes them (`rgb(51, 102, 153)`). Without it the value is stored as `hex`, or `hexa` while the shown format has alpha. A stored value that is not `hex` is still read in any format React Aria parses.
+`valueFormat` shall choose the text the value is stored as: a hex format in lower case (`#336699`, `#33669980`) and the other formats as CSS colour text (`rgb(51, 102, 153)`, `hsla(210, 50%, 40%, 0.5)`). Without it the value is stored as `hex`, or `hexa` while the shown format has alpha. A stored value that is not `hex` is still read in any of the formats, with or without alpha, and hex digits may omit the `#`.
 
 Implementation: `src/components/color-field/color-field.tsx`, `src/components/color-field/color-values.ts`
 Verification: `src/components/color-field/color-field-channels.test.tsx`, `src/components/color-field/color-values.test.ts`
@@ -103,7 +103,7 @@ Verification: `src/components/color-field/color-field-eye-dropper.test.tsx`, `e2
 
 ### UIC-COLOR-FIELD-4.3 - Typing a colour
 
-With `allowsTyping`, the control shall be a group (`ui-color-field__group`) of a trigger button holding only the swatch, named by the provider string `colorPicker` from the label (`Accent picker`), and a React Aria text field (`ui-color-field__entry` around `ui-color-field__input`) that carries the control's id, name, description and states and shows the colour text in the format, or nothing with `placeholder` as its hint. Enter, or focus leaving the input, commits the typed text: a colour in any form React Aria parses (hex with or without `#`, `rgb()`, `rgba()`, `hsl()`, `hsla()`, `hsb()`, `hsba()`) sets the value in its stored format and commits it, empty text clears an optional value, and anything else is put back. Escape puts back the typed text; the field's undo and redo chords work from the input. A read-only or disabled field's input is read-only or disabled and its button disabled.
+With `allowsTyping`, the control shall be a group (`ui-color-field__group`) of a trigger button holding only the swatch, named by the provider string `colorPicker` from the label (`Accent picker`), and a React Aria text field (`ui-color-field__entry` around `ui-color-field__input`) that carries the control's id, name, description and states and shows the colour text in the format, or nothing with `placeholder` as its hint. Enter, or focus leaving the input, commits the typed text: a colour in any CSS form (hex with or without `#`, `rgb()`, `rgba()`, `hsl()`, `hsla()`, `hsb()`, `hsba()`) sets the value in its stored format and commits it, empty text clears an optional value, and anything else is put back. Escape puts back the typed text; the field's undo and redo chords work from the input. A read-only or disabled field's input is read-only or disabled and its button disabled.
 
 Implementation: `src/components/color-field/color-field-entry.tsx`, `src/components/color-field/color-field.tsx`, `src/core/strings.ts`
 Verification: `src/components/color-field/color-field-entry.test.tsx`, `e2e/color-field.spec.ts`

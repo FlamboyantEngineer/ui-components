@@ -5,6 +5,7 @@ export type {
   SelectFieldLoader,
   SelectFieldOption,
   SelectFieldOptionRenderer,
+  SelectFieldOptionState,
   SelectFieldPage,
   SelectFieldProps,
   SelectFieldSelectionMode,

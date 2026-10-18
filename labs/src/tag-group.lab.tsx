@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import type { Selection } from '../../src/primitives/index.js';
+import type { Selection } from '../../src/core/props.js';
 import {
   Tag,
   TagGroup,
@@ -86,6 +86,7 @@ function Picker() {
         selectionMode="multiple"
         selectedKeys={selected}
         onSelectionChange={setSelected}
+        disallowEmptySelection
         tone="info"
         data-lab-field="picker"
       >
@@ -141,7 +142,7 @@ mountLab(
     >
       <Basket />
     </LabSection>
-    <LabSection title="Selection" description="React Aria selection passes through.">
+    <LabSection title="Selection" description="Pick several tags; at least one stays selected.">
       <Picker />
     </LabSection>
     <LabSection

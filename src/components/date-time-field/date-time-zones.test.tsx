@@ -40,7 +40,7 @@ describe('DateTimeField time settings, zones and ranges', () => {
     expect(segment(/^hour/)).toBeInTheDocument();
   });
 
-  it('UIC-DATE-TIME-FIELD-4.2 edits an instant in the given time zone', async () => {
+  it('UIC-DATE-TIME-FIELD-4.2 edits a zoned value in the given time zone', async () => {
     const user = userEvent.setup();
     const onCommit = vi.fn();
     const { container, rerender } = renderInLocale(
@@ -48,7 +48,7 @@ describe('DateTimeField time settings, zones and ranges', () => {
         label="Call"
         mode="date-time"
         timeZone="Asia/Tokyo"
-        defaultValue="2026-04-13T03:00:00.000Z"
+        defaultValue="2026-04-13T12:00:00+09:00[Asia/Tokyo]"
         onCommit={onCommit}
       />,
     );
@@ -58,7 +58,7 @@ describe('DateTimeField time settings, zones and ranges', () => {
     expect(zone).toHaveTextContent('GMT+9');
     act(() => segment(/^hour/).focus());
     await user.keyboard('{ArrowUp}');
-    expect(onCommit).toHaveBeenLastCalledWith('2026-04-13T04:00:00.000Z');
+    expect(onCommit).toHaveBeenLastCalledWith('2026-04-13T13:00:00+09:00[Asia/Tokyo]');
     rerender(
       <UiProvider locale="en-US">
         <DateTimeField
@@ -93,7 +93,7 @@ describe('DateTimeField time settings, zones and ranges', () => {
     );
   });
 
-  it('UIC-DATE-TIME-FIELD-4.3 edits a range of dates and times as instants', async () => {
+  it('UIC-DATE-TIME-FIELD-4.3 edits a range of zoned dates and times', async () => {
     const user = userEvent.setup();
     const onCommit = vi.fn();
     const { container } = renderInLocale(
@@ -115,8 +115,8 @@ describe('DateTimeField time settings, zones and ranges', () => {
     act(() => segment(/^hour/, 1).focus());
     await user.keyboard('{ArrowUp}');
     expect(onCommit).toHaveBeenLastCalledWith({
-      start: '2026-04-13T09:00:00.000Z',
-      end: '2026-04-13T18:00:00.000Z',
+      start: '2026-04-13T09:00:00+00:00[UTC]',
+      end: '2026-04-13T18:00:00+00:00[UTC]',
     });
     await user.click(screen.getByRole('button', { name: /Calendar/ }));
     expect(screen.getAllByRole('grid')).toHaveLength(2);

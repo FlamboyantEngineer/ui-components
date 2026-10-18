@@ -1,6 +1,6 @@
 # Combobox
 
-`Combobox` is a text input with a list of suggestions, built on React Aria's `ComboBox`, `Label`, `Group`, `Input`, `Button`, `Popover` and `ListBox`. The reader types freely (with `allowsCustomValue`) or completes the text from the list, and may pick several options, shown as chips in a [Tag Group](TAG-GROUP.md). The combobox filters its own suggestions (`defaultItems`), or the caller filters them, synchronously or asynchronously, from `onInputChange` (`items`). Long lists render virtualized and load more as they scroll ([COLLECTIONS.md](COLLECTIONS.md)); typed text can add a new option, highlight its matches, complete itself inline, and keep the first match highlighted. React Aria owns the roles, the virtual focus in the list and the keyboard behaviour; its props pass through unchanged.
+`Combobox` is a text input with a list of suggestions, built on React Aria's `ComboBox`, `Label`, `Group`, `Input`, `Button`, `Popover` and `ListBox`. The reader types freely (with `allowsCustomValue`) or completes the text from the list, and may pick several options, shown as chips in a [Tag Group](TAG-GROUP.md). The combobox filters its own suggestions (`defaultItems`), or the caller filters them, synchronously or asynchronously, from `onInputChange` (`items`). Long lists render virtualized and load more as they scroll ([COLLECTIONS.md](COLLECTIONS.md)); typed text can add a new option, highlight its matches, complete itself inline, and keep the first match highlighted. React Aria provides the roles, the virtual focus in the list and the keyboard behaviour; the combobox declares its own props and hands them to it.
 
 ## UIC-COMBOBOX-1 - Field
 
@@ -43,7 +43,7 @@ Verification: `src/components/combobox/combobox-suggestions.test.tsx`, `e2e/comb
 
 ### UIC-COMBOBOX-2.2 - Filtering
 
-With `defaultItems`, the combobox shall show the options whose label contains the typed text, ignoring case, and drop sections left empty. With `items`, it shows exactly the given suggestions, so the caller filters them, for example after fetching them from `onInputChange` while `isPending`.
+With `defaultItems`, the combobox shall show the options whose label contains the typed text, ignoring case, and drop sections left empty. With `items`, it shows exactly the given suggestions, so the caller filters them, for example after fetching them from `onInputChange` while `isPending`. The typed text is held by `inputValue` (controlled) or `defaultInputValue`, and every change of it calls `onInputChange` with the text.
 
 Implementation: `src/components/combobox/combobox-suggestions.tsx`
 Verification: `src/components/combobox/combobox-suggestions.test.tsx`, `e2e/combobox.spec.ts`
@@ -57,7 +57,7 @@ Verification: `src/components/combobox/combobox.test.tsx`, `e2e/combobox.spec.ts
 
 ### UIC-COMBOBOX-2.4 - Keyboard and picking
 
-While the list is open, focus shall stay in the input: Arrow Down and Arrow Up move the highlighted option (the input's `aria-activedescendant`, `data-focused` on the option) and pass over disabled options; Enter or a press picks the option, writes its label to the input, calls `onSelectionChange` with its `id` and closes the list; Escape closes the list. A disabled option cannot be picked.
+While the list is open, focus shall stay in the input: Arrow Down and Arrow Up move the highlighted option (the input's `aria-activedescendant`, `data-focused` on the option) and pass over disabled options; Enter or a press picks the option, writes its label to the input, calls `onChange` with its `id` (the value, with `defaultValue` and the controlled `value`, is the picked `id` or `null`) and closes the list; Escape closes the list. A disabled option cannot be picked.
 
 Implementation: `src/components/combobox/combobox-suggestions.tsx`
 Verification: `src/components/combobox/combobox-suggestions.test.tsx`, `e2e/combobox.spec.ts`
@@ -94,7 +94,7 @@ Verification: `src/components/combobox/combobox.test.tsx`, `src/components/combo
 
 ### UIC-COMBOBOX-3.1 - Multiple selection with chips
 
-`selectionMode="multiple"` shall let the reader pick several options, with React Aria's `value`, `defaultValue` and `onChange` holding the list of ids: picking an option toggles it, keeps the list open (`aria-multiselectable` on the listbox) and clears the typed text. The chosen options shall show, in value order, as chips in the library's `TagGroup` (`ui-combobox__chips`, also `ui-tag-group`, sized like the field) at the start of the field group, named by the provider's `selectedValues` string from the label text (or `aria-label`). A chip shows its option's label, or the label it had when last listed if the suggestions no longer list it, or its id. On an editable combobox each chip offers the tag group's remove button, and Delete or Backspace on a focused chip removes it; a disabled or read-only one offers no removal. React Aria hides everything but the input and the list from assistive technology while the list is open.
+`selectionMode="multiple"` shall let the reader pick several options, with `value`, `defaultValue` and `onChange` holding the list of ids: picking an option toggles it, keeps the list open (`aria-multiselectable` on the listbox) and clears the typed text. The chosen options shall show, in value order, as chips in the library's `TagGroup` (`ui-combobox__chips`, also `ui-tag-group`, sized like the field) at the start of the field group, named by the provider's `selectedValues` string from the label text (or `aria-label`). A chip shows its option's label, or the label it had when last listed if the suggestions no longer list it, or its id. On an editable combobox each chip offers the tag group's remove button, and Delete or Backspace on a focused chip removes it; a disabled or read-only one offers no removal. React Aria hides everything but the input and the list from assistive technology while the list is open.
 
 Implementation: `src/components/combobox/combobox.tsx`, `src/components/combobox/combobox-chips.tsx`, `src/components/combobox/combobox-field.tsx`
 Verification: `src/components/combobox/combobox-chips.test.tsx`, `e2e/combobox.spec.ts`
@@ -145,7 +145,7 @@ Verification: `src/components/combobox/combobox-suggestions.test.tsx`, `e2e/comb
 
 ### UIC-COMBOBOX-4.4 - Custom option content
 
-`renderOption(option, state)` shall draw the content of each option row instead of its icon, label and description, receiving the option and React Aria's item render state (`isFocused`, `isSelected`, `isDisabled` and the rest). The row keeps its `option` role, its hook and its label as the text that the filter matches and the input shows once picked.
+`renderOption(option, state)` shall draw the content of each option row instead of its icon, label and description, receiving the option and the row's state (`ComboboxOptionState`: `isFocused`, `isFocusVisible`, `isSelected`, `isHovered`, `isPressed` and `isDisabled`). The row keeps its `option` role, its hook and its label as the text that the filter matches and the input shows once picked.
 
 Implementation: `src/components/combobox/combobox-suggestions.tsx`
 Verification: `src/components/combobox/combobox-suggestions.test.tsx`, `e2e/combobox.spec.ts`

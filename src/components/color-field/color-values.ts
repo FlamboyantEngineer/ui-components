@@ -1,26 +1,40 @@
 // A colour field's value model: the stored text, the formats it is written and edited in, and the
 // channels each format's inputs edit.
 
-import {
-  parseColor,
-  type Color,
-  type ColorChannel,
-  type ColorSpace,
-} from '../../primitives/index.js';
+import { parseColor } from '../../primitives/index.js';
 
 /** How a colour is written and edited: hex, RGB, HSL or HSB, each with or without alpha. */
 export type ColorFieldFormat = 'hex' | 'hexa' | 'rgb' | 'rgba' | 'hsl' | 'hsla' | 'hsb' | 'hsba';
 
+/** The colour space a format's channel inputs edit. */
+export type ColorFormatSpace = 'rgb' | 'hsl' | 'hsb';
+
+/** A channel a colour input edits. */
+export type ColorFormatChannel =
+  | 'red'
+  | 'green'
+  | 'blue'
+  | 'hue'
+  | 'saturation'
+  | 'lightness'
+  | 'brightness'
+  | 'alpha';
+
 /** The inputs a format edits with: a hex input or the channels of a colour space, then alpha. */
 export interface ColorFormatInputs {
   hasHex: boolean;
-  space: ColorSpace | undefined;
-  channels: ColorChannel[];
+  space: ColorFormatSpace | undefined;
+  channels: ColorFormatChannel[];
+}
+
+/** A colour that writes itself in a format, such as the one the picker reports. */
+export interface FormattableColor {
+  toString(format: ColorFieldFormat): string;
 }
 
 const alphaFormats = new Set<ColorFieldFormat>(['hexa', 'rgba', 'hsla', 'hsba']);
 
-const spaces: Record<ColorFieldFormat, ColorSpace | undefined> = {
+const spaces: Record<ColorFieldFormat, ColorFormatSpace | undefined> = {
   hex: undefined,
   hexa: undefined,
   rgb: 'rgb',
@@ -36,33 +50,46 @@ export function hasAlpha(format: ColorFieldFormat): boolean {
   return alphaFormats.has(format);
 }
 
-/** A colour text as a React Aria colour; hex digits may omit the `#`. `null` when it is not one. */
-export function toColor(value: string | null | undefined): Color | null {
-  const text = value?.trim();
-  if (!text) return null;
-  for (const candidate of [text, `#${text}`]) {
-    try {
-      return parseColor(candidate);
-    } catch {
-      // Not a colour in this spelling; try the next one.
-    }
+function attemptParse(text: string) {
+  try {
+    return parseColor(text);
+  } catch {
+    return null;
   }
-  return null;
 }
 
 /**
- * A colour as text in a format, as React Aria writes it but with alpha to two decimals, so a hex
- * alpha (`80`) reads `0.5` rather than `0.5019607843137255`.
+ * A colour text as the CSS colour it spells, trimmed and with a `#` added to bare hex digits;
+ * `null` when it is no colour.
  */
-export function formatColor(color: Color, format: ColorFieldFormat): string {
+export function toColorText(value: string | null | undefined): string | null {
+  const text = value?.trim();
+  if (!text) return null;
+  return [text, `#${text}`].find((candidate) => attemptParse(candidate) !== null) ?? null;
+}
+
+/**
+ * A colour text written in a format, with alpha to two decimals, so a hex alpha (`80`) reads `0.5`
+ * rather than `0.5019607843137255`. Text that is no colour is kept.
+ */
+export function formatColor(text: string, format: ColorFieldFormat): string {
+  const color = attemptParse(text);
+  if (!color) return text;
   const alpha = color.getChannelValue('alpha');
   return color.withChannelValue('alpha', Math.round(alpha * 100) / 100).toString(format);
 }
 
 /** The stored text of a colour: hex in lower case (`#rrggbb`, `#rrggbbaa`), other formats as written. */
-export function toStoredValue(color: Color, format: ColorFieldFormat): string {
+export function toStoredValue(color: FormattableColor, format: ColorFieldFormat): string {
   const text = color.toString(format);
   return format === 'hex' || format === 'hexa' ? text.toLowerCase() : text;
+}
+
+/** A typed colour text as the stored text, or `null` when it is no colour. */
+export function storeColorText(value: string, format: ColorFieldFormat): string | null {
+  const text = toColorText(value);
+  const color = text === null ? null : attemptParse(text);
+  return color ? toStoredValue(color, format) : null;
 }
 
 /** The inputs that edit a format: the hex input or the space's three channels, then alpha. */

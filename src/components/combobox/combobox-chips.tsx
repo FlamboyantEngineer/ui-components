@@ -1,6 +1,7 @@
 import { useContext, useState } from 'react';
-import { ComboBoxStateContext, type Key } from '../../primitives/index.js';
+import { ComboBoxStateContext } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
+import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Tag, TagGroup, type TagGroupSize } from '../tag-group/tag-group.js';
 import type { ComboboxOption } from './combobox-options.js';

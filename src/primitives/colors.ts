@@ -12,11 +12,3 @@ export {
   ColorThumb,
   parseColor,
 } from 'react-aria-components';
-export type {
-  Color,
-  ColorChannel,
-  ColorSpace,
-  ColorSwatchPickerItemProps,
-  ColorSwatchPickerProps,
-  ColorSwatchProps,
-} from 'react-aria-components';

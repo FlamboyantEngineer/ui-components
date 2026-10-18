@@ -183,14 +183,14 @@ test.describe('Date Time Field lab', () => {
     await expect(zoned.locator('[data-type="timeZoneName"]')).toHaveText(/GMT\+9/);
     await zoned.getByRole('spinbutton', { name: /^hour/ }).focus();
     await page.keyboard.press('ArrowUp');
-    await expect(zonedOutput).toHaveText('"2026-04-13T04:00:00.000Z"');
+    await expect(zonedOutput).toHaveText('"2026-04-13T13:00:00+09:00[Asia/Tokyo]"');
 
     const range = field(page, 'time-range');
     await expect(range.locator('[data-type="timeZoneName"]')).toHaveCount(0);
     await range.getByRole('spinbutton', { name: /^hour/ }).nth(1).focus();
     await page.keyboard.press('ArrowDown');
     await expect(zonedOutput).toHaveText(
-      '{"start":"2026-04-13T09:00:00.000Z","end":"2026-04-13T16:00:00.000Z"}',
+      '{"start":"2026-04-13T09:00:00+00:00[UTC]","end":"2026-04-13T16:00:00+00:00[UTC]"}',
     );
     await lab.expectAccessible();
   });

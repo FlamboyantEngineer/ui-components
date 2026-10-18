@@ -1,13 +1,7 @@
 import type { ReactNode } from 'react';
-import {
-  Collection,
-  Header,
-  ListBoxItem,
-  ListBoxSection,
-  type Key,
-  type ListBoxItemRenderProps,
-} from '../../primitives/index.js';
+import { Collection, Header, ListBoxItem, ListBoxSection } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
+import type { Key } from '../../core/props.js';
 import { Glyph } from '../../core/provider.js';
 import { Icon, toIconProps } from '../icon/icon.js';
 import {
@@ -16,10 +10,26 @@ import {
   type SelectFieldOption,
 } from './select-options.js';
 
+/** The state of an option row that `renderOption` draws for. */
+export interface SelectFieldOptionState {
+  /** The option is chosen. */
+  isSelected: boolean;
+  /** The option has focus, from the keyboard or the pointer. */
+  isFocused: boolean;
+  /** The option has keyboard focus. */
+  isFocusVisible: boolean;
+  /** The pointer is over the option. */
+  isHovered: boolean;
+  /** The option is being pressed. */
+  isPressed: boolean;
+  /** The option cannot be chosen. */
+  isDisabled: boolean;
+}
+
 /** Draws an option's content in the list instead of its icon, label and description. */
 export type SelectFieldOptionRenderer = (
   option: SelectFieldOption,
-  state: ListBoxItemRenderProps,
+  state: SelectFieldOptionState,
 ) => ReactNode;
 
 /** How every option of the list is drawn. */
@@ -79,7 +89,18 @@ function OptionRow({
               {state.isSelected ? <Glyph name="check" /> : null}
             </span>
           ) : null}
-          {renderOption ? renderOption(option, state) : <OptionContent option={option} />}
+          {renderOption ? (
+            renderOption(option, {
+              isSelected: state.isSelected,
+              isFocused: state.isFocused,
+              isFocusVisible: state.isFocusVisible,
+              isHovered: state.isHovered,
+              isPressed: state.isPressed,
+              isDisabled: state.isDisabled,
+            })
+          ) : (
+            <OptionContent option={option} />
+          )}
         </>
       )}
     </ListBoxItem>

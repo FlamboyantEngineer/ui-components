@@ -1,16 +1,14 @@
-import {
-  ColorSwatch as AriaColorSwatch,
-  type Color,
-  type ColorSwatchProps as AriaColorSwatchProps,
-} from '../../primitives/index.js';
+import { ColorSwatch as AriaColorSwatch } from '../../primitives/index.js';
+import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Size } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 
-export interface ColorSwatchProps
-  extends Omit<AriaColorSwatchProps, 'className' | 'style' | 'color'>, BaseProps {
-  /** Any CSS colour or React Aria colour. Nothing (or empty text) draws an empty swatch. */
-  color?: string | Color | null | undefined;
+export interface ColorSwatchProps extends BaseProps, AriaLabellingProps {
+  /** Any CSS colour string. Nothing (or empty text) draws an empty swatch. */
+  color?: string | null | undefined;
+  /** Names the colour instead of its name in the locale. */
+  colorName?: string | undefined;
   /** Box size. Defaults to `md`. */
   size?: Size | undefined;
 }
@@ -38,4 +36,8 @@ export function ColorSwatch({
 }
 
 export { ColorSwatchPicker, ColorSwatchPickerItem } from './color-swatch-picker.js';
-export type { ColorSwatchPickerItemProps, ColorSwatchPickerProps } from './color-swatch-picker.js';
+export type {
+  ColorSwatchPickerItemProps,
+  ColorSwatchPickerLayout,
+  ColorSwatchPickerProps,
+} from './color-swatch-picker.js';

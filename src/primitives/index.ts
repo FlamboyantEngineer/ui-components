@@ -14,4 +14,5 @@ export * from './collections.js';
 export * from './drag-and-drop.js';
 export * from './fields.js';
 export * from './dates.js';
+export * from './date-values.js';
 export * from './colors.js';

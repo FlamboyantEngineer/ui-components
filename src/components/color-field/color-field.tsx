@@ -1,10 +1,5 @@
 import { useId } from 'react';
-import {
-  Button as AriaButton,
-  ColorPicker,
-  DialogTrigger,
-  type Color,
-} from '../../primitives/index.js';
+import { Button as AriaButton, ColorPicker, DialogTrigger } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import { useUiStrings } from '../../core/provider.js';
 import { ColorSwatch } from '../color-swatch/color-swatch.js';
@@ -20,7 +15,7 @@ import { ColorFieldPanel, colorFieldHooks as hooks } from './color-field-panel.j
 import {
   formatColor,
   hasAlpha,
-  toColor,
+  toColorText,
   toStoredValue,
   type ColorFieldFormat,
 } from './color-values.js';
@@ -55,7 +50,8 @@ export interface ColorFieldProps extends FieldInputProps<string | null> {
 interface ColorTriggerProps {
   control: FieldControlProps;
   state: FieldState<string | null>;
-  color: Color | null;
+  /** The value as a CSS colour, or `null` without one. */
+  color: string | null;
   text: string;
 }
 
@@ -114,7 +110,7 @@ export function ColorField({
   const { state, field } = useFieldControl(props, { initialValue: null, emptyValue: null });
   const [shownFormat, setFormat] = useControllableState(format, defaultFormat, onFormatChange);
   const storedFormat = valueFormat ?? (hasAlpha(shownFormat) ? 'hexa' : 'hex');
-  const color = toColor(state.value);
+  const color = toColorText(state.value);
   const shownPlaceholder = placeholder ?? strings.noColor;
   return (
     <Field {...field} {...hooks.root({ className: field.className })} state={state}>

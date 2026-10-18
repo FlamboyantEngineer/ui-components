@@ -1,31 +1,51 @@
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useEffect, useMemo, type ReactNode } from 'react';
 import {
+  parseColor,
   ColorSwatchPicker as AriaColorSwatchPicker,
   ColorSwatchPickerItem as AriaColorSwatchPickerItem,
-  type ColorSwatchPickerItemProps as AriaColorSwatchPickerItemProps,
-  type ColorSwatchPickerProps as AriaColorSwatchPickerProps,
 } from '../../primitives/index.js';
+import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Size } from '../../core/props.js';
 import { ColorSwatch } from './color-swatch.js';
 
-export interface ColorSwatchPickerProps
-  extends Omit<AriaColorSwatchPickerProps, 'className' | 'style'>, BaseProps {
+/** How the swatches are laid out: a grid (the arrow keys move in two dimensions) or a stack. */
+export type ColorSwatchPickerLayout = 'grid' | 'stack';
+
+export interface ColorSwatchPickerProps extends BaseProps, AriaLabellingProps {
+  /** The picked colour, as any CSS colour string (controlled). */
+  value?: string | undefined;
+  /** The colour picked at first, when uncontrolled. */
+  defaultValue?: string | undefined;
+  /** Called with the picked item's `color`, as the item gives it. */
+  onChange?: ((color: string) => void) | undefined;
+  /** Defaults to `grid`. */
+  layout?: ColorSwatchPickerLayout | undefined;
   /** The size of every swatch in the list. Defaults to `md`. */
   size?: Size | undefined;
+  /** The `ColorSwatchPickerItem` choices. */
+  children: ReactNode;
 }
 
-export interface ColorSwatchPickerItemProps
-  extends
-    Omit<AriaColorSwatchPickerItemProps, 'className' | 'style' | 'children' | 'render'>,
-    BaseProps {
+export interface ColorSwatchPickerItemProps extends Omit<BaseProps, 'id'> {
+  /** The colour, as any CSS colour string; it is also what `onChange` receives. */
+  color: string;
   /** Names the colour instead of its name in the locale. */
   colorName?: string | undefined;
+  /** Keeps the swatch listed but not pickable. */
+  isDisabled?: boolean | undefined;
 }
 
 const hooks = createHooks('color-swatch-picker', ['item']);
 
 const SwatchSizeContext = createContext<Size>('md');
+
+/** Each item's colour text by the key the building block gives it, to report picks as given. */
+const ColorTextsContext = createContext<Map<string, string> | null>(null);
+
+function toColorKey(color: string): string {
+  return parseColor(color).toString('hexa');
+}
 
 /**
  * A list of colour swatches to choose one from (React Aria `ColorSwatchPicker`): a single-selection
@@ -35,11 +55,26 @@ export function ColorSwatchPicker({
   size = 'md',
   className,
   children,
+  onChange,
   ...rest
 }: ColorSwatchPickerProps) {
+  const texts = useMemo(() => new Map<string, string>(), []);
   return (
-    <AriaColorSwatchPicker {...rest} {...hooks.root({ className, props: rest, data: { size } })}>
-      <SwatchSizeContext.Provider value={size}>{children}</SwatchSizeContext.Provider>
+    <AriaColorSwatchPicker
+      {...rest}
+      {...hooks.root({ className, props: rest, data: { size } })}
+      onChange={
+        onChange
+          ? (color) => {
+              const key = color.toString('hexa');
+              onChange(texts.get(key) ?? key);
+            }
+          : undefined
+      }
+    >
+      <ColorTextsContext value={texts}>
+        <SwatchSizeContext value={size}>{children}</SwatchSizeContext>
+      </ColorTextsContext>
     </AriaColorSwatchPicker>
   );
 }
@@ -52,6 +87,14 @@ export function ColorSwatchPickerItem({
   ...rest
 }: ColorSwatchPickerItemProps) {
   const size = useContext(SwatchSizeContext);
+  const texts = useContext(ColorTextsContext);
+  useEffect(() => {
+    const key = toColorKey(color);
+    texts?.set(key, color);
+    return () => {
+      if (texts?.get(key) === color) texts.delete(key);
+    };
+  }, [texts, color]);
   return (
     <AriaColorSwatchPickerItem
       {...rest}
