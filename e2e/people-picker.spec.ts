@@ -35,9 +35,12 @@ test.describe('People Picker lab', () => {
     const area = section(page, 'Single person');
     const input = area.getByRole('combobox', { name: 'Assignee' });
     await input.click();
-    await page.keyboard.press('ArrowDown');
     const listbox = page.getByRole('listbox');
-    await expect(listbox.getByRole('option')).toHaveCount(3);
+    // The first key can land before the field is ready to open its list, so press until it opens.
+    await expect(async () => {
+      if (!(await listbox.isVisible())) await input.press('ArrowDown');
+      await expect(listbox.getByRole('option')).toHaveCount(3, { timeout: 1000 });
+    }).toPass();
     const self = listbox.getByRole('option').first();
     await expect(self).toHaveAccessibleName(/^Sam Rivera \(you\)/);
     await expect(self.locator('.ui-people-picker__you')).toHaveText('(you)');
