@@ -16,11 +16,15 @@ import {
   ArrowsPointingOutIcon,
   ArrowsUpDownIcon,
   Bars2Icon,
+  BellIcon,
   CalendarIcon,
   CheckCircleIcon,
   CheckIcon,
+  ClockIcon,
   DocumentDuplicateIcon,
   DocumentIcon,
+  EnvelopeIcon,
+  EnvelopeOpenIcon,
   ChevronDoubleLeftIcon,
   ChevronDoubleRightIcon,
   ChevronDownIcon,
@@ -129,6 +133,10 @@ export const defaultGlyphs = {
   offline: SignalSlashIcon,
   lock: LockClosedIcon,
   emoji: FaceSmileIcon,
+  bell: BellIcon,
+  clock: ClockIcon,
+  envelope: EnvelopeIcon,
+  'envelope-open': EnvelopeOpenIcon,
 } satisfies Record<string, GlyphComponent>;
 
 export const glyphNames = Object.keys(defaultGlyphs) as GlyphName[];

@@ -134,3 +134,6 @@ export * from './components/comment-thread/index.js';
 export * from './components/activity-feed/index.js';
 export * from './components/change-list/index.js';
 export * from './components/version-history/index.js';
+export * from './components/notification-center/index.js';
+export * from './components/approval-panel/index.js';
+export * from './components/decision-control/index.js';
