@@ -34,6 +34,7 @@ import {
   EyeDropperIcon,
   EyeIcon,
   EyeSlashIcon,
+  FaceSmileIcon,
   FolderIcon,
   FunnelIcon,
   InformationCircleIcon,
@@ -127,6 +128,7 @@ export const defaultGlyphs = {
   'trend-flat': ArrowLongRightIcon,
   offline: SignalSlashIcon,
   lock: LockClosedIcon,
+  emoji: FaceSmileIcon,
 } satisfies Record<string, GlyphComponent>;
 
 export const glyphNames = Object.keys(defaultGlyphs) as GlyphName[];

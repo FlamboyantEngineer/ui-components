@@ -1,0 +1,25 @@
+/* Comment Composer */
+
+.ui-comment-composer {
+  display: grid;
+  gap: 6px;
+}
+
+.ui-comment-composer__field {
+  width: 100%;
+}
+
+.ui-comment-composer__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.ui-comment-composer__cancel,
+.ui-comment-composer__submit {
+  flex: none;
+}
+
+.ui-comment-composer[data-pending] .ui-comment-composer__field {
+  opacity: 0.8;
+}
