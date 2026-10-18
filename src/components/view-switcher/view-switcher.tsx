@@ -1,0 +1,264 @@
+import { useState, type ReactNode } from 'react';
+import type { AriaLabellingProps } from '../../core/events.js';
+import { createHooks } from '../../core/hooks.js';
+import type { BaseProps, Key } from '../../core/props.js';
+import { Glyph, useUiStrings } from '../../core/provider.js';
+import { useControllableState } from '../../core/controllable-state.js';
+import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
+import type { IconSource } from '../icon/icon.js';
+import type { MenuEntry } from '../menu/menu.js';
+import { Tab, TabList, TabPanel, Tabs } from '../tabs/tabs.js';
+import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
+import {
+  listViewActions,
+  type ViewActionContext,
+  type ViewActionHandlers,
+} from './view-actions.js';
+import { ViewDialogs, type ViewDialog } from './view-dialogs.js';
+
+/** One saved view of a collection. */
+export interface ViewSwitcherView {
+  /** Identifies the view. */
+  id: Key;
+  /** The view's name. */
+  label: string;
+  /** A glyph name or icon node before the name, such as the view's layout. Decorative. */
+  icon?: IconSource;
+}
+
+/** `tabs` lists the views as tabs; `menu` puts them in a menu, for many views or little room. */
+export type ViewSwitcherVariant = 'tabs' | 'menu';
+
+export interface ViewSwitcherProps extends BaseProps, AriaLabellingProps, ViewActionHandlers {
+  /** The saved views, in order. */
+  views: readonly ViewSwitcherView[];
+  /** The selected view's `id`, controlled. */
+  selectedKey?: Key | undefined;
+  /** The view selected at first, uncontrolled. Defaults to the default view, else the first. */
+  defaultSelectedKey?: Key | undefined;
+  /** Called with the view the reader selects. */
+  onSelectionChange?: ((key: Key) => void) | undefined;
+  /** The selected view's current settings differ from its saved ones. */
+  isDirty?: boolean | undefined;
+  /** The view that opens first, which is marked. */
+  defaultViewKey?: Key | null | undefined;
+  /** How the views show. Defaults to `tabs`. */
+  variant?: ViewSwitcherVariant | undefined;
+  /** The selected view's content: the tab panel of `tabs`, after the menu of `menu`. */
+  children?: ReactNode;
+}
+
+const hooks = createHooks('view-switcher', [
+  'bar',
+  'tabs',
+  'tab',
+  'menu',
+  'label',
+  'default',
+  'modified',
+  'actions',
+  'panel',
+]);
+
+/** A view's name with its marks: the default view's star and the modified mark. */
+function ViewLabel({
+  view,
+  isDefault,
+  isModified,
+}: {
+  view: ViewSwitcherView;
+  isDefault: boolean;
+  isModified: boolean;
+}) {
+  const strings = useUiStrings();
+  return (
+    <>
+      <span {...hooks.slot('label')}>{view.label}</span>
+      {isDefault ? (
+        <>
+          {' '}
+          <span {...hooks.slot('default')}>
+            <Glyph name="star" />
+            <VisuallyHidden elementType="span">{strings.defaultView}</VisuallyHidden>
+          </span>
+        </>
+      ) : null}
+      {isModified ? (
+        <>
+          {' '}
+          <span {...hooks.slot('modified')}>
+            <VisuallyHidden elementType="span">{strings.viewModified}</VisuallyHidden>
+          </span>
+        </>
+      ) : null}
+    </>
+  );
+}
+
+/** The views as tabs, each with a menu of its actions; the panel holds the content. */
+function ViewTabs({
+  props,
+  selectedKey,
+  onSelect,
+  getActions,
+  actions,
+}: {
+  props: ViewSwitcherProps;
+  selectedKey: Key | null;
+  onSelect: (key: Key) => void;
+  getActions: (key: Key) => MenuEntry[];
+  actions: ReactNode;
+}) {
+  const strings = useUiStrings();
+  const { views, defaultViewKey, isDirty = false } = props;
+  return (
+    <Tabs selectedKey={selectedKey ?? undefined} onSelectionChange={onSelect} size="sm">
+      <div {...hooks.slot('bar')}>
+        <TabList
+          className={hooks.slotClass('tabs')}
+          aria-label={props['aria-label'] ?? (props['aria-labelledby'] ? undefined : strings.views)}
+          aria-labelledby={props['aria-labelledby']}
+          overflow="menu"
+          getMenuItems={(key) => getActions(key)}
+        >
+          {views.map((view) => (
+            <Tab
+              key={view.id}
+              id={view.id}
+              icon={view.icon}
+              textValue={view.label}
+              className={hooks.slotClass('tab')}
+            >
+              <ViewLabel
+                view={view}
+                isDefault={view.id === defaultViewKey}
+                isModified={isDirty && view.id === selectedKey}
+              />
+            </Tab>
+          ))}
+        </TabList>
+        {actions}
+      </div>
+      {views.map((view) => (
+        // Only the selected view's panel renders; it holds the content shown for that view.
+        <TabPanel key={view.id} id={view.id} className={hooks.slotClass('panel')}>
+          {props.children}
+        </TabPanel>
+      ))}
+    </Tabs>
+  );
+}
+
+/** The views in a menu whose button shows the selected view. */
+function ViewMenu({
+  props,
+  selected,
+  onSelect,
+}: {
+  props: ViewSwitcherProps;
+  selected: ViewSwitcherView | undefined;
+  onSelect: (key: Key) => void;
+}) {
+  const strings = useUiStrings();
+  const { views, defaultViewKey, isDirty = false } = props;
+  return (
+    <DropdownMenu
+      className={hooks.slotClass('menu')}
+      label={
+        selected ? (
+          <ViewLabel
+            view={selected}
+            isDefault={selected.id === defaultViewKey}
+            isModified={isDirty}
+          />
+        ) : (
+          strings.views
+        )
+      }
+      icon={selected?.icon}
+      aria-label={props['aria-label'] ?? strings.views}
+      selectionMode="single"
+      disallowEmptySelection
+      selectedKeys={selected ? [selected.id] : []}
+      onSelectionChange={(keys) => {
+        const [key] = keys === 'all' ? [] : [...keys];
+        if (key !== undefined) onSelect(key);
+      }}
+      items={views.map((view) => ({
+        id: view.id,
+        label: view.label,
+        icon: view.icon,
+        description: view.id === defaultViewKey ? strings.defaultView : undefined,
+      }))}
+    />
+  );
+}
+
+/**
+ * Names and switches the saved views of a collection, as tabs or a menu. The selected view shows a
+ * modified mark while its settings differ from its saved ones; its actions save, save as a new
+ * view, reset, rename, make it the default view or delete it, each tab also offering its own.
+ */
+export function ViewSwitcher(props: ViewSwitcherProps) {
+  const { views, variant = 'tabs', isDirty = false, defaultViewKey = null } = props;
+  const { className, id } = props;
+  const strings = useUiStrings();
+  const [selectedKey, setSelectedKey] = useControllableState<Key | null>(
+    props.selectedKey,
+    props.defaultSelectedKey ?? defaultViewKey ?? views[0]?.id ?? null,
+    (key) => {
+      if (key !== null) props.onSelectionChange?.(key);
+    },
+  );
+  const [dialog, setDialog] = useState<ViewDialog | null>(null);
+  const selected = views.find((view) => view.id === selectedKey);
+  const context: ViewActionContext = {
+    handlers: props,
+    strings,
+    selectedKey,
+    isDirty,
+    defaultViewKey,
+    canDelete: views.length > 1,
+    openDialog: setDialog,
+  };
+  const getActions = (key: Key) =>
+    listViewActions(key, views.find((view) => view.id === key)?.label ?? String(key), context);
+  const selectedActions = selected ? getActions(selected.id) : [];
+  const actions =
+    selected && selectedActions.length > 0 ? (
+      <DropdownMenu
+        iconOnly
+        label={strings.viewActions(selected.label)}
+        variant="ghost"
+        size="sm"
+        className={hooks.slotClass('actions')}
+        items={selectedActions}
+      />
+    ) : null;
+  const data = { variant, dirty: isDirty };
+  return (
+    <div id={id} {...hooks.root({ className, props, data })}>
+      {variant === 'tabs' ? (
+        <ViewTabs
+          props={props}
+          selectedKey={selectedKey}
+          onSelect={setSelectedKey}
+          getActions={getActions}
+          actions={actions}
+        />
+      ) : (
+        <>
+          <div {...hooks.slot('bar')}>
+            <ViewMenu props={props} selected={selected} onSelect={setSelectedKey} />
+            {actions}
+          </div>
+          {props.children}
+        </>
+      )}
+      <ViewDialogs
+        dialog={dialog}
+        onClose={() => setDialog((open) => open && { ...open, isOpen: false })}
+      />
+    </div>
+  );
+}

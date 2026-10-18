@@ -1,4 +1,5 @@
 import {
+  AdjustmentsHorizontalIcon,
   ArrowDownIcon,
   ArrowLeftIcon,
   ArrowLongRightIcon,
@@ -51,6 +52,7 @@ import {
   PlusIcon,
   QuestionMarkCircleIcon,
   SignalSlashIcon,
+  StarIcon,
   StopIcon,
   TrashIcon,
   UsersIcon,
@@ -141,6 +143,8 @@ export const defaultGlyphs = {
   'envelope-open': EnvelopeOpenIcon,
   send: PaperAirplaneIcon,
   stop: StopIcon,
+  star: StarIcon,
+  adjustments: AdjustmentsHorizontalIcon,
 } satisfies Record<string, GlyphComponent>;
 
 export const glyphNames = Object.keys(defaultGlyphs) as GlyphName[];

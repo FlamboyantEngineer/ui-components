@@ -141,3 +141,8 @@ export * from './components/version-history/index.js';
 export * from './components/notification-center/index.js';
 export * from './components/approval-panel/index.js';
 export * from './components/decision-control/index.js';
+export * from './components/inline-edit/index.js';
+export * from './components/transition-menu/index.js';
+export * from './components/record-header/index.js';
+export * from './components/view-switcher/index.js';
+export * from './components/display-options/index.js';

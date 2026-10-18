@@ -1,0 +1,38 @@
+/* Transition Menu */
+
+.ui-transition-menu {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+}
+
+.ui-transition-menu__trigger {
+  gap: 2px;
+  padding-inline: 2px;
+  border-radius: 999px;
+}
+
+.ui-transition-menu__trigger[data-hovered] .ui-transition-menu__badge {
+  border-color: var(--ref-border-strong);
+}
+
+.ui-transition-menu__badge {
+  pointer-events: none;
+}
+
+.ui-transition-menu[data-pending] .ui-transition-menu__trigger {
+  cursor: progress;
+}
+
+.ui-transition-menu__transition .ui-status-light {
+  flex: none;
+}
+
+.ui-transition-menu__transition[data-disabled] .ui-menu-item__description {
+  color: var(--ref-muted);
+  font-style: italic;
+}
+
+.ui-transition-menu__comment {
+  width: 100%;
+}
