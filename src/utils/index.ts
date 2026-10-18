@@ -166,3 +166,10 @@ export type { TimeScale, TimeScaleOptions, TimeScaleUnit, TimeTickOptions } from
 export { defaultUrlSchemes, isSafeUrl } from './safe-url.js';
 export { encodeQr } from './encode-qr.js';
 export type { QrEncodeOptions, QrErrorCorrection, QrSymbol } from './encode-qr.js';
+export { layoutLayeredGraph } from './layered-layout.js';
+export type {
+  LayeredLayoutEdge,
+  LayeredLayoutNode,
+  LayeredLayoutOptions,
+  LayeredLayoutPosition,
+} from './layered-layout.js';

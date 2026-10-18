@@ -50,6 +50,7 @@
 @import url('reference/date-time-field.css');
 @import url('reference/decision-control.css');
 @import url('reference/description-list.css');
+@import url('reference/diagram-canvas.css');
 @import url('reference/disclosure.css');
 @import url('reference/display-options.css');
 @import url('reference/dock-panel.css');
@@ -147,6 +148,7 @@
 @import url('reference/sparkline.css');
 @import url('reference/split-view.css');
 @import url('reference/stat-tile.css');
+@import url('reference/state-machine-view.css');
 @import url('reference/state-timeline.css');
 @import url('reference/status-light.css');
 @import url('reference/step-list-editor.css');

@@ -178,3 +178,5 @@ export * from './components/permission-matrix/index.js';
 export * from './components/relation-columns/index.js';
 export * from './components/chart/index.js';
 export * from './components/dashboard-grid/index.js';
+export * from './components/diagram-canvas/index.js';
+export * from './components/state-machine-view/index.js';

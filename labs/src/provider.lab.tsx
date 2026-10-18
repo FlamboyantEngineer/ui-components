@@ -107,6 +107,14 @@ const sampleArguments: Partial<Record<keyof UiStrings, readonly unknown[]>> = {
   pivotAggregate: ['average'],
   pivotValueLabel: ['Sum', 'Boxes'],
   pivotAggregationOf: ['Boxes'],
+  diagramPortLabel: ['Pump', 'outlet'],
+  diagramOutgoing: ['Valve, Tank'],
+  diagramIncoming: ['Inlet'],
+  diagramMoved: ['Pump', 1],
+  diagramConnecting: ['Pump, outlet'],
+  diagramConnected: ['Pump', 'Valve'],
+  diagramRemoved: [2],
+  diagramRemoveConnection: ['Pump', 'Valve'],
 };
 
 const stringNames = Object.keys(defaultStrings) as Array<keyof UiStrings>;

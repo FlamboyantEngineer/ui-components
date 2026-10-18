@@ -2,6 +2,7 @@ import { analysisStrings, type AnalysisStrings } from './analysis-strings.js';
 import { commonStrings, type CommonStrings } from './common-strings.js';
 import { contentStrings, type ContentStrings } from './content-strings.js';
 import { dashboardStrings, type DashboardStrings } from './dashboard-strings.js';
+import { diagramStrings, type DiagramStrings } from './diagram-strings.js';
 import { diffStrings, type DiffStrings } from './diff-strings.js';
 import { editingStrings, type EditingStrings } from './editing-strings.js';
 import { fieldStrings, type FieldStrings } from './field-strings.js';
@@ -29,6 +30,7 @@ export interface UiStrings
     CommonStrings,
     ContentStrings,
     DashboardStrings,
+    DiagramStrings,
     DiffStrings,
     EditingStrings,
     FieldStrings,
@@ -51,6 +53,7 @@ export const defaultStrings: UiStrings = {
   ...commonStrings,
   ...contentStrings,
   ...dashboardStrings,
+  ...diagramStrings,
   ...diffStrings,
   ...editingStrings,
   ...fieldStrings,
