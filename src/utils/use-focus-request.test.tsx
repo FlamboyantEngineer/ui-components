@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useFocusRequest } from './use-focus-request.js';
@@ -47,5 +47,20 @@ describe('useFocusRequest', () => {
     act(() => screen.getByRole('button', { name: 'Add' }).focus());
     act(() => vi.advanceTimersToNextFrame());
     expect(screen.getByRole('button', { name: 'Add' })).toHaveFocus();
+  });
+
+  it('UIC-STEP-LIST-EDITOR-4.2 stops retrying once the reader acts again', () => {
+    vi.useFakeTimers({ toFake: ['requestAnimationFrame', 'cancelAnimationFrame'] });
+    render(<Editor />);
+    const add = screen.getByRole('button', { name: 'Add' });
+    act(() => add.click());
+    expect(screen.getByRole('textbox', { name: 'item-1' })).toHaveFocus();
+    // A retry is still pending to confirm focus held; the reader presses elsewhere first.
+    act(() => {
+      fireEvent.pointerDown(add);
+      add.focus();
+    });
+    act(() => vi.advanceTimersToNextFrame());
+    expect(add).toHaveFocus();
   });
 });
