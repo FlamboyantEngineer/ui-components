@@ -95,6 +95,7 @@
 @import url('reference/path.css');
 @import url('reference/pdf-viewer.css');
 @import url('reference/people-picker.css');
+@import url('reference/permission-matrix.css');
 @import url('reference/pin-input.css');
 @import url('reference/popover.css');
 @import url('reference/portal.css');
@@ -113,6 +114,8 @@
 @import url('reference/record-chip.css');
 @import url('reference/record-header.css');
 @import url('reference/record-label.css');
+@import url('reference/relation-columns.css');
+@import url('reference/relation-matrix.css');
 @import url('reference/relative-date-field.css');
 @import url('reference/relative-time.css');
 @import url('reference/save-status.css');

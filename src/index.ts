@@ -156,3 +156,6 @@ export * from './components/transition-menu/index.js';
 export * from './components/record-header/index.js';
 export * from './components/view-switcher/index.js';
 export * from './components/display-options/index.js';
+export * from './components/relation-matrix/index.js';
+export * from './components/permission-matrix/index.js';
+export * from './components/relation-columns/index.js';

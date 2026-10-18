@@ -1,0 +1,75 @@
+/* Relation Columns: side-by-side bordered columns that scroll sideways, the start item's column accented. */
+
+.ui-relation-columns {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 100%;
+}
+
+.ui-relation-columns__path {
+  min-width: 0;
+}
+
+.ui-relation-columns__columns {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  padding-bottom: 4px;
+  overflow-x: auto;
+}
+
+.ui-relation-columns__column {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 17rem;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-canvas);
+}
+
+.ui-relation-columns__column[data-direction='item'] {
+  border-color: var(--ref-accent);
+}
+
+.ui-relation-columns__column-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius) var(--ref-radius) 0 0;
+  background: var(--ref-surface);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.ui-relation-columns__column-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-relation-columns__column-count,
+.ui-relation-columns__item-count {
+  flex: none;
+  color: var(--ref-muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-relation-columns__list {
+  max-height: 16rem;
+  overflow: auto;
+}
+
+.ui-relation-columns__item {
+  min-height: 40px;
+}
+
+.ui-relation-columns__empty {
+  padding: 12px;
+}
