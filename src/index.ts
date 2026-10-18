@@ -12,6 +12,8 @@ export * from './components/portal/index.js';
 export * from './components/projection/index.js';
 export * from './components/overflow-list/index.js';
 export * from './components/svg-markup/index.js';
+export * from './components/html-markup/index.js';
+export * from './components/markdown/index.js';
 export * from './components/layout/index.js';
 export * from './components/split-view/index.js';
 export * from './components/dock-panel/index.js';

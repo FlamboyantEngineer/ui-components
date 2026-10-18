@@ -1,6 +1,8 @@
 // A DOM-free parser for SVG markup strings. It reads the subset of XML that icon and illustration
 // files use and returns a plain, frozen tree that React can render without innerHTML.
 
+import { tokenizeMarkup, type MarkupOpenToken } from '../../utils/markup.js';
+
 export interface SvgElementNode {
   readonly type: 'element';
   /** The tag name as written (`path`, `linearGradient`). The root is always `svg`. */
@@ -24,47 +26,18 @@ interface MutableElement {
   children: Array<MutableElement | SvgTextNode>;
 }
 
-/** The parse so far: the markup, a document node holding the top-level elements, and open elements. */
+/** The parse so far: a document node holding the top-level elements, and the open elements. */
 interface ParserState {
-  markup: string;
   root: MutableElement;
   stack: MutableElement[];
 }
 
-const tagPattern = /<(\/)?([A-Za-z_][\w:.-]*)((?:[^<>"']|"[^"]*"|'[^']*')*?)(\/)?>/y;
-const attributePattern = /([^\s=/>"']+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+)))?/g;
-const entityPattern = /&(#x[0-9a-f]+|#[0-9]+|amp|lt|gt|quot|apos);/gi;
-const namedEntities: Readonly<Record<string, string>> = {
-  amp: '&',
-  lt: '<',
-  gt: '>',
-  quot: '"',
-  apos: "'",
-};
-
 /** Elements whose whole subtree is dropped: scripts and embedded HTML. */
-const droppedElements = new Set(['script', 'foreignobject']);
+const droppedElements: ReadonlySet<string> = new Set(['script', 'foreignobject']);
 const urlAttributes = new Set(['href', 'xlink:href', 'src']);
 
 const cacheLimit = 256;
 const cache = new Map<string, SvgElementNode>();
-
-function decodeEntities(text: string): string {
-  return text.replace(entityPattern, (match, entity: string) => {
-    const lower = entity.toLowerCase();
-    if (lower.startsWith('#x')) return decodeCodePoint(Number.parseInt(lower.slice(2), 16), match);
-    if (lower.startsWith('#')) return decodeCodePoint(Number.parseInt(lower.slice(1), 10), match);
-    return namedEntities[lower] ?? match;
-  });
-}
-
-function decodeCodePoint(value: number, fallback: string): string {
-  try {
-    return String.fromCodePoint(value);
-  } catch {
-    return fallback;
-  }
-}
 
 function isUnsafeUrl(value: string): boolean {
   // Browsers ignore control characters and whitespace inside a scheme.
@@ -77,35 +50,14 @@ function isUnsafeUrl(value: string): boolean {
   return compact.startsWith('javascript:') || compact.startsWith('vbscript:');
 }
 
-function parseAttributes(source: string): Record<string, string> {
-  const attributes: Record<string, string> = {};
-  for (const match of source.matchAll(attributePattern)) {
-    const name = match[1];
-    if (!name || name in attributes) continue;
+function filterAttributes(attributes: Readonly<Record<string, string>>): Record<string, string> {
+  const kept: Record<string, string> = {};
+  for (const [name, value] of Object.entries(attributes)) {
     if (/^on/i.test(name)) continue;
-    const value = decodeEntities(match[2] ?? match[3] ?? match[4] ?? '');
     if (urlAttributes.has(name.toLowerCase()) && isUnsafeUrl(value)) continue;
-    attributes[name] = value;
+    kept[name] = value;
   }
-  return attributes;
-}
-
-/** Index just past the `>` that closes a declaration such as a doctype with an internal subset. */
-function findDeclarationEnd(markup: string, start: number): number {
-  let depth = 0;
-  for (let index = start; index < markup.length; index += 1) {
-    const char = markup[index];
-    if (char === '[') depth += 1;
-    else if (char === ']') depth = Math.max(0, depth - 1);
-    else if (char === '>' && depth === 0) return index + 1;
-  }
-  return markup.length;
-}
-
-/** Index just past the next `terminator` from `from`, or the end of the markup. */
-function findIndexAfter(markup: string, terminator: string, from: number): number {
-  const end = markup.indexOf(terminator, from);
-  return end === -1 ? markup.length : end + terminator.length;
+  return kept;
 }
 
 function freezeNode(node: MutableElement | SvgTextNode): SvgNode {
@@ -128,77 +80,39 @@ function addText(state: ParserState, text: string): void {
   currentElement(state).children.push({ type: 'text', text });
 }
 
-/**
- * Reads a construct that is not an element tag at `open`: a comment, processing instruction or
- * declaration (dropped) or a CDATA section (kept as text). Returns the index after it, or null when
- * `open` starts a tag.
- */
-function parseNonElement(state: ParserState, open: number): number | null {
-  const { markup } = state;
-  if (markup.startsWith('<!--', open)) return findIndexAfter(markup, '-->', open + 4);
-  if (markup.startsWith('<![CDATA[', open)) {
-    const close = markup.indexOf(']]>', open + 9);
-    const end = close === -1 ? markup.length : close;
-    addText(state, markup.slice(open + 9, end));
-    return close === -1 ? end : end + 3;
-  }
-  if (markup.startsWith('<?', open)) return findIndexAfter(markup, '?>', open + 2);
-  if (markup.startsWith('<!', open)) return findDeclarationEnd(markup, open + 2);
-  return null;
-}
-
 /** Closes the nearest open element named `tag`, and any left open inside it. */
 function closeElement(state: ParserState, tag: string): void {
   const at = state.stack.findLastIndex((element, position) => position > 0 && element.tag === tag);
   if (at > 0) state.stack.length = at;
 }
 
-/** Index just past the closing tag of a dropped element that starts before `from`. */
-function skipElement(markup: string, tag: string, from: number): number {
-  const closer = new RegExp(`</${tag}\\s*>`, 'ig');
-  closer.lastIndex = from;
-  return closer.exec(markup) ? closer.lastIndex : markup.length;
-}
-
-/** Reads the tag at `open` into the tree and returns the index after it. */
-function parseTag(state: ParserState, open: number): number {
-  const { markup } = state;
-  tagPattern.lastIndex = open;
-  const match = tagPattern.exec(markup);
-  if (!match) {
-    addText(state, '<');
-    return open + 1;
-  }
-  const end = tagPattern.lastIndex;
-  const [, closing, tag = '', attributeSource = '', selfClosing] = match;
-  if (closing) {
-    closeElement(state, tag);
-    return end;
-  }
-  if (droppedElements.has(tag.toLowerCase())) {
-    return selfClosing ? end : skipElement(markup, tag, end);
-  }
+function openElement(state: ParserState, token: MarkupOpenToken): void {
   const element: MutableElement = {
     type: 'element',
-    tag,
-    attributes: parseAttributes(attributeSource),
+    tag: token.tag,
+    attributes: filterAttributes(token.attributes),
     children: [],
   };
   currentElement(state).children.push(element);
-  if (!selfClosing) state.stack.push(element);
-  return end;
+  if (!token.isSelfClosing) state.stack.push(element);
 }
 
 function parseTree(markup: string): SvgElementNode {
   const root: MutableElement = { type: 'element', tag: '#document', attributes: {}, children: [] };
-  const state: ParserState = { markup, root, stack: [root] };
-  let index = 0;
-  while (index < markup.length) {
-    const open = markup.indexOf('<', index);
-    const textEnd = open === -1 ? markup.length : open;
-    if (textEnd > index) addText(state, decodeEntities(markup.slice(index, textEnd)));
-    if (open === -1) break;
-    index = parseNonElement(state, open) ?? parseTag(state, open);
+  const state: ParserState = { root, stack: [root] };
+  let dropping: string | null = null;
+  for (const token of tokenizeMarkup(markup, { rawTextElements: droppedElements })) {
+    if (dropping !== null) {
+      if (token.type === 'close' && token.tag === dropping) dropping = null;
+    } else if (token.type === 'text') {
+      addText(state, token.text);
+    } else if (token.type === 'close') {
+      closeElement(state, token.tag);
+    } else if (droppedElements.has(token.tag.toLowerCase())) {
+      dropping = token.isSelfClosing ? null : token.tag;
+    } else {
+      openElement(state, token);
+    }
   }
   const svg = root.children.find(
     (child): child is MutableElement =>
