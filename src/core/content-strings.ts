@@ -1,6 +1,6 @@
 /**
  * Strings of the folder manager, code and JSON editors, emoji picker, PDF viewer, data tables,
- * timestamps, save status and record labels.
+ * timestamps, save status, record labels and outlines.
  */
 export interface ContentStrings {
   newFolder: string;
@@ -80,8 +80,10 @@ export interface ContentStrings {
   sidebar: string;
   /** Names a document's page thumbnails. */
   pages: string;
-  /** Names a document's outline (its bookmarks). */
+  /** Names a document's outline (its bookmarks or headings). */
   outline: string;
+  /** Names the toggle that shows or hides the entries under an outline entry, from its label. */
+  sectionsIn: (label: string) => string;
   /** Names one page of a document or a page navigation (`Page 3`). */
   pageNumber: (pageNumber: number) => string;
   rotateClockwise: string;
@@ -203,6 +205,7 @@ export const contentStrings: ContentStrings = {
   sidebar: 'Sidebar',
   pages: 'Pages',
   outline: 'Outline',
+  sectionsIn: (label) => `Sections in ${label}`,
   pageNumber: (pageNumber) => `Page ${pageNumber}`,
   rotateClockwise: 'Rotate clockwise',
   rotateCounterclockwise: 'Rotate counterclockwise',
