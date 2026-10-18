@@ -3,6 +3,7 @@ import {
   ProjectionContent,
   ProjectionOutlet,
   ProjectionProvider,
+  useProjectedContent,
 } from '../../src/components/projection/projection.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
@@ -100,6 +101,43 @@ function SharedToolbar() {
   );
 }
 
+/** A caption that renders only while its slot has content. */
+function Caption() {
+  const caption = useProjectedContent('caption');
+  return caption === undefined ? null : <figcaption data-lab-caption="">{caption}</figcaption>;
+}
+
+/**
+ * A panel owns a private `caption` slot through a scoped provider; its `page-title` content still
+ * reaches the outer provider's outlet.
+ */
+function ScopedPanel() {
+  const [captioned, setCaptioned] = useState(true);
+  return (
+    <ProjectionProvider>
+      <div data-lab-title="">
+        <strong>Page title:</strong> <ProjectionOutlet slot="page-title" fallback={<em>None</em>} />
+      </div>
+      <ProjectionProvider slots={['caption']}>
+        <figure data-lab-figure="">
+          <p>A bowl of cherries.</p>
+          <Caption />
+        </figure>
+        <ProjectionContent slot="page-title">Still life</ProjectionContent>
+        {captioned ? <ProjectionContent slot="caption">Cherries, 1890</ProjectionContent> : null}
+        <label>
+          <input
+            type="checkbox"
+            checked={captioned}
+            onChange={(event) => setCaptioned(event.target.checked)}
+          />{' '}
+          Caption
+        </label>
+      </ProjectionProvider>
+    </ProjectionProvider>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -118,6 +156,12 @@ mountLab(
       description="Each page declares its own tools; the toolbar renders them while the page keeps their state. Overlay tools stack on top."
     >
       <SharedToolbar />
+    </LabSection>
+    <LabSection
+      title="Scoped provider"
+      description="An inner provider owns only the caption slot, read with useProjectedContent so the caption element exists only while it has content; the page title passes through to the outer outlet."
+    >
+      <ScopedPanel />
     </LabSection>
   </>,
 );

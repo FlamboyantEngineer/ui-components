@@ -7,10 +7,16 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 
 export interface ProjectionProviderProps {
   /** The content that publishes to and renders the slots. */
   children?: ReactNode;
+  /**
+   * The only slots this provider owns. Content and outlets of other slots below it reach the
+   * enclosing provider, as if this one were not there. Without it the provider owns every slot.
+   */
+  slots?: readonly string[] | undefined;
 }
 
 export interface ProjectionContentProps {
@@ -44,9 +50,21 @@ interface ProjectionActions {
 const ProjectionActionsContext = createContext<ProjectionActions | null>(null);
 const ProjectionStateContext = createContext<ProjectionState | null>(null);
 
+/** The slots a provider shares with its parent: every slot but its own, while it has a parent. */
+function useSlotOwnership(slots: readonly string[] | undefined, parent: ProjectionActions | null) {
+  const slotList = slots?.join('\n');
+  return useMemo(() => {
+    if (slotList === undefined || !parent) return null;
+    return new Set(slotList.split('\n'));
+  }, [slotList, parent]);
+}
+
 /** Owns the named slots that `ProjectionContent` publishes to and `ProjectionOutlet` renders. */
-export function ProjectionProvider({ children }: ProjectionProviderProps) {
-  const [state, setState] = useState<ProjectionState>(() => new Map());
+export function ProjectionProvider({ slots, children }: ProjectionProviderProps) {
+  const parentActions = useContext(ProjectionActionsContext);
+  const parentState = useContext(ProjectionStateContext);
+  const owned = useSlotOwnership(slots, parentActions);
+  const [ownState, setState] = useState<ProjectionState>(() => new Map());
 
   const publish = useCallback((slot: string, owner: object, content: ReactNode) => {
     setState((current) => {
@@ -74,7 +92,26 @@ export function ProjectionProvider({ children }: ProjectionProviderProps) {
     });
   }, []);
 
-  const actions = useMemo<ProjectionActions>(() => ({ publish, withdraw }), [publish, withdraw]);
+  const actions = useMemo<ProjectionActions>(() => {
+    if (!owned || !parentActions) return { publish, withdraw };
+    return {
+      publish: (slot, owner, content) =>
+        (owned.has(slot) ? publish : parentActions.publish)(slot, owner, content),
+      withdraw: (slot, owner) => (owned.has(slot) ? withdraw : parentActions.withdraw)(slot, owner),
+    };
+  }, [owned, parentActions, publish, withdraw]);
+
+  // Outlets of the slots this provider does not own render the parent's content.
+  const state = useMemo<ProjectionState>(() => {
+    if (!owned || !parentState) return ownState;
+    const merged = new Map(parentState);
+    for (const slot of owned) {
+      const entries = ownState.get(slot);
+      if (entries) merged.set(slot, entries);
+      else merged.delete(slot);
+    }
+    return merged;
+  }, [owned, parentState, ownState]);
 
   return (
     <ProjectionActionsContext.Provider value={actions}>
@@ -105,9 +142,17 @@ export function ProjectionContent({ slot, children }: ProjectionContentProps) {
   return actions ? null : <>{children}</>;
 }
 
+/**
+ * The content of the most recently mounted `ProjectionContent` for `slot`, or `undefined` while the
+ * slot has none, so a component can leave out the element that would hold it.
+ */
+export function useProjectedContent(slot: string): ReactNode {
+  const content = useContext(ProjectionStateContext)?.get(slot)?.at(-1)?.content;
+  return isEmptyNode(content) ? undefined : content;
+}
+
 /** Renders the content of the most recently mounted `ProjectionContent` for its slot. */
 export function ProjectionOutlet({ slot, fallback = null }: ProjectionOutletProps) {
-  const state = useContext(ProjectionStateContext);
-  const content = state?.get(slot)?.at(-1)?.content;
+  const content = useProjectedContent(slot);
   return <>{content ?? fallback}</>;
 }

@@ -1,0 +1,71 @@
+import { useState } from 'react';
+import {
+  NavigationRail,
+  type NavigationRailProps,
+} from '../../src/components/navigation-rail/navigation-rail.js';
+import {
+  NavigationRailGroup,
+  NavigationRailItem,
+  NavigationRailSection,
+} from '../../src/components/navigation-rail/navigation-rail-items.js';
+
+/** The pages of the sample kitchen workspace, by key. */
+export const kitchenPages = {
+  menu: 'Weekly menu',
+  pantry: 'Pantry',
+  inbox: 'Inbox',
+  breakfast: 'Breakfast',
+  lunch: 'Lunch',
+  cakes: 'Cakes',
+  tarts: 'Tarts',
+  team: 'Team',
+  profile: 'Profile',
+  alerts: 'Alerts',
+} as const;
+
+export type KitchenPage = keyof typeof kitchenPages;
+
+export interface KitchenRailProps extends Omit<NavigationRailProps, 'children'> {
+  current: KitchenPage;
+  onNavigate: (page: KitchenPage) => void;
+}
+
+/** The sample rail: pinned pages, a workspace with counts and nested groups, and settings. */
+export function KitchenRail({ current, onNavigate, ...rest }: KitchenRailProps) {
+  const item = (page: KitchenPage) => ({
+    label: kitchenPages[page],
+    href: `#${page}`,
+    isCurrent: current === page,
+    onPress: () => onNavigate(page),
+  });
+  return (
+    <NavigationRail {...rest}>
+      <NavigationRailSection title="Pinned">
+        <NavigationRailItem {...item('menu')} icon="calendar" />
+        <NavigationRailItem {...item('pantry')} icon="folder" />
+      </NavigationRailSection>
+      <NavigationRailSection title="Workspace">
+        <NavigationRailItem {...item('inbox')} icon="info" count={4} countLabel="4 unread" />
+        <NavigationRailGroup label="Recipes" icon="edit">
+          <NavigationRailItem {...item('breakfast')} />
+          <NavigationRailItem {...item('lunch')} />
+          <NavigationRailGroup label="Desserts">
+            <NavigationRailItem {...item('cakes')} />
+            <NavigationRailItem {...item('tarts')} count={120} countLabel="120 recipes" />
+          </NavigationRailGroup>
+        </NavigationRailGroup>
+        <NavigationRailItem {...item('team')} icon="users" />
+      </NavigationRailSection>
+      <NavigationRailSection title="Settings">
+        <NavigationRailItem {...item('profile')} icon="lock" />
+        <NavigationRailItem {...item('alerts')} icon="warning" count={0} />
+      </NavigationRailSection>
+    </NavigationRail>
+  );
+}
+
+/** A sample rail that tracks its own current page. */
+export function NavigatingKitchenRail(props: Omit<KitchenRailProps, 'current' | 'onNavigate'>) {
+  const [current, setCurrent] = useState<KitchenPage>('inbox');
+  return <KitchenRail {...props} current={current} onNavigate={setCurrent} />;
+}

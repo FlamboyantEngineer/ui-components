@@ -54,4 +54,18 @@ test.describe('Projection lab', () => {
     await toolbar.getByRole('button', { name: 'Close overlay' }).click();
     await expect(toolbar.getByRole('button')).toHaveText('Zoom in (2)');
   });
+
+  test('UIC-PROJECTION-1.7 UIC-PROJECTION-1.8 scopes a slot and reads it', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('projection');
+    await expect(page.locator('[data-lab-title]')).toHaveText('Page title: Still life');
+    const figure = page.locator('[data-lab-figure]');
+    await expect(figure.locator('[data-lab-caption]')).toHaveText('Cherries, 1890');
+    await page.getByRole('checkbox', { name: 'Caption' }).uncheck();
+    await expect(figure.locator('figcaption')).toHaveCount(0);
+    await expect(page.locator('[data-lab-title]')).toHaveText('Page title: Still life');
+    await lab.expectAccessible();
+  });
 });

@@ -10,6 +10,9 @@ import { ResizableSplitView } from './resizable-split-view.js';
 import { resolveSplitSeparator, type SplitViewPane } from './split-layout.js';
 import { splitViewHooks as hooks } from './styling-hooks.js';
 
+// Other components reach the standalone handle through this main module.
+export { ResizeHandle } from './resize-handle.js';
+
 export type { SplitViewPane, SplitViewPaneUnit } from './split-layout.js';
 
 /**

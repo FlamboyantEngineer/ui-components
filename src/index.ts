@@ -40,6 +40,8 @@ export * from './components/disclosure/index.js';
 export * from './components/badge/index.js';
 export * from './components/status-light/index.js';
 export * from './components/save-status/index.js';
+export * from './components/app-frame/index.js';
+export * from './components/navigation-rail/index.js';
 export * from './components/banner/index.js';
 export * from './components/empty-state/index.js';
 export * from './components/inline-error/index.js';
