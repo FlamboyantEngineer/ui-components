@@ -38,8 +38,9 @@ test.describe('Drag Handle lab', () => {
     await lab.open('drag-handle');
     const list = page.locator('[data-lab-list="handle"]');
     const output = list.locator('[data-lab-output]');
-    const apple = list.getByRole('row', { name: 'Apple', exact: true });
-    const cherry = list.getByRole('row', { name: 'Cherry', exact: true });
+    // A table row is named by its row header, which also holds the handle (Drag Apple Apple).
+    const apple = list.getByRole('row', { name: 'Apple' });
+    const cherry = list.getByRole('row', { name: 'Cherry' });
     await expect(apple).not.toHaveAttribute('draggable');
     await apple.dragTo(cherry, { sourcePosition: { x: 80, y: 10 } });
     await expect(output).toHaveText('Order: Apple, Banana, Cherry, Fig');

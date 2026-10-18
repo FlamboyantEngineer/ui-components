@@ -27,6 +27,12 @@ const ARIA_PACKAGES = {
   message: 'Import React Aria building blocks from src/primitives (UIC-PRIMITIVES-1.1).',
 };
 
+// Labs show hosts the public API, so they never reach into the building blocks (specs/PRIMITIVES.md).
+const PRIMITIVES_MODULES = {
+  group: ['**/src/primitives', '**/src/primitives/**'],
+  message: 'Labs use the public API, not src/primitives (UIC-PRIMITIVES-1.4).',
+};
+
 export default tseslint.config(
   {
     ignores: [
@@ -59,6 +65,12 @@ export default tseslint.config(
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'error',
       'no-restricted-imports': ['error', { patterns: [ARIA_PACKAGES] }],
+    },
+  },
+  {
+    files: ['labs/src/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': ['error', { patterns: [ARIA_PACKAGES, PRIMITIVES_MODULES] }],
     },
   },
   {

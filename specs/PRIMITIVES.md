@@ -6,7 +6,7 @@ The library's accessible behaviour comes from React Aria Components and its comp
 
 ### UIC-PRIMITIVES-1.1 - Imports go through the primitives
 
-Library source, its unit tests, the labs and the test helpers shall import React Aria building blocks only from `src/primitives/` (`src/primitives/index.js`). Only modules inside `src/primitives/` shall import `react-aria-components`, `react-aria`, `react-stately`, the scoped `@react-aria/*`, `@react-stately/*` and `@react-types/*` packages, or `@internationalized/*`. Lint rejects any other import of them.
+Library source, its unit tests and the test helpers shall import React Aria building blocks only from `src/primitives/` (`src/primitives/index.js`); the labs use none of them (UIC-PRIMITIVES-1.4). Only modules inside `src/primitives/` shall import `react-aria-components`, `react-aria`, `react-stately`, the scoped `@react-aria/*`, `@react-stately/*` and `@react-types/*` packages, or `@internationalized/*`. Lint rejects any other import of them.
 
 Implementation: `eslint.config.js`, `src/primitives/index.ts`
 Verification: `test/primitives.test.ts`
@@ -23,6 +23,13 @@ Verification: `test/primitives.test.ts`
 A primitive keeps its name and props when the library behind it changes: a replacement provides a module with the same exports, adapting the new library's props, states and data attributes to the ones the specs document. Component code, public props types and hooks do not change when a primitive's implementation does.
 
 Implementation: `src/primitives/index.ts`
+Verification: `test/primitives.test.ts`
+
+### UIC-PRIMITIVES-1.4 - Labs use the public API
+
+The labs show hosts how to use the library, so they shall import only its public API, from the component and core modules that `src/index.ts` exports, and never `src/primitives/`. Lint rejects a lab import of any module under `src/primitives/`, as it rejects a lab import of React Aria and its companion packages.
+
+Implementation: `eslint.config.js`
 Verification: `test/primitives.test.ts`
 
 ## UIC-PRIMITIVES-2 - A library-owned public API

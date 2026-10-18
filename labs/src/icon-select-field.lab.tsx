@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Key } from '../../src/primitives/index.js';
+import type { Key } from '../../src/core/props.js';
 import type { FieldLabelLayout } from '../../src/components/field/field.js';
 import {
   IconSelectField,

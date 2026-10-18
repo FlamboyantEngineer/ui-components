@@ -53,8 +53,10 @@ const eslint = new ESLint({ cwd: root });
 // Built from parts so the repository scan below does not match this file.
 const probe = `import { Button } from '${'react-aria'}-components';\nexport const Probe = Button;\n`;
 
-async function isRejected(filePath: string) {
-  const [result] = await eslint.lintText(probe, { filePath });
+const primitivesProbe = `import { Button } from '../../src/${'primitives'}/index.js';\nexport const Probe = Button;\n`;
+
+async function isRejected(filePath: string, text = probe) {
+  const [result] = await eslint.lintText(text, { filePath });
   return (result?.messages ?? []).some((message) => message.ruleId === 'no-restricted-imports');
 }
 
@@ -74,6 +76,12 @@ describe('primitives boundary', { timeout: 30_000 }, () => {
       .filter((path) => ARIA_SOURCE.test(readFileSync(path, 'utf8')))
       .map((path) => relative(root, path));
     expect(offenders).toEqual([]);
+  });
+
+  it('UIC-PRIMITIVES-1.4 rejects a lab import of src/primitives', async () => {
+    expect(await isRejected('labs/src/probe.lab.tsx', primitivesProbe)).toBe(true);
+    expect(await isRejected('labs/src/chrome/probe.tsx', primitivesProbe)).toBe(true);
+    expect(await isRejected('src/components/probe/probe.tsx', primitivesProbe)).toBe(false);
   });
 
   it('UIC-PRIMITIVES-1.2 groups the inventory by area and re-exports every area', () => {

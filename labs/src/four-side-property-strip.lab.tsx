@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { I18nProvider, Input } from '../../src/primitives/index.js';
 import {
   FourSidePropertyStrip,
   type BoxSide,
@@ -7,6 +6,7 @@ import {
 } from '../../src/components/four-side-property-strip/four-side-property-strip.js';
 import { PropertyPanel } from '../../src/components/property-panel/property-panel.js';
 import { PropertyScope } from '../../src/components/property-scope/property-scope.js';
+import { UiProvider } from '../../src/core/provider.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const states = ['plain', 'unit', 'overridden', 'required', 'wide', 'hint'] as const;
@@ -24,7 +24,7 @@ function Margins({ state, name }: { state: (typeof states)[number]; name: string
       wide={state === 'wide'}
       hint={state === 'hint' ? 'Space inside the frame' : undefined}
       renderSide={(side) => (
-        <Input
+        <input
           aria-label={`${name} ${side}`}
           value={values[side]}
           size={3}
@@ -61,7 +61,7 @@ function Linked({ link }: { link: FourSidePropertyStripLink }) {
       defaultLinked={link === 'all'}
       defaultValue={{ top: '8', bottom: '8', left: '12', right: '12' }}
       renderSide={(side, field) => (
-        <Input
+        <input
           aria-label={`Padding ${link} ${side}`}
           value={field.value ?? ''}
           size={3}
@@ -75,7 +75,7 @@ function Linked({ link }: { link: FourSidePropertyStripLink }) {
 /** Flow-relative sides in a right-to-left panel: the start cell edits the right side. */
 function Logical({ direction }: { direction: 'ltr' | 'rtl' }) {
   return (
-    <I18nProvider locale={direction === 'rtl' ? 'ar-EG' : 'en-US'}>
+    <UiProvider locale={direction === 'rtl' ? 'ar-EG' : 'en-US'}>
       <div dir={direction} data-lab-direction={direction}>
         <PropertyPanel aria-label={`Logical ${direction}`}>
           <FourSidePropertyStrip
@@ -88,7 +88,7 @@ function Logical({ direction }: { direction: 'ltr' | 'rtl' }) {
               'inline-end': '0',
             }}
             renderSide={(side, field) => (
-              <Input
+              <input
                 aria-label={`Inset ${direction} ${side}`}
                 value={field.value ?? ''}
                 size={3}
@@ -98,7 +98,7 @@ function Logical({ direction }: { direction: 'ltr' | 'rtl' }) {
           />
         </PropertyPanel>
       </div>
-    </I18nProvider>
+    </UiProvider>
   );
 }
 

@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import type { Key } from '../../src/primitives/index.js';
+import type { Key } from '../../src/core/props.js';
 import {
   FileUpload,
   type FileRejection,

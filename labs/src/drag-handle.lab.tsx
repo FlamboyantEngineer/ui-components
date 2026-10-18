@@ -1,52 +1,66 @@
-import { useState, type JSX } from 'react';
+import { useState } from 'react';
+import { DragHandle } from '../../src/components/drag-handle/drag-handle.js';
 import {
-  GridList,
-  GridListItem,
-  useDragAndDrop,
-  type ItemDropTarget,
-  type Key,
-} from '../../src/primitives/index.js';
-import { armHandleDrag, DragHandle } from '../../src/components/drag-handle/drag-handle.js';
+  ListView,
+  ListViewItem,
+  type ListViewMove,
+} from '../../src/components/list-row/list-view.js';
+import { Table } from '../../src/components/table/table.js';
+import { applyTableMove, type TableColumn } from '../../src/components/table/table-rows.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
-const FRUIT = ['Apple', 'Banana', 'Cherry', 'Fig'];
+interface Fruit {
+  id: string;
+}
 
-function moveBeside(names: readonly string[], keys: Set<Key>, target: ItemDropTarget) {
-  const moving = names.filter((name) => keys.has(name));
-  const rest = names.filter((name) => !keys.has(name));
-  const index = rest.indexOf(String(target.key)) + (target.dropPosition === 'after' ? 1 : 0);
+const FRUIT: Fruit[] = ['Apple', 'Banana', 'Cherry', 'Fig'].map((id) => ({ id }));
+const columns: TableColumn<Fruit>[] = [{ id: 'id', header: 'Fruit' }];
+
+/** The rows with the moved ones taken out and put back beside the target row. */
+function moveBeside(rows: readonly Fruit[], { keys, targetKey, position }: ListViewMove) {
+  const moving = rows.filter((row) => keys.includes(row.id));
+  const rest = rows.filter((row) => !keys.includes(row.id));
+  const index = rest.findIndex((row) => row.id === targetKey) + (position === 'after' ? 1 : 0);
   return [...rest.slice(0, index), ...moving, ...rest.slice(index)];
 }
 
-/** A row element without React Aria's `draggable`, so only its handle starts a pointer drag. */
-function HandleRow({ draggable: _draggable, ...props }: JSX.IntrinsicElements['div']) {
-  return <div {...props} />;
+function Order({ rows }: { rows: readonly Fruit[] }) {
+  return <p data-lab-output>Order: {rows.map((row) => row.id).join(', ')}</p>;
 }
 
-function FruitList({ isHandleOnly = false }: { isHandleOnly?: boolean }) {
-  const [names, setNames] = useState(FRUIT);
-  const { dragAndDropHooks } = useDragAndDrop({
-    getItems: (keys) => [...keys].map((key) => ({ 'text/plain': String(key) })),
-    onReorder: ({ keys, target }) => setNames((current) => moveBeside(current, keys, target)),
-  });
+/** A list view that reorders: each row draws a handle the list names after it. */
+function FruitList() {
+  const [rows, setRows] = useState(FRUIT);
   return (
-    <div
-      data-lab-list={isHandleOnly ? 'handle' : 'row'}
-      onPointerDownCapture={isHandleOnly ? armHandleDrag : undefined}
-    >
-      <GridList
-        aria-label={isHandleOnly ? 'Fruit, dragged by handle' : 'Fruit'}
-        items={names.map((name) => ({ id: name }))}
-        dragAndDropHooks={dragAndDropHooks}
+    <div data-lab-list="row">
+      <ListView
+        aria-label="Fruit"
+        items={rows}
+        disabledKeys={['Fig']}
+        reorder={{ onMove: (move) => setRows((current) => moveBeside(current, move)) }}
       >
-        {(item) => (
-          <GridListItem textValue={item.id} render={isHandleOnly ? HandleRow : undefined}>
-            <DragHandle isDisabled={item.id === 'Fig'} />
-            {item.id}
-          </GridListItem>
-        )}
-      </GridList>
-      <p data-lab-output>Order: {names.join(', ')}</p>
+        {(row) => <ListViewItem id={row.id} title={row.id} />}
+      </ListView>
+      <Order rows={rows} />
+    </div>
+  );
+}
+
+/** A table whose rows drag by their handles only, so a press on a row's text never drags it. */
+function FruitTable() {
+  const [rows, setRows] = useState(FRUIT);
+  return (
+    <div data-lab-list="handle">
+      <Table
+        aria-label="Fruit, dragged by handle"
+        rows={rows}
+        columns={columns}
+        reorder={{
+          dragTrigger: 'handle',
+          onMove: (move) => setRows((current) => applyTableMove(current, move)),
+        }}
+      />
+      <Order rows={rows} />
     </div>
   );
 }
@@ -66,15 +80,15 @@ mountLab(
     </LabSection>
     <LabSection
       title="In a reorderable list"
-      description="Each row draws a handle the list names after it. Focus a row, press ArrowRight to reach its handle and Enter to drag it with the arrow keys. Fig's handle is disabled."
+      description="Each row draws a handle the list names after it. Focus a row, press ArrowRight to reach its handle and Enter to drag it with the arrow keys. Fig is disabled, so its handle is too."
     >
       <FruitList />
     </LabSection>
     <LabSection
       title="Dragging by the handle only"
-      description="The list renders its rows without draggable and arms a row from its handle, so a press on the row's text never drags it."
+      description="The table renders its rows without draggable and arms a row from its handle, so a press on the row's text never drags it."
     >
-      <FruitList isHandleOnly />
+      <FruitTable />
     </LabSection>
   </>,
 );
