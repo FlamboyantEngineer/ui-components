@@ -148,6 +148,8 @@ export * from './components/activity-feed/index.js';
 export * from './components/change-list/index.js';
 export * from './components/tree-compare/index.js';
 export * from './components/text-diff/index.js';
+export * from './components/redline-compare/index.js';
+export * from './components/formula-bar/index.js';
 export * from './components/annotation-layer/index.js';
 export * from './components/version-history/index.js';
 export * from './components/notification-center/index.js';

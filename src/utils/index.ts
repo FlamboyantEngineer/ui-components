@@ -125,6 +125,19 @@ export type {
   TreeChangeCounts,
   TreeComparison,
 } from './compare-trees.js';
+export { compareBlocks } from './compare-blocks.js';
+export type {
+  BlockChange,
+  BlockChangeCounts,
+  BlockComparison,
+  ComparedBlockRow,
+  DocumentBlock,
+  DocumentBlockType,
+  DocumentMark,
+  DocumentMarkType,
+} from './compare-blocks.js';
+export { formatCellReference, parseCellReference } from './cell-reference.js';
+export type { CellCoordinates } from './cell-reference.js';
 export { mapScrollOffset, useSyncedScroll } from './use-synced-scroll.js';
 export type { ScrollAnchor, SyncedScrollOptions, SyncedScrollTarget } from './use-synced-scroll.js';
 export { formatOutlineNumber } from './outline-number.js';

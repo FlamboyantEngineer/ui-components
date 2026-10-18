@@ -62,6 +62,7 @@ import {
   TableCellsIcon,
   TrashIcon,
   UsersIcon,
+  VariableIcon,
   ViewColumnsIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
@@ -160,6 +161,7 @@ export const defaultGlyphs = {
   move: ArrowsUpDownIcon,
   table: TableCellsIcon,
   resize: ArrowsPointingOutIcon,
+  formula: VariableIcon,
 } satisfies Record<string, GlyphComponent>;
 
 export const glyphNames = Object.keys(defaultGlyphs) as GlyphName[];

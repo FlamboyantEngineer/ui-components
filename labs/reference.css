@@ -66,6 +66,7 @@
 @import url('reference/focus-scope.css');
 @import url('reference/folder-manager.css');
 @import url('reference/form.css');
+@import url('reference/formula-bar.css');
 @import url('reference/four-side-property-strip.css');
 @import url('reference/grid-size-picker.css');
 @import url('reference/hover-card.css');
@@ -120,6 +121,7 @@
 @import url('reference/record-chip.css');
 @import url('reference/record-header.css');
 @import url('reference/record-label.css');
+@import url('reference/redline-compare.css');
 @import url('reference/relation-columns.css');
 @import url('reference/relation-matrix.css');
 @import url('reference/relative-date-field.css');
