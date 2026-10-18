@@ -75,6 +75,11 @@ const sampleArguments: Partial<Record<keyof UiStrings, readonly unknown[]>> = {
   moveStep: ['2'],
   textDiffSummary: [5, 3],
   textDiffLine: ['unchanged', 4, 6],
+  permissionGrant: ['Write recipes', 'Editor', true],
+  permissionGroupGrant: ['Photos', 'Editor'],
+  upstreamOf: ['Requirement 12'],
+  downstreamOf: ['Requirement 12'],
+  relatedCount: [2, 'downstream'],
 };
 
 const stringNames = Object.keys(defaultStrings) as Array<keyof UiStrings>;
