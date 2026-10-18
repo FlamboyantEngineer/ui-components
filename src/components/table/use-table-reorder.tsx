@@ -6,15 +6,13 @@ import {
   type PointerEvent,
   type ReactNode,
 } from 'react';
-import {
-  DropIndicator,
-  type DragAndDropHooks,
-  type DropTarget,
-  type Key,
-} from '../../primitives/index.js';
+import { DropIndicator } from '../../primitives/index.js';
+import type { Key } from '../../core/props.js';
 import {
   isMoveChord,
   useReorderDragAndDrop,
+  type CollectionDragAndDropOptions,
+  type CollectionDropTarget,
   type ReorderDragItem,
 } from '../../utils/use-reorder-drag-and-drop.js';
 import { armHandleDrag, keepHandleCellDraggable } from '../drag-handle/drag-handle.js';
@@ -40,7 +38,8 @@ export interface TableReorderOptions<T> {
 export type TableDragTrigger = 'row' | 'handle';
 
 export interface TableReorder<T> {
-  dragAndDropHooks: DragAndDropHooks<T>;
+  /** The options the grid hands to `useDragAndDrop`. */
+  dragAndDrop: CollectionDragAndDropOptions;
   isMovable: (row: T) => boolean;
   /** Handlers for the table root: Alt+ArrowUp/Down moves, and refused drags of fixed rows. */
   rootProps: {
@@ -76,7 +75,7 @@ function findMovableRow<T extends TableRow>(snapshot: ReorderSnapshot<T>, key: K
 /** The move a drop on `target` makes, or null when it is not allowed or changes nothing. */
 function resolveDrop<T extends TableRow>(
   snapshot: ReorderSnapshot<T>,
-  target: DropTarget,
+  target: CollectionDropTarget,
   keys: Iterable<Key>,
 ): TableMove | null {
   if (target.type !== 'item' || target.dropPosition === 'on') return null;
@@ -95,7 +94,7 @@ function resolveStep<T extends TableRow>(
   return { keys: [row.id], targetKey: target.id, position: step === 1 ? 'after' : 'before' };
 }
 
-function renderDropIndicator(target: DropTarget) {
+function renderDropIndicator(target: CollectionDropTarget) {
   return <DropIndicator target={target} className={tableHooks.slotClass('drop-indicator')} />;
 }
 
@@ -120,7 +119,7 @@ function createDragPreview<T extends TableRow>(snapshot: ReorderSnapshot<T>) {
  */
 export function useTableReorder<T extends TableRow>(snapshot: ReorderSnapshot<T>): TableReorder<T> {
   const { reorder } = snapshot;
-  const dragAndDropHooks = useReorderDragAndDrop<T, TableMove>({
+  const dragAndDrop = useReorderDragAndDrop<TableMove>({
     resolveMove: (target, keys) => resolveDrop(snapshot, target, keys),
     onMove: (move) => reorder?.onMove(move),
     getTextValue: getKeyText,
@@ -152,7 +151,7 @@ export function useTableReorder<T extends TableRow>(snapshot: ReorderSnapshot<T>
 
   const isHandleTrigger = reorder?.dragTrigger === 'handle';
   return {
-    dragAndDropHooks,
+    dragAndDrop,
     isMovable,
     rootProps: {
       onKeyDownCapture,

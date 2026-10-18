@@ -85,3 +85,22 @@ export interface SelectionProps {
   /** Keeps at least one item selected. */
   disallowEmptySelection?: boolean | undefined;
 }
+
+/** `toggle` selects items one at a time, as checkboxes do; `replace` makes a press replace the selection. */
+export type SelectionBehavior = 'toggle' | 'replace';
+
+/** A collection whose selection the caller may control, and whether a press toggles or replaces it. */
+export interface CollectionSelectionProps extends SelectionProps {
+  /** How a press selects. Defaults to `toggle`. */
+  selectionBehavior?: SelectionBehavior | undefined;
+}
+
+/** A collection or group whose expanded items the caller may control. */
+export interface ExpansionProps {
+  /** The expanded items, controlled. */
+  expandedKeys?: Iterable<Key> | undefined;
+  /** The items expanded at first, uncontrolled. */
+  defaultExpandedKeys?: Iterable<Key> | undefined;
+  /** Called with the expanded items after each change. */
+  onExpandedChange?: ((keys: Set<Key>) => void) | undefined;
+}

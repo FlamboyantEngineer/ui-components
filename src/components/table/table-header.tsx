@@ -5,8 +5,8 @@ import {
   TableColumnResizeStateContext,
   TableHeader as AriaTableHeader,
   TableStateContext,
-  type SortDescriptor,
 } from '../../primitives/index.js';
+import type { SortDescriptor } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Icon } from '../icon/icon.js';
 import { resolveColumnWidth, type TableColumnWidths } from './column-sizing.js';

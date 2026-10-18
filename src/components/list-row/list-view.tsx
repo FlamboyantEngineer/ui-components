@@ -1,59 +1,117 @@
 // Collections of rows the reader selects, reorders or scrolls through at length: React Aria's grid
 // list in its stack layout, each row drawn with the list row's text.
 
-import { useMemo, type ReactNode } from 'react';
+import { useMemo, type ReactElement, type ReactNode } from 'react';
 import {
   Collection,
   DropIndicator,
   GridList,
   GridListHeader,
   GridListItem,
+  GridListLoadMoreItem,
   GridListSection,
-  type DragAndDropHooks,
-  type DropTarget,
-  type GridListItemProps as AriaGridListItemProps,
-  type GridListProps as AriaGridListProps,
-  type GridListSectionProps as AriaGridListSectionProps,
+  ListLayout,
+  useDragAndDrop,
+  Virtualizer,
 } from '../../primitives/index.js';
+import type { AriaLabellingProps, CollectionSelectionProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, Key } from '../../core/props.js';
+import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import {
+  useReorderDragAndDrop,
+  type CollectionDropTarget,
+} from '../../utils/use-reorder-drag-and-drop.js';
 import { Checkbox } from '../checkbox/checkbox.js';
 import { DragHandle } from '../drag-handle/drag-handle.js';
+import { EmptyState } from '../empty-state/empty-state.js';
 import { ListRowContent, type ListRowContentProps, type ListRowTone } from './list-row.js';
 
+/** A reorder request: move `keys` before or after the row `targetKey`. */
+export interface ListViewMove {
+  /** The moved rows. */
+  keys: Key[];
+  /** The row the moved rows land beside. */
+  targetKey: Key;
+  /** Which side of the target they land on. */
+  position: 'before' | 'after';
+}
+
+/** Opt-in row reordering by drag and drop. */
+export interface ListViewReorderOptions {
+  /** Reports one move. The list never reorders its rows itself: apply the move and re-render. */
+  onMove: (move: ListViewMove) => void;
+}
+
+/** Rows as children, or a function drawing a row or section from each of `items`. */
+export type ListViewChildren<T> = ReactNode | ((item: T) => ReactElement);
+
 export interface ListViewProps<T extends object>
-  extends Omit<AriaGridListProps<T>, 'className' | 'style' | 'layout'>, BaseProps {
+  extends BaseProps, AriaLabellingProps, CollectionSelectionProps {
+  /** The rows or sections as data, drawn by the function in `children`. */
+  items?: Iterable<T> | undefined;
+  /** `ListViewItem`s and `ListViewSection`s, or a function drawing one from each of `items`. */
+  children?: ListViewChildren<T>;
+  /** Values that, when they change, redraw the rows drawn from `items`. */
+  dependencies?: readonly unknown[] | undefined;
+  /** Called with the key of the row the reader activates. */
+  onAction?: ((key: Key) => void) | undefined;
   /** Ask the stylesheet for dividers between rows. */
   divided?: boolean | undefined;
   /** Ask the stylesheet to keep each section's header in view while its rows scroll under it. */
   stickyHeaders?: boolean | undefined;
+  /** Turns on row reordering by drag and drop, by pointer or from a row's drag handle. */
+  reorder?: ListViewReorderOptions | undefined;
+  /** Renders only the rows in view; the stylesheet must bound the list's height. */
+  virtualized?: boolean | undefined;
+  /** Row height in pixels for a virtualized list. Defaults to 48. */
+  rowHeight?: number | undefined;
+  /** Asks for more rows when the end of the list scrolls into view. */
+  onLoadMore?: (() => void) | undefined;
+  /** More rows are loading: a loading row follows the rows. */
+  isLoading?: boolean | undefined;
+  /** Draws the list while it has no rows. */
+  renderEmptyState?: (() => ReactNode) | undefined;
 }
 
-/** The item's `id` is its React Aria collection key. */
-export interface ListViewItemProps<T extends object = object>
-  extends
-    Omit<AriaGridListItemProps<T>, 'className' | 'style' | 'children'>,
-    Omit<BaseProps, 'id'>,
-    Pick<ListRowContentProps, 'title' | 'meta' | 'icon' | 'leading'> {
+export interface ListViewItemProps
+  extends Omit<BaseProps, 'id'>, Pick<ListRowContentProps, 'title' | 'meta' | 'icon' | 'leading'> {
+  /** The row's key in the list. */
+  id?: Key | undefined;
+  /** The text typeahead matches. Defaults to a string `title`. */
+  textValue?: string | undefined;
+  /** Makes the row a link: pressing it or Enter follows the address. */
+  href?: string | undefined;
   /** Controls after the row text, such as an action button; arrow keys reach them. */
   trailing?: ReactNode;
   /** Semantic emphasis, such as an overdue or failed item. Defaults to `neutral`. */
   tone?: ListRowTone | undefined;
 }
 
-/** The section's `id` is its React Aria collection key. */
-export interface ListViewSectionProps<T extends object>
-  extends Omit<AriaGridListSectionProps<T>, 'className' | 'style'>, Omit<BaseProps, 'id'> {
+export interface ListViewSectionProps<T extends object> extends Omit<BaseProps, 'id'> {
+  /** The section's key in the list. */
+  id?: Key | undefined;
   /** The section's header row, which also names the section. */
   title: string;
+  /** The section's rows as data, drawn by the function in `children`. */
+  items?: Iterable<T> | undefined;
+  /** `ListViewItem`s, or a function drawing one from each of `items`. */
+  children?: ListViewChildren<T>;
+  /** Values that, when they change, redraw the rows drawn from `items`. */
+  dependencies?: readonly unknown[] | undefined;
 }
 
-const viewHooks = createHooks('list-view', ['drop-indicator']);
+const viewHooks = createHooks('list-view', ['drop-indicator', 'loader']);
 const itemHooks = createHooks('list-view-item', ['drag-handle', 'checkbox', 'trailing']);
 const sectionHooks = createHooks('list-view-section', ['header']);
 
-function renderDropIndicator(target: DropTarget) {
+/** The drag and drop options of a list that does not reorder: neither draggable nor droppable. */
+const noDragAndDrop = {};
+
+const defaultRowHeight = 48;
+
+function renderDropIndicator(target: CollectionDropTarget) {
   return (
     <DropIndicator
       target={target}
@@ -65,34 +123,92 @@ function renderDropIndicator(target: DropTarget) {
   );
 }
 
-/** The caller's drag and drop hooks, drawing the list's own drop indicator unless they draw one. */
-function useHookedDragAndDrop<T>(hooks: DragAndDropHooks<T> | undefined) {
-  return useMemo(
-    () => (hooks && !hooks.renderDropIndicator ? { ...hooks, renderDropIndicator } : hooks),
-    [hooks],
+function getKeyText(key: Key): string {
+  return String(key);
+}
+
+/** The building block's drag and drop hooks for the list's reorder options. */
+function useListDragAndDrop(reorder: ListViewReorderOptions | undefined) {
+  const options = useReorderDragAndDrop<ListViewMove>({
+    resolveMove: (target, keys) =>
+      target.type === 'item' && target.dropPosition !== 'on' && !keys.has(target.key)
+        ? { keys: [...keys], targetKey: target.key, position: target.dropPosition }
+        : null,
+    onMove: (move) => reorder?.onMove(move),
+    getTextValue: getKeyText,
+    renderDropIndicator,
+  });
+  const { dragAndDropHooks } = useDragAndDrop(reorder ? options : noDragAndDrop);
+  return reorder ? dragAndDropHooks : undefined;
+}
+
+/** The rows: children, or the rows drawn from `items`, and the loading row when loading more. */
+function ListViewRows<T extends object>(
+  props: Pick<ListViewProps<T>, 'items' | 'children' | 'dependencies' | 'onLoadMore' | 'isLoading'>,
+) {
+  const strings = useUiStrings();
+  const { items, children, dependencies, onLoadMore, isLoading = false } = props;
+  return (
+    <>
+      <Collection items={items} dependencies={dependencies}>
+        {children}
+      </Collection>
+      {onLoadMore ? (
+        <GridListLoadMoreItem
+          className={viewHooks.slotClass('loader')}
+          isLoading={isLoading}
+          onLoadMore={onLoadMore}
+        >
+          <EmptyState variant="loading" size="sm" description={strings.loading} />
+        </GridListLoadMoreItem>
+      ) : null}
+    </>
   );
 }
 
 /**
  * A list of rows on React Aria's grid list: single or multiple selection with checkboxes, actions,
- * links, typeahead, sections, drag and drop, empty states and collection children (`Virtualizer`
- * with `ListLayout`, `GridListLoadMoreItem`) are React Aria's. For a plain list of links and
- * buttons, use `List`.
+ * links, typeahead, sections, reordering by drag and drop, virtualization, loading more and an
+ * empty state. For a plain list of links and buttons, use `List`.
  */
 export function ListView<T extends object>({
+  items,
+  children,
+  dependencies,
   divided = false,
   stickyHeaders = false,
-  dragAndDropHooks,
+  reorder,
+  virtualized = false,
+  rowHeight = defaultRowHeight,
+  onLoadMore,
+  isLoading,
+  renderEmptyState,
   className,
   ...rest
 }: ListViewProps<T>) {
-  const hooks = useHookedDragAndDrop(dragAndDropHooks);
-  return (
+  const dragAndDropHooks = useListDragAndDrop(reorder);
+  const emptyState = useMemo(
+    () => renderEmptyState && (() => renderEmptyState()),
+    [renderEmptyState],
+  );
+  const list = (
     <GridList
+      // React Aria keeps drag and drop hooks for the list's lifetime: remount when reorder toggles.
+      key={reorder ? 'reorder' : 'static'}
       {...rest}
-      dragAndDropHooks={hooks}
+      dragAndDropHooks={dragAndDropHooks}
+      renderEmptyState={emptyState}
       {...viewHooks.root({ className, props: rest, data: { divided, stickyHeaders } })}
-    />
+    >
+      <ListViewRows {...{ items, children, dependencies, onLoadMore, isLoading }} />
+    </GridList>
+  );
+  if (!virtualized) return list;
+  const layoutOptions = { rowHeight, headingHeight: rowHeight, loaderHeight: rowHeight };
+  return (
+    <Virtualizer layout={ListLayout} layoutOptions={layoutOptions}>
+      {list}
+    </Virtualizer>
   );
 }
 
@@ -100,7 +216,7 @@ export function ListView<T extends object>({
  * One row of a `ListView`: a drag handle while the list reorders, a selection checkbox while it
  * selects with toggles, the row text (`ListRowContent`) and trailing controls.
  */
-export function ListViewItem<T extends object = object>({
+export function ListViewItem({
   title,
   meta,
   icon,
@@ -110,7 +226,7 @@ export function ListViewItem<T extends object = object>({
   textValue,
   className,
   ...rest
-}: ListViewItemProps<T>) {
+}: ListViewItemProps) {
   return (
     <GridListItem
       {...rest}

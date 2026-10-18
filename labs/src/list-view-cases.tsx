@@ -1,17 +1,11 @@
 import { useState } from 'react';
-import {
-  GridListLoadMoreItem,
-  ListLayout,
-  useDragAndDrop,
-  useListData,
-  Virtualizer,
-  type Selection,
-} from '../../src/primitives/index.js';
+import type { Selection } from '../../src/core/props.js';
 import { IconButton } from '../../src/components/icon-button/icon-button.js';
 import {
   ListView,
   ListViewItem,
   ListViewSection,
+  type ListViewMove,
 } from '../../src/components/list-row/list-view.js';
 
 export const selections = ['none', 'single', 'multiple', 'replace'] as const;
@@ -93,27 +87,29 @@ export function SectionsCase() {
   );
 }
 
+/** The rows in their new order after `move`, as an owner applies a reported move. */
+function applyMove<T extends { id: string }>(rows: readonly T[], move: ListViewMove): T[] {
+  const moving = rows.filter((row) => move.keys.includes(row.id));
+  const rest = rows.filter((row) => !move.keys.includes(row.id));
+  const index = rest.findIndex((row) => row.id === move.targetKey);
+  const at = move.position === 'before' ? index : index + 1;
+  return [...rest.slice(0, at), ...moving, ...rest.slice(at)];
+}
+
 /** Rows reordered by drag and drop, by pointer or from the drag handle by keyboard. */
 export function ReorderCase() {
-  const list = useListData({ initialItems: FRUIT });
-  const { dragAndDropHooks } = useDragAndDrop({
-    getItems: (keys) => [...keys].map((key) => ({ 'text/plain': list.getItem(key)?.name ?? '' })),
-    onReorder(event) {
-      if (event.target.dropPosition === 'before') list.moveBefore(event.target.key, event.keys);
-      else if (event.target.dropPosition === 'after') list.moveAfter(event.target.key, event.keys);
-    },
-  });
+  const [rows, setRows] = useState(FRUIT);
   return (
     <div data-lab-reorder>
       <ListView
         aria-label="Reorderable fruit"
-        items={list.items}
-        dragAndDropHooks={dragAndDropHooks}
+        items={rows}
+        reorder={{ onMove: (move) => setRows((current) => applyMove(current, move)) }}
         divided
       >
         {(item) => <ListViewItem title={item.name} meta={item.meta} />}
       </ListView>
-      <p data-lab-output>Order: {list.items.map((item) => item.name).join(', ')}</p>
+      <p data-lab-output>Order: {rows.map((item) => item.name).join(', ')}</p>
     </div>
   );
 }
@@ -126,14 +122,15 @@ function Recipes({ count, onLoadMore }: { count: number; onLoadMore: () => void 
   }));
   return (
     <div style={{ height: 240, display: 'flex', flexDirection: 'column' }}>
-      <Virtualizer layout={ListLayout} layoutOptions={{ rowHeight: 40 }}>
-        <ListView aria-label="Recipes">
-          {items.map((item) => (
-            <ListViewItem key={item.id} id={item.id} title={item.name} />
-          ))}
-          {count < TOTAL ? <GridListLoadMoreItem onLoadMore={onLoadMore} /> : null}
-        </ListView>
-      </Virtualizer>
+      <ListView
+        aria-label="Recipes"
+        items={items}
+        virtualized
+        rowHeight={40}
+        onLoadMore={count < TOTAL ? onLoadMore : undefined}
+      >
+        {(item) => <ListViewItem title={item.name} />}
+      </ListView>
     </div>
   );
 }

@@ -8,7 +8,6 @@ export {
   Keyboard,
   KeyboardContext,
   Link,
-  LinkContext,
   Separator,
   ToggleButton,
   ToggleButtonGroup,

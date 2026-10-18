@@ -1,8 +1,19 @@
 // What the collapsible parts of a property panel (sections and cards) share.
 
 import { useContext, useId } from 'react';
-import { DisclosureGroupStateContext, type Key } from '../../primitives/index.js';
+import { DisclosureGroupStateContext } from '../../primitives/index.js';
+import type { Key } from '../../core/props.js';
 import { usePersistentState, useUiStrings } from '../../core/provider.js';
+
+/** Whether a section or card is open, which the caller may control. */
+export interface PropertyExpansionProps {
+  /** Whether it is open, controlled. */
+  isExpanded?: boolean | undefined;
+  /** Whether it starts open, uncontrolled. */
+  defaultExpanded?: boolean | undefined;
+  /** Called when it opens or closes. */
+  onExpandedChange?: ((isExpanded: boolean) => void) | undefined;
+}
 
 export interface ScopedExpansionOptions {
   /** Whether a query is active. */

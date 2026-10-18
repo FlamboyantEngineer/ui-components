@@ -1,7 +1,8 @@
 import { useMemo, type ReactNode } from 'react';
-import type { Key } from '../../primitives/index.js';
+import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { mergeProps } from '../../utils/merge-props.js';
+import type { CollectionDragAndDropOptions } from '../../utils/use-reorder-drag-and-drop.js';
 import type { TableProps } from './table.js';
 import { stateRowId, type TableBodyProps, type TableStatus } from './table-body.js';
 import { footerRowId } from './table-footer.js';
@@ -31,6 +32,8 @@ export interface TableGrid<T> {
   layout: ColumnLayout<T>;
   widths: ReturnType<typeof useColumnWidths>;
   reordering: TableReorder<T> | null;
+  /** The grid's drag and drop options, built whether or not the table reorders. */
+  dragAndDrop: CollectionDragAndDropOptions;
   columnReorder: ColumnReorder;
   pinOffsets: TablePinOffsets;
   /** Takes the pinned offsets the header measures. */
@@ -183,6 +186,7 @@ export function useTableGrid<T extends TableRow>(options: TableGridOptions<T>): 
     layout,
     widths,
     reordering: activeReordering,
+    dragAndDrop: reordering.dragAndDrop,
     columnReorder,
     pinOffsets,
     onPinOffsets: pinned.report,

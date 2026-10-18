@@ -226,6 +226,13 @@
   outline-width: 2px;
 }
 
+.ui-list-view__loader {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  color: var(--ref-muted);
+}
+
 .ui-list-view-section {
   display: block;
 }

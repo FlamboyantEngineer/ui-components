@@ -1,5 +1,5 @@
 import { useId, useState, type ReactNode } from 'react';
-import { Input, type Key } from '../../src/primitives/index.js';
+import type { Key } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
 import { Field, useFieldState } from '../../src/components/field/field.js';
 import { IconButton } from '../../src/components/icon-button/icon-button.js';
@@ -53,7 +53,7 @@ function TextSetting({ label, value, ...row }: TextSettingProps) {
     <PropertyRow label={label} htmlFor={`${id}-control`} {...row}>
       <Field id={id} state={state} label={label} labelLayout="control-only">
         {(control) => (
-          <Input
+          <input
             {...control}
             value={state.value}
             onChange={(event) => state.setValue(event.target.value)}
@@ -173,10 +173,10 @@ function StripSample({ variant, name }: { variant: 'separate' | 'segmented'; nam
       <PropertyRow label="Spacing" unit="pt" keywords={['Before', 'After']}>
         <PropertyStrip>
           <PropertyStripCell letter="B" label="Before">
-            <Input aria-label="Spacing before" defaultValue="4" size={3} />
+            <input aria-label="Spacing before" defaultValue="4" size={3} />
           </PropertyStripCell>
           <PropertyStripCell letter="A" label="After">
-            <Input aria-label="Spacing after" defaultValue="8" size={3} />
+            <input aria-label="Spacing after" defaultValue="8" size={3} />
           </PropertyStripCell>
         </PropertyStrip>
       </PropertyRow>

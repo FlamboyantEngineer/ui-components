@@ -27,9 +27,9 @@ Verification: `src/components/card/card.test.tsx`, `e2e/card.spec.ts`
 
 ### UIC-CARD-1.4 - Slotted title in a custom header
 
-Custom `header` content shall receive the title's props through React Aria's `HeadingContext` under the `title` slot ([COMPOSITION.md](COMPOSITION.md#uic-composition-31---slot-props)): a React Aria `Heading` with `slot="title"`, or a host component that reads `useSlottedContext(HeadingContext, 'title')`, gets the title's `id`, the `ui-card__title` class and a `ref`. Once that element renders, the card is named by it as by its own title ([UIC-CARD-1.3](#uic-card-13---region-name-and-roles)); without one the card has no name of its own, and a caller's `aria-label` or `aria-labelledby` still wins. A `Heading` without a slot gets nothing.
+Custom `header` content shall name the card by the `CardTitle` it holds ([COMPOSITION.md](COMPOSITION.md#uic-composition-31---slot-props)): `CardTitle` renders a heading at the card's level (`headingLevel`, else the automatic level) with the card's title `id`, the `ui-card__title` class and the caller's `className` and `data-*` attributes. Once it renders, the card is named by it as by its own title ([UIC-CARD-1.3](#uic-card-13---region-name-and-roles)); without one the card has no name of its own, and a caller's `aria-label` or `aria-labelledby` still wins. Other headings in the header are left alone, and a `CardTitle` outside a card's custom header is a plain heading at the automatic level.
 
-Implementation: `src/components/card/card.tsx`
+Implementation: `src/components/card/card.tsx`, `src/components/card/card-parts.tsx`
 Verification: `src/components/card/card.test.tsx`, `e2e/card.spec.ts`
 
 ## UIC-CARD-2 - Options
@@ -87,9 +87,9 @@ Verification: `src/components/card/card.test.tsx`, `e2e/card.spec.ts`
 
 ### UIC-CARD-3.3 - Slotted action in a custom header
 
-Custom `header` content shall receive the action's props through React Aria's slot contexts under the `action` slot ([COMPOSITION.md](COMPOSITION.md#uic-composition-31---slot-props)): `LinkContext` for `href` (the address, `target`, `rel` and `onAction` as its press handler) and `ButtonContext` for `onAction` alone, each with the `ui-card__action` class and a ref the card registers. A React Aria `Link` or `Button` with `slot="action"` then becomes the action that clicks on the card activate; elements without that slot get nothing.
+A `CardAction` in custom `header` content shall draw the card's action ([COMPOSITION.md](COMPOSITION.md#uic-composition-31---slot-props)): for `href` a link through the provider's link renderer with `target` and `rel` that also calls `onAction` when followed, and for `onAction` alone a React Aria `Button`, each with the `ui-card__action` class and named by its content or its `aria-label`. Clicks on the card then activate it ([UIC-CARD-3.2](#uic-card-32---pressing-the-card)). Without a card action it renders its children as they are; other links and buttons in the header are left alone.
 
-Implementation: `src/components/card/card-action.tsx`, `src/components/card/card.tsx`
+Implementation: `src/components/card/card-action.tsx`, `src/components/card/card-parts.tsx`, `src/components/card/card.tsx`
 Verification: `src/components/card/card.test.tsx`
 
 ## UIC-CARD-4 - Media and loading
@@ -112,28 +112,28 @@ Verification: `src/components/card/card.test.tsx`, `e2e/card.spec.ts`
 
 ### UIC-CARD-5.1 - Grid
 
-`CardGrid` shall render React Aria's `GridList` in its `grid` layout with the `ui-card-grid` root, and `CardGridItem` a `GridListItem` with the `ui-card-grid-item` root around its content, usually a `Card` that takes `role="group"` from the caller ([UIC-CARD-1.3](#uic-card-13---region-name-and-roles)). Arrow keys move focus between cards in two dimensions by their positions on screen (in a `WaterfallLayout`, Left and Right move by position and Up and Down in collection order), Home and End reach the first and last card, and typing moves to the card whose `textValue` starts with the typed text. The grid needs an `aria-label` or `aria-labelledby`.
+`CardGrid` shall render React Aria's `GridList` in its `grid` layout with the `ui-card-grid` root, and `CardGridItem` a `GridListItem` (keyed by its `id`) with the `ui-card-grid-item` root around its content, usually a `Card` that takes `role="group"` from the caller ([UIC-CARD-1.3](#uic-card-13---region-name-and-roles)). Arrow keys move focus between cards in two dimensions by their positions on screen (in the `waterfall` layout, Left and Right move by position and Up and Down in collection order), Home and End reach the first and last card, and typing moves to the card whose `textValue` starts with the typed text. The grid needs an `aria-label` or `aria-labelledby`.
 
 Implementation: `src/components/card/card-grid.tsx`, `labs/reference/card.css`
 Verification: `src/components/card/card.test.tsx`, `e2e/card.spec.ts`
 
 ### UIC-CARD-5.2 - Collection children
 
-`CardGrid` shall pass React Aria's collection props and children through ([COLLECTIONS.md](COLLECTIONS.md)): `items` with a render function, `renderEmptyState` (publishing `data-empty`), a `Virtualizer` around the grid with `GridLayout` or `WaterfallLayout` for a waterfall of cards of different heights, and a `GridListLoadMoreItem` after the items that loads more as it scrolls into view.
+Cards shall come from `CardGridItem` children, or from `items` with a function in `children` that draws one per item and redraws them when `dependencies` change. `virtualized` shall render the grid through React Aria's `Virtualizer` with its grid layout, so only the cards in view of the bounded grid, plus a small buffer, are in the document; `layout="waterfall"` lays out cards of different heights in columns through React Aria's waterfall layout, always virtualized. `minItemSize` (`{ width, height }` in pixels, 200 by 200 by default) sets the smallest card either virtual layout draws. `onLoadMore` shall be called when the end of the cards scrolls into view while `isLoading` is false, through React Aria's `GridListLoadMoreItem` after the cards (`ui-card-grid__loader`); while `isLoading`, it shows a small loading [EmptyState](EMPTY-STATE.md) reading the provider's `loading` string. `renderEmptyState` draws the empty grid, which publishes `data-empty`.
 
-Implementation: `src/components/card/card-grid.tsx`
+Implementation: `src/components/card/card-grid.tsx`, `labs/reference/card.css`
 Verification: `src/components/card/card.test.tsx`, `e2e/card.spec.ts`
 
 ### UIC-CARD-5.3 - Selectable cards
 
-`selectionMode` (`single` or `multiple`), `selectedKeys`, `defaultSelectedKeys` and `onSelectionChange` shall select cards with the pointer and with Space, as React Aria's grid list does, and items publish React Aria's `data-selected`. While the grid selects with toggles (the default `selectionBehavior`), each item draws a selection [Checkbox](CHECKBOX.md) in the `ui-card-grid-item__checkbox` slot before its content, which React Aria names after the item. An item's render function receives `isSelected`, which a card draws through its own `isSelected`.
+`selectionMode` (`single` or `multiple`), `selectionBehavior`, `selectedKeys`, `defaultSelectedKeys` and `onSelectionChange` (with the new `Selection`) shall select cards with the pointer and with Space, as React Aria's grid list does, and items publish React Aria's `data-selected`. While the grid selects with toggles (the default `selectionBehavior`), each item draws a selection [Checkbox](CHECKBOX.md) in the `ui-card-grid-item__checkbox` slot before its content, which React Aria names after the item. A function in an item's `children` receives `{ isSelected }`, which a card draws through its own `isSelected`.
 
 Implementation: `src/components/card/card-grid.tsx`, `labs/reference/card.css`
 Verification: `src/components/card/card.test.tsx`, `e2e/card.spec.ts`
 
 ### UIC-CARD-5.4 - Card actions in a grid
 
-`onAction` on the grid or on an item, and `href` on an item, shall act on a card as React Aria's grid list does: with toggle selection, Enter or a press opens the card while no card is selected, and selects once some are; so a card collection opens a card without nesting a link inside each card.
+`onAction` on the grid (with the card's key) or on an item, and `href` on an item, shall act on a card as React Aria's grid list does: with toggle selection, Enter or a press opens the card while no card is selected, and selects once some are; so a card collection opens a card without nesting a link inside each card.
 
 Implementation: `src/components/card/card-grid.tsx`
 Verification: `src/components/card/card.test.tsx`
@@ -154,6 +154,7 @@ Verification: `src/components/card/card.test.tsx`
 | `ui-card__skeleton`           | slot      |                                              | The loading placeholder (also `ui-skeleton`).          |
 | `ui-card__footer`             | slot      |                                              | The `<footer>`.                                        |
 | `ui-card-grid`                | root      |                                              | The card collection (`role="grid"`).                   |
+| `ui-card-grid__loader`        | slot      |                                              | The loading item after the cards while more load.      |
 | `ui-card-grid-item`           | root      |                                              | One item of the collection (`role="row"`).             |
 | `ui-card-grid-item__checkbox` | slot      |                                              | The selection checkbox (also `ui-checkbox`).           |
 | `data-variant`                | attribute | `default`, `panel`                           | Surface.                                               |

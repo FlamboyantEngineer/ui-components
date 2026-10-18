@@ -162,6 +162,11 @@
   color: var(--ref-muted);
   font-style: italic;
 }
+.ui-card-grid__loader {
+  grid-column: 1 / -1;
+  padding: 8px;
+  color: var(--ref-muted);
+}
 .ui-card-grid-item {
   position: relative;
   border-radius: 8px;

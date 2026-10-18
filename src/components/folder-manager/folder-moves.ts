@@ -1,6 +1,6 @@
 // The moves that put several folders into one destination, in their tree order.
 
-import type { Key } from '../../primitives/index.js';
+import type { Key } from '../../core/props.js';
 import type { TreeMove } from '../../utils/tree-reorder.js';
 import { findFolderPath, type FolderItem } from './folder-model.js';
 

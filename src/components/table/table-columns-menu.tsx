@@ -1,4 +1,4 @@
-import type { Selection } from '../../primitives/index.js';
+import type { Selection } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import { getColumnText } from './table-column.js';

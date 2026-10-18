@@ -1,5 +1,4 @@
-import { useId, useState, type ReactNode } from 'react';
-import { DEFAULT_SLOT, HeadingContext, Provider } from '../../primitives/index.js';
+import { useId, useMemo, useState, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps } from '../../core/props.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
@@ -9,12 +8,8 @@ import {
   type HeadingLevel,
 } from '../section-header/section-header.js';
 import { Skeleton } from '../skeleton/skeleton.js';
-import {
-  CardActionSlots,
-  CardActionTitle,
-  useCardAction,
-  type CardActionOptions,
-} from './card-action.js';
+import { CardActionTitle, useCardAction, type CardActionOptions } from './card-action.js';
+import { CardHeaderContext, type CardHeaderParts } from './card-parts.js';
 
 /** `default`: content on the page. `panel`: a chrome region on a muted surface. */
 export type CardVariant = 'default' | 'panel';
@@ -40,9 +35,8 @@ export interface CardProps
   /** The title's heading level. Defaults to one below the enclosing section's, else 3. */
   headingLevel?: HeadingLevel | undefined;
   /**
-   * Custom header content, in place of the title, description and actions. A React Aria `Heading`
-   * with `slot="title"` in it becomes the card's title and names the card, and a React Aria `Link`
-   * or `Button` with `slot="action"` becomes the card's action.
+   * Custom header content, in place of the title, description and actions. A `CardTitle` in it is
+   * the card's title and names the card, and a `CardAction` is the card's action.
    */
   header?: ReactNode;
   /** Full-bleed media before the header, such as a cover image or a preview. */
@@ -137,25 +131,44 @@ function CardHeading({
   );
 }
 
+/** What the custom header's `CardTitle` and `CardAction` take from the card. */
+function useHeaderParts({
+  headingLevel,
+  titleId,
+  titleRef,
+  action,
+}: Pick<CardHeaderProps, 'headingLevel' | 'titleId' | 'titleRef' | 'action'>): CardHeaderParts {
+  const { options, isActionable, ref } = action;
+  const { href, target, rel, onAction } = options;
+  return useMemo(
+    () => ({
+      title: {
+        id: titleId,
+        className: hooks.slotClass('title'),
+        level: headingLevel,
+        ref: titleRef,
+      },
+      action: {
+        options: { href, target, rel, onAction },
+        isActionable,
+        className: hooks.slotClass('action'),
+        ref,
+      },
+    }),
+    [titleId, headingLevel, titleRef, href, target, rel, onAction, isActionable, ref],
+  );
+}
+
 /**
  * The `<header>`: custom content, or the title block and actions; nothing when all are empty. Custom
- * content gets the title's props through React Aria's `HeadingContext` under the `title` slot.
+ * content's `CardTitle` and `CardAction` take the title's and the action's props from the card.
  */
 function CardHeader({ header, actions, titleRef, ...heading }: CardHeaderProps) {
+  const parts = useHeaderParts({ ...heading, titleRef });
   if (!isEmptyNode(header)) {
-    const title = { id: heading.titleId, className: hooks.slotClass('title'), ref: titleRef };
-    const { action } = heading;
     return (
       <header {...hooks.slot('header')}>
-        <Provider values={[[HeadingContext, { slots: { [DEFAULT_SLOT]: {}, title } }]]}>
-          <CardActionSlots
-            options={action.options}
-            actionRef={action.ref}
-            className={hooks.slotClass('action')}
-          >
-            {header}
-          </CardActionSlots>
-        </Provider>
+        <CardHeaderContext value={parts}>{header}</CardHeaderContext>
       </header>
     );
   }

@@ -30,6 +30,8 @@ export type {
 } from './props.js';
 export type {
   AriaLabellingProps,
+  CollectionSelectionProps,
+  ExpansionProps,
   FocusEventProps,
   HoverEvent,
   HoverEventProps,
@@ -38,6 +40,7 @@ export type {
   PointerType,
   PressEvent,
   PressEventProps,
+  SelectionBehavior,
   SelectionProps,
 } from './events.js';
 export { defaultGlyphs, glyphNames } from './glyphs.js';

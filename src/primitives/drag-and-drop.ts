@@ -7,11 +7,4 @@ export {
   isFileDropItem,
   useDragAndDrop,
 } from 'react-aria-components';
-export type {
-  DirectoryDropItem,
-  DragAndDropHooks,
-  DragAndDropOptions,
-  DropItem,
-  DropTarget,
-  ItemDropTarget,
-} from 'react-aria-components';
+export type { DirectoryDropItem, DropItem, ItemDropTarget } from 'react-aria-components';

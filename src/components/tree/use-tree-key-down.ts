@@ -11,7 +11,7 @@ export interface TreeKeyDownOptions<T extends TreeItemData> extends Pick<
   'onItemKeyDown'
 > {
   /** Reordering, while the tree is reorderable. */
-  reordering: TreeReorder<T> | null;
+  reordering: TreeReorder | null;
   /** In-place renaming, while the owner takes renames. */
   rename: TreeRename<T> | null;
 }
