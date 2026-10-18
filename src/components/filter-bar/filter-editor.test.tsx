@@ -41,7 +41,7 @@ function Editor({
 }) {
   const [condition, setCondition] = useState(initial);
   return (
-    <div data-testid="editor">
+    <div role="group" aria-label="Editor">
       <FilterConditionFields
         field={fields[condition.field]!}
         condition={condition}
@@ -56,7 +56,8 @@ function Editor({
   );
 }
 
-const slot = (name: string) => screen.getByTestId('editor').querySelector(`.part-${name}`);
+const slot = (name: string) =>
+  screen.getByRole('group', { name: 'Editor' }).querySelector(`.part-${name}`);
 
 describe('FilterConditionFields', () => {
   it('UIC-FILTER-BAR-2.2 edits text and changes the operator', async () => {

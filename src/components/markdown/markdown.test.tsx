@@ -155,10 +155,10 @@ describe('Markdown', () => {
   it('UIC-MARKDOWN-2.8 lets the caller replace the rendering of any node', () => {
     const renderNode = vi.fn((node, children) => {
       if (node.type === 'codeBlock' && node.language === 'chart') {
-        return <figure data-testid="chart">{node.text}</figure>;
+        return <figure aria-label="Chart">{node.text}</figure>;
       }
       if (node.type === 'image') return null;
-      if (node.type === 'strong') return <b data-testid="bold">{children}</b>;
+      if (node.type === 'strong') return <b title="Bold">{children}</b>;
       return undefined;
     });
     render(
@@ -167,9 +167,9 @@ describe('Markdown', () => {
         renderNode={renderNode}
       />,
     );
-    expect(screen.getByTestId('chart')).toHaveTextContent('pie');
+    expect(screen.getByRole('figure', { name: 'Chart' })).toHaveTextContent('pie');
     expect(screen.queryByRole('img')).not.toBeInTheDocument();
-    expect(screen.getByTestId('bold')).toHaveTextContent('kept');
+    expect(screen.getByTitle('Bold')).toHaveTextContent('kept');
     expect(renderNode).toHaveBeenCalledWith(expect.objectContaining({ type: 'image' }), null);
   });
 
@@ -182,12 +182,13 @@ describe('Markdown', () => {
 
   it('UIC-MARKDOWN-2.10 carries its hooks, the caller class, id and data attributes', () => {
     const { container } = render(
-      <Markdown source="Text" className="caller" id="notes" data-testid="probe" />,
+      <Markdown source="Text" className="caller" id="notes" data-probe="notes" />,
     );
-    const root = screen.getByTestId('probe');
+    const root = screen.getByText('Text').closest('.caller');
     expect(root).toHaveClass('ui-markdown', 'caller');
     expect(root).toHaveAttribute('id', 'notes');
-    expectHooksMatchSpec(container, 'MARKDOWN');
+    expect(root).toHaveAttribute('data-probe', 'notes');
+    expectHooksMatchSpec(container, 'MARKDOWN', { callerAttributes: ['data-probe'] });
   });
 
   it('UIC-MARKDOWN-3.1 keeps native semantics and never injects raw HTML', () => {
