@@ -131,8 +131,8 @@ const stateProps: Record<(typeof states)[number], Partial<CodeEditorProps>> = {
     lineNumbers: true,
     diagnostics: [{ message: 'This line is long.', line: 4, column: 1, severity: 'warning' }],
   },
-  'read-only': { readOnly: true },
-  disabled: { disabled: true },
+  'read-only': { isReadOnly: true },
+  disabled: { isDisabled: true },
 };
 
 function Editor({

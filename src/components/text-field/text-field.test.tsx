@@ -21,7 +21,7 @@ function SavedField(props: Omit<TextFieldProps, 'label'>) {
 }
 
 describe('TextField', () => {
-  it('UIC-TEXT-FIELD-1.1 is a field around a React Aria text field that starts empty', async () => {
+  it('UIC-TEXT-FIELD-1.1 is a field around a text field that starts empty', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     const { container } = render(<TextField label="Fruit" onChange={onChange} />);
@@ -35,7 +35,7 @@ describe('TextField', () => {
     expectHooksMatchSpec(container, 'FIELD', { slots: ['label', 'control', 'message'] });
   });
 
-  it('UIC-TEXT-FIELD-1.2 edits several lines in a text area and passes React Aria props on', async () => {
+  it('UIC-TEXT-FIELD-1.2 UIC-FIELD-8.3 edits several lines in a text area and passes its input props on', async () => {
     const user = userEvent.setup();
     const events: string[] = [];
     const { container, unmount } = render(
@@ -63,7 +63,7 @@ describe('TextField', () => {
         name="email"
         autoComplete="email"
         inputMode="email"
-        spellCheck="false"
+        spellCheck={false}
         autoFocus
         onKeyDown={(event) => events.push(`key:${event.key}`)}
       />,

@@ -1,11 +1,11 @@
 import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { useState } from 'react';
+import { useState, type JSX } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Fieldset } from '../field/field.js';
 import { Form } from '../form/form.js';
-import { Radio, RadioGroup, type RadioGroupProps } from './radio-group.js';
+import { Radio, RadioGroup, type RadioGroupProps, type RadioRenderState } from './radio-group.js';
 
 function root(container: HTMLElement) {
   return container.querySelector<HTMLElement>('.ui-field');
@@ -31,7 +31,7 @@ function Sizes(props: Omit<RadioGroupProps, 'label' | 'children'>) {
 }
 
 describe('RadioGroup', () => {
-  it('UIC-RADIO-GROUP-1.1 is a field around a React Aria radio group that starts with none selected', async () => {
+  it('UIC-RADIO-GROUP-1.1 is a field around a radio group that starts with none selected', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     const onCommit = vi.fn();
@@ -77,16 +77,22 @@ describe('RadioGroup', () => {
     });
   });
 
-  it('UIC-RADIO-GROUP-1.2 swaps a radio element through React Aria render', () => {
+  it('UIC-RADIO-GROUP-1.2 swaps a radio element through render with its state', () => {
+    const swap = (props: JSX.IntrinsicElements['div'], state: RadioRenderState) => (
+      <div {...props} data-swapped={state.isSelected ? 'selected' : 'idle'} />
+    );
     render(
-      <RadioGroup label="Plan">
-        <Radio value="basic" render={(props) => <section {...props} />}>
+      <RadioGroup label="Plan" defaultValue="basic">
+        <Radio value="basic" render={swap}>
           Basic
+        </Radio>
+        <Radio value="team" render={swap}>
+          Team
         </Radio>
       </RadioGroup>,
     );
-    const field = radio('Basic').closest('.ui-radio');
-    expect(field?.tagName).toBe('SECTION');
+    expect(radio('Basic').closest('.ui-radio')).toHaveAttribute('data-swapped', 'selected');
+    expect(radio('Team').closest('.ui-radio')).toHaveAttribute('data-swapped', 'idle');
   });
 
   it('UIC-RADIO-GROUP-1.3 describes a radio with its description', () => {

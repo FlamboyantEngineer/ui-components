@@ -6,10 +6,9 @@ import {
   SliderOutput,
   SliderThumb,
   SliderTrack,
-  type SliderProps as AriaSliderProps,
 } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
-import type { Size } from '../../core/props.js';
+import type { Orientation, Size } from '../../core/props.js';
 import { clamp } from '../../utils/clamp.js';
 import type { FieldControlProps, FieldInputProps, FieldState } from '../field/field.js';
 
@@ -26,32 +25,22 @@ export interface SliderMark {
 }
 
 /**
- * The React Aria slider props a slider takes; the field supplies the rest. `render` is left out
- * because the field's `<div>` is the root and the slider group is one of its parts.
- */
-type AriaSliderOwnProps = Omit<
-  AriaSliderProps,
-  | 'className'
-  | 'style'
-  | 'children'
-  | 'render'
-  | 'id'
-  | 'value'
-  | 'defaultValue'
-  | 'onChange'
-  | 'onChangeEnd'
-  | 'isDisabled'
-  | 'aria-label'
-  | 'aria-labelledby'
-  | 'aria-describedby'
->;
-
-/**
  * The props `Slider` and `RangeSlider` share: the field's props (a slider always holds a value, so
- * it is never required and never cleared) and React Aria's range, step, orientation and format.
+ * it is never required and never cleared) and the range, step, orientation and format.
  */
-export interface SliderFieldProps<T>
-  extends AriaSliderOwnProps, Omit<FieldInputProps<T>, 'isRequired' | 'emptyValue'> {
+export interface SliderFieldProps<T> extends Omit<FieldInputProps<T>, 'isRequired' | 'emptyValue'> {
+  /** The lowest value. Defaults to 0. */
+  minValue?: number | undefined;
+  /** The highest value. Defaults to 100. */
+  maxValue?: number | undefined;
+  /** The step between values. Defaults to 1. */
+  step?: number | undefined;
+  /** The track's axis. Defaults to `horizontal`. */
+  orientation?: Orientation | undefined;
+  /** How the value is formatted in the locale, in the output and each thumb's value text. */
+  formatOptions?: Intl.NumberFormatOptions | undefined;
+  /** The id of an element with details about the slider. */
+  'aria-details'?: string | undefined;
   /** Called with the value when a drag or a key press that moves a thumb ends. */
   onChangeEnd?: ((value: T) => void) | undefined;
   /** Marks along the track, each with an optional label. */
@@ -64,9 +53,18 @@ export interface SliderFieldProps<T>
 
 type SliderValue = number | [number, number];
 
-/** The props `SliderControl` passes on to React Aria's slider and its thumbs. */
-export type SliderOwnProps<T> = AriaSliderOwnProps &
-  Pick<SliderFieldProps<T>, 'name' | 'onChangeEnd'>;
+/** The props `SliderControl` passes on to the slider and its thumbs. */
+export type SliderOwnProps<T> = Pick<
+  SliderFieldProps<T>,
+  | 'name'
+  | 'onChangeEnd'
+  | 'minValue'
+  | 'maxValue'
+  | 'step'
+  | 'orientation'
+  | 'formatOptions'
+  | 'aria-details'
+>;
 
 export interface SliderControlProps<T extends SliderValue> {
   state: FieldState<T>;

@@ -122,7 +122,7 @@ describe('CodeEditor editing keys', () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     render(
-      <Editor initialValue="a" readOnly indentWithTab autoCloseBrackets onChange={onChange} />,
+      <Editor initialValue="a" isReadOnly indentWithTab autoCloseBrackets onChange={onChange} />,
     );
     await user.click(input());
     await user.keyboard('{End}({Enter}');

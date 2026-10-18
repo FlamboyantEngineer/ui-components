@@ -1,8 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { useState } from 'react';
+import { createRef, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { GridList, GridListItem } from '../../primitives/index.js';
 import { Checkbox, cycleCheckState } from './checkbox.js';
 
 function ThreeState() {
@@ -108,6 +109,46 @@ describe('Checkbox', () => {
     expect(root).toHaveClass('ui-checkbox', 'dense');
     expect(root).toHaveAttribute('data-test', 'option');
     expectHooksMatchSpec(container, 'CHECKBOX', { callerAttributes: ['data-test'] });
+  });
+
+  it('UIC-CHECKBOX-1.1 submits its value, hands over its input and validates natively by default', () => {
+    const inputRef = createRef<HTMLInputElement>();
+    const { rerender } = render(
+      <Checkbox name="terms" value="yes" defaultSelected isRequired inputRef={inputRef}>
+        Terms
+      </Checkbox>,
+    );
+    const input = screen.getByRole('checkbox', { name: 'Terms' });
+    expect(inputRef.current).toBe(input);
+    expect(input).toHaveAttribute('name', 'terms');
+    expect(input).toHaveAttribute('value', 'yes');
+    expect(input).toBeChecked();
+    expect(input).toHaveAttribute('required');
+    rerender(
+      <Checkbox name="terms" value="yes" isRequired validationBehavior="aria">
+        Terms
+      </Checkbox>,
+    );
+    expect(input).not.toHaveAttribute('required');
+    expect(input).toHaveAttribute('aria-required', 'true');
+  });
+
+  it('UIC-CHECKBOX-1.5 shows and toggles the selection of the item it sits in', async () => {
+    const user = userEvent.setup();
+    const onSelectionChange = vi.fn();
+    render(
+      <GridList aria-label="Fruit" selectionMode="multiple" onSelectionChange={onSelectionChange}>
+        <GridListItem id="apple" textValue="Apple">
+          <Checkbox slot="selection" />
+          Apple
+        </GridListItem>
+      </GridList>,
+    );
+    const input = screen.getByRole('checkbox');
+    expect(input).not.toBeChecked();
+    await user.click(input);
+    expect(input).toBeChecked();
+    expect([...(onSelectionChange.mock.calls[0]?.[0] as Set<string>)]).toEqual(['apple']);
   });
 
   it('UIC-CHECKBOX-2.1 cycles unset, ticked and empty', async () => {

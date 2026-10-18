@@ -1,10 +1,14 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import type { DropItem } from '../../primitives/index.js';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
-import { readDroppedFiles } from './file-upload-drop.js';
+import {
+  readDroppedFiles,
+  type DroppedDirectory,
+  type DroppedFile,
+  type DroppedItem,
+} from './file-upload-drop.js';
 import { FileUpload, type FileUploadItem } from './file-upload.js';
 
 function file(name: string, type: string, size = 10): File {
@@ -349,24 +353,24 @@ describe('FileUpload', () => {
     const a = file('a.txt', 'text/plain');
     const b = file('b.txt', 'text/plain');
     const c = file('c.txt', 'text/plain');
-    const fileItem = (entry: File) => ({
+    const fileItem = (entry: File): DroppedFile => ({
       kind: 'file',
       type: entry.type,
       name: entry.name,
       getFile: async () => entry,
-      getText: async () => '',
     });
-    async function* inner() {
+    async function* inner(): AsyncGenerator<DroppedFile | DroppedDirectory> {
       yield fileItem(c);
     }
-    async function* outer() {
+    async function* outer(): AsyncGenerator<DroppedFile | DroppedDirectory> {
       yield fileItem(b);
       yield { kind: 'directory', name: 'inner', getEntries: inner };
     }
-    const items = [
+    const items: DroppedItem[] = [
       fileItem(a),
+      { kind: 'text' },
       { kind: 'directory', name: 'outer', getEntries: outer },
-    ] as unknown as DropItem[];
+    ];
     expect(await readDroppedFiles(items, true)).toEqual([a, b, c]);
     expect(await readDroppedFiles(items, false)).toEqual([a]);
   });

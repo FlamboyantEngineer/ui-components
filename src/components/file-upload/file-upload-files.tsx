@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import type { Key } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
+import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { formatBytes } from '../../utils/format-bytes.js';
 import { IconButton } from '../icon-button/icon-button.js';

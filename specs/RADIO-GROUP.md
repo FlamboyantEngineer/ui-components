@@ -6,35 +6,35 @@
 
 ### UIC-RADIO-GROUP-1.1 - Field control
 
-`RadioGroup` shall render a `Field` around a React Aria radio group (`ui-radio-group__box`, role `radiogroup`, named by the field label), built with `useFieldControl`, holding its `children`, the `Radio` elements. Its root element is the field's root, which carries `ui-radio-group` beside `ui-field`. The value is the selected radio's `value`, or `null` while none is: a field given no value, committed value or default starts with none selected, and Clear selects none. Selecting a radio sets its value and commits it.
+`RadioGroup` shall render a `Field` around a radio group (`ui-radio-group__box`, role `radiogroup`, named by the field label), built with `useFieldControl`, holding its `children`, the `Radio` elements. Its root element is the field's root, which carries `ui-radio-group` beside `ui-field`. The value is the selected radio's `value`, or `null` while none is: a field given no value, committed value or default starts with none selected, and Clear selects none. Selecting a radio sets its value and commits it.
 
 Implementation: `src/components/radio-group/radio-group.tsx`, `labs/reference/radio-group.css`
 Verification: `src/components/radio-group/radio-group.test.tsx`, `e2e/radio-group.spec.ts`
 
 ### UIC-RADIO-GROUP-1.2 - Radio
 
-`Radio` shall render React Aria's `RadioField` (`ui-radio`) holding a `<label>` (`ui-radio__button`, React Aria's `RadioButton`) around a visually hidden native radio input, a drawn indicator (`ui-radio__indicator`, hidden from assistive technology) and its children in `ui-radio__label`, which may be rich content (an icon, a badge, a price). Pressing the indicator or the label selects the radio. React Aria's radio props pass through: `value`, `isDisabled`, `inputRef`, `aria-label` for a radio without text, `render` and the others; a caller `id` goes on the input. A `Radio` renders inside a `RadioGroup`.
+`Radio` shall render a `<div>` (`ui-radio`) holding a `<label>` (`ui-radio__button`) around a visually hidden native radio input, a drawn indicator (`ui-radio__indicator`, hidden from assistive technology) and its children in `ui-radio__label`, which may be rich content (an icon, a badge, a price). Pressing the indicator or the label selects the radio. It takes `value` (the group's value while it is selected), `isDisabled`, `inputRef` (the native input), the labelling props (`aria-label` for a radio without text) and `render`, which replaces the root `<div>` with the caller's element (`ElementRender<'div', RadioRenderState>`, [COMPOSITION.md](COMPOSITION.md)) and receives its states: `isSelected`, `isDisabled`, `isReadOnly`, `isInvalid` and `isRequired`. A caller `id` goes on the input. A `Radio` renders inside a `RadioGroup`.
 
 Implementation: `src/components/radio-group/radio-group.tsx`, `labs/reference/radio-group.css`
 Verification: `src/components/radio-group/radio-group.test.tsx`, `e2e/radio-group.spec.ts`
 
 ### UIC-RADIO-GROUP-1.3 - Description
 
-A radio's `description` shall render in `ui-radio__description` after its `<label>`, through React Aria's description slot, and describe its input (`aria-describedby`).
+A radio's `description` shall render in `ui-radio__description` after its `<label>` and describe its input (`aria-describedby`).
 
 Implementation: `src/components/radio-group/radio-group.tsx`
 Verification: `src/components/radio-group/radio-group.test.tsx`, `e2e/radio-group.spec.ts`
 
 ### UIC-RADIO-GROUP-1.4 - Orientation and size
 
-`orientation` (React Aria's, `vertical` by default, or `horizontal`) shall lay the radios out in a column or a row, publish React Aria's `data-orientation` on the box and set `aria-orientation` on the group. `size` (`sm`, `md` by default, `lg`) shall publish `data-size` on the root.
+`orientation` (`vertical` by default, or `horizontal`) shall lay the radios out in a column or a row, publish `data-orientation` on the box and set `aria-orientation` on the group. `size` (`sm`, `md` by default, `lg`) shall publish `data-size` on the root.
 
 Implementation: `src/components/radio-group/radio-group.tsx`, `labs/reference/radio-group.css`
 Verification: `src/components/radio-group/radio-group.test.tsx`, `e2e/radio-group.spec.ts`
 
 ### UIC-RADIO-GROUP-1.5 - Form value
 
-With `name`, a form shall submit the selected radio's `value` under that name, and nothing while none is selected. Without one, React Aria gives the radios a generated name so they still form one group. React Aria's radio group props (`name`, `form`, `onFocus`, `onBlur` and the others) pass through.
+With `name`, a form shall submit the selected radio's `value` under that name, and nothing while none is selected. Without one, the radios get a generated name so they still form one group. The group takes the field's props, `orientation`, `size` and its radios, and no other.
 
 Implementation: `src/components/radio-group/radio-group.tsx`
 Verification: `src/components/radio-group/radio-group.test.tsx`
@@ -50,7 +50,7 @@ Verification: `src/components/radio-group/radio-group.test.tsx`
 
 ### UIC-RADIO-GROUP-2.1 - Names and states
 
-The group shall be named by the field label and described by the field's description, decoration and message; while invalid it carries `aria-invalid="true"` and `aria-errormessage` naming the message, and while required `aria-required="true"`. Each radio input is named by its label content, or by `aria-label`. The group and its radios publish React Aria's `data-invalid`, `data-required`, `data-readonly` and `data-disabled`; each radio and its button publish `data-selected` while selected, and the button `data-hovered`, `data-pressed`, `data-focused` and `data-focus-visible` (keyboard focus only).
+The group shall be named by the field label and described by the field's description, decoration and message; while invalid it carries `aria-invalid="true"` and `aria-errormessage` naming the message, and while required `aria-required="true"`. Each radio input is named by its label content, or by `aria-label`. The group and its radios publish `data-invalid`, `data-required`, `data-readonly` and `data-disabled`; each radio and its button publish `data-selected` while selected, and the button `data-hovered`, `data-pressed`, `data-focused` and `data-focus-visible` (keyboard focus only).
 
 Implementation: `src/components/radio-group/radio-group.tsx`
 Verification: `src/components/radio-group/radio-group.test.tsx`, `e2e/radio-group.spec.ts`

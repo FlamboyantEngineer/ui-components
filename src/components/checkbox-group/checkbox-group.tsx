@@ -2,7 +2,6 @@ import type { ReactNode } from 'react';
 import {
   CheckboxGroup as AriaCheckboxGroup,
   CheckboxGroupStateContext,
-  type CheckboxGroupProps as AriaCheckboxGroupProps,
 } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import { Checkbox } from '../checkbox/checkbox.js';
@@ -14,29 +13,6 @@ import {
   type FieldState,
 } from '../field/field.js';
 
-/** The React Aria checkbox group props a `CheckboxGroup` takes; the field supplies the rest. */
-type AriaCheckboxGroupOwnProps = Omit<
-  AriaCheckboxGroupProps,
-  | 'className'
-  | 'style'
-  | 'children'
-  | 'render'
-  | 'id'
-  | 'value'
-  | 'defaultValue'
-  | 'onChange'
-  | 'validate'
-  | 'validationBehavior'
-  | 'isInvalid'
-  | 'isRequired'
-  | 'isReadOnly'
-  | 'isDisabled'
-  | 'aria-label'
-  | 'aria-labelledby'
-  | 'aria-describedby'
-  | 'aria-errormessage'
->;
-
 export interface CheckboxGroupOption {
   /** The value the option adds to the group's value, and submits under the group's `name`. */
   value: string;
@@ -45,7 +21,7 @@ export interface CheckboxGroupOption {
   isDisabled?: boolean | undefined;
 }
 
-export interface CheckboxGroupProps extends AriaCheckboxGroupOwnProps, FieldInputProps<string[]> {
+export interface CheckboxGroupProps extends FieldInputProps<string[]> {
   /** The options, in order: one checkbox each. */
   options: readonly CheckboxGroupOption[];
   /**

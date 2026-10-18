@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
+import { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Switch } from './switch.js';
@@ -17,6 +18,18 @@ describe('Switch', () => {
     expect(track?.querySelector('.ui-switch__thumb')).not.toBeNull();
     expect(container.querySelector('.ui-switch__label')).toHaveTextContent('Wi-Fi');
     expectHooksMatchSpec(container, 'SWITCH', { slots: 'all' });
+  });
+
+  it('UIC-SWITCH-1.1 hands its input to inputRef and focuses it with autoFocus', () => {
+    const inputRef = createRef<HTMLInputElement>();
+    render(
+      <Switch inputRef={inputRef} autoFocus>
+        Bluetooth
+      </Switch>,
+    );
+    const input = screen.getByRole('switch', { name: 'Bluetooth' });
+    expect(inputRef.current).toBe(input);
+    expect(input).toHaveFocus();
   });
 
   it('UIC-SWITCH-1.2 flips from the track, the label and Space', async () => {
