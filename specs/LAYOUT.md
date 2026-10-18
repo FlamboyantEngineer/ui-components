@@ -36,7 +36,7 @@ Verification: `src/components/layout/layout.test.tsx`, `e2e/layout.spec.ts`
 
 ### UIC-LAYOUT-2.2 - Alignment and flow
 
-`align` (`start`, `center`, `end`, `stretch`, `baseline`), `justify` (`normal`, `start`, `center`, `end`, `between`) and `wrap` (`wrap`, `nowrap`) shall publish `data-align`, `data-justify` and `data-wrap`. `Stack` aligns `stretch` by default; `Cluster` aligns `center`, justifies `start` and wraps; `InlineField` aligns `center`, justifies `start` and does not wrap; `ToolbarRow` justifies `end` and wraps; `StatusBar` justifies `between` and does not wrap. `inline` on `Cluster` and `InlineField` publishes `data-inline` so the element flows with surrounding text.
+`align` (`start`, `center`, `end`, `stretch`, `baseline`), `justify` (`normal`, `start`, `center`, `end`, `between`) and `wrap` (`wrap`, `nowrap`) shall publish `data-align`, `data-justify` and `data-wrap`. `Stack` aligns `stretch` by default; `Cluster` aligns `center`, justifies `start` and wraps; `InlineField` aligns `center`, justifies `start` and does not wrap; `ToolbarRow` justifies `end` and publishes in `data-wrap` whether its `overflow` wraps (UIC-LAYOUT-3.8); `StatusBar` justifies `between` and does not wrap. `inline` on `Cluster` and `InlineField` publishes `data-inline` so the element flows with surrounding text.
 
 Implementation: `src/components/layout/layout.tsx`, `src/components/layout/toolbar-row.tsx`, `labs/reference/layout.css`
 Verification: `src/components/layout/layout.test.tsx`, `e2e/layout.spec.ts`
@@ -127,6 +127,27 @@ Verification: `src/components/layout/toolbar-row.test.tsx`, `e2e/layout.spec.ts`
 Implementation: `src/components/layout/toolbar-row.tsx`, `labs/reference/layout.css`
 Verification: `src/components/layout/toolbar-row.test.tsx`, `e2e/layout.spec.ts`
 
+### UIC-LAYOUT-3.8 - Toolbar overflow
+
+`ToolbarRow`'s `overflow` shall choose what happens to controls that do not fit on one horizontal row, published in `data-overflow`. `wrap` (the default) flows them onto more rows, and every `ToolbarRowGroup` with them: the row and its groups publish `data-wrap="wrap"`. `scroll` keeps them on one row in a [Toolbar Scroller](TOOLBAR-SCROLLER.md) inside the row: the scroller's strip is the toolbar, named by the row's `aria-label` or `aria-labelledby`, and the row adds no role of its own. `none` keeps one row and leaves overflow to the caller (for example an [Overflow List](OVERFLOW-LIST.md)). Rows that do not wrap and their groups publish `data-wrap="nowrap"`. A vertical row is one column: it treats `scroll` as `none`.
+
+Implementation: `src/components/layout/toolbar-row.tsx`, `labs/reference/layout.css`
+Verification: `src/components/layout/toolbar-row.test.tsx`, `e2e/layout.spec.ts`
+
+### UIC-LAYOUT-3.9 - Pending toolbar
+
+While `isPending` is set, `ToolbarRow` shall keep its place and size in the layout but make its controls inert (`inert`: none takes focus or a press, and assistive technology skips them) and publish `data-pending`, so the stylesheet can withhold its paint while the surface it serves starts, and the content below never moves when the controls appear.
+
+Implementation: `src/components/layout/toolbar-row.tsx`, `labs/reference/layout.css`
+Verification: `src/components/layout/toolbar-row.test.tsx`, `e2e/layout.spec.ts`
+
+### UIC-LAYOUT-3.10 - Attached toolbar groups
+
+`ToolbarRowGroup`'s `density` shall publish `data-density`: `regular` (the default) spaces its controls with the row's gap, and `attached` joins them into one segmented run, which the reference sheet draws without gaps, with one shared border between neighbours and rounded corners only at the run's ends, as an attached [Button Group](BUTTON-GROUP.md). The controls stay separate tools of the toolbar.
+
+Implementation: `src/components/layout/toolbar-row.tsx`, `labs/reference/layout.css`
+Verification: `src/components/layout/toolbar-row.test.tsx`, `e2e/layout.spec.ts`
+
 ## Hooks
 
 | Hook                        | Kind      | Values                                                                | Description                                                 |
@@ -153,7 +174,7 @@ Verification: `src/components/layout/toolbar-row.test.tsx`, `e2e/layout.spec.ts`
 | `data-gutter`               | attribute | `none`, `3xs`, `2xs`, `xs`, `sm`, `md`, `lg`, `xl`, `2xl`, `3xl`      | Padding of `Page` and `Grid`.                               |
 | `data-align`                | attribute | `start`, `center`, `end`, `stretch`, `baseline`                       | Cross-axis alignment.                                       |
 | `data-justify`              | attribute | `normal`, `start`, `center`, `end`, `between`                         | Main-axis distribution.                                     |
-| `data-wrap`                 | attribute | `wrap`, `nowrap`                                                      | Whether children wrap.                                      |
+| `data-wrap`                 | attribute | `wrap`, `nowrap`                                                      | Whether children wrap; also on toolbar groups.              |
 | `data-columns`              | attribute | `1`, `2`, `3`, `4`, `6`, `12`, `fit`, `none`                          | `Grid` column template.                                     |
 | `data-min-column-width`     | attribute | `sm`, `md`, `lg`, `xl`                                                | Smallest column of `columns="fit"`.                         |
 | `data-width`                | attribute | `full`, `wide`, `reading`, `narrow`                                   | `Page` maximum width.                                       |
@@ -161,6 +182,9 @@ Verification: `src/components/layout/toolbar-row.test.tsx`, `e2e/layout.spec.ts`
 | `data-offset`               | attribute | `0`, `1`, `2`, `3`, `4`, `5`, `6`, `7`, `8`, `9`, `10`, `11`          | `GridItem` empty columns before it.                         |
 | `data-ratio`                | attribute | `1-1`, `4-3`, `3-2`, `16-9`, `21-9`, `3-4`, `2-3`, `9-16`             | `AspectRatio` width to height.                              |
 | `data-variant`              | attribute | `plain`, `surface`                                                    | `ToolbarRow` surface.                                       |
+| `data-overflow`             | attribute | `wrap`, `scroll`, `none`                                              | What a toolbar row does with controls that do not fit.      |
+| `data-density`              | attribute | `regular`, `attached`                                                 | Whether a toolbar group's controls are joined.              |
+| `data-pending`              | state     | `true`                                                                | A toolbar row whose controls are inert while it starts.     |
 | `data-grow`                 | state     | `true`, `auto`, `none`                                                | Growth inside a flex parent; absent for the default sizing. |
 | `data-fill`                 | state     | `true`                                                                | Takes the containing block's full block size.               |
 | `data-clip`                 | state     | `true`                                                                | Clips overflowing content.                                  |

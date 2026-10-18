@@ -118,6 +118,60 @@ function Adornments() {
   );
 }
 
+const toHexDigits = (text: string) => text.replace(/[^0-9a-f]/gi, '').toUpperCase();
+const toIdentifier = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, '_');
+
+/** Typed and pasted text is filtered or rewritten before it becomes the value. */
+function TransformedInput() {
+  const [code, setCode] = useState('');
+  return (
+    <>
+      <TextField
+        label="Colour code"
+        description="Hexadecimal digits only, in capitals."
+        maxLength={6}
+        transformInput={toHexDigits}
+        onChange={setCode}
+        data-lab-field="hex"
+      />
+      <TextField
+        label="Identifier"
+        description="Lower case; spaces and symbols become underscores."
+        defaultValue="fruit_bowl"
+        transformInput={toIdentifier}
+        data-lab-field="identifier"
+      />
+      <Output name="Code">{code || 'none'}</Output>
+    </>
+  );
+}
+
+/** The sum of `+`-separated numbers, or nothing while the text is not one. */
+function sumOf(text: string): string | undefined {
+  const terms = text.split('+').map((term) => Number(term.trim()));
+  return terms.some((term) => Number.isNaN(term))
+    ? undefined
+    : String(terms.reduce((a, b) => a + b, 0));
+}
+
+/** Shows the sum at rest and the typed terms while editing. */
+function DisplayedSum() {
+  const [value, setValue] = useState('12 + 30');
+  return (
+    <>
+      <TextField
+        label="Total apples"
+        description="Type a sum such as 12 + 30; the result shows once you leave the field."
+        value={value}
+        onChange={setValue}
+        displayValue={sumOf(value)}
+        data-lab-field="sum"
+      />
+      <Output name="Value">{value}</Output>
+    </>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -195,6 +249,18 @@ mountLab(
         defaultValue={'\u{1F44D}\u{1F3FD}'}
         data-lab-field="graphemes"
       />
+    </LabSection>
+    <LabSection
+      title="Input transform"
+      description="Rejected characters never enter the value and the caret stays in place, for typing and pasting."
+    >
+      <TransformedInput />
+    </LabSection>
+    <LabSection
+      title="Display value"
+      description="At rest the field shows the computed sum; focus shows the typed terms for editing."
+    >
+      <DisplayedSum />
     </LabSection>
   </>,
 );

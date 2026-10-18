@@ -1,7 +1,8 @@
-import { useState, type KeyboardEvent, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Input, TextField as AriaTextField } from '../../primitives/index.js';
 import type { FocusEventProps, KeyboardEventProps } from '../../core/events.js';
 import { useUiStrings } from '../../core/provider.js';
+import { mergeRefs } from '../../utils/merge-props.js';
 import {
   Field,
   countCodePoints,
@@ -9,7 +10,6 @@ import {
   useFieldControl,
   validateString,
   type FieldInputProps,
-  type FieldState,
   type FieldTextInputProps,
   type StringRules,
 } from '../field/field.js';
@@ -19,8 +19,8 @@ import {
   isAutoGrowing,
   textFieldHooks as hooks,
   withCharacterCount,
-  type TextFieldInputProps,
 } from './text-field-parts.js';
+import { useTextFieldInput } from './use-text-field-input.js';
 
 /** The kind of text a single-line field takes: the input's `type`. */
 export type TextFieldType = 'text' | 'email' | 'password' | 'search' | 'tel' | 'url';
@@ -48,19 +48,10 @@ export interface TextFieldProps
   maxRows?: number | undefined;
   /** Shows the text's length (counted as `getLength` counts it), against `maxLength` when set. */
   showCount?: boolean | undefined;
-}
-
-/** Enter commits a single line; Escape puts the committed value back and stops there. */
-function createEditKeyHandler(state: FieldState<string>, multiline: boolean) {
-  return (event: KeyboardEvent<HTMLElement>) => {
-    if (event.nativeEvent.isComposing) return;
-    if (event.key === 'Enter' && !multiline) state.commit();
-    if (event.key === 'Escape' && state.isDirty) {
-      event.preventDefault();
-      event.stopPropagation();
-      state.restore();
-    }
-  };
+  /** Rewrites each typed, pasted or dropped edit before it becomes the value; the caret stays after the same accepted characters. */
+  transformInput?: ((text: string) => string) | undefined;
+  /** What the control shows while it does not have focus, such as a computed result; focus shows the value for editing. */
+  displayValue?: string | undefined;
 }
 
 /**
@@ -83,6 +74,8 @@ export function TextField({
   maxRows,
   showCount = false,
   spellCheck,
+  transformInput,
+  displayValue,
   ...props
 }: TextFieldProps) {
   const strings = useUiStrings();
@@ -93,14 +86,13 @@ export function TextField({
     check: (value) => validateString(value, rules, strings),
   });
   const [isRevealed, setIsRevealed] = useState(false);
+  const edit = useTextFieldInput({ state, multiline, placeholder, transformInput, displayValue });
   const isMasked = allowsReveal && rest.type === 'password';
   const count = showCount ? (getLength ?? countCodePoints)(state.value) : null;
-  const data = { multiline, autosize: multiline && isAutoGrowing({ minRows, maxRows }) };
-  const input: TextFieldInputProps = {
-    ...hooks.slot('input'),
-    placeholder,
-    onBlur: () => state.commit(),
-    onKeyDown: createEditKeyHandler(state, multiline),
+  const data = {
+    multiline,
+    autosize: multiline && isAutoGrowing({ minRows, maxRows }),
+    displayValue: edit.showsDisplayValue,
   };
   const reveal = isMasked
     ? { label: field.label, isRevealed, isDisabled: state.isDisabled, onChange: setIsRevealed }
@@ -112,37 +104,35 @@ export function TextField({
       description={withCharacterCount(field.description, { count, maxLength })}
       state={state}
     >
-      {(control) => {
-        return (
-          <AriaTextField
-            {...rest}
-            {...toAriaControlProps(control)}
-            {...hooks.slot('box')}
-            spellCheck={spellCheck?.toString()}
-            type={isMasked && isRevealed ? 'text' : rest.type}
-            value={state.value}
-            onChange={state.setValue}
+      {(control) => (
+        <AriaTextField
+          {...rest}
+          {...toAriaControlProps(control)}
+          {...hooks.slot('box')}
+          spellCheck={spellCheck?.toString()}
+          type={isMasked && isRevealed ? 'text' : rest.type}
+          value={edit.text}
+          onChange={edit.transform.onChange}
+        >
+          <TextFieldFrame
+            startAdornment={startAdornment}
+            endAdornment={endAdornment}
+            reveal={reveal}
           >
-            <TextFieldFrame
-              startAdornment={startAdornment}
-              endAdornment={endAdornment}
-              reveal={reveal}
-            >
-              {multiline ? (
-                <TextFieldArea
-                  {...input}
-                  controlRef={control.ref}
-                  minRows={minRows}
-                  maxRows={maxRows}
-                  value={state.value}
-                />
-              ) : (
-                <Input {...input} ref={control.ref} />
-              )}
-            </TextFieldFrame>
-          </AriaTextField>
-        );
-      }}
+            {multiline ? (
+              <TextFieldArea
+                {...edit.input}
+                controlRef={mergeRefs(control.ref, edit.transform.ref)}
+                minRows={minRows}
+                maxRows={maxRows}
+                value={edit.text}
+              />
+            ) : (
+              <Input {...edit.input} ref={mergeRefs(control.ref, edit.transform.ref)} />
+            )}
+          </TextFieldFrame>
+        </AriaTextField>
+      )}
     </Field>
   );
 }

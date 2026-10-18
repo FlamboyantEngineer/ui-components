@@ -6,9 +6,10 @@ import {
   Row,
   type CellRenderProps,
 } from '../../primitives/index.js';
-import { measuredProperty } from '../../core/hooks.js';
+import { measuredProperty, pickDataAttributes } from '../../core/hooks.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { DragHandle } from '../drag-handle/drag-handle.js';
+import type { TableRowAttributes } from './table.js';
 import { useExpandGlyph } from '../expand-toggle/expand-toggle.js';
 import { Icon } from '../icon/icon.js';
 import { TableCellEditorView } from './table-cell-editor.js';
@@ -34,6 +35,7 @@ export interface TableRowModel<T> {
   structure: TableStructure<T>;
   renderRowActions?: ((row: T) => ReactNode) | undefined;
   renderRowDetail?: ((row: T) => ReactNode) | undefined;
+  getRowAttributes?: ((row: T) => TableRowAttributes) | undefined;
   /** Draws drag handles; `isMovable` tells which are enabled. */
   isReorderable: boolean;
   isMovable: (row: T) => boolean;
@@ -161,6 +163,7 @@ export function TableDataRow<T extends TableRow>({
   const actionsPin = getColumnPin(structure, 'actions');
   return (
     <Row
+      {...pickDataAttributes(model.getRowAttributes?.(row) ?? {})}
       id={row.id}
       textValue={getRowText(row, getRowHeaderColumns(structure.columns))}
       className={hooks.slotClass('row')}

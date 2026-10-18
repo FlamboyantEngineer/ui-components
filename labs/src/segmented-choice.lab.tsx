@@ -1,4 +1,6 @@
 import { useId, useState } from 'react';
+import { Checkbox } from '../../src/components/checkbox/checkbox.js';
+import { InlineError } from '../../src/components/inline-error/inline-error.js';
 import {
   SegmentedChoice,
   type SegmentedChoiceOption,
@@ -90,6 +92,49 @@ function SubmittedChoices() {
       <button type="submit">Submit</button>
       <p data-lab-output="submitted">Submitted: {submitted}</p>
     </form>
+  );
+}
+
+const notes: SegmentedChoiceOption[] = [
+  { value: 'open', label: 'Open', count: 3 },
+  { value: 'resolved', label: 'Resolved', count: 128 },
+  { value: 'all', label: 'All', count: 131 },
+];
+
+/** Saving the filter takes 800ms; with "Fail the next save" checked, the save fails and the choice goes back. */
+function SavedFilter() {
+  const [value, setValue] = useState<string | null>('open');
+  const [failsNext, setFailsNext] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const save = (next: string | null) =>
+    new Promise<void>((resolve, reject) => {
+      setError(null);
+      window.setTimeout(() => {
+        if (failsNext) {
+          setFailsNext(false);
+          setError('The filter could not be saved. Try again.');
+          reject(new Error('Save failed'));
+          return;
+        }
+        setValue(next);
+        resolve();
+      }, 800);
+    });
+  return (
+    <div data-lab-demo="saved">
+      <SegmentedChoice
+        aria-label="Notes to show"
+        options={notes}
+        value={value}
+        sizing="content"
+        onChange={save}
+      />{' '}
+      <Checkbox isSelected={failsNext} onChange={setFailsNext}>
+        Fail the next save
+      </Checkbox>
+      {error ? <InlineError>{error}</InlineError> : null}
+      <p data-lab-output="saved">Saved: {value}</p>
+    </div>
   );
 }
 
@@ -217,6 +262,33 @@ mountLab(
       description="With a name, the selected values submit with the form as hidden inputs."
     >
       <SubmittedChoices />
+    </LabSection>
+    <LabSection
+      title="Counts"
+      description="Counts follow the labels, capped at 99; each segment reads as its label and count, such as Open, 3."
+    >
+      <StateMatrix
+        axes={{ display: ['labels', 'icons'], size: sizes }}
+        render={({ display, size }) => (
+          <SegmentedChoice
+            aria-label={`Notes, ${display}, ${size}`}
+            size={size}
+            sizing="content"
+            iconOnly={display === 'icons'}
+            defaultValue="open"
+            options={notes.map((option, index) => ({
+              ...option,
+              icon: (['edit', 'check', 'filter'] as const)[index],
+            }))}
+          />
+        )}
+      />
+    </LabSection>
+    <LabSection
+      title="Asynchronous change"
+      description="The pick shows at once and stays pending while it saves; a failed save puts the previous choice back."
+    >
+      <SavedFilter />
     </LabSection>
   </>,
 );

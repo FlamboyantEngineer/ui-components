@@ -54,6 +54,25 @@ test.describe('Table lab', () => {
     expect((await names(caller))[0]).toBe('Lemon');
   });
 
+  test('UIC-TABLE-1.5 marks rows with caller attributes that the stylesheet draws', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('table');
+    const demo = section(page, 'row-marks');
+    const grid = demo.getByRole('grid', { name: 'Fruit, with row marks' });
+    const banana = grid.getByRole('row', { name: /^Banana/ });
+    await expect(banana).toHaveAttribute('data-status', 'empty');
+    await expect(banana).toHaveCSS('text-decoration-line', 'line-through');
+    await expect(grid.getByRole('row', { name: /^Date/ })).toHaveAttribute('data-status', 'low');
+    await expect(grid.getByRole('row', { name: /^Apple/ })).not.toHaveAttribute('data-status');
+    await demo.getByRole('button', { name: 'Add fig' }).click();
+    const fig = grid.getByRole('row', { name: /^Fig/ });
+    await expect(fig).toHaveAttribute('data-change', 'added');
+    await expect(fig.getByRole('rowheader')).not.toHaveCSS('box-shadow', 'none');
+    await lab.expectAccessible('[data-lab="row-marks"]');
+  });
+
   test('UIC-TABLE-3.1 selects rows with checkboxes and the keyboard', async ({ page, lab }) => {
     await lab.open('table');
     const grid = page.getByRole('grid', { name: 'Fruit, selectable' });

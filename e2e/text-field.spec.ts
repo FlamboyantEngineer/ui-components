@@ -182,4 +182,49 @@ test.describe('Text Field lab', () => {
     await expect(field(page, 'graphemes').locator('.ui-text-field__count')).toHaveText('1/3');
     await expect(field(page, 'graphemes')).toHaveAttribute('data-validation', 'valid');
   });
+
+  test('UIC-TEXT-FIELD-4.1 filters typed and pasted text and keeps the caret', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('text-field');
+    const input = field(page, 'hex').getByRole('textbox', { name: 'Colour code' });
+    await input.pressSequentially('a1-zb');
+    await expect(input).toHaveValue('A1B');
+    await expect(output(page, 'Code')).toHaveText('A1B');
+    await input.press('ArrowLeft');
+    await input.press('ArrowLeft');
+    await input.pressSequentially('x');
+    await expect(input).toHaveValue('A1B');
+    expect(await input.evaluate((node: HTMLInputElement) => node.selectionStart)).toBe(1);
+    // Inserted text arrives as one edit, as a paste does.
+    await page.keyboard.insertText('e-0');
+    await expect(input).toHaveValue('AE01B');
+    expect(await input.evaluate((node: HTMLInputElement) => node.selectionStart)).toBe(3);
+
+    const identifier = field(page, 'identifier').getByRole('textbox', { name: 'Identifier' });
+    await identifier.press('End');
+    await identifier.pressSequentially(' Big Bowl');
+    await expect(identifier).toHaveValue('fruit_bowl_big_bowl');
+    await lab.expectAccessible();
+  });
+
+  test('UIC-TEXT-FIELD-4.2 shows the display value at rest and the value while editing', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('text-field');
+    const sum = field(page, 'sum');
+    const input = sum.getByRole('textbox', { name: 'Total apples' });
+    await expect(input).toHaveValue('42');
+    await expect(sum).toHaveAttribute('data-display-value', 'true');
+    await input.focus();
+    await expect(input).toHaveValue('12 + 30');
+    await expect(sum).not.toHaveAttribute('data-display-value');
+    await input.press('End');
+    await input.pressSequentially(' + 8');
+    await input.press('Tab');
+    await expect(input).toHaveValue('50');
+    await expect(output(page, 'Value')).toHaveText('12 + 30 + 8');
+  });
 });

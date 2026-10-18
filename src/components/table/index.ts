@@ -1,5 +1,5 @@
 export { Table } from './table.js';
-export type { TableProps, TableSize } from './table.js';
+export type { TableProps, TableRowAttributes, TableSize } from './table.js';
 export type { TableColumnSize, TableColumnWidths } from './column-sizing.js';
 export type { TableColumnGroup, TableColumnLayout } from './table-columns.js';
 export { filterTableRows } from './table-filters.js';
