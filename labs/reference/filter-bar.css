@@ -1,0 +1,93 @@
+/* Filter Bar: a wrapping row of joined chip buttons, an add menu and a quiet clear button. */
+
+.ui-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.ui-filter-bar__search {
+  flex: 0 1 220px;
+  min-width: 160px;
+}
+
+.ui-filter-bar__list {
+  display: contents;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ui-filter-bar__chip {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  border: 1px solid var(--ref-border);
+  border-radius: 999px;
+  background: var(--ref-surface);
+}
+
+.ui-filter-bar__chip[data-incomplete] {
+  border-style: dashed;
+}
+
+.ui-filter-bar__chip[data-open] {
+  border-color: var(--ref-accent);
+}
+
+.ui-filter-bar__chip-button {
+  min-width: 0;
+  max-width: 320px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 999px 0 0 999px;
+  background: transparent;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-filter-bar__chip-field {
+  font-weight: 600;
+}
+
+.ui-filter-bar__chip-operator {
+  color: var(--ref-muted);
+}
+
+.ui-filter-bar__chip-value {
+  color: var(--ref-text);
+}
+
+.ui-filter-bar__chip-remove {
+  margin-inline-end: 2px;
+  border-radius: 999px;
+}
+
+.ui-filter-bar__editor {
+  min-width: 260px;
+}
+
+.ui-filter-bar__editor .ui-popover__body {
+  display: grid;
+  gap: 10px;
+}
+
+.ui-filter-bar__operator,
+.ui-filter-bar__value {
+  min-width: 0;
+}
+
+.ui-filter-bar__value[role='group'] {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.ui-filter-bar__add {
+  color: var(--ref-accent-ink);
+}
+
+.ui-filter-bar__clear {
+  color: var(--ref-muted);
+}

@@ -2,6 +2,7 @@ import { commonStrings, type CommonStrings } from './common-strings.js';
 import { contentStrings, type ContentStrings } from './content-strings.js';
 import { fieldStrings, type FieldStrings } from './field-strings.js';
 import { historyStrings, type HistoryStrings } from './history-strings.js';
+import { queryStrings, type QueryStrings } from './query-strings.js';
 import { reviewStrings, type ReviewStrings } from './review-strings.js';
 
 /**
@@ -9,7 +10,13 @@ import { reviewStrings, type ReviewStrings } from './review-strings.js';
  * entries live in four modules so each stays readable.
  */
 export interface UiStrings
-  extends CommonStrings, FieldStrings, ContentStrings, HistoryStrings, ReviewStrings {}
+  extends
+    CommonStrings,
+    FieldStrings,
+    ContentStrings,
+    HistoryStrings,
+    ReviewStrings,
+    QueryStrings {}
 
 export const defaultStrings: UiStrings = {
   ...commonStrings,
@@ -17,4 +24,5 @@ export const defaultStrings: UiStrings = {
   ...contentStrings,
   ...historyStrings,
   ...reviewStrings,
+  ...queryStrings,
 };

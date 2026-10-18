@@ -1,0 +1,96 @@
+/* Condition Builder: nested groups as indented, ruled boxes of rule rows. */
+
+.ui-condition-builder {
+  display: block;
+  max-width: 100%;
+}
+
+.ui-condition-builder__group {
+  display: grid;
+  gap: 8px;
+}
+
+.ui-condition-builder__group:not([data-depth='1']) {
+  padding: 8px 10px;
+  border: 1px solid var(--ref-border);
+  border-left: 3px solid var(--ref-accent);
+  border-radius: var(--ref-radius);
+  background: var(--ref-surface);
+}
+
+.ui-condition-builder__group[data-combinator='or']:not([data-depth='1']) {
+  border-left-color: var(--ref-warning);
+}
+
+.ui-condition-builder__group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ui-condition-builder__rules {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ui-condition-builder__item {
+  min-width: 0;
+}
+
+.ui-condition-builder__rule {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.ui-condition-builder__field,
+.ui-condition-builder__operator {
+  flex: 0 0 150px;
+}
+
+.ui-condition-builder__value {
+  flex: 1 1 180px;
+  min-width: 0;
+}
+
+.ui-condition-builder__value[role='group'] {
+  display: flex;
+  gap: 6px;
+}
+
+.ui-condition-builder__actions {
+  display: inline-flex;
+  margin-inline-start: auto;
+}
+
+.ui-condition-builder__message {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--ref-danger);
+  font-size: 12px;
+}
+
+.ui-condition-builder__empty {
+  margin: 0;
+  color: var(--ref-muted);
+  font-size: 13px;
+}
+
+.ui-condition-builder__group-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.ui-condition-builder__add-rule,
+.ui-condition-builder__add-group {
+  color: var(--ref-accent-ink);
+}
+
+.ui-condition-builder__combinator {
+  flex: none;
+}

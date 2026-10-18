@@ -27,6 +27,8 @@ export interface CodeAreaProps {
   value: string;
   onChange: ((value: string) => void) | undefined;
   wrap: 'soft' | 'off';
+  /** `false` turns typed and pasted line breaks into spaces. */
+  multiline: boolean;
   id: string | undefined;
   /** The caller's text area props, without data attributes. */
   props: CodeTextAreaProps;
@@ -60,7 +62,7 @@ function useKeyProps(model: CodeEditorModel, props: CodeTextAreaProps): TextArea
 /** The text area's props: the caller's, with the editor's handlers run first. */
 function useInputProps(
   model: CodeEditorModel,
-  { props, onChange }: Pick<CodeAreaProps, 'props' | 'onChange'>,
+  { props, onChange, multiline }: Pick<CodeAreaProps, 'props' | 'onChange' | 'multiline'>,
 ): TextAreaAttributes {
   const { layers, completion, hover, snippet } = model;
   return {
@@ -71,7 +73,8 @@ function useInputProps(
     ...props,
     ...useKeyProps(model, props),
     onChange: (event) => {
-      onChange?.(event.target.value);
+      const text = event.target.value;
+      onChange?.(multiline ? text : text.replace(/\r?\n/g, ' '));
       hover.close();
       completion.track('input');
     },
@@ -98,7 +101,7 @@ function useInputProps(
 
 /** The highlighted copy and the text area over it. */
 export function CodeArea({ model, props, locks, onChange, ...area }: CodeAreaProps) {
-  const inputProps = useInputProps(model, { props, onChange });
+  const inputProps = useInputProps(model, { props, onChange, multiline: area.multiline });
   const { listId } = area;
   return (
     <div {...hooks.slot('code')}>
@@ -117,6 +120,8 @@ export function CodeArea({ model, props, locks, onChange, ...area }: CodeAreaPro
         ref={area.inputRef}
         value={area.value}
         wrap={area.wrap}
+        rows={area.multiline ? undefined : 1}
+        aria-multiline={area.multiline ? undefined : false}
         aria-invalid={area.isInvalid || undefined}
         aria-describedby={area.describedBy}
         {...(listId === undefined ? {} : toCompletionInputAttributes(model.completion, listId))}

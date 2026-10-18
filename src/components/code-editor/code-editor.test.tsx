@@ -479,3 +479,45 @@ describe('CodeEditor', () => {
     expectHooksMatchSpec(container, 'CODE-EDITOR', { callerAttributes: ['data-testid'] });
   });
 });
+
+describe('CodeEditor on one line', () => {
+  it('UIC-CODE-EDITOR-1.7 leaves Enter to the caller and turns line breaks into spaces', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const onKeyDown = vi.fn();
+    render(
+      <Editor
+        multiline={false}
+        wrap="soft"
+        initialValue="fruit"
+        onChange={onChange}
+        onKeyDown={onKeyDown}
+      />,
+    );
+    const input = screen.getByRole('textbox', { name: 'Source' });
+    expect(input).toHaveAttribute('aria-multiline', 'false');
+    expect(input).toHaveAttribute('rows', '1');
+    expect(input).toHaveAttribute('wrap', 'off');
+    const root = input.closest('.ui-code-editor');
+    expect(root).toHaveAttribute('data-single-line', 'true');
+    expect(root).toHaveAttribute('data-wrap', 'off');
+    await user.click(input);
+    await user.keyboard('{End}{Enter}');
+    expect(input).toHaveValue('fruit');
+    expect(onKeyDown).toHaveBeenCalledWith(expect.objectContaining({ key: 'Enter' }));
+    fireEvent.change(input, { target: { value: 'fruit\napple\r\npear' } });
+    expect(onChange).toHaveBeenLastCalledWith('fruit apple pear');
+    expectHooksMatchSpec(document.body, 'CODE-EDITOR');
+  });
+
+  it('UIC-CODE-EDITOR-1.7 breaks lines on Enter by default', async () => {
+    const user = userEvent.setup();
+    render(<Editor initialValue="fruit" />);
+    const input = screen.getByRole('textbox', { name: 'Source' });
+    expect(input).not.toHaveAttribute('aria-multiline');
+    expect(input.closest('.ui-code-editor')).not.toHaveAttribute('data-single-line');
+    await user.click(input);
+    await user.keyboard('{End}{Enter}');
+    expect(input).toHaveValue('fruit\n');
+  });
+});
