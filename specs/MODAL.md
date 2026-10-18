@@ -188,9 +188,9 @@ Verification: `src/components/modal/modal-presentations.test.tsx`, `e2e/modal.sp
 
 ### UIC-MODAL-8.2 - Anchored dialog
 
-With `placement`, the dialog shall open inside a React Aria `DialogTrigger` as a popover against the trigger at that placement, 8 pixels away and kept 8 pixels inside the viewport, instead of over the page. The popover carries the overlay's hooks (`ui-modal`, `data-layer="dropdown"` with that layer's z-index, tone, size and body layout) with React Aria's `data-placement`, `data-trigger`, `data-entering` and `data-exiting`, and holds the dialog directly, with no panel. The dialog element takes `role="dialog"`, which React Aria's popover needs to stay a plain container. React Aria's popover traps focus, hides the page from assistive technology and returns focus to the trigger; Escape, Cancel and the actions behave as in a modal, and an outside press closes it only when `isDismissable`. `placement` takes precedence over `isNonModal`.
+With `placement`, the dialog shall open inside a React Aria `DialogTrigger` as a popover against the trigger at that placement, 8 pixels away and kept 8 pixels inside the viewport, instead of over the page. The popover carries the overlay's hooks (`ui-modal`, `data-layer="dropdown"` with that layer's z-index, tone, size and body layout) with React Aria's `data-placement`, `data-trigger`, `data-entering` and `data-exiting`, and holds the dialog directly, with no panel. The dialog element takes `role="dialog"`, which React Aria's popover needs to stay a plain container. React Aria's popover traps focus, hides the page from assistive technology and returns focus to the trigger; Escape, Cancel and the actions behave as in a modal, and an outside press closes it only when `isDismissable`. `placement` takes precedence over `isNonModal`. The popover is the [Popover](POPOVER.md)'s floating panel.
 
-Implementation: `src/components/modal/modal.tsx`, `src/components/modal/modal-presentations.tsx`
+Implementation: `src/components/modal/modal.tsx`, `src/components/modal/modal-presentations.tsx`, `src/components/popover/popover.tsx`
 Verification: `src/components/modal/modal-presentations.test.tsx`, `e2e/modal.spec.ts`
 
 ## Hooks

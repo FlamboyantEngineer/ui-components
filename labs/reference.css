@@ -31,6 +31,7 @@
 @import url('reference/date-time-field.css');
 @import url('reference/description-list.css');
 @import url('reference/drag-handle.css');
+@import url('reference/drawer.css');
 @import url('reference/dropdown-menu.css');
 @import url('reference/emoji-picker.css');
 @import url('reference/empty-state.css');
@@ -40,6 +41,7 @@
 @import url('reference/folder-manager.css');
 @import url('reference/form.css');
 @import url('reference/four-side-property-strip.css');
+@import url('reference/hover-card.css');
 @import url('reference/icon.css');
 @import url('reference/icon-button.css');
 @import url('reference/icon-label.css');
@@ -60,6 +62,7 @@
 @import url('reference/path.css');
 @import url('reference/pdf-viewer.css');
 @import url('reference/pin-input.css');
+@import url('reference/popover.css');
 @import url('reference/portal.css');
 @import url('reference/presence-avatar.css');
 @import url('reference/presence-strip.css');

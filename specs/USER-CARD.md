@@ -64,16 +64,16 @@ Verification: `src/components/user-card/user-card.test.tsx`, `e2e/user-card.spec
 
 ### UIC-USER-CARD-2.2 - Opening and dismissing
 
-A click, Enter or Space on the trigger shall open its `card` in a popover in the `ui-user-card__popover` slot, placed below the trigger and flipped or shifted to stay in the viewport, with focus moved into the card. Escape and a press outside shall close it and return focus to the trigger.
+A click, Enter or Space on the trigger shall open its `card` in a popover in the `ui-user-card__popover` slot, placed below the trigger and flipped or shifted to stay in the viewport, on the `dropdown` overlay layer (the [Popover](POPOVER.md#uic-popover-15---layering-and-transitions)'s floating panel), with focus moved into the card. Escape and a press outside shall close it and return focus to the trigger.
 
-Implementation: `src/components/user-card/user-card.tsx`
+Implementation: `src/components/user-card/user-card.tsx`, `src/components/popover/popover.tsx`
 Verification: `src/components/user-card/user-card.test.tsx`, `e2e/user-card.spec.ts`
 
 ### UIC-USER-CARD-2.3 - Opening on hover and focus
 
-With `trigger="hover"`, the trigger shall be a React Aria `PreviewTrigger`: the card opens `delay` milliseconds (600 by default) after the pointer rests on the trigger or keyboard focus reaches it, or on a long press, without moving focus; the popover publishes `data-trigger="PreviewTrigger"`. The trigger carries `aria-haspopup="dialog"` and `aria-expanded` and, while the card is open, is described by it. Tab from the trigger moves into the open card. The card stays open while the pointer travels between the trigger and the card, and closes `closeDelay` milliseconds (200 by default) after the pointer and focus have left both, or on Escape, keeping or returning focus to the trigger. Pressing the trigger runs `onPress` and does not toggle the card. A disabled trigger opens nothing.
+With `trigger="hover"`, the trigger shall open the card in a [Hover Card](HOVER-CARD.md) (React Aria `PreviewTrigger`), whose element also carries `ui-hover-card`: the card opens `delay` milliseconds (600 by default) after the pointer rests on the trigger or keyboard focus reaches it, or on a long press, without moving focus; the popover publishes `data-trigger="PreviewTrigger"`. The trigger carries `aria-haspopup="dialog"` and `aria-expanded` and, while the card is open, is described by it. Tab from the trigger moves into the open card. The card stays open while the pointer travels between the trigger and the card, and closes `closeDelay` milliseconds (200 by default) after the pointer and focus have left both, or on Escape, keeping or returning focus to the trigger. Pressing the trigger runs `onPress` and does not toggle the card. A disabled trigger opens nothing.
 
-Implementation: `src/components/user-card/user-card.tsx`
+Implementation: `src/components/user-card/user-card.tsx`, `src/components/hover-card/hover-card.tsx`
 Verification: `src/components/user-card/user-card.test.tsx`, `e2e/user-card.spec.ts`
 
 ### UIC-USER-CARD-2.4 - Controlled open state
@@ -96,7 +96,7 @@ Verification: `src/components/user-card/user-card.test.tsx`, `e2e/user-card.spec
 | `ui-user-card__actions`      | slot      |                                   | The group of action buttons.                                   |
 | `ui-user-card__action`       | slot      |                                   | One action (also `ui-button`).                                 |
 | `ui-user-card__trigger`      | slot      |                                   | The trigger button around the caller's content.                |
-| `ui-user-card__popover`      | slot      |                                   | The popover holding an open card.                              |
+| `ui-user-card__popover`      | slot      |                                   | The open card's popover (also `ui-hover-card` on hover).       |
 | `ui-user-card__skeleton`     | slot      |                                   | The decorative placeholder while the profile loads.            |
 | `data-status`                | attribute |                                   | The caller's status word, on the card.                         |
 | `data-loading`               | state     | `true`                            | The card's profile is loading.                                 |
