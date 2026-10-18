@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import {
   Checkbox as AriaCheckbox,
   type CheckboxProps as AriaCheckboxProps,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { Glyph } from '../../core/provider.js';

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Input, Label, SearchField } from 'react-aria-components';
+import { Input, Label, SearchField } from '../../src/primitives/index.js';
 import {
   PropertyCard,
   PropertyGroup,

@@ -5,7 +5,7 @@ import {
   Row,
   TableBody as AriaTableBody,
   TableLoadMoreItem,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import { EmptyState } from '../empty-state/empty-state.js';
 import { InlineError } from '../inline-error/inline-error.js';

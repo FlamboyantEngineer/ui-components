@@ -1,7 +1,7 @@
 import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
-import { Input } from 'react-aria-components';
+import { Input } from '../../primitives/index.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Field, useFieldState } from '../field/field.js';

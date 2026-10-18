@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { Button as AriaButton } from 'react-aria-components';
+import { Button as AriaButton } from '../../primitives/index.js';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Button } from '../button/button.js';

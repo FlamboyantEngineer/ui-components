@@ -1,4 +1,4 @@
-import { Button as AriaButton, Input, SearchField } from 'react-aria-components';
+import { Button as AriaButton, Input, SearchField } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Icon } from '../icon/icon.js';
 import { tableHooks as hooks } from './table-hooks.js';

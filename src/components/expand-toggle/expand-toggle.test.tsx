@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createRef, useState } from 'react';
-import { Disclosure, DisclosurePanel } from 'react-aria-components';
+import { Disclosure, DisclosurePanel } from '../../primitives/index.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';

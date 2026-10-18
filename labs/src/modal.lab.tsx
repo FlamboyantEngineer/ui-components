@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { DialogTrigger } from 'react-aria-components';
+import { DialogTrigger } from '../../src/primitives/index.js';
 import { Button } from '../../src/components/button/button.js';
 import { Modal, type ModalProps } from '../../src/components/modal/modal.js';
 import { Portal } from '../../src/components/portal/portal.js';

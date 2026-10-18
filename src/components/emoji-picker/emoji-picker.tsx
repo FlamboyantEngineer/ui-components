@@ -1,5 +1,5 @@
 import { useRef, type ReactNode } from 'react';
-import { Dialog, DialogTrigger, Popover, type DialogProps } from 'react-aria-components';
+import { Dialog, DialogTrigger, Popover, type DialogProps } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';

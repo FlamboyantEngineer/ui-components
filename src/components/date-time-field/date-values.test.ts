@@ -1,4 +1,4 @@
-import { getDayOfWeek } from '@internationalized/date';
+import { getDayOfWeek } from '../../primitives/index.js';
 import { describe, expect, it } from 'vitest';
 import {
   currentDateValue,

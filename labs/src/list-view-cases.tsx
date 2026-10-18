@@ -6,7 +6,7 @@ import {
   useListData,
   Virtualizer,
   type Selection,
-} from 'react-aria-components';
+} from '../../src/primitives/index.js';
 import { IconButton } from '../../src/components/icon-button/icon-button.js';
 import {
   ListView,

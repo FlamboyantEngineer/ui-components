@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import type { Key } from 'react-aria-components';
+import type { Key } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { formatBytes } from '../../utils/format-bytes.js';

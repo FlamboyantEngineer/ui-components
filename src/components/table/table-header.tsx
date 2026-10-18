@@ -6,7 +6,7 @@ import {
   TableHeader as AriaTableHeader,
   TableStateContext,
   type SortDescriptor,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Icon } from '../icon/icon.js';
 import { resolveColumnWidth, type TableColumnWidths } from './column-sizing.js';

@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import type { Key } from 'react-aria-components';
+import type { Key } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { ContextMenuTrigger } from '../context-menu/context-menu.js';

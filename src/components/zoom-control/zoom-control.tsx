@@ -1,5 +1,5 @@
 import { useId, useMemo, type ReactNode } from 'react';
-import { useLocale } from 'react-aria-components';
+import { useLocale } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { GlyphName } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';

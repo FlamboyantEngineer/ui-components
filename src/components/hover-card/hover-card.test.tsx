@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
-import { Dialog, Link } from 'react-aria-components';
+import { Dialog, Link } from '../../primitives/index.js';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Button } from '../button/button.js';

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Key } from 'react-aria-components';
+import type { Key } from '../../src/primitives/index.js';
 import { Tab, TabList, TabPanel, Tabs, type TabListProps } from '../../src/components/tabs/tabs.js';
 import { UiProvider } from '../../src/core/provider.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';

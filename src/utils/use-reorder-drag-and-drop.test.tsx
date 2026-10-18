@@ -7,7 +7,7 @@ import {
   GridListItem,
   type DropTarget,
   type Key,
-} from 'react-aria-components';
+} from '../primitives/index.js';
 import { describe, expect, it, vi } from 'vitest';
 import { DragHandle } from '../components/drag-handle/drag-handle.js';
 import { isMoveChord, useReorderDragAndDrop } from './use-reorder-drag-and-drop.js';

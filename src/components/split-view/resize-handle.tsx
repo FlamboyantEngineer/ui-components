@@ -1,5 +1,5 @@
 import { useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
-import { useLocale } from 'react-aria-components';
+import { useLocale } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps, Orientation } from '../../core/props.js';
 import { clamp } from '../../utils/clamp.js';

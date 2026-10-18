@@ -1,4 +1,4 @@
-import { getDayOfWeek, type DateValue } from '@internationalized/date';
+import { getDayOfWeek, type DateValue } from '../../src/primitives/index.js';
 import { useState } from 'react';
 import type { FieldLabelLayout } from '../../src/components/field/field.js';
 import {

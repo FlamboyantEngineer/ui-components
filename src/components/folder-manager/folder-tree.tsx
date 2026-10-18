@@ -1,5 +1,5 @@
 import { useCallback, useRef, type KeyboardEvent } from 'react';
-import type { Key, Selection } from 'react-aria-components';
+import type { Key, Selection } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { TreeMove } from '../../utils/tree-reorder.js';
 import { ContextMenuTrigger } from '../context-menu/context-menu.js';

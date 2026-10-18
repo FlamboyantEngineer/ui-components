@@ -1,4 +1,4 @@
-import { Radio, RadioGroup } from 'react-aria-components';
+import { Radio, RadioGroup } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';

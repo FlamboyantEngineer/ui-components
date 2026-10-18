@@ -4,7 +4,7 @@ import {
   Toolbar,
   type GroupProps,
   type SeparatorProps as AriaSeparatorProps,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, NativeProps, Orientation } from '../../core/props.js';
 import { Separator } from '../separator/separator.js';

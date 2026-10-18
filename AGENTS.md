@@ -17,7 +17,7 @@ Run `npm run format` to fix formatting. Never weaken a lint rule, the denylist o
 
 - Follow [docs/CODING-GUIDELINES.md](docs/CODING-GUIDELINES.md). `npm run check` enforces the rules it can (lint and `check:structure`); review enforces the rest.
 - Components emit hooks only (`specs/HOOK-CONTRACT.md`): hook classes, data attributes and documented `--ui-*` measured properties. No CSS, no visual inline styles, no styling dependency.
-- Build on React Aria Components wherever it has a matching behaviour.
+- Build on React Aria Components wherever it has a matching behaviour, imported only through `src/primitives/` (`specs/PRIMITIVES.md`).
 - Never name a host application or its domain terms anywhere in the repository, including commit messages and pull request text. Use neutral sample data in labs and tests.
 - Every behaviour change updates the component's spec (`specs/`), its tests (which name the `UIC-` IDs) and its lab.
 - Hooks are public API: renaming or removing one is a major change. Add a changeset to every pull request that changes the package.

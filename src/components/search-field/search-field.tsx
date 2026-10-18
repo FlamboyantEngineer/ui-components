@@ -9,7 +9,7 @@ import {
   Text,
   type FieldErrorProps,
   type SearchFieldProps as AriaSearchFieldProps,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Size } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';

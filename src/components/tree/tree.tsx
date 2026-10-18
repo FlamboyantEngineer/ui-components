@@ -6,7 +6,7 @@ import {
   type Key,
   type TreeItemContentRenderProps,
   type TreeProps as AriaTreeProps,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import type { BaseProps, Size } from '../../core/props.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { readTreeChildren, type TreeMoveItem } from '../../utils/tree-reorder.js';

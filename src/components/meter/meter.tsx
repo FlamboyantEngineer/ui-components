@@ -3,7 +3,7 @@ import {
   Label,
   Meter as AriaMeter,
   type MeterProps as AriaMeterProps,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Size, Tone } from '../../core/props.js';
 import { clamp } from '../../utils/clamp.js';

@@ -2,7 +2,7 @@
 // with their own descendants.
 
 import { useMemo, useState } from 'react';
-import type { Key } from 'react-aria-components';
+import type { Key } from '../../primitives/index.js';
 import { splitMatchTerms, textMatchesTerms } from '../text-match/text-match.js';
 import type { TreeItemData, TreeProps } from './tree.js';
 import type { TreeExpansion } from './use-tree-expansion.js';

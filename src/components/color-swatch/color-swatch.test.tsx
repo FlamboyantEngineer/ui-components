@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { parseColor } from 'react-aria-components';
+import { parseColor } from '../../primitives/index.js';
 import { describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';

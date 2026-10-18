@@ -10,7 +10,7 @@ import {
   toCalendarDate,
   type CalendarDate,
   type ZonedDateTime,
-} from '@internationalized/date';
+} from '../../primitives/index.js';
 
 /**
  * `date` values are `YYYY-MM-DD` texts, `date-time` values UTC ISO instants and `date-range` values

@@ -1,6 +1,6 @@
 // Shared fixtures for the field family's unit tests: a field around a plain React Aria `Input`.
 
-import { Input } from 'react-aria-components';
+import { Input } from '../src/primitives/index.js';
 import {
   Field,
   useFieldState,

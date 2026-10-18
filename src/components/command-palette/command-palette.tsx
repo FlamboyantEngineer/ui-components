@@ -9,7 +9,7 @@ import {
   useFilter,
   type AutocompleteProps,
   type ModalOverlayProps,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import { createHooks, splitDataAttributes } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';

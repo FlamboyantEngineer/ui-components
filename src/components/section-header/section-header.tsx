@@ -5,7 +5,7 @@ import {
   DisclosurePanel,
   DisclosureStateContext,
   type DisclosureProps,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { Glyph } from '../../core/provider.js';

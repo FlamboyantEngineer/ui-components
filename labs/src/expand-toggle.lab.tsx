@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Disclosure, DisclosurePanel } from 'react-aria-components';
+import { Disclosure, DisclosurePanel } from '../../src/primitives/index.js';
 import { ExpandToggle } from '../../src/components/expand-toggle/expand-toggle.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 

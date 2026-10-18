@@ -7,7 +7,7 @@ import {
   HeadingContext,
   Link as AriaLink,
   useSlottedContext,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider, type UiLinkProps } from '../../core/provider.js';

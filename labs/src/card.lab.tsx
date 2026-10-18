@@ -6,7 +6,7 @@ import {
   Virtualizer,
   WaterfallLayout,
   type Selection,
-} from 'react-aria-components';
+} from '../../src/primitives/index.js';
 import { Badge } from '../../src/components/badge/badge.js';
 import { Card, type CardDensity, type CardVariant } from '../../src/components/card/card.js';
 import { CardGrid, CardGridItem } from '../../src/components/card/index.js';

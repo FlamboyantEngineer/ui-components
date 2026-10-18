@@ -5,7 +5,7 @@ import {
   useDragAndDrop,
   type ItemDropTarget,
   type Key,
-} from 'react-aria-components';
+} from '../../src/primitives/index.js';
 import { armHandleDrag, DragHandle } from '../../src/components/drag-handle/drag-handle.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 

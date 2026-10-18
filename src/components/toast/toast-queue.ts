@@ -5,7 +5,7 @@ import type { ReactNode } from 'react';
 import {
   UNSTABLE_ToastQueue as AriaToastQueue,
   type ToastOptions as AriaToastOptions,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import type { Tone } from '../../core/props.js';
 import type { IconSource } from '../icon/icon.js';
 

@@ -1,4 +1,4 @@
-import type { Key } from 'react-aria-components';
+import type { Key } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 
 export type SegmentedChoiceSelectionMode = 'single' | 'multiple';

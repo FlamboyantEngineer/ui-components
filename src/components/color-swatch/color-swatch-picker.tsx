@@ -4,7 +4,7 @@ import {
   ColorSwatchPickerItem as AriaColorSwatchPickerItem,
   type ColorSwatchPickerItemProps as AriaColorSwatchPickerItemProps,
   type ColorSwatchPickerProps as AriaColorSwatchPickerProps,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Size } from '../../core/props.js';
 import { ColorSwatch } from './color-swatch.js';

@@ -1,4 +1,4 @@
-import type { Key, SelectProps as AriaSelectProps } from 'react-aria-components';
+import type { Key, SelectProps as AriaSelectProps } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import { Field, useFieldControl, type FieldInputProps, type FieldState } from '../field/field.js';
 import { SelectControl, type SelectKeysValue } from './select-control.js';

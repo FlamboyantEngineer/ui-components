@@ -1,5 +1,5 @@
 import type { HTMLAttributes, ReactNode } from 'react';
-import { useLocale } from 'react-aria-components';
+import { useLocale } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';

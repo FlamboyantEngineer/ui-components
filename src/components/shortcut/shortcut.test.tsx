@@ -1,6 +1,6 @@
 import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { Button, Menu, MenuItem, MenuTrigger, Popover, Text } from 'react-aria-components';
+import { Button, Menu, MenuItem, MenuTrigger, Popover, Text } from '../../primitives/index.js';
 import { describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';

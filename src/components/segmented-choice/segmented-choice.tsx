@@ -4,7 +4,7 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   type ToggleButtonGroupProps as AriaToggleButtonGroupProps,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps, Size } from '../../core/props.js';
 import { Icon, toIconProps, type IconSource } from '../icon/icon.js';

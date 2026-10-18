@@ -3,7 +3,7 @@ import {
   PreviewTrigger,
   type PopoverProps as AriaPopoverProps,
   type PreviewTriggerProps,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { PopoverPanel } from '../popover/popover.js';

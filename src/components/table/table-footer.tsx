@@ -1,4 +1,4 @@
-import { Cell, Row, TableFooter as AriaTableFooter } from 'react-aria-components';
+import { Cell, Row, TableFooter as AriaTableFooter } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import { tableHooks as hooks } from './table-hooks.js';
 import type { TableRow } from './table-rows.js';

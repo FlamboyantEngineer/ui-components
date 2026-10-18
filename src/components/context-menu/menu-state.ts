@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { Key, RootMenuTriggerState } from 'react-aria-components';
+import type { Key, RootMenuTriggerState } from '../../primitives/index.js';
 
 /**
  * The root menu state React Aria reads for submenus and to close a whole menu tree, for a menu

@@ -1,7 +1,7 @@
 // What the collapsible parts of a property panel (sections and cards) share.
 
 import { useContext, useId } from 'react';
-import { DisclosureGroupStateContext, type Key } from 'react-aria-components';
+import { DisclosureGroupStateContext, type Key } from '../../primitives/index.js';
 import { usePersistentState, useUiStrings } from '../../core/provider.js';
 
 export interface ScopedExpansionOptions {

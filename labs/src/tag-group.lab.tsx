@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import type { Selection } from 'react-aria-components';
+import type { Selection } from '../../src/primitives/index.js';
 import {
   Tag,
   TagGroup,

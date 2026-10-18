@@ -1,6 +1,5 @@
-import { now, type DateValue, type Time } from '@internationalized/date';
-import { useMemo, type ReactNode } from 'react';
 import {
+  now,
   Button as AriaButton,
   Calendar,
   DateInput,
@@ -10,7 +9,10 @@ import {
   Group,
   RangeCalendar,
   TimeField,
-} from 'react-aria-components';
+  type DateValue,
+  type Time,
+} from '../../primitives/index.js';
+import { useMemo, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import { Glyph } from '../../core/provider.js';
 import {

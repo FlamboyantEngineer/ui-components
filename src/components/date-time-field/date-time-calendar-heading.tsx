@@ -8,7 +8,7 @@ import {
   Select,
   SelectValue,
   type Key,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import { Glyph } from '../../core/provider.js';
 import { useLayerZIndex } from '../portal/portal.js';

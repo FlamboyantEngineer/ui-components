@@ -1,4 +1,4 @@
-import { getDayOfWeek, type DateValue } from '@internationalized/date';
+import { getDayOfWeek, type DateValue } from '../../primitives/index.js';
 import { act, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import type { ReactElement } from 'react';

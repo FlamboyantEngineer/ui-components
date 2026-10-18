@@ -2,9 +2,10 @@ import {
   DateFormatter,
   getLocalTimeZone,
   parseDate,
+  useLocale,
   type CalendarDate,
-} from '@internationalized/date';
-import { useLocale, type SelectProps as AriaSelectProps } from 'react-aria-components';
+  type SelectProps as AriaSelectProps,
+} from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';

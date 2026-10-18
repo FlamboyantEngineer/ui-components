@@ -1,5 +1,5 @@
 import { useEffect, useId, useMemo, useRef, useState, type ReactNode, type Ref } from 'react';
-import { useLocale } from 'react-aria-components';
+import { useLocale } from '../../primitives/index.js';
 import { createHooks, splitDataAttributes } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';

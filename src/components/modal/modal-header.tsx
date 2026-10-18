@@ -1,4 +1,4 @@
-import { Heading } from 'react-aria-components';
+import { Heading } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';

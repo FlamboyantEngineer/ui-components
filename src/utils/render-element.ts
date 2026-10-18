@@ -2,7 +2,7 @@
 // (specs/COMPOSITION.md).
 
 import { createElement, type JSX, type ReactElement } from 'react';
-import type { DOMRenderFunction } from 'react-aria-components';
+import type { DOMRenderFunction } from '../primitives/index.js';
 
 /**
  * Replaces the element a component renders. It receives the element's props (hook classes, data

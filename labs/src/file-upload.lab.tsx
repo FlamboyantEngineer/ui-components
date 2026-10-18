@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import type { Key } from 'react-aria-components';
+import type { Key } from '../../src/primitives/index.js';
 import {
   FileUpload,
   type FileRejection,

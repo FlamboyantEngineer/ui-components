@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { ToolbarProps as AriaToolbarProps } from 'react-aria-components';
+import type { ToolbarProps as AriaToolbarProps } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';

@@ -6,7 +6,7 @@ import {
   OverlayTriggerStateContext,
   type ButtonProps as AriaButtonProps,
   type DialogProps,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';

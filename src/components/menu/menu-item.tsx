@@ -8,7 +8,7 @@ import {
   type MenuItemProps as AriaMenuItemProps,
   type MenuItemRenderProps,
   type MenuSectionProps as AriaMenuSectionProps,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, Tone } from '../../core/props.js';
 import { Glyph } from '../../core/provider.js';

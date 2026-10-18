@@ -2,7 +2,7 @@ import { CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { Link, useLocale } from 'react-aria-components';
+import { Link, useLocale } from '../primitives/index.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../test/hooks.js';
 import { defaultGlyphs, glyphNames, type GlyphComponentProps } from './glyphs.js';

@@ -7,7 +7,7 @@ import {
   type ReactNode,
   type RefObject,
 } from 'react';
-import { OverlayTriggerStateContext, useLocale } from 'react-aria-components';
+import { OverlayTriggerStateContext, useLocale } from '../../primitives/index.js';
 import {
   addRecentEmoji,
   getEmojiKey,

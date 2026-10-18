@@ -5,7 +5,7 @@ import {
   Collection,
   Row,
   type CellRenderProps,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { measuredProperty } from '../../core/hooks.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { DragHandle } from '../drag-handle/drag-handle.js';

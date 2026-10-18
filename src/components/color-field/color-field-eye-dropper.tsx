@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { ColorPickerStateContext, parseColor } from 'react-aria-components';
+import { ColorPickerStateContext, parseColor } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { IconButton } from '../icon-button/icon-button.js';

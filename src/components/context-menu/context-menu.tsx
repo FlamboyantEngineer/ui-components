@@ -7,7 +7,11 @@ import {
   type ReactNode,
   type RefObject,
 } from 'react';
-import { MenuContext, RootMenuTriggerStateContext, type Placement } from 'react-aria-components';
+import {
+  MenuContext,
+  RootMenuTriggerStateContext,
+  type Placement,
+} from '../../primitives/index.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Menu, MenuPopover, type MenuPopoverProps } from '../menu/menu.js';

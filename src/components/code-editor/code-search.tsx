@@ -1,5 +1,5 @@
 import type { KeyboardEvent } from 'react';
-import { Input } from 'react-aria-components';
+import { Input } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { Button } from '../button/button.js';

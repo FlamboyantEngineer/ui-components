@@ -1,5 +1,5 @@
 import { useId, useRef, type KeyboardEvent, type PointerEvent } from 'react';
-import { Button as AriaButton, useLocale } from 'react-aria-components';
+import { Button as AriaButton, useLocale } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import { Glyph } from '../../core/provider.js';
 import { clamp } from '../../utils/clamp.js';

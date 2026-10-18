@@ -13,7 +13,7 @@ import {
   type Key,
   type MenuLoadMoreItemProps,
   type MenuProps as AriaMenuProps,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -239,5 +239,5 @@ export { MenuPopover } from './menu-popover.js';
 export type { MenuPopoverProps } from './menu-popover.js';
 export type { MenuSize } from './menu-context.js';
 /** Opens a `MenuPopover` from a pressable trigger such as a `Button` (React Aria). */
-export { MenuTrigger, SubmenuTrigger } from 'react-aria-components';
-export type { MenuTriggerProps, SubmenuTriggerProps } from 'react-aria-components';
+export { MenuTrigger, SubmenuTrigger } from '../../primitives/index.js';
+export type { MenuTriggerProps, SubmenuTriggerProps } from '../../primitives/index.js';

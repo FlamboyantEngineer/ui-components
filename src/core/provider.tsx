@@ -13,7 +13,7 @@ import {
   type Ref,
   type SetStateAction,
 } from 'react';
-import { I18nProvider, RouterProvider } from 'react-aria-components';
+import { I18nProvider, RouterProvider } from '../primitives/index.js';
 import { defaultGlyphs, type GlyphComponent, type GlyphMap, type GlyphName } from './glyphs.js';
 import { mergeClassNames } from './hooks.js';
 import { createMemoryStorage, type UiStorage } from './storage.js';

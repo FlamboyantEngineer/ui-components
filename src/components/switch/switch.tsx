@@ -1,5 +1,8 @@
 import type { ReactNode } from 'react';
-import { Switch as AriaSwitch, type SwitchProps as AriaSwitchProps } from 'react-aria-components';
+import {
+  Switch as AriaSwitch,
+  type SwitchProps as AriaSwitchProps,
+} from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 

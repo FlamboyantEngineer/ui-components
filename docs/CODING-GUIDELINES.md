@@ -22,7 +22,7 @@ Every file in `src/`, `labs/src/`, `test/` and `e2e/` follows these rules. They 
 
 ## Structure
 
-**S1. Three places for code.** `src/core/` holds the contracts every component uses (hooks, provider, props, glyphs, strings, storage); `src/components/<name>/` holds one component or one family; `src/utils/` holds framework-free helpers and generic React hooks used by more than one component. Nothing else lives in `src/`.
+**S1. Four places for code.** `src/core/` holds the contracts every component uses (hooks, provider, props, glyphs, strings, storage); `src/components/<name>/` holds one component or one family; `src/utils/` holds framework-free helpers and generic React hooks used by more than one component; `src/primitives/` holds the named re-exports of React Aria building blocks, one module per area (`specs/PRIMITIVES.md`). Nothing else lives in `src/`.
 
 **S2. A component directory contains** `index.ts`, the main module `<name>.tsx`, optional helper modules, and the unit tests `<module>.test.ts(x)` beside the modules they test. **(enforced)**
 
@@ -33,6 +33,8 @@ Every file in `src/`, `labs/src/`, `test/` and `e2e/` follows these rules. They 
 **S5. Every public component is complete:** a spec with its hook table, unit tests that name the spec's requirement IDs, a lab with its full state matrix, a browser test, and a reference partial when the spec declares class hooks. **(enforced)**
 
 **S6. Module order:** imports, exported types, module constants, private helpers, exported components and hooks.
+
+**S7. React Aria loads only in `src/primitives/`.** Import React Aria building blocks (`Button`, `Popover`, `useLocale`, `Key`, …) from `src/primitives/index.js`, never from `react-aria-components`, `react-aria`, `@internationalized/*` or other React Aria packages. A building block the library has not used yet is added, by name, to its area module first. **(enforced: lint)**
 
 ## Inheritance and composition
 

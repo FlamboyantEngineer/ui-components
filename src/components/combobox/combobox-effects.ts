@@ -1,5 +1,5 @@
 import { useContext, useEffect, type RefObject } from 'react';
-import { ComboBoxStateContext } from 'react-aria-components';
+import { ComboBoxStateContext } from '../../primitives/index.js';
 import { findFirstOptionKey, type ComboboxCompletion } from './combobox-options.js';
 
 export interface AutoHighlightOptions {

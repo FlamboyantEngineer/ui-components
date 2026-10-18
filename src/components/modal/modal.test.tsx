@@ -1,7 +1,7 @@
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState, type ReactNode } from 'react';
-import { Button as AriaButton, DialogTrigger } from 'react-aria-components';
+import { Button as AriaButton, DialogTrigger } from '../../primitives/index.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';

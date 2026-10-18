@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import { Toolbar } from 'react-aria-components';
+import { Toolbar } from '../../src/primitives/index.js';
 import { Badge } from '../../src/components/badge/badge.js';
 import { Button } from '../../src/components/button/button.js';
 import { DropdownMenu } from '../../src/components/dropdown-menu/dropdown-menu.js';

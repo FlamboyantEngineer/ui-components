@@ -1,5 +1,5 @@
 import { useCallback, useState, type ReactNode } from 'react';
-import type { Key } from 'react-aria-components';
+import type { Key } from '../../primitives/index.js';
 import type { BaseProps } from '../../core/props.js';
 import { createSlotRegistry } from '../../utils/slot-registry.js';
 import {

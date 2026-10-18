@@ -1,7 +1,7 @@
 // The folder tree a folder manager shows: the caller's folders, an optional root row standing for
 // "no folder", the draft row of a folder being created, and the folders a filter keeps.
 
-import type { Key } from 'react-aria-components';
+import type { Key } from '../../primitives/index.js';
 import { textMatchesTerms } from '../text-match/text-match.js';
 
 /** A folder: a key unique among all folders, its name and its subfolders in order. */

@@ -7,7 +7,7 @@ import {
   type BreadcrumbsProps as AriaBreadcrumbsProps,
   type Key,
   type LinkProps as AriaLinkProps,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps, Size } from '../../core/props.js';
 import { UiLink, useUiStrings } from '../../core/provider.js';

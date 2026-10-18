@@ -1,6 +1,6 @@
 // The option model of a select field: chosen keys, their order, their options and what changed.
 
-import type { Key } from 'react-aria-components';
+import type { Key } from '../../primitives/index.js';
 import type { IconSource } from '../icon/icon.js';
 
 /** One choice of a select field. */

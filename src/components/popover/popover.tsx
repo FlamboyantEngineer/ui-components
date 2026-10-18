@@ -8,7 +8,7 @@ import {
   Popover as AriaPopover,
   type DialogTriggerProps,
   type PopoverProps as AriaPopoverProps,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';

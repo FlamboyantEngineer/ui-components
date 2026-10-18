@@ -5,7 +5,7 @@ import {
   TableLayout,
   Virtualizer,
   type TableProps as AriaTableProps,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { splitDataAttributes } from '../../core/hooks.js';
 import type { BaseProps, Size } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';

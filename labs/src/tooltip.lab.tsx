@@ -1,4 +1,4 @@
-import { Button as AriaButton } from 'react-aria-components';
+import { Button as AriaButton } from '../../src/primitives/index.js';
 import { Button } from '../../src/components/button/button.js';
 import { Icon } from '../../src/components/icon/icon.js';
 import { IconButton } from '../../src/components/icon-button/icon-button.js';

@@ -10,7 +10,7 @@ import {
   CollectionRendererContext,
   type CollectionRenderer,
   type Key,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 
 type CollectionRootProps = ComponentProps<CollectionRenderer['CollectionRoot']>;
 

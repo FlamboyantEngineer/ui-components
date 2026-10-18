@@ -10,6 +10,23 @@ const STYLING_PACKAGES = [
   { group: ['@linaria/*', 'styled-jsx', 'jss', 'react-jss', 'clsx', 'classnames'] },
 ];
 
+// React Aria and its companion packages load only in src/primitives (specs/PRIMITIVES.md).
+const ARIA_PACKAGES = {
+  group: [
+    'react-aria',
+    'react-aria/*',
+    'react-aria-components',
+    'react-aria-components/*',
+    'react-stately',
+    'react-stately/*',
+    '@react-aria/*',
+    '@react-stately/*',
+    '@react-types/*',
+    '@internationalized/*',
+  ],
+  message: 'Import React Aria building blocks from src/primitives (UIC-PRIMITIVES-1.1).',
+};
+
 export default tseslint.config(
   {
     ignores: [
@@ -41,6 +58,7 @@ export default tseslint.config(
     rules: {
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'error',
+      'no-restricted-imports': ['error', { patterns: [ARIA_PACKAGES] }],
     },
   },
   {
@@ -51,7 +69,7 @@ export default tseslint.config(
       'ui/no-css-import': 'error',
       'ui/no-static-inline-style': 'error',
       'ui/hook-class-names': 'error',
-      'no-restricted-imports': ['error', { patterns: STYLING_PACKAGES }],
+      'no-restricted-imports': ['error', { patterns: [...STYLING_PACKAGES, ARIA_PACKAGES] }],
       'no-restricted-globals': [
         'error',
         {
@@ -113,6 +131,12 @@ export default tseslint.config(
         { selector: 'function', format: ['camelCase', 'PascalCase'] },
         { selector: 'parameter', format: ['camelCase', 'PascalCase'], leadingUnderscore: 'allow' },
       ],
+    },
+  },
+  {
+    files: ['src/primitives/**/*.ts'],
+    rules: {
+      'no-restricted-imports': ['error', { patterns: STYLING_PACKAGES }],
     },
   },
   {

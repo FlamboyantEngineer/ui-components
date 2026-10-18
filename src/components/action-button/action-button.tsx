@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type Ref } from 'react';
-import type { PressEvent } from 'react-aria-components';
+import type { PressEvent } from '../../primitives/index.js';
 import { Button, type ButtonProps } from '../button/button.js';
 
 // An action runs work; it is never a link.

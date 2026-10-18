@@ -14,7 +14,7 @@ import {
   DEFAULT_SLOT,
   LinkContext,
   Provider,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { UiLink } from '../../core/provider.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 

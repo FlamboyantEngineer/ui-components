@@ -1,5 +1,5 @@
 import type { RefObject } from 'react';
-import { Popover, useLocale, type Placement } from 'react-aria-components';
+import { Popover, useLocale, type Placement } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import { useLayerZIndex } from '../portal/portal.js';
 import { codeEditorHooks as hooks } from './code-layers.js';

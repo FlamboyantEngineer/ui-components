@@ -1,5 +1,12 @@
 import { useRef, useState, type CSSProperties, type ReactNode } from 'react';
-import { Button, Dialog, DialogTrigger, Heading, Modal, ModalOverlay } from 'react-aria-components';
+import {
+  Button,
+  Dialog,
+  DialogTrigger,
+  Heading,
+  Modal,
+  ModalOverlay,
+} from '../../src/primitives/index.js';
 import { overlayLayers } from '../../src/components/portal/layers.js';
 import { Portal, PortalContainerProvider, PortalHost } from '../../src/components/portal/portal.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';

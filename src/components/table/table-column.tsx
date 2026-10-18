@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Column, ColumnResizer, type SortDirection } from 'react-aria-components';
+import { Column, ColumnResizer, type SortDirection } from '../../primitives/index.js';
 import type { GlyphName } from '../../core/glyphs.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Icon } from '../icon/icon.js';

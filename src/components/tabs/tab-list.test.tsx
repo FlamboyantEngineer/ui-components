@@ -1,7 +1,7 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
-import type { Key } from 'react-aria-components';
+import type { Key } from '../../primitives/index.js';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Tab, TabList, TabPanel, Tabs, type TabListProps } from './tabs.js';

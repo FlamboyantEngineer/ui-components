@@ -1,7 +1,7 @@
 // How a rendered toast follows its queue entry: its current content, its timer and its exit.
 
 import { useEffect, useMemo, useSyncExternalStore } from 'react';
-import type { QueuedToast } from 'react-aria-components';
+import type { QueuedToast } from '../../primitives/index.js';
 import type { ToastContent, ToastLifecycle, ToastSnapshot } from './toast-queue.js';
 
 const subscribeToNothing = () => () => {};

@@ -1,4 +1,4 @@
-import type { Selection } from 'react-aria-components';
+import type { Selection } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import { getColumnText } from './table-column.js';

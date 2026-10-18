@@ -13,7 +13,7 @@ import {
   Virtualizer,
   type ListBoxItemRenderProps,
   type ListBoxLoadMoreItemProps,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Icon, toIconProps } from '../icon/icon.js';

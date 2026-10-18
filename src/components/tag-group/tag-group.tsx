@@ -6,7 +6,7 @@ import {
   type TagGroupProps as AriaTagGroupProps,
   type TagListProps,
   type TagProps as AriaTagProps,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Size, Tone } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';

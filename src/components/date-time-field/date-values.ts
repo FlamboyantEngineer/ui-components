@@ -16,7 +16,7 @@ import {
   type DateValue,
   type Time,
   type ZonedDateTime,
-} from '@internationalized/date';
+} from '../../primitives/index.js';
 
 /**
  * `date` (`YYYY-MM-DD`), `time` (`HH:mm`), `date-time` (a UTC ISO instant), or a `{ start, end }`

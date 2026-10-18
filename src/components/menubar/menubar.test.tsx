@@ -1,7 +1,7 @@
 import { render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
-import { I18nProvider, type Selection } from 'react-aria-components';
+import { I18nProvider, type Selection } from '../../primitives/index.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { actionKeys } from '../../../test/menu-fixtures.js';

@@ -1,5 +1,5 @@
 import { useMemo, useState, type ClipboardEvent, type FocusEvent, type KeyboardEvent } from 'react';
-import { Group, Input, useLocale, type Key } from 'react-aria-components';
+import { Group, Input, useLocale, type Key } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { mergeRefs } from '../../utils/merge-props.js';

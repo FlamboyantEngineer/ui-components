@@ -11,7 +11,7 @@ import {
   TextArea,
   VisuallyHidden,
   type TextAreaProps as AriaTextAreaProps,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { splitDataAttributes } from '../../core/hooks.js';
 import type { BaseProps, Size } from '../../core/props.js';
 import { useElementSize } from '../../utils/use-element-size.js';

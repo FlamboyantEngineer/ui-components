@@ -2,7 +2,7 @@
 // nested and detail rows, pagination, editing, the summary row and loading more.
 
 import { useRef, useState } from 'react';
-import type { SortDescriptor } from 'react-aria-components';
+import type { SortDescriptor } from '../../src/primitives/index.js';
 import { Button } from '../../src/components/button/button.js';
 import { Table } from '../../src/components/table/table.js';
 import type {

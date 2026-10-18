@@ -9,7 +9,7 @@ import {
   type ReactNode,
   type RefObject,
 } from 'react';
-import { Input, type Key } from 'react-aria-components';
+import { Input, type Key } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { TreeItemData, TreeProps } from './tree.js';
 import { treeHooks as hooks } from './tree-hooks.js';

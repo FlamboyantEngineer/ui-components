@@ -1,5 +1,5 @@
 import { useMemo, useState, type RefObject } from 'react';
-import { useLocale, type Placement } from 'react-aria-components';
+import { useLocale, type Placement } from '../../primitives/index.js';
 import { createOverlayPointRect } from '../../utils/overlay-position.js';
 import type { MenuPopoverProps } from '../menu/menu.js';
 import { isElementAnchor, type MenuAnchor } from './menu-controller.js';

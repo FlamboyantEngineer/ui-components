@@ -1,5 +1,8 @@
-import type { DatePickerProps as AriaDatePickerProps, DateValue } from 'react-aria-components';
-import { useLocale } from 'react-aria-components';
+import {
+  useLocale,
+  type DatePickerProps as AriaDatePickerProps,
+  type DateValue,
+} from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import {

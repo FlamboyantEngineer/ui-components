@@ -1,5 +1,5 @@
 import { useId, useState } from 'react';
-import { Input } from 'react-aria-components';
+import { Input } from '../../src/primitives/index.js';
 import { Field, useFieldState } from '../../src/components/field/field.js';
 import { PropertyFilter } from '../../src/components/property-filter/property-filter.js';
 import {

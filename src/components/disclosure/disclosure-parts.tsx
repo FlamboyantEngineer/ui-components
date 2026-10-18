@@ -1,8 +1,8 @@
 // The parts a disclosure is composed of: a header, the title that toggles it, and its panel.
 
 import { useContext, type ReactNode } from 'react';
-import { useFocusManager } from 'react-aria';
 import {
+  useFocusManager,
   Button as AriaButton,
   DisclosureGroupStateContext,
   DisclosurePanel as AriaDisclosurePanel,
@@ -10,7 +10,7 @@ import {
   Heading,
   type DisclosurePanelProps as AriaDisclosurePanelProps,
   type KeyboardEvent,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { mergeClassNames } from '../../core/hooks.js';
 import type { GlyphName } from '../../core/glyphs.js';
 import type { BaseProps } from '../../core/props.js';
