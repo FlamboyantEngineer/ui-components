@@ -20,28 +20,28 @@ Verification: `src/components/tabs/tabs.test.tsx`, `e2e/tabs.spec.ts`
 
 ### UIC-TABS-1.3 - Selection indicator
 
-The selected tab shall contain React Aria's selection indicator in the `ui-tabs__indicator` slot. When the selection moves, React Aria animates the indicator from the previous tab's position through any `translate` or size transition the stylesheet declares, so one bar appears to slide between tabs.
+The selected tab shall contain a selection indicator in the `ui-tabs__indicator` slot. When the selection moves, the indicator animates from the previous tab's position through any `translate` or size transition the stylesheet declares, so one bar appears to slide between tabs.
 
 Implementation: `src/components/tabs/tabs.tsx`, `labs/reference/tabs.css`
 Verification: `src/components/tabs/tabs.test.tsx`, `e2e/tabs.spec.ts`
 
 ### UIC-TABS-1.4 - Orientation and sizes
 
-`orientation` (`horizontal` by default, or `vertical`) shall lay the tabs out in a row or a column and publish React Aria's `data-orientation` on the root and the list. `size` (`sm`, `md` by default, `lg`) shall publish `data-size` on the root; the reference sheet draws 30, 36 and 42 pixel tabs.
+`orientation` (`horizontal` by default, or `vertical`) shall lay the tabs out in a row or a column and publish `data-orientation` on the root and the list. `size` (`sm`, `md` by default, `lg`) shall publish `data-size` on the root; the reference sheet draws 30, 36 and 42 pixel tabs.
 
 Implementation: `src/components/tabs/tabs.tsx`, `labs/reference/tabs.css`
 Verification: `src/components/tabs/tabs.test.tsx`, `e2e/tabs.spec.ts`
 
 ### UIC-TABS-1.5 - Hooks and caller attributes
 
-Each family member shall carry its hooks below and append the caller's `className`. `Tabs`, `TabList`, `Tab` and `TabPanel` forward caller `data-*` attributes, `ref` and DOM event handlers (such as `onContextMenu`) to their elements; `Tabs` also forwards `id`.
+Each family member shall carry its hooks below and append the caller's `className`. `Tabs`, `TabList`, `Tab` and `TabPanel` forward caller `data-*` attributes and `ref` to their elements; `Tabs` also forwards `id`, `TabList` and `Tab` the ARIA labelling attributes, and `Tab` its `onContextMenu` handler, so a host can open a menu for a tab. A tab's and a panel's `id` is a `Key` (a string or a number).
 
 Implementation: `src/components/tabs/tabs.tsx`
 Verification: `src/components/tabs/tabs.test.tsx`
 
 ### UIC-TABS-1.6 - Swapping elements
 
-`Tabs`, `TabList`, `Tab` and `TabPanel` shall pass React Aria's `render` through, so the caller can replace each element as [COMPOSITION.md](COMPOSITION.md) describes; the replacement receives the element's hook classes, data attributes, React Aria's props and ref.
+`Tabs`, `TabList`, `Tab` and `TabPanel` shall take `render(props, state)`, typed `ElementRender<'div', State>`, so the caller can replace each element as [COMPOSITION.md](COMPOSITION.md) describes; the replacement receives the element's hook classes, data attributes, handlers and ref, and a library state: `TabsRenderState` and `TabListRenderState` (`orientation`), `TabRenderState` (`isSelected`, `isHovered`, `isPressed`, `isFocused`, `isFocusVisible`, `isDisabled`) and `TabPanelRenderState` (`isFocused`, `isFocusVisible`, `isInert`, `isEntering`, `isExiting`). A tab with `href` receives an anchor's props, and its replacement renders an `<a>`.
 
 Implementation: `src/components/tabs/tabs.tsx`, `src/components/tabs/tab-list.tsx`
 Verification: `src/components/tabs/tab-list.test.tsx`
@@ -78,14 +78,14 @@ Verification: `src/components/tabs/tabs.test.tsx`, `e2e/tabs.spec.ts`
 
 ### UIC-TABS-2.5 - Interaction states
 
-The family shall publish React Aria's states: on the root `data-focused` and `data-focus-visible` while focus is within it and `data-disabled` while every tab is disabled; on each tab `data-selected`, `data-hovered`, `data-pressed`, `data-focused`, `data-focus-visible` and `data-disabled`; on the indicator `data-entering` and `data-exiting`; and on each panel `data-focused`, `data-focus-visible`, `data-inert` (a force-mounted panel that is not selected), `data-entering` and `data-exiting`.
+The family shall publish its states: on the root `data-focused` and `data-focus-visible` while focus is within it and `data-disabled` while every tab is disabled; on each tab `data-selected`, `data-hovered`, `data-pressed`, `data-focused`, `data-focus-visible` and `data-disabled`; on the indicator `data-entering` and `data-exiting`; and on each panel `data-focused`, `data-focus-visible`, `data-inert` (a force-mounted panel that is not selected), `data-entering` and `data-exiting`.
 
 Implementation: `src/components/tabs/tabs.tsx`
 Verification: `src/components/tabs/tabs.test.tsx`, `e2e/tabs.spec.ts`
 
 ### UIC-TABS-2.6 - Overflow menu
 
-With `overflow="menu"` a horizontal list shall sit in a `ui-tabs__bar` element (with `data-overflow="menu"`) and render only the tabs that fit, as [`useOverflowItems`](OVERFLOW-LIST.md) measures them in the bar beside a `ui-tabs__overflow` element after the list. The selected tab, then the tab with keyboard focus, always stay; the others fit from the start. The rest stay in React Aria's collection, so panels, selection and keyboard navigation still reach them: an arrow key, Home or End that moves focus to a hidden tab shows it. The overflow element holds an icon-only [Dropdown Menu](DROPDOWN-MENU.md) named by the provider's `moreItems` text with the count, listing the hidden tabs by their text (`textValue`, or a plain-text label) with their disabled state and links; choosing one selects it. The list publishes `data-overflowing` while tabs are hidden. A vertical list scrolls.
+With `overflow="menu"` a horizontal list shall sit in a `ui-tabs__bar` element (with `data-overflow="menu"`) and render only the tabs that fit, as [`useOverflowItems`](OVERFLOW-LIST.md) measures them in the bar beside a `ui-tabs__overflow` element after the list. The selected tab, then the tab with keyboard focus, always stay; the others fit from the start. The rest stay in the tabs' collection, so panels, selection and keyboard navigation still reach them: an arrow key, Home or End that moves focus to a hidden tab shows it. The overflow element holds an icon-only [Dropdown Menu](DROPDOWN-MENU.md) named by the provider's `moreItems` text with the count, listing the hidden tabs by their text (`textValue`, or a plain-text label) with their disabled state and links; choosing one selects it. The list publishes `data-overflowing` while tabs are hidden. A vertical list scrolls.
 
 Implementation: `src/components/tabs/tab-list.tsx`, `src/components/overflow-list/visible-collection.tsx`, `src/utils/use-overflow-items.ts`, `labs/reference/tabs.css`
 Verification: `src/components/tabs/tab-list.test.tsx`, `e2e/tabs.spec.ts`
@@ -99,7 +99,7 @@ Verification: `src/components/tabs/tab-list.test.tsx`, `e2e/tabs.spec.ts`
 
 ### UIC-TABS-2.8 - Removable and added tabs
 
-With `onRemove` every tab with an `id` shall draw a close mark in a `ui-tabs__remove` slot and publish `aria-keyshortcuts="Delete"`. Pressing the mark with a pointer calls `onRemove` with a set holding the tab's `id`, without selecting or focusing the tab; the mark is hidden from assistive technology because Delete or Backspace on the focused tab does the same from the keyboard. The caller removes the tab, and React Aria moves focus to a neighbouring tab. With `onAdd` the list draws a `ui-tabs__add` [Icon Button](ICON-BUTTON.md) (`plus`, named by the provider's `addTab` string) after the tabs, in a `ui-tabs__bar` element, that calls it.
+With `onRemove` every tab with an `id` shall draw a close mark in a `ui-tabs__remove` slot and publish `aria-keyshortcuts="Delete"`. Pressing the mark with a pointer calls `onRemove` with a set holding the tab's `id`, without selecting or focusing the tab; the mark is hidden from assistive technology because Delete or Backspace on the focused tab does the same from the keyboard. The caller removes the tab, and focus moves to a neighbouring tab. With `onAdd` the list draws a `ui-tabs__add` [Icon Button](ICON-BUTTON.md) (`plus`, named by the provider's `addTab` string) after the tabs, in a `ui-tabs__bar` element, that calls it.
 
 Implementation: `src/components/tabs/tabs.tsx`, `src/components/tabs/tab-list.tsx`, `labs/reference/tabs.css`
 Verification: `src/components/tabs/tab-list.test.tsx`, `e2e/tabs.spec.ts`

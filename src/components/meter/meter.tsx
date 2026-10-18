@@ -1,21 +1,26 @@
 import type { ReactNode, Ref } from 'react';
-import {
-  Label,
-  Meter as AriaMeter,
-  type MeterProps as AriaMeterProps,
-} from '../../primitives/index.js';
+import { Label, Meter as AriaMeter } from '../../primitives/index.js';
+import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Size, Tone } from '../../core/props.js';
 import { clamp } from '../../utils/clamp.js';
-import { resolveProgressRange } from '../progress-bar/progress-bar.js';
+import type { ElementRender } from '../../utils/render-element.js';
+import { resolveProgressRange, type ProgressRangeProps } from '../progress-bar/progress-bar.js';
 
 export type MeterSize = Extract<Size, 'sm' | 'md' | 'lg'>;
 
 /** How good the measured quantity is: `neutral` for no judgement, else good, worse or worst. */
 export type MeterTone = Extract<Tone, 'neutral' | 'success' | 'warning' | 'danger'>;
 
-export interface MeterProps
-  extends Omit<AriaMeterProps, 'className' | 'style' | 'children'>, BaseProps {
+/** The values a meter passes to `render` with its root's props. */
+export interface MeterRenderState {
+  /** The value's percentage of the range. */
+  percentage: number;
+  /** The formatted value, or `valueLabel`. */
+  valueText: string | undefined;
+}
+
+export interface MeterProps extends BaseProps, AriaLabellingProps, ProgressRangeProps {
   /** Visible label. Without one, name the meter with `aria-label` or `aria-labelledby`. */
   label?: ReactNode;
   /** Show the value text beside the bar. Defaults to `true`. */
@@ -32,6 +37,8 @@ export interface MeterProps
   optimum?: number | undefined;
   /** The root element. */
   ref?: Ref<HTMLDivElement> | undefined;
+  /** Replaces the root `<div>` with the caller's own, given its props and values. */
+  render?: ElementRender<'div', MeterRenderState> | undefined;
 }
 
 const hooks = createHooks('meter', ['label', 'value', 'track', 'fill']);
@@ -67,8 +74,7 @@ export function resolveMeterTone(
 }
 
 /**
- * A bar showing a quantity within a known range, such as storage used or a score (React Aria
- * `Meter`). Unlike a progress bar it measures an amount, not work toward completion; the HTML
+ * A bar showing a quantity within a known range, such as storage used or a score. Unlike a progress bar it measures an amount, not work toward completion; the HTML
  * `meter` thresholds can judge the value through its tone.
  */
 export function Meter({

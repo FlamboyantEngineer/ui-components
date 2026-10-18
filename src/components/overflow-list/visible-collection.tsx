@@ -6,18 +6,15 @@ import {
   type ComponentProps,
   type ReactNode,
 } from 'react';
-import {
-  CollectionRendererContext,
-  type CollectionRenderer,
-  type Key,
-} from '../../primitives/index.js';
+import { CollectionRendererContext, type CollectionRenderer } from '../../primitives/index.js';
+import type { Key } from '../../core/props.js';
 
 type CollectionRootProps = ComponentProps<CollectionRenderer['CollectionRoot']>;
 
 export interface VisibleCollectionProps {
   /** The keys of the items to render; `null` renders every item. */
   keys: ReadonlySet<Key> | null;
-  /** The React Aria collection component. */
+  /** The library collection component whose items it filters (a tab list, a breadcrumb trail). */
   children: ReactNode;
 }
 
@@ -45,7 +42,7 @@ function VisibleCollectionRoot({ collection }: CollectionRootProps) {
 }
 
 /**
- * Renders only some top-level items of the React Aria collection component inside it (a tab list,
+ * Renders only some top-level items of the collection component inside it (a tab list,
  * a breadcrumb trail) while keeping every item in its collection, so selection, panels and keyboard
  * navigation still know the hidden ones. Pair it with `useOverflowItems`: the same commit renders
  * the visible items, so the row measures what it shows.

@@ -66,7 +66,9 @@ describe('ButtonGroup', () => {
         aria-label="History"
         data-testid="group"
         data-density="caller"
-        render={(props) => <div {...props} data-swapped="yes" />}
+        render={(props, state) => (
+          <div {...props} data-swapped="yes" data-within={String(state.isFocusWithin)} />
+        )}
       >
         <Button>Undo</Button>
       </ButtonGroup>,
@@ -77,8 +79,9 @@ describe('ButtonGroup', () => {
     expect(group).toHaveClass('ui-button-group', 'caller');
     expect(group).toHaveAttribute('data-density', 'regular');
     expect(group).toHaveAttribute('data-swapped', 'yes');
+    expect(group).toHaveAttribute('data-within', 'false');
     expectHooksMatchSpec(document.body, 'BUTTON-GROUP', {
-      callerAttributes: ['data-testid', 'data-swapped'],
+      callerAttributes: ['data-testid', 'data-swapped', 'data-within'],
     });
   });
 });

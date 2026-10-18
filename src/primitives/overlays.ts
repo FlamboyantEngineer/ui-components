@@ -27,7 +27,6 @@ export {
   UNSTABLE_ToastStateContext,
 } from 'react-aria-components';
 export type {
-  DialogProps,
   Placement,
   QueuedToast,
   ToastState,

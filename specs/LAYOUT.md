@@ -94,7 +94,7 @@ Verification: `src/components/layout/wrappers.test.tsx`
 
 ### UIC-LAYOUT-3.3 - Toolbar row
 
-`ToolbarRow` shall line up controls in a centred row. With `role="toolbar"` (the default) it is a React Aria toolbar: arrow keys move focus between its controls and Tab leaves the row; `role="group"` renders a group whose controls are each a tab stop, and `role="none"` adds no role. `variant` publishes `data-variant`: `plain` (the default) or `surface`, a row the stylesheet draws on a surface.
+`ToolbarRow` shall line up controls in a centred row. With `role="toolbar"` (the default) it is a toolbar: arrow keys move focus between its controls and Tab leaves the row; `role="group"` renders a group whose controls are each a tab stop, and `role="none"` adds no role. `variant` publishes `data-variant`: `plain` (the default) or `surface`, a row the stylesheet draws on a surface.
 
 Implementation: `src/components/layout/toolbar-row.tsx`, `labs/reference/layout.css`
 Verification: `src/components/layout/toolbar-row.test.tsx`, `e2e/layout.spec.ts`
@@ -122,7 +122,7 @@ Verification: `src/components/layout/toolbar-row.test.tsx`, `e2e/layout.spec.ts`
 
 ### UIC-LAYOUT-3.7 - Toolbar groups and separators
 
-`ToolbarRowGroup` shall render a React Aria `Group` (`role="group"`, named by the caller's `aria-label` or `aria-labelledby`) in the `ui-toolbar-row__group` slot, laid out along its row (`data-orientation` is the row's). `ToolbarRowSeparator` shall render a React Aria `Separator` in the `ui-toolbar-row__separator` slot across the row: vertical (`role="separator"`, `aria-orientation="vertical"`) in a horizontal row and a horizontal `<hr>` in a vertical one, published in `data-orientation`. Separators take no focus, and a toolbar's arrow keys move through the controls of every group.
+`ToolbarRowGroup` shall render a group (`role="group"`, named by the caller's `aria-label` or `aria-labelledby`) in the `ui-toolbar-row__group` slot, laid out along its row (`data-orientation` is the row's). `ToolbarRowSeparator` shall render a [Separator](SEPARATOR.md) in the `ui-toolbar-row__separator` slot across the row: vertical (`role="separator"`, `aria-orientation="vertical"`) in a horizontal row and a horizontal `<hr>` in a vertical one, published in `data-orientation`. Separators take no focus, and a toolbar's arrow keys move through the controls of every group.
 
 Implementation: `src/components/layout/toolbar-row.tsx`, `labs/reference/layout.css`
 Verification: `src/components/layout/toolbar-row.test.tsx`, `e2e/layout.spec.ts`
@@ -170,4 +170,3 @@ Verification: `src/components/layout/toolbar-row.test.tsx`, `e2e/layout.spec.ts`
 | `data-focus-within`         | state     | `true`                                                                | A toolbar group holds focus (React Aria).                   |
 | `data-focus-visible`        | state     | `true`                                                                | A toolbar group holds keyboard focus (React Aria).          |
 | `data-hovered`              | state     | `true`                                                                | The pointer is over a toolbar group (React Aria).           |
-| `data-disabled`             | state     | `true`                                                                | A toolbar group is disabled (React Aria).                   |

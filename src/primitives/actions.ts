@@ -14,14 +14,4 @@ export {
   ToggleButtonGroup,
   Toolbar,
 } from 'react-aria-components';
-export type {
-  ButtonProps,
-  ButtonRenderProps,
-  GroupProps,
-  KeyboardEvent,
-  LinkProps,
-  PressEvent,
-  SeparatorProps,
-  ToggleButtonGroupProps,
-  ToolbarProps,
-} from 'react-aria-components';
+export type { ButtonProps, KeyboardEvent, LinkProps, PressEvent } from 'react-aria-components';

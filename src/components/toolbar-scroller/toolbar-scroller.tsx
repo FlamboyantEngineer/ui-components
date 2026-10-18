@@ -1,12 +1,8 @@
 import { Fragment, useRef, type FocusEvent, type ReactNode } from 'react';
-import {
-  Toolbar,
-  useLocale,
-  type Key,
-  type ToolbarProps as AriaToolbarProps,
-} from '../../primitives/index.js';
+import { Toolbar, useLocale } from '../../primitives/index.js';
+import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { useOverflowItems } from '../../utils/use-overflow-items.js';
 import {
@@ -37,7 +33,7 @@ export interface ToolbarScrollerItem {
 }
 
 export interface ToolbarScrollerProps<T extends ToolbarScrollerItem = ToolbarScrollerItem>
-  extends Pick<AriaToolbarProps, 'aria-label' | 'aria-labelledby'>, BaseProps {
+  extends Pick<AriaLabellingProps, 'aria-label' | 'aria-labelledby'>, BaseProps {
   /** The tools. They stay direct children of the scrolling strip, at their natural size and order. */
   children?: ReactNode;
   /** Show a scroll button at each edge that hides tools. Defaults to `true`; edge fades always render. */
@@ -119,7 +115,7 @@ function ScrollButton({ edge, isHidden, onPress }: ScrollButtonProps) {
 interface MenuStripProps<T extends ToolbarScrollerItem> {
   items: readonly T[];
   renderItem: (item: T) => ReactNode;
-  stripProps: Pick<AriaToolbarProps, 'aria-label' | 'aria-labelledby'>;
+  stripProps: Pick<AriaLabellingProps, 'aria-label' | 'aria-labelledby'>;
 }
 
 /** The strip of a scroller that collapses tools into a menu: the tools that fit, then the menu. */
@@ -167,8 +163,8 @@ function MenuStrip<T extends ToolbarScrollerItem>({
 }
 
 /**
- * One horizontal row of tools that scrolls instead of squeezing them. A React Aria toolbar gives the
- * tools arrow-key focus; scroll buttons and decorative fades appear only at an edge that hides tools.
+ * One horizontal row of tools that scrolls instead of squeezing them. A toolbar gives the tools
+ * arrow-key focus; scroll buttons and decorative fades appear only at an edge that hides tools.
  */
 export function ToolbarScroller<T extends ToolbarScrollerItem = ToolbarScrollerItem>({
   children,

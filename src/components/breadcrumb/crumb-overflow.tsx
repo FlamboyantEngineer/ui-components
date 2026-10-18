@@ -1,6 +1,7 @@
 import { useId, useMemo, type ReactNode, type RefCallback } from 'react';
-import { Breadcrumb as AriaBreadcrumb, type Key } from '../../primitives/index.js';
+import { Breadcrumb as AriaBreadcrumb } from '../../primitives/index.js';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
+import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { useOverflowItems } from '../../utils/use-overflow-items.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
@@ -49,7 +50,7 @@ export function toCrumbText(item: CrumbEntry, index: number): string {
 
 /**
  * Which crumbs a trail collapsing into a menu keeps: the first and the current crumb, then as many
- * as fit from the current end. The others leave the trail, which stays in React Aria's collection.
+ * as fit from the current end. The others leave the trail but stay in its collection.
  */
 export function useCrumbOverflow(items: readonly CrumbEntry[], isMenu: boolean): CrumbOverflow {
   const overflowKey = useId();

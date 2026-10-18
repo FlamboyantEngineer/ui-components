@@ -5,6 +5,7 @@ import {
   useRef,
   type KeyboardEvent,
   type ReactNode,
+  type Ref,
   type RefObject,
 } from 'react';
 import {
@@ -13,13 +14,13 @@ import {
   TabsContext,
   useLocale,
   useSlottedContext,
-  type Key,
-  type TabListProps as AriaTabListProps,
   type TabListState,
 } from '../../primitives/index.js';
-import type { BaseProps, NativeProps, Orientation } from '../../core/props.js';
+import type { AriaLabellingProps } from '../../core/events.js';
+import type { BaseProps, Key, Orientation } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { mergeProps, mergeRefs } from '../../utils/merge-props.js';
+import type { ElementRender } from '../../utils/render-element.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import { useOverflowItems } from '../../utils/use-overflow-items.js';
 import {
@@ -36,11 +37,18 @@ import { useCenterSelectedTab, useListOverflow } from './tab-list-overflow.js';
 /** `scroll` lets an overflowing list scroll; `menu` collapses the tabs that do not fit into a menu. */
 export type TabListOverflow = 'scroll' | 'menu';
 
-export interface TabListProps<T>
-  extends
-    Omit<AriaTabListProps<T>, 'className' | 'style'>,
-    Pick<NativeProps<'div'>, 'ref'>,
-    BaseProps {
+/** The state a `TabList` passes to `render` with its element's props. */
+export interface TabListRenderState {
+  orientation: Orientation;
+}
+
+export interface TabListProps extends BaseProps, AriaLabellingProps {
+  /** The list element. */
+  ref?: Ref<HTMLDivElement> | undefined;
+  /** The `Tab`s. */
+  children?: ReactNode;
+  /** Replaces the list's `<div>` with the caller's own, given its props and state. */
+  render?: ElementRender<'div', TabListRenderState> | undefined;
   /**
    * What a horizontal list does with tabs that do not fit: `scroll` (the default) or `menu`, which
    * keeps the selected tab and as many others as fit and lists the rest in a "more" menu.
@@ -130,9 +138,9 @@ function resolveParts({
 
 /** Adds the remove keys to the list element, which React Aria keeps its own keyboard handling on. */
 function renderRemoveKeys(
-  render: AriaTabListProps<object>['render'],
+  render: TabListProps['render'],
   onKeyDown: (event: KeyboardEvent<HTMLDivElement>) => void,
-): AriaTabListProps<object>['render'] {
+): TabListProps['render'] {
   return (props, state) => {
     const merged = mergeProps(props, { onKeyDown });
     return render ? render(merged, state) : <div {...merged} />;
@@ -140,10 +148,7 @@ function renderRemoveKeys(
 }
 
 /** Delete and Backspace remove the focused tab of a removable list. */
-function useRemoveKey(
-  state: TabListState<object> | null,
-  onRemove: TabListProps<object>['onRemove'],
-) {
+function useRemoveKey(state: TabListState<object> | null, onRemove: TabListProps['onRemove']) {
   return (event: KeyboardEvent<HTMLDivElement>) => {
     if (!onRemove || !state || (event.key !== 'Delete' && event.key !== 'Backspace')) return;
     const key = state.selectionManager.focusedKey;
@@ -224,7 +229,7 @@ function TabBar({
  * collapses the tabs that do not fit into a "more" menu; it can draw scroll buttons, removable tabs
  * and an add button.
  */
-export function TabList<T extends object>({
+export function TabList({
   overflow = 'scroll',
   scrollButtons = false,
   onRemove,
@@ -232,7 +237,7 @@ export function TabList<T extends object>({
   className,
   ref,
   ...rest
-}: TabListProps<T>) {
+}: TabListProps) {
   const state = useContext(TabListStateContext);
   const orientation = useSlottedContext(TabsContext)?.orientation ?? 'horizontal';
   const { isMenu, hasButtons } = resolveParts({ orientation, overflow, scrollButtons });

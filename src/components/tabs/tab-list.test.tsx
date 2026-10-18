@@ -1,7 +1,7 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
-import type { Key } from '../../primitives/index.js';
+import type { Key } from '../../core/props.js';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Tab, TabList, TabPanel, Tabs, type TabListProps } from './tabs.js';
@@ -11,7 +11,7 @@ const fruit = ['Apple', 'Banana', 'Cherry', 'Fig', 'Grape'];
 function Fruit({
   defaultSelectedKey,
   ...list
-}: Partial<TabListProps<object>> & { defaultSelectedKey?: Key }) {
+}: Partial<TabListProps> & { defaultSelectedKey?: Key }) {
   return (
     <Tabs defaultSelectedKey={defaultSelectedKey}>
       <TabList aria-label="Fruit" {...list}>
@@ -202,23 +202,36 @@ describe('TabList', () => {
     expect(shownTabs()).toEqual(['Banana', 'Cherry', 'Fruit 4']);
   });
 
-  it('UIC-TABS-1.6 renders the family through caller elements', () => {
+  it('UIC-TABS-1.6 renders the family through caller elements with their states', () => {
     render(
-      <Tabs render={(props) => <div {...props} data-swapped="tabs" />}>
-        <TabList aria-label="Fruit" render={(props) => <div {...props} data-swapped="list" />}>
-          <Tab id="apple" render={(props) => <div {...(props as object)} data-swapped="tab" />}>
+      <Tabs render={(props, state) => <div {...props} data-swapped={state.orientation} />}>
+        <TabList
+          aria-label="Fruit"
+          render={(props, state) => <div {...props} data-swapped={`list ${state.orientation}`} />}
+        >
+          <Tab
+            id="apple"
+            render={(props, state) => (
+              <div {...props} data-swapped={state.isSelected ? 'selected tab' : 'tab'} />
+            )}
+          >
             Apple
           </Tab>
         </TabList>
-        <TabPanel id="apple" render={(props) => <div {...props} data-swapped="panel" />}>
+        <TabPanel
+          id="apple"
+          render={(props, state) => (
+            <div {...props} data-swapped={state.isInert ? 'inert panel' : 'panel'} />
+          )}
+        >
           Apples
         </TabPanel>
       </Tabs>,
     );
-    expect(screen.getByRole('tablist')).toHaveAttribute('data-swapped', 'list');
-    expect(screen.getByRole('tab')).toHaveAttribute('data-swapped', 'tab');
+    expect(screen.getByRole('tablist')).toHaveAttribute('data-swapped', 'list horizontal');
+    expect(screen.getByRole('tab')).toHaveAttribute('data-swapped', 'selected tab');
     expect(screen.getByRole('tab')).toHaveClass('ui-tabs__tab');
     expect(screen.getByRole('tabpanel')).toHaveAttribute('data-swapped', 'panel');
-    expect(screen.getByRole('tablist').parentElement).toHaveAttribute('data-swapped', 'tabs');
+    expect(screen.getByRole('tablist').parentElement).toHaveAttribute('data-swapped', 'horizontal');
   });
 });

@@ -1,16 +1,16 @@
 import type { PointerEvent } from 'react';
-import {
-  Button as AriaButton,
-  type ButtonProps as AriaButtonProps,
-} from '../../primitives/index.js';
+import { Button as AriaButton } from '../../primitives/index.js';
+import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { Icon } from '../icon/icon.js';
 
-export interface DragHandleProps
-  extends
-    Omit<AriaButtonProps, 'className' | 'style' | 'children' | 'render' | 'slot'>,
-    BaseProps {}
+export interface DragHandleProps extends BaseProps, AriaLabellingProps {
+  /** Refuses dragging, for a row that cannot move. */
+  isDisabled?: boolean | undefined;
+  /** Keeps the handle out of the tab sequence. Defaults to `true`; the arrow keys reach it. */
+  excludeFromTabOrder?: boolean | undefined;
+}
 
 const hooks = createHooks('drag-handle');
 
@@ -84,7 +84,7 @@ export function armHandleDrag(event: PointerEvent<Element>): void {
 }
 
 /**
- * The drag button of a row in a React Aria collection that reorders by drag and drop. The collection
+ * The drag button of a row in a library collection that reorders by drag and drop. The collection
  * names it after the row and starts the row's keyboard drag from it; it stays out of the tab
  * sequence, since the collection reaches it with the arrow keys.
  */

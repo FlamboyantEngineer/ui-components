@@ -387,11 +387,15 @@ describe('SegmentedChoice', () => {
         aria-label="View"
         options={views}
         isReadOnly
-        render={(props) => <div {...props} data-swapped="yes" />}
+        orientation="vertical"
+        render={(props, state) => (
+          <div {...props} data-swapped="yes" data-laid-out={state.orientation} />
+        )}
       />,
     );
     const group = screen.getByRole('radiogroup', { name: 'View' });
     expect(group).toHaveAttribute('data-swapped', 'yes');
+    expect(group).toHaveAttribute('data-laid-out', 'vertical');
     expect(group).toHaveAttribute('aria-readonly', 'true');
     expect(group).toHaveClass('ui-segmented-choice');
   });
