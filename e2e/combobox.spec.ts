@@ -314,9 +314,16 @@ test.describe('Combobox lab', () => {
     await page.clock.install();
     await lab.open('combobox');
     const area = section(page, 'Loading more');
-    await area.getByRole('combobox', { name: 'Paged city' }).focus();
-    await page.keyboard.press('ArrowDown');
-    await expect(page.getByRole('option', { name: 'Paris 1', exact: true })).toBeVisible();
+    const input = area.getByRole('combobox', { name: 'Paged city' });
+    await input.focus();
+    const listbox = page.getByRole('listbox');
+    // The first key can land before the field is ready to open its list, so press until it opens.
+    await expect(async () => {
+      if (!(await listbox.isVisible())) await input.press('ArrowDown');
+      await expect(page.getByRole('option', { name: 'Paris 1', exact: true })).toBeVisible({
+        timeout: 1000,
+      });
+    }).toPass();
     // Pause only once the list is open: the popover needs running timers to appear.
     await page.clock.pauseAt(Date.now() + 1000);
     await page.locator('.ui-combobox__listbox').evaluate((listbox) => {

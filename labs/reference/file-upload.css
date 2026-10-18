@@ -101,7 +101,7 @@
 
 .ui-file-upload__file {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  grid-template-columns: auto minmax(0, 1fr) auto auto auto;
   align-items: center;
   column-gap: 8px;
   padding: 4px 4px 4px 8px;
@@ -118,9 +118,29 @@
   color: var(--ref-success);
 }
 
-.ui-file-upload__file-preview {
+.ui-file-upload__file[data-change='added'] {
+  border-color: var(--ref-success);
+  background: color-mix(in srgb, var(--ref-success) 10%, transparent);
+}
+
+.ui-file-upload__file-preview,
+.ui-file-upload__file-icon,
+.ui-file-upload__file-media {
   grid-row: 1;
   grid-column: 1;
+}
+
+.ui-file-upload__file-icon {
+  color: var(--ref-muted);
+}
+
+.ui-file-upload__file-media {
+  display: flex;
+  align-items: center;
+  max-width: 64px;
+}
+
+.ui-file-upload__file-preview {
   width: 24px;
   height: 24px;
   border-radius: 3px;
@@ -140,8 +160,16 @@
   font-size: 12px;
 }
 
-.ui-file-upload__file-remove {
+.ui-file-upload__file-actions {
+  display: flex;
   grid-column: 4;
+  grid-row: 1;
+  align-items: center;
+  gap: 4px;
+}
+
+.ui-file-upload__file-remove {
+  grid-column: 5;
   grid-row: 1;
 }
 

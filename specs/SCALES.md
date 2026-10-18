@@ -77,3 +77,10 @@ Verification: `src/utils/time-scale.test.ts`
 
 Implementation: `src/utils/time-scale.ts`
 Verification: `src/utils/time-scale.test.ts`
+
+### UIC-SCALES-2.6 - Calendar units
+
+`floorToTimeUnit(date, unit, locale)` shall return the first day of the day, week, month, quarter or year holding a `YYYY-MM-DD` date (weeks starting on the first day of the week of `locale`), and `addTimeUnits(date, unit, count)` the date moved by a whole number of those units, forward or back, a day past the end of the target month clamping to its last day (January 31 plus one month is February 28). Both return `YYYY-MM-DD` dates, and empty text for a text that is not a date or a count that is not a finite number. [Timeline](TIMELINE.md) steps and pads its range with them.
+
+Implementation: `src/utils/time-scale.ts`
+Verification: `src/utils/time-scale.test.ts`

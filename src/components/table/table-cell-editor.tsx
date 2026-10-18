@@ -2,6 +2,7 @@ import { useContext, useLayoutEffect, useRef, useState, type KeyboardEvent } fro
 import { Input, TableStateContext } from '../../primitives/index.js';
 import { getColumnText } from './table-column.js';
 import { tableHooks as hooks } from './table-hooks.js';
+import { readCellText, type CellReading } from './table-cell-writes.js';
 import {
   getCellValue,
   isTextValue,
@@ -10,28 +11,31 @@ import {
   type TableColumn,
   type TableRow,
 } from './table-rows.js';
-import type { CellEditing } from './use-cell-editing.js';
+import type { CellEditing, CellMove } from './use-cell-editing.js';
+
+/** The text a cell's editor starts with: the cell's text or number. */
+function formatEditorText(value: TableCellValue): string {
+  return isTextValue(value) ? String(value) : '';
+}
 
 interface TableCellEditorViewProps<T> {
   row: T;
   column: TableColumn<T>;
-  editing: Pick<CellEditing<T>, 'commit' | 'cancel' | 'release'>;
+  editing: Pick<CellEditing<T>, 'editing' | 'commit' | 'cancel' | 'release' | 'dismiss'>;
+  /** Spreadsheet mode: Enter and Tab commit and move to the next cell. */
+  movesOnCommit: boolean;
 }
 
 interface DefaultEditorProps {
-  value: TableCellValue;
+  initialText: string;
   label: string;
-  onCommit: (value: TableCellValue) => void;
+  /** Reads the text as the cell's value, with the column's message when it refuses it. */
+  read: (text: string) => CellReading;
+  onCommit: (value: TableCellValue, move?: CellMove) => void;
   onRelease: (value: TableCellValue) => void;
   onCancel: () => void;
-}
-
-/** The typed text as a cell value: a number when the cell held one and the text reads as one. */
-function parseText(text: string, previous: TableCellValue): TableCellValue {
-  const number = Number(text);
-  return typeof previous === 'number' && text.trim() !== '' && Number.isFinite(number)
-    ? number
-    : text;
+  onDismiss: () => void;
+  movesOnCommit: boolean;
 }
 
 /** Hands the arrow keys, Home, End and type-ahead to the editor while it is open. */
@@ -51,35 +55,62 @@ function handleEscape(event: KeyboardEvent, cancel: () => void): void {
   cancel();
 }
 
-/** A text input that commits on Enter and when focus leaves it, and cancels on Escape. */
-function DefaultCellEditor({ value, label, onCommit, onRelease, onCancel }: DefaultEditorProps) {
-  const [text, setText] = useState(isTextValue(value) ? String(value) : '');
+/** Where a commit key moves focus in spreadsheet mode: Enter down, Tab along, Shift back. */
+function getCommitMove(event: KeyboardEvent, movesOnCommit: boolean): CellMove | undefined {
+  if (!movesOnCommit) return undefined;
+  if (event.key === 'Tab') return event.shiftKey ? 'start' : 'end';
+  return event.shiftKey ? 'up' : 'down';
+}
+
+/**
+ * A text input that commits on Enter and when focus leaves it, and cancels on Escape. A value the
+ * column refuses keeps the editor open with its message; leaving then drops the text.
+ */
+function DefaultCellEditor(props: DefaultEditorProps) {
+  const { label, read, movesOnCommit } = props;
+  const [text, setText] = useState(props.initialText);
+  const [error, setError] = useState<string | null>(null);
   // Leaving the document fires blur too: only the first way out counts.
   const isDone = useRef(false);
-  const finish = (report: (value: TableCellValue) => void) => {
+  const commit = (event: KeyboardEvent) => {
+    event.preventDefault();
+    const reading = read(text);
+    setError(reading.error);
+    if (reading.error !== null || isDone.current) return;
+    isDone.current = true;
+    props.onCommit(reading.value, getCommitMove(event, movesOnCommit));
+  };
+  const release = () => {
     if (isDone.current) return;
     isDone.current = true;
-    report(parseText(text, value));
+    const reading = read(text);
+    if (reading.error === null) props.onRelease(reading.value);
+    else props.onDismiss();
   };
   return (
-    <Input
-      className={hooks.slotClass('editor')}
-      aria-label={label}
-      value={text}
-      autoFocus
-      onChange={(event) => setText(event.target.value)}
-      onKeyDown={(event) => {
-        if (event.key === 'Enter') {
-          event.preventDefault();
-          finish(onCommit);
-        }
-        handleEscape(event, () => {
-          isDone.current = true;
-          onCancel();
-        });
-      }}
-      onBlur={() => finish(onRelease)}
-    />
+    <>
+      <Input
+        {...hooks.slot('editor', { invalid: error !== null })}
+        aria-label={label}
+        aria-invalid={error !== null || undefined}
+        value={text}
+        autoFocus
+        onChange={(event) => setText(event.target.value)}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || (event.key === 'Tab' && movesOnCommit)) commit(event);
+          handleEscape(event, () => {
+            isDone.current = true;
+            props.onCancel();
+          });
+        }}
+        onBlur={release}
+      />
+      {error === null ? null : (
+        <span {...hooks.slot('editor-message')} role="alert">
+          {error}
+        </span>
+      )}
+    </>
   );
 }
 
@@ -91,14 +122,16 @@ export function TableCellEditorView<T extends TableRow>({
   row,
   column,
   editing,
+  movesOnCommit,
 }: TableCellEditorViewProps<T>) {
   useKeyboardNavigationLock();
   const value = getCellValue(row, column);
   const label = getColumnText(column);
+  const toEdit = (next: TableCellValue) => ({ row, columnId: column.id, value: next });
   const editor: TableCellEditor = {
     value,
     label,
-    commit: (next) => editing.commit(row, column.id, next),
+    commit: (next) => editing.commit(toEdit(next)),
     cancel: editing.cancel,
   };
   if (column.renderEditor) {
@@ -111,11 +144,14 @@ export function TableCellEditorView<T extends TableRow>({
   }
   return (
     <DefaultCellEditor
-      value={value}
+      initialText={editing.editing?.text ?? formatEditorText(value)}
       label={label}
-      onCommit={editor.commit}
-      onRelease={(next) => editing.release(row, column.id, next)}
+      read={(text) => readCellText(row, column, text)}
+      onCommit={(next, move) => editing.commit(toEdit(next), move)}
+      onRelease={(next) => editing.release(toEdit(next))}
       onCancel={editing.cancel}
+      onDismiss={editing.dismiss}
+      movesOnCommit={movesOnCommit}
     />
   );
 }

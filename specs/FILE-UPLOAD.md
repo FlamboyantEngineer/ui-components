@@ -1,6 +1,6 @@
 # File Upload
 
-`FileUpload` chooses files or folders: from the system file chooser through React Aria's `FileTrigger`, and by drag and drop or paste through React Aria's `DropZone`. It checks each file against the accepted types, the size and count limits and the owner's own check, hands the accepted files to its owner and reports the refused ones; a drag says before the drop whether its files would be accepted. It holds no files itself: the owner performs any upload and passes the files back as data to list them, each with an image thumbnail, its size, its upload progress or its error and a remove button. In a form it submits the listed files under a name and can be required. Sizes are written with [formatBytes](FORMAT-BYTES.md).
+`FileUpload` chooses files or folders: from the system file chooser through React Aria's `FileTrigger`, and by drag and drop or paste through React Aria's `DropZone`. It checks each file against the accepted types, the size and count limits and the owner's own check, hands the accepted files to its owner and reports the refused ones; a drag says before the drop whether its files would be accepted. It holds no files itself: the owner performs any upload and passes the files back as data to list them, each with an image thumbnail or a type glyph, its size, its upload progress or its error, the owner's actions and a remove button. In a form it submits the listed files under a name and can be required. Sizes are written with [formatBytes](FORMAT-BYTES.md).
 
 ## UIC-FILE-UPLOAD-1 - Command
 
@@ -27,7 +27,7 @@ Verification: `src/components/file-upload/file-upload.test.tsx`, `e2e/file-uploa
 
 ### UIC-FILE-UPLOAD-1.4 - Disabled
 
-`isDisabled` shall disable the buttons and the drop zone, which refuses drops, and publish `data-disabled` on the root.
+`isDisabled` shall disable the buttons (the listed files' remove buttons included) and the drop zone, which refuses drops, and publish `data-disabled` on the root.
 
 Implementation: `src/components/file-upload/file-upload.tsx`
 Verification: `src/components/file-upload/file-upload.test.tsx`, `e2e/file-upload.spec.ts`
@@ -38,6 +38,20 @@ With `acceptDirectory`, the system chooser shall pick a folder and every file in
 
 Implementation: `src/components/file-upload/file-upload.tsx`, `src/components/file-upload/file-upload-drop.tsx`
 Verification: `src/components/file-upload/file-upload.test.tsx`, `e2e/file-upload.spec.ts`
+
+### UIC-FILE-UPLOAD-1.6 - Read-only
+
+`isReadOnly` shall list the files without the command, the refusal message or the remove buttons, keeping each file's preview and actions, and publish `data-readonly` on the root.
+
+Implementation: `src/components/file-upload/file-upload.tsx`
+Verification: `src/components/file-upload/file-upload-files.test.tsx`
+
+### UIC-FILE-UPLOAD-1.7 - Owner naming and focus
+
+`aria-labelledby` shall name the command (the drop zone's Browse button) by those elements followed by the command's own text, and `aria-label` by that text followed by the command's own text, so the name keeps what the command shows; `aria-describedby` adds to the command's description. `commandRef` receives the command's button, so an owner such as [File Field](FILE-FIELD.md) can focus it.
+
+Implementation: `src/components/file-upload/file-upload.tsx`, `src/components/file-upload/file-upload-drop.tsx`
+Verification: `src/components/file-upload/file-upload-files.test.tsx`
 
 ## UIC-FILE-UPLOAD-2 - Checking files
 
@@ -134,6 +148,34 @@ A listed file whose `file` is an image (`image/*`) shall show a thumbnail (`ui-f
 Implementation: `src/components/file-upload/file-upload-files.tsx`
 Verification: `src/components/file-upload/file-upload.test.tsx`, `e2e/file-upload.spec.ts`
 
+### UIC-FILE-UPLOAD-3.6 - Caller previews
+
+`renderFilePreview` shall replace a listed file's thumbnail or glyph with what it returns for the file (such as an audio or video player), in `ui-file-upload__file-media`; when it returns nothing (`null`, `undefined`, a boolean or an empty string) the file keeps its built-in preview.
+
+Implementation: `src/components/file-upload/file-upload-files.tsx`
+Verification: `src/components/file-upload/file-upload-files.test.tsx`, `e2e/file-upload.spec.ts`
+
+### UIC-FILE-UPLOAD-3.7 - Type glyph
+
+A listed file without a thumbnail shall show the glyph of its MIME type (`ui-file-upload__file-icon`, decorative): `image`, `video` or `audio` for those families, `file` otherwise, from its `type`, else its `file`'s type (`getFileGlyph`).
+
+Implementation: `src/components/file-upload/file-upload-files.tsx`, `src/utils/file-glyph.ts`, `src/core/glyphs.tsx`
+Verification: `src/components/file-upload/file-upload-files.test.tsx`, `src/utils/file-glyph.test.ts`
+
+### UIC-FILE-UPLOAD-3.8 - Caller actions
+
+`renderFileActions` shall render what it returns for each listed file (such as open or download links) in `ui-file-upload__file-actions`, after the file's progress and error and before its remove button; a file it returns nothing for has no actions part.
+
+Implementation: `src/components/file-upload/file-upload-files.tsx`
+Verification: `src/components/file-upload/file-upload-files.test.tsx`, `e2e/file-upload.spec.ts`
+
+### UIC-FILE-UPLOAD-3.9 - Changed files
+
+A listed file whose `change` is `added` shall publish `data-change="added"`, for an owner that compares the list against a committed one.
+
+Implementation: `src/components/file-upload/file-upload-files.tsx`
+Verification: `src/components/file-upload/file-upload-files.test.tsx`
+
 ## UIC-FILE-UPLOAD-4 - Attributes
 
 ### UIC-FILE-UPLOAD-4.1 - Hooks and caller attributes
@@ -165,14 +207,19 @@ Verification: `src/components/file-upload/file-upload.test.tsx`, `e2e/file-uploa
 | `ui-file-upload__files`         | slot      |                                              | The list of files.                                           |
 | `ui-file-upload__file`          | slot      |                                              | A listed file.                                               |
 | `ui-file-upload__file-preview`  | slot      |                                              | A file's image thumbnail.                                    |
+| `ui-file-upload__file-media`    | slot      |                                              | A file's caller preview, from `renderFilePreview`.           |
+| `ui-file-upload__file-icon`     | slot      |                                              | A file's type glyph (also `ui-icon`).                        |
 | `ui-file-upload__file-name`     | slot      |                                              | A file's name.                                               |
 | `ui-file-upload__file-size`     | slot      |                                              | A file's size.                                               |
 | `ui-file-upload__file-progress` | slot      |                                              | A file's upload progress (also `ui-progress-bar`).           |
 | `ui-file-upload__file-error`    | slot      |                                              | A file's upload error (also `ui-inline-error`).              |
+| `ui-file-upload__file-actions`  | slot      |                                              | A file's caller actions, from `renderFileActions`.           |
 | `ui-file-upload__file-remove`   | slot      |                                              | A file's remove button (also `ui-icon-button`).              |
 | `data-variant`                  | attribute | `button`, `dropzone`                         | The command.                                                 |
 | `data-status`                   | state     | `selected`, `uploading`, `complete`, `error` | On a listed file: where its upload stands.                   |
+| `data-change`                   | state     | `added`                                      | On a listed file: an edit added it.                          |
 | `data-disabled`                 | state     | `true`                                       | Disabled (root, and the drop zone through React Aria).       |
+| `data-readonly`                 | state     | `true`                                       | Read-only: no command and no removal (root).                 |
 | `data-required`                 | state     | `true`                                       | A form needs a file (root).                                  |
 | `data-invalid`                  | state     | `true`                                       | The required or invalid message shows (root).                |
 | `data-drop-accept`              | state     | `true`                                       | A drag over the drop zone would be accepted.                 |

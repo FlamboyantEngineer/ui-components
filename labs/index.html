@@ -62,6 +62,7 @@
           <li><a href="steps.html">Steps</a> — An ordered list of a task's steps with where each one stands, the current one marked.</li>
           <li><a href="tabs.html">Tabs</a> — Switches between peer sections of one surface, with icons, counts, links and overflow scrolling.</li>
           <li><a href="toolbar-scroller.html">Toolbar Scroller</a> — A row of tools that scrolls with edge fades and scroll buttons instead of squeezing.</li>
+          <li><a href="transition-menu.html">Transition Menu</a> — The current state as a badge that opens the allowed next states, with reasons for unavailable ones and an optional confirmation or required comment.</li>
           <li><a href="wizard.html">Wizard</a> — A multi-step task: the list of steps, the current step's panel, and Back, Skip, Next and Finish.</li>
           <li><a href="zoom-control.html">Zoom Control</a> — Zoom out, a slider over zoom levels, zoom in, the percentage and an optional reset.</li>
         </ul>
@@ -79,6 +80,7 @@
           <li><a href="loading-overlay.html">Loading Overlay</a> — A status card, the cover that blocks a loading surface and a region that makes its content inert.</li>
           <li><a href="meter.html">Meter</a> — A quantity within a known range: sizes, tones, worded values and tones judged by low, high and optimum thresholds.</li>
           <li><a href="notification-center.html">Notification Center</a> — A bell with the unread count that opens a notification inbox grouped by day, with read, dismiss and load more.</li>
+          <li><a href="problem-list.html">Problem List</a> — A summary of validation problems that counts them by severity and moves focus to each field.</li>
           <li><a href="progress-bar.html">Progress Bar</a> — Determinate and indeterminate progress bars at three sizes, plus the decorative spinner.</li>
           <li><a href="save-status.html">Save Status</a> — An editor's save status, announced politely, with retry after a failed save.</li>
           <li><a href="segmented-bar.html">Segmented Bar</a> — A bar split into proportional segments: sizes, tones, totals with a remainder, a visible legend and a unit format.</li>
@@ -126,6 +128,7 @@
           <li><a href="color-swatch.html">Color Swatch</a> — A colour shown on its own, named by its colour, in five sizes.</li>
           <li><a href="completion-list.html">Completion List</a> — Suggestions for an editor that keeps focus: a listbox at an anchor, trigger characters such as @ and #, documentation, an empty state and a footer.</li>
           <li><a href="date-time-field.html">Date Time Field</a> — Dates, times, date-times and date ranges in segments and a calendar.</li>
+          <li><a href="file-field.html">File Field</a> — A field whose value is a list of stored files, with uploads in progress, download links and changes against the committed value.</li>
           <li><a href="file-upload.html">File Upload</a> — Chooses or drops files, checks their type and size, and lists them with upload progress and errors.</li>
           <li><a href="folder-manager.html">Folder Manager</a> — Creates, renames, deletes and reorders folders in a tree driven by data and callbacks.</li>
           <li><a href="icon-select-field.html">Icon Select Field</a> — A single select over icon-led options with a no-icon choice.</li>
@@ -150,28 +153,39 @@
         <ul>
           <li><a href="activity-feed.html">Activity Feed</a> — A chronological feed of events grouped by day, with a filter slot, loading of older events and an empty state.</li>
           <li><a href="approval-panel.html">Approval Panel</a> — Who must decide and where each decision stands, with the approvals needed, reminders and the reader's own decision.</li>
+          <li><a href="board.html">Board</a> — Columns of cards with counts and limits, lanes, collapsing, and cards and columns moved by drag and drop or Alt+Arrow keys.</li>
+          <li><a href="calendar-view.html">Calendar View</a> — Events in a month or week view: all-day bars across days, timed events on a time grid, crowded days, today and keyboard navigation between days.</li>
           <li><a href="change-list.html">Change List</a> — What changed in a record, one row per property: word diffs of text, items added to and removed from lists, and old and new values.</li>
           <li><a href="chat-transcript.html">Chat Transcript</a> — A conversation log that follows the latest message, with streaming and error states and a jump to latest control.</li>
           <li><a href="comment-composer.html">Comment Composer</a> — A plain-text comment box with submit and cancel, keyboard chords, pending submits and a stored draft.</li>
           <li><a href="comment-thread.html">Comment Thread</a> — A discussion with a quoted anchor, replies, reactions, edit and delete, resolve and reopen, and collapsed long threads.</li>
+          <li><a href="condition-builder.html">Condition Builder</a> — Nested all and any groups of field, operator and value rules, with reordering, a depth limit and validation.</li>
           <li><a href="decision-control.html">Decision Control</a> — Approve or reject, or a scored vote, with an optional or required comment and an optional signature.</li>
+          <li><a href="display-options.html">Display Options</a> — A popover choosing a collection's grouping, sort and direction, visible properties and their order, and density.</li>
           <li><a href="drag-handle.html">Drag Handle</a> — The drag button of a row in a collection that reorders by drag and drop.</li>
+          <li><a href="facet-list.html">Facet List</a> — Facet values with counts as checkboxes, with search, show more and selected first.</li>
+          <li><a href="filter-bar.html">Filter Bar</a> — Active filters as chips with a typed editor per field, an add menu, clear all and a search slot.</li>
           <li><a href="four-side-property-strip.html">Four Side Property Strip</a> — One property row with a top, bottom, left and right value.</li>
           <li><a href="html-markup.html">HTML Markup</a> — Renders sanitized HTML as React elements, with links through the provider and element overrides.</li>
+          <li><a href="inline-edit.html">Inline Edit</a> — A value read in place that turns into its editor on a click, Enter or F2: Enter or leaving saves, Escape cancels, with pending and failed saves.</li>
           <li><a href="list-row.html">List Row</a> — Native lists of link, action and read-only rows with one tab stop and arrow-key navigation.</li>
           <li><a href="markdown.html">Markdown</a> — Renders Markdown with tables, task lists, code and links through the library's readers.</li>
           <li><a href="property-filter.html">Property Filter</a> — A property panel with a search box that filters its sections and rows.</li>
           <li><a href="property-panel.html">Property Panel</a> — Sections, groups, cards and rows of labelled settings for one subject.</li>
           <li><a href="property-scope.html">Property Scope</a> — Filters property sections and rows by a query the host owns.</li>
+          <li><a href="query-field.html">Query Field</a> — A one-line query input on the code editor: a caller grammar highlights, completes and diagnoses.</li>
           <li><a href="reaction-bar.html">Reaction Bar</a> — Reaction chips with counts and who reacted, toggled by the reader, with an emoji picker to add one.</li>
           <li><a href="record-chip.html">Record Chip</a> — An inline reference to a record with its version, kind, state, preview and remove button.</li>
+          <li><a href="record-header.html">Record Header</a> — A record's title row: kind icon, identifier with copy, an editable title, status, metadata and actions.</li>
           <li><a href="record-label.html">Record Label</a> — A record's icon and identifier, which never break apart, then its name.</li>
           <li><a href="stat-tile.html">Stat Tile</a> — A compact metric on a card: value, delta with trend and tone, a secondary line and a chart slot.</li>
           <li><a href="state-timeline.html">State Timeline</a> — A vertical history of state changes: who moved it, when and why, with the current state marked.</li>
           <li><a href="table.html">Table</a> — A data table with sorting, filtering, selection, resizable and persisted columns, reordering, notices and virtualization.</li>
           <li><a href="tag-group.html">Tag Group</a> — A focusable set of tags in every size and tone, with removal by button or keyboard.</li>
+          <li><a href="timeline.html">Timeline</a> — A Gantt-style timeline: zoom levels, bars with progress, milestones, dependencies, a today marker, grouped rows, pointer and keyboard editing, selection and a table view.</li>
           <li><a href="tree.html">Tree</a> — Hierarchies of rows on React Aria's Tree: expansion, selection, links, persisted state and reordering.</li>
           <li><a href="version-history.html">Version History</a> — Saved versions, newest first: select one to view, two to compare, restore after a confirmation, rename, and filter by name or person.</li>
+          <li><a href="view-switcher.html">View Switcher</a> — Saved views of a collection as tabs or a menu, with a modified marker and save, save as, rename, reset, delete and default view actions.</li>
         </ul>
       </section>
       <section>
@@ -180,6 +194,7 @@
           <li><a href="avatar.html">Avatar</a> — A picture, or initials on a stable colour slot, with a fallback when the picture fails.</li>
           <li><a href="emoji-picker.html">Emoji Picker</a> — Search, browse and choose standard or custom emoji with a skin tone, inline or in a popover.</li>
           <li><a href="find-bar.html">Find Bar</a> — A find row: the find box with the match count, previous and next match, matching options, replace and replace all, and close.</li>
+          <li><a href="media-viewer.html">Media Viewer</a> — A lightbox that pages through images and other files with zoom, rotation, thumbnails and keyboard navigation.</li>
           <li><a href="pdf-viewer.html">PDF Viewer</a> — Pages on canvas with selectable text, zoom, page navigation and find over an injected PDF engine.</li>
           <li><a href="presence-avatar.html">Presence Avatar</a> — One present person's avatar marked with a caller-chosen status, optionally pressable.</li>
           <li><a href="presence-strip.html">Presence Strip</a> — The people present as avatars or dots, with a +N count past the visible maximum.</li>

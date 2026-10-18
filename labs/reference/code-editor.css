@@ -60,6 +60,18 @@
   height: 280px;
 }
 
+/* One line: the surface is one line tall and does not resize. */
+.ui-code-editor[data-single-line] .ui-code-editor__surface {
+  height: calc(var(--ref-code-line) + 2 * var(--ref-code-pad));
+  min-height: 0;
+  resize: none;
+}
+
+.ui-code-editor[data-single-line] :is(.ui-code-editor__highlight, .ui-code-editor__input) {
+  overflow: hidden;
+  scrollbar-gutter: auto;
+}
+
 .ui-code-editor[data-readonly] .ui-code-editor__surface {
   background: var(--ref-surface);
 }

@@ -14,9 +14,11 @@ import type {
 import { splitDataAttributes } from '../../core/hooks.js';
 import type { BaseProps, Key, Size } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import type { ActionRowAction } from '../action-row/action-row.js';
 import { Pagination } from '../pagination/pagination.js';
 import type { TableColumnWidths } from './column-sizing.js';
 import { TableBody } from './table-body.js';
+import { TableSelectionBar } from './table-bulk-edit.js';
 import { TableColumnFilter } from './table-column-filter.js';
 import { getColumnText } from './table-column.js';
 import type { TableColumnGroup, TableColumnLayout } from './table-columns.js';
@@ -34,6 +36,8 @@ import type { TableColumn, TableRow } from './table-rows.js';
 import { TableToolbar } from './table-toolbar.js';
 import type { TableChildRows } from './table-tree.js';
 import type { TableCellEdit } from './use-cell-editing.js';
+import type { TableSpreadsheetProps } from './use-cell-selection.js';
+import type { TableGroupingProps } from './use-table-expansion.js';
 import { useTableGrid, type TableGrid } from './use-table-grid.js';
 import type { TableReorderOptions } from './use-table-reorder.js';
 import type { TablePagination } from './use-table-rows.js';
@@ -50,13 +54,20 @@ export interface TableProps<T extends TableRow>
     AriaLabellingProps,
     CollectionSelectionProps,
     ExpansionProps,
-    TableSortOptions {
+    TableSortOptions,
+    TableGroupingProps<T>,
+    TableSpreadsheetProps<T> {
   /** The data columns, in declared order. */
   columns: readonly TableColumn<T>[];
   /** The rows, each with an `id` unique in the table, nested rows included. */
   rows: readonly T[];
   /** Called with the key of the row the reader activates. */
   onRowAction?: ((key: Key) => void) | undefined;
+  /**
+   * Bulk actions on a selection bar above the grid while rows are selected, in multiple selection.
+   * Columns with `bulkEdit` add an action there that sets one column across the selected rows.
+   */
+  selectionActions?: readonly ActionRowAction[] | undefined;
   /** The id of the column holding nested rows' expand buttons. Defaults to the first drawn column. */
   treeColumn?: Key | undefined;
   /** Draws a search box that keeps the rows whose text contains every term. */
@@ -189,10 +200,10 @@ function TableGridElement<T extends TableRow>({
 
 /**
  * A data table on React Aria's Table: columns and rows as plain data with render callbacks;
- * sorting by one or several columns; a search box and column filters; selection; resizable,
- * reorderable, hideable, pinned and grouped columns; nested and detail rows; cell editing; a
- * summary row; row reordering; pagination, loading more and virtualization; and loading, empty and
- * error notices.
+ * sorting by one or several columns; a search box and column filters; selection with a selection
+ * bar and bulk edit; resizable, reorderable, hideable, pinned and grouped columns; row groups with
+ * aggregates; nested and detail rows; cell editing and a spreadsheet mode; a summary row; row
+ * reordering; pagination, loading more and virtualization; and loading, empty and error notices.
  */
 export function Table<T extends TableRow>({
   size = 'md',
@@ -236,6 +247,7 @@ export function Table<T extends TableRow>({
         columns={rest.columns}
         layout={layout}
       />
+      {grid.selectionBar ? <TableSelectionBar {...grid.selectionBar} /> : null}
       <ResizableTableContainer
         className={hooks.slotClass('scroll')}
         onResize={grid.widths.onResize}

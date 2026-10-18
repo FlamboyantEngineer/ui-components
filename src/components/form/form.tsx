@@ -21,6 +21,7 @@ import {
   type FieldValidationErrors,
   type FieldValidationMode,
 } from '../field/field.js';
+import { FormProblemContext, createFormProblemStore, inDocumentOrder } from './form-problems.js';
 
 /** The HTTP method a native submit uses. */
 export type FormMethod = 'get' | 'post' | 'dialog';
@@ -59,15 +60,6 @@ function toErrorLists(errors: FieldValidationErrors | undefined) {
   );
 }
 
-function inDocumentOrder(fields: Iterable<FieldRegistration>): FieldRegistration[] {
-  return [...fields].sort((left, right) => {
-    const first = left.getElement();
-    const second = right.getElement();
-    if (!first || !second) return 0;
-    return first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1;
-  });
-}
-
 /**
  * The browser fires `invalid` at each invalid control of a native submit it blocked, in document
  * order. The first event of that run shows every field's validation and focuses its control.
@@ -95,7 +87,7 @@ function useInvalidFocus(fields: Set<FieldRegistration>) {
  * A form on React Aria's `Form` that validates its fields on submit: it shows every field's
  * validation and, while any field has an error or is still being checked, blocks the submit and
  * focuses the first such field. `validationErrors` (a server's answer) show on the fields they name
- * until their values change.
+ * until their values change. A `ProblemList` inside it lists the problems its fields show.
  */
 export function Form({
   validationMode = 'submit',
@@ -109,16 +101,28 @@ export function Form({
 }: FormProps) {
   const parent = useFieldScope();
   const [fields] = useState(() => new Set<FieldRegistration>());
+  const [problems] = useState(() => createFormProblemStore(fields));
   const register = useCallback(
     (field: FieldRegistration) => {
       fields.add(field);
-      return () => void fields.delete(field);
+      problems.notify();
+      return () => {
+        fields.delete(field);
+        problems.notify();
+      };
     },
-    [fields],
+    [fields, problems],
   );
   const scope = useMemo(
-    () => ({ ...parent, validationMode, validationBehavior, validationErrors, register }),
-    [parent, validationMode, validationBehavior, validationErrors, register],
+    () => ({
+      ...parent,
+      validationMode,
+      validationBehavior,
+      validationErrors,
+      register,
+      onIssuesChange: problems.notify,
+    }),
+    [parent, validationMode, validationBehavior, validationErrors, register, problems],
   );
   const form = useInvalidFocus(fields);
   const formRef = useMemo(() => mergeRefs(form, ref), [form, ref]);
@@ -140,7 +144,12 @@ export function Form({
       validationErrors={errorLists}
       onSubmit={submit}
     >
-      <FieldScopeContext.Provider value={scope}>{children}</FieldScopeContext.Provider>
+      <FieldScopeContext.Provider value={scope}>
+        <FormProblemContext.Provider value={problems}>{children}</FormProblemContext.Provider>
+      </FieldScopeContext.Provider>
     </AriaForm>
   );
 }
+
+export { useFormProblems } from './form-problems.js';
+export type { FormProblem, FormProblemSource } from './form-problems.js';

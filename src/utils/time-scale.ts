@@ -103,19 +103,47 @@ function floorToUnit(date: CalendarDate, plan: TickPlan, locale: string): Calend
   }
 }
 
-function addUnit(date: CalendarDate, { unit, step }: TickPlan): CalendarDate {
+/** `date` moved by `count` units, which may be negative; month ends clamp (Jan 31 + 1 month is Feb 28). */
+function shiftByUnits(date: CalendarDate, unit: TimeScaleUnit, count: number): CalendarDate {
   switch (unit) {
     case 'day':
-      return date.add({ days: 1 });
+      return date.add({ days: count });
     case 'week':
-      return date.add({ weeks: 1 });
+      return date.add({ weeks: count });
     case 'month':
-      return date.add({ months: 1 });
+      return date.add({ months: count });
     case 'quarter':
-      return date.add({ months: 3 });
+      return date.add({ months: 3 * count });
     case 'year':
-      return date.add({ years: step });
+      return date.add({ years: count });
   }
+}
+
+function addUnit(date: CalendarDate, { unit, step }: TickPlan): CalendarDate {
+  return shiftByUnits(date, unit, unit === 'year' ? step : 1);
+}
+
+/**
+ * The first day of the calendar `unit` holding a `YYYY-MM-DD` date, as a `YYYY-MM-DD` date; weeks
+ * start on the first day of the week of `locale` (the runtime's by default). Empty for a text that
+ * is not a date.
+ */
+export function floorToTimeUnit(date: string, unit: TimeScaleUnit, locale?: string): string {
+  const parsed = parseIsoDate(date);
+  const weekLocale = locale ?? new Intl.DateTimeFormat().resolvedOptions().locale;
+  return parsed ? floorToUnit(parsed, { unit, step: 1 }, weekLocale).toString() : '';
+}
+
+/**
+ * A `YYYY-MM-DD` date moved by `count` calendar units (negative counts move back), as a
+ * `YYYY-MM-DD` date. A day past the end of the target month clamps to its last day. Empty for a
+ * text that is not a date.
+ */
+export function addTimeUnits(date: string, unit: TimeScaleUnit, count: number): string {
+  const parsed = parseIsoDate(date);
+  return parsed && Number.isFinite(count)
+    ? shiftByUnits(parsed, unit, Math.trunc(count)).toString()
+    : '';
 }
 
 /**

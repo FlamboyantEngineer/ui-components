@@ -26,10 +26,18 @@ function isValidatable(element: HTMLElement | null): element is ValidatableEleme
  * field's error as its custom validity. An `invalid` event (a native submit the browser blocked)
  * shows the field's validation; inside a form, the field's own message replaces the browser's.
  */
-export function useFieldFormBinding(state: FieldState<unknown>, slots: FieldSlots): void {
-  const { register } = useFieldScope();
-  const latest = useRef(state);
-  latest.current = state;
+export function useFieldFormBinding(
+  state: FieldState<unknown>,
+  slots: FieldSlots,
+  label: string,
+): void {
+  const { register, onIssuesChange } = useFieldScope();
+  const latest = useRef({ state, label });
+  latest.current = { state, label };
+  const issuesKey = JSON.stringify([
+    label,
+    state.issues.map(({ severity, message }) => [severity, message]),
+  ]);
   const isInForm = Boolean(register);
   const validity =
     state.validationBehavior === 'native' && isFieldBlocking(state)
@@ -41,11 +49,17 @@ export function useFieldFormBinding(state: FieldState<unknown>, slots: FieldSlot
     if (!register) return undefined;
     return register({
       getElement: () => slots.read('root'),
-      isBlocking: () => isFieldBlocking(latest.current),
-      revealValidation: () => latest.current.revealValidation(),
+      isBlocking: () => isFieldBlocking(latest.current.state),
+      revealValidation: () => latest.current.state.revealValidation(),
       focus: () => slots.read('control')?.focus(),
+      getLabel: () => latest.current.label,
+      getIssues: () => latest.current.state.issues,
     });
   }, [register, slots]);
+
+  useEffect(() => {
+    onIssuesChange?.();
+  }, [issuesKey, onIssuesChange]);
 
   // Runs after every commit: the control element can change while the message stays the same.
   useEffect(() => {
@@ -59,7 +73,7 @@ export function useFieldFormBinding(state: FieldState<unknown>, slots: FieldSlot
     const root = slots.read('root');
     if (!root) return undefined;
     const onInvalid = (event: Event) => {
-      const current = latest.current;
+      const current = latest.current.state;
       current.revealValidation();
       if (isInForm && event.target === slots.read('control') && isFieldBlocking(current)) {
         event.preventDefault();

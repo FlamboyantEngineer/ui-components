@@ -497,3 +497,144 @@
 .ui-table__pagination {
   align-self: flex-end;
 }
+
+.ui-table__selection-bar {
+  padding: 4px 8px;
+  border-radius: var(--ref-radius);
+  background: var(--ref-selected);
+  color: var(--ref-text);
+}
+.ui-table__bulk-edit .ui-modal__body {
+  display: grid;
+  gap: 12px;
+}
+
+.ui-table__group-row {
+  background: var(--ref-surface);
+  outline: none;
+}
+.ui-table__group-row[data-focus-visible] {
+  outline: 2px solid var(--ref-focus);
+  outline-offset: -2px;
+}
+.ui-table__group-cell,
+.ui-table__aggregate-cell {
+  box-sizing: border-box;
+  height: 36px;
+  padding: 0 8px;
+  border-bottom: 1px solid var(--ref-border);
+  color: var(--ref-text);
+  font-weight: 600;
+  white-space: nowrap;
+}
+/* The label spills over the empty cells beside it; cells draw no background of their own. */
+.ui-table__group-cell {
+  position: relative;
+  z-index: 1;
+  overflow: visible;
+}
+:is(.ui-table__group-cell, .ui-table__aggregate-cell)[data-pinned] {
+  background: var(--ref-surface);
+}
+.ui-table[data-size='sm'] :is(.ui-table__group-cell, .ui-table__aggregate-cell) {
+  height: 32px;
+}
+.ui-table__group-cell {
+  padding-inline-start: calc(8px + (var(--ui-table-level, 1) - 1) * 20px);
+}
+.ui-table__aggregate-cell[data-align='end'] {
+  text-align: end;
+}
+.ui-table__aggregate-cell[data-align='center'] {
+  text-align: center;
+}
+.ui-table:not([data-virtualized])
+  :is(.ui-table__group-cell, .ui-table__aggregate-cell)[data-pinned] {
+  position: sticky;
+  z-index: 1;
+}
+.ui-table:not([data-virtualized])
+  :is(.ui-table__group-cell, .ui-table__aggregate-cell)[data-pinned='start'] {
+  inset-inline-start: var(--ui-table-pin-offset);
+}
+.ui-table:not([data-virtualized])
+  :is(.ui-table__group-cell, .ui-table__aggregate-cell)[data-pinned='end'] {
+  inset-inline-end: var(--ui-table-pin-offset);
+}
+.ui-table__group-label {
+  vertical-align: middle;
+}
+.ui-table__group-count {
+  display: inline-block;
+  min-width: 20px;
+  margin-inline-start: 8px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: var(--ref-hover);
+  color: var(--ref-text);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.ui-table__cell:is([data-in-range], [data-fill-target], [data-editing]):not([data-pinned]) {
+  position: relative;
+}
+.ui-table__cell[data-in-range] {
+  background-color: var(--ref-selected);
+}
+.ui-table__cell:is([data-in-range], [data-fill-target])::after {
+  position: absolute;
+  inset: 0;
+  border: 0 solid var(--ref-accent);
+  content: '';
+  pointer-events: none;
+}
+.ui-table__cell[data-range-top]::after {
+  border-top-width: 2px;
+}
+.ui-table__cell[data-range-bottom]::after {
+  border-bottom-width: 2px;
+}
+.ui-table__cell[data-range-start]::after {
+  border-inline-start-width: 2px;
+}
+.ui-table__cell[data-range-end]::after {
+  border-inline-end-width: 2px;
+}
+.ui-table__cell[data-fill-target]::after {
+  border-width: 1px;
+  border-style: dashed;
+}
+.ui-table__fill-handle {
+  position: absolute;
+  z-index: 1;
+  inset-block-end: 0;
+  inset-inline-end: 0;
+  width: 8px;
+  height: 8px;
+  border: 1px solid var(--ref-canvas);
+  background: var(--ref-accent);
+  cursor: crosshair;
+}
+.ui-table__cell[data-editing] {
+  overflow: visible;
+}
+.ui-table__editor[data-invalid] {
+  border-color: var(--ref-danger);
+  box-shadow: 0 0 0 1px var(--ref-danger);
+}
+.ui-table__editor-message {
+  position: absolute;
+  z-index: 2;
+  inset-block-start: calc(100% - 2px);
+  inset-inline-start: 4px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--ref-danger-fill);
+  color: var(--ref-accent-text);
+  font-size: 12px;
+  white-space: nowrap;
+}

@@ -57,6 +57,8 @@ export interface TableRowsView<T> {
   rows: readonly T[];
   /** The top-level rows of every page, filtered and, while the table owns the sort, ordered. */
   presentedRows: readonly T[];
+  /** The rows of every page with their presented child rows. */
+  presentedNodes: readonly TableNode<T>[];
   sort: TableSortState;
   filter: TableFilter;
   onFilterChange: (filter: TableFilter) => void;
@@ -118,6 +120,7 @@ export function useTableRows<T extends TableRow>(options: TableRowsOptions<T>): 
     nodes,
     rows: pageRows,
     presentedRows,
+    presentedNodes: presented,
     sort,
     filter,
     onFilterChange: (next) => {
