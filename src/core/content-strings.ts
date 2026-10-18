@@ -14,9 +14,9 @@ export interface ContentStrings {
   topLevel: string;
   /** Names a code editor's list of completions. */
   suggestions: string;
-  /** Names a code editor's find box. */
+  /** Names a find box. */
   find: string;
-  /** Names a code editor's replacement box. */
+  /** Names a find bar's replacement box. */
   replaceWith: string;
   /** Replaces the current match. */
   replace: string;
@@ -70,6 +70,8 @@ export interface ContentStrings {
   searching: string;
   previousMatch: string;
   nextMatch: string;
+  /** How many matches a find found, while none is current (`12 matches`). */
+  matchTotal: (total: number) => string;
   documentFailed: string;
   /** Names a document view's panel of page thumbnails and outline, and its toggle. */
   sidebar: string;
@@ -173,6 +175,7 @@ export const contentStrings: ContentStrings = {
   searching: 'Searching…',
   previousMatch: 'Previous match',
   nextMatch: 'Next match',
+  matchTotal: (total) => (total === 1 ? '1 match' : `${total} matches`),
   documentFailed: 'The document could not be opened.',
   sidebar: 'Sidebar',
   pages: 'Pages',

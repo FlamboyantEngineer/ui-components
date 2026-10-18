@@ -91,7 +91,7 @@ test.describe('PDF Viewer lab', () => {
     lab,
   }) => {
     const reader = await openReader(page, lab);
-    const status = reader.locator('.ui-pdf-viewer__search-status');
+    const status = reader.locator('.ui-find-bar__status');
     const field = reader.getByRole('searchbox', { name: 'Find in document' });
     await field.fill('HARVEST');
     await expect(status).toHaveText('1 of 4');
@@ -445,6 +445,24 @@ test.describe('PDF Viewer lab', () => {
     await expect(reader.getByLabel('Page', { exact: true })).toHaveValue('3');
   });
 
+  test('UIC-PDF-VIEWER-2.5 draws no links while annotations are switched off', async ({
+    page,
+    lab,
+  }) => {
+    const reader = await openCase(page, lab, 'annotations');
+    const first = reader.locator('.ui-pdf-viewer__page').first();
+    await expect(first.locator('[role="presentation"]').first()).toBeVisible();
+    await expect(first.getByRole('link')).toHaveCount(0);
+    await expect(first.locator('.ui-pdf-viewer__annotation-layer')).toBeEmpty();
+    const toggle = reader.getByRole('switch', { name: 'Show annotations' });
+    await reader.getByText('Show annotations').click();
+    await expect(toggle).toBeChecked();
+    await expect(first.getByRole('link', { name: 'https://example.com/' })).toBeVisible();
+    await reader.getByText('Show annotations').click();
+    await expect(toggle).not.toBeChecked();
+    await expect(first.getByRole('link')).toHaveCount(0);
+  });
+
   test('UIC-PDF-VIEWER-3.5 UIC-PDF-VIEWER-4.6 UIC-PDF-VIEWER-5.8 answers the reader keyboard', async ({
     page,
     lab,
@@ -477,7 +495,7 @@ test.describe('PDF Viewer lab', () => {
     // A dozen documents open at once, each with its own engine worker, before axe runs.
     test.slow();
     const reader = await openReader(page, lab);
-    const status = reader.locator('.ui-pdf-viewer__search-status');
+    const status = reader.locator('.ui-find-bar__status');
     await reader.getByRole('searchbox', { name: 'Find in document' }).fill('pear');
     await expect(status).toHaveText('1 of 2');
     await reader.getByRole('button', { name: 'Find options' }).click();
@@ -643,7 +661,7 @@ test.describe('PDF Viewer lab', () => {
     test.slow();
     const reader = await openReader(page, lab);
     await reader.getByRole('searchbox').fill('harvest');
-    await expect(reader.locator('.ui-pdf-viewer__search-status')).toHaveText('1 of 4');
+    await expect(reader.locator('.ui-find-bar__status')).toHaveText('1 of 4');
     await lab.expectAccessible();
   });
 

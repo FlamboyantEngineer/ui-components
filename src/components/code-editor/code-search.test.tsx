@@ -43,15 +43,19 @@ describe('CodeEditor find and replace', () => {
     await user.keyboard('{Control>}f{/Control}');
     const row = container.querySelector('.ui-code-editor__search');
     expect(row?.nextElementSibling).toHaveClass('ui-code-editor__surface');
-    const find = screen.getByRole('textbox', { name: 'Find' });
-    expect(find).toHaveClass('ui-code-editor__search-input');
+    expect(row).toHaveClass('ui-find-bar');
+    const find = screen.getByRole('searchbox', { name: 'Find' });
+    expect(find.closest('.ui-find-bar__query')).not.toBeNull();
     expect(find).toHaveFocus();
     expect(find).toHaveValue('apple');
     expect(screen.getByRole('status')).toHaveTextContent('1 of 1');
     expect(screen.getByRole('button', { name: 'Previous match' })).toBeEnabled();
     expect(screen.getByRole('button', { name: 'Next match' })).toBeEnabled();
     expectHooksMatchSpec(container, 'CODE-EDITOR', {
-      slots: ['search', 'search-input', 'replace-input', 'search-status', 'match'],
+      slots: ['search', 'match'],
+    });
+    expectHooksMatchSpec(container, 'FIND-BAR', {
+      slots: ['query', 'status', 'previous', 'next', 'replacement', 'replace', 'replace-all'],
     });
     await user.clear(find);
     await user.type(find, 'plum');
@@ -110,7 +114,7 @@ describe('CodeEditor find and replace', () => {
     render(<Editor isReadOnly />);
     await user.click(input());
     await user.keyboard('{Control>}f{/Control}');
-    expect(screen.getByRole('textbox', { name: 'Find' })).toHaveFocus();
+    expect(screen.getByRole('searchbox', { name: 'Find' })).toHaveFocus();
     expect(screen.queryByRole('textbox', { name: 'Replace with' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Replace all' })).toBeNull();
   });

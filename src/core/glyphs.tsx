@@ -71,6 +71,8 @@ export const defaultGlyphs = {
   'chevron-right': ChevronRightIcon,
   'chevron-double-left': ChevronDoubleLeftIcon,
   'chevron-double-right': ChevronDoubleRightIcon,
+  'arrow-up': ArrowUpIcon,
+  'arrow-down': ArrowDownIcon,
   close: XMarkIcon,
   check: CheckIcon,
   more: EllipsisHorizontalIcon,

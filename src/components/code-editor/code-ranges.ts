@@ -73,6 +73,23 @@ export function findDiagnosticRange(value: string, diagnostic: CodeDiagnostic): 
   return spanAt(value, start, bounds.start);
 }
 
+/**
+ * Diagnostics whose lines are numbered from `firstLineNumber`, as the gutter numbers them, counted
+ * again from 1 at the text's first line. The same list when the text starts at line 1.
+ */
+export function toTextLines(
+  diagnostics: readonly CodeDiagnostic[],
+  firstLineNumber: number,
+): readonly CodeDiagnostic[] {
+  const shift = firstLineNumber - 1;
+  if (shift === 0) return diagnostics;
+  return diagnostics.map((diagnostic) => ({
+    ...diagnostic,
+    line: diagnostic.line === undefined ? undefined : diagnostic.line - shift,
+    endLine: diagnostic.endLine === undefined ? undefined : diagnostic.endLine - shift,
+  }));
+}
+
 /** Whether each offset is code: not inside a string, key or comment token. */
 function createCodeMask(tokens: readonly CodeToken[]): (offset: number) => boolean {
   const skipped: CodeRange[] = [];

@@ -23,6 +23,7 @@ import {
   type CodeTokenizer,
 } from './code-layers.js';
 import { CodeSearchPanel } from './code-search.js';
+import { toTextLines } from './code-ranges.js';
 import type { CodeCompletion } from './completion-match.js';
 import type { CodeCompletionSource } from './use-code-completion.js';
 import { alignLayers, useCodeEditor, type CodeEditorModel } from './use-code-editor.js';
@@ -52,6 +53,8 @@ export interface CodeEditorProps extends BaseProps, CodeTextAreaProps {
   wrap?: CodeEditorWrap | undefined;
   /** Numbers the source lines in a gutter. */
   lineNumbers?: boolean | undefined;
+  /** The number of the first line, for an excerpt of a longer text; diagnostics count lines from it. Defaults to 1. */
+  firstLineNumber?: number | undefined;
   /** Tools shown in a row above the source, such as a label, a count or a format button. */
   toolbar?: ReactNode;
   /** Spaces per indentation level, for Tab, Shift+Tab and Enter. Defaults to 2. */
@@ -174,6 +177,7 @@ export function CodeEditor({
   size = 'md',
   wrap = 'soft',
   lineNumbers = false,
+  firstLineNumber = 1,
   toolbar,
   indent,
   indentWithTab,
@@ -197,10 +201,11 @@ export function CodeEditor({
     diagnosticsId,
   );
   const { shown, isInvalid } = problems;
+  const located = toTextLines(shown, firstLineNumber);
   const isLocked = isReadOnly || isDisabled;
   const model = useCodeEditor({
     ...{ value, onChange, tokenize, completions, renderHover, indent, indentWithTab },
-    ...{ autoCloseBrackets, allowsSearch, isLocked, diagnostics: shown },
+    ...{ autoCloseBrackets, allowsSearch, isLocked, diagnostics: located },
   });
   const { layers, search } = model;
   const inputRef = useMergedRef(layers.input, ref);
@@ -221,7 +226,8 @@ export function CodeEditor({
         {lineNumbers ? (
           <CodeGutter
             lines={value.split('\n')}
-            severities={severitiesByLine(shown)}
+            firstLineNumber={firstLineNumber}
+            severities={severitiesByLine(located)}
             textWidth={textWidth}
             gutterRef={layers.gutter}
           />

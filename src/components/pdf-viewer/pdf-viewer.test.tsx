@@ -12,6 +12,7 @@ import {
   searchStatus as status,
   stubIntersectionObserver,
   stubLayout,
+  type TestLink,
 } from '../../../test/pdf-fixtures.js';
 import { ProjectionOutlet, ProjectionProvider } from '../projection/projection.js';
 import { PdfViewer } from './pdf-viewer.js';
@@ -93,6 +94,30 @@ describe('PdfViewer', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Zoom in' }));
     expect(Number.parseFloat(page?.style.width ?? '')).toBeCloseTo(420 * 1.25 * pointsToPixels);
     await waitFor(() => expect(engine.render).toHaveBeenCalledTimes(6));
+  });
+
+  it('UIC-PDF-VIEWER-2.5 leaves annotations and links out while they are switched off', async () => {
+    const links: Record<number, TestLink[]> = {
+      0: [{ rect: [46, 388, 202, 404], url: 'https://example.com/' }],
+    };
+    const engine = createEngine({ links });
+    const { container, update } = await renderReady({ showAnnotations: false }, engine);
+    const canvas = container.querySelector('canvas');
+    expect(engine.render).toHaveBeenCalledWith(
+      expect.objectContaining({ canvas, annotationMode: 0 }),
+    );
+    expect(engine.render).not.toHaveBeenCalledWith(expect.objectContaining({ annotationMode: 1 }));
+    expect(engine.AnnotationLayer).not.toHaveBeenCalled();
+    expect(screen.queryByRole('link')).toBeNull();
+    expect(container.querySelectorAll('[role="presentation"]').length).toBeGreaterThan(0);
+
+    update({ showAnnotations: true });
+    expect(await screen.findByRole('link', { name: 'https://example.com/' })).toBeInTheDocument();
+    expect(engine.render).toHaveBeenCalledWith(
+      expect.objectContaining({ canvas, annotationMode: 1 }),
+    );
+    update({ showAnnotations: false });
+    await waitFor(() => expect(screen.queryByRole('link')).toBeNull());
   });
 
   it('UIC-PDF-VIEWER-2.1 renders only the pages near the view', async () => {
@@ -193,7 +218,9 @@ describe('PdfViewer', () => {
     const matches = container.querySelectorAll('.ui-pdf-viewer__match');
     expect([...matches].map((match) => match.textContent)).toEqual(Array(4).fill('harvest'));
     expect(matches[0]).toHaveAttribute('data-current', 'true');
-    expectHooksMatchSpec(container, 'PDF-VIEWER', { slots: ['match', 'search-status'] });
+    expectHooksMatchSpec(container, 'PDF-VIEWER', { slots: ['match', 'group'] });
+    expect(field.closest('.ui-pdf-viewer__group')).toHaveClass('ui-find-bar');
+    expectHooksMatchSpec(container, 'FIND-BAR', { slots: ['query', 'status', 'options'] });
 
     await userEvent.clear(field);
     await userEvent.type(field, 'pear harvest');

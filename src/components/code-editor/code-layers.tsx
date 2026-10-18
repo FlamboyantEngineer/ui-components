@@ -34,7 +34,9 @@ export interface CodeHighlightProps {
 
 export interface CodeGutterProps {
   lines: readonly string[];
-  /** The worst severity reported on each line, by line number. */
+  /** The number of the first row. */
+  firstLineNumber: number;
+  /** The worst severity reported on each line, by line counted from 1 at the text's start. */
   severities: ReadonlyMap<number, FieldSeverity>;
   /** The input's text width, so each hidden line copy wraps where the input wraps. */
   textWidth: number | undefined;
@@ -72,9 +74,6 @@ export const codeEditorHooks = createHooks('code-editor', [
   'completion-description',
   'completion-documentation',
   'search',
-  'search-input',
-  'replace-input',
-  'search-status',
 ]);
 
 const hooks = codeEditorHooks;
@@ -112,7 +111,13 @@ export function CodeHighlight({ segments, caretRef, highlightRef }: CodeHighligh
  * Line numbers beside the input. Each row holds a hidden copy of its line, so a wrapped line keeps
  * one number and the rows stay as tall as the lines they number.
  */
-export function CodeGutter({ lines, severities, textWidth, gutterRef }: CodeGutterProps) {
+export function CodeGutter({
+  lines,
+  firstLineNumber,
+  severities,
+  textWidth,
+  gutterRef,
+}: CodeGutterProps) {
   return (
     <div
       {...hooks.slot('gutter')}
@@ -124,7 +129,7 @@ export function CodeGutter({ lines, severities, textWidth, gutterRef }: CodeGutt
     >
       {lines.map((line, index) => (
         <div key={index} {...hooks.slot('line', { severity: severities.get(index + 1) })}>
-          <span {...hooks.slot('line-number')}>{index + 1}</span>
+          <span {...hooks.slot('line-number')}>{index + firstLineNumber}</span>
           <span {...hooks.slot('line-text')}>{line || '​'}</span>
         </div>
       ))}

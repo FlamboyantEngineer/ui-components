@@ -26,6 +26,17 @@ interface UsePdfCommandsOptions<V extends PdfViewport, C extends PdfTextContent>
 
 const noSizes: readonly PdfSize[] = [];
 
+/** The turned document, marked to leave its annotations undrawn when they are switched off. */
+function useAnnotatedView<V extends PdfViewport, C extends PdfTextContent>(
+  view: LoadedPdf<V, C> | null,
+  showAnnotations: boolean,
+): LoadedPdf<V, C> | null {
+  return useMemo(
+    () => (view && !showAnnotations ? { ...view, hidesAnnotations: true } : view),
+    [view, showAnnotations],
+  );
+}
+
 const ignore = () => undefined;
 
 /** The commands of the toolbar's menu, on the open document. */
@@ -68,7 +79,9 @@ export function usePdfViewer<V extends PdfViewport, C extends PdfTextContent>(
   const isReady = status === 'ready';
   const pageCount = loaded?.pages.length ?? 0;
   const pages = usePdfPages({ scrollerRef, document: loaded, pageCount });
-  const { view, rotate } = usePdfRotation({ loaded, pages });
+  const rotation = usePdfRotation({ loaded, pages });
+  const { rotate } = rotation;
+  const view = useAnnotatedView(rotation.view, props.showAnnotations ?? true);
   const defaultZoom = props.defaultZoom ?? 'page-width';
   const zoom = usePdfZoom({
     defaultZoom,

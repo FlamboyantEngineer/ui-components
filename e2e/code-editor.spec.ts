@@ -103,6 +103,31 @@ test.describe('Code Editor lab', () => {
     await expect(toolbar.locator('[data-lab-output="lines"]')).toHaveText('4 lines');
   });
 
+  test('UIC-CODE-EDITOR-2.3 numbers an excerpt from its first line and marks the lines its diagnostics name', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('code-editor');
+    const excerpt = editor(page, 'excerpt');
+    const numbers = excerpt.locator('.ui-code-editor__line-number');
+    await expect(numbers.first()).toHaveText('41');
+    await expect(numbers.last()).toHaveText('45');
+    await expect(excerpt.locator('.ui-code-editor__line[data-severity="warning"]')).toHaveCount(1);
+    await expect(
+      excerpt.locator(
+        '.ui-code-editor__line[data-severity="warning"] .ui-code-editor__line-number',
+      ),
+    ).toHaveText('43');
+    await expect(excerpt.locator('.ui-code-editor__mark')).toHaveText(['baskit']);
+    await expect(excerpt.locator('.ui-code-editor__diagnostic')).toHaveText([
+      '43:27 Unknown name "baskit".',
+    ]);
+    const input = excerpt.getByRole('textbox', { name: 'Excerpt' });
+    await input.focus();
+    await page.keyboard.press('F8');
+    await expect(page.getByRole('tooltip')).toContainText('Unknown name "baskit".');
+  });
+
   test('UIC-CODE-EDITOR-3.1 UIC-CODE-EDITOR-3.2 lists live diagnostics and clears them when fixed', async ({
     page,
     lab,
@@ -249,10 +274,11 @@ test.describe('Code Editor lab', () => {
     await input.click();
     await page.keyboard.press('Control+Home');
     await page.keyboard.press('Control+f');
-    const find = editing.getByRole('textbox', { name: 'Find' });
+    const find = editing.getByRole('searchbox', { name: 'Find' });
     await expect(find).toBeFocused();
+    await expect(editing.locator('.ui-code-editor__search')).toHaveClass(/ui-find-bar/);
     await page.keyboard.type('BASKET');
-    const status = editing.locator('.ui-code-editor__search-status');
+    const status = editing.locator('.ui-find-bar__status');
     await expect(status).toHaveText('1 of 2');
     await expect(editing.locator('.ui-code-editor__match')).toHaveCount(2);
     await expect(editing.locator('.ui-code-editor__match[data-current]')).toHaveCSS(
