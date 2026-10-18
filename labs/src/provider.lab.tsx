@@ -17,6 +17,7 @@ const sampleArguments: Partial<Record<keyof UiStrings, readonly unknown[]>> = {
   shortcutKeyName: ['↑'],
   shortcutSequence: [['G', 'I']],
   stepOfTotal: [3, 5],
+  heading: [2],
   filterLabel: ['Page Settings'],
   noPropertyMatches: ['zinc'],
   boxSide: ['top'],

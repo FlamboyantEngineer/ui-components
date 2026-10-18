@@ -1,4 +1,6 @@
 // Each component also has its own entry point: @flamboyantengineer/ui-components/<component>.
+// The rich-text editor family is exported only from its entry point (`/rich-text-editor`), since it
+// imports its optional peers (ProseMirror) and the root must load without them.
 export * from './core/index.js';
 export * from './components/icon/index.js';
 export * from './components/icon-label/index.js';

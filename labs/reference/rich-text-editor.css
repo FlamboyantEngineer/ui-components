@@ -1,0 +1,284 @@
+/* Rich Text Editor, Format Toolbar, Selection Toolbar, Insert Menu and Block Handle. */
+
+.ui-field.ui-rich-text-editor {
+  width: 640px;
+}
+
+.ui-rich-text-editor__frame {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-canvas);
+}
+
+.ui-rich-text-editor__frame:focus-within {
+  border-color: var(--ref-focus);
+  box-shadow: 0 0 0 1px var(--ref-focus);
+}
+
+.ui-rich-text-editor[data-validation='invalid'] .ui-rich-text-editor__frame {
+  border-color: var(--ref-danger);
+}
+
+.ui-rich-text-editor[data-disabled] .ui-rich-text-editor__frame {
+  opacity: 0.55;
+}
+
+.ui-rich-text-editor[data-readonly] .ui-rich-text-editor__frame {
+  background: var(--ref-surface);
+}
+
+.ui-rich-text-editor__toolbar {
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--ref-border);
+}
+
+/* The block handle sits in the inline-start gutter the surface leaves free. */
+.ui-rich-text-editor__surface {
+  padding-inline-start: 36px;
+}
+
+/*
+ * Rules ProseMirror needs on the content element (from prosemirror-view/style/prosemirror.css):
+ * hosts must include them for typing, wrapping and selection to work.
+ */
+.ui-rich-text-editor__content {
+  position: relative;
+  min-height: 96px;
+  padding: 10px 12px 10px 0;
+  outline: none;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+  white-space: break-spaces;
+  font-variant-ligatures: none;
+  font-feature-settings: 'liga' 0;
+  line-height: 1.55;
+  font-size: 14px;
+}
+
+.ui-rich-text-editor__content pre {
+  white-space: pre-wrap;
+}
+
+.ui-rich-text-editor__content li {
+  position: relative;
+}
+
+.ui-rich-text-editor__content.ProseMirror-hideselection *::selection {
+  background: transparent;
+}
+
+.ui-rich-text-editor__content.ProseMirror-hideselection {
+  caret-color: transparent;
+}
+
+.ui-rich-text-editor__content [draggable][contenteditable='false'] {
+  user-select: text;
+}
+
+.ui-rich-text-editor__content .ProseMirror-selectednode {
+  outline: 2px solid var(--ref-focus);
+}
+
+.ui-rich-text-editor__content img.ProseMirror-separator {
+  display: inline !important;
+  border: none !important;
+  margin: 0 !important;
+}
+
+/* Prose typography. */
+.ui-rich-text-editor__content > :first-child {
+  margin-top: 0;
+}
+
+.ui-rich-text-editor__content > :last-child {
+  margin-bottom: 0;
+}
+
+.ui-rich-text-editor__content :is(h1, h2, h3) {
+  margin: 1em 0 0.4em;
+  line-height: 1.25;
+  font-weight: 600;
+}
+
+.ui-rich-text-editor__content h1 {
+  font-size: 1.6em;
+}
+
+.ui-rich-text-editor__content h2 {
+  font-size: 1.3em;
+}
+
+.ui-rich-text-editor__content h3 {
+  font-size: 1.1em;
+}
+
+.ui-rich-text-editor__content :is(p, ul, ol, blockquote, pre) {
+  margin: 0 0 0.6em;
+}
+
+.ui-rich-text-editor__content :is(ul, ol) {
+  padding-inline-start: 1.5em;
+}
+
+.ui-rich-text-editor__content blockquote {
+  margin-inline: 0;
+  padding-inline-start: 12px;
+  border-inline-start: 3px solid var(--ref-border);
+  color: var(--ref-muted);
+}
+
+.ui-rich-text-editor__content code {
+  padding: 0.1em 0.3em;
+  border-radius: 4px;
+  background: var(--ref-surface);
+  font-family: var(--ref-mono);
+  font-size: 0.9em;
+}
+
+.ui-rich-text-editor__content pre {
+  padding: 8px 10px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-surface);
+}
+
+.ui-rich-text-editor__content pre code {
+  padding: 0;
+  background: none;
+}
+
+.ui-rich-text-editor__content a {
+  color: var(--ref-accent-ink);
+}
+
+.ui-rich-text-editor__content hr {
+  margin: 12px 0;
+  border: none;
+  border-top: 1px solid var(--ref-border-strong);
+}
+
+.ui-rich-text-editor__content aside {
+  margin: 0 0 0.6em;
+  padding: 8px 12px;
+  border-radius: var(--ref-radius);
+  background: var(--ref-selected);
+}
+
+.ui-rich-text-editor__content mark {
+  background: rgb(250 204 21 / 0.45);
+  color: inherit;
+}
+
+/* The empty document's first block shows the placeholder. */
+.ui-rich-text-editor__placeholder::before {
+  content: attr(data-placeholder);
+  float: inline-start;
+  height: 0;
+  color: var(--ref-muted);
+  pointer-events: none;
+}
+
+.ui-rich-text-editor__content ul:has(> .ui-rich-text-editor__task-item) {
+  padding-inline-start: 0.25em;
+  list-style: none;
+}
+
+.ui-rich-text-editor__task-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.ui-rich-text-editor__task-checkbox {
+  flex: none;
+  padding-top: 0.15em;
+}
+
+.ui-rich-text-editor__task-content {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ui-rich-text-editor__task-item[data-checked] > .ui-rich-text-editor__task-content {
+  color: var(--ref-muted);
+  text-decoration: line-through;
+}
+
+/* Toolbars. */
+.ui-format-toolbar {
+  gap: 2px;
+}
+
+.ui-format-toolbar__block-type.ui-field {
+  width: 150px;
+}
+
+.ui-format-toolbar__link-editor,
+.ui-selection-toolbar__link-editor {
+  width: 300px;
+}
+
+:is(.ui-format-toolbar__link-editor, .ui-selection-toolbar__link-editor) form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.ui-selection-toolbar {
+  padding: 2px 4px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-raised);
+  box-shadow: var(--ref-shadow);
+}
+
+.ui-selection-toolbar__row {
+  gap: 2px;
+}
+
+/* The slash menu: a completion list with the insert menu's own hook. */
+.ui-insert-menu {
+  min-width: 220px;
+}
+
+.ui-insert-menu__caret {
+  width: 0;
+  pointer-events: none;
+}
+
+.ui-insert-menu-button {
+  margin-inline-start: 4px;
+}
+
+.ui-block-handle {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  inset-inline-start: 2px;
+  color: var(--ref-muted);
+}
+
+.ui-block-handle[data-dragging] {
+  opacity: 0.5;
+}
+
+.ui-block-handle__grip {
+  display: inline-flex;
+  cursor: grab;
+}
+
+.ui-block-handle__grip .ui-glyph {
+  width: 14px;
+  height: 14px;
+}
+
+.ui-block-handle__menu.ui-icon-button {
+  width: 18px;
+  min-width: 18px;
+  padding: 0;
+}
