@@ -7,7 +7,7 @@ import {
   Select as AriaSelect,
   SelectValueContext,
   useSlottedContext,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import { Glyph } from '../../core/provider.js';
 import type { FieldControlProps, FieldState } from '../field/field.js';

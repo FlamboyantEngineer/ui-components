@@ -1,4 +1,4 @@
-import { useLocale } from 'react-aria-components';
+import { useLocale } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';

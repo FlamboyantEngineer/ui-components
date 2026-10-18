@@ -1,5 +1,5 @@
 import type { ReactNode, Ref } from 'react';
-import { Group, type GroupProps } from 'react-aria-components';
+import { Group, type GroupProps } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Orientation } from '../../core/props.js';
 

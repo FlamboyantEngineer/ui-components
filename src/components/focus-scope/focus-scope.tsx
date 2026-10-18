@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, type ReactNode, type RefObject } from 'reac
 import {
   FocusScope as AriaFocusScope,
   type FocusScopeProps as AriaFocusScopeProps,
-} from 'react-aria/FocusScope';
+} from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps } from '../../core/props.js';
 import { resolveFocusTarget, useFocusReturn, type FocusTarget } from '../../utils/focus-target.js';
@@ -73,5 +73,5 @@ export function FocusScope({
   );
 }
 
-export { useFocusManager } from 'react-aria/FocusScope';
-export type { FocusManager, FocusManagerOptions } from 'react-aria/FocusScope';
+export { useFocusManager } from '../../primitives/index.js';
+export type { FocusManager, FocusManagerOptions } from '../../primitives/index.js';

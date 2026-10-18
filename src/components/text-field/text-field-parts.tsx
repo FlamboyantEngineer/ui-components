@@ -1,5 +1,5 @@
 import { useCallback, useLayoutEffect, useRef, type ReactNode, type RefObject } from 'react';
-import { Group, TextArea, type TextAreaProps } from 'react-aria-components';
+import { Group, TextArea, type TextAreaProps } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { clamp } from '../../utils/clamp.js';

@@ -1,5 +1,5 @@
 import type { MouseEvent, ReactNode, Ref } from 'react';
-import { Button as AriaButton } from 'react-aria-components';
+import { Button as AriaButton } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps, Tone } from '../../core/props.js';
 import { UiLink } from '../../core/provider.js';

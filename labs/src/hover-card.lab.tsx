@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-aria-components';
+import { Link } from '../../src/primitives/index.js';
 import { Button } from '../../src/components/button/button.js';
 import {
   HoverCard,

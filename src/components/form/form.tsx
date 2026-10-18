@@ -7,7 +7,7 @@ import {
   type FormEvent,
   type ReactNode,
 } from 'react';
-import { Form as AriaForm, type FormProps as AriaFormProps } from 'react-aria-components';
+import { Form as AriaForm, type FormProps as AriaFormProps } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import {

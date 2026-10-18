@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import type { Key } from 'react-aria-components';
+import type { Key } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Tab, TabList, TabPanel, Tabs } from '../tabs/tabs.js';
 import { Tree } from '../tree/tree.js';

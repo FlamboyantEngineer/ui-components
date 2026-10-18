@@ -1,5 +1,5 @@
 import { useId, useRef, useState, type DragEvent, type ReactNode } from 'react';
-import { FileTrigger, useLocale, type FileTriggerProps, type Key } from 'react-aria-components';
+import { FileTrigger, useLocale, type FileTriggerProps, type Key } from '../../primitives/index.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';

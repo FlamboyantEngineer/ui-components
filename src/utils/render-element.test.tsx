@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createRef } from 'react';
-import { Button } from 'react-aria-components';
+import { Button } from '../primitives/index.js';
 import { describe, expect, it, vi } from 'vitest';
 import type { DataAttributes } from '../core/hooks.js';
 import { mergeProps } from './merge-props.js';

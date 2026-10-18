@@ -1,5 +1,5 @@
 import { useId, useMemo, type ReactNode, type RefCallback } from 'react';
-import { Breadcrumb as AriaBreadcrumb, type Key } from 'react-aria-components';
+import { Breadcrumb as AriaBreadcrumb, type Key } from '../../primitives/index.js';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { useOverflowItems } from '../../utils/use-overflow-items.js';

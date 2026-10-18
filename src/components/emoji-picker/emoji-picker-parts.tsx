@@ -4,7 +4,7 @@ import {
   Input,
   SearchField,
   type KeyboardEvent as AriaKeyboardEvent,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';

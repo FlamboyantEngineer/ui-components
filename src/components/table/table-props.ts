@@ -1,4 +1,4 @@
-import type { TableProps as AriaTableProps } from 'react-aria-components';
+import type { TableProps as AriaTableProps } from '../../primitives/index.js';
 import type { TableRow } from './table-rows.js';
 import type { TableGridOptions } from './use-table-grid.js';
 

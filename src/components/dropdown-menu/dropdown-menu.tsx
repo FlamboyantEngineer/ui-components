@@ -1,5 +1,5 @@
 import { useContext, type ReactNode } from 'react';
-import { OverlayTriggerStateContext, type Placement } from 'react-aria-components';
+import { OverlayTriggerStateContext, type Placement } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import { createHooks, mergeClassNames, splitDataAttributes } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';

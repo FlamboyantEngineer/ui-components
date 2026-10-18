@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react';
-import type { Key } from 'react-aria-components';
+import type { Key } from '../../primitives/index.js';
 import { usePersistentState, type PersistCodec } from '../../core/provider.js';
 import type { TreeItemData, TreeProps } from './tree.js';
 

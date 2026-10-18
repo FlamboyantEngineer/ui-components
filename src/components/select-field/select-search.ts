@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAsyncList } from 'react-aria-components';
+import { useAsyncList } from '../../primitives/index.js';
 import { mergeSelectOptions, type SelectFieldOption } from './select-options.js';
 
 /** One page of a search's results; a `cursor` means another page follows. */

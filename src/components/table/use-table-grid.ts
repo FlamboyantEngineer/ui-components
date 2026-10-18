@@ -1,5 +1,5 @@
 import { useMemo, type ReactNode } from 'react';
-import type { Key } from 'react-aria-components';
+import type { Key } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import { mergeProps } from '../../utils/merge-props.js';
 import type { TableProps } from './table.js';

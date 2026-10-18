@@ -16,7 +16,7 @@ import {
   type Key,
   type TabListProps as AriaTabListProps,
   type TabListState,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import type { BaseProps, NativeProps, Orientation } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { mergeProps, mergeRefs } from '../../utils/merge-props.js';

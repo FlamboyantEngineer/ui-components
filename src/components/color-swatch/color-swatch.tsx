@@ -2,7 +2,7 @@ import {
   ColorSwatch as AriaColorSwatch,
   type Color,
   type ColorSwatchProps as AriaColorSwatchProps,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Size } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';

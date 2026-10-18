@@ -3,7 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
-import { UNSTABLE_ToastRegion as AriaToastRegion } from 'react-aria-components';
+import { UNSTABLE_ToastRegion as AriaToastRegion } from '../../primitives/index.js';
 import { Toast, ToastList, ToastRegion, createToastQueue } from './toast.js';
 
 const tones = ['info', 'success', 'warning', 'danger'] as const;

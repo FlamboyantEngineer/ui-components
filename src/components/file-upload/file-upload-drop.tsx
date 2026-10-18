@@ -12,7 +12,7 @@ import {
   isFileDropItem,
   type DirectoryDropItem,
   type DropItem,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { Icon } from '../icon/icon.js';

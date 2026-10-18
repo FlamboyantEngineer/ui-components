@@ -14,7 +14,7 @@ import {
   TooltipContext,
   TooltipTriggerStateContext,
   type TooltipTriggerState,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps } from '../../core/props.js';

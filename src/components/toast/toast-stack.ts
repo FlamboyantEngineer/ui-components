@@ -12,7 +12,7 @@ import {
   type PointerEvent,
   type RefObject,
 } from 'react';
-import { UNSTABLE_ToastStateContext as ToastStateContext } from 'react-aria-components';
+import { UNSTABLE_ToastStateContext as ToastStateContext } from '../../primitives/index.js';
 import { useElementSize } from '../../utils/use-element-size.js';
 import type { ToastSwipeDirection } from './use-toast-swipe.js';
 

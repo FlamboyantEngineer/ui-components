@@ -6,7 +6,7 @@ import {
   OverlayTriggerStateContext,
   type ModalOverlayProps,
   type Placement,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import { createHooks, dataAttributes, type HookProps } from '../../core/hooks.js';
 import { useEnterExit } from '../../utils/use-enter-exit.js';

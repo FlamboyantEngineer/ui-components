@@ -1,5 +1,5 @@
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { OverlayTriggerStateContext } from 'react-aria-components';
+import { OverlayTriggerStateContext } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import { runPendingAction } from '../action-button/action-button.js';
 import type { ModalAction } from './modal.js';

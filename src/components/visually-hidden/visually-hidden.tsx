@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import {
   VisuallyHidden as AriaVisuallyHidden,
+  useFocusWithin,
   type VisuallyHiddenProps as AriaVisuallyHiddenProps,
-} from 'react-aria-components';
-import { useFocusWithin } from 'react-aria/useFocusWithin';
+} from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { mergeProps } from '../../utils/merge-props.js';

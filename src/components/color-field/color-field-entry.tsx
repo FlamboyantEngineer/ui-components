@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button as AriaButton, Input, TextField, type Color } from 'react-aria-components';
+import { Button as AriaButton, Input, TextField, type Color } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import { ColorSwatch } from '../color-swatch/color-swatch.js';
 import { toAriaControlProps, type FieldControlProps, type FieldState } from '../field/field.js';

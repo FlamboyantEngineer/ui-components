@@ -6,7 +6,7 @@ import {
   type KeyboardEvent,
   type RefObject,
 } from 'react';
-import { useLocale } from 'react-aria-components';
+import { useLocale } from '../../primitives/index.js';
 import { isMoveChord } from '../../utils/use-reorder-drag-and-drop.js';
 import { stepColumnMove, type TableColumnMove } from './table-columns.js';
 import type { TableColumn } from './table-rows.js';

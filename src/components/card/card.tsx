@@ -1,5 +1,5 @@
 import { useId, useState, type ReactNode } from 'react';
-import { DEFAULT_SLOT, HeadingContext, Provider } from 'react-aria-components';
+import { DEFAULT_SLOT, HeadingContext, Provider } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps } from '../../core/props.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';

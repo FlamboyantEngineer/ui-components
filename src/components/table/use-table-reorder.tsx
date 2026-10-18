@@ -11,7 +11,7 @@ import {
   type DragAndDropHooks,
   type DropTarget,
   type Key,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import {
   isMoveChord,
   useReorderDragAndDrop,

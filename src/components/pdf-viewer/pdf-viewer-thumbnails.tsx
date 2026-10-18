@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ListBox, ListBoxItem, type Selection } from 'react-aria-components';
+import { ListBox, ListBoxItem, type Selection } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import { useElementSize } from '../../utils/use-element-size.js';
 import { useInView } from '../../utils/use-in-view.js';

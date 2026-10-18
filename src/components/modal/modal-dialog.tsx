@@ -7,7 +7,7 @@ import {
   type KeyboardEvent,
   type RefObject,
 } from 'react';
-import { Dialog, OverlayTriggerStateContext } from 'react-aria-components';
+import { Dialog, OverlayTriggerStateContext } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import type { ModalProps } from './modal.js';

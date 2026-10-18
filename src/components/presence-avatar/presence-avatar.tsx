@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Button as AriaButton, Focusable, type PressEvent } from 'react-aria-components';
+import { Button as AriaButton, Focusable, type PressEvent } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Size } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';

@@ -15,7 +15,7 @@ import {
   type TabPanelProps as AriaTabPanelProps,
   type TabProps as AriaTabProps,
   type TabsProps as AriaTabsProps,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, NativeProps, Size } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';

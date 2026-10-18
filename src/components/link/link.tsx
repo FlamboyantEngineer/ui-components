@@ -3,7 +3,7 @@ import {
   Link as AriaLink,
   composeRenderProps,
   type LinkProps as AriaLinkProps,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { Glyph, UiLink, useUiStrings } from '../../core/provider.js';

@@ -6,7 +6,7 @@ import {
   type InputHTMLAttributes,
   type KeyboardEvent,
 } from 'react';
-import { Group, Input, useLocale } from 'react-aria-components';
+import { Group, Input, useLocale } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { clamp } from '../../utils/clamp.js';

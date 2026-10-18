@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { I18nProvider, Input } from 'react-aria-components';
+import { I18nProvider, Input } from '../../src/primitives/index.js';
 import {
   FourSidePropertyStrip,
   type BoxSide,

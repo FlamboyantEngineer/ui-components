@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import type { Key } from 'react-aria-components';
+import type { Key } from '../../src/primitives/index.js';
 import { Button } from '../../src/components/button/button.js';
 import {
   CommandPalette,

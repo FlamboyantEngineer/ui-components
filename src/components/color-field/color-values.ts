@@ -1,7 +1,12 @@
 // A colour field's value model: the stored text, the formats it is written and edited in, and the
 // channels each format's inputs edit.
 
-import { parseColor, type Color, type ColorChannel, type ColorSpace } from 'react-aria-components';
+import {
+  parseColor,
+  type Color,
+  type ColorChannel,
+  type ColorSpace,
+} from '../../primitives/index.js';
 
 /** How a colour is written and edited: hex, RGB, HSL or HSB, each with or without alpha. */
 export type ColorFieldFormat = 'hex' | 'hexa' | 'rgb' | 'rgba' | 'hsl' | 'hsla' | 'hsb' | 'hsba';

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { VisuallyHidden } from 'react-aria-components';
+import { VisuallyHidden } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps, Size, Tone } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';

@@ -6,7 +6,7 @@ import {
   useDragAndDrop,
   Virtualizer,
   type Selection,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { ListView, ListViewItem, ListViewSection } from './list-view.js';

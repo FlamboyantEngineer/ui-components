@@ -7,7 +7,7 @@ import {
   useFilter,
   type ComboBoxProps as AriaComboBoxProps,
   type ListBoxLoadMoreItemProps,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Size } from '../../core/props.js';
 import { ComboboxField } from './combobox-field.js';

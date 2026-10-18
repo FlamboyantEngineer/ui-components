@@ -9,7 +9,7 @@ import {
   type QueuedToast,
   type ToastRegionProps as AriaToastRegionProps,
   type ToastState,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { createHooks, measuredProperty, pickDataAttributes } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';

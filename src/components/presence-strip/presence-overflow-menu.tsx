@@ -1,4 +1,4 @@
-import { Button as AriaButton } from 'react-aria-components';
+import { Button as AriaButton } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { KeyedValue } from '../../utils/stable-keys.js';

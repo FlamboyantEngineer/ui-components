@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { DialogProps, ModalOverlayProps, Placement } from 'react-aria-components';
+import type { DialogProps, ModalOverlayProps, Placement } from '../../primitives/index.js';
 import { createHooks, splitDataAttributes } from '../../core/hooks.js';
 import type { BaseProps, Size, Tone } from '../../core/props.js';
 import type { ButtonProps, ButtonVariant } from '../button/button.js';

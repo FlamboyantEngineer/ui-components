@@ -2,7 +2,7 @@ import { createElement, useId, type JSX, type ReactNode } from 'react';
 import {
   Separator as AriaSeparator,
   type SeparatorProps as AriaSeparatorProps,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Orientation } from '../../core/props.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';

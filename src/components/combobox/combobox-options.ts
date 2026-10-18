@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { Key } from 'react-aria-components';
+import type { Key } from '../../primitives/index.js';
 import type { IconSource } from '../icon/icon.js';
 
 /** One suggestion. */

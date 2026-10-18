@@ -1,5 +1,5 @@
 import type { KeyboardEvent, ReactNode, RefObject } from 'react';
-import { Input, Label, NumberField } from 'react-aria-components';
+import { Input, Label, NumberField } from '../../primitives/index.js';
 import type { GlyphName } from '../../core/glyphs.js';
 import { useUiStrings } from '../../core/provider.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';

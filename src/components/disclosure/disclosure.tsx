@@ -1,11 +1,11 @@
 import { useMemo, type ReactNode, type Ref } from 'react';
-import { FocusScope } from 'react-aria';
 import {
+  FocusScope,
   Disclosure as AriaDisclosure,
   DisclosureGroup as AriaDisclosureGroup,
   type DisclosureGroupProps as AriaDisclosureGroupProps,
   type DisclosureProps as AriaDisclosureProps,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import type { BaseProps } from '../../core/props.js';
 import { useHeadingLevel, type HeadingLevel } from '../section-header/section-header.js';
 import {

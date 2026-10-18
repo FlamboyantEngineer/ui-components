@@ -8,7 +8,7 @@ import {
   type TreeItemContentRenderProps,
   type TreeItemRenderProps,
   type TreeLoadMoreItemRenderProps,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { measuredProperty } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { EmptyState } from '../empty-state/empty-state.js';

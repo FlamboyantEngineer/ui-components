@@ -1,5 +1,5 @@
 import { Fragment, type ReactNode } from 'react';
-import { Keyboard, VisuallyHidden } from 'react-aria-components';
+import { Keyboard, VisuallyHidden } from '../../primitives/index.js';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';

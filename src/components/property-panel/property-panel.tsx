@@ -1,5 +1,5 @@
 import { useId, useMemo, type ReactNode } from 'react';
-import { DisclosureGroup, type DisclosureGroupProps } from 'react-aria-components';
+import { DisclosureGroup, type DisclosureGroupProps } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps } from '../../core/props.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';

@@ -1,4 +1,4 @@
-import type { Key } from 'react-aria-components';
+import type { Key } from '../../primitives/index.js';
 import type { TableRow } from './table-rows.js';
 
 /** A row with the child rows the table presents under it, keyed by the row's id. */

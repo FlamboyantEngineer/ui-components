@@ -1,5 +1,5 @@
 import { useId, type KeyboardEvent, type ReactNode, type Ref } from 'react';
-import { GridList, GridListItem, type Key } from 'react-aria-components';
+import { GridList, GridListItem, type Key } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import {

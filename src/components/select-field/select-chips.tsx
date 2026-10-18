@@ -1,4 +1,4 @@
-import { Tag, TagGroup, TagList, type Key } from 'react-aria-components';
+import { Tag, TagGroup, TagList, type Key } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { FieldPreviousValue } from '../field/field.js';

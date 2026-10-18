@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseDate } from '@internationalized/date';
+import { parseDate } from '../../primitives/index.js';
 import {
   describeRelativeDate,
   describeRelativeRange,

@@ -1,5 +1,5 @@
 import { useId, useState, type ReactNode } from 'react';
-import { Input, type Key } from 'react-aria-components';
+import { Input, type Key } from '../../src/primitives/index.js';
 import { Button } from '../../src/components/button/button.js';
 import { Field, useFieldState } from '../../src/components/field/field.js';
 import { IconButton } from '../../src/components/icon-button/icon-button.js';

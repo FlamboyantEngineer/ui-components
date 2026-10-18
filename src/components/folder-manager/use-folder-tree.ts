@@ -1,5 +1,5 @@
 import { useEffect, useState, type RefObject } from 'react';
-import type { Key } from 'react-aria-components';
+import type { Key } from '../../primitives/index.js';
 import {
   collectBranchKeys,
   findFolderNode,

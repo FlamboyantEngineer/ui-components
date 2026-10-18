@@ -4,7 +4,7 @@ import {
   ColorPicker,
   DialogTrigger,
   type Color,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import { useUiStrings } from '../../core/provider.js';
 import { ColorSwatch } from '../color-swatch/color-swatch.js';

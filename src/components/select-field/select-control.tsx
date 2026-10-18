@@ -1,5 +1,5 @@
 import { useCallback, useRef, type CSSProperties } from 'react';
-import { Select as AriaSelect } from 'react-aria-components';
+import { Select as AriaSelect } from '../../primitives/index.js';
 import { createHooks, measuredProperty } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';

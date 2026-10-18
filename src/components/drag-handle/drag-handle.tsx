@@ -1,5 +1,8 @@
 import type { PointerEvent } from 'react';
-import { Button as AriaButton, type ButtonProps as AriaButtonProps } from 'react-aria-components';
+import {
+  Button as AriaButton,
+  type ButtonProps as AriaButtonProps,
+} from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { Icon } from '../icon/icon.js';

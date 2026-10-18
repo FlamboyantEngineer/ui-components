@@ -13,7 +13,7 @@ import {
   type DragAndDropOptions,
   type DropTarget,
   type Key,
-} from 'react-aria-components';
+} from '../primitives/index.js';
 
 /** A dragged item: its data by media type. */
 export type ReorderDragItem = Record<string, string>;

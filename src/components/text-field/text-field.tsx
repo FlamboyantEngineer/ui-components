@@ -3,7 +3,7 @@ import {
   Input,
   TextField as AriaTextField,
   type TextFieldProps as AriaTextFieldProps,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import {
   Field,

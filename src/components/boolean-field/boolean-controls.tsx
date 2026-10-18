@@ -1,5 +1,5 @@
 import { useId, useRef, type CSSProperties } from 'react';
-import { Switch, ToggleButton, type Key } from 'react-aria-components';
+import { Switch, ToggleButton, type Key } from '../../primitives/index.js';
 import { createHooks, measuredProperty } from '../../core/hooks.js';
 import { useWidestTextWidth } from '../../utils/use-widest-text-width.js';
 import { Checkbox, cycleCheckState } from '../checkbox/checkbox.js';

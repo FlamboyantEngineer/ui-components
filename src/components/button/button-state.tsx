@@ -4,7 +4,7 @@ import type {
   ButtonRenderProps,
   LinkProps as AriaLinkProps,
   PressEvent,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { NativeProps } from '../../core/props.js';
 import { UiLink } from '../../core/provider.js';

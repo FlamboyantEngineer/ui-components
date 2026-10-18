@@ -3,7 +3,7 @@ import {
   CheckboxGroup as AriaCheckboxGroup,
   CheckboxGroupStateContext,
   type CheckboxGroupProps as AriaCheckboxGroupProps,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import { Checkbox } from '../checkbox/checkbox.js';
 import {

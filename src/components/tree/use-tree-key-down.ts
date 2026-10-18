@@ -1,5 +1,5 @@
 import { useCallback, useRef, type KeyboardEvent } from 'react';
-import { useLocale } from 'react-aria-components';
+import { useLocale } from '../../primitives/index.js';
 import type { TreeMoveDirection } from '../../utils/tree-reorder.js';
 import { isMoveChord } from '../../utils/use-reorder-drag-and-drop.js';
 import type { TreeItemData, TreeProps } from './tree.js';

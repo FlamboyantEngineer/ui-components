@@ -1,5 +1,5 @@
 import { useContext, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
-import { Input, TableStateContext } from 'react-aria-components';
+import { Input, TableStateContext } from '../../primitives/index.js';
 import { getColumnText } from './table-column.js';
 import { tableHooks as hooks } from './table-hooks.js';
 import {

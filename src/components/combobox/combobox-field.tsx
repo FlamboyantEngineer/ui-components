@@ -1,5 +1,10 @@
 import { useContext, useLayoutEffect, useRef, type ChangeEvent, type RefObject } from 'react';
-import { Button as AriaButton, ComboBoxStateContext, Group, Input } from 'react-aria-components';
+import {
+  Button as AriaButton,
+  ComboBoxStateContext,
+  Group,
+  Input,
+} from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { IconButton } from '../icon-button/icon-button.js';

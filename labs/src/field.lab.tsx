@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import { Input, type Key } from 'react-aria-components';
+import { Input, type Key } from '../../src/primitives/index.js';
 import { Badge } from '../../src/components/badge/badge.js';
 import { Button } from '../../src/components/button/button.js';
 import {

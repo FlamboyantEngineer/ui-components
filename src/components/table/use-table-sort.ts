@@ -1,5 +1,5 @@
 import { useMemo, useRef, type KeyboardEvent, type PointerEvent } from 'react';
-import type { SortDescriptor } from 'react-aria-components';
+import type { SortDescriptor } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import { nextSortDescriptor, nextSortDescriptors, toSortDescriptors } from './table-sort.js';
 

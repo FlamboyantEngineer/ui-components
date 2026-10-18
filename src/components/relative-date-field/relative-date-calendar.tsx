@@ -1,6 +1,11 @@
-import { parseDate, type CalendarDate } from '@internationalized/date';
+import {
+  parseDate,
+  Calendar,
+  RangeCalendar,
+  SelectStateContext,
+  type CalendarDate,
+} from '../../primitives/index.js';
 import { useContext, useMemo } from 'react';
-import { Calendar, RangeCalendar, SelectStateContext } from 'react-aria-components';
 import { createHooks } from '../../core/hooks.js';
 import { CalendarBody } from '../date-time-field/date-time-field.js';
 import {

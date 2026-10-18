@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import type { Key } from 'react-aria-components';
+import type { Key } from '../../src/primitives/index.js';
 import type { FieldLabelLayout, FieldMenuEntry } from '../../src/components/field/field.js';
 import {
   SelectField,

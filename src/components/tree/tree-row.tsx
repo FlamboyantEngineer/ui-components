@@ -1,7 +1,7 @@
 // The anatomy of one tree row, inside React Aria's row content.
 
 import type { ReactNode } from 'react';
-import { Button as AriaButton, type Key } from 'react-aria-components';
+import { Button as AriaButton, type Key } from '../../primitives/index.js';
 import type { GlyphName } from '../../core/glyphs.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';

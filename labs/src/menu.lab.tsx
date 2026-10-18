@@ -1,5 +1,5 @@
 import { useState, type CSSProperties, type ReactNode } from 'react';
-import { ListLayout, Virtualizer, type Key, type Selection } from 'react-aria-components';
+import { ListLayout, Virtualizer, type Key, type Selection } from '../../src/primitives/index.js';
 import { Button } from '../../src/components/button/button.js';
 import { IconButton } from '../../src/components/icon-button/icon-button.js';
 import {

@@ -1,5 +1,5 @@
 import type { RefObject } from 'react';
-import { Button, Input, SearchField, type Selection } from 'react-aria-components';
+import { Button, Input, SearchField, type Selection } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';

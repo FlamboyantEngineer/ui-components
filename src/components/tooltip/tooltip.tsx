@@ -5,7 +5,7 @@ import {
   TooltipTrigger,
   type Placement,
   type TooltipTriggerComponentProps,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { createHooks, splitDataAttributes } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 

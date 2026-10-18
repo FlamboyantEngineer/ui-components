@@ -6,7 +6,7 @@ import {
   Text,
   type RadioFieldProps as AriaRadioFieldProps,
   type RadioGroupProps as AriaRadioGroupProps,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Size } from '../../core/props.js';
 import type { SlotRef } from '../../utils/slot-registry.js';

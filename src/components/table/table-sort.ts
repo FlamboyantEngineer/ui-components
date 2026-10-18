@@ -1,4 +1,4 @@
-import type { Key, SortDescriptor, SortDirection } from 'react-aria-components';
+import type { Key, SortDescriptor, SortDirection } from '../../primitives/index.js';
 import {
   compareCellValues,
   getCellValue,

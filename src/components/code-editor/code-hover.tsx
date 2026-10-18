@@ -7,7 +7,7 @@ import {
   type ReactNode,
   type RefObject,
 } from 'react';
-import { Popover } from 'react-aria-components';
+import { Popover } from '../../primitives/index.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { useLayerZIndex } from '../portal/portal.js';
 import { findOffsetAt, measureRange } from './code-geometry.js';

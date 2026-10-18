@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import type { Key } from 'react-aria-components';
+import type { Key } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import { findFolderPath, type FolderItem } from './folder-model.js';
 

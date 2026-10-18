@@ -1,10 +1,10 @@
 import { useContext, useId, useLayoutEffect, useRef, type ReactNode } from 'react';
-import { useInteractOutside } from 'react-aria';
 import {
+  useInteractOutside,
   Button as AriaButton,
   RootMenuTriggerStateContext,
   useLocale,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps, Orientation } from '../../core/props.js';
 import { mergeProps } from '../../utils/merge-props.js';

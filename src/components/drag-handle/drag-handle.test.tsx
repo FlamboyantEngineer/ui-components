@@ -1,6 +1,6 @@
 import { createEvent, fireEvent, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { GridList, GridListItem, useDragAndDrop } from 'react-aria-components';
+import { GridList, GridListItem, useDragAndDrop } from '../../primitives/index.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { armHandleDrag, DragHandle, keepHandleCellDraggable } from './drag-handle.js';

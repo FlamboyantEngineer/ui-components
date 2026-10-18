@@ -12,7 +12,7 @@ import {
   useSlottedContext,
   Virtualizer,
   type AutocompleteProps,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { useLayerZIndex } from '../portal/portal.js';

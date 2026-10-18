@@ -5,7 +5,7 @@ import {
   NumberField as AriaNumberField,
   useLocale,
   type NumberFieldProps as AriaNumberFieldProps,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import {

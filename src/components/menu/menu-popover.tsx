@@ -4,7 +4,7 @@ import {
   PopoverContext,
   useSlottedContext,
   type PopoverProps as AriaPopoverProps,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useLayerZIndex, type PortalProps } from '../portal/portal.js';

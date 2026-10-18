@@ -5,7 +5,7 @@ import {
   TooltipTrigger,
   type Key,
   type ToolbarProps as AriaToolbarProps,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { createHooks, pickDataAttributes } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';

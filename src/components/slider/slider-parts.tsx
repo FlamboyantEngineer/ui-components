@@ -1,13 +1,13 @@
 import { useRef, type ReactNode } from 'react';
-import { useObjectRef } from 'react-aria';
 import {
+  useObjectRef,
   Slider as AriaSlider,
   SliderFill,
   SliderOutput,
   SliderThumb,
   SliderTrack,
   type SliderProps as AriaSliderProps,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { Size } from '../../core/props.js';
 import { clamp } from '../../utils/clamp.js';

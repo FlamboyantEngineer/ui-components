@@ -12,7 +12,7 @@ import {
   type KeyboardEvent,
   type RefObject,
 } from 'react';
-import type { RootMenuTriggerStateContext } from 'react-aria-components';
+import type { RootMenuTriggerStateContext } from '../../primitives/index.js';
 import type { Orientation } from '../../core/props.js';
 import type { MenuSize } from '../menu/menu.js';
 import { resolveMenubarKey, type MenubarKeyAction, type MenubarKeyPlace } from './menubar-keys.js';

@@ -14,7 +14,7 @@ import {
   type GridListItemProps as AriaGridListItemProps,
   type GridListProps as AriaGridListProps,
   type GridListSectionProps as AriaGridListSectionProps,
-} from 'react-aria-components';
+} from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
