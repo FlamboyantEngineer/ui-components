@@ -941,6 +941,27 @@ describe('Modal', () => {
       expect(onPress).toHaveBeenCalledTimes(2);
     });
 
+    it('UIC-MODAL-6.2 hands the keys the dialog does not handle to onKeyDown', async () => {
+      const onPress = vi.fn();
+      const onKeyDown = vi.fn();
+      render(
+        <Modal
+          title="Name"
+          isOpen
+          primaryAction={{ label: 'Create', onPress }}
+          onKeyDown={onKeyDown}
+        >
+          <input aria-label="Name" />
+        </Modal>,
+      );
+      await userEvent.keyboard('{ArrowRight}');
+      expect(onKeyDown).toHaveBeenCalledWith(expect.objectContaining({ key: 'ArrowRight' }));
+      onKeyDown.mockClear();
+      await userEvent.keyboard('{Control>}{Enter}{/Control}');
+      expect(onPress).toHaveBeenCalledTimes(1);
+      expect(onKeyDown.mock.calls.map(([event]) => event.key)).not.toContain('Enter');
+    });
+
     it('UIC-MODAL-6.1 leaves the shortcut to multiline editors and custom action bars', async () => {
       const onPress = vi.fn();
       const { rerender } = render(

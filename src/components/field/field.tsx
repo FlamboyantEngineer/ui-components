@@ -91,7 +91,7 @@ export function Field<T>({
   const getRoot = useCallback(() => slots.read('root'), [slots]);
   const onKeyDown = useFieldUndo(getRoot, state);
   const focus = useFieldFocus({ touch: state.touch, getRoot, isDirty: state.isDirty });
-  useFieldFormBinding(state as FieldState<unknown>, slots);
+  useFieldFormBinding(state as FieldState<unknown>, slots, label);
   const menuModel = useFieldMenu(state, label, { menu, onMenuAction });
   const hasLabel = labelLayout !== 'control-only';
   const control = toFieldControlProps(state, ids, {

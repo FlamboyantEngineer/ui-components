@@ -46,6 +46,13 @@ Verification: `src/components/form/form.test.tsx`, `e2e/form.spec.ts`
 Implementation: `src/components/form/form.tsx`
 Verification: `src/components/form/form.test.tsx`
 
+### UIC-FORM-1.7 - Problems of the fields
+
+`Form` shall keep the issues each field inside it shows (its label and its issues, errors first, as its validation mode lets it show them, UIC-FIELD-3.7) in document order, updated whenever a field's shown issues or label change and when a field mounts or unmounts, so a [Problem List](PROBLEM-LIST.md) inside the form lists them and moves focus to a field's control. Each field gives the form its label and shown issues with its registration (`getLabel`, `getIssues`) and reports their changes through the scope's `onIssuesChange`.
+
+Implementation: `src/components/form/form.tsx`, `src/components/form/form-problems.ts`, `src/components/field/field-form.ts`, `src/components/field/field-scope.ts`
+Verification: `src/components/form/form-problems.test.tsx`, `src/components/problem-list/problem-list.test.tsx`
+
 ## Hooks
 
 | Hook      | Kind | Values | Description           |

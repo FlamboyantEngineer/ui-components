@@ -117,6 +117,7 @@ export function ModalDialog({
   id,
   'aria-label': ariaLabel,
   'aria-describedby': ariaDescribedby,
+  onKeyDown: onCallerKeyDown,
   ...footer
 }: ModalDialogProps) {
   const descriptionId = useId();
@@ -134,6 +135,7 @@ export function ModalDialog({
       return;
     }
     handlePrimaryShortcut(event, { actionState, hasCustomActions: footer.actions !== undefined });
+    if (!event.defaultPrevented) onCallerKeyDown?.(event);
   };
   return (
     <Dialog

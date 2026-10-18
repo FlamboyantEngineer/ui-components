@@ -157,6 +157,16 @@ describe('FileUpload', () => {
     expect(screen.getByRole('button', { name: 'Browse' })).toBeDisabled();
     await user.click(screen.getByRole('button', { name: 'Browse' }));
     expect(onSelect).not.toHaveBeenCalled();
+    rerender(
+      <FileUpload
+        label="Attach"
+        isDisabled
+        files={items}
+        onRemove={() => {}}
+        onSelect={onSelect}
+      />,
+    );
+    expect(screen.getByRole('button', { name: 'Remove Report.pdf' })).toBeDisabled();
     expectHooksMatchSpec(container, 'FILE-UPLOAD');
   });
 

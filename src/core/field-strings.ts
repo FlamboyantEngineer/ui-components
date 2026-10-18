@@ -16,6 +16,16 @@ export interface FieldStrings {
   rejectedFileReason: (name: string, reason: string) => string;
   /** States how many files an upload holds at most. */
   fileCountLimit: (count: number) => string;
+  /** The command of a file field that takes one file. */
+  addFile: string;
+  /** The command of a file field that takes several files. */
+  addFiles: string;
+  /** The default title of a problem list. */
+  problems: string;
+  /** Counts a problem list's problems by severity. */
+  problemCount: (errors: number, warnings: number) => string;
+  /** Names a problem's severity, read before its message. */
+  problemSeverity: (severity: 'error' | 'warning') => string;
   /** A field menu action that puts the field's default value back. */
   setDefault: string;
   /** The message of a required field left empty. */
@@ -131,6 +141,17 @@ export const fieldStrings: FieldStrings = {
     count === 1 ? '1 file is over the file limit.' : `${count} files are over the file limit.`,
   rejectedFileReason: (name, reason) => `${name}: ${reason}`,
   fileCountLimit: (count) => (count === 1 ? 'One file' : `Up to ${count} files`),
+  addFile: 'Add a file',
+  addFiles: 'Add files',
+  problems: 'Problems',
+  problemCount: (errors, warnings) =>
+    [
+      errors > 0 && (errors === 1 ? '1 error' : `${errors} errors`),
+      warnings > 0 && (warnings === 1 ? '1 warning' : `${warnings} warnings`),
+    ]
+      .filter(Boolean)
+      .join(', ') || 'No problems',
+  problemSeverity: (severity) => (severity === 'error' ? 'Error' : 'Warning'),
   setDefault: 'Set to default',
   valueRequired: 'A value is required.',
   validating: 'Validating',

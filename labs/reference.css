@@ -52,6 +52,7 @@
 @import url('reference/expand-toggle.css');
 @import url('reference/facet-list.css');
 @import url('reference/field.css');
+@import url('reference/file-field.css');
 @import url('reference/file-upload.css');
 @import url('reference/filter-bar.css');
 @import url('reference/find-bar.css');
@@ -74,6 +75,7 @@
 @import url('reference/load-more.css');
 @import url('reference/loading-overlay.css');
 @import url('reference/markdown.css');
+@import url('reference/media-viewer.css');
 @import url('reference/menu.css');
 @import url('reference/menubar.css');
 @import url('reference/message-composer.css');
@@ -94,6 +96,7 @@
 @import url('reference/portal.css');
 @import url('reference/presence-avatar.css');
 @import url('reference/presence-strip.css');
+@import url('reference/problem-list.css');
 @import url('reference/progress-bar.css');
 @import url('reference/property-filter.css');
 @import url('reference/property-panel.css');

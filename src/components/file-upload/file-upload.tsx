@@ -1,10 +1,20 @@
-import { useId, useRef, useState, type DragEvent, type ReactNode } from 'react';
+import {
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  type DragEvent,
+  type ReactNode,
+  type Ref,
+  type RefObject,
+} from 'react';
 import { FileTrigger, useLocale } from '../../primitives/index.js';
+import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps, Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { formatBytes } from '../../utils/format-bytes.js';
-import { Button } from '../button/button.js';
+import { mergeRefs } from '../../utils/merge-props.js';
 import { InlineError } from '../inline-error/inline-error.js';
 import { formatMetaLine } from '../meta-line/meta-line.js';
 import {
@@ -14,7 +24,12 @@ import {
   type FileRejection,
   type FileRules,
 } from './file-rules.js';
-import { DropZoneCommand, readDraggedItems, type CommandProps } from './file-upload-drop.js';
+import {
+  ButtonCommand,
+  DropZoneCommand,
+  readDraggedItems,
+  type CommandProps,
+} from './file-upload-drop.js';
 import {
   FileUploadFiles,
   fileUploadHooks as hooks,
@@ -25,7 +40,11 @@ import { useFileForm } from './file-upload-form.js';
 /** `button` is one command among others; `dropzone` is a drop target that also offers Browse. */
 export type FileUploadVariant = 'button' | 'dropzone';
 
-export interface FileUploadProps extends BaseProps, FileRules {
+export interface FileUploadProps
+  extends
+    BaseProps,
+    FileRules,
+    Pick<AriaLabellingProps, 'aria-label' | 'aria-labelledby' | 'aria-describedby'> {
   /** The command's text: the button label, or the drop zone's title. */
   label: string;
   /** Takes several files at once from the chooser and a drop. */
@@ -53,6 +72,14 @@ export interface FileUploadProps extends BaseProps, FileRules {
   isInvalid?: boolean | undefined;
   /** Why the upload is invalid, shown while `isInvalid`. */
   errorMessage?: ReactNode;
+  /** Lists the files without the command and remove buttons, keeping their previews and actions. */
+  isReadOnly?: boolean | undefined;
+  /** The button that opens the chooser (the drop zone's Browse button), for an owner that focuses it. */
+  commandRef?: Ref<HTMLButtonElement> | undefined;
+  /** Trailing actions of a listed file, such as open or download links. */
+  renderFileActions?: ((file: FileUploadItem) => ReactNode) | undefined;
+  /** Replaces the thumbnail of a listed file, such as with an audio or video player; nothing keeps it. */
+  renderFilePreview?: ((file: FileUploadItem) => ReactNode) | undefined;
 }
 
 function defaultDescription(rules: FileRules, strings: UiStrings, locale: string): string {
@@ -107,58 +134,36 @@ function useFileIntake(props: FileUploadProps, held: number) {
   };
 }
 
-function ButtonCommand({
-  label,
-  hint,
-  describedBy,
-  isDisabled,
-  withChooser,
-  commandRef,
-}: CommandProps) {
-  return (
-    <>
-      {withChooser(
-        <Button
-          ref={commandRef}
-          startIcon="upload"
-          isDisabled={isDisabled}
-          aria-describedby={describedBy}
-        >
-          {label}
-        </Button>,
-      )}
-      {hint}
-    </>
-  );
-}
-
 /**
- * Chooses files or folders from the system file chooser or by drag and drop, checks them against
- * the accepted types, the size and count limits and the caller's own check, and hands the accepted
- * ones to `onSelect`. Refusals are reported below the command and to `onReject`; a drag says
- * whether it would be accepted. Listed files show image thumbnails and the upload progress and
- * errors the host reports, and can take part in a form under `name`.
+ * The command's props: its label and naming, its description (by default the accepted types and
+ * limits) and error, the chooser and the intake, and its button ref, shared with the owner's.
  */
-export function FileUpload(props: FileUploadProps) {
-  const { label, description, variant = 'button', files = [], className, id } = props;
-  const { allowsMultiple, acceptDirectory = false, isDisabled = false } = props;
+function useFileCommand(
+  props: FileUploadProps,
+  intake: ReturnType<typeof useFileIntake>,
+  form: { error: boolean; errorId: string; commandRef: RefObject<HTMLButtonElement | null> },
+): CommandProps {
+  const { label, description, allowsMultiple, acceptDirectory = false } = props;
   const strings = useUiStrings();
   const { locale } = useLocale();
   const hintId = useId();
-  const commandRef = useRef<HTMLButtonElement>(null);
-  const intake = useFileIntake(props, files.length);
-  const form = useFileForm({ ...props, files, commandRef });
+  const ownerRef = props.commandRef;
+  const { commandRef } = form;
+  const mergedRef = useMemo(() => mergeRefs(commandRef, ownerRef), [commandRef, ownerRef]);
   const hint = description ?? defaultDescription(props, strings, locale);
-  const command: CommandProps = {
+  return {
     label,
+    naming: { 'aria-label': props['aria-label'], 'aria-labelledby': props['aria-labelledby'] },
     hint: hint ? (
       <span {...hooks.slot('description')} id={hintId}>
         {hint}
       </span>
     ) : null,
     describedBy:
-      [hint && hintId, form.error && form.errorId].filter(Boolean).join(' ') || undefined,
-    isDisabled,
+      [hint && hintId, form.error && form.errorId, props['aria-describedby']]
+        .filter(Boolean)
+        .join(' ') || undefined,
+    isDisabled: props.isDisabled ?? false,
     withChooser: (button) => (
       <FileTrigger
         acceptedFileTypes={props.acceptedFileTypes}
@@ -172,29 +177,57 @@ export function FileUpload(props: FileUploadProps) {
     receive: intake.receive,
     isDragAcceptable: intake.isDragAcceptable,
     acceptDirectory,
-    commandRef,
+    commandRef: mergedRef,
   };
+}
+
+/**
+ * Chooses files or folders from the system file chooser or by drag and drop, checks them against
+ * the accepted types, the size and count limits and the caller's own check, and hands the accepted
+ * ones to `onSelect`. Refusals are reported below the command and to `onReject`; a drag says
+ * whether it would be accepted. Listed files show image thumbnails or type glyphs, the upload
+ * progress and errors the host reports and the owner's actions, and can take part in a form under
+ * `name`.
+ */
+export function FileUpload(props: FileUploadProps) {
+  const { variant = 'button', files = [], className, id, isReadOnly } = props;
+  const strings = useUiStrings();
+  const { locale } = useLocale();
+  const commandRef = useRef<HTMLButtonElement>(null);
+  const intake = useFileIntake(props, files.length);
+  const form = useFileForm({ ...props, files, commandRef });
+  const command = useFileCommand(props, intake, { ...form, commandRef });
   const data = {
     variant,
-    disabled: isDisabled,
+    disabled: props.isDisabled,
+    readonly: isReadOnly,
     required: props.isRequired,
     invalid: form.isInvalid,
   };
+  const Command = variant === 'button' ? ButtonCommand : DropZoneCommand;
   return (
     <div
       {...hooks.root({ className, props, data })}
       id={id}
       onDragEnterCapture={intake.onDragEnter}
     >
-      {variant === 'button' ? <ButtonCommand {...command} /> : <DropZoneCommand {...command} />}
+      {isReadOnly ? null : <Command {...command} />}
       {form.message}
-      {intake.rejections.length > 0 ? (
+      {intake.rejections.length > 0 && !isReadOnly ? (
         <InlineError className={hooks.slotClass('rejections')}>
           {rejectionMessage(intake.rejections, strings)}
         </InlineError>
       ) : null}
       {files.length > 0 ? (
-        <FileUploadFiles label={label} files={files} locale={locale} onRemove={props.onRemove} />
+        <FileUploadFiles
+          label={props.label}
+          files={files}
+          locale={locale}
+          onRemove={isReadOnly ? undefined : props.onRemove}
+          isDisabled={props.isDisabled ?? false}
+          renderFileActions={props.renderFileActions}
+          renderFilePreview={props.renderFilePreview}
+        />
       ) : null}
       {form.input}
     </div>
@@ -203,4 +236,4 @@ export function FileUpload(props: FileUploadProps) {
 
 export type { FileRejection, FileRejectionReason, FileValidator } from './file-rules.js';
 
-export type { FileUploadItem } from './file-upload-files.js';
+export type { FileUploadChange, FileUploadItem } from './file-upload-files.js';

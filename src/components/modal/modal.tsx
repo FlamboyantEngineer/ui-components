@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { DialogTrigger } from '../../primitives/index.js';
-import type { OpenStateProps, OverlayDismissProps } from '../../core/events.js';
+import type { KeyboardEventProps, OpenStateProps, OverlayDismissProps } from '../../core/events.js';
 import { createHooks, splitDataAttributes } from '../../core/hooks.js';
 import type { BaseProps, Placement, Size, Tone } from '../../core/props.js';
 import type { ButtonProps, ButtonVariant } from '../button/button.js';
@@ -66,7 +66,8 @@ export interface ModalTriggerProps extends OpenStateProps {
 /** `alertdialog` marks a decision that interrupts the reader. */
 export type ModalRole = 'dialog' | 'alertdialog';
 
-export interface ModalProps extends OpenStateProps, OverlayDismissProps, BaseProps {
+export interface ModalProps
+  extends OpenStateProps, OverlayDismissProps, Pick<KeyboardEventProps, 'onKeyDown'>, BaseProps {
   /** Defaults to `dialog`. */
   role?: ModalRole | undefined;
   /** Names the dialog instead of its title. */

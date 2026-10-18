@@ -41,6 +41,10 @@ const sampleArguments: Partial<Record<keyof UiStrings, readonly unknown[]>> = {
   removeFilter: ['Status is Open'],
   filterOperator: ['any-of'],
   filterRange: ['2', '5'],
+  downloadFile: ['Report.pdf'],
+  mediaStage: ['Harbour.jpg'],
+  problemCount: [2, 1],
+  problemSeverity: ['warning'],
 };
 
 const stringNames = Object.keys(defaultStrings) as Array<keyof UiStrings>;
