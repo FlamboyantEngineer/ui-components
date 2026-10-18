@@ -1,0 +1,97 @@
+/* Radio Group: radios stacked in the field's control slot, each a 16 pixel ring before its label. */
+
+.ui-radio-group__box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 2px 0;
+}
+
+.ui-radio-group__box[data-orientation='horizontal'] {
+  flex-direction: row;
+  flex-wrap: wrap;
+  column-gap: 16px;
+}
+
+.ui-radio-group[data-dirty] .ui-radio-group__box {
+  padding-inline-start: 6px;
+  border-inline-start: 3px solid var(--ref-info);
+}
+
+.ui-radio {
+  --ref-radio-size: 16px;
+  font-size: 13px;
+}
+
+.ui-radio-group[data-size='sm'] .ui-radio {
+  --ref-radio-size: 14px;
+  font-size: 12px;
+}
+
+.ui-radio-group[data-size='lg'] .ui-radio {
+  --ref-radio-size: 20px;
+  font-size: 15px;
+}
+
+.ui-radio__button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 24px;
+  cursor: pointer;
+}
+
+.ui-radio__indicator {
+  flex: none;
+  box-sizing: border-box;
+  width: var(--ref-radio-size);
+  height: var(--ref-radio-size);
+  border: 1px solid var(--ref-border-strong);
+  border-radius: 50%;
+  background: var(--ref-canvas);
+  transition: border-width 0.1s;
+}
+
+.ui-radio__button[data-selected] .ui-radio__indicator {
+  border: calc(var(--ref-radio-size) * 0.3) solid var(--ref-accent);
+  background: var(--ref-accent-text);
+}
+
+.ui-radio__button[data-hovered]:not([data-selected]) .ui-radio__indicator {
+  border-color: var(--ref-accent-ink);
+}
+
+.ui-radio__button[data-focus-visible] .ui-radio__indicator {
+  outline: 2px solid var(--ref-focus);
+  outline-offset: 2px;
+}
+
+.ui-radio__button[data-invalid]:not([data-selected]) .ui-radio__indicator {
+  border-color: var(--ref-danger);
+}
+
+.ui-radio__button[data-readonly] {
+  cursor: default;
+}
+
+.ui-radio__button[data-readonly]:not([data-selected]) .ui-radio__indicator {
+  border-style: dashed;
+}
+
+/* A disabled radio dims its button only; its description, which may say why, stays readable. */
+.ui-radio__button[data-disabled] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.ui-radio__label {
+  color: var(--ref-text);
+}
+
+.ui-radio__description {
+  display: block;
+  margin-inline-start: calc(var(--ref-radio-size) + 6px);
+  color: var(--ref-muted);
+  font-size: 12px;
+}
