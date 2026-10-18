@@ -14,26 +14,36 @@ const focusRetryFrames = 60;
  */
 export function useFocusRequest(): (target: FocusRequestTarget) => void {
   const request = useRef<FocusRequestTarget | null>(null);
-  const frame = useRef(0);
+  const cancel = useRef(() => {});
   useLayoutEffect(() => {
     const target = request.current;
     if (!target) return;
     request.current = null;
+    cancel.current();
+    let frame = 0;
     let attempts = 0;
+    // The reader acting again (opening the next menu, typing elsewhere) ends the request, so a
+    // pending retry never takes focus back from where the reader moved it.
+    const stop = () => {
+      cancelAnimationFrame(frame);
+      document.removeEventListener('pointerdown', stop, true);
+      document.removeEventListener('keydown', stop, true);
+    };
+    cancel.current = stop;
+    document.addEventListener('pointerdown', stop, true);
+    document.addEventListener('keydown', stop, true);
     const attempt = () => {
       const element = target();
       if (element && document.activeElement !== element) element.focus();
       attempts += 1;
       // A collection may redraw its rows once more after the render: check again on the next frame.
       const isHeld = document.activeElement === element && attempts > 1;
-      if (element && !isHeld && attempts < focusRetryFrames) {
-        frame.current = requestAnimationFrame(attempt);
-      }
+      if (element && !isHeld && attempts < focusRetryFrames) frame = requestAnimationFrame(attempt);
+      else stop();
     };
-    cancelAnimationFrame(frame.current);
     attempt();
   });
-  useEffect(() => () => cancelAnimationFrame(frame.current), []);
+  useEffect(() => () => cancel.current(), []);
   return (target) => {
     request.current = target;
   };
