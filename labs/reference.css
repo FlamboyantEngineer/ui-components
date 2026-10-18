@@ -29,6 +29,8 @@
 @import url('reference/color-swatch.css');
 @import url('reference/combobox.css');
 @import url('reference/command-palette.css');
+@import url('reference/comment-composer.css');
+@import url('reference/comment-thread.css');
 @import url('reference/confirm-dialog.css');
 @import url('reference/copy-button.css');
 @import url('reference/date-time-field.css');
@@ -85,6 +87,7 @@
 @import url('reference/prose-table.css');
 @import url('reference/provider.css');
 @import url('reference/radio-group.css');
+@import url('reference/reaction-bar.css');
 @import url('reference/record-chip.css');
 @import url('reference/record-label.css');
 @import url('reference/relative-date-field.css');
