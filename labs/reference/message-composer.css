@@ -1,0 +1,74 @@
+/* Message Composer */
+
+.ui-message-composer {
+  display: grid;
+  gap: 4px;
+  box-sizing: border-box;
+  padding: 6px;
+  border: 1px solid var(--ref-border-strong);
+  border-radius: var(--ref-radius);
+  background: var(--ref-surface);
+  color: var(--ref-text);
+  font: 14px/1.4 var(--ref-font);
+}
+
+.ui-message-composer:focus-within {
+  outline: 2px solid var(--ref-focus);
+  outline-offset: -1px;
+}
+
+.ui-message-composer[data-disabled] {
+  border-color: var(--ref-border);
+  background: var(--ref-canvas);
+}
+
+.ui-message-composer[data-disabled] .ui-message-composer__input {
+  color: var(--ref-muted);
+}
+
+.ui-message-composer__attachments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.ui-message-composer__input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 0;
+  margin: 0;
+  padding: 4px 6px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  line-height: 20px;
+  resize: none;
+  outline: none;
+}
+
+.ui-message-composer__input::placeholder {
+  color: var(--ref-muted);
+}
+
+.ui-message-composer__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.ui-message-composer__toolbar {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 4px;
+}
+
+.ui-message-composer__action {
+  flex: none;
+}
+
+.ui-message-composer__completions {
+  min-width: min(var(--trigger-width), 360px);
+}

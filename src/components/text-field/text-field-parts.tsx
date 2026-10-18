@@ -1,17 +1,15 @@
 import {
   useCallback,
-  useLayoutEffect,
   useRef,
   type CompositionEvent,
   type KeyboardEvent,
   type ReactNode,
-  type RefObject,
 } from 'react';
-import { Group, TextArea } from '../../primitives/index.js';
+import { Group, Input, TextArea } from '../../primitives/index.js';
 import { createHooks, type HookProps } from '../../core/hooks.js';
+import type { CompletionInputAttributes } from '../completion-list/completion-list.js';
 import { useUiStrings } from '../../core/provider.js';
-import { clamp } from '../../utils/clamp.js';
-import { useElementSize } from '../../utils/use-element-size.js';
+import { useAutoGrow, type AutoGrowOptions } from '../../utils/use-auto-grow.js';
 import { IconButton } from '../icon-button/icon-button.js';
 
 export const textFieldHooks = createHooks('text-field', [
@@ -22,6 +20,7 @@ export const textFieldHooks = createHooks('text-field', [
   'end',
   'reveal',
   'count',
+  'completions',
 ]);
 
 const hooks = textFieldHooks;
@@ -43,21 +42,18 @@ export interface TextFieldFrameProps {
   children: ReactNode;
 }
 
-export interface AutoGrowOptions {
-  minRows: number | undefined;
-  maxRows: number | undefined;
-  value: string;
-}
-
-/** The input's own props: its hooks, the hint and the field's edit handlers. */
-export type TextFieldInputProps = HookProps & {
-  placeholder: string | undefined;
-  onFocus: () => void;
-  onBlur: () => void;
-  onKeyDown: (event: KeyboardEvent<HTMLElement>) => void;
-  onCompositionStart: () => void;
-  onCompositionEnd: (event: CompositionEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-};
+/** The input's own props: its hooks, the hint, the field's edit handlers and its completion list's attributes. */
+export type TextFieldInputProps = HookProps &
+  Partial<CompletionInputAttributes> & {
+    placeholder: string | undefined;
+    onFocus: () => void;
+    onBlur: () => void;
+    onKeyDown: (event: KeyboardEvent<HTMLElement>) => void;
+    onCompositionStart: () => void;
+    onCompositionEnd: (event: CompositionEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+    onClick?: (() => void) | undefined;
+    onKeyUp?: ((event: KeyboardEvent<HTMLElement>) => void) | undefined;
+  };
 
 export interface TextFieldAreaProps extends TextFieldInputProps, AutoGrowOptions {
   /** Publishes the text area to the field. */
@@ -127,42 +123,6 @@ export function withCharacterCount(
   );
 }
 
-function toPixels(value: string): number {
-  return Number.parseFloat(value) || 0;
-}
-
-/** Sets the text area's height to its text's, between the given rows, in its own line height. */
-function fitRows(area: HTMLTextAreaElement, minRows: number, maxRows: number) {
-  const style = area.ownerDocument.defaultView?.getComputedStyle(area);
-  if (!style) return;
-  const lineHeight = toPixels(style.lineHeight) || toPixels(style.fontSize) * 1.2 || 16;
-  const padding = toPixels(style.paddingTop) + toPixels(style.paddingBottom);
-  const border = toPixels(style.borderTopWidth) + toPixels(style.borderBottomWidth);
-  const frame = style.boxSizing === 'border-box' ? padding + border : 0;
-  area.style.height = '0px';
-  const content = clamp(area.scrollHeight - padding, minRows * lineHeight, maxRows * lineHeight);
-  area.style.height = `${content + frame}px`;
-}
-
-/** Whether a text area grows with its text: when either row limit is set. */
-export function isAutoGrowing({ minRows, maxRows }: Pick<AutoGrowOptions, 'minRows' | 'maxRows'>) {
-  return minRows !== undefined || maxRows !== undefined;
-}
-
-/**
- * Grows a text area with its text between `minRows` and `maxRows` (one row and no limit by default),
- * when either is set. Past `maxRows` the text area scrolls. A new width (a stylesheet or font that
- * loads late, a resized container) wraps the text anew, so it measures again.
- */
-function useAutoGrow(area: RefObject<HTMLTextAreaElement | null>, options: AutoGrowOptions) {
-  const { minRows, maxRows, value } = options;
-  const isEnabled = isAutoGrowing(options);
-  const width = useElementSize(area, { enabled: isEnabled })?.width;
-  useLayoutEffect(() => {
-    if (isEnabled && area.current) fitRows(area.current, minRows ?? 1, maxRows ?? Infinity);
-  }, [area, isEnabled, minRows, maxRows, value, width]);
-}
-
 /** The text area, at least `minRows` tall, growing with its text when a row limit is set. */
 export function TextFieldArea({
   controlRef,
@@ -181,4 +141,19 @@ export function TextFieldArea({
   );
   useAutoGrow(area, { minRows, maxRows, value });
   return <TextArea {...rest} ref={ref} rows={minRows} />;
+}
+
+export interface TextFieldControlProps extends Omit<AutoGrowOptions, 'value'> {
+  input: TextFieldInputProps;
+  multiline: boolean;
+  /** The text the control shows. */
+  value: string;
+  /** Publishes the input or text area to the field. */
+  controlRef: (node: HTMLElement | null) => void;
+}
+
+/** The text area of a multiline field, else the input. */
+export function TextFieldControl({ input, multiline, controlRef, ...grow }: TextFieldControlProps) {
+  if (multiline) return <TextFieldArea {...input} {...grow} controlRef={controlRef} />;
+  return <Input {...input} ref={controlRef} />;
 }

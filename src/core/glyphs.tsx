@@ -47,9 +47,11 @@ import {
   MagnifyingGlassIcon,
   MinusIcon,
   PencilSquareIcon,
+  PaperAirplaneIcon,
   PlusIcon,
   QuestionMarkCircleIcon,
   SignalSlashIcon,
+  StopIcon,
   TrashIcon,
   UsersIcon,
   ViewColumnsIcon,
@@ -137,6 +139,8 @@ export const defaultGlyphs = {
   clock: ClockIcon,
   envelope: EnvelopeIcon,
   'envelope-open': EnvelopeOpenIcon,
+  send: PaperAirplaneIcon,
+  stop: StopIcon,
 } satisfies Record<string, GlyphComponent>;
 
 export const glyphNames = Object.keys(defaultGlyphs) as GlyphName[];

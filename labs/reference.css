@@ -24,6 +24,7 @@
 @import url('reference/button-group.css');
 @import url('reference/card.css');
 @import url('reference/change-list.css');
+@import url('reference/chat-transcript.css');
 @import url('reference/checkbox.css');
 @import url('reference/checkbox-group.css');
 @import url('reference/circular-progress.css');
@@ -34,6 +35,7 @@
 @import url('reference/command-palette.css');
 @import url('reference/comment-composer.css');
 @import url('reference/comment-thread.css');
+@import url('reference/completion-list.css');
 @import url('reference/confirm-dialog.css');
 @import url('reference/copy-button.css');
 @import url('reference/date-time-field.css');
@@ -71,6 +73,7 @@
 @import url('reference/markdown.css');
 @import url('reference/menu.css');
 @import url('reference/menubar.css');
+@import url('reference/message-composer.css');
 @import url('reference/meta-line.css');
 @import url('reference/meter.css');
 @import url('reference/modal.css');

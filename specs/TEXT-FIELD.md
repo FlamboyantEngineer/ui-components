@@ -82,7 +82,7 @@ Verification: `src/components/text-field/text-field.test.tsx`, `e2e/text-field.s
 
 A multiline field with `minRows` or `maxRows` shall publish `data-autosize` on its root and set its text area's height (a measured size) to its text's, between `minRows` (one by default) and `maxRows` (no limit by default) rows of its line height, as the text changes; past `maxRows` the text area scrolls. `minRows` is also the text area's `rows`. Without either the text area keeps the stylesheet's height.
 
-Implementation: `src/components/text-field/text-field.tsx`, `src/components/text-field/text-field-parts.tsx`, `labs/reference/text-field.css`
+Implementation: `src/components/text-field/text-field.tsx`, `src/components/text-field/text-field-parts.tsx`, `src/utils/use-auto-grow.ts`, `labs/reference/text-field.css`
 Verification: `src/components/text-field/text-field.test.tsx`, `e2e/text-field.spec.ts`
 
 ### UIC-TEXT-FIELD-3.4 - Character count
@@ -108,26 +108,50 @@ While the control does not have focus, `displayValue` shall be the text it shows
 Implementation: `src/components/text-field/text-field.tsx`, `src/components/text-field/use-text-field-input.ts`
 Verification: `src/components/text-field/use-input-transform.test.tsx`, `e2e/text-field.spec.ts`
 
+## UIC-TEXT-FIELD-5 - Completions
+
+### UIC-TEXT-FIELD-5.1 - Completion list
+
+With `completions`, a vocabulary or a source ([UIC-COMPLETION-LIST-2.2](COMPLETION-LIST.md#uic-completion-list-22---lookups)), the control shall keep its text box role and focus while a [Completion List](COMPLETION-LIST.md) (also `ui-text-field__completions`) opens in a non-modal popover under the text field element (`ui-text-field__box`), not at the caret, as typing, moving the caret or Ctrl+Space finds completions for the text before the caret. The control autocompletes from the list and names its active option (UIC-COMPLETION-LIST-2.4). A read-only or disabled field offers none, and losing focus closes the list.
+
+Implementation: `src/components/text-field/text-field.tsx`, `src/components/text-field/use-text-field-input.ts`, `src/components/completion-list/text-completions.ts`
+Verification: `src/components/text-field/use-text-field-input.test.tsx`, `e2e/text-field.spec.ts`
+
+### UIC-TEXT-FIELD-5.2 - Choosing and inserting
+
+While the list is open, its keys (UIC-COMPLETION-LIST-2.3) shall come before the field's: Enter inserts the active completion without committing, Escape closes the list without reverting, and the caller's `onKeyDown` does not receive them. Inserting replaces the text the completion completes with its `insertText` or label through the field's value, as an edit (so `transformInput` and undo apply where the browser edits natively), and puts the caret after it. A trigger source from `createTriggerCompletions` gives `@` mentions and `#` references.
+
+Implementation: `src/components/text-field/use-text-field-input.ts`, `src/components/completion-list/text-completions.ts`
+Verification: `src/components/text-field/use-text-field-input.test.tsx`, `e2e/text-field.spec.ts`
+
+### UIC-TEXT-FIELD-5.3 - Drawn completions
+
+`renderCompletion(completion, { isActive })` shall draw each option's content instead of its label and description, such as a person's avatar and name.
+
+Implementation: `src/components/text-field/text-field.tsx`
+Verification: `src/components/text-field/use-text-field-input.test.tsx`, `e2e/text-field.spec.ts`
+
 ## Hooks
 
-| Hook                    | Kind  | Values | Description                                                           |
-| ----------------------- | ----- | ------ | --------------------------------------------------------------------- |
-| `ui-text-field`         | root  |        | The field's root (also `ui-field`).                                   |
-| `ui-text-field__box`    | slot  |        | The React Aria text field element around the control.                 |
-| `ui-text-field__group`  | slot  |        | The frame around adornments, the input and reveal.                    |
-| `ui-text-field__start`  | slot  |        | The start adornment.                                                  |
-| `ui-text-field__input`  | slot  |        | The `<input>` or `<textarea>`.                                        |
-| `ui-text-field__end`    | slot  |        | The end adornment.                                                    |
-| `ui-text-field__reveal` | slot  |        | The reveal button (also `ui-icon-button`).                            |
-| `ui-text-field__count`  | slot  |        | The character count, inside the field's description.                  |
-| `data-multiline`        | state | `true` | On the root: the field edits several lines.                           |
-| `data-autosize`         | state | `true` | On the root: the text area grows with its text.                       |
-| `data-display-value`    | state | `true` | On the root: the control shows the display value, not the value.      |
-| `data-invalid`          | state | `true` | On the box, the group and the control: invalid (React Aria).          |
-| `data-required`         | state | `true` | On the box: a value is required (React Aria).                         |
-| `data-readonly`         | state | `true` | On the box: read-only (React Aria).                                   |
-| `data-disabled`         | state | `true` | On the box, the group and the control: disabled (React Aria).         |
-| `data-hovered`          | state | `true` | On the group and the control: under the pointer (React Aria).         |
-| `data-focus-within`     | state | `true` | On the group: focus is inside it (React Aria).                        |
-| `data-focused`          | state | `true` | On the control: focused (React Aria).                                 |
-| `data-focus-visible`    | state | `true` | On the group and the control: focused from the keyboard (React Aria). |
+| Hook                         | Kind  | Values | Description                                                           |
+| ---------------------------- | ----- | ------ | --------------------------------------------------------------------- |
+| `ui-text-field`              | root  |        | The field's root (also `ui-field`).                                   |
+| `ui-text-field__box`         | slot  |        | The React Aria text field element around the control.                 |
+| `ui-text-field__group`       | slot  |        | The frame around adornments, the input and reveal.                    |
+| `ui-text-field__start`       | slot  |        | The start adornment.                                                  |
+| `ui-text-field__input`       | slot  |        | The `<input>` or `<textarea>`.                                        |
+| `ui-text-field__end`         | slot  |        | The end adornment.                                                    |
+| `ui-text-field__reveal`      | slot  |        | The reveal button (also `ui-icon-button`).                            |
+| `ui-text-field__count`       | slot  |        | The character count, inside the field's description.                  |
+| `ui-text-field__completions` | slot  |        | The completion list's popover (also `ui-completion-list`).            |
+| `data-multiline`             | state | `true` | On the root: the field edits several lines.                           |
+| `data-autosize`              | state | `true` | On the root: the text area grows with its text.                       |
+| `data-display-value`         | state | `true` | On the root: the control shows the display value, not the value.      |
+| `data-invalid`               | state | `true` | On the box, the group and the control: invalid (React Aria).          |
+| `data-required`              | state | `true` | On the box: a value is required (React Aria).                         |
+| `data-readonly`              | state | `true` | On the box: read-only (React Aria).                                   |
+| `data-disabled`              | state | `true` | On the box, the group and the control: disabled (React Aria).         |
+| `data-hovered`               | state | `true` | On the group and the control: under the pointer (React Aria).         |
+| `data-focus-within`          | state | `true` | On the group: focus is inside it (React Aria).                        |
+| `data-focused`               | state | `true` | On the control: focused (React Aria).                                 |
+| `data-focus-visible`         | state | `true` | On the group and the control: focused from the keyboard (React Aria). |

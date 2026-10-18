@@ -4,12 +4,8 @@ import { useCodeHover, type CodeHoverModel, type MarkedDiagnostic } from './code
 import type { CodeDiagnostic, CodeToken, CodeTokenizer } from './code-layers.js';
 import { findDiagnosticRange, matchBracket, type BracketMatch } from './code-ranges.js';
 import { splitSegments, type CodeDecorations, type CodeSegment } from './code-segments.js';
-import type { CodeCompletion } from './completion-match.js';
-import {
-  useCodeCompletion,
-  type CodeCompletionModel,
-  type CodeCompletionSource,
-} from './use-code-completion.js';
+import type { Completions, CompletionsModel } from '../completion-list/completion-list.js';
+import { useCodeCompletion } from './use-code-completion.js';
 import { useCodeEdits } from './use-code-edits.js';
 import { useCodeKeys } from './use-code-keys.js';
 import { useCodeSearch, type CodeSearchModel } from './use-code-search.js';
@@ -26,7 +22,7 @@ export interface CodeEditorOptions {
   onChange: ((value: string) => void) | undefined;
   tokenize: CodeTokenizer | undefined;
   diagnostics: readonly CodeDiagnostic[];
-  completions: readonly CodeCompletion[] | CodeCompletionSource | undefined;
+  completions: Completions | undefined;
   renderHover: ((offset: number) => ReactNode) | undefined;
   /** Defaults to 2. */
   indent: number | undefined;
@@ -40,7 +36,7 @@ export interface CodeEditorOptions {
 export interface CodeEditorModel {
   layers: CodeLayers;
   segments: Array<CodeSegment | null>;
-  completion: CodeCompletionModel;
+  completion: CompletionsModel;
   search: CodeSearchModel;
   hover: CodeHoverModel;
   snippet: CodeSnippetSession;
@@ -69,7 +65,7 @@ function toDecorations({
   marked: readonly MarkedDiagnostic[];
   search: CodeSearchModel;
   bracket: BracketMatch | null;
-  completion: CodeCompletionModel;
+  completion: CompletionsModel;
 }): CodeDecorations {
   const brackets = bracket ? [bracket.at, bracket.partner] : [];
   return {
@@ -182,7 +178,6 @@ export function useCodeEditor(options: CodeEditorOptions): CodeEditorModel {
     autoCloseBrackets: Boolean(options.autoCloseBrackets),
     isLocked,
     onFind: options.allowsSearch ? search.open : undefined,
-    onComplete: () => completion.track('explicit'),
     onProblem: goToProblem,
   });
   return {

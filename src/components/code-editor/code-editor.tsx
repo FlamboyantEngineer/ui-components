@@ -11,8 +11,12 @@ import { VisuallyHidden } from '../../primitives/index.js';
 import { splitDataAttributes } from '../../core/hooks.js';
 import type { BaseProps, Size } from '../../core/props.js';
 import { useElementSize } from '../../utils/use-element-size.js';
+import {
+  ControlCompletionList,
+  type Completion,
+  type CompletionSource,
+} from '../completion-list/completion-list.js';
 import { CodeArea, type CodeTextAreaProps } from './code-area.js';
-import { CodeCompletionList } from './code-completion.js';
 import { CodeHoverTooltip } from './code-hover.js';
 import {
   CodeDiagnostics,
@@ -24,8 +28,6 @@ import {
 } from './code-layers.js';
 import { CodeSearchPanel } from './code-search.js';
 import { toTextLines } from './code-ranges.js';
-import type { CodeCompletion } from './completion-match.js';
-import type { CodeCompletionSource } from './use-code-completion.js';
 import { alignLayers, useCodeEditor, type CodeEditorModel } from './use-code-editor.js';
 
 export type CodeEditorSize = Extract<Size, 'sm' | 'md' | 'lg'>;
@@ -44,7 +46,7 @@ export interface CodeEditorProps extends BaseProps, CodeTextAreaProps {
   /** Lists the diagnostics below the source. Defaults to `true`; marks and tips stay without it. */
   listDiagnostics?: boolean | undefined;
   /** A vocabulary for the word before the caret, or a source that completes the place at the caret. */
-  completions?: readonly CodeCompletion[] | CodeCompletionSource | undefined;
+  completions?: readonly Completion[] | CompletionSource | undefined;
   /** Information for the hover tip at a source offset, shown with the problems marked there. */
   renderHover?: ((offset: number) => ReactNode) | undefined;
   /** Starting height. Defaults to `md`. */
@@ -148,11 +150,11 @@ function CodeEditorOverlays(props: {
         />
       ) : null}
       {listId ? (
-        <CodeCompletionList
+        <ControlCompletionList
           model={model.completion}
-          id={listId}
-          inputRef={model.layers.input}
-          caretRef={props.caretRef}
+          listId={listId}
+          anchorRef={props.caretRef}
+          className={hooks.slotClass('popover')}
         />
       ) : null}
       <CodeHoverTooltip model={model.hover} inputRef={model.layers.input} />
@@ -245,14 +247,5 @@ export function CodeEditor({
     </div>
   );
 }
-
-export type { CodeCompletion } from './completion-match.js';
-
-export type {
-  CodeCompletionAnswer,
-  CodeCompletionContext,
-  CodeCompletionResult,
-  CodeCompletionSource,
-} from './use-code-completion.js';
 
 export type { CodeDiagnostic, CodeToken, CodeTokenizer } from './code-layers.js';

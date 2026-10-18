@@ -2,14 +2,16 @@ import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import {
   CodeEditor,
-  type CodeCompletion,
-  type CodeCompletionSource,
   type CodeDiagnostic,
   type CodeEditorProps,
   type CodeEditorSize,
   type CodeEditorWrap,
   type CodeToken,
 } from '../../src/components/code-editor/code-editor.js';
+import type {
+  Completion,
+  CompletionSource,
+} from '../../src/components/completion-list/completion-list.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const keywords = new Set(['let', 'if', 'else', 'return', 'pick', 'and', 'or', 'not']);
@@ -47,7 +49,7 @@ const sample = [
   'else return pick(fruit.ripe and not fruit.bruised, "pears", "plums from the orchard by the river")',
 ].join('\n');
 
-const vocabulary: CodeCompletion[] = [
+const vocabulary: Completion[] = [
   { label: 'fruit.count', description: 'How many fruit are in the basket' },
   { label: 'fruit.ripe', description: 'Whether the fruit is ripe' },
   { label: 'fruit.bruised', description: 'Whether any fruit is bruised' },
@@ -55,7 +57,7 @@ const vocabulary: CodeCompletion[] = [
   { label: 'market.city', description: 'Where the market is held' },
 ];
 
-const fruitFields: CodeCompletion[] = [
+const fruitFields: Completion[] = [
   {
     label: 'count',
     kind: 'property',
@@ -72,7 +74,7 @@ const fruitFields: CodeCompletion[] = [
   { label: 'weigh', kind: 'function', description: 'weigh(unit)', insertText: 'weigh(${unit})' },
 ];
 
-const statements: CodeCompletion[] = [
+const statements: Completion[] = [
   {
     label: 'if',
     kind: 'snippet',
@@ -91,7 +93,7 @@ const statements: CodeCompletion[] = [
 ];
 
 /** Fields after `fruit.`, statements elsewhere: the source reads the text before the caret. */
-const completeSample: CodeCompletionSource = ({ value, caret, query, isExplicit }) => {
+const completeSample: CompletionSource = ({ value, caret, query, isExplicit }) => {
   const field = /fruit\.(\w*)$/.exec(value.slice(0, caret));
   if (field) return { from: caret - (field[1]?.length ?? 0), options: fruitFields };
   return (query || isExplicit) && !query.includes('.') ? statements : [];

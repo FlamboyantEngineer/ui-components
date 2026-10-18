@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { CodeCompletionResult } from '../code-editor/code-editor.js';
+import type { CompletionResult } from '../completion-list/completion-list.js';
 import { createJsonCompletion, describeJsonAt } from './json-complete.js';
 import type { JsonSchema } from './json-schema.js';
 
@@ -23,7 +23,7 @@ const complete = createJsonCompletion(recipe);
 function answer(source: string, isExplicit = false) {
   const caret = source.indexOf('|');
   const value = source.replace('|', '');
-  return complete({ value, caret, query: '', isExplicit }) as CodeCompletionResult | [];
+  return complete({ value, caret, query: '', isExplicit }) as CompletionResult | [];
 }
 
 function labels(source: string, isExplicit = false) {

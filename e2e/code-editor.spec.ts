@@ -240,7 +240,7 @@ test.describe('Code Editor lab', () => {
     const list = page.getByRole('listbox', { name: 'Suggestions' });
     await expect(list.getByRole('option')).toHaveCount(4);
     await expect(list.getByRole('option').first()).toHaveAttribute('data-kind', 'property');
-    const documentation = page.locator('.ui-code-editor__completion-documentation');
+    const documentation = page.locator('.ui-completion-list__documentation');
     await expect(documentation).toHaveText(/How many fruit are in the basket/);
     await expect(list.getByRole('option').first()).toHaveAccessibleDescription(/How many fruit/);
     await page.keyboard.type('we');
