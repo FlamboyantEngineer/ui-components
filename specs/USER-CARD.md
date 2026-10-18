@@ -41,9 +41,9 @@ Verification: `src/components/user-card/user-card.test.tsx`, `e2e/user-card.spec
 
 ### UIC-USER-CARD-1.7 - Loading
 
-While `isLoading`, the card shall publish `data-loading`, set `aria-busy="true"` and draw a decorative `ui-user-card__skeleton` slot, hidden from assistive technology, in place of its status row, details and actions, so a card opened before its profile has loaded keeps its size. The identity row stays. Without it neither attribute renders.
+While `isLoading`, the card shall publish `data-loading`, set `aria-busy="true"` and draw a decorative `ui-user-card__skeleton` slot, hidden from assistive technology, in place of its status row, details and actions, so a card opened before its profile has loaded keeps its size. The slot is a [Skeleton](SKELETON.md) block, so it also carries `ui-skeleton` and its attributes and a host draws it like its other placeholders. The identity row stays. Without it neither attribute renders.
 
-Implementation: `src/components/user-card/user-card.tsx`, `labs/reference/user-card.css`
+Implementation: `src/components/user-card/user-card.tsx`, `src/components/skeleton/skeleton.tsx`, `labs/reference/user-card.css`
 Verification: `src/components/user-card/user-card.test.tsx`, `e2e/user-card.spec.ts`
 
 ### UIC-USER-CARD-1.6 - Hooks and caller attributes
@@ -97,7 +97,7 @@ Verification: `src/components/user-card/user-card.test.tsx`, `e2e/user-card.spec
 | `ui-user-card__action`       | slot      |                                   | One action (also `ui-button`).                                 |
 | `ui-user-card__trigger`      | slot      |                                   | The trigger button around the caller's content.                |
 | `ui-user-card__popover`      | slot      |                                   | The open card's popover (also `ui-hover-card` on hover).       |
-| `ui-user-card__skeleton`     | slot      |                                   | The decorative placeholder while the profile loads.            |
+| `ui-user-card__skeleton`     | slot      |                                   | The placeholder while the profile loads (also `ui-skeleton`).  |
 | `data-status`                | attribute |                                   | The caller's status word, on the card.                         |
 | `data-loading`               | state     | `true`                            | The card's profile is loading.                                 |
 | `data-hovered`               | state     | `true`                            | Pointer over the trigger (React Aria).                         |

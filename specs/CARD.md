@@ -103,9 +103,9 @@ Verification: `src/components/card/card.test.tsx`, `e2e/card.spec.ts`
 
 ### UIC-CARD-4.2 - Loading skeleton
 
-`isLoading` shall publish `data-loading`, set `aria-busy="true"` and replace the body's content with a decorative `ui-card__skeleton` slot hidden from assistive technology, which the stylesheet draws as placeholder lines. The media, header and footer stay. Without it neither attribute renders.
+`isLoading` shall publish `data-loading`, set `aria-busy="true"` and replace the body's content with a decorative `ui-card__skeleton` slot hidden from assistive technology, which the stylesheet draws as placeholder lines. The slot is a [Skeleton](SKELETON.md) block, so it also carries `ui-skeleton` and its attributes and a host draws it like its other placeholders. The media, header and footer stay. Without it neither attribute renders.
 
-Implementation: `src/components/card/card.tsx`, `labs/reference/card.css`
+Implementation: `src/components/card/card.tsx`, `src/components/skeleton/skeleton.tsx`, `labs/reference/card.css`
 Verification: `src/components/card/card.test.tsx`, `e2e/card.spec.ts`
 
 ## UIC-CARD-5 - Card collections
@@ -151,7 +151,7 @@ Verification: `src/components/card/card.test.tsx`
 | `ui-card__description`        | slot      |                                              | Supporting text under the title.                       |
 | `ui-card__actions`            | slot      |                                              | Trailing header controls or status.                    |
 | `ui-card__body`               | slot      |                                              | The body.                                              |
-| `ui-card__skeleton`           | slot      |                                              | The decorative placeholder while loading.              |
+| `ui-card__skeleton`           | slot      |                                              | The loading placeholder (also `ui-skeleton`).          |
 | `ui-card__footer`             | slot      |                                              | The `<footer>`.                                        |
 | `ui-card-grid`                | root      |                                              | The card collection (`role="grid"`).                   |
 | `ui-card-grid-item`           | root      |                                              | One item of the collection (`role="row"`).             |
