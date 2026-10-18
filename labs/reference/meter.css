@@ -1,0 +1,62 @@
+/* Meter: drawn like a progress bar, so both read as one family. */
+
+.ui-meter {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 4px 8px;
+  min-width: 80px;
+}
+
+.ui-meter__label {
+  grid-column: 1;
+  font-size: 13px;
+}
+
+.ui-meter__value {
+  grid-column: 2;
+  color: var(--ref-muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-meter__track {
+  grid-column: 1 / -1;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--ref-border);
+}
+
+.ui-meter[data-size='sm'] .ui-meter__track {
+  height: 4px;
+}
+
+.ui-meter[data-size='lg'] .ui-meter__track {
+  height: 8px;
+}
+
+.ui-meter__fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--ref-accent);
+  transition: width 0.2s;
+}
+
+.ui-meter[data-tone='success'] .ui-meter__fill {
+  background: var(--ref-success);
+}
+
+.ui-meter[data-tone='warning'] .ui-meter__fill {
+  background: var(--ref-warning);
+}
+
+.ui-meter[data-tone='danger'] .ui-meter__fill {
+  background: var(--ref-danger);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-meter__fill {
+    transition: none;
+  }
+}

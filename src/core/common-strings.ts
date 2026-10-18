@@ -66,6 +66,8 @@ export interface CommonStrings {
   unnamed: string;
   /** Accessible name of a person shown with a status (`Maria Santos, Away`). */
   nameWithStatus: (name: string, status: string) => string;
+  /** The label of a presence state on its own (`Away`). */
+  presenceStatus: (status: 'active' | 'away' | 'busy' | 'idle') => string;
   /** Accessible name of an overflow count, with the names it hides when known. */
   morePeople: (count: number, names: readonly string[]) => string;
   /** Spoken name of a keyboard key or modifier (`↑` → `Up Arrow`); other keys are read as written. */
@@ -104,6 +106,8 @@ const spokenKeyNames: Readonly<Record<string, string>> = {
   '+': 'Plus',
   ' ': 'Space',
 };
+
+const presenceStatusNames = { active: 'Active', away: 'Away', busy: 'Busy', idle: 'Idle' } as const;
 
 const boxSideNames = { top: 'Top', right: 'Right', bottom: 'Bottom', left: 'Left' } as const;
 const logicalBoxSideNames = {
@@ -163,6 +167,7 @@ export const commonStrings: CommonStrings = {
   itemCount: (count) => (count === 1 ? '1 item' : `${count} items`),
   unnamed: 'Unnamed',
   nameWithStatus: (name, status) => `${name}, ${status}`,
+  presenceStatus: (status) => presenceStatusNames[status],
   morePeople: (count, names) =>
     `${count === 1 ? '1 more person' : `${count} more people`}${names.length > 0 ? `: ${names.join(', ')}` : ''}`,
   shortcutKeyName: (key) => spokenKeyNames[key] ?? key,
