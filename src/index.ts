@@ -142,6 +142,7 @@ export * from './components/comment-composer/index.js';
 export * from './components/comment-thread/index.js';
 export * from './components/activity-feed/index.js';
 export * from './components/change-list/index.js';
+export * from './components/tree-compare/index.js';
 export * from './components/version-history/index.js';
 export * from './components/notification-center/index.js';
 export * from './components/approval-panel/index.js';

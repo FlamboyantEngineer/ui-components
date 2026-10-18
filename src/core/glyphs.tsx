@@ -156,6 +156,7 @@ export const defaultGlyphs = {
   audio: MusicalNoteIcon,
   star: StarIcon,
   adjustments: AdjustmentsHorizontalIcon,
+  move: ArrowsUpDownIcon,
 } satisfies Record<string, GlyphComponent>;
 
 export const glyphNames = Object.keys(defaultGlyphs) as GlyphName[];
