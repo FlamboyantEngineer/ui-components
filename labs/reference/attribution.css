@@ -1,0 +1,47 @@
+/* Attribution */
+
+.ui-attribution {
+  color: var(--ref-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.ui-attribution__time {
+  color: var(--ref-text);
+}
+
+.ui-attribution__person {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  vertical-align: bottom;
+  color: var(--ref-text);
+}
+
+/* The card trigger reads as the name, not as a button. */
+.ui-attribution__person:is(button) {
+  margin: 0;
+  padding: 0 2px;
+  border: 0;
+  border-radius: 2px;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+.ui-attribution__person:is(button)[data-hovered] .ui-attribution__name {
+  text-decoration: underline;
+}
+
+.ui-attribution__person:is(button)[data-focus-visible] {
+  outline: 2px solid var(--ref-focus);
+  outline-offset: 1px;
+}
+
+.ui-attribution__avatar {
+  flex: none;
+}
+
+.ui-attribution__name {
+  font-weight: 600;
+}

@@ -1,4 +1,7 @@
-/** Strings of the folder manager, code and JSON editors, emoji picker, PDF viewer and data tables. */
+/**
+ * Strings of the folder manager, code and JSON editors, emoji picker, PDF viewer, data tables,
+ * timestamps, save status and record labels.
+ */
 export interface ContentStrings {
   newFolder: string;
   /** Names the field that names a new folder. */
@@ -114,6 +117,14 @@ export interface ContentStrings {
   noData: string;
   /** Describes a series of values by its formatted lowest, highest and last values. */
   seriesSummary: (values: { low: string; high: string; last: string }) => string;
+  /** Stands in for a timestamp that is missing or unreadable, mid-sentence. */
+  unknownTime: string;
+  /** Who did something and when, with `{time}` and `{person}` tokens. */
+  attribution: string;
+  /** An editor's save status (`Saving…`). */
+  saveStatus: (phase: 'dirty' | 'saving' | 'saved' | 'error' | 'offline') => string;
+  /** Stands in for a record the reader may not see, or that no longer exists. */
+  recordUnavailable: (reason: 'restricted' | 'missing') => string;
 }
 
 const emojiCategoryNames: Readonly<Record<string, string>> = {
@@ -130,6 +141,14 @@ const emojiCategoryNames: Readonly<Record<string, string>> = {
   symbols: 'Symbols',
   flags: 'Flags',
 };
+
+const saveStatusNames = {
+  dirty: 'Unsaved changes',
+  saving: 'Saving…',
+  saved: 'Saved',
+  error: 'Not saved',
+  offline: 'Offline',
+} as const;
 
 export const contentStrings: ContentStrings = {
   newFolder: 'New folder',
@@ -207,4 +226,8 @@ export const contentStrings: ContentStrings = {
   summary: 'Summary',
   noData: 'No data',
   seriesSummary: ({ low, high, last }) => `Low ${low}, high ${high}, last ${last}`,
+  unknownTime: 'unknown time',
+  attribution: '{time} by {person}',
+  saveStatus: (phase) => saveStatusNames[phase],
+  recordUnavailable: (reason) => (reason === 'restricted' ? 'Restricted item' : 'Missing item'),
 };

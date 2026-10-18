@@ -1,0 +1,62 @@
+/* Record Label */
+
+.ui-record-label {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0 6px;
+  min-width: 0;
+  max-width: 100%;
+  font-size: 13px;
+  line-height: 1.4;
+  vertical-align: bottom;
+}
+
+.ui-record-label:not([data-truncate]) {
+  flex-wrap: wrap;
+}
+
+.ui-record-label[data-size='sm'] {
+  gap: 0 4px;
+  font-size: 12px;
+}
+
+.ui-record-label[data-size='lg'] {
+  gap: 0 8px;
+  font-size: 15px;
+}
+
+/* The icon and identifier never break apart. */
+.ui-record-label__identity {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+  align-self: center;
+  white-space: nowrap;
+}
+
+.ui-record-label__icon {
+  color: var(--ref-muted);
+}
+
+.ui-record-label__identifier {
+  font-family: var(--ref-mono);
+  font-weight: 600;
+}
+
+.ui-record-label[data-unavailable] .ui-record-label__identifier {
+  color: var(--ref-muted);
+  font-family: inherit;
+  font-style: italic;
+  font-weight: 400;
+}
+
+.ui-record-label__name {
+  min-width: 0;
+}
+
+.ui-record-label[data-truncate] .ui-record-label__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

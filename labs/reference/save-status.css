@@ -1,0 +1,53 @@
+/* Save Status */
+
+.ui-save-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  max-width: 100%;
+  color: var(--ref-muted);
+  font-size: 12px;
+  line-height: 1.4;
+  vertical-align: middle;
+}
+
+.ui-save-status__message {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ui-save-status__icon {
+  flex: none;
+  width: 14px;
+  height: 14px;
+}
+
+.ui-save-status__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-save-status__retry {
+  flex: none;
+}
+
+.ui-save-status[data-phase='saved'] .ui-save-status__icon {
+  color: var(--ref-success);
+}
+
+.ui-save-status[data-phase='error'] {
+  color: var(--ref-danger);
+}
+
+.ui-save-status[data-entering] {
+  animation: ref-fade 0.15s ease-out;
+}
+
+.ui-save-status[data-exiting] {
+  animation: ref-fade 0.4s ease-in reverse;
+}

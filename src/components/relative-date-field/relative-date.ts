@@ -12,6 +12,11 @@ import {
   toCalendarDateTime,
   type CalendarDate,
 } from '../../primitives/index.js';
+import {
+  capitalizeText,
+  describeRelativeTime,
+  type RelativeTimeRelation,
+} from '../../utils/relative-time.js';
 
 /**
  * `date` values are `YYYY-MM-DD` texts, `date-time` values local `YYYY-MM-DDTHH:mm` texts and
@@ -47,7 +52,7 @@ export interface RelativeDateComputedPreset<V> {
   getValue: (now: Date) => V;
 }
 
-export type RelativeDateRelation = 'past' | 'present' | 'future';
+export type RelativeDateRelation = RelativeTimeRelation;
 
 export interface RelativeDateText {
   /** The value relative to now, such as `Tomorrow` or `3 days ago`. */
@@ -63,44 +68,9 @@ export interface RelativeDateBounds {
   maxValue?: string | undefined;
 }
 
-interface ParsedValue {
-  date: CalendarDate;
-  /** The moment a date and time stands for; `null` for a date. */
-  instant: Date | null;
-}
-
-const MINUTE = 60_000;
-const HOUR = 60 * MINUTE;
-const DAY = 24 * HOUR;
-/** A date, or a date and time read as local wall time (an offset or zone converts to it). */
-function parseValue(value: string): ParsedValue | null {
-  const date = parseIsoDate(value);
-  if (date) return { date, instant: null };
-  const dateTime = parseIsoDateTime(value);
-  if (!dateTime) return null;
-  return { date: toCalendarDate(dateTime), instant: dateTime.toDate(getLocalTimeZone()) };
-}
-
 /** The local calendar day of a moment. */
 function toDay(moment: Date): CalendarDate {
   return toCalendarDate(fromDate(moment, getLocalTimeZone()));
-}
-
-/** Upper-cases the first letter, for text that starts a label. */
-function capitalize(text: string, locale: string): string {
-  return text.charAt(0).toLocaleUpperCase(locale) + text.slice(1);
-}
-
-/** The largest unit under a day that fits an instant's distance from now, with its count. */
-function timeDistance(milliseconds: number): [number, Intl.RelativeTimeFormatUnit] {
-  if (Math.abs(milliseconds) < MINUTE) return [Math.round(milliseconds / 1000), 'second'];
-  if (Math.abs(milliseconds) < HOUR) return [Math.round(milliseconds / MINUTE), 'minute'];
-  return [Math.round(milliseconds / HOUR), 'hour'];
-}
-
-function relationOf(distance: number): RelativeDateRelation {
-  if (distance === 0) return 'present';
-  return distance > 0 ? 'future' : 'past';
 }
 
 /** A range is past once it ends before today, future while it starts after, present around it. */
@@ -115,37 +85,17 @@ export function toLocalDay(now: Date): string {
 }
 
 /**
- * Describes a value relative to `now`: seconds, minutes or hours for an instant within a day,
- * calendar days within `fallbackAfterDays`, and the absolute date beyond. `null` when the value is
- * not a date.
+ * Describes a value relative to `now` through the shared relative time formatter, with the relative
+ * text capitalized as a label. `null` when the value is not a date.
  */
 export function describeRelativeDate(
   value: string,
   options: { now: Date; locale: string; fallbackAfterDays: number },
 ): RelativeDateText | null {
-  const parsed = parseValue(value);
-  if (!parsed) return null;
-  const { locale, now } = options;
-  const days = parsed.date.compare(toDay(now));
-  const formatter = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
-  const absolute = new DateFormatter(locale, {
-    dateStyle: 'medium',
-    timeStyle: parsed.instant ? 'short' : undefined,
-  }).format(parsed.instant ?? parsed.date.toDate(getLocalTimeZone()));
-  const offset = parsed.instant ? parsed.instant.getTime() - now.getTime() : 0;
-  if (parsed.instant && Math.abs(offset) < DAY) {
-    const [count, unit] = timeDistance(offset);
-    const relative = capitalize(formatter.format(count, unit), locale);
-    return { relative, absolute, relation: relationOf(count) };
-  }
-  if (Math.abs(days) >= options.fallbackAfterDays) {
-    return { relative: absolute, absolute, relation: relationOf(days) };
-  }
-  return {
-    relative: capitalize(formatter.format(days, 'day'), locale),
-    absolute,
-    relation: relationOf(days),
-  };
+  const text = describeRelativeTime(value, options);
+  if (!text) return null;
+  const relative = capitalizeText(text.relative, options.locale);
+  return { relative, absolute: text.absolute, relation: text.relation };
 }
 
 /**
@@ -179,7 +129,7 @@ export function describeRelativeRange(
 export function formatRelativePreset(preset: RelativeDatePreset, locale: string): string {
   if (preset.label) return preset.label;
   const formatter = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
-  return capitalize(formatter.format(preset.amount, preset.unit), locale);
+  return capitalizeText(formatter.format(preset.amount, preset.unit), locale);
 }
 
 /** A range preset's count of units, such as `7 days`, for the `Last …` and `Next …` labels. */
@@ -226,7 +176,10 @@ export function resolvePickedDate(
 
 /** The `YYYY-MM-DD` date a value falls on, for a date or a date and time. */
 export function toValueDate(value: string): string | null {
-  return parseValue(value)?.date.toString() ?? null;
+  const date = parseIsoDate(value);
+  if (date) return date.toString();
+  const dateTime = parseIsoDateTime(value);
+  return dateTime ? toCalendarDate(dateTime).toString() : null;
 }
 
 /** Which bound a value, or either end of a range, breaks, with that bound's date. */
