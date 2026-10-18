@@ -6,6 +6,7 @@ export type { MergedProps } from './merge-props.js';
 export { renderElement } from './render-element.js';
 export type { ElementRender, RenderElementOptions } from './render-element.js';
 export { copyRichText, copyText } from './clipboard.js';
+export { formatTsv, parseTsv } from './tsv.js';
 export type { ClipboardWriter, CopyOptions, RichCopyOptions, RichCopyResult } from './clipboard.js';
 export { DEFAULT_COPY_TIMEOUT, useClipboard } from './use-clipboard.js';
 export type { ClipboardOptions, ClipboardState, CopyStatus } from './use-clipboard.js';

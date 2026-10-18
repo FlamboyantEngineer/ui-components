@@ -54,6 +54,7 @@ const sampleArguments: Partial<Record<keyof UiStrings, readonly unknown[]>> = {
   copyIdentifier: ['REQ-12'],
   stateTrigger: ['Status', 'In review'],
   transitionTo: ['Approved'],
+  groupHeading: ['Colour', 'Red'],
 };
 
 const stringNames = Object.keys(defaultStrings) as Array<keyof UiStrings>;

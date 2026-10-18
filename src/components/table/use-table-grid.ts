@@ -1,12 +1,14 @@
 import { useMemo, type ReactNode } from 'react';
-import type { Key } from '../../core/props.js';
+import type { Key, Selection } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { mergeProps } from '../../utils/merge-props.js';
 import type { CollectionDragAndDropOptions } from '../../utils/use-reorder-drag-and-drop.js';
 import type { TableProps } from './table.js';
 import { stateRowId, type TableBodyProps, type TableStatus } from './table-body.js';
 import { footerRowId } from './table-footer.js';
-import { detailRowPrefix, type TableRowModel } from './table-row.js';
+import type { TableSelectionBarProps } from './table-bulk-edit.js';
+import { isGroupKey, listVisibleRows } from './table-groups.js';
+import { detailRowPrefix } from './table-row.js';
 import type { TableColumn, TableRow } from './table-rows.js';
 import { pickAriaProps, type TableAriaProps } from './table-props.js';
 import type { TableStructure } from './table-structure.js';
@@ -15,8 +17,11 @@ import { useColumnLayout, type ColumnLayout } from './use-column-layout.js';
 import { useColumnReorder, type ColumnReorder } from './use-column-reorder.js';
 import { useColumnWidths } from './use-column-widths.js';
 import { usePinnedOffsets, type TablePinOffsets } from './use-pinned-offsets.js';
+import { useTableGrouping } from './use-table-grouping.js';
 import { useTableReorder, type TableReorder } from './use-table-reorder.js';
 import { useTableRows, type TableRowsView } from './use-table-rows.js';
+import { resolveSelectionBar, useCellsView, useRowModel } from './use-table-model.js';
+import { useTableSelection } from './use-table-selection.js';
 
 /** The props that shape the grid; the root's presentation is the table's own. */
 export type TableGridOptions<T extends TableRow> = Omit<
@@ -26,7 +31,13 @@ export type TableGridOptions<T extends TableRow> = Omit<
 
 /** What the table renders from. */
 export interface TableGrid<T> {
-  ariaProps: TableAriaProps;
+  /** React Aria's table props, with the selected and expanded keys the table holds. */
+  ariaProps: TableAriaProps & {
+    selectedKeys: Selection;
+    onSelectionChange: (keys: Selection) => void;
+    expandedKeys: Set<Key>;
+    onExpandedChange: (keys: Set<Key>) => void;
+  };
   view: TableRowsView<T>;
   structure: TableStructure<T>;
   layout: ColumnLayout<T>;
@@ -40,6 +51,8 @@ export interface TableGrid<T> {
   onPinOffsets: (offsets: TablePinOffsets) => void;
   onRowAction: ((key: Key) => void) | undefined;
   body: TableBodyProps<T>;
+  /** The selection bar above the grid, when the table draws one. */
+  selectionBar: TableSelectionBarProps<T> | null;
   /** Handlers for the table root from every feature in use. */
   rootProps: object;
 }
@@ -62,9 +75,10 @@ function useStatusMessage(props: StatusProps, status: TableStatus | null): React
   return props.emptyMessage ?? strings.noResults;
 }
 
-/** Whether a key names a row of the caller's, not a notice, detail or summary row. */
+/** Whether a key names a row of the caller's, not a notice, detail, group or summary row. */
 function isDataRowKey(key: Key): boolean {
-  return key !== stateRowId && key !== footerRowId && !String(key).startsWith(detailRowPrefix);
+  const isDetail = String(key).startsWith(detailRowPrefix);
+  return key !== stateRowId && key !== footerRowId && !isDetail && !isGroupKey(key);
 }
 
 /** The data column holding expand buttons: the caller's, if drawn, else the first drawn column. */
@@ -82,9 +96,11 @@ function resolveTreeColumn<T>(
 function useStructure<T extends TableRow>(
   options: TableGridOptions<T>,
   columns: readonly TableColumn<T>[],
+  isGrouped: boolean,
 ): TableStructure<T> {
   const { selectionMode, renderRowActions, actionsColumnWidth = 44, virtualized = false } = options;
-  const isExpandable = options.getChildRows !== undefined || options.renderRowDetail !== undefined;
+  const isExpandable =
+    isGrouped || options.getChildRows !== undefined || options.renderRowDetail !== undefined;
   const treeColumn = resolveTreeColumn(columns, options.treeColumn, isExpandable);
   const hasColumns = columns.length > 0;
   const hasSelection = hasColumns && selectionMode === 'multiple';
@@ -110,6 +126,7 @@ function mergeRootProps<T extends TableRow>(
     sort: TableRowsView<T>['sort'];
     columnReorder: ColumnReorder;
     editingProps: object;
+    cellsProps: object;
   },
 ): object {
   const hasColumnMoves = columns.some((column) => column.allowsReordering);
@@ -119,71 +136,59 @@ function mergeRootProps<T extends TableRow>(
     parts.sort.isMultiple ? parts.sort.rootProps : {},
     hasColumnMoves ? parts.columnReorder.rootProps : {},
     hasEditing ? parts.editingProps : {},
+    parts.cellsProps,
   );
 }
 
 /**
- * Derives everything the grid renders: the rows of the current page, the drawn columns and their
- * layout, the notice, reordering, editing, pinned offsets and the root's handlers.
+ * Derives everything the grid renders: the rows of the current page under their groups, the drawn
+ * columns and their layout, the notice, selection, reordering, editing, spreadsheet mode, pinned
+ * offsets and the root's handlers.
  */
 export function useTableGrid<T extends TableRow>(options: TableGridOptions<T>): TableGrid<T> {
-  const {
-    columns,
-    reorder,
-    onRowAction,
-    renderRowActions,
-    renderRowDetail,
-    getRowAttributes,
-    onRetry,
-    onLoadMore,
-    isLoading,
-  } = options;
+  const { columns, reorder, onRowAction, onRetry, onLoadMore, isLoading } = options;
   const widths = useColumnWidths(options);
   const layout = useColumnLayout(options);
   const view = useTableRows(options);
+  const grouped = useTableGrouping(options, view);
+  const selection = useTableSelection(options, view.presentedNodes);
   const reordering = useTableReorder({ rows: view.rows, reorder });
-  const editing = useCellEditing(options);
+  const structure = useStructure(options, layout.visibleColumns, grouped.isGrouped);
+  const visibleRows = useMemo(
+    () => listVisibleRows(grouped.nodes, grouped.expansion.expandedKeys),
+    [grouped.nodes, grouped.expansion.expandedKeys],
+  );
+  const cells = useCellsView(options, {
+    rows: visibleRows,
+    structure,
+    isRowDisabled: selection.isRowDisabled,
+  });
+  const editing = useCellEditing({ ...options, typeToEdit: cells.view !== null });
   const columnReorder = useColumnReorder({
     columns: layout.visibleColumns,
     moveColumn: layout.moveColumn,
   });
-  const structure = useStructure(options, layout.visibleColumns);
   const hasPins = !structure.isVirtualized && structure.columns.some((column) => column.pin);
   const pinned = usePinnedOffsets(hasPins);
-  const pinOffsets = pinned.offsets;
   const status = resolveStatus(options, view.nodes.length === 0);
   const message = useStatusMessage(options, status);
-  const { editing: editingCell, commit, cancel, release } = editing;
-  const model = useMemo<TableRowModel<T>>(
-    () => ({
-      structure,
-      renderRowActions,
-      renderRowDetail,
-      getRowAttributes,
-      isReorderable: reorder !== undefined && status === null,
-      isMovable: reordering.isMovable,
-      dragTrigger: reorder?.dragTrigger ?? 'row',
-      pinOffsets,
-      editing: { editing: editingCell, commit, cancel, release },
-    }),
-    [
-      structure,
-      renderRowActions,
-      renderRowDetail,
-      getRowAttributes,
-      reorder,
-      status,
-      reordering.isMovable,
-      pinOffsets,
-      editingCell,
-      commit,
-      cancel,
-      release,
-    ],
-  );
-  const activeReordering = reorder ? reordering : null;
+  const activeReordering = reorder && !grouped.isGrouped ? reordering : null;
+  const model = useRowModel(options, {
+    structure,
+    status,
+    reordering,
+    isGrouped: grouped.isGrouped,
+    pinOffsets: pinned.offsets,
+    editing,
+    cells: cells.view,
+  });
   return {
-    ariaProps: pickAriaProps(options),
+    ariaProps: {
+      ...pickAriaProps(options),
+      selectedKeys: selection.selection,
+      onSelectionChange: selection.setSelection,
+      ...grouped.expansion,
+    },
     view,
     structure,
     layout,
@@ -191,15 +196,17 @@ export function useTableGrid<T extends TableRow>(options: TableGridOptions<T>): 
     reordering: activeReordering,
     dragAndDrop: reordering.dragAndDrop,
     columnReorder,
-    pinOffsets,
+    pinOffsets: pinned.offsets,
     onPinOffsets: pinned.report,
     onRowAction: onRowAction && ((key: Key) => isDataRowKey(key) && onRowAction(key)),
-    body: { nodes: view.nodes, model, status, message, onRetry, onLoadMore, isLoading },
+    body: { nodes: grouped.nodes, model, status, message, onRetry, onLoadMore, isLoading },
+    selectionBar: resolveSelectionBar(options, { selection, columns: structure.columns }),
     rootProps: mergeRootProps(columns, {
       reordering: activeReordering,
       sort: view.sort,
       columnReorder,
       editingProps: editing.rootProps,
+      cellsProps: cells.rootProps,
     }),
   };
 }

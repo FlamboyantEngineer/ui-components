@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react';
 import type { Key } from '../../core/props.js';
 import type { TableColumnSizing } from './column-sizing.js';
+import type { TableBulkEdit } from './table-bulk-edit.js';
 import type { TableColumnFilter } from './table-filters.js';
+import type { TableAggregate } from './table-groups.js';
 
 /** A value a cell sorts and filters on. */
 export type TableCellValue = string | number | boolean | Date | null | undefined;
@@ -59,6 +61,17 @@ export interface TableColumn<T> extends TableColumnSizing {
   allowsEditing?: boolean | undefined;
   /** A cell's editor, instead of the default text input. */
   renderEditor?: ((row: T, editor: TableCellEditor) => ReactNode) | undefined;
+  /**
+   * Reads typed, pasted or filled text as the cell's value. Defaults to the text, or a number when
+   * the cell holds a number and the text reads as one.
+   */
+  parseValue?: ((text: string, row: T) => TableCellValue) | undefined;
+  /** Checks a new value of the cell: a message refuses it, null or nothing accepts it. */
+  validateValue?: ((value: TableCellValue, row: T) => string | null | undefined) | undefined;
+  /** Lists the column in the bulk edit of selected rows, which sets it with a field of this type. */
+  bulkEdit?: TableBulkEdit | undefined;
+  /** The column's cell in group header rows, from the group's rows. */
+  aggregate?: TableAggregate<T> | undefined;
   /** The column's cell in a summary row under the rows, from every row the table presents. */
   renderFooter?: ((rows: readonly T[]) => ReactNode) | undefined;
 }

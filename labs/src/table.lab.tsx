@@ -18,6 +18,7 @@ import {
   Pages,
   Summary,
 } from './table-cases.js';
+import { BulkEdit, Grouping, Spreadsheet } from './table-sheet-cases.js';
 
 interface Fruit {
   id: string;
@@ -382,6 +383,24 @@ mountLab(
       description="Scrolling to the end asks for the next twenty rows."
     >
       <LoadingMore />
+    </LabSection>
+    <LabSection
+      title="Row groups"
+      description="Groups by one or two columns or a computed value, with counts and sums; collapse with the chevron or ArrowLeft."
+    >
+      <Grouping />
+    </LabSection>
+    <LabSection
+      title="Spreadsheet mode"
+      description="Select ranges with Shift, copy and paste, type to edit, fill with the handle or Ctrl+D and Ctrl+R, Delete to clear."
+    >
+      <Spreadsheet />
+    </LabSection>
+    <LabSection
+      title="Bulk edit"
+      description="Select rows, then set one column across them from the selection bar."
+    >
+      <BulkEdit />
     </LabSection>
     <LabSection title="Virtualized" description="10,000 rows; only those in view are rendered.">
       <div data-lab="virtualized" style={{ height: 320 }}>

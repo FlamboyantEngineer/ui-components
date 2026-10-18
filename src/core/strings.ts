@@ -5,6 +5,7 @@ import { historyStrings, type HistoryStrings } from './history-strings.js';
 import { mediaStrings, type MediaStrings } from './media-strings.js';
 import { queryStrings, type QueryStrings } from './query-strings.js';
 import { reviewStrings, type ReviewStrings } from './review-strings.js';
+import { tableStrings, type TableStrings } from './table-strings.js';
 import { timelineStrings, type TimelineStrings } from './timeline-strings.js';
 import { viewStrings, type ViewStrings } from './view-strings.js';
 
@@ -21,6 +22,7 @@ export interface UiStrings
     ReviewStrings,
     MediaStrings,
     QueryStrings,
+    TableStrings,
     TimelineStrings,
     ViewStrings {}
 
@@ -32,6 +34,7 @@ export const defaultStrings: UiStrings = {
   ...reviewStrings,
   ...mediaStrings,
   ...queryStrings,
+  ...tableStrings,
   ...timelineStrings,
   ...viewStrings,
 };

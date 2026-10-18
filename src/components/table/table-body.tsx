@@ -10,18 +10,19 @@ import { useUiStrings } from '../../core/provider.js';
 import { EmptyState } from '../empty-state/empty-state.js';
 import { InlineError } from '../inline-error/inline-error.js';
 import { tableHooks as hooks } from './table-hooks.js';
-import { TableDataRow, type TableRowModel } from './table-row.js';
+import { renderBodyNode } from './table-group-row.js';
+import type { TableBodyNode } from './table-groups.js';
+import type { TableRowModel } from './table-row.js';
 import type { TableRow } from './table-rows.js';
 import { countTableColumns } from './table-structure.js';
-import type { TableNode } from './table-tree.js';
 
 /** The notice a table shows in place of its rows. */
 export type TableStatus = 'loading' | 'empty' | 'error';
 
 /** The rows, or the notice that replaces them. */
 export interface TableBodyProps<T> {
-  /** The rows of the current page, with their child rows. */
-  nodes: readonly TableNode<T>[];
+  /** The rows of the current page, with their child rows, under their groups when grouped. */
+  nodes: readonly TableBodyNode<T>[];
   model: TableRowModel<T>;
   status: TableStatus | null;
   /** The notice's text or content. */
@@ -94,7 +95,7 @@ export function TableBody<T extends TableRow>(props: TableBodyProps<T>) {
   return (
     <AriaTableBody className={hooks.slotClass('body')}>
       <Collection items={nodes} dependencies={[model]}>
-        {(node) => <TableDataRow node={node} model={model} />}
+        {(node) => renderBodyNode(node, model)}
       </Collection>
       {onLoadMore || isLoading ? (
         <TableLoader onLoadMore={onLoadMore} isLoading={isLoading} />

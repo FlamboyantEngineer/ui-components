@@ -26,7 +26,10 @@ import {
   type TableStructure,
 } from './table-structure.js';
 import type { TableNode } from './table-tree.js';
+import { placeInBounds } from './table-cell-range.js';
+import type { TableGroup } from './table-groups.js';
 import { isEditingCell, type CellEditing } from './use-cell-editing.js';
+import type { CellSelection } from './use-cell-selection.js';
 import type { TableDragTrigger } from './use-table-reorder.js';
 import type { TablePinOffsets } from './use-pinned-offsets.js';
 
@@ -41,8 +44,32 @@ export interface TableRowModel<T> {
   isMovable: (row: T) => boolean;
   dragTrigger: TableDragTrigger;
   pinOffsets: TablePinOffsets;
-  editing: Pick<CellEditing<T>, 'editing' | 'commit' | 'cancel' | 'release'>;
+  editing: Pick<CellEditing<T>, 'editing' | 'commit' | 'cancel' | 'release' | 'dismiss'>;
+  renderGroupLabel?: ((group: TableGroup<T>) => ReactNode) | undefined;
+  /** Spreadsheet mode's selected cells, or null without it. */
+  cells: TableCellsView<T> | null;
 }
+
+/** What spreadsheet mode draws on the cells. */
+export interface TableCellsView<T> extends Pick<
+  CellSelection<T>,
+  'mode' | 'grid' | 'bounds' | 'fillBounds'
+> {
+  /** The selected cells include an editable one, so the corner cell holds a fill handle. */
+  canFill: boolean;
+}
+
+type CellElementProps = JSX.IntrinsicElements['td' | 'div'];
+
+/** Cell elements marked selected for assistive technology, inside a range of selected cells. */
+const selectedCells = {
+  td: (props: CellElementProps) => (
+    <td {...(props as JSX.IntrinsicElements['td'])} aria-selected="true" />
+  ),
+  div: (props: CellElementProps) => (
+    <div {...(props as JSX.IntrinsicElements['div'])} aria-selected="true" />
+  ),
+};
 
 /** The key prefix of detail rows, kept out of row actions, selection and moves. */
 export const detailRowPrefix = 'ui-table-detail:';
@@ -67,7 +94,13 @@ function createHandleRow(isVirtualized: boolean) {
  * The expand button of a row with child or detail rows, named by React Aria after the row
  * (`Expand <row>`, `Collapse <row>`), or a spacer holding its place.
  */
-function TableExpandButton({ hasChildItems, isExpanded }: CellRenderProps) {
+export function TableExpandButton({
+  hasChildItems,
+  isExpanded,
+}: {
+  hasChildItems: boolean;
+  isExpanded: boolean;
+}) {
   const glyph = useExpandGlyph(isExpanded);
   if (!hasChildItems) return <span {...hooks.slot('expand-spacer')} aria-hidden="true" />;
   return (
@@ -75,6 +108,22 @@ function TableExpandButton({ hasChildItems, isExpanded }: CellRenderProps) {
       <Icon glyph={glyph} size="sm" />
     </AriaButton>
   );
+}
+
+/** Where a cell sits in spreadsheet mode's selected cells and in a dragged fill. */
+function describeRangeCell<T extends TableRow>(
+  view: TableCellsView<T> | null,
+  row: T,
+  column: TableColumn<T>,
+) {
+  const at = {
+    row: view?.grid.rowIndex.get(String(row.id)) ?? -1,
+    column: view?.grid.columnIndex.get(column.id) ?? -1,
+  };
+  const place = placeInBounds(view?.bounds ?? null, at);
+  const isFillTarget = !place.isInRange && placeInBounds(view?.fillBounds ?? null, at).isInRange;
+  const hasFillHandle = view?.mode === 'range' && view.canFill && place.isCorner;
+  return { ...place, isFillTarget, hasFillHandle };
 }
 
 function TableDataCell<T extends TableRow>(props: {
@@ -88,6 +137,7 @@ function TableDataCell<T extends TableRow>(props: {
   const pinStyle = getPinStyle(pin, model.pinOffsets[column.id]);
   const isTree = model.structure.treeColumn === column.id;
   const isEditing = isEditingCell(model.editing.editing, row, column.id);
+  const range = describeRangeCell(model.cells, row, column);
   const style = isTree
     ? ({ level }: CellRenderProps): CSSProperties => ({
         ...pinStyle,
@@ -97,12 +147,21 @@ function TableDataCell<T extends TableRow>(props: {
   return (
     <Cell
       style={style}
+      render={
+        range.isInRange ? selectedCells[model.structure.isVirtualized ? 'div' : 'td'] : undefined
+      }
       {...hooks.slot('cell', {
         kind: 'data',
         align: column.align ?? 'start',
         column: column.id,
         pinned: pin,
         editing: isEditing,
+        inRange: range.isInRange,
+        rangeTop: range.isTop,
+        rangeBottom: range.isBottom,
+        rangeStart: range.isStart,
+        rangeEnd: range.isEnd,
+        fillTarget: range.isFillTarget,
       })}
     >
       {(values) => (
@@ -115,10 +174,18 @@ function TableDataCell<T extends TableRow>(props: {
           ) : null}
           {isTree ? <TableExpandButton {...values} /> : null}
           {isEditing ? (
-            <TableCellEditorView row={row} column={column} editing={model.editing} />
+            <TableCellEditorView
+              row={row}
+              column={column}
+              editing={model.editing}
+              movesOnCommit={model.cells !== null}
+            />
           ) : (
             renderCellContent(row, column)
           )}
+          {range.hasFillHandle ? (
+            <span className={hooks.slotClass('fill-handle')} aria-hidden="true" />
+          ) : null}
         </>
       )}
     </Cell>
