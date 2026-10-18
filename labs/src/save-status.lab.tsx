@@ -80,7 +80,7 @@ mountLab(
       <StateMatrix
         axes={{ width: ['wide', '140px'] }}
         render={({ width }) => (
-          <div style={{ width: width === 'wide' ? 360 : 140 }}>
+          <div style={{ width: width === 'wide' ? 560 : 140 }}>
             <SaveStatus
               phase="error"
               labels={{ error: 'Not saved: the server is busy, try again in a minute' }}
