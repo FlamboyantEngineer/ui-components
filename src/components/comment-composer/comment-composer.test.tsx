@@ -134,10 +134,10 @@ describe('CommentComposer', () => {
         <CommentComposer storageKey="draft:report" defaultValue="Start" onSubmit={() => {}} />
       </UiProvider>
     );
-    const first = render(stored);
+    const { unmount: unmountFirst } = render(stored);
     expect(screen.getByRole('textbox')).toHaveValue('Start');
     await userEvent.type(screen.getByRole('textbox'), 'ed');
-    first.unmount();
+    unmountFirst();
     render(stored);
     expect(screen.getByRole('textbox')).toHaveValue('Started');
     expect(storage.getItem('draft:report')).toBe('"Started"');

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useRef, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -95,7 +95,7 @@ describe('CompletionList', () => {
     const input = screen.getByRole('textbox');
     input.focus();
     const jon = screen.getByRole('option', { name: 'Jon Berg' });
-    fireEvent.pointerMove(jon);
+    await user.hover(jon);
     expect(jon).toHaveAttribute('aria-selected', 'true');
     await user.click(jon);
     expect(onAction).toHaveBeenCalledWith('jon');
