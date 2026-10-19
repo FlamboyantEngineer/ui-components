@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -95,11 +95,14 @@ describe('JsonEditor', () => {
     expect(editor()).toHaveValue('{\n    "a": [\n        1\n    ]\n}');
     expect(onCommit).toHaveBeenCalledWith('{\n    "a": [\n        1\n    ]\n}');
     expect(format).toBeDisabled();
-    fireEvent.change(editor(), { target: { value: '{"a":' } });
+    await user.clear(editor());
+    await user.paste('{"a":');
+    expect(editor()).toHaveValue('{"a":');
     expect(format).toBeDisabled();
-    fireEvent.change(editor(), { target: { value: '' } });
+    await user.clear(editor());
     expect(format).toBeDisabled();
-    fireEvent.change(editor(), { target: { value: '[1,2]' } });
+    await user.paste('[1,2]');
+    expect(editor()).toHaveValue('[1,2]');
     expect(format).toBeEnabled();
   });
 

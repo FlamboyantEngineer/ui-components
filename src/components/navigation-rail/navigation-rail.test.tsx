@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -138,17 +138,20 @@ describe('NavigationRail', () => {
     expect(screen.queryByRole('separator')).not.toBeInTheDocument();
   });
 
-  it('UIC-NAVIGATION-RAIL-1.3 drags the width live and commits it when the drag ends', () => {
+  it('UIC-NAVIGATION-RAIL-1.3 drags the width live and commits it when the drag ends', async () => {
+    const user = userEvent.setup();
     const onWidthChange = vi.fn();
     render(<Rail isResizable onWidthChange={onWidthChange} />);
     const rail = nav();
     const handle = screen.getByRole('separator');
-    fireEvent.pointerDown(handle, { pointerId: 1, button: 0, clientX: 240, isPrimary: true });
-    fireEvent.pointerMove(handle, { pointerId: 1, clientX: 300 });
+    await user.pointer([
+      { keys: '[MouseLeft>]', target: handle, coords: { clientX: 240 } },
+      { coords: { clientX: 300 } },
+    ]);
     expect(rail).toHaveAttribute('data-resizing', 'true');
     expect(rail.style.getPropertyValue('--ui-navigation-rail-width')).toBe('300px');
     expect(onWidthChange).not.toHaveBeenCalled();
-    fireEvent.pointerUp(handle, { pointerId: 1, clientX: 300 });
+    await user.pointer({ keys: '[/MouseLeft]' });
     expect(onWidthChange).toHaveBeenCalledWith(300);
     expect(rail).not.toHaveAttribute('data-resizing');
     expect(rail.style.getPropertyValue('--ui-navigation-rail-width')).toBe('300px');
@@ -389,7 +392,8 @@ describe('NavigationRail', () => {
     });
   });
 
-  it('UIC-NAVIGATION-RAIL-2.5 marks and opens groups holding the current page, nested too', () => {
+  it('UIC-NAVIGATION-RAIL-2.5 marks and opens groups holding the current page, nested too', async () => {
+    const user = userEvent.setup();
     function Page() {
       const [current, setCurrent] = useState('none');
       return (
@@ -415,7 +419,7 @@ describe('NavigationRail', () => {
     render(<Page />);
     const orchard = screen.getByRole('button', { name: 'Orchard' });
     expect(orchard.closest('li')).not.toHaveAttribute('data-current');
-    fireEvent.click(screen.getByRole('button', { name: 'Go to pears' }));
+    await user.click(screen.getByRole('button', { name: 'Go to pears' }));
     expect(orchard.closest('li')).toHaveAttribute('data-current', 'true');
     expect(screen.getByRole('button', { name: 'Fruit' }).closest('li')).toHaveAttribute(
       'data-current',

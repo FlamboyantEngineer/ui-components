@@ -1,4 +1,4 @@
-import { act, createElement, Fragment, useState } from 'react';
+import { createElement, Fragment, useState } from 'react';
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
@@ -103,7 +103,7 @@ describe('MetaLine', () => {
     );
     const { container, rerender } = render(<MetaLine items={[control, 'Pear']} />);
     const button = screen.getByRole('button');
-    act(() => rerender(<MetaLine items={['Leading', control, 'Pear']} />));
+    rerender(<MetaLine items={['Leading', control, 'Pear']} />);
     expect(screen.getByRole('button')).toBe(button);
     expect(container).toHaveTextContent('Leading · Action · Pear');
     expect(errors).not.toHaveBeenCalled();
