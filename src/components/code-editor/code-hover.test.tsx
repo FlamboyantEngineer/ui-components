@@ -59,6 +59,7 @@ describe('CodeEditor problems and hover tips', () => {
   afterEach(() => {
     delete (Range.prototype as Partial<Range>).getBoundingClientRect;
     vi.useRealTimers();
+    vi.unstubAllGlobals();
   });
 
   it('UIC-CODE-EDITOR-3.4 underlines the source each diagnostic points at', () => {
@@ -107,7 +108,10 @@ describe('CodeEditor problems and hover tips', () => {
   });
 
   it('UIC-CODE-EDITOR-3.6 shows the problems and the hover information under the pointer', async () => {
-    vi.useFakeTimers({ shouldAdvanceTime: true });
+    // The leave delay is checked to the millisecond, so the clock moves only when the test moves
+    // it; Testing Library settles each user-event call on a zero timer it advances through `jest`.
+    vi.useFakeTimers();
+    vi.stubGlobal('jest', { advanceTimersByTime: (ms: number) => vi.advanceTimersByTime(ms) });
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     const renderHover = (offset: number) => (offset === 12 ? 'basket: the chosen basket' : null);
     const { baseElement } = render(<Editor diagnostics={problems} renderHover={renderHover} />);
