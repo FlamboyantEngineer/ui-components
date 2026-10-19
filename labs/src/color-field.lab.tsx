@@ -109,7 +109,7 @@ function Presets() {
         defaultValue="#336699"
         swatches={swatches}
         allowsEyeDropper
-        description="Pick a preset swatch, or sample the screen where the browser can."
+        description="Pick a preset swatch; Clear and the screen picker share the footer below the presets."
         onCommit={(value) => setCommitted(value ?? 'empty')}
         data-lab-field="presets"
       />

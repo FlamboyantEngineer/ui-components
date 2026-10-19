@@ -12,20 +12,21 @@ const outdir = join(labsDir, 'build');
 const dev = process.argv.includes('--dev');
 const watch = process.argv.includes('--watch');
 
+const labNames = listLabSources();
 const entryPoints = {
   index: join(labSourceDir, 'index.entry.ts'),
-  ...Object.fromEntries(
-    listLabSources().map((name) => [name, join(labSourceDir, `${name}.lab.tsx`)]),
-  ),
+  reference: join(labsDir, 'reference.css'),
+  ...Object.fromEntries(labNames.map((name) => [name, join(labSourceDir, `${name}.lab.tsx`)])),
 };
 rmSync(outdir, { recursive: true, force: true });
 
-// Files the labs load at runtime, so the static labs work offline. Third-party engines go to
-// vendor/, which the package leaves out: the PDF engine and its worker, and the sample document.
+// Files the labs load at runtime, shipped with the bundles so the static labs work offline:
+// the PDF engine and its worker with their license, and the sample documents.
 const resolvePackage = createRequire(import.meta.url).resolve;
 const staticFiles = {
   'vendor/pdf.min.mjs': resolvePackage('pdfjs-dist/build/pdf.min.mjs'),
   'vendor/pdf.worker.min.mjs': resolvePackage('pdfjs-dist/build/pdf.worker.min.mjs'),
+  'vendor/LICENSE': resolvePackage('pdfjs-dist/LICENSE'),
   'samples/seasonal-report.pdf': join(labsDir, 'samples', 'seasonal-report.pdf'),
   'samples/seasonal-report-locked.pdf': join(labsDir, 'samples', 'seasonal-report-locked.pdf'),
 };
@@ -56,8 +57,8 @@ const options = {
 if (watch) {
   const context = await esbuild.context(options);
   await context.watch();
-  console.log(`Watching ${Object.keys(entryPoints).length - 1} labs.`);
+  console.log(`Watching ${labNames.length} labs.`);
 } else {
   await esbuild.build(options);
-  console.log(`Built ${Object.keys(entryPoints).length - 1} labs into labs/build/.`);
+  console.log(`Built ${labNames.length} labs into labs/build/.`);
 }

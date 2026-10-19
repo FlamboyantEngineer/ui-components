@@ -73,6 +73,8 @@ Verification: `src/components/scroll-region/scroll-region.test.tsx`
 
 `scrollbarVisibility` shall choose when overlay tracks show: `auto` (the default) while their axis overflows; `always` on every axis that scrolls, even when the content fits, where the thumb spans its track and leaves the tab order; `scroll` from a scroll until `scrollbarHideDelay` milliseconds (600 by default) pass without one; `hover` while a mouse or pen pointer is over the region, for the delay after it leaves, and while scrolling as in `scroll`. A focused thumb keeps its tracks shown. A track that shows or hides follows [Enter and Exit](ENTER-EXIT.md): it publishes `data-entering` while it appears and `data-exiting` while it leaves, and stays mounted until its exit animations end.
 
+An unmeasured track shall use a zero-length thumb rather than compute a non-finite inline size.
+
 Implementation: `src/components/scroll-region/scroll-region.tsx`, `src/components/scroll-region/use-scroll-activity.ts`, `src/components/scroll-region/overlay-scrollbars.tsx`, `labs/reference/scroll-region.css`
 Verification: `src/components/scroll-region/scroll-region.test.tsx`, `e2e/scroll-region.spec.ts`
 

@@ -111,6 +111,22 @@ describe('createTimeScale', () => {
     ]);
   });
 
+  it('UIC-SCALES-2.3 stops at the calendar limit without repeating or inventing boundaries', () => {
+    const scale = utc({ domain: ['9999-12-30', '9999-12-31'] });
+    expect(scale.ticks({ unit: 'day' }).map((tick) => [tick.value, tick.position])).toEqual([
+      ['9999-12-30', 0],
+      ['9999-12-31', 100],
+    ]);
+    for (const unit of ['week', 'month', 'quarter', 'year'] as const) {
+      expect(scale.ticks({ unit })).toEqual([]);
+    }
+    expect(
+      utc({ domain: ['9999-01-01', '9999-12-31'] })
+        .ticks({ unit: 'year' })
+        .map((tick) => tick.value),
+    ).toEqual(['9999-01-01']);
+  });
+
   it('UIC-SCALES-2.4 chooses the smallest unit that fits the tick count', () => {
     const unitOf = (domain: readonly [string, string], count?: number) =>
       utc({ domain })
@@ -164,6 +180,24 @@ describe('createTimeScale', () => {
     expect(french.format('2026-03-05', 'day')).toBe('5 mars');
     const tokyo = utc({ timeZone: 'Asia/Tokyo' });
     expect(tokyo.format('2026-03-04T20:00:00Z', 'day')).toBe('Mar 5');
+  });
+
+  it('UIC-SCALES-2.4 counts actual calendar boundaries and uses the smallest fitting year step', () => {
+    expect(
+      utc({ domain: ['2026-01-01', '2026-02-01'] })
+        .ticks({ count: 2 })
+        .map((tick) => tick.value),
+    ).toEqual(['2026-01-01', '2026-02-01']);
+    expect(
+      utc({ domain: ['2026-01-01', '2020-06-01'] })
+        .ticks({ count: 3 })
+        .map((tick) => tick.value),
+    ).toEqual(['2022-01-01', '2024-01-01', '2026-01-01']);
+    expect(
+      utc({ domain: ['0001-01-01', '9999-12-31'] })
+        .ticks({ count: 1 })
+        .map((tick) => tick.value),
+    ).toEqual(['5000-01-01']);
   });
 });
 

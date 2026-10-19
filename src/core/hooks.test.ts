@@ -52,6 +52,25 @@ describe('createHooks', () => {
       'data-variant': 'primary',
     });
   });
+
+  it('UIC-HOOKS-2.2 UIC-HOOKS-2.3 clears caller attributes for inactive hook values', () => {
+    const root = hooks.root({
+      props: {
+        'data-disabled': 'true',
+        'data-loading': 'true',
+        'data-focus-visible': 'true',
+        'data-note': 'caller',
+      },
+      data: { disabled: false, loading: undefined, 'data-focus-visible': null },
+    });
+    expect(root).toEqual({
+      className: 'ui-icon-button',
+      'data-disabled': undefined,
+      'data-loading': undefined,
+      'data-focus-visible': undefined,
+      'data-note': 'caller',
+    });
+  });
 });
 
 describe('dataAttributes', () => {

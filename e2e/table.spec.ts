@@ -250,6 +250,8 @@ test.describe('Table lab', () => {
   });
 
   test('UIC-TABLE-2.8 filters a column from its header by keyboard', async ({ page, lab }) => {
+    // This full-grid flow combines choice, text and numeric filters with a popup accessibility scan.
+    test.slow();
     await lab.open('table');
     const root = section(page, 'column-filters');
     const grid = root.getByRole('grid');

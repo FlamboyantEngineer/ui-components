@@ -76,7 +76,7 @@ describe('resolveLineGeometry', () => {
     expect(geometry.yTicks.map((tick) => tick.value)).toEqual([0, 2, 4]);
   });
 
-  it('UIC-CHART-6.1 reads dates on a time axis in its time zone', () => {
+  it('UIC-CHART-6.1 UIC-SCALES-2.4 reads dates on a time axis in its time zone', () => {
     const geometry = resolveLineGeometry({
       ...base,
       width: 420,
@@ -94,7 +94,13 @@ describe('resolveLineGeometry', () => {
       ['2026-03-01', 10],
       ['2026-03-31', 410],
     ]);
-    expect(geometry.xAxis.ticks.map((tick) => tick.label)).toEqual(['Mar 2026']);
+    expect(geometry.xAxis.ticks.map((tick) => tick.label)).toEqual([
+      'Mar 1',
+      'Mar 8',
+      'Mar 15',
+      'Mar 22',
+      'Mar 29',
+    ]);
     expect(geometry.xAxis.format('2026-03-01')).toBe('Mar 1, 2026');
     expect(geometry.xAxis.format('2026-03-01T12:30:00Z')).toMatch(/^Mar 1, 2026, 12:30\sPM$/);
     expect(geometry.xAxis.format('not a date')).toBe('');

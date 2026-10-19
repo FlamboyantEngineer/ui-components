@@ -53,15 +53,7 @@ interface TickPlan {
 }
 
 const defaultTimeTickCount = 8;
-const dayLength = 86_400_000;
 const units: readonly TimeScaleUnit[] = ['day', 'week', 'month', 'quarter', 'year'];
-const averageDays: Readonly<Record<TimeScaleUnit, number>> = {
-  day: 1,
-  week: 7,
-  month: 30.44,
-  quarter: 91.31,
-  year: 365.25,
-};
 const labelFormats: Readonly<Record<TimeScaleUnit, Intl.DateTimeFormatOptions>> = {
   day: { month: 'short', day: 'numeric' },
   week: { month: 'short', day: 'numeric' },
@@ -78,13 +70,18 @@ function readInstant(text: string, timeZone: string): number {
   return dateTime && 'timeZone' in dateTime ? dateTime.toDate().getTime() : Number.NaN;
 }
 
-function planTicks(spanDays: number, { unit, count }: TimeTickOptions): TickPlan {
+function planTicks(
+  { unit, count }: TimeTickOptions,
+  countTicks: (plan: TickPlan) => number,
+): TickPlan {
   if (unit) return { unit, step: 1 };
   const wanted = typeof count === 'number' && Number.isFinite(count) ? count : defaultTimeTickCount;
   const most = Math.max(1, Math.round(wanted));
-  const fitting = units.find((candidate) => spanDays / averageDays[candidate] + 1 <= most);
+  const fitting = units.find((candidate) => countTicks({ unit: candidate, step: 1 }) <= most);
   if (fitting) return { unit: fitting, step: 1 };
-  return { unit: 'year', step: Math.ceil((spanDays / averageDays.year + 1) / most) };
+  let step = 2;
+  while (countTicks({ unit: 'year', step }) > most) step += 1;
+  return { unit: 'year', step };
 }
 
 /** The start of the unit holding `date`; years align to multiples of the step. */
@@ -119,8 +116,12 @@ function shiftByUnits(date: CalendarDate, unit: TimeScaleUnit, count: number): C
   }
 }
 
-function addUnit(date: CalendarDate, { unit, step }: TickPlan): CalendarDate {
-  return shiftByUnits(date, unit, unit === 'year' ? step : 1);
+function addUnit(date: CalendarDate, plan: TickPlan, locale: string): CalendarDate | undefined {
+  const next = shiftByUnits(date, plan.unit, plan.unit === 'year' ? plan.step : 1);
+  // Calendar arithmetic clamps at its supported limit, sometimes between unit boundaries.
+  return next.compare(date) > 0 && floorToUnit(next, plan, locale).compare(next) === 0
+    ? next
+    : undefined;
 }
 
 /**
@@ -159,22 +160,56 @@ export function createTimeScale(options: TimeScaleOptions): TimeScale {
   ];
   const isReadable = Number.isFinite(start) && Number.isFinite(end);
   const linear = createLinearScale({ domain: [start, end], range: options.range });
+  const labels = new Map<TimeScaleUnit, Intl.DateTimeFormat>();
   const instantOf = (date: CalendarDate) => toZoned(date, timeZone).toDate().getTime();
   const map = (value: string) =>
     isReadable ? linear.map(readInstant(value, timeZone)) : Number.NaN;
   const format = (value: string, unit: TimeScaleUnit) => {
     const instant = readInstant(value, timeZone);
     if (!Number.isFinite(instant)) return '';
-    return new Intl.DateTimeFormat(locale, { timeZone, ...labelFormats[unit] }).format(instant);
+    let formatter = labels.get(unit);
+    if (!formatter) {
+      formatter = new Intl.DateTimeFormat(locale, { timeZone, ...labelFormats[unit] });
+      labels.set(unit, formatter);
+    }
+    return formatter.format(instant);
   };
   const ticks = (tickOptions: TimeTickOptions = {}) => {
     if (!isReadable) return [];
     const [low, high] = [Math.min(start, end), Math.max(start, end)];
-    const plan = planTicks((high - low) / dayLength, tickOptions);
-    let date = floorToUnit(toCalendarDate(fromDate(new Date(low), timeZone)), plan, locale);
-    if (instantOf(date) < low) date = addUnit(date, plan);
+    const lowDate = toCalendarDate(fromDate(new Date(low), timeZone));
+    const highDate = toCalendarDate(fromDate(new Date(high), timeZone));
+    const firstYear = lowDate.year + (instantOf(lowDate.set({ month: 1, day: 1 })) < low ? 1 : 0);
+    const firstTick = (plan: TickPlan) => {
+      if (plan.unit === 'year') {
+        const year = Math.ceil(firstYear / plan.step) * plan.step;
+        return year > lowDate.calendar.getYearsInEra(lowDate)
+          ? undefined
+          : lowDate.set({ year, month: 1, day: 1 });
+      }
+      const date = floorToUnit(lowDate, plan, locale);
+      return instantOf(date) < low ? addUnit(date, plan, locale) : date;
+    };
+    const countTicks = (plan: TickPlan) => {
+      if (plan.unit === 'year') {
+        return Math.max(
+          0,
+          Math.floor(highDate.year / plan.step) - Math.ceil(firstYear / plan.step) + 1,
+        );
+      }
+      const first = firstTick(plan);
+      if (!first || instantOf(first) > high) return 0;
+      if (plan.unit === 'day' || plan.unit === 'week') {
+        const days = highDate.calendar.toJulianDay(highDate) - first.calendar.toJulianDay(first);
+        return Math.floor(days / (plan.unit === 'week' ? 7 : 1)) + 1;
+      }
+      const months = (highDate.year - first.year) * 12 + highDate.month - first.month;
+      return Math.floor(months / (plan.unit === 'quarter' ? 3 : 1)) + 1;
+    };
+    const plan = planTicks(tickOptions, countTicks);
+    let date = firstTick(plan);
     const result: Array<ScaleTick<string>> = [];
-    for (; instantOf(date) <= high; date = addUnit(date, plan)) {
+    for (; date && instantOf(date) <= high; date = addUnit(date, plan, locale)) {
       const value = date.toString();
       result.push({ value, position: map(value), label: format(value, plan.unit) });
     }

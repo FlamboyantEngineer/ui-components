@@ -1,6 +1,7 @@
 // @vitest-environment node
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -42,6 +43,22 @@ afterEach(() => {
 });
 
 describe('no-reference check', () => {
+  it('UIC-LABS-1.2 accepts the original PDF runtime and rejects changed copies', () => {
+    const dir = tempDir();
+    const vendorDir = join(dir, 'labs/build/vendor');
+    mkdirSync(vendorDir, { recursive: true });
+    const resolvePackage = createRequire(import.meta.url).resolve;
+    for (const file of ['pdf.min.mjs', 'pdf.worker.min.mjs']) {
+      copyFileSync(resolvePackage(`pdfjs-dist/build/${file}`), join(vendorDir, file));
+    }
+    const args = [script, '--dir', dir];
+    expect(spawnSync(process.execPath, args, { encoding: 'utf8' }).status).toBe(0);
+    writeFileSync(join(vendorDir, 'pdf.min.mjs'), 'export {};\n');
+    const changed = spawnSync(process.execPath, args, { encoding: 'utf8' });
+    expect(changed.status).toBe(1);
+    expect(changed.stderr).toContain('differs from the installed PDF runtime');
+  });
+
   it('passes neutral content', () => {
     const result = scan({
       'button.tsx': 'export const label = "Save";\n',

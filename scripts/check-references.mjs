@@ -9,6 +9,7 @@
 
 import { execFileSync } from 'node:child_process';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -17,6 +18,12 @@ const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const BINARY = /\.(png|jpe?g|gif|webp|avif|ico|pdf|woff2?|ttf|otf|eot|zip|gz|tgz|wasm|mp4|webm)$/i;
 // Generated third-party metadata, not authored content.
 const GENERATED = new Set(['package-lock.json']);
+const resolvePackage = createRequire(import.meta.url).resolve;
+// Upstream PDF vocabulary overlaps the denylist. Only exact dependency copies are accepted.
+const vendorFiles = new Map([
+  ['labs/build/vendor/pdf.min.mjs', 'pdfjs-dist/build/pdf.min.mjs'],
+  ['labs/build/vendor/pdf.worker.min.mjs', 'pdfjs-dist/build/pdf.worker.min.mjs'],
+]);
 
 const args = process.argv.slice(2);
 
@@ -82,6 +89,18 @@ const { base, files } = listFiles();
 const findings = [];
 
 for (const file of files) {
+  const vendor = vendorFiles.get(file);
+  if (vendor) {
+    try {
+      const actual = readFileSync(join(base, file));
+      const expected = readFileSync(resolvePackage(vendor));
+      if (!actual.equals(expected))
+        findings.push(`${file}: differs from the installed PDF runtime`);
+    } catch {
+      findings.push(`${file}: cannot verify the installed PDF runtime`);
+    }
+    continue;
+  }
   for (const { index, pattern } of denylist) {
     pattern.lastIndex = 0;
     if (pattern.test(file)) findings.push(`${file}: path matches denylist entry #${index}`);

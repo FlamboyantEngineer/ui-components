@@ -50,7 +50,7 @@ Verification: `src/core/hooks.test.ts`
 
 ### UIC-HOOKS-2.3 - Caller data attributes
 
-Every component shall forward the caller's `data-*` props to its root element, for tests, analytics and host behaviour. When a caller attribute has the same name as a hook attribute the component writes, the component's value wins.
+Every component shall forward the caller's `data-*` props to its root element, for tests, analytics and host behaviour. When a caller attribute has the same name as a hook attribute the component writes, the component's value wins, including clearing the attribute when that hook value is `false`, `null` or `undefined`.
 
 Implementation: `src/core/hooks.ts`
 Verification: `src/core/hooks.test.ts`
@@ -59,10 +59,10 @@ Verification: `src/core/hooks.test.ts`
 
 ### UIC-HOOKS-3.1 - No stylesheet and no variables
 
-The package shall ship no CSS, import no stylesheet, depend on no styling package, and define or require no CSS custom property. A component renders correctly unstyled, with only browser defaults.
+Library modules shall import no stylesheet, depend on no styling package, and require no CSS custom property. A component renders correctly unstyled, with only browser defaults. The package includes reference stylesheets for its standalone labs; components never load them. Components may expose the measured custom properties described in UIC-HOOKS-3.2.
 
 Implementation: `eslint.config.js`, `eslint-rules/index.js`, `scripts/check-package.mjs`, `package.json`
-Verification: `test/lint-rules.test.ts`, `test/package.test.ts`
+Verification: `test/lint-rules.test.ts`, `test/package.test.ts`, `e2e/accessibility.spec.ts`
 
 ### UIC-HOOKS-3.2 - Functional inline styles only
 

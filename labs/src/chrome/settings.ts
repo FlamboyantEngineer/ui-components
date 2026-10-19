@@ -17,7 +17,7 @@ type StylesheetState = 'none' | 'loading' | 'loaded' | 'error';
 
 export const DEFAULT_THEME_ATTRIBUTE = 'data-theme';
 
-const referenceStylesheet = 'reference.css';
+const referenceStylesheet = 'build/reference.css';
 const stylesheetLinkId = 'ui-lab-stylesheet';
 
 const storageKeys = {
@@ -120,38 +120,52 @@ export function settingsSearch(settings: LabSettings, search = ''): string {
   return text ? `?${text}` : '';
 }
 
+function applyStylesheet(stylesheet: StylesheetChoice, doc: Document): void {
+  const root = doc.documentElement;
+  const setState = (state: StylesheetState) => {
+    root.dataset.labStylesheetState = state;
+  };
+  root.dataset.labStylesheet = stylesheet.kind;
+
+  let link = doc.getElementById(stylesheetLinkId) as HTMLLinkElement | null;
+  if (stylesheet.kind === 'none') {
+    link?.remove();
+    setState('none');
+  } else {
+    const href = stylesheet.kind === 'reference' ? referenceStylesheet : stylesheet.url;
+    let resolved: string;
+    try {
+      resolved = new URL(href, doc.baseURI).href;
+    } catch {
+      link?.remove();
+      setState('error');
+      return;
+    }
+    if (!link || link.href !== resolved) {
+      link?.remove();
+      link = doc.createElement('link');
+      link.id = stylesheetLinkId;
+      link.rel = 'stylesheet';
+      link.addEventListener('load', () => {
+        if (doc.getElementById(stylesheetLinkId) === link) setState('loaded');
+      });
+      link.addEventListener('error', () => {
+        if (doc.getElementById(stylesheetLinkId) === link) setState('error');
+      });
+      setState('loading');
+      link.href = href;
+      doc.head.append(link);
+    }
+  }
+}
+
 /**
  * Loads the chosen stylesheet and writes the theme attribute on the root element.
  * `data-lab-stylesheet-state` on the root reports none, loading, loaded or error.
  */
 export function applySettings(settings: LabSettings, doc: Document = document): void {
   const root = doc.documentElement;
-  const setState = (state: StylesheetState) => {
-    root.dataset.labStylesheetState = state;
-  };
-  root.dataset.labStylesheet = settings.stylesheet.kind;
-
-  let link = doc.getElementById(stylesheetLinkId) as HTMLLinkElement | null;
-  if (settings.stylesheet.kind === 'none') {
-    link?.remove();
-    setState('none');
-  } else {
-    const href =
-      settings.stylesheet.kind === 'reference' ? referenceStylesheet : settings.stylesheet.url;
-    const resolved = new URL(href, doc.baseURI).href;
-    if (!link || link.href !== resolved) {
-      link?.remove();
-      link = doc.createElement('link');
-      link.id = stylesheetLinkId;
-      link.rel = 'stylesheet';
-      link.addEventListener('load', () => setState('loaded'));
-      link.addEventListener('error', () => setState('error'));
-      setState('loading');
-      link.href = href;
-      doc.head.append(link);
-    }
-  }
-
+  applyStylesheet(settings.stylesheet, doc);
   if (appliedThemeAttribute && appliedThemeAttribute !== settings.themeAttribute) {
     root.removeAttribute(appliedThemeAttribute);
   }

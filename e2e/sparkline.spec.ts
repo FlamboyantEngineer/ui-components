@@ -1,6 +1,30 @@
 import { expect, test } from './fixtures.js';
 
 test.describe('Sparkline lab', () => {
+  test('UIC-SCALES-1.1 UIC-SCALES-1.3 UIC-SCALES-1.5 UIC-SCALES-2.3 UIC-SCALES-2.4 handles extreme scale domains', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('sparkline');
+    for (const domain of ['adjacent', 'tiny', 'subnormal', 'wide']) {
+      const example = page.locator(`[data-lab-scale="${domain}"]`);
+      await expect(example.locator('[data-lab-output="positions"]')).toHaveText('0, 100');
+      const ticks = example.locator('[data-lab-output="ticks"]');
+      await expect(ticks).not.toBeEmpty();
+      await expect(ticks).not.toContainText(/NaN|Infinity|∞/);
+    }
+    await expect(page.locator('[data-lab-scale="tiny"] [data-lab-output="ticks"]')).toContainText(
+      'E-110',
+    );
+    await expect(page.locator('[data-lab-output="tick-budget"]')).toHaveText('1001');
+    await expect(page.locator('[data-lab-output="calendar-limit"]')).toHaveText(
+      '9999-12-30, 9999-12-31',
+    );
+    await expect(page.locator('[data-lab-output="calendar-count"]')).toHaveText(
+      '2026-01-01, 2026-02-01',
+    );
+  });
+
   test('UIC-SPARKLINE-1.1 UIC-SPARKLINE-1.4 UIC-SPARKLINE-2.1 draws named lines and areas with markers', async ({
     page,
     lab,

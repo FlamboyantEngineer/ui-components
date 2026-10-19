@@ -214,11 +214,34 @@ test.describe('Menu lab', () => {
 
   test('UIC-MENU-1.1 renders unstyled without errors', async ({ page, lab }) => {
     await lab.open('menu', { stylesheet: 'none' });
-    await section(page, 'Opened from a button, items as data')
-      .getByRole('button', { name: 'File' })
-      .click();
+    const area = section(page, 'Opened from a button, items as data');
+    await area.getByRole('button', { name: 'File' }).click();
     await expect(item(page, 'Export as')).toBeVisible();
     await expect(popovers(page).getByRole('separator')).toHaveCount(1);
+    await expect(area.locator('[data-lab-output="File action"]')).toHaveText('none');
+    await item(page, /^Open…/).click();
+    await expect(area.locator('[data-lab-output="File action"]')).toHaveText('open');
+    await expect(popovers(page)).toHaveCount(0);
+  });
+
+  test('UIC-MENU-4.1 UIC-MENU-1.4 selects an item by dragging from the trigger', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('menu');
+    const area = section(page, 'Opened from a button, items as data');
+    const trigger = area.getByRole('button', { name: 'File' });
+    await trigger.hover();
+    await page.mouse.down();
+    const entry = item(page, /^New file/);
+    await expect(entry).toBeVisible();
+    const box = await entry.boundingBox();
+    if (!box) throw new Error('menu item not rendered');
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 5 });
+    await page.mouse.up();
+    await expect(area.locator('[data-lab-output="File action"]')).toHaveText('new');
+    await expect(popovers(page)).toHaveCount(0);
+    await expect(trigger).toBeFocused();
   });
 
   test('UIC-MENU-2.1 UIC-MENU-2.3 stays accessible in the dark theme', async ({ page, lab }) => {

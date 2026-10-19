@@ -165,10 +165,7 @@ test.describe('Date Time Field lab', () => {
     );
   });
 
-  test('UIC-DATE-TIME-FIELD-4.1 UIC-DATE-TIME-FIELD-4.2 UIC-DATE-TIME-FIELD-4.3 edits seconds, zones and time ranges', async ({
-    page,
-    lab,
-  }) => {
+  test('UIC-DATE-TIME-FIELD-4.1 edits seconds', async ({ page, lab }) => {
     await lab.open('date-time-field');
     const zonedOutput = page.locator('[data-lab-output="Zoned"]');
     const seconds = field(page, 'seconds');
@@ -177,14 +174,24 @@ test.describe('Date Time Field lab', () => {
     await seconds.getByRole('spinbutton', { name: /^second/ }).focus();
     await page.keyboard.press('ArrowUp');
     await expect(zonedOutput).toHaveText('"06:30:16"');
+    await lab.expectAccessible();
+  });
 
+  test('UIC-DATE-TIME-FIELD-4.2 edits a zoned hour', async ({ page, lab }) => {
+    await lab.open('date-time-field');
+    const zonedOutput = page.locator('[data-lab-output="Zoned"]');
     const zoned = field(page, 'zoned');
     await expect(zoned.getByRole('spinbutton', { name: /^hour/ })).toHaveText('12');
     await expect(zoned.locator('[data-type="timeZoneName"]')).toHaveText(/GMT\+9/);
     await zoned.getByRole('spinbutton', { name: /^hour/ }).focus();
     await page.keyboard.press('ArrowUp');
     await expect(zonedOutput).toHaveText('"2026-04-13T13:00:00+09:00[Asia/Tokyo]"');
+    await lab.expectAccessible();
+  });
 
+  test('UIC-DATE-TIME-FIELD-4.3 edits a time-range endpoint', async ({ page, lab }) => {
+    await lab.open('date-time-field');
+    const zonedOutput = page.locator('[data-lab-output="Zoned"]');
     const range = field(page, 'time-range');
     await expect(range.locator('[data-type="timeZoneName"]')).toHaveCount(0);
     await range.getByRole('spinbutton', { name: /^hour/ }).nth(1).focus();

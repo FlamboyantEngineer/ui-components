@@ -41,14 +41,17 @@ function toKebabCase(key: string): string {
   return key.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
 }
 
+function toAttributeName(key: string): `data-${string}` {
+  return key.startsWith('data-') ? (key as `data-${string}`) : `data-${toKebabCase(key)}`;
+}
+
 /** Converts hook values to data attributes: `{ variant: 'primary', disabled: true }` → `data-variant`, `data-disabled`. */
 export function dataAttributes(values: DataValues | undefined): DataAttributes {
   const attributes: DataAttributes = {};
   if (!values) return attributes;
   for (const [key, value] of Object.entries(values)) {
     if (value === false || value === null || value === undefined) continue;
-    const name = key.startsWith('data-') ? key : `data-${toKebabCase(key)}`;
-    attributes[name as `data-${string}`] = value === true ? 'true' : String(value);
+    attributes[toAttributeName(key)] = value === true ? 'true' : String(value);
   }
   return attributes;
 }
@@ -106,8 +109,11 @@ export function createHooks<const Slot extends string = never>(
     name,
     className: rootClass,
     root({ className, data, props } = {}) {
+      const attributes: DataAttributes = props ? pickDataAttributes(props) : {};
+      // Explicit empty values also clear caller attributes spread before these hooks.
+      for (const key of Object.keys(data ?? {})) attributes[toAttributeName(key)] = undefined;
       return {
-        ...(props ? pickDataAttributes(props) : {}),
+        ...attributes,
         ...dataAttributes(data),
         className: mergeClassNames(rootClass, className),
       };

@@ -17,6 +17,82 @@ const markerSets = {
   'min max last': ['min', 'max', 'last'],
 } as const;
 
+const edgeDomains = {
+  adjacent: [1, 1 + Number.EPSILON],
+  tiny: [1e-110, 2e-110],
+  subnormal: [0, Number.MIN_VALUE],
+  wide: [-1e308, 1e308],
+} as const;
+
+function ScaleEdges() {
+  return (
+    <StateMatrix
+      axes={{ domain: Object.keys(edgeDomains) as Array<keyof typeof edgeDomains> }}
+      render={({ domain }) => {
+        const scale = createLinearScale({
+          domain: edgeDomains[domain],
+          range: [0, 100],
+          formatOptions: domain === 'wide' ? { notation: 'scientific' } : undefined,
+        });
+        return (
+          <div data-lab-scale={domain}>
+            <p>
+              Endpoints:{' '}
+              <output data-lab-output="positions">
+                {edgeDomains[domain].map(scale.map).join(', ')}
+              </output>
+            </p>
+            <p>
+              Ticks:{' '}
+              <output data-lab-output="ticks">
+                {scale
+                  .ticks()
+                  .map((tick) => tick.label)
+                  .join(', ')}
+              </output>
+            </p>
+          </div>
+        );
+      }}
+    />
+  );
+}
+
+function CalendarEdges() {
+  const limit = createTimeScale({
+    domain: ['9999-12-30', '9999-12-31'],
+    range: [0, 100],
+    timeZone: 'UTC',
+  });
+  const month = createTimeScale({
+    domain: ['2026-01-01', '2026-02-01'],
+    range: [0, 100],
+    timeZone: 'UTC',
+  });
+  return (
+    <>
+      <p>
+        Last supported days:{' '}
+        <output data-lab-output="calendar-limit">
+          {limit
+            .ticks({ unit: 'day' })
+            .map((tick) => tick.value)
+            .join(', ')}
+        </output>
+      </p>
+      <p>
+        Two calendar ticks:{' '}
+        <output data-lab-output="calendar-count">
+          {month
+            .ticks({ count: 2 })
+            .map((tick) => tick.value)
+            .join(', ')}
+        </output>
+      </p>
+    </>
+  );
+}
+
 const gapped = [4, 6, 5, Number.NaN, Number.NaN, 7, 9, 8, Number.NaN, 6];
 
 const regions = [
@@ -162,6 +238,30 @@ mountLab(
       description="A wide area with month ticks from the time scale and nice value ticks from the linear scale."
     >
       <QuarterWithTicks />
+    </LabSection>
+    <LabSection
+      title="Scale precision"
+      description="Adjacent floating-point values, tiny and subnormal values, and a domain whose span overflows still map their endpoints and produce finite ticks. Tiny tick labels use scientific notation."
+    >
+      <ScaleEdges />
+      <p>
+        A request for {String(Number.MAX_VALUE)} ticks is bounded:{' '}
+        <output data-lab-output="tick-budget">
+          {
+            createLinearScale({
+              domain: [0, 1],
+              range: [0, 100],
+              tickCount: Number.MAX_VALUE,
+            }).ticks().length
+          }
+        </output>
+      </p>
+    </LabSection>
+    <LabSection
+      title="Calendar boundaries"
+      description="Day ticks stop at the last supported date. Automatic intervals count real calendar boundaries, so a two-tick budget includes both ends of this month."
+    >
+      <CalendarEdges />
     </LabSection>
   </>,
 );

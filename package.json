@@ -43,7 +43,6 @@
     "labs/*.css",
     "labs/reference",
     "labs/build",
-    "!labs/build/vendor",
     "specs",
     "CHANGELOG.md"
   ],

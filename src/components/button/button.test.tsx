@@ -8,6 +8,22 @@ import { mergeProps } from '../../utils/merge-props.js';
 import { Button } from './button.js';
 
 describe('Button', () => {
+  it('UIC-HOOKS-2.3 keeps inactive hooks clear when caller attributes conflict', () => {
+    const { rerender } = render(
+      <Button data-full-width="true" fullWidth={false}>
+        Save
+      </Button>,
+    );
+    const button = screen.getByRole('button', { name: 'Save' });
+    expect(button).not.toHaveAttribute('data-full-width');
+    rerender(
+      <Button data-full-width="false" fullWidth>
+        Save
+      </Button>,
+    );
+    expect(button).toHaveAttribute('data-full-width', 'true');
+  });
+
   it('UIC-BUTTON-1.1 renders a native button of type button and reports presses', async () => {
     const onPress = vi.fn();
     render(<Button onPress={onPress}>Save</Button>);

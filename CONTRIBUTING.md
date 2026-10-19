@@ -31,6 +31,8 @@ Code follows [docs/CODING-GUIDELINES.md](docs/CODING-GUIDELINES.md): naming, str
 - **No direct browser storage.** Persisted state goes through the `UiProvider` storage adapter.
 - **Neutral wording.** Code, comments, docs, specs, labs, fixtures, tests and package metadata never name a host application or its domain vocabulary. `npm run check:references` scans every authored file and path against an encoded denylist in `scripts/reference-denylist.json`. To add a term, append the output of `node scripts/check-references.mjs --encode '<regex>'`.
 
+The PDF lab's third-party engine and worker are verified byte for byte against the installed dependency when checking the package. Their upstream PDF vocabulary is not authored library content; a modified runtime fails verification.
+
 ## Specs, tests and labs
 
 - Each component has a spec in `specs/` in the format of [specs/README.md](specs/README.md): `UIC-` requirement IDs, `Implementation:` and `Verification:` lines, and the component's hook table. `npm run check:specs` validates them.
