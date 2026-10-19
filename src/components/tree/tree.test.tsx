@@ -80,7 +80,7 @@ describe('Tree', () => {
               'plus'
             )
           ) : (
-            <svg data-testid={`icon-${item.id}`} />
+            <svg role="img" aria-label={`${item.name} icon`} />
           )
         }
         renderLabel={(item) => <strong>{item.name}</strong>}
@@ -92,7 +92,9 @@ describe('Tree', () => {
     );
     const fruit = row('Fruit');
     expect(fruit.querySelector('.ui-tree__icon')).toHaveAttribute('data-glyph', 'minus');
-    expect(screen.getByTestId('icon-apple').parentElement).toHaveClass('ui-tree__icon');
+    expect(screen.getByRole('img', { name: 'Apple icon', hidden: true }).parentElement).toHaveClass(
+      'ui-tree__icon',
+    );
     expect(within(row('Apple')).getByText('Apple').tagName).toBe('STRONG');
     expect(row('Apple').querySelector('.ui-tree__meta')).toHaveTextContent('Red');
     expect(row('Pear').querySelector('.ui-tree__meta')).toBeNull();
@@ -230,14 +232,14 @@ describe('Tree', () => {
     expect(JSON.parse(storage.getItem('food-tree') ?? 'null')).toEqual(['vegetables', 'fruit']);
     unmount();
 
-    const second = render(view());
+    const { unmount: unmountSecond } = render(view());
     expect(rowNames()).toEqual(['Fruit', 'Apple', 'Pear', 'Vegetables', 'Kale', 'Nuts']);
-    second.unmount();
+    unmountSecond();
 
     storage.setItem('food-tree', '{"not":"keys"}');
-    const third = render(view());
+    const { unmount: unmountThird } = render(view());
     expect(rowNames()).toEqual(['Fruit', 'Vegetables', 'Kale', 'Nuts']);
-    third.unmount();
+    unmountThird();
 
     storage.setItem('food-tree', '[]');
     render(view({ expandedKeys: ['fruit'] }));
@@ -445,18 +447,19 @@ describe('Tree', () => {
           className="caller"
           id="food"
           ref={ref}
-          data-testid="tree"
+          data-test="tree"
           data-size="x"
         />
       );
     }
     const { container } = render(<Harness />);
-    const tree = screen.getByTestId('tree');
+    const tree = screen.getByRole('treegrid', { name: 'Food' });
+    expect(tree).toHaveAttribute('data-test', 'tree');
     expect(tree).toHaveClass('ui-tree', 'caller');
     expect(tree).toHaveAttribute('id', 'food');
     expect(tree).toHaveAttribute('data-size', 'sm');
     expect(ref.current).toBe(tree);
-    expectHooksMatchSpec(container, 'TREE');
+    expectHooksMatchSpec(container, 'TREE', { callerAttributes: ['data-test'] });
   });
 
   it('UIC-TREE-4.5 renders only the fixed-height rows in view when virtualized', () => {

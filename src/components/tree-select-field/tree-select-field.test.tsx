@@ -360,7 +360,7 @@ describe('TreeSelectField', () => {
     expect(screen.queryByRole('button', { name: 'Clear Place' })).not.toBeInTheDocument();
     expectHooksMatchSpec(container, 'TREE-SELECT-FIELD');
     unmount();
-    const readOnly = render(
+    const { unmount: unmountReadOnly } = render(
       <TreeSelectField
         label="Place"
         items={places}
@@ -373,7 +373,7 @@ describe('TreeSelectField', () => {
     await user.click(trigger(/^Place /));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Remove Peru' })).not.toBeInTheDocument();
-    readOnly.unmount();
+    unmountReadOnly();
     render(<TreeSelectField label="Place" items={places} getTextValue={getTextValue} isDisabled />);
     expect(trigger(/^Place /)).toBeDisabled();
   });
@@ -388,7 +388,7 @@ describe('TreeSelectField', () => {
       );
     expect(values()).toEqual(['']);
     unmount();
-    const multiple = render(
+    const { container: multiple } = render(
       <TreeSelectField
         label="Place"
         items={places}
@@ -399,7 +399,7 @@ describe('TreeSelectField', () => {
       />,
     );
     expect(
-      [...multiple.container.querySelectorAll<HTMLInputElement>('input[name="places"]')].map(
+      [...multiple.querySelectorAll<HTMLInputElement>('input[name="places"]')].map(
         (input) => input.value,
       ),
     ).toEqual(['oslo', 'peru']);

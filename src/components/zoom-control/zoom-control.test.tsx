@@ -143,6 +143,7 @@ describe('ZoomControl', () => {
     expect(range).toHaveAttribute('step', '1');
     expect(range).toHaveValue('3');
     expect(range).toHaveAttribute('aria-valuetext', '137.5%');
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot drag or step a native range input
     fireEvent.change(range, { target: { value: '0' } });
     expect(onChange).toHaveBeenLastCalledWith(50);
     expect(findNearestZoomLevelIndex(levels, 87.5)).toBe(1);

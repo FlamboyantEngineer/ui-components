@@ -32,7 +32,7 @@ function Source(props: UnsavedChangesOptions) {
 function Probe({ onState }: { onState: (state: UnsavedChangesGuardState) => void }) {
   const state = useUnsavedChangesGuard();
   onState(state);
-  return <output data-testid="dirty">{String(state.isDirty)}</output>;
+  return <output aria-label="Dirty">{String(state.isDirty)}</output>;
 }
 
 function setup(children: ReactNode, guardProps: Parameters<typeof UnsavedChangesGuard>[0] = {}) {
@@ -63,6 +63,8 @@ async function settled<T>(promise: Promise<T>): Promise<T | 'pending'> {
   return value;
 }
 
+const dirtyState = () => screen.getByRole('status', { name: 'Dirty' });
+
 const actionNames = () =>
   [...document.querySelectorAll('.ui-modal__actions button')].map((button) => button.textContent);
 
@@ -82,7 +84,7 @@ describe('UnsavedChangesGuard', () => {
         <Probe onState={() => {}} />
       </UnsavedChangesGuard>,
     );
-    expect(screen.getByTestId('dirty')).toHaveTextContent('false');
+    expect(dirtyState()).toHaveTextContent('false');
     const renderWith = (isDirty: boolean, isMounted: boolean) =>
       rerender(
         <UnsavedChangesGuard>
@@ -91,9 +93,9 @@ describe('UnsavedChangesGuard', () => {
         </UnsavedChangesGuard>,
       );
     renderWith(true, true);
-    expect(screen.getByTestId('dirty')).toHaveTextContent('true');
+    expect(dirtyState()).toHaveTextContent('true');
     renderWith(true, false);
-    expect(screen.getByTestId('dirty')).toHaveTextContent('false');
+    expect(dirtyState()).toHaveTextContent('false');
   });
 
   it('UIC-UNSAVED-CHANGES-GUARD-1.1 refuses hooks outside a guard', () => {

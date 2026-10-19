@@ -287,9 +287,11 @@ describe('TextDiff', () => {
     );
     await user.click(screen.getByRole('button', { name: 'Next change' }));
     expect(lineRows(pane(container, 'new'))[1]).toHaveFocus();
-    const removal = render(<TextDiff oldText={'a\nb\nc'} newText={'a\nc'} layout="split" />);
-    await user.click(within(removal.container).getByRole('button', { name: 'Next change' }));
-    expect(lineRows(pane(removal.container, 'old'))[1]).toHaveFocus();
+    const { container: removal } = render(
+      <TextDiff oldText={'a\nb\nc'} newText={'a\nc'} layout="split" />,
+    );
+    await user.click(within(removal).getByRole('button', { name: 'Next change' }));
+    expect(lineRows(pane(removal, 'old'))[1]).toHaveFocus();
   });
 
   it('UIC-TEXT-DIFF-2.3 moves with n and p, except inside widgets, inputs or with modifiers', async () => {
@@ -333,13 +335,12 @@ describe('TextDiff', () => {
       'true',
     );
     expect(rows[0]).toHaveAttribute('tabindex', '-1');
-    const split = render(<TextDiff oldText={oldText} newText={newText} layout="split" />);
-    const newRows = lineRows(pane(split.container, 'new'));
-    expect(label(newRows[0]!)).toBe('Unchanged, new line 1');
-    expect(split.container.querySelector('.ui-text-diff__filler')).toHaveAttribute(
-      'aria-hidden',
-      'true',
+    const { container: split } = render(
+      <TextDiff oldText={oldText} newText={newText} layout="split" />,
     );
+    const newRows = lineRows(pane(split, 'new'));
+    expect(label(newRows[0]!)).toBe('Unchanged, new line 1');
+    expect(split.querySelector('.ui-text-diff__filler')).toHaveAttribute('aria-hidden', 'true');
   });
 
   it('UIC-TEXT-DIFF-3.2 names the root and the focusable panes', () => {
@@ -350,14 +351,11 @@ describe('TextDiff', () => {
     const lines = screen.getByRole('group', { name: 'Lines' });
     expect(lines).toHaveAttribute('tabindex', '0');
     expect(lines).toBe(viewport(container, 'both'));
-    const split = render(<TextDiff oldText={oldText} newText={newText} layout="split" />);
-    expect(within(split.container).getByRole('group', { name: 'Before' })).toBe(
-      viewport(split.container, 'old'),
+    const { container: split } = render(
+      <TextDiff oldText={oldText} newText={newText} layout="split" />,
     );
-    expect(within(split.container).getByRole('group', { name: 'After' })).toHaveAttribute(
-      'tabindex',
-      '0',
-    );
+    expect(within(split).getByRole('group', { name: 'Before' })).toBe(viewport(split, 'old'));
+    expect(within(split).getByRole('group', { name: 'After' })).toHaveAttribute('tabindex', '0');
   });
 
   it('UIC-TEXT-DIFF-3.3 forwards caller attributes and matches its hooks', () => {
@@ -367,14 +365,15 @@ describe('TextDiff', () => {
         newText={newText}
         className="recipe"
         id="recipe-diff"
-        data-testid="diff"
+        data-test="diff"
         aria-describedby="hint"
       />,
     );
-    const root = screen.getByTestId('diff');
+    const root = container.firstElementChild;
+    expect(root).toHaveAttribute('data-test', 'diff');
     expect(root).toHaveClass('ui-text-diff', 'recipe');
     expect(root).toHaveAttribute('id', 'recipe-diff');
     expect(root).toHaveAttribute('aria-describedby', 'hint');
-    expectHooksMatchSpec(container, 'TEXT-DIFF');
+    expectHooksMatchSpec(container, 'TEXT-DIFF', { callerAttributes: ['data-test'] });
   });
 });

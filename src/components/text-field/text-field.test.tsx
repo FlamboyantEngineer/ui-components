@@ -122,7 +122,9 @@ describe('TextField', () => {
     await user.type(input, '!');
     await user.tab();
     expect(onCommit).toHaveBeenLastCalledWith('Figs!');
-    fireEvent.change(input, { target: { value: 'Kiwi' } });
+    await user.clear(input);
+    await user.type(input, 'Kiwi');
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing on a keydown
     fireEvent.keyDown(input, { key: 'Enter', isComposing: true });
     expect(onCommit).toHaveBeenCalledTimes(2);
   });

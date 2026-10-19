@@ -49,7 +49,8 @@ describe('TextField input transform', () => {
     expect(caretOf(input)).toBe(6);
   });
 
-  it('UIC-TEXT-FIELD-4.1 transforms a composition once it ends', () => {
+  it('UIC-TEXT-FIELD-4.1 transforms a composition once it ends', async () => {
+    const user = userEvent.setup();
     const onChange = vi.fn();
     render(
       <TextField label="Code" transformInput={(text) => text.toUpperCase()} onChange={onChange} />,
@@ -57,7 +58,7 @@ describe('TextField input transform', () => {
     const input = screen.getByRole('textbox', { name: 'Code' });
     act(() => input.focus());
     fireEvent.compositionStart(input);
-    fireEvent.change(input, { target: { value: 'ka' } });
+    await user.keyboard('ka');
     expect(input).toHaveValue('ka');
     fireEvent.compositionEnd(input);
     expect(input).toHaveValue('KA');

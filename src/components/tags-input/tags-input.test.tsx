@@ -140,6 +140,7 @@ describe('TagsInput', () => {
     await user.type(input, 'Kiwi,, Lime; Ma');
     expect(tagTexts()).toEqual(['Fig', 'Kiwi', 'Lime']);
     expect(input).toHaveValue(' Ma');
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing on a keydown
     fireEvent.keyDown(input, { key: 'Enter', isComposing: true });
     expect(tagTexts()).toHaveLength(3);
     await user.clear(input);
