@@ -260,7 +260,6 @@ let user: ReturnType<typeof userEvent.setup>;
  */
 function useFakeClock() {
   vi.useFakeTimers();
-  vi.stubGlobal('jest', { advanceTimersByTime: (ms: number) => vi.advanceTimersByTime(ms) });
   user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
 }
 

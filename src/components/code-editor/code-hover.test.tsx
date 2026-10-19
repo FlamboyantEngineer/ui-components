@@ -111,7 +111,6 @@ describe('CodeEditor problems and hover tips', () => {
     // The leave delay is checked to the millisecond, so the clock moves only when the test moves
     // it; Testing Library settles each user-event call on a zero timer it advances through `jest`.
     vi.useFakeTimers();
-    vi.stubGlobal('jest', { advanceTimersByTime: (ms: number) => vi.advanceTimersByTime(ms) });
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     const renderHover = (offset: number) => (offset === 12 ? 'basket: the chosen basket' : null);
     const { baseElement } = render(<Editor diagnostics={problems} renderHover={renderHover} />);

@@ -69,7 +69,6 @@ describe('HoverCard', () => {
     vi.useFakeTimers();
     // Testing Library's async wrapper ends each user-event call on a zero-delay timer, which it only
     // advances under Jest's fake timers; point it at Vitest's clock so no real time passes.
-    vi.stubGlobal('jest', { advanceTimersByTime: (ms: number) => vi.advanceTimersByTime(ms) });
     user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
   });
 

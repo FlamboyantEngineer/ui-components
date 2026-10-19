@@ -113,7 +113,6 @@ function scrollTo(viewport: HTMLElement, top: number) {
  */
 function fakeTimeouts() {
   vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
-  vi.stubGlobal('jest', { advanceTimersByTime: (ms: number) => vi.advanceTimersByTime(ms) });
   return userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
 }
 

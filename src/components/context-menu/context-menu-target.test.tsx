@@ -22,7 +22,6 @@ function popover() {
  */
 function setupOnFakeClock(): UserEvent {
   vi.useFakeTimers();
-  vi.stubGlobal('jest', { advanceTimersByTime: (ms: number) => vi.advanceTimersByTime(ms) });
   return userEvent.setup({ advanceTimers: (ms) => vi.advanceTimersByTime(ms) });
 }
 

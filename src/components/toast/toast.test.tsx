@@ -17,7 +17,6 @@ const titles = () =>
  */
 function useFakeClock() {
   vi.useFakeTimers();
-  vi.stubGlobal('jest', { advanceTimersByTime: (ms: number) => vi.advanceTimersByTime(ms) });
   return userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
 }
 
