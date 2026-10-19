@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -292,6 +292,7 @@ describe('Card', () => {
   });
 
   it('UIC-CARD-3.2 forwards clicks on the card to its action but not from inner controls or selections', async () => {
+    const user = userEvent.setup();
     const onAction = vi.fn();
     const onInner = vi.fn();
     render(
@@ -308,27 +309,32 @@ describe('Card', () => {
         <a href="#map">Map</a>
       </Card>,
     );
-    await userEvent.click(screen.getByText('Fjords and forests'));
+    await user.click(screen.getByText('Fjords and forests'));
     expect(onAction).toHaveBeenCalledTimes(1);
-    await userEvent.click(screen.getByRole('button', { name: 'Share' }));
+    await user.click(screen.getByRole('button', { name: 'Share' }));
     expect(onInner).toHaveBeenCalledTimes(1);
-    fireEvent.click(screen.getByRole('link', { name: 'Map' }));
+    await user.click(screen.getByRole('link', { name: 'Map' }));
     expect(onAction).toHaveBeenCalledTimes(1);
 
     const text = screen.getByText('Fjords and forests');
-    const selection = document.getSelection();
-    selection?.selectAllChildren(text);
-    fireEvent.click(text);
+    // Drag across the text to select it; the click that ends the drag is not an activation.
+    await user.pointer([
+      { keys: '[MouseLeft>]', target: text, offset: 0 },
+      { offset: 6 },
+      { keys: '[/MouseLeft]' },
+    ]);
+    expect(document.getSelection()?.toString()).toBe('Fjords');
     expect(onAction).toHaveBeenCalledTimes(1);
-    selection?.removeAllRanges();
+    document.getSelection()?.removeAllRanges();
     text.addEventListener('click', (event) => event.preventDefault(), { once: true });
-    fireEvent.click(text);
+    await user.click(text);
     expect(onAction).toHaveBeenCalledTimes(1);
-    fireEvent.click(text);
+    await user.click(text);
     expect(onAction).toHaveBeenCalledTimes(2);
   });
 
-  it('UIC-CARD-3.2 repeats the modifier keys of a click on a link card', () => {
+  it('UIC-CARD-3.2 repeats the modifier keys of a click on a link card', async () => {
+    const user = userEvent.setup();
     const clicks: Array<{ ctrlKey: boolean; shiftKey: boolean }> = [];
     const renderLink = ({ onClick, ...props }: UiLinkProps) => (
       <a
@@ -347,8 +353,11 @@ describe('Card', () => {
         </Card>
       </UiProvider>,
     );
-    fireEvent.click(screen.getByText('Savanna city'), { ctrlKey: true });
-    fireEvent.click(screen.getByText('Savanna city'), { shiftKey: true });
+    await user.keyboard('{Control>}');
+    await user.click(screen.getByText('Savanna city'));
+    await user.keyboard('{/Control}{Shift>}');
+    await user.click(screen.getByText('Savanna city'));
+    await user.keyboard('{/Shift}');
     expect(clicks).toEqual([
       { ctrlKey: true, shiftKey: false },
       { ctrlKey: false, shiftKey: true },

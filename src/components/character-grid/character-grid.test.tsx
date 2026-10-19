@@ -197,10 +197,10 @@ describe('CharacterGrid', () => {
     ).toEqual(['Recently used', '€', '→']);
     expect(storage.getItem('symbols')).toBe('["€","→"]');
     unmount();
-    const again = renderGrid({ storage, persistKey: 'symbols' });
-    expect(headings(again.container)).toEqual(['Recently used', 'Arrows', 'Currency']);
+    const { container: againContainer } = renderGrid({ storage, persistKey: 'symbols' });
+    expect(headings(againContainer)).toEqual(['Recently used', 'Arrows', 'Currency']);
     await user.type(screen.getByRole('searchbox'), 'euro');
-    expect(headings(again.container)).toEqual(['Currency']);
+    expect(headings(againContainer)).toEqual(['Currency']);
   });
 
   it('UIC-CHARACTER-GRID-2.2 keeps at most 16, drops characters no longer offered and survives bad values', async () => {

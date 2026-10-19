@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
-import { userEvent } from '@testing-library/user-event';
+import { userEvent, type UserEvent } from '@testing-library/user-event';
 import { I18nProvider } from '../../primitives/index.js';
 import { describe, expect, it, vi } from 'vitest';
 import { UiProvider } from '../../core/provider.js';
@@ -34,8 +34,8 @@ function setBox(element: HTMLElement, { cut }: { cut: boolean }) {
   Object.defineProperty(element, 'scrollWidth', { configurable: true, value: cut ? 240 : 100 });
 }
 
-async function rest(element: HTMLElement) {
-  fireEvent.pointerEnter(element, { pointerType: 'mouse' });
+async function rest(user: UserEvent, element: HTMLElement) {
+  await user.hover(element);
   await act(async () => {
     vi.advanceTimersByTime(500);
   });
@@ -135,10 +135,10 @@ describe('Breadcrumb', () => {
     rerender(<Breadcrumb items={[{ label: 'Home' }]} />);
     expect(container.querySelector('.ui-breadcrumb__separator')).toBeNull();
 
-    rerender(<Breadcrumb items={trail} separator={<svg data-testid="slash" />} />);
-    expect(screen.getAllByTestId('slash')[0]?.parentElement).toHaveClass(
-      'ui-breadcrumb__separator',
-    );
+    rerender(<Breadcrumb items={trail} separator={<svg role="img" aria-label="Slash" />} />);
+    expect(
+      screen.getAllByRole('img', { name: 'Slash', hidden: true })[0]?.parentElement,
+    ).toHaveClass('ui-breadcrumb__separator');
 
     rerender(
       <I18nProvider locale="ar-EG">
@@ -175,20 +175,21 @@ describe('Breadcrumb', () => {
         className="caller"
         id="trail"
         ref={ref}
-        data-testid="probe"
+        data-owner="probe"
         data-size="caller"
       />,
     );
-    const nav = screen.getByTestId('probe');
+    const nav = screen.getByRole('navigation');
     expect(nav.tagName).toBe('NAV');
     expect(nav).toHaveClass('ui-breadcrumb', 'caller');
     expect(nav).toHaveAttribute('id', 'trail');
     expect(nav).toHaveAttribute('data-size', 'md');
+    expect(nav).toHaveAttribute('data-owner', 'probe');
     expect(ref.current).toBe(nav);
     expect(container.querySelector('ol')).not.toHaveAttribute('id');
-    expectHooksMatchSpec(container, 'BREADCRUMB');
-    rerender(<Breadcrumb items={trail} hidden data-testid="probe" />);
-    expect(screen.getByTestId('probe')).not.toBeVisible();
+    expectHooksMatchSpec(container, 'BREADCRUMB', { callerAttributes: ['data-owner'] });
+    rerender(<Breadcrumb items={trail} hidden />);
+    expect(screen.getByRole('navigation', { hidden: true })).not.toBeVisible();
   });
 
   it('UIC-BREADCRUMB-2.1 names the landmark once, with a default or the caller name', () => {
@@ -250,16 +251,19 @@ describe('Breadcrumb', () => {
   });
 
   it('UIC-BREADCRUMB-2.4 publishes hover, press and keyboard focus states', async () => {
+    const user = userEvent.setup();
     const { container } = render(<Breadcrumb items={trail} />);
     const home = screen.getByRole('link', { name: 'Home' });
-    await userEvent.hover(home);
+    await user.hover(home);
     expect(home).toHaveAttribute('data-hovered', 'true');
-    fireEvent.pointerDown(home, { pointerType: 'mouse', button: 0 });
+    await user.pointer({ keys: '[MouseLeft>]', target: home });
     expect(home).toHaveAttribute('data-pressed', 'true');
     expectHooksMatchSpec(container, 'BREADCRUMB');
     fireEvent.pointerCancel(home, { pointerType: 'mouse', button: 0 });
-    await userEvent.unhover(home);
-    await userEvent.tab();
+    await user.unhover(home);
+    // The press focused the link by pointer; leave and come back by keyboard.
+    await user.tab();
+    await user.tab({ shift: true });
     expect(home).toHaveFocus();
     expect(home).toHaveAttribute('data-focus-visible', 'true');
     expect(home).toHaveAttribute('data-focused', 'true');
@@ -269,8 +273,9 @@ describe('Breadcrumb', () => {
   it('UIC-BREADCRUMB-2.5 shows a cut label whole in a tooltip on hover and keyboard focus', async () => {
     const long = 'Seasonal recipes from the coast';
     const current = 'Tables, figures and captions for the printed edition';
-    vi.useFakeTimers();
+    vi.useFakeTimers({ shouldAdvanceTime: true });
     try {
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
       render(
         <Breadcrumb
           items={[
@@ -289,20 +294,19 @@ describe('Breadcrumb', () => {
       setBox(last, { cut: true });
       const tooltip = () => document.querySelector<HTMLElement>('[role="tooltip"]');
 
-      await rest(home);
+      await rest(user, home);
       expect(tooltip()).toBeNull();
-      await rest(last);
+      await rest(user, last);
       expect(tooltip()).toHaveTextContent(current);
       expect(tooltip()).toHaveClass('ui-truncation-tooltip__panel');
       expect(crumb(current)).not.toHaveAttribute('aria-describedby');
       expectHooksMatchSpec(document.body, 'BREADCRUMB', { slots: ['label'] });
-      fireEvent.pointerLeave(last, { pointerType: 'mouse' });
+      await user.unhover(last);
       expect(tooltip()).toBeNull();
 
-      await act(async () => {
-        fireEvent.keyDown(document.body, { key: 'Tab' });
-        crumb(long).focus();
-      });
+      await user.tab();
+      await user.tab();
+      expect(crumb(long)).toHaveFocus();
       expect(tooltip()).toHaveTextContent(long);
       expect(crumb(long)).toHaveAccessibleName(long);
       await act(async () => crumb('Home').focus());

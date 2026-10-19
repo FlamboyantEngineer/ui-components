@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -164,14 +164,15 @@ describe('Carousel', () => {
     expect(shown(container)).toBe('Lisbon');
   });
 
-  it('UIC-CAROUSEL-2.1 moves with the arrow keys, mirrored right to left', () => {
+  it('UIC-CAROUSEL-2.1 moves with the arrow keys, mirrored right to left', async () => {
+    const user = userEvent.setup();
     const { container, rerender } = render(<Carousel aria-label="Cities">{slides()}</Carousel>);
-    const next = screen.getByRole('button', { name: 'Next slide' });
-    fireEvent.keyDown(next, { key: 'ArrowRight' });
+    act(() => screen.getByRole('button', { name: 'Next slide' }).focus());
+    await user.keyboard('{ArrowRight}');
     expect(shown(container)).toBe('Oslo');
-    fireEvent.keyDown(next, { key: 'ArrowRight', ctrlKey: true });
+    await user.keyboard('{Control>}{ArrowRight}{/Control}');
     expect(shown(container)).toBe('Oslo');
-    fireEvent.keyDown(next, { key: 'ArrowLeft' });
+    await user.keyboard('{ArrowLeft}');
     expect(shown(container)).toBe('Lisbon');
     rerender(
       <UiProvider locale="ar-EG">
@@ -180,18 +181,21 @@ describe('Carousel', () => {
         </Carousel>
       </UiProvider>,
     );
-    fireEvent.keyDown(screen.getByRole('button', { name: 'Next slide' }), { key: 'ArrowLeft' });
+    act(() => screen.getByRole('button', { name: 'Next slide' }).focus());
+    await user.keyboard('{ArrowLeft}');
     expect(shown(container)).toBe('Oslo');
   });
 
-  it('UIC-CAROUSEL-2.1 leaves keys alone inside a text field', () => {
+  it('UIC-CAROUSEL-2.1 leaves keys alone inside a text field', async () => {
+    const user = userEvent.setup();
     const { container } = render(
       <Carousel aria-label="Notes">
         <input aria-label="First note" />
         <p>Second</p>
       </Carousel>,
     );
-    fireEvent.keyDown(screen.getByRole('textbox'), { key: 'ArrowRight' });
+    await user.click(screen.getByRole('textbox'));
+    await user.keyboard('{ArrowRight}');
     expect(container.querySelector('.ui-carousel__slide[data-current] input')).not.toBeNull();
   });
 
@@ -229,16 +233,17 @@ describe('Carousel', () => {
     expectHooksMatchSpec(container, 'CAROUSEL', { slots: ['rotation'] });
   });
 
-  it('UIC-CAROUSEL-3.2 pauses while hovered or focused, but not on its rotation button', () => {
+  it('UIC-CAROUSEL-3.2 pauses while hovered or focused, but not on its rotation button', async () => {
     mockReducedMotion(false);
-    vi.useFakeTimers();
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     const { container } = render(
       <Carousel aria-label="Cities" autoplay interval={1000}>
         {slides()}
       </Carousel>,
     );
     const carousel = root(container);
-    fireEvent.pointerEnter(carousel, { pointerType: 'mouse' });
+    await user.hover(carousel);
     expect(carousel).not.toHaveAttribute('data-rotating');
     expect(container.querySelector('.ui-carousel__viewport')).toHaveAttribute(
       'aria-live',
@@ -246,7 +251,7 @@ describe('Carousel', () => {
     );
     act(() => vi.advanceTimersByTime(3000));
     expect(shown(container)).toBe('Lisbon');
-    fireEvent.pointerLeave(carousel);
+    await user.unhover(carousel);
     act(() => vi.advanceTimersByTime(1000));
     expect(shown(container)).toBe('Oslo');
 
@@ -262,7 +267,8 @@ describe('Carousel', () => {
 
   it('UIC-CAROUSEL-3.3 stops and restarts with the rotation button', async () => {
     mockReducedMotion(false);
-    vi.useFakeTimers();
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     const { container } = render(
       <Carousel aria-label="Cities" autoplay interval={1000}>
         {slides()}
@@ -270,13 +276,15 @@ describe('Carousel', () => {
     );
     const stop = screen.getByRole('button', { name: 'Stop automatic slide show' });
     expect(stop.querySelector('[data-glyph]')).toHaveAttribute('data-glyph', 'pause');
-    fireEvent.click(stop);
+    await user.click(stop);
     const start = screen.getByRole('button', { name: 'Start automatic slide show' });
     expect(start.querySelector('[data-glyph]')).toHaveAttribute('data-glyph', 'play');
+    await user.unhover(start);
     act(() => (document.activeElement as HTMLElement | null)?.blur());
     act(() => vi.advanceTimersByTime(5000));
     expect(shown(container)).toBe('Lisbon');
-    fireEvent.click(start);
+    await user.click(start);
+    await user.unhover(start);
     act(() => (document.activeElement as HTMLElement | null)?.blur());
     act(() => vi.advanceTimersByTime(1000));
     expect(shown(container)).toBe('Oslo');

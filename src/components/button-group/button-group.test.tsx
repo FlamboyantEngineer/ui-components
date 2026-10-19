@@ -64,7 +64,7 @@ describe('ButtonGroup', () => {
         id="history"
         className="caller"
         aria-label="History"
-        data-testid="group"
+        data-owner="group"
         data-density="caller"
         render={(props, state) => (
           <div {...props} data-swapped="yes" data-within={String(state.isFocusWithin)} />
@@ -73,15 +73,16 @@ describe('ButtonGroup', () => {
         <Button>Undo</Button>
       </ButtonGroup>,
     );
-    const group = screen.getByTestId('group');
+    const group = screen.getByRole('group', { name: 'History' });
     expect(group).toBe(ref.current);
+    expect(group).toHaveAttribute('data-owner', 'group');
     expect(group).toHaveAttribute('id', 'history');
     expect(group).toHaveClass('ui-button-group', 'caller');
     expect(group).toHaveAttribute('data-density', 'regular');
     expect(group).toHaveAttribute('data-swapped', 'yes');
     expect(group).toHaveAttribute('data-within', 'false');
     expectHooksMatchSpec(document.body, 'BUTTON-GROUP', {
-      callerAttributes: ['data-testid', 'data-swapped', 'data-within'],
+      callerAttributes: ['data-owner', 'data-swapped', 'data-within'],
     });
   });
 });

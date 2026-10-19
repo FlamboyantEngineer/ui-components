@@ -414,7 +414,7 @@ describe('CodeEditor', () => {
     const input = screen.getByRole('textbox');
     await user.type(input, 'fruit.');
     const banana = screen.getByRole('option', { name: 'fruit.banana' });
-    fireEvent.pointerMove(banana);
+    await user.hover(banana);
     expect(banana).toHaveAttribute('aria-selected', 'true');
     await user.click(banana);
     expect(input).toHaveValue('fruit.banana');
@@ -505,7 +505,7 @@ describe('CodeEditor on one line', () => {
     await user.keyboard('{End}{Enter}');
     expect(input).toHaveValue('fruit');
     expect(onKeyDown).toHaveBeenCalledWith(expect.objectContaining({ key: 'Enter' }));
-    fireEvent.change(input, { target: { value: 'fruit\napple\r\npear' } });
+    await user.paste('\napple\r\npear');
     expect(onChange).toHaveBeenLastCalledWith('fruit apple pear');
     expectHooksMatchSpec(document.body, 'CODE-EDITOR');
   });
