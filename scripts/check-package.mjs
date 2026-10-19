@@ -29,6 +29,8 @@ try {
     'package.json',
     'dist/index.js',
     'dist/index.d.ts',
+    'dist/testing/index.js',
+    'dist/testing/index.d.ts',
     'labs/index.html',
     'labs/reference.css',
     'labs/reference/base.css',
