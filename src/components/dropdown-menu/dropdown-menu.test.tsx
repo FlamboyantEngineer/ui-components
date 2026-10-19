@@ -162,16 +162,17 @@ describe('DropdownMenu', () => {
         className="caller"
         id="edit-menu"
         ref={ref}
-        data-testid="probe"
+        data-probe="menu"
         data-open="always"
       />,
     );
-    const trigger = screen.getByTestId('probe');
+    const trigger = screen.getByRole('button', { name: 'Edit' });
     expect(trigger).toHaveClass('ui-button', 'ui-dropdown-menu', 'caller');
     expect(trigger).toHaveAttribute('id', 'edit-menu');
+    expect(trigger).toHaveAttribute('data-probe', 'menu');
     expect(ref.current).toBe(trigger);
     expect(trigger).not.toHaveAttribute('data-open');
-    expectHooksMatchSpec(container, 'DROPDOWN-MENU');
+    expectHooksMatchSpec(container, 'DROPDOWN-MENU', { callerAttributes: ['data-probe'] });
   });
 
   it('UIC-DROPDOWN-MENU-1.7 splits the trigger into an action and a chevron that opens the menu', async () => {

@@ -1,4 +1,5 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
 import { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -12,8 +13,8 @@ function setBox(element: HTMLElement, { cut }: { cut: boolean }) {
   Object.defineProperty(element, 'scrollWidth', { configurable: true, value: cut ? 240 : 100 });
 }
 
-async function hover(element: HTMLElement) {
-  fireEvent.pointerEnter(element, { pointerType: 'mouse' });
+async function hover(user: ReturnType<typeof userEvent.setup>, element: HTMLElement) {
+  await user.hover(element);
   await act(async () => {
     vi.advanceTimersByTime(500);
   });
@@ -63,11 +64,10 @@ describe('Path', () => {
         id="where"
         ref={ref}
         title="Garden"
-        data-testid="probe"
         data-probe="yes"
       />,
     );
-    const root = screen.getByTestId('probe');
+    const root = screen.getByTitle('Garden');
     expect(ref.current).toBe(root);
     expect(root).toHaveClass('ui-path', 'caller');
     expect(root).toHaveAttribute('id', 'where');
@@ -77,29 +77,32 @@ describe('Path', () => {
   });
 
   it('UIC-PATH-2.5 shows the whole path in a tooltip only while it is cut', async () => {
-    vi.useFakeTimers();
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     try {
       render(
         <>
-          <Path path="/Garden/Vegetable beds/North side/Tomatoes" data-testid="long" />
-          <Path path="/Garden" data-testid="short" />
+          <Path path="/Garden/Vegetable beds/North side/Tomatoes" />
+          <Path path="/Garden" />
         </>,
       );
-      const long = screen.getByTestId('long');
-      const short = screen.getByTestId('short');
+      const long = screen
+        .getByText('/Garden/Vegetable beds/North side/Tomatoes')
+        .closest<HTMLElement>('.ui-path')!;
+      const short = screen.getByText('/Garden').closest<HTMLElement>('.ui-path')!;
       expect(long).toHaveClass('ui-path', 'ui-truncation-tooltip');
       setBox(long, { cut: true });
       setBox(short, { cut: false });
-      await hover(short);
+      await hover(user, short);
       expect(tooltip()).toBeNull();
-      await hover(long);
+      await hover(user, long);
       const panel = tooltip();
       expect(panel).toHaveTextContent('/Garden/Vegetable beds/North side/Tomatoes');
       expect(panel).toHaveClass('ui-truncation-tooltip__panel');
       expect(panel?.querySelector('bdi')).toHaveAttribute('dir', 'ltr');
       expect(long).not.toHaveAttribute('aria-describedby');
       expectHooksMatchSpec(document.body, 'PATH', { slots: 'all' });
-      fireEvent.pointerLeave(long, { pointerType: 'mouse' });
+      await user.unhover(long);
       expect(tooltip()).toBeNull();
     } finally {
       vi.useRealTimers();

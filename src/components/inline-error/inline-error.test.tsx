@@ -114,7 +114,7 @@ describe('InlineError', () => {
         Unavailable
       </InlineError>,
     );
-    const root = screen.getByTestId('probe');
+    const root = screen.getByRole('alert');
     expect(root).toHaveClass('ui-inline-error', 'caller');
     expect(root).toHaveAttribute('id', 'error');
     expectHooksMatchSpec(container, 'INLINE-ERROR', { callerAttributes: [] });
@@ -124,7 +124,7 @@ describe('InlineError', () => {
         Unavailable
       </InlineError>,
     );
-    expect(screen.getByTestId('probe')).toBe(root);
+    expect(screen.getByRole('alert', { hidden: true })).toBe(root);
     expect(root.hidden).toBe(true);
     expect(root).toHaveTextContent('Unavailable');
   });

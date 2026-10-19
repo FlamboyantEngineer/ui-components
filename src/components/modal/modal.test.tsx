@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState, type ReactNode } from 'react';
 import { Button as AriaButton } from '../../primitives/index.js';
@@ -514,7 +514,7 @@ describe('Modal', () => {
             isOpen
             onOpenChange={onOpenChange}
             showCloseButton
-            headerActions={<span data-testid="steps">Step 1 of 3</span>}
+            headerActions={<span>Step 1 of 3</span>}
           >
             Body
           </Modal>
@@ -526,7 +526,7 @@ describe('Modal', () => {
         'ui-modal__header-actions',
         expect.stringContaining('ui-modal__close'),
       ]);
-      expect(screen.getByTestId('steps').parentElement).toHaveClass('ui-modal__header-actions');
+      expect(screen.getByText('Step 1 of 3').parentElement).toHaveClass('ui-modal__header-actions');
       expect(screen.getByRole('dialog')).toHaveAccessibleName('Import');
       expectHooksMatchSpec(document.body, 'MODAL', { slots: ['header-actions', 'close'] });
       await userEvent.click(screen.getByRole('button', { name: 'Shut' }));
@@ -695,10 +695,19 @@ describe('Modal', () => {
       render(<Modal title="Save" isOpen primaryAction={{ label: 'Save', onPress }} />);
       const save = screen.getByRole('button', { name: 'Save' });
       const dialog = screen.getByRole('dialog');
+      const shortcut = () =>
+        new KeyboardEvent('keydown', {
+          key: 'Enter',
+          ctrlKey: true,
+          bubbles: true,
+          cancelable: true,
+        });
+      // All three requests land in one turn, before React renders the pending state, which user-event
+      // cannot do: it awaits between events.
       act(() => {
         save.click();
-        fireEvent.keyDown(dialog, { key: 'Enter', ctrlKey: true });
-        fireEvent.keyDown(dialog, { key: 'Enter', ctrlKey: true });
+        dialog.dispatchEvent(shortcut());
+        dialog.dispatchEvent(shortcut());
       });
       expect(onPress).toHaveBeenCalledTimes(1);
       await act(async () => {
@@ -746,11 +755,11 @@ describe('Modal', () => {
         />,
       );
       const save = screen.getByRole('button', { name: 'Save' });
-      await act(async () => userEvent.click(save));
+      await userEvent.click(save);
       expect(screen.getByRole('alert')).toHaveTextContent('Save refused.');
       expect(save).not.toHaveAttribute('data-pending');
       expect(screen.getByRole('dialog')).toBeInTheDocument();
-      await act(async () => userEvent.click(save));
+      await userEvent.click(save);
       expect(attempts).toBe(2);
       expect(screen.queryByRole('alert')).not.toBeInTheDocument();
 
@@ -763,7 +772,7 @@ describe('Modal', () => {
           />
         </UiProvider>,
       );
-      await act(async () => userEvent.click(screen.getByRole('button', { name: 'Retry' })));
+      await userEvent.click(screen.getByRole('button', { name: 'Retry' }));
       expect(screen.getByRole('alert')).toHaveTextContent('Something went wrong.');
     });
 
@@ -963,6 +972,7 @@ describe('Modal', () => {
     });
 
     it('UIC-MODAL-6.1 leaves the shortcut to multiline editors and custom action bars', async () => {
+      const user = userEvent.setup();
       const onPress = vi.fn();
       const { rerender } = render(
         <Modal title="Note" isOpen primaryAction={{ label: 'Post', onPress }}>
@@ -974,7 +984,8 @@ describe('Modal', () => {
         </Modal>,
       );
       for (const name of ['Text', 'Rich', 'Lines']) {
-        fireEvent.keyDown(screen.getByRole('textbox', { name }), { key: 'Enter', ctrlKey: true });
+        await user.click(screen.getByRole('textbox', { name }));
+        await user.keyboard('{Control>}{Enter}{/Control}');
       }
       expect(onPress).not.toHaveBeenCalled();
       rerender(
@@ -987,14 +998,13 @@ describe('Modal', () => {
           <input aria-label="Field" />
         </Modal>,
       );
-      fireEvent.keyDown(screen.getByRole('textbox', { name: 'Field' }), {
-        key: 'Enter',
-        ctrlKey: true,
-      });
+      await user.click(screen.getByRole('textbox', { name: 'Field' }));
+      await user.keyboard('{Control>}{Enter}{/Control}');
       expect(onPress).not.toHaveBeenCalled();
     });
 
     it('UIC-MODAL-6.1 hears popovers opened from the modal, and a nested modal handles its own keys', async () => {
+      const user = userEvent.setup();
       const outer = vi.fn();
       function Nested() {
         const [inner, setInner] = useState(false);
@@ -1013,14 +1023,15 @@ describe('Modal', () => {
         );
       }
       render(<Nested />);
-      fireEvent.keyDown(screen.getByRole('button', { name: 'Lemon' }), {
-        key: 'Enter',
-        ctrlKey: true,
-      });
+      const lemon = screen.getByRole('button', { name: 'Lemon' });
+      await user.click(lemon);
+      expect(lemon).toHaveFocus();
+      await user.keyboard('{Control>}{Enter}{/Control}');
       expect(outer).toHaveBeenCalledTimes(1);
-      await userEvent.click(screen.getByRole('button', { name: 'More' }));
+      await user.click(screen.getByRole('button', { name: 'More' }));
       const field = await screen.findByRole('textbox', { name: 'Inner field' });
-      fireEvent.keyDown(field, { key: 'Enter', ctrlKey: true });
+      await user.click(field);
+      await user.keyboard('{Control>}{Enter}{/Control}');
       expect(outer).toHaveBeenCalledTimes(1);
     });
   });
@@ -1032,14 +1043,13 @@ describe('Modal', () => {
         isOpen
         className="caller"
         id="hooks-dialog"
-        data-testid="modal-root"
         data-tone="loud"
         data-category="spreadsheet"
       >
         Body
       </Modal>,
     );
-    const root = screen.getByTestId('modal-root');
+    const root = screen.getByRole('dialog').closest('.caller');
     expect(root).toHaveClass('ui-modal', 'caller');
     expect(root).toHaveAttribute('data-tone', 'neutral');
     expect(root).toHaveAttribute('data-category', 'spreadsheet');

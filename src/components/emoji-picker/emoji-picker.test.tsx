@@ -36,9 +36,9 @@ function cells(grid: HTMLElement): string[] {
 }
 
 async function renderPicker(props: Parameters<typeof EmojiPicker>[0] = {}) {
-  const result = render(<EmojiPicker loadEmoji={loadFixture} {...props} />);
+  const view = render(<EmojiPicker loadEmoji={loadFixture} {...props} />);
   await screen.findByRole('grid');
-  return result;
+  return view;
 }
 
 beforeAll(() => {

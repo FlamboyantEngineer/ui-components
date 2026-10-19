@@ -57,10 +57,10 @@ describe('PdfViewer context menu', () => {
     const { container } = await renderReady({
       getPageMenuItems,
       renderPageOverlay: ({ pageIndex }) => (
-        <span data-testid={`mark-${pageIndex}`} onContextMenu={(event) => event.preventDefault()} />
+        <span title={`Mark ${pageIndex}`} onContextMenu={(event) => event.preventDefault()} />
       ),
     });
-    fireEvent.contextMenu(screen.getByTestId('mark-0'));
+    fireEvent.contextMenu(screen.getByTitle('Mark 0'));
     expect(getPageMenuItems).not.toHaveBeenCalled();
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     expect(container.querySelector('.ui-pdf-viewer__overlay')).not.toBeNull();

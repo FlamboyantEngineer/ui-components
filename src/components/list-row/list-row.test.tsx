@@ -10,7 +10,8 @@ const primaries = (container: HTMLElement) => [
   ...container.querySelectorAll<HTMLElement>('.ui-list-row__primary'),
 ];
 
-const flush = () => act(async () => {});
+/** Lets pending effects and promise callbacks settle inside act. */
+const flush = () => act(() => Promise.resolve());
 
 describe('List', () => {
   it('UIC-LIST-ROW-1.1 renders a named native list whose rows keep link and button roles', () => {
@@ -233,16 +234,17 @@ describe('List', () => {
   it('UIC-LIST-ROW-1.7 appends the caller class and forwards id, ref and data attributes', () => {
     const ref = createRef<HTMLUListElement>();
     const { container } = render(
-      <List aria-labelledby="heading" className="caller" id="files" ref={ref} data-testid="list">
+      <List aria-labelledby="heading" className="caller" id="files" ref={ref} data-probe="list">
         <ListRow title="Report.pdf" />
       </List>,
     );
-    const list = screen.getByTestId('list');
+    const list = screen.getByRole('list');
+    expect(list).toHaveAttribute('data-probe', 'list');
     expect(list).toHaveClass('ui-list', 'caller');
     expect(list).toHaveAttribute('id', 'files');
     expect(list).toHaveAttribute('aria-labelledby', 'heading');
     expect(ref.current).toBe(list);
-    expectHooksMatchSpec(container, 'LIST-ROW');
+    expectHooksMatchSpec(container, 'LIST-ROW', { callerAttributes: ['data-probe'] });
   });
 
   it('UIC-LIST-ROW-1.7 runs caller key handlers first and leaves claimed keys to them', async () => {
@@ -330,19 +332,20 @@ describe('ListRow', () => {
   it('UIC-LIST-ROW-2.2 draws row content without any control for an element that is itself the link', () => {
     const { container } = render(
       <a href="/report">
-        <ListRowContent title="Report.pdf" meta="4 KB" leading={<svg />} data-testid="content" />
+        <ListRowContent title="Report.pdf" meta="4 KB" leading={<svg />} data-probe="content" />
       </a>,
     );
-    const content = screen.getByTestId('content');
+    const content = screen.getByRole('link').firstElementChild;
+    expect(content).toHaveAttribute('data-probe', 'content');
     expect(content).toHaveClass('ui-list-row-content');
-    expect(content.querySelector('a, button, [tabindex]')).toBeNull();
+    expect(content?.querySelector('a, button, [tabindex]')).toBeNull();
     expectHooksMatchSpec(container, 'LIST-ROW', {
       slots: [
         'ui-list-row-content__leading',
         'ui-list-row-content__title',
         'ui-list-row-content__meta',
       ],
-      callerAttributes: ['data-testid'],
+      callerAttributes: ['data-probe'],
     });
   });
 
@@ -386,11 +389,11 @@ describe('ListRow', () => {
     expect(container.querySelector('.ui-list-row-content__meta')).toHaveTextContent('4 KB');
     expectHooksMatchSpec(container, 'LIST-ROW');
 
-    rerender(<ListRow title="Report.pdf" icon="info" leading={<svg data-testid="media" />} />);
-    expect(screen.queryByTestId('media')).not.toBeInTheDocument();
+    rerender(<ListRow title="Report.pdf" icon="info" leading={<svg aria-label="Media" />} />);
+    expect(screen.queryByLabelText('Media')).not.toBeInTheDocument();
 
-    rerender(<ListRow title="Report.pdf" meta={null} leading={<svg data-testid="media" />} />);
-    expect(screen.getByTestId('media').parentElement).toHaveAttribute('aria-hidden', 'true');
+    rerender(<ListRow title="Report.pdf" meta={null} leading={<svg aria-label="Media" />} />);
+    expect(screen.getByLabelText('Media').parentElement).toHaveAttribute('aria-hidden', 'true');
     expect(container.querySelector('.ui-list-row-content__meta')).toBeNull();
     expect(container.querySelector('.ui-icon-label')).toBeNull();
   });

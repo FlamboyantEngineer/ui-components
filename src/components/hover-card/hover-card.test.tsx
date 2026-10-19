@@ -1,4 +1,5 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { Dialog, Link } from '../../primitives/index.js';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -7,37 +8,31 @@ import { Button } from '../button/button.js';
 import { HoverCard, HoverCardTrigger, type HoverCardProps } from './hover-card.js';
 
 type TriggerOptions = Omit<Parameters<typeof HoverCardTrigger>[0], 'children'>;
-
-function hover(element: Element) {
-  fireEvent.pointerMove(element, { pointerType: 'mouse' });
-  fireEvent.pointerEnter(element, { pointerType: 'mouse' });
-  fireEvent.mouseEnter(element);
-}
-
-function unhover(element: Element) {
-  fireEvent.pointerLeave(element, { pointerType: 'mouse' });
-  fireEvent.mouseLeave(element);
-}
+type User = ReturnType<typeof userEvent.setup>;
 
 /**
  * Moves the pointer in the window. React Aria keeps an open card while the pointer is over the
  * trigger, the card or the area between them; jsdom lays both out at the origin.
  */
-function movePointer(at: 'between' | 'away') {
+async function movePointer(user: User, at: 'between' | 'away') {
   const point = at === 'between' ? 2 : 500;
-  fireEvent.pointerMove(window, { pointerType: 'mouse', clientX: point, clientY: point });
+  await user.pointer({ target: document.body, coords: { clientX: point, clientY: point } });
+}
+
+/**
+ * Rests the pointer on `element`. React Aria opens a preview only for a pointer it has seen move, and
+ * a reader's pointer crosses the page before it enters the trigger, so it moves over the page first.
+ */
+async function hover(user: User, element: Element) {
+  await user.pointer([
+    { target: document.body, coords: { clientX: 1, clientY: 1 } },
+    { target: element },
+  ]);
 }
 
 async function advance(ms: number) {
   await act(async () => {
     vi.advanceTimersByTime(ms);
-  });
-}
-
-function focusByKeyboard(element: HTMLElement) {
-  act(() => {
-    fireEvent.keyDown(document.body, { key: 'Tab' });
-    element.focus();
   });
 }
 
@@ -68,14 +63,21 @@ const card = () => document.querySelector<HTMLElement>('.ui-hover-card');
 const trigger = () => screen.getByRole('button', { name: 'Lisbon' });
 
 describe('HoverCard', () => {
+  let user: User;
+
   beforeEach(() => {
     vi.useFakeTimers();
+    // Testing Library's async wrapper ends each user-event call on a zero-delay timer, which it only
+    // advances under Jest's fake timers; point it at Vitest's clock so no real time passes.
+    vi.stubGlobal('jest', { advanceTimersByTime: (ms: number) => vi.advanceTimersByTime(ms) });
+    user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
   });
 
   afterEach(async () => {
     // Let React Aria's global warm-up and cool-down timers settle between tests.
     await advance(5000);
     vi.useRealTimers();
+    vi.unstubAllGlobals();
   });
 
   it('UIC-HOVER-CARD-1.1 UIC-HOVER-CARD-2.1 UIC-HOVER-CARD-2.3 opens a named card that describes its trigger', async () => {
@@ -92,7 +94,7 @@ describe('HoverCard', () => {
     );
     expect(trigger()).toHaveAttribute('aria-haspopup', 'dialog');
     expect(trigger()).toHaveAttribute('aria-expanded', 'false');
-    hover(trigger());
+    await hover(user, trigger());
     await advance(300);
     const dialog = screen.getByRole('dialog', { name: 'About Lisbon' });
     expect(dialog).toBe(card());
@@ -108,33 +110,32 @@ describe('HoverCard', () => {
       callerAttributes: ['data-lab'],
     });
 
-    fireEvent.click(trigger());
+    await user.click(trigger());
     expect(onPress).toHaveBeenCalledTimes(1);
     expect(card()).not.toBeNull();
-    act(() => {
-      fireEvent.keyDown(trigger(), { key: 'Escape' });
-    });
+    expect(trigger()).toHaveFocus();
+    await user.keyboard('{Escape}');
     await advance(1000);
     expect(card()).toBeNull();
   });
 
   it('UIC-HOVER-CARD-1.2 opens after the hover delay without taking focus and cancels on leave', async () => {
     render(<Preview />);
-    hover(trigger());
+    await hover(user, trigger());
     await advance(599);
     expect(card()).toBeNull();
     await advance(1);
     expect(card()).not.toBeNull();
     expect(card()?.contains(document.activeElement)).toBe(false);
-    unhover(trigger());
-    movePointer('away');
+    await user.unhover(trigger());
+    await movePointer(user, 'away');
     await advance(1000);
     expect(card()).toBeNull();
 
     await advance(5000);
-    hover(trigger());
+    await hover(user, trigger());
     await advance(300);
-    unhover(trigger());
+    await user.unhover(trigger());
     await advance(1000);
     expect(card()).toBeNull();
   });
@@ -149,34 +150,38 @@ describe('HoverCard', () => {
         </HoverCardTrigger>
       </>,
     );
-    hover(trigger());
+    await hover(user, trigger());
     await advance(600);
     expect(screen.getByRole('dialog', { name: 'About Lisbon' })).toBeInTheDocument();
-    unhover(trigger());
-    hover(screen.getByRole('button', { name: 'Oslo' }));
+    await user.unhover(trigger());
+    await hover(user, screen.getByRole('button', { name: 'Oslo' }));
     await advance(0);
     expect(screen.getByRole('dialog', { name: 'About Oslo' })).toBeInTheDocument();
     expect(screen.queryByRole('dialog', { name: 'About Lisbon' })).not.toBeInTheDocument();
-    unhover(screen.getByRole('button', { name: 'Oslo' }));
-    movePointer('away');
+    await user.unhover(screen.getByRole('button', { name: 'Oslo' }));
+    await movePointer(user, 'away');
     await advance(1000);
     expect(card()).toBeNull();
   });
 
   it('UIC-HOVER-CARD-1.2 UIC-HOVER-CARD-1.3 opens on keyboard focus, lets Tab in and closes on Escape', async () => {
-    render(<Preview triggerProps={{ delay: 300 }} />);
-    focusByKeyboard(trigger());
+    render(
+      <>
+        <Preview triggerProps={{ delay: 300 }} />
+        <button type="button">After</button>
+      </>,
+    );
+    await user.tab();
+    await user.tab();
+    expect(trigger()).toHaveFocus();
     expect(card()).toBeNull();
     await advance(300);
     expect(card()).not.toBeNull();
     expect(trigger()).toHaveFocus();
-    act(() => {
-      fireEvent.keyDown(trigger(), { key: 'Tab' });
-    });
+    // The card is portalled after the After button; Tab still moves into it first.
+    await user.tab();
     expect(card()?.contains(document.activeElement)).toBe(true);
-    act(() => {
-      fireEvent.keyDown(document.activeElement as Element, { key: 'Escape' });
-    });
+    await user.keyboard('{Escape}');
     await advance(1000);
     expect(card()).toBeNull();
     // Focus returns in an animation frame once the card has gone.
@@ -186,14 +191,14 @@ describe('HoverCard', () => {
 
   it('UIC-HOVER-CARD-1.3 stays open while the pointer moves into the card, then closes after the close delay', async () => {
     render(<Preview triggerProps={{ delay: 0, closeDelay: 400 }} />);
-    hover(trigger());
+    await hover(user, trigger());
     await advance(0);
-    unhover(trigger());
-    movePointer('between');
-    hover(card() as HTMLElement);
+    await user.unhover(trigger());
+    await movePointer(user, 'between');
+    await hover(user, card() as HTMLElement);
     await advance(1000);
     expect(card()).not.toBeNull();
-    movePointer('away');
+    await movePointer(user, 'away');
     await advance(399);
     expect(card()).not.toBeNull();
     await advance(1);
@@ -218,9 +223,8 @@ describe('HoverCard', () => {
     }
     const { unmount } = render(<Controlled />);
     expect(card()).not.toBeNull();
-    act(() => {
-      fireEvent.keyDown(trigger(), { key: 'Escape' });
-    });
+    act(() => trigger().focus());
+    await user.keyboard('{Escape}');
     expect(onOpenChange).toHaveBeenLastCalledWith(false);
     await advance(1000);
     expect(card()).toBeNull();
@@ -231,7 +235,7 @@ describe('HoverCard', () => {
     unmountDefault();
 
     render(<Preview triggerProps={{ isDisabled: true, delay: 0 }} />);
-    hover(screen.getByRole('button', { name: 'Lisbon' }));
+    await hover(user, screen.getByRole('button', { name: 'Lisbon' }));
     await advance(1000);
     expect(card()).toBeNull();
   });

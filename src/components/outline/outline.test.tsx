@@ -162,7 +162,7 @@ describe('Outline', () => {
             currentId={currentId}
             trackingOffset={offset}
           />
-          <div ref={ref} data-testid="viewport">
+          <div ref={ref} role="region" aria-label="Viewport">
             {Object.keys(tops).map((id) => (
               <h2 key={id} id={id}>
                 {id}
@@ -173,7 +173,7 @@ describe('Outline', () => {
       );
     }
     const { rerender } = render(<Reader />);
-    const viewport = screen.getByTestId('viewport');
+    const viewport = screen.getByRole('region', { name: 'Viewport' });
     Object.defineProperties(viewport, {
       scrollTop: { configurable: true, get: () => scrollTop },
       scrollHeight: { configurable: true, get: () => 2000 },
@@ -297,7 +297,7 @@ describe('Outline', () => {
       const [keys, setKeys] = useState<Set<Key>>(new Set(['intro']));
       return (
         <>
-          <output data-testid="keys">{[...keys].join(',')}</output>
+          <output aria-label="Expanded">{[...keys].join(',')}</output>
           <Outline
             {...props}
             headings={headings}
@@ -312,7 +312,7 @@ describe('Outline', () => {
     render(<Controlled />);
     expect(toggle('Design')).toHaveAttribute('aria-expanded', 'false');
     await userEvent.click(toggle('Design'));
-    expect(screen.getByTestId('keys')).toHaveTextContent('intro,design');
+    expect(screen.getByRole('status', { name: 'Expanded' })).toHaveTextContent('intro,design');
     await userEvent.click(toggle('Terms'));
     expect(toggle('Terms')).toHaveAttribute('aria-expanded', 'false');
   });
