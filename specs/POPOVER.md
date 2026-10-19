@@ -6,7 +6,7 @@
 
 ### UIC-POPOVER-1.1 - Trigger and opening
 
-`PopoverTrigger` shall hold one pressable trigger, such as a `Button`, and a `Popover`, and add no element of its own. Pressing the trigger opens the popover, which renders in an overlay at the end of the document body as the `ui-popover` panel holding the `ui-popover__dialog` element with `role="dialog"`; the trigger reports it in `aria-expanded`. `isOpen` with `onOpenChange` on the trigger controls the popover, `defaultOpen` opens it at first, and `onOpenChange` reports each change the reader asks for. A closed popover renders nothing.
+`PopoverTrigger` shall hold one pressable trigger, such as a `Button`, and a `Popover`, and add no element of its own. Pressing the trigger opens the popover, which renders in an overlay at the end of the document body as the `ui-popover` panel, which publishes its trigger's width as `--ui-trigger-width`, holding the `ui-popover__dialog` element with `role="dialog"`; the trigger reports it in `aria-expanded`. `isOpen` with `onOpenChange` on the trigger controls the popover, `defaultOpen` opens it at first, and `onOpenChange` reports each change the reader asks for. A closed popover renders nothing.
 
 Implementation: `src/components/popover/popover.tsx`
 Verification: `src/components/popover/popover.test.tsx`, `e2e/popover.spec.ts`
@@ -94,16 +94,17 @@ Verification: `src/components/popover/popover.test.tsx`
 
 ## Hooks
 
-| Hook                 | Kind  | Values                           | Description                                                 |
-| -------------------- | ----- | -------------------------------- | ----------------------------------------------------------- |
-| `ui-popover`         | root  |                                  | The floating panel (React Aria `Popover`).                  |
-| `ui-popover__arrow`  | slot  |                                  | The arrow pointing at the trigger.                          |
-| `ui-popover__dialog` | slot  |                                  | The `role="dialog"` element.                                |
-| `ui-popover__header` | slot  |                                  | The title and close button row.                             |
-| `ui-popover__title`  | slot  |                                  | The `<h2>` title.                                           |
-| `ui-popover__close`  | slot  |                                  | The header close button (also `ui-icon-button`).            |
-| `ui-popover__body`   | slot  |                                  | The body.                                                   |
-| `data-placement`     | state | `top`, `bottom`, `left`, `right` | The resolved side, on the panel and the arrow (React Aria). |
-| `data-trigger`       | state | `DialogTrigger`                  | On the panel inside a `PopoverTrigger`, what opened it.     |
-| `data-entering`      | state | `true`                           | On the panel while its entry animation runs (React Aria).   |
-| `data-exiting`       | state | `true`                           | On the panel while its exit animation runs (React Aria).    |
+| Hook                 | Kind     | Values                           | Description                                                 |
+| -------------------- | -------- | -------------------------------- | ----------------------------------------------------------- |
+| `ui-popover`         | root     |                                  | The floating panel (React Aria `Popover`).                  |
+| `--ui-trigger-width` | property |                                  | Width of the element the popover opens from, in pixels.     |
+| `ui-popover__arrow`  | slot     |                                  | The arrow pointing at the trigger.                          |
+| `ui-popover__dialog` | slot     |                                  | The `role="dialog"` element.                                |
+| `ui-popover__header` | slot     |                                  | The title and close button row.                             |
+| `ui-popover__title`  | slot     |                                  | The `<h2>` title.                                           |
+| `ui-popover__close`  | slot     |                                  | The header close button (also `ui-icon-button`).            |
+| `ui-popover__body`   | slot     |                                  | The body.                                                   |
+| `data-placement`     | state    | `top`, `bottom`, `left`, `right` | The resolved side, on the panel and the arrow (React Aria). |
+| `data-trigger`       | state    | `DialogTrigger`                  | On the panel inside a `PopoverTrigger`, what opened it.     |
+| `data-entering`      | state    | `true`                           | On the panel while its entry animation runs (React Aria).   |
+| `data-exiting`       | state    | `true`                           | On the panel while its exit animation runs (React Aria).    |

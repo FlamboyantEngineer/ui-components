@@ -11,7 +11,7 @@
   border: 1px solid var(--ref-border);
   border-radius: var(--ref-radius);
   background: var(--ref-surface);
-  font-size: 13px;
+  font-size: var(--ref-font-size-md);
   line-height: 1.4;
   vertical-align: middle;
 }
@@ -41,16 +41,16 @@
 .ui-record-chip__version {
   flex: none;
   padding: 0 4px;
-  border-radius: 3px;
+  border-radius: var(--ref-radius-sm);
   background: var(--ref-hover);
   font-family: var(--ref-mono);
-  font-size: 11px;
+  font-size: var(--ref-font-size-xs);
 }
 
 .ui-record-chip__type {
   flex: none;
   color: var(--ref-muted);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }
 
 .ui-record-chip__state {
@@ -73,5 +73,5 @@
 .ui-record-chip__preview {
   max-width: 280px;
   padding: 8px 12px;
-  font-size: 13px;
+  font-size: var(--ref-font-size-md);
 }

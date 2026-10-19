@@ -15,7 +15,7 @@ import {
 } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
-import { useLayerZIndex } from '../portal/portal.js';
+import { triggerWidthProperty, useLayerZIndex } from '../portal/portal.js';
 import { SelectListItem, type SelectOptionsDisplay } from './select-option.js';
 import { flattenSelectItems, type SelectFieldItem } from './select-options.js';
 
@@ -116,7 +116,7 @@ export function SelectList(props: SelectListProps) {
       {...hooks.slot('popover', { layer: 'dropdown' })}
       offset={4}
       containerPadding={8}
-      style={{ ...contextStyle, zIndex }}
+      style={{ ...contextStyle, ...triggerWidthProperty, zIndex }}
     >
       {props.isLoading && props.items.length > 0 ? (
         <div {...hooks.slot('loading')} role="status">

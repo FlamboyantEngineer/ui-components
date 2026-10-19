@@ -35,7 +35,7 @@
 }
 
 .ui-carousel__slide:focus-visible {
-  box-shadow: inset 0 0 0 2px var(--ref-focus);
+  box-shadow: var(--ref-focus-inset);
 }
 
 .ui-carousel__slide > figure {
@@ -50,7 +50,7 @@
 
 .ui-carousel__slide figcaption {
   padding: 8px 12px;
-  font-size: 13px;
+  font-size: var(--ref-font-size-md);
 }
 
 .ui-carousel__pagination {
@@ -87,7 +87,7 @@
 
 .ui-carousel__thumbnail {
   overflow: hidden;
-  border-radius: 4px;
+  border-radius: var(--ref-radius-sm);
   opacity: 0.7;
 }
 
@@ -107,7 +107,5 @@
 
 .ui-carousel__dot[data-focus-visible],
 .ui-carousel__thumbnail[data-focus-visible] {
-  box-shadow:
-    0 0 0 2px var(--ref-canvas),
-    0 0 0 4px var(--ref-focus);
+  box-shadow: var(--ref-focus-halo);
 }

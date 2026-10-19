@@ -33,7 +33,7 @@
 .ui-text-field__input[data-focus-visible],
 .ui-text-field__input[data-focused] {
   border-color: var(--ref-focus);
-  outline: 1px solid var(--ref-focus);
+  outline: var(--ref-focus-ring-thin);
 }
 
 .ui-text-field[data-dirty] .ui-text-field__input {
@@ -82,7 +82,7 @@
 
 .ui-text-field__group[data-focus-within] {
   border-color: var(--ref-focus);
-  outline: 1px solid var(--ref-focus);
+  outline: var(--ref-focus-ring-thin);
 }
 
 .ui-text-field[data-dirty] .ui-text-field__group {
@@ -109,7 +109,7 @@
   align-items: center;
   gap: 4px;
   color: var(--ref-muted);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }
 
 .ui-text-field__start .ui-glyph,
@@ -149,5 +149,5 @@
 }
 
 .ui-text-field__completions {
-  min-width: var(--trigger-width);
+  min-width: var(--ui-trigger-width);
 }

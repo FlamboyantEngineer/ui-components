@@ -6,7 +6,7 @@
 }
 
 .ui-select-field[data-disabled] .ui-select-field__trigger {
-  opacity: 0.55;
+  opacity: var(--ref-disabled-opacity);
 }
 
 .ui-select-field .ui-field__control {
@@ -89,7 +89,7 @@
 .ui-select-field__previous {
   flex: 0 1 auto;
   min-width: 0;
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }
 
 .ui-select-field__value {
@@ -133,7 +133,7 @@
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  min-width: var(--trigger-width);
+  min-width: var(--ui-trigger-width);
   border: 1px solid var(--ref-border);
   border-radius: var(--ref-radius);
   background: var(--ref-raised);
@@ -155,7 +155,7 @@
   height: 26px;
   padding: 0 6px;
   border: 1px solid var(--ref-border);
-  border-radius: 4px;
+  border-radius: var(--ref-radius-sm);
   background: var(--ref-canvas);
   color: inherit;
   font: inherit;
@@ -197,8 +197,8 @@
 .ui-select-field__section-header {
   padding: 2px 8px;
   color: var(--ref-muted);
-  font-size: 11px;
-  font-weight: 600;
+  font-size: var(--ref-font-size-xs);
+  font-weight: var(--ref-font-weight-strong);
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
@@ -210,7 +210,7 @@
   column-gap: 8px;
   min-height: 28px;
   padding: 2px 8px;
-  border-radius: 4px;
+  border-radius: var(--ref-radius-sm);
   cursor: default;
   outline: none;
 }
@@ -224,7 +224,7 @@
 }
 
 .ui-select-field__option[data-disabled] {
-  opacity: 0.5;
+  opacity: var(--ref-disabled-opacity);
 }
 
 .ui-select-field__option-check {
@@ -235,13 +235,13 @@
   width: 16px;
   height: 16px;
   border: 1px solid var(--ref-border-strong);
-  border-radius: 3px;
+  border-radius: var(--ref-radius-sm);
 }
 
 .ui-select-field__option[data-selected] .ui-select-field__option-check {
   border-color: var(--ref-accent);
   background: var(--ref-accent);
-  color: var(--ref-accent-text);
+  color: var(--ref-on-fill);
 }
 
 .ui-select-field__option-check .ui-glyph {
@@ -262,7 +262,7 @@
   order: 1;
   flex-basis: 100%;
   color: var(--ref-muted);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }
 
 .ui-select-field__load-more {
@@ -298,9 +298,9 @@
   height: 22px;
   padding: 0 4px 0 8px;
   border: 1px solid var(--ref-border);
-  border-radius: 999px;
+  border-radius: var(--ref-radius-full);
   background: var(--ref-surface);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
   outline: none;
 }
 
@@ -309,7 +309,7 @@
 }
 
 .ui-select-field__chip[data-focus-visible] {
-  box-shadow: 0 0 0 2px var(--ref-focus);
+  box-shadow: var(--ref-focus-halo);
 }
 
 .ui-select-field__chip[data-change='added'] {
@@ -335,5 +335,5 @@
 
 .ui-select-field__removed {
   flex: none;
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }

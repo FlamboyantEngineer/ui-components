@@ -38,7 +38,7 @@
 }
 
 .ui-html-markup mark:not(.ui-text-match) {
-  background: color-mix(in srgb, var(--ref-warning) 30%, transparent);
+  background: var(--ref-highlight);
   color: inherit;
 }
 

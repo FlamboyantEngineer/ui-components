@@ -25,7 +25,7 @@
   width: 18px;
   height: 18px;
   border: 1px solid var(--ref-border-strong);
-  border-radius: 2px;
+  border-radius: var(--ref-radius-xs);
   background: var(--ref-canvas);
   cursor: pointer;
   outline: none;
@@ -33,22 +33,22 @@
 
 .ui-grid-size-picker__cell[data-in-range] {
   border-color: var(--ref-accent);
-  background: color-mix(in srgb, var(--ref-accent) 22%, var(--ref-canvas));
+  background: color-mix(in srgb, var(--ref-accent) var(--ref-tint), var(--ref-canvas));
 }
 
 .ui-grid-size-picker__cell:focus-visible {
-  outline: 2px solid var(--ref-focus);
+  outline: var(--ref-focus-ring);
   outline-offset: 1px;
 }
 
 .ui-grid-size-picker__readout {
   color: var(--ref-muted);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
   font-variant-numeric: tabular-nums;
   text-align: center;
 }
 
 .ui-grid-size-picker[data-disabled] .ui-grid-size-picker__cell {
   cursor: default;
-  opacity: 0.5;
+  opacity: var(--ref-disabled-opacity);
 }

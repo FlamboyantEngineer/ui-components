@@ -9,7 +9,7 @@
 .ui-transition-menu__trigger {
   gap: 2px;
   padding-inline: 2px;
-  border-radius: 999px;
+  border-radius: var(--ref-radius-full);
 }
 
 .ui-transition-menu__trigger[data-hovered] .ui-transition-menu__badge {

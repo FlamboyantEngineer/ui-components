@@ -77,3 +77,10 @@ Every lab shall pass axe with the reference stylesheet in its light theme and in
 
 Implementation: `labs/reference/base.css`
 Verification: `e2e/accessibility.spec.ts`
+
+### UIC-LABS-3.5 - One token set
+
+The reference stylesheet shall draw every colour, type size and weight, radius, focus ring, state opacity, duration, tint and indent from the tokens `labs/reference/base.css` defines on the root (`--ref-*`), with dark values under `data-theme="dark"`: surfaces and text, accent and tones (each tone with a `-fill` that keeps its contrast under `--ref-on-fill`), tint levels for `color-mix`, the search highlight, eight category colours (with fills) for series and avatars, the type, radius and duration scales, focus rings and the scrim. A token that only aliases another in every theme is written as `var()` of it, so no two tokens hold the same literal colour. Partials use no literal a token covers, except a declaration marked `token-exempt:` with its reason (white paper, scanner contrast, a ring over any colour, an alpha mask). A token scoped to one partial is named `--ref-<partial>-…` and exists only for sizes that partial varies by its own data attributes. Every token defined is used, every token used is defined, and measured properties (`--ui-*`) carry a fallback only where the component sets them conditionally.
+
+Implementation: `labs/reference/base.css`, `scripts/check-reference-tokens.mjs`
+Verification: `test/reference-tokens.test.ts`, `e2e/accessibility.spec.ts`

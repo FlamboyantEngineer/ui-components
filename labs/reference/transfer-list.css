@@ -28,13 +28,13 @@
 }
 
 .ui-transfer-list__title {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: var(--ref-font-size-md);
+  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-transfer-list__count {
   color: var(--ref-muted);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
   font-variant-numeric: tabular-nums;
 }
 
@@ -52,7 +52,7 @@
 
 .ui-transfer-list__empty {
   color: var(--ref-muted);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }
 
 .ui-transfer-list__actions {

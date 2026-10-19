@@ -60,7 +60,7 @@
     "test:labs": "playwright test",
     "check:references": "node scripts/check-references.mjs",
     "check:specs": "node scripts/check-specs.mjs",
-    "check:labs": "node scripts/check-labs.mjs",
+    "check:labs": "node scripts/check-labs.mjs && node scripts/check-reference-tokens.mjs",
     "check:package": "node scripts/check-package.mjs",
     "check:public-types": "node scripts/check-public-types.mjs",
     "check": "npm run lint && npm run format:check && npm run typecheck && npm run check:references && npm run check:specs && npm run check:labs && npm run check:structure && npm test && npm run build && npm run check:public-types && npm run build:labs && npm run check:package",

@@ -36,9 +36,7 @@
 
 .ui-inline-edit__read[data-focus-visible] {
   outline: none;
-  box-shadow:
-    0 0 0 2px var(--ref-canvas),
-    0 0 0 4px var(--ref-focus);
+  box-shadow: var(--ref-focus-halo);
 }
 
 .ui-inline-edit__read[data-disabled] {
@@ -57,7 +55,7 @@
 .ui-inline-edit__icon {
   color: var(--ref-muted);
   opacity: 0;
-  transition: opacity 0.1s;
+  transition: opacity var(--ref-duration-fast);
 }
 
 .ui-inline-edit__read:is([data-hovered], [data-focus-visible]) .ui-inline-edit__icon {

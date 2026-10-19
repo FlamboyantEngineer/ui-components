@@ -6,7 +6,7 @@
 }
 
 .ui-relative-date-field[data-disabled] .ui-relative-date-field__trigger {
-  opacity: 0.55;
+  opacity: var(--ref-disabled-opacity);
 }
 
 .ui-relative-date-field .ui-field__control {
@@ -87,7 +87,7 @@
 
 .ui-relative-date-field__popover {
   box-sizing: border-box;
-  min-width: var(--trigger-width);
+  min-width: var(--ui-trigger-width);
   overflow: auto;
   border: 1px solid var(--ref-border);
   border-radius: var(--ref-radius);
@@ -129,7 +129,7 @@
   align-items: center;
   min-height: 28px;
   padding: 2px 8px;
-  border-radius: 4px;
+  border-radius: var(--ref-radius-sm);
   cursor: default;
   outline: none;
 }
@@ -145,6 +145,6 @@
 
 .ui-relative-date-field__preview {
   color: var(--ref-muted);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
   white-space: nowrap;
 }

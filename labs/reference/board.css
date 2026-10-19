@@ -48,7 +48,7 @@
 }
 
 .ui-board__column[data-dragging] {
-  opacity: 0.5;
+  opacity: var(--ref-dragging-opacity);
 }
 
 .ui-board__column[data-drop-target] {
@@ -68,7 +68,7 @@
   flex: 1;
   min-width: 0;
   overflow: hidden;
-  font-weight: 600;
+  font-weight: var(--ref-font-weight-strong);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -82,16 +82,16 @@
 .ui-board__lane-count {
   flex: none;
   padding: 0 6px;
-  border-radius: 999px;
+  border-radius: var(--ref-radius-full);
   background: var(--ref-hover);
   color: var(--ref-muted);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
   font-variant-numeric: tabular-nums;
 }
 
 .ui-board__column[data-over-limit] .ui-board__column-count {
   background: var(--ref-danger-fill);
-  color: #fff;
+  color: var(--ref-on-fill);
 }
 
 .ui-board__column-handle {
@@ -143,7 +143,7 @@
 }
 
 .ui-board__cards[data-focus-visible] {
-  box-shadow: inset 0 0 0 2px var(--ref-focus);
+  box-shadow: var(--ref-focus-inset);
 }
 
 .ui-board__cards[data-drop-target] {
@@ -172,11 +172,11 @@
 }
 
 .ui-board__card[data-focus-visible] {
-  box-shadow: inset 0 0 0 2px var(--ref-focus);
+  box-shadow: var(--ref-focus-inset);
 }
 
 .ui-board__card[data-dragging] {
-  opacity: 0.5;
+  opacity: var(--ref-dragging-opacity);
 }
 
 .ui-board__card-handle {

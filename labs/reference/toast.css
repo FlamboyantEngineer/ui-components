@@ -11,7 +11,7 @@
 }
 
 .ui-toast-region[data-focus-visible] {
-  outline: 2px solid var(--ref-focus);
+  outline: var(--ref-focus-ring);
   outline-offset: 4px;
 }
 
@@ -38,17 +38,17 @@
   box-shadow: var(--ref-shadow);
   outline: none;
   grid-area: 1 / 1;
-  z-index: calc(10 - var(--ui-toast-index, 0));
-  opacity: clamp(0, calc(3 - var(--ui-toast-index, 0)), 1);
+  z-index: calc(10 - var(--ui-toast-index));
+  opacity: clamp(0, calc(3 - var(--ui-toast-index)), 1);
   transform: translate(
       var(--ui-toast-swipe-x, 0px),
-      calc(var(--ui-toast-swipe-y, 0px) - min(var(--ui-toast-index, 0), 3) * 10px)
+      calc(var(--ui-toast-swipe-y, 0px) - min(var(--ui-toast-index), 3) * 10px)
     )
-    scale(calc(1 - min(var(--ui-toast-index, 0), 3) * 0.05));
+    scale(calc(1 - min(var(--ui-toast-index), 3) * 0.05));
   transform-origin: bottom center;
   transition:
-    transform 0.2s ease,
-    opacity 0.2s ease;
+    transform var(--ref-duration) ease,
+    opacity var(--ref-duration) ease;
   touch-action: none;
 }
 
@@ -56,9 +56,7 @@
   opacity: 1;
   transform: translate(
     var(--ui-toast-swipe-x, 0px),
-    calc(
-      var(--ui-toast-swipe-y, 0px) - var(--ui-toast-offset, 0px) - var(--ui-toast-index, 0) * 8px
-    )
+    calc(var(--ui-toast-swipe-y, 0px) - var(--ui-toast-offset) - var(--ui-toast-index) * 8px)
   );
 }
 
@@ -68,7 +66,7 @@
 }
 
 .ui-toast[data-entering] {
-  animation: ref-toast-enter 0.2s ease-out;
+  animation: ref-toast-enter var(--ref-duration) ease-out;
 }
 
 .ui-toast[data-exiting] {
@@ -93,9 +91,7 @@
 }
 
 .ui-toast[data-focus-visible] {
-  box-shadow:
-    0 0 0 2px var(--ref-focus),
-    var(--ref-shadow);
+  box-shadow: var(--ref-focus-halo), var(--ref-shadow);
 }
 
 .ui-toast[data-tone='success'] {
@@ -135,7 +131,7 @@
   border: 2px solid var(--ref-info);
   border-right-color: transparent;
   border-radius: 50%;
-  animation: ref-spin 0.8s linear infinite;
+  animation: ref-spin var(--ref-duration-spin) linear infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -152,12 +148,12 @@
 }
 
 .ui-toast__title {
-  font-weight: 600;
+  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-toast__description {
   color: var(--ref-muted);
-  font-size: 13px;
+  font-size: var(--ref-font-size-md);
 }
 
 .ui-toast__action,

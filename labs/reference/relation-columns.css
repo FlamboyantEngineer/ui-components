@@ -43,8 +43,8 @@
   border-bottom: 1px solid var(--ref-border);
   border-radius: var(--ref-radius) var(--ref-radius) 0 0;
   background: var(--ref-surface);
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--ref-font-size-sm);
+  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-relation-columns__column-title {
@@ -57,7 +57,7 @@
 .ui-relation-columns__item-count {
   flex: none;
   color: var(--ref-muted);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
   font-variant-numeric: tabular-nums;
 }
 

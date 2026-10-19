@@ -62,7 +62,7 @@
   inline-size: auto;
   border: 0;
   background: none;
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
   line-height: 16px;
 }
 

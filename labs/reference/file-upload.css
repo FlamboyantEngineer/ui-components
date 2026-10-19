@@ -8,12 +8,12 @@
   box-sizing: border-box;
   width: 360px;
   max-width: 100%;
-  font-size: 13px;
+  font-size: var(--ref-font-size-md);
 }
 
 .ui-file-upload__description {
   color: var(--ref-muted);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }
 
 .ui-file-upload__dropzone {
@@ -36,7 +36,7 @@
 }
 
 .ui-file-upload__dropzone[data-focus-visible] {
-  outline: 2px solid var(--ref-focus);
+  outline: var(--ref-focus-ring);
   outline-offset: 1px;
 }
 
@@ -48,18 +48,18 @@
 
 .ui-file-upload__dropzone[data-drop-accept] {
   border-color: var(--ref-success);
-  background: color-mix(in srgb, var(--ref-success) 10%, transparent);
+  background: color-mix(in srgb, var(--ref-success) var(--ref-tint-subtle), transparent);
 }
 
 .ui-file-upload__dropzone[data-drop-reject] {
   border-style: solid;
   border-color: var(--ref-danger);
-  background: color-mix(in srgb, var(--ref-danger) 10%, transparent);
+  background: color-mix(in srgb, var(--ref-danger) var(--ref-tint-subtle), transparent);
   cursor: no-drop;
 }
 
 .ui-file-upload__dropzone[data-disabled] {
-  opacity: 0.55;
+  opacity: var(--ref-disabled-opacity);
 }
 
 .ui-file-upload[data-invalid] .ui-file-upload__dropzone {
@@ -72,7 +72,7 @@
 }
 
 .ui-file-upload__label {
-  font-weight: 600;
+  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-file-upload__dropzone .ui-file-upload__description {
@@ -120,7 +120,7 @@
 
 .ui-file-upload__file[data-change='added'] {
   border-color: var(--ref-success);
-  background: color-mix(in srgb, var(--ref-success) 10%, transparent);
+  background: color-mix(in srgb, var(--ref-success) var(--ref-tint-subtle), transparent);
 }
 
 .ui-file-upload__file-preview,
@@ -143,7 +143,7 @@
 .ui-file-upload__file-preview {
   width: 24px;
   height: 24px;
-  border-radius: 3px;
+  border-radius: var(--ref-radius-sm);
   object-fit: cover;
 }
 
@@ -157,7 +157,7 @@
 .ui-file-upload__file-size {
   grid-column: 3;
   color: var(--ref-muted);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }
 
 .ui-file-upload__file-actions {

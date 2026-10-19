@@ -17,7 +17,7 @@
 }
 
 .ui-completion-list[data-entering] {
-  animation: ui-completion-list-enter 120ms ease-out;
+  animation: ui-completion-list-enter var(--ref-duration-fast) ease-out;
 }
 
 @keyframes ui-completion-list-enter {
@@ -55,7 +55,7 @@
   content: attr(data-kind);
   min-width: 56px;
   color: var(--ref-muted);
-  font-size: 11px;
+  font-size: var(--ref-font-size-xs);
 }
 
 .ui-completion-list__label {
@@ -64,7 +64,7 @@
 
 .ui-completion-list__description {
   color: var(--ref-muted);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }
 
 .ui-completion-list__option[data-focused] .ui-completion-list__description,
@@ -77,7 +77,7 @@
   padding: 6px 8px;
   border-top: 1px solid var(--ref-border);
   color: var(--ref-muted);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }
 
 .ui-completion-list__documentation {

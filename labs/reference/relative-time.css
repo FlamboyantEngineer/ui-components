@@ -1,7 +1,7 @@
 /* Relative Time */
 
 .ui-relative-time {
-  border-radius: 2px;
+  border-radius: var(--ref-radius-xs);
   font-variant-numeric: tabular-nums;
 }
 
@@ -13,7 +13,7 @@
 }
 
 .ui-relative-time:focus-visible {
-  outline: 2px solid var(--ref-focus);
+  outline: var(--ref-focus-ring);
   outline-offset: 2px;
 }
 

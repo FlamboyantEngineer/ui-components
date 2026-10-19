@@ -25,16 +25,16 @@
   height: 100%;
   padding: 0 12px;
   border: 1px solid var(--ref-border-strong);
-  border-radius: 22px;
+  border-radius: var(--ref-radius-full);
   background: var(--ref-raised);
-  font-size: 13px;
+  font-size: var(--ref-font-size-md);
 }
 
 .ui-state-machine-view__state[data-current] {
   border-color: var(--ref-accent);
   background: var(--ref-accent);
-  color: var(--ref-accent-text);
-  font-weight: 600;
+  color: var(--ref-on-fill);
+  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-state-machine-view__state[data-final] {

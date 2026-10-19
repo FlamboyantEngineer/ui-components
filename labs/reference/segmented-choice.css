@@ -35,7 +35,7 @@
   background: transparent;
   color: var(--ref-text);
   font: inherit;
-  font-size: 13px;
+  font-size: var(--ref-font-size-md);
   cursor: pointer;
   outline: none;
 }
@@ -54,12 +54,12 @@
 .ui-segmented-choice[data-size='sm'] .ui-segmented-choice__segment {
   height: 24px;
   padding: 0 8px;
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }
 .ui-segmented-choice[data-size='lg'] .ui-segmented-choice__segment {
   height: 32px;
   padding: 0 12px;
-  font-size: 14px;
+  font-size: var(--ref-font-size);
 }
 .ui-segmented-choice__segment[data-hovered] {
   background: var(--ref-hover);
@@ -68,7 +68,7 @@
   background: var(--ref-pressed);
 }
 .ui-segmented-choice__segment[data-selected] {
-  font-weight: 600;
+  font-weight: var(--ref-font-weight-strong);
 }
 .ui-segmented-choice[data-inherited] .ui-segmented-choice__segment[data-selected] {
   color: var(--ref-muted);
@@ -80,9 +80,9 @@
   inset: 0;
   background: var(--ref-selected);
   transition:
-    translate 0.2s,
-    width 0.2s,
-    height 0.2s;
+    translate var(--ref-duration),
+    width var(--ref-duration),
+    height var(--ref-duration);
 }
 .ui-segmented-choice[data-inherited] .ui-segmented-choice__indicator {
   background: var(--ref-hover);
@@ -93,10 +93,10 @@
   }
 }
 .ui-segmented-choice__segment[data-focus-visible] {
-  box-shadow: inset 0 0 0 2px var(--ref-focus);
+  box-shadow: var(--ref-focus-inset);
 }
 .ui-segmented-choice__segment[data-disabled] {
-  opacity: 0.55;
+  opacity: var(--ref-disabled-opacity);
   cursor: not-allowed;
 }
 .ui-segmented-choice[data-readonly] .ui-segmented-choice__segment {
@@ -120,7 +120,7 @@
 .ui-segmented-choice__label::after {
   content: attr(data-label);
   height: 0;
-  font-weight: 600;
+  font-weight: var(--ref-font-weight-strong);
   visibility: hidden;
   overflow: hidden;
 }
@@ -130,11 +130,11 @@
   flex: none;
   min-width: 16px;
   padding: 0 5px;
-  border-radius: 999px;
+  border-radius: var(--ref-radius-full);
   background: var(--ref-hover);
   color: var(--ref-muted);
-  font-size: 11px;
-  font-weight: 600;
+  font-size: var(--ref-font-size-xs);
+  font-weight: var(--ref-font-weight-strong);
   line-height: 16px;
   text-align: center;
 }

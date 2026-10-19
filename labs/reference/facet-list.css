@@ -8,8 +8,8 @@
 
 .ui-facet-list__label {
   color: var(--ref-muted);
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--ref-font-size-sm);
+  font-weight: var(--ref-font-weight-strong);
   letter-spacing: 0.02em;
   text-transform: uppercase;
 }
@@ -46,14 +46,14 @@
   margin-inline-start: auto;
   padding-inline-start: 8px;
   color: var(--ref-muted);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
   font-variant-numeric: tabular-nums;
 }
 
 .ui-facet-list__empty {
   margin: 0;
   color: var(--ref-muted);
-  font-size: 13px;
+  font-size: var(--ref-font-size-md);
 }
 
 .ui-facet-list__toggle {

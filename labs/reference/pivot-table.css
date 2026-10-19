@@ -26,7 +26,7 @@
 }
 
 .ui-pivot-table__field[data-zone='values'] {
-  font-weight: 600;
+  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-pivot-table__field-label {
@@ -54,5 +54,5 @@
 
 .ui-pivot-table__key[data-total],
 .ui-pivot-table__value[data-total] {
-  font-weight: 600;
+  font-weight: var(--ref-font-weight-strong);
 }

@@ -7,7 +7,7 @@
   border-radius: var(--ref-radius);
   background: var(--ref-canvas);
   color: var(--ref-text);
-  font-size: 13px;
+  font-size: var(--ref-font-size-md);
   overflow: hidden;
 }
 
@@ -24,7 +24,7 @@
 .ui-text-diff__summary {
   display: inline-flex;
   gap: 8px;
-  font-weight: 600;
+  font-weight: var(--ref-font-weight-strong);
   font-variant-numeric: tabular-nums;
 }
 
@@ -75,11 +75,11 @@
 }
 
 .ui-text-diff__line[data-change='added'] {
-  background: color-mix(in srgb, var(--ref-success) 12%, transparent);
+  background: color-mix(in srgb, var(--ref-success) var(--ref-tint-subtle), transparent);
 }
 
 .ui-text-diff__line[data-change='removed'] {
-  background: color-mix(in srgb, var(--ref-danger) 12%, transparent);
+  background: color-mix(in srgb, var(--ref-danger) var(--ref-tint-subtle), transparent);
 }
 
 .ui-text-diff__line[data-current] > td:first-child {
@@ -87,7 +87,7 @@
 }
 
 .ui-text-diff__line:focus-visible {
-  outline: 2px solid var(--ref-focus);
+  outline: var(--ref-focus-ring);
   outline-offset: -2px;
 }
 
@@ -95,7 +95,7 @@
   background: repeating-linear-gradient(
     -45deg,
     transparent 0 4px,
-    color-mix(in srgb, var(--ref-border) 50%, transparent) 4px 5px
+    color-mix(in srgb, var(--ref-border) var(--ref-tint-border), transparent) 4px 5px
   );
 }
 
@@ -129,21 +129,21 @@
 }
 
 .ui-text-diff__word {
-  border-radius: 2px;
+  border-radius: var(--ref-radius-xs);
 }
 
 .ui-text-diff__line[data-change='added'] .ui-text-diff__word {
-  background: color-mix(in srgb, var(--ref-success) 32%, transparent);
+  background: color-mix(in srgb, var(--ref-success) var(--ref-tint-strong), transparent);
 }
 
 .ui-text-diff__line[data-change='removed'] .ui-text-diff__word {
-  background: color-mix(in srgb, var(--ref-danger) 32%, transparent);
+  background: color-mix(in srgb, var(--ref-danger) var(--ref-tint-strong), transparent);
 }
 
 .ui-text-diff__fold > td {
   height: 28px;
   padding: 0 8px;
-  background: color-mix(in srgb, var(--ref-info) 8%, var(--ref-canvas));
+  background: color-mix(in srgb, var(--ref-info) var(--ref-tint-subtle), var(--ref-canvas));
   color: var(--ref-muted);
   font: 12px/20px var(--ref-font);
 }

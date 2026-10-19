@@ -4,10 +4,14 @@
   display: grid;
   gap: 8px;
   min-width: 440px;
-  font-size: 13px;
-  --ref-tree-compare-indent: 16px;
+  font-size: var(--ref-font-size-md);
   --ref-tree-compare-marker: 24px;
   --ref-tree-compare-actions: 28px;
+}
+
+/* Two trees side by side indent less than one tree. */
+.ui-tree-compare .ui-tree {
+  --ref-indent: 16px;
 }
 
 .ui-tree-compare__toolbar {
@@ -35,7 +39,7 @@ p.ui-tree-compare__summary {
   border: 1px solid var(--ref-border);
   border-inline-start-width: 3px;
   border-radius: var(--ref-radius);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
   line-height: 20px;
 }
 
@@ -56,7 +60,7 @@ p.ui-tree-compare__summary {
 }
 
 .ui-tree-compare__changes-only {
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }
 
 .ui-tree-compare__previous {
@@ -73,8 +77,8 @@ p.ui-tree-compare__summary {
   grid-template-columns: minmax(0, 1fr) var(--ref-tree-compare-marker) minmax(0, 1fr);
   padding-inline: 5px calc(var(--ref-tree-compare-actions) + 5px);
   color: var(--ref-muted);
-  font-size: 11px;
-  font-weight: 600;
+  font-size: var(--ref-font-size-xs);
+  font-weight: var(--ref-font-weight-strong);
   text-transform: uppercase;
 }
 
@@ -102,7 +106,7 @@ p.ui-tree-compare__summary {
 .ui-tree-compare__tree :is(.ui-tree__expand, .ui-tree__expand-spacer) {
   position: absolute;
   top: 50%;
-  inset-inline-start: calc((var(--ui-tree-level, 1) - 1) * var(--ref-tree-compare-indent) + 2px);
+  inset-inline-start: calc((var(--ui-tree-level) - 1) * var(--ref-indent) + 2px);
   z-index: 1;
   transform: translateY(-50%);
 }
@@ -128,9 +132,9 @@ p.ui-tree-compare__summary {
   position: relative;
   min-width: 0;
   padding-block: 2px;
-  padding-inline: calc((var(--ui-tree-level, 1) - 1) * var(--ref-tree-compare-indent) + 24px) 6px;
+  padding-inline: calc((var(--ui-tree-level) - 1) * var(--ref-indent) + 24px) 6px;
   overflow: hidden;
-  border-radius: 4px;
+  border-radius: var(--ref-radius-sm);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -139,32 +143,32 @@ p.ui-tree-compare__summary {
   background: repeating-linear-gradient(
     -45deg,
     transparent 0 4px,
-    color-mix(in srgb, var(--ref-border) 60%, transparent) 4px 5px
+    color-mix(in srgb, var(--ref-border) var(--ref-tint-border), transparent) 4px 5px
   );
 }
 
 .ui-tree-compare__branch {
   position: absolute;
   top: 50%;
-  inset-inline-start: calc((var(--ui-tree-level, 1) - 1) * var(--ref-tree-compare-indent) + 4px);
+  inset-inline-start: calc((var(--ui-tree-level) - 1) * var(--ref-indent) + 4px);
   color: var(--ref-muted);
   transform: translateY(-50%);
 }
 
 .ui-tree-compare__row[data-change='removed'] .ui-tree-compare__cell[data-side='left'] {
-  background: color-mix(in srgb, var(--ref-danger) 12%, transparent);
+  background: color-mix(in srgb, var(--ref-danger) var(--ref-tint-subtle), transparent);
 }
 
 .ui-tree-compare__row[data-change='added'] .ui-tree-compare__cell[data-side='right'] {
-  background: color-mix(in srgb, var(--ref-success) 12%, transparent);
+  background: color-mix(in srgb, var(--ref-success) var(--ref-tint-subtle), transparent);
 }
 
 .ui-tree-compare__row[data-change='changed'] .ui-tree-compare__cell {
-  background: color-mix(in srgb, var(--ref-warning) 14%, transparent);
+  background: color-mix(in srgb, var(--ref-warning) var(--ref-tint), transparent);
 }
 
 .ui-tree-compare__row[data-change='moved'] .ui-tree-compare__cell:not([data-empty]) {
-  background: color-mix(in srgb, var(--ref-info) 12%, transparent);
+  background: color-mix(in srgb, var(--ref-info) var(--ref-tint-subtle), transparent);
 }
 
 .ui-tree-compare__marker {

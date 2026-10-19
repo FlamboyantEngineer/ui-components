@@ -35,7 +35,7 @@
   height: 36px;
   padding: 0 12px;
   color: var(--ref-muted);
-  font-size: 13px;
+  font-size: var(--ref-font-size-md);
   white-space: nowrap;
   text-decoration: none;
   cursor: pointer;
@@ -44,12 +44,12 @@
 .ui-tabs[data-size='sm'] .ui-tabs__tab {
   height: 30px;
   padding: 0 10px;
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }
 .ui-tabs[data-size='lg'] .ui-tabs__tab {
   height: 42px;
   padding: 0 16px;
-  font-size: 14px;
+  font-size: var(--ref-font-size);
 }
 .ui-tabs__tab[data-hovered] {
   background: var(--ref-hover);
@@ -57,13 +57,13 @@
 }
 .ui-tabs__tab[data-selected] {
   color: var(--ref-text);
-  font-weight: 600;
+  font-weight: var(--ref-font-weight-strong);
 }
 .ui-tabs__tab[data-focus-visible] {
-  box-shadow: inset 0 0 0 2px var(--ref-focus);
+  box-shadow: var(--ref-focus-inset);
 }
 .ui-tabs__tab[data-disabled] {
-  opacity: 0.5;
+  opacity: var(--ref-disabled-opacity);
   cursor: not-allowed;
 }
 
@@ -74,8 +74,8 @@
   height: 2px;
   background: var(--ref-accent);
   transition:
-    translate 0.2s,
-    width 0.2s;
+    translate var(--ref-duration),
+    width var(--ref-duration);
 }
 .ui-tabs__list[data-orientation='vertical'] .ui-tabs__indicator {
   inset-block: 0;
@@ -83,8 +83,8 @@
   width: 2px;
   height: auto;
   transition:
-    translate 0.2s,
-    height 0.2s;
+    translate var(--ref-duration),
+    height var(--ref-duration);
 }
 @media (prefers-reduced-motion: reduce) {
   .ui-tabs__indicator {
@@ -103,7 +103,7 @@
 .ui-tabs__label[data-label]::after {
   content: attr(data-label);
   height: 0;
-  font-weight: 600;
+  font-weight: var(--ref-font-weight-strong);
   visibility: hidden;
   overflow: hidden;
 }
@@ -113,11 +113,11 @@
   min-width: 18px;
   height: 18px;
   padding: 0 5px;
-  border-radius: 999px;
+  border-radius: var(--ref-radius-full);
   background: var(--ref-danger-fill);
-  color: var(--ref-accent-text);
-  font-size: 11px;
-  font-weight: 600;
+  color: var(--ref-on-fill);
+  font-size: var(--ref-font-size-xs);
+  font-weight: var(--ref-font-weight-strong);
   line-height: 18px;
   text-align: center;
 }
@@ -127,7 +127,7 @@
   outline: none;
 }
 .ui-tabs__panel[data-focus-visible] {
-  box-shadow: inset 0 0 0 2px var(--ref-focus);
+  box-shadow: var(--ref-focus-inset);
 }
 
 /* The bar holds a list with its scroll buttons, its "more" menu or its add button on one line. */
@@ -167,7 +167,7 @@
   width: 16px;
   height: 16px;
   margin-inline-end: -4px;
-  border-radius: 4px;
+  border-radius: var(--ref-radius-sm);
   color: var(--ref-muted);
 }
 .ui-tabs__remove .ui-glyph {
@@ -198,11 +198,11 @@
   min-width: 0;
   padding: 2px 6px;
   border: 1px solid var(--ref-accent);
-  border-radius: 4px;
+  border-radius: var(--ref-radius-sm);
   background: var(--ref-canvas);
   color: var(--ref-text);
   font: inherit;
-  font-size: 13px;
+  font-size: var(--ref-font-size-md);
 }
 .ui-tabs__rename-input[data-invalid] {
   border-color: var(--ref-danger);
@@ -214,17 +214,17 @@
   z-index: 1;
   padding: 4px 8px;
   border: 1px solid var(--ref-danger);
-  border-radius: 4px;
+  border-radius: var(--ref-radius-sm);
   background: var(--ref-raised);
   color: var(--ref-danger);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
   white-space: nowrap;
   box-shadow: var(--ref-shadow);
 }
 
 /* A dragged tab dims; the tab it would land beside draws a bar on that side. */
 .ui-tabs__tab[data-dragging] {
-  opacity: 0.5;
+  opacity: var(--ref-dragging-opacity);
 }
 .ui-tabs__tab[data-drop-position='before'] {
   box-shadow: inset 2px 0 0 var(--ref-accent);

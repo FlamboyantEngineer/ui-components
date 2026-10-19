@@ -46,7 +46,7 @@
 
 .ui-date-time-field__previous {
   flex: 0 1 auto;
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }
 
 .ui-date-time-field__input {
@@ -57,7 +57,7 @@
 
 .ui-date-time-field__segment {
   padding: 0 1px;
-  border-radius: 2px;
+  border-radius: var(--ref-radius-xs);
   font-variant-numeric: tabular-nums;
   outline: none;
 }
@@ -72,7 +72,7 @@
 
 .ui-date-time-field__segment[data-focused] {
   background: var(--ref-accent);
-  color: var(--ref-accent-text);
+  color: var(--ref-on-fill);
 }
 
 .ui-date-time-field__separator {
@@ -88,7 +88,7 @@
   height: 22px;
   padding: 0;
   border: 0;
-  border-radius: 4px;
+  border-radius: var(--ref-radius-sm);
   background: none;
   color: inherit;
   cursor: pointer;
@@ -105,7 +105,7 @@
 }
 
 .ui-date-time-field__button[data-focus-visible] {
-  box-shadow: 0 0 0 2px var(--ref-focus);
+  box-shadow: var(--ref-focus-halo);
 }
 
 .ui-date-time-field__button[data-disabled] {
@@ -167,8 +167,8 @@
 .ui-date-time-field__calendar-heading {
   flex: 1 1 auto;
   margin: 0;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: var(--ref-font-size-md);
+  font-weight: var(--ref-font-weight-strong);
   text-align: center;
 }
 
@@ -192,11 +192,11 @@
   height: 24px;
   padding: 0 4px 0 6px;
   border: 1px solid transparent;
-  border-radius: 4px;
+  border-radius: var(--ref-radius-sm);
   background: none;
   color: inherit;
   font: inherit;
-  font-weight: 600;
+  font-weight: var(--ref-font-weight-strong);
   cursor: pointer;
 }
 
@@ -205,7 +205,7 @@
 }
 
 .ui-date-time-field__calendar-select-button[data-focus-visible] {
-  outline: 2px solid var(--ref-focus);
+  outline: var(--ref-focus-ring);
 }
 
 .ui-date-time-field__calendar-select-button .ui-glyph {
@@ -233,7 +233,7 @@
 
 .ui-date-time-field__calendar-select-option {
   padding: 4px 8px;
-  border-radius: 4px;
+  border-radius: var(--ref-radius-sm);
   cursor: default;
   outline: none;
 }
@@ -266,8 +266,8 @@
 .ui-date-time-field__calendar-weekday {
   width: 30px;
   padding: 4px 0;
-  font-size: 11px;
-  font-weight: 500;
+  font-size: var(--ref-font-size-xs);
+  font-weight: var(--ref-font-weight-medium);
 }
 
 .ui-date-time-field__calendar-body {
@@ -280,7 +280,7 @@
   width: 28px;
   height: 28px;
   margin: 1px;
-  border-radius: 4px;
+  border-radius: var(--ref-radius-sm);
   cursor: default;
   outline: none;
 }
@@ -294,13 +294,13 @@
 }
 
 .ui-date-time-field__calendar-cell[data-today] {
-  font-weight: 700;
+  font-weight: var(--ref-font-weight-strong);
   text-decoration: underline;
 }
 
 .ui-date-time-field__calendar-cell[data-selected] {
   background: var(--ref-accent);
-  color: var(--ref-accent-text);
+  color: var(--ref-on-fill);
 }
 
 /* Inside a picked range, only the first and last days are filled. */
@@ -314,7 +314,7 @@
 }
 
 .ui-date-time-field__calendar-cell[data-focus-visible] {
-  box-shadow: 0 0 0 2px var(--ref-focus);
+  box-shadow: var(--ref-focus-halo);
 }
 
 .ui-date-time-field__calendar-cell:is([data-disabled], [data-unavailable]) {

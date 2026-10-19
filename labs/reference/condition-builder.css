@@ -72,13 +72,13 @@
   flex-basis: 100%;
   margin: 0;
   color: var(--ref-danger);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }
 
 .ui-condition-builder__empty {
   margin: 0;
   color: var(--ref-muted);
-  font-size: 13px;
+  font-size: var(--ref-font-size-md);
 }
 
 .ui-condition-builder__group-actions {

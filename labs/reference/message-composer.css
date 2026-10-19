@@ -13,7 +13,7 @@
 }
 
 .ui-message-composer:focus-within {
-  outline: 2px solid var(--ref-focus);
+  outline: var(--ref-focus-ring);
   outline-offset: -1px;
 }
 
@@ -70,5 +70,5 @@
 }
 
 .ui-message-composer__completions {
-  min-width: min(var(--trigger-width), 360px);
+  min-width: min(var(--ui-trigger-width), 360px);
 }

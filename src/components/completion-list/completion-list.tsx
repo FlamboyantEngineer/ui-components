@@ -4,7 +4,7 @@ import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { useLayerZIndex } from '../portal/portal.js';
+import { triggerWidthProperty, useLayerZIndex } from '../portal/portal.js';
 import type { Completion } from './completion-match.js';
 import { getCompletionOptionId } from './completion-option-id.js';
 import type { CompletionsModel } from './use-completions.js';
@@ -168,7 +168,7 @@ export function CompletionList(props: CompletionListProps) {
       triggerRef={anchorRef}
       placement={placement}
       offset={2}
-      style={{ zIndex }}
+      style={{ ...triggerWidthProperty, zIndex }}
     >
       {items.length > 0 ? (
         <div

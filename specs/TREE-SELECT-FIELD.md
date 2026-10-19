@@ -13,7 +13,7 @@ Verification: `src/components/tree-select-field/tree-select-field.test.tsx`, `e2
 
 ### UIC-TREE-SELECT-FIELD-1.2 - Popover
 
-Pressing the trigger shall open a popover (`ui-tree-select-field__popover`) below it holding a dialog (`ui-tree-select-field__dialog`) named by the field's label, with a [Search Field](SEARCH-FIELD.md) (`ui-tree-select-field__search`) named by the provider's `filterLabel` string with the label, which takes focus, and a `Tree` in its `picker` variant (`ui-tree-select-field__tree`) named by the label, its chosen rows selected. Every opening starts afresh: the search is empty and the tree opens with the ancestors of the chosen nodes expanded. Escape, or a press outside, closes the popover and returns focus to the trigger; Escape in the tree closes it rather than clearing a multiple choice. The open state follows `isOpen`, `defaultOpen` and `onOpenChange`.
+Pressing the trigger shall open a popover (`ui-tree-select-field__popover`) below it, publishing the trigger's width as `--ui-trigger-width`, holding a dialog (`ui-tree-select-field__dialog`) named by the field's label, with a [Search Field](SEARCH-FIELD.md) (`ui-tree-select-field__search`) named by the provider's `filterLabel` string with the label, which takes focus, and a `Tree` in its `picker` variant (`ui-tree-select-field__tree`) named by the label, its chosen rows selected. Every opening starts afresh: the search is empty and the tree opens with the ancestors of the chosen nodes expanded. Escape, or a press outside, closes the popover and returns focus to the trigger; Escape in the tree closes it rather than clearing a multiple choice. The open state follows `isOpen`, `defaultOpen` and `onOpenChange`.
 
 Implementation: `src/components/tree-select-field/tree-select-control.tsx`, `src/components/tree-select-field/tree-select-popover.tsx`, `src/components/tree-select-field/tree-index.ts`
 Verification: `src/components/tree-select-field/tree-index.test.ts`, `src/components/tree-select-field/tree-select-field.test.tsx`, `e2e/tree-select-field.spec.ts`
@@ -101,6 +101,7 @@ Verification: `src/components/tree-select-field/tree-select-field.test.tsx`
 | `ui-tree-select-field__chevron` | slot      |                                            | The trigger's chevron glyph.                            |
 | `ui-tree-select-field__clear`   | slot      |                                            | The clear button (also `ui-icon-button`).               |
 | `ui-tree-select-field__popover` | slot      |                                            | The popover.                                            |
+| `--ui-trigger-width`            | property  |                                            | Width of the trigger, in pixels.                        |
 | `ui-tree-select-field__dialog`  | slot      |                                            | The dialog inside the popover.                          |
 | `ui-tree-select-field__search`  | slot      |                                            | The search field (also `ui-search-field`).              |
 | `ui-tree-select-field__tree`    | slot      |                                            | The tree (also `ui-tree`).                              |

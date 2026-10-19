@@ -7,7 +7,7 @@
   min-width: 0;
   max-width: 100%;
   color: var(--ref-muted);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
   line-height: 1.4;
   vertical-align: middle;
 }
@@ -45,9 +45,9 @@
 }
 
 .ui-save-status[data-entering] {
-  animation: ref-fade 0.15s ease-out;
+  animation: ref-fade var(--ref-duration) ease-out;
 }
 
 .ui-save-status[data-exiting] {
-  animation: ref-fade 0.4s ease-in reverse;
+  animation: ref-fade var(--ref-duration-slow) ease-in reverse;
 }

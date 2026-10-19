@@ -28,7 +28,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }
 
 .ui-user-card__indicator {
@@ -63,9 +63,13 @@
 
 .ui-user-card__skeleton {
   height: 72px;
-  border-radius: 4px;
+  border-radius: var(--ref-radius-sm);
   background: repeating-linear-gradient(to bottom, var(--ref-border) 0 10px, transparent 10px 20px);
-  mask-image: linear-gradient(to right, #000 75%, transparent);
+  mask-image: linear-gradient(
+    to right,
+    #000 75%,
+    transparent
+  ); /* token-exempt: an alpha mask, not a colour */
 }
 
 .ui-user-card__actions {
@@ -84,7 +88,7 @@
   max-width: 100%;
   padding: 0;
   border: 0;
-  border-radius: 4px;
+  border-radius: var(--ref-radius-sm);
   background: none;
   color: inherit;
   font: inherit;
@@ -99,23 +103,21 @@
 }
 
 .ui-user-card__trigger[data-focus-visible] {
-  box-shadow:
-    0 0 0 2px var(--ref-canvas),
-    0 0 0 4px var(--ref-focus);
+  box-shadow: var(--ref-focus-halo);
 }
 
 .ui-user-card__trigger[data-disabled] {
   cursor: default;
   text-decoration: none;
-  opacity: 0.6;
+  opacity: var(--ref-disabled-opacity);
 }
 
 .ui-user-card__popover[data-entering] {
-  animation: ref-fade 0.12s ease-out;
+  animation: ref-fade var(--ref-duration-fast) ease-out;
 }
 
 .ui-user-card__popover[data-exiting] {
-  animation: ref-fade 0.12s ease-in reverse;
+  animation: ref-fade var(--ref-duration-fast) ease-in reverse;
 }
 
 /* On hover the popover is also a hover card; the card inside draws the surface. */

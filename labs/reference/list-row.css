@@ -58,7 +58,7 @@
 }
 
 .ui-list-row__primary:focus-visible {
-  box-shadow: inset 0 0 0 2px var(--ref-focus);
+  box-shadow: var(--ref-focus-inset);
 }
 
 .ui-list-row[data-current] > .ui-list-row__primary {
@@ -121,12 +121,12 @@
 }
 
 .ui-list-row-content__title {
-  font-weight: 600;
+  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-list-row-content__meta {
   color: var(--ref-muted);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }
 
 /* List view: the same rows on a grid list. */
@@ -142,7 +142,7 @@
 }
 
 .ui-list-view[data-focus-visible] {
-  box-shadow: inset 0 0 0 2px var(--ref-focus);
+  box-shadow: var(--ref-focus-inset);
 }
 
 .ui-list-view[data-empty] {
@@ -184,7 +184,7 @@
 }
 
 .ui-list-view-item[data-focus-visible] {
-  box-shadow: inset 0 0 0 2px var(--ref-focus);
+  box-shadow: var(--ref-focus-inset);
 }
 
 .ui-list-view-item[data-disabled] {
@@ -193,7 +193,7 @@
 }
 
 .ui-list-view-item[data-dragging] {
-  opacity: 0.5;
+  opacity: var(--ref-dragging-opacity);
 }
 
 .ui-list-view-item[data-drop-target] {
@@ -241,8 +241,8 @@
   padding: 6px 8px 2px;
   background: var(--ref-canvas);
   color: var(--ref-muted);
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--ref-font-size-sm);
+  font-weight: var(--ref-font-weight-strong);
   text-transform: uppercase;
 }
 

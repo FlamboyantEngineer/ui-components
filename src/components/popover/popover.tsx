@@ -17,7 +17,7 @@ import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { IconButton } from '../icon-button/icon-button.js';
-import { useLayerZIndex } from '../portal/portal.js';
+import { triggerWidthProperty, useLayerZIndex } from '../portal/portal.js';
 
 /** A pressable trigger and the `Popover` it opens. */
 export interface PopoverTriggerProps extends OpenStateProps {
@@ -113,7 +113,7 @@ export function PopoverTrigger({ children, ...openState }: PopoverTriggerProps) 
 export function PopoverPanel({ arrowClassName, children, ...rest }: PopoverPanelProps) {
   const zIndex = useLayerZIndex('dropdown');
   return (
-    <AriaPopover {...rest} style={{ zIndex }}>
+    <AriaPopover {...rest} style={{ ...triggerWidthProperty, zIndex }}>
       {arrowClassName ? <OverlayArrow className={arrowClassName} /> : null}
       {children}
     </AriaPopover>

@@ -3,7 +3,7 @@
 .ui-decision-control {
   max-width: 420px;
   color: var(--ref-text);
-  font-size: 13px;
+  font-size: var(--ref-font-size-md);
 }
 
 .ui-decision-control__form {
@@ -14,7 +14,7 @@
 }
 
 .ui-decision-control__label {
-  font-weight: 600;
+  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-decision-control__choice {

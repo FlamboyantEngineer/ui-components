@@ -4,7 +4,7 @@
   box-sizing: border-box;
   max-width: min(320px, calc(100vw - 24px));
   border: 1px solid var(--ref-border);
-  border-radius: 8px;
+  border-radius: var(--ref-radius-lg);
   background: var(--ref-raised);
   color: var(--ref-text);
   box-shadow: var(--ref-shadow);
@@ -12,11 +12,11 @@
 }
 
 .ui-popover[data-entering] {
-  animation: ref-fade 0.12s ease-out;
+  animation: ref-fade var(--ref-duration-fast) ease-out;
 }
 
 .ui-popover[data-exiting] {
-  animation: ref-fade 0.12s ease-in reverse;
+  animation: ref-fade var(--ref-duration-fast) ease-in reverse;
 }
 
 /* The arrow is a bordered square turned on its corner, half of it showing past the panel's edge. */
@@ -68,8 +68,8 @@
   flex: 1 1 auto;
   min-width: 0;
   margin: 0;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--ref-font-size);
+  font-weight: var(--ref-font-weight-strong);
   line-height: 1.4;
 }
 

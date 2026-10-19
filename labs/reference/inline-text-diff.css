@@ -6,13 +6,13 @@
 }
 
 .ui-inline-text-diff__removed {
-  background: color-mix(in srgb, var(--ref-danger) 6%, transparent);
+  background: color-mix(in srgb, var(--ref-danger) var(--ref-tint-subtle), transparent);
   color: var(--ref-danger);
   text-decoration: line-through;
 }
 
 .ui-inline-text-diff__added {
-  background: color-mix(in srgb, var(--ref-success) 6%, transparent);
+  background: color-mix(in srgb, var(--ref-success) var(--ref-tint-subtle), transparent);
   color: var(--ref-success);
   text-decoration: none;
 }

@@ -36,8 +36,8 @@
 .ui-display-options__properties-label,
 .ui-display-options__density-label {
   color: var(--ref-text);
-  font-size: 13px;
-  font-weight: 500;
+  font-size: var(--ref-font-size-md);
+  font-weight: var(--ref-font-weight-medium);
 }
 
 .ui-display-options__properties .ui-list-view {

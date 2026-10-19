@@ -39,7 +39,7 @@
 
 .ui-media-viewer__viewport[data-focus-visible],
 .ui-media-viewer__viewport:focus-visible {
-  outline: 2px solid var(--ref-focus);
+  outline: var(--ref-focus-ring);
   outline-offset: 1px;
 }
 
@@ -85,7 +85,7 @@
 
 .ui-media-viewer__counter {
   color: var(--ref-muted);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
   white-space: nowrap;
 }
 
@@ -123,7 +123,7 @@
   width: 56px;
   height: 40px;
   object-fit: cover;
-  border-radius: 3px;
+  border-radius: var(--ref-radius-sm);
 }
 
 .ui-media-viewer__thumbnail-icon {

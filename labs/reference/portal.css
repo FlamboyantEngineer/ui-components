@@ -7,7 +7,7 @@
 
 .ui-portal[data-layer='tooltip'],
 .ui-portal[data-layer='toast'] {
-  font-size: 13px;
+  font-size: var(--ref-font-size-md);
 }
 
 .ui-portal-host {

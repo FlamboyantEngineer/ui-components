@@ -6,7 +6,7 @@
   gap: 0 6px;
   min-width: 0;
   max-width: 100%;
-  font-size: 13px;
+  font-size: var(--ref-font-size-md);
   line-height: 1.4;
   vertical-align: bottom;
 }
@@ -17,12 +17,12 @@
 
 .ui-record-label[data-size='sm'] {
   gap: 0 4px;
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }
 
 .ui-record-label[data-size='lg'] {
   gap: 0 8px;
-  font-size: 15px;
+  font-size: var(--ref-font-size-lg);
 }
 
 /* The icon and identifier never break apart. */
@@ -41,7 +41,7 @@
 
 .ui-record-label__identifier {
   font-family: var(--ref-mono);
-  font-weight: 600;
+  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-record-label[data-unavailable] .ui-record-label__identifier {

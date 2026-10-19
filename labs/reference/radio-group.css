@@ -20,18 +20,18 @@
 }
 
 .ui-radio {
-  --ref-radio-size: 16px;
-  font-size: 13px;
+  --ref-radio-group-size: 16px;
+  font-size: var(--ref-font-size-md);
 }
 
 .ui-radio-group[data-size='sm'] .ui-radio {
-  --ref-radio-size: 14px;
-  font-size: 12px;
+  --ref-radio-group-size: 14px;
+  font-size: var(--ref-font-size-sm);
 }
 
 .ui-radio-group[data-size='lg'] .ui-radio {
-  --ref-radio-size: 20px;
-  font-size: 15px;
+  --ref-radio-group-size: 20px;
+  font-size: var(--ref-font-size-lg);
 }
 
 .ui-radio__button {
@@ -45,17 +45,17 @@
 .ui-radio__indicator {
   flex: none;
   box-sizing: border-box;
-  width: var(--ref-radio-size);
-  height: var(--ref-radio-size);
+  width: var(--ref-radio-group-size);
+  height: var(--ref-radio-group-size);
   border: 1px solid var(--ref-border-strong);
   border-radius: 50%;
   background: var(--ref-canvas);
-  transition: border-width 0.1s;
+  transition: border-width var(--ref-duration-fast);
 }
 
 .ui-radio__button[data-selected] .ui-radio__indicator {
-  border: calc(var(--ref-radio-size) * 0.3) solid var(--ref-accent);
-  background: var(--ref-accent-text);
+  border: calc(var(--ref-radio-group-size) * 0.3) solid var(--ref-accent);
+  background: var(--ref-on-fill);
 }
 
 .ui-radio__button[data-hovered]:not([data-selected]) .ui-radio__indicator {
@@ -63,7 +63,7 @@
 }
 
 .ui-radio__button[data-focus-visible] .ui-radio__indicator {
-  outline: 2px solid var(--ref-focus);
+  outline: var(--ref-focus-ring);
   outline-offset: 2px;
 }
 
@@ -81,7 +81,7 @@
 
 /* A disabled radio dims its button only; its description, which may say why, stays readable. */
 .ui-radio__button[data-disabled] {
-  opacity: 0.55;
+  opacity: var(--ref-disabled-opacity);
   cursor: not-allowed;
 }
 
@@ -91,7 +91,7 @@
 
 .ui-radio__description {
   display: block;
-  margin-inline-start: calc(var(--ref-radio-size) + 6px);
+  margin-inline-start: calc(var(--ref-radio-group-size) + 6px);
   color: var(--ref-muted);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }

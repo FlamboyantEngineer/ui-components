@@ -5,7 +5,7 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
-  font-size: 13px;
+  font-size: var(--ref-font-size-md);
 }
 
 .ui-property-panel__header {
@@ -66,7 +66,7 @@
 
 .ui-property-section__trigger {
   padding: 10px;
-  font-weight: 600;
+  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-property-section__trigger[data-hovered],
@@ -76,13 +76,13 @@
 
 .ui-property-section__trigger[data-focus-visible],
 .ui-property-card__trigger[data-focus-visible] {
-  outline: 2px solid var(--ref-focus);
+  outline: var(--ref-focus-ring);
   outline-offset: -2px;
 }
 
 .ui-property-section[data-disabled] .ui-property-section__trigger {
   cursor: default;
-  opacity: 0.55;
+  opacity: var(--ref-disabled-opacity);
 }
 
 .ui-property-section__chevron,
@@ -133,7 +133,7 @@
 .ui-property-section__description {
   margin-bottom: 8px;
   color: var(--ref-muted);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }
 
 /* Groups */
@@ -149,8 +149,8 @@
   padding: 4px 0;
   border-bottom: 1px solid var(--ref-border);
   color: var(--ref-muted);
-  font-size: 11px;
-  font-weight: 600;
+  font-size: var(--ref-font-size-xs);
+  font-weight: var(--ref-font-weight-strong);
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
@@ -197,13 +197,13 @@
 
 .ui-property-row__unit {
   color: var(--ref-muted);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }
 
 .ui-property-row__hint {
   flex: 0 0 100%;
   color: var(--ref-muted);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }
 
 .ui-property-row__actions {
@@ -217,7 +217,7 @@
   grid-column: 2 / -1;
   padding-bottom: 4px;
   color: var(--ref-muted);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }
 
 .ui-property-row[data-wide] .ui-property-row__label {
@@ -249,7 +249,7 @@
   }
 
   .ui-property-panel[data-label-layout='responsive'] .ui-property-row__label {
-    font-size: 12px;
+    font-size: var(--ref-font-size-sm);
   }
 
   .ui-property-panel[data-label-layout='responsive'] .ui-property-row__actions {
@@ -262,7 +262,7 @@
 
 .ui-property-card {
   border: 1px solid var(--ref-border);
-  border-radius: 8px;
+  border-radius: var(--ref-radius-lg);
 }
 
 .ui-property-card + .ui-property-card {
@@ -282,16 +282,16 @@
 
 .ui-property-card__trigger {
   padding: 6px 8px;
-  border-radius: 8px;
+  border-radius: var(--ref-radius-lg);
 }
 
 .ui-property-card__name {
-  font-weight: 600;
+  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-property-card__summary {
   color: var(--ref-muted);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }
 
 .ui-property-card__body:not([hidden]) {
@@ -314,7 +314,7 @@
 
 .ui-property-strip-cell__letter {
   color: var(--ref-muted);
-  font-size: 11px;
+  font-size: var(--ref-font-size-xs);
 }
 
 .ui-property-strip-cell > input {

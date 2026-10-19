@@ -8,14 +8,14 @@
   box-sizing: border-box;
   width: 280px;
   max-width: 100%;
-  font-size: 13px;
+  font-size: var(--ref-font-size-md);
 }
 
 /* Stacked by default: the label takes its own line above the control. */
 .ui-field__label {
   flex: 0 0 100%;
   margin-bottom: 4px;
-  font-weight: 500;
+  font-weight: var(--ref-font-weight-medium);
 }
 
 .ui-field:is([data-label-layout='label-colon-control'], [data-label-layout='control-label'])
@@ -55,7 +55,7 @@
 
 .ui-field__control > :is(input, textarea):focus-visible {
   border-color: var(--ref-focus);
-  outline: 1px solid var(--ref-focus);
+  outline: var(--ref-focus-ring-thin);
 }
 
 .ui-field[data-dirty] .ui-field__control > :is(input, textarea) {
@@ -75,7 +75,7 @@
 }
 
 .ui-field[data-disabled] {
-  opacity: 0.55;
+  opacity: var(--ref-disabled-opacity);
 }
 
 .ui-field__help,
@@ -94,13 +94,13 @@
   flex: 0 0 100%;
   margin-top: 4px;
   color: var(--ref-muted);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }
 
 /* The message stays in the document as a live region; empty, it takes no room. */
 .ui-field__message {
   flex: 0 0 100%;
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }
 
 .ui-field__message:not(:empty) {
@@ -138,7 +138,7 @@
   height: 22px;
   padding: 0 4px;
   border: 1px dashed var(--ref-danger);
-  border-radius: 3px;
+  border-radius: var(--ref-radius-sm);
   color: var(--ref-danger);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -165,8 +165,8 @@
 .ui-fieldset__legend {
   padding: 0 4px;
   color: var(--ref-text);
-  font-size: 13px;
-  font-weight: 600;
+  font-size: var(--ref-font-size-md);
+  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-fieldset[data-disabled] {

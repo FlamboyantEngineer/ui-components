@@ -1,7 +1,7 @@
 /* Outline */
 
 .ui-outline {
-  font-size: 13px;
+  font-size: var(--ref-font-size-md);
   line-height: 1.4;
 }
 
@@ -39,7 +39,7 @@
 }
 
 .ui-outline__link:focus-visible {
-  outline: 2px solid var(--ref-focus);
+  outline: var(--ref-focus-ring);
   outline-offset: -2px;
 }
 
@@ -59,12 +59,12 @@
 .ui-outline__item[data-current] > .ui-outline__row > .ui-outline__link {
   border-inline-start-color: var(--ref-accent);
   background: var(--ref-selected);
-  font-weight: 600;
+  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-outline__item[data-current-within]:not([data-expanded]) > .ui-outline__row > .ui-outline__link {
   border-inline-start-color: var(--ref-border-strong);
-  font-weight: 600;
+  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-outline__empty {

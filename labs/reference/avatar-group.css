@@ -12,7 +12,7 @@
   margin: 0;
   padding: 2px;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--ref-radius-full);
   background: none;
   color: inherit;
   font: inherit;
@@ -29,9 +29,7 @@
 }
 
 .ui-avatar-group__trigger[data-focus-visible] {
-  box-shadow:
-    0 0 0 2px var(--ref-canvas),
-    0 0 0 4px var(--ref-focus);
+  box-shadow: var(--ref-focus-halo);
 }
 
 .ui-avatar-group__avatar,
@@ -53,11 +51,11 @@
   min-width: 32px;
   height: 32px;
   padding: 0 4px;
-  border-radius: 999px;
+  border-radius: var(--ref-radius-full);
   background: var(--ref-surface);
   color: var(--ref-text);
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--ref-font-size-sm);
+  font-weight: var(--ref-font-weight-strong);
   line-height: 1;
 }
 
@@ -65,19 +63,19 @@
   min-width: 20px;
   height: 20px;
   padding: 0 2px;
-  font-size: 9px;
+  font-size: var(--ref-font-size-2xs);
 }
 
 .ui-avatar-group[data-size='sm'] .ui-avatar-group__overflow {
   min-width: 24px;
   height: 24px;
-  font-size: 10px;
+  font-size: var(--ref-font-size-2xs);
 }
 
 .ui-avatar-group[data-size='lg'] .ui-avatar-group__overflow {
   min-width: 40px;
   height: 40px;
-  font-size: 13px;
+  font-size: var(--ref-font-size-md);
 }
 
 .ui-avatar-group[data-size='xs'] .ui-avatar-group__avatar + *,

@@ -5,7 +5,7 @@
   align-items: center;
   gap: 6px;
   min-height: 24px;
-  font-size: 13px;
+  font-size: var(--ref-font-size-md);
   vertical-align: middle;
   cursor: pointer;
 }
@@ -23,9 +23,9 @@
   width: 16px;
   height: 16px;
   border: 1px solid var(--ref-border-strong);
-  border-radius: 4px;
+  border-radius: var(--ref-radius-sm);
   background: var(--ref-canvas);
-  color: var(--ref-accent-text);
+  color: var(--ref-on-fill);
 }
 
 .ui-checkbox:is([data-selected], [data-indeterminate]) .ui-checkbox__box {
@@ -44,7 +44,7 @@
 }
 
 .ui-checkbox[data-focus-visible] .ui-checkbox__box {
-  outline: 2px solid var(--ref-focus);
+  outline: var(--ref-focus-ring);
   outline-offset: 2px;
 }
 
@@ -61,7 +61,7 @@
 }
 
 .ui-checkbox[data-disabled] {
-  opacity: 0.55;
+  opacity: var(--ref-disabled-opacity);
   cursor: not-allowed;
 }
 

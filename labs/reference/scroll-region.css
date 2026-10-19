@@ -43,14 +43,14 @@
 }
 
 .ui-scroll-region__viewport:focus-visible {
-  outline: 2px solid var(--ref-focus);
+  outline: var(--ref-focus-ring);
   outline-offset: -2px;
 }
 
 .ui-scroll-region[data-columns] > .ui-scroll-region__viewport {
   display: grid;
   align-content: start;
-  gap: var(--ref-gap);
+  gap: var(--ref-layout-gap);
 }
 
 .ui-scroll-region {
@@ -134,7 +134,7 @@
 
 .ui-scroll-region__thumb {
   box-sizing: border-box;
-  border-radius: 4px;
+  border-radius: var(--ref-radius-sm);
   background: var(--ref-border-strong);
   opacity: 0.6;
 }
@@ -154,7 +154,7 @@
 }
 
 .ui-scroll-region__thumb:focus-visible {
-  outline: 2px solid var(--ref-focus);
+  outline: var(--ref-focus-ring);
   outline-offset: 1px;
 }
 
@@ -170,11 +170,11 @@
 /* Tracks shown by scrolling or hovering fade in and out. */
 
 .ui-scroll-region__track[data-entering] {
-  animation: ref-scroll-region-track-in 0.15s ease-out;
+  animation: ref-scroll-region-track-in var(--ref-duration) ease-out;
 }
 
 .ui-scroll-region__track[data-exiting] {
-  animation: ref-scroll-region-track-out 0.2s ease-in forwards;
+  animation: ref-scroll-region-track-out var(--ref-duration) ease-in forwards;
 }
 
 @keyframes ref-scroll-region-track-in {

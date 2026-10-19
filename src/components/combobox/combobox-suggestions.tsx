@@ -15,7 +15,7 @@ import {
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Icon, toIconProps } from '../icon/icon.js';
-import { useLayerZIndex } from '../portal/portal.js';
+import { triggerWidthProperty, useLayerZIndex } from '../portal/portal.js';
 import { TextMatch, TextMatchProvider } from '../text-match/text-match.js';
 import { useAutoHighlight, useCreatedSelection, useOpenState } from './combobox-effects.js';
 import {
@@ -248,8 +248,8 @@ function OptionList(props: ComboboxSuggestionsProps & { filterText: string }) {
 
 /**
  * The suggestion list: the list header, then a listbox of options and sections, then the add row and
- * the loading row, or the empty content, in a popover on the `dropdown` layer that keeps React Aria's
- * measured `--trigger-width`. It also keeps an option highlighted when asked and holds the building
+ * the loading row, or the empty content, in a popover on the `dropdown` layer that publishes the
+ * field's width as `--ui-trigger-width`. It also keeps an option highlighted when asked and holds the building
  * block's open state to the combobox's.
  */
 export function ComboboxSuggestions(props: ComboboxSuggestionsProps) {
@@ -266,7 +266,7 @@ export function ComboboxSuggestions(props: ComboboxSuggestionsProps) {
       {...hooks.slot('popover', { layer: 'dropdown' })}
       offset={4}
       containerPadding={8}
-      style={{ ...contextStyle, zIndex }}
+      style={{ ...contextStyle, ...triggerWidthProperty, zIndex }}
       // Focus leaving the popover closes it, unless it returns to the input from the list header.
       shouldCloseOnInteractOutside={(element) => element !== inputRef.current}
     >

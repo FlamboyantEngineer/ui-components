@@ -5,7 +5,7 @@
   max-width: min(300px, calc(100vw - 24px));
   padding: 12px;
   border: 1px solid var(--ref-border);
-  border-radius: 8px;
+  border-radius: var(--ref-radius-lg);
   background: var(--ref-raised);
   color: var(--ref-text);
   box-shadow: var(--ref-shadow);
@@ -22,11 +22,11 @@
 }
 
 .ui-hover-card[data-entering] {
-  animation: ref-fade 0.12s ease-out;
+  animation: ref-fade var(--ref-duration-fast) ease-out;
 }
 
 .ui-hover-card[data-exiting] {
-  animation: ref-fade 0.12s ease-in reverse;
+  animation: ref-fade var(--ref-duration-fast) ease-in reverse;
 }
 
 /* The arrow is a bordered square turned on its corner, half of it showing past the card's edge. */

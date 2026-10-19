@@ -17,7 +17,7 @@
   place-items: center;
   box-sizing: border-box;
   padding: 16px;
-  background: color-mix(in srgb, var(--ref-canvas) 72%, transparent);
+  background: color-mix(in srgb, var(--ref-canvas) var(--ref-tint-solid), transparent);
 }
 
 .ui-loading-overlay[data-presentation='scrim'] {
@@ -29,10 +29,10 @@
 }
 
 .ui-loading-overlay {
-  transition: opacity 0.2s;
+  transition: opacity var(--ref-duration);
 }
 .ui-loading-overlay[data-entering] {
-  animation: ref-loading-overlay-enter 0.2s ease-out;
+  animation: ref-loading-overlay-enter var(--ref-duration) ease-out;
 }
 .ui-loading-overlay[data-exiting] {
   opacity: 0;
@@ -73,14 +73,14 @@
 
 .ui-loading-card__label {
   margin: 0;
-  font-weight: 600;
+  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-loading-card__value,
 .ui-loading-card__step {
   flex: none;
   color: var(--ref-muted);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
   font-variant-numeric: tabular-nums;
 }
 
@@ -100,7 +100,7 @@
   gap: 8px;
   min-width: 0;
   color: var(--ref-muted);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }
 
 .ui-loading-card__hint {

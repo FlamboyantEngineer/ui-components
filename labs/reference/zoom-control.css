@@ -29,13 +29,13 @@
 
 .ui-zoom-control__value {
   min-width: 6ch;
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
   font-variant-numeric: tabular-nums;
   text-align: end;
 }
 
 .ui-zoom-control[data-size='lg'] .ui-zoom-control__value {
-  font-size: 14px;
+  font-size: var(--ref-font-size);
 }
 
 .ui-zoom-control[data-disabled] .ui-zoom-control__value {

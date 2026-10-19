@@ -23,7 +23,7 @@
 }
 
 .ui-signature-pad__surface:focus-visible {
-  outline: 2px solid var(--ref-focus);
+  outline: var(--ref-focus-ring);
   outline-offset: 1px;
 }
 
@@ -62,12 +62,12 @@
 
 .ui-signature-pad__input::placeholder {
   color: var(--ref-muted);
-  font-size: 14px;
+  font-size: var(--ref-font-size);
 }
 
 .ui-signature-pad__input[data-focused] {
   border-color: var(--ref-focus);
-  outline: 1px solid var(--ref-focus);
+  outline: var(--ref-focus-ring-thin);
 }
 
 .ui-signature-pad[data-dirty] :is(.ui-signature-pad__surface, .ui-signature-pad__input) {
@@ -101,5 +101,5 @@
 
 .ui-signature-pad[data-disabled] :is(.ui-signature-pad__surface, .ui-signature-pad__input) {
   cursor: not-allowed;
-  opacity: 0.55;
+  opacity: var(--ref-disabled-opacity);
 }
