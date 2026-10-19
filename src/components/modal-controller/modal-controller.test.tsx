@@ -88,7 +88,7 @@ describe('Modal controller', () => {
     });
     await userEvent.click(screen.getByRole('button', { name: 'Keep' }));
     await expect(custom).resolves.toBe(true);
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('UIC-MODAL-CONTROLLER-1.3 settles each result once, with undefined when dismissed', async () => {
@@ -106,7 +106,7 @@ describe('Modal controller', () => {
     await expect(first.result).resolves.toBe('chosen');
     expect(settled).toHaveBeenCalledTimes(1);
     expect(first.isOpen).toBe(false);
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 
     let escaped!: Promise<unknown>;
     act(() => {
@@ -165,7 +165,7 @@ describe('Modal controller', () => {
     controller.subscribe(listener);
     act(() => handle.update({ title: 'Too late' }));
     expect(listener).not.toHaveBeenCalled();
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('UIC-MODAL-CONTROLLER-1.5 publishes a new snapshot per change to subscribers', () => {

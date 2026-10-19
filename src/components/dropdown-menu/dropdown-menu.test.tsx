@@ -77,7 +77,7 @@ describe('DropdownMenu', () => {
     );
     await user.click(screen.getByRole('button', { name: 'Edit' }));
     expect(onOpenChange).toHaveBeenCalledWith(true);
-    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     rerender(
       <DropdownMenu
         label="Edit"
@@ -131,10 +131,7 @@ describe('DropdownMenu', () => {
     );
     await user.click(screen.getByRole('button', { name: 'View' }));
     expect(screen.getByRole('menu')).toHaveAttribute('data-size', 'lg');
-    expect(screen.getByRole('menuitemradio', { name: 'List' })).toHaveAttribute(
-      'aria-checked',
-      'true',
-    );
+    expect(screen.getByRole('menuitemradio', { name: 'List' })).toBeChecked();
     expect(screen.getByRole('menuitemradio', { name: 'Table' })).toHaveAttribute(
       'aria-disabled',
       'true',
@@ -152,7 +149,7 @@ describe('DropdownMenu', () => {
     await waitFor(() => expect(trigger).toHaveFocus());
     await user.click(trigger);
     await user.click(document.body);
-    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     await waitFor(() => expect(trigger).toHaveFocus());
   });
 
@@ -165,16 +162,17 @@ describe('DropdownMenu', () => {
         className="caller"
         id="edit-menu"
         ref={ref}
-        data-testid="probe"
+        data-probe="menu"
         data-open="always"
       />,
     );
-    const trigger = screen.getByTestId('probe');
+    const trigger = screen.getByRole('button', { name: 'Edit' });
     expect(trigger).toHaveClass('ui-button', 'ui-dropdown-menu', 'caller');
     expect(trigger).toHaveAttribute('id', 'edit-menu');
+    expect(trigger).toHaveAttribute('data-probe', 'menu');
     expect(ref.current).toBe(trigger);
     expect(trigger).not.toHaveAttribute('data-open');
-    expectHooksMatchSpec(container, 'DROPDOWN-MENU');
+    expectHooksMatchSpec(container, 'DROPDOWN-MENU', { callerAttributes: ['data-probe'] });
   });
 
   it('UIC-DROPDOWN-MENU-1.7 splits the trigger into an action and a chevron that opens the menu', async () => {
@@ -219,7 +217,7 @@ describe('DropdownMenu', () => {
 
     await user.click(action);
     expect(onPress).toHaveBeenCalledTimes(1);
-    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
 
     await user.click(toggle);
     expect(toggle).toHaveAttribute('aria-expanded', 'true');

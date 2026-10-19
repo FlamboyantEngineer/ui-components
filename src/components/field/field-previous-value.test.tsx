@@ -7,21 +7,25 @@ import { FieldPreviousValue } from './field.js';
 describe('FieldPreviousValue', () => {
   it('UIC-FIELD-9.1 keeps the previous value readable in a del element', () => {
     const { container } = render(
-      <FieldPreviousValue className="caller" id="before" data-testid="marker">
-        <svg data-testid="swatch" />
+      <FieldPreviousValue className="caller" id="before" data-probe="marker">
+        <svg role="img" aria-label="Swatch" />
         Apple
       </FieldPreviousValue>,
     );
-    const marker = screen.getByTestId('marker');
+    const marker = screen.getByText('Apple').closest('.caller');
     expect(marker).toHaveClass('ui-field-previous-value', 'caller');
     expect(marker).toHaveAttribute('id', 'before');
-    const value = marker.querySelector('del');
+    expect(marker).toHaveAttribute('data-probe', 'marker');
+    const value = marker?.querySelector('del');
     expect(value).toHaveClass('ui-field-previous-value__value');
     expect(value).toHaveTextContent('Apple');
     expect(value).not.toHaveAttribute('aria-hidden');
-    expect(value).toContainElement(screen.getByTestId('swatch'));
-    expect(screen.queryByRole('button')).toBeNull();
-    expectHooksMatchSpec(container, 'FIELD', { slots: ['ui-field-previous-value__value'] });
+    expect(value).toContainElement(screen.getByRole('img', { name: 'Swatch' }));
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+    expectHooksMatchSpec(container, 'FIELD', {
+      slots: ['ui-field-previous-value__value'],
+      callerAttributes: ['data-probe'],
+    });
   });
 
   it('UIC-FIELD-9.2 restores the value once per press and keeps pointer focus', async () => {

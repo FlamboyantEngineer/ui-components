@@ -11,6 +11,15 @@ const toneGlyphs = { info: 'info', success: 'success', warning: 'warning', dange
 const titles = () =>
   [...document.querySelectorAll('.ui-toast__title')].map((node) => node.textContent);
 
+/**
+ * Fake timers with a user-event session. Testing Library drains a zero timeout after each user-event
+ * call and advances it only under Jest's fake timers, so it is pointed at Vitest's clock here.
+ */
+function useFakeClock() {
+  vi.useFakeTimers();
+  return userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+}
+
 async function advance(ms: number) {
   await act(async () => {
     vi.advanceTimersByTime(ms);
@@ -20,6 +29,7 @@ async function advance(ms: number) {
 describe('ToastQueue', () => {
   afterEach(() => {
     vi.useRealTimers();
+    vi.unstubAllGlobals();
   });
 
   it('UIC-TOAST-1.1 adds toasts newest first and limits how many show', async () => {
@@ -62,7 +72,7 @@ describe('ToastQueue', () => {
   });
 
   it('UIC-TOAST-1.2 pauses every timer while the region is hovered or focused', async () => {
-    vi.useFakeTimers();
+    const user = useFakeClock();
     const queue = createToastQueue({ defaultTimeout: 5000 });
     render(
       <>
@@ -75,10 +85,10 @@ describe('ToastQueue', () => {
     });
     const region = screen.getByRole('region');
     await advance(2000);
-    fireEvent.pointerEnter(region, { pointerType: 'mouse' });
+    await user.hover(region);
     await advance(10000);
     expect(titles()).toEqual(['Paused']);
-    fireEvent.pointerLeave(region, { pointerType: 'mouse' });
+    await user.unhover(region);
     await advance(2999);
     expect(titles()).toEqual(['Paused']);
     await advance(1);
@@ -135,7 +145,7 @@ describe('ToastQueue', () => {
     act(() => queue.clear());
     expect(titles()).toEqual([]);
     expect(onClose).toHaveBeenCalledTimes(1);
-    expect(screen.queryByRole('region')).toBeNull();
+    expect(screen.queryByRole('region')).not.toBeInTheDocument();
     act(() => {
       queue.add({ title: 'Third again' }, { id: 'third' });
     });
@@ -152,7 +162,7 @@ describe('ToastRegion', () => {
         <ToastRegion queue={queue} />
       </>,
     );
-    expect(screen.queryByRole('region')).toBeNull();
+    expect(screen.queryByRole('region')).not.toBeInTheDocument();
     const keep = screen.getByRole('button', { name: 'Keep' });
     act(() => keep.focus());
     act(() => {
@@ -202,7 +212,8 @@ describe('ToastRegion', () => {
     expect(contentRole('Sent')).toHaveAttribute('aria-atomic', 'true');
   });
 
-  it('UIC-TOAST-2.2 moves focus to the next toast when a focused toast closes', () => {
+  it('UIC-TOAST-2.2 moves focus to the next toast when a focused toast closes', async () => {
+    const user = userEvent.setup();
     const queue = createToastQueue({ defaultTimeout: 0 });
     render(<ToastRegion queue={queue} />);
     let newer = '';
@@ -210,10 +221,8 @@ describe('ToastRegion', () => {
       queue.add({ title: 'Older' });
       newer = queue.add({ title: 'Newer' });
     });
-    act(() => {
-      fireEvent.keyDown(document.body, { key: 'Tab' });
-      screen.getByRole('alertdialog', { name: 'Newer' }).focus();
-    });
+    await user.tab();
+    act(() => screen.getByRole('alertdialog', { name: 'Newer' }).focus());
     act(() => queue.close(newer));
     expect(screen.getByRole('alertdialog', { name: 'Older' })).toHaveFocus();
   });
@@ -228,10 +237,10 @@ describe('ToastRegion', () => {
     expect(list.tagName).toBe('OL');
     expect(list).toHaveClass('ui-toast-list', 'caller');
     expect(list).toHaveAttribute('data-testid', 'stack');
-    expect(screen.queryByRole('region')).toBeNull();
+    expect(screen.queryByRole('region')).not.toBeInTheDocument();
     expect(within(list).getByRole('alertdialog', { name: 'Disk almost full' })).toBeInTheDocument();
     act(() => queue.close(key));
-    expect(within(list).queryByRole('alertdialog')).toBeNull();
+    expect(within(list).queryByRole('alertdialog')).not.toBeInTheDocument();
     expectHooksMatchSpec(container, 'TOAST');
   });
 });
@@ -243,7 +252,7 @@ describe('Toast', () => {
       queue.add({ tone, title: `${tone} title` });
     }
     queue.add({ title: 'Default tone' });
-    queue.add({ title: 'Custom', icon: <svg data-testid="custom-icon" /> });
+    queue.add({ title: 'Custom', icon: <svg role="img" aria-label="Custom glyph" /> });
     queue.add({ title: 'Glyph', icon: 'help' });
     render(<ToastList queue={queue} />);
     for (const tone of tones) {
@@ -259,7 +268,10 @@ describe('Toast', () => {
       'data-tone',
       'info',
     );
-    expect(screen.getByTestId('custom-icon').parentElement).toHaveClass('ui-toast__icon');
+    // The icon slot is aria-hidden, so the custom glyph is only found among hidden elements.
+    expect(
+      screen.getByRole('img', { name: 'Custom glyph', hidden: true }).parentElement,
+    ).toHaveClass('ui-toast__icon');
     expect(
       screen.getByRole('alertdialog', { name: 'Glyph' }).querySelector('.ui-toast__icon'),
     ).toHaveAttribute('data-glyph', 'help');
@@ -291,7 +303,7 @@ describe('Toast', () => {
     expectHooksMatchSpec(document.body, 'TOAST', { slots: ['action'] });
     await userEvent.click(action);
     expect(onAction).toHaveBeenCalledTimes(1);
-    expect(screen.queryByRole('alertdialog')).toBeNull();
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
   });
 
   it('UIC-TOAST-3.4 dismisses with a named icon button', async () => {
@@ -309,42 +321,42 @@ describe('Toast', () => {
     expect(close).toHaveClass('ui-icon-button', 'ui-toast__close');
     await userEvent.click(close);
     expect(onClose).toHaveBeenCalledTimes(1);
-    expect(screen.queryByRole('alertdialog')).toBeNull();
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
   });
 
   it('UIC-TOAST-3.5 forwards caller classes, ids and data attributes and publishes interaction states', async () => {
+    const user = userEvent.setup();
     const queue = createToastQueue({ defaultTimeout: 0 });
-    render(<ToastRegion queue={queue} className="caller" id="messages" data-testid="region" />);
+    render(<ToastRegion queue={queue} className="caller" id="messages" data-test="region" />);
     act(() => {
       queue.add({ title: 'Saved' });
     });
-    const region = screen.getByTestId('region');
+    const region = screen.getByRole('region');
     expect(region).toHaveClass('ui-toast-region', 'caller');
     expect(region).toHaveAttribute('id', 'messages');
-    fireEvent.pointerMove(region, { pointerType: 'mouse' });
-    fireEvent.pointerEnter(region, { pointerType: 'mouse' });
+    expect(region).toHaveAttribute('data-test', 'region');
+    await user.hover(region);
     expect(region).toHaveAttribute('data-hovered', 'true');
     const toast = screen.getByRole('alertdialog', { name: 'Saved' });
-    act(() => {
-      fireEvent.keyDown(document.body, { key: 'Tab' });
-      toast.focus();
-    });
+    await user.tab();
+    act(() => toast.focus());
     expect(toast).toHaveAttribute('data-focused', 'true');
     expect(toast).toHaveAttribute('data-focus-visible', 'true');
-    expectHooksMatchSpec(document.body, 'TOAST');
+    expectHooksMatchSpec(document.body, 'TOAST', { callerAttributes: ['data-test'] });
   });
 
   it('UIC-TOAST-3.5 forwards a region class, id and data attributes', () => {
     const queue = createToastQueue({ defaultTimeout: 0 });
-    render(<ToastRegion queue={queue} className="caller" id="alerts" data-testid="region" />);
+    render(<ToastRegion queue={queue} className="caller" id="alerts" data-test="region" />);
     act(() => {
       queue.add({ tone: 'success', title: 'Saved' });
     });
-    const region = screen.getByTestId('region');
+    const region = screen.getByRole('region');
     expect(region).toHaveClass('ui-toast-region', 'caller');
     expect(region).toHaveAttribute('id', 'alerts');
-    expect(region).toBe(screen.getByRole('region'));
-    expectHooksMatchSpec(document.body, 'TOAST');
+    expect(region).toHaveAttribute('data-test', 'region');
+    expect(document.querySelector('.ui-toast-region')).toBe(region);
+    expectHooksMatchSpec(document.body, 'TOAST', { callerAttributes: ['data-test'] });
   });
 
   it('UIC-TOAST-1.1 refuses a queue that createToastQueue did not make', () => {
@@ -561,7 +573,7 @@ describe('Toast updates and motion', () => {
     expectHooksMatchSpec(document.body, 'TOAST');
     act(() => queue.close(key));
     await exit.finish();
-    expect(screen.queryByRole('alertdialog')).toBeNull();
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
@@ -572,10 +584,11 @@ describe('Toast updates and motion', () => {
     queue.close(key);
     expect(onClose).toHaveBeenCalledTimes(1);
     render(<ToastList queue={queue} />);
-    expect(screen.queryByRole('alertdialog')).toBeNull();
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
   });
 
   it('UIC-TOAST-4.2 swipes a toast away past the threshold and returns it otherwise', async () => {
+    const user = userEvent.setup();
     const queue = createToastQueue({ defaultTimeout: 0 });
     const onAction = vi.fn();
     render(<ToastRegion queue={queue} swipeDirection="left" swipeThreshold={40} />);
@@ -604,15 +617,18 @@ describe('Toast updates and motion', () => {
     pointer('pointerCancel', undo, { clientX: 150, clientY: 10, pointerType: 'mouse' });
 
     const title = within(toast).getByText('Row deleted');
-    pointer('pointerDown', title, { clientX: 200, clientY: 10 });
-    pointer('pointerMove', title, { clientX: 150, clientY: 10 });
-    pointer('pointerUp', title, { clientX: 150, clientY: 10 });
-    fireEvent.click(title);
+    // The release past the threshold dismisses the toast; the click that follows it is swallowed.
+    await user.pointer([
+      { keys: '[MouseLeft>]', target: title, coords: { clientX: 200, clientY: 10 } },
+      { coords: { clientX: 150, clientY: 10 } },
+      { keys: '[/MouseLeft]' },
+    ]);
     expect(onAction).not.toHaveBeenCalled();
-    expect(screen.queryByRole('alertdialog')).toBeNull();
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
   });
 
-  it('UIC-TOAST-4.3 publishes stack positions and expands the region on hover or focus', () => {
+  it('UIC-TOAST-4.3 publishes stack positions and expands the region on hover or focus', async () => {
+    const user = userEvent.setup();
     const queue = createToastQueue({ defaultTimeout: 0 });
     render(
       <>
@@ -631,9 +647,9 @@ describe('Toast updates and motion', () => {
     expect(newer.style.getPropertyValue('--ui-toast-offset')).toBe('0px');
     const region = screen.getByRole('region');
     expect(region).not.toHaveAttribute('data-expanded');
-    fireEvent.pointerEnter(region, { pointerType: 'mouse' });
+    await user.hover(region);
     expect(region).toHaveAttribute('data-expanded', 'true');
-    fireEvent.pointerLeave(region, { pointerType: 'mouse' });
+    await user.unhover(region);
     expect(region).not.toHaveAttribute('data-expanded');
     act(() => newer.focus());
     expect(region).toHaveAttribute('data-expanded', 'true');

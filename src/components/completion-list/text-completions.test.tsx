@@ -85,7 +85,7 @@ describe('Completions engine', () => {
     expect(input()).toHaveAttribute('aria-haspopup', 'listbox');
     expect(input()).not.toHaveAttribute('aria-controls');
     await user.click(input());
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     await user.keyboard('I like ap');
     const list = screen.getByRole('listbox', { name: 'Suggestions' });
     expect(optionTexts()).toEqual(['apple', 'apricot']);
@@ -95,7 +95,7 @@ describe('Completions engine', () => {
     expect(input()).toHaveValue('I like apple pie');
     expect(input().selectionStart).toBe('I like apple pie'.length);
     expect(input()).toHaveFocus();
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     expect(input()).not.toHaveAttribute('aria-activedescendant');
   });
 
@@ -136,7 +136,7 @@ describe('Completions engine', () => {
     render(<Notes completions={fruit} isLocked />);
     await user.click(input());
     await user.keyboard('ap{Control>} {/Control}');
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
   });
 
   it('UIC-COMPLETION-LIST-2.3 moves with the arrows, closes with Escape and keeps used keys from the control', async () => {
@@ -155,7 +155,7 @@ describe('Completions engine', () => {
     await user.keyboard('{ArrowUp}');
     expect(active()).toBe('banana');
     await user.keyboard('{Escape}');
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     expect(onKeyDown).not.toHaveBeenCalled();
     await user.keyboard('{Escape}');
     expect(onKeyDown).toHaveBeenCalledTimes(1);
@@ -169,11 +169,11 @@ describe('Completions engine', () => {
     render(<Notes completions={fruit} />);
     await user.click(input());
     await user.keyboard('ban ');
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     await user.keyboard('{ArrowLeft}');
     expect(optionTexts()).toEqual(['banana']);
     await user.keyboard('{End}');
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
   });
 
   it('UIC-COMPLETION-LIST-2.4 inserts as a browser edit when the browser offers one', async () => {
@@ -190,7 +190,7 @@ describe('Completions engine', () => {
     await user.keyboard('ba{Enter}');
     expect(execCommand).toHaveBeenCalledWith('insertText', false, 'banana');
     expect(input()).toHaveValue('banana');
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     Reflect.deleteProperty(document, 'execCommand');
   });
 });

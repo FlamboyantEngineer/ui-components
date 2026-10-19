@@ -12,9 +12,7 @@ function Sample(props: { layout?: 'inline' | 'stacked'; columns?: 1 | 2 }) {
       <DescriptionRow label={<code>{'{{count}}'}</code>} secondary={<span>Per crate</span>}>
         {0}
       </DescriptionRow>
-      <DescriptionRow label="Title" data-testid="title-row">
-        Safe {'<title>'} &amp; value
-      </DescriptionRow>
+      <DescriptionRow label="Title">Safe {'<title>'} &amp; value</DescriptionRow>
       <DescriptionRow label="Empty">{''}</DescriptionRow>
     </DescriptionList>
   );
@@ -41,13 +39,11 @@ describe('DescriptionList', () => {
       'Empty',
     ]);
     expect(list.querySelector('.ui-description-list__value')).toHaveTextContent('0');
-    expect(screen.getByTestId('title-row').querySelector('dd')?.textContent).toBe(
-      'Safe <title> & value',
-    );
+    const titleRow = screen.getByText('Title').closest('.ui-description-list__row');
+    expect(titleRow?.querySelector('dd')?.textContent).toBe('Safe <title> & value');
     expect(list.querySelectorAll('.ui-description-list__value')[2]?.textContent).toBe('');
     expectHooksMatchSpec(container, 'DESCRIPTION-LIST', {
       slots: 'all',
-      callerAttributes: ['data-testid'],
     });
   });
 
@@ -91,7 +87,7 @@ describe('DescriptionList', () => {
         rerender(<Sample layout={layout} columns={columns} />);
         expect(list()).toHaveAttribute('data-layout', layout);
         expect(list()).toHaveAttribute('data-columns', String(columns));
-        expectHooksMatchSpec(container, 'DESCRIPTION-LIST', { callerAttributes: ['data-testid'] });
+        expectHooksMatchSpec(container, 'DESCRIPTION-LIST');
       }
     }
   });
@@ -185,7 +181,6 @@ describe('DescriptionList', () => {
           onKeyDown={onKeyDown}
           onContextMenu={onContextMenu}
           aria-label="Updated, has a note"
-          data-testid="row"
         >
           {value}
         </DescriptionRow>
@@ -193,7 +188,7 @@ describe('DescriptionList', () => {
       </DescriptionList>
     );
     const { container, rerender } = render(row('Tuesday'));
-    const target = screen.getByTestId('row');
+    const target = screen.getByLabelText('Updated, has a note');
     expect(target).toHaveAttribute('aria-label', 'Updated, has a note');
     expect(container.querySelectorAll('[tabindex]')).toHaveLength(1);
     await user.click(target);
@@ -203,7 +198,7 @@ describe('DescriptionList', () => {
     expect(onKeyDown).toHaveBeenCalled();
     expect(onContextMenu).toHaveBeenCalledTimes(1);
     rerender(row('Wednesday'));
-    expect(screen.getByTestId('row')).toBe(target);
+    expect(screen.getByLabelText('Updated, has a note')).toBe(target);
     expect(target).toHaveFocus();
 
     rerender(

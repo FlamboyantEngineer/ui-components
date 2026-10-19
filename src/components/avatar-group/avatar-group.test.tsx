@@ -134,7 +134,7 @@ describe('AvatarGroup', () => {
     expect(dialog.closest('.ui-avatar-group__popover')).toHaveClass('ui-popover');
     expectHooksMatchSpec(document.body, 'AVATAR-GROUP', { slots: ['popover', 'list', 'item'] });
     await user.keyboard('{Escape}');
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     await waitFor(() => expect(trigger).toHaveFocus());
     await user.keyboard('{Enter}');
     expect(await screen.findByRole('dialog', { name: '6 people' })).toBeInTheDocument();

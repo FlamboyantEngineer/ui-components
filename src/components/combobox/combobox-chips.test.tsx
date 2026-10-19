@@ -36,7 +36,7 @@ describe('Combobox chips', () => {
     expect(onChange).toHaveBeenLastCalledWith(['lima', 'oslo']);
     // React Aria hides everything but the input and the list while the list is open.
     await user.keyboard('{Escape}');
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
 
     const chips = screen.getByRole('grid', { name: 'Cities selected values' });
     const group = chips.closest('.ui-combobox__chips');
@@ -105,7 +105,7 @@ describe('Combobox chips', () => {
     await user.type(screen.getByRole('combobox'), 'lis');
     await user.click(screen.getByRole('option', { name: 'Lisbon' }));
     await user.type(screen.getByRole('combobox'), 'par');
-    expect(screen.queryByRole('option', { name: 'Lisbon' })).toBeNull();
+    expect(screen.queryByRole('option', { name: 'Lisbon' })).not.toBeInTheDocument();
     await user.keyboard('{Escape}');
     expect(
       within(chips())
@@ -125,7 +125,7 @@ describe('Combobox chips', () => {
       />,
     );
     const chips = screen.getByRole('grid', { name: 'Cities selected values' });
-    expect(within(chips).queryByRole('button')).toBeNull();
+    expect(within(chips).queryByRole('button')).not.toBeInTheDocument();
   });
 
   it('UIC-COMBOBOX-3.5 draws each chip with its option icon', () => {
@@ -135,7 +135,7 @@ describe('Combobox chips', () => {
         selectionMode="multiple"
         defaultItems={[
           { id: 'paris', label: 'Paris', icon: 'folder' },
-          { id: 'lima', label: 'Lima', icon: <svg data-testid="flag" /> },
+          { id: 'lima', label: 'Lima', icon: <svg role="img" aria-label="Flag" /> },
           { id: 'oslo', label: 'Oslo' },
         ]}
         defaultValue={['paris', 'lima', 'oslo']}
@@ -146,7 +146,11 @@ describe('Combobox chips', () => {
     expect(paris.querySelector('.ui-combobox__chip-icon')).toHaveAttribute('aria-hidden', 'true');
     expect(paris.querySelector('[data-glyph="folder"]')).not.toBeNull();
     const lima = within(chips).getByRole('row', { name: 'Lima' });
-    expect(within(lima).getByTestId('flag').closest('.ui-combobox__chip-icon')).not.toBeNull();
+    expect(
+      within(lima)
+        .getByRole('img', { name: 'Flag', hidden: true })
+        .closest('.ui-combobox__chip-icon'),
+    ).not.toBeNull();
     const oslo = within(chips).getByRole('row', { name: 'Oslo' });
     expect(oslo.querySelector('.ui-combobox__chip-icon')).toBeNull();
     expectHooksMatchSpec(container, 'COMBOBOX', { slots: ['chips', 'chip-icon'] });

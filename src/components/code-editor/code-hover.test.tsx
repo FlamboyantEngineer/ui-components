@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -59,6 +59,7 @@ describe('CodeEditor problems and hover tips', () => {
   afterEach(() => {
     delete (Range.prototype as Partial<Range>).getBoundingClientRect;
     vi.useRealTimers();
+    vi.unstubAllGlobals();
   });
 
   it('UIC-CODE-EDITOR-3.4 underlines the source each diagnostic points at', () => {
@@ -106,11 +107,14 @@ describe('CodeEditor problems and hover tips', () => {
     expect(container.querySelector('.ui-code-editor__announcement')).toBeEmptyDOMElement();
   });
 
-  it('UIC-CODE-EDITOR-3.6 shows the problems and the hover information under the pointer', () => {
+  it('UIC-CODE-EDITOR-3.6 shows the problems and the hover information under the pointer', async () => {
+    // The leave delay is checked to the millisecond, so the clock moves only when the test moves
+    // it; Testing Library settles each user-event call on a zero timer it advances through `jest`.
     vi.useFakeTimers();
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     const renderHover = (offset: number) => (offset === 12 ? 'basket: the chosen basket' : null);
     const { baseElement } = render(<Editor diagnostics={problems} renderHover={renderHover} />);
-    fireEvent.pointerMove(input(), { clientX: 75, clientY: 25 });
+    await user.pointer({ target: input(), coords: { clientX: 75, clientY: 25 } });
     const tip = tooltip();
     expect(tip).not.toBeNull();
     expect(tip?.style.zIndex).toBe('150');
@@ -120,15 +124,15 @@ describe('CodeEditor problems and hover tips', () => {
       'error',
     );
     expectHooksMatchSpec(baseElement, 'CODE-EDITOR', { slots: ['tooltip', 'diagnostic'] });
-    fireEvent.pointerMove(input(), { clientX: 125, clientY: 5 });
+    await user.pointer({ target: input(), coords: { clientX: 125, clientY: 5 } });
     expect(screen.getByRole('tooltip')).toHaveTextContent('basket: the chosen basket');
-    fireEvent.pointerMove(input(), { clientX: 25, clientY: 5 });
+    await user.pointer({ target: input(), coords: { clientX: 25, clientY: 5 } });
     act(() => vi.advanceTimersByTime(100));
     expect(tooltip()).not.toBeNull();
-    fireEvent.pointerEnter(tooltip() as HTMLElement);
+    await user.hover(tooltip() as HTMLElement);
     act(() => vi.advanceTimersByTime(300));
     expect(tooltip()).not.toBeNull();
-    fireEvent.pointerLeave(tooltip() as HTMLElement);
+    await user.unhover(tooltip() as HTMLElement);
     act(() => vi.advanceTimersByTime(300));
     expect(tooltip()).toBeNull();
   });
@@ -137,7 +141,7 @@ describe('CodeEditor problems and hover tips', () => {
     const user = userEvent.setup();
     render(<Editor diagnostics={problems} />);
     await user.click(input());
-    fireEvent.pointerMove(input(), { clientX: 75, clientY: 25 });
+    await user.pointer({ target: input(), coords: { clientX: 75, clientY: 25 } });
     expect(tooltip()).not.toBeNull();
     await user.keyboard('x');
     expect(tooltip()).toBeNull();

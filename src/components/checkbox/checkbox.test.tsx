@@ -123,13 +123,18 @@ describe('Checkbox', () => {
     expect(input).toHaveAttribute('name', 'terms');
     expect(input).toHaveAttribute('value', 'yes');
     expect(input).toBeChecked();
+    // Native validation by default: the input itself is required.
+    // eslint-disable-next-line jest-dom/prefer-required -- the native attribute, apart from aria-required
     expect(input).toHaveAttribute('required');
     rerender(
       <Checkbox name="terms" value="yes" isRequired validationBehavior="aria">
         Terms
       </Checkbox>,
     );
+    // Validated by the library, not natively: the input is required for assistive technology only.
+    // eslint-disable-next-line jest-dom/prefer-required -- the native attribute, apart from aria-required
     expect(input).not.toHaveAttribute('required');
+    // eslint-disable-next-line jest-dom/prefer-required -- aria-required, apart from native required
     expect(input).toHaveAttribute('aria-required', 'true');
   });
 

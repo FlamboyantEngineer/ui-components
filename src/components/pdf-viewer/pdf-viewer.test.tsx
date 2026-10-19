@@ -108,7 +108,7 @@ describe('PdfViewer', () => {
     );
     expect(engine.render).not.toHaveBeenCalledWith(expect.objectContaining({ annotationMode: 1 }));
     expect(engine.AnnotationLayer).not.toHaveBeenCalled();
-    expect(screen.queryByRole('link')).toBeNull();
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
     expect(container.querySelectorAll('[role="presentation"]').length).toBeGreaterThan(0);
 
     update({ showAnnotations: true });
@@ -117,7 +117,7 @@ describe('PdfViewer', () => {
       expect.objectContaining({ canvas, annotationMode: 1 }),
     );
     update({ showAnnotations: false });
-    await waitFor(() => expect(screen.queryByRole('link')).toBeNull());
+    await waitFor(() => expect(screen.queryByRole('link')).not.toBeInTheDocument());
   });
 
   it('UIC-PDF-VIEWER-2.1 renders only the pages near the view', async () => {
@@ -339,7 +339,7 @@ describe('PdfViewer', () => {
     );
     const { container, unmount } = render(
       <ProjectionProvider>
-        <header data-testid="band">
+        <header aria-label="Band">
           <ProjectionOutlet slot="document-tools" />
         </header>
         <PdfViewer
@@ -351,24 +351,22 @@ describe('PdfViewer', () => {
         />
       </ProjectionProvider>,
     );
-    const band = screen.getByTestId('band');
+    const band = screen.getByRole('banner', { name: 'Band' });
     const toolbar = await within(band).findByRole('toolbar', { name: 'Report controls' });
     expect(container.querySelector('.ui-pdf-viewer .ui-pdf-viewer__toolbar')).toBeNull();
-    await waitFor(() => expect(within(toolbar).getByRole('slider')).not.toBeDisabled());
+    await waitFor(() => expect(within(toolbar).getByRole('slider')).toBeEnabled());
     await userEvent.click(within(toolbar).getByRole('button', { name: 'Zoom in' }));
     const page = container.querySelector<HTMLElement>('.ui-pdf-viewer__page');
     expect(Number.parseFloat(page?.style.width ?? '')).toBeCloseTo(420 * 1.25 * pointsToPixels);
     unmount();
 
-    const alone = render(<PdfViewer {...viewer.props} toolbarSlot="document-tools" />);
-    expect(
-      alone.container.querySelector('.ui-pdf-viewer > .ui-pdf-viewer__toolbar'),
-    ).not.toBeNull();
+    const view = render(<PdfViewer {...viewer.props} toolbarSlot="document-tools" />);
+    expect(view.container.querySelector('.ui-pdf-viewer > .ui-pdf-viewer__toolbar')).not.toBeNull();
   });
 
   it('UIC-PDF-VIEWER-7.1 draws caller content over each page with its viewport', async () => {
     const renderPageOverlay = vi.fn(({ pageIndex, viewport }) => (
-      <span data-testid={`mark-${pageIndex}`}>{`${viewport.width} at ${viewport.scale}`}</span>
+      <span title={`Mark ${pageIndex}`}>{`${viewport.width} at ${viewport.scale}`}</span>
     ));
     const { container } = await renderReady({ defaultZoom: 75, renderPageOverlay });
     const overlays = container.querySelectorAll<HTMLElement>('.ui-pdf-viewer__overlay');
@@ -384,11 +382,11 @@ describe('PdfViewer', () => {
       inset: '0px',
       pointerEvents: 'none',
     });
-    expect(within(first).getByTestId('mark-0')).toHaveTextContent('420 at 1');
+    expect(within(first).getByTitle('Mark 0')).toHaveTextContent('420 at 1');
     expectHooksMatchSpec(container, 'PDF-VIEWER', { slots: ['overlay'] });
 
     await userEvent.click(screen.getByRole('button', { name: 'Zoom in' }));
-    expect(screen.getByTestId('mark-2')).toHaveTextContent(
+    expect(screen.getByTitle('Mark 2')).toHaveTextContent(
       `${420 * pointsToPixels} at ${pointsToPixels}`,
     );
   });

@@ -90,7 +90,7 @@ describe('LineChart', () => {
       'Minutes, 1,200: 4',
       'Minutes, 1,201: 6.5',
     ]);
-    expect(screen.queryByRole('toolbar')).toBeNull();
+    expect(screen.queryByRole('toolbar')).not.toBeInTheDocument();
   });
 
   it('UIC-CHART-4.3 moves focus along a series and to the nearest point of the next', async () => {

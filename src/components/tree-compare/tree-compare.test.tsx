@@ -73,9 +73,10 @@ const compareRow = (name: string) => row(name).querySelector('.ui-tree-compare__
 
 describe('TreeCompare', () => {
   it('UIC-TREE-COMPARE-2.1 UIC-TREE-COMPARE-6.2 aligns both trees in one tree of rows', () => {
-    const { container } = render(<Compare className="mine" id="outline" data-testid="compare" />);
-    const root = screen.getByTestId('compare');
+    const { container } = render(<Compare className="mine" id="outline" data-test="compare" />);
+    const root = container.firstElementChild;
     expect(root).toHaveClass('ui-tree-compare', 'mine');
+    expect(root).toHaveAttribute('data-test', 'compare');
     expect(root).toHaveAttribute('id', 'outline');
     expect(screen.getByRole('treegrid', { name: 'Outline' })).toHaveClass(
       'ui-tree',
@@ -95,7 +96,7 @@ describe('TreeCompare', () => {
     expect(labels[1]).toHaveAttribute('data-side', 'right');
     expectHooksMatchSpec(container, 'TREE-COMPARE', {
       slots: 'all',
-      callerAttributes: ['data-testid'],
+      callerAttributes: ['data-test'],
     });
   });
 

@@ -28,7 +28,7 @@ describe('StatTile', () => {
     expect(within(tile).getByRole('img', { name: 'Last seven days' }).parentElement).toBe(
       slot(tile, 'chart'),
     );
-    expect(tile.textContent).toBe('Open requests1,284+12Since last weekLow 3, high 8, last 8');
+    expect(tile).toHaveTextContent('Open requests1,284+12Since last weekLow 3, high 8, last 8');
     expectHooksMatchSpec(document.body, 'STAT-TILE', { slots: 'all' });
   });
 
@@ -162,16 +162,17 @@ describe('StatTile', () => {
         label="Probe"
         className="caller"
         id="probe"
-        data-testid="probe"
+        data-sample="probe"
         data-trend="caller"
         value={1}
         delta={1}
       />,
     );
-    const tile = screen.getByTestId('probe');
+    const tile = screen.getByRole('region', { name: 'Probe' });
     expect(tile).toHaveClass('ui-card', 'ui-stat-tile', 'caller');
     expect(tile).toHaveAttribute('id', 'probe');
     expect(tile).toHaveAttribute('data-trend', 'up');
-    expectHooksMatchSpec(document.body, 'STAT-TILE');
+    expect(tile).toHaveAttribute('data-sample', 'probe');
+    expectHooksMatchSpec(document.body, 'STAT-TILE', { callerAttributes: ['data-sample'] });
   });
 });

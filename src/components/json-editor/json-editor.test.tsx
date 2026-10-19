@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -95,11 +95,14 @@ describe('JsonEditor', () => {
     expect(editor()).toHaveValue('{\n    "a": [\n        1\n    ]\n}');
     expect(onCommit).toHaveBeenCalledWith('{\n    "a": [\n        1\n    ]\n}');
     expect(format).toBeDisabled();
-    fireEvent.change(editor(), { target: { value: '{"a":' } });
+    await user.clear(editor());
+    await user.paste('{"a":');
+    expect(editor()).toHaveValue('{"a":');
     expect(format).toBeDisabled();
-    fireEvent.change(editor(), { target: { value: '' } });
+    await user.clear(editor());
     expect(format).toBeDisabled();
-    fireEvent.change(editor(), { target: { value: '[1,2]' } });
+    await user.paste('[1,2]');
+    expect(editor()).toHaveValue('[1,2]');
     expect(format).toBeEnabled();
   });
 
@@ -109,7 +112,7 @@ describe('JsonEditor', () => {
     await user.click(screen.getByRole('button', { name: 'Format' }));
     expect(editor()).toHaveValue('[\n  1\n]');
     rerender(<JsonEditor label="Settings" defaultValue="[1]" isReadOnly />);
-    expect(screen.queryByRole('button', { name: 'Format' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Format' })).not.toBeInTheDocument();
   });
 
   it('UIC-JSON-EDITOR-4.1 commits on blur and restores the committed text while dirty', async () => {

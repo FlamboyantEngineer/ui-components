@@ -170,14 +170,14 @@ describe('Board', () => {
       'aria-expanded',
       'false',
     );
-    expect(screen.queryByRole('grid', { name: 'Doing North team' })).toBeNull();
+    expect(screen.queryByRole('grid', { name: 'Doing North team' })).not.toBeInTheDocument();
     expect(container.querySelectorAll('.ui-board__cell[data-collapsed]')).toHaveLength(2);
     await user.click(screen.getByRole('button', { name: 'Collapse South team' }));
     expect(screen.getByRole('group', { name: 'South team' })).toHaveAttribute(
       'data-collapsed',
       'true',
     );
-    expect(screen.queryByRole('grid', { name: 'To do South team' })).toBeNull();
+    expect(screen.queryByRole('grid', { name: 'To do South team' })).not.toBeInTheDocument();
     expect(storage.getItem('kitchen:columns')).toBe('["doing"]');
     expect(storage.getItem('kitchen:lanes')).toBe('["south"]');
     unmount();
@@ -232,7 +232,7 @@ describe('Board', () => {
     expect(onAddCard).toHaveBeenCalledWith({ column: 'doing', lane: 'south' });
     expectHooksMatchSpec(container, 'BOARD', { slots: ['add'] });
     rerender(<TaskBoard lanes={lanes} />);
-    expect(screen.queryByRole('button', { name: 'Add card' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Add card' })).not.toBeInTheDocument();
   });
 
   // Laying out a virtual list in jsdom is slow on a busy machine.

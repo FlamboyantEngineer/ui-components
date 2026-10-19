@@ -234,7 +234,7 @@ describe('TagGroup', () => {
         {(item) => <Tag id={item.id}>{item.name}</Tag>}
       </TagGroup>,
     );
-    expect(screen.queryByRole('button')).toBeNull();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
     expect(tag('Apple')).not.toHaveAttribute('data-allows-removing');
     await user.tab();
     await user.keyboard('{Delete}{Backspace}');

@@ -26,7 +26,7 @@ describe('MenuItem, MenuSection and MenuSeparator', () => {
         <MenuItem
           id="custom"
           icon={
-            <svg data-testid="dot">
+            <svg aria-label="Dot">
               <circle r="2" />
             </svg>
           }
@@ -48,7 +48,7 @@ describe('MenuItem, MenuSection and MenuSeparator', () => {
       'ui-shortcut ui-menu-item__shortcut',
     ]);
     expect(copy.querySelector('.ui-menu-item__check')).toBeNull();
-    expect(screen.getByTestId('dot').parentElement).toHaveClass('ui-menu-item__icon');
+    expect(screen.getByLabelText('Dot').parentElement).toHaveClass('ui-menu-item__icon');
     expectHooksMatchSpec(document.body, 'MENU', {
       slots: ['icon', 'label', 'description', 'shortcut'],
     });
@@ -79,7 +79,7 @@ describe('MenuItem, MenuSection and MenuSeparator', () => {
             id: 'apple',
             label: 'Apple',
             renderContent: ({ isFocused }) => (
-              <b data-testid="custom">{isFocused ? 'Focused' : 'Apple'}</b>
+              <b title="Custom">{isFocused ? 'Focused' : 'Apple'}</b>
             ),
           },
           { id: 'pear', label: 'Pear' },
@@ -88,13 +88,12 @@ describe('MenuItem, MenuSection and MenuSeparator', () => {
     );
     screen.getByRole('button', { name: 'Actions' }).focus();
     await user.keyboard('{ArrowDown}');
-    expect(screen.getByTestId('custom')).toHaveTextContent('Focused');
-    expect(
-      screen.getByTestId('custom').parentElement?.querySelector('.ui-menu-item__label'),
-    ).toBeNull();
+    expect(screen.getByTitle('Custom')).toHaveTextContent('Focused');
+    const custom = screen.getByTitle('Custom');
+    expect(custom.parentElement?.querySelector('.ui-menu-item__label')).toBeNull();
     await user.keyboard('p');
     expect(screen.getByRole('menuitem', { name: 'Pear' })).toHaveFocus();
-    expect(screen.getByTestId('custom')).toHaveTextContent('Apple');
+    expect(screen.getByTitle('Custom')).toHaveTextContent('Apple');
   });
 
   it('UIC-MENU-2.2 hands custom content the library item state only', () => {
@@ -173,7 +172,7 @@ describe('MenuItem, MenuSection and MenuSeparator', () => {
       />,
     );
     expect(screen.getByRole('menu')).toBeInTheDocument();
-    expect(screen.queryByRole('menuitem', { name: 'Loading…' })).toBeNull();
+    expect(screen.queryByRole('menuitem', { name: 'Loading…' })).not.toBeInTheDocument();
     await user.click(screen.getByRole('menuitem', { name: 'Mail' }));
     expect(actionKeys(onAction)).toEqual(['mail']);
   });
@@ -233,7 +232,7 @@ describe('MenuItem, MenuSection and MenuSeparator', () => {
     );
     await openMenu(user);
     const name = screen.getByRole('menuitemradio', { name: 'Name' });
-    expect(name).toHaveAttribute('aria-checked', 'true');
+    expect(name).toBeChecked();
     expect(name).toHaveAttribute('data-selected', 'true');
     expect(name).toHaveAttribute('data-selection-mode', 'single');
     expect(name.querySelector('.ui-menu-item__check [data-glyph="check"]')).not.toBeNull();
@@ -241,15 +240,12 @@ describe('MenuItem, MenuSection and MenuSeparator', () => {
     expect(date.querySelector('.ui-menu-item__check')).toBeEmptyDOMElement();
     await user.click(screen.getByRole('menuitemcheckbox', { name: 'Hidden files' }));
     expect(screen.getByRole('menu')).toBeInTheDocument();
-    expect(screen.getByRole('menuitemcheckbox', { name: 'Hidden files' })).toHaveAttribute(
-      'aria-checked',
-      'true',
-    );
+    expect(screen.getByRole('menuitemcheckbox', { name: 'Hidden files' })).toBeChecked();
     expect(onSelectionChange).toHaveBeenCalledTimes(1);
     expect([...(onSelectionChange.mock.calls[0]?.[0] as Set<string>)]).toEqual(['hidden']);
     expectHooksMatchSpec(document.body, 'MENU', { slots: ['check', 'header'] });
     await user.keyboard('{ArrowDown}{Enter}');
-    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 
   it('UIC-MENU-3.3 takes a selection on a section described as data', async () => {
@@ -275,10 +271,7 @@ describe('MenuItem, MenuSection and MenuSeparator', () => {
       />,
     );
     await openMenu(user);
-    expect(screen.getByRole('menuitemradio', { name: 'Name' })).toHaveAttribute(
-      'aria-checked',
-      'true',
-    );
+    expect(screen.getByRole('menuitemradio', { name: 'Name' })).toBeChecked();
     await user.click(screen.getByRole('menuitemradio', { name: 'Date' }));
     expect([...(onSelectionChange.mock.calls[0]?.[0] as Set<string>)]).toEqual(['date']);
   });
@@ -288,10 +281,10 @@ describe('MenuItem, MenuSection and MenuSeparator', () => {
     render(
       <MenuTrigger>
         <Button>Actions</Button>
-        <MenuPopover className="caller-popover" data-testid="popover">
-          <Menu aria-label="Fruit" className="caller-menu" data-testid="menu" data-size="xl">
-            <MenuSection className="caller-section" data-testid="section" title="All">
-              <MenuItem className="caller-item" data-testid="item" data-tone="loud">
+        <MenuPopover className="caller-popover" data-probe="popover">
+          <Menu aria-label="Fruit" className="caller-menu" data-probe="menu" data-size="xl">
+            <MenuSection className="caller-section" data-probe="section" title="All">
+              <MenuItem className="caller-item" data-probe="item" data-tone="loud">
                 Apple
               </MenuItem>
             </MenuSection>
@@ -301,13 +294,24 @@ describe('MenuItem, MenuSection and MenuSeparator', () => {
       </MenuTrigger>,
     );
     await openMenu(user);
-    expect(screen.getByTestId('popover')).toHaveClass('ui-menu-popover', 'caller-popover');
-    expect(screen.getByTestId('menu')).toHaveClass('ui-menu', 'caller-menu');
-    expect(screen.getByTestId('menu')).toHaveAttribute('data-size', 'md');
-    expect(screen.getByTestId('section')).toHaveClass('ui-menu-section', 'caller-section');
-    expect(screen.getByTestId('item')).toHaveClass('ui-menu-item', 'caller-item');
-    expect(screen.getByTestId('item')).toHaveAttribute('data-tone', 'neutral');
+    const menu = screen.getByRole('menu', { name: 'Fruit' });
+    const popover = menu.closest('.caller-popover');
+    expect(popover).toHaveClass('ui-menu-popover', 'caller-popover');
+    expect(popover).toHaveAttribute('data-probe', 'popover');
+    expect(menu).toHaveClass('ui-menu', 'caller-menu');
+    expect(menu).toHaveAttribute('data-size', 'md');
+    expect(menu).toHaveAttribute('data-probe', 'menu');
+    const section = screen.getByRole('group', { name: 'All' });
+    expect(section).toHaveClass('ui-menu-section', 'caller-section');
+    expect(section).toHaveAttribute('data-probe', 'section');
+    const item = screen.getByRole('menuitem', { name: 'Apple' });
+    expect(item).toHaveClass('ui-menu-item', 'caller-item');
+    expect(item).toHaveAttribute('data-tone', 'neutral');
+    expect(item).toHaveAttribute('data-probe', 'item');
     expect(screen.getByRole('separator')).toHaveClass('ui-menu-separator', 'caller-rule');
-    expectHooksMatchSpec(document.body, 'MENU', { slots: ['header', 'label'] });
+    expectHooksMatchSpec(document.body, 'MENU', {
+      slots: ['header', 'label'],
+      callerAttributes: ['data-probe'],
+    });
   });
 });

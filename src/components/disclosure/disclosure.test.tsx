@@ -163,7 +163,9 @@ describe('Disclosure', () => {
     expect(screen.getByRole('heading', { level: 3, name: 'Orchard' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 4, name: 'Apples' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 5, name: 'Shed' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 6, name: 'Tools', hidden: true })).toBeTruthy();
+    expect(
+      screen.getByRole('heading', { level: 6, name: 'Tools', hidden: true }),
+    ).toBeInTheDocument();
   });
 
   it('UIC-DISCLOSURE-1.6 refuses presses and focus while disabled', async () => {
@@ -189,11 +191,11 @@ describe('Disclosure', () => {
 
   it('UIC-DISCLOSURE-1.7 appends the caller class and forwards data attributes, ref and render', () => {
     const ref = { current: null as HTMLDivElement | null };
-    render(
+    const { container } = render(
       <Disclosure
         title="Notes"
         className="caller"
-        data-testid="notes"
+        data-owner="notes"
         data-indicator-position="caller"
         ref={ref}
         defaultExpanded
@@ -202,13 +204,14 @@ describe('Disclosure', () => {
         Plain text
       </Disclosure>,
     );
-    const root = screen.getByTestId('notes');
+    const root = container.firstElementChild as HTMLElement;
     expect(root.tagName).toBe('SECTION');
+    expect(root).toHaveAttribute('data-owner', 'notes');
     expect(root).toHaveAttribute('aria-busy', 'false');
     expect(root).toHaveClass('ui-disclosure', 'caller');
     expect(root).toHaveAttribute('data-indicator-position', 'start');
     expect(ref.current).toBe(root);
-    expectHooksMatchSpec(document.body, 'DISCLOSURE');
+    expectHooksMatchSpec(document.body, 'DISCLOSURE', { callerAttributes: ['data-owner'] });
   });
 
   it('UIC-DISCLOSURE-1.7 forwards caller attributes on the composed parts', () => {

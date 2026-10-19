@@ -29,6 +29,7 @@ function optionKeys() {
  * the popover.
  */
 function search(text: string) {
+  // eslint-disable-next-line testing-library/prefer-user-event -- user-event would dispatch a late change on blur, during the popover unmount (see above)
   fireEvent.change(screen.getByRole('searchbox'), { target: { value: text } });
 }
 
@@ -119,9 +120,9 @@ describe('SelectField search', () => {
     expect(status).toHaveTextContent('Loading');
     expectHooksMatchSpec(document.body, 'SELECT-FIELD', { slots: ['loading'] });
     release([]);
-    await waitFor(() => expect(screen.getByText('No results')).toBeInTheDocument());
+    expect(await screen.findByText('No results')).toBeInTheDocument();
     search('fail');
-    await waitFor(() => expect(screen.getByText('Search is unavailable.')).toBeInTheDocument());
+    expect(await screen.findByText('Search is unavailable.')).toBeInTheDocument();
   });
 
   it('UIC-SELECT-FIELD-5.3 keeps the label of a chosen searched option after new results', async () => {
@@ -188,7 +189,7 @@ describe('SelectField search', () => {
     expectHooksMatchSpec(document.body, 'SELECT-FIELD', { slots: ['load-more'] });
     act(() => releasePage());
     await waitFor(() => expect(optionKeys()).toEqual(['r1', 'r2', 'b1']));
-    expect(screen.queryByText('Loading')).toBeNull();
+    expect(screen.queryByText('Loading')).not.toBeInTheDocument();
     act(() => observers.at(-1)?.([{ isIntersecting: true }]));
     expect(loadOptions).toHaveBeenCalledTimes(2);
     vi.unstubAllGlobals();

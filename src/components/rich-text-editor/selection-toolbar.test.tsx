@@ -79,7 +79,7 @@ describe('SelectionToolbar', () => {
       ),
     });
     selectRange(1, 5);
-    expect(screen.queryByRole('toolbar', { name: 'Quick marks' })).toBeNull();
+    expect(screen.queryByRole('toolbar', { name: 'Quick marks' })).not.toBeInTheDocument();
   });
 
   it('UIC-RICH-TEXT-EDITOR-7.2 takes focus on Alt+F10 and gives it back on Escape', async () => {
@@ -98,7 +98,7 @@ describe('SelectionToolbar', () => {
     expect(within(row).getByRole('button', { name: 'Bold' })).toHaveFocus();
     await user.keyboard('{Escape}');
     expect(getContent()).toHaveFocus();
-    expect(screen.queryByRole('toolbar', { name: 'Quick marks' })).toBeNull();
+    expect(screen.queryByRole('toolbar', { name: 'Quick marks' })).not.toBeInTheDocument();
     selectRange(1, 4);
     expect(screen.getByRole('toolbar', { name: 'Quick marks' })).toBeInTheDocument();
   });

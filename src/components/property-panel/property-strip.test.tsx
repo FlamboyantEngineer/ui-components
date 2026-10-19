@@ -6,7 +6,7 @@ import { PropertyStrip, PropertyStripCell } from './property-strip.js';
 describe('PropertyStrip', () => {
   it('UIC-PROPERTY-PANEL-3.5 runs cells whose decorative letters leave naming to the controls', () => {
     const { container } = render(
-      <PropertyStrip data-testid="strip">
+      <PropertyStrip>
         <PropertyStripCell letter="B" label="Before">
           <input aria-label="Space before" />
         </PropertyStripCell>
@@ -15,7 +15,7 @@ describe('PropertyStrip', () => {
         </PropertyStripCell>
       </PropertyStrip>,
     );
-    const strip = screen.getByTestId('strip');
+    const strip = container.firstElementChild as HTMLElement;
     expect(strip.tagName).toBe('SPAN');
     expect(strip).toHaveClass('ui-property-strip');
     const cells = strip.querySelectorAll('.ui-property-strip-cell');

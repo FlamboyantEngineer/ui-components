@@ -79,7 +79,7 @@ describe('Tab renaming', { timeout: 15_000 }, () => {
 
     await userEvent.keyboard('{Control>}a{/Control}  Plantain {Enter}');
     expect(onRename).toHaveBeenCalledWith('banana', 'Plantain');
-    expect(screen.queryByRole('textbox')).toBeNull();
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
     expect(tab('Plantain')).toHaveFocus();
     expect(tab('Plantain')).not.toHaveAttribute('data-renaming');
   });
@@ -102,7 +102,7 @@ describe('Tab renaming', { timeout: 15_000 }, () => {
     render(<Renameable onRename={onRename} />);
     await userEvent.dblClick(tab('Cherry'));
     await userEvent.keyboard('Plum{Escape}');
-    expect(screen.queryByRole('textbox')).toBeNull();
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
     expect(tab('Cherry')).toHaveFocus();
     await userEvent.keyboard('{F2}{Enter}');
     await userEvent.keyboard('{F2}{Control>}a{/Control}   {Enter}');
@@ -137,7 +137,7 @@ describe('Tab renaming', { timeout: 15_000 }, () => {
     render(<Renameable disabledKeys={['banana']} />);
     await userEvent.dblClick(tab('Banana'));
     fireEvent.doubleClick(tab('Banana'));
-    expect(screen.queryByRole('textbox')).toBeNull();
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
   });
 
   it('UIC-TABS-3.2 shows the message of a refused name and keeps the field open on Enter', async () => {
@@ -159,7 +159,7 @@ describe('Tab renaming', { timeout: 15_000 }, () => {
 
     await userEvent.keyboard('{Backspace}ies');
     expect(field()).not.toHaveAttribute('aria-invalid');
-    expect(screen.queryByText('Cherry is taken.')).toBeNull();
+    expect(screen.queryByText('Cherry is taken.')).not.toBeInTheDocument();
     await userEvent.keyboard('{Control>}a{/Control}Apple');
     expect(validateName).not.toHaveBeenLastCalledWith('apple', 'Apple');
     expect(field()).not.toHaveAttribute('aria-invalid');
@@ -171,7 +171,7 @@ describe('Tab renaming', { timeout: 15_000 }, () => {
     await userEvent.dblClick(tab('Apple'));
     await userEvent.keyboard('Plum');
     act(() => field().blur());
-    expect(screen.queryByRole('textbox')).toBeNull();
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
     expect(onRename).not.toHaveBeenCalled();
   });
 });

@@ -118,7 +118,7 @@ describe('Menu', () => {
     await user.keyboard('c');
     expect(screen.getByRole('menuitem', { name: 'Cherry' })).toHaveFocus();
     await user.keyboard('{Escape}');
-    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 
   it('UIC-MENU-1.4 runs an action once, closes, and keeps disabled items inert', async () => {
@@ -154,7 +154,7 @@ describe('Menu', () => {
     expect(onApple).toHaveBeenCalledTimes(1);
     expect(onApplePress).toHaveBeenCalledWith(expect.objectContaining({ pointerType: 'mouse' }));
     expect(actionKeys(onAction)).toEqual(['keep', 'apple']);
-    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 
   it('UIC-MENU-1.4 reports submenu actions to the menu that opens them', async () => {
@@ -164,8 +164,8 @@ describe('Menu', () => {
     await openMenu(user);
     await user.keyboard('{End}{ArrowRight}{Enter}');
     expect(actionKeys(onAction)).toEqual(['cherry']);
-    expect(screen.queryByRole('menu')).toBeNull();
-    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 
   it('UIC-MENU-4.1 opens from its trigger with popup attributes and arrow keys', async () => {
@@ -199,7 +199,7 @@ describe('Menu', () => {
     );
     await user.click(screen.getByRole('button', { name: 'Actions' }));
     expect(onOpenChange).toHaveBeenCalledWith(true);
-    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     rerender(
       <MenuTrigger isOpen onOpenChange={onOpenChange}>
         <Button>Actions</Button>
@@ -228,7 +228,7 @@ describe('Menu', () => {
     await waitFor(() => expect(trigger).toHaveFocus());
     await openMenu(user);
     await user.click(document.body);
-    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     await waitFor(() => expect(trigger).toHaveFocus());
   });
 
@@ -318,7 +318,7 @@ describe('Menu', () => {
     expectHooksMatchSpec(document.body, 'MENU', { slots: ['search', 'search-input'] });
     await user.keyboard('{Enter}');
     expect(actionKeys(onAction)).toEqual(['lisbon']);
-    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 
   it('UIC-MENU-5.1 says when nothing matches and leaves a standalone menu unfocused', async () => {
@@ -409,8 +409,9 @@ describe('Menu', () => {
       'Li',
     );
     await user.click(screen.getByRole('menuitem', { name: 'More' }));
-    expect(screen.getByRole('menuitem', { name: 'Lille' })).toHaveTextContent('Lille');
-    expect(screen.getByRole('menuitem', { name: 'Lille' }).querySelector('mark')).toBeNull();
+    const plainLille = screen.getByRole('menuitem', { name: 'Lille' });
+    expect(plainLille).toHaveTextContent('Lille');
+    expect(plainLille.querySelector('mark')).toBeNull();
     unmount();
     render(
       <Autocomplete defaultInputValue="li">

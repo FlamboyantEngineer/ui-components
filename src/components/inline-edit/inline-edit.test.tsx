@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -257,12 +257,14 @@ describe('InlineEdit', { timeout: 15_000 }, () => {
     expect(textbox()).toHaveValue('Seeded rye');
     expectHooksMatchSpec(container, 'INLINE-EDIT', { slots: ['error'] });
     save = deferred();
-    fireEvent.keyDown(textbox(), { key: 'Enter' });
-    expect(screen.queryByRole('alert')).toBeNull();
+    expect(textbox()).toHaveFocus();
+    await user.keyboard('{Enter}');
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     await act(async () => save.reject('nope'));
     expect(screen.getByRole('alert')).toHaveTextContent('The change could not be saved.');
     save = deferred();
-    fireEvent.keyDown(textbox(), { key: 'Enter' });
+    expect(textbox()).toHaveFocus();
+    await user.keyboard('{Enter}');
     await act(async () => save.resolve());
     expect(read()).toHaveFocus();
     expect(root).not.toHaveAttribute('data-invalid');

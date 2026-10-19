@@ -139,7 +139,7 @@ describe('RelationColumns', () => {
     expect(screen.getByRole('grid', { name: 'Upstream of Faster checkout' })).toBeInTheDocument();
     await userEvent.click(screen.getByRole('link', { name: 'Design 4' }));
     expect(onPathChange).toHaveBeenLastCalledWith({ upstream: ['goal'], downstream: ['spec'] });
-    expect(screen.queryByRole('grid', { name: 'Downstream of Test 7' })).toBeNull();
+    expect(screen.queryByRole('grid', { name: 'Downstream of Test 7' })).not.toBeInTheDocument();
     await userEvent.click(screen.getByRole('link', { name: 'Requirement 12' }));
     expect(onPathChange).toHaveBeenLastCalledWith({ upstream: [], downstream: [] });
     expect(crumbs()).toEqual(['Requirement 12']);
@@ -163,7 +163,7 @@ describe('RelationColumns', () => {
     await userEvent.keyboard('{Enter}');
     expect(screen.getByRole('grid', { name: 'Item' })).toHaveTextContent('Design 4');
     expect(rowNames('Downstream of Design 4')).toEqual(['Test 7']);
-    expect(screen.queryByRole('grid', { name: 'Downstream of Test 7' })).toBeNull();
+    expect(screen.queryByRole('grid', { name: 'Downstream of Test 7' })).not.toBeInTheDocument();
   });
 
   it('UIC-RELATION-COLUMNS-2.1 moves between items and columns with the arrow keys', async () => {

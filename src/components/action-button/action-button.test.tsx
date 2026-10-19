@@ -60,9 +60,7 @@ describe('ActionButton', () => {
       </ActionButton>,
     );
     const button = screen.getByRole('button');
-    await act(async () => {
-      await userEvent.click(button);
-    });
+    await userEvent.click(button);
     expect(onError).toHaveBeenCalledWith(new Error('offline'));
     expect(button).not.toHaveAttribute('data-pending');
     await expect(
@@ -115,7 +113,7 @@ describe('ActionButton', () => {
     expect(screen.getByRole('progressbar', { name: 'Exporting' })).toBeInTheDocument();
 
     rerender(<ActionButton isPending={false}>Export</ActionButton>);
-    expect(screen.queryByRole('progressbar')).toBeNull();
+    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
   });
 
   it('UIC-ACTION-BUTTON-1.6 keeps its hint and shortcut while the action runs', async () => {

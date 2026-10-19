@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -86,13 +86,13 @@ describe('NumberField', () => {
     expect(root(container)).not.toHaveAttribute('data-hide-stepper');
     unmount();
 
-    const hidden = render(<NumberField label="Weight" defaultValue={2} step={2} hideStepper />);
-    expect(screen.queryByRole('button', { name: 'Increase Weight' })).toBeNull();
-    expect(root(hidden.container)).toHaveAttribute('data-hide-stepper', 'true');
+    const view = render(<NumberField label="Weight" defaultValue={2} step={2} hideStepper />);
+    expect(screen.queryByRole('button', { name: 'Increase Weight' })).not.toBeInTheDocument();
+    expect(root(view.container)).toHaveAttribute('data-hide-stepper', 'true');
     await user.click(screen.getByRole('textbox'));
     await user.keyboard('{ArrowUp}');
     expect(screen.getByRole('textbox')).toHaveValue('4');
-    expectHooksMatchSpec(hidden.container, 'NUMBER-FIELD', { slots: ['box', 'group', 'input'] });
+    expectHooksMatchSpec(view.container, 'NUMBER-FIELD', { slots: ['box', 'group', 'input'] });
   });
 
   it('UIC-NUMBER-FIELD-1.4 names, describes and locks the input', async () => {
@@ -101,7 +101,7 @@ describe('NumberField', () => {
       <NumberField id="weight" label="Weight" description="In kilograms." isRequired />,
     );
     const input = screen.getByRole('textbox', { name: 'Weight' });
-    expect(input).toHaveAttribute('aria-required', 'true');
+    expect(input).toBeRequired();
     expect(input).toHaveAttribute('aria-invalid', 'true');
     expect(input).toHaveAttribute('aria-errormessage', 'weight-message');
     expect(input).toHaveAccessibleDescription('In kilograms. A value is required.');
@@ -292,7 +292,8 @@ describe('NumberField', () => {
     expect(input).toHaveValue('4');
   });
 
-  it('UIC-NUMBER-FIELD-3.3 steps the value while its scrub handle is dragged', () => {
+  it('UIC-NUMBER-FIELD-3.3 steps the value while its scrub handle is dragged', async () => {
+    const user = userEvent.setup();
     const onChange = vi.fn();
     const onCommit = vi.fn();
     const { container } = render(
@@ -309,25 +310,30 @@ describe('NumberField', () => {
     expect(scrubber).toHaveAttribute('aria-hidden', 'true');
     expect(scrubber.querySelector('[data-glyph="scrub"]')).not.toBeNull();
     const input = screen.getByRole('textbox');
-    fireEvent.pointerDown(scrubber, { pointerId: 1, button: 0, clientX: 100 });
-    fireEvent.pointerMove(scrubber, { pointerId: 1, clientX: 110 });
+    await user.pointer([
+      { keys: '[MouseLeft>]', target: scrubber, coords: { clientX: 100 } },
+      { coords: { clientX: 110 } },
+    ]);
     expect(input).toHaveValue('6');
-    fireEvent.pointerMove(scrubber, { pointerId: 1, clientX: 112 });
+    await user.pointer({ coords: { clientX: 112 } });
     expect(input).toHaveValue('7');
-    fireEvent.pointerMove(scrubber, { pointerId: 1, clientX: 116, shiftKey: true });
+    await user.keyboard('{Shift>}');
+    await user.pointer({ coords: { clientX: 116 } });
+    await user.keyboard('{/Shift}');
     expect(input).toHaveValue('17');
-    fireEvent.pointerMove(scrubber, { pointerId: 1, clientX: 104 });
+    await user.pointer({ coords: { clientX: 104 } });
     expect(input).toHaveValue('14');
     expect(onCommit).not.toHaveBeenCalled();
-    fireEvent.pointerUp(scrubber, { pointerId: 1, clientX: 104 });
+    await user.pointer({ keys: '[/MouseLeft]' });
     expect(onCommit).toHaveBeenCalledTimes(1);
     expect(onCommit).toHaveBeenLastCalledWith(14);
-    fireEvent.pointerMove(scrubber, { pointerId: 1, clientX: 200 });
+    await user.pointer({ coords: { clientX: 200 } });
     expect(input).toHaveValue('14');
     expectHooksMatchSpec(container, 'NUMBER-FIELD', { slots: ['scrubber'] });
   });
 
-  it('UIC-NUMBER-FIELD-3.3 scrubs toward the end of the line and not while locked', () => {
+  it('UIC-NUMBER-FIELD-3.3 scrubs toward the end of the line and not while locked', async () => {
+    const user = userEvent.setup();
     const { container, rerender } = render(
       <UiProvider locale="ar-EG">
         <NumberField
@@ -339,13 +345,17 @@ describe('NumberField', () => {
       </UiProvider>,
     );
     const scrubber = () => container.querySelector('.ui-number-field__scrubber') as HTMLElement;
-    fireEvent.pointerDown(scrubber(), { pointerId: 1, button: 0, clientX: 100 });
-    fireEvent.pointerMove(scrubber(), { pointerId: 1, clientX: 92 });
-    fireEvent.pointerUp(scrubber(), { pointerId: 1, clientX: 92 });
+    await user.pointer([
+      { keys: '[MouseLeft>]', target: scrubber(), coords: { clientX: 100 } },
+      { coords: { clientX: 92 } },
+      { keys: '[/MouseLeft]' },
+    ]);
     expect(screen.getByRole('textbox')).toHaveValue('6');
     rerender(<NumberField label="Weight" value={4} showScrubber isReadOnly />);
-    fireEvent.pointerDown(scrubber(), { pointerId: 1, button: 0, clientX: 100 });
-    fireEvent.pointerMove(scrubber(), { pointerId: 1, clientX: 140 });
+    await user.pointer([
+      { keys: '[MouseLeft>]', target: scrubber(), coords: { clientX: 100 } },
+      { coords: { clientX: 140 } },
+    ]);
     expect(screen.getByRole('textbox')).toHaveValue('4');
   });
 });

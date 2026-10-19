@@ -53,7 +53,7 @@ describe('SelectField list', () => {
       slots: ['popover', 'listbox', 'option'],
     });
     await user.keyboard('{Escape}');
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     expect(onOpenChange).toHaveBeenLastCalledWith(false);
     act(() => trigger('Pear Fruit').focus());
     await user.keyboard('{ArrowDown}');
@@ -68,7 +68,7 @@ describe('SelectField list', () => {
     );
     await user.click(trigger());
     expect(onOpenChange).toHaveBeenCalledWith(true);
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     rerender(<SelectField label="Fruit" options={fruit} isOpen onOpenChange={onOpenChange} />);
     expect(screen.getByRole('listbox')).toBeInTheDocument();
   });
@@ -97,7 +97,7 @@ describe('SelectField list', () => {
     render(<SelectField label="Fruit" options={fruit} defaultValue="apple" />);
     await user.click(trigger('Apple Fruit'));
     await user.keyboard('{ArrowDown}{Enter}');
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     await waitFor(() => expect(trigger('Pear Fruit')).toHaveFocus());
   });
 
@@ -163,7 +163,7 @@ describe('SelectField list', () => {
     const user = userEvent.setup();
     const { unmount } = render(<SelectField label="Fruit" options={fruit} />);
     await user.click(trigger());
-    expect(screen.queryByRole('searchbox')).toBeNull();
+    expect(screen.queryByRole('searchbox')).not.toBeInTheDocument();
     await user.keyboard('{Escape}');
     unmount();
     render(<SelectField label="Fruit" options={fruit} filterable />);
@@ -175,7 +175,7 @@ describe('SelectField list', () => {
     const user = userEvent.setup();
     render(<SelectField label="Fruit" options={orchard} filterable={false} />);
     await user.click(trigger());
-    expect(screen.queryByRole('searchbox')).toBeNull();
+    expect(screen.queryByRole('searchbox')).not.toBeInTheDocument();
   });
 
   it('UIC-SELECT-FIELD-3.6 opens the filter from a printable key without changing the value', async () => {
@@ -206,7 +206,7 @@ describe('SelectField list', () => {
     render(<SelectField label="Fruit" options={fruit} onCommit={onCommit} />);
     act(() => trigger().focus());
     await user.keyboard('f');
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     expect(onCommit).toHaveBeenCalledWith('fig');
   });
 

@@ -67,14 +67,14 @@ describe('SelectField field', () => {
             onChange={setValue}
             onCommit={onCommit}
           />
-          <output data-testid="value">{String(value)}</output>
+          <output aria-label="Current value">{String(value)}</output>
         </>
       );
     }
     render(<Controlled />);
     await user.click(trigger('Apple Fruit'));
     await user.click(screen.getByRole('option', { name: 'Fig' }));
-    expect(screen.getByTestId('value')).toHaveTextContent('fig');
+    expect(screen.getByRole('status', { name: 'Current value' })).toHaveTextContent('fig');
     expect(onCommit).toHaveBeenCalledWith('fig');
     expect(trigger('Fig Fruit')).toBeInTheDocument();
   });
@@ -132,12 +132,12 @@ describe('SelectField field', () => {
     );
     expect(root(container)).toHaveAttribute('data-readonly', 'true');
     const button = trigger('Apple Fruit');
-    expect(button).not.toBeDisabled();
+    expect(button).toBeEnabled();
     await user.click(button);
     expect(button).toHaveFocus();
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     await user.keyboard('{ArrowDown}');
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
   });
 
   it('UIC-SELECT-FIELD-1.3 disables the trigger of a disabled select', () => {

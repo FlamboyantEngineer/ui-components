@@ -49,7 +49,7 @@ describe('ColorField formats and channels', () => {
       <ColorField label="Accent" format="rgb" defaultValue="#336699" onChange={onChange} />,
     );
     let dialog = await openPicker(user);
-    expect(within(dialog).queryByRole('textbox', { name: 'Hex color' })).toBeNull();
+    expect(within(dialog).queryByRole('textbox', { name: 'Hex color' })).not.toBeInTheDocument();
     const fields = dialog.querySelectorAll('.ui-color-field__channel');
     expect([...fields].map((node) => node.getAttribute('data-channel'))).toEqual([
       'red',
@@ -128,7 +128,7 @@ describe('ColorField formats and channels', () => {
     render(<ColorField label="Accent" defaultValue="#336699" formats={['rgb']} />);
     expect(
       within(await openPicker(user)).queryByRole('radiogroup', { name: 'Color format' }),
-    ).toBeNull();
+    ).not.toBeInTheDocument();
   });
 
   it('UIC-COLOR-FIELD-3.4 stores the value in the value format', async () => {

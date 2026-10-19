@@ -43,7 +43,7 @@ describe('RelativeDateField calendar', () => {
     });
     await user.click(within(calendar).getByRole('button', { name: /May 28, 2026/ }));
     expect(onCommit).toHaveBeenLastCalledWith('2026-05-28');
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'In 5 days Due' })).toBeInTheDocument();
   });
 
@@ -76,6 +76,6 @@ describe('RelativeDateField calendar', () => {
     await user.click(screen.getByRole('button', { name: /May 4, 2026/ }));
     await user.click(screen.getByRole('button', { name: /May 8, 2026/ }));
     expect(onCommit).toHaveBeenLastCalledWith({ start: '2026-05-04', end: '2026-05-08' });
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
   });
 });

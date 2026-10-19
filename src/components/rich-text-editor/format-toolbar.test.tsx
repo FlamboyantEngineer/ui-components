@@ -97,10 +97,10 @@ describe('FormatToolbar', () => {
     });
     renderEditor({ schema, toolbar: <FormatToolbar aria-label="Note tools" /> });
     const row = screen.getByRole('toolbar', { name: 'Note tools' });
-    expect(within(row).queryByRole('button', { name: 'Underline' })).toBeNull();
-    expect(within(row).queryByRole('button', { name: 'Link' })).toBeNull();
-    expect(within(row).queryByRole('button', { name: 'Task list' })).toBeNull();
-    expect(within(row).queryByRole('button', { name: 'Quote' })).toBeNull();
+    expect(within(row).queryByRole('button', { name: 'Underline' })).not.toBeInTheDocument();
+    expect(within(row).queryByRole('button', { name: 'Link' })).not.toBeInTheDocument();
+    expect(within(row).queryByRole('button', { name: 'Task list' })).not.toBeInTheDocument();
+    expect(within(row).queryByRole('button', { name: 'Quote' })).not.toBeInTheDocument();
     expect(within(row).getByRole('button', { name: 'Bold' })).toBeInTheDocument();
   });
 
@@ -156,7 +156,7 @@ describe('FormatToolbar', () => {
     expect(value()?.content?.[0]?.content?.[1]?.marks).toEqual([
       { type: 'link', attrs: { href: 'https://example.com/pears', title: null } },
     ]);
-    expect(screen.queryByRole('textbox', { name: 'Link address' })).toBeNull();
+    expect(screen.queryByRole('textbox', { name: 'Link address' })).not.toBeInTheDocument();
     expect(link).toHaveAttribute('aria-pressed', 'true');
     await user.click(link);
     expect(screen.getByRole('textbox', { name: 'Link address' })).toHaveValue(

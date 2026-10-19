@@ -170,14 +170,14 @@ describe('PropertySection', () => {
         </PropertySection>
       </UiProvider>
     );
-    const first = render(section);
+    const { unmount } = render(section);
     await userEvent.click(screen.getByRole('button', { name: 'Print' }));
     expect(storage.getItem('sections.print')).toBe('false');
-    first.unmount();
+    unmount();
 
-    const second = render(section);
+    const view = render(section);
     expect(screen.getByRole('button', { name: 'Print' })).toHaveAttribute('aria-expanded', 'false');
-    second.unmount();
+    view.unmount();
 
     render(
       <UiProvider storage={storage}>
@@ -236,6 +236,6 @@ describe('PropertySection', () => {
       </PropertySection>,
     );
     expect(root).not.toHaveAttribute('data-overridden');
-    expect(screen.queryByRole('img')).toBeNull();
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
   });
 });

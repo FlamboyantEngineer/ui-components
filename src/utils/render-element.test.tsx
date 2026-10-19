@@ -58,13 +58,13 @@ describe('renderElement', () => {
         onPress={onPress}
         render={(props, state) => {
           pressed.push(state.isPressed);
-          return <button {...props} data-testid="swapped" />;
+          return <button {...props} />;
         }}
       >
         Save
       </Button>,
     );
-    const button = screen.getByTestId('swapped');
+    const button = screen.getByRole('button', { name: 'Save' });
     expect(button).toHaveClass('ui-button');
     expect(button).toHaveAttribute('data-variant', 'primary');
     expect(button).toHaveAttribute('data-rac');

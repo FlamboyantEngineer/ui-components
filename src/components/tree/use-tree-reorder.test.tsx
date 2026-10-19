@@ -175,11 +175,18 @@ function leave(transfer: Transfer) {
   entered.clear();
 }
 
+/** Lets React Aria's drop, which reads the dragged items as promises, finish and render. */
+async function settleDrop() {
+  await act(async () => {
+    await Promise.resolve();
+  });
+}
+
 async function drop(transfer: Transfer, source: string, name: string, at: number) {
   dragOver(transfer, name, at);
   fire('drop', row(name), transfer, pointOn(name, at));
   entered.clear();
-  await act(async () => {});
+  await settleDrop();
   fire('dragend', row(source), transfer);
 }
 
@@ -232,7 +239,7 @@ describe('Tree reordering', { timeout: 20_000 }, () => {
     for (const name of ['Apple', 'Pear', 'Kiwi', 'Berries', 'Currant', 'Garden']) {
       expect(row(name)).toHaveAttribute('draggable', 'true');
       expect(row(name)).toHaveAttribute('aria-keyshortcuts', 'Alt+ArrowUp Alt+ArrowDown');
-      expect(row(name).querySelector('.ui-tree__drag-handle')).not.toBeDisabled();
+      expect(row(name).querySelector('.ui-tree__drag-handle')).toBeEnabled();
     }
     for (const name of ['Pantry', 'Plum', 'Fig']) {
       expect(row(name)).not.toHaveAttribute('draggable');
@@ -340,7 +347,7 @@ describe('Tree reordering', { timeout: 20_000 }, () => {
     expect(dropTargets()).toEqual([]);
     fire('drop', row('Kiwi'), foreign, pointOn('Kiwi', 0.9));
     entered.clear();
-    await act(async () => {});
+    await settleDrop();
     expect(onMove).not.toHaveBeenCalled();
   });
 

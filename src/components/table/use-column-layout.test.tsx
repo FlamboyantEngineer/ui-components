@@ -49,7 +49,7 @@ describe('Table column layout', { timeout: 15_000 }, () => {
     const menu = screen.getByRole('menu');
     const items = within(menu).getAllByRole('menuitemcheckbox');
     expect(items.map((item) => item.textContent)).toEqual(['Country', 'People']);
-    expect(items[0]).toHaveAttribute('aria-checked', 'true');
+    expect(items[0]).toBeChecked();
     await user.click(items[0]!);
     expect(headers()).toEqual(['Name', 'People']);
     expect(onColumnLayoutChange).toHaveBeenLastCalledWith({ hidden: ['country'] });

@@ -1,5 +1,5 @@
-import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { userEvent } from '@testing-library/user-event';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
+import { type UserEvent, userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { PeoplePicker, type PeoplePickerLoader, type PeoplePickerPerson } from './people-picker.js';
@@ -28,8 +28,10 @@ function optionNames() {
     .map((option) => option.querySelector('.ui-user-identity__title')?.textContent);
 }
 
-function setText(text: string) {
-  fireEvent.change(input(), { target: { value: text } });
+/** Replaces the search text in one input event, as a paste does, so each query loads once. */
+async function setText(user: UserEvent, text: string) {
+  await user.clear(input());
+  if (text) await user.paste(text);
 }
 
 describe('PeoplePicker', () => {
@@ -45,11 +47,10 @@ describe('PeoplePicker', () => {
         size="lg"
         className="caller"
         id="owner"
-        data-testid="probe"
         loadItems={async () => []}
       />,
     );
-    const root = screen.getByTestId('probe');
+    const root = container.querySelector('.ui-people-picker');
     expect(root).toHaveClass('ui-combobox', 'ui-people-picker', 'caller');
     expect(input()).toHaveAttribute('id', 'owner');
     expect(root).toHaveAttribute('data-size', 'lg');
@@ -79,7 +80,7 @@ describe('PeoplePicker', () => {
       <PeoplePicker label="Owner" loadItems={loadItems} searchDelay={0} onChange={onChange} />,
     );
     await user.click(input());
-    setText('ad');
+    await setText(user, 'ad');
     await waitFor(() => expect(optionNames()).toEqual(['Ada Moreno']));
     expect(loadItems).toHaveBeenCalledWith('ad', expect.any(AbortSignal));
     const option = screen.getByRole('option', { name: /Ada Moreno/ });
@@ -107,11 +108,11 @@ describe('PeoplePicker', () => {
       />,
     );
     await user.click(input());
-    setText('e');
+    await setText(user, 'e');
     const design = await screen.findByRole('option', { name: /Design team/ });
     expect(design.querySelector('.ui-people-picker__person')).toHaveAttribute('data-kind', 'group');
     await user.click(design);
-    setText('ben');
+    await setText(user, 'ben');
     await user.click(await screen.findByRole('option', { name: /Ben Okafor/ }));
     expect(onChange).toHaveBeenLastCalledWith(['design', 'ben']);
     await user.keyboard('{Escape}');
@@ -136,7 +137,7 @@ describe('PeoplePicker', () => {
       />,
     );
     await user.click(input());
-    setText('cleo');
+    await setText(user, 'cleo');
     const option = await screen.findByRole('option', { name: /Cleo Varga/ });
     expect(option).toHaveAttribute('aria-disabled', 'true');
     expect(option).toHaveTextContent('Account inactive');
@@ -166,11 +167,11 @@ describe('PeoplePicker', () => {
     const self = screen.getByRole('option', { name: /Sam Rivera \(you\)/ });
     expect(within(self).getByText('(you)')).toHaveClass('ui-people-picker__you');
     expectHooksMatchSpec(document.body, 'PEOPLE-PICKER', { slots: ['person', 'you'] });
-    setText('o');
+    await setText(user, 'o');
     await waitFor(() => expect(loadItems).toHaveBeenCalledWith('o', expect.any(AbortSignal)));
-    await waitFor(() => expect(screen.queryByText('Recent')).toBeNull());
+    await waitFor(() => expect(screen.queryByText('Recent')).not.toBeInTheDocument());
     expect(screen.getByRole('option', { name: /Sam Rivera \(you\)/ })).toBeInTheDocument();
-    setText('');
+    await setText(user, '');
     await user.click(await screen.findByRole('option', { name: /Sam Rivera/ }));
     expect(onChange).toHaveBeenLastCalledWith('me');
   });
@@ -194,12 +195,12 @@ describe('PeoplePicker', () => {
       />,
     );
     await user.click(input());
-    setText('ad');
+    await setText(user, 'ad');
     await user.click(await screen.findByRole('option', { name: /Ada Moreno/ }));
-    setText('zz');
+    await setText(user, 'zz');
     await waitFor(() => expect(loadItems).toHaveBeenCalledTimes(2));
     act(() => release([]));
-    await waitFor(() => expect(screen.getByText('No results')).toBeInTheDocument());
+    expect(await screen.findByText('No results')).toBeInTheDocument();
     await user.keyboard('{Escape}');
     const chips = screen.getByRole('grid', { name: 'Reviewers selected values' });
     const chip = within(chips).getByRole('row', { name: 'Ada Moreno' });

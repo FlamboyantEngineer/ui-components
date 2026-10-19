@@ -84,27 +84,29 @@ describe('Badge', () => {
       <Badge
         className="caller"
         id="kind"
-        data-testid="probe"
+        data-owner="probe"
         data-tone="caller"
         aria-label="Kind: report"
       >
         Report
       </Badge>,
     );
-    const root = screen.getByTestId('probe');
+    const root = container.firstElementChild;
     expect(root).toHaveClass('ui-badge', 'caller');
     expect(root).toHaveAttribute('id', 'kind');
     expect(root).toHaveAttribute('data-tone', 'neutral');
+    expect(root).toHaveAttribute('data-owner', 'probe');
     expect(root).toHaveAttribute('aria-label', 'Kind: report');
-    expectHooksMatchSpec(container, 'BADGE');
+    expectHooksMatchSpec(container, 'BADGE', { callerAttributes: ['data-owner'] });
 
     rerender(
-      <Badge hidden aria-hidden data-testid="probe">
+      <Badge hidden aria-hidden>
         Report
       </Badge>,
     );
-    expect(screen.getByTestId('probe').hidden).toBe(true);
-    expect(screen.getByTestId('probe')).toHaveAttribute('aria-hidden', 'true');
+    const hidden = container.firstElementChild as HTMLElement;
+    expect(hidden.hidden).toBe(true);
+    expect(hidden).toHaveAttribute('aria-hidden', 'true');
   });
 
   it('UIC-BADGE-2.1 draws a decorative dot and a polite status unless quiet', () => {
@@ -126,7 +128,7 @@ describe('Badge', () => {
         Checking
       </Badge>,
     );
-    expect(screen.queryByRole('status')).toBeNull();
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
     expect(container.querySelector('.ui-badge__dot')).toHaveAttribute('aria-hidden', 'true');
     expect(container.firstElementChild).toHaveAttribute('data-muted-dot', 'true');
     expectHooksMatchSpec(container, 'BADGE', { slots: ['dot'] });
@@ -209,7 +211,11 @@ describe('Badge', () => {
 
   it('UIC-BADGE-1.7 draws decorative icons before and after the label', () => {
     const { container, rerender } = render(
-      <Badge startIcon="check" endIcon={<svg data-testid="custom" />} tone="success">
+      <Badge
+        startIcon="check"
+        endIcon={<svg role="img" aria-label="Custom glyph" />}
+        tone="success"
+      >
         Ripe
       </Badge>,
     );
@@ -220,7 +226,7 @@ describe('Badge', () => {
     expect(start).toHaveAttribute('aria-hidden', 'true');
     expect(label).toHaveClass('ui-badge__label');
     expect(end).toHaveClass('ui-badge__end-icon');
-    expect(screen.getByTestId('custom').parentElement).toBe(end);
+    expect(screen.getByRole('img', { name: 'Custom glyph', hidden: true }).parentElement).toBe(end);
     expectHooksMatchSpec(container, 'BADGE', { slots: ['start-icon', 'label', 'end-icon'] });
 
     rerender(

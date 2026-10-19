@@ -153,7 +153,8 @@ describe('SegmentedBar', () => {
     expect(bar.querySelector('.ui-segmented-bar__total')).toHaveTextContent('Summe 2.501,5 GB');
     expect(entries(bar)[0]).toMatch(/^Images 1,5\sGB 0,1\s%$/);
     rerender(<SegmentedBar aria-label="Storage" segments={results} showTotal={false} />);
-    expect(screen.getByRole('group').querySelector('.ui-segmented-bar__total')).toBeNull();
+    const group = screen.getByRole('group');
+    expect(group.querySelector('.ui-segmented-bar__total')).toBeNull();
   });
 
   it('UIC-SEGMENTED-BAR-1.6 publishes the size, medium by default', () => {
@@ -175,17 +176,18 @@ describe('SegmentedBar', () => {
         className="caller"
         id="probe"
         ref={ref}
-        data-testid="probe"
+        data-sample="probe"
         data-size="caller"
         segments={results}
       />,
     );
-    const bar = screen.getByTestId('probe');
+    const bar = screen.getByRole('group', { name: 'Probe' });
     expect(bar).toHaveClass('ui-segmented-bar', 'caller');
     expect(bar).toHaveAttribute('id', 'probe');
     expect(bar).toHaveAttribute('data-size', 'md');
+    expect(bar).toHaveAttribute('data-sample', 'probe');
     expect(ref.current).toBe(bar);
-    expectHooksMatchSpec(document.body, 'SEGMENTED-BAR');
+    expectHooksMatchSpec(document.body, 'SEGMENTED-BAR', { callerAttributes: ['data-sample'] });
   });
 
   it('UIC-SEGMENTED-BAR-2.2 takes no tab stop', async () => {

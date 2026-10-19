@@ -42,16 +42,16 @@ describe('PdfViewer document', () => {
     await userEvent.type(field, 'apple{Enter}');
     await screen.findByText('The password is incorrect. Try again.');
     expect(field).toHaveValue('apple');
-    expect(screen.queryByRole('button', { name: 'Restore Password' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Restore Password' })).not.toBeInTheDocument();
     expect(field).toHaveAttribute('aria-invalid', 'true');
     await userEvent.type(field, 's');
-    expect(screen.queryByText('The password is incorrect. Try again.')).toBeNull();
+    expect(screen.queryByText('The password is incorrect. Try again.')).not.toBeInTheDocument();
 
     await userEvent.clear(field);
     await userEvent.type(field, 'orchard');
     await userEvent.click(screen.getByRole('button', { name: 'Open' }));
     await waitFor(() => expect(root).not.toHaveAttribute('data-locked'));
-    expect(screen.queryByLabelText('Password')).toBeNull();
+    expect(screen.queryByLabelText('Password')).not.toBeInTheDocument();
     await waitFor(() =>
       expect(container.querySelectorAll('[role="presentation"]')).toHaveLength(7),
     );

@@ -237,7 +237,7 @@ describe('ChangeList', () => {
     render(<ChangeList changes={changes} variant="detailed" />);
     expect(document.querySelectorAll('del').length).toBeGreaterThan(0);
     expect(document.querySelectorAll('ins').length).toBeGreaterThan(0);
-    expect(screen.queryByRole('status')).toBeNull();
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
     await userEvent.tab();
     expect(document.body).toHaveFocus();
   });

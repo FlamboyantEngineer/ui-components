@@ -76,7 +76,7 @@ describe('AppFrame', () => {
       'Console',
     );
     expect(screen.getByText('Places').parentElement?.tagName).toBe('DIV');
-    expect(screen.queryByRole('group')).toBeNull();
+    expect(screen.queryByRole('group')).not.toBeInTheDocument();
   });
 
   it('UIC-APP-FRAME-1.2 names the main region and panels from labels and provider strings', () => {
@@ -121,7 +121,7 @@ describe('AppFrame', () => {
     expect(frame).toHaveAttribute('data-embedded', 'true');
     expect(screen.getByRole('group', { name: 'Workspace' })).toBe(frame);
     for (const role of ['banner', 'main', 'contentinfo', 'complementary']) {
-      expect(screen.queryByRole(role)).toBeNull();
+      expect(screen.queryByRole(role)).not.toBeInTheDocument();
     }
     for (const slot of slotOrder.slice(1)) {
       const region = frame.querySelector(`.ui-app-frame__${slot}`);
@@ -172,23 +172,25 @@ describe('AppFrame', () => {
   });
 
   it('UIC-APP-FRAME-1.5 keeps other slots on the outer provider and nested frames apart', () => {
-    render(
+    const { container } = render(
       <ProjectionProvider>
-        <div data-testid="host-outlet">
+        <div role="region" aria-label="Host tools">
           <ProjectionOutlet slot="host-tools" />
         </div>
-        <AppFrame data-testid="outer">
+        <AppFrame>
           <AppFrameContent region="start-panel">Outer outline</AppFrameContent>
-          <AppFrame isEmbedded data-testid="inner">
+          <AppFrame isEmbedded>
             <AppFrameContent region="start-panel">Inner outline</AppFrameContent>
             <ProjectionContent slot="host-tools">Ruler</ProjectionContent>
           </AppFrame>
         </AppFrame>
       </ProjectionProvider>,
     );
-    expect(screen.getByTestId('host-outlet')).toHaveTextContent('Ruler');
-    const outer = screen.getByTestId('outer');
-    const inner = screen.getByTestId('inner');
+    expect(screen.getByRole('region', { name: 'Host tools' })).toHaveTextContent('Ruler');
+    const frames = container.querySelectorAll('.ui-app-frame');
+    expect(frames).toHaveLength(2);
+    const outer = frames[0]!;
+    const inner = frames[1]!;
     expect(outer.querySelector(':scope > .ui-app-frame__start-panel')).toHaveTextContent(
       'Outer outline',
     );

@@ -39,6 +39,9 @@ class FakeIntersectionObserver {
 }
 
 /** Reports the control entering or leaving the view to the observers watching it. */
+/** Lets pending effects and promise callbacks settle inside act. */
+const flush = () => act(() => Promise.resolve());
+
 function setInView(isIntersecting: boolean) {
   controlInView = isIntersecting;
   act(() => {
@@ -125,7 +128,7 @@ describe('LoadMore', () => {
     expect(screen.getByRole('button')).toHaveAttribute('aria-label', 'Load more conversations');
     rerender(<LoadMore itemLabel="messages" remainingCount={12} />);
     const button = screen.getByRole('button', { name: 'Load more (12 remaining) messages' });
-    expect(button.getAttribute('aria-label')).toContain(button.textContent ?? '');
+    expect(button).toHaveAttribute('aria-label', expect.stringContaining(button.textContent ?? ''));
     rerender(<LoadMore itemLabel="  " />);
     expect(screen.getByRole('button')).not.toHaveAttribute('aria-label');
   });
@@ -141,7 +144,7 @@ describe('LoadMore', () => {
       <LoadMore onLoadMore={onLoadMore} remainingCount={12} itemLabel="results" isPending />,
     );
     expect(button).toHaveFocus();
-    expect(button).not.toBeDisabled();
+    expect(button).toBeEnabled();
     expect(button).toHaveAttribute('aria-disabled', 'true');
     expect(button).toHaveAttribute('data-pending', 'true');
     expect(button).toHaveTextContent('Load more (12 remaining)');
@@ -197,14 +200,15 @@ describe('LoadMore', () => {
   it('UIC-LOAD-MORE-1.6 appends the caller class and forwards id, ref and data attributes', () => {
     const ref = { current: null as HTMLButtonElement | null };
     const { container } = render(
-      <LoadMore className="caller" id="more" ref={ref} data-testid="probe" data-size="caller" />,
+      <LoadMore className="caller" id="more" ref={ref} data-probe="more" data-size="caller" />,
     );
-    const button = screen.getByTestId('probe');
+    const button = screen.getByRole('button', { name: 'Load more' });
+    expect(button).toHaveAttribute('data-probe', 'more');
     expect(button).toHaveClass('ui-button', 'ui-load-more', 'caller');
     expect(button).toHaveAttribute('id', 'more');
     expect(button).toHaveAttribute('data-size', 'sm');
     expect(ref.current).toBe(button);
-    expectHooksMatchSpec(container, 'LOAD-MORE');
+    expectHooksMatchSpec(container, 'LOAD-MORE', { callerAttributes: ['data-probe'] });
   });
 
   it('UIC-LOAD-MORE-1.7 loads each time it comes into view, one request at a time', async () => {
@@ -217,7 +221,7 @@ describe('LoadMore', () => {
     });
     render(<LoadMore autoLoad onLoadMore={onLoadMore} />);
     const button = screen.getByRole('button', { name: 'Load more' });
-    await act(async () => {});
+    await flush();
     expect(onLoadMore).not.toHaveBeenCalled();
 
     setInView(true);
@@ -261,10 +265,10 @@ describe('LoadMore', () => {
     const onLoadMore = vi.fn();
     const { rerender } = render(<LoadMore onLoadMore={onLoadMore} />);
     rerender(<LoadMore autoLoad isDisabled onLoadMore={onLoadMore} />);
-    await act(async () => {});
+    await flush();
     expect(FakeIntersectionObserver.instances).toHaveLength(0);
     rerender(<LoadMore autoLoad isPending onLoadMore={onLoadMore} />);
-    await act(async () => {});
+    await flush();
     expect(FakeIntersectionObserver.instances).toHaveLength(1);
     expect(onLoadMore).not.toHaveBeenCalled();
     rerender(<LoadMore autoLoad onLoadMore={onLoadMore} />);
@@ -285,6 +289,6 @@ describe('LoadMore', () => {
     });
     setInView(true);
     expect(onLoadMore).toHaveBeenCalledTimes(1);
-    await act(async () => {});
+    await flush();
   });
 });

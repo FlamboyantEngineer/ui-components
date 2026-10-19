@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState, type ReactNode } from 'react';
 import { Button as AriaButton } from '../../primitives/index.js';
@@ -86,7 +86,7 @@ describe('Modal', () => {
       expect(screen.getByRole('dialog', { name: 'Draft' })).toBeInTheDocument();
       await userEvent.keyboard('{Escape}');
       expect(onOpenChange).toHaveBeenCalledWith(false);
-      expect(screen.queryByRole('dialog')).toBeNull();
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
       unmount();
 
       render(
@@ -100,7 +100,7 @@ describe('Modal', () => {
       await userEvent.click(screen.getByRole('button', { name: 'Details' }));
       expect(await screen.findByRole('dialog', { name: 'Details' })).toBeInTheDocument();
       await userEvent.click(screen.getByRole('button', { name: 'Done' }));
-      expect(screen.queryByRole('dialog')).toBeNull();
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
 
     it('UIC-MODAL-1.6 opens from its trigger, reports changes and returns focus', async () => {
@@ -114,7 +114,7 @@ describe('Modal', () => {
       expect(screen.getByRole('dialog', { name: 'Settings' })).toBeInTheDocument();
       await userEvent.keyboard('{Escape}');
       expect(onOpenChange).toHaveBeenLastCalledWith(false);
-      expect(screen.queryByRole('dialog')).toBeNull();
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
       const trigger = screen.getByRole('button', { name: 'Settings' });
       await userEvent.click(trigger);
       expect(onOpenChange).toHaveBeenLastCalledWith(true);
@@ -209,7 +209,7 @@ describe('Modal', () => {
       await openHarness({ onOpenChange });
       await userEvent.keyboard('{Escape}');
       expect(onOpenChange).toHaveBeenCalledTimes(1);
-      expect(screen.queryByRole('dialog')).toBeNull();
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 
       render(
         <Modal title="Sticky" isOpen isKeyboardDismissDisabled onOpenChange={onOpenChange}>
@@ -246,7 +246,7 @@ describe('Modal', () => {
       await userEvent.click(screen.getByRole('button', { name: 'More' }));
       expect(await screen.findByRole('dialog', { name: 'Inner' })).toBeInTheDocument();
       await userEvent.keyboard('{Escape}');
-      expect(screen.queryByRole('dialog', { name: 'Inner' })).toBeNull();
+      expect(screen.queryByRole('dialog', { name: 'Inner' })).not.toBeInTheDocument();
       expect(outerChange).not.toHaveBeenCalled();
       const search = screen.getByRole('textbox', { name: 'Search' });
       search.focus();
@@ -362,7 +362,7 @@ describe('Modal', () => {
       await openHarness({ onExitComplete });
       expect(onExitComplete).not.toHaveBeenCalled();
       await userEvent.keyboard('{Escape}');
-      expect(screen.queryByRole('dialog')).toBeNull();
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
       expect(onExitComplete).toHaveBeenCalledTimes(1);
 
       const removed = vi.fn();
@@ -514,7 +514,7 @@ describe('Modal', () => {
             isOpen
             onOpenChange={onOpenChange}
             showCloseButton
-            headerActions={<span data-testid="steps">Step 1 of 3</span>}
+            headerActions={<span>Step 1 of 3</span>}
           >
             Body
           </Modal>
@@ -526,7 +526,7 @@ describe('Modal', () => {
         'ui-modal__header-actions',
         expect.stringContaining('ui-modal__close'),
       ]);
-      expect(screen.getByTestId('steps').parentElement).toHaveClass('ui-modal__header-actions');
+      expect(screen.getByText('Step 1 of 3').parentElement).toHaveClass('ui-modal__header-actions');
       expect(screen.getByRole('dialog')).toHaveAccessibleName('Import');
       expectHooksMatchSpec(document.body, 'MODAL', { slots: ['header-actions', 'close'] });
       await userEvent.click(screen.getByRole('button', { name: 'Shut' }));
@@ -626,7 +626,7 @@ describe('Modal', () => {
           primaryAction={{ label: 'Got it' }}
         />,
       );
-      expect(screen.queryByRole('button', { name: 'Cancel' })).toBeNull();
+      expect(screen.queryByRole('button', { name: 'Cancel' })).not.toBeInTheDocument();
 
       rerender(
         <Modal
@@ -651,8 +651,8 @@ describe('Modal', () => {
       expect(screen.getByRole('button', { name: 'Custom' }).parentElement).toHaveClass(
         'ui-modal__actions',
       );
-      expect(screen.queryByRole('button', { name: 'Hidden' })).toBeNull();
-      expect(screen.queryByRole('button', { name: 'Cancel' })).toBeNull();
+      expect(screen.queryByRole('button', { name: 'Hidden' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Cancel' })).not.toBeInTheDocument();
 
       rerender(<Modal title="Notice" isOpen />);
       expect(document.querySelector('.ui-modal__footer')).toBeNull();
@@ -695,10 +695,19 @@ describe('Modal', () => {
       render(<Modal title="Save" isOpen primaryAction={{ label: 'Save', onPress }} />);
       const save = screen.getByRole('button', { name: 'Save' });
       const dialog = screen.getByRole('dialog');
+      const shortcut = () =>
+        new KeyboardEvent('keydown', {
+          key: 'Enter',
+          ctrlKey: true,
+          bubbles: true,
+          cancelable: true,
+        });
+      // All three requests land in one turn, before React renders the pending state, which user-event
+      // cannot do: it awaits between events.
       act(() => {
         save.click();
-        fireEvent.keyDown(dialog, { key: 'Enter', ctrlKey: true });
-        fireEvent.keyDown(dialog, { key: 'Enter', ctrlKey: true });
+        dialog.dispatchEvent(shortcut());
+        dialog.dispatchEvent(shortcut());
       });
       expect(onPress).toHaveBeenCalledTimes(1);
       await act(async () => {
@@ -746,13 +755,13 @@ describe('Modal', () => {
         />,
       );
       const save = screen.getByRole('button', { name: 'Save' });
-      await act(async () => userEvent.click(save));
+      await userEvent.click(save);
       expect(screen.getByRole('alert')).toHaveTextContent('Save refused.');
       expect(save).not.toHaveAttribute('data-pending');
       expect(screen.getByRole('dialog')).toBeInTheDocument();
-      await act(async () => userEvent.click(save));
+      await userEvent.click(save);
       expect(attempts).toBe(2);
-      expect(screen.queryByRole('alert')).toBeNull();
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
 
       rerender(
         <UiProvider strings={{ actionFailed: 'Something went wrong.' }}>
@@ -763,7 +772,7 @@ describe('Modal', () => {
           />
         </UiProvider>,
       );
-      await act(async () => userEvent.click(screen.getByRole('button', { name: 'Retry' })));
+      await userEvent.click(screen.getByRole('button', { name: 'Retry' }));
       expect(screen.getByRole('alert')).toHaveTextContent('Something went wrong.');
     });
 
@@ -800,7 +809,7 @@ describe('Modal', () => {
       render(<Reopen />);
       await userEvent.click(screen.getByRole('button', { name: 'Save' }));
       await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
-      expect(screen.queryByRole('dialog')).toBeNull();
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
       onOpenChange.mockClear();
       await userEvent.click(screen.getByRole('button', { name: 'Toggle' }));
       const save = await screen.findByRole('button', { name: 'Save' });
@@ -811,7 +820,7 @@ describe('Modal', () => {
         (requests[0] as ReturnType<typeof deferred>).reject(new Error('Old save refused.'));
         await Promise.resolve();
       });
-      expect(screen.queryByRole('alert')).toBeNull();
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
       expect(save).toHaveAttribute('data-pending', 'true');
       await userEvent.keyboard('{Control>}{Enter}{/Control}');
       expect(attempts).toBe(2);
@@ -886,7 +895,7 @@ describe('Modal', () => {
       expect(status.isConnected).toBe(false);
       expect(alert).toHaveTextContent('Save failed. Try again.');
       expect(alert).toHaveAttribute('data-tone', 'danger');
-      expect(screen.queryByRole('status')).toBeNull();
+      expect(screen.queryByRole('status')).not.toBeInTheDocument();
       expectHooksMatchSpec(document.body, 'MODAL', { slots: ['message'] });
       rerender(
         <Modal
@@ -963,6 +972,7 @@ describe('Modal', () => {
     });
 
     it('UIC-MODAL-6.1 leaves the shortcut to multiline editors and custom action bars', async () => {
+      const user = userEvent.setup();
       const onPress = vi.fn();
       const { rerender } = render(
         <Modal title="Note" isOpen primaryAction={{ label: 'Post', onPress }}>
@@ -974,7 +984,8 @@ describe('Modal', () => {
         </Modal>,
       );
       for (const name of ['Text', 'Rich', 'Lines']) {
-        fireEvent.keyDown(screen.getByRole('textbox', { name }), { key: 'Enter', ctrlKey: true });
+        await user.click(screen.getByRole('textbox', { name }));
+        await user.keyboard('{Control>}{Enter}{/Control}');
       }
       expect(onPress).not.toHaveBeenCalled();
       rerender(
@@ -987,14 +998,13 @@ describe('Modal', () => {
           <input aria-label="Field" />
         </Modal>,
       );
-      fireEvent.keyDown(screen.getByRole('textbox', { name: 'Field' }), {
-        key: 'Enter',
-        ctrlKey: true,
-      });
+      await user.click(screen.getByRole('textbox', { name: 'Field' }));
+      await user.keyboard('{Control>}{Enter}{/Control}');
       expect(onPress).not.toHaveBeenCalled();
     });
 
     it('UIC-MODAL-6.1 hears popovers opened from the modal, and a nested modal handles its own keys', async () => {
+      const user = userEvent.setup();
       const outer = vi.fn();
       function Nested() {
         const [inner, setInner] = useState(false);
@@ -1013,14 +1023,15 @@ describe('Modal', () => {
         );
       }
       render(<Nested />);
-      fireEvent.keyDown(screen.getByRole('button', { name: 'Lemon' }), {
-        key: 'Enter',
-        ctrlKey: true,
-      });
+      const lemon = screen.getByRole('button', { name: 'Lemon' });
+      await user.click(lemon);
+      expect(lemon).toHaveFocus();
+      await user.keyboard('{Control>}{Enter}{/Control}');
       expect(outer).toHaveBeenCalledTimes(1);
-      await userEvent.click(screen.getByRole('button', { name: 'More' }));
+      await user.click(screen.getByRole('button', { name: 'More' }));
       const field = await screen.findByRole('textbox', { name: 'Inner field' });
-      fireEvent.keyDown(field, { key: 'Enter', ctrlKey: true });
+      await user.click(field);
+      await user.keyboard('{Control>}{Enter}{/Control}');
       expect(outer).toHaveBeenCalledTimes(1);
     });
   });
@@ -1032,14 +1043,13 @@ describe('Modal', () => {
         isOpen
         className="caller"
         id="hooks-dialog"
-        data-testid="modal-root"
         data-tone="loud"
         data-category="spreadsheet"
       >
         Body
       </Modal>,
     );
-    const root = screen.getByTestId('modal-root');
+    const root = screen.getByRole('dialog').closest('.caller');
     expect(root).toHaveClass('ui-modal', 'caller');
     expect(root).toHaveAttribute('data-tone', 'neutral');
     expect(root).toHaveAttribute('data-category', 'spreadsheet');

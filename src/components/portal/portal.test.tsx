@@ -68,42 +68,42 @@ describe('Portal', () => {
     function Harness({ ready }: { ready: boolean }) {
       return (
         <PortalContainerProvider container={outer}>
-          <Portal data-testid="outer">Lemon</Portal>
+          <Portal>Lemon</Portal>
           <PortalContainerProvider>
-            <Portal data-testid="inherited">Lime</Portal>
+            <Portal>Lime</Portal>
           </PortalContainerProvider>
           <PortalContainerProvider container={ready ? inner : null}>
-            <Portal data-testid="inner">Orange</Portal>
+            <Portal>Orange</Portal>
           </PortalContainerProvider>
         </PortalContainerProvider>
       );
     }
     const { rerender } = render(<Harness ready={false} />);
-    expect(screen.getByTestId('outer').parentElement).toBe(outer);
-    expect(screen.getByTestId('inherited').parentElement).toBe(outer);
-    expect(screen.queryByTestId('inner')).toBeNull();
+    expect(screen.getByText('Lemon').parentElement).toBe(outer);
+    expect(screen.getByText('Lime').parentElement).toBe(outer);
+    expect(screen.queryByText('Orange')).not.toBeInTheDocument();
     expect(document.body.querySelector(':scope > .ui-portal')).toBeNull();
 
     rerender(<Harness ready />);
-    expect(screen.getByTestId('inner').parentElement).toBe(inner);
+    expect(screen.getByText('Orange').parentElement).toBe(inner);
   });
 
   it('UIC-PORTAL-1.3 a portal host renders its container after its children and owns its portals', () => {
     function Page({ open }: { open: boolean }) {
       return open ? (
-        <PortalHost data-testid="host">
+        <PortalHost id="page-host">
           <p>Page content</p>
           <Portal layer="tooltip">Tip</Portal>
           <Portal layer="modal">Dialog</Portal>
-          <PortalHost data-testid="nested">
+          <PortalHost id="nested-host">
             <Portal layer="toast">Saved</Portal>
           </PortalHost>
         </PortalHost>
       ) : null;
     }
     const { container, rerender } = render(<Page open />);
-    const host = screen.getByTestId('host');
-    const nested = screen.getByTestId('nested');
+    const host = document.getElementById('page-host') as HTMLElement;
+    const nested = document.getElementById('nested-host');
     expect(host).toHaveClass('ui-portal-host');
     expect(host.parentElement).toBe(container);
     expect(container.firstElementChild).toHaveTextContent('Page content');
@@ -111,7 +111,7 @@ describe('Portal', () => {
     expect(wrappers(host).filter((wrapper) => wrapper.parentElement === host)).toHaveLength(2);
     expect(screen.getByText('Saved').parentElement).toBe(nested);
     expect(document.body.querySelector(':scope > .ui-portal')).toBeNull();
-    expectHooksMatchSpec(container, 'PORTAL', { callerAttributes: ['data-testid'] });
+    expectHooksMatchSpec(container, 'PORTAL');
 
     rerender(<Page open={false} />);
     expect(document.querySelector('.ui-portal-host')).toBeNull();
@@ -127,6 +127,7 @@ describe('Portal', () => {
         </main>
       );
     }
+    // eslint-disable-next-line testing-library/render-result-naming-convention -- renderToString returns an HTML string, not a render result
     const markup = renderToString(<App />);
     expect(markup).not.toContain('ui-portal');
     expect(renderToString(<Portal>Alone</Portal>)).toBe('');
@@ -221,15 +222,13 @@ describe('Portal', () => {
           <PortalHost layerZIndex={{ toast: 3000 }}>
             <Probe layer="dropdown" name="inherited" />
             <Probe layer="tooltip" name="untouched" />
-            <Portal layer="toast" data-testid="toast">
-              Hi
-            </Portal>
+            <Portal layer="toast">Hi</Portal>
           </PortalHost>
         </PortalContainerProvider>
       </>,
     );
     expect(seen).toEqual({ default: 130, outer: 1000, inherited: 1000, untouched: 150 });
-    expect(screen.getByTestId('toast').style.zIndex).toBe('3000');
+    expect(screen.getByText('Hi').style.zIndex).toBe('3000');
   });
 
   it('UIC-PORTAL-3.1 adds no role, name, tab stop or focus handling', () => {
@@ -256,10 +255,10 @@ describe('Portal', () => {
             {layer}
           </Portal>
         ))}
-        <Portal layer="toast" topLayer={false} data-testid="plain-toast">
+        <Portal layer="toast" topLayer={false}>
           Plain
         </Portal>
-        <Portal layer="modal" topLayer data-testid="top-modal">
+        <Portal layer="modal" topLayer>
           Top
         </Portal>
       </>,
@@ -285,17 +284,17 @@ describe('Portal', () => {
     }
     render(
       <>
-        <Portal layer="backdrop" data-testid="behind">
+        <Portal layer="backdrop">
           <button type="button">Behind</button>
         </Portal>
         <ModalOverlay isOpen isDismissable onOpenChange={onOpenChange}>
           <Modal>
             <Dialog aria-label="Pick a colour">
               <Suggestions>
-                <Portal data-testid="list">
+                <Portal>
                   <button type="button">Teal</button>
                 </Portal>
-                <Portal layer="dropdown" topLayer={false} data-testid="contained">
+                <Portal layer="dropdown" topLayer={false}>
                   <button type="button">Plum</button>
                 </Portal>
               </Suggestions>
@@ -304,42 +303,46 @@ describe('Portal', () => {
         </ModalOverlay>
       </>,
     );
-    expect(screen.getByTestId('behind')).toHaveAttribute('aria-hidden', 'true');
+    expect(screen.getByText('Behind').closest('.ui-portal')).toHaveAttribute('aria-hidden', 'true');
     await userEvent.click(screen.getByRole('button', { name: 'Suggest' }));
-    const list = screen.getByTestId('list');
+    const list = screen.getByRole('button', { name: 'Teal' }).closest('.ui-portal');
     expect(list).not.toHaveAttribute('aria-hidden');
-    expect(screen.getByTestId('contained')).toHaveAttribute('aria-hidden', 'true');
+    expect(screen.getByText('Plum').closest('.ui-portal')).toHaveAttribute('aria-hidden', 'true');
 
     const teal = screen.getByRole('button', { name: 'Teal' });
     await userEvent.click(teal);
     expect(onOpenChange).not.toHaveBeenCalled();
     act(() => teal.focus());
-    expect(document.activeElement).toBe(teal);
+    expect(teal).toHaveFocus();
 
     const plum = screen.getByText('Plum');
     act(() => plum.focus());
-    expect(document.activeElement).not.toBe(plum);
+    expect(plum).not.toHaveFocus();
   });
 
   it('UIC-PORTAL-3.3 appends the caller class and forwards id and data attributes', () => {
     render(
       <PortalHost className="host-caller" id="overlays" data-region="main">
-        <Portal className="caller" id="menu" data-testid="probe" data-layer="bogus" layer="tooltip">
+        <Portal className="caller" id="menu" data-sample="probe" data-layer="bogus" layer="tooltip">
           Menu
         </Portal>
       </PortalHost>,
     );
-    const wrapper = screen.getByTestId('probe');
+    const wrapper = screen.getByText('Menu');
     expect(wrapper).toHaveClass('ui-portal', 'caller');
     expect(wrapper).toHaveAttribute('id', 'menu');
+    expect(wrapper).toHaveAttribute('data-sample', 'probe');
     expect(wrapper).toHaveAttribute('data-layer', 'tooltip');
     const host = document.getElementById('overlays');
     expect(host).toHaveClass('ui-portal-host', 'host-caller');
     expect(host).toHaveAttribute('data-region', 'main');
-    expectHooksMatchSpec(document.body, 'PORTAL', { callerAttributes: ['data-region'] });
+    expectHooksMatchSpec(document.body, 'PORTAL', {
+      callerAttributes: ['data-region', 'data-sample'],
+    });
   });
 
   it('UIC-PORTAL-1.5 renders in place with its layer, also on the server', () => {
+    // eslint-disable-next-line testing-library/render-result-naming-convention -- renderToString returns an HTML string, not a render result
     const markup = renderToString(
       <section>
         <Portal inPlace layer="tooltip">
@@ -352,19 +355,19 @@ describe('Portal', () => {
 
     const { container } = render(
       <section>
-        <Portal inPlace layer="tooltip" data-testid="tip">
+        <Portal inPlace layer="tooltip">
           Tip
         </Portal>
       </section>,
     );
-    const wrapper = screen.getByTestId('tip');
+    const wrapper = screen.getByText('Tip');
     expect(wrapper.parentElement).toBe(container.querySelector('section'));
     expect(wrapper).toHaveAttribute('data-layer', 'tooltip');
     expect(wrapper).toHaveAttribute('data-react-aria-top-layer', 'true');
     expect(wrapper.style.zIndex).toBe(String(defaultLayerZIndex.tooltip));
     expect(wrapper.style.position).toBe('absolute');
     expect(document.body.querySelector(':scope > .ui-portal')).toBeNull();
-    expectHooksMatchSpec(container, 'PORTAL', { callerAttributes: ['data-testid'] });
+    expectHooksMatchSpec(container, 'PORTAL');
   });
 
   it('UIC-PORTAL-3.4 tabs into and out of the content as if it sat where it is declared', async () => {
@@ -431,6 +434,6 @@ describe('Portal', () => {
     // The next stop in document order is the wrapper's first guard, after the page: it was visited.
     await user.tab();
     expect(screen.getByRole('button', { name: 'Plum' })).not.toHaveFocus();
-    expect(document.activeElement).toBe(document.body);
+    expect(document.body).toHaveFocus();
   });
 });

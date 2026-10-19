@@ -69,7 +69,7 @@ describe('HtmlMarkup', () => {
       />,
     );
     expect(screen.getByRole('button', { name: '@Ana' })).toBeInTheDocument();
-    expect(screen.queryByRole('table')).toBeNull();
+    expect(screen.queryByRole('table')).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'the docs' })).toBeInTheDocument();
   });
 
@@ -95,12 +95,13 @@ describe('HtmlMarkup', () => {
 
   it('UIC-HTML-MARKUP-2.6 carries its hook, the caller class, id and data attributes', () => {
     const { container } = render(
-      <HtmlMarkup markup="<p>Text</p>" className="caller" id="body" data-testid="probe" />,
+      <HtmlMarkup markup="<p>Text</p>" className="caller" id="body" data-probe="markup" />,
     );
-    const root = screen.getByTestId('probe');
+    const root = screen.getByText('Text').parentElement;
     expect(root).toHaveClass('ui-html-markup', 'caller');
     expect(root).toHaveAttribute('id', 'body');
-    expectHooksMatchSpec(container, 'HTML-MARKUP');
+    expect(root).toHaveAttribute('data-probe', 'markup');
+    expectHooksMatchSpec(container, 'HTML-MARKUP', { callerAttributes: ['data-probe'] });
   });
 
   it('UIC-HTML-MARKUP-3.1 keeps the semantics of the content', () => {

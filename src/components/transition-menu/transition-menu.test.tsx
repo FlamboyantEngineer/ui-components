@@ -70,7 +70,7 @@ describe('TransitionMenu', { timeout: 15_000 }, () => {
       <TransitionMenu states={states} value="dropped" transitions={[]} onTransition={() => {}} />,
     );
     expect(root).toHaveAttribute('data-readonly', 'true');
-    expect(screen.queryByRole('button')).toBeNull();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
     expect(container.querySelector('.ui-transition-menu__badge')).toHaveAttribute(
       'data-tone',
       'neutral',
@@ -163,7 +163,7 @@ describe('TransitionMenu', { timeout: 15_000 }, () => {
     await user.click(screen.getByRole('menuitem', { name: /Done/ }));
     await user.click(screen.getByRole('button', { name: 'Move to Done' }));
     expect(onTransition).toHaveBeenCalledWith({ transition: 'finish', to: 'done' });
-    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   });
 
   it('UIC-TRANSITION-MENU-1.5 asks for a required comment', async () => {
@@ -197,7 +197,7 @@ describe('TransitionMenu', { timeout: 15_000 }, () => {
     });
     expect(screen.getByRole('dialog')).toBeInTheDocument();
     await act(async () => run.resolve());
-    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   });
 
   it('UIC-TRANSITION-MENU-1.6 refuses transitions while disabled', () => {

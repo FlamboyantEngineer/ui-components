@@ -71,6 +71,43 @@ import { BoltIcon } from '@heroicons/react/24/outline';
 </UiProvider>;
 ```
 
+### Testing helpers
+
+`@flamboyantengineer/ui-components/testing` drives the components from a host's tests the way a reader does ([specs/TESTING.md](specs/TESTING.md)). The helpers work with any test runner; they need the optional peers `@testing-library/dom` and `@testing-library/user-event`.
+
+```tsx
+import { screen } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
+import {
+  chooseMenuItem,
+  getFieldError,
+  getTableCell,
+  pickDate,
+  selectOption,
+} from '@flamboyantengineer/ui-components/testing';
+
+const user = userEvent.setup();
+await selectOption(user, screen.getByRole('button', { name: /Fruit$/ }), 'Pear');
+await pickDate(user, screen.getByRole('group', { name: 'Due' }), '2026-05-14');
+await chooseMenuItem(user, screen.getByRole('button', { name: 'Actions' }), 'Delete');
+expect(getTableCell(screen.getByRole('grid'), 'Apple', 'Colour')).toHaveTextContent('Red');
+expect(getFieldError(screen.getByRole('textbox', { name: 'Name' }))).toBeNull();
+```
+
+| Helper                                               | Does                                                                          |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `selectOption(user, field, option)`                  | Opens a `SelectField` or `Combobox` list from its button and picks an option. |
+| `pickComboboxOption(user, input, { text, option })`  | Types into a combobox and picks a suggestion.                                 |
+| `openMenu(user, trigger)`                            | Opens a menu and returns it.                                                  |
+| `chooseMenuItem(user, trigger, name)`                | Opens a menu and presses an item.                                             |
+| `pickDate(user, field, isoDate)`                     | Types an ISO date into a date field's segments.                               |
+| `toggleTreeItem(user, tree, name)`                   | Expands or collapses a tree row.                                              |
+| `getTableCell(table, rowName, columnName)`           | Finds a cell by row and column names.                                         |
+| `dismissOverlay(user, overlay?)`                     | Presses Escape and waits for the overlay to close.                            |
+| `getHookElement(root, component, slot?)`             | Finds the element carrying `ui-<component>` or `ui-<component>__<slot>`.      |
+| `getFieldError(field)`, `getFieldDescription(field)` | Read the error and description a field's control announces.                   |
+| `createMemoryStorage(initial?)`                      | A `UiStorage` for `UiProvider` that a test can read.                          |
+
 ## Labs
 
 ```sh

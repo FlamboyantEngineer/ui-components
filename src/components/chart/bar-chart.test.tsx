@@ -181,7 +181,7 @@ describe('BarChart', () => {
         showSummary
       />,
     );
-    expect(screen.queryByRole('toolbar')).toBeNull();
+    expect(screen.queryByRole('toolbar')).not.toBeInTheDocument();
     expect(screen.getByRole('figure')).toHaveAccessibleDescription('Apples peak in February');
     expect(screen.getByText('Apples peak in February')).toHaveClass('ui-chart__summary');
   });
@@ -225,12 +225,13 @@ describe('BarChart', () => {
         series={crates}
         className="caller"
         ref={ref}
-        data-testid="crates"
+        data-owner="crates"
         data-layout="caller"
       />,
     );
-    const figure = screen.getByTestId('crates');
+    const figure = screen.getByRole('figure', { name: 'Crates' });
     expect(figure).toHaveClass('ui-chart', 'ui-bar-chart', 'caller');
+    expect(figure).toHaveAttribute('data-owner', 'crates');
     expect(figure).toHaveAttribute('data-layout', 'grouped');
     expect(ref.current).toBe(figure);
   });

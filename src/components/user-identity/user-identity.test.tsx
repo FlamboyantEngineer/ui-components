@@ -43,17 +43,15 @@ describe('UserIdentity', () => {
       <UserIdentity
         name="Jon Berg"
         description={<time dateTime="2026-10-08">Today</time>}
-        nameSuffix={<span data-testid="badge">Guest</span>}
+        nameSuffix={<span>Guest</span>}
       />,
     );
     expect(container.querySelector('.ui-user-identity__description time')).toHaveAttribute(
       'datetime',
       '2026-10-08',
     );
-    expect(screen.getByTestId('badge').parentElement).toHaveClass('ui-user-identity__title');
-    expect(screen.getByTestId('badge').previousElementSibling).toHaveClass(
-      'ui-user-identity__name',
-    );
+    expect(screen.getByText('Guest').parentElement).toHaveClass('ui-user-identity__title');
+    expect(screen.getByText('Guest').previousElementSibling).toHaveClass('ui-user-identity__name');
     for (const description of [undefined, null, false, '', '   ']) {
       rerender(<UserIdentity name="Jon Berg" description={description} />);
       expect(container.querySelector('.ui-user-identity__description')).toBeNull();
@@ -102,7 +100,7 @@ describe('UserIdentity', () => {
       <UserIdentity name="Sam Okafor" description="Editor" src="/sam.png" />,
     );
     expect(container.querySelector('[role], [tabindex], [aria-label]')).toBeNull();
-    expect(screen.queryByRole('img')).toBeNull();
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
     expect(screen.getByText('Sam Okafor')).toBeVisible();
   });
 
@@ -128,7 +126,7 @@ describe('UserIdentity', () => {
       'aria-hidden',
       'true',
     );
-    expect(screen.queryByRole('img')).toBeNull();
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
 
     rerender(<UserIdentity name="Lena Ortiz" status="  " statusLabel="Away" />);
     expect(root(container)).not.toHaveAttribute('data-status');

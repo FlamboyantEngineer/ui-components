@@ -113,7 +113,7 @@ describe('ZoomControl', () => {
     expect(zoomIn).toHaveFocus();
     expect(zoomIn).toHaveAttribute('aria-disabled', 'true');
     expect(zoomIn).toHaveAttribute('data-disabled', 'true');
-    expect(zoomIn).not.toHaveAttribute('disabled');
+    expect(zoomIn).toBeEnabled();
     await userEvent.keyboard('{Enter}');
     expect(value(container)).toHaveTextContent('150%');
     expect(screen.getByRole('button', { name: 'Zoom out' })).not.toHaveAttribute('aria-disabled');
@@ -143,6 +143,7 @@ describe('ZoomControl', () => {
     expect(range).toHaveAttribute('step', '1');
     expect(range).toHaveValue('3');
     expect(range).toHaveAttribute('aria-valuetext', '137.5%');
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot drag or step a native range input
     fireEvent.change(range, { target: { value: '0' } });
     expect(onChange).toHaveBeenLastCalledWith(50);
     expect(findNearestZoomLevelIndex(levels, 87.5)).toBe(1);
@@ -287,7 +288,7 @@ describe('ZoomControl', () => {
     await user.click(screen.getByRole('menuitem', { name: '125.0%' }));
     expect(onChange).toHaveBeenLastCalledWith(125);
     expect(screen.getByText('125.0%', { selector: 'output' })).toBeInTheDocument();
-    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     await waitFor(() => expect(trigger).toHaveFocus());
 
     await user.keyboard('{ArrowDown}');
@@ -298,7 +299,7 @@ describe('ZoomControl', () => {
 
   it('UIC-ZOOM-CONTROL-1.10 draws no preset menu without presets and disables it with the control', () => {
     const { rerender } = render(<ZoomControl presets={[]} />);
-    expect(screen.queryByRole('button', { name: 'Zoom presets' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Zoom presets' })).not.toBeInTheDocument();
     rerender(
       <UiProvider strings={{ zoomPresets: 'Preset zooms' }}>
         <ZoomControl presets={[100]} size="lg" isDisabled />

@@ -49,4 +49,15 @@ describe('package manifest', () => {
         .sort(),
     ).toEqual(['react', 'react-dom']);
   });
+
+  it('UIC-TESTING-1.1 exports the testing helpers with optional Testing Library peers', () => {
+    expect(manifest.exports['./testing']).toEqual({
+      types: './dist/testing/index.d.ts',
+      import: './dist/testing/index.js',
+    });
+    for (const name of ['@testing-library/dom', '@testing-library/user-event']) {
+      expect(manifest.peerDependencies[name]).toBeDefined();
+      expect(manifest.peerDependenciesMeta?.[name]?.optional).toBe(true);
+    }
+  });
 });

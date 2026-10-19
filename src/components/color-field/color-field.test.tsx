@@ -78,7 +78,7 @@ describe('ColorField', () => {
       ],
     });
     await user.keyboard('{Escape}');
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     await waitFor(() => expect(trigger()).toHaveFocus());
   });
 
@@ -87,7 +87,7 @@ describe('ColorField', () => {
     render(<ColorField label="Accent" defaultValue="#336699" isRequired />);
     await user.click(trigger());
     const dialog = await screen.findByRole('dialog');
-    expect(within(dialog).queryByRole('button', { name: 'Clear' })).toBeNull();
+    expect(within(dialog).queryByRole('button', { name: 'Clear' })).not.toBeInTheDocument();
   });
 
   it('UIC-COLOR-FIELD-1.4 forwards the class name, data attributes and id to its root', () => {
@@ -134,7 +134,7 @@ describe('ColorField', () => {
     await user.click(trigger());
     await user.click(await screen.findByRole('button', { name: 'Clear' }));
     expect(onCommit).toHaveBeenLastCalledWith(null);
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     await waitFor(() => expect(trigger()).toHaveFocus());
     expect(trigger()).toHaveAccessibleName('Accent No color');
     await user.click(trigger());

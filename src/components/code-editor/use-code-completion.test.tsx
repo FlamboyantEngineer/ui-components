@@ -39,7 +39,7 @@ describe('CodeEditor completion sources', () => {
     const user = userEvent.setup();
     render(<Editor completions={fruit} />);
     await user.click(input());
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     await user.keyboard('{Control>} {/Control}');
     expect(optionTexts()).toEqual(['apple', 'pick', 'basket']);
     expect(input()).toHaveValue('');
@@ -105,7 +105,7 @@ describe('CodeEditor completion sources', () => {
     await user.keyboard('{Control>} {/Control}');
     await user.keyboard('{Escape}');
     await act(async () => answers[3]?.([{ label: 'apple' }]));
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
   });
 
   it('UIC-CODE-EDITOR-4.7 publishes the kind and shows the documentation of the active option', async () => {

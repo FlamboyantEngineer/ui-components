@@ -141,7 +141,7 @@ describe('CodeEditor', () => {
     const input = screen.getByRole('textbox', { name: 'Source' });
     expect(input).toHaveAttribute('placeholder', 'Write a query');
     expect(input).toHaveAttribute('aria-errormessage', 'source-error');
-    expect(input).toHaveAttribute('aria-required', 'true');
+    expect(input).toBeRequired();
     expect(input).toHaveAttribute('spellcheck', 'false');
     await user.click(input);
     await user.keyboard('x');
@@ -159,7 +159,7 @@ describe('CodeEditor', () => {
     expect(input).toHaveAttribute('readonly');
     await user.click(input);
     await user.keyboard('{End}');
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     rerender(<Editor initialValue="fruit." completions={vocabulary} isDisabled />);
     expect(root(container)).toHaveAttribute('data-disabled', 'true');
     expect(screen.getByRole('textbox')).toBeDisabled();
@@ -400,7 +400,7 @@ describe('CodeEditor', () => {
     expect(active()).toBe('fruit.banana');
     expect(onKeyDown).not.toHaveBeenCalled();
     await user.keyboard('{Escape}');
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     expect(input).toHaveValue('fruit.');
     await user.keyboard('b');
     expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual([
@@ -414,7 +414,7 @@ describe('CodeEditor', () => {
     const input = screen.getByRole('textbox');
     await user.type(input, 'fruit.');
     const banana = screen.getByRole('option', { name: 'fruit.banana' });
-    fireEvent.pointerMove(banana);
+    await user.hover(banana);
     expect(banana).toHaveAttribute('aria-selected', 'true');
     await user.click(banana);
     expect(input).toHaveValue('fruit.banana');
@@ -432,7 +432,7 @@ describe('CodeEditor', () => {
     expect(input).toHaveValue('fruit.apricot + 1');
     expect(onChange).toHaveBeenLastCalledWith('fruit.apricot + 1');
     expect(input.selectionStart).toBe('fruit.apricot'.length);
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     await user.keyboard('{End}{Enter}');
     expect(input).toHaveValue('fruit.apricot + 1\n');
     await user.type(input, 'ci');
@@ -450,7 +450,7 @@ describe('CodeEditor', () => {
     const caret = container.querySelector('.ui-code-editor__highlight .ui-code-editor__caret');
     expect(caret?.previousSibling?.textContent).toBe('fruit.');
     await user.tab();
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     expect(container.querySelector('.ui-code-editor__caret')).toBeNull();
   });
 
@@ -505,7 +505,7 @@ describe('CodeEditor on one line', () => {
     await user.keyboard('{End}{Enter}');
     expect(input).toHaveValue('fruit');
     expect(onKeyDown).toHaveBeenCalledWith(expect.objectContaining({ key: 'Enter' }));
-    fireEvent.change(input, { target: { value: 'fruit\napple\r\npear' } });
+    await user.paste('\napple\r\npear');
     expect(onChange).toHaveBeenLastCalledWith('fruit apple pear');
     expectHooksMatchSpec(document.body, 'CODE-EDITOR');
   });

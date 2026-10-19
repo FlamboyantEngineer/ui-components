@@ -61,9 +61,9 @@ describe('BooleanField', () => {
       'False',
       'True',
     ]);
-    expect(screen.getByRole('radio', { name: 'False' })).toHaveAttribute('aria-checked', 'true');
+    expect(screen.getByRole('radio', { name: 'False' })).toBeChecked();
     rerender(<BooleanField label="Ripe" variant="segmented" value={null} />);
-    expect(screen.getByRole('radio', { name: 'False' })).toHaveAttribute('aria-checked', 'false');
+    expect(screen.getByRole('radio', { name: 'False' })).not.toBeChecked();
     expectHooksMatchSpec(container, 'BOOLEAN-FIELD');
   });
 
@@ -88,7 +88,7 @@ describe('BooleanField', () => {
     );
     expect(caption()).toHaveTextContent('No');
     rerender(<BooleanField label="Notify" variant="segmented" value trueLabel="Yes" />);
-    expect(screen.getByRole('radio', { name: 'Yes' })).toHaveAttribute('aria-checked', 'true');
+    expect(screen.getByRole('radio', { name: 'Yes' })).toBeChecked();
     expect(screen.getByRole('radio', { name: 'False' })).toBeInTheDocument();
     expectHooksMatchSpec(container, 'BOOLEAN-FIELD');
   });
@@ -119,7 +119,7 @@ describe('BooleanField', () => {
     const box = screen.getByRole('checkbox', { name: 'Agree' });
     expect(box).toHaveAttribute('aria-invalid', 'true');
     expect(box).toHaveAttribute('aria-readonly', 'true');
-    expect(box).toHaveAttribute('aria-required', 'true');
+    expect(box).toBeRequired();
   });
 
   it('UIC-BOOLEAN-FIELD-1.5 submits its value in a form', () => {
@@ -191,7 +191,7 @@ describe('BooleanField', () => {
     expect(box).toBePartiallyChecked();
     unmount();
 
-    const segmented = render(
+    const { unmount: unmountSegmented } = render(
       <BooleanField
         label="Inherit"
         variant="segmented"
@@ -203,7 +203,7 @@ describe('BooleanField', () => {
     );
     await user.click(screen.getByRole('radio', { name: 'True' }));
     expect(changes.at(-1)).toBe(null);
-    segmented.unmount();
+    unmountSegmented();
 
     render(<BooleanField label="Plain" defaultValue menu={['clear']} />);
     await user.click(screen.getByRole('button', { name: 'Plain actions' }));
@@ -326,7 +326,7 @@ describe('BooleanField', () => {
     unmount();
     render(<BooleanField label="Ripe" variant="dropdown" value isReadOnly />);
     await user.click(screen.getByRole('button', { name: 'True Ripe' }));
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
   });
 
   it('UIC-BOOLEAN-FIELD-3.1 draws the select field control with the named values', async () => {
@@ -428,7 +428,7 @@ describe('BooleanField', () => {
   it('UIC-BOOLEAN-FIELD-3.2 cycles with allowsUnset, and refuses presses while locked', async () => {
     const user = userEvent.setup();
     const changes: Array<boolean | null> = [];
-    const cycling = render(
+    const { unmount: unmountCycling } = render(
       <BooleanField
         label="Inherit"
         variant="toggle-button"
@@ -441,7 +441,7 @@ describe('BooleanField', () => {
     await user.click(button);
     await user.click(button);
     expect(changes).toEqual([true, false, null]);
-    cycling.unmount();
+    unmountCycling();
     const onChange = vi.fn();
     const { rerender } = render(
       <BooleanField label="Ripe" variant="toggle-button" value isReadOnly onChange={onChange} />,
@@ -483,21 +483,23 @@ describe('BooleanField', () => {
 
   it('UIC-BOOLEAN-FIELD-3.4 shows the committed value before a dirty toggle button or dropdown', async () => {
     const user = userEvent.setup();
-    const toggle = render(
+    const { container: toggleContainer, unmount: unmountToggle } = render(
       <BooleanField label="Ripe" variant="toggle-button" committedValue={false} />,
     );
-    expect(toggle.container.querySelector('.ui-boolean-field__previous')).toBeNull();
+    expect(toggleContainer.querySelector('.ui-boolean-field__previous')).toBeNull();
     await user.click(screen.getByRole('button', { name: 'False Ripe' }));
-    const previous = toggle.container.querySelector('.ui-boolean-field__previous');
+    const previous = toggleContainer.querySelector('.ui-boolean-field__previous');
     expect(previous).toHaveClass('ui-field-previous-value');
     expect(previous?.querySelector('del')).toHaveTextContent('False');
     expect(screen.getByRole('button', { name: 'True Ripe' })).toBeInTheDocument();
-    expectHooksMatchSpec(toggle.container, 'BOOLEAN-FIELD', { slots: ['previous'] });
-    toggle.unmount();
-    const dropdown = render(<BooleanField label="Ripe" variant="dropdown" committedValue />);
+    expectHooksMatchSpec(toggleContainer, 'BOOLEAN-FIELD', { slots: ['previous'] });
+    unmountToggle();
+    const { container: dropdownContainer } = render(
+      <BooleanField label="Ripe" variant="dropdown" committedValue />,
+    );
     await user.click(screen.getByRole('button', { name: 'True Ripe' }));
     await user.click(screen.getByRole('option', { name: 'False' }));
-    expect(dropdown.container.querySelector('.ui-select-field__previous del')).toHaveTextContent(
+    expect(dropdownContainer.querySelector('.ui-select-field__previous del')).toHaveTextContent(
       'True',
     );
     expect(screen.getByRole('button', { name: 'False Ripe' })).toBeInTheDocument();

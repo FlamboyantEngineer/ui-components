@@ -46,13 +46,12 @@ describe('VisuallyHidden', () => {
         className="caller"
         id="hint"
         data-variant="caller"
-        data-testid="hidden"
         onFocus={onFocus}
       >
         <a href="#main">Skip</a>
       </VisuallyHidden>,
     );
-    const hidden = screen.getByTestId('hidden');
+    const hidden = screen.getByRole('link', { name: 'Skip' }).parentElement;
     expect(hidden).toHaveClass('ui-visually-hidden', 'caller');
     expect(hidden).toHaveAttribute('id', 'hint');
     expect(hidden).toHaveAttribute('data-variant', 'caller');

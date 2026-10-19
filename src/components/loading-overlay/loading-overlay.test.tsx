@@ -148,8 +148,8 @@ describe('LoadingOverlay', () => {
     expect(overlay).toHaveAttribute('data-presentation', 'scrim');
     expect(overlay).toHaveAttribute('aria-hidden', 'true');
     expect(overlay).toBeEmptyDOMElement();
-    expect(screen.queryByRole('status')).toBeNull();
-    expect(screen.queryByRole('progressbar')).toBeNull();
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
   });
 });
 
@@ -211,20 +211,20 @@ describe('LoadingRegion', () => {
       'data-presentation',
       'scrim',
     );
-    expect(screen.queryByRole('status')).toBeNull();
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
 });
 
 describe('Loading overlay hooks', () => {
   it('UIC-LOADING-OVERLAY-4.1 appends caller classes and forwards id and data attributes to each root', () => {
-    render(
+    const { container } = render(
       <>
-        <LoadingCard className="caller-card" id="card" data-testid="card" />
-        <LoadingOverlay className="caller-overlay" id="overlay" data-testid="overlay" />
+        <LoadingCard className="caller-card" id="card" data-probe="card" />
+        <LoadingOverlay className="caller-overlay" id="overlay" data-probe="overlay" />
         <LoadingRegion
           className="caller-region"
           id="region"
-          data-testid="region"
+          data-probe="region"
           data-loading="caller"
           isLoading
         >
@@ -232,18 +232,22 @@ describe('Loading overlay hooks', () => {
         </LoadingRegion>
       </>,
     );
-    expect(screen.getByTestId('card')).toHaveClass('ui-loading-card', 'caller-card');
-    expect(screen.getByTestId('card')).toHaveAttribute('id', 'card');
-    const overlay = screen.getByTestId('overlay');
+    const card = container.querySelector('.caller-card');
+    expect(card).toHaveClass('ui-loading-card', 'caller-card');
+    expect(card).toHaveAttribute('id', 'card');
+    expect(card).toHaveAttribute('data-probe', 'card');
+    const overlay = container.querySelector('.caller-overlay');
     expect(overlay).toHaveClass('ui-loading-overlay', 'caller-overlay');
     expect(overlay).toHaveAttribute('id', 'overlay');
-    expect(overlay.querySelector('[data-testid]')).toBeNull();
-    const region = screen.getByTestId('region');
+    expect(overlay).toHaveAttribute('data-probe', 'overlay');
+    expect(overlay?.querySelector('[data-probe]')).toBeNull();
+    const region = screen.getByText('Body').closest('.caller-region');
     expect(region).toHaveClass('ui-loading-region', 'caller-region');
     expect(region).toHaveAttribute('id', 'region');
     expect(region).toHaveAttribute('data-loading', 'true');
-    expect(region.querySelector('[data-testid]')).toBeNull();
-    expectHooksMatchSpec(document.body, 'LOADING-OVERLAY');
+    expect(region).toHaveAttribute('data-probe', 'region');
+    expect(region?.querySelector('[data-probe]')).toBeNull();
+    expectHooksMatchSpec(document.body, 'LOADING-OVERLAY', { callerAttributes: ['data-probe'] });
   });
 });
 

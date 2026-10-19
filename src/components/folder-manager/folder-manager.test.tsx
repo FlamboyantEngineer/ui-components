@@ -110,7 +110,7 @@ describe('FolderManager', () => {
     expect(screen.getByRole('button', { name: 'Rename' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Delete' })).toBeDisabled();
     await user.keyboard('{F2}{Delete}');
-    expect(screen.queryByRole('textbox')).toBeNull();
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
     expect(rowNames()).toHaveLength(5);
   });
 
@@ -180,7 +180,7 @@ describe('FolderManager', () => {
     expect(input.closest('[role="row"]')).toHaveAttribute('aria-level', '2');
     expectHooksMatchSpec(container, 'FOLDER-MANAGER', { slots: ['name-input'] });
     await user.keyboard('  Melons {Enter}');
-    expect(screen.queryByRole('textbox')).toBeNull();
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
     expect(rowNames()).toEqual(['Fruit', 'Citrus', 'Berries', 'Melons', 'Vegetables']);
     expect(onSelectionChange).toHaveBeenLastCalledWith('melons');
     await waitFor(() => expect(row('Melons')).toHaveFocus());
@@ -194,10 +194,10 @@ describe('FolderManager', () => {
     const newFolder = screen.getByRole('button', { name: 'New folder' });
     await user.click(newFolder);
     await user.keyboard('Plums{Escape}');
-    expect(screen.queryByRole('textbox')).toBeNull();
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
     await user.click(newFolder);
     await user.keyboard('   {Enter}');
-    expect(screen.queryByRole('textbox')).toBeNull();
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
     expect(onCreate).not.toHaveBeenCalled();
     await user.click(newFolder);
     expect(screen.getByRole('textbox').closest('[role="row"]')).toHaveAttribute('aria-level', '1');
@@ -278,8 +278,8 @@ describe('FolderManager', () => {
     expect(screen.getByRole('alert')).toHaveTextContent('The action could not be completed.');
     await user.keyboard('{Enter}');
     await act(async () => attempts[2]?.resolve('pears'));
-    expect(screen.queryByRole('textbox')).toBeNull();
-    expect(screen.queryByRole('alert')).toBeNull();
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
   it('UIC-FOLDER-MANAGER-2.6 deletes the selected folder and falls back to its parent', async () => {
@@ -402,7 +402,7 @@ describe('FolderManager', () => {
     render(<FolderManager aria-label="Folders" folders={sample} onCreate={() => {}} />);
     const event = fireEvent.contextMenu(row('Citrus'));
     expect(event).toBe(true);
-    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 
   it('UIC-FOLDER-MANAGER-3.1 reports moves for the owner to apply and keeps the root in place', async () => {
@@ -492,7 +492,7 @@ describe('FolderManager', () => {
     await act(async () => answers[1]?.resolve());
     expect(rowNames()).toEqual(['Pantry', 'Jars', 'Cellar']);
     expect(row('Pantry')).toHaveAttribute('aria-expanded', 'true');
-    expect(screen.queryByRole('alert')).toBeNull();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     vi.unstubAllGlobals();
   });
 

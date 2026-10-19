@@ -19,8 +19,8 @@ describe('IconButton', () => {
   });
 
   it('UIC-ICON-BUTTON-1.1 accepts icon nodes and rejects an empty label', () => {
-    render(<IconButton icon={<svg data-testid="custom" />} label="Custom" />);
-    expect(screen.getByTestId('custom').parentElement).toHaveClass('ui-icon-button__icon');
+    render(<IconButton icon={<svg aria-label="Custom glyph" />} label="Custom" />);
+    expect(screen.getByLabelText('Custom glyph').parentElement).toHaveClass('ui-icon-button__icon');
     expect(() => render(<IconButton icon="close" label="  " />)).toThrow(/label/);
   });
 
@@ -72,14 +72,15 @@ describe('IconButton', () => {
         className="caller"
         id="help"
         ref={ref}
-        data-testid="probe"
+        data-probe="help"
       />,
     );
-    const button = screen.getByTestId('probe');
+    const button = screen.getByRole('button', { name: 'Help' });
     expect(button).toHaveClass('ui-icon-button', 'caller');
     expect(button).toHaveAttribute('id', 'help');
+    expect(button).toHaveAttribute('data-probe', 'help');
     expect(ref.current).toBe(button);
-    expectHooksMatchSpec(document.body, 'ICON-BUTTON');
+    expectHooksMatchSpec(document.body, 'ICON-BUTTON', { callerAttributes: ['data-probe'] });
   });
 
   it('UIC-ICON-BUTTON-1.5 shows a tooltip that describes the button and keeps its label', async () => {
@@ -95,7 +96,7 @@ describe('IconButton', () => {
     expect(button).toHaveAccessibleName('Undo');
     expect(button).toHaveAccessibleDescription('Undo the last edit');
     await user.keyboard('{Escape}');
-    expect(screen.queryByRole('tooltip')).toBeNull();
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
     expect(button).toHaveFocus();
   });
 
@@ -149,7 +150,7 @@ describe('IconButton', () => {
         <IconButton
           icon="copy"
           label="Copy"
-          render={(props) => <button {...props} data-testid="swapped" />}
+          render={(props) => <button {...props} data-swapped="true" />}
         />
       </>,
     );
@@ -163,10 +164,12 @@ describe('IconButton', () => {
     expect(link).toHaveAttribute('href', '/help');
     expect(link).toHaveClass('ui-icon-button');
     expect(link.querySelector('.ui-icon-button__icon')).not.toBeNull();
-    expect(screen.getByTestId('swapped')).toHaveClass('ui-icon-button');
+    const swapped = screen.getByRole('button', { name: 'Copy' });
+    expect(swapped).toHaveAttribute('data-swapped', 'true');
+    expect(swapped).toHaveClass('ui-icon-button');
     expectHooksMatchSpec(document.body, 'ICON-BUTTON', {
       slots: ['icon'],
-      callerAttributes: ['data-testid'],
+      callerAttributes: ['data-swapped'],
     });
   });
 });

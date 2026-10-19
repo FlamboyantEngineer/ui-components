@@ -64,7 +64,7 @@ describe('Tree loading children', () => {
     expect(await screen.findByRole('status')).toHaveTextContent('Loading');
     await act(async () => resolve([{ id: 'lisbon', name: 'Lisbon' }]));
     expect(row('Lisbon')).toHaveAttribute('aria-level', '2');
-    expect(screen.queryByRole('status')).toBeNull();
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
     expect(onLoad).toHaveBeenCalledTimes(1);
   });
 
@@ -84,7 +84,7 @@ describe('Tree loading children', () => {
 
     await userEvent.click(within(row('Asia')).getByRole('button', { name: 'Retry' }));
     expect(await screen.findByRole('row', { name: 'Hanoi' })).toBeInTheDocument();
-    expect(screen.queryByRole('alert')).toBeNull();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     expect(onLoad).toHaveBeenCalledTimes(2);
   });
 });

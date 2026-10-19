@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -188,6 +188,7 @@ describe('FileUpload', () => {
     expect(onSelect).toHaveBeenLastCalledWith([photo, icon]);
     rerender(<FileUpload label="Attach" acceptedFileTypes={['image/*']} onSelect={onSelect} />);
     onSelect.mockClear();
+    // eslint-disable-next-line testing-library/prefer-user-event -- user.upload keeps only the first file on a single-file input; a browser may still deliver several
     fireEvent.change(chooser(container), { target: { files: [icon, photo] } });
     expect(onSelect).toHaveBeenCalledWith([icon]);
   });
@@ -224,7 +225,7 @@ describe('FileUpload', () => {
     await user.upload(chooser(container), [notes, notes]);
     expect(screen.getByRole('alert')).toHaveTextContent('2 files are not an accepted type.');
     await user.upload(chooser(container), [small]);
-    expect(screen.queryByRole('alert')).toBeNull();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     expect(onSelect).not.toHaveBeenCalledWith([]);
   });
 
@@ -246,14 +247,10 @@ describe('FileUpload', () => {
     const report = file('Report.pdf', 'application/pdf');
     const photo = file('photo.png', 'image/png');
     const dataTransfer = filesTransfer([report, photo], 'Plain text');
-    act(() => {
-      fireEvent.dragEnter(zone, { dataTransfer });
-    });
+    fireEvent.dragEnter(zone, { dataTransfer });
     expect(zone).toHaveAttribute('data-drop-target', 'true');
     expectHooksMatchSpec(container, 'FILE-UPLOAD');
-    act(() => {
-      fireEvent.drop(zone, { dataTransfer });
-    });
+    fireEvent.drop(zone, { dataTransfer });
     await waitFor(() => expect(onSelect).toHaveBeenCalledWith([report]));
     expect(onReject).toHaveBeenCalledWith([{ file: photo, reason: 'type' }]);
     expect(zone).not.toHaveAttribute('data-drop-target');
@@ -454,27 +451,17 @@ describe('FileUpload', () => {
     const zone = container.querySelector<HTMLElement>('.ui-file-upload__dropzone');
     if (!zone) throw new Error('no drop zone');
     const photo = file('photo.png', 'image/png');
-    act(() => {
-      fireEvent.dragEnter(zone, { dataTransfer: filesTransfer([photo]) });
-    });
+    fireEvent.dragEnter(zone, { dataTransfer: filesTransfer([photo]) });
     expect(zone).toHaveAttribute('data-drop-accept', 'true');
     expect(zone).not.toHaveAttribute('data-drop-reject');
     expectHooksMatchSpec(container, 'FILE-UPLOAD');
-    act(() => {
-      fireEvent.dragLeave(zone, { dataTransfer: filesTransfer([photo]) });
-    });
+    fireEvent.dragLeave(zone, { dataTransfer: filesTransfer([photo]) });
     expect(zone).not.toHaveAttribute('data-drop-accept');
     const notes = file('notes.txt', 'text/plain');
-    act(() => {
-      fireEvent.dragEnter(zone, { dataTransfer: filesTransfer([photo, notes]) });
-    });
+    fireEvent.dragEnter(zone, { dataTransfer: filesTransfer([photo, notes]) });
     expect(zone).toHaveAttribute('data-drop-reject', 'true');
-    act(() => {
-      fireEvent.dragLeave(zone, { dataTransfer: filesTransfer([photo, notes]) });
-    });
-    act(() => {
-      fireEvent.dragEnter(zone, { dataTransfer: filesTransfer([photo, photo, photo]) });
-    });
+    fireEvent.dragLeave(zone, { dataTransfer: filesTransfer([photo, notes]) });
+    fireEvent.dragEnter(zone, { dataTransfer: filesTransfer([photo, photo, photo]) });
     expect(zone).toHaveAttribute('data-drop-reject', 'true');
     expectHooksMatchSpec(container, 'FILE-UPLOAD');
   });

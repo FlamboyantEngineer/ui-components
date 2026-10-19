@@ -6,7 +6,7 @@ import { useWidestTextWidth } from './use-widest-text-width.js';
 function Probe({ texts }: { texts: readonly string[] }) {
   const ref = useRef<HTMLSpanElement | null>(null);
   const width = useWidestTextWidth(ref, texts);
-  return createElement('span', { ref, 'data-testid': 'probe' }, String(width));
+  return createElement('span', { ref, role: 'status', 'aria-label': 'Widest text' }, String(width));
 }
 
 function stubCanvas() {
@@ -32,17 +32,19 @@ afterEach(() => {
   Reflect.deleteProperty(document, 'fonts');
 });
 
+const probe = () => screen.getByRole('status', { name: 'Widest text' });
+
 describe('useWidestTextWidth', () => {
   it('UIC-MEASUREMENT-3.1 measures the widest text in the element font, rounded up', async () => {
     const { measureText, fonts } = stubCanvas();
     const { rerender } = render(createElement(Probe, { texts: ['Fig', 'Banana'] }));
-    await waitFor(() => expect(screen.getByTestId('probe')).toHaveTextContent('39'));
+    await waitFor(() => expect(probe()).toHaveTextContent('39'));
     expect(fonts.at(-1)).toMatch(/\S/);
     const calls = measureText.mock.calls.length;
     rerender(createElement(Probe, { texts: ['Fig', 'Banana'] }));
     expect(measureText).toHaveBeenCalledTimes(calls);
     rerender(createElement(Probe, { texts: ['Fig', 'Clementine'] }));
-    await waitFor(() => expect(screen.getByTestId('probe')).toHaveTextContent('65'));
+    await waitFor(() => expect(probe()).toHaveTextContent('65'));
   });
 
   it('UIC-MEASUREMENT-3.1 measures again once the fonts load', async () => {
@@ -53,7 +55,7 @@ describe('useWidestTextWidth', () => {
     });
     Object.defineProperty(document, 'fonts', { value: { ready }, configurable: true });
     render(createElement(Probe, { texts: ['Pear'] }));
-    await waitFor(() => expect(screen.getByTestId('probe')).toHaveTextContent('26'));
+    await waitFor(() => expect(probe()).toHaveTextContent('26'));
     const calls = measureText.mock.calls.length;
     loaded();
     await waitFor(() => expect(measureText.mock.calls.length).toBeGreaterThan(calls));
@@ -62,6 +64,6 @@ describe('useWidestTextWidth', () => {
   it('UIC-MEASUREMENT-3.1 returns null without an offscreen canvas', () => {
     vi.stubGlobal('OffscreenCanvas', undefined);
     render(createElement(Probe, { texts: ['Plum'] }));
-    expect(screen.getByTestId('probe')).toHaveTextContent('null');
+    expect(probe()).toHaveTextContent('null');
   });
 });

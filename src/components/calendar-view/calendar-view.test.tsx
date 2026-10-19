@@ -119,7 +119,7 @@ describe('CalendarView', () => {
   it('UIC-CALENDAR-VIEW-1.3 follows a controlled date and view, and hides a single view choice', () => {
     const { unmount } = render(<Calendar date="2026-07-04" view="week" views={['week']} />);
     expect(screen.getByRole('grid', { name: named('Jun 28 – Jul 4, 2026') })).toBeInTheDocument();
-    expect(screen.queryByRole('radiogroup')).toBeNull();
+    expect(screen.queryByRole('radiogroup')).not.toBeInTheDocument();
     unmount();
     render(<Calendar defaultDate="2026-07-04" />);
     expect(screen.getByRole('grid', { name: 'July 2026' })).toBeInTheDocument();

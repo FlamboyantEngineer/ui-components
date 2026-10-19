@@ -126,7 +126,7 @@ describe('FileField', () => {
         renderFileActions={(file) => <a href={`/view/${file.id}`}>Open {file.name}</a>}
       />,
     );
-    expect(screen.queryByRole('button')).toBeNull();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Download Report.pdf' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Open Report.pdf' })).toBeInTheDocument();
     rerender(<Attachments isDisabled defaultValue={[report]} />);

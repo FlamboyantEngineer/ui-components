@@ -1,6 +1,6 @@
 # Coding Guidelines
 
-Every file in `src/`, `labs/src/`, `test/` and `e2e/` follows these rules. They are strict on purpose: one way to name, place, compose and write each thing keeps a large library predictable. Rules marked **(enforced)** fail `npm run check`; the others are checked in review.
+Every file in `src/`, `labs/src/`, `test/` and `e2e/` follows these rules; tests also follow [TESTING-GUIDELINES.md](TESTING-GUIDELINES.md). They are strict on purpose: one way to name, place, compose and write each thing keeps a large library predictable. Rules marked **(enforced)** fail `npm run check`; the others are checked in review.
 
 ## Naming
 
@@ -22,7 +22,7 @@ Every file in `src/`, `labs/src/`, `test/` and `e2e/` follows these rules. They 
 
 ## Structure
 
-**S1. Four places for code.** `src/core/` holds the contracts every component uses (hooks, provider, props, glyphs, strings, storage); `src/components/<name>/` holds one component or one family; `src/utils/` holds framework-free helpers and generic React hooks used by more than one component; `src/primitives/` holds the named re-exports of React Aria building blocks, one module per area (`specs/PRIMITIVES.md`). Nothing else lives in `src/`.
+**S1. Five places for code.** `src/core/` holds the contracts every component uses (hooks, provider, props, glyphs, strings, storage); `src/components/<name>/` holds one component or one family; `src/utils/` holds framework-free helpers and generic React hooks used by more than one component; `src/primitives/` holds the named re-exports of React Aria building blocks, one module per area (`specs/PRIMITIVES.md`); `src/testing/` holds the helpers hosts use in their own tests, which import only `@testing-library/dom` (`specs/TESTING.md`). Nothing else lives in `src/`.
 
 **S2. A component directory contains** `index.ts`, the main module `<name>.tsx`, optional helper modules, and the unit tests `<module>.test.ts(x)` beside the modules they test. **(enforced)**
 

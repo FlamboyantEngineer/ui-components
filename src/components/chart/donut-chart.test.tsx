@@ -39,7 +39,7 @@ describe('DonutChart', () => {
   it('UIC-CHART-4.6 takes a diameter and hides its legend on request', () => {
     render(<DonutChart aria-label="Fruit sold" segments={sold} diameter={96} showLegend={false} />);
     expect(document.querySelector('.ui-chart__plot')).toHaveAttribute('viewBox', '0 0 96 96');
-    expect(screen.queryByRole('toolbar')).toBeNull();
+    expect(screen.queryByRole('toolbar')).not.toBeInTheDocument();
   });
 
   it('UIC-CHART-4.3 UIC-CHART-4.4 steps through slices with a tooltip of the value and share', async () => {

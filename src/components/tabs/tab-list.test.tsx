@@ -104,7 +104,7 @@ describe('TabList', () => {
     stubBar(400);
     render(<Fruit overflow="menu" />);
     expect(shownTabs()).toEqual(fruit);
-    expect(screen.queryByRole('button')).toBeNull();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
     expect(screen.getByRole('tablist')).not.toHaveAttribute('data-overflowing');
   });
 

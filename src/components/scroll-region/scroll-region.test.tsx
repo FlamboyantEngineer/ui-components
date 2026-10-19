@@ -106,6 +106,16 @@ function scrollTo(viewport: HTMLElement, top: number) {
   fireEvent.scroll(viewport);
 }
 
+/**
+ * Fakes the timeouts and returns a user-event session that runs on the fake clock. Testing Library
+ * drains each user-event call with a zero timeout that it advances only on Jest's clock, so point
+ * that at Vitest's; `afterEach` unstubs it.
+ */
+function fakeTimeouts() {
+  vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+  return userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+}
+
 function thumb(viewportId: string, orientation = 'vertical') {
   return document.querySelector<HTMLElement>(
     `[role="scrollbar"][aria-controls="${viewportId}"][aria-orientation="${orientation}"]`,
@@ -349,7 +359,8 @@ describe('ScrollRegion', () => {
     expect(first.scrollTop).toBe(120);
   });
 
-  it('UIC-SCROLL-REGION-2.4 drags a thumb with pointer capture and forwards the wheel to the viewport', () => {
+  it('UIC-SCROLL-REGION-2.4 drags a thumb with pointer capture and forwards the wheel to the viewport', async () => {
+    const user = userEvent.setup();
     viewports.set('region', {
       clientHeight: 100,
       scrollHeight: 300,
@@ -378,14 +389,15 @@ describe('ScrollRegion', () => {
       },
     });
     // Track 80, thumb 26.67: travel 53.33 pixels covers 200 pixels of scrolling.
-    fireEvent.pointerDown(vertical, { pointerId: 3, button: 0, clientY: 10 });
-    expect(captured).toBe(3);
+    await user.pointer({ keys: '[MouseLeft>]', target: vertical, coords: { clientY: 10 } });
+    // user-event's mouse is pointer 1.
+    expect(captured).toBe(1);
     expect(vertical).toHaveFocus();
-    fireEvent.pointerMove(vertical, { pointerId: 3, clientY: 10 + 80 / 3 });
+    await user.pointer({ target: vertical, coords: { clientY: 10 + 80 / 3 } });
     expect(viewport.scrollTop).toBeCloseTo(100);
-    fireEvent.pointerUp(vertical, { pointerId: 3, clientY: 30 });
+    await user.pointer({ keys: '[/MouseLeft]', target: vertical });
     expect(captured).toBeNull();
-    fireEvent.pointerMove(vertical, { pointerId: 3, clientY: 200 });
+    await user.pointer({ target: vertical, coords: { clientY: 200 } });
     expect(viewport.scrollTop).toBeCloseTo(100);
 
     fireEvent.wheel(vertical, { deltaY: 3, deltaMode: 1 });
@@ -421,12 +433,12 @@ describe('ScrollRegion', () => {
     viewports.set('region', geometry);
     const { container } = render(
       <ScrollRegion id="region" axis="both" scrollbar="overlay">
-        <div data-testid="rows">Three rows</div>
+        <div>Three rows</div>
       </ScrollRegion>,
     );
     const viewport = document.getElementById('region')!;
     viewport.getBoundingClientRect = () => ({ top: 50, bottom: 450, height: 400 }) as DOMRect;
-    screen.getByTestId('rows').getBoundingClientRect = () =>
+    screen.getByText('Three rows').getBoundingClientRect = () =>
       ({ top: 50, bottom: 200, height: 150 }) as DOMRect;
     fireEvent.scroll(viewport);
     flushFrames();
@@ -617,8 +629,8 @@ describe('ScrollRegion', () => {
     }
   });
 
-  it('UIC-SCROLL-REGION-2.8 shows hover-mode tracks while hovered, lingering, or with a focused thumb', () => {
-    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+  it('UIC-SCROLL-REGION-2.8 shows hover-mode tracks while hovered, lingering, or with a focused thumb', async () => {
+    const user = fakeTimeouts();
     try {
       viewports.set('menu', {
         clientHeight: 100,
@@ -635,21 +647,26 @@ describe('ScrollRegion', () => {
       const root = container.firstElementChild!;
       const track = () => container.querySelector('.ui-scroll-region__track');
       expect(track()).toBeNull();
-      fireEvent.pointerEnter(root, { pointerType: 'touch' });
+      // A touch pointer enters as it goes down.
+      await user.pointer({ keys: '[TouchA>]', target: root });
       expect(track()).toBeNull();
-      fireEvent.pointerEnter(root, { pointerType: 'mouse' });
+      await user.pointer({ keys: '[/TouchA]' });
+      expect(track()).toBeNull();
+      await user.hover(root);
       expect(root).toHaveAttribute('data-hovering', 'true');
       expect(track()).not.toBeNull();
-      fireEvent.pointerLeave(root, { pointerType: 'mouse' });
+      await user.unhover(root);
       expect(root).not.toHaveAttribute('data-hovering');
       act(() => vi.advanceTimersByTime(599));
       expect(track()).not.toBeNull();
       act(() => vi.advanceTimersByTime(1));
       expect(track()).toBeNull();
 
+      // eslint-disable-next-line testing-library/prefer-user-event -- user-event has no pen pointer
       fireEvent.pointerEnter(root, { pointerType: 'pen' });
       flushFrames();
       act(() => thumb('menu')!.focus());
+      // eslint-disable-next-line testing-library/prefer-user-event -- user-event has no pen pointer
       fireEvent.pointerLeave(root, { pointerType: 'pen' });
       act(() => vi.advanceTimersByTime(1000));
       expect(track()).not.toBeNull();
@@ -721,7 +738,8 @@ describe('ScrollRegion', () => {
     expect(thumb('note', 'horizontal')).toHaveAttribute('tabindex', '-1');
   });
 
-  it('UIC-SCROLL-REGION-2.9 pages toward a press on the track beside the thumb', () => {
+  it('UIC-SCROLL-REGION-2.9 pages toward a press on the track beside the thumb', async () => {
+    const user = userEvent.setup();
     viewports.set('long', {
       clientHeight: 100,
       scrollHeight: 400,
@@ -740,16 +758,18 @@ describe('ScrollRegion', () => {
     const track = container.querySelector<HTMLElement>('.ui-scroll-region__track')!;
     const vertical = thumb('long')!;
     vertical.getBoundingClientRect = () => ({ top: 40, left: 0, bottom: 60 }) as DOMRect;
-    fireEvent.pointerDown(track, { button: 0, clientY: 90 });
+    const press = (target: HTMLElement, clientY: number, keys = '[MouseLeft]') =>
+      user.pointer({ keys, target, coords: { clientY } });
+    await press(track, 90);
     expect(viewport.scrollTop).toBe(100);
-    fireEvent.pointerDown(track, { button: 0, clientY: 90 });
-    fireEvent.pointerDown(track, { button: 0, clientY: 90 });
-    fireEvent.pointerDown(track, { button: 0, clientY: 90 });
+    await press(track, 90);
+    await press(track, 90);
+    await press(track, 90);
     expect(viewport.scrollTop).toBe(300);
-    fireEvent.pointerDown(track, { button: 0, clientY: 10 });
+    await press(track, 10);
     expect(viewport.scrollTop).toBe(200);
-    fireEvent.pointerDown(track, { button: 2, clientY: 10 });
-    fireEvent.pointerDown(vertical, { button: 0, clientY: 10 });
+    await press(track, 10, '[MouseRight]');
+    await press(vertical, 10);
     expect(viewport.scrollTop).toBe(200);
   });
 
@@ -827,8 +847,8 @@ describe('ScrollRegion', () => {
     expect(root).not.toHaveAttribute('data-overflow-y-end');
   });
 
-  it('UIC-SCROLL-REGION-4.2 publishes scrolling and hovering', () => {
-    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+  it('UIC-SCROLL-REGION-4.2 publishes scrolling and hovering', async () => {
+    const user = fakeTimeouts();
     try {
       viewports.set('busy', {
         clientHeight: 100,
@@ -846,10 +866,10 @@ describe('ScrollRegion', () => {
       expect(root).toHaveAttribute('data-scrolling', 'true');
       act(() => vi.advanceTimersByTime(200));
       expect(root).not.toHaveAttribute('data-scrolling');
-      fireEvent.pointerEnter(root, { pointerType: 'mouse' });
+      await user.hover(root);
       expect(root).toHaveAttribute('data-hovering', 'true');
       expectHooksMatchSpec(container, 'SCROLL-REGION');
-      fireEvent.pointerLeave(root, { pointerType: 'mouse' });
+      await user.unhover(root);
       expect(root).not.toHaveAttribute('data-hovering');
     } finally {
       vi.useRealTimers();

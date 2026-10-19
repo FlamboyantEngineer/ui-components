@@ -80,17 +80,24 @@ function capturePointer(element: HTMLElement) {
   });
 }
 
-function drag(
+type User = ReturnType<typeof userEvent.setup>;
+
+/** Drags `target` from one x to another with the primary button; a cancelled drag ends on pointercancel. */
+async function drag(
+  user: User,
   target: Element,
   from: number,
   to: number,
   end: 'pointerUp' | 'pointerCancel' = 'pointerUp',
 ) {
-  const init = { pointerId: 3, button: 0, isPrimary: true };
-  fireEvent.pointerDown(target, { ...init, clientX: from });
-  fireEvent.pointerMove(target, { ...init, clientX: (from + to) / 2 });
-  fireEvent.pointerMove(target, { ...init, clientX: to });
-  fireEvent[end](target, { ...init, clientX: to });
+  await user.pointer([
+    { keys: '[MouseLeft>]', target, coords: { clientX: from } },
+    { coords: { clientX: (from + to) / 2 } },
+    { coords: { clientX: to } },
+  ]);
+  // user-event's mouse pointer has id 1.
+  if (end === 'pointerCancel') fireEvent.pointerCancel(target, { pointerId: 1, clientX: to });
+  await user.pointer({ keys: '[/MouseLeft]' });
 }
 
 /** A timeline that applies its own changes, as an owner does. */
@@ -163,11 +170,10 @@ describe('Timeline', () => {
       className: 'caller',
       id: 'plan',
       ref,
-      'data-testid': 'probe',
       'data-view': 'caller',
       'aria-describedby': 'note',
     } as Partial<TimelineProps>);
-    const root = screen.getByTestId('probe');
+    const root = screen.getByRole('group', { name: 'Kitchen plan' });
     expect(root).toHaveClass('ui-timeline', 'caller');
     expect(root).toHaveAttribute('id', 'plan');
     expect(root).toHaveAttribute('data-view', 'chart');
@@ -185,7 +191,7 @@ describe('Timeline', () => {
     const { container, rerender } = renderTimeline();
     const tier = (name: string) => container.querySelector(`[data-tier="${name}"]`)!;
     expect(tier('major')).toHaveAttribute('data-unit', 'month');
-    expect(tier('major').textContent).toBe('March 2026');
+    expect(tier('major')).toHaveTextContent('March 2026');
     expect(tier('minor')).toHaveAttribute('data-unit', 'day');
     expect(tier('minor').children).toHaveLength(31);
     const fifth = tier('minor').children[4] as HTMLElement;
@@ -203,7 +209,7 @@ describe('Timeline', () => {
       <Timeline {...props} scale="quarter" range={{ start: '2026-01-01', end: '2026-12-31' }} />,
     );
     expect(tier('major')).toHaveAttribute('data-unit', 'year');
-    expect(tier('minor').textContent).toBe('Q1Q2Q3Q4');
+    expect(tier('minor')).toHaveTextContent('Q1Q2Q3Q4');
     rerender(<Timeline {...props} scale="week" range={march} />);
     expect(tier('minor')).toHaveAttribute('data-unit', 'week');
     expect(tier('minor').children[1]?.textContent).toMatch(/^Mar \d+$/);
@@ -230,13 +236,13 @@ describe('Timeline', () => {
       'false',
     );
     expect(container.querySelectorAll('.ui-timeline__row')).toHaveLength(2);
-    expect(screen.queryByRole('button', { name: 'Measure rooms' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Measure rooms' })).not.toBeInTheDocument();
     expect(container.querySelector('.ui-timeline__body')).toHaveStyle({ height: '72px' });
   });
 
   it('UIC-TIMELINE-1.4 follows controlled expanded keys', () => {
     renderTimeline({ expandedKeys: [] });
-    expect(screen.queryByRole('group', { name: 'Survey' })).toBeNull();
+    expect(screen.queryByRole('group', { name: 'Survey' })).not.toBeInTheDocument();
     expect(screen.getByRole('group', { name: 'Build' })).toBeInTheDocument();
   });
 
@@ -301,17 +307,18 @@ describe('Timeline', () => {
     expect(part('gridline')).toHaveAttribute('aria-hidden', 'true');
   });
 
-  it('UIC-TIMELINE-2.1 moves and resizes bars by pointer and commits on release', () => {
+  it('UIC-TIMELINE-2.1 moves and resizes bars by pointer and commits on release', async () => {
+    const user = userEvent.setup();
     const onItemChange = vi.fn();
     render(<OwnedTimeline onItemChange={onItemChange} />);
     const bar = item('Measure rooms');
     capturePointer(bar);
-    fireEvent.pointerDown(bar, { pointerId: 3, button: 0, isPrimary: true, clientX: 100 });
-    fireEvent.pointerMove(bar, { pointerId: 3, clientX: 133 });
+    await user.pointer({ keys: '[MouseLeft>]', target: bar, coords: { clientX: 100 } });
+    await user.pointer({ coords: { clientX: 133 } });
     expect(bar).toHaveAttribute('data-dragging', 'true');
     expect(bar.style.left).toBe(`${3 * 16}px`);
     expect(onItemChange).not.toHaveBeenCalled();
-    fireEvent.pointerUp(bar, { pointerId: 3, clientX: 133 });
+    await user.pointer({ keys: '[/MouseLeft]' });
     expect(onItemChange).toHaveBeenCalledExactlyOnceWith({
       id: 'measure',
       start: '2026-03-04',
@@ -319,13 +326,13 @@ describe('Timeline', () => {
     });
     expect(bar).not.toHaveAttribute('data-dragging');
     const end = bar.querySelector('[data-edge="end"]')!;
-    drag(end, 200, 248);
+    await drag(user, end, 200, 248);
     expect(onItemChange).toHaveBeenLastCalledWith({
       id: 'measure',
       start: '2026-03-04',
       end: '2026-03-11',
     });
-    drag(bar.querySelector('[data-edge="start"]')!, 200, 400);
+    await drag(user, bar.querySelector('[data-edge="start"]')!, 200, 400);
     expect(onItemChange).toHaveBeenLastCalledWith({
       id: 'measure',
       start: '2026-03-11',
@@ -333,13 +340,14 @@ describe('Timeline', () => {
     });
   });
 
-  it('UIC-TIMELINE-2.1 drops a cancelled drag and ignores a press that does not move', () => {
+  it('UIC-TIMELINE-2.1 drops a cancelled drag and ignores a press that does not move', async () => {
+    const user = userEvent.setup();
     const onItemChange = vi.fn();
     render(<OwnedTimeline onItemChange={onItemChange} />);
     const bar = item('Measure rooms');
-    drag(bar, 100, 180, 'pointerCancel');
+    await drag(user, bar, 100, 180, 'pointerCancel');
     expect(bar.style.left).toBe('16px');
-    drag(bar, 100, 104);
+    await drag(user, bar, 100, 104);
     expect(onItemChange).not.toHaveBeenCalled();
   });
 
@@ -383,7 +391,7 @@ describe('Timeline', () => {
     const fixed = item('Paint walls');
     expect(fixed).toHaveAttribute('data-readonly', 'true');
     capturePointer(fixed);
-    drag(fixed, 100, 200);
+    await drag(user, fixed, 100, 200);
     fixed.focus();
     await user.keyboard('{ArrowRight}');
     expect(onItemChange).not.toHaveBeenCalled();

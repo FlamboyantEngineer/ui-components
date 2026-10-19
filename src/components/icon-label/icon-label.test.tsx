@@ -1,4 +1,5 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { IconLabel } from './icon-label.js';
@@ -17,8 +18,8 @@ describe('IconLabel', () => {
   });
 
   it('UIC-ICON-LABEL-1.1 accepts icon nodes and label nodes', () => {
-    render(<IconLabel icon={<svg data-testid="custom" />} label={<strong>Bold</strong>} />);
-    expect(screen.getByTestId('custom').parentElement).toHaveClass('ui-icon-label__icon');
+    render(<IconLabel icon={<svg aria-label="Custom glyph" />} label={<strong>Bold</strong>} />);
+    expect(screen.getByLabelText('Custom glyph').parentElement).toHaveClass('ui-icon-label__icon');
     expect(screen.getByText('Bold').tagName).toBe('STRONG');
   });
 
@@ -44,7 +45,8 @@ describe('IconLabel', () => {
   });
 
   it('UIC-ICON-LABEL-1.6 shows a cut label whole in a tooltip', async () => {
-    vi.useFakeTimers();
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     try {
       const text = 'A long label that the stylesheet cuts';
       const { container } = render(<IconLabel icon="info" label={text} truncate />);
@@ -52,7 +54,7 @@ describe('IconLabel', () => {
       expect(label).toHaveClass('ui-truncation-tooltip');
       Object.defineProperty(label, 'clientWidth', { configurable: true, value: 80 });
       Object.defineProperty(label, 'scrollWidth', { configurable: true, value: 240 });
-      fireEvent.pointerEnter(label, { pointerType: 'mouse' });
+      await user.hover(label);
       await act(async () => {
         vi.advanceTimersByTime(500);
       });

@@ -72,7 +72,7 @@ describe('EmptyState', () => {
       <EmptyState variant="loading" description="Loading records..." />,
     );
     rerender(<EmptyState title="No rows" description="No records..." />);
-    expect(screen.queryByRole('status')).toBeNull();
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
     expect(container.querySelector('[aria-live], [aria-hidden], [tabindex]')).toBeNull();
     expect(container.querySelector('.ui-empty-state__spinner')).toBeNull();
     expect(container.querySelector('p')).toHaveTextContent('No records...');

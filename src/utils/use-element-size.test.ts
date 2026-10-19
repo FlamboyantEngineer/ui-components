@@ -96,6 +96,12 @@ afterEach(async () => {
   document.body.replaceChildren();
 });
 
+/** Renders into a root the test owns; `root.render` is React DOM's own API, so it needs `act`. */
+function commit(root: Root, element: ReactElement): Promise<void> {
+  // eslint-disable-next-line testing-library/no-unnecessary-act -- root.render is React DOM's root API, not Testing Library's render
+  return act(async () => root.render(element));
+}
+
 function Measured({ options }: { options?: ElementSizeOptions | undefined }): ReactElement {
   const ref = useRef<HTMLDivElement | null>(null);
   sizes.push(useElementSize(ref, options));
@@ -103,7 +109,7 @@ function Measured({ options }: { options?: ElementSizeOptions | undefined }): Re
 }
 
 async function render(root: Root, options?: ElementSizeOptions): Promise<void> {
-  await act(async () => root.render(createElement(Measured, { options })));
+  await commit(root, createElement(Measured, { options }));
 }
 
 async function mount(
@@ -249,7 +255,7 @@ test('UIC-MEASUREMENT-2.5 an element held in state is measured when it mounts an
   const root = createRoot(document.body.appendChild(document.createElement('div')));
   roots.push(root);
   const renderPanel = (elementKey: string | null) =>
-    act(async () => root.render(createElement(Panel, { elementKey })));
+    commit(root, createElement(Panel, { elementKey }));
 
   await renderPanel(null);
   expect(FakeObserver.instances).toHaveLength(0);
@@ -291,7 +297,7 @@ test('UIC-MEASUREMENT-2.5 follows the parent of an element held in state and kee
   const root = createRoot(host);
   roots.push(root);
   const renderPanel = (visible: boolean, rowKey = 'first') =>
-    act(async () => root.render(createElement(Panel, { visible, rowKey })));
+    commit(root, createElement(Panel, { visible, rowKey }));
 
   await renderPanel(true);
   const observer = FakeObserver.instances[0]!;

@@ -106,7 +106,7 @@ describe('NotificationCenter', () => {
       callerAttributes: ['data-lab'],
     });
     await userEvent.keyboard('{Escape}');
-    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     expect(onOpenChange).toHaveBeenLastCalledWith(false);
     // Focus goes back to the bell on the frame after the popover unmounts.
     await waitFor(() => expect(bell()).toHaveFocus());
@@ -147,7 +147,7 @@ describe('NotificationCenter', () => {
       <NotificationCenter items={items} presentation="drawer" title="Inbox" isOpen={false} />,
     );
     await settleSheet();
-    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     vi.unstubAllGlobals();
     // @ts-expect-error -- jsdom has no scrollTo; the stub goes away with the test.
     delete Element.prototype.scrollTo;

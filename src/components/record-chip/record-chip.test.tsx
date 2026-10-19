@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -87,14 +87,15 @@ describe('RecordChip', () => {
   });
 
   it('UIC-RECORD-CHIP-1.3 previews a linked record on hover', async () => {
-    vi.useFakeTimers();
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     render(
       <RecordChip identifier="REQ-12" href="/records/12" preview={<p>Owner: Maria Santos</p>} />,
     );
     const link = screen.getByRole('link', { name: 'REQ-12' });
-    fireEvent.pointerMove(link, { pointerType: 'mouse' });
-    fireEvent.pointerEnter(link, { pointerType: 'mouse' });
-    fireEvent.mouseEnter(link);
+    // Move onto the page first, so React Aria reads a pointer modality when the link is entered.
+    await user.pointer({ target: document.body });
+    await user.hover(link);
     await advance(700);
     const card = document.querySelector('.ui-record-chip__preview');
     expect(card).toHaveClass('ui-hover-card');
@@ -103,14 +104,16 @@ describe('RecordChip', () => {
   });
 
   it('UIC-RECORD-CHIP-1.3 ignores the preview of a record without a link', async () => {
-    vi.useFakeTimers();
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     const { container } = render(
       <RecordChip identifier="REQ-12" name="Limits" preview={<p>Owner: Jon Berg</p>} />,
     );
     const label = slot(container, 'label') as HTMLElement;
     expect(label).not.toHaveAttribute('tabindex');
     expect(label).not.toHaveAttribute('aria-haspopup');
-    fireEvent.pointerEnter(label, { pointerType: 'mouse' });
+    await user.pointer({ target: document.body });
+    await user.hover(label);
     await advance(700);
     expect(document.querySelector('.ui-record-chip__preview')).toBeNull();
   });
@@ -149,7 +152,7 @@ describe('RecordChip', () => {
     for (const name of ['version', 'type', 'state', 'name', 'header', 'preview']) {
       expect(slot(container, name)).toBeNull();
     }
-    expect(screen.queryByRole('link')).toBeNull();
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Remove Missing item' })).toBeInTheDocument();
     expectHooksMatchSpec(container, 'RECORD-CHIP', { slots: ['label', 'remove'] });
   });

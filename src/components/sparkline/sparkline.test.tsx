@@ -101,17 +101,18 @@ describe('Sparkline', () => {
         className="caller"
         id="probe"
         ref={ref}
-        data-testid="probe"
+        data-sample="probe"
         data-variant="caller"
         values={week}
       />,
     );
-    const image = screen.getByTestId('probe');
+    const image = screen.getByRole('img', { name: 'Probe' });
     expect(image).toHaveClass('ui-sparkline', 'caller');
     expect(image).toHaveAttribute('id', 'probe');
     expect(image).toHaveAttribute('data-variant', 'line');
+    expect(image).toHaveAttribute('data-sample', 'probe');
     expect(ref.current).toBe(image);
-    expectHooksMatchSpec(document.body, 'SPARKLINE');
+    expectHooksMatchSpec(document.body, 'SPARKLINE', { callerAttributes: ['data-sample'] });
   });
 
   it('UIC-SPARKLINE-2.1 takes no tab stop', async () => {

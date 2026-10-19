@@ -291,7 +291,7 @@ describe('Table', { timeout: 15_000 }, () => {
         defaultSelectedKeys={['apple']}
       />,
     );
-    expect(screen.queryByRole('checkbox')).toBeNull();
+    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
     expect(screen.getByRole('row', { name: 'Apple' })).toHaveAttribute('aria-selected', 'true');
     await user.click(screen.getByRole('rowheader', { name: 'Cherry' }));
     expect(screen.getByRole('row', { name: 'Cherry' })).toHaveAttribute('aria-selected', 'true');

@@ -78,7 +78,7 @@ describe('MediaViewer', () => {
 
   it('UIC-MEDIA-VIEWER-1.1 renders nothing without items', () => {
     render(<MediaViewer items={[]} isOpen />);
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('UIC-MEDIA-VIEWER-1.2 moves through the set with the previous and next buttons', async () => {
@@ -105,7 +105,7 @@ describe('MediaViewer', () => {
     const { rerender } = render(<Viewer selectedKey="guide" />);
     expect(title()).toBe('Guide.pdf');
     rerender(<MediaViewer items={[items[0] as MediaViewerItem]} isOpen />);
-    expect(screen.queryByRole('button', { name: 'Next' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Next' })).not.toBeInTheDocument();
     expect(document.querySelector('.ui-media-viewer__counter')).toBeNull();
     expect(document.querySelector('.ui-media-viewer__thumbnails')).toBeNull();
   });
@@ -217,7 +217,7 @@ describe('MediaViewer', () => {
       'Guide.pdf',
     );
     expect(document.querySelector('.ui-media-viewer__zoom')).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Rotate clockwise' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Rotate clockwise' })).not.toBeInTheDocument();
     expectHooksMatchSpec(document.body, 'MEDIA-VIEWER', { slots: ['content'] });
   });
 
@@ -248,7 +248,7 @@ describe('MediaViewer', () => {
     expect(link).toHaveAttribute('href', '/media/harbour.jpg');
     expect(link).toHaveAttribute('download', 'Harbour.jpg');
     rerender(<Viewer selectedKey="bridge" />);
-    expect(screen.queryByRole('link', { name: /Download/ })).toBeNull();
+    expect(screen.queryByRole('link', { name: /Download/ })).not.toBeInTheDocument();
   });
 
   it('UIC-MEDIA-VIEWER-4.3 carries its hooks and the caller attributes', () => {

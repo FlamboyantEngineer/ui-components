@@ -68,7 +68,7 @@ describe('PdfViewer find owned by the caller', () => {
     const renderSearch = (search: PdfSearchControls) => <CallerFind search={search} />;
     const view = await renderReady({ renderSearch, onSearchQueryChange });
     const toolbar = screen.getByRole('toolbar');
-    expect(within(toolbar).queryByRole('searchbox')).toBeNull();
+    expect(within(toolbar).queryByRole('searchbox')).not.toBeInTheDocument();
     expect(view.container.querySelector('.ui-pdf-viewer .ui-find-bar__status')).toBeNull();
 
     await userEvent.click(screen.getByRole('button', { name: 'Find pears' }));
@@ -83,7 +83,7 @@ describe('PdfViewer find owned by the caller', () => {
     expect(currentMatchPage(view.container)).toBe(0);
 
     view.update({ renderSearch: () => null, searchQuery: 'harvest' });
-    expect(within(toolbar).queryByRole('button', { name: 'Forward' })).toBeNull();
+    expect(within(toolbar).queryByRole('button', { name: 'Forward' })).not.toBeInTheDocument();
     await waitFor(() =>
       expect(view.container.querySelectorAll('.ui-pdf-viewer__match')).toHaveLength(4),
     );

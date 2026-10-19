@@ -29,7 +29,7 @@ describe('useRemoteSearch', () => {
     expect(load).toHaveBeenCalledWith('ap', expect.any(AbortSignal));
     expect(result.current.results).toEqual(['apple', 'apricot']);
     act(() => result.current.searchNow('an'));
-    await act(async () => {});
+    await act(() => vi.advanceTimersByTimeAsync(0));
     expect(result.current.results).toEqual(['banana']);
     expect(load).toHaveBeenCalledTimes(2);
   });

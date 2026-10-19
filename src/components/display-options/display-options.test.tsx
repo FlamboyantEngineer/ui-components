@@ -207,7 +207,7 @@ describe('DisplayOptions', { timeout: 20_000 }, () => {
     await userEvent.keyboard('{Escape}');
     rerender(<DisplayOptions properties={properties} value={value} onChange={onChange} />);
     dialog = await open();
-    expect(within(dialog).queryByRole('radiogroup', { name: 'Density' })).toBeNull();
+    expect(within(dialog).queryByRole('radiogroup', { name: 'Density' })).not.toBeInTheDocument();
   });
 
   it('UIC-DISPLAY-OPTIONS-1.7 disables the button', () => {
@@ -222,7 +222,7 @@ describe('DisplayOptions', { timeout: 20_000 }, () => {
     render(<DisplayOptions properties={properties.slice(0, 1)} />);
     const button = screen.getByRole('button', { name: 'Display' });
     const dialog = await open();
-    expect(within(dialog).queryByRole('button', { name: /Group by/ })).toBeNull();
+    expect(within(dialog).queryByRole('button', { name: /Group by/ })).not.toBeInTheDocument();
     expect(dialog.contains(document.activeElement)).toBe(true);
     await userEvent.keyboard('{Escape}');
     await waitFor(() => expect(button).toHaveFocus());

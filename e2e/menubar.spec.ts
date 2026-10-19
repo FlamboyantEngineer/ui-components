@@ -18,6 +18,15 @@ function item(page: Page, name: string | RegExp): Locator {
   return popovers(page).getByRole('menuitem', { name });
 }
 
+/** Opens the focused top-level menu with ArrowDown, pressing again until the menu shows. */
+async function openWithArrowDown(page: Page, name: string): Promise<void> {
+  const menu = page.getByRole('menu', { name });
+  await expect(async () => {
+    if (!(await menu.isVisible())) await page.keyboard.press('ArrowDown');
+    await expect(menu).toBeVisible({ timeout: 1000 });
+  }).toPass();
+}
+
 function isFocusInBar(page: Page, name = 'Editor'): Promise<boolean> {
   return bar(page, name).evaluate((element) => element.contains(document.activeElement));
 }
@@ -87,8 +96,7 @@ test.describe('Menubar lab', () => {
   }) => {
     await lab.open('menubar');
     await top(page, 'File').focus();
-    await page.keyboard.press('ArrowDown');
-    await expect(page.getByRole('menu', { name: 'File' })).toBeVisible();
+    await openWithArrowDown(page, 'File');
     await page.keyboard.press('ArrowRight');
     await expect(item(page, /^Undo/)).toBeFocused();
     await expect(popovers(page)).toHaveCount(1);
@@ -240,9 +248,9 @@ test.describe('Menubar lab', () => {
     await rtl('File').focus();
     await page.keyboard.press('ArrowLeft');
     await expect(rtl('Edit')).toBeFocused();
-    await page.keyboard.press('ArrowDown');
-    // Wait for the menu to open, so the next key moves between menus rather than along the bar.
-    await expect(page.getByRole('menu', { name: 'Edit' })).toBeVisible();
+    // Open the menu before moving, so the next key moves between menus rather than along the bar;
+    // the first key can land before the bar has caught up with its focus, so press until it opens.
+    await openWithArrowDown(page, 'Edit');
     await page.keyboard.press('ArrowLeft');
     await expect(item(page, /^Guide/)).toBeFocused();
   });

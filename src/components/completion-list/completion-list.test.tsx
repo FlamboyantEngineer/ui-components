@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useRef, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -68,7 +68,7 @@ describe('CompletionList', () => {
 
   it('UIC-COMPLETION-LIST-1.1 stays closed while closed or with nothing to show', () => {
     const { rerender } = render(<Harness isOpen={false} />);
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     rerender(<Harness items={[]} />);
     expect(document.querySelector('.ui-completion-list')).toBeNull();
   });
@@ -95,7 +95,7 @@ describe('CompletionList', () => {
     const input = screen.getByRole('textbox');
     input.focus();
     const jon = screen.getByRole('option', { name: 'Jon Berg' });
-    fireEvent.pointerMove(jon);
+    await user.hover(jon);
     expect(jon).toHaveAttribute('aria-selected', 'true');
     await user.click(jon);
     expect(onAction).toHaveBeenCalledWith('jon');
@@ -111,7 +111,7 @@ describe('CompletionList', () => {
     expect(document.querySelector('.ui-completion-list__footer')).toHaveTextContent('3 matches');
     expectHooksMatchSpec(document.body, 'COMPLETION-LIST', { slots: ['documentation', 'footer'] });
     rerender(<Harness items={[]} renderEmptyState={() => 'No people found'} />);
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     const empty = screen.getByRole('status');
     expect(empty).toHaveTextContent('No people found');
     expect(empty).toHaveAttribute('id', 'people');

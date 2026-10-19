@@ -53,8 +53,12 @@ describe('Field', () => {
       expect(root(container)).toHaveAttribute('data-label-layout', layout);
       expect(parts(container)).toEqual(order[layout]);
       const input = screen.getByRole('textbox', { name: 'Fruit' });
-      expect(input.hasAttribute('aria-label')).toBe(layout === 'control-only');
-      expect(input.hasAttribute('aria-labelledby')).toBe(layout !== 'control-only');
+      const [named, unnamed] =
+        layout === 'control-only'
+          ? ['aria-label', 'aria-labelledby']
+          : ['aria-labelledby', 'aria-label'];
+      expect(input).toHaveAttribute(named);
+      expect(input).not.toHaveAttribute(unnamed);
       const colon = container.querySelector('.ui-field__colon');
       expect(Boolean(colon)).toBe(layout === 'label-colon-control');
       if (colon) expect(colon).toHaveAttribute('aria-hidden', 'true');
@@ -103,7 +107,7 @@ describe('Field', () => {
     expect(marker).toHaveAttribute('aria-hidden', 'true');
     expect(root(container)).toHaveAttribute('data-required', 'true');
     const input = screen.getByRole('textbox', { name: 'Fruit' });
-    expect(input).toHaveAttribute('aria-required', 'true');
+    expect(input).toBeRequired();
     expectHooksMatchSpec(container, 'FIELD', { slots: ['required'] });
   });
 
@@ -115,7 +119,7 @@ describe('Field', () => {
     expect(root(container)).toHaveAttribute('data-readonly', 'true');
     expect(root(container)).not.toHaveAttribute('data-dirty');
     expect(screen.getByRole('textbox')).toHaveAttribute('readonly');
-    expect(screen.queryByRole('button', { name: 'Restore Fruit' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Restore Fruit' })).not.toBeInTheDocument();
     rerender(<TextField options={{ ...options, isDisabled: true }} />);
     expect(root(container)).toHaveAttribute('data-disabled', 'true');
     expect(screen.getByRole('textbox')).toBeDisabled();
@@ -250,7 +254,7 @@ describe('Field', () => {
     await user.click(restore);
     expect(input).toHaveValue('Fig');
     expect(input).toHaveFocus();
-    expect(screen.queryByRole('button', { name: 'Restore Fruit' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Restore Fruit' })).not.toBeInTheDocument();
   });
 
   it('UIC-FIELD-4.1 UIC-SLOT-REGISTRY-1.2 moves keyboard focus to the control before the button leaves', async () => {

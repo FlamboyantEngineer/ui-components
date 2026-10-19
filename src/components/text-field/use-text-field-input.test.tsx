@@ -42,7 +42,7 @@ describe('TextField completions', () => {
     expect(popover).toHaveClass('ui-completion-list');
     expectHooksMatchSpec(document.body, 'TEXT-FIELD', { slots: ['box', 'input', 'completions'] });
     await user.tab();
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     expect(container.querySelector('.ui-text-field__completions')).toBeNull();
   });
 
@@ -51,7 +51,7 @@ describe('TextField completions', () => {
     const { rerender } = render(<TextField label="City" completions={cities} isReadOnly />);
     await user.click(screen.getByRole('textbox'));
     await user.keyboard('{Control>} {/Control}');
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     rerender(<TextField label="City" />);
     expect(screen.getByRole('textbox')).not.toHaveAttribute('aria-autocomplete');
   });
@@ -80,7 +80,7 @@ describe('TextField completions', () => {
     await user.keyboard(' L');
     expect(optionTexts()).toHaveLength(3);
     await user.keyboard('{Escape}');
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     expect(input).toHaveValue('Lisbon L');
     await user.keyboard('{Enter}');
     expect(onCommit).toHaveBeenCalledWith('Lisbon L');
@@ -102,7 +102,7 @@ describe('TextField completions', () => {
     expect(onChange).toHaveBeenLastCalledWith('Ask @jon ');
     expect(area.selectionStart).toBe(9);
     await user.keyboard('or mail me@example');
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
   });
 
   it('UIC-TEXT-FIELD-5.3 draws each completion with renderCompletion', async () => {

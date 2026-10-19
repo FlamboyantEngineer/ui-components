@@ -117,7 +117,7 @@ describe('emoji support', { timeout: 15_000 }, () => {
     expect(await screen.findByRole('row', { name: 'melting face' })).toBeInTheDocument();
     await user.clear(screen.getByRole('searchbox'));
     await user.type(screen.getByRole('searchbox'), 'flag');
-    expect(screen.queryByRole('row', { name: 'flag: Japan' })).toBeNull();
+    expect(screen.queryByRole('row', { name: 'flag: Japan' })).not.toBeInTheDocument();
 
     rerender(<EmojiPicker loadEmoji={loadFixture} renderEmoji={(unicode) => unicode} />);
     expect(await screen.findByRole('row', { name: 'flag: Japan' })).toBeInTheDocument();

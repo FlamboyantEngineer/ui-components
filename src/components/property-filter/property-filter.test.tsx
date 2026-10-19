@@ -61,13 +61,13 @@ describe('PropertyFilter', () => {
   it('UIC-PROPERTY-FILTER-1.2 clears the query from its clear button and from Escape, keeping focus in the input', async () => {
     render(<Fruit />);
     const input = screen.getByRole('searchbox');
-    expect(screen.queryByRole('button', { name: 'Clear search' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Clear search' })).not.toBeInTheDocument();
     await userEvent.type(input, 'apple');
     await userEvent.click(screen.getByRole('button', { name: 'Clear search' }));
     expect(input).toHaveValue('');
     expect(input).toHaveFocus();
     expect(rowOf('Pear')).not.toHaveAttribute('hidden');
-    expect(screen.queryByRole('button', { name: 'Clear search' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Clear search' })).not.toBeInTheDocument();
 
     await userEvent.type(input, 'pear{Escape}');
     expect(input).toHaveValue('');

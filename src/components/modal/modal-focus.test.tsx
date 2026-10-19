@@ -53,7 +53,7 @@ describe('Modal focus targets', () => {
     await user.click(screen.getByRole('button', { name: 'Open' }));
     expect(await screen.findByRole('textbox', { name: 'Street' })).toHaveFocus();
     await user.click(screen.getByRole('button', { name: 'Save' }));
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(after()).toHaveFocus();
   });
 

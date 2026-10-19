@@ -39,7 +39,7 @@ describe('Tree renaming', () => {
     // Typed keys edit the name: no typeahead, no expansion.
     await userEvent.keyboard('{Control>}a{/Control}Berries{ArrowRight} {Enter}');
     expect(onRename).toHaveBeenCalledWith(FOOD[0], 'Berries');
-    expect(screen.queryByRole('textbox')).toBeNull();
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
     expect(row('Fruit')).toHaveFocus();
     expect(row('Fruit')).toHaveAttribute('aria-expanded', 'false');
 
@@ -64,13 +64,13 @@ describe('Tree renaming', () => {
 
     await userEvent.click(row('Oats'));
     await userEvent.keyboard('{F2}');
-    expect(screen.queryByRole('textbox')).toBeNull();
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
   });
 
   it('UIC-TREE-7.1 leaves F2 alone without onRename', async () => {
     render(<FoodTree />);
     await userEvent.tab();
     await userEvent.keyboard('{F2}');
-    expect(screen.queryByRole('textbox')).toBeNull();
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
   });
 });

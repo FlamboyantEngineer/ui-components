@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { Dialog, DialogTrigger, Popover } from '../../primitives/index.js';
 import { describe, expect, it, vi } from 'vitest';
@@ -106,7 +106,7 @@ describe('Button', () => {
 
   it('UIC-BUTTON-1.5 draws decorative start and end icons', () => {
     render(
-      <Button startIcon="plus" endIcon={<svg data-testid="custom-end" />}>
+      <Button startIcon="plus" endIcon={<svg role="img" aria-label="End glyph" />}>
         Add
       </Button>,
     );
@@ -114,13 +114,16 @@ describe('Button', () => {
     const start = button.querySelector('.ui-button__start-icon');
     expect(start).toHaveClass('ui-icon');
     expect(start).toHaveAttribute('aria-hidden', 'true');
-    expect(screen.getByTestId('custom-end').parentElement).toHaveClass('ui-button__end-icon');
+    expect(screen.getByRole('img', { name: 'End glyph', hidden: true }).parentElement).toHaveClass(
+      'ui-button__end-icon',
+    );
     expectHooksMatchSpec(document.body, 'BUTTON', { slots: ['label', 'start-icon', 'end-icon'] });
   });
 
   it('UIC-BUTTON-1.6 shows a tooltip on hover and keyboard focus without a wrapper', async () => {
-    vi.useFakeTimers();
+    vi.useFakeTimers({ shouldAdvanceTime: true });
     try {
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
       const { container } = render(
         <Button tooltip="Save every change" isPending>
           Save
@@ -128,9 +131,7 @@ describe('Button', () => {
       );
       const button = screen.getByRole('button', { name: /Save/ });
       expect(button.parentElement).toBe(container);
-      fireEvent.pointerMove(button, { pointerType: 'mouse' });
-      fireEvent.pointerEnter(button, { pointerType: 'mouse' });
-      fireEvent.mouseEnter(button);
+      await user.hover(button);
       await act(async () => {
         vi.advanceTimersByTime(500);
       });
@@ -153,7 +154,7 @@ describe('Button', () => {
       </Button>,
     );
     await user.tab();
-    expect(screen.queryByRole('tooltip')).toBeNull();
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
     rerender(
       <Button isDisabled focusableWhenDisabled tooltip="Locked">
         Edit
@@ -210,7 +211,7 @@ describe('Button', () => {
       </Button>,
     );
     const bold = screen.getByRole('menuitemcheckbox', { name: 'Bold' });
-    expect(bold).toHaveAttribute('aria-checked', 'true');
+    expect(bold).toBeChecked();
     expect(bold).toHaveAttribute('aria-keyshortcuts', 'Control+B');
   });
 
@@ -234,7 +235,7 @@ describe('Button', () => {
       </form>,
     );
     const focusable = screen.getByRole('button');
-    expect(focusable).not.toBeDisabled();
+    expect(focusable).toBeEnabled();
     expect(focusable).toHaveAttribute('aria-disabled', 'true');
     expect(focusable).toHaveAttribute('data-disabled', 'true');
     await userEvent.tab();
@@ -255,7 +256,7 @@ describe('Button', () => {
       </Button>,
     );
     const button = screen.getByRole('button');
-    expect(button).not.toBeDisabled();
+    expect(button).toBeEnabled();
     expect(button).toHaveAttribute('aria-disabled', 'true');
     expect(button).toHaveAttribute('data-pending', 'true');
     expect(screen.getByRole('progressbar', { name: 'Loading' })).toHaveClass('ui-button__spinner');
@@ -288,16 +289,17 @@ describe('Button', () => {
   });
 
   it('UIC-BUTTON-2.4 publishes hover, press and keyboard focus states', async () => {
+    const user = userEvent.setup();
     render(<Button>States</Button>);
     const button = screen.getByRole('button');
-    await userEvent.hover(button);
+    await user.hover(button);
     expect(button).toHaveAttribute('data-hovered', 'true');
-    fireEvent.pointerDown(button, { pointerType: 'mouse', button: 0 });
+    await user.pointer({ keys: '[MouseLeft>]', target: button });
     expect(button).toHaveAttribute('data-pressed', 'true');
-    fireEvent.pointerUp(button, { pointerType: 'mouse', button: 0 });
-    await userEvent.unhover(button);
+    await user.pointer({ keys: '[/MouseLeft]', target: button });
+    await user.unhover(button);
     button.blur();
-    await userEvent.tab();
+    await user.tab();
     expect(button).toHaveAttribute('data-focus-visible', 'true');
     expect(button).toHaveAttribute('data-focused', 'true');
     expectHooksMatchSpec(document.body, 'BUTTON');
@@ -306,16 +308,17 @@ describe('Button', () => {
   it('UIC-BUTTON-2.5 appends the caller class and forwards id, ref and data attributes', () => {
     const ref = { current: null as HTMLButtonElement | null };
     render(
-      <Button className="caller" id="save" ref={ref} data-testid="probe" data-variant="caller">
+      <Button className="caller" id="save" ref={ref} data-owner="probe" data-variant="caller">
         Save
       </Button>,
     );
-    const button = screen.getByTestId('probe');
+    const button = screen.getByRole('button', { name: 'Save' });
     expect(button).toHaveClass('ui-button', 'caller');
     expect(button).toHaveAttribute('id', 'save');
     expect(button).toHaveAttribute('data-variant', 'secondary');
+    expect(button).toHaveAttribute('data-owner', 'probe');
     expect(ref.current).toBe(button);
-    expectHooksMatchSpec(document.body, 'BUTTON');
+    expectHooksMatchSpec(document.body, 'BUTTON', { callerAttributes: ['data-owner'] });
   });
 
   it('UIC-BUTTON-1.8 renders through the caller element with its hooks, states and ref', async () => {
@@ -332,13 +335,14 @@ describe('Button', () => {
         onPress={onPress}
         render={(props, state) => {
           states.push(state.isHovered, state.isPressed, state.isFocusVisible, state.isPending);
-          return <button {...mergeProps(props, { 'data-testid': 'caller' })} />;
+          return <button {...mergeProps(props, { 'data-caller': 'yes' })} />;
         }}
       >
         Bold
       </Button>,
     );
-    const button = screen.getByTestId('caller');
+    const button = screen.getByRole('menuitemcheckbox', { name: 'Bold' });
+    expect(button).toHaveAttribute('data-caller', 'yes');
     expect(button).toBe(ref.current);
     expect(button).toHaveClass('ui-button');
     expect(button).toHaveAttribute('data-variant', 'primary');
@@ -347,7 +351,7 @@ describe('Button', () => {
     await userEvent.click(button);
     expect(onPress).toHaveBeenCalledTimes(1);
     expect(states).toContain(false);
-    expectHooksMatchSpec(document.body, 'BUTTON', { callerAttributes: ['data-testid'] });
+    expectHooksMatchSpec(document.body, 'BUTTON', { callerAttributes: ['data-caller'] });
   });
 
   it('UIC-BUTTON-1.9 renders a link through the provider link renderer with its hooks', async () => {

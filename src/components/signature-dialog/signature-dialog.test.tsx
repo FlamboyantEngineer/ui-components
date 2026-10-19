@@ -102,7 +102,7 @@ describe('SignatureDialog', { timeout: 15_000 }, () => {
     expect(screen.getByText('Meaning of signature: Approved')).toHaveClass(
       'ui-signature-dialog__meaning',
     );
-    expect(screen.queryByRole('radiogroup')).toBeNull();
+    expect(screen.queryByRole('radiogroup')).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
     render(
       <SignatureDialog title="Sign" userName="Ada" meanings={meanings} onSign={vi.fn()} isOpen />,
@@ -131,7 +131,7 @@ describe('SignatureDialog', { timeout: 15_000 }, () => {
     );
     const reason = screen.getByRole('textbox', { name: 'Reason' });
     expect(reason.tagName).toBe('TEXTAREA');
-    expect(reason).toHaveAttribute('aria-required', 'true');
+    expect(reason).toBeRequired();
     expect(screen.getByRole('img', { name: 'Signature' })).toBeInTheDocument();
     expect(document.querySelector('.ui-signature-pad')).not.toHaveAttribute('data-required');
     unmount();
@@ -146,7 +146,7 @@ describe('SignatureDialog', { timeout: 15_000 }, () => {
         drawing="required"
       />,
     );
-    expect(screen.queryByRole('textbox', { name: 'Reason' })).toBeNull();
+    expect(screen.queryByRole('textbox', { name: 'Reason' })).not.toBeInTheDocument();
     expect(document.querySelector('.ui-signature-pad')).toHaveAttribute('data-required', 'true');
   });
 
@@ -157,7 +157,7 @@ describe('SignatureDialog', { timeout: 15_000 }, () => {
     expect(password).toHaveAttribute('type', 'password');
     expect(password).toHaveAttribute('autocomplete', 'current-password');
     expect(password).toHaveAttribute('aria-required', 'true');
-    expect(screen.queryByRole('textbox', { name: 'User name' })).toBeNull();
+    expect(screen.queryByRole('textbox', { name: 'User name' })).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
     render(
       <SignatureDialog
@@ -239,7 +239,7 @@ describe('SignatureDialog', { timeout: 15_000 }, () => {
     });
     expect(screen.getByRole('button', { name: /Sign/ })).toHaveAttribute('data-pending', 'true');
     await act(async () => signing.resolve());
-    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     expect(onOpenChange).toHaveBeenLastCalledWith(false);
   });
 
@@ -279,7 +279,7 @@ describe('SignatureDialog', { timeout: 15_000 }, () => {
     await user.keyboard('{Escape}');
     expect(passwordInput()).toHaveValue('');
     await user.keyboard('{Escape}');
-    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     await user.click(screen.getByRole('button', { name: 'Approve change' }));
     expect(await screen.findByLabelText(/^Password/, { selector: 'input' })).toHaveValue('');
     await user.click(screen.getByRole('button', { name: 'Cancel' }));

@@ -136,13 +136,13 @@ describe('Combobox suggestions', () => {
     await user.keyboard('{Enter}');
     expect(input()).toHaveValue('Lemon');
     expect(onChange).toHaveBeenLastCalledWith('lemon');
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     await user.keyboard('{ArrowDown}');
     expect(screen.getByRole('listbox')).toBeInTheDocument();
     await user.click(screen.getByRole('option', { name: 'Lime' }));
     expect(input()).toHaveValue('Lemon');
     await user.keyboard('{Escape}');
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     expect(input()).toHaveValue('Lemon');
   });
 
@@ -204,7 +204,7 @@ describe('Combobox suggestions', () => {
 
     await user.clear(input());
     await user.type(input(), 'lemon ');
-    expect(screen.queryByRole('option', { name: /^Add/ })).toBeNull();
+    expect(screen.queryByRole('option', { name: /^Add/ })).not.toBeInTheDocument();
     await user.clear(input());
     await user.type(input(), 'Lem');
     await user.click(screen.getByRole('option', { name: 'Add “Lem”' }));
@@ -238,7 +238,7 @@ describe('Combobox suggestions', () => {
     expect(screen.getByRole('status')).toHaveTextContent('kyoto');
     expect(input()).toHaveValue('Kyoto');
     expect(input()).toHaveFocus();
-    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
   });
 
   it('UIC-COMBOBOX-4.1 renders a long list virtualized and reaches its end by keyboard', async () => {
@@ -328,7 +328,7 @@ describe('Combobox suggestions', () => {
         renderOption={(option, state) => {
           states.push(state);
           return (
-            <span data-testid={`row-${option.id}`}>
+            <span>
               {option.label}
               {state.isFocused ? ' (focused)' : ''}
             </span>
@@ -338,7 +338,7 @@ describe('Combobox suggestions', () => {
     );
     await user.click(input());
     await user.keyboard('{ArrowDown}');
-    expect(screen.getByTestId('row-apple')).toHaveTextContent('Apple (focused)');
+    expect(screen.getByRole('option', { name: /^Apple/ })).toHaveTextContent('Apple (focused)');
     expect(Object.keys(states.at(-1) ?? {}).sort()).toEqual([
       'isDisabled',
       'isFocusVisible',

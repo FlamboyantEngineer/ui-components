@@ -63,7 +63,7 @@ describe('Field menu', () => {
 
   it('UIC-FIELD-6.2 draws no menu for an empty list and keeps the browser menu', () => {
     const { container } = render(<TextField />);
-    expect(screen.queryByRole('button', { name: 'Fruit actions' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Fruit actions' })).not.toBeInTheDocument();
     expect(fireEvent.contextMenu(screen.getByRole('textbox'))).toBe(true);
     expect(container.querySelector('.ui-field__menu')).toBeNull();
   });

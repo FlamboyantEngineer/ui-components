@@ -1,4 +1,5 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
@@ -66,16 +67,15 @@ describe('RelativeTime', () => {
   });
 
   it('UIC-RELATIVE-TIME-1.3 UIC-RELATIVE-TIME-3.1 shows the absolute date in a tooltip on focus', async () => {
-    vi.useFakeTimers();
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     const { container } = render(
       <RelativeTime value="2026-05-21T09:00" getNow={getNow} dateStyle="long" timeStyle="short" />,
     );
     const time = root(container);
     expect(time).toHaveAttribute('tabindex', '0');
-    act(() => {
-      fireEvent.keyDown(document.body, { key: 'Tab' });
-      time.focus();
-    });
+    await user.tab();
+    expect(time).toHaveFocus();
     expect(tooltip()?.textContent?.replace(/\s/g, ' ')).toBe('May 21, 2026 at 9:00 AM');
     expect(tooltip()).toHaveClass('ui-tooltip', 'ui-relative-time__tooltip');
     expect(time).toHaveAttribute('aria-describedby', tooltip()?.id);
@@ -86,12 +86,13 @@ describe('RelativeTime', () => {
   });
 
   it('UIC-RELATIVE-TIME-3.1 opens the tooltip on hover', async () => {
-    vi.useFakeTimers();
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     const { container } = render(<RelativeTime value={at(9, 0)} getNow={getNow} />);
     const time = root(container);
-    fireEvent.pointerMove(time, { pointerType: 'mouse' });
-    fireEvent.pointerEnter(time, { pointerType: 'mouse' });
-    fireEvent.mouseEnter(time);
+    // Move onto the page first, so React Aria reads a pointer modality when the time is entered.
+    await user.pointer({ target: document.body });
+    await user.hover(time);
     await advance(500);
     expect(tooltip()?.textContent?.replace(/\s/g, ' ')).toBe('May 23, 2026, 9:00 AM');
   });

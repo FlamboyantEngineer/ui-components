@@ -40,7 +40,7 @@ describe('RadioGroup', () => {
     const group = screen.getByRole('radiogroup', { name: 'Size' });
     expect(group).toHaveClass('ui-radio-group__box');
     expect(within(group).getAllByRole('radio')).toHaveLength(4);
-    expect(within(group).queryByRole('radio', { checked: true })).toBeNull();
+    expect(within(group).queryByRole('radio', { checked: true })).not.toBeInTheDocument();
     await user.click(screen.getByText('Large'));
     expect(onChange).toHaveBeenLastCalledWith('large');
     expect(onCommit).toHaveBeenLastCalledWith('large');
@@ -155,7 +155,7 @@ describe('RadioGroup', () => {
     const user = userEvent.setup();
     const { container } = render(<Sizes description="Pick one." isRequired />);
     const group = screen.getByRole('radiogroup', { name: 'Size' });
-    expect(group).toHaveAttribute('aria-required', 'true');
+    expect(group).toBeRequired();
     expect(group).toHaveAttribute('aria-invalid', 'true');
     expect(group).toHaveAttribute('data-invalid', 'true');
     expect(group).toHaveAccessibleDescription('Pick one. A value is required.');
@@ -253,7 +253,7 @@ describe('RadioGroup', () => {
     expect(radio('Large')).toHaveFocus();
     await user.click(screen.getByRole('button', { name: 'Size actions' }));
     await user.click(await screen.findByRole('menuitem', { name: 'Clear' }));
-    expect(screen.queryByRole('radio', { checked: true })).toBeNull();
+    expect(screen.queryByRole('radio', { checked: true })).not.toBeInTheDocument();
   });
 
   it('UIC-RADIO-GROUP-3.2 focuses the radio Tab reaches when a form blocks its submit', async () => {

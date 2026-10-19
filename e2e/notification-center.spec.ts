@@ -121,6 +121,11 @@ test.describe('Notification Center lab', () => {
     await lab.open('notification-center');
     const live = page.locator('[data-lab-live]');
     const status = live.locator('.ui-notification-center__announcement');
+    // Scrolling down to the live bell passes the inbox, which then loads its older page and shifts
+    // the content below it; let it load first so the page holds still under the click.
+    const inbox = page.locator('[data-lab-inbox]');
+    await inbox.locator('.ui-notification-list__load-more').scrollIntoViewIfNeeded();
+    await expect(inbox.locator('.ui-notification-list__load-more')).toHaveCount(0);
     await page.getByRole('button', { name: 'Add a notification' }).click();
     await expect(status).toHaveText('New notification: Build 1 passed');
     await expect(live.getByRole('button', { name: 'Notifications, 1 unread' })).toBeVisible();

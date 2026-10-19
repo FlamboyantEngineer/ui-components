@@ -163,7 +163,7 @@ describe('CommentThreadReply', () => {
     await userEvent.click(await screen.findByRole('menuitem', { name: 'Edit' }));
     await userEvent.click(await screen.findByRole('button', { name: 'Publish' }));
     expect(onEdit).toHaveBeenCalledWith('Draft v2');
-    expect(screen.queryByRole('button', { name: 'Publish' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Publish' })).not.toBeInTheDocument();
   });
 
   it('UIC-COMMENT-THREAD-2.4 deletes after confirmation', async () => {
@@ -192,7 +192,7 @@ describe('CommentThreadReply', () => {
     let dialog = await screen.findByRole('alertdialog', { name: 'Delete comment' });
     expect(dialog).toHaveTextContent('The comment will be removed from the thread.');
     await userEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
-    await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull());
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
     expect(onDelete).not.toHaveBeenCalled();
 
     await userEvent.click(screen.getByRole('button', { name: 'Comment actions' }));
@@ -215,7 +215,7 @@ describe('CommentThreadReply', () => {
         />
       </CommentThread>,
     );
-    expect(screen.queryByRole('button', { name: 'Comment actions' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Comment actions' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: '👍 1' })).toHaveAttribute('aria-disabled', 'true');
   });
 

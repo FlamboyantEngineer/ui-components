@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -36,7 +36,11 @@ function Panel(props: Partial<DockPanelProps>) {
 
 /** A frame whose client size the fake observer reports. */
 function Frame({ children }: { children: React.ReactNode }) {
-  return <div data-testid="frame">{children}</div>;
+  return (
+    <div role="region" aria-label="Frame">
+      {children}
+    </div>
+  );
 }
 
 class FakeResizeObserver {
@@ -58,7 +62,8 @@ class FakeResizeObserver {
 
 /** Gives the frame a client size and reports it to every observer watching it. */
 function resizeFrame(width: number, height: number) {
-  const frame = screen.getByTestId('frame');
+  // An open drawer hides the frame from the accessibility tree, so look past that.
+  const frame = screen.getByRole('region', { name: 'Frame', hidden: true });
   Object.defineProperties(frame, {
     clientWidth: { configurable: true, value: width },
     clientHeight: { configurable: true, value: height },
@@ -392,21 +397,20 @@ describe('DockPanel panes', () => {
   });
 
   it('UIC-DOCK-PANEL-2.4 returns focus to the launcher when the pane holding it closes', async () => {
+    const user = userEvent.setup();
     function Controlled() {
       const [isExpanded, setExpanded] = useState(true);
+      // A caller shortcut closes the panel while focus stays inside it.
       return (
-        <>
+        <div onKeyDown={(event) => event.key === 'F4' && setExpanded(false)}>
           <Panel isExpanded={isExpanded} onExpandedChange={setExpanded} />
-          <button type="button" onKeyDown={() => setExpanded(false)}>
-            Outside
-          </button>
-        </>
+        </div>
       );
     }
     render(<Controlled />);
     const filter = screen.getByRole('textbox', { name: 'File filter' });
     act(() => filter.focus());
-    fireEvent.keyDown(screen.getByRole('button', { name: 'Outside' }), { key: 'x' });
+    await user.keyboard('{F4}');
     expect(screen.getByRole('button', { name: 'Files' })).toHaveFocus();
   });
 });
@@ -475,16 +479,16 @@ describe('DockPanel size', () => {
     expect(separator).toHaveAttribute('aria-valuenow', '330');
   });
 
-  it('UIC-DOCK-PANEL-3.2 follows a pointer drag and publishes the resizing state', () => {
+  it('UIC-DOCK-PANEL-3.2 follows a pointer drag and publishes the resizing state', async () => {
+    const user = userEvent.setup();
     const { container } = render(<Panel />);
     const separator = screen.getByRole('separator');
     prepareCapture(separator);
-    const init = { pointerId: 3, button: 0, isPrimary: true };
-    fireEvent.pointerDown(separator, { ...init, clientX: 500 });
+    await user.pointer({ keys: '[MouseLeft>]', target: separator, coords: { clientX: 500 } });
     expect(root(container)).toHaveAttribute('data-resizing', 'true');
-    fireEvent.pointerMove(separator, { ...init, clientX: 450 });
+    await user.pointer({ target: separator, coords: { clientX: 450 } });
     expect(root(container).style.width).toBe('370px');
-    fireEvent.pointerUp(separator, { ...init, clientX: 440 });
+    await user.pointer({ keys: '[/MouseLeft]', target: separator, coords: { clientX: 440 } });
     expect(root(container)).not.toHaveAttribute('data-resizing');
     expect(root(container).style.width).toBe('380px');
   });
@@ -500,22 +504,24 @@ describe('DockPanel persistence', () => {
   }
 
   it('UIC-DOCK-PANEL-3.3 saves and restores the selection, expanded state and size', async () => {
+    const user = userEvent.setup();
     const storage = createMemoryStorage();
     const { unmount } = render(persisted(storage));
-    await userEvent.click(screen.getByRole('button', { name: 'People' }));
+    await user.click(screen.getByRole('button', { name: 'People' }));
     const separator = screen.getByRole('separator');
     prepareCapture(separator);
-    const init = { pointerId: 1, button: 0, isPrimary: true };
-    fireEvent.pointerDown(separator, { ...init, clientX: 500 });
-    fireEvent.pointerMove(separator, { ...init, clientX: 460 });
+    await user.pointer([
+      { keys: '[MouseLeft>]', target: separator, coords: { clientX: 500 } },
+      { coords: { clientX: 460 } },
+    ]);
     expect(JSON.parse(storage.getItem('side')!)).toEqual({ selectedKey: 'people' });
-    fireEvent.pointerUp(separator, { ...init, clientX: 460 });
+    await user.pointer({ keys: '[/MouseLeft]', target: separator, coords: { clientX: 460 } });
     expect(JSON.parse(storage.getItem('side')!)).toEqual({ selectedKey: 'people', size: 360 });
-    await userEvent.click(screen.getByRole('button', { name: 'Collapse Details' }));
+    await user.click(screen.getByRole('button', { name: 'Collapse Details' }));
     unmount();
     const { container } = render(persisted(storage));
     expect(root(container)).not.toHaveAttribute('data-expanded');
-    await userEvent.click(screen.getByRole('button', { name: 'Expand Details' }));
+    await user.click(screen.getByRole('button', { name: 'Expand Details' }));
     expect(pane('People')).toBeVisible();
     expect(root(container).style.width).toBe('360px');
   });
@@ -526,9 +532,9 @@ describe('DockPanel persistence', () => {
     expect(root(container).style.width).toBe('320px');
     unmount();
     const stored = JSON.stringify({ selectedKey: 'locked', isExpanded: 'yes', size: 'wide' });
-    const next = render(persisted(createMemoryStorage({ side: stored })));
+    const { container: nextContainer } = render(persisted(createMemoryStorage({ side: stored })));
     expect(pane('Files')).toBeVisible();
-    expect(root(next.container).style.width).toBe('320px');
+    expect(root(nextContainer).style.width).toBe('320px');
   });
 
   it('UIC-DOCK-PANEL-3.3 leaves controlled values to the caller', async () => {
@@ -572,7 +578,7 @@ describe('DockPanel overlay', () => {
       'right',
     );
     expect(within(dialog).getByText('Maria Santos')).toBeInTheDocument();
-    expect(within(dialog).queryByRole('heading', { level: 3 })).toBeNull();
+    expect(within(dialog).queryByRole('heading', { level: 3 })).not.toBeInTheDocument();
     expect(people).toHaveAttribute('aria-expanded', 'true');
     expect(onExpandedChange).not.toHaveBeenCalled();
     expect(container.querySelectorAll('.ui-dock-panel__pane')).toHaveLength(0);

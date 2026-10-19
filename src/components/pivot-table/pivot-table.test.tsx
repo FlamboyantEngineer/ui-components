@@ -279,7 +279,7 @@ describe('PivotTable', { timeout: 20_000 }, () => {
     );
     const picker = screen.getByRole('button', { name: /Aggregation of Boxes/ });
     expect(picker.closest('.ui-pivot-table__aggregate')).toHaveClass('ui-select-field');
-    expect(screen.queryByRole('button', { name: /Aggregation of Price/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /Aggregation of Price/ })).not.toBeInTheDocument();
     await user.click(picker);
     expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual([
       'Sum',

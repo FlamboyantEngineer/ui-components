@@ -67,12 +67,14 @@ describe('DateTimeField field', () => {
     ).toEqual(['4', '4']);
     expectHooksMatchSpec(container, 'DATE-TIME-FIELD', { slots: ['separator'] });
     unmount();
-    const time = renderInLocale(<DateTimeField label="At" mode="time" defaultValue="13:45" />);
-    expect(root(time.container)).toHaveAttribute('data-mode', 'time');
+    const { container: timeContainer } = renderInLocale(
+      <DateTimeField label="At" mode="time" defaultValue="13:45" />,
+    );
+    expect(root(timeContainer)).toHaveAttribute('data-mode', 'time');
     expect(segment(/^hour/)).toHaveTextContent('1');
     expect(segment(/^minute/)).toHaveTextContent('45');
-    expect(screen.queryByRole('button', { name: /Calendar/ })).toBeNull();
-    expectHooksMatchSpec(time.container, 'DATE-TIME-FIELD', {
+    expect(screen.queryByRole('button', { name: /Calendar/ })).not.toBeInTheDocument();
+    expectHooksMatchSpec(timeContainer, 'DATE-TIME-FIELD', {
       slots: ['group', 'input', 'segment'],
     });
   });
@@ -106,13 +108,13 @@ describe('DateTimeField field', () => {
     expect(onCommit).toHaveBeenLastCalledWith('2026-05-14');
     unmount();
     const time = vi.fn();
-    const second = renderInLocale(
+    const { unmount: unmountSecond } = renderInLocale(
       <DateTimeField label="At" mode="time" defaultValue="09:00" onCommit={time} />,
     );
     act(() => segment(/^hour/).focus());
     await user.keyboard('{ArrowUp}');
     expect(time).toHaveBeenLastCalledWith('10:00');
-    second.unmount();
+    unmountSecond();
     const instant = vi.fn();
     renderInLocale(
       <DateTimeField
@@ -178,13 +180,13 @@ describe('DateTimeField field', () => {
       'true',
     );
     unmount();
-    const readOnly = renderInLocale(
+    const { unmount: unmountReadOnly } = renderInLocale(
       <DateTimeField label="Due" defaultValue="2026-04-13" isReadOnly />,
     );
     expect(segment(/^month/)).toHaveAttribute('aria-readonly', 'true');
     await user.click(screen.getByRole('button', { name: /Calendar/ }));
-    expect(screen.queryByRole('dialog')).toBeNull();
-    readOnly.unmount();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    unmountReadOnly();
     renderInLocale(<DateTimeField label="Due" defaultValue="2026-04-13" isDisabled />);
     expect(segment(/^month/)).toHaveAttribute('aria-disabled', 'true');
     expect(screen.getByRole('button', { name: /Calendar/ })).toBeDisabled();
@@ -293,7 +295,7 @@ describe('DateTimeField calendar', () => {
     );
     await user.keyboard('{ArrowRight}{Enter}');
     expect(onCommit).toHaveBeenCalledWith('2026-04-14');
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('UIC-DATE-TIME-FIELD-2.1 refuses days outside the bounds and shows two months for a range', async () => {
@@ -339,9 +341,9 @@ describe('DateTimeField calendar', () => {
     expect(onCommit).toHaveBeenLastCalledWith(
       `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`,
     );
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /Calendar/ }));
-    expect(screen.queryByRole('button', { name: 'Now' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Now' })).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Clear' }));
     expect(onCommit).toHaveBeenLastCalledWith(null);
     unmount();

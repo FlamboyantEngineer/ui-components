@@ -5,7 +5,7 @@ import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { IconSelectField, type IconSelectFieldOption } from './icon-select-field.js';
 
 const symbols: IconSelectFieldOption[] = [
-  { id: 'star', label: 'Star', icon: <svg data-testid="star-icon" /> },
+  { id: 'star', label: 'Star', icon: <svg aria-label="Star glyph" /> },
   { id: 'check', label: 'Check', icon: 'check' },
   { id: 'info', label: 'Info', icon: 'info' },
 ];
@@ -36,7 +36,9 @@ describe('IconSelectField', () => {
       .getAllByRole('option')
       .map((option) => option.querySelector('.ui-select-field__option-icon'));
     expect(icons.every(Boolean)).toBe(true);
-    expect(screen.getByTestId('star-icon').closest('.ui-select-field__option-icon')).not.toBeNull();
+    expect(
+      screen.getByLabelText('Star glyph').closest('.ui-select-field__option-icon'),
+    ).not.toBeNull();
     expect(screen.getByRole('listbox')).not.toHaveAttribute('aria-multiselectable');
   });
 
@@ -44,7 +46,7 @@ describe('IconSelectField', () => {
     const user = userEvent.setup();
     const { unmount } = render(<IconSelectField label="Symbol" options={many} />);
     await user.click(screen.getByRole('button', { name: /Symbol$/ }));
-    expect(screen.queryByRole('searchbox')).toBeNull();
+    expect(screen.queryByRole('searchbox')).not.toBeInTheDocument();
     await user.keyboard('{Escape}');
     unmount();
     render(<IconSelectField label="Symbol" options={many} filterable />);

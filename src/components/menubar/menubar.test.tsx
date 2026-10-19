@@ -222,7 +222,7 @@ describe('Menubar', () => {
     await user.keyboard('{ArrowDown}{ArrowRight}');
     expect(screen.getByRole('menuitem', { name: 'Undo' })).toHaveFocus();
     await user.keyboard('{ArrowLeft}');
-    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     await waitFor(() => expect(top('Edit')).toHaveFocus());
   });
 
@@ -340,14 +340,12 @@ describe('Menubar', () => {
     await user.click(top('View'));
     expect(screen.getByRole('group', { name: 'Panels' })).toBeInTheDocument();
     const grid = screen.getByRole('menuitemcheckbox', { name: 'Grid' });
-    expect(screen.getByRole('menuitemcheckbox', { name: 'Ruler' })).toHaveAttribute(
-      'aria-checked',
-      'true',
-    );
+    expect(screen.getByRole('menuitemcheckbox', { name: 'Ruler' })).toBeChecked();
     await user.click(grid);
-    expect(grid).toHaveAttribute('aria-checked', 'true');
+    expect(grid).toBeChecked();
     expect(screen.getByRole('menubar')).not.toHaveAttribute('aria-hidden');
-    expect(screen.getByRole('menubar').closest('[inert]')).toBeNull();
+    const menubar = screen.getByRole('menubar');
+    expect(menubar.closest('[inert]')).toBeNull();
     await user.keyboard('{Escape}');
     await user.click(top('Theme'));
     await user.click(screen.getByRole('menuitemradio', { name: 'Dark' }));

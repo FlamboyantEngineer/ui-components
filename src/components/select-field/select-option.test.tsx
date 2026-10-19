@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -69,7 +69,7 @@ describe('SelectField option groups and content', () => {
     );
     expect(container.querySelector('.ui-select-field')).toHaveAttribute('data-icons', 'true');
     await user.click(trigger('Leek Produce'));
-    fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'lea' } });
+    await user.type(screen.getByRole('searchbox'), 'lea');
     expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual([
       'Kale Leafy',
     ]);
@@ -79,7 +79,7 @@ describe('SelectField option groups and content', () => {
   it('UIC-SELECT-FIELD-7.2 draws options through renderOption and keeps the trigger text', async () => {
     const user = userEvent.setup();
     const renderOption = vi.fn((option, state: { isSelected: boolean }) => (
-      <span data-testid={`custom-${String(option.id)}`}>
+      <span>
         {option.label} {state.isSelected ? '(chosen)' : ''}
       </span>
     ));
@@ -93,8 +93,9 @@ describe('SelectField option groups and content', () => {
     );
     expect(trigger('Pear Produce')).toBeInTheDocument();
     await user.click(trigger('Pear Produce'));
-    expect(screen.getByTestId('custom-pear')).toHaveTextContent('Pear (chosen)');
-    expect(screen.getByTestId('custom-apple')).toHaveTextContent('Apple');
+    const list = screen.getByRole('listbox');
+    expect(within(list).getByText('Pear (chosen)')).toBeInTheDocument();
+    expect(within(list).getByText('Apple')).toBeInTheDocument();
     const apple = screen.getByRole('option', { name: /Apple/ });
     expect(apple).toHaveClass('ui-select-field__option');
     expect(apple.querySelector('.ui-select-field__option-label')).toBeNull();

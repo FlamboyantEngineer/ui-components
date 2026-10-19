@@ -135,7 +135,8 @@ describe('Table spreadsheet mode', { timeout: 20_000 }, () => {
     expect(selectedText()).toEqual(['Pear']);
   });
 
-  it('UIC-TABLE-14.1 extends the range by dragging and takes a controlled range', () => {
+  it('UIC-TABLE-14.1 extends the range by dragging and takes a controlled range', async () => {
+    const user = userEvent.setup();
     const onSelectedRangeChange = vi.fn();
     const { unmount } = render(
       <Sheet
@@ -144,18 +145,19 @@ describe('Table spreadsheet mode', { timeout: 20_000 }, () => {
       />,
     );
     expect(selectedText()).toEqual(['3', 'green', '6', 'blue']);
-    fireEvent.pointerDown(cell('Apple', 'name'), { button: 0, pointerId: 1 });
-    fireEvent.pointerUp(window, { pointerId: 1 });
+    await user.pointer({ keys: '[MouseLeft]', target: cell('Apple', 'name') });
     expect(onSelectedRangeChange).toHaveBeenLastCalledWith(
       expect.objectContaining({ anchor: position('a', 'name') }),
     );
     expect(selectedText()).toEqual(['3', 'green', '6', 'blue']);
     unmount();
     render(<Sheet onSelectedRangeChange={onSelectedRangeChange} />);
-    fireEvent.pointerDown(cell('Apple', 'name'), { button: 0, pointerId: 1 });
-    fireEvent.pointerOver(cell('Pear', 'count'), { pointerId: 1 });
-    fireEvent.pointerUp(window, { pointerId: 1 });
-    fireEvent.pointerOver(cell('Plum', 'note'), { pointerId: 1 });
+    await user.pointer([
+      { keys: '[MouseLeft>]', target: cell('Apple', 'name') },
+      { target: cell('Pear', 'count') },
+      { keys: '[/MouseLeft]' },
+      { target: cell('Plum', 'note') },
+    ]);
     expect(onSelectedRangeChange).toHaveBeenLastCalledWith({
       anchor: position('a', 'name'),
       focus: position('b', 'count'),
@@ -200,9 +202,8 @@ describe('Table spreadsheet mode', { timeout: 20_000 }, () => {
     const onBatch = vi.fn();
     render(<Sheet onBatch={onBatch} />);
     await user.click(cell('Pear', 'name'));
-    fireEvent.paste(cell('Pear', 'name'), {
-      clipboardData: clipboard({ 'text/plain': 'Kiwi\t12\tgrey\nLime\t-4\r\n' }),
-    });
+    expect(cell('Pear', 'name')).toHaveFocus();
+    await user.paste('Kiwi\t12\tgrey\nLime\t-4\r\n');
     expect(onBatch).toHaveBeenCalledTimes(1);
     expect(onBatch.mock.calls[0]?.[0]).toEqual([
       { row: items[1], columnId: 'name', value: 'Kiwi' },
@@ -212,7 +213,8 @@ describe('Table spreadsheet mode', { timeout: 20_000 }, () => {
     expect(selectedText()).toEqual(['Kiwi', '12', 'green', 'Lime', '6', 'blue']);
     await user.click(cell('Apple', 'count'));
     await user.keyboard('{Shift>}{ArrowDown}{/Shift}');
-    fireEvent.paste(cell('Apple', 'count'), { clipboardData: clipboard({ 'text/plain': '5' }) });
+    expect(cell('Apple', 'count')).toHaveFocus();
+    await user.paste('5');
     expect(onBatch.mock.calls[1]?.[0]).toEqual([
       { row: items[0], columnId: 'count', value: 5 },
       { row: expect.objectContaining({ id: 'b' }), columnId: 'count', value: 5 },
@@ -235,12 +237,11 @@ describe('Table spreadsheet mode', { timeout: 20_000 }, () => {
     await user.click(cell('Apple', 'count'));
     await user.keyboard('{Shift>}{ArrowDown}{/Shift}');
     const handle = document.querySelector('.ui-table__fill-handle') as HTMLElement;
-    fireEvent.pointerDown(handle, { button: 0, pointerId: 2 });
-    fireEvent.pointerOver(cell('Fig', 'note'), { pointerId: 2 });
+    await user.pointer([{ keys: '[MouseLeft>]', target: handle }, { target: cell('Fig', 'note') }]);
     expect(cell('Plum', 'count')).toHaveAttribute('data-fill-target', 'true');
     expect(cell('Fig', 'count')).toHaveAttribute('data-fill-target', 'true');
     expect(cell('Fig', 'note')).not.toHaveAttribute('data-fill-target');
-    fireEvent.pointerUp(window, { pointerId: 2 });
+    await user.pointer({ keys: '[/MouseLeft]' });
     expect(onBatch).toHaveBeenLastCalledWith([
       { row: items[2], columnId: 'count', value: 5 },
       { row: items[3], columnId: 'count', value: 7 },
@@ -278,7 +279,7 @@ describe('Table spreadsheet mode', { timeout: 20_000 }, () => {
     await user.keyboard('{Enter}{Shift>}{Tab}{/Shift}');
     expect(cell('Kiwi', 'name')).toHaveFocus();
     await user.keyboard(' ');
-    expect(screen.queryByRole('textbox')).toBeNull();
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
   });
 
   it('UIC-TABLE-14.7 keeps the editor open with the column message for a refused value', async () => {
@@ -295,7 +296,7 @@ describe('Table spreadsheet mode', { timeout: 20_000 }, () => {
     expect(screen.getByRole('alert')).toHaveClass('ui-table__editor-message');
     expect(onCellEdit).not.toHaveBeenCalled();
     await user.click(cell('Plum', 'note'));
-    expect(screen.queryByRole('textbox')).toBeNull();
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
     expect(onCellEdit).not.toHaveBeenCalled();
     expect(cell('Apple', 'count')).toHaveTextContent('1');
   });

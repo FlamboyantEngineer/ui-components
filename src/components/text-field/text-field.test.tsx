@@ -86,7 +86,7 @@ describe('TextField', () => {
       <TextField id="fruit" label="Fruit" description="Pick a fruit." isRequired />,
     );
     const input = screen.getByRole('textbox', { name: 'Fruit' });
-    expect(input).toHaveAttribute('aria-required', 'true');
+    expect(input).toBeRequired();
     expect(input).toHaveAttribute('aria-invalid', 'true');
     expect(input).toHaveAttribute('aria-errormessage', 'fruit-message');
     expect(input).toHaveAccessibleDescription('Pick a fruit. A value is required.');
@@ -122,7 +122,9 @@ describe('TextField', () => {
     await user.type(input, '!');
     await user.tab();
     expect(onCommit).toHaveBeenLastCalledWith('Figs!');
-    fireEvent.change(input, { target: { value: 'Kiwi' } });
+    await user.clear(input);
+    await user.type(input, 'Kiwi');
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing on a keydown
     fireEvent.keyDown(input, { key: 'Enter', isComposing: true });
     expect(onCommit).toHaveBeenCalledTimes(2);
   });
@@ -290,9 +292,9 @@ describe('TextField', () => {
     rerender(<TextField label="Password" type="password" allowsReveal isDisabled />);
     expect(screen.getByRole('button', { name: 'Show Password' })).toBeDisabled();
     rerender(<TextField label="Password" type="password" />);
-    expect(screen.queryByRole('button', { name: 'Show Password' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Show Password' })).not.toBeInTheDocument();
     rerender(<TextField label="Password" allowsReveal />);
-    expect(screen.queryByRole('button', { name: 'Show Password' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Show Password' })).not.toBeInTheDocument();
   });
 
   it('UIC-TEXT-FIELD-3.3 grows a text area with its text between its row limits', async () => {

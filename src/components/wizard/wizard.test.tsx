@@ -66,7 +66,7 @@ describe('Wizard', () => {
     expect(panel).toHaveClass('ui-wizard__panel');
     expect(form).toContainElement(panel);
     expect(within(panel).getByRole('textbox', { name: 'City name' })).toBeInTheDocument();
-    expect(screen.queryByRole('textbox', { name: 'Note text' })).toBeNull();
+    expect(screen.queryByRole('textbox', { name: 'Note text' })).not.toBeInTheDocument();
     expect(form?.querySelector('.ui-wizard__footer')).not.toBeNull();
     expectHooksMatchSpec(container, 'WIZARD', {
       slots: ['steps', 'form', 'panel', 'heading', 'footer', 'action'],
@@ -198,14 +198,14 @@ describe('Wizard', () => {
     expect(validate).toHaveBeenCalledTimes(1);
     expect(screen.getByRole('heading', { name: 'City' })).toBeInTheDocument();
     expect(statuses()[0]).toBe('error');
-    expect(screen.queryByRole('alert')).toBeNull();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     await userEvent.click(action('Next'));
     const alert = screen.getByRole('alert');
     expect(alert).toHaveTextContent('Pick a city we fly to.');
     expect(alert).toHaveClass('ui-inline-error', 'ui-wizard__error');
     expectHooksMatchSpec(container, 'WIZARD', { slots: ['error'] });
     await userEvent.click(action('Next'));
-    expect(screen.queryByRole('alert')).toBeNull();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Note' })).toBeInTheDocument();
     expect(statuses()).toEqual(['complete', 'current', 'upcoming']);
   });
@@ -339,12 +339,12 @@ describe('Wizard', () => {
     await passCity();
     expect(within(dialog).getByRole('heading', { name: 'Note' })).toHaveFocus();
     await userEvent.click(action('Cancel'));
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     await userEvent.click(action('Plan a trip'));
     await passCity();
     await userEvent.click(action('Next'));
     await userEvent.click(action('Finish'));
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(screen.getByText('Trip booked')).toBeInTheDocument();
   });
 });

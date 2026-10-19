@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { Button as AriaButton } from '../../primitives/index.js';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -8,15 +8,32 @@ import { Tooltip } from './tooltip.js';
 
 const tooltip = () => document.querySelector<HTMLElement>('[role="tooltip"]');
 
-function hover(element: Element) {
-  fireEvent.pointerMove(element, { pointerType: 'mouse' });
-  fireEvent.pointerEnter(element, { pointerType: 'mouse' });
-  fireEvent.mouseEnter(element);
+let user: ReturnType<typeof userEvent.setup>;
+
+/**
+ * Fake timers with a user-event session. Testing Library drains a zero timeout after each user-event
+ * call and advances it only under Jest's fake timers, so it is pointed at Vitest's clock here.
+ */
+function useFakeClock() {
+  vi.useFakeTimers();
+  return userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
 }
 
-function leave(element: Element) {
-  fireEvent.pointerLeave(element, { pointerType: 'mouse' });
-  fireEvent.mouseLeave(element);
+/** Moves the mouse across the page and onto `element`, so React Aria sees a pointer before the hover. */
+async function hover(element: Element) {
+  await user.pointer({ target: document.body });
+  await user.hover(element);
+}
+
+const leave = (element: Element) => user.unhover(element);
+
+/** Reaches `element` with Tab, as a keyboard user does, stepping back first if it has focus. */
+async function tabTo(element: HTMLElement) {
+  if (element === document.activeElement) await user.tab({ shift: true });
+  for (let step = 0; step < 10 && document.activeElement !== element; step += 1) {
+    await user.tab();
+  }
+  expect(element).toHaveFocus();
 }
 
 async function advance(ms: number) {
@@ -27,12 +44,13 @@ async function advance(ms: number) {
 
 describe('Tooltip', () => {
   beforeEach(() => {
-    vi.useFakeTimers();
+    user = useFakeClock();
   });
   afterEach(async () => {
     // Let React Aria's global warm-up and cool-down timers settle between tests.
     await advance(5000);
     vi.useRealTimers();
+    vi.unstubAllGlobals();
   });
 
   it('UIC-TOOLTIP-1.1 UIC-TOOLTIP-1.2 opens after the hover delay in a portalled tooltip panel', async () => {
@@ -43,7 +61,7 @@ describe('Tooltip', () => {
     );
     const trigger = screen.getByRole('button', { name: 'Save' });
     expect(trigger.parentElement).toBe(container);
-    hover(trigger);
+    await hover(trigger);
     await advance(499);
     expect(tooltip()).toBeNull();
     await advance(1);
@@ -66,18 +84,14 @@ describe('Tooltip', () => {
         </Tooltip>
       </>,
     );
-    act(() => {
-      fireEvent.keyDown(document.body, { key: 'Tab' });
-      screen.getByRole('button', { name: 'First' }).focus();
-    });
+    await tabTo(screen.getByRole('button', { name: 'First' }));
     expect(tooltip()).toHaveTextContent('First hint');
     act(() => screen.getByRole('button', { name: 'First' }).blur());
     await advance(3000);
     expect(tooltip()).toBeNull();
 
     const slow = screen.getByRole('button', { name: 'Slow' });
-    fireEvent.pointerMove(document.body, { pointerType: 'mouse' });
-    hover(slow);
+    await hover(slow);
     await advance(1199);
     expect(tooltip()).toBeNull();
     await advance(1);
@@ -97,11 +111,11 @@ describe('Tooltip', () => {
     );
     const alpha = screen.getByRole('button', { name: 'Alpha' });
     const blue = screen.getByRole('button', { name: 'Blue' });
-    hover(alpha);
+    await hover(alpha);
     await advance(500);
     expect(tooltip()).toHaveTextContent('Alpha hint');
-    leave(alpha);
-    hover(blue);
+    await leave(alpha);
+    await hover(blue);
     await advance(0);
     expect(document.querySelectorAll('[role="tooltip"]')).toHaveLength(1);
     expect(tooltip()).toHaveTextContent('Blue hint');
@@ -118,22 +132,23 @@ describe('Tooltip', () => {
         </Tooltip>
       </>,
     );
-    hover(screen.getByRole('button', { name: 'Disabled hint' }));
+    await hover(screen.getByRole('button', { name: 'Disabled hint' }));
     await advance(1000);
     expect(tooltip()).toBeNull();
-    fireEvent.pointerEnter(screen.getByRole('button', { name: 'Focus' }), { pointerType: 'touch' });
-    hover(screen.getByRole('button', { name: 'Focus' }));
+    await user.pointer([
+      { keys: '[TouchA>]', target: screen.getByRole('button', { name: 'Focus' }) },
+      { keys: '[/TouchA]' },
+    ]);
+    await hover(screen.getByRole('button', { name: 'Focus' }));
     await advance(1000);
     expect(tooltip()).toBeNull();
-    act(() => {
-      fireEvent.keyDown(document.body, { key: 'Tab' });
-      screen.getByRole('button', { name: 'Focus' }).focus();
-    });
+    await tabTo(screen.getByRole('button', { name: 'Focus' }));
     expect(tooltip()).toHaveTextContent('Focus only');
   });
 
   it('UIC-TOOLTIP-1.3 closes on Escape without moving focus, and on press', async () => {
     vi.useRealTimers();
+    vi.unstubAllGlobals();
     const user = userEvent.setup();
     render(
       <Tooltip content="Copy the link">
@@ -161,15 +176,15 @@ describe('Tooltip', () => {
       </Tooltip>,
     );
     const trigger = screen.getByRole('button', { name: 'Target' });
-    hover(trigger);
+    await hover(trigger);
     await advance(300);
-    leave(trigger);
+    await leave(trigger);
     await advance(1000);
     expect(tooltip()).toBeNull();
-    hover(trigger);
+    await hover(trigger);
     await advance(500);
     expect(tooltip()).not.toBeNull();
-    leave(trigger);
+    await leave(trigger);
     await advance(0);
     expect(tooltip()).toBeNull();
   });
@@ -182,10 +197,7 @@ describe('Tooltip', () => {
     );
     const trigger = screen.getByRole('button', { name: 'Help' });
     expect(trigger).not.toHaveAttribute('aria-describedby');
-    act(() => {
-      fireEvent.keyDown(document.body, { key: 'Tab' });
-      trigger.focus();
-    });
+    await tabTo(trigger);
     const panel = tooltip();
     expect(panel?.id).toBeTruthy();
     expect(trigger).toHaveAttribute('aria-describedby', panel?.id);
@@ -225,7 +237,7 @@ describe('Tooltip', () => {
         <Button>Controlled</Button>
       </Tooltip>,
     );
-    hover(screen.getByRole('button', { name: 'Controlled' }));
+    await hover(screen.getByRole('button', { name: 'Controlled' }));
     await advance(500);
     expect(onOpenChange).toHaveBeenCalledWith(true);
     expect(tooltip()).toBeNull();
@@ -239,15 +251,16 @@ describe('Tooltip', () => {
 
   it('UIC-TOOLTIP-1.8 appends the caller class and forwards data attributes to the panel', () => {
     render(
-      <Tooltip content="Hint" defaultOpen className="caller" data-testid="panel" data-variant="x">
+      <Tooltip content="Hint" defaultOpen className="caller" data-test="panel" data-variant="x">
         <Button>Probe</Button>
       </Tooltip>,
     );
-    const panel = screen.getByTestId('panel');
+    const panel = screen.getByRole('tooltip');
     expect(panel).toHaveClass('ui-tooltip', 'caller');
+    expect(panel).toHaveAttribute('data-test', 'panel');
     expect(panel).toHaveAttribute('data-variant', 'default');
     expect(panel).toHaveAttribute('role', 'tooltip');
-    expectHooksMatchSpec(document.body, 'TOOLTIP');
+    expectHooksMatchSpec(document.body, 'TOOLTIP', { callerAttributes: ['data-test'] });
   });
 
   it('UIC-TOOLTIP-1.9 names the trigger by the hint, open or not, without describing it', async () => {
@@ -266,10 +279,7 @@ describe('Tooltip', () => {
     );
     const bold = screen.getByRole('button', { name: 'Bold' });
     expect(bold).toHaveAccessibleDescription('');
-    act(() => {
-      fireEvent.keyDown(document.body, { key: 'Tab' });
-      bold.focus();
-    });
+    await tabTo(bold);
     expect(tooltip()).toHaveTextContent('Bold');
     expect(bold).toHaveAccessibleName('Bold');
     expect(bold).toHaveAccessibleDescription('');
@@ -279,10 +289,7 @@ describe('Tooltip', () => {
     expect(bold).toHaveAccessibleName('Bold');
 
     const italic = screen.getByRole('button', { name: 'Italic' });
-    act(() => {
-      fireEvent.keyDown(document.body, { key: 'Tab' });
-      italic.focus();
-    });
+    await tabTo(italic);
     expect(tooltip()).toHaveTextContent('Italic');
     expect(italic).toHaveAccessibleDescription('Slanted text');
     act(() => italic.blur());
@@ -296,10 +303,7 @@ describe('Tooltip', () => {
       </Tooltip>,
     );
     const trigger = screen.getByRole('button', { name: 'U' });
-    act(() => {
-      fireEvent.keyDown(document.body, { key: 'Tab' });
-      trigger.focus();
-    });
+    await tabTo(trigger);
     expect(trigger).toHaveAccessibleName('U');
     expect(trigger).toHaveAccessibleDescription('Underline');
   });

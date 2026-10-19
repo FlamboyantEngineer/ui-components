@@ -80,7 +80,7 @@ describe('ConfirmDialog', () => {
     expect(onConfirm).toHaveBeenCalledTimes(1);
     expect(onCancel).not.toHaveBeenCalled();
     expect(onOpenChange).toHaveBeenLastCalledWith(false);
-    expect(screen.queryByRole('alertdialog')).toBeNull();
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'Delete file' }));
     await userEvent.click(await screen.findByRole('button', { name: 'Cancel' }));
@@ -117,7 +117,7 @@ describe('ConfirmDialog', () => {
     });
     expect(onCancel).not.toHaveBeenCalled();
 
-    const failing = render(
+    const { unmount: unmountFailing } = render(
       <ConfirmDialog
         title="Archive again?"
         isOpen
@@ -125,10 +125,10 @@ describe('ConfirmDialog', () => {
         onConfirm={() => Promise.reject(new Error('Archive refused.'))}
       />,
     );
-    await act(async () => userEvent.click(screen.getByRole('button', { name: 'Retry' })));
+    await userEvent.click(screen.getByRole('button', { name: 'Retry' }));
     expect(screen.getByRole('alert')).toHaveTextContent('Archive refused.');
     expect(screen.getByRole('alertdialog', { name: 'Archive again?' })).toBeInTheDocument();
-    failing.unmount();
+    unmountFailing();
   });
 
   it('UIC-CONFIRM-DIALOG-1.2 cancels on an outside press only when dismissable', async () => {
@@ -189,7 +189,7 @@ describe('ConfirmDialog', () => {
     expect(onSecondaryAction).toHaveBeenCalledTimes(1);
     expect(onConfirm).not.toHaveBeenCalled();
     expect(onCancel).not.toHaveBeenCalled();
-    expect(screen.queryByRole('alertdialog')).toBeNull();
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
   });
 
   it('UIC-CONFIRM-DIALOG-1.7 draws the glyph of a news tone, or the caller icon, before the title', () => {
@@ -216,7 +216,7 @@ describe('ConfirmDialog', () => {
   it('UIC-CONFIRM-DIALOG-1.8 leaves Cancel out and focuses the action of an acknowledgement', async () => {
     const onCancel = vi.fn();
     await openHarness({ cancelLabel: null, confirmLabel: 'Got it', onCancel });
-    expect(screen.queryByRole('button', { name: 'Cancel' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Cancel' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Got it' })).toHaveFocus();
     await userEvent.keyboard('{Escape}');
     expect(onCancel).toHaveBeenCalledTimes(1);
@@ -247,7 +247,7 @@ describe('ConfirmDialog', () => {
     expect(screen.getByRole('button', { name: 'Cancel' })).toHaveFocus();
     await userEvent.click(screen.getByRole('button', { name: 'Remove', hidden: false }));
     expect(onConfirm).toHaveBeenCalledTimes(1);
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     await waitFor(() => expect(trigger).toHaveFocus());
   });
 
@@ -277,7 +277,7 @@ describe('ConfirmDialog', () => {
     expect(onConfirm).toHaveBeenCalledTimes(1);
     expect(settled).toHaveBeenCalledTimes(1);
     expect(controller.getSnapshot()).toEqual([]);
-    expect(screen.queryByRole('alertdialog')).toBeNull();
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
 
     act(() => {
       answer = confirm(controller, { title: 'Archive?' });
@@ -318,11 +318,10 @@ describe('ConfirmDialog', () => {
         isOpen
         className="caller"
         id="confirm-hooks"
-        data-testid="confirm-root"
         data-purpose="leave"
       />,
     );
-    const root = screen.getByTestId('confirm-root');
+    const root = screen.getByRole('alertdialog').closest('.ui-modal');
     expect(root).toHaveClass('ui-modal', 'ui-confirm-dialog', 'caller');
     expect(root).toHaveAttribute('data-purpose', 'leave');
     expect(screen.getByRole('alertdialog')).toHaveAttribute('id', 'confirm-hooks');

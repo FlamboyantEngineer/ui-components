@@ -94,6 +94,6 @@ describe('PropertyCard', () => {
       </PropertyCard>,
     );
     expect(root).not.toHaveAttribute('data-overridden');
-    expect(screen.queryByRole('img')).toBeNull();
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
   });
 });

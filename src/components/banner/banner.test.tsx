@@ -57,8 +57,12 @@ describe('Banner', () => {
     }
     rerender(<Banner tone="info" icon="restore" description="Note" />);
     expect(container.querySelector('.ui-banner__icon')).toHaveAttribute('data-glyph', 'restore');
-    rerender(<Banner tone="info" icon={<svg data-testid="custom" />} description="Note" />);
-    expect(screen.getByTestId('custom').parentElement).toHaveClass('ui-banner__icon');
+    rerender(
+      <Banner tone="info" icon={<svg role="img" aria-label="Custom glyph" />} description="Note" />,
+    );
+    expect(
+      screen.getByRole('img', { name: 'Custom glyph', hidden: true }).parentElement,
+    ).toHaveClass('ui-banner__icon');
     rerender(<Banner tone="danger" icon={null} description="Note" />);
     expect(container.querySelector('.ui-banner__icon')).toBeNull();
   });
@@ -93,7 +97,7 @@ describe('Banner', () => {
     expect(screen.getByRole('button', { name: 'Dismiss template warning' })).toBeInTheDocument();
 
     rerender(<Banner description="Note" />);
-    expect(screen.queryByRole('button')).toBeNull();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
 
   it('UIC-BANNER-1.4 renders phrasing content when inline', () => {
@@ -212,7 +216,7 @@ describe('Banner', () => {
       expect(screen.getByRole('status')).toBe(root);
       expect(root).toHaveAttribute('data-exiting', 'true');
       await act(async () => finishFade());
-      expect(screen.queryByRole('status')).toBeNull();
+      expect(screen.queryByRole('status')).not.toBeInTheDocument();
     } finally {
       delete (Element.prototype as Partial<Element>).getAnimations;
     }
@@ -224,15 +228,16 @@ describe('Banner', () => {
         description="Note"
         className="caller"
         id="notice"
-        data-testid="probe"
+        data-owner="probe"
         data-tone="caller"
       />,
     );
-    const root = screen.getByTestId('probe');
+    const root = container.firstElementChild;
     expect(root).toHaveClass('ui-banner', 'caller');
     expect(root).toHaveAttribute('id', 'notice');
     expect(root).toHaveAttribute('data-tone', 'neutral');
-    expectHooksMatchSpec(container, 'BANNER');
+    expect(root).toHaveAttribute('data-owner', 'probe');
+    expectHooksMatchSpec(container, 'BANNER', { callerAttributes: ['data-owner'] });
   });
 
   it('UIC-BANNER-1.5 moves focus to the banner once when it first renders with autoFocus', () => {
@@ -244,7 +249,7 @@ describe('Banner', () => {
     );
     const quiet = container.querySelector('.ui-banner');
     expect(quiet).not.toHaveAttribute('tabindex');
-    expect(document.activeElement).toBe(document.body);
+    expect(document.body).toHaveFocus();
 
     rerender(
       <>

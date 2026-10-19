@@ -17,7 +17,7 @@ describe('ContextMenu', () => {
     const controller = createMenuController();
     const onApple = vi.fn();
     render(<ContextMenu controller={controller} />);
-    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     act(() =>
       controller.open(
         { x: 100, y: 120 },
@@ -35,7 +35,7 @@ describe('ContextMenu', () => {
     await user.click(screen.getByRole('menuitem', { name: 'Apple' }));
     expect(onApple).toHaveBeenCalledTimes(1);
     expect(controller.isOpen()).toBe(false);
-    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
 
     act(() => controller.open({ x: 10, y: 10 }));
     await user.keyboard('{Escape}');

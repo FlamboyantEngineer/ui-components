@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -158,7 +158,8 @@ describe('StateMachineView', () => {
     expect(at('Placed')).toEqual([500, 600]);
   });
 
-  it('UIC-STATE-MACHINE-VIEW-3.1 is read only by default', () => {
+  it('UIC-STATE-MACHINE-VIEW-3.1 is read only by default', async () => {
+    const user = userEvent.setup();
     const onStatesChange = vi.fn();
     const { container } = render(
       <StateMachineView
@@ -168,9 +169,11 @@ describe('StateMachineView', () => {
       />,
     );
     expect(container.querySelector('.ui-diagram-canvas__port')).toBeNull();
-    fireEvent.pointerDown(state('Paid'), { button: 0, pointerId: 1, clientX: 0, clientY: 0 });
-    fireEvent.pointerMove(state('Paid'), { pointerId: 1, clientX: 50, clientY: 50 });
-    fireEvent.pointerUp(state('Paid'), { pointerId: 1 });
+    await user.pointer([
+      { keys: '[MouseLeft>]', target: state('Paid'), coords: { clientX: 0, clientY: 0 } },
+      { coords: { clientX: 50, clientY: 50 } },
+      { keys: '[/MouseLeft]' },
+    ]);
     expect(onStatesChange).not.toHaveBeenCalled();
     expect(state('Paid')).toHaveAttribute('data-selected', 'true');
   });
@@ -205,7 +208,7 @@ describe('StateMachineView', () => {
       'delivered',
       'cancelled',
     ]);
-    expect(screen.queryByText('ship')).toBeNull();
+    expect(screen.queryByText('ship')).not.toBeInTheDocument();
     expect(screen.getByText('pay')).toBeInTheDocument();
   });
 });

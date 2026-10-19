@@ -1,5 +1,5 @@
 import { act, render, screen, within } from '@testing-library/react';
-import { userEvent } from '@testing-library/user-event';
+import { userEvent, type UserEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -43,9 +43,10 @@ const tree: ConditionGroup = {
   ],
 };
 
-function Controlled(
-  props: Partial<ConditionBuilderProps> & { onValue?: (value: ConditionGroup) => void },
-) {
+function Controlled({
+  onValue,
+  ...props
+}: Partial<ConditionBuilderProps> & { onValue?: (value: ConditionGroup) => void }) {
   const [value, setValue] = useState(props.defaultValue ?? tree);
   return (
     <ConditionBuilder
@@ -55,7 +56,7 @@ function Controlled(
       value={value}
       onChange={(next) => {
         setValue(next);
-        props.onValue?.(next);
+        onValue?.(next);
       }}
     />
   );
@@ -65,6 +66,36 @@ function Controlled(
 const rule = (name: string) => screen.getAllByRole('group', { name })[0]!;
 const ruleIds = (group: ConditionGroup): unknown[] =>
   group.rules.map((node) => (node.type === 'group' ? ruleIds(node) : node.id));
+// A node's own menu button is the last one inside it; a group's first is its own.
+const menuOf = (container: HTMLElement, index = -1) =>
+  within(container).getAllByRole('button', { name: 'Actions' }).at(index)!;
+
+/** Opens a node's menu and returns it, so its items are found without searching the page. */
+async function openActions(user: UserEvent, container: HTMLElement, index?: number) {
+  await user.click(menuOf(container, index));
+  return screen.findByRole('menu');
+}
+
+// The tree after the nested group's rules were swapped, and after that group was duplicated.
+const either = tree.rules[1] as ConditionGroup;
+const moved: ConditionGroup = {
+  ...tree,
+  rules: [tree.rules[0]!, { ...either, rules: [either.rules[1]!, either.rules[0]!] }],
+};
+const duplicated: ConditionGroup = {
+  ...moved,
+  rules: [
+    ...moved.rules,
+    {
+      ...(moved.rules[1] as ConditionGroup),
+      id: 'copy',
+      rules: [
+        { ...(either.rules[1] as ConditionRule), id: 'genre-copy' },
+        { ...(either.rules[0] as ConditionRule), id: 'pages-copy' },
+      ],
+    },
+  ],
+};
 
 describe('ConditionBuilder', () => {
   it('UIC-CONDITION-BUILDER-1.2 UIC-CONDITION-BUILDER-1.3 UIC-CONDITION-BUILDER-3.1 draws named groups and rules', () => {
@@ -143,7 +174,9 @@ describe('ConditionBuilder', () => {
     render(<Controlled maxDepth={2} />);
     expect(screen.getAllByRole('button', { name: 'Add rule' })).toHaveLength(2);
     expect(screen.getAllByRole('button', { name: 'Add group' })).toHaveLength(1);
-    expect(within(rule('Group')).queryByRole('button', { name: 'Add group' })).toBeNull();
+    expect(
+      within(rule('Group')).queryByRole('button', { name: 'Add group' }),
+    ).not.toBeInTheDocument();
   });
 
   it('UIC-CONDITION-BUILDER-1.3 starts a rule over when its field changes', async () => {
@@ -163,35 +196,46 @@ describe('ConditionBuilder', () => {
     });
   });
 
-  it('UIC-CONDITION-BUILDER-1.5 UIC-STEP-LIST-EDITOR-4.2 moves, duplicates and deletes from a node’s menu', async () => {
+  it('UIC-CONDITION-BUILDER-1.5 UIC-STEP-LIST-EDITOR-4.2 moves a node down from its menu', async () => {
     const user = userEvent.setup();
     const onValue = vi.fn();
     render(<Controlled onValue={onValue} />);
     const nested = rule('Group');
-    const menuOf = (container: HTMLElement) =>
-      within(container).getAllByRole('button', { name: 'Actions' }).at(-1)!;
-    await user.click(menuOf(within(nested).getByRole('group', { name: 'Rule 1' })));
-    expect(await screen.findByRole('menuitem', { name: 'Move up' })).toHaveAttribute(
+    const menu = await openActions(user, within(nested).getByRole('group', { name: 'Rule 1' }));
+    expect(within(menu).getByRole('menuitem', { name: 'Move up' })).toHaveAttribute(
       'aria-disabled',
       'true',
     );
-    await user.click(screen.getByRole('menuitem', { name: 'Move down' }));
-    let next = onValue.mock.lastCall?.[0] as ConditionGroup;
-    expect(ruleIds(next)).toEqual(['title', ['genre', 'pages']]);
+    await user.click(within(menu).getByRole('menuitem', { name: 'Move down' }));
+    expect(ruleIds(onValue.mock.lastCall?.[0] as ConditionGroup)).toEqual([
+      'title',
+      ['genre', 'pages'],
+    ]);
     expect(menuOf(within(nested).getByRole('group', { name: 'Rule 2' }))).toHaveFocus();
+  });
 
-    await user.click(within(nested).getAllByRole('button', { name: 'Actions' })[0]!);
-    await user.click(await screen.findByRole('menuitem', { name: 'Duplicate' }));
-    next = onValue.mock.lastCall?.[0] as ConditionGroup;
+  it('UIC-CONDITION-BUILDER-1.5 duplicates a group from its menu under new ids', async () => {
+    const user = userEvent.setup();
+    const onValue = vi.fn();
+    render(<Controlled onValue={onValue} defaultValue={moved} />);
+    const nested = rule('Group');
+    const menu = await openActions(user, nested, 0);
+    await user.click(within(menu).getByRole('menuitem', { name: 'Duplicate' }));
+    const next = onValue.mock.lastCall?.[0] as ConditionGroup;
     expect(next.rules).toHaveLength(3);
     const copy = next.rules[2] as ConditionGroup;
     expect(copy.combinator).toBe('or');
     expect(copy.id).not.toBe('either');
     expect(copy.rules.map((node) => (node as ConditionRule).field)).toEqual(['genre', 'pages']);
+  });
 
-    await user.click(menuOf(rule('Rule 1')));
-    await user.click(await screen.findByRole('menuitem', { name: 'Delete' }));
-    next = onValue.mock.lastCall?.[0] as ConditionGroup;
+  it('UIC-CONDITION-BUILDER-1.5 deletes a rule from its menu', async () => {
+    const user = userEvent.setup();
+    const onValue = vi.fn();
+    render(<Controlled onValue={onValue} defaultValue={duplicated} />);
+    const menu = await openActions(user, rule('Rule 1'));
+    await user.click(within(menu).getByRole('menuitem', { name: 'Delete' }));
+    const next = onValue.mock.lastCall?.[0] as ConditionGroup;
     expect(next.rules.map((node) => node.type)).toEqual(['group', 'group']);
     expect(screen.getAllByRole('button', { name: 'Add rule' }).at(-1)).toHaveFocus();
   });
@@ -209,7 +253,7 @@ describe('ConditionBuilder', () => {
       ['pages', 'genre'],
       'title',
     ]);
-    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     const moved = screen.getAllByRole('group', { name: 'Rule 2' }).at(-1)!;
     expect(within(moved).getByRole('button', { name: 'Actions' })).toHaveFocus();
   });
@@ -256,8 +300,8 @@ describe('ConditionBuilder', () => {
         }}
       />,
     );
-    expect(within(rule('Rule 1')).queryByRole('textbox')).toBeNull();
-    expect(within(rule('Rule 1')).queryByText('Enter a value.')).toBeNull();
+    expect(within(rule('Rule 1')).queryByRole('textbox')).not.toBeInTheDocument();
+    expect(within(rule('Rule 1')).queryByText('Enter a value.')).not.toBeInTheDocument();
   });
 
   it('UIC-CONDITION-BUILDER-1.7 carries caller attributes and labelling', () => {

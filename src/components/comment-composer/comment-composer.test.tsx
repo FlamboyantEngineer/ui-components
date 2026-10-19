@@ -63,7 +63,7 @@ describe('CommentComposer', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Comment' }));
     const root = container.querySelector('.ui-comment-composer');
     expect(root).toHaveAttribute('data-pending', 'true');
-    expect(screen.queryByRole('button', { name: 'Cancel' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Cancel' })).not.toBeInTheDocument();
     await userEvent.keyboard('{Control>}{Enter}{/Control}');
     expect(onSubmit).toHaveBeenCalledTimes(1);
     await act(async () => settle.reject());
@@ -86,7 +86,7 @@ describe('CommentComposer', () => {
     await userEvent.type(box, 'Kiwi');
     await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
     expect(box).toHaveValue('');
-    expect(screen.queryByRole('button', { name: 'Cancel' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Cancel' })).not.toBeInTheDocument();
     await userEvent.type(box, 'Lime{Escape}');
     expect(box).toHaveValue('');
     expect(outer).not.toHaveBeenCalled();
@@ -134,10 +134,10 @@ describe('CommentComposer', () => {
         <CommentComposer storageKey="draft:report" defaultValue="Start" onSubmit={() => {}} />
       </UiProvider>
     );
-    const first = render(stored);
+    const { unmount: unmountFirst } = render(stored);
     expect(screen.getByRole('textbox')).toHaveValue('Start');
     await userEvent.type(screen.getByRole('textbox'), 'ed');
-    first.unmount();
+    unmountFirst();
     render(stored);
     expect(screen.getByRole('textbox')).toHaveValue('Started');
     expect(storage.getItem('draft:report')).toBe('"Started"');

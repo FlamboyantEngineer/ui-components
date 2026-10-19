@@ -148,7 +148,7 @@ describe('PresenceStrip', () => {
     expectHooksMatchSpec(container, 'PRESENCE-STRIP');
 
     rerender(<PresenceStrip people={people.slice(0, 3)} maxVisible={2} />);
-    expect(screen.queryByRole('button')).toBeNull();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
     expect(container.querySelector('[tabindex]')).toBeNull();
   });
 
@@ -173,7 +173,7 @@ describe('PresenceStrip', () => {
     await userEvent.keyboard('{Escape}');
     await userEvent.click(screen.getByRole('button', { name: 'Lena Ortiz' }));
     expect(onAction).toHaveBeenLastCalledWith('p2');
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expectHooksMatchSpec(container, 'PRESENCE-STRIP', { slots: ['person'] });
   });
 
@@ -218,7 +218,7 @@ describe('PresenceStrip', () => {
     expect(items[1]).toHaveFocus();
     await user.keyboard('{Enter}');
     expect(onAction).toHaveBeenCalledWith('p5');
-    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     await waitFor(() => expect(count).toHaveFocus());
   });
 
@@ -227,7 +227,7 @@ describe('PresenceStrip', () => {
       <PresenceStrip people={[]} overflowCount={2} overflow="menu" />,
     );
     expect(screen.getByRole('img', { name: '2 more people' })).toHaveTextContent('+2');
-    expect(screen.queryByRole('button')).toBeNull();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
 
     rerender(<PresenceStrip people={people} maxVisible={2} variant="dots" overflow="menu" />);
     expect(container.querySelector('.ui-presence-strip__overflow')?.tagName).toBe('SPAN');

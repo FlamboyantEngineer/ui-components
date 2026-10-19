@@ -17,21 +17,23 @@ describe('Icon', () => {
   it('UIC-ICON-1.1 draws children when no glyph is given, and provider glyph replacements', () => {
     const { container, rerender } = render(
       <Icon>
-        <svg data-testid="custom" />
+        <svg aria-label="Custom glyph" />
       </Icon>,
     );
-    expect(screen.getByTestId('custom').parentElement).toHaveClass('ui-icon');
+    expect(screen.getByLabelText('Custom glyph').parentElement).toHaveClass('ui-icon');
     expect(container.querySelector('.ui-icon__glyph')).toBeNull();
 
     function Dot(props: GlyphComponentProps) {
-      return <svg {...props} data-testid="dot" />;
+      return <svg {...props} data-dot="true" />;
     }
     rerender(
       <UiProvider icons={{ check: Dot }}>
         <Icon glyph="check" />
       </UiProvider>,
     );
-    expect(screen.getByTestId('dot')).toHaveClass('ui-icon__glyph');
+    const dot = container.querySelector('[data-dot]');
+    expect(dot).not.toBeNull();
+    expect(dot).toHaveClass('ui-icon__glyph');
   });
 
   it('UIC-ICON-1.1 turns an icon source into Icon props', () => {

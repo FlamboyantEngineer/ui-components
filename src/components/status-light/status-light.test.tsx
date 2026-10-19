@@ -56,10 +56,10 @@ describe('StatusLight', () => {
     expect(root).toHaveAttribute('data-status', 'busy');
     rerender(
       <UiProvider strings={{ presenceStatus: (status) => `[${status}]` }}>
-        <StatusLight status="idle" data-testid="translated" />
+        <StatusLight status="idle" />
       </UiProvider>,
     );
-    expect(screen.getByTestId('translated')).toHaveTextContent('[idle]');
+    expect(container.firstElementChild).toHaveTextContent('[idle]');
   });
 
   it('UIC-STATUS-LIGHT-1.5 publishes the processing state', () => {
@@ -76,16 +76,17 @@ describe('StatusLight', () => {
   });
 
   it('UIC-STATUS-LIGHT-1.6 appends the caller class and forwards id and data attributes', () => {
-    render(
-      <StatusLight className="caller" id="probe" data-testid="probe" data-tone="caller">
+    const { container } = render(
+      <StatusLight className="caller" id="probe" data-sample="probe" data-tone="caller">
         Probe
       </StatusLight>,
     );
-    const root = screen.getByTestId('probe');
+    const root = container.firstElementChild;
     expect(root).toHaveClass('ui-status-light', 'caller');
     expect(root).toHaveAttribute('id', 'probe');
     expect(root).toHaveAttribute('data-tone', 'neutral');
-    expectHooksMatchSpec(document.body, 'STATUS-LIGHT');
+    expect(root).toHaveAttribute('data-sample', 'probe');
+    expectHooksMatchSpec(document.body, 'STATUS-LIGHT', { callerAttributes: ['data-sample'] });
   });
 
   it('UIC-STATUS-LIGHT-2.1 is an image named by aria-label without a visible label', () => {
@@ -99,7 +100,7 @@ describe('StatusLight', () => {
     expect(container.querySelector('.ui-status-light__label')).toBeNull();
 
     rerender(<StatusLight aria-label="Ignored">Running</StatusLight>);
-    expect(screen.queryByRole('img')).toBeNull();
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
     expect(container.firstElementChild).not.toHaveAttribute('aria-label');
     expect(container.firstElementChild).not.toHaveAttribute('aria-hidden');
 
@@ -119,6 +120,6 @@ describe('StatusLight', () => {
     );
     await user.tab();
     expect(screen.getByRole('button', { name: 'After' })).toHaveFocus();
-    expect(screen.queryByRole('status')).toBeNull();
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
 });

@@ -32,7 +32,7 @@ function Source(props: UnsavedChangesOptions) {
 function Probe({ onState }: { onState: (state: UnsavedChangesGuardState) => void }) {
   const state = useUnsavedChangesGuard();
   onState(state);
-  return <output data-testid="dirty">{String(state.isDirty)}</output>;
+  return <output aria-label="Dirty">{String(state.isDirty)}</output>;
 }
 
 function setup(children: ReactNode, guardProps: Parameters<typeof UnsavedChangesGuard>[0] = {}) {
@@ -63,6 +63,8 @@ async function settled<T>(promise: Promise<T>): Promise<T | 'pending'> {
   return value;
 }
 
+const dirtyState = () => screen.getByRole('status', { name: 'Dirty' });
+
 const actionNames = () =>
   [...document.querySelectorAll('.ui-modal__actions button')].map((button) => button.textContent);
 
@@ -82,7 +84,7 @@ describe('UnsavedChangesGuard', () => {
         <Probe onState={() => {}} />
       </UnsavedChangesGuard>,
     );
-    expect(screen.getByTestId('dirty')).toHaveTextContent('false');
+    expect(dirtyState()).toHaveTextContent('false');
     const renderWith = (isDirty: boolean, isMounted: boolean) =>
       rerender(
         <UnsavedChangesGuard>
@@ -91,9 +93,9 @@ describe('UnsavedChangesGuard', () => {
         </UnsavedChangesGuard>,
       );
     renderWith(true, true);
-    expect(screen.getByTestId('dirty')).toHaveTextContent('true');
+    expect(dirtyState()).toHaveTextContent('true');
     renderWith(true, false);
-    expect(screen.getByTestId('dirty')).toHaveTextContent('false');
+    expect(dirtyState()).toHaveTextContent('false');
   });
 
   it('UIC-UNSAVED-CHANGES-GUARD-1.1 refuses hooks outside a guard', () => {
@@ -143,7 +145,7 @@ describe('UnsavedChangesGuard', () => {
   it('UIC-UNSAVED-CHANGES-GUARD-2.1 lets a clean leave through without asking', async () => {
     const { leave } = setup(<Source isDirty={false} label="Profile" />);
     await expect(leave()).resolves.toBe(true);
-    expect(screen.queryByRole('alertdialog')).toBeNull();
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
   });
 
   it('UIC-UNSAVED-CHANGES-GUARD-2.2 asks with a title, a question and the list of unsaved sources', async () => {
@@ -216,7 +218,7 @@ describe('UnsavedChangesGuard', () => {
     await act(async () => first.resolve());
     await expect(result).resolves.toBe(true);
     expect(calls).toEqual(['profile', 'notes']);
-    await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull());
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
   });
 
   it('UIC-UNSAVED-CHANGES-GUARD-2.3 keeps the reader here when a save fails', async () => {
@@ -285,7 +287,7 @@ describe('UnsavedChangesGuard', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'Stay' })).toHaveFocus());
     await userEvent.click(screen.getByRole('button', { name: 'Stay' }));
     await expect(first).resolves.toBe(false);
-    await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull());
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
     const second = leave();
     await screen.findByRole('alertdialog');
     await userEvent.keyboard('{Escape}');
@@ -341,7 +343,7 @@ describe('UnsavedChangesGuard', () => {
     expect(await screen.findByRole('alertdialog', { name: 'Close the panel?' })).toBeVisible();
     await userEvent.click(screen.getByRole('button', { name: 'Stay' }));
     await expect(innerResult).resolves.toBe(false);
-    await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull());
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
 
     let outerResult!: Promise<boolean>;
     act(() => {
