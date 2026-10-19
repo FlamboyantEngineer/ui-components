@@ -1,0 +1,124 @@
+/* Tour: a raised step panel with an arrow, and a spotlight ring whose wide shadow dims the page. */
+
+.ui-tour {
+  box-sizing: border-box;
+  width: min(300px, calc(100vw - 24px));
+  border: 1px solid var(--ref-border);
+  border-radius: 8px;
+  background: var(--ref-raised);
+  color: var(--ref-text);
+  box-shadow: var(--ref-shadow);
+  font: 14px/1.5 var(--ref-font);
+}
+
+.ui-tour[data-entering] {
+  animation: ref-fade 0.12s ease-out;
+}
+
+.ui-tour[data-exiting] {
+  animation: ref-fade 0.12s ease-in reverse;
+}
+
+.ui-tour__arrow {
+  width: 14px;
+  height: 7px;
+  overflow: hidden;
+}
+
+.ui-tour__arrow:is([data-placement='left'], [data-placement='right']) {
+  width: 7px;
+  height: 14px;
+}
+
+.ui-tour__arrow::before {
+  position: absolute;
+  top: 2.5px;
+  left: 2.5px;
+  box-sizing: border-box;
+  width: 9px;
+  height: 9px;
+  border: 1px solid var(--ref-border);
+  background: var(--ref-raised);
+  content: '';
+  transform: rotate(45deg);
+}
+
+.ui-tour__arrow[data-placement='top']::before {
+  top: -4.5px;
+}
+
+.ui-tour__arrow[data-placement='left']::before {
+  left: -4.5px;
+}
+
+.ui-tour__dialog {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  outline: none;
+}
+
+.ui-tour__header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.ui-tour__title {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.ui-tour__progress {
+  flex: none;
+  color: var(--ref-muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-tour__body {
+  color: var(--ref-text);
+}
+
+.ui-tour__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.ui-tour__skip {
+  margin-inline-end: auto;
+}
+
+.ui-tour__back,
+.ui-tour__next {
+  flex: none;
+}
+
+.ui-tour__spotlight {
+  box-sizing: border-box;
+  border-radius: var(--ref-radius);
+  box-shadow:
+    0 0 0 4px var(--ref-focus),
+    0 0 0 9999px rgb(1 4 9 / 0.35);
+  transition:
+    top 0.15s ease,
+    left 0.15s ease,
+    width 0.15s ease,
+    height 0.15s ease;
+}
+
+.ui-tour__spotlight[data-target-missing] {
+  box-shadow: 0 0 0 9999px rgb(1 4 9 / 0.35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-tour__spotlight {
+    transition: none;
+  }
+}

@@ -116,6 +116,21 @@ export { getColorIndex } from './color-index.js';
 export { getInitials } from './initials.js';
 export { diffLines, diffSequences, diffWords } from './diff.js';
 export type { DiffKind, LineDiffHunk, SequenceDiffHunk, WordDiffHunk } from './diff.js';
+export { mergeThreeWay } from './three-way-merge.js';
+export type { MergeChunk, MergeChunkKind } from './three-way-merge.js';
+export { pivot } from './pivot.js';
+export type {
+  PivotAggregateFunction,
+  PivotAggregateName,
+  PivotAggregates,
+  PivotColumn,
+  PivotKey,
+  PivotLayout,
+  PivotRecord,
+  PivotResult,
+  PivotRow,
+  PivotValue,
+} from './pivot.js';
 export { compareTrees } from './compare-trees.js';
 export type {
   CompareTreeNode,
@@ -125,6 +140,19 @@ export type {
   TreeChangeCounts,
   TreeComparison,
 } from './compare-trees.js';
+export { compareBlocks } from './compare-blocks.js';
+export type {
+  BlockChange,
+  BlockChangeCounts,
+  BlockComparison,
+  ComparedBlockRow,
+  DocumentBlock,
+  DocumentBlockType,
+  DocumentMark,
+  DocumentMarkType,
+} from './compare-blocks.js';
+export { formatCellReference, parseCellReference } from './cell-reference.js';
+export type { CellCoordinates } from './cell-reference.js';
 export { mapScrollOffset, useSyncedScroll } from './use-synced-scroll.js';
 export type { ScrollAnchor, SyncedScrollOptions, SyncedScrollTarget } from './use-synced-scroll.js';
 export { formatOutlineNumber } from './outline-number.js';
@@ -136,3 +164,12 @@ export type { BandScale, BandScaleOptions } from './band-scale.js';
 export { addTimeUnits, createTimeScale, floorToTimeUnit } from './time-scale.js';
 export type { TimeScale, TimeScaleOptions, TimeScaleUnit, TimeTickOptions } from './time-scale.js';
 export { defaultUrlSchemes, isSafeUrl } from './safe-url.js';
+export { encodeQr } from './encode-qr.js';
+export type { QrEncodeOptions, QrErrorCorrection, QrSymbol } from './encode-qr.js';
+export { layoutLayeredGraph } from './layered-layout.js';
+export type {
+  LayeredLayoutEdge,
+  LayeredLayoutNode,
+  LayeredLayoutOptions,
+  LayeredLayoutPosition,
+} from './layered-layout.js';

@@ -1,6 +1,6 @@
 # Diff
 
-`diffLines` and `diffWords` compare two texts, and `diffSequences` two arrays of items, and return what changed as typed hunks: runs the texts share (`equal`), runs only the old text has (`delete`) and runs only the new text has (`insert`). They are pure functions with no dependency, written on Myers' shortest-edit algorithm with a search from both ends, so time grows with the texts' length times the number of differences and memory with the length alone. [Inline Text Diff](INLINE-TEXT-DIFF.md) builds its word changes on `diffWords`; hosts use them for line diffs, change lists and summaries.
+`diffLines` and `diffWords` compare two texts, and `diffSequences` two arrays of items, and return what changed as typed hunks: runs the texts share (`equal`), runs only the old text has (`delete`) and runs only the new text has (`insert`). They are pure functions with no dependency, written on Myers' shortest-edit algorithm with a search from both ends, so time grows with the texts' length times the number of differences and memory with the length alone. [Inline Text Diff](INLINE-TEXT-DIFF.md) builds its word changes on `diffWords`; hosts use them for line diffs, change lists and summaries. `mergeThreeWay` builds on the sequence diff to merge two texts that changed a common base.
 
 ## UIC-DIFF-1 - Line diff
 
@@ -56,3 +56,19 @@ Verification: `src/utils/diff.test.ts`
 
 Implementation: `src/utils/diff.ts`
 Verification: `src/utils/diff.test.ts`
+
+## UIC-DIFF-4 - Three-way merge
+
+### UIC-DIFF-4.1 - Chunks
+
+`mergeThreeWay(base, ours, theirs)` shall compare each side with the base through the sequence diff of their lines (lines split as in UIC-DIFF-1.2) and return the merge as chunks (`MergeChunk`) in reading order, each with its `kind` and the `base`, `ours` and `theirs` lines of one run of the base: `unchanged` where neither side changed it, `ours` or `theirs` where only that side did, and `both` where the two sides made the same change. The chunks' base lines joined give the base, their `ours` lines our text and their `theirs` lines their text; two `unchanged` chunks never follow each other, and three empty texts give no chunk. [Merge View](MERGE-VIEW.md) draws them.
+
+Implementation: `src/utils/three-way-merge.ts`, `src/utils/diff.ts`
+Verification: `src/utils/three-way-merge.test.ts`
+
+### UIC-DIFF-4.2 - Conflicts
+
+Changes of the two sides shall join one `conflict` chunk when their base runs overlap, or when they touch and one of them only inserts lines (two insertions at one place, or an insertion right beside the other side's change), so their order would be a guess; a chain of such changes joins one chunk. A conflict's two sides always differ. Changes of neighbouring lines that replace lines on both sides stay separate clean chunks.
+
+Implementation: `src/utils/three-way-merge.ts`
+Verification: `src/utils/three-way-merge.test.ts`
