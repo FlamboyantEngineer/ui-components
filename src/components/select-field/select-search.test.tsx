@@ -29,6 +29,7 @@ function optionKeys() {
  * the popover.
  */
 function search(text: string) {
+  // eslint-disable-next-line testing-library/prefer-user-event -- user-event would dispatch a late change on blur, during the popover unmount (see above)
   fireEvent.change(screen.getByRole('searchbox'), { target: { value: text } });
 }
 

@@ -77,7 +77,7 @@ describe('Table summary row', { timeout: 15_000 }, () => {
   it('UIC-TABLE-12.1 draws no summary row without footers or while a notice shows', () => {
     const { container } = renderFruit({ columns: [{ id: 'name', header: 'Name' }] });
     expect(container.querySelector('.ui-table__footer')).toBeNull();
-    const empty = renderFruit({ rows: [] });
-    expect(empty.container.querySelector('.ui-table__footer')).toBeNull();
+    const { container: empty } = renderFruit({ rows: [] });
+    expect(empty.querySelector('.ui-table__footer')).toBeNull();
   });
 });

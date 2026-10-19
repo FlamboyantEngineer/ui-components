@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -187,7 +187,7 @@ describe('Separator', () => {
         </ToolbarRow>
         <Menu aria-label="Edit">
           <MenuItem>Cut</MenuItem>
-          <MenuSeparator data-testid="menu-rule" />
+          <MenuSeparator />
           <MenuItem>Undo</MenuItem>
         </Menu>
       </>,
@@ -197,7 +197,7 @@ describe('Separator', () => {
     expect(toolbarRule).toHaveAttribute('role', 'separator');
     expect(toolbarRule).toHaveAttribute('data-orientation', 'vertical');
     expect(toolbarRule).toHaveAttribute('data-variant', 'solid');
-    const menuRule = screen.getByTestId('menu-rule');
+    const menuRule = within(screen.getByRole('menu', { name: 'Edit' })).getByRole('separator');
     expect(menuRule).toHaveClass('ui-separator', 'ui-menu-separator');
     expect(menuRule.tagName).toBe('HR');
     expect(menuRule).toHaveAttribute('data-orientation', 'horizontal');

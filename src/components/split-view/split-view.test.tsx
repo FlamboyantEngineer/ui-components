@@ -663,7 +663,8 @@ describe('ResizeHandle', () => {
     expect(handle).toHaveAttribute('data-disabled', 'true');
     onChange.mockClear();
     act(() => handle.focus());
-    fireEvent.keyDown(handle, { key: 'ArrowUp' });
+    expect(handle).toHaveFocus();
+    await user.keyboard('{ArrowUp}');
     pointer('pointerDown', handle, { clientY: 500 });
     pointer('pointerMove', handle, { clientY: 100 });
     expect(onChange).not.toHaveBeenCalled();

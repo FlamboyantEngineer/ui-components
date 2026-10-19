@@ -107,16 +107,17 @@ describe('ProgressBar', () => {
         className="caller"
         id="probe"
         ref={ref}
-        data-testid="probe"
+        data-sample="probe"
         data-size="caller"
       />,
     );
-    const bar = screen.getByTestId('probe');
+    const bar = screen.getByRole('progressbar', { name: 'Probe' });
     expect(bar).toHaveClass('ui-progress-bar', 'caller');
     expect(bar).toHaveAttribute('id', 'probe');
     expect(bar).toHaveAttribute('data-size', 'md');
+    expect(bar).toHaveAttribute('data-sample', 'probe');
     expect(ref.current).toBe(bar);
-    expectHooksMatchSpec(document.body, 'PROGRESS-BAR');
+    expectHooksMatchSpec(document.body, 'PROGRESS-BAR', { callerAttributes: ['data-sample'] });
   });
 });
 
@@ -128,8 +129,8 @@ describe('Spinner', () => {
     expect(spinner).toHaveAttribute('aria-hidden', 'true');
     expect(spinner).toHaveAttribute('data-size', 'md');
     for (const size of ['sm', 'md', 'lg'] as const) {
-      rerender(<Spinner size={size} className="caller" id="busy" data-testid="busy" />);
-      expect(screen.getByTestId('busy')).toHaveAttribute('data-size', size);
+      rerender(<Spinner size={size} className="caller" id="busy" />);
+      expect(spinner).toHaveAttribute('data-size', size);
     }
     expect(spinner).toHaveClass('ui-spinner', 'caller');
     expect(spinner).toHaveAttribute('id', 'busy');

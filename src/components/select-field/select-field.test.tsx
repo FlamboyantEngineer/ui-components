@@ -67,14 +67,14 @@ describe('SelectField field', () => {
             onChange={setValue}
             onCommit={onCommit}
           />
-          <output data-testid="value">{String(value)}</output>
+          <output aria-label="Current value">{String(value)}</output>
         </>
       );
     }
     render(<Controlled />);
     await user.click(trigger('Apple Fruit'));
     await user.click(screen.getByRole('option', { name: 'Fig' }));
-    expect(screen.getByTestId('value')).toHaveTextContent('fig');
+    expect(screen.getByRole('status', { name: 'Current value' })).toHaveTextContent('fig');
     expect(onCommit).toHaveBeenCalledWith('fig');
     expect(trigger('Fig Fruit')).toBeInTheDocument();
   });

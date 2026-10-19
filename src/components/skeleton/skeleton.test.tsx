@@ -44,20 +44,21 @@ describe('Skeleton', () => {
   });
 
   it('UIC-SKELETON-1.4 appends the caller class and forwards id and data attributes', () => {
-    render(
+    const { container } = render(
       <>
-        <Skeleton className="caller" id="block" data-testid="block" data-shape="caller" />
-        <SkeletonText className="lines" id="text" data-testid="text" />
+        <Skeleton className="caller" id="block" data-sample="block" data-shape="caller" />
+        <SkeletonText className="lines" id="text" data-sample="text" />
       </>,
     );
-    const block = screen.getByTestId('block');
+    const [block, text] = container.children;
     expect(block).toHaveClass('ui-skeleton', 'caller');
     expect(block).toHaveAttribute('id', 'block');
     expect(block).toHaveAttribute('data-shape', 'rectangle');
-    const text = screen.getByTestId('text');
+    expect(block).toHaveAttribute('data-sample', 'block');
     expect(text).toHaveClass('ui-skeleton-text', 'lines');
     expect(text).toHaveAttribute('id', 'text');
-    expectHooksMatchSpec(document.body, 'SKELETON');
+    expect(text).toHaveAttribute('data-sample', 'text');
+    expectHooksMatchSpec(document.body, 'SKELETON', { callerAttributes: ['data-sample'] });
   });
 });
 

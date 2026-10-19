@@ -196,16 +196,16 @@ describe('PropertyScope', () => {
     expect(screen.getByRole('textbox', { name: 'Padding' })).toBeInTheDocument();
     expect(screen.getByRole('group', { name: 'Paper' })).toBeInTheDocument();
 
-    const field = render(
+    const view = render(
       <PropertyScope query="nick">
         <PropertyRow label="Settings field" keywords={['Nickname']}>
           <NameField />
         </PropertyRow>
       </PropertyScope>,
     );
-    const fieldLabel = field.container.querySelector('.ui-field__label') as HTMLElement;
+    const fieldLabel = view.container.querySelector('.ui-field__label') as HTMLElement;
     expect(fieldLabel.querySelector('mark')).toHaveTextContent('Nick');
-    expect(within(field.container).getByRole('textbox', { name: 'Nickname' })).toBeInTheDocument();
+    expect(within(view.container).getByRole('textbox', { name: 'Nickname' })).toBeInTheDocument();
   });
 
   it('UIC-PROPERTY-SCOPE-1.4 reports a query nothing matches and offers to clear it', async () => {

@@ -1,5 +1,5 @@
 import { createEvent, fireEvent, render, screen } from '@testing-library/react';
-import { userEvent } from '@testing-library/user-event';
+import { type UserEvent, userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -45,15 +45,13 @@ function Tasks({
   );
 }
 
-/** A pointer press at a position, which jsdom's plain events do not carry. */
-function pointerDown(target: Element, x: number, button = 0) {
-  const event = createEvent.pointerDown(target);
-  Object.defineProperties(event, {
-    clientX: { value: x },
-    clientY: { value: 10 },
-    button: { value: button },
-  });
-  fireEvent(target, event);
+/** Presses and holds a mouse button at a position across the row; `release` lets it go. */
+function press(user: UserEvent, target: Element, x: number, button = 'MouseLeft') {
+  return user.pointer({ keys: `[${button}>]`, target, coords: { clientX: x, clientY: 10 } });
+}
+
+function release(user: UserEvent, button = 'MouseLeft') {
+  return user.pointer({ keys: `[/${button}]` });
 }
 
 function placeHandle(name: string) {
@@ -140,26 +138,31 @@ describe('Table reordering', { timeout: 15_000 }, () => {
     expect(order()).toEqual(['Wash', 'Pinned', 'Dry', 'Fold']);
   });
 
-  it('UIC-TABLE-5.5 drags a row by its handle only', () => {
+  it('UIC-TABLE-5.5 drags a row by its handle only', async () => {
+    const user = userEvent.setup();
     render(<Tasks onMove={() => {}} reorder={{ dragTrigger: 'handle' }} />);
     const wash = row('Wash');
     expect(wash).not.toHaveAttribute('draggable');
     placeHandle('Wash');
     const cell = screen.getByRole('rowheader', { name: /Wash/ });
-    pointerDown(cell, 60);
+    await press(user, cell, 60);
     expect(wash).not.toHaveAttribute('draggable');
-    pointerDown(cell, 10, 2);
+    await release(user);
+    await press(user, cell, 10, 'MouseRight');
     expect(wash).not.toHaveAttribute('draggable');
-    pointerDown(cell, 10);
+    await release(user, 'MouseRight');
+    await press(user, cell, 10);
     expect(wash).toHaveAttribute('draggable', 'true');
-    fireEvent.pointerUp(document);
+    await release(user);
     expect(wash).not.toHaveAttribute('draggable');
-    pointerDown(cell, 10);
+    await press(user, cell, 10);
     fireEvent(wash, createEvent.dragEnd(wash, { dataTransfer: { dropEffect: 'none' } }));
     expect(wash).not.toHaveAttribute('draggable');
+    await release(user);
     placeHandle('Pinned');
-    pointerDown(screen.getByRole('rowheader', { name: /Pinned/ }), 10);
+    await press(user, screen.getByRole('rowheader', { name: /Pinned/ }), 10);
     expect(row('Pinned')).not.toHaveAttribute('draggable');
+    await release(user);
   });
 
   it('UIC-TABLE-5.5 keeps rows draggable from anywhere by default', () => {

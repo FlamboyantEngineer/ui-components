@@ -42,7 +42,7 @@ function Controlled({ onSubmit }: { onSubmit?: (query: string) => void }) {
         onChange={setQuery}
         onSubmit={onSubmit}
       />
-      <output data-testid="query">{query}</output>
+      <output aria-label="Current query">{query}</output>
     </>
   );
 }
@@ -76,7 +76,9 @@ describe('QueryField', () => {
     await user.keyboard('{End} pa');
     const list = await screen.findByRole('listbox');
     await user.click(within(list).getByRole('option', { name: /pages:/ }));
-    expect(screen.getByTestId('query')).toHaveTextContent('genre:history pages:');
+    expect(screen.getByRole('status', { name: 'Current query' })).toHaveTextContent(
+      'genre:history pages:',
+    );
   });
 
   it('UIC-QUERY-FIELD-1.3 UIC-QUERY-FIELD-1.4 submits on Enter and the run button unless invalid', async () => {

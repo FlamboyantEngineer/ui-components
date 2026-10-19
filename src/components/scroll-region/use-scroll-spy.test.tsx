@@ -25,7 +25,7 @@ function Contents({ ids, offset }: { ids: readonly string[]; offset?: number }) 
   const active = useScrollSpy(ref, { ids, offset });
   return (
     <>
-      <nav data-testid="toc">{active ?? 'none'}</nav>
+      <nav aria-label="Contents">{active ?? 'none'}</nav>
       <ScrollRegion ref={ref} id="chapters">
         {['apples', 'pears', 'plums'].map((id) => (
           <section key={id} id={id}>
@@ -35,6 +35,10 @@ function Contents({ ids, offset }: { ids: readonly string[]; offset?: number }) 
       </ScrollRegion>
     </>
   );
+}
+
+function toc() {
+  return screen.getByRole('navigation', { name: 'Contents' });
 }
 
 afterEach(() => {
@@ -49,18 +53,18 @@ describe('useScrollSpy', () => {
     const viewport = document.getElementById('chapters')!;
     stubLayout(viewport);
     fireEvent.scroll(viewport);
-    expect(screen.getByTestId('toc')).toHaveTextContent('apples');
+    expect(toc()).toHaveTextContent('apples');
     viewportBox.scrollTop = 300;
     fireEvent.scroll(viewport);
-    expect(screen.getByTestId('toc')).toHaveTextContent('pears');
+    expect(toc()).toHaveTextContent('pears');
     viewportBox.scrollTop = 250;
     fireEvent.scroll(viewport);
-    expect(screen.getByTestId('toc')).toHaveTextContent('apples');
+    expect(toc()).toHaveTextContent('apples');
     rerender(<Contents ids={['apples', 'pears', 'plums']} offset={60} />);
-    expect(screen.getByTestId('toc')).toHaveTextContent('pears');
+    expect(toc()).toHaveTextContent('pears');
     viewportBox.scrollTop = 800;
     fireEvent.scroll(viewport);
-    expect(screen.getByTestId('toc')).toHaveTextContent('plums');
+    expect(toc()).toHaveTextContent('plums');
   });
 
   it('UIC-SCROLL-REGION-4.5 starts at the first section and skips missing ids', () => {
@@ -68,10 +72,8 @@ describe('useScrollSpy', () => {
     render(<Contents ids={['missing', 'apples', 'pears']} />);
     const viewport = document.getElementById('chapters')!;
     stubLayout(viewport);
-    act(() => {
-      fireEvent.scroll(viewport);
-    });
-    expect(screen.getByTestId('toc')).toHaveTextContent('apples');
+    fireEvent.scroll(viewport);
+    expect(toc()).toHaveTextContent('apples');
     expect(resolveScrollSpy(viewport, { ids: ['missing'] })).toBeUndefined();
     viewportBox.scrollHeight = 200;
     expect(resolveScrollSpy(viewport, { ids: ['apples', 'pears'] })).toBe('apples');
@@ -95,6 +97,6 @@ describe('useScrollSpy', () => {
     stubLayout(viewport);
     viewportBox.top = 400;
     act(() => callbacks.forEach((callback) => callback()));
-    expect(screen.getByTestId('toc')).toHaveTextContent('pears');
+    expect(toc()).toHaveTextContent('pears');
   });
 });
