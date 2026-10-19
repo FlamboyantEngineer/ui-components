@@ -172,23 +172,25 @@ describe('AppFrame', () => {
   });
 
   it('UIC-APP-FRAME-1.5 keeps other slots on the outer provider and nested frames apart', () => {
-    render(
+    const { container } = render(
       <ProjectionProvider>
-        <div data-testid="host-outlet">
+        <div role="region" aria-label="Host tools">
           <ProjectionOutlet slot="host-tools" />
         </div>
-        <AppFrame data-testid="outer">
+        <AppFrame>
           <AppFrameContent region="start-panel">Outer outline</AppFrameContent>
-          <AppFrame isEmbedded data-testid="inner">
+          <AppFrame isEmbedded>
             <AppFrameContent region="start-panel">Inner outline</AppFrameContent>
             <ProjectionContent slot="host-tools">Ruler</ProjectionContent>
           </AppFrame>
         </AppFrame>
       </ProjectionProvider>,
     );
-    expect(screen.getByTestId('host-outlet')).toHaveTextContent('Ruler');
-    const outer = screen.getByTestId('outer');
-    const inner = screen.getByTestId('inner');
+    expect(screen.getByRole('region', { name: 'Host tools' })).toHaveTextContent('Ruler');
+    const frames = container.querySelectorAll('.ui-app-frame');
+    expect(frames).toHaveLength(2);
+    const outer = frames[0]!;
+    const inner = frames[1]!;
     expect(outer.querySelector(':scope > .ui-app-frame__start-panel')).toHaveTextContent(
       'Outer outline',
     );

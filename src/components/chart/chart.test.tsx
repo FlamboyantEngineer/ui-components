@@ -24,7 +24,7 @@ describe('Chart', () => {
   it('UIC-CHART-1.1 UIC-CHART-1.2 UIC-CHART-8.1 is a named figure described by its summary', () => {
     render(
       <Chart label="Harvest" summary="Two fruits, from 7 to 12" table={table}>
-        <svg data-testid="drawing" />
+        <svg role="img" aria-label="Drawing" />
       </Chart>,
     );
     const figure = screen.getByRole('figure', { name: 'Harvest' });
@@ -34,7 +34,9 @@ describe('Chart', () => {
     expect(
       figure.querySelector('.ui-chart__summary')?.closest('.ui-visually-hidden'),
     ).not.toBeNull();
-    expect(screen.getByTestId('drawing').parentElement).toHaveClass('ui-chart__body');
+    expect(screen.getByRole('img', { name: 'Drawing', hidden: true }).parentElement).toHaveClass(
+      'ui-chart__body',
+    );
     expect(figure.querySelector('.ui-chart__header .ui-chart__title')).toHaveTextContent('Harvest');
     expectHooksMatchSpec(document.body, 'CHART', {
       slots: ['header', 'title', 'view-toggle', 'summary', 'body'],
@@ -65,7 +67,7 @@ describe('Chart', () => {
     const onViewChange = vi.fn();
     render(
       <Chart label="Harvest" summary="Two fruits" table={table} onViewChange={onViewChange}>
-        <svg data-testid="drawing" />
+        <svg role="img" aria-label="Drawing" />
       </Chart>,
     );
     const toggle = screen.getByRole('button', { name: 'Show as table' });
@@ -75,7 +77,7 @@ describe('Chart', () => {
     expect(onViewChange).toHaveBeenCalledWith('table');
     expect(toggle).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByRole('figure')).toHaveAttribute('data-view', 'table');
-    expect(screen.queryByTestId('drawing')).not.toBeInTheDocument();
+    expect(screen.queryByRole('img', { name: 'Drawing', hidden: true })).not.toBeInTheDocument();
     const grid = screen.getByRole('table', { name: 'Harvest' });
     expect(grid).toHaveClass('ui-prose-table', 'ui-chart__table');
     expect(
@@ -118,12 +120,13 @@ describe('Chart', () => {
         className="caller"
         id="harvest"
         ref={ref}
-        data-testid="harvest"
+        data-owner="harvest"
         data-view="caller"
       />,
     );
-    const figure = screen.getByTestId('harvest');
+    const figure = screen.getByRole('figure', { name: 'Harvest' });
     expect(figure).toHaveClass('ui-chart', 'caller');
+    expect(figure).toHaveAttribute('data-owner', 'harvest');
     expect(figure).toHaveAttribute('id', 'harvest');
     expect(figure).toHaveAttribute('data-view', 'chart');
     expect(ref.current).toBe(figure);

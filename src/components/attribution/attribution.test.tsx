@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -117,7 +117,7 @@ describe('Attribution', () => {
   });
 
   it('UIC-ATTRIBUTION-1.4 opens the card on hover with cardTrigger="hover"', async () => {
-    vi.useFakeTimers();
+    vi.useFakeTimers({ shouldAdvanceTime: true });
     render(
       <Attribution
         time="2026-05-22"
@@ -127,10 +127,8 @@ describe('Attribution', () => {
         cardTrigger="hover"
       />,
     );
-    const trigger = screen.getByRole('button', { name: 'Maria Santos' });
-    fireEvent.pointerMove(trigger, { pointerType: 'mouse' });
-    fireEvent.pointerEnter(trigger, { pointerType: 'mouse' });
-    fireEvent.mouseEnter(trigger);
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    await user.hover(screen.getByRole('button', { name: 'Maria Santos' }));
     await act(async () => {
       vi.advanceTimersByTime(700);
     });

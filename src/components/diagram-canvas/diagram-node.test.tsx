@@ -1,5 +1,5 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
-import { userEvent } from '@testing-library/user-event';
+import { act, render, screen } from '@testing-library/react';
+import { userEvent, type UserEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { EditableDiagram, pipeEdges, pipeNodes } from '../../../test/diagram-fixtures.js';
@@ -17,42 +17,58 @@ function status() {
   return document.querySelector('.ui-diagram-canvas__status');
 }
 
-function press(
+type Point = { clientX?: number; clientY?: number };
+
+/** Presses the primary button on the element at a viewport point, with Shift held when asked. */
+async function press(
+  user: UserEvent,
   element: Element,
-  init: { clientX?: number; clientY?: number; shiftKey?: boolean } = {},
+  { clientX = 0, clientY = 0, shiftKey = false }: Point & { shiftKey?: boolean } = {},
 ) {
-  fireEvent.pointerDown(element, { button: 0, pointerId: 1, clientX: 0, clientY: 0, ...init });
+  if (shiftKey) await user.keyboard('{Shift>}');
+  await user.pointer({ keys: '[MouseLeft>]', target: element, coords: { clientX, clientY } });
+  if (shiftKey) await user.keyboard('{/Shift}');
 }
 
-function release(element: Element, init: { clientX?: number; clientY?: number } = {}) {
-  fireEvent.pointerUp(element, { pointerId: 1, clientX: 0, clientY: 0, ...init });
+async function release(
+  user: UserEvent,
+  element: Element,
+  { clientX = 0, clientY = 0 }: Point = {},
+) {
+  await user.pointer({ keys: '[/MouseLeft]', target: element, coords: { clientX, clientY } });
 }
 
-function drag(element: Element, to: { clientX: number; clientY: number }, shiftKey = false) {
-  press(element, { shiftKey });
-  fireEvent.pointerMove(element, { pointerId: 1, ...to });
+async function drag(
+  user: UserEvent,
+  element: Element,
+  to: { clientX: number; clientY: number },
+  shiftKey = false,
+) {
+  await press(user, element, { shiftKey });
+  await user.pointer({ target: element, coords: to });
 }
 
 describe('DiagramCanvas nodes', () => {
   it('UIC-DIAGRAM-CANVAS-4.1 selects nodes and edges by press, modifier press and Space', async () => {
+    const user = userEvent.setup();
     const onSelectionChange = vi.fn();
     const { container } = render(
       <DiagramCanvas nodes={pipeNodes} edges={pipeEdges} onSelectionChange={onSelectionChange} />,
     );
-    press(node('Pump'));
-    release(node('Pump'));
+    await press(user, node('Pump'));
+    await release(user, node('Pump'));
     expect(onSelectionChange).toHaveBeenLastCalledWith(new Set(['pump']));
     expect(node('Pump')).toHaveAttribute('data-selected', 'true');
-    press(node('Tank'), { shiftKey: true });
+    await press(user, node('Tank'), { shiftKey: true });
     expect(onSelectionChange).toHaveBeenLastCalledWith(new Set(['pump', 'tank']));
-    press(container.querySelectorAll('.ui-diagram-canvas__edge-hit')[0]!);
+    await press(user, container.querySelectorAll('.ui-diagram-canvas__edge-hit')[0]!);
     expect(onSelectionChange).toHaveBeenLastCalledWith(new Set(['e1']));
     expect(container.querySelector('.ui-diagram-canvas__edge')).toHaveAttribute(
       'data-selected',
       'true',
     );
     expect(screen.getByText('flow')).toHaveAttribute('data-selected', 'true');
-    press(screen.getByText('flow'), { shiftKey: true });
+    await press(user, screen.getByText('flow'), { shiftKey: true });
     expect(onSelectionChange).toHaveBeenLastCalledWith(new Set());
     act(() => node('Valve').focus());
     await userEvent.keyboard(' ');
@@ -60,17 +76,18 @@ describe('DiagramCanvas nodes', () => {
     await userEvent.keyboard('{Shift>} {/Shift}');
     expect(onSelectionChange).toHaveBeenLastCalledWith(new Set());
     const viewport = container.querySelector('.ui-diagram-canvas__viewport')!;
-    press(node('Pump'));
-    release(node('Pump'));
-    press(viewport);
-    release(viewport);
+    await press(user, node('Pump'));
+    await release(user, node('Pump'));
+    await press(user, viewport);
+    await release(user, viewport);
     expect(onSelectionChange).toHaveBeenLastCalledWith(new Set());
     expectHooksMatchSpec(container, 'DIAGRAM-CANVAS', {
       slots: ['edge-hit', 'edge-path', 'edge-arrow'],
     });
   });
 
-  it('UIC-DIAGRAM-CANVAS-4.1 narrows a press on a selected node, and follows single, none and controlled modes', () => {
+  it('UIC-DIAGRAM-CANVAS-4.1 narrows a press on a selected node, and follows single, none and controlled modes', async () => {
+    const user = userEvent.setup();
     const onSelectionChange = vi.fn();
     const { rerender } = render(
       <DiagramCanvas
@@ -81,9 +98,9 @@ describe('DiagramCanvas nodes', () => {
       />,
     );
     expect(node('Tank')).toHaveAttribute('data-selected', 'true');
-    press(node('Pump'));
+    await press(user, node('Pump'));
     expect(onSelectionChange).not.toHaveBeenCalled();
-    release(node('Pump'));
+    await release(user, node('Pump'));
     expect(onSelectionChange).toHaveBeenLastCalledWith(new Set(['pump']));
     rerender(
       <DiagramCanvas
@@ -94,7 +111,7 @@ describe('DiagramCanvas nodes', () => {
         onSelectionChange={onSelectionChange}
       />,
     );
-    press(node('Pump'), { shiftKey: true });
+    await press(user, node('Pump'), { shiftKey: true });
     expect(onSelectionChange).toHaveBeenLastCalledWith(new Set(['pump']));
     expect(node('Pump')).not.toHaveAttribute('data-selected');
     onSelectionChange.mockClear();
@@ -106,11 +123,12 @@ describe('DiagramCanvas nodes', () => {
         onSelectionChange={onSelectionChange}
       />,
     );
-    press(node('Pump'));
+    await press(user, node('Pump'));
     expect(onSelectionChange).not.toHaveBeenCalled();
   });
 
-  it('UIC-DIAGRAM-CANVAS-4.2 selects the nodes a Shift drag marquee touches', () => {
+  it('UIC-DIAGRAM-CANVAS-4.2 selects the nodes a Shift drag marquee touches', async () => {
+    const user = userEvent.setup();
     const onSelectionChange = vi.fn();
     const { container } = render(
       <DiagramCanvas
@@ -121,8 +139,8 @@ describe('DiagramCanvas nodes', () => {
       />,
     );
     const viewport = container.querySelector('.ui-diagram-canvas__viewport')!;
-    press(viewport, { clientX: 100, clientY: 0, shiftKey: true });
-    fireEvent.pointerMove(viewport, { pointerId: 1, clientX: 240, clientY: 110 });
+    await press(user, viewport, { clientX: 100, clientY: 0, shiftKey: true });
+    await user.pointer({ target: viewport, coords: { clientX: 240, clientY: 110 } });
     const marquee = container.querySelector<HTMLElement>('.ui-diagram-canvas__marquee')!;
     expect(marquee.style).toMatchObject({
       left: '100px',
@@ -131,22 +149,23 @@ describe('DiagramCanvas nodes', () => {
       height: '110px',
     });
     expectHooksMatchSpec(container, 'DIAGRAM-CANVAS', { slots: ['marquee'] });
-    release(viewport, { clientX: 240, clientY: 110 });
+    await release(user, viewport, { clientX: 240, clientY: 110 });
     expect(onSelectionChange).toHaveBeenLastCalledWith(new Set(['valve', 'tank']));
     expect(container.querySelector('.ui-diagram-canvas__marquee')).toBeNull();
   });
 
-  it('UIC-DIAGRAM-CANVAS-4.3 drags nodes on the grid in edit mode and applies the move on release', () => {
+  it('UIC-DIAGRAM-CANVAS-4.3 drags nodes on the grid in edit mode and applies the move on release', async () => {
+    const user = userEvent.setup();
     const onNodesChange = vi.fn();
     render(
       <EditableDiagram defaultSelectedKeys={['pump', 'tank']} onNodesChange={onNodesChange} />,
     );
-    drag(node('Pump'), { clientX: 23, clientY: 7 });
+    await drag(user, node('Pump'), { clientX: 23, clientY: 7 });
     expect(node('Pump')).toHaveAttribute('data-moving', 'true');
     expect(node('Pump').style).toMatchObject({ left: '20px', top: '10px' });
     expect(node('Tank').style).toMatchObject({ left: '320px', top: '210px' });
     expect(onNodesChange).not.toHaveBeenCalled();
-    release(node('Pump'));
+    await release(user, node('Pump'));
     expect(onNodesChange).toHaveBeenCalledTimes(1);
     expect(
       onNodesChange.mock.calls[0]![0].map(({ id, x, y }: { id: string; x: number; y: number }) => [
@@ -161,12 +180,13 @@ describe('DiagramCanvas nodes', () => {
     ]);
     expect(node('Pump')).not.toHaveAttribute('data-moving');
     expect(status()).toHaveTextContent('2 nodes moved');
-    drag(node('Valve'), { clientX: 2, clientY: 1 });
-    release(node('Valve'));
+    await drag(user, node('Valve'), { clientX: 2, clientY: 1 });
+    await release(user, node('Valve'));
     expect(onNodesChange).toHaveBeenCalledTimes(1);
   });
 
-  it('UIC-DIAGRAM-CANVAS-4.3 moves nothing outside edit mode and keeps positions off the grid with gridSize 0', () => {
+  it('UIC-DIAGRAM-CANVAS-4.3 moves nothing outside edit mode and keeps positions off the grid with gridSize 0', async () => {
+    const user = userEvent.setup();
     const onNodesChange = vi.fn();
     const { rerender } = render(
       <DiagramCanvas
@@ -176,8 +196,8 @@ describe('DiagramCanvas nodes', () => {
         defaultViewport={{ x: 0, y: 0, zoom: 200 }}
       />,
     );
-    drag(node('Pump'), { clientX: 30, clientY: 30 });
-    release(node('Pump'));
+    await drag(user, node('Pump'), { clientX: 30, clientY: 30 });
+    await release(user, node('Pump'));
     expect(onNodesChange).not.toHaveBeenCalled();
     rerender(
       <DiagramCanvas
@@ -189,8 +209,8 @@ describe('DiagramCanvas nodes', () => {
         gridSize={0}
       />,
     );
-    drag(node('Pump'), { clientX: 23, clientY: 7 });
-    release(node('Pump'));
+    await drag(user, node('Pump'), { clientX: 23, clientY: 7 });
+    await release(user, node('Pump'));
     expect(onNodesChange.mock.calls[0]![0][0]).toMatchObject({ id: 'pump', x: 11.5, y: 3.5 });
   });
 
@@ -277,6 +297,7 @@ describe('DiagramCanvas nodes', () => {
   });
 
   it('UIC-DIAGRAM-CANVAS-5.2 gives up a connection by Escape, the same port or the background', async () => {
+    const user = userEvent.setup();
     const onConnect = vi.fn();
     const { container } = render(<EditableDiagram onConnect={onConnect} />);
     const root = screen.getByRole('group', { name: 'Pipes' });
@@ -296,21 +317,22 @@ describe('DiagramCanvas nodes', () => {
     act(() => outlet.focus());
     await userEvent.keyboard('{Enter}');
     const viewport = container.querySelector('.ui-diagram-canvas__viewport')!;
-    press(viewport);
-    release(viewport);
+    await press(user, viewport);
+    await release(user, viewport);
     expect(root).not.toHaveAttribute('data-connecting');
   });
 
-  it('UIC-DIAGRAM-CANVAS-5.1 connects by dragging from a port to a node, with a preview edge', () => {
+  it('UIC-DIAGRAM-CANVAS-5.1 connects by dragging from a port to a node, with a preview edge', async () => {
+    const user = userEvent.setup();
     const onConnect = vi.fn();
     const { container } = render(<EditableDiagram onConnect={onConnect} />);
     const outlet = screen.getByRole('button', { name: 'Pump, outlet' });
-    drag(outlet, { clientX: 200, clientY: 120 });
+    await drag(user, outlet, { clientX: 200, clientY: 120 });
     const preview = container.querySelector('.ui-diagram-canvas__connection-preview');
     expect(preview?.getAttribute('d')).toMatch(/^M 160 24 C .* 200 120$/);
     expectHooksMatchSpec(container, 'DIAGRAM-CANVAS', { slots: ['connection-preview'] });
     document.elementFromPoint = vi.fn(() => node('Tank'));
-    release(outlet, { clientX: 320, clientY: 220 });
+    await release(user, outlet, { clientX: 320, clientY: 220 });
     expect(onConnect).toHaveBeenCalledWith({
       source: 'pump',
       sourcePort: 'out',
@@ -318,38 +340,39 @@ describe('DiagramCanvas nodes', () => {
       targetPort: undefined,
     });
     expect(container.querySelector('.ui-diagram-canvas__connection-preview')).toBeNull();
-    drag(outlet, { clientX: 200, clientY: 120 });
+    await drag(user, outlet, { clientX: 200, clientY: 120 });
     document.elementFromPoint = vi.fn(() => screen.getByRole('button', { name: 'Valve, inlet' }));
-    release(outlet, { clientX: 300, clientY: 24 });
+    await release(user, outlet, { clientX: 300, clientY: 24 });
     expect(onConnect).toHaveBeenLastCalledWith({
       source: 'pump',
       sourcePort: 'out',
       target: 'valve',
       targetPort: 'in',
     });
-    drag(outlet, { clientX: 200, clientY: 120 });
+    await drag(user, outlet, { clientX: 200, clientY: 120 });
     document.elementFromPoint = vi.fn(() => null);
-    release(outlet, { clientX: 900, clientY: 900 });
+    await release(user, outlet, { clientX: 900, clientY: 900 });
     expect(onConnect).toHaveBeenCalledTimes(2);
     expect(status()).toHaveTextContent('Connection cancelled');
   });
 
-  it('UIC-DIAGRAM-CANVAS-5.1 ends a connection started by a port press on the next node or port pressed', () => {
+  it('UIC-DIAGRAM-CANVAS-5.1 ends a connection started by a port press on the next node or port pressed', async () => {
+    const user = userEvent.setup();
     const onConnect = vi.fn();
     render(<EditableDiagram onConnect={onConnect} />);
     const outlet = screen.getByRole('button', { name: 'Pump, outlet' });
-    press(outlet);
-    release(outlet);
-    press(screen.getByRole('button', { name: 'Valve, inlet' }));
+    await press(user, outlet);
+    await release(user, outlet);
+    await press(user, screen.getByRole('button', { name: 'Valve, inlet' }));
     expect(onConnect).toHaveBeenLastCalledWith({
       source: 'pump',
       sourcePort: 'out',
       target: 'valve',
       targetPort: 'in',
     });
-    press(outlet);
-    release(outlet);
-    press(node('Tank'));
+    await press(user, outlet);
+    await release(user, outlet);
+    await press(user, node('Tank'));
     expect(onConnect).toHaveBeenLastCalledWith({
       source: 'pump',
       sourcePort: 'out',

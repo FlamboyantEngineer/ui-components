@@ -191,7 +191,8 @@ describe('DiagramCanvas', () => {
     expect(container.querySelectorAll('.ui-diagram-canvas__edge')).toHaveLength(2);
   });
 
-  it('UIC-DIAGRAM-CANVAS-3.1 pans by dragging the background and by the wheel', () => {
+  it('UIC-DIAGRAM-CANVAS-3.1 pans by dragging the background and by the wheel', async () => {
+    const user = userEvent.setup();
     const onViewportChange = vi.fn();
     const { container } = render(
       <DiagramCanvas
@@ -202,9 +203,11 @@ describe('DiagramCanvas', () => {
       />,
     );
     const viewport = viewportOf(container);
-    fireEvent.pointerDown(viewport, { button: 0, clientX: 10, clientY: 10, pointerId: 1 });
-    fireEvent.pointerMove(viewport, { clientX: 40, clientY: 25, pointerId: 1 });
-    fireEvent.pointerUp(viewport, { clientX: 40, clientY: 25, pointerId: 1 });
+    await user.pointer([
+      { keys: '[MouseLeft>]', target: viewport, coords: { clientX: 10, clientY: 10 } },
+      { coords: { clientX: 40, clientY: 25 } },
+      { keys: '[/MouseLeft]' },
+    ]);
     expect(onViewportChange).toHaveBeenLastCalledWith({ x: 30, y: 15, zoom: 100 });
     fireEvent.wheel(viewport, { deltaX: 5, deltaY: 20 });
     expect(onViewportChange).toHaveBeenLastCalledWith({ x: 25, y: -5, zoom: 100 });
@@ -304,7 +307,8 @@ describe('DiagramCanvas', () => {
     expect(onViewportChange).toHaveBeenLastCalledWith({ x: 16, y: 16, zoom: 100 });
   });
 
-  it('UIC-DIAGRAM-CANVAS-3.5 draws a minimap of the nodes and view that centres the view where pressed', () => {
+  it('UIC-DIAGRAM-CANVAS-3.5 draws a minimap of the nodes and view that centres the view where pressed', async () => {
+    const user = userEvent.setup();
     stubViewportSize(400, 300);
     const onViewportChange = vi.fn();
     const { container, rerender } = render(
@@ -325,12 +329,16 @@ describe('DiagramCanvas', () => {
     const visible = minimap.querySelector('.ui-diagram-canvas__minimap-viewport')!;
     expect(visible).toHaveAttribute('width', '400');
     vi.spyOn(minimap, 'getBoundingClientRect').mockReturnValue(new DOMRect(0, 0, 540, 380));
-    fireEvent.pointerDown(minimap, { button: 0, clientX: 340, clientY: 240, pointerId: 1 });
+    await user.pointer({
+      keys: '[MouseLeft>]',
+      target: minimap,
+      coords: { clientX: 340, clientY: 240 },
+    });
     expect(onViewportChange).toHaveBeenLastCalledWith({ x: -100, y: -50, zoom: 100 });
-    fireEvent.pointerMove(minimap, { clientX: 240, clientY: 190, pointerId: 1 });
+    await user.pointer({ target: minimap, coords: { clientX: 240, clientY: 190 } });
     expect(onViewportChange).toHaveBeenCalledTimes(2);
-    fireEvent.pointerUp(minimap, { pointerId: 1 });
-    fireEvent.pointerMove(minimap, { clientX: 100, clientY: 100, pointerId: 1 });
+    await user.pointer({ keys: '[/MouseLeft]', target: minimap });
+    await user.pointer({ target: minimap, coords: { clientX: 100, clientY: 100 } });
     expect(onViewportChange).toHaveBeenCalledTimes(2);
     expectHooksMatchSpec(container, 'DIAGRAM-CANVAS', {
       slots: ['minimap', 'minimap-node', 'minimap-viewport'],

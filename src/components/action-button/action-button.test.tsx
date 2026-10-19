@@ -60,9 +60,7 @@ describe('ActionButton', () => {
       </ActionButton>,
     );
     const button = screen.getByRole('button');
-    await act(async () => {
-      await userEvent.click(button);
-    });
+    await userEvent.click(button);
     expect(onError).toHaveBeenCalledWith(new Error('offline'));
     expect(button).not.toHaveAttribute('data-pending');
     await expect(

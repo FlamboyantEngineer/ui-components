@@ -5,7 +5,7 @@ import { UiProvider } from '../../core/provider.js';
 import { ModalHost, createModalController } from '../modal-controller/modal-controller.js';
 import { alert, prompt } from './imperative-dialogs.js';
 
-function renderHost() {
+function mountHost() {
   const controller = createModalController();
   render(<ModalHost controller={controller} />);
   return controller;
@@ -14,7 +14,7 @@ function renderHost() {
 describe('imperative dialogs', () => {
   it('UIC-CONFIRM-DIALOG-2.2 opens an acknowledgement and resolves once it closes', async () => {
     const user = userEvent.setup();
-    const controller = renderHost();
+    const controller = mountHost();
     const onConfirm = vi.fn();
     let done!: Promise<void>;
     act(() => {
@@ -70,7 +70,7 @@ describe('imperative dialogs', () => {
 
   it('UIC-CONFIRM-DIALOG-2.3 asks for text and resolves to it, or to null when cancelled', async () => {
     const user = userEvent.setup();
-    const controller = renderHost();
+    const controller = mountHost();
     let answer!: Promise<string | null>;
     act(() => {
       answer = prompt(controller, {
@@ -96,7 +96,7 @@ describe('imperative dialogs', () => {
 
   it('UIC-CONFIRM-DIALOG-2.3 answers on Enter and resolves null when cancelled or closed', async () => {
     const user = userEvent.setup();
-    const controller = renderHost();
+    const controller = mountHost();
     let answer!: Promise<string | null>;
 
     act(() => {

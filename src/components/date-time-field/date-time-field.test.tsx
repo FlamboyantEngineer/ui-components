@@ -67,12 +67,14 @@ describe('DateTimeField field', () => {
     ).toEqual(['4', '4']);
     expectHooksMatchSpec(container, 'DATE-TIME-FIELD', { slots: ['separator'] });
     unmount();
-    const time = renderInLocale(<DateTimeField label="At" mode="time" defaultValue="13:45" />);
-    expect(root(time.container)).toHaveAttribute('data-mode', 'time');
+    const { container: timeContainer } = renderInLocale(
+      <DateTimeField label="At" mode="time" defaultValue="13:45" />,
+    );
+    expect(root(timeContainer)).toHaveAttribute('data-mode', 'time');
     expect(segment(/^hour/)).toHaveTextContent('1');
     expect(segment(/^minute/)).toHaveTextContent('45');
     expect(screen.queryByRole('button', { name: /Calendar/ })).not.toBeInTheDocument();
-    expectHooksMatchSpec(time.container, 'DATE-TIME-FIELD', {
+    expectHooksMatchSpec(timeContainer, 'DATE-TIME-FIELD', {
       slots: ['group', 'input', 'segment'],
     });
   });
@@ -106,13 +108,13 @@ describe('DateTimeField field', () => {
     expect(onCommit).toHaveBeenLastCalledWith('2026-05-14');
     unmount();
     const time = vi.fn();
-    const second = renderInLocale(
+    const { unmount: unmountSecond } = renderInLocale(
       <DateTimeField label="At" mode="time" defaultValue="09:00" onCommit={time} />,
     );
     act(() => segment(/^hour/).focus());
     await user.keyboard('{ArrowUp}');
     expect(time).toHaveBeenLastCalledWith('10:00');
-    second.unmount();
+    unmountSecond();
     const instant = vi.fn();
     renderInLocale(
       <DateTimeField
@@ -178,13 +180,13 @@ describe('DateTimeField field', () => {
       'true',
     );
     unmount();
-    const readOnly = renderInLocale(
+    const { unmount: unmountReadOnly } = renderInLocale(
       <DateTimeField label="Due" defaultValue="2026-04-13" isReadOnly />,
     );
     expect(segment(/^month/)).toHaveAttribute('aria-readonly', 'true');
     await user.click(screen.getByRole('button', { name: /Calendar/ }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-    readOnly.unmount();
+    unmountReadOnly();
     renderInLocale(<DateTimeField label="Due" defaultValue="2026-04-13" isDisabled />);
     expect(segment(/^month/)).toHaveAttribute('aria-disabled', 'true');
     expect(screen.getByRole('button', { name: /Calendar/ })).toBeDisabled();

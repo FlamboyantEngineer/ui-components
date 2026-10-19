@@ -328,7 +328,7 @@ describe('Combobox suggestions', () => {
         renderOption={(option, state) => {
           states.push(state);
           return (
-            <span data-testid={`row-${option.id}`}>
+            <span>
               {option.label}
               {state.isFocused ? ' (focused)' : ''}
             </span>
@@ -338,7 +338,7 @@ describe('Combobox suggestions', () => {
     );
     await user.click(input());
     await user.keyboard('{ArrowDown}');
-    expect(screen.getByTestId('row-apple')).toHaveTextContent('Apple (focused)');
+    expect(screen.getByRole('option', { name: /^Apple/ })).toHaveTextContent('Apple (focused)');
     expect(Object.keys(states.at(-1) ?? {}).sort()).toEqual([
       'isDisabled',
       'isFocusVisible',

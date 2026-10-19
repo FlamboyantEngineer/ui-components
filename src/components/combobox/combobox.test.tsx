@@ -182,19 +182,20 @@ describe('Combobox', () => {
         aria-label="Fruit"
         defaultItems={fruit}
         className="caller"
-        data-testid="probe"
+        data-owner="probe"
         data-size="xl"
         ref={ref}
         name="fruit"
       />,
     );
-    const root = screen.getByTestId('probe');
+    const root = container.querySelector('.ui-combobox');
     expect(root).toHaveClass('ui-combobox', 'caller');
+    expect(root).toHaveAttribute('data-owner', 'probe');
     expect(root).toHaveAttribute('data-size', 'md');
     expect(ref.current).toBe(root);
     expect(container.querySelector('input[name="fruit"]')).not.toBeNull();
     act(() => input().focus());
-    expectHooksMatchSpec(container, 'COMBOBOX');
+    expectHooksMatchSpec(container, 'COMBOBOX', { callerAttributes: ['data-owner'] });
   });
 
   it('UIC-COMBOBOX-5.5 draws the list header above the listbox and gives focus back after a press', async () => {

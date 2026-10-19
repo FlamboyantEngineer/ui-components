@@ -135,7 +135,7 @@ describe('Combobox chips', () => {
         selectionMode="multiple"
         defaultItems={[
           { id: 'paris', label: 'Paris', icon: 'folder' },
-          { id: 'lima', label: 'Lima', icon: <svg data-testid="flag" /> },
+          { id: 'lima', label: 'Lima', icon: <svg role="img" aria-label="Flag" /> },
           { id: 'oslo', label: 'Oslo' },
         ]}
         defaultValue={['paris', 'lima', 'oslo']}
@@ -146,7 +146,11 @@ describe('Combobox chips', () => {
     expect(paris.querySelector('.ui-combobox__chip-icon')).toHaveAttribute('aria-hidden', 'true');
     expect(paris.querySelector('[data-glyph="folder"]')).not.toBeNull();
     const lima = within(chips).getByRole('row', { name: 'Lima' });
-    expect(within(lima).getByTestId('flag').closest('.ui-combobox__chip-icon')).not.toBeNull();
+    expect(
+      within(lima)
+        .getByRole('img', { name: 'Flag', hidden: true })
+        .closest('.ui-combobox__chip-icon'),
+    ).not.toBeNull();
     const oslo = within(chips).getByRole('row', { name: 'Oslo' });
     expect(oslo.querySelector('.ui-combobox__chip-icon')).toBeNull();
     expectHooksMatchSpec(container, 'COMBOBOX', { slots: ['chips', 'chip-icon'] });

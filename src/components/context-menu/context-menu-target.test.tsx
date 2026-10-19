@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { userEvent } from '@testing-library/user-event';
+import { userEvent, type UserEvent } from '@testing-library/user-event';
 import { createRef } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -9,10 +9,42 @@ import { ContextMenuTrigger } from './context-menu.js';
 
 afterEach(() => {
   vi.useRealTimers();
+  vi.unstubAllGlobals();
 });
 
 function popover() {
   return document.querySelector<HTMLElement>('.ui-menu-popover');
+}
+
+/**
+ * A user-event session on a fake clock that moves only when the test moves it. Testing Library
+ * settles each user-event call on a zero timer it advances only through a `jest` global.
+ */
+function setupOnFakeClock(): UserEvent {
+  vi.useFakeTimers();
+  vi.stubGlobal('jest', { advanceTimersByTime: (ms: number) => vi.advanceTimersByTime(ms) });
+  return userEvent.setup({ advanceTimers: (ms) => vi.advanceTimersByTime(ms) });
+}
+
+/** Reports whether the first `type` event dispatched during `act` had its default prevented. */
+async function isPrevented(type: string, act: () => Promise<void>): Promise<boolean> {
+  let seen: Event | null = null;
+  const listen = (event: Event) => {
+    seen ??= event;
+  };
+  document.addEventListener(type, listen, { capture: true });
+  try {
+    await act();
+  } finally {
+    document.removeEventListener(type, listen, { capture: true });
+  }
+  if (!seen) throw new Error(`No ${type} event was dispatched`);
+  return (seen as Event).defaultPrevented;
+}
+
+/** Presses the secondary mouse button on the target at a viewport point. */
+function rightClick(user: UserEvent, target: Element, clientX = 10, clientY = 10) {
+  return user.pointer({ keys: '[MouseRight]', target, coords: { clientX, clientY } });
 }
 
 function FileMenu({ onAction }: { onAction?: (key: unknown) => void }) {
@@ -33,7 +65,8 @@ function FileMenu({ onAction }: { onAction?: (key: unknown) => void }) {
 }
 
 describe('ContextMenuTrigger', () => {
-  it('UIC-CONTEXT-MENU-1.1 opens at the pointer instead of the browser menu', () => {
+  it('UIC-CONTEXT-MENU-1.1 opens at the pointer instead of the browser menu', async () => {
+    const user = userEvent.setup();
     const outer = vi.fn();
     render(
       <div onContextMenu={outer}>
@@ -43,11 +76,10 @@ describe('ContextMenuTrigger', () => {
         </ContextMenuTrigger>
       </div>,
     );
-    const notPrevented = fireEvent.contextMenu(screen.getByText('Report.pdf'), {
-      clientX: 50,
-      clientY: 60,
-    });
-    expect(notPrevented).toBe(false);
+    const prevented = await isPrevented('contextmenu', () =>
+      rightClick(user, screen.getByText('Report.pdf'), 50, 60),
+    );
+    expect(prevented).toBe(true);
     expect(outer).not.toHaveBeenCalled();
     expect(screen.getByRole('menu', { name: 'Context menu' })).toBeInTheDocument();
     expect(popover()).toHaveAttribute('data-placement', 'bottom');
@@ -71,15 +103,15 @@ describe('ContextMenuTrigger', () => {
     expect(popover()).toHaveAttribute('data-placement', 'bottom');
     await user.keyboard('{Escape}');
     await waitFor(() => expect(target).toHaveFocus());
-    expect(fireEvent.keyDown(target, { key: 'ContextMenu' })).toBe(false);
+    expect(await isPrevented('keydown', () => user.keyboard('{ContextMenu}'))).toBe(true);
     expect(screen.getByRole('menu')).toBeInTheDocument();
     // The browser's own contextmenu event for the same key opens nothing more.
     expect(fireEvent.contextMenu(target, { clientX: 300, clientY: 300 })).toBe(false);
     expect(popover()?.style.left).not.toBe('300px');
   });
 
-  it('UIC-CONTEXT-MENU-1.3 opens at a resting touch once, and not after the touch moves', () => {
-    vi.useFakeTimers();
+  it('UIC-CONTEXT-MENU-1.3 opens at a resting touch once, and not after the touch moves', async () => {
+    const user = setupOnFakeClock();
     render(
       <ContextMenuTrigger>
         <div tabIndex={0}>Report.pdf</div>
@@ -87,18 +119,21 @@ describe('ContextMenuTrigger', () => {
       </ContextMenuTrigger>,
     );
     const target = screen.getByText('Report.pdf');
-    const touch = { pointerType: 'touch', pointerId: 7, clientX: 40, clientY: 40 };
-    fireEvent.pointerDown(target, touch);
-    fireEvent.pointerMove(target, { ...touch, clientX: 70 });
+    const point = { clientX: 40, clientY: 40 };
+    await user.pointer([
+      { keys: '[TouchA>]', target, coords: point },
+      { pointerName: 'TouchA', target, coords: { ...point, clientX: 70 } },
+    ]);
     act(() => vi.advanceTimersByTime(500));
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
-    fireEvent.pointerUp(target, touch);
+    await user.pointer({ keys: '[/TouchA]', target });
 
-    fireEvent.pointerDown(target, { pointerType: 'mouse', pointerId: 1, clientX: 40, clientY: 40 });
+    await user.pointer({ keys: '[MouseLeft>]', target, coords: point });
     act(() => vi.advanceTimersByTime(500));
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    await user.pointer({ keys: '[/MouseLeft]', target });
 
-    fireEvent.pointerDown(target, touch);
+    await user.pointer({ keys: '[TouchA>]', target, coords: point });
     act(() => vi.advanceTimersByTime(499));
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     act(() => vi.advanceTimersByTime(1));
@@ -125,7 +160,7 @@ describe('ContextMenuTrigger', () => {
       </>,
     );
     const target = screen.getByText('Report.pdf');
-    fireEvent.contextMenu(target, { clientX: 10, clientY: 10 });
+    await rightClick(user, target);
     expect(screen.getByRole('menuitem', { name: 'Open' })).toHaveFocus();
     await user.keyboard('{ArrowDown}{Enter}');
     expect(onAction.mock.calls.map((call) => call[0])).toEqual(['rename']);
@@ -149,17 +184,18 @@ describe('ContextMenuTrigger', () => {
       </ContextMenuTrigger>,
     );
     const target = screen.getByText('Report.pdf');
-    fireEvent.contextMenu(target, { clientX: 10, clientY: 10 });
+    await rightClick(user, target);
     await user.keyboard('{Escape}');
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
 
-    fireEvent.contextMenu(target, { clientX: 10, clientY: 10 });
-    expect(fireEvent.contextMenu(screen.getByRole('menuitem', { name: 'Open' }))).toBe(false);
+    await rightClick(user, target);
+    const open = screen.getByRole('menuitem', { name: 'Open' });
+    expect(await isPrevented('contextmenu', () => rightClick(user, open))).toBe(true);
     expect(screen.getByRole('menu')).toBeInTheDocument();
-    fireEvent.mouseDown(document.body, { button: 2 });
+    await rightClick(user, document.body);
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
 
-    fireEvent.contextMenu(target, { clientX: 10, clientY: 10 });
+    await rightClick(user, target);
     await user.click(document.body);
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     expect(onAction).not.toHaveBeenCalled();
@@ -170,18 +206,20 @@ describe('ContextMenuTrigger', () => {
         <FileMenu onAction={onAction} />
       </ContextMenuTrigger>,
     );
-    expect(fireEvent.contextMenu(target, { clientX: 10, clientY: 10 })).toBe(true);
-    fireEvent.keyDown(target, { key: 'F10', shiftKey: true });
+    expect(await isPrevented('contextmenu', () => rightClick(user, target))).toBe(false);
+    act(() => target.focus());
+    await user.keyboard('{Shift>}{F10}{/Shift}');
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 
-  it('UIC-CONTEXT-MENU-1.6 keeps the target own handlers, ref and role, and names the menu', () => {
+  it('UIC-CONTEXT-MENU-1.6 keeps the target own handlers, ref and role, and names the menu', async () => {
+    const user = userEvent.setup();
     const onContextMenu = vi.fn();
     const onKeyDown = vi.fn();
     const ref = createRef<HTMLButtonElement>();
     render(
       <UiProvider strings={{ contextMenu: 'File actions' }}>
-        <ContextMenuTrigger className="caller" data-testid="surface" id="file-menu">
+        <ContextMenuTrigger className="caller" data-owner="surface" id="file-menu">
           <button type="button" ref={ref} onContextMenu={onContextMenu} onKeyDown={onKeyDown}>
             Report.pdf
           </button>
@@ -192,17 +230,17 @@ describe('ContextMenuTrigger', () => {
     const target = screen.getByRole('button', { name: 'Report.pdf' });
     expect(ref.current).toBe(target);
     expect(target).not.toHaveAttribute('aria-haspopup');
-    fireEvent.keyDown(target, { key: 'a' });
+    act(() => target.focus());
+    await user.keyboard('a');
     expect(onKeyDown).toHaveBeenCalledTimes(1);
-    fireEvent.contextMenu(target, { clientX: 5, clientY: 5 });
+    await rightClick(user, target, 5, 5);
     expect(onContextMenu).toHaveBeenCalledTimes(1);
     expect(screen.getByRole('menu', { name: 'File actions' })).toBeInTheDocument();
-    expect(screen.getByRole('dialog', { name: 'File actions' })).toBe(
-      screen.getByTestId('surface'),
-    );
-    expect(screen.getByTestId('surface')).toHaveClass('ui-menu-popover', 'caller');
-    expect(screen.getByTestId('surface')).toHaveAttribute('data-layer', 'context-menu');
-    expect(screen.getByTestId('surface')).toHaveAttribute('id', 'file-menu');
-    expectHooksMatchSpec(document.body, 'MENU', { callerAttributes: ['data-testid'] });
+    const surface = screen.getByRole('dialog', { name: 'File actions' });
+    expect(surface).toHaveAttribute('data-owner', 'surface');
+    expect(surface).toHaveClass('ui-menu-popover', 'caller');
+    expect(surface).toHaveAttribute('data-layer', 'context-menu');
+    expect(surface).toHaveAttribute('id', 'file-menu');
+    expectHooksMatchSpec(document.body, 'MENU', { callerAttributes: ['data-owner'] });
   });
 });

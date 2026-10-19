@@ -74,7 +74,7 @@ describe('ActionRow', () => {
           {
             verb: 'custom',
             id: 'pin',
-            icon: <svg data-testid="pin" />,
+            icon: <svg role="img" aria-label="Pin glyph" />,
             label: 'Pin',
             isSelected: false,
             ref,
@@ -88,7 +88,12 @@ describe('ActionRow', () => {
     expect(full).toHaveAttribute('data-selected', 'true');
     expect(full.querySelector('[data-glyph]')).toHaveAttribute('data-glyph', 'expand');
     expect(screen.getByRole('button', { name: 'Pin' })).toHaveAttribute('aria-pressed', 'false');
-    expect(screen.getByTestId('pin')).toBeInTheDocument();
+    expect(
+      within(screen.getByRole('button', { name: 'Pin' })).getByRole('img', {
+        name: 'Pin glyph',
+        hidden: true,
+      }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Help' })).not.toHaveAttribute('aria-pressed');
     expect(ref.current).toBe(screen.getByRole('button', { name: 'Pin' }));
     await userEvent.click(full);

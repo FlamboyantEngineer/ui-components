@@ -92,14 +92,15 @@ describe('CircularProgress', () => {
         className="caller"
         id="probe"
         ref={ref}
-        data-testid="probe"
+        data-owner="probe"
       />,
     );
-    const ring = screen.getByTestId('probe');
+    const ring = screen.getByRole('progressbar', { name: 'Probe' });
     expect(ring).toHaveClass('ui-circular-progress', 'caller');
+    expect(ring).toHaveAttribute('data-owner', 'probe');
     expect(ring).toHaveAttribute('id', 'probe');
     expect(ref.current).toBe(ring);
-    expectHooksMatchSpec(document.body, 'CIRCULAR-PROGRESS');
+    expectHooksMatchSpec(document.body, 'CIRCULAR-PROGRESS', { callerAttributes: ['data-owner'] });
   });
 
   it('UIC-CIRCULAR-PROGRESS-1.7 publishes completion and the tone', () => {

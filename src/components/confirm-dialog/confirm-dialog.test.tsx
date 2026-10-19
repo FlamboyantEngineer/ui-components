@@ -117,7 +117,7 @@ describe('ConfirmDialog', () => {
     });
     expect(onCancel).not.toHaveBeenCalled();
 
-    const failing = render(
+    const { unmount: unmountFailing } = render(
       <ConfirmDialog
         title="Archive again?"
         isOpen
@@ -125,10 +125,10 @@ describe('ConfirmDialog', () => {
         onConfirm={() => Promise.reject(new Error('Archive refused.'))}
       />,
     );
-    await act(async () => userEvent.click(screen.getByRole('button', { name: 'Retry' })));
+    await userEvent.click(screen.getByRole('button', { name: 'Retry' }));
     expect(screen.getByRole('alert')).toHaveTextContent('Archive refused.');
     expect(screen.getByRole('alertdialog', { name: 'Archive again?' })).toBeInTheDocument();
-    failing.unmount();
+    unmountFailing();
   });
 
   it('UIC-CONFIRM-DIALOG-1.2 cancels on an outside press only when dismissable', async () => {
@@ -318,11 +318,10 @@ describe('ConfirmDialog', () => {
         isOpen
         className="caller"
         id="confirm-hooks"
-        data-testid="confirm-root"
         data-purpose="leave"
       />,
     );
-    const root = screen.getByTestId('confirm-root');
+    const root = screen.getByRole('alertdialog').closest('.ui-modal');
     expect(root).toHaveClass('ui-modal', 'ui-confirm-dialog', 'caller');
     expect(root).toHaveAttribute('data-purpose', 'leave');
     expect(screen.getByRole('alertdialog')).toHaveAttribute('id', 'confirm-hooks');

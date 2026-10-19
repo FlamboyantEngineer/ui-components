@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -109,6 +109,7 @@ describe('CommandPalette', () => {
   });
 
   it('UIC-COMMAND-PALETTE-1.3 opens on Ctrl+K anywhere and closes on it from inside', async () => {
+    const user = userEvent.setup();
     const onOpenChange = vi.fn();
     render(<CommandPalette items={commands} onOpenChange={onOpenChange} />);
     const event = pressShortcut();
@@ -116,7 +117,7 @@ describe('CommandPalette', () => {
     expect(onOpenChange).toHaveBeenLastCalledWith(true);
     const search = screen.getByRole('searchbox', { name: 'Search commands' });
     await waitFor(() => expect(search).toHaveFocus());
-    fireEvent.keyDown(search, { key: 'k', ctrlKey: true });
+    await user.keyboard('{Control>}k{/Control}');
     expect(onOpenChange).toHaveBeenLastCalledWith(false);
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });

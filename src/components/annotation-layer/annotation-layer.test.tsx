@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -149,7 +149,8 @@ describe('AnnotationLayer', () => {
     expect(marks(container)[1]).toHaveStyle({ top: '100px', left: '10px', width: '120px' });
   });
 
-  it('UIC-ANNOTATION-LAYER-1.3 activates the annotation under a press, the last listed on top', () => {
+  it('UIC-ANNOTATION-LAYER-1.3 activates the annotation under a press, the last listed on top', async () => {
+    const user = userEvent.setup();
     const onActiveChange = vi.fn();
     const { container } = render(
       <Notes
@@ -161,18 +162,36 @@ describe('AnnotationLayer', () => {
       />,
     );
     const root = container.firstElementChild as HTMLElement;
-    fireEvent.click(root, { clientX: 80, clientY: 120 });
+    await user.pointer({
+      keys: '[MouseLeft]',
+      target: root,
+      coords: { clientX: 80, clientY: 120 },
+    });
     expect(onActiveChange).toHaveBeenLastCalledWith('figure');
-    fireEvent.click(root, { clientX: 160, clientY: 160 });
+    await user.pointer({
+      keys: '[MouseLeft]',
+      target: root,
+      coords: { clientX: 160, clientY: 160 },
+    });
     expect(onActiveChange).toHaveBeenLastCalledWith('corner');
-    fireEvent.click(root, { clientX: 400, clientY: 400 });
+    await user.pointer({
+      keys: '[MouseLeft]',
+      target: root,
+      coords: { clientX: 400, clientY: 400 },
+    });
     expect(onActiveChange).toHaveBeenCalledTimes(2);
     onActiveChange.mockClear();
-    fireEvent.click(cards(container)[0]!, { clientX: 80, clientY: 120 });
+    // A card activates its own annotation, so press one whose annotation is not under the point.
+    await user.pointer({
+      keys: '[MouseLeft]',
+      target: cards(container)[1]!,
+      coords: { clientX: 80, clientY: 120 },
+    });
     expect(onActiveChange).not.toHaveBeenCalledWith('figure');
   });
 
-  it('UIC-ANNOTATION-LAYER-1.3 follows a controlled active annotation', () => {
+  it('UIC-ANNOTATION-LAYER-1.3 follows a controlled active annotation', async () => {
+    const user = userEvent.setup();
     function Controlled() {
       const [active, setActive] = useState<Key | null>('figure');
       return (
@@ -186,7 +205,7 @@ describe('AnnotationLayer', () => {
     }
     const { container } = render(<Controlled />);
     expect(marks(container)[0]).toHaveAttribute('data-active', 'true');
-    fireEvent.click(screen.getByRole('button', { name: 'Clear' }));
+    await user.click(screen.getByRole('button', { name: 'Clear' }));
     expect(container.querySelector('[data-active]')).toBeNull();
   });
 });
@@ -279,28 +298,29 @@ describe('AnnotationMargin', () => {
 
   it('UIC-ANNOTATION-LAYER-3.1 UIC-ANNOTATION-LAYER-3.2 keeps marks decorative and forwards caller attributes', () => {
     const { container } = render(
-      <AnnotationLayer annotations={annotations} className="notes" id="notes" data-testid="layer">
+      <AnnotationLayer annotations={annotations} className="notes" id="notes" data-owner="layer">
         <span id="phrase">slice</span>
         <AnnotationMargin
           className="side"
           id="side"
-          data-testid="margin"
+          data-owner="margin"
           aria-label="Review notes"
           renderCard={() => 'Note'}
         />
       </AnnotationLayer>,
     );
-    const root = screen.getByTestId('layer');
+    const root = container.firstElementChild;
     expect(root).toHaveClass('ui-annotation-layer', 'notes');
     expect(root).toHaveAttribute('id', 'notes');
-    const margin = screen.getByTestId('margin');
+    expect(root).toHaveAttribute('data-owner', 'layer');
+    const margin = screen.getByRole('list', { name: 'Review notes' });
     expect(margin).toHaveClass('ui-annotation-layer__margin', 'side');
     expect(margin).toHaveAttribute('id', 'side');
-    expect(screen.getByRole('list', { name: 'Review notes' })).toBe(margin);
+    expect(margin).toHaveAttribute('data-owner', 'margin');
     expect(container.querySelector('.ui-annotation-layer__marks')).toHaveAttribute(
       'aria-hidden',
       'true',
     );
-    expectHooksMatchSpec(container, 'ANNOTATION-LAYER');
+    expectHooksMatchSpec(container, 'ANNOTATION-LAYER', { callerAttributes: ['data-owner'] });
   });
 });
