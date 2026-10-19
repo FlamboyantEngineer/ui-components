@@ -1,5 +1,5 @@
 import { CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { act, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { Link, useLocale } from '../primitives/index.js';
@@ -247,9 +247,7 @@ describe('storage', () => {
       </UiProvider>,
     );
     const [, button] = screen.getAllByRole('button');
-    await act(async () => {
-      await userEvent.click(button!);
-    });
+    await userEvent.click(button!);
     expect(button).toHaveTextContent('Count 1');
   });
 });

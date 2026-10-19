@@ -8,12 +8,7 @@ function Notice({ isOpen }: { isOpen: boolean }) {
   const { isMounted, isEntering, isExiting } = useEnterExit(ref, isOpen);
   if (!isMounted) return null;
   return (
-    <div
-      ref={ref}
-      data-testid="notice"
-      data-entering={isEntering || undefined}
-      data-exiting={isExiting || undefined}
-    >
+    <div ref={ref} data-entering={isEntering || undefined} data-exiting={isExiting || undefined}>
       Saved
     </div>
   );
@@ -52,39 +47,39 @@ afterEach(() => {
 describe('useEnterExit', () => {
   it('UIC-ENTER-EXIT-1.1 mounts while open and unmounts at once without animations', () => {
     const { rerender } = render(<Notice isOpen={false} />);
-    expect(screen.queryByTestId('notice')).not.toBeInTheDocument();
+    expect(screen.queryByText('Saved')).not.toBeInTheDocument();
     rerender(<Notice isOpen />);
-    const notice = screen.getByTestId('notice');
+    const notice = screen.getByText('Saved');
     expect(notice).not.toHaveAttribute('data-entering');
     expect(notice).not.toHaveAttribute('data-exiting');
     rerender(<Notice isOpen={false} />);
-    expect(screen.queryByTestId('notice')).not.toBeInTheDocument();
+    expect(screen.queryByText('Saved')).not.toBeInTheDocument();
   });
 
   it('UIC-ENTER-EXIT-1.2 stays entering until the enter animations finish', async () => {
     const animation = createAnimation();
     stubAnimations(() => [animation]);
     render(<Notice isOpen />);
-    expect(screen.getByTestId('notice')).toHaveAttribute('data-entering', 'true');
+    expect(screen.getByText('Saved')).toHaveAttribute('data-entering', 'true');
     await act(async () => animation.finish());
-    expect(screen.getByTestId('notice')).not.toHaveAttribute('data-entering');
+    expect(screen.getByText('Saved')).not.toHaveAttribute('data-entering');
   });
 
   it('UIC-ENTER-EXIT-1.3 stays mounted and exiting until the exit animations finish', async () => {
     let animations: FakeAnimation[] = [];
     stubAnimations(() => animations);
     const { rerender } = render(<Notice isOpen />);
-    expect(screen.getByTestId('notice')).not.toHaveAttribute('data-entering');
+    expect(screen.getByText('Saved')).not.toHaveAttribute('data-entering');
 
     const fade = createAnimation();
     const slide = createAnimation();
     animations = [fade, slide];
     rerender(<Notice isOpen={false} />);
-    expect(screen.getByTestId('notice')).toHaveAttribute('data-exiting', 'true');
+    expect(screen.getByText('Saved')).toHaveAttribute('data-exiting', 'true');
     await act(async () => fade.finish());
-    expect(screen.getByTestId('notice')).toHaveAttribute('data-exiting', 'true');
+    expect(screen.getByText('Saved')).toHaveAttribute('data-exiting', 'true');
     await act(async () => slide.finish());
-    expect(screen.queryByTestId('notice')).not.toBeInTheDocument();
+    expect(screen.queryByText('Saved')).not.toBeInTheDocument();
   });
 
   it('UIC-ENTER-EXIT-1.3 finishes the exit when its animation is cancelled', async () => {
@@ -95,23 +90,23 @@ describe('useEnterExit', () => {
     animations = [fade];
     rerender(<Notice isOpen={false} />);
     await act(async () => fade.cancel());
-    expect(screen.queryByTestId('notice')).not.toBeInTheDocument();
+    expect(screen.queryByText('Saved')).not.toBeInTheDocument();
   });
 
   it('UIC-ENTER-EXIT-1.4 keeps the element when it reopens during its exit', async () => {
     let animations: FakeAnimation[] = [];
     stubAnimations(() => animations);
     const { rerender } = render(<Notice isOpen />);
-    const notice = screen.getByTestId('notice');
+    const notice = screen.getByText('Saved');
     const fade = createAnimation();
     animations = [fade];
     rerender(<Notice isOpen={false} />);
     animations = [];
     rerender(<Notice isOpen />);
-    expect(screen.getByTestId('notice')).toBe(notice);
+    expect(screen.getByText('Saved')).toBe(notice);
     expect(notice).not.toHaveAttribute('data-exiting');
     expect(notice).not.toHaveAttribute('data-entering');
     await act(async () => fade.finish());
-    expect(screen.getByTestId('notice')).toBe(notice);
+    expect(screen.getByText('Saved')).toBe(notice);
   });
 });

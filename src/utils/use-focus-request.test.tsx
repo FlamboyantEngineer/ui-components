@@ -1,4 +1,5 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useFocusRequest } from './use-focus-request.js';
@@ -49,17 +50,16 @@ describe('useFocusRequest', () => {
     expect(screen.getByRole('button', { name: 'Add' })).toHaveFocus();
   });
 
-  it('UIC-STEP-LIST-EDITOR-4.2 stops retrying once the reader acts again', () => {
+  it('UIC-STEP-LIST-EDITOR-4.2 stops retrying once the reader acts again', async () => {
     vi.useFakeTimers({ toFake: ['requestAnimationFrame', 'cancelAnimationFrame'] });
+    const user = userEvent.setup();
     render(<Editor />);
     const add = screen.getByRole('button', { name: 'Add' });
     act(() => add.click());
     expect(screen.getByRole('textbox', { name: 'item-1' })).toHaveFocus();
     // A retry is still pending to confirm focus held; the reader presses elsewhere first.
-    act(() => {
-      fireEvent.pointerDown(add);
-      add.focus();
-    });
+    // Pressing the button focuses it, as the browser does on mousedown.
+    await user.pointer({ keys: '[MouseLeft>]', target: add });
     act(() => vi.advanceTimersToNextFrame());
     expect(add).toHaveFocus();
   });

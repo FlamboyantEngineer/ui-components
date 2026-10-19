@@ -49,9 +49,9 @@ function Row(props: RowProps) {
   const shown = visibleItems.map((item) => <span key={item}>{item}</span>);
   if (nested) {
     return (
-      <div ref={containerRef} data-room={room} data-testid="row">
+      <div ref={containerRef} data-room={room} role="group" aria-label="Row">
         {collapseFrom === 'start' ? indicator : null}
-        <div ref={itemContainerRef} data-testid="items">
+        <div ref={itemContainerRef} role="group" aria-label="Items">
           {shown}
         </div>
         {collapseFrom === 'end' ? indicator : null}
@@ -61,7 +61,7 @@ function Row(props: RowProps) {
   }
   const at = indicatorAfter ?? (collapseFrom === 'start' ? 0 : shown.length);
   return (
-    <div ref={containerRef} data-room={room} data-testid="row">
+    <div ref={containerRef} data-room={room} role="group" aria-label="Row">
       {[...shown.slice(0, at), indicator, ...shown.slice(at)]}
     </div>
   );
@@ -71,8 +71,9 @@ const fruit = ['Apple', 'Banana', 'Cherry', 'Fig'];
 const trail = ['Aa', 'Bb', 'Cc', 'Dd', 'Ee', 'Ff'];
 
 function rowText(): string[] {
-  return Array.from(screen.getByTestId('row').querySelectorAll('span, button'), (node) =>
-    node.textContent === null ? '' : node.textContent,
+  return Array.from(
+    screen.getByRole('group', { name: 'Row' }).querySelectorAll('span, button'),
+    (node) => (node.textContent === null ? '' : node.textContent),
   );
 }
 
@@ -122,20 +123,20 @@ describe('useOverflowItems', () => {
   it('UIC-OVERFLOW-LIST-1.6 measures items inside a nested container beside the indicator and fixed parts', () => {
     render(<Row room={150} items={fruit} nested fixed="Add" />);
     // The room is 150 less the fixed "Add" (30): Apple (50) fits beside "+3" (20); Banana would not.
-    const items = screen.getByTestId('items');
+    const items = screen.getByRole('group', { name: 'Items' });
     expect(Array.from(items.children, (child) => child.textContent)).toEqual(['Apple']);
     expect(items.nextElementSibling).toHaveTextContent('+3');
   });
 
   it('UIC-OVERFLOW-LIST-1.6 renders every nested item that fits, with no indicator', () => {
     render(<Row room={230} items={fruit} nested fixed="Add" />);
-    expect(screen.getByTestId('items').children).toHaveLength(4);
+    expect(screen.getByRole('group', { name: 'Items' }).children).toHaveLength(4);
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
 
   it('UIC-OVERFLOW-LIST-1.6 keeps the last nested items when items collapse from the start', () => {
     render(<Row room={110} items={fruit} nested collapseFrom="start" />);
-    const items = screen.getByTestId('items');
+    const items = screen.getByRole('group', { name: 'Items' });
     expect(Array.from(items.children, (child) => child.textContent)).toEqual(['Cherry', 'Fig']);
     expect(items.previousElementSibling).toHaveTextContent('+2');
   });

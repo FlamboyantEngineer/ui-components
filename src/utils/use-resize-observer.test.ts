@@ -43,6 +43,12 @@ afterEach(async () => {
   document.body.replaceChildren();
 });
 
+/** Renders into a root the test owns; `root.render` is React DOM's own API, so it needs `act`. */
+function commit(root: Root, element: ReactElement): Promise<void> {
+  // eslint-disable-next-line testing-library/no-unnecessary-act -- root.render is React DOM's root API, not Testing Library's render
+  return act(async () => root.render(element));
+}
+
 function newRoot(): Root {
   const root = createRoot(document.body.appendChild(document.createElement('div')));
   roots.push(root);
@@ -73,7 +79,7 @@ test('UIC-MEASUREMENT-1.1 shares one observer across refs, keeps it for fresh ar
       second ? createElement('div', { ref: refs[1] }) : null,
     );
   }
-  await act(async () => root.render(createElement(Panel, { version: 0 })));
+  await commit(root, createElement(Panel, { version: 0 }));
   expect(FakeObserver.instances).toHaveLength(1);
   const observer = FakeObserver.instances[0]!;
   expect([...observer.elements]).toEqual([refs[0].current, refs[1].current]);
@@ -83,14 +89,14 @@ test('UIC-MEASUREMENT-1.1 shares one observer across refs, keeps it for fresh ar
   observer.report(entries);
   expect(callbacks[0]).toHaveBeenCalledWith(entries, observer);
 
-  await act(async () => root.render(createElement(Panel, { version: 1, second: false })));
+  await commit(root, createElement(Panel, { version: 1, second: false }));
   expect(FakeObserver.instances).toHaveLength(1);
   expect([...observer.elements]).toEqual([refs[0].current]);
   observer.report(entries);
   expect(callbacks[0]).toHaveBeenCalledTimes(1);
   expect(callbacks[1]).toHaveBeenCalledWith(entries, observer);
 
-  await act(async () => root.render(createElement(Panel, { version: 1 })));
+  await commit(root, createElement(Panel, { version: 1 }));
   expect(observer.elements.has(refs[1].current!)).toBe(true);
 });
 
@@ -101,8 +107,7 @@ test('UIC-MEASUREMENT-1.2 target functions swap elements, and no targets disconn
   const second = document.createElement('div');
   let target: Element | null = null;
   const targets = () => [target];
-  const render = () =>
-    act(async () => root.render(createElement(Watch, { targets, onResize: callback })));
+  const render = () => commit(root, createElement(Watch, { targets, onResize: callback }));
 
   await render();
   expect(FakeObserver.instances).toHaveLength(0);
@@ -140,7 +145,7 @@ test('UIC-MEASUREMENT-1.3 observes iframe content with the iframe window and ski
   });
   const callback = vi.fn();
   const targets = [document.body, inner];
-  await act(async () => root.render(createElement(Watch, { targets, onResize: callback })));
+  await commit(root, createElement(Watch, { targets, onResize: callback }));
   expect(FakeObserver.instances).toHaveLength(2);
   const [outer, framed] = FakeObserver.instances as [FakeObserver, FakeObserver];
   expect(framed).toBeInstanceOf(FrameObserver);
@@ -150,7 +155,7 @@ test('UIC-MEASUREMENT-1.3 observes iframe content with the iframe window and ski
   expect(callback).toHaveBeenCalledTimes(1);
 
   Reflect.deleteProperty(iframe.contentWindow!, 'ResizeObserver');
-  await act(async () => root.render(createElement(Watch, { targets, onResize: callback })));
+  await commit(root, createElement(Watch, { targets, onResize: callback }));
   expect(framed.disconnected).toBe(true);
   expect(FakeObserver.instances).toHaveLength(2);
   await act(async () => roots.pop()!.unmount());
@@ -164,7 +169,7 @@ test('UIC-MEASUREMENT-1.3 watches one element in two boxes with one observer per
     { element, box: 'border-box' as const },
     { element, box: 'content-box' as const },
   ];
-  await act(async () => root.render(createElement(Watch, { targets, onResize() {} })));
+  await commit(root, createElement(Watch, { targets, onResize() {} }));
   expect(FakeObserver.instances.map((observer) => observer.boxes)).toEqual([
     [{ box: 'border-box' }],
     [{ box: 'content-box' }],
