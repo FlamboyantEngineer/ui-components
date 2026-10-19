@@ -124,9 +124,9 @@ describe('Table selection bar and bulk edit', { timeout: 30_000 }, () => {
       ),
     ).toHaveTextContent('2 selected');
     unmount();
-    const plain = renderItems({ columns: [{ id: 'name', header: 'Name' }] });
+    const { container: plain } = renderItems({ columns: [{ id: 'name', header: 'Name' }] });
     await user.click(check('Apple'));
-    expect(plain.container.querySelector('.ui-table__selection-bar')).toBeNull();
+    expect(plain.querySelector('.ui-table__selection-bar')).toBeNull();
   });
 
   it('UIC-TABLE-15.2 sets a choice across the selected rows in one batch', async () => {

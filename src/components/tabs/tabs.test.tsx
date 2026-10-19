@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { I18nProvider } from '../../primitives/index.js';
@@ -89,7 +89,7 @@ describe('Tabs', () => {
             <Tab id="inbox" icon="info" count={15} countMax={9}>
               Inbox
             </Tab>
-            <Tab id="sent" icon={<svg data-testid="custom" />} count={9} countMax={9}>
+            <Tab id="sent" icon={<svg className="custom-glyph" />} count={9} countMax={9}>
               Sent
             </Tab>
             <Tab id="drafts" count={3} countLabel="3 unsaved">
@@ -113,7 +113,7 @@ describe('Tabs', () => {
     const icon = inbox.querySelector('.ui-tabs__icon');
     expect(icon).toHaveClass('ui-icon');
     expect(icon).toHaveAttribute('aria-hidden', 'true');
-    expect(screen.getByTestId('custom').parentElement).toHaveClass('ui-tabs__icon');
+    expect(container.querySelector('.custom-glyph')?.parentElement).toHaveClass('ui-tabs__icon');
     const sent = screen.getByRole('tab', { name: 'Sent 9' });
     expect(sent).toHaveAccessibleDescription('9 items');
     expect(screen.getByRole('tab', { name: 'Drafts 3' })).toHaveAccessibleDescription('3 unsaved');
@@ -166,8 +166,8 @@ describe('Tabs', () => {
     const tabRef = { current: null as HTMLDivElement | null };
     const onContextMenu = vi.fn((event: React.MouseEvent) => event.preventDefault());
     const { container } = render(
-      <Tabs className="caller-root" id="fruit" ref={rootRef} data-testid="root" data-size="x">
-        <TabList aria-label="Fruit" className="caller-list" data-testid="list">
+      <Tabs className="caller-root" id="fruit" ref={rootRef} data-size="x">
+        <TabList aria-label="Fruit" className="caller-list">
           <Tab
             id="apple"
             className="caller-tab"
@@ -178,23 +178,24 @@ describe('Tabs', () => {
             Apple
           </Tab>
         </TabList>
-        <TabPanel id="apple" className="caller-panel" data-testid="panel">
+        <TabPanel id="apple" className="caller-panel">
           Apples
         </TabPanel>
       </Tabs>,
     );
-    const root = screen.getByTestId('root');
+    const list = screen.getByRole('tablist', { name: 'Fruit' });
+    const root = list.parentElement;
     expect(root).toHaveClass('ui-tabs', 'caller-root');
     expect(root).toHaveAttribute('id', 'fruit');
     expect(root).toHaveAttribute('data-size', 'md');
     expect(rootRef.current).toBe(root);
-    expect(screen.getByTestId('list')).toHaveClass('ui-tabs__list', 'caller-list');
+    expect(list).toHaveClass('ui-tabs__list', 'caller-list');
     const tab = screen.getByRole('tab');
     expect(tab).toHaveClass('ui-tabs__tab', 'caller-tab');
     expect(tab).toHaveAttribute('data-section', 'a');
     expect(tabRef.current).toBe(tab);
-    expect(screen.getByTestId('panel')).toHaveClass('ui-tabs__panel', 'caller-panel');
-    fireEvent.contextMenu(tab);
+    expect(screen.getByRole('tabpanel')).toHaveClass('ui-tabs__panel', 'caller-panel');
+    await userEvent.pointer({ keys: '[MouseRight]', target: tab });
     expect(onContextMenu).toHaveBeenCalledTimes(1);
     expectHooksMatchSpec(container, 'TABS', { callerAttributes: ['data-section'] });
   });
@@ -226,7 +227,7 @@ describe('Tabs', () => {
     expect(selected()).toHaveTextContent('Apple');
     unmount();
 
-    const rtl = render(
+    const { unmount: unmountRtl } = render(
       <I18nProvider locale="he-IL">
         <Fruit />
       </I18nProvider>,
@@ -234,7 +235,7 @@ describe('Tabs', () => {
     await userEvent.tab();
     await userEvent.keyboard('{ArrowLeft}');
     expect(selected()).toHaveTextContent('Banana');
-    rtl.unmount();
+    unmountRtl();
 
     render(<Fruit keyboardActivation="manual" />);
     await userEvent.tab();
@@ -398,20 +399,20 @@ describe('Tabs', () => {
         </Tabs>
       );
     }
-    const first = render(<Forced />);
-    let container = first.container;
+    const view = render(<Forced />);
+    let container = view.container;
     const hidden = container.querySelector('.ui-tabs__panel[data-inert]');
     expect(hidden).toHaveTextContent('Bananas');
     expect(hidden).toHaveAttribute('inert');
     const banana = screen.getByRole('tab', { name: 'Banana' });
     await userEvent.hover(banana);
     expect(banana).toHaveAttribute('data-hovered', 'true');
-    fireEvent.pointerDown(banana, { pointerType: 'mouse', button: 0 });
+    await userEvent.pointer({ keys: '[MouseLeft>]', target: banana });
     expect(banana).toHaveAttribute('data-pressed', 'true');
     expectHooksMatchSpec(container, 'TABS');
-    fireEvent.pointerUp(banana, { pointerType: 'mouse', button: 0 });
+    await userEvent.pointer({ keys: '[/MouseLeft]', target: banana });
     await userEvent.unhover(banana);
-    first.unmount();
+    view.unmount();
 
     // A fresh render keeps the pointer sequence above from moving focus during the keyboard checks.
     container = render(<Forced />).container;

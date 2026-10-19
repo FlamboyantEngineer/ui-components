@@ -66,7 +66,7 @@ describe('Table column groups', { timeout: 15_000 }, () => {
   it('UIC-TABLE-8.7 draws no group row without groups or in a virtualized table', () => {
     const { container } = renderFruit({ columnGroups: [] });
     expect(container.querySelectorAll('thead tr')).toHaveLength(1);
-    const virtualized = renderFruit({ virtualized: true });
-    expect(virtualized.container.querySelector('.ui-table__column-group')).toBeNull();
+    const { container: virtualized } = renderFruit({ virtualized: true });
+    expect(virtualized.querySelector('.ui-table__column-group')).toBeNull();
   });
 });

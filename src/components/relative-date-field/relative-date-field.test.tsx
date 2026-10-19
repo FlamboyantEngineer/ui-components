@@ -136,15 +136,17 @@ describe('RelativeDateField', () => {
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     expect(container.querySelector('time')).not.toBeNull();
     unmount();
-    const disabled = renderInLocale(
+    const { container: disabled, unmount: unmountDisabled } = renderInLocale(
       <RelativeDateField label="Due" defaultValue="2026-05-24" getNow={getNow} isDisabled />,
     );
     expect(screen.getByRole('button', { name: 'Tomorrow Due' })).toBeDisabled();
-    expect(disabled.container.querySelector('time')).not.toBeNull();
-    disabled.unmount();
-    const required = renderInLocale(<RelativeDateField label="Due" getNow={getNow} isRequired />);
-    expect(root(required.container)).toHaveAttribute('data-validation', 'invalid');
-    expect(required.container.querySelector('.ui-relative-date-field__select')).toHaveAttribute(
+    expect(disabled.querySelector('time')).not.toBeNull();
+    unmountDisabled();
+    const { container: required } = renderInLocale(
+      <RelativeDateField label="Due" getNow={getNow} isRequired />,
+    );
+    expect(root(required)).toHaveAttribute('data-validation', 'invalid');
+    expect(required.querySelector('.ui-relative-date-field__select')).toHaveAttribute(
       'data-invalid',
       'true',
     );

@@ -9,23 +9,28 @@ import {
   useProjectedContent,
 } from './projection.js';
 
+/** A labelled sample section around an outlet or a declaration. */
+function region(name: string) {
+  return screen.getByRole('region', { name });
+}
+
 describe('Projection', () => {
   it('UIC-PROJECTION-1.1 renders declared content at the outlet, without wrappers', () => {
     render(
       <ProjectionProvider>
-        <header data-testid="header">
+        <header>
           <ProjectionOutlet slot="tools" />
         </header>
-        <main data-testid="main">
+        <main>
           <ProjectionContent slot="tools">
             <button type="button">Share</button>
           </ProjectionContent>
         </main>
       </ProjectionProvider>,
     );
-    const header = screen.getByTestId('header');
+    const header = screen.getByRole('banner');
     expect(header.firstElementChild).toBe(screen.getByRole('button', { name: 'Share' }));
-    expect(screen.getByTestId('main')).toBeEmptyDOMElement();
+    expect(screen.getByRole('main')).toBeEmptyDOMElement();
   });
 
   it('UIC-PROJECTION-1.1 renders the content at every outlet of the slot', () => {
@@ -41,10 +46,10 @@ describe('Projection', () => {
   });
 
   it('UIC-PROJECTION-1.2 keeps the declaring component state, callbacks and inner state', async () => {
-    let publisherRenders = 0;
+    let publisherCalls = 0;
     function Counter() {
       const [count, setCount] = useState(0);
-      publisherRenders += 1;
+      publisherCalls += 1;
       return (
         <ProjectionContent slot="tools">
           <button type="button" onClick={() => setCount((value) => value + 1)}>
@@ -60,14 +65,14 @@ describe('Projection', () => {
         <Counter />
       </ProjectionProvider>,
     );
-    const rendersAfterMount = publisherRenders;
+    const callsAfterMount = publisherCalls;
     const note = screen.getByRole('textbox', { name: 'Note' });
     await userEvent.type(note, 'ripe');
-    expect(publisherRenders).toBe(rendersAfterMount);
+    expect(publisherCalls).toBe(callsAfterMount);
 
     await userEvent.click(screen.getByRole('button', { name: 'Apples 0' }));
     expect(screen.getByRole('button', { name: 'Apples 1' })).toBeInTheDocument();
-    expect(publisherRenders).toBe(rendersAfterMount + 1);
+    expect(publisherCalls).toBe(callsAfterMount + 1);
     expect(screen.getByRole('textbox', { name: 'Note' })).toBe(note);
     expect(note).toHaveValue('ripe');
   });
@@ -104,33 +109,33 @@ describe('Projection', () => {
     function Page({ second, slot }: { second: boolean; slot: string }) {
       return (
         <ProjectionProvider>
-          <p data-testid="city">
+          <section aria-label="City">
             <ProjectionOutlet slot="city" />
-          </p>
-          <p data-testid="town">
+          </section>
+          <section aria-label="Town">
             <ProjectionOutlet slot="town" />
-          </p>
+          </section>
           <First />
           {second ? <ProjectionContent slot={slot}>Lisbon</ProjectionContent> : null}
         </ProjectionProvider>
       );
     }
     const { rerender } = render(<Page second={false} slot="city" />);
-    expect(screen.getByTestId('city')).toHaveTextContent('Paris');
+    expect(region('City')).toHaveTextContent('Paris');
 
     rerender(<Page second slot="city" />);
-    expect(screen.getByTestId('city')).toHaveTextContent('Lisbon');
+    expect(region('City')).toHaveTextContent('Lisbon');
 
     act(() => setFirstLabel('Rome'));
-    expect(screen.getByTestId('city')).toHaveTextContent('Lisbon');
+    expect(region('City')).toHaveTextContent('Lisbon');
 
     rerender(<Page second slot="town" />);
-    expect(screen.getByTestId('city')).toHaveTextContent('Rome');
-    expect(screen.getByTestId('town')).toHaveTextContent('Lisbon');
+    expect(region('City')).toHaveTextContent('Rome');
+    expect(region('Town')).toHaveTextContent('Lisbon');
 
     rerender(<Page second={false} slot="town" />);
-    expect(screen.getByTestId('town')).toBeEmptyDOMElement();
-    expect(screen.getByTestId('city')).toHaveTextContent('Rome');
+    expect(region('Town')).toBeEmptyDOMElement();
+    expect(region('City')).toHaveTextContent('Rome');
   });
 
   it('UIC-PROJECTION-1.5 reads context at the outlet, not at the declaration', () => {
@@ -141,9 +146,9 @@ describe('Projection', () => {
     render(
       <ProjectionProvider>
         <Season.Provider value="summer">
-          <div data-testid="outlet">
+          <section aria-label="Outlet">
             <ProjectionOutlet slot="season" />
-          </div>
+          </section>
         </Season.Provider>
         <Season.Provider value="winter">
           <ProjectionContent slot="season">
@@ -152,42 +157,40 @@ describe('Projection', () => {
         </Season.Provider>
       </ProjectionProvider>,
     );
-    expect(screen.getByTestId('outlet')).toHaveTextContent('summer');
+    expect(region('Outlet')).toHaveTextContent('summer');
   });
 
   it('UIC-PROJECTION-1.6 renders in place without a provider', () => {
     render(
       <>
-        <div data-testid="outlet">
+        <section aria-label="Outlet">
           <ProjectionOutlet slot="tools" fallback="Fallback" />
-        </div>
-        <div data-testid="origin">
+        </section>
+        <section aria-label="Origin">
           <ProjectionContent slot="tools">
             <button type="button">Zoom</button>
           </ProjectionContent>
-        </div>
+        </section>
       </>,
     );
-    expect(screen.getByTestId('outlet')).toHaveTextContent('Fallback');
-    expect(screen.getByTestId('origin')).toContainElement(
-      screen.getByRole('button', { name: 'Zoom' }),
-    );
+    expect(region('Outlet')).toHaveTextContent('Fallback');
+    expect(region('Origin')).toContainElement(screen.getByRole('button', { name: 'Zoom' }));
   });
 
   it('UIC-PROJECTION-1.7 lets a scoped provider own its slots and pass the others up', () => {
     function Page({ inner }: { inner: boolean }) {
       return (
         <ProjectionProvider>
-          <p data-testid="outer-tools">
+          <section aria-label="Outer tools">
             <ProjectionOutlet slot="tools" fallback="none" />
-          </p>
+          </section>
           <ProjectionProvider slots={['title']}>
-            <p data-testid="inner-title">
+            <section aria-label="Inner title">
               <ProjectionOutlet slot="title" fallback="untitled" />
-            </p>
-            <p data-testid="inner-tools">
+            </section>
+            <section aria-label="Inner tools">
               <ProjectionOutlet slot="tools" fallback="none" />
-            </p>
+            </section>
             {inner ? (
               <>
                 <ProjectionContent slot="title">Harbour</ProjectionContent>
@@ -195,32 +198,32 @@ describe('Projection', () => {
               </>
             ) : null}
           </ProjectionProvider>
-          <p data-testid="outer-title">
+          <section aria-label="Outer title">
             <ProjectionOutlet slot="title" fallback="untitled" />
-          </p>
+          </section>
         </ProjectionProvider>
       );
     }
     const { rerender } = render(<Page inner />);
-    expect(screen.getByTestId('inner-title')).toHaveTextContent('Harbour');
-    expect(screen.getByTestId('outer-title')).toHaveTextContent('untitled');
-    expect(screen.getByTestId('outer-tools')).toHaveTextContent('Ruler');
-    expect(screen.getByTestId('inner-tools')).toHaveTextContent('Ruler');
+    expect(region('Inner title')).toHaveTextContent('Harbour');
+    expect(region('Outer title')).toHaveTextContent('untitled');
+    expect(region('Outer tools')).toHaveTextContent('Ruler');
+    expect(region('Inner tools')).toHaveTextContent('Ruler');
     rerender(<Page inner={false} />);
-    expect(screen.getByTestId('inner-title')).toHaveTextContent('untitled');
-    expect(screen.getByTestId('outer-tools')).toHaveTextContent('none');
+    expect(region('Inner title')).toHaveTextContent('untitled');
+    expect(region('Outer tools')).toHaveTextContent('none');
   });
 
   it('UIC-PROJECTION-1.7 owns every slot without an enclosing provider', () => {
     render(
       <ProjectionProvider slots={['title']}>
-        <p data-testid="tools">
+        <section aria-label="Tools">
           <ProjectionOutlet slot="tools" />
-        </p>
+        </section>
         <ProjectionContent slot="tools">Ruler</ProjectionContent>
       </ProjectionProvider>,
     );
-    expect(screen.getByTestId('tools')).toHaveTextContent('Ruler');
+    expect(region('Tools')).toHaveTextContent('Ruler');
   });
 
   it('UIC-PROJECTION-1.8 reads a slot, undefined while it has no content', () => {
@@ -228,7 +231,11 @@ describe('Projection', () => {
     function Reader() {
       const content = useProjectedContent('tools');
       seen.push(content);
-      return content === undefined ? <span>empty</span> : <div data-testid="holder">{content}</div>;
+      return content === undefined ? (
+        <span>empty</span>
+      ) : (
+        <section aria-label="Holder">{content}</section>
+      );
     }
     function Page({ content }: { content?: string | false | null }) {
       return (
@@ -243,7 +250,7 @@ describe('Projection', () => {
     const { rerender } = render(<Page />);
     expect(screen.getByText('empty')).toBeInTheDocument();
     rerender(<Page content="Ruler" />);
-    expect(screen.getByTestId('holder')).toHaveTextContent('Ruler');
+    expect(region('Holder')).toHaveTextContent('Ruler');
     for (const empty of [false, null, ''] as const) {
       rerender(<Page content={empty} />);
       expect(screen.getByText('empty')).toBeInTheDocument();

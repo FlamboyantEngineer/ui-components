@@ -176,17 +176,18 @@ describe('SegmentedBar', () => {
         className="caller"
         id="probe"
         ref={ref}
-        data-testid="probe"
+        data-sample="probe"
         data-size="caller"
         segments={results}
       />,
     );
-    const bar = screen.getByTestId('probe');
+    const bar = screen.getByRole('group', { name: 'Probe' });
     expect(bar).toHaveClass('ui-segmented-bar', 'caller');
     expect(bar).toHaveAttribute('id', 'probe');
     expect(bar).toHaveAttribute('data-size', 'md');
+    expect(bar).toHaveAttribute('data-sample', 'probe');
     expect(ref.current).toBe(bar);
-    expectHooksMatchSpec(document.body, 'SEGMENTED-BAR');
+    expectHooksMatchSpec(document.body, 'SEGMENTED-BAR', { callerAttributes: ['data-sample'] });
   });
 
   it('UIC-SEGMENTED-BAR-2.2 takes no tab stop', async () => {

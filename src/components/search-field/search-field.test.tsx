@@ -145,12 +145,12 @@ describe('SearchField', () => {
   });
 
   it('UIC-SEARCH-FIELD-2.1 draws its label above the box in the label-control layout', () => {
-    const hidden = render(<SearchField label="Find a city" />);
-    const plain = hidden.container.querySelector('.ui-search-field');
+    const { container: hidden, unmount } = render(<SearchField label="Find a city" />);
+    const plain = hidden.querySelector('.ui-search-field');
     expect(plain).toHaveAttribute('data-label-layout', 'control-only');
-    expect(hidden.container.querySelector('.ui-search-field__label')).toBeNull();
-    expect(hidden.container.querySelector('.ui-search-field__group')).toBeNull();
-    hidden.unmount();
+    expect(hidden.querySelector('.ui-search-field__label')).toBeNull();
+    expect(hidden.querySelector('.ui-search-field__group')).toBeNull();
+    unmount();
     const { container } = render(
       <SearchField label="Find a city" labelLayout="label-control" defaultValue="Os" />,
     );

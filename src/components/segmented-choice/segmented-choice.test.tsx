@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { I18nProvider } from '../../primitives/index.js';
@@ -72,7 +72,7 @@ describe('SegmentedChoice', () => {
         value="up"
         options={[
           { value: 'up', label: 'Ascending', icon: 'sort-ascending' },
-          { value: 'down', label: 'Descending', icon: <svg data-testid="custom" /> },
+          { value: 'down', label: 'Descending', icon: <svg className="custom-glyph" /> },
           { value: 'none', label: 'Unsorted' },
         ]}
       />,
@@ -82,7 +82,9 @@ describe('SegmentedChoice', () => {
     expect(icon).toHaveClass('ui-icon');
     expect(icon).toHaveAttribute('aria-hidden', 'true');
     expect(icon).toHaveAttribute('data-size', 'md');
-    expect(screen.getByTestId('custom').parentElement).toHaveClass('ui-segmented-choice__icon');
+    expect(container.querySelector('.custom-glyph')?.parentElement).toHaveClass(
+      'ui-segmented-choice__icon',
+    );
     const unsorted = screen.getByRole('radio', { name: 'Unsorted' });
     expect(unsorted.querySelector('.ui-segmented-choice__icon')).toBeNull();
     expect(container.querySelector('[role="img"]')).toBeNull();
@@ -138,18 +140,19 @@ describe('SegmentedChoice', () => {
           className="caller"
           id="view"
           ref={ref}
-          data-testid="probe"
+          data-sample="probe"
           data-size="caller"
         />
       </>,
     );
-    const group = screen.getByTestId('probe');
+    const group = screen.getByRole('radiogroup', { name: 'View' });
     expect(group).toHaveClass('ui-segmented-choice', 'caller');
     expect(group).toHaveAttribute('id', 'view');
     expect(group).toHaveAttribute('data-size', 'md');
+    expect(group).toHaveAttribute('data-sample', 'probe');
     expect(group).toHaveAccessibleDescription('Applies to every page');
     expect(ref.current).toBe(group);
-    expectHooksMatchSpec(document.body, 'SEGMENTED-CHOICE');
+    expectHooksMatchSpec(document.body, 'SEGMENTED-CHOICE', { callerAttributes: ['data-sample'] });
   });
 
   it('UIC-SEGMENTED-CHOICE-2.1 is one tab stop with arrow-key focus and Space or Enter to pick', async () => {
@@ -328,10 +331,10 @@ describe('SegmentedChoice', () => {
     const day = screen.getByRole('radio', { name: 'Day' });
     await userEvent.hover(day);
     expect(day).toHaveAttribute('data-hovered', 'true');
-    fireEvent.pointerDown(day, { pointerType: 'mouse', button: 0 });
+    await userEvent.pointer({ keys: '[MouseLeft>]', target: day });
     expect(day).toHaveAttribute('data-pressed', 'true');
     expectHooksMatchSpec(container, 'SEGMENTED-CHOICE');
-    fireEvent.pointerUp(day, { pointerType: 'mouse', button: 0 });
+    await userEvent.pointer({ keys: '[/MouseLeft]', target: day });
     await userEvent.unhover(day);
     day.blur();
     await userEvent.tab();

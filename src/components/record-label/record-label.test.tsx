@@ -34,9 +34,11 @@ describe('RecordLabel', () => {
     expect(slot(container, 'name')).toBeNull();
     expect(slot(container, 'icon')).toBeNull();
     expect(root(container)).toHaveTextContent(/^REQ-12$/);
-    rerender(<RecordLabel identifier="<b>A-1</b>" icon={<svg data-testid="kind" />} />);
+    rerender(<RecordLabel identifier="<b>A-1</b>" icon={<svg role="img" aria-label="Kind" />} />);
     expect(container.querySelector('b')).toBeNull();
-    expect(slot(container, 'icon')).toContainElement(screen.getByTestId('kind'));
+    expect(slot(container, 'icon')).toContainElement(
+      screen.getByRole('img', { name: 'Kind', hidden: true }),
+    );
   });
 
   it('UIC-RECORD-LABEL-1.2 cuts the name by default and wraps it on request', () => {

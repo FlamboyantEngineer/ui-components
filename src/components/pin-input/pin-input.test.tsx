@@ -135,6 +135,7 @@ describe('PinInput', () => {
       'off',
       'off',
     ]);
+    // eslint-disable-next-line testing-library/prefer-user-event -- autofill writes the whole value in one change event; user-event types per character and its paste reaches onPaste instead
     fireEvent.change(cells()[0] as HTMLElement, { target: { value: '4821' } });
     expect(values()).toEqual(['4', '8', '2', '1']);
     expect(onComplete).toHaveBeenCalledWith('4821');

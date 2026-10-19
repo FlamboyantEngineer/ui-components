@@ -281,7 +281,8 @@ describe('SignaturePad', () => {
     expect(strokes(container)).toEqual(drawing.paths);
   });
 
-  it('UIC-SIGNATURE-PAD-1.3 submits the value as JSON under its name', () => {
+  it('UIC-SIGNATURE-PAD-1.3 submits the value as JSON under its name', async () => {
+    const user = userEvent.setup();
     const submitted: Array<FormDataEntryValue | null> = [];
     const { container, rerender } = render(
       <Form
@@ -295,7 +296,7 @@ describe('SignaturePad', () => {
         <button type="submit">Send</button>
       </Form>,
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Send' }));
+    await user.click(screen.getByRole('button', { name: 'Send' }));
     expect(submitted).toEqual([JSON.stringify(drawing)]);
     rerender(
       <Form aria-label="Sign" onSubmit={(event) => event.preventDefault()}>

@@ -27,6 +27,7 @@ const gradientMarkup =
 
 describe('SvgMarkup', () => {
   it('UIC-SVG-MARKUP-2.1 renders markup as React elements with converted attributes', () => {
+    // eslint-disable-next-line testing-library/render-result-naming-convention -- renderToStaticMarkup returns an HTML string, not a render result
     const outline = renderToStaticMarkup(<SvgMarkup markup={outlineMarkup} />);
     expect(outline).toMatch(/^<svg/);
     expect(outline).toMatch(/viewBox="0 0 24 24"/);
@@ -35,6 +36,7 @@ describe('SvgMarkup', () => {
       /<path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14M5 12h14"/,
     );
 
+    // eslint-disable-next-line testing-library/render-result-naming-convention -- renderToStaticMarkup returns an HTML string, not a render result
     const solid = renderToStaticMarkup(<SvgMarkup markup={solidMarkup} />);
     expect(solid).toMatch(/fill="currentColor"/);
     expect(solid).toMatch(/fill-rule="evenodd"/);
@@ -121,11 +123,12 @@ describe('SvgMarkup', () => {
 
   it('UIC-SVG-MARKUP-2.5 appends the caller class and forwards id and data attributes', () => {
     const { container } = render(
-      <SvgMarkup markup={solidMarkup} className="caller" id="mark" data-testid="probe" />,
+      <SvgMarkup markup={solidMarkup} className="caller" id="mark" data-sample="probe" />,
     );
-    const svg = screen.getByTestId('probe');
+    const svg = container.querySelector('svg');
     expect(svg).toHaveClass('ui-svg-markup', 'caller');
     expect(svg).toHaveAttribute('id', 'mark');
-    expectHooksMatchSpec(container, 'SVG-MARKUP');
+    expect(svg).toHaveAttribute('data-sample', 'probe');
+    expectHooksMatchSpec(container, 'SVG-MARKUP', { callerAttributes: ['data-sample'] });
   });
 });
