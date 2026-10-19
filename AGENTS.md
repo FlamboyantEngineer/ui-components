@@ -16,6 +16,7 @@ Run `npm run format` to fix formatting. Never weaken a lint rule, the denylist o
 ## Rules
 
 - Follow [docs/CODING-GUIDELINES.md](docs/CODING-GUIDELINES.md). `npm run check` enforces the rules it can (lint and `check:structure`); review enforces the rest.
+- Write tests by [docs/TESTING-GUIDELINES.md](docs/TESTING-GUIDELINES.md): TypeScript tests beside the source that name their `UIC-` IDs, role and label queries through `screen`, `userEvent.setup()`, and no test ids.
 - Components emit hooks only (`specs/HOOK-CONTRACT.md`): hook classes, data attributes and documented `--ui-*` measured properties. No CSS, no visual inline styles, no styling dependency.
 - Build on React Aria Components wherever it has a matching behaviour, imported only through `src/primitives/` (`specs/PRIMITIVES.md`).
 - Never name a host application or its domain terms anywhere in the repository, including commit messages and pull request text. Use neutral sample data in labs and tests.

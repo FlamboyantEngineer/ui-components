@@ -26,6 +26,10 @@
       "types": "./dist/core/index.d.ts",
       "import": "./dist/core/index.js"
     },
+    "./testing": {
+      "types": "./dist/testing/index.d.ts",
+      "import": "./dist/testing/index.js"
+    },
     "./*": {
       "types": "./dist/components/*/index.d.ts",
       "import": "./dist/components/*/index.js"
@@ -67,6 +71,8 @@
   },
   "peerDependencies": {
     "@handlewithcare/react-prosemirror": "^3.2.11",
+    "@testing-library/dom": "^10.0.0",
+    "@testing-library/user-event": "^14.0.0",
     "pdfjs-dist": "^6.2.0",
     "prosemirror-commands": "^1.7.2",
     "prosemirror-history": "^1.5.1",
@@ -83,6 +89,12 @@
   },
   "peerDependenciesMeta": {
     "@handlewithcare/react-prosemirror": {
+      "optional": true
+    },
+    "@testing-library/dom": {
+      "optional": true
+    },
+    "@testing-library/user-event": {
       "optional": true
     },
     "pdfjs-dist": {
