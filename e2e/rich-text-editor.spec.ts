@@ -27,6 +27,30 @@ async function clearFull(page: Page) {
   return box;
 }
 
+/**
+ * Moves the caret to the end of its line. ProseMirror reads the selection a click made a moment
+ * after the click, which can undo an End pressed at once, so End is pressed until the caret holds.
+ */
+async function pressEnd(page: Page) {
+  await expect(async () => {
+    await page.keyboard.press('End');
+    const atEnd = await page.evaluate(() => {
+      const selection = window.getSelection();
+      const node = selection?.focusNode;
+      if (!selection?.isCollapsed || !node) return false;
+      const block = (
+        node.nodeType === Node.TEXT_NODE ? node.parentElement : (node as Element)
+      )?.closest('p, li, h1, h2, h3, blockquote, pre');
+      if (!block) return false;
+      const range = document.createRange();
+      range.selectNodeContents(block);
+      range.setStart(node, selection.focusOffset);
+      return range.toString() === '';
+    });
+    expect(atEnd).toBe(true);
+  }).toPass();
+}
+
 /** The type names of the full editor's top-level blocks, from its JSON output. */
 async function blockTypes(page: Page): Promise<string[]> {
   const json = JSON.parse((await output(page, 'json').textContent()) ?? '{}') as {
@@ -325,7 +349,7 @@ test.describe('Rich Text Editor lab', () => {
     await expect(toolbar.getByRole('option', { name: 'Code block' })).toHaveCount(0);
     await expect(box.locator('mark')).toHaveText('basket');
     await box.locator('p').first().click();
-    await page.keyboard.press('End');
+    await pressEnd(page);
     await page.keyboard.press('Control+Shift+ArrowLeft');
     await page.keyboard.press('Control+Shift+ArrowLeft');
     await toolbar.getByRole('button', { name: 'Highlight' }).click();
@@ -348,7 +372,7 @@ test.describe('Rich Text Editor lab', () => {
     await lab.open('rich-text-editor');
     const box = content(page, 'controlled');
     await box.locator('p').click();
-    await page.keyboard.press('End');
+    await pressEnd(page);
     await page.keyboard.type(' Early.');
     await expect(output(page, 'changes')).toHaveText('7');
     await page.getByRole('button', { name: 'Load the recipe' }).click();
