@@ -1,6 +1,16 @@
 import { expect, test } from './fixtures.js';
 
 test.describe('Button lab', () => {
+  test('UIC-HOOKS-2.3 clears an inactive hook despite a conflicting caller attribute', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('button');
+    await expect(page.getByRole('button', { name: 'Natural width' })).not.toHaveAttribute(
+      'data-full-width',
+    );
+  });
+
   test('UIC-BUTTON-1.2 UIC-BUTTON-1.3 draws every variant at four block sizes', async ({
     page,
     lab,

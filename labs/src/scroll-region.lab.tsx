@@ -343,7 +343,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Scrollbar visibility"
-      description="Overlay scrollbars shown when the axis overflows, always, while scrolling or while hovered, for long and short content."
+      description="Overlay scrollbars shown when the axis overflows, always, while scrolling or while hovered, for long and short content. An unmeasured track starts with a zero-length thumb."
     >
       <StateMatrix
         axes={{

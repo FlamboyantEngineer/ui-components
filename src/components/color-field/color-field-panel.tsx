@@ -88,7 +88,6 @@ export function ColorFieldPanel({
             <ChannelSlider channel="hue" />
             {hasAlpha(format) ? <ChannelSlider channel="alpha" /> : null}
             <ColorChannelInputs format={format} />
-            {allowsEyeDropper ? <ColorFieldEyeDropper /> : null}
             {swatches.length > 0 ? (
               <ColorSwatchPicker className={hooks.slotClass('swatches')} size="sm">
                 {swatches.map((swatch) => (
@@ -110,6 +109,7 @@ export function ColorFieldPanel({
                 {strings.clear}
               </Button>
             )}
+            {allowsEyeDropper ? <ColorFieldEyeDropper /> : null}
           </>
         )}
       </Dialog>

@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // Packs the library and checks the tarball: built entry points and labs present, no sources or
-// tests, no styling dependency, no stylesheet import, and no host reference anywhere inside.
+// tests, no styling dependency, no stylesheet import, no authored host references, and exact copies
+// of the installed PDF runtime for the standalone lab.
 // Run after `npm run build` and `npm run build:labs`.
 
 import { execFileSync } from 'node:child_process';
@@ -35,6 +36,12 @@ try {
     'labs/reference.css',
     'labs/reference/base.css',
     'labs/build/index.js',
+    'labs/build/reference.css',
+    'labs/build/vendor/pdf.min.mjs',
+    'labs/build/vendor/pdf.worker.min.mjs',
+    'labs/build/vendor/LICENSE',
+    'labs/build/samples/seasonal-report.pdf',
+    'labs/build/samples/seasonal-report-locked.pdf',
   ]) {
     if (!files.has(required)) problems.push(`tarball is missing ${required}`);
   }

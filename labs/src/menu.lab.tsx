@@ -359,7 +359,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Opened from a button, items as data"
-      description="A separator, a section, a disabled item and two levels of submenus. Arrow Right opens a submenu; Arrow Left or Escape closes it."
+      description="A separator, a section, a disabled item and two levels of submenus. Click File to open without choosing an action, or hold the mouse button and drag onto an item to choose it. Arrow Right opens a submenu; Arrow Left or Escape closes it."
     >
       <DataMenu />
     </LabSection>

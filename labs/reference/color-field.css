@@ -91,12 +91,10 @@
 
 .ui-color-field__dialog > .ui-color-field__eye-dropper {
   grid-column: 2;
-  grid-row: 99;
 }
 
 .ui-color-field__dialog > .ui-color-field__clear {
   grid-column: 1;
-  grid-row: 99;
 }
 
 .ui-color-field__format {

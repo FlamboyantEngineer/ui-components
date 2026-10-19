@@ -2,7 +2,7 @@
 
 Unstyled, accessible React components that expose stable styling hooks for a host stylesheet.
 
-- **No styles.** The package ships no CSS and defines no CSS variables. Every component renders hook classes (`ui-<component>`, `ui-<component>__<slot>`) and data attributes (`data-variant`, `data-size`, `data-disabled`, …). The host page loads one stylesheet that styles those hooks.
+- **Unstyled components.** Components load no CSS and require no CSS variables. Every component renders hook classes (`ui-<component>`, `ui-<component>__<slot>`) and data attributes (`data-variant`, `data-size`, `data-disabled`, …), with documented custom properties for measured values. The host page loads a stylesheet that styles those hooks. The standalone labs include their own reference stylesheets.
 - **Accessible behaviour** comes from [React Aria Components](https://react-spectrum.adobe.com/react-aria/components.html).
 - **Generic API.** Neutral names and props (`Button`, `variant`, `size`). Built-in glyphs default to [Heroicons](https://heroicons.com) and can be replaced per glyph.
 - **Static labs.** Every component has a lab page under `labs/` that shows its full variant, size and state matrix with a stylesheet picker. The built labs ship in the package so a host can serve them.
@@ -115,7 +115,7 @@ npm run build:labs   # bundle labs/src/*.lab.tsx into labs/build/
 npm run labs         # serve labs/ at http://127.0.0.1:4173/
 ```
 
-Labs are static HTML files; any static file server works. In a lab, the toolbar's stylesheet picker switches between no styles, the neutral reference sheet (`labs/reference.css`) and any stylesheet URL, and writes a theme value to a root attribute (`data-theme` by default). `?stylesheet=`, `?theme=` and `?themeAttribute=` preselect them, so a host can open a lab with its own stylesheet and theme:
+Labs are static HTML files; any static file server works. In a lab, the toolbar's stylesheet picker switches between no styles, the neutral reference sheet (`labs/build/reference.css`, bundled from the partials in `labs/reference.css`) and any stylesheet URL, and writes a theme value to a root attribute (`data-theme` by default). `?stylesheet=`, `?theme=` and `?themeAttribute=` preselect them, so a host can open a lab with its own stylesheet and theme:
 
 ```text
 labs/provider.html?stylesheet=/assets/app.css&theme=dark

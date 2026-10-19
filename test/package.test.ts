@@ -19,6 +19,7 @@ describe('package manifest', () => {
       expect.arrayContaining(['labs/*.html', 'labs/*.css', 'labs/reference', 'labs/build']),
     );
     expect(manifest.files.some((entry) => entry.startsWith('labs/src'))).toBe(false);
+    expect(manifest.files).not.toContain('!labs/build/vendor');
   });
 
   it('UIC-HOOKS-3.1 ships tree-shakeable ESM entry points and no styling dependency', () => {

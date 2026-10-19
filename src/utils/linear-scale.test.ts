@@ -5,6 +5,65 @@ const values = (scale: ReturnType<typeof createLinearScale>) =>
   scale.ticks().map((tick) => tick.value);
 
 describe('createLinearScale', () => {
+  it('UIC-SCALES-1.1 UIC-SCALES-1.2 maps finite domains and ranges whose span overflows', () => {
+    const scale = createLinearScale({ domain: [-1e308, 1e308], range: [0, 100] });
+    expect([scale.map(-1e308), scale.map(0), scale.map(1e308)]).toEqual([0, 50, 100]);
+    expect([scale.invert(0), scale.invert(50), scale.invert(100)]).toEqual([-1e308, 0, 1e308]);
+    const flat = createLinearScale({ domain: [1, 1], range: [1e308, 1.2e308] });
+    expect(flat.map(1)).toBe(1.1e308);
+    const small = createLinearScale({
+      domain: [1, 1],
+      range: [Number.MIN_VALUE, Number.MIN_VALUE],
+    });
+    expect(small.map(1)).toBe(Number.MIN_VALUE);
+    const extrapolated = createLinearScale({ domain: [-1e308, 0], range: [0, 100] });
+    expect(extrapolated.map(1e308)).toBe(200);
+  });
+
+  it('UIC-SCALES-1.3 bounds an excessive tick request and handles an overflowing step', () => {
+    const many = createLinearScale({
+      domain: [0, 1],
+      range: [0, 100],
+      tickCount: Number.MAX_VALUE,
+    });
+    expect(many.ticks().length).toBeLessThanOrEqual(2001);
+    const wide = createLinearScale({
+      domain: [0, Number.MAX_VALUE],
+      range: [0, 100],
+      tickCount: 1,
+    });
+    expect(wide.ticks()).toEqual([{ value: 0, position: 0, label: '0' }]);
+  });
+
+  it('UIC-SCALES-1.4 keeps nice domain endpoints finite when rounding would overflow', () => {
+    const domain = [-Number.MAX_VALUE, Number.MAX_VALUE] as const;
+    const scale = createLinearScale({ domain, range: [0, 100], nice: true });
+    expect(scale.domain).toEqual(domain);
+    expect(scale.map(domain[0])).toBe(0);
+    expect(scale.map(domain[1])).toBe(100);
+    expect(scale.ticks().length).toBeGreaterThan(0);
+  });
+
+  it.each([
+    [1, 1 + Number.EPSILON],
+    [1e-110, 2e-110],
+    [1e-300, 2e-300],
+    [0, Number.MIN_VALUE],
+    [-1e308, 1e308],
+  ])('UIC-SCALES-1.3 UIC-SCALES-1.5 makes finite, distinct ticks for [%s, %s]', (low, high) => {
+    const scale = createLinearScale({ domain: [low, high], range: [0, 100], locale: 'en-US' });
+    const ticks = scale.ticks();
+    expect(ticks.length).toBeGreaterThan(0);
+    expect(ticks.length).toBeLessThanOrEqual(11);
+    expect(new Set(ticks.map((tick) => tick.value)).size).toBe(ticks.length);
+    for (const tick of ticks) {
+      expect(tick.value).toBeGreaterThanOrEqual(low);
+      expect(tick.value).toBeLessThanOrEqual(high);
+      expect(Number.isFinite(tick.position)).toBe(true);
+    }
+    if (low === 1e-110) expect(ticks[0]?.label).toBe('1E-110');
+  });
+
   it('UIC-SCALES-1.1 maps values to positions in proportion, both ways', () => {
     const scale = createLinearScale({ domain: [0, 50], range: [0, 200] });
     expect(scale.map(0)).toBe(0);

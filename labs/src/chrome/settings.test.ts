@@ -84,10 +84,43 @@ describe('settings round trip', () => {
 });
 
 describe('applySettings', () => {
+  it('UIC-LABS-2.1 reports an invalid stylesheet URL and recovers on the next choice', () => {
+    applySettings(defaultSettings);
+    applySettings({
+      ...defaultSettings,
+      stylesheet: { kind: 'custom', url: 'http://[' },
+      theme: 'dark',
+    });
+    expect(document.documentElement.dataset.labStylesheetState).toBe('error');
+    expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+    expect(document.getElementById('ui-lab-stylesheet')).toBeNull();
+    applySettings(defaultSettings);
+    expect(document.documentElement.dataset.labStylesheetState).toBe('loading');
+    expect(document.getElementById('ui-lab-stylesheet')?.getAttribute('href')).toBe(
+      'build/reference.css',
+    );
+  });
+
+  it('UIC-LABS-2.1 ignores load events from a stylesheet that has been replaced', () => {
+    applySettings(defaultSettings);
+    const previous = document.getElementById('ui-lab-stylesheet') as HTMLLinkElement;
+    applySettings({ ...defaultSettings, stylesheet: { kind: 'custom', url: '/host.css' } });
+    previous.dispatchEvent(new Event('load'));
+    expect(document.documentElement.dataset.labStylesheetState).toBe('loading');
+    const current = document.getElementById('ui-lab-stylesheet') as HTMLLinkElement;
+    current.dispatchEvent(new Event('load'));
+    expect(document.documentElement.dataset.labStylesheetState).toBe('loaded');
+    previous.dispatchEvent(new Event('error'));
+    expect(document.documentElement.dataset.labStylesheetState).toBe('loaded');
+    applySettings({ ...defaultSettings, stylesheet: { kind: 'none' } });
+    current.dispatchEvent(new Event('load'));
+    expect(document.documentElement.dataset.labStylesheetState).toBe('none');
+  });
+
   it('adds, swaps and removes the stylesheet link', () => {
     applySettings(defaultSettings);
     const link = document.getElementById('ui-lab-stylesheet') as HTMLLinkElement;
-    expect(link.getAttribute('href')).toBe('reference.css');
+    expect(link.getAttribute('href')).toBe('build/reference.css');
     expect(document.documentElement.dataset.labStylesheetState).toBe('loading');
 
     applySettings({ ...defaultSettings, stylesheet: { kind: 'custom', url: '/host.css' } });

@@ -8,10 +8,10 @@ The linear and time scales return a scale whose `map` turns a value into a posit
 
 ### UIC-SCALES-1.1 - Mapping
 
-`createLinearScale({ domain, range })` shall map a value to a position in proportion: the first end of the domain to the first end of the range and the second to the second, so reversed ends flip the scale (a vertical axis whose values grow upward). Values beyond the domain extrapolate unless `clamp` is set, which keeps positions inside the range. `invert` maps a position back to its value, also clamped when `clamp` is set. The scale exposes its `domain` and `range`.
+`createLinearScale({ domain, range })` shall map a value to a position in proportion: the first end of the domain to the first end of the range and the second to the second, so reversed ends flip the scale (a vertical axis whose values grow upward). Finite endpoints shall keep mapping correctly when their difference overflows. Values beyond the domain extrapolate unless `clamp` is set, which keeps positions inside the range. `invert` maps a position back to its value, also clamped when `clamp` is set. The scale exposes its `domain` and `range`.
 
 Implementation: `src/utils/linear-scale.ts`
-Verification: `src/utils/linear-scale.test.ts`
+Verification: `src/utils/linear-scale.test.ts`, `e2e/sparkline.spec.ts`
 
 ### UIC-SCALES-1.2 - Truthful edges
 
@@ -22,21 +22,21 @@ Verification: `src/utils/linear-scale.test.ts`
 
 ### UIC-SCALES-1.3 - Ticks
 
-`ticks()` shall return the multiples of a round step that fall inside the domain, in increasing order, each with its position and label. The step is 1, 2 or 5 times a power of ten, chosen so that about `tickCount` steps (5 by default) span the domain; values are written without floating-point noise (`0.3`, not `0.30000000000000004`).
+`ticks()` shall return the multiples of a round step that fall inside the domain, in increasing order, each with its position and label. The step is 1, 2 or 5 times a power of ten, chosen so that about `tickCount` steps (5 by default, with the request clamped to 1–1000) span the domain; values are written without floating-point noise (`0.3`, not `0.30000000000000004`). Tick generation shall terminate for adjacent representable numbers, return no duplicate values and use the smallest positive number when a step underflows. An unrepresentable step falls back to one tick at the lower end.
 
 Implementation: `src/utils/linear-scale.ts`
 Verification: `src/utils/linear-scale.test.ts`
 
 ### UIC-SCALES-1.4 - Nice domain
 
-With `nice`, the scale shall extend its domain outward to the nearest multiples of its tick step, keeping the domain's direction, so the first and last ticks sit at the ends of the range.
+With `nice`, the scale shall extend its domain outward to the nearest multiples of its tick step, keeping the domain's direction, so the first and last ticks sit at the ends of the range. An endpoint shall stay unchanged if rounding it outward would overflow to infinity.
 
 Implementation: `src/utils/linear-scale.ts`
 Verification: `src/utils/linear-scale.test.ts`
 
 ### UIC-SCALES-1.5 - Labels
 
-`format(value)` and the tick labels shall write numbers for `locale` (the runtime's by default) with exactly as many decimals as the tick step has (`0.0`, `0.2`, … for a step of 0.2). `formatOptions` (`Intl.NumberFormatOptions`, such as a percent or a unit) replaces that default.
+`format(value)` and the tick labels shall write numbers for `locale` (the runtime's by default) with exactly as many decimals as the tick step has (`0.0`, `0.2`, … for a step of 0.2). Steps requiring more than 100 decimal places shall use scientific notation instead of exceeding fixed-precision formatting limits. `formatOptions` (`Intl.NumberFormatOptions`, such as a percent or a unit) replaces that default.
 
 Implementation: `src/utils/linear-scale.ts`
 Verification: `src/utils/linear-scale.test.ts`
@@ -59,17 +59,17 @@ Verification: `src/utils/time-scale.test.ts`
 
 ### UIC-SCALES-2.3 - Calendar ticks
 
-`ticks({ unit })` shall return the starts of the calendar days, weeks, months, quarters (January, April, July, October) or years that fall inside the domain, as `YYYY-MM-DD` dates in increasing order, each positioned at midnight in the scale's time zone, so ticks stay on calendar boundaries across daylight saving changes. Weeks start on the first day of the week of `locale`.
+`ticks({ unit })` shall return the starts of the calendar days, weeks, months, quarters (January, April, July, October) or years that fall inside the domain, as `YYYY-MM-DD` dates in increasing order, each positioned at midnight in the scale's time zone, so ticks stay on calendar boundaries across daylight saving changes. Weeks start on the first day of the week of `locale`. Tick generation shall stop at the supported calendar limit without repeating dates or emitting a clamped date between unit boundaries.
 
 Implementation: `src/utils/time-scale.ts`
-Verification: `src/utils/time-scale.test.ts`
+Verification: `src/utils/time-scale.test.ts`, `e2e/sparkline.spec.ts`
 
 ### UIC-SCALES-2.4 - Choosing a unit
 
-Without `unit`, `ticks` shall use the smallest of day, week, month, quarter and year whose ticks number at most `count` (8 by default). When even years are too many, it ticks every n years, at multiples of n, with n the smallest step that fits.
+Without `unit`, `ticks` shall use the smallest of day, week, month, quarter and year whose actual calendar boundaries inside the domain number at most `count` (8 by default). When even years are too many, it ticks every n years, at multiples of n, with n the smallest step that fits.
 
 Implementation: `src/utils/time-scale.ts`
-Verification: `src/utils/time-scale.test.ts`
+Verification: `src/utils/time-scale.test.ts`, `src/components/chart/line-geometry.test.ts`, `e2e/sparkline.spec.ts`
 
 ### UIC-SCALES-2.5 - Labels
 

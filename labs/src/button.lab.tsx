@@ -150,6 +150,14 @@ mountLab(
       <Toggles />
     </LabSection>
     <LabSection
+      title="Caller hook precedence"
+      description="The component's fullWidth state wins over a conflicting caller data attribute, including when the state is off."
+    >
+      <Button fullWidth={false} data-full-width="true">
+        Natural width
+      </Button>
+    </LabSection>
+    <LabSection
       title="Swapped element"
       description="The render prop replaces the button element; the caller's element keeps every hook."
     >

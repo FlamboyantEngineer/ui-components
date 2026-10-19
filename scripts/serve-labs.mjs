@@ -2,7 +2,7 @@
 // Plain static file server for labs/. Labs need nothing beyond static serving.
 //   node scripts/serve-labs.mjs [--port 4173] [--host 127.0.0.1] [--dir labs]
 
-import { createReadStream, statSync } from 'node:fs';
+import { createReadStream, realpathSync, statSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { extname, join, normalize, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -16,7 +16,7 @@ function option(name, fallback) {
 
 const port = Number(option('port', process.env.PORT ?? 4173));
 const host = option('host', '127.0.0.1');
-const dir = resolve(root, option('dir', 'labs'));
+const dir = realpathSync(resolve(root, option('dir', 'labs')));
 
 const TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -34,8 +34,14 @@ const TYPES = {
 };
 
 const server = createServer((request, response) => {
-  const url = new URL(request.url ?? '/', `http://${host}`);
-  let pathname = decodeURIComponent(url.pathname);
+  let pathname;
+  try {
+    const url = new URL(request.url ?? '/', `http://${host}`);
+    pathname = decodeURIComponent(url.pathname);
+  } catch {
+    response.writeHead(400, { 'content-type': 'text/plain' }).end('Bad request');
+    return;
+  }
   if (pathname.endsWith('/')) pathname += 'index.html';
   const file = normalize(join(dir, pathname));
   if (file !== dir && !file.startsWith(dir + sep)) {
@@ -43,8 +49,14 @@ const server = createServer((request, response) => {
     return;
   }
   let stat;
+  let realFile;
   try {
-    stat = statSync(file);
+    realFile = realpathSync(file);
+    if (realFile !== dir && !realFile.startsWith(dir + sep)) {
+      response.writeHead(403).end('Forbidden');
+      return;
+    }
+    stat = statSync(realFile);
   } catch {
     response.writeHead(404, { 'content-type': 'text/plain' }).end('Not found');
     return;
@@ -58,9 +70,9 @@ const server = createServer((request, response) => {
     'content-length': stat.size,
     'cache-control': 'no-store',
   });
-  createReadStream(file).pipe(response);
+  createReadStream(realFile).pipe(response);
 });
 
 server.listen(port, host, () => {
-  console.log(`Serving ${dir} at http://${host}:${port}/`);
+  console.log(`Serving ${dir} at http://${host}:${server.address().port}/`);
 });

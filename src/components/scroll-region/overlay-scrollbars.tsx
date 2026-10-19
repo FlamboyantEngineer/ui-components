@@ -154,7 +154,8 @@ function OverlayThumb(props: ThumbProps) {
   const strings = useUiStrings();
   const thumb = useFocusHandback(viewport);
   const vertical = orientation === 'vertical';
-  const size = Math.min(track, Math.max(MIN_THUMB_SIZE, (track * page) / (max + page)));
+  const size =
+    max > 0 ? Math.min(track, Math.max(MIN_THUMB_SIZE, (track * page) / (max + page))) : track;
   const travel = track - size;
   const position = clamp(value, 0, max);
   const offset = max > 0 ? (position / max) * travel : 0;

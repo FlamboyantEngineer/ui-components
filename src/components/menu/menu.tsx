@@ -29,6 +29,7 @@ import {
   type MenuSectionProps,
 } from './menu-item.js';
 import { MenuPopover } from './menu-popover.js';
+import { MenuTriggerPress } from './menu-trigger-press.js';
 
 /** One action described as data. With `items` it opens a submenu of those entries. */
 export interface MenuItemEntry extends Omit<MenuItemProps, 'id' | 'children' | 'textValue'> {
@@ -274,7 +275,11 @@ export function Menu(props: MenuProps) {
  * and on Arrow Down or Arrow Up, which focus the first or last item.
  */
 export function MenuTrigger({ children, ...openState }: MenuTriggerProps) {
-  return <AriaMenuTrigger {...openState}>{children}</AriaMenuTrigger>;
+  return (
+    <AriaMenuTrigger {...openState}>
+      <MenuTriggerPress>{children}</MenuTriggerPress>
+    </AriaMenuTrigger>
+  );
 }
 
 /** Makes its `MenuItem` open the `MenuPopover` beside it (React Aria `SubmenuTrigger`). */

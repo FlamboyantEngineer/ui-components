@@ -31,7 +31,11 @@ export const test = base.extend<{ lab: LabFixture }>({
         await waitForLab(page);
       },
       async expectAccessible(selector = '#lab-root') {
-        const results = await new AxeBuilder({ page }).include(selector).analyze();
+        // Keep every violation; trim node details we do not inspect in other results.
+        const results = await new AxeBuilder({ page })
+          .include(selector)
+          .options({ resultTypes: ['violations'] })
+          .analyze();
         expect(results.violations.map((violation) => `${violation.id}: ${violation.help}`)).toEqual(
           [],
         );

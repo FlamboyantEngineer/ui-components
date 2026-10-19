@@ -728,6 +728,7 @@ describe('ScrollRegion', () => {
         Short
       </ScrollRegion>,
     );
+    expect(thumb('note')!.style.height).toBe('0px');
     flushFrames();
     flushFrames();
     expect(container.firstElementChild).not.toHaveAttribute('data-overflow-y');

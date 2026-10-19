@@ -96,9 +96,9 @@ Verification: `src/components/menu/menu-item.test.tsx`, `e2e/menu.spec.ts`
 
 ### UIC-MENU-4.1 - Menu trigger
 
-`MenuTrigger` shall hold a trigger (a `Button`, an `IconButton` or another library pressable) and a `MenuPopover`, add no element of its own, and open the popover from the trigger: on press, Enter or Space, and on Arrow Down or Arrow Up, which focus the first or last item. The trigger carries `aria-haspopup`, `aria-expanded` and, while open, `aria-controls` naming the menu, which the trigger labels. `isOpen` with `onOpenChange` controls the open state and `defaultOpen` sets it uncontrolled.
+`MenuTrigger` shall hold a trigger (a `Button`, an `IconButton` or another library pressable) and a `MenuPopover`, add no element of its own, and open the popover from the trigger: on press, Enter or Space, and on Arrow Down or Arrow Up, which focus the first or last item. An opening mouse press that stays within the trigger's original bounds until release shall not activate an overlapping menu item; dragging outside those bounds and releasing over an item shall still activate it. The trigger carries `aria-haspopup`, `aria-expanded` and, while open, `aria-controls` naming the menu, which the trigger labels. `isOpen` with `onOpenChange` controls the open state and `defaultOpen` sets it uncontrolled.
 
-Implementation: `src/components/menu/menu.tsx`
+Implementation: `src/components/menu/menu.tsx`, `src/components/menu/menu-trigger-press.tsx`
 Verification: `src/components/menu/menu.test.tsx`, `e2e/menu.spec.ts`
 
 ### UIC-MENU-4.2 - Focus return

@@ -124,9 +124,7 @@ export function mountIndex(): void {
   const settings = readSettings(location.search, labStorage());
   applySettings(settings);
   const updateLinks = (next: LabSettings) => {
-    for (const link of document.querySelectorAll<HTMLAnchorElement>(
-      '#lab-index a[href$=".html"]',
-    )) {
+    for (const link of document.querySelectorAll<HTMLAnchorElement>('#lab-index a[href]')) {
       const page = link.getAttribute('href')?.split('?')[0] ?? '';
       link.setAttribute('href', `${page}${settingsSearch(next)}`);
     }

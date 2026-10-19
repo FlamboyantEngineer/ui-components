@@ -51,9 +51,11 @@ test.describe('Color Field lab', () => {
     await page.keyboard.press('Enter');
     const dialog = page.getByRole('dialog', { name: 'Marker' });
     await expect(dialog).toBeVisible();
-    const popover = await page.locator('.ui-color-field__popover').boundingBox();
+    const popover = page.locator('.ui-color-field__popover');
+    await expect(popover).toHaveAttribute('data-placement', 'bottom');
+    const box = await popover.boundingBox();
     const anchor = await trigger.boundingBox();
-    expect(popover?.y).toBeGreaterThan((anchor?.y ?? 0) + (anchor?.height ?? 0));
+    expect(box?.y).toBeGreaterThan((anchor?.y ?? 0) + (anchor?.height ?? 0));
     expect((await page.locator('.ui-color-field__area').boundingBox())?.width).toBe(192);
     await lab.expectAccessible('.ui-color-field__popover');
 
@@ -72,6 +74,15 @@ test.describe('Color Field lab', () => {
     await expect(trigger).toBeFocused();
     await expect(output(page, 'Committed')).toHaveText('#ff8800');
     await expect(trigger).toHaveAccessibleName('Marker #FF8800');
+
+    await trigger.evaluate((element) => element.scrollIntoView({ block: 'end' }));
+    await trigger.press('Enter');
+    await expect(popover).toHaveAttribute('data-placement', 'top');
+    const flipped = await popover.boundingBox();
+    const movedAnchor = await trigger.boundingBox();
+    if (!flipped || !movedAnchor) throw new Error('picker or trigger not rendered');
+    expect(flipped.y + flipped.height).toBeLessThan(movedAnchor.y);
+    await page.keyboard.press('Escape');
   });
 
   test('UIC-COLOR-FIELD-2.2 clears an optional colour and keeps a required one', async ({
@@ -169,7 +180,7 @@ test.describe('Color Field lab', () => {
     await expect(output(page, 'Format committed')).toHaveText('rgb(153, 51, 51)');
   });
 
-  test('UIC-COLOR-FIELD-4.1 UIC-COLOR-FIELD-4.2 picks a preset swatch and samples the screen', async ({
+  test('UIC-COLOR-FIELD-1.3 UIC-COLOR-FIELD-4.1 UIC-COLOR-FIELD-4.2 picks a preset swatch and samples the screen', async ({
     page,
     lab,
   }) => {
@@ -184,14 +195,30 @@ test.describe('Color Field lab', () => {
     const trigger = field(page, 'presets').locator('.ui-color-field__trigger');
     await trigger.click();
     const dialog = page.getByRole('dialog', { name: 'Label colour' });
+    await expect(dialog).toBeVisible();
     const swatches = dialog.getByRole('listbox', { name: 'Color swatches' });
+    const clear = dialog.getByRole('button', { name: 'Clear', exact: true });
+    const eyeDropper = dialog.getByRole('button', { name: 'Pick a color from the screen' });
+    const clearBox = await clear.boundingBox();
+    const eyeBox = await eyeDropper.boundingBox();
+    const swatchBox = await swatches.boundingBox();
+    const popover = await page.locator('.ui-color-field__popover').boundingBox();
+    if (!clearBox || !eyeBox || !swatchBox || !popover)
+      throw new Error('picker footer not rendered');
+    expect(Math.abs(clearBox.y - eyeBox.y)).toBeLessThan(1);
+    expect(clearBox.y).toBeGreaterThan(swatchBox.y + swatchBox.height);
+    expect(clearBox.y + clearBox.height).toBeLessThan(popover.y + popover.height);
+    expect(eyeBox.y + eyeBox.height).toBeLessThan(popover.y + popover.height);
+    await clear.focus();
+    await page.keyboard.press('Tab');
+    await expect(eyeDropper).toBeFocused();
     await expect(swatches.getByRole('option').nth(3)).toHaveAttribute('aria-selected', 'true');
     await swatches.getByRole('option').nth(3).focus();
     await page.keyboard.press('ArrowRight');
     await page.keyboard.press('Enter');
     await expect(trigger).toHaveAccessibleName('Label colour #7B4FA0');
     await expect(dialog).toBeVisible();
-    await dialog.getByRole('button', { name: 'Pick a color from the screen' }).click();
+    await eyeDropper.click();
     await expect(trigger).toHaveAccessibleName('Label colour #E69500');
     await lab.expectAccessible('.ui-color-field__popover');
     await page.keyboard.press('Escape');
