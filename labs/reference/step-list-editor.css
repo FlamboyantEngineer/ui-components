@@ -93,3 +93,13 @@
 .ui-step-list-editor__add {
   justify-self: start;
 }
+
+/* Fields here reserve no message line or restore place, so they stay as tall as their control. */
+.ui-step-list-editor .ui-field:not([data-dirty])::after {
+  content: none;
+}
+
+.ui-step-list-editor .ui-field__message:empty {
+  min-height: 0;
+  margin-top: 0;
+}

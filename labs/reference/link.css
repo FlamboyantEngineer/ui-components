@@ -37,7 +37,6 @@
 
 .ui-link[data-current] {
   color: var(--ref-text);
-  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-link[data-disabled] {

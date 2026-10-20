@@ -62,8 +62,10 @@ test.describe('Field lab', () => {
       await expect(target.locator('.ui-field__message')).toHaveText(message);
       await expect(target.locator('.ui-field__message')).toHaveCSS('color', colour);
     }
+    // The empty message keeps its line, so a status never moves what follows the field.
     const resting = cell(page, 'resting', 'label-control').locator('.ui-field__message');
-    expect((await box(resting)).height).toBe(0);
+    const invalid = cell(page, 'invalid', 'label-control').locator('.ui-field__message');
+    expect((await box(resting)).height).toBe((await box(invalid)).height);
     await lab.expectAccessible();
   });
 

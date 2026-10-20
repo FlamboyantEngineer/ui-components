@@ -4,8 +4,8 @@
  */
 
 .ui-visually-hidden[data-focus-within] {
-  display: inline-block;
-  padding: 4px 8px;
+  display: inline-block; /* layout-exempt: a skip link appears while it has focus */
+  padding: 4px 8px; /* layout-exempt: a skip link appears while it has focus */
   border: 1px solid var(--ref-border);
   border-radius: var(--ref-radius);
   background: var(--ref-raised);

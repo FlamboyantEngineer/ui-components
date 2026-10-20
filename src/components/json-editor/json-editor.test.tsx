@@ -106,12 +106,14 @@ describe('JsonEditor', () => {
     expect(format).toBeEnabled();
   });
 
-  it('UIC-JSON-EDITOR-3.1 indents by two spaces by default and shows no button while locked', async () => {
+  it('UIC-JSON-EDITOR-3.1 indents by two spaces by default, disables the button while disabled and drops it while read-only', async () => {
     const user = userEvent.setup();
-    const { rerender } = render(<JsonEditor label="Settings" defaultValue="[1]" />);
+    const { rerender } = render(<JsonEditor label="Settings" defaultValue="[1,2]" />);
     await user.click(screen.getByRole('button', { name: 'Format' }));
-    expect(editor()).toHaveValue('[\n  1\n]');
-    rerender(<JsonEditor label="Settings" defaultValue="[1]" isReadOnly />);
+    expect(editor()).toHaveValue('[\n  1,\n  2\n]');
+    rerender(<JsonEditor label="Settings" value="[3]" isDisabled />);
+    expect(screen.getByRole('button', { name: 'Format' })).toBeDisabled();
+    rerender(<JsonEditor label="Settings" value="[3]" isReadOnly />);
     expect(screen.queryByRole('button', { name: 'Format' })).not.toBeInTheDocument();
   });
 

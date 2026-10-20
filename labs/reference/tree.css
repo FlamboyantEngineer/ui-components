@@ -49,7 +49,11 @@
 }
 
 .ui-tree__item[data-current] {
-  font-weight: var(--ref-font-weight-strong);
+  box-shadow: inset 3px 0 0 var(--ref-accent);
+}
+
+.ui-tree__item[data-current]:dir(rtl) {
+  box-shadow: inset -3px 0 0 var(--ref-accent);
 }
 
 .ui-tree__item[data-focus-visible] {

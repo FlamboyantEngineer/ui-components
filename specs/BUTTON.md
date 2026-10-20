@@ -85,7 +85,7 @@ Verification: `src/components/button/button.test.tsx`, `e2e/button.spec.ts`
 
 ### UIC-BUTTON-2.2 - Pending
 
-`isPending` shall keep the button focusable but refuse presses, set `aria-disabled="true"` and `data-pending`, draw an indeterminate progress bar in the `ui-button__spinner` slot in place of the icons, named by `pendingLabel` or the provider's `loading` string, keep the visible label and accessible name, and never submit a form. The change to and from pending is announced while the button has focus.
+`isPending` shall keep the button focusable but refuse presses, set `aria-disabled="true"` and `data-pending`, draw an indeterminate progress bar in the `ui-button__spinner` slot, named by `pendingLabel` or the provider's `loading` string, keep its icons, label and accessible name in place so the button keeps its size (a stylesheet draws the spinner over them), and never submit a form. The change to and from pending is announced while the button has focus.
 
 Implementation: `src/components/button/button.tsx`
 Verification: `src/components/button/button.test.tsx`

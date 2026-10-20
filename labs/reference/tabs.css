@@ -57,7 +57,7 @@
 }
 .ui-tabs__tab[data-selected] {
   color: var(--ref-text);
-  font-weight: var(--ref-font-weight-strong);
+  font-weight: var(--ref-font-weight-strong); /* layout-exempt: the label reserves this width */
 }
 .ui-tabs__tab[data-focus-visible] {
   box-shadow: var(--ref-focus-inset);

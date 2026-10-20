@@ -136,8 +136,7 @@
 }
 
 .ui-color-field__thumb[data-focus-visible] {
-  width: 20px;
-  height: 20px;
+  scale: 1.25;
 }
 
 .ui-color-field__channels {
@@ -247,4 +246,14 @@
 
 .ui-color-field[data-validation='warning'] .ui-color-field__group {
   border-color: var(--ref-warning);
+}
+
+/* Fields here reserve no message line or restore place, so they stay as tall as their control. */
+.ui-color-field__entry .ui-field:not([data-dirty])::after {
+  content: none;
+}
+
+.ui-color-field__entry .ui-field__message:empty {
+  min-height: 0;
+  margin-top: 0;
 }

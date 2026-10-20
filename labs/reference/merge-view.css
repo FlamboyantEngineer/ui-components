@@ -203,3 +203,13 @@
 .ui-merge-view__editor textarea {
   font: 12px/20px var(--ref-mono);
 }
+
+/* Fields here reserve no message line or restore place, so they stay as tall as their control. */
+.ui-merge-view .ui-field:not([data-dirty])::after {
+  content: none;
+}
+
+.ui-merge-view .ui-field__message:empty {
+  min-height: 0;
+  margin-top: 0;
+}

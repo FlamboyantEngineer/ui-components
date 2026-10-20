@@ -41,7 +41,6 @@ export function JsonEditor(props: JsonEditorProps) {
     check: (value) => checkJsonText(value, schema, strings).issue,
   });
   const { indent = 2, size = 'md', lineNumbers = true, placeholder, autoCloseBrackets } = rest;
-  const isEditable = !state.isReadOnly && !state.isDisabled;
   const formatted = formatJson(state.value, indent);
   const { diagnostics } = checkJsonText(state.value, schema, strings);
   const completions = useMemo(() => (schema ? createJsonCompletion(schema) : undefined), [schema]);
@@ -50,17 +49,18 @@ export function JsonEditor(props: JsonEditorProps) {
     state.setValue(formatted);
     state.commit();
   };
-  const toolbar = isEditable ? (
+  // A disabled editor keeps the button, disabled, so disabling never changes the editor's size.
+  const toolbar = state.isReadOnly ? undefined : (
     <Button
       className={hooks.slotClass('format')}
       size="xs"
       variant="ghost"
-      isDisabled={formatted === null || formatted === state.value}
+      isDisabled={state.isDisabled || formatted === null || formatted === state.value}
       onPress={format}
     >
       {strings.format}
     </Button>
-  ) : undefined;
+  );
   return (
     <Field state={state} {...field} className={mergeClassNames(hooks.className, field.className)}>
       {(control) => (

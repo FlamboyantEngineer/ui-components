@@ -145,9 +145,17 @@
   flex: none;
 }
 
+/* The spinner covers the icons and label, which keep their place so pending never resizes it. */
+.ui-button[data-pending] > :not(.ui-button__spinner) {
+  opacity: 0;
+}
+
 .ui-button__spinner {
+  position: absolute;
+  inset: 0;
   width: 12px;
   height: 12px;
+  margin: auto;
   border: 2px solid currentColor;
   border-right-color: transparent;
   border-radius: 50%;

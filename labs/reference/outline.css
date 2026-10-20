@@ -59,12 +59,10 @@
 .ui-outline__item[data-current] > .ui-outline__row > .ui-outline__link {
   border-inline-start-color: var(--ref-accent);
   background: var(--ref-selected);
-  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-outline__item[data-current-within]:not([data-expanded]) > .ui-outline__row > .ui-outline__link {
   border-inline-start-color: var(--ref-border-strong);
-  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-outline__empty {

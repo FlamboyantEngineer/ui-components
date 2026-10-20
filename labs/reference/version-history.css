@@ -68,10 +68,6 @@
   font-weight: var(--ref-font-weight-strong);
 }
 
-.ui-version-history__version[data-current] .ui-version-history__label {
-  font-weight: var(--ref-font-weight-strong);
-}
-
 .ui-version-history__version .ui-list-row-content__meta {
   display: flex;
   flex-direction: column;

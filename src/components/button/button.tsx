@@ -43,9 +43,9 @@ export interface ButtonProps extends ButtonStateProps, BaseProps {
   content?: ButtonContent | undefined;
   /** Where content sits on the button's width. Defaults to `center`. */
   align?: ButtonAlign | undefined;
-  /** An icon before the label. Replaced by the spinner while pending. */
+  /** An icon before the label. */
   startIcon?: IconSource;
-  /** An icon after the label. Hidden while pending. */
+  /** An icon after the label. */
   endIcon?: IconSource;
   /** Take the full width of the container. */
   fullWidth?: boolean | undefined;
@@ -79,7 +79,10 @@ export function ButtonSpinner({ className, label }: ButtonSpinnerProps) {
   );
 }
 
-/** The spinner while pending, else the icons, around the label. */
+/**
+ * The icons around the label, and the spinner while pending. The icons and label stay while pending,
+ * so the button keeps its size and its name; a stylesheet draws the spinner over them.
+ */
 function ButtonParts({
   children,
   content,
@@ -93,13 +96,11 @@ function ButtonParts({
       {isPending ? (
         <ButtonSpinner className={hooks.slotClass('spinner')} label={pendingLabel} />
       ) : null}
-      {!isPending && startIcon ? (
+      {startIcon ? (
         <Icon {...toIconProps(startIcon)} className={hooks.slotClass('start-icon')} />
       ) : null}
       {content === 'parts' ? children : <span {...hooks.slot('label')}>{children}</span>}
-      {!isPending && endIcon ? (
-        <Icon {...toIconProps(endIcon)} className={hooks.slotClass('end-icon')} />
-      ) : null}
+      {endIcon ? <Icon {...toIconProps(endIcon)} className={hooks.slotClass('end-icon')} /> : null}
     </>
   );
 }
