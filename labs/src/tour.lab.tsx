@@ -122,6 +122,34 @@ function GuidedPage() {
 
 const rememberedKey = 'lab.tour.remembered';
 
+function HighlightTransitions() {
+  const [isOpen, setOpen] = useState(false);
+  const first = useRef<HTMLButtonElement>(null);
+  const second = useRef<HTMLButtonElement>(null);
+  return (
+    <>
+      <p>
+        <Button onPress={() => setOpen(true)}>Preview highlight transitions</Button>
+      </p>
+      <p style={{ display: 'flex', gap: 24 }}>
+        <Button ref={first}>First highlight</Button>
+        <Button ref={second}>Second highlight</Button>
+      </p>
+      <Tour
+        isOpen={isOpen}
+        onOpenChange={setOpen}
+        steps={[
+          { target: '#no-highlight', title: 'Overview', content: 'Start without a highlight.' },
+          { target: first, title: 'First highlight', content: 'This highlight appears in place.' },
+          { target: second, title: 'Second highlight', content: 'The highlight moves here.' },
+          { target: '#no-highlight', title: 'Summary', content: 'Finish without a highlight.' },
+        ]}
+        data-lab-tour="transitions"
+      />
+    </>
+  );
+}
+
 function RememberedTour() {
   const [storage] = useState(() => createMemoryStorage());
   // Each reload mounts the tour afresh; `endings` re-reads the stored completion after it ends.
@@ -182,6 +210,12 @@ mountLab(
       description="A non-modal tour with a persist key. Reload opens it again unless it was finished or skipped; Forget completion clears the key."
     >
       <RememberedTour />
+    </LabSection>
+    <LabSection
+      title="Highlight transitions"
+      description="Position and size animate only between two highlights. The first highlight and changes to or from a centred step without a highlight appear immediately. Try Next and Back."
+    >
+      <HighlightTransitions />
     </LabSection>
   </>,
 );

@@ -1,4 +1,4 @@
-import { useLayoutEffect, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import { autoUpdateOverlay } from '../../utils/overlay-auto-update.js';
 import { Portal } from '../portal/portal.js';
@@ -19,6 +19,10 @@ interface SpotlightBox {
   height: number;
 }
 
+interface SpotlightMeasurement extends SpotlightBox {
+  hasTarget: boolean;
+}
+
 const hooks = createHooks('tour', ['spotlight']);
 
 function measure(target: Element | null): SpotlightBox {
@@ -31,15 +35,32 @@ function measure(target: Element | null): SpotlightBox {
 
 /** Follows the target's box in the viewport as the page scrolls, resizes or the target changes size. */
 function useSpotlightBox(target: Element | null, element: HTMLDivElement | null) {
-  const [box, setBox] = useState<SpotlightBox | null>(null);
+  const [box, setBox] = useState<SpotlightMeasurement | null>(null);
+  const previous = useRef<{ element: HTMLDivElement; hasTarget: boolean } | null>(null);
   useLayoutEffect(() => {
     if (!element) return undefined;
     return autoUpdateOverlay({
       anchor: target ?? element,
       overlay: element,
-      update: () => setBox(measure(target)),
+      update: () => setBox({ ...measure(target), hasTarget: target !== null }),
     });
   }, [target, element]);
+  useLayoutEffect(() => {
+    if (!element || !box) return;
+    if (!box.hasTarget || !previous.current?.hasTarget || previous.current.element !== element) {
+      // Read transitions after applying the box, then settle geometry before the first paint.
+      // Opacity and other host animations remain independent of the highlight's position.
+      for (const animation of element.getAnimations()) {
+        if (
+          'transitionProperty' in animation &&
+          ['top', 'left', 'width', 'height'].includes(String(animation.transitionProperty))
+        ) {
+          animation.cancel();
+        }
+      }
+    }
+    previous.current = { element, hasTarget: box.hasTarget };
+  }, [box, element]);
   return box;
 }
 
