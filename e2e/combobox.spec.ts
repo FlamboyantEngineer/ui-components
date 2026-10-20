@@ -18,9 +18,9 @@ test.describe('Combobox lab', () => {
     const cells = page.locator('table[data-lab-matrix="variant state size"] td[data-lab-cell]');
     expect(await cells.count()).toBe(2 * 6 * 3);
     for (const [size, height] of [
-      ['sm', 26],
-      ['md', 32],
-      ['lg', 38],
+      ['sm', 24],
+      ['md', 28],
+      ['lg', 32],
     ] as const) {
       const field = cell(page, 'default', 'resting', size).locator('.ui-combobox__field');
       expect((await field.boundingBox())?.height).toBe(height);

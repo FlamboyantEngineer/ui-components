@@ -16,8 +16,8 @@ test.describe('Search Field lab', () => {
   }) => {
     await lab.open('search-field');
     for (const [size, height] of [
-      ['md', 32],
-      ['sm', 26],
+      ['md', 28],
+      ['sm', 24],
     ] as const) {
       const box = cell(page, 'empty', size).locator('.ui-search-field');
       expect((await box.boundingBox())?.height).toBe(height);
@@ -91,7 +91,7 @@ test.describe('Search Field lab', () => {
     const label = await labelled.locator('.ui-search-field__label').boundingBox();
     const group = await labelled.locator('.ui-search-field__group').boundingBox();
     expect((label?.y ?? 0) + (label?.height ?? 0)).toBeLessThanOrEqual(group?.y ?? 0);
-    expect(group?.height).toBe(32);
+    expect(group?.height).toBe(28);
     await expect(input).toHaveAccessibleDescription('Type at least three letters.');
     await input.fill('Os');
     await expect(labelled.locator('.ui-search-field__error')).toHaveText('Too short.');

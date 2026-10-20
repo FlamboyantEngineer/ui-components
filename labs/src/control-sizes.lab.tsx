@@ -25,7 +25,7 @@ import type { ControlSize } from '../../src/core/props.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const sizes = ['xs', 'sm', 'md', 'lg'] as const satisfies readonly ControlSize[];
-const contents = ['short', 'long'] as const;
+const contents = ['short', 'long', 'large type'] as const;
 const controls = [
   'button',
   'icon-button',
@@ -207,13 +207,19 @@ mountLab(
   <>
     <LabSection
       title="Every control at every size"
-      description="Each control takes the height of its size whatever its content: xs 20, sm 24, md 28 and lg 32 pixels in the reference stylesheet. Controls without an xs size leave that cell empty."
+      description="Each control takes the height of its size, not of its content or the type around it: xs 20, sm 24, md 28 and lg 32 pixels in the reference stylesheet, also inside 24 pixel type with double line height. Controls without an xs size leave that cell empty."
     >
       <StateMatrix
         axes={{ control: controls, content: contents, size: sizes }}
         render={({ control, content, size }) => {
           const Cell = cells[control];
-          return <Cell size={size} isLong={content === 'long'} />;
+          const cell = <Cell size={size} isLong={content === 'long'} />;
+          // Type the page sets around a control never changes its height: its size does.
+          return content === 'large type' ? (
+            <div style={{ fontSize: 24, lineHeight: 2 }}>{cell}</div>
+          ) : (
+            cell
+          );
         }}
       />
     </LabSection>

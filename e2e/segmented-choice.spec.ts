@@ -1,7 +1,7 @@
 import { expect, test } from './fixtures.js';
 
 test.describe('Segmented Choice lab', () => {
-  test('UIC-SEGMENTED-CHOICE-1.3 draws three segment heights and shares or hugs the width', async ({
+  test('UIC-SEGMENTED-CHOICE-1.3 draws three heights and shares or hugs the width', async ({
     page,
     lab,
   }) => {
@@ -11,10 +11,10 @@ test.describe('Segmented Choice lab', () => {
       ['md', 28],
       ['lg', 32],
     ] as const) {
-      const segment = page
-        .locator(`[data-lab-cell="sizing=equal size=${size}"] .ui-segmented-choice__segment`)
-        .first();
-      expect((await segment.boundingBox())?.height).toBe(height);
+      const frame = page.locator(
+        `[data-lab-cell="sizing=equal size=${size}"] .ui-segmented-choice`,
+      );
+      expect((await frame.boundingBox())?.height).toBe(height);
     }
     const equal = page.locator('[data-lab-cell="sizing=equal size=md"]');
     const widths = await equal

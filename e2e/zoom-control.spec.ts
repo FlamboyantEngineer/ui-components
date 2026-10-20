@@ -7,10 +7,10 @@ test.describe('Zoom Control lab', () => {
   }) => {
     await lab.open('zoom-control');
     for (const [size, edge] of [
-      ['xs', 22],
-      ['sm', 26],
-      ['md', 32],
-      ['lg', 38],
+      ['xs', 20],
+      ['sm', 24],
+      ['md', 28],
+      ['lg', 32],
     ] as const) {
       const group = page
         .locator(`[data-lab-cell="state=default size=${size}"]`)
@@ -89,7 +89,7 @@ test.describe('Zoom Control lab', () => {
       const value = await control.locator('output.ui-zoom-control__value').boundingBox();
       const triggerBox = await trigger.boundingBox();
       expect(triggerBox!.x).toBeGreaterThan(value!.x);
-      expect(triggerBox!.width).toBe(26);
+      expect(triggerBox!.width).toBe(24);
 
       await trigger.click();
       const menu = page.getByRole('menu', { name: 'Zoom presets' });

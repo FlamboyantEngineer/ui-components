@@ -7,6 +7,8 @@
   width: 240px;
   max-width: 100%;
   font-size: var(--ref-font-size-md);
+  /* Its own line height, so the type around it never makes the frame taller than its size. */
+  line-height: 1.25;
   vertical-align: top;
 }
 
@@ -162,9 +164,11 @@
   gap: 1px;
 }
 
+/* Like the select field's list, a long list scrolls within 20rem, or less where there is less room. */
 .ui-combobox__listbox {
   flex: 1 1 auto;
   min-height: 0;
+  max-height: 20rem;
   padding: 4px;
   overflow: auto;
   outline: none;

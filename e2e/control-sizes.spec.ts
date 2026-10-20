@@ -25,7 +25,7 @@ const boxes: Record<string, string> = {
 /** Controls that offer no `xs` size, whose `xs` cells are empty. */
 const withoutXs = ['combobox', 'menubar'];
 
-test('UIC-LABS-3.7 every control takes the height of its size, whatever its content', async ({
+test('UIC-LABS-3.7 every control takes the height of its size, not of its content or type', async ({
   page,
   lab,
 }) => {
@@ -48,7 +48,7 @@ test('UIC-LABS-3.7 every control takes the height of its size, whatever its cont
       }),
     boxes,
   );
-  expect(cells.length).toBe(Object.keys(boxes).length * 2 * 4);
+  expect(cells.length).toBe(Object.keys(boxes).length * 3 * 4);
   const missing = cells
     .filter(({ height }) => height === null)
     .filter(({ control, size }) => !(size === 'xs' && withoutXs.includes(control)))

@@ -26,6 +26,8 @@
 .ui-radio {
   --ref-radio-group-size: 16px;
   font-size: var(--ref-font-size-md);
+  /* Its own line height, so the type around it never makes the row taller than its size. */
+  line-height: 1.25;
 }
 
 .ui-radio-group[data-size='xs'] .ui-radio {
