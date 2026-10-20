@@ -35,7 +35,5 @@
 }
 
 .ui-permission-matrix__grant[data-dirty] .ui-checkbox__box {
-  box-shadow:
-    0 0 0 2px var(--ref-canvas),
-    0 0 0 4px var(--ref-warning);
+  border-color: var(--ref-dirty);
 }

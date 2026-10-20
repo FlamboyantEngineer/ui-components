@@ -71,7 +71,7 @@
 }
 
 .ui-signature-pad[data-dirty] :is(.ui-signature-pad__surface, .ui-signature-pad__input) {
-  border-inline-start: 3px solid var(--ref-info);
+  border-color: var(--ref-dirty);
 }
 
 .ui-signature-pad[data-validation='invalid']

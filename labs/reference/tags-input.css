@@ -22,7 +22,7 @@
 }
 
 .ui-tags-input[data-dirty] .ui-tags-input__group {
-  border-inline-start: 3px solid var(--ref-info);
+  border-color: var(--ref-dirty);
 }
 
 .ui-tags-input__group[data-invalid] {

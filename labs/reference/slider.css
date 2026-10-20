@@ -205,6 +205,12 @@
   opacity: 1;
 }
 
+.ui-slider[data-dirty] .ui-slider__box {
+  outline: var(--ref-dirty-outline);
+  outline-offset: 4px;
+  border-radius: var(--ref-radius);
+}
+
 .ui-slider[data-validation='invalid'] .ui-slider__thumb {
   border-color: var(--ref-danger);
 }
@@ -212,10 +218,6 @@
 .ui-slider[data-readonly] .ui-slider__thumb {
   border-style: dashed;
   cursor: default;
-}
-
-.ui-slider[data-dirty] .ui-slider__box {
-  border-inline-start: 3px solid var(--ref-info);
 }
 
 /* A disabled slider dims its track and output only; its label keeps full contrast. */

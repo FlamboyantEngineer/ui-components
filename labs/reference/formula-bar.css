@@ -38,6 +38,10 @@
   outline-offset: 1px;
 }
 
+.ui-formula-bar[data-dirty] .ui-formula-bar__editor.ui-code-editor {
+  border-color: var(--ref-dirty);
+}
+
 .ui-formula-bar__reference[data-invalid] {
   border-color: var(--ref-danger);
   box-shadow: 0 0 0 1px var(--ref-danger);
@@ -79,8 +83,4 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.ui-formula-bar[data-dirty] .ui-formula-bar__editor.ui-code-editor {
-  border-color: var(--ref-accent);
 }

@@ -98,6 +98,17 @@ for (const declaration of declarations) {
       `${where(declaration)}: opacity for a disabled or dragged state; use --ref-disabled-opacity or --ref-dragging-opacity`,
     );
   }
+  const isDirtyRule = /\[data-dirty\]/.test(selector.replace(/:not\([^)]*\)/g, ''));
+  const dirtyMark = { 'border-color': 'var(--ref-dirty)', outline: 'var(--ref-dirty-outline)' };
+  if (
+    isDirtyRule &&
+    /^(?:border(?!-[a-z-]*radius)|outline(?!-offset)|box-shadow)/.test(property) &&
+    dirtyMark[property] !== value
+  ) {
+    problems.push(
+      `${where(declaration)}: a dirty field marks its whole frame; use border-color: var(--ref-dirty) or outline: var(--ref-dirty-outline)`,
+    );
+  }
 }
 
 // Every token is defined, used, scoped by name and not a literal copy of another.

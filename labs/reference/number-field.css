@@ -82,7 +82,7 @@
 }
 
 .ui-number-field[data-dirty] .ui-number-field__group {
-  border-inline-start: 3px solid var(--ref-info);
+  border-color: var(--ref-dirty);
 }
 
 .ui-number-field[data-validation='invalid'] .ui-number-field__group {

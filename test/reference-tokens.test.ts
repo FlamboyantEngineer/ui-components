@@ -62,6 +62,14 @@ describe('reference token check', () => {
     expect(result.stderr).not.toContain('card.css:3');
   });
 
+  it('UIC-LABS-3.5 marks a dirty field with a uniform frame, not a bar', () => {
+    const result = check({
+      'card.css': `.ui-card[data-dirty] .ui-card__frame { border-inline-start: 3px solid var(--ref-accent); }`,
+    });
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('a dirty field marks its whole frame');
+  });
+
   it('UIC-LABS-3.5 rejects unused, undefined, misnamed and duplicated tokens', () => {
     const result = check(
       {

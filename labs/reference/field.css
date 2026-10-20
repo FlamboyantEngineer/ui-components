@@ -59,7 +59,7 @@
 }
 
 .ui-field[data-dirty] .ui-field__control > :is(input, textarea) {
-  border-inline-start: 3px solid var(--ref-info);
+  border-color: var(--ref-dirty);
 }
 
 .ui-field[data-validation='invalid'] .ui-field__control > :is(input, textarea) {

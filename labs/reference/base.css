@@ -101,7 +101,11 @@
   --ref-focus-halo: 0 0 0 2px var(--ref-canvas), 0 0 0 4px var(--ref-focus);
   --ref-focus-inset: inset 0 0 0 2px var(--ref-focus);
 
-  /* State and motion */
+  /* State and motion. A changed, unsaved field takes --ref-dirty on its frame, like the validation
+     colours; a control without a frame of its own takes the outline. Its own colour, since the
+     accent already marks focus. */
+  --ref-dirty: var(--ref-category-2);
+  --ref-dirty-outline: 1px solid var(--ref-dirty);
   --ref-disabled-opacity: 0.55;
   --ref-dragging-opacity: 0.5;
   --ref-duration-fast: 0.1s;

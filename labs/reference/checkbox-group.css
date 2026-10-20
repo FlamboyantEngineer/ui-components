@@ -21,8 +21,9 @@
 }
 
 .ui-checkbox-group[data-dirty] .ui-checkbox-group__box {
-  padding-inline-start: 6px;
-  border-inline-start: 3px solid var(--ref-info);
+  outline: var(--ref-dirty-outline);
+  outline-offset: 4px;
+  border-radius: var(--ref-radius);
 }
 
 .ui-checkbox-group__box[data-readonly] .ui-checkbox {
