@@ -4,6 +4,7 @@ import { createHooks } from '../../core/hooks.js';
 import type { Key, Selection } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { PopoverPanel } from '../popover/popover.js';
+import { triggerWidthProperty } from '../portal/portal.js';
 import { SearchField } from '../search-field/search-field.js';
 import { Tree, type TreeItemData } from '../tree/tree.js';
 import { getAncestorKeys, type TreeIndex } from './tree-index.js';
@@ -124,7 +125,12 @@ function TreeSelectDialog<T extends TreeItemData>({
  */
 export function TreeSelectPopover<T extends TreeItemData>(props: TreeSelectPopoverProps<T>) {
   return (
-    <PopoverPanel {...hooks.slot('popover')} placement="bottom start" offset={4}>
+    <PopoverPanel
+      {...hooks.slot('popover')}
+      placement="bottom start"
+      offset={4}
+      style={triggerWidthProperty}
+    >
       <TreeSelectDialog {...props} />
     </PopoverPanel>
   );
