@@ -6,7 +6,7 @@
 
 ### UIC-CHECKBOX-GROUP-1.1 - Field control
 
-`CheckboxGroup` shall render a `Field` around a checkbox group (`ui-checkbox-group__box`, role `group`, named by the field label), built with `useFieldControl`, holding one `Checkbox` per entry of `options`, in order, named by its `label`. Its root element is the field's root, which carries `ui-checkbox-group` beside `ui-field`. The value is the list of ticked values: a field given no value, committed value or default starts with none ticked, and Clear empties it. Toggling a box sets the new list and commits it. An option with `isDisabled` cannot be toggled.
+`CheckboxGroup` shall render a `Field` around a checkbox group (`ui-checkbox-group__box`, role `group`, named by the field label), built with `useFieldControl`, holding one `Checkbox` per entry of `options`, in order, named by its `label` and taking the field's `size`. Its root element is the field's root, which carries `ui-checkbox-group` beside `ui-field`. The value is the list of ticked values: a field given no value, committed value or default starts with none ticked, and Clear empties it. Toggling a box sets the new list and commits it. An option with `isDisabled` cannot be toggled.
 
 Implementation: `src/components/checkbox-group/checkbox-group.tsx`, `labs/reference/checkbox-group.css`
 Verification: `src/components/checkbox-group/checkbox-group.test.tsx`, `e2e/checkbox-group.spec.ts`

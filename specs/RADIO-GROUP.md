@@ -27,7 +27,7 @@ Verification: `src/components/radio-group/radio-group.test.tsx`, `e2e/radio-grou
 
 ### UIC-RADIO-GROUP-1.4 - Orientation and size
 
-`orientation` (`vertical` by default, or `horizontal`) shall lay the radios out in a column or a row, publish `data-orientation` on the box and set `aria-orientation` on the group. `size` (`sm`, `md` by default, `lg`) shall publish `data-size` on the root.
+`orientation` (`vertical` by default, or `horizontal`) shall lay the radios out in a column or a row, publish `data-orientation` on the box and set `aria-orientation` on the group. `size` (`xs`, `sm`, `md` by default, `lg`) is the field's size (UIC-FIELD-1.10), which also sizes the radios.
 
 Implementation: `src/components/radio-group/radio-group.tsx`, `labs/reference/radio-group.css`
 Verification: `src/components/radio-group/radio-group.test.tsx`, `e2e/radio-group.spec.ts`
@@ -96,7 +96,7 @@ Verification: `src/components/radio-group/radio-group.test.tsx`, `e2e/radio-grou
 | `ui-radio__indicator`   | slot      |                          | The drawn indicator.                                                  |
 | `ui-radio__label`       | slot      |                          | The label content.                                                    |
 | `ui-radio__description` | slot      |                          | The radio's description.                                              |
-| `data-size`             | attribute | `sm`, `md`, `lg`         | On the group's root: radio size.                                      |
+| `data-size`             | attribute | `xs`, `sm`, `md`, `lg`   | On the group's root: radio size.                                      |
 | `data-orientation`      | attribute | `horizontal`, `vertical` | On the box: layout and arrow-key axis (React Aria).                   |
 | `data-selected`         | state     | `true`                   | On a radio and its button: selected (React Aria).                     |
 | `data-hovered`          | state     | `true`                   | On a button: under the pointer (React Aria).                          |

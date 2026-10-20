@@ -1,6 +1,7 @@
 import { useId, useRef, type CSSProperties } from 'react';
 import { Switch, ToggleButton, type Key } from '../../primitives/index.js';
 import { createHooks, measuredProperty } from '../../core/hooks.js';
+import type { ControlSize } from '../../core/props.js';
 import { useWidestTextWidth } from '../../utils/use-widest-text-width.js';
 import { Checkbox, cycleCheckState } from '../checkbox/checkbox.js';
 import {
@@ -40,6 +41,8 @@ export interface BooleanControlProps {
   labels: BooleanLabels;
   allowsUnset: boolean;
   name: string | undefined;
+  /** The field's size, which the checkbox and segments take. */
+  size: ControlSize;
 }
 
 const hooks = createHooks('boolean-field', [
@@ -116,7 +119,14 @@ function FormValue({
   );
 }
 
-function SegmentedControl({ control, state, labels, allowsUnset, name }: BooleanControlProps) {
+function SegmentedControl({
+  control,
+  state,
+  labels,
+  allowsUnset,
+  name,
+  size,
+}: BooleanControlProps) {
   const aria = toAriaControlProps(control);
   return (
     <>
@@ -129,6 +139,7 @@ function SegmentedControl({ control, state, labels, allowsUnset, name }: Boolean
         isReadOnly={aria.isReadOnly}
         isDisabled={aria.isDisabled}
         isClearable={allowsUnset}
+        size={size}
         options={[
           { value: 'false', label: labels.false },
           { value: 'true', label: labels.true },
@@ -215,7 +226,7 @@ function ToggleButtonControl(props: BooleanControlProps) {
 }
 
 function CheckControl(props: BooleanControlProps) {
-  const { control, state, variant, labels, name } = props;
+  const { control, state, variant, labels, name, size } = props;
   const shared = {
     ...toAriaControlProps(control),
     inputRef: control.ref,
@@ -225,7 +236,7 @@ function CheckControl(props: BooleanControlProps) {
     value: 'true',
   };
   if (variant === 'checkbox')
-    return <Checkbox {...shared} isIndeterminate={state.value === null} />;
+    return <Checkbox {...shared} size={size} isIndeterminate={state.value === null} />;
   const caption = switchCaptionOf(state.value, labels);
   return (
     <Switch {...shared} {...hooks.slot('switch')}>

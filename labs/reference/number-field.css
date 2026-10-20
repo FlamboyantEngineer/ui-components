@@ -12,7 +12,7 @@
   align-items: stretch;
   min-width: 0;
   box-sizing: border-box;
-  height: 28px;
+  height: var(--ref-field-height);
   overflow: hidden;
   border: 1px solid var(--ref-border);
   border-radius: var(--ref-radius);
@@ -47,7 +47,8 @@
   flex: none;
   align-items: center;
   justify-content: center;
-  width: 26px;
+  /* Square inside the frame. */
+  width: calc(var(--ref-field-height) - 2px);
   padding: 0;
   border: 0;
   background: var(--ref-surface);

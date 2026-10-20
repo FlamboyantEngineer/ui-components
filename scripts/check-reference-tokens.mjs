@@ -2,7 +2,8 @@
 // Verifies that the reference stylesheet draws on one token set (UIC-LABS-3.5): partials use the
 // base tokens instead of literal colours, radii, type, focus rings, state opacity and durations;
 // every token is defined once, used, and not a literal copy of another; component-scoped tokens
-// carry their partial's name. A state rule never sizes or places a box (UIC-LABS-3.6).
+// carry their partial's name. A state rule never sizes or places a box (UIC-LABS-3.6), and a
+// control takes its height from the control scale at every size (UIC-LABS-3.7).
 
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
@@ -125,6 +126,39 @@ for (const declaration of declarations) {
   ) {
     problems.push(
       `${where(declaration)}: a dirty field marks its whole frame; use border-color: var(--ref-dirty) or outline: var(--ref-dirty-outline)`,
+    );
+  }
+}
+
+// Controls: a height from the control scale names the scale step of the rule's own size, and the
+// size variants of an element whose height comes from the scale take theirs from it too.
+const heightProperty = /^(?:height|min-height|block-size)$/;
+const sizeAttribute = /\[data-size='(\w+)'\]/;
+const controlHeight = /var\(--ref-control-height-(\w+)\)/g;
+const withoutSize = (selector) => selector.replace(/\[data-size='\w+'\]/g, '');
+const scaledElements = new Set(
+  declarations
+    .filter(
+      ({ selector, property, value }) =>
+        heightProperty.test(property) &&
+        /--ref-control-height-/.test(value) &&
+        !sizeAttribute.test(selector),
+    )
+    .map(({ file, selector }) => `${file}|${selector}`),
+);
+for (const declaration of declarations) {
+  const { file, selector, property, value } = declaration;
+  const size = sizeAttribute.exec(selector)?.[1];
+  if (!size || !heightProperty.test(property)) continue;
+  const steps = [...value.matchAll(controlHeight)].map((match) => match[1]);
+  if (steps.some((step) => step !== size)) {
+    problems.push(
+      `${where(declaration)}: a ${size} control takes --ref-control-height-${size}, not --ref-control-height-${steps.find((step) => step !== size)}`,
+    );
+  }
+  if (steps.length === 0 && scaledElements.has(`${file}|${withoutSize(selector)}`)) {
+    problems.push(
+      `${where(declaration)}: ${property} "${value}" sizes a control off the scale; use var(--ref-control-height-${size})`,
     );
   }
 }

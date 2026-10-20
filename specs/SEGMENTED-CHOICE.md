@@ -20,7 +20,7 @@ Verification: `src/components/segmented-choice/segmented-choice.test.tsx`
 
 ### UIC-SEGMENTED-CHOICE-1.3 - Sizes and sizing
 
-`size` (`sm`, `md` by default, `lg`) shall publish `data-size`; the reference sheet draws 24, 28 and 32 pixel segments. `sizing` shall publish `data-sizing`: `equal` (the default) divides the available width evenly between segments, `content` sizes each segment to its label. The label slot publishes its text in `data-label`, so a stylesheet can reserve the width of a heavier selected weight and selecting a segment never resizes it.
+`size` (`xs`, `sm`, `md` by default, `lg`) shall publish `data-size`; the reference sheet draws the whole frame at the control height of that size (UIC-LABS-3.7). `sizing` shall publish `data-sizing`: `equal` (the default) divides the available width evenly between segments, `content` sizes each segment to its label. The label slot publishes its text in `data-label`, so a stylesheet can reserve the width of a heavier selected weight and selecting a segment never resizes it.
 
 Implementation: `src/components/segmented-choice/segmented-choice.tsx`, `labs/reference/segmented-choice.css`
 Verification: `src/components/segmented-choice/segmented-choice.test.tsx`, `e2e/segmented-choice.spec.ts`
@@ -151,7 +151,7 @@ Verification: `src/components/segmented-choice/segmented-choice.test.tsx`, `e2e/
 | `ui-segmented-choice__icon`      | slot      |                          | A segment's leading icon (also `ui-icon`).          |
 | `ui-segmented-choice__label`     | slot      |                          | A segment's label text.                             |
 | `ui-segmented-choice__count`     | slot      |                          | A segment's count after its label.                  |
-| `data-size`                      | attribute | `sm`, `md`, `lg`         | Segment block size.                                 |
+| `data-size`                      | attribute | `xs`, `sm`, `md`, `lg`   | Segment block size.                                 |
 | `data-sizing`                    | attribute | `equal`, `content`       | How segments share the width.                       |
 | `data-orientation`               | attribute | `horizontal`, `vertical` | Layout and arrow-key axis (React Aria).             |
 | `data-selection-mode`            | attribute | `single`, `multiple`     | One value, or independent toggles.                  |

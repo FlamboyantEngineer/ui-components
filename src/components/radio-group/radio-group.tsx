@@ -19,7 +19,7 @@ import {
   type FieldState,
 } from '../field/field.js';
 
-export type RadioGroupSize = Extract<Size, 'sm' | 'md' | 'lg'>;
+export type RadioGroupSize = Extract<Size, 'xs' | 'sm' | 'md' | 'lg'>;
 
 export interface RadioGroupProps extends FieldInputProps<string | null> {
   /** The radios, in order: `Radio` elements. */
@@ -111,7 +111,7 @@ function RadioBox({ state, control, rest, children }: RadioBoxProps) {
 export function RadioGroup({ children, size = 'md', ...props }: RadioGroupProps) {
   const { state, field, rest } = useFieldControl(props, { initialValue: null, emptyValue: null });
   return (
-    <Field {...field} {...hooks.root({ className: field.className, data: { size } })} state={state}>
+    <Field {...field} {...hooks.root({ className: field.className })} size={size} state={state}>
       {(control) => (
         <RadioBox state={state} control={control} rest={rest}>
           {children}

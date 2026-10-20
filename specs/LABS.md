@@ -95,3 +95,10 @@ A state a person or a field moves through (hover, press, focus, selection, the c
 
 Implementation: `labs/reference/field.css`, `labs/reference/button.css`, `scripts/check-reference-tokens.mjs`
 Verification: `test/reference-tokens.test.ts`, `e2e/stable-states.spec.ts`
+
+### UIC-LABS-3.7 - Control scale
+
+Every single-line control in the reference stylesheet shall take its height from its `data-size` on one scale, whatever its content: `--ref-control-height-xs`, `-sm`, `-md` and `-lg` in `labs/reference/base.css` (20, 24, 28 and 32 pixels). That covers buttons and icon buttons, menu triggers, segmented choices, search boxes, comboboxes, menubar triggers, menu rows, the box of every field (fields default to `md`, 28 pixels) and the rows of checkboxes, switches and radios. A control's height is a fixed `height`; only content that wraps by design (a sentence button, tags or chips past one line, a label that wraps beside a box) grows past it, from a `min-height` at the same step. Buttons inside a control fit its box, and a field's restore, help and menu buttons take the size below the field's. `scripts/check-reference-tokens.mjs` rejects a `[data-size]` rule that gives a control the height of another step, or sizes a size variant of an element whose height comes from the scale off the scale. The Control Sizes lab draws every control at every size with short and long content.
+
+Implementation: `labs/reference/base.css`, `labs/reference/field.css`, `labs/reference/button.css`, `scripts/check-reference-tokens.mjs`, `labs/src/control-sizes.lab.tsx`
+Verification: `test/reference-tokens.test.ts`, `e2e/control-sizes.spec.ts`

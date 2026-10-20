@@ -23,7 +23,8 @@ export function Slider({
   return (
     <Field
       {...field}
-      {...hooks.root({ className: field.className, data: { size, valueLabel } })}
+      {...hooks.root({ className: field.className, data: { valueLabel } })}
+      size={size}
       state={state}
     >
       {(control) => (

@@ -1,4 +1,7 @@
-/* Radio Group: radios stacked in the field's control slot, each a 16 pixel ring before its label. */
+/*
+ * Radio Group: radios stacked in the field's control slot, each a ring before its label in a row as
+ * tall as a control of the group's size.
+ */
 
 .ui-radio-group__box {
   display: flex;
@@ -25,21 +28,26 @@
   font-size: var(--ref-font-size-md);
 }
 
+.ui-radio-group[data-size='xs'] .ui-radio {
+  --ref-radio-group-size: 12px;
+  font-size: var(--ref-font-size-xs);
+}
+
 .ui-radio-group[data-size='sm'] .ui-radio {
   --ref-radio-group-size: 14px;
   font-size: var(--ref-font-size-sm);
 }
 
 .ui-radio-group[data-size='lg'] .ui-radio {
-  --ref-radio-group-size: 20px;
-  font-size: var(--ref-font-size-lg);
+  --ref-radio-group-size: 18px;
+  font-size: var(--ref-font-size);
 }
 
 .ui-radio__button {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  min-height: 24px;
+  min-height: var(--ref-field-height);
   cursor: pointer;
 }
 

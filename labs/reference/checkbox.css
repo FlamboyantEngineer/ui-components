@@ -1,13 +1,35 @@
-/* Checkbox: a 16 pixel box before its label. */
+/*
+ * Checkbox: a box before its label, in a row as tall as a control of its size; a label that wraps
+ * makes the row taller.
+ */
 
 .ui-checkbox {
+  --ref-checkbox-box: 16px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  min-height: 24px;
+  min-height: var(--ref-control-height-md);
   font-size: var(--ref-font-size-md);
   vertical-align: middle;
   cursor: pointer;
+}
+
+.ui-checkbox[data-size='xs'] {
+  --ref-checkbox-box: 12px;
+  min-height: var(--ref-control-height-xs);
+  font-size: var(--ref-font-size-xs);
+}
+
+.ui-checkbox[data-size='sm'] {
+  --ref-checkbox-box: 14px;
+  min-height: var(--ref-control-height-sm);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-checkbox[data-size='lg'] {
+  --ref-checkbox-box: 18px;
+  min-height: var(--ref-control-height-lg);
+  font-size: var(--ref-font-size);
 }
 
 .ui-checkbox + .ui-checkbox {
@@ -20,8 +42,8 @@
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  width: 16px;
-  height: 16px;
+  width: var(--ref-checkbox-box);
+  height: var(--ref-checkbox-box);
   border: 1px solid var(--ref-border-strong);
   border-radius: var(--ref-radius-sm);
   background: var(--ref-canvas);
@@ -34,8 +56,8 @@
 }
 
 .ui-checkbox__glyph {
-  width: 12px;
-  height: 12px;
+  width: calc(var(--ref-checkbox-box) - 4px);
+  height: calc(var(--ref-checkbox-box) - 4px);
   stroke-width: 2.5;
 }
 

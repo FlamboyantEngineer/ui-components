@@ -10,7 +10,7 @@
   align-items: center;
   gap: 6px;
   box-sizing: border-box;
-  height: 28px;
+  height: var(--ref-field-height);
   padding: 0 8px;
   border: 1px solid var(--ref-border);
   border-radius: var(--ref-radius);
@@ -196,7 +196,7 @@
   display: inline-flex;
   align-items: center;
   box-sizing: border-box;
-  height: 28px;
+  height: var(--ref-field-height);
   border: 1px solid var(--ref-border);
   border-radius: var(--ref-radius);
   background: var(--ref-canvas);
@@ -209,7 +209,7 @@
 
 /* The extra class outweighs the trigger's state borders, which the frame draws instead. */
 .ui-color-field .ui-color-field__group .ui-color-field__trigger {
-  height: 26px;
+  height: calc(var(--ref-field-height) - 2px);
   padding: 0 6px;
   border: none;
   border-inline-end: 1px solid var(--ref-border);
@@ -229,7 +229,7 @@
 
 .ui-color-field__entry .ui-color-field__input {
   width: 13ch;
-  height: 26px;
+  height: calc(var(--ref-field-height) - 2px);
   border: none;
   background: transparent;
   outline: none;
@@ -246,14 +246,4 @@
 
 .ui-color-field[data-validation='warning'] .ui-color-field__group {
   border-color: var(--ref-warning);
-}
-
-/* Fields here reserve no message line or restore place, so they stay as tall as their control. */
-.ui-color-field__entry .ui-field:not([data-dirty])::after {
-  content: none;
-}
-
-.ui-color-field__entry .ui-field__message:empty {
-  min-height: 0;
-  margin-top: 0;
 }

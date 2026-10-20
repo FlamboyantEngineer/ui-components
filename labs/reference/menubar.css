@@ -23,7 +23,7 @@
   display: inline-flex;
   align-items: center;
   box-sizing: border-box;
-  min-height: 28px;
+  height: var(--ref-control-height-md);
   padding: 0 10px;
   border: 0;
   border-radius: var(--ref-radius-sm);
@@ -40,7 +40,7 @@
 }
 
 .ui-menubar[data-size='sm'] .ui-menubar__trigger {
-  min-height: 24px;
+  height: var(--ref-control-height-sm);
   padding: 0 8px;
 }
 
@@ -49,7 +49,7 @@
 }
 
 .ui-menubar[data-size='lg'] .ui-menubar__trigger {
-  min-height: 32px;
+  height: var(--ref-control-height-lg);
   padding: 0 12px;
 }
 

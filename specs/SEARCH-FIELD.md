@@ -13,7 +13,7 @@ Verification: `src/components/search-field/search-field.test.tsx`, `e2e/search-f
 
 ### UIC-SEARCH-FIELD-1.2 - Sizes
 
-`size` shall publish `data-size`: `md` (the default) for page toolbars and panels, `sm` for dense chrome. The reference sheet draws 32 and 26 pixel boxes.
+`size` (`xs`, `sm`, `md` by default, `lg`) shall publish `data-size`: `md` for page toolbars and panels, `sm` and `xs` for dense chrome. The reference sheet draws the box at the control height of that size (UIC-LABS-3.7).
 
 Implementation: `src/components/search-field/search-field.tsx`, `labs/reference/search-field.css`
 Verification: `src/components/search-field/search-field.test.tsx`, `e2e/search-field.spec.ts`
@@ -75,7 +75,7 @@ Verification: `src/components/search-field/search-field.test.tsx`, `e2e/search-f
 | `ui-search-field__clear`       | slot      |                                 | The clear button (also `ui-icon-button`, or `ui-button`).           |
 | `ui-search-field__description` | slot      |                                 | The description of the `label-control` layout.                      |
 | `ui-search-field__error`       | slot      |                                 | The error message of the `label-control` layout.                    |
-| `data-size`                    | attribute | `sm`, `md`                      | On the root: box size.                                              |
+| `data-size`                    | attribute | `xs`, `sm`, `md`, `lg`          | On the root: box size.                                              |
 | `data-label-layout`            | attribute | `control-only`, `label-control` | On the root: where the label sits.                                  |
 | `data-pending`                 | state     | `true`                          | On the root: results are loading.                                   |
 | `data-empty`                   | state     | `true`                          | On the root: the query is empty (React Aria).                       |

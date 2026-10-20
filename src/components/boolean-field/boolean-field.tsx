@@ -67,6 +67,7 @@ export function BooleanField({
           labels={labels}
           allowsUnset={allowsUnset}
           name={props.name}
+          size={field.size ?? 'md'}
         />
       )}
     </Field>

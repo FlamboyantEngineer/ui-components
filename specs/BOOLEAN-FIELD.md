@@ -13,7 +13,7 @@ Verification: `src/components/boolean-field/boolean-field.test.tsx`
 
 ### UIC-BOOLEAN-FIELD-1.2 - Variants
 
-`variant` shall choose the control and publish `data-variant`: `checkbox` (the default) draws a `Checkbox` with no text of its own, mixed while unset; `switch` draws a React Aria switch (`ui-boolean-field__switch`, a `<label>` around a native input with role `switch`) with a track (`ui-boolean-field__track`) and a thumb (`ui-boolean-field__thumb`), on while true; `segmented` draws a `SegmentedChoice` with a false and a true segment, the selected one matching the value and none while unset; `dropdown` draws a select of the named values (UIC-BOOLEAN-FIELD-3.1); `toggle-button` draws a toggle button pressed while true (UIC-BOOLEAN-FIELD-3.2).
+`variant` shall choose the control and publish `data-variant`: `checkbox` (the default) draws a `Checkbox` with no text of its own, mixed while unset; `switch` draws a React Aria switch (`ui-boolean-field__switch`, a `<label>` around a native input with role `switch`) with a track (`ui-boolean-field__track`) and a thumb (`ui-boolean-field__thumb`), on while true; `segmented` draws a `SegmentedChoice` with a false and a true segment, the selected one matching the value and none while unset; `dropdown` draws a select of the named values (UIC-BOOLEAN-FIELD-3.1); `toggle-button` draws a toggle button pressed while true (UIC-BOOLEAN-FIELD-3.2). The checkbox and the segments take the field's `size`.
 
 Implementation: `src/components/boolean-field/boolean-field.tsx`, `src/components/boolean-field/boolean-controls.tsx`, `labs/reference/boolean-field.css`
 Verification: `src/components/boolean-field/boolean-field.test.tsx`, `e2e/boolean-field.spec.ts`

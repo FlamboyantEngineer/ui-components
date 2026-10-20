@@ -4,6 +4,7 @@ import {
   CheckboxGroupStateContext,
 } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
+import type { ControlSize } from '../../core/props.js';
 import { Checkbox } from '../checkbox/checkbox.js';
 import {
   Field,
@@ -44,10 +45,12 @@ function SelectAll({
   label,
   options,
   state,
+  size,
 }: {
   label: string;
   options: readonly CheckboxGroupOption[];
   state: FieldState<string[]>;
+  size: ControlSize | undefined;
 }) {
   const enabled = options.filter((option) => !option.isDisabled).map((option) => option.value);
   const ticked = enabled.filter((value) => state.value.includes(value));
@@ -64,6 +67,7 @@ function SelectAll({
     <CheckboxGroupStateContext.Provider value={null}>
       <Checkbox
         className={hooks.slotClass('select-all')}
+        size={size}
         isSelected={isAll}
         isIndeterminate={ticked.length > 0 && !isAll}
         isReadOnly={state.isReadOnly}
@@ -98,11 +102,12 @@ export function CheckboxGroup({ options, selectAllLabel, ...props }: CheckboxGro
             onChange={(value) => pick(state, value)}
           >
             {selectAllLabel ? (
-              <SelectAll label={selectAllLabel} options={options} state={state} />
+              <SelectAll label={selectAllLabel} options={options} state={state} size={field.size} />
             ) : null}
             {options.map((option, index) => (
               <Checkbox
                 key={option.value}
+                size={field.size}
                 value={option.value}
                 isDisabled={option.isDisabled}
                 inputRef={index === first ? control.ref : undefined}

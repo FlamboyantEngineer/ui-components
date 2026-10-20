@@ -1,4 +1,4 @@
-/* Pin Input: a row of square, centred single-character cells. */
+/* Pin Input: a row of centred single-character cells, a step taller than the field's controls. */
 
 .ui-pin-input__group {
   display: inline-flex;
@@ -8,15 +8,15 @@
 
 .ui-pin-input__cell {
   box-sizing: border-box;
-  width: 32px;
-  height: 36px;
+  width: calc(var(--ref-field-height) + 4px);
+  height: calc(var(--ref-field-height) + 8px);
   padding: 0;
   border: 1px solid var(--ref-border);
   border-radius: var(--ref-radius);
   background: var(--ref-canvas);
   color: inherit;
   font: inherit;
-  font-size: var(--ref-font-size-lg);
+  font-size: 1.25em;
   font-variant-numeric: tabular-nums;
   text-align: center;
 }

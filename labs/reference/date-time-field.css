@@ -12,7 +12,7 @@
   gap: 4px;
   min-width: 0;
   box-sizing: border-box;
-  height: 28px;
+  height: var(--ref-field-height);
   padding: 0 4px 0 8px;
   border: 1px solid var(--ref-border);
   border-radius: var(--ref-radius);
@@ -84,8 +84,8 @@
   display: inline-grid;
   flex: none;
   place-items: center;
-  width: 22px;
-  height: 22px;
+  width: calc(var(--ref-field-height) - 6px);
+  height: calc(var(--ref-field-height) - 6px);
   padding: 0;
   border: 0;
   border-radius: var(--ref-radius-sm);
@@ -150,7 +150,6 @@
 
 .ui-date-time-field__preset.ui-button {
   justify-content: flex-start;
-  min-height: 24px;
 }
 
 .ui-date-time-field__calendar {
@@ -331,5 +330,5 @@
 }
 
 .ui-date-time-field__action.ui-button {
-  min-height: 24px;
+  flex: none;
 }

@@ -1,4 +1,4 @@
-/* Segmented Choice */
+/* Segmented Choice: segments inside one frame, which is as tall as a control of its size. */
 
 .ui-segmented-choice {
   display: inline-flex;
@@ -28,7 +28,7 @@
   gap: 6px;
   box-sizing: border-box;
   min-width: 0;
-  height: 28px;
+  height: calc(var(--ref-control-height-md) - 2px);
   margin: 0;
   padding: 0 10px;
   border: 0;
@@ -51,13 +51,18 @@
   border-inline-start: 0;
   border-block-start: 1px solid var(--ref-border);
 }
+.ui-segmented-choice[data-size='xs'] .ui-segmented-choice__segment {
+  height: calc(var(--ref-control-height-xs) - 2px);
+  padding: 0 6px;
+  font-size: var(--ref-font-size-xs);
+}
 .ui-segmented-choice[data-size='sm'] .ui-segmented-choice__segment {
-  height: 24px;
+  height: calc(var(--ref-control-height-sm) - 2px);
   padding: 0 8px;
   font-size: var(--ref-font-size-sm);
 }
 .ui-segmented-choice[data-size='lg'] .ui-segmented-choice__segment {
-  height: 32px;
+  height: calc(var(--ref-control-height-lg) - 2px);
   padding: 0 12px;
   font-size: var(--ref-font-size);
 }

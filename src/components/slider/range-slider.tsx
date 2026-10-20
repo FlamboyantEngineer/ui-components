@@ -56,8 +56,9 @@ export function RangeSlider({
       {...field}
       {...hooks.root({
         className: mergeClassNames(sliderHooks.className, field.className),
-        data: { size, valueLabel },
+        data: { valueLabel },
       })}
+      size={size}
       state={state}
     >
       {(control) => (

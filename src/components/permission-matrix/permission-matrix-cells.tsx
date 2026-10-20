@@ -56,6 +56,7 @@ export function PermissionGrantCheckbox({ role, permission, context }: GrantChec
   const isDirty = isGranted !== context.committed.has(role.id, permission.id);
   return (
     <Checkbox
+      size="sm"
       aria-label={strings.permissionGrant(permission.label, role.label, isInherited && !isGranted)}
       isSelected={isGranted}
       isIndeterminate={isInherited && !isGranted}
@@ -81,6 +82,7 @@ export function PermissionGroupCheckbox({ role, label, permissions, context }: G
   const isAll = keys.length > 0 && held === keys.length;
   return (
     <Checkbox
+      size="sm"
       aria-label={strings.permissionGroupGrant(label, role.label)}
       isSelected={isAll}
       isIndeterminate={held > 0 && !isAll}

@@ -103,6 +103,7 @@ export function TreeRowContent<T extends TreeItemData>(props: {
       <TreeExpandButton state={state} glyph={options.expandGlyph} />
       {props.hasCheckbox ? (
         <Checkbox
+          size="sm"
           slot="selection"
           className={hooks.slotClass('checkbox')}
           isIndeterminate={options.isIndeterminate(item.id)}

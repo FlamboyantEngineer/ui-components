@@ -7,8 +7,8 @@
   justify-content: center;
   gap: 6px;
   box-sizing: border-box;
-  min-height: 32px;
-  padding: 0 12px;
+  height: var(--ref-control-height-md);
+  padding: 0 10px;
   border: 1px solid var(--ref-border);
   border-radius: var(--ref-radius);
   background: var(--ref-surface);
@@ -27,18 +27,18 @@
 }
 
 .ui-button[data-size='xs'] {
-  min-height: 22px;
+  height: var(--ref-control-height-xs);
   padding: 0 6px;
   font-size: var(--ref-font-size-xs);
 }
 .ui-button[data-size='sm'] {
-  min-height: 26px;
+  height: var(--ref-control-height-sm);
   padding: 0 8px;
   font-size: var(--ref-font-size-sm);
 }
 .ui-button[data-size='lg'] {
-  min-height: 38px;
-  padding: 0 16px;
+  height: var(--ref-control-height-lg);
+  padding: 0 12px;
   font-size: var(--ref-font-size);
 }
 
@@ -88,14 +88,13 @@
   background: var(--ref-hover);
 }
 .ui-button[data-variant='chip'] {
-  min-height: 22px;
   padding: 0 8px;
   border-radius: var(--ref-radius-full);
   font-size: var(--ref-font-size-sm);
   font-weight: 400;
 }
 .ui-button[data-variant='link'] {
-  min-height: 0;
+  height: auto;
   padding: 0;
   border: 0;
   background: none;
@@ -106,7 +105,7 @@
   text-decoration: underline;
 }
 .ui-button[data-variant='bare'] {
-  min-height: 0;
+  height: auto;
   padding: 0;
   border: 0;
   background: none;
@@ -128,7 +127,10 @@
   justify-content: flex-start;
   text-align: start;
 }
+/* A sentence wraps, so it grows from its size's height instead of keeping it. */
 .ui-button[data-content='sentence'] {
+  height: auto;
+  min-height: var(--ref-control-height-md);
   white-space: normal;
   padding-block: 6px;
 }

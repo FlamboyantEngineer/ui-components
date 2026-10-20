@@ -96,5 +96,8 @@ describe('Switch', () => {
     expect(root).toHaveClass('ui-switch', 'dense');
     expect(root).toHaveAttribute('data-test', 'toggle');
     expectHooksMatchSpec(container, 'SWITCH', { callerAttributes: ['data-test'] });
+    expect(root).toHaveAttribute('data-size', 'md');
+    const small = render(<Switch size="sm">Small</Switch>).container;
+    expect(small.querySelector('.ui-switch')).toHaveAttribute('data-size', 'sm');
   });
 });

@@ -27,23 +27,24 @@ Verification: `src/components/switch/switch.test.tsx`, `e2e/switch.spec.ts`
 
 ### UIC-SWITCH-1.4 - Hooks and caller attributes
 
-`Switch` shall carry the hooks below, append the caller's `className` to its root and forward caller `data-*` attributes to it.
+`Switch` shall carry the hooks below, append the caller's `className` to its root and forward caller `data-*` attributes to it. `size` (`xs`, `sm`, `md` by default, `lg`) shall publish `data-size` on the root, so a stylesheet gives the row the height of that size on the control scale.
 
 Implementation: `src/components/switch/switch.tsx`
 Verification: `src/components/switch/switch.test.tsx`
 
 ## Hooks
 
-| Hook                 | Kind  | Values | Description                                |
-| -------------------- | ----- | ------ | ------------------------------------------ |
-| `ui-switch`          | root  |        | The `<label>` around the input.            |
-| `ui-switch__track`   | slot  |        | The drawn track.                           |
-| `ui-switch__thumb`   | slot  |        | The thumb inside the track.                |
-| `ui-switch__label`   | slot  |        | The visible label text.                    |
-| `data-selected`      | state | `true` | On (React Aria).                           |
-| `data-pressed`       | state | `true` | Being pressed (React Aria).                |
-| `data-hovered`       | state | `true` | Under the pointer (React Aria).            |
-| `data-focused`       | state | `true` | The input has focus (React Aria).          |
-| `data-focus-visible` | state | `true` | The input has keyboard focus (React Aria). |
-| `data-disabled`      | state | `true` | Disabled (React Aria).                     |
-| `data-readonly`      | state | `true` | Read-only (React Aria).                    |
+| Hook                 | Kind      | Values                 | Description                                |
+| -------------------- | --------- | ---------------------- | ------------------------------------------ |
+| `ui-switch`          | root      |                        | The `<label>` around the input.            |
+| `ui-switch__track`   | slot      |                        | The drawn track.                           |
+| `ui-switch__thumb`   | slot      |                        | The thumb inside the track.                |
+| `ui-switch__label`   | slot      |                        | The visible label text.                    |
+| `data-size`          | attribute | `xs`, `sm`, `md`, `lg` | Row size.                                  |
+| `data-selected`      | state     | `true`                 | On (React Aria).                           |
+| `data-pressed`       | state     | `true`                 | Being pressed (React Aria).                |
+| `data-hovered`       | state     | `true`                 | Under the pointer (React Aria).            |
+| `data-focused`       | state     | `true`                 | The input has focus (React Aria).          |
+| `data-focus-visible` | state     | `true`                 | The input has keyboard focus (React Aria). |
+| `data-disabled`      | state     | `true`                 | Disabled (React Aria).                     |
+| `data-readonly`      | state     | `true`                 | Read-only (React Aria).                    |

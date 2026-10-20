@@ -1,5 +1,6 @@
 import { useId, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
+import type { ControlSize } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { SlotRef } from '../../utils/slot-registry.js';
 import { IconButton } from '../icon-button/icon-button.js';
@@ -39,6 +40,13 @@ export const fieldHooks = createHooks('field', [
   'description',
   'message',
 ]);
+
+const controlSizes: readonly ControlSize[] = ['xs', 'sm', 'md', 'lg'];
+
+/** The size of a button inside or beside a control of `size`: one step smaller, never below `xs`. */
+export function toInnerControlSize(size: ControlSize): ControlSize {
+  return controlSizes[Math.max(0, controlSizes.indexOf(size) - 1)] ?? 'xs';
+}
 
 export interface FieldIds {
   control: string;
@@ -160,10 +168,12 @@ export function FieldMessage({
 export function FieldHelp({
   id,
   label,
+  size,
   children,
 }: {
   id: string;
   label: string;
+  size: ControlSize;
   children: ReactNode;
 }) {
   const strings = useUiStrings();
@@ -171,7 +181,7 @@ export function FieldHelp({
     <>
       <IconButton
         icon="help"
-        size="sm"
+        size={size}
         label={strings.fieldHelp(label)}
         tooltip={children}
         className={fieldHooks.slotClass('help')}

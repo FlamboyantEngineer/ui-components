@@ -154,7 +154,7 @@ export function CardGridItem({ className, children, ...rest }: CardGridItemProps
       {({ selectionMode, selectionBehavior, isSelected }) => (
         <>
           {selectionMode !== 'none' && selectionBehavior === 'toggle' ? (
-            <Checkbox slot="selection" className={itemHooks.slotClass('checkbox')} />
+            <Checkbox size="sm" slot="selection" className={itemHooks.slotClass('checkbox')} />
           ) : null}
           {typeof children === 'function' ? children({ isSelected }) : children}
         </>
