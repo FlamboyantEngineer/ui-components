@@ -6,7 +6,7 @@ Every component has a static lab page that renders its full variant, size and st
 
 ### UIC-LABS-1.1 - Static files
 
-Each lab shall be a static file `labs/<name>.html` that loads a prebuilt bundle from `labs/build/<name>.js`. `npm run build:labs` builds every bundle, and the labs need nothing beyond a static file server (`npm run labs` is one). `labs/index.html` lists every lab by group with its description. The supplied server shall reject malformed URL paths with 400, reject paths outside the lab directory (including symbolic links that resolve outside it) with 403 and return 404 for missing files, while continuing to serve subsequent requests.
+Each lab shall be a static file `labs/<name>.html` that loads a prebuilt bundle from `labs/build/<name>.js`. `npm run build:labs` builds every bundle, and the labs need nothing beyond a static file server (`npm run labs` is one). `labs/index.html` lists every lab with its description, in tiers from the simplest up: Foundations (setup and layout), Primitives grouped by type, Fields built on the field base, Assemblies of primitives and fields for one job, and Widgets that run a whole task on their own surface. Each tier lists its groups in order and each group its labs by title; every lab page names its tier and group (`lab-tier`, `lab-group`), and `npm run check:labs` rejects a tier or group the index does not list. The supplied server shall reject malformed URL paths with 400, reject paths outside the lab directory (including symbolic links that resolve outside it) with 403 and return 404 for missing files, while continuing to serve subsequent requests.
 
 Every page shall declare an embedded icon so browsers do not request a missing `favicon.ico` while opening the standalone labs.
 

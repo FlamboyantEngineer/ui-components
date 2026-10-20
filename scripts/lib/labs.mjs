@@ -9,18 +9,48 @@ export const labsDir = join(root, 'labs');
 export const labSourceDir = join(labsDir, 'src');
 export const referenceDir = join(labsDir, 'reference');
 
-export const LAB_GROUPS = [
-  'Harness',
-  'Foundations',
-  'Actions and navigation',
-  'Feedback and status',
-  'Overlays and menus',
-  'Field base',
-  'Field controls',
-  'Data views',
-  'Content',
-  'Widgets',
+/**
+ * The tiers of the lab index from the simplest up, each with its groups in order: foundations,
+ * then primitives grouped by type, fields built on the field base, assemblies of primitives and
+ * fields for one job, and widgets that run a whole task on their own surface.
+ */
+export const LAB_TIERS = [
+  { tier: 'Foundations', groups: ['Setup', 'Layout'] },
+  {
+    tier: 'Primitives',
+    groups: [
+      'Display',
+      'Rendered content',
+      'People',
+      'Feedback and status',
+      'Actions',
+      'Inputs',
+      'Navigation',
+      'Overlays',
+    ],
+  },
+  { tier: 'Fields', groups: ['Base', 'Text and numbers', 'Dates', 'Choice', 'Rich values'] },
+  {
+    tier: 'Assemblies',
+    groups: [
+      'Collections',
+      'Records and properties',
+      'Search and filtering',
+      'Editing tools',
+      'Collaboration',
+      'App structure',
+    ],
+  },
+  {
+    tier: 'Widgets',
+    groups: ['Media and pickers', 'Charts and diagrams', 'Planning', 'Documents and code'],
+  },
 ];
+
+/** The groups a tier holds, or none for an unknown tier. */
+export function groupsOfTier(tier) {
+  return LAB_TIERS.find((entry) => entry.tier === tier)?.groups ?? [];
+}
 
 export function listLabSources() {
   return readdirSync(labSourceDir)
@@ -63,18 +93,20 @@ export function readLabMeta(name) {
     name,
     html,
     title: title ? unescapeHtml(title[1]) : null,
+    tier: meta('lab-tier'),
     group: meta('lab-group'),
     description: meta('description'),
   };
 }
 
-export function renderLabPage({ name, title, group, description }) {
+export function renderLabPage({ name, title, tier, group, description }) {
   return `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%2F%3E" />
+    <meta name="lab-tier" content="${escapeHtml(tier)}" />
     <meta name="lab-group" content="${escapeHtml(group)}" />
     <meta name="description" content="${escapeHtml(description)}" />
     <title>${escapeHtml(title)} · Labs</title>
@@ -88,24 +120,35 @@ export function renderLabPage({ name, title, group, description }) {
 `;
 }
 
-export function renderIndex(labs) {
-  const sections = LAB_GROUPS.map((group) => {
-    const members = labs
-      .filter((lab) => lab.group === group)
-      .sort((a, b) => a.title.localeCompare(b.title));
-    if (members.length === 0) return '';
-    const items = members
-      .map(
-        (lab) =>
-          `          <li><a href="${lab.name}.html">${escapeHtml(lab.title)}</a> — ${escapeHtml(lab.description)}</li>`,
-      )
-      .join('\n');
-    return `      <section>
-        <h2>${escapeHtml(group)}</h2>
-        <ul>
+function renderGroup(labs, group) {
+  const members = labs
+    .filter((lab) => lab.group === group)
+    .sort((a, b) => a.title.localeCompare(b.title));
+  if (members.length === 0) return '';
+  const items = members
+    .map(
+      (lab) =>
+        `            <li><a href="${lab.name}.html">${escapeHtml(lab.title)}</a> — ${escapeHtml(lab.description)}</li>`,
+    )
+    .join('\n');
+  return `        <section>
+          <h3>${escapeHtml(group)}</h3>
+          <ul>
 ${items}
-        </ul>
-      </section>
+          </ul>
+        </section>
+`;
+}
+
+/** The index: each tier, simplest first, with its groups in order and their labs by title. */
+export function renderIndex(labs) {
+  const sections = LAB_TIERS.map(({ tier, groups }) => {
+    const members = labs.filter((lab) => lab.tier === tier);
+    const body = groups.map((group) => renderGroup(members, group)).join('');
+    if (!body) return '';
+    return `      <section>
+        <h2>${escapeHtml(tier)}</h2>
+${body}      </section>
 `;
   }).join('');
   return `<!doctype html>

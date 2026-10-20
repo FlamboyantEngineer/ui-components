@@ -72,6 +72,17 @@ test.describe('lab harness', () => {
   }) => {
     await page.goto(formatLabUrl('index', { stylesheet: 'none', theme: 'dark' }));
     await waitForLab(page);
+    await expect(page.getByRole('heading', { level: 2 })).toHaveText([
+      'Foundations',
+      'Primitives',
+      'Fields',
+      'Assemblies',
+      'Widgets',
+    ]);
+    const primitives = page.locator('#lab-index > section').filter({
+      has: page.getByRole('heading', { level: 2, name: 'Primitives' }),
+    });
+    await expect(primitives.getByRole('heading', { level: 3 }).first()).toHaveText('Display');
     const link = page.getByRole('link', { name: 'Provider' });
     await expect(link).toHaveAttribute('href', 'provider.html?stylesheet=none&theme=dark');
     await link.click();

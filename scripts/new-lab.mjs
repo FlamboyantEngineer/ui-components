@@ -1,14 +1,15 @@
 #!/usr/bin/env node
 // Scaffolds a lab and regenerates labs/index.html.
-//   npm run new:lab -- <name> --title "Button" --group "Actions and navigation" --description "…"
+//   npm run new:lab -- <name> --title "Button" --tier Primitives --group Actions --description "…"
 //   npm run new:lab -- --sync     rewrite every lab page from its metadata, regenerate the index
 //                                 and the reference stylesheet's import list
 
 import { existsSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
-  LAB_GROUPS,
+  LAB_TIERS,
   collectLabs,
+  groupsOfTier,
   labsDir,
   labSourceDir,
   renderIndex,
@@ -26,7 +27,7 @@ function option(name) {
 function sync() {
   const labs = collectLabs();
   for (const lab of labs) {
-    if (lab.title && lab.group && lab.description) {
+    if (lab.title && lab.tier && lab.group && lab.description) {
       writeFileSync(join(labsDir, `${lab.name}.html`), renderLabPage(lab));
     }
   }
@@ -42,17 +43,19 @@ if (args.includes('--sync')) {
 
 const name = args[0];
 const title = option('title');
+const tier = option('tier');
 const group = option('group');
 const description = option('description');
-if (!name || !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(name) || !title || !group || !description) {
+const tiers = LAB_TIERS.map((entry) => `${entry.tier}: ${entry.groups.join(', ')}`).join('\n  ');
+if (!name || !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(name) || !title || !tier || !group || !description) {
   console.error(
-    'Usage: npm run new:lab -- <kebab-name> --title <title> --group <group> --description <text>',
+    'Usage: npm run new:lab -- <kebab-name> --title <title> --tier <tier> --group <group> --description <text>',
   );
-  console.error(`Groups: ${LAB_GROUPS.join(', ')}`);
+  console.error(`Tiers and groups:\n  ${tiers}`);
   process.exit(2);
 }
-if (!LAB_GROUPS.includes(group)) {
-  console.error(`Unknown group "${group}". Groups: ${LAB_GROUPS.join(', ')}`);
+if (!groupsOfTier(tier).includes(group)) {
+  console.error(`Unknown tier and group "${tier}", "${group}". Tiers and groups:\n  ${tiers}`);
   process.exit(2);
 }
 
@@ -63,7 +66,7 @@ if (existsSync(page) || existsSync(source)) {
   process.exit(1);
 }
 
-writeFileSync(page, renderLabPage({ name, title, group, description }));
+writeFileSync(page, renderLabPage({ name, title, tier, group, description }));
 writeFileSync(
   source,
   `import { LabSection, mountLab } from './chrome/index.js';

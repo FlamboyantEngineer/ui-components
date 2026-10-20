@@ -5,8 +5,9 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import {
-  LAB_GROUPS,
+  LAB_TIERS,
   collectLabs,
+  groupsOfTier,
   labsDir,
   labSourceDir,
   listLabPages,
@@ -33,12 +34,17 @@ const labs = collectLabs();
 for (const lab of labs) {
   if (!lab.title) problems.push(`labs/${lab.name}.html: missing "<title>… · Labs</title>"`);
   if (!lab.description) problems.push(`labs/${lab.name}.html: missing description meta`);
-  if (!LAB_GROUPS.includes(lab.group)) {
+  const groups = groupsOfTier(lab.tier);
+  if (groups.length === 0) {
     problems.push(
-      `labs/${lab.name}.html: lab-group "${lab.group}" is not one of ${LAB_GROUPS.join(', ')}`,
+      `labs/${lab.name}.html: lab-tier "${lab.tier}" is not one of ${LAB_TIERS.map(({ tier }) => tier).join(', ')}`,
+    );
+  } else if (!groups.includes(lab.group)) {
+    problems.push(
+      `labs/${lab.name}.html: lab-group "${lab.group}" is not one of the ${lab.tier} groups: ${groups.join(', ')}`,
     );
   }
-  if (lab.title && lab.description && lab.group && lab.html !== renderLabPage(lab)) {
+  if (lab.title && lab.description && lab.tier && lab.group && lab.html !== renderLabPage(lab)) {
     problems.push(
       `labs/${lab.name}.html: markup differs from the lab page template (run npm run new:lab -- --sync)`,
     );
