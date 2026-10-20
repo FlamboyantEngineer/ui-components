@@ -1,6 +1,75 @@
+import type { Locator } from '@playwright/test';
 import { expect, test } from './fixtures.js';
 
+async function getPositionTransitions(spotlight: Locator) {
+  return spotlight.evaluate((element) =>
+    element.getAnimations().flatMap((animation) => {
+      const property =
+        'transitionProperty' in animation ? String(animation.transitionProperty) : '';
+      return ['top', 'left', 'width', 'height'].includes(property) ? [property] : [];
+    }),
+  );
+}
+
 test.describe('Tour lab', () => {
+  test('UIC-TOUR-1.3 shows the first highlight in place without a position transition', async ({
+    page,
+    lab,
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await lab.open('tour');
+    // Long transitions make an accidental movement observable without racing its duration.
+    await page.addStyleTag({ content: '.ui-tour__spotlight { transition-duration: 60s; }' });
+    await page.locator('[data-lab-start="page"]').click();
+    await expect(page.getByRole('dialog', { name: 'Search' })).toBeFocused();
+    const spotlight = page.locator('.ui-tour__spotlight');
+    expect(await getPositionTransitions(spotlight)).toEqual([]);
+    const target = page.locator('[data-lab-page="guided"] [data-lab-target="search"]');
+    expect(await spotlight.boundingBox()).toEqual(await target.boundingBox());
+  });
+
+  test('UIC-TOUR-1.2 UIC-TOUR-1.3 skips position transitions when either highlight is missing', async ({
+    page,
+    lab,
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await lab.open('tour');
+    await page.addStyleTag({ content: '.ui-tour__spotlight { transition-duration: 60s; }' });
+    const start = page.getByRole('button', { name: 'Preview highlight transitions' });
+    await start.click();
+    const spotlight = page.locator('.ui-tour__spotlight');
+    await expect(page.getByRole('dialog', { name: 'Overview' })).toBeFocused();
+    expect(await getPositionTransitions(spotlight)).toEqual([]);
+
+    await page.getByRole('button', { name: 'Next', exact: true }).click();
+    await expect(page.getByRole('dialog', { name: 'First highlight' })).toBeFocused();
+    expect(await getPositionTransitions(spotlight)).toEqual([]);
+    const first = page.getByRole('button', { name: 'First highlight', includeHidden: true });
+    expect(await spotlight.boundingBox()).toEqual(await first.boundingBox());
+
+    await page.getByRole('button', { name: 'Next', exact: true }).click();
+    await expect(page.getByRole('dialog', { name: 'Second highlight' })).toBeFocused();
+    expect(await getPositionTransitions(spotlight)).toContain('left');
+    await spotlight.evaluate((element) => {
+      for (const animation of element.getAnimations()) animation.finish();
+    });
+
+    await page.getByRole('button', { name: 'Next', exact: true }).click();
+    await expect(page.getByRole('dialog', { name: 'Summary' })).toBeFocused();
+    await expect(spotlight).toHaveAttribute('data-target-missing', 'true');
+    await expect(page.locator('.ui-tour__arrow')).toHaveCount(0);
+    expect(await getPositionTransitions(spotlight)).toEqual([]);
+    expect(await spotlight.boundingBox()).toMatchObject({ width: 0, height: 0 });
+
+    await page.getByRole('button', { name: 'Back', exact: true }).click();
+    await expect(page.getByRole('dialog', { name: 'Second highlight' })).toBeFocused();
+    expect(await getPositionTransitions(spotlight)).toEqual([]);
+    const second = page.getByRole('button', { name: 'Second highlight', includeHidden: true });
+    expect(await spotlight.boundingBox()).toEqual(await second.boundingBox());
+    await page.keyboard.press('Escape');
+    await expect(start).toBeFocused();
+  });
+
   test('UIC-TOUR-1.1 UIC-TOUR-1.3 UIC-TOUR-2.1 walks the page with a spotlight over each target', async ({
     page,
     lab,
@@ -124,8 +193,20 @@ test.describe('Tour lab', () => {
     await expect(panel).toBeVisible();
     await expect(panel).not.toHaveAttribute('data-entering');
     await lab.expectAccessible('[data-lab-tour="page"]');
+  });
+
+  test('UIC-TOUR-2.2 UIC-TOUR-2.5 passes axe after closing the tour', async ({ page, lab }) => {
+    await lab.open('tour');
+    const start = page.locator('[data-lab-start="page"]');
+    await start.click();
+    await expect(page.getByRole('dialog', { name: 'Search' })).toBeFocused();
     await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await expect(start).toBeFocused();
     await lab.expectAccessible();
+  });
+
+  test('UIC-TOUR-1.1 passes axe in the dark theme', async ({ lab }) => {
     await lab.open('tour', { theme: 'dark' });
     await lab.expectAccessible();
   });
