@@ -53,7 +53,7 @@
 
   /* Tints: how much of a tone mixes into the canvas (or into transparency) for washes, marks and
      borders, e.g. color-mix(in srgb, var(--ref-danger) var(--ref-tint-subtle), var(--ref-canvas)). */
-  --ref-tint-subtle: 10%;
+  --ref-tint-subtle: 8%;
   --ref-tint: 16%;
   --ref-tint-strong: 30%;
   --ref-tint-border: 45%;
