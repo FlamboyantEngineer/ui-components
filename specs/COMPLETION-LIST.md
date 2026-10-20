@@ -6,7 +6,7 @@
 
 ### UIC-COMPLETION-LIST-1.1 - Popover
 
-While `isOpen`, and while it has items or an empty state to show, `CompletionList` shall render a non-modal React Aria popover (`ui-completion-list`) on the `dropdown` overlay layer against `anchorRef`: below it, aligned with its start, or above it when there is more room there, kept inside the viewport. The popover never takes focus or hides the rest of the page, and it follows the anchor to where it has moved whenever it renders with new items, as an editor passes them when its caret marker moves. `onOpenChange` hears the popover ask to close.
+While `isOpen`, and while it has items or an empty state to show, `CompletionList` shall render a non-modal React Aria popover (`ui-completion-list`) on the `dropdown` overlay layer against `anchorRef`: below it, aligned with its start, or above it when there is more room there, kept inside the viewport, publishing the anchor's width as `--ui-trigger-width`. The popover never takes focus or hides the rest of the page, and it follows the anchor to where it has moved whenever it renders with new items, as an editor passes them when its caret marker moves. `onOpenChange` hears the popover ask to close.
 
 Implementation: `src/components/completion-list/completion-list.tsx`
 Verification: `src/components/completion-list/completion-list.test.tsx`, `e2e/completion-list.spec.ts`
@@ -78,18 +78,19 @@ Verification: `src/components/completion-list/trigger-completions.test.ts`, `e2e
 
 ## Hooks
 
-| Hook                                | Kind      | Values                                     | Description                                            |
-| ----------------------------------- | --------- | ------------------------------------------ | ------------------------------------------------------ |
-| `ui-completion-list`                | root      |                                            | The non-modal popover.                                 |
-| `ui-completion-list__listbox`       | slot      |                                            | The listbox of options.                                |
-| `ui-completion-list__option`        | slot      |                                            | An option.                                             |
-| `ui-completion-list__label`         | slot      |                                            | An option's label.                                     |
-| `ui-completion-list__description`   | slot      |                                            | An option's description.                               |
-| `ui-completion-list__documentation` | slot      |                                            | The active option's documentation.                     |
-| `ui-completion-list__empty`         | slot      |                                            | What shows while there are no options.                 |
-| `ui-completion-list__footer`        | slot      |                                            | The line after the options.                            |
-| `data-kind`                         | attribute |                                            | On an option: the completion's kind.                   |
-| `data-focused`                      | state     | `true`                                     | On an option: the active option.                       |
-| `data-placement`                    | state     | `top`, `bottom`, `left`, `right`, `center` | Side of the anchor the popover opened on (React Aria). |
-| `data-entering`                     | state     | `true`                                     | The popover is opening (React Aria).                   |
-| `data-exiting`                      | state     | `true`                                     | The popover is closing (React Aria).                   |
+| Hook                                | Kind      | Values                                     | Description                                             |
+| ----------------------------------- | --------- | ------------------------------------------ | ------------------------------------------------------- |
+| `ui-completion-list`                | root      |                                            | The non-modal popover.                                  |
+| `--ui-trigger-width`                | property  |                                            | Width of the element the popover opens from, in pixels. |
+| `ui-completion-list__listbox`       | slot      |                                            | The listbox of options.                                 |
+| `ui-completion-list__option`        | slot      |                                            | An option.                                              |
+| `ui-completion-list__label`         | slot      |                                            | An option's label.                                      |
+| `ui-completion-list__description`   | slot      |                                            | An option's description.                                |
+| `ui-completion-list__documentation` | slot      |                                            | The active option's documentation.                      |
+| `ui-completion-list__empty`         | slot      |                                            | What shows while there are no options.                  |
+| `ui-completion-list__footer`        | slot      |                                            | The line after the options.                             |
+| `data-kind`                         | attribute |                                            | On an option: the completion's kind.                    |
+| `data-focused`                      | state     | `true`                                     | On an option: the active option.                        |
+| `data-placement`                    | state     | `top`, `bottom`, `left`, `right`, `center` | Side of the anchor the popover opened on (React Aria).  |
+| `data-entering`                     | state     | `true`                                     | The popover is opening (React Aria).                    |
+| `data-exiting`                      | state     | `true`                                     | The popover is closing (React Aria).                    |

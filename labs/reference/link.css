@@ -1,7 +1,7 @@
 /* Link */
 
 .ui-link {
-  border-radius: 2px;
+  border-radius: var(--ref-radius-xs);
   color: var(--ref-accent-ink);
   text-decoration: none;
   text-underline-offset: 2px;
@@ -19,16 +19,16 @@
 }
 
 .ui-link[data-standalone] {
-  font-weight: 500;
+  font-weight: var(--ref-font-weight-medium);
 }
 
 /* A link in running text that is not underlined keeps a cue besides colour. */
 .ui-link:not([data-standalone]):is([data-underline='hover'], [data-underline='none']) {
-  font-weight: 500;
+  font-weight: var(--ref-font-weight-medium);
 }
 
 .ui-link[data-focus-visible] {
-  box-shadow: 0 0 0 2px var(--ref-focus);
+  box-shadow: var(--ref-focus-halo);
 }
 
 .ui-link[data-pressed] {
@@ -37,7 +37,7 @@
 
 .ui-link[data-current] {
   color: var(--ref-text);
-  font-weight: 600;
+  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-link[data-disabled] {

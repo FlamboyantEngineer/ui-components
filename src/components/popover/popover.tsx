@@ -1,4 +1,4 @@
-import { useContext, type ReactNode, type RefObject } from 'react';
+import { useContext, type CSSProperties, type ReactNode, type RefObject } from 'react';
 import {
   Dialog,
   DialogTrigger,
@@ -38,6 +38,8 @@ export interface PopoverPanelProps
   isNonModal?: boolean | undefined;
   /** The arrow's hook class; when given, an arrow pointing at the trigger leads the panel. */
   arrowClassName?: string | undefined;
+  /** Measured properties for the panel, such as a dropdown's `--ui-trigger-width`. */
+  style?: CSSProperties | undefined;
   'aria-label'?: string | undefined;
   'aria-labelledby'?: string | undefined;
   children: ReactNode;
@@ -110,10 +112,10 @@ export function PopoverTrigger({ children, ...openState }: PopoverTriggerProps) 
  * The floating panel the library's anchored overlays share: a React Aria popover on the `dropdown`
  * layer, with an optional arrow. It adds no hooks of its own; the caller passes them.
  */
-export function PopoverPanel({ arrowClassName, children, ...rest }: PopoverPanelProps) {
+export function PopoverPanel({ arrowClassName, children, style, ...rest }: PopoverPanelProps) {
   const zIndex = useLayerZIndex('dropdown');
   return (
-    <AriaPopover {...rest} style={{ zIndex }}>
+    <AriaPopover {...rest} style={{ ...style, zIndex }}>
       {arrowClassName ? <OverlayArrow className={arrowClassName} /> : null}
       {children}
     </AriaPopover>

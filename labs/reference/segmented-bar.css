@@ -10,13 +10,13 @@
 
 .ui-segmented-bar__label {
   grid-column: 1;
-  font-size: 13px;
+  font-size: var(--ref-font-size-md);
 }
 
 .ui-segmented-bar__total {
   grid-column: 2;
   color: var(--ref-muted);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
   font-variant-numeric: tabular-nums;
 }
 
@@ -26,7 +26,7 @@
   gap: 1px;
   height: 8px;
   overflow: hidden;
-  border-radius: 999px;
+  border-radius: var(--ref-radius-full);
   background: var(--ref-border);
 }
 
@@ -47,7 +47,7 @@
   /* Shrinking by width keeps the shares proportional around the gaps. */
   flex: 0 1 auto;
   min-width: 2px;
-  transition: width 0.2s;
+  transition: width var(--ref-duration);
 }
 
 .ui-segmented-bar__item[data-tone='info'] .ui-segmented-bar__swatch,
@@ -78,7 +78,7 @@
   margin: 2px 0 0;
   padding: 0;
   list-style: none;
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }
 
 .ui-segmented-bar__item {
@@ -90,7 +90,7 @@
 .ui-segmented-bar__swatch {
   width: 8px;
   height: 8px;
-  border-radius: 2px;
+  border-radius: var(--ref-radius-xs);
 }
 
 .ui-segmented-bar__item-label {
@@ -98,7 +98,7 @@
 }
 
 .ui-segmented-bar__item-value {
-  font-weight: 600;
+  font-weight: var(--ref-font-weight-strong);
   font-variant-numeric: tabular-nums;
 }
 

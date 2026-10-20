@@ -5,7 +5,7 @@
   align-items: center;
   gap: 8px;
   min-height: 24px;
-  font-size: 13px;
+  font-size: var(--ref-font-size-md);
   vertical-align: middle;
   cursor: pointer;
 }
@@ -22,7 +22,7 @@
   width: 30px;
   height: 18px;
   border: 1px solid var(--ref-border-strong);
-  border-radius: 9px;
+  border-radius: var(--ref-radius-full);
   background: var(--ref-surface);
 }
 
@@ -34,7 +34,7 @@
   height: 10px;
   border-radius: 50%;
   background: var(--ref-border-strong);
-  transition: inset-inline-start 0.1s;
+  transition: inset-inline-start var(--ref-duration-fast);
 }
 
 .ui-switch[data-selected] .ui-switch__track {
@@ -44,7 +44,7 @@
 
 .ui-switch[data-selected] .ui-switch__thumb {
   inset-inline-start: 15px;
-  background: var(--ref-accent-text);
+  background: var(--ref-on-fill);
 }
 
 .ui-switch[data-hovered] .ui-switch__track {
@@ -56,7 +56,7 @@
 }
 
 .ui-switch[data-focus-visible] .ui-switch__track {
-  outline: 2px solid var(--ref-focus);
+  outline: var(--ref-focus-ring);
   outline-offset: 2px;
 }
 
@@ -69,7 +69,7 @@
 }
 
 .ui-switch[data-disabled] {
-  opacity: 0.55;
+  opacity: var(--ref-disabled-opacity);
   cursor: not-allowed;
 }
 

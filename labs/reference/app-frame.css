@@ -25,11 +25,11 @@
 
 .ui-app-frame__skip-link {
   color: var(--ref-accent-ink);
-  font-weight: 600;
+  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-app-frame__skip-link:focus-visible {
-  outline: 2px solid var(--ref-focus);
+  outline: var(--ref-focus-ring);
   outline-offset: 2px;
 }
 
@@ -83,7 +83,7 @@
 }
 
 .ui-app-frame__main:focus-visible {
-  outline: 2px solid var(--ref-focus);
+  outline: var(--ref-focus-ring);
   outline-offset: -2px;
 }
 
@@ -97,7 +97,7 @@
   border-block-start: 1px solid var(--ref-border);
   background: var(--ref-surface);
   color: var(--ref-muted);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }
 
 /* App Frame Band */
@@ -117,7 +117,7 @@
   align-items: center;
   gap: 8px;
   min-width: 0;
-  font-weight: 600;
+  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-app-frame-band__status {

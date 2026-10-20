@@ -1,7 +1,7 @@
 /* Change List */
 
 .ui-change-list {
-  font-size: 13px;
+  font-size: var(--ref-font-size-md);
   line-height: 20px;
 }
 
@@ -69,8 +69,8 @@
 .ui-change-list__item {
   padding: 0 6px;
   border: 1px solid var(--ref-border);
-  border-radius: 999px;
-  font-size: 12px;
+  border-radius: var(--ref-radius-full);
+  font-size: var(--ref-font-size-sm);
 }
 
 .ui-change-list__item[data-change='added'] {
@@ -106,8 +106,8 @@
   flex: none;
   min-width: 3.5rem;
   color: var(--ref-muted);
-  font-size: 11px;
-  font-weight: 600;
+  font-size: var(--ref-font-size-xs);
+  font-weight: var(--ref-font-weight-strong);
   text-transform: uppercase;
 }
 
@@ -118,5 +118,5 @@
 
 .ui-change-list__attribution {
   color: var(--ref-muted);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }

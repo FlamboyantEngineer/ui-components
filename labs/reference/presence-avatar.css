@@ -36,15 +36,11 @@
 
 .ui-presence-avatar:is(span):focus-visible {
   outline: none;
-  box-shadow:
-    0 0 0 2px var(--ref-canvas),
-    0 0 0 4px var(--ref-focus);
+  box-shadow: var(--ref-focus-halo);
 }
 
 .ui-presence-avatar[data-focus-visible] {
-  box-shadow:
-    0 0 0 2px var(--ref-canvas),
-    0 0 0 4px var(--ref-focus);
+  box-shadow: var(--ref-focus-halo);
 }
 
 .ui-presence-avatar__indicator {

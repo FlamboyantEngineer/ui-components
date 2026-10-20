@@ -10,7 +10,7 @@
   height: 100%;
   min-height: 0;
   background: var(--ref-surface);
-  font-size: 13px;
+  font-size: var(--ref-font-size-md);
 }
 
 .ui-navigation-rail[data-collapsed] {
@@ -24,7 +24,7 @@
   gap: 8px;
   min-height: 44px;
   padding: 4px 8px 4px 12px;
-  font-weight: 600;
+  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-navigation-rail__header > :not(.ui-navigation-rail__toggle) {
@@ -90,8 +90,8 @@
 .ui-navigation-rail__section-title {
   padding: 4px 8px;
   color: var(--ref-muted);
-  font-size: 11px;
-  font-weight: 600;
+  font-size: var(--ref-font-size-xs);
+  font-weight: var(--ref-font-weight-strong);
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
@@ -128,7 +128,7 @@
   background: none;
   color: var(--ref-text);
   font: inherit;
-  font-weight: 500;
+  font-weight: var(--ref-font-weight-medium);
   text-align: start;
   cursor: pointer;
 }
@@ -150,12 +150,12 @@
 .ui-navigation-rail__item[data-current]
   > .ui-navigation-rail__group
   > .ui-navigation-rail__group-trigger {
-  font-weight: 700;
+  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-navigation-rail__link[data-focus-visible],
 .ui-navigation-rail__group-trigger[data-focus-visible] {
-  outline: 2px solid var(--ref-focus);
+  outline: var(--ref-focus-ring);
   outline-offset: -2px;
   box-shadow: none;
 }
@@ -174,8 +174,8 @@
   height: 24px;
   border-radius: 50%;
   background: var(--ref-border);
-  font-size: 10px;
-  font-weight: 700;
+  font-size: var(--ref-font-size-2xs);
+  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-navigation-rail__label {

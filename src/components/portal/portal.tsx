@@ -4,10 +4,11 @@ import {
   useMemo,
   useState,
   useSyncExternalStore,
+  type CSSProperties,
   type ReactNode,
 } from 'react';
 import { createPortal } from 'react-dom';
-import { createHooks } from '../../core/hooks.js';
+import { createHooks, measuredProperty } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { omitUndefined } from '../../utils/omit-undefined.js';
 import { defaultLayerZIndex, isLayerAbove, type OverlayLayer } from './layers.js';
@@ -104,6 +105,15 @@ export function PortalHost({ children, layerZIndex, className, ...rest }: Portal
 export function useLayerZIndex(layer: OverlayLayer): number {
   return useContext(PortalContext).zIndex[layer];
 }
+
+/**
+ * The width of the element a dropdown opens from, published as `--ui-trigger-width` from the
+ * building block's measurement, so stylesheets size the list without naming the building block.
+ */
+export const triggerWidthProperty = measuredProperty(
+  'trigger-width',
+  'var(--trigger-width)',
+) as CSSProperties;
 
 /**
  * Renders its children in the overlay container (the document body unless a provider chooses

@@ -17,8 +17,8 @@
 .ui-empty-state__title {
   margin: 0;
   color: var(--ref-text);
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--ref-font-size);
+  font-weight: var(--ref-font-weight-strong);
 }
 .ui-empty-state__description {
   margin: 0;
@@ -57,7 +57,7 @@
   border: 2px solid currentColor;
   border-right-color: transparent;
   border-radius: 50%;
-  animation: ref-spin 0.8s linear infinite;
+  animation: ref-spin var(--ref-duration-spin) linear infinite;
 }
 .ui-banner__spinner {
   margin-block-start: 2px;

@@ -105,7 +105,7 @@
 .ui-dock-panel__launcher > [aria-expanded='true'] {
   background: var(--ref-selected);
   box-shadow: inset 0 -2px var(--ref-accent);
-  color: var(--ref-accent-text);
+  color: var(--ref-on-fill);
 }
 
 .ui-dock-panel__launchers[data-orientation='vertical']
@@ -170,7 +170,7 @@
 }
 
 .ui-dock-panel__pane:focus-visible {
-  outline: 2px solid var(--ref-focus);
+  outline: var(--ref-focus-ring);
   outline-offset: -2px;
 }
 
@@ -185,8 +185,8 @@
   margin: 0;
   overflow: hidden;
   color: var(--ref-text);
-  font-size: 13px;
-  font-weight: 600;
+  font-size: var(--ref-font-size-md);
+  font-weight: var(--ref-font-weight-strong);
   text-overflow: ellipsis;
   white-space: nowrap;
 }

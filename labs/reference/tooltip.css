@@ -4,11 +4,11 @@
   box-sizing: border-box;
   max-width: min(280px, calc(100vw - 24px));
   padding: 4px 8px;
-  border-radius: 4px;
+  border-radius: var(--ref-radius-sm);
   background: var(--ref-text);
   color: var(--ref-canvas);
-  font-size: 12px;
-  font-weight: 500;
+  font-size: var(--ref-font-size-sm);
+  font-weight: var(--ref-font-weight-medium);
   line-height: 1.4;
   box-shadow: var(--ref-shadow);
 }
@@ -21,11 +21,11 @@
 }
 
 .ui-tooltip[data-entering] {
-  animation: ref-fade 0.12s ease-out;
+  animation: ref-fade var(--ref-duration-fast) ease-out;
 }
 
 .ui-tooltip[data-exiting] {
-  animation: ref-fade 0.12s ease-in reverse;
+  animation: ref-fade var(--ref-duration-fast) ease-in reverse;
 }
 
 @keyframes ref-fade {

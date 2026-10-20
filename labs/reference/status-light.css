@@ -4,7 +4,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 13px;
+  font-size: var(--ref-font-size-md);
   line-height: 1.4;
   vertical-align: middle;
 }
@@ -20,7 +20,7 @@
 
 .ui-status-light[data-size='sm'] {
   gap: 4px;
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }
 
 .ui-status-light[data-size='sm'] .ui-status-light__dot {
@@ -30,7 +30,7 @@
 
 .ui-status-light[data-size='lg'] {
   gap: 8px;
-  font-size: 15px;
+  font-size: var(--ref-font-size-lg);
 }
 
 .ui-status-light[data-size='lg'] .ui-status-light__dot {
@@ -77,7 +77,7 @@
 }
 
 .ui-status-light[data-processing] .ui-status-light__dot {
-  animation: ref-status-light-pulse 1.2s ease-in-out infinite;
+  animation: ref-status-light-pulse var(--ref-duration-loop) ease-in-out infinite;
 }
 
 @keyframes ref-status-light-pulse {

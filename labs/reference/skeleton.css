@@ -4,7 +4,7 @@
  */
 
 :where(.ui-skeleton[data-loading]) {
-  border-radius: 4px;
+  border-radius: var(--ref-radius-sm);
   background: var(--ref-border);
 }
 
@@ -47,7 +47,7 @@
 }
 
 .ui-skeleton[data-animated] {
-  animation: ref-skeleton-pulse 1.4s ease-in-out infinite;
+  animation: ref-skeleton-pulse var(--ref-duration-loop) ease-in-out infinite;
 }
 
 @keyframes ref-skeleton-pulse {

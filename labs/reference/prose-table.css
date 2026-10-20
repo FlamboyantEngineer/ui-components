@@ -16,7 +16,7 @@
 
 .ui-prose-table th {
   background: var(--ref-surface);
-  font-weight: 600;
+  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-prose-table__caption {
@@ -31,7 +31,7 @@
 
 .ui-prose-table tfoot :is(th, td) {
   border-top-width: 2px;
-  font-weight: 600;
+  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-prose-table [data-align='start'] {

@@ -5,7 +5,7 @@
   padding: 0;
   list-style: none;
   color: var(--ref-text);
-  font-size: 13px;
+  font-size: var(--ref-font-size-md);
   line-height: 20px;
 }
 
@@ -73,8 +73,8 @@
 
 .ui-state-timeline__current {
   color: var(--ref-accent-ink);
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--ref-font-size-sm);
+  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-state-timeline__entry[data-status='upcoming'] .ui-state-timeline__state {
@@ -89,5 +89,5 @@
 }
 
 .ui-state-timeline__attribution {
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }

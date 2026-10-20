@@ -27,7 +27,7 @@
   width: 30px;
   height: 18px;
   border: 1px solid var(--ref-border-strong);
-  border-radius: 9px;
+  border-radius: var(--ref-radius-full);
   background: var(--ref-surface);
 }
 
@@ -39,7 +39,7 @@
   height: 10px;
   border-radius: 50%;
   background: var(--ref-border-strong);
-  transition: inset-inline-start 0.1s;
+  transition: inset-inline-start var(--ref-duration-fast);
 }
 
 .ui-boolean-field__switch[data-selected] .ui-boolean-field__track {
@@ -49,11 +49,11 @@
 
 .ui-boolean-field__switch[data-selected] .ui-boolean-field__thumb {
   inset-inline-start: 15px;
-  background: var(--ref-accent-text);
+  background: var(--ref-on-fill);
 }
 
 .ui-boolean-field__switch[data-focus-visible] .ui-boolean-field__track {
-  outline: 2px solid var(--ref-focus);
+  outline: var(--ref-focus-ring);
   outline-offset: 2px;
 }
 
@@ -108,11 +108,11 @@
 .ui-boolean-field__toggle-button[data-selected] {
   border-color: var(--ref-accent);
   background: var(--ref-accent);
-  color: var(--ref-accent-text);
+  color: var(--ref-on-fill);
 }
 
 .ui-boolean-field__toggle-button[data-focus-visible] {
-  outline: 2px solid var(--ref-focus);
+  outline: var(--ref-focus-ring);
   outline-offset: 2px;
 }
 
@@ -138,7 +138,7 @@
 .ui-boolean-field__previous {
   align-self: center;
   margin-inline-end: 4px;
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }
 
 /* The dropdown is the select field's control; its field states live on this root. */

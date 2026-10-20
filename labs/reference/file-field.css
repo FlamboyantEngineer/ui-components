@@ -31,5 +31,5 @@
 
 .ui-file-field__removed {
   flex: none;
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }

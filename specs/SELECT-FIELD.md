@@ -66,7 +66,7 @@ Verification: `src/components/select-field/select-field.test.tsx`
 
 ### UIC-SELECT-FIELD-3.1 - Opening
 
-Pressing the trigger, or Enter, Space, Arrow Down or Arrow Up on it, shall open the options in a popover (`ui-select-field__popover`) anchored below the trigger on the `dropdown` layer, publishing `data-layer` and taking its z-index from `useLayerZIndex('dropdown')`. React Aria keeps focus in the list, moves it to the chosen option, locks page scrolling while the list is open, and closes the list on Escape or a press outside it. `isOpen`, `defaultOpen` and `onOpenChange` control the open state.
+Pressing the trigger, or Enter, Space, Arrow Down or Arrow Up on it, shall open the options in a popover (`ui-select-field__popover`) anchored below the trigger on the `dropdown` layer, publishing `data-layer` and taking its z-index from `useLayerZIndex('dropdown')`, and publishing the trigger's width as `--ui-trigger-width`. React Aria keeps focus in the list, moves it to the chosen option, locks page scrolling while the list is open, and closes the list on Escape or a press outside it. `isOpen`, `defaultOpen` and `onOpenChange` control the open state.
 
 Implementation: `src/components/select-field/select-list.tsx`, `src/components/select-field/select-control.tsx`
 Verification: `src/components/select-field/select-list.test.tsx`, `e2e/select-field.spec.ts`
@@ -222,6 +222,7 @@ Verification: `src/components/select-field/select-model.test.tsx`, `e2e/select-f
 | `ui-select-field__value-label`        | slot      |                                            | The chosen option's label or the placeholder.                            |
 | `ui-select-field__chevron`            | slot      |                                            | The trigger's chevron glyph.                                             |
 | `ui-select-field__popover`            | slot      |                                            | The list's floating surface.                                             |
+| `--ui-trigger-width`                  | property  |                                            | Width of the element the popover opens from, in pixels.                  |
 | `ui-select-field__loading`            | slot      |                                            | The status line of a running search.                                     |
 | `ui-select-field__search`             | slot      |                                            | The filter's search field.                                               |
 | `ui-select-field__search-input`       | slot      |                                            | The filter input.                                                        |

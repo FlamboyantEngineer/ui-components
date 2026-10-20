@@ -25,8 +25,8 @@
 
 .ui-step-list-editor__heading {
   color: var(--ref-muted);
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--ref-font-size-sm);
+  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-step-list-editor__steps {
@@ -56,7 +56,7 @@
 }
 
 .ui-step-list-editor__step[data-dragging] {
-  opacity: 0.5;
+  opacity: var(--ref-dragging-opacity);
 }
 
 .ui-step-list-editor__step[data-drop-target][data-position='before'] {

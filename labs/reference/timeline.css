@@ -1,12 +1,14 @@
 /* Timeline: a bordered chart with a pinned scale and row list, toned bars and thin connectors. */
 
 .ui-timeline {
+  --ref-indent: 16px;
+
   max-width: 100%;
   border: 1px solid var(--ref-border);
   border-radius: var(--ref-radius);
   background: var(--ref-canvas);
   color: var(--ref-text);
-  font-size: 13px;
+  font-size: var(--ref-font-size-md);
   overflow: hidden;
 }
 
@@ -54,14 +56,14 @@
   border-inline-start: 1px solid var(--ref-border);
   overflow: hidden;
   color: var(--ref-muted);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
   white-space: nowrap;
   text-overflow: clip;
 }
 
 .ui-timeline__scale-row[data-tier='major'] .ui-timeline__scale-cell {
   color: var(--ref-text);
-  font-weight: 600;
+  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-timeline__row-label {
@@ -69,7 +71,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  padding-inline: calc(4px + (var(--ui-timeline-level, 1) - 1) * 16px) 8px;
+  padding-inline: calc(4px + (var(--ui-timeline-level) - 1) * var(--ref-indent)) 8px;
   border-bottom: 1px solid var(--ref-border);
   overflow: hidden;
   white-space: nowrap;
@@ -85,7 +87,7 @@
 }
 
 .ui-timeline__row-label[data-group] .ui-timeline__row-name {
-  font-weight: 600;
+  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-timeline__body {
@@ -93,7 +95,8 @@
 }
 
 .ui-timeline__gridline {
-  border-inline-start: 1px solid color-mix(in srgb, var(--ref-border) 55%, transparent);
+  border-inline-start: 1px solid
+    color-mix(in srgb, var(--ref-border) var(--ref-tint-border), transparent);
 }
 
 .ui-timeline__gridline[data-major] {
@@ -124,7 +127,7 @@
 
 .ui-timeline__row {
   box-sizing: border-box;
-  border-bottom: 1px solid color-mix(in srgb, var(--ref-border) 55%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--ref-border) var(--ref-tint-border), transparent);
 }
 
 .ui-timeline__item {
@@ -137,12 +140,17 @@
   height: 22px;
   margin: 0;
   padding: 0 8px;
-  border: 1px solid color-mix(in srgb, var(--ref-timeline-tone) 50%, var(--ref-canvas));
-  border-radius: 4px;
-  background: color-mix(in srgb, var(--ref-timeline-tone) 12%, var(--ref-canvas));
+  border: 1px solid
+    color-mix(in srgb, var(--ref-timeline-tone) var(--ref-tint-border), var(--ref-canvas));
+  border-radius: var(--ref-radius-sm);
+  background: color-mix(
+    in srgb,
+    var(--ref-timeline-tone) var(--ref-tint-subtle),
+    var(--ref-canvas)
+  );
   color: var(--ref-text);
   font: inherit;
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
   text-align: start;
   white-space: nowrap;
   overflow: hidden;
@@ -189,7 +197,7 @@
 }
 
 .ui-timeline__item:focus-visible {
-  outline: 2px solid var(--ref-focus);
+  outline: var(--ref-focus-ring);
   outline-offset: 2px;
 }
 
@@ -197,7 +205,11 @@
   position: absolute;
   inset-block: 0;
   inset-inline-start: 0;
-  background: color-mix(in srgb, var(--ref-timeline-tone) 30%, var(--ref-canvas));
+  background: color-mix(
+    in srgb,
+    var(--ref-timeline-tone) var(--ref-tint-strong),
+    var(--ref-canvas)
+  );
 }
 
 .ui-timeline__item-label {
@@ -222,7 +234,7 @@
 }
 
 .ui-timeline__item:hover .ui-timeline__handle {
-  background: color-mix(in srgb, var(--ref-timeline-tone) 45%, transparent);
+  background: color-mix(in srgb, var(--ref-timeline-tone) var(--ref-tint-border), transparent);
 }
 
 /* A milestone is a diamond centred on its day, with its label beside it. */
@@ -242,9 +254,14 @@
   position: absolute;
   inset: 1px;
   transform: rotate(45deg);
-  border: 1px solid color-mix(in srgb, var(--ref-timeline-tone) 70%, var(--ref-canvas));
-  border-radius: 2px;
-  background: color-mix(in srgb, var(--ref-timeline-tone) 40%, var(--ref-canvas));
+  border: 1px solid
+    color-mix(in srgb, var(--ref-timeline-tone) var(--ref-tint-solid), var(--ref-canvas));
+  border-radius: var(--ref-radius-xs);
+  background: color-mix(
+    in srgb,
+    var(--ref-timeline-tone) var(--ref-tint-border),
+    var(--ref-canvas)
+  );
 }
 
 .ui-timeline__item[data-kind='milestone'][data-selected] {

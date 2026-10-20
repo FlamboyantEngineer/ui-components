@@ -11,8 +11,8 @@
   gap: 4px;
   min-height: 24px;
   padding: 1px 8px;
-  border-radius: 12px;
-  font-size: 12px;
+  border-radius: var(--ref-radius-full);
+  font-size: var(--ref-font-size-sm);
   line-height: 1;
 }
 
@@ -28,7 +28,7 @@
 .ui-reaction-bar__emoji {
   display: inline-flex;
   align-items: center;
-  font-size: 14px;
+  font-size: var(--ref-font-size);
 }
 
 .ui-reaction-bar__image {

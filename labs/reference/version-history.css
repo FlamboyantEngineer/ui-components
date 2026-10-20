@@ -19,7 +19,7 @@
 .ui-version-history__named-only,
 .ui-version-history__person {
   flex: none;
-  font-size: 13px;
+  font-size: var(--ref-font-size-md);
 }
 
 .ui-version-history__compare {
@@ -62,14 +62,14 @@
   flex: none;
   padding: 0 6px;
   border: 1px solid var(--ref-accent);
-  border-radius: 999px;
+  border-radius: var(--ref-radius-full);
   color: var(--ref-text);
-  font-size: 11px;
-  font-weight: 600;
+  font-size: var(--ref-font-size-xs);
+  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-version-history__version[data-current] .ui-version-history__label {
-  font-weight: 600;
+  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-version-history__version .ui-list-row-content__meta {

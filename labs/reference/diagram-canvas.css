@@ -40,7 +40,7 @@
   background: var(--ref-raised);
   color: var(--ref-text);
   font: inherit;
-  font-size: 13px;
+  font-size: var(--ref-font-size-md);
   cursor: grab;
 }
 
@@ -49,7 +49,7 @@
 }
 
 .ui-diagram-canvas__palette-item:focus-visible {
-  outline: 2px solid var(--ref-focus);
+  outline: var(--ref-focus-ring);
   outline-offset: 2px;
 }
 
@@ -115,10 +115,10 @@
 
 .ui-diagram-canvas__edge-label {
   padding: 0 6px;
-  border-radius: 4px;
+  border-radius: var(--ref-radius-sm);
   background: var(--ref-canvas);
   color: var(--ref-muted);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
   line-height: 18px;
   white-space: nowrap;
   cursor: pointer;
@@ -126,7 +126,7 @@
 
 .ui-diagram-canvas__edge-label[data-selected] {
   color: var(--ref-accent-ink);
-  font-weight: 600;
+  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-diagram-canvas__connection-preview {
@@ -144,13 +144,13 @@
   border: 1px solid var(--ref-border-strong);
   border-radius: var(--ref-radius);
   background: var(--ref-raised);
-  font-size: 13px;
+  font-size: var(--ref-font-size-md);
   line-height: 1.3;
   cursor: pointer;
 }
 
 .ui-diagram-canvas__node:focus-visible {
-  outline: 2px solid var(--ref-focus);
+  outline: var(--ref-focus-ring);
   outline-offset: 2px;
 }
 
@@ -203,7 +203,7 @@ button.ui-diagram-canvas__port:hover {
 }
 
 .ui-diagram-canvas__port:focus-visible {
-  outline: 2px solid var(--ref-focus);
+  outline: var(--ref-focus-ring);
   outline-offset: 2px;
 }
 
@@ -229,7 +229,7 @@ button.ui-diagram-canvas__port:hover {
   width: 160px;
   height: 100px;
   border: 1px solid var(--ref-border);
-  border-radius: 4px;
+  border-radius: var(--ref-radius-sm);
   background: var(--ref-surface);
   cursor: pointer;
 }
@@ -262,7 +262,7 @@ button.ui-diagram-canvas__port:hover {
   align-items: baseline;
   gap: 4px 16px;
   padding: 8px 12px;
-  font-size: 13px;
+  font-size: var(--ref-font-size-md);
 }
 
 .ui-diagram-canvas__outline-item + .ui-diagram-canvas__outline-item {
@@ -270,7 +270,7 @@ button.ui-diagram-canvas__port:hover {
 }
 
 .ui-diagram-canvas__outline-item:focus-visible {
-  outline: 2px solid var(--ref-focus);
+  outline: var(--ref-focus-ring);
   outline-offset: -2px;
 }
 
@@ -280,7 +280,7 @@ button.ui-diagram-canvas__port:hover {
 
 .ui-diagram-canvas__outline-label {
   min-width: 8em;
-  font-weight: 600;
+  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-diagram-canvas__outline-links {
@@ -319,7 +319,7 @@ button.ui-diagram-canvas__port:hover {
 }
 
 .ui-diagram-canvas__outline-link:focus-visible {
-  outline: 2px solid var(--ref-focus);
+  outline: var(--ref-focus-ring);
   outline-offset: 2px;
 }
 

@@ -5,12 +5,12 @@
   gap: 4px;
   width: 240px;
   max-width: 100%;
-  font-size: 13px;
+  font-size: var(--ref-font-size-md);
   vertical-align: top;
 }
 
 .ui-combobox__label {
-  font-weight: 500;
+  font-weight: var(--ref-font-weight-medium);
 }
 
 .ui-combobox__field {
@@ -27,12 +27,12 @@
 
 .ui-combobox[data-size='sm'] .ui-combobox__field {
   min-height: 26px;
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }
 
 .ui-combobox[data-size='lg'] .ui-combobox__field {
   min-height: 38px;
-  font-size: 14px;
+  font-size: var(--ref-font-size);
 }
 
 .ui-combobox__field[data-focus-within] {
@@ -49,7 +49,7 @@
 }
 
 .ui-combobox[data-disabled] .ui-combobox__field {
-  opacity: 0.55;
+  opacity: var(--ref-disabled-opacity);
 }
 
 .ui-combobox__search-icon {
@@ -78,7 +78,7 @@
   border: 2px solid var(--ref-muted);
   border-right-color: transparent;
   border-radius: 50%;
-  animation: ref-combobox-spin 0.8s linear infinite;
+  animation: ref-combobox-spin var(--ref-duration-spin) linear infinite;
 }
 
 .ui-combobox :is(.ui-combobox__clear.ui-icon-button, .ui-combobox__button) {
@@ -99,7 +99,7 @@
   place-items: center;
   padding: 0;
   border: 0;
-  border-radius: 4px;
+  border-radius: var(--ref-radius-sm);
   background: none;
   color: inherit;
   cursor: pointer;
@@ -116,17 +116,17 @@
 }
 
 .ui-combobox__button[data-focus-visible] {
-  box-shadow: 0 0 0 2px var(--ref-focus);
+  box-shadow: var(--ref-focus-halo);
 }
 
 .ui-combobox__description {
   color: var(--ref-muted);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }
 
 .ui-combobox__error {
   color: var(--ref-danger);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }
 
 /* Filters above the options stay put while the listbox scrolls. */
@@ -144,9 +144,9 @@
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  min-width: var(--trigger-width);
+  min-width: var(--ui-trigger-width);
   /* Wide options wrap within this; a virtualized list, whose rows do not size it, needs it. */
-  max-width: max(var(--trigger-width), 320px);
+  max-width: max(var(--ui-trigger-width), 320px);
   overflow: hidden;
   border: 1px solid var(--ref-border);
   border-radius: var(--ref-radius);
@@ -173,8 +173,8 @@
 .ui-combobox__section-header {
   padding: 4px 8px 2px;
   color: var(--ref-muted);
-  font-size: 11px;
-  font-weight: 600;
+  font-size: var(--ref-font-size-xs);
+  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-combobox__option {
@@ -184,7 +184,7 @@
   column-gap: 8px;
   min-height: 28px;
   padding: 2px 8px;
-  border-radius: 4px;
+  border-radius: var(--ref-radius-sm);
   cursor: default;
   outline: none;
 }
@@ -194,11 +194,11 @@
 }
 
 .ui-combobox__option[data-selected] {
-  font-weight: 600;
+  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-combobox__option[data-disabled] {
-  opacity: 0.5;
+  opacity: var(--ref-disabled-opacity);
 }
 
 .ui-combobox__option-icon {
@@ -214,7 +214,7 @@
   order: 1;
   flex-basis: 100%;
   color: var(--ref-muted);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }
 
 .ui-combobox__option[data-focused] .ui-combobox__option-description {
@@ -263,7 +263,7 @@
   align-items: center;
   min-height: 28px;
   padding: 2px 8px;
-  border-radius: 4px;
+  border-radius: var(--ref-radius-sm);
   color: var(--ref-accent-ink);
   cursor: default;
   outline: none;

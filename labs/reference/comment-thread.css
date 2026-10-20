@@ -34,7 +34,7 @@
   padding: 2px 8px;
   border-inline-start: 3px solid var(--ref-warning);
   color: var(--ref-muted);
-  font-size: 13px;
+  font-size: var(--ref-font-size-md);
 }
 
 .ui-comment-thread__status {
@@ -54,7 +54,7 @@
 }
 
 .ui-comment-thread__item:focus-visible {
-  outline: 2px solid var(--ref-focus);
+  outline: var(--ref-focus-ring);
   outline-offset: 2px;
 }
 
@@ -67,7 +67,7 @@
 }
 
 .ui-comment-thread__error {
-  font-size: 13px;
+  font-size: var(--ref-font-size-md);
 }
 
 .ui-comment-thread__composer {
@@ -98,7 +98,7 @@
 .ui-comment-thread-reply__time,
 .ui-comment-thread-reply__edited {
   color: var(--ref-muted);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }
 
 .ui-comment-thread-reply__edited::before {
@@ -112,7 +112,7 @@
 }
 
 .ui-comment-thread-reply__body {
-  font-size: 14px;
+  font-size: var(--ref-font-size);
   line-height: 1.5;
   white-space: pre-wrap;
   overflow-wrap: anywhere;

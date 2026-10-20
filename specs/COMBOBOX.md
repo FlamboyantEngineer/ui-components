@@ -78,7 +78,7 @@ Verification: `src/components/combobox/combobox-suggestions.test.tsx`, `e2e/comb
 
 ### UIC-COMBOBOX-2.7 - Popover
 
-The list's popover (`ui-combobox__popover`) shall sit on the `dropdown` layer, publishing `data-layer` and taking its z-index from `useLayerZIndex('dropdown')` ([PORTAL.md](PORTAL.md)), 4 pixels below the field and at least as wide as React Aria's measured `--trigger-width`, with the listbox (`ui-combobox__listbox`) inside.
+The list's popover (`ui-combobox__popover`) shall sit on the `dropdown` layer, publishing `data-layer` and taking its z-index from `useLayerZIndex('dropdown')` ([PORTAL.md](PORTAL.md)), 4 pixels below the field and at least as wide as the field, which it publishes as `--ui-trigger-width`, with the listbox (`ui-combobox__listbox`) inside.
 
 Implementation: `src/components/combobox/combobox-suggestions.tsx`, `labs/reference/combobox.css`
 Verification: `src/components/combobox/combobox-suggestions.test.tsx`, `e2e/combobox.spec.ts`
@@ -223,6 +223,7 @@ Verification: `src/components/combobox/combobox.test.tsx`
 | `ui-combobox__description`        | slot      |                                            | Help text.                                                          |
 | `ui-combobox__error`              | slot      |                                            | Error message while invalid.                                        |
 | `ui-combobox__popover`            | slot      |                                            | The list's floating surface.                                        |
+| `--ui-trigger-width`              | property  |                                            | Width of the element the popover opens from, in pixels.             |
 | `ui-combobox__listbox`            | slot      |                                            | The `role="listbox"` list.                                          |
 | `ui-combobox__section`            | slot      |                                            | A group of options.                                                 |
 | `ui-combobox__section-header`     | slot      |                                            | A section title.                                                    |

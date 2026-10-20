@@ -7,10 +7,10 @@
   border-radius: var(--ref-radius);
   background: var(--ref-canvas);
   color: var(--ref-text);
-  font-size: 14px;
+  font-size: var(--ref-font-size);
   line-height: 1.5;
   overflow: hidden;
-  --ref-redline-marker: 28px;
+  --ref-redline-compare-marker: 28px;
 }
 
 .ui-redline-compare__header {
@@ -25,8 +25,8 @@
 
 .ui-redline-compare__summary {
   margin: 0;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: var(--ref-font-size-md);
+  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-redline-compare__navigation {
@@ -41,12 +41,12 @@
 
 .ui-redline-compare__columns {
   display: grid;
-  grid-template-columns: var(--ref-redline-marker) repeat(2, minmax(0, 1fr));
+  grid-template-columns: var(--ref-redline-compare-marker) repeat(2, minmax(0, 1fr));
   padding: 4px 12px 4px 0;
   border-bottom: 1px solid var(--ref-border);
   color: var(--ref-muted);
-  font-size: 11px;
-  font-weight: 600;
+  font-size: var(--ref-font-size-xs);
+  font-weight: var(--ref-font-weight-strong);
   text-transform: uppercase;
 }
 
@@ -66,7 +66,7 @@
 
 .ui-redline-compare__row {
   display: grid;
-  grid-template-columns: var(--ref-redline-marker) minmax(0, 1fr);
+  grid-template-columns: var(--ref-redline-compare-marker) minmax(0, 1fr);
   align-items: start;
   padding: 6px 12px 6px 0;
   border-bottom: 1px solid var(--ref-border);
@@ -77,19 +77,19 @@
 }
 
 .ui-redline-compare[data-layout='split'] .ui-redline-compare__row {
-  grid-template-columns: var(--ref-redline-marker) repeat(2, minmax(0, 1fr));
+  grid-template-columns: var(--ref-redline-compare-marker) repeat(2, minmax(0, 1fr));
 }
 
 .ui-redline-compare__row[data-change='added'] {
-  background: color-mix(in srgb, var(--ref-success) 8%, transparent);
+  background: color-mix(in srgb, var(--ref-success) var(--ref-tint-subtle), transparent);
 }
 
 .ui-redline-compare__row[data-change='removed'] {
-  background: color-mix(in srgb, var(--ref-danger) 8%, transparent);
+  background: color-mix(in srgb, var(--ref-danger) var(--ref-tint-subtle), transparent);
 }
 
 .ui-redline-compare__row[data-change='moved'] {
-  background: color-mix(in srgb, var(--ref-info) 8%, transparent);
+  background: color-mix(in srgb, var(--ref-info) var(--ref-tint-subtle), transparent);
 }
 
 .ui-redline-compare__row[data-current] {
@@ -97,7 +97,7 @@
 }
 
 .ui-redline-compare__row:focus-visible {
-  outline: 2px solid var(--ref-focus);
+  outline: var(--ref-focus-ring);
   outline-offset: -2px;
 }
 
@@ -148,7 +148,7 @@
   background: repeating-linear-gradient(
     -45deg,
     transparent 0 4px,
-    color-mix(in srgb, var(--ref-border) 50%, transparent) 4px 5px
+    color-mix(in srgb, var(--ref-border) var(--ref-tint-border), transparent) 4px 5px
   );
 }
 
@@ -157,15 +157,15 @@
 }
 
 .ui-redline-compare__block[data-type='heading'] {
-  font-weight: 700;
+  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-redline-compare__block[data-type='heading'][data-level='1'] {
-  font-size: 18px;
+  font-size: var(--ref-font-size-xl);
 }
 
 .ui-redline-compare__block[data-type='heading'][data-level='2'] {
-  font-size: 16px;
+  font-size: var(--ref-font-size-lg);
 }
 
 .ui-redline-compare__block[data-type='list-item'] {
@@ -199,18 +199,18 @@
 }
 
 .ui-redline-compare__word {
-  border-radius: 2px;
+  border-radius: var(--ref-radius-xs);
   color: inherit;
 }
 
 .ui-redline-compare__word[data-change='added'] {
-  background: color-mix(in srgb, var(--ref-success) 24%, transparent);
+  background: color-mix(in srgb, var(--ref-success) var(--ref-tint), transparent);
   text-decoration: underline;
   text-decoration-color: var(--ref-success);
 }
 
 .ui-redline-compare__word[data-change='removed'] {
-  background: color-mix(in srgb, var(--ref-danger) 20%, transparent);
+  background: color-mix(in srgb, var(--ref-danger) var(--ref-tint), transparent);
   text-decoration: line-through;
   text-decoration-color: var(--ref-danger);
 }
@@ -236,7 +236,7 @@
 
 .ui-redline-compare__note {
   color: var(--ref-muted);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }
 
 .ui-redline-compare__note::before {
@@ -244,7 +244,7 @@
 }
 
 .ui-redline-compare__jump {
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }
 
 .ui-redline-compare__actions {

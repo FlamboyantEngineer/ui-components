@@ -7,8 +7,8 @@
 }
 
 .ui-query-field__label {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: var(--ref-font-size-md);
+  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-query-field__control {

@@ -35,11 +35,11 @@
 .ui-action-row__tooltip {
   max-width: 240px;
   padding: 4px 8px;
-  border-radius: 4px;
+  border-radius: var(--ref-radius-sm);
   background: var(--ref-text);
   box-shadow: var(--ref-shadow);
   color: var(--ref-canvas);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
   line-height: 1.4;
 }
 
@@ -83,6 +83,6 @@
 
 .ui-action-row__count {
   color: var(--ref-text);
-  font-weight: 600;
+  font-weight: var(--ref-font-weight-strong);
   white-space: nowrap;
 }

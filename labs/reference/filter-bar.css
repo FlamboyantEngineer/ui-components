@@ -24,7 +24,7 @@
   align-items: center;
   max-width: 100%;
   border: 1px solid var(--ref-border);
-  border-radius: 999px;
+  border-radius: var(--ref-radius-full);
   background: var(--ref-surface);
 }
 
@@ -41,14 +41,14 @@
   max-width: 320px;
   overflow: hidden;
   border: 0;
-  border-radius: 999px 0 0 999px;
+  border-radius: var(--ref-radius-full) 0 0 var(--ref-radius-full);
   background: transparent;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .ui-filter-bar__chip-field {
-  font-weight: 600;
+  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-filter-bar__chip-operator {
@@ -61,7 +61,7 @@
 
 .ui-filter-bar__chip-remove {
   margin-inline-end: 2px;
-  border-radius: 999px;
+  border-radius: var(--ref-radius-full);
 }
 
 .ui-filter-bar__editor {

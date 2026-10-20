@@ -14,44 +14,42 @@
   background: var(--ref-surface);
   color: var(--ref-text);
   font: inherit;
-  font-size: 13px;
-  font-weight: 500;
+  font-size: var(--ref-font-size-md);
+  font-weight: var(--ref-font-weight-medium);
   line-height: 1.2;
   white-space: nowrap;
   cursor: pointer;
   user-select: none;
   outline: none;
   transition:
-    background-color 0.1s,
-    border-color 0.1s;
+    background-color var(--ref-duration-fast),
+    border-color var(--ref-duration-fast);
 }
 
 .ui-button[data-size='xs'] {
   min-height: 22px;
   padding: 0 6px;
-  font-size: 11px;
+  font-size: var(--ref-font-size-xs);
 }
 .ui-button[data-size='sm'] {
   min-height: 26px;
   padding: 0 8px;
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }
 .ui-button[data-size='lg'] {
   min-height: 38px;
   padding: 0 16px;
-  font-size: 14px;
+  font-size: var(--ref-font-size);
 }
 
 .ui-button[data-hovered] {
-  background: color-mix(in srgb, var(--ref-surface), var(--ref-text) 6%);
+  background: color-mix(in srgb, var(--ref-surface), var(--ref-text) var(--ref-tint-subtle));
 }
 .ui-button[data-pressed] {
-  background: color-mix(in srgb, var(--ref-surface), var(--ref-text) 12%);
+  background: color-mix(in srgb, var(--ref-surface), var(--ref-text) var(--ref-tint-subtle));
 }
 .ui-button[data-focus-visible] {
-  box-shadow:
-    0 0 0 2px var(--ref-canvas),
-    0 0 0 4px var(--ref-focus);
+  box-shadow: var(--ref-focus-halo);
 }
 .ui-button[data-selected] {
   background: var(--ref-selected);
@@ -61,7 +59,7 @@
 .ui-button:is([data-variant='primary'], [data-variant='accent']) {
   background: var(--ref-accent);
   border-color: var(--ref-accent);
-  color: var(--ref-accent-text);
+  color: var(--ref-on-fill);
 }
 .ui-button[data-variant='accent'] {
   background: var(--ref-success-fill);
@@ -80,7 +78,7 @@
 }
 .ui-button[data-variant='danger'][data-hovered] {
   background: var(--ref-danger-fill);
-  color: var(--ref-accent-text);
+  color: var(--ref-on-fill);
 }
 .ui-button[data-variant='ghost'] {
   border-color: transparent;
@@ -92,8 +90,8 @@
 .ui-button[data-variant='chip'] {
   min-height: 22px;
   padding: 0 8px;
-  border-radius: 999px;
-  font-size: 12px;
+  border-radius: var(--ref-radius-full);
+  font-size: var(--ref-font-size-sm);
   font-weight: 400;
 }
 .ui-button[data-variant='link'] {
@@ -117,7 +115,7 @@
 }
 
 .ui-button:is([data-disabled], [data-pending]) {
-  opacity: 0.55;
+  opacity: var(--ref-disabled-opacity);
   cursor: not-allowed;
   filter: none;
 }
@@ -153,7 +151,7 @@
   border: 2px solid currentColor;
   border-right-color: transparent;
   border-radius: 50%;
-  animation: ref-spin 0.8s linear infinite;
+  animation: ref-spin var(--ref-duration-spin) linear infinite;
 }
 
 @keyframes ref-spin {

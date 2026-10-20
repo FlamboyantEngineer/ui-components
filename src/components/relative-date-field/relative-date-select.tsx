@@ -11,7 +11,7 @@ import {
 import { createHooks } from '../../core/hooks.js';
 import { Glyph } from '../../core/provider.js';
 import type { FieldControlProps, FieldState } from '../field/field.js';
-import { useLayerZIndex } from '../portal/portal.js';
+import { triggerWidthProperty, useLayerZIndex } from '../portal/portal.js';
 import type { RelativeDateText } from './relative-date.js';
 
 /** One preset of the list, with whether the field's bounds refuse it. */
@@ -95,7 +95,11 @@ export function PresetSelect({
       validationBehavior="aria"
     >
       <RelativeTrigger control={control} text={text} placeholder={placeholder} />
-      <Popover {...hooks.slot('popover', { layer: 'dropdown' })} offset={4} style={{ zIndex }}>
+      <Popover
+        {...hooks.slot('popover', { layer: 'dropdown' })}
+        offset={4}
+        style={{ ...triggerWidthProperty, zIndex }}
+      >
         <ListBox className={hooks.slotClass('listbox')} items={items}>
           {(item) => (
             <ListBoxItem

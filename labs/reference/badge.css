@@ -9,11 +9,11 @@
   min-height: 22px;
   padding: 0 8px;
   border: 1px solid var(--ref-border);
-  border-radius: 999px;
+  border-radius: var(--ref-radius-full);
   background: var(--ref-surface);
   color: var(--ref-text);
-  font-size: 12px;
-  font-weight: 500;
+  font-size: var(--ref-font-size-sm);
+  font-weight: var(--ref-font-weight-medium);
   line-height: 1;
   white-space: nowrap;
   vertical-align: middle;
@@ -21,29 +21,29 @@
 .ui-badge[data-size='sm'] {
   min-height: 18px;
   padding: 0 6px;
-  font-size: 10px;
+  font-size: var(--ref-font-size-2xs);
 }
 .ui-badge[data-size='lg'] {
   min-height: 26px;
   padding: 0 10px;
-  font-size: 14px;
+  font-size: var(--ref-font-size);
 }
 
 .ui-badge[data-variant='subtle'][data-tone='info'] {
-  border-color: color-mix(in srgb, var(--ref-info) 45%, var(--ref-canvas));
-  background: color-mix(in srgb, var(--ref-info) 10%, var(--ref-canvas));
+  border-color: color-mix(in srgb, var(--ref-info) var(--ref-tint-border), var(--ref-canvas));
+  background: color-mix(in srgb, var(--ref-info) var(--ref-tint-subtle), var(--ref-canvas));
 }
 .ui-badge[data-variant='subtle'][data-tone='success'] {
-  border-color: color-mix(in srgb, var(--ref-success) 45%, var(--ref-canvas));
-  background: color-mix(in srgb, var(--ref-success) 10%, var(--ref-canvas));
+  border-color: color-mix(in srgb, var(--ref-success) var(--ref-tint-border), var(--ref-canvas));
+  background: color-mix(in srgb, var(--ref-success) var(--ref-tint-subtle), var(--ref-canvas));
 }
 .ui-badge[data-variant='subtle'][data-tone='warning'] {
-  border-color: color-mix(in srgb, var(--ref-warning) 45%, var(--ref-canvas));
-  background: color-mix(in srgb, var(--ref-warning) 10%, var(--ref-canvas));
+  border-color: color-mix(in srgb, var(--ref-warning) var(--ref-tint-border), var(--ref-canvas));
+  background: color-mix(in srgb, var(--ref-warning) var(--ref-tint-subtle), var(--ref-canvas));
 }
 .ui-badge[data-variant='subtle'][data-tone='danger'] {
-  border-color: color-mix(in srgb, var(--ref-danger) 45%, var(--ref-canvas));
-  background: color-mix(in srgb, var(--ref-danger) 10%, var(--ref-canvas));
+  border-color: color-mix(in srgb, var(--ref-danger) var(--ref-tint-border), var(--ref-canvas));
+  background: color-mix(in srgb, var(--ref-danger) var(--ref-tint-subtle), var(--ref-canvas));
 }
 
 .ui-badge:is([data-variant='solid'], [data-variant='count']) {

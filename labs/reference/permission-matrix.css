@@ -11,7 +11,7 @@
 }
 
 .ui-permission-matrix__role-label {
-  font-weight: 600;
+  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-permission-matrix__role[data-readonly] .ui-permission-matrix__role-label {

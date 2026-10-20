@@ -22,7 +22,7 @@
   border: 1px solid var(--ref-border);
   border-radius: var(--ref-radius);
   background: var(--ref-raised);
-  font-size: 13px;
+  font-size: var(--ref-font-size-md);
   outline: none;
 }
 
@@ -33,11 +33,11 @@
 }
 
 .ui-menu[data-size='sm'] {
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }
 
 .ui-menu[data-size='lg'] {
-  font-size: 14px;
+  font-size: var(--ref-font-size);
 }
 
 .ui-menu-item {
@@ -48,7 +48,7 @@
   box-sizing: border-box;
   min-height: 28px;
   padding: 2px 8px;
-  border-radius: 4px;
+  border-radius: var(--ref-radius-sm);
   color: var(--ref-text);
   line-height: 1.3;
   text-decoration: none;
@@ -76,7 +76,7 @@
 }
 
 .ui-menu-item[data-focus-visible] {
-  box-shadow: inset 0 0 0 2px var(--ref-focus);
+  box-shadow: var(--ref-focus-inset);
 }
 
 .ui-menu-item[data-tone='danger'] {
@@ -84,7 +84,7 @@
 }
 
 .ui-menu-item[data-disabled] {
-  opacity: 0.5;
+  opacity: var(--ref-disabled-opacity);
 }
 
 .ui-menu-item__check,
@@ -113,7 +113,7 @@
   border: 2px solid currentColor;
   border-right-color: transparent;
   border-radius: 50%;
-  animation: ref-menu-spin 0.8s linear infinite;
+  animation: ref-menu-spin var(--ref-duration-spin) linear infinite;
 }
 
 .ui-menu-item__label {
@@ -125,7 +125,7 @@
   order: 1;
   flex-basis: 100%;
   color: var(--ref-muted);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }
 
 .ui-menu-item:is([data-focused], [data-open]) .ui-menu-item__description {
@@ -141,7 +141,7 @@
 }
 
 .ui-menu-item__shortcut .ui-shortcut__key {
-  font-size: 11px;
+  font-size: var(--ref-font-size-xs);
   line-height: 14px;
 }
 
@@ -159,8 +159,8 @@
 .ui-menu-section__header {
   padding: 4px 8px 2px;
   color: var(--ref-muted);
-  font-size: 11px;
-  font-weight: 600;
+  font-size: var(--ref-font-size-xs);
+  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-menu-separator {
@@ -188,7 +188,7 @@
   height: 28px;
   padding: 0 8px;
   border: 1px solid var(--ref-border);
-  border-radius: 4px;
+  border-radius: var(--ref-radius-sm);
   background: var(--ref-canvas);
   color: var(--ref-text);
   font: inherit;
@@ -229,7 +229,7 @@
   border: 2px solid currentColor;
   border-right-color: transparent;
   border-radius: 50%;
-  animation: ref-menu-spin 0.8s linear infinite;
+  animation: ref-menu-spin var(--ref-duration-spin) linear infinite;
 }
 
 /* Context menus use the menu hooks; their popover sits on the context-menu layer. */

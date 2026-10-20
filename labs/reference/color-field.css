@@ -26,7 +26,7 @@
 
 .ui-color-field__trigger[data-focus-visible] {
   border-color: var(--ref-focus);
-  outline: 1px solid var(--ref-focus);
+  outline: var(--ref-focus-ring-thin);
 }
 
 .ui-color-field__trigger[data-disabled] {
@@ -56,7 +56,7 @@
 
 .ui-color-field__value {
   font-family: var(--ref-mono);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }
 
 .ui-color-field__value[data-placeholder] {
@@ -73,7 +73,7 @@
   background: var(--ref-raised);
   box-shadow: var(--ref-shadow);
   color: var(--ref-text);
-  font-size: 13px;
+  font-size: var(--ref-font-size-md);
 }
 
 .ui-color-field__dialog {
@@ -104,7 +104,7 @@
 .ui-color-field__area {
   width: 192px;
   height: 160px;
-  border-radius: 4px;
+  border-radius: var(--ref-radius-sm);
 }
 
 .ui-color-field__slider {
@@ -113,18 +113,18 @@
 
 .ui-color-field__track {
   height: 16px;
-  border-radius: 4px;
+  border-radius: var(--ref-radius-sm);
 }
 
 .ui-color-field__thumb {
   box-sizing: border-box;
   width: 16px;
   height: 16px;
-  border: 2px solid #ffffff;
+  border: 2px solid #ffffff; /* token-exempt: a ring that reads over any colour */
   border-radius: 50%;
   box-shadow:
     0 0 0 1px rgb(0 0 0 / 0.6),
-    inset 0 0 0 1px rgb(0 0 0 / 0.3);
+    inset 0 0 0 1px rgb(0 0 0 / 0.3); /* token-exempt: a ring that reads over any colour */
 }
 
 .ui-color-field__track .ui-color-field__thumb {
@@ -173,7 +173,7 @@
 
 .ui-color-field__input[data-focused] {
   border-color: var(--ref-focus);
-  outline: 1px solid var(--ref-focus);
+  outline: var(--ref-focus-ring-thin);
 }
 
 .ui-color-field__input[data-invalid] {
@@ -201,7 +201,7 @@
 
 .ui-color-field__group:focus-within {
   border-color: var(--ref-focus);
-  outline: 1px solid var(--ref-focus);
+  outline: var(--ref-focus-ring-thin);
 }
 
 /* The extra class outweighs the trigger's state borders, which the frame draws instead. */
@@ -216,7 +216,7 @@
 }
 
 .ui-color-field .ui-color-field__group .ui-color-field__trigger[data-focus-visible] {
-  outline: 2px solid var(--ref-focus);
+  outline: var(--ref-focus-ring);
   outline-offset: -2px;
 }
 

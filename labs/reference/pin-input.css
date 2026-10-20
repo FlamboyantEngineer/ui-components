@@ -16,7 +16,7 @@
   background: var(--ref-canvas);
   color: inherit;
   font: inherit;
-  font-size: 16px;
+  font-size: var(--ref-font-size-lg);
   font-variant-numeric: tabular-nums;
   text-align: center;
 }
@@ -31,7 +31,7 @@
 
 .ui-pin-input__cell[data-focused] {
   border-color: var(--ref-focus);
-  outline: 1px solid var(--ref-focus);
+  outline: var(--ref-focus-ring-thin);
 }
 
 .ui-pin-input[data-complete] .ui-pin-input__cell {
@@ -57,5 +57,5 @@
 
 .ui-pin-input__cell[data-disabled] {
   cursor: not-allowed;
-  opacity: 0.55;
+  opacity: var(--ref-disabled-opacity);
 }

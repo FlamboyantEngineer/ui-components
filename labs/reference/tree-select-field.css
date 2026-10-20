@@ -6,7 +6,7 @@
 }
 
 .ui-tree-select-field[data-disabled] .ui-tree-select-field__trigger {
-  opacity: 0.55;
+  opacity: var(--ref-disabled-opacity);
 }
 
 .ui-tree-select-field .ui-field__control {
@@ -111,7 +111,7 @@
 
 .ui-tree-select-field__popover {
   box-sizing: border-box;
-  min-width: max(var(--trigger-width), 240px);
+  min-width: max(var(--ui-trigger-width), 240px);
   border: 1px solid var(--ref-border);
   border-radius: var(--ref-radius);
   background: var(--ref-raised);
@@ -120,11 +120,11 @@
 }
 
 .ui-tree-select-field__popover[data-entering] {
-  animation: ref-fade 0.12s ease-out;
+  animation: ref-fade var(--ref-duration-fast) ease-out;
 }
 
 .ui-tree-select-field__popover[data-exiting] {
-  animation: ref-fade 0.12s ease-in reverse;
+  animation: ref-fade var(--ref-duration-fast) ease-in reverse;
 }
 
 .ui-tree-select-field__dialog {

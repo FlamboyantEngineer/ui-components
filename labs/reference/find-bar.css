@@ -5,7 +5,7 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 4px;
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }
 
 .ui-find-bar__query.ui-search-field {
@@ -34,7 +34,7 @@
   height: 26px;
   padding: 0 8px;
   border: 1px solid var(--ref-border-strong);
-  border-radius: 13px;
+  border-radius: var(--ref-radius-full);
   background: var(--ref-canvas);
   color: var(--ref-text);
   font: inherit;
@@ -45,7 +45,7 @@
 }
 
 .ui-find-bar__replacement[data-focus-visible] {
-  outline: 2px solid var(--ref-focus);
+  outline: var(--ref-focus-ring);
   outline-offset: 1px;
 }
 

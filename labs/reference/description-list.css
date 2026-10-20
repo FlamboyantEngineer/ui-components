@@ -1,45 +1,45 @@
 /* Description List */
 
 .ui-description-list {
-  --ref-description-columns: 1;
+  --ref-description-list-columns: 1;
   display: grid;
-  grid-template-columns: repeat(var(--ref-description-columns), max-content minmax(0, 1fr));
+  grid-template-columns: repeat(var(--ref-description-list-columns), max-content minmax(0, 1fr));
   gap: 4px 8px;
   margin: 0;
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
   line-height: 1.35;
 }
 
 .ui-description-list[data-columns='2'] {
-  --ref-description-columns: 2;
+  --ref-description-list-columns: 2;
 }
 
 .ui-description-list[data-columns='3'] {
-  --ref-description-columns: 3;
+  --ref-description-list-columns: 3;
 }
 
 .ui-description-list[data-columns='4'] {
-  --ref-description-columns: 4;
+  --ref-description-list-columns: 4;
 }
 
 .ui-description-list__row {
-  --ref-description-span: 1;
+  --ref-description-list-span: 1;
   display: grid;
-  grid-column: span calc(2 * var(--ref-description-span));
+  grid-column: span calc(2 * var(--ref-description-list-span));
   grid-template-columns: subgrid;
   align-items: baseline;
 }
 
 .ui-description-list__row[data-span='2'] {
-  --ref-description-span: 2;
+  --ref-description-list-span: 2;
 }
 
 .ui-description-list__row[data-span='3'] {
-  --ref-description-span: 3;
+  --ref-description-list-span: 3;
 }
 
 .ui-description-list__row[data-span='4'] {
-  --ref-description-span: 4;
+  --ref-description-list-span: 4;
 }
 
 /* A row covering the whole line, or more columns than the list has, spans the full line. */
@@ -53,7 +53,7 @@
 
 .ui-description-list__label {
   margin: 0;
-  font-weight: 600;
+  font-weight: var(--ref-font-weight-strong);
   overflow-wrap: break-word;
 }
 
@@ -70,12 +70,12 @@
 }
 
 .ui-description-list[data-layout='stacked'] {
-  grid-template-columns: repeat(var(--ref-description-columns), minmax(0, 1fr));
+  grid-template-columns: repeat(var(--ref-description-list-columns), minmax(0, 1fr));
   gap: 12px;
 }
 
 .ui-description-list[data-layout='stacked'] .ui-description-list__row {
-  grid-column: span var(--ref-description-span);
+  grid-column: span var(--ref-description-list-span);
   grid-template-columns: minmax(0, 1fr);
   gap: 4px;
 }
@@ -97,7 +97,7 @@
 
 @media (max-width: 44rem) {
   .ui-description-list.ui-description-list {
-    --ref-description-columns: 1;
+    --ref-description-list-columns: 1;
   }
 
   .ui-description-list .ui-description-list__row.ui-description-list__row {

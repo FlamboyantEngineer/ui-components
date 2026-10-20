@@ -10,13 +10,13 @@
 
 .ui-meter__label {
   grid-column: 1;
-  font-size: 13px;
+  font-size: var(--ref-font-size-md);
 }
 
 .ui-meter__value {
   grid-column: 2;
   color: var(--ref-muted);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
   font-variant-numeric: tabular-nums;
 }
 
@@ -24,7 +24,7 @@
   grid-column: 1 / -1;
   height: 6px;
   overflow: hidden;
-  border-radius: 999px;
+  border-radius: var(--ref-radius-full);
   background: var(--ref-border);
 }
 
@@ -40,7 +40,7 @@
   height: 100%;
   border-radius: inherit;
   background: var(--ref-accent);
-  transition: width 0.2s;
+  transition: width var(--ref-duration);
 }
 
 .ui-meter[data-tone='success'] .ui-meter__fill {

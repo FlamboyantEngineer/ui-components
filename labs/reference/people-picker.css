@@ -22,7 +22,7 @@
 .ui-people-picker__avatar.ui-avatar {
   width: 16px;
   height: 16px;
-  font-size: 7px;
+  font-size: var(--ref-font-size-2xs);
 }
 
 .ui-people-picker .ui-combobox__chip-icon:has(.ui-people-picker__avatar) {

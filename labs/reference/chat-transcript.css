@@ -28,7 +28,7 @@
 }
 
 .ui-chat-transcript__log > .ui-scroll-region__viewport:focus-visible {
-  outline: 2px solid var(--ref-focus);
+  outline: var(--ref-focus-ring);
   outline-offset: -2px;
 }
 
@@ -67,7 +67,7 @@
 .ui-chat-message[data-origin='system'] {
   align-self: center;
   color: var(--ref-muted);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }
 
 .ui-chat-message__avatar {
@@ -84,7 +84,7 @@
   display: flex;
   align-items: baseline;
   gap: 6px;
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }
 
 .ui-chat-message[data-origin='sent'] .ui-chat-message__header {
@@ -92,7 +92,7 @@
 }
 
 .ui-chat-message__author {
-  font-weight: 600;
+  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-chat-message__time {
@@ -101,7 +101,7 @@
 
 .ui-chat-message__content {
   padding: 6px 10px;
-  border-radius: 10px;
+  border-radius: var(--ref-radius-lg);
   background: var(--ref-surface);
   overflow-wrap: anywhere;
   white-space: pre-wrap;

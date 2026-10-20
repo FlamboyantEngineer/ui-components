@@ -62,7 +62,7 @@
 }
 
 .ui-toolbar-scroller > .ui-toolbar-scroller__scroll-button[data-edge][data-hovered] {
-  background: color-mix(in srgb, var(--ref-raised), var(--ref-text) 8%);
+  background: color-mix(in srgb, var(--ref-raised), var(--ref-text) var(--ref-tint-subtle));
 }
 
 .ui-toolbar-scroller__scroll-button[data-edge='start'] {

@@ -21,7 +21,7 @@
 
 .ui-number-field__group[data-focus-within] {
   border-color: var(--ref-focus);
-  outline: 1px solid var(--ref-focus);
+  outline: var(--ref-focus-ring-thin);
 }
 
 .ui-number-field__input {
@@ -124,7 +124,7 @@
   flex: none;
   align-items: center;
   color: var(--ref-muted);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }
 
 .ui-number-field__start {

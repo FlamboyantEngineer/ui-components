@@ -10,7 +10,7 @@
   border-radius: var(--ref-radius);
   background: var(--ref-surface);
   color: var(--ref-text);
-  font-size: 13px;
+  font-size: var(--ref-font-size-md);
 }
 
 .ui-problem-list[data-severity='error'] {
@@ -27,8 +27,8 @@
 
 .ui-problem-list__title {
   margin: 0;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--ref-font-size);
+  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-problem-list__summary {
@@ -70,7 +70,7 @@
 }
 
 .ui-problem-list__jump[data-focus-visible] {
-  outline: 2px solid var(--ref-focus);
+  outline: var(--ref-focus-ring);
   outline-offset: 1px;
 }
 
@@ -88,7 +88,7 @@
 }
 
 .ui-problem-list__label {
-  font-weight: 600;
+  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-problem-list__label::after {

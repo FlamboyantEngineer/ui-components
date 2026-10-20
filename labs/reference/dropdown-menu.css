@@ -1,7 +1,7 @@
 /* Dropdown Menu. The trigger is a Button or Icon Button. */
 
 .ui-dropdown-menu__caret {
-  transition: transform 0.1s;
+  transition: transform var(--ref-duration-fast);
 }
 
 .ui-dropdown-menu[data-open] .ui-dropdown-menu__caret {
@@ -27,7 +27,7 @@
 }
 
 .ui-dropdown-menu__toggle .ui-glyph {
-  transition: transform 0.1s;
+  transition: transform var(--ref-duration-fast);
 }
 
 .ui-dropdown-menu[data-open] .ui-dropdown-menu__toggle .ui-glyph {

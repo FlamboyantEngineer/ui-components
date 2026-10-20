@@ -51,7 +51,7 @@
 .ui-pdf-viewer__page-label,
 .ui-pdf-viewer__page-total {
   color: var(--ref-muted);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
   white-space: nowrap;
 }
 
@@ -64,7 +64,7 @@
   color: var(--ref-text);
   background: var(--ref-raised);
   font: inherit;
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }
 
 .ui-pdf-viewer__page-input {
@@ -74,7 +74,7 @@
 }
 
 .ui-pdf-viewer__page-input[data-focus-visible] {
-  outline: 2px solid var(--ref-focus);
+  outline: var(--ref-focus-ring);
   outline-offset: 1px;
 }
 
@@ -143,19 +143,19 @@
 }
 
 .ui-pdf-viewer__thumbnail[data-focus-visible] {
-  outline: 2px solid var(--ref-focus);
+  outline: var(--ref-focus-ring);
   outline-offset: -2px;
 }
 
 .ui-pdf-viewer__thumbnail-canvas {
   display: block;
-  background: #ffffff;
+  background: #ffffff; /* token-exempt: a page is white paper in both themes */
   box-shadow: 0 0 0 1px var(--ref-border);
 }
 
 .ui-pdf-viewer__thumbnail-label {
   color: var(--ref-muted);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
   font-variant-numeric: tabular-nums;
 }
 
@@ -180,7 +180,7 @@
 }
 
 .ui-pdf-viewer__scroller:focus-visible {
-  outline: 2px solid var(--ref-focus);
+  outline: var(--ref-focus-ring);
   outline-offset: -2px;
 }
 
@@ -197,7 +197,7 @@
 
 .ui-pdf-viewer__page {
   flex: none;
-  background: #ffffff;
+  background: #ffffff; /* token-exempt: a page is white paper in both themes */
   box-shadow: 0 0 0 1px var(--ref-border);
 }
 
@@ -266,18 +266,18 @@
 
 .ui-pdf-viewer__text-layer ::selection {
   color: transparent;
-  background: rgb(9 105 218 / 0.3);
+  background: color-mix(in srgb, var(--ref-accent) var(--ref-tint-strong), transparent);
 }
 
 .ui-pdf-viewer__match {
   margin: -1px;
   padding: 1px;
-  border-radius: 3px;
-  background: rgb(255 196 0 / 0.45);
+  border-radius: var(--ref-radius-sm);
+  background: var(--ref-highlight);
 }
 
 .ui-pdf-viewer__match[data-current] {
-  background: rgb(255 120 0 / 0.6);
+  background: var(--ref-highlight-current);
 }
 
 /* The engine positions each link as a percentage of the page; the layer passes the pointer through
@@ -292,14 +292,14 @@
 .ui-pdf-viewer__annotation-layer .linkAnnotation > a {
   position: absolute;
   inset: 0;
-  border-radius: 2px;
+  border-radius: var(--ref-radius-xs);
 }
 
 .ui-pdf-viewer__annotation-layer .linkAnnotation > a:hover {
-  background: rgb(255 196 0 / 0.25);
+  background: color-mix(in srgb, var(--ref-accent) var(--ref-tint), transparent);
 }
 
 .ui-pdf-viewer__annotation-layer .linkAnnotation > a:focus-visible {
-  outline: 2px solid var(--ref-focus);
+  outline: var(--ref-focus-ring);
   outline-offset: 1px;
 }

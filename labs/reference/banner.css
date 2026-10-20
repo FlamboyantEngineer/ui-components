@@ -10,32 +10,32 @@
   border-radius: var(--ref-radius);
   background: var(--ref-surface);
   color: var(--ref-text);
-  font-size: 13px;
+  font-size: var(--ref-font-size-md);
   line-height: 1.4;
-  transition: opacity 0.2s;
+  transition: opacity var(--ref-duration);
 }
 .ui-banner:focus-visible {
-  outline: 2px solid var(--ref-focus);
+  outline: var(--ref-focus-ring);
   outline-offset: 2px;
 }
 .ui-banner[data-tone='info'] {
-  border-color: color-mix(in srgb, var(--ref-info) 45%, var(--ref-canvas));
-  background: color-mix(in srgb, var(--ref-info) 8%, var(--ref-canvas));
+  border-color: color-mix(in srgb, var(--ref-info) var(--ref-tint-border), var(--ref-canvas));
+  background: color-mix(in srgb, var(--ref-info) var(--ref-tint-subtle), var(--ref-canvas));
 }
 .ui-banner[data-tone='success'] {
-  border-color: color-mix(in srgb, var(--ref-success) 45%, var(--ref-canvas));
-  background: color-mix(in srgb, var(--ref-success) 8%, var(--ref-canvas));
+  border-color: color-mix(in srgb, var(--ref-success) var(--ref-tint-border), var(--ref-canvas));
+  background: color-mix(in srgb, var(--ref-success) var(--ref-tint-subtle), var(--ref-canvas));
 }
 .ui-banner[data-tone='warning'] {
-  border-color: color-mix(in srgb, var(--ref-warning) 45%, var(--ref-canvas));
-  background: color-mix(in srgb, var(--ref-warning) 8%, var(--ref-canvas));
+  border-color: color-mix(in srgb, var(--ref-warning) var(--ref-tint-border), var(--ref-canvas));
+  background: color-mix(in srgb, var(--ref-warning) var(--ref-tint-subtle), var(--ref-canvas));
 }
 .ui-banner[data-tone='danger'] {
-  border-color: color-mix(in srgb, var(--ref-danger) 45%, var(--ref-canvas));
-  background: color-mix(in srgb, var(--ref-danger) 8%, var(--ref-canvas));
+  border-color: color-mix(in srgb, var(--ref-danger) var(--ref-tint-border), var(--ref-canvas));
+  background: color-mix(in srgb, var(--ref-danger) var(--ref-tint-subtle), var(--ref-canvas));
 }
 .ui-banner[data-entering] {
-  animation: ref-banner-enter 0.2s ease-out;
+  animation: ref-banner-enter var(--ref-duration) ease-out;
 }
 .ui-banner[data-exiting] {
   opacity: 0.75;
@@ -80,7 +80,7 @@
   min-width: 0;
 }
 .ui-banner__title {
-  font-weight: 600;
+  font-weight: var(--ref-font-weight-strong);
 }
 .ui-banner__description {
   overflow-wrap: anywhere;

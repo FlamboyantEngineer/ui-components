@@ -21,10 +21,10 @@
   height: 22px;
   padding: 0 8px;
   border: 1px solid var(--ref-border);
-  border-radius: 999px;
+  border-radius: var(--ref-radius-full);
   background: var(--ref-surface);
   color: var(--ref-text);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
   line-height: 1;
   cursor: default;
   outline: none;
@@ -33,13 +33,13 @@
 .ui-tag-group[data-size='sm'] .ui-tag-group__tag {
   height: 18px;
   padding: 0 6px;
-  font-size: 10px;
+  font-size: var(--ref-font-size-2xs);
 }
 
 .ui-tag-group[data-size='lg'] .ui-tag-group__tag {
   height: 26px;
   padding: 0 10px;
-  font-size: 14px;
+  font-size: var(--ref-font-size);
 }
 
 /* The remove button takes only its own width. */
@@ -48,23 +48,23 @@
 }
 
 .ui-tag-group__tag[data-tone='info'] {
-  border-color: color-mix(in srgb, var(--ref-info) 45%, var(--ref-canvas));
-  background: color-mix(in srgb, var(--ref-info) 10%, var(--ref-canvas));
+  border-color: color-mix(in srgb, var(--ref-info) var(--ref-tint-border), var(--ref-canvas));
+  background: color-mix(in srgb, var(--ref-info) var(--ref-tint-subtle), var(--ref-canvas));
 }
 
 .ui-tag-group__tag[data-tone='success'] {
-  border-color: color-mix(in srgb, var(--ref-success) 45%, var(--ref-canvas));
-  background: color-mix(in srgb, var(--ref-success) 10%, var(--ref-canvas));
+  border-color: color-mix(in srgb, var(--ref-success) var(--ref-tint-border), var(--ref-canvas));
+  background: color-mix(in srgb, var(--ref-success) var(--ref-tint-subtle), var(--ref-canvas));
 }
 
 .ui-tag-group__tag[data-tone='warning'] {
-  border-color: color-mix(in srgb, var(--ref-warning) 45%, var(--ref-canvas));
-  background: color-mix(in srgb, var(--ref-warning) 10%, var(--ref-canvas));
+  border-color: color-mix(in srgb, var(--ref-warning) var(--ref-tint-border), var(--ref-canvas));
+  background: color-mix(in srgb, var(--ref-warning) var(--ref-tint-subtle), var(--ref-canvas));
 }
 
 .ui-tag-group__tag[data-tone='danger'] {
-  border-color: color-mix(in srgb, var(--ref-danger) 45%, var(--ref-canvas));
-  background: color-mix(in srgb, var(--ref-danger) 10%, var(--ref-canvas));
+  border-color: color-mix(in srgb, var(--ref-danger) var(--ref-tint-border), var(--ref-canvas));
+  background: color-mix(in srgb, var(--ref-danger) var(--ref-tint-subtle), var(--ref-canvas));
 }
 
 .ui-tag-group__tag[data-hovered] {
@@ -77,12 +77,12 @@
 }
 
 .ui-tag-group__tag[data-focus-visible] {
-  outline: 2px solid var(--ref-focus);
+  outline: var(--ref-focus-ring);
   outline-offset: 1px;
 }
 
 .ui-tag-group__tag[data-disabled] {
-  opacity: 0.55;
+  opacity: var(--ref-disabled-opacity);
 }
 
 .ui-tag-group__label {
@@ -107,6 +107,6 @@
 
 .ui-tag-group__empty {
   color: var(--ref-muted);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
   font-style: italic;
 }

@@ -21,8 +21,8 @@
 
 .ui-mapping-table__table thead th {
   color: var(--ref-muted);
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--ref-font-size-sm);
+  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-mapping-table__row[data-duplicate] > .ui-mapping-table__column {
@@ -30,14 +30,14 @@
 }
 
 .ui-mapping-table__column {
-  font-weight: 600;
+  font-weight: var(--ref-font-weight-strong);
   white-space: nowrap;
 }
 
 .ui-mapping-table__samples {
   max-width: 240px;
   color: var(--ref-muted);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
 }
 
 .ui-mapping-table__sample {
@@ -71,7 +71,7 @@
 .ui-mapping-table__counts,
 .ui-mapping-table__problem {
   margin: 0;
-  font-size: 13px;
+  font-size: var(--ref-font-size-md);
 }
 
 .ui-mapping-table__counts {

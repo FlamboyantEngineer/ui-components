@@ -5,11 +5,11 @@
   vertical-align: middle;
   border-radius: var(--ref-radius);
   outline: 1px solid var(--ref-border);
-  background: #ffffff;
+  background: #ffffff; /* token-exempt: scanners need a white quiet zone */
 }
 
 .ui-qr-code__modules {
-  fill: #000000;
+  fill: #000000; /* token-exempt: scanners need black modules */
 }
 
 .ui-qr-code[data-invalid] {

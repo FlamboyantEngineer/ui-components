@@ -3,9 +3,27 @@
  * Theme: set data-theme="dark" on the root element.
  */
 
+/*
+ * Tokens. Every partial draws its colours, type, shape, focus, state opacity and motion from these;
+ * `npm run check:labs` rejects literal values that a token covers. Component-scoped tokens
+ * (`--ref-<component>-*`) are only for sizes one component varies by its own data attributes.
+ */
 :root {
+  /* Type */
   --ref-font: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --ref-mono: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  --ref-font-size-2xs: 10px;
+  --ref-font-size-xs: 11px;
+  --ref-font-size-sm: 12px;
+  --ref-font-size-md: 13px;
+  --ref-font-size: 14px;
+  --ref-font-size-lg: 16px;
+  --ref-font-size-xl: 20px;
+  --ref-font-size-2xl: 28px;
+  --ref-font-weight-medium: 500;
+  --ref-font-weight-strong: 600;
+
+  /* Surfaces and text */
   --ref-text: #1f2328;
   --ref-muted: #59636e;
   --ref-canvas: #ffffff;
@@ -16,22 +34,85 @@
   --ref-hover: rgb(31 35 40 / 0.06);
   --ref-pressed: rgb(31 35 40 / 0.12);
   --ref-selected: rgb(9 105 218 / 0.12);
-  --ref-accent: #0969da;
-  --ref-accent-text: #ffffff;
-  --ref-accent-ink: #0969da;
-  --ref-danger: #cf222e;
-  --ref-warning: #9a6700;
-  --ref-success: #1a7f37;
-  --ref-success-fill: #1a7f37;
-  /* A danger background under white text; it keeps its contrast in both themes. */
-  --ref-danger-fill: #cf222e;
-  --ref-info: #0969da;
-  --ref-focus: #0969da;
   --ref-shadow: 0 8px 24px rgb(66 74 83 / 0.2);
+  --ref-scrim: rgb(31 35 40 / 0.45);
+  /* Over a surface that is already dimmed, such as a drawer stacked on another. */
+  --ref-scrim-weak: rgb(31 35 40 / 0.2);
+
+  /* Accent and tones. Fills keep their contrast under --ref-on-fill in both themes; the plain tone
+     is for text, borders and marks on the canvas. */
+  --ref-accent: #0969da;
+  --ref-accent-ink: var(--ref-accent);
+  --ref-on-fill: #ffffff;
+  --ref-danger-fill: #cf222e;
+  --ref-success-fill: #1a7f37;
+  --ref-danger: var(--ref-danger-fill);
+  --ref-success: var(--ref-success-fill);
+  --ref-warning: #9a6700;
+  --ref-info: var(--ref-accent-ink);
+
+  /* Tints: how much of a tone mixes into the canvas (or into transparency) for washes, marks and
+     borders, e.g. color-mix(in srgb, var(--ref-danger) var(--ref-tint-subtle), var(--ref-canvas)). */
+  --ref-tint-subtle: 8%;
+  --ref-tint: 16%;
+  --ref-tint-strong: 30%;
+  --ref-tint-border: 45%;
+  --ref-tint-solid: 70%;
+  --ref-highlight: color-mix(in srgb, var(--ref-warning) var(--ref-tint-strong), transparent);
+  --ref-highlight-current: color-mix(
+    in srgb,
+    var(--ref-warning) var(--ref-tint-border),
+    transparent
+  );
+
+  /* Categories: series, avatars and other values told apart by colour. -fill keeps its contrast
+     under --ref-on-fill in both themes; the plain colour is for marks on the canvas. */
+  --ref-category-0-fill: #1d4ed8;
+  --ref-category-1-fill: #b45309;
+  --ref-category-2-fill: #6d28d9;
+  --ref-category-3-fill: #047857;
+  --ref-category-4-fill: #b91c1c;
+  --ref-category-5-fill: #0e7490;
+  --ref-category-6-fill: #be185d;
+  --ref-category-7-fill: #475569;
+  --ref-category-0: #0969da;
+  --ref-category-1: #bf8700;
+  --ref-category-2: #8250df;
+  --ref-category-3: #1a7f37;
+  --ref-category-4: #cf222e;
+  --ref-category-5: #0e7490;
+  --ref-category-6: #bf3989;
+  --ref-category-7: var(--ref-muted);
+
+  /* Shape */
+  --ref-radius-xs: 2px;
+  --ref-radius-sm: 4px;
   --ref-radius: 6px;
+  --ref-radius-lg: 8px;
+  --ref-radius-full: 999px;
+  /* One level of a hierarchy: trees, tree tables, timeline rows. */
+  --ref-indent: 20px;
+
+  /* Focus */
+  --ref-focus: var(--ref-accent-ink);
+  --ref-focus-ring: 2px solid var(--ref-focus);
+  /* Inside a field frame, whose border already adds a pixel. */
+  --ref-focus-ring-thin: 1px solid var(--ref-focus);
+  --ref-focus-halo: 0 0 0 2px var(--ref-canvas), 0 0 0 4px var(--ref-focus);
+  --ref-focus-inset: inset 0 0 0 2px var(--ref-focus);
+
+  /* State and motion */
+  --ref-disabled-opacity: 0.55;
+  --ref-dragging-opacity: 0.5;
+  --ref-duration-fast: 0.1s;
+  --ref-duration: 0.2s;
+  --ref-duration-slow: 0.4s;
+  /* One turn of a spinner, and one cycle of a pulse or a sliding bar. */
+  --ref-duration-spin: 0.8s;
+  --ref-duration-loop: 1.2s;
 
   color-scheme: light;
-  font: 14px/1.5 var(--ref-font);
+  font: var(--ref-font-size)/1.5 var(--ref-font);
   color: var(--ref-text);
   background: var(--ref-canvas);
 }
@@ -47,14 +128,21 @@
   --ref-hover: rgb(240 246 252 / 0.08);
   --ref-pressed: rgb(240 246 252 / 0.14);
   --ref-selected: rgb(56 139 253 / 0.2);
+  --ref-shadow: 0 8px 24px rgb(1 4 9 / 0.6);
+  --ref-scrim: rgb(1 4 9 / 0.7);
+  --ref-scrim-weak: rgb(1 4 9 / 0.3);
   --ref-accent: #1f6feb;
   --ref-accent-ink: #4493f8;
   --ref-danger: #ff7b72;
-  --ref-warning: #d29922;
   --ref-success: #3fb950;
-  --ref-info: #4493f8;
-  --ref-focus: #4493f8;
-  --ref-shadow: 0 8px 24px rgb(1 4 9 / 0.6);
+  --ref-warning: #d29922;
+  --ref-category-0: #4493f8;
+  --ref-category-1: #d29922;
+  --ref-category-2: #ab7df8;
+  --ref-category-3: #3fb950;
+  --ref-category-4: #ff7b72;
+  --ref-category-5: #39c5cf;
+  --ref-category-6: #f778ba;
 
   color-scheme: dark;
 }

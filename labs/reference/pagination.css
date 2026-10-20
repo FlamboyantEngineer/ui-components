@@ -2,7 +2,7 @@
 
 .ui-pagination {
   display: flex;
-  font-size: 13px;
+  font-size: var(--ref-font-size-md);
 }
 
 .ui-pagination__list {
@@ -32,7 +32,7 @@
   border-color: var(--ref-accent);
   background: var(--ref-selected);
   color: var(--ref-text);
-  font-weight: 600;
+  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-pagination__ellipsis {
@@ -44,5 +44,5 @@
 }
 
 .ui-pagination[data-disabled] {
-  opacity: 0.6;
+  opacity: var(--ref-disabled-opacity);
 }

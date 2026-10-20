@@ -4,7 +4,7 @@
   box-sizing: border-box;
   width: min(300px, calc(100vw - 24px));
   border: 1px solid var(--ref-border);
-  border-radius: 8px;
+  border-radius: var(--ref-radius-lg);
   background: var(--ref-raised);
   color: var(--ref-text);
   box-shadow: var(--ref-shadow);
@@ -12,11 +12,11 @@
 }
 
 .ui-tour[data-entering] {
-  animation: ref-fade 0.12s ease-out;
+  animation: ref-fade var(--ref-duration-fast) ease-out;
 }
 
 .ui-tour[data-exiting] {
-  animation: ref-fade 0.12s ease-in reverse;
+  animation: ref-fade var(--ref-duration-fast) ease-in reverse;
 }
 
 .ui-tour__arrow {
@@ -68,15 +68,15 @@
   flex: 1 1 auto;
   min-width: 0;
   margin: 0;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--ref-font-size);
+  font-weight: var(--ref-font-weight-strong);
   line-height: 1.4;
 }
 
 .ui-tour__progress {
   flex: none;
   color: var(--ref-muted);
-  font-size: 12px;
+  font-size: var(--ref-font-size-sm);
   font-variant-numeric: tabular-nums;
 }
 
@@ -104,17 +104,17 @@
   box-sizing: border-box;
   border-radius: var(--ref-radius);
   box-shadow:
-    0 0 0 4px var(--ref-focus),
-    0 0 0 9999px rgb(1 4 9 / 0.35);
+    0 0 0 4px var(--ref-accent-ink),
+    0 0 0 9999px var(--ref-scrim);
   transition:
-    top 0.15s ease,
-    left 0.15s ease,
-    width 0.15s ease,
-    height 0.15s ease;
+    top var(--ref-duration) ease,
+    left var(--ref-duration) ease,
+    width var(--ref-duration) ease,
+    height var(--ref-duration) ease;
 }
 
 .ui-tour__spotlight[data-target-missing] {
-  box-shadow: 0 0 0 9999px rgb(1 4 9 / 0.35);
+  box-shadow: 0 0 0 9999px var(--ref-scrim);
 }
 
 @media (prefers-reduced-motion: reduce) {
