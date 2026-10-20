@@ -37,12 +37,49 @@ test.describe('lab harness', () => {
     expect(await background(page)).toBe('rgb(13, 17, 23)');
     const chrome = page.locator('#lab-chrome');
     await expect(chrome.getByLabel('Stylesheet', { exact: true })).toHaveValue('reference');
-    await expect(chrome.getByLabel('Theme')).toHaveValue('dark');
+    await expect(chrome.getByLabel('Theme', { exact: true })).toHaveValue('dark');
 
     await lab.open('provider', { stylesheet: 'none', theme: 'night', themeAttribute: 'data-mode' });
     await expect(page.locator('html')).toHaveAttribute('data-mode', 'night');
     await expect(page.locator('html')).not.toHaveAttribute('data-theme', /.*/);
     await expect(chrome.getByLabel('Stylesheet', { exact: true })).toHaveValue('none');
+    await expect(chrome.getByLabel('Theme', { exact: true })).toHaveValue('custom');
+    await expect(chrome.getByLabel('Theme value')).toHaveValue('night');
+  });
+
+  test("UIC-LABS-2.2 follows the reader's colour scheme until a light or dark theme is chosen", async ({
+    page,
+    lab,
+  }) => {
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await lab.open('provider');
+    const chrome = page.locator('#lab-chrome');
+    await expect(chrome.getByLabel('Theme', { exact: true })).toHaveValue('system');
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    expect(await background(page)).toBe('rgb(13, 17, 23)');
+    await page.emulateMedia({ colorScheme: 'light' });
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+    expect(await background(page)).toBe('rgb(255, 255, 255)');
+
+    await chrome.getByLabel('Theme', { exact: true }).selectOption('dark');
+    await page.emulateMedia({ colorScheme: 'light' });
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    await expect(page).toHaveURL((url) => url.searchParams.get('theme') === 'dark');
+    await expect(chrome).toHaveCSS('color-scheme', 'dark');
+  });
+
+  test('UIC-LABS-2.5 applies the stylesheet and theme from the head, before the lab script runs', async ({
+    page,
+  }) => {
+    // Without the lab's own script, only the head can have applied the settings.
+    await page.route('**/build/provider.js', (route) => route.abort());
+    await page.goto(formatLabUrl('provider', { stylesheet: 'reference', theme: 'dark' }));
+    const link = page.locator('head > link#ui-lab-stylesheet');
+    await expect(link).toHaveAttribute('href', 'build/reference.css');
+    await expect(link).toHaveAttribute('blocking', 'render');
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    await expect(page.locator('html')).toHaveAttribute('data-lab-stylesheet-state', 'loaded');
+    expect(await background(page)).toBe('rgb(13, 17, 23)');
   });
 
   test('UIC-LABS-2.3 UIC-LABS-2.4 remembers a choice made in the chrome and writes it to the query string', async ({
@@ -58,7 +95,7 @@ test.describe('lab harness', () => {
     expect(await background(page)).toBe('rgb(1, 2, 3)');
     await expect(page).toHaveURL((url) => url.searchParams.get('stylesheet') === customSheet);
 
-    await chrome.getByLabel('Theme').fill('dark');
+    await chrome.getByLabel('Theme', { exact: true }).selectOption('dark');
     await expect(page).toHaveURL((url) => url.searchParams.get('theme') === 'dark');
 
     await page.goto('provider.html');
@@ -125,7 +162,7 @@ test.describe('lab harness', () => {
     await waitForLab(page);
     const chrome = page.locator('#lab-chrome');
     await chrome.getByLabel('Stylesheet', { exact: true }).selectOption('none');
-    await chrome.getByLabel('Theme', { exact: true }).fill('dark');
+    await chrome.getByLabel('Theme', { exact: true }).selectOption('dark');
     const links = page.locator('#lab-index a');
     const hrefs = await links.evaluateAll((elements) =>
       elements.map((element) => element.getAttribute('href')),

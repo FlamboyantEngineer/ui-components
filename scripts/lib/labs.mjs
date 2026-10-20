@@ -99,6 +99,18 @@ export function readLabMeta(name) {
   };
 }
 
+/**
+ * Applies the stylesheet and theme from the head, before the body is parsed, and keeps the lab
+ * content hidden until the stylesheet has loaded, so no page paints unstyled first. The chrome
+ * stays visible, so a slow custom stylesheet can still be changed.
+ */
+const settingsHead = `    <style>
+      html[data-lab-stylesheet-state='loading'] :is(#lab-root, #lab-index) {
+        visibility: hidden;
+      }
+    </style>
+    <script src="build/boot.js"></script>`;
+
 export function renderLabPage({ name, title, tier, group, description }) {
   return `<!doctype html>
 <html lang="en">
@@ -106,6 +118,7 @@ export function renderLabPage({ name, title, tier, group, description }) {
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%2F%3E" />
+${settingsHead}
     <meta name="lab-tier" content="${escapeHtml(tier)}" />
     <meta name="lab-group" content="${escapeHtml(group)}" />
     <meta name="description" content="${escapeHtml(description)}" />
@@ -157,6 +170,7 @@ ${body}      </section>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%2F%3E" />
+${settingsHead}
     <meta name="description" content="Every component lab, with a shared stylesheet picker." />
     <title>Labs</title>
     <script type="module" src="build/index.js"></script>

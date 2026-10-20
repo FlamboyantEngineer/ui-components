@@ -13,6 +13,7 @@ import {
   readSettings,
   rememberSettings,
   settingsSearch,
+  watchColorScheme,
   type LabSettings,
 } from './settings.js';
 
@@ -47,12 +48,32 @@ function markReady() {
   document.documentElement.dataset.labReady = 'true';
 }
 
+/**
+ * Applies `settings` now and again whenever the reader's colour scheme changes, which a system
+ * theme follows, and draws the chrome in the scheme a light or dark theme sets.
+ */
+function applyFollowingScheme(initial: LabSettings) {
+  let current = initial;
+  const apply = () => {
+    applySettings(current);
+    const host = document.getElementById('lab-chrome');
+    host?.style.setProperty('color-scheme', document.documentElement.dataset.labScheme ?? null);
+  };
+  apply();
+  watchColorScheme(apply);
+  return (next: LabSettings) => {
+    current = next;
+    apply();
+  };
+}
+
 /** Mounts the chrome in a shadow root so neither the chosen stylesheet nor the lab can restyle it. */
 function mountChrome(
   initial: LabSettings,
   onSettings: (settings: LabSettings) => void,
   index: boolean,
 ) {
+  const apply = applyFollowingScheme(initial);
   const host = document.getElementById('lab-chrome');
   if (!host) throw new Error('Lab page is missing #lab-chrome');
   host.setAttribute('aria-label', 'Lab settings');
@@ -70,7 +91,7 @@ function mountChrome(
   (shadow as ShadowRoot).append(container);
 
   const change = (settings: LabSettings) => {
-    applySettings(settings);
+    apply(settings);
     rememberSettings(settings, labStorage());
     history.replaceState(
       null,
@@ -100,7 +121,6 @@ function Ready({ children }: { children: ReactNode }) {
 /** Applies the stylesheet and theme, mounts the chrome, and renders the lab content into #lab-root. */
 export function mountLab(content: ReactNode, options: MountLabOptions = {}): void {
   const settings = readSettings(location.search, labStorage());
-  applySettings(settings);
   mountChrome(settings, () => {}, false);
 
   const root = document.getElementById('lab-root');
@@ -122,7 +142,6 @@ export function mountLab(content: ReactNode, options: MountLabOptions = {}): voi
 /** The index page: chrome plus links that carry the current settings into each lab. */
 export function mountIndex(): void {
   const settings = readSettings(location.search, labStorage());
-  applySettings(settings);
   const updateLinks = (next: LabSettings) => {
     for (const link of document.querySelectorAll<HTMLAnchorElement>('#lab-index a[href]')) {
       const page = link.getAttribute('href')?.split('?')[0] ?? '';

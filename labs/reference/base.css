@@ -1,6 +1,7 @@
 /*
  * Reference stylesheet base: theme variables, the document and the lab matrix.
- * Theme: set data-theme="dark" on the root element.
+ * Theme: data-theme="dark" on the root element draws the dark theme; "light" or no attribute the
+ * light one. The labs' theme picker writes it, following the reader's colour scheme by default.
  */
 
 /*
