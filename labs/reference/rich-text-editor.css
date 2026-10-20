@@ -19,6 +19,10 @@
   box-shadow: 0 0 0 1px var(--ref-focus);
 }
 
+.ui-rich-text-editor[data-dirty] .ui-rich-text-editor__frame {
+  border-color: var(--ref-dirty);
+}
+
 .ui-rich-text-editor[data-validation='invalid'] .ui-rich-text-editor__frame {
   border-color: var(--ref-danger);
 }

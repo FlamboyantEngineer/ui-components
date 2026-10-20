@@ -39,7 +39,11 @@
 }
 
 .ui-color-field[data-dirty] .ui-color-field__trigger {
-  border-inline-start: 3px solid var(--ref-info);
+  border-color: var(--ref-dirty);
+}
+
+.ui-color-field[data-dirty] .ui-color-field__group {
+  border-color: var(--ref-dirty);
 }
 
 .ui-color-field[data-validation='invalid'] .ui-color-field__trigger {
@@ -235,10 +239,6 @@
 .ui-color-field[data-readonly] .ui-color-field__group {
   border-style: dashed;
   background: var(--ref-surface);
-}
-
-.ui-color-field[data-dirty] .ui-color-field__group {
-  border-inline-start: 3px solid var(--ref-info);
 }
 
 .ui-color-field[data-validation='invalid'] .ui-color-field__group {

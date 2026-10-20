@@ -11,7 +11,7 @@
 }
 
 .ui-json-editor[data-dirty] .ui-code-editor {
-  border-inline-start: 3px solid var(--ref-info);
+  border-color: var(--ref-dirty);
 }
 
 .ui-json-editor[data-validation='warning'] .ui-code-editor {

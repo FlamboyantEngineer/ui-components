@@ -53,16 +53,16 @@
   box-shadow: 0 0 0 1px var(--ref-focus);
 }
 
+.ui-tree-select-field[data-dirty] .ui-tree-select-field__trigger {
+  border-color: var(--ref-dirty);
+}
+
 .ui-tree-select-field[data-validation='invalid'] .ui-tree-select-field__trigger {
   border-color: var(--ref-danger);
 }
 
 .ui-tree-select-field[data-validation='warning'] .ui-tree-select-field__trigger {
   border-color: var(--ref-warning);
-}
-
-.ui-tree-select-field[data-dirty] .ui-tree-select-field__trigger {
-  border-inline-start: 3px solid var(--ref-info);
 }
 
 .ui-tree-select-field[data-readonly] .ui-tree-select-field__trigger {

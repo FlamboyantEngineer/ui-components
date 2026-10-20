@@ -37,7 +37,11 @@
 }
 
 .ui-text-field[data-dirty] .ui-text-field__input {
-  border-inline-start: 3px solid var(--ref-info);
+  border-color: var(--ref-dirty);
+}
+
+.ui-text-field[data-dirty] .ui-text-field__group {
+  border-color: var(--ref-dirty);
 }
 
 .ui-text-field[data-validation='invalid'] .ui-text-field__input {
@@ -83,10 +87,6 @@
 .ui-text-field__group[data-focus-within] {
   border-color: var(--ref-focus);
   outline: var(--ref-focus-ring-thin);
-}
-
-.ui-text-field[data-dirty] .ui-text-field__group {
-  border-inline-start: 3px solid var(--ref-info);
 }
 
 .ui-text-field[data-validation='invalid'] .ui-text-field__group {

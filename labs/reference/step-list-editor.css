@@ -52,7 +52,7 @@
 }
 
 .ui-step-list-editor__step[data-dirty] {
-  border-inline-start: 3px solid var(--ref-accent);
+  border-color: var(--ref-dirty);
 }
 
 .ui-step-list-editor__step[data-dragging] {

@@ -47,16 +47,16 @@
   box-shadow: 0 0 0 1px var(--ref-focus);
 }
 
+.ui-relative-date-field[data-dirty] .ui-relative-date-field__trigger {
+  border-color: var(--ref-dirty);
+}
+
 .ui-relative-date-field__select[data-invalid] .ui-relative-date-field__trigger {
   border-color: var(--ref-danger);
 }
 
 .ui-relative-date-field[data-validation='warning'] .ui-relative-date-field__trigger {
   border-color: var(--ref-warning);
-}
-
-.ui-relative-date-field[data-dirty] .ui-relative-date-field__trigger {
-  border-inline-start: 3px solid var(--ref-info);
 }
 
 .ui-relative-date-field[data-readonly] .ui-relative-date-field__trigger {

@@ -65,16 +65,16 @@
   box-shadow: 0 0 0 1px var(--ref-focus);
 }
 
+.ui-select-field[data-dirty] .ui-select-field__trigger {
+  border-color: var(--ref-dirty);
+}
+
 .ui-select-field__select[data-invalid] .ui-select-field__trigger {
   border-color: var(--ref-danger);
 }
 
 .ui-select-field[data-validation='warning'] .ui-select-field__trigger {
   border-color: var(--ref-warning);
-}
-
-.ui-select-field[data-dirty] .ui-select-field__trigger {
-  border-inline-start: 3px solid var(--ref-info);
 }
 
 .ui-select-field[data-readonly] .ui-select-field__trigger {

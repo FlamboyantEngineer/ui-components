@@ -38,8 +38,8 @@
   background: var(--ref-surface);
 }
 
-.ui-pin-input[data-dirty] .ui-pin-input__cell:first-child {
-  border-inline-start: 3px solid var(--ref-info);
+.ui-pin-input[data-dirty] .ui-pin-input__cell {
+  border-color: var(--ref-dirty);
 }
 
 .ui-pin-input__cell[data-invalid] {

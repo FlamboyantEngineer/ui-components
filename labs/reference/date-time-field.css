@@ -28,16 +28,16 @@
   box-shadow: 0 0 0 1px var(--ref-focus);
 }
 
+.ui-date-time-field[data-dirty] .ui-date-time-field__group {
+  border-color: var(--ref-dirty);
+}
+
 .ui-date-time-field__picker[data-invalid] .ui-date-time-field__group {
   border-color: var(--ref-danger);
 }
 
 .ui-date-time-field[data-validation='warning'] .ui-date-time-field__group {
   border-color: var(--ref-warning);
-}
-
-.ui-date-time-field[data-dirty] .ui-date-time-field__group {
-  border-inline-start: 3px solid var(--ref-info);
 }
 
 .ui-date-time-field[data-readonly] .ui-date-time-field__group {
