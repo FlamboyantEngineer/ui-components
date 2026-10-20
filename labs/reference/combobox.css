@@ -194,7 +194,7 @@
 }
 
 .ui-combobox__option[data-selected] {
-  font-weight: var(--ref-font-weight-strong);
+  color: var(--ref-accent-ink);
 }
 
 .ui-combobox__option[data-disabled] {

@@ -1,4 +1,8 @@
-/* Field: label, control and buttons on one wrapping row; description and message below. */
+/*
+ * Field: label, control and buttons on one wrapping row; description and message below. A field keeps
+ * room for what its states add, so turning dirty, invalid or pending never moves its control or its
+ * neighbours: the restore button's place closes the control row, and the message keeps one line.
+ */
 
 .ui-field {
   display: flex;
@@ -84,6 +88,19 @@
   flex: none;
 }
 
+/* The 26 pixel restore button closes the row, and holds its place while the field is clean. */
+.ui-field > .ui-field-restore-button,
+.ui-field:not([data-dirty])::after {
+  order: 1;
+}
+
+.ui-field:not([data-dirty])::after {
+  content: '';
+  flex: none;
+  width: 26px;
+  height: 26px;
+}
+
 .ui-field__decoration {
   display: inline-flex;
   flex: none;
@@ -92,19 +109,19 @@
 
 .ui-field__description {
   flex: 0 0 100%;
+  order: 2;
   margin-top: 4px;
   color: var(--ref-muted);
   font-size: var(--ref-font-size-sm);
 }
 
-/* The message stays in the document as a live region; empty, it takes no room. */
+/* The message stays in the document as a live region, and keeps a line while empty. */
 .ui-field__message {
   flex: 0 0 100%;
-  font-size: var(--ref-font-size-sm);
-}
-
-.ui-field__message:not(:empty) {
+  order: 2;
+  min-height: 1lh;
   margin-top: 4px;
+  font-size: var(--ref-font-size-sm);
 }
 
 .ui-field__message[data-severity='error'] {

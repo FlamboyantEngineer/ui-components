@@ -13,9 +13,9 @@
   gap: 6px;
   box-sizing: border-box;
   max-width: 100%;
-  min-height: 32px;
+  min-height: 28px;
   margin: 0;
-  padding: 4px 8px;
+  padding: 0 8px;
   border: 1px solid transparent;
   border-radius: var(--ref-radius);
   background: transparent;
@@ -96,4 +96,14 @@
 
 .ui-inline-edit[data-invalid] .ui-inline-edit__control .ui-text-field__box {
   border-color: var(--ref-danger);
+}
+
+/* Fields here reserve no message line or restore place, so they stay as tall as their control. */
+.ui-inline-edit .ui-field:not([data-dirty])::after {
+  content: none;
+}
+
+.ui-inline-edit .ui-field__message:empty {
+  min-height: 0;
+  margin-top: 0;
 }

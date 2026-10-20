@@ -34,7 +34,6 @@
   border-color: var(--ref-accent);
   background: var(--ref-accent);
   color: var(--ref-on-fill);
-  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-state-machine-view__state[data-final] {

@@ -67,9 +67,6 @@
 .ui-segmented-choice__segment[data-pressed] {
   background: var(--ref-pressed);
 }
-.ui-segmented-choice__segment[data-selected] {
-  font-weight: var(--ref-font-weight-strong);
-}
 .ui-segmented-choice[data-inherited] .ui-segmented-choice__segment[data-selected] {
   color: var(--ref-muted);
 }

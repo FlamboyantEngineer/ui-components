@@ -32,7 +32,6 @@
   border-color: var(--ref-accent);
   background: var(--ref-selected);
   color: var(--ref-text);
-  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-pagination__ellipsis {

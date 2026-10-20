@@ -286,3 +286,13 @@
   min-width: 18px;
   padding: 0;
 }
+
+/* Fields here reserve no message line or restore place, so they stay as tall as their control. */
+.ui-format-toolbar .ui-field:not([data-dirty])::after {
+  content: none;
+}
+
+.ui-format-toolbar .ui-field__message:empty {
+  min-height: 0;
+  margin-top: 0;
+}

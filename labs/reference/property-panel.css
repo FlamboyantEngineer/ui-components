@@ -352,3 +352,13 @@
 .ui-property-icon-group[data-variant='segmented'] > * + * {
   border-inline-start: 1px solid var(--ref-border);
 }
+
+/* Fields here reserve no message line or restore place, so they stay as tall as their control. */
+.ui-property-row .ui-field:not([data-dirty])::after {
+  content: none;
+}
+
+.ui-property-row .ui-field__message:empty {
+  min-height: 0;
+  margin-top: 0;
+}

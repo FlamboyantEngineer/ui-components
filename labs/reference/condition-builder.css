@@ -94,3 +94,13 @@
 .ui-condition-builder__combinator {
   flex: none;
 }
+
+/* Fields here reserve no message line or restore place, so they stay as tall as their control. */
+.ui-condition-builder .ui-field:not([data-dirty])::after {
+  content: none;
+}
+
+.ui-condition-builder .ui-field__message:empty {
+  min-height: 0;
+  margin-top: 0;
+}

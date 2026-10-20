@@ -104,9 +104,6 @@
 .ui-steps__label {
   overflow-wrap: anywhere;
 }
-.ui-steps__item[data-current] .ui-steps__label {
-  font-weight: var(--ref-font-weight-strong);
-}
 .ui-steps__item[data-status='upcoming'] .ui-steps__label,
 .ui-steps__item[data-status='skipped'] .ui-steps__label {
   color: var(--ref-muted);

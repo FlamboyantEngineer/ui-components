@@ -126,7 +126,6 @@
 
 .ui-diagram-canvas__edge-label[data-selected] {
   color: var(--ref-accent-ink);
-  font-weight: var(--ref-font-weight-strong);
 }
 
 .ui-diagram-canvas__connection-preview {

@@ -70,6 +70,23 @@ describe('reference token check', () => {
     expect(result.stderr).toContain('a dirty field marks its whole frame');
   });
 
+  it('UIC-LABS-3.6 rejects state rules that size or place a box, unless marked exempt', () => {
+    const result = check({
+      'card.css': `.ui-card[data-selected] { font-weight: var(--ref-font-weight-strong); }
+.ui-card[data-validation='invalid'] .ui-card__message { margin-top: 4px; }
+.ui-card:hover { padding: 4px; }
+.ui-card[data-focus-within] { display: block; /* layout-exempt: a skip link */ }
+.ui-card[data-current] { color: var(--ref-text); background: var(--ref-canvas); }
+.ui-card:not([data-dirty])::after { width: 26px; }
+.ui-card[data-expanded] { height: 40px; }`,
+    });
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('card.css:1: font-weight changes with a state');
+    expect(result.stderr).toContain('card.css:2: margin-top changes with a state');
+    expect(result.stderr).toContain('card.css:3: padding changes with a state');
+    expect(result.stderr).not.toMatch(/card\.css:[4-7]:/);
+  });
+
   it('UIC-LABS-3.5 rejects unused, undefined, misnamed and duplicated tokens', () => {
     const result = check(
       {

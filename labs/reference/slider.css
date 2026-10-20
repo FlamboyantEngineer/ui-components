@@ -15,14 +15,6 @@
   --ref-slider-thumb: 20px;
 }
 
-/*
- * A drag maps the pointer's travel onto the track's length, so the track keeps its length while the
- * field turns dirty mid-drag: the control slot always leaves room for the 26 pixel restore button.
- */
-.ui-slider:not([data-dirty]) .ui-field__control {
-  margin-inline-end: calc(26px + 6px);
-}
-
 .ui-slider__box {
   display: flex;
   flex: 1 1 auto;

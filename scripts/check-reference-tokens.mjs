@@ -2,7 +2,7 @@
 // Verifies that the reference stylesheet draws on one token set (UIC-LABS-3.5): partials use the
 // base tokens instead of literal colours, radii, type, focus rings, state opacity and durations;
 // every token is defined once, used, and not a literal copy of another; component-scoped tokens
-// carry their partial's name.
+// carry their partial's name. A state rule never sizes or places a box (UIC-LABS-3.6).
 
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
@@ -11,10 +11,13 @@ const dirFlag = process.argv.indexOf('--dir');
 const referenceDir =
   dirFlag === -1 ? join(import.meta.dirname, '..', 'labs', 'reference') : process.argv[dirFlag + 1];
 const exemptMarker = 'token-exempt:';
+const layoutExemptMarker = 'layout-exempt:';
 const problems = [];
 
 const stripComments = (css) =>
-  css.replace(/\/\*[\s\S]*?\*\//g, (comment) => (comment.includes(exemptMarker) ? comment : ''));
+  css.replace(/\/\*[\s\S]*?\*\//g, (comment) =>
+    comment.includes(exemptMarker) || comment.includes(layoutExemptMarker) ? comment : '',
+  );
 
 /** Each declaration with its selector, property, value and line, from one stylesheet. */
 function readDeclarations(file) {
@@ -28,7 +31,9 @@ function readDeclarations(file) {
       /(--[\w-]+|[a-z-]+)\s*:\s*([^;]+);([ \t]*\/\*[\s\S]*?\*\/)?/g,
     )) {
       const line = css.slice(0, bodyStart + match.index).split('\n').length;
-      const isExempt = (match[3] ?? '').includes(exemptMarker);
+      const comment = match[3] ?? '';
+      const isExempt = comment.includes(exemptMarker);
+      const isLayoutExempt = comment.includes(layoutExemptMarker);
       declarations.push({
         file,
         selector,
@@ -36,6 +41,7 @@ function readDeclarations(file) {
         value: match[2].trim(),
         line,
         isExempt,
+        isLayoutExempt,
       });
     }
   }
@@ -56,10 +62,22 @@ const fontSizeValue =
   /^(?:inherit|[\d.]+(?:em|rem|%)|var\(--ref-font-size(?:-[\w]+)?\)|calc\(.*\))$/;
 const fontWeightValue = /^(?:inherit|normal|400|var\(--ref-font-weight-[a-z]+\))$/;
 const literalDuration = /(?<![\w.-])(?:\d*\.)?\d+m?s\b/;
+// States a person or a field moves through; read-only, expanded, editing, empty and loading are modes.
+const transientState =
+  /\[data-(?:selected|current|current-within|hovered|pressed|focused|focus-visible|focus-within|dirty|validation|pending|invalid|dragging|drop-target|disabled)[\]=]|:(?:hover|active|focus|focus-visible|focus-within|checked)\b/;
+const layoutProperty =
+  /^(?:display|font-(?:weight|size)|letter-spacing|line-height|(?:min-|max-)?(?:width|height|inline-size|block-size)|(?:padding|margin)(?:-[a-z-]+)?|border(?:-[a-z]+)*-width|(?:row-|column-)?gap|grid-template(?:-[a-z]+)?|flex(?:-basis)?)$/;
 
 for (const declaration of declarations) {
-  const { file, selector, property, value, isExempt } = declaration;
-  if (file === 'base.css' || property.startsWith('--') || isExempt) continue;
+  const { file, selector, property, value, isExempt, isLayoutExempt } = declaration;
+  if (file === 'base.css' || property.startsWith('--')) continue;
+  const isStateRule = transientState.test(selector.replace(/:not\([^)]*\)/g, ''));
+  if (isStateRule && layoutProperty.test(property) && !isLayoutExempt) {
+    problems.push(
+      `${where(declaration)}: ${property} changes with a state, so the state moves the layout; mark it with colour, background, outline, shadow or a positioned part`,
+    );
+  }
+  if (isExempt) continue;
   const parts = value.split(/\s+(?![^(]*\))/);
   if (colourLiteral.test(value))
     problems.push(`${where(declaration)}: literal colour in ${property}; use a colour token`);

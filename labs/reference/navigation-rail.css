@@ -150,7 +150,7 @@
 .ui-navigation-rail__item[data-current]
   > .ui-navigation-rail__group
   > .ui-navigation-rail__group-trigger {
-  font-weight: var(--ref-font-weight-strong);
+  color: var(--ref-accent-ink);
 }
 
 .ui-navigation-rail__link[data-focus-visible],

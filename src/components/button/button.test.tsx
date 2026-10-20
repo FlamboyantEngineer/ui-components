@@ -264,7 +264,7 @@ describe('Button', () => {
     expectHooksMatchSpec(document.body, 'BUTTON');
   });
 
-  it('UIC-BUTTON-2.2 keeps focus and label while pending and refuses presses', async () => {
+  it('UIC-BUTTON-2.2 keeps focus, icons and label while pending and refuses presses', async () => {
     const onPress = vi.fn();
     render(
       <Button isPending startIcon="plus" endIcon="chevron-down" onPress={onPress}>
@@ -276,11 +276,14 @@ describe('Button', () => {
     expect(button).toHaveAttribute('aria-disabled', 'true');
     expect(button).toHaveAttribute('data-pending', 'true');
     expect(screen.getByRole('progressbar', { name: 'Loading' })).toHaveClass('ui-button__spinner');
-    expect(button.querySelector('.ui-button__start-icon, .ui-button__end-icon')).toBeNull();
+    expect(button.querySelector('.ui-button__start-icon')).toBeInTheDocument();
+    expect(button.querySelector('.ui-button__end-icon')).toBeInTheDocument();
     expect(button).toHaveTextContent('Saving');
     await userEvent.click(button);
     expect(onPress).not.toHaveBeenCalled();
-    expectHooksMatchSpec(document.body, 'BUTTON', { slots: ['spinner', 'label'] });
+    expectHooksMatchSpec(document.body, 'BUTTON', {
+      slots: ['spinner', 'start-icon', 'label', 'end-icon'],
+    });
   });
 
   it('UIC-BUTTON-2.3 marks the current choice and respects caller toggle semantics', () => {

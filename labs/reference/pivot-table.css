@@ -56,3 +56,13 @@
 .ui-pivot-table__value[data-total] {
   font-weight: var(--ref-font-weight-strong);
 }
+
+/* Fields here reserve no message line or restore place, so they stay as tall as their control. */
+.ui-pivot-table__chooser .ui-field:not([data-dirty])::after {
+  content: none;
+}
+
+.ui-pivot-table__chooser .ui-field__message:empty {
+  min-height: 0;
+  margin-top: 0;
+}

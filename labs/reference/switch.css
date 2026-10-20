@@ -52,7 +52,7 @@
 }
 
 .ui-switch[data-pressed] .ui-switch__thumb {
-  width: 12px;
+  scale: 1.2 1;
 }
 
 .ui-switch[data-focus-visible] .ui-switch__track {
