@@ -2,7 +2,7 @@ import type { ReactNode, Ref } from 'react';
 import { Checkbox as AriaCheckbox } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, ControlSize } from '../../core/props.js';
 import { Glyph } from '../../core/provider.js';
 
 export interface CheckboxProps extends BaseProps, AriaLabellingProps {
@@ -29,6 +29,8 @@ export interface CheckboxProps extends BaseProps, AriaLabellingProps {
   inputRef?: Ref<HTMLInputElement> | undefined;
   /** `selection` binds the box to the selection of the list row, tree row or card it sits in. */
   slot?: 'selection' | undefined;
+  /** The row's height on the shared control scale, which sizes the box and label. Defaults to `md`. */
+  size?: ControlSize | undefined;
   /** The visible label. It names the checkbox, and pressing it toggles the box. */
   children?: ReactNode;
 }
@@ -45,9 +47,9 @@ export function cycleCheckState(value: boolean | null): boolean | null {
 }
 
 /** A tick box on a native checkbox input, with an optional visible label. */
-export function Checkbox({ children, className, ...rest }: CheckboxProps) {
+export function Checkbox({ children, size = 'md', className, ...rest }: CheckboxProps) {
   return (
-    <AriaCheckbox {...rest} {...hooks.root({ className, props: rest })}>
+    <AriaCheckbox {...rest} {...hooks.root({ className, props: rest, data: { size } })}>
       {({ isSelected, isIndeterminate }) => (
         <>
           <span {...hooks.slot('box')} aria-hidden="true">

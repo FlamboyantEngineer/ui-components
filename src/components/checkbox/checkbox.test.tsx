@@ -109,6 +109,9 @@ describe('Checkbox', () => {
     expect(root).toHaveClass('ui-checkbox', 'dense');
     expect(root).toHaveAttribute('data-test', 'option');
     expectHooksMatchSpec(container, 'CHECKBOX', { callerAttributes: ['data-test'] });
+    expect(root).toHaveAttribute('data-size', 'md');
+    const small = render(<Checkbox size="sm">Small</Checkbox>).container;
+    expect(small.querySelector('.ui-checkbox')).toHaveAttribute('data-size', 'sm');
   });
 
   it('UIC-CHECKBOX-1.1 submits its value, hands over its input and validates natively by default', () => {

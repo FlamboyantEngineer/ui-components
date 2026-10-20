@@ -171,4 +171,15 @@ describe('CheckboxGroup', () => {
     expect(screen.getByRole('group')).toHaveAttribute('id', 'toppings-control');
     expectHooksMatchSpec(container, 'CHECKBOX-GROUP', { callerAttributes: ['data-test'] });
   });
+
+  it('UIC-CHECKBOX-GROUP-1.1 UIC-FIELD-1.10 gives its checkboxes the field size', () => {
+    const { container } = render(
+      <CheckboxGroup label="Toppings" options={toppings} size="sm" selectAllLabel="All" />,
+    );
+    expect(root(container)).toHaveAttribute('data-size', 'sm');
+    const sizes = [...container.querySelectorAll('.ui-checkbox')].map((box) =>
+      box.getAttribute('data-size'),
+    );
+    expect(new Set(sizes)).toEqual(new Set(['sm']));
+  });
 });

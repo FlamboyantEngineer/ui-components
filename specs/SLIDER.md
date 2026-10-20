@@ -41,7 +41,7 @@ Verification: `src/components/slider/slider.test.tsx`, `e2e/slider.spec.ts`
 
 ### UIC-SLIDER-1.6 - Orientation and size
 
-`orientation` (`horizontal` by default, or `vertical`) shall lay the track out along that axis, publish `data-orientation` on the box, the track, the fill and the output, and turn the thumb's drag and arrow keys to that axis. `size` (`sm`, `md` by default, `lg`) shall publish `data-size` on the root.
+`orientation` (`horizontal` by default, or `vertical`) shall lay the track out along that axis, publish `data-orientation` on the box, the track, the fill and the output, and turn the thumb's drag and arrow keys to that axis. `size` (`xs`, `sm`, `md` by default, `lg`) is the field's size (UIC-FIELD-1.10), which also sizes the track and thumb.
 
 Implementation: `src/components/slider/slider.tsx`, `src/components/slider/slider-parts.tsx`, `labs/reference/slider.css`
 Verification: `src/components/slider/slider.test.tsx`, `e2e/slider.spec.ts`
@@ -136,7 +136,7 @@ Verification: `src/components/slider/slider.test.tsx`, `e2e/slider.spec.ts`
 | `ui-slider__mark-label`  | slot      |                           | A mark's label.                                                          |
 | `ui-slider__thumb`       | slot      |                           | A thumb, holding its hidden range input.                                 |
 | `ui-slider__thumb-label` | slot      |                           | A thumb's value, with `valueLabel="thumb"`.                              |
-| `data-size`              | attribute | `sm`, `md`, `lg`          | On the root: track and thumb size.                                       |
+| `data-size`              | attribute | `xs`, `sm`, `md`, `lg`    | On the root: track and thumb size.                                       |
 | `data-value-label`       | attribute | `output`, `thumb`, `none` | On the root: where the value shows.                                      |
 | `data-orientation`       | attribute | `horizontal`, `vertical`  | On the box, the track, the fill and the output (React Aria).             |
 | `data-in-range`          | state     | `true`                    | On a mark within the filled part.                                        |

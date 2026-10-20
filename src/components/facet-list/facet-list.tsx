@@ -67,6 +67,7 @@ function FacetOption({
   const formatted = option.count === undefined ? null : format(option.count);
   return (
     <Checkbox
+      size="sm"
       value={option.value}
       isDisabled={option.isDisabled}
       aria-label={formatted === null ? undefined : strings.labelWithCount(option.label, formatted)}

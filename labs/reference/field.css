@@ -15,6 +15,33 @@
   font-size: var(--ref-font-size-md);
 }
 
+/*
+ * Sizes. The control box takes the control height of the field's size, the buttons beside and
+ * inside it the size below, and the type the matching step; content never changes the box's height.
+ */
+.ui-field {
+  --ref-field-height: var(--ref-control-height-md);
+  --ref-field-button: var(--ref-control-height-sm);
+}
+
+.ui-field[data-size='xs'] {
+  --ref-field-height: var(--ref-control-height-xs);
+  --ref-field-button: var(--ref-control-height-xs);
+  font-size: var(--ref-font-size-xs);
+}
+
+.ui-field[data-size='sm'] {
+  --ref-field-height: var(--ref-control-height-sm);
+  --ref-field-button: var(--ref-control-height-xs);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-field[data-size='lg'] {
+  --ref-field-height: var(--ref-control-height-lg);
+  --ref-field-button: var(--ref-control-height-md);
+  font-size: var(--ref-font-size);
+}
+
 /* Stacked by default: the label takes its own line above the control. */
 .ui-field__label {
   flex: 0 0 100%;
@@ -48,7 +75,7 @@
   flex: 1 1 auto;
   min-width: 0;
   box-sizing: border-box;
-  height: 28px;
+  height: var(--ref-field-height);
   padding: 0 8px;
   border: 1px solid var(--ref-border);
   border-radius: var(--ref-radius);
@@ -88,7 +115,7 @@
   flex: none;
 }
 
-/* The 26 pixel restore button closes the row, and holds its place while the field is clean. */
+/* The restore button closes the row, and holds its place while the field is clean. */
 .ui-field > .ui-field-restore-button,
 .ui-field:not([data-dirty])::after {
   order: 1;
@@ -97,8 +124,8 @@
 .ui-field:not([data-dirty])::after {
   content: '';
   flex: none;
-  width: 26px;
-  height: 26px;
+  width: var(--ref-field-button);
+  height: var(--ref-field-button);
 }
 
 .ui-field__decoration {
@@ -113,6 +140,11 @@
   margin-top: 4px;
   color: var(--ref-muted);
   font-size: var(--ref-font-size-sm);
+}
+
+/* Small fields take smaller help and message type. */
+.ui-field:is([data-size='xs'], [data-size='sm']) :is(.ui-field__description, .ui-field__message) {
+  font-size: var(--ref-font-size-xs);
 }
 
 /* The message stays in the document as a live region, and keeps a line while empty. */
@@ -164,7 +196,7 @@
 
 .ui-field-previous-value .ui-field-restore-button {
   width: 22px;
-  min-height: 22px;
+  height: 22px;
 }
 
 /* A fieldset: a framed group under its legend. */

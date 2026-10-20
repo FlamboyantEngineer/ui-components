@@ -46,7 +46,8 @@
   align-items: center;
   column-gap: 8px;
   box-sizing: border-box;
-  min-height: 28px;
+  /* A row is as tall as a control of the menu's size; a description below makes it taller. */
+  min-height: var(--ref-control-height-md);
   padding: 2px 8px;
   border-radius: var(--ref-radius-sm);
   color: var(--ref-text);
@@ -57,13 +58,13 @@
 }
 
 .ui-menu[data-size='sm'] .ui-menu-item {
-  min-height: 24px;
+  min-height: var(--ref-control-height-sm);
   padding: 1px 6px;
   column-gap: 6px;
 }
 
 .ui-menu[data-size='lg'] .ui-menu-item {
-  min-height: 32px;
+  min-height: var(--ref-control-height-lg);
   padding: 4px 10px;
 }
 

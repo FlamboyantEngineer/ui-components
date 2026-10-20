@@ -11,7 +11,7 @@ test.describe('Load More lab', () => {
     await expect(counted).toHaveAccessibleName('Load more (12 remaining) messages');
     await expect(counted).toHaveClass(/ui-button/);
     const box = await counted.boundingBox();
-    expect(box?.height).toBe(26);
+    expect(box?.height).toBe(24);
     await expect(page.locator('[data-lab-cell="state=idle count=zero"] .ui-load-more')).toHaveText(
       'Load more (0 remaining)',
     );

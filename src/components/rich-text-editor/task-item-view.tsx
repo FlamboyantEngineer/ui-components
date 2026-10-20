@@ -36,6 +36,7 @@ export function TaskItemView({
     >
       <span {...hooks.slot('task-checkbox')} ref={box} contentEditable={false}>
         <Checkbox
+          size="sm"
           aria-label={strings.taskDone}
           isSelected={isChecked}
           isReadOnly={!isEditable}

@@ -5,6 +5,11 @@
   --ref-slider-thumb: 16px;
 }
 
+.ui-slider[data-size='xs'] {
+  --ref-slider-track: 2px;
+  --ref-slider-thumb: 10px;
+}
+
 .ui-slider[data-size='sm'] {
   --ref-slider-track: 2px;
   --ref-slider-thumb: 12px;

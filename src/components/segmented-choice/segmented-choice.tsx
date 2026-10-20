@@ -17,7 +17,7 @@ import type { PendingChangeHandler } from './pending-change.js';
 
 export type { SegmentedChoiceSelectionMode, SegmentedChoiceValue } from './choice-selection.js';
 
-export type SegmentedChoiceSize = Extract<Size, 'sm' | 'md' | 'lg'>;
+export type SegmentedChoiceSize = Extract<Size, 'xs' | 'sm' | 'md' | 'lg'>;
 
 /** `equal` divides the available width evenly; `content` sizes each segment to its label. */
 export type SegmentedChoiceSizing = 'equal' | 'content';
@@ -144,7 +144,11 @@ function Segment({ option, size, iconOnly, countMax }: SegmentProps) {
     >
       <SelectionIndicator className={hooks.slotClass('indicator')} />
       {option.icon ? (
-        <Icon {...toIconProps(option.icon)} size={size} className={hooks.slotClass('icon')} />
+        <Icon
+          {...toIconProps(option.icon)}
+          size={size === 'xs' ? 'sm' : size}
+          className={hooks.slotClass('icon')}
+        />
       ) : null}
       {showsIconOnly ? null : (
         <span {...hooks.slot('label', { label: option.label })}>{option.label}</span>

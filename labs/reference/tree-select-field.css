@@ -31,7 +31,7 @@
   min-width: 0;
   max-width: 100%;
   box-sizing: border-box;
-  height: 28px;
+  height: var(--ref-field-height);
   padding: 0 8px;
   border: 1px solid var(--ref-border);
   border-radius: var(--ref-radius);
@@ -100,8 +100,8 @@
 
 .ui-tree-select-field__clear.ui-icon-button {
   flex: none;
-  width: 20px;
-  min-height: 20px;
+  width: calc(var(--ref-field-height) - 8px);
+  height: calc(var(--ref-field-height) - 8px);
   border-radius: 50%;
 }
 

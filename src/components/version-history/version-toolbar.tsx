@@ -72,6 +72,7 @@ export function VersionToolbar({
       {filter ? (
         <>
           <Switch
+            size="sm"
             className={hooks.slotClass('named-only')}
             isSelected={filter.namedOnly}
             onChange={(namedOnly) => onFilterChange({ ...filter, namedOnly })}

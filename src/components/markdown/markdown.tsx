@@ -139,7 +139,7 @@ function renderTask(node: MarkdownListItem, checked: boolean, context: RenderCon
   const blocks = first?.type === 'paragraph' ? rest : node.children;
   return (
     <li {...hooks.slot('task')}>
-      <Checkbox isReadOnly isSelected={checked}>
+      <Checkbox size="sm" isReadOnly isSelected={checked}>
         {renderAll(label, context)}
       </Checkbox>
       {renderAll(blocks, context)}

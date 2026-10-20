@@ -1,13 +1,33 @@
-/* Switch: a 30 by 18 pixel track with a sliding thumb, before its label. */
+/*
+ * Switch: a 30 by 18 pixel track with a sliding thumb, before its label, in a row as tall as a
+ * control of its size; a label that wraps makes the row taller.
+ */
 
 .ui-switch {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  min-height: 24px;
+  min-height: var(--ref-control-height-md);
   font-size: var(--ref-font-size-md);
+  /* Its own line height, so the type around it never makes the row taller than its size. */
+  line-height: 1.25;
   vertical-align: middle;
   cursor: pointer;
+}
+
+.ui-switch[data-size='xs'] {
+  min-height: var(--ref-control-height-xs);
+  font-size: var(--ref-font-size-xs);
+}
+
+.ui-switch[data-size='sm'] {
+  min-height: var(--ref-control-height-sm);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-switch[data-size='lg'] {
+  min-height: var(--ref-control-height-lg);
+  font-size: var(--ref-font-size);
 }
 
 .ui-switch + .ui-switch {

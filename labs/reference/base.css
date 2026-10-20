@@ -93,6 +93,15 @@
   /* One level of a hierarchy: trees, tree tables, timeline rows. */
   --ref-indent: 20px;
 
+  /*
+   * Control heights: every single-line control of one size (button, field box, menu row, segment,
+   * search box) takes the height of its `data-size`, whatever its content.
+   */
+  --ref-control-height-xs: 20px;
+  --ref-control-height-sm: 24px;
+  --ref-control-height-md: 28px;
+  --ref-control-height-lg: 32px;
+
   /* Focus */
   --ref-focus: var(--ref-accent-ink);
   --ref-focus-ring: 2px solid var(--ref-focus);

@@ -20,7 +20,7 @@ import type {
 } from '../field/field.js';
 import { IconButton } from '../icon-button/icon-button.js';
 
-export type SearchFieldSize = Extract<Size, 'sm' | 'md'>;
+export type SearchFieldSize = Extract<Size, 'xs' | 'sm' | 'md' | 'lg'>;
 
 /** Where a search box's label sits: on the input only, or drawn above the box. */
 export type SearchFieldLabelLayout = Extract<FieldLabelLayout, 'label-control' | 'control-only'>;

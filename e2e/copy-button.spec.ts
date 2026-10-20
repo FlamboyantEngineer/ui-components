@@ -15,7 +15,7 @@ test.describe('Copy Button lab', () => {
         async (size) => (await button('rest', 'ghost', size).boundingBox())?.height,
       ),
     );
-    expect(sizes).toEqual([22, 26, 32, 38]);
+    expect(sizes).toEqual([20, 24, 28, 32]);
     await lab.expectAccessible();
   });
 

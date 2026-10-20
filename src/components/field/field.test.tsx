@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { TextField } from '../../../test/field-fixtures.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { TextMatchProvider } from '../text-match/text-match.js';
+import type { ControlSize } from '../../core/props.js';
 import type { FieldLabelLayout } from './field.js';
 
 function root(container: HTMLElement) {
@@ -141,6 +142,32 @@ describe('Field', () => {
     expect(input?.id).toMatch(/-control$/);
     expect(input?.getAttribute('aria-labelledby')).toBe(input?.id.replace(/-control$/, '-label'));
     expect(root(generated)).not.toHaveAttribute('id');
+  });
+
+  it('UIC-FIELD-1.10 publishes its size and sizes its buttons one step below', () => {
+    const sizesOf = (size?: ControlSize) => {
+      const { container, unmount } = render(
+        <TextField
+          size={size}
+          options={{ value: 'Pear', committedValue: 'Apple' }}
+          help="Tip"
+          menu={['clear']}
+        />,
+      );
+      expectHooksMatchSpec(container, 'FIELD');
+      const sizes = [
+        root(container),
+        ...['.ui-field-restore-button', '.ui-field__help', '.ui-field__menu'].map((selector) =>
+          container.querySelector(selector),
+        ),
+      ].map((element) => element?.getAttribute('data-size'));
+      unmount();
+      return sizes;
+    };
+    expect(sizesOf()).toEqual(['md', 'sm', 'sm', 'sm']);
+    expect(sizesOf('xs')).toEqual(['xs', 'xs', 'xs', 'xs']);
+    expect(sizesOf('sm')).toEqual(['sm', 'xs', 'xs', 'xs']);
+    expect(sizesOf('lg')).toEqual(['lg', 'md', 'md', 'md']);
   });
 
   it('UIC-FIELD-2.3 publishes dirty state while the value differs from the committed value', async () => {

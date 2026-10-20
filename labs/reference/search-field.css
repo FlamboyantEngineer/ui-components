@@ -1,25 +1,40 @@
-/* Search Field: glyph, input and clear button in one frame. */
+/* Search Field: glyph, input and clear button in one frame as tall as a control of its size. */
 
 .ui-search-field {
+  --ref-search-field-height: var(--ref-control-height-md);
   display: inline-flex;
   align-items: center;
   gap: 6px;
   box-sizing: border-box;
   width: 240px;
   max-width: 100%;
-  height: 32px;
+  height: var(--ref-search-field-height);
   padding: 0 4px 0 8px;
   border: 1px solid var(--ref-border);
   border-radius: var(--ref-radius);
   background: var(--ref-canvas);
-  font-size: var(--ref-font-size);
+  font-size: var(--ref-font-size-md);
   vertical-align: middle;
 }
 
+.ui-search-field[data-size='xs'] {
+  --ref-search-field-height: var(--ref-control-height-xs);
+  font-size: var(--ref-font-size-xs);
+}
+
 .ui-search-field[data-size='sm'] {
-  height: 26px;
-  border-radius: var(--ref-radius-full);
+  --ref-search-field-height: var(--ref-control-height-sm);
   font-size: var(--ref-font-size-sm);
+}
+
+.ui-search-field[data-size='lg'] {
+  --ref-search-field-height: var(--ref-control-height-lg);
+  font-size: var(--ref-font-size);
+}
+
+.ui-search-field:is([data-size='xs'], [data-size='sm']),
+.ui-search-field:is([data-size='xs'], [data-size='sm']) .ui-search-field__group {
+  border-radius: var(--ref-radius-full);
 }
 
 .ui-search-field:focus-within {
@@ -43,7 +58,7 @@
   color: var(--ref-muted);
 }
 
-.ui-search-field[data-size='sm'] .ui-search-field__glyph {
+.ui-search-field:is([data-size='xs'], [data-size='sm']) .ui-search-field__glyph {
   width: 14px;
   height: 14px;
 }
@@ -72,6 +87,12 @@
   flex: none;
 }
 
+/* The clear button fits inside the frame at every size. */
+.ui-search-field .ui-search-field__clear.ui-icon-button {
+  width: calc(var(--ref-search-field-height) - 6px);
+  height: calc(var(--ref-search-field-height) - 6px);
+}
+
 /* The label-control layout: the label above, the group as the box, the messages below. */
 .ui-search-field[data-label-layout='label-control'] {
   flex-direction: column;
@@ -98,16 +119,11 @@
   align-items: center;
   gap: 6px;
   box-sizing: border-box;
-  height: 32px;
+  height: var(--ref-search-field-height);
   padding: 0 4px 0 8px;
   border: 1px solid var(--ref-border);
   border-radius: var(--ref-radius);
   background: var(--ref-canvas);
-}
-
-.ui-search-field[data-size='sm'] .ui-search-field__group {
-  height: 26px;
-  border-radius: var(--ref-radius-full);
 }
 
 .ui-search-field__group[data-focus-within] {

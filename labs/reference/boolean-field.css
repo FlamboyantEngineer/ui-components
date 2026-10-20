@@ -15,7 +15,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  min-height: 24px;
+  min-height: var(--ref-field-height);
   cursor: pointer;
 }
 
@@ -78,7 +78,7 @@
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  height: 28px;
+  height: var(--ref-field-height);
   padding: 0 10px;
   border: 1px solid var(--ref-border);
   border-radius: var(--ref-radius);

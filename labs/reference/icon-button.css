@@ -6,8 +6,8 @@
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  width: 32px;
-  min-height: 32px;
+  width: var(--ref-control-height-md);
+  height: var(--ref-control-height-md);
   padding: 0;
   border: 1px solid var(--ref-border);
   border-radius: var(--ref-radius);
@@ -23,16 +23,16 @@
 }
 
 .ui-icon-button[data-size='xs'] {
-  width: 22px;
-  min-height: 22px;
+  width: var(--ref-control-height-xs);
+  height: var(--ref-control-height-xs);
 }
 .ui-icon-button[data-size='sm'] {
-  width: 26px;
-  min-height: 26px;
+  width: var(--ref-control-height-sm);
+  height: var(--ref-control-height-sm);
 }
 .ui-icon-button[data-size='lg'] {
-  width: 38px;
-  min-height: 38px;
+  width: var(--ref-control-height-lg);
+  height: var(--ref-control-height-lg);
 }
 
 .ui-icon-button[data-hovered] {
@@ -81,18 +81,15 @@
   background: var(--ref-hover);
 }
 .ui-icon-button[data-variant='chip'] {
-  min-height: 22px;
   padding: 0 8px;
   border-radius: var(--ref-radius-full);
 }
 .ui-icon-button[data-variant='link'] {
-  min-height: 0;
   border: 0;
   background: none;
   color: var(--ref-accent-ink);
 }
 .ui-icon-button[data-variant='bare'] {
-  min-height: 0;
   border: 0;
   background: none;
   color: inherit;

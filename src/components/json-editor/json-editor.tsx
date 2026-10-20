@@ -32,7 +32,7 @@ const hooks = createHooks('json-editor', ['format']);
  * and a Format button that rewrites valid text with standard indentation. It commits when it loses
  * focus and when the text is formatted. Blank text is valid unless the field is required.
  */
-export function JsonEditor(props: JsonEditorProps) {
+export function JsonEditor({ size = 'md', ...props }: JsonEditorProps) {
   const strings = useUiStrings();
   const { schema } = props;
   const { state, field, rest } = useFieldControl<string, JsonEditorProps>(props, {
@@ -40,7 +40,7 @@ export function JsonEditor(props: JsonEditorProps) {
     emptyValue: '',
     check: (value) => checkJsonText(value, schema, strings).issue,
   });
-  const { indent = 2, size = 'md', lineNumbers = true, placeholder, autoCloseBrackets } = rest;
+  const { indent = 2, lineNumbers = true, placeholder, autoCloseBrackets } = rest;
   const formatted = formatJson(state.value, indent);
   const { diagnostics } = checkJsonText(state.value, schema, strings);
   const completions = useMemo(() => (schema ? createJsonCompletion(schema) : undefined), [schema]);
@@ -62,7 +62,12 @@ export function JsonEditor(props: JsonEditorProps) {
     </Button>
   );
   return (
-    <Field state={state} {...field} className={mergeClassNames(hooks.className, field.className)}>
+    <Field
+      state={state}
+      {...field}
+      size={size}
+      className={mergeClassNames(hooks.className, field.className)}
+    >
       {(control) => (
         <CodeEditor
           id={control.id}

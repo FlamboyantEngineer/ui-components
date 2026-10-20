@@ -1,11 +1,12 @@
 import { useCallback, useState, type ReactNode } from 'react';
-import type { BaseProps, Key } from '../../core/props.js';
+import type { BaseProps, ControlSize, Key } from '../../core/props.js';
 import { createSlotRegistry } from '../../utils/slot-registry.js';
 import {
   FieldContextMenu,
   FieldMenuButton,
   useFieldMenu,
   type FieldMenuEntry,
+  type FieldMenuModel,
 } from './field-menu.js';
 import {
   FieldHelp,
@@ -13,6 +14,7 @@ import {
   FieldMessage,
   fieldHooks as hooks,
   toFieldControlProps,
+  toInnerControlSize,
   useFieldIds,
   type FieldControlProps,
   type FieldLabelLayout,
@@ -30,6 +32,11 @@ export interface FieldProps<T> extends BaseProps {
   label: string;
   /** Where the label sits against the control. Defaults to `label-control`. */
   labelLayout?: FieldLabelLayout | undefined;
+  /**
+   * The control's height on the shared control scale, which sizes the field's type and its
+   * buttons with it. Defaults to `md`.
+   */
+  size?: ControlSize | undefined;
   /** Help text below the control, which describes it. */
   description?: ReactNode;
   /** Help shown in a tooltip from a help button after the control. */
@@ -65,6 +72,35 @@ function toFieldStates(state: FieldState<unknown>) {
   };
 }
 
+/** The buttons after the control, one size below the field: restore while dirty, help and menu. */
+function FieldButtons({
+  label,
+  size,
+  help,
+  menu,
+  onRestore,
+}: {
+  label: string;
+  size: ControlSize;
+  help: { id: string; content: ReactNode } | null;
+  menu: FieldMenuModel | null;
+  onRestore: (() => void) | null;
+}) {
+  return (
+    <>
+      {onRestore ? <FieldRestoreButton label={label} size={size} onPress={onRestore} /> : null}
+      {help ? (
+        <FieldHelp id={help.id} label={label} size={size}>
+          {help.content}
+        </FieldHelp>
+      ) : null}
+      {menu ? (
+        <FieldMenuButton model={menu} size={size} className={hooks.slotClass('menu')} />
+      ) : null}
+    </>
+  );
+}
+
 /**
  * Lays out a field around its control: the label, the control, the restore, help and menu buttons,
  * the host's decoration, the description and the validation message. It gives the control its ids
@@ -75,6 +111,7 @@ export function Field<T>({
   state,
   label,
   labelLayout = 'label-control',
+  size = 'md',
   description,
   help,
   decoration,
@@ -110,6 +147,7 @@ export function Field<T>({
   };
   const data = {
     labelLayout,
+    size,
     ...toFieldStates(state as FieldState<unknown>),
     focused: focus.isFocused,
   };
@@ -126,15 +164,13 @@ export function Field<T>({
         {labelLayout === 'control-label' ? null : labelElement}
         <div {...hooks.slot('control')}>{children(control)}</div>
         {labelLayout === 'control-label' ? labelElement : null}
-        {state.isDirty ? <FieldRestoreButton label={label} size="sm" onPress={restore} /> : null}
-        {help ? (
-          <FieldHelp id={ids.help} label={label}>
-            {help}
-          </FieldHelp>
-        ) : null}
-        {menu.length > 0 ? (
-          <FieldMenuButton model={menuModel} className={hooks.slotClass('menu')} />
-        ) : null}
+        <FieldButtons
+          label={label}
+          size={toInnerControlSize(size)}
+          help={help ? { id: ids.help, content: help } : null}
+          menu={menu.length > 0 ? menuModel : null}
+          onRestore={state.isDirty ? restore : null}
+        />
         {decoration ? (
           <div {...hooks.slot('decoration')} id={ids.decoration}>
             {decoration}

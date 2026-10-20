@@ -237,7 +237,7 @@ export function ListViewItem({
         <>
           {allowsDragging ? <DragHandle className={itemHooks.slotClass('drag-handle')} /> : null}
           {selectionMode !== 'none' && selectionBehavior === 'toggle' ? (
-            <Checkbox slot="selection" className={itemHooks.slotClass('checkbox')} />
+            <Checkbox size="sm" slot="selection" className={itemHooks.slotClass('checkbox')} />
           ) : null}
           <ListRowContent title={title} meta={meta} icon={icon} leading={leading} />
           {isEmptyNode(trailing) ? null : <div {...itemHooks.slot('trailing')}>{trailing}</div>}

@@ -1,11 +1,14 @@
-/* Combobox */
+/* Combobox: a frame as tall as a control of its size; chosen chips that wrap make it taller. */
 
 .ui-combobox {
+  --ref-combobox-height: var(--ref-control-height-md);
   display: inline-grid;
   gap: 4px;
   width: 240px;
   max-width: 100%;
   font-size: var(--ref-font-size-md);
+  /* Its own line height, so the type around it never makes the frame taller than its size. */
+  line-height: 1.25;
   vertical-align: top;
 }
 
@@ -18,20 +21,26 @@
   align-items: center;
   gap: 4px;
   box-sizing: border-box;
-  min-height: 32px;
+  min-height: var(--ref-combobox-height);
   padding: 0 4px 0 8px;
   border: 1px solid var(--ref-border);
   border-radius: var(--ref-radius);
   background: var(--ref-canvas);
 }
 
+.ui-combobox[data-size='sm'] {
+  --ref-combobox-height: var(--ref-control-height-sm);
+}
+
 .ui-combobox[data-size='sm'] .ui-combobox__field {
-  min-height: 26px;
   font-size: var(--ref-font-size-sm);
 }
 
+.ui-combobox[data-size='lg'] {
+  --ref-combobox-height: var(--ref-control-height-lg);
+}
+
 .ui-combobox[data-size='lg'] .ui-combobox__field {
-  min-height: 38px;
   font-size: var(--ref-font-size);
 }
 
@@ -83,15 +92,8 @@
 
 .ui-combobox :is(.ui-combobox__clear.ui-icon-button, .ui-combobox__button) {
   flex: none;
-  width: 22px;
-  min-height: 22px;
-  height: 22px;
-}
-
-.ui-combobox[data-size='sm'] :is(.ui-combobox__clear.ui-icon-button, .ui-combobox__button) {
-  width: 18px;
-  min-height: 18px;
-  height: 18px;
+  width: calc(var(--ref-combobox-height) - 6px);
+  height: calc(var(--ref-combobox-height) - 6px);
 }
 
 .ui-combobox__button {
@@ -162,9 +164,11 @@
   gap: 1px;
 }
 
+/* Like the select field's list, a long list scrolls within 20rem, or less where there is less room. */
 .ui-combobox__listbox {
   flex: 1 1 auto;
   min-height: 0;
+  max-height: 20rem;
   padding: 4px;
   overflow: auto;
   outline: none;

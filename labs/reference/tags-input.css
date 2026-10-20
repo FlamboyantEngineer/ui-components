@@ -8,7 +8,8 @@
   gap: 4px;
   min-width: 0;
   box-sizing: border-box;
-  min-height: 28px;
+  /* One line at the field's height; more tags wrap onto more lines. */
+  min-height: var(--ref-field-height);
   padding: 2px 4px 2px 6px;
   border: 1px solid var(--ref-border);
   border-radius: var(--ref-radius);
@@ -44,6 +45,15 @@
   opacity: var(--ref-disabled-opacity);
 }
 
+/* The tags fit inside the box at every size: one line keeps the field's height. */
+.ui-tags-input .ui-tag-group__tag {
+  height: calc(var(--ref-field-height) - 6px);
+}
+
+.ui-tags-input:is([data-size='xs'], [data-size='sm']) .ui-tag-group__tag {
+  font-size: var(--ref-font-size-2xs);
+}
+
 /* The tags take only their own width, so a press beside them reaches the frame. */
 .ui-tags-input .ui-tags-input__tags {
   flex: 0 1 auto;
@@ -55,7 +65,7 @@
   flex: 1 1 80px;
   min-width: 80px;
   box-sizing: border-box;
-  height: 22px;
+  height: calc(var(--ref-field-height) - 6px);
   padding: 0 2px;
   border: 0;
   background: none;

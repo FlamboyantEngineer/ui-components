@@ -30,6 +30,9 @@ export type NativeProps<E extends keyof JSX.IntrinsicElements> = Omit<
 /** Block and box sizes. A component that offers fewer derives its own with `Extract<Size, …>`. */
 export type Size = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 
+/** The sizes of single-line controls: every control of one size shares one height. */
+export type ControlSize = Extract<Size, 'xs' | 'sm' | 'md' | 'lg'>;
+
 /** Semantic tones for status, feedback and emphasis. */
 export type Tone = 'neutral' | 'info' | 'success' | 'warning' | 'danger';
 

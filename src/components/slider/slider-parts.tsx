@@ -12,7 +12,7 @@ import type { Orientation, Size } from '../../core/props.js';
 import { clamp } from '../../utils/clamp.js';
 import type { FieldControlProps, FieldInputProps, FieldState } from '../field/field.js';
 
-export type SliderSize = Extract<Size, 'sm' | 'md' | 'lg'>;
+export type SliderSize = Extract<Size, 'xs' | 'sm' | 'md' | 'lg'>;
 
 /** Where the value shows: in an output beside the track, in a label on each thumb, or nowhere. */
 export type SliderValueLabel = 'output' | 'thumb' | 'none';

@@ -64,6 +64,7 @@ export function BlockTypeSelect({ controller, className, onCommand }: OverlayCon
   };
   return (
     <SelectField
+      size="sm"
       className={className}
       label={strings.blockType}
       labelLayout="control-only"

@@ -82,6 +82,7 @@ const stateKeys = new Set<string>([
 const layoutKeys = new Set<string>([
   'label',
   'labelLayout',
+  'size',
   'description',
   'help',
   'decoration',

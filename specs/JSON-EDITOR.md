@@ -6,7 +6,7 @@
 
 ### UIC-JSON-EDITOR-1.1 - Field around a code editor
 
-`JsonEditor` shall render a `Field` (root `ui-field`, also `ui-json-editor`) whose control is a `CodeEditor` text area named by the field's label, with line numbers unless `lineNumbers` is `false`, long lines scrolling sideways (`wrap="off"`), the starting height of `size` (`md` by default) and the caller's `placeholder`. It takes the field props (`FieldInputProps<string>`), and the caller's `className`, `id` and `data-*` attributes go on the field's root.
+`JsonEditor` shall render a `Field` (root `ui-field`, also `ui-json-editor`) whose control is a `CodeEditor` text area named by the field's label, with line numbers unless `lineNumbers` is `false`, long lines scrolling sideways (`wrap="off"`), the starting height of `size` (`sm`, `md` by default, `lg`, which is also the field's size) and the caller's `placeholder`. It takes the field props (`FieldInputProps<string>`), and the caller's `className`, `id` and `data-*` attributes go on the field's root.
 
 Implementation: `src/components/json-editor/json-editor.tsx`
 Verification: `src/components/json-editor/json-editor.test.tsx`, `e2e/json-editor.spec.ts`

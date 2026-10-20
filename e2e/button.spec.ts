@@ -19,10 +19,10 @@ test.describe('Button lab', () => {
     const cells = page.locator('table[data-lab-matrix="variant size"] td[data-lab-cell]');
     expect(await cells.count()).toBe(9 * 4);
     for (const [size, height] of [
-      ['xs', 22],
-      ['sm', 26],
-      ['md', 32],
-      ['lg', 38],
+      ['xs', 20],
+      ['sm', 24],
+      ['md', 28],
+      ['lg', 32],
     ] as const) {
       const box = await page
         .locator(`[data-lab-cell="variant=secondary size=${size}"] .ui-button`)
@@ -106,7 +106,7 @@ test.describe('Button lab', () => {
     await expect(disabled).toHaveJSProperty('tagName', 'SPAN');
     await expect(disabled).toHaveAttribute('aria-disabled', 'true');
     const box = await link.boundingBox();
-    expect(box?.height).toBe(32);
+    expect(box?.height).toBe(28);
     await link.focus();
     await expect(link).toHaveAttribute('data-focus-visible', 'true');
     await page.keyboard.press('Enter');

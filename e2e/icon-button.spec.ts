@@ -7,10 +7,10 @@ test.describe('Icon Button lab', () => {
   }) => {
     await lab.open('icon-button');
     for (const [size, edge] of [
-      ['xs', 22],
-      ['sm', 26],
-      ['md', 32],
-      ['lg', 38],
+      ['xs', 20],
+      ['sm', 24],
+      ['md', 28],
+      ['lg', 32],
     ] as const) {
       const button = page
         .locator(`[data-lab-cell="variant=ghost size=${size}"]`)

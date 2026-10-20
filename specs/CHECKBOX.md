@@ -27,7 +27,7 @@ Verification: `src/components/checkbox/checkbox.test.tsx`, `e2e/checkbox.spec.ts
 
 ### UIC-CHECKBOX-1.4 - Hooks and caller attributes
 
-`Checkbox` shall carry the hooks below, append the caller's `className` to its root and forward caller `data-*` attributes to it.
+`Checkbox` shall carry the hooks below, append the caller's `className` to its root and forward caller `data-*` attributes to it. `size` (`xs`, `sm`, `md` by default, `lg`) shall publish `data-size` on the root, so a stylesheet sizes the box and gives the row the height of that size on the control scale.
 
 Implementation: `src/components/checkbox/checkbox.tsx`
 Verification: `src/components/checkbox/checkbox.test.tsx`
@@ -50,19 +50,20 @@ Verification: `src/components/checkbox/checkbox.test.tsx`
 
 ## Hooks
 
-| Hook                 | Kind  | Values | Description                                |
-| -------------------- | ----- | ------ | ------------------------------------------ |
-| `ui-checkbox`        | root  |        | The `<label>` around the input.            |
-| `ui-checkbox__box`   | slot  |        | The drawn box.                             |
-| `ui-checkbox__glyph` | slot  |        | The tick or dash glyph inside the box.     |
-| `ui-checkbox__label` | slot  |        | The visible label text.                    |
-| `data-selected`      | state | `true` | Ticked (React Aria).                       |
-| `data-indeterminate` | state | `true` | Mixed (React Aria).                        |
-| `data-pressed`       | state | `true` | Being pressed (React Aria).                |
-| `data-hovered`       | state | `true` | Under the pointer (React Aria).            |
-| `data-focused`       | state | `true` | The input has focus (React Aria).          |
-| `data-focus-visible` | state | `true` | The input has keyboard focus (React Aria). |
-| `data-disabled`      | state | `true` | Disabled (React Aria).                     |
-| `data-readonly`      | state | `true` | Read-only (React Aria).                    |
-| `data-invalid`       | state | `true` | Invalid (React Aria).                      |
-| `data-required`      | state | `true` | Must be ticked (React Aria).               |
+| Hook                 | Kind      | Values                 | Description                                |
+| -------------------- | --------- | ---------------------- | ------------------------------------------ |
+| `ui-checkbox`        | root      |                        | The `<label>` around the input.            |
+| `ui-checkbox__box`   | slot      |                        | The drawn box.                             |
+| `ui-checkbox__glyph` | slot      |                        | The tick or dash glyph inside the box.     |
+| `ui-checkbox__label` | slot      |                        | The visible label text.                    |
+| `data-size`          | attribute | `xs`, `sm`, `md`, `lg` | Row size.                                  |
+| `data-selected`      | state     | `true`                 | Ticked (React Aria).                       |
+| `data-indeterminate` | state     | `true`                 | Mixed (React Aria).                        |
+| `data-pressed`       | state     | `true`                 | Being pressed (React Aria).                |
+| `data-hovered`       | state     | `true`                 | Under the pointer (React Aria).            |
+| `data-focused`       | state     | `true`                 | The input has focus (React Aria).          |
+| `data-focus-visible` | state     | `true`                 | The input has keyboard focus (React Aria). |
+| `data-disabled`      | state     | `true`                 | Disabled (React Aria).                     |
+| `data-readonly`      | state     | `true`                 | Read-only (React Aria).                    |
+| `data-invalid`       | state     | `true`                 | Invalid (React Aria).                      |
+| `data-required`      | state     | `true`                 | Must be ticked (React Aria).               |

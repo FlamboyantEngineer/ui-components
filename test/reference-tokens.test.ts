@@ -87,6 +87,31 @@ describe('reference token check', () => {
     expect(result.stderr).not.toMatch(/card\.css:[4-7]:/);
   });
 
+  it('UIC-LABS-3.7 sizes controls from the control scale at their own step', () => {
+    const scale = base.replace(
+      '  --ref-font-size-sm: 12px;\n',
+      '  --ref-font-size-sm: 12px;\n  --ref-control-height-sm: 24px;\n  --ref-control-height-md: 28px;\n',
+    );
+    const result = check(
+      {
+        'card.css': `.ui-card { height: var(--ref-control-height-md); }
+.ui-card[data-size='sm'] { height: var(--ref-control-height-md); }
+.ui-card__chip[data-size='sm'] { height: 18px; }`,
+        'tile.css': `.ui-tile { height: var(--ref-control-height-md); }
+.ui-tile[data-size='sm'] { height: 26px; }`,
+        'pill.css': `.ui-pill { height: var(--ref-control-height-md); }
+.ui-pill[data-size='sm'] { height: calc(var(--ref-control-height-sm) - 2px); }`,
+      },
+      scale,
+    );
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain(
+      'card.css:2: a sm control takes --ref-control-height-sm, not --ref-control-height-md',
+    );
+    expect(result.stderr).toContain('tile.css:2: height "26px" sizes a control off the scale');
+    expect(result.stderr).not.toMatch(/card\.css:3|pill\.css/);
+  });
+
   it('UIC-LABS-3.5 rejects unused, undefined, misnamed and duplicated tokens', () => {
     const result = check(
       {

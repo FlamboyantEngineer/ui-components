@@ -18,10 +18,10 @@ test.describe('Dropdown Menu lab', () => {
     const cells = page.locator('table[data-lab-matrix="variant size"] td[data-lab-cell]');
     expect(await cells.count()).toBe(5 * 4);
     for (const [size, height] of [
-      ['xs', 22],
-      ['sm', 26],
-      ['md', 32],
-      ['lg', 38],
+      ['xs', 20],
+      ['sm', 24],
+      ['md', 28],
+      ['lg', 32],
     ] as const) {
       const trigger = page.locator(
         `[data-lab-cell="variant=secondary size=${size}"] .ui-dropdown-menu`,
@@ -46,8 +46,8 @@ test.describe('Dropdown Menu lab', () => {
     await expect(trigger).toHaveClass(/ui-icon-button/);
     await expect(trigger).toHaveAccessibleName('More options');
     const box = await trigger.boundingBox();
-    expect(box?.width).toBe(32);
-    expect(box?.height).toBe(32);
+    expect(box?.width).toBe(28);
+    expect(box?.height).toBe(28);
     await expect(trigger.locator('.ui-dropdown-menu__caret')).toHaveCount(0);
   });
 
@@ -131,10 +131,10 @@ test.describe('Dropdown Menu lab', () => {
   }) => {
     await lab.open('dropdown-menu');
     for (const [size, height] of [
-      ['xs', 22],
-      ['sm', 26],
-      ['md', 32],
-      ['lg', 38],
+      ['xs', 20],
+      ['sm', 24],
+      ['md', 28],
+      ['lg', 32],
     ] as const) {
       const root = page.locator(`[data-lab-cell="action=primary size=${size}"] .ui-dropdown-menu`);
       await expect(root).toHaveAttribute('data-split', 'true');

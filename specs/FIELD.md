@@ -67,6 +67,13 @@ Verification: `src/components/field/field.test.tsx`
 Implementation: `src/components/field/field.tsx`, `src/components/field/field-form.ts`, `src/components/field/field-state.ts`
 Verification: `src/components/field/field-form.test.tsx`
 
+### UIC-FIELD-1.10 - Size
+
+`size` (`xs`, `sm`, `md` by default, `lg`, the shared `ControlSize`) shall publish `data-size` on the field's root, so a stylesheet gives the control the height of that size on the control scale whatever its content (UIC-LABS-3.7). The field's restore, help and menu buttons take the size one step below (`xs` stays `xs`), so they fit beside the control. Every field control built on `Field` takes `size` with the field's props.
+
+Implementation: `src/components/field/field.tsx`, `src/components/field/field-parts.tsx`, `src/components/field/field-control.ts`
+Verification: `src/components/field/field.test.tsx`
+
 ## UIC-FIELD-2 - Value and commit
 
 ### UIC-FIELD-2.1 - Value
@@ -352,6 +359,7 @@ Verification: `src/components/field/fieldset.test.tsx`, `src/components/field/fi
 | `ui-field__description`          | slot      |                                                                         | The description.                                                 |
 | `ui-field__message`              | slot      |                                                                         | The validation message; empty while valid.                       |
 | `data-label-layout`              | attribute | `label-control`, `control-label`, `label-colon-control`, `control-only` | Where the label sits.                                            |
+| `data-size`                      | attribute | `xs`, `sm`, `md`, `lg`                                                  | The control size.                                                |
 | `data-validation`                | state     | `valid`, `invalid`, `warning`, `pending`                                | Validation status.                                               |
 | `data-dirty`                     | state     | `true`                                                                  | The value differs from the committed value.                      |
 | `data-required`                  | state     | `true`                                                                  | A value is required.                                             |

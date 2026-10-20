@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import type { Key } from '../../core/props.js';
+import type { ControlSize, Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { ContextMenuTrigger } from '../context-menu/context-menu.js';
@@ -66,16 +66,18 @@ export function useFieldMenu(
 /** The field's menu button. */
 export function FieldMenuButton({
   model,
+  size,
   className,
 }: {
   model: FieldMenuModel;
+  size: ControlSize;
   className: string;
 }) {
   return (
     <DropdownMenu
       iconOnly
       label={model.label}
-      size="sm"
+      size={size}
       menuSize="md"
       className={className}
       items={model.entries}

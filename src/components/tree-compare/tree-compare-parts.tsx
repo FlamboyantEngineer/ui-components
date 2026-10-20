@@ -87,6 +87,7 @@ export function TreeCompareToolbar(props: {
     <div {...hooks.slot('toolbar')}>
       <TreeCompareSummary counts={props.counts} />
       <Switch
+        size="sm"
         className={hooks.slotClass('changes-only')}
         isSelected={props.changesOnly}
         onChange={props.onChangesOnlyChange}

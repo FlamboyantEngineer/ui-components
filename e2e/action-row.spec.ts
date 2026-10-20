@@ -26,10 +26,10 @@ test.describe('Action Row lab', () => {
   test('UIC-ACTION-ROW-2.2 sizes every action button', async ({ page, lab }) => {
     await lab.open('action-row');
     for (const [size, edge] of [
-      ['xs', 22],
-      ['sm', 26],
-      ['md', 32],
-      ['lg', 38],
+      ['xs', 20],
+      ['sm', 24],
+      ['md', 28],
+      ['lg', 32],
     ] as const) {
       const button = page
         .locator(`[data-lab-cell="state=default size=${size}"]`)

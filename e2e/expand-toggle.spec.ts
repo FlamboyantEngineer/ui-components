@@ -4,10 +4,10 @@ test.describe('Expand Toggle lab', () => {
   test('UIC-EXPAND-TOGGLE-1.5 gives a leaf the toggle box at every size', async ({ page, lab }) => {
     await lab.open('expand-toggle');
     for (const [size, edge] of [
-      ['xs', 22],
-      ['sm', 26],
-      ['md', 32],
-      ['lg', 38],
+      ['xs', 20],
+      ['sm', 24],
+      ['md', 28],
+      ['lg', 32],
     ] as const) {
       const toggle = await page
         .locator(`[data-lab-cell="state=collapsed size=${size}"] .ui-expand-toggle`)

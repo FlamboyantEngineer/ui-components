@@ -65,6 +65,11 @@ describe('BooleanField', () => {
     rerender(<BooleanField label="Ripe" variant="segmented" value={null} />);
     expect(screen.getByRole('radio', { name: 'False' })).not.toBeChecked();
     expectHooksMatchSpec(container, 'BOOLEAN-FIELD');
+
+    rerender(<BooleanField label="Ripe" variant="segmented" size="sm" value={null} />);
+    expect(screen.getByRole('radiogroup', { name: 'Ripe' })).toHaveAttribute('data-size', 'sm');
+    rerender(<BooleanField label="Ripe" size="lg" value={null} />);
+    expect(container.querySelector('.ui-checkbox')).toHaveAttribute('data-size', 'lg');
   });
 
   it('UIC-BOOLEAN-FIELD-1.3 captions a switch only with custom labels or while unset', () => {
