@@ -289,7 +289,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Editable plant"
-      description="Drag parts on the 10 pixel grid or move them with the arrow keys (Shift for larger steps); Shift-drag the background for a marquee; drag from a port, or press a port then a part, to connect; press or drag a palette item to add a part; Delete removes. The wheel pans, Ctrl or Command with the wheel zooms."
+      description="Drag parts on the 10 pixel grid or move them with the arrow keys (Shift for larger steps); Shift-drag the background for a marquee; drag from a port, or press a port then a part, to connect; press or drag a palette item to add a part; Delete removes. Cancelled node, connection and marquee drags discard their drafts. The wheel pans, Ctrl or Command with the wheel zooms."
     >
       <Plant />
     </LabSection>

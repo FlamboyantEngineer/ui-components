@@ -1,4 +1,4 @@
-import { useLocale } from '../../primitives/index.js';
+import { useDateFormatter, useNumberFormatter } from '../../primitives/index.js';
 import type { Key, Selection, SelectionMode } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { clamp } from '../../utils/clamp.js';
@@ -47,10 +47,9 @@ function toEntries(rows: readonly TimelineRow[], items: readonly TimelineItem[])
 
 function useColumns(): TableProps<TableEntry>['columns'] {
   const strings = useUiStrings();
-  const { locale } = useLocale();
-  const days = new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeZone: 'UTC' });
-  const percent = new Intl.NumberFormat(locale, { style: 'percent' });
-  const day = (date: string) => (date ? days.format(Date.parse(date)) : '');
+  const days = useDateFormatter({ dateStyle: 'medium', timeZone: 'UTC' });
+  const percent = useNumberFormatter({ style: 'percent' });
+  const day = (date: string) => (date ? days.format(new Date(date)) : '');
   return [
     { id: 'name', header: strings.timelineItemColumn, isRowHeader: true, allowsSorting: true },
     { id: 'row', header: strings.timelineRowColumn, allowsSorting: true },

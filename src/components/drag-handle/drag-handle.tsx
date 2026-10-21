@@ -3,6 +3,7 @@ import { Button as AriaButton } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
+import { armElementDrag } from '../../utils/pointer-drag.js';
 import { Icon } from '../icon/icon.js';
 
 export interface DragHandleProps extends BaseProps, AriaLabellingProps {
@@ -71,16 +72,8 @@ export function armHandleDrag(event: PointerEvent<Element>): void {
   if (event.button !== 0 || !row || !handle || !isInside(handle.getBoundingClientRect(), event)) {
     return;
   }
-  const document = row.ownerDocument;
   holdCellFocus(handle);
-  row.setAttribute('draggable', 'true');
-  const disarm = () => {
-    row.removeAttribute('draggable');
-    document.removeEventListener('pointerup', disarm, true);
-    row.removeEventListener('dragend', disarm);
-  };
-  document.addEventListener('pointerup', disarm, true);
-  row.addEventListener('dragend', disarm);
+  armElementDrag(row);
 }
 
 /**

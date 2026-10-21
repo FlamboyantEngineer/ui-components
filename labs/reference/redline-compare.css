@@ -194,7 +194,7 @@
   padding: 2px 6px;
   border-radius: var(--ref-radius);
   background: var(--ref-surface);
-  font: 13px/1.5 var(--ref-mono);
+  font: var(--ref-font-size-md)/1.5 var(--ref-mono);
   white-space: pre-wrap;
 }
 

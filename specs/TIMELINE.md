@@ -2,6 +2,8 @@
 
 `Timeline` is a Gantt-style view of rows over time, for plans, schedules and roadmaps: each row holds bars (a first and a last day, with optional progress) and milestones (one day), dependencies join items with connectors, and a marker shows today. The time scale zooms between days, weeks, months and quarters; rows can be grouped and collapsed; items move and resize by pointer and keyboard, and the owner applies each change. A table view lists the same items. Positions come from the time scale ([SCALES.md](SCALES.md)) and are set as functional inline styles.
 
+Pointer ownership and drag lifecycle cleanup follow the shared [drag interaction contract](DRAG-INTERACTIONS.md).
+
 ## UIC-TIMELINE-1 - Chart
 
 ### UIC-TIMELINE-1.1 - Parts

@@ -1,15 +1,13 @@
-import { useRef, useState, type KeyboardEvent } from 'react';
-import { useDrag, useDrop, useLocale } from '../../primitives/index.js';
-import type { PressEvent } from '../../core/events.js';
+import { useRef, type KeyboardEvent } from 'react';
+import { useLocale } from '../../primitives/index.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { mergeProps } from '../../utils/merge-props.js';
+import { useItemDrag } from '../../utils/use-item-drag.js';
 import { isMoveChord } from '../../utils/use-reorder-drag-and-drop.js';
 import { ExpandToggle } from '../expand-toggle/expand-toggle.js';
 import { IconButton } from '../icon-button/icon-button.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { boardHooks as hooks } from './board-hooks.js';
-import type { BoardMovePosition } from './board-moves.js';
 import type { BoardColumnDrag } from './use-board-drag.js';
 
 /** A column header's view of its column. */
@@ -38,37 +36,17 @@ function useColumnHeaderDrag({
   drag,
 }: Pick<BoardColumnHeaderProps, 'columnKey' | 'title' | 'drag'>) {
   const ref = useRef<HTMLDivElement>(null);
-  const [dropPosition, setDropPosition] = useState<BoardMovePosition | null>(null);
-  const dragType = drag?.dragType ?? '';
-  const { dragProps, dragButtonProps, isDragging } = useDrag({
-    hasDragButton: true,
-    isDisabled: !drag,
-    getItems: () => [{ [dragType]: String(columnKey), 'text/plain': title }],
-    getAllowedDropOperations: () => ['move'],
-    onDragStart: () => {
-      if (drag) drag.dragging.current = columnKey;
-    },
-    onDragEnd: () => {
-      if (drag) drag.dragging.current = null;
-    },
-  });
-  const { dropProps } = useDrop({
+  const { dragProps, startDrag, isDragging, dropPosition } = useItemDrag({
     ref,
+    key: columnKey,
+    textValue: title,
+    dragType: drag?.dragType ?? '',
+    dragging: drag?.dragging ?? null,
     isDisabled: !drag,
-    getDropOperation: (types, allowed) =>
-      types.has(dragType) && allowed.includes('move') && drag?.resolveDrop(columnKey)
-        ? 'move'
-        : 'cancel',
-    onDropEnter: () => setDropPosition(drag?.resolveDrop(columnKey)?.position ?? null),
-    onDropExit: () => setDropPosition(null),
-    onDrop: () => {
-      setDropPosition(null);
-      const move = drag?.resolveDrop(columnKey);
-      if (move) drag?.onMove(move);
-    },
+    resolveMove: () => drag?.resolveDrop(columnKey) ?? null,
+    onMove: (move) => drag?.onMove(move),
   });
-  const startDrag = (event: PressEvent) => dragButtonProps.onPress?.(event as never);
-  return { ref, props: mergeProps(dragProps, dropProps), startDrag, isDragging, dropPosition };
+  return { ref, props: dragProps, startDrag, isDragging, dropPosition };
 }
 
 /**

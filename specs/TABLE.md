@@ -2,6 +2,8 @@
 
 `Table` shows records a reader scans, sorts, filters, selects, edits and acts on. It is built on React Aria's `Table`: columns and rows are plain data with render callbacks, and the table adds sorting by one or several columns, a search box and typed column filters, selection with a selection bar and bulk edit, resizable, reorderable, hideable, pinned and grouped columns with a persisted layout, row groups with aggregates, nested rows and detail rows, cell editing and a spreadsheet mode with cell ranges, the clipboard and filling, a summary row, row reordering by drag and drop or keyboard, pagination through [Pagination](PAGINATION.md), loading more rows, full-width loading, empty and error notices, and virtualization for long lists. `sortTableRows`, `filterTableRows` and `applyTableMove` are exported for callers that keep the order, the filtering or the pages of their rows themselves, and `formatTsv` and `parseTsv` for tab-separated text.
 
+Pointer ownership and drag lifecycle cleanup follow the shared [drag interaction contract](DRAG-INTERACTIONS.md).
+
 ## UIC-TABLE-1 - Columns and rows
 
 ### UIC-TABLE-1.1 - Data-driven grid
@@ -466,7 +468,7 @@ Verification: `src/components/table/use-cell-selection.test.tsx`, `src/component
 
 ### UIC-TABLE-14.5 - Filling
 
-In `range` mode, the bottom end cell of a selection holding an editable cell shall draw a fill handle (`ui-table__fill-handle`, hidden from assistive technology). Dragging it down or towards the end, whichever reaches further, marks the cells it would fill with `data-fill-target` and, on release, fills them from the selected cells: each column, or each row, continues an evenly spaced run of numbers by its step and repeats anything else, then the filled cells are selected. Control or Command with D fills the selection down from its first row, and with R towards the end from its first column. Fills are reported like a paste.
+In `range` mode, the bottom end cell of a selection holding an editable cell shall draw a fill handle (`ui-table__fill-handle`, hidden from assistive technology). Dragging it down or towards the end, whichever reaches further, marks the cells it would fill with `data-fill-target` and, on release, fills them from the selected cells: each column, or each row, continues an evenly spaced run of numbers by its step and repeats anything else, then the filled cells are selected. Control or Command with D fills the selection down from its first row, and with R towards the end from its first column. Fills are reported like a paste. Cancelling a fill shall clear its preview without writing cells; release and cancellation follow only the pointer that started it, in the table's own document.
 
 Implementation: `src/components/table/use-cell-pointer.ts`, `src/components/table/use-cell-selection.ts`, `src/components/table/table-cell-writes.ts`, `src/components/table/table-row.tsx`
 Verification: `src/components/table/use-cell-selection.test.tsx`, `src/components/table/table-cell-writes.test.ts`, `e2e/table.spec.ts`

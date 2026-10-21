@@ -111,11 +111,5 @@
   border: 2px solid currentColor;
   border-right-color: transparent;
   border-radius: 50%;
-  animation: ref-icon-button-spin var(--ref-duration-spin) linear infinite;
-}
-
-@keyframes ref-icon-button-spin {
-  to {
-    transform: rotate(360deg);
-  }
+  animation: ref-spin var(--ref-duration-spin) linear infinite;
 }

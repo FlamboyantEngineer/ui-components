@@ -2,6 +2,8 @@
 
 `SignaturePad` is a [field](FIELD.md) for a signature. The reader draws it with a mouse, a pen or a touch on an SVG canvas, as smoothed strokes with Undo stroke and Clear, or types their name instead, the keyboard alternative to drawing. The value is plain data: a drawn signature (`DrawnSignature`: SVG path data per stroke in a drawing space) or a typed one (`TypedSignature`: the name), and `null` while empty. It takes the field's props (`FieldInputProps<SignatureValue | null>`), so it has a label and layout, a description, validation, dirty state and restore, undo and redo, and the field menu. `formatSignatureSvg` and `formatSignatureDataUrl` turn a drawing into standalone SVG markup or a `data:` URL, to store, to show through [Svg Markup](SVG-MARKUP.md) or as an image.
 
+Pointer ownership and drag lifecycle cleanup follow the shared [drag interaction contract](DRAG-INTERACTIONS.md).
+
 ## UIC-SIGNATURE-PAD-1 - Contract
 
 ### UIC-SIGNATURE-PAD-1.1 - Field control

@@ -2,6 +2,8 @@
 
 `Board` lays cards out in columns, one per value of a grouping the owner chooses (a status, a stage, an owner), optionally repeated in lanes (swimlanes) for a second grouping. Each column has a header with its title, its card count against an optional limit and a collapse toggle; each lane has a header with its title, its count and a collapse toggle. Every cell (one column in one lane) is a React Aria grid list of the caller's card content. Cards move within and between cells by pointer or keyboard drag and drop and by Alt+Arrow keys, and columns reorder, each move reported as plain data for the owner to apply, as for [Tree reordering](TREE-REORDER.md) and [List View](LIST-ROW.md#uic-list-row-35---drag-and-drop). Long cells virtualize ([COLLECTIONS.md](COLLECTIONS.md)).
 
+Pointer ownership and drag lifecycle cleanup follow the shared [drag interaction contract](DRAG-INTERACTIONS.md).
+
 ## UIC-BOARD-1 - Layout
 
 ### UIC-BOARD-1.1 - Columns, cells and cards

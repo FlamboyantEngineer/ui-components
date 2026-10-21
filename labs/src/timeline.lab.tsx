@@ -314,7 +314,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Project plan"
-      description="Grouped rows that collapse, a locked milestone, drag and keyboard editing (arrows move by the zoom unit, Shift and arrows change the end), multiple selection, and the table view of the same items."
+      description="Grouped rows that collapse, a locked milestone, drag and keyboard editing (arrows move by the zoom unit, Shift and arrows change the end), multiple selection, and the table view of the same items. Cancelling a drag discards its draft dates."
     >
       <PlanDemo />
     </LabSection>

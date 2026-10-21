@@ -2,6 +2,8 @@
 
 `SplitView` holds panes side by side or stacked. With a fixed `ratio` the stylesheet sizes two tracks; with `panes` a window splitter between each pair resizes them by pointer and keyboard, following the WAI-ARIA window splitter pattern, with percent or fixed pixel panes and panes that collapse. `ResizeHandle` is that splitter on its own, for a host that keeps its own sizes in any unit. A split fills its host and gives each pane its own scrolling, so it divides views, not page content.
 
+Pointer ownership and drag lifecycle cleanup follow the shared [drag interaction contract](DRAG-INTERACTIONS.md).
+
 ## UIC-SPLIT-VIEW-1 - Fixed split
 
 ### UIC-SPLIT-VIEW-1.1 - Orientation and ratio

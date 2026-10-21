@@ -13,6 +13,7 @@
   /* Type */
   --ref-font: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --ref-mono: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  --ref-script: Georgia, 'Times New Roman', serif;
   --ref-font-size-2xs: 10px;
   --ref-font-size-xs: 11px;
   --ref-font-size-sm: 12px;
@@ -76,11 +77,11 @@
   --ref-category-5-fill: #0e7490;
   --ref-category-6-fill: #be185d;
   --ref-category-7-fill: #475569;
-  --ref-category-0: #0969da;
+  --ref-category-0: var(--ref-accent-ink);
   --ref-category-1: #bf8700;
   --ref-category-2: #8250df;
-  --ref-category-3: #1a7f37;
-  --ref-category-4: #cf222e;
+  --ref-category-3: var(--ref-success);
+  --ref-category-4: var(--ref-danger);
   --ref-category-5: #0e7490;
   --ref-category-6: #bf3989;
   --ref-category-7: var(--ref-muted);
@@ -150,11 +151,8 @@
   --ref-danger: #ff7b72;
   --ref-success: #3fb950;
   --ref-warning: #d29922;
-  --ref-category-0: #4493f8;
   --ref-category-1: #d29922;
   --ref-category-2: #ab7df8;
-  --ref-category-3: #3fb950;
-  --ref-category-4: #ff7b72;
   --ref-category-5: #39c5cf;
   --ref-category-6: #f778ba;
 
@@ -183,4 +181,10 @@ body {
 #lab-root table[data-lab-matrix] > * > tr > th {
   color: var(--ref-muted);
   font-weight: 500;
+}
+
+@keyframes ref-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }

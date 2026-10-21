@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { userEvent, type UserEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -49,6 +49,30 @@ async function drag(
 }
 
 describe('DiagramCanvas nodes', () => {
+  it('UIC-DIAGRAM-CANVAS-4.2 UIC-DIAGRAM-CANVAS-4.3 discards a cancelled node move and marquee', async () => {
+    const user = userEvent.setup();
+    const onNodesChange = vi.fn();
+    const onSelectionChange = vi.fn();
+    const { container } = render(
+      <EditableDiagram onNodesChange={onNodesChange} onSelectionChange={onSelectionChange} />,
+    );
+    await drag(user, node('Pump'), { clientX: 23, clientY: 7 });
+    expect(node('Pump')).toHaveAttribute('data-moving', 'true');
+    fireEvent.pointerCancel(node('Pump'), { pointerId: 1 });
+    await release(user, node('Pump'));
+    expect(node('Pump')).not.toHaveAttribute('data-moving');
+    expect(node('Pump').style).toMatchObject({ left: '0px', top: '0px' });
+    expect(onNodesChange).not.toHaveBeenCalled();
+    onSelectionChange.mockClear();
+    const viewport = container.querySelector('.ui-diagram-canvas__viewport')!;
+    await press(user, viewport, { shiftKey: true });
+    await user.pointer({ target: viewport, coords: { clientX: 240, clientY: 110 } });
+    expect(container.querySelector('.ui-diagram-canvas__marquee')).not.toBeNull();
+    fireEvent.lostPointerCapture(viewport, { pointerId: 1 });
+    await release(user, viewport);
+    expect(container.querySelector('.ui-diagram-canvas__marquee')).toBeNull();
+    expect(onSelectionChange).not.toHaveBeenCalled();
+  });
   it('UIC-DIAGRAM-CANVAS-4.1 selects nodes and edges by press, modifier press and Space', async () => {
     const user = userEvent.setup();
     const onSelectionChange = vi.fn();
@@ -320,6 +344,19 @@ describe('DiagramCanvas nodes', () => {
     await press(user, viewport);
     await release(user, viewport);
     expect(root).not.toHaveAttribute('data-connecting');
+  });
+
+  it('UIC-DIAGRAM-CANVAS-5.1 discards a connection preview when pointer capture is lost', async () => {
+    const user = userEvent.setup();
+    const onConnect = vi.fn();
+    const { container } = render(<EditableDiagram onConnect={onConnect} />);
+    const outlet = screen.getByRole('button', { name: 'Pump, outlet' });
+    await drag(user, outlet, { clientX: 200, clientY: 120 });
+    expect(container.querySelector('.ui-diagram-canvas__connection-preview')).not.toBeNull();
+    fireEvent.lostPointerCapture(outlet, { pointerId: 1 });
+    await release(user, outlet);
+    expect(container.querySelector('.ui-diagram-canvas__connection-preview')).toBeNull();
+    expect(onConnect).not.toHaveBeenCalled();
   });
 
   it('UIC-DIAGRAM-CANVAS-5.1 connects by dragging from a port to a node, with a preview edge', async () => {

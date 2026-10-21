@@ -1,4 +1,5 @@
-import { useRef, useState, type PointerEvent } from 'react';
+import { useState } from 'react';
+import { usePointerDrag } from '../../utils/use-pointer-drag.js';
 import type { SelectionMode } from '../../core/props.js';
 import {
   isRectOverlap,
@@ -36,7 +37,6 @@ function spanRect(a: { x: number; y: number }, b: { x: number; y: number }): Dia
  * connection in progress.
  */
 export function useBackgroundPointer(controller: DiagramController, selectionMode: SelectionMode) {
-  const start = useRef<BackgroundStart | null>(null);
   const [marquee, setMarquee] = useState<DiagramRect | null>(null);
   const { view, selection, connect } = controller;
   const selectWithin = (rect: DiagramRect) => {
@@ -49,51 +49,46 @@ export function useBackgroundPointer(controller: DiagramController, selectionMod
         .map((node) => node.id),
     );
   };
-  const onPointerDown = (event: PointerEvent<HTMLElement>) => {
-    if (event.button !== 0) return;
-    const box = event.currentTarget.getBoundingClientRect();
-    start.current = {
-      x: event.clientX,
-      y: event.clientY,
-      left: box.left,
-      top: box.top,
-      origin: view.viewport,
-      mode: event.shiftKey && selectionMode === 'multiple' ? 'marquee' : 'pan',
-      isMoved: false,
-    };
-    event.currentTarget.setPointerCapture?.(event.pointerId);
-  };
-  const onPointerMove = (event: PointerEvent<HTMLElement>) => {
-    const active = start.current;
-    if (!active) return;
-    const delta = { x: event.clientX - active.x, y: event.clientY - active.y };
-    if (!active.isMoved && Math.hypot(delta.x, delta.y) < dragThreshold) return;
-    active.isMoved = true;
-    if (active.mode === 'pan') {
-      view.setViewport({
-        ...active.origin,
-        x: active.origin.x + delta.x,
-        y: active.origin.y + delta.y,
-      });
-      return;
-    }
-    const from = { x: active.x - active.left, y: active.y - active.top };
-    setMarquee(spanRect(from, { x: event.clientX - active.left, y: event.clientY - active.top }));
-  };
-  const onPointerUp = () => {
-    const active = start.current;
-    start.current = null;
-    if (!active) return;
-    if (!active.isMoved) {
-      connect.cancel();
-      selection.replace([]);
-    } else if (marquee) {
-      selectWithin(marquee);
-    }
-    setMarquee(null);
-  };
+  const pointerProps = usePointerDrag<HTMLElement, BackgroundStart>({
+    onStart: (event) => {
+      const box = event.currentTarget.getBoundingClientRect();
+      return {
+        x: event.clientX,
+        y: event.clientY,
+        left: box.left,
+        top: box.top,
+        origin: view.viewport,
+        mode: event.shiftKey && selectionMode === 'multiple' ? 'marquee' : 'pan',
+        isMoved: false,
+      };
+    },
+    onMove: (event, active) => {
+      const delta = { x: event.clientX - active.x, y: event.clientY - active.y };
+      if (!active.isMoved && Math.hypot(delta.x, delta.y) < dragThreshold) return;
+      active.isMoved = true;
+      if (active.mode === 'pan') {
+        view.setViewport({
+          ...active.origin,
+          x: active.origin.x + delta.x,
+          y: active.origin.y + delta.y,
+        });
+        return;
+      }
+      const from = { x: active.x - active.left, y: active.y - active.top };
+      setMarquee(spanRect(from, { x: event.clientX - active.left, y: event.clientY - active.top }));
+    },
+    onEnd: (_event, active, isCancelled) => {
+      if (!isCancelled) {
+        if (!active.isMoved) {
+          connect.cancel();
+          selection.replace([]);
+        } else if (marquee) selectWithin(marquee);
+      }
+      setMarquee(null);
+    },
+  });
   return {
     marquee,
-    pointerProps: { onPointerDown, onPointerMove, onPointerUp, onPointerCancel: onPointerUp },
+    pointerProps,
   };
 }

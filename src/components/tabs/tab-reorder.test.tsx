@@ -179,7 +179,7 @@ describe('Tab reordering', { timeout: 15_000 }, () => {
     expect(onReorder).not.toHaveBeenCalled();
   });
 
-  it('UIC-TABS-3.3 drags a tab onto the half of another tab it should land beside', async () => {
+  it('UIC-TABS-3.3 UIC-DRAG-INTERACTIONS-2.3 drags a tab onto the half of another tab it should land beside', async () => {
     const onReorder = vi.fn();
     const { container } = render(<Reorderable onReorder={onReorder} />);
     const apple = tab('Apple');
@@ -206,6 +206,30 @@ describe('Tab reordering', { timeout: 15_000 }, () => {
     });
     expect(shownTabs()).toEqual(['Banana', 'Cherry', 'Apple', 'Fig']);
     expect(tab('Cherry')).not.toHaveAttribute('data-drop-position');
+  });
+
+  it('UIC-TABS-3.3 UIC-DRAG-INTERACTIONS-2.3 accepts a disabled landing tab and calls the latest owner on drop', async () => {
+    const previous = vi.fn();
+    const current = vi.fn();
+    const { rerender } = render(<Reorderable onReorder={previous} disabledKeys={['cherry']} />);
+    const apple = tab('Apple');
+    const cherry = tab('Cherry');
+    place(cherry, 200);
+    const transfer = createDataTransfer();
+    drag('dragStart', apple, { transfer });
+    await act(() => new Promise((resolve) => requestAnimationFrame(resolve)));
+    drag('dragEnter', cherry, { transfer, clientX: 220 });
+    expect(cherry).toHaveAttribute('data-drop-position', 'before');
+    rerender(<Reorderable onReorder={current} disabledKeys={['cherry']} />);
+    drag('drop', cherry, { transfer, clientX: 220 });
+    drag('dragEnd', apple, { transfer });
+    expect(previous).not.toHaveBeenCalled();
+    expect(current).toHaveBeenCalledExactlyOnceWith({
+      key: 'apple',
+      targetKey: 'cherry',
+      position: 'before',
+    });
+    expect(shownTabs()).toEqual(['Banana', 'Apple', 'Cherry', 'Fig']);
   });
 
   it('UIC-TABS-3.3 refuses drops that change nothing, drags from elsewhere and disabled tabs', () => {

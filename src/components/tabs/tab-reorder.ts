@@ -4,14 +4,13 @@
 import {
   useLayoutEffect,
   useRef,
-  useState,
   type HTMLAttributes,
   type KeyboardEvent,
   type RefObject,
 } from 'react';
-import { useDrag, useDrop } from '../../primitives/index.js';
 import type { Key, Orientation } from '../../core/props.js';
-import { mergeProps } from '../../utils/merge-props.js';
+import { useItemDrag } from '../../utils/use-item-drag.js';
+import { resolveDropPosition } from '../../utils/pointer-drag.js';
 import { isMoveChord } from '../../utils/use-reorder-drag-and-drop.js';
 import { findTabElement, listTabKeys, type TabsShared, type TabListModel } from './tab-actions.js';
 
@@ -150,10 +149,14 @@ function findDropPosition(
   box: { width: number; height: number },
   point: { x: number; y: number; reorder: TabReorder },
 ): TabDropPosition {
-  if (point.reorder.orientation === 'vertical') {
-    return point.y < box.height / 2 ? 'before' : 'after';
-  }
-  return point.x < box.width / 2 !== point.reorder.isRtl ? 'before' : 'after';
+  return resolveDropPosition({
+    width: box.width,
+    height: box.height,
+    x: point.x,
+    y: point.y,
+    orientation: point.reorder.orientation,
+    isRtl: point.reorder.isRtl,
+  });
 }
 
 /**
@@ -167,37 +170,18 @@ export function useTabDrag({
   ref,
   reorder,
 }: TabDragOptions): TabDragState {
-  const [dropPosition, setDropPosition] = useState<TabDropPosition | null>(null);
-  const moveAt = (x: number, y: number) => {
-    const box = ref.current?.getBoundingClientRect() ?? { width: 0, height: 0 };
-    return reorder.resolveDrop(tabKey, findDropPosition(box, { x, y, reorder }));
-  };
-  const showDrop = ({ x, y }: { x: number; y: number }) =>
-    setDropPosition(moveAt(x, y)?.position ?? null);
-  const { dragProps, isDragging } = useDrag({
-    hasDragButton: true,
-    isDisabled,
-    getItems: () => [{ [tabDragType]: String(tabKey), 'text/plain': textValue }],
-    getAllowedDropOperations: () => ['move'],
-    onDragStart: () => {
-      reorder.draggingKey.current = tabKey;
-    },
-    onDragEnd: () => {
-      reorder.draggingKey.current = null;
-    },
-  });
-  const { dropProps } = useDrop({
+  return useItemDrag({
     ref,
-    // The building block passes the point as two more arguments.
-    getDropOperationForPoint: (...[types, allowed, x, y]) =>
-      types.has(tabDragType) && allowed.includes('move') && moveAt(x, y) ? 'move' : 'cancel',
-    onDropEnter: showDrop,
-    onDropMove: showDrop,
-    onDropExit: () => setDropPosition(null),
-    onDrop: ({ x, y }) => {
-      const move = moveAt(x, y);
-      if (move) reorder.onReorder(move);
+    key: tabKey,
+    textValue,
+    dragType: tabDragType,
+    dragging: reorder.draggingKey,
+    isDisabled,
+    isDropDisabled: false,
+    resolveMove: ({ x, y }) => {
+      const box = ref.current?.getBoundingClientRect() ?? { width: 0, height: 0 };
+      return reorder.resolveDrop(tabKey, findDropPosition(box, { x, y, reorder }));
     },
+    onMove: reorder.onReorder,
   });
-  return { dragProps: mergeProps(dragProps, dropProps), isDragging, dropPosition };
 }

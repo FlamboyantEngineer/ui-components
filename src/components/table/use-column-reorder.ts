@@ -7,6 +7,7 @@ import {
   type RefObject,
 } from 'react';
 import { useLocale } from '../../primitives/index.js';
+import { resolveDropPosition } from '../../utils/pointer-drag.js';
 import { isMoveChord } from '../../utils/use-reorder-drag-and-drop.js';
 import { stepColumnMove, type TableColumnMove } from './table-columns.js';
 import type { TableColumn } from './table-rows.js';
@@ -72,8 +73,15 @@ function findDropTarget(
   const header = listHeaders(event.currentTarget).find((item) => item.dataset['column'] === id);
   if (!header || id === undefined || id === context.dragging.current) return null;
   const box = header.getBoundingClientRect();
-  const isLeftHalf = event.clientX < box.left + box.width / 2;
-  return { id, position: isLeftHalf !== context.isRtl ? 'before' : 'after' };
+  const position = resolveDropPosition({
+    width: box.width,
+    height: box.height,
+    x: event.clientX - box.left,
+    y: event.clientY - box.top,
+    orientation: 'horizontal',
+    isRtl: context.isRtl,
+  });
+  return { id, position };
 }
 
 /**

@@ -153,7 +153,7 @@ function FastSteps() {
     <>
       <NumberField
         label="Opacity"
-        description="Shift steps by 10, Alt by 0.1; drag the handle sideways to scrub."
+        description="Shift steps by 10, Alt by 0.1; drag the handle sideways to scrub. Releasing or cancelling ends the scrub."
         defaultValue={40}
         minValue={0}
         maxValue={100}

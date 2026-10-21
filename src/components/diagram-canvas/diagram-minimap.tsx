@@ -1,4 +1,5 @@
-import { useRef, type PointerEvent } from 'react';
+import type { PointerEvent } from 'react';
+import { usePointerDrag } from '../../utils/use-pointer-drag.js';
 import { diagramHooks as hooks } from './diagram-hooks.js';
 import { findDiagramBounds, resolveNodeRect } from './diagram-model.js';
 import type { DiagramPoint, DiagramRect } from './edge-route.js';
@@ -30,15 +31,13 @@ function toViewBoxPoint(
  */
 export function DiagramMinimap({ controller }: DiagramMinimapProps) {
   const { view, nodes, selection } = controller;
-  const isDragging = useRef(false);
   const size = view.size;
-  if (!size || nodes.length === 0) return null;
   const factor = view.viewport.zoom / 100;
   const visible = {
     x: -view.viewport.x / factor,
     y: -view.viewport.y / factor,
-    width: size.width / factor,
-    height: size.height / factor,
+    width: (size?.width ?? 0) / factor,
+    height: (size?.height ?? 0) / factor,
   };
   const viewBox = findDiagramBounds([...nodes.map(resolveNodeRect), visible], minimapPadding)!;
   const centreAt = (event: PointerEvent<SVGSVGElement>) => {
@@ -48,31 +47,31 @@ export function DiagramMinimap({ controller }: DiagramMinimapProps) {
     });
     view.setViewport({
       ...view.viewport,
-      x: size.width / 2 - point.x * factor,
-      y: size.height / 2 - point.y * factor,
+      x: (size?.width ?? 0) / 2 - point.x * factor,
+      y: (size?.height ?? 0) / 2 - point.y * factor,
     });
   };
+  const drag = usePointerDrag<SVGSVGElement, boolean>({
+    onStart: (event) => {
+      if (!size || nodes.length === 0) return null;
+      event.stopPropagation();
+      centreAt(event);
+      return true;
+    },
+    onMove: (event) => {
+      event.stopPropagation();
+      centreAt(event);
+    },
+    onEnd: (event) => event.stopPropagation(),
+  });
+  if (!size || nodes.length === 0) return null;
   return (
     <svg
       {...hooks.slot('minimap')}
       aria-hidden="true"
       viewBox={`${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}`}
       style={{ touchAction: 'none' }}
-      onPointerDown={(event) => {
-        if (event.button !== 0) return;
-        event.stopPropagation();
-        isDragging.current = true;
-        event.currentTarget.setPointerCapture?.(event.pointerId);
-        centreAt(event);
-      }}
-      onPointerMove={(event) => {
-        event.stopPropagation();
-        if (isDragging.current) centreAt(event);
-      }}
-      onPointerUp={(event) => {
-        event.stopPropagation();
-        isDragging.current = false;
-      }}
+      {...drag}
     >
       {nodes.map((node) => {
         const rect = resolveNodeRect(node);

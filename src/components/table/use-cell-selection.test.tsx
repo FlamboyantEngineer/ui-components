@@ -230,6 +230,20 @@ describe('Table spreadsheet mode', { timeout: 20_000 }, () => {
     expect(onBatch).toHaveBeenLastCalledWith([{ row: items[0], columnId: 'count', value: '' }]);
   });
 
+  it('UIC-TABLE-14.5 cancels a fill without writing cells or leaving a preview', async () => {
+    const user = userEvent.setup();
+    const onBatch = vi.fn();
+    render(<Sheet onBatch={onBatch} columns={uncheckedColumns} />);
+    await user.click(cell('Apple', 'count'));
+    const handle = document.querySelector('.ui-table__fill-handle')!;
+    await user.pointer([{ keys: '[MouseLeft>]', target: handle }, { target: cell('Fig', 'note') }]);
+    expect(document.querySelector('[data-fill-target]')).not.toBeNull();
+    fireEvent.pointerCancel(handle, { pointerId: 1 });
+    await user.pointer({ keys: '[/MouseLeft]' });
+    expect(onBatch).not.toHaveBeenCalled();
+    expect(document.querySelector('[data-fill-target]')).toBeNull();
+  });
+
   it('UIC-TABLE-14.5 fills by dragging the fill handle and down and right with the keyboard', async () => {
     const user = userEvent.setup();
     const onBatch = vi.fn();

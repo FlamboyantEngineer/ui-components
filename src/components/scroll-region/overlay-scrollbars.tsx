@@ -12,6 +12,7 @@ import type { Orientation } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { clamp } from '../../utils/clamp.js';
 import { useEnterExit } from '../../utils/use-enter-exit.js';
+import { usePointerDrag } from '../../utils/use-pointer-drag.js';
 import { scrollRegionHooks as hooks } from './styling-hooks.js';
 import type { OverlayMeasurement } from './use-overlay-metrics.js';
 
@@ -57,7 +58,6 @@ interface TrackProps extends ThumbProps {
 }
 
 interface ThumbDrag {
-  pointerId: number;
   start: number;
   value: number;
 }
@@ -117,36 +117,20 @@ function useFocusHandback(viewport: RefObject<HTMLDivElement | null>) {
 
 /** Pointer dragging with capture: the viewport scrolls in proportion to the thumb's travel. */
 function useThumbDrag(thumb: ThumbProps, travel: number) {
-  const drag = useRef<ThumbDrag | null>(null);
   const vertical = thumb.orientation === 'vertical';
   const coordinate = (event: PointerEvent) => (vertical ? event.clientY : event.clientX);
-  const release = () => {
-    drag.current = null;
-  };
-  return {
-    onPointerDown(event: PointerEvent<HTMLDivElement>) {
-      if (event.button !== 0) return;
+  return usePointerDrag<HTMLDivElement, ThumbDrag>({
+    onStart: (event) => {
       event.preventDefault();
       event.currentTarget.focus({ preventScroll: true });
-      event.currentTarget.setPointerCapture?.(event.pointerId);
-      const value = clamp(readScrollPosition(thumb), 0, thumb.max);
-      drag.current = { pointerId: event.pointerId, start: coordinate(event), value };
+      return { start: coordinate(event), value: clamp(readScrollPosition(thumb), 0, thumb.max) };
     },
-    onPointerMove(event: PointerEvent<HTMLDivElement>) {
-      const active = drag.current;
-      if (!active || active.pointerId !== event.pointerId || travel <= 0) return;
+    onMove: (event, active) => {
+      if (travel <= 0) return;
       const delta = coordinate(event) - active.start;
       scrollViewportTo(thumb, clamp(active.value + (delta / travel) * thumb.max, 0, thumb.max));
     },
-    onPointerUp(event: PointerEvent<HTMLDivElement>) {
-      if (event.currentTarget.hasPointerCapture?.(event.pointerId)) {
-        event.currentTarget.releasePointerCapture(event.pointerId);
-      }
-      release();
-    },
-    onPointerCancel: release,
-    onLostPointerCapture: release,
-  };
+  });
 }
 
 function OverlayThumb(props: ThumbProps) {

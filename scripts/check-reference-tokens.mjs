@@ -17,16 +17,40 @@ const problems = [];
 
 const stripComments = (css) =>
   css.replace(/\/\*[\s\S]*?\*\//g, (comment) =>
-    comment.includes(exemptMarker) || comment.includes(layoutExemptMarker) ? comment : '',
+    comment.includes(exemptMarker) || comment.includes(layoutExemptMarker)
+      ? comment
+      : comment.replace(/[^\n]/g, ' '),
   );
 
-/** Each declaration with its selector, property, value and line, from one stylesheet. */
+function splitSelectors(text) {
+  const selectors = [];
+  let start = 0;
+  let depth = 0;
+  let quote = '';
+  for (let index = 0; index < text.length; index += 1) {
+    const character = text[index];
+    if (quote) {
+      if (character === '\\') index += 1;
+      else if (character === quote) quote = '';
+    } else if (character === '"' || character === "'") quote = character;
+    else if (character === '(' || character === '[') depth += 1;
+    else if (character === ')' || character === ']') depth -= 1;
+    else if (character === ',' && depth === 0) {
+      selectors.push(text.slice(start, index).trim());
+      start = index + 1;
+    }
+  }
+  selectors.push(text.slice(start).trim());
+  return selectors;
+}
+
+/** Each declaration with its selectors, property, value and original line, from one stylesheet. */
 function readDeclarations(file) {
   const css = stripComments(readFileSync(join(referenceDir, file), 'utf8'));
   const declarations = [];
   const rulePattern = /([^{}]*)\{([^{}]*)\}/g;
   for (const rule of css.matchAll(rulePattern)) {
-    const selector = rule[1].trim().split('\n').at(-1).trim();
+    const selectors = splitSelectors(rule[1]);
     const bodyStart = rule.index + rule[1].length + 1;
     for (const match of rule[2].matchAll(
       /(--[\w-]+|[a-z-]+)\s*:\s*([^;]+);([ \t]*\/\*[\s\S]*?\*\/)?/g,
@@ -35,15 +59,16 @@ function readDeclarations(file) {
       const comment = match[3] ?? '';
       const isExempt = comment.includes(exemptMarker);
       const isLayoutExempt = comment.includes(layoutExemptMarker);
-      declarations.push({
-        file,
-        selector,
-        property: match[1],
-        value: match[2].trim(),
-        line,
-        isExempt,
-        isLayoutExempt,
-      });
+      for (const selector of selectors)
+        declarations.push({
+          file,
+          selector,
+          property: match[1],
+          value: match[2].trim(),
+          line,
+          isExempt,
+          isLayoutExempt,
+        });
     }
   }
   return declarations;
@@ -67,7 +92,21 @@ const literalDuration = /(?<![\w.-])(?:\d*\.)?\d+m?s\b/;
 const transientState =
   /\[data-(?:selected|current|current-within|hovered|pressed|focused|focus-visible|focus-within|dirty|validation|pending|invalid|dragging|drop-target|disabled)[\]=]|:(?:hover|active|focus|focus-visible|focus-within|checked)\b/;
 const layoutProperty =
-  /^(?:display|font-(?:weight|size)|letter-spacing|line-height|(?:min-|max-)?(?:width|height|inline-size|block-size)|(?:padding|margin)(?:-[a-z-]+)?|border(?:-[a-z]+)*-width|(?:row-|column-)?gap|grid-template(?:-[a-z]+)?|flex(?:-basis)?)$/;
+  /^(?:display|font(?:-(?:weight|size))?|letter-spacing|line-height|(?:min-|max-)?(?:width|height|inline-size|block-size)|(?:padding|margin)(?:-[a-z-]+)?|border(?:-[a-z]+)*-width|(?:row-|column-)?gap|grid-template(?:-[a-z]+)?|flex(?:-basis)?)$/;
+
+function isTokenFont(value) {
+  if (value === 'inherit') return true;
+  // Line height is independent of the type scale, including a fixed height in a code view.
+  const parts = value.replace(/\/\s*(?:var\([^)]*\)|[\w.%+-]+)/, '').split(/\s+(?![^(]*\))/);
+  return (
+    /var\(--ref-(?:font|mono|script)\)$/.test(value) &&
+    !parts.some(
+      (part) =>
+        /^[\d.]+px$/.test(part) ||
+        (/^(?:bold|bolder|lighter|[1-9]00)$/.test(part) && !fontWeightValue.test(part)),
+    )
+  );
+}
 
 for (const declaration of declarations) {
   const { file, selector, property, value, isExempt, isLayoutExempt } = declaration;
@@ -90,6 +129,9 @@ for (const declaration of declarations) {
   }
   if (property === 'font-weight' && !fontWeightValue.test(value)) {
     problems.push(`${where(declaration)}: font-weight "${value}" is not a weight token`);
+  }
+  if (property === 'font' && !isTokenFont(value)) {
+    problems.push(`${where(declaration)}: font "${value}" is not a type token shorthand`);
   }
   if (
     /^(?:transition|animation)(?:-duration|-delay)?$/.test(property) &&

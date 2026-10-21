@@ -85,7 +85,7 @@
   border-inline-end: 1px solid var(--ref-border);
   background: var(--ref-surface);
   color: var(--ref-muted);
-  font: 13px / var(--ref-code-editor-line) var(--ref-mono);
+  font: var(--ref-font-size-md) / var(--ref-code-editor-line) var(--ref-mono);
   user-select: none;
 }
 
@@ -138,7 +138,7 @@
   margin: 0;
   padding: var(--ref-code-editor-pad);
   border: 0;
-  font: 13px / var(--ref-code-editor-line) var(--ref-mono);
+  font: var(--ref-font-size-md) / var(--ref-code-editor-line) var(--ref-mono);
   letter-spacing: normal;
   tab-size: 2;
   white-space: pre-wrap;

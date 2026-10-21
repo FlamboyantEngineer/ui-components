@@ -13,7 +13,7 @@
   background: var(--ref-raised);
   color: var(--ref-text);
   box-shadow: var(--ref-shadow);
-  font: 13px/1.3 var(--ref-font);
+  font: var(--ref-font-size-md)/1.3 var(--ref-font);
 }
 
 .ui-completion-list[data-entering] {

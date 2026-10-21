@@ -78,10 +78,7 @@ export function sortTableRows<T extends TableRow>(
 ): readonly T[] {
   const compare = createRowComparator(columns, sort);
   if (!compare) return rows;
-  return rows
-    .map((row, index) => ({ row, index }))
-    .sort((left, right) => compare(left.row, right.row) || left.index - right.index)
-    .map((entry) => entry.row);
+  return [...rows].sort(compare);
 }
 
 /**

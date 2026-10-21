@@ -102,12 +102,6 @@ export function isEmptyFilterValue(value: TableColumnFilterValue | undefined): b
   return value === undefined || createCellTest(value) === null;
 }
 
-/** Whether the filter keeps every row. */
-export function isEmptyFilter(filter: TableFilter): boolean {
-  const columns = Object.values(filter.columns ?? {});
-  return !filter.query?.trim() && columns.every((value) => isEmptyFilterValue(value));
-}
-
 /** `filter` with one column's value replaced, or removed when `value` is null or filters nothing. */
 export function setColumnFilter(
   filter: TableFilter,

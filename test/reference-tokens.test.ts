@@ -62,6 +62,56 @@ describe('reference token check', () => {
     expect(result.stderr).not.toContain('card.css:3');
   });
 
+  it('UIC-LABS-3.5 checks size, weight and family in font shorthands while preserving line height', () => {
+    const type = `${base}:root { --ref-font: system-ui; }`;
+    const common = `.ui-card { color: var(--ref-text); background: var(--ref-canvas); border-radius: var(--ref-radius); border-color: var(--ref-accent); font-size: var(--ref-font-size-sm); font-family: var(--ref-font); }`;
+    const result = check(
+      {
+        'card.css': `${common}
+.ui-card__label { font: 13px/20px var(--ref-font); }
+.ui-card__title { font: 600 var(--ref-font-size-sm)/1.3 var(--ref-font); }
+.ui-card__other { font: var(--ref-font-size-sm)/1.3 Arial; }`,
+      },
+      type,
+    );
+    expect(result.status).toBe(1);
+    expect(result.stderr.match(/is not a type token shorthand/g)).toHaveLength(3);
+    const valid = check(
+      {
+        'card.css': `${common}
+.ui-card__code { font: var(--ref-font-size-sm)/20px var(--ref-font); }
+.ui-card__label { font: inherit; }`,
+      },
+      type,
+    );
+    expect(valid.stderr).toBe('');
+    expect(valid.status).toBe(0);
+  });
+
+  it('UIC-LABS-3.6 UIC-LABS-3.7 checks every grouped selector without splitting functional or quoted commas', () => {
+    const common = `.ui-card { color: var(--ref-text); background: var(--ref-canvas); border-radius: var(--ref-radius); border-color: var(--ref-accent); font-size: var(--ref-font-size-sm); }`;
+    const result = check(
+      {
+        'card.css': `${common}
+.ui-card[data-selected],
+.ui-card__label { padding: 8px; }
+.ui-card[data-size='sm'],
+.ui-card[data-size='xs'] { height: var(--ref-control-height-sm); }`,
+      },
+      `${base}:root { --ref-control-height-sm: 24px; }`,
+    );
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('card.css:3: padding changes with a state');
+    expect(result.stderr).toContain('a xs control takes --ref-control-height-xs');
+    const valid = check({
+      'card.css': `${common}
+.ui-card:not([data-dirty], [data-invalid]),
+.ui-card[data-name='selected, other'] { padding: 8px; }`,
+    });
+    expect(valid.stderr).toBe('');
+    expect(valid.status).toBe(0);
+  });
+
   it('UIC-LABS-3.5 marks a dirty field with a uniform frame, not a bar', () => {
     const result = check({
       'card.css': `.ui-card[data-dirty] .ui-card__frame { border-inline-start: 3px solid var(--ref-accent); }`,

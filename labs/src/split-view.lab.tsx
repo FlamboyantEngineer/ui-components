@@ -134,7 +134,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Resizable"
-      description="Drag a separator or focus it and use the arrow keys (Shift for fine steps), Home and End. A drag shows the resizing state."
+      description="Drag a separator or focus it and use the arrow keys (Shift for fine steps), Home and End. A drag shows the resizing state; release or cancellation finishes it."
     >
       <StateMatrix
         axes={{ orientation: ['horizontal', 'vertical'], start: ['30', '50'] }}

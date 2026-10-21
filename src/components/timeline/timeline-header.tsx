@@ -1,4 +1,4 @@
-import { useLocale } from '../../primitives/index.js';
+import { useDateFormatter } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { TimeScaleUnit } from '../../utils/time-scale.js';
 import {
@@ -26,15 +26,18 @@ const labelFormats: Readonly<Record<string, Intl.DateTimeFormatOptions>> = {
 };
 
 /** Writes a header cell's label from the first day it covers. */
-function useScaleLabel(): (date: string, unit: TimeScaleUnit, tier: ScaleTier) => string {
+function useScaleLabel(
+  scale: TimelineScale,
+): (date: string, unit: TimeScaleUnit, tier: ScaleTier) => string {
   const strings = useUiStrings();
-  const { locale } = useLocale();
+  const plan = timelineScales[scale];
+  const major = useDateFormatter({ ...labelFormats[`major:${plan.major}`], timeZone: 'UTC' });
+  const minor = useDateFormatter({ ...labelFormats[`minor:${plan.minor}`], timeZone: 'UTC' });
   return (date, unit, tier) => {
-    const instant = Date.parse(date);
+    const instant = new Date(date);
     if (unit === 'quarter')
-      return strings.timelineQuarter(Math.floor(new Date(instant).getUTCMonth() / 3) + 1);
-    const options = labelFormats[`${tier}:${unit}`] ?? {};
-    return new Intl.DateTimeFormat(locale, { ...options, timeZone: 'UTC' }).format(instant);
+      return strings.timelineQuarter(Math.floor(instant.getUTCMonth() / 3) + 1);
+    return (tier === 'major' ? major : minor).format(instant);
   };
 }
 
@@ -43,7 +46,7 @@ function useScaleLabel(): (date: string, unit: TimeScaleUnit, tier: ScaleTier) =
  * the larger unit (months or years) over a row of the scale's unit.
  */
 export function TimelineHeader({ axis, scale }: TimelineHeaderProps) {
-  const label = useScaleLabel();
+  const label = useScaleLabel(scale);
   const plan = timelineScales[scale];
   const tiers: Array<[ScaleTier, TimeScaleUnit]> = [
     ['major', plan.major],

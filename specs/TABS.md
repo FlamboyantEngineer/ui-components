@@ -2,6 +2,8 @@
 
 `Tabs` switches between peer sections of one surface. It is a family built on React Aria's `Tabs`, `TabList`, `Tab` and `TabPanel`: `Tabs` holds the selection, `TabList` the row (or column) of `Tab`s, and each `TabPanel` the content of the tab with the same `id`. A horizontal list that runs out of room scrolls, with optional scroll buttons, or collapses the tabs that do not fit into a "more" [Dropdown Menu](DROPDOWN-MENU.md) measured by [`useOverflowItems`](OVERFLOW-LIST.md); tabs can be removable and the list can add tabs. A list can also rename its tabs in place, reorder them by dragging and from the keyboard, and give each tab a menu of its actions, and `Tabs` can remember its selected tab through the provider's storage. Picking one of a few values of a setting is a [Segmented Choice](SEGMENTED-CHOICE.md); showing where a page sits in a hierarchy is a [Breadcrumb](BREADCRUMB.md).
 
+Pointer ownership and drag lifecycle cleanup follow the shared [drag interaction contract](DRAG-INTERACTIONS.md).
+
 ## UIC-TABS-1 - Structure
 
 ### UIC-TABS-1.1 - Tabs, list and panels
