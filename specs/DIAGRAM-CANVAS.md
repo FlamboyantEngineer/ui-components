@@ -160,8 +160,10 @@ Verification: `src/components/diagram-canvas/diagram-canvas.test.tsx`, `e2e/diag
 
 Each node shall be a `role="group"` in the Tab order, named by its `label`, described as the provider's `diagramNode` string through `aria-roledescription`, and described by its `description`, the provider's `diagramSelected` string while selected, and the `diagramOutgoing` and `diagramIncoming` strings listing the labels of the nodes it leads to and comes from (each followed by the edge's label in parentheses).
 
-Implementation: `src/components/diagram-canvas/diagram-node.tsx`, `src/components/diagram-canvas/diagram-canvas.tsx`
-Verification: `src/components/diagram-canvas/diagram-canvas.test.tsx`, `e2e/diagram-canvas.spec.ts`
+Link descriptions shall preserve edge order, include parallel edges and self-links, and leave out connections whose other node is missing. Both views share the same indexed connections.
+
+Implementation: `src/components/diagram-canvas/diagram-links.ts`, `src/components/diagram-canvas/diagram-node.tsx`, `src/components/diagram-canvas/diagram-canvas.tsx`
+Verification: `src/components/diagram-canvas/diagram-links.test.ts`, `src/components/diagram-canvas/diagram-canvas.test.tsx`, `e2e/diagram-canvas.spec.ts`
 
 ### UIC-DIAGRAM-CANVAS-6.2 - Announcements
 
@@ -181,8 +183,10 @@ Verification: `src/components/diagram-canvas/diagram-node.test.tsx`, `src/compon
 
 The view shall be `view` (controlled) or held from `defaultView` (`canvas`), switched by a [Segmented Choice](SEGMENTED-CHOICE.md) in the toolbar (`ui-diagram-canvas__view-switch`) named by the provider's `diagramView` string, and reported through `onViewChange`. The outline (`ui-diagram-canvas__outline`, a list named by the `diagramOutlineView` string) holds an entry per node (`ui-diagram-canvas__outline-item`, with `data-selected`) showing its label (`ui-diagram-canvas__outline-label`), then the nodes it leads to and comes from (`ui-diagram-canvas__outline-links` with `data-direction` `outgoing` or `incoming`, labelled by `ui-diagram-canvas__outline-links-label` reading `diagramLeadsTo` or `diagramComesFrom`) as buttons (`ui-diagram-canvas__outline-link`) that move focus to that node's entry. In edit mode each outgoing link is followed by an [Icon Button](ICON-BUTTON.md) (`ui-diagram-canvas__outline-remove`) named by `diagramRemoveConnection` that removes the edge through `onEdgesChange`. The zoom control and fit button show only in the canvas view.
 
-Implementation: `src/components/diagram-canvas/diagram-outline.tsx`, `src/components/diagram-canvas/diagram-toolbar.tsx`
-Verification: `src/components/diagram-canvas/diagram-canvas.test.tsx`, `e2e/diagram-canvas.spec.ts`
+Link descriptions shall preserve edge order, include parallel edges and self-links, and leave out connections whose other node is missing. Both views share the same indexed connections.
+
+Implementation: `src/components/diagram-canvas/diagram-links.ts`, `src/components/diagram-canvas/diagram-outline.tsx`, `src/components/diagram-canvas/diagram-toolbar.tsx`
+Verification: `src/components/diagram-canvas/diagram-links.test.ts`, `src/components/diagram-canvas/diagram-canvas.test.tsx`, `e2e/diagram-canvas.spec.ts`
 
 ## Hooks
 

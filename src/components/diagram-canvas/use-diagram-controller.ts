@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState, type RefCallback } from 'react';
 import type { Key, Selection, SelectionMode } from '../../core/props.js';
+import { indexDiagramLinks, type DiagramLinks } from './diagram-links.js';
 import { diagramHooks as hooks } from './diagram-hooks.js';
 import {
   findDiagramBounds,
@@ -47,6 +48,7 @@ export interface DiagramController {
   /** The nodes with any dragged positions applied. */
   nodes: readonly DiagramNode[];
   edges: readonly DiagramEdge[];
+  links: ReadonlyMap<Key, DiagramLinks>;
   isEditing: boolean;
   selection: DiagramSelection;
   moves: NodeMoves;
@@ -102,6 +104,7 @@ function useTargetRegistry() {
 /** The state and services of one diagram canvas. */
 export function useDiagramController(options: DiagramControllerOptions): DiagramController {
   const { edges, isEditing } = options;
+  const links = useMemo(() => indexDiagramLinks(options.nodes, edges), [options.nodes, edges]);
   const [message, announce] = useState('');
   const [viewportElement, setViewportElement] = useState<HTMLElement | null>(null);
   const bounds = useMemo(
@@ -140,6 +143,7 @@ export function useDiagramController(options: DiagramControllerOptions): Diagram
   return {
     nodes: applyPreview(options.nodes, moves.preview),
     edges,
+    links,
     isEditing,
     selection,
     moves,

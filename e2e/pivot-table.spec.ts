@@ -14,6 +14,19 @@ function rowHeaders(scope: Locator): Locator {
 }
 
 test.describe('Pivot Table lab', () => {
+  test('UIC-PIVOT-TABLE-1.2 summarizes a large dataset into finite min, max and average cells', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('pivot-table');
+    const table = page.getByRole('grid', { name: 'Large dataset', exact: true });
+    await expect(table.locator('tbody .ui-pivot-table__value')).toHaveText([
+      '0',
+      '199,999',
+      '99,999.5',
+    ]);
+  });
+
   test('UIC-PIVOT-TABLE-2.1 UIC-PIVOT-TABLE-2.2 UIC-PIVOT-TABLE-2.3 UIC-PIVOT-TABLE-2.4 draws every state', async ({
     page,
     lab,

@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { resolveLineGeometry, type LineGeometryInput } from './line-geometry.js';
+import {
+  createLineValueScale,
+  resolveLineGeometry,
+  type LineGeometryInput,
+} from './line-geometry.js';
 
 const base = {
   width: 120,
@@ -10,6 +14,17 @@ const base = {
 } satisfies Partial<LineGeometryInput>;
 
 describe('resolveLineGeometry', () => {
+  it('UIC-CHART-6.3 spans a large series without a function-argument limit', () => {
+    const input = {
+      ...base,
+      series: [
+        { series: 0, points: Array.from({ length: 200_000 }, (_, x) => ({ x, y: x - 100_000 })) },
+      ],
+    };
+    const scale = createLineValueScale(input, { top: 10, bottom: 110, left: 10, right: 110 });
+    expect(scale.domain).toEqual([-100_000, 100_000]);
+  });
+
   it('UIC-CHART-6.1 UIC-CHART-6.2 draws numeric x values in order, with an area toward zero', () => {
     const geometry = resolveLineGeometry({
       ...base,

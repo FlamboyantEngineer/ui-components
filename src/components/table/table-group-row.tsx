@@ -1,5 +1,11 @@
 import type { CSSProperties, ReactNode } from 'react';
-import { Cell, Collection, Row, useLocale, type CellRenderProps } from '../../primitives/index.js';
+import {
+  Cell,
+  Collection,
+  Row,
+  useNumberFormatter,
+  type CellRenderProps,
+} from '../../primitives/index.js';
 import { measuredProperty } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
@@ -78,8 +84,7 @@ function TableGroupRow<T extends TableRow>({
   model: TableRowModel<T>;
 }) {
   const strings = useUiStrings();
-  const { locale } = useLocale();
-  const format = new Intl.NumberFormat(locale);
+  const format = useNumberFormatter();
   const { group } = node;
   const { structure, pinOffsets } = model;
   const heading = useGroupHeading(group);

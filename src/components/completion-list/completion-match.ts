@@ -64,12 +64,11 @@ export function scoreCompletion(label: string, query: string): number | null {
 export function matchCompletions(completions: readonly Completion[], query: string): Completion[] {
   if (!query) return [...completions];
   return completions
-    .map((completion, index) => ({
+    .map((completion) => ({
       completion,
-      index,
       score: scoreCompletion(completion.label, query),
     }))
     .filter(({ completion, score }) => score !== null && completion.label !== query)
-    .sort((a, b) => (a.score ?? 0) - (b.score ?? 0) || a.index - b.index)
+    .sort((a, b) => (a.score ?? 0) - (b.score ?? 0))
     .map(({ completion }) => completion);
 }

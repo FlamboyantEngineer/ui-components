@@ -42,8 +42,7 @@ export function sortTableNodes<T extends TableRow>(
   nodes: readonly TableNode<T>[],
   compare: (left: T, right: T) => number,
 ): readonly TableNode<T>[] {
-  return nodes
-    .map((node, index) => ({ node, index }))
-    .sort((left, right) => compare(left.node.row, right.node.row) || left.index - right.index)
-    .map(({ node }) => ({ ...node, children: sortTableNodes(node.children, compare) }));
+  return [...nodes]
+    .sort((left, right) => compare(left.row, right.row))
+    .map((node) => ({ ...node, children: sortTableNodes(node.children, compare) }));
 }

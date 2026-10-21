@@ -65,30 +65,33 @@ const groupPadding = 0.1;
 
 /** The lowest and highest ends the bars reach, always including zero. */
 function findValueExtent(input: BarGeometryInput): [number, number] {
-  const ends: number[] = [0];
+  let low = 0;
+  let high = 0;
   input.categories.forEach((_, index) => {
     let above = 0;
     let below = 0;
     for (const { values } of input.series) {
       const value = values[index];
       if (value === undefined || !Number.isFinite(value)) continue;
-      if (input.layout === 'grouped') ends.push(value);
-      else if (value >= 0) above += value;
+      if (input.layout === 'grouped') {
+        low = Math.min(low, value);
+        high = Math.max(high, value);
+      } else if (value >= 0) above += value;
       else below += value;
     }
-    ends.push(above, below);
+    low = Math.min(low, below);
+    high = Math.max(high, above);
   });
-  const low = Math.min(...ends);
-  const high = Math.max(...ends);
   return low === high ? [0, 1] : [low, high];
 }
 
-function createScales(input: BarGeometryInput, plot: ChartBox) {
+/** The value axis, also used to measure tick labels before laying out bars. */
+export function createBarValueScale(input: BarGeometryInput, plot: ChartBox): LinearScale {
   const isVertical = input.orientation === 'vertical';
   const valueRange: [number, number] = isVertical
     ? [plot.bottom, plot.top]
     : [plot.left, plot.right];
-  const values = createLinearScale({
+  return createLinearScale({
     domain: findValueExtent(input),
     range: valueRange,
     nice: true,
@@ -99,11 +102,6 @@ function createScales(input: BarGeometryInput, plot: ChartBox) {
       valueTickSpacing[input.orientation],
     ),
   });
-  const bands = createBandScale({
-    domain: input.categories,
-    range: isVertical ? [plot.left, plot.right] : [plot.top, plot.bottom],
-  });
-  return { values, bands };
 }
 
 /**
@@ -112,9 +110,14 @@ function createScales(input: BarGeometryInput, plot: ChartBox) {
  * zero. Grouped bars split their band between the drawn series. Values that are not finite numbers
  * draw no bar. Coordinates are rounded to two decimals.
  */
-export function resolveBarGeometry(input: BarGeometryInput): BarGeometry {
+export function resolveBarGeometry(input: BarGeometryInput, valueScale?: LinearScale): BarGeometry {
   const plot = resolvePlotBox(input.width, input.height, input.margin);
-  const { values, bands } = createScales(input, plot);
+  const isVertical = input.orientation === 'vertical';
+  const values = valueScale ?? createBarValueScale(input, plot);
+  const bands = createBandScale({
+    domain: input.categories,
+    range: isVertical ? [plot.left, plot.right] : [plot.top, plot.bottom],
+  });
   const groups = createBandScale({
     domain: input.series.map(({ series }) => String(series)),
     range: [0, bands.bandwidth],

@@ -43,10 +43,23 @@ function createInstantReader(timeZone: string) {
 
 /** The lowest and highest readable values, or `undefined` without any. */
 function findExtent(values: readonly LineChartX[], read: (value: LineChartX) => number) {
-  const readable = values.filter((value) => Number.isFinite(read(value)));
-  if (readable.length === 0) return undefined;
-  const sorted = [...readable].sort((a, b) => read(a) - read(b));
-  return [sorted[0]!, sorted.at(-1)!] as const;
+  let extent: [LineChartX, LineChartX] | undefined;
+  let low = Infinity;
+  let high = -Infinity;
+  for (const value of values) {
+    const at = read(value);
+    if (!Number.isFinite(at)) continue;
+    extent ??= [value, value];
+    if (at < low) {
+      low = at;
+      extent[0] = value;
+    }
+    if (at >= high) {
+      high = at;
+      extent[1] = value;
+    }
+  }
+  return extent;
 }
 
 function createTimeAxis(options: LineXAxisOptions): LineXAxis {

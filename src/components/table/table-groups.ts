@@ -1,3 +1,4 @@
+import { summarizeNumbers } from '../../utils/summarize-numbers.js';
 import type { ReactNode } from 'react';
 import type { Key, SortDescriptor, SortDirection } from '../../core/props.js';
 import { getColumnText } from './table-column.js';
@@ -200,10 +201,6 @@ export function aggregateCellValues(
   kind: Exclude<TableAggregate<never>, (rows: readonly never[]) => ReactNode>,
 ): number | null {
   if (kind === 'count') return values.filter((value) => !isEmptyCellValue(value)).length;
-  const numbers = values.filter(
-    (value): value is number => typeof value === 'number' && Number.isFinite(value),
-  );
-  if (numbers.length === 0) return null;
-  if (kind === 'sum') return numbers.reduce((total, value) => total + value, 0);
-  return kind === 'min' ? Math.min(...numbers) : Math.max(...numbers);
+  const summary = summarizeNumbers(values);
+  return summary.count === 0 ? null : summary[kind];
 }

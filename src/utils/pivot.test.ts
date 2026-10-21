@@ -69,6 +69,20 @@ describe('pivot', () => {
     expect(keys.indexOf('item 9')).toBeLessThan(keys.indexOf('Item 10'));
   });
 
+  it('UIC-PIVOT-TABLE-1.2 aggregates a large group without a function-argument limit', () => {
+    const records = Array.from({ length: 200_000 }, (_, value) => ({ value }));
+    const result = pivot(records, {
+      rows: [],
+      columns: [],
+      values: [
+        { field: 'value', aggregate: 'min' },
+        { field: 'value', aggregate: 'max' },
+        { field: 'value', aggregate: 'average' },
+      ],
+    });
+    expect(result.grandTotal).toEqual([0, 199_999, 99_999.5]);
+  });
+
   it('UIC-PIVOT-TABLE-1.2 aggregates by sum, count, min, max, average or a function', () => {
     const result = pivot(sales, {
       rows: ['region'],

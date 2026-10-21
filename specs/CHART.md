@@ -158,15 +158,19 @@ Verification: `src/components/chart/line-geometry.test.ts`, `src/components/char
 
 The value axis shall run from `minValue` to `maxValue` when given, keeping values beyond them at the edges, and otherwise over a nice domain that includes zero and every value, about one tick every 40 pixels, with grid lines across the plot.
 
-Implementation: `src/components/chart/line-geometry.ts`
+The finite input values shall determine the domain without depending on the runtime limit on function arguments.
+
+Implementation: `src/utils/summarize-numbers.ts`, `src/components/chart/line-geometry.ts`
 Verification: `src/components/chart/line-geometry.test.ts`
 
 ### UIC-CHART-6.4 - Table
 
 The line chart's table shall have one row per distinct x value of any series, in x order, headed by its formatted x value under `categoryLabel` (the provider's `chartCategory` string by default), then each series' formatted value at that x, or nothing.
 
-Implementation: `src/components/chart/line-chart.tsx`
-Verification: `src/components/chart/line-chart.test.tsx`
+A repeated coordinate shall use its first point in each series, leaving the cell blank if that point has no finite value. Building the table shall read each source coordinate once before ordering the distinct coordinates.
+
+Implementation: `src/components/chart/line-table.ts`, `src/components/chart/line-chart.tsx`
+Verification: `src/components/chart/line-table.test.ts`, `src/components/chart/line-chart.test.tsx`
 
 ## UIC-CHART-7 - Donut chart
 

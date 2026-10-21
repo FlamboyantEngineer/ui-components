@@ -1,5 +1,5 @@
 import { useId, useMemo, type ReactNode } from 'react';
-import { useLocale } from '../../primitives/index.js';
+import { useNumberFormatter } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { GlyphName } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
@@ -80,17 +80,12 @@ function sortLevels(levels: readonly number[]): number[] {
 }
 
 function useZoomFormatter(formatOptions: Intl.NumberFormatOptions | undefined) {
-  const { locale } = useLocale();
-  return useMemo(
-    () =>
-      new Intl.NumberFormat(locale, {
-        style: 'unit',
-        unit: 'percent',
-        maximumFractionDigits: 20,
-        ...formatOptions,
-      }),
-    [locale, formatOptions],
-  );
+  return useNumberFormatter({
+    style: 'unit',
+    unit: 'percent',
+    maximumFractionDigits: 20,
+    ...formatOptions,
+  });
 }
 
 /** A built-in button that requests its target zoom, disabled but focusable while it has none. */

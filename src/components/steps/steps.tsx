@@ -1,5 +1,9 @@
 import type { ReactNode } from 'react';
-import { Button as AriaButton, VisuallyHidden, useLocale } from '../../primitives/index.js';
+import {
+  Button as AriaButton,
+  VisuallyHidden,
+  useNumberFormatter,
+} from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key, NativeProps, Orientation } from '../../core/props.js';
@@ -76,11 +80,11 @@ function resolveStepStatus(item: StepsItem, index: number, currentIndex: number)
 
 /** The decorative marker: a glyph for a settled step, else the step's number. */
 function StepMarker({ status, index }: { status: StepsStatus; index: number }) {
-  const { locale } = useLocale();
+  const format = useNumberFormatter();
   const glyph = status in statusGlyphs ? statusGlyphs[status as keyof typeof statusGlyphs] : null;
   return (
     <span {...hooks.slot('marker')} aria-hidden="true">
-      {glyph ? <Icon glyph={glyph} size="sm" /> : new Intl.NumberFormat(locale).format(index + 1)}
+      {glyph ? <Icon glyph={glyph} size="sm" /> : format.format(index + 1)}
     </span>
   );
 }

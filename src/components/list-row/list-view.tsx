@@ -1,10 +1,10 @@
 // Collections of rows the reader selects, reorders or scrolls through at length: React Aria's grid
 // list in its stack layout, each row drawn with the list row's text.
 
+import { createDropIndicator } from '../../utils/create-drop-indicator.js';
 import { useMemo, type ReactElement, type ReactNode } from 'react';
 import {
   Collection,
-  DropIndicator,
   GridList,
   GridListHeader,
   GridListItem,
@@ -19,10 +19,7 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
-import {
-  useReorderDragAndDrop,
-  type CollectionDropTarget,
-} from '../../utils/use-reorder-drag-and-drop.js';
+import { useReorderDragAndDrop } from '../../utils/use-reorder-drag-and-drop.js';
 import { Checkbox } from '../checkbox/checkbox.js';
 import { DragHandle } from '../drag-handle/drag-handle.js';
 import { EmptyState } from '../empty-state/empty-state.js';
@@ -111,17 +108,7 @@ const noDragAndDrop = {};
 
 const defaultRowHeight = 48;
 
-function renderDropIndicator(target: CollectionDropTarget) {
-  return (
-    <DropIndicator
-      target={target}
-      className={viewHooks.slotClass('drop-indicator')}
-      render={(props) => (
-        <div {...props} data-position={target.type === 'item' ? target.dropPosition : undefined} />
-      )}
-    />
-  );
-}
+const renderDropIndicator = createDropIndicator(viewHooks.slotClass('drop-indicator'));
 
 function getKeyText(key: Key): string {
   return String(key);

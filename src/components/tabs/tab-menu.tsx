@@ -1,3 +1,4 @@
+import { joinMenuGroups } from '../menu/menu.js';
 // The menu of a tab's actions, opened from the tab like a context menu.
 
 import { useRef, type KeyboardEvent, type MouseEvent, type PointerEvent } from 'react';
@@ -49,15 +50,6 @@ function findMoveDirections(reorder: TabReorder): [MoveDirection, MoveDirection]
   return reorder.isRtl ? ['right', 'left'] : ['left', 'right'];
 }
 
-/** Joins non-empty groups of entries with separators. */
-function joinGroups(groups: readonly MenuItemEntry[][]): MenuEntry[] {
-  return groups
-    .filter((group) => group.length > 0)
-    .flatMap((group, index) =>
-      index === 0 ? group : [{ type: 'separator' as const, id: `separator-${index}` }, ...group],
-    );
-}
-
 /** The menu entries of the actions a list takes: rename and duplicate, moves, then delete. */
 function useStandardEntries(options: TabMenuOptions) {
   const strings = useUiStrings();
@@ -105,7 +97,7 @@ function useStandardEntries(options: TabMenuOptions) {
           },
         ]
       : [];
-    return joinGroups([edits, moves, removal]);
+    return joinMenuGroups([edits, moves, removal]);
   };
 }
 

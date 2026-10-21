@@ -1,4 +1,4 @@
-import { useLocale } from '../../primitives/index.js';
+import { useLocale, useNumberFormatter } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { formatDateValue } from '../date-time-field/date-time-field.js';
@@ -22,6 +22,7 @@ export interface FilterConditionText {
 interface FormatContext {
   strings: UiStrings;
   locale: string;
+  number: Intl.NumberFormat;
 }
 
 function formatList(values: readonly string[], field: FilterField): string {
@@ -33,8 +34,7 @@ function formatList(values: readonly string[], field: FilterField): string {
 
 function formatValue(condition: FilterCondition, field: FilterField, context: FormatContext) {
   const { value } = condition;
-  const { strings, locale } = context;
-  const number = new Intl.NumberFormat(locale);
+  const { strings, locale, number } = context;
   switch (getFilterValueKind(field.type, condition.operator)) {
     case 'none':
       return '';
@@ -64,11 +64,12 @@ export function useFilterConditionText(): (
 ) => FilterConditionText {
   const strings = useUiStrings();
   const { locale } = useLocale();
+  const number = useNumberFormatter();
   return (condition, field) => ({
     field: field.label,
     operator: strings.filterOperator(condition.operator),
     value: isFilterConditionComplete(condition, field)
-      ? formatValue(condition, field, { strings, locale })
+      ? formatValue(condition, field, { strings, locale, number })
       : '',
   });
 }

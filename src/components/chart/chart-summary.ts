@@ -1,4 +1,4 @@
-import { useLocale } from '../../primitives/index.js';
+import { summarizeNumbers } from '../../utils/summarize-numbers.js';
 import { useUiStrings } from '../../core/provider.js';
 
 export interface ValueSummaryOptions {
@@ -9,21 +9,15 @@ export interface ValueSummaryOptions {
   format: Intl.NumberFormat;
 }
 
-/** A number format for the provider's locale. */
-export function useNumberFormat(formatOptions: Intl.NumberFormatOptions | undefined) {
-  const { locale } = useLocale();
-  return new Intl.NumberFormat(locale, formatOptions);
-}
-
 /** The text that describes drawn values: how many series and values, and the lowest and highest. */
 export function useValueSummary({ values, series, format }: ValueSummaryOptions): string {
   const strings = useUiStrings();
-  const finite = values.filter((value) => Number.isFinite(value));
-  if (finite.length === 0) return strings.noData;
+  const summary = summarizeNumbers(values);
+  if (summary.count === 0) return strings.noData;
   return strings.chartSummary({
     series,
-    values: finite.length,
-    low: format.format(Math.min(...finite)),
-    high: format.format(Math.max(...finite)),
+    values: summary.count,
+    low: format.format(summary.min),
+    high: format.format(summary.max),
   });
 }

@@ -67,3 +67,5 @@ export function IconButton({
   );
   return withTooltip(element, { tooltip: hint, shortcut: rest.shortcut });
 }
+
+export { ScrollStripButton } from './scroll-strip-button.js';

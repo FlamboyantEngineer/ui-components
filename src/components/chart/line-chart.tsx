@@ -1,22 +1,24 @@
 import type { ReactNode, Ref } from 'react';
-import { useLocale } from '../../primitives/index.js';
+import { getLocalTimeZone, useLocale, useNumberFormatter } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { Chart, type ChartSeries, type ChartTable, type ChartViewProps } from './chart.js';
+import { Chart, type ChartSeries, type ChartViewProps } from './chart.js';
 import { ChartAxis } from './chart-axis.js';
 import { chartHooks, lineChartHooks } from './chart-hooks.js';
 import { ChartLegend, useHiddenKeys, type ChartHiddenKeysProps } from './chart-legend.js';
 import { ChartTooltip, useChartPoints } from './chart-points.js';
-import { useNumberFormat, useValueSummary } from './chart-summary.js';
+import { useValueSummary } from './chart-summary.js';
 import {
+  createLineValueScale,
   resolveLineGeometry,
   type LineChartPoint,
   type LineGeometry,
   type LineGeometryInput,
 } from './line-geometry.js';
-import type { LineXAxis } from './line-x-axis.js';
+import { resolvePlotBox } from './chart-layout.js';
+import { toLineTable } from './line-table.js';
 import { useChartFrame, useLabelMargin } from './use-chart-box.js';
 
 export type { LineChartPoint } from './line-geometry.js';
@@ -156,38 +158,13 @@ function useLineGeometry(
 ): LineGeometry {
   const { locale } = useLocale();
   const margin = { top: 8, right: 24, bottom: 24 };
-  const probe = resolveLineGeometry({ ...input, locale, margin: { ...margin, left: 0 } });
+  const plot = resolvePlotBox(input.width, input.height, { ...margin, left: 0 });
+  const values = createLineValueScale({ ...input, locale, margin: { ...margin, left: 0 } }, plot);
   const left = useLabelMargin(
     element,
-    probe.yTicks.map((tick) => tick.label),
+    values.ticks().map((tick) => tick.label),
   );
-  return resolveLineGeometry({ ...input, locale, margin: { ...margin, left } });
-}
-
-/** The table: one row per x value of any series, in x order, with each series' value there. */
-function toLineTable(
-  series: readonly LineChartSeries[],
-  {
-    xAxis,
-    format,
-    categoryLabel,
-  }: { xAxis: LineXAxis; format: Intl.NumberFormat; categoryLabel: string },
-): ChartTable {
-  const byX = new Map<number, LineChartPoint['x']>();
-  for (const point of series.flatMap((entry) => entry.points)) {
-    const at = xAxis.read(point.x);
-    if (Number.isFinite(at) && !byX.has(at)) byX.set(at, point.x);
-  }
-  const rows = [...byX.entries()]
-    .sort(([a], [b]) => a - b)
-    .map(([at, x]) => [
-      xAxis.format(x),
-      ...series.map((entry) => {
-        const point = entry.points.find((candidate) => xAxis.read(candidate.x) === at);
-        return point && Number.isFinite(point.y) ? format.format(point.y) : '';
-      }),
-    ]);
-  return { columns: [categoryLabel, ...series.map((entry) => entry.label)], rows };
+  return resolveLineGeometry({ ...input, locale, margin: { ...margin, left } }, values);
 }
 
 /**
@@ -203,7 +180,7 @@ export function LineChart({
   minValue,
   maxValue,
   formatOptions,
-  timeZone = new Intl.DateTimeFormat().resolvedOptions().timeZone,
+  timeZone = getLocalTimeZone(),
   categoryLabel,
   summary,
   showSummary,
@@ -217,7 +194,7 @@ export function LineChart({
 }: LineChartProps) {
   const strings = useUiStrings();
   const { width, element, frameRef } = useChartFrame(ref);
-  const format = useNumberFormat(formatOptions);
+  const format = useNumberFormatter(formatOptions);
   const [hidden, setHidden] = useHiddenKeys({ hiddenKeys, defaultHiddenKeys, onHiddenKeysChange });
   const drawn = series
     .map((entry, index) => ({ series: index, points: entry.points, id: entry.id }))

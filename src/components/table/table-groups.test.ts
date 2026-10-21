@@ -134,6 +134,13 @@ describe('table grouping helpers', () => {
     expect(ids([])).toEqual([]);
   });
 
+  it('UIC-TABLE-13.5 aggregates a large group without a function-argument limit', () => {
+    const values = Array.from({ length: 200_000 }, (_, index) => index - 100_000);
+    expect(aggregateCellValues(values, 'min')).toBe(-100_000);
+    expect(aggregateCellValues(values, 'max')).toBe(99_999);
+    expect(aggregateCellValues(values, 'sum')).toBe(-100_000);
+  });
+
   it('UIC-TABLE-13.3 UIC-TABLE-13.5 aggregates counts of values and sums, minimums and maximums of numbers', () => {
     const values = [3, '', null, 7, 'x', undefined, Number.NaN, -1];
     expect(aggregateCellValues(values, 'count')).toBe(5);

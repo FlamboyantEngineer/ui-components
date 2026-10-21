@@ -1,5 +1,5 @@
 import { useId, useState, type FocusEvent } from 'react';
-import { CheckboxGroup as AriaCheckboxGroup, useLocale } from '../../primitives/index.js';
+import { CheckboxGroup as AriaCheckboxGroup, useNumberFormatter } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
@@ -98,7 +98,6 @@ export function FacetList({
   ...rest
 }: FacetListProps) {
   const strings = useUiStrings();
-  const { locale } = useLocale();
   const labelId = useId();
   const optionsId = useId();
   const [value, setValue] = useControllableState(controlledValue, defaultValue, (next) =>
@@ -114,7 +113,7 @@ export function FacetList({
     limit,
     isExpanded,
   });
-  const count = new Intl.NumberFormat(locale);
+  const count = useNumberFormatter();
   const choose = (ticked: string[]) =>
     setValue(options.map((option) => option.value).filter((entry) => ticked.includes(entry)));
   const canFold = !query.trim() && options.length > limit;
@@ -145,7 +144,7 @@ export function FacetList({
         onChange={choose}
       >
         {shown.map((option) => (
-          <FacetOption key={option.value} option={option} format={count.format} />
+          <FacetOption key={option.value} option={option} format={(value) => count.format(value)} />
         ))}
       </AriaCheckboxGroup>
       {matchCount === 0 ? <p {...hooks.slot('empty')}>{strings.noResults}</p> : null}

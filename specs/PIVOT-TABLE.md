@@ -15,7 +15,9 @@ Verification: `src/utils/pivot.test.ts`
 
 Each value (`PivotValue`) of the layout shall aggregate its `field` over a set of records by its `aggregate`, `sum` by default: `count` counts the non-empty values, `sum`, `min`, `max` and `average` read the finite numbers and give `null` without one, and a function receives every value of the field (empty ones included) and returns a number or `null`. Aggregates (`PivotAggregates`) list one number or `null` per value, in layout order.
 
-Implementation: `src/utils/pivot.ts`
+Built-in numeric aggregates shall not depend on the runtime limit on function arguments.
+
+Implementation: `src/utils/summarize-numbers.ts`, `src/utils/pivot.ts`
 Verification: `src/utils/pivot.test.ts`
 
 ### UIC-PIVOT-TABLE-1.3 - Totals
