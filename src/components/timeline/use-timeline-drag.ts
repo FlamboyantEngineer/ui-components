@@ -1,4 +1,5 @@
 import { useRef, useState, type PointerEvent } from 'react';
+import { usePointerDrag } from '../../utils/use-pointer-drag.js';
 import {
   resolveDragChange,
   type ReadItem,
@@ -17,7 +18,6 @@ export interface TimelineDragOptions {
 }
 
 interface Drag {
-  pointerId: number;
   originX: number;
   edge: TimelineDragEdge;
   origin: ReadItem;
@@ -44,41 +44,10 @@ export function useTimelineDrag({
   onDraft,
   onCommit,
 }: TimelineDragOptions) {
-  const drag = useRef<Drag | null>(null);
   const moved = useRef(false);
   const [isDragging, setDragging] = useState(false);
 
-  const finish = (event: PointerEvent<HTMLElement>, shouldCommit: boolean) => {
-    const active = drag.current;
-    if (active?.pointerId !== event.pointerId) return;
-    drag.current = null;
-    setDragging(false);
-    const target = event.currentTarget;
-    if (target.hasPointerCapture?.(event.pointerId)) target.releasePointerCapture(event.pointerId);
-    if (shouldCommit && active.days !== 0) {
-      onCommit(resolveDragChange(active.origin, active.edge, active.days));
-    }
-    onDraft(null);
-  };
-
-  const onPointerDown = (event: PointerEvent<HTMLElement>) => {
-    moved.current = false;
-    if (!isEditable || event.button !== 0 || event.isPrimary === false || drag.current) return;
-    const edge = readEdge(event.target, read.kind);
-    drag.current = {
-      pointerId: event.pointerId,
-      originX: event.clientX,
-      edge,
-      origin: read,
-      days: 0,
-    };
-    event.currentTarget.setPointerCapture?.(event.pointerId);
-    setDragging(true);
-  };
-
-  const onPointerMove = (event: PointerEvent<HTMLElement>) => {
-    const active = drag.current;
-    if (active?.pointerId !== event.pointerId) return;
+  const move = (event: PointerEvent<HTMLElement>, active: Drag) => {
     const travel = event.clientX - active.originX;
     if (Math.abs(travel) >= dragThreshold) moved.current = true;
     const days = Math.round(travel / dayWidth);
@@ -86,6 +55,28 @@ export function useTimelineDrag({
     active.days = days;
     onDraft(resolveDragChange(active.origin, active.edge, days));
   };
+  const handlers = usePointerDrag<HTMLElement, Drag>({
+    onStart: (event) => {
+      if (!isEditable) return null;
+      moved.current = false;
+      setDragging(true);
+      return {
+        originX: event.clientX,
+        edge: readEdge(event.target, read.kind),
+        origin: read,
+        days: 0,
+      };
+    },
+    onMove: move,
+    onEnd: (event, active, isCancelled) => {
+      if (!isCancelled) move(event, active);
+      setDragging(false);
+      if (!isCancelled && active.days !== 0) {
+        onCommit(resolveDragChange(active.origin, active.edge, active.days));
+      }
+      onDraft(null);
+    },
+  });
 
   return {
     isDragging,
@@ -95,15 +86,6 @@ export function useTimelineDrag({
       moved.current = false;
       return hasMoved;
     },
-    handlers: {
-      onPointerDown,
-      onPointerMove,
-      onPointerUp: (event: PointerEvent<HTMLElement>) => {
-        onPointerMove(event);
-        finish(event, true);
-      },
-      onPointerCancel: (event: PointerEvent<HTMLElement>) => finish(event, false),
-      onLostPointerCapture: (event: PointerEvent<HTMLElement>) => finish(event, false),
-    },
+    handlers,
   };
 }

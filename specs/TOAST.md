@@ -2,6 +2,8 @@
 
 A toast is a transient, non-blocking message about something that just happened, built on React Aria's toast region and queue. The host creates one queue with `createToastQueue`, renders it once in a `ToastRegion` and adds toasts whenever its own logic decides to. A toast shows a tone glyph (or a busy indicator while pending), a title, an optional description, an optional action and a dismiss button, changes in place as work progresses, and never asks a question it waits on; a decision belongs in a modal dialog and a field's problem stays beside the field. `ToastList` draws a queue in place, for previews.
 
+Pointer ownership and drag lifecycle cleanup follow the shared [drag interaction contract](DRAG-INTERACTIONS.md).
+
 ## UIC-TOAST-1 - Queue
 
 ### UIC-TOAST-1.1 - Adding toasts

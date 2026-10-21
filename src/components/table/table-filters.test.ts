@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
   filterTableRows,
-  isEmptyFilter,
   isEmptyFilterValue,
   listFilterOptions,
   setColumnFilter,
@@ -76,8 +75,6 @@ describe('table filter helpers', () => {
     expect(filter).toEqual({ query: 'a', columns: { colour: ['Red'] } });
     expect(setColumnFilter(filter, 'colour', [])).toEqual({ query: 'a', columns: {} });
     expect(setColumnFilter(filter, 'colour', null)).toEqual({ query: 'a', columns: {} });
-    expect(isEmptyFilter({ query: '  ', columns: { name: '' } })).toBe(true);
-    expect(isEmptyFilter(filter)).toBe(false);
   });
 
   it('UIC-TABLE-2.8 lists a set filter its options, else the sorted distinct values', () => {

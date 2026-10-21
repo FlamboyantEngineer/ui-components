@@ -346,7 +346,7 @@ describe('Board', () => {
     );
   });
 
-  it('UIC-BOARD-3.1 offers column handles only while the board takes column moves', () => {
+  it('UIC-BOARD-3.1 UIC-DRAG-INTERACTIONS-2.3 offers column handles only while the board takes column moves', () => {
     const { container, rerender } = render(<TaskBoard onColumnMove={vi.fn()} />);
     const handle = screen.getByRole('button', { name: 'Move column Doing' });
     expect(handle).toHaveClass('ui-board__column-handle', 'ui-icon-button');
@@ -355,6 +355,23 @@ describe('Board', () => {
     rerender(<TaskBoard />);
     expect(container.querySelector('.ui-board__column-handle')).toBeNull();
     expect(container.querySelector('.ui-board__column')).not.toHaveAttribute('draggable');
+  });
+
+  it('UIC-BOARD-3.2 UIC-DRAG-INTERACTIONS-2.3 drags a column by keyboard to an accepted target', async () => {
+    const user = userEvent.setup();
+    const onColumnMove = vi.fn<(move: BoardColumnMove) => void>();
+    const { container } = render(<TaskBoard onColumnMove={onColumnMove} />);
+    act(() => screen.getByRole('button', { name: 'Move column To do' }).focus());
+    await user.keyboard('{Enter}');
+    await waitFor(() =>
+      expect(container.querySelectorAll('.ui-board__column[data-drop-target]')).toHaveLength(1),
+    );
+    await user.keyboard('{Tab}{Enter}');
+    expect(onColumnMove).toHaveBeenCalledExactlyOnceWith({
+      key: 'todo',
+      targetKey: 'done',
+      position: 'after',
+    });
   });
 
   it('UIC-BOARD-3.2 moves a column with Alt+Arrow keys on its handle', async () => {

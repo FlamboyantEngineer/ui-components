@@ -1,13 +1,13 @@
 import { useEffect, type ReactNode } from 'react';
 import { PopoverContext, useSlottedContext } from '../../primitives/index.js';
+import { capturePointer, releasePointer } from '../../utils/pointer-drag.js';
 
 /** Keep a popup that overlaps its trigger from receiving the opening mouse release. */
 function captureOpeningPress(trigger: Element) {
   let pointer: number | undefined;
   let bounds: DOMRect;
   const release = () => {
-    if (pointer !== undefined && trigger.hasPointerCapture?.(pointer))
-      trigger.releasePointerCapture(pointer);
+    if (pointer !== undefined) releasePointer(trigger, pointer);
     pointer = undefined;
   };
   const down = (event: Event) => {
@@ -22,7 +22,8 @@ function captureOpeningPress(trigger: Element) {
     bounds = trigger.getBoundingClientRect();
     // React Aria releases capture during pointerdown, before this microtask runs.
     queueMicrotask(() => {
-      if (pointer === press.pointerId) trigger.setPointerCapture?.(pointer);
+      if (pointer === press.pointerId)
+        capturePointer({ currentTarget: trigger, pointerId: pointer });
     });
   };
   const move = (event: Event) => {

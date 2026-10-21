@@ -3,6 +3,7 @@ import { useLocale } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps, Orientation } from '../../core/props.js';
 import { clamp } from '../../utils/clamp.js';
+import { usePointerDrag } from '../../utils/use-pointer-drag.js';
 
 /** The pane whose size the handle's value reports, relative to the separator. */
 export type ResizeHandleSizedPane = 'before' | 'after';
@@ -57,7 +58,6 @@ export interface ResizeHandleProps
 }
 
 interface Drag {
-  pointerId: number;
   start: number;
   startValue: number;
   scale: number;
@@ -92,13 +92,12 @@ function useResizeInteraction(options: ResizeInteractionOptions) {
     options;
   const { sizedPane = 'before', direction = 'ltr', onResizingChange } = options;
   const [isResizing, setResizing] = useState(false);
-  const drag = useRef<Drag | null>(null);
   // Pointer travel toward the inline end (or down) grows the pane before the separator.
   const sign =
     (orientation === 'vertical' && direction === 'rtl' ? -1 : 1) *
     (sizedPane === 'before' ? 1 : -1);
   const latest = useRef(value);
-  if (!drag.current) latest.current = value;
+  if (!isResizing) latest.current = value;
 
   const axisCoordinate = (event: PointerEvent) =>
     orientation === 'vertical' ? event.clientX : event.clientY;
@@ -106,41 +105,28 @@ function useResizeInteraction(options: ResizeInteractionOptions) {
     setResizing(next);
     onResizingChange?.(next);
   };
-  const finish = (event: PointerEvent<HTMLDivElement>) => {
-    const target = event.currentTarget;
-    if (drag.current?.pointerId !== event.pointerId) return;
-    drag.current = null;
-    if (target.hasPointerCapture?.(event.pointerId)) target.releasePointerCapture(event.pointerId);
-    changeResizing(false);
-    onChangeEnd?.(latest.current);
-  };
-  const move = (event: PointerEvent<HTMLDivElement>) => {
-    const active = drag.current;
-    if (!active || active.pointerId !== event.pointerId || active.scale <= 0) return;
+  const move = (event: PointerEvent<HTMLDivElement>, active: Drag) => {
+    if (active.scale <= 0) return;
     const delta = (axisCoordinate(event) - active.start) * active.scale * sign;
     const next = clamp(active.startValue + delta, minValue, maxValue);
     if (next === latest.current) return;
     latest.current = next;
     onChange?.(next);
   };
-  const start = (event: PointerEvent<HTMLDivElement>) => {
-    if (event.button !== 0 || event.isPrimary === false || drag.current) return;
-    event.preventDefault();
-    const { pointerId } = event;
-    drag.current = {
-      pointerId,
-      start: axisCoordinate(event),
-      startValue: value,
-      scale: getUnitsPerPixel(),
-    };
-    latest.current = value;
-    event.currentTarget.setPointerCapture?.(pointerId);
-    changeResizing(true);
-  };
-  const end = (event: PointerEvent<HTMLDivElement>) => {
-    move(event);
-    finish(event);
-  };
+  const pointer = usePointerDrag<HTMLDivElement, Drag>({
+    onStart: (event) => {
+      event.preventDefault();
+      latest.current = value;
+      changeResizing(true);
+      return { start: axisCoordinate(event), startValue: value, scale: getUnitsPerPixel() };
+    },
+    onMove: move,
+    onEnd: (event, active, isCancelled) => {
+      if (!isCancelled) move(event, active);
+      changeResizing(false);
+      onChangeEnd?.(latest.current);
+    },
+  });
   const step = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.defaultPrevented) return;
     const next = resolveResizeKeyboardValue(event, options);
@@ -149,7 +135,7 @@ function useResizeInteraction(options: ResizeInteractionOptions) {
     if (next !== value) onChange?.(next);
     onChangeEnd?.(next);
   };
-  return { isResizing, start, move, end, finish, step };
+  return { isResizing, pointer, step };
 }
 
 /**
@@ -226,11 +212,11 @@ export function ResizeHandle({
     ? {}
     : {
         tabIndex: 0,
-        onPointerDown: chain(onPointerDown, interaction.start),
-        onPointerMove: chain(onPointerMove, interaction.move),
-        onPointerUp: chain(onPointerUp, interaction.end),
-        onPointerCancel: chain(onPointerCancel, interaction.finish),
-        onLostPointerCapture: chain(onLostPointerCapture, interaction.finish),
+        onPointerDown: chain(onPointerDown, interaction.pointer.onPointerDown),
+        onPointerMove: chain(onPointerMove, interaction.pointer.onPointerMove),
+        onPointerUp: chain(onPointerUp, interaction.pointer.onPointerUp),
+        onPointerCancel: chain(onPointerCancel, interaction.pointer.onPointerCancel),
+        onLostPointerCapture: chain(onLostPointerCapture, interaction.pointer.onLostPointerCapture),
         onKeyDown: chain(onKeyDown, interaction.step),
       };
 

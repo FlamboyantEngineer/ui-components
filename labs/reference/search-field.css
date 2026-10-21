@@ -158,11 +158,5 @@
   border: 2px solid var(--ref-muted);
   border-right-color: transparent;
   border-radius: 50%;
-  animation: ref-search-field-spin var(--ref-duration-spin) linear infinite;
-}
-
-@keyframes ref-search-field-spin {
-  to {
-    transform: rotate(360deg);
-  }
+  animation: ref-spin var(--ref-duration-spin) linear infinite;
 }

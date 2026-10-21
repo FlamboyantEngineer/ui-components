@@ -1,14 +1,9 @@
-import {
-  useEffect,
-  useId,
-  useRef,
-  type KeyboardEvent,
-  type PointerEvent,
-  type ReactNode,
-} from 'react';
+import { useEffect, useId, useRef, type KeyboardEvent, type ReactNode } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { mergeRefs } from '../../utils/merge-props.js';
+import { capturePointer } from '../../utils/pointer-drag.js';
+import { usePointerDrag } from '../../utils/use-pointer-drag.js';
 import { diagramHooks as hooks } from './diagram-hooks.js';
 import {
   findConnectedNode,
@@ -56,43 +51,47 @@ function isToggleEvent(event: { shiftKey: boolean; metaKey: boolean; ctrlKey: bo
 
 /** Selection on press, and a drag that moves the node (and the selection holding it). */
 function useNodePointer(id: Key, controller: DiagramController) {
-  const start = useRef<PointerStart | null>(null);
   const { selection, moves, connect, isEditing } = controller;
-  return {
-    onPointerDown: (event: PointerEvent<HTMLElement>) => {
-      if (event.button !== 0) return;
+  return usePointerDrag<HTMLElement, PointerStart>({
+    capture: false,
+    onStart: (event) => {
       event.stopPropagation();
-      if (connect.complete(id)) return;
+      if (connect.complete(id)) return null;
       const isToggle = isToggleEvent(event);
       const wasSelected = selection.selected.has(id);
       if (isToggle || !wasSelected) selection.select(id, isToggle);
-      start.current = {
+      const state = {
         x: event.clientX,
         y: event.clientY,
         isDragging: false,
         wasSelected,
         isToggle,
       };
-      if (!isEditing || isToggle) return;
-      moves.begin(id);
-      event.currentTarget.setPointerCapture?.(event.pointerId);
+      if (isEditing && !isToggle) {
+        moves.begin(id);
+        capturePointer(event);
+      }
+      return state;
     },
-    onPointerMove: (event: PointerEvent<HTMLElement>) => {
-      const active = start.current;
-      if (!active || !isEditing || active.isToggle) return;
+    onMove: (event, active) => {
+      if (!isEditing || active.isToggle) return;
       const delta = { x: event.clientX - active.x, y: event.clientY - active.y };
       if (!active.isDragging && Math.hypot(delta.x, delta.y) < dragThreshold) return;
       active.isDragging = true;
       moves.drag(delta);
     },
-    onPointerUp: () => {
-      const active = start.current;
-      start.current = null;
-      if (!active) return;
+    onEnd: (_event, active, isCancelled) => {
+      if (isCancelled) {
+        moves.cancel();
+        return;
+      }
       if (active.isDragging) moves.end();
-      else if (active.wasSelected && !active.isToggle) selection.replace([id]);
+      else {
+        moves.cancel();
+        if (active.wasSelected && !active.isToggle) selection.replace([id]);
+      }
     },
-  };
+  });
 }
 
 /** The keys a focused node handles: selection, moves, removal, connection and navigation. */

@@ -33,6 +33,8 @@ export interface NodeMoves {
   drag: (delta: DiagramPoint) => void;
   /** Applies the previewed drag; false when the nodes did not move. */
   end: () => boolean;
+  /** Discards an unfinished pointer move. */
+  cancel: () => void;
   /** Moves `id` (and the selection holding it) one grid step, or five with `large`. */
   step: (id: Key, options: { direction: DiagramDirection; large: boolean }) => void;
   /** Removes `id`, or the selection when it holds `id`, with the edges that touch removed nodes. */
@@ -113,6 +115,10 @@ export function useNodeMoves(options: NodeMovesOptions): NodeMoves {
       if (!active || !moved || !at || (at.x === origin?.x && at.y === origin.y)) return false;
       commit(active.anchor, moved);
       return true;
+    },
+    cancel: () => {
+      start.current = null;
+      setPreview(null);
     },
     step: (anchor, { direction, large }) => {
       const active = { anchor, origins: collectOrigins(nodes, { anchor, selected }) };

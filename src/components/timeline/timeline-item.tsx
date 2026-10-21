@@ -1,5 +1,5 @@
 import { useId, type KeyboardEvent } from 'react';
-import { useLocale } from '../../primitives/index.js';
+import { useDateFormatter, useNumberFormatter } from '../../primitives/index.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { clamp } from '../../utils/clamp.js';
@@ -45,20 +45,16 @@ function useItemDescription(
   isEditable: boolean,
 ): string {
   const strings = useUiStrings();
-  const { locale } = useLocale();
-  const days = new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeZone: 'UTC' });
-  const formatDay = (date: string) => days.format(Date.parse(date));
+  const days = useDateFormatter({ dateStyle: 'medium', timeZone: 'UTC' });
+  const percent = useNumberFormatter({ style: 'percent' });
+  const formatDay = (date: string) => days.format(new Date(date));
   const { read } = placed;
   const progress = readProgress(placed);
   const parts = [
     read.kind === 'milestone'
       ? strings.timelineMilestone(formatDay(read.start))
       : strings.timelineDates({ start: formatDay(read.start), end: formatDay(read.end) }),
-    progress === undefined
-      ? ''
-      : strings.timelineProgress(
-          new Intl.NumberFormat(locale, { style: 'percent' }).format(progress),
-        ),
+    progress === undefined ? '' : strings.timelineProgress(percent.format(progress)),
     predecessors ? strings.timelineDependsOn(predecessors.names) : '',
     predecessors?.hasConflict ? strings.timelineConflict : '',
     isEditable ? strings.timelineKeyboardHint(read.kind) : '',

@@ -1,7 +1,9 @@
 // Swiping a toast away: the pointer drags it along one direction, and a release past the threshold
 // dismisses it.
 
-import { useRef, useState, type PointerEvent } from 'react';
+import { useState } from 'react';
+import { capturePointer } from '../../utils/pointer-drag.js';
+import { usePointerDrag } from '../../utils/use-pointer-drag.js';
 import { measuredProperty } from '../../core/hooks.js';
 
 /** The direction a toast is swiped to dismiss it. */
@@ -41,50 +43,32 @@ function swallowNextClick(element: HTMLElement) {
  * dismisses it and keeps the travel for its exit, a shorter one returns it to rest.
  */
 export function useToastSwipe({ direction, threshold, onDismiss }: ToastSwipeOptions) {
-  // Pointer events can outrun renders, so the gesture lives in a ref and the render state follows it.
-  const gesture = useRef<{ id: number; x: number; y: number; isSwiping: boolean } | null>(null);
   const [travel, setTravel] = useState(0);
   const [isSwiping, setSwiping] = useState(false);
-
-  const finish = (event: PointerEvent<HTMLElement>, isRelease: boolean) => {
-    const current = gesture.current;
-    if (current?.id !== event.pointerId) return;
-    gesture.current = null;
-    if (!current.isSwiping) return;
-    setSwiping(false);
-    swallowNextClick(event.currentTarget);
-    const distance = toTravel(direction, event.clientX - current.x, event.clientY - current.y);
-    if (isRelease && distance >= threshold) onDismiss();
-    else setTravel(0);
-  };
-
-  const swipeProps = {
-    onPointerDown: (event: PointerEvent<HTMLElement>) => {
-      if (event.button !== 0) return;
-      gesture.current = {
-        id: event.pointerId,
-        x: event.clientX,
-        y: event.clientY,
-        isSwiping: false,
-      };
-    },
-    onPointerMove: (event: PointerEvent<HTMLElement>) => {
-      const current = gesture.current;
-      if (current?.id !== event.pointerId) return;
+  const swipeProps = usePointerDrag<HTMLElement, { x: number; y: number; isSwiping: boolean }>({
+    capture: false,
+    onStart: (event) => ({ x: event.clientX, y: event.clientY, isSwiping: false }),
+    onMove: (event, current) => {
       const distance = toTravel(direction, event.clientX - current.x, event.clientY - current.y);
       if (!current.isSwiping && Math.abs(distance) < swipeSlop) return;
       if (!current.isSwiping) {
         current.isSwiping = true;
-        event.currentTarget.setPointerCapture?.(event.pointerId);
+        capturePointer(event);
         // A text selection left by the drag would turn the next drag into a native drag and drop.
         event.currentTarget.ownerDocument.getSelection()?.removeAllRanges();
         setSwiping(true);
       }
       setTravel(Math.max(0, distance));
     },
-    onPointerUp: (event: PointerEvent<HTMLElement>) => finish(event, true),
-    onPointerCancel: (event: PointerEvent<HTMLElement>) => finish(event, false),
-  };
+    onEnd: (event, current, isCancelled) => {
+      if (!current.isSwiping) return;
+      setSwiping(false);
+      swallowNextClick(event.currentTarget);
+      const distance = toTravel(direction, event.clientX - current.x, event.clientY - current.y);
+      if (!isCancelled && distance >= threshold) onDismiss();
+      else setTravel(0);
+    },
+  });
 
   const isHorizontal = direction === 'left' || direction === 'right';
   const signed = direction === 'left' || direction === 'up' ? -travel : travel;

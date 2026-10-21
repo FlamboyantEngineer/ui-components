@@ -64,7 +64,7 @@
 .ui-text-diff__table {
   min-width: 100%;
   border-collapse: collapse;
-  font: 12px/20px var(--ref-mono);
+  font: var(--ref-font-size-sm)/20px var(--ref-mono);
 }
 
 .ui-text-diff__line > td,
@@ -145,7 +145,7 @@
   padding: 0 8px;
   background: color-mix(in srgb, var(--ref-info) var(--ref-tint-subtle), var(--ref-canvas));
   color: var(--ref-muted);
-  font: 12px/20px var(--ref-font);
+  font: var(--ref-font-size-sm)/20px var(--ref-font);
 }
 
 .ui-text-diff .ui-text-diff__expand {
@@ -157,7 +157,7 @@
   padding: 8px 12px;
   border-block: 1px solid var(--ref-border);
   background: var(--ref-surface);
-  font: 14px/1.5 var(--ref-font);
+  font: var(--ref-font-size)/1.5 var(--ref-font);
   white-space: normal;
 }
 

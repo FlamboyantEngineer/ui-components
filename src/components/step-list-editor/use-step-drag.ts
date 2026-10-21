@@ -1,15 +1,8 @@
-import {
-  useId,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-  type HTMLAttributes,
-  type RefObject,
-} from 'react';
-import { useDrag, useDrop } from '../../primitives/index.js';
+import { useLayoutEffect, useMemo, useRef, type HTMLAttributes, type RefObject } from 'react';
 import type { PressEvent } from '../../core/events.js';
-import { mergeProps } from '../../utils/merge-props.js';
+import { useItemDrag } from '../../utils/use-item-drag.js';
+import { useDragType } from '../../utils/use-drag-type.js';
+import { armElementDrag } from '../../utils/pointer-drag.js';
 import { resolveStepDrop, type StepListEditorStep, type StepMove } from './step-list.js';
 
 /** What every step's drag and drop shares: the editor's media type, the dragged step and the move. */
@@ -33,7 +26,7 @@ export function useStepDrag(source: StepDragSource): StepDrag {
   useLayoutEffect(() => {
     latest.current = source;
   });
-  const dragType = `application/x-ui-step-${useId().replace(/[^a-z0-9]/gi, '')}`.toLowerCase();
+  const dragType = useDragType('step');
   const dragging = useRef<string | null>(null);
   return useMemo(
     () => ({
@@ -56,15 +49,7 @@ export function useStepDrag(source: StepDragSource): StepDrag {
 function armStep(event: PressEvent): void {
   const step = event.target.closest('[data-key]');
   if (event.pointerType === 'keyboard' || event.pointerType === 'virtual' || !step) return;
-  const document = step.ownerDocument;
-  step.setAttribute('draggable', 'true');
-  const disarm = () => {
-    step.removeAttribute('draggable');
-    document.removeEventListener('pointerup', disarm, true);
-    step.removeEventListener('dragend', disarm);
-  };
-  document.addEventListener('pointerup', disarm, true);
-  step.addEventListener('dragend', disarm);
+  armElementDrag(step);
 }
 
 /** A step's drag and drop: props for the step and its handle, and its states. */
@@ -92,41 +77,24 @@ export function useStepRowDrag({
   drag: StepDrag | null;
 }): StepRowDrag {
   const ref = useRef<HTMLLIElement>(null);
-  const [dropPosition, setDropPosition] = useState<StepMove['position'] | null>(null);
-  const dragType = drag?.dragType ?? '';
-  const { dragProps, dragButtonProps, isDragging } = useDrag({
-    hasDragButton: true,
-    isDisabled: !drag,
-    getItems: () => [{ [dragType]: id, 'text/plain': label }],
-    getAllowedDropOperations: () => ['move'],
-    onDragStart: () => {
-      if (drag) drag.dragging.current = id;
-    },
-    onDragEnd: () => {
-      if (drag) drag.dragging.current = null;
-    },
-  });
-  const { dropProps } = useDrop({
+  const { dragProps, startDrag, isDragging, dropPosition } = useItemDrag({
     ref,
+    key: id,
+    textValue: label,
+    dragType: drag?.dragType ?? '',
+    dragging: drag?.dragging ?? null,
     isDisabled: !drag,
-    getDropOperation: (types, allowed) =>
-      types.has(dragType) && allowed.includes('move') && drag?.resolveDrop(id) ? 'move' : 'cancel',
-    onDropEnter: () => setDropPosition(drag?.resolveDrop(id)?.position ?? null),
-    onDropExit: () => setDropPosition(null),
-    onDrop: () => {
-      setDropPosition(null);
-      const move = drag?.resolveDrop(id);
-      if (move) drag?.onMove(move);
-    },
+    resolveMove: () => drag?.resolveDrop(id) ?? null,
+    onMove: (move) => drag?.onMove(move),
   });
   // The step turns draggable only while its handle is pressed (`armStep`).
   const { draggable: _draggable, ...stepDragProps } = dragProps;
   return {
     ref,
-    props: drag ? (mergeProps(stepDragProps, dropProps) as HTMLAttributes<HTMLLIElement>) : {},
+    props: drag ? (stepDragProps as HTMLAttributes<HTMLLIElement>) : {},
     handleProps: {
       onPressStart: armStep,
-      onPress: (event: PressEvent) => dragButtonProps.onPress?.(event as never),
+      onPress: startDrag,
     },
     isDragging,
     dropPosition,

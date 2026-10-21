@@ -2,6 +2,8 @@
 
 `ScrollRegion` is an area that scrolls on its own. Its root frames a native scroll viewport, so content overflow, wheel, touch and keyboard scrolling stay with the browser. Optional overlay scrollbars replace the native ones with thumbs that take no layout space and show by a visibility mode, optional markers paint a decorative overview of the content beside the native vertical scrollbar, and the root publishes how far the content reaches past each edge and whether the region is scrolling or hovered. A component that already scrolls on its own is not wrapped in a second region.
 
+Pointer ownership and drag lifecycle cleanup follow the shared [drag interaction contract](DRAG-INTERACTIONS.md).
+
 ## UIC-SCROLL-REGION-1 - Structure
 
 ### UIC-SCROLL-REGION-1.1 - Frame and viewport

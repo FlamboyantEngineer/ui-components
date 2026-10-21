@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { userEvent, type UserEvent } from '@testing-library/user-event';
 import { GridList, GridListItem, useDragAndDrop } from '../../primitives/index.js';
 import { describe, expect, it, vi } from 'vitest';
@@ -157,22 +157,27 @@ describe('DragHandle', { timeout: 15_000 }, () => {
   });
 
   it('UIC-DRAG-HANDLE-2.2 keeps a press in the handle cell from focusing it until the next frame', async () => {
-    const user = userEvent.setup();
-    const nextFrame = () => new Promise((resolve) => requestAnimationFrame(resolve));
-    const { unmount } = render(<HandleRows isHandleOnly={false} />);
-    const appleCell = cell('Apple');
-    await press(user, screen.getByText('Apple'), { x: 60 });
-    expect(appleCell).not.toHaveAttribute('tabindex');
-    await press(user, cell('Colour'), { x: 200 });
-    expect(cell('Colour')).toHaveAttribute('tabindex', '-1');
-    await nextFrame();
-    expect(appleCell).toHaveAttribute('tabindex', '-1');
-    unmount();
-    render(<HandleRows />);
-    placeHandles();
-    await press(user, cell('Apple'), { x: 10 });
-    expect(cell('Apple')).not.toHaveAttribute('tabindex');
-    await nextFrame();
-    expect(cell('Apple')).toHaveAttribute('tabindex', '-1');
+    vi.useFakeTimers();
+    try {
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+      const nextFrame = () => act(() => vi.advanceTimersToNextFrame());
+      const { unmount } = render(<HandleRows isHandleOnly={false} />);
+      const appleCell = cell('Apple');
+      await press(user, screen.getByText('Apple'), { x: 60 });
+      expect(appleCell).not.toHaveAttribute('tabindex');
+      await press(user, cell('Colour'), { x: 200 });
+      expect(cell('Colour')).toHaveAttribute('tabindex', '-1');
+      nextFrame();
+      expect(appleCell).toHaveAttribute('tabindex', '-1');
+      unmount();
+      render(<HandleRows />);
+      placeHandles();
+      await press(user, cell('Apple'), { x: 10 });
+      expect(cell('Apple')).not.toHaveAttribute('tabindex');
+      nextFrame();
+      expect(cell('Apple')).toHaveAttribute('tabindex', '-1');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

@@ -144,7 +144,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Drawing and output"
-      description="Draw strokes, undo or clear them, or type a name; the drawing shows as an image and as SVG markup."
+      description="Draw strokes, undo or clear them, or type a name; the drawing shows as an image and as SVG markup. A cancelled pointer discards its unfinished stroke."
     >
       <LiveSignature />
     </LabSection>

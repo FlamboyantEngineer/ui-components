@@ -2,6 +2,8 @@
 
 `StepListEditor` edits an ordered list of steps, such as the steps of a test procedure or a recipe. Each step is a numbered row with one multi-line text field per caller column (for example an action, its input data and its expected result). Steps are added, inserted, duplicated, moved and deleted from their menus, reordered by dragging their handles or with Alt+Arrow keys, and marked dirty against the steps as last saved. The value is plain data. It is a list of field groups rather than a grid, so every field keeps its own arrow keys and the Tab key walks through every field.
 
+Pointer ownership and drag lifecycle cleanup follow the shared [drag interaction contract](DRAG-INTERACTIONS.md).
+
 ## UIC-STEP-LIST-EDITOR-1 - Steps and editing
 
 ### UIC-STEP-LIST-EDITOR-1.1 - Numbered steps of fields

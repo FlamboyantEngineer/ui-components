@@ -268,7 +268,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Overlay scrollbars"
-      description="Focus a thumb and use the arrow keys, Page Up, Page Down, Home and End, or drag it."
+      description="Focus a thumb and use the arrow keys, Page Up, Page Down, Home and End, or drag it. Release or cancel the pointer to end a thumb drag."
     >
       <div style={frame(360, 200)} data-lab-region="overlay">
         <ScrollRegion

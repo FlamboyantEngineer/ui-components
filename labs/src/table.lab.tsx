@@ -392,7 +392,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Spreadsheet mode"
-      description="Select ranges with Shift, copy and paste, type to edit, fill with the handle or Ctrl+D and Ctrl+R, Delete to clear."
+      description="Select ranges with Shift, copy and paste, type to edit, fill with the handle or Ctrl+D and Ctrl+R, Delete to clear. Cancelling a fill leaves the cells unchanged."
     >
       <Spreadsheet />
     </LabSection>

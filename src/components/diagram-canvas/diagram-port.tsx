@@ -1,4 +1,5 @@
-import { useRef, type CSSProperties, type PointerEvent } from 'react';
+import type { CSSProperties } from 'react';
+import { usePointerDrag } from '../../utils/use-pointer-drag.js';
 import { useUiStrings } from '../../core/provider.js';
 import { diagramHooks as hooks } from './diagram-hooks.js';
 import type { DiagramNode, DiagramPort } from './diagram-model.js';
@@ -30,42 +31,41 @@ function placePort(port: DiagramPort): CSSProperties {
  */
 export function DiagramPortView({ node, port, controller }: DiagramPortViewProps) {
   const strings = useUiStrings();
-  const drag = useRef<{ x: number; y: number; isDragging: boolean } | null>(null);
   const { connect } = controller;
   const data = {
     side: port.side,
     connectSource: connect.connecting?.port === port.id && connect.connecting.node === node.id,
   };
+  const drag = usePointerDrag<HTMLButtonElement, { x: number; y: number; isDragging: boolean }>({
+    onStart: (event) => {
+      if (!controller.isEditing) return null;
+      event.stopPropagation();
+      if (connect.complete(node.id, port.id)) return null;
+      connect.start(node.id, port.id);
+      return { x: event.clientX, y: event.clientY, isDragging: false };
+    },
+    onMove: (event, active) => {
+      if (
+        !active.isDragging &&
+        Math.hypot(event.clientX - active.x, event.clientY - active.y) < dragThreshold
+      )
+        return;
+      active.isDragging = true;
+      connect.track(controller.toDiagram(event.clientX, event.clientY));
+    },
+    onEnd: (event, active, isCancelled) => {
+      if (isCancelled) {
+        connect.cancel();
+        return;
+      }
+      if (!active.isDragging) return;
+      const target = controller.findTarget(event.clientX, event.clientY);
+      if (!target || !connect.complete(target.node, target.port)) connect.cancel();
+    },
+  });
   if (!controller.isEditing) {
     return <span {...hooks.slot('port', data)} aria-hidden="true" style={placePort(port)} />;
   }
-  const onPointerDown = (event: PointerEvent<HTMLButtonElement>) => {
-    if (event.button !== 0) return;
-    event.stopPropagation();
-    if (connect.complete(node.id, port.id)) return;
-    connect.start(node.id, port.id);
-    drag.current = { x: event.clientX, y: event.clientY, isDragging: false };
-    event.currentTarget.setPointerCapture?.(event.pointerId);
-  };
-  const onPointerMove = (event: PointerEvent<HTMLButtonElement>) => {
-    const active = drag.current;
-    if (!active) return;
-    if (
-      !active.isDragging &&
-      Math.hypot(event.clientX - active.x, event.clientY - active.y) < dragThreshold
-    )
-      return;
-    active.isDragging = true;
-    connect.track(controller.toDiagram(event.clientX, event.clientY));
-  };
-  const onPointerUp = (event: PointerEvent<HTMLButtonElement>) => {
-    const active = drag.current;
-    drag.current = null;
-    if (!active?.isDragging) return;
-    event.currentTarget.releasePointerCapture?.(event.pointerId);
-    const target = controller.findTarget(event.clientX, event.clientY);
-    if (!target || !connect.complete(target.node, target.port)) connect.cancel();
-  };
   return (
     <button
       {...hooks.slot('port', data)}
@@ -73,9 +73,7 @@ export function DiagramPortView({ node, port, controller }: DiagramPortViewProps
       type="button"
       aria-label={strings.diagramPortLabel(node.label, port.label)}
       style={placePort(port)}
-      onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onPointerUp={onPointerUp}
+      {...drag}
       onKeyDown={(event) => {
         if (event.key !== 'Escape' || !connect.connecting) return;
         event.preventDefault();

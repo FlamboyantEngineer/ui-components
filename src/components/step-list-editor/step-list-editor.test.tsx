@@ -204,7 +204,7 @@ describe('StepListEditor', { timeout: 15_000 }, () => {
     expect(onValue).toHaveBeenCalledTimes(2);
   });
 
-  it('UIC-STEP-LIST-EDITOR-2.4 makes a step draggable only while its handle is pressed', async () => {
+  it('UIC-STEP-LIST-EDITOR-2.4 UIC-DRAG-INTERACTIONS-2.3 makes a step draggable only while its handle is pressed', async () => {
     const user = userEvent.setup();
     render(<Controlled />);
     const item = stepItem(1);

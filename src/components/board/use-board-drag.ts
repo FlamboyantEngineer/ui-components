@@ -1,5 +1,6 @@
-import { useId, useLayoutEffect, useMemo, useRef, type RefObject } from 'react';
+import { useLayoutEffect, useMemo, useRef, type RefObject } from 'react';
 import type { Key } from '../../core/props.js';
+import { useDragType } from '../../utils/use-drag-type.js';
 import type { CollectionDropTarget } from '../../utils/use-reorder-drag-and-drop.js';
 import {
   resolveBoardDrop,
@@ -45,11 +46,6 @@ interface ColumnDragSource {
   onMove: ((move: BoardColumnMove) => void) | undefined;
 }
 
-function useDragType(kind: 'card' | 'column'): string {
-  const id = useId().replace(/[^a-z0-9]/gi, '');
-  return `application/x-ui-board-${kind}-${id}`.toLowerCase();
-}
-
 function useLatest<T>(value: T): RefObject<T> {
   const latest = useRef(value);
   useLayoutEffect(() => {
@@ -64,7 +60,7 @@ function useLatest<T>(value: T): RefObject<T> {
  */
 export function useBoardCardDrag(source: CardDragSource): BoardCardDrag | null {
   const latest = useLatest(source);
-  const dragType = useDragType('card');
+  const dragType = useDragType('board-card');
   const dragging = useRef<Key | null>(null);
   const drag = useMemo<BoardCardDrag>(() => {
     const resolveDrop = (address: BoardCellAddress, target: CollectionDropTarget) => {
@@ -92,7 +88,7 @@ export function useBoardCardDrag(source: CardDragSource): BoardCardDrag | null {
 /** The board's column drag and drop, shared by its column headers. `null` without `onMove`. */
 export function useBoardColumnDrag(source: ColumnDragSource): BoardColumnDrag | null {
   const latest = useLatest(source);
-  const dragType = useDragType('column');
+  const dragType = useDragType('board-column');
   const dragging = useRef<Key | null>(null);
   const drag = useMemo<BoardColumnDrag>(
     () => ({

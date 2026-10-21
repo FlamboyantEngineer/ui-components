@@ -54,10 +54,6 @@ export function toSingleMode(mode: DateTimeFieldMode): SingleDateMode {
   return mode === 'date-time-range' ? 'date-time' : mode;
 }
 
-export function isRangeMode(mode: DateTimeFieldMode): boolean {
-  return mode === 'date-range' || mode === 'date-time-range';
-}
-
 /** A text as a moment on one scale per mode (milliseconds), or `null` when the mode cannot read it. */
 function toMoment(text: string, mode: SingleDateMode, options: DateValueOptions): number | null {
   if (mode === 'time') {

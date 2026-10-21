@@ -2,6 +2,8 @@
 
 `DiagramCanvas` draws a diagram of nodes joined by edges on a pannable, zoomable surface, for block diagrams, flows, dependency graphs and state machines. The caller renders each node's content and owns the data: nodes (`{ id, x, y, width?, height?, label, ports?, data }`) and edges (`{ id, source, target, sourcePort?, targetPort?, label? }`) are plain data, and every change the reader makes arrives through a callback (`onNodesChange`, `onEdgesChange`, `onConnect`, `onNodeAdd`) for the caller to apply. Edges are SVG paths routed by `routeDiagramEdge`, a pure function. Nodes are named, focusable groups; the reader selects them, moves between connected nodes from the keyboard and, in edit mode, moves, connects, adds and removes them by pointer or keyboard; an outline view lists the same diagram as text. The canvas is library-owned and needs no diagram engine. A [State Machine View](STATE-MACHINE-VIEW.md) draws states and transitions on it.
 
+Pointer ownership and drag lifecycle cleanup follow the shared [drag interaction contract](DRAG-INTERACTIONS.md).
+
 ## UIC-DIAGRAM-CANVAS-1 - Structure
 
 ### UIC-DIAGRAM-CANVAS-1.1 - Root and parts
@@ -103,14 +105,14 @@ Verification: `src/components/diagram-canvas/diagram-node.test.tsx`, `e2e/diagra
 
 ### UIC-DIAGRAM-CANVAS-4.2 - Marquee
 
-In multiple selection, a Shift drag on the background shall draw a marquee (`ui-diagram-canvas__marquee`) and select the nodes it touches when released.
+In multiple selection, a Shift drag on the background shall draw a marquee (`ui-diagram-canvas__marquee`) and select the nodes it touches when released. Cancellation or lost capture shall discard the marquee without changing the selection.
 
 Implementation: `src/components/diagram-canvas/use-background-pointer.ts`
 Verification: `src/components/diagram-canvas/diagram-node.test.tsx`, `e2e/diagram-canvas.spec.ts`
 
 ### UIC-DIAGRAM-CANVAS-4.3 - Moving by pointer
 
-With `isEditing`, which publishes `data-editing` on the root, dragging a node shall move it, with the rest of the selection when it is selected, its position snapping to multiples of `gridSize` (10 pixels by default; `0` turns snapping off). While dragging, the moved nodes show where they would go and publish `data-moving`; on release `onNodesChange` receives every node with the new positions and the live region reads the provider's `diagramMoved` string.
+With `isEditing`, which publishes `data-editing` on the root, dragging a node shall move it, with the rest of the selection when it is selected, its position snapping to multiples of `gridSize` (10 pixels by default; `0` turns snapping off). While dragging, the moved nodes show where they would go and publish `data-moving`; on release `onNodesChange` receives every node with the new positions and the live region reads the provider's `diagramMoved` string. Cancellation or lost capture shall discard the preview without calling `onNodesChange`.
 
 Implementation: `src/components/diagram-canvas/use-node-moves.ts`, `src/components/diagram-canvas/diagram-node.tsx`
 Verification: `src/components/diagram-canvas/diagram-node.test.tsx`, `src/components/diagram-canvas/diagram-model.test.ts`, `e2e/diagram-canvas.spec.ts`
@@ -133,7 +135,7 @@ Verification: `src/components/diagram-canvas/diagram-node.test.tsx`
 
 ### UIC-DIAGRAM-CANVAS-5.1 - Connecting by pointer
 
-In edit mode, dragging from a port shall draw a preview edge (`ui-diagram-canvas__connection-preview`) to the pointer, and releasing it over a node or a port calls `onConnect({ source, sourcePort, target, targetPort })` (`targetPort` undefined on a node) and reads the provider's `diagramConnected` string. Releasing elsewhere gives the connection up. While a connection is in progress the root publishes `data-connecting` and its port and node publish `data-connect-source`.
+In edit mode, dragging from a port shall draw a preview edge (`ui-diagram-canvas__connection-preview`) to the pointer, and releasing it over a node or a port calls `onConnect({ source, sourcePort, target, targetPort })` (`targetPort` undefined on a node) and reads the provider's `diagramConnected` string. Releasing elsewhere gives the connection up. While a connection is in progress the root publishes `data-connecting` and its port and node publish `data-connect-source`. Cancellation or lost capture shall give up the unfinished connection without calling `onConnect`.
 
 Implementation: `src/components/diagram-canvas/use-diagram-connect.ts`, `src/components/diagram-canvas/diagram-port.tsx`, `src/components/diagram-canvas/diagram-edges.tsx`
 Verification: `src/components/diagram-canvas/diagram-node.test.tsx`, `e2e/diagram-canvas.spec.ts`

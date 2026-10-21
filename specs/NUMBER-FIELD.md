@@ -2,6 +2,8 @@
 
 `NumberField` is a [field](FIELD.md) for a number, built on React Aria's `NumberField`. It parses and formats the number for the locale with `Intl.NumberFormat` options (decimals, grouping, currency, percent, units), steps it with buttons and the arrow keys, and reports a value outside its range or off its step. It takes the field's props (`FieldInputProps<number | null>`): an empty field holds `null`, never zero. What a number means (units, currencies, derived values) is the caller's: the field edits a plain number. Literal affixes sit inside its frame as adornments, Shift and Alt step by larger and smaller amounts, and a scrub handle steps the value by dragging.
 
+Pointer ownership and drag lifecycle cleanup follow the shared [drag interaction contract](DRAG-INTERACTIONS.md).
+
 ## UIC-NUMBER-FIELD-1 - Contract
 
 ### UIC-NUMBER-FIELD-1.1 - Field control

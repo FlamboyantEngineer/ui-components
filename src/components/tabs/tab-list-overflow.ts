@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import type { Key, Orientation } from '../../core/props.js';
+import { useResizeObserver } from '../../utils/use-resize-observer.js';
 
 interface ListScrollOptions {
   orientation: Orientation;
@@ -61,13 +62,7 @@ export function useListOverflow(
   // Tabs added, removed or relabelled re-render the list.
   useLayoutEffect(measure);
 
-  useEffect(() => {
-    const list = listRef.current;
-    if (!list || typeof ResizeObserver !== 'function') return;
-    const observer = new ResizeObserver(measure);
-    observer.observe(list);
-    return () => observer.disconnect();
-  }, [listRef, measure]);
+  useResizeObserver([listRef], measure);
 
   return overflowing;
 }

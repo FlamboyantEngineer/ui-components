@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, type PointerEvent } from 'react';
+import { listenPointerRelease } from '../../utils/pointer-drag.js';
 import {
   createBoundsRange,
   createCellRange,
@@ -44,17 +45,10 @@ function isInteractive(target: Element, cell: HTMLElement): boolean {
   return control !== null && control !== cell && cell.contains(control);
 }
 
-/**
- * Selecting cells by pointer in spreadsheet mode: a press selects a cell and focuses it, Shift
- * with a press extends the range to the pressed cell, dragging extends it to the cell under the
- * pointer, and dragging the fill handle fills the cells it reaches when the pointer is released.
- * Presses on data cells select cells rather than rows; controls inside cells keep their presses.
- */
-export function useCellPointer<T extends TableRow>(options: CellPointerOptions<T>): CellPointer {
-  const { mode, grid } = options;
+/** The selection or fill gesture, including its live target and document-level ending. */
+function useCellDrag<T extends TableRow>(options: CellPointerOptions<T>) {
   const [fillBounds, setFillBounds] = useState<CellBounds | null>(null);
   const drag = useRef<DragKind | null>(null);
-  // The fill target as the release sees it, which may come before the next render.
   const fillTarget = useRef<CellBounds | null>(null);
   const stop = useRef<(() => void) | null>(null);
   const latest = useRef(options);
@@ -63,47 +57,79 @@ export function useCellPointer<T extends TableRow>(options: CellPointerOptions<T
   });
   useEffect(() => () => stop.current?.(), []);
 
-  const finish = () => {
-    const { bounds, grid: current, write, setRange } = latest.current;
+  const finish = (shouldCommit: boolean) => {
+    const { bounds, grid, write, setRange } = latest.current;
     const target = fillTarget.current;
-    if (drag.current === 'fill' && bounds && target) {
-      write(planFill(current, bounds, target));
-      setRange(createBoundsRange(current, target));
+    if (shouldCommit && drag.current === 'fill' && bounds && target) {
+      write(planFill(grid, bounds, target));
+      setRange(createBoundsRange(grid, target));
     }
     drag.current = null;
     fillTarget.current = null;
     setFillBounds(null);
   };
-  const begin = (kind: DragKind) => {
+  const begin = (kind: DragKind, event: PointerEvent<HTMLElement>) => {
+    stop.current?.();
     drag.current = kind;
-    const end = () => {
-      window.removeEventListener('pointerup', end);
-      window.removeEventListener('pointercancel', end);
+    const end = (shouldCommit: boolean) => {
       stop.current = null;
-      finish();
+      finish(shouldCommit);
     };
-    window.addEventListener('pointerup', end);
-    window.addEventListener('pointercancel', end);
-    stop.current = end;
+    stop.current = listenPointerRelease({
+      element: event.currentTarget,
+      pointerId: event.pointerId,
+      onRelease: () => end(true),
+      onCancel: () => end(false),
+    });
   };
+  const extend = (position: TableCellPosition) => {
+    const { grid, range, bounds, setRange } = latest.current;
+    if (!drag.current || !range) return;
+    if (drag.current === 'select') {
+      setRange({ anchor: range.anchor, focus: position });
+      return;
+    }
+    const at = locateCell(grid, position);
+    fillTarget.current = bounds && at ? resolveFillTarget(bounds, at) : null;
+    setFillBounds(fillTarget.current);
+  };
+  return { fillBounds, begin, extend };
+}
 
-  const press = (cell: HTMLElement, position: TableCellPosition, isShift: boolean) => {
-    const { range, setRange } = latest.current;
-    if (isShift && mode === 'range' && range) {
+/**
+ * Selecting cells by pointer in spreadsheet mode: a press selects a cell and focuses it, Shift
+ * with a press extends the range to the pressed cell, dragging extends it to the cell under the
+ * pointer, and dragging the fill handle fills the cells it reaches when the pointer is released.
+ * Presses on data cells select cells rather than rows; controls inside cells keep their presses.
+ */
+export function useCellPointer<T extends TableRow>(options: CellPointerOptions<T>): CellPointer {
+  const { mode, grid, range, setRange } = options;
+  const drag = useCellDrag(options);
+  const press = (
+    cell: HTMLElement,
+    position: TableCellPosition,
+    event: PointerEvent<HTMLElement>,
+  ) => {
+    if (event.shiftKey && mode === 'range' && range) {
       setRange({ anchor: range.anchor, focus: position });
       return;
     }
     setRange(createCellRange(position));
     cell.focus();
-    if (mode === 'range') begin('select');
+    if (mode === 'range') drag.begin('select', event);
   };
-
   const onPointerDownCapture = (event: PointerEvent<HTMLElement>) => {
-    if (mode === 'none' || event.button !== 0 || !(event.target instanceof Element)) return;
+    if (
+      mode === 'none' ||
+      event.button !== 0 ||
+      event.isPrimary === false ||
+      !(event.target instanceof Element)
+    )
+      return;
     if (event.target.closest('.ui-table__fill-handle')) {
       event.preventDefault();
       event.stopPropagation();
-      begin('fill');
+      drag.begin('fill', event);
       return;
     }
     const cell = findDataCell(event.target, event.currentTarget);
@@ -113,23 +139,12 @@ export function useCellPointer<T extends TableRow>(options: CellPointerOptions<T
     // The press is the table's: no row selection, no text selection.
     event.preventDefault();
     event.stopPropagation();
-    press(cell, position, event.shiftKey);
+    press(cell, position, event);
   };
-
   const onPointerOver = (event: PointerEvent<HTMLElement>) => {
-    if (!drag.current) return;
     const cell = findDataCell(event.target, event.currentTarget);
     const position = cell ? readCellPosition(grid, cell) : null;
-    const { range, bounds, setRange } = latest.current;
-    if (!position || !range) return;
-    if (drag.current === 'select') {
-      setRange({ anchor: range.anchor, focus: position });
-      return;
-    }
-    const at = locateCell(grid, position);
-    fillTarget.current = bounds && at ? resolveFillTarget(bounds, at) : null;
-    setFillBounds(fillTarget.current);
+    if (position) drag.extend(position);
   };
-
-  return { fillBounds, rootProps: { onPointerDownCapture, onPointerOver } };
+  return { fillBounds: drag.fillBounds, rootProps: { onPointerDownCapture, onPointerOver } };
 }

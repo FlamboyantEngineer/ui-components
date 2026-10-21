@@ -186,7 +186,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Live region"
-      description="Push toasts into the region at the end of the page: they pile up, and hovering or focusing the pile spreads it out and pauses their five-second lifetime. Pending toasts update in place, promise toasts settle into success or error, and a drag to the right swipes a toast away."
+      description="Push toasts into the region at the end of the page: they pile up, and hovering or focusing the pile spreads it out and pauses their five-second lifetime. Pending toasts update in place, promise toasts settle into success or error, and a drag to the right swipes a toast away. Cancelling a swipe returns the toast to rest."
     >
       <LiveDemo />
     </LabSection>

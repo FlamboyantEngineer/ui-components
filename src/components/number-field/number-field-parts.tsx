@@ -1,8 +1,9 @@
-import { useId, useRef, type KeyboardEvent, type PointerEvent } from 'react';
+import { useId, type KeyboardEvent } from 'react';
 import { Button as AriaButton, useLocale } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import { Glyph } from '../../core/provider.js';
 import { clamp } from '../../utils/clamp.js';
+import { usePointerDrag } from '../../utils/use-pointer-drag.js';
 import type { FieldState } from '../field/field.js';
 
 export const numberFieldHooks = createHooks('number-field', [
@@ -110,39 +111,32 @@ export function NumberScrubber({
   steps: NumberSteps;
 }) {
   const { direction } = useLocale();
-  const drag = useRef<{ x: number; travelled: number; value: number | null } | null>(null);
-  const onPointerDown = (event: PointerEvent<HTMLSpanElement>) => {
-    if (isLocked(state) || event.button !== 0) return;
-    event.preventDefault();
-    event.currentTarget.setPointerCapture?.(event.pointerId);
-    drag.current = { x: event.clientX, travelled: 0, value: state.value };
-  };
-  const onPointerMove = (event: PointerEvent<HTMLSpanElement>) => {
-    const current = drag.current;
-    if (!current) return;
-    const travelled =
-      current.travelled + (event.clientX - current.x) * (direction === 'rtl' ? -1 : 1);
-    const count = Math.trunc(travelled / pixelsPerStep);
-    const size = modifierStep(event, steps) ?? steps.step;
-    const value = count === 0 ? current.value : addStep(current.value, count * size, steps);
-    drag.current = { x: event.clientX, travelled: travelled - count * pixelsPerStep, value };
-    if (count !== 0) state.setValue(value);
-  };
-  const onDragEnd = () => {
-    if (!drag.current) return;
-    drag.current = null;
-    state.commit();
-  };
+  const drag = usePointerDrag<
+    HTMLSpanElement,
+    { x: number; travelled: number; value: number | null }
+  >({
+    onStart: (event) => {
+      if (isLocked(state)) return null;
+      event.preventDefault();
+      return { x: event.clientX, travelled: 0, value: state.value };
+    },
+    onMove: (event, current) => {
+      const travelled =
+        current.travelled + (event.clientX - current.x) * (direction === 'rtl' ? -1 : 1);
+      const count = Math.trunc(travelled / pixelsPerStep);
+      const size = modifierStep(event, steps) ?? steps.step;
+      const value = count === 0 ? current.value : addStep(current.value, count * size, steps);
+      Object.assign(current, {
+        x: event.clientX,
+        travelled: travelled - count * pixelsPerStep,
+        value,
+      });
+      if (count !== 0) state.setValue(value);
+    },
+    onEnd: () => state.commit(),
+  });
   return (
-    <span
-      {...hooks.slot('scrubber')}
-      aria-hidden="true"
-      style={{ touchAction: 'none' }}
-      onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onPointerUp={onDragEnd}
-      onPointerCancel={onDragEnd}
-    >
+    <span {...hooks.slot('scrubber')} aria-hidden="true" style={{ touchAction: 'none' }} {...drag}>
       <Glyph name="scrub" />
     </span>
   );

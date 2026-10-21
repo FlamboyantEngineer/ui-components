@@ -34,7 +34,7 @@
   background: var(--ref-raised);
   color: var(--ref-text);
   box-shadow: var(--ref-shadow);
-  font: 14px/1.5 var(--ref-font);
+  font: var(--ref-font-size)/1.5 var(--ref-font);
   overflow: auto;
 }
 

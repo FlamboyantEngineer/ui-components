@@ -1,7 +1,8 @@
-import { useId, useRef, useState, type PointerEvent } from 'react';
+import { useId, useState, type PointerEvent } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { clamp } from '../../utils/clamp.js';
+import { usePointerDrag } from '../../utils/use-pointer-drag.js';
 import { Button } from '../button/button.js';
 import type { FieldControlProps } from '../field/field.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
@@ -49,38 +50,29 @@ function useStrokeCapture(
   size: DrawnSignature,
   { isEditable, onStroke }: { isEditable: boolean; onStroke: (path: string) => void },
 ) {
-  const pointer = useRef<number | null>(null);
-  const points = useRef<SignaturePoint[]>([]);
   const [livePath, setLivePath] = useState<string | null>(null);
-  const add = (event: PointerEvent<SVGSVGElement>) => {
-    points.current = [...points.current, toDrawingPoint(event, size)];
-    setLivePath(formatSignatureStroke(points.current));
+  const add = (event: PointerEvent<SVGSVGElement>, points: SignaturePoint[]) => {
+    points.push(toDrawingPoint(event, size));
+    setLivePath(formatSignatureStroke(points));
   };
-  const end = (event: PointerEvent<SVGSVGElement>, isKept: boolean) => {
-    if (event.pointerId !== pointer.current) return;
-    if (isKept) add(event);
-    pointer.current = null;
-    setLivePath(null);
-    if (isKept) onStroke(formatSignatureStroke(points.current));
-  };
-  return {
-    livePath,
-    handlers: {
-      onPointerDown: (event: PointerEvent<SVGSVGElement>) => {
-        if (!isEditable || event.button !== 0 || pointer.current !== null) return;
-        event.preventDefault();
-        event.currentTarget.setPointerCapture?.(event.pointerId);
-        pointer.current = event.pointerId;
-        points.current = [];
-        add(event);
-      },
-      onPointerMove: (event: PointerEvent<SVGSVGElement>) => {
-        if (event.pointerId === pointer.current) add(event);
-      },
-      onPointerUp: (event: PointerEvent<SVGSVGElement>) => end(event, true),
-      onPointerCancel: (event: PointerEvent<SVGSVGElement>) => end(event, false),
+  const handlers = usePointerDrag<SVGSVGElement, SignaturePoint[]>({
+    onStart: (event) => {
+      if (!isEditable) return null;
+      event.preventDefault();
+      const points: SignaturePoint[] = [];
+      add(event, points);
+      return points;
     },
-  };
+    onMove: add,
+    onEnd: (event, points, isCancelled) => {
+      if (!isCancelled) {
+        points.push(toDrawingPoint(event, size));
+        onStroke(formatSignatureStroke(points));
+      }
+      setLivePath(null);
+    },
+  });
+  return { livePath, handlers };
 }
 
 /**

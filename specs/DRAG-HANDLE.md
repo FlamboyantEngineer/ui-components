@@ -2,6 +2,8 @@
 
 `DragHandle` draws the drag button of a row in a library collection that reorders by drag and drop, such as [Tree](TREE.md) and [Table](TABLE.md). The collection names the button after its row and starts the row's keyboard drag from it; collections that draw handles render this one rather than their own. `armHandleDrag` lets a collection drag rows by their handles only, `keepHandleCellDraggable` lets a drag start from the handle's cell, and a collection can draw its own drag preview ([Table](TABLE.md#uic-table-56---drag-preview) does).
 
+Pointer ownership and drag lifecycle cleanup follow the shared [drag interaction contract](DRAG-INTERACTIONS.md).
+
 ## UIC-DRAG-HANDLE-1 - Drag handle
 
 ### UIC-DRAG-HANDLE-1.1 - Drag button
