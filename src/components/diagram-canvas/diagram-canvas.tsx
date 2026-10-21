@@ -10,7 +10,8 @@ import { diagramHooks as hooks } from './diagram-hooks.js';
 import { DiagramMinimap } from './diagram-minimap.js';
 import type { DiagramEdge, DiagramNode, DiagramViewport } from './diagram-model.js';
 import { DiagramNodeView, type DiagramNodeRenderState } from './diagram-node.js';
-import { DiagramOutline, collectDiagramLinks, formatDiagramLink } from './diagram-outline.js';
+import { formatDiagramLink } from './diagram-links.js';
+import { DiagramOutline } from './diagram-outline.js';
 import {
   DiagramPaletteContext,
   useCanvasPalette,
@@ -102,7 +103,7 @@ function isTextEntry(target: EventTarget): boolean {
 /** Each node's description: the labels of the nodes it leads to and comes from. */
 function describeLinks(controller: DiagramController, strings: ReturnType<typeof useUiStrings>) {
   return (node: DiagramNode) => {
-    const { outgoing, incoming } = collectDiagramLinks(node, controller);
+    const { outgoing, incoming } = controller.links.get(node.id)!;
     return [
       outgoing.length > 0
         ? strings.diagramOutgoing(outgoing.map(formatDiagramLink).join(', '))

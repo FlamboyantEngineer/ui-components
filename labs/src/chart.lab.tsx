@@ -276,6 +276,28 @@ mountLab(
       <ControlledChart />
     </LabSection>
     <LabSection
+      title="Repeated coordinates"
+      description="Each series keeps its first reading at a repeated coordinate. A missing first reading leaves that table cell blank."
+    >
+      <LineChart
+        label="Repeated readings"
+        defaultView="table"
+        series={[
+          {
+            id: 'a',
+            label: 'First',
+            points: [
+              { x: 0, y: 4 },
+              { x: 0, y: 8 },
+              { x: 1, y: Number.NaN },
+              { x: 1, y: 6 },
+            ],
+          },
+          { id: 'b', label: 'Second', points: [{ x: 1, y: 3 }] },
+        ]}
+      />
+    </LabSection>
+    <LabSection
       title="Custom drawing"
       description="A host's own drawing inside the shared frame, with the library's axis, legend, band scale and table view."
     >

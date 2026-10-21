@@ -1,7 +1,8 @@
 // The lines, areas and points of a line chart and its scales (specs/CHART.md).
 
+import { summarizeNumbers } from '../../utils/summarize-numbers.js';
 import { clamp } from '../../utils/clamp.js';
-import { createLinearScale, type ScaleTick } from '../../utils/linear-scale.js';
+import { createLinearScale, type LinearScale, type ScaleTick } from '../../utils/linear-scale.js';
 import {
   countTicks,
   resolvePlotBox,
@@ -71,23 +72,23 @@ const xTickSpacing = 80;
 const yTickSpacing = 40;
 
 function findValueDomain(input: LineGeometryInput): [number, number] {
-  const values = input.series.flatMap(({ points }) =>
-    points.map((point) => point.y).filter((value) => Number.isFinite(value)),
+  const summary = summarizeNumbers(
+    input.series.flatMap(({ points }) => points.map((point) => point.y)),
   );
-  const low = input.minValue ?? Math.min(0, ...values);
-  const high = input.maxValue ?? Math.max(0, ...values);
+  const low = input.minValue ?? Math.min(0, summary.min);
+  const high = input.maxValue ?? Math.max(0, summary.max);
   return low === high ? [low, low + 1] : [low, high];
 }
 
 /** Path data through runs of points, split where a value is missing. */
 function toPaths(runs: readonly LinePoint[][], baseline: number) {
-  const line = runs
-    .map((run) => run.map(({ x, y }, index) => `${index === 0 ? 'M' : 'L'}${x},${y}`).join(''))
-    .join('');
+  const paths = runs.map((run) =>
+    run.map(({ x, y }, index) => `${index === 0 ? 'M' : 'L'}${x},${y}`).join(''),
+  );
+  const line = paths.join('');
   const area = runs
-    .map((run) => {
-      const path = run.map(({ x, y }, index) => `${index === 0 ? 'M' : 'L'}${x},${y}`).join('');
-      return `${path}L${run.at(-1)!.x},${baseline}L${run[0]!.x},${baseline}Z`;
+    .map((run, index) => {
+      return `${paths[index]}L${run.at(-1)!.x},${baseline}L${run[0]!.x},${baseline}Z`;
     })
     .join('');
   return { line, area };
@@ -123,23 +124,10 @@ function layOutSeries(
   return { runs: runs.filter((run) => run.length > 0), points: drawn };
 }
 
-/**
- * Lays series out in a box: x along a time or linear axis across the readable x values, and
- * values along a value axis (higher values higher up). Points whose x cannot be read are left out;
- * a value that is not a finite number breaks the line and the area, which fills toward zero or
- * the edge nearest it. Coordinates are rounded to two decimals.
- */
-export function resolveLineGeometry(input: LineGeometryInput): LineGeometry {
-  const plot = resolvePlotBox(input.width, input.height, input.margin);
-  const xAxis = createLineXAxis({
-    values: input.series.flatMap(({ points }) => points.map((point) => point.x)),
-    range: [plot.left, plot.right],
-    tickCount: countTicks(plot.right - plot.left, xTickSpacing),
-    timeZone: input.timeZone,
-    locale: input.locale,
-  });
+/** The value axis, also used to measure tick labels before laying out paths. */
+export function createLineValueScale(input: LineGeometryInput, plot: ChartBox): LinearScale {
   const isFixed = input.minValue !== undefined || input.maxValue !== undefined;
-  const values = createLinearScale({
+  return createLinearScale({
     domain: findValueDomain(input),
     range: [plot.bottom, plot.top],
     nice: !isFixed,
@@ -148,6 +136,27 @@ export function resolveLineGeometry(input: LineGeometryInput): LineGeometry {
     locale: input.locale,
     formatOptions: input.formatOptions,
   });
+}
+
+/**
+ * Lays series out in a box: x along a time or linear axis across the readable x values, and
+ * values along a value axis (higher values higher up). Points whose x cannot be read are left out;
+ * a value that is not a finite number breaks the line and the area, which fills toward zero or
+ * the edge nearest it. Coordinates are rounded to two decimals.
+ */
+export function resolveLineGeometry(
+  input: LineGeometryInput,
+  valueScale?: LinearScale,
+): LineGeometry {
+  const plot = resolvePlotBox(input.width, input.height, input.margin);
+  const xAxis = createLineXAxis({
+    values: input.series.flatMap(({ points }) => points.map((point) => point.x)),
+    range: [plot.left, plot.right],
+    tickCount: countTicks(plot.right - plot.left, xTickSpacing),
+    timeZone: input.timeZone,
+    locale: input.locale,
+  });
+  const values = valueScale ?? createLineValueScale(input, plot);
   const [low, high] = [Math.min(...values.domain), Math.max(...values.domain)];
   const baseline = roundCoordinate(values.map(clamp(0, low, high)));
   const lines = input.series.map((entry) => {

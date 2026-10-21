@@ -178,7 +178,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Shapes"
-      description="Rising, falling and flat series, a single value, a series with gaps and one with no values."
+      description="Rising, falling and flat series, a single value, a series with gaps and one with no values. Finite values determine the range for large series too."
     >
       <StateMatrix
         axes={{ shape: [...(Object.keys(series) as Array<keyof typeof series>), 'gaps', 'empty'] }}

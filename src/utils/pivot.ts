@@ -1,6 +1,7 @@
 // Pivot of plain records (specs/PIVOT-TABLE.md): groups by row and column fields and aggregates
 // value fields per group, with row, column and grand totals computed from the records.
 
+import { summarizeNumbers } from './summarize-numbers.js';
 /** A record a pivot reads: plain data whose fields are named by key. */
 export type PivotRecord = Readonly<Record<string, unknown>>;
 
@@ -113,33 +114,6 @@ function isPresent(value: unknown): boolean {
   return value !== undefined && value !== null && value !== '';
 }
 
-function isNumber(value: unknown): value is number {
-  return typeof value === 'number' && Number.isFinite(value);
-}
-
-const aggregations: Readonly<
-  Record<PivotAggregateName, (values: readonly unknown[]) => number | null>
-> = {
-  count: (values) => values.filter(isPresent).length,
-  sum: (values) => {
-    const numbers = values.filter(isNumber);
-    return numbers.length === 0 ? null : numbers.reduce((total, value) => total + value, 0);
-  },
-  min: (values) => {
-    const numbers = values.filter(isNumber);
-    return numbers.length === 0 ? null : Math.min(...numbers);
-  },
-  max: (values) => {
-    const numbers = values.filter(isNumber);
-    return numbers.length === 0 ? null : Math.max(...numbers);
-  },
-  average: (values) => {
-    const numbers = values.filter(isNumber);
-    if (numbers.length === 0) return null;
-    return numbers.reduce((total, value) => total + value, 0) / numbers.length;
-  },
-};
-
 /**
  * One value's aggregate over records: `count` counts the non-empty values; `sum`, `min`, `max` and
  * `average` read the finite numbers and give `null` without one; a function gets every value.
@@ -147,7 +121,11 @@ const aggregations: Readonly<
 function aggregateValue(records: readonly PivotRecord[], value: PivotValue): number | null {
   const values = records.map((record) => record[value.field]);
   const { aggregate = 'sum' } = value;
-  return typeof aggregate === 'function' ? aggregate(values) : aggregations[aggregate](values);
+  if (typeof aggregate === 'function') return aggregate(values);
+  if (aggregate === 'count') return values.filter(isPresent).length;
+  const summary = summarizeNumbers(values);
+  if (summary.count === 0) return null;
+  return aggregate === 'average' ? summary.sum / summary.count : summary[aggregate];
 }
 
 function aggregateAll(records: readonly PivotRecord[], layout: PivotLayout): PivotAggregates {

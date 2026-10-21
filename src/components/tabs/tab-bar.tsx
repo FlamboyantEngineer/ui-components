@@ -7,17 +7,11 @@ import { useUiStrings } from '../../core/provider.js';
 import { useOverflowItems } from '../../utils/use-overflow-items.js';
 import { scrollStripPage, type ScrollStripState } from '../../utils/use-scroll-strip-overflow.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { IconButton, ScrollStripButton } from '../icon-button/icon-button.js';
 import type { TabListModel } from './tab-actions.js';
 import { tabsHooks as hooks } from './tab-hooks.js';
 
 type Edge = 'start' | 'end';
-
-interface TabScrollButtonProps {
-  edge: Edge;
-  isHidden: boolean;
-  onPress: (edge: Edge) => void;
-}
 
 /** Which tabs a menu list keeps, and the elements that measure them. */
 export type TabOverflow = ReturnType<typeof useTabOverflow>;
@@ -47,22 +41,6 @@ function toMenuEntries(state: TabListModel, keys: readonly Key[]) {
       href: props.href,
     };
   });
-}
-
-function TabScrollButton({ edge, isHidden, onPress }: TabScrollButtonProps) {
-  const strings = useUiStrings();
-  const pointsLeft = (edge === 'start') !== (useLocale().direction === 'rtl');
-  return (
-    <IconButton
-      {...hooks.slot('scroll-button', { edge })}
-      icon={pointsLeft ? 'chevron-left' : 'chevron-right'}
-      label={edge === 'start' ? strings.scrollBackward : strings.scrollForward}
-      size="sm"
-      excludeFromTabOrder
-      hidden={isHidden}
-      onPress={() => onPress(edge)}
-    />
-  );
 }
 
 /** Which tabs a menu list keeps: the selected and focused tabs first, then from the start. */
@@ -99,7 +77,12 @@ export function TabBar({
   };
   const scrollButton = (edge: Edge) =>
     hasButtons ? (
-      <TabScrollButton edge={edge} isHidden={!strip.overflow[edge]} onPress={pageToward} />
+      <ScrollStripButton
+        {...hooks.slot('scroll-button', { edge })}
+        edge={edge}
+        isHidden={!strip.overflow[edge]}
+        onPress={pageToward}
+      />
     ) : null;
   return (
     <div

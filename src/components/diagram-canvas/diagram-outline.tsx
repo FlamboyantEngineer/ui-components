@@ -3,17 +3,13 @@ import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { IconButton } from '../icon-button/icon-button.js';
 import { diagramHooks as hooks } from './diagram-hooks.js';
-import type { DiagramEdge, DiagramNode } from './diagram-model.js';
+import type { DiagramNode } from './diagram-model.js';
+import type { DiagramLink } from './diagram-links.js';
+import { formatDiagramLink } from './diagram-links.js';
 import type { DiagramController } from './use-diagram-controller.js';
 
 export interface DiagramOutlineProps {
   controller: DiagramController;
-}
-
-/** An edge seen from one of its nodes, with the node at its other end. */
-export interface DiagramLink {
-  edge: DiagramEdge;
-  other: DiagramNode;
 }
 
 interface OutlineLinksProps {
@@ -22,31 +18,6 @@ interface OutlineLinksProps {
   links: readonly DiagramLink[];
   controller: DiagramController;
   onFollow: (id: Key) => void;
-}
-
-/** A link's text: the label of the node at the other end, then the edge's label, if any. */
-export function formatDiagramLink({ edge, other }: DiagramLink): string {
-  return edge.label ? `${other.label} (${edge.label})` : other.label;
-}
-
-/** The edges leaving a node and the edges reaching it, with the nodes at their other ends. */
-export function collectDiagramLinks(
-  node: DiagramNode,
-  { nodes, edges }: { nodes: readonly DiagramNode[]; edges: readonly DiagramEdge[] },
-): { outgoing: DiagramLink[]; incoming: DiagramLink[] } {
-  const byId = new Map(nodes.map((item) => [item.id, item]));
-  const link = (edge: DiagramEdge, otherId: Key) => {
-    const other = byId.get(otherId);
-    return other ? [{ edge, other }] : [];
-  };
-  return {
-    outgoing: edges
-      .filter((edge) => edge.source === node.id)
-      .flatMap((edge) => link(edge, edge.target)),
-    incoming: edges
-      .filter((edge) => edge.target === node.id)
-      .flatMap((edge) => link(edge, edge.source)),
-  };
 }
 
 /** One direction of a node's links: buttons that move to the node at the other end. */
@@ -99,7 +70,7 @@ export function DiagramOutline({ controller }: DiagramOutlineProps) {
   return (
     <ul {...hooks.slot('outline')} aria-label={strings.diagramOutlineView}>
       {controller.nodes.map((node) => {
-        const links = collectDiagramLinks(node, controller);
+        const links = controller.links.get(node.id)!;
         const shared = { node, controller, onFollow };
         return (
           <li

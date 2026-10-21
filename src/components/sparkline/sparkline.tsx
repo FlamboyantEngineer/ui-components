@@ -1,5 +1,5 @@
 import { useId, type Ref } from 'react';
-import { useLocale } from '../../primitives/index.js';
+import { useNumberFormatter } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
@@ -44,10 +44,9 @@ function useSeriesSummary(
   formatOptions: Intl.NumberFormatOptions | undefined,
 ): string {
   const strings = useUiStrings();
-  const { locale } = useLocale();
   const { min, max, last } = points;
+  const format = useNumberFormatter(formatOptions);
   if (!min || !max || !last) return strings.noData;
-  const format = new Intl.NumberFormat(locale, formatOptions);
   return strings.seriesSummary({
     low: format.format(min.value),
     high: format.format(max.value),

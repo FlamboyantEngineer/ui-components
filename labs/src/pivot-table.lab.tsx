@@ -152,6 +152,25 @@ mountLab(
       />
     </LabSection>
     <LabSection
+      title="Large dataset"
+      description="Minimum, maximum and average summarize 200,000 readings in one compact group."
+    >
+      <PivotTable
+        aria-label="Large dataset"
+        records={Array.from({ length: 200_000 }, (_, reading) => ({ reading }))}
+        fields={[{ id: 'reading', label: 'Reading' }]}
+        defaultLayout={{
+          rows: [],
+          columns: [],
+          values: [
+            { label: 'Low', field: 'reading', aggregate: 'min' },
+            { label: 'High', field: 'reading', aggregate: 'max' },
+            { label: 'Average', field: 'reading', aggregate: 'average' },
+          ],
+        }}
+      />
+    </LabSection>
+    <LabSection
       title="Field chooser"
       description="Drag fields between Fields, Rows, Columns and Values, or focus a card and press Alt with an arrow key; pick a value's aggregation on its card. Press a column header to sort, and expand a region to see its fruit."
     >

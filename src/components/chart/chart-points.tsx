@@ -62,13 +62,27 @@ const verticalKeys: PointKeys = {
 };
 
 function closest(points: readonly ChartPoint[], index: number): ChartPoint | undefined {
-  return [...points].sort((a, b) => Math.abs(a.index - index) - Math.abs(b.index - index))[0];
+  let nearest: ChartPoint | undefined;
+  let distance = Infinity;
+  for (const point of points) {
+    const next = Math.abs(point.index - index);
+    if (next < distance) {
+      nearest = point;
+      distance = next;
+    }
+  }
+  return nearest;
 }
 
 /** The series beside `from`'s, `step` series away among those drawn. */
 function findAcross(points: readonly ChartPoint[], from: ChartPoint, step: 1 | -1) {
-  const series = [...new Set(points.map((point) => point.series))].sort((a, b) => a - b);
-  const target = series[series.indexOf(from.series) + step];
+  let target: number | undefined;
+  for (const point of points) {
+    const distance = (point.series - from.series) * step;
+    if (distance > 0 && (target === undefined || distance < (target - from.series) * step)) {
+      target = point.series;
+    }
+  }
   if (target === undefined) return undefined;
   return closest(
     points.filter((point) => point.series === target),

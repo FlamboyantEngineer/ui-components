@@ -1,5 +1,10 @@
 import type { ReactNode } from 'react';
-import { Group, Input, NumberField as AriaNumberField, useLocale } from '../../primitives/index.js';
+import {
+  Group,
+  Input,
+  NumberField as AriaNumberField,
+  useNumberFormatter,
+} from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import {
@@ -105,14 +110,19 @@ export function NumberField({
   ...props
 }: NumberFieldProps) {
   const strings = useUiStrings();
-  const { locale } = useLocale();
   const { minValue, maxValue, step, formatOptions } = props;
-  const formatter = new Intl.NumberFormat(locale, formatOptions);
+  const formatter = useNumberFormatter(formatOptions);
   const { state, field, rest } = useFieldControl(props, {
     initialValue: null,
     emptyValue: null,
     check: (value) =>
-      checkNumber(value, { minValue, maxValue, step, format: formatter.format, strings }),
+      checkNumber(value, {
+        minValue,
+        maxValue,
+        step,
+        format: (number) => formatter.format(number),
+        strings,
+      }),
   });
   const steps: NumberSteps = { step: step ?? 1, smallStep, largeStep, minValue, maxValue };
   const commit = (value: number) => {

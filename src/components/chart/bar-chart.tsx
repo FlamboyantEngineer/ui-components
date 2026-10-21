@@ -1,21 +1,23 @@
 import type { ReactNode, Ref } from 'react';
-import { useLocale } from '../../primitives/index.js';
+import { useLocale, useNumberFormatter } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, Orientation } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import {
+  createBarValueScale,
   resolveBarGeometry,
   type BarChartLayout,
   type BarGeometry,
   type BarGeometryInput,
 } from './bar-geometry.js';
 import { Chart, type ChartSeries, type ChartTable, type ChartViewProps } from './chart.js';
+import { resolvePlotBox } from './chart-layout.js';
 import { ChartAxis } from './chart-axis.js';
 import { barChartHooks, chartHooks } from './chart-hooks.js';
 import { ChartLegend, useHiddenKeys, type ChartHiddenKeysProps } from './chart-legend.js';
 import { ChartTooltip, useChartPoints } from './chart-points.js';
-import { useNumberFormat, useValueSummary } from './chart-summary.js';
+import { useValueSummary } from './chart-summary.js';
 import { useChartFrame, useLabelMargin } from './use-chart-box.js';
 
 export type { BarChartLayout } from './bar-geometry.js';
@@ -145,14 +147,16 @@ function useBarGeometry(
 ): BarGeometry {
   const { locale } = useLocale();
   const margin = { top: 8, right: 16, bottom: 24 };
-  const probe = resolveBarGeometry({ ...input, locale, margin: { ...margin, left: 0 } });
+  const plot = resolvePlotBox(input.width, input.height, { ...margin, left: 0 });
+  const values =
+    input.orientation === 'vertical'
+      ? createBarValueScale({ ...input, locale, margin: { ...margin, left: 0 } }, plot)
+      : undefined;
   const left = useLabelMargin(
     element,
-    input.orientation === 'vertical'
-      ? probe.values.ticks().map((tick) => tick.label)
-      : input.categories,
+    values ? values.ticks().map((tick) => tick.label) : input.categories,
   );
-  return resolveBarGeometry({ ...input, locale, margin: { ...margin, left } });
+  return resolveBarGeometry({ ...input, locale, margin: { ...margin, left } }, values);
 }
 
 function toBarTable(
@@ -203,7 +207,7 @@ export function BarChart({
 }: BarChartProps) {
   const strings = useUiStrings();
   const { width, element, frameRef } = useChartFrame(ref);
-  const format = useNumberFormat(formatOptions);
+  const format = useNumberFormatter(formatOptions);
   const [hidden, setHidden] = useHiddenKeys({ hiddenKeys, defaultHiddenKeys, onHiddenKeysChange });
   const drawn = series
     .map((entry, index) => ({ series: index, values: entry.values, id: entry.id }))

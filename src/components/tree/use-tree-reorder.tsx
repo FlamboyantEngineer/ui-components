@@ -1,5 +1,5 @@
+import { createDropIndicator } from '../../utils/create-drop-indicator.js';
 import { useCallback, useLayoutEffect, useMemo, useRef } from 'react';
-import { DropIndicator } from '../../primitives/index.js';
 import type { Key } from '../../core/props.js';
 import {
   getVisibleTreeRows,
@@ -59,6 +59,7 @@ export interface TreeReorder {
   moveByKeyboard: (request: TreeKeyboardMove) => boolean;
 }
 
+const renderDropIndicator = createDropIndicator(hooks.slotClass('drop-indicator'));
 const siblingShortcuts = 'Alt+ArrowUp Alt+ArrowDown';
 const parentShortcuts = 'Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight';
 
@@ -80,18 +81,6 @@ function resolveDropMoves<T>(
   }
   const move = resolveTreeDrop(rows, { key, targetKey: target.key, position }, reorder);
   return move ? [move] : null;
-}
-
-function renderDropIndicator(target: CollectionDropTarget) {
-  return (
-    <DropIndicator
-      target={target}
-      className={hooks.slotClass('drop-indicator')}
-      render={(props) => (
-        <div {...props} data-position={target.type === 'item' ? target.dropPosition : undefined} />
-      )}
-    />
-  );
 }
 
 /** The visible rows with their movability, while the tree is reorderable. */

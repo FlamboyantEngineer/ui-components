@@ -1,6 +1,6 @@
+import { createDropIndicator } from '../../utils/create-drop-indicator.js';
 import { useCallback, useMemo, type ReactNode } from 'react';
 import {
-  DropIndicator,
   GridList,
   GridListItem,
   ListLayout,
@@ -14,7 +14,6 @@ import { DragHandle } from '../drag-handle/drag-handle.js';
 import { EmptyState } from '../empty-state/empty-state.js';
 import { boardHooks as hooks } from './board-hooks.js';
 import type { BoardCellAddress } from './board-moves.js';
-import type { CollectionDropTarget } from '../../utils/use-reorder-drag-and-drop.js';
 import type { BoardCardDrag } from './use-board-drag.js';
 
 /** What every cell of a board draws its cards with. */
@@ -48,19 +47,7 @@ type DragAndDropOptions = Parameters<typeof useDragAndDrop>[0];
 /** The options of a cell that does not drag: neither draggable nor droppable. */
 const noDragAndDrop: DragAndDropOptions = {};
 
-/** A media type unique to this board, in the lower case browsers give drag types. */
-
-function renderDropIndicator(target: CollectionDropTarget) {
-  return (
-    <DropIndicator
-      target={target}
-      className={hooks.slotClass('drop-indicator')}
-      render={(props) => (
-        <div {...props} data-position={target.type === 'item' ? target.dropPosition : undefined} />
-      )}
-    />
-  );
-}
+const renderDropIndicator = createDropIndicator(hooks.slotClass('drop-indicator'));
 
 /**
  * A cell's grid list drag and drop hooks: its cards drag with the board's media type, and it takes

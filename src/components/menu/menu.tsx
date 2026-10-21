@@ -298,3 +298,5 @@ export type {
 export { MenuOverlay, MenuPopover } from './menu-popover.js';
 export type { MenuOverlayProps, MenuPopoverProps } from './menu-popover.js';
 export type { MenuSize } from './menu-context.js';
+
+export { joinMenuGroups } from './menu-groups.js';

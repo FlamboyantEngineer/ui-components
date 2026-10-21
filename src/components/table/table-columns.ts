@@ -71,9 +71,7 @@ export function arrangeColumns<C extends PinnedColumn>(
   const hidden = new Set(layout.hidden ?? []);
   return orderColumns(columns, layout.order)
     .filter((column) => !hidden.has(column.id))
-    .map((column, index) => ({ column, index }))
-    .sort((left, right) => pinRank(left.column) - pinRank(right.column) || left.index - right.index)
-    .map((entry) => entry.column);
+    .sort((left, right) => pinRank(left) - pinRank(right));
 }
 
 /** The full column order after a move, or null when the columns are pinned to different edges. */

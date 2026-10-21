@@ -1,5 +1,5 @@
 import { useId, type ReactNode, type Ref } from 'react';
-import { useLocale } from '../../primitives/index.js';
+import { useNumberFormatter } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key, Size, Tone } from '../../core/props.js';
@@ -94,9 +94,8 @@ function SegmentedBarLegend({
   formatOptions: Intl.NumberFormatOptions | undefined;
   isVisible: boolean;
 }) {
-  const { locale } = useLocale();
-  const count = new Intl.NumberFormat(locale, formatOptions);
-  const percent = new Intl.NumberFormat(locale, shareFormat);
+  const count = useNumberFormatter(formatOptions);
+  const percent = useNumberFormatter(shareFormat);
   const list = (
     <ul {...hooks.slot('legend')}>
       {segments.map(({ segment, value, share }) => (
@@ -129,7 +128,7 @@ export function SegmentedBar({
 }: SegmentedBarProps) {
   const labelId = useId();
   const strings = useUiStrings();
-  const { locale } = useLocale();
+  const format = useNumberFormatter(formatOptions);
   const resolved = resolveSegmentedBar(segments, total);
   const hasLabel = label != null && rest['aria-labelledby'] === undefined && !rest['aria-label'];
   return (
@@ -145,9 +144,7 @@ export function SegmentedBar({
         </span>
       ) : null}
       {showTotal ? (
-        <span {...hooks.slot('total')}>
-          {strings.totalCount(new Intl.NumberFormat(locale, formatOptions).format(resolved.total))}
-        </span>
+        <span {...hooks.slot('total')}>{strings.totalCount(format.format(resolved.total))}</span>
       ) : null}
       <div {...hooks.slot('track')} aria-hidden="true">
         {resolved.segments.map(({ segment, share }) =>

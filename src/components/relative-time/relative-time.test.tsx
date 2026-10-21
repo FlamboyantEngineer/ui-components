@@ -4,7 +4,6 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { RelativeTime } from './relative-time.js';
-import { getClockState } from './relative-time-clock.js';
 
 const fixedNow = new Date(2026, 4, 23, 10, 30);
 const getNow = () => fixedNow;
@@ -162,13 +161,13 @@ describe('RelativeTime', () => {
     const [instant, day] = Array.from(container.children);
     expect(instant).toHaveTextContent('Now');
     expect(day).toHaveTextContent('Today');
-    expect(getClockState()).toEqual({ isRunning: true, subscribers: 2 });
+    expect(vi.getTimerCount()).toBe(1);
     await advance(30_000);
     expect(instant).toHaveTextContent('30 seconds ago');
     expect(day).toHaveTextContent('Yesterday');
     await advance(30_000);
     expect(instant).toHaveTextContent('1 minute ago');
     unmount();
-    expect(getClockState()).toEqual({ isRunning: false, subscribers: 0 });
+    expect(vi.getTimerCount()).toBe(0);
   });
 });

@@ -1,5 +1,6 @@
 // The paths and marked points of a sparkline, from its values and box (specs/SPARKLINE.md).
 
+import { summarizeNumbers } from '../../utils/summarize-numbers.js';
 import { clamp } from '../../utils/clamp.js';
 import { createLinearScale } from '../../utils/linear-scale.js';
 
@@ -82,9 +83,9 @@ function findMarkedPoints(points: readonly SparklinePoint[]): SparklineGeometry[
  */
 export function resolveSparklineGeometry(input: SparklineGeometryInput): SparklineGeometry {
   const { values, width, height } = input;
-  const finite = values.filter((value) => Number.isFinite(value));
-  const low = input.minValue ?? Math.min(...finite);
-  const high = input.maxValue ?? Math.max(...finite);
+  const summary = summarizeNumbers(values);
+  const low = input.minValue ?? summary.min;
+  const high = input.maxValue ?? summary.max;
   const x = createLinearScale({
     domain: [0, values.length - 1],
     range: [inset, width - inset],

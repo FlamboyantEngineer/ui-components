@@ -94,7 +94,7 @@ export function toActionContent(action: ActionRowAction, strings: UiStrings): Ac
 /** Custom actions in their given order, then the standard verbs in their fixed order. */
 export function orderActions<A extends ActionRowAction>(actions: readonly A[]): A[] {
   return actions
-    .map((action, index) => ({ action, index, rank: verbOrder.indexOf(action.verb) }))
-    .sort((left, right) => left.rank - right.rank || left.index - right.index)
+    .map((action) => ({ action, rank: verbOrder.indexOf(action.verb) }))
+    .sort((left, right) => left.rank - right.rank)
     .map(({ action }) => action);
 }

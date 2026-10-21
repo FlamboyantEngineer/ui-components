@@ -12,7 +12,7 @@ import {
 } from '../../utils/use-scroll-strip-overflow.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import type { IconSource } from '../icon/icon.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { ScrollStripButton } from '../icon-button/icon-button.js';
 
 /** `scroll` lets the strip scroll; `menu` moves the tools that do not fit into a "more" menu. */
 export type ToolbarScrollerOverflow = 'scroll' | 'menu';
@@ -52,12 +52,6 @@ export interface ToolbarScrollerProps<T extends ToolbarScrollerItem = ToolbarScr
 
 type Edge = 'start' | 'end';
 
-interface ScrollButtonProps {
-  edge: Edge;
-  isHidden: boolean;
-  onPress: (edge: Edge) => void;
-}
-
 const hooks = createHooks('toolbar-scroller', [
   'strip',
   'item',
@@ -94,22 +88,6 @@ function revealTool(strip: HTMLElement, tool: Element) {
   if (item.left < visibleLeft) delta = item.left - visibleLeft;
   else if (item.right > visibleRight) delta = item.right - visibleRight;
   if (delta !== 0) scrollStripTo(strip, strip.scrollLeft + delta, 'instant');
-}
-
-function ScrollButton({ edge, isHidden, onPress }: ScrollButtonProps) {
-  const strings = useUiStrings();
-  const pointsLeft = (edge === 'start') !== (useLocale().direction === 'rtl');
-  return (
-    <IconButton
-      {...hooks.slot('scroll-button', { edge })}
-      icon={pointsLeft ? 'chevron-left' : 'chevron-right'}
-      label={edge === 'start' ? strings.scrollBackward : strings.scrollForward}
-      size="sm"
-      excludeFromTabOrder
-      hidden={isHidden}
-      onPress={() => onPress(edge)}
-    />
-  );
 }
 
 interface MenuStripProps<T extends ToolbarScrollerItem> {
@@ -212,7 +190,12 @@ export function ToolbarScroller<T extends ToolbarScrollerItem = ToolbarScrollerI
       onFocus={onFocus}
     >
       {scrollButtons ? (
-        <ScrollButton edge="start" isHidden={!edges.start} onPress={pageToward} />
+        <ScrollStripButton
+          {...hooks.slot('scroll-button', { edge: 'start' })}
+          edge="start"
+          isHidden={!edges.start}
+          onPress={pageToward}
+        />
       ) : null}
       <Toolbar
         ref={stripRef}
@@ -228,7 +211,12 @@ export function ToolbarScroller<T extends ToolbarScrollerItem = ToolbarScrollerI
       <span {...hooks.slot('fade', { edge: 'start' })} aria-hidden="true" hidden={!edges.start} />
       <span {...hooks.slot('fade', { edge: 'end' })} aria-hidden="true" hidden={!edges.end} />
       {scrollButtons ? (
-        <ScrollButton edge="end" isHidden={!edges.end} onPress={pageToward} />
+        <ScrollStripButton
+          {...hooks.slot('scroll-button', { edge: 'end' })}
+          edge="end"
+          isHidden={!edges.end}
+          onPress={pageToward}
+        />
       ) : null}
     </div>
   );

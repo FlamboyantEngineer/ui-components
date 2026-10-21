@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { useLocale } from '../../primitives/index.js';
+import { useNumberFormatter } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Tone } from '../../core/props.js';
 import { Glyph } from '../../core/provider.js';
@@ -76,12 +76,10 @@ export function StatTile({
   className,
   ...rest
 }: StatTileProps) {
-  const { locale } = useLocale();
   const change = resolveChange(delta, goal);
-  const valueText =
-    valueLabel ??
-    (typeof value === 'number' ? new Intl.NumberFormat(locale, formatOptions).format(value) : null);
-  const deltaFormat = new Intl.NumberFormat(locale, {
+  const format = useNumberFormatter(formatOptions);
+  const valueText = valueLabel ?? (typeof value === 'number' ? format.format(value) : null);
+  const deltaFormat = useNumberFormatter({
     ...(deltaFormatOptions ?? formatOptions),
     signDisplay: 'exceptZero',
   });

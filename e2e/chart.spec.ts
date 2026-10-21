@@ -6,6 +6,18 @@ const demo = (page: Page, name: string) => page.locator(`[data-lab-demo="${name}
 const tooltip = (page: Page) => page.locator('.ui-chart__tooltip');
 
 test.describe('Chart lab', () => {
+  test('UIC-CHART-6.4 keeps first readings and blanks missing values at repeated coordinates', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chart');
+    const table = page.getByRole('table', { name: 'Repeated readings', exact: true });
+    const rows = table.locator('tbody tr');
+    await expect(rows).toHaveCount(2);
+    await expect(rows.nth(0).getByRole('cell')).toHaveText(['4', '']);
+    await expect(rows.nth(1).getByRole('cell')).toHaveText(['', '3']);
+  });
+
   test('UIC-CHART-1.1 UIC-CHART-3.2 UIC-CHART-4.6 UIC-CHART-5.1 UIC-CHART-5.2 UIC-CHART-8.1 draws grouped and stacked bars both ways', async ({
     page,
     lab,

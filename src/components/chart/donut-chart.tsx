@@ -1,5 +1,5 @@
 import type { ReactNode, Ref } from 'react';
-import { useLocale } from '../../primitives/index.js';
+import { useNumberFormatter } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
@@ -8,7 +8,6 @@ import { Chart, type ChartSeries, type ChartTable, type ChartViewProps } from '.
 import { chartHooks, donutChartHooks } from './chart-hooks.js';
 import { ChartLegend, useHiddenKeys, type ChartHiddenKeysProps } from './chart-legend.js';
 import { ChartTooltip, useChartPoints } from './chart-points.js';
-import { useNumberFormat } from './chart-summary.js';
 import { resolveDonutGeometry, type DonutGeometry } from './donut-geometry.js';
 
 /** One part of a donut chart's whole. */
@@ -163,10 +162,9 @@ export function DonutChart({
   ...rest
 }: DonutChartProps) {
   const strings = useUiStrings();
-  const { locale } = useLocale();
   const formats = {
-    value: useNumberFormat(formatOptions),
-    share: new Intl.NumberFormat(locale, shareFormat),
+    value: useNumberFormatter(formatOptions),
+    share: useNumberFormatter(shareFormat),
   };
   const [hidden, setHidden] = useHiddenKeys({ hiddenKeys, defaultHiddenKeys, onHiddenKeysChange });
   const geometry = resolveDonutGeometry({
@@ -175,7 +173,10 @@ export function DonutChart({
       .filter(({ id }) => !hidden.has(id)),
     diameter,
   });
-  const largest = [...geometry.slices].sort((a, b) => b.value - a.value)[0];
+  const largest = geometry.slices.reduce<DonutGeometry['slices'][number] | undefined>(
+    (best, slice) => (!best || slice.value > best.value ? slice : best),
+    undefined,
+  );
   const generated = largest
     ? strings.donutSummary(
         formats.value.format(geometry.total),

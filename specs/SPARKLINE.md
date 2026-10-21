@@ -15,8 +15,10 @@ Verification: `src/components/sparkline/sparkline.test.tsx`, `e2e/sparkline.spec
 
 The values shall be spaced evenly from the left edge to the right in their order, and placed from the bottom edge (`minValue`, by default the lowest value) to the top (`maxValue`, by default the highest), inside a 3 pixel inset that keeps edge markers whole; values beyond `minValue` or `maxValue` stay at the edge. Equal values sit on the middle line, and a single value at the centre. The area fills from the line toward zero: to zero when zero lies between the bottom and the top, and otherwise to the edge nearest zero (the bottom for positive values). Coordinates are rounded to two decimals.
 
-Implementation: `src/components/sparkline/sparkline-geometry.ts`, `src/utils/linear-scale.ts`
-Verification: `src/components/sparkline/sparkline-geometry.test.ts`, `src/components/sparkline/sparkline.test.tsx`
+Calculating the finite value range shall not depend on the runtime limit on function arguments.
+
+Implementation: `src/utils/summarize-numbers.ts`, `src/components/sparkline/sparkline-geometry.ts`, `src/utils/linear-scale.ts`
+Verification: `src/utils/summarize-numbers.test.ts`, `src/components/sparkline/sparkline-geometry.test.ts`, `src/components/sparkline/sparkline.test.tsx`
 
 ### UIC-SPARKLINE-1.3 - Gaps
 

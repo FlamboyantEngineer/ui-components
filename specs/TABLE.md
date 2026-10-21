@@ -433,7 +433,9 @@ Verification: `src/components/table/table-group-row.test.tsx`, `e2e/table.spec.t
 
 The table shall group with small pure functions: resolving `groupBy` against the columns and the sort, grouping nodes level by level under unique keys with empty values last, listing group keys, listing the rows a reader sees inside expanded groups and rows, and computing the built-in aggregates.
 
-Implementation: `src/components/table/table-groups.ts`
+Built-in aggregates shall handle groups larger than the runtime limit on function arguments, retaining the same finite-number and empty-value rules.
+
+Implementation: `src/utils/summarize-numbers.ts`, `src/components/table/table-groups.ts`
 Verification: `src/components/table/table-groups.test.ts`
 
 ## UIC-TABLE-14 - Spreadsheet mode

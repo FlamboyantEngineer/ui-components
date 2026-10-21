@@ -68,13 +68,13 @@ export function matchInsertItems(
 ): InsertMenuItem[] {
   if (!query) return [...items];
   return items
-    .map((item, index) => {
+    .map((item) => {
       const scores = [item.label, ...(item.keywords ?? [])]
         .map((word) => scoreCompletion(word, query))
         .filter((score): score is number => score !== null);
-      return { item, index, score: scores.length > 0 ? Math.min(...scores) : null };
+      return { item, score: scores.length > 0 ? Math.min(...scores) : null };
     })
     .filter(({ score }) => score !== null)
-    .sort((a, b) => (a.score ?? 0) - (b.score ?? 0) || a.index - b.index)
+    .sort((a, b) => (a.score ?? 0) - (b.score ?? 0))
     .map(({ item }) => item);
 }

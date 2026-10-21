@@ -40,11 +40,6 @@ export function subscribeClock(at: number, wake: Wake): () => void {
   };
 }
 
-/** Whether the shared clock holds a pending timeout, and for how many subscribers. */
-export function getClockState(): { isRunning: boolean; subscribers: number } {
-  return { isRunning: timer !== undefined, subscribers: wakeTimes.size };
-}
-
 /** Renders the calling component again `delay` milliseconds from now, on the shared clock. */
 export function useClockTick(delay: number | null): void {
   const [tick, wake] = useReducer((count: number) => count + 1, 0);

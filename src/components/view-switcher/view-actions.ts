@@ -1,3 +1,4 @@
+import { joinMenuGroups } from '../menu/menu.js';
 // The actions a view switcher offers for a view, as menu entries for the actions menu and each
 // tab's own menu.
 
@@ -26,15 +27,6 @@ export interface ViewActionContext {
   /** The only view left cannot be deleted. */
   canDelete: boolean;
   openDialog: (dialog: ViewDialog) => void;
-}
-
-/** Joins non-empty groups of entries with separators. */
-function joinGroups(groups: readonly MenuItemEntry[][]): MenuEntry[] {
-  return groups
-    .filter((group) => group.length > 0)
-    .flatMap((group, index) =>
-      index === 0 ? group : [{ type: 'separator' as const, id: `separator-${index}` }, ...group],
-    );
 }
 
 /** Save, save as and reset: they act on the current settings, so only on the selected view. */
@@ -106,5 +98,5 @@ export function listViewActions(key: Key, label: string, context: ViewActionCont
         },
       ]
     : [];
-  return joinGroups([listSettingsActions(key, context), naming, removal]);
+  return joinMenuGroups([listSettingsActions(key, context), naming, removal]);
 }

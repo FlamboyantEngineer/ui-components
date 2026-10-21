@@ -386,7 +386,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Row groups"
-      description="Groups by one or two columns or a computed value, with counts and sums; collapse with the chevron or ArrowLeft."
+      description="Groups by one or two columns or a computed value, with counts and sums; collapse with the chevron or ArrowLeft. Numeric aggregates also handle large groups."
     >
       <Grouping />
     </LabSection>
