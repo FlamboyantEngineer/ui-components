@@ -7,7 +7,10 @@ export type StylesheetChoice =
 
 export interface LabSettings {
   stylesheet: StylesheetChoice;
-  /** Value written to `themeAttribute` on the root element; empty writes nothing. */
+  /**
+   * `system` follows the reader's colour scheme, writing `light` or `dark`; any other value is
+   * written to `themeAttribute` on the root element as it is, and empty writes nothing.
+   */
   theme: string;
   /** Root attribute the host's theme switch reads, `data-theme` by default. */
   themeAttribute: string;
@@ -16,6 +19,11 @@ export interface LabSettings {
 type StylesheetState = 'none' | 'loading' | 'loaded' | 'error';
 
 export const DEFAULT_THEME_ATTRIBUTE = 'data-theme';
+
+/** The theme that follows the reader's colour scheme. */
+export const SYSTEM_THEME = 'system';
+
+const darkSchemeQuery = '(prefers-color-scheme: dark)';
 
 const referenceStylesheet = 'build/reference.css';
 const stylesheetLinkId = 'ui-lab-stylesheet';
@@ -30,11 +38,9 @@ const attributeNamePattern = /^[a-z][a-z0-9-]*$/i;
 
 export const defaultSettings: LabSettings = {
   stylesheet: { kind: 'reference' },
-  theme: '',
+  theme: SYSTEM_THEME,
   themeAttribute: DEFAULT_THEME_ATTRIBUTE,
 };
-
-let appliedThemeAttribute: string | null = null;
 
 function parseStylesheet(value: string | null | undefined): StylesheetChoice | null {
   if (value === null || value === undefined || value.trim() === '') return null;
@@ -84,6 +90,7 @@ export function readSettings(search: string, storage: Storage | null): LabSettin
     parseStylesheet(query.get('stylesheet')) ??
     parseStylesheet(getSafely(storage, storageKeys.stylesheet)) ??
     defaultSettings.stylesheet;
+  // An empty theme is a choice, writing nothing; only a missing one falls back to the default.
   const theme = query.has('theme')
     ? (query.get('theme') ?? '')
     : (getSafely(storage, storageKeys.theme) ?? defaultSettings.theme);
@@ -109,8 +116,8 @@ export function rememberSettings(settings: LabSettings, storage: Storage | null)
 export function settingsSearch(settings: LabSettings, search = ''): string {
   const query = new URLSearchParams(search);
   query.set('stylesheet', formatStylesheet(settings.stylesheet));
-  if (settings.theme) query.set('theme', settings.theme);
-  else query.delete('theme');
+  if (settings.theme === defaultSettings.theme) query.delete('theme');
+  else query.set('theme', settings.theme);
   if (settings.themeAttribute !== DEFAULT_THEME_ATTRIBUTE) {
     query.set('themeAttribute', settings.themeAttribute);
   } else {
@@ -146,6 +153,8 @@ function applyStylesheet(stylesheet: StylesheetChoice, doc: Document): void {
       link = doc.createElement('link');
       link.id = stylesheetLinkId;
       link.rel = 'stylesheet';
+      // Applied from the page head, the sheet holds the first paint until it loads.
+      link.setAttribute('blocking', 'render');
       link.addEventListener('load', () => {
         if (doc.getElementById(stylesheetLinkId) === link) setState('loaded');
       });
@@ -159,21 +168,39 @@ function applyStylesheet(stylesheet: StylesheetChoice, doc: Document): void {
   }
 }
 
+/** The value the theme writes: `light` or `dark` for the system theme, else the theme itself. */
+export function resolveTheme(theme: string, view: Window | null = window): string {
+  if (theme !== SYSTEM_THEME) return theme;
+  return view?.matchMedia?.(darkSchemeQuery).matches ? 'dark' : 'light';
+}
+
+/** Calls `onChange` whenever the reader's colour scheme changes; returns the unsubscribe. */
+export function watchColorScheme(onChange: () => void, view: Window = window): () => void {
+  const query = view.matchMedia?.(darkSchemeQuery);
+  query?.addEventListener('change', onChange);
+  return () => query?.removeEventListener('change', onChange);
+}
+
 /**
- * Loads the chosen stylesheet and writes the theme attribute on the root element.
- * `data-lab-stylesheet-state` on the root reports none, loading, loaded or error.
+ * Loads the chosen stylesheet and writes the theme attribute on the root element. The page head
+ * applies the settings before the body is parsed and the lab script applies them again, so the
+ * attribute last written is remembered on the root (`data-lab-theme-attribute`), not in memory.
+ * `data-lab-stylesheet-state` on the root reports none, loading, loaded or error, and
+ * `data-lab-scheme` the colour scheme a light or dark theme sets, which the chrome follows.
  */
 export function applySettings(settings: LabSettings, doc: Document = document): void {
   const root = doc.documentElement;
   applyStylesheet(settings.stylesheet, doc);
-  if (appliedThemeAttribute && appliedThemeAttribute !== settings.themeAttribute) {
-    root.removeAttribute(appliedThemeAttribute);
-  }
-  if (settings.theme) {
-    root.setAttribute(settings.themeAttribute, settings.theme);
-    appliedThemeAttribute = settings.themeAttribute;
+  const previous = root.dataset.labThemeAttribute;
+  if (previous && previous !== settings.themeAttribute) root.removeAttribute(previous);
+  const value = resolveTheme(settings.theme, doc.defaultView);
+  if (value) {
+    root.setAttribute(settings.themeAttribute, value);
+    root.dataset.labThemeAttribute = settings.themeAttribute;
   } else {
     root.removeAttribute(settings.themeAttribute);
-    appliedThemeAttribute = null;
+    delete root.dataset.labThemeAttribute;
   }
+  if (value === 'light' || value === 'dark') root.dataset.labScheme = value;
+  else delete root.dataset.labScheme;
 }

@@ -54,11 +54,20 @@ const options = {
   logLevel: 'info',
 };
 
+// The settings every page applies from its head before the body is parsed: a classic script, since
+// the head cannot wait for a module, so the first paint already has the stylesheet and theme.
+const bootOptions = {
+  ...options,
+  entryPoints: { boot: join(labSourceDir, 'chrome', 'boot.ts') },
+  splitting: false,
+  format: 'iife',
+};
+
 if (watch) {
-  const context = await esbuild.context(options);
-  await context.watch();
+  const contexts = await Promise.all([esbuild.context(options), esbuild.context(bootOptions)]);
+  await Promise.all(contexts.map((context) => context.watch()));
   console.log(`Watching ${labNames.length} labs.`);
 } else {
-  await esbuild.build(options);
+  await Promise.all([esbuild.build(options), esbuild.build(bootOptions)]);
   console.log(`Built ${labNames.length} labs into labs/build/.`);
 }

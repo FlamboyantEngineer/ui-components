@@ -29,18 +29,25 @@ Every lab and the index shall show a toolbar with a stylesheet picker offering U
 Implementation: `labs/src/chrome/lab-chrome.tsx`, `labs/src/chrome/settings.ts`, `labs/src/chrome/mount.tsx`
 Verification: `e2e/lab-harness.spec.ts`, `labs/src/chrome/settings.test.ts`
 
-### UIC-LABS-2.2 - Theme attribute
+### UIC-LABS-2.2 - Theme
 
-The toolbar shall offer a theme value and the root-element attribute it is written to (`data-theme` by default), so a host stylesheet's own theme switch can be exercised.
+The toolbar shall offer a theme picker: System (the default), Light, Dark and Custom, and the root-element attribute the theme is written to (`data-theme` by default). System writes `light` or `dark` from the reader's colour scheme and follows it when it changes; Light and Dark write `light` and `dark`, which the reference stylesheet draws; Custom writes a value typed in, nothing while it is empty, so a host stylesheet's own theme switch can be exercised. The toolbar draws itself in the colour scheme a light or dark theme sets.
 
-Implementation: `labs/src/chrome/lab-chrome.tsx`, `labs/src/chrome/settings.ts`
+Implementation: `labs/src/chrome/lab-chrome.tsx`, `labs/src/chrome/settings.ts`, `labs/src/chrome/mount.tsx`
 Verification: `e2e/lab-harness.spec.ts`, `labs/src/chrome/settings.test.ts`
 
 ### UIC-LABS-2.3 - Query string and remembered choice
 
-`?stylesheet=` (`none`, `reference` or a URL), `?theme=` and `?themeAttribute=` shall preselect the settings. Otherwise the last choice made in the toolbar applies, remembered in `localStorage`; a browser that refuses storage falls back to the defaults (reference sheet, no theme). Changing a setting rewrites the query string, and the index carries the current settings into every lab link, including after repeated toolbar changes.
+`?stylesheet=` (`none`, `reference` or a URL), `?theme=` and `?themeAttribute=` shall preselect the settings. Otherwise the last choice made in the toolbar applies, remembered in `localStorage`; a browser that refuses storage falls back to the defaults (reference sheet, system theme). Changing a setting rewrites the query string, and the index carries the current settings into every lab link, including after repeated toolbar changes.
 
 Implementation: `labs/src/chrome/settings.ts`, `labs/src/chrome/mount.tsx`
+Verification: `e2e/lab-harness.spec.ts`, `labs/src/chrome/settings.test.ts`
+
+### UIC-LABS-2.5 - Styled from the first paint
+
+Every lab page and the index shall apply the stylesheet and theme from a classic script in the head (`labs/build/boot.js`), before the body is parsed: the stylesheet link holds the first paint (`blocking="render"`) and the lab content stays hidden while the stylesheet loads, so a page never paints unstyled first. The toolbar stays visible, so a slow stylesheet can still be changed.
+
+Implementation: `labs/src/chrome/boot.ts`, `labs/src/chrome/settings.ts`, `scripts/lib/labs.mjs`, `scripts/build-labs.mjs`
 Verification: `e2e/lab-harness.spec.ts`, `labs/src/chrome/settings.test.ts`
 
 ### UIC-LABS-2.4 - Isolated chrome

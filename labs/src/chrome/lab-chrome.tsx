@@ -1,6 +1,7 @@
 import { useId, useState, type FormEvent } from 'react';
 import {
   DEFAULT_THEME_ATTRIBUTE,
+  SYSTEM_THEME,
   isValidThemeAttribute,
   type LabSettings,
   type StylesheetChoice,
@@ -15,6 +16,14 @@ export interface LabChromeProps {
 }
 
 type Kind = StylesheetChoice['kind'];
+
+/** The theme choices the picker names; any other value is a custom one typed in. */
+const themeChoices = [SYSTEM_THEME, 'light', 'dark'] as const;
+type ThemeChoice = (typeof themeChoices)[number] | 'custom';
+
+function toThemeChoice(theme: string): ThemeChoice {
+  return (themeChoices as readonly string[]).includes(theme) ? (theme as ThemeChoice) : 'custom';
+}
 
 /** The chrome's draft values and the actions that commit them. */
 type ChromeState = ReturnType<typeof useChromeState>;
@@ -85,6 +94,7 @@ function useChromeState(initial: LabSettings, onChange: (settings: LabSettings) 
     initial.stylesheet.kind === 'custom' ? initial.stylesheet.url : '',
   );
   const [attribute, setAttribute] = useState(initial.themeAttribute);
+  const [themeChoice, setThemeChoice] = useState(toThemeChoice(initial.theme));
 
   const commit = (next: LabSettings) => {
     setSettings(next);
@@ -99,10 +109,16 @@ function useChromeState(initial: LabSettings, onChange: (settings: LabSettings) 
     kind,
     url,
     attribute,
+    themeChoice,
     setUrl,
     setAttribute,
     commit,
     commitUrl,
+    chooseTheme(next: ThemeChoice) {
+      setThemeChoice(next);
+      // A custom theme starts empty, which writes nothing until a value is typed.
+      commit({ ...settings, theme: next === 'custom' ? '' : next });
+    },
     chooseKind(next: Kind) {
       setKind(next);
       if (next === 'custom') commitUrl();
@@ -156,19 +172,36 @@ function StylesheetFields({ chrome }: { chrome: ChromeState }) {
 }
 
 function ThemeFields({ chrome }: { chrome: ChromeState }) {
-  const ids = { theme: useId(), attribute: useId() };
+  const ids = { theme: useId(), value: useId(), attribute: useId() };
   return (
     <>
       <label htmlFor={ids.theme}>Theme</label>
-      <input
+      <select
         id={ids.theme}
-        type="text"
-        placeholder="none"
-        value={chrome.settings.theme}
-        onChange={(event) =>
-          chrome.commit({ ...chrome.settings, theme: event.target.value.trim() })
-        }
-      />
+        value={chrome.themeChoice}
+        onChange={(event) => chrome.chooseTheme(event.target.value as ThemeChoice)}
+      >
+        <option value={SYSTEM_THEME}>System</option>
+        <option value="light">Light</option>
+        <option value="dark">Dark</option>
+        <option value="custom">Custom</option>
+      </select>
+      {chrome.themeChoice === 'custom' ? (
+        <>
+          <label htmlFor={ids.value} className="visually-hidden">
+            Theme value
+          </label>
+          <input
+            id={ids.value}
+            type="text"
+            placeholder="none"
+            value={chrome.settings.theme}
+            onChange={(event) =>
+              chrome.commit({ ...chrome.settings, theme: event.target.value.trim() })
+            }
+          />
+        </>
+      ) : null}
       <label htmlFor={ids.attribute}>on</label>
       <input
         id={ids.attribute}

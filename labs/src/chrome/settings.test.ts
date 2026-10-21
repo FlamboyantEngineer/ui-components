@@ -4,6 +4,7 @@ import {
   defaultSettings,
   readSettings,
   rememberSettings,
+  resolveTheme,
   settingsSearch,
 } from './settings.js';
 
@@ -32,13 +33,17 @@ const throwingStorage = {
 
 afterEach(() => {
   document.getElementById('ui-lab-stylesheet')?.remove();
-  for (const name of ['data-theme', 'data-mode']) document.documentElement.removeAttribute(name);
+  const names = ['data-theme', 'data-mode', 'data-lab-theme-attribute', 'data-lab-scheme'];
+  for (const name of names) document.documentElement.removeAttribute(name);
 });
 
 // UIC-LABS-2.1 UIC-LABS-2.2 UIC-LABS-2.3
 describe('readSettings', () => {
-  it('defaults to the reference sheet and no theme', () => {
+  it('defaults to the reference sheet and the system theme, and keeps an empty theme', () => {
     expect(readSettings('', memoryStorage())).toEqual(defaultSettings);
+    expect(defaultSettings.theme).toBe('system');
+    expect(readSettings('?theme=', memoryStorage()).theme).toBe('');
+    expect(readSettings('', memoryStorage({ 'ui-labs:theme': '' })).theme).toBe('');
   });
 
   it('prefers the query string over the remembered choice', () => {
@@ -77,6 +82,7 @@ describe('settings round trip', () => {
 
   it('writes the query string and keeps unrelated parameters', () => {
     expect(settingsSearch(defaultSettings, '?case=3')).toBe('?case=3&stylesheet=reference');
+    expect(settingsSearch({ ...defaultSettings, theme: '' })).toBe('?stylesheet=reference&theme=');
     expect(
       settingsSearch({ stylesheet: { kind: 'none' }, theme: 'dark', themeAttribute: 'data-mode' }),
     ).toBe('?stylesheet=none&theme=dark&themeAttribute=data-mode');
@@ -129,6 +135,24 @@ describe('applySettings', () => {
     applySettings({ ...defaultSettings, stylesheet: { kind: 'none' } });
     expect(document.getElementById('ui-lab-stylesheet')).toBeNull();
     expect(document.documentElement.dataset.labStylesheetState).toBe('none');
+  });
+
+  it('UIC-LABS-2.2 writes light or dark for the system theme, from the colour scheme', () => {
+    const dark = { matchMedia: () => ({ matches: true }) } as unknown as Window;
+    const light = { matchMedia: () => ({ matches: false }) } as unknown as Window;
+    expect(resolveTheme('system', dark)).toBe('dark');
+    expect(resolveTheme('system', light)).toBe('light');
+    expect(resolveTheme('night', dark)).toBe('night');
+    applySettings({ ...defaultSettings, theme: 'dark' });
+    expect(document.documentElement.dataset.labScheme).toBe('dark');
+    applySettings({ ...defaultSettings, theme: 'night' });
+    expect(document.documentElement.getAttribute('data-theme')).toBe('night');
+    expect(document.documentElement.dataset.labScheme).toBeUndefined();
+  });
+
+  it('UIC-LABS-2.5 makes the stylesheet hold the first paint', () => {
+    applySettings(defaultSettings);
+    expect(document.getElementById('ui-lab-stylesheet')).toHaveAttribute('blocking', 'render');
   });
 
   it('moves the theme between attributes', () => {
