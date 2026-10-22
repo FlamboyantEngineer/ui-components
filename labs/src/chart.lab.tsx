@@ -167,7 +167,7 @@ mountLab(
   <>
     <LabSection
       title="Bar layouts"
-      description="Grouped and stacked bars, vertical and horizontal, with a legend that shows and hides each series."
+      description="Grouped and stacked bars, vertical and horizontal, with a legend that shows and hides each series. Arrow keys move between values and series, Home and End jump to the series ends, and Tab leaves the plot without scanning its points."
     >
       <StateMatrix
         axes={{ layout: ['grouped', 'stacked'], orientation: ['vertical', 'horizontal'] }}

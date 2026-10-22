@@ -99,4 +99,23 @@ test.describe('Relative Time lab', () => {
     await lab.open('relative-time', { theme: 'dark' });
     await lab.expectAccessible();
   });
+  test('UIC-RELATIVE-TIME-2.2 updates a shared deadline after timestamps are removed and remounted', async ({
+    page,
+    lab,
+  }) => {
+    await page.clock.install();
+    await lab.open('relative-time');
+    const demo = page.locator('[data-lab-demo="shared-clock"]');
+    const times = demo.locator('time');
+    await expect(times).toHaveCount(20);
+    await demo.getByRole('button', { name: 'Remove timestamps' }).click();
+    await expect(times).toHaveCount(0);
+    await page.clock.runFor(30_000);
+    await demo.getByRole('button', { name: 'Mount timestamps' }).click();
+    await expect(times).toHaveCount(20);
+    const before = await times.first().textContent();
+    await page.clock.runFor(10_000);
+    await expect(times.first()).not.toHaveText(before!);
+    await expect(times).toHaveText(Array(20).fill(await times.first().textContent()));
+  });
 });

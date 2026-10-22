@@ -47,6 +47,21 @@ describe('diagram model', () => {
     ).toBe(false);
   });
 
+  it('UIC-DIAGRAM-CANVAS-1.2 bounds a large diagram without argument limits', () => {
+    const rects = Array.from({ length: 200_000 }, (_, index) => ({
+      x: index,
+      y: -index,
+      width: 10,
+      height: 20,
+    }));
+    expect(findDiagramBounds(rects, 5)).toEqual({
+      x: -5,
+      y: -200_004,
+      width: 200_019,
+      height: 200_029,
+    });
+  });
+
   it('UIC-DIAGRAM-CANVAS-3.3 fits bounds in view within the zoom range', () => {
     const bounds = { x: 100, y: 100, width: 400, height: 200 };
     expect(
@@ -103,5 +118,17 @@ describe('diagram model', () => {
     expect(offsets.get('back')).toBe(-12);
     expect(offsets.get('lone')).toBe(0);
     expect(offsets.has('loop')).toBe(false);
+  });
+  it('UIC-DIAGRAM-CANVAS-2.3 keeps a large parallel group centred in edge order', () => {
+    const parallel = Array.from({ length: 20_000 }, (_, index) => ({
+      id: index,
+      source: index % 2 === 0 ? 'b' : 'a',
+      target: index % 2 === 0 ? 'a' : 'b',
+    }));
+    const offsets = spreadParallelEdges(parallel);
+    expect(offsets.size).toBe(parallel.length);
+    expect(offsets.get(0)).toBe(239_988);
+    expect(offsets.get(1)).toBe(-239_964);
+    expect(offsets.get(19_999)).toBe(239_988);
   });
 });

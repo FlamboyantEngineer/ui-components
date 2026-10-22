@@ -295,7 +295,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Read only graph"
-      description="Tab to a module, then move between connected modules with the arrow keys; switch to the outline to read the graph as a list. Both views list connections in edge order, including parallel connections and loops."
+      description="Tab to a module, then move between connected modules with the arrow keys; switch to the outline to read the graph as a list. Both views list connections in edge order, including parallel connections and loops. Bounds are measured in one pass and parallel edges are grouped without copying earlier entries."
     >
       <Modules />
     </LabSection>

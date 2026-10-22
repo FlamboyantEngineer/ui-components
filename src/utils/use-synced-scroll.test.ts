@@ -1,5 +1,5 @@
 import { renderHook } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { mapScrollOffset, useSyncedScroll, type ScrollAnchor } from './use-synced-scroll.js';
 
 function createContainer(scrollHeight: number, clientHeight = 100): HTMLElement {
@@ -108,5 +108,52 @@ describe('useSyncedScroll', () => {
     unmount();
     scrollTo(first, 0);
     expect(second.scrollTop).toBe(200);
+  });
+  it("UIC-SYNCED-SCROLL-1.2 reads each container's anchors once per scroll", () => {
+    const containers = [createContainer(300), createContainer(400), createContainer(500)];
+    const getAnchors = vi.fn((_container: HTMLElement) => anchors([0, 100, 200]));
+    renderHook(() => useSyncedScroll(containers, { getAnchors }));
+    scrollTo(containers[0]!, 100);
+    for (const container of containers) expect(container.scrollTop).toBe(100);
+    expect(getAnchors.mock.calls.map(([container]) => container)).toEqual(containers);
+  });
+
+  it('UIC-SYNCED-SCROLL-1.3 retains pending echoes across a re-render', () => {
+    const first = createContainer(300);
+    const second = createContainer(500);
+    const { rerender } = renderHook(() => useSyncedScroll([first, second]));
+    scrollTo(first, 100);
+    rerender();
+    first.scrollTop = 150;
+    second.dispatchEvent(new Event('scroll'));
+    expect(first.scrollTop).toBe(150);
+  });
+
+  it('UIC-SYNCED-SCROLL-1.1 keeps listeners on unchanged targets and reads replaced refs', () => {
+    const first = createContainer(300);
+    const second = createContainer(500);
+    const third = createContainer(700);
+    const add = vi.spyOn(first, 'addEventListener');
+    const remove = vi.spyOn(first, 'removeEventListener');
+    const other = { current: second };
+    const { rerender, unmount } = renderHook(() => useSyncedScroll([first, other]));
+    rerender();
+    expect(add).toHaveBeenCalledTimes(1);
+    expect(remove).not.toHaveBeenCalled();
+    other.current = third;
+    rerender();
+    scrollTo(first, 100);
+    expect(second.scrollTop).toBe(0);
+    expect(third.scrollTop).toBe(300);
+    scrollTo(second, 200);
+    expect(first.scrollTop).toBe(100);
+    unmount();
+    expect(remove).toHaveBeenCalledOnce();
+  });
+  it('UIC-SYNCED-SCROLL-1.3 treats repeated targets as one container', () => {
+    const first = createContainer(300);
+    const add = vi.spyOn(first, 'addEventListener');
+    renderHook(() => useSyncedScroll([first, { current: first }]));
+    expect(add).not.toHaveBeenCalled();
   });
 });
