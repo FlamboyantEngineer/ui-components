@@ -39,12 +39,30 @@ export function autoUpdateOverlay({
   everyFrame = false,
 }: OverlayAutoUpdateOptions): () => void {
   const view = anchor.ownerDocument.defaultView ?? window;
+  let active = true;
   let frame: number | null = null;
-  const schedule = () => {
-    frame ??= view.requestAnimationFrame(() => {
-      frame = null;
+  let needsUpdate = false;
+  let last = everyFrame ? snapshot(anchor) : null;
+  const request = () => {
+    if (active) frame ??= view.requestAnimationFrame(compare);
+  };
+  const compare = () => {
+    frame = null;
+    if (!active) return;
+    if (last) {
+      const next = snapshot(anchor);
+      needsUpdate ||= !isSameBox(last, next);
+      last = next;
+    }
+    if (needsUpdate) {
+      needsUpdate = false;
       update();
-    });
+    }
+    if (everyFrame) request();
+  };
+  const schedule = () => {
+    needsUpdate = true;
+    request();
   };
   const listening = { capture: true, passive: true } as const;
   view.addEventListener('scroll', schedule, listening);
@@ -54,24 +72,14 @@ export function autoUpdateOverlay({
   observer?.observe(anchor);
   observer?.observe(overlay);
 
-  let watch: number | null = null;
-  if (everyFrame) {
-    let last = snapshot(anchor);
-    const compare = () => {
-      const next = snapshot(anchor);
-      if (!isSameBox(last, next)) update();
-      last = next;
-      watch = view.requestAnimationFrame(compare);
-    };
-    watch = view.requestAnimationFrame(compare);
-  }
   update();
+  if (everyFrame) request();
 
   return () => {
+    active = false;
     view.removeEventListener('scroll', schedule, listening);
     view.removeEventListener('resize', schedule);
     observer?.disconnect();
     if (frame !== null) view.cancelAnimationFrame(frame);
-    if (watch !== null) view.cancelAnimationFrame(watch);
   };
 }

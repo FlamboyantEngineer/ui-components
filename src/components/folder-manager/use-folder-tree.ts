@@ -1,11 +1,7 @@
 import { useEffect, useState, type RefObject } from 'react';
 import type { Key } from '../../core/props.js';
-import {
-  collectBranchKeys,
-  findFolderNode,
-  type FolderItem,
-  type FolderNode,
-} from './folder-model.js';
+import { walkTree } from '../../utils/walk-tree.js';
+import { type FolderItem, type FolderNode } from './folder-model.js';
 
 export interface FolderSelectionOptions {
   /** `single` (the default) selects one folder; `multiple` lets the reader select several. */
@@ -75,8 +71,13 @@ export function useFolderExpansion<T extends FolderItem>(
 ): FolderExpansion {
   const [collapsed, setCollapsed] = useState<ReadonlySet<Key>>(() => new Set());
   const [opened, setOpened] = useState<ReadonlySet<Key>>(() => new Set());
-  const branchKeys = collectBranchKeys(nodes);
-  const isLazy = (key: Key) => findFolderNode(nodes, key)?.isLazy ?? false;
+  const branchKeys: Key[] = [];
+  const lazyKeys = new Set<Key>();
+  for (const node of walkTree(nodes, (node) => node.children)) {
+    if (node.children) branchKeys.push(node.id);
+    if (node.isLazy) lazyKeys.add(node.id);
+  }
+  const isLazy = (key: Key) => lazyKeys.has(key);
   return {
     expandedKeys: [
       ...branchKeys.filter((key) => !collapsed.has(key)),
@@ -88,8 +89,10 @@ export function useFolderExpansion<T extends FolderItem>(
       setOpened(new Set(lazy));
       setCollapsed(new Set(branchKeys.filter((key) => !keys.has(key))));
     },
-    reveal: (keys) =>
-      setCollapsed((current) => new Set([...current].filter((key) => !keys.includes(key)))),
+    reveal: (keys) => {
+      const revealed = new Set(keys);
+      setCollapsed((current) => new Set([...current].filter((key) => !revealed.has(key))));
+    },
   };
 }
 

@@ -6,21 +6,21 @@
 
 ### UIC-REDLINE-COMPARE-1.1 - Blocks matched by id or text
 
-`compareBlocks(oldBlocks, newBlocks)` shall take two lists of blocks (`DocumentBlock`: a `type` among `paragraph`, `heading`, `list-item`, `quote` and `code`, an optional `level`, the `text`, optional inline `marks` and an optional `id` unique within its document) and return `{ rows, counts }`, where `rows` are aligned rows (`ComparedBlockRow`) in reading order, each with a unique `key`, its `change`, the `oldBlock` and `newBlock` it holds, their `oldIndex` and `newIndex` in the inputs, and the flags below. Blocks match by `id`, or by equal text when they have none, on the longest common run of matches ([UIC-DIFF-3.1](DIFF.md#uic-diff-31---hunks-of-items)); a match is one row holding both blocks, `unchanged`, or `changed` with the word diff of their texts in `words` ([UIC-DIFF-2.1](DIFF.md#uic-diff-21---hunks-of-text)) when the texts differ.
+`compareBlocks(oldBlocks, newBlocks)` shall take two lists of blocks (`DocumentBlock`: a `type` among `paragraph`, `heading`, `list-item`, `quote` and `code`, an optional `level`, the `text`, optional inline `marks` and an optional `id` unique within its document) and return `{ rows, counts }`, where `rows` are aligned rows (`ComparedBlockRow`) in reading order, each with a unique `key`, its `change`, the `oldBlock` and `newBlock` it holds, their `oldIndex` and `newIndex` in the inputs, and the flags below. Blocks match by `id`, or by equal text when they have none, on the longest common run of matches ([UIC-DIFF-3.1](DIFF.md#uic-diff-31---hunks-of-items)); a match is one row holding both blocks, `unchanged`, or `changed` with the word diff of their texts in `words` ([UIC-DIFF-2.1](DIFF.md#uic-diff-21---hunks-of-text)) when the texts differ. Numeric and string ids are distinct, including ids with delimiter-like text. Row keys are opaque: keyed rows use `id:` followed by the JSON encoding of the id type and its string value; hosts use the returned keys for decisions and counterparts.
 
 Implementation: `src/utils/compare-blocks.ts`, `src/utils/diff.ts`
 Verification: `src/utils/compare-blocks.test.ts`
 
 ### UIC-REDLINE-COMPARE-1.2 - Added, removed and rewritten blocks
 
-Between two matches, a block without an id on each side whose texts share at least half their characters shall pair in order into one `changed` row with its word diff; blocks with ids never pair with another id. A block only the new document holds is an `added` row and one only the old document holds a `removed` row; ahead of each pair come the removed and then the added blocks before it.
+Between two matches, a block without an id on each side whose texts share at least half their characters shall pair in order into one `changed` row with its word diff; blocks with ids never pair with another id. A block only the new document holds is an `added` row and one only the old document holds a `removed` row; ahead of each pair come the removed and then the added blocks before it. Pairing shall scan the remaining candidate positions directly and retain those positions while emitting rows, without copying suffix arrays or searching already paired prefixes.
 
 Implementation: `src/utils/compare-blocks.ts`
 Verification: `src/utils/compare-blocks.test.ts`
 
 ### UIC-REDLINE-COMPARE-1.3 - Moved blocks
 
-A block deleted between two matches and inserted elsewhere with the same id, or the same non-blank text when it has none, shall be `moved` and appear twice: at its old position as a row holding only the old block with `move: 'from'`, and at its new position as a row holding both blocks with `move: 'to'` and the word diff when the texts differ. Each names the other in `counterpartKey`.
+A block deleted between two matches and inserted elsewhere with the same id, or the same non-blank text when it has none, shall be `moved` and appear twice: at its old position as a row holding only the old block with `move: 'from'`, and at its new position as a row holding both blocks with `move: 'to'` and the word diff when the texts differ. Each names the other in `counterpartKey`. Repeated non-blank paragraphs shall pair their old and new positions in reading order, with move buckets built and consumed without repeatedly copying or shifting their contents.
 
 Implementation: `src/utils/compare-blocks.ts`
 Verification: `src/utils/compare-blocks.test.ts`

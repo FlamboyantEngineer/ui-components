@@ -54,4 +54,32 @@ describe('table tree helpers', () => {
       'Norway',
     ]);
   });
+
+  it('UIC-TABLE-9.3 builds, filters and sorts deeply nested rows without a call-stack limit', () => {
+    let rows: Place[] = [{ id: '19999', name: 'Match' }];
+    for (let index = 19_998; index >= 0; index -= 1) {
+      rows = [{ id: String(index), name: 'Parent', places: rows }];
+    }
+    const nodes = buildTableNodes(rows, (row) => row.places);
+    const visits: string[] = [];
+    const filtered = filterTableNodes(nodes, (row) => {
+      visits.push(row.id);
+      return row.name === 'Match';
+    });
+    const sorted = sortTableNodes(filtered, (left, right) => left.name.localeCompare(right.name));
+    let level = sorted;
+    let depth = 0;
+    while (level.length > 0) {
+      expect(level).toHaveLength(1);
+      expect(level[0]?.id).toBe(String(depth));
+      level = level[0]!.children;
+      depth += 1;
+    }
+    expect(depth).toBe(20_000);
+    expect(visits).toHaveLength(20_000);
+    expect(visits[0]).toBe('19999');
+    expect(visits.at(-1)).toBe('0');
+    expect(nodes[0]?.row).toBe(rows[0]);
+    expect(filterTableNodes(nodes, () => false)).toEqual([]);
+  });
 });

@@ -40,4 +40,18 @@ describe('resolveDonutGeometry', () => {
       'M50,0A50,50 0 0 1 50,100L50,80A30,30 0 0 0 50,20ZM50,100A50,50 0 0 1 50,0L50,20A30,30 0 0 0 50,80Z',
     );
   });
+
+  it('UIC-CHART-7.1 draws proportional slices when their total exceeds the numeric range', () => {
+    const geometry = resolveDonutGeometry({
+      values: [
+        { series: 0, value: Number.MAX_VALUE },
+        { series: 1, value: Number.MAX_VALUE },
+      ],
+      diameter: 100,
+    });
+    expect(geometry.total).toBe(Infinity);
+    expect(geometry.slices.map(({ share }) => share)).toEqual([0.5, 0.5]);
+    expect(geometry.slices[0]?.path).toBe('M50,0A50,50 0 0 1 50,100L50,80A30,30 0 0 0 50,20Z');
+    expect(geometry.slices[1]?.path).toBe('M50,100A50,50 0 0 1 50,0L50,20A30,30 0 0 0 50,80Z');
+  });
 });

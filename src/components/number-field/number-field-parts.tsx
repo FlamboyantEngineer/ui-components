@@ -3,6 +3,7 @@ import { Button as AriaButton, useLocale } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import { Glyph } from '../../core/provider.js';
 import { clamp } from '../../utils/clamp.js';
+import { countDecimalPlaces } from '../../utils/count-decimal-places.js';
 import { usePointerDrag } from '../../utils/use-pointer-drag.js';
 import type { FieldState } from '../field/field.js';
 
@@ -33,12 +34,6 @@ const pixelsPerStep = 4;
 
 const arrowDirections: Readonly<Record<string, number>> = { ArrowUp: 1, ArrowDown: -1 };
 
-function decimalsOf(value: number): number {
-  const text = String(value);
-  const point = text.indexOf('.');
-  return point === -1 ? 0 : text.length - point - 1;
-}
-
 /**
  * The value `delta` away from `value`, kept in the range and rounded to the precision of both, so
  * decimal steps do not drift (0.1 + 0.2). An empty value moves to the minimum, or zero.
@@ -47,8 +42,9 @@ export function addStep(value: number | null, delta: number, steps: NumberSteps)
   const minimum = steps.minValue ?? -Infinity;
   const maximum = steps.maxValue ?? Infinity;
   if (value === null) return clamp(0, minimum, maximum);
-  const precision = Math.max(decimalsOf(value), decimalsOf(Math.abs(delta)));
-  return clamp(Number((value + delta).toFixed(precision)), minimum, maximum);
+  const precision = Math.max(countDecimalPlaces(value), countDecimalPlaces(delta));
+  const next = value + delta;
+  return clamp(precision <= 100 ? Number(next.toFixed(precision)) : next, minimum, maximum);
 }
 
 /** The step a modifier chooses: `largeStep` with Shift, `smallStep` with Alt, else none. */
@@ -115,8 +111,8 @@ export function NumberScrubber({
     HTMLSpanElement,
     { x: number; travelled: number; value: number | null }
   >({
+    isDisabled: isLocked(state),
     onStart: (event) => {
-      if (isLocked(state)) return null;
       event.preventDefault();
       return { x: event.clientX, travelled: 0, value: state.value };
     },
@@ -133,7 +129,9 @@ export function NumberScrubber({
       });
       if (count !== 0) state.setValue(value);
     },
-    onEnd: () => state.commit(),
+    onEnd: () => {
+      if (!isLocked(state)) state.commit();
+    },
   });
   return (
     <span {...hooks.slot('scrubber')} aria-hidden="true" style={{ touchAction: 'none' }} {...drag}>

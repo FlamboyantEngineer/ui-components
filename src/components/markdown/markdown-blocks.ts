@@ -26,7 +26,7 @@ export interface BlockContext {
   inlines: Array<{ target: MarkdownInline[]; text: string }>;
   /** Headings in document order, whose ids are given once their text is parsed. */
   headings: Array<{ id: string; readonly children: readonly MarkdownInline[] }>;
-  /** Parses the lines of a container (a block quote, a list item) into blocks. */
+  /** Queues a container's lines and returns its blocks, filled before the parent resumes. */
   parseBlocks: (lines: readonly string[]) => MarkdownBlock[];
 }
 

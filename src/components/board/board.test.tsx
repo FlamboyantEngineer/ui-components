@@ -346,6 +346,22 @@ describe('Board', () => {
     );
   });
 
+  it('UIC-BOARD-2.3 leaves focus where the reader moves it during a pending move repair', async () => {
+    vi.useFakeTimers({ toFake: ['requestAnimationFrame', 'cancelAnimationFrame'] });
+    const user = userEvent.setup();
+    try {
+      render(<MovingBoard />);
+      act(() => screen.getByRole('row', { name: 'Make soup' }).focus());
+      await user.keyboard('{Alt>}{ArrowRight}{/Alt}');
+      const other = screen.getByRole('row', { name: 'Bake bread' });
+      await user.click(other);
+      act(() => vi.advanceTimersByTime(16 * 5));
+      expect(other).toHaveFocus();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('UIC-BOARD-3.1 UIC-DRAG-INTERACTIONS-2.3 offers column handles only while the board takes column moves', () => {
     const { container, rerender } = render(<TaskBoard onColumnMove={vi.fn()} />);
     const handle = screen.getByRole('button', { name: 'Move column Doing' });

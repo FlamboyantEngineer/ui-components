@@ -22,11 +22,11 @@ export function useWidestTextWidth(
   texts: readonly string[],
 ): number | null {
   const [width, setWidth] = useState<number | null>(null);
-  const key = texts.join('\n');
+  const key = JSON.stringify(texts);
   useEffect(() => {
     const element = ref.current;
     if (!element) return undefined;
-    const lines = key.split('\n');
+    const lines: string[] = JSON.parse(key);
     let active = true;
     const measure = () => {
       if (active) setWidth(widestText(element, lines));

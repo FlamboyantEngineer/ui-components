@@ -2,7 +2,7 @@ import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { UiProvider } from '../../core/provider.js';
-import type { DocumentBlock } from '../../utils/compare-blocks.js';
+import { compareBlocks, type DocumentBlock } from '../../utils/compare-blocks.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { RedlineCompare } from './redline-compare.js';
 
@@ -251,7 +251,8 @@ describe('RedlineCompare', () => {
     expect(onResolve).toHaveBeenCalledTimes(1);
     const [{ decision, row }] = onResolve.mock.calls[0]!;
     expect(decision).toBe('accepted');
-    expect(row).toMatchObject({ key: 'id:serves', change: 'changed', oldIndex: 1, newIndex: 1 });
+    expect(row).toMatchObject({ change: 'changed', oldIndex: 1, newIndex: 1 });
+    expect(row.key).toBe(compareBlocks(before, after).rows[1]!.key);
     expect(rows[1]).toHaveAttribute('data-resolution', 'accepted');
     expect(accept).toHaveAttribute('aria-pressed', 'true');
     await user.click(accept);
@@ -271,7 +272,7 @@ describe('RedlineCompare', () => {
       <RedlineCompare
         oldBlocks={before}
         newBlocks={after}
-        resolutions={{ 'id:zest': 'rejected' }}
+        resolutions={{ [compareBlocks(before, after).rows[7]!.key]: 'rejected' }}
         onResolve={onResolve}
       />,
     );

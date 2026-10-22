@@ -22,6 +22,10 @@ test.describe('Redline Compare lab', () => {
       'Opening hours',
       'Open daily from nine to five.',
     ]);
+    const typed = page.getByRole('group', { name: 'Typed identifiers' });
+    await expect(typed.locator('.ui-redline-compare__row')).toHaveCount(4);
+    await expect(typed.getByText('Numeric entry', { exact: true })).toHaveCount(2);
+    await expect(typed.getByText('Text entry', { exact: true })).toHaveCount(1);
   });
 
   test('UIC-REDLINE-COMPARE-2.2 sets the old and new cells side by side', async ({ page, lab }) => {
@@ -93,11 +97,11 @@ test.describe('Redline Compare lab', () => {
     const output = review.locator('[data-lab-output]');
     const accept = rows.nth(1).getByRole('button', { name: 'Accept' });
     await accept.click();
-    await expect(output).toHaveText('Last decision: accepted id:scope (changed)');
+    await expect(output).toHaveText('Last decision: accepted scope (changed)');
     await expect(rows.nth(1)).toHaveAttribute('data-resolution', 'accepted');
     await expect(accept).toHaveAttribute('aria-pressed', 'true');
     await rows.nth(3).getByRole('button', { name: 'Reject' }).click();
-    await expect(output).toHaveText('Last decision: rejected id:gloves (moved)');
+    await expect(output).toHaveText('Last decision: rejected gloves (moved)');
     await expect(rows.nth(7).getByRole('button', { name: 'Accept' })).toHaveCount(0);
     await review.getByRole('radio', { name: 'Side by side' }).click();
     await expect(review.locator('.ui-redline-compare')).toHaveAttribute('data-layout', 'split');

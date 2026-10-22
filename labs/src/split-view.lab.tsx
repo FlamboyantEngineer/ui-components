@@ -1,4 +1,5 @@
 import { useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { Button } from '../../src/components/button/button.js';
 import { UiProvider } from '../../src/core/provider.js';
 import { ResizeHandle } from '../../src/components/split-view/resize-handle.js';
 import { SplitView, type SplitViewHandle } from '../../src/components/split-view/split-view.js';
@@ -88,11 +89,15 @@ function CollapsibleSplit() {
 function PixelHandle({ isDisabled = false, label }: { isDisabled?: boolean; label: string }) {
   const [height, setHeight] = useState(60);
   const [status, setStatus] = useState('idle');
+  const [isLocked, setLocked] = useState(false);
   return (
     <div style={{ ...frame(260, 180), justifyContent: 'flex-end' }}>
       <output data-lab-output="handle" style={{ padding: '0 8px', marginBottom: 'auto' }}>
         {status}
       </output>
+      <Button size="sm" isDisabled={isDisabled} onPress={() => setLocked((current) => !current)}>
+        {isLocked ? 'Unlock handle' : 'Lock handle'}
+      </Button>
       <ResizeHandle
         orientation="horizontal"
         value={height}
@@ -100,7 +105,7 @@ function PixelHandle({ isDisabled = false, label }: { isDisabled?: boolean; labe
         maxValue={150}
         extent={180}
         sizedPane="after"
-        isDisabled={isDisabled}
+        isDisabled={isDisabled || isLocked}
         aria-label={label}
         onChange={setHeight}
         onResizingChange={(isResizing) => setStatus(isResizing ? 'dragging' : 'idle')}
@@ -230,7 +235,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Standalone handle"
-      description="A handle sizing the pane after it in pixels, enabled and disabled."
+      description="A handle sizing the pane after it in pixels, enabled and disabled. Locking during a drag clears its shield and ends the gesture without a commit."
     >
       <StateMatrix
         axes={{ state: ['enabled', 'disabled'] }}

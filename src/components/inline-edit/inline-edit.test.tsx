@@ -1,3 +1,4 @@
+import { isEmptyValue } from '../../utils/is-empty-value.js';
 import { act, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
@@ -5,7 +6,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { NumberField } from '../number-field/number-field.js';
 import { InlineEdit, type InlineEditProps } from './inline-edit.js';
-import { isEmptyValue, isSameValue } from './use-inline-edit.js';
+import { isSameValue } from './use-inline-edit.js';
 
 function deferred() {
   let resolve!: () => void;

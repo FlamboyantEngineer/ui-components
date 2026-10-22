@@ -1,4 +1,5 @@
 import { summarizeNumbers } from '../../utils/summarize-numbers.js';
+import { walkTree } from '../../utils/walk-tree.js';
 import type { ReactNode } from 'react';
 import type { Key, SortDescriptor, SortDirection } from '../../core/props.js';
 import { getColumnText } from './table-column.js';
@@ -176,9 +177,11 @@ export function groupTableNodes<T>(
 
 /** The keys of every group header row, nested ones included. */
 export function listGroupKeys<T>(nodes: readonly TableBodyNode<T>[]): string[] {
-  return nodes.flatMap((node) =>
-    isGroupNode(node) ? [node.id, ...listGroupKeys(node.children)] : [],
-  );
+  const keys: string[] = [];
+  for (const node of walkTree(nodes, (node) => (isGroupNode(node) ? node.children : undefined))) {
+    if (isGroupNode(node)) keys.push(node.id);
+  }
+  return keys;
 }
 
 /** The data rows a reader sees, in order: inside expanded groups and under expanded rows. */
@@ -186,10 +189,13 @@ export function listVisibleRows<T>(
   nodes: readonly TableBodyNode<T>[],
   expandedKeys: ReadonlySet<Key>,
 ): T[] {
-  return nodes.flatMap((node) => {
-    const children = expandedKeys.has(node.id) ? listVisibleRows(node.children, expandedKeys) : [];
-    return isGroupNode(node) ? children : [node.row, ...children];
-  });
+  const rows: T[] = [];
+  for (const node of walkTree(nodes, (node) =>
+    expandedKeys.has(node.id) ? node.children : undefined,
+  )) {
+    if (!isGroupNode(node)) rows.push(node.row);
+  }
+  return rows;
 }
 
 /**

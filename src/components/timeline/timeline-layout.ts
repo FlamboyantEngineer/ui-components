@@ -54,15 +54,19 @@ export interface TimelineLayoutOptions {
   rowHeight: number;
 }
 
+interface ReadTimelineEntry {
+  item: TimelineItem;
+  read: ReadItem | null;
+}
+
 function placeItems(
   axis: TimelineAxis,
   rows: readonly VisibleRow[],
-  items: readonly TimelineItem[],
+  items: ReadonlyMap<Key, ReadTimelineEntry>,
 ): Map<Key, PlacedItem> {
   const rowIndex = new Map(rows.map((entry, index) => [entry.row.id, index]));
   const placed = new Map<Key, PlacedItem>();
-  for (const item of items) {
-    const read = readTimelineItem(item);
+  for (const { item, read } of items.values()) {
     const index = rowIndex.get(item.rowId);
     if (!read || index === undefined) continue;
     placed.set(item.id, { item, read, rowIndex: index, ...resolveItemSpan(axis, read) });
@@ -71,22 +75,17 @@ function placeItems(
 }
 
 function collectPredecessors(
-  items: readonly TimelineItem[],
+  items: ReadonlyMap<Key, ReadTimelineEntry>,
   dependencies: readonly TimelineDependency[],
 ): Map<Key, ItemPredecessors> {
-  const byId = new Map(items.map((item) => [item.id, item]));
   const result = new Map<Key, ItemPredecessors>();
   for (const { from, to } of dependencies) {
-    const source = byId.get(from);
-    const target = byId.get(to);
-    const [read, follower] = [
-      source && readTimelineItem(source),
-      target && readTimelineItem(target),
-    ];
-    if (!source || !read || !follower) continue;
+    const source = items.get(from);
+    const target = items.get(to);
+    if (!source?.read || !target?.read) continue;
     const entry = result.get(to) ?? { names: [], hasConflict: false };
-    entry.names.push(source.label);
-    entry.hasConflict ||= isDependencyConflict(read, follower);
+    entry.names.push(source.item.label);
+    entry.hasConflict ||= isDependencyConflict(source.read, target.read);
     result.set(to, entry);
   }
   return result;
@@ -99,7 +98,8 @@ function collectPredecessors(
  */
 export function resolveTimelineLayout(options: TimelineLayoutOptions): TimelineLayout {
   const { axis, rows, items, dependencies, rowHeight } = options;
-  const placed = placeItems(axis, rows, items);
+  const indexed = new Map(items.map((item) => [item.id, { item, read: readTimelineItem(item) }]));
+  const placed = placeItems(axis, rows, indexed);
   const rowItems = new Map<Key, PlacedItem[]>(rows.map((entry) => [entry.row.id, []]));
   for (const entry of placed.values()) rowItems.get(entry.item.rowId)!.push(entry);
   const centre = (entry: PlacedItem) => entry.rowIndex * rowHeight + rowHeight / 2;
@@ -115,7 +115,7 @@ export function resolveTimelineLayout(options: TimelineLayoutOptions): TimelineL
       },
     ];
   });
-  return { rowItems, connectors, predecessors: collectPredecessors(items, dependencies) };
+  return { rowItems, connectors, predecessors: collectPredecessors(indexed, dependencies) };
 }
 
 function applyDraft(items: readonly TimelineItem[], draft: TimelineItemChange | null) {

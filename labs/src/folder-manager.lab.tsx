@@ -269,7 +269,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Several folders"
-      description="Ctrl or Shift with a click, or Shift with the arrow keys, selects several folders. Delete removes them all; right-click for Move to."
+      description="Ctrl or Shift with a click, or Shift with the arrow keys, selects several folders. Delete removes them all; right-click for Move to. Folders already at the destination stay there, and the depth limit includes every selected subfolder."
     >
       <SeveralFolders />
     </LabSection>
@@ -292,7 +292,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Large tree"
-      description="Two thousand folders: only the rows in view are in the document."
+      description="Two thousand folders: only the rows in view are in the document, while selection and branch expansion keep the folder order."
     >
       <FolderManager
         aria-label="Warehouse folders"

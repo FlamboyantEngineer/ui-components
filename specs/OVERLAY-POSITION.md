@@ -108,7 +108,7 @@ Verification: `src/utils/overlay-geometry.test.ts`
 
 ### UIC-OVERLAY-POSITION-3.5 - Auto-update
 
-`autoUpdateOverlay({ anchor, overlay, update })` shall call `update` at once and then, at most once per animation frame, after any scroll in the anchor's document, a resize of its window, or a size change of the anchor or the overlay, from the timers and observers of the anchor's own window. `everyFrame` also compares the anchor's box every animation frame and calls `update` when it moved. The returned function removes every listener, observer and pending frame.
+`autoUpdateOverlay({ anchor, overlay, update })` shall call `update` at once and then, at most once per animation frame, after any scroll in the anchor's document, a resize of its window, or a size change of the anchor or the overlay, from the timers and observers of the anchor's own window. `everyFrame` also compares the anchor's box every animation frame and calls `update` when it moved; movement and other changes in the same frame share one update. The returned function removes every listener, observer and pending frame, including when called during an update; later observer reports do nothing.
 
 Implementation: `src/utils/overlay-auto-update.ts`
 Verification: `src/utils/overlay-auto-update.test.ts`

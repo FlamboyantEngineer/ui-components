@@ -1,8 +1,9 @@
+import { toErrorMessage } from '../../utils/to-error-message.js';
 import { useEffect, useRef, useState, type FormEvent, type RefObject } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { runPendingAction, toFailureMessage } from '../action-button/action-button.js';
+import { runPendingAction } from '../action-button/action-button.js';
 import type { StepsStatus } from '../steps/steps.js';
 import type { WizardProps, WizardStep } from './wizard.js';
 
@@ -110,7 +111,7 @@ export function useWizardNavigation(options: NavigationOptions): WizardNavigatio
         if (pending) setFailure(null);
       },
       action: step ? () => advance(step) : undefined,
-      onError: (error) => setFailure({ message: toFailureMessage(error, strings.actionFailed) }),
+      onError: (error) => setFailure({ message: toErrorMessage(error, strings.actionFailed) }),
     });
   };
   const skip = () => {

@@ -28,21 +28,31 @@ export function observeViewport(
   view: Window & typeof globalThis,
   { measure, getExtraTargets, subtree = false }: ViewportObserverOptions,
 ): ViewportObserver {
-  let frame = 0;
+  let active = true;
+  let frame: number | null = null;
+  const observed = new Set<Element>();
   const schedule = () => {
-    if (frame) return;
+    if (!active || frame !== null) return;
     frame = view.requestAnimationFrame(() => {
-      frame = 0;
-      measure();
+      frame = null;
+      if (active) measure();
     });
   };
   const resize =
     typeof view.ResizeObserver === 'function' ? new view.ResizeObserver(schedule) : null;
   const observe = () => {
+    if (!active) return;
     if (resize) {
-      resize.disconnect();
-      for (const target of [element, ...element.children, ...(getExtraTargets?.() ?? [])]) {
-        if (target) resize.observe(target);
+      const wanted = new Set([element, ...element.children, ...(getExtraTargets?.() ?? [])]);
+      for (const target of observed) {
+        if (wanted.has(target)) continue;
+        resize.unobserve(target);
+        observed.delete(target);
+      }
+      for (const target of wanted) {
+        if (!target || observed.has(target)) continue;
+        resize.observe(target);
+        observed.add(target);
       }
     }
     schedule();
@@ -54,9 +64,12 @@ export function observeViewport(
     schedule,
     observe,
     disconnect() {
+      active = false;
       resize?.disconnect();
+      observed.clear();
       mutations.disconnect();
-      view.cancelAnimationFrame(frame);
+      if (frame !== null) view.cancelAnimationFrame(frame);
+      frame = null;
     },
   };
 }

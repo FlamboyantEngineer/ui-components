@@ -28,7 +28,7 @@ interface SideChange {
   lines: string[];
 }
 
-/** Each side's changes still to place, in order. */
+/** Each side's changes, in order. */
 interface ChangeQueues {
   ours: SideChange[];
   theirs: SideChange[];
@@ -78,10 +78,11 @@ function applyChanges(
   const lines: string[] = [];
   let position = span.start;
   for (const change of changes) {
-    lines.push(...base.slice(position, change.start), ...change.lines);
+    for (; position < change.start; position += 1) lines.push(base[position]!);
+    for (const line of change.lines) lines.push(line);
     position = change.end;
   }
-  lines.push(...base.slice(position, span.end));
+  for (; position < span.end; position += 1) lines.push(base[position]!);
   return lines;
 }
 
@@ -105,20 +106,24 @@ function toChunk(
 }
 
 /**
- * Takes the next chunk's changes off the queues: the earliest change, then every change of either
- * side that joins the span they cover, until none does.
+ * Collects the next chunk's changes: the earliest change, then every change of either side that
+ * joins the span they cover, until none does.
  */
-function takeChunk(queues: ChangeQueues) {
+function takeChunk(queues: ChangeQueues, positions: Record<keyof ChangeQueues, number>) {
   const side =
-    (queues.theirs[0]?.start ?? Infinity) < (queues.ours[0]?.start ?? Infinity) ? 'theirs' : 'ours';
-  const first = queues[side].shift()!;
+    (queues.theirs[positions.theirs]?.start ?? Infinity) <
+    (queues.ours[positions.ours]?.start ?? Infinity)
+      ? 'theirs'
+      : 'ours';
+  const first = queues[side][positions[side]++]!;
   const taken: ChangeQueues = { ours: [], theirs: [] };
   taken[side].push(first);
   const span = { start: first.start, end: first.end };
   const takeJoining = (from: keyof ChangeQueues) => {
-    const next = queues[from][0];
+    const next = queues[from][positions[from]];
     if (!next || !joins(span, next)) return false;
-    taken[from].push(queues[from].shift()!);
+    taken[from].push(next);
+    positions[from] += 1;
     span.start = Math.min(span.start, next.start);
     span.end = Math.max(span.end, next.end);
     return true;
@@ -141,14 +146,15 @@ export function mergeThreeWay(base: string, ours: string, theirs: string): Merge
     theirs: findChanges(baseLines, splitLines(theirs)),
   };
   const chunks: MergeChunk[] = [];
+  const positions = { ours: 0, theirs: 0 };
   let position = 0;
   const pushUnchanged = (end: number) => {
     if (end <= position) return;
     const lines = baseLines.slice(position, end);
     chunks.push({ kind: 'unchanged', base: lines, ours: lines, theirs: lines });
   };
-  while (queues.ours.length > 0 || queues.theirs.length > 0) {
-    const { span, taken } = takeChunk(queues);
+  while (positions.ours < queues.ours.length || positions.theirs < queues.theirs.length) {
+    const { span, taken } = takeChunk(queues, positions);
     pushUnchanged(span.start);
     chunks.push(toChunk(baseLines, span, taken));
     position = span.end;

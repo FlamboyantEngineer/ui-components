@@ -97,6 +97,42 @@ describe('DiagramCanvas', () => {
     expect(within(pump).getByText('Pump')).toHaveClass('ui-diagram-canvas__node-label');
   });
 
+  it('UIC-DIAGRAM-CANVAS-1.2 UIC-DIAGRAM-CANVAS-6.4 retains distinct numeric and text keys after reordering', async () => {
+    const user = userEvent.setup();
+    const nodes = [
+      { id: 1, x: 0, y: 0, label: 'Numeric' },
+      { id: '1', x: 200, y: 0, label: 'Text' },
+    ];
+    const edges = [
+      { id: 3, source: 1, target: '1', label: 'Forward' },
+      { id: '3', source: '1', target: 1, label: 'Back' },
+    ];
+    const shared = { showMinimap: false, defaultSelectedKeys: [1], onSelectionChange: vi.fn() };
+    const { container, rerender } = render(
+      <DiagramCanvas {...shared} nodes={nodes} edges={edges} />,
+    );
+    const numeric = node('Numeric');
+    const text = node('Text');
+    const drawn = container.querySelectorAll('.ui-diagram-canvas__edge');
+    expect(numeric).toHaveAttribute('data-selected', 'true');
+    expect(text).not.toHaveAttribute('data-selected');
+    rerender(
+      <DiagramCanvas {...shared} nodes={[...nodes].reverse()} edges={[...edges].reverse()} />,
+    );
+    expect(node('Numeric')).toBe(numeric);
+    expect(node('Text')).toBe(text);
+    expect(container.querySelectorAll('.ui-diagram-canvas__edge')[0]).toBe(drawn[1]);
+    await user.click(text);
+    expect(shared.onSelectionChange).toHaveBeenLastCalledWith(new Set(['1']));
+    expect(numeric).not.toHaveAttribute('data-selected');
+    expect(text).toHaveAttribute('data-selected', 'true');
+    await user.click(screen.getByRole('radio', { name: 'Outline' }));
+    const outlined = container.querySelectorAll('.ui-diagram-canvas__outline-item');
+    expect(outlined[0]).toHaveTextContent('Text');
+    rerender(<DiagramCanvas {...shared} nodes={nodes} edges={edges} />);
+    expect(container.querySelectorAll('.ui-diagram-canvas__outline-item')[0]).toBe(outlined[1]);
+  });
+
   it('UIC-DIAGRAM-CANVAS-1.2 draws node content with renderNode', () => {
     const renderNode = vi.fn((item, state) => (
       <strong>

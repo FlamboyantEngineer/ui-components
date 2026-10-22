@@ -29,8 +29,8 @@ Verification: `src/components/save-status/save-status.test.tsx`, `e2e/save-statu
 
 With `hideSavedAfter`, the `saved` label shall leave `hideSavedAfter` milliseconds after the phase becomes `saved`; the root publishes `data-exiting` while the stylesheet's animations on it run, then the glyph and label are removed and `data-phase` stays `saved`. A label that appears publishes `data-entering` the same way. Any other phase restarts the count, and without `hideSavedAfter` the label stays.
 
-Implementation: `src/components/save-status/save-status.tsx`, `src/utils/use-enter-exit.ts`, `labs/reference/save-status.css`
-Verification: `src/components/save-status/save-status.test.tsx`, `e2e/save-status.spec.ts`
+Implementation: `src/components/save-status/save-status.tsx`, `src/utils/use-delayed-flag.ts`, `src/utils/use-enter-exit.ts`, `labs/reference/save-status.css`
+Verification: `src/components/save-status/save-status.test.tsx`, `src/utils/use-delayed-flag.test.ts`, `e2e/save-status.spec.ts`
 
 ### UIC-SAVE-STATUS-1.5 - Truncation
 

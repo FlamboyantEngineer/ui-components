@@ -162,6 +162,39 @@ test.describe('Number Field lab', () => {
     await expect(input).toHaveValue('49.9');
     await page.keyboard.press('ArrowUp');
     await expect(input).toHaveValue('50');
+    const fine = field(page, 'fine').getByRole('textbox', { name: 'Fine increment' });
+    await fine.focus();
+    await page.keyboard.press('Alt+ArrowUp');
+    await expect(fine).toHaveValue('0.0000002');
+    await expect(output(page, 'Fine committed')).toHaveText('2e-7');
+  });
+
+  test('UIC-NUMBER-FIELD-3.3 abandons a scrub when the field becomes read-only', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('number-field');
+    const demo = page.locator('[data-lab-demo="locked-scrub"]');
+    const input = demo.getByRole('textbox', { name: 'Amount' });
+    const scrubber = demo.locator('.ui-number-field__scrubber');
+    await scrubber.scrollIntoViewIfNeeded();
+    await page.evaluate(
+      () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))),
+    );
+    const handle = await scrubber.boundingBox();
+    if (!handle) throw new Error('not rendered');
+    const x = handle.x + handle.width / 2;
+    const y = handle.y + handle.height / 2;
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(x + 8, y);
+    await expect(input).toHaveValue('6');
+    await expect(input).toHaveAttribute('readonly');
+    await page.mouse.move(x + 24, y);
+    await page.mouse.up();
+    await expect(input).toHaveValue('6');
+    await expect(output(page, 'Scrub committed')).toHaveText('4');
+    await lab.expectAccessible('[data-lab-demo="locked-scrub"]');
   });
 
   test('UIC-NUMBER-FIELD-3.3 scrubs the value by dragging its handle sideways', async ({

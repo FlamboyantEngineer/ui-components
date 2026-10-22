@@ -22,6 +22,10 @@ test.describe('Markdown lab', () => {
     const quote = page.locator('[data-lab-cell="content=quote text=body"] .ui-markdown');
     await expect(quote.locator('blockquote blockquote')).toHaveText('A nested remark.');
     await expect(quote.getByRole('separator')).toHaveCount(1);
+    const nested = page.locator('[data-lab-nested]');
+    await expect(nested.locator('blockquote')).toHaveCount(6);
+    await expect(nested.getByRole('list')).toHaveCount(2);
+    await expect(nested.getByRole('listitem')).toHaveCount(2);
     await expect(
       page.locator('[data-lab-cell="content=text text=small"] .ui-markdown p').first(),
     ).toHaveCSS('font-size', '12px');
@@ -130,6 +134,9 @@ test.describe('Markdown lab', () => {
     await expect(unsafe).toContainText('<b onclick="window.unsafe = true">bold</b>');
     await expect(unsafe.getByRole('link')).toHaveCount(0);
     await expect(unsafe).toContainText('A script link and a data image');
+    const spans = page.locator('[data-lab-unsafe-spans]');
+    await expect(spans.locator('code')).toHaveCount(8);
+    await expect(spans.getByRole('link')).toHaveCount(0);
     await unsafe.getByText(/Raw HTML/).click();
     expect(await page.evaluate(() => (window as { unsafe?: boolean }).unsafe)).toBeUndefined();
     await lab.expectAccessible();

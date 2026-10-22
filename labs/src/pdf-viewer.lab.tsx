@@ -145,7 +145,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Reader"
-      description="Zoom (buttons, slider, Ctrl + wheel, Ctrl + plus, minus and 0, pinch), fit modes, page navigation (Home, End), find with Enter and Shift + Enter, Ctrl + F and the find options, text selection, links on the first page, rotating, printing and saving from the menu, and a caller action at the end of the toolbar. The sample is requested with a header of the caller's."
+      description="Zoom (buttons, slider, Ctrl + wheel, Ctrl + plus, minus and 0, pinch), fit modes, page navigation (Home, End), find with Enter and Shift + Enter, Ctrl + F and the find options, text selection, links on the first page, rotating, printing and saving from the menu, and a caller action at the end of the toolbar. Scrolling follows the current page and zoom keeps the reading position, including in an embedded window. The sample is requested with a header of the caller's."
     >
       <Reader />
     </LabSection>
@@ -169,7 +169,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Caller-owned find"
-      description="The caller holds the query and the current match and draws its own find controls in the toolbar."
+      description="The caller holds the query and the current match and draws its own find controls in the toolbar. Phrases can span text runs, and every occurrence can be highlighted on a page."
     >
       <CallerOwnedFind />
     </LabSection>

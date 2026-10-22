@@ -17,6 +17,31 @@ function serialize(nodes: readonly HtmlNode[]): string {
 const clean = (markup: string) => serialize(sanitizeHtml(markup));
 
 describe('sanitizeHtml', () => {
+  it('UIC-HTML-MARKUP-1.1 keeps deeply nested valid elements frozen without a call stack limit', () => {
+    const depth = 20_000;
+    const nodes = sanitizeHtml('<span>'.repeat(depth) + 'Leaf' + '</span>'.repeat(depth));
+    let children = nodes;
+    let count = 0;
+    while (children[0]?.type === 'element') {
+      const node = children[0];
+      expect(Object.isFrozen(node)).toBe(true);
+      expect(Object.isFrozen(node.children)).toBe(true);
+      children = node.children;
+      count += 1;
+    }
+    expect(count).toBe(depth);
+    expect(children).toEqual([{ type: 'text', text: 'Leaf' }]);
+  });
+
+  it('UIC-HTML-MARKUP-1.3 unwraps deeply nested excluded elements in their content order', () => {
+    const depth = 20_000;
+    const nodes = sanitizeHtml(
+      'Before' + '<x-wrap>'.repeat(depth) + '<b>Leaf</b>' + '</x-wrap>'.repeat(depth) + 'After',
+    );
+    expect(serialize(nodes)).toBe('Before<b>Leaf</b>After');
+    expect(Object.isFrozen(nodes)).toBe(true);
+  });
+
   it('UIC-HTML-MARKUP-1.1 returns a frozen tree of lower-case elements and decoded text', () => {
     const nodes = sanitizeHtml(
       'Intro <P CLASS="lead">Fish &amp; chips&nbsp;&mdash; <B>hot</B></P>',

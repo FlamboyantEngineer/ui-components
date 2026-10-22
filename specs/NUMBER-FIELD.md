@@ -75,14 +75,14 @@ Verification: `src/components/number-field/number-field.test.tsx`, `e2e/number-f
 
 ### UIC-NUMBER-FIELD-3.2 - Modifier steps
 
-With `largeStep`, Shift with Arrow Up or Arrow Down shall step the value by `largeStep`; with `smallStep`, Alt with the arrows steps it by `smallStep`. Each step keeps the value within `minValue` and `maxValue`, rounds it to the precision of the value and the step, prevents the key's default and commits. An empty value steps to the minimum, or zero. A read-only or disabled field refuses the steps, and without the matching prop a modified arrow does nothing.
+With `largeStep`, Shift with Arrow Up or Arrow Down shall step the value by `largeStep`; with `smallStep`, Alt with the arrows steps it by `smallStep`. Each step keeps the value within `minValue` and `maxValue`, rounds it to the precision of the value and the step, prevents the key's default and commits. Scientific notation retains its decimal precision; values finer than the platform's fixed-decimal limit retain their arithmetic result instead of throwing. An empty value steps to the minimum, or zero. A read-only or disabled field refuses the steps, and without the matching prop a modified arrow does nothing.
 
 Implementation: `src/components/number-field/number-field.tsx`, `src/components/number-field/number-field-parts.tsx`
 Verification: `src/components/number-field/number-field.test.tsx`, `e2e/number-field.spec.ts`
 
 ### UIC-NUMBER-FIELD-3.3 - Scrub handle
 
-`showScrubber` shall draw a scrub handle (`ui-number-field__scrubber`, holding the `scrub` glyph, hidden from assistive technology, which steps with the arrow keys) after the decrement button. Pressing it with the primary pointer button and dragging sideways steps the value once every 4 pixels toward the end of the line (rightward in left-to-right text, leftward in right-to-left text) by `step`, or by `largeStep` with Shift and `smallStep` with Alt, within the range; the field's value follows the drag through `onChange` and commits once when the drag ends. The handle captures the pointer and opts out of touch panning (`touch-action: none`). A read-only or disabled field refuses the drag.
+`showScrubber` shall draw a scrub handle (`ui-number-field__scrubber`, holding the `scrub` glyph, hidden from assistive technology, which steps with the arrow keys) after the decrement button. Pressing it with the primary pointer button and dragging sideways steps the value once every 4 pixels toward the end of the line (rightward in left-to-right text, leftward in right-to-left text) by `step`, or by `largeStep` with Shift and `smallStep` with Alt, within the range; the field's value follows the drag through `onChange` and commits once when the drag ends. The handle captures the pointer and opts out of touch panning (`touch-action: none`). A read-only or disabled field refuses the drag. Becoming read-only or disabled releases capture and abandons an active scrub without a commit; unlocking requires a new press.
 
 Implementation: `src/components/number-field/number-field.tsx`, `src/components/number-field/number-field-parts.tsx`, `src/core/glyphs.tsx`, `labs/reference/number-field.css`
 Verification: `src/components/number-field/number-field.test.tsx`, `e2e/number-field.spec.ts`

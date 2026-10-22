@@ -73,14 +73,30 @@ function createQueryPattern(query: string, options: PdfSearchOptions): RegExp | 
   return new RegExp(source, options.matchCase ? 'gu' : 'giu');
 }
 
-function toRunRanges(page: PdfPageText, match: PdfMatch, isCurrent: boolean): PdfMatchRange[] {
-  const ranges: PdfMatchRange[] = [];
-  page.starts.forEach((runStart, run) => {
+function findFirstRun(page: PdfPageText, offset: number): number {
+  let low = 0;
+  let high = page.starts.length;
+  while (low < high) {
+    const middle = (low + high) >>> 1;
+    const end = (page.starts[middle] ?? 0) + (page.lengths[middle] ?? 0);
+    if (end <= offset) low = middle + 1;
+    else high = middle;
+  }
+  return low;
+}
+
+function appendRunRanges(
+  page: PdfPageText,
+  match: PdfMatch,
+  { ranges, isCurrent }: { ranges: PdfMatchRange[]; isCurrent: boolean },
+): void {
+  for (let run = findFirstRun(page, match.start); run < page.starts.length; run += 1) {
+    const runStart = page.starts[run] ?? 0;
+    if (runStart >= match.end) break;
     const start = Math.max(match.start, runStart);
     const end = Math.min(match.end, runStart + (page.lengths[run] ?? 0));
     if (start < end) ranges.push({ run, start: start - runStart, end: end - runStart, isCurrent });
-  });
-  return ranges;
+  }
 }
 
 export function createPageText(content: PdfTextContent): PdfPageText {
@@ -138,7 +154,7 @@ export function groupMatchRanges(
     const page = pages[match.pageIndex];
     if (!page || (!highlightAll && index !== current)) return;
     const ranges = groups.get(match.pageIndex) ?? [];
-    ranges.push(...toRunRanges(page, match, index === current));
+    appendRunRanges(page, match, { ranges, isCurrent: index === current });
     groups.set(match.pageIndex, ranges);
   });
   return groups;

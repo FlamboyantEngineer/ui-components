@@ -60,8 +60,7 @@ function collectItem(lines: readonly string[], at: number, marker: ListMarker): 
     if (isBlank(line)) {
       const resume = nextNonBlank(lines, index);
       if (resume >= lines.length || indentOf(lines[resume] ?? '') < marker.contentIndent) break;
-      itemLines.push(...Array.from({ length: resume - index }, () => ''));
-      index = resume;
+      for (; index < resume; index += 1) itemLines.push('');
     } else if (indentOf(line) >= marker.contentIndent) {
       itemLines.push(line.slice(marker.contentIndent));
       index += 1;

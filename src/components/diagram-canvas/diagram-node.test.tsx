@@ -252,6 +252,39 @@ describe('DiagramCanvas nodes', () => {
     expect(node('Valve')).toHaveFocus();
   });
 
+  it('UIC-DIAGRAM-CANVAS-4.1 UIC-DIAGRAM-CANVAS-4.3 abandons a node move when editing ends while preserving viewing selection', async () => {
+    const user = userEvent.setup();
+    const onNodesChange = vi.fn();
+    const { rerender } = render(<EditableDiagram onNodesChange={onNodesChange} />);
+    await drag(user, node('Pump'), { clientX: 23, clientY: 7 });
+    expect(node('Pump')).toHaveAttribute('data-moving', 'true');
+    rerender(<EditableDiagram isEditing={false} onNodesChange={onNodesChange} />);
+    expect(node('Pump')).not.toHaveAttribute('data-moving');
+    expect(node('Pump').style).toMatchObject({ left: '0px', top: '0px' });
+    await release(user, node('Pump'));
+    expect(onNodesChange).not.toHaveBeenCalled();
+    await user.click(node('Tank'));
+    expect(node('Tank')).toHaveAttribute('data-selected', 'true');
+    expect(node('Pump')).not.toHaveAttribute('data-selected');
+  });
+
+  it('UIC-DIAGRAM-CANVAS-4.3 requires a fresh node press after editing is disabled and re-enabled', async () => {
+    const user = userEvent.setup();
+    const onNodesChange = vi.fn();
+    const { rerender } = render(<EditableDiagram onNodesChange={onNodesChange} />);
+    await press(user, node('Pump'));
+    rerender(<EditableDiagram isEditing={false} onNodesChange={onNodesChange} />);
+    rerender(<EditableDiagram onNodesChange={onNodesChange} />);
+    await user.pointer({ target: node('Pump'), coords: { clientX: 30, clientY: 0 } });
+    await release(user, node('Pump'));
+    expect(onNodesChange).not.toHaveBeenCalled();
+    expect(node('Pump')).not.toHaveAttribute('data-moving');
+    await drag(user, node('Pump'), { clientX: 23, clientY: 7 });
+    await release(user, node('Pump'));
+    expect(onNodesChange).toHaveBeenCalledTimes(1);
+    expect(node('Pump').style).toMatchObject({ left: '20px', top: '10px' });
+  });
+
   it('UIC-DIAGRAM-CANVAS-4.5 UIC-DIAGRAM-CANVAS-6.2 removes the focused node or the selection with their edges', async () => {
     const onNodesChange = vi.fn();
     const onEdgesChange = vi.fn();

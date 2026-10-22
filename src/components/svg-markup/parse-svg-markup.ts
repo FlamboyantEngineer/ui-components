@@ -2,6 +2,7 @@
 // files use and returns a plain, frozen tree that React can render without innerHTML.
 
 import { tokenizeMarkup, type MarkupOpenToken } from '../../utils/markup.js';
+import { walkTree } from '../../utils/walk-tree.js';
 
 export interface SvgElementNode {
   readonly type: 'element';
@@ -60,14 +61,17 @@ function filterAttributes(attributes: Readonly<Record<string, string>>): Record<
   return kept;
 }
 
-function freezeNode(node: MutableElement | SvgTextNode): SvgNode {
-  if (node.type === 'text') return Object.freeze(node);
-  return Object.freeze({
-    type: 'element',
-    tag: node.tag,
-    attributes: Object.freeze(node.attributes),
-    children: Object.freeze(node.children.map(freezeNode)),
-  });
+function freezeNode(root: MutableElement | SvgTextNode): SvgNode {
+  for (const node of walkTree([root], (node) =>
+    node.type === 'element' ? node.children : undefined,
+  )) {
+    if (node.type === 'element') {
+      Object.freeze(node.attributes);
+      Object.freeze(node.children);
+    }
+    Object.freeze(node);
+  }
+  return root;
 }
 
 function currentElement(state: ParserState): MutableElement {

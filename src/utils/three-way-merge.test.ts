@@ -57,6 +57,17 @@ describe('mergeThreeWay', () => {
     ]);
   });
 
+  it('UIC-DIFF-4.1 keeps complete insertions and deletions of two hundred thousand lines', () => {
+    const lines = Array.from({ length: 200_000 }, (_, index) => `Line ${index}`);
+    const source = lines.join('\n');
+    expect(mergeThreeWay('', source, '')).toEqual([
+      { kind: 'ours', base: [], ours: lines, theirs: [] },
+    ]);
+    expect(mergeThreeWay(source, '', source)).toEqual([
+      { kind: 'ours', base: lines, ours: [], theirs: lines },
+    ]);
+  });
+
   it('UIC-DIFF-4.2 marks different changes to the same lines as a conflict', () => {
     const chunks = mergeThreeWay(
       text('a', 'b', 'c', 'd'),

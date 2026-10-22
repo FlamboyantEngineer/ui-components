@@ -16,10 +16,3 @@ export function toFieldValueKey(value: unknown): string {
 export function isFieldValueEqual(left: unknown, right: unknown): boolean {
   return Object.is(left, right) || toFieldValueKey(left) === toFieldValueKey(right);
 }
-
-/** Whether a value counts as empty for a required field: nothing, blank text or an empty list. */
-export function isFieldValueEmpty(value: unknown): boolean {
-  if (value === null || value === undefined) return true;
-  if (typeof value === 'string') return value.trim() === '';
-  return Array.isArray(value) && value.length === 0;
-}

@@ -127,6 +127,12 @@ test.describe('Chart lab', () => {
       'width',
       '96',
     );
+    const large = page.getByRole('figure', { name: 'Large amounts' });
+    await expect(large.getByRole('img', { name: /50%$/ })).toHaveCount(2);
+    await expect(large.locator('.ui-donut-chart__slice').first()).toHaveAttribute(
+      'd',
+      /A80,80 0 0 1 80,160/,
+    );
   });
 
   test('UIC-CHART-1.2 UIC-CHART-4.5 shows a summary, a table and an empty chart', async ({

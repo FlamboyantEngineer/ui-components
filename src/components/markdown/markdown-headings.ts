@@ -1,17 +1,23 @@
 // Heading ids and the outline of a parsed Markdown document (specs/MARKDOWN.md).
 
 import type { OutlineHeading } from '../outline/outline.js';
-import type { MarkdownBlock, MarkdownDocument, MarkdownInline } from './markdown-nodes.js';
+import { walkTree } from '../../utils/walk-tree.js';
+import type {
+  MarkdownDocument,
+  MarkdownInline,
+  MarkdownBlock,
+  MarkdownListItem,
+} from './markdown-nodes.js';
 
 /** The text inline nodes read as: link and emphasis text, code, image alt text. */
 export function toPlainText(nodes: readonly MarkdownInline[]): string {
-  return nodes
-    .map((node) => {
-      if ('children' in node) return toPlainText(node.children);
-      if (node.type === 'image') return node.alt;
-      return node.type === 'lineBreak' ? ' ' : node.text;
-    })
-    .join('');
+  const text: string[] = [];
+  for (const node of walkTree(nodes, (item) => ('children' in item ? item.children : undefined))) {
+    if ('children' in node) continue;
+    if (node.type === 'image') text.push(node.alt);
+    else text.push(node.type === 'lineBreak' ? ' ' : node.text);
+  }
+  return text.join('');
 }
 
 /** Lower case, accents folded, every run of other characters than letters and digits a hyphen. */
@@ -28,26 +34,16 @@ function slugifyHeading(text: string): string {
 /** Hands out heading slugs, suffixing repeats `-2`, `-3`, … so they stay unique in a document. */
 export function createHeadingIdAllocator(): (text: string) => string {
   const used = new Set<string>();
+  const nextSuffix = new Map<string, number>();
   return (text) => {
     const base = slugifyHeading(text);
     let id = base;
-    for (let count = 2; used.has(id); count += 1) id = `${base}-${count}`;
+    let count = nextSuffix.get(base) ?? 2;
+    while (used.has(id)) id = `${base}-${count++}`;
+    nextSuffix.set(base, count);
     used.add(id);
     return id;
   };
-}
-
-function collectHeadings(blocks: readonly MarkdownBlock[], prefix: string): OutlineHeading[] {
-  return blocks.flatMap((block): OutlineHeading[] => {
-    if (block.type === 'heading') {
-      return [{ id: prefix + block.id, label: toPlainText(block.children), level: block.level }];
-    }
-    if (block.type === 'blockquote') return collectHeadings(block.children, prefix);
-    if (block.type === 'list') {
-      return block.children.flatMap((item) => collectHeadings(item.children, prefix));
-    }
-    return [];
-  });
 }
 
 /**
@@ -58,5 +54,18 @@ export function listMarkdownHeadings(
   document: MarkdownDocument,
   headingIdPrefix = '',
 ): OutlineHeading[] {
-  return collectHeadings(document.children, headingIdPrefix);
+  const headings: OutlineHeading[] = [];
+  const getChildren = (node: MarkdownBlock | MarkdownListItem) =>
+    node.type === 'blockquote' || node.type === 'list' || node.type === 'listItem'
+      ? node.children
+      : undefined;
+  for (const block of walkTree<MarkdownBlock | MarkdownListItem>(document.children, getChildren)) {
+    if (block.type !== 'heading') continue;
+    headings.push({
+      id: headingIdPrefix + block.id,
+      label: toPlainText(block.children),
+      level: block.level,
+    });
+  }
+  return headings;
 }

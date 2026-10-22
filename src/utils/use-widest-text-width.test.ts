@@ -61,6 +61,37 @@ describe('useWidestTextWidth', () => {
     await waitFor(() => expect(measureText.mock.calls.length).toBeGreaterThan(calls));
   });
 
+  it('UIC-MEASUREMENT-3.1 preserves newlines within labels and distinguishes an empty list', () => {
+    const { measureText } = stubCanvas();
+    const { rerender } = render(createElement(Probe, { texts: ['A', 'B'] }));
+    expect(probe()).toHaveTextContent('7');
+    measureText.mockClear();
+    rerender(createElement(Probe, { texts: ['A\nB'] }));
+    expect(measureText).toHaveBeenCalledWith('A\nB');
+    expect(probe()).toHaveTextContent('20');
+    measureText.mockClear();
+    rerender(createElement(Probe, { texts: [] }));
+    expect(probe()).toHaveTextContent('0');
+    expect(measureText).not.toHaveBeenCalled();
+    rerender(createElement(Probe, { texts: [''] }));
+    expect(measureText).toHaveBeenCalledWith('');
+  });
+
+  it('UIC-MEASUREMENT-3.1 ignores font readiness after unmount', async () => {
+    const { measureText } = stubCanvas();
+    let loaded = () => {};
+    const ready = new Promise<void>((resolve) => {
+      loaded = resolve;
+    });
+    Object.defineProperty(document, 'fonts', { value: { ready }, configurable: true });
+    const { unmount } = render(createElement(Probe, { texts: ['Pear'] }));
+    expect(measureText).toHaveBeenCalledTimes(1);
+    unmount();
+    loaded();
+    await ready;
+    expect(measureText).toHaveBeenCalledTimes(1);
+  });
+
   it('UIC-MEASUREMENT-3.1 returns null without an offscreen canvas', () => {
     vi.stubGlobal('OffscreenCanvas', undefined);
     render(createElement(Probe, { texts: ['Plum'] }));

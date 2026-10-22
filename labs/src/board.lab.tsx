@@ -201,7 +201,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Moving cards and columns"
-      description="Drag cards within and between columns, or press Alt+Arrow keys on a card; drag a column header or press Alt+ArrowLeft and Alt+ArrowRight on its handle. Doing holds at most two cards. Every cell adds cards."
+      description="Drag cards within and between columns, or press Alt+Arrow keys on a card; drag a column header or press Alt+ArrowLeft and Alt+ArrowRight on its handle. Focus follows a moved item until you act elsewhere. Doing holds at most two cards. Every cell adds cards."
     >
       <MovingBoard />
     </LabSection>

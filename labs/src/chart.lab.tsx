@@ -233,7 +233,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Donuts"
-      description="The parts of a whole around their total, in tones and in position slots, and a smaller ring without a legend."
+      description="The parts of a whole around their total, in tones and in position slots, and a smaller ring without a legend. The table lists every segment with its amount and share, including hidden segments."
     >
       <StateMatrix
         axes={{ data: ['results', 'fruit', 'small'] }}
@@ -247,6 +247,19 @@ mountLab(
             formatOptions={data === 'fruit' ? { style: 'unit', unit: 'kilogram' } : undefined}
           />
         )}
+      />
+    </LabSection>
+    <LabSection
+      title="Large amounts"
+      description="Two equal finite amounts keep equal slices and table shares even when their total exceeds the numeric range."
+    >
+      <DonutChart
+        label="Large amounts"
+        segments={[
+          { id: 'first', label: 'First', value: Number.MAX_VALUE },
+          { id: 'second', label: 'Second', value: Number.MAX_VALUE },
+        ]}
+        formatOptions={{ notation: 'scientific' }}
       />
     </LabSection>
     <LabSection

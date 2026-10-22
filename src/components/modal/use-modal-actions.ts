@@ -1,7 +1,8 @@
+import { toErrorMessage } from '../../utils/to-error-message.js';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { OverlayTriggerStateContext } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
-import { runPendingAction, toFailureMessage } from '../action-button/action-button.js';
+import { runPendingAction } from '../action-button/action-button.js';
 import type { ModalAction } from './modal.js';
 
 /** Which built-in footer action runs. */
@@ -84,8 +85,7 @@ export function useModalActions({
       },
       action: onPress ? () => onPress(() => closeOpening(opening)) : undefined,
       onError: (error) => {
-        if (generation.current === opening)
-          setFailure(toFailureMessage(error, strings.actionFailed));
+        if (generation.current === opening) setFailure(toErrorMessage(error, strings.actionFailed));
       },
     });
   };

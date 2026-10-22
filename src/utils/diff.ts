@@ -57,11 +57,11 @@ function commonPrefixLength<T>(a: readonly T[], b: readonly T[]): number {
   return length;
 }
 
-function commonSuffixLength<T>(a: readonly T[], b: readonly T[]): number {
+function commonSuffixLength<T>(a: readonly T[], b: readonly T[], prefix: number): number {
   let length = 0;
   while (
-    length < a.length &&
-    length < b.length &&
+    length < a.length - prefix &&
+    length < b.length - prefix &&
     a[a.length - 1 - length] === b[b.length - 1 - length]
   ) {
     length += 1;
@@ -150,26 +150,34 @@ function findSplit<T>(a: readonly T[], b: readonly T[]): [number, number] | null
   return null;
 }
 
-function diffTokens<T>(a: readonly T[], b: readonly T[]): Array<TokenEdit<T>> {
+function diffTokens<T>(
+  a: readonly T[],
+  b: readonly T[],
+  edits: Array<TokenEdit<T>> = [],
+): Array<TokenEdit<T>> {
   const prefix = commonPrefixLength(a, b);
-  const suffix = commonSuffixLength(a.slice(prefix), b.slice(prefix));
+  const suffix = commonSuffixLength(a, b, prefix);
   const oldMiddle = a.slice(prefix, a.length - suffix);
   const newMiddle = b.slice(prefix, b.length - suffix);
-  const edits: Array<TokenEdit<T>> = [{ kind: 'equal', tokens: a.slice(0, prefix) }];
+  edits.push({ kind: 'equal', tokens: a.slice(0, prefix) });
   if (oldMiddle.length === 0 || newMiddle.length === 0) {
     edits.push({ kind: 'delete', tokens: oldMiddle }, { kind: 'insert', tokens: newMiddle });
   } else {
     const split = findSplit(oldMiddle, newMiddle);
     if (split) {
       const [x, y] = split;
-      edits.push(...diffTokens(oldMiddle.slice(0, x), newMiddle.slice(0, y)));
-      edits.push(...diffTokens(oldMiddle.slice(x), newMiddle.slice(y)));
+      diffTokens(oldMiddle.slice(0, x), newMiddle.slice(0, y), edits);
+      diffTokens(oldMiddle.slice(x), newMiddle.slice(y), edits);
     } else {
       edits.push({ kind: 'delete', tokens: oldMiddle }, { kind: 'insert', tokens: newMiddle });
     }
   }
   edits.push({ kind: 'equal', tokens: a.slice(a.length - suffix) });
   return edits;
+}
+
+function appendTokens<T>(target: T[], source: readonly T[]) {
+  for (const token of source) target.push(token);
 }
 
 /**
@@ -187,12 +195,12 @@ function toHunks<T>(edits: Array<TokenEdit<T>>): Array<TokenEdit<T>> {
     inserted = [];
   };
   for (const edit of edits) {
-    if (edit.kind === 'delete') deleted = deleted.concat(edit.tokens);
-    else if (edit.kind === 'insert') inserted = inserted.concat(edit.tokens);
+    if (edit.kind === 'delete') appendTokens(deleted, edit.tokens);
+    else if (edit.kind === 'insert') appendTokens(inserted, edit.tokens);
     else if (edit.tokens.length > 0) {
       flush();
       const last = hunks.at(-1);
-      if (last?.kind === 'equal') last.tokens = last.tokens.concat(edit.tokens);
+      if (last?.kind === 'equal') appendTokens(last.tokens, edit.tokens);
       else hunks.push({ kind: 'equal', tokens: edit.tokens });
     }
   }

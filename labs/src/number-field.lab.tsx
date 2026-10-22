@@ -147,6 +147,28 @@ function Affixes() {
   );
 }
 
+function LockedScrub() {
+  const [isReadOnly, setReadOnly] = useState(false);
+  const [committed, setCommitted] = useState<number | null>(4);
+  return (
+    <div data-lab-demo="locked-scrub">
+      <NumberField
+        label="Amount"
+        description="Reaching 6 makes the field read-only and ends the scrub. Unlock, then press again to scrub."
+        defaultValue={4}
+        showScrubber
+        isReadOnly={isReadOnly}
+        onChange={(value) => {
+          if (value !== null && value >= 6) setReadOnly(true);
+        }}
+        onCommit={setCommitted}
+      />
+      <Button onPress={() => setReadOnly(false)}>Unlock</Button>
+      <Output name="Scrub committed">{committed === null ? 'empty' : committed}</Output>
+    </div>
+  );
+}
+
 function FastSteps() {
   const [committed, setCommitted] = useState<number | null>(40);
   return (
@@ -165,6 +187,24 @@ function FastSteps() {
         data-lab-field="fast"
       />
       <Output name="Opacity">{committed === null ? 'empty' : committed}</Output>
+    </>
+  );
+}
+
+function FineSteps() {
+  const [committed, setCommitted] = useState<number | null>(1e-7);
+  return (
+    <>
+      <NumberField
+        label="Fine increment"
+        defaultValue={1e-7}
+        step={1e-7}
+        smallStep={1e-7}
+        formatOptions={{ maximumFractionDigits: 10 }}
+        onCommit={setCommitted}
+        data-lab-field="fine"
+      />
+      <Output name="Fine committed">{committed}</Output>
     </>
   );
 }
@@ -202,6 +242,15 @@ mountLab(
     </LabSection>
     <LabSection title="Fast steps" description="Modifier steps and a scrub handle.">
       <FastSteps />
+    </LabSection>
+    <LabSection title="Lock during a scrub" description="A lock ends the current pointer gesture.">
+      <LockedScrub />
+    </LabSection>
+    <LabSection
+      title="Fine steps"
+      description="Alt with an arrow preserves tiny decimal increments."
+    >
+      <FineSteps />
     </LabSection>
   </>,
 );

@@ -69,6 +69,11 @@ const contents = {
   unchanged: [short, short],
 } as const;
 const contentNames = Object.keys(contents) as Array<keyof typeof contents>;
+const typedBlocks: DocumentBlock[] = [
+  { id: 1, type: 'paragraph', text: 'Numeric entry' },
+  { id: '1', type: 'paragraph', text: 'Text entry' },
+  { id: 'keep', type: 'paragraph', text: 'Unchanged entry' },
+];
 
 const draftNotes: DocumentBlock[] = [
   { type: 'paragraph', text: 'The library opens at nine on weekdays.' },
@@ -109,7 +114,7 @@ function Review() {
         resolutions={decisions}
         onResolve={({ decision, row }) => {
           setDecisions({ ...decisions, [row.key]: decision });
-          setLast(`${decision} ${row.key} (${row.change})`);
+          setLast(`${decision} ${row.newBlock?.id ?? row.oldBlock?.id} (${row.change})`);
         }}
       />
       <output data-lab-output>{`Last decision: ${last}`}</output>
@@ -155,6 +160,17 @@ mountLab(
             layout={layout}
           />
         )}
+      />
+    </LabSection>
+    <LabSection
+      title="Typed identifiers"
+      description="Numeric and string identifiers remain distinct when a paragraph moves, and the jump links connect its two positions."
+    >
+      <RedlineCompare
+        aria-label="Typed identifiers"
+        oldBlocks={typedBlocks}
+        newBlocks={[typedBlocks[1]!, typedBlocks[2]!, typedBlocks[0]!]}
+        data-lab-demo="typed"
       />
     </LabSection>
   </>,

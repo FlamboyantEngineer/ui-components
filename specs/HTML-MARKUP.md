@@ -8,6 +8,8 @@
 
 `sanitizeHtml(markup, policy)` shall return the fragment as a frozen list of nodes: elements (`tag` in lower case, the kept `attributes` with lower-case names and decoded entities, `children`) and text with its character references decoded ([UIC-MARKUP-1](MARKUP.md#uic-markup-1---tokens)). Comments and doctypes are dropped, and a `<` that starts no tag is text. It never touches the DOM.
 
+Filtering deeply nested kept or excluded elements shall preserve content order and freezing without relying on recursive calls. Excluded wrappers shall append into their parent's output rather than repeatedly copy their descendants.
+
 Implementation: `src/components/html-markup/sanitize-html.ts`, `src/components/html-markup/html-tree.ts`, `src/utils/markup.ts`
 Verification: `src/components/html-markup/sanitize-html.test.ts`
 
@@ -59,7 +61,9 @@ Verification: `src/components/html-markup/sanitize-html.test.ts`
 
 `HtmlMarkup` shall render `markup`, sanitized, inside a `<div>` root as React elements, converting attribute names to React props (`class` to `className`, `colspan` to `colSpan`, `datetime` to `dateTime`, boolean attributes such as `open` and `reversed` to `true`), so it renders on the server as in the browser. It never sets `innerHTML` and parses again only when `markup` or `policy` changes.
 
-Implementation: `src/components/html-markup/html-markup.tsx`
+Building the React element tree shall use an iterative traversal, preserving each node's sibling key and calling element overrides after their rendered children.
+
+Implementation: `src/components/html-markup/html-markup.tsx`, `src/utils/map-tree.ts`
 Verification: `src/components/html-markup/html-markup.test.tsx`, `e2e/html-markup.spec.ts`
 
 ### UIC-HTML-MARKUP-2.2 - Links

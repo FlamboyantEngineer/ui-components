@@ -292,6 +292,26 @@ describe('NumberField', () => {
     expect(input).toHaveValue('4');
   });
 
+  it('UIC-NUMBER-FIELD-3.2 commits a tiny modified step without rounding it to zero', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    render(
+      <NumberField
+        label="Fine increment"
+        defaultValue={1e-7}
+        smallStep={1e-7}
+        step={1e-7}
+        formatOptions={{ maximumFractionDigits: 10 }}
+        onCommit={onCommit}
+      />,
+    );
+    const input = screen.getByRole('textbox', { name: 'Fine increment' });
+    await user.click(input);
+    await user.keyboard('{Alt>}{ArrowUp}{/Alt}');
+    expect(input).toHaveValue('0.0000002');
+    expect(onCommit).toHaveBeenLastCalledWith(2e-7);
+  });
+
   it('UIC-NUMBER-FIELD-3.3 steps the value while its scrub handle is dragged', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
@@ -331,6 +351,39 @@ describe('NumberField', () => {
     expect(input).toHaveValue('14');
     expectHooksMatchSpec(container, 'NUMBER-FIELD', { slots: ['scrubber'] });
   });
+
+  it.each(['isDisabled', 'isReadOnly'] as const)(
+    'UIC-NUMBER-FIELD-3.3 drops an active scrub when %s changes and requires a new press after unlocking',
+    async (lock) => {
+      const user = userEvent.setup();
+      const onChange = vi.fn();
+      const onCommit = vi.fn();
+      const props = { label: 'Weight', defaultValue: 4, showScrubber: true, onChange, onCommit };
+      const { container, rerender } = render(<NumberField {...props} />);
+      const scrubber = container.querySelector('.ui-number-field__scrubber') as HTMLElement;
+      const input = screen.getByRole('textbox');
+      await user.pointer([
+        { keys: '[MouseLeft>]', target: scrubber, coords: { clientX: 100 } },
+        { coords: { clientX: 108 } },
+      ]);
+      expect(input).toHaveValue('6');
+      onChange.mockClear();
+      rerender(<NumberField {...props} {...{ [lock]: true }} />);
+      await user.pointer({ coords: { clientX: 120 } });
+      expect(input).toHaveValue('6');
+      rerender(<NumberField {...props} />);
+      await user.pointer([{ coords: { clientX: 132 } }, { keys: '[/MouseLeft]' }]);
+      expect(onChange).not.toHaveBeenCalled();
+      expect(onCommit).not.toHaveBeenCalled();
+      await user.pointer([
+        { keys: '[MouseLeft>]', target: scrubber, coords: { clientX: 132 } },
+        { coords: { clientX: 140 } },
+        { keys: '[/MouseLeft]' },
+      ]);
+      expect(input).toHaveValue('8');
+      expect(onCommit).toHaveBeenCalledExactlyOnceWith(8);
+    },
+  );
 
   it('UIC-NUMBER-FIELD-3.3 scrubs toward the end of the line and not while locked', async () => {
     const user = userEvent.setup();

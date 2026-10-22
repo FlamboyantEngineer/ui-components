@@ -1,4 +1,5 @@
 import { useState, type CSSProperties } from 'react';
+import { Button } from '../../src/components/button/button.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import {
   Timeline,
@@ -245,6 +246,7 @@ function PlanDemo() {
   const [view, setView] = useState<TimelineView>('chart');
   const [selected, setSelected] = useState<Set<Key>>(new Set());
   const [lastChange, setLastChange] = useState('None yet');
+  const [isLocked, setLocked] = useState(false);
   const onItemChange = (change: TimelineItemChange) => {
     setItems((current) => applyChange(current, change));
     const name = items.find((item) => item.id === change.id)?.label;
@@ -270,6 +272,9 @@ function PlanDemo() {
           size="sm"
           sizing="content"
         />
+        <Button size="sm" onPress={() => setLocked((current) => !current)}>
+          {isLocked ? 'Unlock timeline' : 'Lock timeline'}
+        </Button>
       </div>
       <Timeline
         aria-label="Kitchen renovation"
@@ -284,7 +289,7 @@ function PlanDemo() {
         onSelectionChange={(keys) =>
           setSelected(new Set(keys === 'all' ? items.map((item) => item.id) : keys))
         }
-        onItemChange={onItemChange}
+        onItemChange={isLocked ? undefined : onItemChange}
       />
       <p data-lab-demo="last-change">Last change: {lastChange}</p>
       <p data-lab-demo="selection">Selected: {selected.size}</p>
@@ -314,7 +319,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Project plan"
-      description="Grouped rows that collapse, a locked milestone, drag and keyboard editing (arrows move by the zoom unit, Shift and arrows change the end), multiple selection, and the table view of the same items. Cancelling a drag discards its draft dates."
+      description="Nested groups that collapse, a locked milestone, drag and keyboard editing (arrows move by the zoom unit, Shift and arrows change the end), multiple selection, and the table view of the same items. Dependencies name their predecessors even when those rows are hidden. Cancelling a drag discards its draft dates."
     >
       <PlanDemo />
     </LabSection>

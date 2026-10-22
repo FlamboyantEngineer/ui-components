@@ -50,6 +50,29 @@ describe('timeline layout', () => {
     expect(predecessors.get('b')).toEqual({ names: ['Survey', 'Hidden'], hasConflict: true });
   });
 
+  it('UIC-TIMELINE-1.7 reads an item’s dates once across many dependencies', () => {
+    let reads = 0;
+    const related = items.slice(0, 2).map((item) => ({
+      ...item,
+      get start() {
+        reads += 1;
+        return item.start;
+      },
+    }));
+    const dependencies = Array.from({ length: 1_000 }, () => ({ from: 'a', to: 'b' }));
+    const { connectors, predecessors } = resolveTimelineLayout({
+      axis,
+      rows,
+      items: related,
+      dependencies,
+      rowHeight: 36,
+    });
+    expect(connectors).toHaveLength(dependencies.length);
+    expect(predecessors.get('b')?.names).toHaveLength(dependencies.length);
+    expect(predecessors.get('b')?.hasConflict).toBe(false);
+    expect(reads).toBeLessThanOrEqual(related.length * 4);
+  });
+
   it('UIC-TIMELINE-1.2 UIC-TIMELINE-2.1 shows a draft without moving the range', () => {
     const { axis: drafted, layout } = layoutTimeline({
       rows,

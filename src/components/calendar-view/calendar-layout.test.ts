@@ -135,4 +135,56 @@ describe('calendar layout', () => {
     expect(block?.top).toBeCloseTo((11 / 23) * 100);
     expect(block?.height).toBeCloseTo((1 / 23) * 100);
   });
+
+  it('UIC-CALENDAR-VIEW-2.5 distinguishes repeated hours and clips a 25-hour day', () => {
+    const timeZone = 'America/New_York';
+    const placed = readEvents(
+      [
+        {
+          id: 'early',
+          title: 'Early',
+          start: '2026-11-01T01:30-04:00',
+          end: '2026-11-01T01:45-04:00',
+        },
+        {
+          id: 'late',
+          title: 'Late',
+          start: '2026-11-01T01:30-05:00',
+          end: '2026-11-01T01:45-05:00',
+        },
+        {
+          id: 'before',
+          title: 'Before',
+          start: '2026-10-31T23:30-04:00',
+          end: '2026-11-01T01:00-04:00',
+        },
+        {
+          id: 'zero',
+          title: 'Zero',
+          start: '2026-11-01T23:00-05:00',
+          end: '2026-11-01T23:00-05:00',
+        },
+        {
+          id: 'after',
+          title: 'After',
+          start: '2026-11-01T23:30-05:00',
+          end: '2026-11-02T01:00-05:00',
+        },
+      ],
+      timeZone,
+    );
+    const blocks = layoutDay('2026-11-01', placed, timeZone);
+    const rounded = (value: number) => Math.round(value * 1000) / 1000;
+    expect(
+      blocks.map((block) => [block.placed.event.id, rounded(block.top), rounded(block.height)]),
+    ).toEqual([
+      ['before', 0, 4],
+      ['early', 6, 1],
+      ['late', 10, 1],
+      ['zero', 96, 0],
+      ['after', 98, 2],
+    ]);
+    expect(blocks[0]?.continuesBefore).toBe(true);
+    expect(blocks.at(-1)?.continuesAfter).toBe(true);
+  });
 });

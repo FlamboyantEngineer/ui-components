@@ -80,7 +80,7 @@ Verification: `src/components/board/board.test.tsx`, `src/components/board/board
 
 ### UIC-BOARD-2.3 - Keyboard moves
 
-With `onMove`, Alt+ArrowUp and Alt+ArrowDown on a card shall report the move past its neighbouring card in the cell, and Alt+ArrowLeft and Alt+ArrowRight (mirrored right to left) the move to the same place in the neighbouring open column of its lane, at the end when that cell holds fewer cards; collapsed columns are skipped. Focus stays on the moved card once the owner renders the move. At either end the chord is claimed and moves nothing. Cards publish the chords in `aria-keyshortcuts`.
+With `onMove`, Alt+ArrowUp and Alt+ArrowDown on a card shall report the move past its neighbouring card in the cell, and Alt+ArrowLeft and Alt+ArrowRight (mirrored right to left) the move to the same place in the neighbouring open column of its lane, at the end when that cell holds fewer cards; collapsed columns are skipped. Focus stays on the moved card once the owner renders the move, following the shared [focus request lifecycle](STEP-LIST-EDITOR.md#uic-step-list-editor-42---focus-after-an-edit). At either end the chord is claimed and moves nothing. Cards publish the chords in `aria-keyshortcuts`.
 
 Implementation: `src/components/board/board.tsx`, `src/components/board/board-moves.ts`
 Verification: `src/components/board/board.test.tsx`, `src/components/board/board-moves.test.ts`, `e2e/board.spec.ts`

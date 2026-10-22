@@ -164,7 +164,7 @@ mountLab(
   <>
     <LabSection
       title="States and counts"
-      description="Idle, pending and disabled, with and without a count."
+      description="Idle, pending and disabled, with and without a count. Disabled controls ignore presses and visibility reports until enabled again."
     >
       <StateMatrix
         axes={{

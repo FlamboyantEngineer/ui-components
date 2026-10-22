@@ -99,7 +99,7 @@ mountLab(
   <>
     <LabSection
       title="States"
-      description="The month and week views with events, with a crowded day and empty. The clock is fixed at 18 March 2026, 10:30 UTC."
+      description="The month and week views with events, with a crowded day and empty. Week events follow elapsed time and clip at midnight when they continue into another day. The clock is fixed at 18 March 2026, 10:30 UTC."
     >
       <StateMatrix
         axes={{

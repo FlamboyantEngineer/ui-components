@@ -1,3 +1,4 @@
+import { toErrorMessage } from '../../utils/to-error-message.js';
 import { useRef, useState } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -45,10 +46,6 @@ export interface FolderActions<T extends FolderItem> {
   cancel(): void;
   /** Deletes the folders, in order, stopping at the first refusal. */
   remove(folders: readonly T[]): Promise<void>;
-}
-
-function messageOf(error: unknown, fallback: string): string {
-  return error instanceof Error && error.message ? error.message : fallback;
 }
 
 function isKey(value: unknown): value is Key {
@@ -109,7 +106,7 @@ export function useFolderActions<T extends FolderItem>({
       finish(current, key);
     } catch (error) {
       setEdit({ ...current, name, isPending: false });
-      setMessage(messageOf(error, strings.actionFailed));
+      setMessage(toErrorMessage(error, strings.actionFailed));
     }
   };
 
@@ -124,7 +121,7 @@ export function useFolderActions<T extends FolderItem>({
       select(parentKey);
       onSettle(parentKey);
     } catch (error) {
-      setMessage(messageOf(error, strings.actionFailed));
+      setMessage(toErrorMessage(error, strings.actionFailed));
     } finally {
       setDeleting(false);
     }

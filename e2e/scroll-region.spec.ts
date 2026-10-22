@@ -138,6 +138,35 @@ test.describe('Scroll Region lab', () => {
     expect(Math.abs(scrollTop - (scrollHeight - clientHeight) / 2)).toBeLessThan(3);
   });
 
+  test('UIC-SCROLL-REGION-2.7 follows content that shrinks and grows inside a retained child', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('scroll-region');
+    const region = page.locator('[data-lab-region="overlay"]');
+    const vertical = region.getByRole('scrollbar', { name: 'Scroll vertically' });
+    const horizontal = region.getByRole('scrollbar', { name: 'Scroll horizontally' });
+    await expect(vertical).toHaveCount(1);
+    await page.getByRole('button', { name: 'Show fewer cities' }).click();
+    await expect(vertical).toHaveCount(0);
+    await expect(horizontal).toHaveCount(1);
+    await page.getByRole('button', { name: 'Show all cities' }).click();
+    await expect(vertical).toHaveCount(1);
+    const viewport = region.locator('.ui-scroll-region__viewport');
+    await expect(async () => {
+      const track = await box(
+        region.locator('.ui-scroll-region__track[data-orientation="vertical"]'),
+      );
+      const thumb = await box(vertical);
+      const size = await metrics(viewport);
+      expect(
+        Math.abs(
+          thumb.height - Math.max(24, (track.height * size.clientHeight) / size.scrollHeight),
+        ),
+      ).toBeLessThan(1);
+    }).toPass();
+  });
+
   test('UIC-SCROLL-REGION-2.5 UIC-SCROLL-REGION-2.6 keeps tracks clear of headers and under short content', async ({
     page,
     lab,

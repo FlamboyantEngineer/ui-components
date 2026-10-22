@@ -2,6 +2,7 @@
 
 import type { Key } from '../core/props.js';
 import { diffSequences, diffWords, type WordDiffHunk } from './diff.js';
+import { toKeyIdentity } from './to-key-identity.js';
 
 /** The kind of a document block. */
 export type DocumentBlockType = 'paragraph' | 'heading' | 'list-item' | 'quote' | 'code';
@@ -37,7 +38,7 @@ export type BlockChangeCounts = Record<Exclude<BlockChange, 'unchanged'>, number
 
 /** One aligned row: a block of the old document, of the new one, or of both. */
 export interface ComparedBlockRow<B extends DocumentBlock = DocumentBlock> {
-  /** Unique among the rows. */
+  /** Opaque identity, unique among the rows. */
   key: string;
   change: BlockChange;
   /** The block in the old document, when the row shows it or compares against it. */
@@ -86,10 +87,10 @@ interface Alignment<B extends DocumentBlock> {
 const similarityThreshold = 0.5;
 
 const toIdentity = (block: DocumentBlock) =>
-  block.id === undefined ? `text:${block.text}` : `id:${String(block.id)}`;
+  block.id === undefined ? `text:${block.text}` : `id:${toKeyIdentity(block.id)}`;
 
 const toRowKey = (block: DocumentBlock, side: 'old' | 'new', index: number) =>
-  block.id === undefined ? `${side}:${index}` : `id:${String(block.id)}`;
+  block.id === undefined ? `${side}:${index}` : toIdentity(block);
 
 /** The equal pairs and the change runs of two block lists, in reading order. */
 function segmentBlocks(oldBlocks: readonly DocumentBlock[], newBlocks: readonly DocumentBlock[]) {
@@ -128,17 +129,24 @@ function segmentBlocks(oldBlocks: readonly DocumentBlock[], newBlocks: readonly 
 function findMoves<B extends DocumentBlock>(alignment: Alignment<B>, runs: readonly ChangeRun[]) {
   const { oldBlocks, newBlocks, movedTo, movedFrom } = alignment;
   const waiting = new Map<string, number[]>();
-  for (const index of runs.flatMap((run) => run.inserted)) {
-    const block = newBlocks[index]!;
-    if (block.id === undefined && block.text.trim() === '') continue;
-    const identity = toIdentity(block);
-    waiting.set(identity, [...(waiting.get(identity) ?? []), index]);
+  for (const run of runs) {
+    for (const index of run.inserted) {
+      const block = newBlocks[index]!;
+      if (block.id === undefined && block.text.trim() === '') continue;
+      const identity = toIdentity(block);
+      const indices = waiting.get(identity);
+      if (indices) indices.push(index);
+      else waiting.set(identity, [index]);
+    }
   }
-  for (const index of runs.flatMap((run) => run.deleted)) {
-    const target = waiting.get(toIdentity(oldBlocks[index]!))?.shift();
-    if (target === undefined) continue;
-    movedTo.set(index, target);
-    movedFrom.set(target, index);
+  for (const indices of waiting.values()) indices.reverse();
+  for (const run of runs) {
+    for (const index of run.deleted) {
+      const target = waiting.get(toIdentity(oldBlocks[index]!))?.pop();
+      if (target === undefined) continue;
+      movedTo.set(index, target);
+      movedFrom.set(target, index);
+    }
   }
 }
 
@@ -156,27 +164,24 @@ function measureSimilarity(oldText: string, newText: string): number {
  * Pairs the deleted and inserted blocks of a run that have no ids and read alike, in order: each
  * deleted block takes the first similar inserted block after the last one taken.
  */
-function pairSimilar<B extends DocumentBlock>(alignment: Alignment<B>, run: ChangeRun) {
+function* pairSimilar<B extends DocumentBlock>(alignment: Alignment<B>, run: ChangeRun) {
   const { oldBlocks, newBlocks, movedTo, movedFrom } = alignment;
   const isFree = (block: B) => block.id === undefined;
-  const pairs: Array<[number, number]> = [];
   let from = 0;
-  for (const oldIndex of run.deleted) {
+  for (let deleted = 0; deleted < run.deleted.length; deleted += 1) {
+    const oldIndex = run.deleted[deleted]!;
     const oldBlock = oldBlocks[oldIndex]!;
     if (!isFree(oldBlock) || movedTo.has(oldIndex)) continue;
-    const found = run.inserted.slice(from).findIndex((newIndex) => {
+    for (let inserted = from; inserted < run.inserted.length; inserted += 1) {
+      const newIndex = run.inserted[inserted]!;
       const newBlock = newBlocks[newIndex]!;
-      return (
-        isFree(newBlock) &&
-        !movedFrom.has(newIndex) &&
-        measureSimilarity(oldBlock.text, newBlock.text) >= similarityThreshold
-      );
-    });
-    if (found < 0) continue;
-    pairs.push([oldIndex, run.inserted[from + found]!]);
-    from += found + 1;
+      if (!isFree(newBlock) || movedFrom.has(newIndex)) continue;
+      if (measureSimilarity(oldBlock.text, newBlock.text) < similarityThreshold) continue;
+      yield [deleted, inserted] as const;
+      from = inserted + 1;
+      break;
+    }
   }
-  return pairs;
 }
 
 function haveSameMarks(oldBlock: DocumentBlock, newBlock: DocumentBlock): boolean {
@@ -209,8 +214,7 @@ function pairRow<B extends DocumentBlock>(
   const versions = compareVersions(oldBlock, newBlock);
   const isChanged = versions.words || versions.isTypeChanged || versions.isFormatChanged;
   if (isChanged) alignment.counts.changed += 1;
-  const key =
-    oldBlock.id === undefined ? `pair:${oldIndex}:${newIndex}` : `id:${String(oldBlock.id)}`;
+  const key = oldBlock.id === undefined ? `pair:${oldIndex}:${newIndex}` : toIdentity(oldBlock);
   const change = isChanged ? 'changed' : 'unchanged';
   return { key, change, oldBlock, newBlock, oldIndex, newIndex, ...versions };
 }
@@ -281,9 +285,9 @@ function runRows<B extends DocumentBlock>(alignment: Alignment<B>, run: ChangeRu
     for (; deleted < oldEnd; deleted += 1) rows.push(oldRow(alignment, run.deleted[deleted]!));
     for (; inserted < newEnd; inserted += 1) rows.push(newRow(alignment, run.inserted[inserted]!));
   };
-  for (const pair of pairSimilar(alignment, run)) {
-    flush(run.deleted.indexOf(pair[0]), run.inserted.indexOf(pair[1]));
-    rows.push(pairRow(alignment, pair));
+  for (const [oldOffset, newOffset] of pairSimilar(alignment, run)) {
+    flush(oldOffset, newOffset);
+    rows.push(pairRow(alignment, [run.deleted[oldOffset]!, run.inserted[newOffset]!]));
     deleted += 1;
     inserted += 1;
   }

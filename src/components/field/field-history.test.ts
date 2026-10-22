@@ -1,3 +1,4 @@
+import { isEmptyValue } from '../../utils/is-empty-value.js';
 import { describe, expect, it } from 'vitest';
 import {
   canStepFieldHistory,
@@ -5,7 +6,7 @@ import {
   recordFieldHistory,
   stepFieldHistory,
 } from './field-history.js';
-import { isFieldValueEmpty, isFieldValueEqual } from './field-value.js';
+import { isFieldValueEqual } from './field-value.js';
 
 describe('field history', () => {
   it('UIC-FIELD-5.1 records distinct values and drops redo entries on a new value', () => {
@@ -35,8 +36,7 @@ describe('field history', () => {
     expect(isFieldValueEqual([1, 2], [2, 1])).toBe(false);
     expect(isFieldValueEqual(null, undefined)).toBe(false);
     expect(isFieldValueEqual(Number.NaN, Number.NaN)).toBe(true);
-    for (const empty of [null, undefined, '', '  ', []])
-      expect(isFieldValueEmpty(empty)).toBe(true);
-    for (const value of [false, 0, 'a', [0], {}]) expect(isFieldValueEmpty(value)).toBe(false);
+    for (const empty of [null, undefined, '', '  ', []]) expect(isEmptyValue(empty)).toBe(true);
+    for (const value of [false, 0, 'a', [0], {}]) expect(isEmptyValue(value)).toBe(false);
   });
 });

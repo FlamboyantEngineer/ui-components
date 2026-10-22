@@ -56,8 +56,9 @@ function useStrokeCapture(
     setLivePath(formatSignatureStroke(points));
   };
   const handlers = usePointerDrag<SVGSVGElement, SignaturePoint[]>({
+    isDisabled: !isEditable,
+    onCancel: () => setLivePath(null),
     onStart: (event) => {
-      if (!isEditable) return null;
       event.preventDefault();
       const points: SignaturePoint[] = [];
       add(event, points);

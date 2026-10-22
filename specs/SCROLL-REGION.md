@@ -66,10 +66,10 @@ Verification: `src/components/scroll-region/scroll-region.test.tsx`
 
 ### UIC-SCROLL-REGION-2.7 - Updates and cleanup
 
-Overlay geometry shall refresh when the viewport, its children, the headers or the tracks resize, when content mutates and when the viewport scrolls, also without `ResizeObserver`, coalesced to one read per animation frame. Regions update independently. A focused thumb that disappears because its axis stopped overflowing returns focus to the viewport. Unmounting releases every observer and pending frame.
+Overlay geometry shall refresh when the viewport, its children, the headers or the tracks resize, when content mutates and when the viewport scrolls, also without `ResizeObserver`, coalesced to one read per animation frame. Unchanged targets retain their size observations through content mutations; added targets are observed once and removed targets are released. Regions update independently. A focused thumb that disappears because its axis stopped overflowing returns focus to the viewport. Unmounting releases every observer and pending frame; later reports do nothing.
 
 Implementation: `src/components/scroll-region/use-overlay-metrics.ts`, `src/components/scroll-region/observe-viewport.ts`, `src/components/scroll-region/overlay-scrollbars.tsx`
-Verification: `src/components/scroll-region/scroll-region.test.tsx`
+Verification: `src/components/scroll-region/scroll-region.test.tsx`, `src/components/scroll-region/observe-viewport.test.ts`
 
 ### UIC-SCROLL-REGION-2.8 - Scrollbar visibility
 

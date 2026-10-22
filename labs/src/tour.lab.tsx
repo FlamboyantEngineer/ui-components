@@ -213,7 +213,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Highlight transitions"
-      description="Position and size animate only between two highlights. The first highlight and changes to or from a centred step without a highlight appear immediately. Try Next and Back."
+      description="Position and size animate only between two highlights. The first highlight and changes to or from a centred step without a highlight appear immediately. Try Next and Back, then scroll or resize the page to follow the target."
     >
       <HighlightTransitions />
     </LabSection>

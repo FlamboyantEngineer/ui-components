@@ -1,4 +1,5 @@
 import { findMaximum } from '../../utils/find-maximum.js';
+import { countDecimalPlaces } from '../../utils/count-decimal-places.js';
 import { formatTsv } from '../../utils/tsv.js';
 import { listBoundsCells, type CellBounds, type CellGrid } from './table-cell-range.js';
 import {
@@ -126,12 +127,6 @@ export function planClear<T>(grid: CellGrid<T>, bounds: CellBounds): CellWrite<T
   );
 }
 
-function countDecimals(value: number): number {
-  const [coefficient = '', exponent = '0'] = String(value).split('e');
-  const decimals = coefficient.split('.')[1]?.length ?? 0;
-  return Math.max(0, decimals - Number(exponent));
-}
-
 /** The step, final value and precision of an evenly spaced run of finite numbers. */
 function readSeries(values: readonly TableCellValue[]) {
   const [first, second] = values;
@@ -146,7 +141,7 @@ function readSeries(values: readonly TableCellValue[]) {
     const tolerance =
       Number.EPSILON * Math.max(Math.abs(value), Math.abs(last), Math.abs(step)) * 4;
     if (index > 0 && Math.abs(value - last - step) > tolerance) return null;
-    decimals = Math.max(decimals, countDecimals(value));
+    decimals = Math.max(decimals, countDecimalPlaces(value));
     last = value;
   }
   return { step, last, decimals };

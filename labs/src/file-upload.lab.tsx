@@ -207,7 +207,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Folders"
-      description="Choose or drop a folder: every file in it, through its subfolders, is listed."
+      description="Choose or drop a folder: every file in it, through its subfolders, is listed in entry order."
     >
       <FolderUpload />
     </LabSection>

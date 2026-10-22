@@ -1,5 +1,6 @@
 import type { PointerEvent } from 'react';
 import { usePointerDrag } from '../../utils/use-pointer-drag.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { diagramHooks as hooks } from './diagram-hooks.js';
 import { findDiagramBounds, resolveNodeRect } from './diagram-model.js';
 import type { DiagramPoint, DiagramRect } from './edge-route.js';
@@ -77,7 +78,7 @@ export function DiagramMinimap({ controller }: DiagramMinimapProps) {
         const rect = resolveNodeRect(node);
         return (
           <rect
-            key={node.id}
+            key={toKeyIdentity(node.id)}
             {...hooks.slot('minimap-node', { selected: selection.selected.has(node.id) })}
             x={rect.x}
             y={rect.y}

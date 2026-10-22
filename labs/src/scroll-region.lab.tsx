@@ -74,6 +74,30 @@ function WideList({ count = 12 }: { count?: number }) {
   );
 }
 
+function UpdatingOverlay() {
+  const [isShort, setShort] = useState(false);
+  return (
+    <>
+      <p>
+        <button type="button" onClick={() => setShort((short) => !short)}>
+          {isShort ? 'Show all cities' : 'Show fewer cities'}
+        </button>
+      </p>
+      <div style={frame(360, 200)} data-lab-region="overlay">
+        <ScrollRegion
+          id="overlay-viewport"
+          axis="both"
+          scrollbar="overlay"
+          role="region"
+          aria-label="Cities with overlay scrollbars"
+        >
+          <WideList count={isShort ? 3 : 24} />
+        </ScrollRegion>
+      </div>
+    </>
+  );
+}
+
 function StickyTable() {
   const headerRef = useScrollRegionHeaderRef();
   return (
@@ -268,19 +292,9 @@ mountLab(
     </LabSection>
     <LabSection
       title="Overlay scrollbars"
-      description="Focus a thumb and use the arrow keys, Page Up, Page Down, Home and End, or drag it. Release or cancel the pointer to end a thumb drag."
+      description="Focus a thumb and use the arrow keys, Page Up, Page Down, Home and End, or drag it. Show fewer cities to shrink the content; the tracks follow the new size. Release or cancel the pointer to end a thumb drag."
     >
-      <div style={frame(360, 200)} data-lab-region="overlay">
-        <ScrollRegion
-          id="overlay-viewport"
-          axis="both"
-          scrollbar="overlay"
-          role="region"
-          aria-label="Cities with overlay scrollbars"
-        >
-          <WideList count={24} />
-        </ScrollRegion>
-      </div>
+      <UpdatingOverlay />
     </LabSection>
     <LabSection
       title="Header inset"

@@ -20,7 +20,7 @@ Verification: `src/components/context-menu/context-menu-target.test.tsx`, `e2e/c
 
 ### UIC-CONTEXT-MENU-1.3 - Long press
 
-A touch that rests on the target for 500 milliseconds without moving more than 10 pixels shall open the menu at the touch point. A `contextmenu` event the platform sends for the same press is ignored, so the menu opens once.
+A touch that rests on the target for 500 milliseconds without moving more than 10 pixels shall open the menu at the touch point. Disabling or unmounting the trigger cancels a pending touch; re-enabling does not resume it. A `contextmenu` event the platform sends for the same press is ignored, so the menu opens once.
 
 Implementation: `src/components/context-menu/context-menu-target.ts`
 Verification: `src/components/context-menu/context-menu-target.test.tsx`, `e2e/context-menu.spec.ts`

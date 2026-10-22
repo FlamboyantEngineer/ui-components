@@ -96,7 +96,7 @@ Verification: `src/components/split-view/split-view.test.tsx`, `e2e/split-view.s
 
 ### UIC-SPLIT-VIEW-3.4 - Standalone handle
 
-`ResizeHandle` shall work outside `SplitView` in any unit: the caller passes `value`, `minValue`, `maxValue`, `extent` and `getUnitsPerPixel` and receives `onChange`, `onChangeEnd` and `onResizingChange`. `isDisabled` removes it from the tab order, ignores input and publishes `data-disabled` and `aria-disabled`. `resolveResizeKeyboardValue` exposes the keyboard contract.
+`ResizeHandle` shall work outside `SplitView` in any unit: the caller passes `value`, `minValue`, `maxValue`, `extent` and `getUnitsPerPixel` and receives `onChange`, `onChangeEnd` and `onResizingChange`. `isDisabled` removes it from the tab order, ignores input and publishes `data-disabled` and `aria-disabled`. Becoming disabled during a drag shall release capture, clear the resizing state and shield, and report `onResizingChange(false)` without `onChangeEnd`; re-enabling requires a new press. `resolveResizeKeyboardValue` exposes the keyboard contract.
 
 Implementation: `src/components/split-view/resize-handle.tsx`
 Verification: `src/components/split-view/split-view.test.tsx`

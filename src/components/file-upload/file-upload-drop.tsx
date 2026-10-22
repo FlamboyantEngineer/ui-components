@@ -71,12 +71,11 @@ function nameCommand(naming: CommandNaming, id: string, text: string) {
   return naming['aria-label'] ? { 'aria-label': `${naming['aria-label']} ${text}` } : {};
 }
 
-async function readDirectory(item: DroppedDirectory): Promise<File[]> {
-  const files: File[] = [];
+async function readDirectory(item: DroppedDirectory, files: File[]): Promise<void> {
   for await (const entry of item.getEntries()) {
-    files.push(...(entry.kind === 'file' ? [await entry.getFile()] : await readDirectory(entry)));
+    if (entry.kind === 'file') files.push(await entry.getFile());
+    else await readDirectory(entry, files);
   }
-  return files;
 }
 
 /** The dropped files, in order, with every file inside dropped folders when they are accepted. */
@@ -87,8 +86,7 @@ export async function readDroppedFiles(
   const files: File[] = [];
   for (const item of items) {
     if (item.kind === 'file') files.push(await item.getFile());
-    else if (acceptDirectory && item.kind === 'directory')
-      files.push(...(await readDirectory(item)));
+    else if (acceptDirectory && item.kind === 'directory') await readDirectory(item, files);
   }
   return files;
 }

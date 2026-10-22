@@ -359,7 +359,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Nested rows"
-      description="Expand with the chevron or ArrowRight; the filter keeps the places above a match."
+      description="Expand with the chevron or ArrowRight; sorting keeps sibling order stable, and filtering retains the places above a deep match."
     >
       <NestedRows />
     </LabSection>

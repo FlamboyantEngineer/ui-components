@@ -180,17 +180,17 @@ Verification: `src/components/chart/line-table.test.ts`, `src/components/chart/l
 
 ### UIC-CHART-7.1 - Slices and total
 
-`DonutChart` shall draw one `ui-donut-chart__slice` ring segment per shown segment with a finite, positive `value`, clockwise from the top, each spanning its share of the shown total, around a hole of 60% of the radius, and the total in the middle through the provider's `totalCount` string in a `ui-donut-chart__total` text hidden from assistive technology.
+`DonutChart` shall draw one `ui-donut-chart__slice` ring segment per shown segment with a finite, positive `value`, clockwise from the top, each spanning its share of the shown total, around a hole of 60% of the radius, and the total in the middle through the provider's `totalCount` string in a `ui-donut-chart__total` text hidden from assistive technology. Finite amounts whose sum exceeds the numeric range shall retain their proportions; an unrepresentable total remains infinity.
 
-Implementation: `src/components/chart/donut-chart.tsx`, `src/components/chart/donut-geometry.ts`
-Verification: `src/components/chart/donut-geometry.test.ts`, `src/components/chart/donut-chart.test.tsx`, `e2e/chart.spec.ts`
+Implementation: `src/components/chart/donut-chart.tsx`, `src/components/chart/donut-geometry.ts`, `src/utils/resolve-amount-shares.ts`
+Verification: `src/components/chart/donut-geometry.test.ts`, `src/components/chart/donut-chart.test.tsx`, `src/utils/resolve-amount-shares.test.ts`, `e2e/chart.spec.ts`
 
 ### UIC-CHART-7.2 - Table
 
-The donut chart's table shall list every segment, hidden ones included, with its formatted value and its share of the whole, under the headings `categoryLabel` (the provider's `chartCategory` string by default), `chartAmount` and `chartShare`.
+The donut chart's table shall list every segment, hidden ones included, with its formatted value and its share of the whole, under the headings `categoryLabel` (the provider's `chartCategory` string by default), `chartAmount` and `chartShare`. It shall use the same finite, positive amounts as the drawing, treating other amounts as zero, and build rows in linear passes without calculating slice paths.
 
-Implementation: `src/components/chart/donut-chart.tsx`
-Verification: `src/components/chart/donut-chart.test.tsx`
+Implementation: `src/components/chart/donut-chart.tsx`, `src/components/chart/donut-table.ts`, `src/components/chart/donut-geometry.ts`
+Verification: `src/components/chart/donut-chart.test.tsx`, `src/components/chart/donut-table.test.ts`
 
 ## UIC-CHART-8 - Accessibility
 

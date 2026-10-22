@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useLayoutEffect, useState } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { DiagramNode } from './diagram-model.js';
@@ -33,15 +33,22 @@ export interface DiagramConnect {
 /** The connection the reader is drawing from a port, by pointer drag or by keyboard. */
 export function useDiagramConnect({
   nodes,
+  isEditing,
   onConnect,
   announce,
 }: {
   nodes: readonly DiagramNode[];
+  isEditing: boolean;
   onConnect: ((connection: DiagramConnection) => void) | undefined;
   announce: (message: string) => void;
 }): DiagramConnect {
   const strings = useUiStrings();
   const [connecting, setConnecting] = useState<DiagramConnecting | null>(null);
+  useLayoutEffect(() => {
+    if (isEditing || !connecting) return;
+    setConnecting(null);
+    announce(strings.diagramConnectCancelled);
+  }, [isEditing, connecting, announce, strings.diagramConnectCancelled]);
   const labelOf = (id: Key) => nodes.find((node) => node.id === id)?.label ?? String(id);
   const cancel = () => {
     if (!connecting) return;
@@ -49,8 +56,9 @@ export function useDiagramConnect({
     announce(strings.diagramConnectCancelled);
   };
   return {
-    connecting,
+    connecting: isEditing ? connecting : null,
     start: (node, port) => {
+      if (!isEditing) return;
       const portLabel = nodes
         .find((item) => item.id === node)
         ?.ports?.find((item) => item.id === port)?.label;
@@ -61,7 +69,7 @@ export function useDiagramConnect({
     },
     track: (pointer) => setConnecting((current) => (current ? { ...current, pointer } : current)),
     complete: (target, targetPort) => {
-      if (!connecting) return false;
+      if (!isEditing || !connecting) return false;
       if (target === connecting.node && targetPort === connecting.port) {
         cancel();
         return true;

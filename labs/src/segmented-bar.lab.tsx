@@ -112,6 +112,22 @@ mountLab(
       />
     </LabSection>
     <LabSection
+      title="Large amounts"
+      description="Two equal finite amounts still split the track equally when their total exceeds the numeric range."
+    >
+      <div style={column(320)}>
+        <SegmentedBar
+          label="Large amounts"
+          segments={[
+            { id: 'first', label: 'First', value: Number.MAX_VALUE },
+            { id: 'second', label: 'Second', value: Number.MAX_VALUE, tone: 'info' },
+          ]}
+          formatOptions={{ notation: 'scientific' }}
+          showLegend
+        />
+      </div>
+    </LabSection>
+    <LabSection
       title="Space used"
       description="Counts and the total formatted as gigabytes, out of a 128 GB disk."
     >

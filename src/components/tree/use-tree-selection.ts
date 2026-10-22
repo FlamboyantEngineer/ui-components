@@ -3,6 +3,7 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import type { Key, Selection } from '../../core/props.js';
+import { walkTree } from '../../utils/walk-tree.js';
 import type { TreeItemData, TreeProps } from './tree.js';
 
 export interface TreeSelectionOptions<T extends TreeItemData> extends Pick<
@@ -32,11 +33,13 @@ interface Cascade<T> {
 const noKeys: ReadonlySet<Key> = new Set();
 
 function collectKeys<T extends TreeItemData>(items: readonly T[], cascade: Cascade<T>): Key[] {
-  return items.flatMap((item) =>
-    cascade.disabled.has(item.id)
-      ? []
-      : [item.id, ...collectKeys(cascade.getChildren(item) ?? [], cascade)],
-  );
+  const keys: Key[] = [];
+  const getChildren = (item: T) =>
+    cascade.disabled.has(item.id) ? undefined : cascade.getChildren(item);
+  for (const item of walkTree(items, getChildren)) {
+    if (!cascade.disabled.has(item.id)) keys.push(item.id);
+  }
+  return keys;
 }
 
 function toKeySet<T extends TreeItemData>(

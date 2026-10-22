@@ -42,13 +42,16 @@ export function useTreeCompareNavigation<T extends CompareTreeNode>(
   });
 
   const reveal = (key: Key) => {
-    const hidden = (index.ancestors.get(key) ?? []).filter(
-      (ancestor) => !expandedKeys.has(ancestor),
-    );
+    const hidden: Key[] = [];
+    let ancestor = index.parent.get(key);
+    while (ancestor !== undefined) {
+      if (!expandedKeys.has(ancestor)) hidden.push(ancestor);
+      ancestor = index.parent.get(ancestor);
+    }
     currentKey.current = key;
     if (hidden.length === 0 && focusRow(key)) return;
     pendingKey.current = key;
-    setExpandedKeys(new Set([...expandedKeys, ...hidden]));
+    setExpandedKeys(new Set([...expandedKeys, ...hidden.reverse()]));
   };
 
   return {

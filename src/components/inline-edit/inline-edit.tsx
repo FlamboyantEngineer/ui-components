@@ -1,3 +1,4 @@
+import { isEmptyValue } from '../../utils/is-empty-value.js';
 import { useId, type ReactNode } from 'react';
 import { Button as AriaButton } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
@@ -7,7 +8,7 @@ import { IconButton } from '../icon-button/icon-button.js';
 import { InlineError } from '../inline-error/inline-error.js';
 import { TextField } from '../text-field/text-field.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
-import { isEmptyValue, useInlineEdit } from './use-inline-edit.js';
+import { useInlineEdit } from './use-inline-edit.js';
 
 /** What `renderEditor` receives to draw the editor of an inline edit. */
 export interface InlineEditEditorProps<T> {

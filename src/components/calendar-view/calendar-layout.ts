@@ -2,7 +2,7 @@
 // a week, and timed events placed within a day. Days are `YYYY-MM-DD` texts (calendar-days.ts).
 
 import { parseIsoDate, parseIsoDateTime } from '../../primitives/index.js';
-import { createTimeScale } from '../../utils/time-scale.js';
+import { createLinearScale } from '../../utils/linear-scale.js';
 import type { CalendarViewEvent } from './calendar-view.js';
 import { compareDays, getDayOf, getDayStart, shiftDay } from './calendar-days.js';
 
@@ -191,12 +191,10 @@ export function layoutDay(
   const next = shiftDay(day, { days: 1 });
   const from = getDayStart(day, timeZone);
   const to = getDayStart(next, timeZone);
-  const scale = createTimeScale({
-    domain: [day, next],
+  const scale = createLinearScale({
+    domain: [from, to],
     range: [0, 100],
-    timeZone,
   });
-  const position = (instant: number) => scale.map(new Date(instant).toISOString());
   const blocks = events
     .filter(
       (placed) =>
@@ -204,8 +202,8 @@ export function layoutDay(
     )
     .sort((first, second) => first.start - second.start || second.end - first.end)
     .map((placed) => {
-      const top = position(Math.max(placed.start, from));
-      const bottom = position(Math.min(placed.end, to));
+      const top = scale.map(Math.max(placed.start, from));
+      const bottom = scale.map(Math.min(placed.end, to));
       return {
         placed,
         top,

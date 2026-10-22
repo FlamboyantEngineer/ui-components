@@ -58,6 +58,29 @@ describe('timeline geometry', () => {
     });
   });
 
+  it('UIC-TIMELINE-1.2 takes date extremes from unsorted items and ignores unreadable starts', () => {
+    const unordered = [
+      { id: 'last', rowId: 'r', label: 'Last', start: '2026-08-15', end: '2026-09-03' },
+      { id: 'invalid', rowId: 'r', label: 'Invalid', start: 'soon', end: '2027-01-01' },
+      { id: 'first', rowId: 'r', label: 'First', start: '2026-01-02', end: '2025-12-01' },
+      { id: 'middle', rowId: 'r', label: 'Middle', start: '2026-05-01' },
+    ];
+    const options = {
+      range: undefined,
+      scale: 'day' as const,
+      today: '2026-03-10',
+      locale: 'en-US',
+    };
+    expect(resolveTimelineRange({ ...options, items: unordered })).toEqual({
+      start: '2026-01-01',
+      end: '2026-09-04',
+    });
+    expect(resolveTimelineRange({ ...options, items: [unordered[1]!] })).toEqual({
+      start: '2026-03-09',
+      end: '2026-03-11',
+    });
+  });
+
   it('UIC-TIMELINE-1.3 sizes the axis by the scale and cuts header cells at the range ends', () => {
     const axis = createTimelineAxis({ start: '2026-03-04', end: '2026-04-10' }, 'week', 'en-US');
     expect(axis.dayWidth).toBe(16);

@@ -12,6 +12,22 @@ function element(node: SvgNode | undefined): SvgElementNode {
 }
 
 describe('parseSvgMarkup', () => {
+  it('UIC-SVG-MARKUP-1.1 freezes a deeply nested drawing without recursive stack growth', () => {
+    const tree = parseSvgMarkup(`<svg>${'<g>'.repeat(20_000)}x${'</g>'.repeat(20_000)}</svg>`);
+    let node = tree;
+    let depth = 0;
+    while (node.children[0]?.type === 'element') {
+      expect(Object.isFrozen(node)).toBe(true);
+      expect(Object.isFrozen(node.attributes)).toBe(true);
+      expect(Object.isFrozen(node.children)).toBe(true);
+      node = node.children[0];
+      depth += 1;
+    }
+    expect(depth).toBe(20_000);
+    expect(node.children[0]).toEqual({ type: 'text', text: 'x' });
+    expect(Object.isFrozen(node.children[0])).toBe(true);
+  });
+
   it('UIC-SVG-MARKUP-1.1 returns the root svg as a frozen element tree', () => {
     const tree = parseSvgMarkup(plusMarkup);
     expect(tree.tag).toBe('svg');

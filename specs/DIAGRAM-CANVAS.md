@@ -17,7 +17,7 @@ Verification: `src/components/diagram-canvas/diagram-canvas.test.tsx`, `e2e/diag
 
 Each node shall render, in the order of `nodes`, as a `ui-diagram-canvas__node` positioned in the content layer at its `x` and `y` with its `width` and `height` (160 by 48 pixels by default). Its content is `renderNode(node, { isSelected, isEditing })`, or else its `label` in `ui-diagram-canvas__node-label`.
 
-Bounds shall be computed in one pass without depending on the runtime limit on function arguments.
+Numeric and text keys with the same spelling shall identify distinct nodes and edges in both views, including after reordering. Bounds shall be computed in one pass without depending on the runtime limit on function arguments.
 
 Implementation: `src/components/diagram-canvas/diagram-node.tsx`, `src/components/diagram-canvas/diagram-model.ts`
 Verification: `src/components/diagram-canvas/diagram-canvas.test.tsx`, `src/components/diagram-canvas/diagram-model.test.ts`
@@ -54,7 +54,7 @@ Verification: `src/components/diagram-canvas/edge-route.test.ts`, `src/component
 
 ### UIC-DIAGRAM-CANVAS-2.3 - Parallel edges and loops
 
-Edges between the same two nodes shall be spread 24 pixels apart around the line between them, each shifted to the right of its own direction of travel, so an edge and its reverse never overlap. An edge from a node to itself loops over the node's top. Grouping parallel edges shall append each edge once, without copying its preceding group.
+Edges between the same two nodes shall be spread 24 pixels apart around the line between them, each shifted to the right of its own direction of travel, so an edge and its reverse never overlap. An edge from a node to itself loops over the node's top. Grouping parallel edges shall append each edge once, without copying its preceding group, and retain each endpoint key's type and delimiters.
 
 Implementation: `src/components/diagram-canvas/edge-route.ts`, `src/components/diagram-canvas/diagram-model.ts`
 Verification: `src/components/diagram-canvas/edge-route.test.ts`, `src/components/diagram-canvas/diagram-model.test.ts`
@@ -114,7 +114,7 @@ Verification: `src/components/diagram-canvas/diagram-node.test.tsx`, `e2e/diagra
 
 ### UIC-DIAGRAM-CANVAS-4.3 - Moving by pointer
 
-With `isEditing`, which publishes `data-editing` on the root, dragging a node shall move it, with the rest of the selection when it is selected, its position snapping to multiples of `gridSize` (10 pixels by default; `0` turns snapping off). While dragging, the moved nodes show where they would go and publish `data-moving`; on release `onNodesChange` receives every node with the new positions and the live region reads the provider's `diagramMoved` string. Cancellation or lost capture shall discard the preview without calling `onNodesChange`.
+With `isEditing`, which publishes `data-editing` on the root, dragging a node shall move it, with the rest of the selection when it is selected, its position snapping to multiples of `gridSize` (10 pixels by default; `0` turns snapping off). While dragging, the moved nodes show where they would go and publish `data-moving`; on release `onNodesChange` receives every node with the new positions and the live region reads the provider's `diagramMoved` string. Cancellation, lost capture or leaving edit mode shall release capture and discard the preview without calling `onNodesChange`. Returning to edit mode requires a fresh press; selecting nodes and panning remain available in viewing mode.
 
 Implementation: `src/components/diagram-canvas/use-node-moves.ts`, `src/components/diagram-canvas/diagram-node.tsx`
 Verification: `src/components/diagram-canvas/diagram-node.test.tsx`, `src/components/diagram-canvas/diagram-model.test.ts`, `e2e/diagram-canvas.spec.ts`
@@ -137,17 +137,19 @@ Verification: `src/components/diagram-canvas/diagram-node.test.tsx`
 
 ### UIC-DIAGRAM-CANVAS-5.1 - Connecting by pointer
 
-In edit mode, dragging from a port shall draw a preview edge (`ui-diagram-canvas__connection-preview`) to the pointer, and releasing it over a node or a port calls `onConnect({ source, sourcePort, target, targetPort })` (`targetPort` undefined on a node) and reads the provider's `diagramConnected` string. Releasing elsewhere gives the connection up. While a connection is in progress the root publishes `data-connecting` and its port and node publish `data-connect-source`. Cancellation or lost capture shall give up the unfinished connection without calling `onConnect`.
+In edit mode, dragging from a port shall draw a preview edge (`ui-diagram-canvas__connection-preview`) to the pointer, and releasing it over a node or a port calls `onConnect({ source, sourcePort, target, targetPort })` (`targetPort` undefined on a node) and reads the provider's `diagramConnected` string. Releasing elsewhere gives the connection up. While a connection is in progress the root publishes `data-connecting` and its port and node publish `data-connect-source`. Cancellation, lost capture or leaving edit mode shall give up the unfinished connection without calling `onConnect`; re-enabling editing does not resume it.
 
 Implementation: `src/components/diagram-canvas/use-diagram-connect.ts`, `src/components/diagram-canvas/diagram-port.tsx`, `src/components/diagram-canvas/diagram-edges.tsx`
-Verification: `src/components/diagram-canvas/diagram-node.test.tsx`, `e2e/diagram-canvas.spec.ts`
+Verification: `src/components/diagram-canvas/diagram-node.test.tsx`, `src/components/diagram-canvas/diagram-port.test.tsx`, `e2e/diagram-canvas.spec.ts`
 
 ### UIC-DIAGRAM-CANVAS-5.2 - Connecting by keyboard
 
 Pressing a port (Enter, Space or a click that does not drag) shall start a connection and read the provider's `diagramConnecting` string; Enter on a focused node, or pressing another port, ends it there; pressing the same port again, Escape, or a press on the background gives it up and reads `diagramConnectCancelled`.
 
+Leaving edit mode shall also cancel a connection started by a click or keyboard; nodes in viewing mode cannot complete it.
+
 Implementation: `src/components/diagram-canvas/use-diagram-connect.ts`, `src/components/diagram-canvas/diagram-port.tsx`, `src/components/diagram-canvas/diagram-node.tsx`
-Verification: `src/components/diagram-canvas/diagram-node.test.tsx`, `e2e/diagram-canvas.spec.ts`
+Verification: `src/components/diagram-canvas/diagram-node.test.tsx`, `src/components/diagram-canvas/diagram-port.test.tsx`, `e2e/diagram-canvas.spec.ts`
 
 ### UIC-DIAGRAM-CANVAS-5.3 - Palette
 

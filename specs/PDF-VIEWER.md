@@ -50,10 +50,10 @@ Verification: `src/components/pdf-viewer/use-pdf-document.test.tsx`, `e2e/pdf-vi
 
 ### UIC-PDF-VIEWER-2.1 - Page rendering
 
-Each page shall be a `ui-pdf-viewer__page` element sized to the page at the applied zoom, where 100% shows the page at its printed size (96 CSS pixels per inch), holding a `ui-pdf-viewer__canvas` the engine draws into at the device pixel ratio, capped at 2²⁵ device pixels per page. The bitmap shall include the appearance of the page's annotations (the engine's `AnnotationMode.ENABLE`) unless they are switched off (UIC-PDF-VIEWER-2.5); form fields are drawn as they appear, not as fields to fill in. Only pages within one screen of the view render; a page further away keeps its size but releases its bitmap and its text and annotation layers, and every rendering page is drawn again when the zoom or the rotation changes.
+Each page shall be a `ui-pdf-viewer__page` element sized to the page at the applied zoom, where 100% shows the page at its printed size (96 CSS pixels per inch), holding a `ui-pdf-viewer__canvas` the engine draws into at the device pixel ratio, capped at 2²⁵ device pixels per page. The bitmap shall include the appearance of the page's annotations (the engine's `AnnotationMode.ENABLE`) unless they are switched off (UIC-PDF-VIEWER-2.5); form fields are drawn as they appear, not as fields to fill in. Only pages within one screen of the view render; a page further away keeps its size but releases its bitmap and its text and annotation layers, and every rendering page is drawn again when the zoom or the rotation changes. Visibility uses the scroller's own window's observer, or renders every page when that window cannot observe intersections. Reports from disconnected observers and replaced or removed page elements shall be ignored, and unchanged reports shall preserve the current visibility set.
 
 Implementation: `src/components/pdf-viewer/pdf-viewer-page.tsx`, `src/components/pdf-viewer/use-page-render.ts`, `src/components/pdf-viewer/use-near-pages.ts`
-Verification: `src/components/pdf-viewer/pdf-viewer.test.tsx`, `src/components/pdf-viewer/use-page-render.test.ts`, `e2e/pdf-viewer.spec.ts`
+Verification: `src/components/pdf-viewer/pdf-viewer.test.tsx`, `src/components/pdf-viewer/use-page-render.test.ts`, `src/components/pdf-viewer/use-near-pages.test.tsx`, `e2e/pdf-viewer.spec.ts`
 
 ### UIC-PDF-VIEWER-2.2 - Text layer
 
@@ -64,10 +64,10 @@ Verification: `src/components/pdf-viewer/pdf-viewer.test.tsx`, `e2e/pdf-viewer.s
 
 ### UIC-PDF-VIEWER-2.3 - Page scroller
 
-The pages shall scroll in `ui-pdf-viewer__scroller`, a focusable `role="document"` element named by `aria-label` (the provider's `document` string by default), so the keyboard scrolls the document once it has focus. A new document starts at its first page, unless it opens at `defaultPage` (UIC-PDF-VIEWER-4.4).
+The pages shall scroll in `ui-pdf-viewer__scroller`, a focusable `role="document"` element named by `aria-label` (the provider's `document` string by default), so the keyboard scrolls the document once it has focus. A new document starts at its first page, unless it opens at `defaultPage` (UIC-PDF-VIEWER-4.4). Opening a new document or removing the viewer shall cancel any queued scroll capture in the scroller's own window and ignore its late callback.
 
 Implementation: `src/components/pdf-viewer/pdf-viewer-stage.tsx`, `src/components/pdf-viewer/use-pdf-pages.ts`
-Verification: `src/components/pdf-viewer/pdf-viewer.test.tsx`, `e2e/pdf-viewer.spec.ts`
+Verification: `src/components/pdf-viewer/pdf-viewer.test.tsx`, `src/components/pdf-viewer/use-pdf-pages.test.tsx`, `e2e/pdf-viewer.spec.ts`
 
 ### UIC-PDF-VIEWER-2.4 - Links
 
@@ -103,10 +103,10 @@ Verification: `src/components/pdf-viewer/pdf-viewer.test.tsx`, `src/components/p
 
 ### UIC-PDF-VIEWER-3.3 - Reading position
 
-A zoom change shall keep the reader's place: the page at the top of the view and the depth into it, and the horizontal centre of the view.
+A zoom change shall keep the reader's place: the page at the top of the view and the depth into it, and the horizontal centre of the view. Scrolls shall capture that position at most once per animation frame in the scroller's own window, including when the frame identifier is zero.
 
 Implementation: `src/components/pdf-viewer/use-pdf-pages.ts`, `src/components/pdf-viewer/use-pdf-zoom.ts`
-Verification: `e2e/pdf-viewer.spec.ts`
+Verification: `src/components/pdf-viewer/use-pdf-pages.test.tsx`, `e2e/pdf-viewer.spec.ts`
 
 ### UIC-PDF-VIEWER-3.4 - Wheel zoom
 
@@ -177,7 +177,7 @@ Verification: `src/components/pdf-viewer/use-pdf-keyboard.test.tsx`, `e2e/pdf-vi
 
 ### UIC-PDF-VIEWER-5.1 - Matches
 
-The toolbar's find row, a [Find Bar](FIND-BAR.md) (also `ui-pdf-viewer__group`) whose find box is labelled and hinted with the provider's `findInDocument` string and emptied by its Escape key and clear button, shall find the query in the text of every page, ignoring case; whitespace in the query matches any whitespace, including a line break, so a phrase is found across lines. Every match in a rendered text layer shall be wrapped in a `ui-pdf-viewer__match` element, the current match carrying `data-current`. Emptying the query removes the matches.
+The toolbar's find row, a [Find Bar](FIND-BAR.md) (also `ui-pdf-viewer__group`) whose find box is labelled and hinted with the provider's `findInDocument` string and emptied by its Escape key and clear button, shall find the query in the text of every page, ignoring case; whitespace in the query matches any whitespace, including a line break, so a phrase is found across lines. Every match in a rendered text layer shall be wrapped in a `ui-pdf-viewer__match` element, the current match carrying `data-current`. A phrase may span any number of text runs; locating its pieces shall skip unrelated runs, and grouping highlights shall not copy a growing collection for each match. Emptying the query removes the matches.
 
 Implementation: `src/components/pdf-viewer/pdf-viewer-search.tsx`, `src/components/pdf-viewer/pdf-search.ts`, `src/components/pdf-viewer/highlights.ts`, `src/components/pdf-viewer/use-pdf-search.ts`
 Verification: `src/components/pdf-viewer/pdf-viewer.test.tsx`, `src/components/pdf-viewer/pdf-search.test.ts`, `src/components/pdf-viewer/highlights.test.ts`, `e2e/pdf-viewer.spec.ts`

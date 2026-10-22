@@ -24,7 +24,7 @@ mountLab(
   <>
     <LabSection
       title="Sources by placement"
-      description="Each drawing on its own (24px in the reference sheet) and inside Icon at every size."
+      description="Each drawing preserves its elements and groups, on its own (24px in the reference sheet) and inside Icon at every size."
     >
       <StateMatrix
         axes={{ markup: markups, placement: placements }}

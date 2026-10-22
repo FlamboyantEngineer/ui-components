@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { filterCharacterCategories, formatCodePoints } from './character-filter.js';
 
 const categories = [
@@ -64,5 +64,15 @@ describe('filterCharacterCategories', () => {
       'currency',
     ]);
     expect(filterCharacterCategories(categories, 'nothing like it')).toEqual([]);
+  });
+
+  it('UIC-CHARACTER-GRID-2.1 normalizes a search once across a large character set', () => {
+    const normalize = vi.spyOn(String.prototype, 'normalize');
+    const characters = Array.from({ length: 1_000 }, (_, index) => ({
+      char: String.fromCodePoint(0x1f300 + index),
+      name: `Sample character ${index}`,
+    }));
+    expect(filterCharacterCategories([{ id: 'all', label: 'All', characters }], 'Ω')).toEqual([]);
+    expect(normalize.mock.contexts.filter((context) => String(context) === 'Ω')).toHaveLength(1);
   });
 });

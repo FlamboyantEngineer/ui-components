@@ -13,6 +13,7 @@ import type {
 import type { BaseProps, Key, Size } from '../../core/props.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { readTreeChildren, type TreeMoveItem } from '../../utils/tree-reorder.js';
+import { walkTree } from '../../utils/walk-tree.js';
 import type { IconSource } from '../icon/icon.js';
 import { TextMatchProvider } from '../text-match/text-match.js';
 import { TreeEmptyState, useTreeItemRenderer } from './tree-item.js';
@@ -201,10 +202,8 @@ function findTreeItem<T extends TreeItemData>(
   items: readonly T[],
   { key, getChildren }: { key: Key; getChildren: (item: T) => readonly T[] | undefined },
 ): T | undefined {
-  for (const item of items) {
-    const found =
-      item.id === key ? item : findTreeItem(getChildren(item) ?? [], { key, getChildren });
-    if (found) return found;
+  for (const item of walkTree(items, getChildren)) {
+    if (item.id === key) return item;
   }
   return undefined;
 }

@@ -1,11 +1,12 @@
 // A board of cards in columns, optionally repeated in lanes: each cell is a React Aria grid list,
 // and cards move within and between cells by drag and drop or Alt+Arrow keys.
 
-import { useLayoutEffect, useRef, type KeyboardEvent, type ReactNode, type RefObject } from 'react';
+import { useRef, type KeyboardEvent, type ReactNode, type RefObject } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps, Key } from '../../core/props.js';
 import { isMoveChord } from '../../utils/use-reorder-drag-and-drop.js';
+import { useFocusRequest } from '../../utils/use-focus-request.js';
 import { BoardColumnHeader } from './board-column-header.js';
 import { boardHooks as hooks } from './board-hooks.js';
 import { BoardCells, BoardLaneGroup } from './board-lane.js';
@@ -79,7 +80,7 @@ export interface BoardProps<T extends { id: Key }> extends BaseProps, AriaLabell
 }
 
 /** What a keyboard move hands focus back to once it renders. */
-type FocusRequest = { kind: 'card' | 'column'; key: Key } | null;
+type FocusRequest = (kind: 'card' | 'column', key: Key) => void;
 
 const cardShortcuts = 'Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight';
 const editableSelector = 'input, textarea, select, [contenteditable=""], [contenteditable="true"]';
@@ -99,40 +100,24 @@ function findCardKey(target: EventTarget, layout: BoardLayout): Key | undefined 
   return [...layout.addresses.keys()].find((key) => String(key) === text);
 }
 
-/** How many frames focus follows a moved card: its new list renders it, and its old list repairs focus. */
-const refocusFrames = 3;
-
 /** Gives focus back to a moved card or column handle once the move renders. */
-function useMoveFocus(root: RefObject<HTMLDivElement | null>): RefObject<FocusRequest> {
-  const request = useRef<FocusRequest>(null);
-  useLayoutEffect(() => {
-    const pending = request.current;
-    request.current = null;
-    if (!pending) return;
-    const key = CSS.escape(String(pending.key));
+function useMoveFocus(root: RefObject<HTMLDivElement | null>): FocusRequest {
+  const request = useFocusRequest();
+  return (kind, key) => {
+    const escaped = CSS.escape(String(key));
     const selector =
-      pending.kind === 'card'
-        ? `.${hooks.slotClass('card')}[data-key="${key}"]`
-        : `.${hooks.slotClass('column')}[data-key="${key}"] .${hooks.slotClass('column-handle')}`;
-    // A card that changes cells renders in its new grid list only after the board does, and the
-    // list it left moves focus to its next card once it renders: follow it for a few frames.
-    let frame = 0;
-    const refocus = () => {
-      const element = root.current?.querySelector<HTMLElement>(selector);
-      if (element && element !== element.ownerDocument.activeElement) element.focus();
-      frame += 1;
-      if (frame < refocusFrames) requestAnimationFrame(refocus);
-    };
-    refocus();
-  });
-  return request;
+      kind === 'card'
+        ? `.${hooks.slotClass('card')}[data-key="${escaped}"]`
+        : `.${hooks.slotClass('column')}[data-key="${escaped}"] .${hooks.slotClass('column-handle')}`;
+    request(() => root.current?.querySelector<HTMLElement>(selector));
+  };
 }
 
 /** Alt+Arrow keys on a card: the move they make, reported, with focus kept on the card. */
 function useCardKeys(options: {
   layout: BoardLayout;
   onMove: ((move: BoardMove) => void) | undefined;
-  focus: RefObject<FocusRequest>;
+  focus: FocusRequest;
 }) {
   const { direction: textDirection } = useLocale();
   const { layout, onMove, focus } = options;
@@ -146,7 +131,7 @@ function useCardKeys(options: {
     event.preventDefault();
     event.stopPropagation();
     if (!move) return;
-    focus.current = { kind: 'card', key: move.key };
+    focus('card', move.key);
     onMove(move);
   };
 }
@@ -159,13 +144,13 @@ function BoardColumnHeaders<T>({
 }: {
   model: BoardModel<T>;
   onColumnMove: ((move: BoardColumnMove) => void) | undefined;
-  focus: RefObject<FocusRequest>;
+  focus: FocusRequest;
 }) {
   const drag = useBoardColumnDrag({ columns: model.columnKeys, onMove: onColumnMove });
   const onStep = (key: Key, step: -1 | 1) => {
     const move = stepColumnMove(model.columnKeys, key, step);
     if (!move) return;
-    focus.current = { kind: 'column', key };
+    focus('column', key);
     onColumnMove?.(move);
   };
   return (

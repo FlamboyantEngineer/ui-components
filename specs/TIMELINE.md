@@ -15,7 +15,7 @@ Verification: `src/components/timeline/timeline.test.tsx`, `e2e/timeline.spec.ts
 
 ### UIC-TIMELINE-1.2 - Range
 
-The chart shall show the days of `range` (`{ start, end }`, both `YYYY-MM-DD` and included). Without a readable range (or one that ends before it starts) it shows the items' first to last day (today when there are no items), widened to whole units of the scale and one more unit on each side. The range comes from the items as given, so it does not shift while a drag is in progress.
+The chart shall show the days of `range` (`{ start, end }`, both `YYYY-MM-DD` and included). Without a readable range (or one that ends before it starts) it shows the items' first to last day (today when there are no items), widened to whole units of the scale and one more unit on each side. The first and last days shall be found in one pass without sorting the items' dates. The range comes from the items as given, so it does not shift while a drag is in progress.
 
 Implementation: `src/components/timeline/timeline-geometry.ts`, `src/utils/time-scale.ts`
 Verification: `src/components/timeline/timeline-geometry.test.ts`, `src/components/timeline/timeline.test.tsx`
@@ -29,7 +29,7 @@ Verification: `src/components/timeline/timeline-geometry.test.ts`, `src/componen
 
 ### UIC-TIMELINE-1.4 - Rows and groups
 
-`rows` shall list the rows top to bottom; a row with `children` is a group. The row list, pinned to the start of the viewport, holds a `ui-timeline__row-label` per visible row, `rowHeight` tall, with its depth from 1 as `--ui-timeline-level`, `data-group` on groups and `data-expanded` on expanded groups. Each label holds an [Expand Toggle](EXPAND-TOGGLE.md) in the `ui-timeline__toggle` slot, named by the row and toggling a group (an empty box on other rows, so names align), and the `ui-timeline__row-name`. The body holds a `ui-timeline__row` per visible row, `rowHeight` tall, holding the row's items. Collapsing a group hides its descendant rows and their items and connectors. The expanded groups follow the shared expansion props (`expandedKeys`, `defaultExpandedKeys`, `onExpandedChange`); every group starts expanded by default.
+`rows` shall list the rows top to bottom; a row with `children` is a group. Deeply nested groups shall keep their order and depth without relying on recursive calls. The row list, pinned to the start of the viewport, holds a `ui-timeline__row-label` per visible row, `rowHeight` tall, with its depth from 1 as `--ui-timeline-level`, `data-group` on groups and `data-expanded` on expanded groups. Each label holds an [Expand Toggle](EXPAND-TOGGLE.md) in the `ui-timeline__toggle` slot, named by the row and toggling a group (an empty box on other rows, so names align), and the `ui-timeline__row-name`. The body holds a `ui-timeline__row` per visible row, `rowHeight` tall, holding the row's items. Collapsing a group hides its descendant rows and their items and connectors. The expanded groups follow the shared expansion props (`expandedKeys`, `defaultExpandedKeys`, `onExpandedChange`); every group starts expanded by default.
 
 Implementation: `src/components/timeline/timeline-rows.ts`, `src/components/timeline/timeline-chart.tsx`, `src/components/timeline/timeline.tsx`
 Verification: `src/components/timeline/timeline-rows.test.ts`, `src/components/timeline/timeline.test.tsx`, `e2e/timeline.spec.ts`
@@ -50,7 +50,7 @@ Verification: `src/components/timeline/timeline.test.tsx`, `src/components/timel
 
 ### UIC-TIMELINE-1.7 - Dependencies
 
-`dependencies` (`{ from, to }`, finish to start) shall be drawn in a `ui-timeline__connectors` SVG layer behind the items, as wide and tall as the body, with one `ui-timeline__connector` path per dependency whose items are both visible: from the end of `from` (a milestone's centre) at the middle of its row, out and along to the start of `to`, ending in an arrow head. When `to` starts less than 16 pixels after `from` ends, the path steps back along the boundary of the target's row. A dependency is in conflict, `data-conflict` on its connector and on the following item, when the following item starts before the day the item it follows ends.
+`dependencies` (`{ from, to }`, finish to start) shall be drawn in a `ui-timeline__connectors` SVG layer behind the items, as wide and tall as the body, with one `ui-timeline__connector` path per dependency whose items are both visible: from the end of `from` (a milestone's centre) at the middle of its row, out and along to the start of `to`, ending in an arrow head. Each item's validated dates shall be reused across its placement and all dependency descriptions. When `to` starts less than 16 pixels after `from` ends, the path steps back along the boundary of the target's row. A dependency is in conflict, `data-conflict` on its connector and on the following item, when the following item starts before the day the item it follows ends.
 
 Implementation: `src/components/timeline/timeline-geometry.ts`, `src/components/timeline/timeline-layout.ts`, `src/components/timeline/timeline-chart.tsx`
 Verification: `src/components/timeline/timeline-geometry.test.ts`, `src/components/timeline/timeline-layout.test.ts`, `src/components/timeline/timeline.test.tsx`, `e2e/timeline.spec.ts`
@@ -80,7 +80,7 @@ Verification: `src/components/timeline/timeline.test.tsx`
 
 ### UIC-TIMELINE-2.1 - Pointer moves and resizes
 
-With `onItemChange`, a primary-button pointer drag on an item that is not `isReadOnly` shall capture the pointer and move the item by whole days (the pointer's travel divided by the pixels per day, rounded); a drag that starts on a bar's `ui-timeline__handle` (`data-edge` `start` or `end`, drawn only on movable bars) moves that end instead, never past the other. The item shows the days as it goes and publishes `data-dragging`; releasing the pointer calls `onItemChange({ id, start, end })` once when the days changed, and a cancelled drag drops them. The owner applies the change to `items`. A press that travels 3 pixels or more does not select.
+With `onItemChange`, a primary-button pointer drag on an item that is not `isReadOnly` shall capture the pointer and move the item by whole days (the pointer's travel divided by the pixels per day, rounded); a drag that starts on a bar's `ui-timeline__handle` (`data-edge` `start` or `end`, drawn only on movable bars) moves that end instead, never past the other. The item shows the days as it goes and publishes `data-dragging`; releasing the pointer calls `onItemChange({ id, start, end })` once when the days changed, and a cancelled drag drops them. Making the item read-only or removing `onItemChange` during a drag shall release capture, clear the draft and dragging state, and report no change. Re-enabling editing requires a new press. The owner applies the change to `items`. A press that travels 3 pixels or more does not select.
 
 Implementation: `src/components/timeline/use-timeline-drag.ts`, `src/components/timeline/timeline-geometry.ts`, `src/components/timeline/timeline-item.tsx`
 Verification: `src/components/timeline/timeline.test.tsx`, `src/components/timeline/timeline-geometry.test.ts`, `e2e/timeline.spec.ts`

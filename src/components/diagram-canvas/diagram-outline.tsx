@@ -1,6 +1,7 @@
 import { useId, useRef } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { IconButton } from '../icon-button/icon-button.js';
 import { diagramHooks as hooks } from './diagram-hooks.js';
 import type { DiagramNode } from './diagram-model.js';
@@ -33,7 +34,7 @@ function OutlineLinks({ direction, node, links, controller, onFollow }: OutlineL
       </span>
       <ul aria-labelledby={labelId}>
         {links.map((link) => (
-          <li key={link.edge.id}>
+          <li key={toKeyIdentity(link.edge.id)}>
             <button
               {...hooks.slot('outline-link')}
               type="button"
@@ -74,7 +75,7 @@ export function DiagramOutline({ controller }: DiagramOutlineProps) {
         const shared = { node, controller, onFollow };
         return (
           <li
-            key={node.id}
+            key={toKeyIdentity(node.id)}
             {...hooks.slot('outline-item', {
               selected: controller.selection.selected.has(node.id),
             })}

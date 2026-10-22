@@ -1,7 +1,8 @@
 // The folder tree a folder manager shows: the caller's folders, an optional root row standing for
 // "no folder", the draft row of a folder being created, and the folders a filter keeps.
 
-import { findMaximum } from '../../utils/find-maximum.js';
+import { walkTree } from '../../utils/walk-tree.js';
+import { mapTree } from '../../utils/map-tree.js';
 import type { Key } from '../../core/props.js';
 import { textMatchesTerms } from '../text-match/text-match.js';
 
@@ -52,26 +53,14 @@ function childrenOf<T extends FolderItem>(folder: T): readonly T[] {
   return (folder.children ?? []) as readonly T[];
 }
 
-function toNodes<T extends FolderItem>(
-  folders: readonly T[],
+function appendDraft<T extends FolderItem>(
+  nodes: FolderNode<T>[],
   parentKey: Key | null,
   options: FolderNodeOptions,
-): FolderNode<T>[] {
-  const { draftParentKey, terms = [] } = options;
-  const nodes: FolderNode<T>[] = folders.flatMap((folder) => {
-    const children = toNodes(childrenOf(folder), folder.id, options);
-    const isMatch = terms.length === 0 || textMatchesTerms(folder.name, terms);
-    if (!isMatch && children.length === 0) return [];
-    const isLazy = Boolean(folder.hasChildren) && childrenOf(folder).length === 0;
-    const kept = children.length > 0 ? children : undefined;
-    return [
-      { id: folder.id, name: folder.name, kind: 'folder' as const, folder, children: kept, isLazy },
-    ];
-  });
-  if (draftParentKey === parentKey) {
+): void {
+  if (options.draftParentKey === parentKey) {
     nodes.push({ id: folderDraftKey, name: '', kind: 'draft', folder: null, isLazy: false });
   }
-  return nodes;
 }
 
 /** The tree rows for the folders, with the root row and the draft row when asked for. */
@@ -79,7 +68,21 @@ export function buildFolderNodes<T extends FolderItem>(
   folders: readonly T[],
   options: FolderNodeOptions,
 ): FolderNode<T>[] {
-  const nodes = toNodes(folders, null, options);
+  const { terms = [] } = options;
+  const nodes = mapTree<T, FolderNode<T>>(folders, childrenOf, (folder, children) => {
+    appendDraft(children, folder.id, options);
+    const isMatch = terms.length === 0 || textMatchesTerms(folder.name, terms);
+    if (!isMatch && children.length === 0) return null;
+    return {
+      id: folder.id,
+      name: folder.name,
+      kind: 'folder',
+      folder,
+      children: children.length > 0 ? children : undefined,
+      isLazy: Boolean(folder.hasChildren) && childrenOf(folder).length === 0,
+    };
+  });
+  appendDraft(nodes, null, options);
   if (options.rootLabel === undefined) return nodes;
   return [
     {
@@ -96,38 +99,46 @@ export function buildFolderNodes<T extends FolderItem>(
 /** The folder `key` and its ancestors, outermost first, or an empty list when it is missing. */
 export function findFolderPath<T extends FolderItem>(folders: readonly T[], key: Key | null): T[] {
   if (key === null) return [];
-  for (const folder of folders) {
-    if (folder.id === key) return [folder];
-    const path = findFolderPath(childrenOf(folder), key);
-    if (path.length > 0) return [folder, ...path];
+  const levels = [folders[Symbol.iterator]()];
+  const path: T[] = [];
+  while (levels.length > 0) {
+    const next = levels.at(-1)!.next();
+    if (next.done) {
+      levels.pop();
+      continue;
+    }
+    path.length = levels.length - 1;
+    path.push(next.value);
+    if (next.value.id === key) return path;
+    const children = childrenOf(next.value);
+    if (children.length > 0) levels.push(children[Symbol.iterator]());
   }
   return [];
 }
 
 /** How many levels a folder and its deepest subfolder span: 1 for a folder without subfolders. */
 export function getFolderHeight(folder: FolderItem): number {
-  const children = folder.children ?? [];
-  return 1 + findMaximum(children, getFolderHeight, 0);
+  let height = 0;
+  const levels = [[folder][Symbol.iterator]()];
+  while (levels.length > 0) {
+    const next = levels.at(-1)!.next();
+    if (next.done) {
+      levels.pop();
+      continue;
+    }
+    height = Math.max(height, levels.length);
+    if (next.value.children?.length) levels.push(next.value.children[Symbol.iterator]());
+  }
+  return height;
 }
 
 /** The keys of every row that has children. */
 export function collectBranchKeys<T extends FolderItem>(nodes: readonly FolderNode<T>[]): Key[] {
-  return nodes.flatMap((node) =>
-    node.children ? [node.id, ...collectBranchKeys(node.children)] : [],
-  );
-}
-
-/** The row node `key`, at any depth. */
-export function findFolderNode<T extends FolderItem>(
-  nodes: readonly FolderNode<T>[],
-  key: Key,
-): FolderNode<T> | undefined {
-  for (const node of nodes) {
-    if (node.id === key) return node;
-    const found = node.children ? findFolderNode(node.children, key) : undefined;
-    if (found) return found;
+  const keys: Key[] = [];
+  for (const node of walkTree(nodes, (node) => node.children)) {
+    if (node.children) keys.push(node.id);
   }
-  return undefined;
+  return keys;
 }
 
 /**
@@ -138,9 +149,13 @@ export function listTopmostFolders<T extends FolderItem>(
   folders: readonly T[],
   keys: ReadonlySet<Key>,
 ): T[] {
-  return folders.flatMap((folder) =>
-    keys.has(folder.id) ? [folder] : listTopmostFolders(childrenOf(folder), keys),
-  );
+  const selected: T[] = [];
+  for (const folder of walkTree(folders, (folder) =>
+    keys.has(folder.id) ? undefined : childrenOf(folder),
+  )) {
+    if (keys.has(folder.id)) selected.push(folder);
+  }
+  return selected;
 }
 
 /**
@@ -151,11 +166,22 @@ export function listFolderDestinations<T extends FolderItem>(
   folders: readonly T[],
   moving: ReadonlySet<Key>,
 ): FolderDestination<T>[] {
-  const visit = (level: readonly T[], path: string[]): FolderDestination<T>[] =>
-    level.flatMap((folder) => {
-      if (moving.has(folder.id)) return [];
-      const own = [...path, folder.name];
-      return [{ folder, path: own }, ...visit(childrenOf(folder), own)];
-    });
-  return [{ folder: null, path: [] }, ...visit(folders, [])];
+  const destinations: FolderDestination<T>[] = [{ folder: null, path: [] }];
+  const levels = [folders[Symbol.iterator]()];
+  const path: string[] = [];
+  while (levels.length > 0) {
+    const next = levels.at(-1)!.next();
+    if (next.done) {
+      levels.pop();
+      continue;
+    }
+    const folder = next.value;
+    if (moving.has(folder.id)) continue;
+    path.length = levels.length - 1;
+    path.push(folder.name);
+    destinations.push({ folder, path: [...path] });
+    const children = childrenOf(folder);
+    if (children.length > 0) levels.push(children[Symbol.iterator]());
+  }
+  return destinations;
 }
