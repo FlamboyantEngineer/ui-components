@@ -50,7 +50,7 @@ Verification: `src/utils/relative-time.test.ts`, `src/components/relative-date-f
 
 ### UIC-RELATIVE-TIME-2.2 - One shared clock
 
-A mounted `RelativeTime` shall render again when its `nextChange` comes due, so `Now` becomes `1 minute ago` and `Today` becomes `Yesterday` at midnight without the caller re-rendering. Every timestamp on the page shares one timer, set for the earliest moment any of them needs; it stops when none is mounted or none can change.
+A mounted `RelativeTime` shall render again when its `nextChange` comes due, so `Now` becomes `1 minute ago` and `Today` becomes `Yesterday` at midnight without the caller re-rendering. Every timestamp on the page shares one timer, set for the earliest moment any of them needs; it stops when none is mounted or none can change. Subscriptions sharing a deadline are counted together, so adding or cancelling one does not rescan the other callbacks at that deadline. A callback cancelled or rescheduled by an earlier wake callback shall not fire from the old due batch.
 
 Implementation: `src/components/relative-time/relative-time-clock.ts`, `src/components/relative-time/relative-time.tsx`
 Verification: `src/components/relative-time/relative-time-clock.test.ts`, `src/components/relative-time/relative-time.test.tsx`, `e2e/relative-time.spec.ts`

@@ -313,6 +313,27 @@ const countries: Record<string, string> = {
   quito: 'Ecuador',
 };
 
+function RememberedChips() {
+  const [icon, setIcon] = useState<'file' | 'folder'>('file');
+  const [isListed, setListed] = useState(true);
+  return (
+    <div data-lab-demo="remembered-chips">
+      <Combobox
+        label="Saved types"
+        selectionMode="multiple"
+        items={isListed ? [{ id: 'notes', label: 'Notes', icon }] : []}
+        defaultValue={['notes']}
+      />
+      <Button size="sm" onPress={() => setIcon(icon === 'file' ? 'folder' : 'file')}>
+        Change icon
+      </Button>{' '}
+      <Button size="sm" onPress={() => setListed(!isListed)}>
+        {isListed ? 'Hide suggestions' : 'Show suggestions'}
+      </Button>
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection title="Variants, sizes and states" description="Each cell is a live combobox.">
@@ -439,6 +460,12 @@ mountLab(
         defaultItems={fileTypes}
         defaultValue={['notes', 'events']}
       />
+    </LabSection>
+    <LabSection
+      title="Remembered chips"
+      description="Change the selected option’s icon, then hide its suggestions: the chip retains its latest label and icon until removed."
+    >
+      <RememberedChips />
     </LabSection>
   </>,
 );

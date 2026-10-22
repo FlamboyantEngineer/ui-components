@@ -17,6 +17,8 @@ Verification: `src/components/diagram-canvas/diagram-canvas.test.tsx`, `e2e/diag
 
 Each node shall render, in the order of `nodes`, as a `ui-diagram-canvas__node` positioned in the content layer at its `x` and `y` with its `width` and `height` (160 by 48 pixels by default). Its content is `renderNode(node, { isSelected, isEditing })`, or else its `label` in `ui-diagram-canvas__node-label`.
 
+Bounds shall be computed in one pass without depending on the runtime limit on function arguments.
+
 Implementation: `src/components/diagram-canvas/diagram-node.tsx`, `src/components/diagram-canvas/diagram-model.ts`
 Verification: `src/components/diagram-canvas/diagram-canvas.test.tsx`, `src/components/diagram-canvas/diagram-model.test.ts`
 
@@ -52,7 +54,7 @@ Verification: `src/components/diagram-canvas/edge-route.test.ts`, `src/component
 
 ### UIC-DIAGRAM-CANVAS-2.3 - Parallel edges and loops
 
-Edges between the same two nodes shall be spread 24 pixels apart around the line between them, each shifted to the right of its own direction of travel, so an edge and its reverse never overlap. An edge from a node to itself loops over the node's top.
+Edges between the same two nodes shall be spread 24 pixels apart around the line between them, each shifted to the right of its own direction of travel, so an edge and its reverse never overlap. An edge from a node to itself loops over the node's top. Grouping parallel edges shall append each edge once, without copying its preceding group.
 
 Implementation: `src/components/diagram-canvas/edge-route.ts`, `src/components/diagram-canvas/diagram-model.ts`
 Verification: `src/components/diagram-canvas/edge-route.test.ts`, `src/components/diagram-canvas/diagram-model.test.ts`

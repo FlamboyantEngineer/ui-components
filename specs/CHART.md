@@ -91,8 +91,10 @@ Verification: `src/components/chart/bar-chart.test.tsx`, `src/components/chart/l
 
 The drawn values shall take one tab stop, on the first value or the last one focused. The left and right arrow keys move focus to the previous and next value of the same series (the up and down arrow keys for a horizontal bar chart, whose categories run down), the up and down arrow keys (left and right for a horizontal bar chart) move to the nearest value of the previous and next drawn series, and Home and End move to the first and last value of the series. A donut's slices form one series.
 
+Navigation shall select the next point in a single scan without sorting the points; keys outside navigation shall leave them unread. When two points in the target series are equally close, the first in input order wins.
+
 Implementation: `src/components/chart/chart-points.tsx`
-Verification: `src/components/chart/bar-chart.test.tsx`, `src/components/chart/line-chart.test.tsx`, `src/components/chart/donut-chart.test.tsx`, `e2e/chart.spec.ts`
+Verification: `src/components/chart/chart-points.test.tsx`, `src/components/chart/bar-chart.test.tsx`, `src/components/chart/line-chart.test.tsx`, `src/components/chart/donut-chart.test.tsx`, `e2e/chart.spec.ts`
 
 ### UIC-CHART-4.4 - Tooltip
 

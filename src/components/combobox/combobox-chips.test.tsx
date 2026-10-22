@@ -155,4 +155,34 @@ describe('Combobox chips', () => {
     expect(oslo.querySelector('.ui-combobox__chip-icon')).toBeNull();
     expectHooksMatchSpec(container, 'COMBOBOX', { slots: ['chips', 'chip-icon'] });
   });
+  it('UIC-COMBOBOX-3.1 UIC-COMBOBOX-3.5 keeps the latest icon when suggestions change', () => {
+    const option: ComboboxOption = { id: 'paris', label: 'Paris', icon: 'folder' };
+    const { rerender } = render(
+      <Combobox label="Cities" selectionMode="multiple" items={[option]} value={['paris']} />,
+    );
+    const chips = screen.getByRole('grid', { name: 'Cities selected values' });
+    expect(chips.querySelector('[data-glyph="folder"]')).not.toBeNull();
+    rerender(
+      <Combobox
+        label="Cities"
+        selectionMode="multiple"
+        items={[{ ...option, icon: 'plus' }]}
+        value={['paris']}
+      />,
+    );
+    expect(chips.querySelector('[data-glyph="plus"]')).not.toBeNull();
+    rerender(<Combobox label="Cities" selectionMode="multiple" items={[]} value={['paris']} />);
+    expect(within(chips).getByRole('row', { name: 'Paris' })).toBeInTheDocument();
+    expect(chips.querySelector('[data-glyph="plus"]')).not.toBeNull();
+    expect(chips.querySelector('[data-glyph="folder"]')).toBeNull();
+  });
+  it('UIC-COMBOBOX-3.1 releases remembered options when a selection is removed', () => {
+    const { rerender } = render(
+      <Combobox label="Cities" selectionMode="multiple" items={cities} value={['paris']} />,
+    );
+    rerender(<Combobox label="Cities" selectionMode="multiple" items={[]} value={[]} />);
+    rerender(<Combobox label="Cities" selectionMode="multiple" items={[]} value={['paris']} />);
+    const chips = screen.getByRole('grid', { name: 'Cities selected values' });
+    expect(within(chips).getByRole('row', { name: 'paris' })).toBeInTheDocument();
+  });
 });

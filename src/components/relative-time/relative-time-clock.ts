@@ -6,11 +6,17 @@ import { useEffect, useReducer } from 'react';
 type Wake = () => void;
 
 const wakeTimes = new Map<Wake, number>();
+const wakeCounts = new Map<number, number>();
 let timer: ReturnType<typeof setTimeout> | undefined;
 let timerAt = Infinity;
 
-function schedule(): void {
-  const next = Math.min(...wakeTimes.values());
+function findNextWake(): number {
+  let next = Infinity;
+  for (const at of wakeCounts.keys()) next = Math.min(next, at);
+  return next;
+}
+
+function schedule(next = findNextWake()): void {
   if (next === timerAt) return;
   clearTimeout(timer);
   timer = undefined;
@@ -18,13 +24,23 @@ function schedule(): void {
   if (next !== Infinity) timer = setTimeout(fire, Math.max(next - Date.now(), 0));
 }
 
+function removeWake(wake: Wake): number | undefined {
+  const at = wakeTimes.get(wake);
+  if (at === undefined) return undefined;
+  wakeTimes.delete(wake);
+  const count = wakeCounts.get(at)!;
+  if (count === 1) wakeCounts.delete(at);
+  else wakeCounts.set(at, count - 1);
+  return at;
+}
+
 function fire(): void {
   timer = undefined;
   timerAt = Infinity;
   const now = Date.now();
   for (const [wake, at] of [...wakeTimes]) {
-    if (at > now) continue;
-    wakeTimes.delete(wake);
+    if (at > now || wakeTimes.get(wake) !== at) continue;
+    removeWake(wake);
     wake();
   }
   schedule();
@@ -32,11 +48,14 @@ function fire(): void {
 
 /** Wakes `wake` once at `at` (epoch milliseconds); the returned function cancels it. */
 export function subscribeClock(at: number, wake: Wake): () => void {
+  const previous = removeWake(wake);
   wakeTimes.set(wake, at);
-  schedule();
+  wakeCounts.set(at, (wakeCounts.get(at) ?? 0) + 1);
+  if (at < timerAt) schedule(at);
+  else if (previous === timerAt && !wakeCounts.has(timerAt)) schedule();
   return () => {
-    wakeTimes.delete(wake);
-    schedule();
+    const cancelled = removeWake(wake);
+    if (cancelled === timerAt && !wakeCounts.has(timerAt)) schedule();
   };
 }
 

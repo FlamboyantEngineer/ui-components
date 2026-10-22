@@ -227,7 +227,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Synced scroll"
-      description="useSyncedScroll on its own: two lists of different lengths keep the same fraction of their scroll range."
+      description="useSyncedScroll on its own: two lists of different lengths keep the same fraction of their scroll range. Scroll listeners and pending echo suppression survive re-renders; matched anchors are read once per pane."
     >
       <SyncedLists />
     </LabSection>

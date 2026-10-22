@@ -40,6 +40,27 @@ function LiveStamp() {
   );
 }
 
+function SharedClock() {
+  const [stamp] = useState(() => new Date().toISOString());
+  const [isVisible, setVisible] = useState(true);
+  return (
+    <div data-lab-demo="shared-clock">
+      <Button size="sm" onPress={() => setVisible(!isVisible)}>
+        {isVisible ? 'Remove timestamps' : 'Mount timestamps'}
+      </Button>
+      {isVisible ? (
+        <ul>
+          {Array.from({ length: 20 }, (_, index) => (
+            <li key={index}>
+              Entry {index + 1}: <RelativeTime value={stamp} showTooltip={false} />
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -114,6 +135,12 @@ mountLab(
       description="Stamped on the real clock: it reads now, then seconds and minutes ago, updating on one timer shared by every timestamp on the page."
     >
       <LiveStamp />
+    </LabSection>
+    <LabSection
+      title="Shared clock"
+      description="A batch of timestamps shares the same deadline and timer. Remove and remount them while the clock runs."
+    >
+      <SharedClock />
     </LabSection>
   </>,
 );

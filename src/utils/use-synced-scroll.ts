@@ -1,4 +1,5 @@
-import { useEffect, useLayoutEffect, useRef, type RefObject } from 'react';
+import { useCallback, useLayoutEffect, useRef, type RefObject } from 'react';
+import { clamp } from './clamp.js';
 import type { Key } from '../core/props.js';
 
 /** A container to keep aligned: the element, or a ref whose element is stable. */
@@ -20,6 +21,12 @@ export interface SyncedScrollOptions {
   readonly getAnchors?: ((container: HTMLElement) => readonly ScrollAnchor[]) | undefined;
   /** False stops aligning. Defaults to true. */
   readonly enabled?: boolean | undefined;
+}
+
+interface ScrollSync {
+  containers: Set<HTMLElement>;
+  echoes: Map<HTMLElement, number>;
+  options: SyncedScrollOptions;
 }
 
 function resolveElement(target: SyncedScrollTarget): HTMLElement | null {
@@ -73,12 +80,26 @@ export function mapScrollOffset(
   return startTarget + ((offset - start) / (next[0] - start)) * (next[1] - startTarget);
 }
 
-function resolveTop(source: HTMLElement, target: HTMLElement, options: SyncedScrollOptions) {
+function syncScroll(source: HTMLElement, { containers, echoes, options }: ScrollSync): void {
+  const echo = echoes.get(source);
+  echoes.delete(source);
+  const offset = source.scrollTop;
+  if (echo !== undefined && Math.abs(echo - offset) < 1) return;
   const { getAnchors } = options;
-  const top = getAnchors
-    ? mapScrollOffset(source.scrollTop, getAnchors(source), getAnchors(target))
-    : (source.scrollTop / (scrollRange(source) || 1)) * scrollRange(target);
-  return Math.min(Math.max(0, top), scrollRange(target));
+  const from = getAnchors?.(source);
+  const fraction = offset / (scrollRange(source) || 1);
+  for (const target of containers) {
+    if (target === source) continue;
+    const range = scrollRange(target);
+    const top = clamp(
+      from && getAnchors ? mapScrollOffset(offset, from, getAnchors(target)) : fraction * range,
+      0,
+      range,
+    );
+    if (Math.abs(target.scrollTop - top) < 1) continue;
+    target.scrollTop = top;
+    echoes.set(target, target.scrollTop);
+  }
 }
 
 /**
@@ -90,33 +111,35 @@ export function useSyncedScroll(
   targets: readonly SyncedScrollTarget[],
   options: SyncedScrollOptions = {},
 ): void {
-  const latest = useRef(options);
+  const state = useRef<ScrollSync>({ containers: new Set(), echoes: new Map(), options });
+  const onScroll = useCallback((event: Event) => {
+    syncScroll(event.currentTarget as HTMLElement, state.current);
+  }, []);
+
   useLayoutEffect(() => {
-    latest.current = options;
+    const current = state.current;
+    current.options = options;
+    const wanted = new Set(targets.map(resolveElement).filter((element) => element !== null));
+    if (options.enabled === false || wanted.size < 2) wanted.clear();
+    for (const container of current.containers) {
+      if (wanted.has(container)) continue;
+      container.removeEventListener('scroll', onScroll);
+      current.echoes.delete(container);
+    }
+    for (const container of wanted) {
+      if (!current.containers.has(container)) {
+        container.addEventListener('scroll', onScroll, { passive: true });
+      }
+    }
+    current.containers = wanted;
   });
 
-  useEffect(() => {
-    const containers = targets.map(resolveElement).filter((element) => element !== null);
-    if (latest.current.enabled === false || containers.length < 2) return undefined;
-    const echoes = new Map<HTMLElement, number>();
-    const onScroll = (event: Event) => {
-      const source = event.currentTarget as HTMLElement;
-      const echo = echoes.get(source);
-      echoes.delete(source);
-      if (echo !== undefined && Math.abs(echo - source.scrollTop) < 1) return;
-      for (const target of containers) {
-        if (target === source) continue;
-        const top = resolveTop(source, target, latest.current);
-        if (Math.abs(target.scrollTop - top) < 1) continue;
-        target.scrollTop = top;
-        echoes.set(target, target.scrollTop);
-      }
-    };
-    for (const container of containers) {
-      container.addEventListener('scroll', onScroll, { passive: true });
-    }
+  useLayoutEffect(() => {
+    const current = state.current;
     return () => {
-      for (const container of containers) container.removeEventListener('scroll', onScroll);
+      for (const container of current.containers) container.removeEventListener('scroll', onScroll);
+      current.containers.clear();
+      current.echoes.clear();
     };
-  });
+  }, [onScroll]);
 }

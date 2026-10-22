@@ -407,4 +407,20 @@ test.describe('Combobox lab', () => {
     await expect(icon.locator('[data-glyph="calendar"]')).toHaveCount(1);
     expect((await icon.boundingBox())?.width).toBe(14);
   });
+  test('UIC-COMBOBOX-3.1 UIC-COMBOBOX-3.5 remembers the latest chip icon after filtering', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('combobox');
+    const demo = page.locator('[data-lab-demo="remembered-chips"]');
+    const chips = demo.getByRole('grid', { name: 'Saved types selected values' });
+    const icon = chips.locator('.ui-combobox__chip-icon');
+    await expect(icon).toHaveAttribute('data-glyph', 'file');
+    await demo.getByRole('button', { name: 'Change icon' }).click();
+    await expect(icon).toHaveAttribute('data-glyph', 'folder');
+    await demo.getByRole('button', { name: 'Hide suggestions' }).click();
+    await expect(chips.getByRole('row', { name: 'Notes' })).toBeVisible();
+    await expect(icon).toHaveAttribute('data-glyph', 'folder');
+    await lab.expectAccessible('[data-lab-demo="remembered-chips"]');
+  });
 });

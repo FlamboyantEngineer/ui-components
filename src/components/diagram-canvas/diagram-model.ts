@@ -74,11 +74,22 @@ export function resolveNodeRect(node: DiagramNode): DiagramRect {
 /** The smallest box around `rects`, grown by `padding` on every side, or null without boxes. */
 export function findDiagramBounds(rects: readonly DiagramRect[], padding = 0): DiagramRect | null {
   if (rects.length === 0) return null;
-  const left = Math.min(...rects.map((rect) => rect.x)) - padding;
-  const top = Math.min(...rects.map((rect) => rect.y)) - padding;
-  const right = Math.max(...rects.map((rect) => rect.x + rect.width)) + padding;
-  const bottom = Math.max(...rects.map((rect) => rect.y + rect.height)) + padding;
-  return { x: left, y: top, width: right - left, height: bottom - top };
+  let left = Infinity;
+  let top = Infinity;
+  let right = -Infinity;
+  let bottom = -Infinity;
+  for (const rect of rects) {
+    left = Math.min(left, rect.x);
+    top = Math.min(top, rect.y);
+    right = Math.max(right, rect.x + rect.width);
+    bottom = Math.max(bottom, rect.y + rect.height);
+  }
+  return {
+    x: left - padding,
+    y: top - padding,
+    width: right - left + padding * 2,
+    height: bottom - top + padding * 2,
+  };
 }
 
 /** Whether two boxes overlap. */
@@ -180,7 +191,9 @@ export function spreadParallelEdges(edges: readonly DiagramEdge[]): Map<Key, num
     if (edge.source === edge.target) continue;
     const ends = [String(edge.source), String(edge.target)].sort();
     const key = JSON.stringify(ends);
-    groups.set(key, [...(groups.get(key) ?? []), edge]);
+    const group = groups.get(key);
+    if (group) group.push(edge);
+    else groups.set(key, [edge]);
   }
   const offsets = new Map<Key, number>();
   for (const [key, group] of groups) {

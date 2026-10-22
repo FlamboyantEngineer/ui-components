@@ -61,33 +61,40 @@ const verticalKeys: PointKeys = {
   nextSeries: 'ArrowRight',
 };
 
-function closest(points: readonly ChartPoint[], index: number): ChartPoint | undefined {
-  let nearest: ChartPoint | undefined;
-  let distance = Infinity;
-  for (const point of points) {
-    const next = Math.abs(point.index - index);
-    if (next < distance) {
-      nearest = point;
-      distance = next;
-    }
-  }
-  return nearest;
-}
-
-/** The series beside `from`'s, `step` series away among those drawn. */
+/** The nearest point in the nearest drawn series in `step`'s direction. */
 function findAcross(points: readonly ChartPoint[], from: ChartPoint, step: 1 | -1) {
-  let target: number | undefined;
+  let target: ChartPoint | undefined;
+  let seriesDistance = Infinity;
+  let pointDistance = Infinity;
   for (const point of points) {
     const distance = (point.series - from.series) * step;
-    if (distance > 0 && (target === undefined || distance < (target - from.series) * step)) {
-      target = point.series;
+    if (distance <= 0 || distance > seriesDistance) continue;
+    const proximity = Math.abs(point.index - from.index);
+    if (distance < seriesDistance || proximity < pointDistance) {
+      target = point;
+      seriesDistance = distance;
+      pointDistance = proximity;
     }
   }
-  if (target === undefined) return undefined;
-  return closest(
-    points.filter((point) => point.series === target),
-    from.index,
-  );
+  return target;
+}
+
+function findAlong(
+  points: readonly ChartPoint[],
+  from: ChartPoint,
+  { key, keys }: { key: string; keys: PointKeys },
+): ChartPoint | undefined {
+  let target: ChartPoint | undefined;
+  const isFirst = key === keys.next || key === 'Home';
+  for (const point of points) {
+    if (point.series !== from.series) continue;
+    if (key === keys.previous && point.index >= from.index) continue;
+    if (key === keys.next && point.index <= from.index) continue;
+    if (!target || (isFirst ? point.index < target.index : point.index > target.index)) {
+      target = point;
+    }
+  }
+  return target;
 }
 
 /** The point a key moves focus to from `from`, or `undefined` for a key that does not move it. */
@@ -96,19 +103,12 @@ function findNextPoint(
   from: ChartPoint,
   { key, keys }: { key: string; keys: PointKeys },
 ): ChartPoint | undefined {
-  const along = points
-    .filter((point) => point.series === from.series)
-    .sort((a, b) => a.index - b.index);
-  const position = along.findIndex((point) => point.key === from.key);
   switch (key) {
     case keys.previous:
-      return along[position - 1];
     case keys.next:
-      return along[position + 1];
     case 'Home':
-      return along[0];
     case 'End':
-      return along.at(-1);
+      return findAlong(points, from, { key, keys });
     case keys.previousSeries:
       return findAcross(points, from, -1);
     case keys.nextSeries:

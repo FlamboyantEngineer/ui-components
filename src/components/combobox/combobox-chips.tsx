@@ -27,19 +27,20 @@ function useChosenOptions(options: readonly ComboboxOption[]): ComboboxOption[] 
   const state = useContext(ComboBoxStateContext);
   const [remembered, setRemembered] = useState<ReadonlyMap<Key, ComboboxOption>>(new Map());
   const keys = Array.isArray(state?.value) ? (state.value as readonly Key[]) : [];
-  const listed = options.filter((option) => keys.includes(option.id));
-  const unseen = listed.filter((option) => remembered.get(option.id)?.label !== option.label);
-  // Remembering what was listed during render keeps the chips in step with the selection.
-  if (unseen.length > 0) {
-    setRemembered(
-      new Map([...remembered, ...unseen.map((option) => [option.id, option] as const)]),
-    );
+  const listed = new Map(options.map((option) => [option.id, option]));
+  const next = new Map<Key, ComboboxOption>();
+  for (const key of keys) {
+    const option = listed.get(key) ?? remembered.get(key);
+    if (option) next.set(key, option);
   }
-  return keys.map(
-    (key) =>
-      listed.find((option) => option.id === key) ??
-      remembered.get(key) ?? { id: key, label: String(key) },
-  );
+  // Remember committed choices during render, retaining their latest labels and icons.
+  if (
+    next.size !== remembered.size ||
+    [...next].some(([key, option]) => remembered.get(key) !== option)
+  ) {
+    setRemembered(next);
+  }
+  return keys.map((key) => next.get(key) ?? { id: key, label: String(key) });
 }
 
 /**
