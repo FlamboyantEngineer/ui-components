@@ -82,8 +82,8 @@ Verification: `src/components/loading-overlay/loading-overlay.test.tsx`, `e2e/lo
 
 With `delay` (milliseconds), `LoadingRegion` shall stay usable and unmarked until `isLoading` has been true for that long, then block as above; loading that ends sooner never shows the overlay, marks the region busy or makes its content inert. A `LoadingOverlay` given `delay` renders nothing until it has been mounted that long.
 
-Implementation: `src/components/loading-overlay/loading-overlay.tsx`
-Verification: `src/components/loading-overlay/loading-overlay.test.tsx`, `e2e/loading-overlay.spec.ts`
+Implementation: `src/components/loading-overlay/loading-overlay.tsx`, `src/utils/use-delayed-flag.ts`
+Verification: `src/components/loading-overlay/loading-overlay.test.tsx`, `src/utils/use-delayed-flag.test.ts`, `e2e/loading-overlay.spec.ts`
 
 ## UIC-LOADING-OVERLAY-4 - Hooks
 

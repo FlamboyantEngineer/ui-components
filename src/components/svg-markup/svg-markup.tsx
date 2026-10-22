@@ -1,6 +1,7 @@
 import { createElement, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
+import { mapTree } from '../../utils/map-tree.js';
 import { toImageProps } from '../icon/icon.js';
 import { parseSvgMarkup, type SvgElementNode, type SvgNode } from './parse-svg-markup.js';
 
@@ -69,15 +70,13 @@ function toElementProps(
 }
 
 function renderChildren(node: SvgElementNode): ReactNode[] {
-  return node.children.map((child, index) => renderNode(child, index));
-}
-
-function renderNode(node: SvgNode, key: number): ReactNode {
-  if (node.type === 'text') return node.text;
-  return createElement(
-    node.tag,
-    { ...toElementProps(node.attributes), key },
-    ...renderChildren(node),
+  return mapTree<SvgNode, ReactNode>(
+    node.children,
+    (child) => (child.type === 'element' ? child.children : undefined),
+    (child, children, key) =>
+      child.type === 'text'
+        ? child.text
+        : createElement(child.tag, { ...toElementProps(child.attributes), key }, children),
   );
 }
 
@@ -106,6 +105,6 @@ export function SvgMarkup({ markup, label, className, ...rest }: SvgMarkupProps)
       focusable: 'false',
       ...toImageProps(label),
     },
-    ...renderChildren(tree),
+    renderChildren(tree),
   );
 }

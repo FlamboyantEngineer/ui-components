@@ -1,4 +1,5 @@
 import type { Key } from '../../core/props.js';
+import { mapTree } from '../../utils/map-tree.js';
 import type { TableRow } from './table-rows.js';
 
 /** A row with the child rows the table presents under it, keyed by the row's id. */
@@ -16,11 +17,11 @@ export function buildTableNodes<T extends TableRow>(
   rows: readonly T[],
   getChildRows: TableChildRows<T>,
 ): readonly TableNode<T>[] {
-  return rows.map((row) => ({
-    id: row.id,
-    row,
-    children: getChildRows ? buildTableNodes(getChildRows(row) ?? [], getChildRows) : [],
-  }));
+  return mapTree<T, TableNode<T>>(
+    rows,
+    (row) => getChildRows?.(row),
+    (row, children) => ({ id: row.id, row, children }),
+  );
 }
 
 /**
@@ -31,10 +32,12 @@ export function filterTableNodes<T extends TableRow>(
   nodes: readonly TableNode<T>[],
   matches: (row: T) => boolean,
 ): readonly TableNode<T>[] {
-  return nodes.flatMap((node) => {
-    const children = filterTableNodes(node.children, matches);
-    return matches(node.row) || children.length > 0 ? [{ ...node, children }] : [];
-  });
+  return mapTree(
+    nodes,
+    (node) => node.children,
+    (node, children: TableNode<T>[]) =>
+      matches(node.row) || children.length > 0 ? { ...node, children } : null,
+  );
 }
 
 /** The nodes ordered by `compare` at every level; rows it cannot separate keep their order. */
@@ -42,7 +45,11 @@ export function sortTableNodes<T extends TableRow>(
   nodes: readonly TableNode<T>[],
   compare: (left: T, right: T) => number,
 ): readonly TableNode<T>[] {
-  return [...nodes]
-    .sort((left, right) => compare(left.row, right.row))
-    .map((node) => ({ ...node, children: sortTableNodes(node.children, compare) }));
+  const ordered = (siblings: readonly TableNode<T>[]) =>
+    [...siblings].sort((left, right) => compare(left.row, right.row));
+  return mapTree(
+    ordered(nodes),
+    (node) => ordered(node.children),
+    (node, children: TableNode<T>[]) => ({ ...node, children }),
+  );
 }

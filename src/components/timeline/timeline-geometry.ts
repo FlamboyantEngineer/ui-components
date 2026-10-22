@@ -146,14 +146,17 @@ export function resolveTimelineRange(options: {
   if (range && isTimelineDate(range.start) && isTimelineDate(range.end)) {
     if (range.end >= range.start) return range;
   }
-  const days = items.flatMap((item) => {
+  let low: string | undefined;
+  let high: string | undefined;
+  for (const item of items) {
     const read = readTimelineItem(item);
-    return read ? [read.start, read.end] : [];
-  });
-  const sorted = (days.length > 0 ? days : [today]).sort();
+    if (!read) continue;
+    if (low === undefined || read.start < low) low = read.start;
+    if (high === undefined || read.end > high) high = read.end;
+  }
   const unit = timelineScales[scale].minor;
-  const first = floorToTimeUnit(sorted[0]!, unit, locale);
-  const last = floorToTimeUnit(sorted.at(-1)!, unit, locale);
+  const first = floorToTimeUnit(low ?? today, unit, locale);
+  const last = floorToTimeUnit(high ?? today, unit, locale);
   return {
     start: addTimeUnits(first, unit, -1),
     end: addTimeUnits(addTimeUnits(last, unit, 2), 'day', -1),

@@ -18,16 +18,20 @@ export interface HighlightedTextRuns {
 
 function groupByRun(ranges: readonly PdfMatchRange[]): Map<number, PdfMatchRange[]> {
   const groups = new Map<number, PdfMatchRange[]>();
-  for (const range of ranges) groups.set(range.run, [...(groups.get(range.run) ?? []), range]);
+  for (const range of ranges) {
+    const group = groups.get(range.run) ?? [];
+    group.push(range);
+    groups.set(range.run, group);
+  }
   return groups;
 }
 
 function markRun(run: HTMLElement, text: string, ranges: readonly PdfMatchRange[]) {
-  const nodes: Node[] = [];
+  const nodes = document.createDocumentFragment();
   let current: HTMLElement | null = null;
   let offset = 0;
   for (const range of ranges) {
-    nodes.push(document.createTextNode(text.slice(offset, range.start)));
+    nodes.append(document.createTextNode(text.slice(offset, range.start)));
     const mark = document.createElement('span');
     mark.className = pdfViewerHooks.slotClass('match');
     mark.textContent = text.slice(range.start, range.end);
@@ -35,11 +39,11 @@ function markRun(run: HTMLElement, text: string, ranges: readonly PdfMatchRange[
       mark.dataset.current = 'true';
       current ??= mark;
     }
-    nodes.push(mark);
+    nodes.append(mark);
     offset = range.end;
   }
-  nodes.push(document.createTextNode(text.slice(offset)));
-  run.replaceChildren(...nodes);
+  nodes.append(document.createTextNode(text.slice(offset)));
+  run.replaceChildren(nodes);
   return current;
 }
 

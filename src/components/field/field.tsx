@@ -1,3 +1,4 @@
+import { isEmptyValue } from '../../utils/is-empty-value.js';
 import { useCallback, useState, type ReactNode } from 'react';
 import type { BaseProps, ControlSize, Key } from '../../core/props.js';
 import { createSlotRegistry } from '../../utils/slot-registry.js';
@@ -23,7 +24,6 @@ import { useFieldFocus, useFieldFormBinding } from './field-form.js';
 import { FieldRestoreButton } from './field-restore-button.js';
 import type { FieldIssue, FieldState, FieldValidation } from './field-state.js';
 import { useFieldUndo } from './field-undo.js';
-import { isFieldValueEmpty } from './field-value.js';
 
 export interface FieldProps<T> extends BaseProps {
   /** The field's controller, from `useFieldState`. */
@@ -68,7 +68,7 @@ function toFieldStates(state: FieldState<unknown>) {
     readonly: state.isReadOnly,
     disabled: state.isDisabled,
     touched: state.isTouched,
-    filled: !isFieldValueEmpty(state.value),
+    filled: !isEmptyValue(state.value),
   };
 }
 

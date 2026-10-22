@@ -71,6 +71,7 @@ const contents = {
   identical: ['one\ntwo', 'one\ntwo', 'one\ntwo'],
 } as const;
 const contentNames = Object.keys(contents) as Array<keyof typeof contents>;
+const insertedSection = Array.from({ length: 24 }, (_, index) => `Step ${index + 1}`).join('\n');
 
 function Output({ name, value }: { name: string; value: string }) {
   return (
@@ -140,6 +141,12 @@ mountLab(
         theirs={settingsTheirs}
         data-lab-field="settings"
       />
+    </LabSection>
+    <LabSection
+      title="An inserted section"
+      description="A whole section added to an empty text is one clean change, and every line appears in the result."
+    >
+      <MergeView aria-label="Inserted section merge" base="" ours={insertedSection} theirs="" />
     </LabSection>
   </>,
 );

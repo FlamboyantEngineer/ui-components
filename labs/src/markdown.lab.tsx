@@ -187,6 +187,15 @@ mountLab(
       <Markdown source={taskList} data-lab-tasks />
     </LabSection>
     <LabSection
+      title="Nested blocks"
+      description="Nested quotes can hold nested lists while keeping their content in source order."
+    >
+      <Markdown
+        source={`${'> '.repeat(6)}- outer\n${'> '.repeat(6)}  - nested item`}
+        data-lab-nested
+      />
+    </LabSection>
+    <LabSection
       title="Heading ids and outline"
       description="One parse feeds the outline and the reader; headings carry prefixed ids and in-page links follow them."
     >
@@ -206,9 +215,10 @@ mountLab(
     </LabSection>
     <LabSection
       title="Safe content"
-      description="Raw HTML shows as text; a script link keeps only its text and a data image only its alt text."
+      description="Raw HTML shows as text; a script link keeps its formatted label, and a data image keeps only its alt text."
     >
       <Markdown source={unsafe} data-lab-unsafe />
+      <Markdown source={`[${'`code` '.repeat(8)}](javascript:noop)`} data-lab-unsafe-spans />
     </LabSection>
   </>,
 );

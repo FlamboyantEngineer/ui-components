@@ -64,6 +64,7 @@ function Sample({
 function LiveSignature() {
   const [value, setValue] = useState<SignatureValue | null>(null);
   const [commits, setCommits] = useState(0);
+  const [isReadOnly, setReadOnly] = useState(false);
   const drawing = value?.kind === 'drawn' ? value : null;
   return (
     <>
@@ -71,10 +72,14 @@ function LiveSignature() {
         label="Your signature"
         description="Draw with a mouse, a pen or a finger, or choose Type to type your name."
         value={value}
+        isReadOnly={isReadOnly}
         onChange={setValue}
         onCommit={() => setCommits((count) => count + 1)}
         data-lab-field="live"
       />
+      <Button onPress={() => setReadOnly((current) => !current)}>
+        {isReadOnly ? 'Unlock drawing' : 'Lock drawing'}
+      </Button>
       <Output name="Kind">{value?.kind ?? 'empty'}</Output>
       <Output name="Strokes">{drawing ? drawing.paths.length : 0}</Output>
       <Output name="Typed">{value?.kind === 'typed' ? value.text : 'none'}</Output>
@@ -144,7 +149,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Drawing and output"
-      description="Draw strokes, undo or clear them, or type a name; the drawing shows as an image and as SVG markup. A cancelled pointer discards its unfinished stroke."
+      description="Draw strokes, undo or clear them, or type a name; the drawing shows as an image and as SVG markup. Cancelling or locking the drawing discards its unfinished stroke."
     >
       <LiveSignature />
     </LabSection>

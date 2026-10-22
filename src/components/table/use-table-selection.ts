@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import type { CollectionSelectionProps } from '../../core/events.js';
 import type { Key, Selection } from '../../core/props.js';
 import { useControllableState } from '../../core/controllable-state.js';
+import { walkTree } from '../../utils/walk-tree.js';
 import type { TableRow } from './table-rows.js';
 import type { TableNode } from './table-tree.js';
 
@@ -17,10 +18,6 @@ export interface TableSelection<T> {
 function toSelection(keys: Iterable<Key> | 'all' | undefined): Selection | undefined {
   if (keys === undefined) return undefined;
   return keys === 'all' ? 'all' : new Set(keys);
-}
-
-function flattenNodes<T>(nodes: readonly TableNode<T>[]): T[] {
-  return nodes.flatMap((node) => [node.row, ...flattenNodes(node.children)]);
 }
 
 /**
@@ -46,10 +43,13 @@ export function useTableSelection<T extends TableRow>(
   );
   const isRowDisabled = useMemo(() => (row: T) => disabled.has(String(row.id)), [disabled]);
   const selectedRows = useMemo(() => {
-    const rows = flattenNodes(presented).filter((row) => !isRowDisabled(row));
-    if (selection === 'all') return rows;
-    const keys = new Set([...selection].map(String));
-    return rows.filter((row) => keys.has(String(row.id)));
+    const keys = selection === 'all' ? null : new Set([...selection].map(String));
+    const rows: T[] = [];
+    if (keys?.size === 0) return rows;
+    for (const { row } of walkTree(presented, (node) => node.children)) {
+      if (!isRowDisabled(row) && (!keys || keys.has(String(row.id)))) rows.push(row);
+    }
+    return rows;
   }, [presented, selection, isRowDisabled]);
   return { selection, setSelection, selectedRows, isRowDisabled };
 }

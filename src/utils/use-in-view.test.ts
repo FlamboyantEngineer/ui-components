@@ -85,6 +85,32 @@ describe('useInView', () => {
     element.remove();
   });
 
+  it('UIC-MEASUREMENT-4.1 UIC-MEASUREMENT-4.2 ignores released observations after target or enabled changes', () => {
+    const first = document.createElement('div');
+    const second = document.createElement('div');
+    const { result, rerender } = renderHook(
+      ({ target, enabled }) => useInView(target, { enabled }),
+      { initialProps: { target: first, enabled: true } },
+    );
+    const old = latestObserver();
+    act(() => old.report(first, true));
+    expect(result.current).toBe(true);
+    rerender({ target: second, enabled: true });
+    const current = latestObserver();
+    act(() => old.report(first, true));
+    expect(result.current).toBe(false);
+    act(() => current.report(second, true));
+    act(() => old.report(first, false));
+    expect(result.current).toBe(true);
+    rerender({ target: second, enabled: false });
+    act(() => current.report(second, true));
+    rerender({ target: second, enabled: true });
+    act(() => current.report(second, true));
+    expect(result.current).toBe(false);
+    act(() => latestObserver().report(second, true));
+    expect(result.current).toBe(true);
+  });
+
   it('UIC-MEASUREMENT-4.2 returns false without an element or IntersectionObserver', () => {
     const { result } = renderHook(() => useInView(null));
     expect(result.current).toBe(false);

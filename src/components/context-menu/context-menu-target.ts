@@ -68,7 +68,7 @@ function useLongPress(options: ContextMenuTargetOptions, suppressUntil: RefObjec
     if (pending.current) clearTimeout(pending.current.timer);
     pending.current = null;
   }, []);
-  useEffect(() => cancel, [cancel]);
+  useEffect(() => cancel, [cancel, isDisabled]);
   return {
     cancel,
     onPointerDown(event: PointerEvent<HTMLElement>) {

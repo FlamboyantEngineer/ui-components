@@ -186,9 +186,13 @@ function closeBracket(state: InlineState): boolean {
     return false;
   }
   const nodes = createLinkNodes(bracket, target, items.splice(at + 1));
-  items.splice(at, 1, ...nodes.map((node): Item => ({ kind: 'node', node })));
+  items.pop();
+  for (const node of nodes) items.push({ kind: 'node', node });
   if (!bracket.isImage) {
-    for (const item of items.slice(0, at)) if (item.kind === 'bracket') item.isActive = false;
+    for (let index = 0; index < at; index += 1) {
+      const item = items[index]!;
+      if (item.kind === 'bracket') item.isActive = false;
+    }
   }
   state.at = target.end;
   return true;

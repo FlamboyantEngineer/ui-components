@@ -56,8 +56,12 @@ export function useTimelineDrag({
     onDraft(resolveDragChange(active.origin, active.edge, days));
   };
   const handlers = usePointerDrag<HTMLElement, Drag>({
+    isDisabled: !isEditable,
+    onCancel: () => {
+      setDragging(false);
+      onDraft(null);
+    },
     onStart: (event) => {
-      if (!isEditable) return null;
       moved.current = false;
       setDragging(true);
       return {

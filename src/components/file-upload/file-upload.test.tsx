@@ -382,6 +382,24 @@ describe('FileUpload', () => {
     expect(await readDroppedFiles(items, false)).toEqual([a]);
   });
 
+  it('UIC-FILE-UPLOAD-1.5 reads a large dropped folder without losing file order', async () => {
+    const first = file('first.txt', 'text/plain');
+    const last = file('last.txt', 'text/plain');
+    async function* getEntries(): AsyncGenerator<DroppedFile> {
+      for (let index = 0; index < 200_000; index += 1) {
+        const entry = index === 199_999 ? last : first;
+        yield { kind: 'file', name: entry.name, type: entry.type, getFile: async () => entry };
+      }
+    }
+    const files = await readDroppedFiles(
+      [{ kind: 'directory', name: 'Many files', getEntries }],
+      true,
+    );
+    expect(files).toHaveLength(200_000);
+    expect(files[0]).toBe(first);
+    expect(files.at(-1)).toBe(last);
+  });
+
   it('UIC-FILE-UPLOAD-2.5 UIC-FILE-UPLOAD-2.6 refuses small files and files past the count limit', async () => {
     const user = userEvent.setup();
     const onReject = vi.fn();

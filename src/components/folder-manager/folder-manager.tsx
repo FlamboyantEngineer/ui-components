@@ -12,7 +12,6 @@ import {
   type FolderToolbarProps,
 } from './folder-manager-parts.js';
 import {
-  findFolderPath,
   getFolderHeight,
   listFolderDestinations,
   type FolderDestination,
@@ -95,9 +94,8 @@ function toolbarOf<T extends FolderItem>(
 function destinationsOf<T extends FolderItem>({ model, props }: ToolContext<T>) {
   const moving = new Set(model.selection.map((folder) => folder.id));
   const height = findMaximum(model.selection, getFolderHeight, 0);
-  const fits = ({ folder }: FolderDestination<T>) =>
-    props.maxDepth === undefined ||
-    (folder ? findFolderPath(props.folders, folder.id).length : 0) + height <= props.maxDepth;
+  const fits = ({ path }: FolderDestination<T>) =>
+    props.maxDepth === undefined || path.length + height <= props.maxDepth;
   return listFolderDestinations(props.folders, moving).filter(fits);
 }
 

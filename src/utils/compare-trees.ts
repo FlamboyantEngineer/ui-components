@@ -2,6 +2,7 @@
 
 import type { Key } from '../core/props.js';
 import { diffSequences } from './diff.js';
+import { walkTree } from './walk-tree.js';
 
 /** A node of a compared hierarchy. Its children are nodes of the same type. */
 export interface CompareTreeNode {
@@ -19,7 +20,7 @@ export type TreeChangeCounts = Record<Exclude<TreeChange, 'unchanged'>, number>;
 
 /** One aligned row: a node on the left, on the right or on both sides, and its child rows. */
 export interface ComparedTreeRow<T extends CompareTreeNode = CompareTreeNode> {
-  /** Unique among the rows: the node's id, or `moved-from:<id>` for a moved node's old position. */
+  /** Unique among rows: the node's id, or an unused `moved-from:<id>` key for its old position. */
   id: Key;
   /** The node's id. */
   nodeId: Key;
@@ -48,27 +49,40 @@ interface Comparison<T extends CompareTreeNode> {
   right: Map<Key, T>;
   isEqual: (left: T, right: T) => boolean;
   counts: TreeChangeCounts;
+  movedFrom: Map<Key, Key>;
+  rowIds: Set<Key>;
 }
 
 const haveSameLabel = (left: CompareTreeNode, right: CompareTreeNode) => left.label === right.label;
 
-const toMovedFromId = (id: Key): Key => `moved-from:${String(id)}`;
+function getMovedFromId<T extends CompareTreeNode>(id: Key, comparison: Comparison<T>): Key {
+  const known = comparison.movedFrom.get(id);
+  if (known !== undefined) return known;
+  const base = `moved-from:${String(id)}`;
+  let candidate = base;
+  for (let suffix = 2; comparison.rowIds.has(candidate); suffix += 1)
+    candidate = `${base}:${suffix}`;
+  comparison.rowIds.add(candidate);
+  comparison.movedFrom.set(id, candidate);
+  return candidate;
+}
 
 const childrenOf = <T extends CompareTreeNode>(node: T) => (node.children ?? []) as readonly T[];
 
-function indexTree<T extends CompareTreeNode>(nodes: readonly T[], index = new Map<Key, T>()) {
-  for (const node of nodes) {
-    index.set(node.id, node);
-    indexTree(childrenOf(node), index);
-  }
+function indexTree<T extends CompareTreeNode>(nodes: readonly T[]) {
+  const index = new Map<Key, T>();
+  for (const node of walkTree(nodes, childrenOf)) index.set(node.id, node);
   return index;
 }
 
-function pairRow<T extends CompareTreeNode>(left: T, right: T, comparison: Comparison<T>) {
+function pairRow<T extends CompareTreeNode>(
+  left: T,
+  right: T,
+  comparison: Comparison<T>,
+): ComparedTreeRow<T> {
   const change: TreeChange = comparison.isEqual(left, right) ? 'unchanged' : 'changed';
   if (change === 'changed') comparison.counts.changed += 1;
-  const children = alignRows(childrenOf(left), childrenOf(right), comparison);
-  return { id: left.id, nodeId: left.id, left, right, change, children };
+  return { id: left.id, nodeId: left.id, left, right, change, children: [] };
 }
 
 /** A node only the left sibling list holds: removed, or the old position of a moved node. */
@@ -77,7 +91,7 @@ function leftRow<T extends CompareTreeNode>(
   comparison: Comparison<T>,
 ): ComparedTreeRow<T> {
   if (comparison.right.has(node.id)) {
-    const id = toMovedFromId(node.id);
+    const id = getMovedFromId(node.id, comparison);
     return {
       id,
       nodeId: node.id,
@@ -88,8 +102,7 @@ function leftRow<T extends CompareTreeNode>(
     };
   }
   comparison.counts.removed += 1;
-  const children = alignRows(childrenOf(node), [], comparison);
-  return { id: node.id, nodeId: node.id, left: node, change: 'removed', children };
+  return { id: node.id, nodeId: node.id, left: node, change: 'removed', children: [] };
 }
 
 /**
@@ -103,31 +116,64 @@ function rightRow<T extends CompareTreeNode>(
   const old = comparison.left.get(node.id);
   if (old) {
     comparison.counts.moved += 1;
-    const children = alignRows(childrenOf(old), childrenOf(node), comparison);
-    const counterpartId = toMovedFromId(node.id);
-    return { id: node.id, nodeId: node.id, right: node, change: 'moved', counterpartId, children };
+    const counterpartId = getMovedFromId(node.id, comparison);
+    return {
+      id: node.id,
+      nodeId: node.id,
+      right: node,
+      change: 'moved',
+      counterpartId,
+      children: [],
+    };
   }
   comparison.counts.added += 1;
-  const children = alignRows([], childrenOf(node), comparison);
-  return { id: node.id, nodeId: node.id, right: node, change: 'added', children };
+  return { id: node.id, nodeId: node.id, right: node, change: 'added', children: [] };
 }
 
 /** Aligns two sibling lists on their longest common run of ids. */
+function* alignSiblings<T extends CompareTreeNode>(
+  left: readonly T[],
+  right: readonly T[],
+  comparison: Comparison<T>,
+): Generator<ComparedTreeRow<T>> {
+  const ids = (nodes: readonly T[]) => nodes.map((node) => node.id);
+  for (const { kind, items } of diffSequences(ids(left), ids(right))) {
+    for (const id of items) {
+      if (kind === 'equal')
+        yield pairRow(comparison.left.get(id)!, comparison.right.get(id)!, comparison);
+      else if (kind === 'delete') yield leftRow(comparison.left.get(id)!, comparison);
+      else yield rightRow(comparison.right.get(id)!, comparison);
+    }
+  }
+}
+
 function alignRows<T extends CompareTreeNode>(
   left: readonly T[],
   right: readonly T[],
   comparison: Comparison<T>,
 ): Array<ComparedTreeRow<T>> {
-  const leftById = new Map(left.map((node) => [node.id, node]));
-  const rightById = new Map(right.map((node) => [node.id, node]));
-  const ids = (nodes: readonly T[]) => nodes.map((node) => node.id);
-  return diffSequences(ids(left), ids(right)).flatMap(({ kind, items }) =>
-    items.map((id) => {
-      if (kind === 'equal') return pairRow(leftById.get(id)!, rightById.get(id)!, comparison);
-      if (kind === 'delete') return leftRow(leftById.get(id)!, comparison);
-      return rightRow(rightById.get(id)!, comparison);
-    }),
-  );
+  const rows: Array<ComparedTreeRow<T>> = [];
+  const stack = [{ rows, entries: alignSiblings(left, right, comparison) }];
+  while (stack.length > 0) {
+    const frame = stack.at(-1)!;
+    const next = frame.entries.next();
+    if (next.done) {
+      stack.pop();
+      continue;
+    }
+    const row = next.value;
+    frame.rows.push(row);
+    if (row.change === 'moved' && !row.right) continue;
+    const oldNode = row.left ?? comparison.left.get(row.nodeId);
+    const oldChildren = oldNode ? childrenOf(oldNode) : [];
+    const newChildren = row.right ? childrenOf(row.right) : [];
+    if (oldChildren.length === 0 && newChildren.length === 0) continue;
+    stack.push({
+      rows: row.children,
+      entries: alignSiblings(oldChildren, newChildren, comparison),
+    });
+  }
+  return rows;
 }
 
 /**
@@ -147,6 +193,10 @@ export function compareTrees<T extends CompareTreeNode>(
     right: indexTree(right),
     isEqual: options.isEqual ?? haveSameLabel,
     counts: { added: 0, removed: 0, changed: 0, moved: 0 },
+    movedFrom: new Map(),
+    rowIds: new Set(),
   };
+  for (const id of comparison.left.keys()) comparison.rowIds.add(id);
+  for (const id of comparison.right.keys()) comparison.rowIds.add(id);
   return { rows: alignRows(left, right, comparison), counts: comparison.counts };
 }

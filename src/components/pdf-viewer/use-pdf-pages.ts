@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
+import { useCallback, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { useNearPages, type NearPages } from './use-near-pages.js';
 
 export interface UsePdfPagesOptions {
@@ -117,15 +117,23 @@ function revealInScroller(scroller: HTMLElement, element: HTMLElement) {
  */
 function useScrollAnchor({ scrollerRef, document, elements, onPageChange }: ScrollAnchorOptions) {
   const anchor = useRef<ScrollAnchor | null>(null);
-  const frame = useRef(0);
+  const frame = useRef<{ view: Window; id: number } | null>(null);
+  const cancelFrame = useCallback(() => {
+    const pending = frame.current;
+    frame.current = null;
+    if (pending) pending.view.cancelAnimationFrame(pending.id);
+  }, []);
 
   useLayoutEffect(() => {
+    cancelFrame();
     anchor.current = null;
     const scroller = scrollerRef.current;
-    if (!scroller) return;
-    scroller.scrollTop = 0;
-    scroller.scrollLeft = 0;
-  }, [document, scrollerRef]);
+    if (scroller) {
+      scroller.scrollTop = 0;
+      scroller.scrollLeft = 0;
+    }
+    return cancelFrame;
+  }, [cancelFrame, document, scrollerRef]);
 
   const captureAnchor = useCallback(() => {
     const scroller = scrollerRef.current;
@@ -144,14 +152,16 @@ function useScrollAnchor({ scrollerRef, document, elements, onPageChange }: Scro
   }, [elements, scrollerRef]);
 
   const handleScroll = useCallback(() => {
-    if (frame.current) return;
-    frame.current = requestAnimationFrame(() => {
-      frame.current = 0;
+    const view = scrollerRef.current?.ownerDocument.defaultView;
+    if (!view || frame.current !== null) return;
+    const pending = { view, id: 0 };
+    frame.current = pending;
+    pending.id = view.requestAnimationFrame(() => {
+      if (frame.current !== pending) return;
+      frame.current = null;
       captureAnchor();
     });
-  }, [captureAnchor]);
-
-  useEffect(() => () => cancelAnimationFrame(frame.current), []);
+  }, [captureAnchor, scrollerRef]);
 
   return { captureAnchor, restoreAnchor, handleScroll };
 }

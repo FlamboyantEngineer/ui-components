@@ -66,7 +66,7 @@ Verification: `src/utils/use-element-size.test.ts`
 
 ### UIC-MEASUREMENT-3.1 - Widest text
 
-`useWidestTextWidth(ref, texts)` shall return the width, in whole pixels rounded up, of the widest of `texts` drawn in the computed font of the ref's element, measured on an offscreen canvas after the element mounts. It measures again when the set of texts changes and once the document's fonts finish loading, never for a fresh array holding the same texts, and returns `null` where no offscreen canvas is available. Components publish the result as a measured property so a control keeps its width as the shown text changes.
+`useWidestTextWidth(ref, texts)` shall return the width, in whole pixels rounded up, of the widest of `texts` drawn in the computed font of the ref's element, measured on an offscreen canvas after the element mounts. It measures each complete string, including embedded newlines, and returns zero for an empty list. It measures again when the set of texts changes and once the document's fonts finish loading, never for a fresh array holding the same texts, ignores font readiness after unmount, and returns `null` where no offscreen canvas is available. Components publish the result as a measured property so a control keeps its width as the shown text changes.
 
 Implementation: `src/utils/use-widest-text-width.ts`
 Verification: `src/utils/use-widest-text-width.test.ts`
@@ -75,7 +75,7 @@ Verification: `src/utils/use-widest-text-width.test.ts`
 
 ### UIC-MEASUREMENT-4.1 - In view
 
-`useInView(target)` shall return whether any part of the target element is visible in the viewport after clipping by the scrolling ancestors it sits in, from the `IntersectionObserver` of the element's own window: false until the first report, then each report for that element. Unmounting disconnects the observer. Components use it to load more content as it scrolls into view ([Load More](LOAD-MORE.md#uic-load-more-17---loading-on-view)) and hosts to render content lazily.
+`useInView(target)` shall return whether any part of the target element is visible in the viewport after clipping by the scrolling ancestors it sits in, from the `IntersectionObserver` of the element's own window: false until the first report, then each report for that element. Replacing the target, disabling or unmounting disconnects the old observer; its later reports are ignored. Components use it to load more content as it scrolls into view ([Load More](LOAD-MORE.md#uic-load-more-17---loading-on-view)) and hosts to render content lazily.
 
 Implementation: `src/utils/use-in-view.ts`
 Verification: `src/utils/use-in-view.test.ts`, `e2e/load-more.spec.ts`

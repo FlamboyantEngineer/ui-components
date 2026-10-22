@@ -149,6 +149,35 @@ describe('SignaturePad', () => {
     });
   });
 
+  it.each(['isDisabled', 'isReadOnly'] as const)(
+    'UIC-SIGNATURE-PAD-1.4 UIC-SIGNATURE-PAD-2.1 drops the live stroke when %s changes during drawing',
+    async (lock) => {
+      const user = userEvent.setup();
+      const onChange = vi.fn();
+      const onCommit = vi.fn();
+      const props = { label: 'Signature', onChange, onCommit };
+      const { container, rerender } = render(<SignaturePad {...props} />);
+      const target = canvas(container);
+      const release = vi.fn();
+      Object.assign(target, { hasPointerCapture: () => true, releasePointerCapture: release });
+      await user.pointer([
+        { keys: '[MouseLeft>]', target, coords: { clientX: 110, clientY: 60 } },
+        { coords: { clientX: 130, clientY: 80 } },
+      ]);
+      expect(surface()).toHaveAttribute('data-drawing', 'true');
+      expect(strokes(container)).toHaveLength(1);
+      rerender(<SignaturePad {...props} {...{ [lock]: true }} />);
+      expect(release).toHaveBeenCalledTimes(1);
+      expect(surface()).not.toHaveAttribute('data-drawing');
+      expect(strokes(container)).toEqual([]);
+      rerender(<SignaturePad {...props} />);
+      await user.pointer([{ coords: { clientX: 150, clientY: 90 } }, { keys: '[/MouseLeft]' }]);
+      expect(strokes(container)).toEqual([]);
+      expect(onChange).not.toHaveBeenCalled();
+      expect(onCommit).not.toHaveBeenCalled();
+    },
+  );
+
   it('UIC-SIGNATURE-PAD-2.1 ignores other buttons, drops cancelled strokes and keeps a drawing space', () => {
     const onChange = vi.fn();
     const { container } = render(

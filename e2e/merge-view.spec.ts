@@ -35,6 +35,11 @@ test.describe('Merge View lab', () => {
     const rows = (side: string) =>
       conflicts.locator(`[data-side="${side}"] .ui-merge-view__table tr`);
     await expect(rows('ours')).toHaveCount(await rows('theirs').count());
+    const inserted = page.getByRole('group', { name: 'Inserted section merge' });
+    await expect(inserted.getByRole('status')).toHaveText('No conflicts');
+    await expect(inserted.locator('.ui-merge-view__block .ui-merge-view__text')).toHaveText(
+      Array.from({ length: 24 }, (_, index) => `Step ${index + 1}`).join('\n'),
+    );
     await lab.expectAccessible();
   });
 

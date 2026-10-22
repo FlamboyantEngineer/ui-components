@@ -105,6 +105,8 @@ test.describe('Relative Time lab', () => {
   }) => {
     await page.clock.install();
     await lab.open('relative-time');
+    // Keep the captured label stable while checking that every subscriber has caught up.
+    await page.clock.pauseAt(Date.now() + 1000);
     const demo = page.locator('[data-lab-demo="shared-clock"]');
     const times = demo.locator('time');
     await expect(times).toHaveCount(20);
@@ -117,5 +119,6 @@ test.describe('Relative Time lab', () => {
     await page.clock.runFor(10_000);
     await expect(times.first()).not.toHaveText(before!);
     await expect(times).toHaveText(Array(20).fill(await times.first().textContent()));
+    await page.clock.resume();
   });
 });

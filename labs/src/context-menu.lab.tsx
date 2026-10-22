@@ -188,7 +188,7 @@ mountLab(
   <>
     <LabSection
       title="Targets by size"
-      description="Right-click a target, long-press it on a touch screen, or focus it and press Shift+F10 or the Context Menu key. Focus returns to a focusable target."
+      description="Right-click a target, long-press it on a touch screen, or focus it and press Shift+F10 or the Context Menu key. Disabled targets leave the browser menu alone and cancel a pending long press. Focus returns to a focusable target."
     >
       <Targets />
     </LabSection>

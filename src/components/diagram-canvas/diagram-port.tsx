@@ -37,8 +37,9 @@ export function DiagramPortView({ node, port, controller }: DiagramPortViewProps
     connectSource: connect.connecting?.port === port.id && connect.connecting.node === node.id,
   };
   const drag = usePointerDrag<HTMLButtonElement, { x: number; y: number; isDragging: boolean }>({
+    isDisabled: !controller.isEditing,
+    onCancel: connect.cancel,
     onStart: (event) => {
-      if (!controller.isEditing) return null;
       event.stopPropagation();
       if (connect.complete(node.id, port.id)) return null;
       connect.start(node.id, port.id);

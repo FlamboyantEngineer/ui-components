@@ -65,6 +65,11 @@ test.describe('Tree Compare lab', () => {
       '[data-lab-cell="trees=identical filter=all rows"] .ui-tree-compare__summary',
     );
     await expect(identical).toHaveText('No differences');
+    const nested = page.getByRole('treegrid', { name: 'Nested changes' });
+    await expect(nested.getByRole('row')).toHaveCount(12);
+    await expect(
+      nested.getByRole('row', { name: 'Revised leaf, changed from Earlier leaf' }),
+    ).toBeVisible();
   });
 
   test('UIC-TREE-COMPARE-2.3 UIC-TREE-COMPARE-3.1 indents each side and expands both together', async ({

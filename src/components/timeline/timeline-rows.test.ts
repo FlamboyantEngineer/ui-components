@@ -44,4 +44,26 @@ describe('timeline rows', () => {
       'build',
     ]);
   });
+
+  it('UIC-TIMELINE-1.4 keeps the depth and order of deeply nested groups', () => {
+    const count = 20_000;
+    let row: TimelineRow = { id: count - 1, label: String(count - 1) };
+    for (let id = count - 2; id >= 0; id -= 1) {
+      row = { id, label: String(id), children: [row] };
+    }
+    const visible = flattenTimelineRows([row]);
+    expect(visible).toHaveLength(count);
+    expect(visible[0]?.level).toBe(1);
+    expect(visible.at(-1)).toEqual({
+      row: { id: count - 1, label: String(count - 1) },
+      level: count,
+      hasChildren: false,
+      isExpanded: false,
+    });
+    const groups = collectGroupKeys([row]);
+    expect(groups).toHaveLength(count - 1);
+    expect(groups[0]).toBe(0);
+    expect(groups.at(-1)).toBe(count - 2);
+    expect(flattenTimelineRows([row], new Set())).toHaveLength(1);
+  });
 });

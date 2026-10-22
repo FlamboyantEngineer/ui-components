@@ -6,7 +6,7 @@ Internal helpers share pointer ownership, capture cleanup, native drag arming, i
 
 ### UIC-DRAG-INTERACTIONS-1.1 - Starting
 
-`usePointerDrag` shall start from a primary pointer's primary-button press only when its start callback returns gesture data. A refused press shall produce no move or end callbacks.
+`usePointerDrag` shall start from a primary pointer's primary-button press only when enabled and its start callback returns gesture data. A refused press shall produce no move or end callbacks.
 
 Implementation: `src/utils/use-pointer-drag.ts`
 Verification: `src/utils/use-pointer-drag.test.tsx`
@@ -20,7 +20,9 @@ Verification: `src/utils/use-pointer-drag.test.tsx`
 
 ### UIC-DRAG-INTERACTIONS-1.3 - Ending
 
-Release shall finish a gesture once; cancellation and lost capture shall finish it once as cancelled. Ending shall clear ownership before releasing capture, so a subsequent lost-capture event has no effect. Unmount shall release capture without reporting a drop.
+Release shall finish a gesture once; cancellation and lost capture shall finish it once as cancelled. Ending shall clear ownership before releasing capture, so a subsequent lost-capture event has no effect. Unmount or changing `isDisabled` to true shall release capture and abandon the gesture without an end callback. Disabling shall call the latest `onCancel` with the starting data once, after clearing ownership and capture, so a component can clear its preview; unmount shall call no callback. Re-enabling shall require a new press rather than resuming that gesture.
+
+Changing a gesture's `resetKey` shall abandon it through the same cancellation cleanup, while allowing new presses in the new mode. A shared selection and editing surface uses this to discard an edit when its mode changes while keeping viewing gestures available.
 
 Implementation: `src/utils/use-pointer-drag.ts`, `src/utils/pointer-drag.ts`
 Verification: `src/utils/use-pointer-drag.test.tsx`

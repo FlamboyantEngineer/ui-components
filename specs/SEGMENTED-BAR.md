@@ -13,10 +13,10 @@ Verification: `src/components/segmented-bar/segmented-bar.test.tsx`, `e2e/segmen
 
 ### UIC-SEGMENTED-BAR-1.2 - Shares
 
-Each segment in `segments` (`id`, `label`, `value`, optional `tone`) shall take the inline `width` of its share of the whole, in its given order. The whole is `total` when it is larger than the sum of the segments, leaving the rest of the track empty (40 of 100 checks run), and otherwise the sum. A value that is not a finite, positive number counts as 0; a segment with no share draws no track segment but keeps its legend entry, and an empty whole draws an empty track with every share at 0%.
+Each segment in `segments` (`id`, `label`, `value`, optional `tone`) shall take the inline `width` of its share of the whole, in its given order. The whole is `total` when it is larger than the sum of the segments, leaving the rest of the track empty (40 of 100 checks run), and otherwise the sum. A value that is not a finite, positive number counts as 0; a segment with no share draws no track segment but keeps its legend entry, and an empty whole draws an empty track with every share at 0%. Finite amounts whose sum exceeds the numeric range shall retain their proportions, while the unrepresentable total remains infinity; a finite explicit total cannot reduce that sum.
 
-Implementation: `src/components/segmented-bar/segmented-bar.tsx`
-Verification: `src/components/segmented-bar/segmented-bar.test.tsx`, `e2e/segmented-bar.spec.ts`
+Implementation: `src/components/segmented-bar/segmented-bar.tsx`, `src/utils/resolve-amount-shares.ts`
+Verification: `src/components/segmented-bar/segmented-bar.test.tsx`, `src/utils/resolve-amount-shares.test.ts`, `e2e/segmented-bar.spec.ts`
 
 ### UIC-SEGMENTED-BAR-1.3 - Tones
 

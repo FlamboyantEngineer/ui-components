@@ -340,6 +340,38 @@ describe('Timeline', () => {
     });
   });
 
+  it.each(['item', 'callback'] as const)(
+    'UIC-TIMELINE-2.1 drops the draft when editing is locked through the %s during a drag',
+    async (lock) => {
+      const user = userEvent.setup();
+      const onItemChange = vi.fn();
+      const props = { rows, items, range: march, scale: 'week' as const, onItemChange };
+      const { rerender } = render(<Timeline {...props} aria-label="Plan" />);
+      const bar = item('Measure rooms');
+      capturePointer(bar);
+      await user.pointer([
+        { keys: '[MouseLeft>]', target: bar, coords: { clientX: 100 } },
+        { coords: { clientX: 133 } },
+      ]);
+      expect(bar).toHaveAttribute('data-dragging', 'true');
+      expect(bar.style.left).toBe('48px');
+      rerender(
+        <Timeline
+          {...props}
+          aria-label="Plan"
+          items={lock === 'item' ? items.map((value) => ({ ...value, isReadOnly: true })) : items}
+          onItemChange={lock === 'callback' ? undefined : onItemChange}
+        />,
+      );
+      expect(bar).not.toHaveAttribute('data-dragging');
+      expect(bar.style.left).toBe('16px');
+      rerender(<Timeline {...props} aria-label="Plan" />);
+      await user.pointer([{ coords: { clientX: 165 } }, { keys: '[/MouseLeft]' }]);
+      expect(bar.style.left).toBe('16px');
+      expect(onItemChange).not.toHaveBeenCalled();
+    },
+  );
+
   it('UIC-TIMELINE-2.1 drops a cancelled drag and ignores a press that does not move', async () => {
     const user = userEvent.setup();
     const onItemChange = vi.fn();

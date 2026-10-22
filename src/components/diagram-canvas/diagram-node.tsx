@@ -54,9 +54,11 @@ function useNodePointer(id: Key, controller: DiagramController) {
   const { selection, moves, connect, isEditing } = controller;
   return usePointerDrag<HTMLElement, PointerStart>({
     capture: false,
+    resetKey: isEditing,
+    onCancel: () => moves.cancel(),
     onStart: (event) => {
       event.stopPropagation();
-      if (connect.complete(id)) return null;
+      if (isEditing && connect.complete(id)) return null;
       const isToggle = isToggleEvent(event);
       const wasSelected = selection.selected.has(id);
       if (isToggle || !wasSelected) selection.select(id, isToggle);
@@ -81,7 +83,7 @@ function useNodePointer(id: Key, controller: DiagramController) {
       moves.drag(delta);
     },
     onEnd: (_event, active, isCancelled) => {
-      if (isCancelled) {
+      if (isCancelled || (active.isDragging && !isEditing)) {
         moves.cancel();
         return;
       }

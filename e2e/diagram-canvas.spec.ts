@@ -26,6 +26,32 @@ async function viewportBox(page: Page) {
 }
 
 test.describe('Diagram Canvas lab', () => {
+  test('UIC-DIAGRAM-CANVAS-5.1 UIC-DIAGRAM-CANVAS-5.2 cancels a pending connection when editing ends', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('diagram-canvas');
+    await viewportBox(page);
+    const edges = plant(page).locator('.ui-diagram-canvas__edge');
+    const before = await edges.count();
+    await plant(page).getByRole('button', { name: 'Pump, outlet' }).focus();
+    await page.keyboard.press('Enter');
+    await expect(plant(page)).toHaveAttribute('data-connecting', 'true');
+    await page.getByRole('checkbox', { name: 'Editing enabled' }).uncheck();
+    await expect(plant(page)).not.toHaveAttribute('data-connecting');
+    await expect(plant(page).locator('.ui-diagram-canvas__connection-preview')).toHaveCount(0);
+    await part(page, 'Filter').focus();
+    await page.keyboard.press('Enter');
+    await expect(edges).toHaveCount(before);
+    await page.getByRole('checkbox', { name: 'Editing enabled' }).check();
+    await plant(page).getByRole('button', { name: 'Filter, inlet' }).focus();
+    await page.keyboard.press('Enter');
+    await expect(plant(page)).toHaveAttribute('data-connecting', 'true');
+    await expect(edges).toHaveCount(before);
+    await page.keyboard.press('Escape');
+    await expect(plant(page)).not.toHaveAttribute('data-connecting');
+  });
+
   test('UIC-DIAGRAM-CANVAS-1.1 UIC-DIAGRAM-CANVAS-6.1 UIC-DIAGRAM-CANVAS-6.4 draws every state', async ({
     page,
     lab,

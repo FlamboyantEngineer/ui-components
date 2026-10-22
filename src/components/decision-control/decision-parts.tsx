@@ -1,3 +1,4 @@
+import { toErrorMessage } from '../../utils/to-error-message.js';
 import { useState, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -76,10 +77,6 @@ export const decisionControlHooks = createHooks('decision-control', [
 
 const hooks = decisionControlHooks;
 
-function toMessage(error: unknown, fallback: string): string {
-  return error instanceof Error && error.message ? error.message : fallback;
-}
-
 /** Submitting a decision: pending and failed while unsigned, through the signature dialog when signed. */
 export function useDecisionSubmission({
   details,
@@ -101,7 +98,7 @@ export function useDecisionSubmission({
     setPending(true);
     setError(null);
     submit(null)
-      .catch((reason: unknown) => setError(toMessage(reason, strings.decisionFailed)))
+      .catch((reason: unknown) => setError(toErrorMessage(reason, strings.decisionFailed)))
       .finally(() => setPending(false));
   };
   return { isPending, isSigning, setSigning, error, start, submit };

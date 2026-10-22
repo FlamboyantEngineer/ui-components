@@ -184,6 +184,7 @@ function PartContent({ node }: { node: DiagramNode<Part> }) {
 }
 
 function Plant() {
+  const [isEditing, setEditing] = useState(true);
   const [nodes, setNodes] = useState(plantNodes);
   const [edges, setEdges] = useState(plantEdges);
   const [selection, setSelection] = useState<Selection>(new Set<Key>());
@@ -211,13 +212,21 @@ function Plant() {
         onChange={(value) => setRouting((value as DiagramEdgeRouting | null) ?? 'bezier')}
         size="sm"
       />
+      <label>
+        <input
+          type="checkbox"
+          checked={isEditing}
+          onChange={(event) => setEditing(event.currentTarget.checked)}
+        />{' '}
+        Editing enabled
+      </label>
       <DiagramCanvas<Part>
         aria-label="Water plant"
         data-lab-field="plant"
         nodes={nodes}
         edges={edges}
         routing={routing}
-        isEditing
+        isEditing={isEditing}
         renderNode={(node) => <PartContent node={node} />}
         onNodesChange={setNodes}
         onEdgesChange={setEdges}
@@ -289,13 +298,13 @@ mountLab(
     </LabSection>
     <LabSection
       title="Editable plant"
-      description="Drag parts on the 10 pixel grid or move them with the arrow keys (Shift for larger steps); Shift-drag the background for a marquee; drag from a port, or press a port then a part, to connect; press or drag a palette item to add a part; Delete removes. Cancelled node, connection and marquee drags discard their drafts. The wheel pans, Ctrl or Command with the wheel zooms."
+      description="Drag parts on the 10 pixel grid or move them with the arrow keys (Shift for larger steps); Shift-drag the background for a marquee; drag from a port, or press a port then a part, to connect; press or drag a palette item to add a part; Delete removes. Leaving edit mode discards unfinished moves and connections; selecting and panning still work. Cancelled drags discard their drafts. The wheel pans, Ctrl or Command with the wheel zooms."
     >
       <Plant />
     </LabSection>
     <LabSection
       title="Read only graph"
-      description="Tab to a module, then move between connected modules with the arrow keys; switch to the outline to read the graph as a list. Both views list connections in edge order, including parallel connections and loops. Bounds are measured in one pass and parallel edges are grouped without copying earlier entries."
+      description="Tab to a module, then move between connected modules with the arrow keys; switch to the outline to read the graph as a list. Both views preserve each node and connection when reordered, including numeric and text keys with the same spelling, and list connections in edge order with parallel connections and loops."
     >
       <Modules />
     </LabSection>

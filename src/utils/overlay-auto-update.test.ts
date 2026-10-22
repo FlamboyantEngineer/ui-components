@@ -93,4 +93,44 @@ describe('autoUpdateOverlay', () => {
     expect(update).toHaveBeenCalledTimes(2);
     expect(frames.size).toBe(0);
   });
+
+  it('UIC-OVERLAY-POSITION-3.5 combines moving anchors, scrolling and resizing in one frame', () => {
+    const { anchor, overlay, scroller, update } = setup();
+    let top = 10;
+    anchor.getBoundingClientRect = () => DOMRect.fromRect({ y: top, width: 40, height: 20 });
+    const stop = autoUpdateOverlay({ anchor, overlay, update, everyFrame: true });
+    top = 30;
+    scroller.dispatchEvent(new Event('scroll'));
+    window.dispatchEvent(new Event('resize'));
+    FakeResizeObserver.instances[0]?.callback([], {} as ResizeObserver);
+    expect(frames.size).toBe(1);
+    runFrame();
+    expect(update).toHaveBeenCalledTimes(2);
+    expect(frames.size).toBe(1);
+    runFrame();
+    expect(update).toHaveBeenCalledTimes(2);
+    stop();
+  });
+
+  it('UIC-OVERLAY-POSITION-3.5 stops permanently when its own update releases the observation', () => {
+    const { anchor, overlay, scroller } = setup();
+    let calls = 0;
+    const stop = autoUpdateOverlay({
+      anchor,
+      overlay,
+      everyFrame: true,
+      update: () => {
+        calls += 1;
+        if (calls > 1) stop();
+      },
+    });
+    scroller.dispatchEvent(new Event('scroll'));
+    runFrame();
+    expect(calls).toBe(2);
+    expect(frames.size).toBe(0);
+    FakeResizeObserver.instances[0]?.callback([], {} as ResizeObserver);
+    runFrame();
+    expect(calls).toBe(2);
+    expect(frames.size).toBe(0);
+  });
 });

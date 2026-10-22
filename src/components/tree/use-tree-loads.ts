@@ -1,3 +1,4 @@
+import { toErrorMessage } from '../../utils/to-error-message.js';
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -14,10 +15,6 @@ export interface TreeLoads {
   hasLoaded: (key: Key) => boolean;
   /** Why loading a branch's children failed, or `null`. */
   errorOf: (key: Key) => string | null;
-}
-
-function messageOf(error: unknown, fallback: string): string {
-  return error instanceof Error && error.message ? error.message : fallback;
 }
 
 /**
@@ -48,7 +45,7 @@ export function useTreeLoads(onLoad: ((key: Key) => unknown) | undefined): TreeL
           .then(() => run(key))
           .then(
             () => settle(key, 'loaded'),
-            (error: unknown) => settle(key, { error: messageOf(error, strings.actionFailed) }),
+            (error: unknown) => settle(key, { error: toErrorMessage(error, strings.actionFailed) }),
           );
       },
       isLoading: (key) => loads.get(key) === 'loading',

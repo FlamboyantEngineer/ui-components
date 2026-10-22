@@ -1,5 +1,6 @@
 import type { PointerEvent } from 'react';
 import type { Key } from '../../core/props.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { diagramHooks as hooks } from './diagram-hooks.js';
 import {
   findDiagramBounds,
@@ -100,7 +101,10 @@ export function DiagramEdges({ controller, routing }: DiagramEdgesProps) {
         style={{ position: 'absolute', left: bounds.x, top: bounds.y, pointerEvents: 'none' }}
       >
         {routed.map(({ edge, route }) => (
-          <g key={edge.id} {...hooks.slot('edge', { selected: selection.selected.has(edge.id) })}>
+          <g
+            key={toKeyIdentity(edge.id)}
+            {...hooks.slot('edge', { selected: selection.selected.has(edge.id) })}
+          >
             <path
               {...hooks.slot('edge-hit')}
               d={route.path}
@@ -119,7 +123,7 @@ export function DiagramEdges({ controller, routing }: DiagramEdgesProps) {
       {routed.map(({ edge, route }) =>
         edge.label ? (
           <div
-            key={edge.id}
+            key={toKeyIdentity(edge.id)}
             {...hooks.slot('edge-label', { selected: selection.selected.has(edge.id) })}
             aria-hidden="true"
             style={{

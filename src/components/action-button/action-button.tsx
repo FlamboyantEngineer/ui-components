@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useRef, useState, type Ref } from 'react';
+import { useCallback, useRef, useState, type Ref } from 'react';
 import type { PressEvent } from '../../core/events.js';
+import { useDelayedFlag } from '../../utils/use-delayed-flag.js';
 import { Button, type ButtonProps } from '../button/button.js';
 
 // An action runs work; it is never a link.
@@ -46,25 +47,6 @@ export async function runPendingAction(options: {
   }
 }
 
-/** The message to show for a failed action: the error's own message, else `fallback`. */
-export function toFailureMessage(error: unknown, fallback: string): string {
-  return error instanceof Error && error.message ? error.message : fallback;
-}
-
-/** Whether `flag` has held for `delay` milliseconds; it turns false with the flag. */
-function useDelayedFlag(flag: boolean, delay: number): boolean {
-  const [elapsed, setElapsed] = useState(false);
-  useEffect(() => {
-    if (!flag || delay <= 0) return undefined;
-    const timer = setTimeout(() => setElapsed(true), delay);
-    return () => {
-      clearTimeout(timer);
-      setElapsed(false);
-    };
-  }, [flag, delay]);
-  return flag && (delay <= 0 || elapsed);
-}
-
 /** A button that runs an asynchronous action and refuses repeat presses until it settles. */
 export function ActionButton({
   variant = 'primary',
@@ -78,7 +60,8 @@ export function ActionButton({
   const [internalPending, setInternalPending] = useState(false);
   const running = useRef(false);
   const pending = isPending ?? internalPending;
-  const showsPending = useDelayedFlag(pending, pendingDelay);
+  const isElapsed = useDelayedFlag(pending, pendingDelay <= 0 ? undefined : pendingDelay);
+  const showsPending = pending && (pendingDelay <= 0 || isElapsed);
 
   const handlePress = useCallback(
     (event: PressEvent) => {

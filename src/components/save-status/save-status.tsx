@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef } from 'react';
 import type { GlyphName } from '../../core/glyphs.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { useEnterExit } from '../../utils/use-enter-exit.js';
+import { useDelayedFlag } from '../../utils/use-delayed-flag.js';
 import { Button } from '../button/button.js';
 import { Icon } from '../icon/icon.js';
 import { TruncationTooltip } from '../truncation-tooltip/truncation-tooltip.js';
@@ -36,20 +37,6 @@ const phaseGlyphs: Partial<Record<SaveStatusPhase, GlyphName>> = {
   offline: 'offline',
 };
 
-/** Whether the `saved` phase has lasted `delay` milliseconds; resets when the phase changes. */
-function useSavedElapsed(isSaved: boolean, delay: number | undefined): boolean {
-  const [elapsed, setElapsed] = useState(false);
-  useEffect(() => {
-    if (!isSaved || delay === undefined) return undefined;
-    const timer = setTimeout(() => setElapsed(true), delay);
-    return () => {
-      clearTimeout(timer);
-      setElapsed(false);
-    };
-  }, [isSaved, delay]);
-  return isSaved && elapsed;
-}
-
 /**
  * An editor's save status: a label and glyph for the phase in a polite live region, so each change
  * is announced without moving focus, and a Retry button after a failed save.
@@ -64,7 +51,7 @@ export function SaveStatus({
 }: SaveStatusProps) {
   const strings = useUiStrings();
   const ref = useRef<HTMLSpanElement>(null);
-  const isHidden = useSavedElapsed(phase === 'saved', hideSavedAfter);
+  const isHidden = useDelayedFlag(phase === 'saved', hideSavedAfter);
   const { isMounted, isEntering, isExiting } = useEnterExit(ref, phase !== 'idle' && !isHidden);
   const glyph = phaseGlyphs[phase];
   const showLabel = isMounted && phase !== 'idle';

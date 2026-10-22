@@ -617,6 +617,47 @@ describe('ResizeHandle', () => {
     expect(handle).toHaveAttribute('aria-valuenow', '40');
   });
 
+  it('UIC-SPLIT-VIEW-3.3 UIC-SPLIT-VIEW-3.4 clears capture and the resize shield when disabled during a drag', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const onChangeEnd = vi.fn();
+    const onResizingChange = vi.fn();
+    const props = {
+      orientation: 'horizontal' as const,
+      value: 300,
+      minValue: 120,
+      maxValue: 640,
+      'aria-label': 'Resize details',
+      onChange,
+      onChangeEnd,
+      onResizingChange,
+    };
+    const { container, rerender } = render(<ResizeHandle {...props} />);
+    const handle = screen.getByRole('separator', { name: 'Resize details' });
+    const release = vi.fn();
+    Object.assign(handle, {
+      setPointerCapture: vi.fn(),
+      hasPointerCapture: () => true,
+      releasePointerCapture: release,
+    });
+    await user.pointer([
+      { keys: '[MouseLeft>]', target: handle, coords: { clientY: 100 } },
+      { coords: { clientY: 130 } },
+    ]);
+    expect(onChange).toHaveBeenLastCalledWith(330);
+    expect(container.querySelector('.ui-resize-handle__shield')).not.toBeNull();
+    rerender(<ResizeHandle {...props} isDisabled />);
+    expect(release).toHaveBeenCalledTimes(1);
+    expect(handle).not.toHaveAttribute('data-resizing');
+    expect(container.querySelector('.ui-resize-handle__shield')).toBeNull();
+    expect(onResizingChange.mock.calls).toEqual([[true], [false]]);
+    onChange.mockClear();
+    rerender(<ResizeHandle {...props} />);
+    await user.pointer([{ coords: { clientY: 160 } }, { keys: '[/MouseLeft]' }]);
+    expect(onChange).not.toHaveBeenCalled();
+    expect(onChangeEnd).not.toHaveBeenCalled();
+  });
+
   it('UIC-SPLIT-VIEW-3.4 works alone in pixels and ignores input while disabled', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();

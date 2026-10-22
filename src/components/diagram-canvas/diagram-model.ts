@@ -1,5 +1,6 @@
 import type { Key } from '../../core/props.js';
 import { clamp } from '../../utils/clamp.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import type { DiagramPoint, DiagramPortSide, DiagramRect } from './edge-route.js';
 
 /** A connection point on a node's side. */
@@ -189,7 +190,7 @@ export function spreadParallelEdges(edges: readonly DiagramEdge[]): Map<Key, num
   const groups = new Map<string, DiagramEdge[]>();
   for (const edge of edges) {
     if (edge.source === edge.target) continue;
-    const ends = [String(edge.source), String(edge.target)].sort();
+    const ends = [toKeyIdentity(edge.source), toKeyIdentity(edge.target)].sort();
     const key = JSON.stringify(ends);
     const group = groups.get(key);
     if (group) group.push(edge);
@@ -200,7 +201,7 @@ export function spreadParallelEdges(edges: readonly DiagramEdge[]): Map<Key, num
     const first = (JSON.parse(key) as string[])[0];
     group.forEach((edge, index) => {
       const spread = (index - (group.length - 1) / 2) * parallelSpacing;
-      offsets.set(edge.id, String(edge.source) === first ? spread : -spread);
+      offsets.set(edge.id, toKeyIdentity(edge.source) === first ? spread : -spread);
     });
   }
   return offsets;

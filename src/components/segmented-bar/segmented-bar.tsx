@@ -4,6 +4,7 @@ import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key, Size, Tone } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { resolveAmountShares } from '../../utils/resolve-amount-shares.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 
 export type SegmentedBarSize = Extract<Size, 'sm' | 'md' | 'lg'>;
@@ -61,26 +62,19 @@ const hooks = createHooks('segmented-bar', [
 
 const shareFormat: Intl.NumberFormatOptions = { style: 'percent', maximumFractionDigits: 1 };
 
-function toAmount(value: number | undefined): number {
-  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : 0;
-}
-
 /** Each segment's truthful amount and share, and the whole they are shares of. */
 function resolveSegmentedBar(
   segments: readonly SegmentedBarSegment[],
   total?: number,
 ): { total: number; segments: ResolvedSegment[] } {
-  const amounts = segments.map((segment) => toAmount(segment.value));
-  const whole = Math.max(
-    toAmount(total),
-    amounts.reduce((sum, value) => sum + value, 0),
-  );
+  const resolved = resolveAmountShares(segments, (segment) => segment.value, total);
   return {
-    total: whole,
-    segments: segments.map((segment, index) => {
-      const value = amounts[index] ?? 0;
-      return { segment, value, share: whole > 0 ? (value / whole) * 100 : 0 };
-    }),
+    total: resolved.total,
+    segments: resolved.amounts.map(({ item, value, share }) => ({
+      segment: item,
+      value,
+      share: share * 100,
+    })),
   };
 }
 

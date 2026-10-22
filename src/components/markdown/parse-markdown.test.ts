@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { listMarkdownHeadings } from './markdown-headings.js';
+import { createHeadingIdAllocator, listMarkdownHeadings } from './markdown-headings.js';
 import type { MarkdownBlock, MarkdownInline } from './markdown-nodes.js';
 import { parseMarkdown } from './parse-markdown.js';
 
@@ -16,6 +16,116 @@ function inlines(source: string): readonly MarkdownInline[] {
 const text = (value: string) => ({ type: 'text', text: value });
 
 describe('parseMarkdown', () => {
+  it('UIC-MARKDOWN-1.10 UIC-MARKDOWN-1.12 keeps a hundred thousand spans, including unsafe-link text', () => {
+    const content = '`x` '.repeat(100_000).trimEnd();
+    for (const source of [content, `[${content}](javascript:noop)`]) {
+      const nodes = inlines(source);
+      expect(nodes).toHaveLength(199_999);
+      expect(nodes.filter((node) => node.type === 'inlineCode')).toHaveLength(100_000);
+      expect(nodes[0]).toEqual({ type: 'inlineCode', text: 'x' });
+      expect(nodes.at(-1)).toEqual({ type: 'inlineCode', text: 'x' });
+      expect(nodes.some((node) => node.type === 'link')).toBe(false);
+    }
+  });
+
+  it('UIC-MARKDOWN-1.1 UIC-MARKDOWN-1.2 freezes and names deeply nested inline formatting', () => {
+    const document = parseMarkdown(`# ${'*'.repeat(40_000)}Text${'*'.repeat(40_000)}`);
+    expect(listMarkdownHeadings(document)).toEqual([{ id: 'text', label: 'Text', level: 1 }]);
+    const heading = document.children[0];
+    if (heading?.type !== 'heading') throw new Error('expected a heading');
+    let nodes = heading.children;
+    let depth = 0;
+    while (nodes[0] && 'children' in nodes[0]) {
+      nodes = nodes[0].children;
+      depth += 1;
+    }
+    expect(depth).toBe(20_000);
+    expect(nodes).toEqual([text('Text')]);
+    expect(Object.isFrozen(nodes[0])).toBe(true);
+  });
+
+  it('UIC-MARKDOWN-1.6 keeps list paragraphs separated by two hundred thousand blank lines', () => {
+    const [list] = blocks(`- first\n${'\n'.repeat(200_000)}  final`);
+    if (list?.type !== 'list') throw new Error('expected a list');
+    expect(list.children[0]?.children).toEqual([
+      { type: 'paragraph', children: [text('first')] },
+      { type: 'paragraph', children: [text('final')] },
+    ]);
+    expect(list.tight).toBe(false);
+  });
+
+  it('UIC-MARKDOWN-1.2 allocates repeated heading ids without colliding with suffix-like titles', () => {
+    const allocate = createHeadingIdAllocator();
+    expect(['Title', 'Title-2', 'Title', 'Title-3', 'Title'].map(allocate)).toEqual([
+      'title',
+      'title-2',
+      'title-3',
+      'title-3-2',
+      'title-4',
+    ]);
+    const repeated = Array.from({ length: 20_000 }, () => allocate('Repeated'));
+    expect(new Set(repeated).size).toBe(20_000);
+    expect(repeated.at(-1)).toBe('repeated-20000');
+  });
+
+  it('UIC-MARKDOWN-2.9 lists headings inside twenty thousand nested containers', () => {
+    let children = blocks('## Nested');
+    for (let depth = 0; depth < 20_000; depth += 1) children = [{ type: 'blockquote', children }];
+    expect(listMarkdownHeadings({ type: 'document', children }, 'deep-')).toEqual([
+      { id: 'deep-nested', label: 'Nested', level: 2 },
+    ]);
+  });
+
+  it('UIC-MARKDOWN-1.1 UIC-MARKDOWN-1.5 parses five thousand nested block quotes', () => {
+    const document = parseMarkdown(`${'> '.repeat(5_000)}# Nested`);
+    let children = document.children;
+    let depth = 0;
+    while (children[0]?.type === 'blockquote') {
+      depth += 1;
+      children = children[0].children;
+    }
+    expect(depth).toBe(5_000);
+    expect(children[0]).toMatchObject({ type: 'heading', id: 'nested' });
+    expect(Object.isFrozen(children[0])).toBe(true);
+  });
+
+  it('UIC-MARKDOWN-1.2 UIC-MARKDOWN-1.11 preserves source order for nested definitions and repeated headings', () => {
+    const source = [
+      '- ## Repeated',
+      '  [guide]: /first',
+      '  [guide]',
+      '- ## Repeated',
+      '  > ### Repeated',
+      '  > [guide]: /second',
+      '  > [guide]',
+      '',
+      '## Repeated',
+      '[guide]: /third',
+      '[guide]',
+    ].join('\n');
+    const document = parseMarkdown(source);
+    expect(listMarkdownHeadings(document).map((heading) => heading.id)).toEqual([
+      'repeated',
+      'repeated-2',
+      'repeated-3',
+      'repeated-4',
+    ]);
+    const [list, , paragraph] = document.children;
+    if (list?.type !== 'list' || paragraph?.type !== 'paragraph')
+      throw new Error('expected list and paragraph');
+    const first = list.children[0]?.children[1];
+    const quote = list.children[1]?.children[1];
+    if (first?.type !== 'paragraph' || quote?.type !== 'blockquote')
+      throw new Error('expected nested paragraphs');
+    const second = quote.children[1];
+    if (second?.type !== 'paragraph') throw new Error('expected quoted paragraph');
+    for (const block of [first, second, paragraph]) {
+      expect(block.children).toEqual([
+        { type: 'link', href: '/first', title: null, children: [text('guide')] },
+      ]);
+    }
+  });
+
   it('UIC-MARKDOWN-1.1 returns a frozen document tree without touching the DOM', () => {
     const document = parseMarkdown('# Title\n\nSome *text*.');
     expect(document.type).toBe('document');

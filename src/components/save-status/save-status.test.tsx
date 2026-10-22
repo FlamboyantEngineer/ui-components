@@ -86,6 +86,14 @@ describe('SaveStatus', () => {
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
 
+  it('UIC-SAVE-STATUS-1.4 shows the saved label until a zero-delay timer runs', () => {
+    vi.useFakeTimers();
+    render(<SaveStatus phase="saved" hideSavedAfter={0} />);
+    expect(screen.getByRole('status')).toHaveTextContent('Saved');
+    act(() => vi.advanceTimersByTime(0));
+    expect(screen.getByRole('status')).toBeEmptyDOMElement();
+  });
+
   it('UIC-SAVE-STATUS-1.4 hides the saved label after the delay and restarts on change', async () => {
     vi.useFakeTimers();
     const { container, rerender } = render(<SaveStatus phase="saving" hideSavedAfter={2000} />);

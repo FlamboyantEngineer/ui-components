@@ -4,11 +4,12 @@ import type { AriaLabellingProps } from '../../core/events.js';
 import { mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { Chart, type ChartSeries, type ChartTable, type ChartViewProps } from './chart.js';
+import { Chart, type ChartSeries, type ChartViewProps } from './chart.js';
 import { chartHooks, donutChartHooks } from './chart-hooks.js';
 import { ChartLegend, useHiddenKeys, type ChartHiddenKeysProps } from './chart-legend.js';
 import { ChartTooltip, useChartPoints } from './chart-points.js';
 import { resolveDonutGeometry, type DonutGeometry } from './donut-geometry.js';
+import { toDonutTable, type DonutFormats } from './donut-table.js';
 
 /** One part of a donut chart's whole. */
 export interface DonutChartSegment extends ChartSeries {
@@ -36,11 +37,6 @@ export interface DonutChartProps
   showLegend?: boolean | undefined;
   /** The root element. */
   ref?: Ref<HTMLDivElement> | undefined;
-}
-
-interface DonutFormats {
-  value: Intl.NumberFormat;
-  share: Intl.NumberFormat;
 }
 
 const shareFormat: Intl.NumberFormatOptions = { style: 'percent', maximumFractionDigits: 1 };
@@ -117,28 +113,6 @@ function DonutPlot({
       />
     </>
   );
-}
-
-/** The table: every segment's value and share of the whole, hidden ones included. */
-function toDonutTable(
-  segments: readonly DonutChartSegment[],
-  { formats, headings }: { formats: DonutFormats; headings: readonly string[] },
-): ChartTable {
-  const { slices, total } = resolveDonutGeometry({
-    values: segments.map(({ value }, series) => ({ series, value })),
-    diameter: 0,
-  });
-  return {
-    columns: headings,
-    rows: segments.map((segment, series) => {
-      const slice = slices.find((candidate) => candidate.series === series);
-      return [
-        segment.label,
-        formats.value.format(slice?.value ?? 0),
-        formats.share.format(total > 0 ? (slice?.value ?? 0) / total : 0),
-      ];
-    }),
-  };
 }
 
 /**

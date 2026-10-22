@@ -64,7 +64,7 @@ interface Drag {
 }
 
 type ResizeInteractionOptions = ResizeKeyboardInput &
-  Pick<ResizeHandleProps, 'onChange' | 'onChangeEnd' | 'onResizingChange'> & {
+  Pick<ResizeHandleProps, 'onChange' | 'onChangeEnd' | 'onResizingChange' | 'isDisabled'> & {
     getUnitsPerPixel: () => number;
   };
 
@@ -114,6 +114,8 @@ function useResizeInteraction(options: ResizeInteractionOptions) {
     onChange?.(next);
   };
   const pointer = usePointerDrag<HTMLDivElement, Drag>({
+    isDisabled: options.isDisabled,
+    onCancel: () => changeResizing(false),
     onStart: (event) => {
       event.preventDefault();
       latest.current = value;
@@ -207,6 +209,7 @@ export function ResizeHandle({
     onChange,
     onChangeEnd,
     onResizingChange,
+    isDisabled,
   });
   const interactive = isDisabled
     ? {}

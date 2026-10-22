@@ -34,7 +34,7 @@ Verification: `src/components/file-upload/file-upload.test.tsx`, `e2e/file-uploa
 
 ### UIC-FILE-UPLOAD-1.5 - Folders
 
-With `acceptDirectory`, the system chooser shall pick a folder and every file in it is offered, as with `allowsMultiple`; a folder dropped on the drop zone is read, through its subfolders, for its files. Without it a dropped folder is ignored. The drop is read as library dropped items (`DroppedFile`, `DroppedDirectory` and `DroppedText`, which is ignored), whatever building block reports it.
+With `acceptDirectory`, the system chooser shall pick a folder and every file in it is offered, as with `allowsMultiple`; a folder dropped on the drop zone is read, through its subfolders, for its files. Files retain their entry order, with a subfolder's files before the next sibling entry; large folders shall not be limited by JavaScript's function argument count. Without it a dropped folder is ignored. The drop is read as library dropped items (`DroppedFile`, `DroppedDirectory` and `DroppedText`, which is ignored), whatever building block reports it.
 
 Implementation: `src/components/file-upload/file-upload.tsx`, `src/components/file-upload/file-upload-drop.tsx`
 Verification: `src/components/file-upload/file-upload.test.tsx`, `e2e/file-upload.spec.ts`

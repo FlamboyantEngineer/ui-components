@@ -332,10 +332,10 @@ Verification: `src/components/table/table-row.test.tsx`, `e2e/table.spec.ts`
 
 ### UIC-TABLE-9.3 - Sorting and filtering nested rows
 
-The table shall sort child rows among their siblings with the table's sort, and keep a row while it, or any row nested under it, passes the filter, keeping only its child rows that pass.
+The table shall sort child rows among their siblings with the table's sort, and keep a row while it, or any row nested under it, passes the filter, keeping only its child rows that pass. Building, filtering and sorting nested row data shall preserve reading order without depending on the JavaScript call-stack depth.
 
-Implementation: `src/components/table/table-tree.ts`, `src/components/table/use-table-rows.ts`
-Verification: `src/components/table/table-tree.test.ts`, `src/components/table/table-row.test.tsx`
+Implementation: `src/components/table/table-tree.ts`, `src/components/table/use-table-rows.ts`, `src/utils/map-tree.ts`
+Verification: `src/components/table/table-tree.test.ts`, `src/components/table/table-row.test.tsx`, `src/utils/map-tree.test.ts`
 
 ## UIC-TABLE-10 - Pagination
 
@@ -435,6 +435,8 @@ The table shall group with small pure functions: resolving `groupBy` against the
 
 Built-in aggregates shall handle groups larger than the runtime limit on function arguments, retaining the same finite-number and empty-value rules.
 
+Collecting visible rows and group keys shall preserve reading order without call-stack depth limits or repeatedly copying descendant arrays.
+
 Implementation: `src/utils/summarize-numbers.ts`, `src/components/table/table-groups.ts`
 Verification: `src/components/table/table-groups.test.ts`
 
@@ -513,8 +515,10 @@ Verification: `src/utils/tsv.test.ts`
 
 In multiple selection, `selectionActions`, or a drawn column with `bulkEdit`, shall draw a selection bar (`ui-table__selection-bar`, an [Action Row](ACTION-ROW.md) selection bar of size `sm`) between the toolbar and the grid while rows are selected: the number of selected rows the table presents (every enabled one for `all`), a button and Escape that clear the selection, and the caller's actions.
 
+Selection collection shall traverse nested rows once in reading order without constructing a separate descendant list for every parent, and skip traversal for an empty selection.
+
 Implementation: `src/components/table/table-bulk-edit.tsx`, `src/components/table/use-table-selection.ts`, `src/components/table/use-table-model.ts`, `src/components/table/table.tsx`
-Verification: `src/components/table/table-bulk-edit.test.tsx`, `e2e/table.spec.ts`
+Verification: `src/components/table/table-bulk-edit.test.tsx`, `src/components/table/use-table-selection.test.tsx`, `e2e/table.spec.ts`
 
 ### UIC-TABLE-15.2 - Bulk edit
 

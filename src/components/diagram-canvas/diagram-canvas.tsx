@@ -4,6 +4,7 @@ import type { AriaLabellingProps, SelectionProps } from '../../core/events.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { mergeProps, mergeRefs } from '../../utils/merge-props.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { DiagramEdges } from './diagram-edges.js';
 import { diagramHooks as hooks } from './diagram-hooks.js';
@@ -167,7 +168,7 @@ function DiagramViewportArea<T>({
         <DiagramEdges controller={controller} routing={routing} />
         {controller.nodes.map((node) => (
           <DiagramNodeView
-            key={node.id}
+            key={toKeyIdentity(node.id)}
             node={node as DiagramNode<T>}
             controller={controller}
             description={describe(node)}

@@ -84,9 +84,9 @@ Verification: `src/components/step-list-editor/step-list-editor.test.tsx`, `e2e/
 
 ### UIC-STEP-LIST-EDITOR-4.2 - Focus after an edit
 
-The editors that add, remove and move their items (this editor and [Condition Builder](CONDITION-BUILDER.md)) shall move focus with `useFocusRequest`: a request names how to find the element to focus, and after the next render it is focused, then checked again on the following frames until it holds focus (at most 60), since an open menu keeps the page inert for a few frames and moving an element drops its focus. A pointer press or key press ends the request, so a pending check never takes focus back from where the reader has moved it.
+The editors that add, remove and move their items (this editor, [Condition Builder](CONDITION-BUILDER.md) and [Board](BOARD.md)) shall move focus with `useFocusRequest`: a request names how to find the element to focus, and after the next render it is focused, then checked again on the following frames until it holds focus (at most 60 attempts, including while the target has not mounted), since an open menu keeps the page inert for a few frames and moving an element drops its focus. The target's own document and animation frames are used once it exists. A pointer press, key press, newer request or unmount ends the request, so a pending check never takes focus back from where the reader has moved it.
 
-Implementation: `src/utils/use-focus-request.ts`, `src/components/condition-builder/condition-builder.tsx`
+Implementation: `src/utils/use-focus-request.ts`, `src/components/condition-builder/condition-builder.tsx`, `src/components/board/board.tsx`
 Verification: `src/utils/use-focus-request.test.tsx`, `src/components/condition-builder/condition-builder.test.tsx`
 
 ## Hooks

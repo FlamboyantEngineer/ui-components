@@ -71,7 +71,7 @@ Verification: `src/components/calendar-view/calendar-layout.test.ts`, `src/compo
 
 ### UIC-CALENDAR-VIEW-2.5 - Time grid
 
-In the week view, timed events shorter than 24 hours shall be placed in the time grid of each day they touch, clipped to the day, with an inline absolute `top` and `height` in percent of the day, mapped by a [time scale](SCALES.md) over the day's real length (so a day that changes clock time keeps its events at their instants). Overlapping events share the day's width side by side, each with an inline `left` and `width` in percent. An event clipped at the start or end of the day publishes `data-continues-before` or `data-continues-after`.
+In the week view, timed events shorter than 24 hours shall be placed in the time grid of each day they touch, clipped to the day, with an inline absolute `top` and `height` in percent of the day, mapped linearly from their parsed instants over the day's real length (so a 23-hour or 25-hour day keeps its events at their instants, including repeated wall-clock times). Placement shall use the epoch milliseconds directly. Overlapping events share the day's width side by side, each with an inline `left` and `width` in percent. An event clipped at the start or end of the day publishes `data-continues-before` or `data-continues-after`; a zero-duration event keeps zero height.
 
 Implementation: `src/components/calendar-view/calendar-layout.ts`, `src/components/calendar-view/calendar-week.tsx`, `src/utils/time-scale.ts`
 Verification: `src/components/calendar-view/calendar-layout.test.ts`, `src/components/calendar-view/calendar-view.test.tsx`, `e2e/calendar-view.spec.ts`

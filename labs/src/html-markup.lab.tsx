@@ -71,7 +71,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Sanitizing"
-      description="Scripts, styles, frames and form fields are dropped; script URLs, handlers and hook classes go; a new-tab link gets a safe rel."
+      description="Scripts, styles, frames and form fields are dropped; script URLs, handlers and hook classes go; a new-tab link gets a safe rel. Excluded wrappers keep their content in order, including nested wrappers."
     >
       <HtmlMarkup markup={unsafe} data-lab-unsafe />
     </LabSection>

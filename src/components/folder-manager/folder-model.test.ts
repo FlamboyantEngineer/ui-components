@@ -21,6 +21,12 @@ const folders: FolderItem[] = [
   { id: 'vegetables', name: 'Vegetables' },
 ];
 
+function createFolderChain(depth: number): FolderItem {
+  let folder: FolderItem = { id: depth, name: 'Leaf' };
+  for (let id = depth - 1; id >= 0; id -= 1) folder = { id, name: 'Branch', children: [folder] };
+  return folder;
+}
+
 describe('folder model', () => {
   it('UIC-FOLDER-MANAGER-1.1 shapes the folders into tree rows and lists the rows with children', () => {
     const nodes = buildFolderNodes(folders, {});
@@ -108,6 +114,48 @@ describe('folder model', () => {
     expect(planFolderMoves(folders, [vegetables], null)).toEqual([]);
   });
 
+  it('UIC-FOLDER-MANAGER-6.3 plans a large selection without searching for each folder again', () => {
+    let reads = 0;
+    const children = Array.from({ length: 1_000 }, (_, index) => ({
+      get id() {
+        reads += 1;
+        return index;
+      },
+      name: String(index),
+    }));
+    const source: FolderItem = { id: 'source', name: 'Source', children };
+    const destination: FolderItem = { id: 'destination', name: 'Destination' };
+    const moves = planFolderMoves([source, destination], children, destination);
+    expect(reads).toBeLessThanOrEqual(children.length * 5);
+    expect(moves).toEqual(
+      children.map((_, key) => ({ key, targetKey: 'destination', position: 'inside' })),
+    );
+  });
+
+  it('UIC-FOLDER-MANAGER-6.3 skips reading the tree when no folders move', () => {
+    const folders = [
+      {
+        get id(): string {
+          throw new Error('No folder should be read');
+        },
+        name: 'Folder',
+      },
+    ];
+    expect(planFolderMoves(folders, [], null)).toEqual([]);
+  });
+
+  it('UIC-FOLDER-MANAGER-6.3 searches past a deeply nested branch without a call stack limit', () => {
+    let branch: FolderItem = { id: 'leaf', name: 'Leaf' };
+    for (let index = 0; index < 20_000; index += 1) {
+      branch = { id: `branch-${index}`, name: 'Branch', children: [branch] };
+    }
+    const source = { id: 'source', name: 'Source' };
+    const destination = { id: 'destination', name: 'Destination' };
+    expect(planFolderMoves([branch, source, destination], [source], destination)).toEqual([
+      { key: 'source', targetKey: 'destination', position: 'inside' },
+    ]);
+  });
+
   it('UIC-FOLDER-MANAGER-7.1 keeps the folders that match every term, with their ancestors', () => {
     const names = (terms: string[]) => {
       const visit = (nodes: ReturnType<typeof buildFolderNodes>): string[] =>
@@ -122,5 +170,32 @@ describe('folder model', () => {
   it('UIC-FOLDER-MANAGER-2.7 measures a wide folder without argument limits', () => {
     const children = Array.from({ length: 200_000 }, (_, id) => ({ id, name: String(id) }));
     expect(getFolderHeight({ id: 'root', name: 'Root', children })).toBe(2);
+  });
+
+  it('UIC-FOLDER-MANAGER-8.1 prepares deep folders, paths, selections and filtered draft rows', () => {
+    const root = createFolderChain(20_000);
+    const nodes = buildFolderNodes([root], {
+      rootLabel: 'All',
+      terms: ['leaf'],
+      draftParentKey: 20_000,
+    });
+    const path = findFolderPath([root], 20_000);
+    expect(path).toHaveLength(20_001);
+    expect(getFolderHeight(root)).toBe(20_001);
+    expect(collectBranchKeys(nodes)).toHaveLength(20_002);
+    let leaf = nodes[0];
+    while (leaf?.children?.[0] && leaf.id !== 20_000) leaf = leaf.children[0];
+    expect(leaf?.folder).toBe(path.at(-1));
+    expect(leaf?.children?.[0]?.id).toBe(folderDraftKey);
+    expect(listTopmostFolders([root], new Set([20_000]))[0]).toBe(path.at(-1));
+  });
+
+  it('UIC-FOLDER-MANAGER-6.3 lists deep destination paths without a call stack limit', () => {
+    const destinations = listFolderDestinations([createFolderChain(2_000)], new Set());
+    expect(destinations).toHaveLength(2_002);
+    expect(destinations[0]).toEqual({ folder: null, path: [] });
+    expect(destinations.at(-1)?.folder?.id).toBe(2_000);
+    expect(destinations.at(-1)?.path).toHaveLength(2_001);
+    expect(destinations.at(-1)?.path.at(-1)).toBe('Leaf');
   });
 });

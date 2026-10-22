@@ -33,15 +33,17 @@ export function formatCodePoints(char: string): string {
  * Whether a character matches a search: its name holds every term of `query` (ignoring case and
  * accents), or `query` is the character itself or its code point (`U+00B0`, `u+b0`).
  */
-function isCharacterMatch(character: CharacterGridCharacter, query: string): boolean {
-  const trimmed = query.trim();
-  if (trimmed === character.char) return true;
-  const code = codePointQuery.exec(trimmed);
-  if (code?.[1] !== undefined && Array.from(character.char).length === 1) {
-    return character.char.codePointAt(0) === Number.parseInt(code[1], 16);
-  }
-  const terms = splitMatchTerms(trimmed, { ignoreAccents: true });
-  return textMatchesTerms(character.name, terms, { ignoreAccents: true });
+function createCharacterMatch(query: string): (character: CharacterGridCharacter) => boolean {
+  const code = codePointQuery.exec(query)?.[1];
+  const codePoint = code === undefined ? undefined : Number.parseInt(code, 16);
+  const terms = splitMatchTerms(query, { ignoreAccents: true });
+  return (character) => {
+    if (query === character.char) return true;
+    if (codePoint !== undefined && Array.from(character.char).length === 1) {
+      return character.char.codePointAt(0) === codePoint;
+    }
+    return textMatchesTerms(character.name, terms, { ignoreAccents: true });
+  };
 }
 
 /**
@@ -52,11 +54,11 @@ export function filterCharacterCategories(
   categories: readonly CharacterGridCategory[],
   query: string,
 ): CharacterGridCategory[] {
-  if (query.trim() === '') return [...categories];
+  const trimmed = query.trim();
+  if (trimmed === '') return [...categories];
+  const matches = createCharacterMatch(trimmed);
   return categories.flatMap((category) => {
-    const characters = category.characters.filter((character) =>
-      isCharacterMatch(character, query),
-    );
+    const characters = category.characters.filter(matches);
     return characters.length > 0 ? [{ ...category, characters }] : [];
   });
 }

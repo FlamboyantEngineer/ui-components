@@ -50,6 +50,27 @@ function describe2(tree: readonly TableBodyNode<Item>[]): unknown[] {
 }
 
 describe('table grouping helpers', () => {
+  it('UIC-TABLE-13.5 collects deep group keys and visible rows in reading order', () => {
+    let node: TableBodyNode<{ id: number }> = { id: 20_000, row: { id: 20_000 }, children: [] };
+    const expanded = new Set<string>();
+    for (let index = 19_999; index >= 0; index -= 1) {
+      const key = `group-${index}`;
+      expanded.add(key);
+      node = {
+        id: key,
+        group: { key, groupingId: 'kind', label: 'Kind', value: index, rows: [], level: index + 1 },
+        children: [node],
+      };
+    }
+    const keys = listGroupKeys([node]);
+    expect(keys).toHaveLength(20_000);
+    expect(keys[0]).toBe('group-0');
+    expect(keys.at(-1)).toBe('group-19999');
+    expect(listVisibleRows([node], expanded)).toEqual([{ id: 20_000 }]);
+    expanded.delete('group-0');
+    expect(listVisibleRows([node], expanded)).toEqual([]);
+  });
+
   it('UIC-TABLE-13.5 resolves column ids and computed groupings, skipping unknown ids', () => {
     const groupings = resolveGroupings(
       ['city', 'missing', { id: 'heavy', label: 'Heavy', getValue: (row: Item) => row.weight > 2 }],

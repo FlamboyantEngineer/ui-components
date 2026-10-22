@@ -574,6 +574,39 @@ describe('FolderManager', () => {
     expect(onMove).not.toHaveBeenCalled();
   });
 
+  it('UIC-FOLDER-MANAGER-6.3 checks each destination depth against the selected subtree', async () => {
+    const user = userEvent.setup();
+    const onMove = vi.fn();
+    render(
+      <FolderManager
+        aria-label="Folders"
+        folders={[
+          { id: 'moving', name: 'Moving', children: [{ id: 'leaf', name: 'Leaf' }] },
+          { id: 'target', name: 'Target', children: [{ id: 'nested', name: 'Nested' }] },
+        ]}
+        selectionMode="multiple"
+        defaultSelectedKeys={['moving']}
+        maxDepth={3}
+        onMove={onMove}
+      />,
+    );
+    fireEvent.contextMenu(row('Moving'));
+    const menu = await screen.findByRole('menu');
+    await user.click(within(menu).getByRole('menuitem', { name: 'Move to' }));
+    const submenu = (await screen.findAllByRole('menu')).at(-1) as HTMLElement;
+    expect(
+      within(submenu)
+        .getAllByRole('menuitem')
+        .map((item) => item.textContent),
+    ).toEqual(['Top level', 'Target']);
+    await user.click(within(submenu).getByRole('menuitem', { name: 'Target' }));
+    expect(onMove).toHaveBeenCalledExactlyOnceWith({
+      key: 'moving',
+      targetKey: 'target',
+      position: 'inside',
+    });
+  });
+
   it('UIC-FOLDER-MANAGER-7.1 filters the folders by name and highlights the matches', async () => {
     const user = userEvent.setup();
     const { container } = render(<Manager filterable />);

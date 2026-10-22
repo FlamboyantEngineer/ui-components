@@ -26,6 +26,25 @@ const gradientMarkup =
   '</svg>';
 
 describe('SvgMarkup', () => {
+  it('UIC-SVG-MARKUP-2.1 constructs deep drawing children without recursive stack growth', () => {
+    const markup = `<svg>${'<g>'.repeat(20_000)}<path/>${'</g>'.repeat(20_000)}</svg>`;
+    // Construct the React tree without depending on the host renderer's nesting limit.
+    expect(SvgMarkup({ markup })).not.toBeNull();
+  });
+
+  it.each([false, true])(
+    'UIC-SVG-MARKUP-2.1 renders large sibling lists without function argument limits (group: %s)',
+    (isGrouped) => {
+      const paths = '<path d="M0 0"/>'.repeat(200_000);
+      const markup = `<svg>${isGrouped ? `<g>${paths}</g>` : paths}</svg>`;
+      // eslint-disable-next-line testing-library/render-result-naming-convention -- server rendering returns a string.
+      const output = renderToStaticMarkup(<SvgMarkup markup={markup} />);
+      expect(output.split('<path').length - 1).toBe(200_000);
+      expect(output).toMatch(/^<svg/);
+      expect(output).toMatch(/<\/svg>$/);
+    },
+  );
+
   it('UIC-SVG-MARKUP-2.1 renders markup as React elements with converted attributes', () => {
     // eslint-disable-next-line testing-library/render-result-naming-convention -- renderToStaticMarkup returns an HTML string, not a render result
     const outline = renderToStaticMarkup(<SvgMarkup markup={outlineMarkup} />);

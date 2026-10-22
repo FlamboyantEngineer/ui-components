@@ -101,6 +101,13 @@ test.describe('Segmented Bar lab', () => {
       /Failed\s*1\s*8\.3%/,
     ]);
     await expect(running.locator('.ui-segmented-bar__segment')).toHaveCount(2);
+    const large = page.getByRole('group', { name: 'Large amounts' });
+    await expect(large.locator('.ui-segmented-bar__item-share')).toHaveText(['50%', '50%']);
+    expect(
+      await large
+        .locator('.ui-segmented-bar__segment')
+        .evaluateAll((segments) => segments.map((segment) => (segment as HTMLElement).style.width)),
+    ).toEqual(['50%', '50%']);
     await lab.expectAccessible();
   });
 });

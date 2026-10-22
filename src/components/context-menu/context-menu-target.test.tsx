@@ -173,6 +173,30 @@ describe('ContextMenuTrigger', () => {
     await waitFor(() => expect(before).toHaveFocus());
   });
 
+  it('UIC-CONTEXT-MENU-1.3 UIC-CONTEXT-MENU-1.5 cancels a resting touch when the trigger becomes disabled', async () => {
+    const user = setupOnFakeClock();
+    const menu = (isDisabled: boolean) => (
+      <ContextMenuTrigger isDisabled={isDisabled}>
+        <div tabIndex={0}>Report.pdf</div>
+        <FileMenu />
+      </ContextMenuTrigger>
+    );
+    const { rerender } = render(menu(false));
+    const target = screen.getByText('Report.pdf');
+    await user.pointer({ keys: '[TouchA>]', target });
+    act(() => vi.advanceTimersByTime(499));
+    rerender(menu(true));
+    act(() => vi.advanceTimersByTime(500));
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    rerender(menu(false));
+    act(() => vi.advanceTimersByTime(500));
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    await user.pointer({ keys: '[/TouchA]', target });
+    await user.pointer({ keys: '[TouchA>]', target });
+    act(() => vi.advanceTimersByTime(500));
+    expect(screen.getByRole('menu')).toBeInTheDocument();
+  });
+
   it('UIC-CONTEXT-MENU-1.5 closes on Escape and outside presses, and stays out of the way when disabled', async () => {
     const user = userEvent.setup();
     const onAction = vi.fn();

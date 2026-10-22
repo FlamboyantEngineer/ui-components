@@ -6,14 +6,14 @@
 
 ### UIC-MARKDOWN-1.1 - Document tree
 
-`parseMarkdown(source)` shall return a frozen `MarkdownDocument` whose `children` are the blocks in source order, each node a plain object with a `type` (`heading`, `paragraph`, `codeBlock`, `blockquote`, `list`, `listItem`, `table`, `thematicBreak`; inline `text`, `inlineCode`, `emphasis`, `strong`, `strikethrough`, `link`, `image`, `lineBreak`). Lines end at `\n`, `\r\n` or `\r`, leading tabs count to the next multiple of four columns, and every construct the parser does not recognise is text. It never touches the DOM.
+`parseMarkdown(source)` shall return a frozen `MarkdownDocument` whose `children` are the blocks in source order, each node a plain object with a `type` (`heading`, `paragraph`, `codeBlock`, `blockquote`, `list`, `listItem`, `table`, `thematicBreak`; inline `text`, `inlineCode`, `emphasis`, `strong`, `strikethrough`, `link`, `image`, `lineBreak`). Lines end at `\n`, `\r\n` or `\r`, leading tabs count to the next multiple of four columns, and every construct the parser does not recognise is text. It never touches the DOM. Freezing and deferred inline collection shall use bounded appends and iterative walks, including deeply nested inline formatting.
 
 Implementation: `src/components/markdown/parse-markdown.ts`, `src/components/markdown/markdown-nodes.ts`
 Verification: `src/components/markdown/parse-markdown.test.ts`
 
 ### UIC-MARKDOWN-1.2 - Headings
 
-ATX headings (`#` to `######` followed by a space, an optional closing `#` sequence) and setext headings (paragraph lines underlined with `===` for level 1 or `---` for level 2) shall become `heading` nodes with their level and inline content. Each heading's `id` is a slug of its plain text (accents folded, lower case, every run of characters other than letters and digits one hyphen, `section` when nothing is left), suffixed `-2`, `-3`, … when an earlier heading of the document has the same slug.
+ATX headings (`#` to `######` followed by a space, an optional closing `#` sequence) and setext headings (paragraph lines underlined with `===` for level 1 or `---` for level 2) shall become `heading` nodes with their level and inline content. Each heading's `id` is a slug of its plain text (accents folded, lower case, every run of characters other than letters and digits one hyphen, `section` when nothing is left), suffixed `-2`, `-3`, … when an earlier heading of the document has the same slug. Repeated slugs shall resume from their next available suffix while still avoiding collisions with suffix-like source titles.
 
 Implementation: `src/components/markdown/markdown-blocks.ts`, `src/components/markdown/markdown-headings.ts`, `src/components/markdown/markdown-lines.ts`
 Verification: `src/components/markdown/parse-markdown.test.ts`
@@ -34,14 +34,14 @@ Verification: `src/components/markdown/parse-markdown.test.ts`
 
 ### UIC-MARKDOWN-1.5 - Block quotes
 
-Lines starting with `>` shall become a `blockquote` whose content is parsed as blocks, so quotes nest and hold any block. A paragraph line without the marker continues the quote's paragraph (a lazy continuation).
+Lines starting with `>` shall become a `blockquote` whose content is parsed as blocks, so quotes nest and hold any block. A paragraph line without the marker continues the quote's paragraph (a lazy continuation). Five thousand nested block quotes shall parse without recursive calls; deferred container frames retain depth-first source order for reference definitions, inline content and heading ids.
 
-Implementation: `src/components/markdown/markdown-containers.ts`
+Implementation: `src/components/markdown/markdown-containers.ts`, `src/components/markdown/parse-markdown.ts`
 Verification: `src/components/markdown/parse-markdown.test.ts`
 
 ### UIC-MARKDOWN-1.6 - Lists
 
-Items marked `-`, `+` or `*`, or numbered with `.` or `)`, shall become `list` nodes of `listItem`s whose content (the lines indented to the item's content column, and lazy paragraph lines) is parsed as blocks, so lists nest. A change of bullet or delimiter starts a new list; an ordered list's `start` is its first number. A list is `tight` unless a blank line separates two items or two blocks of an item.
+Items marked `-`, `+` or `*`, or numbered with `.` or `)`, shall become `list` nodes of `listItem`s whose content (the lines indented to the item's content column, and lazy paragraph lines) is parsed as blocks, so lists nest. A change of bullet or delimiter starts a new list; an ordered list's `start` is its first number. A list is `tight` unless a blank line separates two items or two blocks of an item. A continuation may follow two hundred thousand blank lines without exceeding the function argument limit.
 
 Implementation: `src/components/markdown/markdown-containers.ts`, `src/components/markdown/markdown-lines.ts`
 Verification: `src/components/markdown/parse-markdown.test.ts`
@@ -69,7 +69,7 @@ Verification: `src/components/markdown/parse-markdown.test.ts`
 
 ### UIC-MARKDOWN-1.10 - Inline formatting
 
-The inline parser shall read `*` and `_` runs into `emphasis` and `strong` nodes under CommonMark's flanking and delimiter rules (no emphasis inside words with `_`), `~` and `~~` runs into `strikethrough`, backtick runs into `inlineCode` (closed by a run of the same length), backslash escapes of ASCII punctuation into literal characters, and character references into their characters. An unclosed delimiter or backtick run stays text.
+The inline parser shall read `*` and `_` runs into `emphasis` and `strong` nodes under CommonMark's flanking and delimiter rules (no emphasis inside words with `_`), `~` and `~~` runs into `strikethrough`, backtick runs into `inlineCode` (closed by a run of the same length), backslash escapes of ASCII punctuation into literal characters, and character references into their characters. An unclosed delimiter or backtick run stays text. A paragraph may contain a hundred thousand inline spans without exceeding the function argument limit.
 
 Implementation: `src/components/markdown/markdown-inlines.ts`, `src/components/markdown/markdown-inline-syntax.ts`, `src/utils/markup.ts`
 Verification: `src/components/markdown/parse-markdown.test.ts`
@@ -83,7 +83,7 @@ Verification: `src/components/markdown/parse-markdown.test.ts`
 
 ### UIC-MARKDOWN-1.12 - Safe content
 
-Raw HTML shall stay text. A link whose destination is not relative or `http`, `https`, `mailto` or `tel` ([`isSafeUrl`](MARKUP.md#uic-markup-21---safe-urls)) shall be replaced by its content, and an image whose source is not relative or `http` or `https` by its alt text, so no `javascript:` or `data:` URL reaches the tree.
+Raw HTML shall stay text. A link whose destination is not relative or `http`, `https`, `mailto` or `tel` ([`isSafeUrl`](MARKUP.md#uic-markup-21---safe-urls)) shall be replaced by its content, and an image whose source is not relative or `http` or `https` by its alt text, so no `javascript:` or `data:` URL reaches the tree. An unsafe link with a hundred thousand inline spans shall preserve its formatted label through bounded appends.
 
 Implementation: `src/components/markdown/markdown-inlines.ts`, `src/utils/safe-url.ts`
 Verification: `src/components/markdown/parse-markdown.test.ts`
@@ -148,7 +148,7 @@ Verification: `src/components/markdown/markdown.test.tsx`, `e2e/markdown.spec.ts
 
 ### UIC-MARKDOWN-2.9 - Outline
 
-`source` shall also take a document `parseMarkdown` returned, and `listMarkdownHeadings(document, headingIdPrefix)` shall list its headings in order as [Outline](OUTLINE.md) headings (`id` with the prefix, `label` the plain text, `level`), so one parse feeds both the reader and its outline.
+`source` shall also take a document `parseMarkdown` returned, and `listMarkdownHeadings(document, headingIdPrefix)` shall list its headings in order as [Outline](OUTLINE.md) headings (`id` with the prefix, `label` the plain text, `level`), so one parse feeds both the reader and its outline. Heading collection and plain-text extraction shall walk nested document and inline nodes iteratively.
 
 Implementation: `src/components/markdown/markdown.tsx`, `src/components/markdown/markdown-headings.ts`
 Verification: `src/components/markdown/markdown.test.tsx`, `src/components/markdown/parse-markdown.test.ts`, `e2e/markdown.spec.ts`

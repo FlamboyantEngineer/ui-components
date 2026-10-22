@@ -1,3 +1,4 @@
+import { toErrorMessage } from '../../utils/to-error-message.js';
 // The editing state of an inline edit: opening and closing the editor, the value being edited, the
 // save and its outcome, focus, and the keys and focus moves that save or cancel.
 
@@ -31,17 +32,6 @@ const focusableSelector = ['input', 'textarea', 'select', 'button', '[tabindex]'
 /** Whether two plain-data values are the same, so saving would change nothing. */
 export function isSameValue(a: unknown, b: unknown): boolean {
   return Object.is(a, b) || JSON.stringify(a) === JSON.stringify(b);
-}
-
-/** Whether a value shows nothing: nullish, blank text or an empty list. */
-export function isEmptyValue(value: unknown): boolean {
-  if (value === null || value === undefined) return true;
-  if (typeof value === 'string') return value.trim() === '';
-  return Array.isArray(value) && value.length === 0;
-}
-
-function toMessage(error: unknown, fallback: string): string {
-  return error instanceof Error && error.message ? error.message : fallback;
 }
 
 /** Whether Enter on this element belongs to the element: a button, an open list or a text area. */
@@ -125,7 +115,7 @@ export function useInlineEdit<T>(options: InlineEditStateOptions<T>) {
       await onSave(next);
       close(focusReturn);
     } catch (failure) {
-      setError(toMessage(failure, options.failureMessage));
+      setError(toErrorMessage(failure, options.failureMessage));
     } finally {
       setPending(false);
     }

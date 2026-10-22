@@ -117,6 +117,17 @@ const BIKE_B: Part[] = [
 
 const ALL_PARTS = ['frame', 'wheels', 'drive', 'cockpit'];
 
+function createNestedRevision(label: string): CompareTreeNode[] {
+  let nodes: CompareTreeNode[] = [{ id: 'leaf', label }];
+  for (let level = 10; level >= 0; level -= 1) {
+    nodes = [{ id: `level-${level}`, label: `Level ${level}`, children: nodes }];
+  }
+  return nodes;
+}
+
+const nestedBefore = createNestedRevision('Earlier leaf');
+const nestedAfter = createNestedRevision('Revised leaf');
+
 /** Sections are equal when their title and their status match. */
 const isSameSection = (left: Section, right: Section) =>
   left.label === right.label && left.status === right.status;
@@ -208,6 +219,17 @@ mountLab(
       description="The expansion controlled from outside with expand all and collapse all. The hub and the headset moved; follow a moved row's arrow button to its other position."
     >
       <ProductStructure />
+    </LabSection>
+    <LabSection
+      title="Nested changes"
+      description="A change at the end of a nested branch keeps its ancestor rows visible; stepping to the difference expands that path."
+    >
+      <TreeCompare
+        aria-label="Nested changes"
+        left={nestedBefore}
+        right={nestedAfter}
+        data-lab-demo="nested"
+      />
     </LabSection>
   </>,
 );

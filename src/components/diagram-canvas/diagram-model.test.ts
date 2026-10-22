@@ -119,6 +119,30 @@ describe('diagram model', () => {
     expect(offsets.get('lone')).toBe(0);
     expect(offsets.has('loop')).toBe(false);
   });
+
+  it('UIC-DIAGRAM-CANVAS-2.3 distinguishes numeric and text node keys in parallel groups', () => {
+    const offsets = spreadParallelEdges([
+      { id: 'numeric', source: 1, target: 2 },
+      { id: 'text', source: '1', target: '2' },
+      { id: 'numeric-back', source: 2, target: 1 },
+    ]);
+    expect(offsets.get('numeric')).toBe(-12);
+    expect(offsets.get('numeric-back')).toBe(-12);
+    expect(offsets.get('text')).toBe(0);
+  });
+
+  it('UIC-DIAGRAM-CANVAS-2.3 keeps composite-key delimiters and reversed edges distinct', () => {
+    const offsets = spreadParallelEdges([
+      { id: 'comma-first', source: 'a,b', target: 'c' },
+      { id: 'comma-last', source: 'a', target: 'b,c' },
+      { id: 'quoted', source: 'a">b', target: '[c]' },
+      { id: 'quoted-back', source: '[c]', target: 'a">b' },
+    ]);
+    expect(offsets.get('comma-first')).toBe(0);
+    expect(offsets.get('comma-last')).toBe(0);
+    expect(Math.abs(offsets.get('quoted')!)).toBe(12);
+    expect(offsets.get('quoted-back')).toBe(offsets.get('quoted'));
+  });
   it('UIC-DIAGRAM-CANVAS-2.3 keeps a large parallel group centred in edge order', () => {
     const parallel = Array.from({ length: 20_000 }, (_, index) => ({
       id: index,

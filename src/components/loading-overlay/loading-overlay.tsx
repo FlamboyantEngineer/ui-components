@@ -1,9 +1,10 @@
-import { useEffect, useId, useMemo, useRef, useState, type ReactNode, type Ref } from 'react';
+import { useId, useMemo, useRef, type ReactNode, type Ref } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import { createHooks, splitDataAttributes } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { useDelayedFlag } from '../../utils/use-delayed-flag.js';
 import { useEnterExit } from '../../utils/use-enter-exit.js';
 import { Portal } from '../portal/portal.js';
 import {
@@ -86,21 +87,6 @@ const cardHooks = createHooks('loading-card', [
 ]);
 const overlayHooks = createHooks('loading-overlay');
 const regionHooks = createHooks('loading-region', ['content']);
-
-/** True while `isActive` has held for `delay` milliseconds (at once without a delay). */
-function useActiveAfter(isActive: boolean, delay: number): boolean {
-  const [isElapsed, setElapsed] = useState(false);
-  const isDelayed = isActive && delay > 0;
-  useEffect(() => {
-    if (!isDelayed) return undefined;
-    const timer = setTimeout(() => setElapsed(true), delay);
-    return () => {
-      clearTimeout(timer);
-      setElapsed(false);
-    };
-  }, [isDelayed, delay]);
-  return isActive && (!isDelayed || isElapsed);
-}
 
 function isMeasured(progress: LoadingProgress | undefined): progress is LoadingProgress {
   return progress !== undefined && !progress.isIndeterminate;
@@ -227,7 +213,8 @@ export function LoadingOverlay({
   ref,
   ...rest
 }: LoadingOverlayProps) {
-  const isShown = useActiveAfter(true, delay);
+  const isElapsed = useDelayedFlag(true, delay > 0 ? delay : undefined);
+  const isShown = delay > 0 ? isElapsed : true;
   const isScrim = presentation === 'scrim';
   const [data, cardProps] = splitDataAttributes(rest);
   if (!isShown) return null;
@@ -260,7 +247,8 @@ export function LoadingRegion({
   id,
   ...rest
 }: LoadingRegionProps) {
-  const isBlocked = useActiveAfter(isLoading, delay);
+  const isElapsed = useDelayedFlag(isLoading, delay > 0 ? delay : undefined);
+  const isBlocked = isLoading && (delay > 0 ? isElapsed : true);
   const overlayRef = useRef<HTMLDivElement>(null);
   const { isMounted, isEntering, isExiting } = useEnterExit(overlayRef, isBlocked);
   const [data, overlayProps] = splitDataAttributes(rest);

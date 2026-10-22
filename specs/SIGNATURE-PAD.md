@@ -29,7 +29,7 @@ Verification: `src/components/signature-pad/signature-pad.test.tsx`
 
 ### UIC-SIGNATURE-PAD-1.4 - Read-only and disabled
 
-A read-only or disabled field shall show its signature and refuse every change: the drawing area ignores the pointer, Undo stroke and Clear are disabled, the name input is natively read-only or disabled and the mode choice is read-only or disabled.
+A read-only or disabled field shall show its signature and refuse every change: the drawing area ignores the pointer, Undo stroke and Clear are disabled, the name input is natively read-only or disabled and the mode choice is read-only or disabled. Becoming read-only or disabled during a stroke shall release capture, clear the live path and drawing state, and abandon the stroke without changing or committing the signature. Unlocking requires a new press.
 
 Implementation: `src/components/signature-pad/signature-pad.tsx`, `src/components/signature-pad/signature-surface.tsx`
 Verification: `src/components/signature-pad/signature-pad.test.tsx`

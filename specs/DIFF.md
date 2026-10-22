@@ -20,7 +20,7 @@ Verification: `src/utils/diff.test.ts`
 
 ### UIC-DIFF-1.3 - Shortest edit
 
-The hunks shall keep as many lines in common as the texts allow (a longest common subsequence), list each change between two equal hunks as one delete followed by one insert, never hold two neighbours of the same kind or an empty hunk, and rebuild the old text from its equal and delete hunks and the new text from its equal and insert hunks. Texts that share a long start or end compare only their differing middles, and twenty thousand lines with scattered changes compare in under two seconds.
+The hunks shall keep as many lines in common as the texts allow (a longest common subsequence), list each change between two equal hunks as one delete followed by one insert, never hold two neighbours of the same kind or an empty hunk, and rebuild the old text from its equal and delete hunks and the new text from its equal and insert hunks. Texts that share a long start or end compare only their differing middles, and twenty thousand lines with scattered changes compare in under two seconds. Recursive comparisons shall append to one edit list, and joining hunks shall append their tokens without repeatedly copying the accumulated run.
 
 Implementation: `src/utils/diff.ts`
 Verification: `src/utils/diff.test.ts`
@@ -61,7 +61,7 @@ Verification: `src/utils/diff.test.ts`
 
 ### UIC-DIFF-4.1 - Chunks
 
-`mergeThreeWay(base, ours, theirs)` shall compare each side with the base through the sequence diff of their lines (lines split as in UIC-DIFF-1.2) and return the merge as chunks (`MergeChunk`) in reading order, each with its `kind` and the `base`, `ours` and `theirs` lines of one run of the base: `unchanged` where neither side changed it, `ours` or `theirs` where only that side did, and `both` where the two sides made the same change. The chunks' base lines joined give the base, their `ours` lines our text and their `theirs` lines their text; two `unchanged` chunks never follow each other, and three empty texts give no chunk. [Merge View](MERGE-VIEW.md) draws them.
+`mergeThreeWay(base, ours, theirs)` shall compare each side with the base through the sequence diff of their lines (lines split as in UIC-DIFF-1.2) and return the merge as chunks (`MergeChunk`) in reading order, each with its `kind` and the `base`, `ours` and `theirs` lines of one run of the base: `unchanged` where neither side changed it, `ours` or `theirs` where only that side did, and `both` where the two sides made the same change. The chunks' base lines joined give the base, their `ours` lines our text and their `theirs` lines their text; two `unchanged` chunks never follow each other, and three empty texts give no chunk. The ordered change lists shall be traversed without removing their first elements, and a chunk may insert or delete two hundred thousand lines without exceeding the platform's function argument limit. [Merge View](MERGE-VIEW.md) draws them.
 
 Implementation: `src/utils/three-way-merge.ts`, `src/utils/diff.ts`
 Verification: `src/utils/three-way-merge.test.ts`

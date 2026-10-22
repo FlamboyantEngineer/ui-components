@@ -129,6 +129,7 @@ export function useDiagramController(options: DiagramControllerOptions): Diagram
   });
   const connect = useDiagramConnect({
     nodes: options.nodes,
+    isEditing,
     onConnect: options.onConnect,
     announce,
   });

@@ -2,6 +2,7 @@ import { createElement, Fragment, useMemo, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { UiLink } from '../../core/provider.js';
+import { mapTree } from '../../utils/map-tree.js';
 import { TextMatch } from '../text-match/text-match.js';
 import {
   defaultHtmlPolicy,
@@ -65,16 +66,19 @@ function renderDefaultElement(element: HtmlElementNode, children: ReactNode): Re
 type ElementRenderer = HtmlMarkupProps['renderElement'];
 
 function renderNodes(nodes: readonly HtmlNode[], renderElement: ElementRenderer): ReactNode[] {
-  return nodes.map((node, index) => {
-    if (node.type === 'text') return <TextMatch key={index}>{node.text}</TextMatch>;
-    const children = renderNodes(node.children, renderElement);
-    const custom = renderElement?.(node, children);
-    return (
-      <Fragment key={index}>
-        {custom === undefined ? renderDefaultElement(node, children) : custom}
-      </Fragment>
-    );
-  });
+  return mapTree<HtmlNode, ReactNode>(
+    nodes,
+    (node) => (node.type === 'element' ? node.children : undefined),
+    (node, children, index) => {
+      if (node.type === 'text') return <TextMatch key={index}>{node.text}</TextMatch>;
+      const custom = renderElement?.(node, children);
+      return (
+        <Fragment key={index}>
+          {custom === undefined ? renderDefaultElement(node, children) : custom}
+        </Fragment>
+      );
+    },
+  );
 }
 
 /**

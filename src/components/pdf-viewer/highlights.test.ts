@@ -39,4 +39,28 @@ describe('highlightTextRuns', () => {
     expect(highlighted.current).toBeNull();
     expect(runs[0]?.childNodes).toHaveLength(1);
   });
+
+  it('UIC-PDF-VIEWER-5.1 highlights many matches in one run and restores its text', () => {
+    const count = 1_000;
+    const text = 'a '.repeat(count);
+    const [run] = createRuns([text]);
+    expect(run).toBeDefined();
+    const highlighted = highlightTextRuns({
+      runs: [run!],
+      texts: [text],
+      ranges: Array.from({ length: count }, (_, index) => ({
+        run: 0,
+        start: index * 2,
+        end: index * 2 + 1,
+        isCurrent: index === 500,
+      })),
+    });
+    expect(run?.querySelectorAll('.ui-pdf-viewer__match')).toHaveLength(count);
+    expect(run?.textContent).toBe(text);
+    expect(highlighted.current).toBe(run?.querySelectorAll('.ui-pdf-viewer__match')[500]);
+    expect(highlighted.current).toHaveAttribute('data-current', 'true');
+    highlighted.restore();
+    expect(run?.textContent).toBe(text);
+    expect(run?.childNodes).toHaveLength(1);
+  });
 });

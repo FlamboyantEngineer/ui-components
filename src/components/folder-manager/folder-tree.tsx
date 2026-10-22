@@ -2,6 +2,7 @@ import { useCallback, useRef, type KeyboardEvent } from 'react';
 import type { Key, Selection } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { TreeMove } from '../../utils/tree-reorder.js';
+import { walkTree } from '../../utils/walk-tree.js';
 import { ContextMenuTrigger } from '../context-menu/context-menu.js';
 import { InlineError } from '../inline-error/inline-error.js';
 import { Menu, type MenuEntry } from '../menu/menu.js';
@@ -38,9 +39,13 @@ export interface FolderTreeProps<T extends FolderItem> {
 
 /** The selected folder keys a tree selection stands for: never the root or draft rows. */
 function toFolderKeys<T extends FolderItem>(keys: Selection, nodes: readonly FolderNode<T>[]) {
-  const all = (level: readonly FolderNode<T>[]): Key[] =>
-    level.flatMap((node) => [node.id, ...(node.children ? all(node.children) : [])]);
-  const chosen = keys === 'all' ? all(nodes) : [...keys];
+  const chosen =
+    keys === 'all'
+      ? Array.from(
+          walkTree(nodes, (node) => node.children),
+          (node) => node.id,
+        )
+      : [...keys];
   return chosen.filter((key) => key !== folderRootKey && key !== folderDraftKey);
 }
 
@@ -68,15 +73,11 @@ function useTreeSelection(rows: readonly Key[]) {
 function nodeAt<T extends FolderItem>(target: EventTarget, nodes: readonly FolderNode<T>[]) {
   const row = target instanceof Element ? target.closest('[role="row"]') : null;
   const key = row?.getAttribute('data-key');
-  const visit = (level: readonly FolderNode<T>[]): FolderNode<T> | undefined => {
-    for (const node of level) {
-      if (String(node.id) === key) return node;
-      const found = node.children ? visit(node.children) : undefined;
-      if (found) return found;
-    }
-    return undefined;
-  };
-  return key === null || key === undefined ? undefined : visit(nodes);
+  if (key === null || key === undefined) return undefined;
+  for (const node of walkTree(nodes, (node) => node.children)) {
+    if (String(node.id) === key) return node;
+  }
+  return undefined;
 }
 
 /** Whether `node` may go among `parent`'s children within the depth limit. */

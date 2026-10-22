@@ -116,8 +116,10 @@ Verification: `src/components/folder-manager/folder-manager.test.tsx`
 
 A folder with `hasChildren` and no `children` shall start collapsed with an expand button (UIC-TREE-2.2). Expanding it calls `onLoadChildren` with its key, which may return a promise, and the tree shows its loading row below the folder while the promise is pending; the owner adds the subfolders to `folders`, and the folder stays expanded. A rejection shows its message, or the provider string `actionFailed`, in an `InlineError` alert (`ui-folder-manager__load-error`) in the folder's row, whose Retry button loads again.
 
+Expansion shall collect branch and lazy-folder membership once per tree walk, so opening many folders does not search the tree again for each key.
+
 Implementation: `src/components/tree/use-tree-loads.ts`, `src/components/folder-manager/use-folder-tree.ts`, `src/components/folder-manager/folder-tree.tsx`, `src/components/folder-manager/folder-model.ts`
-Verification: `src/components/folder-manager/folder-manager.test.tsx`, `src/components/folder-manager/folder-model.test.ts`, `e2e/folder-manager.spec.ts`
+Verification: `src/components/folder-manager/folder-manager.test.tsx`, `src/components/folder-manager/folder-model.test.ts`, `src/components/folder-manager/use-folder-tree.test.tsx`, `e2e/folder-manager.spec.ts`
 
 ## UIC-FOLDER-MANAGER-6 - Several folders
 
@@ -139,6 +141,8 @@ Verification: `src/components/folder-manager/folder-manager.test.tsx`, `src/comp
 
 With `onMove` in multiple selection, the context menu shall hold Move to (provider string `moveTo`) with a submenu of the places the selected folders may go: the top level (named by `rootLabel`, or the provider string `topLevel`), then every folder in tree order, named by its path (`Fruit / Citrus`), except the selected folders, the folders inside them and the places where a selected folder would sit below `maxDepth`. Choosing one reports a `TreeMove` for each selected folder outside another selected one, in tree order: inside the folder as its last child, or after the last top-level folder and then after the folder moved before it. A folder already there is left alone, and the destination expands.
 
+Destination depth checks shall reuse the paths already listed. Planning a selection's moves shall read the folders' current parents in one tree traversal rather than search again for each selected folder, stopping once all selected folders are found. An empty selection shall not read any folders.
+
 Implementation: `src/components/folder-manager/folder-moves.ts`, `src/components/folder-manager/folder-model.ts`, `src/components/folder-manager/folder-manager.tsx`, `src/components/folder-manager/use-folder-manager.ts`, `src/core/strings.ts`
 Verification: `src/components/folder-manager/folder-manager.test.tsx`, `src/components/folder-manager/folder-model.test.ts`, `e2e/folder-manager.spec.ts`
 
@@ -148,8 +152,10 @@ Verification: `src/components/folder-manager/folder-manager.test.tsx`, `src/comp
 
 `filterable` shall draw a [SearchField](SEARCH-FIELD.md) (`ui-folder-manager__filter`) above the tree, named by the provider string `filterLabel` with the tree's `aria-label` (or `search`). Its query keeps the loaded folders whose name holds every term, matched as [TextMatch](TEXT-MATCH.md) matches them, with their ancestors, expands the branches that hold matches and marks the matched text with `TextMatch`; without a match the tree shows the provider string `noResults`. Starting to create or rename a folder clears the query.
 
+Revealing matching branches shall compare collapsed keys against a set of revealed keys, without a repeated scan for each branch.
+
 Implementation: `src/components/folder-manager/folder-manager.tsx`, `src/components/folder-manager/folder-model.ts`, `src/components/folder-manager/use-folder-manager.ts`, `src/components/folder-manager/folder-tree.tsx`
-Verification: `src/components/folder-manager/folder-manager.test.tsx`, `src/components/folder-manager/folder-model.test.ts`, `e2e/folder-manager.spec.ts`
+Verification: `src/components/folder-manager/folder-manager.test.tsx`, `src/components/folder-manager/folder-model.test.ts`, `src/components/folder-manager/use-folder-tree.test.tsx`, `e2e/folder-manager.spec.ts`
 
 ## UIC-FOLDER-MANAGER-8 - Large trees
 
@@ -157,8 +163,10 @@ Verification: `src/components/folder-manager/folder-manager.test.tsx`, `src/comp
 
 `virtualized` and `rowHeight` shall pass to the tree, which then renders only the rows in view (UIC-TREE-4.5).
 
-Implementation: `src/components/folder-manager/folder-manager.tsx`, `src/components/folder-manager/folder-tree.tsx`
-Verification: `src/components/folder-manager/folder-manager.test.tsx`, `e2e/folder-manager.spec.ts`
+Preparing filtered nodes, collecting branch keys and selected folders, measuring paths and subtree height, and listing destinations shall preserve reading order without a JavaScript call stack depth limit. Draft rows remain last at their requested parent, and a folder with loaded children never becomes lazy merely because filtering hides those children.
+
+Implementation: `src/components/folder-manager/folder-manager.tsx`, `src/components/folder-manager/folder-tree.tsx`, `src/components/folder-manager/folder-model.ts`, `src/utils/map-tree.ts`, `src/utils/walk-tree.ts`
+Verification: `src/components/folder-manager/folder-manager.test.tsx`, `src/components/folder-manager/folder-model.test.ts`, `e2e/folder-manager.spec.ts`
 
 ## Hooks
 

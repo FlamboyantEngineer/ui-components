@@ -20,6 +20,12 @@ export interface HtmlTextNode {
 
 export type HtmlNode = HtmlElementNode | HtmlTextNode;
 
+interface FilterLevel {
+  iterator: Iterator<RawNode>;
+  output: HtmlNode[];
+  element: RawElement | null;
+}
+
 /** What `sanitizeHtml` keeps. Names are lower case. */
 export interface HtmlPolicy {
   /** Elements kept. Any other element is unwrapped: its content stays in its place. */
@@ -114,19 +120,39 @@ function filterAttributes(element: RawElement, policy: HtmlPolicy): Record<strin
 }
 
 function filterNodes(nodes: readonly RawNode[], policy: HtmlPolicy): HtmlNode[] {
-  return nodes.flatMap((node): HtmlNode[] => {
-    if (typeof node === 'string') return [Object.freeze({ type: 'text', text: node })];
-    const children = filterNodes(node.children, policy);
-    if (!policy.elements.includes(node.tag)) return children;
-    return [
-      Object.freeze({
-        type: 'element',
-        tag: node.tag,
-        attributes: Object.freeze(filterAttributes(node, policy)),
-        children: Object.freeze(children),
-      }),
-    ];
-  });
+  const output: HtmlNode[] = [];
+  const elements = new Set(policy.elements);
+  const levels: FilterLevel[] = [{ iterator: nodes[Symbol.iterator](), output, element: null }];
+  while (levels.length > 0) {
+    const level = levels.at(-1)!;
+    const next = level.iterator.next();
+    if (next.done) {
+      levels.pop();
+      if (level.element) {
+        levels.at(-1)!.output.push(
+          Object.freeze({
+            type: 'element',
+            tag: level.element.tag,
+            attributes: Object.freeze(filterAttributes(level.element, policy)),
+            children: Object.freeze(level.output),
+          }),
+        );
+      }
+      continue;
+    }
+    const node = next.value;
+    if (typeof node === 'string') {
+      level.output.push(Object.freeze({ type: 'text', text: node }));
+      continue;
+    }
+    const isAllowed = elements.has(node.tag);
+    levels.push({
+      iterator: node.children[Symbol.iterator](),
+      output: isAllowed ? [] : level.output,
+      element: isAllowed ? node : null,
+    });
+  }
+  return output;
 }
 
 /**

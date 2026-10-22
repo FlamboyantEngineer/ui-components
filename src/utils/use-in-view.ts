@@ -46,8 +46,10 @@ export function useInView(
     const element = resolveElement(target);
     const Observer = element?.ownerDocument.defaultView?.IntersectionObserver;
     if (!enabled || !element || typeof Observer !== 'function') return undefined;
+    let active = true;
     const observer = new Observer(
       (entries) => {
+        if (!active) return;
         const entry = entries.findLast((candidate) => candidate.target === element);
         if (entry) setInView(entry.isIntersecting);
       },
@@ -55,6 +57,7 @@ export function useInView(
     );
     observer.observe(element);
     return () => {
+      active = false;
       observer.disconnect();
       setInView(false);
     };

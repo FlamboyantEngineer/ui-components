@@ -1,9 +1,10 @@
+import { isEmptyValue } from '../../utils/is-empty-value.js';
 // How a field decides its validation: its issues, its status and message, and when it shows them.
 
 import { useCallback, useState } from 'react';
 import type { UiStrings } from '../../core/strings.js';
 import type { FieldValidationErrors, FieldValidationMode } from './field-scope.js';
-import { isFieldValueEmpty, isFieldValueEqual } from './field-value.js';
+import { isFieldValueEqual } from './field-value.js';
 
 export type FieldSeverity = 'error' | 'warning';
 
@@ -64,7 +65,7 @@ export function checkFieldValue<T>(
   rules: { isRequired?: boolean | undefined; validate?: ((value: T) => FieldIssues) | undefined },
   strings: UiStrings,
 ): FieldIssue[] {
-  if (rules.isRequired && isFieldValueEmpty(value)) {
+  if (rules.isRequired && isEmptyValue(value)) {
     return [{ severity: 'error', message: strings.valueRequired, validity: 'valueMissing' }];
   }
   return toIssueList(rules.validate?.(value));

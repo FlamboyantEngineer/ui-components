@@ -6,7 +6,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { TextMatchProvider } from '../text-match/text-match.js';
-import { HtmlMarkup } from './html-markup.js';
+import { HtmlMarkup, type HtmlMarkupProps } from './html-markup.js';
 
 const reply =
   '<p>Thanks <span data-person="ana" class="mention">@Ana</span>, see <a href="/docs">the docs</a>.</p>' +
@@ -15,6 +15,21 @@ const reply =
   '<p>Line<br>break <time datetime="2026-01-02">today</time></p><script>window.unsafe = true</script>';
 
 describe('HtmlMarkup', () => {
+  it('UIC-HTML-MARKUP-2.1 UIC-HTML-MARKUP-2.3 builds deeply nested element overrides from children outward', () => {
+    const depth = 20_000;
+    const renderElement = vi.fn<NonNullable<HtmlMarkupProps['renderElement']>>(() => 'Ready');
+    render(
+      <HtmlMarkup
+        markup={'<span>'.repeat(depth) + '<b>Leaf</b>' + '</span>'.repeat(depth)}
+        renderElement={renderElement}
+      />,
+    );
+    expect(screen.getByText('Ready')).toBeInTheDocument();
+    expect(renderElement).toHaveBeenCalledTimes(depth + 1);
+    expect(renderElement.mock.calls[0]?.[0].tag).toBe('b');
+    expect(renderElement.mock.calls.at(-1)?.[0].tag).toBe('span');
+  });
+
   it('UIC-HTML-MARKUP-2.1 renders the sanitized tree as React elements with React attribute names', () => {
     const errors = vi.spyOn(console, 'error');
     const { container } = render(<HtmlMarkup markup={reply} />);

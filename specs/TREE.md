@@ -8,8 +8,10 @@
 
 `Tree` shall render a React Aria tree grid named by its `aria-label` or `aria-labelledby`, with one row per visible item. Children come from `getChildren` (the item's `children` by default), and `getTextValue` gives each row its accessible name and the text typeahead matches. Each row has `aria-level`, and `aria-expanded` when it has children. The caller's data stays its own: the tree reads items only through `id`, the accessors and the render callbacks.
 
-Implementation: `src/components/tree/tree.tsx`, `src/components/tree/tree-item.tsx`
-Verification: `src/components/tree/tree.test.tsx`, `e2e/tree.spec.ts`
+Library item lookups and loaded key collection shall retain reading order through iterative tree walks, with no repeated descendant-array copies. A lookup stops before reading the matched item's children.
+
+Implementation: `src/components/tree/tree.tsx`, `src/components/tree/tree-item.tsx`, `src/utils/walk-tree.ts`
+Verification: `src/components/tree/tree.test.tsx`, `src/utils/walk-tree.test.ts`, `e2e/tree.spec.ts`
 
 ### UIC-TREE-1.2 - Row anatomy
 

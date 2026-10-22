@@ -36,6 +36,62 @@ describe('PDF search', () => {
     ]);
   });
 
+  it('UIC-PDF-VIEWER-5.1 splits a match across a large number of text runs', () => {
+    const count = 200_000;
+    const page = createPageText({
+      items: Array.from({ length: count }, () => ({ str: 'a', hasEOL: false })),
+    });
+    const ranges = groupMatchRanges([page], [{ pageIndex: 0, start: 0, end: count }], {
+      current: 0,
+    }).get(0);
+    expect(ranges).toHaveLength(count);
+    expect(ranges?.[0]).toEqual({ run: 0, start: 0, end: 1, isCurrent: true });
+    expect(ranges?.at(-1)).toEqual({ run: count - 1, start: 0, end: 1, isCurrent: true });
+  });
+
+  it('UIC-PDF-VIEWER-5.1 locates many matches without scanning unrelated text runs', () => {
+    const count = 20_000;
+    let reads = 0;
+    const starts = new Proxy(
+      Array.from({ length: count }, (_, index) => index),
+      {
+        get(target, key, receiver) {
+          if (typeof key === 'string' && /^\d+$/.test(key)) reads += 1;
+          return Reflect.get(target, key, receiver);
+        },
+      },
+    );
+    const page = { text: 'a'.repeat(count), starts, lengths: Array<number>(count).fill(1) };
+    const matches = Array.from({ length: 1_000 }, (_, index) => ({
+      pageIndex: 0,
+      start: index * 20,
+      end: index * 20 + 1,
+    }));
+    const ranges = groupMatchRanges([page], matches, { current: 500 }).get(0);
+    expect(ranges).toHaveLength(matches.length);
+    expect(ranges?.[500]).toEqual({ run: 10_000, start: 0, end: 1, isCurrent: true });
+    expect(reads).toBeLessThan(count);
+  });
+
+  it('UIC-PDF-VIEWER-5.1 keeps match order and skips empty runs at matching boundaries', () => {
+    const page = createPageText({
+      items: ['', 'ab', '', 'cd'].map((str) => ({ str, hasEOL: false })),
+    });
+    const ranges = groupMatchRanges(
+      [page],
+      [
+        { pageIndex: 0, start: 2, end: 4 },
+        { pageIndex: 0, start: 1, end: 3 },
+      ],
+      { current: 1 },
+    ).get(0);
+    expect(ranges).toEqual([
+      { run: 3, start: 0, end: 2, isCurrent: false },
+      { run: 1, start: 1, end: 2, isCurrent: true },
+      { run: 3, start: 0, end: 1, isCurrent: true },
+    ]);
+  });
+
   it('UIC-PDF-VIEWER-5.3 starts at the first match on or after a page, wrapping to the first', () => {
     const matches = findTextMatches(pages, 'harvest');
     expect(findMatchFrom(matches, 0)).toBe(0);

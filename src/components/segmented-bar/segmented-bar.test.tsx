@@ -88,6 +88,28 @@ describe('SegmentedBar', () => {
     expect(bar.querySelector('.ui-segmented-bar__total')).toHaveTextContent('0 total');
   });
 
+  it('UIC-SEGMENTED-BAR-1.2 draws finite extreme amounts proportionally when their sum overflows', () => {
+    const segments = [
+      { id: 'a', label: 'First', value: Number.MAX_VALUE },
+      { id: 'b', label: 'Second', value: Number.MAX_VALUE },
+    ];
+    const { rerender } = render(
+      <SegmentedBar aria-label="Extreme amounts" segments={segments} total={Number.MAX_VALUE} />,
+    );
+    const bar = screen.getByRole('group', { name: 'Extreme amounts' });
+    expect(widths(bar)).toEqual(['50%', '50%']);
+    expect(
+      [...bar.querySelectorAll('.ui-segmented-bar__item-share')].map((item) => item.textContent),
+    ).toEqual(['50%', '50%']);
+    rerender(
+      <SegmentedBar
+        aria-label="Extreme amounts"
+        segments={segments.map((segment) => ({ ...segment, value: Number.MIN_VALUE }))}
+      />,
+    );
+    expect(widths(bar)).toEqual(['50%', '50%']);
+  });
+
   it('UIC-SEGMENTED-BAR-1.3 publishes each tone on the segment and its entry, neutral by default', () => {
     const tones = ['neutral', 'info', 'success', 'warning', 'danger'] as const;
     render(

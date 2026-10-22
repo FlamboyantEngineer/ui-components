@@ -156,7 +156,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Inline"
-      description="Search by name or code point (try “arrow”, “u+00b0” or “°”), move with the arrow keys, choose with a press or Enter; choices lead the grid."
+      description="Search the whole set by name, ignoring accents, or by code point (try “arrow”, “u+00b0” or “°”), move with the arrow keys, choose with a press or Enter; choices lead the grid."
     >
       <InlineGrid />
     </LabSection>

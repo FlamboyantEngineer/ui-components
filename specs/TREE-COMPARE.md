@@ -6,7 +6,7 @@
 
 ### UIC-TREE-COMPARE-1.1 - Nodes matched by id
 
-`compareTrees(left, right, options)` shall take two lists of nodes (`CompareTreeNode`: an `id` unique within its tree, a `label` and optional `children` of the same type) and return `{ rows, counts }`, where `rows` are aligned rows (`ComparedTreeRow`) nested like the trees, each with a unique `id`, the `nodeId` it shows, its `left` and `right` nodes where it shows them, its `change` and its child rows. Sibling lists are aligned on their longest common run of ids ([UIC-DIFF-3.1](DIFF.md#uic-diff-31---hunks-of-items)); a node both lists hold in that run is one row holding both nodes, `unchanged` when `options.isEqual(left, right)` holds (equal labels by default) and `changed` otherwise, and its children are aligned under it.
+`compareTrees(left, right, options)` shall take two lists of nodes (`CompareTreeNode`: an `id` unique within its tree, a `label` and optional `children` of the same type) and return `{ rows, counts }`, where `rows` are aligned rows (`ComparedTreeRow`) nested like the trees, each with a unique `id`, the `nodeId` it shows, its `left` and `right` nodes where it shows them, its `change` and its child rows. Sibling lists are aligned on their longest common run of ids ([UIC-DIFF-3.1](DIFF.md#uic-diff-31---hunks-of-items)); a node both lists hold in that run is one row holding both nodes, `unchanged` when `options.isEqual(left, right)` holds (equal labels by default) and `changed` otherwise, and its children are aligned under it. Indexing and alignment shall handle twenty thousand nested nodes without recursive calls; equality callbacks keep depth-first reading order.
 
 Implementation: `src/utils/compare-trees.ts`, `src/utils/diff.ts`
 Verification: `src/utils/compare-trees.test.ts`
@@ -20,7 +20,7 @@ Verification: `src/utils/compare-trees.test.ts`
 
 ### UIC-TREE-COMPARE-1.3 - Moved nodes
 
-A node both trees hold under another parent, or out of order among the same siblings, shall be `moved` and appear twice: at its old position as a row holding only the left node, with no child rows and the id `moved-from:<id>`, and at its new position as a row holding only the right node, with the node's left and right children aligned below it. Each row names the other in `counterpartId`. A node and its parent that swap places still give a finite list of rows.
+A node both trees hold under another parent, or out of order among the same siblings, shall be `moved` and appear twice: at its old position as a row holding only the left node, with no child rows and the id `moved-from:<id>`, and at its new position as a row holding only the right node, with the node's left and right children aligned below it. Each row names the other in `counterpartId`. A node and its parent that swap places still give a finite list of rows. If a generated old-position id collides with an input or generated row id, it shall receive the first unused suffix `:2`, `:3`, and so on; both counterparts keep the allocated identity.
 
 Implementation: `src/utils/compare-trees.ts`
 Verification: `src/utils/compare-trees.test.ts`
@@ -59,26 +59,26 @@ Verification: `src/components/tree-compare/tree-compare.test.tsx`, `e2e/tree-com
 
 ### UIC-TREE-COMPARE-3.1 - One expansion for both sides
 
-Expanding or collapsing a row shall show or hide its child rows on both sides at once, from the expand button, ArrowRight and ArrowLeft, or pressing a row with child rows. The expanded rows are controlled with `expandedKeys` and `onExpandedChange` (row ids), or uncontrolled from `defaultExpandedKeys`; without it every row with a difference below it starts expanded.
+Expanding or collapsing a row shall show or hide its child rows on both sides at once, from the expand button, ArrowRight and ArrowLeft, or pressing a row with child rows. The expanded rows are controlled with `expandedKeys` and `onExpandedChange` (row ids), or uncontrolled from `defaultExpandedKeys`; without it every row with a difference below it starts expanded. Expansion and row indexing shall traverse deep rows iteratively and store one immediate parent link per child instead of copying every ancestor path.
 
 Implementation: `src/components/tree-compare/tree-compare.tsx`, `src/components/tree-compare/tree-compare-rows.ts`
-Verification: `src/components/tree-compare/tree-compare.test.tsx`, `e2e/tree-compare.spec.ts`
+Verification: `src/components/tree-compare/tree-compare-rows.test.ts`, `src/components/tree-compare/tree-compare.test.tsx`, `e2e/tree-compare.spec.ts`
 
 ### UIC-TREE-COMPARE-3.2 - Only differences
 
-The `ui-tree-compare__changes-only` [Switch](SWITCH.md), named by the provider's `treeChangesOnly` string, shall keep only the rows that differ and the rows above them, hiding unchanged rows with no difference below. It is controlled with `changesOnly` and `onChangesOnlyChange`, or uncontrolled from `defaultChangesOnly` (off), and the root publishes `data-changes-only` while it is on. A comparison with no rows to show reads the provider's `treeNoDifferences` string in the tree's empty state.
+The `ui-tree-compare__changes-only` [Switch](SWITCH.md), named by the provider's `treeChangesOnly` string, shall keep only the rows that differ and the rows above them, hiding unchanged rows with no difference below. It is controlled with `changesOnly` and `onChangesOnlyChange`, or uncontrolled from `defaultChangesOnly` (off), and the root publishes `data-changes-only` while it is on. A comparison with no rows to show reads the provider's `treeNoDifferences` string in the tree's empty state. Filtering shall retain deep ancestor context without recursive calls.
 
 Implementation: `src/components/tree-compare/tree-compare.tsx`, `src/components/tree-compare/tree-compare-rows.ts`
-Verification: `src/components/tree-compare/tree-compare.test.tsx`, `e2e/tree-compare.spec.ts`
+Verification: `src/components/tree-compare/tree-compare-rows.test.ts`, `src/components/tree-compare/tree-compare.test.tsx`, `e2e/tree-compare.spec.ts`
 
 ## UIC-TREE-COMPARE-4 - Navigation
 
 ### UIC-TREE-COMPARE-4.1 - Stepping between differences
 
-The `ui-tree-compare__previous` and `ui-tree-compare__next` icon buttons (the provider's `treePreviousChange` and `treeNextChange` strings), and Shift+F7 and F7 in a row, shall move focus to the previous or the next row with a difference in reading order, starting from the row last focused and wrapping around at either end, expanding the rows above it first and scrolling it into view. Both buttons are disabled while the trees do not differ.
+The `ui-tree-compare__previous` and `ui-tree-compare__next` icon buttons (the provider's `treePreviousChange` and `treeNextChange` strings), and Shift+F7 and F7 in a row, shall move focus to the previous or the next row with a difference in reading order, starting from the row last focused and wrapping around at either end, expanding the rows above it first and scrolling it into view. Both buttons are disabled while the trees do not differ. A step shall scan the indexed order directly without allocating filtered or reversed row arrays.
 
 Implementation: `src/components/tree-compare/tree-compare.tsx`, `src/components/tree-compare/use-tree-compare-navigation.ts`, `src/components/tree-compare/tree-compare-rows.ts`
-Verification: `src/components/tree-compare/tree-compare.test.tsx`, `e2e/tree-compare.spec.ts`
+Verification: `src/components/tree-compare/tree-compare-rows.test.ts`, `src/components/tree-compare/tree-compare.test.tsx`, `e2e/tree-compare.spec.ts`
 
 ### UIC-TREE-COMPARE-4.2 - Moved rows link their positions
 

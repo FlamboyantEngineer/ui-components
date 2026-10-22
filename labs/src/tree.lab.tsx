@@ -389,7 +389,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Loading on demand"
-      description="Opening a region loads its towns. South fails the first time: its row shows why, with a retry."
+      description="Opening a region loads its towns in their given order. South fails the first time: its row shows why, with a retry."
     >
       <LoadingTree />
     </LabSection>
