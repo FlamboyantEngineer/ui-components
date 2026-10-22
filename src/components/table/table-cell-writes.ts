@@ -1,3 +1,4 @@
+import { findMaximum } from '../../utils/find-maximum.js';
 import { formatTsv } from '../../utils/tsv.js';
 import { listBoundsCells, type CellBounds, type CellGrid } from './table-cell-range.js';
 import {
@@ -97,7 +98,7 @@ export function planPaste<T>(
   bounds: CellBounds,
   block: readonly (readonly string[])[],
 ): { writes: CellWrite<T>[]; bounds: CellBounds } | null {
-  const width = Math.max(0, ...block.map((cells) => cells.length));
+  const width = findMaximum(block, (cells) => cells.length, 0);
   if (width === 0) return null;
   const isSingle = block.length === 1 && width === 1;
   const target = isSingle
@@ -126,20 +127,29 @@ export function planClear<T>(grid: CellGrid<T>, bounds: CellBounds): CellWrite<T
 }
 
 function countDecimals(value: number): number {
-  const [, decimals = ''] = String(value).split('.');
-  return Math.min(decimals.length, 10);
+  const [coefficient = '', exponent = '0'] = String(value).split('e');
+  const decimals = coefficient.split('.')[1]?.length ?? 0;
+  return Math.max(0, decimals - Number(exponent));
 }
 
-/** The step of an evenly spaced run of at least two numbers, else null. */
-function findSeriesStep(values: readonly TableCellValue[]): number | null {
-  const numbers = values.filter((value): value is number => typeof value === 'number');
-  if (values.length < 2 || numbers.length !== values.length) return null;
-  const [first = 0, second = 0] = numbers;
+/** The step, final value and precision of an evenly spaced run of finite numbers. */
+function readSeries(values: readonly TableCellValue[]) {
+  const [first, second] = values;
+  if (typeof first !== 'number' || typeof second !== 'number') return null;
   const step = second - first;
-  const isEven = numbers.every(
-    (value, index) => index === 0 || Math.abs(value - (numbers[index - 1] ?? 0) - step) < 1e-9,
-  );
-  return isEven ? step : null;
+  if (!Number.isFinite(step)) return null;
+  let last = first;
+  let decimals = 0;
+  for (let index = 0; index < values.length; index += 1) {
+    const value = values[index];
+    if (typeof value !== 'number' || !Number.isFinite(value)) return null;
+    const tolerance =
+      Number.EPSILON * Math.max(Math.abs(value), Math.abs(last), Math.abs(step)) * 4;
+    if (index > 0 && Math.abs(value - last - step) > tolerance) return null;
+    decimals = Math.max(decimals, countDecimals(value));
+    last = value;
+  }
+  return { step, last, decimals };
 }
 
 /**
@@ -148,15 +158,14 @@ function findSeriesStep(values: readonly TableCellValue[]): number | null {
  */
 export function extendSeries(values: readonly TableCellValue[], count: number): TableCellValue[] {
   if (values.length === 0) return [];
-  const step = findSeriesStep(values);
-  const last = values[values.length - 1];
-  if (step === null || typeof last !== 'number') {
+  const series = readSeries(values);
+  if (!series) {
     return Array.from({ length: count }, (_, index) => values[index % values.length]);
   }
-  const decimals = Math.max(...values.map((value) => countDecimals(value as number)));
-  return Array.from({ length: count }, (_, index) =>
-    Number((last + step * (index + 1)).toFixed(decimals)),
-  );
+  return Array.from({ length: count }, (_, index) => {
+    const next = series.last + series.step * (index + 1);
+    return series.decimals <= 100 ? Number(next.toFixed(series.decimals)) : next;
+  });
 }
 
 function listIndices(from: number, to: number): number[] {

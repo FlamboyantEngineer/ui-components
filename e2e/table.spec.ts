@@ -736,4 +736,26 @@ test.describe('Table lab', () => {
     await expect(bar).toHaveCount(0);
     await lab.expectAccessible('[data-lab="bulk-edit"]');
   });
+  test('UIC-TABLE-14.5 continues small numeric steps through the fill handle', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('table');
+    const demo = section(page, 'small-steps');
+    const grid = demo.getByRole('grid', { name: 'Small steps' });
+    const cell = (row: string) => grid.locator(`[data-key="${row}"] > [data-column="value"]`);
+    await cell('r1').click();
+    await page.keyboard.press('Shift+ArrowDown');
+    const handle = await grid.locator('.ui-table__fill-handle').boundingBox();
+    const target = await cell('r4').boundingBox();
+    if (!handle || !target) throw new Error('No fill geometry');
+    await page.mouse.move(handle.x + handle.width / 2, handle.y + handle.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(target.x + 10, target.y + 10, { steps: 6 });
+    await page.mouse.up();
+    await expect(cell('r3')).toHaveText('3e-7');
+    await expect(cell('r4')).toHaveText('4e-7');
+    await expect(demo.locator('[data-lab-output]')).toHaveText('1e-7, 2e-7, 3e-7, 4e-7');
+    await lab.expectAccessible('[data-lab="small-steps"]');
+  });
 });

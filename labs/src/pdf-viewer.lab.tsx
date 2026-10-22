@@ -124,7 +124,10 @@ mountLab(
         }
       />
     </LabSection>
-    <LabSection title="Opening zoom" description="Fit the page width, fit the whole page, or 50%.">
+    <LabSection
+      title="Opening zoom"
+      description="Fit the page width, fit the whole page, or 50%. Fitting uses the widest and tallest page, including in large documents."
+    >
       <StateMatrix
         axes={{ zoom: zooms }}
         render={({ zoom }) => (

@@ -202,7 +202,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Line charts"
-      description="A burndown over working days on a time axis (with a gap on a missing day and an ideal line), as lines and as areas, and build minutes on a numeric axis."
+      description="A burndown over working days on a time axis (with a gap on a missing day and an ideal line), as lines and as areas, and build minutes on a numeric axis. Dates preserve explicit offsets and millisecond precision."
     >
       <StateMatrix
         axes={{ variant: ['line', 'area'] }}

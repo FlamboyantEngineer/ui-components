@@ -37,4 +37,11 @@ describe('PDF zoom', () => {
     expect(findLargestPage([])).toBeNull();
     expect(toCssScale(150)).toBeCloseTo(2);
   });
+  it('UIC-PDF-VIEWER-3.2 fits metadata for a large document without argument limits', () => {
+    const sizes = Array.from({ length: 200_000 }, (_, index) => ({
+      width: index,
+      height: 200_000 - index,
+    }));
+    expect(findLargestPage(sizes)).toEqual({ width: 199_999, height: 200_000 });
+  });
 });

@@ -1,3 +1,4 @@
+import { findMaximum } from '../../utils/find-maximum.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { CalendarDayCell, findDayEvents, type CalendarDayContext } from './calendar-day.js';
 import {
@@ -37,7 +38,7 @@ interface MonthDayProps extends Omit<CalendarMonthProps, 'grid' | 'titleId'> {
 function MonthDay({ date, column, segments, visibleLanes, events, day, event }: MonthDayProps) {
   const covering = findColumnSegments(segments, column);
   const shown = covering.filter((segment) => segment.lane < visibleLanes);
-  const laneCount = Math.max(0, ...shown.map((segment) => segment.lane + 1));
+  const laneCount = findMaximum(shown, (segment) => segment.lane + 1, 0);
   const isActive = date === day.focused;
   const isOutsideMonth = !isSameMonth(date, day.focused);
   return (

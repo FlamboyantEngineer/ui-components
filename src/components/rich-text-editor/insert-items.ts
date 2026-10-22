@@ -34,6 +34,17 @@ const defaultKeywords: Record<string, readonly string[]> = {
   divider: ['rule', 'hr', 'line', 'separator'],
 };
 
+function scoreInsertItem(item: InsertMenuItem, query: string): number | null {
+  let best = scoreCompletion(item.label, query);
+  if (best === 0) return best;
+  for (const keyword of item.keywords ?? []) {
+    const score = scoreCompletion(keyword, query);
+    if (score === 0) return score;
+    if (score !== null && (best === null || score < best)) best = score;
+  }
+  return best;
+}
+
 /** The built-in entries: text blocks, lists, quote and divider, then the caller's own. */
 export function getInsertItems(
   strings: UiStrings,
@@ -68,12 +79,7 @@ export function matchInsertItems(
 ): InsertMenuItem[] {
   if (!query) return [...items];
   return items
-    .map((item) => {
-      const scores = [item.label, ...(item.keywords ?? [])]
-        .map((word) => scoreCompletion(word, query))
-        .filter((score): score is number => score !== null);
-      return { item, score: scores.length > 0 ? Math.min(...scores) : null };
-    })
+    .map((item) => ({ item, score: scoreInsertItem(item, query) }))
     .filter(({ score }) => score !== null)
     .sort((a, b) => (a.score ?? 0) - (b.score ?? 0))
     .map(({ item }) => item);

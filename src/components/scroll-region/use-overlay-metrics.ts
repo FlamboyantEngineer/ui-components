@@ -1,3 +1,4 @@
+import { findMaximum } from '../../utils/find-maximum.js';
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 import { observeViewport } from './observe-viewport.js';
 
@@ -69,15 +70,16 @@ function isSameMetrics(left: OverlayMetrics, right: OverlayMetrics): boolean {
 function measureLift(element: HTMLElement): number {
   if (element.scrollHeight > element.clientHeight + 1 || element.children.length === 0) return 0;
   const top = element.getBoundingClientRect().top;
-  const bottom = Math.max(
+  const bottom = findMaximum(
+    element.children,
+    (child) => child.getBoundingClientRect().bottom - top,
     0,
-    ...Array.from(element.children, (child) => child.getBoundingClientRect().bottom - top),
   );
   return Math.max(0, Math.floor(element.clientHeight - bottom));
 }
 
 function measureHeaders(headers: Iterable<HTMLElement>): number {
-  return Math.max(0, ...Array.from(headers, (header) => header.getBoundingClientRect().height));
+  return findMaximum(headers, (header) => header.getBoundingClientRect().height, 0);
 }
 
 function readMetrics(element: HTMLElement, tracks: Tracks, header: number): OverlayMetrics {

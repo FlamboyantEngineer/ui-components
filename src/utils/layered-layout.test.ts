@@ -74,4 +74,28 @@ describe('layoutLayeredGraph', () => {
     ]);
     expect(layoutLayeredGraph({ nodes: [], edges: [] })).toEqual([]);
   });
+  it('UIC-STATE-MACHINE-VIEW-2.1 lays out a wide graph without argument limits or queue compaction', () => {
+    const count = 200_000;
+    const positions = layoutLayeredGraph({
+      nodes: Array.from({ length: count }, (_, id) => ({ id, width: 10, height: 10 })),
+      edges: [],
+    });
+    expect(positions).toHaveLength(count);
+    expect(positions[0]).toEqual({ id: 0, x: 0, y: 0, layer: 0 });
+    expect(positions.at(-1)).toEqual({ id: count - 1, x: 0, y: (count - 1) * 42, layer: 0 });
+  });
+
+  it('UIC-STATE-MACHINE-VIEW-2.1 deduplicates dense repeated and reversed connections', () => {
+    const count = 10_000;
+    const nodes = Array.from({ length: count }, (_, id) => ({ id, width: 10, height: 10 }));
+    const edges = nodes.slice(1).flatMap(({ id }) => [
+      { source: 0, target: id },
+      { source: 0, target: id },
+      { source: id, target: 0 },
+    ]);
+    const positions = layoutLayeredGraph({ nodes, edges });
+    expect(positions[0]?.layer).toBe(0);
+    expect(positions.slice(1).every(({ layer }) => layer === 1)).toBe(true);
+    expect(positions.slice(1).map(({ id }) => id)).toEqual(nodes.slice(1).map(({ id }) => id));
+  });
 });

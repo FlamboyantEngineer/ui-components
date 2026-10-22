@@ -38,8 +38,10 @@ Verification: `src/components/annotation-layer/annotation-layer.test.tsx`, `e2e/
 
 `stackAnnotationCards` shall place each anchored card at the top of its anchor, measured from the top of the margin, unless the card before it reaches lower, then `gap` pixels (8 by default) under that card. No card starts above the margin's top. The active card stays level with its anchor where the cards before it fit above it: they move up from it, and the cards after it move down; where they do not fit, they start at the margin's top and push the active card down. Cards without an anchor follow the lowest card, one under another. Each card is placed with `position: absolute` and its `top` inline, and the margin (`position: relative`) takes the `min-height` that holds every card.
 
+Finding an anchor’s first rectangle shall use a reduction without allocating a list of tops or depending on an argument limit.
+
 Implementation: `src/components/annotation-layer/stack-cards.ts`, `src/components/annotation-layer/annotation-margin.tsx`
-Verification: `src/components/annotation-layer/stack-cards.test.ts`, `src/components/annotation-layer/annotation-layer.test.tsx`, `e2e/annotation-layer.spec.ts`
+Verification: `src/components/annotation-layer/annotation-margin.test.tsx`, `src/components/annotation-layer/stack-cards.test.ts`, `src/components/annotation-layer/annotation-layer.test.tsx`, `e2e/annotation-layer.spec.ts`
 
 ### UIC-ANNOTATION-LAYER-2.3 - Measuring
 

@@ -139,7 +139,7 @@ mountLab(
   <>
     <LabSection
       title="States"
-      description="A read-only machine, one with a current state, and edit mode with a transition port on each state, laid out left to right and top to bottom."
+      description="A read-only machine, one with a current state, and edit mode with a transition port on each state, laid out left to right and top to bottom. Wide graphs and repeated connections keep a stable layout."
     >
       <StateMatrix
         axes={{ state: states, orientation: orientations }}

@@ -158,4 +158,29 @@ describe('table cell write helpers', () => {
     expect(resolveFillTarget(source, { row: 1, column: 2 })).toEqual({ ...source, end: 2 });
     expect(resolveFillTarget(source, { row: 0, column: 0 })).toBeNull();
   });
+  it('UIC-TABLE-14.3 pastes a large source block while clipping writes to the grid', () => {
+    const block = Array.from({ length: 200_000 }, () => ['7']);
+    const paste = planPaste(grid, { top: 0, bottom: 0, start: 1, end: 1 }, block);
+    expect(paste?.bounds).toEqual({ top: 0, bottom: 3, start: 1, end: 1 });
+    expect(paste?.writes).toHaveLength(4);
+  });
+
+  it('UIC-TABLE-14.5 fills small scientific-notation steps without rounding them to zero', () => {
+    expect(extendSeries([1e-7, 2e-7], 2)).toEqual([3e-7, 4e-7]);
+    expect(extendSeries([1e-12, 2e-12], 2)).toEqual([3e-12, 4e-12]);
+    expect(extendSeries([Number.MIN_VALUE, Number.MIN_VALUE * 2], 2)).toEqual([
+      Number.MIN_VALUE * 3,
+      Number.MIN_VALUE * 4,
+    ]);
+    expect(extendSeries([1e-12, 2e-12, 100e-12], 3)).toEqual([1e-12, 2e-12, 100e-12]);
+  });
+
+  it('UIC-TABLE-14.5 extends a large series without spreading its decimal precisions', () => {
+    expect(
+      extendSeries(
+        Array.from({ length: 200_000 }, (_, index) => index),
+        2,
+      ),
+    ).toEqual([200_000, 200_001]);
+  });
 });

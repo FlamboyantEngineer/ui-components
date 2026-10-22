@@ -404,4 +404,19 @@ describe('TreeSelectField', () => {
       ),
     ).toEqual(['oslo', 'peru']);
   });
+  it('UIC-TREE-SELECT-FIELD-1.4 reads only the chosen node when showing a label', () => {
+    const read = vi.fn(getTextValue);
+    render(
+      <TreeSelectField
+        label="Place"
+        items={places}
+        getTextValue={read}
+        value="oslo"
+        valueDisplay="label"
+      />,
+    );
+    expect(screen.getByText('Oslo')).toBeInTheDocument();
+    expect(read).toHaveBeenCalled();
+    expect(read.mock.calls.every(([place]) => place.id === 'oslo')).toBe(true);
+  });
 });

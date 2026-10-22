@@ -4,13 +4,13 @@ import {
   fromDate,
   getLocalTimeZone,
   parseIsoDate,
-  parseIsoDateTime,
   startOfWeek,
   toCalendarDate,
   toZoned,
   type CalendarDate,
 } from '../primitives/index.js';
 import { createLinearScale, type ScaleInterval, type ScaleTick } from './linear-scale.js';
+import { readTimeInstant } from './read-time-instant.js';
 
 /** The calendar unit between a time scale's ticks. */
 export type TimeScaleUnit = 'day' | 'week' | 'month' | 'quarter' | 'year';
@@ -61,14 +61,6 @@ const labelFormats: Readonly<Record<TimeScaleUnit, Intl.DateTimeFormatOptions>> 
   quarter: { month: 'short', year: 'numeric' },
   year: { year: 'numeric' },
 };
-
-/** The epoch milliseconds of an ISO 8601 text read in `timeZone`; a date is its first instant. */
-function readInstant(text: string, timeZone: string): number {
-  const date = parseIsoDate(text);
-  if (date) return toZoned(date, timeZone).toDate().getTime();
-  const dateTime = parseIsoDateTime(text, timeZone);
-  return dateTime && 'timeZone' in dateTime ? dateTime.toDate().getTime() : Number.NaN;
-}
 
 function planTicks(
   { unit, count }: TimeTickOptions,
@@ -154,7 +146,7 @@ export function addTimeUnits(date: string, unit: TimeScaleUnit, count: number): 
 export function createTimeScale(options: TimeScaleOptions): TimeScale {
   const timeZone = options.timeZone ?? getLocalTimeZone();
   const locale = options.locale ?? new Intl.DateTimeFormat().resolvedOptions().locale;
-  const [start, end] = options.domain.map((text) => readInstant(text, timeZone)) as [
+  const [start, end] = options.domain.map((text) => readTimeInstant(text, timeZone)) as [
     number,
     number,
   ];
@@ -163,9 +155,9 @@ export function createTimeScale(options: TimeScaleOptions): TimeScale {
   const labels = new Map<TimeScaleUnit, Intl.DateTimeFormat>();
   const instantOf = (date: CalendarDate) => toZoned(date, timeZone).toDate().getTime();
   const map = (value: string) =>
-    isReadable ? linear.map(readInstant(value, timeZone)) : Number.NaN;
+    isReadable ? linear.map(readTimeInstant(value, timeZone)) : Number.NaN;
   const format = (value: string, unit: TimeScaleUnit) => {
-    const instant = readInstant(value, timeZone);
+    const instant = readTimeInstant(value, timeZone);
     if (!Number.isFinite(instant)) return '';
     let formatter = labels.get(unit);
     if (!formatter) {
