@@ -80,6 +80,8 @@ Verification: `src/components/folder-manager/folder-manager.test.tsx`, `e2e/fold
 
 With `maxDepth`, New folder shall be disabled on a folder at that depth (the top level being 1), focusable with the provider string `folderDepthLimit` as its tooltip, and a move that would place a folder or its deepest subfolder below that depth is refused.
 
+Measuring the deepest loaded child shall reduce the children without an argument limit.
+
 Implementation: `src/components/folder-manager/folder-manager.tsx`, `src/components/folder-manager/folder-tree.tsx`, `src/components/folder-manager/folder-model.ts`, `src/core/strings.ts`
 Verification: `src/components/folder-manager/folder-manager.test.tsx`, `src/components/folder-manager/folder-model.test.ts`
 

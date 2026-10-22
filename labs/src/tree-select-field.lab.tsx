@@ -216,7 +216,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Choice and display"
-      description="Single and multiple choice, read as labels or as paths; a chosen branch shows as one chip."
+      description="Single and multiple choice, read as labels or as paths; a chosen branch shows as one chip. Labels name the selected nodes; paths include their ancestors, and removing a branch keeps the other choices."
     >
       <StateMatrix
         axes={{ mode: modes, display: displays }}

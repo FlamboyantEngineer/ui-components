@@ -458,6 +458,8 @@ Verification: `src/components/table/use-cell-selection.test.tsx`, `src/component
 
 Pasting tab-separated text while a data cell has focus shall write it into the selected cells: one value into every selected cell, more values from the top start cell as far as the grid reaches, then select the cells the paste covers. Each text is read by the column's `parseValue` and checked by its `validateValue`; only cells of columns with `allowsEditing` in enabled rows whose value the column accepts and that change are written, and `onCellsChange` receives them in one batch. The table never changes its rows itself.
 
+Pastes shall measure the widest source row without a function-argument limit and clip writes to the grid.
+
 Implementation: `src/components/table/use-cell-selection.ts`, `src/components/table/table-cell-writes.ts`, `src/utils/tsv.ts`
 Verification: `src/components/table/use-cell-selection.test.tsx`, `src/components/table/table-cell-writes.test.ts`, `e2e/table.spec.ts`
 
@@ -471,6 +473,8 @@ Verification: `src/components/table/use-cell-selection.test.tsx`, `src/component
 ### UIC-TABLE-14.5 - Filling
 
 In `range` mode, the bottom end cell of a selection holding an editable cell shall draw a fill handle (`ui-table__fill-handle`, hidden from assistive technology). Dragging it down or towards the end, whichever reaches further, marks the cells it would fill with `data-fill-target` and, on release, fills them from the selected cells: each column, or each row, continues an evenly spaced run of numbers by its step and repeats anything else, then the filled cells are selected. Control or Command with D fills the selection down from its first row, and with R towards the end from its first column. Fills are reported like a paste. Cancelling a fill shall clear its preview without writing cells; release and cancellation follow only the pointer that started it, in the table's own document.
+
+Numeric runs shall be checked within floating-point precision and retain the decimals of scientific-notation values. Tiny uneven values repeat rather than being mistaken for a progression. Reading a source series shall not allocate a filtered numeric copy or spread its precisions into arguments.
 
 Implementation: `src/components/table/use-cell-pointer.ts`, `src/components/table/use-cell-selection.ts`, `src/components/table/table-cell-writes.ts`, `src/components/table/table-row.tsx`
 Verification: `src/components/table/use-cell-selection.test.tsx`, `src/components/table/table-cell-writes.test.ts`, `e2e/table.spec.ts`

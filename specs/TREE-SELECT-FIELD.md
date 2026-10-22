@@ -15,6 +15,8 @@ Verification: `src/components/tree-select-field/tree-select-field.test.tsx`, `e2
 
 Pressing the trigger shall open a popover (`ui-tree-select-field__popover`) below it, publishing the trigger's width as `--ui-trigger-width`, holding a dialog (`ui-tree-select-field__dialog`) named by the field's label, with a [Search Field](SEARCH-FIELD.md) (`ui-tree-select-field__search`) named by the provider's `filterLabel` string with the label, which takes focus, and a `Tree` in its `picker` variant (`ui-tree-select-field__tree`) named by the label, its chosen rows selected. Every opening starts afresh: the search is empty and the tree opens with the ancestors of the chosen nodes expanded. Escape, or a press outside, closes the popover and returns focus to the trigger; Escape in the tree closes it rather than clearing a multiple choice. The open state follows `isOpen`, `defaultOpen` and `onOpenChange`.
 
+Indexing the loaded hierarchy shall use an explicit traversal stack. Opening at multiple selected nodes shall collect their distinct ancestors without revisiting shared parent paths.
+
 Implementation: `src/components/tree-select-field/tree-select-control.tsx`, `src/components/tree-select-field/tree-select-popover.tsx`, `src/components/tree-select-field/tree-index.ts`
 Verification: `src/components/tree-select-field/tree-index.test.ts`, `src/components/tree-select-field/tree-select-field.test.tsx`, `e2e/tree-select-field.spec.ts`
 
@@ -28,6 +30,8 @@ Verification: `src/components/tree-select-field/tree-select-field.test.tsx`, `e2
 ### UIC-TREE-SELECT-FIELD-1.4 - Value display
 
 With `valueDisplay` `label` (the default), a chosen node shall read as its text value (`getTextValue`); with `path`, as the text values of its ancestors and itself joined like a [Path](PATH.md) (`Europe/Norway/Oslo`). The trigger and the chips both follow it.
+
+Label display shall read only the selected node’s text; path display reads its ancestors too.
 
 Implementation: `src/components/tree-select-field/tree-select-control.tsx`
 Verification: `src/components/tree-select-field/tree-select-field.test.tsx`, `e2e/tree-select-field.spec.ts`
@@ -58,6 +62,8 @@ Verification: `src/components/tree-select-field/tree-index.test.ts`, `src/compon
 ### UIC-TREE-SELECT-FIELD-2.3 - Chips
 
 A multiple choice shall show its chosen nodes after the frame as a `TagGroup` (`ui-tree-select-field__chips`) named by the provider's `selectedValues` string with the label, one `Tag` (`ui-tree-select-field__chip`) per chosen key, or with `selectionPropagation` per chosen branch (a chosen node whose ancestors are not chosen). While the field is editable each chip can be removed by its button, Delete or Backspace; removing a chip removes its key and, with `selectionPropagation`, its descendants and ancestors, and commits.
+
+Collapsing and removing selected branches shall reuse shared ancestor checks rather than materializing an ancestor array for each selected key.
 
 Implementation: `src/components/tree-select-field/tree-select-control.tsx`, `src/components/tree-select-field/tree-index.ts`
 Verification: `src/components/tree-select-field/tree-index.test.ts`, `src/components/tree-select-field/tree-select-field.test.tsx`, `e2e/tree-select-field.spec.ts`

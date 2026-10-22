@@ -119,4 +119,8 @@ describe('folder model', () => {
     expect(names(['plum'])).toEqual([]);
     expect(names([])).toHaveLength(4);
   });
+  it('UIC-FOLDER-MANAGER-2.7 measures a wide folder without argument limits', () => {
+    const children = Array.from({ length: 200_000 }, (_, id) => ({ id, name: String(id) }));
+    expect(getFolderHeight({ id: 'root', name: 'Root', children })).toBe(2);
+  });
 });

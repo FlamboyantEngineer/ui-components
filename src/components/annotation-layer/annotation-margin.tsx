@@ -84,7 +84,9 @@ export function AnnotationMargin({
     anchors.map(({ annotation, rects }) => ({
       id: annotation.id,
       anchorTop:
-        rects.length === 0 ? null : Math.min(...rects.map((rect) => rect.top)) - geometry.offset,
+        rects.length === 0
+          ? null
+          : rects.reduce((top, rect) => Math.min(top, rect.top), Infinity) - geometry.offset,
       height: geometry.heights.get(annotation.id) ?? 0,
     })),
     { activeId, gap },

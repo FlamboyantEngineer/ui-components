@@ -96,6 +96,8 @@ Verification: `src/components/pdf-viewer/pdf-viewer.test.tsx`, `src/components/p
 
 Fit page width and fit whole page shall be toggle buttons beside the zoom control (`fit-width` and `fit-page` glyphs, the provider's `fitWidth` and `fitPage` strings), pressed while their mode applies. Fitting the width fits the widest page into the page column's width and keeps the zoom between 50% and 200%; fitting the page fits the largest page whole into the column. The column is the scroller's client box less the padding of `ui-pdf-viewer__pages`. A fit is resolved again whenever the scroller changes size; a zoom chosen as a percentage is kept. `defaultZoom` (a percentage, `page-width` by default, or `page-fit`) is the zoom the viewer opens at.
 
+Page dimensions shall be reduced without intermediate dimension arrays or function-argument limits.
+
 Implementation: `src/components/pdf-viewer/pdf-viewer-toolbar.tsx`, `src/components/pdf-viewer/pdf-zoom.ts`, `src/components/pdf-viewer/use-pdf-zoom.ts`
 Verification: `src/components/pdf-viewer/pdf-viewer.test.tsx`, `src/components/pdf-viewer/pdf-zoom.test.ts`, `e2e/pdf-viewer.spec.ts`
 

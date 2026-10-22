@@ -182,4 +182,28 @@ describe('CheckboxGroup', () => {
     );
     expect(new Set(sizes)).toEqual(new Set(['sm']));
   });
+  it('UIC-CHECKBOX-GROUP-1.4 keeps disabled and unlisted values when selecting and clearing all', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(
+      <CheckboxGroup
+        label="Toppings"
+        options={toppings}
+        defaultValue={['truffle', 'unlisted']}
+        selectAllLabel="All toppings"
+        onChange={onChange}
+      />,
+    );
+    const parent = screen.getByRole('checkbox', { name: 'All toppings' });
+    await user.click(parent);
+    expect(onChange).toHaveBeenLastCalledWith([
+      'truffle',
+      'unlisted',
+      'basil',
+      'olives',
+      'peppers',
+    ]);
+    await user.click(parent);
+    expect(onChange).toHaveBeenLastCalledWith(['truffle', 'unlisted']);
+  });
 });

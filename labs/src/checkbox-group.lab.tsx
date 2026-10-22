@@ -109,7 +109,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Select all"
-      description="The parent box is mixed while some toppings are ticked."
+      description="The parent box is mixed while some toppings are ticked. Selecting or clearing all preserves disabled and unlisted values and the value order."
     >
       <SelectAll />
     </LabSection>

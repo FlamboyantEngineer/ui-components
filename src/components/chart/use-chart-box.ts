@@ -1,3 +1,4 @@
+import { findMaximum } from '../../utils/find-maximum.js';
 import { useMemo, useState, type Ref, type RefCallback } from 'react';
 import { mergeRefs } from '../../utils/merge-props.js';
 import { useElementSize } from '../../utils/use-element-size.js';
@@ -36,6 +37,6 @@ export function useLabelMargin(element: Element | null, labels: readonly string[
   const target = useMemo(() => ({ current: element }), [element]);
   const measured = useWidestTextWidth(target, labels);
   const widest =
-    measured ?? Math.max(0, ...labels.map((label) => label.length)) * fallbackCharacterWidth;
+    measured ?? findMaximum(labels, (label) => label.length, 0) * fallbackCharacterWidth;
   return widest + labelRoom;
 }

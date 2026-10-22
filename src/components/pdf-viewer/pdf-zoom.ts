@@ -1,3 +1,4 @@
+import { findMaximum } from '../../utils/find-maximum.js';
 import { clamp } from '../../utils/clamp.js';
 
 /** A zoom in percent, or a fit mode resolved against the space the pages have. */
@@ -47,7 +48,7 @@ export function toCssScale(percent: number): number {
 export function findLargestPage(sizes: readonly PdfSize[]): PdfSize | null {
   if (sizes.length === 0) return null;
   return {
-    width: Math.max(...sizes.map((size) => size.width)),
-    height: Math.max(...sizes.map((size) => size.height)),
+    width: findMaximum(sizes, (size) => size.width),
+    height: findMaximum(sizes, (size) => size.height),
   };
 }

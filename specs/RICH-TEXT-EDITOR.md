@@ -192,8 +192,10 @@ Verification: `src/components/rich-text-editor/selection-toolbar.test.tsx`, `e2e
 
 `InsertMenu` shall open a `CompletionList` (also `ui-insert-menu`, named by `aria-label`, `aria-labelledby` or `insertCommands`) against a caret marker (`ui-insert-menu__caret`) placed at the slash, while the focused document has a `/` at the start of a text block or after white space followed by a query up to the caret (no space, not in code). It lists the built-in entries the schema supports (paragraph, headings 1 to 3, code block, bullet, numbered and task lists, quote, divider) then the caller's `items` (`InsertMenuItem`: `id`, `label`, `description`, `icon`, `keywords`, `command`), matched by label or keyword as completions match (best first); with no match it closes.
 
+Matching shall keep only the best score, stop reading keywords once a prefix match is found, and preserve input order for equally ranked entries, without building a score array or depending on an argument limit.
+
 Implementation: `src/components/rich-text-editor/insert-menu.tsx`, `src/components/rich-text-editor/use-slash-menu.ts`, `src/components/rich-text-editor/insert-items.ts`, `src/components/completion-list/completion-list.tsx`
-Verification: `src/components/rich-text-editor/insert-menu.test.tsx`, `e2e/rich-text-editor.spec.ts`
+Verification: `src/components/rich-text-editor/insert-items.test.ts`, `src/components/rich-text-editor/insert-menu.test.tsx`, `e2e/rich-text-editor.spec.ts`
 
 ### UIC-RICH-TEXT-EDITOR-8.2 - Keys and insertion
 

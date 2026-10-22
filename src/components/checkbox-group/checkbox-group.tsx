@@ -53,14 +53,16 @@ function SelectAll({
   size: ControlSize | undefined;
 }) {
   const enabled = options.filter((option) => !option.isDisabled).map((option) => option.value);
-  const ticked = enabled.filter((value) => state.value.includes(value));
+  const enabledValues = new Set(enabled);
+  const selected = new Set(state.value);
+  const ticked = enabled.filter((value) => selected.has(value));
   const isAll = enabled.length > 0 && ticked.length === enabled.length;
   const onChange = () =>
     pick(
       state,
       isAll
-        ? state.value.filter((value) => !enabled.includes(value))
-        : [...state.value, ...enabled.filter((value) => !state.value.includes(value))],
+        ? state.value.filter((value) => !enabledValues.has(value))
+        : [...state.value, ...enabled.filter((value) => !selected.has(value))],
     );
   // The parent box is not one of the group's values, so it stays outside the group's state.
   return (

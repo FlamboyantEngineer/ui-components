@@ -20,6 +20,11 @@ interface Stock {
   organic: boolean;
 }
 
+interface Reading {
+  id: string;
+  value: number;
+}
+
 const stock: Stock[] = [
   {
     id: 'apple',
@@ -101,6 +106,11 @@ const stock: Stock[] = [
     picked: '2026-10-04',
     organic: false,
   },
+];
+
+const readingColumns: TableColumn<Reading>[] = [
+  { id: 'id', header: 'Reading' },
+  { id: 'value', header: 'Value', allowsEditing: true, renderCell: (row) => String(row.value) },
 ];
 
 const price = new Intl.NumberFormat('en', { style: 'currency', currency: 'EUR' });
@@ -329,6 +339,29 @@ export function BulkEdit() {
         size="sm"
       />
       <output data-lab-output>{`Last change: ${last}`}</output>
+    </div>
+  );
+}
+
+export function SmallSteps() {
+  const [rows, setRows] = useState<Reading[]>([
+    { id: 'r1', value: 1e-7 },
+    { id: 'r2', value: 2e-7 },
+    { id: 'r3', value: 0 },
+    { id: 'r4', value: 0 },
+  ]);
+  return (
+    <div data-lab="small-steps">
+      <Table
+        aria-label="Small steps"
+        rows={rows}
+        columns={readingColumns}
+        cellSelection="range"
+        onCellEdit={(edit) => setRows((current) => applyEdits(current, [edit]))}
+        onCellsChange={(edits) => setRows((current) => applyEdits(current, edits))}
+        size="sm"
+      />
+      <output data-lab-output>{rows.map((row) => row.value).join(', ')}</output>
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import { findMaximum } from '../../utils/find-maximum.js';
 import type { Key } from '../../core/props.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -93,7 +94,7 @@ function toolbarOf<T extends FolderItem>(
 /** Where the selected folders may move: not into themselves, and within the depth limit. */
 function destinationsOf<T extends FolderItem>({ model, props }: ToolContext<T>) {
   const moving = new Set(model.selection.map((folder) => folder.id));
-  const height = Math.max(0, ...model.selection.map(getFolderHeight));
+  const height = findMaximum(model.selection, getFolderHeight, 0);
   const fits = ({ folder }: FolderDestination<T>) =>
     props.maxDepth === undefined ||
     (folder ? findFolderPath(props.folders, folder.id).length : 0) + height <= props.maxDepth;

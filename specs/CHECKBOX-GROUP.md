@@ -29,6 +29,8 @@ Verification: `src/components/checkbox-group/checkbox-group.test.tsx`, `e2e/chec
 
 With `selectAllLabel`, the group shall draw a parent `Checkbox` first (`ui-checkbox-group__select-all`), named by that label and outside the group's value: ticked while every enabled option is ticked, mixed while only some are, empty otherwise. Pressing it ticks every enabled option, or clears them all when all are ticked, keeping disabled options as they are, and commits. It follows the field's read-only and disabled states and is disabled when no option is enabled.
 
+Select-all membership checks shall use sets while preserving the order of values and keeping disabled and unlisted values unchanged.
+
 Implementation: `src/components/checkbox-group/checkbox-group.tsx`
 Verification: `src/components/checkbox-group/checkbox-group.test.tsx`, `e2e/checkbox-group.spec.ts`
 

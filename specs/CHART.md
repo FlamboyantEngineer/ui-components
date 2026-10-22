@@ -146,6 +146,8 @@ Verification: `src/components/chart/bar-chart.test.tsx`
 
 `LineChart` shall place each point of its series (`points` of `{ x, y }`) along x by `x`: ISO 8601 dates or date-times make a time axis read in `timeZone` (the runtime's by default) with calendar ticks from the time scale, and numbers a linear axis; the first point decides which, and points whose `x` cannot be read are left out. The axis spans the lowest to the highest `x`, about one tick every 80 pixels. In names, the tooltip and the table, dates read as medium dates (with the time for a date-time) and numbers in the locale.
 
+Charts and time scales shall share ISO instant parsing. Point ordering shall read source coordinates a bounded number of times rather than reparsing them in the sort comparator.
+
 Implementation: `src/components/chart/line-chart.tsx`, `src/components/chart/line-x-axis.ts`, `src/utils/time-scale.ts`
 Verification: `src/components/chart/line-geometry.test.ts`, `src/components/chart/line-chart.test.tsx`, `e2e/chart.spec.ts`
 

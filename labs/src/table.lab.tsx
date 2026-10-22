@@ -18,7 +18,7 @@ import {
   Pages,
   Summary,
 } from './table-cases.js';
-import { BulkEdit, Grouping, Spreadsheet } from './table-sheet-cases.js';
+import { BulkEdit, Grouping, SmallSteps, Spreadsheet } from './table-sheet-cases.js';
 
 interface Fruit {
   id: string;
@@ -395,6 +395,12 @@ mountLab(
       description="Select ranges with Shift, copy and paste, type to edit, fill with the handle or Ctrl+D and Ctrl+R, Delete to clear. Cancelling a fill leaves the cells unchanged."
     >
       <Spreadsheet />
+    </LabSection>
+    <LabSection
+      title="Small numeric steps"
+      description="Select the first two values and drag the fill handle through the last row. Tiny steps continue in scientific notation; uneven values repeat instead. Large pastes are clipped to the available cells."
+    >
+      <SmallSteps />
     </LabSection>
     <LabSection
       title="Bulk edit"

@@ -2,6 +2,7 @@
 
 import { createLinearScale, type ScaleTick } from '../../utils/linear-scale.js';
 import { createTimeScale } from '../../utils/time-scale.js';
+import { readTimeInstant } from '../../utils/read-time-instant.js';
 
 /** Where a value sits along a line chart's x axis: an ISO 8601 date or date-time, or a number. */
 export type LineChartX = string | number;
@@ -28,19 +29,6 @@ export interface LineXAxis {
 }
 
 const dateOnly = /^\d{4}-\d{2}-\d{2}$/;
-const dayLength = 86_400_000;
-
-/** Reads ISO 8601 texts in `timeZone` as epoch milliseconds, through a one-day time scale. */
-function createInstantReader(timeZone: string) {
-  const day = createTimeScale({
-    domain: ['2000-01-01', '2000-01-02'],
-    range: [0, dayLength],
-    timeZone,
-  });
-  const origin = Date.parse(day.invert(0));
-  return (text: string) => origin + day.map(text);
-}
-
 /** The lowest and highest readable values, or `undefined` without any. */
 function findExtent(values: readonly LineChartX[], read: (value: LineChartX) => number) {
   let extent: [LineChartX, LineChartX] | undefined;
@@ -64,8 +52,8 @@ function findExtent(values: readonly LineChartX[], read: (value: LineChartX) => 
 
 function createTimeAxis(options: LineXAxisOptions): LineXAxis {
   const { range, timeZone, locale, tickCount } = options;
-  const instant = createInstantReader(timeZone);
-  const read = (value: LineChartX) => (typeof value === 'string' ? instant(value) : Number.NaN);
+  const read = (value: LineChartX) =>
+    typeof value === 'string' ? readTimeInstant(value, timeZone) : Number.NaN;
   const extent = findExtent(options.values, read) as readonly [string, string] | undefined;
   const scale = createTimeScale({ domain: extent ?? ['', ''], range, timeZone, locale });
   const date = new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeZone });

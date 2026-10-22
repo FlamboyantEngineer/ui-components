@@ -2,6 +2,7 @@
 // layer by the barycentre of its neighbours, then place the layers side by side.
 
 import type { Key, Orientation } from '../core/props.js';
+import { findMaximum } from './find-maximum.js';
 
 export interface LayeredLayoutNode {
   id: Key;
@@ -35,11 +36,8 @@ export interface LayeredLayoutPosition {
   layer: number;
 }
 
-interface Graph {
-  count: number;
-  /** Successors of each node by index, in edge order, without duplicates. */
-  next: number[][];
-}
+/** Successors of each node by index, in edge order, without duplicates. */
+type Graph = number[][];
 
 const sweeps = 4;
 
@@ -48,33 +46,33 @@ function buildGraph(
   edges: readonly LayeredLayoutEdge[],
 ): Graph {
   const index = new Map(nodes.map((node, position) => [node.id, position]));
-  const next = nodes.map(() => [] as number[]);
+  const next = nodes.map(() => new Set<number>());
   for (const edge of edges) {
     const from = index.get(edge.source);
     const to = index.get(edge.target);
     if (from === undefined || to === undefined || from === to) continue;
-    if (!next[from]!.includes(to)) next[from]!.push(to);
+    next[from]!.add(to);
   }
-  return { count: nodes.length, next };
+  return next.map((targets) => [...targets]);
 }
 
 /** The graph with every edge that closes a cycle (found depth first, in node order) reversed. */
 function breakCycles(graph: Graph): Graph {
-  const state = new Array<0 | 1 | 2>(graph.count).fill(0);
-  const next = graph.next.map(() => [] as number[]);
+  const state = new Array<0 | 1 | 2>(graph.length).fill(0);
+  const next = graph.map(() => new Set<number>());
   const visit = (start: number) => {
     const stack: Array<{ node: number; edge: number }> = [{ node: start, edge: 0 }];
     state[start] = 1;
     while (stack.length > 0) {
       const frame = stack.at(-1)!;
-      const to = graph.next[frame.node]![frame.edge++];
+      const to = graph[frame.node]![frame.edge++];
       if (to === undefined) {
         state[frame.node] = 2;
         stack.pop();
       } else if (state[to] === 1) {
-        if (!next[to]!.includes(frame.node)) next[to]!.push(frame.node);
+        next[to]!.add(frame.node);
       } else {
-        if (!next[frame.node]!.includes(to)) next[frame.node]!.push(to);
+        next[frame.node]!.add(to);
         if (state[to] === 0) {
           state[to] = 1;
           stack.push({ node: to, edge: 0 });
@@ -82,19 +80,19 @@ function breakCycles(graph: Graph): Graph {
       }
     }
   };
-  for (let node = 0; node < graph.count; node += 1) if (state[node] === 0) visit(node);
-  return { count: graph.count, next };
+  for (let node = 0; node < graph.length; node += 1) if (state[node] === 0) visit(node);
+  return next.map((targets) => [...targets]);
 }
 
 /** Each node's layer: one more than the deepest layer that leads to it. */
 function assignLayers(graph: Graph): number[] {
-  const incoming = new Array<number>(graph.count).fill(0);
-  for (const targets of graph.next) for (const to of targets) incoming[to]! += 1;
-  const layers = new Array<number>(graph.count).fill(0);
+  const incoming = new Array<number>(graph.length).fill(0);
+  for (const targets of graph) for (const to of targets) incoming[to]! += 1;
+  const layers = new Array<number>(graph.length).fill(0);
   const ready = incoming.flatMap((count, node) => (count === 0 ? [node] : []));
-  while (ready.length > 0) {
-    const node = ready.shift()!;
-    for (const to of graph.next[node]!) {
+  for (let head = 0; head < ready.length; head += 1) {
+    const node = ready[head]!;
+    for (const to of graph[node]!) {
       layers[to] = Math.max(layers[to]!, layers[node]! + 1);
       incoming[to]! -= 1;
       if (incoming[to] === 0) ready.push(to);
@@ -121,13 +119,17 @@ function orderLayers(graph: Graph, layers: number[]): number[][] {
   const ordered: number[][] = [];
   layers.forEach((layer, node) => (ordered[layer] ??= []).push(node));
   const rows = Array.from(ordered, (row) => row ?? []);
-  const previous = graph.next.map(() => [] as number[]);
-  graph.next.forEach((targets, node) => targets.forEach((to) => previous[to]!.push(node)));
-  const positions = new Array<number>(graph.count).fill(0);
+  const previous = graph.map(() => [] as number[]);
+  graph.forEach((targets, node) => targets.forEach((to) => previous[to]!.push(node)));
+  const positions = new Array<number>(graph.length).fill(0);
   rows.forEach((row) => row.forEach((node, index) => (positions[node] = index)));
   for (let sweep = 0; sweep < sweeps; sweep += 1) {
-    for (const row of rows.slice(1)) sortByBarycentre(row, previous, positions);
-    for (const row of rows.slice(0, -1).reverse()) sortByBarycentre(row, graph.next, positions);
+    for (let row = 1; row < rows.length; row += 1) {
+      sortByBarycentre(rows[row]!, previous, positions);
+    }
+    for (let row = rows.length - 2; row >= 0; row -= 1) {
+      sortByBarycentre(rows[row]!, graph, positions);
+    }
   }
   return rows;
 }
@@ -151,7 +153,7 @@ export function layoutLayeredGraph(options: LayeredLayoutOptions): LayeredLayout
       0,
     ),
   );
-  const widest = Math.max(0, ...extents);
+  const widest = findMaximum(extents, (extent) => extent, 0);
   const places = new Array<{ along: number; across: number }>(nodes.length);
   let along = 0;
   rows.forEach((row, layer) => {
@@ -160,7 +162,7 @@ export function layoutLayeredGraph(options: LayeredLayoutOptions): LayeredLayout
       places[node] = { along, across };
       across += breadth(nodes[node]!) + nodeGap;
     }
-    along += Math.max(0, ...row.map((node) => depth(nodes[node]!))) + layerGap;
+    along += findMaximum(row, (node) => depth(nodes[node]!), 0) + layerGap;
   });
   return nodes.map((node, index) => {
     const place = places[index]!;

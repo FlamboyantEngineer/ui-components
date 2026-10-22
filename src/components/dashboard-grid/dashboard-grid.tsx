@@ -1,3 +1,4 @@
+import { findMaximum } from '../../utils/find-maximum.js';
 import {
   createContext,
   useContext,
@@ -196,7 +197,7 @@ export function DashboardGrid({
     : (previewLayout ?? committed.layout);
   const order = [...committed.layout].sort((a, b) => a.y - b.y || a.x - b.x);
   const positions = new Map(shown.map((item) => [item.id, item]));
-  const rows = Math.max(1, ...shown.map((item) => item.y + item.h));
+  const rows = findMaximum(shown, (item) => item.y + item.h, 1);
   const state = { ...moves, columns, isEditing: isEditing && !isReflowed, announce: setMessage };
   const style = {
     gridTemplateColumns: `repeat(${shownColumns}, minmax(0, 1fr))`,

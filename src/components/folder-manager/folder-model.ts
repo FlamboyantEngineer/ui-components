@@ -1,6 +1,7 @@
 // The folder tree a folder manager shows: the caller's folders, an optional root row standing for
 // "no folder", the draft row of a folder being created, and the folders a filter keeps.
 
+import { findMaximum } from '../../utils/find-maximum.js';
 import type { Key } from '../../core/props.js';
 import { textMatchesTerms } from '../text-match/text-match.js';
 
@@ -106,7 +107,7 @@ export function findFolderPath<T extends FolderItem>(folders: readonly T[], key:
 /** How many levels a folder and its deepest subfolder span: 1 for a folder without subfolders. */
 export function getFolderHeight(folder: FolderItem): number {
   const children = folder.children ?? [];
-  return 1 + Math.max(0, ...children.map(getFolderHeight));
+  return 1 + findMaximum(children, getFolderHeight, 0);
 }
 
 /** The keys of every row that has children. */

@@ -121,4 +121,20 @@ describe('resolveLineGeometry', () => {
     expect(geometry.xAxis.format('not a date')).toBe('');
     expect(geometry.xAxis.read(3)).toBeNaN();
   });
+  it('UIC-CHART-6.1 UIC-CHART-6.2 reads each source coordinate a bounded number of times before ordering', () => {
+    const count = 1000;
+    let reads = 0;
+    const points = Array.from({ length: count }, (_, index) => ({
+      get x() {
+        reads++;
+        return (index * 37) % count;
+      },
+      y: index,
+    }));
+    const geometry = resolveLineGeometry({ ...base, series: [{ series: 0, points }] });
+    expect(geometry.lines[0]?.points.map(({ at }) => at)).toEqual(
+      Array.from({ length: count }, (_, x) => x),
+    );
+    expect(reads).toBeLessThanOrEqual(count * 4);
+  });
 });

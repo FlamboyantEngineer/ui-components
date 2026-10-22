@@ -63,11 +63,15 @@ function describeNode<T extends TreeItemData>(
 ): ChosenNode {
   const entry = index.get(key);
   if (!entry) return { id: key, text: String(key), isMissing: true };
-  const labels = [...getAncestorKeys(index, key), key].flatMap((ancestor) => {
-    const node = index.get(ancestor);
-    return node ? [getTextValue(node.item)] : [];
-  });
-  const text = display === 'path' ? formatPath(labels) : getTextValue(entry.item);
+  const text =
+    display === 'path'
+      ? formatPath(
+          [...getAncestorKeys(index, key), key].flatMap((ancestor) => {
+            const node = index.get(ancestor);
+            return node ? [getTextValue(node.item)] : [];
+          }),
+        )
+      : getTextValue(entry.item);
   return { id: key, text, isMissing: false };
 }
 

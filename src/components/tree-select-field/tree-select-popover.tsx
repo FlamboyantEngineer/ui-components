@@ -7,7 +7,7 @@ import { PopoverPanel } from '../popover/popover.js';
 import { triggerWidthProperty } from '../portal/portal.js';
 import { SearchField } from '../search-field/search-field.js';
 import { Tree, type TreeItemData } from '../tree/tree.js';
-import { getAncestorKeys, type TreeIndex } from './tree-index.js';
+import { collectAncestorKeys, type TreeIndex } from './tree-index.js';
 import type { TreeSelectFieldProps } from './tree-select-field.js';
 
 export interface TreeSelectPopoverProps<T extends TreeItemData> extends Pick<
@@ -53,7 +53,7 @@ function TreeSelectDialog<T extends TreeItemData>({
   const strings = useUiStrings();
   const [filterText, setFilterText] = useState('');
   const treeRef = useRef<HTMLDivElement>(null);
-  const [expanded] = useState(() => keys.flatMap((key) => getAncestorKeys(index, key)));
+  const [expanded] = useState(() => collectAncestorKeys(index, keys));
   // Captured, since a search field with a key handler of its own would keep Escape from closing
   // the popover: Down from the search field moves to the tree's first row, and Escape in the tree
   // closes the popover instead of clearing a multiple choice.

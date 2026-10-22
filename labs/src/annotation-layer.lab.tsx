@@ -126,7 +126,7 @@ mountLab(
   <>
     <LabSection
       title="Anchors and cards"
-      description="A region of the plan anchored by a rectangle, two phrases anchored by element, and a note whose anchor was removed. Cards stack beside their anchors without overlap; the active card stays level with its anchor, with the default and a wider gap."
+      description="A region of the plan anchored by a rectangle, two phrases anchored by element, and a note whose anchor was removed. Cards align with the first line of multi-line anchors and stack without overlap; the active card stays level with its anchor, with the default and a wider gap."
     >
       <StateMatrix
         axes={{ active: ['none', 'kitchen', 'blind'], gap: ['8', '24'] }}

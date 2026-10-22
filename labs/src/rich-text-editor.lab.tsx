@@ -44,7 +44,10 @@ mountLab(
         )}
       />
     </LabSection>
-    <LabSection title="Toolbar, selection toolbar, slash menu and block handle">
+    <LabSection
+      title="Toolbar, selection toolbar, slash menu and block handle"
+      description="Type a slash and a command label or keyword; equally good matches keep their menu order."
+    >
       <FullEditor />
     </LabSection>
     <LabSection title="Custom schema">

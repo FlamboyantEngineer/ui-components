@@ -263,7 +263,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Managing folders"
-      description='New folder, Rename (F2) and Delete; right-click a row for its menu; Alt+Arrow keys or drag to move. Answers take 300 ms, the name "Taken" is refused, a folder with subfolders cannot be deleted, and folders nest at most three deep.'
+      description='New folder, Rename (F2) and Delete; right-click a row for its menu; Alt+Arrow keys or drag to move. Answers take 300 ms, the name "Taken" is refused, a folder with subfolders cannot be deleted, and folders nest at most three deep, even when a folder has many loaded children.'
     >
       <ManagedFolders />
     </LabSection>

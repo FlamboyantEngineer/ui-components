@@ -100,11 +100,12 @@ function layOutSeries(
   scales: { xAxis: LineXAxis; y: (value: number) => number },
 ): { runs: LinePoint[][]; points: LinePoint[] } {
   const ordered = points
-    .filter((point) => Number.isFinite(scales.xAxis.read(point.x)))
-    .sort((a, b) => scales.xAxis.read(a.x) - scales.xAxis.read(b.x));
+    .map((point) => ({ point, at: scales.xAxis.read(point.x) }))
+    .filter(({ at }) => Number.isFinite(at))
+    .sort((a, b) => a.at - b.at);
   const runs: LinePoint[][] = [[]];
   const drawn: LinePoint[] = [];
-  for (const point of ordered) {
+  for (const { point } of ordered) {
     if (!Number.isFinite(point.y)) {
       runs.push([]);
       continue;
