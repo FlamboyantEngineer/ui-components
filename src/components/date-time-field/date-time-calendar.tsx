@@ -143,27 +143,30 @@ function DatePresets({ settings, onPick }: Pick<CalendarPopoverProps, 'settings'
 }
 
 /**
- * The picker's quick actions: Today for a date, Now for a date and time, and Clear. Each picks its
- * value and closes the picker.
+ * The picker's quick actions: Today for a date, Now for a date and time, and Clear unless the field
+ * is required. Each picks its value, read when pressed, and closes the picker.
  */
 function DateActions({ mode, settings, onPick }: Omit<CalendarPopoverProps, 'children'>) {
   const strings = useUiStrings();
   const pick = usePick(onPick);
-  const action = (label: string, value: DateFieldValue) => (
+  const action = (label: string, getValue: () => DateFieldValue, isDisabled = false) => (
     <Button
       variant="ghost"
       size="sm"
       className={hooks.slotClass('action')}
-      onPress={() => pick(value)}
+      isDisabled={isDisabled}
+      onPress={() => pick(getValue())}
     >
       {label}
     </Button>
   );
   return (
     <div {...hooks.slot('actions')}>
-      {mode === 'date' ? action(strings.today, currentDateValue('date', settings)) : null}
-      {mode === 'date-time' ? action(strings.now, currentDateValue('date-time', settings)) : null}
-      {action(strings.clear, null)}
+      {mode === 'date' ? action(strings.today, () => currentDateValue('date', settings)) : null}
+      {mode === 'date-time'
+        ? action(strings.now, () => currentDateValue('date-time', settings))
+        : null}
+      {settings.isRequired ? null : action(strings.clear, () => null, !settings.canClear)}
     </div>
   );
 }

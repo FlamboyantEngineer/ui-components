@@ -106,8 +106,11 @@ function useDateCheck(props: AnyDateTimeFieldProps, mode: DateTimeFieldMode) {
 function toSettings(
   props: AnyDateTimeFieldProps,
   isPickable: (value: DateFieldValue) => boolean,
+  state: Pick<FieldState<unknown>, 'isRequired' | 'canClear'>,
 ): DateControlSettings {
   return {
+    isRequired: state.isRequired,
+    canClear: state.canClear,
     timeZone: props.timeZone,
     granularity: props.granularity,
     hourCycle: props.hourCycle,
@@ -162,7 +165,7 @@ export function DateTimeField<M extends DateTimeFieldMode = 'date'>(props: DateT
             state={state as unknown as FieldState<DateFieldValue>}
             mode={mode}
             bounds={props}
-            settings={toSettings(all, (value) => !check(value))}
+            settings={toSettings(all, (value) => !check(value), state)}
             previous={previous}
             onPick={pick}
           />
