@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import type { BaseProps, Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { Attribution, type AttributionProps } from '../attribution/attribution.js';
 import type { AvatarIdentity } from '../avatar/avatar.js';
 import {
@@ -95,7 +96,7 @@ export function ChangeList({
         const hasAttribution = Boolean(change.time) || change.person !== undefined;
         return (
           <DescriptionRow
-            key={change.id}
+            key={toKeyIdentity(change.id)}
             label={change.label}
             className={hooks.slotClass('change')}
             data-change={resolveChangeKind(change.before, change.after)}

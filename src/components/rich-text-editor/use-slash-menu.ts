@@ -9,6 +9,7 @@ import type { EditorView } from 'prosemirror-view';
 import { useState, type RefObject } from 'react';
 import { matchInsertItems, type InsertMenuItem } from './insert-items.js';
 import { toEngineCommand } from './engine-commands.js';
+import { useRichTextEditorContext } from './rich-text-context.js';
 
 /** The text a slash command replaces: the slash and the query typed after it. */
 interface SlashRange {
@@ -60,13 +61,15 @@ export function useSlashMenu(
   items: readonly InsertMenuItem[],
   surfaceRef: RefObject<HTMLElement | null>,
 ) {
+  const { isEditable } = useRichTextEditorContext('InsertMenu');
   const state = useEditorState();
-  const range = findSlashRange(state);
+  const range = isEditable ? findSlashRange(state) : null;
   const matches = range ? matchInsertItems(items, range.query) : [];
   const [hasFocus, setFocus] = useState(false);
   const [dismissedAt, setDismissedAt] = useState<number | null>(null);
   const [active, setActive] = useState({ query: '', index: 0 });
   const [caret, setCaret] = useState<CaretPlace | null>(null);
+  if (!range && dismissedAt !== null) setDismissedAt(null);
   const isOpen = Boolean(range) && hasFocus && dismissedAt !== range?.from && matches.length > 0;
   const activeIndex =
     active.query === range?.query ? Math.min(active.index, matches.length - 1) : 0;
@@ -82,6 +85,7 @@ export function useSlashMenu(
   );
 
   const choose = useEditorEventCallback((view, item: InsertMenuItem) => {
+    if (!isEditable) return;
     const current = findSlashRange(view.state);
     if (current) view.dispatch(view.state.tr.delete(current.from, current.to));
     toEngineCommand(item.command)(view.state, view.dispatch, view);

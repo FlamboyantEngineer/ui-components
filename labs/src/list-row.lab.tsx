@@ -200,7 +200,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="List view selection"
-      description="A List View in each selection mode: checkboxes while it selects with toggles, a press replaces the selection in replace mode. Damson is disabled; typing a letter moves to the matching row."
+      description="A List View in each selection mode: checkboxes while it selects with toggles, a press replaces the selection in replace mode. Damson is disabled; typing a letter moves to the matching row. Initial selection and disabled keys are generators that survive selection updates."
     >
       <StateMatrix
         axes={{ selection: selections }}

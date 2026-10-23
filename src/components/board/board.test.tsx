@@ -75,6 +75,34 @@ function MovingBoard({ onMove, ...props }: TaskBoardProps) {
   );
 }
 
+function TypedBoard({ onMove }: { onMove: (move: BoardMove) => void }) {
+  const [items, setItems] = useState([
+    { id: 1 as Key, title: 'Numeric card', column: 1 as Key },
+    { id: '1' as Key, title: 'Text card', column: 1 as Key },
+  ]);
+  const [currentColumns, setColumns] = useState([
+    { id: 1 as Key, title: 'Numeric column' },
+    { id: '1' as Key, title: 'Text column' },
+  ]);
+  return (
+    <Board
+      aria-label="Typed board"
+      columns={currentColumns}
+      items={items}
+      getColumn={(item) => item.column}
+      getTextValue={(item) => item.title}
+      renderCard={(item) => item.title}
+      onMove={(move) => {
+        onMove(move);
+        setItems((current) =>
+          applyBoardMove(current, move, (item, cell) => ({ ...item, column: cell.column })),
+        );
+      }}
+      onColumnMove={(move) => setColumns((current) => applyColumnMove(current, move))}
+    />
+  );
+}
+
 const grid = (name: string) => screen.getByRole('grid', { name });
 const cardNames = (name: string) =>
   within(grid(name))
@@ -82,6 +110,32 @@ const cardNames = (name: string) =>
     .map((row) => row.textContent);
 
 describe('Board', () => {
+  it('UIC-BOARD-2.3 UIC-BOARD-3.2 keeps typed card and column identities through moves', async () => {
+    const user = userEvent.setup();
+    const onMove = vi.fn();
+    render(<TypedBoard onMove={onMove} />);
+    screen.getByRole('row', { name: 'Text card' }).focus();
+    await user.keyboard('{Alt>}{ArrowRight}{/Alt}');
+    expect(onMove).toHaveBeenLastCalledWith({
+      key: '1',
+      column: '1',
+      lane: null,
+      targetKey: null,
+      position: 'after',
+    });
+    expect(within(grid('Numeric column')).getByRole('row', { name: 'Numeric card' })).toBeVisible();
+    const moved = within(grid('Text column')).getByRole('row', { name: 'Text card' });
+    await waitFor(() => expect(moved).toHaveFocus());
+    const handle = screen.getByRole('button', { name: 'Move column Text column' });
+    handle.focus();
+    await user.keyboard('{Alt>}{ArrowLeft}{/Alt}');
+    await waitFor(() => expect(handle).toHaveFocus());
+    const titles = [...document.querySelectorAll('.ui-board__column-title')].map(
+      (element) => element.textContent,
+    );
+    expect(titles).toEqual(['Text column', 'Numeric column']);
+  });
+
   it('UIC-BOARD-1.1 UIC-BOARD-1.8 UIC-BOARD-4.1 renders columns, cells and cards', async () => {
     const onAction = vi.fn<(key: Key) => void>();
     const { container } = render(

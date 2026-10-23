@@ -55,8 +55,13 @@ export function stepChosenKeys(
 /** Whether stepping the selected keys would move any of them. */
 export function canStepChosenKeys(
   chosen: readonly Key[],
-  options: { selected: ReadonlySet<Key>; step: -1 | 1 },
+  { selected, step }: { selected: ReadonlySet<Key>; step: -1 | 1 },
 ): boolean {
-  const next = stepChosenKeys(chosen, options);
-  return next.some((key, index) => key !== chosen[index]);
+  if (selected.size === 0) return false;
+  for (let index = 0; index < chosen.length; index += 1) {
+    const key = chosen[index]!;
+    const neighbor = chosen[index + step];
+    if (neighbor !== undefined && selected.has(key) && !selected.has(neighbor)) return true;
+  }
+  return false;
 }

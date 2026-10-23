@@ -149,7 +149,8 @@ describe('MessageComposer', () => {
     );
     await user.click(input());
     await user.keyboard('Ask @');
-    expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual([
+    const options = await screen.findAllByRole('option');
+    expect(options.map((option) => option.textContent)).toEqual([
       'Person: Maria Santos',
       'Person: Jon Berg',
     ]);

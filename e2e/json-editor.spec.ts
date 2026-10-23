@@ -164,4 +164,26 @@ test.describe('JSON Editor lab', () => {
     await expect(input).toHaveValue(/"vegetarian": true\n\}$/);
     await expect(recipe.locator('.ui-code-editor__bracket')).toHaveCount(0);
   });
+
+  test('UIC-JSON-EDITOR-5.1 UIC-JSON-EDITOR-5.2 validates reordered objects and inserts constant and null defaults', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('json-editor');
+    const sample = page.locator('[data-lab-editor="literal-schema"]');
+    const input = sample.getByRole('textbox', { name: 'Schema values' });
+    await expect(sample).toHaveAttribute('data-validation', 'valid');
+    await input.fill('{"constant');
+    await page.keyboard.press('Control+Space');
+    await page.keyboard.press('Enter');
+    await expect(input).toHaveValue('{"constant": "fixed"');
+    await input.fill('{"nullable');
+    await page.keyboard.press('Control+Space');
+    await page.keyboard.press('Enter');
+    await expect(input).toHaveValue('{"nullable": null');
+    await input.fill('{"toString":1}');
+    await expect(sample.locator('.ui-field__message')).toHaveText(
+      'Line 1, column 2: Property "toString" is not allowed.',
+    );
+  });
 });

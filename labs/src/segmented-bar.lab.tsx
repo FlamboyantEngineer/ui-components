@@ -9,8 +9,8 @@ import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 const column = (width: number): CSSProperties => ({ width });
 
 const checks: SegmentedBarSegment[] = [
-  { id: 'passed', label: 'Passed', value: 42, tone: 'success' },
-  { id: 'failed', label: 'Failed', value: 6, tone: 'danger' },
+  { id: 1, label: 'Passed', value: 42, tone: 'success' },
+  { id: '1', label: 'Failed', value: 6, tone: 'danger' },
   { id: 'blocked', label: 'Blocked', value: 4, tone: 'warning' },
   { id: 'skipped', label: 'Skipped', value: 8 },
 ];
@@ -34,8 +34,8 @@ function RunningChecks() {
         total={12}
         showLegend
         segments={[
-          { id: 'passed', label: 'Passed', value: passed, tone: 'success' },
-          { id: 'failed', label: 'Failed', value: failed, tone: 'danger' },
+          { id: 1, label: 'Passed', value: passed, tone: 'success' },
+          { id: '1', label: 'Failed', value: failed, tone: 'danger' },
         ]}
       />
       <p>

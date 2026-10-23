@@ -30,6 +30,18 @@ const row = (name: string) =>
   screen.getByText(name).closest<HTMLElement>('.ui-approval-panel__approver') as HTMLElement;
 
 describe('ApprovalPanel', () => {
+  it('UIC-APPROVAL-PANEL-1.4 keeps numeric and text IDs distinct when an approver is removed', () => {
+    const entries: ApprovalPanelApprover[] = [
+      { id: 1, person: { name: 'Numeric approver' }, decision: 'pending' },
+      { id: '1', person: { name: 'Text approver' }, decision: 'pending' },
+    ];
+    const { rerender } = render(<ApprovalPanel approvers={entries} getNow={getNow} />);
+    const textApprover = screen.getByText('Text approver');
+    rerender(<ApprovalPanel approvers={entries.slice(1)} getNow={getNow} />);
+    expect(screen.getByText('Text approver')).toBe(textApprover);
+    expect(screen.queryByText('Numeric approver')).not.toBeInTheDocument();
+  });
+
   it('UIC-APPROVAL-PANEL-1.1 UIC-APPROVAL-PANEL-1.8 renders a section named by its heading', () => {
     const ref = createRef<HTMLElement>();
     const { container } = render(

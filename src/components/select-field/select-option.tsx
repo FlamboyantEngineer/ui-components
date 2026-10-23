@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { Collection, Header, ListBoxItem, ListBoxSection } from '../../primitives/index.js';
+import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { createHooks } from '../../core/hooks.js';
 import type { Key } from '../../core/props.js';
 import { Glyph } from '../../core/provider.js';
@@ -77,7 +78,7 @@ function OptionRow({
   const { isMultiple, blockedKeys, renderOption } = display;
   return (
     <ListBoxItem
-      id={option.id}
+      id={toCollectionKey(option.id)}
       textValue={option.label}
       isDisabled={option.isDisabled || blockedKeys.has(option.id)}
       className={hooks.slotClass('option')}
@@ -120,7 +121,7 @@ export function SelectListItem({
 }) {
   if (!isSelectFieldGroup(item)) return <OptionRow option={item} display={display} />;
   return (
-    <ListBoxSection id={item.id} className={hooks.slotClass('section')}>
+    <ListBoxSection id={toCollectionKey(item.id)} className={hooks.slotClass('section')}>
       {item.label ? (
         <Header className={hooks.slotClass('section-header')}>{item.label}</Header>
       ) : null}

@@ -1,5 +1,6 @@
 import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
+import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import type { Selection } from '../../core/props.js';
 import { UiProvider } from '../../core/provider.js';
@@ -22,6 +23,172 @@ function Reorderable({ onMove }: { onMove: (move: ListViewMove) => void }) {
 }
 
 describe('ListView', () => {
+  it('UIC-LIST-ROW-3.3 retains one-shot selected and disabled key iterables across rerenders', () => {
+    const selectedKeys = (function* () {
+      yield 'apple';
+    })();
+    const disabledKeys = (function* () {
+      yield 'banana';
+    })();
+    const props = { items: fruit, selectionMode: 'multiple' as const, selectedKeys, disabledKeys };
+    const renderItem = (item: (typeof fruit)[number]) => <ListViewItem title={item.name} />;
+    const { rerender } = render(
+      <ListView {...props} aria-label="Fruit">
+        {renderItem}
+      </ListView>,
+    );
+    const apple = screen.getByRole('row', { name: /Apple/ });
+    const banana = screen.getByRole('row', { name: /Banana/ });
+    expect([apple.getAttribute('aria-selected'), banana.getAttribute('aria-disabled')]).toEqual([
+      'true',
+      'true',
+    ]);
+    rerender(
+      <ListView {...props} aria-label="Updated fruit">
+        {renderItem}
+      </ListView>,
+    );
+    expect([apple.getAttribute('aria-selected'), banana.getAttribute('aria-disabled')]).toEqual([
+      'true',
+      'true',
+    ]);
+  });
+
+  it('UIC-LIST-ROW-3.3 preserves Shift ranges across controlled numeric, textual and spaced selections', async () => {
+    const user = userEvent.setup();
+    const onSelectionChange = vi.fn();
+    const items = [
+      { id: 1, name: 'Numeric' },
+      { id: '1', name: 'Textual' },
+      { id: 'a b', name: 'Spaced' },
+      { id: 'ab', name: 'Compact' },
+    ];
+    function Controlled() {
+      const [selected, setSelected] = useState<Selection>(new Set());
+      return (
+        <ListView
+          aria-label="Keys"
+          items={items}
+          selectionMode="multiple"
+          selectionBehavior="replace"
+          selectedKeys={selected}
+          onSelectionChange={(keys) => {
+            setSelected(keys);
+            onSelectionChange(keys);
+          }}
+        >
+          {(item) => <ListViewItem title={item.name} />}
+        </ListView>
+      );
+    }
+    render(<Controlled />);
+    await user.click(screen.getByRole('row', { name: 'Numeric' }));
+    await user.keyboard('{Shift>}');
+    await user.click(screen.getByRole('row', { name: 'Compact' }));
+    await user.keyboard('{/Shift}');
+    expect(onSelectionChange).toHaveBeenLastCalledWith(new Set([1, '1', 'a b', 'ab']));
+  });
+  it('UIC-LIST-ROW-3.1 UIC-LIST-ROW-3.3 keeps mixed and whitespace IDs distinct through focus and selection', async () => {
+    const user = userEvent.setup();
+    const onSelectionChange = vi.fn();
+    const entries = [
+      { id: 1, name: 'Numeric row' },
+      { id: '1', name: 'Text row' },
+      { id: 'a b', name: 'Spaced row' },
+      { id: 'ab', name: 'Compact row' },
+    ];
+    render(
+      <ListView
+        aria-label="Typed rows"
+        items={entries}
+        selectionMode="multiple"
+        defaultSelectedKeys={[1]}
+        disabledKeys={['a b']}
+        onSelectionChange={onSelectionChange}
+      >
+        {(item) => <ListViewItem title={item.name} />}
+      </ListView>,
+    );
+    const rows = screen.getAllByRole('row');
+    expect(new Set(rows.map((row) => row.id)).size).toBe(entries.length);
+    expect(rows[0]).toHaveAttribute('aria-selected', 'true');
+    expect(rows[1]).toHaveAttribute('aria-selected', 'false');
+    await user.tab();
+    expect(rows[0]).toHaveFocus();
+    await user.keyboard('{ArrowDown} ');
+    expect(rows[1]).toHaveFocus();
+    expect(onSelectionChange).toHaveBeenLastCalledWith(new Set([1, '1']));
+    await user.keyboard('{ArrowDown}');
+    expect(rows[3]).toHaveFocus();
+  });
+
+  it('UIC-LIST-ROW-3.1 preserves static fragment row identity and original action keys', async () => {
+    const user = userEvent.setup();
+    const onAction = vi.fn();
+    const { rerender } = render(
+      <ListView aria-label="Typed rows" onAction={onAction}>
+        <>
+          <ListViewItem id={1} title="Numeric row" />
+          <ListViewItem id="1" title="Text row" />
+        </>
+      </ListView>,
+    );
+    const textRow = screen.getByRole('row', { name: 'Text row' });
+    await user.click(textRow);
+    expect(onAction).toHaveBeenLastCalledWith('1');
+    rerender(
+      <ListView aria-label="Typed rows" onAction={onAction}>
+        <>
+          <ListViewItem id="1" title="Text row" />
+        </>
+      </ListView>,
+    );
+    expect(screen.getByRole('row', { name: 'Text row' })).toBe(textRow);
+  });
+
+  it('UIC-LIST-ROW-3.4 preserves dynamic section row IDs and controlled selections', async () => {
+    const user = userEvent.setup();
+    const entries = [
+      { id: 1, name: 'Numeric row' },
+      { id: '1', name: 'Text row' },
+    ];
+    const onSelectionChange = vi.fn();
+    render(
+      <ListView
+        aria-label="Sections"
+        selectionMode="multiple"
+        selectedKeys={['1']}
+        onSelectionChange={onSelectionChange}
+      >
+        <ListViewSection id={2} title="First section" items={entries.slice(0, 1)}>
+          {(item) => <ListViewItem title={item.name} />}
+        </ListViewSection>
+        <ListViewSection id="2" title="Second section" items={entries.slice(1)}>
+          {(item) => <ListViewItem title={item.name} />}
+        </ListViewSection>
+      </ListView>,
+    );
+    const numeric = screen.getByRole('row', { name: /Numeric row/ });
+    const text = screen.getByRole('row', { name: /Text row/ });
+    expect(numeric.id).not.toBe(text.id);
+    expect(numeric).toHaveAttribute('aria-selected', 'false');
+    expect(text).toHaveAttribute('aria-selected', 'true');
+    await user.click(within(numeric).getByRole('checkbox'));
+    expect(onSelectionChange).toHaveBeenLastCalledWith(new Set(['1', 1]));
+  });
+
+  it('UIC-LIST-ROW-3.1 leaves custom row props unchanged', () => {
+    function CustomRow({ id }: { id: string }) {
+      return <ListViewItem id={id} title={`Row ${id}`} />;
+    }
+    render(
+      <ListView aria-label="Custom rows">
+        <CustomRow id="readable" />
+      </ListView>,
+    );
+    expect(screen.getByRole('row', { name: 'Row readable' })).toBeInTheDocument();
+  });
+
   it('UIC-LIST-ROW-3.1 renders a named grid list of rows drawn with the row text', async () => {
     const onAction = vi.fn();
     const { container } = render(

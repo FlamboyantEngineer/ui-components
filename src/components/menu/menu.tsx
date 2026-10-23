@@ -18,18 +18,19 @@ import type { AriaLabellingProps, OpenStateProps, SelectionProps } from '../../c
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { TextMatch, TextMatchProvider } from '../text-match/text-match.js';
+import { fromCollectionKey } from '../../utils/from-collection-key.js';
+import { toCollectionSelectionProps } from '../../utils/collection-selection.js';
+import { encodeCollectionChildren } from '../../utils/encode-collection-children.js';
+import { TextMatchProvider } from '../text-match/text-match.js';
 import { MenuSizeContext, type MenuSize } from './menu-context.js';
 import {
   MenuItem,
-  MenuSection,
-  MenuSeparator,
   type MenuItemProps,
   type MenuItemRenderState,
   type MenuSectionProps,
 } from './menu-item.js';
-import { MenuPopover } from './menu-popover.js';
 import { MenuTriggerPress } from './menu-trigger-press.js';
+import { renderMenuChildren } from './menu-entries.js';
 
 /** One action described as data. With `items` it opens a submenu of those entries. */
 export interface MenuItemEntry extends Omit<MenuItemProps, 'id' | 'children' | 'textValue'> {
@@ -107,37 +108,6 @@ const hooks = createHooks('menu', [
 const MenuActionContext = createContext<MenuProps['onAction']>(undefined);
 
 const defaultRowHeights: Record<MenuSize, number> = { sm: 24, md: 28, lg: 32 };
-
-function renderEntries(entries: readonly MenuEntry[], highlight: boolean): ReactElement[] {
-  return entries.map((entry) => renderEntry(entry, highlight));
-}
-
-function renderEntry(entry: MenuEntry, highlight: boolean): ReactElement {
-  if (entry.type === 'separator') return <MenuSeparator key={entry.id} />;
-  if (entry.type === 'section') {
-    const { type: _type, items, ...section } = entry;
-    return (
-      <MenuSection key={entry.id} {...section}>
-        {renderEntries(items, highlight)}
-      </MenuSection>
-    );
-  }
-  const { type: _type, label, items, renderContent, ...item } = entry;
-  const element = (
-    <MenuItem key={entry.id} textValue={label} {...item}>
-      {renderContent ?? (highlight ? <TextMatch>{label}</TextMatch> : label)}
-    </MenuItem>
-  );
-  if (!items?.length) return element;
-  return (
-    <SubmenuTrigger key={entry.id}>
-      {element}
-      <MenuPopover>
-        <Menu>{renderEntries(items, highlight)}</Menu>
-      </MenuPopover>
-    </SubmenuTrigger>
-  );
-}
 
 /** The loading sentinel: React Aria calls `onLoadMore` as it scrolls into view and shows the row while loading. */
 function MenuLoader({ onLoadMore, isLoading }: Pick<MenuProps, 'onLoadMore' | 'isLoading'>) {
@@ -228,6 +198,10 @@ export function Menu(props: MenuProps) {
     size,
     className,
     onAction,
+    selectedKeys,
+    defaultSelectedKeys,
+    disabledKeys,
+    onSelectionChange,
     filterable,
     highlightMatches = false,
     virtualized = false,
@@ -246,10 +220,16 @@ export function Menu(props: MenuProps) {
     <AriaMenu
       {...rest}
       {...hooks.root({ className, props: rest, data: { size: resolvedSize, virtualized } })}
-      onAction={action}
+      onAction={action && ((key) => action(fromCollectionKey(key)))}
+      {...toCollectionSelectionProps({
+        selectedKeys,
+        defaultSelectedKeys,
+        disabledKeys,
+        onSelectionChange,
+      })}
       renderEmptyState={renderEmptyState}
     >
-      {children ?? (items ? renderEntries(items, highlightMatches) : null)}
+      {renderMenuChildren({ children, items, highlightMatches })}
       {onLoadMore || isLoading ? (
         <MenuLoader onLoadMore={onLoadMore} isLoading={isLoading} />
       ) : null}
@@ -284,7 +264,7 @@ export function MenuTrigger({ children, ...openState }: MenuTriggerProps) {
 
 /** Makes its `MenuItem` open the `MenuPopover` beside it (React Aria `SubmenuTrigger`). */
 export function SubmenuTrigger({ children }: SubmenuTriggerProps) {
-  return <AriaSubmenuTrigger>{children}</AriaSubmenuTrigger>;
+  return <AriaSubmenuTrigger>{encodeCollectionChildren(children, [MenuItem])}</AriaSubmenuTrigger>;
 }
 
 export { MenuItem, MenuSection, MenuSeparator } from './menu-item.js';

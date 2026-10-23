@@ -3,6 +3,7 @@ import { useLocale } from '../../primitives/index.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { useItemDrag } from '../../utils/use-item-drag.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { isMoveChord } from '../../utils/use-reorder-drag-and-drop.js';
 import { ExpandToggle } from '../expand-toggle/expand-toggle.js';
 import { IconButton } from '../icon-button/icon-button.js';
@@ -67,6 +68,7 @@ export function BoardColumnHeader(props: BoardColumnHeaderProps) {
     onStep(columnKey, direction === 'rtl' ? (-step as -1 | 1) : step);
   };
   const data = {
+    keyIdentity: toKeyIdentity(columnKey),
     collapsed: isCollapsed,
     overLimit: isOverLimit,
     dragging: header.isDragging,

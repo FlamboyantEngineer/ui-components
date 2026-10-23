@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { createHooks } from '../../core/hooks.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -164,7 +165,7 @@ export function FileUploadFiles({ label, files, ...options }: FileUploadFilesPro
   return (
     <ul {...hooks.slot('files')} aria-label={label}>
       {files.map((item) => (
-        <FileRow key={item.id} item={item} options={options} />
+        <FileRow key={toKeyIdentity(item.id)} item={item} options={options} />
       ))}
     </ul>
   );

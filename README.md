@@ -9,7 +9,7 @@ Unstyled, accessible React components that expose stable styling hooks for a hos
 
 ## Install
 
-The package is published privately to GitHub Packages as `@flamboyantengineer/ui-components`.
+Publishing targets GitHub Packages as `@flamboyantengineer/ui-components` with restricted access.
 
 1. Create a token that can read the package:
    - **Locally:** a classic personal access token with the `read:packages` scope, from an account that can read `FlamboyantEngineer/ui-components`.

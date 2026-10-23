@@ -13,14 +13,14 @@ Verification: `src/components/select-field/select-field.test.tsx`, `e2e/select-f
 
 ### UIC-SELECT-FIELD-1.2 - Value and commit
 
-A single select's value shall be the chosen option's `id` or `null`; a multiple select's is the list of chosen ids in the options' order, without repeats, ids no option names keeping their place after the others. The field takes `value` with `onChange` or holds the value itself from `committedValue` or `defaultValue`, and every pick, chip removal and value restore sets the value and commits it at once, so `onCommit` hears each change.
+A single select's value shall be the chosen option's `id` or `null`; a multiple select's is the list of chosen ids in the options' order, without repeats, ids no option names keeping their place after the others. The field takes `value` with `onChange` or holds the value itself from `committedValue` or `defaultValue`, and every pick, chip removal and value restore sets the value and commits it at once, so `onCommit` hears each change. Numeric and text keys with the same spelling remain distinct in options, chips and callbacks, while form inputs submit the original key text.
 
 Implementation: `src/components/select-field/select-field.tsx`, `src/components/select-field/select-control.tsx`, `src/components/select-field/select-options.ts`
 Verification: `src/components/select-field/select-field.test.tsx`, `src/components/select-field/select-options.test.ts`
 
 ### UIC-SELECT-FIELD-1.3 - Validation and states
 
-The field base's validation shall apply (a required field without a value is invalid, then `validate`, `isPending`), and an invalid select marks its React Aria `Select` invalid (`data-invalid`). A disabled select disables its trigger. A read-only select keeps its trigger focusable and its value visible, never opens its list and offers no chip removal.
+The field base's validation shall apply (a required field without a value is invalid, then `validate`, `isPending`), and an invalid select marks its React Aria `Select` invalid (`data-invalid`). A disabled select disables its trigger and keeps its list closed, including an explicitly open list. A read-only select keeps its trigger focusable and its value visible, never opens its list and offers no chip removal.
 
 Implementation: `src/components/select-field/select-control.tsx`, `src/components/select-field/select-chips.tsx`
 Verification: `src/components/select-field/select-field.test.tsx`, `e2e/select-field.spec.ts`
@@ -34,7 +34,7 @@ Verification: `src/components/select-field/select-field.test.tsx`, `e2e/select-f
 
 ### UIC-SELECT-FIELD-1.5 - Hooks and caller attributes
 
-`SelectField` shall carry the hooks below, append the caller's `className` and forward caller `data-*` attributes and `id` to the field root, and pass `name`, `autoFocus`, `isOpen`, `defaultOpen` and `onOpenChange` to React Aria's `Select`.
+`SelectField` shall carry the hooks below, append the caller's `className` and forward caller `data-*` attributes and `id` to the field root, and use `name` for its form inputs, and pass `autoFocus`, `isOpen`, `defaultOpen` and `onOpenChange` to React Aria's `Select`.
 
 Implementation: `src/components/select-field/select-field.tsx`, `src/components/select-field/select-control.tsx`
 Verification: `src/components/select-field/select-field.test.tsx`
@@ -163,7 +163,7 @@ Verification: `src/components/select-field/select-search.test.tsx`, `e2e/select-
 
 ### UIC-SELECT-FIELD-6.1 - Form values
 
-With `name`, the select shall publish its chosen ids to its form through React Aria's hidden select: one entry for a single select's choice and one per chosen id for a multiple select. A single select showing its `emptyLabel` option publishes one empty entry, as a native select's empty option does, never that option's generated key.
+With `name`, the select shall publish its chosen ids to its form through hidden inputs: one entry for a single select's choice and one per chosen id for a multiple select. A single select showing its `emptyLabel` option publishes one empty entry, as a native select's empty option does, never that option's generated key.
 
 Implementation: `src/components/select-field/select-control.tsx`
 Verification: `src/components/select-field/select-field.test.tsx`

@@ -64,6 +64,14 @@ function Commit() {
         onCommit={setCommitted}
         data-lab-field="validate"
       />
+      <NumberField
+        label="External amount"
+        description="The external value stays visible with its error; blur or Enter snaps it to the allowed range."
+        defaultValue={12}
+        minValue={0}
+        maxValue={10}
+        data-lab-field="external"
+      />
       <Output name="Committed">{committed === null ? 'empty' : committed}</Output>
     </>
   );

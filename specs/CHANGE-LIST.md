@@ -8,6 +8,8 @@
 
 `ChangeList` shall render a [Description List](DESCRIPTION-LIST.md) (`<dl>`, also `ui-change-list`) with one row per item of `changes`, in order: a `DescriptionRow` (also `ui-change-list__change`) whose `<dt>` holds the change's `label` and whose value holds its values. Each row publishes `data-type` (`value` unless the change sets `type`) and `data-change`: `added` when only the new value is set, `removed` when only the old one is, and `changed` otherwise, where a value is unset when it is nullish, an empty text or an empty list.
 
+Numeric and text IDs, such as `1` and `'1'`, identify distinct entries; removing one preserves the other entry's rendered identity.
+
 Implementation: `src/components/change-list/change-list.tsx`, `src/components/change-list/list-changes.ts`
 Verification: `src/components/change-list/change-list.test.tsx`, `e2e/change-list.spec.ts`
 

@@ -1,4 +1,5 @@
 import { useId } from 'react';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { measuredProperty } from '../../core/hooks.js';
 import type { Key } from '../../core/props.js';
 import { ExpandToggle } from '../expand-toggle/expand-toggle.js';
@@ -50,7 +51,7 @@ function TimelineRowList({ rows, rowHeight, labelId, onExpandedChange }: RowList
     <div {...hooks.slot('list')} style={{ position: 'sticky', left: 0, zIndex: 1 }}>
       {rows.map(({ row, level, hasChildren, isExpanded }, index) => (
         <div
-          key={row.id}
+          key={toKeyIdentity(row.id)}
           {...hooks.slot('row-label', { group: hasChildren, expanded: isExpanded })}
           style={{ height: rowHeight, ...measuredProperty('timeline-level', String(level)) }}
         >
@@ -175,7 +176,7 @@ export function TimelineChart({
           <TimelineConnectors axis={axis} layout={layout} height={rows.length * rowHeight} />
           {rows.map(({ row }, index) => (
             <div
-              key={row.id}
+              key={toKeyIdentity(row.id)}
               {...hooks.slot('row')}
               role="group"
               aria-labelledby={labelId(index)}
@@ -183,7 +184,7 @@ export function TimelineChart({
             >
               {layout.rowItems.get(row.id)?.map((placed) => (
                 <TimelineItemButton
-                  key={placed.item.id}
+                  key={toKeyIdentity(placed.item.id)}
                   placed={placed}
                   predecessors={layout.predecessors.get(placed.item.id)}
                   scale={scale}

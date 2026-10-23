@@ -3,7 +3,13 @@ import type { Key } from '../../src/core/props.js';
 import { Tab, TabList, TabPanel, Tabs, type TabListProps } from '../../src/components/tabs/tabs.js';
 import { UiProvider } from '../../src/core/provider.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
-import { MealTabs, RememberedTabs, VerticalReorderTabs } from './tabs-cases.js';
+import {
+  DisabledRemovalTabs,
+  MealTabs,
+  RememberedTabs,
+  TypedKeyTabs,
+  VerticalReorderTabs,
+} from './tabs-cases.js';
 
 const sizes = ['sm', 'md', 'lg'] as const;
 
@@ -212,6 +218,35 @@ mountLab(
       description="Press a tab's close mark, or Delete on a focused tab, to remove it; the add button appends one."
     >
       <EditableTabs />
+    </LabSection>
+    <LabSection
+      title="Disabled close marks"
+      description="Summer and Autumn refuse removal. Disabling all tabs also stops Spring's close mark."
+    >
+      <DisabledRemovalTabs />
+    </LabSection>
+    <LabSection
+      title="Count caps"
+      description="Fractional caps round down; invalid caps show the full count."
+    >
+      <Tabs>
+        <TabList aria-label="Count caps">
+          <Tab id="fractional" count={5.9} countMax={2.9}>
+            Fractional cap
+          </Tab>
+          <Tab id="invalid" count={5.9} countMax={Number.NaN}>
+            Invalid cap
+          </Tab>
+        </TabList>
+        <TabPanel id="fractional">The cap rounds down to 2.</TabPanel>
+        <TabPanel id="invalid">An invalid cap shows the full count.</TabPanel>
+      </Tabs>
+    </LabSection>
+    <LabSection
+      title="Typed tab IDs"
+      description="Numeric, text and whitespace-containing IDs keep separate selection and panel relationships."
+    >
+      <TypedKeyTabs />
     </LabSection>
     <LabSection
       title="Rename, reorder and tab menu"

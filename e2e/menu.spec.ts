@@ -27,6 +27,33 @@ async function topmostAt(page: Page, box: { x: number; y: number; width: number;
 }
 
 test.describe('Menu lab', () => {
+  test('UIC-MENU-1.1 UIC-MENU-3.3 preserves typed IDs through keyboard selection', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('menu');
+    const demo = page.locator('[data-lab-demo="typed-keys"]');
+    const trigger = demo.getByRole('button', { name: 'Typed choices' });
+    await trigger.focus();
+    await page.keyboard.press('ArrowDown');
+    const menu = page.getByRole('menu', { name: 'Typed choices' });
+    const numeric = menu.getByRole('menuitemcheckbox', { name: 'Numeric option' });
+    const text = menu.getByRole('menuitemcheckbox', { name: 'Text option' });
+    await expect(numeric).toHaveAttribute('aria-checked', 'true');
+    await expect(text).toHaveAttribute('aria-checked', 'false');
+    await expect(numeric).toBeFocused();
+    expect(await numeric.getAttribute('id')).not.toBe(await text.getAttribute('id'));
+    await page.keyboard.press('ArrowDown');
+    await expect(text).toBeFocused();
+    await page.keyboard.press('Space');
+    await expect(text).toHaveAttribute('aria-checked', 'true');
+    await expect(numeric).toHaveAttribute('aria-checked', 'true');
+    await expect(demo.getByRole('status')).toHaveText('Action: string: 1');
+    await page.keyboard.press('ArrowDown');
+    await expect(menu.getByRole('menuitemcheckbox', { name: 'Compact option' })).toBeFocused();
+    await page.keyboard.press('Escape');
+  });
+
   test('UIC-MENU-1.2 UIC-MENU-2.1 draws rows and icons at three sizes', async ({ page, lab }) => {
     await lab.open('menu');
     for (const [size, row, icon] of [

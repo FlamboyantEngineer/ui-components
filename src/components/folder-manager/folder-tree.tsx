@@ -3,6 +3,7 @@ import type { Key, Selection } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { TreeMove } from '../../utils/tree-reorder.js';
 import { walkTree } from '../../utils/walk-tree.js';
+import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { ContextMenuTrigger } from '../context-menu/context-menu.js';
 import { InlineError } from '../inline-error/inline-error.js';
 import { Menu, type MenuEntry } from '../menu/menu.js';
@@ -74,8 +75,9 @@ function nodeAt<T extends FolderItem>(target: EventTarget, nodes: readonly Folde
   const row = target instanceof Element ? target.closest('[role="row"]') : null;
   const key = row?.getAttribute('data-key');
   if (key === null || key === undefined) return undefined;
+  const original = fromCollectionKey(key);
   for (const node of walkTree(nodes, (node) => node.children)) {
-    if (String(node.id) === key) return node;
+    if (node.id === original) return node;
   }
   return undefined;
 }

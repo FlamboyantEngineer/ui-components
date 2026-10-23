@@ -7,6 +7,7 @@ import type { Key } from '../../core/props.js';
 import type { UiStrings } from '../../core/strings.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { capitalizeText } from '../../utils/relative-time.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { Attribution, type AttributionProps } from '../attribution/attribution.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import { ListViewItem } from '../list-row/list-row.js';
@@ -86,7 +87,7 @@ export function renderVersionRow(
   const actions = version.isDisabled ? [] : listActions(version, context);
   return (
     <ListViewItem
-      key={version.id}
+      key={toKeyIdentity(version.id)}
       id={version.id}
       textValue={target.title}
       className={hooks.slotClass('version')}

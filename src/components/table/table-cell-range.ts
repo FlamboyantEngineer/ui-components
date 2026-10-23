@@ -1,4 +1,5 @@
 import type { Key } from '../../core/props.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import type { TableColumn, TableRow } from './table-rows.js';
 
 /** `cell` selects one cell at a time; `range` also selects rectangles of cells; `none` neither. */
@@ -28,7 +29,7 @@ export interface CellBounds {
 export interface CellGrid<T> {
   rows: readonly T[];
   columns: readonly TableColumn<T>[];
-  /** Row indices by the text of the row's key, as the document carries it. */
+  /** Row indices by the typed key identity carried by the row element. */
   rowIndex: ReadonlyMap<string, number>;
   columnIndex: ReadonlyMap<string, number>;
 }
@@ -57,7 +58,7 @@ export function createCellGrid<T extends TableRow>(
   return {
     rows,
     columns,
-    rowIndex: new Map(rows.map((row, index) => [String(row.id), index])),
+    rowIndex: new Map(rows.map((row, index) => [toKeyIdentity(row.id), index])),
     columnIndex: new Map(columns.map((column, index) => [column.id, index])),
   };
 }
@@ -77,7 +78,7 @@ export function locateCell<T>(
   grid: CellGrid<T>,
   position: TableCellPosition,
 ): { row: number; column: number } | null {
-  const row = grid.rowIndex.get(String(position.rowKey));
+  const row = grid.rowIndex.get(toKeyIdentity(position.rowKey));
   const column = grid.columnIndex.get(position.columnId);
   return row === undefined || column === undefined ? null : { row, column };
 }
@@ -161,7 +162,7 @@ export function isSameCellRange(
   right: TableCellRange | null,
 ): boolean {
   const same = (a: TableCellPosition, b: TableCellPosition) =>
-    String(a.rowKey) === String(b.rowKey) && a.columnId === b.columnId;
+    a.rowKey === b.rowKey && a.columnId === b.columnId;
   if (!left || !right) return left === right;
   return same(left.anchor, right.anchor) && same(left.focus, right.focus);
 }
@@ -179,7 +180,7 @@ export function readCellPosition<T extends TableRow>(
   grid: CellGrid<T>,
   cell: HTMLElement,
 ): TableCellPosition | null {
-  const rowKey = cell.closest('[role="row"]')?.getAttribute('data-key');
+  const rowKey = cell.closest('[role="row"]')?.getAttribute('data-key-identity');
   const index = rowKey == null ? undefined : grid.rowIndex.get(rowKey);
   const row = index === undefined ? undefined : grid.rows[index];
   const columnId = cell.dataset['column'];

@@ -32,10 +32,22 @@ const columns: TableColumn<Row>[] = [
 const grid = createCellGrid(rows, columns);
 
 describe('table cell range helpers', () => {
-  it('UIC-TABLE-14.8 locates cells by row key text and column id', () => {
+  it('UIC-TABLE-14.8 locates cells by typed row key and column id', () => {
     expect(locateCell(grid, { rowKey: 2, columnId: 'c' })).toEqual({ row: 1, column: 2 });
-    expect(locateCell(grid, { rowKey: '2', columnId: 'c' })).toEqual({ row: 1, column: 2 });
+    expect(locateCell(grid, { rowKey: '2', columnId: 'c' })).toBeNull();
     expect(locateCell(grid, { rowKey: 9, columnId: 'a' })).toBeNull();
+  });
+
+  it('UIC-TABLE-14.8 keeps numeric and text row keys in separate cells and ranges', () => {
+    const mixed = createCellGrid([{ id: 1 }, { id: '1' }], [{ id: 'value', header: 'Value' }]);
+    expect(locateCell(mixed, { rowKey: 1, columnId: 'value' })).toEqual({ row: 0, column: 0 });
+    expect(locateCell(mixed, { rowKey: '1', columnId: 'value' })).toEqual({ row: 1, column: 0 });
+    expect(
+      isSameCellRange(
+        createCellRange({ rowKey: 1, columnId: 'value' }),
+        createCellRange({ rowKey: '1', columnId: 'value' }),
+      ),
+    ).toBe(false);
   });
 
   it('UIC-TABLE-14.8 bounds a range from either corner and drops ranges the grid does not show', () => {

@@ -4,6 +4,7 @@ import { createHooks } from '../../core/hooks.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { readTreeChildren } from '../../utils/tree-reorder.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { formatPath } from '../../utils/path.js';
 import type { FieldControlProps, FieldInputProps, FieldState } from '../field/field.js';
 import { Tag, TagGroup } from '../tag-group/tag-group.js';
@@ -158,7 +159,13 @@ function HiddenInputs({
 }) {
   const entries = isMultiple ? keys : [keys[0] ?? ''];
   return entries.map((key) => (
-    <input key={String(key)} type="hidden" name={name} value={String(key)} disabled={isDisabled} />
+    <input
+      key={toKeyIdentity(key)}
+      type="hidden"
+      name={name}
+      value={String(key)}
+      disabled={isDisabled}
+    />
   ));
 }
 

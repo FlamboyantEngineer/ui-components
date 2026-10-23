@@ -1,4 +1,4 @@
-import { useRef, useState, type KeyboardEvent, type RefObject } from 'react';
+import { useLayoutEffect, useRef, useState, type KeyboardEvent, type RefObject } from 'react';
 import { matchCompletions, type Completion } from './completion-match.js';
 
 /** What a completion source knows about the place it completes. */
@@ -86,6 +86,8 @@ interface Lookup {
   reason: CompletionReason;
 }
 
+type CompletionSession = ReturnType<typeof useCompletionState>;
+
 const NAVIGATION_KEYS = new Set(['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End']);
 
 const closed: CompletionState = {
@@ -132,6 +134,73 @@ function lookUp(completions: Completions, lookup: Lookup) {
   return lookup.query || lookup.reason === 'explicit' ? completions : [];
 }
 
+function hideCompletionState(state: CompletionState): CompletionState {
+  return state.isOpen ? { ...state, isOpen: false } : state;
+}
+
+function useCompletionState(options: CompletionsOptions) {
+  const [state, setState] = useState<CompletionState>(closed);
+  const request = useRef(0);
+  const latest = useRef({ state, options });
+  useLayoutEffect(() => {
+    const wasLocked = latest.current.options.isLocked;
+    latest.current = { state, options };
+    if (!options.isLocked || wasLocked) return;
+    request.current += 1;
+    setState(hideCompletionState);
+  }, [state, options]);
+  useLayoutEffect(
+    () => () => {
+      request.current += 1;
+      latest.current.state = hideCompletionState(latest.current.state);
+    },
+    [],
+  );
+  return { state, setState, request, latest };
+}
+
+function closeCompletions(session: CompletionSession) {
+  session.request.current += 1;
+  session.latest.current.state = hideCompletionState(session.latest.current.state);
+  session.setState(hideCompletionState);
+}
+
+function applyCompletion(session: CompletionSession, option: Completion) {
+  const current = session.latest.current;
+  if (current.options.isLocked || !current.state.isOpen || !current.state.options.includes(option))
+    return;
+  const { start, end } = current.state;
+  current.state = hideCompletionState(current.state);
+  try {
+    current.options.insert(option, { start, end });
+  } finally {
+    closeCompletions(session);
+  }
+}
+
+function trackCompletions(session: CompletionSession, reason: CompletionReason) {
+  const current = session.latest.current.options;
+  const input = current.inputRef.current;
+  if (!input || !current.completions || current.isLocked) return;
+  // Inputs without a caret (such as `email`) report none; complete at the end.
+  const caret = input.selectionStart ?? input.value.length;
+  const lookup = {
+    value: input.value,
+    caret,
+    query: current.findQuery(input.value, caret),
+    reason,
+  };
+  const id = (session.request.current += 1);
+  const show = (answer: CompletionAnswer) => {
+    if (id === session.request.current && !session.latest.current.options.isLocked)
+      session.setState((state) => toState(answer, lookup, state.revision + 1));
+  };
+  const answer = lookUp(current.completions, lookup);
+  if (!isPromise(answer)) return show(answer);
+  session.setState(hideCompletionState);
+  answer.then(show, () => undefined);
+}
+
 /**
  * Completion for a text control that keeps focus: the options for the place at the caret, from a
  * vocabulary or a source, ranked against the typed text; an active option moved with the arrow
@@ -139,39 +208,16 @@ function lookUp(completions: Completions, lookup: Lookup) {
  * lookup's answer shows.
  */
 export function useCompletions(options: CompletionsOptions): CompletionsModel {
-  const { completions, inputRef, isLocked, findQuery, insert } = options;
-  const [state, setState] = useState<CompletionState>(closed);
-  const request = useRef(0);
+  const { completions, isLocked } = options;
+  const session = useCompletionState(options);
+  const { state, setState, request } = session;
   const usedKey = useRef<string | null>(null);
   const isOpen = state.isOpen && !isLocked;
-  const hide = () => setState((current) => ({ ...current, isOpen: false }));
-  const close = () => {
-    request.current += 1;
-    hide();
-  };
+  const close = () => closeCompletions(session);
   const setActiveIndex = (index: number) =>
     setState((current) => ({ ...current, activeIndex: index }));
-  const apply = (option: Completion) => {
-    insert(option, { start: state.start, end: state.end });
-    close();
-  };
-
-  const track = (reason: CompletionReason) => {
-    const input = inputRef.current;
-    if (!input || !completions || isLocked) return;
-    // Inputs without a caret (such as `email`) report none; complete at the end.
-    const caret = input.selectionStart ?? input.value.length;
-    const lookup = { value: input.value, caret, query: findQuery(input.value, caret), reason };
-    const id = (request.current += 1);
-    const show = (answer: CompletionAnswer) => {
-      if (id === request.current)
-        setState((current) => toState(answer, lookup, current.revision + 1));
-    };
-    const answer = lookUp(completions, lookup);
-    if (!isPromise(answer)) return show(answer);
-    hide();
-    answer.then(show, () => undefined);
-  };
+  const apply = (option: Completion) => applyCompletion(session, option);
+  const track = (reason: CompletionReason) => trackCompletions(session, reason);
 
   /** The list's own keys while it is open; returns whether the key was used. */
   const choose = (key: string, shiftKey: boolean): boolean => {

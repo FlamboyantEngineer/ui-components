@@ -14,6 +14,23 @@ function rowHeaders(scope: Locator): Locator {
 }
 
 test.describe('Pivot Table lab', () => {
+  test('UIC-PIVOT-TABLE-3.2 UIC-PIVOT-TABLE-3.3 moves repeated fields independently', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('pivot-table');
+    const repeated = field(page, 'repeated');
+    const chooser = repeated.getByRole('group', { name: 'Pivot fields' });
+    const zone = (name: string) => chooser.getByRole('grid', { name });
+    await expect(zone('Fields').locator('.ui-board__card')).toHaveText(['Other', 'Third']);
+    await zone('Values').getByRole('row', { name: 'Sum of Amount' }).focus();
+    await page.keyboard.press('Alt+ArrowLeft');
+    await expect(output(page, 'repeated-layout')).toHaveText('rows a; columns a; values -');
+    await expect(zone('Rows').getByRole('row', { name: 'Amount' })).toHaveCount(1);
+    await expect(zone('Columns').getByRole('row', { name: 'Amount' })).toHaveCount(1);
+    await expect(zone('Fields').locator('.ui-board__card')).toHaveText(['Other', 'Third']);
+  });
+
   test('UIC-PIVOT-TABLE-1.2 summarizes a large dataset into finite min, max and average cells', async ({
     page,
     lab,

@@ -363,7 +363,7 @@ describe('CodeEditor', () => {
     expect(input).not.toHaveAttribute('aria-controls');
     expect(input).not.toHaveAttribute('aria-activedescendant');
     await user.type(input, 'fruit.a');
-    const list = screen.getByRole('listbox', { name: 'Suggestions' });
+    const list = await screen.findByRole('listbox', { name: 'Suggestions' });
     expect(input).toHaveAttribute('aria-controls', list.id);
     const options = screen.getAllByRole('option');
     expect(options.map((option) => option.textContent)).toEqual([
@@ -389,6 +389,7 @@ describe('CodeEditor', () => {
     render(<Editor completions={vocabulary} onKeyDown={onKeyDown} />);
     const input = screen.getByRole('textbox');
     await user.type(input, 'fruit.');
+    await screen.findByRole('listbox');
     onKeyDown.mockClear();
     const active = () => screen.getByRole('option', { selected: true }).textContent;
     expect(active()).toContain('fruit.apple');
@@ -403,7 +404,7 @@ describe('CodeEditor', () => {
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     expect(input).toHaveValue('fruit.');
     await user.keyboard('b');
-    expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual([
+    expect((await screen.findAllByRole('option')).map((option) => option.textContent)).toEqual([
       'fruit.banana',
     ]);
   });
@@ -413,7 +414,7 @@ describe('CodeEditor', () => {
     render(<Editor completions={vocabulary} />);
     const input = screen.getByRole('textbox');
     await user.type(input, 'fruit.');
-    const banana = screen.getByRole('option', { name: 'fruit.banana' });
+    const banana = await screen.findByRole('option', { name: 'fruit.banana' });
     await user.hover(banana);
     expect(banana).toHaveAttribute('aria-selected', 'true');
     await user.click(banana);
@@ -444,6 +445,7 @@ describe('CodeEditor', () => {
     const user = userEvent.setup();
     const { container } = render(<Editor completions={vocabulary} />);
     await user.type(screen.getByRole('textbox'), 'fruit.');
+    await screen.findByRole('listbox');
     const popover = document.querySelector<HTMLElement>('.ui-code-editor__popover');
     expect(popover?.style.zIndex).toBe('130');
     expect(popover).not.toHaveAttribute('role', 'dialog');

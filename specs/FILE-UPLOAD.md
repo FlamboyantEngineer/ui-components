@@ -115,7 +115,7 @@ Verification: `src/components/file-upload/file-rules.test.ts`, `src/components/f
 
 ### UIC-FILE-UPLOAD-3.1 - File list
 
-`files` shall render as a list (`ui-file-upload__files`) named by `label`, one `ui-file-upload__file` per file with its name (`ui-file-upload__file-name`), its size when given (`ui-file-upload__file-size`, `formatBytes` in the `UiProvider` locale) and `data-status`: `error` with an error, `uploading` while `progress` is below 100, `complete` at 100, `selected` without progress.
+`files` shall render as a list (`ui-file-upload__files`) named by `label`, one `ui-file-upload__file` per file with its name (`ui-file-upload__file-name`), its size when given (`ui-file-upload__file-size`, `formatBytes` in the `UiProvider` locale) and `data-status`: `error` with an error, `uploading` while `progress` is below 100, `complete` at 100, `selected` without progress. Numeric and text file ids remain distinct when rows are reordered, preserving each file row's state.
 
 Implementation: `src/components/file-upload/file-upload-files.tsx`
 Verification: `src/components/file-upload/file-upload.test.tsx`, `e2e/file-upload.spec.ts`

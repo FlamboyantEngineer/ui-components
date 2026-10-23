@@ -27,14 +27,14 @@ function textUrl(text: string): string {
 }
 
 const report: FileFieldItem = {
-  id: 'report',
+  id: 1,
   name: 'Report.pdf',
   size: 482_000,
   type: 'application/pdf',
   downloadUrl: textUrl('Quarterly report'),
 };
 const harbour: FileFieldItem = {
-  id: 'harbour',
+  id: '1',
   name: 'Harbour.png',
   size: 2_400_000,
   type: 'image/png',

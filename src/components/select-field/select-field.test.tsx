@@ -26,6 +26,39 @@ afterEach(() => {
 });
 
 describe('SelectField field', () => {
+  it('UIC-SELECT-FIELD-1.2 keeps numeric and text selections distinct while submitting their original values', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const options = [
+      { id: 1, label: 'Numeric' },
+      { id: '1', label: 'Textual' },
+    ];
+    const { container } = render(
+      <form>
+        <SelectField
+          label="Types"
+          options={options}
+          selectionMode="multiple"
+          defaultValue={[1]}
+          onChange={onChange}
+          name="types"
+        />
+      </form>,
+    );
+    await user.click(screen.getByRole('button', { name: 'Select an option Types' }));
+    await user.click(screen.getByRole('option', { name: 'Textual' }));
+    expect(onChange).toHaveBeenLastCalledWith([1, '1']);
+    expect(new FormData(container.querySelector('form')!).getAll('types')).toEqual(['1', '1']);
+  });
+
+  it.each(['isReadOnly', 'isDisabled'] as const)(
+    'UIC-SELECT-FIELD-1.3 keeps an explicitly open list closed while %s',
+    (lock) => {
+      render(<SelectField label="Types" options={fruit} isOpen {...{ [lock]: true }} />);
+      expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+    },
+  );
+
   it('UIC-SELECT-FIELD-1.1 renders a field around a framed trigger named by its value and label', () => {
     const { container } = render(
       <SelectField

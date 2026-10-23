@@ -60,6 +60,7 @@ describe('JSON completion from a schema', () => {
       '"tags"': '"tags": [${}]',
       '"note"': '"note": null',
       '"steps"': '"steps": {${}}',
+      '"oven"': '"oven": ${"fan"}',
     });
     expect(answer('{"na|": 1}')).toMatchObject({
       options: expect.arrayContaining([expect.objectContaining({ insertText: '"name"' })]),
@@ -96,5 +97,38 @@ describe('JSON completion from a schema', () => {
     expect(describeJsonAt(recipe, source, source.indexOf('"course"'))).toBe('When it is served.');
     expect(describeJsonAt(recipe, source, source.indexOf('2'))).toBeNull();
     expect(describeJsonAt(recipe, source, 0)).toBeNull();
+  });
+
+  it('UIC-JSON-EDITOR-5.2 keeps null and constant starting values and escapes literal snippet syntax', () => {
+    const source = createJsonCompletion({
+      properties: {
+        nullable: { enum: [null], default: 'other' },
+        constant: { enum: ['other', 'fixed'], const: 'fixed' },
+        '${key}': { default: '${value}\\}' },
+      },
+    });
+    const result = source({ value: '{', caret: 1, query: '', isExplicit: true });
+    expect(result).toMatchObject({
+      options: [
+        expect.objectContaining({ insertText: '"nullable": ${null}' }),
+        expect.objectContaining({ insertText: '"constant": ${"fixed"}' }),
+        expect.objectContaining({ insertText: '"\\${key\\}": ${"\\${value\\}\\\\\\\\\\}"}' }),
+      ],
+    });
+  });
+
+  it('UIC-JSON-EDITOR-5.2 UIC-JSON-EDITOR-5.5 resolves escaped property names as JSON strings', () => {
+    const schema = { properties: { 'a"b': { description: 'Quoted key' } } };
+    const source = '{"a\\"b": 1}';
+    expect(describeJsonAt(schema, source, source.indexOf('a'))).toBe('Quoted key');
+    const result = createJsonCompletion(schema)({
+      value: source,
+      caret: source.indexOf(':') - 1,
+      query: '',
+      isExplicit: true,
+    });
+    expect(result).toMatchObject({
+      options: [expect.objectContaining({ label: '"a\\"b"' })],
+    });
   });
 });

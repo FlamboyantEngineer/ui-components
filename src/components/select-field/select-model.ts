@@ -112,9 +112,9 @@ export function useSelectActions(
     config.onOpenChange,
   );
   const [filterText, setFilterText] = useState('');
-  const isOpen = !state.isReadOnly && open;
+  const isOpen = !state.isReadOnly && !state.isDisabled && open;
   const setOpen = (next: boolean) => {
-    if (!next || !state.isReadOnly) setOwnOpen(next);
+    if (!next || (!state.isReadOnly && !state.isDisabled)) setOwnOpen(next);
   };
   const changeFilter = (text: string) => {
     setFilterText(text);

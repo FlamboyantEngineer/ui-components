@@ -85,6 +85,7 @@ export function DecisionControl({
   const submission = useDecisionSubmission({
     details: { decision: picked?.value ?? '', comment: commentText },
     isSigned: signature !== undefined,
+    isDisabled,
     onSubmit,
     onSubmitted: () => setCommentText(''),
   });
@@ -130,7 +131,7 @@ export function DecisionControl({
           isDisabled={isDisabled || !picked}
         />
       </Form>
-      {signature && picked ? (
+      {signature && picked && !isDisabled ? (
         <DecisionSignature
           signature={signature}
           picked={picked}

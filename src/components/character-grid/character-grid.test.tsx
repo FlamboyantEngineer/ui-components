@@ -49,6 +49,29 @@ function headings(container: HTMLElement) {
 }
 
 describe('CharacterGrid', () => {
+  it('UIC-CHARACTER-GRID-1.1 keeps category identities distinct when their IDs differ only by whitespace', async () => {
+    const user = userEvent.setup();
+    const onSelect = vi.fn();
+    const first = { char: '€', name: 'First euro' };
+    const second = { char: '€', name: 'Second euro' };
+    render(
+      <CharacterGrid
+        categories={[
+          { id: 'a b', label: 'First category', characters: [first] },
+          { id: 'ab', label: 'Second category', characters: [second] },
+        ]}
+        onSelect={onSelect}
+      />,
+    );
+    const left = screen.getByRole('row', { name: 'First euro' });
+    const right = screen.getByRole('row', { name: 'Second euro' });
+    expect(left.id).not.toBe(right.id);
+    await user.click(left);
+    expect(onSelect).toHaveBeenLastCalledWith(first);
+    await user.click(right);
+    expect(onSelect).toHaveBeenLastCalledWith(second);
+  });
+
   it('UIC-CHARACTER-GRID-1.1 UIC-CHARACTER-GRID-2.4 renders a search and one grid with a section per category', () => {
     const { container } = render(
       <CharacterGrid

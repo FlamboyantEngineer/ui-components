@@ -124,6 +124,8 @@ Verification: `e2e/list-row.spec.ts`
 
 `ListView` shall render React Aria's `GridList` in its `stack` layout with the `ui-list-view` root, named by its `aria-label` or `aria-labelledby`, and `ListViewItem` a `GridListItem` (`ui-list-view-item`, keyed by its `id`) whose cell holds the row text drawn by `ListRowContent` (`title`, `meta`, `icon`, `leading`) followed by `trailing` controls in the `ui-list-view-item__trailing` slot. Rows come from `ListViewItem` and `ListViewSection` children, or from `items` with a function in `children` that draws one per item and redraws them when `dependencies` change. The list is one tab stop: ArrowDown and ArrowUp move between rows, Home and End to the first and last, and Enter or a press calls `onAction` with the row's key or follows the item's `href` (React Aria). A string `title` is the item's `textValue` unless one is given. `divided` publishes `data-divided` and the item's `tone` (`neutral` by default, `danger`) `data-tone`, as on `List` and `ListRow`.
 
+IDs on `ListViewItem` and `ListViewSection`, including IDs inferred from dynamic items, retain their primitive type: numeric `1` and text `'1'` remain distinct, as do text IDs differing only by whitespace. Selection, action and reorder callbacks report the original IDs. Internally encoded collection IDs keep React keys and accessibility references unique; arbitrary custom child components keep their caller props unchanged.
+
 Implementation: `src/components/list-row/list-view.tsx`, `labs/reference/list-row.css`
 Verification: `src/components/list-row/list-view.test.tsx`, `e2e/list-row.spec.ts`
 
@@ -137,6 +139,8 @@ Verification: `src/components/list-row/list-view.test.tsx`, `e2e/list-row.spec.t
 ### UIC-LIST-ROW-3.3 - Selection
 
 The selection props (`selectionMode`, `selectionBehavior`, `selectedKeys`, `defaultSelectedKeys`, `onSelectionChange` with the new `Selection`, `disallowEmptySelection`, `disabledKeys`) shall select rows: selected rows carry `aria-selected` and `data-selected`, and a multiple-selection list `aria-multiselectable`. While the list selects with toggles (`selectionBehavior="toggle"`, the default), each row draws a selection [Checkbox](CHECKBOX.md) before its text in the `ui-list-view-item__checkbox` slot, which reports and toggles the row's selection; with `replace` no checkbox draws and a press replaces the selection.
+
+One-shot generators supplied for selected, initial or disabled keys keep their values across unrelated rerenders. Controlled updates preserve the primitive's range-selection anchor; mutable Sets and arrays still reflect membership changes.
 
 Implementation: `src/components/list-row/list-view.tsx`, `labs/reference/list-row.css`
 Verification: `src/components/list-row/list-view.test.tsx`, `e2e/list-row.spec.ts`

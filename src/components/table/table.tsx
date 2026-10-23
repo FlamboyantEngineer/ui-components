@@ -14,6 +14,8 @@ import type {
 import { splitDataAttributes } from '../../core/hooks.js';
 import type { BaseProps, Key, Size } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { toCollectionKey } from '../../utils/to-collection-key.js';
+import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import type { ActionRowAction } from '../action-row/action-row.js';
 import { Pagination } from '../pagination/pagination.js';
 import type { TableColumnWidths } from './column-sizing.js';
@@ -183,9 +185,16 @@ function TableGridElement<T extends TableRow>({
       key={reordering ? 'reorder' : 'static'}
       className={hooks.slotClass('grid')}
       render={hasGroupRow(structure, header.groups) ? renderTableWithTracks : undefined}
-      treeColumn={structure.treeColumn ?? undefined}
-      sortDescriptor={view.sort.descriptors[0]}
-      onSortChange={view.sort.onSortChange}
+      treeColumn={structure.treeColumn === null ? undefined : toCollectionKey(structure.treeColumn)}
+      sortDescriptor={
+        view.sort.descriptors[0] && {
+          ...view.sort.descriptors[0],
+          column: toCollectionKey(String(view.sort.descriptors[0].column)),
+        }
+      }
+      onSortChange={(descriptor) =>
+        view.sort.onSortChange({ ...descriptor, column: fromCollectionKey(descriptor.column) })
+      }
       onRowAction={onRowAction}
       dragAndDropHooks={reordering ? dragAndDropHooks : undefined}
     >

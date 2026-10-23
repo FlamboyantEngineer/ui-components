@@ -41,6 +41,29 @@ function Controlled({ onChange }: { onChange?: (value: Key[]) => void }) {
 }
 
 describe('TransferList', () => {
+  it('UIC-TRANSFER-LIST-2.1 UIC-TRANSFER-LIST-2.3 transfers numeric and textual keys independently through its row collections', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(
+      <TransferList
+        aria-label="Keys"
+        items={[
+          { id: 1, label: 'Numeric item' },
+          { id: '1', label: 'Text item' },
+        ]}
+        defaultValue={[1]}
+        onChange={onChange}
+      />,
+    );
+    await user.click(within(side('Available')).getByRole('row', { name: 'Text item' }));
+    await user.keyboard('{Enter}');
+    expect(onChange).toHaveBeenLastCalledWith([1, '1']);
+    expect(rows('Chosen')).toEqual(['Numeric item', 'Text item']);
+    await user.click(screen.getByRole('button', { name: 'Move selected to available' }));
+    expect(onChange).toHaveBeenLastCalledWith([1]);
+    expect(rows('Chosen')).toEqual(['Numeric item']);
+    expect(rows('Available')).toEqual(['Text item']);
+  });
   it('UIC-TRANSFER-LIST-1.1 UIC-TRANSFER-LIST-2.6 renders two named sides with filters, counts and move buttons', () => {
     const { container } = render(
       <TransferList
@@ -168,6 +191,25 @@ describe('TransferList', () => {
     await user.click(screen.getByRole('button', { name: 'Move all to chosen' }));
     expect(onChange).toHaveBeenLastCalledWith(['quito', 'lisbon', 'oslo', 'lima', 'malmo']);
     expect(screen.getByRole('button', { name: 'Move all to chosen' })).toBeDisabled();
+  });
+
+  it('UIC-TRANSFER-LIST-1.4 matches every normalized term on either side independently', async () => {
+    const user = userEvent.setup();
+    render(
+      <TransferList
+        aria-label="Places"
+        items={[
+          { id: 'old', label: 'Malmö / Old-town' },
+          { id: 'new', label: 'Malmö New town' },
+          { id: 'other', label: 'Oslo Old town' },
+        ]}
+        defaultValue={['new']}
+      />,
+    );
+    await user.type(screen.getByRole('searchbox', { name: 'Filter available' }), 'MALMO_OLD');
+    await user.type(screen.getByRole('searchbox', { name: 'Filter chosen' }), 'town-malmo');
+    expect(rows('Available')).toEqual(['Malmö / Old-town']);
+    expect(rows('Chosen')).toEqual(['Malmö New town']);
   });
 
   it('UIC-TRANSFER-LIST-2.3 moves a row on double click and with Enter', async () => {

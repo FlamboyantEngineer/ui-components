@@ -19,6 +19,9 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { fromCollectionKey } from '../../utils/from-collection-key.js';
+import { toCollectionSelectionProps } from '../../utils/collection-selection.js';
+import { encodeCollectionChildren } from '../../utils/encode-collection-children.js';
 import { useReorderDragAndDrop } from '../../utils/use-reorder-drag-and-drop.js';
 import { Checkbox } from '../checkbox/checkbox.js';
 import { DragHandle } from '../drag-handle/drag-handle.js';
@@ -111,7 +114,7 @@ const defaultRowHeight = 48;
 const renderDropIndicator = createDropIndicator(viewHooks.slotClass('drop-indicator'));
 
 function getKeyText(key: Key): string {
-  return String(key);
+  return String(fromCollectionKey(key));
 }
 
 /** The building block's drag and drop hooks for the list's reorder options. */
@@ -119,7 +122,11 @@ function useListDragAndDrop(reorder: ListViewReorderOptions | undefined) {
   const options = useReorderDragAndDrop<ListViewMove>({
     resolveMove: (target, keys) =>
       target.type === 'item' && target.dropPosition !== 'on' && !keys.has(target.key)
-        ? { keys: [...keys], targetKey: target.key, position: target.dropPosition }
+        ? {
+            keys: [...keys].map(fromCollectionKey),
+            targetKey: fromCollectionKey(target.key),
+            position: target.dropPosition,
+          }
         : null,
     onMove: (move) => reorder?.onMove(move),
     getTextValue: getKeyText,
@@ -138,7 +145,7 @@ function ListViewRows<T extends object>(
   return (
     <>
       <Collection items={items} dependencies={dependencies}>
-        {children}
+        {encodeCollectionChildren(children, [ListViewItem, ListViewSection])}
       </Collection>
       {onLoadMore ? (
         <GridListLoadMoreItem
@@ -170,6 +177,11 @@ export function ListView<T extends object>({
   onLoadMore,
   isLoading,
   renderEmptyState,
+  selectedKeys,
+  defaultSelectedKeys,
+  disabledKeys,
+  onSelectionChange,
+  onAction,
   className,
   ...rest
 }: ListViewProps<T>) {
@@ -183,6 +195,13 @@ export function ListView<T extends object>({
       // React Aria keeps drag and drop hooks for the list's lifetime: remount when reorder toggles.
       key={reorder ? 'reorder' : 'static'}
       {...rest}
+      {...toCollectionSelectionProps({
+        selectedKeys,
+        defaultSelectedKeys,
+        disabledKeys,
+        onSelectionChange,
+      })}
+      onAction={onAction && ((key) => onAction(fromCollectionKey(key)))}
       dragAndDropHooks={dragAndDropHooks}
       renderEmptyState={emptyState}
       {...viewHooks.root({ className, props: rest, data: { divided, stickyHeaders } })}
@@ -247,7 +266,7 @@ export function ListViewSection<T extends object>({
     <GridListSection {...rest} {...sectionHooks.root({ className, props: rest })}>
       <GridListHeader className={sectionHooks.slotClass('header')}>{title}</GridListHeader>
       <Collection items={items} dependencies={dependencies}>
-        {children}
+        {encodeCollectionChildren(children, [ListViewItem, ListViewSection])}
       </Collection>
     </GridListSection>
   );

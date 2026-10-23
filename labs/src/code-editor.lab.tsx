@@ -249,6 +249,28 @@ function EditingEditor() {
   );
 }
 
+function BoundaryEditor() {
+  const [value, setValue] = useState('İ apple APPLE\n([})');
+  return (
+    <CodeEditor
+      aria-label="Boundary source"
+      data-lab-editor="boundaries"
+      value={value}
+      onChange={setValue}
+      tokenize={tokenize}
+      allowsSearch
+      completions={[
+        { label: '${literal}' },
+        { label: 'escaped', insertText: '\\${literal} ${value\\}text}' },
+      ]}
+      diagnostics={[
+        { message: 'First range.', line: 1, column: 3, endColumn: 8, severity: 'warning' },
+        { message: 'Overlapping range.', line: 1, column: 5, endColumn: 14 },
+      ]}
+    />
+  );
+}
+
 function ProblemsEditor() {
   const [value, setValue] = useState(
     'let basket = "apples"\nreturn pick(fruit.ripe, baskit, "pears")',
@@ -341,6 +363,12 @@ mountLab(
       description="Tab and Shift+Tab indent by four spaces, Escape then Tab leaves; brackets and quotes pair up; Enter keeps the indentation; the bracket at the caret and its partner are marked. Ctrl+F finds and replaces. Typing or Ctrl+Space asks the source: statements with snippets (Tab moves between fields), or fields after fruit."
     >
       <EditingEditor />
+    </LabSection>
+    <LabSection
+      title="Source boundaries"
+      description="Find apple after İ and replace it without shifting the source. The second line has a mismatched nested bracket. Ctrl+Space offers a literal label and an escaped snippet; overlapping diagnostics retain the worst severity."
+    >
+      <BoundaryEditor />
     </LabSection>
     <LabSection
       title="Problems and hover tips"

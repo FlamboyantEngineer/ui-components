@@ -67,6 +67,24 @@ function wheel(target: Element, init: WheelEventInit) {
 }
 
 describe('ToolbarScroller', () => {
+  it('UIC-TOOLBAR-SCROLLER-3.1 retains each tool state when numeric and text IDs reorder', async () => {
+    const user = userEvent.setup();
+    const items = [
+      { id: 1, label: 'Numeric tool' },
+      { id: '1', label: 'Text tool' },
+    ];
+    const renderItem = (item: (typeof items)[number]) => (
+      <input aria-label={item.label} defaultValue={item.label} />
+    );
+    const { rerender } = render(<ToolbarScroller items={items} renderItem={renderItem} />);
+    await user.type(screen.getByRole('textbox', { name: 'Numeric tool' }), ' changed');
+    rerender(<ToolbarScroller items={[...items].reverse()} renderItem={renderItem} />);
+    expect(screen.getByRole('textbox', { name: 'Numeric tool' })).toHaveValue(
+      'Numeric tool changed',
+    );
+    expect(screen.getByRole('textbox', { name: 'Text tool' })).toHaveValue('Text tool');
+  });
+
   afterEach(() => {
     vi.unstubAllGlobals();
   });

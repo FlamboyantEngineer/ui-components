@@ -25,6 +25,53 @@ function input() {
 }
 
 describe('Combobox', () => {
+  it('UIC-COMBOBOX-2.4 UIC-COMBOBOX-2.8 keeps numeric and text selections distinct and submits original keys', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const items = [
+      { id: 1, label: 'Numeric' },
+      { id: '1', label: 'Textual' },
+    ];
+    const { container } = render(
+      <form>
+        <Combobox
+          label="Types"
+          defaultItems={items}
+          defaultValue={1}
+          onChange={onChange}
+          name="types"
+        />
+      </form>,
+    );
+    expect(input()).toHaveValue('Numeric');
+    await user.click(screen.getByRole('button', { name: 'Show suggestions Types' }));
+    await user.click(await screen.findByRole('option', { name: 'Textual' }));
+    expect(onChange).toHaveBeenLastCalledWith('1');
+    expect(input()).toHaveValue('Textual');
+    expect(new FormData(container.querySelector('form')!).get('types')).toBe('1');
+  });
+
+  it.each(['isReadOnly', 'isDisabled'] as const)(
+    'UIC-COMBOBOX-1.3 keeps an explicitly open list closed while %s',
+    async (lock) => {
+      const loadItems = vi.fn().mockResolvedValue([]);
+      render(
+        <Combobox
+          label="Types"
+          defaultItems={fruit}
+          loadItems={loadItems}
+          defaultInputValue="a"
+          searchDelay={0}
+          isOpen
+          {...{ [lock]: true }}
+        />,
+      );
+      await act(async () => undefined);
+      expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+      expect(loadItems).not.toHaveBeenCalled();
+    },
+  );
+
   it('UIC-COMBOBOX-1.1 draws the label, field, input, button, description and error', () => {
     const { container, rerender } = render(
       <Combobox
@@ -132,7 +179,7 @@ describe('Combobox', () => {
     await user.click(input());
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     await user.keyboard('b');
-    expect(screen.getByRole('listbox')).toBeInTheDocument();
+    expect(await screen.findByRole('listbox')).toBeInTheDocument();
     expect(input()).toHaveAttribute('aria-expanded', 'true');
     await user.tab();
     await user.tab();
@@ -143,16 +190,16 @@ describe('Combobox', () => {
     await user.keyboard('b');
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     await user.keyboard('{ArrowDown}');
-    expect(screen.getByRole('listbox')).toBeInTheDocument();
+    expect(await screen.findByRole('listbox')).toBeInTheDocument();
     await user.keyboard('{Escape}');
     await user.click(screen.getByRole('button', { name: /Show suggestions/ }));
-    expect(screen.getByRole('listbox')).toBeInTheDocument();
+    expect(await screen.findByRole('listbox')).toBeInTheDocument();
 
     rerender(<Combobox aria-label="Fruit" defaultItems={fruit} menuTrigger="focus" />);
     await user.click(document.body);
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     await user.click(input());
-    expect(screen.getByRole('listbox')).toBeInTheDocument();
+    expect(await screen.findByRole('listbox')).toBeInTheDocument();
   });
 
   it('UIC-COMBOBOX-2.5 keeps typed text only when custom values are allowed', async () => {
@@ -173,6 +220,81 @@ describe('Combobox', () => {
     expect(input()).toHaveValue('Apples');
     await user.click(document.body);
     expect(input()).toHaveValue('Apple');
+  });
+
+  it.each(['value', 'defaultValue'] as const)(
+    'UIC-COMBOBOX-2.5 treats an unknown %s as an option id rather than custom text',
+    (property) => {
+      const { container } = render(
+        <form>
+          <Combobox
+            label="Fruit"
+            defaultItems={fruit}
+            allowsCustomValue
+            name="fruit"
+            {...{ [property]: 'Quince' }}
+          />
+        </form>,
+      );
+      expect(input()).toHaveValue('');
+      expect(new FormData(container.querySelector('form')!).get('fruit')).toBe('');
+    },
+  );
+
+  it('UIC-COMBOBOX-2.5 controls and submits custom text independently of option ids', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const field = (value: string, inputValue: string) => (
+      <form>
+        <Combobox
+          label="Fruit"
+          defaultItems={fruit}
+          allowsCustomValue
+          value={value}
+          inputValue={inputValue}
+          onChange={onChange}
+          name="fruit"
+        />
+      </form>
+    );
+    const { container, rerender } = render(field('missing', 'Quince'));
+    const submitted = () => new FormData(container.querySelector('form')!).get('fruit');
+    expect(input()).toHaveValue('Quince');
+    expect(submitted()).toBe('Quince');
+    rerender(field('other', 'Kumquat'));
+    expect(input()).toHaveValue('Kumquat');
+    await user.click(input());
+    await user.click(document.body);
+    expect(onChange).toHaveBeenLastCalledWith(null);
+    expect(input()).toHaveValue('Kumquat');
+    expect(submitted()).toBe('Kumquat');
+  });
+
+  it('UIC-COMBOBOX-2.4 UIC-COMBOBOX-2.5 selects original typed ids after starting with custom text', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const items = [
+      { id: 1, label: 'Numeric' },
+      { id: '1', label: 'Textual' },
+    ];
+    const { container } = render(
+      <form>
+        <Combobox
+          label="Kind"
+          defaultItems={items}
+          allowsCustomValue
+          defaultInputValue="Quince"
+          onChange={onChange}
+          name="kind"
+        />
+      </form>,
+    );
+    expect(input()).toHaveValue('Quince');
+    await user.click(screen.getByRole('button', { name: 'Show suggestions Kind' }));
+    await user.click(await screen.findByRole('option', { name: 'Textual' }));
+    expect(onChange).toHaveBeenLastCalledWith('1');
+    expect(input()).toHaveValue('Textual');
+    expect(new FormData(container.querySelector('form')!).get('kind')).toBe('Textual');
   });
 
   it('UIC-COMBOBOX-2.8 appends caller classes and forwards data attributes and the ref', () => {
@@ -214,6 +336,7 @@ describe('Combobox', () => {
     );
     await user.click(input());
     await user.keyboard('{ArrowDown}');
+    await screen.findByRole('listbox');
     const header = document.querySelector('.ui-combobox__list-header');
     expect(header?.parentElement).toHaveClass('ui-combobox__popover');
     expect(
@@ -223,7 +346,7 @@ describe('Combobox', () => {
     expectHooksMatchSpec(document.body, 'COMBOBOX', { slots: ['list-header', 'listbox'] });
     await user.click(screen.getByRole('button', { name: 'Only citrus' }));
     expect(onPress).toHaveBeenCalledTimes(1);
-    expect(screen.getByRole('listbox')).toBeInTheDocument();
+    expect(await screen.findByRole('listbox')).toBeInTheDocument();
     expect(input()).toHaveFocus();
     await user.keyboard('{ArrowDown}');
     expect(input()).toHaveAttribute('aria-activedescendant');
@@ -235,7 +358,7 @@ describe('Combobox', () => {
     const { container } = render(
       <Combobox aria-label="Fruit" defaultItems={fruit} defaultOpen onOpenChange={onOpenChange} />,
     );
-    expect(screen.getByRole('listbox')).toBeInTheDocument();
+    expect(await screen.findByRole('listbox')).toBeInTheDocument();
     // React Aria hides the button from assistive technology while the list is open.
     await user.click(container.querySelector('.ui-combobox__button') as HTMLElement);
     expect(onOpenChange).toHaveBeenLastCalledWith(false);
@@ -260,11 +383,11 @@ describe('Combobox', () => {
     rerender(
       <Combobox aria-label="Fruit" defaultItems={fruit} isOpen onOpenChange={onOpenChange} />,
     );
-    expect(screen.getByRole('listbox')).toBeInTheDocument();
+    expect(await screen.findByRole('listbox')).toBeInTheDocument();
     onOpenChange.mockClear();
     await user.keyboard('{Escape}');
     expect(onOpenChange).toHaveBeenCalledWith(false);
-    expect(screen.getByRole('listbox')).toBeInTheDocument();
+    expect(await screen.findByRole('listbox')).toBeInTheDocument();
     rerender(
       <Combobox
         aria-label="Fruit"

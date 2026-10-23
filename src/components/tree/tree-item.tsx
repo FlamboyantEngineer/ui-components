@@ -11,6 +11,7 @@ import {
 import { measuredProperty } from '../../core/hooks.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { EmptyState } from '../empty-state/empty-state.js';
 import type { TreeExpandGlyph, TreeItemData, TreeItemState, TreeProps } from './tree.js';
 import { treeHooks as hooks } from './tree-hooks.js';
@@ -194,7 +195,7 @@ export function useTreeItemRenderer<T extends TreeItemData>(
       const rowElement = { isMovable, isCurrent, isIndeterminate, href, keyShortcuts };
       return (
         <TreeItem
-          id={item.id}
+          id={toCollectionKey(item.id)}
           textValue={getTextValue(item)}
           href={href}
           hasChildItems={isLazy || undefined}

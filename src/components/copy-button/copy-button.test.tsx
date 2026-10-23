@@ -53,6 +53,26 @@ describe('CopyButton', () => {
     expectHooksMatchSpec(container, 'COPY-BUTTON');
   });
 
+  it('UIC-COPY-BUTTON-1.1 reports every overlapping write while keeping the latest feedback', async () => {
+    const user = userEvent.setup();
+    let refuseEarlier: ((error: Error) => void) | undefined;
+    vi.spyOn(navigator.clipboard, 'writeText')
+      .mockImplementationOnce(
+        () => new Promise<void>((_resolve, reject) => (refuseEarlier = reject)),
+      )
+      .mockResolvedValueOnce();
+    const onCopy = vi.fn();
+    render(<CopyButton value="City" onCopy={onCopy} />);
+    const button = screen.getByRole('button', { name: 'Copy' });
+    await user.click(button);
+    await user.click(button);
+    expect(screen.getByRole('status')).toHaveTextContent('Copied');
+    expect(onCopy).toHaveBeenCalledExactlyOnceWith(true);
+    await act(async () => refuseEarlier?.(new Error('Denied')));
+    expect(onCopy.mock.calls).toEqual([[true], [false]]);
+    expect(screen.getByRole('status')).toHaveTextContent('Copied');
+  });
+
   it('UIC-COPY-BUTTON-1.3 takes its name and announcements from the label and provider strings', async () => {
     const user = userEvent.setup();
     render(

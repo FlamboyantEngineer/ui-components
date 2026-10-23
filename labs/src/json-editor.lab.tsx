@@ -122,6 +122,28 @@ function RecipeEditor() {
   );
 }
 
+function LiteralSchemaEditor() {
+  return (
+    <JsonEditor
+      label="Schema values"
+      description="Object key order does not affect constants. Complete nullable or constant, and try unknown keys such as toString. Literal snippet characters stay in JSON strings."
+      defaultValue={'{"payload":{"second":"${field}","first":1},"constructor":1}'}
+      schema={{
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          payload: { const: { first: 1, second: '${field}' } },
+          nullable: { enum: [null], default: 'other' },
+          constant: { const: 'fixed' },
+          constructor: { type: 'integer' as const },
+          'a"b': { type: 'string', description: 'A quoted property name.' },
+        },
+      }}
+      data-lab-editor="literal-schema"
+    />
+  );
+}
+
 const longJson = JSON.stringify(
   Array.from({ length: 30 }, (_, index) => ({ row: index + 1, fruit: index % 2 ? 'Pear' : 'Fig' })),
   null,
@@ -181,6 +203,9 @@ mountLab(
       description="Problems are underlined where they are and the first one is the field's message; rest the pointer on a key for its description, or press F8. Brackets and quotes pair up."
     >
       <RecipeEditor />
+    </LabSection>
+    <LabSection title="Schema values and literal strings">
+      <LiteralSchemaEditor />
     </LabSection>
     <LabSection
       title="Long text"

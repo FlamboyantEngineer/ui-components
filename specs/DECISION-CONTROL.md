@@ -27,7 +27,7 @@ Verification: `src/components/decision-control/decision-control.test.tsx`, `e2e/
 
 ### UIC-DECISION-CONTROL-1.4 - Submit
 
-A primary submit `Button` (`ui-decision-control__submit`) reading `submitLabel`, else the provider's `submitDecision` string, shall be disabled until a decision is picked. Submitting validates the form, showing a missing required comment on the field, then calls `onSubmit({ decision, comment, signature: null })`. While a returned promise is unsettled the button is pending and the root publishes `data-pending`; a rejection shows its error's message, else the provider's `decisionFailed` string, in an `InlineError` (`ui-decision-control__error`) and keeps the comment; success clears the comment and the error.
+A primary submit `Button` (`ui-decision-control__submit`) reading `submitLabel`, else the provider's `submitDecision` string, shall be disabled until a decision is picked. Submitting validates the form, showing a missing required comment on the field, then calls `onSubmit({ decision, comment, signature: null })`. While a returned promise is unsettled the button is pending and the root publishes `data-pending`; repeated submissions are refused immediately, including before that state renders. A synchronous throw or rejected promise shows its error's message, else the provider's `decisionFailed` string, in an `InlineError` (`ui-decision-control__error`) and keeps the comment; success clears the comment and the error.
 
 Implementation: `src/components/decision-control/decision-control.tsx`, `src/components/decision-control/decision-parts.tsx`, `src/core/content-strings.ts`
 Verification: `src/components/decision-control/decision-control.test.tsx`, `e2e/decision-control.spec.ts`
@@ -41,7 +41,7 @@ Verification: `src/components/decision-control/decision-control.test.tsx`, `e2e/
 
 ### UIC-DECISION-CONTROL-1.6 - Disabled
 
-`isDisabled` shall disable the choice, the comment and Submit.
+`isDisabled` shall disable the choice, the comment and Submit, and refuse form submissions. Disabling an open signature dialog shall abandon it and discard its credentials; re-enabling shall require a new Submit, retaining the decision and comment. A submission already handed to the caller may still finish.
 
 Implementation: `src/components/decision-control/decision-control.tsx`
 Verification: `src/components/decision-control/decision-control.test.tsx`

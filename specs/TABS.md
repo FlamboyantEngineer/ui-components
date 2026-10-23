@@ -8,14 +8,14 @@ Pointer ownership and drag lifecycle cleanup follow the shared [drag interaction
 
 ### UIC-TABS-1.1 - Tabs, list and panels
 
-`Tabs` shall render its root, a `TabList` with role `tablist` named by its `aria-label` or `aria-labelledby`, one `Tab` per section with role `tab` named by its label, and the `TabPanel` of the selected tab with role `tabpanel`, labelled by its tab. Each selected tab carries `aria-selected="true"` and `aria-controls` naming its panel. `selectedKey` with `onSelectionChange` controls the selection and `defaultSelectedKey` sets it when uncontrolled; without either, the first enabled tab is selected.
+`Tabs` shall render its root, a `TabList` with role `tablist` named by its `aria-label` or `aria-labelledby`, one `Tab` per section with role `tab` named by its label, and the `TabPanel` of the selected tab with role `tabpanel`, labelled by its tab. Each selected tab carries `aria-selected="true"` and `aria-controls` naming its panel, including panels returned from a host component. `selectedKey` with `onSelectionChange` controls the selection and `defaultSelectedKey` sets it when uncontrolled; without either, the first enabled tab is selected.
 
 Implementation: `src/components/tabs/tabs.tsx`
-Verification: `src/components/tabs/tabs.test.tsx`, `e2e/tabs.spec.ts`
+Verification: `src/components/tabs/tabs.test.tsx`, `src/components/tabs/tab-keys.test.tsx`, `e2e/tabs.spec.ts`
 
 ### UIC-TABS-1.2 - Labels, icons and counts
 
-A tab's children shall render in the `ui-tabs__label` slot, which publishes plain-text labels in `data-label` so a stylesheet can reserve the width of a heavier selected weight. `icon` (a built-in glyph name or any icon node) draws a decorative [Icon](ICON.md) in the `ui-tabs__icon` slot before the label. `count` shows a positive whole number after the label in the `ui-tabs__count` slot, capped at `countMax` (99 by default) as `<max>+`; zero, negative and non-finite counts show nothing. The tab's accessible name is its visible text (the label, then the shown count), and its accessible description is `countLabel`, or the provider's `itemCount` text, with the full count.
+A tab's children shall render in the `ui-tabs__label` slot, which publishes plain-text labels in `data-label` so a stylesheet can reserve the width of a heavier selected weight. `icon` (a built-in glyph name or any icon node) draws a decorative [Icon](ICON.md) in the `ui-tabs__icon` slot before the label. `count` shows a positive whole number after the label in the `ui-tabs__count` slot, capped at `countMax` (99 by default) as `<max>+`, following [Count](COUNT.md): finite, nonnegative caps round down and other caps are ignored; zero, negative and non-finite counts show nothing. The tab's accessible name is its visible text (the label, then the shown count), and its accessible description is `countLabel`, or the provider's `itemCount` text, with the full count.
 
 Implementation: `src/components/tabs/tabs.tsx`
 Verification: `src/components/tabs/tabs.test.tsx`, `e2e/tabs.spec.ts`
@@ -59,7 +59,7 @@ Verification: `src/components/tabs/tabs.test.tsx`, `e2e/tabs.spec.ts`
 
 ### UIC-TABS-2.2 - Disabled tabs
 
-A `Tab` with `isDisabled` (or listed in `disabledKeys`) shall carry `aria-disabled="true"` and `data-disabled`, ignore presses and be skipped by keyboard navigation. `isDisabled` on `Tabs` disables every tab.
+A `Tab` with `isDisabled` (or listed in `disabledKeys`) shall carry `aria-disabled="true"` and `data-disabled`, ignore presses including its close mark, and be skipped by keyboard navigation. `isDisabled` on `Tabs` disables every tab, the overflow menu and reordering. Disabled states shall also refuse Delete or Backspace on a tab that already has focus. The close mark follows changes to these disabled states without removing the mark.
 
 Implementation: `src/components/tabs/tabs.tsx`
 Verification: `src/components/tabs/tabs.test.tsx`, `e2e/tabs.spec.ts`

@@ -3,6 +3,7 @@ import { createHooks } from '../../core/hooks.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { getFileGlyph } from '../../utils/file-glyph.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { Button } from '../button/button.js';
 import { IconButton } from '../icon-button/icon-button.js';
 import { Icon } from '../icon/icon.js';
@@ -125,7 +126,7 @@ export function MediaThumbnails({
         const url = item.thumbnailUrl ?? (isImageItem(item) ? item.src : undefined);
         return (
           <Button
-            key={item.id}
+            key={toKeyIdentity(item.id)}
             className={hooks.slotClass('thumbnail')}
             variant="ghost"
             aria-label={item.name}

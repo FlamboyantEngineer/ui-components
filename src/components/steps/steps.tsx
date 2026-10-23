@@ -9,6 +9,7 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key, NativeProps, Orientation } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { Icon } from '../icon/icon.js';
 
 /** Where a step stands: done, being worked on, not reached, failed or passed over. */
@@ -178,7 +179,7 @@ export function Steps({
     >
       {items.map((item, index) => (
         <Step
-          key={item.id}
+          key={toKeyIdentity(item.id)}
           item={item}
           index={index}
           status={resolveStepStatus(item, index, currentIndex)}

@@ -1,3 +1,4 @@
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import type { RefObject } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { TruncationTooltip } from '../truncation-tooltip/truncation-tooltip.js';
@@ -86,7 +87,7 @@ export function RelationMatrixHeader({
         const isCurrent = isFocusWithin && focus.column === columnIndex;
         return (
           <div
-            key={column.id}
+            key={toKeyIdentity(column.id)}
             role="columnheader"
             aria-colindex={columnIndex + 2}
             tabIndex={isFocused ? 0 : -1}

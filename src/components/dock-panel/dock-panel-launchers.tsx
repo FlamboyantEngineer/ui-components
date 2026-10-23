@@ -4,6 +4,7 @@ import type { GlyphName } from '../../core/glyphs.js';
 import type { Key, Placement } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { normalizeCount } from '../../utils/count.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { Badge } from '../badge/badge.js';
 import { IconButton } from '../icon-button/icon-button.js';
 import { Tooltip } from '../tooltip/tooltip.js';
@@ -145,7 +146,7 @@ export function DockPanelLaunchers({
     >
       {panes.map((pane) => (
         <DockPanelLauncher
-          key={pane.id}
+          key={toKeyIdentity(pane.id)}
           pane={pane}
           isSelected={pane.id === selectedKey}
           isOpen={isOpen && pane.id === selectedKey}

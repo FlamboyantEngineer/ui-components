@@ -37,6 +37,29 @@ describe('code ranges', () => {
     expect(matchBracket('ab', [{ text: 'ab' }], 1)).toBeNull();
   });
 
+  it('UIC-CODE-EDITOR-6.5 rejects mismatched nested pairs in either direction', () => {
+    for (const text of ['([})', '({])', '([{)}])']) {
+      expect(matchBracket(text, [{ text }], 1)).toEqual({ at: 0, partner: null });
+      expect(matchBracket(text, [{ text }], text.length)).toEqual({
+        at: text.length - 1,
+        partner: null,
+      });
+    }
+    const text = '(([]))';
+    expect(matchBracket(text, [{ text }], 1)).toEqual({ at: 0, partner: 5 });
+    expect(matchBracket(text, [{ text }], 6)).toEqual({ at: 5, partner: 0 });
+  });
+
+  it('UIC-CODE-EDITOR-6.5 skips many comment ranges while scanning brackets', () => {
+    const tokens = [
+      { text: '(' },
+      ...Array.from({ length: 20000 }, () => ({ text: '/* [ */\n', type: 'comment' })),
+      { text: ')' },
+    ];
+    const text = tokens.map((token) => token.text).join('');
+    expect(matchBracket(text, tokens, 1)).toEqual({ at: 0, partner: text.length - 1 });
+  });
+
   it('UIC-CODE-EDITOR-7.2 finds every match of a query ignoring case, without overlaps', () => {
     expect(findMatches('Apple apple aaa', 'apple')).toEqual([
       { start: 0, end: 5 },
@@ -47,6 +70,22 @@ describe('code ranges', () => {
       { start: 2, end: 4 },
     ]);
     expect(findMatches('abc', '')).toEqual([]);
+  });
+
+  it('UIC-CODE-EDITOR-7.2 keeps source offsets after Unicode case changes and matches literal text', () => {
+    expect(findMatches('İ apple APPLE', 'apple')).toEqual([
+      { start: 2, end: 7 },
+      { start: 8, end: 13 },
+    ]);
+    expect(findMatches('İ İ', 'İ')).toEqual([
+      { start: 0, end: 1 },
+      { start: 2, end: 3 },
+    ]);
+    expect(findMatches('a.*[b] A.*[B]', '.*[b]')).toEqual([
+      { start: 1, end: 6 },
+      { start: 8, end: 13 },
+    ]);
+    expect(findMatches('😀 X 𐐀', '𐐨')).toEqual([{ start: 5, end: 7 }]);
   });
 
   it('UIC-CODE-EDITOR-2.3 counts diagnostic lines again from the text start of an excerpt', () => {

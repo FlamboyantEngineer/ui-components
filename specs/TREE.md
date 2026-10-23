@@ -6,7 +6,7 @@
 
 ### UIC-TREE-1.1 - Data-driven rows
 
-`Tree` shall render a React Aria tree grid named by its `aria-label` or `aria-labelledby`, with one row per visible item. Children come from `getChildren` (the item's `children` by default), and `getTextValue` gives each row its accessible name and the text typeahead matches. Each row has `aria-level`, and `aria-expanded` when it has children. The caller's data stays its own: the tree reads items only through `id`, the accessors and the render callbacks.
+`Tree` shall render a React Aria tree grid named by its `aria-label` or `aria-labelledby`, with one row per visible item. Children come from `getChildren` (the item's `children` by default), and `getTextValue` gives each row its accessible name and the text typeahead matches. Each row has `aria-level`, and `aria-expanded` when it has children. The caller's data stays its own: the tree reads items only through `id`, the accessors and the render callbacks. Numeric and text ids that read alike, and ids whose whitespace would normalize alike in a collection primitive, remain distinct. Only the primitive receives encoded identities; selection, expansion, actions, loading, item state and reorder callbacks retain the caller's original keys.
 
 Library item lookups and loaded key collection shall retain reading order through iterative tree walks, with no repeated descendant-array copies. A lookup stops before reading the matched item's children.
 
@@ -63,22 +63,24 @@ Verification: `src/components/tree/use-tree-loads.test.tsx`, `e2e/tree.spec.ts`
 
 The tree shall be one tab stop. ArrowDown and ArrowUp move between visible rows, Home and End to the first and last row, and printable keys run typeahead over the text values (React Aria).
 
-Implementation: `src/components/tree/tree.tsx`
-Verification: `src/components/tree/tree.test.tsx`, `e2e/tree.spec.ts`
+Implementation: `src/components/tree/tree.tsx`, `src/components/tree/tree-aria-keys.ts`
+Verification: `src/components/tree/tree.test.tsx`, `src/components/tree/tree-aria-keys.test.tsx`, `e2e/tree.spec.ts`
 
 ### UIC-TREE-3.2 - Selection and disabled rows
 
 The selection props (`selectionMode`, `selectionBehavior`, `selectedKeys`, `defaultSelectedKeys`, `disallowEmptySelection`, and `onSelectionChange` with the new `Selection`) shall select rows: selected rows carry `aria-selected` and `data-selected`. Rows in `disabledKeys` carry `aria-disabled` and `data-disabled` and cannot be selected, activated or expanded.
 
-Implementation: `src/components/tree/tree.tsx`
-Verification: `src/components/tree/tree.test.tsx`
+Initial selection and disabled key iterables are read once for the model and primitive, so a one-shot generator has the same effect as a set or array.
+
+Implementation: `src/components/tree/tree.tsx`, `src/components/tree/tree-aria-keys.ts`
+Verification: `src/components/tree/tree.test.tsx`, `src/components/tree/tree-aria-keys.test.tsx`
 
 ### UIC-TREE-3.3 - Row actions
 
 `onAction` shall receive the key of the row the reader activates: on press, or on Enter and double-click when selection replaces on press (React Aria). Controls from `renderActions` act on their own without selecting or activating the row.
 
-Implementation: `src/components/tree/tree.tsx`
-Verification: `src/components/tree/tree.test.tsx`
+Implementation: `src/components/tree/tree.tsx`, `src/components/tree/tree-aria-keys.ts`
+Verification: `src/components/tree/tree.test.tsx`, `src/components/tree/tree-aria-keys.test.tsx`
 
 ### UIC-TREE-3.4 - Link rows
 
@@ -128,8 +130,8 @@ Verification: `src/components/tree/tree.test.tsx`, `e2e/tree.spec.ts`
 
 `Tree` shall carry the hooks below, append the caller's `className`, and forward `id`, `ref` and caller `data-*` attributes to the tree element.
 
-Implementation: `src/components/tree/tree.tsx`
-Verification: `src/components/tree/tree.test.tsx`
+Implementation: `src/components/tree/tree.tsx`, `src/components/tree/tree-aria-keys.ts`
+Verification: `src/components/tree/tree.test.tsx`, `src/components/tree/tree-aria-keys.test.tsx`
 
 ### UIC-TREE-4.5 - Virtualization
 
@@ -151,6 +153,8 @@ Verification: `src/components/tree/use-tree-selection.test.tsx`, `e2e/tree.spec.
 
 With `selectionPropagation` and multiple selection, selecting or deselecting a row shall select or deselect its loaded descendants that are not disabled, and then each branch shall be selected exactly when all its enabled children are. A row that is not selected while a descendant is publishes `data-indeterminate` and its checkbox shows mixed. The tree holds the selection from `defaultSelectedKeys` unless `selectedKeys` controls it, and reports every change to `onSelectionChange` as a set of keys.
 
+Selection propagation and indeterminate-state calculations shall walk loaded hierarchies without recursive JavaScript calls, including deeply nested branches.
+
 Implementation: `src/components/tree/use-tree-selection.ts`, `src/components/tree/tree-item.tsx`, `src/components/tree/tree.tsx`
 Verification: `src/components/tree/use-tree-selection.test.tsx`, `e2e/tree.spec.ts`
 
@@ -159,6 +163,8 @@ Verification: `src/components/tree/use-tree-selection.test.tsx`, `e2e/tree.spec.
 ### UIC-TREE-6.1 - Filtered rows
 
 While `filterText` is not blank, the tree shall show only the loaded rows whose text value matches it, their ancestors and their descendants. Ancestors of a match open to show it; expanding and collapsing then changes an expansion of the filter's own, and the reader's expansion returns once the filter clears. A row matches while its text value holds every term of `filterText`, split as [Text Match](TEXT-MATCH.md) does, or while `filter(textValue, filterText)` returns true when the caller sets one. Default labels mark the terms through `TextMatch`.
+
+Filtering shall walk loaded hierarchies without recursive JavaScript calls and evaluate the match callback once per item in preorder, including deeply nested branches.
 
 Implementation: `src/components/tree/use-tree-filter.ts`, `src/components/tree/tree-row.tsx`, `src/components/tree/tree.tsx`
 Verification: `src/components/tree/use-tree-filter.test.tsx`, `e2e/tree.spec.ts`
@@ -216,5 +222,5 @@ Verification: `src/components/tree/use-tree-rename.test.tsx`, `e2e/tree.spec.ts`
 | `data-pressed`            | state     | `true`                  | A row or button is pressed (React Aria).                                      |
 | `data-dragging`           | state     | `true`                  | The row being dragged (React Aria).                                           |
 | `data-href`               | state     |                         | A link row's destination (React Aria).                                        |
-| `data-key`                | state     |                         | React Aria's key for a row; not for styling.                                  |
+| `data-key`                | state     |                         | The encoded primitive key for a row; not for styling.                         |
 | `data-collection`         | state     |                         | React Aria's collection id on the tree and its rows; not for styling.         |

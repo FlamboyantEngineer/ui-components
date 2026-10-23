@@ -8,6 +8,8 @@
 
 `ActivityFeed` shall render a `<div>` root (`ui-activity-feed`) holding an ordered list (`<ol>`, `ui-activity-feed__list`) with one `ui-activity-feed__entry` (`<li>`) per item of `items`, in the order given.
 
+Numeric and text IDs, such as `1` and `'1'`, identify distinct entries; removing one preserves the other entry's rendered identity.
+
 Implementation: `src/components/activity-feed/activity-feed.tsx`
 Verification: `src/components/activity-feed/activity-feed.test.tsx`, `e2e/activity-feed.spec.ts`
 

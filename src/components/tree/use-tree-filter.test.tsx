@@ -1,8 +1,9 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, renderHook, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Tree, type TreeProps } from './tree.js';
+import { useTreeFilter } from './use-tree-filter.js';
 
 interface Food {
   id: string;
@@ -32,6 +33,37 @@ const rowNames = () =>
   screen.queryAllByRole('row').map((element) => element.getAttribute('aria-label'));
 
 describe('Tree filtering', () => {
+  it('UIC-TREE-6.1 filters deeply nested items in preorder without a recursive call stack', () => {
+    let leaf: Food = { id: '19999', name: 'Match' };
+    for (let index = 19998; index >= 0; index -= 1) {
+      leaf = { id: String(index), name: String(index), children: [leaf] };
+    }
+    const visited: string[] = [];
+    const { result } = renderHook(() =>
+      useTreeFilter({
+        items: [leaf],
+        getChildren: (item) => item.children,
+        getTextValue: (item) => item.name,
+        filterText: 'Match',
+        filter: (text, query) => {
+          visited.push(text);
+          return text === query;
+        },
+        expansion: { expandedKeys: new Set(), setExpandedKeys() {}, expand() {} },
+      }),
+    );
+    expect(result.current.items).toEqual([leaf]);
+    expect(result.current.expansion.expandedKeys.size).toBe(19999);
+    expect(visited).toHaveLength(20000);
+    expect(visited.slice(0, 3)).toEqual(['0', '1', '2']);
+    expect(visited.at(-1)).toBe('Match');
+    let current = result.current.items[0]!;
+    for (let index = 1; index < 20000; index += 1) {
+      current = result.current.getChildren(current)![0]!;
+      expect(current.id).toBe(String(index));
+    }
+  });
+
   it('UIC-TREE-6.1 shows matching rows with their ancestors opened and marks the text', () => {
     const { container, rerender } = render(<FoodTree filterText="ale" />);
     expect(rowNames()).toEqual(['Vegetables', 'Kale']);

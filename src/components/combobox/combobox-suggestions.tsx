@@ -1,6 +1,7 @@
-import { useId, type CSSProperties, type ReactNode, type RefObject } from 'react';
+import { useContext, useId, type CSSProperties, type ReactNode, type RefObject } from 'react';
 import {
   Collection,
+  ComboBoxStateContext,
   Header,
   ListBox,
   ListBoxItem,
@@ -12,6 +13,9 @@ import {
   useSlottedContext,
   Virtualizer,
 } from '../../primitives/index.js';
+import { fromCollectionKey } from '../../utils/from-collection-key.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
+import { useFrameFlag } from '../../utils/use-frame-flag.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Icon, toIconProps } from '../icon/icon.js';
@@ -142,14 +146,17 @@ function OptionRow({
     >
       {(state) =>
         display.renderOption ? (
-          display.renderOption(option, {
-            isSelected: state.isSelected,
-            isFocused: state.isFocused,
-            isFocusVisible: state.isFocusVisible,
-            isHovered: state.isHovered,
-            isPressed: state.isPressed,
-            isDisabled: state.isDisabled,
-          })
+          display.renderOption(
+            { ...option, id: fromCollectionKey(option.id) },
+            {
+              isSelected: state.isSelected,
+              isFocused: state.isFocused,
+              isFocusVisible: state.isFocusVisible,
+              isHovered: state.isHovered,
+              isPressed: state.isPressed,
+              isDisabled: state.isDisabled,
+            },
+          )
         ) : (
           <OptionContent option={option} highlightMatches={display.highlightMatches} />
         )
@@ -165,7 +172,7 @@ function renderItems(display: ComboboxOptionDisplay) {
       <ListBoxSection id={item.id} className={hooks.slotClass('section')}>
         <Header className={hooks.slotClass('section-header')}>{item.title}</Header>
         {item.options.map((option) => (
-          <OptionRow key={option.id} option={option} display={display} />
+          <OptionRow key={toKeyIdentity(option.id)} option={option} display={display} />
         ))}
       </ListBoxSection>
     );
@@ -254,6 +261,8 @@ function OptionList(props: ComboboxSuggestionsProps & { filterText: string }) {
  */
 export function ComboboxSuggestions(props: ComboboxSuggestionsProps) {
   const zIndex = useLayerZIndex('dropdown');
+  const state = useContext(ComboBoxStateContext);
+  const isShown = useFrameFlag(props.isOpen, props.inputRef);
   const context = useSlottedContext(PopoverContext);
   const contextStyle = typeof context?.style === 'object' ? (context.style as CSSProperties) : {};
   useAutoHighlight({ autoHighlight: Boolean(props.autoHighlight), completion: props.completion });
@@ -264,6 +273,10 @@ export function ComboboxSuggestions(props: ComboboxSuggestionsProps) {
   return (
     <Popover
       {...hooks.slot('popover', { layer: 'dropdown' })}
+      isOpen={isShown}
+      onOpenChange={(open) => {
+        if (!open) state?.close();
+      }}
       offset={4}
       containerPadding={8}
       style={{ ...contextStyle, ...triggerWidthProperty, zIndex }}

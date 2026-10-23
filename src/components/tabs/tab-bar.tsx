@@ -1,6 +1,6 @@
 // The parts around a list of tabs: scroll buttons, the "more" menu of hidden tabs and the add button.
 
-import { useMemo, type ReactNode, type RefObject } from 'react';
+import { useContext, useMemo, type ReactNode, type RefObject } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import type { Key, Orientation } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -8,7 +8,7 @@ import { useOverflowItems } from '../../utils/use-overflow-items.js';
 import { scrollStripPage, type ScrollStripState } from '../../utils/use-scroll-strip-overflow.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import { IconButton, ScrollStripButton } from '../icon-button/icon-button.js';
-import type { TabListModel } from './tab-actions.js';
+import { TabsSharedContext, type TabListModel } from './tab-actions.js';
 import { tabsHooks as hooks } from './tab-hooks.js';
 
 type Edge = 'start' | 'end';
@@ -30,14 +30,14 @@ export interface TabBarProps {
 const noKeys: readonly Key[] = Object.freeze([]);
 
 /** The menu entries of the hidden tabs: their text, disabled state and link. */
-function toMenuEntries(state: TabListModel, keys: readonly Key[]) {
+function toMenuEntries(state: TabListModel, keys: readonly Key[], isDisabled: boolean) {
   return keys.map((key) => {
     const node = state.collection.getItem(key);
     const props = (node?.props ?? {}) as { isDisabled?: boolean; href?: string };
     return {
       id: key,
       label: node?.textValue || String(key),
-      isDisabled: state.disabledKeys.has(key) || props.isDisabled === true,
+      isDisabled: isDisabled || state.disabledKeys.has(key) || props.isDisabled === true,
       href: props.href,
     };
   });
@@ -69,6 +69,7 @@ export function TabBar({
   children,
 }: TabBarProps) {
   const strings = useUiStrings();
+  const { isDisabled } = useContext(TabsSharedContext);
   const rtl = useLocale().direction === 'rtl';
   const pageToward = (edge: Edge) => {
     if (!strip.stripRef.current) return;
@@ -99,7 +100,8 @@ export function TabBar({
             size="sm"
             placement="bottom end"
             label={strings.moreItems(menu.hiddenItems.length)}
-            items={toMenuEntries(state, menu.hiddenItems)}
+            isDisabled={isDisabled}
+            items={toMenuEntries(state, menu.hiddenItems, isDisabled)}
             onAction={(key) => state.setSelectedKey(key)}
           />
         </div>

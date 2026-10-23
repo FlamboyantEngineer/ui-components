@@ -228,7 +228,7 @@ describe('JsonEditor', () => {
     render(<JsonEditor label="Settings" schema={schema} />);
     await user.click(editor());
     await user.keyboard('{{"na');
-    const option = screen.getByRole('option', { name: /^"name"/ });
+    const option = await screen.findByRole('option', { name: /^"name"/ });
     expect(option).toHaveAttribute('data-kind', 'property');
     expect(option).toHaveAccessibleDescription('What the dish is called.');
     await user.keyboard('{Enter}');
@@ -237,7 +237,7 @@ describe('JsonEditor', () => {
     expect(editor()).toHaveValue('{"name": "Soup", "course": "starter"');
     expect(editor().value.slice(editor().selectionStart, editor().selectionEnd)).toBe('"starter"');
     await user.keyboard('{Control>} {/Control}');
-    expect(screen.getAllByRole('option').map((entry) => entry.textContent)).toEqual([
+    expect((await screen.findAllByRole('option')).map((entry) => entry.textContent)).toEqual([
       '"starter"',
       '"main"',
     ]);
@@ -253,5 +253,26 @@ describe('JsonEditor', () => {
     expect(editor()).toHaveValue('[\n    \n]');
     await user.keyboard('{{');
     expect(editor()).toHaveValue('[\n    {}\n]');
+  });
+
+  it('UIC-JSON-EDITOR-5.2 UIC-JSON-EDITOR-5.3 inserts schema strings and objects as literal JSON', async () => {
+    const user = userEvent.setup();
+    const value = { literal: '${field}', brace: '}', slash: '\\' };
+    render(
+      <JsonEditor
+        label="Settings"
+        schema={{ properties: { payload: { const: value } } }}
+        defaultValue="{"
+      />,
+    );
+    await user.click(editor());
+    await user.keyboard('{End}"pay{Enter}');
+    expect(editor()).toHaveValue(`{"payload": ${JSON.stringify(value)}`);
+    expect(editor().value.slice(editor().selectionStart, editor().selectionEnd)).toBe(
+      JSON.stringify(value),
+    );
+    await user.keyboard('{End}');
+    await user.paste('}');
+    expect(JSON.parse(editor().value)).toEqual({ payload: value });
   });
 });

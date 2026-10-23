@@ -4,6 +4,7 @@ import { useId } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { Key, SortDirection } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { Checkbox } from '../checkbox/checkbox.js';
 import { ListView, ListViewItem } from '../list-row/list-row.js';
 import { SegmentedChoice } from '../segmented-choice/segmented-choice.js';
@@ -129,7 +130,7 @@ export function PropertiesSection({ properties, value, onChange }: DisplayOption
           const isShown = value.properties.includes(property.id);
           return (
             <ListViewItem
-              key={property.id}
+              key={toKeyIdentity(property.id)}
               id={property.id}
               title={property.label}
               className={hooks.slotClass('property')}

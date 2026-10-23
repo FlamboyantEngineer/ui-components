@@ -63,6 +63,7 @@ mountLab(
             label="Decision, disabled"
             defaultValue="approve"
             isDisabled
+            signature={{ userName: 'Ada Park' }}
             onSubmit={() => {}}
           />
         )}
@@ -89,6 +90,13 @@ mountLab(
         onSubmit={() =>
           Promise.reject(new Error('The review closed before your decision arrived.'))
         }
+      />
+      <DecisionControl
+        label="Submit and throw"
+        defaultValue="approve"
+        onSubmit={() => {
+          throw new Error('The decision could not be recorded.');
+        }}
       />
     </LabSection>
     <LabSection

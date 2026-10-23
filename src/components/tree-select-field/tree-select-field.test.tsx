@@ -63,6 +63,28 @@ function row(name: string) {
 }
 
 describe('TreeSelectField', () => {
+  it('UIC-TREE-SELECT-FIELD-2.6 preserves hidden inputs for numeric and text keys when reordered', () => {
+    const items = [
+      { id: 1, name: 'Numeric' },
+      { id: '1', name: 'Textual' },
+    ];
+    const props = {
+      label: 'Kind',
+      items,
+      getTextValue: (item: (typeof items)[number]) => item.name,
+      name: 'kinds',
+      selectionMode: 'multiple' as const,
+      selectionPropagation: false,
+    };
+    const { container, rerender } = render(<TreeSelectField {...props} value={[1, '1']} />);
+    const [numeric, textual] = container.querySelectorAll('input[type="hidden"][name="kinds"]');
+    rerender(<TreeSelectField {...props} value={['1', 1]} />);
+    expect([...container.querySelectorAll('input[type="hidden"][name="kinds"]')]).toEqual([
+      textual,
+      numeric,
+    ]);
+  });
+
   it('UIC-TREE-SELECT-FIELD-1.1 UIC-TREE-SELECT-FIELD-2.7 renders a field around a framed trigger', () => {
     const { container } = render(
       <TreeSelectField

@@ -44,4 +44,30 @@ describe('completion matching', () => {
     });
     expect(indentInsertion(block, '')).toBe(block);
   });
+
+  it('UIC-CODE-EDITOR-4.8 quotes literal snippet syntax and braces within fields', () => {
+    expect(parseSnippet('\\${literal} ${a\\}b\\\\c\\$d}')).toEqual({
+      text: '${literal} a}b\\c$d',
+      fields: [{ start: 11, end: 18 }],
+    });
+    expect(parseSnippet(String.raw`\path \q $ \} \\`)).toEqual({
+      text: '\\path \\q $ } \\',
+      fields: [],
+    });
+  });
+
+  it('UIC-CODE-EDITOR-4.8 keeps an unfinished field literal, including its quoted closing brace', () => {
+    for (const snippet of [
+      '${a\\}',
+      'before ${a\\} after',
+      '${'.repeat(20000),
+      '${' + '\\'.repeat(100000),
+    ]) {
+      expect(parseSnippet(snippet)).toEqual({ text: snippet, fields: [] });
+    }
+    expect(parseSnippet('${ok} ${a\\}')).toEqual({
+      text: 'ok ${a\\}',
+      fields: [{ start: 0, end: 2 }],
+    });
+  });
 });

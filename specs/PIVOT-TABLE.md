@@ -84,6 +84,8 @@ Verification: `src/components/pivot-table/pivot-fields.test.ts`, `src/components
 
 The field chooser shall be a `Board` (`ui-pivot-table__chooser`) named by the provider's `pivotFieldChooser` string, with four columns titled by the `pivotFields`, `pivotRows`, `pivotColumns` and `pivotValues` strings: the offered fields the layout does not use, the row fields and the column fields in layout order, and one card per value in order. A card holds a `ui-pivot-table__field` publishing its zone as `data-zone`, with a `ui-pivot-table__field-label` reading the field's label; a zone without cards reads the `pivotNoFields` string.
 
+Each card shall have a unique internal key, including repeated fields and field ids that resemble generated keys, so moving a repeated field never moves a different card.
+
 Implementation: `src/components/pivot-table/pivot-field-chooser.tsx`, `src/components/pivot-table/pivot-fields.ts`, `src/core/analysis-strings.ts`
 Verification: `src/components/pivot-table/pivot-fields.test.ts`, `src/components/pivot-table/pivot-table.test.tsx`, `e2e/pivot-table.spec.ts`
 

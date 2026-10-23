@@ -1,6 +1,6 @@
 # Composition
 
-How a caller composes its own elements with library components: swapping the element a component renders, merging props onto a part the caller builds, and filling a component's named parts through slot props. The helpers live in `src/utils/` and are exported from the package root. Every library component that offers one of these follows the contract here, so a host learns it once.
+How a caller composes its own elements with library components: swapping the element a component renders, merging props onto a part the caller builds, and filling a component's named parts through slot props. The element and prop composition helpers live in `src/utils/` and are exported from the package root; collection identity adapters stay internal. Every library component that offers one of these follows the contract here, so a host learns it once.
 
 ## UIC-COMPOSITION-1 - Element swapping
 
@@ -42,3 +42,12 @@ A component that lets the caller replace one of its named parts with its own con
 
 Implementation: `src/components/card/card-parts.tsx`, `src/components/card/card.tsx`
 Verification: `src/components/card/card.test.tsx`, `e2e/card.spec.ts`
+
+## UIC-COMPOSITION-4 - Collection identity
+
+### UIC-COMPOSITION-4.1 - Library-owned keyed siblings
+
+Where a library component renders repeated elements itself, the React keys shall preserve the type of a caller's `Key`: numeric `1` and text `"1"` identify different elements, whose local state stays with them when reordered or removed. Public IDs and callback values retain the caller's original type. Internal compound identities shall encode their parts without delimiter collisions. Self-iterating key iterators retain their values across renders; reusable arrays and Sets continue to reflect caller mutations.
+
+Implementation: `src/utils/to-key-identity.ts`, `src/utils/to-collection-key.ts`, `src/utils/from-collection-key.ts`, `src/utils/collection-selection.ts`, `src/utils/materialize-iterator.ts`, `src/utils/encode-collection-children.tsx`, `src/utils/create-key-index.ts`
+Verification: `src/utils/to-key-identity.test.ts`, `src/utils/to-collection-key.test.ts`, `src/utils/from-collection-key.test.ts`, `src/utils/collection-selection.test.ts`, `src/utils/materialize-iterator.test.ts`, `src/utils/create-key-index.test.ts`, `src/components/menu/menu.test.tsx`, `src/components/list-row/list-view.test.tsx`

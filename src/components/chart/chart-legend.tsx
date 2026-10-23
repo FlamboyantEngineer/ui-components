@@ -4,6 +4,7 @@ import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps, Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import type { ChartSeries } from './chart.js';
 import { chartLegendHooks as hooks } from './chart-hooks.js';
 
@@ -66,7 +67,7 @@ export function ChartLegend({
     >
       {items.map((item, series) => (
         <ToggleButton
-          key={item.id}
+          key={toKeyIdentity(item.id)}
           id={item.id}
           {...hooks.slot('item', { series, tone: item.tone })}
         >

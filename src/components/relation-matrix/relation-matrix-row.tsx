@@ -1,3 +1,4 @@
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import type { CSSProperties } from 'react';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import type { Tone } from '../../core/props.js';
@@ -115,7 +116,7 @@ export function RelationMatrixRow({ row, rowIndex, context }: RelationMatrixRowP
         const column = columns[columnIndex] as RelationMatrixItem;
         return (
           <RelationMatrixCell
-            key={column.id}
+            key={toKeyIdentity(column.id)}
             relation={index.get(row.id, column.id)}
             position={{ row: rowIndex, column: columnIndex }}
             gridColumn={tracks.lines.get(columnIndex)}

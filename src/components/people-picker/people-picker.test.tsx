@@ -161,6 +161,7 @@ describe('PeoplePicker', () => {
     );
     await user.click(input());
     await user.keyboard('{ArrowDown}');
+    await screen.findByRole('listbox');
     expect(optionNames()).toEqual(['Sam Rivera (you)', 'Ben Okafor']);
     expect(loadItems).not.toHaveBeenCalled();
     expect(screen.getByText('Recent')).toHaveClass('ui-combobox__section-header');

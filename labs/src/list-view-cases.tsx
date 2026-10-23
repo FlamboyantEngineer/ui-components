@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Selection } from '../../src/core/props.js';
+import type { Key, Selection } from '../../src/core/props.js';
 import { IconButton } from '../../src/components/icon-button/icon-button.js';
 import {
   ListView,
@@ -11,8 +11,8 @@ import {
 export const selections = ['none', 'single', 'multiple', 'replace'] as const;
 
 const FRUIT = [
-  { id: 'apple', name: 'Apple', meta: 'Red · Autumn' },
-  { id: 'banana', name: 'Banana', meta: 'Yellow · All year' },
+  { id: 1, name: 'Apple', meta: 'Red · Autumn' },
+  { id: '1', name: 'Banana', meta: 'Yellow · All year' },
   { id: 'cherry', name: 'Cherry', meta: 'Dark red · Summer' },
   { id: 'damson', name: 'Damson', meta: 'Purple · Autumn' },
   { id: 'elderberry', name: 'Elderberry', meta: 'Black · Late summer' },
@@ -45,7 +45,16 @@ const TOTAL = 200;
 
 /** A list in one selection mode, with a disabled row and a trailing button per row. */
 export function SelectionCase({ selection }: { selection: (typeof selections)[number] }) {
-  const [selected, setSelected] = useState<Selection>(new Set(['banana']));
+  const [selected, setSelected] = useState<Selection | Iterable<Key>>(() =>
+    (function* () {
+      yield '1';
+    })(),
+  );
+  const [disabledKeys] = useState(() =>
+    (function* () {
+      yield 'damson';
+    })(),
+  );
   const mode = selection === 'replace' ? 'multiple' : selection;
   return (
     <ListView
@@ -56,7 +65,7 @@ export function SelectionCase({ selection }: { selection: (typeof selections)[nu
       selectionBehavior={selection === 'replace' ? 'replace' : 'toggle'}
       selectedKeys={selected}
       onSelectionChange={setSelected}
-      disabledKeys={['damson']}
+      disabledKeys={disabledKeys}
     >
       {(item) => (
         <ListViewItem
@@ -88,7 +97,7 @@ export function SectionsCase() {
 }
 
 /** The rows in their new order after `move`, as an owner applies a reported move. */
-function applyMove<T extends { id: string }>(rows: readonly T[], move: ListViewMove): T[] {
+function applyMove<T extends { id: Key }>(rows: readonly T[], move: ListViewMove): T[] {
   const moving = rows.filter((row) => move.keys.includes(row.id));
   const rest = rows.filter((row) => !move.keys.includes(row.id));
   const index = rest.findIndex((row) => row.id === move.targetKey);

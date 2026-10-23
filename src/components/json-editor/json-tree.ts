@@ -42,42 +42,60 @@ interface Frame {
 
 const SCALARS = new Set(['string', 'number', 'literal']);
 
-/** Builds a tree from the tokens of text that parses. */
-function createReader(tokens: readonly PlacedJsonToken[]) {
-  let index = 0;
-  const next = () => tokens[index++] as PlacedJsonToken;
-  const value = (): JsonNode => {
-    const token = next();
-    if (token.text === '{') return members(token.offset);
-    if (token.text === '[') return elements(token.offset);
-    const end = token.offset + token.text.length;
-    return { kind: 'scalar', start: token.offset, end, value: JSON.parse(token.text) as string };
-  };
-  const members = (start: number): JsonNode => {
-    const properties: JsonPropertyNode[] = [];
-    while (tokens[index]?.text !== '}') {
-      const key = next();
-      index += 1;
-      const end = key.offset + key.text.length;
-      properties.push({
-        key: JSON.parse(key.text) as string,
-        start: key.offset,
-        end,
-        value: value(),
-      });
-      if (tokens[index]?.text === ',') index += 1;
+type JsonContainer = Extract<JsonNode, { kind: 'object' | 'array' }>;
+
+interface ReadFrame {
+  node: JsonContainer;
+  key?: PlacedJsonToken;
+}
+
+function appendNode(node: JsonNode, frame: ReadFrame | undefined) {
+  if (!frame) return;
+  if (frame.node.kind === 'array') frame.node.items.push(node);
+  else {
+    const key = frame.key!;
+    frame.node.properties.push({
+      key: JSON.parse(key.text) as string,
+      start: key.offset,
+      end: key.offset + key.text.length,
+      value: node,
+    });
+    delete frame.key;
+  }
+}
+
+/** Builds a tree from tokens already checked by the native parser. */
+function readTree(tokens: readonly PlacedJsonToken[]): JsonNode | null {
+  const stack: ReadFrame[] = [];
+  let root: JsonNode | null = null;
+  for (const token of tokens) {
+    const frame = stack.at(-1);
+    if (token.text === ':' || token.text === ',') continue;
+    if (token.text === '}' || token.text === ']') {
+      frame!.node.end = token.offset + 1;
+      stack.pop();
+      continue;
     }
-    return { kind: 'object', start, end: next().offset + 1, properties };
-  };
-  const elements = (start: number): JsonNode => {
-    const items: JsonNode[] = [];
-    while (tokens[index]?.text !== ']') {
-      items.push(value());
-      if (tokens[index]?.text === ',') index += 1;
+    if (frame?.node.kind === 'object' && !frame.key) {
+      frame.key = token;
+      continue;
     }
-    return { kind: 'array', start, end: next().offset + 1, items };
-  };
-  return value;
+    const node: JsonNode =
+      token.text === '{'
+        ? { kind: 'object', start: token.offset, end: 0, properties: [] }
+        : token.text === '['
+          ? { kind: 'array', start: token.offset, end: 0, items: [] }
+          : {
+              kind: 'scalar',
+              start: token.offset,
+              end: token.offset + token.text.length,
+              value: JSON.parse(token.text) as string,
+            };
+    root ??= node;
+    appendNode(node, frame);
+    if (node.kind !== 'scalar') stack.push({ node });
+  }
+  return root;
 }
 
 /** The tree of JSON text, or `null` when it is blank or does not parse. */
@@ -88,7 +106,7 @@ export function parseJsonTree(source: string): JsonNode | null {
   } catch {
     return null;
   }
-  return createReader(placeJsonTokens(source))();
+  return readTree(placeJsonTokens(source));
 }
 
 /** A key's text without its quotes, also while it is still being typed. */

@@ -13,9 +13,8 @@ export interface TreeCompareRowIndex<T extends CompareTreeNode> {
   position: Map<Key, number>;
   /** Each child row's immediate parent. Root rows have no entry. */
   parent: Map<Key, Key>;
-  /** Each row by id, and by the key text its row element carries. */
+  /** Each row by its original id. */
   byId: Map<Key, ComparedTreeRow<T>>;
-  byText: Map<string, ComparedTreeRow<T>>;
 }
 
 /** The rows that differ, with the rows above them as context. */
@@ -56,7 +55,6 @@ export function indexRows<T extends CompareTreeNode>(
     position: new Map(),
     parent: new Map(),
     byId: new Map(),
-    byText: new Map(),
   };
   const getChildren = (row: ComparedTreeRow<T>) => {
     for (const child of row.children) index.parent.set(child.id, row.id);
@@ -66,7 +64,6 @@ export function indexRows<T extends CompareTreeNode>(
     index.position.set(row.id, index.order.length);
     index.order.push(row);
     index.byId.set(row.id, row);
-    index.byText.set(String(row.id), row);
   }
   return index;
 }

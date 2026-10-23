@@ -10,6 +10,7 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key, NativeProps, Size } from '../../core/props.js';
 import { UiLink, useUiStrings } from '../../core/provider.js';
 import { mergeRefs } from '../../utils/merge-props.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import { Icon, toIconProps, type IconSource } from '../icon/icon.js';
 import type { MenuEntry } from '../menu/menu.js';
@@ -77,12 +78,14 @@ interface CrumbProps {
   isLast: boolean;
   separator: IconSource;
   isDisabled: boolean | undefined;
+  onAction: BreadcrumbProps['onAction'];
 }
 
 interface CrumbMenuProps {
   item: BreadcrumbItem;
   index: number;
   isDisabled: boolean | undefined;
+  onAction: BreadcrumbProps['onAction'];
 }
 
 const hooks = createHooks('breadcrumb', ['list', 'item', 'link', 'label', 'menu', 'separator']);
@@ -121,7 +124,7 @@ function moveFocus(event: KeyboardEvent<HTMLElement>, rtl: boolean) {
 }
 
 /** The button after a crumb that opens the menu of the places beside it. */
-function CrumbMenu({ item, index, isDisabled }: CrumbMenuProps) {
+function CrumbMenu({ item, index, isDisabled, onAction }: CrumbMenuProps) {
   const strings = useUiStrings();
   return (
     <DropdownMenu
@@ -133,6 +136,7 @@ function CrumbMenu({ item, index, isDisabled }: CrumbMenuProps) {
       className={hooks.slotClass('menu')}
       label={strings.placesBeside(toCrumbText(item, index))}
       items={item.menu}
+      onAction={(key) => onAction?.(key)}
     />
   );
 }
@@ -141,7 +145,7 @@ function Separator({ glyph }: { glyph: IconSource }) {
   return <Icon {...toIconProps(glyph)} size="sm" className={hooks.slotClass('separator')} />;
 }
 
-function Crumb({ item, index, isLast, separator, isDisabled }: CrumbProps) {
+function Crumb({ item, index, isLast, separator, isDisabled, onAction }: CrumbProps) {
   return (
     <AriaBreadcrumb id={toCrumbKey(item, index)} className={hooks.slotClass('item')}>
       <AriaLink
@@ -151,7 +155,9 @@ function Crumb({ item, index, isLast, separator, isDisabled }: CrumbProps) {
       >
         <TruncationTooltip className={hooks.slotClass('label')}>{item.label}</TruncationTooltip>
       </AriaLink>
-      {item.menu?.length ? <CrumbMenu item={item} index={index} isDisabled={isDisabled} /> : null}
+      {item.menu?.length ? (
+        <CrumbMenu item={item} index={index} isDisabled={isDisabled} onAction={onAction} />
+      ) : null}
       {isLast ? null : <Separator glyph={separator} />}
     </AriaBreadcrumb>
   );
@@ -172,12 +178,13 @@ function renderCrumbs(
 ): ReactNode[] {
   const crumbs: ReactNode[] = items.map((item, index) => (
     <Crumb
-      key={String(toCrumbKey(item, index))}
+      key={toKeyIdentity(toCrumbKey(item, index))}
       item={item}
       index={index}
       isLast={index === items.length - 1}
       separator={glyph}
       isDisabled={isDisabled}
+      onAction={onAction}
     />
   ));
   if (overflow.visibleKeys === null) return crumbs;

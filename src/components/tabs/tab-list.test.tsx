@@ -10,10 +10,11 @@ const fruit = ['Apple', 'Banana', 'Cherry', 'Fig', 'Grape'];
 
 function Fruit({
   defaultSelectedKey,
+  isDisabled,
   ...list
-}: Partial<TabListProps> & { defaultSelectedKey?: Key }) {
+}: Partial<TabListProps> & { defaultSelectedKey?: Key; isDisabled?: boolean }) {
   return (
-    <Tabs defaultSelectedKey={defaultSelectedKey}>
+    <Tabs defaultSelectedKey={defaultSelectedKey} isDisabled={isDisabled}>
       <TabList aria-label="Fruit" {...list}>
         {fruit.map((name) => (
           <Tab key={name} id={name.toLowerCase()}>
@@ -108,6 +109,26 @@ describe('TabList', () => {
     expect(screen.getByRole('tablist')).not.toHaveAttribute('data-overflowing');
   });
 
+  it('UIC-TABS-2.2 UIC-TABS-2.6 disables overflow choices and its trigger with every tab', async () => {
+    const user = userEvent.setup();
+    stubBar(160);
+    const { rerender } = render(<Fruit overflow="menu" />);
+    const apple = screen.getByRole('tab', { name: 'Apple' });
+    const more = screen.getByRole('button', { name: '3 more items' });
+    await user.click(more);
+    rerender(<Fruit overflow="menu" isDisabled />);
+    expect(more).toBeDisabled();
+    const grape = screen.getByRole('menuitem', { name: 'Grape' });
+    expect(grape).toHaveAttribute('aria-disabled', 'true');
+    await user.click(grape);
+    expect(apple).toHaveAttribute('aria-selected', 'true');
+    await user.keyboard('{Escape}');
+    rerender(<Fruit overflow="menu" />);
+    await user.click(more);
+    await user.click(screen.getByRole('menuitem', { name: 'Grape' }));
+    expect(screen.getByRole('tab', { name: 'Grape' })).toHaveAttribute('aria-selected', 'true');
+  });
+
   it('UIC-TABS-2.7 draws scroll buttons at the edges that hide tabs and pages the list', async () => {
     const scrollTo = vi.fn(function (this: HTMLElement, { left }: ScrollToOptions) {
       this.scrollLeft = left ?? 0;
@@ -174,6 +195,39 @@ describe('TabList', () => {
     expect(onAdd).toHaveBeenCalledTimes(1);
     expectHooksMatchSpec(container, 'TABS', { slots: ['bar', 'list', 'tab', 'remove', 'add'] });
   });
+
+  it.each(['tabs', 'keys', 'tab'] as const)(
+    'UIC-TABS-2.2 UIC-TABS-2.8 refuses a close mark while disabled through %s and follows changes',
+    async (source) => {
+      const user = userEvent.setup();
+      const onRemove = vi.fn();
+      const tabs = (isDisabled: boolean) => (
+        <Tabs
+          isDisabled={source === 'tabs' && isDisabled}
+          disabledKeys={source === 'keys' && isDisabled ? ['banana'] : []}
+        >
+          <TabList aria-label="Fruit" onRemove={onRemove}>
+            <Tab id="apple">Apple</Tab>
+            <Tab id="banana" isDisabled={source === 'tab' && isDisabled}>
+              Banana
+            </Tab>
+          </TabList>
+        </Tabs>
+      );
+      const { rerender } = render(tabs(false));
+      const banana = screen.getByRole('tab', { name: 'Banana' });
+      const mark = banana.querySelector('.ui-tabs__remove') as HTMLElement;
+      await user.click(banana);
+      rerender(tabs(true));
+      await user.click(mark);
+      await user.keyboard('{Delete}{Backspace}');
+      expect(onRemove).not.toHaveBeenCalled();
+      expect(mark).toBeInTheDocument();
+      rerender(tabs(false));
+      await user.click(mark);
+      expect(onRemove).toHaveBeenCalledExactlyOnceWith(new Set(['banana']));
+    },
+  );
 
   it('UIC-TABS-2.8 removes tabs a caller drops from its list', async () => {
     function Editable() {

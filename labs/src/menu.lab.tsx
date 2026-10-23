@@ -15,6 +15,7 @@ import {
 } from '../../src/components/menu/menu.js';
 import { Portal, PortalHost } from '../../src/components/portal/portal.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { MenuKeyCase } from './menu-key-case.js';
 
 const sizes = ['sm', 'md', 'lg'] as const;
 const cities = ['Paris', 'Lima', 'Oslo', 'Cairo', 'Quito', 'Hanoi', 'Dakar', 'Perth', 'Turin'];
@@ -436,6 +437,12 @@ mountLab(
       description="rowHeight sets 40-pixel rows; scrolling to the end loads 200 more cities, up to 1000."
     >
       <VirtualizedPagedMenu />
+    </LabSection>
+    <LabSection
+      title="Typed collection IDs"
+      description="Numeric 1 and text '1' identify separate choices, as do text IDs with and without spaces. Spaced option is disabled; the action output retains its ID type."
+    >
+      <MenuKeyCase />
     </LabSection>
   </>,
 );

@@ -48,6 +48,26 @@ const small = {
 
 const kindOptions = kinds.map((kind) => ({ value: kind.id, label: kind.label }));
 
+function TypedRelations() {
+  const [relations, setRelations] = useState<RelationMatrixRelation[]>([{ row: 1, column: '1' }]);
+  return (
+    <RelationMatrix
+      aria-label="Distinct relation keys"
+      rows={[
+        { id: 1, label: 'Numeric row' },
+        { id: '1', label: 'Text row' },
+      ]}
+      columns={[
+        { id: 1, label: 'Numeric column' },
+        { id: '1', label: 'Text column' },
+      ]}
+      relations={relations}
+      columnLabels="truncated"
+      onCellAction={(cell) => setRelations((current) => toggleRelation(current, cell))}
+    />
+  );
+}
+
 function describeAction(cell: RelationMatrixCell, kind: string): string {
   const row = requirements.find((item) => item.id === cell.row)?.label.split(':')[0];
   const column = tests.find((item) => item.id === cell.column)?.label.split(':')[0];
@@ -152,6 +172,12 @@ mountLab(
       description="Two thousand requirements against four hundred tests, windowed on both axes: only the rows and columns in view render. Every ninth requirement is uncovered."
     >
       <LargeMatrix />
+    </LabSection>
+    <LabSection
+      title="Distinct relation keys"
+      description="Numeric and text keys identify separate rows and columns. Press a cell to toggle only its own relation."
+    >
+      <TypedRelations />
     </LabSection>
   </>,
 );

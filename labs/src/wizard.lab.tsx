@@ -165,5 +165,25 @@ mountLab(
     >
       <NewProjectModal />
     </LabSection>
+    <LabSection
+      title="Numeric and text step IDs"
+      description="The numeric ID 1 and text ID '1' identify different steps. Each new panel starts its own uncontrolled draft."
+    >
+      <Wizard
+        aria-label="Separate step drafts"
+        steps={[
+          {
+            id: 1,
+            label: 'First draft',
+            content: <TextField label="Draft" defaultValue="First" />,
+          },
+          {
+            id: '1',
+            label: 'Second draft',
+            content: <TextField label="Draft" defaultValue="Second" />,
+          },
+        ]}
+      />
+    </LabSection>
   </>,
 );

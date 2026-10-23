@@ -8,6 +8,8 @@
 
 `TransferList` shall render a root `<div role="group">` (`ui-transfer-list`) named by its `aria-label` or `aria-labelledby`, holding the available side, the move buttons (`ui-transfer-list__actions`) and the chosen side. Each side (`ui-transfer-list__pane`, with `data-side` `available` or `chosen`) holds a header (`ui-transfer-list__header`) with its title (`ui-transfer-list__title`: `availableLabel` or the provider's `availableItems`, `chosenLabel` or `chosenItems`) and its count (`ui-transfer-list__count`), a [Search Field](SEARCH-FIELD.md) (`ui-transfer-list__search`) named by the provider's `filterLabel` string with the title, and a `ListView` (`ui-transfer-list__list`) named by the title. Each row is a `ListViewItem` showing an item's `label`, its `description` as meta text and its `icon`.
 
+Numeric and text ids that read alike remain separate rows and selections in both sides; moving one reports its original key without moving its counterpart.
+
 Implementation: `src/components/transfer-list/transfer-list.tsx`, `src/components/transfer-list/transfer-pane.tsx`, `src/core/picker-strings.ts`
 Verification: `src/components/transfer-list/transfer-list.test.tsx`, `e2e/transfer-list.spec.ts`
 
@@ -28,6 +30,8 @@ Verification: `src/components/transfer-list/transfer-list.test.tsx`, `e2e/transf
 ### UIC-TRANSFER-LIST-1.4 - Filtering
 
 Text in a side's search field shall show only the side's rows whose label holds every word of it, ignoring case and accents. A side without rows to show reads the provider's `noResults` string while it filters, else `noItems`, in `ui-transfer-list__empty`.
+
+Query terms are split as [Text Match](TEXT-MATCH.md) does, including `/`, `_` and `-` separators, and prepared once for the side rather than reparsed for each row.
 
 Implementation: `src/components/transfer-list/use-transfer-list.ts`, `src/components/transfer-list/transfer-pane.tsx`
 Verification: `src/components/transfer-list/transfer-list.test.tsx`, `e2e/transfer-list.spec.ts`
@@ -58,6 +62,8 @@ Verification: `src/components/transfer-list/transfer-list.test.tsx`, `e2e/transf
 ### UIC-TRANSFER-LIST-2.4 - Reordering
 
 With `reorderable`, the root shall publish `data-reorderable`, the chosen side's rows reorder by drag and drop, by pointer or from each row's drag handle by keyboard ([UIC-LIST-ROW-3.5](LIST-ROW.md#uic-list-row-35---drag-and-drop)), dropped rows landing together in their order, and a `ui-transfer-list__reorder` group under the chosen side's header holds move up and move down `IconButton`s named by the provider's `moveItem` string. They move each selected chosen item one place, passing over the next unselected item, and are disabled while that would move nothing.
+
+Movement availability shall be derived from neighboring selected and unselected keys without allocating a reordered copy.
 
 Implementation: `src/components/transfer-list/transfer-list.tsx`, `src/components/transfer-list/transfer-moves.ts`
 Verification: `src/components/transfer-list/transfer-moves.test.ts`, `src/components/transfer-list/transfer-list.test.tsx`, `e2e/transfer-list.spec.ts`

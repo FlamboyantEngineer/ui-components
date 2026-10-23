@@ -76,23 +76,25 @@ const frames = { wide: 560, medium: 320, narrow: 220 } as const;
 
 function SiblingTrail() {
   const [picked, setPicked] = useState('(none)');
-  const sibling = (id: string, label: string) => ({ id, label, onAction: () => setPicked(label) });
+  const labels = { drinks: 'Drinks', menus: 'Menus', cake: 'Lemon cake', pie: 'Key lime pie' };
+  const sibling = (id: keyof typeof labels) => ({ id, label: labels[id] });
   return (
     <div data-lab-demo="siblings">
       <Breadcrumb
         aria-label="Trail with nearby places"
+        onAction={(id) => setPicked(labels[id as keyof typeof labels] ?? String(id))}
         items={[
           { id: 'home', label: 'Home', href: '#home' },
           {
             id: 'recipes',
             label: 'Recipes',
             href: '#recipes',
-            menu: [sibling('drinks', 'Drinks'), sibling('menus', 'Menus')],
+            menu: [sibling('drinks'), sibling('menus')],
           },
           {
             id: 'tart',
             label: 'Lemon tart',
-            menu: [sibling('cake', 'Lemon cake'), sibling('pie', 'Key lime pie')],
+            menu: [sibling('cake'), sibling('pie')],
           },
         ]}
       />

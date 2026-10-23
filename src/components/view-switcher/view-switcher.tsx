@@ -4,6 +4,7 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { useControllableState } from '../../core/controllable-state.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import type { IconSource } from '../icon/icon.js';
 import type { MenuEntry } from '../menu/menu.js';
@@ -123,7 +124,7 @@ function ViewTabs({
         >
           {views.map((view) => (
             <Tab
-              key={view.id}
+              key={toKeyIdentity(view.id)}
               id={view.id}
               icon={view.icon}
               textValue={view.label}
@@ -141,7 +142,7 @@ function ViewTabs({
       </div>
       {views.map((view) => (
         // Only the selected view's panel renders; it holds the content shown for that view.
-        <TabPanel key={view.id} id={view.id} className={hooks.slotClass('panel')}>
+        <TabPanel key={toKeyIdentity(view.id)} id={view.id} className={hooks.slotClass('panel')}>
           {props.children}
         </TabPanel>
       ))}

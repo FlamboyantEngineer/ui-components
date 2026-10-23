@@ -4,6 +4,7 @@ import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { SearchField } from '../search-field/search-field.js';
 import {
   filterCharacterCategories,
@@ -50,7 +51,7 @@ const hooks = createHooks('character-grid', [
 const gridKeys = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End']);
 
 function getCellKey(section: string, char: string): string {
-  return `${section}:${char}`;
+  return encodeURIComponent(JSON.stringify([section, char]));
 }
 
 /** The decorative preview of the character last hovered or focused: itself, its name and code. */
@@ -93,7 +94,11 @@ function CharacterSections({
       onAction={onAction}
     >
       {sections.map((section) => (
-        <GridListSection key={section.key} id={section.key} className={hooks.slotClass('section')}>
+        <GridListSection
+          key={section.key}
+          id={toCollectionKey(section.key)}
+          className={hooks.slotClass('section')}
+        >
           <GridListHeader className={hooks.slotClass('heading')}>{section.label}</GridListHeader>
           {section.characters.map((character) => (
             <GridListItem

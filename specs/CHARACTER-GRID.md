@@ -8,6 +8,8 @@
 
 `CharacterGrid` shall render a root `<div role="group">` (`ui-character-grid`) named by `aria-label`, `aria-labelledby` or, without either, the provider's `characterGrid` string, holding a [Search Field](SEARCH-FIELD.md) (`ui-character-grid__search`) named by the `searchCharacters` string, then a React Aria grid list with a grid layout (`ui-character-grid__grid`) named like the root, then the preview. Each of `categories` is a section of the grid (`ui-character-grid__section`, `role="rowgroup"`) headed by its `label` (`ui-character-grid__heading`), holding one cell per character (`ui-character-grid__cell`) that shows `char` and is named by `name`.
 
+Category and cell identities shall remain distinct when category IDs contain whitespace or separator characters. Choosing a cell always reports its original character entry.
+
 Implementation: `src/components/character-grid/character-grid.tsx`, `src/core/picker-strings.ts`
 Verification: `src/components/character-grid/character-grid.test.tsx`, `e2e/character-grid.spec.ts`
 

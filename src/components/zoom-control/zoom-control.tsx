@@ -8,10 +8,11 @@ import { useUiStrings } from '../../core/provider.js';
 import type { ButtonSize } from '../button/button.js';
 import { IconButton } from '../icon-button/icon-button.js';
 import { ZoomPresetMenu, type ZoomPreset } from './zoom-presets.js';
+import { resolveZoomLevels, sortZoomLevels } from './zoom-levels.js';
 
 export interface ZoomControlProps
   extends Pick<NativeProps<'div'>, 'aria-label' | 'aria-labelledby'>, BaseProps {
-  /** The zoom levels in percent (`100` means 100%). Sorted ascending; duplicates are ignored. */
+  /** Finite zoom levels in percent (`100` means 100%). Sorted ascending; duplicates are ignored. */
   levels?: readonly number[] | undefined;
   /** The current zoom in percent (controlled). It may lie between levels, for example a fit-to-width value. */
   value?: number | undefined;
@@ -54,7 +55,7 @@ interface ZoomButtonProps {
 interface ZoomSliderProps {
   id: string;
   levels: readonly number[];
-  value: number;
+  index: number;
   valueText: string;
   isDisabled: boolean;
   onRequest: (value: number) => void;
@@ -74,10 +75,6 @@ const hooks = createHooks('zoom-control', [
   'presets',
   'reset',
 ]);
-
-function sortLevels(levels: readonly number[]): number[] {
-  return [...new Set(levels)].filter(Number.isFinite).sort((a, b) => a - b);
-}
 
 function useZoomFormatter(formatOptions: Intl.NumberFormatOptions | undefined) {
   return useNumberFormatter({
@@ -106,7 +103,7 @@ function ZoomButton({ slot, icon, label, target, size, isDisabled, onRequest }: 
 }
 
 /** A native range input over the level indices. */
-function ZoomSlider({ id, levels, value, valueText, isDisabled, onRequest }: ZoomSliderProps) {
+function ZoomSlider({ id, levels, index, valueText, isDisabled, onRequest }: ZoomSliderProps) {
   const strings = useUiStrings();
   return (
     <input
@@ -116,7 +113,7 @@ function ZoomSlider({ id, levels, value, valueText, isDisabled, onRequest }: Zoo
       min={0}
       max={Math.max(0, levels.length - 1)}
       step={1}
-      value={findNearestZoomLevelIndex(levels, value)}
+      value={index}
       disabled={isDisabled}
       aria-label={strings.zoomLevel}
       aria-valuetext={valueText}
@@ -128,16 +125,9 @@ function ZoomSlider({ id, levels, value, valueText, isDisabled, onRequest }: Zoo
   );
 }
 
-/** Index of the level closest to `value`; the lower level wins a tie. */
+/** Index of the closest level after sorting and deduplicating finite levels; lower wins a tie. */
 export function findNearestZoomLevelIndex(levels: readonly number[], value: number): number {
-  const sorted = sortLevels(levels);
-  let best = 0;
-  sorted.forEach((level, index) => {
-    if (Math.abs(level - value) < Math.abs((sorted[best] ?? level) - value) - tolerance) {
-      best = index;
-    }
-  });
-  return best;
+  return resolveZoomLevels(sortZoomLevels(levels), value).index;
 }
 
 /**
@@ -149,10 +139,8 @@ export function findNextZoomLevel(
   value: number,
   direction: 1 | -1,
 ): number | undefined {
-  const sorted = sortLevels(levels);
-  return direction === 1
-    ? sorted.find((level) => level > value + tolerance)
-    : sorted.findLast((level) => level < value - tolerance);
+  const targets = resolveZoomLevels(sortZoomLevels(levels), value);
+  return direction === 1 ? targets.next : targets.previous;
 }
 
 /**
@@ -179,11 +167,11 @@ export function ZoomControl({
   const strings = useUiStrings();
   const sliderId = useId();
   const [current, request] = useControllableState(value, defaultValue, onChange);
-  const sorted = useMemo(() => sortLevels(levels), [levels]);
+  const sorted = useMemo(() => sortZoomLevels(levels), [levels]);
+  const targets = resolveZoomLevels(sorted, current);
   const formatter = useZoomFormatter(formatOptions);
   const valueText = formatter.format(current);
   const buttonProps = { size, isDisabled, onRequest: request };
-  const atReset = resetValue === undefined || Math.abs(current - resetValue) < tolerance;
 
   return (
     <div
@@ -198,13 +186,13 @@ export function ZoomControl({
           slot="zoom-out"
           icon="minus"
           label={strings.zoomOut}
-          target={findNextZoomLevel(sorted, current, -1)}
+          target={targets.previous}
         />
       )}
       <ZoomSlider
         id={sliderId}
         levels={sorted}
-        value={current}
+        index={targets.index}
         valueText={valueText}
         isDisabled={isDisabled}
         onRequest={request}
@@ -215,7 +203,7 @@ export function ZoomControl({
           slot="zoom-in"
           icon="plus"
           label={strings.zoomIn}
-          target={findNextZoomLevel(sorted, current, 1)}
+          target={targets.next}
         />
       )}
       <output {...hooks.slot('value')} htmlFor={sliderId}>
@@ -234,7 +222,7 @@ export function ZoomControl({
           slot="reset"
           icon="restore"
           label={strings.resetZoom}
-          target={atReset ? undefined : resetValue}
+          target={Math.abs(current - resetValue) < tolerance ? undefined : resetValue}
         />
       )}
     </div>

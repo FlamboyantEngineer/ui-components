@@ -98,7 +98,7 @@ Verification: `src/components/rich-text-editor/rich-text-editor.test.tsx`, `e2e/
 
 ### UIC-RICH-TEXT-EDITOR-4.1 - Read-only, disabled, invalid and required
 
-A read-only editor shall keep its document readable, focusable and selectable but refuse every edit (`contenteditable="false"`, `aria-readonly`, `data-readonly` on the content); a disabled one is also out of the tab sequence (`aria-disabled`, `data-disabled`). Neither offers commands: the controller's `can` and `run` refuse and the chrome disables or hides itself. An invalid field marks the content `aria-invalid`; a required one reports `aria-required` and is invalid (`valueMissing`) while its document is empty.
+A read-only editor shall keep its document readable, focusable and selectable but refuse every edit (`contenteditable="false"`, `aria-readonly`, `data-readonly` on the content); a disabled one is also out of the tab sequence (`aria-disabled`, `data-disabled`). Neither offers commands: the controller's `can` and `run` refuse and the chrome disables or hides itself. Locking an editor dismisses its slash menu, insert button menu and link editor; unlocking does not reopen the button menu or link editor. An invalid field marks the content `aria-invalid`; a required one reports `aria-required` and is invalid (`valueMissing`) while its document is empty.
 
 Implementation: `src/components/rich-text-editor/editor-surface.tsx`, `src/components/rich-text-editor/rich-text-editor.tsx`, `src/components/rich-text-editor/rich-text-controller.ts`
 Verification: `src/components/rich-text-editor/rich-text-editor.test.tsx`, `e2e/rich-text-editor.spec.ts`
@@ -190,16 +190,16 @@ Verification: `src/components/rich-text-editor/selection-toolbar.test.tsx`, `e2e
 
 ### UIC-RICH-TEXT-EDITOR-8.1 - Slash menu
 
-`InsertMenu` shall open a `CompletionList` (also `ui-insert-menu`, named by `aria-label`, `aria-labelledby` or `insertCommands`) against a caret marker (`ui-insert-menu__caret`) placed at the slash, while the focused document has a `/` at the start of a text block or after white space followed by a query up to the caret (no space, not in code). It lists the built-in entries the schema supports (paragraph, headings 1 to 3, code block, bullet, numbered and task lists, quote, divider) then the caller's `items` (`InsertMenuItem`: `id`, `label`, `description`, `icon`, `keywords`, `command`), matched by label or keyword as completions match (best first); with no match it closes.
+`InsertMenu` shall open a `CompletionList` (also `ui-insert-menu`, named by `aria-label`, `aria-labelledby` or `insertCommands`) against a caret marker (`ui-insert-menu__caret`) placed at the slash, while the focused, editable document has a `/` at the start of a text block or after white space followed by a query up to the caret (no space, not in code). It lists the built-in entries the schema supports (paragraph, headings 1 to 3, code block, bullet, numbered and task lists, quote, divider) then the caller's `items` (`InsertMenuItem`: `id`, `label`, `description`, `icon`, `keywords`, `command`), matched by label or keyword as completions match (best first); with no match it closes.
 
-Matching shall keep only the best score, stop reading keywords once a prefix match is found, and preserve input order for equally ranked entries, without building a score array or depending on an argument limit.
+Each entry shall use its best label or keyword score, stopping its keyword scan once a prefix match is found without building a keyword score array or depending on an argument limit. All matching entries are ordered by score, preserving input order for ties.
 
 Implementation: `src/components/rich-text-editor/insert-menu.tsx`, `src/components/rich-text-editor/use-slash-menu.ts`, `src/components/rich-text-editor/insert-items.ts`, `src/components/completion-list/completion-list.tsx`
 Verification: `src/components/rich-text-editor/insert-items.test.ts`, `src/components/rich-text-editor/insert-menu.test.tsx`, `e2e/rich-text-editor.spec.ts`
 
 ### UIC-RICH-TEXT-EDITOR-8.2 - Keys and insertion
 
-While the menu is open, ArrowDown and ArrowUp shall move the active entry (wrapping), Enter or Tab replace the slash and query with the active entry's command, and Escape closes the menu until another slash; pressing an entry inserts it. Focus stays in the document, which autocompletes from a list (`aria-autocomplete="list"`, `aria-haspopup="listbox"`) and, while open, names the list in `aria-controls` and the active entry in `aria-activedescendant`.
+While the menu is open, ArrowDown and ArrowUp shall move the active entry (wrapping), Enter or Tab replace the slash and query with the active entry's command, and Escape closes the menu until the current slash query ends; removing and retyping a slash at the same source position can open a new menu. Pressing an entry inserts it. A menu callback that remains pending after the editor locks cannot change the document. Focus stays in the document, which autocompletes from a list (`aria-autocomplete="list"`, `aria-haspopup="listbox"`) and, while open, names the list in `aria-controls` and the active entry in `aria-activedescendant`.
 
 Implementation: `src/components/rich-text-editor/use-slash-menu.ts`, `src/components/rich-text-editor/insert-menu.tsx`
 Verification: `src/components/rich-text-editor/insert-menu.test.tsx`, `e2e/rich-text-editor.spec.ts`

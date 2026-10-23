@@ -84,7 +84,7 @@ Verification: `src/components/tree-select-field/tree-select-field.test.tsx`
 
 ### UIC-TREE-SELECT-FIELD-2.6 - Forms
 
-With `name`, the field shall render hidden inputs under that name: one per chosen key for a multiple choice, and one holding the key or an empty entry for a single choice, disabled while the field is.
+With `name`, the field shall render hidden inputs under that name: one per chosen key for a multiple choice, and one holding the key or an empty entry for a single choice, disabled while the field is. Numeric and text keys with the same spelling remain distinct as inputs are reordered.
 
 Implementation: `src/components/tree-select-field/tree-select-control.tsx`
 Verification: `src/components/tree-select-field/tree-select-field.test.tsx`

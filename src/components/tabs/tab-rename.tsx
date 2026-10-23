@@ -15,6 +15,7 @@ import {
 import { Input } from '../../primitives/index.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import {
   findTabElement,
   isTabDisabled,
@@ -195,7 +196,7 @@ export function TabRenameOverlay({ rename, state, listRef }: TabRenameOverlayPro
   if (!rename || key === null || !node) return null;
   return (
     <TabRenameField
-      key={String(key)}
+      key={toKeyIdentity(key)}
       tabKey={key}
       name={node.textValue}
       rename={rename}

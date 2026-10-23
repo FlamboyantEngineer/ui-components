@@ -11,6 +11,24 @@ import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 const fewTools = ['Bold', 'Italic'];
 const manyTools = ['Bold', 'Italic', 'Underline', 'Strike', 'Highlight', 'Link', 'Quote', 'Code'];
 
+function TypedTools() {
+  const [isReversed, setReversed] = useState(false);
+  const items = [
+    { id: 1, label: 'Numeric tool' },
+    { id: '1', label: 'Text tool' },
+  ];
+  return (
+    <div data-lab-demo="typed-tools">
+      <Button onPress={() => setReversed(!isReversed)}>Reverse tools</Button>
+      <ToolbarScroller
+        aria-label="Separate tool drafts"
+        items={isReversed ? [...items].reverse() : items}
+        renderItem={(item) => <input aria-label={item.label} defaultValue={item.label} />}
+      />
+    </div>
+  );
+}
+
 function Tools({ names }: { names: string[] }) {
   return (
     <>
@@ -117,6 +135,12 @@ mountLab(
         axes={{ width: ['wide', 'medium', 'narrow'] }}
         render={({ width }) => <MenuTools width={width} />}
       />
+    </LabSection>
+    <LabSection
+      title="Numeric and text tool IDs"
+      description="Edit a tool's draft, then reverse the tools: the draft stays with its original ID."
+    >
+      <TypedTools />
     </LabSection>
   </>,
 );

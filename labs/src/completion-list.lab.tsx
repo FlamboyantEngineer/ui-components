@@ -1,5 +1,6 @@
 import { useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { Avatar } from '../../src/components/avatar/avatar.js';
+import { Button } from '../../src/components/button/button.js';
 import {
   CompletionList,
   createTriggerCompletions,
@@ -21,6 +22,11 @@ const cities: CompletionListItem[] = [
   { id: 'london', label: 'London', description: 'United Kingdom', kind: 'city' },
   { id: 'lyon', label: 'Lyon', description: 'France', kind: 'city' },
   { id: 'oslo', label: 'Oslo', description: 'Norway', kind: 'city' },
+];
+
+const typedItems: CompletionListItem[] = [
+  { id: 1, label: 'Numeric option' },
+  { id: '1', label: 'Textual option' },
 ];
 
 const documented: CompletionListItem[] = cities.map((city) => ({
@@ -199,8 +205,12 @@ const noteCompletions = createTriggerCompletions([
 
 function TriggeredNote() {
   const [value, setValue] = useState('');
+  const [isReadOnly, setReadOnly] = useState(false);
   return (
     <>
+      <Button onPress={() => setReadOnly(!isReadOnly)}>
+        {isReadOnly ? 'Enable note editing' : 'Make note read-only'}
+      </Button>
       <TextField
         label="Note"
         multiline
@@ -208,6 +218,7 @@ function TriggeredNote() {
         value={value}
         onChange={setValue}
         completions={noteCompletions}
+        isReadOnly={isReadOnly}
         renderCompletion={(completion) =>
           completion.kind === 'person' ? (
             <UserIdentity name={completion.label} description={completion.description} size="sm" />
@@ -226,6 +237,12 @@ function TriggeredNote() {
 
 mountLab(
   <>
+    <LabSection
+      title="Primitive keys"
+      description="Numeric and text ids that read alike remain separate options."
+    >
+      <DemoEditor label="Primitive keys" items={typedItems} options={{}} cell="typed" />
+    </LabSection>
     <LabSection
       title="Content and extras"
       description="Focus an input to open its list: labels alone, with descriptions, with the active option's documentation, or drawn by the caller; with a footer or an empty state for a filter that matches nothing."
@@ -251,7 +268,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="A long list"
-      description="The active option stays in view as the arrow keys move it; the footer counts the matches and lists the keys."
+      description="Tab into the editor from the last matrix cell: the list stays open after the page scrolls. Arrow keys scroll the active option within the list; the footer counts matches and lists the keys."
     >
       <Note>The input keeps focus throughout: the list only draws what the input asks for.</Note>
       <DemoEditor
@@ -275,7 +292,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Trigger characters"
-      description="Type @ and a name (spaces allowed) to mention a person, or # and a number for a reference; the chosen token replaces the trigger and its query. An address such as alice@example.com opens nothing."
+      description="Type @ and a name (spaces allowed) to mention a person, or # and a number for a reference; the chosen token replaces the trigger and its query. An address such as alice@example.com opens nothing. Making the note read-only closes completions; enabling editing needs a new lookup."
     >
       <TriggeredNote />
     </LabSection>

@@ -1,5 +1,6 @@
-import { screen, within } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { render, screen, within } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
+import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import {
   ViewProbe,
@@ -9,7 +10,7 @@ import {
   selectRange,
 } from '../../../test/rich-text-fixtures.js';
 import { InsertMenu, InsertMenuButton, type InsertMenuItem } from './insert-menu.js';
-import type { RichTextDocument } from './rich-text-editor.js';
+import { RichTextEditor, type RichTextDocument } from './rich-text-editor.js';
 
 installEditorDom();
 
@@ -25,8 +26,8 @@ function list() {
   return screen.queryByRole('listbox', { name: 'Insert commands' });
 }
 
-function optionLabels() {
-  return within(list() as HTMLElement)
+async function optionLabels() {
+  return within(await screen.findByRole('listbox', { name: 'Insert commands' }))
     .getAllByRole('option')
     .map((option) => option.querySelector('.ui-completion-list__label')?.textContent);
 }
@@ -50,7 +51,7 @@ describe('InsertMenu', () => {
     expect(list()).toBeNull();
     await user.click(getContent());
     await user.keyboard('/');
-    expect(optionLabels()).toEqual([
+    expect(await optionLabels()).toEqual([
       'Text',
       'Heading 1',
       'Heading 2',
@@ -71,11 +72,11 @@ describe('InsertMenu', () => {
       callerAttributes: ['data-testid'],
     });
     await user.keyboard('title');
-    expect(optionLabels()).toEqual(['Heading 1']);
+    expect(await optionLabels()).toEqual(['Heading 1']);
     await user.keyboard(' /todo');
-    expect(optionLabels()).toEqual(['Task list']);
+    expect(await optionLabels()).toEqual(['Task list']);
     await user.keyboard(' /thank');
-    expect(optionLabels()).toEqual(['Signature line']);
+    expect(await optionLabels()).toEqual(['Signature line']);
     await user.keyboard('zz');
     expect(list()).toBeNull();
   });
@@ -86,7 +87,7 @@ describe('InsertMenu', () => {
     await user.keyboard('a/');
     expect(list()).toBeNull();
     await user.keyboard(' /');
-    expect(list()).not.toBeNull();
+    expect(await screen.findByRole('listbox', { name: 'Insert commands' })).toBeInTheDocument();
     await user.keyboard(' ');
     expect(list()).toBeNull();
   });
@@ -96,6 +97,7 @@ describe('InsertMenu', () => {
     const content = getContent();
     await user.click(content);
     await user.keyboard('/head');
+    await screen.findByRole('listbox', { name: 'Insert commands' });
     expect(content).toHaveAttribute('aria-autocomplete', 'list');
     expect(content).toHaveAttribute('aria-haspopup', 'listbox');
     expect(content).toHaveAttribute('aria-controls', list()?.id);
@@ -122,13 +124,25 @@ describe('InsertMenu', () => {
     await user.keyboard('q');
     expect(list()).toBeNull();
     await user.keyboard(' /quo');
-    await user.click(screen.getByRole('option', { name: /Quote/ }));
+    await user.click(await screen.findByRole('option', { name: /Quote/ }));
     expect(value()?.content).toEqual([
       {
         type: 'blockquote',
         content: [{ type: 'paragraph', content: [{ type: 'text', text: '/q ' }] }],
       },
     ]);
+  });
+
+  it('UIC-RICH-TEXT-EDITOR-8.2 opens again when a dismissed slash is removed and retyped at the same position', async () => {
+    const { user } = renderMenu();
+    await user.click(getContent());
+    await user.keyboard('/{Escape}');
+    expect(list()).toBeNull();
+    selectRange(1, 2);
+    await user.keyboard('{Backspace}');
+    expect(getContent()).toHaveTextContent(/^$/);
+    await user.keyboard('/');
+    expect(await screen.findByRole('listbox', { name: 'Insert commands' })).toBeInTheDocument();
   });
 
   it('UIC-RICH-TEXT-EDITOR-8.3 inserts from the insert button and returns focus to the document', async () => {
@@ -154,5 +168,50 @@ describe('InsertMenu', () => {
   it('UIC-RICH-TEXT-EDITOR-8.3 disables the insert button in a read-only editor', () => {
     renderMenu({ isReadOnly: true });
     expect(screen.getByRole('button', { name: 'Insert' })).toBeDisabled();
+  });
+
+  it.each(['isReadOnly', 'isDisabled'] as const)(
+    'UIC-RICH-TEXT-EDITOR-4.1 UIC-RICH-TEXT-EDITOR-8.1 refuses the slash menu while %s, including a menu already open',
+    async (lock) => {
+      const user = userEvent.setup();
+      const onChange = vi.fn();
+      const content = (
+        <>
+          <ViewProbe />
+          <InsertMenu />
+        </>
+      );
+      const { rerender } = render(
+        <RichTextEditor label="Notes" onChange={onChange}>
+          {content}
+        </RichTextEditor>,
+      );
+      await user.click(getContent());
+      await user.keyboard('/head');
+      expect(await screen.findByRole('listbox', { name: 'Insert commands' })).toBeInTheDocument();
+      rerender(
+        <RichTextEditor label="Notes" onChange={onChange} {...{ [lock]: true }}>
+          {content}
+        </RichTextEditor>,
+      );
+      onChange.mockClear();
+      expect(list()).toBeNull();
+      selectRange(6);
+      await user.keyboard('{Enter}{Tab}');
+      expect(getContent()).toHaveTextContent('/head');
+      expect(list()).toBeNull();
+      expect(onChange).not.toHaveBeenCalled();
+    },
+  );
+
+  it('UIC-RICH-TEXT-EDITOR-4.1 UIC-RICH-TEXT-EDITOR-8.3 dismisses an open insert button menu when the editor locks', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<RichTextEditor label="Notes" toolbar={<InsertMenuButton />} />);
+    await user.click(screen.getByRole('button', { name: 'Insert' }));
+    expect(await screen.findByRole('menu')).toBeInTheDocument();
+    rerender(<RichTextEditor label="Notes" isReadOnly toolbar={<InsertMenuButton />} />);
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    rerender(<RichTextEditor label="Notes" toolbar={<InsertMenuButton />} />);
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 });

@@ -3,6 +3,7 @@ import { BarChart, type BarChartSeries } from '../../src/components/chart/bar-ch
 import { Chart, type ChartView } from '../../src/components/chart/chart.js';
 import { ChartAxis } from '../../src/components/chart/chart-axis.js';
 import { ChartLegend } from '../../src/components/chart/chart-legend.js';
+import { Button } from '../../src/components/button/button.js';
 import { DonutChart, type DonutChartSegment } from '../../src/components/chart/donut-chart.js';
 import { LineChart, type LineChartSeries } from '../../src/components/chart/line-chart.js';
 import type { Key } from '../../src/core/props.js';
@@ -163,8 +164,49 @@ function ControlledChart() {
   );
 }
 
+function TypedKeys() {
+  const [isReversed, setReversed] = useState(false);
+  const [hidden, setHidden] = useState<Set<Key>>(new Set());
+  const items = [
+    { id: 1, label: 'Numeric series' },
+    { id: '1', label: 'Text series' },
+  ];
+  const ticks = [
+    { value: 1, position: 20, label: 'Number 1' },
+    { value: '1', position: 140, label: 'Text 1' },
+  ];
+  return (
+    <div data-lab-demo="typed-keys">
+      <Button onPress={() => setReversed(!isReversed)}>Reverse typed entries</Button>
+      <ChartLegend
+        items={isReversed ? items.reverse() : items}
+        hiddenKeys={hidden}
+        onHiddenKeysChange={setHidden}
+      />
+      <svg width={180} height={70} aria-hidden="true">
+        <ChartAxis
+          position="bottom"
+          ticks={isReversed ? ticks.reverse() : ticks}
+          offset={35}
+          range={[0, 180]}
+          gridLength={30}
+        />
+      </svg>
+      <output data-lab-output="typed-hidden">
+        {[...hidden].map((key) => `${typeof key} ${key}`).join(', ') || 'none'}
+      </output>
+    </div>
+  );
+}
+
 mountLab(
   <>
+    <LabSection
+      title="Typed identities"
+      description="Numeric and text series IDs and tick values with the same spelling remain distinct when reordered."
+    >
+      <TypedKeys />
+    </LabSection>
     <LabSection
       title="Bar layouts"
       description="Grouped and stacked bars, vertical and horizontal, with a legend that shows and hides each series. Arrow keys move between values and series, Home and End jump to the series ends, and Tab leaves the plot without scanning its points."

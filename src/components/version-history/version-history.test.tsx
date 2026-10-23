@@ -54,6 +54,18 @@ async function openMenu(index: number) {
 
 // Menus and dialogs driven by userEvent are slow in jsdom on a busy machine.
 describe('VersionHistory', { timeout: 15_000 }, () => {
+  it('UIC-VERSION-HISTORY-1.1 keeps numeric and text IDs distinct when a version is removed', () => {
+    const entries: VersionHistoryVersion[] = [
+      { id: 1, label: 'Numeric version', time: '2026-04-20' },
+      { id: '1', label: 'Text version', time: '2026-04-20' },
+    ];
+    const { rerender } = render(<VersionHistory versions={entries} getNow={getNow} />);
+    const textVersion = screen.getByText('Text version');
+    rerender(<VersionHistory versions={entries.slice(1)} getNow={getNow} />);
+    expect(screen.getByText('Text version')).toBe(textVersion);
+    expect(screen.queryByText('Numeric version')).not.toBeInTheDocument();
+  });
+
   it('UIC-VERSION-HISTORY-1.1 lists the versions in a grid', () => {
     const { container } = render(<VersionHistory versions={versions} getNow={getNow} />);
     const root = container.firstElementChild as HTMLElement;

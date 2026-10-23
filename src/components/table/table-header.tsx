@@ -1,3 +1,5 @@
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
+import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { useContext, useLayoutEffect, type JSX, type ReactNode } from 'react';
 import {
   Checkbox as AriaCheckbox,
@@ -75,9 +77,9 @@ function PinnedOffsetsProbe({
   const layout = useContext(TableColumnResizeStateContext);
   const offsets = computePinOffsets(
     (state?.collection.columns ?? []).map((column) => ({
-      key: String(column.key),
+      key: String(fromCollectionKey(column.key)),
       width: layout?.getColumnWidth(column.key) ?? 0,
-      pin: pins[String(column.key)],
+      pin: pins[String(fromCollectionKey(column.key))],
     })),
   );
   useLayoutEffect(() => onMeasure(offsets));
@@ -166,7 +168,10 @@ function TableColumnTracks() {
   return (
     <colgroup>
       {(state?.collection.columns ?? []).map((column) => (
-        <col key={column.key} style={{ width: layout?.getColumnWidth(column.key) }} />
+        <col
+          key={toKeyIdentity(column.key)}
+          style={{ width: layout?.getColumnWidth(column.key) }}
+        />
       ))}
     </colgroup>
   );

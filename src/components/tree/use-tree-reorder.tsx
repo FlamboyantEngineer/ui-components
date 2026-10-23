@@ -1,4 +1,5 @@
 import { createDropIndicator } from '../../utils/create-drop-indicator.js';
+import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { useCallback, useLayoutEffect, useMemo, useRef } from 'react';
 import type { Key } from '../../core/props.js';
 import {
@@ -123,10 +124,15 @@ export function useTreeReorder<T extends TreeItemData>(
     else if (first) reorder?.onMove(first);
   }, []);
   const dragAndDrop = useReorderDragAndDrop<readonly TreeMove[]>({
-    resolveMove: (target, keys) => resolveDropMoves(rows, source.reorder, { target, keys }),
+    resolveMove: (target, keys) =>
+      resolveDropMoves(rows, source.reorder, {
+        target: target.type === 'item' ? { ...target, key: fromCollectionKey(target.key) } : target,
+        keys: new Set([...keys].map(fromCollectionKey)),
+      }),
     onMove: report,
     getTextValue: (key) => {
-      const row = rows.find((entry) => entry.key === key);
+      const original = fromCollectionKey(key);
+      const row = rows.find((entry) => entry.key === original);
       return row ? source.getTextValue(row.item) : String(key);
     },
     renderDropIndicator,

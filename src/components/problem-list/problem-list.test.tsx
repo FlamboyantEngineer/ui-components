@@ -17,6 +17,18 @@ function items(container: HTMLElement) {
 }
 
 describe('ProblemList', () => {
+  it('UIC-PROBLEM-LIST-1.2 keeps numeric and text IDs distinct when a problem is removed', () => {
+    const entries: ProblemListItem[] = [
+      { id: 1, message: 'Numeric problem' },
+      { id: '1', message: 'Text problem' },
+    ];
+    const { rerender } = render(<ProblemList problems={entries} />);
+    const textProblem = screen.getByText('Text problem');
+    rerender(<ProblemList problems={entries.slice(1)} />);
+    expect(screen.getByText('Text problem')).toBe(textProblem);
+    expect(screen.queryByText('Numeric problem')).not.toBeInTheDocument();
+  });
+
   it('UIC-PROBLEM-LIST-1.1 heads the problems and counts them by severity', () => {
     const { container, rerender } = render(
       <ProblemList problems={problems} data-test="problems" className="extra" id="summary" />,

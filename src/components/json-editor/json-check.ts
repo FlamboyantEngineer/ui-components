@@ -2,6 +2,7 @@
 // diagnostics and as the field's message.
 
 import type { UiStrings } from '../../core/strings.js';
+import { findLineStarts } from '../../utils/find-line-starts.js';
 import type { CodeDiagnostic } from '../code-editor/code-editor.js';
 import type { FieldIssue } from '../field/field.js';
 import { validateJsonSchema, type JsonSchema } from './json-schema.js';
@@ -17,9 +18,15 @@ export interface JsonCheck {
 const noProblems: JsonCheck = { diagnostics: [], issue: null };
 
 /** The line and column, counted from 1, of an offset. */
-function placeOf(source: string, offset: number) {
-  const lines = source.slice(0, offset).split('\n');
-  return { line: lines.length, column: (lines.at(-1)?.length ?? 0) + 1 };
+function placeOf(starts: readonly number[], offset: number) {
+  let low = 0;
+  let high = starts.length;
+  while (low + 1 < high) {
+    const middle = Math.floor((low + high) / 2);
+    if (starts[middle]! <= offset) low = middle;
+    else high = middle;
+  }
+  return { line: low + 1, column: offset - starts[low]! + 1 };
 }
 
 function checkParse(source: string, strings: UiStrings): JsonCheck | null {
@@ -45,17 +52,31 @@ export function checkJsonText(
   schema: JsonSchema | undefined,
   strings: UiStrings,
 ): JsonCheck {
-  const parse = checkParse(source, strings);
-  if (parse) return parse;
   const tree = schema ? parseJsonTree(source) : null;
+  const parse = tree ? null : checkParse(source, strings);
+  if (parse) return parse;
   if (!tree || !schema) return noProblems;
+  const starts = findLineStarts(source);
   const diagnostics = validateJsonSchema(tree, schema, strings).map(({ message, start, end }) => {
-    const from = placeOf(source, start);
-    const to = placeOf(source, end);
+    const from = placeOf(starts, start);
+    const to = placeOf(starts, end);
     return { message, ...from, endLine: to.line, endColumn: to.column };
   });
   const [first] = diagnostics;
   if (!first) return noProblems;
   const message = strings.jsonProblemAt(first.line, first.column, first.message);
   return { diagnostics, issue: { severity: 'error', message } };
+}
+
+/** Reuses the current result for the field check and the editor's diagnostic layer. */
+export function createJsonChecker(schema: JsonSchema | undefined, strings: UiStrings) {
+  let previous: string | undefined;
+  let result = noProblems;
+  return (source: string): JsonCheck => {
+    if (source !== previous) {
+      result = checkJsonText(source, schema, strings);
+      previous = source;
+    }
+    return result;
+  };
 }

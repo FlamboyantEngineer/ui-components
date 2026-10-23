@@ -10,6 +10,8 @@ import type { PressEventProps, SelectionProps } from '../../core/events.js';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, Key, SelectionMode, Tone } from '../../core/props.js';
 import { Glyph } from '../../core/provider.js';
+import { toCollectionSelectionProps } from '../../utils/collection-selection.js';
+import { encodeCollectionChildren } from '../../utils/encode-collection-children.js';
 import { Icon, toIconProps, type IconSource } from '../icon/icon.js';
 import { Separator } from '../separator/separator.js';
 import { Shortcut, type ShortcutProps } from '../shortcut/shortcut.js';
@@ -202,11 +204,23 @@ export function MenuItem({
 }
 
 /** A group of menu items with an optional heading and its own selection mode. */
-export function MenuSection({ title, children, className, ...rest }: MenuSectionProps) {
+export function MenuSection({
+  title,
+  children,
+  className,
+  selectedKeys,
+  defaultSelectedKeys,
+  onSelectionChange,
+  ...rest
+}: MenuSectionProps) {
   return (
-    <AriaMenuSection {...rest} {...sectionHooks.root({ className, props: rest })}>
+    <AriaMenuSection
+      {...rest}
+      {...sectionHooks.root({ className, props: rest })}
+      {...toCollectionSelectionProps({ selectedKeys, defaultSelectedKeys, onSelectionChange })}
+    >
       {title ? <Header className={sectionHooks.slotClass('header')}>{title}</Header> : null}
-      {children}
+      {encodeCollectionChildren(children, [MenuItem])}
     </AriaMenuSection>
   );
 }

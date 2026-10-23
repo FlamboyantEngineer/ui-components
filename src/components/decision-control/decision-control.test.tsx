@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -132,6 +132,66 @@ describe('DecisionControl', { timeout: 15_000 }, () => {
       expect(screen.getByRole('alert')).toHaveTextContent('The decision could not be submitted.'),
     );
     expectHooksMatchSpec(container, 'DECISION-CONTROL', { slots: ['error'] });
+  });
+
+  it('UIC-DECISION-CONTROL-1.4 handles synchronous failures and allows a successful retry', async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn().mockImplementationOnce(() => {
+      throw new Error('Try again.');
+    });
+    render(<DecisionControl onSubmit={onSubmit} defaultValue="approve" />);
+    await user.type(comment(), 'Keep this draft');
+    await user.click(submit());
+    expect(await screen.findByRole('alert')).toHaveTextContent('Try again.');
+    expect(comment()).toHaveValue('Keep this draft');
+    expect(submit()).not.toHaveAttribute('data-pending');
+    await user.click(submit());
+    await waitFor(() => expect(comment()).toHaveValue(''));
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(onSubmit).toHaveBeenCalledTimes(2);
+  });
+
+  it('UIC-DECISION-CONTROL-1.4 refuses repeated form submissions before pending state renders', async () => {
+    const pending = deferred();
+    const onSubmit = vi.fn(() => pending.promise);
+    render(<DecisionControl onSubmit={onSubmit} defaultValue="approve" />);
+    const form = screen.getByRole<HTMLFormElement>('form', { name: 'Your decision' });
+    act(() => {
+      form.requestSubmit();
+      form.requestSubmit();
+    });
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+    pending.resolve();
+    await waitFor(() => expect(submit()).not.toHaveAttribute('data-pending'));
+  });
+
+  it('UIC-DECISION-CONTROL-1.5 UIC-DECISION-CONTROL-1.6 abandons signing and its credentials when disabled', async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    const control = (isDisabled: boolean) => (
+      <DecisionControl
+        onSubmit={onSubmit}
+        defaultValue="approve"
+        signature={{ userName: 'Ada Park' }}
+        isDisabled={isDisabled}
+      />
+    );
+    const { rerender } = render(control(false));
+    await user.type(comment(), 'Keep the comment');
+    await user.click(submit());
+    const dialog = await screen.findByRole('dialog', { name: 'Sign your decision' });
+    await user.type(within(dialog).getByLabelText(/^Password/, { selector: 'input' }), 'secret');
+    rerender(control(true));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    const form = screen.getByRole<HTMLFormElement>('form', { name: 'Your decision' });
+    act(() => form.requestSubmit());
+    expect(onSubmit).not.toHaveBeenCalled();
+    rerender(control(false));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(comment()).toHaveValue('Keep the comment');
+    await user.click(submit());
+    const reopened = await screen.findByRole('dialog', { name: 'Sign your decision' });
+    expect(within(reopened).getByLabelText(/^Password/, { selector: 'input' })).toHaveValue('');
   });
 
   it('UIC-DECISION-CONTROL-1.5 signs the decision through the signature dialog', async () => {

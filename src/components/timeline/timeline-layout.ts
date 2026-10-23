@@ -1,6 +1,7 @@
 // Places the timeline's items on its visible rows and draws its dependencies (specs/TIMELINE.md).
 
 import type { Key } from '../../core/props.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import {
   createTimelineAxis,
   isDependencyConflict,
@@ -109,7 +110,7 @@ export function resolveTimelineLayout(options: TimelineLayoutOptions): TimelineL
     const points = { x1: source.right, y1: centre(source), x2: target.left, y2: centre(target) };
     return [
       {
-        key: `${from}>${to}`,
+        key: JSON.stringify([toKeyIdentity(from), toKeyIdentity(to)]),
         path: resolveConnectorPath({ ...points, rowHeight }),
         hasConflict: isDependencyConflict(source.read, target.read),
       },

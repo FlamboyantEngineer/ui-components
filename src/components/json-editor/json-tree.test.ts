@@ -35,6 +35,19 @@ describe('JSON tree', () => {
     expect(parseJsonTree('  ')).toBeNull();
   });
 
+  it('UIC-JSON-EDITOR-5.1 reads deeply nested arrays and objects without a call-stack limit', () => {
+    const depth = 20_000;
+    const source = '{"a":['.repeat(depth) + '1' + ']}'.repeat(depth);
+    let node = parseJsonTree(source);
+    for (let index = 0; index < depth; index += 1) {
+      if (node?.kind !== 'object') throw new Error('Expected an object');
+      const array = node.properties[0]?.value;
+      if (array?.kind !== 'array') throw new Error('Expected an array');
+      node = array.items[0] ?? null;
+    }
+    expect(node).toEqual({ kind: 'scalar', value: 1, start: depth * 6, end: depth * 6 + 1 });
+  });
+
   it('UIC-JSON-EDITOR-5.2 finds the key or value at the caret in text that may not parse yet', () => {
     const at = (source: string) => {
       const caret = source.indexOf('|');

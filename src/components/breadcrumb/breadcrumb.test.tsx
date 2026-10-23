@@ -383,8 +383,10 @@ describe('Breadcrumb', () => {
 
   it('UIC-BREADCRUMB-1.8 offers the places beside a crumb in a menu after its link', async () => {
     const onSibling = vi.fn();
+    const onAction = vi.fn();
     const { container } = render(
       <Breadcrumb
+        onAction={onAction}
         items={[
           trail[0] as BreadcrumbItem,
           {
@@ -409,6 +411,32 @@ describe('Breadcrumb', () => {
     await userEvent.click(button);
     await userEvent.click(screen.getByRole('menuitem', { name: 'Drinks' }));
     expect(onSibling).toHaveBeenCalledTimes(1);
+    expect(onAction).toHaveBeenCalledExactlyOnceWith('drinks');
+    await userEvent.click(button);
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Menus' }));
+    expect(onAction).toHaveBeenLastCalledWith('menus');
+    expect(onAction).toHaveBeenCalledTimes(2);
+  });
+
+  it('UIC-BREADCRUMB-1.8 reports choices from a nearby place submenu', async () => {
+    const user = userEvent.setup();
+    const onAction = vi.fn();
+    render(
+      <Breadcrumb
+        onAction={onAction}
+        items={[
+          {
+            label: 'Recipes',
+            menu: [{ id: 'drinks', label: 'Drinks', items: [{ id: 'tea', label: 'Tea' }] }],
+          },
+          { label: 'Desserts' },
+        ]}
+      />,
+    );
+    await user.click(screen.getByRole('button', { name: 'Places beside Recipes' }));
+    await user.keyboard('{ArrowDown}{ArrowRight}');
+    await user.click(await screen.findByRole('menuitem', { name: 'Tea' }));
+    expect(onAction).toHaveBeenCalledExactlyOnceWith('tea');
   });
 
   it('UIC-BREADCRUMB-2.3 disables the menus of a disabled trail', () => {

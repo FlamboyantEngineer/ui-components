@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useRef } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, Key } from '../../core/props.js';
@@ -100,6 +100,8 @@ export function InsertMenuButton({ items, className, ...rest }: InsertMenuButton
   const controller = useRichTextController();
   const focusReturn = useFocusReturn(controller);
   const available = useAvailableItems(items);
+  const [isOpen, setOpen] = useState(false);
+  if (isOpen && !controller.isEditable) setOpen(false);
   return (
     <DropdownMenu
       {...rest}
@@ -110,6 +112,8 @@ export function InsertMenuButton({ items, className, ...rest }: InsertMenuButton
       iconOnly
       size="sm"
       isDisabled={!controller.isEditable}
+      isOpen={isOpen && controller.isEditable}
+      onOpenChange={setOpen}
       items={available.map(({ id, label, description, icon }) => ({
         id,
         label,

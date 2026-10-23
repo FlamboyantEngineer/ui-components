@@ -1,6 +1,36 @@
 import { expect, test } from './fixtures.js';
 
 test.describe('Tree lab', () => {
+  test('UIC-TREE-1.1 UIC-TREE-2.1 UIC-TREE-3.2 UIC-TREE-3.3 retains typed keys through expansion, selection and actions', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('tree');
+    const sample = page.locator('[data-lab-typed-tree]');
+    const tree = sample.getByRole('treegrid', { name: 'Primitive keys' });
+    await expect(tree.getByRole('row', { name: 'Numeric child' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+    await expect(tree.getByRole('row', { name: 'Space key' })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+    await expect(tree.getByRole('row', { name: 'Dash key' })).not.toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+    await tree
+      .getByRole('row', { name: 'Text branch' })
+      .getByRole('button', { name: 'Expand Text branch' })
+      .click();
+    await tree.getByRole('row', { name: 'Text child' }).click();
+    await expect(sample.locator('[data-lab-output="typed-selection"]')).toHaveText(
+      '[["string","2"]]',
+    );
+    await page.keyboard.press('Enter');
+    await expect(sample.locator('[data-lab-output="typed-action"]')).toHaveText('["string","2"]');
+  });
   test('UIC-TREE-1.1 UIC-TREE-2.1 UIC-TREE-3.1 navigates, expands and collapses by keyboard', async ({
     page,
     lab,
@@ -163,6 +193,25 @@ test.describe('Tree lab', () => {
     await expect(tree.getByRole('row', { name: 'South town 1' })).toBeVisible();
     await expect(error).toHaveCount(0);
     await lab.expectAccessible('[data-lab-loading]');
+  });
+
+  test('UIC-TREE-5.2 UIC-TREE-6.1 filters and selects through nested branches', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('tree');
+    const area = page.locator('[data-lab-nested-tree]');
+    const tree = area.getByRole('treegrid', { name: 'Nested levels' });
+    const root = tree.getByRole('row', { name: 'Level 1', exact: true });
+    await expect(root).toHaveAttribute('data-indeterminate', 'true');
+    await area.getByRole('searchbox', { name: 'Filter levels' }).fill('Level 24');
+    await expect(tree.getByRole('row')).toHaveCount(24);
+    await root.focus();
+    await page.keyboard.press('Space');
+    await expect(tree.locator('[role="row"][aria-selected="true"]')).toHaveCount(24);
+    await area.getByRole('searchbox', { name: 'Filter levels' }).fill('');
+    await expect(tree.getByRole('row')).toHaveCount(1);
+    await expect(root).toHaveAttribute('aria-selected', 'true');
   });
 
   test('UIC-TREE-7.1 renames a row in place with F2', async ({ page, lab }) => {

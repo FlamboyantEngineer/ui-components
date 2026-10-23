@@ -1,7 +1,7 @@
 import { render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
-import type { SortDescriptor } from '../../core/props.js';
+import type { Selection, SortDescriptor } from '../../core/props.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Table } from './table.js';
@@ -31,6 +31,39 @@ const header = (name: string) => screen.getByRole('columnheader', { name: new Re
 
 // Full React Aria tables driven by userEvent are slow in jsdom on a busy machine.
 describe('Table', { timeout: 15_000 }, () => {
+  it('UIC-TABLE-3.1 preserves Shift range anchors while a caller controls typed row selections', async () => {
+    const user = userEvent.setup();
+    const onSelectionChange = vi.fn();
+    const rows = [
+      { id: 1, name: 'Numeric' },
+      { id: '1', name: 'Textual' },
+      { id: 'a b', name: 'Spaced' },
+      { id: 'ab', name: 'Compact' },
+    ];
+    function Controlled() {
+      const [selected, setSelected] = useState<Selection>(new Set());
+      return (
+        <Table
+          aria-label="Keys"
+          rows={rows}
+          columns={[{ id: 'name', header: 'Name' }]}
+          selectionMode="multiple"
+          selectionBehavior="replace"
+          selectedKeys={selected}
+          onSelectionChange={(keys) => {
+            setSelected(keys);
+            onSelectionChange(keys);
+          }}
+        />
+      );
+    }
+    render(<Controlled />);
+    await user.click(screen.getByRole('row', { name: 'Numeric' }));
+    await user.keyboard('{Shift>}');
+    await user.click(screen.getByRole('row', { name: 'Compact' }));
+    await user.keyboard('{/Shift}');
+    expect(onSelectionChange).toHaveBeenLastCalledWith(new Set([1, '1', 'a b', 'ab']));
+  });
   it('UIC-TABLE-1.1 renders one row per item and one cell per column as React nodes', () => {
     const { container } = render(
       <Table

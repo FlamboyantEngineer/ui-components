@@ -10,6 +10,7 @@ import {
 } from '../../src/components/board/index.js';
 import type { Key } from '../../src/core/props.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { TypedBoard } from './collection-identity-cases.js';
 
 interface Task {
   id: string;
@@ -216,6 +217,12 @@ mountLab(
       description="Five hundred cards, virtualized: each cell renders only the cards in view."
     >
       <LongBoard />
+    </LabSection>
+    <LabSection
+      title="Distinct board keys"
+      description="Numeric and text keys identify separate cards and columns; keyboard moves keep focus on the item that moved."
+    >
+      <TypedBoard />
     </LabSection>
   </>,
 );

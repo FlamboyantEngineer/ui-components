@@ -16,6 +16,7 @@ import type { BaseProps, Key } from '../../core/props.js';
 import { usePersistentState } from '../../core/provider.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 import { useElementSize } from '../../utils/use-element-size.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import {
   normalizeDashboardLayout,
@@ -123,15 +124,21 @@ function useTileMoves({
   committed,
   columns,
   rowHeight,
+  isEditing,
 }: {
   element: HTMLDivElement | null;
   committed: ReturnType<typeof useDashboardLayout>;
   columns: number;
   rowHeight: number;
+  isEditing: boolean;
 }) {
   const [preview, setPreview] = useState<Preview | null>(null);
   const latest = useRef<Preview | null>(null);
   const refocus = useRef<{ id: Key; kind: TileMoveKind } | null>(null);
+  if (!isEditing && preview) {
+    latest.current = null;
+    setPreview(null);
+  }
   return {
     previewLayout: preview?.layout,
     refocus,
@@ -190,7 +197,14 @@ export function DashboardGrid({
   );
   const shownColumns = useShownColumns(element, columns, minColumnWidth);
   const isReflowed = shownColumns < columns;
-  const { previewLayout, ...moves } = useTileMoves({ element, committed, columns, rowHeight });
+  const editable = isEditing && !isReflowed;
+  const { previewLayout, ...moves } = useTileMoves({
+    element,
+    committed,
+    columns,
+    rowHeight,
+    isEditing: editable,
+  });
   const [message, setMessage] = useState('');
   const shown = isReflowed
     ? reflowDashboardLayout(committed.layout, { from: columns, to: shownColumns })
@@ -198,7 +212,7 @@ export function DashboardGrid({
   const order = [...committed.layout].sort((a, b) => a.y - b.y || a.x - b.x);
   const positions = new Map(shown.map((item) => [item.id, item]));
   const rows = findMaximum(shown, (item) => item.y + item.h, 1);
-  const state = { ...moves, columns, isEditing: isEditing && !isReflowed, announce: setMessage };
+  const state = { ...moves, columns, isEditing: editable, announce: setMessage };
   const style = {
     gridTemplateColumns: `repeat(${shownColumns}, minmax(0, 1fr))`,
     gridTemplateRows: `repeat(${rows}, ${rowHeight}px)`,
@@ -217,7 +231,7 @@ export function DashboardGrid({
       {order.map((entry) => {
         const item = positions.get(entry.id) ?? entry;
         return (
-          <DashboardGridContext.Provider key={item.id} value={{ ...state, item }}>
+          <DashboardGridContext.Provider key={toKeyIdentity(item.id)} value={{ ...state, item }}>
             {children(item)}
           </DashboardGridContext.Provider>
         );

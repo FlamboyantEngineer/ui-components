@@ -10,8 +10,12 @@ Pointer ownership and drag lifecycle cleanup follow the shared [drag interaction
 
 `Table` shall render React Aria's grid semantics (`grid`, `columnheader`, `row`, `rowheader` and `gridcell` roles) named by its `aria-label` or `aria-labelledby`, with one row per item in `rows`, keyed by the item's `id`, and one cell per column. A cell shows `renderCell(row)` when the column has it, else the column's value (`getValue(row)`, else the row's property named by the column `id`) as text when it is a string or a number. Content is React nodes; no HTML string is injected. The columns marked `isRowHeader`, or the first column when none is, name each row.
 
+Row keys retain their primitive type, including numeric `1` and text `"1"`. Collection identities encode whitespace, so keys `"a b"` and `"ab"` keep separate accessible names, selections, expansion, cell ranges, editors, row actions and moves. Callbacks report the caller's original keys; `data-key` is an opaque collection identity.
+
+Column ids containing whitespace shall likewise remain distinct in accessible names, sorting, widths and cell editing.
+
 Implementation: `src/components/table/table.tsx`, `src/components/table/table-header.tsx`, `src/components/table/table-column.tsx`, `src/components/table/table-body.tsx`, `src/components/table/table-row.tsx`
-Verification: `src/components/table/table.test.tsx`, `e2e/table.spec.ts`
+Verification: `src/components/table/table.test.tsx`, `e2e/table.spec.ts`, `src/components/table/table-key-identity.test.tsx`
 
 ### UIC-TABLE-1.2 - Column hooks
 
@@ -48,7 +52,7 @@ Verification: `src/components/table/table-row.test.tsx`, `e2e/table.spec.ts`
 Pressing the header of a column with `allowsSorting`, by pointer or with Enter, shall cycle its sort through ascending, descending and unsorted. The sorted header carries `aria-sort="ascending"` or `"descending"` and `data-sort-direction`; other sortable headers carry `aria-sort="none"`. `onSortChange` receives each next descriptor, or `null` for unsorted.
 
 Implementation: `src/components/table/use-table-sort.ts`, `src/components/table/table-sort.ts`
-Verification: `src/components/table/table.test.tsx`, `src/components/table/table-rows.test.ts`, `e2e/table.spec.ts`
+Verification: `src/components/table/table.test.tsx`, `src/components/table/table-rows.test.ts`, `e2e/table.spec.ts`, `src/components/table/table-key-identity.test.tsx`
 
 ### UIC-TABLE-2.2 - Table-owned order
 
@@ -113,7 +117,7 @@ Verification: `src/components/table/table-filters.test.ts`
 The table shall select rows through the selection props (`selectionMode` `none`, `single` or `multiple`, `selectionBehavior` `toggle` or `replace`, `selectedKeys`, `defaultSelectedKeys`, `disabledKeys`, `disallowEmptySelection`, and `onSelectionChange` with the new `Selection`), controlled or not; without `selectedKeys` the table holds the selection itself and hands it to React Aria's grid. Multiple selection adds a leading checkbox column whose header checkbox selects every enabled row; each checkbox draws the `check` glyph when selected, the `minus` glyph when indeterminate and nothing otherwise, and takes React Aria's localized names. Disabled rows are never selected.
 
 Implementation: `src/components/table/table-header.tsx`, `src/components/table/table-row.tsx`
-Verification: `src/components/table/table.test.tsx`, `e2e/table.spec.ts`
+Verification: `src/components/table/table.test.tsx`, `e2e/table.spec.ts`, `src/components/table/table-aria-keys.test.ts`, `src/components/table/use-table-selection.test.tsx`
 
 ### UIC-TABLE-3.2 - Row action
 
@@ -321,7 +325,7 @@ Verification: `src/components/table/table-columns.test.ts`
 With `getChildRows`, each row's child rows shall be drawn under it while it is expanded, through React Aria's expandable rows: the grid becomes a `treegrid`, rows carry `aria-level` and, with children, `aria-expanded`, and ArrowRight and ArrowLeft on a focused row expand and collapse it. The tree column (the column whose id is `treeColumn` when it is drawn, else the first drawn data column) holds an expand button (`ui-table__expand`, React Aria's `chevron` slot, which names it `Expand <row>` or `Collapse <row>`, drawing the expand toggle's chevron) for rows with children and a spacer (`ui-table__expand-spacer`) for the others, and its cells publish the measured `--ui-table-level` from 1. `expandedKeys` (controlled) or `defaultExpandedKeys` choose the expanded rows, and `onExpandedChange` receives the expanded keys after each change.
 
 Implementation: `src/components/table/table-row.tsx`, `src/components/table/use-table-grid.ts`, `src/components/table/table-tree.ts`
-Verification: `src/components/table/table-row.test.tsx`, `e2e/table.spec.ts`
+Verification: `src/components/table/table-row.test.tsx`, `e2e/table.spec.ts`, `src/components/table/table-key-identity.test.tsx`, `src/components/table/table-aria-keys.test.ts`
 
 ### UIC-TABLE-9.2 - Detail rows
 
@@ -367,7 +371,7 @@ Verification: `src/components/table/use-table-rows.test.tsx`
 A cell of a column with `allowsEditing` shall open its editor on F2 or Enter while the cell has focus, or on a double click, and publish `data-editing` while it is open. One cell is edited at a time. While the editor is open the grid's arrow-key navigation and type-ahead are off, so the editor keeps its keys.
 
 Implementation: `src/components/table/use-cell-editing.ts`, `src/components/table/table-row.tsx`, `src/components/table/table-cell-editor.tsx`
-Verification: `src/components/table/use-cell-editing.test.tsx`, `e2e/table.spec.ts`
+Verification: `src/components/table/use-cell-editing.test.tsx`, `e2e/table.spec.ts`, `src/components/table/table-key-identity.test.tsx`
 
 ### UIC-TABLE-11.2 - Default editor
 
@@ -405,8 +409,10 @@ Verification: `src/components/table/table-body.test.tsx`, `e2e/table.spec.ts`
 
 `groupBy` shall draw the rows of the current page, once filtered and sorted, under group header rows: one per value of its first entry, holding the groups of its next entry, and so on. An entry is a column id, grouping by the column's values (a hidden column included), or a computed grouping (`id`, `label` and `getValue(row)`); unknown column ids are skipped. Rows keep their order inside a group, so the table's sort orders them. Groups are ordered by value, descending when the table sorts their column descending and ascending otherwise, with the group of empty values (absent, null or empty text) last. Each group has a key unique in the table, the path of grouping ids and values under `ui-table-group:` (`ui-table-group:kind=Fruit/city=Oslo`), and the grid becomes a `treegrid` whose group rows and rows carry `aria-level`. Nested rows stay under their row.
 
+Generated group keys shall escape `%`, `/`, `=` and `:` inside grouping ids and values, keeping logical paths stable when group sorting or source row order changes. They avoid every source row id and every other generated group key; a collision receives the first unused numeric suffix. Ordinary keys keep their existing value. Treat group keys as opaque values from `renderGroupLabel(group)`, since a group and a similarly named data row expand and collapse independently.
+
 Implementation: `src/components/table/table-groups.ts`, `src/components/table/use-table-grouping.ts`, `src/components/table/use-table-grid.ts`
-Verification: `src/components/table/table-group-row.test.tsx`, `src/components/table/table-groups.test.ts`, `e2e/table.spec.ts`
+Verification: `src/components/table/table-group-row.test.tsx`, `src/components/table/table-groups.test.ts`, `e2e/table.spec.ts`, `src/components/table/table-key-identity.test.tsx`
 
 ### UIC-TABLE-13.2 - Group header rows
 
@@ -427,7 +433,7 @@ Verification: `src/components/table/table-group-row.test.tsx`, `src/components/t
 Groups shall be expanded until collapsed: the expand button, or ArrowLeft and ArrowRight on a focused group row, collapses and expands it. `collapsedGroups` (controlled) or `defaultCollapsedGroups` name the collapsed group keys, and `onCollapsedGroupsChange` receives them after each change, keeping the keys of groups not drawn now, such as those of another page. Expanding nested rows still reports only through `onExpandedChange`. Groups work in a virtualized table.
 
 Implementation: `src/components/table/use-table-expansion.ts`, `src/components/table/use-table-grouping.ts`, `src/components/table/table-group-row.tsx`
-Verification: `src/components/table/table-group-row.test.tsx`, `e2e/table.spec.ts`
+Verification: `src/components/table/table-group-row.test.tsx`, `e2e/table.spec.ts`, `src/components/table/table-key-identity.test.tsx`
 
 ### UIC-TABLE-13.5 - Grouping helpers
 
@@ -497,7 +503,7 @@ Verification: `src/components/table/use-cell-selection.test.tsx`, `src/component
 
 ### UIC-TABLE-14.8 - Cell helpers
 
-The table shall select and write cells with small pure functions: a grid of the visible rows and drawn columns locates cells by row key text and column id, bounds a range from either corner, steps a cell inside the grid and places a cell on the edges of bounds; writes format values as text, read text through the column, keep only accepted changes of editable cells in enabled rows, copy, plan pastes, clears and fills, continue series and pick the direction of a dragged fill.
+The table shall select and write cells with small pure functions: a grid of the visible rows and drawn columns locates cells by typed row key and column id, bounds a range from either corner, steps a cell inside the grid and places a cell on the edges of bounds; writes format values as text, read text through the column, keep only accepted changes of editable cells in enabled rows, copy, plan pastes, clears and fills, continue series and pick the direction of a dragged fill.
 
 Implementation: `src/components/table/table-cell-range.ts`, `src/components/table/table-cell-writes.ts`
 Verification: `src/components/table/table-cell-range.test.ts`, `src/components/table/table-cell-writes.test.ts`
@@ -589,6 +595,7 @@ Verification: `src/components/table/table-bulk-edit.test.tsx`, `e2e/table.spec.t
 | `data-resizable-direction`       | attribute | `left`, `right`, `both`        | Which ways a column can still be resized (React Aria).                    |
 | `data-selection-mode`            | attribute | `single`, `multiple`           | The table's selection mode, on rows (React Aria).                         |
 | `data-key`                       | attribute |                                | A column, row or cell key (React Aria).                                   |
+| `data-key-identity`              | attribute |                                | On data rows: JSON `[type, text]` retaining the row key's primitive type. |
 | `data-collection`                | attribute |                                | React Aria's collection identifier; not for styling.                      |
 | `data-column-index`              | attribute |                                | A cell's column index (React Aria).                                       |
 | `data-level`                     | attribute |                                | A row's or cell's nesting level, from 1 (React Aria).                     |

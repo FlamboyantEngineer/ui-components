@@ -1,4 +1,5 @@
-import { screen, within } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import {
@@ -9,7 +10,7 @@ import {
   selectRange,
 } from '../../../test/rich-text-fixtures.js';
 import { FormatToolbar } from './format-toolbar.js';
-import { createRichTextSchema, type RichTextDocument } from './rich-text-editor.js';
+import { RichTextEditor, createRichTextSchema, type RichTextDocument } from './rich-text-editor.js';
 
 installEditorDom();
 
@@ -166,4 +167,27 @@ describe('FormatToolbar', () => {
     expect(value()?.content?.[0]?.content).toEqual([{ type: 'text', text: 'Pick pears' }]);
     expectHooksMatchSpec(container, 'RICH-TEXT-EDITOR');
   });
+
+  it.each(['isReadOnly', 'isDisabled'] as const)(
+    'UIC-RICH-TEXT-EDITOR-4.1 UIC-RICH-TEXT-EDITOR-6.3 closes the link editor on %s and does not reopen it when unlocked',
+    async (lock) => {
+      const user = userEvent.setup();
+      const { rerender } = render(
+        <RichTextEditor label="Notes" defaultValue={note} toolbar={<FormatToolbar />} />,
+      );
+      await user.click(within(toolbar()).getByRole('button', { name: 'Link' }));
+      expect(screen.getByRole('textbox', { name: 'Link address' })).toBeInTheDocument();
+      rerender(
+        <RichTextEditor
+          label="Notes"
+          defaultValue={note}
+          toolbar={<FormatToolbar />}
+          {...{ [lock]: true }}
+        />,
+      );
+      expect(screen.queryByRole('textbox', { name: 'Link address' })).not.toBeInTheDocument();
+      rerender(<RichTextEditor label="Notes" defaultValue={note} toolbar={<FormatToolbar />} />);
+      expect(screen.queryByRole('textbox', { name: 'Link address' })).not.toBeInTheDocument();
+    },
+  );
 });

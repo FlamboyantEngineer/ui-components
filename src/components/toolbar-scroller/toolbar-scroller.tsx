@@ -4,6 +4,7 @@ import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { useOverflowItems } from '../../utils/use-overflow-items.js';
 import {
   scrollStripPage,
@@ -115,7 +116,7 @@ function MenuStrip<T extends ToolbarScrollerItem>({
       orientation="horizontal"
     >
       {visibleItems.map((item) => (
-        <div key={item.id} {...hooks.slot('item')}>
+        <div key={toKeyIdentity(item.id)} {...hooks.slot('item')}>
           {renderItem(item)}
         </div>
       ))}
@@ -205,7 +206,9 @@ export function ToolbarScroller<T extends ToolbarScrollerItem = ToolbarScrollerI
         onScroll={syncOverflow}
       >
         {items && renderItem
-          ? items.map((item) => <Fragment key={item.id}>{renderItem(item)}</Fragment>)
+          ? items.map((item) => (
+              <Fragment key={toKeyIdentity(item.id)}>{renderItem(item)}</Fragment>
+            ))
           : children}
       </Toolbar>
       <span {...hooks.slot('fade', { edge: 'start' })} aria-hidden="true" hidden={!edges.start} />

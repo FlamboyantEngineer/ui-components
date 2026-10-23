@@ -17,6 +17,71 @@ const MEALS: Meal[] = [
 
 const SEASONS = ['Spring', 'Summer', 'Autumn', 'Winter'];
 
+function KeyPanels({ items }: { items: readonly { id: Key; label: string }[] }) {
+  return (
+    <>
+      {items.map((item) => (
+        <TabPanel key={`${typeof item.id}:${item.id}`} id={item.id}>
+          {item.label} panel
+        </TabPanel>
+      ))}
+    </>
+  );
+}
+
+export function TypedKeyTabs() {
+  const [selected, setSelected] = useState<Key>(1);
+  const items = [
+    { id: 1, label: 'Numeric' },
+    { id: '1', label: 'Text' },
+    { id: 'a b', label: 'Spaced' },
+    { id: 'ab', label: 'Compact' },
+  ];
+  return (
+    <div data-lab-demo="typed-tab-keys">
+      <Tabs selectedKey={selected} onSelectionChange={setSelected}>
+        <TabList aria-label="Typed tab keys">
+          {items.map((item) => (
+            <Tab key={`${typeof item.id}:${item.id}`} id={item.id}>
+              {item.label}
+            </Tab>
+          ))}
+        </TabList>
+        <KeyPanels items={items} />
+      </Tabs>
+      <p data-lab-output="selected">
+        Selected {typeof selected}: {JSON.stringify(selected)}
+      </p>
+    </div>
+  );
+}
+
+export function DisabledRemovalTabs() {
+  const [isDisabled, setDisabled] = useState(false);
+  const [removed, setRemoved] = useState('(none)');
+  return (
+    <div data-lab-demo="disabled-removal">
+      <Button onPress={() => setDisabled(!isDisabled)}>Toggle disabled tabs</Button>
+      <Tabs isDisabled={isDisabled} disabledKeys={['summer']}>
+        <TabList
+          aria-label="Removable seasons"
+          onRemove={(keys) => setRemoved([...keys].join(', '))}
+        >
+          <Tab id="spring">Spring</Tab>
+          <Tab id="summer">Summer</Tab>
+          <Tab id="autumn" isDisabled>
+            Autumn
+          </Tab>
+        </TabList>
+        <TabPanel id="spring">Spring details.</TabPanel>
+        <TabPanel id="summer">Summer details.</TabPanel>
+        <TabPanel id="autumn">Autumn details.</TabPanel>
+      </Tabs>
+      <p data-lab-output="removed">Remove requested: {removed}</p>
+    </div>
+  );
+}
+
 /** The tabs in their new order after `move`, as an owner applies a reported move. */
 function applyMove(meals: readonly Meal[], move: TabMove): Meal[] {
   const moving = meals.find((meal) => meal.id === move.key);

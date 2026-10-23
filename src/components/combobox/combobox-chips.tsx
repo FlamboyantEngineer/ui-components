@@ -1,5 +1,7 @@
 import { useContext, useState } from 'react';
 import { ComboBoxStateContext } from '../../primitives/index.js';
+import { fromCollectionKey } from '../../utils/from-collection-key.js';
+import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { createHooks } from '../../core/hooks.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -26,7 +28,9 @@ const hooks = createHooks('combobox', ['chips', 'chip-icon']);
 function useChosenOptions(options: readonly ComboboxOption[]): ComboboxOption[] {
   const state = useContext(ComboBoxStateContext);
   const [remembered, setRemembered] = useState<ReadonlyMap<Key, ComboboxOption>>(new Map());
-  const keys = Array.isArray(state?.value) ? (state.value as readonly Key[]) : [];
+  const keys = Array.isArray(state?.value)
+    ? (state.value as readonly Key[]).map(fromCollectionKey)
+    : [];
   const listed = new Map(options.map((option) => [option.id, option]));
   const next = new Map<Key, ComboboxOption>();
   for (const key of keys) {
@@ -53,7 +57,12 @@ export function ComboboxChips({ label, options, size, isEditable }: ComboboxChip
   const chosen = useChosenOptions(options);
   if (!state || chosen.length === 0) return null;
   const onRemove = (removed: Set<Key>) =>
-    state.setValue(chosen.map((option) => option.id).filter((key) => !removed.has(key)));
+    state.setValue(
+      chosen
+        .map((option) => option.id)
+        .filter((key) => !removed.has(key))
+        .map(toCollectionKey),
+    );
   return (
     <TagGroup
       className={hooks.slotClass('chips')}

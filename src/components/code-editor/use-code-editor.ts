@@ -3,6 +3,7 @@ import { revealRange } from './code-geometry.js';
 import { useCodeHover, type CodeHoverModel, type MarkedDiagnostic } from './code-hover.js';
 import type { CodeDiagnostic, CodeToken, CodeTokenizer } from './code-layers.js';
 import { findDiagnosticRange, matchBracket, type BracketMatch } from './code-ranges.js';
+import { findLineStarts } from '../../utils/find-line-starts.js';
 import { splitSegments, type CodeDecorations, type CodeSegment } from './code-segments.js';
 import type { Completions, CompletionsModel } from '../completion-list/completion-list.js';
 import { useCodeCompletion } from './use-code-completion.js';
@@ -110,14 +111,14 @@ function useDecoratedText(options: CodeEditorOptions, caret: number | null) {
     () => (tokenize ? tokenize(value) : [{ text: value }]),
     [tokenize, value],
   );
-  const marked = useMemo(
-    () =>
-      diagnostics.flatMap((diagnostic) => {
-        const range = findDiagnosticRange(value, diagnostic);
-        return range ? [{ diagnostic, range }] : [];
-      }),
-    [diagnostics, value],
-  );
+  const marked = useMemo(() => {
+    if (diagnostics.length === 0) return [];
+    const starts = findLineStarts(value);
+    return diagnostics.flatMap((diagnostic) => {
+      const range = findDiagnosticRange(value, diagnostic, starts);
+      return range ? [{ diagnostic, range }] : [];
+    });
+  }, [diagnostics, value]);
   const bracket = useMemo(
     () => (caret === null ? null : matchBracket(value, tokens, caret)),
     [value, tokens, caret],

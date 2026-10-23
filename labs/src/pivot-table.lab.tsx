@@ -133,6 +133,32 @@ function QuarterlyTotals() {
   );
 }
 
+function RepeatedFields() {
+  const [layout, setLayout] = useState<PivotLayout>({
+    rows: ['a'],
+    columns: [],
+    values: [{ field: 'a' }],
+  });
+  return (
+    <>
+      <PivotTable
+        aria-label="Repeated fields"
+        records={[{ a: 2, 'values:a:3': 3, 'values:a:3:1': 4 }]}
+        fields={[
+          { id: 'a', label: 'Amount' },
+          { id: 'values:a:3', label: 'Other' },
+          { id: 'values:a:3:1', label: 'Third' },
+        ]}
+        layout={layout}
+        onLayoutChange={setLayout}
+        fieldChooser
+        data-lab-field="repeated"
+      />
+      <Output name="repeated-layout" value={describeLayout(layout)} />
+    </>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -181,6 +207,12 @@ mountLab(
       description="Years expand into quarters; the expanded group keys are held by the page."
     >
       <QuarterlyTotals />
+    </LabSection>
+    <LabSection
+      title="Repeated fields"
+      description="Amount appears as both a row field and a value. Move either card independently while the other offered fields remain available."
+    >
+      <RepeatedFields />
     </LabSection>
   </>,
 );

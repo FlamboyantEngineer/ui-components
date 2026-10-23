@@ -72,11 +72,6 @@ export function isGroupNode<T>(node: TableBodyNode<T>): node is TableGroupNode<T
   return 'group' in node;
 }
 
-/** Whether a key names a group header row. */
-export function isGroupKey(key: Key): boolean {
-  return String(key).startsWith(groupKeyPrefix);
-}
-
 /** Whether a value counts as no value: absent, null or empty text. */
 export function isEmptyCellValue(value: TableCellValue): boolean {
   return value === null || value === undefined || value === '';
@@ -126,6 +121,11 @@ function compareGroupValues(left: TableCellValue, right: TableCellValue, directi
 interface GroupLevel {
   prefix: string;
   level: number;
+  reserved: Set<Key>;
+}
+
+function encodeGroupPart(value: string): string {
+  return value.replace(/[%/=:]/g, encodeURIComponent);
 }
 
 function groupLevel<T>(
@@ -147,7 +147,11 @@ function groupLevel<T>(
     compareGroupValues(left.value, right.value, grouping.direction),
   );
   return ordered.map(([valueKey, bucket]) => {
-    const key = `${at.prefix}${grouping.id}=${valueKey}`;
+    const base = `${at.prefix}${encodeGroupPart(grouping.id)}=${encodeGroupPart(valueKey)}`;
+    let key = base;
+    let suffix = 0;
+    while (at.reserved.has(key)) key = `${base}:${++suffix}`;
+    at.reserved.add(key);
     return {
       id: key,
       group: {
@@ -158,7 +162,11 @@ function groupLevel<T>(
         rows: bucket.nodes.map((node) => node.row),
         level: at.level,
       },
-      children: groupLevel(bucket.nodes, rest, { prefix: `${key}/`, level: at.level + 1 }),
+      children: groupLevel(bucket.nodes, rest, {
+        prefix: `${base}/`,
+        level: at.level + 1,
+        reserved: at.reserved,
+      }),
     };
   });
 }
@@ -171,8 +179,12 @@ function groupLevel<T>(
 export function groupTableNodes<T>(
   nodes: readonly TableNode<T>[],
   groupings: readonly ResolvedGrouping<T>[],
+  reservedKeys: Iterable<Key> = [],
 ): readonly TableBodyNode<T>[] {
-  return groupLevel(nodes, groupings, { prefix: groupKeyPrefix, level: 1 });
+  if (groupings.length === 0) return nodes;
+  const reserved = new Set(reservedKeys);
+  for (const node of walkTree(nodes, (node) => node.children)) reserved.add(node.id);
+  return groupLevel(nodes, groupings, { prefix: groupKeyPrefix, level: 1, reserved });
 }
 
 /** The keys of every group header row, nested ones included. */

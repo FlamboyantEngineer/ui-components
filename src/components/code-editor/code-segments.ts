@@ -28,9 +28,11 @@ export interface CodeSegment {
 
 function collectCuts({ marks, matches, brackets, caret }: CodeDecorations): number[] {
   const cuts = new Set<number>(caret === null ? [] : [caret]);
-  for (const range of [...marks, ...matches, ...brackets]) {
-    cuts.add(range.start);
-    cuts.add(range.end);
+  for (const ranges of [marks, matches, brackets]) {
+    for (const range of ranges) {
+      cuts.add(range.start);
+      cuts.add(range.end);
+    }
   }
   return [...cuts].sort((a, b) => a - b);
 }
@@ -48,16 +50,31 @@ function covering<T extends CodeRange>(ranges: readonly T[], offset: number): T 
   return undefined;
 }
 
-function worstSeverity(decorations: CodeDecorations, offset: number): FieldSeverity | null {
-  let worst: FieldSeverity | null = null;
-  for (const { start, end, severity } of decorations.marks) {
-    if (offset >= start && offset < end && worst !== 'error') worst = severity;
-  }
-  return worst;
+/** Reads marks in source order, counting overlapping ranges once at each boundary. */
+function createSeverityReader(marks: CodeDecorations['marks']) {
+  const events = marks
+    .flatMap(({ start, end, severity }) =>
+      end > start
+        ? [
+            { at: start, severity, delta: 1 },
+            { at: end, severity, delta: -1 },
+          ]
+        : [],
+    )
+    .sort((a, b) => a.at - b.at);
+  const counts = { error: 0, warning: 0 };
+  let next = 0;
+  return (offset: number): FieldSeverity | null => {
+    while (next < events.length && (events[next]?.at ?? Infinity) <= offset) {
+      const event = events[next++];
+      if (event) counts[event.severity] += event.delta;
+    }
+    return counts.error > 0 ? 'error' : counts.warning > 0 ? 'warning' : null;
+  };
 }
 
 function toSegment(
-  piece: { text: string; type: string | null; at: number },
+  piece: { text: string; type: string | null; at: number; severity: FieldSeverity | null },
   decorations: CodeDecorations,
 ): CodeSegment {
   const { text, type, at } = piece;
@@ -66,7 +83,7 @@ function toSegment(
   return {
     text,
     type,
-    severity: worstSeverity(decorations, at),
+    severity: piece.severity,
     match: match ? { isCurrent: match.isCurrent } : null,
     bracket: bracket ? { isUnmatched: bracket.isUnmatched } : null,
   };
@@ -81,6 +98,7 @@ export function splitSegments(
   decorations: CodeDecorations,
 ): Array<CodeSegment | null> {
   const cuts = collectCuts(decorations);
+  const readSeverity = createSeverityReader(decorations.marks);
   const segments: Array<CodeSegment | null> = [];
   let offset = 0;
   let next = 0;
@@ -92,7 +110,15 @@ export function splitSegments(
       const to = Math.min(end, cuts[next] ?? end);
       if (from === decorations.caret) segments.push(null);
       segments.push(
-        toSegment({ text: text.slice(from - offset, to - offset), type, at: from }, decorations),
+        toSegment(
+          {
+            text: text.slice(from - offset, to - offset),
+            type,
+            at: from,
+            severity: readSeverity(from),
+          },
+          decorations,
+        ),
       );
       from = to;
     }

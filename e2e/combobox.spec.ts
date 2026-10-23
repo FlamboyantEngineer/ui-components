@@ -157,14 +157,28 @@ test.describe('Combobox lab', () => {
     await expect(input).toHaveValue('limo');
   });
 
-  test('UIC-COMBOBOX-2.3 opens on focus when asked to', async ({ page, lab }) => {
+  test('UIC-COMBOBOX-2.3 opens on focus after Tab scrolls the field into view', async ({
+    page,
+    lab,
+  }) => {
     await lab.open('combobox');
     const input = section(page, 'Open on focus').getByRole('combobox', { name: 'Fruit on focus' });
-    // The list closes when the page scrolls, so bring the field into view first.
-    await input.scrollIntoViewIfNeeded();
-    await expect(input).toBeInViewport();
-    await input.click();
-    await expect(page.getByRole('listbox')).toBeVisible();
+    const previous = section(page, 'Custom options').getByRole('combobox', { name: 'Capital' });
+    await previous.evaluate((element) => element.focus({ preventScroll: true }));
+    await expect(input).not.toBeInViewport();
+    await page.keyboard.press('Tab');
+    await expect(input).toBeFocused();
+    await expect(input).toHaveAttribute('aria-expanded', 'true');
+    const list = page.getByRole('listbox');
+    await expect(list).toBeVisible();
+    const scroll = await page.evaluate(() => scrollY);
+    await page.keyboard.press('ArrowDown');
+    const first = list.getByRole('option', { name: /^Apple/ });
+    await expect(first).toHaveAttribute('data-focused', 'true');
+    await expect(input).toHaveAttribute('aria-activedescendant', (await first.getAttribute('id'))!);
+    await expect(async () => expect(await page.evaluate(() => scrollY)).toBe(scroll)).toPass();
+    await page.keyboard.press('Escape');
+    await expect(list).toBeHidden();
   });
 
   test('UIC-COMBOBOX-1.3 stays accessible in the dark theme', async ({ page, lab }) => {

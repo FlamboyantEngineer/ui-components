@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useRef, useState } from 'react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { Modal, type ModalProps } from './modal.js';
 
 type PageProps = Pick<ModalProps, 'initialFocus' | 'finalFocus' | 'isNonModal'>;
@@ -36,6 +36,51 @@ function Page({ initialFocus, finalFocus, isNonModal, refs }: PageProps & { refs
 }
 
 describe('Modal focus targets', () => {
+  it.each([false, true])(
+    'UIC-MODAL-3.1 UIC-MODAL-3.4 skips unavailable fields with an explicit target %s',
+    (isChosen) => {
+      const focus = HTMLElement.prototype.focus;
+      // jsdom does not implement the browser's CSS visibility check when focus is requested.
+      vi.spyOn(HTMLElement.prototype, 'focus').mockImplementation(function (
+        this: HTMLElement,
+        options,
+      ) {
+        if (this.style.display === 'none' || this.matches(':disabled')) return;
+        focus.call(this, options);
+      });
+      render(
+        <Modal
+          isOpen
+          title="Unavailable fields"
+          showCloseButton
+          initialFocus={isChosen ? () => screen.getByLabelText('Unavailable') : undefined}
+        >
+          <input aria-label="Unavailable" style={{ display: 'none' }} />
+          <fieldset disabled>
+            <input aria-label="Disabled field" />
+          </fieldset>
+          <input aria-label="Ready" readOnly />
+        </Modal>,
+      );
+      expect(screen.getByRole('textbox', { name: 'Ready' })).toHaveFocus();
+    },
+  );
+
+  it('UIC-MODAL-3.4 falls back when a connected chosen element cannot take focus', () => {
+    render(
+      <Modal
+        isOpen
+        title="Unavailable target"
+        showCloseButton
+        initialFocus={() => screen.getByText('Plain text')}
+      >
+        <span>Plain text</span>
+        <input aria-label="Ready" />
+      </Modal>,
+    );
+    expect(screen.getByRole('textbox', { name: 'Ready' })).toHaveFocus();
+  });
+
   it('UIC-MODAL-3.4 focuses the chosen elements on open and on close, given as refs', async () => {
     const user = userEvent.setup();
     render(<Page refs />);

@@ -55,7 +55,7 @@ Verification: `src/components/breadcrumb/breadcrumb.test.tsx`, `e2e/breadcrumb.s
 
 ### UIC-BREADCRUMB-1.8 - Menus of nearby places
 
-A crumb with a non-empty `menu` shall draw, after its link, an icon-only [Dropdown Menu](DROPDOWN-MENU.md) in the `ui-breadcrumb__menu` slot (a `chevron-down` trigger named by the provider's `placesBeside` text with the crumb's text) whose entries, as [Menu](MENU.md) takes them, list the places beside it: siblings to jump to, with their own links and actions. The menu button is its own tab stop; the arrow keys move between crumb links only.
+A crumb with a non-empty `menu` shall draw, after its link, an icon-only [Dropdown Menu](DROPDOWN-MENU.md) in the `ui-breadcrumb__menu` slot (a `chevron-down` trigger named by the provider's `placesBeside` text with the crumb's text) whose entries, as [Menu](MENU.md) takes them, list the places beside it: siblings to jump to, with their own links and actions. Choosing an entry also calls the trail's `onAction` with that entry's `id`, including entries in submenus. The menu button is its own tab stop; the arrow keys move between crumb links only.
 
 Implementation: `src/components/breadcrumb/breadcrumb.tsx`
 Verification: `src/components/breadcrumb/breadcrumb.test.tsx`, `e2e/breadcrumb.spec.ts`

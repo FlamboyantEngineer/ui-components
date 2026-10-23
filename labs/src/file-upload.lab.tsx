@@ -19,9 +19,9 @@ function swatch(colour: string): string {
 }
 
 const listed: FileUploadItem[] = [
-  { id: 'report', name: 'Report.pdf', size: 482_000 },
+  { id: 1, name: 'Report.pdf', size: 482_000 },
   {
-    id: 'photo',
+    id: '1',
     name: 'Harbour.png',
     size: 2_400_000,
     progress: 45,

@@ -3,6 +3,7 @@
 
 import type { UiStrings } from '../../core/strings.js';
 import type { JsonNode, JsonPathStep } from './json-tree.js';
+import { isJsonValueEqual, stringifyJsonValue } from './json-value.js';
 
 export type JsonSchemaType =
   | 'object'
@@ -55,13 +56,6 @@ interface Check {
   issues: JsonSchemaIssue[];
 }
 
-/** The plain value of a node. */
-export function toJsonValue(node: JsonNode): unknown {
-  if (node.kind === 'scalar') return node.value;
-  if (node.kind === 'array') return node.items.map(toJsonValue);
-  return Object.fromEntries(node.properties.map(({ key, value }) => [key, toJsonValue(value)]));
-}
-
 function typeOf(node: JsonNode): JsonSchemaType {
   if (node.kind !== 'scalar') return node.kind;
   if (node.value === null) return 'null';
@@ -70,7 +64,8 @@ function typeOf(node: JsonNode): JsonSchemaType {
 
 function hasType(node: JsonNode, type: JsonSchemaType): boolean {
   const actual = typeOf(node);
-  if (type === 'integer') return actual === 'number' && Number.isInteger(toJsonValue(node));
+  if (type === 'integer')
+    return node.kind === 'scalar' && typeof node.value === 'number' && Number.isInteger(node.value);
   return actual === type;
 }
 
@@ -91,11 +86,12 @@ function checkValue(check: Check): boolean {
     report(check, strings.jsonTypeMismatch(types));
     return false;
   }
-  const allowed = schema.enum ?? ('const' in schema ? [schema.const] : undefined);
-  const value = JSON.stringify(toJsonValue(node));
-  if (allowed && !allowed.some((entry) => JSON.stringify(entry) === value)) {
-    report(check, strings.jsonValueMismatch(allowed.map((entry) => JSON.stringify(entry))));
-    return false;
+  const constraints = [schema.enum, 'const' in schema ? [schema.const] : undefined];
+  for (const allowed of constraints) {
+    if (allowed && !allowed.some((entry) => isJsonValueEqual(node, entry))) {
+      report(check, strings.jsonValueMismatch(allowed.map((entry) => stringifyJsonValue(entry))));
+      return false;
+    }
   }
   return true;
 }
@@ -128,38 +124,44 @@ function checkScalar(check: Check, value: unknown) {
   }
 }
 
-function checkArray(check: Check, items: readonly JsonNode[]) {
+function checkArray(check: Check, items: readonly JsonNode[], pending: Check[]) {
   const { schema, strings } = check;
   if (schema.minItems !== undefined && items.length < schema.minItems)
     report(check, strings.jsonTooFewItems(schema.minItems));
   if (schema.maxItems !== undefined && items.length > schema.maxItems)
     report(check, strings.jsonTooManyItems(schema.maxItems));
   const itemSchema = schema.items;
-  if (itemSchema) for (const item of items) checkNode({ ...check, node: item, schema: itemSchema });
+  if (itemSchema) {
+    for (let index = items.length - 1; index >= 0; index -= 1) {
+      pending.push({ ...check, node: items[index]!, schema: itemSchema });
+    }
+  }
 }
 
-function checkObject(check: Check, node: Extract<JsonNode, { kind: 'object' }>) {
+function checkObject(check: Check, node: Extract<JsonNode, { kind: 'object' }>, pending: Check[]) {
   const { schema, strings } = check;
-  const keys = new Set(node.properties.map(({ key }) => key));
+  const properties = new Map(node.properties.map((property) => [property.key, property]));
   for (const name of schema.required ?? []) {
-    if (!keys.has(name))
+    if (!properties.has(name))
       report(check, strings.jsonMissingProperty(name), { start: node.start, end: node.start + 1 });
   }
-  for (const property of node.properties) {
-    const own = schema.properties?.[property.key];
+  const entries = [...properties.values()];
+  for (let index = entries.length - 1; index >= 0; index -= 1) {
+    const property = entries[index]!;
+    const own = getPropertySchema(schema, property.key);
     const extra = schema.additionalProperties;
-    if (own) checkNode({ ...check, node: property.value, schema: own });
+    if (own) pending.push({ ...check, node: property.value, schema: own });
     else if (extra === false) report(check, strings.jsonUnknownProperty(property.key), property);
-    else if (extra && extra !== true) checkNode({ ...check, node: property.value, schema: extra });
+    else if (extra && extra !== true)
+      pending.push({ ...check, node: property.value, schema: extra });
   }
 }
 
-function checkNode(check: Check) {
-  const { node } = check;
-  if (!checkValue(check)) return;
-  if (node.kind === 'scalar') checkScalar(check, node.value);
-  else if (node.kind === 'array') checkArray(check, node.items);
-  else checkObject(check, node);
+/** Only declared properties describe a JSON key; prototype members are ordinary extra keys. */
+function getPropertySchema(schema: JsonSchema, key: string): JsonSchema | undefined {
+  return schema.properties && Object.hasOwn(schema.properties, key)
+    ? schema.properties[key]
+    : undefined;
 }
 
 /** The places a JSON tree breaks a schema, in document order. */
@@ -169,7 +171,14 @@ export function validateJsonSchema(
   strings: UiStrings,
 ): JsonSchemaIssue[] {
   const issues: JsonSchemaIssue[] = [];
-  checkNode({ node, schema, strings, issues });
+  const pending: Check[] = [{ node, schema, strings, issues }];
+  while (pending.length > 0) {
+    const check = pending.pop()!;
+    if (!checkValue(check)) continue;
+    if (check.node.kind === 'scalar') checkScalar(check, check.node.value);
+    else if (check.node.kind === 'array') checkArray(check, check.node.items, pending);
+    else checkObject(check, check.node, pending);
+  }
   return issues.sort((a, b) => a.start - b.start);
 }
 
@@ -184,7 +193,9 @@ export function findSubschema(
     const extra: JsonSchema | null =
       typeof current.additionalProperties === 'object' ? current.additionalProperties : null;
     current =
-      typeof step === 'number' ? (current.items ?? null) : (current.properties?.[step] ?? extra);
+      typeof step === 'number'
+        ? (current.items ?? null)
+        : (getPropertySchema(current, step) ?? extra);
   }
   return current;
 }

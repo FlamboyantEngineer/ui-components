@@ -20,7 +20,7 @@ Verification: `src/components/combobox/combobox.test.tsx`, `e2e/combobox.spec.ts
 
 ### UIC-COMBOBOX-1.3 - States
 
-`isDisabled`, `isReadOnly`, `isInvalid` and `isRequired` shall pass to React Aria, which publishes `data-disabled`, `data-readonly`, `data-invalid` and `data-required` on the root and keeps a disabled or read-only list closed; the root also publishes `data-focused` and `data-open`. `isPending` marks the caller still fetching suggestions: it publishes `data-pending`, sets `aria-busy="true"` on the input and draws a decorative busy indicator (`ui-combobox__spinner`) in the field.
+`isDisabled`, `isReadOnly`, `isInvalid` and `isRequired` shall pass to React Aria, which publishes `data-disabled`, `data-readonly`, `data-invalid` and `data-required` on the root and keeps a disabled or read-only list closed even when an open state was explicitly requested; the root also publishes `data-focused` and `data-open`. `isPending` marks the caller still fetching suggestions: it publishes `data-pending`, sets `aria-busy="true"` on the input and draws a decorative busy indicator (`ui-combobox__spinner`) in the field.
 
 Implementation: `src/components/combobox/combobox.tsx`, `labs/reference/combobox.css`
 Verification: `src/components/combobox/combobox.test.tsx`, `e2e/combobox.spec.ts`
@@ -50,21 +50,21 @@ Verification: `src/components/combobox/combobox-suggestions.test.tsx`, `e2e/comb
 
 ### UIC-COMBOBOX-2.3 - Opening
 
-The list shall open in the `dropdown` layer as the reader types (`menuTrigger="input"`, the default), on focus (`focus`) or only on Arrow Down, Arrow Up or the button (`manual`); Arrow Down and Arrow Up open it from the input and the button toggles it. It closes when the input loses focus or a scroll container of the field scrolls.
+The list shall open in the `dropdown` layer as the reader types (`menuTrigger="input"`, the default), on focus (`focus`) or only on Arrow Down, Arrow Up or the button (`manual`); Arrow Down and Arrow Up open it from the input and the button toggles it. Opening waits for focus-driven scrolling, so tabbing to a field below the viewport keeps its list usable. It closes when the input loses focus or a scroll container of the field scrolls after opening.
 
-Implementation: `src/components/combobox/combobox.tsx`
-Verification: `src/components/combobox/combobox.test.tsx`, `e2e/combobox.spec.ts`
+Implementation: `src/components/combobox/combobox.tsx`, `src/components/combobox/combobox-suggestions.tsx`, `src/utils/use-frame-flag.ts`
+Verification: `src/components/combobox/combobox.test.tsx`, `src/components/combobox/combobox-opening.test.tsx`, `src/utils/use-frame-flag.test.ts`, `e2e/combobox.spec.ts`
 
 ### UIC-COMBOBOX-2.4 - Keyboard and picking
 
-While the list is open, focus shall stay in the input: Arrow Down and Arrow Up move the highlighted option (the input's `aria-activedescendant`, `data-focused` on the option) and pass over disabled options; Enter or a press picks the option, writes its label to the input, calls `onChange` with its `id` (the value, with `defaultValue` and the controlled `value`, is the picked `id` or `null`) and closes the list; Escape closes the list. A disabled option cannot be picked.
+While the list is open, focus shall stay in the input: Arrow Down and Arrow Up move the highlighted option (the input's `aria-activedescendant`, `data-focused` on the option) and pass over disabled options; Enter or a press picks the option, writes its label to the input, calls `onChange` with its `id` (the value, with `defaultValue` and the controlled `value`, is the picked `id` or `null`) and closes the list; Escape closes the list. A disabled option cannot be picked. Numeric and text ids with the same spelling remain distinct in suggestions and chips, and callbacks retain each id's original type.
 
 Implementation: `src/components/combobox/combobox-suggestions.tsx`
 Verification: `src/components/combobox/combobox-suggestions.test.tsx`, `e2e/combobox.spec.ts`
 
 ### UIC-COMBOBOX-2.5 - Custom values
 
-With `allowsCustomValue`, the typed text shall stay when the input loses focus or Escape closes the list, and no option is selected. Without it, the input returns to the selected option's label (or empties) when the reader leaves it.
+With `allowsCustomValue`, the typed text shall stay when the input loses focus or Escape closes the list, and no option is selected. Custom text is controlled by `inputValue` and `onInputChange`, or starts from `defaultInputValue`; `value` and `defaultValue` remain option ids, so an unknown id does not become custom text. Custom text and form submission retain their original characters without collection-key encoding. Without it, the input returns to the selected option's label (or empties) when the reader leaves it.
 
 Implementation: `src/components/combobox/combobox.tsx`
 Verification: `src/components/combobox/combobox.test.tsx`
@@ -85,7 +85,7 @@ Verification: `src/components/combobox/combobox-suggestions.test.tsx`, `e2e/comb
 
 ### UIC-COMBOBOX-2.8 - Hooks and caller attributes
 
-`Combobox` shall carry the hooks below, append the caller's `className`, and forward caller `data-*` attributes, `id`, `name` and `ref` to React Aria's `ComboBox`.
+`Combobox` shall carry the hooks below, append the caller's `className`, and forward caller `data-*` attributes, `id` and `ref` to React Aria's `ComboBox`. With `name`, hidden inputs submit the original chosen ids (one per chosen value); with `allowsCustomValue`, the input submits its text. A disabled control submits nothing.
 
 Implementation: `src/components/combobox/combobox.tsx`, `src/components/combobox/combobox-suggestions.tsx`
 Verification: `src/components/combobox/combobox.test.tsx`, `src/components/combobox/combobox-suggestions.test.tsx`
@@ -94,7 +94,7 @@ Verification: `src/components/combobox/combobox.test.tsx`, `src/components/combo
 
 ### UIC-COMBOBOX-3.1 - Multiple selection with chips
 
-`selectionMode="multiple"` shall let the reader pick several options, with `value`, `defaultValue` and `onChange` holding the list of ids: picking an option toggles it, keeps the list open (`aria-multiselectable` on the listbox) and clears the typed text. The chosen options shall show, in value order, as chips in the library's `TagGroup` (`ui-combobox__chips`, also `ui-tag-group`, sized like the field) at the start of the field group, named by the provider's `selectedValues` string from the label text (or `aria-label`). A chip shows its option's label, or the label it had when last listed if the suggestions no longer list it, or its id. A chip also retains its most recently listed icon when suggestions change. Only current selections are remembered; removing a selection releases its cached option. On an editable combobox each chip offers the tag group's remove button, and Delete or Backspace on a focused chip removes it; a disabled or read-only one offers no removal. React Aria hides everything but the input and the list from assistive technology while the list is open.
+`selectionMode="multiple"` shall let the reader pick several options, with `value`, `defaultValue` and `onChange` holding the list of ids: picking an option toggles it, keeps the list open (`aria-multiselectable` on the listbox) and clears the typed text. An unchanged controlled selection shall not clear typed search text as input or loading state rerenders. The chosen options shall show, in value order, as chips in the library's `TagGroup` (`ui-combobox__chips`, also `ui-tag-group`, sized like the field) at the start of the field group, named by the provider's `selectedValues` string from the label text (or `aria-label`). A chip shows its option's label, or the label it had when last listed if the suggestions no longer list it, or its id. A chip also retains its most recently listed icon when suggestions change. Only current selections are remembered; removing a selection releases its cached option. On an editable combobox each chip offers the tag group's remove button, and Delete or Backspace on a focused chip removes it; a disabled or read-only one offers no removal. React Aria hides everything but the input and the list from assistive technology while the list is open.
 
 Implementation: `src/components/combobox/combobox.tsx`, `src/components/combobox/combobox-chips.tsx`, `src/components/combobox/combobox-field.tsx`
 Verification: `src/components/combobox/combobox-chips.test.tsx`, `e2e/combobox.spec.ts`

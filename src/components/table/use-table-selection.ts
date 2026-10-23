@@ -13,11 +13,13 @@ export interface TableSelection<T> {
   /** The selected rows the table presents across pages, nested rows included, in order. */
   selectedRows: readonly T[];
   isRowDisabled: (row: T) => boolean;
+  disabledKeys: ReadonlySet<Key>;
 }
 
 function toSelection(keys: Iterable<Key> | 'all' | undefined): Selection | undefined {
   if (keys === undefined) return undefined;
-  return keys === 'all' ? 'all' : new Set(keys);
+  if (keys === 'all') return 'all';
+  return keys instanceof Set ? keys : new Set(keys);
 }
 
 /**
@@ -37,19 +39,16 @@ export function useTableSelection<T extends TableRow>(
     toSelection(options.defaultSelectedKeys) ?? new Set<Key>(),
     options.onSelectionChange,
   );
-  const disabled = useMemo(
-    () => new Set([...(options.disabledKeys ?? [])].map(String)),
-    [options.disabledKeys],
-  );
-  const isRowDisabled = useMemo(() => (row: T) => disabled.has(String(row.id)), [disabled]);
+  const disabled = useMemo(() => new Set(options.disabledKeys ?? []), [options.disabledKeys]);
+  const isRowDisabled = useMemo(() => (row: T) => disabled.has(row.id), [disabled]);
   const selectedRows = useMemo(() => {
-    const keys = selection === 'all' ? null : new Set([...selection].map(String));
+    const keys = selection === 'all' ? null : selection;
     const rows: T[] = [];
     if (keys?.size === 0) return rows;
     for (const { row } of walkTree(presented, (node) => node.children)) {
-      if (!isRowDisabled(row) && (!keys || keys.has(String(row.id)))) rows.push(row);
+      if (!isRowDisabled(row) && (!keys || keys.has(row.id))) rows.push(row);
     }
     return rows;
   }, [presented, selection, isRowDisabled]);
-  return { selection, setSelection, selectedRows, isRowDisabled };
+  return { selection, setSelection, selectedRows, isRowDisabled, disabledKeys: disabled };
 }

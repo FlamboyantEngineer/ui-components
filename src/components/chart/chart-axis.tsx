@@ -1,6 +1,7 @@
 import type { Ref } from 'react';
 import type { BaseProps } from '../../core/props.js';
 import type { ScaleInterval, ScaleTick } from '../../utils/linear-scale.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { chartAxisHooks as hooks } from './chart-hooks.js';
 
 /** The edge of the drawing an axis runs along. */
@@ -53,7 +54,7 @@ export function ChartAxis({
       {gridLength > 0
         ? ticks.map((tick) => (
             <line
-              key={`grid:${tick.value}`}
+              key={`grid:${toKeyIdentity(tick.value)}`}
               {...hooks.slot('grid')}
               {...line(tick.position, offset, offset + towardGrid * gridLength)}
             />
@@ -66,7 +67,7 @@ export function ChartAxis({
           : { x1: offset, y1: range[0], x2: offset, y2: range[1] })}
       />
       {ticks.map((tick) => (
-        <g key={tick.value}>
+        <g key={toKeyIdentity(tick.value)}>
           <line
             {...hooks.slot('tick')}
             {...line(tick.position, offset, offset - towardGrid * tickLength)}

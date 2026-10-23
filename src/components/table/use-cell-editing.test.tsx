@@ -61,6 +61,39 @@ const rowHeader = (text: string) => screen.getByRole('rowheader', { name: text }
 
 // Full React Aria tables driven by userEvent are slow in jsdom on a busy machine.
 describe('Table cell editing', { timeout: 15_000 }, () => {
+  it('UIC-TABLE-11.1 UIC-TABLE-11.2 edits and refocuses the row with the correct key type', async () => {
+    const user = userEvent.setup();
+    const onCellEdit = vi.fn();
+    render(
+      <Table
+        aria-label="Typed rows"
+        rows={[
+          { id: 1, name: 'Numeric row', weight: 10 },
+          { id: '1', name: 'Text row', weight: 20 },
+        ]}
+        columns={[
+          { id: 'name', header: 'Name' },
+          { id: 'weight', header: 'Weight', allowsEditing: true },
+        ]}
+        onCellEdit={onCellEdit}
+      />,
+    );
+    const numeric = screen.getByRole('row', { name: 'Numeric row' });
+    const text = screen.getByRole('row', { name: 'Text row' });
+    const textCell = within(text).getByRole('gridcell', { name: '20' });
+    textCell.focus();
+    await user.keyboard('{F2}');
+    expect(within(text).getByRole('textbox', { name: 'Weight' })).toHaveValue('20');
+    expect(within(numeric).queryByRole('textbox')).not.toBeInTheDocument();
+    await user.keyboard('{Control>}a{/Control}25{Enter}');
+    expect(onCellEdit.mock.lastCall![0]).toMatchObject({
+      row: { id: '1' },
+      columnId: 'weight',
+      value: 25,
+    });
+    expect(textCell).toHaveFocus();
+  });
+
   it('UIC-TABLE-11.1 UIC-TABLE-11.2 opens with F2 and commits a number with Enter', async () => {
     const user = userEvent.setup();
     const onCellEdit = vi.fn();

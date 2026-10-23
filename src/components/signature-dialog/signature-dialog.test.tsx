@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { UiProvider } from '../../core/provider.js';
 import { SignatureDialog, type SignatureDialogProps } from './signature-dialog.js';
 
@@ -60,6 +61,24 @@ function deferred() {
 }
 
 describe('SignatureDialog', { timeout: 15_000 }, () => {
+  it('UIC-SIGNATURE-DIALOG-1.2 UIC-SIGNATURE-DIALOG-2.2 signs the selected primitive key without coercing its type', async () => {
+    const onSign = vi.fn();
+    const { user } = await openHarness({
+      meanings: [
+        { id: 1, label: 'Numeric approval' },
+        { id: '1', label: 'Textual approval' },
+      ],
+      reason: 'none',
+      onSign,
+    });
+    await user.click(screen.getByRole('radio', { name: 'Textual approval' }));
+    expect(screen.getByRole('radio', { name: 'Numeric approval' })).not.toBeChecked();
+    await user.type(passwordInput(), 'orchard');
+    await user.click(screen.getByRole('button', { name: 'Sign' }));
+    await waitFor(() => expect(onSign).toHaveBeenCalledOnce());
+    expect(onSign).toHaveBeenCalledWith(expect.objectContaining({ meaning: '1' }));
+  });
+
   it('UIC-SIGNATURE-DIALOG-1.1 renders a modal with the summary, Cancel and Sign', async () => {
     const { dialog } = await openHarness({ children: <p>3 requirements change.</p> });
     expect(dialog).toHaveAccessibleName('Sign the change');
@@ -109,7 +128,9 @@ describe('SignatureDialog', { timeout: 15_000 }, () => {
     );
     const group = screen.getByRole('radiogroup', { name: 'Meaning of signature' });
     const radios = within(group).getAllByRole('radio');
-    expect(radios.map((radio) => radio.getAttribute('value'))).toEqual(['approve', 'review', '7']);
+    expect(radios.map((radio) => radio.getAttribute('value'))).toEqual(
+      meanings.map(({ id }) => toKeyIdentity(id)),
+    );
     expect(radios.some((radio) => (radio as HTMLInputElement).checked)).toBe(false);
     expect(within(group).getByRole('radio', { name: 'Approved' })).toHaveAccessibleDescription(
       'The change is ready to release.',

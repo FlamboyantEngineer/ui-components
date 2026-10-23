@@ -21,7 +21,7 @@ const lena = { name: 'Lena Ortiz', colorKey: 'lena' };
 
 const firstPage: NotificationItem[] = [
   {
-    id: 'mention',
+    id: 1,
     title: 'Maria Santos mentioned you',
     description: 'Requirement 12',
     actor: maria,
@@ -29,7 +29,7 @@ const firstPage: NotificationItem[] = [
     href: '#requirement-12',
   },
   {
-    id: 'invite',
+    id: '1',
     title: 'Lena Ortiz invited you to Pantry recipes',
     actor: lena,
     time: at(20, 9, 5),
@@ -81,7 +81,7 @@ function InboxDemo() {
       onDismiss={dismiss}
       onMarkAllRead={() => setItems((list) => list.map((item) => ({ ...item, isRead: true })))}
       renderActions={(item) =>
-        item.id === 'invite' ? (
+        item.id === '1' ? (
           <Button size="sm" onPress={() => dismiss(item.id)}>
             Accept
           </Button>

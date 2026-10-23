@@ -1,3 +1,4 @@
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { ExpandToggle } from '../expand-toggle/expand-toggle.js';
@@ -34,7 +35,7 @@ export function BoardCells<T extends { id: Key }>({
     <div {...hooks.slot('cells')}>
       {model.columns.map((column, index) => (
         <BoardCell
-          key={column.id}
+          key={toKeyIdentity(column.id)}
           address={{ column: column.id, lane }}
           items={model.getCellItems(column.id, lane)}
           isCollapsed={model.collapsedColumns.keys.has(column.id)}

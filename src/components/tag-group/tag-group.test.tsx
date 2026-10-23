@@ -4,6 +4,7 @@ import { useState } from 'react';
 import type { Key, Selection } from '../../core/props.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { UiProvider } from '../../core/provider.js';
 import { Tag, TagGroup } from './tag-group.js';
 
@@ -39,6 +40,123 @@ function tag(name: string) {
 }
 
 describe('TagGroup', () => {
+  it('UIC-TAG-GROUP-2.3 UIC-TAG-GROUP-2.4 retains one-shot selected and disabled keys across rerenders', () => {
+    const selectedKeys = (function* () {
+      yield 'apple';
+    })();
+    const disabledKeys = (function* () {
+      yield 'pear';
+    })();
+    const props = { items: fruit, selectionMode: 'multiple' as const, selectedKeys, disabledKeys };
+    const renderTag = (item: Fruit) => <Tag id={item.id}>{item.name}</Tag>;
+    const { rerender } = render(
+      <TagGroup {...props} aria-label="Fruit">
+        {renderTag}
+      </TagGroup>,
+    );
+    expect(tag('Apple')).toHaveAttribute('aria-selected', 'true');
+    expect(tag('Pear')).toHaveAttribute('data-disabled', 'true');
+    rerender(
+      <TagGroup {...props} aria-label="Updated fruit">
+        {renderTag}
+      </TagGroup>,
+    );
+    expect(tag('Apple')).toHaveAttribute('aria-selected', 'true');
+    expect(tag('Pear')).toHaveAttribute('data-disabled', 'true');
+  });
+
+  it('UIC-TAG-GROUP-2.4 preserves Shift range selection across controlled updates', async () => {
+    const user = userEvent.setup();
+    const onSelectionChange = vi.fn();
+    function Picker() {
+      const [selected, setSelected] = useState<Selection>(new Set());
+      return (
+        <TagGroup
+          aria-label="Range"
+          selectionMode="multiple"
+          selectedKeys={selected}
+          onSelectionChange={(keys) => {
+            setSelected(keys);
+            onSelectionChange(keys);
+          }}
+        >
+          <Tag id={1}>Numeric</Tag>
+          <Tag id="1">Textual</Tag>
+          <Tag id="a b">Spaced</Tag>
+          <Tag id="ab">Compact</Tag>
+        </TagGroup>
+      );
+    }
+    render(<Picker />);
+    await user.click(tag('Numeric'));
+    await user.keyboard('{Shift>}{ArrowRight}{ArrowRight}{/Shift}');
+    expect(onSelectionChange).toHaveBeenLastCalledWith(new Set([1, '1', 'a b']));
+  });
+
+  it('UIC-TAG-GROUP-2.3 treats disabled keys as an iterable even when its text is all', () => {
+    render(
+      <TagGroup aria-label="Letters" disabledKeys="all" onRemove={() => undefined}>
+        <Tag id="a">A</Tag>
+        <Tag id="l">L</Tag>
+      </TagGroup>,
+    );
+    expect(tag('A')).toHaveAttribute('data-disabled', 'true');
+    expect(tag('L')).toHaveAttribute('data-disabled', 'true');
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+  });
+
+  it('UIC-TAG-GROUP-1.2 retains the dynamic renderer cache for unchanged items', () => {
+    const renderTag = vi.fn((item: Fruit) => <Tag id={item.id}>{item.name}</Tag>);
+    const { rerender } = render(
+      <TagGroup aria-label="Basket" items={fruit}>
+        {renderTag}
+      </TagGroup>,
+    );
+    const calls = renderTag.mock.calls.length;
+    expect(calls).toBeGreaterThanOrEqual(fruit.length);
+    rerender(
+      <TagGroup aria-label="Updated basket" items={fruit}>
+        {renderTag}
+      </TagGroup>,
+    );
+    expect(renderTag).toHaveBeenCalledTimes(calls);
+  });
+
+  it('UIC-TAG-GROUP-1.2 UIC-TAG-GROUP-2.4 preserves numeric and text identities when selecting, removing and reordering tags', async () => {
+    const user = userEvent.setup();
+    const items = [
+      { id: 1, label: 'Numeric' },
+      { id: '1', label: 'Textual' },
+    ];
+    const onRemove = vi.fn();
+    const onSelectionChange = vi.fn();
+    const props = {
+      'aria-label': 'Types',
+      selectionMode: 'multiple' as const,
+      selectedKeys: [1],
+      onRemove,
+      onSelectionChange,
+    };
+    const { rerender } = render(
+      <TagGroup {...props} items={items}>
+        {(item) => <Tag id={item.id}>{item.label}</Tag>}
+      </TagGroup>,
+    );
+    const numeric = tag('Numeric');
+    const textual = tag('Textual');
+    expect(numeric).toHaveAttribute('aria-selected', 'true');
+    await user.click(textual);
+    expect(onSelectionChange).toHaveBeenCalledWith(new Set([1, '1']));
+    await user.click(within(textual).getByRole('button', { name: 'Remove Textual' }));
+    expect(onRemove).toHaveBeenCalledWith(new Set(['1']));
+    rerender(
+      <TagGroup {...props} items={[items[1]!, items[0]!]}>
+        {(item) => <Tag id={item.id}>{item.label}</Tag>}
+      </TagGroup>,
+    );
+    expect(screen.getAllByRole('row')).toEqual([textual, numeric]);
+  });
+
   it('UIC-TAG-GROUP-1.1 renders a named grid of tag rows', () => {
     const { container } = render(
       <TagGroup aria-label="Basket">
@@ -71,14 +189,14 @@ describe('TagGroup', () => {
       'Pear',
       'Plum',
     ]);
-    expect(tag('Pear')).toHaveAttribute('data-key', 'pear');
+    expect(tag('Pear')).toHaveAttribute('data-key', toCollectionKey('pear'));
     rerender(
       <TagGroup aria-label="Basket" items={[{ id: 'pear', name: 'Conference pear' }]}>
         {(item) => <Tag id={item.id}>{item.name}</Tag>}
       </TagGroup>,
     );
     expect(screen.getAllByRole('row')).toHaveLength(1);
-    expect(tag('Conference pear')).toHaveAttribute('data-key', 'pear');
+    expect(tag('Conference pear')).toHaveAttribute('data-key', toCollectionKey('pear'));
   });
 
   it('UIC-TAG-GROUP-1.3 publishes its size on the root', () => {

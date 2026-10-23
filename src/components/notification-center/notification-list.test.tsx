@@ -44,6 +44,18 @@ const row = (title: string) =>
   screen.getByText(title).closest<HTMLElement>('.ui-notification-list__item') as HTMLElement;
 
 describe('NotificationList', () => {
+  it('UIC-NOTIFICATION-CENTER-1.1 keeps numeric and text IDs distinct when a notification is removed', () => {
+    const entries: NotificationItem[] = [
+      { id: 1, title: 'Numeric notification', time: '2026-05-20' },
+      { id: '1', title: 'Text notification', time: '2026-05-20' },
+    ];
+    const { rerender } = render(<NotificationList items={entries} getNow={getNow} />);
+    const textNotification = screen.getByText('Text notification');
+    rerender(<NotificationList items={entries.slice(1)} getNow={getNow} />);
+    expect(screen.getByText('Text notification')).toBe(textNotification);
+    expect(screen.queryByText('Numeric notification')).not.toBeInTheDocument();
+  });
+
   it('UIC-NOTIFICATION-CENTER-1.1 UIC-NOTIFICATION-CENTER-1.9 draws each notification as a list row', async () => {
     const onAction = vi.fn();
     const { container } = render(

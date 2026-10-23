@@ -25,6 +25,11 @@ export interface TagEntry {
   rejected: string | null;
 }
 
+interface TagValues {
+  length: number;
+  has(tag: string): boolean;
+}
+
 /** Text that splits into several tags: a pasted line break always splits. */
 const lineBreak = String.raw`\r?\n`;
 
@@ -44,18 +49,14 @@ export function splitTagText(text: string, delimiters: readonly string[]): strin
 
 /** Whether the text holds a delimiter or a line break. */
 export function hasTagDelimiter(text: string, delimiters: readonly string[]): boolean {
-  return splitTagText(text, delimiters).length > 1;
+  return createDelimiterPattern(delimiters).test(text);
 }
 
 /**
  * Why the field refuses a tag, given the tags it already holds: it is full, it holds the tag
  * already, or the caller's check refuses it. `null` accepts the tag.
  */
-export function checkTag(
-  tag: string,
-  value: readonly string[],
-  rules: TagRules,
-): FieldIssue | null {
+function checkTagAgainst(tag: string, value: TagValues, rules: TagRules): FieldIssue | null {
   const { maxValues, strings } = rules;
   if (maxValues !== undefined && value.length >= maxValues) {
     return {
@@ -64,11 +65,19 @@ export function checkTag(
       validity: 'rangeOverflow',
     };
   }
-  if (!rules.allowsDuplicates && value.includes(tag)) {
+  if (!rules.allowsDuplicates && value.has(tag)) {
     return { severity: 'error', message: strings.duplicateValue(tag), validity: 'customError' };
   }
   const message = rules.validateTag?.(tag);
   return message ? { severity: 'error', message, validity: 'customError' } : null;
+}
+
+export function checkTag(
+  tag: string,
+  value: readonly string[],
+  rules: TagRules,
+): FieldIssue | null {
+  return checkTagAgainst(tag, { length: value.length, has: (tag) => value.includes(tag) }, rules);
 }
 
 /**
@@ -85,9 +94,17 @@ export function resolveTagEntry(
   const last = options.keepLast ? parts.pop() : undefined;
   const added: string[] = [];
   const refused: string[] = [];
-  for (const tag of parts.map((part) => part.trim()).filter((part) => part !== '')) {
-    if (checkTag(tag, [...value, ...added], rules)) refused.push(tag);
-    else added.push(tag);
+  const selected = rules.allowsDuplicates ? null : new Set(value);
+  const current = { length: value.length, has: (tag: string) => selected?.has(tag) ?? false };
+  for (const part of parts) {
+    const tag = part.trim();
+    if (tag === '') continue;
+    if (checkTagAgainst(tag, current, rules)) refused.push(tag);
+    else {
+      added.push(tag);
+      selected?.add(tag);
+      current.length++;
+    }
   }
   const kept = last ? [...refused, last] : refused;
   return { added, inputValue: kept.join(rules.delimiters[0] ?? ' '), rejected: refused[0] ?? null };

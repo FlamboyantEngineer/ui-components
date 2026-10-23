@@ -40,6 +40,44 @@ const eventNames = (element: HTMLElement) =>
   );
 
 describe('CalendarView', () => {
+  it('UIC-CALENDAR-VIEW-2.1 UIC-CALENDAR-VIEW-2.2 keeps numeric and text event identities in the week view', async () => {
+    const user = userEvent.setup();
+    const onEventAction = vi.fn();
+    const typedEvents = [
+      { id: 1, title: 'Numeric event', start: '2026-03-18T12:00:00Z' },
+      { id: '1', title: 'Text event', start: '2026-03-18T12:00:00Z' },
+    ];
+    const props = { events: typedEvents, defaultView: 'week' as const, onEventAction };
+    const { rerender } = render(<Calendar {...props} />);
+    const numeric = screen.getByRole('button', { name: /^Numeric event,/ });
+    const text = screen.getByRole('button', { name: /^Text event,/ });
+    rerender(<Calendar {...props} events={[...typedEvents].reverse()} />);
+    expect(screen.getByRole('button', { name: /^Numeric event,/ })).toBe(numeric);
+    expect(screen.getByRole('button', { name: /^Text event,/ })).toBe(text);
+    await user.click(numeric);
+    await user.click(text);
+    expect(onEventAction.mock.calls).toEqual([[1], ['1']]);
+  });
+
+  it('UIC-CALENDAR-VIEW-2.1 UIC-CALENDAR-VIEW-2.4 keeps numeric and text events distinct in a crowded-day list', async () => {
+    const user = userEvent.setup();
+    const onEventAction = vi.fn();
+    const typedEvents = [
+      { id: 1, title: 'Numeric event', start: '2026-03-18T12:00:00Z' },
+      { id: '1', title: 'Text event', start: '2026-03-18T12:00:00Z' },
+    ];
+    const props = { events: typedEvents, maxEvents: 1, onEventAction };
+    const { rerender } = render(<Calendar {...props} />);
+    await user.click(screen.getByRole('button', { name: '+2 more' }));
+    const numeric = await screen.findByRole('button', { name: /^Numeric event,/ });
+    const text = screen.getByRole('button', { name: /^Text event,/ });
+    rerender(<Calendar {...props} events={[...typedEvents].reverse()} />);
+    expect(screen.getByRole('button', { name: /^Numeric event,/ })).toBe(numeric);
+    expect(screen.getByRole('button', { name: /^Text event,/ })).toBe(text);
+    await user.click(numeric);
+    await user.click(text);
+    expect(onEventAction.mock.calls).toEqual([[1], ['1']]);
+  });
   it('UIC-CALENDAR-VIEW-1.1 UIC-CALENDAR-VIEW-4.1 UIC-CALENDAR-VIEW-4.3 shows the month of the focused day', () => {
     const { container } = render(<Calendar id="plan" className="mine" data-test="calendar" />);
     const root = container.querySelector('.ui-calendar-view');

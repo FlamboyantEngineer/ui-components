@@ -13,6 +13,8 @@ import type { AriaLabellingProps } from '../../core/events.js';
 import { dataAttributes, mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, Key, NativeProps } from '../../core/props.js';
 import { mergeProps } from '../../utils/merge-props.js';
+import { normalizeCount } from '../../utils/count.js';
+import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import type { ElementRender } from '../../utils/render-element.js';
 import { Icon, toIconProps, type IconSource } from '../icon/icon.js';
 import {
@@ -23,7 +25,7 @@ import {
 } from './tab-actions.js';
 import { tabsHooks as hooks } from './tab-hooks.js';
 import { useTabMenuTarget } from './tab-menu.js';
-import { joinIds, normalizeCount, TabCount, TabRemoveMark } from './tab-parts.js';
+import { joinIds, TabCount, TabRemoveMark } from './tab-parts.js';
 import { useTabDrag, type TabDropPosition, type TabReorder } from './tab-reorder.js';
 
 /** The states a `Tab` passes to `render` with its element's props. */
@@ -165,7 +167,7 @@ function TabItem({
     onContextMenu,
   });
   const { rename, onRemove } = actions;
-  const shown = normalizeCount(count);
+  const shown = normalizeCount(count) || null;
   const describedBy =
     shown === null ? rest['aria-describedby'] : joinIds(rest['aria-describedby'], countId);
   const name = readTabText(textValue, children);
@@ -197,7 +199,11 @@ function TabItem({
         <TabCount id={countId} count={shown} countMax={countMax} countLabel={countLabel} />
       )}
       {onRemove && key !== undefined ? (
-        <TabRemoveMark onRemove={() => onRemove(new Set<Key>([key]))} />
+        <TabRemoveMark
+          onRemove={() => {
+            if (!isDisabled) onRemove(new Set<Key>([key]));
+          }}
+        />
       ) : null}
     </AriaTab>
   );
@@ -208,7 +214,8 @@ function MovableTab({ reorder, ...props }: TabItemProps & { reorder: TabReorder;
   const ref = useRef<HTMLElement | null>(null);
   const isRenaming = props.actions.rename?.editingKey === props.id;
   const isDisabled = useIsTabDisabled(props.id, props.isDisabled) || isRenaming;
-  const textValue = readTabText(props.textValue, props.children) ?? String(props.id);
+  const textValue =
+    readTabText(props.textValue, props.children) ?? String(fromCollectionKey(props.id));
   const drag = useTabDrag({ tabKey: props.id, textValue, isDisabled, ref, reorder });
   return <TabItem {...props} drag={{ ...drag, ref }} />;
 }

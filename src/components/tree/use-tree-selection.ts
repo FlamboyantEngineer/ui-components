@@ -3,6 +3,7 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import type { Key, Selection } from '../../core/props.js';
+import { mapTree } from '../../utils/map-tree.js';
 import { walkTree } from '../../utils/walk-tree.js';
 import type { TreeItemData, TreeProps } from './tree.js';
 
@@ -55,14 +56,12 @@ function pushDown<T extends TreeItemData>(
   context: { previous: ReadonlySet<Key>; result: Set<Key>; cascade: Cascade<T> },
 ): void {
   const { previous, result, cascade } = context;
-  for (const item of items) {
-    const children = cascade.getChildren(item) ?? [];
+  const getChildren = (item: T) =>
+    result.has(item.id) === previous.has(item.id) ? cascade.getChildren(item) : undefined;
+  for (const item of walkTree(items, getChildren)) {
     const isSelected = result.has(item.id);
-    if (isSelected === previous.has(item.id)) {
-      pushDown(children, context);
-      continue;
-    }
-    for (const key of collectKeys(children, cascade)) {
+    if (isSelected === previous.has(item.id)) continue;
+    for (const key of collectKeys(cascade.getChildren(item) ?? [], cascade)) {
       if (isSelected) result.add(key);
       else result.delete(key);
     }
@@ -70,14 +69,22 @@ function pushDown<T extends TreeItemData>(
 }
 
 /** Selects each row whose enabled children are all selected, and deselects the others. */
-function pullUp<T extends TreeItemData>(item: T, result: Set<Key>, cascade: Cascade<T>): void {
-  const children = (cascade.getChildren(item) ?? []).filter(
-    (child) => !cascade.disabled.has(child.id),
+function pullUp<T extends TreeItemData>(
+  items: readonly T[],
+  result: Set<Key>,
+  cascade: Cascade<T>,
+): void {
+  mapTree(
+    items,
+    (item) => (cascade.getChildren(item) ?? []).filter((child) => !cascade.disabled.has(child.id)),
+    (item, children: T[]) => {
+      if (children.length > 0 && !cascade.disabled.has(item.id)) {
+        if (children.every((child) => result.has(child.id))) result.add(item.id);
+        else result.delete(item.id);
+      }
+      return item;
+    },
   );
-  for (const child of children) pullUp(child, result, cascade);
-  if (children.length === 0 || cascade.disabled.has(item.id)) return;
-  if (children.every((child) => result.has(child.id))) result.add(item.id);
-  else result.delete(item.id);
 }
 
 /** Rows that are not selected while a descendant is. */
@@ -86,12 +93,12 @@ function findIndeterminate<T extends TreeItemData>(
   { selected, cascade }: { selected: ReadonlySet<Key>; cascade: Cascade<T> },
 ): ReadonlySet<Key> {
   const found = new Set<Key>();
-  const visit = (item: T): boolean => {
-    const below = (cascade.getChildren(item) ?? []).map(visit).some(Boolean);
+  if (selected.size === 0) return found;
+  mapTree(items, cascade.getChildren, (item, children: boolean[]) => {
+    const below = children.some(Boolean);
     if (below && !selected.has(item.id)) found.add(item.id);
     return below || selected.has(item.id);
-  };
-  items.forEach(visit);
+  });
   return found;
 }
 
@@ -134,7 +141,7 @@ export function useTreeSelection<T extends TreeItemData>(
       onSelectionChange(next) {
         const result = new Set(toKeySet(next, { items, cascade }));
         pushDown(items, { previous: selected, result, cascade });
-        for (const item of items) pullUp(item, result, cascade);
+        pullUp(items, result, cascade);
         if (selectedKeys === undefined) setOwn(result);
         onSelectionChange?.(result);
       },
