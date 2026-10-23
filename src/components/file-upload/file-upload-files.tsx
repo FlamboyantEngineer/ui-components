@@ -1,4 +1,11 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode,
+  type RefObject,
+} from 'react';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { createHooks } from '../../core/hooks.js';
 import type { Key } from '../../core/props.js';
@@ -35,10 +42,19 @@ export interface FileUploadItem {
   change?: FileUploadChange | undefined;
 }
 
+/** Keeps keyboard focus in the upload when the row of a pressed remove button leaves the list. */
+export interface RemovalFocus {
+  /** Records a file's remove button, or its removal with `null`. */
+  register: (id: Key, button: HTMLElement | null) => void;
+  /** Records a press on a file's remove button, before `onRemove` runs. */
+  willRemove: (id: Key) => void;
+}
+
 /** What each listed file draws besides its name, size, progress and error. */
 export interface FileUploadRowOptions {
   locale: string;
   onRemove: ((id: Key) => void) | undefined;
+  removalFocus: RemovalFocus;
   /** Disables the remove buttons. */
   isDisabled: boolean;
   renderFileActions: ((file: FileUploadItem) => ReactNode) | undefined;
@@ -122,6 +138,48 @@ function FilePreview({
   );
 }
 
+/** The listed file the focus moves to when `removed` leaves the list: the next one, else the previous one. */
+function findNeighbour(order: readonly string[], removed: string, listed: ReadonlySet<string>) {
+  const at = order.indexOf(removed);
+  const next = order.slice(at + 1).find((id) => listed.has(id));
+  return next ?? order.slice(0, at).findLast((id) => listed.has(id));
+}
+
+/**
+ * After the row of a pressed remove button leaves `files`, and the focus left with it, focuses the
+ * next file's remove button, else the previous one's, else the command, so a keyboard or screen
+ * reader user keeps their place.
+ */
+export function useRemovalFocus(
+  files: readonly FileUploadItem[],
+  commandRef: RefObject<HTMLElement | null>,
+): RemovalFocus {
+  const buttons = useRef(new Map<string, HTMLElement>());
+  const removal = useRef<{ id: string; order: string[] } | null>(null);
+  useLayoutEffect(() => {
+    const pending = removal.current;
+    const listed = new Set(files.map((item) => toKeyIdentity(item.id)));
+    if (!pending || listed.has(pending.id)) return;
+    removal.current = null;
+    const active = document.activeElement;
+    if (active && active !== document.body) return;
+    const neighbour = findNeighbour(pending.order, pending.id, listed);
+    (neighbour === undefined ? commandRef.current : buttons.current.get(neighbour))?.focus();
+  }, [files, commandRef]);
+  return {
+    register(id, button) {
+      if (button) buttons.current.set(toKeyIdentity(id), button);
+      else buttons.current.delete(toKeyIdentity(id));
+    },
+    willRemove(id) {
+      removal.current = {
+        id: toKeyIdentity(id),
+        order: files.map((item) => toKeyIdentity(item.id)),
+      };
+    },
+  };
+}
+
 function FileRow({ item, options }: { item: FileUploadItem; options: FileUploadRowOptions }) {
   const strings = useUiStrings();
   const { locale, onRemove, renderFileActions } = options;
@@ -153,7 +211,11 @@ function FileRow({ item, options }: { item: FileUploadItem; options: FileUploadR
           label={strings.removeItem(item.name)}
           size="sm"
           isDisabled={options.isDisabled}
-          onPress={() => onRemove(item.id)}
+          ref={(button) => options.removalFocus.register(item.id, button)}
+          onPress={() => {
+            options.removalFocus.willRemove(item.id);
+            onRemove(item.id);
+          }}
         />
       ) : null}
     </li>

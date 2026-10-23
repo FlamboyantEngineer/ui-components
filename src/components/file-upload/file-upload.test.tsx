@@ -1,5 +1,6 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
+import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
@@ -9,7 +10,7 @@ import {
   type DroppedFile,
   type DroppedItem,
 } from './file-upload-drop.js';
-import { FileUpload, type FileUploadItem } from './file-upload.js';
+import { FileUpload, type FileUploadItem, type FileUploadProps } from './file-upload.js';
 
 function file(name: string, type: string, size = 10): File {
   return new File(['x'.repeat(size)], name, { type });
@@ -43,6 +44,25 @@ const items: FileUploadItem[] = [
   { id: 'c', name: 'Notes.txt', size: 12, progress: 100 },
   { id: 'd', name: 'Map.svg', error: 'The server refused the file.' },
 ];
+
+/** An owner that lists what the upload hands on and drops what it removes. */
+function ListingOwner(props: Omit<FileUploadProps, 'onSelect' | 'files' | 'label'>) {
+  const [listed, setListed] = useState<FileUploadItem[]>([]);
+  return (
+    <FileUpload
+      {...props}
+      label="Attach"
+      files={listed}
+      onSelect={(chosen) =>
+        setListed((current) => [
+          ...current,
+          ...chosen.map((entry) => ({ id: entry.name, name: entry.name, file: entry })),
+        ])
+      }
+      onRemove={(id) => setListed((current) => current.filter((item) => item.id !== id))}
+    />
+  );
+}
 
 describe('FileUpload', () => {
   it('UIC-FILE-UPLOAD-3.1 preserves distinct numeric and text file rows when reordered', () => {
@@ -328,6 +348,23 @@ describe('FileUpload', () => {
     expectHooksMatchSpec(container, 'FILE-UPLOAD', { slots: ['file-remove'] });
   });
 
+  it('UIC-FILE-UPLOAD-3.4 keeps keyboard focus in the upload when a removed file leaves the list', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<ListingOwner allowsMultiple />);
+    await user.upload(chooser(container), [
+      file('a.txt', 'text/plain'),
+      file('b.txt', 'text/plain'),
+      file('c.txt', 'text/plain'),
+    ]);
+    act(() => screen.getByRole('button', { name: 'Remove b.txt' }).focus());
+    await user.keyboard('{Enter}');
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Remove c.txt' })).toHaveFocus());
+    await user.keyboard('{Enter}');
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Remove a.txt' })).toHaveFocus());
+    await user.keyboard('{Enter}');
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Attach' })).toHaveFocus());
+  });
+
   it('UIC-FILE-UPLOAD-4.1 appends the caller class and forwards the id and data attributes', () => {
     const { container } = render(
       <FileUpload
@@ -469,6 +506,23 @@ describe('FileUpload', () => {
     );
   });
 
+  it('UIC-FILE-UPLOAD-2.6 UIC-FILE-UPLOAD-2.7 keeps overlapping offers with a later check within the count limit', async () => {
+    const user = userEvent.setup();
+    const onReject = vi.fn();
+    const validate = () => new Promise<null>((resolve) => setTimeout(() => resolve(null), 20));
+    const { container } = render(
+      <ListingOwner maxFiles={1} validate={validate} onReject={onReject} />,
+    );
+    const a = file('a.txt', 'text/plain');
+    const b = file('b.txt', 'text/plain');
+    await user.upload(chooser(container), a);
+    await user.upload(chooser(container), b);
+    await waitFor(() => expect(onReject).toHaveBeenCalledWith([{ file: b, reason: 'count' }]));
+    expect(screen.getAllByRole('listitem')).toHaveLength(1);
+    expect(screen.getByRole('list')).toHaveTextContent('a.txt');
+    expect(screen.getByRole('alert')).toHaveTextContent('1 file is over the file limit.');
+  });
+
   it('UIC-FILE-UPLOAD-2.8 says during a drag whether the dragged files would be accepted', () => {
     const { container } = render(
       <FileUpload
@@ -581,5 +635,75 @@ describe('FileUpload', () => {
     );
     expect(container.querySelector('.ui-file-upload')).toHaveAttribute('data-invalid', 'true');
     expect(container.querySelector('input[type="file"][hidden]')).toBeNull();
+  });
+
+  it('UIC-FILE-UPLOAD-4.2 leaves a disabled or read-only upload out of form validation', () => {
+    const listed = [{ id: 'a', name: 'a.txt', file: file('a.txt', 'text/plain') }];
+    render(
+      <>
+        <form aria-label="Disabled">
+          <FileUpload label="Attach" name="docs" isRequired isDisabled onSelect={() => {}} />
+        </form>
+        <form aria-label="Disabled with files">
+          <FileUpload label="Attach" name="docs" isDisabled files={listed} onSelect={() => {}} />
+        </form>
+        <form aria-label="Read-only">
+          <FileUpload label="Attach" name="docs" isRequired isReadOnly onSelect={() => {}} />
+        </form>
+      </>,
+    );
+    expect(screen.getByRole('form', { name: 'Disabled' })).toBeValid();
+    const withFiles = screen.getByRole('form', { name: 'Disabled with files' });
+    expect(withFiles.querySelector('input[name="docs"]')).toBeDisabled();
+    expect(new FormData(withFiles as HTMLFormElement).getAll('docs')).toEqual([]);
+    expect(screen.getByRole('form', { name: 'Read-only' })).toBeValid();
+  });
+
+  it('UIC-FILE-UPLOAD-4.2 sets the form input files again only when the listed files change', () => {
+    const transfers = vi.fn();
+    class CountingTransfer {
+      readonly held: File[] = [];
+      readonly items = { add: (entry: File) => this.held.push(entry) };
+      constructor() {
+        transfers();
+      }
+      get files() {
+        return this.held;
+      }
+    }
+    vi.stubGlobal('DataTransfer', CountingTransfer);
+    const assigned = new WeakMap<HTMLInputElement, unknown>();
+    vi.spyOn(HTMLInputElement.prototype, 'files', 'get').mockImplementation(function (
+      this: HTMLInputElement,
+    ) {
+      return (assigned.get(this) ?? []) as FileList;
+    });
+    vi.spyOn(HTMLInputElement.prototype, 'files', 'set').mockImplementation(function (
+      this: HTMLInputElement,
+      value: FileList | null,
+    ) {
+      assigned.set(this, value);
+    });
+    try {
+      const a = file('a.txt', 'text/plain');
+      const b = file('b.txt', 'text/plain');
+      const listing = (progress: number, extra: FileUploadItem[] = []) => (
+        <FileUpload
+          label="Attach"
+          name="docs"
+          files={[{ id: 'a', name: 'a.txt', file: a, progress }, ...extra]}
+          onSelect={() => {}}
+        />
+      );
+      const { rerender } = render(listing(10));
+      expect(transfers).toHaveBeenCalledTimes(1);
+      rerender(listing(20));
+      rerender(listing(30));
+      expect(transfers).toHaveBeenCalledTimes(1);
+      rerender(listing(40, [{ id: 'b', name: 'b.txt', file: b }]));
+      expect(transfers).toHaveBeenCalledTimes(2);
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });

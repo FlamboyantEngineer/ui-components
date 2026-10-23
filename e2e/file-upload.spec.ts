@@ -58,6 +58,27 @@ test.describe('File Upload lab', () => {
     await expect(rows).toHaveCount(2);
   });
 
+  test('UIC-FILE-UPLOAD-3.4 keeps keyboard focus in the upload as files are removed', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('file-upload');
+    const target = upload(page, 'button');
+    await target.locator('input[type="file"]').setInputFiles([
+      { name: 'first.txt', mimeType: 'text/plain', buffer: Buffer.alloc(10) },
+      { name: 'second.txt', mimeType: 'text/plain', buffer: Buffer.alloc(10) },
+    ]);
+    const rows = target.locator('.ui-file-upload__file');
+    await expect(rows).toHaveCount(2);
+    await target.getByRole('button', { name: 'Remove first.txt' }).focus();
+    await page.keyboard.press('Enter');
+    await expect(rows).toHaveCount(1);
+    await expect(target.getByRole('button', { name: 'Remove second.txt' })).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(rows).toHaveCount(0);
+    await expect(target.getByRole('button', { name: 'Attach files' })).toBeFocused();
+  });
+
   test('UIC-FILE-UPLOAD-2.3 UIC-FILE-UPLOAD-2.4 checks dropped files and marks the drop zone during a drag', async ({
     page,
     lab,
