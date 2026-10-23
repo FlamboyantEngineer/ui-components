@@ -116,6 +116,11 @@ describe('LoadingCard', () => {
       />,
     );
     expect(screen.getByRole('progressbar')).toHaveAccessibleName('Estimated loading progress');
+    rerender(
+      <LoadingCard label="Preparing" progress={{ isIndeterminate: true, 'aria-label': 'Files' }} />,
+    );
+    expect(screen.getByRole('progressbar')).toHaveAccessibleName('Files');
+    expect(screen.getByRole('progressbar')).not.toHaveAttribute('aria-valuenow');
   });
 
   it('UIC-LOADING-OVERLAY-1.5 renders the hint as a truncation tooltip', () => {
@@ -199,6 +204,39 @@ describe('LoadingRegion', () => {
     expect(region.querySelector('.ui-loading-overlay')).toBeNull();
     await userEvent.click(screen.getByRole('button', { name: 'Apply' }));
     expect(onPress).toHaveBeenCalledTimes(1);
+  });
+
+  it('UIC-LOADING-OVERLAY-3.1 keeps keyboard focus on the region while blocking and returns it after', async () => {
+    const user = userEvent.setup();
+    const regionWith = (isLoading: boolean) => (
+      <>
+        <LoadingRegion label="Saving" isLoading={isLoading}>
+          <button type="button">Apply</button>
+        </LoadingRegion>
+        <button type="button">Elsewhere</button>
+      </>
+    );
+    const { container, rerender } = render(regionWith(false));
+    const region = container.querySelector<HTMLElement>('.ui-loading-region');
+    const apply = screen.getByRole('button', { name: 'Apply' });
+    const elsewhere = screen.getByRole('button', { name: 'Elsewhere' });
+    expect(region).not.toHaveAttribute('tabindex');
+    await user.click(apply);
+
+    rerender(regionWith(true));
+    expect(region).toHaveFocus();
+    expect(region).toHaveAttribute('tabindex', '-1');
+    rerender(regionWith(false));
+    expect(apply).toHaveFocus();
+    expect(region).not.toHaveAttribute('tabindex');
+
+    rerender(regionWith(true));
+    expect(region).toHaveFocus();
+    await user.click(elsewhere);
+    rerender(regionWith(false));
+    expect(elsewhere).toHaveFocus();
+    rerender(regionWith(true));
+    expect(elsewhere).toHaveFocus();
   });
 
   it('UIC-LOADING-OVERLAY-3.1 passes the scrim presentation to its overlay', () => {
