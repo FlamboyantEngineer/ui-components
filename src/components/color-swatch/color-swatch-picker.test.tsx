@@ -37,6 +37,20 @@ describe('ColorSwatchPicker', () => {
     expectHooksMatchSpec(container, 'COLOR-SWATCH', { slots: 'all' });
   });
 
+  it('UIC-COLOR-SWATCH-2.1 leaves out items and values in a notation React Aria does not read', () => {
+    render(
+      <ColorSwatchPicker aria-label="Palette" value="red">
+        <ColorSwatchPickerItem color="red" />
+        <ColorSwatchPickerItem color="#2e8b57" colorName="Sea green" />
+        <ColorSwatchPickerItem color="oklch(70% 0.1 200)" />
+      </ColorSwatchPicker>,
+    );
+    const options = screen.getAllByRole('option');
+    expect(options).toHaveLength(1);
+    expect(options[0]).toHaveAccessibleName('Sea green');
+    expect(options[0]).toHaveAttribute('aria-selected', 'false');
+  });
+
   it('UIC-COLOR-SWATCH-2.2 moves with the arrow keys and picks with Enter or a press', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
