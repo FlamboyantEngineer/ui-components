@@ -6,14 +6,14 @@
 
 ### UIC-PROBLEM-LIST-1.1 - Summary
 
-`ProblemList` shall render a `<section>` (`ui-problem-list`) named by its heading (`ui-problem-list__title`, `title` or the provider string `problems`, at the level of the enclosing section), the count of errors and warnings (`ui-problem-list__summary`, provider string `problemCount`) and a list (`ui-problem-list__items`) with one `ui-problem-list__item` per problem, carrying `data-severity`. The root publishes `data-severity` with the worst severity listed (`error`, else `warning`) and `data-empty` while there is no problem, when the list is left out and the count reads `No problems`.
+`ProblemList` shall render a `<section>` (`ui-problem-list`) named by its heading (`ui-problem-list__title`, `title` or the provider string `problems`, one level below the enclosing section's (down to 6), else level 3), the count of errors and warnings (`ui-problem-list__summary`, provider string `problemCount`) and a list (`ui-problem-list__items`) with one `ui-problem-list__item` per problem, carrying `data-severity`. The root publishes `data-severity` with the worst severity listed (`error`, else `warning`) and `data-empty` while there is no problem, when the list is left out and the count reads `No problems`.
 
 Implementation: `src/components/problem-list/problem-list.tsx`, `src/components/problem-list/problem-list-items.tsx`, `src/core/strings.ts`
 Verification: `src/components/problem-list/problem-list.test.tsx`, `e2e/problem-list.spec.ts`
 
 ### UIC-PROBLEM-LIST-1.2 - One problem
 
-Each problem shall show the glyph of its severity (`ui-problem-list__icon`, `error` or `warning`, decorative), its severity in words for assistive technology (provider string `problemSeverity`), its `label` when it has one (`ui-problem-list__label`) and its `message` (`ui-problem-list__message`). A problem without a severity is an `error`.
+Each problem shall show the glyph of its severity (`ui-problem-list__icon`, `error` or `warning`, decorative), its severity in words for assistive technology (provider string `problemSeverity`), its `label` when it has one (`ui-problem-list__label`) and its `message` (`ui-problem-list__message`), separated by a space in the text so they read as words without a stylesheet. Nothing but phrasing content goes inside the jump button. A problem without a severity is an `error`.
 
 Numeric and text IDs, such as `1` and `'1'`, identify distinct entries; removing one preserves the other entry's rendered identity.
 
