@@ -135,6 +135,22 @@ describe('emoji catalog', () => {
     expect(addRecentEmoji(['a', 'b', 'c'], 'd', 3)).toEqual(['d', 'a', 'b']);
   });
 
+  it('UIC-EMOJI-PICKER-2.2 counts repeats and other tones of the same emoji once', () => {
+    const list = parseEmojiData(fixture);
+    const wave = { kind: 'native', emoji: list[1] as NativeEmoji } as const;
+    const heart = { kind: 'native', emoji: list[3] as NativeEmoji } as const;
+    expect(resolveEmojiKeys(['👋', '👋🏽', '❤️', '❤', '👋'], list, [])).toEqual([wave, heart]);
+    expect(resolveEmojiKeys([':party_parrot:', ':party_parrot:'], list, [party])).toEqual([
+      { kind: 'custom', emoji: party },
+    ]);
+  });
+
+  it('UIC-EMOJI-PICKER-1.4 keeps one recent key per emoji when one is chosen', () => {
+    expect(addRecentEmoji(['👋🏽', '😀'], '👋', 24)).toEqual(['👋', '😀']);
+    expect(addRecentEmoji(['😀', '😀', '❤'], '❤️', 24)).toEqual(['❤️', '😀']);
+    expect(addRecentEmoji([':a:', ':a:', ':b:'], ':b:', 24)).toEqual([':b:', ':a:']);
+  });
+
   it('UIC-EMOJI-PICKER-2.3 names a custom emoji by its label or shortcode', () => {
     expect(getEmojiLabel({ kind: 'custom', emoji: party })).toBe(':party_parrot:');
     expect(getEmojiLabel({ kind: 'custom', emoji: { ...party, label: 'Party parrot' } })).toBe(

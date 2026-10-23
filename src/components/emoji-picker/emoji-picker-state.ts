@@ -1,6 +1,7 @@
 import {
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -8,6 +9,8 @@ import {
   type RefObject,
 } from 'react';
 import { OverlayTriggerStateContext, useLocale } from '../../primitives/index.js';
+import { useControllableState } from '../../core/controllable-state.js';
+import { createValueStore, type ValueStore } from '../../utils/value-store.js';
 import {
   addRecentEmoji,
   getEmojiKey,
@@ -103,8 +106,11 @@ export interface EmojiPickerState {
   gridRef: RefObject<HTMLDivElement | null>;
   tone: SkinTone;
   setTone(tone: SkinTone): void;
-  /** The emoji last hovered or focused. */
-  active: EmojiEntry | null;
+  /**
+   * The emoji last hovered or focused, in a store of its own, so a hover re-renders only the parts
+   * that show it.
+   */
+  activeEmoji: ValueStore<EmojiEntry | null>;
   /** Chooses the first emoji shown, for Enter in the search field. */
   chooseFirst(): void;
   autoFocus: boolean | undefined;
@@ -115,11 +121,18 @@ export interface EmojiPickerStateOptions
   extends SkinToneState, EmojiSources, EmojiChoiceHandlers, EmojiChoiceFilters {
   onSearchChange?: ((value: string) => void) | undefined;
   autoFocus?: boolean | undefined;
+  /**
+   * Loads the standard emoji in place of the bundled set. Called once per picker, so a new function
+   * on a later render loads nothing; give the picker a new `key` to load again.
+   */
   loadEmoji?: (() => Promise<readonly NativeEmoji[]>) | undefined;
+  /** Draws a standard emoji's glyph, such as an image from an emoji font, in place of the text. */
   renderEmoji?: ((unicode: string) => ReactNode) | undefined;
   /** The picker element, whose font the platform support is measured in. */
   rootRef: RefObject<HTMLElement | null>;
 }
+
+type EmojiLoader = () => Promise<readonly NativeEmoji[]>;
 
 const searchLimit = 60;
 const recentLimit = 24;
@@ -143,35 +156,30 @@ function buildTabs(emoji: readonly NativeEmoji[], recent: EmojiEntry[], custom: 
   return tabs;
 }
 
-export function useEmojiData(loadEmoji: () => Promise<readonly NativeEmoji[]>): EmojiData {
-  const [result, setResult] = useState<EmojiData & { loader?: typeof loadEmoji }>({
+/**
+ * The emoji `load` returns, loaded once per `loadKey` through the latest `load`, so a host that
+ * passes a new function on each render does not load again.
+ */
+export function useEmojiData(load: EmojiLoader, loadKey: string): EmojiData {
+  const latest = useRef(load);
+  useLayoutEffect(() => {
+    latest.current = load;
+  });
+  const [result, setResult] = useState<EmojiData & { loadKey?: string }>({
     emoji: null,
     failed: false,
   });
   useEffect(() => {
     let current = true;
-    loadEmoji().then(
-      (emoji) => current && setResult({ loader: loadEmoji, emoji, failed: false }),
-      () => current && setResult({ loader: loadEmoji, emoji: null, failed: true }),
+    latest.current().then(
+      (emoji) => current && setResult({ loadKey, emoji, failed: false }),
+      () => current && setResult({ loadKey, emoji: null, failed: true }),
     );
     return () => {
       current = false;
     };
-  }, [loadEmoji]);
-  return result.loader === loadEmoji ? result : { emoji: null, failed: false };
-}
-
-export function useSkinTone({
-  skinTone,
-  defaultSkinTone = 'default',
-  onSkinToneChange,
-}: SkinToneState) {
-  const [own, setOwn] = useState(defaultSkinTone);
-  const change = (tone: SkinTone) => {
-    setOwn(tone);
-    onSkinToneChange?.(tone);
-  };
-  return [skinTone ?? own, change] as const;
+  }, [loadKey]);
+  return result.loadKey === loadKey ? result : { emoji: null, failed: false };
 }
 
 export function useEmojiTabs(
@@ -220,11 +228,16 @@ export function useChooseEmoji({
   };
 }
 
-/** The standard emoji from `loadEmoji`, or the bundled set in the React Aria locale's language. */
-function useLocalizedEmojiData(loadEmoji: EmojiPickerStateOptions['loadEmoji']): EmojiData {
+/**
+ * The standard emoji from `loadEmoji`, loaded once, or the bundled set in the React Aria locale's
+ * language, loaded again when the locale changes.
+ */
+function useLocalizedEmojiData(loadEmoji: EmojiLoader | undefined): EmojiData {
   const emojiLocale = resolveEmojiLocale(useLocale().locale);
-  const loadLocalized = useMemo(() => () => loadEmojiData(emojiLocale), [emojiLocale]);
-  return useEmojiData(loadEmoji ?? loadLocalized);
+  return useEmojiData(
+    loadEmoji ?? (() => loadEmojiData(emojiLocale)),
+    loadEmoji ? 'caller' : `bundled:${emojiLocale}`,
+  );
 }
 
 /**
@@ -259,12 +272,16 @@ function useOfferedEmoji({
 /** The state every part of a picker reads, from the picker's props. */
 export function useEmojiPickerState(options: EmojiPickerStateOptions): EmojiPickerState {
   const data = useOfferedEmoji(options);
-  const [tone, setTone] = useSkinTone(options);
+  const [tone, setTone] = useControllableState(
+    options.skinTone,
+    options.defaultSkinTone ?? 'default',
+    options.onSkinToneChange,
+  );
   const { tabs, all } = useEmojiTabs(data.emoji, options);
   const search = useEmojiSearch(all, options.onSearchChange);
   const choose = useChooseEmoji({ ...options, tone });
   const [tabId, setTabId] = useState<string>();
-  const [active, setActive] = useState<EmojiEntry | null>(null);
+  const [activeEmoji] = useState(() => createValueStore<EmojiEntry | null>(null));
   const gridRef = useRef<HTMLDivElement>(null);
   const tab = tabs.find((item) => item.id === tabId) ?? tabs[0];
   const first = search.isSearching ? search.results[0] : tab?.entries[0];
@@ -277,14 +294,14 @@ export function useEmojiPickerState(options: EmojiPickerStateOptions): EmojiPick
     grid: {
       skinTone: tone,
       onSelect: choose,
-      onActiveChange: setActive,
+      onActiveChange: activeEmoji.set,
       renderEmoji: options.renderEmoji,
       gridRef,
     },
     gridRef,
     tone,
     setTone,
-    active,
+    activeEmoji,
     chooseFirst: () => (first ? choose(first) : undefined),
     autoFocus: options.autoFocus,
   };
