@@ -303,6 +303,9 @@ describe('VersionHistory', { timeout: 15_000 }, () => {
     expect(filterVersions(versions, { namedOnly: true, person: 'Lena Ortiz' })).toEqual([
       versions[3],
     ]);
+    const spaced = { id: 'a', time: '2026-01-01', person: { name: ' Ada ' } };
+    expect(listVersionPeople([spaced])).toEqual(['Ada']);
+    expect(filterVersions([spaced], { namedOnly: false, person: 'Ada' })).toEqual([spaced]);
   });
 
   it('UIC-VERSION-HISTORY-1.7 follows a controlled filter and hides the filters on request', () => {
