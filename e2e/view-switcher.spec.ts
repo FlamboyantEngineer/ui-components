@@ -91,7 +91,10 @@ test.describe('View Switcher lab', () => {
     await expect(demo.getByRole('tab')).toHaveText(['All recipes', 'By cuisine']);
   });
 
-  test('UIC-VIEW-SWITCHER-1.8 switches views from a menu', async ({ page, lab }) => {
+  test('UIC-VIEW-SWITCHER-1.8 UIC-VIEW-SWITCHER-2.1 switches views from a menu named by a heading', async ({
+    page,
+    lab,
+  }) => {
     await lab.open('view-switcher');
     const demo = page.locator('[data-lab-demo="views-menu"]');
     await demo.locator('.ui-view-switcher__menu').click();

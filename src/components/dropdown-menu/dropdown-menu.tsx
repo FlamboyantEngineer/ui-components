@@ -52,6 +52,7 @@ type DropdownMenuMenuProps = Pick<
   | 'shouldCloseOnSelect'
   | 'filterable'
   | 'aria-label'
+  | 'aria-labelledby'
 >;
 
 type DropdownMenuTriggerProps = Omit<
@@ -196,6 +197,7 @@ export function DropdownMenu({
   shouldCloseOnSelect,
   filterable,
   'aria-label': menuLabel,
+  'aria-labelledby': menuLabelledBy,
   size = 'md',
   onPress,
   ...trigger
@@ -213,6 +215,7 @@ export function DropdownMenu({
     shouldCloseOnSelect,
     filterable,
     'aria-label': menuLabel,
+    'aria-labelledby': menuLabelledBy,
     size: menuSize ?? (size === 'xs' ? 'sm' : size),
   };
   const parts = { trigger: { ...trigger, size }, menu, placement };

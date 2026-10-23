@@ -89,8 +89,16 @@ describe('DropdownMenu', () => {
     );
     expect(screen.getByRole('menu')).toHaveAccessibleName(expect.stringContaining('Clipboard'));
     unmount();
-    render(<DropdownMenu label="Sort" items={items} defaultOpen />);
+    const { unmount: unmountSort } = render(<DropdownMenu label="Sort" items={items} defaultOpen />);
     expect(screen.getByRole('menu', { name: 'Sort' })).toBeInTheDocument();
+    unmountSort();
+    render(
+      <>
+        <h2 id="tools">Tools</h2>
+        <DropdownMenu label="Edit" items={items} defaultOpen aria-labelledby="tools" />
+      </>,
+    );
+    expect(screen.getByRole('menu')).toHaveAccessibleName('Tools');
   });
 
   it('UIC-DROPDOWN-MENU-1.4 passes menu props, children and the derived size to the menu', async () => {

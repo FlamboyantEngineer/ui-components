@@ -13,7 +13,7 @@ Verification: `src/components/view-switcher/view-switcher.test.tsx`, `e2e/view-s
 
 ### UIC-VIEW-SWITCHER-1.2 - Selecting a view
 
-`selectedKey` (controlled) or `defaultSelectedKey` shall choose the selected view, which starts at `defaultSelectedKey`, else `defaultViewKey`, else the first view; selecting another view calls `onSelectionChange` with its `id`.
+`selectedKey` (controlled) or `defaultSelectedKey` shall choose the selected view, which starts at `defaultSelectedKey`, else `defaultViewKey`, else the first view; selecting another view calls `onSelectionChange` with its `id`. When the chosen view is not among `views`, such as after it was deleted, the default view, else the first view, shows as selected; an uncontrolled selection moves to it and reports it through `onSelectionChange` once.
 
 Implementation: `src/components/view-switcher/view-switcher.tsx`
 Verification: `src/components/view-switcher/view-switcher.test.tsx`, `e2e/view-switcher.spec.ts`
