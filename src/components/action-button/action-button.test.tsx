@@ -52,6 +52,39 @@ describe('ActionButton', () => {
     expect(onPress).toHaveBeenCalledTimes(2);
   });
 
+  it('UIC-ACTION-BUTTON-1.2 UIC-ACTION-BUTTON-1.7 submits its form once per action, also during the pending delay', async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn((event: React.FormEvent) => event.preventDefault());
+    const onPress = vi.fn(() => new Promise<void>(() => undefined));
+    render(
+      <form onSubmit={onSubmit}>
+        <ActionButton type="submit" pendingDelay={1000} onPress={onPress}>
+          Send later
+        </ActionButton>
+        <ActionButton type="submit" onPress={onPress}>
+          Send now
+        </ActionButton>
+      </form>,
+    );
+    const later = screen.getByRole('button', { name: 'Send later' });
+    await user.click(later);
+    await user.click(later);
+    await user.keyboard('{Enter}');
+    expect(onPress).toHaveBeenCalledTimes(1);
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+
+    const now = screen.getByRole('button', { name: 'Send now' });
+    await user.click(now);
+    expect(now).toHaveAttribute('data-pending', 'true');
+    // The press that started the action submits; React Aria's switch to a plain button would land
+    // before that press submits in a browser, so the button keeps its type and refuses repeats.
+    expect(now).toHaveAttribute('type', 'submit');
+    await user.click(now);
+    await user.keyboard('{Enter}');
+    expect(onPress).toHaveBeenCalledTimes(2);
+    expect(onSubmit).toHaveBeenCalledTimes(2);
+  });
+
   it('UIC-ACTION-BUTTON-1.3 settles after a rejection and reports it', async () => {
     const onError = vi.fn();
     render(

@@ -13,7 +13,7 @@ Verification: `src/components/action-button/action-button.test.tsx`, `e2e/action
 
 ### UIC-ACTION-BUTTON-1.2 - No repeat activation
 
-While pending, the button shall refuse further activation by pointer, keyboard or programmatic click, so the action runs once per press until it settles.
+While pending, the button shall refuse further activation by pointer, keyboard or programmatic click, so the action runs once per press until it settles. A `type="submit"` or `type="reset"` action button keeps its type: the press that starts the action submits or resets its form, and the native activation of every later click (pointer, keyboard, implicit submission or programmatic) is cancelled until the action settles, also while `pendingDelay` holds the pending state back.
 
 Implementation: `src/components/action-button/action-button.tsx`
 Verification: `src/components/action-button/action-button.test.tsx`, `e2e/action-button.spec.ts`
@@ -34,7 +34,7 @@ Verification: `src/components/action-button/action-button.test.tsx`
 
 ### UIC-ACTION-BUTTON-1.5 - Controlled pending and pending name
 
-A caller's `isPending` shall override the internal pending state. While pending the button keeps its accessible name, and its busy indicator is named by `pendingLabel`, or the provider's `loading` string. `runPendingAction` exposes the same lifecycle for hosts that run an action from elsewhere (for example a keyboard shortcut).
+A caller's `isPending` shall override the internal pending state. While pending the button keeps its label, and its busy indicator is named by `pendingLabel`, or the provider's `loading` string; a button named by `aria-label` is named by that label followed by the busy indicator's name, as in Button (UIC-BUTTON-2.2). `runPendingAction` exposes the same lifecycle for hosts that run an action from elsewhere (for example a keyboard shortcut).
 
 Implementation: `src/components/action-button/action-button.tsx`
 Verification: `src/components/action-button/action-button.test.tsx`
