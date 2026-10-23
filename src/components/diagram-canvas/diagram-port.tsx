@@ -1,14 +1,19 @@
-import type { CSSProperties } from 'react';
+import type { CSSProperties, RefCallback, RefObject } from 'react';
 import { usePointerDrag } from '../../utils/use-pointer-drag.js';
 import { useUiStrings } from '../../core/provider.js';
 import { diagramHooks as hooks } from './diagram-hooks.js';
 import type { DiagramNode, DiagramPort } from './diagram-model.js';
-import type { DiagramController } from './use-diagram-controller.js';
+import type { DiagramController, DiagramTarget } from './use-diagram-controller.js';
 
 export interface DiagramPortViewProps {
   node: DiagramNode;
   port: DiagramPort;
-  controller: DiagramController;
+  /** The canvas's latest controller, read when the reader acts. */
+  controller: RefObject<DiagramController>;
+  registerTarget: (target: DiagramTarget) => RefCallback<HTMLElement>;
+  isEditing: boolean;
+  /** A connection is being drawn from this port. */
+  isConnectSource: boolean;
 }
 
 const dragThreshold = 3;
@@ -29,20 +34,24 @@ function placePort(port: DiagramPort): CSSProperties {
  * A port: in edit mode a button that starts a connection when pressed or dragged, and ends one
  * that is in progress; otherwise a decorative mark.
  */
-export function DiagramPortView({ node, port, controller }: DiagramPortViewProps) {
+export function DiagramPortView({
+  node,
+  port,
+  controller,
+  registerTarget,
+  isEditing,
+  isConnectSource,
+}: DiagramPortViewProps) {
   const strings = useUiStrings();
-  const { connect } = controller;
-  const data = {
-    side: port.side,
-    connectSource: connect.connecting?.port === port.id && connect.connecting.node === node.id,
-  };
+  const connect = () => controller.current.connect;
+  const data = { side: port.side, connectSource: isConnectSource };
   const drag = usePointerDrag<HTMLButtonElement, { x: number; y: number; isDragging: boolean }>({
-    isDisabled: !controller.isEditing,
-    onCancel: connect.cancel,
+    isDisabled: !isEditing,
+    onCancel: () => connect().cancel(),
     onStart: (event) => {
       event.stopPropagation();
-      if (connect.complete(node.id, port.id)) return null;
-      connect.start(node.id, port.id);
+      if (connect().complete(node.id, port.id)) return null;
+      connect().start(node.id, port.id);
       return { x: event.clientX, y: event.clientY, isDragging: false };
     },
     onMove: (event, active) => {
@@ -52,38 +61,38 @@ export function DiagramPortView({ node, port, controller }: DiagramPortViewProps
       )
         return;
       active.isDragging = true;
-      connect.track(controller.toDiagram(event.clientX, event.clientY));
+      connect().track(controller.current.toDiagram(event.clientX, event.clientY));
     },
     onEnd: (event, active, isCancelled) => {
       if (isCancelled) {
-        connect.cancel();
+        connect().cancel();
         return;
       }
       if (!active.isDragging) return;
-      const target = controller.findTarget(event.clientX, event.clientY);
-      if (!target || !connect.complete(target.node, target.port)) connect.cancel();
+      const target = controller.current.findTarget(event.clientX, event.clientY);
+      if (!target || !connect().complete(target.node, target.port)) connect().cancel();
     },
   });
-  if (!controller.isEditing) {
+  if (!isEditing) {
     return <span {...hooks.slot('port', data)} aria-hidden="true" style={placePort(port)} />;
   }
   return (
     <button
       {...hooks.slot('port', data)}
-      ref={controller.registerTarget({ node: node.id, port: port.id })}
+      ref={registerTarget({ node: node.id, port: port.id })}
       type="button"
       aria-label={strings.diagramPortLabel(node.label, port.label)}
       style={placePort(port)}
       {...drag}
       onKeyDown={(event) => {
-        if (event.key !== 'Escape' || !connect.connecting) return;
+        if (event.key !== 'Escape' || !connect().connecting) return;
         event.preventDefault();
-        connect.cancel();
+        connect().cancel();
       }}
       onClick={(event) => {
         // A pointer press acts on pointer down; a click from the keyboard has no pointer detail.
         if (event.detail !== 0) return;
-        if (!connect.complete(node.id, port.id)) connect.start(node.id, port.id);
+        if (!connect().complete(node.id, port.id)) connect().start(node.id, port.id);
       }}
     />
   );

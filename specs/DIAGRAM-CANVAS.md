@@ -15,12 +15,12 @@ Verification: `src/components/diagram-canvas/diagram-canvas.test.tsx`, `e2e/diag
 
 ### UIC-DIAGRAM-CANVAS-1.2 - Nodes
 
-Each node shall render, in the order of `nodes`, as a `ui-diagram-canvas__node` positioned in the content layer at its `x` and `y` with its `width` and `height` (160 by 48 pixels by default). Its content is `renderNode(node, { isSelected, isEditing })`, or else its `label` in `ui-diagram-canvas__node-label`.
+Each node shall render, in the order of `nodes`, as a `ui-diagram-canvas__node` positioned in the content layer at its `x` and `y` with its `width` and `height` (160 by 48 pixels by default). Its content is `renderNode(node, { isSelected, isEditing })`, or else its `label` in `ui-diagram-canvas__node-label`. A node renders again only when its own data or state changes: while nodes are dragged, `renderNode` runs for them alone and only the edges touching them are routed again.
 
 Numeric and text keys with the same spelling shall identify distinct nodes and edges in both views, including after reordering. Bounds shall be computed in one pass without depending on the runtime limit on function arguments.
 
-Implementation: `src/components/diagram-canvas/diagram-node.tsx`, `src/components/diagram-canvas/diagram-model.ts`
-Verification: `src/components/diagram-canvas/diagram-canvas.test.tsx`, `src/components/diagram-canvas/diagram-model.test.ts`
+Implementation: `src/components/diagram-canvas/diagram-node.tsx`, `src/components/diagram-canvas/diagram-model.ts`, `src/components/diagram-canvas/diagram-canvas.tsx`, `src/components/diagram-canvas/diagram-edges.tsx`
+Verification: `src/components/diagram-canvas/diagram-canvas.test.tsx`, `src/components/diagram-canvas/diagram-model.test.ts`, `src/components/diagram-canvas/diagram-node.test.tsx`
 
 ### UIC-DIAGRAM-CANVAS-1.3 - Ports
 
@@ -70,9 +70,9 @@ Verification: `src/components/diagram-canvas/diagram-canvas.test.tsx`, `e2e/diag
 
 ### UIC-DIAGRAM-CANVAS-3.2 - Zooming
 
-The wheel with Ctrl or Command shall zoom around the pointer; the toolbar's [Zoom Control](ZOOM-CONTROL.md) (`ui-diagram-canvas__zoom`, resetting to 100%) and the `+` and `-` keys anywhere in the viewport step through its levels around the middle of the view. The zoom stays between 25% and 400%.
+The wheel with Ctrl or Command shall zoom around the pointer; the toolbar's [Zoom Control](ZOOM-CONTROL.md) (`ui-diagram-canvas__zoom`, resetting to 100%) and the `+` and `-` keys anywhere in the viewport, except in a field, a slider or editable content inside a node, step through its levels around the middle of the view. The zoom stays between 25% and 400%.
 
-Implementation: `src/components/diagram-canvas/use-diagram-viewport.ts`, `src/components/diagram-canvas/diagram-toolbar.tsx`, `src/components/diagram-canvas/diagram-canvas.tsx`
+Implementation: `src/components/diagram-canvas/use-diagram-viewport.ts`, `src/components/diagram-canvas/diagram-toolbar.tsx`, `src/components/diagram-canvas/diagram-canvas.tsx`, `src/utils/is-key-owner.ts`
 Verification: `src/components/diagram-canvas/diagram-canvas.test.tsx`, `src/components/diagram-canvas/diagram-model.test.ts`, `e2e/diagram-canvas.spec.ts`
 
 ### UIC-DIAGRAM-CANVAS-3.3 - Fitting
@@ -128,9 +128,9 @@ Verification: `src/components/diagram-canvas/diagram-node.test.tsx`, `e2e/diagra
 
 ### UIC-DIAGRAM-CANVAS-4.5 - Removing
 
-In edit mode Delete or Backspace on a focused node shall remove it, or the whole selection when it is selected (selected edges included), with every edge that touches a removed node: `onNodesChange` receives the nodes left and `onEdgesChange` the edges left, the live region reads the provider's `diagramRemoved` string with the count, and focus moves to the next node left.
+In edit mode Delete or Backspace on a focused node shall remove it, or the whole selection when it is selected (selected edges included), with every edge that touches a removed node: `onNodesChange` receives the nodes left and `onEdgesChange` the edges left, the live region reads the provider's `diagramRemoved` string with the count, and focus moves to the next node left, else the previous one, else the viewport, which takes focus without joining the Tab order.
 
-Implementation: `src/components/diagram-canvas/use-node-moves.ts`, `src/components/diagram-canvas/diagram-node.tsx`
+Implementation: `src/components/diagram-canvas/use-node-moves.ts`, `src/components/diagram-canvas/diagram-node.tsx`, `src/components/diagram-canvas/diagram-canvas.tsx`
 Verification: `src/components/diagram-canvas/diagram-node.test.tsx`
 
 ## UIC-DIAGRAM-CANVAS-5 - Connecting and adding
@@ -171,9 +171,9 @@ Verification: `src/components/diagram-canvas/diagram-links.test.ts`, `src/compon
 
 ### UIC-DIAGRAM-CANVAS-6.2 - Announcements
 
-Moves, removals and connections made by pointer or keyboard shall be read through the live region, as the requirements above state.
+Moves, removals and connections made by pointer or keyboard shall be read through the live region, as the requirements above state. Each announcement replaces the region's text, so a message that repeats the last one (the same node moved twice) is read again.
 
-Implementation: `src/components/diagram-canvas/diagram-canvas.tsx`
+Implementation: `src/components/diagram-canvas/diagram-canvas.tsx`, `src/components/diagram-canvas/use-diagram-controller.ts`
 Verification: `src/components/diagram-canvas/diagram-node.test.tsx`
 
 ### UIC-DIAGRAM-CANVAS-6.3 - Moving between connected nodes
@@ -185,7 +185,7 @@ Verification: `src/components/diagram-canvas/diagram-node.test.tsx`, `src/compon
 
 ### UIC-DIAGRAM-CANVAS-6.4 - Outline view
 
-The view shall be `view` (controlled) or held from `defaultView` (`canvas`), switched by a [Segmented Choice](SEGMENTED-CHOICE.md) in the toolbar (`ui-diagram-canvas__view-switch`) named by the provider's `diagramView` string, and reported through `onViewChange`. The outline (`ui-diagram-canvas__outline`, a list named by the `diagramOutlineView` string) holds an entry per node (`ui-diagram-canvas__outline-item`, with `data-selected`) showing its label (`ui-diagram-canvas__outline-label`), then the nodes it leads to and comes from (`ui-diagram-canvas__outline-links` with `data-direction` `outgoing` or `incoming`, labelled by `ui-diagram-canvas__outline-links-label` reading `diagramLeadsTo` or `diagramComesFrom`) as buttons (`ui-diagram-canvas__outline-link`) that move focus to that node's entry. In edit mode each outgoing link is followed by an [Icon Button](ICON-BUTTON.md) (`ui-diagram-canvas__outline-remove`) named by `diagramRemoveConnection` that removes the edge through `onEdgesChange`. The zoom control and fit button show only in the canvas view.
+The view shall be `view` (controlled) or held from `defaultView` (`canvas`), switched by a [Segmented Choice](SEGMENTED-CHOICE.md) in the toolbar (`ui-diagram-canvas__view-switch`) named by the provider's `diagramView` string, and reported through `onViewChange`. The outline (`ui-diagram-canvas__outline`, a list named by the `diagramOutlineView` string) holds an entry per node (`ui-diagram-canvas__outline-item`, with `data-selected`) showing its label (`ui-diagram-canvas__outline-label`), then the nodes it leads to and comes from (`ui-diagram-canvas__outline-links` with `data-direction` `outgoing` or `incoming`, labelled by `ui-diagram-canvas__outline-links-label` reading `diagramLeadsTo` or `diagramComesFrom`) as buttons (`ui-diagram-canvas__outline-link`) that move focus to that node's entry. In edit mode each outgoing link is followed by an [Icon Button](ICON-BUTTON.md) (`ui-diagram-canvas__outline-remove`) named by `diagramRemoveConnection` that removes the edge through `onEdgesChange` and moves focus to the next link of that list, else the previous one, else the node's entry. The zoom control and fit button show only in the canvas view.
 
 Link descriptions shall preserve edge order, include parallel edges and self-links, and leave out connections whose other node is missing. Both views share the same indexed connections.
 

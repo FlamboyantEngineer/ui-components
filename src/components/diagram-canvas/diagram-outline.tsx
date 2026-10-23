@@ -21,6 +21,18 @@ interface OutlineLinksProps {
   onFollow: (id: Key) => void;
 }
 
+/**
+ * Where focus goes once a link's remove button is gone with its link: the next link of the list,
+ * else the previous one, else the node's entry.
+ */
+function findFocusAfterRemoval(button: Element): HTMLElement | null {
+  const item = button.closest('li');
+  const sibling = item?.nextElementSibling ?? item?.previousElementSibling;
+  const link = sibling?.querySelector<HTMLElement>(`.${hooks.slotClass('outline-link')}`);
+  const entry = item?.parentElement?.closest<HTMLElement>(`.${hooks.slotClass('outline-item')}`);
+  return link ?? entry ?? null;
+}
+
 /** One direction of a node's links: buttons that move to the node at the other end. */
 function OutlineLinks({ direction, node, links, controller, onFollow }: OutlineLinksProps) {
   const strings = useUiStrings();
@@ -49,7 +61,11 @@ function OutlineLinks({ direction, node, links, controller, onFollow }: OutlineL
                 label={strings.diagramRemoveConnection(node.label, link.other.label)}
                 size="xs"
                 variant="ghost"
-                onPress={() => controller.moves.removeEdge(link.edge.id)}
+                onPress={(event) => {
+                  const next = findFocusAfterRemoval(event.target);
+                  controller.moves.removeEdge(link.edge.id);
+                  next?.focus();
+                }}
               />
             ) : null}
           </li>

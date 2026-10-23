@@ -300,6 +300,58 @@ describe('DiagramCanvas nodes', () => {
     expect(status()).toHaveTextContent('1 item removed');
   });
 
+  it('UIC-DIAGRAM-CANVAS-4.5 moves focus to the previous node after the last, then to the viewport', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<EditableDiagram />);
+    act(() => node('Tank').focus());
+    await user.keyboard('{Delete}');
+    expect(node('Valve')).toHaveFocus();
+    await user.keyboard('{Delete}');
+    expect(node('Pump')).toHaveFocus();
+    await user.keyboard('{Delete}');
+    expect(container.querySelector('.ui-diagram-canvas__viewport')).toHaveFocus();
+  });
+
+  it('UIC-DIAGRAM-CANVAS-6.2 reads a repeated announcement again', async () => {
+    const user = userEvent.setup();
+    render(<EditableDiagram />);
+    act(() => node('Valve').focus());
+    const spoken: Element[] = [];
+    for (let move = 0; move < 3; move += 1) {
+      await user.keyboard('{ArrowRight}');
+      spoken.push(status()!.firstElementChild!);
+    }
+    expect(spoken.map((element) => element.textContent)).toEqual([
+      'Valve moved',
+      'Valve moved',
+      'Valve moved',
+    ]);
+    expect(new Set(spoken).size).toBe(3);
+  });
+
+  it('UIC-DIAGRAM-CANVAS-1.2 renders only the dragged node again while a node is dragged', async () => {
+    const user = userEvent.setup();
+    const nodes = Array.from({ length: 30 }, (_, index) => ({
+      id: `n${index}`,
+      x: (index % 6) * 200,
+      y: Math.floor(index / 6) * 100,
+      label: `Node ${index}`,
+    }));
+    const edges = nodes
+      .slice(1)
+      .map((item, index) => ({ id: `e${index}`, source: nodes[index]!.id, target: item.id }));
+    const renderNode = vi.fn((item: { label: string }) => item.label);
+    render(<EditableDiagram nodes={nodes} edges={edges} renderNode={renderNode} />);
+    renderNode.mockClear();
+    await drag(user, node('Node 3'), { clientX: 23, clientY: 7 });
+    for (const clientX of [43, 63, 83, 103]) {
+      await user.pointer({ target: node('Node 3'), coords: { clientX, clientY: 7 } });
+    }
+    await release(user, node('Node 3'));
+    expect(renderNode).toHaveBeenCalled();
+    expect(renderNode.mock.calls.every(([item]) => item.label === 'Node 3')).toBe(true);
+  });
+
   it('UIC-DIAGRAM-CANVAS-4.5 removes selected edges with a selected node', async () => {
     const onEdgesChange = vi.fn();
     const onNodesChange = vi.fn();
