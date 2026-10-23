@@ -1,4 +1,5 @@
-import { act, fireEvent, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import {
@@ -10,7 +11,7 @@ import {
   selectRange,
 } from '../../../test/rich-text-fixtures.js';
 import { BlockHandle } from './block-handle.js';
-import type { RichTextDocument } from './rich-text-editor.js';
+import { RichTextEditor, type RichTextDocument } from './rich-text-editor.js';
 
 installEditorDom();
 
@@ -115,5 +116,58 @@ describe('BlockHandle', () => {
     );
     await user.click(screen.getByRole('menuitem', { name: 'Delete' }));
     expect(texts(value())).toEqual(['One', 'Three', 'Two']);
+  });
+
+  it('UIC-RICH-TEXT-EDITOR-9.3 UIC-RICH-TEXT-EDITOR-5.5 turns and deletes every block from the menu after a select-all', async () => {
+    const { user, value } = renderHandle();
+    selectRange(7);
+    await user.keyboard('{Control>}a{/Control}');
+    const open = async () => {
+      await user.click(screen.getByRole('button', { name: 'Block actions' }));
+      return screen.findByRole('menu');
+    };
+    await open();
+    for (const name of ['Move up', 'Move down'])
+      expect(screen.getByRole('menuitem', { name })).toHaveAttribute('aria-disabled', 'true');
+    await user.click(screen.getByRole('menuitem', { name: 'Turn into' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Heading 2' }));
+    expect(value()?.content?.map((block) => block.attrs?.level)).toEqual([2, 2, 2]);
+    expect(texts(value())).toEqual(['One', 'Two', 'Three']);
+    await open();
+    await user.click(screen.getByRole('menuitem', { name: 'Delete' }));
+    expect(value()?.content).toEqual([{ type: 'paragraph' }]);
+  });
+
+  it('UIC-RICH-TEXT-EDITOR-3.1 UIC-RICH-TEXT-EDITOR-5.5 moves the selected blocks with Alt+Shift+Up and Down, and none after a select-all', async () => {
+    const { user, value, changes } = renderHandle();
+    selectRange(2, 7);
+    await user.keyboard('{Alt>}{Shift>}{ArrowDown}{/Shift}{/Alt}');
+    expect(texts(value())).toEqual(['Three', 'One', 'Two']);
+    await user.keyboard('{Alt>}{Shift>}{ArrowUp}{/Shift}{/Alt}');
+    expect(texts(value())).toEqual(['One', 'Two', 'Three']);
+    await user.keyboard('{Control>}a{/Control}');
+    const count = changes.length;
+    await user.keyboard('{Alt>}{Shift>}{ArrowDown}{ArrowUp}{/Shift}{/Alt}');
+    expect(changes).toHaveLength(count);
+    await user.keyboard('{Control>}{Alt>}1{/Alt}{/Control}');
+    expect(value()?.content?.map((block) => block.type)).toEqual(['heading', 'heading', 'heading']);
+  });
+
+  it('UIC-RICH-TEXT-EDITOR-4.1 UIC-RICH-TEXT-EDITOR-9.3 dismisses an open block menu when the editor locks', async () => {
+    const user = userEvent.setup();
+    const editor = (isReadOnly: boolean) => (
+      <RichTextEditor label="Notes" defaultValue={blocks} isReadOnly={isReadOnly}>
+        <ViewProbe />
+        <BlockHandle />
+      </RichTextEditor>
+    );
+    const { rerender } = render(editor(false));
+    selectRange(2);
+    await user.click(screen.getByRole('button', { name: 'Block actions' }));
+    expect(await screen.findByRole('menu')).toBeInTheDocument();
+    rerender(editor(true));
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    rerender(editor(false));
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 });

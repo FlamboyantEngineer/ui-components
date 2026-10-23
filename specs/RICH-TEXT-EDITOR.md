@@ -71,7 +71,7 @@ Verification: `src/components/rich-text-editor/rich-text-editor.test.tsx`, `e2e/
 The editor shall run these shortcuts (`Mod` is Ctrl, or Cmd on Apple platforms) when the schema has the types they need: Mod+B bold, Mod+I italic, Mod+U underline, Mod+Shift+S strike, Mod+E inline code; Mod+Alt+0 paragraph, Mod+Alt+1 to 3 headings, Mod+Alt+C code block; Mod+Shift+7 numbered list, Mod+Shift+8 bullet list, Mod+Shift+9 task list, Mod+Shift+B quote; Mod+Z undo, Mod+Shift+Z and Mod+Y redo; Alt+Shift+Up and Down move the block (UIC-RICH-TEXT-EDITOR-5.5); plus ProseMirror's base keys.
 
 Implementation: `src/components/rich-text-editor/rich-text-keys.ts`
-Verification: `src/components/rich-text-editor/rich-text-editor.test.tsx`, `e2e/rich-text-editor.spec.ts`
+Verification: `src/components/rich-text-editor/rich-text-editor.test.tsx`, `src/components/rich-text-editor/block-handle.test.tsx`, `e2e/rich-text-editor.spec.ts`
 
 ### UIC-RICH-TEXT-EDITOR-3.2 - Markdown shortcuts
 
@@ -98,10 +98,10 @@ Verification: `src/components/rich-text-editor/rich-text-editor.test.tsx`, `e2e/
 
 ### UIC-RICH-TEXT-EDITOR-4.1 - Read-only, disabled, invalid and required
 
-A read-only editor shall keep its document readable, focusable and selectable but refuse every edit (`contenteditable="false"`, `aria-readonly`, `data-readonly` on the content); a disabled one is also out of the tab sequence (`aria-disabled`, `data-disabled`). Neither offers commands: the controller's `can` and `run` refuse and the chrome disables or hides itself. Locking an editor dismisses its slash menu, insert button menu and link editor; unlocking does not reopen the button menu or link editor. An invalid field marks the content `aria-invalid`; a required one reports `aria-required` and is invalid (`valueMissing`) while its document is empty.
+A read-only editor shall keep its document readable, focusable and selectable but refuse every edit (`contenteditable="false"`, `aria-readonly`, `data-readonly` on the content); a disabled one is also out of the tab sequence (`aria-disabled`, `data-disabled`). Neither offers commands: the controller's `can` and `run` refuse and the chrome disables or hides itself. Locking an editor dismisses its slash menu, insert button menu, block menu and link editor; unlocking does not reopen the button menus or link editor. An invalid field marks the content `aria-invalid`; a required one reports `aria-required` and is invalid (`valueMissing`) while its document is empty.
 
-Implementation: `src/components/rich-text-editor/editor-surface.tsx`, `src/components/rich-text-editor/rich-text-editor.tsx`, `src/components/rich-text-editor/rich-text-controller.ts`
-Verification: `src/components/rich-text-editor/rich-text-editor.test.tsx`, `e2e/rich-text-editor.spec.ts`
+Implementation: `src/components/rich-text-editor/editor-surface.tsx`, `src/components/rich-text-editor/rich-text-editor.tsx`, `src/components/rich-text-editor/rich-text-controller.ts`, `src/components/rich-text-editor/block-handle.tsx`
+Verification: `src/components/rich-text-editor/rich-text-editor.test.tsx`, `src/components/rich-text-editor/block-handle.test.tsx`, `e2e/rich-text-editor.spec.ts`
 
 ### UIC-RICH-TEXT-EDITOR-4.2 - Value changes from outside, commit and restore
 
@@ -142,10 +142,10 @@ Verification: `src/components/rich-text-editor/engine-commands.test.ts`, `e2e/ri
 
 ### UIC-RICH-TEXT-EDITOR-5.5 - Block commands
 
-The block commands shall act on the top-level block holding the whole selection (none when it spans several): `move-block` swaps it with the previous (`up`) or next (`down`) block and keeps the selection in it, `duplicate-block` inserts a copy after it and moves the selection into the copy, and `delete-block` removes it, leaving an empty paragraph in place of the document's last block.
+The block commands shall act on the top-level blocks the selection touches, one or several (a select-all touches them all): `move-block` swaps them with the block before (`up`) or after (`down`) and keeps the selection in them (refused when there is no such block), `duplicate-block` inserts a copy of them after them and moves the selection into the copy, and `delete-block` removes them, leaving an empty paragraph when they were the whole document.
 
-Implementation: `src/components/rich-text-editor/block-commands.ts`
-Verification: `src/components/rich-text-editor/engine-commands.test.ts`, `e2e/rich-text-editor.spec.ts`
+Implementation: `src/components/rich-text-editor/block-commands.ts`, `src/components/rich-text-editor/block-handle.tsx`
+Verification: `src/components/rich-text-editor/engine-commands.test.ts`, `src/components/rich-text-editor/block-handle.test.tsx`, `e2e/rich-text-editor.spec.ts`
 
 ## UIC-RICH-TEXT-EDITOR-6 - Format Toolbar
 
@@ -215,7 +215,7 @@ Verification: `src/components/rich-text-editor/insert-menu.test.tsx`, `e2e/rich-
 
 ### UIC-RICH-TEXT-EDITOR-9.1 - Placement
 
-`BlockHandle` shall render `ui-block-handle`, absolutely placed in the surface at the top of the top-level block under the pointer, or else of the block holding the selection while the document or the handle has focus or its menu is open; it renders nothing otherwise or while the editor is not editable. It follows the block as the document changes.
+`BlockHandle` shall render `ui-block-handle`, absolutely placed in the surface at the top of the top-level block under the pointer, or else of the first block the selection touches while the document or the handle has focus or its menu is open; it renders nothing otherwise or while the editor is not editable. It follows the block as the document changes.
 
 Implementation: `src/components/rich-text-editor/block-handle.tsx`, `src/components/rich-text-editor/use-block-target.ts`
 Verification: `src/components/rich-text-editor/block-handle.test.tsx`, `e2e/rich-text-editor.spec.ts`
@@ -229,7 +229,7 @@ Verification: `src/components/rich-text-editor/block-handle.test.tsx`, `e2e/rich
 
 ### UIC-RICH-TEXT-EDITOR-9.3 - Block menu
 
-The handle's menu button (`ui-block-handle__menu`, an icon-only `DropdownMenu` named `blockActions`) shall select the block when it opens and offer a `turnInto` submenu of the block types and wrappers the schema supports, then `moveUp`, `moveDown`, `duplicate` and `delete` (disabled when they cannot run). Choosing an entry runs it on the block and returns focus to the document.
+The handle's menu button (`ui-block-handle__menu`, an icon-only `DropdownMenu` named `blockActions`) shall select the block when it opens (a selection over several blocks including it stays, so the menu acts on all of them) and offer a `turnInto` submenu of the block types and wrappers the schema supports, then `moveUp`, `moveDown`, `duplicate` and `delete` (disabled when they cannot run). Choosing an entry runs it on the block and returns focus to the document.
 
 Implementation: `src/components/rich-text-editor/block-handle.tsx`, `src/components/rich-text-editor/use-focus-return.ts`
 Verification: `src/components/rich-text-editor/block-handle.test.tsx`, `e2e/rich-text-editor.spec.ts`
