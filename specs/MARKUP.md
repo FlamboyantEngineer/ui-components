@@ -25,6 +25,13 @@ Verification: `src/utils/markup.test.ts`
 Implementation: `src/utils/markup.ts`
 Verification: `src/utils/markup.test.ts`
 
+### UIC-MARKUP-1.4 - Dropped elements
+
+`skipDroppedElements(tokens, { isDropped, isEmpty })` shall pass on the tokens outside the elements `isDropped` picks, skipping each picked element with its content up to its matching closing tag (or to the end of the markup). Elements of the same name nested inside a dropped one are counted, so their closing tags do not end the drop early; tag names compare ignoring case. An element `isEmpty` reports (by default one ending in `/>`) is dropped alone.
+
+Implementation: `src/utils/markup.ts`
+Verification: `src/utils/markup.test.ts`
+
 ## UIC-MARKUP-2 - URLs
 
 ### UIC-MARKUP-2.1 - Safe URLs
