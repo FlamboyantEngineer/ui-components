@@ -75,15 +75,18 @@ export interface FolderManagerModel<T extends FolderItem> {
   moveTo(destination: T | null): void;
 }
 
-/** The filter query, and a setter that expands the branches holding the new matches. */
-function useFolderQuery<T extends FolderItem>(folders: readonly T[]) {
+/**
+ * The filter query, and a setter that expands the branches holding the new matches, the root row
+ * included.
+ */
+function useFolderQuery<T extends FolderItem>(folders: readonly T[], rootLabel: string | undefined) {
   const [query, setQuery] = useState('');
   const terms = useMemo(() => splitMatchTerms(query), [query]);
   const update = (next: string, expansion: FolderExpansion) => {
     setQuery(next);
     const nextTerms = splitMatchTerms(next);
     if (nextTerms.length === 0) return;
-    expansion.reveal(collectBranchKeys(buildFolderNodes(folders, { terms: nextTerms })));
+    expansion.reveal(collectBranchKeys(buildFolderNodes(folders, { rootLabel, terms: nextTerms })));
   };
   return { query, terms, update };
 }
@@ -122,7 +125,7 @@ export function useFolderManager<T extends FolderItem>(
   const loads = useTreeLoads(options.onLoadChildren);
   const { edit } = actions;
   const draftParentKey = edit?.kind === 'create' ? edit.key : undefined;
-  const filter = useFolderQuery(folders);
+  const filter = useFolderQuery(folders, rootLabel);
   const { terms } = filter;
   const nodes = useMemo(
     () => buildFolderNodes(folders, { rootLabel, draftParentKey, terms }),

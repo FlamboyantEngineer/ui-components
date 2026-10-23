@@ -626,6 +626,22 @@ describe('FolderManager', () => {
     expect(rowNames()).toEqual(['Fruit', 'Citrus', 'Berries', 'Vegetables']);
   });
 
+  it('UIC-FOLDER-MANAGER-7.1 expands a collapsed root row to show the matches', async () => {
+    const user = userEvent.setup();
+    render(<Manager filterable rootLabel="All folders" />);
+    await user.click(row('All folders'));
+    await user.keyboard('{ArrowLeft}');
+    expect(rowNames()).toEqual(['All folders']);
+    const search = screen.getByRole('searchbox', { name: 'Filter folders' });
+    await user.type(search, 'cit');
+    expect(rowNames()).toEqual(['All folders', 'Fruit', 'Citrus']);
+    await user.clear(search);
+    await user.type(search, 'plum');
+    expect(screen.getAllByRole('row').map((element) => element.textContent)).toContain(
+      'No results',
+    );
+  });
+
   it('UIC-FOLDER-MANAGER-7.1 clears the filter to create a folder', async () => {
     const user = userEvent.setup();
     render(<Manager filterable defaultSelectedKey="vegetables" />);

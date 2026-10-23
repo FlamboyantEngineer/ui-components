@@ -150,7 +150,7 @@ Verification: `src/components/folder-manager/folder-manager.test.tsx`, `src/comp
 
 ### UIC-FOLDER-MANAGER-7.1 - Filter
 
-`filterable` shall draw a [SearchField](SEARCH-FIELD.md) (`ui-folder-manager__filter`) above the tree, named by the provider string `filterLabel` with the tree's `aria-label` (or `search`). Its query keeps the loaded folders whose name holds every term, matched as [TextMatch](TEXT-MATCH.md) matches them, with their ancestors, expands the branches that hold matches and marks the matched text with `TextMatch`; without a match the tree shows the provider string `noResults`. Starting to create or rename a folder clears the query.
+`filterable` shall draw a [SearchField](SEARCH-FIELD.md) (`ui-folder-manager__filter`) above the tree, named by the provider string `filterLabel` with the tree's `aria-label` (or `search`). Its query keeps the loaded folders whose name holds every term, matched as [TextMatch](TEXT-MATCH.md) matches them, with their ancestors, expands the branches that hold matches, the root row included, and marks the matched text with `TextMatch`; without a match the tree shows the provider string `noResults` in place of every row, the root row included. Starting to create or rename a folder clears the query.
 
 Revealing matching branches shall compare collapsed keys against a set of revealed keys, without a repeated scan for each branch.
 

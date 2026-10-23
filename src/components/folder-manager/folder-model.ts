@@ -63,7 +63,10 @@ function appendDraft<T extends FolderItem>(
   }
 }
 
-/** The tree rows for the folders, with the root row and the draft row when asked for. */
+/**
+ * The tree rows for the folders, with the root row and the draft row when asked for. A filter that
+ * matches nothing leaves no row, the root row included, so the tree can say so.
+ */
 export function buildFolderNodes<T extends FolderItem>(
   folders: readonly T[],
   options: FolderNodeOptions,
@@ -83,7 +86,7 @@ export function buildFolderNodes<T extends FolderItem>(
     };
   });
   appendDraft(nodes, null, options);
-  if (options.rootLabel === undefined) return nodes;
+  if (options.rootLabel === undefined || (terms.length > 0 && nodes.length === 0)) return nodes;
   return [
     {
       id: folderRootKey,
