@@ -28,9 +28,10 @@ export interface CalendarGrid {
 const dayCellSelector = '[role="gridcell"][data-date]';
 
 /**
- * Arrow keys, Home, End, PageUp and PageDown on a day cell move the focused day (and with it the
- * month or week on show), then focus its cell; focus landing in a day of the period makes it the
- * focused day, so the tab stop follows the reader.
+ * Arrow keys, Home, End, PageUp and PageDown on a day cell move from that cell's day, make the day
+ * they reach the focused day (showing its month or week), then focus its cell; focus landing in a
+ * day of the period makes it the focused day, so the tab stop follows the reader. A move the owner
+ * of a controlled date does not apply leaves focus where it is.
  */
 export function useCalendarGrid({
   focused,
@@ -40,12 +41,17 @@ export function useCalendarGrid({
 }: CalendarGridOptions): CalendarGrid {
   const { locale, direction } = useLocale();
   const ref = useRef<HTMLDivElement>(null);
-  const shouldFocus = useRef(false);
+  /** The day a keyboard move asked for, focused once it is the focused day. */
+  const pendingFocus = useRef<string | null>(null);
+  const focusDay = (day: string) =>
+    ref.current?.querySelector<HTMLElement>(`${dayCellSelector}[data-date="${day}"]`)?.focus();
+  // Runs after every render: a render that does not show the requested day drops the request.
   useLayoutEffect(() => {
-    if (!shouldFocus.current) return;
-    shouldFocus.current = false;
-    ref.current?.querySelector<HTMLElement>(`${dayCellSelector}[data-date="${focused}"]`)?.focus();
-  }, [focused]);
+    const pending = pendingFocus.current;
+    if (pending === null) return;
+    pendingFocus.current = null;
+    if (pending === focused) focusDay(pending);
+  });
   return {
     ref,
     onKeyDown: (event) => {
@@ -53,11 +59,15 @@ export function useCalendarGrid({
       if (!target.matches(dayCellSelector) || event.altKey || event.ctrlKey || event.metaKey)
         return;
       const isRightToLeft = direction === 'rtl';
-      const next = moveFocusedDay(focused, { key: event.key, mode, isRightToLeft, locale });
+      const from = target.getAttribute('data-date') ?? focused;
+      const next = moveFocusedDay(from, { key: event.key, mode, isRightToLeft, locale });
       if (!next) return;
       event.preventDefault();
-      if (next === focused) return;
-      shouldFocus.current = true;
+      if (next === focused) {
+        focusDay(next);
+        return;
+      }
+      pendingFocus.current = next;
       setFocused(next);
     },
     onFocus: (event) => {
