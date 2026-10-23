@@ -55,7 +55,7 @@ Verification: `src/components/segmented-choice/segmented-choice.test.tsx`, `e2e/
 
 ### UIC-SEGMENTED-CHOICE-1.8 - Swapping the root
 
-`render(props, state)`, typed `ElementRender<'div', SegmentedChoiceRenderState>`, shall replace the group's `<div>` ([COMPOSITION.md](COMPOSITION.md)): the caller's element receives the hook classes, data attributes, the `aria-readonly` and `aria-invalid` the component adds, and the ref, and `state` holds the group's `orientation` and `isDisabled`.
+`render(props, state)`, typed `ElementRender<'div', SegmentedChoiceRenderState>`, shall replace the group's `<div>` ([COMPOSITION.md](COMPOSITION.md)): the caller's element receives the hook classes, data attributes, the `aria-readonly`, `aria-invalid` and `aria-busy` the component adds, and the ref, and `state` holds the group's `orientation` and `isDisabled`.
 
 Implementation: `src/components/segmented-choice/segmented-choice.tsx`
 Verification: `src/components/segmented-choice/segmented-choice.test.tsx`
@@ -122,7 +122,7 @@ Verification: `src/components/segmented-choice/segmented-choice.test.tsx`, `e2e/
 
 ### UIC-SEGMENTED-CHOICE-3.2 - Read-only
 
-`isReadOnly` shall keep the segments focusable and the selected one marked, ignore picking, set `aria-readonly="true"` on the group and publish `data-readonly`.
+`isReadOnly` shall keep the segments focusable and the selected ones marked, ignore picking and publish `data-readonly`. A single-selection group (`radiogroup`) also sets `aria-readonly="true"`; WAI-ARIA allows no `aria-readonly` on the `toolbar` or `group` of multiple selection, so there the pressed states stay and the presses are ignored.
 
 Implementation: `src/components/segmented-choice/segmented-choice.tsx`
 Verification: `src/components/segmented-choice/segmented-choice.test.tsx`
