@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createRef } from 'react';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
@@ -241,6 +241,32 @@ describe('VersionHistory', { timeout: 15_000 }, () => {
     await userEvent.type(cleared, '{Enter}');
     expect(onRename).toHaveBeenLastCalledWith('v2', '');
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  });
+
+  it('UIC-VERSION-HISTORY-1.6 saves a name once per Enter or Control+Enter and shows a failure', async () => {
+    const user = userEvent.setup();
+    let fail!: (error: unknown) => void;
+    const onRename = vi.fn(
+      () =>
+        new Promise<void>((_resolve, reject) => {
+          fail = reject;
+        }),
+    );
+    render(<VersionHistory versions={versions} currentKey="v5" onRename={onRename} />);
+    await user.click(within(rows()[0]!).getByRole('button', { name: /^Actions for/ }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Name this version' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Name this version' });
+    const action = within(dialog).getByRole('button', { name: 'Save' });
+    await user.type(within(dialog).getByRole('textbox', { name: 'Version name' }), 'Blue');
+    await user.keyboard('{Enter}');
+    await user.keyboard('{Enter}');
+    await user.keyboard('{Control>}{Enter}{/Control}');
+    expect(onRename).toHaveBeenCalledTimes(1);
+    expect(onRename).toHaveBeenCalledWith('v5', 'Blue');
+    expect(action).toHaveAttribute('data-pending', 'true');
+    await act(async () => fail(new Error('Name taken')));
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent('Name taken');
+    expect(screen.getByRole('dialog', { name: 'Name this version' })).toBeInTheDocument();
   });
 
   it('UIC-VERSION-HISTORY-1.7 filters to named versions and to one person', async () => {

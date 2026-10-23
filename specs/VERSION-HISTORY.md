@@ -43,7 +43,7 @@ Verification: `src/components/version-history/version-history.test.tsx`, `e2e/ve
 
 ### UIC-VERSION-HISTORY-1.6 - Naming a version
 
-With `onRename`, every enabled version's menu shall offer the provider's `nameVersion` action for an automatic version and `renameVersion` for a named one. It opens a [Modal](MODAL.md) with the same title holding a text field named by `versionName` and filled with the version's name; Save, or Enter in the field, calls `onRename` with the key and the trimmed name when it changed (an empty name makes the version automatic again) and closes the dialog once a returned promise settles; an unchanged name only closes it.
+With `onRename`, every enabled version's menu shall offer the provider's `nameVersion` action for an automatic version and `renameVersion` for a named one. It opens a [Modal](MODAL.md) with the same title holding a text field named by `versionName` and filled with the version's name; Save, or Enter in the field, runs the dialog's Save action ([UIC-MODAL-6.3](MODAL.md#uic-modal-63---primary-action-from-the-content)), which calls `onRename` with the key and the trimmed name when it changed (an empty name makes the version automatic again) and closes the dialog once a returned promise settles, keeping Save pending meanwhile and the dialog open with the failure if it rejects; an unchanged name only closes it. A repeated Enter or Control+Enter while it is pending calls `onRename` no second time.
 
 Implementation: `src/components/version-history/version-row.tsx`, `src/components/version-history/version-dialogs.tsx`, `src/core/history-strings.ts`
 Verification: `src/components/version-history/version-history.test.tsx`, `e2e/version-history.spec.ts`

@@ -1,6 +1,6 @@
 // The dialogs a version history opens from a version's menu: confirming a restore, and naming.
 
-import { useState, type KeyboardEvent } from 'react';
+import { useState } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { ConfirmDialog } from '../confirm-dialog/confirm-dialog.js';
@@ -48,7 +48,8 @@ export function RestoreVersionDialog({
 
 /**
  * Names a version, or renames it. Saving a changed name (trimmed; empty removes the name) calls
- * `onAction` and closes the dialog; saving the same name only closes it. Enter in the field saves.
+ * `onAction` and closes the dialog; saving the same name only closes it. Enter in the field saves
+ * through the dialog's action, so it is pending until a returned promise settles and shows a failure.
  */
 export function RenameVersionDialog({
   target,
@@ -65,10 +66,6 @@ export function RenameVersionDialog({
     if (target && trimmed !== label) await onAction(target.key, trimmed);
     onClose();
   };
-  const onKeyDown = (event: KeyboardEvent) => {
-    // A failed save keeps the dialog open; the Save action shows the failure when pressed.
-    if (event.key === 'Enter' && !event.nativeEvent.isComposing) save().catch(() => undefined);
-  };
   return (
     <Modal
       isOpen={isOpen}
@@ -79,15 +76,21 @@ export function RenameVersionDialog({
       title={label === '' ? strings.nameVersion : strings.renameVersion}
       primaryAction={{ label: strings.save, onPress: save }}
     >
-      <TextField
-        label={strings.versionName}
-        value={value}
-        onChange={(next) => {
-          if (target) setDraft({ key: target.key, value: next });
-        }}
-        onKeyDown={onKeyDown}
-        autoFocus
-      />
+      {({ runPrimaryAction }) => (
+        <TextField
+          label={strings.versionName}
+          value={value}
+          onChange={(next) => {
+            if (target) setDraft({ key: target.key, value: next });
+          }}
+          onKeyDown={(event) => {
+            // Control+Enter is the modal's own shortcut for the same action.
+            if (event.key !== 'Enter' || event.ctrlKey || event.metaKey) return;
+            if (!event.nativeEvent.isComposing) runPrimaryAction();
+          }}
+          autoFocus
+        />
+      )}
     </Modal>
   );
 }

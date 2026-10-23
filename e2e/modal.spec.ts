@@ -111,6 +111,24 @@ test.describe('Modal lab', () => {
     await lab.expectAccessible('.ui-modal');
   });
 
+  test('UIC-MODAL-6.3 runs the primary action once from Enter in a field', async ({ page, lab }) => {
+    await lab.open('modal');
+    await page.locator('[data-lab-open="save"]').click();
+    const city = page.getByRole('textbox', { name: 'City' });
+    await expect(city).toBeFocused();
+    await city.fill('Oslo');
+    const save = page.getByRole('button', { name: 'Save' });
+    await page.keyboard.press('Enter');
+    await expect(save).toHaveAttribute('data-pending', 'true');
+    await page.keyboard.press('Enter');
+    await page.keyboard.press('Control+Enter');
+    await page.locator('[data-lab-action="fail"]').click();
+    await expect(page.getByRole('alert')).toHaveText('The list is full.');
+    await expect(save).not.toHaveAttribute('data-pending');
+    await expect(page.locator('[data-lab-action="fail"]')).toBeDisabled();
+    await expect(page.locator('[data-lab-output="saved"]')).toHaveText('none');
+  });
+
   test('UIC-MODAL-1.2 UIC-MODAL-1.3 UIC-MODAL-2.1 UIC-MODAL-2.2 stacks modals below the toast layer', async ({
     page,
     lab,

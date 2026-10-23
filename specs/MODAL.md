@@ -124,7 +124,7 @@ Verification: `src/components/modal/modal.test.tsx`
 
 ### UIC-MODAL-4.3 - Body
 
-The children shall render in the body. Children given as a function receive `close`, which closes the modal.
+The children shall render in the body. Children given as a function receive `close`, which closes the modal, and `runPrimaryAction` ([UIC-MODAL-6.3](#uic-modal-63---primary-action-from-the-content)).
 
 Implementation: `src/components/modal/modal.tsx`
 Verification: `src/components/modal/modal.test.tsx`
@@ -181,6 +181,13 @@ Verification: `src/components/modal/modal.test.tsx`, `e2e/modal.spec.ts`
 
 Implementation: `src/components/modal/modal-dialog.tsx`, `src/components/modal/modal.tsx`
 Verification: `src/components/modal/modal.test.tsx`
+
+### UIC-MODAL-6.3 - Primary action from the content
+
+`runPrimaryAction`, given to children that are a function, shall run the primary action through the same lifecycle as a press: its button pending until a returned promise settles, a repeat refused even before the pending state renders, and a rejection announced as a failure. It shall do nothing whenever Control+Enter would not run the action: while it is disabled or pending, while another action runs, and when `actions` replaces the built-in buttons. A dialog whose field saves on Enter calls it, so one key press runs the action once.
+
+Implementation: `src/components/modal/modal-dialog.tsx`, `src/components/modal/modal.tsx`
+Verification: `src/components/modal/modal.test.tsx`, `e2e/modal.spec.ts`
 
 ## UIC-MODAL-7 - Hooks
 

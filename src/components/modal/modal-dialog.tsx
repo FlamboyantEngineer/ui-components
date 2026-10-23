@@ -10,7 +10,7 @@ import {
 import { Dialog, OverlayTriggerStateContext } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
-import type { ModalProps } from './modal.js';
+import type { ModalProps, ModalRenderProps } from './modal.js';
 import { InitialFocus, useFocusReturn } from './modal-focus.js';
 import { ModalFooter } from './modal-footer.js';
 import { ModalHeader } from './modal-header.js';
@@ -49,13 +49,16 @@ const hooks = createHooks('modal', ['dialog', 'body']);
 
 function ModalBody({
   children,
-  close,
+  renderProps,
   ref,
-}: Pick<ModalProps, 'children'> & { close: () => void; ref: RefObject<HTMLDivElement | null> }) {
+}: Pick<ModalProps, 'children'> & {
+  renderProps: ModalRenderProps;
+  ref: RefObject<HTMLDivElement | null>;
+}) {
   if (children === undefined || children === null) return null;
   return (
     <div ref={ref} {...hooks.slot('body')}>
-      {typeof children === 'function' ? children({ close }) : children}
+      {typeof children === 'function' ? children(renderProps) : children}
     </div>
   );
 }
@@ -82,6 +85,16 @@ function handlePrimaryShortcut(
   if (!actionState.canRun('primary')) return;
   event.preventDefault();
   actionState.run('primary');
+}
+
+/** What function children receive: `close`, and the primary action unless `actions` replace it. */
+function toRenderProps(actionState: ModalActions, hasCustomActions: boolean): ModalRenderProps {
+  return {
+    close: actionState.close,
+    runPrimaryAction: () => {
+      if (!hasCustomActions) actionState.run('primary');
+    },
+  };
 }
 
 /** Calls `onExitComplete` when the dialog leaves the page after closing, not when torn down open. */
@@ -129,12 +142,13 @@ export function ModalDialog({
   const actionState = useModalActions(footer);
   useFocusReturn({ containerRef: dialogRef, finalFocus, fallback: opener });
   useExitComplete(onExitComplete);
+  const hasCustomActions = footer.actions !== undefined;
   const onKeyDown = (event: KeyboardEvent<HTMLElement>) => {
     if (event.key === 'Escape') {
       handleEscape(event, { canEscape, isFloating, shouldCloseOnEscape, close: actionState.close });
       return;
     }
-    handlePrimaryShortcut(event, { actionState, hasCustomActions: footer.actions !== undefined });
+    handlePrimaryShortcut(event, { actionState, hasCustomActions });
     if (!event.defaultPrevented) onCallerKeyDown?.(event);
   };
   return (
@@ -157,7 +171,7 @@ export function ModalDialog({
         isDismissDisabled={isDismissDisabled}
         onClose={actionState.close}
       />
-      <ModalBody ref={bodyRef} close={actionState.close}>
+      <ModalBody ref={bodyRef} renderProps={toRenderProps(actionState, hasCustomActions)}>
         {children}
       </ModalBody>
       <ModalFooter

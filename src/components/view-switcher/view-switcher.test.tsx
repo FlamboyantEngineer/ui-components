@@ -134,6 +134,29 @@ describe('ViewSwitcher', { timeout: 20_000 }, () => {
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   });
 
+  it('UIC-VIEW-SWITCHER-1.5 saves once per Enter or Control+Enter, pending, and shows a failure', async () => {
+    const user = userEvent.setup();
+    const save = deferred();
+    const onSaveAs = vi.fn(() => save.promise);
+    render(<ViewSwitcher views={views} onSaveAs={onSaveAs} />);
+    await user.click(actionsButton('All recipes'));
+    await user.click(await screen.findByRole('menuitem', { name: 'Save as new view' }));
+    const dialog = await screen.findByRole('dialog', { name: 'New view' });
+    const action = within(dialog).getByRole('button', { name: 'Save' });
+    await user.type(within(dialog).getByRole('textbox', { name: /^View name/ }), 'Mine');
+    await user.keyboard('{Enter}');
+    await user.keyboard('{Enter}');
+    await user.keyboard('{Control>}{Enter}{/Control}');
+    expect(onSaveAs).toHaveBeenCalledTimes(1);
+    expect(onSaveAs).toHaveBeenCalledWith('Mine');
+    expect(action).toHaveAttribute('data-pending', 'true');
+    await act(async () => save.reject(new Error('Name taken')));
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent('Name taken');
+    expect(screen.getByRole('dialog', { name: 'New view' })).toBeInTheDocument();
+    await user.keyboard('{Control>}{Enter}{/Control}');
+    expect(onSaveAs).toHaveBeenCalledTimes(2);
+  });
+
   it('UIC-VIEW-SWITCHER-1.6 renames a view from its actions or its tab menu', async () => {
     const onRename = vi.fn();
     render(<ViewSwitcher views={views} onRename={onRename} />);
