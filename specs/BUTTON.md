@@ -62,7 +62,7 @@ Verification: `src/components/button/button.test.tsx`
 
 ### UIC-BUTTON-1.9 - Links
 
-With `href` the button shall be a link: an `<a>` with the same hooks and parts, drawn through the provider's `renderLink` so the host's router can take it ([PROVIDER.md](PROVIDER.md)), navigating through the provider's `navigate` when the host sets one, and reporting `onPress`. `target` and `rel` pass through, and `target="_blank"` adds `rel="noopener noreferrer"` unless `rel` is given. A disabled link renders as a `<span>` with role `link`, `aria-disabled="true"` and `data-disabled`. `tooltip` and `shortcut` work as on a button; `render`, `type`, `isPending`, `isSelected`, the toggle state and `focusableWhenDisabled` apply to a `<button>` only, because `render` keeps the element type. `ref` reaches the `<a>`.
+With `href` the button shall be a link: an `<a>` with the same hooks and parts, drawn through the provider's `renderLink` so the host's router can take it ([PROVIDER.md](PROVIDER.md)), navigating through the provider's `navigate` when the host sets one, and reporting `onPress`. `target` and `rel` pass through, and `target="_blank"` adds `rel="noopener noreferrer"` unless `rel` is given. A disabled link renders as a `<span>` with role `link`, `aria-disabled="true"` and `data-disabled`, without `href`, `target` or `rel`. The link takes the button's name and description (`aria-label`, `aria-labelledby`, `aria-describedby`, `aria-details`), `id`, `aria-current`, `autoFocus`, `hidden` and the press, hover, focus and key handlers of UIC-BUTTON-1.10. `tooltip` and `shortcut` work as on a button; `render`, `type`, `isPending`, `isSelected`, the toggle state, `focusableWhenDisabled`, `excludeFromTabOrder`, `preventFocusOnPress`, `slot`, `role` and the toggle and popup states (`aria-pressed`, `aria-checked`, `aria-selected`, `aria-haspopup`, `aria-expanded`, `aria-controls`) apply to a `<button>` only, because `render` keeps the element type. `ref` reaches the `<a>`.
 
 Implementation: `src/components/button/button.tsx`, `src/components/button/button-state.tsx`
 Verification: `src/components/button/button.test.tsx`, `e2e/button.spec.ts`
@@ -85,7 +85,7 @@ Verification: `src/components/button/button.test.tsx`, `e2e/button.spec.ts`
 
 ### UIC-BUTTON-2.2 - Pending
 
-`isPending` shall keep the button focusable but refuse presses, set `aria-disabled="true"` and `data-pending`, draw an indeterminate progress bar in the `ui-button__spinner` slot, named by `pendingLabel` or the provider's `loading` string, keep its icons, label and accessible name in place so the button keeps its size (a stylesheet draws the spinner over them), and never submit a form. The change to and from pending is announced while the button has focus.
+`isPending` shall keep the button focusable but refuse presses, set `aria-disabled="true"` and `data-pending`, draw an indeterminate progress bar in the `ui-button__spinner` slot, named by `pendingLabel` or the provider's `loading` string, keep its icons and label in place so the button keeps its size (a stylesheet draws the spinner over them), and never submit a form. React Aria names a pending button that has `aria-label` by that label followed by the busy indicator's name ("More Loading"). The change to and from pending is announced while the button has focus.
 
 Implementation: `src/components/button/button.tsx`
 Verification: `src/components/button/button.test.tsx`
@@ -113,7 +113,7 @@ Verification: `src/components/button/button.test.tsx`
 
 ### UIC-BUTTON-2.6 - Toggle state
 
-With `defaultSelected` or `onChange` the button shall be a toggle: every press (after `onPress`) flips its selected state and reports the new state through `onChange`, and it always states `aria-pressed` (`true` or `false`) with `data-selected` while selected. `defaultSelected` sets the initial state of a toggle that keeps its own; with `isSelected` as well the caller controls it and the press only reports the requested state. Without either, `isSelected` only shows the state.
+With `defaultSelected` or `onChange` the button shall be a toggle: every press (after `onPress`) flips its selected state and reports the new state through `onChange`, and it states `aria-pressed` (`true` or `false`) unless the caller states toggle semantics (UIC-BUTTON-2.3), with `data-selected` while selected. `defaultSelected` sets the initial state of a toggle that keeps its own; with `isSelected` as well the caller controls it and the press only reports the requested state. Without either, `isSelected` only shows the state.
 
 Implementation: `src/components/button/button.tsx`, `src/components/button/button-state.tsx`
 Verification: `src/components/button/button.test.tsx`, `e2e/button.spec.ts`

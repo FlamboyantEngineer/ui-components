@@ -56,6 +56,7 @@ describe('IconButton', () => {
     expect(button.querySelector('.ui-icon-button__spinner')).not.toBeNull();
     expect(button.querySelector('.ui-icon-button__icon')).toBeNull();
     expect(button).toHaveAttribute('data-pending', 'true');
+    expect(button).toHaveAccessibleName('Undo Loading');
     expectHooksMatchSpec(document.body, 'ICON-BUTTON', { slots: ['spinner'] });
 
     rerender(<IconButton icon="undo" label="Undo" isSelected />);

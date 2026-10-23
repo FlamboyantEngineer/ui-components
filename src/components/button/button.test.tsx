@@ -286,6 +286,15 @@ describe('Button', () => {
     });
   });
 
+  it('UIC-BUTTON-2.2 names a pending button that has aria-label by its label and busy indicator', () => {
+    render(
+      <Button isPending aria-label="More">
+        …
+      </Button>,
+    );
+    expect(screen.getByRole('button')).toHaveAccessibleName('More Loading');
+  });
+
   it('UIC-BUTTON-2.3 marks the current choice and respects caller toggle semantics', () => {
     const { rerender } = render(<Button isSelected>Bold</Button>);
     const button = screen.getByRole('button');
@@ -432,6 +441,77 @@ describe('Button', () => {
     expect(link).toHaveAttribute('data-disabled', 'true');
     await userEvent.click(link);
     expect(onPress).not.toHaveBeenCalled();
+  });
+
+  it('UIC-BUTTON-1.9 names a link by aria-label or aria-labelledby and reports its key and focus handlers', async () => {
+    const user = userEvent.setup();
+    const onKeyDown = vi.fn();
+    const onKeyUp = vi.fn();
+    const onFocusChange = vi.fn();
+    render(
+      <>
+        <span id="files-heading">Shared files</span>
+        <Button
+          href="/files"
+          aria-label="Open files"
+          onKeyDown={onKeyDown}
+          onKeyUp={onKeyUp}
+          onFocusChange={onFocusChange}
+        >
+          Open
+        </Button>
+        <Button href="/shared" aria-labelledby="files-heading">
+          12
+        </Button>
+        <Button href="/hidden" hidden>
+          Hidden
+        </Button>
+      </>,
+    );
+    const files = screen.getByRole('link', { name: 'Open files' });
+    expect(screen.getByRole('link', { name: 'Shared files' })).toHaveAttribute('href', '/shared');
+    expect(screen.getByText('Hidden').closest('a')).toHaveAttribute('hidden');
+    await user.tab();
+    expect(files).toHaveFocus();
+    await user.keyboard('a');
+    expect(onKeyDown).toHaveBeenCalled();
+    expect(onKeyUp).toHaveBeenCalled();
+    expect(onFocusChange).toHaveBeenCalledWith(true);
+  });
+
+  it('UIC-BUTTON-1.9 keeps target and rel off a disabled link', () => {
+    render(
+      <Button href="https://example.com/help" target="_blank" isDisabled>
+        Help
+      </Button>,
+    );
+    const link = screen.getByRole('link', { name: 'Help' });
+    expect(link.tagName).toBe('SPAN');
+    expect(link).not.toHaveAttribute('target');
+    expect(link).not.toHaveAttribute('rel');
+  });
+
+  it('UIC-BUTTON-2.3 UIC-BUTTON-2.6 leaves aria-pressed off a toggle whose caller states toggle semantics', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(
+      <>
+        <Button role="switch" aria-checked={false} onChange={onChange}>
+          Wrap
+        </Button>
+        <Button role="menuitemcheckbox" aria-checked defaultSelected>
+          Ruler
+        </Button>
+      </>,
+    );
+    const wrap = screen.getByRole('switch', { name: 'Wrap' });
+    expect(wrap).not.toHaveAttribute('aria-pressed');
+    const ruler = screen.getByRole('menuitemcheckbox', { name: 'Ruler' });
+    expect(ruler).not.toHaveAttribute('aria-pressed');
+    expect(ruler).toHaveAttribute('data-selected', 'true');
+    await user.click(wrap);
+    expect(onChange).toHaveBeenCalledWith(true);
+    expect(wrap).not.toHaveAttribute('aria-pressed');
   });
 
   it('UIC-BUTTON-2.6 toggles its own state from defaultSelected and reports each change', async () => {

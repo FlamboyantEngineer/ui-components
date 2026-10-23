@@ -196,7 +196,24 @@ describe('Link', () => {
     await userEvent.click(link);
     expect(onPress).not.toHaveBeenCalled();
     expect(navigate).not.toHaveBeenCalled();
-    expectHooksMatchSpec(container, 'LINK', { slots: 'all' });
+    expectHooksMatchSpec(container, 'LINK');
+  });
+
+  it('UIC-LINK-2.2 UIC-LINK-2.4 says nothing about a new tab for a link that opens nothing', () => {
+    const { container } = render(
+      <>
+        <Link href="/docs" isExternal isDisabled>
+          Docs
+        </Link>
+        <Link isExternal onPress={() => undefined}>
+          Notes
+        </Link>
+      </>,
+    );
+    const [docs, notes] = screen.getAllByRole('link');
+    expect(docs).toHaveAccessibleName('Docs');
+    expect(notes).toHaveAccessibleName('Notes');
+    expect(container.querySelector('.ui-link__external-icon')).toBeNull();
   });
 
   it('UIC-LINK-3.2 UIC-LINK-3.3 takes focus and publishes React Aria states and the current page', async () => {
