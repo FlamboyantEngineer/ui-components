@@ -94,8 +94,10 @@ Verification: `src/components/field/field-state.test.tsx`
 
 A field shall be dirty while its value differs from its committed value by structure (key order and object identity do not count) and publish `data-dirty` on its root. A read-only or disabled field is never dirty.
 
+Values are compared as immutable data: an object or array value is read once, however often it is compared, so a large value costs one walk per change; a value changed in place is not seen as changed.
+
 Implementation: `src/components/field/field-state.ts`, `src/components/field/field-value.ts`, `src/components/field/field.tsx`
-Verification: `src/components/field/field-state.test.tsx`, `src/components/field/field.test.tsx`
+Verification: `src/components/field/field-state.test.tsx`, `src/components/field/field.test.tsx`, `src/components/field/field-value.test.ts`
 
 ### UIC-FIELD-2.4 - Locked fields
 
