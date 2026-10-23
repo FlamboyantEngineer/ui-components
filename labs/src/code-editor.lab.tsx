@@ -290,6 +290,32 @@ function ProblemsEditor() {
   );
 }
 
+function FormEditor() {
+  const [value, setValue] = useState('let basket = pick(fruit.ripe)');
+  const [submitted, setSubmitted] = useState('Nothing submitted yet');
+  return (
+    <form
+      aria-label="Saved query"
+      data-lab-demo="form"
+      onSubmit={(event) => {
+        event.preventDefault();
+        setSubmitted(`Submitted: ${String(new FormData(event.currentTarget).get('source'))}`);
+      }}
+    >
+      <CodeEditor
+        aria-label="Query source"
+        name="source"
+        tokenize={tokenize}
+        size="sm"
+        value={value}
+        onChange={setValue}
+      />
+      <Button type="submit">Submit</Button>
+      <output data-lab-output="form">{submitted}</output>
+    </form>
+  );
+}
+
 const longSource = Array.from(
   { length: 60 },
   (_, index) =>
@@ -381,6 +407,12 @@ mountLab(
       description="Lines 41 to 45 of a longer text, read-only: the gutter starts at 41 and the warning the caller reports at line 43 marks that line. F8 shows its tip."
     >
       <ExcerptEditor />
+    </LabSection>
+    <LabSection
+      title="In a form"
+      description="With a name, the form submits the source under it like any text field."
+    >
+      <FormEditor />
     </LabSection>
     <LabSection
       title="Long source"

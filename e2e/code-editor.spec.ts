@@ -371,6 +371,36 @@ test.describe('Code Editor lab', () => {
     await expect(problems.locator('.ui-code-editor__mark')).toHaveCount(0);
   });
 
+  test('UIC-CODE-EDITOR-1.1 submits the source with its form under its name', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('code-editor');
+    const form = page.locator('[data-lab-demo="form"]');
+    const source = form.getByRole('textbox', { name: 'Query source' });
+    await source.focus();
+    await page.keyboard.press('End');
+    await page.keyboard.type(' // ok');
+    await form.getByRole('button', { name: 'Submit' }).click();
+    await expect(form.locator('[data-lab-output="form"]')).toHaveText(
+      'Submitted: let basket = pick(fruit.ripe) // ok',
+    );
+  });
+
+  test('UIC-CODE-EDITOR-6.3 leaves the editor backwards with Shift+Tab right after Escape', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('code-editor');
+    const source = editor(page, 'editing').getByRole('textbox');
+    await source.focus();
+    const before = await source.inputValue();
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('Shift+Tab');
+    await expect(source).not.toBeFocused();
+    await expect(source).toHaveValue(before);
+  });
+
   test('UIC-CODE-EDITOR-1.1 passes axe in the dark theme', async ({ page, lab }) => {
     await lab.open('code-editor', { theme: 'dark' });
     await editor(page, 'completions').getByRole('textbox').click();

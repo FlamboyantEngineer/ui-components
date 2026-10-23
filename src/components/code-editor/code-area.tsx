@@ -9,6 +9,8 @@ import { alignLayers, type CodeEditorModel } from './use-code-editor.js';
 export interface CodeTextAreaProps extends AriaLabellingProps, KeyboardEventProps {
   /** Shown while the source is empty. */
   placeholder?: string | undefined;
+  /** The form name: a form submits the source under it. */
+  name?: string | undefined;
   /** The id of the element holding the message for an invalid source. */
   'aria-errormessage'?: string | undefined;
   onFocus?: ((event: FocusEvent<HTMLTextAreaElement>) => void) | undefined;
