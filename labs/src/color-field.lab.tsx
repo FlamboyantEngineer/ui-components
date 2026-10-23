@@ -157,6 +157,27 @@ function Saved() {
   );
 }
 
+/** Each named field submits its stored value once; the typed input adds no second entry. */
+function FormValue() {
+  const [entries, setEntries] = useState('none');
+  return (
+    <form
+      onSubmit={(event) => {
+        event.preventDefault();
+        const data = new FormData(event.currentTarget);
+        setEntries(
+          [...data.entries()].map(([name, entry]) => `${name}=${String(entry)}`).join(' '),
+        );
+      }}
+    >
+      <ColorField label="Brand" name="brand" defaultValue="#336699" format="rgb" />
+      <ColorField label="Highlight" name="highlight" defaultValue="#e69500" allowsTyping />
+      <button type="submit">Submit</button>
+      <Output name="Form">{entries}</Output>
+    </form>
+  );
+}
+
 mountLab(
   <>
     <LabSection title="Layouts and states" description="Every label layout against every state.">
@@ -209,6 +230,9 @@ mountLab(
       description="Pick, then restore, undo with Ctrl+Z, or use the field menu."
     >
       <Saved />
+    </LabSection>
+    <LabSection title="Form value" description="A named field submits its stored colour.">
+      <FormValue />
     </LabSection>
   </>,
 );
