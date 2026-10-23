@@ -1,4 +1,5 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
+import { useState } from 'react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -185,6 +186,46 @@ describe('NotificationList', () => {
     expectHooksMatchSpec(container, 'NOTIFICATION-CENTER', {
       slots: ['item-actions', 'read-toggle', 'dismiss'],
     });
+  });
+
+  it('UIC-NOTIFICATION-CENTER-1.4 moves focus to a neighbour when a focused row leaves', async () => {
+    const user = userEvent.setup();
+    function Inbox({ filter }: { filter?: 'unread' }) {
+      const [list, setList] = useState(items.slice(1, 4));
+      return (
+        <NotificationList
+          items={list}
+          getNow={getNow}
+          filter={filter}
+          onDismiss={(key) => setList((current) => current.filter((item) => item.id !== key))}
+          onReadChange={(key, isRead) =>
+            setList((current) =>
+              current.map((item) => (item.id === key ? { ...item, isRead } : item)),
+            )
+          }
+        />
+      );
+    }
+    const { unmount } = render(<Inbox />);
+    await user.click(within(row('Import finished')).getByRole('button', { name: 'Mark as unread' }));
+    expect(within(row('Import finished')).getByRole('button', { name: 'Mark as read' })).toHaveFocus();
+    // The only notification of today leaves with its day; focus goes to the next day's row.
+    await user.click(within(row('Import finished')).getByRole('button', { name: 'Dismiss' }));
+    await waitFor(() =>
+      expect(within(row('Jon Berg replied')).getByRole('button', { name: 'Dismiss' })).toHaveFocus(),
+    );
+    await user.keyboard('{Enter}');
+    await waitFor(() =>
+      expect(within(row('Weekly digest')).getByRole('button', { name: 'Dismiss' })).toHaveFocus(),
+    );
+    await user.keyboard('{Enter}');
+    await waitFor(() =>
+      expect(screen.getByRole('radio', { name: /^All/ })).toHaveFocus(),
+    );
+    unmount();
+    render(<Inbox filter="unread" />);
+    await user.click(within(row('Jon Berg replied')).getByRole('button', { name: 'Mark as read' }));
+    await waitFor(() => expect(screen.getByRole('radio', { name: /^Unread/ })).toHaveFocus());
   });
 
   it('UIC-NOTIFICATION-CENTER-1.5 filters to unread notifications', async () => {

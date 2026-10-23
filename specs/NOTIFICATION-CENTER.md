@@ -31,9 +31,9 @@ Verification: `src/components/notification-center/notification-list.test.tsx`, `
 
 ### UIC-NOTIFICATION-CENTER-1.4 - Row actions
 
-With `onReadChange`, each row shall end with an `IconButton` (`ui-notification-list__read-toggle`) named and hinted by the provider's `markRead` string with the `envelope-open` glyph while unread, or `markUnread` with the `envelope` glyph while read, which calls `onReadChange(id, isRead)` with the opposite state. With `onDismiss`, a `close` `IconButton` (`ui-notification-list__dismiss`) named by the provider's `dismiss` string calls `onDismiss(id)`. `renderActions(item)` draws the caller's controls for a notification, such as Accept and Decline, in `ui-notification-list__item-actions` before them. These controls follow the row's link or button, never inside it.
+With `onReadChange`, each row shall end with an `IconButton` (`ui-notification-list__read-toggle`) named and hinted by the provider's `markRead` string with the `envelope-open` glyph while unread, or `markUnread` with the `envelope` glyph while read, which calls `onReadChange(id, isRead)` with the opposite state. With `onDismiss`, a `close` `IconButton` (`ui-notification-list__dismiss`) named by the provider's `dismiss` string calls `onDismiss(id)`. `renderActions(item)` draws the caller's controls for a notification, such as Accept and Decline, in `ui-notification-list__item-actions` before them. These controls follow the row's link or button, never inside it. When a row leaves the list while focus is inside it, such as after a dismissal or a read toggle under the unread filter, focus shall move to the same control of the next row, else of the previous row (across days), else to the filter's chosen option, so it never falls to the page.
 
-Implementation: `src/components/notification-center/notification-row.tsx`, `src/core/glyphs.tsx`
+Implementation: `src/components/notification-center/notification-row.tsx`, `src/components/notification-center/use-removal-focus.ts`, `src/core/glyphs.tsx`
 Verification: `src/components/notification-center/notification-list.test.tsx`, `e2e/notification-center.spec.ts`
 
 ### UIC-NOTIFICATION-CENTER-1.5 - Filter
