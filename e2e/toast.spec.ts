@@ -166,6 +166,35 @@ test.describe('Toast lab', () => {
     await expect(toast).toHaveCount(0);
   });
 
+  test('UIC-TOAST-1.2 UIC-TOAST-4.3 expands while the region holds focus, and only then', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('toast');
+    await page.mouse.move(0, 0);
+    const pushShort = page.locator('[data-lab-push="short"]');
+    const region = page.locator('.ui-toast-region');
+    await pushShort.focus();
+    await page.keyboard.press('Enter');
+    await expect(region).toBeVisible();
+    await expect(async () => {
+      await page.keyboard.press('F6');
+      await expect(region).toBeFocused({ timeout: 100 });
+    }).toPass();
+    await expect(region).toHaveAttribute('data-expanded', 'true');
+    await page.waitForTimeout(2000);
+    await expect(region.getByRole('alertdialog', { name: 'Copied' })).toBeVisible();
+
+    await region.getByRole('button', { name: 'Dismiss' }).focus();
+    await page.keyboard.press('Enter');
+    await expect(region).toHaveCount(0);
+    await pushShort.focus();
+    await page.keyboard.press('Enter');
+    await expect(region).toBeVisible();
+    await expect(region).not.toHaveAttribute('data-expanded');
+    await expect(region).toHaveCount(0, { timeout: 5000 });
+  });
+
   test('UIC-TOAST-4.3 piles toasts and spreads them while the region is hovered', async ({
     page,
     lab,

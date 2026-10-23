@@ -8,11 +8,14 @@ import {
   useEffect,
   useMemo,
   useState,
-  type FocusEvent,
-  type PointerEvent,
   type RefObject,
 } from 'react';
-import { UNSTABLE_ToastStateContext as ToastStateContext } from '../../primitives/index.js';
+import {
+  UNSTABLE_ToastStateContext as ToastStateContext,
+  useFocusWithin,
+  useHover,
+} from '../../primitives/index.js';
+import { mergeProps } from '../../utils/merge-props.js';
 import { useElementSize } from '../../utils/use-element-size.js';
 import type { ToastSwipeDirection } from './use-toast-swipe.js';
 
@@ -29,6 +32,8 @@ interface ToastStackValue {
   /** Measured toast heights by key. */
   heights: ReadonlyMap<string, number>;
   report: (key: string, height: number | undefined) => void;
+  /** The region is hovered or holds focus, so its toasts' timers stay paused. */
+  isPaused: boolean;
 }
 
 /** A toast's place in its stack. */
@@ -48,15 +53,19 @@ const ToastStackContext = createContext<ToastStackValue>({
   swipeThreshold: defaultSwipeThreshold,
   heights: new Map(),
   report: () => {},
+  isPaused: false,
 });
 
 export const ToastStackProvider = ToastStackContext.Provider;
 
-/** The stack a region or list provides: its swipe settings and its toasts' measured heights. */
-export function useToastStack({
-  swipeDirection = 'right',
-  swipeThreshold = defaultSwipeThreshold,
-}: ToastStackSettings): ToastStackValue {
+/**
+ * The stack a region or list provides: its swipe settings, its toasts' measured heights and whether
+ * their timers are paused.
+ */
+export function useToastStack(
+  { swipeDirection = 'right', swipeThreshold = defaultSwipeThreshold }: ToastStackSettings,
+  isPaused = false,
+): ToastStackValue {
   const [heights, setHeights] = useState<ReadonlyMap<string, number>>(() => new Map());
   const report = useCallback((key: string, height: number | undefined) => {
     setHeights((current) => {
@@ -68,9 +77,14 @@ export function useToastStack({
     });
   }, []);
   return useMemo(
-    () => ({ swipeDirection, swipeThreshold, heights, report }),
-    [swipeDirection, swipeThreshold, heights, report],
+    () => ({ swipeDirection, swipeThreshold, heights, report, isPaused }),
+    [swipeDirection, swipeThreshold, heights, report, isPaused],
   );
+}
+
+/** Whether the toast's stack holds its timers: its region is hovered or holds focus. */
+export function useIsStackPaused(): boolean {
+  return useContext(ToastStackContext).isPaused;
 }
 
 /** Measures the toast in `ref` into its stack and returns its index and offset there. */
@@ -94,21 +108,18 @@ export function useToastStackPosition(
 }
 
 /**
- * Whether the pointer is over the region or focus is inside its list: the stack is expanded. React
- * Aria's region forwards pointer handlers but not focus ones, so those go on the list.
+ * Whether the pointer is over the region or focus is inside it, on the region itself included: the
+ * stack is expanded and its timers pause. React Aria's hover and focus-within also end when a toast
+ * under the pointer or holding focus leaves and the pointer or focus moves on; a region left without
+ * toasts has neither. `regionProps` go on the region element.
  */
-export function useStackExpanded() {
-  const [isHovered, setHovered] = useState(false);
+export function useStackExpanded(hasToasts: boolean) {
   const [isFocused, setFocused] = useState(false);
-  const pointerHandlers = {
-    onPointerEnter: (event: PointerEvent) => setHovered(event.pointerType !== 'touch'),
-    onPointerLeave: () => setHovered(false),
+  const { hoverProps, isHovered } = useHover({ isDisabled: !hasToasts });
+  const { focusWithinProps } = useFocusWithin({ onFocusWithinChange: setFocused });
+  if (!hasToasts && isFocused) setFocused(false);
+  return {
+    isExpanded: isHovered || isFocused,
+    regionProps: mergeProps(hoverProps, focusWithinProps),
   };
-  const focusHandlers = {
-    onFocus: () => setFocused(true),
-    onBlur: (event: FocusEvent) => {
-      if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false);
-    },
-  };
-  return { isExpanded: isHovered || isFocused, pointerHandlers, focusHandlers };
 }
