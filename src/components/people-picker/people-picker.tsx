@@ -69,6 +69,8 @@ export interface PeoplePickerProps<M extends ComboboxSelectionMode = 'single'>
   currentUser?: PeoplePickerPerson | undefined;
   /** People chosen recently, listed under a heading before a search. */
   recent?: readonly PeoplePickerPerson[] | undefined;
+  /** People listed before a search without a heading, such as those a saved value holds, so their names show without a search. */
+  knownPeople?: readonly PeoplePickerPerson[] | undefined;
 }
 
 const hooks = createHooks('people-picker', ['person', 'you', 'avatar']);
@@ -89,15 +91,21 @@ function toOption(person: PeoplePickerPerson): ComboboxOption {
   };
 }
 
-/** The people listed before a search: the current user, then the recent ones under a heading. */
+/**
+ * The people listed before a search, each once: the current user, the known people, then the recent
+ * ones under a heading.
+ */
 function toIdleItems(
-  currentUser: PeoplePickerPerson | undefined,
-  recent: readonly PeoplePickerPerson[],
+  people: Pick<PeoplePickerProps, 'currentUser' | 'knownPeople' | 'recent'>,
   section: { id: string; title: string },
 ): ComboboxItem[] {
-  const others = recent.filter((person) => person.id !== currentUser?.id);
+  const { currentUser, knownPeople = [], recent = [] } = people;
+  const known = knownPeople.filter((person) => person.id !== currentUser?.id);
+  const listed = new Set([currentUser?.id, ...known.map((person) => person.id)]);
+  const others = recent.filter((person) => !listed.has(person.id));
   return [
     ...(currentUser ? [toOption(currentUser)] : []),
+    ...known.map(toOption),
     ...(others.length > 0 ? [{ ...section, options: others.map(toOption) }] : []),
   ];
 }
@@ -153,13 +161,14 @@ function PersonRow({
 
 /**
  * A field for choosing one or more people or groups, on `Combobox`: it searches through `loadItems`
- * as the reader types, lists the current user and recent people before a search, draws each person
+ * as the reader types, lists the current user, known and recent people before a search, draws each person
  * with `UserIdentity`, and shows chosen people of a multiple picker as chips with their avatars.
  */
 export function PeoplePicker<M extends ComboboxSelectionMode = 'single'>({
   loadItems,
   currentUser,
   recent = [],
+  knownPeople = [],
   size = 'md',
   className,
   ...rest
@@ -168,7 +177,7 @@ export function PeoplePicker<M extends ComboboxSelectionMode = 'single'>({
   const sectionId = useId();
   const { found, load } = usePeopleSearch(loadItems);
   const people = new Map(found);
-  for (const person of [...recent, ...(currentUser ? [currentUser] : [])]) {
+  for (const person of [...recent, ...knownPeople, ...(currentUser ? [currentUser] : [])]) {
     people.set(person.id, person);
   }
   return (
@@ -177,7 +186,10 @@ export function PeoplePicker<M extends ComboboxSelectionMode = 'single'>({
       className={mergeClassNames(hooks.className, className)}
       size={size}
       loadItems={load}
-      items={toIdleItems(currentUser, recent, { id: sectionId, title: strings.recentPeople })}
+      items={toIdleItems(
+        { currentUser, knownPeople, recent },
+        { id: sectionId, title: strings.recentPeople },
+      )}
       renderOption={(option) => {
         const person = people.get(option.id);
         return person ? (

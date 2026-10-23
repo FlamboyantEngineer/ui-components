@@ -69,6 +69,8 @@ function PersonValue({ field, condition, labelLayout, slotClass, setValue }: Val
   const loadItems = usePeopleLoader(field);
   const value = condition.value as readonly string[];
   const name = labelLayout === 'control-only' ? { 'aria-label': strings.filterValue } : {};
+  // The chosen people are known from the field's options, so they show by name before a search.
+  const chosen = toPeople(field.options).filter((person) => value.includes(String(person.id)));
   return (
     <PeoplePicker
       {...name}
@@ -76,6 +78,7 @@ function PersonValue({ field, condition, labelLayout, slotClass, setValue }: Val
       label={labelLayout === 'label-control' ? strings.filterValue : undefined}
       selectionMode="multiple"
       loadItems={loadItems}
+      knownPeople={chosen}
       value={[...value]}
       onChange={(keys) => setValue(keys.map(String))}
     />

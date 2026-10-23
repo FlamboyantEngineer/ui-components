@@ -89,4 +89,20 @@ test.describe('People Picker lab', () => {
     expect((await avatar.boundingBox())?.width).toBe(16);
     await lab.expectAccessible();
   });
+
+  test('UIC-PEOPLE-PICKER-3.5 names the people of a saved value before a search', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('people-picker');
+    const area = section(page, 'Saved value');
+    const chips = area.getByRole('grid', { name: 'Watchers selected values' });
+    await expect(chips.getByRole('row').nth(0)).toHaveAccessibleName('Chen Wei');
+    await expect(chips.getByRole('row').nth(1)).toHaveAccessibleName('Support desk');
+    await area.getByRole('combobox', { name: 'Watchers' }).focus();
+    await page.keyboard.press('ArrowDown');
+    const listbox = page.getByRole('listbox');
+    await expect(listbox.getByRole('option')).toHaveCount(2);
+    await expect(listbox.getByRole('option').nth(0)).toContainText('Chen Wei');
+  });
 });
