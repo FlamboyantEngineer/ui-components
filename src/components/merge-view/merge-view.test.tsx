@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { UiProvider } from '../../core/provider.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { MergeView } from './merge-view.js';
 
@@ -230,6 +231,24 @@ describe('MergeView', { timeout: 15_000 }, () => {
       'data-resolution',
       'unresolved',
     );
+  });
+
+  it('UIC-MERGE-VIEW-2.4 does not redraw the input sides while a result is typed', async () => {
+    const user = userEvent.setup();
+    const drawLine = vi.fn((change: string, number: number) => `${change} line ${number}`);
+    render(
+      <UiProvider strings={{ mergeViewLine: drawLine }}>
+        <MergeView base={base} ours={ours} theirs={theirs} />
+      </UiProvider>,
+    );
+    const editor = within(
+      screen.getByRole('group', { name: 'Conflict 1 of 1' }),
+    ).getByRole<HTMLTextAreaElement>('textbox');
+    await user.type(editor, 'x');
+    drawLine.mockClear();
+    await user.type(editor, 'yz');
+    expect(editor.value).toMatch(/xyz$/);
+    expect(drawLine).not.toHaveBeenCalled();
   });
 
   it('UIC-MERGE-VIEW-3.1 counts the unresolved conflicts', async () => {
