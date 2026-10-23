@@ -1,7 +1,7 @@
 import { useEffect, type RefObject } from 'react';
 import type { PdfEngine } from './pdf-engine.js';
 import { resolveZoomPercent } from './pdf-zoom.js';
-import { useLatest } from './use-latest.js';
+import { useLatest } from '../../utils/use-latest.js';
 import type { PdfZoomState } from './use-pdf-zoom.js';
 
 export interface UsePinchZoomOptions {

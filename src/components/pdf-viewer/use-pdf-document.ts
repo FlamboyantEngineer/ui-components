@@ -12,7 +12,7 @@ import {
   type PdfViewport,
 } from './pdf-engine.js';
 import type { PdfSize } from './pdf-zoom.js';
-import { useLatest } from './use-latest.js';
+import { useLatest } from '../../utils/use-latest.js';
 
 export type PdfDocumentStatus = 'loading' | 'password' | 'ready' | 'error';
 

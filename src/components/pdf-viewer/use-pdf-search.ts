@@ -10,7 +10,7 @@ import {
   type PdfSearchOptions,
 } from './pdf-search.js';
 import type { LoadedPdf } from './use-pdf-document.js';
-import { useLatest } from './use-latest.js';
+import { useLatest } from '../../utils/use-latest.js';
 import type { PdfPagesController } from './use-pdf-pages.js';
 
 export interface UsePdfSearchOptions {

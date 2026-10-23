@@ -444,6 +444,13 @@ describe('Board', () => {
     });
   });
 
+  it('UIC-BOARD-3.2 publishes the column handle chords and its keyboard drag description', () => {
+    render(<TaskBoard onColumnMove={vi.fn()} />);
+    const handle = screen.getByRole('button', { name: 'Move column To do' });
+    expect(handle).toHaveAttribute('aria-keyshortcuts', 'Alt+ArrowLeft Alt+ArrowRight');
+    expect(handle).toHaveAccessibleDescription(/\S/);
+  });
+
   it('UIC-BOARD-3.2 moves a column with Alt+Arrow keys on its handle', async () => {
     const onColumnMove = vi.fn<(move: BoardColumnMove) => void>();
     function Reordering() {
