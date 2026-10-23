@@ -29,7 +29,7 @@ Verification: `src/components/character-grid/character-grid.test.tsx`, `e2e/char
 
 ### UIC-CHARACTER-GRID-1.4 - Preview
 
-The `ui-character-grid__preview` shall show the character last hovered or focused: the character in `ui-character-grid__preview-char`, its name in `ui-character-grid__preview-name` and its code points in Unicode notation (`U+00A9`, separated by spaces for a sequence) in `ui-character-grid__preview-code`. It is empty before any, and hidden from assistive technology, since the focused cell already announces its name.
+The `ui-character-grid__preview` shall show the character last hovered or focused: the character in `ui-character-grid__preview-char`, its name in `ui-character-grid__preview-name` and its code points in Unicode notation (`U+00A9`, separated by spaces for a sequence) in `ui-character-grid__preview-code`. It is empty before any, and hidden from assistive technology, since the focused cell already announces its name. Hovering or focusing a cell shall redraw the preview, not the cells.
 
 Implementation: `src/components/character-grid/character-grid.tsx`, `src/components/character-grid/character-filter.ts`
 Verification: `src/components/character-grid/character-filter.test.ts`, `src/components/character-grid/character-grid.test.tsx`
