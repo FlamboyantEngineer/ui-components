@@ -82,6 +82,11 @@ describe('JSON parse checks', () => {
     });
     expect(locateJsonError(source, 'JSON Parse error: Unexpected identifier')).toBeNull();
   });
+
+  it('UIC-JSON-EDITOR-2.2 locates a deep unfinished container without a call-stack limit', () => {
+    const source = '{"a":['.repeat(20_000) + '1';
+    expect(findJsonError(source)?.location).toEqual({ line: 1, column: source.length + 1 });
+  });
 });
 
 describe('formatJson', () => {
@@ -90,5 +95,14 @@ describe('formatJson', () => {
     expect(formatJson('{"a":1}', 4)).toBe('{\n    "a": 1\n}');
     expect(formatJson('{"a":', 2)).toBeNull();
     expect(formatJson(' ', 2)).toBeNull();
+  });
+
+  it('UIC-JSON-EDITOR-3.1 formats deep values and retains native JSON normalization', () => {
+    const source = '['.repeat(20_000) + '1' + ']'.repeat(20_000);
+    expect(formatJson(source, 0)).toBe(source);
+    const sample = '{"20":-0,"2":1e400,"a":1,"a":2,"__proto__":{"x":"\\\\"},"empty":[]}';
+    for (const indent of [0, 2, 4, 20, -1, 1.5]) {
+      expect(formatJson(sample, indent)).toBe(JSON.stringify(JSON.parse(sample), null, indent));
+    }
   });
 });

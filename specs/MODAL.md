@@ -80,7 +80,7 @@ Verification: `src/components/modal/modal.test.tsx`, `e2e/modal.spec.ts`
 
 ### UIC-MODAL-3.1 - Initial focus
 
-When the modal opens, focus shall move to the element inside it that has `autoFocus` (including a footer action with `autoFocus`); otherwise, with `initialFocus="first"` (the default), to the first focusable element of the body, then of the footer, then of the header; otherwise to the dialog element. `initialFocus="dialog"` focuses the dialog element.
+When the modal opens, focus shall move to the element inside it that has `autoFocus` (including a footer action with `autoFocus`); otherwise, with `initialFocus="first"` (the default), to the first focusable element of the body, then of the footer, then of the header; otherwise to the dialog element. Unavailable elements, including ones hidden by CSS or disabled by a fieldset, shall be skipped. `initialFocus="dialog"` focuses the dialog element.
 
 Implementation: `src/components/modal/modal.tsx`, `src/components/modal/modal-focus.tsx`
 Verification: `src/components/modal/modal.test.tsx`, `e2e/modal.spec.ts`
@@ -101,7 +101,7 @@ Verification: `src/components/modal/modal.test.tsx`, `e2e/modal.spec.ts`
 
 ### UIC-MODAL-3.4 - Chosen focus targets
 
-`initialFocus` given a ref or a function returning an element shall focus that element on open, ahead of an `autoFocus` element, and fall back to `first` when it names no element in the document. `finalFocus`, a ref or a function asked at that moment, shall receive focus when the dialog leaves the page instead of the element focused when it opened, provided focus was still inside the dialog or on the body.
+`initialFocus` given a ref or a function returning an element shall focus that element on open, ahead of an `autoFocus` element, and fall back to `first` when it names no element in the document or the browser refuses to focus it. `finalFocus`, a ref or a function asked at that moment, shall receive focus when the dialog leaves the page instead of the element focused when it opened, provided focus was still inside the dialog or on the body.
 
 Implementation: `src/components/modal/modal-focus.tsx`, `src/components/modal/modal-dialog.tsx`, `src/utils/focus-target.ts`
 Verification: `src/components/modal/modal-focus.test.tsx`, `e2e/modal.spec.ts`

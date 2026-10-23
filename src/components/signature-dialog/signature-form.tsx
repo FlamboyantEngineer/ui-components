@@ -1,4 +1,5 @@
 import { useImperativeHandle, useRef, useState, type Ref } from 'react';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { createHooks } from '../../core/hooks.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -80,7 +81,11 @@ function MeaningChoice({
   return (
     <RadioGroup label={strings.signatureMeaning} isRequired value={value} onChange={onChange}>
       {meanings.map((meaning) => (
-        <Radio key={meaning.id} value={String(meaning.id)} description={meaning.description}>
+        <Radio
+          key={toKeyIdentity(meaning.id)}
+          value={toKeyIdentity(meaning.id)}
+          description={meaning.description}
+        >
           {meaning.label}
         </Radio>
       ))}
@@ -147,13 +152,15 @@ export function SignatureForm({
   const isValid = useRef(false);
   const [typedUserName, setTypedUserName] = useState('');
   const [password, setPassword] = useState('');
-  const [meaning, setMeaning] = useState(meanings.length === 1 ? String(meanings[0]?.id) : null);
+  const [meaning, setMeaning] = useState(
+    meanings.length === 1 ? toKeyIdentity(meanings[0]!.id) : null,
+  );
   const [reasonText, setReasonText] = useState('');
   const [signature, setSignature] = useState<SignatureValue | null>(null);
   useImperativeHandle(submitRef, () => (close: () => void) => {
     isValid.current = false;
     form.current?.requestSubmit();
-    const chosen = meanings.find((entry) => String(entry.id) === meaning);
+    const chosen = meanings.find((entry) => toKeyIdentity(entry.id) === meaning);
     if (!isValid.current || !chosen) return undefined;
     const details: SignatureDetails = {
       userName: credentials === 'username-password' ? typedUserName : userName,

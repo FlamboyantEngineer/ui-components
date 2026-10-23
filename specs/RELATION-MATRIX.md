@@ -52,6 +52,8 @@ Verification: `src/components/relation-matrix/matrix-navigation.test.ts`, `src/c
 
 With `onCellAction`, a press on a body cell, or Enter or Space while it has focus, shall call `onCellAction({ row, column, relation })` with the cell's row and column keys and its relation (`null` for an empty cell), and the root publishes `data-actionable`. The matrix never changes its relations itself: the owner adds or removes the relation and renders the matrix again; `toggleRelation(relations, { row, column, kind })` returns the relations with that cell's relation removed, or added with `kind` when it had none. Without `onCellAction` a press only moves focus.
 
+Numeric and text keys with the same characters shall remain separate row and column identities during rendering, navigation and actions.
+
 Implementation: `src/components/relation-matrix/relation-matrix.tsx`, `src/components/relation-matrix/relation-matrix-row.tsx`, `src/components/relation-matrix/use-matrix-navigation.ts`, `src/components/relation-matrix/relation-matrix-model.ts`
 Verification: `src/components/relation-matrix/relation-matrix.test.tsx`, `src/components/relation-matrix/relation-matrix-model.test.ts`, `e2e/relation-matrix.spec.ts`
 

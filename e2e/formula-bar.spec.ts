@@ -1,3 +1,4 @@
+import { toCollectionKey } from '../src/utils/to-collection-key.js';
 import type { Page } from '@playwright/test';
 import { expect, test } from './fixtures.js';
 
@@ -11,7 +12,7 @@ function spreadsheet(page: Page) {
     result: root.locator('.ui-formula-bar__result'),
     output: root.locator('[data-lab-output]'),
     cell: (row: number, column: string) =>
-      grid.locator(`[data-key="row-${row}"] > [data-column="${column}"]`),
+      grid.locator(`[data-key="${toCollectionKey(`row-${row}`)}"] > [data-column="${column}"]`),
   };
 }
 

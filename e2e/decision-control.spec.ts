@@ -43,6 +43,9 @@ test.describe('Decision Control lab', () => {
     await expect(failing.getByRole('alert')).toHaveText(
       'The review closed before your decision arrived.',
     );
+    const throwing = page.getByRole('form', { name: 'Submit and throw' });
+    await throwing.getByRole('button', { name: 'Submit' }).click();
+    await expect(throwing.getByRole('alert')).toHaveText('The decision could not be recorded.');
   });
 
   test('UIC-DECISION-CONTROL-1.3 asks a reason for negative votes only', async ({ page, lab }) => {

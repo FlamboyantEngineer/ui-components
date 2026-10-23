@@ -16,14 +16,14 @@ import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 const today = '2026-03-11';
 
 const smallRows: TimelineRow[] = [
-  { id: 'prep', label: 'Preparation' },
-  { id: 'cook', label: 'Cooking' },
+  { id: 1, label: 'Preparation' },
+  { id: '1', label: 'Cooking' },
 ];
 
 const smallItems: TimelineItem[] = [
   {
-    id: 'shop',
-    rowId: 'prep',
+    id: 2,
+    rowId: 1,
     label: 'Shopping',
     start: '2026-03-02',
     end: '2026-03-06',
@@ -31,8 +31,8 @@ const smallItems: TimelineItem[] = [
     tone: 'success',
   },
   {
-    id: 'chop',
-    rowId: 'prep',
+    id: '2',
+    rowId: 1,
     label: 'Chopping',
     start: '2026-03-09',
     end: '2026-03-13',
@@ -40,17 +40,17 @@ const smallItems: TimelineItem[] = [
   },
   {
     id: 'stew',
-    rowId: 'cook',
+    rowId: '1',
     label: 'Slow stew',
     start: '2026-03-12',
     end: '2026-03-25',
     tone: 'info',
   },
-  { id: 'serve', rowId: 'cook', label: 'Dinner', start: '2026-03-27', kind: 'milestone' },
+  { id: 'serve', rowId: '1', label: 'Dinner', start: '2026-03-27', kind: 'milestone' },
 ];
 
 const smallDependencies = [
-  { from: 'chop', to: 'stew' },
+  { from: '2', to: 'stew' },
   { from: 'stew', to: 'serve' },
 ];
 
@@ -232,7 +232,7 @@ function StateCell({ state }: { state: string }) {
       <Timeline
         {...props}
         selectionMode="single"
-        defaultSelectedKeys={state === 'selected' ? ['chop'] : []}
+        defaultSelectedKeys={state === 'selected' ? ['2'] : []}
         defaultExpandedKeys={state === 'collapsed' ? [] : undefined}
       />
     </div>
@@ -301,7 +301,7 @@ mountLab(
   <>
     <LabSection
       title="Zoom levels"
-      description="Days, weeks, months and quarters over the same plan, with progress, a milestone, dependencies and the today marker. Editable timelines move and resize their bars; fixed ones do not."
+      description="Days, weeks, months and quarters over the same plan, with progress, a milestone, dependencies and the today marker. Editable timelines move and resize their bars; fixed ones do not. The rows and items include numeric and text keys with the same spelling."
     >
       <StateMatrix
         axes={{ scale: ['day', 'week', 'month', 'quarter'], mode: ['editable', 'fixed'] }}

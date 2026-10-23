@@ -12,9 +12,9 @@ const maria = { name: 'Maria Santos', colorKey: 'maria' };
 const jon = { name: 'Jon Berg', src: samplePicture, colorKey: 'jon' };
 
 const changes: ChangeListChange[] = [
-  { id: 'status', label: 'Status', before: 'Draft', after: 'Approved' },
+  { id: 1, label: 'Status', before: 'Draft', after: 'Approved' },
   {
-    id: 'method',
+    id: '1',
     label: 'Method',
     type: 'text',
     before: 'Knead the dough for ten minutes, then rest it covered for an hour.',

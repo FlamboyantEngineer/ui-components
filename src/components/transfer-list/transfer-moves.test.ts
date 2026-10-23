@@ -74,4 +74,17 @@ describe('stepChosenKeys', () => {
     expect(canStepChosenKeys(chosen, { selected: new Set(['d']), step: 1 })).toBe(false);
     expect(canStepChosenKeys(chosen, { selected: new Set(), step: 1 })).toBe(false);
   });
+
+  it('UIC-TRANSFER-LIST-2.4 matches movement availability for every partial selection', () => {
+    const keys = [0, '', 1, '1', 'last'];
+    for (let mask = 0; mask < 2 ** keys.length; mask += 1) {
+      const selected = new Set(keys.filter((_, index) => (mask & (1 << index)) !== 0));
+      for (const step of [-1, 1] as const) {
+        const moved = stepChosenKeys(keys, { selected, step });
+        expect(canStepChosenKeys(keys, { selected, step })).toBe(
+          moved.some((key, index) => key !== keys[index]),
+        );
+      }
+    }
+  });
 });

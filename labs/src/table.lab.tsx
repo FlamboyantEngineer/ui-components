@@ -19,6 +19,7 @@ import {
   Summary,
 } from './table-cases.js';
 import { BulkEdit, Grouping, SmallSteps, Spreadsheet } from './table-sheet-cases.js';
+import { GroupKeyTable, TypedTable } from './collection-identity-cases.js';
 
 interface Fruit {
   id: string;
@@ -377,6 +378,18 @@ mountLab(
     </LabSection>
     <LabSection title="Summary row" description="Totals of every row the filter keeps.">
       <Summary />
+    </LabSection>
+    <LabSection
+      title="Distinct row keys"
+      description="Numeric, text and spaced keys name separate rows. Select, edit or expand each row independently."
+    >
+      <TypedTable />
+    </LabSection>
+    <LabSection
+      title="Independent group and row expansion"
+      description="The group's generated key avoids the parent's similarly named row key. Expand the parent, collapse the group and reopen it: the child's visibility is retained."
+    >
+      <GroupKeyTable />
     </LabSection>
     <LabSection
       title="Loading more"

@@ -30,7 +30,12 @@ function insertCompletion(
   if (!input) return;
   const end = Math.max(range.end, input.selectionStart);
   const indentation = indentationAt(input.value, range.start);
-  const parsed = indentInsertion(parseSnippet(option.insertText ?? option.label), indentation);
+  const parsed = indentInsertion(
+    option.insertText === undefined
+      ? { text: option.label, fields: [] }
+      : parseSnippet(option.insertText),
+    indentation,
+  );
   const length = input.value.length - (end - range.start) + parsed.text.length;
   const stops = [...parsed.fields, { start: parsed.text.length, end: parsed.text.length }].map(
     (stop) => ({ start: range.start + stop.start, end: range.start + stop.end }),

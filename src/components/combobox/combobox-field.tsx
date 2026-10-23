@@ -12,6 +12,7 @@ import {
   Group,
   Input,
 } from '../../primitives/index.js';
+import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { createHooks } from '../../core/hooks.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { IconButton } from '../icon-button/icon-button.js';
@@ -145,4 +146,28 @@ export function ComboboxField({
       </AriaButton>
     </Group>
   );
+}
+
+/** Submits original keys while collection primitives use their encoded identities. */
+export function ComboboxInputs({
+  name,
+  isDisabled,
+  isCustom,
+}: {
+  name: string | undefined;
+  isDisabled: boolean | undefined;
+  isCustom: boolean | undefined;
+}) {
+  const state = useContext(ComboBoxStateContext);
+  if (!name || isCustom) return null;
+  const keys = Array.isArray(state?.value) ? state.value : [state?.value ?? ''];
+  return keys.map((key) => (
+    <input
+      key={String(key)}
+      type="hidden"
+      name={name}
+      value={String(fromCollectionKey(key))}
+      disabled={isDisabled}
+    />
+  ));
 }

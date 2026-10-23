@@ -45,9 +45,32 @@ describe('timeline layout', () => {
       rowHeight: 36,
     });
     expect(connectors).toEqual([
-      { key: 'a>b', path: 'M96,18H104V36H56V54H64M60,50L64,54L60,58', hasConflict: false },
+      {
+        key: '["[\\"string\\",\\"a\\"]","[\\"string\\",\\"b\\"]"]',
+        path: 'M96,18H104V36H56V54H64M60,50L64,54L60,58',
+        hasConflict: false,
+      },
     ]);
     expect(predecessors.get('b')).toEqual({ names: ['Survey', 'Hidden'], hasConflict: true });
+  });
+
+  it('UIC-TIMELINE-1.7 gives typed and delimiter-bearing dependency endpoints distinct connector identities', () => {
+    const keys = [1, '1', 2, '2', 'a>b', 'a', 'b>c', 'c'];
+    const dependencies = [
+      { from: 1, to: 2 },
+      { from: '1', to: '2' },
+      { from: 'a>b', to: 'c' },
+      { from: 'a', to: 'b>c' },
+    ];
+    const { connectors } = resolveTimelineLayout({
+      axis,
+      rows,
+      rowHeight: 36,
+      dependencies,
+      items: keys.map((id) => ({ id, rowId: 'one', label: String(id), start: '2026-03-02' })),
+    });
+    expect(connectors).toHaveLength(4);
+    expect(new Set(connectors.map((connector) => connector.key)).size).toBe(4);
   });
 
   it('UIC-TIMELINE-1.7 reads an item’s dates once across many dependencies', () => {

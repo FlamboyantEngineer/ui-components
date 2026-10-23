@@ -1,6 +1,7 @@
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
+import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { SelectField, type SelectFieldOption } from './select-field.js';
 
@@ -32,7 +33,9 @@ function trigger(name: RegExp | string = /Fruit$/) {
 }
 
 function optionNames() {
-  return screen.getAllByRole('option').map((option) => option.getAttribute('data-key'));
+  return screen
+    .getAllByRole('option')
+    .map((option) => fromCollectionKey(option.getAttribute('data-key') ?? ''));
 }
 
 describe('SelectField list', () => {

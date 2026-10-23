@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, type FocusEvent } from 'react';
 import type { Key } from '../../core/props.js';
+import { fromCollectionKey } from '../../utils/from-collection-key.js';
+import { toCollectionKey } from '../../utils/to-collection-key.js';
 import type { CompareTreeNode } from '../../utils/compare-trees.js';
 import { findNextChange, type TreeCompareRowIndex } from './tree-compare-rows.js';
 
@@ -13,7 +15,7 @@ export interface TreeCompareNavigationOptions<T extends CompareTreeNode> {
 
 function findRowElement(tree: HTMLElement | null, key: Key): HTMLElement | undefined {
   const rows = tree?.querySelectorAll<HTMLElement>('[role="row"]') ?? [];
-  return [...rows].find((row) => row.getAttribute('data-key') === String(key));
+  return [...rows].find((row) => row.getAttribute('data-key') === toCollectionKey(key));
 }
 
 /**
@@ -63,7 +65,9 @@ export function useTreeCompareNavigation<T extends CompareTreeNode>(
     },
     onFocus(event: FocusEvent<HTMLElement>) {
       const row = event.target.closest('[role="row"]');
-      const focused = index.byText.get(row?.getAttribute('data-key') ?? '');
+      const key = row?.getAttribute('data-key');
+      const focused =
+        key === null || key === undefined ? undefined : index.byId.get(fromCollectionKey(key));
       if (focused) currentKey.current = focused.id;
     },
   };

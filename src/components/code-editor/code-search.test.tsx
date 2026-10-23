@@ -35,6 +35,16 @@ function matches(container: HTMLElement) {
 }
 
 describe('CodeEditor find and replace', () => {
+  it('UIC-CODE-EDITOR-7.3 replaces original source ranges after a character whose lowercase expands', async () => {
+    const user = userEvent.setup();
+    render(<Editor initialValue="İ apple APPLE" />);
+    await user.click(input());
+    await user.keyboard('{Control>}f{/Control}apple');
+    await user.type(screen.getByRole('textbox', { name: 'Replace with' }), 'pear');
+    await user.click(screen.getByRole('button', { name: 'Replace all' }));
+    expect(input()).toHaveValue('İ pear pear');
+  });
+
   it('UIC-CODE-EDITOR-7.1 opens the find row on Ctrl+F with the selected text and focus in the find box', async () => {
     const user = userEvent.setup();
     const { container } = render(<Editor />);

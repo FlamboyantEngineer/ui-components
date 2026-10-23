@@ -1,7 +1,9 @@
 // A board of cards in columns, optionally repeated in lanes: each cell is a React Aria grid list,
 // and cards move within and between cells by drag and drop or Alt+Arrow keys.
 
-import { useRef, type KeyboardEvent, type ReactNode, type RefObject } from 'react';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
+import { createKeyIndex } from '../../utils/create-key-index.js';
+import { useMemo, useRef, type KeyboardEvent, type ReactNode, type RefObject } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps, Key } from '../../core/props.js';
@@ -94,21 +96,21 @@ function toDirection(key: string, isRightToLeft: boolean): BoardMoveDirection | 
 }
 
 /** The card a keydown came from: the key of the card row around its target. */
-function findCardKey(target: EventTarget, layout: BoardLayout): Key | undefined {
+function findCardKey(target: EventTarget, identities: ReadonlyMap<string, Key>): Key | undefined {
   if (!(target instanceof Element) || target.closest(editableSelector)) return undefined;
-  const text = target.closest(`.${hooks.slotClass('card')}`)?.getAttribute('data-key');
-  return [...layout.addresses.keys()].find((key) => String(key) === text);
+  const identity = target.closest(`.${hooks.slotClass('card')}`)?.getAttribute('data-key');
+  return identity === null || identity === undefined ? undefined : identities.get(identity);
 }
 
 /** Gives focus back to a moved card or column handle once the move renders. */
 function useMoveFocus(root: RefObject<HTMLDivElement | null>): FocusRequest {
   const request = useFocusRequest();
   return (kind, key) => {
-    const escaped = CSS.escape(String(key));
+    const escaped = CSS.escape(toKeyIdentity(key));
     const selector =
       kind === 'card'
-        ? `.${hooks.slotClass('card')}[data-key="${escaped}"]`
-        : `.${hooks.slotClass('column')}[data-key="${escaped}"] .${hooks.slotClass('column-handle')}`;
+        ? `.${hooks.slotClass('card')}[data-key-identity="${escaped}"]`
+        : `.${hooks.slotClass('column')}[data-key-identity="${escaped}"] .${hooks.slotClass('column-handle')}`;
     request(() => root.current?.querySelector<HTMLElement>(selector));
   };
 }
@@ -121,10 +123,14 @@ function useCardKeys(options: {
 }) {
   const { direction: textDirection } = useLocale();
   const { layout, onMove, focus } = options;
+  const identities = useMemo(
+    () => (onMove ? createKeyIndex(layout.addresses.keys()) : new Map()),
+    [layout, onMove],
+  );
   return (event: KeyboardEvent<HTMLElement>) => {
     const direction = toDirection(event.key, textDirection === 'rtl');
     if (!onMove || !direction || !isMoveChord(event)) return;
-    const key = findCardKey(event.target, layout);
+    const key = findCardKey(event.target, identities);
     const move =
       key === undefined ? undefined : resolveBoardKeyboardMove(layout, { key, direction });
     if (move === undefined) return;
@@ -157,7 +163,7 @@ function BoardColumnHeaders<T>({
     <div {...hooks.slot('columns')}>
       {model.columns.map((column, index) => (
         <BoardColumnHeader
-          key={column.id}
+          key={toKeyIdentity(column.id)}
           columnKey={column.id}
           title={column.title}
           titleId={model.columnTitleId(index)}
@@ -243,7 +249,13 @@ export function Board<T extends { id: Key }>({
       <BoardColumnHeaders model={model} onColumnMove={onColumnMove} focus={focus} />
       {lanes ? (
         lanes.map((lane, index) => (
-          <BoardLaneGroup key={lane.id} model={model} lane={lane} index={index} options={options} />
+          <BoardLaneGroup
+            key={toKeyIdentity(lane.id)}
+            model={model}
+            lane={lane}
+            index={index}
+            options={options}
+          />
         ))
       ) : (
         <BoardCells model={model} lane={null} options={options} />

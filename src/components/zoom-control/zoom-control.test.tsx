@@ -100,6 +100,28 @@ describe('ZoomControl', () => {
     expect(findNextZoomLevel(levels, 10, 1)).toBe(50);
   });
 
+  it('UIC-ZOOM-CONTROL-1.2 UIC-ZOOM-CONTROL-1.4 normalises finite levels for helpers and repeated controlled values', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const unordered = [150, NaN, 50, Infinity, 100, 100, -Infinity];
+    const { rerender } = render(<ZoomControl levels={unordered} value={75} onChange={onChange} />);
+    expect(slider()).toHaveAttribute('max', '2');
+    expect(slider()).toHaveValue('0');
+    expect(findNearestZoomLevelIndex(unordered, 75)).toBe(0);
+    expect(findNextZoomLevel(unordered, 75, 1)).toBe(100);
+    expect(findNextZoomLevel(unordered, 75, -1)).toBe(50);
+    await user.click(screen.getByRole('button', { name: 'Zoom in' }));
+    expect(onChange).toHaveBeenLastCalledWith(100);
+    rerender(<ZoomControl levels={unordered} value={125} onChange={onChange} />);
+    expect(slider()).toHaveValue('1');
+    await user.click(screen.getByRole('button', { name: 'Zoom out' }));
+    expect(onChange).toHaveBeenLastCalledWith(100);
+    rerender(<ZoomControl levels={[]} value={125} />);
+    expect(slider()).toHaveAttribute('max', '0');
+    expect(findNearestZoomLevelIndex([], 100)).toBe(0);
+    expect(findNextZoomLevel([], 100, 1)).toBeUndefined();
+  });
+
   it('UIC-ZOOM-CONTROL-1.3 disables a step at the last level but keeps it focusable', async () => {
     function Controlled() {
       const [zoom, setZoom] = useState(125);

@@ -1,6 +1,7 @@
 import { createHooks } from '../../core/hooks.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { Button } from '../button/button.js';
 import type { FieldSeverity } from '../field/field.js';
 import { Icon } from '../icon/icon.js';
@@ -64,7 +65,7 @@ export function ProblemItems({
   return (
     <ul {...hooks.slot('items')}>
       {problems.map((problem) => (
-        <li key={problem.id} {...hooks.slot('item', { severity: problem.severity })}>
+        <li key={toKeyIdentity(problem.id)} {...hooks.slot('item', { severity: problem.severity })}>
           {problem.focus || onAction ? (
             <Button
               className={hooks.slotClass('jump')}

@@ -8,6 +8,8 @@ import {
 } from '../../primitives/index.js';
 import { measuredProperty, pickDataAttributes } from '../../core/hooks.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
+import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { DragHandle } from '../drag-handle/drag-handle.js';
 import type { TableRowAttributes } from './table.js';
 import { useExpandGlyph } from '../expand-toggle/expand-toggle.js';
@@ -117,7 +119,7 @@ function describeRangeCell<T extends TableRow>(
   column: TableColumn<T>,
 ) {
   const at = {
-    row: view?.grid.rowIndex.get(String(row.id)) ?? -1,
+    row: view?.grid.rowIndex.get(toKeyIdentity(row.id)) ?? -1,
     column: view?.grid.columnIndex.get(column.id) ?? -1,
   };
   const place = placeInBounds(view?.bounds ?? null, at);
@@ -201,7 +203,7 @@ function TableDetailRow<T extends TableRow>(props: {
   const { row, model } = props;
   return (
     <Row
-      id={`${detailRowPrefix}${String(row.id)}`}
+      id={`${detailRowPrefix}${toCollectionKey(row.id)}`}
       textValue={getRowText(row, getRowHeaderColumns(model.structure.columns))}
       // Focusable so controls in the detail stay reachable, never selectable.
       isDisabled
@@ -217,9 +219,11 @@ function TableDetailRow<T extends TableRow>(props: {
 
 /** One row with its cells, then its detail row and its child rows. */
 export function TableDataRow<T extends TableRow>({
+  id,
   node,
   model,
 }: {
+  id: string;
   node: TableNode<T>;
   model: TableRowModel<T>;
 }) {
@@ -231,9 +235,9 @@ export function TableDataRow<T extends TableRow>({
   return (
     <Row
       {...pickDataAttributes(model.getRowAttributes?.(row) ?? {})}
-      id={row.id}
+      id={id}
       textValue={getRowText(row, getRowHeaderColumns(structure.columns))}
-      className={hooks.slotClass('row')}
+      {...hooks.slot('row', { keyIdentity: toKeyIdentity(row.id) })}
       render={model.dragTrigger === 'handle' ? createHandleRow(structure.isVirtualized) : undefined}
     >
       {structure.hasSelection ? (
@@ -268,7 +272,7 @@ export function TableDataRow<T extends TableRow>({
       )}
       {node.children.length > 0 ? (
         <Collection items={node.children} dependencies={[model]}>
-          {(child) => <TableDataRow node={child} model={model} />}
+          {(child) => <TableDataRow id={toCollectionKey(child.id)} node={child} model={model} />}
         </Collection>
       ) : null}
     </Row>

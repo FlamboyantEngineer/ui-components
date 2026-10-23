@@ -16,14 +16,16 @@ function Reorderable({
   onReorder,
   orientation,
   disabledKeys,
+  isDisabled,
 }: {
   onReorder?: (move: TabMove) => void;
   orientation?: Orientation;
   disabledKeys?: Key[];
+  isDisabled?: boolean;
 }) {
   const [keys, setKeys] = useState(fruit);
   return (
-    <Tabs orientation={orientation} disabledKeys={disabledKeys}>
+    <Tabs orientation={orientation} disabledKeys={disabledKeys} isDisabled={isDisabled}>
       <TabList
         aria-label="Fruit"
         onReorder={(move) => {
@@ -130,6 +132,32 @@ describe('resolveTabMove and stepTabMove', () => {
 
 // Tabs driven by userEvent are slow in jsdom on a busy machine.
 describe('Tab reordering', { timeout: 15_000 }, () => {
+  it('UIC-TABS-3.3 keeps original numeric and text IDs through a pointer drop', async () => {
+    const onReorder = vi.fn();
+    render(
+      <Tabs>
+        <TabList aria-label="Typed drag" onReorder={onReorder}>
+          <Tab id={1}>Numeric</Tab>
+          <Tab id="1">Text</Tab>
+        </TabList>
+      </Tabs>,
+    );
+    const numeric = tab('Numeric');
+    const text = tab('Text');
+    place(text, 100);
+    const transfer = createDataTransfer();
+    drag('dragStart', numeric, { transfer });
+    await act(() => new Promise((resolve) => requestAnimationFrame(resolve)));
+    drag('dragEnter', text, { transfer, clientX: 180 });
+    drag('drop', text, { transfer, clientX: 180 });
+    drag('dragEnd', numeric, { transfer });
+    expect(onReorder).toHaveBeenCalledExactlyOnceWith({
+      key: 1,
+      targetKey: '1',
+      position: 'after',
+    });
+  });
+
   it('UIC-TABS-3.4 moves the focused tab with Alt+Arrow keys and keeps focus on it', async () => {
     const onReorder = vi.fn();
     render(<Reorderable onReorder={onReorder} />);
@@ -255,6 +283,25 @@ describe('Tab reordering', { timeout: 15_000 }, () => {
     drag('drop', banana, { transfer: outside, clientX: 120 });
     expect(onReorder).not.toHaveBeenCalled();
     expect(tab('Fig')).toHaveAttribute('draggable', 'false');
+  });
+
+  it('UIC-TABS-2.2 UIC-TABS-3.4 refuses reordering when the focused tabs become disabled', async () => {
+    const user = userEvent.setup();
+    const onReorder = vi.fn();
+    const { rerender } = render(<Reorderable onReorder={onReorder} />);
+    await user.click(tab('Banana'));
+    rerender(<Reorderable onReorder={onReorder} isDisabled />);
+    await user.keyboard('{Alt>}{ArrowRight}{/Alt}');
+    expect(onReorder).not.toHaveBeenCalled();
+    expect(tab('Banana')).not.toHaveAttribute('draggable', 'true');
+    rerender(<Reorderable onReorder={onReorder} />);
+    await user.click(tab('Banana'));
+    await user.keyboard('{Alt>}{ArrowRight}{/Alt}');
+    expect(onReorder).toHaveBeenCalledExactlyOnceWith({
+      key: 'banana',
+      targetKey: 'cherry',
+      position: 'after',
+    });
   });
 
   it('UIC-TABS-3.3 draws no drag affordance without onReorder', () => {

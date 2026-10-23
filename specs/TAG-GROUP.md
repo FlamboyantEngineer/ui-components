@@ -13,7 +13,7 @@ Verification: `src/components/tag-group/tag-group.test.tsx`, `e2e/tag-group.spec
 
 ### UIC-TAG-GROUP-1.2 - Items or children
 
-The tags shall be the group's `Tag` children, or, with `items`, the `Tag` its render function returns for each item. A tag's `id` is its collection key. Rendering new items or children updates the tags, their content and their names.
+The tags shall be the group's `Tag` children, or, with `items`, the `Tag` its render function returns for each item. A tag's `id` is its collection key. Numeric and text keys with the same spelling stay distinct through selection, removal and reordering; callbacks retain the original key types. Rendering new items or children updates the tags, their content and their names.
 
 Implementation: `src/components/tag-group/tag-group.tsx`
 Verification: `src/components/tag-group/tag-group.test.tsx`
@@ -73,6 +73,8 @@ Verification: `src/components/tag-group/tag-group.test.tsx`
 
 With `selectionMode` (`single` or `multiple`), pressing a tag shall select it: `selectedKeys` or `defaultSelectedKeys`, tag keys or `'all'`, with `onSelectionChange`, called with the shared `Selection` (a set of keys or `'all'`), hold the selection, `disallowEmptySelection` keeps one tag selected, and selected tags publish `data-selected` and `aria-selected`.
 
+One-shot generators supplied for selected, initial or disabled keys keep their values across unrelated rerenders. Controlled updates preserve the primitive's range-selection anchor; mutable Sets and arrays still reflect membership changes.
+
 Implementation: `src/components/tag-group/tag-group.tsx`
 Verification: `src/components/tag-group/tag-group.test.tsx`
 
@@ -88,7 +90,7 @@ Verification: `src/components/tag-group/tag-group.test.tsx`
 | `ui-tag-group__empty`  | slot      |                                                   | The empty state inside the list.                                          |
 | `data-size`            | attribute | `sm`, `md`, `lg`                                  | On the root: the tags' scale.                                             |
 | `data-tone`            | attribute | `neutral`, `info`, `success`, `warning`, `danger` | On a tag: its tone.                                                       |
-| `data-key`             | attribute |                                                   | On a tag: its `id`, written by React Aria.                                |
+| `data-key`             | attribute |                                                   | On a tag: its opaque encoded collection identity, written by React Aria.  |
 | `data-collection`      | attribute |                                                   | React Aria's collection identifier on the list and tags; not for styling. |
 | `data-selection-mode`  | attribute | `single`, `multiple`                              | On a tag: the group's selection mode, when it has one (React Aria).       |
 | `data-empty`           | state     | `true`                                            | On the list: it holds no tag (React Aria).                                |

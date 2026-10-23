@@ -119,6 +119,38 @@ export function FullEditor() {
   );
 }
 
+/** Locks all chrome while retaining the document's slash query and selection. */
+export function LockedChromeEditor() {
+  const [isReadOnly, setReadOnly] = useState(false);
+  const [value, setValue] = useState<RichTextDocument>({
+    type: 'doc',
+    content: [{ type: 'paragraph', content: [{ type: 'text', text: '/head' }] }],
+  });
+  return (
+    <>
+      <Button onPress={() => setReadOnly(!isReadOnly)}>
+        {isReadOnly ? 'Enable editing' : 'Make read-only'}
+      </Button>
+      <RichTextEditor
+        label="Lockable note"
+        value={value}
+        onChange={setValue}
+        isReadOnly={isReadOnly}
+        toolbar={
+          <FormatToolbar>
+            <InsertMenuButton />
+          </FormatToolbar>
+        }
+        data-lab-editor="lockable"
+      >
+        <InsertMenu />
+        <SelectionToolbar />
+        <BlockHandle />
+      </RichTextEditor>
+    </>
+  );
+}
+
 const noteSchema = createRichTextSchema({
   nodes: {
     codeBlock: null,

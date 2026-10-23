@@ -22,6 +22,18 @@ const entries = (bar: HTMLElement) =>
     .map((item) => item.textContent);
 
 describe('SegmentedBar', () => {
+  it('UIC-SEGMENTED-BAR-1.1 keeps numeric and text IDs distinct when a segment is removed', () => {
+    const entries = [
+      { id: 1, label: 'Numeric segment', value: 1 },
+      { id: '1', label: 'Text segment', value: 1 },
+    ];
+    const { rerender } = render(<SegmentedBar segments={entries} showLegend aria-label="Parts" />);
+    const textSegment = screen.getByText('Text segment');
+    rerender(<SegmentedBar segments={entries.slice(1)} showLegend aria-label="Parts" />);
+    expect(screen.getByText('Text segment')).toBe(textSegment);
+    expect(screen.queryByText('Numeric segment')).not.toBeInTheDocument();
+  });
+
   it('UIC-SEGMENTED-BAR-1.1 UIC-SEGMENTED-BAR-2.1 is a named group with a hidden track and a summary list', () => {
     render(<SegmentedBar label="Checks" segments={results} showLegend />);
     const bar = screen.getByRole('group', { name: 'Checks' });

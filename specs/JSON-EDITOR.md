@@ -29,7 +29,7 @@ Verification: `src/components/json-editor/json-editor.test.tsx`, `src/components
 
 ### UIC-JSON-EDITOR-2.2 - Error location
 
-The line and column, counted from 1, shall be those of the first token that breaks JSON's grammar (a missing value, a trailing comma, an unclosed bracket at the end of the text). When the tokens follow the grammar but the parser still refuses the text (an invalid escape, for example), they are read from the parser's message, which gives either `line L column C` or a character `position`.
+The line and column, counted from 1, shall be those of the first token that breaks JSON's grammar (a missing value, a trailing comma, an unclosed bracket at the end of the text). The grammar check also handles deeply nested unfinished containers without recursive calls. When the tokens follow the grammar but the parser still refuses the text (an invalid escape, for example), they are read from the parser's message, which gives either `line L column C` or a character `position`.
 
 Implementation: `src/components/json-editor/json-text.ts`
 Verification: `src/components/json-editor/json-text.test.ts`
@@ -77,21 +77,21 @@ Verification: `src/components/json-editor/json-editor.test.tsx`
 
 ### UIC-JSON-EDITOR-5.1 - Schema subset
 
-With `schema`, text that parses shall be checked against this subset of JSON Schema, other keywords being ignored: `type` (one or a list of `object`, `array`, `string`, `number`, `integer`, `boolean`, `null`), `enum`, `const`, `properties`, `required`, `additionalProperties` (`false`, or a schema for the other properties), `items` (one schema for every item), `minimum`, `maximum`, `minLength`, `maxLength` (in characters), `pattern` (a pattern that is not a valid expression is ignored), `minItems` and `maxItems`. A value of the wrong type or outside its `enum` or `const` is not checked further. Each problem is an error diagnostic marking the value (a missing property marks the object's `{`, a property `additionalProperties: false` refuses marks its key), with the provider strings `jsonTypeMismatch`, `jsonValueMismatch`, `jsonMissingProperty`, `jsonUnknownProperty`, `jsonTooFewItems`, `jsonTooManyItems`, `rangeUnderflow`, `rangeOverflow`, `tooShort`, `tooLong` and `patternMismatch`. The field reports the first problem in the text with `jsonProblemAt` and its line and column, before the caller's `validate` runs.
+With `schema`, text that parses shall be checked against this subset of JSON Schema, other keywords being ignored: `type` (one or a list of `object`, `array`, `string`, `number`, `integer`, `boolean`, `null`), `enum`, `const`, `properties`, `required`, `additionalProperties` (`false`, or a schema for the other properties), `items` (one schema for every item), `minimum`, `maximum`, `minLength`, `maxLength` (in characters), `pattern` (a pattern that is not a valid expression is ignored), `minItems` and `maxItems`. Both `enum` and `const` apply when both are given. Structured values compare recursively by value: array order matters, object key order does not, and a repeated object key takes its last value as `JSON.parse` does. Only own entries in `properties` describe keys; prototype names such as `constructor` are ordinary keys. A value of the wrong type or outside its `enum` or `const` is not checked further. Parsing, validation, equality and formatting use explicit container stacks, so valid deep nesting does not exhaust the JavaScript call stack, and a node without an enumeration or constant is not reserialized to validate it. Each problem is an error diagnostic marking the value (a missing property marks the object's `{`, a property `additionalProperties: false` refuses marks its key), with the provider strings `jsonTypeMismatch`, `jsonValueMismatch`, `jsonMissingProperty`, `jsonUnknownProperty`, `jsonTooFewItems`, `jsonTooManyItems`, `rangeUnderflow`, `rangeOverflow`, `tooShort`, `tooLong` and `patternMismatch`. The field reports the first problem in the text with `jsonProblemAt` and its line and column, before the caller's `validate` runs.
 
-Implementation: `src/components/json-editor/json-schema.ts`, `src/components/json-editor/json-tree.ts`, `src/components/json-editor/json-check.ts`, `src/components/json-editor/json-editor.tsx`, `src/core/strings.ts`
-Verification: `src/components/json-editor/json-schema.test.ts`, `src/components/json-editor/json-tree.test.ts`, `src/components/json-editor/json-editor.test.tsx`, `e2e/json-editor.spec.ts`
+Implementation: `src/components/json-editor/json-schema.ts`, `src/components/json-editor/json-tree.ts`, `src/components/json-editor/json-value.ts`, `src/components/json-editor/json-check.ts`, `src/components/json-editor/json-editor.tsx`, `src/core/strings.ts`
+Verification: `src/components/json-editor/json-schema.test.ts`, `src/components/json-editor/json-tree.test.ts`, `src/components/json-editor/json-check.test.ts`, `src/components/json-editor/json-editor.test.tsx`, `e2e/json-editor.spec.ts`
 
 ### UIC-JSON-EDITOR-5.2 - Key completion
 
-At a key of an object the schema describes (found through `properties`, `additionalProperties` and `items`, in text that may not parse yet), the editor shall complete with the properties the object does not have yet: the quoted name as label, kind `property`, the allowed types as description and the property's `description` as documentation. Inserting one replaces the key typed so far and adds `: ` and a starting value as a snippet field (UIC-CODE-EDITOR-4.8): the first `enum` value or the `default`, else `""`, `0`, `false`, `null`, `{}` or `[]` by type; a key already followed by a colon is replaced alone.
+At a key of an object the schema describes (found through `properties`, `additionalProperties` and `items`, in text that may not parse yet), the editor shall complete with the properties the object does not have yet: the quoted name as label, kind `property`, the allowed types as description and the property's `description` as documentation. Inserting one replaces the key typed so far and adds `: ` and a starting value as a snippet field (UIC-CODE-EDITOR-4.8): the `const`, first `enum` value (including `null`) or the `default`, else `""`, `0`, `false`, `null`, `{}` or `[]` by type; a key already followed by a colon is replaced alone. Serialized keys and starting values preserve literal dollar signs, braces and backslashes instead of interpreting them as snippet fields.
 
 Implementation: `src/components/json-editor/json-complete.ts`, `src/components/json-editor/json-tree.ts`, `src/components/json-editor/json-schema.ts`
 Verification: `src/components/json-editor/json-complete.test.ts`, `src/components/json-editor/json-tree.test.ts`, `src/components/json-editor/json-editor.test.tsx`, `e2e/json-editor.spec.ts`
 
 ### UIC-JSON-EDITOR-5.3 - Value completion
 
-At a value, the editor shall complete with the values its schema lists (`enum`, or `const`), or else `true` and `false` for a boolean, `null` for a null and the `default`, as JSON, with kind `value` and the schema's `description` as documentation. Inserting one replaces the value typed so far.
+At a value, the editor shall complete with the values its schema lists (`const`, or `enum`), or else `true` and `false` for a boolean, `null` for a null and the `default`, as JSON, with kind `value` and the schema's `description` as documentation. Inserting one replaces the value typed so far with literal JSON, preserving any snippet-like characters in its strings.
 
 Implementation: `src/components/json-editor/json-complete.ts`
 Verification: `src/components/json-editor/json-complete.test.ts`, `src/components/json-editor/json-editor.test.tsx`
@@ -105,7 +105,7 @@ Verification: `src/components/json-editor/json-complete.test.ts`
 
 ### UIC-JSON-EDITOR-5.5 - Hover documentation
 
-Resting the pointer on a key or a value shall show the `description` of its schema in the code editor's hover tip (UIC-CODE-EDITOR-3.6), after any problem marked there.
+Resting the pointer on a key or a value shall show the `description` of its schema in the code editor's hover tip (UIC-CODE-EDITOR-3.6), after any problem marked there. JSON escapes in property names are decoded before looking up their schema.
 
 Implementation: `src/components/json-editor/json-complete.ts`, `src/components/json-editor/json-editor.tsx`
 Verification: `src/components/json-editor/json-complete.test.ts`, `e2e/json-editor.spec.ts`

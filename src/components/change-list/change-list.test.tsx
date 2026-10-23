@@ -35,6 +35,18 @@ const value = (row: HTMLElement | undefined) =>
   row?.querySelector('.ui-description-list__value') as HTMLElement;
 
 describe('ChangeList', () => {
+  it('UIC-CHANGE-LIST-1.1 keeps numeric and text IDs distinct when a change is removed', () => {
+    const entries = [
+      { id: 1, label: 'Numeric change', after: 'First' },
+      { id: '1', label: 'Text change', after: 'Second' },
+    ];
+    const { rerender } = render(<ChangeList changes={entries} />);
+    const textChange = screen.getByText('Text change');
+    rerender(<ChangeList changes={entries.slice(1)} />);
+    expect(screen.getByText('Text change')).toBe(textChange);
+    expect(screen.queryByText('Numeric change')).not.toBeInTheDocument();
+  });
+
   it('UIC-CHANGE-LIST-1.1 renders one description row per change', () => {
     const { container } = render(<ChangeList changes={changes} />);
     const list = container.querySelector('dl');

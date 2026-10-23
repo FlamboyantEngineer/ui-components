@@ -61,4 +61,24 @@ test.describe('Copy Button lab', () => {
     await expect(status).toHaveText('Copied');
     await lab.expectAccessible();
   });
+
+  test('UIC-CLIPBOARD-2.1 preserves latest feedback and reset across pending writes', async ({
+    page,
+    lab,
+  }) => {
+    await page.clock.install();
+    await lab.open('copy-button');
+    await page.clock.pauseAt(Date.now() + 1000);
+    const demo = page.locator('[data-lab-demo="feedback"]');
+    const status = demo.getByRole('status');
+    await demo.getByRole('button', { name: 'Start earlier copy' }).click();
+    await demo.getByRole('button', { name: 'Copy latest' }).click();
+    await expect(status).toHaveText('Feedback: copied');
+    await demo.getByRole('button', { name: 'Refuse earlier copy' }).click();
+    await expect(status).toHaveText('Feedback: copied');
+    await demo.getByRole('button', { name: 'Start earlier copy' }).click();
+    await demo.getByRole('button', { name: 'Reset feedback' }).click();
+    await demo.getByRole('button', { name: 'Refuse earlier copy' }).click();
+    await expect(status).toHaveText('Feedback: idle');
+  });
 });

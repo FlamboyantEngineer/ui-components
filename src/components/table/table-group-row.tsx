@@ -7,6 +7,7 @@ import {
   type CellRenderProps,
 } from '../../primitives/index.js';
 import { measuredProperty } from '../../core/hooks.js';
+import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { useUiStrings } from '../../core/provider.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import {
@@ -77,9 +78,11 @@ function GroupLabel<T>(props: {
  * columns' aggregates, then its rows.
  */
 function TableGroupRow<T extends TableRow>({
+  id,
   node,
   model,
 }: {
+  id: string;
   node: TableGroupNode<T>;
   model: TableRowModel<T>;
 }) {
@@ -98,7 +101,7 @@ function TableGroupRow<T extends TableRow>({
   const actionsPin = getColumnPin(structure, 'actions');
   return (
     <Row
-      id={node.id}
+      id={id}
       textValue={strings.labelWithCount(heading, strings.itemCount(group.rows.length))}
       // Focusable to expand and collapse, never selectable.
       isDisabled
@@ -161,8 +164,8 @@ export function renderBodyNode<T extends TableRow>(
   model: TableRowModel<T>,
 ): ReactNode {
   return isGroupNode(node) ? (
-    <TableGroupRow node={node} model={model} />
+    <TableGroupRow id={toCollectionKey(node.id)} node={node} model={model} />
   ) : (
-    <TableDataRow node={node} model={model} />
+    <TableDataRow id={toCollectionKey(node.id)} node={node} model={model} />
   );
 }

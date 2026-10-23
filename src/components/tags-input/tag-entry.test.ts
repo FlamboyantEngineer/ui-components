@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { defaultStrings } from '../../core/strings.js';
 import {
   checkTag,
@@ -17,6 +17,48 @@ const rules: TagRules = {
 };
 
 describe('tag entry', () => {
+  it.each([false, true])(
+    'UIC-TAGS-INPUT-2.2 UIC-TAGS-INPUT-3.3 reads existing tags once at most for a large paste when duplicates are %s',
+    (allowsDuplicates) => {
+      const count = 5000;
+      let reads = 0;
+      const value = new Proxy(
+        Array.from({ length: count }, (_, index) => `Held ${index}`),
+        {
+          get(target, key, receiver) {
+            if (typeof key === 'string' && /^\d+$/.test(key)) reads++;
+            return Reflect.get(target, key, receiver) as unknown;
+          },
+        },
+      );
+      const validateTag = vi.fn(() => null);
+      const entered = Array.from({ length: count }, (_, index) => `New ${index}`);
+      const result = resolveTagEntry(entered.join(','), {
+        keepLast: false,
+        value,
+        rules: { ...rules, allowsDuplicates, validateTag },
+      });
+      expect(result).toEqual({ added: entered, inputValue: '', rejected: null });
+      expect(reads).toBe(allowsDuplicates ? 0 : count);
+      expect(validateTag).toHaveBeenCalledTimes(count);
+    },
+  );
+
+  it('UIC-TAGS-INPUT-3.1 UIC-TAGS-INPUT-3.4 checks accepted tags once and preserves refusal order', () => {
+    const validateTag = vi.fn((tag: string) => (tag === 'No' ? 'Refused.' : null));
+    const result = resolveTagEntry('Old,New,New,No,Last,Extra,Tail', {
+      keepLast: true,
+      value: ['Old'],
+      rules: { ...rules, maxValues: 3, validateTag },
+    });
+    expect(result).toEqual({
+      added: ['New', 'Last'],
+      inputValue: 'Old,New,No,Extra,Tail',
+      rejected: 'Old',
+    });
+    expect(validateTag.mock.calls.map(([tag]) => tag)).toEqual(['New', 'No', 'Last']);
+  });
+
   it('UIC-TAGS-INPUT-2.1 UIC-TAGS-INPUT-2.2 splits at delimiters and line breaks', () => {
     expect(splitTagText('Fig, Kiwi;Lime\r\nMango\nPlum', [',', ';'])).toEqual([
       'Fig',

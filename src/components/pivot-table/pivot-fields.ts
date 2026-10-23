@@ -50,10 +50,17 @@ function insertAt<T>(items: readonly T[], index: number, item: T): T[] {
  */
 function keyCards(cards: ReadonlyArray<Omit<PivotFieldCard, 'id'>>): PivotFieldCard[] {
   const seen = new Set<string>();
+  const reserved = new Set(cards.map((card) => card.field.id));
   return cards.map((card, index) => {
     const isFirst = !seen.has(card.field.id);
     seen.add(card.field.id);
-    return { ...card, id: isFirst ? card.field.id : `${card.zone}:${card.field.id}:${index}` };
+    if (isFirst) return { ...card, id: card.field.id };
+    const base = `${card.zone}:${card.field.id}:${index}`;
+    let id = base;
+    let suffix = 0;
+    while (reserved.has(id)) id = `${base}:${++suffix}`;
+    reserved.add(id);
+    return { ...card, id };
   });
 }
 

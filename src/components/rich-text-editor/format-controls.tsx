@@ -86,6 +86,7 @@ export function LinkButton({ controller, className, onCommand }: OverlayControlP
   const strings = useUiStrings();
   const [isOpen, setOpen] = useState(false);
   const [address, setAddress] = useState('');
+  if (isOpen && !controller.isEditable) setOpen(false);
   const href = address.trim();
   const finish = (isDone: boolean) => {
     if (!isDone) return;
@@ -98,7 +99,7 @@ export function LinkButton({ controller, className, onCommand }: OverlayControlP
   };
   return (
     <PopoverTrigger
-      isOpen={isOpen}
+      isOpen={isOpen && controller.isEditable}
       onOpenChange={(open) => {
         if (open) setAddress(controller.link ?? '');
         setOpen(open);

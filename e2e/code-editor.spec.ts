@@ -16,6 +16,39 @@ async function box(locator: Locator) {
 }
 
 test.describe('Code Editor lab', () => {
+  test('UIC-CODE-EDITOR-7.2 UIC-CODE-EDITOR-7.3 replaces literal Unicode ranges without shifting source offsets', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('code-editor');
+    const target = editor(page, 'boundaries');
+    const input = target.getByRole('textbox', { name: 'Boundary source' });
+    await input.press('Control+f');
+    await target.getByRole('searchbox', { name: 'Find' }).fill('apple');
+    await expect
+      .poll(async () => (await target.locator('.ui-code-editor__match').allTextContents()).join(''))
+      .toBe('appleAPPLE');
+    await target.getByRole('textbox', { name: 'Replace with' }).fill('pear');
+    await target.getByRole('button', { name: 'Replace all', exact: true }).click();
+    await expect(input).toHaveValue('İ pear pear\n([})');
+  });
+
+  test('UIC-CODE-EDITOR-6.5 rejects a mismatched pair nested inside the bracket at the caret', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('code-editor');
+    const target = editor(page, 'boundaries');
+    const input = target.getByRole('textbox', { name: 'Boundary source' });
+    await input.focus();
+    await input.press('Control+End');
+    await expect(target.locator('.ui-code-editor__bracket')).toHaveText([')']);
+    await expect(target.locator('.ui-code-editor__bracket')).toHaveAttribute(
+      'data-unmatched',
+      'true',
+    );
+  });
+
   test('UIC-CODE-EDITOR-1.1 UIC-CODE-EDITOR-1.2 lays the transparent text area exactly over the highlighted copy', async ({
     page,
     lab,

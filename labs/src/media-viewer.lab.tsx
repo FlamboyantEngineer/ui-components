@@ -60,7 +60,11 @@ const mixed: MediaViewerItem[] = [
   { id: 'notes', src: 'notes.txt', name: 'Notes.txt', type: 'text/plain' },
 ];
 
-const sets = { photos, mixed, single: [photos[2] as MediaViewerItem] } as const;
+const typed: MediaViewerItem[] = [
+  { ...photos[0]!, id: 1 },
+  { ...photos[1]!, id: '1' },
+];
+const sets = { photos, mixed, single: [photos[2] as MediaViewerItem], typed } as const;
 type SetName = keyof typeof sets;
 
 /** Renders the PDF of a mixed set in the library's PDF viewer; other files fall back. */
@@ -147,7 +151,7 @@ mountLab(
   <>
     <LabSection
       title="Sets"
-      description="Photos of three shapes, a mixed set with a PDF (in the PDF viewer) and a text file without a preview, and a single photo, opened at the first or last item."
+      description="Photos of three shapes, a mixed set with a PDF (in the PDF viewer) and a text file without a preview, a single photo, and two photos with distinct numeric and text keys of the same spelling, opened at the first or last item."
     >
       <StateMatrix
         axes={{ set: Object.keys(sets) as SetName[], opens: ['first', 'last'] }}

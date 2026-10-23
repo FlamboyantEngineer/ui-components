@@ -13,6 +13,7 @@ import {
   Virtualizer,
   type AutocompleteProps,
 } from '../../primitives/index.js';
+import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { triggerWidthProperty, useLayerZIndex } from '../portal/portal.js';
@@ -72,7 +73,7 @@ function OptionList(props: SelectListProps) {
       renderEmptyState={() => <span {...hooks.slot('empty')}>{emptyMessage}</span>}
     >
       {items.map((item) => (
-        <SelectListItem key={item.id} item={item} display={props} />
+        <SelectListItem key={toCollectionKey(item.id)} item={item} display={props} />
       ))}
       {more ? (
         <ListBoxLoadMoreItem
@@ -105,10 +106,13 @@ export function SelectList(props: SelectListProps) {
   const context = useSlottedContext(PopoverContext);
   const contextStyle = typeof context?.style === 'object' ? (context.style as CSSProperties) : {};
   const descriptions = new Map(
-    flattenSelectItems(props.items).map((option) => [option.id, option.description]),
+    flattenSelectItems(props.items).map((option) => [
+      toCollectionKey(option.id),
+      option.description,
+    ]),
   );
   const filter: AutocompleteProps<object>['filter'] = (text, query, node) => {
-    const description = descriptions.get(node.key);
+    const description = descriptions.get(String(node.key));
     return contains(text, query) || Boolean(description && contains(description, query));
   };
   return (

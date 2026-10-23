@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
@@ -58,7 +59,7 @@ export function RemovedFiles({
 }) {
   return removed.map((item) => (
     <FieldPreviousValue
-      key={item.id}
+      key={toKeyIdentity(item.id)}
       className={hooks.slotClass('removed')}
       restoreLabel={item.name}
       isDisabled={isDisabled}
@@ -80,6 +81,12 @@ export function FileFieldInputs({
   isDisabled: boolean;
 }) {
   return value.map((item) => (
-    <input key={item.id} type="hidden" name={name} value={item.id} disabled={isDisabled} />
+    <input
+      key={toKeyIdentity(item.id)}
+      type="hidden"
+      name={name}
+      value={item.id}
+      disabled={isDisabled}
+    />
   ));
 }

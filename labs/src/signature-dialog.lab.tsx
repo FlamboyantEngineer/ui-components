@@ -13,7 +13,8 @@ const meaningSets = {
   several: [
     { id: 'approve', label: 'Approved', description: 'The change is ready to release.' },
     { id: 'review', label: 'Reviewed', description: 'The change was read and checked.' },
-    { id: 'author', label: 'Authored' },
+    { id: 7, label: 'Authored' },
+    { id: '7', label: 'Acknowledged' },
   ],
 } as const;
 const meaningCounts = ['one', 'several'] as const;
@@ -130,7 +131,7 @@ mountLab(
   <>
     <LabSection
       title="Meanings and credentials"
-      description="One meaning is stated, several are chosen; the password alone or with the user name."
+      description="One meaning is stated, several are chosen; numeric and text ids remain separate choices. Enter the password alone or with the user name."
     >
       <StateMatrix
         axes={{ meanings: meaningCounts, credentials: credentialKinds }}

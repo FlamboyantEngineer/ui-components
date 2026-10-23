@@ -2,6 +2,7 @@ import { useLayoutEffect, useRef, useState, type KeyboardEvent, type ReactNode }
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps, Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { useResizeObserver } from '../../utils/use-resize-observer.js';
 import { useAnnotationContext } from './annotation-context.js';
 import { annotationLayerHooks as hooks } from './annotation-hooks.js';
@@ -117,7 +118,7 @@ export function AnnotationMargin({
         const isActive = card.id === activeId;
         return (
           <div
-            key={card.id}
+            key={toKeyIdentity(card.id)}
             ref={register(card.id)}
             role="listitem"
             tabIndex={card.id === tabStop ? 0 : -1}

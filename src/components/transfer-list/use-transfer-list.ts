@@ -37,11 +37,6 @@ type PerSide<T> = Record<TransferListSide, T>;
 
 const noKeys: ReadonlySet<Key> = new Set();
 
-function matchesFilter(item: TransferListItem, filterText: string): boolean {
-  const terms = splitMatchTerms(filterText, { ignoreAccents: true });
-  return terms.length === 0 || textMatchesTerms(item.label, terms, { ignoreAccents: true });
-}
-
 function buildSide(
   all: readonly TransferListItem[],
   {
@@ -50,10 +45,15 @@ function buildSide(
     blocked,
   }: { filterText: string; selection: Selection; blocked: ReadonlySet<Key> },
 ): TransferSide {
-  const shown = all.filter((item) => matchesFilter(item, filterText));
+  const terms = splitMatchTerms(filterText, { ignoreAccents: true });
+  const shown =
+    terms.length === 0
+      ? all
+      : all.filter((item) => textMatchesTerms(item.label, terms, { ignoreAccents: true }));
   const movable = new Set(shown.map((item) => item.id).filter((key) => !blocked.has(key)));
-  const selected =
+  const filtered =
     selection === 'all' ? movable : new Set([...selection].filter((key) => movable.has(key)));
+  const selected = selection !== 'all' && filtered.size === selection.size ? selection : filtered;
   return { all, shown, selected, movable, filterText };
 }
 

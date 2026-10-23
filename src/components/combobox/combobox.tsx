@@ -1,10 +1,11 @@
-import { useRef, type ReactNode, type Ref } from 'react';
+import { useMemo, useRef, type ReactNode, type Ref } from 'react';
 import { ComboBox as AriaComboBox, FieldError, Label, Text } from '../../primitives/index.js';
 import type { AriaLabellingProps, OpenStateProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key, Size } from '../../core/props.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
-import { ComboboxField } from './combobox-field.js';
+import { decodeComboboxValue, encodeComboboxItems, useComboboxValues } from './combobox-values.js';
+import { ComboboxField, ComboboxInputs } from './combobox-field.js';
 import { flattenOptions, type ComboboxItem } from './combobox-options.js';
 import type { ComboboxLoader } from './combobox-search.js';
 import {
@@ -138,6 +139,22 @@ function omitModelProps<P extends ComboboxModelOptions>(props: P) {
   return aria;
 }
 
+function ComboboxMessages({
+  description,
+  errorMessage,
+}: Pick<ComboboxProps, 'description' | 'errorMessage'>) {
+  return (
+    <>
+      {description ? (
+        <Text slot="description" className={hooks.slotClass('description')}>
+          {description}
+        </Text>
+      ) : null}
+      <FieldError className={hooks.slotClass('error')}>{errorMessage}</FieldError>
+    </>
+  );
+}
+
 /**
  * A text input with a list of suggestions (React Aria `ComboBox`): typed freely when
  * `allowsCustomValue`, or completed from the list; several options may be picked as chips.
@@ -163,11 +180,13 @@ export function Combobox<M extends ComboboxSelectionMode = 'single'>({
   highlightMatches,
   autoHighlight,
   renderOption,
+  name,
   ...rest
 }: ComboboxProps<M>) {
   const aria = omitModelProps(rest);
-  const model = useComboboxModel({ ...rest, isPending });
-  const { suggestions } = model;
+  const values = useComboboxValues(aria.value, aria.defaultValue);
+  const model = useComboboxModel({ ...rest, isPending, isDisabled, isReadOnly });
+  const suggestions = useMemo(() => encodeComboboxItems(model.suggestions), [model.suggestions]);
   const inline = useInlineCompletionState({ completesInline, suggestions });
   const [input, setInput] = useForwardedRef(inputRef);
   const createdRef = useRef<string | null>(null);
@@ -175,7 +194,11 @@ export function Combobox<M extends ComboboxSelectionMode = 'single'>({
   return (
     <AriaComboBox<ComboboxItem, ComboboxSelectionMode>
       {...aria}
-      onChange={onChange ? (next) => onChange(next as ComboboxValue<M>) : undefined}
+      {...values}
+      onChange={
+        onChange ? (next) => onChange(decodeComboboxValue(next) as ComboboxValue<M>) : undefined
+      }
+      name={aria.allowsCustomValue ? name : undefined}
       {...hooks.root({ className, props: aria, data: { variant, size, pending: model.isPending } })}
       {...(model.isControlled ? { items: suggestions } : { defaultItems: suggestions })}
       defaultFilter={inline.defaultFilter}
@@ -192,16 +215,12 @@ export function Combobox<M extends ComboboxSelectionMode = 'single'>({
         placeholder={placeholder}
         isPending={model.isPending}
         isEditable={!isDisabled && !isReadOnly}
-        chips={aria.selectionMode === 'multiple' ? toChips(label, aria, suggestions) : null}
+        chips={aria.selectionMode === 'multiple' ? toChips(label, aria, model.suggestions) : null}
         completion={inline.field}
         input={{ ref: input, setRef: setInput }}
       />
-      {description ? (
-        <Text slot="description" className={hooks.slotClass('description')}>
-          {description}
-        </Text>
-      ) : null}
-      <FieldError className={hooks.slotClass('error')}>{errorMessage}</FieldError>
+      <ComboboxMessages description={description} errorMessage={errorMessage} />
+      <ComboboxInputs name={name} isDisabled={isDisabled} isCustom={aria.allowsCustomValue} />
       <ComboboxSuggestions
         {...list}
         items={suggestions}

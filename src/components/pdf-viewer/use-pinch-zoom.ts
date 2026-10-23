@@ -1,4 +1,4 @@
-import { useEffect, useRef, type RefObject } from 'react';
+import { useEffect, type RefObject } from 'react';
 import type { PdfEngine } from './pdf-engine.js';
 import { resolveZoomPercent } from './pdf-zoom.js';
 import { useLatest } from './use-latest.js';
@@ -21,46 +21,54 @@ export interface UsePinchZoomOptions {
  */
 export function usePinchZoom({ engine, scrollerRef, pagesRef, zoom }: UsePinchZoomOptions): void {
   const latest = useLatest(zoom);
-  // The zoom the gesture has reached, ahead of the render that applies it.
-  const target = useRef<number | null>(null);
-
   useEffect(() => {
     const scroller = scrollerRef.current;
     if (!engine || !scroller) return undefined;
     const controller = new AbortController();
+    let target: number | null = null;
+    let activeColumn: HTMLElement | null = null;
+    const clear = () => {
+      target = null;
+      if (!activeColumn) return;
+      activeColumn.style.transform = '';
+      activeColumn.style.transformOrigin = '';
+      activeColumn = null;
+    };
     const manager = new engine.TouchManager({
       container: scroller,
       signal: controller.signal,
       onPinching(origin, previousDistance, distance) {
         const column = pagesRef.current;
-        if (previousDistance <= 0 || !column) return;
+        if (controller.signal.aborted || previousDistance <= 0 || !column) return;
+        if (column !== activeColumn) {
+          clear();
+          activeColumn = column;
+        }
         const { percent } = latest.current;
-        if (target.current === null) {
+        if (target === null) {
           const box = column.getBoundingClientRect();
           column.style.transformOrigin = `${(origin[0] ?? 0) - box.left}px ${(origin[1] ?? 0) - box.top}px`;
         }
-        const reached = (target.current ?? percent) * (distance / previousDistance);
-        target.current = resolveZoomPercent({ zoom: reached, page: null, available: null });
-        column.style.transform = `scale(${target.current / percent})`;
+        const reached = (target ?? percent) * (distance / previousDistance);
+        target = resolveZoomPercent({ zoom: reached, page: null, available: null });
+        column.style.transform = `scale(${target / percent})`;
       },
       onPinchEnd() {
-        const reached = target.current;
-        target.current = null;
-        const column = pagesRef.current;
-        if (column) {
-          column.style.transform = '';
-          column.style.transformOrigin = '';
-        }
+        if (controller.signal.aborted) return;
+        const reached = target;
+        clear();
         if (reached !== null) latest.current.setZoom(reached);
       },
       onPanning(deltaX, deltaY) {
+        if (controller.signal.aborted) return;
         scroller.scrollLeft -= deltaX;
         scroller.scrollTop -= deltaY;
       },
     });
     return () => {
-      manager.destroy();
       controller.abort();
+      clear();
+      manager.destroy();
     };
   }, [engine, latest, pagesRef, scrollerRef]);
 }

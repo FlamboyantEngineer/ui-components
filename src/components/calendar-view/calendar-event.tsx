@@ -5,6 +5,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { Popover, PopoverTrigger } from '../popover/popover.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import type { PlacedEvent } from './calendar-layout.js';
 import { calendarViewHooks as hooks } from './calendar-view-hooks.js';
 import type { CalendarFormat } from './use-calendar-format.js';
@@ -115,7 +116,7 @@ export function CalendarMoreEvents({
         <div {...hooks.slot('more-list')}>
           {events.map((placed) => (
             <CalendarEventButton
-              key={placed.event.id}
+              key={toKeyIdentity(placed.event.id)}
               placed={placed}
               context={context}
               isTabbable

@@ -1,9 +1,11 @@
-import type { ReactNode, Ref } from 'react';
+import { useMemo, type ReactNode, type Ref } from 'react';
 import { TabPanel as AriaTabPanel, Tabs as AriaTabs } from '../../primitives/index.js';
 import { mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, Key, Orientation, Size } from '../../core/props.js';
 import { usePersistentState, type PersistCodec } from '../../core/provider.js';
 import type { ElementRender } from '../../utils/render-element.js';
+import { fromCollectionKey } from '../../utils/from-collection-key.js';
+import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { TabsSharedContext, useTabsShared } from './tab-actions.js';
 import { tabsHooks as hooks } from './tab-hooks.js';
 
@@ -87,7 +89,10 @@ const keyCodec: PersistCodec<Key | null> = {
  * back on every change. With nothing stored it starts from `defaultSelectedKey`; the building block
  * replaces a key that no enabled tab has with the first enabled tab, which is then stored.
  */
-function usePersistedSelection({ persistKey, ...selection }: SelectionOptions) {
+function usePersistedSelection({
+  persistKey,
+  ...selection
+}: SelectionOptions): Omit<SelectionOptions, 'persistKey'> {
   const isPersisted = persistKey !== undefined && selection.selectedKey === undefined;
   const [storedKey, setStoredKey] = usePersistentState<Key | null>(
     isPersisted ? persistKey : undefined,
@@ -123,10 +128,14 @@ export function Tabs({
     defaultSelectedKey,
     onSelectionChange,
   });
+  const disabledKeys = useMemo(
+    () => rest.disabledKeys && Array.from(rest.disabledKeys, toCollectionKey),
+    [rest.disabledKeys],
+  );
   const shared = useTabsShared({
     orientation: rest.orientation ?? 'horizontal',
     isDisabled: rest.isDisabled ?? false,
-    disabledKeys: rest.disabledKeys,
+    disabledKeys,
   });
   return (
     <TabsSharedContext.Provider value={shared}>
@@ -134,7 +143,16 @@ export function Tabs({
         // Another storage key restores that key's selection.
         key={persistKey}
         {...rest}
-        {...selection}
+        selectedKey={
+          selection.selectedKey === undefined ? undefined : toCollectionKey(selection.selectedKey)
+        }
+        defaultSelectedKey={
+          selection.defaultSelectedKey === undefined
+            ? undefined
+            : toCollectionKey(selection.defaultSelectedKey)
+        }
+        onSelectionChange={(key) => selection.onSelectionChange?.(fromCollectionKey(key))}
+        disabledKeys={disabledKeys}
         {...hooks.root({ className, props: rest, data: { size } })}
       />
     </TabsSharedContext.Provider>
@@ -142,9 +160,13 @@ export function Tabs({
 }
 
 /** The content shown for the tab with the same `id`. */
-export function TabPanel({ className, ...rest }: TabPanelProps) {
+export function TabPanel({ className, id, ...rest }: TabPanelProps) {
   return (
-    <AriaTabPanel {...rest} className={mergeClassNames(hooks.slotClass('panel'), className)} />
+    <AriaTabPanel
+      {...rest}
+      id={id === undefined ? undefined : toCollectionKey(id)}
+      className={mergeClassNames(hooks.slotClass('panel'), className)}
+    />
   );
 }
 

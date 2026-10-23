@@ -10,6 +10,8 @@ import {
   InPlaceRenameTree,
   LoadingTree,
   MultipleReorderTree,
+  NestedTree,
+  PrimitiveTree,
 } from './tree-cases.js';
 
 interface Entry {
@@ -361,6 +363,12 @@ mountLab(
       />
     </LabSection>
     <LabSection
+      title="Primitive keys"
+      description="Numeric and text ids stay distinct in selection, expansion, actions and reordering. Space key is disabled independently of Dash key."
+    >
+      <PrimitiveTree />
+    </LabSection>
+    <LabSection
       title="Reordering"
       description="Drag a row, use its drag handle with the keyboard, or press Alt+Arrow keys. Budget.xlsx is fixed and Archive.zip disabled. On the right, rows also move between folders, and folders to the top level."
     >
@@ -392,6 +400,12 @@ mountLab(
       description="Opening a region loads its towns in their given order. South fails the first time: its row shows why, with a retry."
     >
       <LoadingTree />
+    </LabSection>
+    <LabSection
+      title="Nested filtering and selection"
+      description="Twenty-four loaded levels: filter for Level 24 to reveal its ancestors, or select the root to select every descendant."
+    >
+      <NestedTree />
     </LabSection>
     <LabSection
       title="Renaming in place"

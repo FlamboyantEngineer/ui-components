@@ -45,6 +45,20 @@ const items: FileUploadItem[] = [
 ];
 
 describe('FileUpload', () => {
+  it('UIC-FILE-UPLOAD-3.1 preserves distinct numeric and text file rows when reordered', () => {
+    const files = [
+      { id: 1, name: 'Numeric.txt' },
+      { id: '1', name: 'Textual.txt' },
+    ];
+    const props = { label: 'Files', files, onSelect: () => undefined };
+    const { container, rerender } = render(<FileUpload {...props} />);
+    const [numeric, textual] = container.querySelectorAll('.ui-file-upload__file');
+    rerender(<FileUpload {...props} files={[files[1]!, files[0]!]} />);
+    expect([...container.querySelectorAll('.ui-file-upload__file')]).toEqual([textual, numeric]);
+    expect(numeric).toHaveTextContent('Numeric.txt');
+    expect(textual).toHaveTextContent('Textual.txt');
+  });
+
   it('UIC-FILE-UPLOAD-1.1 opens the system chooser from a button labelled by the label', async () => {
     const user = userEvent.setup();
     const { container } = render(<FileUpload label="Attach files" onSelect={() => {}} />);

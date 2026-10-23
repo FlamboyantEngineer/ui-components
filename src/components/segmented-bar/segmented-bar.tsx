@@ -5,6 +5,7 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key, Size, Tone } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { resolveAmountShares } from '../../utils/resolve-amount-shares.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 
 export type SegmentedBarSize = Extract<Size, 'sm' | 'md' | 'lg'>;
@@ -93,7 +94,10 @@ function SegmentedBarLegend({
   const list = (
     <ul {...hooks.slot('legend')}>
       {segments.map(({ segment, value, share }) => (
-        <li key={segment.id} {...hooks.slot('item', { tone: segment.tone ?? 'neutral' })}>
+        <li
+          key={toKeyIdentity(segment.id)}
+          {...hooks.slot('item', { tone: segment.tone ?? 'neutral' })}
+        >
           <span {...hooks.slot('swatch')} aria-hidden="true" />
           <span {...hooks.slot('item-label')}>{segment.label}</span>{' '}
           <span {...hooks.slot('item-value')}>{count.format(value)}</span>{' '}
@@ -144,7 +148,7 @@ export function SegmentedBar({
         {resolved.segments.map(({ segment, share }) =>
           share > 0 ? (
             <div
-              key={segment.id}
+              key={toKeyIdentity(segment.id)}
               {...hooks.slot('segment', { tone: segment.tone ?? 'neutral' })}
               style={{ width: `${share}%` }}
             />

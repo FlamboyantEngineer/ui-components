@@ -26,7 +26,7 @@ describe('Combobox chips', () => {
     );
     const combobox = screen.getByRole('combobox', { name: 'Cities' });
     await user.type(combobox, 'li');
-    await user.click(screen.getByRole('option', { name: 'Lima' }));
+    await user.click(await screen.findByRole('option', { name: 'Lima' }));
     expect(onChange).toHaveBeenLastCalledWith(['lima']);
     // The list stays open for more choices and the typed text clears.
     expect(screen.getByRole('listbox')).toHaveAttribute('aria-multiselectable', 'true');
@@ -103,7 +103,7 @@ describe('Combobox chips', () => {
     // A key no suggestion lists shows itself.
     expect(within(chips()).getByRole('row', { name: 'ghost' })).toBeInTheDocument();
     await user.type(screen.getByRole('combobox'), 'lis');
-    await user.click(screen.getByRole('option', { name: 'Lisbon' }));
+    await user.click(await screen.findByRole('option', { name: 'Lisbon' }));
     await user.type(screen.getByRole('combobox'), 'par');
     expect(screen.queryByRole('option', { name: 'Lisbon' })).not.toBeInTheDocument();
     await user.keyboard('{Escape}');

@@ -9,6 +9,44 @@ async function centerOffset(list: Locator, tab: Locator): Promise<number> {
 }
 
 test.describe('Tabs lab', () => {
+  test('UIC-TABS-1.1 UIC-TABS-2.1 keeps typed and whitespace IDs separate', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('tabs');
+    const demo = page.locator('[data-lab-demo="typed-tab-keys"]');
+    const ids = await demo.getByRole('tab').evaluateAll((tabs) => tabs.map((tab) => tab.id));
+    expect(new Set(ids).size).toBe(4);
+    for (const [name, value] of [
+      ['Text', 'string: "1"'],
+      ['Numeric', 'number: 1'],
+      ['Compact', 'string: "ab"'],
+      ['Spaced', 'string: "a b"'],
+    ]) {
+      await demo.getByRole('tab', { name }).click();
+      await expect(demo.locator('[data-lab-output="selected"]')).toHaveText(`Selected ${value}`);
+      await expect(demo.getByRole('tabpanel', { name })).toHaveText(`${name} panel`);
+    }
+  });
+
+  test('UIC-TABS-2.2 UIC-TABS-2.8 keeps disabled close marks inert as disabled states change', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('tabs');
+    const demo = page.locator('[data-lab-demo="disabled-removal"]');
+    const output = demo.locator('[data-lab-output="removed"]');
+    await demo.getByRole('tab', { name: 'Summer' }).locator('.ui-tabs__remove').click();
+    await demo.getByRole('tab', { name: 'Autumn' }).locator('.ui-tabs__remove').click();
+    await expect(output).toHaveText('Remove requested: (none)');
+    await demo.getByRole('button', { name: 'Toggle disabled tabs' }).click();
+    await demo.getByRole('tab', { name: 'Spring' }).locator('.ui-tabs__remove').click();
+    await expect(output).toHaveText('Remove requested: (none)');
+    await demo.getByRole('button', { name: 'Toggle disabled tabs' }).click();
+    await demo.getByRole('tab', { name: 'Spring' }).locator('.ui-tabs__remove').click();
+    await expect(output).toHaveText('Remove requested: spring');
+  });
+
   test('UIC-TABS-1.1 UIC-TABS-1.4 draws three tab heights in rows and columns', async ({
     page,
     lab,

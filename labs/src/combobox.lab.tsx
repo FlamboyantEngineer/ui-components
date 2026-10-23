@@ -336,6 +336,21 @@ function RememberedChips() {
 
 mountLab(
   <>
+    <LabSection
+      title="Primitive keys"
+      description="Numeric and text ids that read alike remain distinct choices."
+    >
+      <Combobox
+        label="Primitive keys"
+        defaultItems={[
+          { id: 1, label: 'Numeric' },
+          { id: '1', label: 'Textual' },
+        ]}
+        selectionMode="multiple"
+        defaultValue={[1, '1']}
+        name="typed-keys"
+      />
+    </LabSection>
     <LabSection title="Variants, sizes and states" description="Each cell is a live combobox.">
       <StateMatrix
         axes={{ variant: ['default', 'search'], state: states, size: sizes }}
@@ -387,7 +402,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Multiple selection"
-      description="Picking keeps the list open and adds a chip; the chips are a tag group."
+      description="Typed search text stays until a choice is made. Picking keeps the list open and adds a chip; the chips are a tag group."
     >
       <Multiple />
     </LabSection>
@@ -438,7 +453,10 @@ mountLab(
         )}
       />
     </LabSection>
-    <LabSection title="Open on focus" description="The list opens when the input takes focus.">
+    <LabSection
+      title="Open on focus"
+      description="Tab from Capital above: the list opens after the page scrolls the focused field into view and keeps keyboard navigation in the input."
+    >
       <Combobox label="Fruit on focus" defaultItems={fruit} menuTrigger="focus" />
     </LabSection>
     <LabSection

@@ -10,26 +10,38 @@ export interface ParsedSnippet {
 
 const WORD_BEFORE_CARET = /[A-Za-z_$][\w$.]*$/;
 
-const FIELD = /\$\{([^}]*)\}/g;
+const quotedCharacters = new Set(['\\', '$', '}']);
 
 /** The identifier-like word that ends at `caret`, or `''`. */
 export function findCompletionQuery(value: string, caret: number): string {
   return WORD_BEFORE_CARET.exec(value.slice(0, caret))?.[0] ?? '';
 }
 
-/** Replaces each `${…}` field with its default text and records where the fields are. */
+/** Reads `${…}` fields; backslashes quote a dollar, closing brace or backslash. */
 export function parseSnippet(snippet: string): ParsedSnippet {
   const fields: CodeRange[] = [];
   let text = '';
-  let last = 0;
-  for (const match of snippet.matchAll(FIELD)) {
-    text += snippet.slice(last, match.index);
-    const placeholder = match[1] ?? '';
-    fields.push({ start: text.length, end: text.length + placeholder.length });
-    text += placeholder;
-    last = match.index + match[0].length;
+  let field: { start: number; source: number } | null = null;
+  for (let index = 0; index < snippet.length; index += 1) {
+    const character = snippet[index]!;
+    if (character === '\\' && quotedCharacters.has(snippet[index + 1] ?? '')) {
+      text += snippet[++index];
+      continue;
+    }
+    if (!field && character === '$' && snippet[index + 1] === '{') {
+      field = { start: text.length, source: index };
+      index += 1;
+      continue;
+    }
+    if (field && character === '}') {
+      fields.push({ start: field.start, end: text.length });
+      field = null;
+      continue;
+    }
+    text += character;
   }
-  return { text: text + snippet.slice(last), fields };
+  if (field) text = text.slice(0, field.start) + snippet.slice(field.source);
+  return { text, fields };
 }
 
 /** Indents every line of a multiline insertion after the first like the line it goes into. */

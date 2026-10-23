@@ -11,12 +11,28 @@ describe('table selection', () => {
     ];
     const { result, rerender } = renderHook(
       ({ selectedKeys }: { selectedKeys: 'all' | number[] }) =>
-        useTableSelection({ selectedKeys, disabledKeys: ['2'] }, nodes),
+        useTableSelection({ selectedKeys, disabledKeys: [2] }, nodes),
       { initialProps: { selectedKeys: 'all' as 'all' | number[] } },
     );
     expect(result.current.selectedRows.map((row) => row.id)).toEqual([1, 3]);
     rerender({ selectedKeys: [3, 2, 1] });
     expect(result.current.selectedRows.map((row) => row.id)).toEqual([1, 3]);
+  });
+
+  it('UIC-TABLE-15.1 distinguishes numeric and text keys in selections and disabled rows', () => {
+    const nodes = [
+      { id: 1, row: { id: 1 }, children: [] },
+      { id: '1', row: { id: '1' }, children: [] },
+    ];
+    const { result } = renderHook(() =>
+      useTableSelection<{ id: number | string }>(
+        { selectedKeys: new Set([1, '1']), disabledKeys: [1] },
+        nodes,
+      ),
+    );
+    expect(result.current.selectedRows).toEqual([{ id: '1' }]);
+    expect(result.current.isRowDisabled({ id: 1 })).toBe(true);
+    expect(result.current.isRowDisabled({ id: '1' })).toBe(false);
   });
 
   it('UIC-TABLE-15.1 does not read presented rows when the selection is empty', () => {
@@ -31,6 +47,17 @@ describe('table selection', () => {
     ];
     const { result } = renderHook(() => useTableSelection({}, nodes));
     expect(result.current.selectedRows).toEqual([]);
+  });
+
+  it('UIC-TABLE-3.1 UIC-TABLE-15.1 retains disabled keys from one-shot iterables for the collection', () => {
+    const disabledKeys = [1][Symbol.iterator]();
+    const { result } = renderHook(() =>
+      useTableSelection({ selectedKeys: 'all', disabledKeys }, [
+        { id: 1, row: { id: 1 }, children: [] },
+      ]),
+    );
+    expect(result.current.selectedRows).toEqual([]);
+    expect([...result.current.disabledKeys]).toEqual([1]);
   });
 
   it('UIC-TABLE-15.1 collects a deep selection without repeated descendant arrays', () => {

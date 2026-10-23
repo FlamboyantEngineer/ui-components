@@ -42,6 +42,91 @@ const cityNames = ['Paris', 'Lima', 'Oslo', 'Lisbon', 'Cairo'];
 const cityEntries: MenuEntry[] = cityNames.map((name) => ({ id: name.toLowerCase(), label: name }));
 
 describe('Menu', () => {
+  it('UIC-MENU-1.1 UIC-MENU-3.3 keeps typed and whitespace IDs distinct in selections and actions', async () => {
+    const user = userEvent.setup();
+    const onAction = vi.fn();
+    const onSelectionChange = vi.fn();
+    render(
+      <MenuButton
+        items={[
+          { id: 1, label: 'Numeric option' },
+          { id: '1', label: 'Text option' },
+          { id: 'a b', label: 'Spaced option' },
+          { id: 'ab', label: 'Compact option' },
+        ]}
+        selectionMode="multiple"
+        defaultSelectedKeys={[1]}
+        disabledKeys={['a b']}
+        onAction={onAction}
+        onSelectionChange={onSelectionChange}
+      />,
+    );
+    const menu = await openMenu(user);
+    const options = within(menu).getAllByRole('menuitemcheckbox');
+    expect(new Set(options.map((option) => option.id)).size).toBe(4);
+    expect(options[0]).toBeChecked();
+    expect(options[1]).not.toBeChecked();
+    expect(options[2]).toHaveAttribute('aria-disabled', 'true');
+    await user.keyboard('{ArrowDown} ');
+    expect(options[1]).toHaveFocus();
+    expect(onSelectionChange).toHaveBeenLastCalledWith(new Set([1, '1']));
+    expect(onAction).toHaveBeenLastCalledWith('1');
+    await user.keyboard('{ArrowDown}');
+    expect(options[3]).toHaveFocus();
+  });
+
+  it('UIC-MENU-3.3 decodes a JSX section selection without changing primitive ID types', async () => {
+    const user = userEvent.setup();
+    const onSelectionChange = vi.fn();
+    render(
+      <MenuButton>
+        <MenuSection
+          title="Typed choices"
+          selectionMode="multiple"
+          selectedKeys={['1']}
+          onSelectionChange={onSelectionChange}
+        >
+          <MenuItem id={1}>Numeric option</MenuItem>
+          <MenuItem id="1">Text option</MenuItem>
+        </MenuSection>
+      </MenuButton>,
+    );
+    const menu = await openMenu(user);
+    const numeric = within(menu).getByRole('menuitemcheckbox', { name: 'Numeric option' });
+    const text = within(menu).getByRole('menuitemcheckbox', { name: 'Text option' });
+    expect(numeric.id).not.toBe(text.id);
+    expect(text).toBeChecked();
+    await user.click(numeric);
+    expect(onSelectionChange).toHaveBeenLastCalledWith(new Set(['1', 1]));
+  });
+
+  it('UIC-MENU-4.5 decodes typed actions inherited by a submenu', async () => {
+    const user = userEvent.setup();
+    const onAction = vi.fn();
+    render(
+      <MenuButton
+        onAction={onAction}
+        items={[
+          {
+            id: 'more',
+            label: 'More choices',
+            items: [
+              { id: 1, label: 'Numeric option' },
+              { id: '1', label: 'Text option' },
+            ],
+          },
+        ]}
+      />,
+    );
+    const menu = await openMenu(user);
+    await user.click(within(menu).getByRole('menuitem', { name: 'More choices' }));
+    const text = await screen.findByRole('menuitem', { name: 'Text option' });
+    const numeric = screen.getByRole('menuitem', { name: 'Numeric option' });
+    expect(numeric.id).not.toBe(text.id);
+    await user.click(numeric);
+    expect(onAction).toHaveBeenLastCalledWith(1);
+  });
+
   it('UIC-MENU-1.1 draws entries from data like the matching children', async () => {
     const user = userEvent.setup();
     render(<MenuButton items={fruitEntries} aria-label="Fruit" />);

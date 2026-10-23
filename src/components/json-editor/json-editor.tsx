@@ -4,7 +4,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { CodeEditor, type CodeEditorSize } from '../code-editor/code-editor.js';
 import { Field, useFieldControl, type FieldInputProps } from '../field/field.js';
-import { checkJsonText } from './json-check.js';
+import { createJsonChecker } from './json-check.js';
 import { createJsonCompletion, describeJsonAt } from './json-complete.js';
 import type { JsonSchema } from './json-schema.js';
 import { formatJson, tokenizeJson } from './json-text.js';
@@ -35,14 +35,15 @@ const hooks = createHooks('json-editor', ['format']);
 export function JsonEditor({ size = 'md', ...props }: JsonEditorProps) {
   const strings = useUiStrings();
   const { schema } = props;
+  const check = useMemo(() => createJsonChecker(schema, strings), [schema, strings]);
   const { state, field, rest } = useFieldControl<string, JsonEditorProps>(props, {
     initialValue: '',
     emptyValue: '',
-    check: (value) => checkJsonText(value, schema, strings).issue,
+    check: (value) => check(value).issue,
   });
   const { indent = 2, lineNumbers = true, placeholder, autoCloseBrackets } = rest;
-  const formatted = formatJson(state.value, indent);
-  const { diagnostics } = checkJsonText(state.value, schema, strings);
+  const formatted = useMemo(() => formatJson(state.value, indent), [state.value, indent]);
+  const { diagnostics } = check(state.value);
   const completions = useMemo(() => (schema ? createJsonCompletion(schema) : undefined), [schema]);
   const format = () => {
     if (formatted === null) return;

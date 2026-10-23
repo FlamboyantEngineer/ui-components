@@ -122,6 +122,41 @@ function OwnedTimeline({ onItemChange }: { onItemChange: TimelineProps['onItemCh
 }
 
 describe('Timeline', () => {
+  it('UIC-TIMELINE-1.4 UIC-TIMELINE-1.5 keeps numeric and text row and item identities when reordered', async () => {
+    const user = userEvent.setup();
+    const onSelectionChange = vi.fn();
+    const typedRows = [
+      { id: 1, label: 'Numeric row' },
+      { id: '1', label: 'Text row' },
+    ];
+    const typedItems = [
+      { id: 2, rowId: 1, label: 'Numeric item', start: '2026-03-02' },
+      { id: '2', rowId: 1, label: 'Text item', start: '2026-03-02' },
+    ];
+    const props = {
+      rows: typedRows,
+      items: typedItems,
+      range: march,
+      onSelectionChange,
+      selectionMode: 'multiple' as const,
+    };
+    const { rerender } = render(<Timeline {...props} />);
+    const numeric = item('Numeric item');
+    const text = item('Text item');
+    const numericRow = screen.getByRole('group', { name: 'Numeric row' });
+    const textRow = screen.getByRole('group', { name: 'Text row' });
+    rerender(
+      <Timeline {...props} rows={[...typedRows].reverse()} items={[...typedItems].reverse()} />,
+    );
+    expect(item('Numeric item')).toBe(numeric);
+    expect(item('Text item')).toBe(text);
+    expect(screen.getByRole('group', { name: 'Numeric row' })).toBe(numericRow);
+    expect(screen.getByRole('group', { name: 'Text row' })).toBe(textRow);
+    await user.click(numeric);
+    expect(onSelectionChange).toHaveBeenLastCalledWith(new Set([2]));
+    await user.click(text);
+    expect(onSelectionChange).toHaveBeenLastCalledWith(new Set([2, '2']));
+  });
   it('UIC-TIMELINE-1.1 UIC-TIMELINE-1.10 renders the chart parts and the hooks of its spec', () => {
     const { container } = renderTimeline({ dependencies: [{ from: 'measure', to: 'quote' }] });
     const root = container.querySelector('.ui-timeline')!;

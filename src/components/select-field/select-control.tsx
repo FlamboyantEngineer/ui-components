@@ -3,6 +3,8 @@ import { Select as AriaSelect } from '../../primitives/index.js';
 import { createHooks, measuredProperty } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
+import { fromCollectionKey } from '../../utils/from-collection-key.js';
+import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { useWidestTextWidth } from '../../utils/use-widest-text-width.js';
 import type { FieldControlProps, FieldState } from '../field/field.js';
 import { SelectChips } from './select-chips.js';
@@ -102,8 +104,7 @@ export function SelectControl({ control, label, ...props }: SelectControlProps) 
   const list = useListProps(props, model);
   const actions = useSelectActions(props, model, list.isFilterable);
   const trigger = useTrigger(control, props, model);
-  // React Aria would submit the empty option's generated key; submit an empty entry instead.
-  const submitsEmpty = Boolean(props.name) && model.empty !== null && model.single === model.empty;
+  const submitted = isMultiple ? model.keys : [model.keys[0] ?? ''];
   return (
     <>
       <AriaSelect<SelectFieldOption, 'single' | 'multiple'>
@@ -114,8 +115,14 @@ export function SelectControl({ control, label, ...props }: SelectControlProps) 
         aria-labelledby={control['aria-labelledby']}
         aria-describedby={control['aria-describedby']}
         selectionMode={isMultiple ? 'multiple' : 'single'}
-        value={isMultiple ? model.keys : (model.single?.id ?? null)}
-        onChange={(value) => actions.commitKeys(toSelectKeys(value))}
+        value={
+          isMultiple
+            ? model.keys.map(toCollectionKey)
+            : model.single
+              ? toCollectionKey(model.single.id)
+              : null
+        }
+        onChange={(value) => actions.commitKeys(toSelectKeys(value).map(fromCollectionKey))}
         isOpen={actions.isOpen}
         onOpenChange={actions.changeOpen}
         isDisabled={state.isDisabled}
@@ -123,7 +130,6 @@ export function SelectControl({ control, label, ...props }: SelectControlProps) 
         isInvalid={state.validation.status === 'invalid'}
         validationBehavior="aria"
         allowsEmptyCollection
-        name={submitsEmpty ? undefined : props.name}
         autoFocus={props.autoFocus}
       >
         <SelectTrigger
@@ -144,9 +150,17 @@ export function SelectControl({ control, label, ...props }: SelectControlProps) 
           onFilterTextChange={actions.changeFilter}
         />
       </AriaSelect>
-      {submitsEmpty ? (
-        <input type="hidden" name={props.name} value="" disabled={state.isDisabled} />
-      ) : null}
+      {props.name
+        ? submitted.map((key) => (
+            <input
+              key={toCollectionKey(key)}
+              type="hidden"
+              name={props.name}
+              value={String(key)}
+              disabled={state.isDisabled}
+            />
+          ))
+        : null}
       {isMultiple ? (
         <SelectChips
           label={label}

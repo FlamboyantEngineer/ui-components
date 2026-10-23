@@ -70,8 +70,9 @@ export function usePdfKeyboard(options: UsePdfKeyboardOptions): PdfKeyboard {
 
   const onViewerKeyDown = useCallback(
     (event: KeyboardEvent<HTMLElement>) => {
-      if (!(event.ctrlKey || event.metaKey) || event.altKey || event.shiftKey) return;
+      if (!(event.ctrlKey || event.metaKey) || event.altKey) return;
       const shortcut = readShortcut(event.key);
+      if (event.shiftKey && shortcut !== 'zoom-in') return;
       const { isReady, zoom, defaultZoom, findFieldRef } = latest.current;
       const field = findFieldRef.current;
       if (shortcut === 'find' && field) {

@@ -15,15 +15,16 @@ export interface InitialFocusProps {
 const tabbableSelector =
   'a[href], area[href], button, input, select, textarea, iframe, summary, [tabindex], [contenteditable]';
 
-function findFirstTabbable(root: Element | null): HTMLElement | null {
-  if (!root) return null;
+function focusFirstTabbable(root: Element | null): boolean {
+  if (!root) return false;
   for (const element of root.querySelectorAll<HTMLElement>(tabbableSelector)) {
     if (element.tabIndex < 0 || element.closest('[inert], [hidden]')) continue;
     if ('disabled' in element && element.disabled === true) continue;
     if (element instanceof HTMLInputElement && element.type === 'hidden') continue;
-    return element;
+    element.focus();
+    if (element.ownerDocument.activeElement === element) return true;
   }
-  return null;
+  return false;
 }
 
 /**
@@ -40,14 +41,12 @@ export function InitialFocus({ dialogRef, bodyRef, footerRef, target }: InitialF
     const chosen = resolveFocusTarget(targetRef.current);
     if (chosen) {
       chosen.focus();
-      return;
+      if (chosen.ownerDocument.activeElement === chosen) return;
     }
-    if (dialog.contains(document.activeElement)) return;
-    const first =
-      findFirstTabbable(bodyRef.current) ??
-      findFirstTabbable(footerRef.current) ??
-      findFirstTabbable(dialog);
-    first?.focus();
+    const active = dialog.ownerDocument.activeElement;
+    if (active !== dialog && dialog.contains(active)) return;
+    if (focusFirstTabbable(bodyRef.current) || focusFirstTabbable(footerRef.current)) return;
+    focusFirstTabbable(dialog);
   }, [dialogRef, bodyRef, footerRef]);
   return null;
 }

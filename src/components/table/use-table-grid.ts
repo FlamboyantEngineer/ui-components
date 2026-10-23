@@ -4,11 +4,9 @@ import { useUiStrings } from '../../core/provider.js';
 import { mergeProps } from '../../utils/merge-props.js';
 import type { CollectionDragAndDropOptions } from '../../utils/use-reorder-drag-and-drop.js';
 import type { TableProps } from './table.js';
-import { stateRowId, type TableBodyProps, type TableStatus } from './table-body.js';
-import { footerRowId } from './table-footer.js';
+import type { TableBodyProps, TableStatus } from './table-body.js';
 import type { TableSelectionBarProps } from './table-bulk-edit.js';
-import { isGroupKey, listVisibleRows } from './table-groups.js';
-import { detailRowPrefix } from './table-row.js';
+import { listVisibleRows } from './table-groups.js';
 import type { TableColumn, TableRow } from './table-rows.js';
 import { pickAriaProps, type TableAriaProps } from './table-props.js';
 import type { TableStructure } from './table-structure.js';
@@ -22,6 +20,7 @@ import { useTableReorder, type TableReorder } from './use-table-reorder.js';
 import { useTableRows, type TableRowsView } from './use-table-rows.js';
 import { resolveSelectionBar, useCellsView, useRowModel } from './use-table-model.js';
 import { useTableSelection } from './use-table-selection.js';
+import { createTableAriaKeys, createTableRowAction, useTableKeyIndex } from './table-aria-keys.js';
 
 /** The props that shape the grid; the root's presentation is the table's own. */
 export type TableGridOptions<T extends TableRow> = Omit<
@@ -73,12 +72,6 @@ function useStatusMessage(props: StatusProps, status: TableStatus | null): React
   if (status === 'error') return props.errorMessage;
   if (status === 'loading') return props.loadingMessage ?? strings.loading;
   return props.emptyMessage ?? strings.noResults;
-}
-
-/** Whether a key names a row of the caller's, not a notice, detail, group or summary row. */
-function isDataRowKey(key: Key): boolean {
-  const isDetail = String(key).startsWith(detailRowPrefix);
-  return key !== stateRowId && key !== footerRowId && !isDetail && !isGroupKey(key);
 }
 
 /** The data column holding expand buttons: the caller's, if drawn, else the first drawn column. */
@@ -152,6 +145,7 @@ export function useTableGrid<T extends TableRow>(options: TableGridOptions<T>): 
   const view = useTableRows(options);
   const grouped = useTableGrouping(options, view);
   const selection = useTableSelection(options, view.presentedNodes);
+  const keyIndex = useTableKeyIndex(options.rows, options.getChildRows, onRowAction !== undefined);
   const reordering = useTableReorder({ rows: view.rows, reorder });
   const structure = useStructure(options, layout.visibleColumns, grouped.isGrouped);
   const visibleRows = useMemo(
@@ -185,9 +179,11 @@ export function useTableGrid<T extends TableRow>(options: TableGridOptions<T>): 
   return {
     ariaProps: {
       ...pickAriaProps(options),
-      selectedKeys: selection.selection,
-      onSelectionChange: selection.setSelection,
-      ...grouped.expansion,
+      ...createTableAriaKeys({
+        selection,
+        expansion: grouped.expansion,
+        disabledKeys: selection.disabledKeys,
+      }),
     },
     view,
     structure,
@@ -198,7 +194,7 @@ export function useTableGrid<T extends TableRow>(options: TableGridOptions<T>): 
     columnReorder,
     pinOffsets: pinned.offsets,
     onPinOffsets: pinned.report,
-    onRowAction: onRowAction && ((key: Key) => isDataRowKey(key) && onRowAction(key)),
+    onRowAction: createTableRowAction(keyIndex, onRowAction),
     body: { nodes: grouped.nodes, model, status, message, onRetry, onLoadMore, isLoading },
     selectionBar: resolveSelectionBar(options, { selection, columns: structure.columns }),
     rootProps: mergeRootProps(columns, {

@@ -117,14 +117,14 @@ Verification: `src/components/pdf-viewer/pdf-viewer.test.tsx`, `e2e/pdf-viewer.s
 
 ### UIC-PDF-VIEWER-3.5 - Keyboard zoom
 
-With focus in the viewer or its toolbar and the document open, Ctrl or Command with `+` (or `=`) and `-` shall step the zoom along the grid, and with `0` return to `defaultZoom`, preventing the browser's own page zoom.
+With focus in the viewer or its toolbar and the document open, Ctrl or Command with `+` (or `=`) and `-` shall step the zoom along the grid, and with `0` return to `defaultZoom`, preventing the browser's own page zoom. Shift may be held when typing `+`; other shifted shortcuts remain native.
 
 Implementation: `src/components/pdf-viewer/use-pdf-keyboard.ts`
 Verification: `src/components/pdf-viewer/use-pdf-keyboard.test.tsx`, `e2e/pdf-viewer.spec.ts`
 
 ### UIC-PDF-VIEWER-3.6 - Pinch zoom
 
-On a touch screen, two fingers pinching over the pages shall scale the page column with them (an inline `transform` about the point between them), and apply the zoom they reached when they lift: the zoom before the gesture times the ratio of the fingers' last span to their first, within 25% and 1000%. The pages are drawn again only then, so the element under a finger stays in place for the whole gesture. Two fingers dragging without pinching scroll the pages; one finger keeps the browser's scrolling. The engine's `TouchManager` tells the gestures apart.
+On a touch screen, two fingers pinching over the pages shall scale the page column with them (an inline `transform` about the point between them), and apply the zoom they reached when they lift: the zoom before the gesture times the ratio of the fingers' last span to their first, within 25% and 1000%. The pages are drawn again only then, so the element under a finger stays in place for the whole gesture. Two fingers dragging without pinching scroll the pages; one finger keeps the browser's scrolling. The engine's `TouchManager` tells the gestures apart. Closing or replacing the document or removing the viewer cancels a pinch, clears its temporary transform without committing a zoom, and ignores late callbacks from its touch manager.
 
 Implementation: `src/components/pdf-viewer/use-pinch-zoom.ts`
 Verification: `src/components/pdf-viewer/use-pinch-zoom.test.tsx`, `e2e/pdf-viewer.spec.ts`

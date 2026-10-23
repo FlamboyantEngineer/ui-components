@@ -14,6 +14,7 @@ import {
   type FieldInputProps,
   type FieldIssue,
 } from '../field/field.js';
+import { snapNumberValue } from './snap-number-value.js';
 import {
   NumberScrubber,
   Stepper,
@@ -107,6 +108,7 @@ export function NumberField({
   smallStep,
   largeStep,
   showScrubber = false,
+  commitBehavior = 'snap',
   ...props
 }: NumberFieldProps) {
   const strings = useUiStrings();
@@ -126,9 +128,15 @@ export function NumberField({
   });
   const steps: NumberSteps = { step: step ?? 1, smallStep, largeStep, minValue, maxValue };
   const commit = (value: number) => {
-    state.setValue(Number.isNaN(value) ? null : value);
+    const next = commitBehavior === 'snap' ? snapNumberValue(value, props) : value;
+    state.setValue(Number.isNaN(next) ? null : next);
     state.commit();
   };
+  const finishUnchanged = (value: number) => {
+    if (commitBehavior !== 'snap' || value !== state.value) return;
+    if (snapNumberValue(value, props) !== value) commit(value);
+  };
+  const modifiedStep = createModifierStepHandler(state, steps);
   const data = { hideStepper };
   return (
     <Field {...field} {...hooks.root({ className: field.className, data })} state={state}>
@@ -137,26 +145,35 @@ export function NumberField({
           {...rest}
           {...toAriaControlProps(control)}
           {...hooks.slot('box')}
+          commitBehavior="validate"
           value={state.value ?? Number.NaN}
           onChange={commit}
         >
-          <Group {...hooks.slot('group')}>
-            {hideStepper ? null : (
-              <Stepper slot="decrement" labelledBy={control['aria-labelledby']} />
-            )}
-            {showScrubber ? <NumberScrubber state={state} steps={steps} /> : null}
-            {startAdornment ? <span {...hooks.slot('start')}>{startAdornment}</span> : null}
-            <Input
-              {...hooks.slot('input')}
-              ref={control.ref}
-              placeholder={placeholder}
-              onKeyDown={createModifierStepHandler(state, steps)}
-            />
-            {endAdornment ? <span {...hooks.slot('end')}>{endAdornment}</span> : null}
-            {hideStepper ? null : (
-              <Stepper slot="increment" labelledBy={control['aria-labelledby']} />
-            )}
-          </Group>
+          {({ state: inputState }) => (
+            <Group {...hooks.slot('group')}>
+              {hideStepper ? null : (
+                <Stepper slot="decrement" labelledBy={control['aria-labelledby']} />
+              )}
+              {showScrubber ? <NumberScrubber state={state} steps={steps} /> : null}
+              {startAdornment ? <span {...hooks.slot('start')}>{startAdornment}</span> : null}
+              <Input
+                {...hooks.slot('input')}
+                ref={control.ref}
+                placeholder={placeholder}
+                onBlur={() => finishUnchanged(inputState.numberValue)}
+                onKeyDown={(event) => {
+                  modifiedStep(event);
+                  if (event.key === 'Enter' && !event.nativeEvent.isComposing) {
+                    finishUnchanged(inputState.numberValue);
+                  }
+                }}
+              />
+              {endAdornment ? <span {...hooks.slot('end')}>{endAdornment}</span> : null}
+              {hideStepper ? null : (
+                <Stepper slot="increment" labelledBy={control['aria-labelledby']} />
+              )}
+            </Group>
+          )}
         </AriaNumberField>
       )}
     </Field>

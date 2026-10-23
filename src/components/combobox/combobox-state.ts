@@ -19,6 +19,8 @@ export interface ComboboxModelOptions extends OpenStateProps, InputTextOptions {
   minSearchLength?: number | undefined;
   searchDelay?: number | undefined;
   isPending?: boolean | undefined;
+  isDisabled?: boolean | undefined;
+  isReadOnly?: boolean | undefined;
   onLoadMore?: (() => void) | undefined;
   isLoading?: boolean | undefined;
   renderEmptyState?: (() => ReactNode) | undefined;
@@ -70,11 +72,13 @@ function useInputText({ inputValue, defaultInputValue, onInputChange }: InputTex
  * busy state and empty content that go with them.
  */
 export function useComboboxModel(options: ComboboxModelOptions) {
-  const [isOpen, setOpen] = useControllableState(
+  const [open, setOpen] = useControllableState(
     options.isOpen,
     Boolean(options.defaultOpen),
     options.onOpenChange,
   );
+  const isLocked = Boolean(options.isDisabled || options.isReadOnly);
+  const isOpen = open && !isLocked;
   const input = useInputText(options);
   const search = useComboboxSearch({ ...options, isOpen, text: input.text });
   const renderEmpty = useEmptyContent({ search, renderEmptyState: options.renderEmptyState });
@@ -86,6 +90,7 @@ export function useComboboxModel(options: ComboboxModelOptions) {
     isOpen,
     // React Aria reports the open state it holds; reporting only changes keeps a controlled list quiet.
     onOpenChange: (next: boolean) => {
+      if (next && isLocked) return;
       if (next !== isOpen) setOpen(next);
     },
     input,

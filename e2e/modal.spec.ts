@@ -1,6 +1,18 @@
 import type { Locator, Page } from '@playwright/test';
 import { expect, test } from './fixtures.js';
 
+for (const mode of ['hidden', 'fieldset', 'chosen-hidden', 'chosen-plain']) {
+  test(`UIC-MODAL-3.1 UIC-MODAL-3.4 focuses the first usable body field after ${mode}`, async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('modal');
+    await page.getByRole('button', { name: `Open ${mode} focus case` }).click();
+    const dialog = page.getByRole('dialog', { name: `Focus after ${mode}` });
+    await expect(dialog.getByRole('textbox', { name: 'Ready' })).toBeFocused();
+  });
+}
+
 const sizes = [
   ['sm', 400],
   ['md', 560],

@@ -2,6 +2,7 @@
 
 import type { MouseEvent, PointerEvent } from 'react';
 import { Glyph, useUiStrings } from '../../core/provider.js';
+import { formatCount } from '../../utils/count.js';
 import { tabsHooks as hooks } from './tab-hooks.js';
 
 export interface TabCountProps {
@@ -11,20 +12,13 @@ export interface TabCountProps {
   countLabel: string | undefined;
 }
 
-/** A count worth showing: a positive whole number, or `null`. */
-export function normalizeCount(count: number | null | undefined): number | null {
-  if (typeof count !== 'number' || !Number.isFinite(count)) return null;
-  const whole = Math.floor(count);
-  return whole > 0 ? whole : null;
-}
-
 /** A tab's shown count, and the hidden description that gives the full count. */
 export function TabCount({ id, count, countMax, countLabel }: TabCountProps) {
   const strings = useUiStrings();
   return (
     <>
       {' '}
-      <span {...hooks.slot('count')}>{count > countMax ? `${countMax}+` : count}</span>
+      <span {...hooks.slot('count')}>{formatCount(count, { max: countMax })}</span>
       <span id={id} hidden>
         {countLabel ?? strings.itemCount(count)}
       </span>

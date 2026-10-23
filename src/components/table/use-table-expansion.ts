@@ -2,7 +2,7 @@ import { useMemo, type ReactNode } from 'react';
 import type { ExpansionProps } from '../../core/events.js';
 import type { Key } from '../../core/props.js';
 import { useControllableState } from '../../core/controllable-state.js';
-import { isGroupKey, type TableGroup, type TableGroupBy } from './table-groups.js';
+import type { TableGroup, TableGroupBy } from './table-groups.js';
 
 /** A table's row grouping: the groupings, the group headers and which groups are collapsed. */
 export interface TableGroupingProps<T> {
@@ -68,8 +68,8 @@ export function useTableExpansion(
     [rows, groupKeys, collapsed],
   );
   const onExpandedChange = (keys: Set<Key>) => {
-    const nextRows = new Set([...keys].filter((key) => !isGroupKey(key)));
     const drawn = new Set<Key>(groupKeys);
+    const nextRows = new Set([...keys].filter((key) => !drawn.has(key)));
     const nextCollapsed = new Set([
       ...[...collapsed].filter((key) => !drawn.has(key)),
       ...groupKeys.filter((key) => !keys.has(key)),

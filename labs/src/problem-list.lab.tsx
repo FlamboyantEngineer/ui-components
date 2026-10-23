@@ -14,8 +14,8 @@ const contents = ['empty', 'errors', 'warnings', 'mixed'] as const;
 const targets = ['plain', 'jump'] as const;
 
 const errors: ProblemListItem[] = [
-  { id: 'title', label: 'Title', message: 'Add a title.' },
-  { id: 'owner', label: 'Owner', message: 'Choose an owner.' },
+  { id: 1, label: 'Title', message: 'Add a title.' },
+  { id: '1', label: 'Owner', message: 'Choose an owner.' },
 ];
 const warnings: ProblemListItem[] = [
   { id: 'budget', label: 'Budget', message: 'The budget is unusually high.', severity: 'warning' },

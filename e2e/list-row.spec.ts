@@ -106,6 +106,7 @@ test.describe('List Row lab', () => {
     await lab.open('list-row');
     const list = page.getByRole('grid', { name: 'Fruit multiple' });
     const row = (name: string) => list.getByRole('row', { name: new RegExp(`^${name}`) });
+    expect(await row('Apple').getAttribute('id')).not.toBe(await row('Banana').getAttribute('id'));
     await expect(row('Banana')).toHaveAttribute('aria-selected', 'true');
     await row('Apple').focus();
     await page.keyboard.press('ArrowDown');

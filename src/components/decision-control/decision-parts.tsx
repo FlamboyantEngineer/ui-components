@@ -1,8 +1,9 @@
 import { toErrorMessage } from '../../utils/to-error-message.js';
-import { useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
+import { runPendingAction } from '../action-button/action-button.js';
 import type { IconSource } from '../icon/icon.js';
 import { InlineError } from '../inline-error/inline-error.js';
 import {
@@ -61,6 +62,7 @@ export interface DecisionSubmission {
 interface DecisionSubmissionOptions {
   details: Omit<DecisionControlDetails, 'signature'>;
   isSigned: boolean;
+  isDisabled: boolean;
   onSubmit: (details: DecisionControlDetails) => void | Promise<unknown>;
   onSubmitted: () => void;
 }
@@ -81,6 +83,7 @@ const hooks = decisionControlHooks;
 export function useDecisionSubmission({
   details,
   isSigned,
+  isDisabled,
   onSubmit,
   onSubmitted,
 }: DecisionSubmissionOptions): DecisionSubmission {
@@ -88,18 +91,33 @@ export function useDecisionSubmission({
   const [isPending, setPending] = useState(false);
   const [isSigning, setSigning] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const submit = (signature: SignatureDetails | null) =>
-    Promise.resolve(onSubmit({ ...details, signature })).then(onSubmitted);
+  const running = useRef(false);
+  useEffect(() => {
+    if (isDisabled) setSigning(false);
+  }, [isDisabled]);
+  const submit = async (signature: SignatureDetails | null) => {
+    if (isDisabled || running.current) return;
+    running.current = true;
+    try {
+      await onSubmit({ ...details, signature });
+      onSubmitted();
+    } finally {
+      running.current = false;
+    }
+  };
   const start = () => {
+    if (isDisabled || running.current) return;
     if (isSigned) {
       setSigning(true);
       return;
     }
-    setPending(true);
     setError(null);
-    submit(null)
-      .catch((reason: unknown) => setError(toErrorMessage(reason, strings.decisionFailed)))
-      .finally(() => setPending(false));
+    void runPendingAction({
+      blocked: false,
+      setPending,
+      action: () => submit(null),
+      onError: (reason) => setError(toErrorMessage(reason, strings.decisionFailed)),
+    });
   };
   return { isPending, isSigning, setSigning, error, start, submit };
 }

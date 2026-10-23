@@ -223,6 +223,29 @@ function orderAfter(items: Shelf[], move: TreeMove | undefined, parent: string):
 
 // Simulated drags re-render the whole tree many times; allow for a loaded test machine.
 describe('Tree reordering', { timeout: 20_000 }, () => {
+  it('UIC-TREE-REORDER-1.2 UIC-TREE-REORDER-1.4 reports original typed keys for a drag of numeric and textual siblings', async () => {
+    const onMoveMany = vi.fn();
+    render(
+      <Tree
+        aria-label="Keys"
+        items={[
+          { id: 1, name: 'Numeric item' },
+          { id: '1', name: 'Text item' },
+          { id: 'last', name: 'Last item' },
+        ]}
+        getTextValue={(item) => item.name}
+        selectionMode="multiple"
+        defaultSelectedKeys={[1, '1']}
+        reorder={{ onMove() {}, onMoveMany }}
+      />,
+    );
+    const transfer = startDrag('Numeric item');
+    await drop(transfer, 'Numeric item', 'Last item', 0.9);
+    expect(onMoveMany).toHaveBeenCalledExactlyOnceWith([
+      { key: 1, targetKey: 'last', position: 'after' },
+      { key: '1', targetKey: 1, position: 'after' },
+    ]);
+  });
   it('UIC-TREE-REORDER-1.1 offers drag affordances only on rows that can move, and none without reordering', () => {
     const { container, rerender } = render(<ShelfTree />);
     expect(

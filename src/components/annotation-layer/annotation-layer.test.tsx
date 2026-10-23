@@ -211,6 +211,27 @@ describe('AnnotationLayer', () => {
 });
 
 describe('AnnotationMargin', () => {
+  it('UIC-ANNOTATION-LAYER-2.1 keeps numeric and text IDs distinct when a card is removed', () => {
+    const entries: Annotation[] = [
+      { id: 1, rects: [{ top: 10, left: 20, width: 10, height: 10 }] },
+      { id: '1', rects: [{ top: 30, left: 20, width: 10, height: 10 }] },
+    ];
+    const renderCard = (annotation: Annotation) => `${typeof annotation.id} card`;
+    const { rerender } = render(
+      <AnnotationLayer annotations={entries}>
+        <AnnotationMargin renderCard={renderCard} />
+      </AnnotationLayer>,
+    );
+    const textCard = screen.getByText('string card');
+    rerender(
+      <AnnotationLayer annotations={entries.slice(1)}>
+        <AnnotationMargin renderCard={renderCard} />
+      </AnnotationLayer>,
+    );
+    expect(screen.getByText('string card')).toBe(textCard);
+    expect(screen.queryByText('number card')).not.toBeInTheDocument();
+  });
+
   it('UIC-ANNOTATION-LAYER-2.1 lists a card per annotation in anchor order, orphans last', () => {
     const { container } = render(<Notes defaultActiveId="missing" />);
     const list = screen.getByRole('list', { name: 'Annotations' });

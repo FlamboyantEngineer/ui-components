@@ -48,11 +48,122 @@ const tileNames = () =>
   );
 const status = () => document.querySelector('.ui-dashboard-grid__status');
 
+function stubGridWidth(width: number) {
+  vi.stubGlobal(
+    'ResizeObserver',
+    class {
+      constructor(private readonly callback: ResizeObserverCallback) {}
+      observe(target: Element) {
+        this.callback(
+          [{ target, contentRect: { width, height: 0 } } as ResizeObserverEntry],
+          this as unknown as ResizeObserver,
+        );
+      }
+      unobserve() {}
+      disconnect() {}
+    },
+  );
+}
+
 afterEach(() => {
   vi.unstubAllGlobals();
 });
 
 describe('DashboardGrid', () => {
+  it('UIC-DASHBOARD-GRID-2.2 UIC-DASHBOARD-GRID-3.1 discards an unfinished pointer move when reflow makes the grid read only', async () => {
+    stubGridWidth(300);
+    const user = userEvent.setup();
+    const onLayoutChange = vi.fn();
+    const { rerender } = render(<Board isEditing onLayoutChange={onLayoutChange} />);
+    const tile = screen.getByRole('group', { name: 'Visitors' });
+    const handle = screen.getByRole('button', { name: 'Move Visitors' });
+    await user.pointer([
+      { keys: '[MouseLeft>]', target: handle, coords: { pageX: 0, pageY: 0 } },
+      { coords: { pageX: 0, pageY: 80 } },
+    ]);
+    expect(tile).toHaveAttribute('data-moving', 'true');
+    rerender(<Board isEditing minColumnWidth={100} onLayoutChange={onLayoutChange} />);
+    expect(screen.getByRole('group', { name: 'Overview' })).toHaveAttribute(
+      'data-reflowed',
+      'true',
+    );
+    expect(tile).not.toHaveAttribute('data-moving');
+    await user.pointer({ keys: '[/MouseLeft]' });
+    rerender(<Board isEditing onLayoutChange={onLayoutChange} />);
+    expect(tile.style.gridRow).toBe('1 / span 2');
+    expect(onLayoutChange).not.toHaveBeenCalled();
+  });
+  it.each(['move', 'resize'] as const)(
+    'UIC-DASHBOARD-GRID-2.1 UIC-DASHBOARD-GRID-2.2 UIC-DASHBOARD-GRID-2.3 discards an unfinished pointer %s when editing stops',
+    async (kind) => {
+      const user = userEvent.setup();
+      const onLayoutChange = vi.fn();
+      const original = [{ id: 'tile', x: 0, y: 0, w: 1, h: 1 }];
+      const grid = (isEditing: boolean) => (
+        <DashboardGrid
+          defaultLayout={original}
+          isEditing={isEditing}
+          onLayoutChange={onLayoutChange}
+        >
+          {() => <DashboardTile label="Tile">Content</DashboardTile>}
+        </DashboardGrid>
+      );
+      const { rerender } = render(grid(true));
+      const tile = screen.getByRole('group', { name: 'Tile' });
+      const handle = screen.getByRole('button', {
+        name: kind === 'move' ? 'Move Tile' : 'Resize Tile',
+      });
+      await user.pointer([
+        { keys: '[MouseLeft>]', target: handle, coords: { pageX: 0, pageY: 0 } },
+        { coords: { pageX: 0, pageY: 80 } },
+      ]);
+      expect(tile.style.gridRow).toBe(kind === 'move' ? '2 / span 1' : '1 / span 2');
+      rerender(grid(false));
+      expect(tile.style.gridRow).toBe('1 / span 1');
+      expect(tile).not.toHaveAttribute('data-moving');
+      expect(tile).not.toHaveAttribute('data-resizing');
+      await user.pointer({ keys: '[/MouseLeft]' });
+      expect(onLayoutChange).not.toHaveBeenCalled();
+      rerender(grid(true));
+      const next = screen.getByRole('button', { name: 'Move Tile' });
+      next.focus();
+      await user.keyboard('{ArrowDown}');
+      expect(onLayoutChange).toHaveBeenCalledOnce();
+    },
+  );
+  it('UIC-DASHBOARD-GRID-1.2 UIC-DASHBOARD-GRID-2.6 keeps numeric and text tile content and handles through reordering', async () => {
+    const user = userEvent.setup();
+    const onLayoutChange = vi.fn();
+    const typedLayout = [
+      { id: 1, x: 0, y: 0, w: 6, h: 1 },
+      { id: '1', x: 6, y: 0, w: 6, h: 1 },
+    ];
+    const grid = (next: DashboardGridItem[]) => (
+      <DashboardGrid layout={next} isEditing onLayoutChange={onLayoutChange}>
+        {(entry) => (
+          <DashboardTile label={typeof entry.id === 'number' ? 'Numeric tile' : 'Text tile'}>
+            <input aria-label={`${typeof entry.id} note`} />
+          </DashboardTile>
+        )}
+      </DashboardGrid>
+    );
+    const { rerender } = render(grid(typedLayout));
+    const numeric = screen.getByRole('group', { name: 'Numeric tile' });
+    const text = screen.getByRole('group', { name: 'Text tile' });
+    const note = screen.getByRole('textbox', { name: 'number note' });
+    await user.type(note, 'Keep this note');
+    rerender(grid(typedLayout.map((entry) => ({ ...entry, x: 6 - entry.x }))));
+    expect(screen.getByRole('group', { name: 'Numeric tile' })).toBe(numeric);
+    expect(screen.getByRole('group', { name: 'Text tile' })).toBe(text);
+    expect(note).toHaveValue('Keep this note');
+    screen.getByRole('button', { name: 'Move Numeric tile' }).focus();
+    await user.keyboard('{ArrowDown}');
+    expect(onLayoutChange).toHaveBeenCalledOnce();
+    expect(
+      onLayoutChange.mock.calls[0]?.[0].find((entry: DashboardGridItem) => entry.id === 1)?.y,
+    ).toBe(1);
+    expect(screen.getByRole('button', { name: 'Move Numeric tile' })).toHaveFocus();
+  });
   it('UIC-DASHBOARD-GRID-1.1 UIC-DASHBOARD-GRID-4.1 places named tiles on its tracks in reading order', () => {
     render(<Board />);
     const grid = screen.getByRole('group', { name: 'Overview' });
@@ -221,21 +332,7 @@ describe('DashboardGrid', () => {
   });
 
   it('UIC-DASHBOARD-GRID-3.1 reflows onto fewer columns, read only, when narrow', () => {
-    vi.stubGlobal(
-      'ResizeObserver',
-      class {
-        constructor(private readonly callback: ResizeObserverCallback) {}
-        observe(target: Element) {
-          const entry = { target, contentRect: { width: 300, height: 0 } };
-          this.callback(
-            [entry as unknown as ResizeObserverEntry],
-            this as unknown as ResizeObserver,
-          );
-        }
-        unobserve() {}
-        disconnect() {}
-      },
-    );
+    stubGridWidth(300);
     render(<Board isEditing minColumnWidth={100} />);
     const grid = screen.getByRole('group', { name: 'Overview' });
     expect(grid).toHaveAttribute('data-reflowed', 'true');

@@ -4,6 +4,7 @@ import { Modal, ModalTrigger, type ModalProps } from '../../src/components/modal
 import { Portal } from '../../src/components/portal/portal.js';
 import { Shortcut } from '../../src/components/shortcut/shortcut.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { ModalFocusCases } from './modal-focus-cases.js';
 
 /** A save the lab holds until the reader finishes or fails it. */
 interface PendingRequest {
@@ -377,6 +378,12 @@ mountLab(
       description="Notes float at the corner without a backdrop; the page field stays usable while they are open, and Escape inside them closes them."
     >
       <FloatingNotes />
+    </LabSection>
+    <LabSection
+      title="Unavailable focus targets"
+      description="Initial focus skips hidden and fieldset-disabled fields, and falls back when an explicit target cannot receive focus."
+    >
+      <ModalFocusCases />
     </LabSection>
     <LabSection
       title="Anchored dialog"

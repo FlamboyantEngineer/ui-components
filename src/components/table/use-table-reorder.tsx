@@ -8,6 +8,8 @@ import {
 } from 'react';
 import { DropIndicator } from '../../primitives/index.js';
 import type { Key } from '../../core/props.js';
+import { createKeyIndex } from '../../utils/create-key-index.js';
+import { toCollectionKey } from '../../utils/to-collection-key.js';
 import {
   isMoveChord,
   useReorderDragAndDrop,
@@ -54,6 +56,10 @@ interface ReorderSnapshot<T> {
   reorder: TableReorderOptions<T> | undefined;
 }
 
+interface IndexedReorderSnapshot<T> extends ReorderSnapshot<T> {
+  keys: ReadonlyMap<string, Key>;
+}
+
 const moveKeys: Readonly<Record<string, -1 | 1>> = { ArrowUp: -1, ArrowDown: 1 };
 
 /** The key of the body or footer row of this table that holds `target`, or null. */
@@ -68,18 +74,25 @@ function canMoveRow<T>(reorder: TableReorderOptions<T> | undefined, row: T): boo
 }
 
 function findMovableRow<T extends TableRow>(snapshot: ReorderSnapshot<T>, key: Key): T | undefined {
-  const row = snapshot.rows.find((candidate) => String(candidate.id) === String(key));
+  const row = snapshot.rows.find((candidate) => toCollectionKey(candidate.id) === key);
   return row && canMoveRow(snapshot.reorder, row) ? row : undefined;
 }
 
 /** The move a drop on `target` makes, or null when it is not allowed or changes nothing. */
 function resolveDrop<T extends TableRow>(
-  snapshot: ReorderSnapshot<T>,
+  snapshot: IndexedReorderSnapshot<T>,
   target: CollectionDropTarget,
   keys: Iterable<Key>,
 ): TableMove | null {
   if (target.type !== 'item' || target.dropPosition === 'on') return null;
-  const move = { keys: [...keys], targetKey: target.key, position: target.dropPosition };
+  const index = snapshot.keys;
+  const targetKey = index.get(String(target.key));
+  if (targetKey === undefined) return null;
+  const moved = [...keys].flatMap((key) => {
+    const original = index.get(String(key));
+    return original === undefined ? [] : [original];
+  });
+  const move = { keys: moved, targetKey, position: target.dropPosition };
   return isEffectiveTableMove(snapshot.rows, move) ? move : null;
 }
 
@@ -108,7 +121,7 @@ function createDragPreview<T extends TableRow>(snapshot: ReorderSnapshot<T>) {
   if (!render) return undefined;
   return (items: ReorderDragItem[]) => {
     const keys = new Set(items.map((item) => item['text/plain']));
-    const rows = snapshot.rows.filter((row) => keys.has(getKeyText(row.id)));
+    const rows = snapshot.rows.filter((row) => keys.has(toCollectionKey(row.id)));
     return <div {...tableHooks.slot('drag-preview', { count: rows.length })}>{render(rows)}</div>;
   };
 }
@@ -119,8 +132,13 @@ function createDragPreview<T extends TableRow>(snapshot: ReorderSnapshot<T>) {
  */
 export function useTableReorder<T extends TableRow>(snapshot: ReorderSnapshot<T>): TableReorder<T> {
   const { reorder } = snapshot;
+  const keys = useMemo(
+    () => (reorder ? createKeyIndex(snapshot.rows.map((row) => row.id)) : new Map()),
+    [snapshot.rows, reorder],
+  );
+  const indexed = { ...snapshot, keys };
   const dragAndDrop = useReorderDragAndDrop<TableMove>({
-    resolveMove: (target, keys) => resolveDrop(snapshot, target, keys),
+    resolveMove: (target, keys) => resolveDrop(indexed, target, keys),
     onMove: (move) => reorder?.onMove(move),
     getTextValue: getKeyText,
     renderDropIndicator,

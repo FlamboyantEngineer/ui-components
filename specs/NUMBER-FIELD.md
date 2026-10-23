@@ -45,17 +45,17 @@ Verification: `src/components/number-field/number-field.test.tsx`
 
 ### UIC-NUMBER-FIELD-2.1 - Commit
 
-`NumberField` shall keep the text being typed apart from its value: the text becomes the value, through `onChange`, and commits, through `onCommit`, only when the input loses focus, when Enter is pressed and on each step. Intermediate text such as `-` or `1.` never becomes a value. A value set from outside the input (a controlled value, restore, undo or a menu action) replaces the text.
+`NumberField` shall keep the text being typed apart from its value: the text becomes the value, through `onChange`, and commits, through `onCommit`, only when the input loses focus, when Enter is pressed and on each step. Intermediate text such as `-` or `1.` never becomes a value. A value set from outside the input (a controlled value, restore, undo or a menu action) replaces the text without being clamped or snapped during render, so the displayed number remains the value being validated. A snapping commit on blur or Enter also corrects an unchanged external value.
 
 Implementation: `src/components/number-field/number-field.tsx`
 Verification: `src/components/number-field/number-field.test.tsx`, `e2e/number-field.spec.ts`
 
 ### UIC-NUMBER-FIELD-2.2 - Range and step
 
-`minValue`, `maxValue` and `step` shall bound the value. `commitBehavior` (`NumberFieldCommitBehavior`) chooses what a commit does: by default (`snap`) a committed value is clamped into the range and snapped to the nearest step. With `commitBehavior="validate"` it is kept as typed, and the field reports a value below the minimum, above the maximum or off the step (counted from the minimum, or from zero) as an error with the provider strings `rangeUnderflow`, `rangeOverflow` and `stepMismatch`, given the bound formatted like the value. Any value outside the rules, a controlled one included, reports the same way, before the caller's `validate`.
+`minValue`, `maxValue` and `step` shall bound the value. `commitBehavior` (`NumberFieldCommitBehavior`) chooses what a commit does: by default (`snap`) a committed value is clamped into the range and snapped to the nearest step. With `commitBehavior="validate"` it is kept as typed, and the field reports a value below the minimum, above the maximum or off the step (counted from the minimum, or from zero) as an error with the provider strings `rangeUnderflow`, `rangeOverflow` and `stepMismatch`, given the bound formatted like the value. Any value outside the rules, a controlled one included, reports the same way, before the caller's `validate`. Snapping uses the minimum as its origin (zero without a minimum), keeps the result on a valid step at an off-step maximum, and preserves decimal and scientific-notation precision.
 
-Implementation: `src/components/number-field/number-field.tsx`, `src/core/strings.ts`
-Verification: `src/components/number-field/number-field.test.tsx`, `e2e/number-field.spec.ts`
+Implementation: `src/components/number-field/number-field.tsx`, `src/components/number-field/snap-number-value.ts`, `src/core/strings.ts`
+Verification: `src/components/number-field/number-field.test.tsx`, `src/components/number-field/snap-number-value.test.ts`, `e2e/number-field.spec.ts`
 
 ### UIC-NUMBER-FIELD-2.3 - Field behaviour
 

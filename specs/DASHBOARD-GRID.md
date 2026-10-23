@@ -13,7 +13,7 @@ Verification: `src/components/dashboard-grid/dashboard-grid.test.tsx`, `e2e/dash
 
 ### UIC-DASHBOARD-GRID-1.2 - Layout data
 
-The layout shall be controlled with `layout` and `onLayoutChange` or uncontrolled from `defaultLayout`; with `storageKey`, the uncontrolled layout is remembered through the provider storage adapter ([PROVIDER.md](PROVIDER.md)). `onLayoutChange` receives the whole layout after each move or resize. The grid shows the layout normalised: coordinates rounded to whole cells, each tile at least one cell and kept inside the columns, the first of repeated ids kept, and overlapping tiles settled in reading order, each moving down just below a tile settled before it.
+The layout shall be controlled with `layout` and `onLayoutChange` or uncontrolled from `defaultLayout`; with `storageKey`, the uncontrolled layout is remembered through the provider storage adapter ([PROVIDER.md](PROVIDER.md)). `onLayoutChange` receives the whole layout after each move or resize. Numeric and text item IDs with the same spelling identify distinct tiles; a reading-order change preserves their content and handles. The grid shows the layout normalised: coordinates rounded to whole cells, each tile at least one cell and kept inside the columns, the first of repeated ids kept, and overlapping tiles settled in reading order, each moving down just below a tile settled before it.
 
 Implementation: `src/components/dashboard-grid/dashboard-grid.tsx`, `src/components/dashboard-grid/dashboard-layout.ts`
 Verification: `src/components/dashboard-grid/dashboard-layout.test.ts`, `src/components/dashboard-grid/dashboard-grid.test.tsx`
@@ -29,7 +29,7 @@ Verification: `src/components/dashboard-grid/dashboard-grid.test.tsx`
 
 ### UIC-DASHBOARD-GRID-2.1 - Edit mode
 
-With `isEditing`, the root shall publish `data-editing` and each tile shall show a `ui-dashboard-grid__move` button before its content, holding the decorative built-in `drag-handle` glyph, and a `ui-dashboard-grid__resize` button after it, holding the `resize` glyph. Without it the tiles show no handles.
+With `isEditing`, the root shall publish `data-editing` and each tile shall show a `ui-dashboard-grid__move` button before its content, holding the decorative built-in `drag-handle` glyph, and a `ui-dashboard-grid__resize` button after it, holding the `resize` glyph. Without it the tiles show no handles. Leaving edit mode or entering a responsive read-only layout shall discard any unfinished pointer move or resize, restore the committed geometry, clear the moving state and report no layout change. Returning to edit mode starts from the committed layout.
 
 Implementation: `src/components/dashboard-grid/dashboard-grid.tsx`, `src/components/dashboard-grid/dashboard-tile.tsx`
 Verification: `src/components/dashboard-grid/dashboard-grid.test.tsx`, `e2e/dashboard-grid.spec.ts`

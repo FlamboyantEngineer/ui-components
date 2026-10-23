@@ -1,4 +1,5 @@
 import { useState, type CSSProperties } from 'react';
+import type { Key } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
 import { Card } from '../../src/components/card/card.js';
 import { BarChart } from '../../src/components/chart/bar-chart.js';
@@ -28,10 +29,16 @@ const overview: DashboardGridItem[] = [
 ];
 
 const small: DashboardGridItem[] = [
-  { id: 'a', x: 0, y: 0, w: 2, h: 1 },
-  { id: 'b', x: 2, y: 0, w: 1, h: 1 },
+  { id: 1, x: 0, y: 0, w: 2, h: 1 },
+  { id: '1', x: 2, y: 0, w: 1, h: 1 },
   { id: 'c', x: 0, y: 1, w: 3, h: 1 },
 ];
+
+const smallTitles = new Map<Key, string>([
+  [1, 'A'],
+  ['1', 'B'],
+  ['c', 'C'],
+]);
 
 const frame = (width: number): CSSProperties => ({ width });
 
@@ -106,13 +113,13 @@ mountLab(
   <>
     <LabSection
       title="Edit mode"
-      description="Each tile shows a move and a resize handle. Drag them, or focus one and press the arrow keys; tiles in the way move down."
+      description="Each tile shows a move and a resize handle. Drag them, or focus one and press the arrow keys; tiles in the way move down. Leaving edit mode or reflowing to a narrow layout discards an unfinished pointer move or resize."
     >
       <EditableOverview />
     </LabSection>
     <LabSection
       title="States"
-      description="Reading and editing a small grid on three columns, and the same grid narrow enough to reflow onto one column, read only."
+      description="Reading and editing a small grid on three columns with numeric and text IDs kept distinct, and the same grid narrow enough to reflow onto one column, read only."
     >
       <StateMatrix
         axes={{ mode: ['reading', 'editing'], width: ['wide', 'narrow'] }}
@@ -127,8 +134,8 @@ mountLab(
               isEditing={mode === 'editing'}
             >
               {(item) => (
-                <DashboardTile label={`Tile ${String(item.id).toUpperCase()}`}>
-                  Tile {String(item.id).toUpperCase()}
+                <DashboardTile label={`Tile ${smallTitles.get(item.id)}`}>
+                  Tile {smallTitles.get(item.id)}
                 </DashboardTile>
               )}
             </DashboardGrid>
@@ -150,8 +157,8 @@ mountLab(
           isEditing
         >
           {(item) => (
-            <DashboardTile label={`Saved ${String(item.id).toUpperCase()}`}>
-              Saved {String(item.id).toUpperCase()}
+            <DashboardTile label={`Saved ${smallTitles.get(item.id)}`}>
+              Saved {smallTitles.get(item.id)}
             </DashboardTile>
           )}
         </DashboardGrid>

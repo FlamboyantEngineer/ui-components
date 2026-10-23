@@ -1,4 +1,5 @@
 import { isTextItem, type PdfTextContent } from './pdf-engine.js';
+import { escapeRegExp } from '../../utils/escape-regexp.js';
 
 /** A page's searchable text: its runs joined, with a line break after each run that ends a line. */
 export interface PdfPageText {
@@ -39,10 +40,6 @@ const combiningMarks = /\p{M}/gu;
 // A letter, mark, digit or underscore on either side of a match makes it part of a longer word.
 const wordBefore = '(?<![\\p{L}\\p{M}\\p{N}_])';
 const wordAfter = '(?![\\p{L}\\p{M}\\p{N}_])';
-
-function escapeRegExp(text: string): string {
-  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
 
 /**
  * Accented letters as their base letter, one character at a time, so an index in the result is the

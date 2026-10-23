@@ -7,6 +7,25 @@ const cards = (board: Locator, column: string) =>
 const titles = (board: Locator) => board.locator('.ui-board__column-title').allTextContents();
 
 test.describe('Board lab', () => {
+  test('UIC-BOARD-2.3 UIC-BOARD-3.2 moves typed cards and columns without sharing focus', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('board');
+    const board = demo(page, 'typed-board');
+    await board.getByRole('row', { name: 'Text card' }).focus();
+    await page.keyboard.press('Alt+ArrowRight');
+    await expect(cards(board, 'Numeric column')).toHaveText(['Numeric card']);
+    await expect(cards(board, 'Text column')).toHaveText(['Text card']);
+    await expect(board.getByRole('row', { name: 'Text card' })).toBeFocused();
+    const handle = board.getByRole('button', { name: 'Move column Text column' });
+    await handle.focus();
+    await page.keyboard.press('Alt+ArrowLeft');
+    expect(await titles(board)).toEqual(['Text column', 'Numeric column']);
+    await expect(handle).toBeFocused();
+    await lab.expectAccessible('[data-lab-demo="typed-board"]');
+  });
+
   test('UIC-BOARD-1.1 UIC-BOARD-1.2 UIC-BOARD-1.4 UIC-BOARD-1.5 UIC-BOARD-4.1 shows counts, limits, empty and collapsed columns', async ({
     page,
     lab,

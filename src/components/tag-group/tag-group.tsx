@@ -3,6 +3,9 @@ import { Tag as AriaTag, TagGroup as AriaTagGroup, TagList } from '../../primiti
 import type { AriaLabellingProps, SelectionProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key, Size, Tone } from '../../core/props.js';
+import { toCollectionSelectionProps } from '../../utils/collection-selection.js';
+import { fromCollectionKey } from '../../utils/from-collection-key.js';
+import { encodeCollectionChildren } from '../../utils/encode-collection-children.js';
 import { useUiStrings } from '../../core/provider.js';
 import { IconButton } from '../icon-button/icon-button.js';
 
@@ -56,10 +59,28 @@ export function TagGroup<T extends object>({
   tone = 'neutral',
   renderEmptyState,
   className,
+  selectedKeys,
+  defaultSelectedKeys,
+  disabledKeys,
+  onSelectionChange,
+  onRemove,
   ...rest
 }: TagGroupProps<T>) {
+  const decode = (selection: Iterable<Key>) =>
+    new Set(Array.from(selection, (key) => fromCollectionKey(key)));
+
   return (
-    <AriaTagGroup {...rest} {...hooks.root({ className, props: rest, data: { size } })}>
+    <AriaTagGroup
+      {...rest}
+      {...hooks.root({ className, props: rest, data: { size } })}
+      {...toCollectionSelectionProps({
+        selectedKeys,
+        defaultSelectedKeys,
+        disabledKeys,
+        onSelectionChange,
+      })}
+      onRemove={onRemove ? (selection) => onRemove(decode(selection)) : undefined}
+    >
       <ToneContext value={tone}>
         <TagList
           className={hooks.slotClass('list')}
@@ -70,7 +91,7 @@ export function TagGroup<T extends object>({
               : undefined
           }
         >
-          {children}
+          {encodeCollectionChildren(children, [Tag])}
         </TagList>
       </ToneContext>
     </AriaTagGroup>

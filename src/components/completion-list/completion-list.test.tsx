@@ -41,8 +41,29 @@ function Harness(props: HarnessProps) {
 }
 
 describe('CompletionList', () => {
-  it('UIC-COMPLETION-LIST-1.1 UIC-COMPLETION-LIST-1.2 shows the options in a non-modal popover', () => {
+  it('UIC-COMPLETION-LIST-1.2 keeps numeric and text keys distinct through reordering', async () => {
+    const items = [
+      { id: 1, label: 'Numeric' },
+      { id: '1', label: 'Textual' },
+    ];
+    const { rerender } = render(<Harness items={items} activeKey="1" />);
+    const numeric = await screen.findByRole('option', { name: 'Numeric' });
+    const textual = screen.getByRole('option', { name: 'Textual' });
+    expect(numeric.id).not.toBe(textual.id);
+    expect(getCompletionOptionId('people', 'with space')).not.toMatch(/\s/);
+    expect(getCompletionOptionId('people', 'with space')).not.toBe(
+      getCompletionOptionId('people', 'withspace'),
+    );
+    expect(document.getElementById(getCompletionOptionId('people', '1'))).toBe(textual);
+    expect(textual).toHaveAttribute('aria-selected', 'true');
+    rerender(<Harness items={[items[1]!, items[0]!]} activeKey={1} />);
+    expect(screen.getAllByRole('option')).toEqual([textual, numeric]);
+    expect(numeric).toHaveAttribute('aria-selected', 'true');
+  });
+
+  it('UIC-COMPLETION-LIST-1.1 UIC-COMPLETION-LIST-1.2 shows the options in a non-modal popover', async () => {
     render(<Harness />);
+    await screen.findByRole('listbox');
     const popover = document.querySelector<HTMLElement>('.ui-completion-list');
     expect(popover).not.toHaveAttribute('role', 'dialog');
     expect(popover?.style.zIndex).toBe('130');
@@ -55,7 +76,7 @@ describe('CompletionList', () => {
       'Team A',
     ]);
     expect(options[0]).toHaveAttribute('id', getCompletionOptionId('people', 'maria'));
-    expect(options[2]).toHaveAttribute('id', 'people-option-team%20a');
+    expect(options[2]).toHaveAttribute('id', getCompletionOptionId('people', 'team a'));
     expect(options[0]).toHaveAttribute('aria-selected', 'true');
     expect(options[0]).toHaveAttribute('data-focused', 'true');
     expect(options[0]).toHaveAttribute('data-kind', 'person');
@@ -73,14 +94,14 @@ describe('CompletionList', () => {
     expect(document.querySelector('.ui-completion-list')).toBeNull();
   });
 
-  it('UIC-COMPLETION-LIST-1.2 draws items with renderItem and takes a caller name', () => {
+  it('UIC-COMPLETION-LIST-1.2 draws items with renderItem and takes a caller name', async () => {
     render(
       <Harness
         aria-label="People"
         renderItem={(item, { isActive }) => `${item.label}${isActive ? ' (active)' : ''}`}
       />,
     );
-    expect(screen.getByRole('listbox', { name: 'People' })).toBeInTheDocument();
+    expect(await screen.findByRole('listbox', { name: 'People' })).toBeInTheDocument();
     expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual([
       'Maria Santos (active)',
       'Jon Berg',
@@ -94,7 +115,7 @@ describe('CompletionList', () => {
     render(<Harness onAction={onAction} />);
     const input = screen.getByRole('textbox');
     input.focus();
-    const jon = screen.getByRole('option', { name: 'Jon Berg' });
+    const jon = await screen.findByRole('option', { name: 'Jon Berg' });
     await user.hover(jon);
     expect(jon).toHaveAttribute('aria-selected', 'true');
     await user.click(jon);
@@ -102,9 +123,9 @@ describe('CompletionList', () => {
     expect(input).toHaveFocus();
   });
 
-  it('UIC-COMPLETION-LIST-1.4 shows the active documentation, an empty state and a footer', () => {
+  it('UIC-COMPLETION-LIST-1.4 shows the active documentation, an empty state and a footer', async () => {
     const { rerender } = render(<Harness activeKey="jon" footer="3 matches" />);
-    const jon = screen.getByRole('option', { name: 'Jon Berg' });
+    const jon = await screen.findByRole('option', { name: 'Jon Berg' });
     const documentation = document.querySelector('.ui-completion-list__documentation');
     expect(documentation).toHaveTextContent('Field research, Oslo office.');
     expect(jon).toHaveAccessibleDescription('Field research, Oslo office.');
@@ -118,8 +139,9 @@ describe('CompletionList', () => {
     expectHooksMatchSpec(document.body, 'COMPLETION-LIST', { slots: ['empty'] });
   });
 
-  it('UIC-COMPLETION-LIST-1.5 puts the class and data attributes on the popover and the id on the list', () => {
+  it('UIC-COMPLETION-LIST-1.5 puts the class and data attributes on the popover and the id on the list', async () => {
     render(<Harness className="caller" data-testid="probe" />);
+    await screen.findByRole('listbox');
     const popover = document.querySelector('.ui-completion-list');
     expect(popover).toHaveClass('caller');
     expect(popover).toHaveAttribute('data-testid', 'probe');

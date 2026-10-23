@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import {
   aggregateCellValues,
   groupTableNodes,
-  isGroupKey,
   isGroupNode,
   listGroupKeys,
   listVisibleRows,
@@ -11,6 +10,7 @@ import {
 } from './table-groups.js';
 import type { TableColumn } from './table-rows.js';
 import { buildTableNodes } from './table-tree.js';
+import { walkTree } from '../../utils/walk-tree.js';
 
 interface Item {
   id: string;
@@ -50,6 +50,67 @@ function describe2(tree: readonly TableBodyNode<Item>[]): unknown[] {
 }
 
 describe('table grouping helpers', () => {
+  it('UIC-TABLE-13.1 UIC-TABLE-13.5 allocates group keys around row ids and path delimiters', () => {
+    const base = 'ui-table-group:a=x/b=y';
+    const source = buildTableNodes(
+      [
+        { id: base, a: 'x', b: 'y' },
+        { id: `${base}:1`, a: 'x/b=y', b: 'z' },
+      ],
+      undefined,
+    );
+    const grouped = groupTableNodes(
+      source,
+      [
+        { id: 'a', label: 'A', getValue: (row) => row.a, direction: 'ascending' },
+        { id: 'b', label: 'B', getValue: (row) => row.b, direction: 'ascending' },
+      ],
+      [`${base}:2`],
+    );
+    const keys = listGroupKeys(grouped);
+    expect(new Set(keys).size).toBe(4);
+    expect(keys).not.toContain(base);
+    expect(keys).not.toContain(`${base}:1`);
+    expect(keys).not.toContain(`${base}:2`);
+    expect(keys).toContain(`${base}:3`);
+    expect(keys).toContain('ui-table-group:a=x%2Fb%3Dy');
+    expect(listVisibleRows(grouped, new Set(keys)).map((row) => row.id)).toEqual([
+      base,
+      `${base}:1`,
+    ]);
+  });
+
+  it('UIC-TABLE-13.1 UIC-TABLE-13.5 keeps delimiter-like group paths stable through sorting and input reordering', () => {
+    const source = buildTableNodes(
+      [
+        { id: 'first', a: 'x/b=y', b: 'z' },
+        { id: 'second', a: 'x', b: 'y' },
+        { id: 'third', a: 'x%2Fb%3Dy', b: 'z:1' },
+      ],
+      undefined,
+    );
+    const identify = (direction: 'ascending' | 'descending', reversed = false) => {
+      const grouped = groupTableNodes(reversed ? [...source].reverse() : source, [
+        { id: 'a', label: 'A', getValue: (row) => row.a, direction },
+        { id: 'b', label: 'B', getValue: (row) => row.b, direction },
+      ]);
+      const found = new Map<string, string>();
+      for (const node of walkTree(grouped, (node) =>
+        isGroupNode(node) ? node.children : undefined,
+      )) {
+        if (isGroupNode(node)) {
+          found.set(JSON.stringify([node.group.level, node.group.value]), node.id);
+        }
+      }
+      return found;
+    };
+    const initial = identify('ascending');
+    expect(identify('descending')).toEqual(initial);
+    expect(identify('ascending', true)).toEqual(initial);
+    expect([...initial.values()]).toContain('ui-table-group:a=x%252Fb%253Dy');
+    expect([...initial.values()]).toContain('ui-table-group:a=x%252Fb%253Dy/b=z%3A1');
+  });
+
   it('UIC-TABLE-13.5 collects deep group keys and visible rows in reading order', () => {
     let node: TableBodyNode<{ id: number }> = { id: 20_000, row: { id: 20_000 }, children: [] };
     const expanded = new Set<string>();
@@ -123,8 +184,6 @@ describe('table grouping helpers', () => {
       },
     ]);
     expect(listGroupKeys(tree)).toHaveLength(6);
-    expect(isGroupKey('ui-table-group:city=Oslo')).toBe(true);
-    expect(isGroupKey('a')).toBe(false);
   });
 
   it('UIC-TABLE-13.5 groups dates by day and leaves the nodes as they are without groupings', () => {

@@ -12,7 +12,7 @@ import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const symbols: CharacterGridCategory[] = [
   {
-    id: 'arrows',
+    id: 'ar rows',
     label: 'Arrows',
     characters: [
       { char: '←', name: 'Leftwards arrow' },

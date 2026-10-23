@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Column, ColumnResizer } from '../../primitives/index.js';
 import type { SortDirection } from '../../core/props.js';
 import type { GlyphName } from '../../core/glyphs.js';
+import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Icon } from '../icon/icon.js';
 import { getColumnBounds, type TableColumnSize } from './column-sizing.js';
@@ -56,7 +57,7 @@ export function DataColumn<T>({
   const hasControls = column.allowsResizing === true || state.filter !== null;
   return (
     <Column
-      id={column.id}
+      id={toCollectionKey(column.id)}
       textValue={getColumnText(column)}
       isRowHeader={state.isRowHeader}
       allowsSorting={column.allowsSorting}

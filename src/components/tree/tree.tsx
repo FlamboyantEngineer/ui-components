@@ -17,6 +17,7 @@ import { walkTree } from '../../utils/walk-tree.js';
 import type { IconSource } from '../icon/icon.js';
 import { TextMatchProvider } from '../text-match/text-match.js';
 import { TreeEmptyState, useTreeItemRenderer } from './tree-item.js';
+import { createTreeAriaKeys } from './tree-aria-keys.js';
 import { treeHooks as hooks } from './tree-hooks.js';
 import { useTreeExpansion } from './use-tree-expansion.js';
 import { useTreeFilter } from './use-tree-filter.js';
@@ -240,9 +241,21 @@ function useTreeModel<T extends TreeItemData>(props: TreeProps<T>) {
     filter: features.filter,
     expansion: useTreeExpansion(expansionOptions),
   });
-  const { reorder, disabledKeys } = state;
+  const { reorder } = state;
+  const disabledKeys = useMemo(
+    () => (state.disabledKeys ? new Set(state.disabledKeys) : undefined),
+    [state.disabledKeys],
+  );
+  const defaultSelectedKeys = useMemo(
+    () =>
+      features.selection.defaultSelectedKeys === 'all'
+        ? ('all' as const)
+        : features.selection.defaultSelectedKeys && new Set(features.selection.defaultSelectedKeys),
+    [features.selection.defaultSelectedKeys],
+  );
   const selection = useTreeSelection({
     ...features.selection,
+    defaultSelectedKeys,
     items: state.items,
     getChildren: getAllChildren,
     disabledKeys,
@@ -271,7 +284,7 @@ function useTreeModel<T extends TreeItemData>(props: TreeProps<T>) {
   const dependencies = useMemo(() => [renderItem], [renderItem]);
   return {
     ...parts,
-    state,
+    state: { ...state, disabledKeys },
     items,
     expansion,
     selection,
@@ -292,6 +305,12 @@ export function Tree<T extends TreeItemData>(props: TreeProps<T>) {
   const { root, aria, state, items, expansion, selection, reordering, keys, ...model } =
     useTreeModel(props);
   const { isPending, emptyMessage, disabledKeys } = state;
+  const ariaKeys = createTreeAriaKeys({
+    selection: selection.props,
+    expansion,
+    disabledKeys,
+    onAction: aria.onAction,
+  });
   const hasEmptyState = isPending || !isEmptyNode(emptyMessage);
   const { dragAndDropHooks } = useDragAndDrop<T>(reordering?.dragAndDrop ?? noDragAndDrop);
   let tree = (
@@ -299,14 +318,11 @@ export function Tree<T extends TreeItemData>(props: TreeProps<T>) {
       // React Aria keeps drag and drop hooks for the tree's lifetime: remount when reordering toggles.
       key={reordering ? 'reorderable' : 'fixed'}
       {...aria}
-      {...selection.props}
+      {...ariaKeys}
       {...hooks.root({ className: root.className, props: aria, data: root.data })}
       ref={root.ref}
       items={items}
-      disabledKeys={disabledKeys}
       dependencies={model.dependencies}
-      expandedKeys={expansion.expandedKeys}
-      onExpandedChange={expansion.setExpandedKeys}
       renderEmptyState={
         hasEmptyState
           ? () => <TreeEmptyState isPending={isPending} emptyMessage={emptyMessage} />

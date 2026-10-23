@@ -1,6 +1,7 @@
 // JSON text helpers for the JSON editor: highlighting tokens, parse checks and formatting.
 
 import type { CodeToken } from '../code-editor/code-editor.js';
+import { stringifyJsonValue } from './json-value.js';
 
 /** Where a JSON text stops parsing, counted from 1. */
 export interface JsonErrorLocation {
@@ -73,45 +74,51 @@ export function placeJsonTokens(source: string): PlacedJsonToken[] {
   return placed;
 }
 
-/** Walks the tokens through JSON's grammar; `index` stops at the first token that breaks it. */
-function createGrammar(tokens: readonly PlacedJsonToken[]) {
-  let index = 0;
-  const take = (text: string) => {
-    if (tokens[index]?.text !== text) return false;
-    index += 1;
+interface GrammarFrame {
+  kind: 'root' | 'array' | 'object';
+  expects: 'first' | 'key' | 'colon' | 'value' | 'comma' | 'done';
+}
+
+function readGrammarValue(stack: GrammarFrame[], token: PlacedJsonToken): boolean {
+  const frame = stack.at(-1)!;
+  frame.expects = frame.kind === 'root' ? 'done' : 'comma';
+  if (token.text === '{' || token.text === '[') {
+    stack.push({ kind: token.text === '{' ? 'object' : 'array', expects: 'first' });
     return true;
-  };
-  const list = (close: string, item: () => boolean): boolean => {
-    index += 1;
-    if (take(close)) return true;
-    do {
-      if (!item()) return false;
-    } while (take(','));
-    return take(close);
-  };
-  const value = (): boolean => {
-    const token = tokens[index];
-    if (token?.text === '{') return list('}', member);
-    if (token?.text === '[') return list(']', value);
-    if (!token || !SCALARS.has(token.type)) return false;
-    index += 1;
+  }
+  return SCALARS.has(token.type);
+}
+
+function readGrammarToken(stack: GrammarFrame[], token: PlacedJsonToken): boolean {
+  const frame = stack.at(-1)!;
+  const close = frame.kind === 'array' ? ']' : '}';
+  if (frame.expects === 'first') {
+    if (token.text === close) return Boolean(stack.pop());
+    frame.expects = frame.kind === 'array' ? 'value' : 'key';
+  }
+  if (frame.expects === 'value') return readGrammarValue(stack, token);
+  if (frame.expects === 'key') {
+    if (token.type !== 'key' && token.type !== 'string') return false;
+    frame.expects = 'colon';
     return true;
-  };
-  const member = (): boolean => {
-    const type = tokens[index]?.type;
-    if (type !== 'key' && type !== 'string') return false;
-    index += 1;
-    return take(':') && value();
-  };
-  return { value, stop: () => index };
+  }
+  if (frame.expects === 'colon') {
+    frame.expects = 'value';
+    return token.text === ':';
+  }
+  if (frame.expects !== 'comma') return false;
+  if (token.text === close) return Boolean(stack.pop());
+  frame.expects = frame.kind === 'array' ? 'value' : 'key';
+  return token.text === ',';
 }
 
 /** Where the tokens stop following JSON's grammar, or `null` when they follow it. */
 function findGrammarError(source: string): number | null {
-  const tokens = placeJsonTokens(source);
-  const grammar = createGrammar(tokens);
-  if (grammar.value() && grammar.stop() === tokens.length) return null;
-  return tokens[grammar.stop()]?.offset ?? source.length;
+  const stack: GrammarFrame[] = [{ kind: 'root', expects: 'value' }];
+  for (const token of placeJsonTokens(source)) {
+    if (!readGrammarToken(stack, token)) return token.offset;
+  }
+  return stack.length === 1 && stack[0]?.expects === 'done' ? null : source.length;
 }
 
 /**
@@ -157,6 +164,10 @@ export function findJsonError(source: string): { location: JsonErrorLocation | n
 
 /** The text rewritten with `indent` spaces per level, or `null` when it is blank or not JSON. */
 export function formatJson(source: string, indent: number): string | null {
-  if (findJsonError(source) !== null || source.trim() === '') return null;
-  return JSON.stringify(JSON.parse(source), null, indent);
+  if (source.trim() === '') return null;
+  try {
+    return stringifyJsonValue(JSON.parse(source), indent);
+  } catch {
+    return null;
+  }
 }

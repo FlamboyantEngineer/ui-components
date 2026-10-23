@@ -1,6 +1,7 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
 import { userEvent, type UserEvent } from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import type { Key } from '../../core/props.js';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Combobox, type ComboboxLoader, type ComboboxOption } from './combobox.js';
 
@@ -47,20 +48,51 @@ function createDeferredLoader() {
   return { calls, loadItems };
 }
 
+afterEach(() => vi.useRealTimers());
+
 describe('Combobox remote search', () => {
-  it('UIC-COMBOBOX-5.1 searches only an open list, at once on opening and after a pause in typing', async () => {
+  it('UIC-COMBOBOX-3.1 UIC-COMBOBOX-5.1 retains typed search text while a controlled multiple selection stays unchanged', async () => {
     const user = userEvent.setup();
+    const value: Key[] = [];
+    const onChange = vi.fn();
+    const loadItems = vi.fn<ComboboxLoader>(async (query) => findCities(query));
+    render(
+      <Combobox
+        label="Cities"
+        selectionMode="multiple"
+        value={value}
+        onChange={onChange}
+        loadItems={loadItems}
+        searchDelay={0}
+      />,
+    );
+    await user.type(input(), 'lis');
+    expect(input()).toHaveValue('lis');
+    await user.click(await screen.findByRole('option', { name: 'Lisbon' }));
+    expect(loadItems).toHaveBeenLastCalledWith('lis', expect.any(AbortSignal));
+    expect(onChange).toHaveBeenLastCalledWith(['lisbon']);
+  });
+
+  it('UIC-COMBOBOX-5.1 searches only an open list, at once on opening and after a pause in typing', async () => {
+    vi.useFakeTimers({
+      toFake: ['setTimeout', 'clearTimeout', 'requestAnimationFrame', 'cancelAnimationFrame'],
+    });
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     const loadItems = vi.fn<ComboboxLoader>(async (query) => findCities(query));
     render(<Combobox label="City" loadItems={loadItems} searchDelay={50} />);
     await user.click(input());
     expect(loadItems).not.toHaveBeenCalled();
     await setText(user, 'l');
-    await waitFor(() => expect(optionLabels()).toEqual(['Lima', 'Oslo', 'Lisbon']));
+    await act(() => vi.advanceTimersByTimeAsync(50));
+    expect(optionLabels()).toEqual(['Lima', 'Oslo', 'Lisbon']);
     expect(loadItems).toHaveBeenCalledTimes(1);
     expect(loadItems).toHaveBeenLastCalledWith('l', expect.any(AbortSignal));
     await setText(user, 'li');
     await setText(user, 'lis ');
-    await waitFor(() => expect(optionLabels()).toEqual(['Lisbon']));
+    await act(() => vi.advanceTimersByTimeAsync(49));
+    expect(loadItems).toHaveBeenCalledTimes(1);
+    await act(() => vi.advanceTimersByTimeAsync(1));
+    expect(optionLabels()).toEqual(['Lisbon']);
     // The pause skipped "li"; the trimmed text is searched.
     expect(loadItems).toHaveBeenCalledTimes(2);
     expect(loadItems).toHaveBeenLastCalledWith('lis', expect.any(AbortSignal));
@@ -125,7 +157,7 @@ describe('Combobox remote search', () => {
     render(<Combobox label="City" loadItems={loadItems} items={recent} searchDelay={0} />);
     await user.click(input());
     await user.keyboard('{ArrowDown}');
-    expect(optionLabels()).toEqual(['Cairo']);
+    await waitFor(() => expect(optionLabels()).toEqual(['Cairo']));
     await setText(user, 'pa');
     await waitFor(() => expect(optionLabels()).toEqual(['Paris']));
     await setText(user, '');
@@ -144,7 +176,7 @@ describe('Combobox remote search', () => {
     );
     await user.click(input());
     await user.keyboard('{ArrowDown}');
-    expect(screen.getByText('Type at least 2 characters to search.')).toHaveClass(
+    expect(await screen.findByText('Type at least 2 characters to search.')).toHaveClass(
       'ui-combobox__empty',
     );
     expect(loadItems).not.toHaveBeenCalled();
@@ -209,7 +241,7 @@ describe('Combobox remote search', () => {
       />,
     );
     await user.type(input(), 'zz');
-    const empty = screen.getByText('No city by that name');
+    const empty = await screen.findByText('No city by that name');
     expect(empty.closest('.ui-combobox__empty')).not.toBeNull();
     expect(screen.queryByText('No results')).not.toBeInTheDocument();
   });

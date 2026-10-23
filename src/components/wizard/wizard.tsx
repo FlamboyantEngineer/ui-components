@@ -3,6 +3,7 @@ import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key, Orientation } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { Button } from '../button/button.js';
 import { Form } from '../form/form.js';
 import { InlineError } from '../inline-error/inline-error.js';
@@ -137,16 +138,9 @@ export function Wizard({
     isOptional: entry.isOptional,
     status: navigation.statuses[position],
   }));
+  const data = { orientation, pending: navigation.isPending };
   return (
-    <div
-      role="group"
-      {...rest}
-      {...hooks.root({
-        className,
-        props: rest,
-        data: { orientation, pending: navigation.isPending },
-      })}
-    >
+    <div role="group" {...rest} {...hooks.root({ className, props: rest, data })}>
       <Steps
         items={items}
         currentId={step?.id}
@@ -157,7 +151,12 @@ export function Wizard({
       />
       <Form className={hooks.slotClass('form')} onSubmit={navigation.submit}>
         {step ? (
-          <div key={step.id} {...hooks.slot('panel')} role="group" aria-labelledby={headingId}>
+          <div
+            key={toKeyIdentity(step.id)}
+            {...hooks.slot('panel')}
+            role="group"
+            aria-labelledby={headingId}
+          >
             <Heading
               {...hooks.slot('heading')}
               id={headingId}

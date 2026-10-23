@@ -37,8 +37,8 @@ const events: CalendarViewEvent[] = [
 
 const crowded: CalendarViewEvent[] = [
   ...events,
-  { id: 'standup', title: 'Standup', start: '2026-03-18T09:00', end: '2026-03-18T09:15' },
-  { id: 'interview', title: 'Interview', start: '2026-03-18T11:00', end: '2026-03-18T12:00' },
+  { id: 1, title: 'Standup', start: '2026-03-18T09:00', end: '2026-03-18T09:15' },
+  { id: '1', title: 'Interview', start: '2026-03-18T11:00', end: '2026-03-18T12:00' },
   { id: 'retro', title: 'Retrospective', start: '2026-03-18T15:00', end: '2026-03-18T16:00' },
 ];
 
@@ -99,7 +99,7 @@ mountLab(
   <>
     <LabSection
       title="States"
-      description="The month and week views with events, with a crowded day and empty. Week events follow elapsed time and clip at midnight when they continue into another day. The clock is fixed at 18 March 2026, 10:30 UTC."
+      description="The month and week views with events, with a crowded day and empty. Week events follow elapsed time and clip at midnight when they continue into another day. The crowded cases include distinct numeric and text event keys with the same spelling. The clock is fixed at 18 March 2026, 10:30 UTC."
     >
       <StateMatrix
         axes={{

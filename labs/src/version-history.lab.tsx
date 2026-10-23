@@ -16,9 +16,9 @@ const jon = { name: 'Jon Berg', src: samplePicture, colorKey: 'jon' };
 const lena = { name: 'Lena Ortiz', colorKey: 'lena' };
 
 const versions: VersionHistoryVersion[] = [
-  { id: 'v6', time: '2026-04-20T10:24:00', person: maria },
+  { id: 1, time: '2026-04-20T10:24:00', person: maria },
   {
-    id: 'v5',
+    id: '1',
     label: 'Ready for review',
     time: '2026-04-20T09:10:00',
     person: jon,
@@ -33,7 +33,7 @@ const versions: VersionHistoryVersion[] = [
 type MatrixState = 'versions' | 'two selected' | 'loading more' | 'loading' | 'error' | 'empty';
 
 function stateProps(state: MatrixState) {
-  if (state === 'two selected') return { versions, defaultSelectedKeys: ['v5', 'v2'] };
+  if (state === 'two selected') return { versions, defaultSelectedKeys: ['1', 'v2'] };
   if (state === 'loading more') return { versions, isLoading: true, onLoadMore: () => {} };
   if (state === 'loading') return { versions: [], isLoading: true };
   if (state === 'error') {
@@ -177,7 +177,7 @@ mountLab(
         render={({ state, filters }) => (
           <VersionHistory
             aria-label={`Versions, ${state}, filters ${filters}`}
-            currentKey="v6"
+            currentKey={1}
             showFilters={filters === 'shown'}
             onCompare={() => {}}
             onRestore={() => {}}
@@ -195,7 +195,7 @@ mountLab(
           <VersionHistory
             aria-label={`Versions, ${filter}`}
             versions={versions}
-            currentKey="v6"
+            currentKey={1}
             defaultFilter={
               filter === 'named only'
                 ? { namedOnly: true, person: null }

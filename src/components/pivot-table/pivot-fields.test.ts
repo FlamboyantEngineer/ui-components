@@ -74,6 +74,33 @@ describe('pivot field cards', () => {
     expect(move('missing', 'rows', null)).toBe(layout);
   });
 
+  it('UIC-PIVOT-TABLE-3.2 UIC-PIVOT-TABLE-3.3 keeps generated card ids distinct from field ids', () => {
+    const offered = [
+      { id: 'a', label: 'Amount' },
+      { id: 'values:a:3', label: 'Other' },
+      { id: 'values:a:3:1', label: 'Third' },
+    ];
+    const current: PivotLayout = { rows: ['a'], columns: [], values: [{ field: 'a' }] };
+    const cards = createFieldCards(offered, current);
+    expect(cards.map((card) => card.id)).toEqual([
+      'values:a:3',
+      'values:a:3:1',
+      'a',
+      'values:a:3:2',
+    ]);
+    const duplicate = cards.at(-1)!;
+    const next = applyFieldMove(current, offered, {
+      key: duplicate.id,
+      column: 'columns',
+      targetKey: null,
+      position: 'after',
+    });
+    expect(next).toEqual({ rows: ['a'], columns: ['a'], values: [] });
+    expect(createFieldCards(offered, next).find((card) => card.id === 'values:a:3')?.field.id).toBe(
+      'values:a:3',
+    );
+  });
+
   it('UIC-PIVOT-TABLE-3.3 keeps a value moved within the values and drops a duplicate row field', () => {
     const two: PivotLayout = {
       rows: ['region'],

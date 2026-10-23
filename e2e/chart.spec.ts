@@ -1,6 +1,26 @@
 import type { Page } from '@playwright/test';
 import { expect, test } from './fixtures.js';
 
+test('UIC-CHART-2.1 UIC-CHART-3.1 UIC-CHART-3.2 keeps numeric and text identities distinct after reordering', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('chart');
+  const demo = page.locator('[data-lab-demo="typed-keys"]');
+  const numeric = demo.getByRole('button', { name: 'Numeric series' });
+  const text = demo.getByRole('button', { name: 'Text series' });
+  const hidden = demo.locator('[data-lab-output="typed-hidden"]');
+  await numeric.click();
+  await expect(hidden).toHaveText('number 1');
+  await demo.getByRole('button', { name: 'Reverse typed entries' }).click();
+  await expect(numeric).toHaveAttribute('aria-pressed', 'false');
+  await expect(text).toHaveAttribute('aria-pressed', 'true');
+  await expect(demo.locator('.ui-chart-axis__label')).toHaveText(['Text 1', 'Number 1']);
+  await numeric.click();
+  await text.click();
+  await expect(hidden).toHaveText('string 1');
+});
+
 const cell = (page: Page, id: string) => page.locator(`[data-lab-cell="${id}"]`);
 const demo = (page: Page, name: string) => page.locator(`[data-lab-demo="${name}"]`);
 const tooltip = (page: Page) => page.locator('.ui-chart__tooltip');

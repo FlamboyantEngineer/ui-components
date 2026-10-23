@@ -37,6 +37,20 @@ function Attachments(props: Partial<FileFieldProps>) {
 }
 
 describe('FileField', () => {
+  it('UIC-FILE-FIELD-1.6 preserves distinct numeric and text hidden inputs when reordered', () => {
+    const value = [
+      { id: 1, name: 'Numeric.txt' },
+      { id: '1', name: 'Textual.txt' },
+    ];
+    const { container, rerender } = render(<Attachments name="files" value={value} />);
+    const [numeric, textual] = container.querySelectorAll('input[type="hidden"][name="files"]');
+    rerender(<Attachments name="files" value={[value[1]!, value[0]!]} />);
+    expect([...container.querySelectorAll('input[type="hidden"][name="files"]')]).toEqual([
+      textual,
+      numeric,
+    ]);
+  });
+
   it('UIC-FILE-FIELD-1.1 makes the upload command the field control, named by the label', async () => {
     const user = userEvent.setup();
     const { container } = render(

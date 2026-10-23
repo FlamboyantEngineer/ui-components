@@ -105,7 +105,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Filtering and moving all"
-      description="Filter a side, then move every row it shows; select several with Shift and Ctrl or Cmd."
+      description="Every word must match, ignoring case and accents; spaces, slashes, underscores and dashes separate words. Move every shown row, or select several with Shift and Ctrl or Cmd."
     >
       <Itinerary />
     </LabSection>

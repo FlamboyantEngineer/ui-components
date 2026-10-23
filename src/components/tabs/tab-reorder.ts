@@ -92,7 +92,7 @@ export function stepTabMove(keys: readonly Key[], key: Key, step: -1 | 1): TabMo
 
 /** A list's reordering while the owner takes moves. A disabled tab never moves. */
 export function createTabReorder({ shared, isRtl, onReorder }: TabReorderOptions) {
-  if (!onReorder) return null;
+  if (!onReorder || shared.isDisabled) return null;
   const { draggingKey } = shared;
   const reorder: TabReorder = {
     orientation: shared.orientation,

@@ -60,10 +60,13 @@ test.describe('Activity Feed lab', () => {
     const feed = demo.getByRole('list', { name: 'Requirement activity' });
     await expect(feed.locator('.ui-activity-feed__entry')).toHaveCount(5);
     const control = demo.locator('.ui-activity-feed__load-more');
-    await control.scrollIntoViewIfNeeded();
+    // Keep focus through loading so manual activation does not scroll the sentinel into view again.
+    await control.focus();
     await expect(feed.locator('.ui-activity-feed__entry')).toHaveCount(8);
+    await expect(control).toBeEnabled();
     await expect(control).not.toHaveAttribute('aria-disabled', 'true');
-    await control.click();
+    await expect(control).toBeFocused();
+    await page.keyboard.press('Enter');
     await expect(feed.locator('.ui-activity-feed__entry')).toHaveCount(11);
     await expect(demo.locator('.ui-activity-feed__load-more')).toHaveCount(0);
     await demo.getByRole('radio', { name: 'Comments' }).click();

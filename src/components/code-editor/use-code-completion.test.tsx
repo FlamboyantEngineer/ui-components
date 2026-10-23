@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -35,13 +35,21 @@ const fruit: Completion[] = [
 ];
 
 describe('CodeEditor completion sources', () => {
+  it('UIC-CODE-EDITOR-4.4 inserts a label containing snippet syntax literally', async () => {
+    const user = userEvent.setup();
+    render(<Editor completions={[{ label: '${literal}' }]} />);
+    await user.click(input());
+    await user.keyboard('{Control>} {/Control}{Enter}');
+    expect(marked()).toBe('${literal}|');
+  });
+
   it('UIC-CODE-EDITOR-4.2 opens every completion on Ctrl+Space, even without a word', async () => {
     const user = userEvent.setup();
     render(<Editor completions={fruit} />);
     await user.click(input());
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     await user.keyboard('{Control>} {/Control}');
-    expect(optionTexts()).toEqual(['apple', 'pick', 'basket']);
+    await waitFor(() => expect(optionTexts()).toEqual(['apple', 'pick', 'basket']));
     expect(input()).toHaveValue('');
   });
 
@@ -61,14 +69,14 @@ describe('CodeEditor completion sources', () => {
       query: 'fruit.',
       isExplicit: false,
     });
-    expect(optionTexts()).toEqual(['apple', 'pick', 'basket']);
+    await waitFor(() => expect(optionTexts()).toEqual(['apple', 'pick', 'basket']));
     await user.keyboard('a');
     expect(optionTexts()).toEqual(['apple']);
     await user.keyboard('{ArrowLeft}');
     expect(optionTexts()).toEqual([]);
     await user.keyboard('{Control>} {/Control}');
     expect(source).toHaveBeenLastCalledWith(expect.objectContaining({ isExplicit: true }));
-    expect(optionTexts()).toEqual(['apple', 'pick', 'basket']);
+    await waitFor(() => expect(optionTexts()).toEqual(['apple', 'pick', 'basket']));
   });
 
   it('UIC-CODE-EDITOR-4.6 replaces the range a source names and filters by the text typed in it', async () => {
@@ -82,7 +90,7 @@ describe('CodeEditor completion sources', () => {
     render(<Editor completions={source} initialValue={'""'} />);
     await user.click(input());
     await user.keyboard('{Home}{ArrowRight}p');
-    expect(optionTexts()).toEqual(['"pear"', '"apple"']);
+    await waitFor(() => expect(optionTexts()).toEqual(['"pear"', '"apple"']));
     await user.keyboard('{Enter}');
     expect(marked()).toBe('"pear"|');
   });
@@ -98,9 +106,9 @@ describe('CodeEditor completion sources', () => {
     await user.keyboard('ap');
     expect(answers).toHaveLength(3);
     await act(async () => answers[2]?.([{ label: 'apricot' }]));
-    expect(optionTexts()).toEqual(['apricot']);
+    await waitFor(() => expect(optionTexts()).toEqual(['apricot']));
     await act(async () => answers[1]?.([{ label: 'apple' }]));
-    expect(optionTexts()).toEqual(['apricot']);
+    await waitFor(() => expect(optionTexts()).toEqual(['apricot']));
     await user.keyboard('{Escape}');
     await user.keyboard('{Control>} {/Control}');
     await user.keyboard('{Escape}');
@@ -113,7 +121,7 @@ describe('CodeEditor completion sources', () => {
     const { baseElement } = render(<Editor completions={fruit} />);
     await user.click(input());
     await user.keyboard('{Control>} {/Control}');
-    const [apple, pick] = screen.getAllByRole('option');
+    const [apple, pick] = await screen.findAllByRole('option');
     expect(apple).toHaveAttribute('data-kind', 'variable');
     const documentation = baseElement.querySelector('.ui-completion-list__documentation');
     expect(documentation).toHaveTextContent('A crisp fruit that keeps for months.');

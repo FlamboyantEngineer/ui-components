@@ -43,7 +43,7 @@ Verification: `src/components/tags-input/tags-input.test.tsx`, `src/components/t
 
 ### UIC-TAGS-INPUT-2.2 - Pasting a list
 
-Pasted text that holds a delimiter or a line break shall replace the input's selection and be added whole as tags, split at every delimiter and line break; pasted text without one pastes into the input as typed text.
+Pasted text that holds a delimiter or a line break shall replace the input's selection and be added whole as tags, split at every delimiter and line break; pasted text without one pastes into the input as typed text. Large entries shall check membership against the existing and newly accepted tags without copying or rescanning the growing list for every tag.
 
 Implementation: `src/components/tags-input/tags-input-parts.tsx`, `src/components/tags-input/tag-entry.ts`
 Verification: `src/components/tags-input/tags-input.test.tsx`, `src/components/tags-input/tag-entry.test.ts`, `e2e/tags-input.spec.ts`

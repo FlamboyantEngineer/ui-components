@@ -1,12 +1,15 @@
 import { useId, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { Popover, useLocale, type Placement } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
+import { useFrameFlag } from '../../utils/use-frame-flag.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { triggerWidthProperty, useLayerZIndex } from '../portal/portal.js';
 import type { Completion } from './completion-match.js';
 import { getCompletionOptionId } from './completion-option-id.js';
+import { useActiveCompletion } from './use-active-completion.js';
 import type { CompletionsModel } from './use-completions.js';
 
 /** A completion with the key the editor moves and acts on. */
@@ -93,15 +96,6 @@ function useFollowedPlacement(
   return direction === 'rtl' ? 'bottom right' : 'bottom left';
 }
 
-/** Keeps the active option in view as the editor moves it through a list that scrolls. */
-function useActiveInView(listId: string, activeKey: Key | null, isOpen: boolean) {
-  useLayoutEffect(() => {
-    if (!isOpen || activeKey === null) return;
-    const option = document.getElementById(getCompletionOptionId(listId, activeKey));
-    option?.scrollIntoView?.({ block: 'nearest' });
-  }, [listId, activeKey, isOpen]);
-}
-
 function CompletionOption({
   item,
   listId,
@@ -152,9 +146,12 @@ export function CompletionList(props: CompletionListProps) {
   const zIndex = useLayerZIndex('dropdown');
   const generatedId = useId();
   const listId = props.id ?? generatedId;
-  const isShown = isOpen && (items.length > 0 || Boolean(renderEmptyState));
+  const isShown = useFrameFlag(
+    isOpen && (items.length > 0 || Boolean(renderEmptyState)),
+    anchorRef,
+  );
   const placement = useFollowedPlacement(anchorRef, isShown, items);
-  useActiveInView(listId, activeKey, isShown);
+  useActiveCompletion(listId, activeKey, { isOpen: isShown, anchorRef });
   const documentation = items.find((item) => item.id === activeKey)?.documentation;
   const documentationId = documentation ? `${listId}-documentation` : undefined;
   const { className, ...rest } = props;
@@ -182,7 +179,7 @@ export function CompletionList(props: CompletionListProps) {
         >
           {items.map((item) => (
             <CompletionOption
-              key={item.id}
+              key={toKeyIdentity(item.id)}
               item={item}
               listId={listId}
               props={props}

@@ -40,7 +40,7 @@ function Requested() {
     <div data-lab-case="requested">
       <ZoomControl
         aria-label="Canvas zoom"
-        levels={levels}
+        levels={[200, 50, 125, 100, 75, 150, 100, Number.NaN, Infinity]}
         value={zoom}
         resetValue={100}
         onChange={(next) => {
@@ -148,7 +148,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Requested levels"
-      description="A controlled control: the buttons, the slider (arrow keys, Home, End) and reset request levels that the lab applies."
+      description="A controlled control: unordered levels, duplicates and non-finite entries share one normalised ladder. The buttons, slider (arrow keys, Home, End) and reset request levels that the lab applies."
     >
       <Requested />
     </LabSection>

@@ -59,6 +59,27 @@ afterEach(() => {
 });
 
 describe('MediaViewer', () => {
+  it('UIC-MEDIA-VIEWER-1.2 UIC-MEDIA-VIEWER-1.3 keeps numeric and text thumbnail identities and selections', async () => {
+    const user = userEvent.setup();
+    const onSelectionChange = vi.fn();
+    const typedItems = [
+      { id: 1, name: 'Numeric image', src: '/numeric.png' },
+      { id: '1', name: 'Text image', src: '/text.png' },
+    ];
+    const { rerender } = render(
+      <Viewer items={typedItems} onSelectionChange={onSelectionChange} />,
+    );
+    const numeric = screen.getByRole('button', { name: 'Numeric image' });
+    const text = screen.getByRole('button', { name: 'Text image' });
+    rerender(<Viewer items={[...typedItems].reverse()} onSelectionChange={onSelectionChange} />);
+    expect(screen.getByRole('button', { name: 'Numeric image' })).toBe(numeric);
+    expect(screen.getByRole('button', { name: 'Text image' })).toBe(text);
+    await user.click(text);
+    expect(title()).toBe('Text image');
+    await user.click(numeric);
+    expect(title()).toBe('Numeric image');
+    expect(onSelectionChange.mock.calls).toEqual([['1'], [1]]);
+  });
   it('UIC-MEDIA-VIEWER-1.1 opens a full-size modal titled by the item, with its caption', async () => {
     const user = userEvent.setup();
     const onOpenChange = vi.fn();

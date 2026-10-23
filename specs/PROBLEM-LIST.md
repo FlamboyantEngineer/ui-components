@@ -15,6 +15,8 @@ Verification: `src/components/problem-list/problem-list.test.tsx`, `e2e/problem-
 
 Each problem shall show the glyph of its severity (`ui-problem-list__icon`, `error` or `warning`, decorative), its severity in words for assistive technology (provider string `problemSeverity`), its `label` when it has one (`ui-problem-list__label`) and its `message` (`ui-problem-list__message`). A problem without a severity is an `error`.
 
+Numeric and text IDs, such as `1` and `'1'`, identify distinct entries; removing one preserves the other entry's rendered identity.
+
 Implementation: `src/components/problem-list/problem-list-items.tsx`, `src/core/strings.ts`
 Verification: `src/components/problem-list/problem-list.test.tsx`
 

@@ -1,3 +1,4 @@
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { useUiStrings } from '../../core/provider.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { CalendarDayCell, findDayEvents, type CalendarDayContext } from './calendar-day.js';
@@ -90,7 +91,7 @@ function WeekDay({
       <div {...hooks.slot('timed')} style={{ position: 'relative' }}>
         {layoutDay(date, events, timeZone).map((block) => (
           <CalendarEventButton
-            key={block.placed.event.id}
+            key={toKeyIdentity(block.placed.event.id)}
             placed={block.placed}
             context={event}
             isTabbable={isActive}

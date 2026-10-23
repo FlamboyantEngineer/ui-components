@@ -22,8 +22,11 @@ import { mergeProps, mergeRefs } from '../../utils/merge-props.js';
 import type { ElementRender } from '../../utils/render-element.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import { useScrollStripOverflow } from '../../utils/use-scroll-strip-overflow.js';
+import { encodeCollectionChildren } from '../../utils/encode-collection-children.js';
+import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { VisibleCollection } from '../overflow-list/overflow-list.js';
 import { TabActionsContext, TabsSharedContext, type TabActions } from './tab-actions.js';
+import { Tab } from './tab.js';
 import { TabBar, useTabOverflow } from './tab-bar.js';
 import { tabsHooks as hooks } from './tab-hooks.js';
 import { useCenterSelectedTab, useListOverflow } from './tab-list-overflow.js';
@@ -128,9 +131,10 @@ function isTabKey(event: KeyboardEvent<HTMLElement>) {
  * moves it, each while the owner takes that action.
  */
 function useListKeys({ state, onRemove, rename, onReorderKey }: ListKeyOptions) {
+  const { isDisabled } = useContext(TabsSharedContext);
   const focusedKey = () => {
     const key = state?.selectionManager.focusedKey ?? null;
-    return key === null || state?.selectionManager.isDisabled(key) ? null : key;
+    return key === null || isDisabled || state?.selectionManager.isDisabled(key) ? null : key;
   };
   const handlers: ListKeyHandlers = {};
   if (onRemove) {
@@ -179,10 +183,35 @@ function useTabActions(
   const shared = useContext(TabsSharedContext);
   const isRtl = useLocale().direction === 'rtl';
   const { onRemove, onRename, validateName, onReorder, onDuplicate, getMenuItems } = props;
-  const rename = createTabRename({ shared, onRename, validateName });
-  const reorder = createTabReorder({ shared, isRtl, onReorder });
-  const menu = useTabMenu({ shared, rename, reorder, onRemove, onDuplicate, getMenuItems });
-  const actions = { onRemove, rename, reorder, menu };
+  const remove =
+    onRemove && ((keys: Set<Key>) => onRemove(new Set([...keys].map(fromCollectionKey))));
+  const rename = createTabRename({
+    shared,
+    onRename: onRename && ((key, name) => onRename(fromCollectionKey(key), name)),
+    validateName: validateName && ((key, name) => validateName(fromCollectionKey(key), name)),
+  });
+  const reorder = createTabReorder({
+    shared,
+    isRtl,
+    onReorder:
+      onReorder &&
+      ((move) =>
+        onReorder({
+          ...move,
+          key: fromCollectionKey(move.key),
+          targetKey: fromCollectionKey(move.targetKey),
+        })),
+  });
+  const menu = useTabMenu({
+    shared,
+    rename,
+    reorder,
+    onRemove: remove,
+    onDuplicate: onDuplicate && ((key) => onDuplicate(fromCollectionKey(key))),
+    getMenuItems:
+      getMenuItems && ((key, standard) => getMenuItems(fromCollectionKey(key), standard)),
+  });
+  const actions = { onRemove: remove, rename, reorder, menu };
   return {
     ...actions,
     keyShortcuts: listKeyShortcuts({ orientation: shared.orientation, actions }),
@@ -226,7 +255,12 @@ export function TabList({
     if (state) stateRef.current = state;
   });
   const onReorderKey = useTabReorderKeys({ state, listRef, reorder: actions.reorder });
-  const keys = useListKeys({ state, onRemove, rename: actions.rename, onReorderKey });
+  const keys = useListKeys({
+    state,
+    onRemove: actions.onRemove,
+    rename: actions.rename,
+    onReorderKey,
+  });
   const elementRef = useMemo(
     () => mergeRefs(setListRef, menu.itemContainerRef, hasButtons ? stripRef : undefined),
     [setListRef, menu.itemContainerRef, hasButtons],
@@ -235,7 +269,7 @@ export function TabList({
   if (!state) {
     return (
       <TabActionsContext.Provider value={actions}>
-        <AriaTabList {...rest} />
+        <AriaTabList {...rest}>{encodeCollectionChildren(rest.children, [Tab])}</AriaTabList>
       </TabActionsContext.Provider>
     );
   }

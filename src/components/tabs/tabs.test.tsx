@@ -78,6 +78,26 @@ describe('Tabs', () => {
     expect(selected()).toHaveTextContent('Apple');
   });
 
+  it.each([
+    [2.9, '2+'],
+    [-1, '5'],
+    [Number.NaN, '5'],
+    [Number.POSITIVE_INFINITY, '5'],
+  ])('UIC-TABS-1.2 normalizes the count cap %s like other library counts', (countMax, shown) => {
+    render(
+      <Tabs>
+        <TabList aria-label="Counted">
+          <Tab id="counted" count={5.9} countMax={Number(countMax)}>
+            Entries
+          </Tab>
+        </TabList>
+      </Tabs>,
+    );
+    const tab = screen.getByRole('tab', { name: `Entries ${shown}` });
+    expect(tab).toHaveAccessibleDescription('5 items');
+    expect(tab.querySelector('.ui-tabs__count')).toHaveTextContent(String(shown));
+  });
+
   it('UIC-TABS-1.2 draws icons, labels and capped counts described with the full count', () => {
     const { container } = render(
       <>

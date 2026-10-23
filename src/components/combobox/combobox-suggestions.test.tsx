@@ -32,7 +32,7 @@ describe('Combobox suggestions', () => {
     render(<Combobox aria-label="Fruit" defaultItems={fruit} />);
     await user.click(input());
     await user.keyboard('{ArrowDown}');
-    const listbox = screen.getByRole('listbox');
+    const listbox = await screen.findByRole('listbox');
     const apple = within(listbox).getByRole('option', { name: 'Apple Crisp' });
     expect(apple).not.toHaveAttribute('aria-labelledby');
     expect([...apple.children].map((child) => child.getAttribute('class'))).toEqual([
@@ -66,6 +66,7 @@ describe('Combobox suggestions', () => {
     const { unmount } = render(<Combobox aria-label="Fruit" defaultItems={fruit} />);
     await user.click(input());
     await user.keyboard('AN');
+    await screen.findByRole('listbox');
     const names = () =>
       screen
         .getAllByRole('option')
@@ -121,7 +122,7 @@ describe('Combobox suggestions', () => {
     await user.keyboard('l');
     // Apple, then Lemon and the disabled Lime under Citrus.
     await user.keyboard('{ArrowDown}');
-    const apple = screen.getByRole('option', { name: /^Apple/ });
+    const apple = await screen.findByRole('option', { name: /^Apple/ });
     expect(input()).toHaveAttribute('aria-activedescendant', apple.id);
     expect(apple).toHaveAttribute('data-focused', 'true');
     await user.keyboard('{ArrowDown}');
@@ -138,7 +139,7 @@ describe('Combobox suggestions', () => {
     expect(onChange).toHaveBeenLastCalledWith('lemon');
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     await user.keyboard('{ArrowDown}');
-    expect(screen.getByRole('listbox')).toBeInTheDocument();
+    expect(await screen.findByRole('listbox')).toBeInTheDocument();
     await user.click(screen.getByRole('option', { name: 'Lime' }));
     expect(input()).toHaveValue('Lemon');
     await user.keyboard('{Escape}');
@@ -151,7 +152,7 @@ describe('Combobox suggestions', () => {
     const { rerender } = render(<Combobox aria-label="Fruit" defaultItems={fruit} />);
     await user.click(input());
     await user.keyboard('zz');
-    expect(screen.getByRole('listbox')).toHaveAttribute('data-empty', 'true');
+    expect(await screen.findByRole('listbox')).toHaveAttribute('data-empty', 'true');
     expect(document.querySelector('.ui-combobox__empty')).toHaveTextContent('No results');
     expectHooksMatchSpec(document.body, 'COMBOBOX', { slots: ['empty'] });
     rerender(
@@ -161,6 +162,7 @@ describe('Combobox suggestions', () => {
     );
     await user.click(input());
     await user.keyboard('{Control>}a{/Control}zz');
+    await screen.findByRole('listbox');
     expect(document.querySelector('.ui-combobox__empty')).toHaveTextContent('Nothing grows here');
   });
 
@@ -173,6 +175,7 @@ describe('Combobox suggestions', () => {
     );
     await user.click(input());
     await user.keyboard('{ArrowDown}');
+    await screen.findByRole('listbox');
     const popover = document.querySelector<HTMLElement>('.ui-combobox__popover');
     expect(popover).toHaveAttribute('data-layer', 'dropdown');
     expect(popover?.style.zIndex).toBe('777');
@@ -194,7 +197,7 @@ describe('Combobox suggestions', () => {
       />,
     );
     await user.type(input(), 'Kiwi');
-    const create = screen.getByRole('option', { name: 'Add “Kiwi”' });
+    const create = await screen.findByRole('option', { name: 'Add “Kiwi”' });
     expect(create).toHaveClass('ui-combobox__create');
     expect(screen.getByRole('listbox')).not.toHaveAttribute('data-empty');
     expectHooksMatchSpec(document.body, 'COMBOBOX', { slots: ['create'] });
@@ -204,6 +207,7 @@ describe('Combobox suggestions', () => {
 
     await user.clear(input());
     await user.type(input(), 'lemon ');
+    await screen.findByRole('listbox');
     expect(screen.queryByRole('option', { name: /^Add/ })).not.toBeInTheDocument();
     await user.clear(input());
     await user.type(input(), 'Lem');
@@ -255,7 +259,7 @@ describe('Combobox suggestions', () => {
     render(<Combobox aria-label="City" defaultItems={many} virtualized />);
     await user.click(input());
     await user.keyboard('{ArrowDown}');
-    const options = screen.getAllByRole('option');
+    const options = await screen.findAllByRole('option');
     expect(options.length).toBeLessThan(40);
     expect(options[0]).toHaveAttribute('aria-setsize', '300');
     expect(options[0]).toHaveClass('ui-combobox__option');
@@ -265,7 +269,7 @@ describe('Combobox suggestions', () => {
     await user.keyboard('{ArrowUp}');
     expect(input()).toHaveAttribute(
       'aria-activedescendant',
-      screen.getByRole('option', { name: 'City 299' }).id,
+      (await screen.findByRole('option', { name: 'City 299' })).id,
     );
   });
 
@@ -296,6 +300,7 @@ describe('Combobox suggestions', () => {
     const { rerender } = render(<Paged isLoading={false} items={page} />);
     await user.click(input());
     await user.keyboard('{ArrowDown}');
+    await screen.findByRole('listbox');
     act(() => report([{ isIntersecting: true, target: observed.at(-1) } as never], {} as never));
     expect(onLoadMore).toHaveBeenCalled();
     rerender(<Paged isLoading items={page} />);
@@ -312,6 +317,7 @@ describe('Combobox suggestions', () => {
     const user = userEvent.setup();
     render(<Combobox aria-label="Fruit" defaultItems={fruit} highlightMatches />);
     await user.type(input(), 'an');
+    await screen.findByRole('listbox');
     const marks = [...document.querySelectorAll('.ui-combobox__option-label mark.ui-text-match')];
     // Adjacent matches share one mark.
     expect(marks.map((mark) => mark.textContent)).toEqual(['anan', 'an']);
@@ -338,7 +344,9 @@ describe('Combobox suggestions', () => {
     );
     await user.click(input());
     await user.keyboard('{ArrowDown}');
-    expect(screen.getByRole('option', { name: /^Apple/ })).toHaveTextContent('Apple (focused)');
+    expect(await screen.findByRole('option', { name: /^Apple/ })).toHaveTextContent(
+      'Apple (focused)',
+    );
     expect(Object.keys(states.at(-1) ?? {}).sort()).toEqual([
       'isDisabled',
       'isFocusVisible',

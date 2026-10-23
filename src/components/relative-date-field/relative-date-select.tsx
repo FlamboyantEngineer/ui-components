@@ -88,7 +88,7 @@ export function PresetSelect({
       onChange={(key) => {
         if (key !== null) onPick(String(key));
       }}
-      isOpen={state.isReadOnly ? false : open.isOpen}
+      isOpen={state.isReadOnly || state.isDisabled ? false : open.isOpen}
       isDisabled={state.isDisabled}
       isRequired={state.isRequired}
       isInvalid={state.validation.status === 'invalid'}

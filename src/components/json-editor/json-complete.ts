@@ -8,6 +8,7 @@ import type {
 } from '../completion-list/completion-list.js';
 import { findSubschema, listSchemaTypes, type JsonSchema } from './json-schema.js';
 import { findJsonContext, type JsonCaretContext } from './json-tree.js';
+import { stringifyJsonValue } from './json-value.js';
 
 /** What a value of each type starts as when its key is inserted; `${…}` is the field to fill. */
 const valueTemplates: Readonly<Record<string, string>> = {
@@ -20,18 +21,32 @@ const valueTemplates: Readonly<Record<string, string>> = {
   array: '[${}]',
 };
 
+function readKey(text: string): string {
+  try {
+    return JSON.parse(text) as string;
+  } catch {
+    return text.replace(/^"|"$/g, '');
+  }
+}
+
 function describeTypes(schema: JsonSchema): string | undefined {
   return listSchemaTypes(schema).join(' | ') || undefined;
 }
 
+function escapeSnippet(text: string): string {
+  return text.replace(/[\\$}]/g, '\\$&');
+}
+
 function templateOf(schema: JsonSchema): string {
-  const first = schema.enum?.[0] ?? schema.default;
-  if (first !== undefined) return `\${${JSON.stringify(first)}}`;
+  const values = 'const' in schema ? [schema.const] : schema.enum;
+  if (values?.length) return `\${${escapeSnippet(stringifyJsonValue(values[0]))}}`;
+  if (schema.default !== undefined)
+    return `\${${escapeSnippet(stringifyJsonValue(schema.default))}}`;
   return valueTemplates[listSchemaTypes(schema)[0] ?? ''] ?? '${}';
 }
 
 function keyOptions(schema: JsonSchema, context: JsonCaretContext, rest: string): Completion[] {
-  const typing = context.token?.text.replace(/^"|"$/g, '');
+  const typing = context.token ? readKey(context.token.text) : undefined;
   const hasColon = rest.trimStart().startsWith(':');
   return Object.entries(schema.properties ?? {})
     .filter(([name]) => name === typing || !context.keys.includes(name))
@@ -41,21 +56,21 @@ function keyOptions(schema: JsonSchema, context: JsonCaretContext, rest: string)
       description: describeTypes(property),
       documentation: property.description,
       insertText: hasColon
-        ? JSON.stringify(name)
-        : `${JSON.stringify(name)}: ${templateOf(property)}`,
+        ? escapeSnippet(JSON.stringify(name))
+        : `${escapeSnippet(JSON.stringify(name))}: ${templateOf(property)}`,
     }));
 }
 
 function valueOptions(schema: JsonSchema): Completion[] {
   const types = listSchemaTypes(schema);
-  const listed = schema.enum ?? ('const' in schema ? [schema.const] : []);
+  const listed = 'const' in schema ? [schema.const] : (schema.enum ?? []);
   const values = [
     ...listed,
     ...(types.includes('boolean') && listed.length === 0 ? [true, false] : []),
     ...(types.includes('null') && listed.length === 0 ? [null] : []),
     ...(schema.default !== undefined && listed.length === 0 ? [schema.default] : []),
   ];
-  const unique = [...new Set(values.map((value) => JSON.stringify(value)))];
+  const unique = [...new Set(values.map((value) => stringifyJsonValue(value)))];
   return unique.map((label) => ({ label, kind: 'value', documentation: schema.description }));
 }
 
@@ -92,6 +107,6 @@ export function describeJsonAt(schema: JsonSchema, source: string, offset: numbe
   const context = findJsonContext(source, offset + 1);
   const token = context?.token;
   if (!context || !token || offset < token.offset) return null;
-  const key = context.position === 'key' ? [token.text.replace(/^"|"$/g, '')] : [];
+  const key = context.position === 'key' ? [readKey(token.text)] : [];
   return findSubschema(schema, [...context.path, ...key])?.description ?? null;
 }

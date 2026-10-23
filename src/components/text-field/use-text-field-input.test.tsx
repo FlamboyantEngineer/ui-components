@@ -33,7 +33,7 @@ describe('TextField completions', () => {
     const input = screen.getByRole('textbox', { name: 'City' });
     expect(input).toHaveAttribute('aria-autocomplete', 'list');
     await user.type(input, 'L');
-    const list = screen.getByRole('listbox', { name: 'Suggestions' });
+    const list = await screen.findByRole('listbox', { name: 'Suggestions' });
     expect(optionTexts()).toEqual(['LisbonPortugal', 'LondonUnited Kingdom', 'LyonFrance']);
     expect(input).toHaveAttribute('aria-controls', list.id);
     expect(input).toHaveAttribute('aria-activedescendant', screen.getAllByRole('option')[0]?.id);
@@ -70,6 +70,7 @@ describe('TextField completions', () => {
     );
     const input = screen.getByRole<HTMLInputElement>('textbox');
     await user.type(input, 'Lo');
+    await screen.findByRole('listbox', { name: 'Suggestions' });
     onKeyDown.mockClear();
     expect(optionTexts()).toEqual(['LondonUnited Kingdom', 'LisbonPortugal', 'LyonFrance']);
     await user.keyboard('{ArrowDown}{Enter}');
@@ -78,6 +79,7 @@ describe('TextField completions', () => {
     expect(onCommit).not.toHaveBeenCalled();
     expect(onKeyDown).not.toHaveBeenCalled();
     await user.keyboard(' L');
+    await screen.findByRole('listbox', { name: 'Suggestions' });
     expect(optionTexts()).toHaveLength(3);
     await user.keyboard('{Escape}');
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
@@ -93,6 +95,7 @@ describe('TextField completions', () => {
     render(<TextField label="Note" multiline completions={mentions} onChange={onChange} />);
     const area = screen.getByRole<HTMLTextAreaElement>('textbox');
     await user.type(area, 'Ask @');
+    await screen.findByRole('listbox', { name: 'Suggestions' });
     expect(optionTexts()).toEqual(['Maria Santos', 'Jon Berg']);
     expect(screen.getAllByRole('option')[0]).toHaveAttribute('data-kind', 'person');
     await user.keyboard('j');
@@ -115,6 +118,7 @@ describe('TextField completions', () => {
       />,
     );
     await user.type(screen.getByRole('textbox'), 'Ly');
+    await screen.findByRole('listbox', { name: 'Suggestions' });
     expect(optionTexts()).toEqual(['> Lyon']);
   });
 });

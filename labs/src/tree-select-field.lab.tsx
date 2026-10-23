@@ -160,6 +160,23 @@ function MultipleChoice({ propagation }: { propagation: boolean }) {
   );
 }
 
+function PrimitiveKeys() {
+  return (
+    <TreeSelectField
+      label="Kinds"
+      items={[
+        { id: 1, name: 'Numeric' },
+        { id: '1', name: 'Textual' },
+      ]}
+      getTextValue={(item) => item.name}
+      selectionMode="multiple"
+      selectionPropagation={false}
+      defaultValue={[1, '1']}
+      name="kinds"
+    />
+  );
+}
+
 const lazyRoots: Place[] = [
   { id: 'asia', name: 'Asia', isLazy: true },
   { id: 'oceania', name: 'Oceania', isLazy: true },
@@ -235,6 +252,12 @@ mountLab(
     >
       <MultipleChoice propagation />
       <MultipleChoice propagation={false} />
+    </LabSection>
+    <LabSection
+      title="Primitive keys"
+      description="Numeric and text ids keep distinct chips and form inputs."
+    >
+      <PrimitiveKeys />
     </LabSection>
     <LabSection
       title="Lazy branches"

@@ -43,4 +43,43 @@ describe('PdfViewer pinch zoom', () => {
     await waitFor(() => expect(manager?.destroy).toHaveBeenCalled());
     expect(options.signal.aborted).toBe(true);
   });
+
+  it('UIC-PDF-VIEWER-3.6 drops an interrupted pinch and ignores callbacks from the closed document', async () => {
+    const engine = createEngine();
+    const onZoomChange = vi.fn();
+    const view = await renderReady({ defaultZoom: 100, onZoomChange }, engine);
+    const options = engine.touch.options!;
+    const column = view.container.querySelector<HTMLElement>('.ui-pdf-viewer__pages')!;
+    const scroller = screen.getByRole('document');
+    scroller.scrollTop = 100;
+    act(() => options.onPinching([30, 40], 100, 200));
+    expect(column.style.transform).toBe('scale(2)');
+    view.update({ source: null, defaultZoom: 100, onZoomChange });
+    expect(options.signal.aborted).toBe(true);
+    expect(column.style.transform).toBe('');
+    expect(column.style.transformOrigin).toBe('');
+    scroller.scrollTop = 100;
+    act(() => {
+      options.onPinching([30, 40], 100, 300);
+      options.onPinchEnd();
+      options.onPanning(0, 20);
+    });
+    expect(column.style.transform).toBe('');
+    expect(scroller.scrollTop).toBe(100);
+    expect(onZoomChange).toHaveBeenLastCalledWith(100);
+
+    view.update({ source: '/files/Next.pdf', defaultZoom: 100, onZoomChange });
+    await waitFor(() => expect(engine.touch.options).not.toBe(options));
+    const next = engine.touch.options!;
+    act(() => {
+      next.onPinching([30, 40], 100, 150);
+      next.onPinchEnd();
+    });
+    expect(onZoomChange).toHaveBeenLastCalledWith(150);
+    act(() => next.onPinching([30, 40], 100, 200));
+    const nextColumn = view.container.querySelector<HTMLElement>('.ui-pdf-viewer__pages')!;
+    view.unmount();
+    expect(nextColumn.style.transform).toBe('');
+    expect(nextColumn.style.transformOrigin).toBe('');
+  });
 });

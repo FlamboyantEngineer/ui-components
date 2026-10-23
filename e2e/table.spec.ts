@@ -1,3 +1,4 @@
+import { toCollectionKey } from '../src/utils/to-collection-key.js';
 import type { Locator, Page } from '@playwright/test';
 import { expect, test } from './fixtures.js';
 
@@ -7,6 +8,45 @@ const names = (table: Locator) =>
 const width = async (locator: Locator) => Math.round((await locator.boundingBox())?.width ?? 0);
 
 test.describe('Table lab', () => {
+  test('UIC-TABLE-9.1 UIC-TABLE-13.4 keeps row expansion when a similarly named group collapses', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('table');
+    const demo = page.locator('[data-lab-demo="group-keys"]');
+    await demo.getByRole('button', { name: 'Expand Parent row' }).click();
+    await expect(demo.getByRole('row', { name: 'Child row' })).toBeVisible();
+    await demo.getByRole('button', { name: /^Collapse Kind: Fruit/ }).click();
+    await expect(demo.getByRole('row', { name: 'Parent row' })).toHaveCount(0);
+    await demo.getByRole('button', { name: /^Expand Kind: Fruit/ }).click();
+    await expect(demo.getByRole('row', { name: 'Child row' })).toBeVisible();
+  });
+
+  test('UIC-TABLE-1.1 UIC-TABLE-3.1 UIC-TABLE-9.1 UIC-TABLE-11.1 UIC-TABLE-14.8 keeps similar row keys independent', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('table');
+    const demo = page.locator('[data-lab-demo="typed-table"]');
+    const numeric = demo.getByRole('row', { name: 'Expand Numeric key', exact: true });
+    const text = demo.getByRole('row', { name: 'Expand Text key', exact: true });
+    await expect(demo.getByRole('row', { name: 'Expand Spaced key', exact: true })).toBeVisible();
+    await expect(demo.getByRole('row', { name: 'Expand Joined key', exact: true })).toBeVisible();
+    await text.locator('.ui-table__checkbox').click();
+    await expect(demo.locator('[data-lab-output="typed-selection"]')).toHaveText('Selected: ["1"]');
+    const value = text.getByRole('gridcell', { name: '20', exact: true });
+    await value.focus();
+    await page.keyboard.press('F2');
+    await text.getByRole('textbox', { name: 'Value' }).fill('25');
+    await page.keyboard.press('Enter');
+    await expect(text.getByRole('gridcell', { name: '25', exact: true })).toBeVisible();
+    await expect(numeric.getByRole('gridcell', { name: '10', exact: true })).toBeVisible();
+    await text.getByRole('button', { name: 'Expand Text key' }).click();
+    await expect(demo.getByText('Details for Text key', { exact: true })).toBeVisible();
+    await expect(demo.getByText('Details for Numeric key', { exact: true })).toHaveCount(0);
+    await lab.expectAccessible('[data-lab-demo="typed-table"]');
+  });
+
   test('UIC-TABLE-1.1 UIC-TABLE-1.3 UIC-TABLE-7.1 draws grids at two row sizes', async ({
     page,
     lab,
@@ -614,7 +654,7 @@ test.describe('Table lab', () => {
       const grid = root.getByRole('grid', { name: 'Stock, spreadsheet' });
       const output = root.locator('[data-lab-output]');
       const cell = (row: string, column: string) =>
-        grid.locator(`[data-key="${row}"] > [data-column="${column}"]`);
+        grid.locator(`[data-key="${toCollectionKey(row)}"] > [data-column="${column}"]`);
       await cell('apple', 'name').click();
       await expect(output).toHaveText('Range: apple.name:apple.name · Last change: none');
       await cell('banana', 'weight').click({ modifiers: ['Shift'] });
@@ -655,7 +695,7 @@ test.describe('Table lab', () => {
       const grid = root.getByRole('grid', { name: 'Stock, spreadsheet' });
       const output = root.locator('[data-lab-output]');
       const cell = (row: string, column: string) =>
-        grid.locator(`[data-key="${row}"] > [data-column="${column}"]`);
+        grid.locator(`[data-key="${toCollectionKey(row)}"] > [data-column="${column}"]`);
       await cell('apple', 'weight').click();
       await page.keyboard.press('Shift+ArrowDown');
       const handle = await grid.locator('.ui-table__fill-handle').boundingBox();
@@ -743,7 +783,8 @@ test.describe('Table lab', () => {
     await lab.open('table');
     const demo = section(page, 'small-steps');
     const grid = demo.getByRole('grid', { name: 'Small steps' });
-    const cell = (row: string) => grid.locator(`[data-key="${row}"] > [data-column="value"]`);
+    const cell = (row: string) =>
+      grid.locator(`[data-key="${toCollectionKey(row)}"] > [data-column="value"]`);
     await cell('r1').click();
     await page.keyboard.press('Shift+ArrowDown');
     const handle = await grid.locator('.ui-table__fill-handle').boundingBox();

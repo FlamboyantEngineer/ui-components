@@ -1,5 +1,7 @@
 import { useMemo } from 'react';
 import type { ExpansionProps } from '../../core/events.js';
+import { walkTree } from '../../utils/walk-tree.js';
+import type { TableChildRows } from './table-tree.js';
 import {
   groupTableNodes,
   listGroupKeys,
@@ -17,6 +19,8 @@ import type { TableRowsView } from './use-table-rows.js';
 interface TableGroupingOptions<T> extends TableGroupingProps<T>, ExpansionProps {
   /** Every column, drawn or hidden, which `groupBy` may name. */
   columns: readonly TableColumn<T>[];
+  rows: readonly T[];
+  getChildRows?: TableChildRows<T>;
 }
 
 /** The table body's nodes, grouped or not, and the expansion of its rows and groups. */
@@ -34,12 +38,17 @@ export function useTableGrouping<T extends TableRow>(
   options: TableGroupingOptions<T>,
   view: Pick<TableRowsView<T>, 'nodes' | 'sort'>,
 ): TableGroupedBody<T> {
-  const { groupBy, columns } = options;
+  const { groupBy, columns, rows, getChildRows } = options;
   const descriptors = view.sort.descriptors;
   const nodes = useMemo(() => {
     const groupings = resolveGroupings(groupBy ?? [], columns, descriptors);
-    return groupings.length > 0 ? groupTableNodes(view.nodes, groupings) : view.nodes;
-  }, [groupBy, columns, descriptors, view.nodes]);
+    if (groupings.length === 0) return view.nodes;
+    const reserved = Array.from(
+      walkTree(rows, (row) => getChildRows?.(row) ?? undefined),
+      (row) => row.id,
+    );
+    return groupTableNodes(view.nodes, groupings, reserved);
+  }, [groupBy, columns, descriptors, view.nodes, rows, getChildRows]);
   const groupKeys = useMemo(() => listGroupKeys(nodes), [nodes]);
   const expansion = useTableExpansion(options, groupKeys);
   return { nodes, isGrouped: groupKeys.length > 0, expansion };

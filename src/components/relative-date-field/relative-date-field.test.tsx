@@ -17,6 +17,14 @@ function root(container: HTMLElement) {
 }
 
 describe('RelativeDateField', () => {
+  it.each(['isReadOnly', 'isDisabled'] as const)(
+    'UIC-RELATIVE-DATE-FIELD-1.4 keeps an explicitly open list closed while %s',
+    (lock) => {
+      render(<RelativeDateField label="Due" getNow={getNow} isOpen {...{ [lock]: true }} />);
+      expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+    },
+  );
+
   it('UIC-RELATIVE-DATE-FIELD-1.1 reads the value relative to now and previews the absolute date', () => {
     const { container } = renderInLocale(
       <RelativeDateField id="due" label="Due" defaultValue="2026-05-24" getNow={getNow} />,

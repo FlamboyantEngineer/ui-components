@@ -1,5 +1,6 @@
 import { useEffect, useState, type RefObject } from 'react';
 import type { Key } from '../../core/props.js';
+import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { walkTree } from '../../utils/walk-tree.js';
 import { type FolderItem, type FolderNode } from './folder-model.js';
 
@@ -25,7 +26,7 @@ export interface FolderExpansion {
 
 function findRow(region: HTMLElement, key: Key): HTMLElement | undefined {
   const rows = region.querySelectorAll<HTMLElement>('[role="row"]');
-  return Array.from(rows).find((element) => element.dataset.key === String(key));
+  return Array.from(rows).find((element) => element.dataset.key === toCollectionKey(key));
 }
 
 function isSameList(a: readonly Key[], b: readonly Key[]): boolean {

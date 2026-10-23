@@ -21,7 +21,7 @@ export interface BooleanFieldProps extends FieldInputProps<boolean | null> {
    * an unset option.
    */
   allowsUnset?: boolean | undefined;
-  /** The form name; a form submits `true` or `false`, and no value while unset. */
+  /** The form name: checkbox and switch submit `true` while on; the other variants submit `true` or `false`, and nothing while unset. */
   name?: string | undefined;
 }
 

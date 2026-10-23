@@ -1,6 +1,7 @@
 // A traceability matrix: row items × column items with a mark in each related cell, on a grid
 // that windows both axes, since React Aria's table renders every column of a row.
 
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { useMemo, useRef } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps, Key, Tone } from '../../core/props.js';
@@ -140,7 +141,7 @@ export function RelationMatrix({
       >
         {view.rows.map((rowIndex) => {
           const row = rows[rowIndex] as RelationMatrixItem;
-          return <RelationMatrixRow key={row.id} row={row} rowIndex={rowIndex} context={context} />;
+          return <RelationMatrixRow key={toKeyIdentity(row.id)} {...{ row, rowIndex, context }} />;
         })}
       </div>
     </div>

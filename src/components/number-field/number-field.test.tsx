@@ -20,6 +20,29 @@ function SavedField(props: Omit<NumberFieldProps, 'label'>) {
 }
 
 describe('NumberField', () => {
+  it('UIC-NUMBER-FIELD-1.4 keeps a read-only off-step external value on blur and Enter', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const onCommit = vi.fn();
+    render(
+      <NumberField
+        label="Weight"
+        value={2.7}
+        step={0.5}
+        isReadOnly
+        onChange={onChange}
+        onCommit={onCommit}
+      />,
+    );
+    const input = screen.getByRole('textbox', { name: 'Weight' });
+    await user.click(input);
+    await user.keyboard('{Enter}');
+    await user.tab();
+    expect(input).toHaveValue('2.7');
+    expect(onChange).not.toHaveBeenCalled();
+    expect(onCommit).not.toHaveBeenCalled();
+  });
+
   it('UIC-NUMBER-FIELD-1.1 is a field around a number field that starts empty', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
@@ -193,6 +216,48 @@ describe('NumberField', () => {
     await user.tab();
     expect(root(container)).toHaveAttribute('data-validation', 'valid');
   });
+
+  it('UIC-NUMBER-FIELD-2.1 UIC-NUMBER-FIELD-2.2 shows external values without hiding their validation errors', () => {
+    const onChange = vi.fn();
+    const onCommit = vi.fn();
+    const props = { label: 'Weight', minValue: 0, maxValue: 10, step: 0.5, onChange, onCommit };
+    const { container, rerender } = render(<NumberField {...props} value={12} />);
+    const input = screen.getByRole('textbox', { name: 'Weight' });
+    expect(input).toHaveValue('12');
+    expect(message(container)).toBe('Enter 10 or less.');
+    rerender(<NumberField {...props} value={-2} />);
+    expect(input).toHaveValue('-2');
+    expect(message(container)).toBe('Enter 0 or more.');
+    rerender(<NumberField {...props} value={3.3} />);
+    expect(input).toHaveValue('3.3');
+    expect(message(container)).toBe('Enter a value in steps of 0.5.');
+    expect(onChange).not.toHaveBeenCalled();
+    expect(onCommit).not.toHaveBeenCalled();
+  });
+
+  it.each(['blur', 'Enter'])(
+    'UIC-NUMBER-FIELD-2.2 snaps an unchanged external value on %s',
+    async (action) => {
+      const user = userEvent.setup();
+      const onCommit = vi.fn();
+      render(
+        <NumberField
+          label="Weight"
+          defaultValue={12}
+          minValue={0}
+          maxValue={10}
+          onCommit={onCommit}
+        />,
+      );
+      const input = screen.getByRole('textbox', { name: 'Weight' });
+      expect(input).toHaveValue('12');
+      await user.click(input);
+      if (action === 'blur') await user.tab();
+      else await user.keyboard('{Enter}');
+      expect(input).toHaveValue('10');
+      expect(onCommit).toHaveBeenCalledExactlyOnceWith(10);
+    },
+  );
 
   it('UIC-NUMBER-FIELD-2.3 shows warnings and pending checks', () => {
     const { container, rerender } = render(

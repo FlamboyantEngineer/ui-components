@@ -49,6 +49,27 @@ async function passCity() {
 }
 
 describe('Wizard', () => {
+  it('UIC-WIZARD-2.1 keeps numeric and text step IDs separate when replacing an uncontrolled field', async () => {
+    const user = userEvent.setup();
+    const onCurrentIdChange = vi.fn();
+    render(
+      <Wizard
+        onCurrentIdChange={onCurrentIdChange}
+        steps={[
+          { id: 1, label: 'First', content: <TextField label="Draft" defaultValue="First" /> },
+          { id: '1', label: 'Second', content: <TextField label="Draft" defaultValue="Second" /> },
+        ]}
+      />,
+    );
+    await user.type(screen.getByRole('textbox', { name: 'Draft' }), ' edited');
+    await user.click(action('Next'));
+    expect(onCurrentIdChange).toHaveBeenCalledWith('1');
+    expect(screen.getByRole('textbox', { name: 'Draft' })).toHaveValue('Second');
+    await user.click(action('Back'));
+    expect(onCurrentIdChange).toHaveBeenLastCalledWith(1);
+    expect(screen.getByRole('textbox', { name: 'Draft' })).toHaveValue('First');
+  });
+
   it('UIC-WIZARD-1.1 renders the steps, the current panel in a form, and the footer', () => {
     const { container } = renderWizard();
     const root = screen.getByRole('group', { name: 'Plan a trip' });

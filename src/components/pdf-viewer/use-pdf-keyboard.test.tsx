@@ -89,6 +89,21 @@ describe('PdfViewer keyboard', () => {
     expect(await pressUnhandled(user, '{Control>}f{/Control}')).toBe(true);
   });
 
+  it('UIC-PDF-VIEWER-3.5 accepts the Shift needed to type plus without taking other shifted shortcuts', async () => {
+    const user = userEvent.setup();
+    const onZoomChange = vi.fn();
+    await renderReady({ defaultZoom: 100, onZoomChange });
+    focus(scroller());
+    expect(await pressUnhandled(user, '{Control>}{Shift>}+{/Shift}{/Control}')).toBe(false);
+    expect(onZoomChange).toHaveBeenLastCalledWith(125);
+    expect(await pressUnhandled(user, '{Meta>}{Shift>}+{/Shift}{/Meta}')).toBe(false);
+    expect(onZoomChange).toHaveBeenLastCalledWith(150);
+    for (const key of ['F', '-', '0']) {
+      expect(await pressUnhandled(user, `{Control>}{Shift>}${key}{/Shift}{/Control}`)).toBe(true);
+    }
+    expect(onZoomChange).toHaveBeenLastCalledWith(150);
+  });
+
   it('UIC-PDF-VIEWER-4.6 goes to the first and last page with Home and End', async () => {
     const user = userEvent.setup();
     stubLayout();

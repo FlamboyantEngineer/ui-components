@@ -133,6 +133,12 @@ function Extras() {
 mountLab(
   <>
     <LabSection
+      title="Disabled open state"
+      description="A disabled field keeps its presets closed even with an explicit open state."
+    >
+      <RelativeDateField label="Disabled due date" isDisabled isOpen getNow={getNow} />
+    </LabSection>
+    <LabSection
       title="Layouts and states"
       description="Every label layout against every state, against a clock fixed at 20 April 2026, 10:30."
     >

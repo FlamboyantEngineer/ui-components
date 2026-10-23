@@ -134,6 +134,30 @@ describe('Chart', () => {
 });
 
 describe('ChartLegend', () => {
+  it('UIC-CHART-2.1 retains typed series identities and hidden keys when reordered', async () => {
+    const user = userEvent.setup();
+    const onHiddenKeysChange = vi.fn();
+    const series = [
+      { id: 1, label: 'Numeric series' },
+      { id: '1', label: 'Text series' },
+    ];
+    const { rerender } = render(
+      <ChartLegend items={series} onHiddenKeysChange={onHiddenKeysChange} />,
+    );
+    const numeric = screen.getByRole('button', { name: 'Numeric series' });
+    const text = screen.getByRole('button', { name: 'Text series' });
+    rerender(<ChartLegend items={[...series].reverse()} onHiddenKeysChange={onHiddenKeysChange} />);
+    expect(screen.getByRole('button', { name: 'Numeric series' })).toBe(numeric);
+    expect(screen.getByRole('button', { name: 'Text series' })).toBe(text);
+    await user.click(numeric);
+    expect(onHiddenKeysChange).toHaveBeenLastCalledWith(new Set([1]));
+    expect(text).toHaveAttribute('aria-pressed', 'true');
+    await user.click(numeric);
+    await user.click(text);
+    expect(onHiddenKeysChange).toHaveBeenLastCalledWith(new Set(['1']));
+    await user.keyboard('{ArrowRight}');
+    expect(numeric).toHaveFocus();
+  });
   it('UIC-CHART-2.1 toggles series with one pressed button per shown series', async () => {
     const user = userEvent.setup();
     const onHiddenKeysChange = vi.fn();
@@ -213,6 +237,28 @@ describe('ChartAxis', () => {
     { value: 0, position: 10, label: '0' },
     { value: 5, position: 110, label: '5' },
   ];
+
+  it('UIC-CHART-3.1 UIC-CHART-3.2 retains typed tick labels and grid lines when reordered', () => {
+    const typedTicks = [
+      { value: 1, position: 10, label: 'Numeric tick' },
+      { value: '1', position: 50, label: 'Text tick' },
+    ];
+    const axis = (values: typeof typedTicks) => (
+      <svg>
+        <ChartAxis position="bottom" ticks={values} offset={100} range={[0, 100]} gridLength={80} />
+      </svg>
+    );
+    const { container, rerender } = render(axis(typedTicks));
+    const numeric = screen.getByText('Numeric tick');
+    const text = screen.getByText('Text tick');
+    const numericGrid = container.querySelector('.ui-chart-axis__grid[x1="10"]');
+    const textGrid = container.querySelector('.ui-chart-axis__grid[x1="50"]');
+    rerender(axis([...typedTicks].reverse()));
+    expect(screen.getByText('Numeric tick')).toBe(numeric);
+    expect(screen.getByText('Text tick')).toBe(text);
+    expect(container.querySelector('.ui-chart-axis__grid[x1="10"]')).toBe(numericGrid);
+    expect(container.querySelector('.ui-chart-axis__grid[x1="50"]')).toBe(textGrid);
+  });
 
   it('UIC-CHART-3.1 UIC-CHART-3.2 UIC-CHART-8.2 draws a bottom axis with marks, labels and grid lines', () => {
     const { container } = render(

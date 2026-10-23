@@ -5,6 +5,34 @@ const overview = (page: Page) => page.locator('[data-lab-demo="overview"]');
 const layout = (page: Page) => overview(page).locator('[data-lab-output="layout"]');
 
 test.describe('Dashboard Grid lab', () => {
+  test('UIC-DASHBOARD-GRID-2.1 UIC-DASHBOARD-GRID-2.2 drops a pointer preview when editing stops', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('dashboard-grid');
+    const demo = overview(page);
+    const grid = demo.getByRole('group', { name: 'Overview' });
+    const tile = grid.getByRole('group', { name: 'Visitors', exact: true });
+    const handle = grid.getByRole('button', { name: 'Move Visitors' });
+    await handle.hover();
+    const bounds = (await handle.boundingBox())!;
+    await page.mouse.down();
+    await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2 + 120, {
+      steps: 4,
+    });
+    await expect(tile).toHaveAttribute('data-moving', 'true');
+    const toggle = demo.getByRole('button', { name: 'Done editing' });
+    await toggle.focus();
+    await toggle.press('Enter');
+    await expect(tile).not.toHaveAttribute('data-moving');
+    await page.mouse.up();
+    await expect(layout(page)).toHaveText(
+      'visitors 0,0 3×1; orders 3,0 3×1; results 6,0 6×3; crates 0,1 6×3; notes 6,3 6×1',
+    );
+    await demo.getByRole('button', { name: 'Edit layout' }).press('Enter');
+    await expect(tile).not.toHaveAttribute('data-moving');
+    await expect(tile).toHaveCSS('grid-row-start', '1');
+  });
   test('UIC-DASHBOARD-GRID-1.1 UIC-DASHBOARD-GRID-2.1 UIC-DASHBOARD-GRID-4.1 places named tiles with handles in edit mode', async ({
     page,
     lab,

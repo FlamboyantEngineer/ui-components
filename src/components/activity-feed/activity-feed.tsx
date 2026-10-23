@@ -6,6 +6,7 @@ import type { BaseProps, Key, NativeProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { capitalizeText } from '../../utils/relative-time.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { Avatar, getDisplayName, type AvatarIdentity } from '../avatar/avatar.js';
 import { EmptyState } from '../empty-state/empty-state.js';
 import { Icon, toIconProps, type IconSource } from '../icon/icon.js';
@@ -148,13 +149,13 @@ function DayGroups({
   return groups.map((group, index) => {
     const headingId = `${baseId}-${index}`;
     return (
-      <li key={`${group.day}:${String(group.items[0]!.id)}`} {...hooks.slot('group')}>
+      <li key={`${group.day}:${toKeyIdentity(group.items[0]!.id)}`} {...hooks.slot('group')}>
         <Heading {...hooks.slot('day')} id={headingId}>
           {group.label}
         </Heading>
         <ol {...hooks.slot('entries')} aria-labelledby={headingId}>
           {group.items.map((item) => (
-            <Entry key={item.id} item={item} options={options} />
+            <Entry key={toKeyIdentity(item.id)} item={item} options={options} />
           ))}
         </ol>
       </li>
@@ -188,7 +189,7 @@ function FeedList({
       {groupBy === 'day' ? (
         <DayGroups items={items} options={options} headingLevel={headingLevel} />
       ) : (
-        items.map((item) => <Entry key={item.id} item={item} options={options} />)
+        items.map((item) => <Entry key={toKeyIdentity(item.id)} item={item} options={options} />)
       )}
     </ol>
   );

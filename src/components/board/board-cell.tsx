@@ -1,4 +1,7 @@
 import { createDropIndicator } from '../../utils/create-drop-indicator.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
+import { toCollectionKey } from '../../utils/to-collection-key.js';
+import { createKeyIndex } from '../../utils/create-key-index.js';
 import { useCallback, useMemo, type ReactNode } from 'react';
 import {
   GridList,
@@ -15,6 +18,7 @@ import { EmptyState } from '../empty-state/empty-state.js';
 import { boardHooks as hooks } from './board-hooks.js';
 import type { BoardCellAddress } from './board-moves.js';
 import type { BoardCardDrag } from './use-board-drag.js';
+import type { CollectionDropTarget } from '../../utils/use-reorder-drag-and-drop.js';
 
 /** What every cell of a board draws its cards with. */
 export interface BoardCellOptions<T> {
@@ -53,25 +57,41 @@ const renderDropIndicator = createDropIndicator(hooks.slotClass('drop-indicator'
  * A cell's grid list drag and drop hooks: its cards drag with the board's media type, and it takes
  * drops of the board's cards wherever `resolveDrop` lets them land. `undefined` without `drag`.
  */
-function useCellDragAndDrop(drag: BoardCardDrag | null, { column, lane }: BoardCellAddress) {
+function useCellDragAndDrop(
+  drag: BoardCardDrag | null,
+  { column, lane }: BoardCellAddress,
+  keys: ReadonlyMap<string, Key>,
+) {
   const options = useMemo<DragAndDropOptions>(() => {
     if (!drag) return noDragAndDrop;
     const address = { column, lane };
+    const decodeTarget = (target: CollectionDropTarget): CollectionDropTarget | null => {
+      if (target.type === 'root') return target;
+      const key = keys.get(String(target.key));
+      return key === undefined ? null : { ...target, key };
+    };
     return {
-      getItems: (keys) =>
-        [...keys].map((key) => ({
+      getItems: (dragged) =>
+        [...dragged].map((key) => ({
           [drag.dragType]: String(key),
-          'text/plain': drag.getTextValue(key),
+          'text/plain': drag.getTextValue(keys.get(String(key))!),
         })),
       getAllowedDropOperations: () => ['move'],
       acceptedDragTypes: [drag.dragType],
-      onDragStart: ({ keys }) => drag.setDragging([...keys][0] ?? null),
+      onDragStart: ({ keys: dragged }) =>
+        drag.setDragging(keys.get(String([...dragged][0])) ?? null),
       onDragEnd: () => drag.setDragging(null),
-      getDropOperation: (target) => (drag.resolveDrop(address, target) ? 'move' : 'cancel'),
-      onDrop: ({ target }) => drag.drop(address, target),
+      getDropOperation: (target) => {
+        const decoded = decodeTarget(target);
+        return decoded && drag.resolveDrop(address, decoded) ? 'move' : 'cancel';
+      },
+      onDrop: ({ target }) => {
+        const decoded = decodeTarget(target);
+        if (decoded) drag.drop(address, decoded);
+      },
       renderDropIndicator,
     };
-  }, [drag, column, lane]);
+  }, [drag, column, lane, keys]);
   const { dragAndDropHooks } = useDragAndDrop(options);
   return drag ? dragAndDropHooks : undefined;
 }
@@ -85,7 +105,8 @@ function BoardCards<T extends { id: Key }>({
 }: BoardCellProps<T>) {
   const strings = useUiStrings();
   const { renderCard, getTextValue, onAction, keyShortcuts, virtualized, drag } = options;
-  const dragAndDropHooks = useCellDragAndDrop(drag, address);
+  const keys = useMemo(() => createKeyIndex(items.map((item) => item.id)), [items]);
+  const dragAndDropHooks = useCellDragAndDrop(drag, address, keys);
   const renderEmptyState = useCallback(
     () => (
       <EmptyState size="sm" description={strings.noCards} className={hooks.slotClass('empty')} />
@@ -99,16 +120,22 @@ function BoardCards<T extends { id: Key }>({
       aria-labelledby={labelledBy}
       items={items}
       dependencies={[renderCard, getTextValue, keyShortcuts]}
-      onAction={onAction}
+      onAction={
+        onAction &&
+        ((key) => {
+          const original = keys.get(String(key));
+          if (original !== undefined) onAction(original);
+        })
+      }
       dragAndDropHooks={dragAndDropHooks}
       renderEmptyState={renderEmptyState}
       {...hooks.slot('cards', { virtualized })}
     >
       {(item) => (
         <GridListItem
-          id={item.id}
+          id={toCollectionKey(item.id)}
           textValue={getTextValue(item)}
-          className={hooks.slotClass('card')}
+          {...hooks.slot('card', { keyIdentity: toKeyIdentity(item.id) })}
           render={(domProps) => <div {...domProps} aria-keyshortcuts={keyShortcuts} />}
         >
           {({ allowsDragging }) => (

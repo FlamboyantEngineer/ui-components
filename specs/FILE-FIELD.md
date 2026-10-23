@@ -41,7 +41,7 @@ Verification: `src/components/file-field/file-field.test.tsx`
 
 ### UIC-FILE-FIELD-1.6 - Forms
 
-With `name`, the field shall submit each held file's id in a hidden input under that name; a disabled field submits none.
+With `name`, the field shall submit each held file's id in a hidden input under that name; a disabled field submits none. Numeric and text file ids remain distinct when the value is reordered, including each file row and hidden form input.
 
 Implementation: `src/components/file-field/file-field-parts.tsx`
 Verification: `src/components/file-field/file-field.test.tsx`

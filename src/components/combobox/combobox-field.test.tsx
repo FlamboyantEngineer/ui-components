@@ -27,6 +27,7 @@ describe('Combobox entry', () => {
     const onChange = vi.fn();
     render(<Combobox aria-label="Fruit" defaultItems={fruit} autoHighlight onChange={onChange} />);
     await user.type(input(), 'ap');
+    await screen.findByRole('listbox');
     expect(highlighted()).toBe('Grape');
     await user.type(input(), 'r');
     // Apricot is disabled, so nothing matches "apr" but it; nothing is highlighted.
@@ -42,6 +43,7 @@ describe('Combobox entry', () => {
     const user = userEvent.setup();
     render(<Combobox aria-label="Fruit" defaultItems={fruit} />);
     await user.type(input(), 'ap');
+    await screen.findByRole('listbox');
     expect(highlighted()).toBeNull();
   });
 
@@ -53,6 +55,7 @@ describe('Combobox entry', () => {
     );
     expect(input()).toHaveAttribute('aria-autocomplete', 'both');
     await user.type(input(), 'ap');
+    await screen.findByRole('listbox');
     expect(input()).toHaveValue('apple');
     expect(input().selectionStart).toBe(2);
     expect(input().selectionEnd).toBe(5);

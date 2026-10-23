@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import type { Selection } from '../../src/core/props.js';
+import type { Key, Selection } from '../../src/core/props.js';
 import {
   Tag,
   TagGroup,
@@ -76,8 +76,13 @@ function Basket() {
 }
 
 function Picker() {
-  const [selected, setSelected] = useState<Selection>(new Set(['pear']));
-  const names = selected === 'all' ? ['all'] : [...selected].map(String);
+  const [selected, setSelected] = useState<Selection | Iterable<Key>>(() =>
+    (function* () {
+      yield 'pear';
+    })(),
+  );
+  const names =
+    selected === 'all' ? ['all'] : selected instanceof Set ? [...selected].map(String) : ['pear'];
   return (
     <>
       <TagGroup
@@ -116,6 +121,15 @@ function Marked() {
 
 mountLab(
   <>
+    <LabSection
+      title="Primitive keys"
+      description="Numeric and text ids that read alike remain distinct choices."
+    >
+      <TagGroup aria-label="Primitive keys" selectionMode="multiple" defaultSelectedKeys={[1]}>
+        <Tag id={1}>Numeric</Tag>
+        <Tag id="1">Textual</Tag>
+      </TagGroup>
+    </LabSection>
     <LabSection title="Tones and sizes" description="Removable tags in every tone and size.">
       <StateMatrix
         axes={{ tone: tones, size: sizes }}
@@ -142,7 +156,10 @@ mountLab(
     >
       <Basket />
     </LabSection>
-    <LabSection title="Selection" description="Pick several tags; at least one stays selected.">
+    <LabSection
+      title="Selection"
+      description="Pick several tags; at least one stays selected. Initial controlled selection comes from a one-shot generator."
+    >
       <Picker />
     </LabSection>
     <LabSection

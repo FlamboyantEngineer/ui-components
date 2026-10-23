@@ -1,6 +1,8 @@
 // Ranges of the source a code editor marks: diagnostics, matching brackets and search matches.
 
 import type { CodeDiagnostic, CodeToken } from './code-layers.js';
+import { escapeRegExp } from '../../utils/escape-regexp.js';
+import { findLineStarts } from '../../utils/find-line-starts.js';
 
 /** A run of the source, as text offsets. */
 export interface CodeRange {
@@ -28,26 +30,25 @@ const opening = new Set(['(', '[', '{']);
 /** Token types whose text is not code, so their brackets do not count. */
 const textTypes = new Set(['string', 'key', 'comment']);
 
-const WORD = /^[\w$]+/;
+const word = /[\w$]+/y;
 
-function lineBounds(value: string, line: number): CodeRange | null {
-  const lines = value.split('\n');
-  if (line < 1 || line > lines.length) return null;
-  const start = lines.slice(0, line - 1).reduce((sum, text) => sum + text.length + 1, 0);
-  return { start, end: start + (lines[line - 1]?.length ?? 0) };
+function lineBounds(value: string, line: number, starts: readonly number[]): CodeRange | null {
+  const start = starts[line - 1];
+  if (start === undefined) return null;
+  return { start, end: starts[line] === undefined ? value.length : (starts[line] as number) - 1 };
 }
 
 /** The offset of a line and column counted from 1, kept within the line. */
-function offsetAt(value: string, line: number, column: number): number | null {
-  const bounds = lineBounds(value, line);
+function offsetAt(bounds: CodeRange | null, column: number): number | null {
   if (!bounds) return null;
   return Math.min(bounds.end, bounds.start + Math.max(0, column - 1));
 }
 
 /** At least one character: the word at `start`, or the character before a line end. */
 function spanAt(value: string, start: number, lineStart: number): CodeRange | null {
-  const word = WORD.exec(value.slice(start))?.[0].length ?? 0;
-  if (word > 0) return { start, end: start + word };
+  word.lastIndex = start;
+  const length = word.exec(value)?.[0].length ?? 0;
+  if (length > 0) return { start, end: start + length };
   if (start < value.length && value[start] !== '\n') return { start, end: start + 1 };
   return start > lineStart ? { start: start - 1, end: start } : null;
 }
@@ -56,10 +57,14 @@ function spanAt(value: string, start: number, lineStart: number): CodeRange | nu
  * The source a diagnostic marks: from its column to `endLine` and `endColumn`, or else the word at
  * its column; the line's text when it has no column. `null` when it has no line or nothing to mark.
  */
-export function findDiagnosticRange(value: string, diagnostic: CodeDiagnostic): CodeRange | null {
+export function findDiagnosticRange(
+  value: string,
+  diagnostic: CodeDiagnostic,
+  starts: readonly number[] = findLineStarts(value),
+): CodeRange | null {
   const { line, column, endLine, endColumn } = diagnostic;
   if (line === undefined) return null;
-  const bounds = lineBounds(value, line);
+  const bounds = lineBounds(value, line, starts);
   if (!bounds) return null;
   if (column === undefined) {
     const indent = /^\s*/.exec(value.slice(bounds.start, bounds.end))?.[0].length ?? 0;
@@ -68,7 +73,10 @@ export function findDiagnosticRange(value: string, diagnostic: CodeDiagnostic): 
       : null;
   }
   const start = Math.min(bounds.end, bounds.start + Math.max(0, column - 1));
-  const end = endColumn === undefined ? null : offsetAt(value, endLine ?? line, endColumn);
+  const end =
+    endColumn === undefined
+      ? null
+      : offsetAt(lineBounds(value, endLine ?? line, starts), endColumn);
   if (end !== null && end > start) return { start, end };
   return spanAt(value, start, bounds.start);
 }
@@ -98,7 +106,16 @@ function createCodeMask(tokens: readonly CodeToken[]): (offset: number) => boole
     if (type && textTypes.has(type)) skipped.push({ start: offset, end: offset + text.length });
     offset += text.length;
   }
-  return (at) => !skipped.some(({ start, end }) => at >= start && at < end);
+  return (at) => {
+    let low = 0;
+    let high = skipped.length;
+    while (low < high) {
+      const middle = (low + high) >>> 1;
+      if ((skipped[middle]?.end ?? 0) <= at) low = middle + 1;
+      else high = middle;
+    }
+    return at < (skipped[low]?.start ?? Infinity);
+  };
 }
 
 function scanForPartner(value: string, from: number, isCode: (offset: number) => boolean) {
@@ -108,8 +125,11 @@ function scanForPartner(value: string, from: number, isCode: (offset: number) =>
     const character = value[at] ?? '';
     if (!(character in pairs) || !isCode(at)) continue;
     if (opening.has(character) === forward) stack.push(character);
-    else if (stack.length > 0) stack.pop();
-    else return pairs[character] === value[from] ? at : null;
+    else {
+      if (stack.length === 0) return pairs[character] === value[from] ? at : null;
+      const expected = stack.pop();
+      if (pairs[character] !== expected) return null;
+    }
   }
   return null;
 }
@@ -134,11 +154,8 @@ export function matchBracket(
 /** The places `query` occurs in the source, ignoring case, without overlaps. */
 export function findMatches(value: string, query: string): CodeRange[] {
   if (!query) return [];
-  const text = value.toLowerCase();
-  const needle = query.toLowerCase();
-  const matches: CodeRange[] = [];
-  for (let at = text.indexOf(needle); at !== -1; at = text.indexOf(needle, at + needle.length)) {
-    matches.push({ start: at, end: at + needle.length });
-  }
-  return matches;
+  return Array.from(value.matchAll(new RegExp(escapeRegExp(query), 'giu')), (match) => ({
+    start: match.index,
+    end: match.index + match[0].length,
+  }));
 }

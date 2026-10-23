@@ -4,6 +4,7 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key, Tone } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { getDisplayName, type AvatarIdentity } from '../avatar/avatar.js';
 import { Badge } from '../badge/badge.js';
 import { IconButton } from '../icon-button/icon-button.js';
@@ -234,7 +235,7 @@ export function ApprovalPanel({
       <ul {...hooks.slot('approvers')} aria-label={strings.approvers}>
         {approvers.map((approver) => (
           <ApproverRow
-            key={approver.id}
+            key={toKeyIdentity(approver.id)}
             approver={approver}
             isCurrent={approver.id === currentApproverId}
             onRemind={onRemind}

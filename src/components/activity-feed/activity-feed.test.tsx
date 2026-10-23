@@ -32,6 +32,18 @@ const summaries = (scope: HTMLElement) =>
 afterEach(() => vi.unstubAllGlobals());
 
 describe('ActivityFeed', () => {
+  it('UIC-ACTIVITY-FEED-1.1 keeps numeric and text IDs distinct when an entry is removed', () => {
+    const entries: ActivityFeedItem[] = [
+      { id: 1, action: 'Numeric entry', time: '2026-04-20' },
+      { id: '1', action: 'Text entry', time: '2026-04-20' },
+    ];
+    const { rerender } = render(<ActivityFeed items={entries} groupBy="none" getNow={getNow} />);
+    const textEntry = screen.getByText('Text entry');
+    rerender(<ActivityFeed items={entries.slice(1)} groupBy="none" getNow={getNow} />);
+    expect(screen.getByText('Text entry')).toBe(textEntry);
+    expect(screen.queryByText('Numeric entry')).not.toBeInTheDocument();
+  });
+
   it('UIC-ACTIVITY-FEED-1.1 lists the entries in the order given', () => {
     const { container } = render(<ActivityFeed items={items} groupBy="none" getNow={getNow} />);
     const root = container.firstElementChild as HTMLElement;

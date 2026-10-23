@@ -13,7 +13,7 @@ Verification: `src/components/zoom-control/zoom-control.test.tsx`, `e2e/zoom-con
 
 ### UIC-ZOOM-CONTROL-1.2 - Levels and value
 
-`levels` shall give the zoom levels in percent (`100` means 100%), used sorted ascending without duplicates; without it the control uses `defaultZoomLevels`. The current zoom is `value` (controlled) or `defaultValue` (uncontrolled, `100` by default), and every request reaches `onChange` with the requested percentage; an uncontrolled control also applies it. The value may lie between levels, for example a fit-to-width zoom.
+`levels` shall give the zoom levels in percent (`100` means 100%), used sorted ascending without duplicates or non-finite entries; without it the control uses `defaultZoomLevels`. The current zoom is `value` (controlled) or `defaultValue` (uncontrolled, `100` by default), and every request reaches `onChange` with the requested percentage; an uncontrolled control also applies it. The value may lie between levels, for example a fit-to-width zoom. Normalisation is shared by the slider and step buttons, and retained while the levels stay the same.
 
 Implementation: `src/components/zoom-control/zoom-control.tsx`
 Verification: `src/components/zoom-control/zoom-control.test.tsx`

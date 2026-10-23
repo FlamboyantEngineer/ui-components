@@ -8,6 +8,8 @@ The menu family lists actions or options a reader can choose: `Menu` (the list),
 
 `Menu` shall render a `role="menu"` list from `MenuItem`, `MenuSection`, `MenuSeparator` and `SubmenuTrigger` children or, without children, from its `items` entries: item entries (`id`, `label` and the item options), section entries (`type: 'section'` with `title` and `items`) and separator entries (`type: 'separator'`). An item entry with `items` opens a submenu of those entries. Entries take the props of the component they describe.
 
+Numeric and text IDs (`1` and `'1'`) and text IDs differing only by whitespace identify distinct items and retain separate accessibility references. Root and section selections, disabled keys and actions keep the caller's original ID types, including actions inherited by submenus.
+
 Implementation: `src/components/menu/menu.tsx`, `src/components/menu/menu-item.tsx`
 Verification: `src/components/menu/menu.test.tsx`, `e2e/menu.spec.ts`
 

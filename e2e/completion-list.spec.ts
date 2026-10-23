@@ -10,6 +10,13 @@ test.describe('Completion List lab', () => {
   }) => {
     await lab.open('completion-list');
     const input = editor(page, 'documentation-footer');
+    await input.evaluate((element) => element.scrollIntoView({ block: 'center' }));
+    await page.evaluate(
+      () =>
+        new Promise<void>((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+        ),
+    );
     await input.focus();
     const list = page.getByRole('listbox', { name: 'Suggestions' });
     const options = list.getByRole('option');
@@ -17,11 +24,13 @@ test.describe('Completion List lab', () => {
     await expect(options.first()).toHaveAttribute('aria-selected', 'true');
     await expect(options.first()).toHaveAttribute('data-kind', 'city');
     await expect(input).toHaveAttribute('aria-controls', (await list.getAttribute('id')) ?? '');
-    const anchor = await input.boundingBox();
-    const popover = await page.locator('[data-lab-list="documentation-footer"]').boundingBox();
-    expect(anchor && popover && popover.y >= anchor.y + anchor.height).toBe(true);
-    expect(anchor && popover && popover.y - (anchor.y + anchor.height) < 8).toBe(true);
-    expect(anchor && popover && Math.abs(popover.x - anchor.x) < 2).toBe(true);
+    await expect(async () => {
+      const anchor = await input.boundingBox();
+      const popover = await page.locator('[data-lab-list="documentation-footer"]').boundingBox();
+      expect(anchor && popover && popover.y >= anchor.y + anchor.height).toBe(true);
+      expect(anchor && popover && popover.y - (anchor.y + anchor.height) < 8).toBe(true);
+      expect(anchor && popover && Math.abs(popover.x - anchor.x) < 2).toBe(true);
+    }).toPass();
     await expect(page.locator('.ui-completion-list__documentation')).toHaveText(
       'Lisbon is a city in Portugal.',
     );
@@ -77,6 +86,26 @@ test.describe('Completion List lab', () => {
     await expect(page.locator('.ui-completion-list__footer')).toContainText('38 matches');
     await lab.expectAccessible();
     await lab.expectAccessible('[data-lab-list="long"]');
+  });
+
+  test('UIC-COMPLETION-LIST-1.2 keeps a completion list usable after Tab scrolls its editor into view', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('completion-list');
+    await editor(page, 'drawn-empty state').focus();
+    await expect(page.getByRole('status').filter({ hasText: 'No cities match' })).toBeVisible();
+    await page.keyboard.press('Tab');
+    const long = editor(page, 'long');
+    await expect(long).toBeFocused();
+    const list = page.getByRole('listbox', { name: 'Suggestions' });
+    await expect(list.getByRole('option')).toHaveCount(38);
+    const scroll = await page.evaluate(() => scrollY);
+    await page.keyboard.press('ArrowUp');
+    const last = list.getByRole('option', { name: 'Zurich' });
+    await expect(last).toHaveAttribute('aria-selected', 'true');
+    await expect(last).toBeInViewport();
+    await expect(async () => expect(await page.evaluate(() => scrollY)).toBe(scroll)).toPass();
   });
 
   test('UIC-COMPLETION-LIST-2.5 mentions people and references after their trigger characters', async ({

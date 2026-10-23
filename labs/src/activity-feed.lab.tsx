@@ -17,7 +17,7 @@ const lena = { name: 'Lena Ortiz', colorKey: 'lena' };
 
 const events: ActivityFeedItem[] = [
   {
-    id: 'comment',
+    id: 1,
     person: maria,
     action: 'commented on',
     target: 'Requirement 12',
@@ -25,7 +25,7 @@ const events: ActivityFeedItem[] = [
     detail: 'The tolerance should be stated in millimetres.',
   },
   {
-    id: 'change',
+    id: '1',
     person: jon,
     action: 'changed',
     target: 'Requirement 12',
@@ -77,7 +77,7 @@ type KindedEvent = ActivityFeedItem & { kind: Exclude<Kind, 'all'> };
 
 const kindedEvents: KindedEvent[] = events.map((item) => ({
   ...item,
-  kind: item.id === 'comment' ? 'comments' : 'changes',
+  kind: item.id === 1 ? 'comments' : 'changes',
 }));
 
 /** Older events made up on demand, a page at a time. */

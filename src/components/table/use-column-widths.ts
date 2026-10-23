@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { Key } from '../../core/props.js';
 import { usePersistentState } from '../../core/provider.js';
+import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import {
   pickColumnWidths,
   type TableColumnSizing,
@@ -21,6 +22,10 @@ export interface ColumnWidths {
   onResizeEnd: (widths: Map<Key, unknown>) => void;
 }
 
+function restoreColumnKeys(widths: Map<Key, unknown>): Map<Key, unknown> {
+  return new Map([...widths].map(([key, value]) => [fromCollectionKey(key), value]));
+}
+
 /**
  * Column widths for a resizable table: previewed live while a column is being resized, then kept
  * (and persisted under `persistKey`) and reported once when the gesture ends.
@@ -31,7 +36,7 @@ export function useColumnWidths(options: ColumnWidthsOptions): ColumnWidths {
   const [live, setLive] = useState<TableColumnWidths | null>(null);
 
   const onResizeEnd = (widths: Map<Key, unknown>) => {
-    const next = pickColumnWidths(widths, columns);
+    const next = pickColumnWidths(restoreColumnKeys(widths), columns);
     setStored(next);
     setLive(null);
     onColumnWidthsChange?.(next);
@@ -39,7 +44,7 @@ export function useColumnWidths(options: ColumnWidthsOptions): ColumnWidths {
 
   return {
     widths: live ?? pickColumnWidths(stored, columns),
-    onResize: (widths) => setLive(pickColumnWidths(widths, columns)),
+    onResize: (widths) => setLive(pickColumnWidths(restoreColumnKeys(widths), columns)),
     onResizeEnd,
   };
 }

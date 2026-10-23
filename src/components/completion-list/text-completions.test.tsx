@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useRef, useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -9,6 +9,7 @@ import {
   useTextCompletions,
   type Completion,
   type CompletionSource,
+  type CompletionsModel,
 } from './completion-list.js';
 
 const fruit: Completion[] = [
@@ -22,10 +23,14 @@ function Notes({
   completions,
   isLocked = false,
   onKeyDown,
+  onModel,
+  onInsert,
 }: {
   completions: readonly Completion[] | CompletionSource;
   isLocked?: boolean;
   onKeyDown?: () => void;
+  onModel?: (model: CompletionsModel) => void;
+  onInsert?: (value: string) => void;
 }) {
   const [value, setValue] = useState('');
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -33,8 +38,12 @@ function Notes({
     completions,
     inputRef,
     isLocked,
-    setValue,
+    setValue: (next) => {
+      onInsert?.(next);
+      setValue(next);
+    },
   });
+  onModel?.(model);
   return (
     <>
       <textarea
@@ -87,7 +96,7 @@ describe('Completions engine', () => {
     await user.click(input());
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     await user.keyboard('I like ap');
-    const list = screen.getByRole('listbox', { name: 'Suggestions' });
+    const list = await screen.findByRole('listbox', { name: 'Suggestions' });
     expect(optionTexts()).toEqual(['apple', 'apricot']);
     expect(input()).toHaveAttribute('aria-controls', list.id);
     expect(input()).toHaveAttribute('aria-activedescendant', screen.getAllByRole('option')[0]?.id);
@@ -115,7 +124,7 @@ describe('Completions engine', () => {
       query: '9',
       isExplicit: false,
     });
-    expect(optionTexts()).toEqual(['#12']);
+    await waitFor(() => expect(optionTexts()).toEqual(['#12']));
     await user.keyboard('{Tab}');
     expect(input()).toHaveValue('See Requirement 12');
   });
@@ -129,13 +138,70 @@ describe('Completions engine', () => {
     await user.click(input());
     await user.keyboard('ap');
     await act(async () => answers.at(-1)?.([{ label: 'apricot' }]));
-    expect(optionTexts()).toEqual(['apricot']);
+    await waitFor(() => expect(optionTexts()).toEqual(['apricot']));
     await act(async () => answers.at(-2)?.([{ label: 'apple' }]));
-    expect(optionTexts()).toEqual(['apricot']);
+    await waitFor(() => expect(optionTexts()).toEqual(['apricot']));
     unmount();
     render(<Notes completions={fruit} isLocked />);
     await user.click(input());
     await user.keyboard('ap{Control>} {/Control}');
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+  });
+
+  it('UIC-COMPLETION-LIST-2.2 discards a pending answer when locked and requires a new lookup after unlocking', async () => {
+    const user = userEvent.setup();
+    const answers: Array<(options: Completion[]) => void> = [];
+    const source: CompletionSource = () =>
+      new Promise<Completion[]>((resolve) => answers.push(resolve));
+    const { rerender } = render(<Notes completions={source} />);
+    await user.click(input());
+    await user.keyboard('ap');
+    const pending = answers.at(-1);
+    rerender(<Notes completions={source} isLocked />);
+    await act(async () => pending?.([{ label: 'apple' }]));
+    rerender(<Notes completions={source} />);
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+    await user.keyboard('{Control>} {/Control}');
+    await act(async () => answers.at(-1)?.([{ label: 'apricot' }]));
+    await waitFor(() => expect(optionTexts()).toEqual(['apricot']));
+  });
+
+  it('UIC-COMPLETION-LIST-2.2 UIC-COMPLETION-LIST-2.4 refuses a captured insertion callback after locking and keeps the old list closed', async () => {
+    const user = userEvent.setup();
+    let model: CompletionsModel | undefined;
+    const onModel = (current: CompletionsModel) => (model = current);
+    const onInsert = vi.fn();
+    const props = { completions: fruit, onModel, onInsert };
+    const { rerender } = render(<Notes {...props} />);
+    await user.click(input());
+    await user.keyboard('ap');
+    const choose = model!.apply;
+    const option = model!.options[0]!;
+    rerender(<Notes {...props} isLocked />);
+    act(() => choose(option));
+    expect(onInsert).not.toHaveBeenCalled();
+    expect(input()).toHaveValue('ap');
+    rerender(<Notes {...props} />);
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+  });
+
+  it('UIC-COMPLETION-LIST-2.4 inserts only once when a callback is repeated before the next render', async () => {
+    const user = userEvent.setup();
+    let model: CompletionsModel | undefined;
+    const onInsert = vi.fn();
+    render(
+      <Notes completions={fruit} onInsert={onInsert} onModel={(current) => (model = current)} />,
+    );
+    await user.click(input());
+    await user.keyboard('ap');
+    const choose = model!.apply;
+    const option = model!.options[0]!;
+    act(() => {
+      choose(option);
+      choose(option);
+    });
+    expect(onInsert).toHaveBeenCalledExactlyOnceWith('apple pie');
+    expect(input()).toHaveValue('apple pie');
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
   });
 
@@ -145,6 +211,7 @@ describe('Completions engine', () => {
     render(<Notes completions={fruit} onKeyDown={onKeyDown} />);
     await user.click(input());
     await user.keyboard('{Control>} {/Control}');
+    await screen.findByRole('listbox');
     onKeyDown.mockClear();
     const active = () => screen.getByRole('option', { selected: true }).textContent;
     expect(active()).toBe('apple');
@@ -160,7 +227,7 @@ describe('Completions engine', () => {
     await user.keyboard('{Escape}');
     expect(onKeyDown).toHaveBeenCalledTimes(1);
     await user.keyboard('a');
-    expect(optionTexts()).toEqual(['apple', 'apricot']);
+    await waitFor(() => expect(optionTexts()).toEqual(['apple', 'apricot']));
     expect(onKeyDown).toHaveBeenCalledTimes(2);
   });
 
@@ -171,7 +238,7 @@ describe('Completions engine', () => {
     await user.keyboard('ban ');
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     await user.keyboard('{ArrowLeft}');
-    expect(optionTexts()).toEqual(['banana']);
+    await waitFor(() => expect(optionTexts()).toEqual(['banana']));
     await user.keyboard('{End}');
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
   });

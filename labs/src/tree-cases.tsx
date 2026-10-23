@@ -33,6 +33,62 @@ const name = (entry: Place) => entry.name;
 const describeSelection = (keys: Selection) =>
   keys === 'all' ? 'all' : [...keys].map(String).sort().join(', ') || 'none';
 
+interface PrimitiveEntry {
+  id: Key;
+  name: string;
+  children?: PrimitiveEntry[];
+}
+
+const primitiveItems: PrimitiveEntry[] = [
+  { id: 1, name: 'Numeric branch', children: [{ id: 2, name: 'Numeric child' }] },
+  { id: '1', name: 'Text branch', children: [{ id: '2', name: 'Text child' }] },
+  { id: 'a b', name: 'Space key' },
+  { id: 'a-b', name: 'Dash key' },
+];
+
+export function PrimitiveTree() {
+  const [items, setItems] = useState<readonly PrimitiveEntry[]>(primitiveItems);
+  const [selection, setSelection] = useState<Selection>(new Set([2]));
+  const [action, setAction] = useState('none');
+  const [move, setMove] = useState('none');
+  return (
+    <div data-lab-typed-tree>
+      <Tree
+        aria-label="Primitive keys"
+        items={items}
+        getTextValue={(item) => item.name}
+        defaultExpandedKeys={[1]}
+        selectionMode="multiple"
+        selectionBehavior="replace"
+        selectedKeys={selection}
+        onSelectionChange={setSelection}
+        onAction={(key) => setAction(JSON.stringify([typeof key, key]))}
+        disabledKeys={['a b']}
+        reorder={{
+          onMove: (next) => {
+            setItems(applyTreeMove(items, next));
+            setMove(JSON.stringify(next));
+          },
+        }}
+      />
+      <p>
+        Selection:{' '}
+        <output data-lab-output="typed-selection">
+          {selection === 'all'
+            ? 'all'
+            : JSON.stringify([...selection].map((key) => [typeof key, key]))}
+        </output>
+      </p>
+      <p>
+        Action: <output data-lab-output="typed-action">{action}</output>
+      </p>
+      <p>
+        Move: <output data-lab-output="typed-move">{move}</output>
+      </p>
+    </div>
+  );
+}
+
 /** Checkboxes whose selection cascades through branches. */
 export function CheckboxTree() {
   const [selected, setSelected] = useState<Selection>(new Set(['lisbon']));
@@ -70,6 +126,39 @@ export function FilterTree() {
         getTextValue={name}
         filterText={query}
         emptyMessage="No places match"
+      />
+    </div>
+  );
+}
+
+function createNestedPlaces(): Place[] {
+  let entry = place('nested-24', 'Level 24');
+  for (let level = 23; level >= 1; level -= 1) {
+    entry = place(`nested-${level}`, `Level ${level}`, [entry]);
+  }
+  return [entry];
+}
+
+const nestedPlaces = createNestedPlaces();
+
+/** Filtering and cascading selection share the same loaded, deeply nested branch. */
+export function NestedTree() {
+  const [query, setQuery] = useState('');
+  return (
+    <div data-lab-nested-tree>
+      <label>
+        Filter levels{' '}
+        <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} />
+      </label>
+      <Tree
+        aria-label="Nested levels"
+        items={nestedPlaces}
+        getTextValue={name}
+        filterText={query}
+        selectionMode="multiple"
+        checkboxSelection
+        selectionPropagation
+        defaultSelectedKeys={['nested-24']}
       />
     </div>
   );

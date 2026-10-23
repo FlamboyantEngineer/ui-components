@@ -1,4 +1,7 @@
 import { Tag, TagGroup, TagList } from '../../primitives/index.js';
+import { fromCollectionKey } from '../../utils/from-collection-key.js';
+import { toCollectionKey } from '../../utils/to-collection-key.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { createHooks } from '../../core/hooks.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -62,7 +65,9 @@ export function SelectChips({
         <TagGroup
           className={hooks.slotClass('chips')}
           aria-label={strings.selectedValues(label)}
-          onRemove={isEditable ? onRemove : undefined}
+          onRemove={
+            isEditable ? (keys) => onRemove(new Set([...keys].map(fromCollectionKey))) : undefined
+          }
         >
           <TagList className={hooks.slotClass('chip-list')} items={chosen}>
             {(option) => (
@@ -71,7 +76,7 @@ export function SelectChips({
                   change: added.has(option.id) ? 'added' : null,
                   missing: option.isMissing,
                 })}
-                id={option.id}
+                id={toCollectionKey(option.id)}
                 textValue={option.label}
               >
                 {({ allowsRemoving }) => (
@@ -97,7 +102,7 @@ export function SelectChips({
       ) : null}
       {removed.map((option) => (
         <FieldPreviousValue
-          key={option.id}
+          key={toKeyIdentity(option.id)}
           className={hooks.slotClass('removed')}
           restoreLabel={option.label}
           onRestore={() => onRestore(option.id)}

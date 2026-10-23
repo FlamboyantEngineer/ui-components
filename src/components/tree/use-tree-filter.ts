@@ -3,6 +3,7 @@
 
 import { useMemo, useState } from 'react';
 import type { Key } from '../../core/props.js';
+import { mapTree } from '../../utils/map-tree.js';
 import { splitMatchTerms, textMatchesTerms } from '../text-match/text-match.js';
 import type { TreeItemData, TreeProps } from './tree.js';
 import type { TreeExpansion } from './use-tree-expansion.js';
@@ -32,23 +33,30 @@ interface FilterContext<T> {
   revealed: Set<Key>;
 }
 
-/** The rows of one level that show, recording what shows below each and which rows to open. */
-function filterLevel<T extends TreeItemData>(
-  level: readonly T[],
-  context: FilterContext<T>,
-  isInsideMatch: boolean,
-): { kept: T[]; hasMatch: boolean } {
-  const kept: T[] = [];
-  let hasMatch = false;
-  for (const item of level) {
-    const isMatch = context.isMatch(item);
-    const below = filterLevel(context.getChildren(item) ?? [], context, isInsideMatch || isMatch);
-    context.children.set(item.id, below.kept);
-    if (below.hasMatch) context.revealed.add(item.id);
-    if (isMatch || below.hasMatch || isInsideMatch) kept.push(item);
-    hasMatch ||= isMatch || below.hasMatch;
-  }
-  return { kept, hasMatch };
+/** Records matching ancestry on descent and retained children on ascent. */
+function filterItems<T extends TreeItemData>(items: readonly T[], context: FilterContext<T>): T[] {
+  const matched = new Set<Key>();
+  const insideMatch = new Set<Key>();
+  return mapTree(
+    items,
+    (item) => {
+      const isMatch = context.isMatch(item);
+      if (isMatch) matched.add(item.id);
+      const children = context.getChildren(item) ?? [];
+      if (isMatch || insideMatch.has(item.id)) {
+        for (const child of children) insideMatch.add(child.id);
+      }
+      return children;
+    },
+    (item, children: T[]) => {
+      context.children.set(item.id, children);
+      const hasMatch = children.some(
+        (child) => matched.has(child.id) || context.revealed.has(child.id),
+      );
+      if (hasMatch) context.revealed.add(item.id);
+      return matched.has(item.id) || hasMatch || insideMatch.has(item.id) ? item : null;
+    },
+  );
 }
 
 /**
@@ -73,7 +81,7 @@ export function useTreeFilter<T extends TreeItemData>(
       children: new Map(),
       revealed: new Set(),
     };
-    const { kept } = filterLevel(items, context, false);
+    const kept = filterItems(items, context);
     const getShownChildren = (item: T) => context.children.get(item.id) ?? getChildren(item);
     return { kept, getShownChildren, revealed: context.revealed };
   }, [isFiltering, items, getChildren, getTextValue, filterText, filter]);

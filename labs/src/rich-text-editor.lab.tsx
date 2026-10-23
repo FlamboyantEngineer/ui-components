@@ -9,6 +9,7 @@ import {
   ControlledEditor,
   CustomSchemaEditor,
   FullEditor,
+  LockedChromeEditor,
   shortNote,
 } from './rich-text-editor-cases.js';
 
@@ -49,6 +50,12 @@ mountLab(
       description="Type a slash and a command label or keyword; equally good matches keep their menu order."
     >
       <FullEditor />
+    </LabSection>
+    <LabSection
+      title="Locking open chrome"
+      description="Open a slash, insert or link menu, then make the note read-only. Its chrome closes and the document stays unchanged."
+    >
+      <LockedChromeEditor />
     </LabSection>
     <LabSection title="Custom schema">
       <CustomSchemaEditor />

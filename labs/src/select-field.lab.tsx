@@ -361,6 +361,21 @@ function Form() {
 mountLab(
   <>
     <LabSection
+      title="Primitive keys"
+      description="Numeric and text ids that read alike remain distinct choices."
+    >
+      <SelectField
+        label="Primitive keys"
+        options={[
+          { id: 1, label: 'Numeric' },
+          { id: '1', label: 'Textual' },
+        ]}
+        selectionMode="multiple"
+        defaultValue={[1, '1']}
+        name="typed-keys"
+      />
+    </LabSection>
+    <LabSection
       title="Layouts and states"
       description="A single select in every label layout and state. The dirty cell shows the previous value."
     >

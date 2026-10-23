@@ -10,6 +10,8 @@ Each notification is plain data: `id`, a one-line `title`, an optional `descript
 
 `NotificationList` shall render a `ui-notification-list` `<div>` drawing each shown notification as a `ListRow` that also carries `ui-notification-list__item`: the `title` as its title, the actor's decorative small `Avatar` (`ui-notification-list__actor`) as its leading media, or the `icon` when there is no actor, and a `MetaLine` of the actor's name, the `description` and a `RelativeTime` of `time` (`ui-notification-list__time`, read against `getNow`, without a tooltip of its own because the row's control holds it). A notification with `href` is a link row; without one it is a button row while the list has `onAction`, and a read-only row otherwise. Opening a row, by link or button, calls `onAction` with its `id`.
 
+Numeric and text IDs, such as `1` and `'1'`, identify distinct entries; removing one preserves the other entry's rendered identity.
+
 Implementation: `src/components/notification-center/notification-list.tsx`, `src/components/notification-center/notification-row.tsx`
 Verification: `src/components/notification-center/notification-list.test.tsx`, `e2e/notification-center.spec.ts`
 

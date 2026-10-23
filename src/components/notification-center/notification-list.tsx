@@ -4,6 +4,7 @@ import { useControllableState } from '../../core/controllable-state.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { Button } from '../button/button.js';
 import { EmptyState } from '../empty-state/empty-state.js';
 import { List } from '../list-row/list-row.js';
@@ -68,7 +69,7 @@ function ListGroup({ group, actions }: ListGroupProps) {
       </Heading>
       <List divided aria-labelledby={headingId} className={hooks.slotClass('list')}>
         {group.items.map((item) => (
-          <NotificationRow key={item.id} item={item} actions={actions} />
+          <NotificationRow key={toKeyIdentity(item.id)} item={item} actions={actions} />
         ))}
       </List>
     </section>

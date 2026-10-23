@@ -154,5 +154,19 @@ mountLab(
     >
       <LiveReview />
     </LabSection>
+    <LabSection
+      title="Numeric and text IDs"
+      description="The numeric ID 1 and the text ID '1' identify separate cards."
+    >
+      <AnnotationLayer
+        annotations={[
+          { id: 1, rects: [{ top: 0, left: 0, width: 20, height: 20 }] },
+          { id: '1', rects: [{ top: 40, left: 0, width: 20, height: 20 }] },
+        ]}
+      >
+        <p>Two annotations with different primitive ID types.</p>
+        <AnnotationMargin renderCard={(annotation) => `${typeof annotation.id} ID card`} />
+      </AnnotationLayer>
+    </LabSection>
   </>,
 );

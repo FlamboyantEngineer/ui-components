@@ -62,6 +62,32 @@ const cell = (row: number, column: number) =>
   ) as HTMLElement;
 
 describe('RelationMatrix', () => {
+  it('UIC-RELATION-MATRIX-1.1 UIC-RELATION-MATRIX-2.2 distinguishes numeric and text row and column keys', async () => {
+    const user = userEvent.setup();
+    const onCellAction = vi.fn();
+    const error = vi.spyOn(console, 'error');
+    render(
+      <RelationMatrix
+        aria-label="Typed relations"
+        rows={[
+          { id: 1, label: 'Numeric row' },
+          { id: '1', label: 'Text row' },
+        ]}
+        columns={[
+          { id: 1, label: 'Numeric column' },
+          { id: '1', label: 'Text column' },
+        ]}
+        relations={[{ row: 1, column: '1' }]}
+        onCellAction={onCellAction}
+      />,
+    );
+    expect(cell(0, 1)).toHaveAttribute('data-related', 'true');
+    expect(cell(1, 0)).not.toHaveAttribute('data-related');
+    await user.click(cell(1, 0));
+    expect(onCellAction).toHaveBeenCalledWith(expect.objectContaining({ row: '1', column: 1 }));
+    expect(error).not.toHaveBeenCalled();
+  });
+
   it('UIC-RELATION-MATRIX-1.1 UIC-RELATION-MATRIX-1.5 UIC-RELATION-MATRIX-4.1 renders a grid of headers and cells', () => {
     const { container } = render(
       <Matrix id="coverage" className="mine" data-test="matrix" rowsLabel="Requirements" />,

@@ -32,6 +32,7 @@ export function useClipboard({
   const [status, setStatus] = useState<CopyStatus>('idle');
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isMounted = useRef(true);
+  const request = useRef(0);
 
   const clearTimer = useCallback(() => {
     if (timer.current !== null) clearTimeout(timer.current);
@@ -42,19 +43,22 @@ export function useClipboard({
     isMounted.current = true;
     return () => {
       isMounted.current = false;
+      request.current += 1;
       clearTimer();
     };
   }, [clearTimer]);
 
   const reset = useCallback(() => {
+    request.current += 1;
     clearTimer();
     setStatus('idle');
   }, [clearTimer]);
 
   const copy = useCallback(
     async (text: string) => {
+      const current = ++request.current;
       const copied = await copyText(text, { clipboard, fallback });
-      if (!isMounted.current) return copied;
+      if (!isMounted.current || current !== request.current) return copied;
       clearTimer();
       setStatus(copied ? 'copied' : 'failed');
       timer.current = setTimeout(() => {

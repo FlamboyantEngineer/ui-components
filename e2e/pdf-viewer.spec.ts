@@ -472,7 +472,7 @@ test.describe('PDF Viewer lab', () => {
     const fitted = Number(await zoom.textContent());
     const field = reader.getByLabel('Page', { exact: true });
     await reader.locator('.ui-pdf-viewer__scroller').focus();
-    await page.keyboard.press('Control+Equal');
+    await page.keyboard.press('Control+Shift+Equal');
     await expect(zoom).toHaveText(String(Math.floor(fitted / 25) * 25 + 25));
     await page.keyboard.press('Control+Minus');
     await page.keyboard.press('Control+Minus');

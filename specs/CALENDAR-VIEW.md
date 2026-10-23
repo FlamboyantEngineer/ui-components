@@ -43,7 +43,7 @@ Verification: `src/components/calendar-view/calendar-view.test.tsx`, `src/compon
 
 ### UIC-CALENDAR-VIEW-2.1 - Event data
 
-Each event shall have an `id`, a `title` and a `start`: a `YYYY-MM-DD` date makes it an all-day event, an ISO 8601 date-time a timed one. `end` is the last day of an all-day event, inclusive, or the end of a timed event, exclusive; without it an all-day event lasts its start day and a timed event an hour. An end before the start is read as the start. Events whose start is neither are left out. `tone` (`neutral` by default) is published as `data-tone`.
+Each event shall have an `id`, a `title` and a `start`: a `YYYY-MM-DD` date makes it an all-day event, an ISO 8601 date-time a timed one. `end` is the last day of an all-day event, inclusive, or the end of a timed event, exclusive; without it an all-day event lasts its start day and a timed event an hour. An end before the start is read as the start. Events whose start is neither are left out. Numeric and text IDs with the same spelling identify distinct events, retaining their rendered identity and callback keys when reordered in the week view or a crowded-day list. `tone` (`neutral` by default) is published as `data-tone`.
 
 Implementation: `src/components/calendar-view/calendar-layout.ts`, `src/components/calendar-view/calendar-event.tsx`
 Verification: `src/components/calendar-view/calendar-layout.test.ts`, `src/components/calendar-view/calendar-view.test.tsx`

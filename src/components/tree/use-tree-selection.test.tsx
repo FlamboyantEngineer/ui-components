@@ -1,9 +1,10 @@
-import { render, screen, within } from '@testing-library/react';
+import { act, render, renderHook, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import type { Selection } from '../../core/props.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Tree, type TreeProps } from './tree.js';
+import { useTreeSelection } from './use-tree-selection.js';
 
 interface Food {
   id: string;
@@ -45,6 +46,52 @@ const selectedRows = () =>
     .map((element) => element.getAttribute('aria-label'));
 
 describe('Tree selection', () => {
+  it('UIC-TREE-5.2 cascades and clears a deeply nested loaded selection without recursion', () => {
+    let leaf: Food = { id: '19999', name: 'Leaf' };
+    for (let index = 19998; index >= 0; index -= 1) {
+      leaf = { id: String(index), name: String(index), children: [leaf] };
+    }
+    const onSelectionChange = vi.fn<(keys: Selection) => void>();
+    const { result } = renderHook(() =>
+      useTreeSelection({
+        items: [leaf],
+        getChildren: (item) => item.children,
+        disabledKeys: undefined,
+        selectionPropagation: true,
+        onSelectionChange,
+      }),
+    );
+    act(() => result.current.props.onSelectionChange?.(new Set(['19999'])));
+    const selected = onSelectionChange.mock.lastCall![0] as Set<string>;
+    expect(selected.size).toBe(20000);
+    expect(selected.has('0')).toBe(true);
+    const clearedRoot = new Set(selected);
+    clearedRoot.delete('0');
+    act(() => result.current.props.onSelectionChange?.(clearedRoot));
+    expect(onSelectionChange.mock.lastCall![0]).toEqual(new Set());
+  });
+
+  it('UIC-TREE-5.2 marks deeply nested partial selections without changing controlled keys', () => {
+    let leaf: Food = { id: '19999', name: 'Leaf' };
+    for (let index = 19998; index >= 0; index -= 1) {
+      leaf = { id: String(index), name: String(index), children: [leaf] };
+    }
+    const selectedKeys = new Set(['19999']);
+    const { result } = renderHook(() =>
+      useTreeSelection({
+        items: [leaf],
+        getChildren: (item) => item.children,
+        disabledKeys: undefined,
+        selectedKeys,
+        selectionPropagation: true,
+      }),
+    );
+    expect(result.current.isIndeterminate('0')).toBe(true);
+    expect(result.current.isIndeterminate('19998')).toBe(true);
+    expect(result.current.isIndeterminate('19999')).toBe(false);
+    expect(selectedKeys).toEqual(new Set(['19999']));
+  });
+
   it('UIC-TREE-5.1 draws a selection checkbox in each row while the tree selects', async () => {
     const { container, rerender } = render(<FoodTree selectionMode="multiple" checkboxSelection />);
     expect(screen.getAllByRole('checkbox')).toHaveLength(6);

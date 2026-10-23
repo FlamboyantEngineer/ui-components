@@ -250,11 +250,12 @@ describe('ActionRow', () => {
     const menu = screen.getByRole('menu', { name: 'More actions' });
     expect(more).toHaveAttribute('aria-controls', menu.id);
     expect(menu).toHaveAttribute('data-size', 'sm');
-    expect(
-      within(menu)
-        .getAllByRole('menuitem')
-        .map((item) => item.dataset.key),
-    ).toEqual(['export', 'archive', 'locked', 'delete']);
+    expect(within(menu).getAllByRole('menuitem')).toEqual([
+      within(menu).getByRole('menuitem', { name: /^Export\b/ }),
+      within(menu).getByRole('menuitem', { name: 'Archive' }),
+      within(menu).getByRole('menuitem', { name: 'Rename' }),
+      within(menu).getByRole('menuitem', { name: 'Delete' }),
+    ]);
     expect(within(menu).getByRole('menuitem', { name: /Rename/ })).toHaveAttribute(
       'aria-disabled',
       'true',

@@ -18,23 +18,23 @@ const lena = { name: 'Lena Ortiz', colorKey: 'lena' };
 const scenarios: Record<string, readonly ApprovalPanelApprover[]> = {
   pending: [
     {
-      id: 'maria',
+      id: 1,
       person: maria,
       decision: 'approved',
       time: new Date(2026, 3, 20, 9, 10).toISOString(),
     },
-    { id: 'jon', person: jon, decision: 'pending' },
+    { id: '1', person: jon, decision: 'pending' },
     { id: 'kitchen', person: kitchen, decision: 'pending' },
   ],
   approved: [
     {
-      id: 'maria',
+      id: 1,
       person: maria,
       decision: 'approved',
       time: new Date(2026, 3, 20, 9, 10).toISOString(),
       comment: 'The new quantities read well.',
     },
-    { id: 'jon', person: jon, decision: 'approved', time: '2026-04-19' },
+    { id: '1', person: jon, decision: 'approved', time: '2026-04-19' },
     {
       id: 'kitchen',
       person: kitchen,
@@ -44,9 +44,9 @@ const scenarios: Record<string, readonly ApprovalPanelApprover[]> = {
     },
   ],
   rejected: [
-    { id: 'maria', person: maria, decision: 'approved', time: '2026-04-18' },
+    { id: 1, person: maria, decision: 'approved', time: '2026-04-18' },
     {
-      id: 'jon',
+      id: '1',
       person: jon,
       decision: 'rejected',
       time: new Date(2026, 3, 20, 8, 45).toISOString(),

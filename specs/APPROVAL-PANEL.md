@@ -29,6 +29,8 @@ Verification: `src/components/approval-panel/approval-panel.test.tsx`, `e2e/appr
 
 The approvers shall render in order in a `ui-approval-panel__approvers` list named by the provider's `approvers` string, each a `ui-approval-panel__approver` item publishing `data-decision` with: a small `UserIdentity` (`ui-approval-panel__identity`) of `person`, a group drawing the group avatar; a `Badge` of the decision (`ui-approval-panel__decision`) with its tone (approved `success`, rejected `danger`, abstained `info`, pending `neutral`), glyph (`check`, `close`, `minus`, `clock`) and the provider's `approvalDecision` label; a `RelativeTime` of `time` read against `getNow` (`ui-approval-panel__time`) when there is one; and the `comment` in `ui-approval-panel__comment` when there is one.
 
+Numeric and text IDs, such as `1` and `'1'`, identify distinct entries; removing one preserves the other entry's rendered identity.
+
 Implementation: `src/components/approval-panel/approval-panel.tsx`, `src/core/glyphs.tsx`
 Verification: `src/components/approval-panel/approval-panel.test.tsx`, `e2e/approval-panel.spec.ts`
 

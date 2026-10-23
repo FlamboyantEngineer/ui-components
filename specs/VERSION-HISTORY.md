@@ -8,6 +8,8 @@
 
 `VersionHistory` shall render a `<div>` root (`ui-version-history`) holding a `ListView` (`ui-version-history__list`, a React Aria grid) with one `ListViewItem` (`ui-version-history__version`, keyed by the version's `id`) per version the filters keep (UIC-VERSION-HISTORY-1.7), in the order of `versions`.
 
+Numeric and text IDs, such as `1` and `'1'`, identify distinct entries; removing one preserves the other entry's rendered identity.
+
 Implementation: `src/components/version-history/version-history.tsx`, `src/components/version-history/version-row.tsx`
 Verification: `src/components/version-history/version-history.test.tsx`, `e2e/version-history.spec.ts`
 

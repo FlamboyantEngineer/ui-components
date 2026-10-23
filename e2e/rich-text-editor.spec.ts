@@ -425,4 +425,26 @@ test.describe('Rich Text Editor lab', () => {
     await expect(page.getByRole('listbox', { name: 'Insert commands' })).toBeVisible();
     await lab.expectAccessible();
   });
+
+  test('UIC-RICH-TEXT-EDITOR-4.1 UIC-RICH-TEXT-EDITOR-8.1 keeps a slash query unchanged after locking the editor', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('rich-text-editor');
+    const box = content(page, 'lockable');
+    await box.click();
+    await pressEnd(page);
+    const menu = page.getByRole('listbox', { name: 'Insert commands' });
+    await expect(menu).toBeVisible();
+    await page.getByRole('button', { name: 'Make read-only' }).click();
+    await expect(box).toHaveAttribute('aria-readonly', 'true');
+    await box.focus();
+    await page.keyboard.press('End');
+    await page.keyboard.press('Enter');
+    await expect(menu).toHaveCount(0);
+    await expect(box).toHaveText('/head');
+    await expect(
+      formatToolbar(page, 'lockable').getByRole('button', { name: 'Insert' }),
+    ).toBeDisabled();
+  });
 });

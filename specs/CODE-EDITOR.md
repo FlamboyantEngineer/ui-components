@@ -175,7 +175,7 @@ Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/code-edito
 
 ### UIC-CODE-EDITOR-4.8 - Snippets
 
-A completion's `insertText` shall be inserted instead of its label. In it, `${…}` marks a field holding its default text, and the lines after the first take the indentation of the line the insertion goes into. After the insertion the first field is selected (or else the caret goes after the insertion), and while the caret stays in the current field Tab selects the next field, then the end of the insertion, and Shift+Tab the previous field; Tab with the caret elsewhere, or after the last field, ends the stepping.
+A completion's `insertText` shall be inserted instead of its label. Only `insertText` interprets `${…}` as a field holding its default text; a label is literal text. A backslash before `$`, `}` or another backslash quotes that character, including inside a field. Other backslashes remain literal. The lines after the first take the indentation of the line the insertion goes into. After the insertion the first field is selected (or else the caret goes after the insertion), and while the caret stays in the current field Tab selects the next field, then the end of the insertion, and Shift+Tab the previous field; Tab with the caret elsewhere, or after the last field, ends the stepping.
 
 Implementation: `src/components/code-editor/completion-match.ts`, `src/components/code-editor/use-code-completion.ts`, `src/components/code-editor/use-code-snippet.ts`
 Verification: `src/components/code-editor/code-editor.test.tsx`, `src/components/code-editor/completion-match.test.ts`, `e2e/code-editor.spec.ts`
@@ -221,7 +221,7 @@ Verification: `src/components/code-editor/code-editing.test.ts`, `src/components
 
 ### UIC-CODE-EDITOR-6.5 - Matching brackets
 
-While the text area has focus with a collapsed caret, the bracket right before the caret (or else right after it) and its partner shall render inside `ui-code-editor__bracket`; a bracket without a partner carries `data-unmatched`. Brackets inside tokens typed `string`, `key` or `comment` are not counted.
+While the text area has focus with a collapsed caret, the bracket right before the caret (or else right after it) and its partner shall render inside `ui-code-editor__bracket`; a bracket without a partner carries `data-unmatched`. Nested brackets must match by type in order; an intervening mismatched pair leaves the bracket unmatched. Brackets inside tokens typed `string`, `key` or `comment` are not counted.
 
 Implementation: `src/components/code-editor/code-ranges.ts`, `src/components/code-editor/code-segments.ts`, `src/components/code-editor/use-code-editor.ts`
 Verification: `src/components/code-editor/code-ranges.test.ts`, `src/components/code-editor/code-editor.test.tsx`, `e2e/code-editor.spec.ts`
@@ -237,7 +237,7 @@ Verification: `src/components/code-editor/code-search.test.tsx`, `e2e/code-edito
 
 ### UIC-CODE-EDITOR-7.2 - Matches
 
-The places the query occurs, ignoring case and without overlaps, shall render inside `ui-code-editor__match`, the current one with `data-current`. Changing the query makes the first match at or after the caret current; the buttons, Enter and Shift+Enter in the find box move to the next and previous match, wrapping, and the text area scrolls the current match into view.
+The places the literal query occurs, using Unicode case-insensitive matching and without overlaps, shall render inside `ui-code-editor__match`, the current one with `data-current`. Ranges always refer to the original source, including after characters whose lowercase form changes length. Changing the query makes the first match at or after the caret current; the buttons, Enter and Shift+Enter in the find box move to the next and previous match, wrapping, and the text area scrolls the current match into view.
 
 Implementation: `src/components/code-editor/use-code-search.ts`, `src/components/code-editor/code-ranges.ts`, `src/components/code-editor/code-segments.ts`, `src/components/code-editor/use-code-editor.ts`
 Verification: `src/components/code-editor/code-ranges.test.ts`, `src/components/code-editor/code-search.test.tsx`, `e2e/code-editor.spec.ts`

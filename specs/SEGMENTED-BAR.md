@@ -8,6 +8,8 @@
 
 `SegmentedBar` shall render a `ui-segmented-bar` element holding its visible `label` in a `ui-segmented-bar__label` slot when one is given, the total in a `ui-segmented-bar__total` slot, a `ui-segmented-bar__track` holding one `ui-segmented-bar__segment` per segment with a share, and a `ui-segmented-bar__legend` list.
 
+Numeric and text IDs, such as `1` and `'1'`, identify distinct entries; removing one preserves the other entry's rendered identity.
+
 Implementation: `src/components/segmented-bar/segmented-bar.tsx`
 Verification: `src/components/segmented-bar/segmented-bar.test.tsx`, `e2e/segmented-bar.spec.ts`
 
