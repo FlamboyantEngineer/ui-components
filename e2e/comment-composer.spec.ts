@@ -3,7 +3,7 @@ import { expect, test } from './fixtures.js';
 const cell = (id: string) => `[data-lab-cell="${id}"] .ui-comment-composer`;
 
 test.describe('Comment Composer lab', () => {
-  test('UIC-COMMENT-COMPOSER-1.1 UIC-COMMENT-COMPOSER-1.4 draws each state', async ({
+  test('UIC-COMMENT-COMPOSER-1.1 UIC-COMMENT-COMPOSER-1.4 UIC-COMMENT-COMPOSER-1.6 draws each state', async ({
     page,
     lab,
   }) => {
@@ -24,6 +24,7 @@ test.describe('Comment Composer lab', () => {
     const disabled = page.locator(cell('draft=draft state=disabled'));
     await expect(disabled).toHaveAttribute('data-disabled', 'true');
     await expect(disabled.getByRole('textbox')).toBeDisabled();
+    await expect(disabled.getByRole('button', { name: 'Cancel' })).toHaveCount(0);
     // The text box grows with its text from two rows.
     const emptyHeight = (await empty.getByRole('textbox').boundingBox())?.height ?? 0;
     expect(emptyHeight).toBeGreaterThan(30);
