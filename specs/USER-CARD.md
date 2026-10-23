@@ -34,7 +34,7 @@ Verification: `src/components/user-card/user-card.test.tsx`, `e2e/user-card.spec
 
 ### UIC-USER-CARD-1.5 - Accessibility
 
-The card shall be a `role="dialog"` named by the display name, or by the caller's `aria-label`. Its avatar and status indicator are decorative, so the name, secondary line, status label, details and actions are what is read.
+The card shall be a `role="dialog"` named by the display name, or by the caller's `aria-label`. Its avatar and status indicator are decorative, so the name, secondary line, status label, details and actions are what is read. Only a card that opens in an overlay, such as a `UserCardTrigger` popover, takes focus when it appears; a card rendered in place, or shown in a hover card ([UIC-USER-CARD-2.3](#uic-user-card-23---opening-on-hover-and-focus)), takes no focus and its actions are reached in the tab order.
 
 Implementation: `src/components/user-card/user-card.tsx`
 Verification: `src/components/user-card/user-card.test.tsx`, `e2e/user-card.spec.ts`

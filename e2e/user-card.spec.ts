@@ -6,6 +6,7 @@ test.describe('User Card lab', () => {
     lab,
   }) => {
     await lab.open('user-card');
+    await expect(page.locator('.ui-user-card:focus, .ui-user-card :focus')).toHaveCount(0);
     const full = page.locator('[data-lab-cell="content=details and actions avatar=picture"]');
     const card = full.getByRole('dialog', { name: 'Maria Santos' });
     await expect(card.locator('.ui-user-identity__description')).toHaveText('maria@example.com');
