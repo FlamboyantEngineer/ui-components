@@ -6,7 +6,7 @@
 
 ### UIC-USER-IDENTITY-1.1 - Avatar, name and secondary line
 
-`UserIdentity` shall draw a decorative `Avatar` in the `ui-user-identity__avatar` slot, then a `ui-user-identity__content` column holding a `ui-user-identity__title` line with the trimmed `name` in the `ui-user-identity__name` slot, and, when `description` is given, the secondary line in the `ui-user-identity__description` slot under it. A blank `name` reads as the provider's `unnamed` string. Text is rendered as text, never as markup.
+`UserIdentity` shall draw a decorative `Avatar` in the `ui-user-identity__avatar` slot, then a `ui-user-identity__content` column holding a `ui-user-identity__title` line with the trimmed `name` in the `ui-user-identity__name` slot, and, when `description` is given, the secondary line in the `ui-user-identity__description` slot under it, after a space so that a name computed from the row's content reads the two lines as separate words even unstyled. A blank `name` reads as the provider's `unnamed` string. Text is rendered as text, never as markup.
 
 Implementation: `src/components/user-identity/user-identity.tsx`
 Verification: `src/components/user-identity/user-identity.test.tsx`, `e2e/user-identity.spec.ts`
