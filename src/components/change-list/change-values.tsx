@@ -49,8 +49,9 @@ const hooks = changeListHooks;
 
 const toText = (value: ChangeListValue) =>
   typeof value === 'string' ? value : (value ?? []).join(', ');
+// A blank value is unset: an empty text is a list of none, not a list of one empty item.
 const toList = (value: ChangeListValue) =>
-  typeof value === 'string' ? [value] : [...(value ?? [])];
+  isBlankValue(value) ? [] : typeof value === 'string' ? [value] : [...(value ?? [])];
 
 function ListItems({
   items,
