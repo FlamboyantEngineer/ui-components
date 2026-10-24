@@ -138,6 +138,11 @@ function toError(cause: unknown): Error {
   return cause instanceof Error ? cause : new Error(String(cause));
 }
 
+/** A URL object as its text, so a new `URL` for the same address is the same document. */
+function toLoadSource(source: PdfSource | null): PdfSource | null {
+  return source instanceof URL ? source.href : source;
+}
+
 function isCurrent(key: LoadKey | null, source: PdfSource | null, attempt: number): boolean {
   return key?.source === source && key.attempt === attempt;
 }
@@ -192,12 +197,13 @@ export function createViewportCache<V extends PdfViewport, C extends PdfTextCont
 /**
  * Opens `source` with the injected engine and keeps it open until the source changes or the viewer
  * unmounts, when the engine's loading task (and its worker) is destroyed. A `null` source stays
- * loading. A new array is a new document. A document that needs its password waits for it.
+ * loading. A new array is a new document; a URL, as text or a `URL`, is the same document while its
+ * address is. A document that needs its password waits for it.
  */
 export function usePdfDocument<V extends PdfViewport, C extends PdfTextContent>(
   options: UsePdfDocumentOptions<V, C>,
 ): PdfDocumentResult<V, C> {
-  const { source } = options;
+  const source = toLoadSource(options.source);
   const [attempt, setAttempt] = useState(0);
   const [result, setResult] = useState<LoadResult<V, C> | null>(null);
   const [password, setPassword] = useState<PasswordState | null>(null);

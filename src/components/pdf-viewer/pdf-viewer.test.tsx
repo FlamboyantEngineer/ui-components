@@ -263,60 +263,69 @@ describe('PdfViewer', () => {
     expect(status()).toHaveTextContent('1 of 4');
   });
 
-  it('UIC-PDF-VIEWER-6.1 orders the toolbar and keeps caret keys in its text fields', async () => {
-    const download = vi.fn();
-    await renderReady({
-      actions: <button onClick={download}>Download</button>,
-      leadingActions: <button>Outline</button>,
-      renderPageOverlay: () => null,
-      defaultSidebarOpen: true,
-    });
-    const toolbar = screen.getByRole('toolbar', { name: 'Report controls' });
-    const controls = [...toolbar.querySelectorAll('button:not([hidden]), input')].map(
-      (control) => control.getAttribute('aria-label') ?? control.textContent,
-    );
-    expect(controls[0]).toBe('Outline');
-    expect(controls[1]).toBe('Sidebar');
-    expect(screen.getByRole('button', { name: 'Outline' }).parentElement).toHaveClass(
-      'ui-pdf-viewer__leading-actions',
-    );
-    expect(controls.indexOf('Zoom level')).toBeLessThan(controls.indexOf('Fit page width'));
-    expect(controls.indexOf('Fit whole page')).toBeLessThan(controls.indexOf('Previous page'));
-    expect(controls.indexOf('Next page')).toBeLessThan(controls.indexOf('Find in document'));
-    expect(controls.indexOf('Find options')).toBeLessThan(controls.indexOf('More options'));
-    expect(controls.at(-1)).toBe('Download');
+  // Three viewers each load an engine and open a document, which takes seconds on a busy machine.
+  it(
+    'UIC-PDF-VIEWER-6.1 orders the toolbar and keeps caret keys in its text fields',
+    {
+      timeout: 30_000,
+    },
+    async () => {
+      const download = vi.fn();
+      await renderReady({
+        actions: <button onClick={download}>Download</button>,
+        leadingActions: <button>Outline</button>,
+        renderPageOverlay: () => null,
+        defaultSidebarOpen: true,
+      });
+      const toolbar = screen.getByRole('toolbar', { name: 'Report controls' });
+      const controls = [...toolbar.querySelectorAll('button:not([hidden]), input')].map(
+        (control) => control.getAttribute('aria-label') ?? control.textContent,
+      );
+      expect(controls[0]).toBe('Outline');
+      expect(controls[1]).toBe('Sidebar');
+      expect(screen.getByRole('button', { name: 'Outline' }).parentElement).toHaveClass(
+        'ui-pdf-viewer__leading-actions',
+      );
+      expect(controls.indexOf('Zoom level')).toBeLessThan(controls.indexOf('Fit page width'));
+      expect(controls.indexOf('Fit whole page')).toBeLessThan(controls.indexOf('Previous page'));
+      expect(controls.indexOf('Next page')).toBeLessThan(controls.indexOf('Find in document'));
+      expect(controls.indexOf('Find options')).toBeLessThan(controls.indexOf('More options'));
+      expect(controls.at(-1)).toBe('Download');
 
-    const field = screen.getByRole('searchbox');
-    await userEvent.type(field, 'pear');
-    await userEvent.keyboard('{ArrowLeft}');
-    expect(field).toHaveFocus();
-    expect((field as HTMLInputElement).selectionStart).toBe(3);
-    await userEvent.keyboard('{Home}{ArrowLeft}');
-    expect(screen.getByRole('button', { name: 'Next page' })).toHaveFocus();
-    await userEvent.click(screen.getByRole('button', { name: 'Download' }));
-    expect(download).toHaveBeenCalled();
+      const field = screen.getByRole('searchbox');
+      await userEvent.type(field, 'pear');
+      await userEvent.keyboard('{ArrowLeft}');
+      expect(field).toHaveFocus();
+      expect((field as HTMLInputElement).selectionStart).toBe(3);
+      await userEvent.keyboard('{Home}{ArrowLeft}');
+      expect(screen.getByRole('button', { name: 'Next page' })).toHaveFocus();
+      await userEvent.click(screen.getByRole('button', { name: 'Download' }));
+      expect(download).toHaveBeenCalled();
 
-    // The password form and the outline show in viewers of their own.
-    const outline = [{ title: 'Markets', dest: 'markets', url: null, items: [] }];
-    render(
-      <>
-        <PdfViewer
-          aria-label="Locked"
-          source="/files/Locked.pdf"
-          loadEngine={createEngine({ password: 'orchard' }).loadEngine}
-        />
-        <PdfViewer
-          aria-label="Outlined"
-          source="/files/Report.pdf"
-          loadEngine={createEngine({ outline }).loadEngine}
-          defaultSidebarOpen
-        />
-      </>,
-    );
-    await screen.findByLabelText('Password');
-    await screen.findByRole('treegrid', { name: 'Outline' });
-    expectHooksMatchSpec(document.body, 'PDF-VIEWER', { slots: 'all' });
-  });
+      // The password form and the outline show in viewers of their own.
+      const outline = [{ title: 'Markets', dest: 'markets', url: null, items: [] }];
+      render(
+        <>
+          <PdfViewer
+            aria-label="Locked"
+            source="/files/Locked.pdf"
+            loadEngine={createEngine({ password: 'orchard' }).loadEngine}
+          />
+          <PdfViewer
+            aria-label="Outlined"
+            source="/files/Report.pdf"
+            loadEngine={createEngine({ outline }).loadEngine}
+            defaultSidebarOpen
+          />
+        </>,
+      );
+      // Each new viewer loads its engine and opens its document before these parts render.
+      const opened = { timeout: 15_000 };
+      await screen.findByLabelText('Password', {}, opened);
+      await screen.findByRole('treegrid', { name: 'Outline' }, opened);
+      expectHooksMatchSpec(document.body, 'PDF-VIEWER', { slots: 'all' });
+    },
+  );
 
   it('UIC-PDF-VIEWER-6.2 appends the caller class and forwards id and data attributes', async () => {
     const { root, container } = await renderReady({
