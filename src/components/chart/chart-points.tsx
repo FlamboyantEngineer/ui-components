@@ -99,7 +99,10 @@ function findAlong(
   return target;
 }
 
-/** The point a key moves focus to from `from`, or `undefined` for a key that does not move it. */
+/**
+ * The point a key moves focus to from `from`, or `undefined` for a key that does not move it. Each
+ * key scans the points once, without sorting them; keys outside navigation read none.
+ */
 function findNextPoint(
   points: readonly ChartPoint[],
   from: ChartPoint,

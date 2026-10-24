@@ -7,7 +7,7 @@ export interface DonutFormats {
   share: Intl.NumberFormat;
 }
 
-/** Every segment's value and share of the whole, hidden ones included. */
+/** Every segment's value and share of the whole, hidden ones included, in linear passes. */
 export function toDonutTable(
   segments: readonly DonutChartSegment[],
   { formats, headings }: { formats: DonutFormats; headings: readonly string[] },

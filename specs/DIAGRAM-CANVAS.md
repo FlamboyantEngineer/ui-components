@@ -17,7 +17,7 @@ Verification: `src/components/diagram-canvas/diagram-canvas.test.tsx`, `e2e/diag
 
 Each node shall render, in the order of `nodes`, as a `ui-diagram-canvas__node` positioned in the content layer at its `x` and `y` with its `width` and `height` (160 by 48 pixels by default). Its content is `renderNode(node, { isSelected, isEditing })`, or else its `label` in `ui-diagram-canvas__node-label`. A node renders again only when its own data or state changes: while nodes are dragged, `renderNode` runs for them alone and only the edges touching them are routed again.
 
-Numeric and text keys with the same spelling shall identify distinct nodes and edges in both views, including after reordering. Bounds shall be computed in one pass without depending on the runtime limit on function arguments.
+Numeric and text keys with the same spelling shall identify distinct nodes and edges in both views, including after reordering. The bounds shall hold for a diagram of any size (200 000 nodes included).
 
 Implementation: `src/components/diagram-canvas/diagram-node.tsx`, `src/components/diagram-canvas/diagram-model.ts`, `src/components/diagram-canvas/diagram-canvas.tsx`, `src/components/diagram-canvas/diagram-edges.tsx`
 Verification: `src/components/diagram-canvas/diagram-canvas.test.tsx`, `src/components/diagram-canvas/diagram-model.test.ts`, `src/components/diagram-canvas/diagram-node.test.tsx`
@@ -54,7 +54,7 @@ Verification: `src/components/diagram-canvas/edge-route.test.ts`, `src/component
 
 ### UIC-DIAGRAM-CANVAS-2.3 - Parallel edges and loops
 
-Edges between the same two nodes shall be spread 24 pixels apart around the line between them, each shifted to the right of its own direction of travel, so an edge and its reverse never overlap. An edge from a node to itself loops over the node's top. Grouping parallel edges shall append each edge once, without copying its preceding group, and retain each endpoint key's type and delimiters.
+Edges between the same two nodes shall be spread 24 pixels apart around the line between them, each shifted to the right of its own direction of travel, so an edge and its reverse never overlap. An edge from a node to itself loops over the node's top. Edges group as parallel only when their endpoint keys match in type and spelling, delimiters included, and a group of any size (tens of thousands of edges) spreads in edge order.
 
 Implementation: `src/components/diagram-canvas/edge-route.ts`, `src/components/diagram-canvas/diagram-model.ts`
 Verification: `src/components/diagram-canvas/edge-route.test.ts`, `src/components/diagram-canvas/diagram-model.test.ts`
@@ -164,7 +164,7 @@ Verification: `src/components/diagram-canvas/diagram-canvas.test.tsx`, `e2e/diag
 
 Each node shall be a `role="group"` in the Tab order, named by its `label`, described as the provider's `diagramNode` string through `aria-roledescription`, and described by its `description`, the provider's `diagramSelected` string while selected, and the `diagramOutgoing` and `diagramIncoming` strings listing the labels of the nodes it leads to and comes from (each followed by the edge's label in parentheses).
 
-Link descriptions shall preserve edge order, include parallel edges and self-links, and leave out connections whose other node is missing. Both views share the same indexed connections.
+Link descriptions shall preserve edge order, include parallel edges and self-links, and leave out connections whose other node is missing, the same in the outline view (UIC-DIAGRAM-CANVAS-6.4).
 
 Implementation: `src/components/diagram-canvas/diagram-links.ts`, `src/components/diagram-canvas/diagram-node.tsx`, `src/components/diagram-canvas/diagram-canvas.tsx`
 Verification: `src/components/diagram-canvas/diagram-links.test.ts`, `src/components/diagram-canvas/diagram-canvas.test.tsx`, `e2e/diagram-canvas.spec.ts`
@@ -186,8 +186,6 @@ Verification: `src/components/diagram-canvas/diagram-node.test.tsx`, `src/compon
 ### UIC-DIAGRAM-CANVAS-6.4 - Outline view
 
 The view shall be `view` (controlled) or held from `defaultView` (`canvas`), switched by a [Segmented Choice](SEGMENTED-CHOICE.md) in the toolbar (`ui-diagram-canvas__view-switch`) named by the provider's `diagramView` string, and reported through `onViewChange`. The outline (`ui-diagram-canvas__outline`, a list named by the `diagramOutlineView` string) holds an entry per node (`ui-diagram-canvas__outline-item`, with `data-selected`) showing its label (`ui-diagram-canvas__outline-label`), then the nodes it leads to and comes from (`ui-diagram-canvas__outline-links` with `data-direction` `outgoing` or `incoming`, labelled by `ui-diagram-canvas__outline-links-label` reading `diagramLeadsTo` or `diagramComesFrom`) as buttons (`ui-diagram-canvas__outline-link`) that move focus to that node's entry. In edit mode each outgoing link is followed by an [Icon Button](ICON-BUTTON.md) (`ui-diagram-canvas__outline-remove`) named by `diagramRemoveConnection` that removes the edge through `onEdgesChange` and moves focus to the next link of that list, else the previous one, else the node's entry. The zoom control and fit button show only in the canvas view.
-
-Link descriptions shall preserve edge order, include parallel edges and self-links, and leave out connections whose other node is missing. Both views share the same indexed connections.
 
 Implementation: `src/components/diagram-canvas/diagram-links.ts`, `src/components/diagram-canvas/diagram-outline.tsx`, `src/components/diagram-canvas/diagram-toolbar.tsx`
 Verification: `src/components/diagram-canvas/diagram-links.test.ts`, `src/components/diagram-canvas/diagram-canvas.test.tsx`, `e2e/diagram-canvas.spec.ts`

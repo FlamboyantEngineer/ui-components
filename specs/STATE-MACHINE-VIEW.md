@@ -31,7 +31,7 @@ Verification: `src/components/state-machine-view/state-machine-view.test.tsx`
 
 `layoutLayeredGraph({ nodes, edges, orientation, layerGap, nodeGap })` shall place a directed graph in layers and return each node's top left corner and layer, in the order of `nodes`: edges that close a cycle (found depth first, in node order) are reversed for the layout, edges to unknown nodes and loops are ignored, each node goes one layer after the deepest node that leads to it, the nodes of each layer are ordered by the average position of their neighbours in the layers before and after (four sweeps each way) to reduce crossings, and each layer is centred across the widest one. `horizontal` (the default) places the layers left to right; `vertical` top to bottom. Gaps default to 80 pixels between layers and 32 between nodes.
 
-Repeated edges shall be deduplicated in insertion order with set membership. Layer assignment shall advance through its queue without removing its front, and measuring wide or deep layouts shall not depend on function-argument limits.
+A repeated edge counts once, the first in insertion order, and a graph of any width (200 000 nodes in one layer included) is laid out.
 
 Implementation: `src/utils/layered-layout.ts`
 Verification: `src/utils/layered-layout.test.ts`

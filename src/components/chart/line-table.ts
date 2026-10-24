@@ -3,7 +3,10 @@ import type { LineChartSeries } from './line-chart.js';
 import type { LineChartPoint } from './line-geometry.js';
 import type { LineXAxis } from './line-x-axis.js';
 
-/** Every series' values by coordinate, keeping the first point at a repeated coordinate. */
+/**
+ * Every series' values by coordinate, keeping the first point at a repeated coordinate. Each source
+ * coordinate is read once, before the distinct coordinates are ordered.
+ */
 export function toLineTable(
   series: readonly LineChartSeries[],
   {

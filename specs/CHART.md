@@ -91,7 +91,7 @@ Verification: `src/components/chart/bar-chart.test.tsx`, `src/components/chart/l
 
 The drawn values shall take one tab stop, on the first value or the last one focused. The left and right arrow keys move focus to the previous and next value of the same series (the up and down arrow keys for a horizontal bar chart, whose categories run down), the up and down arrow keys (left and right for a horizontal bar chart) move to the nearest value of the previous and next drawn series, and Home and End move to the first and last value of the series. A donut's slices form one series.
 
-Navigation shall select the next point in a single scan without sorting the points; keys outside navigation shall leave them unread. When two points in the target series are equally close, the first in input order wins.
+When two points in the target series are equally close, the first in input order wins.
 
 Implementation: `src/components/chart/chart-points.tsx`
 Verification: `src/components/chart/chart-points.test.tsx`, `src/components/chart/bar-chart.test.tsx`, `src/components/chart/line-chart.test.tsx`, `src/components/chart/donut-chart.test.tsx`, `e2e/chart.spec.ts`
@@ -146,7 +146,7 @@ Verification: `src/components/chart/bar-chart.test.tsx`
 
 `LineChart` shall place each point of its series (`points` of `{ x, y }`) along x by `x`: ISO 8601 dates or date-times make a time axis read in `timeZone` (the runtime's by default) with calendar ticks from the time scale, and numbers a linear axis; the first point decides which, and points whose `x` cannot be read are left out. The axis spans the lowest to the highest `x`, about one tick every 80 pixels. In names, the tooltip and the table, dates read as medium dates (with the time for a date-time) and numbers in the locale.
 
-Charts and time scales shall share ISO instant parsing. Point ordering shall read source coordinates a bounded number of times rather than reparsing them in the sort comparator.
+The x axis shall read ISO dates and date-times as the time scale does, so its ticks and the points agree.
 
 Implementation: `src/components/chart/line-chart.tsx`, `src/components/chart/line-x-axis.ts`, `src/utils/time-scale.ts`
 Verification: `src/components/chart/line-geometry.test.ts`, `src/components/chart/line-chart.test.tsx`, `e2e/chart.spec.ts`
@@ -162,7 +162,7 @@ Verification: `src/components/chart/line-geometry.test.ts`, `src/components/char
 
 The value axis shall run from `minValue` to `maxValue` when given, keeping values beyond them at the edges, and otherwise over a nice domain that includes zero and every value, about one tick every 40 pixels, with grid lines across the plot.
 
-The finite input values shall determine the domain without depending on the runtime limit on function arguments.
+The domain comes from the finite values alone, however many there are (a series of 200 000 values draws).
 
 Implementation: `src/utils/summarize-numbers.ts`, `src/components/chart/line-geometry.ts`
 Verification: `src/components/chart/line-geometry.test.ts`
@@ -171,7 +171,7 @@ Verification: `src/components/chart/line-geometry.test.ts`
 
 The line chart's table shall have one row per distinct x value of any series, in x order, headed by its formatted x value under `categoryLabel` (the provider's `chartCategory` string by default), then each series' formatted value at that x, or nothing.
 
-A repeated coordinate shall use its first point in each series, leaving the cell blank if that point has no finite value. Building the table shall read each source coordinate once before ordering the distinct coordinates.
+A repeated coordinate shall use its first point in each series, leaving the cell blank if that point has no finite value.
 
 Implementation: `src/components/chart/line-table.ts`, `src/components/chart/line-chart.tsx`
 Verification: `src/components/chart/line-table.test.ts`, `src/components/chart/line-chart.test.tsx`
@@ -187,7 +187,7 @@ Verification: `src/components/chart/donut-geometry.test.ts`, `src/components/cha
 
 ### UIC-CHART-7.2 - Table
 
-The donut chart's table shall list every segment, hidden ones included, with its formatted value and its share of the whole, under the headings `categoryLabel` (the provider's `chartCategory` string by default), `chartAmount` and `chartShare`. It shall use the same finite, positive amounts as the drawing, treating other amounts as zero, and build rows in linear passes without calculating slice paths.
+The donut chart's table shall list every segment, hidden ones included, with its formatted value and its share of the whole, under the headings `categoryLabel` (the provider's `chartCategory` string by default), `chartAmount` and `chartShare`. It shall use the same finite, positive amounts as the drawing, treating other amounts as zero.
 
 Implementation: `src/components/chart/donut-chart.tsx`, `src/components/chart/donut-table.ts`, `src/components/chart/donut-geometry.ts`
 Verification: `src/components/chart/donut-chart.test.tsx`, `src/components/chart/donut-table.test.ts`
