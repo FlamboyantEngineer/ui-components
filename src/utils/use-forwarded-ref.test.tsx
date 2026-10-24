@@ -22,7 +22,7 @@ function Probe({
 }
 
 describe('useForwardedRef', () => {
-  it('fills its own ref and the caller ref object or callback', () => {
+  it('UIC-COMPOSITION-2.2 fills its own ref and the caller ref object or callback', () => {
     const onOwn = vi.fn();
     const object = createRef<HTMLDivElement>();
     const { container, rerender } = render(<Probe forwarded={object} onOwn={onOwn} />);
@@ -35,5 +35,22 @@ describe('useForwardedRef', () => {
 
     rerender(<Probe onOwn={onOwn} />);
     expect(onOwn).toHaveBeenLastCalledWith(container.firstElementChild);
+  });
+
+  it('UIC-COMPOSITION-2.2 runs the cleanup a caller callback ref returns instead of calling it with null', () => {
+    const cleanup = vi.fn();
+    const setup = vi.fn((node: HTMLDivElement | null) => {
+      void node;
+      return cleanup;
+    });
+    function Box({ forwarded }: { forwarded: Ref<HTMLDivElement> }) {
+      const [, setRef] = useForwardedRef(forwarded);
+      return <div ref={setRef} />;
+    }
+    const { unmount } = render(<Box forwarded={setup} />);
+    expect(setup).toHaveBeenCalledTimes(1);
+    unmount();
+    expect(cleanup).toHaveBeenCalledTimes(1);
+    expect(setup).not.toHaveBeenCalledWith(null);
   });
 });

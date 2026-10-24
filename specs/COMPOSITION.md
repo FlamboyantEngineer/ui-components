@@ -29,10 +29,10 @@ Verification: `src/utils/merge-props.test.ts`
 
 ### UIC-COMPOSITION-2.2 - Refs
 
-`mergeRefs(...refs)` shall return one callback ref that hands the element to every ref object and callback given, skips `null` and `undefined` ones, and on detach clears the objects, calls the callbacks with `null`, or runs the cleanup a React 19 callback ref returned instead.
+`mergeRefs(...refs)` shall return one callback ref that hands the element to every ref object and callback given, skips `null` and `undefined` ones, and on detach clears the objects, calls the callbacks with `null`, or runs the cleanup a React 19 callback ref returned instead. Components that keep their own ref beside the caller's `ref` merge them the same way, so a caller's callback ref cleanup runs when the element detaches.
 
-Implementation: `src/utils/merge-props.ts`
-Verification: `src/utils/merge-props.test.ts`
+Implementation: `src/utils/merge-props.ts`, `src/utils/use-forwarded-ref.ts`
+Verification: `src/utils/merge-props.test.ts`, `src/utils/use-forwarded-ref.test.tsx`
 
 ## UIC-COMPOSITION-3 - Slots
 
