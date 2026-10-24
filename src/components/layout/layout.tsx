@@ -67,12 +67,12 @@ export type ViewProps = NativeProps<'section'> & BaseProps & LayoutContainmentPr
 export interface PageProps extends NativeProps<'section'>, BaseProps, LayoutContainmentProps {
   /** Maximum content width. Defaults to `wide`. */
   width?: PageWidth | undefined;
-  /** Padding around the content. Defaults to `lg`. */
+  /** Padding around the content. Defaults to `3xl`. */
   gutter?: LayoutSpace | undefined;
 }
 
 export interface StackOwnProps extends BaseProps, LayoutContainmentProps {
-  /** Gap between children. Defaults to `md`. */
+  /** Gap between children. Defaults to `2xl`. */
   space?: LayoutSpace | undefined;
   /** Cross-axis alignment. Defaults to `stretch`. */
   align?: LayoutAlign | undefined;
@@ -83,7 +83,7 @@ export interface StackOwnProps extends BaseProps, LayoutContainmentProps {
 export type StackProps<E extends LayoutElement = 'div'> = PolymorphicLayoutProps<E, StackOwnProps>;
 
 export interface ClusterOwnProps extends BaseProps, LayoutContainmentProps {
-  /** Gap between children. Defaults to `sm`. */
+  /** Gap between children. Defaults to `md`. */
   space?: LayoutSpace | undefined;
   /** Cross-axis alignment. Defaults to `center`. */
   align?: LayoutAlign | undefined;
@@ -107,7 +107,7 @@ export interface GridOwnProps extends BaseProps, LayoutContainmentProps {
   columns?: GridColumns | undefined;
   /** Smallest column width for `columns="fit"`. Defaults to `sm`. */
   minColumnWidth?: GridMinColumnWidth | undefined;
-  /** Gap between cells. Defaults to `md`. */
+  /** Gap between cells. Defaults to `2xl`. */
   space?: LayoutSpace | undefined;
   /** Cell alignment. Defaults to `stretch`. */
   align?: LayoutAlign | undefined;

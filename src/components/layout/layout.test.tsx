@@ -180,6 +180,18 @@ describe('Layout options', () => {
     expect(container.querySelector('.ui-stack__divider')).toBeNull();
   });
 
+  it('UIC-LAYOUT-2.7 draws no divider for an empty-string child', () => {
+    const label: string = '';
+    const { container } = render(
+      <Cluster divided>
+        <span>Apple</span>
+        {label && <span>{label}</span>}
+        <span>Pear</span>
+      </Cluster>,
+    );
+    expect(container.querySelectorAll('.ui-cluster__divider')).toHaveLength(1);
+  });
+
   it('UIC-LAYOUT-2.7 picks a divider element valid in the parent and keeps keyed children', () => {
     const { container, rerender } = render(
       <Cluster as="ul" divided>

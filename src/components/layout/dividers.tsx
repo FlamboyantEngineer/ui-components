@@ -1,4 +1,5 @@
 import { Children, Fragment, createElement, isValidElement, type ReactNode } from 'react';
+import { isEmptyNode } from '../../utils/is-empty-node.js';
 import type { LayoutElement } from './layout.js';
 
 /** Parents whose children are list items, so a divider between them is one too. */
@@ -14,7 +15,8 @@ export function resolveDividerElement(parent: LayoutElement): 'li' | 'span' | 'd
 
 /**
  * The rendered children of a layout primitive with a decorative divider, hidden from assistive
- * technology, between each pair. Children that render nothing get no divider.
+ * technology, between each pair. Children that are `null`, `undefined`, booleans or empty strings
+ * get no divider; components are not rendered to find out whether they draw anything.
  */
 export function interleaveDividers(
   children: ReactNode,
@@ -22,7 +24,8 @@ export function interleaveDividers(
 ): ReactNode[] {
   const element = resolveDividerElement(parent);
   // `Children.toArray` keys every element, so keyed children keep their identity when reordered.
-  return Children.toArray(children).map((child, index) => (
+  const shown = Children.toArray(children).filter((child) => !isEmptyNode(child));
+  return shown.map((child, index) => (
     <Fragment key={isValidElement(child) ? child.key : index}>
       {index > 0 ? createElement(element, { className, 'aria-hidden': true }) : null}
       {child}

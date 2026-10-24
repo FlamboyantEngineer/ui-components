@@ -30,7 +30,7 @@ export interface SectionHeaderProps extends BaseProps {
 export interface SectionProps extends SectionHeaderProps, LayoutContainmentProps {
   /** The section's content, after its header. */
   children?: ReactNode;
-  /** Gap between the header and the content. Defaults to `md`. */
+  /** Gap between the header and the content. Defaults to `2xl`. */
   space?: LayoutSpace | undefined;
   /** The title toggles the content. Expanded by default. */
   collapsible?: boolean | undefined;

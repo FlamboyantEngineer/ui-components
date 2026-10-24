@@ -71,7 +71,7 @@ Verification: `src/components/layout/grid-item.test.tsx`, `e2e/layout.spec.ts`
 
 ### UIC-LAYOUT-2.7 - Dividers
 
-`divided` on `Stack` and `Cluster` shall publish `data-divided` and render a decorative divider between each pair of rendered children, hidden from assistive technology, in the `ui-stack__divider` or `ui-cluster__divider` slot. The divider is a valid child of the element: an `<li>` in `ul` and `ol`, a `<span>` in `a`, `label`, `p` and `span`, a `<div>` elsewhere. Children that render nothing get no divider, and keyed children keep their identity.
+`divided` on `Stack` and `Cluster` shall publish `data-divided` and render a decorative divider between each pair of rendered children, hidden from assistive technology, in the `ui-stack__divider` or `ui-cluster__divider` slot. The divider is a valid child of the element: an `<li>` in `ul` and `ol`, a `<span>` in `a`, `label`, `p` and `span`, a `<div>` elsewhere. Children that are `null`, `undefined`, booleans or empty strings get no divider; a component child gets one even when it renders nothing, since components are not rendered to find out. Keyed children keep their identity.
 
 Implementation: `src/components/layout/layout.tsx`, `src/components/layout/dividers.tsx`, `labs/reference/layout.css`
 Verification: `src/components/layout/layout.test.tsx`, `e2e/layout.spec.ts`
