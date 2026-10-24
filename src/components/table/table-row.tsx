@@ -34,6 +34,12 @@ import type { CellSelection } from './use-cell-selection.js';
 import type { TableDragTrigger } from './use-table-reorder.js';
 import type { TablePinOffsets } from './use-pinned-offsets.js';
 
+/** A row's caller attributes: `false` leaves an attribute out, unlike a root `data-*` prop. */
+function toRowAttributes(attributes: TableRowAttributes | undefined) {
+  const shown = Object.entries(attributes ?? {}).filter(([, value]) => value !== false);
+  return pickDataAttributes(Object.fromEntries(shown));
+}
+
 /** What every row and cell of a table renders from. */
 export interface TableRowModel<T> {
   structure: TableStructure<T>;
@@ -233,7 +239,7 @@ export function TableDataRow<T extends TableRow>({
   const actionsPin = getColumnPin(structure, 'actions');
   return (
     <Row
-      {...pickDataAttributes(model.getRowAttributes?.(row) ?? {})}
+      {...toRowAttributes(model.getRowAttributes?.(row))}
       id={id}
       textValue={getRowText(row, getRowHeaderColumns(structure.columns))}
       {...hooks.slot('row')}
