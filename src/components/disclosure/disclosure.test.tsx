@@ -332,6 +332,37 @@ describe('DisclosureGroup', () => {
     }
   });
 
+  it('UIC-DISCLOSURE-3.2 addresses disclosures whose id is 0 or empty', async () => {
+    const user = userEvent.setup();
+    const onExpandedChange = vi.fn();
+    render(
+      <DisclosureGroup
+        allowsMultipleExpanded
+        defaultExpandedKeys={[0]}
+        onExpandedChange={onExpandedChange}
+      >
+        <Disclosure id={0} title="Zero">
+          First
+        </Disclosure>
+        <Disclosure id="" title="Blank">
+          Second
+        </Disclosure>
+        <Disclosure id="0" title="Text zero">
+          Third
+        </Disclosure>
+      </DisclosureGroup>,
+    );
+    expect(screen.getByRole('button', { name: 'Zero' })).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('button', { name: 'Text zero' })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
+    await user.click(screen.getByRole('button', { name: 'Blank' }));
+    expect([...(onExpandedChange.mock.lastCall?.[0] as Set<Key>)]).toEqual([0, '']);
+    await user.click(screen.getByRole('button', { name: 'Zero' }));
+    expect([...(onExpandedChange.mock.lastCall?.[0] as Set<Key>)]).toEqual(['']);
+  });
+
   it('UIC-DISCLOSURE-3.2 lets the group keys win over a disclosure state', () => {
     render(
       <DisclosureGroup defaultExpandedKeys={['figs']}>

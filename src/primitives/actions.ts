@@ -1,4 +1,4 @@
-// Buttons, links, toolbars, keyboard hints and press events.
+// Buttons, links, toolbars, keyboard hints, press events and hover.
 
 export {
   Button,
@@ -14,3 +14,4 @@ export {
   Toolbar,
 } from 'react-aria-components';
 export type { ButtonProps, KeyboardEvent, LinkProps, PressEvent } from 'react-aria-components';
+export { useHover } from 'react-aria/useHover';

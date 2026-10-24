@@ -66,8 +66,12 @@ export function UserIdentity(props: UserIdentityProps) {
           <span {...hooks.slot('name')}>{getDisplayName(identity.name, strings.unnamed)}</span>
           {nameSuffix}
         </span>
+        {/* A space keeps the two lines apart in a name computed from content, even unstyled. */}
         {isBlankNode(description) ? null : (
-          <span {...hooks.slot('description')}>{description}</span>
+          <>
+            {' '}
+            <span {...hooks.slot('description')}>{description}</span>
+          </>
         )}
       </span>
       {/* After the text and a space, so the status is read after the name; the stylesheet places it

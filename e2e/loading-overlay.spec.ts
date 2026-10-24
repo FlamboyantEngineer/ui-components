@@ -81,6 +81,25 @@ test.describe('Loading Overlay lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-LOADING-OVERLAY-3.1 keeps keyboard focus on the region while it blocks and returns it', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('loading-overlay');
+    const demo = page.locator('[data-lab-demo="region"]');
+    const region = demo.locator('.ui-loading-region');
+    const apply = demo.getByRole('button', { name: 'Apply' });
+    await demo.getByRole('textbox', { name: 'City' }).focus();
+    await page.keyboard.press('Tab');
+    await expect(apply).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(region).toHaveAttribute('aria-busy', 'true');
+    await expect(region).toBeFocused();
+    await expect(region).not.toHaveAttribute('aria-busy');
+    await expect(apply).toBeFocused();
+    await expect(region).not.toHaveAttribute('tabindex');
+  });
+
   test('UIC-LOADING-OVERLAY-2.4 UIC-ENTER-EXIT-1.3 fades the region cover out before removing it', async ({
     page,
     lab,
