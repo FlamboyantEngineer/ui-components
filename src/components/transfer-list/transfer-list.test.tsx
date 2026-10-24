@@ -141,6 +141,35 @@ describe('TransferList', () => {
     expect(count()).toHaveTextContent('5 items, 5 selected');
   });
 
+  it("UIC-TRANSFER-LIST-1.3 describes each side's list by its count", () => {
+    render(<TransferList aria-label="Cities" items={cities} defaultValue={['oslo']} />);
+    expect(side('Available')).toHaveAccessibleDescription('4 items');
+    expect(side('Chosen')).toHaveAccessibleDescription('1 item');
+  });
+
+  it("UIC-TRANSFER-LIST-2.1 redraws no row of one side when the other side's selection changes", async () => {
+    const user = userEvent.setup();
+    let iconReads = 0;
+    const counted = {
+      id: 'counted',
+      label: 'Counted',
+      get icon() {
+        iconReads += 1;
+        return 'star' as const;
+      },
+    };
+    render(
+      <TransferList aria-label="Cities" items={[counted, ...cities]} defaultValue={['lima']} />,
+    );
+    const before = iconReads;
+    await user.click(within(side('Chosen')).getByRole('row', { name: 'Lima' }));
+    expect(within(side('Chosen')).getByRole('row', { name: 'Lima' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+    expect(iconReads).toBe(before);
+  });
+
   it('UIC-TRANSFER-LIST-1.4 filters each side, ignoring case and accents', async () => {
     const user = userEvent.setup();
     const { container } = render(

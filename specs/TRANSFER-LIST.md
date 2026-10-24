@@ -22,7 +22,7 @@ Verification: `src/components/transfer-list/transfer-list.test.tsx`
 
 ### UIC-TRANSFER-LIST-1.3 - Counts
 
-Each side's count shall read the provider's `itemCount` string for the items on the side (`8 items`), followed while it has a selection by the `selectedCount` string (`8 items, 2 selected`).
+Each side's count shall read the provider's `itemCount` string for the items on the side (`8 items`), followed while it has a selection by the `selectedCount` string (`8 items, 2 selected`). The count describes the side's list.
 
 Implementation: `src/components/transfer-list/transfer-pane.tsx`
 Verification: `src/components/transfer-list/transfer-list.test.tsx`, `e2e/transfer-list.spec.ts`
