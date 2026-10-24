@@ -45,7 +45,7 @@ Verification: `src/components/number-field/number-field.test.tsx`
 
 ### UIC-NUMBER-FIELD-2.1 - Commit
 
-`NumberField` shall keep the text being typed apart from its value: the text becomes the value, through `onChange`, and commits, through `onCommit`, only when the input loses focus, when Enter is pressed and on each step. Intermediate text such as `-` or `1.` never becomes a value. A value set from outside the input (a controlled value, restore, undo or a menu action) replaces the text without being clamped or snapped during render, so the displayed number remains the value being validated. A snapping commit on blur or Enter also corrects an unchanged external value.
+`NumberField` shall keep the text being typed apart from its value: the text becomes the value, through `onChange`, when the input loses focus (Tab reads it just before focus moves), when Enter is pressed and on each step, and commits, through `onCommit`, on Enter, on each step and when focus leaves the field (UIC-FIELD-1.11), so Tab from typed text reaches the restore button. Intermediate text such as `-` or `1.` never becomes a value. A value set from outside the input (a controlled value, restore, undo or a menu action) replaces the text without being clamped or snapped during render, so the displayed number remains the value being validated. A snapping commit on blur or Enter also corrects an unchanged external value.
 
 Implementation: `src/components/number-field/number-field.tsx`
 Verification: `src/components/number-field/number-field.test.tsx`, `e2e/number-field.spec.ts`
@@ -75,7 +75,7 @@ Verification: `src/components/number-field/number-field.test.tsx`, `e2e/number-f
 
 ### UIC-NUMBER-FIELD-3.2 - Modifier steps
 
-With `largeStep`, Shift with Arrow Up or Arrow Down shall step the value by `largeStep`; with `smallStep`, Alt with the arrows steps it by `smallStep`. Each step keeps the value within `minValue` and `maxValue`, rounds it to the precision of the value and the step, prevents the key's default and commits. Scientific notation retains its decimal precision; values finer than the platform's fixed-decimal limit retain their arithmetic result instead of throwing. An empty value steps to the minimum, or zero. A read-only or disabled field refuses the steps, and without the matching prop a modified arrow does nothing.
+With `largeStep`, Shift with Arrow Up or Arrow Down shall step the value by `largeStep`; with `smallStep`, Alt with the arrows steps it by `smallStep`. Each step keeps the value within `minValue` and `maxValue`, rounds it to the precision of the value and the step, prevents the key's default and commits. Scientific notation retains its decimal precision; values finer than the platform's fixed-decimal limit retain their arithmetic result instead of throwing. An empty value steps up to the minimum and down to the maximum (zero without one), as the plain arrow keys do. A read-only or disabled field refuses the steps, and without the matching prop a modified arrow does nothing.
 
 Implementation: `src/components/number-field/number-field.tsx`, `src/components/number-field/number-field-parts.tsx`
 Verification: `src/components/number-field/number-field.test.tsx`, `e2e/number-field.spec.ts`

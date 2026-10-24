@@ -91,6 +91,29 @@ test.describe('Pin Input lab', () => {
     await expect(otp.locator('.ui-field__message')).toHaveText('');
   });
 
+  test('UIC-FIELD-1.9 UIC-FIELD-1.11 UIC-PIN-INPUT-2.5 keeps an edited code until focus leaves the field', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('pin-input');
+    const otp = field(page, 'otp');
+    await cells(otp).first().click();
+    await page.keyboard.type('1');
+    await cells(otp).first().click();
+    await expect(cells(otp).first()).toBeFocused();
+    await expect(otp).not.toHaveAttribute('data-touched');
+    await page.keyboard.press('End');
+    await page.keyboard.press('Tab');
+    await expect(otp.getByRole('button', { name: 'Restore Verification code' })).toBeFocused();
+    await expect(otp).toHaveAttribute('data-dirty', 'true');
+    await expect(otp).not.toHaveAttribute('data-touched');
+    await page.keyboard.press('Tab');
+    await expect(otp.locator(':focus')).toHaveCount(0);
+    expect(await page.evaluate(() => document.activeElement?.localName)).not.toBe('body');
+    await expect(otp).not.toHaveAttribute('data-dirty');
+    await expect(otp).toHaveAttribute('data-touched', 'true');
+  });
+
   test('UIC-PIN-INPUT-2.4 fills the cells from the focused one with a paste', async ({
     page,
     lab,
@@ -149,7 +172,7 @@ test.describe('Pin Input lab', () => {
     await expect(cells(masked).first()).toHaveAttribute('type', 'password');
   });
 
-  test('UIC-PIN-INPUT-2.7 UIC-PIN-INPUT-1.6 restores, undoes, clears and submits', async ({
+  test('UIC-PIN-INPUT-2.7 UIC-PIN-INPUT-1.6 restores, undoes, clears, submits and resets', async ({
     page,
     lab,
   }) => {
@@ -178,6 +201,8 @@ test.describe('Pin Input lab', () => {
     await page.keyboard.type('42');
     await page.getByRole('button', { name: 'Unlock', exact: true }).click();
     await expect(output(page, 'Submitted')).toHaveText('4242');
+    await page.getByRole('button', { name: 'Reset' }).click();
+    await expect.poll(() => readValues(pin)).toEqual(['', '', '', '']);
   });
 
   test('UIC-PIN-INPUT-1.2 passes axe in the dark theme', async ({ page, lab }) => {

@@ -6,7 +6,7 @@
 
 ### UIC-MODAL-1.1 - Opening and closing
 
-`Modal` shall be open while `isOpen` is true (or, uncontrolled, from `defaultOpen`), report every close through `onOpenChange(false)`, and render nothing while closed. Inside a `ModalTrigger` ([UIC-MODAL-1.6](#uic-modal-16---trigger)), with neither `isOpen` nor `defaultOpen`, it shall follow the trigger's open state. While open it renders, in an overlay at the end of the document body, the `ui-modal` overlay, the `ui-modal__panel` box and the `ui-modal__dialog` element with `role="dialog"`.
+`Modal` shall be open while `isOpen` is true (or, uncontrolled, from `defaultOpen`), report every close through `onOpenChange(false)`, and render nothing while closed. Inside a `ModalTrigger` ([UIC-MODAL-1.6](#uic-modal-16---trigger)) or a React Aria `DialogTrigger`, with neither `isOpen` nor `defaultOpen`, it shall follow the trigger's open state: the trigger's `onOpenChange` reports every change, and the modal's own `onOpenChange` reports the closes the modal makes (Cancel, the close button, Escape, an outside press, an action), so a confirmation can tell a cancel inside a trigger. While open it renders, in an overlay at the end of the document body, the `ui-modal` overlay, the `ui-modal__panel` box and the `ui-modal__dialog` element with `role="dialog"`.
 
 Implementation: `src/components/modal/modal.tsx`
 Verification: `src/components/modal/modal.test.tsx`, `e2e/modal.spec.ts`

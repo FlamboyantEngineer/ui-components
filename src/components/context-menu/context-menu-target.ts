@@ -41,6 +41,16 @@ interface PendingPress {
   y: number;
 }
 
+/** Input types whose text the reader edits, where the browser's own menu offers paste and spelling. */
+const textInputTypes = new Set(['text', 'search', 'url', 'tel', 'email', 'password', 'number']);
+
+/** Whether `target` is a text control inside `owner` (not the owner itself), which keeps its own menu. */
+function isTextInside(target: EventTarget, owner: Element): boolean {
+  if (!(target instanceof HTMLElement) || target === owner) return false;
+  if (target.isContentEditable || target instanceof HTMLTextAreaElement) return true;
+  return target instanceof HTMLInputElement && textInputTypes.has(target.type);
+}
+
 function isKeyboardContextMenu(event: KeyboardEvent) {
   return event.key === 'ContextMenu' || (event.shiftKey && event.key === 'F10');
 }
@@ -75,6 +85,7 @@ function useLongPress(options: ContextMenuTargetOptions, suppressUntil: RefObjec
       own.onPointerDown?.(event);
       cancel();
       if (isDisabled || event.pointerType !== 'touch') return;
+      if (isTextInside(event.target, event.currentTarget)) return;
       const { clientX: x, clientY: y, pointerId, currentTarget } = event;
       const timer = setTimeout(() => {
         pending.current = null;
@@ -102,7 +113,8 @@ function useLongPress(options: ContextMenuTargetOptions, suppressUntil: RefObjec
 /**
  * The handlers and ref that make an element a context menu target: a secondary click opens the
  * menu at the pointer, the Context Menu key or Shift+F10 below the element, a long touch at the
- * touch point.
+ * touch point. A secondary click or long touch on a text control inside the target keeps the
+ * browser's own menu, which edits the text.
  */
 export function useContextMenuTarget(options: ContextMenuTargetOptions): ContextMenuTargetProps {
   const { controller, isDisabled, own, targetRef } = options;
@@ -123,10 +135,12 @@ export function useContextMenuTarget(options: ContextMenuTargetOptions): Context
     onContextMenu(event) {
       own.onContextMenu?.(event);
       if (isDisabled) return;
+      const isSuppressed = Date.now() < suppressUntil.current;
+      if (!isSuppressed && isTextInside(event.target, event.currentTarget)) return;
       event.preventDefault();
       event.stopPropagation();
       cancel();
-      if (Date.now() < suppressUntil.current) return;
+      if (isSuppressed) return;
       openAt(controller, event.currentTarget, { x: event.clientX, y: event.clientY });
     },
     onKeyDown(event) {

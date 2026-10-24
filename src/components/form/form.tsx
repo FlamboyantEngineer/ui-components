@@ -21,7 +21,12 @@ import {
   type FieldValidationErrors,
   type FieldValidationMode,
 } from '../field/field.js';
-import { FormProblemContext, createFormProblemStore, inDocumentOrder } from './form-problems.js';
+import {
+  FormProblemContext,
+  createFormProblemStore,
+  inDocumentOrder,
+  type FormProblemStore,
+} from './form-problems.js';
 
 /** The HTTP method a native submit uses. */
 export type FormMethod = 'get' | 'post' | 'dialog';
@@ -58,6 +63,18 @@ function toErrorLists(errors: FieldValidationErrors | undefined) {
       typeof error === 'string' ? error : [...error],
     ]),
   );
+}
+
+/**
+ * Notifies the problem store once for all the fields that register or change their issues in one
+ * commit (a mount, a submit that reveals every field), rather than once for each field.
+ */
+function useBatchedNotify(problems: FormProblemStore) {
+  const [requests, setRequests] = useState(0);
+  useEffect(() => {
+    if (requests > 0) problems.notify();
+  }, [requests, problems]);
+  return useCallback(() => setRequests((count) => count + 1), []);
 }
 
 /**
@@ -102,16 +119,17 @@ export function Form({
   const parent = useFieldScope();
   const [fields] = useState(() => new Set<FieldRegistration>());
   const [problems] = useState(() => createFormProblemStore(fields));
+  const notify = useBatchedNotify(problems);
   const register = useCallback(
     (field: FieldRegistration) => {
       fields.add(field);
-      problems.notify();
+      notify();
       return () => {
         fields.delete(field);
-        problems.notify();
+        notify();
       };
     },
-    [fields, problems],
+    [fields, notify],
   );
   const scope = useMemo(
     () => ({
@@ -120,9 +138,9 @@ export function Form({
       validationBehavior,
       validationErrors,
       register,
-      onIssuesChange: problems.notify,
+      onIssuesChange: notify,
     }),
-    [parent, validationMode, validationBehavior, validationErrors, register, problems],
+    [parent, validationMode, validationBehavior, validationErrors, register, notify],
   );
   const form = useInvalidFocus(fields);
   const formRef = useMemo(() => mergeRefs(form, ref), [form, ref]);

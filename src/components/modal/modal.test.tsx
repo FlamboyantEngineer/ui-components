@@ -103,6 +103,31 @@ describe('Modal', () => {
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
 
+    it('UIC-MODAL-1.1 reports the closes it makes inside a ModalTrigger', async () => {
+      const onOpenChange = vi.fn();
+      const onTriggerChange = vi.fn();
+      render(
+        <ModalTrigger onOpenChange={onTriggerChange}>
+          <AriaButton>Details</AriaButton>
+          <Modal title="Details" cancelAction={{ label: 'Done' }} onOpenChange={onOpenChange}>
+            Body
+          </Modal>
+        </ModalTrigger>,
+      );
+      await userEvent.click(screen.getByRole('button', { name: 'Details' }));
+      await screen.findByRole('dialog', { name: 'Details' });
+      expect(onTriggerChange).toHaveBeenLastCalledWith(true);
+      await userEvent.click(screen.getByRole('button', { name: 'Done' }));
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      expect(onOpenChange).toHaveBeenCalledExactlyOnceWith(false);
+      expect(onTriggerChange).toHaveBeenLastCalledWith(false);
+      await userEvent.click(screen.getByRole('button', { name: 'Details' }));
+      await screen.findByRole('dialog', { name: 'Details' });
+      await userEvent.keyboard('{Escape}');
+      expect(onOpenChange).toHaveBeenCalledTimes(2);
+      expect(onOpenChange).toHaveBeenLastCalledWith(false);
+    });
+
     it('UIC-MODAL-1.6 opens from its trigger, reports changes and returns focus', async () => {
       const onOpenChange = vi.fn();
       render(

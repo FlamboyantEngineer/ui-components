@@ -92,7 +92,7 @@ Verification: `src/components/pin-input/pin-input.test.tsx`, `src/components/pin
 
 ### UIC-PIN-INPUT-2.5 - Completion
 
-A change that leaves every cell filled with a new value shall commit it and call `onComplete` once with it. Focus leaving the group also commits the value.
+A change that leaves every cell filled with a new value shall commit it and call `onComplete` once with it; both receive the value the field renders, so a caller that changes the typed value (to upper case, say) gets its own value back. Focus leaving the field also commits the value (UIC-FIELD-1.11); Tab from the cells reaches the restore button first.
 
 Implementation: `src/components/pin-input/pin-input-cells.tsx`
 Verification: `src/components/pin-input/pin-input.test.tsx`, `e2e/pin-input.spec.ts`

@@ -62,10 +62,13 @@ describe('Field menu', () => {
   });
 
   it('UIC-FIELD-6.2 draws no menu for an empty list and keeps the browser menu', () => {
-    const { container } = render(<TextField />);
+    const { container } = render(<TextField description="Seasonal" />);
     expect(screen.queryByRole('button', { name: 'Fruit actions' })).not.toBeInTheDocument();
     expect(fireEvent.contextMenu(screen.getByRole('textbox'))).toBe(true);
+    expect(fireEvent.contextMenu(screen.getByText('Seasonal'))).toBe(true);
     expect(container.querySelector('.ui-field__menu')).toBeNull();
+    // The field renders its root alone: no menu machinery beside it.
+    expect(container.children).toHaveLength(1);
   });
 
   it('UIC-FIELD-1.7 keeps a read-only menu with value actions disabled and refuses a disabled one', async () => {
@@ -105,6 +108,18 @@ describe('Field menu', () => {
     expect(await screen.findByRole('menuitem', { name: 'Copy name' })).toHaveFocus();
   });
 
+  it('UIC-FIELD-6.3 keeps the browser menu on the text of its control', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<TextField options={{ defaultValue: 'Fig' }} menu={menu} />);
+    const input = screen.getByRole('textbox');
+    expect(fireEvent.contextMenu(input)).toBe(true);
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    expect(container.children).toHaveLength(1);
+    await user.click(input);
+    await user.keyboard('{Shift>}{F10}{/Shift}');
+    expect(await screen.findByRole('menuitem', { name: 'Copy name' })).toHaveFocus();
+  });
+
   it('UIC-FIELD-6.4 applies Clear and Set to default, then reports every chosen entry', async () => {
     const user = userEvent.setup();
     const onMenuAction = vi.fn();
@@ -126,7 +141,7 @@ describe('Field menu', () => {
     expect(onMenuAction).toHaveBeenLastCalledWith('set-default');
     await user.click(within(await openFromButton(user)).getByRole('menuitem', { name: 'Help' }));
     expect(onMenuAction).toHaveBeenLastCalledWith('help');
-    fireEvent.contextMenu(input);
+    fireEvent.contextMenu(screen.getByText('Fruit'));
     await user.click(await screen.findByRole('menuitem', { name: 'Copy name' }));
     expect(onMenuAction).toHaveBeenLastCalledWith('copy');
     expect(input).toHaveValue('Apple');

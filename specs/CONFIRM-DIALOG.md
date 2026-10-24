@@ -13,7 +13,7 @@ Verification: `src/components/confirm-dialog/confirm-dialog.test.tsx`, `e2e/conf
 
 ### UIC-CONFIRM-DIALOG-1.2 - Outcomes
 
-Confirming shall run `onConfirm` and then close the dialog without calling `onCancel`. When `onConfirm` returns a promise the confirm action is pending until it settles; a rejection keeps the dialog open with the error in its footer ([UIC-MODAL-5.3](MODAL.md#uic-modal-53---failed-actions)). Cancel, Escape and, with `isDismissable`, an outside press shall close it and call `onCancel` once. Every close reports `onOpenChange(false)`.
+Confirming shall run `onConfirm` and then close the dialog without calling `onCancel`. When `onConfirm` returns a promise the confirm action is pending until it settles; a rejection keeps the dialog open with the error in its footer ([UIC-MODAL-5.3](MODAL.md#uic-modal-53---failed-actions)). Cancel, Escape and, with `isDismissable`, an outside press shall close it and call `onCancel` once, also inside a `ModalTrigger` or `DialogTrigger` that holds the open state. Every close the dialog makes reports `onOpenChange(false)`.
 
 Implementation: `src/components/confirm-dialog/confirm-dialog.tsx`
 Verification: `src/components/confirm-dialog/confirm-dialog.test.tsx`, `e2e/confirm-dialog.spec.ts`

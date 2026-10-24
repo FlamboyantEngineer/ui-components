@@ -1,7 +1,7 @@
 import { isEmptyValue } from '../../utils/is-empty-value.js';
 import { useCallback, useState, type ReactNode } from 'react';
 import type { BaseProps, ControlSize, Key } from '../../core/props.js';
-import { createSlotRegistry } from '../../utils/slot-registry.js';
+import { createSlotRegistry, type SlotRegistry } from '../../utils/slot-registry.js';
 import {
   FieldContextMenu,
   FieldMenuButton,
@@ -20,7 +20,8 @@ import {
   type FieldControlProps,
   type FieldLabelLayout,
 } from './field-parts.js';
-import { useFieldFocus, useFieldFormBinding } from './field-form.js';
+import { useFieldFocus } from './field-focus.js';
+import { useFieldFormBinding } from './field-form.js';
 import { FieldRestoreButton } from './field-restore-button.js';
 import type { FieldIssue, FieldState, FieldValidation } from './field-state.js';
 import { useFieldUndo } from './field-undo.js';
@@ -55,8 +56,33 @@ export interface FieldProps<T> extends BaseProps {
   renderMessage?:
     | ((validation: FieldValidation, issues: readonly FieldIssue[]) => ReactNode)
     | undefined;
+  /**
+   * Commits the value once focus leaves the field (its control, its buttons and the popovers they
+   * open), for a control that commits on blur: moving to the field's own buttons does not commit.
+   */
+  commitOnBlur?: boolean | undefined;
   /** Renders the control with the props that name, describe and lock it. */
   children: (control: FieldControlProps) => ReactNode;
+}
+
+type FieldSlots = SlotRegistry<'root' | 'control'>;
+
+/** Focus in the field: leaving it touches the field and, with `commitOnBlur`, commits first. */
+function useFieldLeave(state: FieldState<unknown>, slots: FieldSlots, commitOnBlur: boolean) {
+  return useFieldFocus({
+    getRoot: () => slots.read('root'),
+    getControl: () => slots.read('control'),
+    onLeave: () => {
+      if (commitOnBlur) state.commit();
+      state.touch();
+    },
+  });
+}
+
+/** Puts the committed value back; the button leaves with it, so keyboard focus moves to the control first. */
+function restoreField(state: FieldState<unknown>, slots: FieldSlots) {
+  slots.read('control')?.focus();
+  state.restore();
 }
 
 /** The states the root publishes from the field state. */
@@ -118,16 +144,17 @@ export function Field<T>({
   menu = [],
   onMenuAction,
   renderMessage,
+  commitOnBlur = false,
   children,
   className,
   id,
   ...rest
 }: FieldProps<T>) {
   const ids = useFieldIds(id);
-  const [slots] = useState(() => createSlotRegistry<'root' | 'control'>());
+  const [slots] = useState<FieldSlots>(() => createSlotRegistry());
   const getRoot = useCallback(() => slots.read('root'), [slots]);
   const onKeyDown = useFieldUndo(getRoot, state);
-  const focus = useFieldFocus({ touch: state.touch, getRoot, isDirty: state.isDirty });
+  const focus = useFieldLeave(state as FieldState<unknown>, slots, commitOnBlur);
   useFieldFormBinding(state as FieldState<unknown>, slots, label);
   const menuModel = useFieldMenu(state, label, { menu, onMenuAction });
   const hasLabel = labelLayout !== 'control-only';
@@ -140,11 +167,6 @@ export function Field<T>({
   const labelElement = hasLabel ? (
     <FieldLabel ids={ids} label={label} layout={labelLayout} isRequired={state.isRequired} />
   ) : null;
-  const restore = () => {
-    // The button leaves once the value is restored, so keyboard focus moves to the control first.
-    slots.read('control')?.focus();
-    state.restore();
-  };
   const data = {
     labelLayout,
     size,
@@ -169,7 +191,7 @@ export function Field<T>({
           size={toInnerControlSize(size)}
           help={help ? { id: ids.help, content: help } : null}
           menu={menu.length > 0 ? menuModel : null}
-          onRestore={state.isDirty ? restore : null}
+          onRestore={state.isDirty ? () => restoreField(state as FieldState<unknown>, slots) : null}
         />
         {decoration ? (
           <div {...hooks.slot('decoration')} id={ids.decoration}>

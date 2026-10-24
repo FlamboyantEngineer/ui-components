@@ -107,9 +107,30 @@ describe('TextField display value', () => {
     await user.click(input);
     await user.type(input, ' + 1');
     expect(input).toHaveValue('2 * 3 + 1');
+    // Tab reaches the restore button; the display value shows, and leaving the field commits.
+    await user.tab();
+    expect(input).toHaveValue('6');
+    expect(onCommit).not.toHaveBeenCalled();
     await user.tab();
     expect(onCommit).toHaveBeenLastCalledWith('2 * 3 + 1');
     expect(input).toHaveValue('6');
+  });
+
+  it('UIC-TEXT-FIELD-4.2 submits the value, not the display value', async () => {
+    const user = userEvent.setup();
+    render(
+      <form aria-label="Order">
+        <TextField label="Quantity" name="quantity" defaultValue="3" displayValue="three units" />
+      </form>,
+    );
+    const form = screen.getByRole<HTMLFormElement>('form', { name: 'Order' });
+    const input = screen.getByRole('textbox', { name: 'Quantity' });
+    expect(input).toHaveValue('three units');
+    expect(input).not.toHaveAttribute('name');
+    expect(new FormData(form).getAll('quantity')).toEqual(['3']);
+    await user.click(input);
+    await user.type(input, '0');
+    expect(new FormData(form).getAll('quantity')).toEqual(['30']);
   });
 
   it('UIC-TEXT-FIELD-4.2 shows a multiline display value in the text area', async () => {

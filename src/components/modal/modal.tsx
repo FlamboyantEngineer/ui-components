@@ -189,13 +189,7 @@ export function Modal({
     );
   }
   return (
-    <BlockingModal
-      {...dismissal}
-      isOpen={isOpen}
-      defaultOpen={defaultOpen}
-      onOpenChange={onOpenChange}
-      rootProps={rootProps}
-    >
+    <BlockingModal {...dismissal} state={ownState} rootProps={rootProps}>
       {dialog}
     </BlockingModal>
   );

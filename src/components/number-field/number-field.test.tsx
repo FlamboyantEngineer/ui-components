@@ -83,6 +83,8 @@ describe('NumberField', () => {
     await user.clear(input);
     await user.type(input, '2.500,25x');
     expect(input).toHaveValue('2.500,25');
+    // Tab reaches the restore button inside the field; leaving the field commits.
+    await user.tab();
     await user.tab();
     expect(onCommit).toHaveBeenLastCalledWith(2500.25);
     expect(input).toHaveValue('2.500,25\u00a0€');
@@ -179,9 +181,11 @@ describe('NumberField', () => {
     const input = screen.getByRole('textbox');
     await user.type(input, '12');
     await user.tab();
+    await user.tab();
     expect(onCommit).toHaveBeenLastCalledWith(10);
     await user.clear(input);
     await user.type(input, '3.3');
+    await user.tab();
     await user.tab();
     expect(onCommit).toHaveBeenLastCalledWith(3.5);
   });

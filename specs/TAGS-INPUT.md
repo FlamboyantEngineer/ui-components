@@ -50,10 +50,10 @@ Verification: `src/components/tags-input/tags-input.test.tsx`, `src/components/t
 
 ### UIC-TAGS-INPUT-2.3 - Typed text
 
-The input's text shall be the caller's `inputValue` when given, else the field's own, and every change (typing, and the text left after tags are added) shall call `onInputChange` with the new text. `placeholder` shows while the input is empty.
+The input's text shall be the caller's `inputValue` when given, else the field's own, and every change (typing, and the text left after tags are added) shall call `onInputChange` with the new text. `placeholder` shows while the input is empty. Typing does not render the tags again, so it stays fast with many tags.
 
-Implementation: `src/components/tags-input/tags-input.tsx`, `src/core/controllable-state.ts`
-Verification: `src/components/tags-input/tags-input.test.tsx`
+Implementation: `src/components/tags-input/tags-input.tsx`, `src/components/tags-input/tags-input-parts.tsx`, `src/core/controllable-state.ts`
+Verification: `src/components/tags-input/tags-input.test.tsx`, `src/components/tags-input/tags-input-parts.test.tsx`
 
 ### UIC-TAGS-INPUT-2.4 - Adding on blur
 

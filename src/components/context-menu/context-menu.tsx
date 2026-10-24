@@ -3,6 +3,7 @@ import {
   cloneElement,
   isValidElement,
   useCallback,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -120,7 +121,7 @@ export function ContextMenu({
   );
   return (
     <>
-      <span ref={fallbackRef} hidden />
+      {triggerRef ? null : <span ref={fallbackRef} hidden />}
       <RootMenuTriggerStateContext.Provider value={state}>
         <MenuOverlay
           {...rest}
@@ -156,15 +157,21 @@ export function ContextMenuTrigger({
     ? target.props
     : {};
   const targetProps = useContextMenuTarget({ controller, isDisabled, own, targetRef });
+  useEffect(() => {
+    if (isDisabled) controller.close();
+  }, [isDisabled, controller]);
   if (!isValidElement<ContextMenuTargetProps>(target)) {
     throw new Error('ContextMenuTrigger needs a target element as its first child.');
   }
+  // A disabled target opens no menu, so it mounts none.
   return (
     <>
       {cloneElement(target, targetProps)}
-      <ContextMenu {...rest} controller={controller} triggerRef={targetRef}>
-        {menu.length > 0 ? menu : undefined}
-      </ContextMenu>
+      {isDisabled ? null : (
+        <ContextMenu {...rest} controller={controller} triggerRef={targetRef}>
+          {menu.length > 0 ? menu : undefined}
+        </ContextMenu>
+      )}
     </>
   );
 }

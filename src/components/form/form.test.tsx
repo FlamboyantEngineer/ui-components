@@ -2,10 +2,12 @@ import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createRef, useState, type FormEvent } from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import { TextField as PlainField } from '../../../test/field-fixtures.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { BooleanField } from '../boolean-field/boolean-field.js';
 import { Fieldset } from '../field/field.js';
 import { NumberField } from '../number-field/number-field.js';
+import { ProblemList } from '../problem-list/problem-list.js';
 import { TextField } from '../text-field/text-field.js';
 import { Form, type FormProps } from './form.js';
 
@@ -192,5 +194,27 @@ describe('Form', () => {
     expect(onSubmit).not.toHaveBeenCalled();
     expect(screen.getByRole('textbox', { name: 'Name' })).toHaveFocus();
     expect(field('Name')).toHaveAttribute('data-validation', 'invalid');
+  });
+
+  it('UIC-FORM-1.7 reads its fields once per commit, however many mount or change at once', async () => {
+    const user = userEvent.setup();
+    const compare = vi.spyOn(Node.prototype, 'compareDocumentPosition');
+    const count = 100;
+    // A sort of the fields in document order, a few times over, and never once per field.
+    const bound = count * Math.log2(count) * 4;
+    render(
+      <Form aria-label="Survey" validationBehavior="aria">
+        <ProblemList />
+        {Array.from({ length: count }, (_, index) => (
+          <PlainField key={index} label={`Answer ${index + 1}`} options={{ isRequired: true }} />
+        ))}
+        <button type="submit">Send</button>
+      </Form>,
+    );
+    expect(compare.mock.calls.length).toBeLessThan(bound);
+    compare.mockClear();
+    await user.click(screen.getByRole('button', { name: 'Send' }));
+    expect(screen.getByRole('status')).toHaveTextContent(`${count} errors`);
+    expect(compare.mock.calls.length).toBeLessThan(bound);
   });
 });

@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { FieldRestoreButton } from './field-restore-button.js';
@@ -8,7 +8,7 @@ export interface FieldPreviousValueProps extends BaseProps {
   children: ReactNode;
   /** Puts this one value back. Without it the marker only shows the value. */
   onRestore?: (() => void) | undefined;
-  /** Names the restore button (`Restore <restoreLabel>`); defaults to the text of `children`. */
+  /** Names the restore button (`Restore <restoreLabel>`); defaults to the text content of `children`. */
   restoreLabel?: string | undefined;
   /** The field is locked: the restore button is disabled. */
   isDisabled?: boolean | undefined;
@@ -29,10 +29,16 @@ export function FieldPreviousValue({
   id,
   ...rest
 }: FieldPreviousValueProps) {
-  const label = restoreLabel ?? (typeof children === 'string' ? children : '');
+  const valueRef = useRef<HTMLModElement>(null);
+  // Content that is not plain text (an icon and its label) is named by the text it renders.
+  const [text, setText] = useState(typeof children === 'string' ? children : '');
+  useLayoutEffect(() => setText(valueRef.current?.textContent?.trim() ?? ''), [children]);
+  const label = restoreLabel ?? text;
   return (
     <span {...hooks.root({ className, props: rest })} id={id}>
-      <del {...hooks.slot('value')}>{children}</del>
+      <del {...hooks.slot('value')} ref={valueRef}>
+        {children}
+      </del>
       {onRestore && label ? (
         <FieldRestoreButton label={label} size="sm" isDisabled={isDisabled} onPress={onRestore} />
       ) : null}

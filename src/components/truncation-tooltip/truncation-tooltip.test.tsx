@@ -136,6 +136,28 @@ describe('TruncationTooltip', () => {
     expect(tooltip()).toBeNull();
   });
 
+  it('UIC-TRUNCATION-TOOLTIP-1.3 stays closed when a script moves focus after a pointer press', async () => {
+    render(
+      <>
+        <button type="button">Close menu</button>
+        <a href="#report">
+          <TruncationTooltip>{FULL_TEXT}</TruncationTooltip>
+        </a>
+      </>,
+    );
+    const link = screen.getByRole('link', { name: FULL_TEXT });
+    setBox(screen.getByText(FULL_TEXT), { cut: true });
+    await user.click(screen.getByRole('button', { name: 'Close menu' }));
+    // Focus restoration after a menu or dialog closes is not keyboard focus.
+    await act(async () => link.focus());
+    expect(link).toHaveFocus();
+    expect(tooltip()).toBeNull();
+    await user.tab({ shift: true });
+    await user.tab();
+    expect(link).toHaveFocus();
+    expect(tooltip()).toHaveTextContent(FULL_TEXT);
+  });
+
   it('UIC-TRUNCATION-TOOLTIP-1.3 stays closed when the focused text fits', async () => {
     render(
       <a href="#short">

@@ -41,8 +41,7 @@ export type ModalDismissal = Required<
 > &
   Pick<OverlayDismissProps, 'shouldCloseOnInteractOutside'>;
 
-export interface BlockingModalProps
-  extends Omit<ModalPresentationProps, 'state'>, ModalDismissal, ModalOpenOptions {}
+export interface BlockingModalProps extends ModalPresentationProps, ModalDismissal {}
 
 export interface AnchoredModalProps extends ModalPresentationProps, ModalDismissal {
   placement: Placement;
@@ -62,9 +61,27 @@ export function resolveDismissal({
   };
 }
 
+/** An open state from whether it is open and how to change it. */
+function toModalOpenState(isOpen: boolean, change: (isOpen: boolean) => void): ModalOpenState {
+  const setOpen = (next: boolean) => {
+    if (next !== isOpen) change(next);
+  };
+  return {
+    isOpen,
+    setOpen,
+    open: () => setOpen(true),
+    close: () => setOpen(false),
+    toggle: () => setOpen(!isOpen),
+    // A dialog opens against its trigger or the viewport, never at a pointer position.
+    point: null,
+    setPoint: () => {},
+  };
+}
+
 /**
- * The open state of a dialog React Aria's modal overlay does not hold: its own, controlled or from
- * `defaultOpen`, or else the state of the enclosing `DialogTrigger`.
+ * The open state of a dialog: its own, controlled or from `defaultOpen`, or else the state of the
+ * enclosing `DialogTrigger`. A change the dialog makes to a trigger's state (Cancel, Escape, an
+ * outside press, an action) also reaches the dialog's own `onOpenChange`.
  */
 export function useModalOpenState({
   isOpen,
@@ -73,39 +90,26 @@ export function useModalOpenState({
 }: ModalOpenOptions): ModalOpenState {
   const trigger = useContext(OverlayTriggerStateContext);
   const [own, setOwn] = useControllableState(isOpen, defaultOpen ?? false, onOpenChange);
-  if (trigger && isOpen === undefined && defaultOpen === undefined) return trigger;
-  const setOpen = (next: boolean) => {
-    if (next !== own) setOwn(next);
-  };
-  return {
-    isOpen: own,
-    setOpen,
-    open: () => setOpen(true),
-    close: () => setOpen(false),
-    toggle: () => setOpen(!own),
-    // A dialog opens against its trigger or the viewport, never at a pointer position.
-    point: null,
-    setPoint: () => {},
-  };
+  if (trigger && isOpen === undefined && defaultOpen === undefined) {
+    return toModalOpenState(trigger.isOpen, (next) => {
+      trigger.setOpen(next);
+      onOpenChange?.(next);
+    });
+  }
+  return toModalOpenState(own, setOwn);
 }
 
 /**
  * A dialog over a page it blocks (React Aria `ModalOverlay` and `Modal`): the overlay covers the
- * viewport on the `modal` layer, focus stays inside, and the page is hidden and inert.
+ * viewport on the `modal` layer, focus stays inside, and the page is hidden and inert. The overlay
+ * follows the dialog's open state, so every close goes through it.
  */
-export function BlockingModal({
-  isOpen,
-  defaultOpen,
-  rootProps,
-  children,
-  ...overlay
-}: BlockingModalProps) {
+export function BlockingModal({ state, rootProps, children, ...overlay }: BlockingModalProps) {
   const zIndex = useLayerZIndex('modal');
   return (
     <ModalOverlay
-      // Inside a DialogTrigger an explicit `undefined` would override the trigger's open state.
-      {...(isOpen !== undefined ? { isOpen } : {})}
-      {...(defaultOpen !== undefined ? { defaultOpen } : {})}
+      isOpen={state.isOpen}
+      onOpenChange={state.setOpen}
       {...overlay}
       {...rootProps}
       style={{ position: 'fixed', inset: 0, zIndex }}

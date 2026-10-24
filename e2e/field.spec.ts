@@ -211,6 +211,36 @@ test.describe('Field lab', () => {
     await expect(submit.getByRole('textbox')).toHaveAttribute('aria-invalid', 'true');
   });
 
+  test('UIC-FIELD-1.9 UIC-FIELD-3.7 stays untouched while focus moves between its parts and its menu', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('field');
+    const parts = field(page, 'blur-parts');
+    const input = parts.getByRole('textbox', { name: 'Town' });
+    await input.focus();
+    await page.keyboard.press('Tab');
+    await expect(parts.getByRole('button', { name: 'Help for Town' })).toBeFocused();
+    await page.keyboard.press('Tab');
+    const menuButton = parts.getByRole('button', { name: 'Town actions' });
+    await expect(menuButton).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('menuitem', { name: 'Help' })).toBeFocused();
+    await expect(parts).toHaveAttribute('data-focused', 'true');
+    await page.keyboard.press('Escape');
+    await expect(menuButton).toBeFocused();
+    await page.keyboard.press('Shift+Tab');
+    await page.keyboard.press('Shift+Tab');
+    await expect(input).toBeFocused();
+    await expect(parts).toHaveAttribute('data-focused', 'true');
+    await expect(parts).not.toHaveAttribute('data-touched');
+    await expect(parts).toHaveAttribute('data-validation', 'valid');
+    await input.blur();
+    await expect(parts).not.toHaveAttribute('data-focused');
+    await expect(parts).toHaveAttribute('data-touched', 'true');
+    await expect(parts).toHaveAttribute('data-validation', 'invalid');
+  });
+
   test('UIC-FIELD-3.5 UIC-FIELD-3.6 lists every issue in the message', async ({ page, lab }) => {
     await lab.open('field');
     const issues = field(page, 'issues');
