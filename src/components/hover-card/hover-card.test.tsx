@@ -139,6 +139,18 @@ describe('HoverCard', () => {
     expect(card()).toBeNull();
   });
 
+  it('UIC-HOVER-CARD-1.2 opens on a long touch and moves focus into the card', async () => {
+    vi.stubGlobal('ontouchstart', null);
+    render(<Preview />);
+    expect(trigger()).toHaveAccessibleDescription(/long press/i);
+    await user.pointer({ keys: '[TouchA>]', target: trigger() });
+    await advance(500);
+    expect(card()).not.toBeNull();
+    await user.pointer({ keys: '[/TouchA]', target: trigger() });
+    await advance(0);
+    expect(card()?.contains(document.activeElement)).toBe(true);
+  });
+
   it('UIC-HOVER-CARD-1.2 opens a neighbouring card at once right after one closes', async () => {
     render(
       <>
