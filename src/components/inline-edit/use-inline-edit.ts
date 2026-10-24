@@ -71,6 +71,23 @@ function useEditFocus(isEditing: boolean) {
 }
 
 /**
+ * The value being edited and the failure shown, both cleared whenever the editor opens or closes.
+ * An owner opening or closing a controlled editor skips `open` and `close`, so every editing
+ * session starts again from the saved value, without the last session's failure.
+ */
+function useEditSession<T>(isEditing: boolean) {
+  const [draft, setDraft] = useState<{ value: T } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [session, setSession] = useState(isEditing);
+  if (session !== isEditing) {
+    setSession(isEditing);
+    setDraft(null);
+    setError(null);
+  }
+  return { draft, setDraft, error, setError };
+}
+
+/**
  * The editing state of an inline edit: the editor opens from the read view, holds the value being
  * edited, saves it (waiting on a returned promise and keeping the editor open with the message of a
  * failure) and closes, moving focus in and back out.
@@ -82,9 +99,8 @@ export function useInlineEdit<T>(options: InlineEditStateOptions<T>) {
     options.defaultEditing,
     options.onEditingChange,
   );
-  const [draft, setDraft] = useState<{ value: T } | null>(null);
+  const { draft, setDraft, error, setError } = useEditSession<T>(isEditing);
   const [isPending, setPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const focus = useEditFocus(isEditing);
   const blurTimer = useRef<number | undefined>(undefined);
   useEffect(() => () => window.clearTimeout(blurTimer.current), []);
