@@ -1,7 +1,7 @@
 import { useContext, type ReactNode } from 'react';
 import { OverlayTriggerStateContext } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
-import { createHooks, mergeClassNames, splitDataAttributes } from '../../core/hooks.js';
+import { createHooks, splitDataAttributes } from '../../core/hooks.js';
 import type { BaseProps, Placement } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { Button, type ButtonProps } from '../button/button.js';
@@ -84,13 +84,7 @@ function DropdownMenuTrigger({
   ...rest
 }: DropdownMenuTriggerProps) {
   const isOpen = useContext(OverlayTriggerStateContext)?.isOpen ?? false;
-  const props = {
-    ...rest,
-    ...hooks.root({ props: rest, data: { open: isOpen } }),
-    // A caller's `data-open` never shows on a closed trigger.
-    'data-open': isOpen ? 'true' : undefined,
-    className: mergeClassNames(hooks.className, className),
-  };
+  const props = { ...rest, ...hooks.root({ className, props: rest, data: { open: isOpen } }) };
   if (iconOnly) {
     return (
       <IconButton
