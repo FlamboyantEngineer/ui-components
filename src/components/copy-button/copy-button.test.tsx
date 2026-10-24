@@ -39,6 +39,27 @@ describe('CopyButton', () => {
     expect(screen.getByRole('status')).toBeEmptyDOMElement();
   });
 
+  it('UIC-COPY-BUTTON-1.1 announces a second copy within the timeout', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<CopyButton value="City" />);
+    const button = screen.getByRole('button', { name: 'Copy' });
+    const status = screen.getByRole('status');
+    await user.click(button);
+    expect(status).toHaveTextContent('Copied');
+    const changes: MutationRecord[] = [];
+    const observer = new MutationObserver((records) => changes.push(...records));
+    observer.observe(status, { childList: true, characterData: true, subtree: true });
+    try {
+      await user.click(button);
+      await act(async () => undefined);
+      expect(changes.length).toBeGreaterThan(0);
+      expect(status).toHaveTextContent('Copied');
+    } finally {
+      observer.disconnect();
+    }
+    expect(container.firstElementChild).toHaveAttribute('data-copied', 'true');
+  });
+
   it('UIC-COPY-BUTTON-1.2 shows and announces a refused copy', async () => {
     const user = userEvent.setup();
     vi.spyOn(navigator.clipboard, 'writeText').mockRejectedValue(new Error('Denied'));
