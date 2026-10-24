@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { I18nProvider } from '../../primitives/index.js';
@@ -86,6 +86,22 @@ describe('TagsInput', () => {
     expect(submitted).toEqual([]);
   });
 
+  it('UIC-TAGS-INPUT-1.2 UIC-FIELD-2.6 puts the first tags back on a native form reset', async () => {
+    const user = userEvent.setup();
+    render(
+      <form aria-label="Order">
+        <TagsInput label="Fruit" name="fruit" defaultValue={['Apple']} />
+        <button type="reset">Reset</button>
+      </form>,
+    );
+    const form = screen.getByRole<HTMLFormElement>('form', { name: 'Order' });
+    await user.type(screen.getByRole('textbox', { name: 'Fruit' }), 'Fig{Enter}');
+    expect(new FormData(form).getAll('fruit')).toEqual(['Apple', 'Fig']);
+    await user.click(screen.getByRole('button', { name: 'Reset' }));
+    await waitFor(() => expect(new FormData(form).getAll('fruit')).toEqual(['Apple']));
+    expect(tagTexts()).toEqual(['Apple']);
+  });
+
   it('UIC-TAGS-INPUT-1.3 names and describes the input and names the tags', () => {
     const { container, rerender } = render(
       <TagsInput id="fruit" label="Fruit" description="Type and press Enter." isRequired />,
@@ -147,6 +163,27 @@ describe('TagsInput', () => {
     await user.type(input, '  {Enter}');
     expect(onSubmit).toHaveBeenCalledTimes(1);
     expect(tagTexts()).toHaveLength(3);
+  });
+
+  it('UIC-TAGS-INPUT-1.1 commits the tags a caller changes', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    function Lower() {
+      const [value, setValue] = useState<string[]>([]);
+      return (
+        <TagsInput
+          label="Fruit"
+          value={value}
+          onChange={(next) => setValue(next.map((tag) => tag.toLowerCase()))}
+          onCommit={onCommit}
+        />
+      );
+    }
+    const { container } = render(<Lower />);
+    await user.type(screen.getByRole('textbox', { name: 'Fruit' }), 'Ab{Enter}');
+    expect(tagTexts()).toEqual(['ab']);
+    expect(onCommit).toHaveBeenCalledExactlyOnceWith(['ab']);
+    expect(root(container)).not.toHaveAttribute('data-dirty');
   });
 
   it('UIC-TAGS-INPUT-2.2 splits a pasted list and pastes plain text as typed', async () => {

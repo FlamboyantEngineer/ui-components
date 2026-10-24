@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useRef, type KeyboardEvent, type ReactNode } from 'react';
 import {
   Group,
   Input,
@@ -13,6 +13,7 @@ import {
   useFieldControl,
   type FieldInputProps,
   type FieldIssue,
+  type FieldState,
 } from '../field/field.js';
 import { snapNumberValue } from './snap-number-value.js';
 import {
@@ -94,11 +95,66 @@ function checkNumber(value: number | null, rules: NumberRules): FieldIssue | nul
   return null;
 }
 
+/** What the input reads from React Aria's number field state: the parsed number and its commit. */
+interface NumberInputState {
+  numberValue: number;
+  commit(): void;
+}
+
+interface NumberEntryOptions {
+  commitBehavior: NumberFieldCommitBehavior;
+  bounds: Pick<NumberFieldProps, 'minValue' | 'maxValue' | 'step'>;
+  steps: NumberSteps;
+}
+
 /**
- * A field for a number, parsed and formatted for the locale, with steppers. It commits on blur, on
- * Enter and on each step, and reports a value outside its range or off its step. Adornments sit
- * inside its frame; Shift and Alt step by larger and smaller amounts, and a scrub handle steps by
- * dragging.
+ * Takes React Aria's commits into the field, snapped or kept, and commits them, except while the
+ * typed text is read on its way out of the input (Tab or blur): the field then commits once focus
+ * leaves it, so Tab reaches the restore button. Blur and Enter still snap a value React Aria saw
+ * as unchanged, and Shift or Alt with an arrow steps by the larger or smaller step.
+ */
+function useNumberEntry(state: FieldState<number | null>, options: NumberEntryOptions) {
+  const { commitBehavior, bounds, steps } = options;
+  const isLeaving = useRef(false);
+  const commit = (value: number) => {
+    const next = commitBehavior === 'snap' ? snapNumberValue(value, bounds) : value;
+    state.setValue(Number.isNaN(next) ? null : next);
+    if (!isLeaving.current) state.commit();
+  };
+  const finishUnchanged = (value: number) => {
+    if (commitBehavior !== 'snap' || value !== state.value) return;
+    if (snapNumberValue(value, bounds) !== value) commit(value);
+  };
+  const modifiedStep = createModifierStepHandler(state, steps);
+  const toInputProps = (input: NumberInputState) => ({
+    onBlurCapture: () => {
+      isLeaving.current = true;
+    },
+    onBlur: () => {
+      finishUnchanged(input.numberValue);
+      isLeaving.current = false;
+    },
+    onKeyDown: (event: KeyboardEvent<HTMLInputElement>) => {
+      modifiedStep(event);
+      if (event.key === 'Enter' && !event.nativeEvent.isComposing) {
+        finishUnchanged(input.numberValue);
+      }
+      // The typed number becomes the value before Tab moves focus, so dirty state is current.
+      if (event.key === 'Tab') {
+        isLeaving.current = true;
+        input.commit();
+        isLeaving.current = false;
+      }
+    },
+  });
+  return { commit, toInputProps };
+}
+
+/**
+ * A field for a number, parsed and formatted for the locale, with steppers. It commits when focus
+ * leaves the field, on Enter and on each step, and reports a value outside its range or off its
+ * step. Adornments sit inside its frame; Shift and Alt step by larger and smaller amounts, and a
+ * scrub handle steps by dragging.
  */
 export function NumberField({
   placeholder,
@@ -127,19 +183,16 @@ export function NumberField({
       }),
   });
   const steps: NumberSteps = { step: step ?? 1, smallStep, largeStep, minValue, maxValue };
-  const commit = (value: number) => {
-    const next = commitBehavior === 'snap' ? snapNumberValue(value, props) : value;
-    state.setValue(Number.isNaN(next) ? null : next);
-    state.commit();
-  };
-  const finishUnchanged = (value: number) => {
-    if (commitBehavior !== 'snap' || value !== state.value) return;
-    if (snapNumberValue(value, props) !== value) commit(value);
-  };
-  const modifiedStep = createModifierStepHandler(state, steps);
+  const bounds = { minValue, maxValue, step };
+  const entry = useNumberEntry(state, { commitBehavior, bounds, steps });
   const data = { hideStepper };
   return (
-    <Field {...field} {...hooks.root({ className: field.className, data })} state={state}>
+    <Field
+      {...field}
+      {...hooks.root({ className: field.className, data })}
+      state={state}
+      commitOnBlur
+    >
       {(control) => (
         <AriaNumberField
           {...rest}
@@ -147,7 +200,7 @@ export function NumberField({
           {...hooks.slot('box')}
           commitBehavior="validate"
           value={state.value ?? Number.NaN}
-          onChange={commit}
+          onChange={entry.commit}
         >
           {({ state: inputState }) => (
             <Group {...hooks.slot('group')}>
@@ -160,13 +213,7 @@ export function NumberField({
                 {...hooks.slot('input')}
                 ref={control.ref}
                 placeholder={placeholder}
-                onBlur={() => finishUnchanged(inputState.numberValue)}
-                onKeyDown={(event) => {
-                  modifiedStep(event);
-                  if (event.key === 'Enter' && !event.nativeEvent.isComposing) {
-                    finishUnchanged(inputState.numberValue);
-                  }
-                }}
+                {...entry.toInputProps(inputState)}
               />
               {endAdornment ? <span {...hooks.slot('end')}>{endAdornment}</span> : null}
               {hideStepper ? null : (

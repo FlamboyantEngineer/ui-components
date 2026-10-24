@@ -53,6 +53,7 @@ export function PinInput({
         data: { complete: state.value.length >= length },
       })}
       state={state}
+      commitOnBlur
     >
       {(control) => (
         <PinInputCells

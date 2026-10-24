@@ -36,12 +36,14 @@ const arrowDirections: Readonly<Record<string, number>> = { ArrowUp: 1, ArrowDow
 
 /**
  * The value `delta` away from `value`, kept in the range and rounded to the precision of both, so
- * decimal steps do not drift (0.1 + 0.2). An empty value moves to the minimum, or zero.
+ * decimal steps do not drift (0.1 + 0.2). An empty value steps up to the minimum and down to the
+ * maximum (zero without one), as React Aria's plain arrow keys do.
  */
 export function addStep(value: number | null, delta: number, steps: NumberSteps): number {
   const minimum = steps.minValue ?? -Infinity;
   const maximum = steps.maxValue ?? Infinity;
-  if (value === null) return clamp(0, minimum, maximum);
+  if (value === null)
+    return clamp((delta > 0 ? steps.minValue : steps.maxValue) ?? 0, minimum, maximum);
   const precision = Math.max(countDecimalPlaces(value), countDecimalPlaces(delta));
   const next = value + delta;
   return clamp(precision <= 100 ? Number(next.toFixed(precision)) : next, minimum, maximum);

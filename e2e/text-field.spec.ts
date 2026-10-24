@@ -66,9 +66,33 @@ test.describe('Text Field lab', () => {
     await note.press('Enter');
     await note.pressSequentially('Two');
     await expect(output(page, 'Committed')).toHaveText('Bergen');
+    // Tab reaches the restore button inside the field; leaving the field commits.
     await note.press('Tab');
+    await page.keyboard.press('Tab');
     await expect(output(page, 'Committed')).toHaveText('One Two');
     await expect(note).toHaveValue('One\nTwo');
+  });
+
+  test('UIC-FIELD-1.11 UIC-TEXT-FIELD-2.1 reaches the restore button by Tab and commits on leaving', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('text-field');
+    const commit = field(page, 'commit');
+    const city = commit.getByRole('textbox', { name: 'City' });
+    await city.focus();
+    await city.pressSequentially('s');
+    await page.keyboard.press('Tab');
+    await expect(commit.getByRole('button', { name: 'Restore City' })).toBeFocused();
+    await expect(commit).toHaveAttribute('data-dirty', 'true');
+    await expect(commit).toHaveAttribute('data-focused', 'true');
+    await expect(commit).not.toHaveAttribute('data-touched');
+    await expect(output(page, 'Committed')).toHaveText('Oslo');
+    await page.keyboard.press('Tab');
+    await expect(field(page, 'note').getByRole('textbox', { name: 'Note' })).toBeFocused();
+    await expect(output(page, 'Committed')).toHaveText('Oslos');
+    await expect(commit).not.toHaveAttribute('data-dirty');
+    await expect(commit).toHaveAttribute('data-touched', 'true');
   });
 
   test('UIC-TEXT-FIELD-2.4 restores, undoes and clears from the field menu', async ({
@@ -91,7 +115,8 @@ test.describe('Text Field lab', () => {
     await dirty.getByRole('button', { name: 'Favourite fruit actions' }).click();
     await page.getByRole('menuitem', { name: 'Clear' }).click();
     await expect(input).toHaveValue('');
-    await input.click({ button: 'right' });
+    // The input's own text keeps the browser's menu; the rest of the field opens the field menu.
+    await dirty.locator('.ui-field__label').click({ button: 'right' });
     await page.getByRole('menuitem', { name: 'Set to default' }).click();
     await expect(input).toHaveValue('Pear');
     await page.getByRole('button', { name: 'Save' }).click();

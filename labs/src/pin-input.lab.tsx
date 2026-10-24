@@ -109,6 +109,7 @@ function InForm() {
       <Button type="submit" variant="primary">
         Unlock
       </Button>
+      <Button type="reset">Reset</Button>
       <Output name="Submitted">{submitted}</Output>
     </Form>
   );
@@ -152,7 +153,10 @@ mountLab(
     >
       <DirtyAndRestore />
     </LabSection>
-    <LabSection title="In a form" description="Unlock with a partly filled PIN to see the message.">
+    <LabSection
+      title="In a form"
+      description="Unlock with a partly filled PIN to see the message; Reset empties the PIN again."
+    >
       <InForm />
     </LabSection>
   </>,

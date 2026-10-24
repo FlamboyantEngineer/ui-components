@@ -120,6 +120,10 @@ describe('TextField', () => {
     await user.tab();
     expect(onCommit).toHaveBeenCalledTimes(1);
     await user.type(input, '!');
+    // Tab reaches the restore button inside the field; leaving the field commits.
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'Restore Fruit' })).toHaveFocus();
+    expect(onCommit).toHaveBeenCalledTimes(1);
     await user.tab();
     expect(onCommit).toHaveBeenLastCalledWith('Figs!');
     await user.clear(input);
@@ -135,6 +139,7 @@ describe('TextField', () => {
     render(<TextField label="Notes" multiline onCommit={onCommit} />);
     await user.type(screen.getByRole('textbox'), 'One{Enter}Two');
     expect(onCommit).not.toHaveBeenCalled();
+    await user.tab();
     await user.tab();
     expect(onCommit).toHaveBeenCalledWith('One\nTwo');
   });
@@ -206,6 +211,7 @@ describe('TextField', () => {
     const { container } = render(<SavedField />);
     const input = screen.getByRole('textbox', { name: 'Fruit' });
     await user.type(input, 's');
+    await user.tab();
     await user.tab();
     expect(screen.getByRole('status', { hidden: true })).toHaveTextContent('Apples');
     expect(root(container)).not.toHaveAttribute('data-dirty');
@@ -320,6 +326,15 @@ describe('TextField', () => {
     expectHooksMatchSpec(container, 'TEXT-FIELD');
     rerender(<TextField label="Notes" multiline />);
     expect(root(container)).not.toHaveAttribute('data-autosize');
+  });
+
+  it('UIC-TEXT-FIELD-3.4 counts trimmed text with trim, as the length rules do', () => {
+    const { container } = render(
+      <TextField label="Code" defaultValue="abc   " maxLength={4} trim showCount />,
+    );
+    const count = container.querySelector('.ui-text-field__count');
+    expect(count).toHaveTextContent('3/4');
+    expect(root(container)).toHaveAttribute('data-validation', 'valid');
   });
 
   it('UIC-TEXT-FIELD-3.4 counts the text in the description, as the length rules count it', async () => {

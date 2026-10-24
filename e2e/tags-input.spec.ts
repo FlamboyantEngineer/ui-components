@@ -197,7 +197,8 @@ test.describe('Tags Input lab', () => {
     await basket.getByRole('button', { name: 'Basket actions' }).click();
     await page.getByRole('menuitem', { name: 'Clear' }).click();
     await expect(tags(basket)).toHaveCount(0);
-    await input.click({ button: 'right' });
+    // The input's own text keeps the browser's menu; the rest of the field opens the field menu.
+    await basket.locator('.ui-field__label').click({ button: 'right' });
     await page.getByRole('menuitem', { name: 'Set to default' }).click();
     await expect(tags(basket)).toHaveText(['Plum']);
     await page.getByRole('button', { name: 'Save' }).click();

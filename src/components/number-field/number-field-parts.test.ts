@@ -19,4 +19,13 @@ describe('addStep', () => {
     expect(addStep(2e-7, -1e-7, { ...steps, minValue: 1.5e-7 })).toBe(1.5e-7);
     expect(addStep(null, 1e-7, steps)).toBe(0);
   });
+
+  it('UIC-NUMBER-FIELD-3.2 steps an empty value up to the minimum and down to the maximum', () => {
+    const range = { step: 1, smallStep: 1, largeStep: 5, minValue: -10, maxValue: 10 };
+    expect(addStep(null, 5, range)).toBe(-10);
+    expect(addStep(null, -5, range)).toBe(10);
+    const open = { step: 1, smallStep: 1, largeStep: 5, minValue: undefined, maxValue: undefined };
+    expect(addStep(null, 5, open)).toBe(0);
+    expect(addStep(null, -5, { ...open, minValue: 3 })).toBe(3);
+  });
 });

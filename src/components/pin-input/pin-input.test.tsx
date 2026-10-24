@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { I18nProvider } from '../../primitives/index.js';
@@ -165,6 +165,23 @@ describe('PinInput', () => {
     );
     await user.click(screen.getByRole('button', { name: 'Verify' }));
     expect(submitted).toEqual([]);
+  });
+
+  it('UIC-PIN-INPUT-1.6 UIC-FIELD-2.6 puts the first code back on a native form reset', async () => {
+    const user = userEvent.setup();
+    render(
+      <form aria-label="Verify">
+        <PinInput label="Code" length={4} name="code" defaultValue="1" />
+        <button type="reset">Reset</button>
+      </form>,
+    );
+    const form = screen.getByRole<HTMLFormElement>('form', { name: 'Verify' });
+    await user.click(cells()[1] as HTMLElement);
+    await user.keyboard('2');
+    expect(new FormData(form).get('code')).toBe('12');
+    await user.click(screen.getByRole('button', { name: 'Reset' }));
+    await waitFor(() => expect(new FormData(form).get('code')).toBe('1'));
+    expect(values()).toEqual(['1', '', '', '']);
   });
 
   it('UIC-PIN-INPUT-1.7 refuses edits while read-only but still moves', async () => {
@@ -344,6 +361,52 @@ describe('PinInput', () => {
     await user.click(screen.getByRole('button', { name: 'After' }));
     expect(onCommit).toHaveBeenLastCalledWith('12');
     expect(onComplete).toHaveBeenCalledTimes(2);
+  });
+
+  it('UIC-PIN-INPUT-2.5 commits and completes with the code a caller changes', async () => {
+    const user = userEvent.setup();
+    const onComplete = vi.fn();
+    const onCommit = vi.fn();
+    function Upper() {
+      const [value, setValue] = useState('');
+      return (
+        <PinInput
+          label="Code"
+          length={2}
+          type="alphanumeric"
+          value={value}
+          onChange={(next) => setValue(next.toUpperCase())}
+          onComplete={onComplete}
+          onCommit={onCommit}
+        />
+      );
+    }
+    const { container } = render(<Upper />);
+    await user.click(cells()[0] as HTMLElement);
+    await user.keyboard('ab');
+    expect(values()).toEqual(['A', 'B']);
+    expect(onComplete).toHaveBeenCalledExactlyOnceWith('AB');
+    expect(onCommit).toHaveBeenCalledExactlyOnceWith('AB');
+    expect(root(container)).not.toHaveAttribute('data-dirty');
+  });
+
+  it('UIC-PIN-INPUT-2.5 UIC-FIELD-1.11 keeps an edited code until focus leaves the field', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    render(
+      <>
+        <PinInput label="Code" length={4} onCommit={onCommit} />
+        <button type="button">After</button>
+      </>,
+    );
+    await user.click(cells()[0] as HTMLElement);
+    await user.keyboard('12');
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'Restore Code' })).toHaveFocus();
+    expect(onCommit).not.toHaveBeenCalled();
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'After' })).toHaveFocus();
+    expect(onCommit).toHaveBeenCalledExactlyOnceWith('12');
   });
 
   it('UIC-PIN-INPUT-2.6 reports a partly filled code', async () => {

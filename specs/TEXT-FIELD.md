@@ -1,6 +1,6 @@
 # Text Field
 
-`TextField` is a [field](FIELD.md) for a plain string, on one line or several. It is built on React Aria's `TextField` with an `Input` or a `TextArea`, and takes the field's props (`FieldInputProps<string>`) and text input props (`FieldTextInputProps`), so it has a label and layout, validation, dirty state and restore, undo and redo, and the field menu. It commits on blur and on Enter, reverts an edit on Escape, and checks length and format with the field's string rules. Adornments and a reveal button for masked text sit inside the input's frame, a text area can grow with its text, and a counter shows the text's length. A query that filters or finds is a [Search Field](SEARCH-FIELD.md), and a number is a [Number Field](NUMBER-FIELD.md).
+`TextField` is a [field](FIELD.md) for a plain string, on one line or several. It is built on React Aria's `TextField` with an `Input` or a `TextArea`, and takes the field's props (`FieldInputProps<string>`) and text input props (`FieldTextInputProps`), so it has a label and layout, validation, dirty state and restore, undo and redo, and the field menu. It commits when focus leaves the field and on Enter, reverts an edit on Escape, and checks length and format with the field's string rules. Adornments and a reveal button for masked text sit inside the input's frame, a text area can grow with its text, and a counter shows the text's length. A query that filters or finds is a [Search Field](SEARCH-FIELD.md), and a number is a [Number Field](NUMBER-FIELD.md).
 
 ## UIC-TEXT-FIELD-1 - Contract
 
@@ -36,7 +36,7 @@ Verification: `src/components/text-field/text-field.test.tsx`
 
 ### UIC-TEXT-FIELD-2.1 - Commit
 
-`TextField` shall commit its value when the control loses focus and when Enter is pressed on a single line; Enter in a multiline field inserts a line break, and blur still commits. An Enter that confirms an input method composition does not commit. `onCommit` runs only for a value that differs from the committed value, so a repeated Enter or the blur after an Enter commits nothing again.
+`TextField` shall commit its value when focus leaves the field (UIC-FIELD-1.11) and when Enter is pressed on a single line; Enter in a multiline field inserts a line break, and leaving still commits. Tab from an edited control reaches the restore button without committing. An Enter that confirms an input method composition does not commit. `onCommit` runs only for a value that differs from the committed value, so a repeated Enter or the blur after an Enter commits nothing again.
 
 Implementation: `src/components/text-field/text-field.tsx`, `src/components/text-field/use-text-field-input.ts`
 Verification: `src/components/text-field/text-field.test.tsx`, `e2e/text-field.spec.ts`
@@ -87,7 +87,7 @@ Verification: `src/components/text-field/text-field.test.tsx`, `e2e/text-field.s
 
 ### UIC-TEXT-FIELD-3.4 - Character count
 
-With `showCount`, the field shall show the text's length after its description, in `ui-text-field__count` inside the field's description, which describes the control: the provider string `characterCount` (`12/100` against `maxLength`, `12` without one). The count and the length rules count with `getLength` (code points by default, UIC-FIELD-7.4), so a grapheme counter counts a combined emoji once in both.
+With `showCount`, the field shall show the text's length after its description, in `ui-text-field__count` inside the field's description, which describes the control: the provider string `characterCount` (`12/100` against `maxLength`, `12` without one). The count and the length rules count with `getLength` (code points by default, UIC-FIELD-7.4), so a grapheme counter counts a combined emoji once in both; with `trim` both count the text without its leading and trailing whitespace.
 
 Implementation: `src/components/text-field/text-field.tsx`, `src/components/text-field/text-field-parts.tsx`, `src/core/strings.ts`
 Verification: `src/components/text-field/text-field.test.tsx`, `e2e/text-field.spec.ts`
@@ -103,7 +103,7 @@ Verification: `src/components/text-field/use-input-transform.test.tsx`, `e2e/tex
 
 ### UIC-TEXT-FIELD-4.2 - Display value
 
-While the control does not have focus, `displayValue` shall be the text it shows, such as a computed result or a formatted quantity, and the root publishes `data-display-value`; focusing the control shows the value for editing. The display value never changes the value, the committed value, dirty state, undo or `onCommit`.
+While the control does not have focus, `displayValue` shall be the text it shows, such as a computed result or a formatted quantity, and the root publishes `data-display-value`; focusing the control shows the value for editing. The display value never changes the value, the committed value, dirty state, undo or `onCommit`, and a form submits the value: with `displayValue` and `name`, the value submits through a hidden input under the name and the visible input has none.
 
 Implementation: `src/components/text-field/text-field.tsx`, `src/components/text-field/use-text-field-input.ts`
 Verification: `src/components/text-field/use-input-transform.test.tsx`, `e2e/text-field.spec.ts`

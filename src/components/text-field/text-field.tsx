@@ -17,6 +17,7 @@ import {
   useFieldControl,
   validateString,
   type FieldInputProps,
+  type FieldState,
   type FieldTextInputProps,
   type StringRules,
 } from '../field/field.js';
@@ -66,6 +67,17 @@ export interface TextFieldProps
     | undefined;
 }
 
+/** The character count: the text as the length rules check it (trimmed with `trim`), by `getLength`. */
+function countCharacters(value: string, { trim, getLength }: StringRules): number {
+  return (getLength ?? countCodePoints)(trim ? value.trim() : value);
+}
+
+/** The input shows the display value, so the value submits under the form name through a hidden input. */
+function HiddenValue({ name, state }: { name: string | undefined; state: FieldState<string> }) {
+  if (!name) return null;
+  return <input type="hidden" name={name} value={state.value} disabled={state.isDisabled} />;
+}
+
 /** The completion list under the text field element, when the field offers completions. */
 function TextFieldCompletions({
   edit,
@@ -87,8 +99,8 @@ function TextFieldCompletions({
 }
 
 /**
- * A field for a plain string, on one line or several. It validates its length and format, commits on
- * blur and on Enter, and reverts an edit on Escape. Adornments and a reveal button sit inside the
+ * A field for a plain string, on one line or several. It validates its length and format, commits
+ * when focus leaves the field and on Enter, and reverts an edit on Escape. Adornments and a reveal button sit inside the
  * input's frame; a counter joins the description.
  */
 export function TextField({
@@ -123,9 +135,8 @@ export function TextField({
   const [isRevealed, setIsRevealed] = useState(false);
   const input = { placeholder, transformInput, displayValue, onKeyDown, completions };
   const edit = useTextFieldInput({ state, multiline, ...input });
-
   const isMasked = allowsReveal && rest.type === 'password';
-  const count = showCount ? (getLength ?? countCodePoints)(state.value) : null;
+  const count = showCount ? countCharacters(state.value, rules) : null;
   const autosize = multiline && isAutoGrowing({ minRows, maxRows });
   const data = { multiline, autosize, displayValue: edit.showsDisplayValue };
   const reveal = isMasked
@@ -137,6 +148,7 @@ export function TextField({
       {...hooks.root({ className: field.className, data })}
       description={withCharacterCount(field.description, { count, maxLength })}
       state={state}
+      commitOnBlur
     >
       {(control) => (
         <>
@@ -145,6 +157,7 @@ export function TextField({
             {...toAriaControlProps(control)}
             {...hooks.slot('box')}
             ref={edit.boxRef}
+            name={displayValue === undefined ? rest.name : undefined}
             spellCheck={spellCheck?.toString()}
             type={isMasked && isRevealed ? 'text' : rest.type}
             value={edit.text}
@@ -162,6 +175,7 @@ export function TextField({
             </TextFieldFrame>
           </AriaTextField>
           <TextFieldCompletions edit={edit} renderCompletion={renderCompletion} />
+          {displayValue === undefined ? null : <HiddenValue name={rest.name} state={state} />}
         </>
       )}
     </Field>
