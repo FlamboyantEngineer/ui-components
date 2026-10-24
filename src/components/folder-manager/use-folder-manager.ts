@@ -24,11 +24,15 @@ import {
   useFolderSelection,
   useRowFocus,
   type FolderExpansion,
+  type FolderSelectionMode,
   type FolderSelectionOptions,
 } from './use-folder-tree.js';
 
-export interface FolderManagerOptions<T extends FolderItem>
-  extends FolderCallbacks<T>, FolderSelectionOptions {
+export interface FolderManagerOptions<
+  T extends FolderItem,
+  M extends FolderSelectionMode = FolderSelectionMode,
+>
+  extends FolderCallbacks<T>, FolderSelectionOptions<M> {
   /** The folders, nested. The manager never changes them: callbacks report each change. */
   folders: readonly T[];
   /** Shows a root row with this label above the folders, standing for no folder (`null`). */
@@ -106,8 +110,8 @@ function toSelectedRows(
  * The folder manager's state: selection, expansion, the filter, loading subfolders, edits,
  * deletes and moves, and focus after each.
  */
-export function useFolderManager<T extends FolderItem>(
-  options: FolderManagerOptions<T>,
+export function useFolderManager<T extends FolderItem, M extends FolderSelectionMode>(
+  options: FolderManagerOptions<T, M>,
 ): FolderManagerModel<T> {
   const { folders, rootLabel, isPending = false } = options;
   const messageId = useId();

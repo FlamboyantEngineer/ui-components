@@ -18,14 +18,18 @@ import {
   type FolderItem,
 } from './folder-model.js';
 import { FolderTree } from './folder-tree.js';
+import type { FolderSelectionMode } from './use-folder-tree.js';
 import {
   useFolderManager,
   type FolderManagerModel,
   type FolderManagerOptions,
 } from './use-folder-manager.js';
 
-export interface FolderManagerProps<T extends FolderItem>
-  extends BaseProps, FolderManagerOptions<T> {
+export interface FolderManagerProps<
+  T extends FolderItem,
+  M extends FolderSelectionMode = FolderSelectionMode,
+>
+  extends BaseProps, FolderManagerOptions<T, M> {
   /** Names the folder tree. */
   'aria-label'?: string | undefined;
   'aria-labelledby'?: string | undefined;
@@ -39,7 +43,7 @@ export interface FolderManagerProps<T extends FolderItem>
 
 interface ToolContext<T extends FolderItem> {
   model: FolderManagerModel<T>;
-  props: FolderManagerProps<T>;
+  props: Omit<FolderManagerProps<T>, 'onSelectionChange'>;
   strings: UiStrings;
 }
 
@@ -157,7 +161,10 @@ function runMenuAction<T extends FolderItem>({ model, props }: ToolContext<T>, k
  * promise; a rejected promise keeps an edit open with its reason. Actions appear only when their
  * callback is set.
  */
-export function FolderManager<T extends FolderItem>(props: FolderManagerProps<T>) {
+export function FolderManager<
+  T extends FolderItem,
+  M extends FolderSelectionMode = FolderSelectionMode,
+>(props: FolderManagerProps<T, M>) {
   const strings = useUiStrings();
   const context = { model: useFolderManager(props), props, strings };
   const { model } = context;

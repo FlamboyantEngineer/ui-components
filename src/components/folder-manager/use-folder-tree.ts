@@ -4,16 +4,29 @@ import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { walkTree } from '../../utils/walk-tree.js';
 import { type FolderItem, type FolderNode } from './folder-model.js';
 
-export interface FolderSelectionOptions {
+/** `single` selects one folder; `multiple` lets the reader select several. */
+export type FolderSelectionMode = 'single' | 'multiple';
+
+/**
+ * What `onSelectionChange` receives: the set of selected folders in multiple selection, as React
+ * Aria reports it, else the selected folder (`null`: none).
+ */
+export type FolderSelectionHandler<M extends FolderSelectionMode> = [M] extends ['multiple']
+  ? (keys: Set<Key>) => void
+  : (key: Key | null) => void;
+
+export interface FolderSelectionOptions<M extends FolderSelectionMode = FolderSelectionMode> {
   /** `single` (the default) selects one folder; `multiple` lets the reader select several. */
-  selectionMode?: 'single' | 'multiple' | undefined;
+  selectionMode?: M | undefined;
   /** The selected folder (`null`: none), controlled, in single selection. */
   selectedKey?: Key | null | undefined;
   defaultSelectedKey?: Key | null | undefined;
-  onSelectionChange?: ((key: Key | null) => void) | undefined;
+  /** Called with the selection after each change: the folder, or the set of folders when multiple. */
+  onSelectionChange?: FolderSelectionHandler<M> | undefined;
   /** The selected folders, controlled, in multiple selection. */
   selectedKeys?: Iterable<Key> | undefined;
   defaultSelectedKeys?: Iterable<Key> | undefined;
+  /** @deprecated Use `onSelectionChange`, which receives a `Set` in multiple selection. */
   onSelectedKeysChange?: ((keys: Key[]) => void) | undefined;
 }
 
@@ -33,7 +46,9 @@ function isSameList(a: readonly Key[], b: readonly Key[]): boolean {
   return a.length === b.length && a.every((key, index) => key === b[index]);
 }
 
-function controlledKeys(options: FolderSelectionOptions): Key[] | undefined {
+function controlledKeys<M extends FolderSelectionMode>(
+  options: FolderSelectionOptions<M>,
+): Key[] | undefined {
   if (options.selectionMode === 'multiple') {
     return options.selectedKeys === undefined ? undefined : [...options.selectedKeys];
   }
@@ -41,22 +56,35 @@ function controlledKeys(options: FolderSelectionOptions): Key[] | undefined {
   return options.selectedKey === null ? [] : [options.selectedKey];
 }
 
-function initialKeys(options: FolderSelectionOptions): Key[] {
+function initialKeys<M extends FolderSelectionMode>(options: FolderSelectionOptions<M>): Key[] {
   if (options.selectionMode === 'multiple') return [...(options.defaultSelectedKeys ?? [])];
   return options.defaultSelectedKey == null ? [] : [options.defaultSelectedKey];
 }
 
+/** Reports a new selection in the shape of the selection mode. */
+function reportSelection(options: FolderSelectionOptions, keys: Key[]) {
+  // The handler's shape follows `selectionMode`, which the caller's type already matched.
+  const onSelectionChange = options.onSelectionChange as
+    | ((selection: Key | null | Set<Key>) => void)
+    | undefined;
+  if (options.selectionMode !== 'multiple') {
+    onSelectionChange?.(keys[0] ?? null);
+    return;
+  }
+  onSelectionChange?.(new Set(keys));
+  options.onSelectedKeysChange?.(keys);
+}
+
 /** The selected folders, in single or multiple selection, controlled or held here. */
-export function useFolderSelection(
-  options: FolderSelectionOptions,
+export function useFolderSelection<M extends FolderSelectionMode>(
+  options: FolderSelectionOptions<M>,
 ): [Key[], (keys: Key[]) => void] {
   const [own, setOwn] = useState<Key[]>(() => initialKeys(options));
   const selected = controlledKeys(options) ?? own;
   const select = (keys: Key[]) => {
     if (isSameList(keys, selected)) return;
     setOwn(keys);
-    if (options.selectionMode === 'multiple') options.onSelectedKeysChange?.(keys);
-    else options.onSelectionChange?.(keys[0] ?? null);
+    reportSelection(options as FolderSelectionOptions, keys);
   };
   return [selected, select];
 }

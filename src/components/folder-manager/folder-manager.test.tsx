@@ -520,6 +520,29 @@ describe('FolderManager', () => {
     expect(screen.getByRole('button', { name: 'Rename' })).toBeEnabled();
   });
 
+  it('UIC-FOLDER-MANAGER-6.1 reports a multiple selection as a set through onSelectionChange', async () => {
+    const user = userEvent.setup();
+    const onSelectionChange = vi.fn<(keys: Set<Key>) => void>();
+    const onSelectedKeysChange = vi.fn();
+    render(
+      <FolderManager
+        aria-label="Folders"
+        folders={sample}
+        selectionMode="multiple"
+        defaultSelectedKeys={['citrus']}
+        onSelectionChange={onSelectionChange}
+        onSelectedKeysChange={onSelectedKeysChange}
+      />,
+    );
+    await user.keyboard('{Control>}');
+    await user.click(row('Vegetables'));
+    await user.keyboard('{/Control}');
+    expect(onSelectionChange).toHaveBeenCalledTimes(1);
+    expect(onSelectionChange.mock.lastCall![0]).toBeInstanceOf(Set);
+    expect([...onSelectionChange.mock.lastCall![0]]).toEqual(['citrus', 'vegetables']);
+    expect(onSelectedKeysChange).toHaveBeenLastCalledWith(['citrus', 'vegetables']);
+  });
+
   it('UIC-FOLDER-MANAGER-6.2 deletes every selected folder, one after another', async () => {
     const user = userEvent.setup();
     const deleted: Key[] = [];

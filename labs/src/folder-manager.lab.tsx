@@ -146,7 +146,7 @@ function SeveralFolders() {
         folders={folders}
         selectionMode="multiple"
         selectedKeys={selected}
-        onSelectedKeysChange={setSelected}
+        onSelectionChange={(keys) => setSelected([...keys])}
         data-lab-manager="multiple"
         {...callbacks}
       />

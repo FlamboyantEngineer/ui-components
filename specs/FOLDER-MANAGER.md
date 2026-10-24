@@ -20,7 +20,7 @@ Verification: `src/components/folder-manager/folder-manager.test.tsx`, `src/comp
 
 ### UIC-FOLDER-MANAGER-1.3 - Selection
 
-The tree shall select one folder at a time (React Aria single selection that follows focus), controlled with `selectedKey` and `onSelectionChange` or held from `defaultSelectedKey`, where `null` is no folder, unless `selectionMode` is `multiple` (UIC-FOLDER-MANAGER-6.1).
+The tree shall select one folder at a time (React Aria single selection that follows focus), controlled with `selectedKey` and `onSelectionChange`, which receives the folder's key, or held from `defaultSelectedKey`, where `null` is no folder, unless `selectionMode` is `multiple` (UIC-FOLDER-MANAGER-6.1).
 
 Implementation: `src/components/folder-manager/use-folder-tree.ts`, `src/components/folder-manager/folder-tree.tsx`
 Verification: `src/components/folder-manager/folder-manager.test.tsx`, `e2e/folder-manager.spec.ts`
@@ -125,7 +125,7 @@ Verification: `src/components/folder-manager/folder-manager.test.tsx`, `src/comp
 
 ### UIC-FOLDER-MANAGER-6.1 - Multiple selection
 
-With `selectionMode="multiple"`, the tree shall select several folders (React Aria multiple selection that replaces on press: Ctrl, Cmd or Shift with a press, and Shift with the arrow keys, extend it), controlled with `selectedKeys` and `onSelectedKeysChange` or held from `defaultSelectedKeys`. The root row stands for an empty selection.
+With `selectionMode="multiple"`, the tree shall select several folders (React Aria multiple selection that replaces on press: Ctrl, Cmd or Shift with a press, and Shift with the arrow keys, extend it), controlled with `selectedKeys` or held from `defaultSelectedKeys`, and reports each change to `onSelectionChange` as a `Set` of keys, as React Aria's collections do. `onSelectedKeysChange`, which receives the keys as a list, is deprecated and still called. The root row stands for an empty selection.
 
 Implementation: `src/components/folder-manager/use-folder-tree.ts`, `src/components/folder-manager/folder-tree.tsx`, `src/components/folder-manager/folder-manager.tsx`
 Verification: `src/components/folder-manager/folder-manager.test.tsx`, `e2e/folder-manager.spec.ts`
