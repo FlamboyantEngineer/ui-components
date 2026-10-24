@@ -8,6 +8,7 @@ import {
   useEffect,
   useMemo,
   useState,
+  type HTMLAttributes,
   type RefObject,
 } from 'react';
 import {
@@ -113,7 +114,10 @@ export function useToastStackPosition(
  * under the pointer or holding focus leaves and the pointer or focus moves on; a region left without
  * toasts has neither. `regionProps` go on the region element.
  */
-export function useStackExpanded(hasToasts: boolean) {
+export function useStackExpanded(hasToasts: boolean): {
+  isExpanded: boolean;
+  regionProps: HTMLAttributes<HTMLElement>;
+} {
   const [isFocused, setFocused] = useState(false);
   const { hoverProps, isHovered } = useHover({ isDisabled: !hasToasts });
   const { focusWithinProps } = useFocusWithin({ onFocusWithinChange: setFocused });
