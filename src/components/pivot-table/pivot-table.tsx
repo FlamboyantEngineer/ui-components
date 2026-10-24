@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps, ExpansionProps } from '../../core/events.js';
-import type { BaseProps, Key } from '../../core/props.js';
+import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { pivot, type PivotLayout, type PivotRecord, type PivotRow } from '../../utils/pivot.js';
 import { Table } from '../table/table.js';
@@ -29,13 +29,9 @@ export interface PivotTableProps extends BaseProps, AriaLabellingProps, Expansio
 
 const emptyLayout: PivotLayout = { rows: [], columns: [], values: [] };
 
-// Group keys are JSON and may hold spaces, which the table's element ids cannot.
+// The table encodes its row keys itself, so group keys that hold spaces stay distinct.
 function toTableRow(group: PivotRow, order: number): PivotTableRow {
-  return { id: encodeURIComponent(group.key), group, order };
-}
-
-function toRowIds(keys: Iterable<Key> | undefined): Key[] | undefined {
-  return keys === undefined ? undefined : [...keys].map((key) => encodeURIComponent(String(key)));
+  return { id: group.key, group, order };
 }
 
 /**
@@ -97,11 +93,9 @@ export function PivotTable({
         getChildRows={
           current.rows.length > 1 ? (row) => row.group?.children.map(toTableRow) : undefined
         }
-        expandedKeys={toRowIds(expandedKeys)}
-        defaultExpandedKeys={toRowIds(defaultExpandedKeys)}
-        onExpandedChange={(ids) =>
-          onExpandedChange?.(new Set([...ids].map((id) => decodeURIComponent(String(id)))))
-        }
+        expandedKeys={expandedKeys}
+        defaultExpandedKeys={defaultExpandedKeys}
+        onExpandedChange={onExpandedChange}
       />
     </div>
   );
