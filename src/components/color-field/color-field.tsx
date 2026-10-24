@@ -122,7 +122,12 @@ export function ColorField({
     if (!next) state.commit();
   };
   return (
-    <Field {...field} {...hooks.root({ className: field.className })} state={state}>
+    <Field
+      {...field}
+      {...hooks.root({ className: field.className })}
+      state={state}
+      commitOnBlur={allowsTyping}
+    >
       {(control) => (
         <ColorPicker
           value={color ?? emptyPickerColor}

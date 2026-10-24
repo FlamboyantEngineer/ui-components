@@ -63,7 +63,10 @@ function Output({ name, children }: { name: string; children: ReactNode }) {
   );
 }
 
-/** The committed text is the caller's: it stays dirty until a commit (blur or Format) saves it. */
+/**
+ * The committed text is the caller's: it stays dirty until a commit (leaving the field or Format)
+ * saves it.
+ */
 function SavedEditor() {
   const [committed, setCommitted] = useState('{"fruit":"Pear","sizes":[1,2,3]}');
   const [last, setLast] = useState('none');

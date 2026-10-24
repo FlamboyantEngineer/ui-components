@@ -36,6 +36,19 @@ test.describe('Relative Date Field lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-FIELD-4.1 UIC-RELATIVE-DATE-FIELD-1.4 reaches the restore button of a dirty field by Tab', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('relative-date-field');
+    const dirty = page.locator('[data-lab-cell="state=dirty layout=label-control"] .ui-field');
+    await expect(dirty).toHaveAttribute('data-dirty', 'true');
+    await dirty.getByRole('button', { name: /Apr 27, 2026/ }).focus();
+    await page.keyboard.press('Tab');
+    await expect(dirty.getByRole('button', { name: 'Restore Due' })).toBeFocused();
+    await expect(dirty).toHaveAttribute('data-dirty', 'true');
+  });
+
   test('UIC-RELATIVE-DATE-FIELD-1.3 passes axe in the dark theme, with the presets open', async ({
     page,
     lab,

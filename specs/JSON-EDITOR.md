@@ -54,7 +54,7 @@ Verification: `src/components/json-editor/json-editor.test.tsx`, `src/components
 
 ### UIC-JSON-EDITOR-4.1 - Commit, dirty state and restore
 
-The editor shall commit its text when the text area loses focus. While the text differs from the committed text the field is dirty and offers its restore button, which puts the committed text back.
+The editor shall commit its text when focus leaves the field (UIC-FIELD-1.11), so Tab from the edited text area reaches the restore button without committing. While the text differs from the committed text the field is dirty and offers its restore button, which puts the committed text back.
 
 Implementation: `src/components/json-editor/json-editor.tsx`
 Verification: `src/components/json-editor/json-editor.test.tsx`, `e2e/json-editor.spec.ts`

@@ -127,7 +127,7 @@ function Typing() {
         defaultValue="#2e8b57"
         allowsTyping
         swatches={swatches}
-        description="Type hex, rgb() or hsl(); Enter or leaving the input commits."
+        description="Type hex, rgb() or hsl(); Enter, or leaving the field, commits."
         onCommit={(value) => setCommitted(value ?? 'empty')}
         data-lab-field="typing"
       />

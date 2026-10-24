@@ -39,14 +39,18 @@ export function RichTextEditor(props: RichTextEditorProps) {
         : null,
   });
   return (
-    <Field state={state} {...field} className={mergeClassNames(hooks.className, field.className)}>
+    <Field
+      state={state}
+      {...field}
+      className={mergeClassNames(hooks.className, field.className)}
+      commitOnBlur
+    >
       {(control) => (
         <EditorSurface
           control={control}
           schema={engine}
           value={state.value}
           onChange={state.setValue}
-          onBlur={() => state.commit()}
           placeholder={rest.placeholder}
           toolbar={rest.toolbar}
         >
