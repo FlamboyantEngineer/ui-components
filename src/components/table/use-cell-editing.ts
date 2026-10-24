@@ -7,7 +7,7 @@ import {
   type MouseEvent,
 } from 'react';
 import type { TableCellValue, TableColumn, TableRow } from './table-rows.js';
-import { toKeyIdentity } from '../../utils/to-key-identity.js';
+import { toCollectionKey } from '../../utils/to-collection-key.js';
 
 /** A finished cell edit: the row, the column and the cell's new value. */
 export interface TableCellEdit<T> {
@@ -16,7 +16,7 @@ export interface TableCellEdit<T> {
   value: TableCellValue;
 }
 
-/** The cell being edited, by typed row identity and column id, with its initial typed character. */
+/** The cell being edited, by its row's collection key and column id, with its initial typed character. */
 export interface TableEditingCell {
   rowKey: string;
   columnId: string;
@@ -78,7 +78,7 @@ function findEditableCell<T>(
   const body = element?.closest('.ui-table__body');
   if (!(element instanceof HTMLElement) || !body || body.closest('.ui-table') !== root) return null;
   const columnId = element.dataset['column'];
-  const rowKey = element.closest('[role="row"]')?.getAttribute('data-key-identity');
+  const rowKey = element.closest('[role="row"]')?.getAttribute('data-key');
   const column = columns.find((candidate) => candidate.id === columnId);
   if (!column?.allowsEditing || columnId === undefined || rowKey == null) return null;
   return { rowKey, columnId };
@@ -87,7 +87,7 @@ function findEditableCell<T>(
 /** The cell's element, found again after a render. */
 function findCellElement(root: HTMLElement, cell: TableEditingCell): HTMLElement | undefined {
   const row = [...root.querySelectorAll('.ui-table__body [role="row"]')].find(
-    (candidate) => candidate.getAttribute('data-key-identity') === cell.rowKey,
+    (candidate) => candidate.getAttribute('data-key') === cell.rowKey,
   );
   return [...(row?.children ?? [])].find(
     (candidate): candidate is HTMLElement =>
@@ -121,7 +121,7 @@ export function isEditingCell<T extends TableRow>(
   row: T,
   columnId: string,
 ): boolean {
-  return editing?.rowKey === toKeyIdentity(row.id) && editing.columnId === columnId;
+  return editing?.rowKey === toCollectionKey(row.id) && editing.columnId === columnId;
 }
 
 /**
