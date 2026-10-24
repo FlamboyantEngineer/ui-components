@@ -55,6 +55,48 @@ describe('List', () => {
     expect(renders).toEqual([]);
   });
 
+  it('UIC-LIST-ROW-1.2 keeps the tab stop on the first row while rows change before focus enters', async () => {
+    const user = userEvent.setup();
+    function Results({ names }: { names: string[] }) {
+      return (
+        <>
+          <input aria-label="Query" />
+          <List aria-label="Results">
+            {names.map((name) => (
+              <ListRow key={name} title={name} onPress={() => {}} />
+            ))}
+          </List>
+        </>
+      );
+    }
+    const { rerender } = render(<Results names={['Apple', 'Banana', 'Cherry']} />);
+    await flush();
+    rerender(<Results names={['Avocado', 'Banana', 'Cherry']} />);
+    await flush();
+    rerender(<Results names={['Apricot', 'Avocado', 'Banana', 'Cherry']} />);
+    await flush();
+    act(() => screen.getByRole('textbox', { name: 'Query' }).focus());
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'Apricot' })).toHaveFocus();
+  });
+
+  it('UIC-LIST-ROW-1.2 reads the rows once for a whole batch of mounting rows', async () => {
+    const querySelectorAll = vi.spyOn(Element.prototype, 'querySelectorAll');
+    const names = Array.from({ length: 200 }, (_, index) => `Row ${index}`);
+    render(
+      <List aria-label="Many">
+        {names.map((name) => (
+          <ListRow key={name} title={name} onPress={() => {}} />
+        ))}
+      </List>,
+    );
+    await flush();
+    const reads = querySelectorAll.mock.calls.filter(([selector]) =>
+      String(selector).includes('ui-list-row__primary'),
+    );
+    expect(reads.length).toBeLessThanOrEqual(2);
+  });
+
   it('UIC-LIST-ROW-1.2 makes a row the tab stop when one of its trailing controls takes focus', async () => {
     const { container } = render(
       <List aria-label="Fruit">
