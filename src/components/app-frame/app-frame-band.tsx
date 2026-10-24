@@ -6,7 +6,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { ToolbarRow } from '../layout/layout.js';
 import { ProjectionContent, useProjectedContent } from '../projection/projection.js';
-import { toAppFrameSlot, type AppFrameBandSlot } from './app-frame.js';
+import { toAppFrameSlot, useIsInsideAppFrame, type AppFrameBandSlot } from './app-frame.js';
 
 export interface AppFrameBandProps extends BaseProps, AriaLabellingProps {
   /** The leading part: a title, a breadcrumb or fields. */
@@ -84,7 +84,11 @@ export function AppFrameBand({
   );
 }
 
-/** Fills a part of the nearest frame's band from anywhere below the frame, in place of its own. */
+/**
+ * Fills a part of the nearest frame's band from anywhere below the frame, in place of its own.
+ * Without a frame above, it renders its children in place.
+ */
 export function AppFrameBandContent({ slot, children }: AppFrameBandContentProps) {
+  if (!useIsInsideAppFrame()) return <>{children}</>;
   return <ProjectionContent slot={toAppFrameSlot(slot)}>{children}</ProjectionContent>;
 }
