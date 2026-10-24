@@ -156,7 +156,7 @@ test.describe('JSON Editor lab', () => {
     await page.keyboard.press('Enter');
     await page.keyboard.type('"');
     const list = page.getByRole('listbox', { name: 'Suggestions' });
-    await expect(list.getByRole('option')).toHaveText(['"vegetarian"boolean', '"tags"array']);
+    await expect(list.getByRole('option')).toHaveText(['"vegetarian" boolean', '"tags" array']);
     await page.keyboard.type('ve');
     await page.keyboard.press('Enter');
     await expect(input).toHaveValue(/"course": "brunch",\n {2}"vegetarian": false\n\}$/);

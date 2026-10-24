@@ -1,4 +1,12 @@
-import { useCallback, useEffect, useReducer, useRef, useState, type RefObject } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useReducer,
+  useRef,
+  useState,
+  type RefObject,
+} from 'react';
 import type { Orientation } from '../core/props.js';
 import { useResizeObserver } from './use-resize-observer.js';
 
@@ -66,6 +74,36 @@ function resolveWheelScrollPosition(strip: HTMLElement, event: WheelEvent): numb
   return next === strip.scrollLeft ? null : next;
 }
 
+type StripAttachment = (strip: HTMLElement) => () => void;
+
+/**
+ * Attaches `attach` to the strip element and detaches it when the element or `attach` changes,
+ * checking after every commit like `useResizeObserver`, so a strip that mounts after the first
+ * render, or is replaced, is attached too. `attach` should keep its identity between renders.
+ */
+function useStripAttachment(
+  stripRef: RefObject<HTMLElement | null>,
+  attach: StripAttachment | null,
+): void {
+  const attached = useRef<{ strip: HTMLElement; attach: StripAttachment; detach: () => void }>(
+    null,
+  );
+  useLayoutEffect(() => {
+    const strip = stripRef.current;
+    const current = attached.current;
+    if (current?.strip === strip && current.attach === attach) return;
+    current?.detach();
+    attached.current = strip && attach ? { strip, attach, detach: attach(strip) } : null;
+  });
+  useLayoutEffect(
+    () => () => {
+      attached.current?.detach();
+      attached.current = null;
+    },
+    [],
+  );
+}
+
 /** Lets the vertical wheel scroll a horizontal strip. */
 function useWheelScrolling(
   stripRef: RefObject<HTMLElement | null>,
@@ -77,9 +115,7 @@ function useWheelScrolling(
     onWheelScrollRef.current = onWheelScroll;
   }, [onWheelScroll]);
 
-  useEffect(() => {
-    const strip = stripRef.current;
-    if (!strip || !horizontal) return undefined;
+  const attach = useCallback((strip: HTMLElement) => {
     const onWheel = (event: WheelEvent) => {
       if (!isStripWheel(strip, event)) return;
       const next = resolveWheelScrollPosition(strip, event);
@@ -90,7 +126,8 @@ function useWheelScrolling(
     };
     strip.addEventListener('wheel', onWheel, { capture: true, passive: false });
     return () => strip.removeEventListener('wheel', onWheel, { capture: true });
-  }, [horizontal, stripRef]);
+  }, []);
+  useStripAttachment(stripRef, horizontal ? attach : null);
 }
 
 /**
@@ -121,8 +158,9 @@ export function scrollStripPage(
  * Tracks whether a scrolling strip (a row of tabs or tools) hides content past either edge, so the
  * stylesheet can draw a fade there, and lets the vertical wheel scroll a horizontal strip. Scrolling
  * stays free: no snapping, paging or stepper buttons. Measurements coalesce to one read per animation
- * frame and resync when the strip or its children resize and when children mount or unmount. Right-to-
- * left strips report and scroll from their inline start.
+ * frame and resync when the strip or its children resize and when children mount or unmount. A strip
+ * that mounts after the first render, or is replaced, is followed too. Right-to-left strips report
+ * and scroll from their inline start.
  */
 export function useScrollStripOverflow(
   stripRef: RefObject<HTMLElement | null>,
@@ -166,18 +204,23 @@ export function useScrollStripOverflow(
     return strip ? [strip, ...Array.from(strip.children)] : [];
   }, syncOverflow);
 
-  useEffect(() => {
-    const strip = stripRef.current;
-    const Observer = strip?.ownerDocument.defaultView?.MutationObserver;
-    if (!strip || !Observer) return undefined;
-    // A new child can be wider than the space it fills without resizing the strip itself.
-    const mutations = new Observer(() => {
-      refreshTargets();
+  const observeChildren = useCallback(
+    (strip: HTMLElement) => {
+      const Observer = strip.ownerDocument.defaultView?.MutationObserver;
+      // A strip that mounts late is measured as it arrives.
       syncOverflow();
-    });
-    mutations.observe(strip, { childList: true });
-    return () => mutations.disconnect();
-  }, [stripRef, syncOverflow]);
+      if (!Observer) return () => undefined;
+      // A new child can be wider than the space it fills without resizing the strip itself.
+      const mutations = new Observer(() => {
+        refreshTargets();
+        syncOverflow();
+      });
+      mutations.observe(strip, { childList: true });
+      return () => mutations.disconnect();
+    },
+    [syncOverflow],
+  );
+  useStripAttachment(stripRef, observeChildren);
 
   return { overflow, syncOverflow };
 }

@@ -1,6 +1,6 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { useDelayedFlag } from './use-delayed-flag.js';
+import { useActiveAfter, useDelayedFlag } from './use-delayed-flag.js';
 
 afterEach(() => vi.useRealTimers());
 
@@ -68,5 +68,24 @@ describe('useDelayedFlag', () => {
     expect(vi.getTimerCount()).toBe(1);
     unmount();
     expect(vi.getTimerCount()).toBe(0);
+  });
+});
+
+describe('useActiveAfter', () => {
+  it('UIC-ACTION-BUTTON-1.7 UIC-LOADING-OVERLAY-3.2 follows the flag at once without a delay and after it with one', () => {
+    vi.useFakeTimers();
+    const { result, rerender } = renderHook(({ active, delay }) => useActiveAfter(active, delay), {
+      initialProps: { active: true, delay: 0 },
+    });
+    expect(result.current).toBe(true);
+    expect(vi.getTimerCount()).toBe(0);
+    rerender({ active: false, delay: -5 });
+    expect(result.current).toBe(false);
+    rerender({ active: true, delay: 100 });
+    expect(result.current).toBe(false);
+    act(() => vi.advanceTimersByTime(100));
+    expect(result.current).toBe(true);
+    rerender({ active: false, delay: 100 });
+    expect(result.current).toBe(false);
   });
 });

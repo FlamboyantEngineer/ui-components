@@ -92,14 +92,14 @@ Verification: `src/components/file-upload/file-rules.test.ts`, `src/components/f
 
 ### UIC-FILE-UPLOAD-2.6 - Count limit
 
-With `maxFiles`, the upload shall hold at most that many files, counting the listed `files`: offered files that pass the other checks are accepted in order until the limit, and the rest are refused with the reason `count`.
+With `maxFiles`, the upload shall hold at most that many files, counting the listed `files` and the files it handed on since the owner last rendered it: offered files that pass the other checks are accepted in order until the limit, and the rest are refused with the reason `count`.
 
 Implementation: `src/components/file-upload/file-rules.ts`, `src/components/file-upload/file-upload.tsx`, `src/core/strings.ts`
 Verification: `src/components/file-upload/file-rules.test.ts`, `src/components/file-upload/file-upload.test.tsx`, `e2e/file-upload.spec.ts`
 
 ### UIC-FILE-UPLOAD-2.7 - Owner's check
 
-`validate` shall check each offered file that matches the types and fits the size limits, given the files of the same offer accepted before it, so it can refuse names, duplicates or image dimensions: a message it returns refuses the file with the reason `invalid` and that message. It may answer with a promise; the offer is then handed on once every answer has come. The checks run in this order: type, size, `validate`, count.
+`validate` shall check each offered file that matches the types and fits the size limits, given the files of the same offer accepted before it, so it can refuse names, duplicates or image dimensions: a message it returns refuses the file with the reason `invalid` and that message. It may answer with a promise; the offer is then handed on once every answer has come. An offer made while an earlier one still waits for its answers is checked after the earlier one is handed on, so overlapping offers never pass `maxFiles` together and the refusals shown are the latest offer's. The checks run in this order: type, size, `validate`, count.
 
 Implementation: `src/components/file-upload/file-rules.ts`, `src/components/file-upload/file-upload.tsx`, `src/core/strings.ts`
 Verification: `src/components/file-upload/file-rules.test.ts`, `src/components/file-upload/file-upload.test.tsx`, `e2e/file-upload.spec.ts`
@@ -136,9 +136,9 @@ Verification: `src/components/file-upload/file-upload.test.tsx`
 
 ### UIC-FILE-UPLOAD-3.4 - Removing a file
 
-With `onRemove`, each file shall have an `IconButton` (`ui-file-upload__file-remove`, `close` glyph) named by the provider string `removeItem` with the file name, which calls `onRemove` with the file's `id`.
+With `onRemove`, each file shall have an `IconButton` (`ui-file-upload__file-remove`, `close` glyph) named by the provider string `removeItem` with the file name, which calls `onRemove` with the file's `id`. When the owner then drops the file and focus went with its row, focus moves to the next file's remove button, else the previous file's, else the command.
 
-Implementation: `src/components/file-upload/file-upload-files.tsx`, `src/core/strings.ts`
+Implementation: `src/components/file-upload/file-upload-files.tsx`, `src/components/file-upload/file-upload.tsx`, `src/core/strings.ts`
 Verification: `src/components/file-upload/file-upload.test.tsx`, `e2e/file-upload.spec.ts`
 
 ### UIC-FILE-UPLOAD-3.5 - Image previews
@@ -187,7 +187,7 @@ Verification: `src/components/file-upload/file-upload.test.tsx`
 
 ### UIC-FILE-UPLOAD-4.2 - Forms
 
-With `name` or `isRequired`, the upload shall render a hidden file input that holds the listed files' `file`s, so a native form submit or `FormData` carries them under `name` (in browsers that can set an input's files). While `isRequired` and no file is listed, a form submit is refused: the upload shows the provider string `valueRequired` in an `InlineError` alert (`ui-file-upload__error`) that describes the command, publishes `data-invalid`, and moves focus to the command; listing a file clears it. `isRequired` publishes `data-required`. `isInvalid` likewise shows the owner's `errorMessage` there and publishes `data-invalid`.
+With `name` or `isRequired`, the upload shall render a hidden file input that holds the listed files' `file`s, so a native form submit or `FormData` carries them under `name` (in browsers that can set an input's files). While `isRequired` and no file is listed, a form submit is refused: the upload shows the provider string `valueRequired` in an `InlineError` alert (`ui-file-upload__error`) that describes the command, publishes `data-invalid`, and moves focus to the command; listing a file clears it. A disabled upload's input is disabled, so the form neither submits its files nor refuses a submit for it, and a read-only upload never refuses a submit. `isRequired` publishes `data-required`. `isInvalid` likewise shows the owner's `errorMessage` there and publishes `data-invalid`.
 
 Implementation: `src/components/file-upload/file-upload-form.tsx`, `src/components/file-upload/file-upload.tsx`
 Verification: `src/components/file-upload/file-upload.test.tsx`, `e2e/file-upload.spec.ts`

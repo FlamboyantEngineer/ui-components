@@ -27,10 +27,10 @@ Verification: `src/components/combobox/combobox.test.tsx`, `e2e/combobox.spec.ts
 
 ### UIC-COMBOBOX-1.4 - Clear button
 
-While the input holds text and the combobox is neither disabled nor read-only, the field shall draw a bare small `IconButton` (`close` glyph, named by the provider string `clear`, also `ui-combobox__clear`) that empties the input and the selection and returns focus to the input.
+While the input holds text and the combobox is neither disabled nor read-only, the field shall draw a bare small `IconButton` (`close` glyph, named by the provider string `clear`, also `ui-combobox__clear`) that empties the input and, for a single combobox, the selection, and returns focus to the input; a pointer press keeps focus in the input throughout, so pressing it while the list is open works too. A multiple combobox keeps its chips, which have their own remove buttons, and reports no change.
 
-Implementation: `src/components/combobox/combobox.tsx`
-Verification: `src/components/combobox/combobox.test.tsx`, `e2e/combobox.spec.ts`
+Implementation: `src/components/combobox/combobox.tsx`, `src/components/combobox/combobox-field.tsx`
+Verification: `src/components/combobox/combobox.test.tsx`, `src/components/combobox/combobox-chips.test.tsx`, `e2e/combobox.spec.ts`
 
 ## UIC-COMBOBOX-2 - Suggestions
 
@@ -94,7 +94,7 @@ Verification: `src/components/combobox/combobox.test.tsx`, `src/components/combo
 
 ### UIC-COMBOBOX-3.1 - Multiple selection with chips
 
-`selectionMode="multiple"` shall let the reader pick several options, with `value`, `defaultValue` and `onChange` holding the list of ids: picking an option toggles it, keeps the list open (`aria-multiselectable` on the listbox) and clears the typed text. An unchanged controlled selection shall not clear typed search text as input or loading state rerenders. The chosen options shall show, in value order, as chips in the library's `TagGroup` (`ui-combobox__chips`, also `ui-tag-group`, sized like the field) at the start of the field group, named by the provider's `selectedValues` string from the label text (or `aria-label`). A chip shows its option's label, or the label it had when last listed if the suggestions no longer list it, or its id. A chip also retains its most recently listed icon when suggestions change. Only current selections are remembered; removing a selection releases its cached option. On an editable combobox each chip offers the tag group's remove button, and Delete or Backspace on a focused chip removes it; a disabled or read-only one offers no removal. React Aria hides everything but the input and the list from assistive technology while the list is open.
+`selectionMode="multiple"` shall let the reader pick several options, with `value`, `defaultValue` and `onChange` holding the list of ids: picking an option toggles it, keeps the list open (`aria-multiselectable` on the listbox) and clears the typed text. An unchanged controlled selection shall not clear typed search text as input or loading state rerenders. The chosen options shall show, in value order, as chips in the library's `TagGroup` (`ui-combobox__chips`, also `ui-tag-group`, sized like the field) at the start of the field group, named by the provider's `selectedValues` string from the label text (or `aria-label`); a label drawn as markup, or the elements `aria-labelledby` names, give their text once rendered. A chip shows its option's label, or the label it had when last listed if the suggestions no longer list it, or its id. A chip also retains its most recently listed icon when suggestions change. Only current selections are remembered; removing a selection releases its cached option. On an editable combobox each chip offers the tag group's remove button, and Delete or Backspace on a focused chip removes it; a disabled or read-only one offers no removal. React Aria hides everything but the input and the list from assistive technology while the list is open.
 
 Implementation: `src/components/combobox/combobox.tsx`, `src/components/combobox/combobox-chips.tsx`, `src/components/combobox/combobox-field.tsx`
 Verification: `src/components/combobox/combobox-chips.test.tsx`, `e2e/combobox.spec.ts`

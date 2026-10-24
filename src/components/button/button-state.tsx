@@ -9,8 +9,8 @@ import type {
   PressEventProps,
 } from '../../core/events.js';
 import type { NativeProps } from '../../core/props.js';
-import { UiLink } from '../../core/provider.js';
 import type { ElementRender } from '../../utils/render-element.js';
+import { renderLinkElement } from '../link/link.js';
 import { formatAriaKeyShortcuts, type ShortcutChord } from '../shortcut/shortcut.js';
 
 /** The states a button passes to `render` with the `<button>`'s props. */
@@ -59,7 +59,10 @@ export interface ButtonStateProps
   isDisabled?: boolean | undefined;
   /** Keep a disabled button focusable, with `aria-disabled="true"`, refusing activation. */
   focusableWhenDisabled?: boolean | undefined;
-  /** Shows a spinner in place of the icons and refuses presses, keeping focus and the label. */
+  /**
+   * Shows a busy indicator and refuses presses, keeping focus. Button keeps its icons and label
+   * under the indicator; Icon Button shows it in place of its icon.
+   */
   isPending?: boolean | undefined;
   /** Names the busy indicator while pending. Defaults to the provider's `loading` string. */
   pendingLabel?: string | undefined;
@@ -131,14 +134,15 @@ export interface ButtonLinkElementProps
   extends
     PressEventProps,
     HoverEventProps,
-    Pick<FocusEventProps, 'onFocus' | 'onBlur'>,
+    FocusEventProps,
+    KeyboardEventProps,
+    AriaLabellingProps,
     Pick<
       ButtonStateProps,
-      'href' | 'target' | 'rel' | 'isDisabled' | 'autoFocus' | 'aria-current'
+      'href' | 'target' | 'rel' | 'isDisabled' | 'autoFocus' | 'hidden' | 'aria-current'
     > {
   id?: string | undefined;
   ref?: Ref<HTMLAnchorElement> | undefined;
-  'aria-describedby'?: string | undefined;
   /** Draws the `<a>`, or the `<span>` of a disabled link. */
   render: (props: AnchorDomProps | SpanDomProps) => ReactElement;
 }
@@ -209,7 +213,9 @@ function omitOwnProps({
 }
 
 /** Whether the caller states toggle semantics itself, so `isSelected` adds no `aria-pressed`. */
-function statesToggle(props: ButtonStateProps): boolean {
+function statesToggle(
+  props: Pick<ButtonStateProps, 'role' | 'aria-checked' | 'aria-pressed'>,
+): boolean {
   return (
     props['aria-pressed'] !== undefined ||
     props['aria-checked'] !== undefined ||
@@ -267,18 +273,22 @@ export function toAriaButtonProps(
 /**
  * The selected state and press handler of a button. With `defaultSelected` or `onChange` it is a
  * toggle: a press flips the state (held here unless `isSelected` controls it) and reports it, and
- * it always states `aria-pressed`. Otherwise `isSelected` only shows the state.
+ * it states `aria-pressed` unless the caller states toggle semantics. Otherwise `isSelected` only
+ * shows the state.
  */
-export function useButtonSelection({
-  isSelected,
-  defaultSelected,
-  onChange,
-  onPress,
-  'aria-pressed': ariaPressed,
-}: Pick<
-  ButtonStateProps,
-  'isSelected' | 'defaultSelected' | 'onChange' | 'onPress' | 'aria-pressed'
->): Pick<ButtonStateProps, 'isSelected' | 'onPress' | 'aria-pressed'> {
+export function useButtonSelection(
+  props: Pick<
+    ButtonStateProps,
+    | 'isSelected'
+    | 'defaultSelected'
+    | 'onChange'
+    | 'onPress'
+    | 'role'
+    | 'aria-checked'
+    | 'aria-pressed'
+  >,
+): Pick<ButtonStateProps, 'isSelected' | 'onPress' | 'aria-pressed'> {
+  const { isSelected, defaultSelected, onChange, onPress, 'aria-pressed': ariaPressed } = props;
   const isToggle = defaultSelected !== undefined || onChange !== undefined;
   const [selected, setSelected] = useControllableState(
     isSelected,
@@ -288,7 +298,7 @@ export function useButtonSelection({
   if (!isToggle) return { isSelected, onPress, 'aria-pressed': ariaPressed };
   return {
     isSelected: selected,
-    'aria-pressed': ariaPressed ?? selected,
+    'aria-pressed': statesToggle(props) ? ariaPressed : selected,
     onPress: (event: PressEvent) => {
       onPress?.(event);
       setSelected(!selected);
@@ -296,54 +306,52 @@ export function useButtonSelection({
   };
 }
 
-/** Draws a link button's anchor through the provider's link renderer; a disabled one is a span. */
-function renderLinkElement(
-  props: AnchorDomProps | SpanDomProps,
-  extra: Record<string, unknown>,
-): ReactElement {
-  if ('href' in props && typeof props.href === 'string' && props['aria-disabled'] === undefined) {
-    return <UiLink {...props} {...extra} href={props.href} />;
-  }
-  const { href: _href, ...spanProps } = props as AnchorDomProps;
-  return <span {...(spanProps as SpanDomProps)} {...extra} />;
+/**
+ * The props that apply to a `<button>` only, which a link button never hands its building block:
+ * the native type, the pending and selected states, the button's own focus options and its
+ * button-only roles and states.
+ */
+function omitButtonOnlyProps({
+  type: _type,
+  isPending: _isPending,
+  pendingLabel: _pendingLabel,
+  isSelected: _isSelected,
+  defaultSelected: _defaultSelected,
+  onChange: _onChange,
+  focusableWhenDisabled: _focusableWhenDisabled,
+  preventFocusOnPress: _preventFocusOnPress,
+  excludeFromTabOrder: _excludeFromTabOrder,
+  slot: _slot,
+  render: _render,
+  role: _role,
+  'aria-checked': _ariaChecked,
+  'aria-selected': _ariaSelected,
+  'aria-pressed': _ariaPressed,
+  'aria-haspopup': _ariaHaspopup,
+  'aria-expanded': _ariaExpanded,
+  'aria-controls': _ariaControls,
+  ...rest
+}: ButtonStateProps) {
+  return rest;
 }
 
-/** Building-block link props for a button with `href`: its press, focus and disabled states. */
+/**
+ * Building-block link props for a button with `href`: everything a link takes (press, hover, focus
+ * and key handlers, labelling, `id`, `autoFocus`, `hidden`), with a safe `rel` for a new tab.
+ */
 export function toAriaLinkProps(
-  {
-    href,
-    target,
-    rel,
-    isDisabled,
-    onPress,
-    onPressStart,
-    onPressEnd,
-    onPressChange,
-    onPressUp,
-    onHoverStart,
-    onHoverEnd,
-    onHoverChange,
-    onFocus,
-    onBlur,
-    autoFocus,
-    shortcut,
-    ref,
-    id,
-    'aria-describedby': ariaDescribedBy,
-    'aria-current': ariaCurrent,
-  }: ButtonStateProps & { id?: string | undefined },
+  props: ButtonStateProps & { id?: string | undefined },
   { isTooltipName = false }: ButtonStateOptions = {},
 ): ButtonLinkElementProps {
+  const { shortcut, ref, target, rel, ...rest } = omitButtonOnlyProps(props);
   const extra: Record<string, unknown> = { 'aria-keyshortcuts': toKeyShortcuts(shortcut) };
-  if (isTooltipName) extra['aria-describedby'] = ariaDescribedBy;
+  if (isTooltipName) extra['aria-describedby'] = rest['aria-describedby'];
   return {
-    ...{ href, target, isDisabled, autoFocus, id },
-    ...{ onPress, onPressStart, onPressEnd, onPressChange, onPressUp },
-    ...{ onHoverStart, onHoverEnd, onHoverChange, onFocus, onBlur },
+    ...rest,
+    target,
     rel: rel ?? (target === '_blank' ? 'noopener noreferrer' : undefined),
     ref: ref as Ref<HTMLAnchorElement> | undefined,
-    'aria-describedby': ariaDescribedBy,
-    'aria-current': ariaCurrent,
-    render: (props) => renderLinkElement(props, extra),
+    // The building block draws a `<span>` without `href`; its props fit an anchor's.
+    render: (element) => renderLinkElement({ ...(element as AnchorDomProps), ...extra }),
   };
 }

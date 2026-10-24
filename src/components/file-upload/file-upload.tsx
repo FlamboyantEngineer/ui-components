@@ -1,5 +1,6 @@
 import {
   useId,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -33,6 +34,7 @@ import {
 import {
   FileUploadFiles,
   fileUploadHooks as hooks,
+  useRemovalFocus,
   type FileUploadItem,
 } from './file-upload-files.js';
 import { useFileForm } from './file-upload-form.js';
@@ -105,7 +107,10 @@ function rejectionMessage(rejections: readonly FileRejection[], strings: UiStrin
 
 /**
  * Checks offered files, reports the refusals and hands on the accepted ones, and judges a drag
- * before the drop. `held` files are listed already.
+ * before the drop. `held` files are listed already. An offer made while an earlier one still waits
+ * for `validate` is checked once the earlier one is handed on, counting the files it accepted until
+ * the upload renders again, so overlapping offers never pass `maxFiles` together and the latest
+ * offer's refusals are the ones shown.
  */
 function useFileIntake(props: FileUploadProps, held: number) {
   const { allowsMultiple, acceptDirectory, onSelect, onReject } = props;
@@ -113,19 +118,36 @@ function useFileIntake(props: FileUploadProps, held: number) {
   const rules: FileRules = { acceptedFileTypes, maxSize, minSize, maxFiles, validate };
   const [rejections, setRejections] = useState<FileRejection[]>([]);
   const [isDragAcceptable, setDragAcceptable] = useState(true);
+  const count = useRef({ held, accepted: 0 });
+  const queue = useRef<Promise<void> | null>(null);
+  useLayoutEffect(() => {
+    count.current = { held, accepted: 0 };
+  });
   const isMultiple = Boolean(allowsMultiple || acceptDirectory);
   const report = (result: FilePartition) => {
+    count.current.accepted += result.accepted.length;
     setRejections(result.rejections);
     if (result.rejections.length > 0) onReject?.(result.rejections);
     if (result.accepted.length > 0) onSelect(result.accepted);
+  };
+  const judge = (offered: readonly File[]): Promise<void> | undefined => {
+    const outcome = partitionFiles(offered, rules, count.current.held + count.current.accepted);
+    if (outcome instanceof Promise) return outcome.then(report);
+    report(outcome);
+    return undefined;
   };
   return {
     rejections,
     isDragAcceptable,
     receive(offered: readonly File[]) {
-      const outcome = partitionFiles(isMultiple ? offered : offered.slice(0, 1), rules, held);
-      if (outcome instanceof Promise) void outcome.then(report);
-      else report(outcome);
+      const files = isMultiple ? offered : offered.slice(0, 1);
+      const run = () => judge(files);
+      const outcome = queue.current ? queue.current.then(run, run) : run();
+      if (!outcome) return;
+      const settled: Promise<void> = outcome.finally(() => {
+        if (queue.current === settled) queue.current = null;
+      });
+      queue.current = settled;
     },
     onDragEnter(event: DragEvent) {
       const items = readDraggedItems(event);
@@ -197,6 +219,7 @@ export function FileUpload(props: FileUploadProps) {
   const intake = useFileIntake(props, files.length);
   const form = useFileForm({ ...props, files, commandRef });
   const command = useFileCommand(props, intake, { ...form, commandRef });
+  const removalFocus = useRemovalFocus(files, commandRef);
   const data = {
     variant,
     disabled: props.isDisabled,
@@ -225,6 +248,7 @@ export function FileUpload(props: FileUploadProps) {
           locale={locale}
           onRemove={isReadOnly ? undefined : props.onRemove}
           isDisabled={props.isDisabled ?? false}
+          removalFocus={removalFocus}
           renderFileActions={props.renderFileActions}
           renderFilePreview={props.renderFilePreview}
         />

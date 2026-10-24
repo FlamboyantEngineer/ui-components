@@ -1,7 +1,8 @@
-import { useContext, useState } from 'react';
+import { useContext, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { ComboBoxStateContext } from '../../primitives/index.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
+import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -45,6 +46,43 @@ function useChosenOptions(options: readonly ComboboxOption[]): ComboboxOption[] 
     setRemembered(next);
   }
   return keys.map((key) => next.get(key) ?? { id: key, label: String(key) });
+}
+
+export interface ChipsLabelOptions {
+  /** The combobox's label. */
+  label: ReactNode;
+  /** The combobox's own naming. */
+  aria: AriaLabellingProps;
+  /** The combobox shows chips; otherwise nothing is read. */
+  isEnabled: boolean;
+}
+
+/**
+ * The text naming a multiple combobox, which names its chips, and the ref for its label element:
+ * a text `label` or `aria-label` as given, else the text of the label element or of the elements
+ * `aria-labelledby` names, read once they render, so a label drawn as markup or named elsewhere
+ * still names the chips.
+ */
+export function useChipsLabel({ label, aria, isEnabled }: ChipsLabelOptions) {
+  const given = typeof label === 'string' ? label : aria['aria-label'];
+  const labelledBy = aria['aria-labelledby'];
+  const labelRef = useRef<HTMLLabelElement>(null);
+  const [read, setRead] = useState('');
+  useLayoutEffect(() => {
+    if (!isEnabled || given !== undefined) return;
+    const element = labelRef.current;
+    const owner = element?.ownerDocument ?? document;
+    const sources = labelledBy
+      ? labelledBy.split(/\s+/).map((id) => owner.getElementById(id))
+      : [element];
+    setRead(
+      sources
+        .map((source) => source?.textContent?.trim() ?? '')
+        .filter(Boolean)
+        .join(' '),
+    );
+  }, [isEnabled, given, label, labelledBy]);
+  return { text: given ?? read, labelRef };
 }
 
 /**

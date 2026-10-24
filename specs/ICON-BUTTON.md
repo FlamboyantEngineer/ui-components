@@ -20,7 +20,7 @@ Verification: `src/components/icon-button/icon-button.test.tsx`, `e2e/icon-butto
 
 ### UIC-ICON-BUTTON-1.3 - States
 
-`IconButton` shall offer Button's states with the same semantics, through the same React Aria wiring: `isDisabled` with optional `focusableWhenDisabled`, `isPending` (an indeterminate progress bar named by `pendingLabel` replaces the icon in the `ui-icon-button__spinner` slot), `isSelected` with toggle semantics, and React Aria's interaction states.
+`IconButton` shall offer Button's states with the same semantics, through the same React Aria wiring: `isDisabled` with optional `focusableWhenDisabled`, `isPending` (an indeterminate progress bar named by `pendingLabel` replaces the icon in the `ui-icon-button__spinner` slot), `isSelected` with toggle semantics, and React Aria's interaction states. While pending, the button is named by its `label` followed by the busy indicator's name ("More Loading"), as React Aria names a pending button that has `aria-label`.
 
 Implementation: `src/components/icon-button/icon-button.tsx`, `src/components/button/button.tsx`
 Verification: `src/components/icon-button/icon-button.test.tsx`, `e2e/icon-button.spec.ts`

@@ -4,7 +4,7 @@ import { createHooks, splitDataAttributes } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
-import { useDelayedFlag } from '../../utils/use-delayed-flag.js';
+import { useActiveAfter } from '../../utils/use-delayed-flag.js';
 import { useEnterExit } from '../../utils/use-enter-exit.js';
 import { Portal } from '../portal/portal.js';
 import {
@@ -215,8 +215,7 @@ export function LoadingOverlay({
   ref,
   ...rest
 }: LoadingOverlayProps) {
-  const isElapsed = useDelayedFlag(true, delay > 0 ? delay : undefined);
-  const isShown = delay > 0 ? isElapsed : true;
+  const isShown = useActiveAfter(true, delay);
   const isScrim = presentation === 'scrim';
   const [data, cardProps] = splitDataAttributes(rest);
   if (!isShown) return null;
@@ -250,8 +249,7 @@ export function LoadingRegion({
   id,
   ...rest
 }: LoadingRegionProps) {
-  const isElapsed = useDelayedFlag(isLoading, delay > 0 ? delay : undefined);
-  const isBlocked = isLoading && (delay > 0 ? isElapsed : true);
+  const isBlocked = useActiveAfter(isLoading, delay);
   const overlayRef = useRef<HTMLDivElement>(null);
   const { isMounted, isEntering, isExiting } = useEnterExit(overlayRef, isBlocked);
   const rootRef = useRef<HTMLDivElement>(null);

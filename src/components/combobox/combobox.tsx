@@ -5,6 +5,7 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key, Size } from '../../core/props.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import { decodeComboboxValue, encodeComboboxItems, useComboboxValues } from './combobox-values.js';
+import { useChipsLabel } from './combobox-chips.js';
 import { ComboboxField, ComboboxInputs } from './combobox-field.js';
 import { flattenOptions, type ComboboxItem } from './combobox-options.js';
 import type { ComboboxLoader } from './combobox-search.js';
@@ -112,11 +113,8 @@ export interface ComboboxProps<M extends ComboboxSelectionMode = 'single'>
 const hooks = createHooks('combobox', ['label', 'description', 'error']);
 
 /** What the chips of a multiple combobox need: the text naming their group, and the options. */
-function toChips(label: ReactNode, aria: AriaLabellingProps, suggestions: Iterable<ComboboxItem>) {
-  return {
-    label: typeof label === 'string' ? label : (aria['aria-label'] ?? ''),
-    options: flattenOptions(suggestions),
-  };
+function toChips(label: string, suggestions: Iterable<ComboboxItem>) {
+  return { label, options: flattenOptions(suggestions) };
 }
 
 /** The props React Aria's `ComboBox` takes as given: all but the suggestions and the open state. */
@@ -137,6 +135,14 @@ function omitModelProps<P extends ComboboxModelOptions>(props: P) {
     ...aria
   } = props;
   return aria;
+}
+
+function ComboboxLabel({ label, labelRef }: { label: ReactNode; labelRef: Ref<HTMLLabelElement> }) {
+  return label ? (
+    <Label ref={labelRef} className={hooks.slotClass('label')}>
+      {label}
+    </Label>
+  ) : null;
 }
 
 function ComboboxMessages({
@@ -190,6 +196,8 @@ export function Combobox<M extends ComboboxSelectionMode = 'single'>({
   const inline = useInlineCompletionState({ completesInline, suggestions });
   const [input, setInput] = useForwardedRef(inputRef);
   const createdRef = useRef<string | null>(null);
+  const isMultiple = aria.selectionMode === 'multiple';
+  const naming = useChipsLabel({ label, aria, isEnabled: isMultiple });
   const list = { virtualized, onCreateOption, highlightMatches, autoHighlight, renderOption };
   return (
     <AriaComboBox<ComboboxItem, ComboboxSelectionMode>
@@ -208,14 +216,14 @@ export function Combobox<M extends ComboboxSelectionMode = 'single'>({
       isReadOnly={isReadOnly}
       allowsEmptyCollection={allowsEmptyCollection}
     >
-      {label ? <Label className={hooks.slotClass('label')}>{label}</Label> : null}
+      <ComboboxLabel label={label} labelRef={naming.labelRef} />
       <ComboboxField
         variant={variant}
         size={size}
         placeholder={placeholder}
         isPending={model.isPending}
         isEditable={!isDisabled && !isReadOnly}
-        chips={aria.selectionMode === 'multiple' ? toChips(label, aria, model.suggestions) : null}
+        chips={isMultiple ? toChips(naming.text, model.suggestions) : null}
         completion={inline.field}
         input={{ ref: input, setRef: setInput }}
       />

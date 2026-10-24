@@ -127,6 +127,8 @@ function CompletionOption({
       ) : (
         <>
           <span {...hooks.slot('label')}>{item.label}</span>
+          {/* The space keeps the label and the description apart in the option's name. */}
+          {item.description ? ' ' : null}
           {item.description ? <span {...hooks.slot('description')}>{item.description}</span> : null}
         </>
       )}

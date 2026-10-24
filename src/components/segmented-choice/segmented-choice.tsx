@@ -92,6 +92,8 @@ interface SegmentProps {
 }
 
 interface GroupState {
+  /** The group is a `radiogroup`, the one group role that allows `aria-readonly`. */
+  isSingle: boolean;
   isReadOnly: boolean;
   isInvalid: boolean;
   isPending: boolean;
@@ -99,17 +101,22 @@ interface GroupState {
 
 const hooks = createHooks('segmented-choice', ['segment', 'indicator', 'icon', 'label', 'count']);
 
-/** `aria-readonly`, `aria-invalid` and `aria-busy` on the group, which the building block does not set. */
+/**
+ * `aria-readonly`, `aria-invalid` and `aria-busy` on the group, which the building block does not
+ * set. A multiple-selection `toolbar` or `group` allows no `aria-readonly`, so only a `radiogroup`
+ * states it.
+ */
 function renderGroupState(
-  { isReadOnly, isInvalid, isPending }: GroupState,
+  { isSingle, isReadOnly, isInvalid, isPending }: GroupState,
   render: SegmentedChoiceProps['render'],
 ): Pick<SegmentedChoiceProps, 'render'> {
-  if (!isReadOnly && !isInvalid && !isPending) return render ? { render } : {};
+  const statesReadOnly = isSingle && isReadOnly;
+  if (!statesReadOnly && !isInvalid && !isPending) return render ? { render } : {};
   return {
     render: (props, state) => {
       const merged = {
         ...props,
-        'aria-readonly': isReadOnly || undefined,
+        'aria-readonly': statesReadOnly || undefined,
         'aria-invalid': isInvalid || undefined,
         'aria-busy': isPending || undefined,
       };
@@ -231,7 +238,15 @@ export function SegmentedChoice<M extends SegmentedChoiceSelectionMode = 'single
       selectedKeys={selection.selectedKeys}
       onSelectionChange={selection.onSelectionChange}
       selectionMode={selection.selectionMode}
-      {...renderGroupState({ isReadOnly, isInvalid, isPending: selection.isPending }, render)}
+      {...renderGroupState(
+        {
+          isSingle: selection.selectionMode === 'single',
+          isReadOnly,
+          isInvalid,
+          isPending: selection.isPending,
+        },
+        render,
+      )}
     >
       {options.map((option) => (
         <Segment

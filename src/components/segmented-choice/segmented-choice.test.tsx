@@ -318,6 +318,31 @@ describe('SegmentedChoice', () => {
     expectHooksMatchSpec(container, 'SEGMENTED-CHOICE');
   });
 
+  it('UIC-SEGMENTED-CHOICE-3.2 leaves aria-readonly off a read-only multiple selection', async () => {
+    const onChange = vi.fn();
+    render(
+      <SegmentedChoice
+        aria-label="Text style"
+        selectionMode="multiple"
+        options={[
+          { value: 'bold', label: 'Bold' },
+          { value: 'italic', label: 'Italic' },
+        ]}
+        defaultValue={['bold']}
+        isReadOnly
+        isInvalid
+        onChange={onChange}
+      />,
+    );
+    const toolbar = screen.getByRole('toolbar', { name: 'Text style' });
+    expect(toolbar).not.toHaveAttribute('aria-readonly');
+    expect(toolbar).toHaveAttribute('data-readonly', 'true');
+    expect(toolbar).toHaveAttribute('aria-invalid', 'true');
+    await userEvent.click(screen.getByRole('button', { name: 'Italic' }));
+    expect(onChange).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: 'Bold' })).toHaveAttribute('aria-pressed', 'true');
+  });
+
   it('UIC-SEGMENTED-CHOICE-3.3 marks an invalid group', () => {
     const { container } = render(<SegmentedChoice aria-label="View" options={views} isInvalid />);
     const group = screen.getByRole('radiogroup');

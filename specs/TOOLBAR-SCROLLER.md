@@ -29,7 +29,7 @@ Verification: `src/components/toolbar-scroller/toolbar-scroller.test.tsx`
 
 ### UIC-TOOLBAR-SCROLLER-2.1 - Overflow edges
 
-The root shall publish `data-overflow-start` while content lies more than one pixel past the strip's start edge and `data-overflow-end` while content lies past its end edge, in either writing direction, as the [scroll strip hook](SCROLL-STRIP.md) measures them. Both are recomputed, within an animation frame, when the strip scrolls, when a scroll button moves it, when the strip or one of its direct children resizes, and when a direct child mounts or unmounts.
+The root shall publish `data-overflow-start` while content lies more than one pixel past the strip's start edge and `data-overflow-end` while content lies past its end edge, in either writing direction, as the [scroll strip hook](SCROLL-STRIP.md) measures them. Both are recomputed, within an animation frame, when the strip scrolls, when a scroll button moves it, when the strip or one of its direct children resizes, and when a direct child mounts or unmounts. This holds as well for a strip that mounts after the first render, as after a switch from `overflow="menu"` to `"scroll"`.
 
 Implementation: `src/components/toolbar-scroller/toolbar-scroller.tsx`, `src/utils/use-scroll-strip-overflow.ts`
 Verification: `src/components/toolbar-scroller/toolbar-scroller.test.tsx`, `e2e/toolbar-scroller.spec.ts`
@@ -50,7 +50,7 @@ Verification: `src/components/toolbar-scroller/toolbar-scroller.test.tsx`, `e2e/
 
 ### UIC-TOOLBAR-SCROLLER-2.4 - Wheel input
 
-Wheel input over the strip shall scroll it along the row by the dominant wheel axis (downward toward the end edge, mirrored right to left), converting line and page deltas to pixels, as the [scroll strip hook](SCROLL-STRIP.md) does, and prevent the page from scrolling only while the strip moves. A strip at its bound, or one that fits, leaves the wheel to the page. Wheel input with Control or Meta held is left to the browser, and a wheel over a menu, listbox or dialog open inside the strip keeps scrolling that popup.
+Wheel input over the strip shall scroll it along the row by the dominant wheel axis (downward toward the end edge, mirrored right to left), converting line and page deltas to pixels, as the [scroll strip hook](SCROLL-STRIP.md) does, and prevent the page from scrolling only while the strip moves. A strip at its bound, or one that fits, leaves the wheel to the page. Wheel input with Control or Meta held is left to the browser, and a wheel over a menu, listbox or dialog open inside the strip keeps scrolling that popup. A strip that mounts after the first render takes wheel input too.
 
 Implementation: `src/components/toolbar-scroller/toolbar-scroller.tsx`, `src/utils/use-scroll-strip-overflow.ts`
 Verification: `src/components/toolbar-scroller/toolbar-scroller.test.tsx`

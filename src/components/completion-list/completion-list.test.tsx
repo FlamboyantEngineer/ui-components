@@ -71,10 +71,11 @@ describe('CompletionList', () => {
     expect(list).toHaveAttribute('id', 'people');
     const options = screen.getAllByRole('option');
     expect(options.map((option) => option.textContent)).toEqual([
-      'Maria SantosDesign',
+      'Maria Santos Design',
       'Jon Berg',
       'Team A',
     ]);
+    expect(options[0]).toHaveAccessibleName('Maria Santos Design');
     expect(options[0]).toHaveAttribute('id', getCompletionOptionId('people', 'maria'));
     expect(options[2]).toHaveAttribute('id', getCompletionOptionId('people', 'team a'));
     expect(options[0]).toHaveAttribute('aria-selected', 'true');

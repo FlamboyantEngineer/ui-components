@@ -379,7 +379,7 @@ describe('CodeEditor', () => {
     expect(input).toHaveAttribute('aria-controls', list.id);
     const options = screen.getAllByRole('option');
     expect(options.map((option) => option.textContent)).toEqual([
-      'fruit.appleA crisp fruit',
+      'fruit.apple A crisp fruit',
       'fruit.apricot',
       'fruit.banana',
     ]);

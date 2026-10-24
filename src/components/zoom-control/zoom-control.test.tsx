@@ -173,6 +173,23 @@ describe('ZoomControl', () => {
     expect(findNearestZoomLevelIndex(levels, 1000)).toBe(4);
   });
 
+  it('UIC-ZOOM-CONTROL-1.4 steps the slider from a value between levels to the neighbouring level', () => {
+    const onChange = vi.fn();
+    const { rerender } = render(<ZoomControl value={110} onChange={onChange} />);
+    const range = slider();
+    expect(range).toHaveValue('3');
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot step a native range input
+    fireEvent.change(range, { target: { value: '2' } });
+    expect(onChange).toHaveBeenLastCalledWith(100);
+    rerender(<ZoomControl value={90} onChange={onChange} />);
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot step a native range input
+    fireEvent.change(range, { target: { value: '4' } });
+    expect(onChange).toHaveBeenLastCalledWith(100);
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot drag a native range input
+    fireEvent.change(range, { target: { value: '0' } });
+    expect(onChange).toHaveBeenLastCalledWith(25);
+  });
+
   it('UIC-ZOOM-CONTROL-1.5 shows the percentage without rounding and keeps the value node mounted', () => {
     const { container, rerender } = render(<ZoomControl levels={levels} value={0} />);
     const output = value(container);
