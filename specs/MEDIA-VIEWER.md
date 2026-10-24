@@ -13,7 +13,7 @@ Verification: `src/components/media-viewer/media-viewer.test.tsx`, `e2e/media-vi
 
 ### UIC-MEDIA-VIEWER-1.2 - Moving through the set
 
-`selectedKey` (controlled) or `defaultSelectedKey` (uncontrolled, defaulting to the first item) shall choose the shown item, and `onSelectionChange` receives the key of each item moved to. With more than one item, the stage starts with a previous button (`ui-media-viewer__previous`, `chevron-left` glyph, provider string `previous`) and ends with a next button (`ui-media-viewer__next`, `chevron-right`, `next`), each disabled at its end of the set, and the header shows the position (`ui-media-viewer__counter`, provider string `stepOfTotal`) in a polite live region.
+`selectedKey` (controlled) or `defaultSelectedKey` (uncontrolled, defaulting to the first item) shall choose the shown item, and `onSelectionChange` receives the key of each item moved to. With more than one item, the stage starts with a previous button (`ui-media-viewer__previous`, `chevron-left` glyph, `chevron-right` right to left, provider string `previous`) and ends with a next button (`ui-media-viewer__next`, `chevron-right`, `chevron-left` right to left, `next`), each disabled but focusable (`aria-disabled`) at its end of the set, so focus stays on a button that reaches the end, and the header shows the position (`ui-media-viewer__counter`, provider string `stepOfTotal`) in a polite live region.
 
 Implementation: `src/components/media-viewer/media-viewer.tsx`, `src/components/media-viewer/media-stage.tsx`, `src/components/media-viewer/media-viewer-parts.tsx`
 Verification: `src/components/media-viewer/media-viewer.test.tsx`, `e2e/media-viewer.spec.ts`
@@ -27,9 +27,9 @@ Verification: `src/components/media-viewer/media-viewer.test.tsx`, `e2e/media-vi
 
 ### UIC-MEDIA-VIEWER-1.4 - Keyboard
 
-Inside the viewer, Arrow Left and Arrow Right shall show the previous and next item (mirrored in a right-to-left locale), and `+` (or `=`) and `-` zoom an image in and out by the zoom control's levels. Presses with Control, Command or Alt, and presses inside an element that uses keys itself (an input, a text area, a select, editable content or a slider), are left alone.
+Inside the viewer, Page Up and Page Down shall show the previous and next item, and so shall Arrow Left and Arrow Right (mirrored in a right-to-left locale), except while focus is in the viewport and the image is wider than it, when the arrows scroll the image; `+` (or `=`) and `-` zoom an image in and out by the zoom control's levels. Presses with Control, Command or Alt, and presses inside an element that uses keys itself (an input, a text area, a select, a slider, or editable content with any `contenteditable` value but `false`), are left alone.
 
-Implementation: `src/components/media-viewer/media-layout.ts`, `src/components/media-viewer/media-viewer.tsx`, `src/components/modal/modal-dialog.tsx`
+Implementation: `src/components/media-viewer/media-layout.ts`, `src/components/media-viewer/media-viewer.tsx`, `src/components/modal/modal-dialog.tsx`, `src/utils/is-key-owner.ts`
 Verification: `src/components/media-viewer/media-layout.test.ts`, `src/components/media-viewer/media-viewer.test.tsx`, `e2e/media-viewer.spec.ts`
 
 ## UIC-MEDIA-VIEWER-2 - Images

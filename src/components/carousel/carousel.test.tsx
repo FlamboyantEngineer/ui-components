@@ -199,6 +199,42 @@ describe('Carousel', () => {
     expect(container.querySelector('.ui-carousel__slide[data-current] input')).not.toBeNull();
   });
 
+  it('UIC-CAROUSEL-2.1 leaves keys to editable content and to widgets that handled them', async () => {
+    const user = userEvent.setup();
+    render(
+      <Carousel aria-label="Notes">
+        <div role="textbox" aria-label="First note" contentEditable="plaintext-only" tabIndex={0} />
+        <div
+          role="group"
+          aria-label="Second note"
+          tabIndex={0}
+          onKeyDown={(event) => event.preventDefault()}
+        />
+      </Carousel>,
+    );
+    act(() => screen.getByRole('textbox', { name: 'First note' }).focus());
+    await user.keyboard('{ArrowRight}');
+    expect(screen.getByRole('textbox', { name: 'First note' })).toBeVisible();
+    await user.click(screen.getByRole('button', { name: 'Next slide' }));
+    act(() => screen.getByRole('group', { name: 'Second note' }).focus());
+    await user.keyboard('{ArrowLeft}');
+    expect(screen.getByRole('group', { name: 'Second note' })).toBeVisible();
+  });
+
+  it('UIC-CAROUSEL-1.2 points the previous and next chevrons the other way right to left', () => {
+    const { container } = render(
+      <UiProvider locale="ar-EG">
+        <Carousel aria-label="Cities">{slides()}</Carousel>
+      </UiProvider>,
+    );
+    expect(
+      container.querySelector('.ui-carousel__previous [data-glyph="chevron-right"]'),
+    ).not.toBeNull();
+    expect(
+      container.querySelector('.ui-carousel__next [data-glyph="chevron-left"]'),
+    ).not.toBeNull();
+  });
+
   it('UIC-CAROUSEL-2.2 moves focus to the new slide when the focused one hides', async () => {
     const user = userEvent.setup();
     const { container } = render(<Carousel aria-label="Cities">{slides()}</Carousel>);

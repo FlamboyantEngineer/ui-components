@@ -1,5 +1,7 @@
 // Where a media viewer draws an image: fitted to the stage, zoomed and turned by quarter turns.
 
+import { isKeyOwner } from '../../utils/is-key-owner.js';
+
 export interface MediaSize {
   width: number;
   height: number;
@@ -48,24 +50,32 @@ export function layoutMedia({ natural, stage, zoom, rotation }: MediaLayoutInput
 /** What a key press asks of a media viewer, if anything. */
 export type MediaKeyCommand = 'previous' | 'next' | 'zoom-in' | 'zoom-out';
 
-/** Elements that use arrow and character keys themselves. */
-const keyOwners = 'input, textarea, select, [contenteditable="true"], [role="slider"]';
+/** Keys that ask the same of a media viewer in either text direction. */
+const fixedKeys: Readonly<Record<string, MediaKeyCommand>> = {
+  PageUp: 'previous',
+  PageDown: 'next',
+  '+': 'zoom-in',
+  '=': 'zoom-in',
+  '-': 'zoom-out',
+};
 
 /**
- * The command of a key press: the arrow keys move to the previous or next item (mirrored right to
- * left), `+` and `-` zoom. Presses with a modifier, or inside an element that uses keys itself, ask
- * nothing.
+ * The command of a key press: Page Up and Page Down move to the previous or next item, and so do the
+ * arrow keys (mirrored right to left) unless `isPanning`, when they scroll a zoomed image instead;
+ * `+` and `-` zoom. Presses with a modifier, or inside an element that uses keys itself, ask nothing.
  */
 export function resolveMediaKey(
   event: Pick<KeyboardEvent, 'key' | 'ctrlKey' | 'metaKey' | 'altKey' | 'target'>,
   direction: 'ltr' | 'rtl',
+  isPanning = false,
 ): MediaKeyCommand | null {
   if (event.ctrlKey || event.metaKey || event.altKey) return null;
-  if (event.target instanceof Element && event.target.closest(keyOwners)) return null;
+  if (isKeyOwner(event.target)) return null;
+  const fixed = fixedKeys[event.key];
+  if (fixed) return fixed;
+  if (isPanning) return null;
   const forward = direction === 'rtl' ? 'ArrowLeft' : 'ArrowRight';
   const backward = direction === 'rtl' ? 'ArrowRight' : 'ArrowLeft';
   if (event.key === forward) return 'next';
-  if (event.key === backward) return 'previous';
-  if (event.key === '+' || event.key === '=') return 'zoom-in';
-  return event.key === '-' ? 'zoom-out' : null;
+  return event.key === backward ? 'previous' : null;
 }

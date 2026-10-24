@@ -1,4 +1,5 @@
 import { useState, type ReactNode, type RefObject } from 'react';
+import { useLocale } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import { getFileGlyph } from '../../utils/file-glyph.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
@@ -97,6 +98,7 @@ function MediaFallback({ item }: { item: MediaViewerItem }) {
 export function MediaStage(props: MediaStageProps) {
   const { item, viewportRef, hasSiblings } = props;
   const strings = useUiStrings();
+  const isRtl = useLocale().direction === 'rtl';
   const stage = useElementSize(viewportRef, { box: 'client' });
   const isImage = isImageItem(item);
   const custom = isImage ? null : props.renderItem?.(item);
@@ -105,9 +107,10 @@ export function MediaStage(props: MediaStageProps) {
       {hasSiblings ? (
         <IconButton
           className={hooks.slotClass('previous')}
-          icon="chevron-left"
+          icon={isRtl ? 'chevron-right' : 'chevron-left'}
           label={strings.previous}
           isDisabled={!props.onPrevious}
+          focusableWhenDisabled
           onPress={props.onPrevious}
         />
       ) : null}
@@ -129,9 +132,10 @@ export function MediaStage(props: MediaStageProps) {
       {hasSiblings ? (
         <IconButton
           className={hooks.slotClass('next')}
-          icon="chevron-right"
+          icon={isRtl ? 'chevron-left' : 'chevron-right'}
           label={strings.next}
           isDisabled={!props.onNext}
+          focusableWhenDisabled
           onPress={props.onNext}
         />
       ) : null}
