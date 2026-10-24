@@ -49,7 +49,7 @@ const subscribeToNothing = () => () => {};
 const getServerPlatform = (): ShortcutPlatform => 'linux';
 
 /** The detected platform: the server's notation while hydrating, the browser's once hydrated. */
-function useDetectedPlatform(): ShortcutPlatform {
+export function useDetectedPlatform(): ShortcutPlatform {
   return useSyncExternalStore(subscribeToNothing, getShortcutPlatform, getServerPlatform);
 }
 
@@ -123,4 +123,4 @@ export function KeyHints({ hints, platform, className, ...rest }: KeyHintsProps)
 }
 
 export { formatAriaKeyShortcuts } from './shortcut-format.js';
-export type { ShortcutChord } from './shortcut-format.js';
+export type { ShortcutChord, ShortcutPlatform } from './shortcut-format.js';

@@ -11,7 +11,11 @@ import type {
 import type { NativeProps } from '../../core/props.js';
 import type { ElementRender } from '../../utils/render-element.js';
 import { renderLinkElement } from '../link/link.js';
-import { formatAriaKeyShortcuts, type ShortcutChord } from '../shortcut/shortcut.js';
+import {
+  formatAriaKeyShortcuts,
+  type ShortcutChord,
+  type ShortcutPlatform,
+} from '../shortcut/shortcut.js';
 
 /** The states a button passes to `render` with the `<button>`'s props. */
 export interface ButtonRenderState {
@@ -106,6 +110,8 @@ export interface ButtonStateProps
 export interface ButtonStateOptions {
   /** The tooltip only repeats the accessible name, so it adds no description. */
   isTooltipName?: boolean | undefined;
+  /** The notation of `aria-keyshortcuts`; `useDetectedPlatform()` so hydration matches the server. */
+  platform?: ShortcutPlatform | undefined;
 }
 
 /** What a button hands its building block for a `<button>`. */
@@ -166,8 +172,11 @@ interface PassThrough {
 }
 
 /** A chord's `aria-keyshortcuts` value, or `undefined` without a chord or for an empty key. */
-export function toKeyShortcuts(shortcut: ShortcutChord | undefined): string | undefined {
-  return shortcut ? formatAriaKeyShortcuts(shortcut) || undefined : undefined;
+export function toKeyShortcuts(
+  shortcut: ShortcutChord | undefined,
+  platform?: ShortcutPlatform,
+): string | undefined {
+  return shortcut ? formatAriaKeyShortcuts(shortcut, platform) || undefined : undefined;
 }
 
 function hasEntries(value: object): boolean {
@@ -231,7 +240,7 @@ function statesToggle(
  */
 export function toAriaButtonProps(
   props: ButtonStateProps,
-  { isTooltipName = false }: ButtonStateOptions = {},
+  { isTooltipName = false, platform }: ButtonStateOptions = {},
 ): ButtonElementProps {
   const {
     isSelected = false,
@@ -261,7 +270,7 @@ export function toAriaButtonProps(
         role,
         'aria-checked': ariaChecked,
         'aria-selected': ariaSelected,
-        'aria-keyshortcuts': toKeyShortcuts(shortcut),
+        'aria-keyshortcuts': toKeyShortcuts(shortcut, platform),
       },
       focusableDisabled,
       describedBy: isTooltipName ? { value: rest['aria-describedby'] } : undefined,
@@ -341,10 +350,12 @@ function omitButtonOnlyProps({
  */
 export function toAriaLinkProps(
   props: ButtonStateProps & { id?: string | undefined },
-  { isTooltipName = false }: ButtonStateOptions = {},
+  { isTooltipName = false, platform }: ButtonStateOptions = {},
 ): ButtonLinkElementProps {
   const { shortcut, ref, target, rel, ...rest } = omitButtonOnlyProps(props);
-  const extra: Record<string, unknown> = { 'aria-keyshortcuts': toKeyShortcuts(shortcut) };
+  const extra: Record<string, unknown> = {
+    'aria-keyshortcuts': toKeyShortcuts(shortcut, platform),
+  };
   if (isTooltipName) extra['aria-describedby'] = rest['aria-describedby'];
   return {
     ...rest,

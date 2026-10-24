@@ -20,7 +20,7 @@ Verification: `src/components/media-viewer/media-viewer.test.tsx`, `e2e/media-vi
 
 ### UIC-MEDIA-VIEWER-1.3 - Thumbnails
 
-With more than one item, the modal's footer shall hold a thumbnail strip (`ui-media-viewer__thumbnails`, a group named by the provider string `thumbnails`) with one `Button` per item (`ui-media-viewer__thumbnail`) named by the item's name and showing its `thumbnailUrl`, an image item's `src`, or else the glyph of its type (`ui-media-viewer__thumbnail-image`, `ui-media-viewer__thumbnail-icon`). The shown item's button carries `aria-current`; pressing a button shows its item. Numeric and text item IDs with the same spelling retain distinct thumbnails and selection keys, including after reordering.
+With more than one item, the modal's footer shall hold a thumbnail strip (`ui-media-viewer__thumbnails`, a group named by the provider string `thumbnails`) with one `Button` per item (`ui-media-viewer__thumbnail`) named by the item's name and showing its `thumbnailUrl`, an image item's `src`, or else the glyph of its type (`ui-media-viewer__thumbnail-image`, `ui-media-viewer__thumbnail-icon`). The shown item's button carries `aria-current`; pressing a button shows its item, and pressing the shown item's button reports no selection change. Numeric and text item IDs with the same spelling retain distinct thumbnails and selection keys, including after reordering.
 
 Implementation: `src/components/media-viewer/media-viewer-parts.tsx`
 Verification: `src/components/media-viewer/media-viewer.test.tsx`, `e2e/media-viewer.spec.ts`

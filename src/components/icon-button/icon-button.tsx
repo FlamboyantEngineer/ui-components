@@ -9,6 +9,7 @@ import {
   type ButtonProps,
 } from '../button/button.js';
 import { Icon, toIconProps, type IconSource } from '../icon/icon.js';
+import { useDetectedPlatform } from '../shortcut/shortcut.js';
 
 export interface IconButtonProps extends Omit<
   ButtonProps,
@@ -41,7 +42,10 @@ export function IconButton({
   const isPending = !isLink && rest.isPending;
   // The button shows no text, so a shortcut's tooltip names the command too.
   const hint = tooltip ?? (rest.shortcut ? label : undefined);
-  const options = { isTooltipName: hint === label && !rest.shortcut };
+  const options = {
+    isTooltipName: hint === label && !rest.shortcut,
+    platform: useDetectedPlatform(),
+  };
   const hookProps = hooks.root({
     className,
     props: rest,
