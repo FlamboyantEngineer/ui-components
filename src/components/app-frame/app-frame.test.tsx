@@ -204,6 +204,15 @@ describe('AppFrame', () => {
     expect(screen.getByText('Loose')).toBeInTheDocument();
   });
 
+  it('UIC-APP-FRAME-1.5 renders content in place under a host projection provider without a frame', () => {
+    render(
+      <ProjectionProvider>
+        <AppFrameContent region="end-panel">Loose panel</AppFrameContent>
+      </ProjectionProvider>,
+    );
+    expect(screen.getByText('Loose panel')).toBeInTheDocument();
+  });
+
   it('UIC-APP-FRAME-1.6 forwards the class, id and data attributes', () => {
     const { container } = render(
       <AppFrame className="extra" id="frame" data-app="notes">

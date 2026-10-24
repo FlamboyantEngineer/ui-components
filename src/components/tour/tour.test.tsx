@@ -143,7 +143,7 @@ describe('Tour', () => {
           <button type="button" onClick={() => setOpen(true)}>
             Help
           </button>
-          <Page isOpen={isOpen} onOpenChange={setOpen} />
+          <Page isOpen={isOpen} onOpenChange={setOpen} isNonModal />
         </>
       );
     }
@@ -206,6 +206,29 @@ describe('Tour', () => {
     await user.click(await screen.findByRole('button', { name: 'Finish' }));
     await user.click(screen.getByRole('button', { name: 'Restart' }));
     expect(await screen.findByRole('dialog', { name: 'Filters' })).toBeInTheDocument();
+  });
+
+  it('UIC-TOUR-2.4 starts again at the default step after the host closes it', async () => {
+    const user = userEvent.setup();
+    function HostClosed() {
+      const [isOpen, setOpen] = useState(true);
+      return (
+        <>
+          <button type="button" onClick={() => setOpen((value) => !value)}>
+            Toggle tour
+          </button>
+          <Page isOpen={isOpen} onOpenChange={setOpen} isNonModal />
+        </>
+      );
+    }
+    render(<HostClosed />);
+    expect(await screen.findByRole('dialog', { name: 'Search' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Next' }));
+    expect(await screen.findByRole('dialog', { name: 'Filters' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Toggle tour' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Toggle tour' }));
+    expect(await screen.findByRole('dialog', { name: 'Search' })).toBeInTheDocument();
   });
 
   it('UIC-TOUR-3.1 remembers completion through the provider storage', async () => {

@@ -137,6 +137,25 @@ describe('CommandPalette', () => {
     expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
 
+  it('UIC-COMMAND-PALETTE-1.3 matches a letter or digit that Shift or Alt turned into another character', () => {
+    const { unmount } = render(<CommandPalette items={commands} shortcut="Ctrl+Shift+1" />);
+    pressShortcut({ key: '!', code: 'Digit1', ctrlKey: true, shiftKey: true });
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    unmount();
+    render(<CommandPalette items={commands} shortcut="Alt+P" />);
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    pressShortcut({ key: 'π', code: 'KeyP', altKey: true });
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+  });
+
+  it('UIC-COMMAND-PALETTE-1.3 reads a letter the layout types from the typed letter', () => {
+    render(<CommandPalette items={commands} shortcut="Ctrl+Q" />);
+    pressShortcut({ key: 'a', code: 'KeyQ', ctrlKey: true });
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    pressShortcut({ key: 'q', code: 'KeyA', ctrlKey: true });
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+  });
+
   it('UIC-COMMAND-PALETTE-1.3 takes another chord, none, and removes it on unmount', () => {
     const { rerender, unmount } = render(
       <CommandPalette items={commands} shortcut="Ctrl+Shift+P" />,

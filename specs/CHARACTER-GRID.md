@@ -29,7 +29,7 @@ Verification: `src/components/character-grid/character-grid.test.tsx`, `e2e/char
 
 ### UIC-CHARACTER-GRID-1.4 - Preview
 
-The `ui-character-grid__preview` shall show the character last hovered or focused: the character in `ui-character-grid__preview-char`, its name in `ui-character-grid__preview-name` and its code points in Unicode notation (`U+00A9`, separated by spaces for a sequence) in `ui-character-grid__preview-code`. It is empty before any, and hidden from assistive technology, since the focused cell already announces its name.
+The `ui-character-grid__preview` shall show the character last hovered or focused: the character in `ui-character-grid__preview-char`, its name in `ui-character-grid__preview-name` and its code points in Unicode notation (`U+00A9`, separated by spaces for a sequence) in `ui-character-grid__preview-code`. It is empty before any, and hidden from assistive technology, since the focused cell already announces its name. Hovering or focusing a cell shall redraw the preview, not the cells.
 
 Implementation: `src/components/character-grid/character-grid.tsx`, `src/components/character-grid/character-filter.ts`
 Verification: `src/components/character-grid/character-filter.test.ts`, `src/components/character-grid/character-grid.test.tsx`
@@ -38,7 +38,7 @@ Verification: `src/components/character-grid/character-filter.test.ts`, `src/com
 
 ### UIC-CHARACTER-GRID-2.1 - Search
 
-Text in the search field shall narrow every section to the characters that match, and leave out sections without a match, while the root publishes `data-searching`. A character matches when its name holds every word of the text, ignoring case and accents, when the text is the character itself, or when the text is its code point (`U+00B0`, `u+b0`). The query's terms and code point shall be read once for the whole set of characters. With no match the grid gives way to a `role="status"` message (`ui-character-grid__message`) reading the provider's `noResults` string. Enter in the search field chooses the first character shown, Down moves focus to it, and Escape in the empty field reaches the surface around the grid, so a popover holding it closes.
+Text in the search field shall narrow every section to the characters that match, and leave out sections without a match, while the root publishes `data-searching`. A character matches when its name holds every word of the text, ignoring case and accents, when the text is the character itself, or when the text is its code point (`U+00B0`, `u+b0`). With no match the grid gives way to a `role="status"` message (`ui-character-grid__message`) reading the provider's `noResults` string. Enter in the search field chooses the first character shown, Down moves focus to it, and Escape in the empty field reaches the surface around the grid, so a popover holding it closes.
 
 Implementation: `src/components/character-grid/character-grid.tsx`, `src/components/character-grid/character-filter.ts`
 Verification: `src/components/character-grid/character-filter.test.ts`, `src/components/character-grid/character-grid.test.tsx`, `e2e/character-grid.spec.ts`

@@ -60,6 +60,49 @@ test.describe('Media Viewer lab', () => {
     await expect(title(page)).toHaveText('Tower.svg');
   });
 
+  test('UIC-MEDIA-VIEWER-1.2 keeps focus on the next button at the end of the set', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('media-viewer');
+    await page.locator('[data-lab-open="photos-first"]').click();
+    await settled(page);
+    const counter = page.locator('.ui-media-viewer__counter');
+    const next = page.locator('.ui-media-viewer__next');
+    await next.focus();
+    await page.keyboard.press('Enter');
+    await expect(counter).toHaveText('2 of 3');
+    await page.keyboard.press('Enter');
+    await expect(counter).toHaveText('3 of 3');
+    await expect(next).toBeFocused();
+    await expect(next).toHaveAttribute('aria-disabled', 'true');
+    await page.keyboard.press('ArrowLeft');
+    await expect(counter).toHaveText('2 of 3');
+  });
+
+  test('UIC-MEDIA-VIEWER-1.4 pans a zoomed image with the arrows and moves with the page keys', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('media-viewer');
+    await page.locator('[data-lab-open="photos-first"]').click();
+    await settled(page);
+    const counter = page.locator('.ui-media-viewer__counter');
+    const viewport = page.locator('.ui-media-viewer__viewport');
+    await expect(viewport).toBeFocused();
+    for (let step = 0; step < 4; step += 1) await page.keyboard.press('+');
+    await expect
+      .poll(() => viewport.evaluate((element) => element.scrollWidth > element.clientWidth))
+      .toBe(true);
+    await page.keyboard.press('ArrowRight');
+    await expect(counter).toHaveText('1 of 3');
+    await expect.poll(() => viewport.evaluate((element) => element.scrollLeft)).toBeGreaterThan(0);
+    await page.keyboard.press('PageDown');
+    await expect(counter).toHaveText('2 of 3');
+    await page.keyboard.press('ArrowRight');
+    await expect(counter).toHaveText('3 of 3');
+  });
+
   test('UIC-MEDIA-VIEWER-2.1 UIC-MEDIA-VIEWER-2.2 fits, zooms, pans and turns an image', async ({
     page,
     lab,

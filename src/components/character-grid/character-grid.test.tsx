@@ -105,6 +105,21 @@ describe('CharacterGrid', () => {
     expect(screen.getByRole('grid', { name: 'Symbols' })).toBeInTheDocument();
   });
 
+  it('UIC-CHARACTER-GRID-1.1 names the grid like the root when a heading labels it', () => {
+    render(
+      <>
+        <h2 id="symbols-heading">Insert symbol</h2>
+        <CharacterGrid
+          categories={categories}
+          onSelect={() => {}}
+          aria-labelledby="symbols-heading"
+        />
+      </>,
+    );
+    expect(screen.getByRole('group', { name: 'Insert symbol' })).toBeInTheDocument();
+    expect(screen.getByRole('grid')).toHaveAccessibleName('Insert symbol');
+  });
+
   it('UIC-CHARACTER-GRID-1.2 chooses a character by click or Enter', async () => {
     const user = userEvent.setup();
     const { onSelect } = renderGrid();
@@ -161,6 +176,35 @@ describe('CharacterGrid', () => {
     expectHooksMatchSpec(container, 'CHARACTER-GRID', {
       slots: ['preview-char', 'preview-name', 'preview-code'],
     });
+  });
+
+  it('UIC-CHARACTER-GRID-1.4 redraws only the preview, not the cells, on hover', async () => {
+    const user = userEvent.setup();
+    let nameReads = 0;
+    const characters = Array.from({ length: 60 }, (_, index) => {
+      const name = `Mark ${index}`;
+      return {
+        char: String.fromCodePoint(0x2600 + index),
+        get name() {
+          nameReads += 1;
+          return name;
+        },
+      };
+    });
+    render(
+      <CharacterGrid
+        categories={[{ id: 'marks', label: 'Marks', characters }]}
+        onSelect={() => {}}
+      />,
+    );
+    const grid = screen.getByRole('grid');
+    const first = within(grid).getByRole('row', { name: 'Mark 1' });
+    const second = within(grid).getByRole('row', { name: 'Mark 2' });
+    nameReads = 0;
+    await user.hover(first);
+    await user.hover(second);
+    expect(screen.getByText('Mark 2')).toHaveClass('ui-character-grid__preview-name');
+    expect(nameReads).toBeLessThan(characters.length);
   });
 
   it('UIC-CHARACTER-GRID-2.1 narrows the sections, chooses the first match and moves down to it', async () => {

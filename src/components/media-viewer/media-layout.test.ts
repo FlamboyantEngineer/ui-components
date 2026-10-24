@@ -77,4 +77,23 @@ describe('resolveMediaKey', () => {
     const button = document.createElement('button');
     expect(resolveMediaKey(keyEvent('ArrowRight', { target: button }), 'ltr')).toBe('next');
   });
+
+  it('UIC-MEDIA-VIEWER-1.4 leaves keys to editable content of any value but false', () => {
+    const editable = document.createElement('div');
+    editable.setAttribute('contenteditable', '');
+    expect(resolveMediaKey(keyEvent('ArrowRight', { target: editable }), 'ltr')).toBeNull();
+    editable.setAttribute('contenteditable', 'plaintext-only');
+    expect(resolveMediaKey(keyEvent('-', { target: editable }), 'ltr')).toBeNull();
+    editable.setAttribute('contenteditable', 'false');
+    expect(resolveMediaKey(keyEvent('ArrowRight', { target: editable }), 'ltr')).toBe('next');
+  });
+
+  it('UIC-MEDIA-VIEWER-1.4 moves with Page Up and Page Down and leaves the arrows to panning', () => {
+    expect(resolveMediaKey(keyEvent('PageDown'), 'ltr')).toBe('next');
+    expect(resolveMediaKey(keyEvent('PageUp'), 'rtl')).toBe('previous');
+    expect(resolveMediaKey(keyEvent('ArrowRight'), 'ltr', true)).toBeNull();
+    expect(resolveMediaKey(keyEvent('ArrowLeft'), 'rtl', true)).toBeNull();
+    expect(resolveMediaKey(keyEvent('PageDown'), 'ltr', true)).toBe('next');
+    expect(resolveMediaKey(keyEvent('+'), 'ltr', true)).toBe('zoom-in');
+  });
 });

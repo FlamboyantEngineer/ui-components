@@ -27,14 +27,14 @@ Verification: `src/components/emoji-picker/emoji-picker.test.tsx`, `e2e/emoji-pi
 
 ### UIC-EMOJI-PICKER-1.4 - Choosing
 
-Choosing an emoji shall call `onSelect` once with the selection: for a standard emoji its record, the glyph and hexcode in the current skin tone and the tone actually applied (`default` for an emoji that takes none); for a custom emoji its record. It shall then call `onRecentEmojiChange` with `recentEmoji` updated: the chosen emoji's key first, without duplicates, at most 24 long. Inside a dialog trigger, choosing closes the overlay.
+Choosing an emoji shall call `onSelect` once with the selection: for a standard emoji its record, the glyph and hexcode in the current skin tone and the tone actually applied (`default` for an emoji that takes none); for a custom emoji its record. It shall then call `onRecentEmojiChange` with `recentEmoji` updated: the chosen emoji's key first, at most 24 long, with one key per emoji (a repeated key, or a key naming the same emoji in another skin tone, is dropped). Inside a dialog trigger, choosing closes the overlay.
 
 Implementation: `src/components/emoji-picker/emoji-picker.tsx`, `src/components/emoji-picker/emoji-picker-state.ts`, `src/components/emoji-picker/emoji-catalog.ts`
-Verification: `src/components/emoji-picker/emoji-picker.test.tsx`, `e2e/emoji-picker.spec.ts`
+Verification: `src/components/emoji-picker/emoji-catalog.test.ts`, `src/components/emoji-picker/emoji-picker.test.tsx`, `e2e/emoji-picker.spec.ts`
 
 ### UIC-EMOJI-PICKER-1.5 - Preview
 
-The footer's `ui-emoji-picker__preview` shall show the emoji last hovered or focused, its glyph in `ui-emoji-picker__preview-emoji` and its label in `ui-emoji-picker__preview-label`. The preview is decorative; the focused cell already announces its name.
+The footer's `ui-emoji-picker__preview` shall show the emoji last hovered or focused, its glyph in `ui-emoji-picker__preview-emoji` and its label in `ui-emoji-picker__preview-label`. The preview is decorative; the focused cell already announces its name. Hovering or focusing an emoji shall redraw the preview and the parts that read `useActiveEmoji`, not the grid.
 
 Implementation: `src/components/emoji-picker/emoji-picker.tsx`, `src/components/emoji-picker/emoji-grid.tsx`
 Verification: `src/components/emoji-picker/emoji-picker.test.tsx`
@@ -50,7 +50,7 @@ Verification: `src/components/emoji-picker/emoji-picker.test.tsx`, `e2e/emoji-pi
 
 ### UIC-EMOJI-PICKER-2.2 - Recently used emoji
 
-`recentEmoji` shall list keys, most recent first: a standard emoji's glyph, in any skin tone, or `:shortcode:` for a custom emoji. Keys that match no emoji are skipped; the rest fill the recently used tab in order.
+`recentEmoji` shall list keys, most recent first: a standard emoji's glyph, in any skin tone, or `:shortcode:` for a custom emoji. Keys that match no emoji are skipped, and so are keys naming an emoji already listed (a repeat, or the same emoji in another skin tone), so each emoji counts once; the rest fill the recently used tab in order.
 
 Implementation: `src/components/emoji-picker/emoji-picker-state.ts`, `src/components/emoji-picker/emoji-catalog.ts`
 Verification: `src/components/emoji-picker/emoji-catalog.test.ts`, `src/components/emoji-picker/emoji-picker.test.tsx`

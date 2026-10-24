@@ -99,6 +99,7 @@ function layOutSeries(
   { series, points }: LineGeometrySeries,
   scales: { xAxis: LineXAxis; y: (value: number) => number },
 ): { runs: LinePoint[][]; points: LinePoint[] } {
+  // Each x is read once before the sort, not again in the comparator.
   const ordered = points
     .map((point) => ({ point, at: scales.xAxis.read(point.x) }))
     .filter(({ at }) => Number.isFinite(at))

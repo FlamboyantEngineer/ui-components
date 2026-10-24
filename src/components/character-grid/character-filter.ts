@@ -31,7 +31,8 @@ export function formatCodePoints(char: string): string {
 
 /**
  * Whether a character matches a search: its name holds every term of `query` (ignoring case and
- * accents), or `query` is the character itself or its code point (`U+00B0`, `u+b0`).
+ * accents), or `query` is the character itself or its code point (`U+00B0`, `u+b0`). The terms and
+ * code point are read once per query, not once per character.
  */
 function createCharacterMatch(query: string): (character: CharacterGridCharacter) => boolean {
   const code = codePointQuery.exec(query)?.[1];

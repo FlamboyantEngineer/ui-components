@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type RefCallback } from 'react';
+import { useCallback, useMemo, useState, type RefCallback } from 'react';
 import type { Key, Selection, SelectionMode } from '../../core/props.js';
 import { indexDiagramLinks, type DiagramLinks } from './diagram-links.js';
 import { diagramHooks as hooks } from './diagram-hooks.js';
@@ -63,8 +63,14 @@ export interface DiagramController {
   findTarget: (clientX: number, clientY: number) => DiagramTarget | null;
   /** The diagram point at a screen point. */
   toDiagram: (clientX: number, clientY: number) => DiagramPoint;
-  message: string;
+  /** The latest announcement; `id` changes with each one, so the same text is read again. */
+  message: DiagramMessage;
   announce: (message: string) => void;
+}
+
+export interface DiagramMessage {
+  text: string;
+  id: number;
 }
 
 function applyPreview(
@@ -75,37 +81,47 @@ function applyPreview(
   return nodes.map((node) => (preview.has(node.id) ? { ...node, ...preview.get(node.id) } : node));
 }
 
-/** Element lookups for nodes and ports, kept by ref callbacks. */
-function useTargetRegistry() {
-  const targets = useRef(new Map<Element, DiagramTarget>());
+/** Element lookups for nodes and ports, kept by ref callbacks; the same functions every render. */
+function createTargetRegistry() {
+  const targets = new Map<Element, DiagramTarget>();
   return {
     registerTarget:
       (target: DiagramTarget): RefCallback<HTMLElement> =>
       (element) => {
         if (!element) return undefined;
-        targets.current.set(element, target);
+        targets.set(element, target);
         return () => {
-          targets.current.delete(element);
+          targets.delete(element);
         };
       },
     focusNode: (id: Key) => {
-      for (const [element, target] of targets.current) {
+      for (const [element, target] of targets) {
         if (target.node === id && target.port === undefined) (element as HTMLElement).focus();
       }
     },
     findTarget: (clientX: number, clientY: number) => {
       const hit = document.elementFromPoint(clientX, clientY);
       const element = hit?.closest(`.${hooks.slotClass('port')}, .${hooks.slotClass('node')}`);
-      return (element && targets.current.get(element)) ?? null;
+      return (element && targets.get(element)) ?? null;
     },
   };
+}
+
+/** The live region's text, renewed by each announcement even when the text repeats. */
+function useAnnouncer() {
+  const [message, setMessage] = useState<DiagramMessage>({ text: '', id: 0 });
+  const announce = useCallback(
+    (text: string) => setMessage((current) => ({ text, id: current.id + 1 })),
+    [],
+  );
+  return [message, announce] as const;
 }
 
 /** The state and services of one diagram canvas. */
 export function useDiagramController(options: DiagramControllerOptions): DiagramController {
   const { edges, isEditing } = options;
   const links = useMemo(() => indexDiagramLinks(options.nodes, edges), [options.nodes, edges]);
-  const [message, announce] = useState('');
+  const [message, announce] = useAnnouncer();
   const [viewportElement, setViewportElement] = useState<HTMLElement | null>(null);
   const bounds = useMemo(
     () => findDiagramBounds(options.nodes.map(resolveNodeRect)),
@@ -133,7 +149,7 @@ export function useDiagramController(options: DiagramControllerOptions): Diagram
     onConnect: options.onConnect,
     announce,
   });
-  const registry = useTargetRegistry();
+  const [registry] = useState(createTargetRegistry);
   const toDiagram = (clientX: number, clientY: number) => {
     const box = viewportElement?.getBoundingClientRect();
     return toDiagramPoint(view.viewport, {

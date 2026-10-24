@@ -1,4 +1,4 @@
-import { useId, useRef, type MouseEvent, type ReactNode } from 'react';
+import { createContext, useContext, useId, useRef, type MouseEvent, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -96,6 +96,7 @@ const appFrameBandSlots: readonly AppFrameBandSlot[] = ['leading', 'status', 'to
 
 /** Every slot a frame's projection provider owns; other slots reach the provider above the frame. */
 const appFrameSlots = [...regions, ...appFrameBandSlots].map(toAppFrameSlot);
+const InsideAppFrameContext = createContext(false);
 
 const leadingRegions: readonly RegionSpec[] = [
   { region: 'top-bar', element: 'header' },
@@ -232,12 +233,27 @@ export function AppFrame({
   };
   return (
     <ProjectionProvider slots={appFrameSlots}>
-      <AppFrameLayout {...rest} own={own} />
+      <InsideAppFrameContext.Provider value>
+        <AppFrameLayout {...rest} own={own} />
+      </InsideAppFrameContext.Provider>
     </ProjectionProvider>
   );
 }
 
-/** Fills a region of the nearest `AppFrame` from anywhere below it, in place of the region's own. */
+/**
+ * Whether an `AppFrame` is above, so frame content projects into it. Without one, frame content
+ * renders in place, even below a projection provider of the host's own.
+ */
+export function useIsInsideAppFrame(): boolean {
+  return useContext(InsideAppFrameContext);
+}
+
+/**
+ * Fills a region of the nearest `AppFrame` from anywhere below it, in place of the region's own.
+ * Without a frame above, it renders its children in place.
+ */
 export function AppFrameContent({ region, children }: AppFrameContentProps) {
-  return <ProjectionContent slot={toAppFrameSlot(region)}>{children}</ProjectionContent>;
+  const slot = toAppFrameSlot(region);
+  if (!useIsInsideAppFrame()) return <>{children}</>;
+  return <ProjectionContent slot={slot}>{children}</ProjectionContent>;
 }
