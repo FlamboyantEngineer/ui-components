@@ -1,8 +1,12 @@
 // Groups dated entries under the local calendar day they fall on, labelled `Today`, `Yesterday` or
 // the date, for lists read newest first.
 
-import { DateFormatter, getLocalTimeZone, type CalendarDate } from '../../primitives/index.js';
-import { formatRelativeDay, parseCalendarDay, toLocalDay } from '../../utils/calendar-day.js';
+import { DateFormatter } from '../../primitives/index.js';
+import {
+  createCalendarDayReader,
+  formatRelativeDay,
+  type CalendarDay,
+} from '../../utils/calendar-day.js';
 
 /** Entries that fall on one day, in the order they were given. */
 export interface DayGroup<T> {
@@ -23,17 +27,15 @@ export interface GroupByDayOptions<T> {
   unknownLabel: string;
 }
 
-function labelDay(day: CalendarDate, options: Pick<GroupByDayOptions<unknown>, 'now' | 'locale'>) {
-  const today = toLocalDay(options.now);
-  const offset = day.compare(today);
-  if (offset === 0 || offset === -1) return formatRelativeDay(offset, options.locale);
-  const formatter = new DateFormatter(options.locale, {
+function labelDay(day: CalendarDay, locale: string) {
+  if (day.offset === 0 || day.offset === -1) return formatRelativeDay(day.offset, locale);
+  const formatter = new DateFormatter(locale, {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
-    year: day.year === today.year ? undefined : 'numeric',
+    year: day.isThisYear ? undefined : 'numeric',
   });
-  return formatter.format(day.toDate(getLocalTimeZone()));
+  return formatter.format(day.start);
 }
 
 /**
@@ -43,12 +45,14 @@ function labelDay(day: CalendarDate, options: Pick<GroupByDayOptions<unknown>, '
  */
 export function groupByDay<T>(items: readonly T[], options: GroupByDayOptions<T>): DayGroup<T>[] {
   const groups = new Map<string, DayGroup<T>>();
+  const readDay = createCalendarDayReader(options.now);
   for (const item of items) {
-    const day = parseCalendarDay(options.getDate(item));
-    const key = day ? day.toString() : '';
+    const day = readDay(options.getDate(item));
+    const key = day ? day.key : '';
     let group = groups.get(key);
     if (!group) {
-      group = { day: key, label: day ? labelDay(day, options) : options.unknownLabel, items: [] };
+      const label = day ? labelDay(day, options.locale) : options.unknownLabel;
+      group = { day: key, label, items: [] };
       groups.set(key, group);
     }
     group.items.push(item);

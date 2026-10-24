@@ -1,7 +1,11 @@
 // Groups timed entries by the local calendar day they happened on, with a heading per day.
 
-import { DateFormatter, getLocalTimeZone, type CalendarDate } from '../../primitives/index.js';
-import { formatRelativeDay, parseCalendarDay, toLocalDay } from '../../utils/calendar-day.js';
+import { DateFormatter } from '../../primitives/index.js';
+import {
+  createCalendarDayReader,
+  formatRelativeDay,
+  type CalendarDay,
+} from '../../utils/calendar-day.js';
 
 /** A run of entries from one calendar day. */
 export interface DayGroup<T> {
@@ -21,10 +25,9 @@ export interface DayGroupOptions {
 }
 
 /** `Today`, `Yesterday` and `Tomorrow` as Intl words them; the full date further away. */
-function formatDayLabel(day: CalendarDate, { now, locale }: DayGroupOptions): string {
-  const offset = day.compare(toLocalDay(now));
-  if (Math.abs(offset) <= 1) return formatRelativeDay(offset, locale);
-  return new DateFormatter(locale, { dateStyle: 'full' }).format(day.toDate(getLocalTimeZone()));
+function formatDayLabel(day: CalendarDay, locale: string): string {
+  if (Math.abs(day.offset) <= 1) return formatRelativeDay(day.offset, locale);
+  return new DateFormatter(locale, { dateStyle: 'full' }).format(day.start);
 }
 
 /**
@@ -36,15 +39,16 @@ export function groupByDay<T extends { time: string }>(
   options: DayGroupOptions,
 ): DayGroup<T>[] {
   const groups: DayGroup<T>[] = [];
+  const readDay = createCalendarDayReader(options.now);
   for (const item of items) {
-    const day = parseCalendarDay(item.time);
-    const key = day ? day.toString() : '';
+    const day = readDay(item.time);
+    const key = day ? day.key : '';
     const last = groups.at(-1);
     if (last && last.day === key) {
       last.items.push(item);
       continue;
     }
-    const label = day ? formatDayLabel(day, options) : options.unknownLabel;
+    const label = day ? formatDayLabel(day, options.locale) : options.unknownLabel;
     groups.push({ day: key, label, items: [item] });
   }
   return groups;
