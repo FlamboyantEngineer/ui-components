@@ -57,6 +57,7 @@ describe('Tree selection', () => {
         items: [leaf],
         getChildren: (item) => item.children,
         disabledKeys: undefined,
+        selectionMode: 'multiple',
         selectionPropagation: true,
         onSelectionChange,
       }),
@@ -83,6 +84,7 @@ describe('Tree selection', () => {
         getChildren: (item) => item.children,
         disabledKeys: undefined,
         selectedKeys,
+        selectionMode: 'multiple',
         selectionPropagation: true,
       }),
     );
@@ -143,6 +145,22 @@ describe('Tree selection', () => {
 
     await userEvent.click(box('Fruit'));
     expect(selectedRows()).toEqual(['Vegetables', 'Kale']);
+  });
+
+  it('UIC-TREE-5.2 selects one row without cascading in single selection', async () => {
+    const user = userEvent.setup();
+    const onSelectionChange = vi.fn<(keys: Selection) => void>();
+    render(
+      <FoodTree
+        selectionMode="single"
+        selectionPropagation
+        onSelectionChange={onSelectionChange}
+      />,
+    );
+    await user.click(row('Fruit'));
+    expect(onSelectionChange).toHaveBeenLastCalledWith(new Set(['fruit']));
+    expect(selectedRows()).toEqual(['Fruit']);
+    expect(row('Fruit')).not.toHaveAttribute('data-indeterminate');
   });
 
   it('UIC-TREE-5.2 follows a controlled selection and leaves disabled rows alone', async () => {
