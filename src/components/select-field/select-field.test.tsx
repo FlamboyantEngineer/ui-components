@@ -45,7 +45,7 @@ describe('SelectField field', () => {
         />
       </form>,
     );
-    await user.click(screen.getByRole('button', { name: 'Select an option Types' }));
+    await user.click(screen.getByRole('button', { name: '1 selected Types' }));
     await user.click(screen.getByRole('option', { name: 'Textual' }));
     expect(onChange).toHaveBeenLastCalledWith([1, '1']);
     expect(new FormData(container.querySelector('form')!).getAll('types')).toEqual(['1', '1']);
@@ -269,7 +269,7 @@ describe('SelectField field', () => {
 });
 
 describe('SelectField trigger', () => {
-  it('UIC-SELECT-FIELD-2.1 shows the placeholder, a missing choice and a multiple select placeholder', () => {
+  it('UIC-SELECT-FIELD-2.1 shows the placeholder, a missing choice and a multiple select count', () => {
     const { container, rerender } = render(<SelectField label="Fruit" options={fruit} />);
     const value = () => container.querySelector('.ui-select-field__value');
     expect(value()).toHaveAttribute('data-placeholder', 'true');
@@ -284,11 +284,24 @@ describe('SelectField trigger', () => {
         label="Fruit"
         selectionMode="multiple"
         options={fruit}
-        value={['apple']}
+        value={['apple', 'fig']}
+        placeholder="Add"
+      />,
+    );
+    expect(value()).toHaveTextContent('2 selected');
+    expect(value()).not.toHaveAttribute('data-placeholder');
+    expect(trigger('2 selected Fruit')).toBeInTheDocument();
+    rerender(
+      <SelectField
+        label="Fruit"
+        selectionMode="multiple"
+        options={fruit}
+        value={[]}
         placeholder="Add"
       />,
     );
     expect(value()).toHaveTextContent('Add');
+    expect(value()).toHaveAttribute('data-placeholder', 'true');
     expect(container.querySelector('.ui-select-field__chevron')).toHaveAttribute(
       'data-glyph',
       'chevron-down',
@@ -314,6 +327,25 @@ describe('SelectField trigger', () => {
     await user.click(screen.getByRole('option', { name: 'None' }));
     expect(onCommit).toHaveBeenCalledWith(null);
     expect(trigger('None Fruit')).toBeInTheDocument();
+  });
+
+  it('UIC-SELECT-FIELD-1.2 shows a chosen option whose id is empty text, which reads as no value otherwise', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const options = [
+      { id: '', label: 'None' },
+      { id: 'apple', label: 'Apple' },
+    ];
+    const { unmount } = render(
+      <SelectField label="Fruit" options={options} defaultValue="apple" onChange={onChange} />,
+    );
+    await user.click(trigger('Apple Fruit'));
+    await user.click(screen.getByRole('option', { name: 'None' }));
+    expect(onChange).toHaveBeenLastCalledWith('');
+    expect(trigger('None Fruit')).toBeInTheDocument();
+    unmount();
+    render(<SelectField label="Fruit" options={fruit} value="" />);
+    expect(trigger('Select an option Fruit')).toBeInTheDocument();
   });
 
   it('UIC-SELECT-FIELD-2.2 publishes the widest label width measured in the trigger font', async () => {

@@ -69,16 +69,19 @@ function OptionContent({ option }: { option: SelectFieldOption }) {
 }
 
 function OptionRow({
+  id,
   option,
   display,
 }: {
+  /** The option's collection key. */
+  id: string;
   option: SelectFieldOption;
   display: SelectOptionsDisplay;
 }) {
   const { isMultiple, blockedKeys, renderOption } = display;
   return (
     <ListBoxItem
-      id={toCollectionKey(option.id)}
+      id={id}
       textValue={option.label}
       isDisabled={option.isDisabled || blockedKeys.has(option.id)}
       className={hooks.slotClass('option')}
@@ -108,26 +111,42 @@ function OptionRow({
   );
 }
 
+/** What the rows depend on beyond their own item, so a cached row is drawn again when it changes. */
+export function toDisplayDependencies(display: SelectOptionsDisplay): unknown[] {
+  return [display.isMultiple, display.blockedKeys, display.renderOption];
+}
+
 /**
- * One entry of the list: an option row, or a group as a section (React Aria `ListBoxSection`) led
- * by its heading, when it has one, and holding its options.
+ * Draws the list's items in a React Aria `Collection`, which keeps each item's row while the item
+ * and the display stay the same, so filtering a long list does not draw every row again: an option
+ * row, or a group as a section (React Aria `ListBoxSection`) led by its heading, when it has one,
+ * and holding its options. Rows carry their collection key as `id`, which also keys them.
  */
-export function SelectListItem({
-  item,
+export function SelectListItems({
+  items,
   display,
 }: {
-  item: SelectFieldItem;
+  items: readonly SelectFieldItem[];
   display: SelectOptionsDisplay;
 }) {
-  if (!isSelectFieldGroup(item)) return <OptionRow option={item} display={display} />;
   return (
-    <ListBoxSection id={toCollectionKey(item.id)} className={hooks.slotClass('section')}>
-      {item.label ? (
-        <Header className={hooks.slotClass('section-header')}>{item.label}</Header>
-      ) : null}
-      <Collection items={item.options}>
-        {(option) => <OptionRow option={option} display={display} />}
-      </Collection>
-    </ListBoxSection>
+    <Collection items={items} dependencies={toDisplayDependencies(display)}>
+      {(item) =>
+        isSelectFieldGroup(item) ? (
+          <ListBoxSection id={toCollectionKey(item.id)} className={hooks.slotClass('section')}>
+            {item.label ? (
+              <Header className={hooks.slotClass('section-header')}>{item.label}</Header>
+            ) : null}
+            <Collection items={item.options} dependencies={toDisplayDependencies(display)}>
+              {(option) => (
+                <OptionRow id={toCollectionKey(option.id)} option={option} display={display} />
+              )}
+            </Collection>
+          </ListBoxSection>
+        ) : (
+          <OptionRow id={toCollectionKey(item.id)} option={item} display={display} />
+        )
+      }
+    </Collection>
   );
 }

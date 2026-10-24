@@ -101,9 +101,18 @@ export function toEngineCommand(command: RichTextCommand): Command {
   }
 }
 
+/** Whether the selection holds text blocks and every one of them has this type and attributes. */
 function hasMarkup(state: EditorState, type: NodeType, attrs: RichTextAttributes | undefined) {
-  const { $from, $to } = state.selection;
-  return $from.parent.hasMarkup(type, attrs) && $to.parent.hasMarkup(type, attrs);
+  const { from, to } = state.selection;
+  let hasBlock = false;
+  let isEvery = true;
+  state.doc.nodesBetween(from, to, (node) => {
+    if (!node.isTextblock) return isEvery;
+    hasBlock = true;
+    isEvery &&= node.hasMarkup(type, attrs);
+    return false;
+  });
+  return hasBlock && isEvery;
 }
 
 /** Whether a command's effect already holds at the selection, for a toggle's pressed state. */

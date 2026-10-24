@@ -8,6 +8,7 @@ import { Glyph, useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import type { MenuEntry } from '../menu/menu.js';
+import { findTopBlocks } from './block-commands.js';
 import { getBlockItems, getWrapItems } from './format-items.js';
 import type { RichTextCommand } from './rich-text-command.js';
 import type { RichTextController } from './rich-text-controller.js';
@@ -37,8 +38,11 @@ function getBlockCommands(strings: UiStrings, controller: RichTextController) {
   return { turnInto, actions };
 }
 
-function toMenuEntries(strings: UiStrings, controller: RichTextController): MenuEntry[] {
-  const { turnInto, actions } = getBlockCommands(strings, controller);
+function toMenuEntries(
+  strings: UiStrings,
+  controller: RichTextController,
+  { turnInto, actions }: ReturnType<typeof getBlockCommands>,
+): MenuEntry[] {
   return [
     {
       id: 'turn-into',
@@ -55,8 +59,13 @@ function toMenuEntries(strings: UiStrings, controller: RichTextController): Menu
   ];
 }
 
-/** Selects the block at `pos`: a caret at its start, or the block itself when it holds no text. */
+/**
+ * Selects the block at `pos`: a caret at its start, or the block itself when it holds no text. A
+ * selection over several blocks that include it stays, so the menu acts on all of them.
+ */
 function selectBlock(view: EditorView, pos: number) {
+  const blocks = findTopBlocks(view.state);
+  if (blocks && blocks.endIndex - blocks.index > 1 && blocks.from <= pos && pos < blocks.to) return;
   const node = view.state.doc.nodeAt(pos);
   if (!node) return;
   const selection = node.isAtom
@@ -88,14 +97,14 @@ export function BlockHandle({ className, ...rest }: BlockHandleProps) {
     const dragging = { slice: selection.content(), move: true, node: selection };
     view.dragging = dragging;
   });
+  if (isMenuOpen && !controller.isEditable) setMenuOpen(false);
   if (!target || !controller.isEditable) return null;
-  const { actions } = getBlockCommands(strings, controller);
+  const commands = getBlockCommands(strings, controller);
   const run = (key: Key) => {
     const id = String(key);
-    const turnInto = getBlockCommands(strings, controller).turnInto.find(
-      (item) => `turn-into:${item.id}` === id,
-    );
-    const command = turnInto?.command ?? actions.find((action) => action.id === id)?.command;
+    const turnInto = commands.turnInto.find((item) => `turn-into:${item.id}` === id);
+    const command =
+      turnInto?.command ?? commands.actions.find((action) => action.id === id)?.command;
     if (command && controller.run(command)) focusReturn.request();
   };
   return (
@@ -130,7 +139,7 @@ export function BlockHandle({ className, ...rest }: BlockHandleProps) {
           if (open) select(target.pos);
           setMenuOpen(open);
         }}
-        items={toMenuEntries(strings, controller)}
+        items={toMenuEntries(strings, controller, commands)}
         onAction={run}
       />
     </div>

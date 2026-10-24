@@ -30,7 +30,11 @@ test.describe('Color Field lab', () => {
     await expect(
       field(page, 'placeholder').locator('.ui-color-field__trigger'),
     ).toHaveAccessibleName('Border Same as the text');
-    await expect(cell(page, 'read-only').locator('.ui-color-field__trigger')).toBeDisabled();
+    const readOnly = cell(page, 'read-only').locator('.ui-color-field__trigger');
+    await expect(readOnly).toBeEnabled();
+    await readOnly.click();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await expect(cell(page, 'disabled').locator('.ui-color-field__trigger')).toBeDisabled();
     await expect(page.locator('[data-lab-cell="format=rgb"] .ui-color-field__value')).toHaveText(
       'rgb(51, 102, 153)',
     );
@@ -250,6 +254,15 @@ test.describe('Color Field lab', () => {
     await page.keyboard.press('Escape');
     await expect(button).toBeFocused();
     await lab.expectAccessible();
+  });
+
+  test('UIC-COLOR-FIELD-2.4 submits each named colour once in its stored format', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('color-field');
+    await page.getByRole('button', { name: 'Submit' }).click();
+    await expect(output(page, 'Form')).toHaveText('brand=#336699 highlight=#e69500');
   });
 
   test('UIC-COLOR-FIELD-1.3 passes axe in the dark theme', async ({ page, lab }) => {

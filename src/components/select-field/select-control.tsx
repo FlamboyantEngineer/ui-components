@@ -1,9 +1,10 @@
-import { useCallback, useRef, type CSSProperties } from 'react';
+import { useMemo, useRef, type CSSProperties } from 'react';
 import { Select as AriaSelect } from '../../primitives/index.js';
 import { createHooks, measuredProperty } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
+import { mergeRefs } from '../../utils/merge-props.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { useWidestTextWidth } from '../../utils/use-widest-text-width.js';
 import type { FieldControlProps, FieldState } from '../field/field.js';
@@ -68,29 +69,37 @@ function useListProps(
 
 /**
  * The trigger's ref (read for its font, focused after a clear and published to the field), its
- * placeholder and the measured width of the widest text it can show.
+ * placeholder, a multiple select's count of its choices and the measured width of the widest text
+ * it can show.
  */
-function useTrigger(control: FieldControlProps, config: SelectConfig, model: SelectModel) {
+function useTrigger(
+  control: FieldControlProps,
+  props: Omit<SelectControlProps, 'control' | 'label'>,
+  model: SelectModel,
+) {
   const strings = useUiStrings();
   const triggerRef = useRef<HTMLButtonElement | null>(null);
-  const ref = useCallback(
-    (node: HTMLButtonElement | null) => {
-      triggerRef.current = node;
-      control.ref(node);
-    },
-    [control],
-  );
-  const placeholder = config.placeholder ?? strings.selectPlaceholder;
+  const ref = useMemo(() => mergeRefs(triggerRef, control.ref), [control.ref]);
+  const placeholder = props.placeholder ?? strings.selectPlaceholder;
+  const options = flattenSelectItems(props.options);
+  const count = model.keys.length;
   const texts = [
     model.empty?.label ?? placeholder,
-    ...flattenSelectItems(config.options).map((option) => option.label),
+    ...(props.isMultiple ? [strings.selectedCount(options.length)] : []),
+    ...options.map((option) => option.label),
   ];
   const width = useWidestTextWidth(triggerRef, texts);
   const style =
     width === null
       ? undefined
       : (measuredProperty('select-field-label-width', width) as CSSProperties);
-  return { ref, placeholder, style, focus: () => triggerRef.current?.focus() };
+  return {
+    ref,
+    placeholder,
+    summary: props.isMultiple && count > 0 ? strings.selectedCount(count) : null,
+    style,
+    focus: () => triggerRef.current?.focus(),
+  };
 }
 
 /**
@@ -137,6 +146,7 @@ export function SelectControl({ control, label, ...props }: SelectControlProps) 
           chosen={model.single}
           previous={model.previous}
           placeholder={trigger.placeholder}
+          summary={trigger.summary}
           clearLabel={props.isClearable && state.canClear ? strings.clearValue(label) : null}
           onClear={() => {
             state.clear();
