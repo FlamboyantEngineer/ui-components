@@ -330,6 +330,18 @@ mountLab(
       <StateMatrix axes={{ mode: modes }} render={({ mode }) => <ModeField mode={mode} />} />
     </LabSection>
     <LabSection
+      title="Moving inside a field"
+      description="A required field in blur mode: Tab to its help and menu buttons, or open its menu, and the message waits until focus leaves the field."
+    >
+      <SampleField
+        label="Town"
+        options={{ defaultValue: '', isRequired: true, validationMode: 'blur' }}
+        help="The town the order ships to."
+        menu={['help']}
+        data-lab-field="blur-parts"
+      />
+    </LabSection>
+    <LabSection
       title="Several issues"
       description="Every issue is listed, errors first; the too-short error is reworded from its validity state."
     >
