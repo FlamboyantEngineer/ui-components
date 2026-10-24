@@ -3,7 +3,7 @@ import { resolveDestination, type PdfTarget } from './pdf-destination.js';
 import type { PdfLinkService, PdfTextContent, PdfViewport } from './pdf-engine.js';
 import { createLinkService } from './pdf-link-service.js';
 import type { LoadedPdf } from './use-pdf-document.js';
-import { useLatest } from './use-latest.js';
+import { useLatest } from '../../utils/use-latest.js';
 import type { PdfPagesController } from './use-pdf-pages.js';
 
 export interface UsePdfLinksOptions<

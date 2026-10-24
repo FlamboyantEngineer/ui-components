@@ -31,9 +31,9 @@ Verification: `src/components/annotation-layer/annotation-layer.test.tsx`, `e2e/
 
 `AnnotationMargin` shall render a `ui-annotation-layer__margin` element (`role="list"`, named by the caller's labelling props or the provider's `annotations` string) holding one `ui-annotation-layer__card` (`role="listitem"`) per annotation of the layer around it, in the order of their anchors from the top and then the annotations without an anchor. Each card holds what `renderCard(annotation, { isActive, isOrphaned })` returns and publishes `data-active` for the active annotation and `data-orphaned` for one without an anchor. A margin outside an `AnnotationLayer` throws.
 
-Numeric and text IDs, such as `1` and `'1'`, identify distinct entries; removing one preserves the other entry's rendered identity.
+Numeric and text IDs, such as `1` and `'1'`, identify distinct entries, for the cards and for the layer's marks; removing one preserves the other entry's rendered card and marks.
 
-Implementation: `src/components/annotation-layer/annotation-margin.tsx`, `src/components/annotation-layer/annotation-context.ts`, `src/core/diff-strings.ts`
+Implementation: `src/components/annotation-layer/annotation-margin.tsx`, `src/components/annotation-layer/annotation-context.ts`, `src/components/annotation-layer/annotation-layer.tsx`, `src/core/diff-strings.ts`
 Verification: `src/components/annotation-layer/annotation-layer.test.tsx`, `e2e/annotation-layer.spec.ts`
 
 ### UIC-ANNOTATION-LAYER-2.2 - Stacking without overlap

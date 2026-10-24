@@ -35,7 +35,10 @@ export interface PdfViewerProps<
   V extends PdfViewport = PdfViewport,
   C extends PdfTextContent = PdfTextContent,
 > extends BaseProps {
-  /** The document's URL or bytes; `null` while the bytes are on their way. A new array is a new document. */
+  /**
+   * The document's URL or bytes; `null` while the bytes are on their way. A new array is a new
+   * document; a URL, as text or a `URL` object, is the same document while its address is.
+   */
   source: PdfSource | null;
   /** Loads the PDF engine when a document starts loading, for example `() => import('pdfjs-dist')`. */
   loadEngine: () => Promise<PdfEngine<V, C>>;

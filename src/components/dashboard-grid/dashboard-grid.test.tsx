@@ -331,6 +331,106 @@ describe('DashboardGrid', () => {
     expect(screen.getByRole('group', { name: 'Notes' }).style.gridRow).toBe('4 / span 1');
   });
 
+  it('UIC-DASHBOARD-GRID-1.2 remembers an uncontrolled layout under a persist key', async () => {
+    const user = userEvent.setup();
+    const storage = createMemoryStorage();
+    const view = (
+      <UiProvider storage={storage}>
+        <DashboardGrid aria-label="Saved" defaultLayout={layout} persistKey="overview" isEditing>
+          {(item) => <DashboardTile label={titles[item.id]!}>{item.id}</DashboardTile>}
+        </DashboardGrid>
+      </UiProvider>
+    );
+    const { unmount } = render(view);
+    screen.getByRole('button', { name: 'Move Notes' }).focus();
+    await user.keyboard('{ArrowDown}');
+    expect(JSON.parse(storage.getItem('overview') ?? '[]')[2]).toMatchObject({ id: 'notes', y: 3 });
+    unmount();
+    render(view);
+    expect(screen.getByRole('group', { name: 'Notes' }).style.gridRow).toBe('4 / span 1');
+  });
+
+  it('UIC-DASHBOARD-GRID-2.3 keeps the start column when a resize reaches the last column', async () => {
+    const user = userEvent.setup();
+    const onLayoutChange = vi.fn();
+    render(
+      <DashboardGrid
+        aria-label="Edge"
+        defaultLayout={[{ id: 'a', x: 8, y: 0, w: 3, h: 2 }]}
+        onLayoutChange={onLayoutChange}
+        isEditing
+      >
+        {() => <DashboardTile label="a">A</DashboardTile>}
+      </DashboardGrid>,
+    );
+    const resize = screen.getByRole('button', { name: 'Resize a' });
+    resize.focus();
+    await user.keyboard('{ArrowRight}');
+    expect(onLayoutChange).toHaveBeenCalledExactlyOnceWith([{ id: 'a', x: 8, y: 0, w: 4, h: 2 }]);
+    await user.keyboard('{ArrowRight}');
+    expect(onLayoutChange).toHaveBeenCalledOnce();
+    // jsdom lays nothing out, so a column steps one pixel: drag three columns past the edge.
+    await user.pointer([
+      { keys: '[MouseLeft>]', target: resize, coords: { pageX: 0, pageY: 0 } },
+      { coords: { pageX: 3, pageY: 0 } },
+      { keys: '[/MouseLeft]' },
+    ]);
+    expect(onLayoutChange).toHaveBeenCalledOnce();
+    expect(screen.getByRole('group', { name: 'a' }).style.gridColumn).toBe('9 / span 4');
+  });
+
+  it('UIC-DASHBOARD-GRID-2.3 grows a tile toward the inline end with the left arrow in right-to-left text', async () => {
+    const user = userEvent.setup();
+    const onLayoutChange = vi.fn();
+    render(
+      <UiProvider locale="ar-EG">
+        <Board isEditing onLayoutChange={onLayoutChange} />
+      </UiProvider>,
+    );
+    screen.getByRole('button', { name: 'Resize Notes' }).focus();
+    await user.keyboard('{ArrowRight}');
+    expect(onLayoutChange.mock.lastCall?.[0][2]).toMatchObject({ id: 'notes', x: 0, w: 11 });
+    await user.keyboard('{ArrowLeft}');
+    expect(onLayoutChange.mock.lastCall?.[0][2]).toMatchObject({ id: 'notes', x: 0, w: 12 });
+  });
+
+  it('UIC-DASHBOARD-GRID-2.2 UIC-DASHBOARD-GRID-2.5 reports and announces nothing for an arrow press against an edge', async () => {
+    const user = userEvent.setup();
+    const onLayoutChange = vi.fn();
+    render(<Board isEditing onLayoutChange={onLayoutChange} />);
+    screen.getByRole('button', { name: 'Move Visitors' }).focus();
+    await user.keyboard('{ArrowLeft}{ArrowUp}');
+    expect(onLayoutChange).not.toHaveBeenCalled();
+    expect(status()).toHaveTextContent('');
+  });
+
+  it('UIC-DASHBOARD-GRID-2.2 renders the tiles again only when a pointer drag reaches another cell', async () => {
+    const user = userEvent.setup();
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue(
+      DOMRect.fromRect({ width: 1200, height: 400 }),
+    );
+    const renderTile = vi.fn((item: DashboardGridItem) => (
+      <DashboardTile label={titles[item.id]!}>{item.id}</DashboardTile>
+    ));
+    render(
+      <DashboardGrid aria-label="Overview" defaultLayout={layout} isEditing>
+        {renderTile}
+      </DashboardGrid>,
+    );
+    const move = screen.getByRole('button', { name: 'Move Visitors' });
+    await user.pointer([
+      { keys: '[MouseLeft>]', target: move, coords: { pageX: 0, pageY: 0 } },
+      { coords: { pageX: 1, pageY: 0 } },
+    ]);
+    renderTile.mockClear();
+    for (let x = 2; x <= 10; x += 1) await user.pointer({ coords: { pageX: x, pageY: 0 } });
+    expect(renderTile).not.toHaveBeenCalled();
+    await user.pointer({ coords: { pageX: 100, pageY: 0 } });
+    expect(renderTile).toHaveBeenCalled();
+    await user.pointer({ keys: '[/MouseLeft]' });
+    expect(screen.getByRole('group', { name: 'Visitors' }).style.gridColumn).toBe('2 / span 6');
+  });
+
   it('UIC-DASHBOARD-GRID-3.1 reflows onto fewer columns, read only, when narrow', () => {
     stubGridWidth(300);
     render(<Board isEditing minColumnWidth={100} />);

@@ -13,7 +13,7 @@ import {
 } from './page-geometry.js';
 import type { PdfTextContent, PdfViewport } from './pdf-engine.js';
 import type { LoadedPdf } from './use-pdf-document.js';
-import { useLatest } from './use-latest.js';
+import { useLatest } from '../../utils/use-latest.js';
 
 export interface UsePdfContextMenuOptions<
   V extends PdfViewport = PdfViewport,

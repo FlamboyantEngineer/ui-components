@@ -68,11 +68,6 @@ export const codeEditorHooks = createHooks('code-editor', [
   'announcement',
   'tooltip',
   'popover',
-  'completions',
-  'completion',
-  'completion-label',
-  'completion-description',
-  'completion-documentation',
   'search',
 ]);
 

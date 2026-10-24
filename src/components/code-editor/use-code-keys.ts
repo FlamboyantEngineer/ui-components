@@ -39,13 +39,17 @@ const brackets = new Set(['(', '[', '{', '"', "'", '`']);
 
 const pairClosers = new Set([')', ']', '}', '"', "'", '`']);
 
+/** Keys pressed on their own before a chord, which keep Escape's "Tab leaves" until the chord. */
+const modifierKeys = new Set(['Shift', 'Control', 'Alt', 'Meta']);
+
 function hasModifier(event: KeyboardEvent): boolean {
   return event.ctrlKey || event.metaKey || event.altKey;
 }
 
 /**
- * The editing keys of a code editor: Tab and Shift+Tab indentation (left by Escape then Tab), Enter
- * keeping the indentation, bracket and quote pairs, and the shortcuts for search and problems. Returns a handler that reports whether it used the key.
+ * The editing keys of a code editor: Tab and Shift+Tab indentation (left by Escape then Tab or
+ * Shift+Tab), Enter keeping the indentation, bracket and quote pairs, and the shortcuts for search
+ * and problems. Returns a handler that reports whether it used the key.
  */
 export function useCodeKeys(options: CodeKeysOptions) {
   const { inputRef, applyEdit, indent, isLocked } = options;
@@ -87,7 +91,7 @@ export function useCodeKeys(options: CodeKeysOptions) {
     const input = inputRef.current;
     if (!input || event.nativeEvent.isComposing) return false;
     const leaving = tabLeaves.current;
-    tabLeaves.current = event.key === 'Escape';
+    if (!modifierKeys.has(event.key)) tabLeaves.current = event.key === 'Escape';
     if (handleShortcut(event)) {
       event.preventDefault();
       return true;

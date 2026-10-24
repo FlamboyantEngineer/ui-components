@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { TextField } from '../text-field/text-field.js';
@@ -104,6 +105,15 @@ function ConflictBlock(props: ConflictBlockProps) {
   );
 }
 
+/** A clean chunk's merged lines, which an edit of a conflict leaves as they are. */
+const CleanBlock = memo(function CleanBlock({ block }: { block: MergeBlock }) {
+  return (
+    <div {...hooks.slot('block', { kind: block.chunk.kind })}>
+      <pre {...hooks.slot('text')}>{getCleanLines(block.chunk).join('\n')}</pre>
+    </div>
+  );
+});
+
 /**
  * The result pane: each clean chunk's merged lines, and each conflict as a block with its take
  * actions and an editor holding its result.
@@ -115,13 +125,7 @@ export function MergeResultPane(props: MergeResultPaneProps) {
       <div {...hooks.slot('blocks')}>
         {blocks.map((block) => {
           const { conflict } = block;
-          if (conflict === null) {
-            return (
-              <div key={block.index} {...hooks.slot('block', { kind: block.chunk.kind })}>
-                <pre {...hooks.slot('text')}>{getCleanLines(block.chunk).join('\n')}</pre>
-              </div>
-            );
-          }
+          if (conflict === null) return <CleanBlock key={block.index} block={block} />;
           return (
             <ConflictBlock
               key={block.index}

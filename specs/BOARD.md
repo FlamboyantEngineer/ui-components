@@ -80,11 +80,11 @@ Verification: `src/components/board/board.test.tsx`, `src/components/board/board
 
 ### UIC-BOARD-2.3 - Keyboard moves
 
-With `onMove`, Alt+ArrowUp and Alt+ArrowDown on a card shall report the move past its neighbouring card in the cell, and Alt+ArrowLeft and Alt+ArrowRight (mirrored right to left) the move to the same place in the neighbouring open column of its lane, at the end when that cell holds fewer cards; collapsed columns are skipped. Focus stays on the moved card once the owner renders the move, following the shared [focus request lifecycle](STEP-LIST-EDITOR.md#uic-step-list-editor-42---focus-after-an-edit). At either end the chord is claimed and moves nothing. Cards publish the chords in `aria-keyshortcuts`.
+With `onMove`, Alt+ArrowUp and Alt+ArrowDown on a card shall report the move past its neighbouring card in the cell, and Alt+ArrowLeft and Alt+ArrowRight (mirrored right to left) the move to the same place in the neighbouring open column of its lane, at the end when that cell holds fewer cards; collapsed columns are skipped. Focus stays on the moved card once the owner renders the move, following the shared [focus request lifecycle](STEP-LIST-EDITOR.md#uic-step-list-editor-42---focus-after-an-edit); in a virtualized cell that does not render the moved card, the cell scrolls toward it until it renders and takes focus. At either end the chord is claimed and moves nothing. Cards publish the chords in `aria-keyshortcuts`.
 
 Card, column and lane keys retain their primitive type; numeric `1` and text `"1"` identify separate items. Card actions, moves and focus restoration shall preserve that distinction, including keys containing whitespace. Public callbacks retain the original keys; a card's React Aria `data-key` is opaque.
 
-Implementation: `src/components/board/board.tsx`, `src/components/board/board-moves.ts`
+Implementation: `src/components/board/board.tsx`, `src/components/board/board-moves.ts`, `src/components/board/board-cell.tsx`
 Verification: `src/components/board/board.test.tsx`, `src/components/board/board-moves.test.ts`, `e2e/board.spec.ts`
 
 ### UIC-BOARD-2.4 - Applying moves
@@ -105,9 +105,9 @@ Verification: `src/components/board/board.test.tsx`, `src/components/board/board
 
 ### UIC-BOARD-3.2 - Keyboard column moves
 
-Alt+ArrowLeft and Alt+ArrowRight on a column's drag handle (mirrored right to left) shall report the move of the column one place, keeping focus on its handle once the owner renders the move; at either end they do nothing. Enter on the handle shall start a keyboard drag of the column (React Aria's drag button), which lands on the other column headers in turn as Tab moves and drops on Enter, reported as for a pointer drop.
+Alt+ArrowLeft and Alt+ArrowRight on a column's drag handle (mirrored right to left) shall report the move of the column one place, keeping focus on its handle once the owner renders the move; at either end they do nothing. Enter on the handle shall start a keyboard drag of the column (React Aria's drag button), which lands on the other column headers in turn as Tab moves and drops on Enter, reported as for a pointer drop. The handle publishes both chords in `aria-keyshortcuts` and is described by React Aria's drag button description, which tells the reader how to start a keyboard drag.
 
-Implementation: `src/components/board/board-column-header.tsx`, `src/components/board/board.tsx`, `src/components/board/board-moves.ts`
+Implementation: `src/components/board/board-column-header.tsx`, `src/components/board/board.tsx`, `src/components/board/board-moves.ts`, `src/utils/use-item-drag.ts`
 Verification: `src/components/board/board.test.tsx`, `src/components/board/board-moves.test.ts`, `e2e/board.spec.ts`
 
 ## UIC-BOARD-4 - Accessibility

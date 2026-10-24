@@ -315,6 +315,31 @@ describe('CalendarView', () => {
     expect(onDateChange).toHaveBeenLastCalledWith('2026-04-28');
   });
 
+  it('UIC-CALENDAR-VIEW-4.2 moves from the cell that has focus, also a day of another month', async () => {
+    render(<Calendar defaultDate="2026-04-15" />);
+    const user = userEvent.setup();
+    await user.click(document.querySelector('[data-date="2026-03-30"]') as HTMLElement);
+    await user.keyboard('{ArrowRight}');
+    expect(document.querySelector('[data-date="2026-03-31"]')).toHaveFocus();
+    expect(screen.getByRole('grid', { name: 'March 2026' })).toBeInTheDocument();
+    await user.click(document.querySelector('[data-date="2026-04-01"]') as HTMLElement);
+    await user.keyboard('{ArrowLeft}');
+    expect(document.querySelector('[data-date="2026-03-31"]')).toHaveFocus();
+  });
+
+  it('UIC-CALENDAR-VIEW-4.2 leaves focus alone after a keyboard move the owner refuses', async () => {
+    const view = (date: string) => <Calendar date={date} onDateChange={() => {}} />;
+    const { rerender } = render(view('2026-03-18'));
+    const user = userEvent.setup();
+    act(() => cell('Wednesday, March 18, 2026').focus());
+    await user.keyboard('{ArrowRight}');
+    expect(cell('Wednesday, March 18, 2026')).toHaveFocus();
+    const next = screen.getByRole('button', { name: 'Next month' });
+    act(() => next.focus());
+    rerender(view('2026-04-18'));
+    expect(next).toHaveFocus();
+  });
+
   it('UIC-CALENDAR-VIEW-4.2 puts only the focused day events in the tab sequence', async () => {
     render(<Calendar />);
     const user = userEvent.setup();

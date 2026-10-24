@@ -24,6 +24,8 @@ export interface ItemDragOptions<K extends Key, Move extends ItemMove> {
 export interface ItemDragState<Move extends ItemMove> {
   dragProps: HTMLAttributes<HTMLElement>;
   startDrag: (event: PressEvent) => void;
+  /** The id of the building block's description of the drag button, for its `aria-describedby`. */
+  describedBy: string | undefined;
   isDragging: boolean;
   dropPosition: Move['position'] | null;
 }
@@ -75,6 +77,7 @@ export function useItemDrag<K extends Key, Move extends ItemMove>(
   return {
     dragProps: mergeProps(dragProps, dropProps),
     startDrag: (event) => dragButtonProps.onPress?.(event as never),
+    describedBy: dragButtonProps['aria-describedby'],
     isDragging,
     dropPosition,
   };

@@ -8,26 +8,44 @@ interface TextPoint {
   offset: number;
 }
 
-function collectTextNodes(root: Node): Text[] {
+/** The text nodes of the highlighted copy in order, with the source offset each starts at. */
+export interface CopyText {
+  nodes: readonly Text[];
+  starts: readonly number[];
+  length: number;
+}
+
+/** Reads the copy's text nodes once, for every lookup until the copy renders again. */
+export function readCopyText(root: Node): CopyText {
   const walker = root.ownerDocument?.createTreeWalker(root, NodeFilter.SHOW_TEXT);
   const nodes: Text[] = [];
-  for (let node = walker?.nextNode(); node; node = walker?.nextNode()) nodes.push(node as Text);
-  return nodes;
-}
-
-function locate(nodes: readonly Text[], offset: number): TextPoint | null {
-  let start = 0;
-  for (const node of nodes) {
-    const length = node.data.length;
-    if (offset <= start + length) return { node, offset: offset - start };
-    start += length;
+  const starts: number[] = [];
+  let length = 0;
+  for (let node = walker?.nextNode(); node; node = walker?.nextNode()) {
+    nodes.push(node as Text);
+    starts.push(length);
+    length += (node as Text).data.length;
   }
-  return null;
+  return { nodes, starts, length };
 }
 
-function measure(nodes: readonly Text[], range: CodeRange): DOMRect | null {
-  const from = locate(nodes, range.start);
-  const to = locate(nodes, range.end);
+/** The text node an offset falls in: the first one that ends at or after it, by bisection. */
+function locate({ nodes, starts }: CopyText, offset: number): TextPoint | null {
+  let low = 0;
+  let high = nodes.length;
+  while (low < high) {
+    const middle = (low + high) >> 1;
+    if ((starts[middle] ?? 0) + (nodes[middle]?.data.length ?? 0) < offset) low = middle + 1;
+    else high = middle;
+  }
+  const node = nodes[low];
+  return node ? { node, offset: offset - (starts[low] ?? 0) } : null;
+}
+
+/** The on-screen rectangle of a range of the highlighted copy, or `null` when it cannot say. */
+export function measureRange(copy: CopyText, range: CodeRange): DOMRect | null {
+  const from = locate(copy, range.start);
+  const to = locate(copy, range.end);
   if (!from || !to) return null;
   const domRange = from.node.ownerDocument.createRange();
   domRange.setStart(from.node, from.offset);
@@ -35,11 +53,6 @@ function measure(nodes: readonly Text[], range: CodeRange): DOMRect | null {
   return typeof domRange.getBoundingClientRect === 'function'
     ? domRange.getBoundingClientRect()
     : null;
-}
-
-/** The on-screen rectangle of a range of the highlighted copy, or `null` when it cannot say. */
-export function measureRange(highlight: HTMLElement, range: CodeRange): DOMRect | null {
-  return measure(collectTextNodes(highlight), range);
 }
 
 function isBefore(rect: DOMRect, x: number, y: number): boolean {
@@ -54,25 +67,24 @@ function contains(rect: DOMRect, x: number, y: number): boolean {
  * The offset of the character under a point, found by bisecting the copy's characters in reading
  * order; `null` over no character, such as past the end of a line.
  */
-export function findOffsetAt(highlight: HTMLElement, x: number, y: number): number | null {
-  const nodes = collectTextNodes(highlight);
-  const length = nodes.reduce((sum, node) => sum + node.data.length, 0);
+export function findOffsetAt(copy: CopyText, x: number, y: number): number | null {
+  const { length } = copy;
   let low = 0;
   let high = length;
   while (low < high) {
     const middle = (low + high) >> 1;
-    const rect = measure(nodes, { start: middle, end: middle + 1 });
+    const rect = measureRange(copy, { start: middle, end: middle + 1 });
     if (!rect) return null;
     if (isBefore(rect, x, y)) low = middle + 1;
     else high = middle;
   }
-  const rect = low < length ? measure(nodes, { start: low, end: low + 1 }) : null;
+  const rect = low < length ? measureRange(copy, { start: low, end: low + 1 }) : null;
   return rect && contains(rect, x, y) ? low : null;
 }
 
 /** Scrolls the text area so a range of the copy is in view; the copy follows the text area. */
 export function revealRange(input: HTMLElement, highlight: HTMLElement, range: CodeRange) {
-  const rect = measureRange(highlight, range);
+  const rect = measureRange(readCopyText(highlight), range);
   if (!rect) return;
   const frame = highlight.getBoundingClientRect();
   const top = rect.top - frame.top + highlight.scrollTop;

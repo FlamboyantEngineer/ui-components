@@ -76,6 +76,20 @@ describe('CodeEditor editing keys', () => {
     expect(screen.getByRole('button', { name: 'After' })).toHaveFocus();
   });
 
+  it('UIC-CODE-EDITOR-6.3 leaves backwards with Shift+Tab right after Escape', async () => {
+    const user = userEvent.setup();
+    render(
+      <>
+        <button type="button">Before</button>
+        <Editor initialValue="  one" indentWithTab />
+      </>,
+    );
+    await user.click(input());
+    await user.keyboard('{Escape}{Shift>}{Tab}{/Shift}');
+    expect(input().value).toBe('  one');
+    expect(screen.getByRole('button', { name: 'Before' })).toHaveFocus();
+  });
+
   it('UIC-CODE-EDITOR-6.3 leaves Tab to the browser without indentWithTab', async () => {
     const user = userEvent.setup();
     render(<Editor initialValue="one" />);
