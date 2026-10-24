@@ -60,7 +60,9 @@ function stateMenu(state: string): MenuProps {
     label: state === 'pending' ? 'Loading…' : state === 'danger' ? 'Delete' : 'Archive',
     icon: 'minus',
     tone: state === 'danger' ? 'danger' : 'neutral',
-    isDisabled: state === 'disabled',
+    isDisabled: state === 'disabled' || state === 'focusable disabled',
+    focusableWhenDisabled: state === 'focusable disabled',
+    description: state === 'focusable disabled' ? 'Nothing to archive' : undefined,
     isPending: state === 'pending',
   };
   const selection: MenuProps = {
@@ -348,11 +350,19 @@ mountLab(
     </LabSection>
     <LabSection
       title="Item states by size"
-      description="Tone, disabled, pending and selection. Hover, press and keyboard focus show on interaction."
+      description="Tone, disabled, focusable disabled (Tab reaches it and it shows why it is unavailable, but refuses activation), pending and selection. Hover, press and keyboard focus show on interaction."
     >
       <StateMatrix
         axes={{
-          state: ['default', 'danger', 'disabled', 'pending', 'selected', 'unselected'],
+          state: [
+            'default',
+            'danger',
+            'disabled',
+            'focusable disabled',
+            'pending',
+            'selected',
+            'unselected',
+          ],
           size: sizes,
         }}
         render={({ state, size }) => <Menu size={size} {...stateMenu(state)} />}

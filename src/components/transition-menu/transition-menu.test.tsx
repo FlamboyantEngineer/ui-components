@@ -232,8 +232,41 @@ describe('TransitionMenu', { timeout: 15_000 }, () => {
     expect(screen.getByRole('menu', { name: 'Stage' })).toBeInTheDocument();
     expect(screen.getByRole('menuitem', { name: /Start work/ })).toHaveFocus();
     await user.keyboard('{ArrowUp}');
+    expect(screen.getByRole('menuitem', { name: /Send for review/ })).toHaveFocus();
+    await user.keyboard('{ArrowUp}');
     expect(screen.getByRole('menuitem', { name: /Dropped/ })).toHaveFocus();
     await user.keyboard('{Escape}');
     await waitFor(() => expect(button).toHaveFocus());
+  });
+
+  it('UIC-TRANSITION-MENU-1.3 UIC-TRANSITION-MENU-2.1 reaches an unavailable transition by keyboard but refuses it', async () => {
+    const user = userEvent.setup();
+    const onTransition = vi.fn();
+    render(
+      <TransitionMenu
+        states={states}
+        value="open"
+        transitions={transitions}
+        onTransition={onTransition}
+      />,
+    );
+    trigger().focus();
+    await user.keyboard('{ArrowDown}');
+    const menu = await screen.findByRole('menu', { name: 'Status' });
+    await waitFor(() =>
+      expect(within(menu).getByRole('menuitem', { name: /Start work/ })).toHaveFocus(),
+    );
+    await user.keyboard('{End}');
+    const review = within(menu).getByRole('menuitem', {
+      name: 'Send for review Add a reviewer first',
+    });
+    expect(review).toHaveFocus();
+    expect(review).toHaveAttribute('aria-disabled', 'true');
+    await user.keyboard('{Enter}');
+    await user.keyboard(' ');
+    await user.click(review);
+    expect(onTransition).not.toHaveBeenCalled();
+    expect(menu).toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: /^Move to/ })).not.toBeInTheDocument();
   });
 });

@@ -96,6 +96,30 @@ test.describe('Menu lab', () => {
     expect(Number(disabledOpacity)).toBeLessThan(1);
   });
 
+  test('UIC-MENU-2.6 keeps a focusable disabled item reachable but inert', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('menu');
+    const menu = page.locator('[data-lab-cell="state=focusable disabled size=md"] [role="menu"]');
+    const item = menu.getByRole('menuitem', { name: 'Archive Nothing to archive' });
+    await expect(item).toHaveAttribute('aria-disabled', 'true');
+    await expect(item).toHaveAttribute('data-disabled', 'true');
+    // Focusing a menu moves focus to its first reachable item: none for a plain disabled item.
+    const disabled = page.locator('[data-lab-cell="state=disabled size=md"] [role="menu"]');
+    await disabled.focus();
+    await expect(disabled.getByRole('menuitem')).not.toBeFocused();
+    await menu.focus();
+    await expect(item).toBeFocused();
+    await page.keyboard.press('Enter');
+    await page.keyboard.press('Space');
+    await expect(item).toBeFocused();
+    await expect(item).not.toHaveAttribute('data-pressed');
+    const opacity = await item.evaluate((node) => getComputedStyle(node).opacity);
+    expect(Number(opacity)).toBeLessThan(1);
+    await lab.expectAccessible('[data-lab-cell="state=focusable disabled size=md"]');
+  });
+
   test('UIC-MENU-4.1 UIC-MENU-1.3 UIC-MENU-4.5 UIC-MENU-4.2 navigates menus and submenus by keyboard', async ({
     page,
     lab,
