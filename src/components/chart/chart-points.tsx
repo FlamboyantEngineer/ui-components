@@ -1,4 +1,6 @@
 import {
+  useCallback,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -119,6 +121,23 @@ function findNextPoint(
 }
 
 /**
+ * Closes an open tooltip on Escape wherever focus is, as React Aria's tooltips do, so a tooltip
+ * opened by hover can be dismissed without moving the pointer. The press goes no further.
+ */
+function useEscapeToClose(isOpen: boolean, close: () => void) {
+  useEffect(() => {
+    if (!isOpen) return undefined;
+    const onKeyDown = (event: globalThis.KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      event.stopPropagation();
+      close();
+    };
+    document.addEventListener('keydown', onKeyDown, true);
+    return () => document.removeEventListener('keydown', onKeyDown, true);
+  }, [isOpen, close]);
+}
+
+/**
  * One tab stop for a chart's drawn values: the arrow keys move along a series (across the
  * categories) and between series, Home and End jump to a series' ends, and the value hovered or
  * focused shows the tooltip until the pointer leaves, focus moves on or Escape is pressed.
@@ -129,6 +148,8 @@ export function useChartPoints(points: readonly ChartPoint[], isVertical = false
   const anchor = useRef<SVGElement | null>(null);
   const [focusKey, setFocusKey] = useState<string | null>(null);
   const [activeKey, setActiveKey] = useState<string | null>(null);
+  const close = useCallback(() => setActiveKey(null), []);
+  useEscapeToClose(activeKey !== null, close);
   const tabKey = points.some((point) => point.key === focusKey) ? focusKey : points[0]?.key;
   const keys = isVertical ? verticalKeys : horizontalKeys;
   const activate = (key: string, element: SVGElement) => {
@@ -152,10 +173,6 @@ export function useChartPoints(points: readonly ChartPoint[], isVertical = false
       onPointerEnter: (event) => activate(point.key, event.currentTarget),
       onPointerLeave: () => setActiveKey(null),
       onKeyDown: (event) => {
-        if (event.key === 'Escape') {
-          setActiveKey(null);
-          return;
-        }
         const next = findNextPoint(points, point, { key: event.key, keys });
         if (!next) return;
         event.preventDefault();

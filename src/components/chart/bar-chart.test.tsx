@@ -152,6 +152,25 @@ describe('BarChart', () => {
     expect(tooltip()).toBeNull();
   });
 
+  it('UIC-CHART-4.4 closes a hovered tooltip on Escape wherever focus is', async () => {
+    const user = userEvent.setup();
+    const outer = vi.fn();
+    render(
+      <div onKeyDown={(event) => outer(event.key)}>
+        <button type="button">Elsewhere</button>
+        <BarChart aria-label="Crates" categories={months} series={crates} />
+      </div>,
+    );
+    act(() => screen.getByRole('button', { name: 'Elsewhere' }).focus());
+    await user.hover(bars()[1]!);
+    expect(tooltip()).not.toBeNull();
+    await user.keyboard('{Escape}');
+    expect(tooltip()).toBeNull();
+    expect(outer).not.toHaveBeenCalled();
+    await user.keyboard('{Escape}');
+    expect(outer).toHaveBeenCalledWith('Escape');
+  });
+
   it('UIC-CHART-2.1 UIC-CHART-4.5 hides series from the legend and summarises the drawn values', async () => {
     const user = userEvent.setup();
     const onHiddenKeysChange = vi.fn();
