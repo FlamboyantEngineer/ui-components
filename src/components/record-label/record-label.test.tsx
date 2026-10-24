@@ -26,7 +26,9 @@ describe('RecordLabel', () => {
     expect(identity).toHaveTextContent(/^REQ-12$/);
     expect(element).toHaveTextContent(/^REQ-12 Brake pressure limits$/);
     expect(slot(container, 'name')).toHaveTextContent(/^Brake pressure limits$/);
-    expectHooksMatchSpec(container, 'RECORD-LABEL', { slots: 'all' });
+    expectHooksMatchSpec(container, 'RECORD-LABEL', {
+      slots: ['identity', 'icon', 'identifier', 'name'],
+    });
   });
 
   it('UIC-RECORD-LABEL-1.1 omits a blank name and the icon when none is given', () => {
@@ -72,6 +74,35 @@ describe('RecordLabel', () => {
     rerender(<RecordLabel identifier="REQ-12" />);
     expect(screen.queryByRole('link')).not.toBeInTheDocument();
     expect(root(container)).not.toHaveAttribute('tabindex');
+  });
+
+  it('UIC-RECORD-LABEL-1.3 names a label without a link from hidden text, never the span', () => {
+    const { container, rerender } = render(
+      <RecordLabel
+        identifier="REQ-12"
+        name="Limits"
+        aria-label="Requirement 12, Limits"
+        aria-labelledby="heading"
+        aria-describedby="hint"
+      />,
+    );
+    const label = root(container);
+    expect(label).not.toHaveAttribute('aria-label');
+    expect(label).not.toHaveAttribute('aria-labelledby');
+    expect(label).toHaveAttribute('aria-describedby', 'hint');
+    expect(screen.getByText('Requirement 12, Limits')).toHaveClass(
+      'ui-record-label__accessible-label',
+    );
+    expect(slot(container, 'identity')).toHaveAttribute('aria-hidden', 'true');
+    expect(slot(container, 'name')).toHaveAttribute('aria-hidden', 'true');
+    expectHooksMatchSpec(container, 'RECORD-LABEL', {
+      slots: ['identity', 'identifier', 'name', 'accessible-label'],
+    });
+
+    rerender(<RecordLabel identifier="REQ-12" href="/records/12" aria-label="Requirement 12" />);
+    expect(screen.getByRole('link', { name: 'Requirement 12' })).toBe(root(container));
+    expect(slot(container, 'accessible-label')).toBeNull();
+    expect(slot(container, 'identity')).not.toHaveAttribute('aria-hidden');
   });
 
   it('UIC-RECORD-LABEL-1.4 sizes the icon with the label, medium by default', () => {
