@@ -34,7 +34,7 @@ describe('TextField completions', () => {
     expect(input).toHaveAttribute('aria-autocomplete', 'list');
     await user.type(input, 'L');
     const list = await screen.findByRole('listbox', { name: 'Suggestions' });
-    expect(optionTexts()).toEqual(['LisbonPortugal', 'LondonUnited Kingdom', 'LyonFrance']);
+    expect(optionTexts()).toEqual(['Lisbon Portugal', 'London United Kingdom', 'Lyon France']);
     expect(input).toHaveAttribute('aria-controls', list.id);
     expect(input).toHaveAttribute('aria-activedescendant', screen.getAllByRole('option')[0]?.id);
     expect(input).toHaveFocus();
@@ -72,7 +72,7 @@ describe('TextField completions', () => {
     await user.type(input, 'Lo');
     await screen.findByRole('listbox', { name: 'Suggestions' });
     onKeyDown.mockClear();
-    expect(optionTexts()).toEqual(['LondonUnited Kingdom', 'LisbonPortugal', 'LyonFrance']);
+    expect(optionTexts()).toEqual(['London United Kingdom', 'Lisbon Portugal', 'Lyon France']);
     await user.keyboard('{ArrowDown}{Enter}');
     expect(input).toHaveValue('Lisbon');
     expect(input.selectionStart).toBe(6);

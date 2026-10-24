@@ -87,6 +87,14 @@ describe('Completions engine', () => {
     expect(labels('')).toEqual(['apple', 'apricot', 'banana']);
   });
 
+  it('UIC-COMPLETION-LIST-2.1 ranks a later word prefix as a word prefix when an earlier word shares its first letter', () => {
+    expect(scoreCompletion('new_name', 'na')).toBe(1);
+    expect(scoreCompletion('new_name_number', 'nu')).toBe(1);
+    expect(scoreCompletion('new_name', 'nwa')).toBe(3);
+    const labels = matchCompletions([{ label: 'new_name' }, { label: 'first_name' }], 'na');
+    expect(labels.map(({ label }) => label)).toEqual(['new_name', 'first_name']);
+  });
+
   it('UIC-COMPLETION-LIST-2.2 UIC-COMPLETION-LIST-2.4 completes the word before the caret from a vocabulary', async () => {
     const user = userEvent.setup();
     render(<Notes completions={fruit} />);
@@ -146,6 +154,24 @@ describe('Completions engine', () => {
     await user.click(input());
     await user.keyboard('ap{Control>} {/Control}');
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+  });
+
+  it('UIC-COMPLETION-LIST-2.2 keeps an open list, narrowed to the typed text, while a source answers a later edit', async () => {
+    const user = userEvent.setup();
+    const answers: Array<(options: Completion[]) => void> = [];
+    const source: CompletionSource = () =>
+      new Promise<Completion[]>((resolve) => answers.push(resolve));
+    render(<Notes completions={source} />);
+    await user.click(input());
+    await user.keyboard('a');
+    await act(async () => answers.at(-1)?.(fruit));
+    await waitFor(() => expect(optionTexts()).toEqual(['apple', 'apricot']));
+    const list = screen.getByRole('listbox');
+    await user.keyboard('pr');
+    expect(input()).toHaveAttribute('aria-controls', list.id);
+    expect(optionTexts()).toEqual(['apricot']);
+    await user.keyboard('{Enter}');
+    expect(input()).toHaveValue('apricot');
   });
 
   it('UIC-COMPLETION-LIST-2.2 discards a pending answer when locked and requires a new lookup after unlocking', async () => {

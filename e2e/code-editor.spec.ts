@@ -217,8 +217,8 @@ test.describe('Code Editor lab', () => {
     );
     await page.keyboard.type(' and b');
     await expect(list.getByRole('option')).toHaveText([
-      'basketThe chosen basket',
-      'fruit.bruisedWhether any fruit is bruised',
+      'basket The chosen basket',
+      'fruit.bruised Whether any fruit is bruised',
     ]);
     await page.keyboard.press('Escape');
     await expect(list).toBeHidden();
@@ -277,7 +277,7 @@ test.describe('Code Editor lab', () => {
     await expect(documentation).toHaveText(/How many fruit are in the basket/);
     await expect(list.getByRole('option').first()).toHaveAccessibleDescription(/How many fruit/);
     await page.keyboard.type('we');
-    await expect(list.getByRole('option')).toHaveText(['weighweigh(unit)']);
+    await expect(list.getByRole('option')).toHaveText(['weigh weigh(unit)']);
     await page.keyboard.press('Enter');
     await page.keyboard.type('kg');
     await expect(input).toHaveValue(/\nlet n = fruit\.weigh\(kg\)$/);
