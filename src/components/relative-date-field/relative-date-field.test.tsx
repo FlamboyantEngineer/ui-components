@@ -109,6 +109,29 @@ describe('RelativeDateField', () => {
     expect(onCommit).toHaveBeenLastCalledWith('2026-05-30');
   });
 
+  it('UIC-RELATIVE-DATE-FIELD-1.3 commits nothing from the closed trigger', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    renderInLocale(
+      <RelativeDateField
+        label="Due"
+        getNow={getNow}
+        defaultValue="2026-05-30"
+        onCommit={onCommit}
+      />,
+    );
+    const trigger = screen.getByRole('button', { name: /Due$/ });
+    trigger.focus();
+    await user.keyboard('{ArrowRight}{ArrowLeft}{ArrowRight}t');
+    expect(onCommit).not.toHaveBeenCalled();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+    expect(trigger).toHaveAccessibleName('May 30, 2026 Due');
+    await user.keyboard('{ArrowDown}');
+    expect(await screen.findByRole('listbox')).toBeInTheDocument();
+    await user.keyboard('{Enter}');
+    expect(onCommit).toHaveBeenLastCalledWith('2026-05-23');
+  });
+
   it('UIC-RELATIVE-DATE-FIELD-1.3 takes custom presets and commits local date-times', async () => {
     const user = userEvent.setup();
     const onCommit = vi.fn();
@@ -142,6 +165,8 @@ describe('RelativeDateField', () => {
     expect(trigger).toBeEnabled();
     await user.click(trigger);
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+    await user.keyboard('{ArrowDown}');
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     expect(container.querySelector('time')).not.toBeNull();
     unmount();
     const { container: disabled, unmount: unmountDisabled } = renderInLocale(
@@ -158,6 +183,23 @@ describe('RelativeDateField', () => {
       'data-invalid',
       'true',
     );
+  });
+
+  it('UIC-RELATIVE-DATE-FIELD-1.4 reports no opening while read-only', async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    renderInLocale(
+      <RelativeDateField
+        label="Due"
+        defaultValue="2026-05-24"
+        getNow={getNow}
+        isReadOnly
+        onOpenChange={onOpenChange}
+      />,
+    );
+    await user.click(screen.getByRole('button', { name: 'Tomorrow Due' }));
+    await user.keyboard('{ArrowDown}{Enter}');
+    expect(onOpenChange).not.toHaveBeenCalled();
   });
 
   it('UIC-RELATIVE-DATE-FIELD-1.4 restores, undoes and clears from the menu', async () => {

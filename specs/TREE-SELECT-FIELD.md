@@ -77,7 +77,7 @@ Verification: `src/components/tree-select-field/tree-select-field.test.tsx`, `e2
 
 ### UIC-TREE-SELECT-FIELD-2.5 - Clear, read-only and disabled
 
-With `isClearable`, while the value can be cleared, a clear `IconButton` (`ui-tree-select-field__clear`) named by the provider's `clearValue` string with the label shall follow the trigger; pressing it clears and commits the value and focuses the trigger. A read-only field does not open and its chips cannot be removed; a disabled field's trigger is disabled.
+With `isClearable`, while the value can be cleared, a clear `IconButton` (`ui-tree-select-field__clear`) named by the provider's `clearValue` string with the label shall follow the trigger; pressing it clears and commits the value and focuses the trigger. A read-only field does not open, calls no `onOpenChange` when pressed, and its chips cannot be removed; a disabled field's trigger is disabled.
 
 Implementation: `src/components/tree-select-field/tree-select-control.tsx`, `src/components/tree-select-field/tree-select-trigger.tsx`
 Verification: `src/components/tree-select-field/tree-select-field.test.tsx`
