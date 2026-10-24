@@ -6,7 +6,7 @@
 
 ### UIC-ICON-1.1 - Sources
 
-`Icon` shall draw the built-in glyph named by `glyph` (through the provider, [PROVIDER.md](PROVIDER.md)) or, without `glyph`, its children (an SVG element, an image or any node). A glyph renders in the `ui-icon__glyph` slot. Components that take an icon accept an `IconSource` (a glyph name or a node) and draw it with `toIconProps`.
+`Icon` shall draw the built-in glyph named by `glyph` (through the provider, [PROVIDER.md](PROVIDER.md)) or, without `glyph`, its children (an SVG element, an image or any node). A glyph renders in the `ui-icon__glyph` slot. Components that take an icon accept an `IconSource` (a glyph name or a node) and draw it with `toIconProps`; `isGlyphName` is true only for a built-in glyph's name, so any other string (such as `★`) is drawn as text rather than looked up.
 
 Implementation: `src/components/icon/icon.tsx`
 Verification: `src/components/icon/icon.test.tsx`, `e2e/icon.spec.ts`
