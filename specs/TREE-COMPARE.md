@@ -59,7 +59,7 @@ Verification: `src/components/tree-compare/tree-compare.test.tsx`, `e2e/tree-com
 
 ### UIC-TREE-COMPARE-3.1 - One expansion for both sides
 
-Expanding or collapsing a row shall show or hide its child rows on both sides at once, from the expand button, ArrowRight and ArrowLeft, or pressing a row with child rows. The expanded rows are controlled with `expandedKeys` and `onExpandedChange` (row ids), or uncontrolled from `defaultExpandedKeys`; without it every row with a difference below it starts expanded. Expansion and row indexing shall traverse deep rows iteratively and store one immediate parent link per child instead of copying every ancestor path.
+Expanding or collapsing a row shall show or hide its child rows on both sides at once, from the expand button, ArrowRight and ArrowLeft, or pressing a row with child rows. The expanded rows are controlled with `expandedKeys` and `onExpandedChange` (row ids), or uncontrolled from `defaultExpandedKeys`; without it every row with a difference below it starts expanded. Uncontrolled expansion starts over in the same way whenever `left` or `right` changes (a new array is new trees), so a comparison whose second tree arrives later shows its differences; a new `isEqual` alone keeps it. Expansion and row indexing shall traverse deep rows iteratively and store one immediate parent link per child instead of copying every ancestor path.
 
 Implementation: `src/components/tree-compare/tree-compare.tsx`, `src/components/tree-compare/tree-compare-rows.ts`
 Verification: `src/components/tree-compare/tree-compare-rows.test.ts`, `src/components/tree-compare/tree-compare.test.tsx`, `e2e/tree-compare.spec.ts`
