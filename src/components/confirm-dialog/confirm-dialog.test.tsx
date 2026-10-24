@@ -7,6 +7,7 @@ import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { ModalHost, createModalController } from '../modal-controller/modal-controller.js';
+import { ModalTrigger } from '../modal/modal.js';
 import { ConfirmDialog, confirm, type ConfirmDialogProps } from './confirm-dialog.js';
 
 function deferred() {
@@ -249,6 +250,50 @@ describe('ConfirmDialog', () => {
     expect(onConfirm).toHaveBeenCalledTimes(1);
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     await waitFor(() => expect(trigger).toHaveFocus());
+  });
+
+  it('UIC-CONFIRM-DIALOG-1.2 UIC-CONFIRM-DIALOG-1.9 reports a cancel inside a trigger', async () => {
+    const warn = vi.spyOn(console, 'warn');
+    const onCancel = vi.fn();
+    const onOpenChange = vi.fn();
+    const { unmount } = render(
+      <DialogTrigger>
+        <Button>Remove</Button>
+        <ConfirmDialog
+          title="Remove Lima?"
+          placement="top"
+          onCancel={onCancel}
+          onOpenChange={onOpenChange}
+        />
+      </DialogTrigger>,
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Remove' }));
+    await screen.findByRole('dialog', { name: 'Remove Lima?' });
+    await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(onCancel).toHaveBeenCalledTimes(1);
+    expect(onOpenChange).toHaveBeenCalledExactlyOnceWith(false);
+    unmount();
+
+    const onConfirm = vi.fn();
+    render(
+      <ModalTrigger>
+        <Button>Delete</Button>
+        <ConfirmDialog title="Delete it?" onCancel={onCancel} onConfirm={onConfirm} />
+      </ModalTrigger>,
+    );
+    const trigger = screen.getByRole('button', { name: 'Delete' });
+    await userEvent.click(trigger);
+    await screen.findByRole('alertdialog', { name: 'Delete it?' });
+    await userEvent.keyboard('{Escape}');
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    expect(onCancel).toHaveBeenCalledTimes(2);
+    await userEvent.click(trigger);
+    await userEvent.click(await screen.findByRole('button', { name: 'Confirm' }));
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
+    expect(onConfirm).toHaveBeenCalledTimes(1);
+    expect(onCancel).toHaveBeenCalledTimes(2);
+    expect(warn).not.toHaveBeenCalledWith(expect.stringContaining('controlled by a trigger'));
   });
 
   it('UIC-CONFIRM-DIALOG-2.1 resolves true after confirming and false otherwise', async () => {
