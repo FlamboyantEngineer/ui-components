@@ -49,7 +49,7 @@ function setFunctionModule(grid: QrGrid, [x, y]: readonly [number, number], dark
 }
 
 /** The centres of the alignment patterns along each axis. */
-export function getAlignmentPositions(version: number): number[] {
+function getAlignmentPositions(version: number): number[] {
   if (version === 1) return [];
   const count = Math.floor(version / 7) + 2;
   const step = Math.floor((version * 8 + count * 3 + 5) / (count * 4 - 4)) * 2;
