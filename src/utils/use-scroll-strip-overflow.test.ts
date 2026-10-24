@@ -250,3 +250,32 @@ test('UIC-SCROLL-STRIP-1.3 leaves a vertical strip to native wheel scrolling', a
     await act(async () => root.unmount());
   }
 });
+
+test('UIC-SCROLL-STRIP-1.2 UIC-SCROLL-STRIP-1.3 follows a strip that mounts after the first render', async () => {
+  let api!: ScrollStripState;
+  function Strip({ isShown }: { isShown: boolean }): ReactElement {
+    const ref = useRef<HTMLDivElement>(null);
+    api = useScrollStripOverflow(ref);
+    return isShown
+      ? createElement('div', { ref, 'data-testid': 'strip' })
+      : createElement('span', { 'data-testid': 'placeholder' });
+  }
+  const root = createRoot(document.body.appendChild(document.createElement('div')));
+  try {
+    await commit(root, createElement(Strip, { isShown: false }));
+    await commit(root, createElement(Strip, { isShown: true }));
+    const strip = document.querySelector<HTMLDivElement>('[data-testid="strip"]')!;
+    const geometry = { position: 0, visible: 100, total: 300 };
+    defineGeometry(strip, geometry, { reads: 0 });
+    await flush();
+    expect(api.overflow).toEqual({ start: false, end: true });
+    expect(observed.has(strip)).toBe(true);
+    expect(wheel(strip, { deltaY: 120 }).defaultPrevented).toBe(true);
+    expect(geometry.position).toBe(120);
+    await act(async () => strip.append(document.createElement('span')));
+    await flush();
+    expect(api.overflow).toEqual({ start: true, end: true });
+  } finally {
+    await act(async () => root.unmount());
+  }
+});
