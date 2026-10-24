@@ -225,7 +225,7 @@ describe('DateTimeField field', () => {
     await user.click(screen.getByRole('button', { name: 'Restore Due' }));
     expect(segment(/^day/)).toHaveTextContent('13');
     await user.click(screen.getByRole('button', { name: 'Due actions' }));
-    await user.click(screen.getByRole('menuitem', { name: 'Clear' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Clear' }));
     expect(onCommit).toHaveBeenLastCalledWith(null);
     expect(segment(/^day/)).toHaveAttribute('data-placeholder', 'true');
   });

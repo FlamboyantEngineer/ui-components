@@ -49,7 +49,7 @@ beforeAll(() => {
 
 async function openMenu(index: number) {
   await userEvent.click(within(rows()[index]!).getByRole('button', { name: /^Actions for/ }));
-  return screen.getByRole('menu');
+  return screen.findByRole('menu');
 }
 
 // Menus and dialogs driven by userEvent are slow in jsdom on a busy machine.
@@ -188,7 +188,7 @@ describe('VersionHistory', { timeout: 15_000 }, () => {
     expect(trigger.closest('.ui-version-history__actions')).not.toBeNull();
     expectHooksMatchSpec(container, 'VERSION-HISTORY', { slots: ['actions'] });
     await openMenu(1);
-    await userEvent.click(screen.getByRole('menuitem', { name: 'Restore this version' }));
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'Restore this version' }));
     const dialog = await screen.findByRole('alertdialog', { name: 'Restore Final draft?' });
     expect(dialog).toHaveTextContent('Its content replaces the current content.');
     await userEvent.click(within(dialog).getByRole('button', { name: 'Restore' }));
@@ -198,7 +198,7 @@ describe('VersionHistory', { timeout: 15_000 }, () => {
     await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
 
     await openMenu(2);
-    await userEvent.click(screen.getByRole('menuitem', { name: 'Restore this version' }));
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'Restore this version' }));
     const second = await screen.findByRole('alertdialog', { name: /^Restore Apr 18, 2026/ });
     await userEvent.click(within(second).getByRole('button', { name: 'Cancel' }));
     await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
@@ -214,7 +214,7 @@ describe('VersionHistory', { timeout: 15_000 }, () => {
         .getAllByRole('menuitem')
         .map((item) => item.textContent),
     ).toEqual(['Name this version']);
-    await userEvent.click(screen.getByRole('menuitem', { name: 'Name this version' }));
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'Name this version' }));
     let dialog = await screen.findByRole('dialog', { name: 'Name this version' });
     const field = within(dialog).getByRole('textbox', { name: 'Version name' });
     await waitFor(() => expect(field).toHaveFocus());
@@ -234,7 +234,7 @@ describe('VersionHistory', { timeout: 15_000 }, () => {
     expect(onRename).toHaveBeenCalledTimes(1);
 
     await openMenu(3);
-    await userEvent.click(screen.getByRole('menuitem', { name: 'Rename version' }));
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'Rename version' }));
     dialog = await screen.findByRole('dialog', { name: 'Rename version' });
     const cleared = within(dialog).getByRole('textbox', { name: 'Version name' });
     await userEvent.clear(cleared);
@@ -284,11 +284,11 @@ describe('VersionHistory', { timeout: 15_000 }, () => {
     expect(person.closest('.ui-version-history__person')).not.toBeNull();
     await userEvent.click(person);
     expect(
-      within(screen.getByRole('menu'))
+      within(await screen.findByRole('menu'))
         .getAllByRole('menuitemradio')
         .map((item) => item.textContent),
     ).toEqual(['Anyone', 'Maria Santos', 'Jon Berg', 'Lena Ortiz']);
-    await userEvent.click(screen.getByRole('menuitemradio', { name: 'Maria Santos' }));
+    await userEvent.click(await screen.findByRole('menuitemradio', { name: 'Maria Santos' }));
     expect(onFilterChange).toHaveBeenLastCalledWith({ namedOnly: false, person: 'Maria Santos' });
     expect(rows()).toHaveLength(2);
     expect(screen.getByRole('button', { name: 'Edited by Maria Santos' })).toBeInTheDocument();

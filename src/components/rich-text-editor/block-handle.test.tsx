@@ -91,6 +91,7 @@ describe('BlockHandle', () => {
     selectRange(7);
     const open = async () => {
       await user.click(screen.getByRole('button', { name: 'Block actions' }));
+      await screen.findByRole('menu');
     };
     await open();
     expect(screen.getAllByRole('menuitem').map((item) => item.textContent)).toEqual([
@@ -100,21 +101,21 @@ describe('BlockHandle', () => {
       'Duplicate',
       'Delete',
     ]);
-    await user.click(screen.getByRole('menuitem', { name: 'Move down' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Move down' }));
     expect(texts(value())).toEqual(['One', 'Three', 'Two']);
     await open();
-    await user.click(screen.getByRole('menuitem', { name: 'Turn into' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Turn into' }));
     await user.click(await screen.findByRole('menuitem', { name: 'Heading 2' }));
     expect(value()?.content?.[2]).toMatchObject({ type: 'heading', attrs: { level: 2 } });
     await open();
-    await user.click(screen.getByRole('menuitem', { name: 'Duplicate' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Duplicate' }));
     expect(texts(value())).toEqual(['One', 'Three', 'Two', 'Two']);
     await open();
     expect(screen.getByRole('menuitem', { name: 'Move down' })).toHaveAttribute(
       'aria-disabled',
       'true',
     );
-    await user.click(screen.getByRole('menuitem', { name: 'Delete' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Delete' }));
     expect(texts(value())).toEqual(['One', 'Three', 'Two']);
   });
 

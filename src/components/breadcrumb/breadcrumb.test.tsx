@@ -359,7 +359,7 @@ describe('Breadcrumb', () => {
       });
 
       await userEvent.click(within(nav).getByRole('button', { name: '2 more items' }));
-      const menu = screen.getByRole('menu');
+      const menu = await screen.findByRole('menu');
       expect(
         within(menu)
           .getAllByRole('menuitem')
@@ -409,11 +409,11 @@ describe('Breadcrumb', () => {
     });
     expect(await press(crumb('Home'), '{ArrowRight}')).toBe('Recipes');
     await userEvent.click(button);
-    await userEvent.click(screen.getByRole('menuitem', { name: 'Drinks' }));
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'Drinks' }));
     expect(onSibling).toHaveBeenCalledTimes(1);
     expect(onAction).toHaveBeenCalledExactlyOnceWith('drinks');
     await userEvent.click(button);
-    await userEvent.click(screen.getByRole('menuitem', { name: 'Menus' }));
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'Menus' }));
     expect(onAction).toHaveBeenLastCalledWith('menus');
     expect(onAction).toHaveBeenCalledTimes(2);
   });
@@ -434,6 +434,7 @@ describe('Breadcrumb', () => {
       />,
     );
     await user.click(screen.getByRole('button', { name: 'Places beside Recipes' }));
+    await screen.findByRole('menu');
     await user.keyboard('{ArrowDown}{ArrowRight}');
     await user.click(await screen.findByRole('menuitem', { name: 'Tea' }));
     expect(onAction).toHaveBeenCalledExactlyOnceWith('tea');

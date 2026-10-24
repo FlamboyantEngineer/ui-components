@@ -10,7 +10,7 @@ import {
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
-const sizes = ['sm', 'md', 'lg'] as const;
+const sizes = ['xs', 'sm', 'md', 'lg'] as const;
 const states = ['resting', 'with value', 'disabled', 'read-only', 'invalid', 'pending'] as const;
 
 const fruit: ComboboxItem[] = [
@@ -112,6 +112,7 @@ function Multiple() {
     <>
       <Combobox
         label="Cities"
+        size="xs"
         selectionMode="multiple"
         defaultItems={cities}
         value={chosen}

@@ -97,7 +97,7 @@ describe('PdfViewer find owned by the caller', () => {
     expect(view.container.querySelectorAll('.ui-pdf-viewer__match')).toHaveLength(2);
 
     await userEvent.click(screen.getByRole('button', { name: 'Find options' }));
-    const menu = screen.getByRole('menu');
+    const menu = await screen.findByRole('menu');
     const options = within(menu).getAllByRole('menuitemcheckbox');
     expect(options.map((option) => option.textContent)).toEqual([
       'Highlight all',

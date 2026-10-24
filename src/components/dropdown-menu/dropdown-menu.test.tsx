@@ -57,7 +57,7 @@ describe('DropdownMenu', () => {
     expect(trigger).toHaveAttribute('aria-expanded', 'false');
     expect(trigger).not.toHaveAttribute('data-open');
     await user.click(trigger);
-    const menu = screen.getByRole('menu', { name: 'Edit' });
+    const menu = await screen.findByRole('menu', { name: 'Edit' });
     expect(trigger).toHaveAttribute('aria-expanded', 'true');
     expect(trigger).toHaveAttribute('aria-controls', menu.id);
     expect(trigger).toHaveAttribute('data-open', 'true');
@@ -66,7 +66,7 @@ describe('DropdownMenu', () => {
     expect(trigger).not.toHaveAttribute('data-open');
     await waitFor(() => expect(trigger).toHaveFocus());
     await user.keyboard('{ArrowUp}');
-    expect(screen.getByRole('menuitem', { name: 'Copy' })).toHaveFocus();
+    await waitFor(() => expect(screen.getByRole('menuitem', { name: 'Copy' })).toHaveFocus());
   });
 
   it('UIC-DROPDOWN-MENU-1.3 follows a controlled open state and names the menu', async () => {
@@ -87,12 +87,14 @@ describe('DropdownMenu', () => {
         aria-label="Clipboard"
       />,
     );
-    expect(screen.getByRole('menu')).toHaveAccessibleName(expect.stringContaining('Clipboard'));
+    expect(await screen.findByRole('menu')).toHaveAccessibleName(
+      expect.stringContaining('Clipboard'),
+    );
     unmount();
     const { unmount: unmountSort } = render(
       <DropdownMenu label="Sort" items={items} defaultOpen />,
     );
-    expect(screen.getByRole('menu', { name: 'Sort' })).toBeInTheDocument();
+    expect(await screen.findByRole('menu', { name: 'Sort' })).toBeInTheDocument();
     unmountSort();
     render(
       <>
@@ -100,7 +102,7 @@ describe('DropdownMenu', () => {
         <DropdownMenu label="Edit" items={items} defaultOpen aria-labelledby="tools" />
       </>,
     );
-    expect(screen.getByRole('menu')).toHaveAccessibleName('Tools');
+    expect(await screen.findByRole('menu')).toHaveAccessibleName('Tools');
   });
 
   it('UIC-DROPDOWN-MENU-1.4 passes menu props, children and the derived size to the menu', async () => {
@@ -117,7 +119,7 @@ describe('DropdownMenu', () => {
       />,
     );
     await user.click(screen.getByRole('button', { name: 'Edit' }));
-    expect(screen.getByRole('menu')).toHaveAttribute('data-size', 'sm');
+    expect(await screen.findByRole('menu')).toHaveAttribute('data-size', 'sm');
     await user.click(screen.getByRole('menuitem', { name: 'Paste' }));
     await user.click(screen.getByRole('menuitem', { name: 'Copy' }));
     expect(onAction.mock.calls.map((call) => call[0])).toEqual(['copy']);
@@ -140,7 +142,7 @@ describe('DropdownMenu', () => {
       </DropdownMenu>,
     );
     await user.click(screen.getByRole('button', { name: 'View' }));
-    expect(screen.getByRole('menu')).toHaveAttribute('data-size', 'lg');
+    expect(await screen.findByRole('menu')).toHaveAttribute('data-size', 'lg');
     expect(screen.getByRole('menuitemradio', { name: 'List' })).toBeChecked();
     expect(screen.getByRole('menuitemradio', { name: 'Table' })).toHaveAttribute(
       'aria-disabled',
@@ -155,9 +157,10 @@ describe('DropdownMenu', () => {
     render(<DropdownMenu label="Edit" items={items} />);
     const trigger = screen.getByRole('button', { name: 'Edit' });
     await user.click(trigger);
-    await user.click(screen.getByRole('menuitem', { name: 'Cut' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Cut' }));
     await waitFor(() => expect(trigger).toHaveFocus());
     await user.click(trigger);
+    await screen.findByRole('menu');
     await user.click(document.body);
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     await waitFor(() => expect(trigger).toHaveFocus());
@@ -232,7 +235,10 @@ describe('DropdownMenu', () => {
     await user.click(toggle);
     expect(toggle).toHaveAttribute('aria-expanded', 'true');
     expect(group).toHaveAttribute('data-open', 'true');
-    expect(screen.getByRole('menu', { name: 'More options' })).toHaveAttribute('data-size', 'sm');
+    expect(await screen.findByRole('menu', { name: 'More options' })).toHaveAttribute(
+      'data-size',
+      'sm',
+    );
     await user.click(screen.getByRole('menuitem', { name: 'Save a copy' }));
     expect(onAction.mock.calls[0]?.[0]).toBe('copy');
     expect(group).not.toHaveAttribute('data-open');
@@ -256,18 +262,44 @@ describe('DropdownMenu', () => {
         onOpenChange={onOpenChange}
       />,
     );
-    expect(screen.getByRole('menu')).toBeInTheDocument();
+    expect(await screen.findByRole('menu')).toBeInTheDocument();
     await user.keyboard('{Escape}');
     expect(onOpenChange).toHaveBeenCalledWith(false);
-    expect(screen.getByRole('menu')).toBeInTheDocument();
+    expect(await screen.findByRole('menu')).toBeInTheDocument();
   });
 
   it('UIC-DROPDOWN-MENU-1.4 passes filterable to the menu', async () => {
     const user = userEvent.setup();
     render(<DropdownMenu label="Move to" filterable items={items} />);
     await user.click(screen.getByRole('button', { name: 'Move to' }));
-    expect(screen.getByRole('searchbox', { name: 'Search' })).toHaveFocus();
+    await waitFor(() => expect(screen.getByRole('searchbox', { name: 'Search' })).toHaveFocus());
     await user.keyboard('co');
     expect(screen.getAllByRole('menuitem').map((item) => item.textContent)).toEqual(['Copy']);
+  });
+
+  it('UIC-DROPDOWN-MENU-1.4 keeps the page scrollable and includes submenus in outside dismissal', async () => {
+    const user = userEvent.setup();
+    const onAction = vi.fn();
+    render(
+      <DropdownMenu
+        label="Edit"
+        onAction={onAction}
+        items={[{ id: 'more', label: 'More', items: [{ id: 'copy', label: 'Copy' }] }]}
+      />,
+    );
+    const trigger = screen.getByRole('button', { name: 'Edit' });
+    const overflow = document.documentElement.style.overflow;
+    await user.click(trigger);
+    await screen.findByRole('menu');
+    expect(document.documentElement.style.overflow).toBe(overflow);
+    expect(screen.getByRole('button', { name: 'Edit' })).toBeInTheDocument();
+    await user.click(trigger);
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    await user.click(trigger);
+    await screen.findByRole('menu');
+    await user.keyboard('{ArrowDown}{ArrowRight}');
+    await user.click(await screen.findByRole('menuitem', { name: 'Copy' }));
+    expect(onAction).toHaveBeenCalledWith('copy');
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 });

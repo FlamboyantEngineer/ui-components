@@ -543,7 +543,7 @@ describe('ToolbarScroller', () => {
       const more = screen.getByRole('button', { name: '2 more items' });
       expect(more).toHaveFocus();
       await userEvent.keyboard('{Enter}');
-      expect(screen.getAllByRole('menuitem').map((item) => item.textContent)).toEqual([
+      expect((await screen.findAllByRole('menuitem')).map((item) => item.textContent)).toEqual([
         'Underline',
         'Clear',
       ]);

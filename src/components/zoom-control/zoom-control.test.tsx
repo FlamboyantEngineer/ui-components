@@ -319,18 +319,19 @@ describe('ZoomControl', () => {
     ]);
 
     await user.click(trigger);
-    const menu = screen.getByRole('menu', { name: 'Zoom presets' });
+    const menu = await screen.findByRole('menu', { name: 'Zoom presets' });
     expect(
       Array.from(menu.querySelectorAll('[role="menuitem"]'), (item) => item.textContent),
     ).toEqual(['Fit width', '50.0%', '125.0%']);
     expectHooksMatchSpec(document.body, 'ZOOM-CONTROL', { slots: ['presets'] });
-    await user.click(screen.getByRole('menuitem', { name: '125.0%' }));
+    await user.click(await screen.findByRole('menuitem', { name: '125.0%' }));
     expect(onChange).toHaveBeenLastCalledWith(125);
     expect(screen.getByText('125.0%', { selector: 'output' })).toBeInTheDocument();
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     await waitFor(() => expect(trigger).toHaveFocus());
 
     await user.keyboard('{ArrowDown}');
+    await screen.findByRole('menu');
     await user.keyboard('{Enter}');
     expect(onPresetAction).toHaveBeenCalledWith('fit-width');
     expect(onChange).toHaveBeenCalledTimes(1);

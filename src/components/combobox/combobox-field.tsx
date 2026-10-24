@@ -16,7 +16,7 @@ import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { createHooks } from '../../core/hooks.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { IconButton } from '../icon-button/icon-button.js';
-import type { TagGroupSize } from '../tag-group/tag-group.js';
+import type { ControlSize } from '../../core/props.js';
 import { ComboboxChips, type ComboboxChipsProps } from './combobox-chips.js';
 import {
   findCompletion,
@@ -26,7 +26,7 @@ import {
 
 export interface ComboboxFieldProps {
   variant: 'default' | 'search';
-  size: TagGroupSize;
+  size: ControlSize;
   placeholder: string | undefined;
   isPending: boolean;
   /** Neither disabled nor read-only. */
@@ -133,7 +133,9 @@ export function ComboboxField({
   const onChange = useInlineCompletion(completion, input.ref);
   return (
     <Group className={hooks.slotClass('field')}>
-      {chips === null ? null : <ComboboxChips {...chips} size={size} isEditable={isEditable} />}
+      {chips === null ? null : (
+        <ComboboxChips {...chips} size={size === 'xs' ? 'sm' : size} isEditable={isEditable} />
+      )}
       {variant === 'search' ? (
         <Glyph name="search" className={hooks.slotClass('search-icon')} />
       ) : null}

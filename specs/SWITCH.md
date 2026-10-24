@@ -6,7 +6,7 @@
 
 ### UIC-SWITCH-1.1 - Track, thumb and label
 
-`Switch` shall render a `<label>` (`ui-switch`) around a visually hidden native input with role `switch`, a track (`ui-switch__track`, hidden from assistive technology) holding a thumb (`ui-switch__thumb`), and its children in `ui-switch__label`. It takes `isSelected` (controlled) or `defaultSelected` (uncontrolled) with `onChange`, `name` and `value`, `isReadOnly`, `isDisabled`, `autoFocus` (focus the input when it mounts), `inputRef` (the native input) and the labelling props.
+`Switch` shall render a `<label>` (`ui-switch`) around a visually hidden native input with role `switch`, a track (`ui-switch__track`, hidden from assistive technology) holding a thumb (`ui-switch__thumb`), and its children in `ui-switch__label`. The reference thumb shall stay circular while pressed and throughout its slide between states. It takes `isSelected` (controlled) or `defaultSelected` (uncontrolled) with `onChange`, `name` and `value`, `isReadOnly`, `isDisabled`, `autoFocus` (focus the input when it mounts), `inputRef` (the native input) and the labelling props.
 
 Implementation: `src/components/switch/switch.tsx`, `labs/reference/switch.css`
 Verification: `src/components/switch/switch.test.tsx`, `e2e/switch.spec.ts`

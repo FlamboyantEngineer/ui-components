@@ -152,10 +152,12 @@ describe('JsonEditor', () => {
     await user.keyboard('{Control>}{Shift>}z{/Shift}{/Control}');
     expect(editor()).toHaveValue('[1]');
     await user.click(screen.getByRole('button', { name: 'Settings actions' }));
-    await user.click(within(screen.getByRole('menu')).getByRole('menuitem', { name: 'Clear' }));
+    await user.click(
+      within(await screen.findByRole('menu')).getByRole('menuitem', { name: 'Clear' }),
+    );
     expect(editor()).toHaveValue('');
     await user.click(screen.getByRole('button', { name: 'Settings actions' }));
-    await user.click(screen.getByRole('menuitem', { name: 'Set to default' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Set to default' }));
     expect(editor()).toHaveValue('[]');
     expectHooksMatchSpec(container, 'JSON-EDITOR');
   });

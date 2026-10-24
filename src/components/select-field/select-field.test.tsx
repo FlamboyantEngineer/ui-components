@@ -217,10 +217,10 @@ describe('SelectField field', () => {
       />,
     );
     await user.click(screen.getByRole('button', { name: 'Fruit actions' }));
-    await user.click(screen.getByRole('menuitem', { name: 'Clear' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Clear' }));
     expect(trigger('Select an option Fruit')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Fruit actions' }));
-    await user.click(screen.getByRole('menuitem', { name: 'Set to default' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Set to default' }));
     expect(trigger('Pear Fruit')).toBeInTheDocument();
   });
 
@@ -238,7 +238,7 @@ describe('SelectField field', () => {
       />,
     );
     await user.click(screen.getByRole('button', { name: 'Fruit actions' }));
-    await user.click(screen.getByRole('menuitem', { name: 'Clear' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Clear' }));
     expect(onCommit).toHaveBeenCalledWith([]);
   });
 

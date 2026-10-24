@@ -12,44 +12,47 @@ const cities: ComboboxOption[] = ['Paris', 'Lima', 'Oslo', 'Lisbon'].map((name) 
 }));
 
 describe('Combobox chips', () => {
-  it('UIC-COMBOBOX-3.1 picks several options and shows them as chips in a tag group', async () => {
-    const user = userEvent.setup();
-    const onChange = vi.fn();
-    render(
-      <Combobox
-        label="Cities"
-        selectionMode="multiple"
-        defaultItems={cities}
-        onChange={onChange}
-        size="sm"
-      />,
-    );
-    const combobox = screen.getByRole('combobox', { name: 'Cities' });
-    await user.type(combobox, 'li');
-    await user.click(await screen.findByRole('option', { name: 'Lima' }));
-    expect(onChange).toHaveBeenLastCalledWith(['lima']);
-    // The list stays open for more choices and the typed text clears.
-    expect(screen.getByRole('listbox')).toHaveAttribute('aria-multiselectable', 'true');
-    expect(combobox).toHaveValue('');
-    expect(screen.getByRole('option', { name: 'Lima' })).toHaveAttribute('aria-selected', 'true');
-    await user.click(screen.getByRole('option', { name: 'Oslo' }));
-    expect(onChange).toHaveBeenLastCalledWith(['lima', 'oslo']);
-    // React Aria hides everything but the input and the list while the list is open.
-    await user.keyboard('{Escape}');
-    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+  it.each(['xs', 'sm'] as const)(
+    'UIC-COMBOBOX-1.2 UIC-COMBOBOX-3.1 picks several options and shows them as chips at %s',
+    async (size) => {
+      const user = userEvent.setup();
+      const onChange = vi.fn();
+      render(
+        <Combobox
+          label="Cities"
+          selectionMode="multiple"
+          defaultItems={cities}
+          onChange={onChange}
+          size={size}
+        />,
+      );
+      const combobox = screen.getByRole('combobox', { name: 'Cities' });
+      await user.type(combobox, 'li');
+      await user.click(await screen.findByRole('option', { name: 'Lima' }));
+      expect(onChange).toHaveBeenLastCalledWith(['lima']);
+      // The list stays open for more choices and the typed text clears.
+      expect(screen.getByRole('listbox')).toHaveAttribute('aria-multiselectable', 'true');
+      expect(combobox).toHaveValue('');
+      expect(screen.getByRole('option', { name: 'Lima' })).toHaveAttribute('aria-selected', 'true');
+      await user.click(screen.getByRole('option', { name: 'Oslo' }));
+      expect(onChange).toHaveBeenLastCalledWith(['lima', 'oslo']);
+      // React Aria hides everything but the input and the list while the list is open.
+      await user.keyboard('{Escape}');
+      expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
 
-    const chips = screen.getByRole('grid', { name: 'Cities selected values' });
-    const group = chips.closest('.ui-combobox__chips');
-    expect(group).toHaveClass('ui-tag-group');
-    expect(group).toHaveAttribute('data-size', 'sm');
-    expect(group?.parentElement).toHaveClass('ui-combobox__field');
-    expect(
-      within(chips)
-        .getAllByRole('row')
-        .map((row) => row.textContent),
-    ).toEqual(['Lima', 'Oslo']);
-    expectHooksMatchSpec(document.body, 'COMBOBOX', { slots: ['chips'] });
-  });
+      const chips = screen.getByRole('grid', { name: 'Cities selected values' });
+      const group = chips.closest('.ui-combobox__chips');
+      expect(group).toHaveClass('ui-tag-group');
+      expect(group).toHaveAttribute('data-size', 'sm');
+      expect(group?.parentElement).toHaveClass('ui-combobox__field');
+      expect(
+        within(chips)
+          .getAllByRole('row')
+          .map((row) => row.textContent),
+      ).toEqual(['Lima', 'Oslo']);
+      expectHooksMatchSpec(document.body, 'COMBOBOX', { slots: ['chips'] });
+    },
+  );
 
   it('UIC-COMBOBOX-3.1 names the chips after a label drawn as markup or named elsewhere', async () => {
     render(

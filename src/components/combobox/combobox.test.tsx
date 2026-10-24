@@ -111,7 +111,7 @@ describe('Combobox', () => {
     const root = container.querySelector('.ui-combobox');
     expect(root).toHaveAttribute('data-variant', 'default');
     expect(root).toHaveAttribute('data-size', 'md');
-    for (const size of ['sm', 'md', 'lg'] as const) {
+    for (const size of ['xs', 'sm', 'md', 'lg'] as const) {
       rerender(<Combobox aria-label="Fruit" defaultItems={fruit} variant="search" size={size} />);
       expect(root).toHaveAttribute('data-size', size);
       expect(root).toHaveAttribute('data-variant', 'search');
@@ -177,7 +177,7 @@ describe('Combobox', () => {
     const user = userEvent.setup();
     const { container } = render(<Combobox aria-label="Fruit" defaultItems={fruit} />);
     await user.type(input(), 'ba');
-    expect(screen.getByRole('listbox')).toBeInTheDocument();
+    expect(await screen.findByRole('listbox')).toBeInTheDocument();
     // The open list hides the rest of the field from assistive technology, so find the hook.
     await user.click(container.querySelector<HTMLElement>('.ui-combobox__clear')!);
     expect(input()).toHaveValue('');

@@ -8,7 +8,7 @@ import type { LoadedPdf } from './use-pdf-document.js';
 
 async function chooseCommand(name: string) {
   await userEvent.click(screen.getByRole('button', { name: 'More options' }));
-  await userEvent.click(within(screen.getByRole('menu')).getByRole('menuitem', { name }));
+  await userEvent.click(within(await screen.findByRole('menu')).getByRole('menuitem', { name }));
 }
 
 describe('PdfViewer rotation', () => {

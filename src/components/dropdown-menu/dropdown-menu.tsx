@@ -1,5 +1,10 @@
-import { useContext, type ReactNode } from 'react';
-import { OverlayTriggerStateContext } from '../../primitives/index.js';
+import { useContext, useRef, type ReactNode } from 'react';
+import {
+  OverlayTriggerStateContext,
+  PopoverContext,
+  useSlottedContext,
+} from '../../primitives/index.js';
+import { useFrameFlag } from '../../utils/use-frame-flag.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import { createHooks, splitDataAttributes } from '../../core/hooks.js';
 import type { BaseProps, Placement } from '../../core/props.js';
@@ -9,7 +14,8 @@ import type { IconSource } from '../icon/icon.js';
 import { IconButton } from '../icon-button/icon-button.js';
 import {
   Menu,
-  MenuPopover,
+  MenuOverlay,
+  type MenuPopoverProps,
   MenuTrigger,
   type MenuProps,
   type MenuSize,
@@ -73,6 +79,22 @@ interface DropdownMenuPartsProps {
 }
 
 const hooks = createHooks('dropdown-menu', ['caret', 'action', 'toggle']);
+
+/** Wait for focus-driven scrolling before the nonmodal menu subscribes to scroll dismissal. */
+function DropdownMenuPopover(props: MenuPopoverProps) {
+  const state = useContext(OverlayTriggerStateContext);
+  const context = useSlottedContext(PopoverContext);
+  const fallback = useRef<Element | null>(null);
+  const isShown = useFrameFlag(state?.isOpen ?? false, context?.triggerRef ?? fallback);
+  return (
+    <MenuOverlay
+      {...props}
+      isNonModal
+      isOpen={isShown}
+      onOpenChange={(open) => state?.setOpen(open)}
+    />
+  );
+}
 
 /** The menu button: a `Button` with a caret, or an `IconButton`, publishing the open state. */
 function DropdownMenuTrigger({
@@ -160,9 +182,9 @@ function DropdownSplitButton({
           label={strings.moreOptions}
           className={hooks.slotClass('toggle')}
         />
-        <MenuPopover placement={placement}>
+        <DropdownMenuPopover placement={placement}>
           <Menu {...menu} />
-        </MenuPopover>
+        </DropdownMenuPopover>
       </MenuTrigger>
     </div>
   );
@@ -225,9 +247,9 @@ export function DropdownMenu({
   return (
     <MenuTrigger isOpen={isOpen} defaultOpen={defaultOpen} onOpenChange={onOpenChange}>
       <DropdownMenuTrigger {...parts.trigger} />
-      <MenuPopover placement={placement}>
+      <DropdownMenuPopover placement={placement}>
         <Menu {...menu} />
-      </MenuPopover>
+      </DropdownMenuPopover>
     </MenuTrigger>
   );
 }

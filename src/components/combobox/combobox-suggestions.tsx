@@ -17,6 +17,7 @@ import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { useFrameFlag } from '../../utils/use-frame-flag.js';
 import { createHooks } from '../../core/hooks.js';
+import type { ControlSize } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Icon, toIconProps } from '../icon/icon.js';
 import { triggerWidthProperty, useLayerZIndex } from '../portal/portal.js';
@@ -61,6 +62,7 @@ export interface ComboboxOptionDisplay {
 }
 
 export interface ComboboxSuggestionsProps extends ComboboxOptionDisplay {
+  size: ControlSize;
   /** The suggestions, in display order. */
   items: Iterable<ComboboxItem>;
   /** Renders only the options in view. */
@@ -272,7 +274,7 @@ export function ComboboxSuggestions(props: ComboboxSuggestionsProps) {
   const filterText = completion?.text === inputText ? completion.typed : inputText;
   return (
     <Popover
-      {...hooks.slot('popover', { layer: 'dropdown' })}
+      {...hooks.slot('popover', { layer: 'dropdown', size: props.size })}
       isOpen={isShown}
       onOpenChange={(open) => {
         if (!open) state?.close();
