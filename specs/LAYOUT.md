@@ -101,7 +101,7 @@ Verification: `src/components/layout/toolbar-row.test.tsx`, `e2e/layout.spec.ts`
 
 ### UIC-LAYOUT-3.4 - Status bar
 
-`StatusBar` shall render a `<footer>` strip of status items along the bottom of a view, spaced `xs`, justified `between` and not wrapping by default.
+`StatusBar` shall render a `<footer>` strip of status items along the bottom of a view, spaced `xs`, justified `between` and not wrapping by default. It is never the page's `contentinfo` landmark: it carries `role="none"`, or `role="group"` when the caller names it with `aria-label` or `aria-labelledby`, and a caller `role` wins.
 
 Implementation: `src/components/layout/layout.tsx`, `labs/reference/layout.css`
 Verification: `src/components/layout/layout.test.tsx`, `e2e/layout.spec.ts`

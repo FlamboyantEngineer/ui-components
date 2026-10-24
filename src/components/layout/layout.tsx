@@ -325,7 +325,11 @@ export function InlineField({
   );
 }
 
-/** A `<footer>` strip of status items along the bottom of a view. */
+/**
+ * A `<footer>` strip of status items along the bottom of a view. It is not a landmark (outside
+ * sectioning content a `<footer>` would be the page's content information): a named bar is a group,
+ * and a caller `role` wins.
+ */
 export function StatusBar({
   children,
   className,
@@ -338,8 +342,13 @@ export function StatusBar({
   ...rest
 }: StatusBarProps) {
   const data = { space, justify, wrap, ...resolveContainment({ grow, fill, clip }) };
+  const isNamed = Boolean(rest['aria-label'] ?? rest['aria-labelledby']);
   return (
-    <footer {...rest} {...statusBarHooks.root({ className, data })}>
+    <footer
+      role={isNamed ? 'group' : 'none'}
+      {...rest}
+      {...statusBarHooks.root({ className, data })}
+    >
       {children}
     </footer>
   );

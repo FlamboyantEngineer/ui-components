@@ -123,6 +123,20 @@ describe('SectionHeader', () => {
     expectHooksMatchSpec(container, 'SECTION-HEADER');
   });
 
+  it('UIC-SECTION-HEADER-1.3 keeps a standalone header from becoming the page banner', () => {
+    render(
+      <>
+        <SectionHeader title="Inbox" />
+        <SectionHeader title="Archive" />
+      </>,
+    );
+    expect(screen.queryByRole('banner')).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Inbox' }).closest('header')).toHaveAttribute(
+      'role',
+      'none',
+    );
+  });
+
   it('UIC-SECTION-HEADER-1.3 passes spacing and containment to the stack', () => {
     const { container } = render(
       <Section title="Orchard" space="sm" grow fill clip>

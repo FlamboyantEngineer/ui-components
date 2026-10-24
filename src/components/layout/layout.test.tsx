@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { createRef } from 'react';
 import { describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -381,6 +381,19 @@ describe('StatusBar', () => {
     expect(bar).toHaveAttribute('data-space', 'xs');
     expect(bar).toHaveAttribute('data-justify', 'between');
     expect(bar).toHaveAttribute('data-wrap', 'nowrap');
+    expect(screen.getByRole('group', { name: 'Status' })).toBe(bar);
     expectHooksMatchSpec(container, 'LAYOUT');
+  });
+
+  it('UIC-LAYOUT-3.4 never makes a status bar the page content information', () => {
+    const { container } = render(
+      <>
+        <StatusBar>Ready</StatusBar>
+        <StatusBar role="contentinfo">Saved</StatusBar>
+      </>,
+    );
+    const [plain, landmark] = Array.from(container.children);
+    expect(plain).toHaveAttribute('role', 'none');
+    expect(screen.getByRole('contentinfo')).toBe(landmark);
   });
 });

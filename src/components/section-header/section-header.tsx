@@ -155,7 +155,10 @@ function CollapsibleSection({
   );
 }
 
-/** A section title with optional supporting text and trailing actions, in a `<header>`. */
+/**
+ * A section title with optional supporting text and trailing actions, in a `<header>` that is not
+ * a landmark: outside sectioning content a `<header>` would be the page's banner.
+ */
 export function SectionHeader({
   title,
   description,
@@ -167,7 +170,7 @@ export function SectionHeader({
   const headingId = useId();
   const level = useHeadingLevel(headingLevel);
   return (
-    <header {...rest} {...headerHooks.root({ className })}>
+    <header role="none" {...rest} {...headerHooks.root({ className })}>
       <HeaderContent
         title={title}
         description={description}
