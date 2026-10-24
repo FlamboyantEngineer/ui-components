@@ -1,16 +1,8 @@
 // Groups dated entries under the local calendar day they fall on, labelled `Today`, `Yesterday` or
 // the date, for lists read newest first.
 
-import {
-  DateFormatter,
-  fromDate,
-  getLocalTimeZone,
-  parseIsoDate,
-  parseIsoDateTime,
-  toCalendarDate,
-  type CalendarDate,
-} from '../../primitives/index.js';
-import { capitalizeText } from '../../utils/relative-time.js';
+import { DateFormatter, getLocalTimeZone, type CalendarDate } from '../../primitives/index.js';
+import { formatRelativeDay, parseCalendarDay, toLocalDay } from '../../utils/calendar-day.js';
 
 /** Entries that fall on one day, in the order they were given. */
 export interface DayGroup<T> {
@@ -31,24 +23,10 @@ export interface GroupByDayOptions<T> {
   unknownLabel: string;
 }
 
-/** The calendar day of an ISO 8601 date, or of a date and time read as local wall time. */
-function toDay(value: string): CalendarDate | null {
-  const date = parseIsoDate(value);
-  if (date) return date;
-  const dateTime = parseIsoDateTime(value);
-  return dateTime ? toCalendarDate(dateTime) : null;
-}
-
 function labelDay(day: CalendarDate, options: Pick<GroupByDayOptions<unknown>, 'now' | 'locale'>) {
-  const today = toCalendarDate(fromDate(options.now, getLocalTimeZone()));
+  const today = toLocalDay(options.now);
   const offset = day.compare(today);
-  if (offset === 0 || offset === -1) {
-    const words = new Intl.RelativeTimeFormat(options.locale, { numeric: 'auto' }).format(
-      offset,
-      'day',
-    );
-    return capitalizeText(words, options.locale);
-  }
+  if (offset === 0 || offset === -1) return formatRelativeDay(offset, options.locale);
   const formatter = new DateFormatter(options.locale, {
     weekday: 'long',
     month: 'long',
@@ -66,7 +44,7 @@ function labelDay(day: CalendarDate, options: Pick<GroupByDayOptions<unknown>, '
 export function groupByDay<T>(items: readonly T[], options: GroupByDayOptions<T>): DayGroup<T>[] {
   const groups = new Map<string, DayGroup<T>>();
   for (const item of items) {
-    const day = toDay(options.getDate(item));
+    const day = parseCalendarDay(options.getDate(item));
     const key = day ? day.toString() : '';
     let group = groups.get(key);
     if (!group) {
