@@ -51,3 +51,12 @@ Where a library component renders repeated elements itself, the React keys shall
 
 Implementation: `src/utils/to-key-identity.ts`, `src/utils/to-collection-key.ts`, `src/utils/from-collection-key.ts`, `src/utils/collection-selection.ts`, `src/utils/materialize-iterator.ts`, `src/utils/encode-collection-children.tsx`, `src/utils/create-key-index.ts`
 Verification: `src/utils/to-key-identity.test.ts`, `src/utils/to-collection-key.test.ts`, `src/utils/from-collection-key.test.ts`, `src/utils/collection-selection.test.ts`, `src/utils/materialize-iterator.test.ts`, `src/utils/create-key-index.test.ts`, `src/components/menu/menu.test.tsx`, `src/components/list-row/list-view.test.tsx`
+
+## UIC-COMPOSITION-5 - Controlled state
+
+### UIC-COMPOSITION-5.1 - Controllable values
+
+A value a component lets the caller control (`value`/`defaultValue` with `onChange`, or `<thing>`/`default<Thing>` with `on<Thing>Change`) shall follow the caller's value while it is defined and otherwise keep the component's own copy, starting at the default. Setting it updates the own copy only when uncontrolled, and calls the change handler only when the new value differs from the current one (`Object.is`), as React Aria's controlled state does, so setting the current value again reports nothing.
+
+Implementation: `src/core/controllable-state.ts`
+Verification: `src/core/controllable-state.test.ts`
