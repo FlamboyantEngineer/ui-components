@@ -13,16 +13,16 @@ Verification: `src/components/svg-markup/parse-svg-markup.test.ts`
 
 ### UIC-SVG-MARKUP-1.2 - Unsafe content
 
-`parseSvgMarkup` shall drop `<script>` and `<foreignObject>` elements with their content, event-handler attributes (`on…`), and `href`, `xlink:href` or `src` values using a `javascript:` or `vbscript:` URL.
+`parseSvgMarkup` shall drop `<script>` and `<foreignObject>` elements with their content, event-handler attributes (`on…`), and `href`, `xlink:href` or `src` values using a `javascript:` or `vbscript:` URL, whatever the case or separator of the attribute name (`xlink-href`). It shall also drop, with their content, SMIL animations (`set`, `animate`, `animateColor`, `animateMotion`, `animateTransform`) that animate a link attribute (an `attributeName` ending in `href`, or `src`) or whose `to`, `from`, `by` or any of whose `values` is such a URL, so no animation can set a link to a script. Nested elements of the same name do not end a drop early.
 
-Implementation: `src/components/svg-markup/parse-svg-markup.ts`
-Verification: `src/components/svg-markup/parse-svg-markup.test.ts`, `e2e/svg-markup.spec.ts`
+Implementation: `src/components/svg-markup/parse-svg-markup.ts`, `src/utils/markup.ts`
+Verification: `src/components/svg-markup/parse-svg-markup.test.ts`, `src/components/svg-markup/svg-markup.test.tsx`, `e2e/svg-markup.spec.ts`
 
 ### UIC-SVG-MARKUP-1.3 - Cached parsing
 
 `parseSvgMarkup` shall cache its result by markup string and return the same tree for the same markup, keeping the 256 most recently used entries.
 
-Implementation: `src/components/svg-markup/parse-svg-markup.ts`
+Implementation: `src/components/svg-markup/parse-svg-markup.ts`, `src/utils/markup.ts`
 Verification: `src/components/svg-markup/parse-svg-markup.test.ts`
 
 ## UIC-SVG-MARKUP-2 - Rendering

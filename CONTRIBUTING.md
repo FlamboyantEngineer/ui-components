@@ -2,8 +2,11 @@
 
 ## Branches and pull requests
 
-- `main` is always releasable. Work happens on short-lived branches cut from `main` and merged back by pull request.
-- CI must be green before merge: lint, format, typecheck, the no-reference check, specs, labs, unit tests, build, labs build, package contents and Playwright.
+- `dev` is the integration branch. Work happens on short-lived branches cut from `dev` and merged back into `dev` by pull request.
+- `main` is always releasable. It is updated only from `dev`, through a reviewed release pull request once the full checks pass on `dev`.
+- Before a pull request merges, both check runs must pass:
+  - `npm run check`: lint, format, typecheck, the no-reference check, specs, labs, structure, unit tests, build, public types, labs build and package contents.
+  - `npm run test:labs`: Playwright against the built labs (run `npm run build:labs` first).
 - Every pull request that changes the published package adds a changeset (`npx changeset`).
 
 ## Versioning

@@ -94,6 +94,14 @@ describe('MetaLine', () => {
     expect(container.querySelector('[role], [aria-live]')).toBeNull();
   });
 
+  it('UIC-META-LINE-1.3 keeps the state of an unkeyed entry when an earlier entry empties', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<MetaLine items={['Open', <Counter />]} />);
+    await user.click(screen.getByRole('button'));
+    rerender(<MetaLine items={[null, <Counter />]} />);
+    expect(screen.getByRole('button')).toHaveTextContent('Count 1');
+  });
+
   it('UIC-META-LINE-1.3 keeps explicit numeric keys apart from positions', () => {
     const errors = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     const control = (

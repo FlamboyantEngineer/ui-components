@@ -92,7 +92,10 @@ function isResizable(props: SplitViewProps): props is ResizableSplitViewProps {
   return props.panes !== undefined;
 }
 
-/** The first of two percent panes' size bounds, combining both panes' constraints. */
+/**
+ * The first of two percent panes' size bounds, combining both panes' constraints.
+ * @deprecated Not used by `SplitView` and not part of its contract; it will be removed.
+ */
 export function resolveSplitBounds(panes: readonly [SplitViewPane, SplitViewPane]): {
   min: number;
   max: number;
@@ -101,7 +104,11 @@ export function resolveSplitBounds(panes: readonly [SplitViewPane, SplitViewPane
   return { min, max };
 }
 
-/** The first pane's starting size: a stored size, else the default, else half, within the bounds. */
+/**
+ * The first pane's starting size: a stored size, else the default, else half, within the bounds.
+ * @deprecated `SplitView` falls back to the defaults when a stored size does not fit instead of
+ * clamping it, as this does; it will be removed.
+ */
 export function resolveInitialSplitSize(
   panes: readonly [SplitViewPane, SplitViewPane],
   defaultSize?: number | null,

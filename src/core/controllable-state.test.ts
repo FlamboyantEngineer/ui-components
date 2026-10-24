@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { useControllableState } from './controllable-state.js';
 
 describe('useControllableState', () => {
-  it('holds its own value when uncontrolled and reports changes', () => {
+  it('UIC-COMPOSITION-5.1 holds its own value when uncontrolled and reports changes', () => {
     const onChange = vi.fn();
     const { result } = renderHook(() =>
       useControllableState<string | null>(undefined, 'a', onChange),
@@ -14,7 +14,7 @@ describe('useControllableState', () => {
     expect(onChange).toHaveBeenCalledWith(null);
   });
 
-  it('follows the caller when controlled, even when the caller holds null', () => {
+  it('UIC-COMPOSITION-5.1 follows the caller when controlled, even when the caller holds null', () => {
     const onChange = vi.fn();
     const { result, rerender } = renderHook(
       ({ value }: { value: string | null }) => useControllableState(value, 'a', onChange),
@@ -26,5 +26,30 @@ describe('useControllableState', () => {
     expect(onChange).toHaveBeenCalledWith('b');
     rerender({ value: 'b' });
     expect(result.current[0]).toBe('b');
+  });
+
+  it('UIC-COMPOSITION-5.1 reports no change when the new value is the current one', () => {
+    const onChange = vi.fn();
+    const { result, rerender } = renderHook(
+      ({ value }: { value: string | undefined }) => useControllableState(value, 'a', onChange),
+      { initialProps: { value: 'a' as string | undefined } },
+    );
+    act(() => result.current[1]('a'));
+    expect(onChange).not.toHaveBeenCalled();
+    rerender({ value: undefined });
+    act(() => result.current[1]('a'));
+    expect(onChange).not.toHaveBeenCalled();
+    act(() => result.current[1]('b'));
+    expect(onChange).toHaveBeenCalledExactlyOnceWith('b');
+    act(() => result.current[1]('b'));
+    expect(onChange).toHaveBeenCalledTimes(1);
+    act(() => {
+      result.current[1]('c');
+      result.current[1]('b');
+    });
+    expect(onChange.mock.calls).toEqual([['b'], ['c'], ['b']]);
+    const { result: notANumber } = renderHook(() => useControllableState(Number.NaN, 0, onChange));
+    act(() => notANumber.current[1](Number.NaN));
+    expect(onChange).toHaveBeenCalledTimes(3);
   });
 });

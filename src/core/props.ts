@@ -2,7 +2,7 @@
 
 import type { ComponentPropsWithRef, JSX } from 'react';
 
-/** A value a caller `data-*` attribute can carry. */
+/** A value a caller `data-*` attribute can carry, rendered as text as React does (`false` too). */
 export type DataAttributeValue = string | number | boolean | undefined;
 
 /**
@@ -14,7 +14,7 @@ export interface BaseProps {
   className?: string | undefined;
   /** The root element's id. */
   id?: string | undefined;
-  /** Caller `data-*` attributes, forwarded to the root element. */
+  /** Caller `data-*` attributes, forwarded to the root element as React renders them. */
   [data: `data-${string}`]: DataAttributeValue;
 }
 

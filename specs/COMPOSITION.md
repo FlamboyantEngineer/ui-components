@@ -29,10 +29,10 @@ Verification: `src/utils/merge-props.test.ts`
 
 ### UIC-COMPOSITION-2.2 - Refs
 
-`mergeRefs(...refs)` shall return one callback ref that hands the element to every ref object and callback given, skips `null` and `undefined` ones, and on detach clears the objects, calls the callbacks with `null`, or runs the cleanup a React 19 callback ref returned instead.
+`mergeRefs(...refs)` shall return one callback ref that hands the element to every ref object and callback given, skips `null` and `undefined` ones, and on detach clears the objects, calls the callbacks with `null`, or runs the cleanup a React 19 callback ref returned instead. Components that keep their own ref beside the caller's `ref` merge them the same way, so a caller's callback ref cleanup runs when the element detaches.
 
-Implementation: `src/utils/merge-props.ts`
-Verification: `src/utils/merge-props.test.ts`
+Implementation: `src/utils/merge-props.ts`, `src/utils/use-forwarded-ref.ts`
+Verification: `src/utils/merge-props.test.ts`, `src/utils/use-forwarded-ref.test.tsx`
 
 ## UIC-COMPOSITION-3 - Slots
 
@@ -58,3 +58,12 @@ A library collection item (`Tab`, `TabPanel`, `Tag`, `ListViewItem`, `ListViewSe
 
 Implementation: `src/utils/to-collection-key.ts`, `src/utils/key-collection-children.tsx`, `src/components/tabs/tab.tsx`, `src/components/tabs/tabs.tsx`, `src/components/tag-group/tag-group.tsx`, `src/components/list-row/list-view.tsx`, `src/components/menu/menu-item.tsx`
 Verification: `src/utils/to-collection-key.test.ts`, `src/components/tabs/tab-keys.test.tsx`, `src/components/tag-group/tag-group.test.tsx`, `src/components/list-row/list-view.test.tsx`, `src/components/menu/menu.test.tsx`
+
+## UIC-COMPOSITION-5 - Controlled state
+
+### UIC-COMPOSITION-5.1 - Controllable values
+
+A value a component lets the caller control (`value`/`defaultValue` with `onChange`, or `<thing>`/`default<Thing>` with `on<Thing>Change`) shall follow the caller's value while it is defined and otherwise keep the component's own copy, starting at the default. Setting it updates the own copy only when uncontrolled, and calls the change handler only when the new value differs from the current one (`Object.is`), as React Aria's controlled state does, so setting the current value again reports nothing.
+
+Implementation: `src/core/controllable-state.ts`
+Verification: `src/core/controllable-state.test.ts`

@@ -27,6 +27,13 @@ export interface TokenizeMarkupOptions {
   rawTextElements?: ReadonlySet<string> | undefined;
 }
 
+export interface SkipDroppedElementsOptions {
+  /** Whether an opening tag starts an element dropped with its content. */
+  isDropped: (token: MarkupOpenToken) => boolean;
+  /** Whether an opening tag has no content (self-closing, or void in HTML). Defaults to `/>`. */
+  isEmpty?: ((token: MarkupOpenToken) => boolean) | undefined;
+}
+
 /** The markup being read and the tokens read so far. */
 interface Scanner {
   markup: string;
@@ -212,4 +219,28 @@ export function tokenizeMarkup(markup: string, options: TokenizeMarkupOptions = 
     index = readNonElement(scanner, open) ?? readTag(scanner, open);
   }
   return tokens;
+}
+
+/**
+ * The tokens outside the elements `isDropped` picks: each picked element is skipped with its
+ * content up to its matching closing tag. Elements of the same name nested inside it are counted,
+ * so their closing tags do not end the drop early; tag names compare ignoring case.
+ */
+export function* skipDroppedElements(
+  tokens: Iterable<MarkupToken>,
+  { isDropped, isEmpty = (token) => token.isSelfClosing }: SkipDroppedElementsOptions,
+): Generator<MarkupToken> {
+  let dropping: string | null = null;
+  let depth = 0;
+  for (const token of tokens) {
+    if (dropping === null) {
+      if (token.type !== 'open' || !isDropped(token)) yield token;
+      else if (!isEmpty(token)) [dropping, depth] = [token.tag.toLowerCase(), 1];
+      continue;
+    }
+    if (token.type === 'text' || token.tag.toLowerCase() !== dropping) continue;
+    if (token.type === 'close') depth -= 1;
+    else if (!isEmpty(token)) depth += 1;
+    if (depth === 0) dropping = null;
+  }
 }

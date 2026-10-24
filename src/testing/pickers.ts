@@ -18,14 +18,16 @@ async function pressOption(user: TestUser, trigger: Element, option: NameMatch) 
 }
 
 /**
- * Opens the list of a `SelectField` or `Combobox` from its button and presses the option named
- * `option`. `field` is the field's root or the button itself. A multiple selection stays open.
+ * Opens the list of a `SelectField` or `Combobox` from its button, unless it is already open, and
+ * presses the option named `option`. `field` is the field's root or the button itself. A multiple
+ * selection stays open, so the next call picks another option from the same list.
  */
 export async function selectOption(user: TestUser, field: Element, option: NameMatch) {
   const trigger = field.matches(LISTBOX_TRIGGER) ? field : field.querySelector(LISTBOX_TRIGGER);
   if (!trigger) throw new Error('No button that opens a list box is rendered in the field.');
-  await user.click(trigger);
-  await pressOption(user, field.querySelector('[role="combobox"]') ?? trigger, option);
+  const control = field.querySelector('[role="combobox"]') ?? trigger;
+  if (control.getAttribute('aria-expanded') !== 'true') await user.click(trigger);
+  await pressOption(user, control, option);
 }
 
 /** Clears a combobox input, types `pick.text` and presses the suggested option. */

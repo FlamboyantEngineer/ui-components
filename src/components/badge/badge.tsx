@@ -171,6 +171,31 @@ function DotBadge({
   );
 }
 
+/**
+ * Where a label badge's `aria-label` goes: its name when it has a role, else visually hidden text
+ * read in place of the visible label, since a generic element cannot carry a name.
+ */
+function resolveLabelName({
+  role,
+  ariaLabel,
+  ariaHidden,
+}: {
+  role: 'status' | undefined;
+  ariaLabel: string | undefined;
+  ariaHidden: NativeProps<'span'>['aria-hidden'];
+}): { name: string | undefined; hiddenText: string | undefined } {
+  if (role) return { name: ariaLabel, hiddenText: undefined };
+  const isSpoken = Boolean(ariaLabel) && !isAriaHidden(ariaHidden);
+  return { name: undefined, hiddenText: isSpoken ? ariaLabel : undefined };
+}
+
+/** A label badge's decorative icon in its slot, or nothing. */
+function renderLabelIcon(source: IconSource, slot: 'start-icon' | 'end-icon') {
+  return isEmptyNode(source) ? null : (
+    <Icon {...toIconProps(source)} className={hooks.slotClass(slot)} />
+  );
+}
+
 function LabelBadge({
   variant = 'subtle',
   children,
@@ -182,24 +207,26 @@ function LabelBadge({
   size = 'md',
   bare = false,
   className,
+  'aria-label': ariaLabel,
   ...rest
 }: BadgeLabelProps) {
   const isStatus = variant === 'status';
+  const role = isStatus && announce ? 'status' : undefined;
+  const { name, hiddenText } = resolveLabelName({
+    role,
+    ariaLabel,
+    ariaHidden: rest['aria-hidden'],
+  });
   const data = { variant, tone, size, bare, mutedDot: isStatus && mutedDot };
   return (
-    <span
-      {...rest}
-      {...hooks.root({ className, data })}
-      role={isStatus && announce ? 'status' : undefined}
-    >
+    <span {...rest} {...hooks.root({ className, data })} role={role} aria-label={name}>
       {isStatus ? <span {...hooks.slot('dot')} aria-hidden="true" /> : null}
-      {isEmptyNode(startIcon) ? null : (
-        <Icon {...toIconProps(startIcon)} className={hooks.slotClass('start-icon')} />
-      )}
-      <span {...hooks.slot('label')}>{children}</span>
-      {isEmptyNode(endIcon) ? null : (
-        <Icon {...toIconProps(endIcon)} className={hooks.slotClass('end-icon')} />
-      )}
+      {renderLabelIcon(startIcon, 'start-icon')}
+      <span {...hooks.slot('label')} aria-hidden={hiddenText !== undefined || undefined}>
+        {children}
+      </span>
+      {renderLabelIcon(endIcon, 'end-icon')}
+      {hiddenText === undefined ? null : <AccessibleLabel>{hiddenText}</AccessibleLabel>}
     </span>
   );
 }

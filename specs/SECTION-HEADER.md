@@ -20,7 +20,7 @@ Verification: `src/components/section-header/section-header.test.tsx`
 
 ### UIC-SECTION-HEADER-1.3 - Named sections
 
-`Section` shall render a `<section>` whose `aria-labelledby` names its heading, so the region is named by the visible title only; the description and actions stay out of the name. A standalone `SectionHeader` and its `<header>` are not named, so the heading keeps its place in heading navigation. `space` (the gap before the content, `2xl` by default), `grow`, `fill` and `clip` work as on `Stack` ([LAYOUT.md](LAYOUT.md)).
+`Section` shall render a `<section>` whose `aria-labelledby` names its heading, so the region is named by the visible title only; the description and actions stay out of the name. A standalone `SectionHeader` and its `<header>` are not named, so the heading keeps its place in heading navigation, and the `<header>` carries `role="none"` so it never becomes the page's `banner` landmark, wherever the host places it. `space` (the gap before the content, `2xl` by default), `grow`, `fill` and `clip` work as on `Stack` ([LAYOUT.md](LAYOUT.md)).
 
 Implementation: `src/components/section-header/section-header.tsx`
 Verification: `src/components/section-header/section-header.test.tsx`, `e2e/section-header.spec.ts`

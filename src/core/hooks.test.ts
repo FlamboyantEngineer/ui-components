@@ -86,11 +86,19 @@ describe('dataAttributes', () => {
 });
 
 describe('caller attribute helpers', () => {
-  it('UIC-HOOKS-2.3 picks and splits data attributes', () => {
-    const props = { 'data-row': 2, 'data-flag': true, 'data-off': false, title: 't' };
-    expect(pickDataAttributes(props)).toEqual({ 'data-row': '2', 'data-flag': 'true' });
+  it('UIC-HOOKS-2.3 picks and splits data attributes, rendering values as React does', () => {
+    const props = {
+      'data-row': 2,
+      'data-flag': true,
+      'data-off': false,
+      'data-gone': undefined,
+      'data-none': null,
+      title: 't',
+    };
+    const picked = { 'data-row': '2', 'data-flag': 'true', 'data-off': 'false' };
+    expect(pickDataAttributes(props)).toEqual(picked);
     const [data, rest] = splitDataAttributes(props);
-    expect(data).toEqual({ 'data-row': '2', 'data-flag': 'true' });
+    expect(data).toEqual(picked);
     expect(rest).toEqual({ title: 't' });
   });
 

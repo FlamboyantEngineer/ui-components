@@ -92,7 +92,7 @@ Verification: `src/components/markdown/parse-markdown.test.ts`
 
 ### UIC-MARKDOWN-2.1 - Elements
 
-`Markdown` shall render `source` inside a `<div>` root, each node as its element: `<h1>`–`<h6>`, `<p>`, `<blockquote>`, `<ul>`, `<ol>` (with `start` when it is not 1), `<li>`, `<em>`, `<strong>`, `<del>`, `<br>`, `<img>` with `alt` and `title` in the `ui-markdown__image` slot, and a [Separator](SEPARATOR.md) for a thematic break. The paragraphs of a tight list's items render without `<p>`.
+`Markdown` shall render `source` inside a `<div>` root, each node as its element: `<h1>`–`<h6>`, `<p>`, `<blockquote>`, `<ul>`, `<ol>` (with `start` when it is not 1), `<li>`, `<em>`, `<strong>`, `<del>`, `<br>`, `<img>` with `alt` and `title` in the `ui-markdown__image` slot, and a [Separator](SEPARATOR.md) for a thematic break. The paragraphs of a tight list's items render without `<p>`. The elements are built without recursive calls, so every document `parseMarkdown` returns renders, five thousand nested block quotes included; how deep a tree the host's renderer can mount is its own limit.
 
 Implementation: `src/components/markdown/markdown.tsx`, `labs/reference/markdown.css`
 Verification: `src/components/markdown/markdown.test.tsx`, `e2e/markdown.spec.ts`
@@ -141,7 +141,7 @@ Verification: `src/components/markdown/markdown.test.tsx`, `e2e/markdown.spec.ts
 
 ### UIC-MARKDOWN-2.8 - Node overrides
 
-`renderNode(node, children)` shall be called for every node with the node and its rendered children (`null` for a node without children); a return value other than `undefined` replaces the node's rendering, `null` hiding it. Callers use it to highlight code, draw diagrams from fenced code, resolve image sources or add heading anchors.
+`renderNode(node, children)` shall be called once for every node it renders with the node and its rendered children (`null` for a node without children); a return value other than `undefined` replaces the node's rendering, `null` hiding it. A task item's first paragraph labels its checkbox rather than rendering as a paragraph, so it is not passed itself: the item's children are its label's rendered inline nodes followed by its other blocks. Callers use it to highlight code, draw diagrams from fenced code, resolve image sources or add heading anchors.
 
 Implementation: `src/components/markdown/markdown.tsx`
 Verification: `src/components/markdown/markdown.test.tsx`, `e2e/markdown.spec.ts`

@@ -41,6 +41,16 @@ describe('ColorSwatch', () => {
     expectHooksMatchSpec(container, 'COLOR-SWATCH');
   });
 
+  it.each(['red', 'transparent', 'currentColor', 'oklch(70% 0.1 200)', 'rgb(0 0 0 / 50%)'])(
+    'UIC-COLOR-SWATCH-1.2 draws %s, a notation React Aria does not read, as an empty swatch',
+    (color) => {
+      render(<ColorSwatch color={color} />);
+      const swatch = screen.getByRole('img', { name: 'No color' });
+      expect(swatch).toHaveAttribute('data-empty', 'true');
+      expect(swatch.style.backgroundColor).toBe('rgba(255, 255, 255, 0)');
+    },
+  );
+
   it('UIC-COLOR-SWATCH-1.3 publishes its size', () => {
     const { container } = render(
       <>

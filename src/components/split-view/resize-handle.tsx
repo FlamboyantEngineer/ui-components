@@ -170,6 +170,33 @@ export function resolveResizeKeyboardValue(
   return clamp(value + (grows ? step : -step), minValue, maxValue);
 }
 
+/** The caller's own pointer and key handlers on a handle. */
+type HandleEvents = Pick<
+  ResizeHandleProps,
+  | 'onPointerDown'
+  | 'onPointerMove'
+  | 'onPointerUp'
+  | 'onPointerCancel'
+  | 'onLostPointerCapture'
+  | 'onKeyDown'
+>;
+
+/** An enabled handle's tab stop and handlers: the caller's handlers run before the handle's own. */
+function chainHandleEvents(
+  caller: HandleEvents,
+  { pointer, step }: ReturnType<typeof useResizeInteraction>,
+) {
+  return {
+    tabIndex: 0,
+    onPointerDown: chain(caller.onPointerDown, pointer.onPointerDown),
+    onPointerMove: chain(caller.onPointerMove, pointer.onPointerMove),
+    onPointerUp: chain(caller.onPointerUp, pointer.onPointerUp),
+    onPointerCancel: chain(caller.onPointerCancel, pointer.onPointerCancel),
+    onLostPointerCapture: chain(caller.onLostPointerCapture, pointer.onLostPointerCapture),
+    onKeyDown: chain(caller.onKeyDown, step),
+  };
+}
+
 /**
  * A focusable window splitter (`role="separator"`) that resizes the pane beside it by pointer drag,
  * with pointer capture, and by keyboard. While a drag is in progress it renders a viewport shield so
@@ -188,12 +215,6 @@ export function ResizeHandle({
   onResizingChange,
   isDisabled = false,
   className,
-  onPointerDown,
-  onPointerMove,
-  onPointerUp,
-  onPointerCancel,
-  onLostPointerCapture,
-  onKeyDown,
   ...rest
 }: ResizeHandleProps) {
   const { direction } = useLocale();
@@ -211,17 +232,8 @@ export function ResizeHandle({
     onResizingChange,
     isDisabled,
   });
-  const interactive = isDisabled
-    ? {}
-    : {
-        tabIndex: 0,
-        onPointerDown: chain(onPointerDown, interaction.pointer.onPointerDown),
-        onPointerMove: chain(onPointerMove, interaction.pointer.onPointerMove),
-        onPointerUp: chain(onPointerUp, interaction.pointer.onPointerUp),
-        onPointerCancel: chain(onPointerCancel, interaction.pointer.onPointerCancel),
-        onLostPointerCapture: chain(onLostPointerCapture, interaction.pointer.onLostPointerCapture),
-        onKeyDown: chain(onKeyDown, interaction.step),
-      };
+  // A disabled handle ignores pointer and keys itself; the caller's handlers in `rest` still run.
+  const interactive = isDisabled ? {} : chainHandleEvents(rest, interaction);
 
   return (
     <>

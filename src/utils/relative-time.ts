@@ -53,7 +53,6 @@ interface ParsedValue {
 const SECOND = 1000;
 const MINUTE = 60 * SECOND;
 const HOUR = 60 * MINUTE;
-const DAY = 24 * HOUR;
 
 /** A date, or a date and time read as local wall time (an offset or zone converts to it). */
 function parseValue(value: string): ParsedValue | null {
@@ -69,11 +68,35 @@ function toDay(moment: Date): CalendarDate {
   return toCalendarDate(fromDate(moment, getLocalTimeZone()));
 }
 
-/** The step under a day that words an instant's distance from now, in milliseconds and as a unit. */
-function timeStep(milliseconds: number): [number, Intl.RelativeTimeFormatUnit] {
-  if (Math.abs(milliseconds) < MINUTE) return [SECOND, 'second'];
-  if (Math.abs(milliseconds) < HOUR) return [MINUTE, 'minute'];
-  return [HOUR, 'hour'];
+/** A unit under a day, and how many of it round up to the next unit. */
+const timeUnits: ReadonlyArray<[number, Intl.RelativeTimeFormatUnit, number]> = [
+  [SECOND, 'second', 60],
+  [MINUTE, 'minute', 60],
+  [HOUR, 'hour', 24],
+];
+
+/** Distance from now at which an instant's rounded hours reach a day, so it reads in days. */
+const dayDistance = (24 - 0.5) * HOUR;
+
+interface TimeStep {
+  step: number;
+  unit: Intl.RelativeTimeFormatUnit;
+  /** The smallest distance from now that still reads in this unit. */
+  floor: number;
+}
+
+/**
+ * The unit that words an instant `offset` milliseconds from now, chosen by its rounded count so a
+ * count never reads 60 seconds, 60 minutes or 24 hours; `null` once the instant reads in days.
+ */
+function timeStep(offset: number): TimeStep | null {
+  let floor = 0;
+  for (const [step, unit, limit] of timeUnits) {
+    const ceiling = (limit - 0.5) * step;
+    if (Math.abs(offset) < ceiling) return { step, unit, floor };
+    floor = ceiling;
+  }
+  return null;
 }
 
 function relationOf(distance: number): RelativeTimeRelation {
@@ -103,8 +126,9 @@ export function capitalizeText(text: string, locale: string): string {
 
 /**
  * Describes an ISO 8601 date (`YYYY-MM-DD`) or date and time relative to `now`: seconds, minutes
- * or hours for an instant within a day, calendar days within `fallbackAfterDays`, and the absolute
- * date beyond. `null` when the value is not a date.
+ * or hours for an instant within a day, by its rounded count (59.7 seconds reads `1 minute`, 23.6
+ * hours reads in days), calendar days within `fallbackAfterDays`, and the absolute date beyond.
+ * `null` when the value is not a date.
  */
 export function describeRelativeTime(
   value: string,
@@ -120,20 +144,23 @@ export function describeRelativeTime(
     timeStyle: parsed.instant ? (options.timeStyle ?? 'short') : undefined,
   }).format(parsed.instant ?? parsed.date.toDate(getLocalTimeZone()));
   const offset = parsed.instant ? parsed.instant.getTime() - now.getTime() : 0;
-  if (parsed.instant && Math.abs(offset) < DAY) {
-    const [step, unit] = timeStep(offset);
-    const count = Math.round(offset / step);
-    const pastDay = offset < 0 ? DAY + offset + 1 : Infinity;
+  const time = parsed.instant ? timeStep(offset) : null;
+  if (time) {
+    const count = Math.round(offset / time.step);
+    // A future instant moves down to the smaller unit once it comes nearer than this unit's floor.
+    const nearer = offset > 0 && time.floor > 0 ? offset - time.floor + 1 : Infinity;
     return {
-      relative: formatter.format(count, unit),
+      relative: formatter.format(count, time.unit),
       absolute,
       relation: relationOf(count),
       isRelative: true,
-      nextChange: Math.min(untilNextStep(offset, step), pastDay),
+      nextChange: Math.min(untilNextStep(offset, time.step), nearer),
     };
   }
+  // A future instant read in days starts reading in hours once it is nearer than a day.
+  const untilHours = parsed.instant && offset > 0 ? offset - dayDistance + 1 : Infinity;
   if (Math.abs(days) >= options.fallbackAfterDays) {
-    const nextChange = days > 0 ? untilMidnight(now) : null;
+    const nextChange = days > 0 ? Math.min(untilMidnight(now), untilHours) : null;
     return {
       relative: absolute,
       absolute,
@@ -147,6 +174,6 @@ export function describeRelativeTime(
     absolute,
     relation: relationOf(days),
     isRelative: true,
-    nextChange: untilMidnight(now),
+    nextChange: Math.min(untilMidnight(now), untilHours),
   };
 }

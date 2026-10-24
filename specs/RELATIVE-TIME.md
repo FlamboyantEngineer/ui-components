@@ -13,7 +13,7 @@ Verification: `src/components/relative-time/relative-time.test.tsx`, `e2e/relati
 
 ### UIC-RELATIVE-TIME-1.2 - Relative words
 
-The text shall read the value relative to `getNow()` (the current time by default) in the provider locale's words: a date and time within a day in seconds, minutes or hours (`5 minutes ago`, `In 2 hours`, `Now`), a value within `fallbackAfterDays` calendar days (7 by default) in days (`Today`, `Yesterday`, `In 3 days`), and anything farther as its absolute date. `capitalize` (true by default) upper-cases the first letter of relative words, as at the start of a label; `false` keeps the form `Intl` gives mid-sentence (`yesterday`, `in 2 hours`). An absolute date is never re-cased.
+The text shall read the value relative to `getNow()` (the current time by default) in the provider locale's words: a date and time within a day in seconds, minutes or hours (`5 minutes ago`, `In 2 hours`, `Now`), choosing the unit by the rounded count so it never reads 60 seconds, 60 minutes or 24 hours (59.7 seconds ago reads `1 minute ago`, and an instant whose hours round to 24 reads in days), a value within `fallbackAfterDays` calendar days (7 by default) in days (`Today`, `Yesterday`, `In 3 days`), and anything farther as its absolute date. `capitalize` (true by default) upper-cases the first letter of relative words, as at the start of a label; `false` keeps the form `Intl` gives mid-sentence (`yesterday`, `in 2 hours`). An absolute date is never re-cased.
 
 Implementation: `src/components/relative-time/relative-time.tsx`, `src/utils/relative-time.ts`
 Verification: `src/components/relative-time/relative-time.test.tsx`, `src/utils/relative-time.test.ts`, `e2e/relative-time.spec.ts`
@@ -43,7 +43,7 @@ Verification: `src/components/relative-time/relative-time.test.tsx`
 
 ### UIC-RELATIVE-TIME-2.1 - Shared formatter
 
-`describeRelativeTime(value, { now, locale, fallbackAfterDays, dateStyle, timeStyle })` in `src/utils/relative-time.ts` shall return the relative words in their mid-sentence form, the absolute text, the relation, whether the words read relative, and `nextChange`: the milliseconds until the words may read differently (the next rounding step of seconds, minutes or hours, the switch to days after a day, or the next local midnight for day counts), or `null` for a past value already read as its absolute date. It returns `null` for a value that is not a date. `capitalizeText` upper-cases the first letter in the locale. Relative Time and Relative Date Field both read values through it.
+`describeRelativeTime(value, { now, locale, fallbackAfterDays, dateStyle, timeStyle })` in `src/utils/relative-time.ts` shall return the relative words in their mid-sentence form, the absolute text, the relation, whether the words read relative, and `nextChange`: the milliseconds until the words may read differently (the next rounding step of seconds, minutes or hours, the switch to the next or previous unit when the rounded count crosses 60 seconds, 60 minutes or 24 hours, or the next local midnight for day counts), or `null` for a past value already read as its absolute date. It returns `null` for a value that is not a date. `capitalizeText` upper-cases the first letter in the locale. Relative Time and Relative Date Field both read values through it.
 
 Implementation: `src/utils/relative-time.ts`, `src/components/relative-date-field/relative-date.ts`
 Verification: `src/utils/relative-time.test.ts`, `src/components/relative-date-field/relative-date.test.ts`

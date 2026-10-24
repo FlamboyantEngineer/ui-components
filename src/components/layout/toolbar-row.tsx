@@ -34,7 +34,7 @@ export interface ToolbarRowProps
   variant?: ToolbarRowVariant | undefined;
   /** `vertical` stacks the controls, and a toolbar moves focus with Up and Down. Defaults to `horizontal`. */
   orientation?: Orientation | undefined;
-  /** Gap between controls. Defaults to `sm`. */
+  /** Gap between controls. Defaults to `md`. */
   space?: LayoutSpace | undefined;
   /** Distribution of controls. Defaults to `end`. */
   justify?: LayoutJustify | undefined;

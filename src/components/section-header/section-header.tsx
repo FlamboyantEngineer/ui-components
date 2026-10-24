@@ -30,7 +30,7 @@ export interface SectionHeaderProps extends BaseProps {
 export interface SectionProps extends SectionHeaderProps, LayoutContainmentProps {
   /** The section's content, after its header. */
   children?: ReactNode;
-  /** Gap between the header and the content. Defaults to `md`. */
+  /** Gap between the header and the content. Defaults to `2xl`. */
   space?: LayoutSpace | undefined;
   /** The title toggles the content. Expanded by default. */
   collapsible?: boolean | undefined;
@@ -155,7 +155,10 @@ function CollapsibleSection({
   );
 }
 
-/** A section title with optional supporting text and trailing actions, in a `<header>`. */
+/**
+ * A section title with optional supporting text and trailing actions, in a `<header>` that is not
+ * a landmark: outside sectioning content a `<header>` would be the page's banner.
+ */
 export function SectionHeader({
   title,
   description,
@@ -167,7 +170,7 @@ export function SectionHeader({
   const headingId = useId();
   const level = useHeadingLevel(headingLevel);
   return (
-    <header {...rest} {...headerHooks.root({ className })}>
+    <header role="none" {...rest} {...headerHooks.root({ className })}>
       <HeaderContent
         title={title}
         description={description}

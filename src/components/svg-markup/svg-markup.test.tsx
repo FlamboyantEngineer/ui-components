@@ -92,6 +92,23 @@ describe('SvgMarkup', () => {
     }
   });
 
+  it('UIC-SVG-MARKUP-1.2 renders no animation that sets a link to a script URL', () => {
+    const { container } = render(
+      <SvgMarkup
+        markup={[
+          '<svg viewBox="0 0 10 10">',
+          '<a><set attributeName="href" to="javascript:alert(1)"/><rect width="10" height="10"/></a>',
+          '<a><animate attributeName="href" values="#a;javascript:alert(1)"/></a>',
+          '<a><animate attributeName="xlink:href" from="javascript:alert(1)" to="#a"/></a>',
+          '</svg>',
+        ].join('')}
+      />,
+    );
+    expect(container.innerHTML).not.toContain('javascript:');
+    expect(container.querySelector('set, animate')).toBeNull();
+    expect(container.querySelector('rect')).not.toBeNull();
+  });
+
   it('UIC-SVG-MARKUP-2.2 keeps drawing attributes and drops the attributes the component owns', () => {
     const { container } = render(<SvgMarkup markup={outlineMarkup} />);
     const svg = container.firstElementChild as SVGSVGElement;

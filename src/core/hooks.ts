@@ -61,14 +61,17 @@ export function mergeClassNames(...classNames: Array<string | false | null | und
   return classNames.filter(Boolean).join(' ');
 }
 
-/** The caller's `data-*` props, to forward to a component's root element. */
+/**
+ * The caller's `data-*` props, to forward to a component's root element. Values render as React
+ * renders a `data-*` prop: strings, numbers and booleans as text (`false` as `"false"`), while
+ * `null` and `undefined` omit the attribute.
+ */
 export function pickDataAttributes(props: object): DataAttributes {
   const attributes: DataAttributes = {};
   for (const [key, value] of Object.entries(props)) {
-    if (dataAttributeName.test(key) && (typeof value === 'string' || typeof value === 'number')) {
+    if (!dataAttributeName.test(key)) continue;
+    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
       attributes[key as `data-${string}`] = String(value);
-    } else if (dataAttributeName.test(key) && value === true) {
-      attributes[key as `data-${string}`] = 'true';
     }
   }
   return attributes;

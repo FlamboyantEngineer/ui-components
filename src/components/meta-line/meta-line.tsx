@@ -31,6 +31,8 @@ function hasContent(item: ReactNode): boolean {
 
 function getEntryKey(item: ReactNode, index: number): string {
   // Explicit keys and positions live in separate namespaces, so key="1" never meets position 1.
+  // Positions count every item, empty ones included, so an entry keeps its key when one before it
+  // empties.
   return isValidElement(item) && item.key !== null ? `k:${item.key}` : `i:${index}`;
 }
 
@@ -41,12 +43,14 @@ export function formatMetaLine(items: readonly MetaLineTextItem[]): string {
 
 /** One inline line of metadata entries separated by a decorative middot. */
 export function MetaLine({ items, className, ...rest }: MetaLineProps) {
-  const entries = items.filter(hasContent);
+  const entries = items.flatMap((item, index) =>
+    hasContent(item) ? [{ item, key: getEntryKey(item, index) }] : [],
+  );
   if (entries.length === 0) return null;
   return (
     <span {...rest} {...hooks.root({ className })}>
-      {entries.map((item, index) => (
-        <Fragment key={getEntryKey(item, index)}>
+      {entries.map(({ item, key }, index) => (
+        <Fragment key={key}>
           {index > 0 ? (
             <>
               {' '}

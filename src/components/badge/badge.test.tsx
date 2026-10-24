@@ -96,7 +96,7 @@ describe('Badge', () => {
     expect(root).toHaveAttribute('id', 'kind');
     expect(root).toHaveAttribute('data-tone', 'neutral');
     expect(root).toHaveAttribute('data-owner', 'probe');
-    expect(root).toHaveAttribute('aria-label', 'Kind: report');
+    expect(screen.getByText('Kind: report')).toHaveClass('ui-badge__accessible-label');
     expectHooksMatchSpec(container, 'BADGE', { callerAttributes: ['data-owner'] });
 
     rerender(
@@ -207,6 +207,37 @@ describe('Badge', () => {
     rerender(<Badge count={12} max={9} placement="overlay" tone="danger" size="sm" />);
     expect(container.firstElementChild).toHaveAttribute('data-placement', 'overlay');
     expectHooksMatchSpec(container, 'BADGE');
+  });
+
+  it('UIC-BADGE-1.8 reads a label badge by its aria-label without naming a generic element', () => {
+    const { container, rerender } = render(<Badge aria-label="Priority high">High</Badge>);
+    expect(container.querySelector('.ui-badge:not([role])[aria-label]')).toBeNull();
+    expect(screen.getByText('Priority high')).toHaveClass('ui-badge__accessible-label');
+    expect(screen.getByText('High')).toHaveAttribute('aria-hidden', 'true');
+    expectHooksMatchSpec(container, 'BADGE', { slots: ['label', 'accessible-label'] });
+
+    rerender(
+      <Badge variant="status" announce={false} aria-label="Build passing">
+        Passing
+      </Badge>,
+    );
+    expect(container.querySelector('[aria-label]')).toBeNull();
+    expect(screen.getByText('Build passing')).toHaveClass('ui-badge__accessible-label');
+
+    rerender(
+      <Badge variant="status" aria-label="Build passing">
+        Passing
+      </Badge>,
+    );
+    expect(screen.getByRole('status', { name: 'Build passing' })).toHaveTextContent('Passing');
+    expect(container.querySelector('.ui-badge__accessible-label')).toBeNull();
+
+    rerender(
+      <Badge aria-label="Priority high" aria-hidden>
+        High
+      </Badge>,
+    );
+    expect(container.querySelector('.ui-badge__accessible-label, [aria-label]')).toBeNull();
   });
 
   it('UIC-BADGE-1.7 draws decorative icons before and after the label', () => {
