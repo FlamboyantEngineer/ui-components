@@ -150,7 +150,7 @@ Verification: `src/components/board/board.test.tsx`, `e2e/board.spec.ts`
 | `data-dragging`             | state     | `true`            | A column header or card being dragged.                                               |
 | `data-drop-target`          | state     | `true`            | A column header, cell, card or drop indicator under a drag.                          |
 | `data-position`             | state     | `before`, `after` | Where a dragged column or card would land against the target.                        |
-| `data-key`                  | state     |                   | A column header's or card's key.                                                     |
+| `data-key`                  | state     |                   | Card: opaque collection key (React Aria); column header: its key as text.            |
 | `data-key-identity`         | attribute |                   | On column headers and cards: JSON `[type, text]` retaining the key's primitive type. |
 | `data-empty`                | state     | `true`            | A cell without cards (React Aria).                                                   |
 | `data-focused`              | state     | `true`            | A cell or card has focus (React Aria).                                               |

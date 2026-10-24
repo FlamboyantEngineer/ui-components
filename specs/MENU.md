@@ -8,7 +8,7 @@ The menu family lists actions or options a reader can choose: `Menu` (the list),
 
 `Menu` shall render a `role="menu"` list from `MenuItem`, `MenuSection`, `MenuSeparator` and `SubmenuTrigger` children or, without children, from its `items` entries: item entries (`id`, `label` and the item options), section entries (`type: 'section'` with `title` and `items`) and separator entries (`type: 'separator'`). An item entry with `items` opens a submenu of those entries. Entries take the props of the component they describe.
 
-Numeric and text IDs (`1` and `'1'`) and text IDs differing only by whitespace identify distinct items and retain separate accessibility references. Root and section selections, disabled keys and actions keep the caller's original ID types, including actions inherited by submenus.
+Numeric and text IDs (`1` and `'1'`) and text IDs differing only by whitespace identify distinct items and retain separate accessibility references. Root and section selections, disabled keys and actions keep the caller's original ID types, including actions inherited by submenus. A `MenuItem` or `MenuSection` rendered through a host component that forwards its props keeps its `id` ([UIC-COMPOSITION-4.2](COMPOSITION.md#uic-composition-42---collection-items-behind-a-host-component)).
 
 Implementation: `src/components/menu/menu.tsx`, `src/components/menu/menu-item.tsx`
 Verification: `src/components/menu/menu.test.tsx`, `e2e/menu.spec.ts`
@@ -191,7 +191,7 @@ Verification: `src/components/menu/menu.test.tsx`, `e2e/menu.spec.ts`
 | `ui-menu-item__shortcut`          | slot      |                                                                               | Keyboard chord (also `ui-shortcut`).                                |
 | `ui-menu-item__submenu-indicator` | slot      |                                                                               | Chevron of a submenu trigger (also `ui-glyph`).                     |
 | `data-tone`                       | attribute | `neutral`, `danger`                                                           | Emphasis.                                                           |
-| `data-key`                        | state     |                                                                               | The item's `id` (React Aria).                                       |
+| `data-key`                        | state     |                                                                               | Opaque collection key (React Aria): not the `id`, not for styling.  |
 | `data-pending`                    | state     | `true`                                                                        | A placeholder for loading actions.                                  |
 | `data-disabled`                   | state     | `true`                                                                        | Disabled (React Aria).                                              |
 | `data-hovered`                    | state     | `true`                                                                        | Pointer over the item.                                              |

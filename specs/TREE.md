@@ -222,5 +222,5 @@ Verification: `src/components/tree/use-tree-rename.test.tsx`, `e2e/tree.spec.ts`
 | `data-pressed`            | state     | `true`                  | A row or button is pressed (React Aria).                                      |
 | `data-dragging`           | state     | `true`                  | The row being dragged (React Aria).                                           |
 | `data-href`               | state     |                         | A link row's destination (React Aria).                                        |
-| `data-key`                | state     |                         | The encoded primitive key for a row; not for styling.                         |
+| `data-key`                | state     |                         | Opaque collection key (React Aria): not the `id`, not for styling.            |
 | `data-collection`         | state     |                         | React Aria's collection id on the tree and its rows; not for styling.         |

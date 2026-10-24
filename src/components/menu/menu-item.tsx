@@ -11,7 +11,8 @@ import { createHooks, mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, Key, SelectionMode, Tone } from '../../core/props.js';
 import { Glyph } from '../../core/provider.js';
 import { toCollectionSelectionProps } from '../../utils/collection-selection.js';
-import { encodeCollectionChildren } from '../../utils/encode-collection-children.js';
+import { keyCollectionChildren } from '../../utils/key-collection-children.js';
+import { toCollectionItemKey } from '../../utils/to-collection-key.js';
 import { Icon, toIconProps, type IconSource } from '../icon/icon.js';
 import { Separator } from '../separator/separator.js';
 import { Shortcut, type ShortcutProps } from '../shortcut/shortcut.js';
@@ -166,6 +167,7 @@ function MenuItemContent({
 
 /** One menu row: selection check, icon, label, description, shortcut and submenu arrow. */
 export function MenuItem({
+  id,
   children,
   icon,
   description,
@@ -180,6 +182,7 @@ export function MenuItem({
   return (
     <AriaMenuItem
       {...rest}
+      id={toCollectionItemKey(id)}
       {...itemHooks.root({ className, props: rest, data: { tone, pending: isPending } })}
       textValue={textValue ?? (typeof children === 'string' ? children : undefined)}
       isDisabled={isPending || isDisabled}
@@ -205,6 +208,7 @@ export function MenuItem({
 
 /** A group of menu items with an optional heading and its own selection mode. */
 export function MenuSection({
+  id,
   title,
   children,
   className,
@@ -216,11 +220,12 @@ export function MenuSection({
   return (
     <AriaMenuSection
       {...rest}
+      id={toCollectionItemKey(id)}
       {...sectionHooks.root({ className, props: rest })}
       {...toCollectionSelectionProps({ selectedKeys, defaultSelectedKeys, onSelectionChange })}
     >
       {title ? <Header className={sectionHooks.slotClass('header')}>{title}</Header> : null}
-      {encodeCollectionChildren(children, [MenuItem])}
+      {keyCollectionChildren(children)}
     </AriaMenuSection>
   );
 }

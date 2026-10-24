@@ -15,6 +15,8 @@ import {
   MenuTrigger,
   SubmenuTrigger,
   type MenuEntry,
+  type MenuItemProps,
+  type MenuSectionProps,
 } from './menu.js';
 
 /** Stubs IntersectionObserver and returns a function that reports the first observed element in view. */
@@ -40,6 +42,15 @@ function stubIntersections() {
 
 const cityNames = ['Paris', 'Lima', 'Oslo', 'Lisbon', 'Cairo'];
 const cityEntries: MenuEntry[] = cityNames.map((name) => ({ id: name.toLowerCase(), label: name }));
+
+/** Host components around the menu's parts, as React Aria's reuse pattern writes them. */
+function Choice(props: MenuItemProps) {
+  return <MenuItem {...props} />;
+}
+
+function ChoiceGroup(props: MenuSectionProps) {
+  return <MenuSection {...props} />;
+}
 
 describe('Menu', () => {
   it('UIC-MENU-1.1 UIC-MENU-3.3 keeps typed and whitespace IDs distinct in selections and actions', async () => {
@@ -98,6 +109,57 @@ describe('Menu', () => {
     expect(text).toBeChecked();
     await user.click(numeric);
     expect(onSelectionChange).toHaveBeenLastCalledWith(new Set(['1', 1]));
+  });
+
+  it('UIC-COMPOSITION-4.2 UIC-MENU-1.1 UIC-MENU-1.4 UIC-MENU-3.3 keys items rendered through a host component by their id', async () => {
+    const user = userEvent.setup();
+    const onAction = vi.fn();
+    const onSelectionChange = vi.fn();
+    render(
+      <Menu
+        aria-label="Choices"
+        selectionMode="multiple"
+        selectedKeys={['apple']}
+        disabledKeys={['pear']}
+        onAction={onAction}
+        onSelectionChange={onSelectionChange}
+      >
+        <Choice id="apple">Apple</Choice>
+        <Choice id="pear">Pear</Choice>
+        <Choice id={2}>Two</Choice>
+      </Menu>,
+    );
+    expect(screen.getByRole('menuitemcheckbox', { name: 'Apple' })).toBeChecked();
+    expect(screen.getByRole('menuitemcheckbox', { name: 'Pear' })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+    await user.click(screen.getByRole('menuitemcheckbox', { name: 'Two' }));
+    expect(onAction).toHaveBeenLastCalledWith(2);
+    expect(onSelectionChange).toHaveBeenLastCalledWith(new Set(['apple', 2]));
+  });
+
+  it('UIC-COMPOSITION-4.2 UIC-MENU-3.1 UIC-MENU-3.3 keys a section and its items rendered through host components', async () => {
+    const user = userEvent.setup();
+    const onSelectionChange = vi.fn();
+    render(
+      <Menu aria-label="Choices">
+        <ChoiceGroup
+          id="fruit"
+          title="Fruit"
+          selectionMode="single"
+          defaultSelectedKeys={[1]}
+          onSelectionChange={onSelectionChange}
+        >
+          <Choice id={1}>Numeric</Choice>
+          <Choice id="1">Text</Choice>
+        </ChoiceGroup>
+      </Menu>,
+    );
+    const group = screen.getByRole('group', { name: 'Fruit' });
+    expect(within(group).getByRole('menuitemradio', { name: 'Numeric' })).toBeChecked();
+    await user.click(within(group).getByRole('menuitemradio', { name: 'Text' }));
+    expect(onSelectionChange).toHaveBeenLastCalledWith(new Set(['1']));
   });
 
   it('UIC-MENU-4.5 decodes typed actions inherited by a submenu', async () => {

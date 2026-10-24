@@ -8,7 +8,7 @@ Pointer ownership and drag lifecycle cleanup follow the shared [drag interaction
 
 ### UIC-TABS-1.1 - Tabs, list and panels
 
-`Tabs` shall render its root, a `TabList` with role `tablist` named by its `aria-label` or `aria-labelledby`, one `Tab` per section with role `tab` named by its label, and the `TabPanel` of the selected tab with role `tabpanel`, labelled by its tab. Each selected tab carries `aria-selected="true"` and `aria-controls` naming its panel, including panels returned from a host component. `selectedKey` with `onSelectionChange` controls the selection and `defaultSelectedKey` sets it when uncontrolled; without either, the first enabled tab is selected.
+`Tabs` shall render its root, a `TabList` with role `tablist` named by its `aria-label` or `aria-labelledby`, one `Tab` per section with role `tab` named by its label, and the `TabPanel` of the selected tab with role `tabpanel`, labelled by its tab. Each selected tab carries `aria-selected="true"` and `aria-controls` naming its panel, including tabs and panels returned from a host component that forwards their props ([UIC-COMPOSITION-4.2](COMPOSITION.md#uic-composition-42---collection-items-behind-a-host-component)). `selectedKey` with `onSelectionChange` controls the selection and `defaultSelectedKey` sets it when uncontrolled; without either, the first enabled tab is selected.
 
 Implementation: `src/components/tabs/tabs.tsx`
 Verification: `src/components/tabs/tabs.test.tsx`, `src/components/tabs/tab-keys.test.tsx`, `e2e/tabs.spec.ts`
@@ -182,7 +182,7 @@ Verification: `src/components/tabs/tabs.test.tsx`, `e2e/tabs.spec.ts`
 | `data-overflow`          | attribute | `scroll`, `menu`         | What the bar's list does with tabs that do not fit.                        |
 | `data-edge`              | attribute | `start`, `end`           | The edge a scroll button belongs to.                                       |
 | `data-label`             | attribute |                          | A plain-text label, on the label slot.                                     |
-| `data-key`               | attribute |                          | A tab's `id`, written by React Aria.                                       |
+| `data-key`               | attribute |                          | Opaque collection key (React Aria): not the `id`, not for styling.         |
 | `data-collection`        | attribute |                          | React Aria's collection identifier on the list and tabs; not for styling.  |
 | `data-overflowing`       | state     | `true`                   | The list's tabs do not fit.                                                |
 | `data-selected`          | state     | `true`                   | The selected tab.                                                          |

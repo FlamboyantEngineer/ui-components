@@ -5,7 +5,7 @@ import type { BaseProps, Key, Orientation, Size } from '../../core/props.js';
 import { usePersistentState, type PersistCodec } from '../../core/provider.js';
 import type { ElementRender } from '../../utils/render-element.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
-import { toCollectionKey } from '../../utils/to-collection-key.js';
+import { toCollectionItemKey, toCollectionKey } from '../../utils/to-collection-key.js';
 import { TabsSharedContext, useTabsShared } from './tab-actions.js';
 import { tabsHooks as hooks } from './tab-hooks.js';
 
@@ -143,14 +143,8 @@ export function Tabs({
         // Another storage key restores that key's selection.
         key={persistKey}
         {...rest}
-        selectedKey={
-          selection.selectedKey === undefined ? undefined : toCollectionKey(selection.selectedKey)
-        }
-        defaultSelectedKey={
-          selection.defaultSelectedKey === undefined
-            ? undefined
-            : toCollectionKey(selection.defaultSelectedKey)
-        }
+        selectedKey={toCollectionItemKey(selection.selectedKey)}
+        defaultSelectedKey={toCollectionItemKey(selection.defaultSelectedKey)}
         onSelectionChange={(key) => selection.onSelectionChange?.(fromCollectionKey(key))}
         disabledKeys={disabledKeys}
         {...hooks.root({ className, props: rest, data: { size } })}
@@ -164,7 +158,7 @@ export function TabPanel({ className, id, ...rest }: TabPanelProps) {
   return (
     <AriaTabPanel
       {...rest}
-      id={id === undefined ? undefined : toCollectionKey(id)}
+      id={toCollectionItemKey(id)}
       className={mergeClassNames(hooks.slotClass('panel'), className)}
     />
   );
