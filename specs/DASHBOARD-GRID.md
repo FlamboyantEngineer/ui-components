@@ -13,7 +13,7 @@ Verification: `src/components/dashboard-grid/dashboard-grid.test.tsx`, `e2e/dash
 
 ### UIC-DASHBOARD-GRID-1.2 - Layout data
 
-The layout shall be controlled with `layout` and `onLayoutChange` or uncontrolled from `defaultLayout`; with `storageKey`, the uncontrolled layout is remembered through the provider storage adapter ([PROVIDER.md](PROVIDER.md)). `onLayoutChange` receives the whole layout after each move or resize. Numeric and text item IDs with the same spelling identify distinct tiles; a reading-order change preserves their content and handles. The grid shows the layout normalised: coordinates rounded to whole cells, each tile at least one cell and kept inside the columns, the first of repeated ids kept, and overlapping tiles settled in reading order, each moving down just below a tile settled before it.
+The layout shall be controlled with `layout` and `onLayoutChange` or uncontrolled from `defaultLayout`; with `persistKey`, the uncontrolled layout is remembered through the provider storage adapter ([PROVIDER.md](PROVIDER.md)) under that key. `storageKey` is the deprecated name of `persistKey` and still works when `persistKey` is not given. `onLayoutChange` receives the whole layout after each move or resize. Numeric and text item IDs with the same spelling identify distinct tiles; a reading-order change preserves their content and handles. The grid shows the layout normalised: coordinates rounded to whole cells, each tile at least one cell and kept inside the columns, the first of repeated ids kept, and overlapping tiles settled in reading order, each moving down just below a tile settled before it.
 
 Implementation: `src/components/dashboard-grid/dashboard-grid.tsx`, `src/components/dashboard-grid/dashboard-layout.ts`
 Verification: `src/components/dashboard-grid/dashboard-layout.test.ts`, `src/components/dashboard-grid/dashboard-grid.test.tsx`
@@ -36,14 +36,14 @@ Verification: `src/components/dashboard-grid/dashboard-grid.test.tsx`, `e2e/dash
 
 ### UIC-DASHBOARD-GRID-2.2 - Moving
 
-Dragging a move handle with a pointer shall move its tile by whole cells, to the cell nearest the pointer's travel (one column step being the grid's width plus its column gap divided by the columns, and one row step the row height plus the row gap), and each arrow key press on it moves the tile one cell; the right arrow moves toward the inline end in left-to-right text and the left arrow in right-to-left text. While a pointer drag lasts, the tile publishes `data-moving` and the grid shows where every tile would go; when it ends, or after each key press, the layout changes.
+Dragging a move handle with a pointer shall move its tile by whole cells, to the cell nearest the pointer's travel (one column step being the grid's width plus its column gap divided by the columns, and one row step the row height plus the row gap), and each arrow key press on it moves the tile one cell; the right arrow moves toward the inline end in left-to-right text and the left arrow in right-to-left text. While a pointer drag lasts, the tile publishes `data-moving` and the grid shows where every tile would go, drawing the tiles again only when the drag reaches another cell; when it ends, or after each key press, the layout changes. A move or resize that leaves every tile where it was, such as an arrow key pressed against an edge, reports no layout change and announces nothing.
 
 Implementation: `src/components/dashboard-grid/dashboard-tile.tsx`, `src/components/dashboard-grid/use-tile-move.ts`, `src/components/dashboard-grid/dashboard-grid.tsx`, `src/primitives/drag-and-drop.ts`
 Verification: `src/components/dashboard-grid/dashboard-grid.test.tsx`, `e2e/dashboard-grid.spec.ts`
 
 ### UIC-DASHBOARD-GRID-2.3 - Resizing
 
-The resize handle shall change its tile's span from its bottom end corner in the same way, by pointer drag and arrow keys (right and down grow it), never below `minColumnSpan` columns or `minRowSpan` rows (1 by default) nor past the last column; the tile publishes `data-resizing` while a pointer drag lasts.
+The resize handle shall change its tile's span from its bottom end corner in the same way, by pointer drag and arrow keys (the arrow toward the inline end, ArrowRight left to right and ArrowLeft right to left, and ArrowDown grow it), never below `minColumnSpan` columns or `minRowSpan` rows (1 by default) nor past the last column: a resize keeps the tile's start column, so at the last column it stops growing; the tile publishes `data-resizing` while a pointer drag lasts.
 
 Implementation: `src/components/dashboard-grid/dashboard-tile.tsx`, `src/components/dashboard-grid/use-tile-move.ts`
 Verification: `src/components/dashboard-grid/dashboard-grid.test.tsx`, `e2e/dashboard-grid.spec.ts`
@@ -57,7 +57,7 @@ Verification: `src/components/dashboard-grid/dashboard-layout.test.ts`, `src/com
 
 ### UIC-DASHBOARD-GRID-2.5 - Announcements
 
-After a move or resize, a polite live region (`role="status"`, the visually hidden `ui-dashboard-grid__status`) shall announce the tile's new place through the provider's `tileMoved` string (`Visitors moved to column 2, row 1`) or its new span through `tileResized` (`Visitors resized to 6 columns by 3 rows`).
+After a move or resize that changes the layout, a polite live region (`role="status"`, the visually hidden `ui-dashboard-grid__status`) shall announce the tile's new place through the provider's `tileMoved` string (`Visitors moved to column 2, row 1`) or its new span through `tileResized` (`Visitors resized to 6 columns by 3 rows`).
 
 Implementation: `src/components/dashboard-grid/dashboard-grid.tsx`, `src/components/dashboard-grid/dashboard-tile.tsx`, `src/core/dashboard-strings.ts`
 Verification: `src/components/dashboard-grid/dashboard-grid.test.tsx`, `e2e/dashboard-grid.spec.ts`

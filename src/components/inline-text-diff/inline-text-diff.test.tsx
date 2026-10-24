@@ -32,6 +32,15 @@ describe('text diff helpers', () => {
     });
   });
 
+  it('UIC-INLINE-TEXT-DIFF-1.2 keeps no context and no ellipsis with a zero context', () => {
+    expect(
+      createInlineTextDiffExcerpt('The quick brown fox', 'The quick red fox', { context: 0 }),
+    ).toEqual([
+      { kind: 'removed', text: 'brown' },
+      { kind: 'added', text: 'red' },
+    ]);
+  });
+
   it('UIC-INLINE-TEXT-DIFF-1.2 bounds context and runs, and drops empty segments', () => {
     expect(createInlineTextDiffExcerpt('', 'First value')).toEqual([
       { kind: 'added', text: 'First value' },

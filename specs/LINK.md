@@ -57,7 +57,7 @@ Verification: `src/components/link/link.test.tsx`, `e2e/link.spec.ts`
 
 ### UIC-LINK-2.2 - New tabs
 
-`isExternal` shall open the link in a new tab (`target="_blank"`) unless the caller gives `target`. A link whose target is `_blank`, by either means, shall add `noopener` and `noreferrer` to the caller's `rel`, draw the decorative `external-link` glyph in the `ui-link__external-icon` slot after its content, and add the provider's `opensInNewTab` text ("(opens in a new tab)") in a visually hidden `ui-link__new-tab-label` slot, a [Visually Hidden](VISUALLY-HIDDEN.md) element.
+`isExternal` shall open the link in a new tab (`target="_blank"`) unless the caller gives `target`. A link whose target is `_blank`, by either means, shall add `noopener` and `noreferrer` to the caller's `rel`, draw the decorative `external-link` glyph in the `ui-link__external-icon` slot after its content, and add the provider's `opensInNewTab` text ("(opens in a new tab)") in a visually hidden `ui-link__new-tab-label` slot, a [Visually Hidden](VISUALLY-HIDDEN.md) element. A link without `href` or a disabled link opens nothing, so it draws neither the glyph nor the text.
 
 Implementation: `src/components/link/link.tsx`, `src/core/common-strings.ts`, `src/core/glyphs.tsx`
 Verification: `src/components/link/link.test.tsx`, `e2e/link.spec.ts`

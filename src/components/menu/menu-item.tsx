@@ -1,4 +1,4 @@
-import { useContext, type ReactNode } from 'react';
+import { useContext, type ComponentPropsWithRef, type ReactNode } from 'react';
 import {
   Header,
   KeyboardContext,
@@ -11,7 +11,8 @@ import { createHooks, mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, Key, SelectionMode, Tone } from '../../core/props.js';
 import { Glyph } from '../../core/provider.js';
 import { toCollectionSelectionProps } from '../../utils/collection-selection.js';
-import { encodeCollectionChildren } from '../../utils/encode-collection-children.js';
+import { keyCollectionChildren } from '../../utils/key-collection-children.js';
+import { toCollectionItemKey } from '../../utils/to-collection-key.js';
 import { Icon, toIconProps, type IconSource } from '../icon/icon.js';
 import { Separator } from '../separator/separator.js';
 import { Shortcut, type ShortcutProps } from '../shortcut/shortcut.js';
@@ -61,6 +62,8 @@ export interface MenuItemProps extends Omit<BaseProps, 'id'>, PressEventProps {
   tone?: MenuItemTone | undefined;
   /** Keeps the item visible but out of reach. */
   isDisabled?: boolean | undefined;
+  /** Keeps a disabled item in keyboard navigation, with `aria-disabled="true"`, refusing activation. */
+  focusableWhenDisabled?: boolean | undefined;
   /** Draws a busy indicator instead of the icon and refuses activation. */
   isPending?: boolean | undefined;
 }
@@ -98,9 +101,12 @@ interface MenuItemContentProps extends Pick<MenuItemProps, 'icon' | 'description
   children: ReactNode;
 }
 
-/** The building block's item state, narrowed to the states the library publishes. */
-function toRenderState(state: MenuItemRenderState): MenuItemRenderState {
-  const { isHovered, isFocused, isFocusVisible, isPressed, isSelected, isDisabled } = state;
+/**
+ * The building block's item state, narrowed to the states the library publishes. A focusable
+ * disabled item is enabled for the building block, so its disabled state comes from the props.
+ */
+function toRenderState(state: MenuItemRenderState, isDisabled: boolean): MenuItemRenderState {
+  const { isHovered, isFocused, isFocusVisible, isPressed, isSelected } = state;
   const { selectionMode, hasSubmenu, isOpen } = state;
   return {
     isHovered,
@@ -108,11 +114,42 @@ function toRenderState(state: MenuItemRenderState): MenuItemRenderState {
     isFocusVisible,
     isPressed,
     isSelected,
-    isDisabled,
+    isDisabled: isDisabled || state.isDisabled,
     selectionMode,
     hasSubmenu,
     isOpen,
   };
+}
+
+/**
+ * Draws a focusable disabled item. The building block keeps it enabled so arrow keys, Home, End,
+ * type-to-select and hover still reach it (React Aria skips disabled items), so the row states
+ * `aria-disabled` itself and drops the handlers that would press, select or activate it. Enter and
+ * Space are refused without stopping them, so a search field's simulated key reports them cancelled.
+ */
+function renderFocusableDisabled(
+  domProps: ComponentPropsWithRef<'div'> | ComponentPropsWithRef<'a'>,
+) {
+  // Without `href` the building block draws a `<div>`.
+  const {
+    onPointerDown: _onPointerDown,
+    onPointerUp: _onPointerUp,
+    onMouseDown: _onMouseDown,
+    onClick: _onClick,
+    onKeyDown,
+    ...props
+  } = domProps as ComponentPropsWithRef<'div'>;
+  return (
+    <div
+      {...props}
+      aria-disabled="true"
+      data-disabled="true"
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') event.preventDefault();
+        else onKeyDown?.(event);
+      }}
+    />
+  );
 }
 
 /**
@@ -166,27 +203,33 @@ function MenuItemContent({
 
 /** One menu row: selection check, icon, label, description, shortcut and submenu arrow. */
 export function MenuItem({
+  id,
   children,
   icon,
   description,
   shortcut,
   tone = 'neutral',
   isPending = false,
-  isDisabled,
+  isDisabled = false,
+  focusableWhenDisabled = false,
   textValue,
   className,
+  href,
   ...rest
 }: MenuItemProps) {
+  const focusableDisabled = isDisabled && focusableWhenDisabled && !isPending;
   return (
     <AriaMenuItem
       {...rest}
+      {...(focusableDisabled ? { render: renderFocusableDisabled } : { href })}
+      id={toCollectionItemKey(id)}
       {...itemHooks.root({ className, props: rest, data: { tone, pending: isPending } })}
       textValue={textValue ?? (typeof children === 'string' ? children : undefined)}
-      isDisabled={isPending || isDisabled}
+      isDisabled={isPending || (isDisabled && !focusableDisabled) || undefined}
     >
       {(state) =>
         typeof children === 'function' ? (
-          children(toRenderState(state))
+          children(toRenderState(state, focusableDisabled))
         ) : (
           <MenuItemContent
             state={state}
@@ -205,6 +248,7 @@ export function MenuItem({
 
 /** A group of menu items with an optional heading and its own selection mode. */
 export function MenuSection({
+  id,
   title,
   children,
   className,
@@ -216,11 +260,12 @@ export function MenuSection({
   return (
     <AriaMenuSection
       {...rest}
+      id={toCollectionItemKey(id)}
       {...sectionHooks.root({ className, props: rest })}
       {...toCollectionSelectionProps({ selectedKeys, defaultSelectedKeys, onSelectionChange })}
     >
       {title ? <Header className={sectionHooks.slotClass('header')}>{title}</Header> : null}
-      {encodeCollectionChildren(children, [MenuItem])}
+      {keyCollectionChildren(children)}
     </AriaMenuSection>
   );
 }

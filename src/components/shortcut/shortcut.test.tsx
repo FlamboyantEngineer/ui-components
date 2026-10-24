@@ -1,11 +1,15 @@
-import { render, screen, within } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
+import { hydrateRoot } from 'react-dom/client';
+import { renderToString } from 'react-dom/server';
 import { userEvent } from '@testing-library/user-event';
 import { Button, Menu, MenuItem, MenuTrigger, Popover, Text } from '../../primitives/index.js';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { KeyHints, Shortcut } from './shortcut.js';
 import { getShortcutPlatform } from './shortcut-format.js';
+
+afterEach(() => vi.unstubAllGlobals());
 
 describe('Shortcut', () => {
   it('UIC-SHORTCUT-2.1 draws one keycap per modifier and key in the chosen notation', () => {
@@ -28,6 +32,31 @@ describe('Shortcut', () => {
     expect(root.querySelector('.ui-shortcut__keys')?.textContent).toBe('Ctrl+Shift+K');
     expect(root.querySelectorAll('.ui-shortcut__key')).toHaveLength(3);
     expectHooksMatchSpec(container, 'SHORTCUT');
+  });
+
+  it('UIC-SHORTCUT-2.1 hydrates in the server notation, then draws the detected one', async () => {
+    vi.resetModules();
+    vi.stubGlobal('navigator', { platform: 'MacIntel' });
+    const fresh = await import('./shortcut.js');
+    // eslint-disable-next-line testing-library/render-result-naming-convention -- renderToString returns an HTML string, not a render result
+    const markup = renderToString(<fresh.Shortcut chord="Ctrl+K" />);
+    expect(markup).toContain('data-platform="linux"');
+    const host = document.body.appendChild(document.createElement('div'));
+    host.innerHTML = markup;
+    const errors = vi.spyOn(console, 'error');
+    const hydrateErrors: unknown[] = [];
+    let app: ReturnType<typeof hydrateRoot> | undefined;
+    await act(async () => {
+      app = hydrateRoot(host, <fresh.Shortcut chord="Ctrl+K" />, {
+        onRecoverableError: (error) => hydrateErrors.push(error),
+      });
+    });
+    expect(hydrateErrors).toEqual([]);
+    expect(errors).not.toHaveBeenCalled();
+    expect(host.firstElementChild).toHaveAttribute('data-platform', 'mac');
+    expect(host.querySelector('.ui-shortcut__keys')).toHaveTextContent('⌘K');
+    act(() => app?.unmount());
+    host.remove();
   });
 
   it('UIC-SHORTCUT-2.1 uses the detected platform by default and renders nothing for an empty key', () => {

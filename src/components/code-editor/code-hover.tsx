@@ -10,9 +10,10 @@ import {
 import { Popover } from '../../primitives/index.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { useLayerZIndex } from '../portal/portal.js';
-import { findOffsetAt, measureRange } from './code-geometry.js';
+import { findOffsetAt, measureRange, readCopyText, type CopyText } from './code-geometry.js';
 import { codeEditorHooks as hooks, type CodeDiagnostic } from './code-layers.js';
 import type { CodeRange } from './code-ranges.js';
+import type { CodeSegment } from './code-segments.js';
 
 /** A diagnostic and the source it marks. */
 export interface MarkedDiagnostic {
@@ -25,6 +26,15 @@ export interface CodeHoverOptions {
   highlightRef: RefObject<HTMLPreElement | null>;
   marked: readonly MarkedDiagnostic[];
   renderHover: ((offset: number) => ReactNode) | undefined;
+  /** What the highlighted copy draws; its text is read again only after it changes. */
+  segments: readonly (CodeSegment | null)[];
+}
+
+/** The copy's text as last read, and the render it was read from. */
+interface ReadCopy {
+  highlight: HTMLElement;
+  segments: readonly (CodeSegment | null)[];
+  text: CopyText;
 }
 
 /** What the tooltip shows, and the on-screen rectangle it points at. */
@@ -70,9 +80,18 @@ export function useCodeHover({
   highlightRef,
   marked,
   renderHover,
+  segments,
 }: CodeHoverOptions): CodeHoverModel {
   const [tip, setTip] = useState<CodeHoverTip | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const copy = useRef<ReadCopy | null>(null);
+  // Pointer moves read the copy's text nodes from the last render instead of walking it each time.
+  const readCopy = (highlight: HTMLElement): CopyText => {
+    const last = copy.current;
+    if (last?.highlight === highlight && last.segments === segments) return last.text;
+    copy.current = { highlight, segments, text: readCopyText(highlight) };
+    return copy.current.text;
+  };
   const hold = useCallback(() => {
     if (timer.current) clearTimeout(timer.current);
     timer.current = null;
@@ -85,7 +104,7 @@ export function useCodeHover({
 
   const tipAt = (offset: number, range: CodeRange): CodeHoverTip | null => {
     const highlight = highlightRef.current;
-    const rect = highlight ? measureRange(highlight, range) : null;
+    const rect = highlight ? measureRange(readCopy(highlight), range) : null;
     const diagnostics = diagnosticsAt(marked, offset);
     const info = renderHover?.(offset);
     if (!rect || (diagnostics.length === 0 && isEmptyNode(info))) return null;
@@ -102,7 +121,7 @@ export function useCodeHover({
     onPointerMove(event) {
       const highlight = highlightRef.current;
       if (!highlight || event.buttons !== 0 || inputRef.current === null) return;
-      const offset = findOffsetAt(highlight, event.clientX, event.clientY);
+      const offset = findOffsetAt(readCopy(highlight), event.clientX, event.clientY);
       if (offset !== null && offset === tip?.offset) return hold();
       const next = offset === null ? null : tipAt(offset, { start: offset, end: offset + 1 });
       if (next) {

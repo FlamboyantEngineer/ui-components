@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { createRef } from 'react';
 import { describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -178,6 +178,18 @@ describe('Layout options', () => {
     );
     expect(container.firstElementChild).not.toHaveAttribute('data-divided');
     expect(container.querySelector('.ui-stack__divider')).toBeNull();
+  });
+
+  it('UIC-LAYOUT-2.7 draws no divider for an empty-string child', () => {
+    const label: string = '';
+    const { container } = render(
+      <Cluster divided>
+        <span>Apple</span>
+        {label && <span>{label}</span>}
+        <span>Pear</span>
+      </Cluster>,
+    );
+    expect(container.querySelectorAll('.ui-cluster__divider')).toHaveLength(1);
   });
 
   it('UIC-LAYOUT-2.7 picks a divider element valid in the parent and keeps keyed children', () => {
@@ -381,6 +393,19 @@ describe('StatusBar', () => {
     expect(bar).toHaveAttribute('data-space', 'xs');
     expect(bar).toHaveAttribute('data-justify', 'between');
     expect(bar).toHaveAttribute('data-wrap', 'nowrap');
+    expect(screen.getByRole('group', { name: 'Status' })).toBe(bar);
     expectHooksMatchSpec(container, 'LAYOUT');
+  });
+
+  it('UIC-LAYOUT-3.4 never makes a status bar the page content information', () => {
+    const { container } = render(
+      <>
+        <StatusBar>Ready</StatusBar>
+        <StatusBar role="contentinfo">Saved</StatusBar>
+      </>,
+    );
+    const [plain, landmark] = Array.from(container.children);
+    expect(plain).toHaveAttribute('role', 'none');
+    expect(screen.getByRole('contentinfo')).toBe(landmark);
   });
 });

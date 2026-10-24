@@ -418,6 +418,15 @@ describe('RangeSlider', () => {
     expect(keepThumbsApart([30, 60], [40, 60], bounds)).toEqual([30, 60]);
     expect(keepThumbsApart([5, 8], [0, 5], { ...bounds, minValue: 0 })).toEqual([5, 8]);
     expect(keepThumbsApart([3, 5], [0, 5], bounds)).toEqual([0, 5]);
-    expect(keepThumbsApart([95, 97], [95, 99], bounds)).toEqual([95, 100]);
+    expect(keepThumbsApart([95, 99], [95, 100], bounds)).toEqual([95, 100]);
+  });
+
+  it('UIC-SLIDER-4.3 moves thumbs already too close one step at a time, never closer', () => {
+    const bounds = { distance: 20, minValue: 0, maxValue: 100 };
+    expect(keepThumbsApart([45, 51], [45, 50], bounds)).toEqual([45, 51]);
+    expect(keepThumbsApart([44, 50], [45, 50], bounds)).toEqual([44, 50]);
+    expect(keepThumbsApart([45, 49], [45, 50], bounds)).toEqual([45, 50]);
+    expect(keepThumbsApart([46, 50], [45, 50], bounds)).toEqual([45, 50]);
+    expect(keepThumbsApart([81, 100], [80, 100], { ...bounds, distance: 30 })).toEqual([80, 100]);
   });
 });

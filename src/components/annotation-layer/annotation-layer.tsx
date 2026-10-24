@@ -1,6 +1,7 @@
 import { useLayoutEffect, useState, type MouseEvent, type ReactNode } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { BaseProps, Key } from '../../core/props.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { useResizeObserver } from '../../utils/use-resize-observer.js';
 import { AnnotationContext } from './annotation-context.js';
 import { annotationLayerHooks as hooks } from './annotation-hooks.js';
@@ -90,7 +91,7 @@ export function AnnotationLayer({
         {anchors.flatMap(({ annotation, rects }) =>
           rects.map((rect, index) => (
             <div
-              key={`${annotation.id}-${index}`}
+              key={`${toKeyIdentity(annotation.id)}-${index}`}
               {...hooks.slot('mark', { active: annotation.id === active })}
               style={{
                 position: 'absolute',

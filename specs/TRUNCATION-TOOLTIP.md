@@ -20,7 +20,7 @@ Verification: `src/components/truncation-tooltip/truncation-tooltip.test.tsx`, `
 
 ### UIC-TRUNCATION-TOOLTIP-1.3 - Keyboard focus
 
-When keyboard focus reaches the text or the nearest focusable element holding it, such as a link or a row, the tooltip shall open at once if the text is cut, and close when that element loses focus. Focus that follows a pointer press on that element opens nothing.
+When keyboard focus reaches the text or the nearest focusable element holding it, such as a link or a row, the tooltip shall open at once if the text is cut, and close when that element loses focus. Focus while the reader uses a pointer opens nothing: focus that follows a pointer press on that element, and focus a script moves there after a pointer press anywhere (as focus restoration does when a menu or dialog closes), as React Aria's tooltips open only on visible focus.
 
 Implementation: `src/components/truncation-tooltip/truncation-tooltip.tsx`
 Verification: `src/components/truncation-tooltip/truncation-tooltip.test.tsx`, `e2e/truncation-tooltip.spec.ts`

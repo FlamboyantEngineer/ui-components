@@ -3,9 +3,12 @@ import { Tag as AriaTag, TagGroup as AriaTagGroup, TagList } from '../../primiti
 import type { AriaLabellingProps, SelectionProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key, Size, Tone } from '../../core/props.js';
-import { toCollectionSelectionProps } from '../../utils/collection-selection.js';
-import { fromCollectionKey } from '../../utils/from-collection-key.js';
-import { encodeCollectionChildren } from '../../utils/encode-collection-children.js';
+import {
+  fromCollectionSelection,
+  toCollectionSelectionProps,
+} from '../../utils/collection-selection.js';
+import { keyCollectionChildren } from '../../utils/key-collection-children.js';
+import { toCollectionItemKey } from '../../utils/to-collection-key.js';
 import { useUiStrings } from '../../core/provider.js';
 import { IconButton } from '../icon-button/icon-button.js';
 
@@ -66,9 +69,6 @@ export function TagGroup<T extends object>({
   onRemove,
   ...rest
 }: TagGroupProps<T>) {
-  const decode = (selection: Iterable<Key>) =>
-    new Set(Array.from(selection, (key) => fromCollectionKey(key)));
-
   return (
     <AriaTagGroup
       {...rest}
@@ -79,7 +79,7 @@ export function TagGroup<T extends object>({
         disabledKeys,
         onSelectionChange,
       })}
-      onRemove={onRemove ? (selection) => onRemove(decode(selection)) : undefined}
+      onRemove={onRemove && ((keys) => onRemove(fromCollectionSelection(keys) as Set<Key>))}
     >
       <ToneContext value={tone}>
         <TagList
@@ -91,7 +91,7 @@ export function TagGroup<T extends object>({
               : undefined
           }
         >
-          {encodeCollectionChildren(children, [Tag])}
+          {keyCollectionChildren(children)}
         </TagList>
       </ToneContext>
     </AriaTagGroup>
@@ -102,12 +102,13 @@ export function TagGroup<T extends object>({
  * One tag of a `TagGroup`. In a group with `onRemove` an enabled tag ends with a remove button,
  * named by the provider's `remove` string read with the tag's name.
  */
-export function Tag({ children, tone, textValue, className, ...rest }: TagProps) {
+export function Tag({ id, children, tone, textValue, className, ...rest }: TagProps) {
   const strings = useUiStrings();
   const groupTone = useContext(ToneContext);
   return (
     <AriaTag
       {...rest}
+      id={toCollectionItemKey(id)}
       {...hooks.slot('tag', { tone: tone ?? groupTone }, className)}
       textValue={textValue ?? (typeof children === 'string' ? children : undefined)}
     >

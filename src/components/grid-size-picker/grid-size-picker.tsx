@@ -61,6 +61,13 @@ function GridCell({
       onPointerEnter={isDisabled ? undefined : () => onPreview({ rows, columns })}
       onFocus={isDisabled ? undefined : () => onPreview({ rows, columns })}
       onClick={isDisabled ? undefined : () => onSelect({ rows, columns })}
+      onKeyDown={(event) => {
+        // The focused cell, not a hovered one, is the size the reader hears and chooses.
+        if (isDisabled || (event.key !== 'Enter' && event.key !== ' ')) return;
+        event.preventDefault();
+        event.stopPropagation();
+        onSelect({ rows, columns });
+      }}
     />
   );
 }
@@ -87,12 +94,11 @@ function useGridPreview(max: GridSize, autoFocus: boolean) {
       isCorner: event.ctrlKey || event.metaKey,
       max,
     });
-    if (!next) return false;
+    if (!next) return;
     event.preventDefault();
     event.stopPropagation();
     shouldFocus.current = true;
     setPreview(next);
-    return true;
   };
   const focusRef = (node: HTMLDivElement | null) => {
     cellRef.current = node;
@@ -103,8 +109,8 @@ function useGridPreview(max: GridSize, autoFocus: boolean) {
 /**
  * Chooses a number of rows and columns, as for a new table, from a grid of cells: hovering or
  * focusing a cell previews its size, shown in a readout such as `3 × 4`, and the grid grows one row
- * and column past the preview up to its maximum. Arrow keys, Home and End move the preview; a press,
- * Enter or Space chooses it.
+ * and column past the preview up to its maximum. Arrow keys, Home and End move the preview; a press
+ * chooses the pressed cell, and Enter or Space the focused one.
  */
 export function GridSizePicker({
   onSelect,
@@ -123,11 +129,7 @@ export function GridSizePicker({
   const { preview, setPreview, move, focusRef } = useGridPreview(max, autoFocus);
   const shown = getShownGridSize(preview, { min: { rows: minRows, columns: minColumns }, max });
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (isDisabled || move(event)) return;
-    if (event.key !== 'Enter' && event.key !== ' ') return;
-    event.preventDefault();
-    event.stopPropagation();
-    onSelect(preview);
+    if (!isDisabled) move(event);
   };
   const cell = { preview, isDisabled, onPreview: setPreview, onSelect, focusRef };
   return (

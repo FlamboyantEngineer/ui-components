@@ -110,7 +110,7 @@ Verification: `src/components/slider/slider.test.tsx`, `e2e/slider.spec.ts`
 
 ### UIC-SLIDER-4.3 - Minimum distance
 
-`minStepsBetweenThumbs` (0 by default) shall keep that many steps between the thumbs: the thumb that moves stops that far from the other, within the range. `keepThumbsApart(next, previous, bounds)` gives the range after a move from the previous one, holding back the thumb that moved, and keeps a change that moves both thumbs as it is.
+`minStepsBetweenThumbs` (0 by default) shall keep that many steps between the thumbs: the thumb that moves stops that far from the other, within the range. `keepThumbsApart(next, previous, bounds)` gives the range after a move from the previous one, holding back the thumb that moved, and keeps a change that moves both thumbs as it is. Thumbs already closer than that (a value set from outside, or the range's end) never jump apart: a move that brings them closer is refused and one that moves them apart is kept as it is.
 
 Implementation: `src/components/slider/range-slider.tsx`
 Verification: `src/components/slider/slider.test.tsx`, `e2e/slider.spec.ts`

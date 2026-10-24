@@ -100,6 +100,11 @@ function plainGlyph(key: string): string {
   return key.replace(anyToneModifier, '').replace(variationSelector, '');
 }
 
+/** The emoji a recent key names: a custom `:shortcode:` as is, a glyph without tone or variation. */
+function normalizeRecentKey(key: string): string {
+  return key.startsWith(':') ? key : plainGlyph(key);
+}
+
 function bestScore(values: readonly string[], query: string, weights: readonly number[]): number {
   const [exact = 0, prefix = 0, contains = 0] = weights;
   let best = 0;
@@ -180,7 +185,10 @@ export function getEmojiKey(entry: EmojiEntry): string {
   return entry.kind === 'native' ? entry.emoji.unicode : `:${entry.emoji.shortcode}:`;
 }
 
-/** The entries for stored keys, skipping keys that match no emoji. Tone modifiers are ignored. */
+/**
+ * The entries for stored keys, skipping keys that match no emoji and keys naming an emoji already
+ * listed. Tone modifiers are ignored.
+ */
 export function resolveEmojiKeys(
   keys: readonly string[],
   emoji: readonly NativeEmoji[],
@@ -189,15 +197,29 @@ export function resolveEmojiKeys(
   const byKey = new Map<string, EmojiEntry>();
   for (const item of emoji) byKey.set(plainGlyph(item.unicode), { kind: 'native', emoji: item });
   for (const item of custom) byKey.set(`:${item.shortcode}:`, { kind: 'custom', emoji: item });
+  const listed = new Set<EmojiEntry>();
   return keys.flatMap((key) => {
-    const entry = byKey.get(key.startsWith(':') ? key : plainGlyph(key));
-    return entry ? [entry] : [];
+    const entry = byKey.get(normalizeRecentKey(key));
+    if (!entry || listed.has(entry)) return [];
+    listed.add(entry);
+    return [entry];
   });
 }
 
-/** `recent` with `key` moved to the front, without duplicates and at most `limit` long. */
+/**
+ * `recent` with `key` moved to the front and at most `limit` long, keeping one key per emoji: other
+ * tones of the same emoji and repeated keys are dropped.
+ */
 export function addRecentEmoji(recent: readonly string[], key: string, limit: number): string[] {
-  return [key, ...recent.filter((item) => item !== key)].slice(0, limit);
+  const seen = new Set<string>();
+  return [key, ...recent]
+    .filter((item) => {
+      const normalized = normalizeRecentKey(item);
+      if (seen.has(normalized)) return false;
+      seen.add(normalized);
+      return true;
+    })
+    .slice(0, limit);
 }
 
 /**

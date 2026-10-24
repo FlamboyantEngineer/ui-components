@@ -41,7 +41,7 @@ Verification: `src/components/badge/badge.test.tsx`
 
 ### UIC-BADGE-1.6 - Hooks and caller attributes
 
-`Badge` shall carry the hooks below, append the caller's `className`, forward caller `data-*` attributes, `id`, `hidden`, `aria-hidden` and `aria-label`, and keep its own hook values over caller attributes of the same name.
+`Badge` shall carry the hooks below, append the caller's `className`, forward caller `data-*` attributes, `id`, `hidden` and `aria-hidden`, read `aria-label` as [UIC-BADGE-1.8](#uic-badge-18---accessible-label), [UIC-BADGE-3.2](#uic-badge-32---accessible-count) and [UIC-BADGE-4.1](#uic-badge-41---dot-marker) say, and keep its own hook values over caller attributes of the same name.
 
 Implementation: `src/components/badge/badge.tsx`
 Verification: `src/components/badge/badge.test.tsx`
@@ -52,6 +52,13 @@ Verification: `src/components/badge/badge.test.tsx`
 
 Implementation: `src/components/badge/badge.tsx`, `labs/reference/badge.css`
 Verification: `src/components/badge/badge.test.tsx`, `e2e/badge.spec.ts`
+
+### UIC-BADGE-1.8 - Accessible label
+
+A label badge's `aria-label` shall be read in place of its visible label. An announced status badge (`role="status"`) carries it as its name; any other label badge has no role, so the visible label is hidden from assistive technology and the text renders in the visually hidden `ui-badge__accessible-label` slot, and no generic element carries a name. An `aria-hidden` badge renders no hidden text.
+
+Implementation: `src/components/badge/badge.tsx`
+Verification: `src/components/badge/badge.test.tsx`
 
 ## UIC-BADGE-2 - Status
 
@@ -103,17 +110,17 @@ Verification: `src/components/badge/badge.test.tsx`, `e2e/badge.spec.ts`
 
 ## Hooks
 
-| Hook                         | Kind      | Values                                            | Description                                         |
-| ---------------------------- | --------- | ------------------------------------------------- | --------------------------------------------------- |
-| `ui-badge`                   | root      |                                                   | The `<span>`.                                       |
-| `ui-badge__dot`              | slot      |                                                   | The tone dot of a status badge.                     |
-| `ui-badge__start-icon`       | slot      |                                                   | The icon before a label (also `ui-icon`).           |
-| `ui-badge__label`            | slot      |                                                   | The visible label or formatted count.               |
-| `ui-badge__end-icon`         | slot      |                                                   | The icon after a label (also `ui-icon`).            |
-| `ui-badge__accessible-label` | slot      |                                                   | Visually hidden count or dot text, when it differs. |
-| `data-variant`               | attribute | `subtle`, `solid`, `status`, `count`, `dot`       | Shape; `count` for count badges, `dot` for markers. |
-| `data-tone`                  | attribute | `neutral`, `info`, `success`, `warning`, `danger` | Tone.                                               |
-| `data-size`                  | attribute | `sm`, `md`, `lg`                                  | Scale.                                              |
-| `data-placement`             | attribute | `inline`, `overlay`                               | Count and dot badges: inline or pinned to a corner. |
-| `data-bare`                  | state     | `true`                                            | No pill.                                            |
-| `data-muted-dot`             | state     | `true`                                            | A status badge's softened dot.                      |
+| Hook                         | Kind      | Values                                            | Description                                                                 |
+| ---------------------------- | --------- | ------------------------------------------------- | --------------------------------------------------------------------------- |
+| `ui-badge`                   | root      |                                                   | The `<span>`.                                                               |
+| `ui-badge__dot`              | slot      |                                                   | The tone dot of a status badge.                                             |
+| `ui-badge__start-icon`       | slot      |                                                   | The icon before a label (also `ui-icon`).                                   |
+| `ui-badge__label`            | slot      |                                                   | The visible label or formatted count.                                       |
+| `ui-badge__end-icon`         | slot      |                                                   | The icon after a label (also `ui-icon`).                                    |
+| `ui-badge__accessible-label` | slot      |                                                   | Visually hidden `aria-label` or count text that assistive technology reads. |
+| `data-variant`               | attribute | `subtle`, `solid`, `status`, `count`, `dot`       | Shape; `count` for count badges, `dot` for markers.                         |
+| `data-tone`                  | attribute | `neutral`, `info`, `success`, `warning`, `danger` | Tone.                                                                       |
+| `data-size`                  | attribute | `sm`, `md`, `lg`                                  | Scale.                                                                      |
+| `data-placement`             | attribute | `inline`, `overlay`                               | Count and dot badges: inline or pinned to a corner.                         |
+| `data-bare`                  | state     | `true`                                            | No pill.                                                                    |
+| `data-muted-dot`             | state     | `true`                                            | A status badge's softened dot.                                              |

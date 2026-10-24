@@ -1,4 +1,4 @@
-import { useId, type ReactNode } from 'react';
+import { useId, useRef, type ReactNode } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { BaseProps } from '../../core/props.js';
@@ -20,6 +20,7 @@ import {
   type NotificationRowActions,
 } from './notification-row.js';
 import { useArrivalAnnouncement } from './use-arrival-announcement.js';
+import { useRemovalFocus } from './use-removal-focus.js';
 
 export type { NotificationItem } from './notification-row.js';
 
@@ -181,10 +182,14 @@ export function NotificationList({
     locale,
     unknownLabel: strings.earlier,
   });
+  const rootRef = useRef<HTMLDivElement>(null);
+  const focusHandlers = useRemovalFocus(rootRef);
   const rowActions = { onAction, onReadChange, onDismiss, renderActions, getNow };
   return (
     <div
       {...rest}
+      {...focusHandlers}
+      ref={rootRef}
       {...hooks.root({ className, props: rest, data: { filter } })}
       aria-busy={isLoading || undefined}
     >

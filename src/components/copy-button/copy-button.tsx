@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { VisuallyHidden } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
@@ -39,6 +40,8 @@ export function CopyButton({
 }: CopyButtonProps) {
   const strings = useUiStrings();
   const { copy, status } = useClipboard({ timeout });
+  // Counts settled copies: a repeated outcome still changes the live region, so it is announced.
+  const [settled, setSettled] = useState(0);
   const announcements: Record<CopyStatus, string> = {
     idle: '',
     copied: strings.copied,
@@ -47,10 +50,11 @@ export function CopyButton({
 
   return (
     <span
-      {...hooks.root({ className, props: rest })}
-      // Absent states stay absent: a caller attribute of the same name never shows through.
-      data-copied={status === 'copied' ? 'true' : undefined}
-      data-failed={status === 'failed' ? 'true' : undefined}
+      {...hooks.root({
+        className,
+        props: rest,
+        data: { copied: status === 'copied', failed: status === 'failed' },
+      })}
       id={id}
     >
       <IconButton
@@ -62,11 +66,13 @@ export function CopyButton({
         isDisabled={isDisabled}
         onPress={async () => {
           const copied = await copy(value);
+          setSettled((count) => count + 1);
           onCopy?.(copied);
         }}
       />
       <VisuallyHidden elementType="span" className={hooks.slotClass('status')} role="status">
         {announcements[status]}
+        {status !== 'idle' && settled % 2 === 0 ? '\u200b' : null}
       </VisuallyHidden>
     </span>
   );

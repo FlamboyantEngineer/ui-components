@@ -72,7 +72,10 @@ export function resolveNodeRect(node: DiagramNode): DiagramRect {
   };
 }
 
-/** The smallest box around `rects`, grown by `padding` on every side, or null without boxes. */
+/**
+ * The smallest box around `rects`, grown by `padding` on every side, or null without boxes. One
+ * pass, without spreading the rects into a call, so any number of them works.
+ */
 export function findDiagramBounds(rects: readonly DiagramRect[], padding = 0): DiagramRect | null {
   if (rects.length === 0) return null;
   let left = Infinity;
@@ -184,7 +187,8 @@ export function findConnectedNode(options: {
 
 /**
  * Sideways offsets that keep edges between the same two nodes apart: spread evenly around the line
- * between the nodes, in each edge's own direction of travel. A lone edge gets `0`.
+ * between the nodes, in each edge's own direction of travel. A lone edge gets `0`. Each edge is
+ * appended to its group once, without copying the group, so large groups stay linear.
  */
 export function spreadParallelEdges(edges: readonly DiagramEdge[]): Map<Key, number> {
   const groups = new Map<string, DiagramEdge[]>();

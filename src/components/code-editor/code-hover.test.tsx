@@ -137,6 +137,34 @@ describe('CodeEditor problems and hover tips', () => {
     expect(tooltip()).toBeNull();
   });
 
+  it('UIC-CODE-EDITOR-3.6 reads the copy once while the pointer moves over an unchanged source', async () => {
+    const user = userEvent.setup();
+    const source = Array.from({ length: 40 }, (_, line) => `let row${line} = ${line}`).join('\n');
+    const tokenize = (text: string) =>
+      text.split(/(\s+)/).map((part) => ({ text: part, type: /\w/.test(part) ? 'name' : null }));
+    const { container } = render(<Editor initialValue={source} tokenize={tokenize} />);
+    const highlight = container.querySelector('.ui-code-editor__highlight') as HTMLElement;
+    // Lay the copy out from offsets read before the pointer moves, so only the editor walks it.
+    const starts = new Map<Node, number>();
+    const walker = document.createTreeWalker(highlight, NodeFilter.SHOW_TEXT);
+    for (let node = walker.nextNode(), at = 0; node; node = walker.nextNode()) {
+      starts.set(node, at);
+      at += (node as Text).data.length;
+    }
+    const text = highlight.textContent ?? '';
+    Range.prototype.getBoundingClientRect = function (this: Range) {
+      const before = text.slice(0, (starts.get(this.startContainer) ?? 0) + this.startOffset);
+      const lines = before.split('\n');
+      const left = (lines.at(-1)?.length ?? 0) * CHARACTER.width;
+      return new DOMRect(left, (lines.length - 1) * CHARACTER.height, CHARACTER.width, 20);
+    };
+    const walks = vi.spyOn(document, 'createTreeWalker');
+    for (let step = 0; step < 8; step += 1) {
+      await user.pointer({ target: input(), coords: { clientX: 5 + step * 10, clientY: 205 } });
+    }
+    expect(walks.mock.calls.filter(([root]) => root === highlight)).toHaveLength(1);
+  });
+
   it('UIC-CODE-EDITOR-3.6 closes the tip on an edit', async () => {
     const user = userEvent.setup();
     render(<Editor diagnostics={problems} />);

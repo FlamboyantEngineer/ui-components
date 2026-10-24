@@ -1,4 +1,4 @@
-import { useMemo, useState, type KeyboardEvent } from 'react';
+import { useMemo, type KeyboardEvent } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps, ExpansionProps } from '../../core/events.js';
 import type { BaseProps, Key } from '../../core/props.js';
@@ -8,6 +8,7 @@ import {
   type CompareTreeNode,
   type ComparedTreeRow,
 } from '../../utils/compare-trees.js';
+import { useStateFor } from '../../utils/use-state-for.js';
 import { Tree } from '../tree/tree.js';
 import {
   TreeCompareHeader,
@@ -53,26 +54,33 @@ type Row<T extends CompareTreeNode> = ComparedTreeRow<T>;
 
 const readChildren = <T extends CompareTreeNode>(row: Row<T>) => row.children;
 
-/** The expanded rows, by default every row with a difference below it. */
+/**
+ * The expanded rows, by default every row with a difference below it. Uncontrolled expansion
+ * belongs to the compared trees: it starts over when `left` or `right` changes.
+ */
 function useCompareExpansion<T extends CompareTreeNode>(
-  rows: ReadonlyArray<Row<T>>,
+  { rows, trees }: { rows: ReadonlyArray<Row<T>>; trees: object },
   props: ExpansionProps,
 ) {
   const { expandedKeys, defaultExpandedKeys, onExpandedChange } = props;
-  const [initial] = useState(() =>
-    defaultExpandedKeys ? new Set(defaultExpandedKeys) : collectKeysAboveChanges(rows),
+  const initial = useMemo(
+    () => (defaultExpandedKeys ? new Set(defaultExpandedKeys) : collectKeysAboveChanges(rows)),
+    [defaultExpandedKeys, rows],
   );
-  return useControllableState<Set<Key>>(
-    expandedKeys ? new Set(expandedKeys) : undefined,
-    initial,
-    onExpandedChange,
-  );
+  const [own, setOwn] = useStateFor(trees, initial);
+  const isControlled = expandedKeys !== undefined;
+  const setExpanded = (next: Set<Key>) => {
+    if (!isControlled) setOwn(next);
+    onExpandedChange?.(next);
+  };
+  return [isControlled ? new Set(expandedKeys) : own, setExpanded] as const;
 }
 
 /** Everything the comparison draws: the aligned rows shown, the filter, expansion and navigation. */
 function useTreeCompareModel<T extends CompareTreeNode>(props: TreeCompareProps<T>) {
   const { left, right, isEqual, changesOnly, defaultChangesOnly = false } = props;
   const comparison = useMemo(() => compareTrees(left, right, { isEqual }), [left, right, isEqual]);
+  const trees = useMemo(() => ({ left, right }), [left, right]);
   const [isFiltered, setFiltered] = useControllableState(
     changesOnly,
     defaultChangesOnly,
@@ -83,7 +91,7 @@ function useTreeCompareModel<T extends CompareTreeNode>(props: TreeCompareProps<
     [comparison, isFiltered],
   );
   const index = useMemo(() => indexRows(rows), [rows]);
-  const [expanded, setExpanded] = useCompareExpansion(comparison.rows, props);
+  const [expanded, setExpanded] = useCompareExpansion({ rows: comparison.rows, trees }, props);
   const navigation = useTreeCompareNavigation({
     index,
     expandedKeys: expanded,

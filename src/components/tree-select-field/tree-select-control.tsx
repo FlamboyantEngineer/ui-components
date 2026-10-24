@@ -194,7 +194,9 @@ export function TreeSelectControl<T extends TreeItemData>(props: TreeSelectContr
         clearLabel={props.isClearable && state.canClear ? strings.clearValue(label) : null}
         onClear={state.clear}
         isOpen={open && isEditable}
-        onOpenChange={(next) => setOpen(next && isEditable)}
+        onOpenChange={(next) => {
+          if (isEditable) setOpen(next);
+        }}
         popover={
           <TreeSelectPopover
             label={label}

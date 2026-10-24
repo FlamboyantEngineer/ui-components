@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -491,6 +491,22 @@ describe('Timeline', () => {
     );
     await user.click(item('Handover'));
     expect(onSelectionChange).toHaveBeenLastCalledWith(new Set(['quote', 'done']));
+  });
+
+  it('UIC-TIMELINE-2.1 UIC-TIMELINE-2.4 selects from the keyboard after a cancelled drag', async () => {
+    const user = userEvent.setup();
+    const onSelectionChange = vi.fn();
+    renderTimeline({ selectionMode: 'single', onSelectionChange, onItemChange: vi.fn() });
+    const bar = item('Measure rooms');
+    await user.pointer([
+      { keys: '[MouseLeft>]', target: bar, coords: { clientX: 100 } },
+      { coords: { clientX: 110 } },
+    ]);
+    // A cancelled gesture ends without a click; user-event's mouse pointer has id 1.
+    fireEvent.pointerCancel(bar, { pointerId: 1, clientX: 110 });
+    act(() => bar.focus());
+    await user.keyboard('{Enter}');
+    expect(onSelectionChange).toHaveBeenCalledExactlyOnceWith(new Set(['measure']));
   });
 
   it('UIC-TIMELINE-2.4 follows controlled keys and leaves items unpressable without a mode', async () => {

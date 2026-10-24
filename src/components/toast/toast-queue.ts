@@ -91,6 +91,8 @@ export interface ToastStore {
   add: (content: ToastContent, options: { timeout: number; onClose: () => void }) => string;
   close: (key: string) => void;
   clear: () => void;
+  pauseAll: () => void;
+  resumeAll: () => void;
 }
 
 /** What a queued toast shows now, how long it lives and whether it is still open. */
@@ -122,9 +124,11 @@ const defaultToastTimeout = 5000;
 /** Lifecycles by the content object the React Aria queue holds for each toast. */
 const lifecycles = new WeakMap<object, ToastLifecycle>();
 
-/** The lifecycle of a toast added through `createToastQueue`, if it was. */
-export function getToastLifecycle(content: ToastContent): ToastLifecycle | undefined {
-  return lifecycles.get(content);
+/** The lifecycle of a toast, which every toast gets as `createToastQueue` adds it. */
+export function getToastLifecycle(content: ToastContent): ToastLifecycle {
+  const lifecycle = lifecycles.get(content);
+  if (!lifecycle) throw new Error('A toast must come from createToastQueue.');
+  return lifecycle;
 }
 
 function resolveContent<T>(content: ToastContent | ((value: T) => ToastContent), value: T) {
@@ -221,6 +225,12 @@ export function createQueueOverStore(
     }
     removeNow(key);
   };
+  // Each toast holds its own timer while its region is hovered or holds focus (useToastTimer). The
+  // building block's region pauses and resumes every timer only as its hover and focus change, which
+  // misses a timer started meanwhile, and resuming a running timer starts a second timeout, so its
+  // calls do nothing.
+  ariaQueue.pauseAll = () => {};
+  ariaQueue.resumeAll = () => {};
 
   function add(content: ToastContent, { id, onClose, timeout }: ToastAddOptions = {}) {
     const lifetime = timeout ?? (content.isPending ? 0 : defaultTimeout);

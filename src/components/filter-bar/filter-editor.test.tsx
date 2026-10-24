@@ -175,6 +175,13 @@ describe('FilterConditionFields', () => {
     });
   });
 
+  it('UIC-FILTER-BAR-2.2 names the chosen people of a person value before any search', () => {
+    render(<Editor initial={{ field: 'readers', operator: 'any-of', value: ['maria'] }} />);
+    const chips = slot('value')!.querySelector('.ui-combobox__chips');
+    expect(chips).toHaveTextContent('Maria Santos');
+    expect(chips).not.toHaveTextContent('maria');
+  });
+
   it('UIC-FILTER-BAR-2.2 picks true or false, with no operator select for one operator', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();

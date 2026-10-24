@@ -22,7 +22,7 @@ Verification: `src/testing/index.test.tsx`
 
 ### UIC-TESTING-2.1 - Select an option
 
-`selectOption(user, field, option)` shall press the button that opens a list box (`aria-haspopup="listbox"`) in `field`, which is a `SelectField` or `Combobox` root or that button itself, wait for the list box it opened (the one its control names in `aria-controls`, else the last in the document) and press the option named `option`. A multiple selection stays open.
+`selectOption(user, field, option)` shall press the button that opens a list box (`aria-haspopup="listbox"`) in `field`, which is a `SelectField` or `Combobox` root or that button itself, unless its control is already expanded (`aria-expanded="true"`), wait for the list box it opened (the one its control names in `aria-controls`, else the last in the document) and press the option named `option`. A multiple selection stays open, so consecutive calls pick several options without closing the list.
 
 Implementation: `src/testing/pickers.ts`, `src/testing/popups.ts`
 Verification: `src/testing/pickers.test.tsx`

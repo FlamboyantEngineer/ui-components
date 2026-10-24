@@ -50,9 +50,9 @@ Verification: `src/components/merge-view/merge-blocks.test.ts`, `src/components/
 
 ### UIC-MERGE-VIEW-2.4 - Editable result
 
-Editing a conflict's editor shall resolve the conflict as `edited`, its text becoming the conflict's result, whatever it holds. A take action afterwards replaces the edited text.
+Editing a conflict's editor shall resolve the conflict as `edited`, its text becoming the conflict's result, whatever it holds. A take action afterwards replaces the edited text. Typing in the editor redraws neither the input sides nor the result's clean chunks, so it stays quick in a long text.
 
-Implementation: `src/components/merge-view/merge-view.tsx`, `src/components/merge-view/merge-view-result.tsx`
+Implementation: `src/components/merge-view/merge-view.tsx`, `src/components/merge-view/merge-view-result.tsx`, `src/components/merge-view/merge-view-sides.tsx`
 Verification: `src/components/merge-view/merge-view.test.tsx`, `e2e/merge-view.spec.ts`
 
 ### UIC-MERGE-VIEW-2.5 - Result and resolution state

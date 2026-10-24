@@ -7,8 +7,8 @@ import { computeErrorCorrection } from './qr-reed-solomon.js';
 export type QrErrorCorrection = 'low' | 'medium' | 'quartile' | 'high';
 
 /** The smallest and largest QR versions. */
-export const QR_MIN_VERSION = 1;
-export const QR_MAX_VERSION = 40;
+const qrMinVersion = 1;
+const qrMaxVersion = 40;
 
 /** Error correction codewords per block, by level, indexed by version (index 0 unused). */
 const eccPerBlock: Record<QrErrorCorrection, readonly number[]> = {
@@ -77,7 +77,7 @@ function countBits(version: number): number {
 
 /** The smallest version whose data codewords hold `length` bytes at `level`, if any does. */
 export function selectQrVersion(length: number, level: QrErrorCorrection): number | undefined {
-  for (let version = QR_MIN_VERSION; version <= QR_MAX_VERSION; version += 1) {
+  for (let version = qrMinVersion; version <= qrMaxVersion; version += 1) {
     const needed = 4 + countBits(version) + 8 * length;
     if (needed <= countDataCodewords(version, level) * 8) return version;
   }

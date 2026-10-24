@@ -152,7 +152,8 @@ function createValueColumn(column: ValueColumnOptions, value: ValueSpec, footer:
     allowsSorting: true,
     getValue: read,
     renderCell: (row: PivotTableRow) => (
-      <Value value={value.format(read(row))} isTotal={footer.isTotal} />
+      // Without row fields the one row holds the column totals.
+      <Value value={value.format(read(row))} isTotal={footer.isTotal || row.group === null} />
     ),
     renderFooter: footer.hasFooter
       ? () => <Value value={value.format(column.total)} isTotal />

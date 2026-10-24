@@ -53,6 +53,8 @@ test.describe('Wizard lab', () => {
     await expect(name).toBeFocused();
     await expect(name).toHaveAttribute('aria-invalid', 'true');
     await name.fill('Apollo');
+    // Hold the pretend server's 600 ms check until the pending state has been seen.
+    await page.clock.pauseAt(Date.now() + 1000);
     await next.click();
     await expect(next).toHaveAttribute('data-pending', 'true');
     await expect(demo.locator('.ui-wizard')).toHaveAttribute('data-pending', 'true');

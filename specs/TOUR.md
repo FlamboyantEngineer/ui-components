@@ -52,7 +52,7 @@ Verification: `src/components/tour/tour.test.tsx`, `e2e/tour.spec.ts`
 
 ### UIC-TOUR-2.4 - A fresh start
 
-An uncontrolled step shall return to `defaultStep` when the tour closes, so a tour opened again starts from the beginning.
+An uncontrolled step shall return to `defaultStep` whenever the tour closes, by Finish, Skip or Escape or by the host setting a controlled `isOpen` to `false`, so a tour opened again starts from the beginning.
 
 Implementation: `src/components/tour/tour.tsx`
 Verification: `src/components/tour/tour.test.tsx`

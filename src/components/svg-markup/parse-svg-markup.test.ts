@@ -105,6 +105,33 @@ describe('parseSvgMarkup', () => {
     expect(image?.attributes).toEqual({ href: 'tile.png' });
   });
 
+  it('UIC-SVG-MARKUP-1.2 drops animations that could set a link to a script URL', () => {
+    const tree = parseSvgMarkup(
+      [
+        '<svg viewBox="0 0 10 10">',
+        '<a><set attributeName="href" to="javascript:steal()"/><rect width="10"/></a>',
+        '<a><animate attributeName="xlink:href" values="#a;#b" dur="1s"/></a>',
+        '<a><animate attribute-name="href" values="#ring; javascript:steal()"/></a>',
+        '<a><animate attributeName="title" from=" JavaScript:steal()" to="#b"/></a>',
+        '<a><animateMotion by="vbscript:steal()"><set attributeName="href"/></animateMotion></a>',
+        '<a><set attributeName="x:href" to="#ring"><set to="#a"/></set><circle r="1"/></a>',
+        '<path xlink-href="javascript:steal()" XLINK:HREF="javascript:steal()" d="M0 0"/>',
+        '<rect><set attributeName="fill" to="red"/><animate attributeName="x" values="0;5"/></rect>',
+        '</svg>',
+      ].join(''),
+    );
+    const [first, second, third, fourth, fifth, sixth, path, rect] = tree.children.map(element);
+    expect(tree.children).toHaveLength(8);
+    expect(first?.children.map((child) => element(child).tag)).toEqual(['rect']);
+    for (const link of [second, third, fourth, fifth]) expect(link?.children).toEqual([]);
+    expect(sixth?.children.map((child) => element(child).tag)).toEqual(['circle']);
+    expect(path?.attributes).toEqual({ d: 'M0 0' });
+    expect(rect?.children.map((child) => element(child).attributes)).toEqual([
+      { attributeName: 'fill', to: 'red' },
+      { attributeName: 'x', values: '0;5' },
+    ]);
+  });
+
   it('UIC-SVG-MARKUP-1.3 caches trees by markup, keeping the most recently used', () => {
     const first = parseSvgMarkup(plusMarkup);
     expect(parseSvgMarkup(plusMarkup)).toBe(first);

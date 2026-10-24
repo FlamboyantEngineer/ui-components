@@ -371,6 +371,39 @@ describe('ToolbarScroller', () => {
     expect(wheel(strip, { deltaY: 50 }).defaultPrevented).toBe(false);
   });
 
+  it('UIC-TOOLBAR-SCROLLER-2.1 UIC-TOOLBAR-SCROLLER-2.4 follows a strip that mounts after a switch from the overflow menu', async () => {
+    const items = [
+      { id: 'bold', label: 'Bold' },
+      { id: 'italic', label: 'Italic' },
+    ];
+    const renderItem = (item: { label: string }) => <button type="button">{item.label}</button>;
+    const { container, rerender } = render(
+      <ToolbarScroller aria-label="Format" overflow="menu" items={items} renderItem={renderItem} />,
+    );
+    expect(container.querySelector('.ui-toolbar-scroller')).toHaveAttribute(
+      'data-overflow',
+      'menu',
+    );
+    rerender(
+      <ToolbarScroller
+        aria-label="Format"
+        overflow="scroll"
+        items={items}
+        renderItem={renderItem}
+      />,
+    );
+    const { root, strip } = parts(container);
+    stubStrip(strip, 400, 100);
+    const down = wheel(screen.getByRole('button', { name: 'Bold' }), { deltaY: 120 });
+    expect(strip.scrollLeft).toBe(120);
+    expect(down.defaultPrevented).toBe(true);
+    // The mutation observer of the late strip remeasures when a child is added.
+    act(() => strip.append(document.createElement('span')));
+    await nextFrame();
+    expect(root).toHaveAttribute('data-overflow-start', 'true');
+    expect(root).toHaveAttribute('data-overflow-end', 'true');
+  });
+
   it('UIC-TOOLBAR-SCROLLER-2.4 leaves the wheel to a popup open inside the strip', () => {
     const { container } = render(
       <ToolbarScroller aria-label="Format">

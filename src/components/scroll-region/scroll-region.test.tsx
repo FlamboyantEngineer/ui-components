@@ -404,6 +404,37 @@ describe('ScrollRegion', () => {
     expect(scrollBy).toHaveBeenCalledWith({ left: 0, top: 48 });
   });
 
+  it('UIC-SCROLL-REGION-2.4 keeps the page still while the wheel over a thumb can scroll the viewport', () => {
+    viewports.set('region', {
+      clientHeight: 100,
+      scrollHeight: 300,
+      clientWidth: 120,
+      scrollWidth: 120,
+    });
+    render(
+      <ScrollRegion id="region" scrollbar="overlay">
+        Content
+      </ScrollRegion>,
+    );
+    flushFrames();
+    flushFrames();
+    const viewport = document.getElementById('region')!;
+    trackScrollTop(viewport);
+    viewport.scrollBy = vi.fn(({ top = 0 }: ScrollToOptions) => {
+      viewport.scrollTop += top;
+    }) as typeof viewport.scrollBy;
+    const vertical = thumb('region')!;
+    // A cancelled wheel event does not scroll the page.
+    expect(fireEvent.wheel(vertical, { deltaY: 40 })).toBe(false);
+    expect(viewport.scrollTop).toBe(40);
+    expect(fireEvent.wheel(vertical, { deltaY: 400 })).toBe(false);
+    expect(viewport.scrollTop).toBe(200);
+    // At the viewport's end the wheel goes on to the page, as on a native scrollbar.
+    expect(fireEvent.wheel(vertical, { deltaY: 40 })).toBe(true);
+    expect(fireEvent.wheel(vertical, { deltaY: -40 })).toBe(false);
+    expect(viewport.scrollTop).toBe(160);
+  });
+
   it('UIC-SCROLL-REGION-2.5 gives no header ref outside an inset overlay region', () => {
     const refs: unknown[] = [];
     function Probe() {
@@ -671,6 +702,36 @@ describe('ScrollRegion', () => {
       act(() => vi.advanceTimersByTime(1000));
       expect(track()).not.toBeNull();
       act(() => thumb('menu')!.blur());
+      expect(track()).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('UIC-SCROLL-REGION-2.7 UIC-SCROLL-REGION-2.8 lets tracks hide after a focused thumb left with its axis', () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    try {
+      const geometry = { clientHeight: 100, scrollHeight: 300, clientWidth: 120, scrollWidth: 120 };
+      viewports.set('log', geometry);
+      const { container } = render(
+        <ScrollRegion id="log" scrollbar="overlay" scrollbarVisibility="scroll">
+          Lines
+        </ScrollRegion>,
+      );
+      flushFrames();
+      const viewport = document.getElementById('log')!;
+      const track = () => container.querySelector('.ui-scroll-region__track');
+      fireEvent.scroll(viewport);
+      act(() => thumb('log')!.focus());
+      act(() => vi.advanceTimersByTime(1000));
+      expect(track()).not.toBeNull();
+      geometry.scrollHeight = 80;
+      resizeAll();
+      expect(thumb('log')).toBeNull();
+      expect(viewport).toHaveFocus();
+      geometry.scrollHeight = 300;
+      resizeAll();
+      act(() => vi.advanceTimersByTime(1000));
       expect(track()).toBeNull();
     } finally {
       vi.useRealTimers();

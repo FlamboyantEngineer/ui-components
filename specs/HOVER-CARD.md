@@ -13,7 +13,7 @@ Verification: `src/components/hover-card/hover-card.test.tsx`, `e2e/hover-card.s
 
 ### UIC-HOVER-CARD-1.2 - Opening
 
-The card shall open `delay` milliseconds (600 by default) after a mouse or pen rests on the trigger or keyboard focus reaches it, without moving focus. The pointer leaving the trigger first cancels the opening. Right after a card closes, a neighbouring trigger opens its card without the delay, and only one card is open at a time.
+The card shall open `delay` milliseconds (600 by default) after a mouse or pen rests on the trigger or keyboard focus reaches it, without moving focus. The pointer leaving the trigger first cancels the opening. Right after a card closes, a neighbouring trigger opens its card without the delay, and only one card is open at a time. On a touch device, which has no hover, a long press on the trigger opens the card at once and moves focus into it; while the reader uses touch, the trigger is described by React Aria's long-press hint.
 
 Implementation: `src/components/hover-card/hover-card.tsx`
 Verification: `src/components/hover-card/hover-card.test.tsx`, `e2e/hover-card.spec.ts`

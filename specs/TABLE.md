@@ -167,7 +167,7 @@ Verification: `src/components/table/column-sizing.test.ts`
 
 ### UIC-TABLE-5.1 - Drag and drop
 
-With `reorder`, the first cell of each row shall start with a [Drag Handle](DRAG-HANDLE.md) (`ui-table__drag-handle`, named `Drag <row>` by React Aria). Dragging a row by pointer from anywhere on it, the handle's cell included ([UIC-DRAG-HANDLE-2.2](DRAG-HANDLE.md#uic-drag-handle-22---dragging-from-the-handles-cell)), or from the keyboard with Enter on its handle, the arrow keys and Enter, shall report one `reorder.onMove({ keys, targetKey, position })` with `position` `before` or `after`, while a `ui-table__drop-indicator` row marks the drop position. Drop positions that would leave the order unchanged are refused. The table never reorders its rows itself. Reordering moves the top-level rows of the current page; nested, detail and summary rows never move and nothing lands beside them.
+With `reorder`, the first cell of each row shall start with a [Drag Handle](DRAG-HANDLE.md) (`ui-table__drag-handle`, named `Drag <row>` by React Aria). Dragging a row by pointer from anywhere on it, the handle's cell included ([UIC-DRAG-HANDLE-2.2](DRAG-HANDLE.md#uic-drag-handle-22---dragging-from-the-handles-cell)), or from the keyboard with Enter on its handle, the arrow keys and Enter, shall report one `reorder.onMove({ keys, targetKey, position })` with `position` `before` or `after`, while a `ui-table__drop-indicator` row marks the drop position. Drop positions that would leave the order unchanged are refused. A dragged row carries its `id` as text (`text/plain`) to other drop targets. The table never reorders its rows itself. Reordering moves the top-level rows of the current page; nested, detail and summary rows never move and nothing lands beside them.
 
 Implementation: `src/components/table/use-table-reorder.tsx`, `src/utils/use-reorder-drag-and-drop.ts`, `src/components/table/table-row.tsx`
 Verification: `src/components/table/use-table-reorder.test.tsx`, `e2e/table.spec.ts`
@@ -594,8 +594,7 @@ Verification: `src/components/table/table-bulk-edit.test.tsx`, `e2e/table.spec.t
 | `data-sort-direction`            | attribute | `ascending`, `descending`      | The sorted column's direction (React Aria).                               |
 | `data-resizable-direction`       | attribute | `left`, `right`, `both`        | Which ways a column can still be resized (React Aria).                    |
 | `data-selection-mode`            | attribute | `single`, `multiple`           | The table's selection mode, on rows (React Aria).                         |
-| `data-key`                       | attribute |                                | A column, row or cell key (React Aria).                                   |
-| `data-key-identity`              | attribute |                                | On data rows: JSON `[type, text]` retaining the row key's primitive type. |
+| `data-key`                       | attribute |                                | Opaque collection key (React Aria): not the `id`, not for styling.        |
 | `data-collection`                | attribute |                                | React Aria's collection identifier; not for styling.                      |
 | `data-column-index`              | attribute |                                | A cell's column index (React Aria).                                       |
 | `data-level`                     | attribute |                                | A row's or cell's nesting level, from 1 (React Aria).                     |

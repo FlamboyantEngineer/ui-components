@@ -42,6 +42,22 @@ test.describe('Truncation Tooltip lab', () => {
     await expect(page.getByRole('tooltip')).toHaveCount(0);
   });
 
+  test('UIC-TRUNCATION-TOOLTIP-1.3 stays closed when a script focuses the link after a pointer press', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('truncation-tooltip');
+    const link = page.locator('[data-lab-cell="text=cut holder=link"] a');
+    await page.locator('[data-lab-cell="text=cut holder=plain"]').click();
+    await link.evaluate((element: HTMLElement) => element.focus());
+    await expect(link).toBeFocused();
+    // The panel would open at once; give it a frame or two to show if it were going to.
+    await page.evaluate(
+      () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))),
+    );
+    await expect(page.getByRole('tooltip')).toHaveCount(0);
+  });
+
   test('UIC-TRUNCATION-TOOLTIP-1.4 closes on press and on Escape', async ({ page, lab }) => {
     await lab.open('truncation-tooltip');
     const cut = page.locator('[data-lab-cell="text=cut holder=plain"] .ui-truncation-tooltip');

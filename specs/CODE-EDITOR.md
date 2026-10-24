@@ -8,7 +8,7 @@ The editor stays a text area: it does not fold code and it re-tokenizes and redr
 
 ### UIC-CODE-EDITOR-1.1 - Text area over a highlighted copy
 
-`CodeEditor` shall render its `value` in a `<textarea>` (`ui-code-editor__input`), the control, with spelling, autocorrection, autocapitalization and autocomplete off, and report each edit through `onChange`. Behind it, a `<pre>` (`ui-code-editor__highlight`) hidden from assistive technology draws the same text, so a stylesheet can make the text area's text transparent and let the copy paint it. The text area takes the caller's `placeholder`, labelling props (`aria-label`, `aria-labelledby`, `aria-describedby`, `aria-details`), `aria-errormessage`, `isRequired` (as `aria-required`) and its focus and keyboard handlers (`onFocus`, `onBlur`, `onKeyDown`, `onKeyUp`), which run after the editor's own.
+`CodeEditor` shall render its `value` in a `<textarea>` (`ui-code-editor__input`), the control, with spelling, autocorrection, autocapitalization and autocomplete off, and report each edit through `onChange`. Behind it, a `<pre>` (`ui-code-editor__highlight`) hidden from assistive technology draws the same text, so a stylesheet can make the text area's text transparent and let the copy paint it. The text area takes the caller's `placeholder`, `name` (so a form submits the source under it), labelling props (`aria-label`, `aria-labelledby`, `aria-describedby`, `aria-details`), `aria-errormessage`, `isRequired` (as `aria-required`) and its focus and keyboard handlers (`onFocus`, `onBlur`, `onKeyDown`, `onKeyUp`), which run after the editor's own.
 
 Implementation: `src/components/code-editor/code-editor.tsx`, `src/components/code-editor/code-layers.tsx`
 Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/code-editor.spec.ts`
@@ -117,10 +117,10 @@ Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/code-edito
 
 ### UIC-CODE-EDITOR-3.6 - Hover tip
 
-When the pointer rests on a marked range, or on an offset for which `renderHover` returns content, a non-modal React Aria popover (`ui-code-editor__tooltip`) on the `tooltip` overlay layer shall point at that character with, inside a `role="tooltip"` element, the message of each problem marked there (a `ui-code-editor__diagnostic` with `data-severity`) followed by the caller's content. The tip stays while the pointer moves into it, hides shortly after the pointer leaves both, and closes on Escape, on an edit and when the text area loses focus.
+When the pointer rests on a marked range, or on an offset for which `renderHover` returns content, a non-modal React Aria popover (`ui-code-editor__tooltip`) on the `tooltip` overlay layer shall point at that character with, inside a `role="tooltip"` element, the message of each problem marked there (a `ui-code-editor__diagnostic` with `data-severity`) followed by the caller's content. The tip stays while the pointer moves into it, hides shortly after the pointer leaves both, and closes on Escape, on an edit and when the text area loses focus. Finding the character under the pointer reads the copy's text once per render of the copy and bisects it, so pointer moves stay cheap on a long source.
 
-Implementation: `src/components/code-editor/code-hover.tsx`, `src/components/code-editor/code-geometry.ts`, `src/components/code-editor/code-editor.tsx`
-Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/code-editor.spec.ts`
+Implementation: `src/components/code-editor/code-hover.tsx`, `src/components/code-editor/code-geometry.ts`, `src/components/code-editor/code-editor.tsx`, `src/components/code-editor/use-code-editor.ts`
+Verification: `src/components/code-editor/code-editor.test.tsx`, `src/components/code-editor/code-hover.test.tsx`, `e2e/code-editor.spec.ts`
 
 ## UIC-CODE-EDITOR-4 - Completions
 
@@ -207,10 +207,10 @@ Verification: `src/components/code-editor/code-editing.test.ts`, `src/components
 
 ### UIC-CODE-EDITOR-6.3 - Tab indentation
 
-With `indentWithTab`, Tab shall insert spaces up to the next indentation stop at a caret or over a selection within one line, and indent every non-empty line of a selection across lines by one level; Shift+Tab removes one level (a tab, or up to `indent` spaces) from each line the selection touches. Tab then stays in the editor, except right after Escape, when Tab and Shift+Tab move focus as usual.
+With `indentWithTab`, Tab shall insert spaces up to the next indentation stop at a caret or over a selection within one line, and indent every non-empty line of a selection across lines by one level; Shift+Tab removes one level (a tab, or up to `indent` spaces) from each line the selection touches. Tab then stays in the editor, except right after Escape, when Tab and Shift+Tab move focus as usual; a modifier key pressed on its own after Escape, such as the Shift of Shift+Tab, keeps that.
 
 Implementation: `src/components/code-editor/code-editing.ts`, `src/components/code-editor/use-code-keys.ts`
-Verification: `src/components/code-editor/code-editing.test.ts`, `src/components/code-editor/code-editor.test.tsx`, `e2e/code-editor.spec.ts`
+Verification: `src/components/code-editor/code-editing.test.ts`, `src/components/code-editor/code-editor.test.tsx`, `src/components/code-editor/use-code-keys.test.tsx`, `e2e/code-editor.spec.ts`
 
 ### UIC-CODE-EDITOR-6.4 - Bracket and quote pairs
 

@@ -80,18 +80,51 @@ export function splitMatchTerms(query: string, options: MatchTextOptions = {}): 
   return folded.split(/\s+/).filter(Boolean);
 }
 
+/** How occurrences count: as words, and whether accents may be left out. */
+interface MatchRules {
+  matchWords: boolean;
+  ignoreAccents: boolean;
+}
+
+/** A term found at an index of the normalized text. */
+interface Occurrence {
+  start: number;
+  term: string;
+}
+
+/**
+ * Whether an occurrence of `term` at `start` counts. Without `ignoreAccents` it may not stop before
+ * a combining mark, so `cafe` does not match a decomposed `café` any more than a composed one.
+ */
+function isMatchAt(haystack: string, { start, term }: Occurrence, rules: MatchRules): boolean {
+  if (rules.matchWords && !isWordMatchAt(haystack, start, term)) return false;
+  return rules.ignoreAccents || !combiningMark.test(haystack[start + term.length] ?? '');
+}
+
+/** Whether `term` occurs in `haystack` by the rules, stopping at the first occurrence that counts. */
+function hasOccurrence(haystack: string, term: string, rules: MatchRules): boolean {
+  for (
+    let start = haystack.indexOf(term);
+    start !== -1;
+    start = haystack.indexOf(term, start + 1)
+  ) {
+    if (isMatchAt(haystack, { start, term }, rules)) return true;
+  }
+  return false;
+}
+
 /** Every occurrence of `term` in `haystack`, as ranges tagged with the term's index. */
 function findOccurrences(
   haystack: string,
   { term, index }: { term: string; index: number },
-  matchWords: boolean,
+  rules: MatchRules,
 ) {
   const ranges: TextMatchRange[] = [];
   let from = 0;
   while (from + term.length <= haystack.length) {
     const start = haystack.indexOf(term, from);
     if (start < 0) break;
-    if (matchWords && !isWordMatchAt(haystack, start, term)) {
+    if (!isMatchAt(haystack, { start, term }, rules)) {
       from = start + 1;
       continue;
     }
@@ -111,8 +144,9 @@ export function findTermRanges(
   { matchWords = false, ignoreAccents = false }: FindTermRangesOptions = {},
 ): TextMatchRange[] {
   const haystack = normalizeMatchText(text, { ignoreAccents });
+  const rules = { matchWords, ignoreAccents };
   const ranges = terms.flatMap((term, index) =>
-    term ? findOccurrences(haystack, { term, index }, matchWords) : [],
+    term ? findOccurrences(haystack, { term, index }, rules) : [],
   );
   ranges.sort((left, right) => left.start - right.start || left.end - right.end);
   const merged: TextMatchRange[] = [];
@@ -132,5 +166,6 @@ export function textMatchesTerms(
   options: MatchTextOptions = {},
 ): boolean {
   const haystack = normalizeMatchText(text, options);
-  return terms.every((term) => term.length > 0 && haystack.includes(term));
+  const rules = { matchWords: false, ignoreAccents: options.ignoreAccents ?? false };
+  return terms.every((term) => term.length > 0 && hasOccurrence(haystack, term, rules));
 }

@@ -20,6 +20,8 @@ export interface BoardColumnHeaderProps {
   /** The cards in the column, across lanes. */
   count: number;
   limit: number | undefined;
+  /** Whether the column holds more cards than its limit. */
+  isOverLimit: boolean;
   isCollapsed: boolean;
   onCollapsedChange: (isCollapsed: boolean) => void;
   /** Column reordering, while the board takes column moves. */
@@ -30,6 +32,8 @@ export interface BoardColumnHeaderProps {
 
 const steps: Readonly<Record<string, -1 | 1>> = { ArrowLeft: -1, ArrowRight: 1 };
 
+const columnShortcuts = 'Alt+ArrowLeft Alt+ArrowRight';
+
 /** A column header's drag and drop: it drags, and takes drops of another column of the board. */
 function useColumnHeaderDrag({
   columnKey,
@@ -37,7 +41,7 @@ function useColumnHeaderDrag({
   drag,
 }: Pick<BoardColumnHeaderProps, 'columnKey' | 'title' | 'drag'>) {
   const ref = useRef<HTMLDivElement>(null);
-  const { dragProps, startDrag, isDragging, dropPosition } = useItemDrag({
+  const { dragProps, startDrag, describedBy, isDragging, dropPosition } = useItemDrag({
     ref,
     key: columnKey,
     textValue: title,
@@ -47,7 +51,7 @@ function useColumnHeaderDrag({
     resolveMove: () => drag?.resolveDrop(columnKey) ?? null,
     onMove: (move) => drag?.onMove(move),
   });
-  return { ref, props: dragProps, startDrag, isDragging, dropPosition };
+  return { ref, props: dragProps, startDrag, describedBy, isDragging, dropPosition };
 }
 
 /**
@@ -55,12 +59,11 @@ function useColumnHeaderDrag({
  * the column too), a collapse toggle, the title and the card count against the column's limit.
  */
 export function BoardColumnHeader(props: BoardColumnHeaderProps) {
-  const { columnKey, title, titleId, count, limit, isCollapsed, onCollapsedChange, drag, onStep } =
-    props;
+  const { columnKey, title, titleId, count, limit, isOverLimit, isCollapsed } = props;
+  const { onCollapsedChange, drag, onStep } = props;
   const strings = useUiStrings();
   const { direction } = useLocale();
   const header = useColumnHeaderDrag({ columnKey, title, drag });
-  const isOverLimit = limit !== undefined && count > limit;
   const onHandleKeyDown = (event: KeyboardEvent) => {
     const step = steps[event.key];
     if (!step || !isMoveChord(event)) return;
@@ -88,8 +91,10 @@ export function BoardColumnHeader(props: BoardColumnHeaderProps) {
           size="sm"
           label={strings.moveColumn(title)}
           className={hooks.slotClass('column-handle')}
+          aria-describedby={header.describedBy}
           onPress={header.startDrag}
           onKeyDown={onHandleKeyDown}
+          render={(domProps) => <button {...domProps} aria-keyshortcuts={columnShortcuts} />}
         />
       ) : null}
       <ExpandToggle

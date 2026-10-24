@@ -4,7 +4,7 @@ import { createHooks, splitDataAttributes } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
-import { useDelayedFlag } from '../../utils/use-delayed-flag.js';
+import { useActiveAfter } from '../../utils/use-delayed-flag.js';
 import { useEnterExit } from '../../utils/use-enter-exit.js';
 import { Portal } from '../portal/portal.js';
 import {
@@ -13,6 +13,7 @@ import {
   type ProgressBarProps,
 } from '../progress-bar/progress-bar.js';
 import { TruncationTooltip } from '../truncation-tooltip/truncation-tooltip.js';
+import { useBlockedFocus } from './use-blocked-focus.js';
 
 /** Measured progress for the card's bar. Without it, or when indeterminate, the bar has no level. */
 export type LoadingProgress = Pick<
@@ -130,7 +131,8 @@ function LoadingCardBar({
   progress: LoadingProgress | undefined;
   labelId: string;
 }) {
-  const { 'aria-label': progressLabel, ...range } = isMeasured(progress) ? progress : {};
+  const { 'aria-label': progressLabel, ...measured }: LoadingProgress = progress ?? {};
+  const range = isMeasured(progress) ? measured : {};
   return (
     <div {...cardHooks.slot('progress')} aria-live="off">
       <ProgressBar
@@ -213,8 +215,7 @@ export function LoadingOverlay({
   ref,
   ...rest
 }: LoadingOverlayProps) {
-  const isElapsed = useDelayedFlag(true, delay > 0 ? delay : undefined);
-  const isShown = delay > 0 ? isElapsed : true;
+  const isShown = useActiveAfter(true, delay);
   const isScrim = presentation === 'scrim';
   const [data, cardProps] = splitDataAttributes(rest);
   if (!isShown) return null;
@@ -235,7 +236,8 @@ export function LoadingOverlay({
 
 /**
  * A bounded region that blocks its own content while loading: it is marked busy, its content is
- * inert (no pointer, focus or assistive-technology access) and a `LoadingOverlay` covers it. With
+ * inert (no pointer, focus or assistive-technology access) and a `LoadingOverlay` covers it; focus
+ * that was in the content waits on the region and returns once loading ends. With
  * `delay` all of it waits until the work has lasted that long; the overlay stays mounted through its
  * exit transition (`useEnterExit`).
  */
@@ -247,19 +249,23 @@ export function LoadingRegion({
   id,
   ...rest
 }: LoadingRegionProps) {
-  const isElapsed = useDelayedFlag(isLoading, delay > 0 ? delay : undefined);
-  const isBlocked = isLoading && (delay > 0 ? isElapsed : true);
+  const isBlocked = useActiveAfter(isLoading, delay);
   const overlayRef = useRef<HTMLDivElement>(null);
   const { isMounted, isEntering, isExiting } = useEnterExit(overlayRef, isBlocked);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  useBlockedFocus({ rootRef, contentRef, isBlocked });
   const [data, overlayProps] = splitDataAttributes(rest);
   return (
     <div
       {...data}
       {...regionHooks.root({ className, data: { loading: isBlocked } })}
       id={id}
+      ref={rootRef}
       aria-busy={isBlocked || undefined}
+      tabIndex={isBlocked ? -1 : undefined}
     >
-      <div {...regionHooks.slot('content')} inert={isBlocked || undefined}>
+      <div {...regionHooks.slot('content')} ref={contentRef} inert={isBlocked || undefined}>
         {children}
       </div>
       {isMounted ? (

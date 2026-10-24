@@ -1,6 +1,7 @@
-import { useLayoutEffect, useMemo, useRef, type RefObject } from 'react';
+import { useMemo, useRef, type RefObject } from 'react';
 import type { Key } from '../../core/props.js';
 import { useDragType } from '../../utils/use-drag-type.js';
+import { useLatest } from '../../utils/use-latest.js';
 import type { CollectionDropTarget } from '../../utils/use-reorder-drag-and-drop.js';
 import {
   resolveBoardDrop,
@@ -44,14 +45,6 @@ interface CardDragSource {
 interface ColumnDragSource {
   columns: readonly Key[];
   onMove: ((move: BoardColumnMove) => void) | undefined;
-}
-
-function useLatest<T>(value: T): RefObject<T> {
-  const latest = useRef(value);
-  useLayoutEffect(() => {
-    latest.current = value;
-  });
-  return latest;
 }
 
 /**

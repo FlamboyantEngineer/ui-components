@@ -28,9 +28,9 @@ test.describe('Problem List lab', () => {
     await form.getByRole('button', { name: 'Book' }).click();
     await expect(list.getByRole('status')).toHaveText('2 errors, 1 warning');
     await expect(list.locator('.ui-problem-list__item')).toHaveText([
-      'Error: NameA value is required.',
-      'Warning: EmailCheck the address; it has no @.',
-      'Error: SeatsA value is required.',
+      'Error: Name A value is required.',
+      'Warning: Email Check the address; it has no @.',
+      'Error: Seats A value is required.',
     ]);
     await list.getByRole('button', { name: /Seats/ }).click();
     await expect(form.getByRole('textbox', { name: 'Seats' })).toBeFocused();

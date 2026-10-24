@@ -66,6 +66,30 @@ describe('useFieldState', () => {
     expect(controlled.current.isDirty).toBe(false);
   });
 
+  it('UIC-FIELD-2.2 commits the value a controlled caller renders after a change in the same event', () => {
+    const onCommit = vi.fn();
+    const { result } = renderHook(() => {
+      const [value, setValue] = useState('');
+      return useFieldState({ value, onChange: (next) => setValue(next.toUpperCase()), onCommit });
+    });
+    act(() => {
+      result.current.setValue('ab');
+      result.current.commit();
+    });
+    expect(onCommit).toHaveBeenCalledExactlyOnceWith('AB');
+    expect(result.current.committedValue).toBe('AB');
+    expect(result.current.isDirty).toBe(false);
+
+    const ignored = vi.fn();
+    const { result: fixed } = renderField({ value: 'Apple', onCommit: ignored });
+    act(() => {
+      fixed.current.setValue('Pear');
+      fixed.current.commit();
+    });
+    expect(ignored).not.toHaveBeenCalled();
+    expect(fixed.current.committedValue).toBe('Apple');
+  });
+
   it('UIC-FIELD-2.3 compares values by structure', () => {
     const committedValue = { name: 'Ada', tags: ['a', 'b'] };
     const { result, rerender } = renderField({
@@ -197,6 +221,17 @@ describe('useFieldState', () => {
     rerender({ defaultValue: 'A', onCommit });
     act(() => result.current.undo());
     expect(result.current.value).toBe('AB');
+  });
+
+  it('UIC-FIELD-5.1 undoes back to a first value that is undefined', () => {
+    const { result } = renderField<string | undefined>({});
+    act(() => result.current.setValue('a'));
+    expect(result.current.canUndo).toBe(true);
+    act(() => result.current.undo());
+    expect(result.current.value).toBeUndefined();
+    expect([result.current.canUndo, result.current.canRedo]).toEqual([false, true]);
+    act(() => result.current.redo());
+    expect(result.current.value).toBe('a');
   });
 
   it('UIC-FIELD-5.1 records controlled changes and actions in the history', () => {

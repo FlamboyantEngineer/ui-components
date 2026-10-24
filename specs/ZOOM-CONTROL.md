@@ -27,7 +27,7 @@ Verification: `src/components/zoom-control/zoom-control.test.tsx`, `e2e/zoom-con
 
 ### UIC-ZOOM-CONTROL-1.4 - Slider
 
-The slider shall be a native `<input type="range">` over the level indices, from `0` to the last index in steps of one, whose value is the index of the level nearest the current value (`findNearestZoomLevelIndex`, the lower level on a tie). It is named by the provider's `zoomLevel` string and announces the formatted value through `aria-valuetext`. Moving it with the pointer, the arrow keys, Home or End requests the level at the new index.
+The slider shall be a native `<input type="range">` over the level indices, from `0` to the last index in steps of one, whose value is the index of the level nearest the current value (`findNearestZoomLevelIndex`, the lower level on a tie). It is named by the provider's `zoomLevel` string and announces the formatted value through `aria-valuetext`. Moving it with the pointer, the arrow keys, Home or End requests the level at the new index, except that one step from a value between levels requests the neighbouring level on that side, as the step buttons do (UIC-ZOOM-CONTROL-1.3), so no level is skipped.
 
 Implementation: `src/components/zoom-control/zoom-control.tsx`
 Verification: `src/components/zoom-control/zoom-control.test.tsx`, `e2e/zoom-control.spec.ts`

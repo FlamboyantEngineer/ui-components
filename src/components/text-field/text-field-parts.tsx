@@ -94,10 +94,9 @@ function RevealButton({ label, isRevealed, isDisabled, onChange }: RevealButtonP
       label={strings.revealValue(label)}
       size="sm"
       isSelected={isRevealed}
-      aria-pressed={isRevealed}
       isDisabled={isDisabled}
       preventFocusOnPress
-      onPress={() => onChange(!isRevealed)}
+      onChange={onChange}
     />
   );
 }

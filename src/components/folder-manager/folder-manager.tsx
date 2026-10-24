@@ -1,4 +1,6 @@
 import { findMaximum } from '../../utils/find-maximum.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
+import { walkTree } from '../../utils/walk-tree.js';
 import type { Key } from '../../core/props.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -18,14 +20,18 @@ import {
   type FolderItem,
 } from './folder-model.js';
 import { FolderTree } from './folder-tree.js';
+import type { FolderSelectionMode } from './use-folder-tree.js';
 import {
   useFolderManager,
   type FolderManagerModel,
   type FolderManagerOptions,
 } from './use-folder-manager.js';
 
-export interface FolderManagerProps<T extends FolderItem>
-  extends BaseProps, FolderManagerOptions<T> {
+export interface FolderManagerProps<
+  T extends FolderItem,
+  M extends FolderSelectionMode = FolderSelectionMode,
+>
+  extends BaseProps, FolderManagerOptions<T, M> {
   /** Names the folder tree. */
   'aria-label'?: string | undefined;
   'aria-labelledby'?: string | undefined;
@@ -39,7 +45,7 @@ export interface FolderManagerProps<T extends FolderItem>
 
 interface ToolContext<T extends FolderItem> {
   model: FolderManagerModel<T>;
-  props: FolderManagerProps<T>;
+  props: Omit<FolderManagerProps<T>, 'onSelectionChange'>;
   strings: UiStrings;
 }
 
@@ -106,11 +112,23 @@ function moveEntryOf<T extends FolderItem>(context: ToolContext<T>): MenuEntry {
     id: 'move',
     label: strings.moveTo,
     isDisabled: model.selection.length === 0 || model.isBusy,
-    items: destinationsOf(context).map(({ folder, path }) => ({
-      id: `${moveKeyPrefix}${folder === null ? '' : String(folder.id)}`,
-      label: path.length > 0 ? path.join(' / ') : topLevel,
-    })),
+    // Listed when the menu shows them rather than on every render: they span the whole tree.
+    get items() {
+      return destinationsOf(context).map(({ folder, path }) => ({
+        id: `${moveKeyPrefix}${folder === null ? '' : toKeyIdentity(folder.id)}`,
+        label: path.length > 0 ? path.join(' / ') : topLevel,
+      }));
+    },
   };
+}
+
+/** The folder whose key has this identity (`toKeyIdentity`), or `null` when none has. */
+function findFolderByIdentity<T extends FolderItem>(folders: readonly T[], identity: string) {
+  const children = (folder: T) => folder.children as readonly T[] | undefined;
+  for (const folder of walkTree(folders, children)) {
+    if (toKeyIdentity(folder.id) === identity) return folder;
+  }
+  return null;
 }
 
 function menuOf<T extends FolderItem>(
@@ -142,11 +160,7 @@ function runMenuAction<T extends FolderItem>({ model, props }: ToolContext<T>, k
   if (id === 'rename') return model.startRename();
   if (id === 'delete') return model.remove();
   if (!id.startsWith(moveKeyPrefix)) return undefined;
-  const target = id.slice(moveKeyPrefix.length);
-  const destination = listFolderDestinations(props.folders, new Set()).find(
-    ({ folder }) => folder !== null && String(folder.id) === target,
-  );
-  return model.moveTo(destination?.folder ?? null);
+  return model.moveTo(findFolderByIdentity(props.folders, id.slice(moveKeyPrefix.length)));
 }
 
 /**
@@ -157,7 +171,10 @@ function runMenuAction<T extends FolderItem>({ model, props }: ToolContext<T>, k
  * promise; a rejected promise keeps an edit open with its reason. Actions appear only when their
  * callback is set.
  */
-export function FolderManager<T extends FolderItem>(props: FolderManagerProps<T>) {
+export function FolderManager<
+  T extends FolderItem,
+  M extends FolderSelectionMode = FolderSelectionMode,
+>(props: FolderManagerProps<T, M>) {
   const strings = useUiStrings();
   const context = { model: useFolderManager(props), props, strings };
   const { model } = context;

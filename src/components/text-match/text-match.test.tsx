@@ -77,7 +77,8 @@ describe('accent-insensitive matching', () => {
 
   it('UIC-TEXT-MATCH-1.2 never ends a range between a letter and its combining mark', () => {
     const decomposed = 'cafe\u0301 noir';
-    expect(findTermRanges(decomposed, ['cafe'])).toEqual([{ start: 0, end: 5, term: 0 }]);
+    // Without ignoreAccents a match that would stop before the mark does not count at all.
+    expect(findTermRanges(decomposed, ['cafe'])).toEqual([]);
     expect(findTermRanges(decomposed, ['cafe', 'noir'], { ignoreAccents: true })).toEqual([
       { start: 0, end: 5, term: 0 },
       { start: 6, end: 10, term: 1 },
@@ -137,6 +138,21 @@ describe('TextMatch', () => {
     expect(marks[0]).toHaveAttribute('data-testid', 'hit');
     expect(marks[0]).toHaveTextContent('anan');
     expectHooksMatchSpec(container, 'TEXT-MATCH');
+  });
+
+  it('UIC-TEXT-MATCH-1.4 counts decomposed accents the same as composed ones without ignoreAccents', () => {
+    const composed = 'Caf\u00e9 au lait';
+    const decomposed = 'Cafe\u0301 au lait';
+    expect(textMatchesTerms(decomposed, ['cafe'])).toBe(textMatchesTerms(composed, ['cafe']));
+    expect(textMatchesTerms(decomposed, ['cafe'])).toBe(false);
+    expect(findTermRanges(decomposed, ['cafe'])).toEqual([]);
+    expect(textMatchesTerms('Cafe cafe\u0301', ['cafe'])).toBe(true);
+    expect(findTermRanges('cafe\u0301 cafe', ['cafe'])).toEqual([{ start: 6, end: 10, term: 0 }]);
+    expect(textMatchesTerms(decomposed, ['cafe\u0301'])).toBe(true);
+    // With ignoreAccents the mark folds away and the range takes it in.
+    expect(findTermRanges(decomposed, ['cafe'], { ignoreAccents: true })).toEqual([
+      { start: 0, end: 5, term: 0 },
+    ]);
   });
 
   it('UIC-TEXT-MATCH-1.4 marks accented text from an unaccented query on request', () => {

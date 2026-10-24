@@ -91,6 +91,24 @@ test.describe('Date Time Field lab', () => {
     );
   });
 
+  test('UIC-FIELD-4.1 UIC-DATE-TIME-FIELD-1.4 reaches the restore button of an uncommitted value by Tab', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('date-time-field');
+    const bounded = field(page, 'bounded');
+    await bounded.getByRole('spinbutton', { name: /^month/ }).focus();
+    await page.keyboard.type('05');
+    await expect(bounded).toHaveAttribute('data-dirty', 'true');
+    await bounded.getByRole('spinbutton', { name: /^year/ }).focus();
+    await page.keyboard.press('Tab');
+    await expect(bounded.getByRole('button', { name: /Calendar/ })).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(bounded.getByRole('button', { name: 'Restore Delivery' })).toBeFocused();
+    await expect(bounded).toHaveAttribute('data-dirty', 'true');
+    await expect(committed(page)).toHaveText('"2026-04-13"');
+  });
+
   test('UIC-DATE-TIME-FIELD-2.1 passes axe in the dark theme, with the calendar open', async ({
     page,
     lab,

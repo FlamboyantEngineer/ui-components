@@ -13,7 +13,7 @@ Verification: `src/components/select-field/select-field.test.tsx`, `e2e/select-f
 
 ### UIC-SELECT-FIELD-1.2 - Value and commit
 
-A single select's value shall be the chosen option's `id` or `null`; a multiple select's is the list of chosen ids in the options' order, without repeats, ids no option names keeping their place after the others. The field takes `value` with `onChange` or holds the value itself from `committedValue` or `defaultValue`, and every pick, chip removal and value restore sets the value and commits it at once, so `onCommit` hears each change. Numeric and text keys with the same spelling remain distinct in options, chips and callbacks, while form inputs submit the original key text.
+A single select's value shall be the chosen option's `id` or `null`; a multiple select's is the list of chosen ids in the options' order, without repeats, ids no option names keeping their place after the others. The field takes `value` with `onChange` or holds the value itself from `committedValue` or `defaultValue`, and every pick, chip removal and value restore sets the value and commits it at once, so `onCommit` hears each change. Numeric and text keys with the same spelling remain distinct in options, chips and callbacks, while form inputs submit the original key text. A single value of `''` stands for no value, as a native select's empty option does (the form submits it empty and a required field reports it missing), but while an option has the id `''` the trigger shows that option as the choice.
 
 Implementation: `src/components/select-field/select-field.tsx`, `src/components/select-field/select-control.tsx`, `src/components/select-field/select-options.ts`
 Verification: `src/components/select-field/select-field.test.tsx`, `src/components/select-field/select-options.test.ts`
@@ -43,14 +43,14 @@ Verification: `src/components/select-field/select-field.test.tsx`
 
 ### UIC-SELECT-FIELD-2.1 - Summary
 
-A single select's trigger shall show the chosen option's icon (`ui-select-field__value-icon`) and label (`ui-select-field__value-label`) inside its value element. Without a choice it shows `placeholder` (by default the provider string `selectPlaceholder`) and the value element publishes `data-placeholder`. A chosen id that no option names shows as itself, with `data-missing`. A multiple select's trigger always shows the placeholder. With `emptyLabel`, a single select lists a first option of that label which stands for no value: the trigger shows it while the value is `null`, and picking it commits `null`. The trigger ends with a chevron glyph (`ui-select-field__chevron`).
+A single select's trigger shall show the chosen option's icon (`ui-select-field__value-icon`) and label (`ui-select-field__value-label`) inside its value element. Without a choice it shows `placeholder` (by default the provider string `selectPlaceholder`) and the value element publishes `data-placeholder`. A chosen id that no option names shows as itself, with `data-missing`. A multiple select's trigger shows the provider string `selectedCount` for its choices (`2 selected`), so it reads as its choices and the field's label, or the placeholder (with `data-placeholder`) while it has none. With `emptyLabel`, a single select lists a first option of that label which stands for no value: the trigger shows it while the value is `null`, and picking it commits `null`. The trigger ends with a chevron glyph (`ui-select-field__chevron`).
 
 Implementation: `src/components/select-field/select-trigger.tsx`, `src/components/select-field/select-control.tsx`, `src/core/strings.ts`
 Verification: `src/components/select-field/select-field.test.tsx`, `e2e/select-field.spec.ts`
 
 ### UIC-SELECT-FIELD-2.2 - Width
 
-The select shall measure the widest of its options' labels and its placeholder (or empty label) in the trigger's font on a canvas and publish it, in pixels, as `--ui-select-field-label-width` on `ui-select-field__select`; its root publishes `data-icons` when any option has an icon. It measures once per set of labels and again when the document's fonts finish loading; opening, filtering and search results never change it. The reference sheet sizes the trigger to that width plus its padding, chevron and, with `data-icons`, an icon, capped at the width of the field's control slot, so the trigger keeps its width as the choice changes.
+The select shall measure the widest of its options' labels, its placeholder (or empty label) and, for a multiple select, the `selectedCount` text for all its options in the trigger's font on a canvas and publish it, in pixels, as `--ui-select-field-label-width` on `ui-select-field__select`; its root publishes `data-icons` when any option has an icon. It measures once per set of labels and again when the document's fonts finish loading; opening, filtering and search results never change it. The reference sheet sizes the trigger to that width plus its padding, chevron and, with `data-icons`, an icon, capped at the width of the field's control slot, so the trigger keeps its width as the choice changes.
 
 Implementation: `src/utils/use-widest-text-width.ts`, `src/components/select-field/select-control.tsx`, `labs/reference/select-field.css`
 Verification: `src/components/select-field/select-field.test.tsx`, `e2e/select-field.spec.ts`
@@ -186,7 +186,7 @@ Verification: `src/components/select-field/select-option.test.tsx`, `e2e/select-
 
 ### UIC-SELECT-FIELD-7.3 - Virtualized list
 
-With `virtualized`, the list shall render through React Aria's `Virtualizer` with a list layout: only the options in and near view are in the document, placed by the virtualizer's inline offsets, and scrolling or moving focus with the arrow keys, Home and End brings the others in. The reference sheet caps the listbox's height so it scrolls.
+With `virtualized`, the list shall render through React Aria's `Virtualizer` with a list layout: only the options in and near view are in the document, placed by the virtualizer's inline offsets, and scrolling or moving focus with the arrow keys, Home and End brings the others in. Every list keeps each option's row while the option and the way rows are drawn stay the same, so typing in the filter of a long list draws no unchanged row again. The reference sheet caps the listbox's height so it scrolls.
 
 Implementation: `src/components/select-field/select-list.tsx`, `labs/reference/select-field.css`
 Verification: `src/components/select-field/select-list.test.tsx`, `e2e/select-field.spec.ts`
@@ -267,6 +267,6 @@ Verification: `src/components/select-field/select-model.test.tsx`, `e2e/select-f
 | `data-entering`                       | state     | `true`                                     | Popover entry animation (React Aria).                                    |
 | `data-exiting`                        | state     | `true`                                     | Popover exit animation (React Aria).                                     |
 | `data-collection`                     | state     |                                            | React Aria's collection marker.                                          |
-| `data-key`                            | state     |                                            | An option's or chip's id (React Aria).                                   |
+| `data-key`                            | state     |                                            | Opaque collection key (React Aria): not the `id`, not for styling.       |
 | `data-layout`                         | state     | `stack`                                    | Listbox layout (React Aria).                                             |
 | `data-orientation`                    | state     | `vertical`                                 | Listbox orientation (React Aria).                                        |

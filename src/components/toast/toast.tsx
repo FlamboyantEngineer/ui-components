@@ -1,4 +1,4 @@
-import { useContext, useMemo, useRef, useSyncExternalStore } from 'react';
+import { useCallback, useContext, useMemo, useRef, useSyncExternalStore } from 'react';
 import {
   Text,
   UNSTABLE_Toast as AriaToast,
@@ -15,6 +15,7 @@ import { createHooks, measuredProperty, pickDataAttributes } from '../../core/ho
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { mergeProps } from '../../utils/merge-props.js';
 import { useEnterExit } from '../../utils/use-enter-exit.js';
 import { getToneGlyph } from '../banner/banner.js';
 import { Button } from '../button/button.js';
@@ -31,6 +32,7 @@ import {
 } from './toast-queue.js';
 import {
   ToastStackProvider,
+  useIsStackPaused,
   useStackExpanded,
   useToastStack,
   useToastStackPosition,
@@ -87,6 +89,16 @@ function getAriaQueue(queue: ToastQueue): AriaToastQueue<ToastContent> {
   return ariaQueue;
 }
 
+/** The building block queue's visible toasts, following its changes. */
+function useVisibleToasts(ariaQueue: AriaToastQueue<ToastContent>) {
+  const subscribe = useCallback(
+    (onChange: () => void) => ariaQueue.subscribe(onChange),
+    [ariaQueue],
+  );
+  const getSnapshot = () => ariaQueue.visibleToasts;
+  return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+}
+
 function renderToast({ toast }: { toast: QueuedToast<ToastContent> }) {
   return <Toast toast={toast} />;
 }
@@ -138,10 +150,11 @@ function Toast({ toast }: { toast: QueuedToast<ToastContent> }) {
   const strings = useUiStrings();
   const state = useContext(ToastStateContext);
   const lifecycle = getToastLifecycle(toast.content);
-  const snapshot = useToastSnapshot(toast.content, lifecycle);
+  const snapshot = useToastSnapshot(lifecycle);
   const ref = useRef<HTMLDivElement>(null);
   const { isMounted, isEntering, isExiting } = useEnterExit(ref, snapshot.isOpen);
-  useToastTimer(lifecycle ? toast.timer : undefined, snapshot);
+  const isPaused = useIsStackPaused();
+  useToastTimer(toast.timer, snapshot, isPaused);
   useToastPresence(lifecycle, isMounted);
   const { index, offset, swipeDirection, swipeThreshold } = useToastStackPosition(toast.key, ref);
   const swipe = useToastSwipe({
@@ -170,7 +183,7 @@ function Toast({ toast }: { toast: QueuedToast<ToastContent> }) {
       {...swipe.swipeProps}
       ref={ref}
       // The queue's entry drives the timer (useToastTimer), so React Aria does not reset it.
-      toast={lifecycle ? { ...toast, timeout: undefined } : toast}
+      toast={{ ...toast, timeout: undefined }}
       style={style}
       {...toastHooks.root({ data })}
     >
@@ -207,22 +220,20 @@ export function ToastRegion({
   className,
   ...rest
 }: ToastRegionProps) {
-  const stack = useToastStack({ swipeDirection, swipeThreshold });
-  const { isExpanded, pointerHandlers, focusHandlers } = useStackExpanded();
+  const ariaQueue = getAriaQueue(queue);
+  const hasToasts = useVisibleToasts(ariaQueue).length > 0;
+  const { isExpanded, regionProps } = useStackExpanded(hasToasts);
+  const stack = useToastStack({ swipeDirection, swipeThreshold }, isExpanded);
   return (
     <ToastStackProvider value={stack}>
       <AriaToastRegion
         {...rest}
-        {...pointerHandlers}
-        queue={getAriaQueue(queue)}
+        queue={ariaQueue}
         {...regionHooks.root({ className, data: { expanded: isExpanded } })}
+        // React Aria's region forwards no focus handlers, so they join its props here.
+        render={(props) => <div {...mergeProps(props, regionProps)} />}
       >
-        <AriaToastList
-          className={listHooks.className}
-          render={(props) => <ol {...props} {...focusHandlers} />}
-        >
-          {renderToast}
-        </AriaToastList>
+        <AriaToastList className={listHooks.className}>{renderToast}</AriaToastList>
       </AriaToastRegion>
     </ToastStackProvider>
   );
@@ -241,11 +252,7 @@ export function ToastList({
 }: ToastListProps) {
   const ariaQueue = getAriaQueue(queue);
   const stack = useToastStack({ swipeDirection, swipeThreshold });
-  const visibleToasts = useSyncExternalStore(
-    (onChange) => ariaQueue.subscribe(onChange),
-    () => ariaQueue.visibleToasts,
-    () => ariaQueue.visibleToasts,
-  );
+  const visibleToasts = useVisibleToasts(ariaQueue);
   const state = useMemo<ToastState<ToastContent>>(
     () => ({
       visibleToasts,

@@ -69,6 +69,22 @@ describe('pivot', () => {
     expect(keys.indexOf('item 9')).toBeLessThan(keys.indexOf('Item 10'));
   });
 
+  it('UIC-PIVOT-TABLE-1.1 reads NaN and infinite values as text, apart from the empty group', () => {
+    const records = [
+      { kind: null, n: 1 },
+      { kind: NaN, n: 2 },
+      { kind: Infinity, n: 3 },
+      { kind: -Infinity, n: 4 },
+    ];
+    const result = pivot(records, {
+      rows: ['kind'],
+      columns: [],
+      values: [{ field: 'n', aggregate: 'count' }],
+    });
+    expect(result.rows.map((row) => row.value)).toEqual(['-Infinity', 'Infinity', 'NaN', null]);
+    expect(new Set(result.rows.map((row) => row.key)).size).toBe(4);
+  });
+
   it('UIC-PIVOT-TABLE-1.2 aggregates a large group without a function-argument limit', () => {
     const records = Array.from({ length: 200_000 }, (_, value) => ({ value }));
     const result = pivot(records, {

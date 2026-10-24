@@ -62,10 +62,10 @@ Verification: `src/components/field/field.test.tsx`
 
 ### UIC-FIELD-1.9 - Interaction states
 
-`Field` shall publish on its root `data-focused` while focus is inside the field (its control, its buttons and the popovers they open, which React's focus events reach through portals), `data-touched` once focus has left the field (`state.touch()`, also when the focused part unmounts) and `data-filled` while the value is not empty (UIC-FIELD-3.1), so a stylesheet can wait for interaction.
+`Field` shall publish on its root `data-focused` while focus is inside the field (its control, its buttons and the popovers they open, which React's focus events reach through portals), `data-touched` once focus has left the field (`state.touch()`) and `data-filled` while the value is not empty (UIC-FIELD-3.1), so a stylesheet can wait for interaction. Focus moving between the field's parts never leaves it, even when the browser renders between the blur and the focus: focus that moves out of the root's elements leaves the field only once it has landed outside the field and its popovers.
 
-Implementation: `src/components/field/field.tsx`, `src/components/field/field-form.ts`, `src/components/field/field-state.ts`
-Verification: `src/components/field/field-form.test.tsx`
+Implementation: `src/components/field/field.tsx`, `src/components/field/field-focus.ts`, `src/components/field/field-state.ts`
+Verification: `src/components/field/field-form.test.tsx`, `src/components/field/field-focus.test.tsx`, `e2e/field.spec.ts`
 
 ### UIC-FIELD-1.10 - Size
 
@@ -73,6 +73,13 @@ Verification: `src/components/field/field-form.test.tsx`
 
 Implementation: `src/components/field/field.tsx`, `src/components/field/field-parts.tsx`, `src/components/field/field-control.ts`
 Verification: `src/components/field/field.test.tsx`
+
+### UIC-FIELD-1.11 - Leaving the field
+
+With `commitOnBlur`, a field whose control commits on blur shall commit its value once focus leaves the field (UIC-FIELD-1.9), not when focus moves from the control to the field's own buttons, so Tab from an edited control reaches the restore button and the field stays dirty until focus leaves it. A focused part that unmounts (a restore button once the value is clean) moves focus to the control, so keyboard focus never falls to the page. `commitOnBlur` is the control's choice: it is not one of the props a control takes from its caller (`FieldLayoutProps`). The library's text field, number field, pin input, JSON editor, rich text editor, signature pad (typed name) and color field (typed colour) commit this way.
+
+Implementation: `src/components/field/field.tsx`, `src/components/field/field-focus.ts`, `src/components/field/field-control.ts`
+Verification: `src/components/field/field-focus.test.tsx`, `src/components/json-editor/json-editor.test.tsx`, `src/components/rich-text-editor/rich-text-editor.test.tsx`, `src/components/signature-pad/signature-pad.test.tsx`, `src/components/color-field/color-field-entry.test.tsx`, `e2e/text-field.spec.ts`, `e2e/pin-input.spec.ts`, `e2e/number-field.spec.ts`, `e2e/json-editor.spec.ts`, `e2e/rich-text-editor.spec.ts`, `e2e/signature-pad.spec.ts`, `e2e/color-field.spec.ts`
 
 ## UIC-FIELD-2 - Value and commit
 
@@ -85,7 +92,7 @@ Verification: `src/components/field/field-state.test.tsx`
 
 ### UIC-FIELD-2.2 - Commit
 
-`commit()` shall finish an edit: when the value differs from the committed value it calls `onCommit` with the value and, unless the caller controls `committedValue`, makes it the committed value. A field the caller controls stays dirty until the caller passes the new committed value. An uncontrolled committed value starts at the committed value, the controlled value or the default, whichever is given first.
+`commit()` shall finish an edit: when the value differs from the committed value it calls `onCommit` with the value and, unless the caller controls `committedValue`, makes it the committed value. A field the caller controls stays dirty until the caller passes the new committed value. An uncontrolled committed value starts at the committed value, the controlled value or the default, whichever is given first. After `setValue` changes a controlled value in the same event, `commit()` commits the value the caller renders once it has rendered (a caller may change the value it was given, or ignore it), so the committed value is always one the field shows.
 
 Implementation: `src/components/field/field-state.ts`
 Verification: `src/components/field/field-state.test.tsx`
@@ -94,8 +101,10 @@ Verification: `src/components/field/field-state.test.tsx`
 
 A field shall be dirty while its value differs from its committed value by structure (key order and object identity do not count) and publish `data-dirty` on its root. A read-only or disabled field is never dirty.
 
+Values are compared as immutable data: an object or array value is read once, however often it is compared, so a large value costs one walk per change; a value changed in place is not seen as changed.
+
 Implementation: `src/components/field/field-state.ts`, `src/components/field/field-value.ts`, `src/components/field/field.tsx`
-Verification: `src/components/field/field-state.test.tsx`, `src/components/field/field.test.tsx`
+Verification: `src/components/field/field-state.test.tsx`, `src/components/field/field.test.tsx`, `src/components/field/field-value.test.ts`
 
 ### UIC-FIELD-2.4 - Locked fields
 
@@ -110,6 +119,13 @@ Verification: `src/components/field/field-state.test.tsx`
 
 Implementation: `src/components/field/field-state.ts`
 Verification: `src/components/field/field-state.test.tsx`
+
+### UIC-FIELD-2.6 - Native reset
+
+A native reset of the form the field's control belongs to (or the form around the field) shall put back the value the field had when it mounted, through `setValue`, as the browser does for its own controls, whatever element the control renders. It runs once the reset is over, so a control whose building block already reset the value is left alone.
+
+Implementation: `src/components/field/field-form.ts`
+Verification: `src/components/pin-input/pin-input.test.tsx`, `src/components/tags-input/tags-input.test.tsx`
 
 ## UIC-FIELD-3 - Validation
 
@@ -187,7 +203,7 @@ Verification: `src/components/field/field-form.test.tsx`
 
 ### UIC-FIELD-4.1 - Restoring a field
 
-While dirty, a field shall show a `FieldRestoreButton` after its control, named from its label (`Restore <label>`). Pressing it puts the committed value back. A pointer press leaves focus on the control; a keyboard press moves focus to the control before the button leaves.
+While dirty, a field shall show a `FieldRestoreButton` after its control, named from its label (`Restore <label>`), which is the next tab stop after the control (UIC-FIELD-1.11). Pressing it puts the committed value back. A pointer press leaves focus on the control; a keyboard press moves focus to the control before the button leaves.
 
 Implementation: `src/components/field/field.tsx`, `src/components/field/field-restore-button.tsx`
 Verification: `src/components/field/field.test.tsx`, `e2e/field.spec.ts`
@@ -203,7 +219,7 @@ Verification: `src/components/field/field-restore-button.test.tsx`
 
 ### UIC-FIELD-5.1 - History
 
-`useFieldState` shall record every distinct value the field shows, from edits, actions and controlled changes alike, keeping the last 100. `undo()` and `redo()` step back and forward through them, each followed by a commit; a new value after an undo drops the values that could be redone. `canUndo` and `canRedo` tell whether a step is possible; a read-only or disabled field has none.
+`useFieldState` shall record every distinct value the field shows, from edits, actions and controlled changes alike (`undefined` included), keeping the last 100. `undo()` and `redo()` step back and forward through them, each followed by a commit; a new value after an undo drops the values that could be redone. `canUndo` and `canRedo` tell whether a step is possible; a read-only or disabled field has none.
 
 Implementation: `src/components/field/field-state.ts`, `src/components/field/field-history.ts`
 Verification: `src/components/field/field-history.test.ts`, `src/components/field/field-state.test.tsx`
@@ -240,14 +256,14 @@ Verification: `src/components/field/field-menu.test.tsx`
 
 ### UIC-FIELD-6.2 - Availability
 
-Clear shall be disabled unless the field can be cleared and Set to default unless it can be set to its default (UIC-FIELD-2.5); Help is always enabled. A field with an empty `menu` draws no menu button and leaves the browser's context menu alone.
+Clear shall be disabled unless the field can be cleared and Set to default unless it can be set to its default (UIC-FIELD-2.5); Help is always enabled. A field with an empty `menu` draws no menu button, leaves the browser's context menu alone and renders no element beside its root.
 
 Implementation: `src/components/field/field-menu.tsx`, `src/components/field/field.tsx`
 Verification: `src/components/field/field-menu.test.tsx`
 
 ### UIC-FIELD-6.3 - Opening
 
-The field menu shall open from a menu button after the control (`ui-field__menu`, a `DropdownMenu` showing the `more` glyph) and as the field's context menu: a secondary click or long touch anywhere on the field, or Shift+F10 or the Context Menu key inside it. Both are named by the provider string `fieldActions` from the label (`<label> actions`).
+The field menu shall open from a menu button after the control (`ui-field__menu`, a `DropdownMenu` showing the `more` glyph) and as the field's context menu: a secondary click or long touch anywhere on the field but the text of its control, where the browser's own menu (paste, spelling) stays, or Shift+F10 or the Context Menu key inside it. Both are named by the provider string `fieldActions` from the label (`<label> actions`).
 
 Implementation: `src/components/field/field-menu.tsx`, `src/components/field/field.tsx`, `src/core/strings.ts`
 Verification: `src/components/field/field-menu.test.tsx`, `e2e/field.spec.ts`
@@ -323,7 +339,7 @@ Verification: `src/components/field/field-previous-value.test.tsx`
 
 ### UIC-FIELD-9.2 - Restoring a previous value
 
-With `onRestore`, the marker shall end with a `FieldRestoreButton` named from `restoreLabel` (or the text content) that calls `onRestore` once per press, keeps pointer focus where it was and is disabled while `isDisabled`. Without `onRestore` the marker only shows the value.
+With `onRestore`, the marker shall end with a `FieldRestoreButton` named from `restoreLabel` (or the text content the value renders, plain text or not; content with no text and no `restoreLabel` draws no button) that calls `onRestore` once per press, keeps pointer focus where it was and is disabled while `isDisabled`. Without `onRestore` the marker only shows the value.
 
 Implementation: `src/components/field/field-previous-value.tsx`
 Verification: `src/components/field/field-previous-value.test.tsx`

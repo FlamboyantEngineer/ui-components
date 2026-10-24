@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { Button } from '../button/button.js';
+import { ProjectionProvider } from '../projection/projection.js';
 import { ToolbarRowGroup } from '../layout/toolbar-row.js';
 import { SaveStatus } from '../save-status/save-status.js';
 import { AppFrame } from './app-frame.js';
@@ -91,6 +92,17 @@ describe('AppFrameBand', () => {
     await user.click(screen.getByRole('button', { name: 'Bold' }));
     await user.keyboard('{ArrowRight}');
     expect(screen.getByRole('button', { name: 'Italic' })).toHaveFocus();
+  });
+
+  it('UIC-APP-FRAME-2.3 renders band content in place without a frame', () => {
+    render(
+      <ProjectionProvider>
+        <AppFrameBandContent slot="actions">
+          <Button>Loose action</Button>
+        </AppFrameBandContent>
+      </ProjectionProvider>,
+    );
+    expect(screen.getByRole('button', { name: 'Loose action' })).toBeInTheDocument();
   });
 
   it('UIC-APP-FRAME-2.3 fills the band from deep in the frame, keeping the page state', async () => {

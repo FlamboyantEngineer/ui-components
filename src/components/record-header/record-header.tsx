@@ -82,8 +82,14 @@ export function RecordHeader({
         />
       </div>
       {onTitleChange ? (
-        // An editor is not phrasing content, so an editable title is a heading by role.
-        <div role="heading" aria-level={level} {...hooks.slot('title')}>
+        // An editor is not phrasing content, so an editable title is a heading by role. It is named
+        // by the title alone, not by the edit button's instruction it holds.
+        <div
+          role="heading"
+          aria-level={level}
+          aria-label={title === '' ? undefined : title}
+          {...hooks.slot('title')}
+        >
           <InlineEdit
             label={strings.recordTitle}
             value={title}

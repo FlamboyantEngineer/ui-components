@@ -83,6 +83,27 @@ test.describe('Signature Pad lab', () => {
     await expect(field.getByRole('img', { name: 'Your signature' })).toBeVisible();
   });
 
+  test('UIC-FIELD-1.11 UIC-SIGNATURE-PAD-3.2 reaches the restore button by Tab and commits on leaving the field', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('signature-pad');
+    const field = page.locator('[data-lab-cell="mode=type"] .ui-signature-pad');
+    const input = field.getByRole('textbox', { name: 'Signature' });
+    await input.click();
+    await page.keyboard.press('End');
+    await page.keyboard.type(' Jr');
+    await expect(field).toHaveAttribute('data-dirty', 'true');
+    await page.keyboard.press('Tab');
+    const restore = field.getByRole('button', { name: 'Restore Signature' });
+    await expect(restore).toBeFocused();
+    await expect(field).toHaveAttribute('data-dirty', 'true');
+    await page.keyboard.press('Tab');
+    await expect(field).not.toHaveAttribute('data-dirty');
+    await expect(field).not.toHaveAttribute('data-focused');
+    await expect(input).toHaveValue(/ Jr$/);
+  });
+
   test('UIC-SIGNATURE-PAD-1.1 UIC-SIGNATURE-PAD-3.3 blocks a form until signed and shows every state', async ({
     page,
     lab,

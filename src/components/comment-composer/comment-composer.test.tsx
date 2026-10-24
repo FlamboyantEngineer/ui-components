@@ -143,6 +143,36 @@ describe('CommentComposer', () => {
     expect(storage.getItem('draft:report')).toBe('"Started"');
   });
 
+  it('UIC-COMMENT-COMPOSER-1.5 keeps an uncontrolled draft under persistKey', async () => {
+    const user = userEvent.setup();
+    const storage = createMemoryStorage();
+    const stored = (
+      <UiProvider storage={storage}>
+        <CommentComposer
+          persistKey="draft:notes"
+          storageKey="draft:old"
+          defaultValue="Plum"
+          onSubmit={() => {}}
+        />
+      </UiProvider>
+    );
+    const { unmount } = render(stored);
+    await user.type(screen.getByRole('textbox'), 's');
+    unmount();
+    render(stored);
+    expect(screen.getByRole('textbox')).toHaveValue('Plums');
+    expect(storage.getItem('draft:notes')).toBe('"Plums"');
+    expect(storage.getItem('draft:old')).toBeNull();
+  });
+
+  it('UIC-COMMENT-COMPOSER-1.4 UIC-COMMENT-COMPOSER-1.6 offers no cancel while disabled', () => {
+    render(
+      <CommentComposer onSubmit={() => {}} onCancel={() => {}} defaultValue="Draft" isDisabled />,
+    );
+    expect(screen.queryByRole('button', { name: 'Cancel' })).not.toBeInTheDocument();
+    expect(screen.getByRole('textbox')).toHaveValue('Draft');
+  });
+
   it('UIC-COMMENT-COMPOSER-1.6 refuses typing and submitting while disabled', async () => {
     const onSubmit = vi.fn();
     const { container } = render(

@@ -3,12 +3,20 @@
 
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { createKeyIndex } from '../../utils/create-key-index.js';
-import { useMemo, useRef, type KeyboardEvent, type ReactNode, type RefObject } from 'react';
+import {
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type ReactNode,
+  type RefObject,
+} from 'react';
 import { useLocale } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps, Key } from '../../core/props.js';
 import { isMoveChord } from '../../utils/use-reorder-drag-and-drop.js';
 import { useFocusRequest } from '../../utils/use-focus-request.js';
+import type { BoardCardReveal } from './board-cell.js';
 import { BoardColumnHeader } from './board-column-header.js';
 import { boardHooks as hooks } from './board-hooks.js';
 import { BoardCells, BoardLaneGroup } from './board-lane.js';
@@ -102,8 +110,14 @@ function findCardKey(target: EventTarget, identities: ReadonlyMap<string, Key>):
   return identity === null || identity === undefined ? undefined : identities.get(identity);
 }
 
-/** Gives focus back to a moved card or column handle once the move renders. */
-function useMoveFocus(root: RefObject<HTMLDivElement | null>): FocusRequest {
+/**
+ * Gives focus back to a moved card or column handle once the move renders. A card a virtualized
+ * cell does not render is scrolled toward until it renders and takes focus.
+ */
+function useMoveFocus(
+  root: RefObject<HTMLDivElement | null>,
+  reveals: ReadonlySet<BoardCardReveal>,
+): FocusRequest {
   const request = useFocusRequest();
   return (kind, key) => {
     const escaped = CSS.escape(toKeyIdentity(key));
@@ -111,7 +125,11 @@ function useMoveFocus(root: RefObject<HTMLDivElement | null>): FocusRequest {
       kind === 'card'
         ? `.${hooks.slotClass('card')}[data-key-identity="${escaped}"]`
         : `.${hooks.slotClass('column')}[data-key-identity="${escaped}"] .${hooks.slotClass('column-handle')}`;
-    request(() => root.current?.querySelector<HTMLElement>(selector));
+    request(() => {
+      const element = root.current?.querySelector<HTMLElement>(selector);
+      if (!element && kind === 'card') for (const reveal of reveals) reveal(key);
+      return element;
+    });
   };
 }
 
@@ -169,6 +187,7 @@ function BoardColumnHeaders<T>({
           titleId={model.columnTitleId(index)}
           count={model.countColumn(column.id)}
           limit={column.limit}
+          isOverLimit={model.isOverLimit(column)}
           isCollapsed={model.collapsedColumns.keys.has(column.id)}
           onCollapsedChange={(isCollapsed) =>
             model.collapsedColumns.setCollapsed(column.id, isCollapsed)
@@ -212,7 +231,8 @@ export function Board<T extends { id: Key }>({
   ...rest
 }: BoardProps<T>) {
   const root = useRef<HTMLDivElement>(null);
-  const focus = useMoveFocus(root);
+  const [reveals] = useState(() => new Set<BoardCardReveal>());
+  const focus = useMoveFocus(root, reveals);
   const model = useBoardModel({
     ...{ columns, lanes, items, getColumn, getLane, persistKey },
     ...{ collapsedColumns, defaultCollapsedColumns, onCollapsedColumnsChange },
@@ -237,6 +257,7 @@ export function Board<T extends { id: Key }>({
     keyShortcuts,
     virtualized,
     drag,
+    reveals,
   };
   return (
     <div

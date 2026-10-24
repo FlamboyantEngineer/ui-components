@@ -5,7 +5,7 @@ import {
 } from '@handlewithcare/react-prosemirror';
 import type { Node as DocNode } from 'prosemirror-model';
 import { useEffect, useState, type FocusEvent } from 'react';
-import { findTopBlock } from './block-commands.js';
+import { findTopBlocks } from './block-commands.js';
 import { useRichTextEditorContext } from './rich-text-context.js';
 
 /** The block a handle serves and where it sits, with the handle's own focus and drag state. */
@@ -48,12 +48,17 @@ export function useBlockTarget(isHeld: boolean): BlockTarget | null {
   const [top, setTop] = useState<number | null>(null);
   const isFocused = hasEditorFocus || hasOwnFocus || isHeld;
   const hoveredPos = hovered?.doc === state.doc && !isHeld ? hovered.pos : null;
-  const pos = hoveredPos ?? (isFocused ? (findTopBlock(state)?.pos ?? null) : null);
+  const pos = hoveredPos ?? (isFocused ? (findTopBlocks(state)?.from ?? null) : null);
 
   useEditorEventListener('mousemove', (view, event) => {
     if (isHeld) return false;
     const found = view.posAtCoords({ left: event.clientX, top: event.clientY });
-    if (found) setHovered({ pos: findTopLevelPos(view.state.doc, found.pos), doc: view.state.doc });
+    if (!found) return false;
+    const { doc } = view.state;
+    const block = findTopLevelPos(doc, found.pos);
+    setHovered((current) =>
+      current?.pos === block && current.doc === doc ? current : { pos: block, doc },
+    );
     return false;
   });
   useEditorEventListener('focus', () => (setEditorFocus(true), false));

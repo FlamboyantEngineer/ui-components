@@ -129,7 +129,7 @@ Node.js 22 is required.
 
 ```sh
 npm ci
-npm run check       # lint, format, typecheck, no-reference, specs, labs, unit tests, builds, package
+npm run check       # lint, format, typecheck, no-reference, specs, labs, structure, unit tests, builds, public types, package
 npm run test:labs   # Playwright against the built labs
 ```
 

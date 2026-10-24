@@ -7,13 +7,13 @@ import {
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Size } from '../../core/props.js';
-import { ColorSwatch } from './color-swatch.js';
+import { ColorSwatch, isSwatchColor } from './color-swatch.js';
 
 /** How the swatches are laid out: a grid (the arrow keys move in two dimensions) or a stack. */
 export type ColorSwatchPickerLayout = 'grid' | 'stack';
 
 export interface ColorSwatchPickerProps extends BaseProps, AriaLabellingProps {
-  /** The picked colour, as any CSS colour string (controlled). */
+  /** The picked colour, as a hex, `rgb()`, `hsl()` or `hsb()` string (controlled). */
   value?: string | undefined;
   /** The colour picked at first, when uncontrolled. */
   defaultValue?: string | undefined;
@@ -28,7 +28,10 @@ export interface ColorSwatchPickerProps extends BaseProps, AriaLabellingProps {
 }
 
 export interface ColorSwatchPickerItemProps extends Omit<BaseProps, 'id'> {
-  /** The colour, as any CSS colour string; it is also what `onChange` receives. */
+  /**
+   * The colour, as a hex, `rgb()`, `hsl()` or `hsb()` string; it is also what `onChange` receives.
+   * An item whose colour is in another notation is left out.
+   */
   color: string;
   /** Names the colour instead of its name in the locale. */
   colorName?: string | undefined;
@@ -55,6 +58,8 @@ export function ColorSwatchPicker({
   size = 'md',
   className,
   children,
+  value,
+  defaultValue,
   onChange,
   ...rest
 }: ColorSwatchPickerProps) {
@@ -63,6 +68,8 @@ export function ColorSwatchPicker({
     <AriaColorSwatchPicker
       {...rest}
       {...hooks.root({ className, props: rest, data: { size } })}
+      value={isSwatchColor(value) ? value : undefined}
+      defaultValue={isSwatchColor(defaultValue) ? defaultValue : undefined}
       onChange={
         onChange
           ? (color) => {
@@ -88,13 +95,16 @@ export function ColorSwatchPickerItem({
 }: ColorSwatchPickerItemProps) {
   const size = useContext(SwatchSizeContext);
   const texts = useContext(ColorTextsContext);
+  const isShown = isSwatchColor(color);
   useEffect(() => {
+    if (!isShown) return;
     const key = toColorKey(color);
     texts?.set(key, color);
     return () => {
       if (texts?.get(key) === color) texts.delete(key);
     };
-  }, [texts, color]);
+  }, [texts, color, isShown]);
+  if (!isShown) return null;
   return (
     <AriaColorSwatchPickerItem
       {...rest}

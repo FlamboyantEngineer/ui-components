@@ -1,6 +1,9 @@
 import { useLayoutEffect, useRef, type RefObject } from 'react';
 
-/** A ref that always holds the latest value, for callbacks read from effects without restarting them. */
+/**
+ * A ref holding the `value` of the latest committed render, for event handlers and effects that
+ * must read it without re-rendering or re-subscribing when it changes.
+ */
 export function useLatest<T>(value: T): RefObject<T> {
   const ref = useRef(value);
   useLayoutEffect(() => {

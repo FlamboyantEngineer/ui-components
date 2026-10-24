@@ -34,7 +34,7 @@ Verification: `src/components/app-frame/app-frame.test.tsx`, `e2e/app-frame.spec
 
 ### UIC-APP-FRAME-1.5 - Filling regions from below
 
-`AppFrameContent` shall render nothing in place and fill the `region` (`top-bar`, `navigation`, `start-panel`, `end-panel`, `bottom-panel`, `status-bar`) of the nearest `AppFrame` above it, replacing the region's own content while it is mounted and has content; a region with only projected content renders while it has some. The frame owns a [Projection](PROJECTION.md#uic-projection-17---scoped-providers) provider scoped to its region and band slots, so other projection slots below it still reach a provider above the frame, and a frame inside another fills only its own regions. Without a frame above, `AppFrameContent` renders its children in place.
+`AppFrameContent` shall render nothing in place and fill the `region` (`top-bar`, `navigation`, `start-panel`, `end-panel`, `bottom-panel`, `status-bar`) of the nearest `AppFrame` above it, replacing the region's own content while it is mounted and has content; a region with only projected content renders while it has some. The frame owns a [Projection](PROJECTION.md#uic-projection-17---scoped-providers) provider scoped to its region and band slots, so other projection slots below it still reach a provider above the frame, and a frame inside another fills only its own regions. Without a frame above, `AppFrameContent` renders its children in place, even below a projection provider of the host's own.
 
 Implementation: `src/components/app-frame/app-frame.tsx`, `src/components/projection/projection.tsx`
 Verification: `src/components/app-frame/app-frame.test.tsx`, `e2e/app-frame.spec.ts`
@@ -64,9 +64,9 @@ Verification: `src/components/app-frame/app-frame-band.test.tsx`, `e2e/app-frame
 
 ### UIC-APP-FRAME-2.3 - Filling the band from below
 
-`AppFrameBandContent` shall render nothing in place and fill the `slot` (`leading`, `status`, `tools`, `actions`) of the band of the nearest `AppFrame` above it, replacing the band's own content for that part while it is mounted and has content, as `AppFrameContent` fills a region (UIC-APP-FRAME-1.5). The content keeps the state and callbacks of the component that declares it, so a page deep in the frame owns its tools and actions.
+`AppFrameBandContent` shall render nothing in place and fill the `slot` (`leading`, `status`, `tools`, `actions`) of the band of the nearest `AppFrame` above it, replacing the band's own content for that part while it is mounted and has content, as `AppFrameContent` fills a region (UIC-APP-FRAME-1.5). Without a frame above, it renders its children in place, even below a projection provider of the host's own. The content keeps the state and callbacks of the component that declares it, so a page deep in the frame owns its tools and actions.
 
-Implementation: `src/components/app-frame/app-frame-band.tsx`, `src/components/projection/projection.tsx`
+Implementation: `src/components/app-frame/app-frame.tsx`, `src/components/app-frame/app-frame-band.tsx`, `src/components/projection/projection.tsx`
 Verification: `src/components/app-frame/app-frame-band.test.tsx`, `e2e/app-frame.spec.ts`
 
 ### UIC-APP-FRAME-2.4 - Band hooks and caller attributes

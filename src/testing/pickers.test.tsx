@@ -24,6 +24,19 @@ describe('testing pickers', () => {
     expect(onChange).toHaveBeenLastCalledWith('plum');
   });
 
+  it('UIC-TESTING-2.1 picks several options of a multiple selection from the open list', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const { container } = render(
+      <SelectField label="Fruit" selectionMode="multiple" options={fruit} onChange={onChange} />,
+    );
+    const field = getHookElement(container, 'select-field');
+    await selectOption(user, field, 'Pear');
+    await selectOption(user, field, 'Plum');
+    expect(onChange).toHaveBeenLastCalledWith(['pear', 'plum']);
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
+  });
+
   it('UIC-TESTING-2.1 picks a combobox option from its button', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();

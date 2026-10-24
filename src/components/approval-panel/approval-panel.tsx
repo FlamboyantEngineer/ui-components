@@ -96,10 +96,11 @@ const decisions: readonly ApprovalPanelDecision[] = [
   'pending',
 ];
 
-/** The approvals needed: `requiredCount` as a whole number from 1, else every approver. */
+/** The approvals needed, a whole number from 1: `requiredCount`, else every approver. */
 function resolveRequired(requiredCount: number | undefined, approverCount: number): number {
-  if (requiredCount === undefined || !Number.isFinite(requiredCount)) return approverCount;
-  return Math.max(1, Math.trunc(requiredCount));
+  const count =
+    requiredCount === undefined || !Number.isFinite(requiredCount) ? approverCount : requiredCount;
+  return Math.max(1, Math.trunc(count));
 }
 
 /** Rejected by any rejection, approved once the approvals reach the count needed, else pending. */
@@ -152,7 +153,14 @@ function ApproverRow(props: ApproverRowProps) {
       <UserIdentity
         {...approver.person}
         size="sm"
-        nameSuffix={isCurrent ? <span {...hooks.slot('you')}>{strings.you}</span> : null}
+        nameSuffix={
+          isCurrent ? (
+            <>
+              {' '}
+              <span {...hooks.slot('you')}>{strings.you}</span>
+            </>
+          ) : null
+        }
         className={hooks.slotClass('identity')}
       />
       <Badge

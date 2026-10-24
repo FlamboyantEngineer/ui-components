@@ -4,7 +4,7 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Size } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Icon, toIconProps, type IconSource } from '../icon/icon.js';
-import { Shortcut } from '../shortcut/shortcut.js';
+import { Shortcut, useDetectedPlatform } from '../shortcut/shortcut.js';
 import { Tooltip } from '../tooltip/tooltip.js';
 import {
   toAriaButtonProps,
@@ -139,6 +139,7 @@ export function Button({
   ...rest
 }: ButtonProps) {
   const selection = useButtonSelection(rest);
+  const options = { platform: useDetectedPlatform() };
   const isLink = rest.href !== undefined;
   const hookProps = hooks.root({
     className,
@@ -157,11 +158,11 @@ export function Button({
     </ButtonParts>
   );
   const element = isLink ? (
-    <AriaLink {...toAriaLinkProps(rest)} {...hookProps}>
+    <AriaLink {...toAriaLinkProps(rest, options)} {...hookProps}>
       {parts}
     </AriaLink>
   ) : (
-    <AriaButton {...toAriaButtonProps({ ...rest, ...selection })} {...hookProps}>
+    <AriaButton {...toAriaButtonProps({ ...rest, ...selection }, options)} {...hookProps}>
       {parts}
     </AriaButton>
   );

@@ -5,12 +5,8 @@ import { useUiStrings } from '../../core/provider.js';
 import { normalizeCount } from '../../utils/count.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 import { useInView } from '../../utils/use-in-view.js';
-import {
-  ActionButton,
-  runPendingAction,
-  type ActionButtonProps,
-} from '../action-button/action-button.js';
-import type { ButtonSize, ButtonVariant } from '../button/button.js';
+import { usePendingAction, type ActionButtonProps } from '../action-button/action-button.js';
+import { Button, type ButtonSize, type ButtonVariant } from '../button/button.js';
 
 export interface LoadMoreProps
   extends
@@ -72,23 +68,9 @@ function useLoadRequests({
   isDisabled: boolean;
   button: HTMLButtonElement | null;
 }) {
-  const [internalPending, setInternalPending] = useState(false);
-  const running = useRef(false);
-  const pending = isPending ?? internalPending;
+  const { pending, run } = usePendingAction({ isPending, isDisabled, onError });
   const isInView = useInView(button, { enabled: Boolean(autoLoad) && !isDisabled, scrollOffset });
-
-  const request = useCallback(() => {
-    if (running.current || isDisabled || pending) return;
-    void runPendingAction({
-      blocked: false,
-      setPending: (next) => {
-        running.current = next;
-        setInternalPending(next);
-      },
-      action: onLoadMore,
-      onError,
-    });
-  }, [isDisabled, pending, onLoadMore, onError]);
+  const request = useCallback(() => run(onLoadMore), [run, onLoadMore]);
 
   const latestRequest = useRef(request);
   useEffect(() => {
@@ -122,7 +104,7 @@ export function LoadMore({
   const text = toVisibleText(label ?? strings.loadMore, remainingCount, strings.remainingCount);
   const collection = itemLabel?.trim();
   const [button, setButton] = useState<HTMLButtonElement | null>(null);
-  const buttonRef = useMemo(() => mergeRefs(setButton, ref), [ref]);
+  const buttonRef = useMemo(() => mergeRefs<HTMLButtonElement>(setButton, ref), [ref]);
   const { pending, request } = useLoadRequests({
     onLoadMore,
     onError,
@@ -134,7 +116,7 @@ export function LoadMore({
   });
 
   return (
-    <ActionButton
+    <Button
       {...rest}
       ref={buttonRef}
       className={mergeClassNames(hooks.className, className)}
@@ -147,6 +129,6 @@ export function LoadMore({
       onPress={onLoadMore ? request : undefined}
     >
       {text}
-    </ActionButton>
+    </Button>
   );
 }

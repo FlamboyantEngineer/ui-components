@@ -1,7 +1,7 @@
 import { useCallback, type KeyboardEvent, type RefObject } from 'react';
 import { findNextZoomLevel } from '../zoom-control/zoom-control.js';
 import { pdfZoomLevels, type PdfZoom } from './pdf-zoom.js';
-import { useLatest } from './use-latest.js';
+import { useLatest } from '../../utils/use-latest.js';
 import type { PdfPagesController } from './use-pdf-pages.js';
 import type { PdfZoomState } from './use-pdf-zoom.js';
 

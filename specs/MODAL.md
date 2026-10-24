@@ -6,7 +6,7 @@
 
 ### UIC-MODAL-1.1 - Opening and closing
 
-`Modal` shall be open while `isOpen` is true (or, uncontrolled, from `defaultOpen`), report every close through `onOpenChange(false)`, and render nothing while closed. Inside a `ModalTrigger` ([UIC-MODAL-1.6](#uic-modal-16---trigger)), with neither `isOpen` nor `defaultOpen`, it shall follow the trigger's open state. While open it renders, in an overlay at the end of the document body, the `ui-modal` overlay, the `ui-modal__panel` box and the `ui-modal__dialog` element with `role="dialog"`.
+`Modal` shall be open while `isOpen` is true (or, uncontrolled, from `defaultOpen`), report every close through `onOpenChange(false)`, and render nothing while closed. Inside a `ModalTrigger` ([UIC-MODAL-1.6](#uic-modal-16---trigger)) or a React Aria `DialogTrigger`, with neither `isOpen` nor `defaultOpen`, it shall follow the trigger's open state: the trigger's `onOpenChange` reports every change, and the modal's own `onOpenChange` reports the closes the modal makes (Cancel, the close button, Escape, an outside press, an action), so a confirmation can tell a cancel inside a trigger. While open it renders, in an overlay at the end of the document body, the `ui-modal` overlay, the `ui-modal__panel` box and the `ui-modal__dialog` element with `role="dialog"`.
 
 Implementation: `src/components/modal/modal.tsx`
 Verification: `src/components/modal/modal.test.tsx`, `e2e/modal.spec.ts`
@@ -124,7 +124,7 @@ Verification: `src/components/modal/modal.test.tsx`
 
 ### UIC-MODAL-4.3 - Body
 
-The children shall render in the body. Children given as a function receive `close`, which closes the modal.
+The children shall render in the body. Children given as a function receive `close`, which closes the modal, and `runPrimaryAction` ([UIC-MODAL-6.3](#uic-modal-63---primary-action-from-the-content)).
 
 Implementation: `src/components/modal/modal.tsx`
 Verification: `src/components/modal/modal.test.tsx`
@@ -181,6 +181,13 @@ Verification: `src/components/modal/modal.test.tsx`, `e2e/modal.spec.ts`
 
 Implementation: `src/components/modal/modal-dialog.tsx`, `src/components/modal/modal.tsx`
 Verification: `src/components/modal/modal.test.tsx`
+
+### UIC-MODAL-6.3 - Primary action from the content
+
+`runPrimaryAction`, given to children that are a function, shall run the primary action through the same lifecycle as a press: its button pending until a returned promise settles, a repeat refused even before the pending state renders, and a rejection announced as a failure. It shall do nothing whenever Control+Enter would not run the action: while it is disabled or pending, while another action runs, and when `actions` replaces the built-in buttons. A dialog whose field saves on Enter calls it, so one key press runs the action once.
+
+Implementation: `src/components/modal/modal-dialog.tsx`, `src/components/modal/modal.tsx`
+Verification: `src/components/modal/modal.test.tsx`, `e2e/modal.spec.ts`
 
 ## UIC-MODAL-7 - Hooks
 

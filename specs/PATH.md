@@ -50,7 +50,7 @@ Verification: `src/components/path/path.test.tsx`
 
 ### UIC-PATH-2.4 - Hooks and caller attributes
 
-`Path` shall carry the hooks below, append the caller's `className`, and forward caller `data-*` attributes, `id`, `ref` and the other native `<span>` attributes to its root, except the pointer handlers the tooltip owns (`onPointerEnter`, `onPointerLeave`, `onPointerDown`).
+`Path` shall carry the hooks below, append the caller's `className`, and forward caller `data-*` attributes, `id`, `ref` and the other native `<span>` attributes to its root, except the pointer handlers the tooltip owns (`onPointerEnter`, `onPointerLeave`, `onPointerDown`). Its props are its own and the native ones: the Truncation Tooltip's expandable-text props (`expandable`, `isExpanded`, `defaultExpanded`, `onExpandedChange`), which an earlier release let through and which add a "Show more" control that [UIC-PATH-2.1](#uic-path-21---text) rules out, are deprecated: they are still passed on until a major release removes them.
 
 Implementation: `src/components/path/path.tsx`
 Verification: `src/components/path/path.test.tsx`

@@ -1,5 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
+import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { ColorField } from './color-field.js';
@@ -57,11 +58,63 @@ describe('ColorField typing', () => {
     expect(input()).toHaveValue('#FF0000');
     await user.clear(input());
     await user.type(input(), '00aa00');
+    // Leaving the input applies the text; leaving the field commits it.
     await user.tab();
     expect(onCommit).toHaveBeenLastCalledWith('#00aa00');
     await user.click(input());
     await user.keyboard('{Control>}z{/Control}');
     expect(input()).toHaveValue('#FF0000');
+  });
+
+  it('UIC-COLOR-FIELD-4.3 UIC-FIELD-1.11 reaches the restore button by Tab and commits on leaving the field', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    function Saved() {
+      const [value, setValue] = useState<string | null>('#cc3300');
+      const [committed, setCommitted] = useState<string | null>('#336699');
+      return (
+        <ColorField
+          label="Accent"
+          allowsTyping
+          value={value}
+          onChange={setValue}
+          committedValue={committed}
+          onCommit={(next) => {
+            onCommit(next);
+            setCommitted(next);
+          }}
+        />
+      );
+    }
+    render(<Saved />);
+    expect(screen.getByRole('button', { name: 'Restore Accent' })).toBeInTheDocument();
+    await user.clear(input());
+    await user.type(input(), '#00aa00');
+    await user.tab();
+    const restore = screen.getByRole('button', { name: 'Restore Accent' });
+    expect(restore).toHaveFocus();
+    expect(input()).toHaveValue('#00AA00');
+    expect(onCommit).not.toHaveBeenCalled();
+    await user.tab();
+    expect(onCommit).toHaveBeenLastCalledWith('#00aa00');
+    expect(restore).not.toBeInTheDocument();
+  });
+
+  it('UIC-COLOR-FIELD-4.3 UIC-FIELD-1.11 applies typed text when focus moves to the swatch button', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    render(<ColorField label="Accent" allowsTyping defaultValue="#336699" onCommit={onCommit} />);
+    await user.clear(input());
+    await user.type(input(), 'f00');
+    await user.tab({ shift: true });
+    expect(screen.getByRole('button', { name: 'Accent picker' })).toHaveFocus();
+    expect(input()).toHaveValue('#FF0000');
+    expect(onCommit).not.toHaveBeenCalled();
+    await user.tab();
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'Restore Accent' })).toHaveFocus();
+    await user.tab();
+    expect(onCommit).toHaveBeenLastCalledWith('#ff0000');
   });
 
   it('UIC-COLOR-FIELD-4.3 puts back unreadable text and clears an optional value', async () => {

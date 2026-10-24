@@ -106,7 +106,7 @@ function SaveForm() {
         data-lab-modal="save"
         footerContent={
           <>
-            <Shortcut chord="Ctrl+Enter" /> saves.{' '}
+            Enter in City or <Shortcut chord="Ctrl+Enter" /> saves.{' '}
             <Button
               size="sm"
               data-lab-action="finish"
@@ -141,9 +141,18 @@ function SaveForm() {
           },
         }}
       >
-        <label>
-          City <input value={name} onChange={(event) => setName(event.target.value)} />
-        </label>
+        {({ runPrimaryAction }) => (
+          <label>
+            City{' '}
+            <input
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' && !event.ctrlKey && !event.metaKey) runPrimaryAction();
+              }}
+            />
+          </label>
+        )}
       </Modal>
     </div>
   );
@@ -333,7 +342,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Asynchronous primary action"
-      description="Save stays pending until Finish request or Fail request in the footer, refusing repeat presses meanwhile; a finished save closes and a failure stays open with the error."
+      description="Save, Enter in City or Control+Enter runs the same action, which stays pending until Finish request or Fail request in the footer, refusing repeat presses and keys meanwhile; a finished save closes and a failure stays open with the error."
     >
       <SaveForm />
     </LabSection>

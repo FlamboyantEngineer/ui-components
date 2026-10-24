@@ -244,7 +244,7 @@ mountLab(
       description="With selectionMode multiple the segments press independently, as a toolbar of toggles."
     >
       <StateMatrix
-        axes={{ state: ['default', 'disabled'] }}
+        axes={{ state: ['default', 'disabled', 'read-only'] }}
         render={({ state }) => (
           <SegmentedChoice
             aria-label={`Text style, ${state}`}
@@ -252,6 +252,7 @@ mountLab(
             options={styles}
             defaultValue={['bold', 'underline']}
             isDisabled={state === 'disabled'}
+            isReadOnly={state === 'read-only'}
             sizing="content"
           />
         )}

@@ -1,4 +1,4 @@
-import type { KeyboardEvent, ReactNode } from 'react';
+import type { JSX, KeyboardEvent, ReactElement, ReactNode } from 'react';
 import { Toolbar, Tooltip, TooltipTrigger } from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks, pickDataAttributes } from '../../core/hooks.js';
@@ -65,6 +65,11 @@ function ActionRowMenu({
   );
 }
 
+/** A tooltip that only repeats the action's label names the button already, so it describes nothing. */
+function renderWithoutDescription(props: JSX.IntrinsicElements['button']): ReactElement {
+  return <button {...props} aria-describedby={undefined} />;
+}
+
 /** A custom action's ref and toggle state, which report `aria-pressed` either way once set. */
 function toCustomButtonProps(action: ActionRowAction): Partial<IconButtonProps> {
   if (action.verb !== 'custom') return {};
@@ -91,6 +96,7 @@ function ActionRowButton({ action, size }: { action: ActionRowAction; size: Butt
       isPending={action.isPending}
       pendingLabel={pendingLabel}
       aria-controls={action['aria-controls']}
+      render={action.tooltip === undefined ? renderWithoutDescription : undefined}
     />
   );
   const withTooltip = (

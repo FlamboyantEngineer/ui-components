@@ -1,4 +1,4 @@
-import { useId, type ReactNode } from 'react';
+import { memo, useId, type ReactNode } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { ScrollRegion } from '../scroll-region/scroll-region.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
@@ -68,9 +68,16 @@ export function MergePane({ side, label, paneRef, children }: MergeFrameProps) {
 
 /**
  * One input side: a table of its lines, one body per chunk, padded with filler rows so every side
- * draws as many rows for a chunk and the sides stay level.
+ * draws as many rows for a chunk and the sides stay level. Its props hold while the reader edits a
+ * conflict's result, so typing redraws only the result pane.
  */
-export function MergeSidePane({ side, label, blocks, current, paneRef }: MergeSidePaneProps) {
+export const MergeSidePane = memo(function MergeSidePane({
+  side,
+  label,
+  blocks,
+  current,
+  paneRef,
+}: MergeSidePaneProps) {
   return (
     <MergePane side={side} label={label} paneRef={paneRef}>
       <table {...hooks.slot('table')}>
@@ -97,4 +104,4 @@ export function MergeSidePane({ side, label, blocks, current, paneRef }: MergeSi
       </table>
     </MergePane>
   );
-}
+});

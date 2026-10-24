@@ -59,7 +59,10 @@ const hooks = createHooks('combobox', [
   'button',
 ]);
 
-/** Empties the input and the selection, then returns focus to the input. */
+/**
+ * Empties the input and, for a single combobox, the selection, then returns focus to the input. A
+ * multiple combobox keeps its chips, which have their own remove buttons.
+ */
 function ClearButton({ inputRef }: { inputRef: RefObject<HTMLInputElement | null> }) {
   const state = useContext(ComboBoxStateContext);
   const strings = useUiStrings();
@@ -72,8 +75,11 @@ function ClearButton({ inputRef }: { inputRef: RefObject<HTMLInputElement | null
       variant="bare"
       size="sm"
       className={hooks.slotClass('clear')}
+      // Pressing keeps focus in the input, so an open list neither closes nor reverts the text
+      // under the pointer, which would take the button away mid-press.
+      preventFocusOnPress
       onPress={() => {
-        state.setSelectedKey(null);
+        if (!Array.isArray(state.value)) state.setSelectedKey(null);
         state.setInputValue('');
         inputRef.current?.focus();
       }}

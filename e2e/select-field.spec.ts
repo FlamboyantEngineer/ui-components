@@ -64,7 +64,7 @@ test.describe('Select Field lab', () => {
   }) => {
     await lab.open('select-field', { theme: 'dark' });
     await lab.expectAccessible();
-    await field(page, 'multiple').getByRole('button', { name: 'Select an option Basket' }).click();
+    await field(page, 'multiple').getByRole('button', { name: '2 selected Basket' }).click();
     await expect(page.getByRole('listbox')).toBeVisible();
     await lab.expectAccessible('.ui-select-field__popover');
   });
@@ -146,7 +146,7 @@ test.describe('Select Field lab', () => {
     await expect(output(page, 'Value')).toHaveText('fig');
     await basket.getByRole('button', { name: 'Restore Apple' }).click();
     await expect(output(page, 'Value')).toHaveText('apple, fig');
-    await basket.getByRole('button', { name: 'Select an option Basket' }).click();
+    await basket.getByRole('button', { name: '2 selected Basket' }).click();
     await page.getByRole('option', { name: 'Quince' }).click();
     await expect(page.getByRole('listbox')).toBeVisible();
     await page.getByRole('option', { name: 'Pear' }).click();

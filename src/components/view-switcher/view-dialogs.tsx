@@ -1,6 +1,6 @@
 // The dialogs a view switcher opens from a view's actions: naming a view, and confirming a deletion.
 
-import { useState, type KeyboardEvent } from 'react';
+import { useState } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { ConfirmDialog } from '../confirm-dialog/confirm-dialog.js';
 import { Modal } from '../modal/modal.js';
@@ -35,12 +35,6 @@ function NameViewDialog({
     await dialog?.onSubmit(name);
     onClose();
   };
-  const onKeyDown = (event: KeyboardEvent) => {
-    // A failed submit keeps the dialog open; the Save action shows the failure when pressed.
-    if (event.key === 'Enter' && !event.nativeEvent.isComposing && name) {
-      submit().catch(() => undefined);
-    }
-  };
   return (
     <Modal
       isOpen={dialog?.isOpen ?? false}
@@ -51,14 +45,20 @@ function NameViewDialog({
       title={dialog?.type === 'rename' ? strings.renameView : strings.newView}
       primaryAction={{ label: strings.save, isDisabled: !name, onPress: submit }}
     >
-      <TextField
-        label={strings.viewName}
-        value={draft ?? dialog?.label ?? ''}
-        onChange={setDraft}
-        onKeyDown={onKeyDown}
-        isRequired
-        autoFocus
-      />
+      {({ runPrimaryAction }) => (
+        <TextField
+          label={strings.viewName}
+          value={draft ?? dialog?.label ?? ''}
+          onChange={setDraft}
+          onKeyDown={(event) => {
+            // Control+Enter is the modal's own shortcut for the same action.
+            if (event.key !== 'Enter' || event.ctrlKey || event.metaKey) return;
+            if (!event.nativeEvent.isComposing) runPrimaryAction();
+          }}
+          isRequired
+          autoFocus
+        />
+      )}
     </Modal>
   );
 }

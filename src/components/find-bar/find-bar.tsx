@@ -145,7 +145,8 @@ function FindBarReplace({
     props.onReplacementChange,
   );
   const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key !== 'Enter') return;
+    // The Enter that confirms a text composition replaces nothing.
+    if (event.key !== 'Enter' || event.nativeEvent.isComposing) return;
     event.preventDefault();
     event.stopPropagation();
     if (hasMatches) onReplace?.(replacement);
@@ -216,7 +217,7 @@ function FindBarFind({
   );
   const hasMatches = (matchCount ?? 0) > 0;
   const onKeyDown = (event: KeyboardEvent) => {
-    if (event.key !== 'Enter') return;
+    if (event.key !== 'Enter' || event.nativeEvent.isComposing) return;
     event.preventDefault();
     if (!hasMatches) return;
     if (event.shiftKey) onPrevious?.();

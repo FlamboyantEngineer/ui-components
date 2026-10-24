@@ -20,7 +20,7 @@ Verification: `src/components/record-label/record-label.test.tsx`, `e2e/record-l
 
 ### UIC-RECORD-LABEL-1.3 - Link
 
-With `href` the root shall be a library [Link](LINK.md) (also `ui-link`, `secondary`, underlined on hover) to the record, rendered through the provider's link renderer, whose text is the whole label; `isExternal` opens it in a new tab and says so. Without `href` the root is a `<span>` with no role or tab stop. `aria-label`, `aria-labelledby`, `aria-describedby` and `aria-details` reach the root.
+With `href` the root shall be a library [Link](LINK.md) (also `ui-link`, `secondary`, underlined on hover) to the record, rendered through the provider's link renderer, whose text is the whole label; `isExternal` opens it in a new tab and says so. Without `href` the root is a `<span>` with no role or tab stop. `aria-label`, `aria-labelledby`, `aria-describedby` and `aria-details` reach the link. A `<span>` cannot carry a name, so without a link `aria-describedby` and `aria-details` reach it, an `aria-label` is read in place of the visible text from a visually hidden `ui-record-label__accessible-label` slot (the identity and name hidden from assistive technology), and `aria-labelledby` is not set.
 
 Implementation: `src/components/record-label/record-label.tsx`, `src/components/link/link.tsx`
 Verification: `src/components/record-label/record-label.test.tsx`, `e2e/record-label.spec.ts`
@@ -48,13 +48,14 @@ Verification: `src/components/record-label/record-label.test.tsx`
 
 ## Hooks
 
-| Hook                          | Kind      | Values                  | Description                                          |
-| ----------------------------- | --------- | ----------------------- | ---------------------------------------------------- |
-| `ui-record-label`             | root      |                         | The label: a `<span>`, or the link (also `ui-link`). |
-| `ui-record-label__identity`   | slot      |                         | The icon and identifier, which never break apart.    |
-| `ui-record-label__icon`       | slot      |                         | The decorative icon (also `ui-icon`).                |
-| `ui-record-label__identifier` | slot      |                         | The identifier, or the unavailable record's text.    |
-| `ui-record-label__name`       | slot      |                         | The name (also `ui-truncation-tooltip` when cut).    |
-| `data-size`                   | attribute | `sm`, `md`, `lg`        | Icon and text size.                                  |
-| `data-truncate`               | attribute | `true`                  | The name stays on one line and is cut.               |
-| `data-unavailable`            | attribute | `restricted`, `missing` | Why the record cannot be shown.                      |
+| Hook                                | Kind      | Values                  | Description                                             |
+| ----------------------------------- | --------- | ----------------------- | ------------------------------------------------------- |
+| `ui-record-label`                   | root      |                         | The label: a `<span>`, or the link (also `ui-link`).    |
+| `ui-record-label__identity`         | slot      |                         | The icon and identifier, which never break apart.       |
+| `ui-record-label__icon`             | slot      |                         | The decorative icon (also `ui-icon`).                   |
+| `ui-record-label__identifier`       | slot      |                         | The identifier, or the unavailable record's text.       |
+| `ui-record-label__name`             | slot      |                         | The name (also `ui-truncation-tooltip` when cut).       |
+| `ui-record-label__accessible-label` | slot      |                         | Visually hidden `aria-label` of a label without a link. |
+| `data-size`                         | attribute | `sm`, `md`, `lg`        | Icon and text size.                                     |
+| `data-truncate`                     | attribute | `true`                  | The name stays on one line and is cut.                  |
+| `data-unavailable`                  | attribute | `restricted`, `missing` | Why the record cannot be shown.                         |

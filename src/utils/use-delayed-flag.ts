@@ -13,3 +13,9 @@ export function useDelayedFlag(isActive: boolean, delay: number | undefined): bo
   }, [isActive, delay]);
   return isActive && isElapsed;
 }
+
+/** An active flag held back until it has stayed active for `delay` milliseconds; at once without one. */
+export function useActiveAfter(isActive: boolean, delay: number): boolean {
+  const isElapsed = useDelayedFlag(isActive, delay > 0 ? delay : undefined);
+  return delay > 0 ? isElapsed : isActive;
+}

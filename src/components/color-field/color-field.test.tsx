@@ -42,10 +42,34 @@ describe('ColorField', () => {
     rerender(<ColorField id="accent" label="Accent" value={null} placeholder="Pick a colour" />);
     expect(value()).toHaveTextContent('Pick a colour');
     expect(value()).toHaveAttribute('data-placeholder', 'true');
-    rerender(<ColorField id="accent" label="Accent" value="#336699" isReadOnly />);
-    expect(trigger()).toBeDisabled();
     rerender(<ColorField id="accent" label="Accent" value="#336699" isDisabled />);
     expect(trigger()).toBeDisabled();
+  });
+
+  it('UIC-COLOR-FIELD-1.2 keeps a read-only trigger focusable and never opens the picker', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    render(<ColorField label="Accent" value="#336699" isReadOnly onCommit={onCommit} />);
+    expect(trigger()).toBeEnabled();
+    await user.tab();
+    expect(trigger()).toHaveFocus();
+    expect(trigger()).toHaveAccessibleName('Accent #336699');
+    await user.keyboard('{Enter}');
+    await user.click(trigger());
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    await user.keyboard('{Backspace}');
+    expect(onCommit).not.toHaveBeenCalled();
+  });
+
+  it('UIC-COLOR-FIELD-1.3 closes the picker when the field locks and keeps it closed when unlocked', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<ColorField label="Accent" defaultValue="#336699" />);
+    await user.click(trigger());
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+    rerender(<ColorField label="Accent" defaultValue="#336699" isReadOnly />);
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    rerender(<ColorField label="Accent" defaultValue="#336699" />);
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('UIC-COLOR-FIELD-1.3 opens a picker with an area, a hue slider, a hex input and Clear', async () => {
@@ -158,6 +182,34 @@ describe('ColorField', () => {
     await user.keyboard('{Delete}');
     expect(onCommit).not.toHaveBeenCalled();
     expect(trigger()).toHaveAccessibleName('Accent #336699');
+  });
+
+  it('UIC-COLOR-FIELD-2.4 submits the stored value under its name', async () => {
+    const user = userEvent.setup();
+    const { unmount } = render(
+      <form aria-label="Theme">
+        <ColorField label="Accent" name="accent" defaultValue="#336699" format="rgb" />
+      </form>,
+    );
+    const form = () => screen.getByRole('form', { name: 'Theme' }) as HTMLFormElement;
+    expect(new FormData(form()).getAll('accent')).toEqual(['#336699']);
+    trigger().focus();
+    await user.keyboard('{Backspace}');
+    expect(new FormData(form()).getAll('accent')).toEqual(['']);
+    unmount();
+    const { rerender } = render(
+      <form aria-label="Theme">
+        <ColorField label="Accent" name="accent" defaultValue="#336699" allowsTyping />
+      </form>,
+    );
+    expect(screen.getByRole('textbox', { name: 'Accent' })).not.toHaveAttribute('name');
+    expect(new FormData(form()).getAll('accent')).toEqual(['#336699']);
+    rerender(
+      <form aria-label="Theme">
+        <ColorField label="Accent" name="accent" defaultValue="#336699" allowsTyping isDisabled />
+      </form>,
+    );
+    expect(new FormData(form()).getAll('accent')).toEqual([]);
   });
 
   it('UIC-COLOR-FIELD-2.3 shows dirty state, restores and sets the default from the menu', async () => {

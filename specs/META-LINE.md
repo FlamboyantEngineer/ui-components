@@ -20,7 +20,7 @@ Verification: `src/components/meta-line/meta-line.test.tsx`, `e2e/meta-line.spec
 
 ### UIC-META-LINE-1.3 - Nodes keep their identity
 
-Entries shall keep their markup, accessibility and interactions, and keep their state when entries around them appear or disappear. An entry with an explicit React key is keyed by it, and other entries by position, in separate namespaces so an explicit key `1` never collides with position 1. The line adds no control, role or live region.
+Entries shall keep their markup, accessibility and interactions, and keep their state when entries around them appear or disappear. An entry with an explicit React key is keyed by it, and other entries by their position in `items`, counting empty entries, so an unkeyed entry keeps its state when an entry before it empties; the two live in separate namespaces so an explicit key `1` never collides with position 1. The line adds no control, role or live region.
 
 Implementation: `src/components/meta-line/meta-line.tsx`
 Verification: `src/components/meta-line/meta-line.test.tsx`

@@ -57,7 +57,7 @@ Verification: `src/components/shortcut/shortcut-format.test.ts`
 
 ### UIC-SHORTCUT-2.1 - Keycaps
 
-`Shortcut` shall render a `<kbd>` root (React Aria `Keyboard`) holding the `ui-shortcut__keys` wrapper, which draws one `<kbd>` keycap per modifier and key in the `ui-shortcut__key` slot, with the platform separator between them, so its text equals `formatShortcut`. It publishes the notation drawn in `data-platform` and uses the detected platform unless `platform` is set. A chord with an empty key renders nothing.
+`Shortcut` shall render a `<kbd>` root (React Aria `Keyboard`) holding the `ui-shortcut__keys` wrapper, which draws one `<kbd>` keycap per modifier and key in the `ui-shortcut__key` slot, with the platform separator between them, so its text equals `formatShortcut`. It publishes the notation drawn in `data-platform` and uses the detected platform unless `platform` is set. On the server and while hydrating it draws the notation detection reports without a browser (`linux`), so the hydrated markup matches, then draws the browser's own notation. A chord with an empty key renders nothing.
 
 Implementation: `src/components/shortcut/shortcut.tsx`, `labs/reference/shortcut.css`
 Verification: `src/components/shortcut/shortcut.test.tsx`, `e2e/shortcut.spec.ts`

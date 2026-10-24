@@ -1,11 +1,12 @@
-import { createEvent, fireEvent, render, screen } from '@testing-library/react';
+import { createEvent, fireEvent, render, renderHook, screen } from '@testing-library/react';
 import { type UserEvent, userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Table } from './table.js';
 import { applyTableMove, type TableMove } from './table-rows.js';
-import type { TableReorderOptions } from './use-table-reorder.js';
+import { toCollectionKey } from '../../utils/to-collection-key.js';
+import { useTableReorder, type TableReorderOptions } from './use-table-reorder.js';
 
 interface Task {
   id: string;
@@ -196,5 +197,46 @@ describe('Table reordering', { timeout: 15_000 }, () => {
     expect(preview).toHaveTextContent('1 task: Dry');
     expectHooksMatchSpec(document.body, 'TABLE', { slots: ['drag-preview'] });
     fireEvent(row('Dry'), createEvent.dragEnd(row('Dry'), { dataTransfer }));
+  });
+
+  it("UIC-TABLE-5.1 carries the dragged rows' own ids as their text", () => {
+    const { result } = renderHook(() =>
+      useTableReorder({ rows: [{ id: 'a b' }, { id: 1 }], reorder: { onMove() {} } }),
+    );
+    const keys = new Set([toCollectionKey('a b'), toCollectionKey(1)]);
+    expect(result.current.dragAndDrop.getItems(keys)).toEqual([
+      { 'text/plain': 'a b' },
+      { 'text/plain': '1' },
+    ]);
+  });
+
+  it('UIC-TABLE-5.6 draws the preview from the dragged row only, beside a row of the same spelling', () => {
+    const rows = [
+      { id: 1, title: 'Numeric' },
+      { id: '1', title: 'Text' },
+    ];
+    render(
+      <Table
+        aria-label="Typed"
+        rows={rows}
+        columns={[{ id: 'title', header: 'Title' }]}
+        reorder={{ onMove: () => {}, renderDragPreview: (dragged) => dragged[0]?.title }}
+      />,
+    );
+    const setDragImage = vi.fn();
+    const dataTransfer = {
+      clearData: () => {},
+      setData: () => {},
+      setDragImage,
+      items: { add: () => {} },
+      dropEffect: 'none',
+      effectAllowed: 'all',
+    };
+    fireEvent(row('Text'), createEvent.dragStart(row('Text'), { dataTransfer }));
+    const preview = (setDragImage.mock.lastCall?.[0] as HTMLElement)
+      .firstElementChild as HTMLElement;
+    expect(preview).toHaveAttribute('data-count', '1');
+    expect(preview).toHaveTextContent('Text');
+    fireEvent(row('Text'), createEvent.dragEnd(row('Text'), { dataTransfer }));
   });
 });

@@ -54,6 +54,52 @@ describe('Combobox chips', () => {
     },
   );
 
+  it('UIC-COMBOBOX-3.1 names the chips after a label drawn as markup or named elsewhere', async () => {
+    render(
+      <>
+        <h2 id="cities-heading">Cities</h2>
+        <Combobox
+          aria-labelledby="cities-heading"
+          selectionMode="multiple"
+          defaultItems={cities}
+          defaultValue={['lima']}
+        />
+        <Combobox
+          label={<span>Towns</span>}
+          selectionMode="multiple"
+          defaultItems={cities}
+          defaultValue={['oslo']}
+        />
+      </>,
+    );
+    expect(await screen.findByRole('grid', { name: 'Cities selected values' })).toBeInTheDocument();
+    expect(await screen.findByRole('grid', { name: 'Towns selected values' })).toBeInTheDocument();
+  });
+
+  it('UIC-COMBOBOX-1.4 UIC-COMBOBOX-3.1 clears the typed text of a multiple combobox and keeps its chips', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const { container } = render(
+      <Combobox
+        label="Cities"
+        selectionMode="multiple"
+        defaultItems={cities}
+        defaultValue={['lima']}
+        onChange={onChange}
+      />,
+    );
+    const combobox = screen.getByRole('combobox', { name: 'Cities' });
+    await user.type(combobox, 'pa');
+    // The open list hides the rest of the field from assistive technology, so find the hook.
+    await user.click(container.querySelector<HTMLElement>('.ui-combobox__clear')!);
+    expect(combobox).toHaveValue('');
+    expect(combobox).toHaveFocus();
+    expect(onChange).not.toHaveBeenCalled();
+    await user.keyboard('{Escape}');
+    const chips = screen.getByRole('grid', { name: 'Cities selected values' });
+    expect(within(chips).getByRole('row')).toHaveTextContent('Lima');
+  });
+
   it('UIC-COMBOBOX-3.1 removes a chip by its button or by Backspace', async () => {
     const user = userEvent.setup();
     function Cities() {

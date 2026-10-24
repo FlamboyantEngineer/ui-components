@@ -24,6 +24,21 @@ describe('PdfViewer document', () => {
     expect(engine.getDocument).toHaveBeenCalledTimes(1);
   });
 
+  it('UIC-PDF-VIEWER-1.1 keeps the document open across new URL objects for the same address', async () => {
+    const address = () => new URL('/files/Report.pdf', 'https://example.test/');
+    const { engine, update } = renderViewer({ source: address() });
+    await screen.findAllByRole('presentation');
+    expect(engine.getDocument).toHaveBeenCalledExactlyOnceWith({
+      url: 'https://example.test/files/Report.pdf',
+    });
+    update({ source: address() });
+    update({ source: address() });
+    await screen.findAllByRole('presentation');
+    expect(engine.getDocument).toHaveBeenCalledOnce();
+    update({ source: new URL('/files/Other.pdf', 'https://example.test/') });
+    await waitFor(() => expect(engine.getDocument).toHaveBeenCalledTimes(2));
+  });
+
   it('UIC-PDF-VIEWER-1.6 asks for the password, marks a wrong one and opens with the right one', async () => {
     const engine = createEngine({ password: 'orchard' });
     const { root, container } = renderViewer({}, engine);

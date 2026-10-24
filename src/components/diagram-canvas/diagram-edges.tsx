@@ -1,4 +1,4 @@
-import type { PointerEvent } from 'react';
+import { useMemo, useState, type PointerEvent } from 'react';
 import type { Key } from '../../core/props.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { diagramHooks as hooks } from './diagram-hooks.js';
@@ -27,6 +27,15 @@ interface RoutedEdge {
   route: DiagramRoute;
 }
 
+/** An edge's route with what it was routed from, reused while none of that changes. */
+interface CachedRoute {
+  source: DiagramNode;
+  target: DiagramNode;
+  routing: DiagramEdgeRouting;
+  offset: number;
+  route: DiagramRoute;
+}
+
 const layerPadding = 96;
 
 function resolveEnd(node: DiagramNode, portId: string | undefined): DiagramEdgeEnd {
@@ -37,19 +46,35 @@ function resolveEnd(node: DiagramNode, portId: string | undefined): DiagramEdgeE
   };
 }
 
-function routeEdges(controller: DiagramController, routing: DiagramEdgeRouting): RoutedEdge[] {
+/**
+ * Every edge with its route. Routes are kept per edge and reused while the edge, its two nodes, the
+ * routing and its offset stay the same, so dragging one node re-routes only the edges touching it.
+ */
+function useRoutedEdges(controller: DiagramController, routing: DiagramEdgeRouting): RoutedEdge[] {
+  const [cache] = useState(() => new WeakMap<DiagramEdge, CachedRoute>());
+  const offsets = useMemo(() => spreadParallelEdges(controller.edges), [controller.edges]);
   const byId = new Map(controller.nodes.map((node) => [node.id, node]));
-  const offsets = spreadParallelEdges(controller.edges);
   return controller.edges.flatMap((edge) => {
     const source = byId.get(edge.source);
     const target = byId.get(edge.target);
     if (!source || !target) return [];
+    const offset = offsets.get(edge.id) ?? 0;
+    const cached = cache.get(edge);
+    if (
+      cached?.source === source &&
+      cached.target === target &&
+      cached.routing === routing &&
+      cached.offset === offset
+    ) {
+      return [{ edge, route: cached.route }];
+    }
     const route = routeDiagramEdge({
       source: resolveEnd(source, edge.sourcePort),
       target: resolveEnd(target, edge.targetPort),
       routing,
-      offset: offsets.get(edge.id) ?? 0,
+      offset,
     });
+    cache.set(edge, { source, target, routing, offset, route });
     return [{ edge, route }];
   });
 }
@@ -73,7 +98,7 @@ function routePreview(controller: DiagramController, routing: DiagramEdgeRouting
  */
 export function DiagramEdges({ controller, routing }: DiagramEdgesProps) {
   const { selection } = controller;
-  const routed = routeEdges(controller, routing);
+  const routed = useRoutedEdges(controller, routing);
   const preview = routePreview(controller, routing);
   const points = [...routed.map((item) => item.route.label), ...(preview ? [preview.label] : [])];
   const bounds = findDiagramBounds(

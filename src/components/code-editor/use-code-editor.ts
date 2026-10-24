@@ -146,13 +146,14 @@ export function useCodeEditor(options: CodeEditorOptions): CodeEditorModel {
   const [caret, setCaret] = useState<number | null>(null);
   const [announcement, setAnnouncement] = useState('');
   const { tokens, marked, bracket } = useDecoratedText(options, caret);
+  const segments = splitSegments(tokens, toDecorations({ marked, search, bracket, completion }));
   const hover = useCodeHover({
     inputRef: layers.input,
     highlightRef: layers.highlight,
     marked,
     renderHover: options.renderHover,
+    segments,
   });
-  const segments = splitSegments(tokens, toDecorations({ marked, search, bracket, completion }));
   const currentMatch = search.matches[search.current];
   useLayoutEffect(() => {
     const input = layers.input.current;

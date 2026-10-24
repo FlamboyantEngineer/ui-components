@@ -36,6 +36,7 @@ function TileHandle({ grid, kind, label, minColumnSpan, minRowSpan }: TileHandle
   const moveProps = useTileMove({
     item: grid.item,
     kind,
+    columns: grid.columns,
     minColumnSpan,
     minRowSpan,
     measureStep: grid.measureStep,

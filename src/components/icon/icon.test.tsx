@@ -44,6 +44,15 @@ describe('Icon', () => {
     expect(toIconProps(node)).toEqual({ children: node });
   });
 
+  it('UIC-ICON-1.1 draws a string that names no glyph as text', () => {
+    expect(isGlyphName('★')).toBe(false);
+    expect(isGlyphName('constructor')).toBe(false);
+    expect(toIconProps('★')).toEqual({ children: '★' });
+    const { container } = render(<Icon {...toIconProps('★')} />);
+    expect(container.querySelector('.ui-icon')).toHaveTextContent('★');
+    expect(container.querySelector('.ui-icon__glyph')).toBeNull();
+  });
+
   it('UIC-ICON-1.2 publishes the size, medium by default', () => {
     const { container, rerender } = render(<Icon glyph="plus" />);
     expect(container.firstElementChild).toHaveAttribute('data-size', 'md');

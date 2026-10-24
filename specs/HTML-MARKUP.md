@@ -22,9 +22,9 @@ Verification: `src/components/html-markup/sanitize-html.test.ts`
 
 ### UIC-HTML-MARKUP-1.3 - Elements
 
-Elements the policy does not list shall be unwrapped, their content kept in their place. `script`, `style`, `template`, `iframe`, `frame`, `frameset`, `object`, `embed`, `applet`, `noscript`, `noembed`, `noframes`, `xmp`, `plaintext`, `title`, `textarea`, `select`, `svg`, `math`, `base`, `link` and `meta` shall be dropped with their content whatever the policy lists; the content of the raw-text ones is never parsed as markup.
+Elements the policy does not list shall be unwrapped, their content kept in their place. `script`, `style`, `template`, `iframe`, `frame`, `frameset`, `object`, `embed`, `applet`, `noscript`, `noembed`, `noframes`, `xmp`, `plaintext`, `title`, `textarea`, `select`, `svg`, `math`, `base`, `link` and `meta` shall be dropped with their content whatever the policy lists, up to the closing tag that matches them (nested elements of the same name are counted). The content of the ones an HTML parser reads as text (`script`, `style`, `iframe`, `noembed`, `noframes`, `noscript`, `xmp`, `plaintext`, `textarea` and `title`) is never parsed as markup.
 
-Implementation: `src/components/html-markup/html-tree.ts`, `src/components/html-markup/sanitize-html.ts`
+Implementation: `src/components/html-markup/html-tree.ts`, `src/components/html-markup/sanitize-html.ts`, `src/utils/markup.ts`
 Verification: `src/components/html-markup/sanitize-html.test.ts`, `e2e/html-markup.spec.ts`
 
 ### UIC-HTML-MARKUP-1.4 - Attributes

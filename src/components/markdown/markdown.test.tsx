@@ -1,7 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { render, screen, within } from '@testing-library/react';
+import { render, renderHook, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
+import { isValidElement } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
@@ -140,6 +141,43 @@ describe('Markdown', () => {
     expect(tasks).toHaveLength(2);
     expect(tasks[1]?.querySelector('p')).toHaveTextContent('Later.');
     expectHooksMatchSpec(container, 'MARKDOWN', { slots: ['task'] });
+  });
+
+  it('UIC-MARKDOWN-2.1 builds deeply nested block quotes without recursive calls', () => {
+    const document = parseMarkdown('>'.repeat(5000) + ' deep');
+    // Build the element tree without mounting it, so the check does not depend on the host
+    // renderer's own nesting limit.
+    const { result } = renderHook(() => Markdown({ source: document }));
+    const tags: unknown[] = [];
+    const pending: unknown[] = [result.current];
+    while (pending.length > 0) {
+      const node = pending.pop();
+      if (Array.isArray(node)) pending.push(...node);
+      else if (isValidElement<{ children?: unknown }>(node)) {
+        tags.push(node.type);
+        pending.push(node.props.children);
+      }
+    }
+    expect(tags.filter((tag) => tag === 'blockquote')).toHaveLength(5000);
+    expect(tags).toContain('p');
+  });
+
+  it('UIC-MARKDOWN-2.8 renders each node of a task item once', () => {
+    const seen: string[] = [];
+    const paragraphs: unknown[] = [];
+    render(
+      <Markdown
+        source={'- [x] Buy pears\n\n  Ripe ones.'}
+        renderNode={(node) => {
+          if (node.type === 'text') seen.push(node.text);
+          if (node.type === 'paragraph') paragraphs.push(node);
+          return undefined;
+        }}
+      />,
+    );
+    expect(seen).toEqual(['Buy pears', 'Ripe ones.']);
+    expect(paragraphs).toHaveLength(1);
+    expect(screen.getByRole('checkbox', { name: 'Buy pears' })).toBeChecked();
   });
 
   it('UIC-MARKDOWN-2.7 renders text through TextMatch so a provider highlights the query', () => {

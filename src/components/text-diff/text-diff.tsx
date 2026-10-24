@@ -7,6 +7,8 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from 'react';
+import { isEditableTarget } from '../../utils/is-editable-target.js';
+import { useStateFor } from '../../utils/use-state-for.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -51,12 +53,6 @@ export interface TextDiffProps extends BaseProps, AriaLabellingProps {
   renderLineWidget?: ((line: TextDiffLine) => ReactNode) | undefined;
 }
 
-/** State that belongs to one pair of texts and starts over when they change. */
-interface DiffState<T> {
-  blocks: readonly DiffBlock[];
-  value: T;
-}
-
 interface HeaderProps {
   added: number;
   removed: number;
@@ -86,20 +82,6 @@ function readRowAnchors(container: HTMLElement): ScrollAnchor[] {
     key: index,
     offset: row.getBoundingClientRect().top - origin,
   }));
-}
-
-/** Whether a key press belongs to a line widget or a text input rather than to the diff. */
-function isWithinEditableContent(target: EventTarget): boolean {
-  const element = target as Element;
-  return Boolean(
-    element.closest?.(`.${hooks.slotClass('widget')}, input, textarea, select, [contenteditable]`),
-  );
-}
-
-/** State for the current pair of texts: the value set for them, or the initial one. */
-function useDiffState<T>(blocks: readonly DiffBlock[], initial: T): [T, (value: T) => void] {
-  const [state, setState] = useState<DiffState<T>>({ blocks, value: initial });
-  return [state.blocks === blocks ? state.value : initial, (value) => setState({ blocks, value })];
 }
 
 function TextDiffHeader({ added, removed, previous, next, changes, onMove }: HeaderProps) {
@@ -196,8 +178,9 @@ export function TextDiff({
   const rootRef = useRef<HTMLDivElement>(null);
   const pendingFocus = useRef<string | null>(null);
   const blocks = useMemo(() => createDiffBlocks(oldText, newText), [oldText, newText]);
-  const [expanded, setExpanded] = useDiffState(blocks, noneExpanded);
-  const [current, setCurrent] = useDiffState<number | null>(blocks, null);
+  // Opened folds and the current change belong to one pair of texts and start over with the next.
+  const [expanded, setExpanded] = useStateFor(blocks, noneExpanded);
+  const [current, setCurrent] = useStateFor<number | null>(blocks, null);
   const isSplit = layout === 'split';
   const counts = countChanges(blocks);
   const changeBlocks = blocks.filter((block) => block.kind === 'change');
@@ -221,7 +204,8 @@ export function TextDiff({
     pendingFocus.current = getRowId(baseId, isSplit ? 'new' : 'both', fold.firstKey);
   };
   const onKeyDown = (event: KeyboardEvent) => {
-    if (event.altKey || event.ctrlKey || event.metaKey || isWithinEditableContent(event.target)) {
+    const widget = `.${hooks.slotClass('widget')}`;
+    if (event.altKey || event.ctrlKey || event.metaKey || isEditableTarget(event.target, widget)) {
       return;
     }
     if (event.key === 'n') moveTo(next);

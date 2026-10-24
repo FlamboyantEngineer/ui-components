@@ -104,6 +104,42 @@ describe('FacetList', () => {
     expectHooksMatchSpec(document.body, 'FACET-LIST', { slots: ['search', 'empty'] });
   });
 
+  it('UIC-FACET-LIST-1.1 exposes the label as a heading at the section level', () => {
+    render(<FacetList label="City" options={cities.slice(0, 3)} />);
+    const heading = screen.getByRole('heading', { name: 'City', level: 3 });
+    expect(heading).toHaveClass('ui-facet-list__label');
+  });
+
+  it('UIC-FACET-LIST-1.2 keeps ticked values that no option shows when another is ticked', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(
+      <FacetList
+        label="City"
+        options={[cities[1]!, { value: 'bergen', label: 'Bergen' }]}
+        value={['oslo', 'lima']}
+        onChange={onChange}
+      />,
+    );
+    await user.click(screen.getByRole('checkbox', { name: 'Bergen' }));
+    expect(onChange).toHaveBeenLastCalledWith(['oslo', 'bergen', 'lima']);
+  });
+
+  it('UIC-FACET-LIST-1.3 UIC-FACET-LIST-1.4 drops the query when the search field goes', async () => {
+    const user = userEvent.setup();
+    const many = Array.from({ length: 12 }, (_, index) => ({
+      value: `city-${index}`,
+      label: index === 3 ? 'Oslo' : `City ${index}`,
+    }));
+    const { rerender } = render(<FacetList label="City" options={many} />);
+    await user.type(screen.getByRole('searchbox', { name: 'Filter city' }), 'os');
+    expect(screen.getAllByRole('checkbox')).toHaveLength(1);
+    rerender(<FacetList label="City" options={many.slice(0, 9)} />);
+    expect(screen.queryByRole('searchbox')).not.toBeInTheDocument();
+    expect(screen.getAllByRole('checkbox')).toHaveLength(5);
+    expect(screen.getByRole('button', { name: 'Show 4 more' })).toBeInTheDocument();
+  });
+
   it('UIC-FACET-LIST-1.5 lists ticked values first, holding the order while focus is inside', async () => {
     const user = userEvent.setup();
     function Controlled() {

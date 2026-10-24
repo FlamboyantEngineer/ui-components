@@ -45,7 +45,7 @@ test.describe('Completion List lab', () => {
       'London is a city in United Kingdom.',
     );
     await page.keyboard.type('y');
-    await expect(options).toHaveText(['LyonFrance']);
+    await expect(options).toHaveText(['Lyon France']);
     await expect(page.locator('.ui-completion-list__footer')).toHaveText('1 matches');
     await page.keyboard.press('Enter');
     await expect(list).toBeHidden();

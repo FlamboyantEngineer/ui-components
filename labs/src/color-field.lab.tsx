@@ -127,7 +127,7 @@ function Typing() {
         defaultValue="#2e8b57"
         allowsTyping
         swatches={swatches}
-        description="Type hex, rgb() or hsl(); Enter or leaving the input commits."
+        description="Type hex, rgb() or hsl(); Enter, or leaving the field, commits."
         onCommit={(value) => setCommitted(value ?? 'empty')}
         data-lab-field="typing"
       />
@@ -154,6 +154,27 @@ function Saved() {
       <Button onPress={() => setSaved(value)}>Save</Button>
       <Output name="Saved">{saved ?? 'empty'}</Output>
     </>
+  );
+}
+
+/** Each named field submits its stored value once; the typed input adds no second entry. */
+function FormValue() {
+  const [entries, setEntries] = useState('none');
+  return (
+    <form
+      onSubmit={(event) => {
+        event.preventDefault();
+        const data = new FormData(event.currentTarget);
+        setEntries(
+          [...data.entries()].map(([name, entry]) => `${name}=${String(entry)}`).join(' '),
+        );
+      }}
+    >
+      <ColorField label="Brand" name="brand" defaultValue="#336699" format="rgb" />
+      <ColorField label="Highlight" name="highlight" defaultValue="#e69500" allowsTyping />
+      <button type="submit">Submit</button>
+      <Output name="Form">{entries}</Output>
+    </form>
   );
 }
 
@@ -209,6 +230,9 @@ mountLab(
       description="Pick, then restore, undo with Ctrl+Z, or use the field menu."
     >
       <Saved />
+    </LabSection>
+    <LabSection title="Form value" description="A named field submits its stored colour.">
+      <FormValue />
     </LabSection>
   </>,
 );

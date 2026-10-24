@@ -45,9 +45,9 @@ Verification: `src/components/scroll-region/scroll-region.test.tsx`, `e2e/scroll
 
 ### UIC-SCROLL-REGION-2.4 - Thumb pointer and wheel
 
-Dragging a thumb shall keep the pointer through pointer capture and scroll the viewport in proportion to the travel; the wheel over a thumb scrolls the viewport.
+Dragging a thumb shall keep the pointer through pointer capture and scroll the viewport in proportion to the travel; the wheel over a thumb scrolls the viewport, and not the page while the viewport can still scroll that way. At the viewport's edge the wheel scrolls the page, as a native scrollbar's does.
 
-Implementation: `src/components/scroll-region/overlay-scrollbars.tsx`
+Implementation: `src/components/scroll-region/overlay-scrollbars.tsx`, `src/components/scroll-region/use-thumb-wheel.ts`
 Verification: `src/components/scroll-region/scroll-region.test.tsx`, `e2e/scroll-region.spec.ts`
 
 ### UIC-SCROLL-REGION-2.5 - Header inset
@@ -66,7 +66,7 @@ Verification: `src/components/scroll-region/scroll-region.test.tsx`
 
 ### UIC-SCROLL-REGION-2.7 - Updates and cleanup
 
-Overlay geometry shall refresh when the viewport, its children, the headers or the tracks resize, when content mutates and when the viewport scrolls, also without `ResizeObserver`, coalesced to one read per animation frame. Unchanged targets retain their size observations through content mutations; added targets are observed once and removed targets are released. Regions update independently. A focused thumb that disappears because its axis stopped overflowing returns focus to the viewport. Unmounting releases every observer and pending frame; later reports do nothing.
+Overlay geometry shall refresh when the viewport, its children, the headers or the tracks resize, when content mutates and when the viewport scrolls, also without `ResizeObserver`, coalesced to one read per animation frame. Unchanged targets retain their size observations through content mutations; added targets are observed once and removed targets are released. Regions update independently. A focused thumb that disappears because its axis stopped overflowing returns focus to the viewport and no longer counts as focused, so its tracks hide again by the visibility mode. Unmounting releases every observer and pending frame; later reports do nothing.
 
 Implementation: `src/components/scroll-region/use-overlay-metrics.ts`, `src/components/scroll-region/observe-viewport.ts`, `src/components/scroll-region/overlay-scrollbars.tsx`
 Verification: `src/components/scroll-region/scroll-region.test.tsx`, `src/components/scroll-region/observe-viewport.test.ts`

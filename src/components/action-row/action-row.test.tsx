@@ -151,13 +151,16 @@ describe('ActionRow', () => {
     expect(full).toHaveFocus();
     expect(await screen.findByRole('tooltip')).toHaveTextContent('Full screen (F)');
     expect(full).toHaveAccessibleName('Full screen');
+    expect(full).toHaveAccessibleDescription('Full screen (F)');
 
     await userEvent.tab();
     const refresh = screen.getByRole('button', { name: 'Refresh' });
     expect(refresh).toHaveFocus();
     const tooltip = await screen.findByRole('tooltip', { name: 'Refresh' });
     expect(tooltip).toHaveClass('ui-action-row__tooltip');
-    expect(refresh).toHaveAttribute('aria-describedby', tooltip.id);
+    // A tooltip that only repeats the label does not describe the button as well.
+    expect(refresh).not.toHaveAttribute('aria-describedby');
+    expect(refresh).toHaveAccessibleDescription('');
     expectHooksMatchSpec(document.body, 'ACTION-ROW', { slots: ['tooltip'] });
   });
 

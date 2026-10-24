@@ -14,6 +14,8 @@ export interface CellStep {
 export interface TileMoveOptions {
   item: DashboardGridItem;
   kind: TileMoveKind;
+  /** The grid's columns, which a resize never reaches past. */
+  columns: number;
   /** The narrowest and shortest a resize may make the tile. */
   minColumnSpan: number;
   minRowSpan: number;
@@ -25,34 +27,46 @@ export interface TileMoveOptions {
   onCommit: (isKeyboard: boolean) => void;
 }
 
+interface Cells {
+  x: number;
+  y: number;
+}
+
 interface MoveStart {
   origin: DashboardGridItem;
   step: CellStep;
   deltaX: number;
   deltaY: number;
+  /** The cells of the last preview, `null` before the first. */
+  cells: Cells | null;
 }
 
-/** The tile an accumulated move of `cells` makes from `origin`. */
+/**
+ * The tile an accumulated move of `cells` makes from `origin`. A resize keeps the tile's start, so
+ * it never spans past the last column.
+ */
 function resolveMovedItem(
-  { origin, cells }: { origin: DashboardGridItem; cells: { x: number; y: number } },
+  { origin, cells }: { origin: DashboardGridItem; cells: Cells },
   {
     kind,
+    columns,
     minColumnSpan,
     minRowSpan,
-  }: Pick<TileMoveOptions, 'kind' | 'minColumnSpan' | 'minRowSpan'>,
+  }: Pick<TileMoveOptions, 'kind' | 'columns' | 'minColumnSpan' | 'minRowSpan'>,
 ): DashboardGridItem {
   if (kind === 'move') return { ...origin, x: origin.x + cells.x, y: origin.y + cells.y };
   return {
     ...origin,
-    w: Math.max(minColumnSpan, origin.w + cells.x),
+    w: Math.min(columns - origin.x, Math.max(minColumnSpan, origin.w + cells.x)),
     h: Math.max(minRowSpan, origin.h + cells.y),
   };
 }
 
 /**
  * Pointer drags and arrow keys that move or resize a tile by whole cells. A pointer move snaps to
- * the nearest cell; each arrow key press moves one cell, toward the inline end for the right arrow
- * in left-to-right text and the left arrow in right-to-left text.
+ * the nearest cell, and previews again only when it reaches another cell; each arrow key press
+ * moves one cell, toward the inline end for the right arrow in left-to-right text and the left
+ * arrow in right-to-left text.
  */
 export function useTileMove(options: TileMoveOptions): DOMAttributes<HTMLButtonElement> {
   const { direction } = useLocale();
@@ -60,7 +74,13 @@ export function useTileMove(options: TileMoveOptions): DOMAttributes<HTMLButtonE
   const sign = direction === 'rtl' ? -1 : 1;
   const { moveProps } = useMove({
     onMoveStart: () => {
-      start.current = { origin: options.item, step: options.measureStep(), deltaX: 0, deltaY: 0 };
+      start.current = {
+        origin: options.item,
+        step: options.measureStep(),
+        deltaX: 0,
+        deltaY: 0,
+        cells: null,
+      };
     },
     onMove: (event) => {
       const active = start.current;
@@ -72,6 +92,8 @@ export function useTileMove(options: TileMoveOptions): DOMAttributes<HTMLButtonE
         x: isKeyboard ? active.deltaX : Math.round(active.deltaX / active.step.column),
         y: isKeyboard ? active.deltaY : Math.round(active.deltaY / active.step.row),
       };
+      if (active.cells?.x === cells.x && active.cells.y === cells.y) return;
+      active.cells = cells;
       options.onPreview(resolveMovedItem({ origin: active.origin, cells }, options));
     },
     onMoveEnd: (event) => {

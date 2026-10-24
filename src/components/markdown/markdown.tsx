@@ -1,6 +1,7 @@
 import { createElement, Fragment, useMemo, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
+import { mapTree } from '../../utils/map-tree.js';
 import { Checkbox } from '../checkbox/checkbox.js';
 import { Link } from '../link/link.js';
 import { ProseTable } from '../prose-table/prose-table.js';
@@ -32,7 +33,11 @@ interface RenderContext {
   renderNode: MarkdownProps['renderNode'];
   headingIdPrefix: string | undefined;
   headingIds: ReadonlySet<string>;
-  /** The paragraphs being rendered sit directly in an item of a tight list. */
+}
+
+/** A node to render, and whether it sits directly in an item of a tight list. */
+interface RenderEntry {
+  node: MarkdownNode;
   isTight: boolean;
 }
 
@@ -51,24 +56,50 @@ const inlineTypes: ReadonlySet<string> = new Set([
   'lineBreak',
 ]);
 
+/** A task item's label, its first paragraph's inlines, and its other blocks. */
+function splitTask(node: MarkdownListItem) {
+  const [first, ...rest] = node.children;
+  return first?.type === 'paragraph'
+    ? { label: first.children, blocks: rest }
+    : { label: [], blocks: node.children };
+}
+
+/**
+ * The entries a node renders its children from. A task item renders its label's inlines in place of
+ * its first paragraph, then its other blocks, so every node renders once.
+ */
+function listChildEntries({ node, isTight }: RenderEntry): RenderEntry[] | undefined {
+  if (!('children' in node)) return undefined;
+  if (node.type === 'list') {
+    return node.children.map((item) => ({ node: item, isTight: node.tight }));
+  }
+  if (node.type !== 'listItem') {
+    return node.children.map((child) => ({ node: child, isTight: false }));
+  }
+  const { label, blocks } = splitTask(node);
+  const children = node.checked === null ? node.children : [...label, ...blocks];
+  return children.map((child) => ({ node: child, isTight }));
+}
+
+/** Renders nodes from the leaves up, without recursion, so deep nesting cannot overflow the stack. */
 function renderAll(nodes: readonly MarkdownNode[], context: RenderContext): ReactNode[] {
-  return nodes.map((node, index) => <Fragment key={index}>{renderNode(node, context)}</Fragment>);
+  return mapTree<RenderEntry, ReactNode>(
+    nodes.map((node) => ({ node, isTight: false })),
+    listChildEntries,
+    (entry, children, index) => (
+      <Fragment key={index}>{renderNode(entry, children, context)}</Fragment>
+    ),
+  );
 }
 
-function renderChildren(node: MarkdownNode, context: RenderContext): ReactNode {
-  if (!('children' in node)) return null;
-  if (node.type === 'list') return renderAll(node.children, { ...context, isTight: node.tight });
-  const isTight = node.type === 'listItem' && context.isTight;
-  return renderAll(node.children, { ...context, isTight });
-}
-
-function renderNode(node: MarkdownNode, context: RenderContext): ReactNode {
-  const children = renderChildren(node, context);
+function renderNode(entry: RenderEntry, mapped: ReactNode[], context: RenderContext): ReactNode {
+  const { node } = entry;
+  const children = 'children' in node ? mapped : null;
   const custom = context.renderNode?.(node, children);
   if (custom !== undefined) return custom;
   return isInline(node)
     ? renderInline(node, children, context)
-    : renderBlock(node, children, context);
+    : renderBlock({ node, isTight: entry.isTight }, mapped, context);
 }
 
 function isInline(node: MarkdownNode): node is MarkdownInline {
@@ -133,23 +164,21 @@ function renderTable(node: MarkdownTable, context: RenderContext) {
 }
 
 /** A task item: a read-only checkbox labelled by the item's first paragraph, then the rest. */
-function renderTask(node: MarkdownListItem, checked: boolean, context: RenderContext) {
-  const [first, ...rest] = node.children;
-  const label = first?.type === 'paragraph' ? first.children : [];
-  const blocks = first?.type === 'paragraph' ? rest : node.children;
+function renderTask(node: MarkdownListItem, checked: boolean, children: ReactNode[]) {
+  const labelLength = splitTask(node).label.length;
   return (
     <li {...hooks.slot('task')}>
       <Checkbox size="sm" isReadOnly isSelected={checked}>
-        {renderAll(label, context)}
+        {children.slice(0, labelLength)}
       </Checkbox>
-      {renderAll(blocks, context)}
+      {children.slice(labelLength)}
     </li>
   );
 }
 
 function renderBlock(
-  node: Exclude<MarkdownNode, MarkdownInline>,
-  children: ReactNode,
+  { node, isTight }: { node: Exclude<MarkdownNode, MarkdownInline>; isTight: boolean },
+  children: ReactNode[],
   context: RenderContext,
 ) {
   switch (node.type) {
@@ -159,7 +188,7 @@ function renderBlock(
       return createElement(`h${node.level}`, { id }, children);
     }
     case 'paragraph':
-      return context.isTight ? children : <p>{children}</p>;
+      return isTight ? children : <p>{children}</p>;
     case 'codeBlock':
       return (
         <pre {...hooks.slot('code-block', { language: node.language })}>
@@ -174,7 +203,7 @@ function renderBlock(
       if (!node.ordered) return <ul>{children}</ul>;
       return <ol start={node.start === 1 ? undefined : node.start}>{children}</ol>;
     case 'listItem':
-      return node.checked === null ? <li>{children}</li> : renderTask(node, node.checked, context);
+      return node.checked === null ? <li>{children}</li> : renderTask(node, node.checked, children);
     case 'table':
       return renderTable(node, context);
     case 'thematicBreak':
@@ -206,7 +235,6 @@ export function Markdown({
     renderNode: customRender,
     headingIdPrefix,
     headingIds,
-    isTight: false,
   };
   return (
     <div {...rest} {...hooks.root({ className })}>

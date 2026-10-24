@@ -6,7 +6,7 @@ import {
 } from '../../primitives/index.js';
 import { useFrameFlag } from '../../utils/use-frame-flag.js';
 import { useControllableState } from '../../core/controllable-state.js';
-import { createHooks, mergeClassNames, splitDataAttributes } from '../../core/hooks.js';
+import { createHooks, splitDataAttributes } from '../../core/hooks.js';
 import type { BaseProps, Placement } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { Button, type ButtonProps } from '../button/button.js';
@@ -58,6 +58,7 @@ type DropdownMenuMenuProps = Pick<
   | 'shouldCloseOnSelect'
   | 'filterable'
   | 'aria-label'
+  | 'aria-labelledby'
 >;
 
 type DropdownMenuTriggerProps = Omit<
@@ -106,13 +107,7 @@ function DropdownMenuTrigger({
   ...rest
 }: DropdownMenuTriggerProps) {
   const isOpen = useContext(OverlayTriggerStateContext)?.isOpen ?? false;
-  const props = {
-    ...rest,
-    ...hooks.root({ props: rest, data: { open: isOpen } }),
-    // A caller's `data-open` never shows on a closed trigger.
-    'data-open': isOpen ? 'true' : undefined,
-    className: mergeClassNames(hooks.className, className),
-  };
+  const props = { ...rest, ...hooks.root({ className, props: rest, data: { open: isOpen } }) };
   if (iconOnly) {
     return (
       <IconButton
@@ -218,6 +213,7 @@ export function DropdownMenu({
   shouldCloseOnSelect,
   filterable,
   'aria-label': menuLabel,
+  'aria-labelledby': menuLabelledBy,
   size = 'md',
   onPress,
   ...trigger
@@ -235,6 +231,7 @@ export function DropdownMenu({
     shouldCloseOnSelect,
     filterable,
     'aria-label': menuLabel,
+    'aria-labelledby': menuLabelledBy,
     size: menuSize ?? (size === 'xs' ? 'sm' : size),
   };
   const parts = { trigger: { ...trigger, size }, menu, placement };

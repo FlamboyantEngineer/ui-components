@@ -26,13 +26,8 @@ function isWordStart(label: string, index: number): boolean {
   );
 }
 
-/** How many characters `query` skips in `label` as a subsequence starting at a word; `null` if it is not one. */
-function measureGaps(label: string, query: string): number | null {
-  const lower = label.toLowerCase();
-  const first = [...lower].findIndex(
-    (character, index) => character === query[0] && isWordStart(label, index),
-  );
-  if (first === -1) return null;
+/** How many characters `query` skips in `lower` as a subsequence from `first`; `null` if it is not one. */
+function measureGapsFrom(lower: string, query: string, first: number): number | null {
   let gaps = 0;
   let at = first + 1;
   for (const character of query.slice(1)) {
@@ -42,6 +37,21 @@ function measureGaps(label: string, query: string): number | null {
     at = found + 1;
   }
   return gaps;
+}
+
+/**
+ * The fewest characters `query` skips in `label` as a subsequence starting at a word, trying every
+ * word that starts with its first character; `null` if it is no such subsequence.
+ */
+function measureGaps(label: string, query: string): number | null {
+  const lower = label.toLowerCase();
+  let best: number | null = null;
+  for (let index = 0; index < lower.length && best !== 0; index += 1) {
+    if (lower[index] !== query[0] || !isWordStart(label, index)) continue;
+    const gaps = measureGapsFrom(lower, query, index);
+    if (gaps !== null && (best === null || gaps < best)) best = gaps;
+  }
+  return best;
 }
 
 /**

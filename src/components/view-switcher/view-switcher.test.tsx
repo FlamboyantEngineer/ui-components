@@ -1,5 +1,6 @@
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
+import { useState } from 'react';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import type { Key } from '../../core/props.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -135,6 +136,29 @@ describe('ViewSwitcher', { timeout: 20_000 }, () => {
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   });
 
+  it('UIC-VIEW-SWITCHER-1.5 saves once per Enter or Control+Enter, pending, and shows a failure', async () => {
+    const user = userEvent.setup();
+    const save = deferred();
+    const onSaveAs = vi.fn(() => save.promise);
+    render(<ViewSwitcher views={views} onSaveAs={onSaveAs} />);
+    await user.click(actionsButton('All recipes'));
+    await user.click(await screen.findByRole('menuitem', { name: 'Save as new view' }));
+    const dialog = await screen.findByRole('dialog', { name: 'New view' });
+    const action = within(dialog).getByRole('button', { name: 'Save' });
+    await user.type(within(dialog).getByRole('textbox', { name: /^View name/ }), 'Mine');
+    await user.keyboard('{Enter}');
+    await user.keyboard('{Enter}');
+    await user.keyboard('{Control>}{Enter}{/Control}');
+    expect(onSaveAs).toHaveBeenCalledTimes(1);
+    expect(onSaveAs).toHaveBeenCalledWith('Mine');
+    expect(action).toHaveAttribute('data-pending', 'true');
+    await act(async () => save.reject(new Error('Name taken')));
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent('Name taken');
+    expect(screen.getByRole('dialog', { name: 'New view' })).toBeInTheDocument();
+    await user.keyboard('{Control>}{Enter}{/Control}');
+    expect(onSaveAs).toHaveBeenCalledTimes(2);
+  });
+
   it('UIC-VIEW-SWITCHER-1.6 renames a view from its actions or its tab menu', async () => {
     const onRename = vi.fn();
     render(<ViewSwitcher views={views} onRename={onRename} />);
@@ -187,6 +211,47 @@ describe('ViewSwitcher', { timeout: 20_000 }, () => {
     );
   });
 
+  it('UIC-VIEW-SWITCHER-1.2 UIC-VIEW-SWITCHER-1.7 selects the default view when the selected one is deleted', async () => {
+    const user = userEvent.setup();
+    const onSelectionChange = vi.fn<(key: Key) => void>();
+    function Deleting() {
+      const [list, setList] = useState(views);
+      return (
+        <ViewSwitcher
+          views={list}
+          defaultSelectedKey="quick"
+          onSelectionChange={onSelectionChange}
+          onDelete={(key) => setList((current) => current.filter((view) => view.id !== key))}
+        >
+          <p>Rows</p>
+        </ViewSwitcher>
+      );
+    }
+    render(<Deleting />);
+    await user.click(actionsButton('Quick meals'));
+    await user.click(await screen.findByRole('menuitem', { name: 'Delete' }));
+    const dialog = await screen.findByRole('alertdialog', { name: 'Delete Quick meals?' });
+    await user.click(within(dialog).getByRole('button', { name: 'Delete' }));
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
+    expect(screen.getByRole('tab', { name: 'All recipes' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+    expect(screen.getByRole('tabpanel')).toHaveTextContent('Rows');
+    expect(actionsButton('All recipes')).toBeInTheDocument();
+    expect(onSelectionChange.mock.calls).toEqual([['all']]);
+  });
+
+  it('UIC-VIEW-SWITCHER-1.2 shows the default view while a controlled key names no view', () => {
+    render(
+      <ViewSwitcher views={views} selectedKey="gone" defaultViewKey="baking" variant="menu">
+        <p>Rows</p>
+      </ViewSwitcher>,
+    );
+    expect(screen.getByRole('button', { name: 'Baking Default view' })).toBeInTheDocument();
+    expect(screen.getByText('Rows')).toBeInTheDocument();
+  });
+
   it('UIC-VIEW-SWITCHER-1.8 puts the views in a menu', async () => {
     const onSelectionChange = vi.fn();
     const { container } = render(
@@ -231,5 +296,17 @@ describe('ViewSwitcher', { timeout: 20_000 }, () => {
     expect(list).toBeInTheDocument();
     await userEvent.keyboard('{Shift>}{F10}{/Shift}');
     expect(await screen.findByRole('menuitem', { name: 'Rename' })).toBeInTheDocument();
+  });
+
+  it('UIC-VIEW-SWITCHER-2.1 names the menu of views by aria-labelledby', async () => {
+    const user = userEvent.setup();
+    render(
+      <>
+        <h2 id="saved">Saved views</h2>
+        <ViewSwitcher views={views} variant="menu" aria-labelledby="saved" />
+      </>,
+    );
+    await user.click(screen.getByRole('button', { name: 'All recipes' }));
+    expect(await screen.findByRole('menu')).toHaveAccessibleName('Saved views');
   });
 });

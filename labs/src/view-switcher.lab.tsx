@@ -62,10 +62,16 @@ function RecipeViews({ variant }: { variant: 'tabs' | 'menu' }) {
   const setCurrent = (settings: DisplayOptionsValue) =>
     setDrafts((all) => ({ ...all, [String(selected.id)]: settings }));
   const dropDraft = (key: Key) => setDrafts(({ [String(key)]: _dropped, ...rest }) => rest);
+  // The menu of views is named by the heading above it; the tabs by their own label.
+  const naming =
+    variant === 'menu'
+      ? { 'aria-labelledby': 'menu-views-heading' }
+      : { 'aria-label': 'Recipe views' };
   return (
     <div data-lab-demo={`views-${variant}`}>
+      {variant === 'menu' ? <h3 id="menu-views-heading">Recipe views</h3> : null}
       <ViewSwitcher
-        aria-label="Recipe views"
+        {...naming}
         variant={variant}
         views={views}
         selectedKey={selected.id}
@@ -140,7 +146,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="In a menu"
-      description="The same views in a menu, for many views or little room."
+      description="The same views in a menu, for many views or little room; the heading above names the menu."
     >
       <RecipeViews variant="menu" />
     </LabSection>

@@ -15,7 +15,7 @@ Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`
 
 ### UIC-TOAST-1.2 - Lifetime
 
-A toast shall close itself after `timeout` milliseconds, defaulting to the queue's `defaultTimeout` (5000 unless set), or to 0 for a pending toast ([UIC-TOAST-3.6](#uic-toast-36---pending)); a `timeout` of 0 keeps it until it is dismissed. A toast's timer runs only while it is shown. Hovering the region or moving focus into it shall pause every visible toast's timer, and leaving resumes each with the time that remained. Closing a toast calls its `onClose`.
+A toast shall close itself after `timeout` milliseconds, defaulting to the queue's `defaultTimeout` (5000 unless set), or to 0 for a pending toast ([UIC-TOAST-3.6](#uic-toast-36---pending)); a `timeout` of 0 keeps it until it is dismissed. A toast's timer runs only while it is shown. Hovering the region or moving focus into it (onto the region itself or into a toast) shall pause every visible toast's timer, also a timer that starts or restarts meanwhile (a toast added, updated with a new lifetime or settled from a promise while the reader points at the region), and leaving resumes each with the time that remained. Closing a toast calls its `onClose`.
 
 Implementation: `src/components/toast/toast.tsx`
 Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`
@@ -133,7 +133,7 @@ Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`
 
 ### UIC-TOAST-4.3 - Stack position and expansion
 
-Each toast shall publish its place in the stack as `--ui-toast-index` (0 for the newest visible toast, unitless) and `--ui-toast-offset` (the summed measured height of the newer visible toasts, in pixels), so the stylesheet can pile toasts and spread them out. A `ToastRegion` publishes `data-expanded` while the pointer is over it or focus is inside it, the same moments its timers pause, so the stylesheet can spread a pile while the reader works with it.
+Each toast shall publish its place in the stack as `--ui-toast-index` (0 for the newest visible toast, unitless) and `--ui-toast-offset` (the summed measured height of the newer visible toasts, in pixels), so the stylesheet can pile toasts and spread them out. A `ToastRegion` publishes `data-expanded` while the pointer is over it or focus is inside it (the region element included), the same moments its timers pause, so the stylesheet can spread a pile while the reader works with it. When the toast under the pointer or holding focus leaves, the region stops being hovered or focused as the pointer or focus moves elsewhere, and a region whose last toast has left is neither, so the next toast starts collapsed and running.
 
 Implementation: `src/components/toast/toast-stack.ts`, `src/components/toast/toast.tsx`, `labs/reference/toast.css`
 Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`

@@ -7,6 +7,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { Checkbox } from '../checkbox/checkbox.js';
 import { SearchField } from '../search-field/search-field.js';
+import { useHeadingLevel } from '../section-header/section-header.js';
 import { listFacetOptions, type FacetListOption } from './facet-options.js';
 
 export interface FacetListProps extends BaseProps {
@@ -53,6 +54,18 @@ function useFrozenOrder(value: readonly string[]) {
       if (!event.currentTarget.contains(event.relatedTarget)) setFrozen(null);
     },
   };
+}
+
+/**
+ * The ticked values in option order, then the ticked values no option shows in their previous
+ * order: values whose options come and go as counts refresh stay ticked.
+ */
+function orderTicked(options: readonly FacetListOption[], ticked: readonly string[]): string[] {
+  const known = new Set(options.map((option) => option.value));
+  return [
+    ...options.map((option) => option.value).filter((entry) => ticked.includes(entry)),
+    ...ticked.filter((entry) => !known.has(entry)),
+  ];
 }
 
 /** One value's checkbox, named by its label with its count. */
@@ -104,19 +117,21 @@ export function FacetList({
     onChange?.([...next]),
   );
   const [query, setQuery] = useState('');
+  // A query outlives its field when the options shrink; it must not keep narrowing them unseen.
+  const activeQuery = filterable ? query : '';
   const [isExpanded, setExpanded] = useState(false);
+  const headingLevel = useHeadingLevel(undefined);
   const frozen = useFrozenOrder(value);
   const { shown, hiddenCount, matchCount } = listFacetOptions({
     options,
-    query,
+    query: activeQuery,
     firstValues: selectedFirst ? frozen.order : null,
     limit,
     isExpanded,
   });
   const count = useNumberFormatter();
-  const choose = (ticked: string[]) =>
-    setValue(options.map((option) => option.value).filter((entry) => ticked.includes(entry)));
-  const canFold = !query.trim() && options.length > limit;
+  const choose = (ticked: string[]) => setValue(orderTicked(options, ticked));
+  const canFold = !activeQuery.trim() && options.length > limit;
   return (
     <div
       {...hooks.root({ className, props: rest, data: { expanded: isExpanded && canFold } })}
@@ -124,7 +139,7 @@ export function FacetList({
       onFocus={frozen.onFocus}
       onBlur={frozen.onBlur}
     >
-      <div {...hooks.slot('label')} id={labelId}>
+      <div {...hooks.slot('label')} id={labelId} role="heading" aria-level={headingLevel}>
         {label}
       </div>
       {filterable ? (

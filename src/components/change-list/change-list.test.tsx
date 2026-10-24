@@ -193,6 +193,18 @@ describe('ChangeList', () => {
     expectHooksMatchSpec(container, 'CHANGE-LIST', { slots: ['items', 'item'] });
   });
 
+  it('UIC-CHANGE-LIST-1.5 reads an empty old value of a list change as no items', () => {
+    const { container } = render(
+      <ChangeList
+        changes={[{ id: 'tags', label: 'Tags', type: 'list', before: '', after: ['red'] }]}
+      />,
+    );
+    const items = [...container.querySelectorAll('.ui-change-list__item')];
+    expect(items.map((item) => `${item.getAttribute('data-change')}:${item.textContent}`)).toEqual([
+      'added:red',
+    ]);
+  });
+
   it('UIC-CHANGE-LIST-1.6 says who made a change and when', () => {
     const { container } = render(
       <ChangeList
@@ -223,6 +235,11 @@ describe('ChangeList', () => {
     expect(container.querySelector('.ui-empty-state')).toHaveTextContent('No changes.');
     rerender(<ChangeList changes={[]} renderEmptyState={() => 'Identical'} />);
     expect(container).toHaveTextContent(/^Identical$/);
+  });
+
+  it('UIC-CHANGE-LIST-1.7 renders nothing for an empty state that returns null', () => {
+    const { container } = render(<ChangeList changes={[]} renderEmptyState={() => null} />);
+    expect(container).toBeEmptyDOMElement();
   });
 
   it('UIC-CHANGE-LIST-1.8 forwards id, labels, class names and caller attributes', () => {

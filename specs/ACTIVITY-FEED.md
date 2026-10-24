@@ -28,7 +28,7 @@ Verification: `src/components/activity-feed/activity-feed.test.tsx`, `e2e/activi
 
 With `groupBy="day"` (the default), each run of consecutive items from the same local calendar day shall render as a `ui-activity-feed__group` (`<li>`) holding a heading (`ui-activity-feed__day`) and an ordered list of its entries (`ui-activity-feed__entries`) named by that heading. The heading reads `Today`, `Yesterday` or `Tomorrow` as `Intl.RelativeTimeFormat` words them for the locale, capitalized, and the full date (`Tuesday, April 14, 2026`) for other days, read against `getNow`; items whose time cannot be read form runs under the provider's `unknownTime` string, capitalized. The heading level is `headingLevel`, else one below the enclosing section's, else 3. With `groupBy="none"` the entries sit directly in the list without headings. `groupBy` is published as `data-group-by` on the root.
 
-Implementation: `src/components/activity-feed/activity-feed.tsx`, `src/components/activity-feed/day-groups.ts`
+Implementation: `src/components/activity-feed/activity-feed.tsx`, `src/components/activity-feed/day-groups.ts`, `src/utils/calendar-day.ts`
 Verification: `src/components/activity-feed/activity-feed.test.tsx`, `e2e/activity-feed.spec.ts`
 
 ### UIC-ACTIVITY-FEED-1.4 - Filter slot

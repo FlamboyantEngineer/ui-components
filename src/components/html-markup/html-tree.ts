@@ -1,7 +1,7 @@
 // Builds the element tree of an HTML fragment from markup tokens, closing elements the way an HTML
 // parser implies (specs/HTML-MARKUP.md). Policy filtering happens afterwards in sanitize-html.ts.
 
-import { tokenizeMarkup, type MarkupOpenToken } from '../../utils/markup.js';
+import { skipDroppedElements, tokenizeMarkup, type MarkupOpenToken } from '../../utils/markup.js';
 
 export interface RawElement {
   tag: string;
@@ -61,8 +61,22 @@ const voidElements = new Set([
   'wbr',
 ]);
 
-/** Blocked elements with content, read as raw text so their markup is never parsed. */
-const rawTextElements = new Set([...blockedElements].filter((tag) => !voidElements.has(tag)));
+/**
+ * Blocked elements whose content an HTML parser reads as text, so their markup is never parsed.
+ * The content of the other blocked elements is read only to find their matching closing tag.
+ */
+const rawTextElements: ReadonlySet<string> = new Set([
+  'iframe',
+  'noembed',
+  'noframes',
+  'noscript',
+  'plaintext',
+  'script',
+  'style',
+  'textarea',
+  'title',
+  'xmp',
+]);
 
 /** Elements whose text children are dropped, as React cannot render text there. */
 const tableStructure = new Set(['table', 'thead', 'tbody', 'tfoot', 'tr', 'colgroup']);
@@ -143,27 +157,21 @@ function addText(stack: RawElement[], text: string): void {
 
 /**
  * Reads an HTML fragment into a tree of lower-case elements and text. Blocked elements are skipped
- * with their content, void elements take no children, and an element closes the open elements an
- * HTML parser would close (a paragraph before a block, a list item before the next one, table
- * parts before their siblings); a stray closing tag is ignored.
+ * with their content (nested ones of the same name included), void elements take no children, and
+ * an element closes the open elements an HTML parser would close (a paragraph before a block, a
+ * list item before the next one, table parts before their siblings); a stray closing tag is ignored.
  */
 export function buildHtmlTree(markup: string): RawNode[] {
   const root: RawElement = { tag: '#fragment', attributes: {}, children: [] };
   const stack = [root];
-  let dropping: string | null = null;
-  for (const token of tokenizeMarkup(markup, { rawTextElements })) {
-    if (dropping !== null) {
-      if (token.type === 'close' && token.tag.toLowerCase() === dropping) dropping = null;
-    } else if (token.type === 'text') {
-      addText(stack, token.text);
-    } else if (token.type === 'close') {
-      closeElement(stack, token.tag.toLowerCase());
-    } else if (blockedElements.has(token.tag.toLowerCase())) {
-      const isVoid = token.isSelfClosing || voidElements.has(token.tag.toLowerCase());
-      dropping = isVoid ? null : token.tag.toLowerCase();
-    } else {
-      openElement(stack, token);
-    }
+  const tokens = skipDroppedElements(tokenizeMarkup(markup, { rawTextElements }), {
+    isDropped: (token) => blockedElements.has(token.tag.toLowerCase()),
+    isEmpty: (token) => token.isSelfClosing || voidElements.has(token.tag.toLowerCase()),
+  });
+  for (const token of tokens) {
+    if (token.type === 'text') addText(stack, token.text);
+    else if (token.type === 'close') closeElement(stack, token.tag.toLowerCase());
+    else openElement(stack, token);
   }
   return root.children;
 }

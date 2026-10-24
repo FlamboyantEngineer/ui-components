@@ -173,6 +173,17 @@ describe('Combobox', () => {
     expect(container.querySelector('.ui-combobox__clear')).toBeNull();
   });
 
+  it('UIC-COMBOBOX-1.4 keeps focus in the input when the clear button is pressed with the list open', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<Combobox aria-label="Fruit" defaultItems={fruit} />);
+    await user.type(input(), 'ba');
+    expect(await screen.findByRole('listbox')).toBeInTheDocument();
+    // The open list hides the rest of the field from assistive technology, so find the hook.
+    await user.click(container.querySelector<HTMLElement>('.ui-combobox__clear')!);
+    expect(input()).toHaveValue('');
+    expect(input()).toHaveFocus();
+  });
+
   it('UIC-COMBOBOX-2.3 opens as the user types, on focus or only on request', async () => {
     const user = userEvent.setup();
     const { rerender } = render(<Combobox aria-label="Fruit" defaultItems={fruit} />);

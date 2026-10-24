@@ -38,6 +38,16 @@ interface MediaView {
   rotation: number;
 }
 
+/** Whether the arrow keys scroll the image: focus is in the viewport and the image is wider. */
+function isPanning(viewport: HTMLElement | null, target: EventTarget): boolean {
+  return (
+    viewport !== null &&
+    target instanceof Node &&
+    viewport.contains(target) &&
+    viewport.scrollWidth > viewport.clientWidth
+  );
+}
+
 /** The zoom a key asks for, or the current one when there is no level that way. */
 function stepZoom(zoom: number, command: MediaKeyCommand): number {
   return findNextZoomLevel(defaultZoomLevels, zoom, command === 'zoom-in' ? 1 : -1) ?? zoom;
@@ -83,7 +93,8 @@ export function MediaViewer({
     return target ? () => setKey(target.id) : undefined;
   };
   const onKeyDown = (event: KeyboardEvent) => {
-    const command = resolveMediaKey(event.nativeEvent, direction);
+    const panning = isPanning(viewportRef.current, event.target);
+    const command = resolveMediaKey(event.nativeEvent, direction, panning);
     if (!command) return;
     event.preventDefault();
     if (command === 'previous' || command === 'next') move(command === 'next' ? 1 : -1)?.();
