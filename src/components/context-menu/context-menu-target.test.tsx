@@ -88,6 +88,9 @@ describe('ContextMenuTrigger', () => {
   });
 
   it('UIC-CONTEXT-MENU-1.2 opens below the focused target from the Context Menu key or Shift+F10', async () => {
+    // The key's own contextmenu event is ignored for a short time after the key; a stopped wall
+    // clock keeps that window open however slowly the test runs.
+    vi.useFakeTimers({ toFake: ['Date'] });
     const user = userEvent.setup();
     render(
       <ContextMenuTrigger>
@@ -107,6 +110,30 @@ describe('ContextMenuTrigger', () => {
     // The browser's own contextmenu event for the same key opens nothing more.
     expect(fireEvent.contextMenu(target, { clientX: 300, clientY: 300 })).toBe(false);
     expect(popover()?.style.left).not.toBe('300px');
+  });
+
+  it('UIC-CONTEXT-MENU-1.1 UIC-CONTEXT-MENU-1.3 keeps the browser menu on a text control inside the target', async () => {
+    const user = setupOnFakeClock();
+    render(
+      <ContextMenuTrigger>
+        <div>
+          <input aria-label="Name" />
+          <span>Row</span>
+        </div>
+        <FileMenu />
+      </ContextMenuTrigger>,
+    );
+    const input = screen.getByRole('textbox', { name: 'Name' });
+    expect(await isPrevented('contextmenu', () => rightClick(user, input))).toBe(false);
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    await user.pointer({ keys: '[TouchA>]', target: input });
+    act(() => vi.advanceTimersByTime(500));
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    await user.pointer({ keys: '[/TouchA]', target: input });
+    expect(await isPrevented('contextmenu', () => rightClick(user, screen.getByText('Row')))).toBe(
+      true,
+    );
+    expect(screen.getByRole('menu')).toBeInTheDocument();
   });
 
   it('UIC-CONTEXT-MENU-1.3 opens at a resting touch once, and not after the touch moves', async () => {
@@ -222,6 +249,20 @@ describe('ContextMenuTrigger', () => {
     await user.click(document.body);
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     expect(onAction).not.toHaveBeenCalled();
+
+    // Disabling the trigger closes its open menu, which stays closed once enabled again.
+    await rightClick(user, target);
+    expect(screen.getByRole('menu')).toBeInTheDocument();
+    const trigger = (isDisabled: boolean) => (
+      <ContextMenuTrigger isDisabled={isDisabled}>
+        <div tabIndex={0}>Report.pdf</div>
+        <FileMenu onAction={onAction} />
+      </ContextMenuTrigger>
+    );
+    rerender(trigger(true));
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    rerender(trigger(false));
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
 
     rerender(
       <ContextMenuTrigger isDisabled>

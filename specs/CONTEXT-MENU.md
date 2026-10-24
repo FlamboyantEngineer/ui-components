@@ -6,7 +6,7 @@ A context menu lists actions for whatever the reader points at. `ContextMenu` sh
 
 ### UIC-CONTEXT-MENU-1.1 - Opening at the pointer
 
-A secondary click on the target (a `contextmenu` event) shall prevent the browser's own menu, keep the event from reaching enclosing context menu triggers, and open the menu below and after the pointer, 2 pixels away, flipped above or shifted along the edge when it does not fit in the viewport. The menu is a popover anchored to that point, so it publishes `data-placement`.
+A secondary click on the target (a `contextmenu` event) shall prevent the browser's own menu, keep the event from reaching enclosing context menu triggers, and open the menu below and after the pointer, except on a text control inside the target (a text input, a text area or editable content, not the target itself), where the browser's own menu edits the text. The menu opens 2 pixels away, flipped above or shifted along the edge when it does not fit in the viewport. The menu is a popover anchored to that point, so it publishes `data-placement`.
 
 Implementation: `src/components/context-menu/context-menu.tsx`, `src/components/context-menu/context-menu-target.ts`, `src/components/context-menu/menu-anchor.ts`
 Verification: `src/components/context-menu/context-menu-target.test.tsx`, `e2e/context-menu.spec.ts`
@@ -20,7 +20,7 @@ Verification: `src/components/context-menu/context-menu-target.test.tsx`, `e2e/c
 
 ### UIC-CONTEXT-MENU-1.3 - Long press
 
-A touch that rests on the target for 500 milliseconds without moving more than 10 pixels shall open the menu at the touch point. Disabling or unmounting the trigger cancels a pending touch; re-enabling does not resume it. A `contextmenu` event the platform sends for the same press is ignored, so the menu opens once.
+A touch that rests on the target for 500 milliseconds without moving more than 10 pixels shall open the menu at the touch point; a touch on a text control inside the target leaves the platform's own text handling alone. Disabling or unmounting the trigger cancels a pending touch; re-enabling does not resume it. A `contextmenu` event the platform sends for the same press is ignored, so the menu opens once.
 
 Implementation: `src/components/context-menu/context-menu-target.ts`
 Verification: `src/components/context-menu/context-menu-target.test.tsx`, `e2e/context-menu.spec.ts`
@@ -34,7 +34,7 @@ Verification: `src/components/context-menu/context-menu-target.test.tsx`, `e2e/c
 
 ### UIC-CONTEXT-MENU-1.5 - Dismissal
 
-The open menu shall close on Escape, on a primary press outside it and on a secondary press outside it (where the browser then shows its own menu), without running an action. A secondary click inside the menu does not open the browser's menu. With `isDisabled` the target keeps the browser's menu and opens none.
+The open menu shall close on Escape, on a primary press outside it and on a secondary press outside it (where the browser then shows its own menu), without running an action. A secondary click inside the menu does not open the browser's menu. With `isDisabled` the target keeps the browser's menu and opens none: the trigger mounts no menu, and disabling it closes an open one.
 
 Implementation: `src/components/context-menu/context-menu.tsx`, `src/components/context-menu/menu-state.ts`
 Verification: `src/components/context-menu/context-menu-target.test.tsx`, `e2e/context-menu.spec.ts`
