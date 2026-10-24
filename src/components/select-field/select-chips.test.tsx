@@ -44,6 +44,19 @@ describe('SelectField chips', () => {
     });
   });
 
+  it('UIC-SELECT-FIELD-4.1 names the chips from the field label when no label is drawn', () => {
+    render(
+      <SelectField
+        label="Fruit"
+        labelLayout="control-only"
+        selectionMode="multiple"
+        options={fruit}
+        defaultValue={['pear']}
+      />,
+    );
+    expect(chipLabels()).toEqual(['Pear']);
+  });
+
   it('UIC-SELECT-FIELD-4.1 moves between chips with the arrow keys', async () => {
     const user = userEvent.setup();
     render(

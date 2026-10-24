@@ -85,6 +85,20 @@ describe('TreeSelectField', () => {
     ]);
   });
 
+  it('UIC-TREE-SELECT-FIELD-2.3 names the chips from the field label when no label is drawn', () => {
+    render(
+      <TreeSelectField
+        label="Place"
+        labelLayout="control-only"
+        selectionMode="multiple"
+        items={places}
+        getTextValue={getTextValue}
+        defaultValue={['oslo']}
+      />,
+    );
+    expect(screen.getByRole('grid', { name: 'Place selected values' })).toBeInTheDocument();
+  });
+
   it('UIC-TREE-SELECT-FIELD-1.1 UIC-TREE-SELECT-FIELD-2.7 renders a field around a framed trigger', () => {
     const { container } = render(
       <TreeSelectField
