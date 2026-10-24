@@ -102,6 +102,12 @@ describe('TagsInput', () => {
     expect(tagTexts()).toEqual(['Apple']);
   });
 
+  it('UIC-TAGS-INPUT-1.3 names the tags from the field label when no label is drawn', () => {
+    render(<TagsInput label="Fruit" labelLayout="control-only" defaultValue={['Fig']} />);
+    expect(screen.getByRole('textbox', { name: 'Fruit' })).toBeInTheDocument();
+    expect(screen.getByRole('grid', { name: 'Fruit selected values' })).toBeInTheDocument();
+  });
+
   it('UIC-TAGS-INPUT-1.3 names and describes the input and names the tags', () => {
     const { container, rerender } = render(
       <TagsInput id="fruit" label="Fruit" description="Type and press Enter." isRequired />,

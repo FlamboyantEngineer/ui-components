@@ -29,8 +29,8 @@ const hooks = createHooks('json-editor', ['format']);
 /**
  * A field for JSON text: a highlighted code editor whose text must parse, and follow `schema` when
  * given, with problems marked where they are, completions and hover documentation from the schema,
- * and a Format button that rewrites valid text with standard indentation. It commits when it loses
- * focus and when the text is formatted. Blank text is valid unless the field is required.
+ * and a Format button that rewrites valid text with standard indentation. It commits when focus
+ * leaves the field and when the text is formatted. Blank text is valid unless the field is required.
  */
 export function JsonEditor({ size = 'md', ...props }: JsonEditorProps) {
   const strings = useUiStrings();
@@ -72,6 +72,7 @@ export function JsonEditor({ size = 'md', ...props }: JsonEditorProps) {
       {...field}
       size={size}
       className={mergeClassNames(hooks.className, field.className)}
+      commitOnBlur
     >
       {(control) => (
         <CodeEditor
@@ -87,7 +88,6 @@ export function JsonEditor({ size = 'md', ...props }: JsonEditorProps) {
           isDisabled={control.disabled}
           value={state.value}
           onChange={state.setValue}
-          onBlur={() => state.commit()}
           tokenize={tokenizeJson}
           diagnostics={diagnostics}
           listDiagnostics={false}

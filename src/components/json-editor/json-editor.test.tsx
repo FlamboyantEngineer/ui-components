@@ -117,7 +117,7 @@ describe('JsonEditor', () => {
     expect(screen.queryByRole('button', { name: 'Format' })).not.toBeInTheDocument();
   });
 
-  it('UIC-JSON-EDITOR-4.1 commits on blur and restores the committed text while dirty', async () => {
+  it('UIC-JSON-EDITOR-4.1 UIC-FIELD-1.11 commits on leaving the field and restores the committed text while dirty', async () => {
     const user = userEvent.setup();
     const onCommit = vi.fn();
     const { container } = render(
@@ -131,6 +131,10 @@ describe('JsonEditor', () => {
     expect(editor()).toHaveValue('[1]');
     expect(field(container)).not.toHaveAttribute('data-dirty');
     await user.keyboard('{End} ');
+    // Tab from the edited editor reaches the restore button; leaving the field commits.
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'Restore Settings' })).toHaveFocus();
+    expect(onCommit).not.toHaveBeenCalledWith('[1] ');
     await user.tab();
     expect(onCommit).toHaveBeenLastCalledWith('[1] ');
   });

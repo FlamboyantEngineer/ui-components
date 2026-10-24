@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { MenuButton, actionKeys, fruitEntries, openMenu } from '../../../test/menu-fixtures.js';
@@ -12,6 +12,7 @@ import {
   MenuSection,
   MenuSeparator,
   MenuTrigger,
+  SubmenuTrigger,
   type MenuItemRenderState,
 } from './menu.js';
 
@@ -137,6 +138,146 @@ describe('MenuItem, MenuSection and MenuSeparator', () => {
       expect(item).toHaveAttribute('data-disabled', 'true');
     }
     expectHooksMatchSpec(document.body, 'MENU');
+  });
+
+  it('UIC-MENU-2.6 UIC-MENU-1.3 reaches a focusable disabled item by keyboard but refuses it', async () => {
+    const user = userEvent.setup();
+    const onAction = vi.fn();
+    const onItemAction = vi.fn();
+    const onPress = vi.fn();
+    render(
+      <MenuButton aria-label="Share" onAction={onAction}>
+        <MenuItem id="copy">Copy link</MenuItem>
+        <MenuItem
+          id="mail"
+          description="Add an address first"
+          href="/mail"
+          isDisabled
+          focusableWhenDisabled
+          onAction={onItemAction}
+          onPress={onPress}
+        >
+          Send by mail
+        </MenuItem>
+        <MenuItem id="print">Print</MenuItem>
+      </MenuButton>,
+    );
+    screen.getByRole('button', { name: 'Actions' }).focus();
+    await user.keyboard('{ArrowDown}');
+    const menu = await screen.findByRole('menu', { name: 'Share' });
+    const mail = within(menu).getByRole('menuitem', { name: 'Send by mail Add an address first' });
+    await waitFor(() =>
+      expect(within(menu).getByRole('menuitem', { name: 'Copy link' })).toHaveFocus(),
+    );
+    await user.keyboard('{ArrowDown}');
+    expect(mail).toHaveFocus();
+    expect(mail).toHaveAttribute('aria-disabled', 'true');
+    expect(mail).toHaveAttribute('data-disabled', 'true');
+    expect(mail).toHaveAttribute('tabindex', '0');
+    expect(mail).not.toHaveAttribute('href');
+    await user.keyboard('{Enter}');
+    await user.keyboard(' ');
+    await user.click(mail);
+    expect(onAction).not.toHaveBeenCalled();
+    expect(onItemAction).not.toHaveBeenCalled();
+    expect(onPress).not.toHaveBeenCalled();
+    expect(menu).toBeInTheDocument();
+    await user.keyboard('{End}');
+    expect(within(menu).getByRole('menuitem', { name: 'Print' })).toHaveFocus();
+    await user.keyboard('{ArrowUp}');
+    expect(mail).toHaveFocus();
+    await user.keyboard('{Home}s');
+    expect(mail).toHaveFocus();
+    expectHooksMatchSpec(document.body, 'MENU', { slots: ['label', 'description'] });
+  });
+
+  it('UIC-MENU-2.6 refuses to select a focusable disabled item and hands custom content its state', async () => {
+    const user = userEvent.setup();
+    const onSelectionChange = vi.fn();
+    const states: MenuItemRenderState[] = [];
+    render(
+      <MenuButton
+        aria-label="Columns"
+        selectionMode="multiple"
+        onSelectionChange={onSelectionChange}
+      >
+        <MenuItem id="size">Size</MenuItem>
+        <MenuItem id="owner" isDisabled focusableWhenDisabled>
+          {(state) => {
+            states.push(state);
+            return 'Owner';
+          }}
+        </MenuItem>
+      </MenuButton>,
+    );
+    screen.getByRole('button', { name: 'Actions' }).focus();
+    await user.keyboard('{ArrowDown}');
+    const menu = await screen.findByRole('menu', { name: 'Columns' });
+    const owner = within(menu).getByRole('menuitemcheckbox', { name: 'Owner' });
+    await waitFor(() =>
+      expect(within(menu).getByRole('menuitemcheckbox', { name: 'Size' })).toHaveFocus(),
+    );
+    await user.keyboard('{ArrowDown}');
+    expect(owner).toHaveFocus();
+    await user.keyboard(' ');
+    await user.keyboard('{Enter}');
+    await user.click(owner);
+    expect(onSelectionChange).not.toHaveBeenCalled();
+    expect(owner).not.toBeChecked();
+    expect(states.at(-1)).toMatchObject({ isDisabled: true, isFocused: true });
+  });
+
+  it('UIC-MENU-2.6 refuses Enter on a highlighted focusable disabled item of a filterable menu', async () => {
+    const user = userEvent.setup();
+    const onAction = vi.fn();
+    render(
+      <MenuButton aria-label="Cities" filterable onAction={onAction}>
+        <MenuItem id="lima" isDisabled focusableWhenDisabled>
+          Lima
+        </MenuItem>
+        <MenuItem id="lisbon">Lisbon</MenuItem>
+      </MenuButton>,
+    );
+    await openMenu(user);
+    const search = screen.getByRole('searchbox', { name: 'Search' });
+    await user.keyboard('li{ArrowDown}');
+    const lima = screen.getByRole('menuitem', { name: 'Lima' });
+    await waitFor(() => expect(lima).toHaveAttribute('data-focused', 'true'));
+    expect(search).toHaveFocus();
+    await user.keyboard('{Enter}');
+    expect(onAction).not.toHaveBeenCalled();
+    expect(screen.getByRole('menu', { name: 'Cities' })).toBeInTheDocument();
+    await user.keyboard('{ArrowDown}{Enter}');
+    expect(actionKeys(onAction)).toEqual(['lisbon']);
+  });
+
+  it('UIC-MENU-2.6 keeps a disabled submenu trigger out of reach', async () => {
+    const user = userEvent.setup();
+    render(
+      <MenuButton aria-label="File">
+        <MenuItem id="open">Open</MenuItem>
+        <SubmenuTrigger>
+          <MenuItem id="export" isDisabled focusableWhenDisabled>
+            Export
+          </MenuItem>
+          <MenuPopover>
+            <Menu aria-label="Formats">
+              <MenuItem id="pdf">PDF</MenuItem>
+            </Menu>
+          </MenuPopover>
+        </SubmenuTrigger>
+      </MenuButton>,
+    );
+    screen.getByRole('button', { name: 'Actions' }).focus();
+    await user.keyboard('{ArrowDown}');
+    const open = await screen.findByRole('menuitem', { name: 'Open' });
+    await waitFor(() => expect(open).toHaveFocus());
+    await user.keyboard('{ArrowDown}');
+    expect(open).toHaveFocus();
+    expect(screen.getByRole('menuitem', { name: 'Export' })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
   });
 
   it('UIC-MENU-2.4 draws pending placeholders and replaces them in the open menu', async () => {

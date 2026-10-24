@@ -256,6 +256,30 @@ test.describe('Color Field lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-FIELD-1.11 UIC-COLOR-FIELD-4.3 keeps a typed colour uncommitted until focus leaves the field', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('color-field');
+    const typing = field(page, 'typing');
+    const input = typing.getByRole('textbox', { name: 'Text colour' });
+    await input.fill('#ff0000');
+    // Leaving the input for the swatch button applies the text; the field stays dirty.
+    await page.keyboard.press('Shift+Tab');
+    await expect(typing.getByRole('button', { name: 'Text colour picker' })).toBeFocused();
+    await expect(input).toHaveValue('#FF0000');
+    await expect(typing).toHaveAttribute('data-dirty', 'true');
+    await page.keyboard.press('Tab');
+    await expect(input).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(typing.getByRole('button', { name: 'Restore Text colour' })).toBeFocused();
+    await expect(output(page, 'Typed committed')).toHaveText('none');
+    await page.keyboard.press('Tab');
+    await expect(output(page, 'Typed committed')).toHaveText('#ff0000');
+    await expect(typing).not.toHaveAttribute('data-dirty');
+    await expect(typing).not.toHaveAttribute('data-focused');
+  });
+
   test('UIC-COLOR-FIELD-2.4 submits each named colour once in its stored format', async ({
     page,
     lab,

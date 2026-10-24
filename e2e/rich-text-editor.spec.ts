@@ -385,6 +385,28 @@ test.describe('Rich Text Editor lab', () => {
     await expect(editor(page, 'controlled')).not.toHaveAttribute('data-dirty', 'true');
   });
 
+  test('UIC-FIELD-1.11 UIC-RICH-TEXT-EDITOR-4.2 reaches the restore button by Tab and commits on leaving the field', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('rich-text-editor');
+    const field = page.locator('[data-lab-cell="state=resting chrome=plain"] .ui-rich-text-editor');
+    const document = field.getByRole('textbox', { name: /^Note/ });
+    await document.click();
+    await page.keyboard.press('Control+End');
+    await page.keyboard.type(' today');
+    await expect(field).toHaveAttribute('data-dirty', 'true');
+    await page.keyboard.press('Tab');
+    const restore = field.getByRole('button', { name: 'Restore Note' });
+    await expect(restore).toBeFocused();
+    await expect(field).toHaveAttribute('data-dirty', 'true');
+    await page.keyboard.press('Tab');
+    await expect(field).not.toHaveAttribute('data-dirty');
+    await expect(field).not.toHaveAttribute('data-focused');
+    await expect(restore).toHaveCount(0);
+    await expect(document).toContainText('today');
+  });
+
   test('UIC-RICH-TEXT-EDITOR-4.1 refuses edits while read-only or disabled', async ({
     page,
     lab,

@@ -28,7 +28,7 @@ export interface TransitionMenuTransition {
   label?: string | undefined;
   /** What the transition does, under its name. */
   description?: string | undefined;
-  /** Why the transition is not available now: it shows disabled, with the reason under its name. */
+  /** Why the transition is unavailable: it shows disabled but focusable, with this under its name. */
   disabledReason?: string | undefined;
   /** Asks for confirmation first, in a dialog with this message. */
   confirmMessage?: ReactNode;
@@ -85,7 +85,9 @@ function toMenuItem(
     id: transition.id,
     label: transition.label ?? target.label,
     description: transition.disabledReason ?? transition.description,
+    // Unavailable transitions stay reachable by arrow keys, so their reason can be read.
     isDisabled: transition.disabledReason !== undefined,
+    focusableWhenDisabled: true,
     icon: <StatusLight tone={tone} size="sm" />,
     className: hooks.slotClass('transition'),
     'data-target-tone': tone,
@@ -135,7 +137,7 @@ export function TransitionMenu({
   );
   const choose = (key: Key) => {
     const transition = transitions.find((entry) => entry.id === key);
-    if (!transition) return;
+    if (!transition || transition.disabledReason !== undefined) return;
     if (transition.confirmMessage === undefined && !transition.requiresComment) {
       void run({ transition: transition.id, to: transition.to });
       return;

@@ -97,6 +97,33 @@ test.describe('JSON Editor lab', () => {
     );
   });
 
+  test('UIC-FIELD-1.11 UIC-JSON-EDITOR-4.1 reaches the restore button by Tab and commits on leaving the field', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('json-editor');
+    const editor = saved(page);
+    const committed = page.locator('[data-lab-output="Committed"]');
+    const input = editor.getByRole('textbox', { name: 'Order' });
+    await input.click();
+    await page.keyboard.press('Control+End');
+    await page.keyboard.press('ArrowLeft');
+    await page.keyboard.type(',"ripe":true');
+    await page.keyboard.press('Tab');
+    await expect(editor.getByRole('button', { name: 'Restore Order' })).toBeFocused();
+    await expect(editor).toHaveAttribute('data-dirty', 'true');
+    // Moving between the field's own buttons commits nothing.
+    await page.keyboard.press('Tab');
+    await expect(editor.getByRole('button', { name: 'Help for Order' })).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(editor.getByRole('button', { name: 'Order actions' })).toBeFocused();
+    await expect(committed).toHaveText('{"fruit":"Pear","sizes":[1,2,3]}');
+    await page.keyboard.press('Tab');
+    await expect(committed).toHaveText('{"fruit":"Pear","sizes":[1,2,3],"ripe":true}');
+    await expect(editor).not.toHaveAttribute('data-dirty');
+    await expect(editor).not.toHaveAttribute('data-focused');
+  });
+
   test('UIC-JSON-EDITOR-1.1 passes axe in the dark theme', async ({ lab }) => {
     await lab.open('json-editor', { theme: 'dark' });
     await lab.expectAccessible();

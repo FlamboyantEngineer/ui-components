@@ -1,4 +1,4 @@
-import { createContext, useContext, type ReactElement, type ReactNode } from 'react';
+import { cloneElement, createContext, useContext, type ReactElement, type ReactNode } from 'react';
 import {
   Autocomplete,
   AutocompleteStateContext,
@@ -256,9 +256,18 @@ export function MenuTrigger({ children, ...openState }: MenuTriggerProps) {
   );
 }
 
-/** Makes its `MenuItem` open the `MenuPopover` beside it (React Aria `SubmenuTrigger`). */
+/**
+ * Makes its `MenuItem` open the `MenuPopover` beside it (React Aria `SubmenuTrigger`). The item
+ * ignores `focusableWhenDisabled`: hover and the arrow key would still open the submenu.
+ */
 export function SubmenuTrigger({ children }: SubmenuTriggerProps) {
-  return <AriaSubmenuTrigger>{children}</AriaSubmenuTrigger>;
+  const [item, popover] = children as [ReactElement<MenuItemProps>, ReactElement];
+  return (
+    <AriaSubmenuTrigger>
+      {cloneElement(item, { focusableWhenDisabled: false })}
+      {popover}
+    </AriaSubmenuTrigger>
+  );
 }
 
 export { MenuItem, MenuSection, MenuSeparator } from './menu-item.js';

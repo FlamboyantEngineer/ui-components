@@ -22,10 +22,10 @@ Verification: `src/components/menu/menu.test.tsx`, `e2e/menu.spec.ts`
 
 ### UIC-MENU-1.3 - Keyboard navigation
 
-While a menu has focus, Arrow Down and Arrow Up shall move focus to the next and previous enabled item, wrapping at the ends and passing over disabled and pending items, section headings and separators; Home and End move to the first and last enabled item; typing characters moves focus to the next item whose label starts with them; Enter and Space activate the focused item; Escape closes the menu.
+While a menu has focus, Arrow Down and Arrow Up shall move focus to the next and previous enabled item, wrapping at the ends and passing over disabled and pending items, section headings and separators; a disabled item with `focusableWhenDisabled` counts as enabled here ([UIC-MENU-2.6](#uic-menu-26---focusable-disabled-items)); Home and End move to the first and last enabled item; typing characters moves focus to the next item whose label starts with them; Enter and Space activate the focused item; Escape closes the menu.
 
 Implementation: `src/components/menu/menu.tsx`
-Verification: `src/components/menu/menu.test.tsx`, `e2e/menu.spec.ts`
+Verification: `src/components/menu/menu.test.tsx`, `src/components/menu/menu-item.test.tsx`, `e2e/menu.spec.ts`
 
 ### UIC-MENU-1.4 - Actions
 
@@ -52,7 +52,7 @@ Verification: `src/components/menu/menu-item.test.tsx`
 
 ### UIC-MENU-2.3 - Tone and disabled items
 
-`tone` (`neutral`, the default, or `danger`) shall be published in `data-tone`, so a destructive action can be marked; it changes no behaviour. `isDisabled` (or the menu's `disabledKeys`) shall keep the item visible with `aria-disabled="true"` and `data-disabled`, out of keyboard navigation and inert to pointer and keyboard.
+`tone` (`neutral`, the default, or `danger`) shall be published in `data-tone`, so a destructive action can be marked; it changes no behaviour. `isDisabled` (or the menu's `disabledKeys`) shall keep the item visible with `aria-disabled="true"` and `data-disabled`, out of keyboard navigation and inert to pointer and keyboard. `focusableWhenDisabled` keeps it in keyboard navigation instead ([UIC-MENU-2.6](#uic-menu-26---focusable-disabled-items)).
 
 Implementation: `src/components/menu/menu-item.tsx`, `labs/reference/menu.css`
 Verification: `src/components/menu/menu-item.test.tsx`, `e2e/menu.spec.ts`
@@ -69,6 +69,13 @@ Verification: `src/components/menu/menu-item.test.tsx`
 `MenuItem` shall publish its interaction states: `data-hovered` (pointer over the item), `data-focused`, `data-focus-visible` (keyboard focus) and `data-pressed`.
 
 Implementation: `src/components/menu/menu-item.tsx`
+Verification: `src/components/menu/menu-item.test.tsx`, `e2e/menu.spec.ts`
+
+### UIC-MENU-2.6 - Focusable disabled items
+
+With `isDisabled` and `focusableWhenDisabled`, `MenuItem` shall stay in keyboard navigation (arrow keys, Home, End, type-to-select and hover reach it) so a reader can find it and read why it is unavailable, as the WAI-ARIA Authoring Practices allow for disabled menu items. It carries `aria-disabled="true"` and `data-disabled`, its `description` (for example the reason it is unavailable) stays part of its accessible name, and custom content receives `isDisabled: true`. It refuses activation: a press, Enter or Space, including Enter in a filterable menu's search field while it is highlighted, calls no `onAction` or press handler, changes no selection, follows no `href` and leaves the menu open. It does not apply to an item disabled through the menu's `disabledKeys`, to a pending item, or to the item of a `SubmenuTrigger`, which stays out of reach because hovering or the arrow key would still open its submenu.
+
+Implementation: `src/components/menu/menu-item.tsx`, `src/components/menu/menu.tsx`
 Verification: `src/components/menu/menu-item.test.tsx`, `e2e/menu.spec.ts`
 
 ## UIC-MENU-3 - Sections, separators and selection

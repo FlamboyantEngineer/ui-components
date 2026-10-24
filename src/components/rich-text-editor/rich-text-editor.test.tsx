@@ -350,6 +350,19 @@ describe('RichTextEditor', () => {
     expect(container.querySelector('.ui-field')).not.toHaveAttribute('data-dirty');
   });
 
+  it('UIC-RICH-TEXT-EDITOR-4.2 UIC-FIELD-1.11 reaches the restore button by Tab and commits on leaving the field', async () => {
+    const onCommit = vi.fn();
+    const { user } = renderEditor({ defaultValue: note, onCommit, children: <ViewProbe /> });
+    selectRange(11);
+    await user.keyboard('!');
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'Restore Notes' })).toHaveFocus();
+    expect(onCommit).not.toHaveBeenCalled();
+    await user.tab();
+    expect(onCommit).toHaveBeenCalledTimes(1);
+    expect(onCommit.mock.calls[0]?.[0].content[0].content[0].text).toBe('Pick pears!');
+  });
+
   it('UIC-RICH-TEXT-EDITOR-4.2 offers restore while the document differs from the committed one', async () => {
     const { user } = renderEditor({
       defaultValue: note,
