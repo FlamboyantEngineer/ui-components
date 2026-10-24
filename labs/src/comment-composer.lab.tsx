@@ -59,7 +59,7 @@ function StoredDraft() {
       </Button>
       {isShown ? (
         <CommentComposer
-          storageKey="lab:comment-draft"
+          persistKey="lab:comment-draft"
           onSubmit={() => {}}
           onCancel={() => setCancelled((count) => count + 1)}
           data-lab-composer="stored"

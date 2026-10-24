@@ -117,6 +117,8 @@ describe('ApprovalPanel', () => {
     rerender(<ApprovalPanel approvers={rejected} requiredCount={1} />);
     expect(root).toHaveAttribute('data-outcome', 'rejected');
     expect(root.querySelector('.ui-approval-panel__outcome')).toHaveTextContent('Rejected');
+    rerender(<ApprovalPanel approvers={[]} />);
+    expect(root).toHaveAttribute('data-outcome', 'pending');
   });
 
   it('UIC-APPROVAL-PANEL-1.3 shows the approvals against those needed over a bar of decisions', () => {
@@ -179,6 +181,8 @@ describe('ApprovalPanel', () => {
     const { container } = render(<ApprovalPanel approvers={approvers} currentApproverId="jon" />);
     expect(row('Jon Berg')).toHaveAttribute('data-current', 'true');
     expect(row('Jon Berg').querySelector('.ui-approval-panel__you')).toHaveTextContent('You');
+    // The mark stays a separate word in the text itself, without a stylesheet's spacing.
+    expect(row('Jon Berg')).toHaveTextContent('Jon Berg You');
     expect(row('Maria Santos')).not.toHaveAttribute('data-current');
     expectHooksMatchSpec(container, 'APPROVAL-PANEL', { slots: ['you'] });
   });

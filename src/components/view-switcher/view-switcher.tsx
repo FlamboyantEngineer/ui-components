@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key } from '../../core/props.js';
@@ -177,7 +177,8 @@ function ViewMenu({
         )
       }
       icon={selected?.icon}
-      aria-label={props['aria-label'] ?? strings.views}
+      aria-label={props['aria-label'] ?? (props['aria-labelledby'] ? undefined : strings.views)}
+      aria-labelledby={props['aria-labelledby']}
       selectionMode="single"
       disallowEmptySelection
       selectedKeys={selected ? [selected.id] : []}
@@ -195,6 +196,33 @@ function ViewMenu({
   );
 }
 
+function findView(views: readonly ViewSwitcherView[], key: Key | null | undefined) {
+  return key === null || key === undefined ? undefined : views.find((view) => view.id === key);
+}
+
+/**
+ * The selected view: the chosen one while it is among `views`, else the default view, else the
+ * first. An uncontrolled selection left on a view that is gone moves to that fallback and reports it.
+ */
+function useSelectedView(props: ViewSwitcherProps) {
+  const { views, defaultViewKey } = props;
+  const [chosenKey, select] = useControllableState<Key | null>(
+    props.selectedKey,
+    props.defaultSelectedKey ?? defaultViewKey ?? views[0]?.id ?? null,
+    (key) => {
+      if (key !== null) props.onSelectionChange?.(key);
+    },
+  );
+  const selected = findView(views, chosenKey) ?? findView(views, defaultViewKey) ?? views[0];
+  const selectedKey = selected?.id ?? null;
+  const isStale =
+    props.selectedKey === undefined && selectedKey !== null && chosenKey !== selectedKey;
+  useEffect(() => {
+    if (isStale) select(selectedKey);
+  });
+  return { selected, selectedKey, select };
+}
+
 /**
  * Names and switches the saved views of a collection, as tabs or a menu. The selected view shows a
  * modified mark while its settings differ from its saved ones; its actions save, save as a new
@@ -204,15 +232,8 @@ export function ViewSwitcher(props: ViewSwitcherProps) {
   const { views, variant = 'tabs', isDirty = false, defaultViewKey = null } = props;
   const { className, id } = props;
   const strings = useUiStrings();
-  const [selectedKey, setSelectedKey] = useControllableState<Key | null>(
-    props.selectedKey,
-    props.defaultSelectedKey ?? defaultViewKey ?? views[0]?.id ?? null,
-    (key) => {
-      if (key !== null) props.onSelectionChange?.(key);
-    },
-  );
+  const { selected, selectedKey, select: setSelectedKey } = useSelectedView(props);
   const [dialog, setDialog] = useState<ViewDialog | null>(null);
-  const selected = views.find((view) => view.id === selectedKey);
   const context: ViewActionContext = {
     handlers: props,
     strings,

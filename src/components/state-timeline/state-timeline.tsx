@@ -5,6 +5,7 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key, NativeProps, SortDirection, Tone } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { Attribution, type AttributionProps } from '../attribution/attribution.js';
 import type { AvatarIdentity } from '../avatar/avatar.js';
 import { Badge } from '../badge/badge.js';
@@ -98,8 +99,18 @@ function Entry({ entry, status, showAvatar, fallbackAfterDays, getNow }: EntryPr
           >
             {entry.label}
           </Badge>
-          {isCurrent ? <span {...hooks.slot('current')}>{strings.currentState}</span> : null}
-          {status === 'upcoming' ? <VisuallyHidden>{strings.upcomingState}</VisuallyHidden> : null}
+          {isCurrent ? (
+            <>
+              {' '}
+              <span {...hooks.slot('current')}>{strings.currentState}</span>
+            </>
+          ) : null}
+          {status === 'upcoming' ? (
+            <>
+              {' '}
+              <VisuallyHidden elementType="span">{strings.upcomingState}</VisuallyHidden>
+            </>
+          ) : null}
           {hasAttribution ? (
             <Attribution
               time={entry.time}
@@ -141,7 +152,7 @@ export function StateTimeline({
     >
       {toRows(entries, upcoming, direction).map(({ entry, status }) => (
         <Entry
-          key={`${status === 'upcoming' ? 'upcoming' : 'entry'}:${entry.id}`}
+          key={`${status === 'upcoming' ? 'upcoming' : 'entry'}:${toKeyIdentity(entry.id)}`}
           entry={entry}
           status={status}
           showAvatar={showAvatar}

@@ -27,24 +27,24 @@ Verification: `src/components/comment-composer/comment-composer.test.tsx`
 
 ### UIC-COMMENT-COMPOSER-1.4 - Cancelling
 
-A ghost `Button` in `ui-comment-composer__cancel`, reading the provider's `cancel` string, shall show while the draft is not blank, or always with `onCancel`. Pressing it, or Escape in the composer while it shows, shall clear the draft and call `onCancel`. Escape with nothing to cancel is left to the surface around the composer, such as an overlay that closes on it.
+A ghost `Button` in `ui-comment-composer__cancel`, reading the provider's `cancel` string, shall show while the draft is not blank, or always with `onCancel`, unless the composer is disabled or pending. Pressing it, or Escape in the composer while it shows, shall clear the draft and call `onCancel`. Escape with nothing to cancel is left to the surface around the composer, such as an overlay that closes on it.
 
 Implementation: `src/components/comment-composer/comment-composer.tsx`
 Verification: `src/components/comment-composer/comment-composer.test.tsx`, `e2e/comment-composer.spec.ts`
 
 ### UIC-COMMENT-COMPOSER-1.5 - Draft
 
-The draft shall be controlled by `value` with `onChange`, which reports every edit; uncontrolled, it starts at `defaultValue` (empty by default). With `storageKey`, an uncontrolled draft is read from and written to the provider storage under that key ([UIC-PROVIDER-6.1](PROVIDER.md#uic-provider-61---storage-adapter)), so a composer mounted again resumes it.
+The draft shall be controlled by `value` with `onChange`, which reports every edit; uncontrolled, it starts at `defaultValue` (empty by default). With `persistKey`, an uncontrolled draft is read from and written to the provider storage under that key ([UIC-PROVIDER-6.1](PROVIDER.md#uic-provider-61---storage-adapter)), so a composer mounted again resumes it. `storageKey` is a deprecated name for `persistKey`, used when `persistKey` is not given.
 
 Implementation: `src/components/comment-composer/comment-composer.tsx`
 Verification: `src/components/comment-composer/comment-composer.test.tsx`, `e2e/comment-composer.spec.ts`
 
 ### UIC-COMMENT-COMPOSER-1.6 - Disabled
 
-With `isDisabled`, the root shall carry `data-disabled`, and the text box and the submit button shall be disabled, so nothing is typed or submitted.
+With `isDisabled`, the root shall carry `data-disabled`, the text box and the submit button shall be disabled and there is no cancel button, so nothing is typed, submitted or cancelled; Escape leaves the draft as it is.
 
 Implementation: `src/components/comment-composer/comment-composer.tsx`
-Verification: `src/components/comment-composer/comment-composer.test.tsx`
+Verification: `src/components/comment-composer/comment-composer.test.tsx`, `e2e/comment-composer.spec.ts`
 
 ### UIC-COMMENT-COMPOSER-1.7 - Accessibility, hooks and caller attributes
 

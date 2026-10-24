@@ -13,7 +13,7 @@ Verification: `src/components/approval-panel/approval-panel.test.tsx`, `e2e/appr
 
 ### UIC-APPROVAL-PANEL-1.2 - Outcome
 
-The panel shall publish `data-outcome`: `rejected` when any approver rejected, else `approved` once the approvers who approved reach `requiredCount`, else `pending`. `requiredCount` is a whole number from 1 and defaults to the number of approvers.
+The panel shall publish `data-outcome`: `rejected` when any approver rejected, else `approved` once the approvers who approved reach `requiredCount`, else `pending`. `requiredCount` is a whole number from 1 and defaults to the number of approvers, or 1 without approvers, so a panel nobody has approved yet is `pending`.
 
 Implementation: `src/components/approval-panel/approval-panel.tsx`
 Verification: `src/components/approval-panel/approval-panel.test.tsx`, `e2e/approval-panel.spec.ts`
@@ -36,7 +36,7 @@ Verification: `src/components/approval-panel/approval-panel.test.tsx`, `e2e/appr
 
 ### UIC-APPROVAL-PANEL-1.5 - The reader's row
 
-The approver whose `id` is `currentApproverId` shall publish `data-current` and show the provider's `you` string after their name (`ui-approval-panel__you`).
+The approver whose `id` is `currentApproverId` shall publish `data-current` and show the provider's `you` string after their name and a space (`ui-approval-panel__you`).
 
 Implementation: `src/components/approval-panel/approval-panel.tsx`
 Verification: `src/components/approval-panel/approval-panel.test.tsx`, `e2e/approval-panel.spec.ts`

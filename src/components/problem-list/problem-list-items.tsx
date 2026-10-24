@@ -47,8 +47,12 @@ function ProblemText({ problem }: { problem: ShownProblem }) {
   return (
     <>
       <Icon glyph={problem.severity} className={hooks.slotClass('icon')} />
-      <VisuallyHidden>{`${strings.problemSeverity(problem.severity)}: `}</VisuallyHidden>
-      {problem.label ? <span {...hooks.slot('label')}>{problem.label}</span> : null}
+      <VisuallyHidden elementType="span">{`${strings.problemSeverity(problem.severity)}:`}</VisuallyHidden>{' '}
+      {problem.label ? (
+        <>
+          <span {...hooks.slot('label')}>{problem.label}</span>{' '}
+        </>
+      ) : null}
       <span {...hooks.slot('message')}>{problem.message}</span>
     </>
   );

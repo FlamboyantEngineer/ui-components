@@ -971,6 +971,51 @@ describe('Modal', () => {
       expect(onKeyDown.mock.calls.map(([event]) => event.key)).not.toContain('Enter');
     });
 
+    it('UIC-MODAL-6.3 runs the primary action from the content once, pending, and shows its failure', async () => {
+      const user = userEvent.setup();
+      const save = deferred();
+      const onPress = vi.fn(() => save.promise);
+      const runFromField = ({ runPrimaryAction }: { runPrimaryAction: () => void }) => (
+        <input
+          aria-label="Name"
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' && !event.ctrlKey && !event.metaKey) runPrimaryAction();
+          }}
+        />
+      );
+      const { rerender } = render(
+        <Modal title="Name" isOpen primaryAction={{ label: 'Create', onPress }}>
+          {runFromField}
+        </Modal>,
+      );
+      const action = screen.getByRole('button', { name: 'Create' });
+      await user.click(screen.getByRole('textbox', { name: 'Name' }));
+      await user.keyboard('{Enter}{Enter}{Control>}{Enter}{/Control}');
+      expect(onPress).toHaveBeenCalledTimes(1);
+      expect(action).toHaveAttribute('data-pending', 'true');
+      await act(async () => save.reject(new Error('Name taken')));
+      expect(await screen.findByRole('alert')).toHaveTextContent('Name taken');
+      expect(action).not.toHaveAttribute('data-pending');
+      rerender(
+        <Modal title="Name" isOpen primaryAction={{ label: 'Create', onPress, isDisabled: true }}>
+          {runFromField}
+        </Modal>,
+      );
+      await user.keyboard('{Enter}');
+      rerender(
+        <Modal
+          title="Name"
+          isOpen
+          primaryAction={{ label: 'Create', onPress }}
+          actions={<button type="button">Send</button>}
+        >
+          {runFromField}
+        </Modal>,
+      );
+      await user.keyboard('{Enter}');
+      expect(onPress).toHaveBeenCalledTimes(1);
+    });
+
     it('UIC-MODAL-6.1 leaves the shortcut to multiline editors and custom action bars', async () => {
       const user = userEvent.setup();
       const onPress = vi.fn();
