@@ -138,6 +138,26 @@ test.describe('Scroll Region lab', () => {
     expect(Math.abs(scrollTop - (scrollHeight - clientHeight) / 2)).toBeLessThan(3);
   });
 
+  test('UIC-SCROLL-REGION-2.4 scrolls the viewport and not the page with the wheel over a thumb', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('scroll-region');
+    const region = page.locator('[data-lab-region="overlay"]');
+    const viewport = region.locator('.ui-scroll-region__viewport');
+    const thumb = region.locator('.ui-scroll-region__thumb[data-orientation="vertical"]');
+    await region.scrollIntoViewIfNeeded();
+    await page.evaluate(
+      () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))),
+    );
+    const before = await page.evaluate(() => window.scrollY);
+    const start = await box(thumb);
+    await page.mouse.move(start.x + start.width / 2, start.y + start.height / 2);
+    await page.mouse.wheel(0, 40);
+    await expect.poll(async () => (await metrics(viewport)).scrollTop).toBe(40);
+    expect(await page.evaluate(() => window.scrollY)).toBe(before);
+  });
+
   test('UIC-SCROLL-REGION-2.7 follows content that shrinks and grows inside a retained child', async ({
     page,
     lab,

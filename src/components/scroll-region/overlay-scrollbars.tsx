@@ -6,7 +6,6 @@ import {
   type KeyboardEvent,
   type PointerEvent,
   type RefObject,
-  type WheelEvent,
 } from 'react';
 import type { Orientation } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -15,6 +14,7 @@ import { useEnterExit } from '../../utils/use-enter-exit.js';
 import { usePointerDrag } from '../../utils/use-pointer-drag.js';
 import { scrollRegionHooks as hooks } from './styling-hooks.js';
 import type { OverlayMeasurement } from './use-overlay-metrics.js';
+import { useThumbWheel } from './use-thumb-wheel.js';
 
 export interface OverlayScrollbarsProps {
   /** The natively scrolling viewport the thumbs scroll. */
@@ -49,12 +49,15 @@ interface ThumbProps {
   onScrolled: () => void;
 }
 
-interface TrackProps extends ThumbProps {
+interface FocusProps {
+  /** Called when focus enters or leaves the thumb, including when a focused thumb disappears. */
+  onFocusChange: (isFocused: boolean) => void;
+}
+
+interface TrackProps extends ThumbProps, FocusProps {
   trackRef: (element: HTMLElement | null) => void;
   /** Show the track; it stays mounted through its exit. */
   isVisible: boolean;
-  /** Called when focus enters or leaves the track's thumb. */
-  onFocusChange: (isFocused: boolean) => void;
 }
 
 interface ThumbDrag {
@@ -100,8 +103,14 @@ function scrollViewportTo(thumb: ThumbProps, value: number): void {
   thumb.onScrolled();
 }
 
-/** A focused thumb that disappears hands focus back to the viewport it scrolls. */
-function useFocusHandback(viewport: RefObject<HTMLDivElement | null>) {
+/**
+ * A focused thumb that disappears hands focus back to the viewport it scrolls and reports that it
+ * lost focus, since a removed element fires no blur.
+ */
+function useFocusHandback(
+  viewport: RefObject<HTMLDivElement | null>,
+  onFocusChange: FocusProps['onFocusChange'],
+) {
   const thumb = useRef<HTMLDivElement | null>(null);
   useLayoutEffect(() => {
     const element = thumb.current;
@@ -109,9 +118,10 @@ function useFocusHandback(viewport: RefObject<HTMLDivElement | null>) {
     return () => {
       if (element && element.ownerDocument.activeElement === element) {
         scroller?.focus({ preventScroll: true });
+        onFocusChange(false);
       }
     };
-  }, [viewport]);
+  }, [viewport, onFocusChange]);
   return thumb;
 }
 
@@ -133,10 +143,11 @@ function useThumbDrag(thumb: ThumbProps, travel: number) {
   });
 }
 
-function OverlayThumb(props: ThumbProps) {
-  const { orientation, viewport, viewportId, track, page, max, value } = props;
+function OverlayThumb({ onFocusChange, ...props }: ThumbProps & FocusProps) {
+  const { orientation, viewport, viewportId, track, page, max, value, rtl } = props;
   const strings = useUiStrings();
-  const thumb = useFocusHandback(viewport);
+  const thumb = useFocusHandback(viewport, onFocusChange);
+  useThumbWheel(thumb, { viewport, page, rtl });
   const vertical = orientation === 'vertical';
   const size =
     max > 0 ? Math.min(track, Math.max(MIN_THUMB_SIZE, (track * page) / (max + page))) : track;
@@ -164,11 +175,6 @@ function OverlayThumb(props: ThumbProps) {
         ...(vertical ? { top: offset, height: size } : { left: offset, width: size }),
       }}
       {...dragHandlers}
-      onWheel={(event: WheelEvent<HTMLDivElement>) => {
-        const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? page : 1;
-        viewport.current?.scrollBy({ left: event.deltaX * unit, top: event.deltaY * unit });
-        event.stopPropagation();
-      }}
       onKeyDown={(event: KeyboardEvent<HTMLDivElement>) => {
         const current = clamp(readScrollPosition(props), 0, max);
         const next = resolveThumbKey(event.key, current, props);
@@ -216,7 +222,7 @@ function OverlayTrack({ trackRef, isVisible, onFocusChange, ...thumb }: TrackPro
       onFocus={() => onFocusChange(true)}
       onBlur={() => onFocusChange(false)}
     >
-      <OverlayThumb {...thumb} />
+      <OverlayThumb {...thumb} onFocusChange={onFocusChange} />
     </div>
   );
 }
