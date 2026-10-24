@@ -1,6 +1,6 @@
 # People Picker
 
-`PeoplePicker` is a field for choosing one person or group, or several. It is a configured [Combobox](COMBOBOX.md): it searches through the caller's `loadItems` as the reader types (UIC-COMBOBOX-5.1 to 5.3), lists the current user and the people chosen recently before a search, draws each person with a [User Identity](USER-IDENTITY.md) row and shows the chosen people of a multiple picker as chips with their [Avatar](AVATAR.md). People are plain data (`id`, `name`, the avatar identity fields, `description`, `isDisabled`, `disabledReason`); the value is the chosen `id`, or the list of chosen ids.
+`PeoplePicker` is a field for choosing one person or group, or several. It is a configured [Combobox](COMBOBOX.md): it searches through the caller's `loadItems` as the reader types (UIC-COMBOBOX-5.1 to 5.3), lists the current user, the people the caller already knows and the people chosen recently before a search, draws each person with a [User Identity](USER-IDENTITY.md) row and shows the chosen people of a multiple picker as chips with their [Avatar](AVATAR.md). People are plain data (`id`, `name`, the avatar identity fields, `description`, `isDisabled`, `disabledReason`); the value is the chosen `id`, or the list of chosen ids.
 
 ## UIC-PEOPLE-PICKER-1 - Field
 
@@ -62,6 +62,13 @@ Verification: `src/components/people-picker/people-picker.test.tsx`, `e2e/people
 Before a search, `recent` people other than the current user shall be listed, in the given order, in a section headed by the provider string `recentPeople`. Without recent people there is no section.
 
 Implementation: `src/components/people-picker/people-picker.tsx`, `src/core/field-strings.ts`
+Verification: `src/components/people-picker/people-picker.test.tsx`, `e2e/people-picker.spec.ts`
+
+### UIC-PEOPLE-PICKER-3.5 - Known people
+
+Before a search, `knownPeople` other than the current user shall be listed after the current user and before the recent people, in the given order and without a heading; a recent person among them is listed here only. They are known like people a search returned (UIC-PEOPLE-PICKER-3.1), so a value that holds them, such as a saved one, shows their names in the input or the chips before any search.
+
+Implementation: `src/components/people-picker/people-picker.tsx`
 Verification: `src/components/people-picker/people-picker.test.tsx`, `e2e/people-picker.spec.ts`
 
 ### UIC-PEOPLE-PICKER-3.4 - Hooks and caller attributes

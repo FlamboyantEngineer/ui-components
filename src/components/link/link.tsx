@@ -122,7 +122,8 @@ export function Link({
   className,
   ...rest
 }: LinkProps) {
-  const opensNewTab = target === '_blank';
+  // A link without a destination, or a disabled one, is a span that opens nothing.
+  const opensNewTab = target === '_blank' && rest.href !== undefined && !rest.isDisabled;
   return (
     <AriaLink
       {...rest}

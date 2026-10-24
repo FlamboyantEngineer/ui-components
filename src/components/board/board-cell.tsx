@@ -2,7 +2,7 @@ import { createDropIndicator } from '../../utils/create-drop-indicator.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { createKeyIndex } from '../../utils/create-key-index.js';
-import { useCallback, useMemo, type ReactNode } from 'react';
+import { useCallback, useLayoutEffect, useMemo, useRef, type ReactNode } from 'react';
 import {
   GridList,
   GridListItem,
@@ -20,6 +20,9 @@ import type { BoardCellAddress } from './board-moves.js';
 import type { BoardCardDrag } from './use-board-drag.js';
 import type { CollectionDropTarget } from '../../utils/use-reorder-drag-and-drop.js';
 
+/** Scrolls the virtualized cell holding the card `key` toward it; other cells ignore the call. */
+export type BoardCardReveal = (key: Key) => void;
+
 /** What every cell of a board draws its cards with. */
 export interface BoardCellOptions<T> {
   renderCard: (item: T) => ReactNode;
@@ -30,6 +33,8 @@ export interface BoardCellOptions<T> {
   keyShortcuts: string | undefined;
   virtualized: boolean;
   drag: BoardCardDrag | null;
+  /** Where each virtualized cell registers its `BoardCardReveal` for focus after a move. */
+  reveals: Set<BoardCardReveal>;
 }
 
 export interface BoardCellProps<T> {
@@ -52,6 +57,49 @@ type DragAndDropOptions = Parameters<typeof useDragAndDrop>[0];
 const noDragAndDrop: DragAndDropOptions = {};
 
 const renderDropIndicator = createDropIndicator(hooks.slotClass('drop-indicator'));
+
+/**
+ * Scrolls a virtualized cell toward its card at `index`, which it does not render, so that the
+ * virtualizer renders it: the card's place is estimated from the rendered card nearest to it (or the
+ * cell's start), and each later call starts from a nearer, measured card.
+ */
+function scrollTowardCard(grid: HTMLElement, cards: { keys: readonly Key[]; index: number }) {
+  const { keys, index } = cards;
+  const indexes = new Map(keys.map((key, at) => [toKeyIdentity(key), at]));
+  const origin = grid.getBoundingClientRect().top - grid.scrollTop;
+  let anchor = { index: 0, top: 0 };
+  for (const row of grid.querySelectorAll(`.${hooks.slotClass('card')}`)) {
+    const at = indexes.get(row.getAttribute('data-key-identity') ?? '');
+    if (at === undefined || Math.abs(at - index) >= Math.abs(anchor.index - index)) continue;
+    anchor = { index: at, top: row.getBoundingClientRect().top - origin };
+  }
+  const top = anchor.top + (index - anchor.index) * estimatedCardHeight;
+  grid.scrollTop = Math.max(0, top - grid.clientHeight / 2);
+}
+
+/**
+ * Registers a virtualized cell's `BoardCardReveal`, so that a card moved into the cell by keyboard
+ * renders and takes focus wherever the cell is scrolled.
+ */
+function useCardReveal<T extends { id: Key }>(
+  reveals: Set<BoardCardReveal> | null,
+  items: readonly T[],
+) {
+  const grid = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    if (!reveals) return;
+    const reveal: BoardCardReveal = (key) => {
+      const keys = items.map((item) => item.id);
+      const index = keys.indexOf(key);
+      if (index >= 0 && grid.current) scrollTowardCard(grid.current, { keys, index });
+    };
+    reveals.add(reveal);
+    return () => {
+      reveals.delete(reveal);
+    };
+  }, [reveals, items]);
+  return grid;
+}
 
 /**
  * A cell's grid list drag and drop hooks: its cards drag with the board's media type, and it takes
@@ -107,6 +155,7 @@ function BoardCards<T extends { id: Key }>({
   const { renderCard, getTextValue, onAction, keyShortcuts, virtualized, drag } = options;
   const keys = useMemo(() => createKeyIndex(items.map((item) => item.id)), [items]);
   const dragAndDropHooks = useCellDragAndDrop(drag, address, keys);
+  const grid = useCardReveal(virtualized ? options.reveals : null, items);
   const renderEmptyState = useCallback(
     () => (
       <EmptyState size="sm" description={strings.noCards} className={hooks.slotClass('empty')} />
@@ -117,6 +166,7 @@ function BoardCards<T extends { id: Key }>({
     <GridList
       // React Aria keeps drag and drop hooks for the list's lifetime: remount when moves toggle.
       key={drag ? 'drag' : 'static'}
+      ref={grid}
       aria-labelledby={labelledBy}
       items={items}
       dependencies={[renderCard, getTextValue, keyShortcuts]}

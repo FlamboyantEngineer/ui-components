@@ -1,4 +1,5 @@
 import { createContext, useContext } from 'react';
+import { useStoreValue } from '../../utils/value-store.js';
 import { toEmojiSelection, type EmojiSelection } from './emoji-catalog.js';
 import type { EmojiPickerState } from './emoji-picker-state.js';
 
@@ -17,6 +18,7 @@ export function useEmojiPickerContext(): EmojiPickerState {
  * would report in the current skin tone, or `null` before any.
  */
 export function useActiveEmoji(): EmojiSelection | null {
-  const { active, tone } = useEmojiPickerContext();
+  const { activeEmoji, tone } = useEmojiPickerContext();
+  const active = useStoreValue(activeEmoji);
   return active ? toEmojiSelection(active, tone) : null;
 }

@@ -83,6 +83,8 @@ const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'bas
 function readKey(record: PivotRecord, field: string): PivotKey {
   const value = record[field];
   if (value === undefined || value === null || value === '') return null;
+  // JSON has no non-finite numbers: NaN would share the empty group's `null` key.
+  if (typeof value === 'number' && !Number.isFinite(value)) return String(value);
   if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
     return value;
   }

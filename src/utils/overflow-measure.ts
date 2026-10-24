@@ -5,14 +5,14 @@
 export type OverflowCollapseFrom = 'start' | 'end';
 
 /** The elements one commit rendered: the items, the indicator and the parts that keep their size. */
-export interface OverflowParts {
+interface OverflowParts {
   items: Element[];
   indicator: Element | null;
   fixed: Element[];
 }
 
 /** The room the items share and the gaps that separate them. */
-export interface OverflowRoom {
+interface OverflowRoom {
   /** The container's content box. */
   width: number;
   height: number;
@@ -24,7 +24,7 @@ export interface OverflowRoom {
   indicatorGap: number;
 }
 
-export interface RenderedLayout {
+interface RenderedLayout {
   /** Whether this commit rendered the indicator. */
   hasIndicator: boolean;
   /** The indicator element when the caller marked it, wherever it stands. */
@@ -59,7 +59,7 @@ function measureInlineChrome(element: Element): number {
 }
 
 /** An element's border-box width plus its inline margins. */
-export function measureOuterSize(element: Element): number {
+function measureOuterSize(element: Element): number {
   const style = getStyle(element);
   const margins = style ? readPixels(style.marginLeft) + readPixels(style.marginRight) : 0;
   return element.getBoundingClientRect().width + margins;
@@ -77,7 +77,7 @@ export function measureContentBox(container: HTMLElement) {
 }
 
 /** The room of a flat row, or of a nested item container beside the indicator and fixed parts. */
-export function measureRoom(
+function measureRoom(
   container: HTMLElement,
   itemContainer: HTMLElement | null,
   fixed: readonly Element[],
@@ -114,7 +114,7 @@ function findIndicator(
  * or else the item container's neighbour at the collapsing end, and the container's other element
  * children are fixed parts.
  */
-export function readParts(
+function readParts(
   container: HTMLElement,
   itemContainer: HTMLElement | null,
   layout: RenderedLayout,

@@ -108,6 +108,100 @@ describe('ToastQueue', () => {
     expect(titles()).toEqual([]);
   });
 
+  it('UIC-TOAST-1.2 UIC-TOAST-1.5 UIC-TOAST-1.6 keeps a toast updated or added under the pointer paused', async () => {
+    const user = useFakeClock();
+    const queue = createToastQueue();
+    render(<ToastRegion queue={queue} />);
+    let key = '';
+    let finish: (value: string) => void = () => {};
+    const work = new Promise<string>((resolve) => {
+      finish = resolve;
+    });
+    act(() => {
+      queue.add({ title: 'Sticky' }, { timeout: 0 });
+      key = queue.add({ title: 'Saving', isPending: true });
+      queue.promise(work, {
+        pending: { title: 'Uploading' },
+        success: { title: 'Uploaded' },
+        error: { title: 'Failed' },
+      });
+    });
+    const region = screen.getByRole('region');
+    await user.hover(region);
+    act(() => queue.update(key, { title: 'Saved' }));
+    await act(async () => finish('done'));
+    act(() => {
+      queue.add({ title: 'Fresh' });
+    });
+    await advance(6000);
+    expect(titles()).toEqual(['Fresh', 'Uploaded', 'Saved', 'Sticky']);
+    await user.unhover(region);
+    await advance(4999);
+    expect(titles()).toEqual(['Fresh', 'Uploaded', 'Saved', 'Sticky']);
+    await advance(1);
+    expect(titles()).toEqual(['Sticky']);
+  });
+
+  it('UIC-TOAST-1.2 UIC-TOAST-4.3 pauses while the region itself holds focus', async () => {
+    const user = useFakeClock();
+    const queue = createToastQueue();
+    render(
+      <>
+        <button type="button">Outside</button>
+        <ToastRegion queue={queue} />
+      </>,
+    );
+    act(() => {
+      queue.add({ title: 'Landmark' });
+    });
+    const region = screen.getByRole('region');
+    act(() => region.focus());
+    expect(region).toHaveAttribute('data-expanded', 'true');
+    await advance(10000);
+    expect(titles()).toEqual(['Landmark']);
+    await user.click(screen.getByRole('button', { name: 'Outside' }));
+    expect(region).not.toHaveAttribute('data-expanded');
+    await advance(5000);
+    expect(titles()).toEqual([]);
+  });
+
+  it('UIC-TOAST-1.2 UIC-TOAST-4.3 stops pausing once a focused toast is dismissed', async () => {
+    const user = useFakeClock();
+    const queue = createToastQueue();
+    render(
+      <>
+        <button type="button">Outside</button>
+        <ToastRegion queue={queue} />
+      </>,
+    );
+    const dismissFocused = async () => {
+      act(() => screen.getByRole('button', { name: 'Dismiss' }).focus());
+      await user.keyboard('{Enter}');
+      expect(titles()).toEqual([]);
+    };
+    const addRunning = async (title: string) => {
+      act(() => {
+        queue.add({ title });
+      });
+      expect(screen.getByRole('region')).not.toHaveAttribute('data-expanded');
+      await advance(5000);
+      expect(titles()).toEqual([]);
+    };
+    act(() => {
+      queue.add({ title: 'First' });
+    });
+    await dismissFocused();
+    await addRunning('Second');
+
+    act(() => screen.getByRole('button', { name: 'Outside' }).focus());
+    act(() => {
+      queue.add({ title: 'Third' });
+    });
+    await dismissFocused();
+    expect(screen.getByRole('button', { name: 'Outside' })).toHaveFocus();
+    await addRunning('Fourth');
+  });
+
   it('UIC-TOAST-1.3 replaces a toast with the same id without closing it', async () => {
     vi.useFakeTimers();
     const replacedClose = vi.fn();

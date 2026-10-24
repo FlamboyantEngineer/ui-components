@@ -15,7 +15,7 @@ Verification: `src/components/drag-handle/drag-handle.test.tsx`, `e2e/drag-handl
 
 ### UIC-DRAG-HANDLE-1.2 - Outside the tab sequence
 
-The handle shall stay out of the tab sequence, since a collection reaches it with the arrow keys from its row; `excludeFromTabOrder={false}` puts it back.
+The handle shall stay out of the tab sequence, since a collection reaches it with the arrow keys from its row; `excludeFromTabOrder={false}` puts it back, and an `undefined` value keeps the default.
 
 Implementation: `src/components/drag-handle/drag-handle.tsx`
 Verification: `src/components/drag-handle/drag-handle.test.tsx`, `e2e/drag-handle.spec.ts`

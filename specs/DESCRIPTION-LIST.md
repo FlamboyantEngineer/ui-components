@@ -34,9 +34,9 @@ Verification: `src/components/description-list/description-list.test.tsx`, `e2e/
 
 ### UIC-DESCRIPTION-LIST-1.5 - Formatted values
 
-A row without children shall show its `value` formatted for the provider's locale ([PROVIDER.md](PROVIDER.md)): a number or a `{ start, end }` number range with `Intl.NumberFormat`, a date or a date range with `Intl.DateTimeFormat` (a medium date unless `formatOptions` says otherwise), and a list of texts with `Intl.ListFormat` (a conjunction by default). `formatOptions` passes `Intl` options for the value's kind. Children, when given, are shown instead. `formatDescriptionValue(value, { locale, formatOptions })` exposes the same text.
+A row without children shall show its `value` formatted for the provider's locale ([PROVIDER.md](PROVIDER.md)): a number or a `{ start, end }` number range with `Intl.NumberFormat`, an ISO 8601 date or date and time text (`2026-05-14`, `2026-05-14T09:30`), or a range of them, with `Intl.DateTimeFormat` (a medium date unless `formatOptions` says otherwise), reading the text in the formatter's time zone so a calendar date never shifts a day (a text that is not a date shows as written), and a list of texts with `Intl.ListFormat` (a conjunction by default). `formatOptions` passes `Intl` options for the value's kind. Children, when given, are shown instead. `formatDescriptionValue(value, { locale, formatOptions })` exposes the same text. A `Date` object, or a range of them, still formats as before but is deprecated: it holds an instant, so the calendar date it shows depends on the reader's time zone.
 
-Implementation: `src/components/description-list/description-list.tsx`, `src/components/description-list/format-description-value.ts`
+Implementation: `src/components/description-list/description-list.tsx`, `src/components/description-list/format-description-value.ts`, `src/utils/read-time-instant.ts`
 Verification: `src/components/description-list/description-list.test.tsx`, `e2e/description-list.spec.ts`
 
 ## UIC-DESCRIPTION-LIST-2 - States and accessibility

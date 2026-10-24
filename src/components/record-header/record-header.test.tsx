@@ -64,7 +64,7 @@ describe('RecordHeader', { timeout: 15_000 }, () => {
       />,
     );
     expect(container.firstElementChild).toHaveAttribute('data-editable', 'true');
-    const heading = screen.getByRole('heading', { level: 2 });
+    const heading = screen.getByRole('heading', { level: 2, name: 'Cooling rack' });
     expect(heading.tagName).toBe('DIV');
     expect(heading).toHaveClass('ui-record-header__title');
     const edit = screen.getByRole('button', { name: /^Edit Title/ });

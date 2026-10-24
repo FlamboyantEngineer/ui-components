@@ -80,6 +80,16 @@ describe('MediaViewer', () => {
     expect(title()).toBe('Numeric image');
     expect(onSelectionChange.mock.calls).toEqual([['1'], [1]]);
   });
+  it("UIC-MEDIA-VIEWER-1.3 reports no selection change for the shown item's thumbnail", async () => {
+    const user = userEvent.setup();
+    const onSelectionChange = vi.fn();
+    render(<Viewer onSelectionChange={onSelectionChange} />);
+    await user.click(screen.getByRole('button', { name: 'Harbour.jpg' }));
+    expect(onSelectionChange).not.toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: 'Bridge.png' }));
+    await user.click(screen.getByRole('button', { name: 'Bridge.png' }));
+    expect(onSelectionChange.mock.calls).toEqual([['bridge']]);
+  });
   it('UIC-MEDIA-VIEWER-1.1 opens a full-size modal titled by the item, with its caption', async () => {
     const user = userEvent.setup();
     const onOpenChange = vi.fn();
@@ -112,13 +122,46 @@ describe('MediaViewer', () => {
     await user.click(screen.getByRole('button', { name: 'Next' }));
     expect(onSelectionChange).toHaveBeenLastCalledWith('guide');
     expect(title()).toBe('Guide.pdf');
-    expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Next' })).toHaveAttribute('aria-disabled', 'true');
     await user.click(screen.getByRole('button', { name: 'Previous' }));
     await user.click(screen.getByRole('button', { name: 'Previous' }));
     expect(title()).toBe('Harbour.jpg');
-    expect(screen.getByRole('button', { name: 'Previous' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Previous' })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
     expect(
       document.querySelector('.ui-media-viewer__previous [data-glyph="chevron-left"]'),
+    ).not.toBeNull();
+  });
+
+  it('UIC-MEDIA-VIEWER-1.2 keeps focus on a button that reaches the end of the set', async () => {
+    const user = userEvent.setup();
+    render(<Viewer defaultSelectedKey="bridge" />);
+    const next = screen.getByRole('button', { name: 'Next' });
+    next.focus();
+    await user.keyboard('{Enter}');
+    expect(title()).toBe('Guide.pdf');
+    expect(next).toHaveFocus();
+    expect(next).toBeEnabled();
+    expect(next).toHaveAttribute('aria-disabled', 'true');
+    await user.keyboard('{Enter}');
+    expect(title()).toBe('Guide.pdf');
+    await user.keyboard('{ArrowLeft}');
+    expect(title()).toBe('Bridge.png');
+  });
+
+  it('UIC-MEDIA-VIEWER-1.2 points the previous and next chevrons the other way right to left', () => {
+    render(
+      <UiProvider locale="ar-EG">
+        <Viewer defaultSelectedKey="bridge" />
+      </UiProvider>,
+    );
+    expect(
+      document.querySelector('.ui-media-viewer__previous [data-glyph="chevron-right"]'),
+    ).not.toBeNull();
+    expect(
+      document.querySelector('.ui-media-viewer__next [data-glyph="chevron-left"]'),
     ).not.toBeNull();
   });
 

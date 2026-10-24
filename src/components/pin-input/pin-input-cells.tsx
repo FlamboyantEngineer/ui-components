@@ -95,7 +95,8 @@ function toCellControlProps(control: FieldControlProps) {
  * Changes the value and moves focus once the new value has rendered, when the tab order and the
  * cell that takes the next character follow it. Focus moves only while it is still in the group
  * and the value did change, so a change the caller ignores moves nothing later. A value that fills
- * every cell commits and calls `onComplete`, once per new complete value.
+ * every cell commits, and `onComplete` receives the value the caller renders once it is complete,
+ * once per new complete value.
  */
 function useCellWriter(
   state: FieldState<string>,
@@ -108,9 +109,9 @@ function useCellWriter(
     pendingFocus.current = null;
     const group = slots.read('group');
     const isInside = group?.contains(group.ownerDocument.activeElement) ?? false;
-    if (pending && pending.from !== state.value && isInside) {
-      slots.readAll('cell')[pending.index]?.focus();
-    }
+    if (!pending || pending.from === state.value) return;
+    if (isInside) slots.readAll('cell')[pending.index]?.focus();
+    if (state.value.length >= length) onComplete?.(state.value);
   });
   return (next: string, focusIndex: number) => {
     if (next === state.value) {
@@ -119,9 +120,7 @@ function useCellWriter(
     }
     pendingFocus.current = { index: focusIndex, from: state.value };
     state.setValue(next);
-    if (next.length < length) return;
-    state.commit();
-    onComplete?.(next);
+    if (next.length >= length) state.commit();
   };
 }
 
@@ -170,10 +169,9 @@ export function PinInputCells({ control, state, cells, name, onComplete }: PinIn
         isDisabled={state.isDisabled}
         isInvalid={control['aria-invalid']}
         isReadOnly={state.isReadOnly}
+        // The field commits once focus leaves it, so Tab reaches its restore button.
         onBlur={(event) => {
-          if (event.currentTarget.contains(event.relatedTarget as Node | null)) return;
-          setFocused(null);
-          state.commit();
+          if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setFocused(null);
         }}
       >
         {Array.from({ length }, (_, index) => (

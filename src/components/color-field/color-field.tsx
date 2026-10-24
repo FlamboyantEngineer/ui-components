@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { useId, useState } from 'react';
 import { Button as AriaButton, ColorPicker, DialogTrigger } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -59,8 +59,9 @@ interface ColorTriggerProps {
 const emptyPickerColor = '#808080';
 
 /**
- * The trigger is named by the field label and the colour text. Backspace or Delete clears an optional
- * value; every other key goes on to the field, for its undo chords.
+ * The trigger is named by the field label and the colour text, and stays focusable while read-only.
+ * Backspace or Delete clears an optional value; every other key goes on to the field, for its undo
+ * chords.
  */
 function ColorTrigger({ control, state, color, text }: ColorTriggerProps) {
   const valueId = useId();
@@ -73,7 +74,7 @@ function ColorTrigger({ control, state, color, text }: ColorTriggerProps) {
       aria-label={control['aria-label']}
       aria-labelledby={`${name} ${valueId}`}
       aria-describedby={control['aria-describedby']}
-      isDisabled={control.disabled || control.readOnly}
+      isDisabled={control.disabled}
       onKeyDown={(event) => {
         if ((event.key === 'Backspace' || event.key === 'Delete') && state.canClear) state.clear();
         else event.continuePropagation();
@@ -92,7 +93,7 @@ function ColorTrigger({ control, state, color, text }: ColorTriggerProps) {
  * shows a swatch and the colour text (or, with `allowsTyping`, a swatch button and a text input) and
  * opens a picker: a format choice, a saturation and brightness area, hue and alpha sliders, the
  * format's inputs, an eye dropper, preset swatches and, unless required, a Clear button. The picked
- * colour commits when the picker closes.
+ * colour commits when the picker closes. With `name`, a hidden input submits the stored value.
  */
 export function ColorField({
   format,
@@ -112,14 +113,27 @@ export function ColorField({
   const storedFormat = valueFormat ?? (hasAlpha(shownFormat) ? 'hexa' : 'hex');
   const color = toColorText(state.value);
   const shownPlaceholder = placeholder ?? strings.noColor;
+  const [isOpen, setOpen] = useState(false);
+  const isEditable = !state.isReadOnly && !state.isDisabled;
+  if (isOpen && !isEditable) setOpen(false);
+  const changeOpen = (next: boolean) => {
+    if (next && !isEditable) return;
+    setOpen(next);
+    if (!next) state.commit();
+  };
   return (
-    <Field {...field} {...hooks.root({ className: field.className })} state={state}>
+    <Field
+      {...field}
+      {...hooks.root({ className: field.className })}
+      state={state}
+      commitOnBlur={allowsTyping}
+    >
       {(control) => (
         <ColorPicker
           value={color ?? emptyPickerColor}
           onChange={(next) => state.setValue(toStoredValue(next, storedFormat))}
         >
-          <DialogTrigger onOpenChange={(isOpen) => (isOpen ? undefined : state.commit())}>
+          <DialogTrigger isOpen={isOpen} onOpenChange={changeOpen}>
             {allowsTyping ? (
               <ColorEntry
                 control={control}
@@ -148,6 +162,14 @@ export function ColorField({
               allowsEyeDropper={allowsEyeDropper}
             />
           </DialogTrigger>
+          {props.name ? (
+            <input
+              type="hidden"
+              name={props.name}
+              value={state.value ?? ''}
+              disabled={state.isDisabled}
+            />
+          ) : null}
         </ColorPicker>
       )}
     </Field>

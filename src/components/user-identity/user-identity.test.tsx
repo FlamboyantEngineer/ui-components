@@ -29,6 +29,18 @@ describe('UserIdentity', () => {
     });
   });
 
+  it('UIC-USER-IDENTITY-1.1 separates the name and the secondary line in a name from content', () => {
+    const { container } = render(
+      <button type="button">
+        <UserIdentity name="Jon Berg" description="Research team" />
+      </button>,
+    );
+    expect(screen.getByRole('button')).toHaveAccessibleName('Jon Berg Research team');
+    expect(container.querySelector('.ui-user-identity__content')?.textContent).toBe(
+      'Jon Berg Research team',
+    );
+  });
+
   it('UIC-USER-IDENTITY-1.1 renders text as text and reads a blank name as unnamed', () => {
     const { container, rerender } = render(<UserIdentity name="<b>bold()</b>" />);
     expect(container.querySelector('b')).toBeNull();

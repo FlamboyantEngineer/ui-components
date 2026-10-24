@@ -9,13 +9,13 @@ import {
 import { DropIndicator } from '../../primitives/index.js';
 import type { Key } from '../../core/props.js';
 import { createKeyIndex } from '../../utils/create-key-index.js';
+import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
 import {
   isMoveChord,
   useReorderDragAndDrop,
   type CollectionDragAndDropOptions,
   type CollectionDropTarget,
-  type ReorderDragItem,
 } from '../../utils/use-reorder-drag-and-drop.js';
 import { armHandleDrag, keepHandleCellDraggable } from '../drag-handle/drag-handle.js';
 import { tableHooks } from './table-hooks.js';
@@ -111,16 +111,16 @@ function renderDropIndicator(target: CollectionDropTarget) {
   return <DropIndicator target={target} className={tableHooks.slotClass('drop-indicator')} />;
 }
 
+/** The text a dragged row carries to other drop targets: its own `id`, not its collection key. */
 function getKeyText(key: Key): string {
-  return String(key);
+  return String(fromCollectionKey(key));
 }
 
 /** The drag preview: the caller's content for the dragged rows, in the table's preview slot. */
 function createDragPreview<T extends TableRow>(snapshot: ReorderSnapshot<T>) {
   const render = snapshot.reorder?.renderDragPreview;
   if (!render) return undefined;
-  return (items: ReorderDragItem[]) => {
-    const keys = new Set(items.map((item) => item['text/plain']));
+  return (keys: ReadonlySet<Key>) => {
     const rows = snapshot.rows.filter((row) => keys.has(toCollectionKey(row.id)));
     return <div {...tableHooks.slot('drag-preview', { count: rows.length })}>{render(rows)}</div>;
   };

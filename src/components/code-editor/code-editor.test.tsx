@@ -149,6 +149,18 @@ describe('CodeEditor', () => {
     expect(events).toEqual(['focus', 'down:x', 'up:x', 'down:Tab', 'blur']);
   });
 
+  it('UIC-CODE-EDITOR-1.1 submits the source with its form under its name', async () => {
+    const user = userEvent.setup();
+    render(
+      <form aria-label="Query">
+        <Editor name="source" initialValue="select 1" />
+      </form>,
+    );
+    await user.type(screen.getByRole('textbox', { name: 'Source' }), ' + 2');
+    const form = screen.getByRole<HTMLFormElement>('form', { name: 'Query' });
+    expect(new FormData(form).get('source')).toBe('select 1 + 2');
+  });
+
   it('UIC-CODE-EDITOR-1.6 locks a read-only or disabled editor and offers no completions', async () => {
     const user = userEvent.setup();
     const { container, rerender } = render(
@@ -367,7 +379,7 @@ describe('CodeEditor', () => {
     expect(input).toHaveAttribute('aria-controls', list.id);
     const options = screen.getAllByRole('option');
     expect(options.map((option) => option.textContent)).toEqual([
-      'fruit.appleA crisp fruit',
+      'fruit.apple A crisp fruit',
       'fruit.apricot',
       'fruit.banana',
     ]);

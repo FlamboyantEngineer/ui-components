@@ -182,7 +182,7 @@ describe('ExpandToggle', () => {
       <ExpandToggle isPending pendingLabel="Loading citrus" onExpandedChange={onExpandedChange} />,
     );
     // React Aria names a pending button by its label and its busy indicator.
-    const toggle = screen.getByRole('button', { name: /^Expand/ });
+    const toggle = screen.getByRole('button', { name: 'Expand Loading citrus' });
     expect(toggle).toHaveAttribute('data-pending', 'true');
     expect(toggle).toHaveAttribute('aria-disabled', 'true');
     expect(screen.getByRole('progressbar', { name: 'Loading citrus' })).toHaveClass(

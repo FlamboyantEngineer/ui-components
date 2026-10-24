@@ -177,6 +177,31 @@ describe('PeoplePicker', () => {
     expect(onChange).toHaveBeenLastCalledWith('me');
   });
 
+  it('UIC-PEOPLE-PICKER-3.5 names known people of a saved value and lists them before a search', async () => {
+    const user = userEvent.setup();
+    const loadItems = vi.fn<PeoplePickerLoader>(async (query) => findPeople(query));
+    const ada = directory[0] as PeoplePickerPerson;
+    const ben = directory[1] as PeoplePickerPerson;
+    render(
+      <PeoplePicker
+        label="Reviewers"
+        selectionMode="multiple"
+        currentUser={me}
+        knownPeople={[me, ada]}
+        recent={[ada, ben]}
+        defaultValue={['ada']}
+        loadItems={loadItems}
+      />,
+    );
+    const chips = screen.getByRole('grid', { name: 'Reviewers selected values' });
+    expect(within(chips).getByRole('row', { name: 'Ada Moreno' })).toBeInTheDocument();
+    await user.click(input());
+    await user.keyboard('{ArrowDown}');
+    await screen.findByRole('listbox');
+    expect(optionNames()).toEqual(['Sam Rivera (you)', 'Ada Moreno', 'Ben Okafor']);
+    expect(loadItems).not.toHaveBeenCalled();
+  });
+
   it('UIC-PEOPLE-PICKER-3.1 keeps a searched person known after later results leave them out', async () => {
     const user = userEvent.setup();
     let release: (people: PeoplePickerPerson[]) => void = () => {};

@@ -63,6 +63,8 @@ interface OrderedRows {
   order: RefObject<string[]>;
   /** Registered primaries in document order; each call refreshes `order`. */
   read: () => Array<[string, HTMLElement]>;
+  /** Reads once in a microtask, however many times it is asked before then. */
+  queueRead: () => void;
 }
 
 interface ListState {
@@ -70,6 +72,8 @@ interface ListState {
   rows: OrderedRows;
   store: ActiveRowStore;
   focusedId: RefObject<string | null>;
+  /** Whether focus has entered the list; until then the first row holds the tab stop. */
+  hasEntered: RefObject<boolean>;
 }
 
 interface RemovedRow {
@@ -146,10 +150,11 @@ function isFocusLost(document: Document): boolean {
  * its nearest neighbour, and moves focus there when the removed row held it and focus fell out.
  */
 function recoverFromRemoval(state: ListState, removed: RemovedRow) {
-  const { list, rows, store, focusedId } = state;
+  const { list, rows, store, focusedId, hasEntered } = state;
   if (!list.current?.isConnected) return;
+  const candidates = hasEntered.current ? [removed.id, ...removed.neighbours] : [];
   const nextId =
-    [removed.id, ...removed.neighbours].find((candidate) => rows.nodes.current.has(candidate)) ??
+    candidates.find((candidate) => rows.nodes.current.has(candidate)) ??
     rows.read()[0]?.[0] ??
     null;
   if (store.getActiveId() === removed.id) store.setActiveId(nextId);
@@ -160,10 +165,11 @@ function recoverFromRemoval(state: ListState, removed: RemovedRow) {
 
 function useOrderedRows(
   list: RefObject<HTMLUListElement | null>,
-  primaryClass: string,
+  { primaryClass, onRead }: { primaryClass: string; onRead: (order: readonly string[]) => void },
 ): OrderedRows {
   const nodes = useRef(new Map<string, HTMLElement>());
   const order = useRef<string[]>([]);
+  const isReadQueued = useRef(false);
   const read = useCallback(() => {
     const ids = new Map([...nodes.current].map(([id, node]) => [node, id]));
     const primaries = [...(list.current?.querySelectorAll<HTMLElement>(`.${primaryClass}`) ?? [])];
@@ -172,8 +178,17 @@ function useOrderedRows(
       return id === undefined ? [] : [[id, node]];
     });
     order.current = rows.map(([id]) => id);
+    onRead(order.current);
     return rows;
-  }, [list, primaryClass]);
+  }, [list, primaryClass, onRead]);
+  const queueRead = useCallback(() => {
+    if (isReadQueued.current) return;
+    isReadQueued.current = true;
+    queueMicrotask(() => {
+      isReadQueued.current = false;
+      read();
+    });
+  }, [read]);
   // Keyed moves and inserts change the order without any registration.
   useLayoutEffect(() => {
     const element = list.current;
@@ -184,26 +199,30 @@ function useOrderedRows(
     read();
     return () => observer.disconnect();
   }, [list, read]);
-  return useMemo(() => ({ nodes, order, read }), [read]);
+  return useMemo(() => ({ nodes, order, read, queueRead }), [read, queueRead]);
 }
 
 function useRowRegistry(state: ListState): RowRegistry {
-  const { list, rows, store, focusedId } = state;
+  const { list, rows, store, focusedId, hasEntered } = state;
   const register = useCallback(
     (id: string, node: HTMLElement) => {
       rows.nodes.current.set(id, node);
       if (store.getActiveId() === null) store.setActiveId(id);
-      queueMicrotask(rows.read);
+      // A row enabled without a DOM change escapes the observer; one read serves a whole batch.
+      rows.queueRead();
       return () => {
         // The order snapshot still holds the row: compute its neighbours before it is gone.
         const neighbours = findNeighbours(rows.order.current, id);
         if (rows.nodes.current.get(id) === node) rows.nodes.current.delete(id);
         queueMicrotask(() =>
-          recoverFromRemoval({ list, rows, store, focusedId }, { id, node, neighbours }),
+          recoverFromRemoval(
+            { list, rows, store, focusedId, hasEntered },
+            { id, node, neighbours },
+          ),
         );
       };
     },
-    [list, rows, store, focusedId],
+    [list, rows, store, focusedId, hasEntered],
   );
   return useMemo(
     () => ({
@@ -212,10 +231,11 @@ function useRowRegistry(state: ListState): RowRegistry {
       getActiveId: store.getActiveId,
       activate: (id: string) => {
         focusedId.current = id;
+        hasEntered.current = true;
         store.setActiveId(id);
       },
     }),
-    [register, store, focusedId],
+    [register, store, focusedId, hasEntered],
   );
 }
 
@@ -230,10 +250,18 @@ export function useListNavigation({
   ref,
 }: ListNavigationOptions): ListNavigation {
   const [list, setRef] = useForwardedRef(ref);
-  const rows = useOrderedRows(list, primaryClass);
   const [store] = useState(createActiveRowStore);
+  const hasEntered = useRef(false);
+  // Until focus enters the list, the tab stop follows the first row as rows come and go.
+  const onRead = useCallback(
+    (order: readonly string[]) => {
+      if (!hasEntered.current && order[0] !== undefined) store.setActiveId(order[0]);
+    },
+    [store],
+  );
+  const rows = useOrderedRows(list, { primaryClass, onRead });
   const focusedId = useRef<string | null>(null);
-  const registry = useRowRegistry({ list, rows, store, focusedId });
+  const registry = useRowRegistry({ list, rows, store, focusedId, hasEntered });
   useImperativeHandle(handleRef, () => ({ focusFirst: () => rows.read()[0]?.[1].focus() }), [rows]);
 
   const onKeyDown = (event: KeyboardEvent<HTMLUListElement>) => {

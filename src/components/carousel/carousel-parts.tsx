@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Button as AriaButton } from '../../primitives/index.js';
+import { Button as AriaButton, useLocale } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { IconButton } from '../icon-button/icon-button.js';
@@ -48,6 +48,7 @@ export function CarouselControls({
   rotation,
 }: CarouselControlsProps) {
   const strings = useUiStrings();
+  const isRtl = useLocale().direction === 'rtl';
   return (
     <div {...hooks.slot('controls')}>
       {rotation ? (
@@ -62,7 +63,7 @@ export function CarouselControls({
         />
       ) : null}
       <IconButton
-        icon="chevron-left"
+        icon={isRtl ? 'chevron-right' : 'chevron-left'}
         label={strings.previousSlide}
         size="sm"
         className={hooks.slotClass('previous')}
@@ -72,7 +73,7 @@ export function CarouselControls({
         onPress={onPrevious}
       />
       <IconButton
-        icon="chevron-right"
+        icon={isRtl ? 'chevron-left' : 'chevron-right'}
         label={strings.nextSlide}
         size="sm"
         className={hooks.slotClass('next')}

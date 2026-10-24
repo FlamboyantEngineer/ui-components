@@ -3,6 +3,9 @@ import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider, type UiLinkProps } from '../../core/provider.js';
+import { Button } from '../button/button.js';
+import { Popover, PopoverTrigger } from '../popover/popover.js';
+import { Portal } from '../portal/portal.js';
 import { CardGrid, CardGridItem } from './card-grid.js';
 import { CardAction, CardTitle } from './card-parts.js';
 import { Card } from './card.js';
@@ -331,6 +334,33 @@ describe('Card', () => {
     expect(onAction).toHaveBeenCalledTimes(1);
     await user.click(text);
     expect(onAction).toHaveBeenCalledTimes(2);
+  });
+
+  it('UIC-CARD-3.2 leaves clicks in content portalled out of the card alone', async () => {
+    const user = userEvent.setup();
+    const onAction = vi.fn();
+    render(
+      <Card
+        title="Trip"
+        onAction={onAction}
+        actions={
+          <PopoverTrigger>
+            <Button>Details</Button>
+            <Popover title="Details">Two hours along the water</Popover>
+          </PopoverTrigger>
+        }
+      >
+        Body
+        <Portal>
+          <p>Harbour notes</p>
+        </Portal>
+      </Card>,
+    );
+    await user.click(screen.getByText('Harbour notes'));
+    expect(onAction).not.toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: 'Details' }));
+    await user.click(await screen.findByText('Two hours along the water'));
+    expect(onAction).not.toHaveBeenCalled();
   });
 
   it('UIC-CARD-3.2 repeats the modifier keys of a click on a link card', async () => {

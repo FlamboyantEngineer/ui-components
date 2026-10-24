@@ -1,7 +1,15 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { Tab, TabList, TabPanel, Tabs, type TabListProps, type TabsProps } from './tabs.js';
+import {
+  Tab,
+  TabList,
+  TabPanel,
+  Tabs,
+  type TabListProps,
+  type TabProps,
+  type TabsProps,
+} from './tabs.js';
 
 function TypedTabs({ list, ...props }: TabsProps & { list?: Partial<TabListProps> }) {
   return (
@@ -18,6 +26,11 @@ function TypedTabs({ list, ...props }: TabsProps & { list?: Partial<TabListProps
       <TabPanel id="ab">Compact panel</TabPanel>
     </Tabs>
   );
+}
+
+/** A host component around `Tab`, as React Aria's reuse pattern writes it. */
+function NamedTab(props: TabProps) {
+  return <Tab {...props} />;
 }
 
 describe('Tab key identities', () => {
@@ -135,5 +148,53 @@ describe('Tab key identities', () => {
     expect(validateName).toHaveBeenLastCalledWith(1, 'Number');
     expect(onRename).toHaveBeenCalledExactlyOnceWith(1, 'Number');
     await waitFor(() => expect(numeric).toHaveFocus());
+  });
+
+  it('UIC-COMPOSITION-4.2 UIC-TABS-1.1 pairs tabs rendered through a host component with their panels', async () => {
+    const user = userEvent.setup();
+    const onSelectionChange = vi.fn();
+    render(
+      <Tabs defaultSelectedKey="b" disabledKeys={['c']} onSelectionChange={onSelectionChange}>
+        <TabList aria-label="Wrapped tabs">
+          <NamedTab id="a">Apple</NamedTab>
+          <NamedTab id="b">Banana</NamedTab>
+          <NamedTab id="c">Cherry</NamedTab>
+        </TabList>
+        <TabPanel id="a">Apple panel</TabPanel>
+        <TabPanel id="b">Banana panel</TabPanel>
+        <TabPanel id="c">Cherry panel</TabPanel>
+      </Tabs>,
+    );
+    const banana = screen.getByRole('tab', { name: 'Banana' });
+    expect(banana).toHaveAttribute('aria-selected', 'true');
+    expect(banana).toHaveAttribute('aria-controls', screen.getByRole('tabpanel').id);
+    expect(screen.getByRole('tabpanel')).toHaveTextContent('Banana panel');
+    expect(screen.getByRole('tab', { name: 'Cherry' })).toHaveAttribute('aria-disabled', 'true');
+    await user.click(screen.getByRole('tab', { name: 'Apple' }));
+    expect(onSelectionChange).toHaveBeenLastCalledWith('a');
+    expect(screen.getByRole('tabpanel')).toHaveTextContent('Apple panel');
+  });
+
+  it('UIC-COMPOSITION-4.2 UIC-TABS-2.8 UIC-TABS-3.1 reports the ids of tabs rendered through a host component', async () => {
+    const user = userEvent.setup();
+    const onRemove = vi.fn();
+    const onRename = vi.fn();
+    render(
+      <Tabs>
+        <TabList aria-label="Wrapped tabs" onRemove={onRemove} onRename={onRename}>
+          <NamedTab id={1}>Numeric</NamedTab>
+          <NamedTab id="1">Text</NamedTab>
+        </TabList>
+      </Tabs>,
+    );
+    const text = screen.getByRole('tab', { name: 'Text' });
+    await user.click(text);
+    await user.keyboard('{Delete}');
+    expect(onRemove).toHaveBeenLastCalledWith(new Set(['1']));
+    await user.keyboard('{F2}');
+    const field = screen.getByRole('textbox', { name: 'Rename Text' });
+    await user.clear(field);
+    await user.type(field, 'Words{Enter}');
+    expect(onRename).toHaveBeenLastCalledWith('1', 'Words');
   });
 });

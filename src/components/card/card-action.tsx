@@ -97,6 +97,8 @@ export function useCardAction(options: CardActionOptions): CardAction {
     const element = action.current;
     if (!isActionable || !element || event.defaultPrevented) return;
     if (!(event.target instanceof Element) || element.contains(event.target)) return;
+    // React bubbles clicks out of portals; content portalled out of the card is not the card.
+    if (!event.currentTarget.contains(event.target)) return;
     if (isCardClick(event.target, event.currentTarget)) repeatClick(element, event);
   };
   return { isActionable, actionRef, onClick };

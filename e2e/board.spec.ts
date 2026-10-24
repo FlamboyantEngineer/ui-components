@@ -194,4 +194,23 @@ test.describe('Board lab', () => {
     await grid.evaluate((element) => element.scrollTo(0, element.scrollHeight));
     await expect(grid.getByRole('row', { name: 'Inventory item 500' })).toBeVisible();
   });
+
+  test('UIC-BOARD-1.7 UIC-BOARD-2.3 keeps focus on a card moved into a virtualized cell out of view', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('board');
+    const todo = demo(page, 'virtualized').getByRole('grid', { name: 'To do' });
+    const done = demo(page, 'virtualized').getByRole('grid', { name: 'Done' });
+    await todo.evaluate((element) => element.scrollTo(0, element.scrollHeight / 2));
+    const card = todo.getByRole('row').nth(4);
+    await expect(card).toBeVisible();
+    const name = (await card.textContent()) ?? '';
+    await card.focus();
+    await page.keyboard.press('Alt+ArrowRight');
+    const moved = done.getByRole('row', { name, exact: true });
+    await expect(moved).toBeFocused();
+    await expect(moved).toBeInViewport();
+    await expect(todo.getByRole('row', { name, exact: true })).toHaveCount(0);
+  });
 });

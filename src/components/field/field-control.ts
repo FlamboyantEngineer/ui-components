@@ -7,8 +7,11 @@ import {
 } from './field-state.js';
 import type { FieldProps } from './field.js';
 
-/** The props a control hands to `Field`: its layout, parts and caller attributes. */
-export type FieldLayoutProps = Omit<FieldProps<unknown>, 'state' | 'children'>;
+/**
+ * The props a control hands to `Field`: its layout, parts and caller attributes. Whether the field
+ * commits on blur is the control's choice, not its caller's.
+ */
+export type FieldLayoutProps = Omit<FieldProps<unknown>, 'state' | 'children' | 'commitOnBlur'>;
 
 /**
  * The props every field control shares: the field's label, layout and parts, and its value,

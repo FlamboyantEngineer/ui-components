@@ -3,6 +3,7 @@ import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks, type HookProps } from '../../core/hooks.js';
 import type { BaseProps, Size } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { VisuallyHidden } from '../../primitives/index.js';
 import { Icon, toIconProps, type IconSource } from '../icon/icon.js';
 import { Link } from '../link/link.js';
 import { TruncationTooltip } from '../truncation-tooltip/truncation-tooltip.js';
@@ -31,7 +32,13 @@ export interface RecordLabelProps extends BaseProps, AriaLabellingProps {
   unavailable?: RecordUnavailable | undefined;
 }
 
-const hooks = createHooks('record-label', ['identity', 'icon', 'identifier', 'name']);
+const hooks = createHooks('record-label', [
+  'identity',
+  'icon',
+  'identifier',
+  'name',
+  'accessible-label',
+]);
 
 const unavailableGlyphs = { restricted: 'lock', missing: 'warning' } as const;
 
@@ -55,6 +62,16 @@ function RecordLabelRoot({
 }
 
 /**
+ * The root's caller props and the text read in place of the visible label. A link carries the
+ * caller's name; a span cannot, so it reads `aria-label` from hidden text and drops `aria-labelledby`.
+ */
+function resolveLabelling<P extends AriaLabellingProps>(props: P, isLink: boolean) {
+  const { 'aria-label': ariaLabel, 'aria-labelledby': _labelledBy, ...unnamed } = props;
+  if (isLink) return { rootProps: props, hiddenText: undefined };
+  return { rootProps: unnamed, hiddenText: ariaLabel || undefined };
+}
+
+/**
  * A record named by its icon and identifier, which never break apart, then its name, which gives up
  * width first: cut with a tooltip, or wrapped. With `href` the whole label is a link.
  */
@@ -73,14 +90,17 @@ export function RecordLabel({
   const strings = useUiStrings();
   const glyph = unavailable ? unavailableGlyphs[unavailable] : icon;
   const text = name?.trim();
+  const link = unavailable ? undefined : href;
+  const { rootProps, hiddenText } = resolveLabelling(rest, link !== undefined);
+  const isHidden = hiddenText !== undefined || undefined;
   return (
     <RecordLabelRoot
-      {...rest}
+      {...rootProps}
       {...hooks.root({ className, props: rest, data: { size, truncate, unavailable } })}
-      href={unavailable ? undefined : href}
+      href={link}
       isExternal={isExternal}
     >
-      <span {...hooks.slot('identity')}>
+      <span {...hooks.slot('identity')} aria-hidden={isHidden}>
         {glyph ? (
           <Icon {...toIconProps(glyph)} size={size} className={hooks.slotClass('icon')} />
         ) : null}
@@ -92,12 +112,21 @@ export function RecordLabel({
         <>
           {' '}
           {truncate ? (
-            <TruncationTooltip className={hooks.slotClass('name')}>{text}</TruncationTooltip>
+            <TruncationTooltip className={hooks.slotClass('name')} aria-hidden={isHidden}>
+              {text}
+            </TruncationTooltip>
           ) : (
-            <span {...hooks.slot('name')}>{text}</span>
+            <span {...hooks.slot('name')} aria-hidden={isHidden}>
+              {text}
+            </span>
           )}
         </>
       ) : null}
+      {hiddenText === undefined ? null : (
+        <VisuallyHidden elementType="span" className={hooks.slotClass('accessible-label')}>
+          {hiddenText}
+        </VisuallyHidden>
+      )}
     </RecordLabelRoot>
   );
 }

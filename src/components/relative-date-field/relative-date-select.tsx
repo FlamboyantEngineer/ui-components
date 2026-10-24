@@ -8,6 +8,7 @@ import {
   SelectValueContext,
   useSlottedContext,
 } from '../../primitives/index.js';
+import { useControllableState } from '../../core/controllable-state.js';
 import { createHooks } from '../../core/hooks.js';
 import { Glyph } from '../../core/provider.js';
 import type { FieldControlProps, FieldState } from '../field/field.js';
@@ -63,7 +64,8 @@ function RelativeTrigger({
 
 /**
  * The preset list: a select that never holds a choice, so picking the same preset again commits.
- * Its popover can hold more beside the list, such as a calendar.
+ * Only the open list picks; a locked field neither opens it nor reports opening. Its popover can
+ * hold more beside the list, such as a calendar.
  */
 export function PresetSelect({
   control,
@@ -73,12 +75,16 @@ export function PresetSelect({
   placeholder,
   onPick,
   aside,
-  ...open
+  isOpen,
+  defaultOpen,
+  onOpenChange,
 }: PresetSelectProps) {
   const zIndex = useLayerZIndex('dropdown');
+  const [open, setOpen] = useControllableState(isOpen, Boolean(defaultOpen), onOpenChange);
+  const isLocked = state.isReadOnly || state.isDisabled;
+  const isListOpen = open && !isLocked;
   return (
     <AriaSelect
-      {...open}
       className={hooks.slotClass('select')}
       id={control.id}
       aria-label={control['aria-label']}
@@ -86,9 +92,14 @@ export function PresetSelect({
       aria-describedby={control['aria-describedby']}
       value={null}
       onChange={(key) => {
-        if (key !== null) onPick(String(key));
+        // The closed trigger's Arrow Left, Arrow Right and typing pick the first match when the
+        // select holds no choice, which would commit a preset the reader never saw.
+        if (key !== null && isListOpen) onPick(String(key));
       }}
-      isOpen={state.isReadOnly || state.isDisabled ? false : open.isOpen}
+      isOpen={isListOpen}
+      onOpenChange={(next) => {
+        if (!isLocked) setOpen(next);
+      }}
       isDisabled={state.isDisabled}
       isRequired={state.isRequired}
       isInvalid={state.validation.status === 'invalid'}

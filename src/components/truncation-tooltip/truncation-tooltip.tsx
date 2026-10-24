@@ -13,6 +13,7 @@ import {
 import {
   TooltipContext,
   TooltipTriggerStateContext,
+  useFocusVisible,
   type TooltipTriggerState,
 } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
@@ -95,35 +96,27 @@ function useTruncationState(ref: RefObject<HTMLElement | null>): TruncationState
 
 /**
  * Opens on keyboard focus of the nearest focusable element holding the text and closes on its blur.
- * Focus that follows a press on that element is pointer focus and opens nothing.
+ * Focus while the reader uses a pointer (a press, or focus a script moves after one) is not visible
+ * focus and opens nothing, as React Aria's tooltips decide.
  */
-function useFocusReveal(
-  ref: RefObject<HTMLElement | null>,
-  pressed: RefObject<boolean>,
-  { open, close }: TruncationState,
-) {
+function useFocusReveal(ref: RefObject<HTMLElement | null>, { open, close }: TruncationState) {
+  const { isFocusVisible } = useFocusVisible();
+  const isVisible = useRef(isFocusVisible);
+  isVisible.current = isFocusVisible;
   useEffect(() => {
     const target = ref.current?.closest<HTMLElement>(focusableSelector);
     if (!target) return;
-    const onPointerDown = () => {
-      pressed.current = true;
-    };
     const onFocus = () => {
-      if (!pressed.current) open();
+      if (isVisible.current) open();
     };
-    const onBlur = () => {
-      pressed.current = false;
-      close();
-    };
-    target.addEventListener('pointerdown', onPointerDown);
+    const onBlur = () => close();
     target.addEventListener('focus', onFocus);
     target.addEventListener('blur', onBlur);
     return () => {
-      target.removeEventListener('pointerdown', onPointerDown);
       target.removeEventListener('focus', onFocus);
       target.removeEventListener('blur', onBlur);
     };
-  }, [ref, pressed, open, close]);
+  }, [ref, open, close]);
 }
 
 /** Closes on Escape, consuming the key only while the tooltip is open. */
@@ -180,20 +173,14 @@ function ExpandControl({
 }
 
 /** The text's pointer handlers: rest to open after `delay`, leave or press to close. */
-function createPointerHandlers(pressed: RefObject<boolean>, state: TruncationState, delay: number) {
+function createPointerHandlers(state: TruncationState, delay: number) {
   const { schedule, close } = state;
   return {
     onPointerEnter: (event: PointerEvent) => {
       if (event.pointerType !== 'touch') schedule(delay);
     },
-    onPointerLeave: () => {
-      pressed.current = false;
-      close();
-    },
-    onPointerDown: () => {
-      pressed.current = true;
-      close();
-    },
+    onPointerLeave: () => close(),
+    onPointerDown: () => close(),
   };
 }
 
@@ -214,11 +201,10 @@ export function TruncationTooltip({
   ...rest
 }: TruncationTooltipProps) {
   const [ref, setRef] = useForwardedRef(callerRef);
-  const pressed = useRef(false);
   const state = useTruncationState(ref);
-  useFocusReveal(ref, pressed, state);
+  useFocusReveal(ref, state);
   useEscapeToClose(state);
-  const pointerHandlers = createPointerHandlers(pressed, state, delay);
+  const pointerHandlers = createPointerHandlers(state, delay);
   const [expanded, setExpanded] = useControllableState(
     isExpanded,
     defaultExpanded,

@@ -1,7 +1,7 @@
 import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createRef } from 'react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { UiProvider } from '../../core/provider.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { StateTimeline, type StateTimelineEntry } from './state-timeline.js';
@@ -62,6 +62,20 @@ describe('StateTimeline', () => {
     });
   });
 
+  it('UIC-STATE-TIMELINE-1.1 keeps numeric and text IDs distinct when an entry is removed', () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const both: StateTimelineEntry[] = [
+      { id: 1, label: 'Numeric state' },
+      { id: '1', label: 'Text state' },
+    ];
+    const { rerender } = render(<StateTimeline entries={both} getNow={getNow} />);
+    const text = screen.getByText('Text state');
+    rerender(<StateTimeline entries={both.slice(1)} getNow={getNow} />);
+    expect(screen.getByText('Text state')).toBe(text);
+    expect(screen.queryByText('Numeric state')).not.toBeInTheDocument();
+    expect(error).not.toHaveBeenCalled();
+  });
+
   it('UIC-STATE-TIMELINE-1.2 says who made each change and when', () => {
     const { container } = render(
       <StateTimeline
@@ -109,7 +123,9 @@ describe('StateTimeline', () => {
     expect(rows[2]).toHaveAttribute('aria-current', 'step');
     expect(rows[2]?.querySelector('.ui-state-timeline__current')).toHaveTextContent('Now');
     expect(rows.filter((row) => row.hasAttribute('aria-current'))).toHaveLength(1);
-    expect(rows[3]).toHaveTextContent('ReleasedLater');
+    // Words stay apart in the text itself, without a stylesheet's spacing.
+    expect(rows[2]).toHaveTextContent('Approved Now');
+    expect(rows[3]).toHaveTextContent('Released Later');
     expect(within(rows[3]!).getByText('Later').style.position).toBe('absolute');
     expect(rows[1]).not.toHaveTextContent('Later');
   });

@@ -35,6 +35,7 @@ const directory: PeoplePickerPerson[] = [
 ];
 
 const recent = directory.filter((person) => ['ada', 'design'].includes(String(person.id)));
+const savedWatchers = directory.filter((person) => ['chen', 'support'].includes(String(person.id)));
 
 /** Searches the directory as a server would, after 300 milliseconds, stopping when aborted. */
 const searchDirectory: PeoplePickerLoader = (query, signal) =>
@@ -128,6 +129,18 @@ mountLab(
       description="A multiple picker shows chosen people and groups as chips with their avatars."
     >
       <Reviewers />
+    </LabSection>
+    <LabSection
+      title="Saved value"
+      description="A saved value names people no search has returned yet; the picker knows them, so the chips read their names and the list shows them before a search."
+    >
+      <PeoplePicker
+        label="Watchers"
+        selectionMode="multiple"
+        loadItems={searchDirectory}
+        defaultValue={savedWatchers.map((person) => person.id)}
+        knownPeople={savedWatchers}
+      />
     </LabSection>
     <LabSection
       title="Required, with a short delay"

@@ -37,6 +37,8 @@ export interface DashboardGridProps extends BaseProps, AriaLabellingProps {
   /** Called with the whole layout after the reader moves or resizes a tile. */
   onLayoutChange?: ((layout: DashboardGridItem[]) => void) | undefined;
   /** Remembers the uncontrolled layout through the provider storage under this key. */
+  persistKey?: string | undefined;
+  /** @deprecated Use `persistKey`. */
   storageKey?: string | undefined;
   /** The columns the layout is laid out on. Defaults to 12. */
   columns?: number | undefined;
@@ -63,7 +65,7 @@ export interface DashboardGridTileState {
   refocus: RefObject<{ id: Key; kind: TileMoveKind } | null>;
   measureStep: () => CellStep;
   preview: (next: DashboardGridItem, kind: TileMoveKind) => void;
-  /** Keeps the previewed layout and returns the moved tile, if a preview was shown. */
+  /** Keeps the previewed layout and returns the moved tile, if a preview changed the layout. */
   commit: (isKeyboard: boolean) => DashboardGridItem | undefined;
   announce: (message: string) => void;
 }
@@ -94,13 +96,31 @@ function readGap(element: Element, property: 'columnGap' | 'rowGap'): number {
   return Number.isFinite(value) ? value : 0;
 }
 
+/** Whether two layouts place the same tiles in the same order on the same cells. */
+function isSameLayout(a: readonly DashboardGridItem[], b: readonly DashboardGridItem[]): boolean {
+  return (
+    a.length === b.length &&
+    a.every((item, index) => {
+      const other = b[index];
+      return (
+        other !== undefined &&
+        other.id === item.id &&
+        other.x === item.x &&
+        other.y === item.y &&
+        other.w === item.w &&
+        other.h === item.h
+      );
+    })
+  );
+}
+
 /** The layout shown: the committed one, or the preview while a tile moves. */
 function useDashboardLayout(
-  props: Pick<DashboardGridProps, 'layout' | 'defaultLayout' | 'onLayoutChange' | 'storageKey'>,
+  props: Pick<DashboardGridProps, 'layout' | 'defaultLayout' | 'onLayoutChange' | 'persistKey'>,
   columns: number,
 ) {
   const [own, setOwn] = usePersistentState<DashboardGridItem[]>(
-    props.layout === undefined ? props.storageKey : undefined,
+    props.layout === undefined ? props.persistKey : undefined,
     () => [...(props.defaultLayout ?? [])],
   );
   const layout = normalizeDashboardLayout(props.layout ?? own, columns);
@@ -160,7 +180,7 @@ function useTileMoves({
       const last = latest.current;
       latest.current = null;
       setPreview(null);
-      if (!last) return undefined;
+      if (!last || isSameLayout(last.layout, committed.layout)) return undefined;
       if (isKeyboard) refocus.current = { id: last.item.id, kind: last.kind };
       committed.commit(last.layout);
       return last.item;
@@ -178,6 +198,7 @@ export function DashboardGrid({
   layout,
   defaultLayout,
   onLayoutChange,
+  persistKey,
   storageKey,
   columns: columnsProp = 12,
   minColumnWidth,
@@ -192,7 +213,7 @@ export function DashboardGrid({
   const [element, setElement] = useState<HTMLDivElement | null>(null);
   const rootRef = useMemo(() => mergeRefs(ref, setElement), [ref]);
   const committed = useDashboardLayout(
-    { layout, defaultLayout, onLayoutChange, storageKey },
+    { layout, defaultLayout, onLayoutChange, persistKey: persistKey ?? storageKey },
     columns,
   );
   const shownColumns = useShownColumns(element, columns, minColumnWidth);

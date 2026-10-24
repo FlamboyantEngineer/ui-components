@@ -1,7 +1,7 @@
 // A DOM-free parser for SVG markup strings. It reads the subset of XML that icon and illustration
 // files use and returns a plain, frozen tree that React can render without innerHTML.
 
-import { tokenizeMarkup, type MarkupOpenToken } from '../../utils/markup.js';
+import { skipDroppedElements, tokenizeMarkup, type MarkupOpenToken } from '../../utils/markup.js';
 import { walkTree } from '../../utils/walk-tree.js';
 
 export interface SvgElementNode {
@@ -35,7 +35,19 @@ interface ParserState {
 
 /** Elements whose whole subtree is dropped: scripts and embedded HTML. */
 const droppedElements: ReadonlySet<string> = new Set(['script', 'foreignobject']);
-const urlAttributes = new Set(['href', 'xlink:href', 'src']);
+/** Attributes holding a URL, keyed as `toAttributeKey` reads them (`xlink:href` → `xlinkhref`). */
+const urlAttributes: ReadonlySet<string> = new Set(['href', 'xlinkhref', 'src']);
+/** SMIL elements that set another element's attribute, and the attributes holding their values. */
+const animationElements: ReadonlySet<string> = new Set([
+  'animate',
+  'animatecolor',
+  'animatemotion',
+  'animatetransform',
+  'set',
+]);
+const animationValueAttributes: ReadonlySet<string> = new Set(['to', 'from', 'by', 'values']);
+/** An animated attribute that holds a link, however it is prefixed (`href`, `xlink:href`). */
+const linkTarget = /(?:href|(?:^|:)src)$/i;
 
 const cacheLimit = 256;
 const cache = new Map<string, SvgElementNode>();
@@ -51,11 +63,33 @@ function isUnsafeUrl(value: string): boolean {
   return compact.startsWith('javascript:') || compact.startsWith('vbscript:');
 }
 
+/** An attribute name as the renderer reads it, ignoring case and `-` or `:` separators. */
+function toAttributeKey(name: string): string {
+  return name.toLowerCase().replace(/[-:]/g, '');
+}
+
+/**
+ * A SMIL animation that could set a link to a script URL: it animates a link attribute, or one of
+ * its values is a script URL. Such an element is dropped with its content.
+ */
+function isLinkAnimation({ tag, attributes }: MarkupOpenToken): boolean {
+  if (!animationElements.has(tag.toLowerCase())) return false;
+  return Object.entries(attributes).some(([name, value]) => {
+    const key = toAttributeKey(name);
+    if (key === 'attributename') return linkTarget.test(value.trim());
+    return animationValueAttributes.has(key) && value.split(';').some(isUnsafeUrl);
+  });
+}
+
+function isDroppedElement(token: MarkupOpenToken): boolean {
+  return droppedElements.has(token.tag.toLowerCase()) || isLinkAnimation(token);
+}
+
 function filterAttributes(attributes: Readonly<Record<string, string>>): Record<string, string> {
   const kept: Record<string, string> = {};
   for (const [name, value] of Object.entries(attributes)) {
     if (/^on/i.test(name)) continue;
-    if (urlAttributes.has(name.toLowerCase()) && isUnsafeUrl(value)) continue;
+    if (urlAttributes.has(toAttributeKey(name)) && isUnsafeUrl(value)) continue;
     kept[name] = value;
   }
   return kept;
@@ -104,19 +138,11 @@ function openElement(state: ParserState, token: MarkupOpenToken): void {
 function parseTree(markup: string): SvgElementNode {
   const root: MutableElement = { type: 'element', tag: '#document', attributes: {}, children: [] };
   const state: ParserState = { root, stack: [root] };
-  let dropping: string | null = null;
-  for (const token of tokenizeMarkup(markup, { rawTextElements: droppedElements })) {
-    if (dropping !== null) {
-      if (token.type === 'close' && token.tag === dropping) dropping = null;
-    } else if (token.type === 'text') {
-      addText(state, token.text);
-    } else if (token.type === 'close') {
-      closeElement(state, token.tag);
-    } else if (droppedElements.has(token.tag.toLowerCase())) {
-      dropping = token.isSelfClosing ? null : token.tag;
-    } else {
-      openElement(state, token);
-    }
+  const tokens = tokenizeMarkup(markup, { rawTextElements: droppedElements });
+  for (const token of skipDroppedElements(tokens, { isDropped: isDroppedElement })) {
+    if (token.type === 'text') addText(state, token.text);
+    else if (token.type === 'close') closeElement(state, token.tag);
+    else openElement(state, token);
   }
   const svg = root.children.find(
     (child): child is MutableElement =>
@@ -129,8 +155,9 @@ function parseTree(markup: string): SvgElementNode {
 /**
  * Parses SVG markup into a frozen element tree rooted at its `<svg>` element. Comments, processing
  * instructions and doctypes are dropped; CDATA becomes text; entities are decoded. Scripts, embedded
- * HTML (`foreignObject`), event-handler attributes and script URLs are dropped. Results are cached by
- * markup string, keeping the most recently used entries. Throws when the markup has no `<svg>` root.
+ * HTML (`foreignObject`), event-handler attributes, script URLs and SMIL animations that could set a
+ * link to a script URL are dropped. Results are cached by markup string, keeping the most recently
+ * used entries. Throws when the markup has no `<svg>` root.
  */
 export function parseSvgMarkup(markup: string): SvgElementNode {
   const cached = cache.get(markup);

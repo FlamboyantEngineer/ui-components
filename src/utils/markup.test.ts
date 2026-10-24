@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { decodeEntities, tokenizeMarkup } from './markup.js';
+import { decodeEntities, skipDroppedElements, tokenizeMarkup } from './markup.js';
 
 describe('tokenizeMarkup', () => {
   it('UIC-MARKUP-1.1 splits markup into text, opening and closing tags', () => {
@@ -45,6 +45,32 @@ describe('tokenizeMarkup', () => {
       { type: 'text', text: 'open' },
       { type: 'close', tag: 'script' },
     ]);
+  });
+});
+
+describe('skipDroppedElements', () => {
+  it('UIC-MARKUP-1.4 skips dropped elements with their content, counting nested ones', () => {
+    const tokens = tokenizeMarkup(
+      '<p>a<object><OBJECT></object><b>fallback</b></Object>b<object/>c<embed>d</p>',
+    );
+    const kept = [
+      ...skipDroppedElements(tokens, {
+        isDropped: (token) => ['object', 'embed'].includes(token.tag.toLowerCase()),
+        isEmpty: (token) => token.isSelfClosing || token.tag === 'embed',
+      }),
+    ];
+    expect(kept).toEqual([
+      { type: 'open', tag: 'p', attributes: {}, isSelfClosing: false },
+      { type: 'text', text: 'a' },
+      { type: 'text', text: 'b' },
+      { type: 'text', text: 'c' },
+      { type: 'text', text: 'd' },
+      { type: 'close', tag: 'p' },
+    ]);
+    const unclosed = tokenizeMarkup('<svg><set attributeName="href"><b>x</b>');
+    expect([
+      ...skipDroppedElements(unclosed, { isDropped: (token) => token.tag === 'set' }),
+    ]).toEqual([{ type: 'open', tag: 'svg', attributes: {}, isSelfClosing: false }]);
   });
 });
 

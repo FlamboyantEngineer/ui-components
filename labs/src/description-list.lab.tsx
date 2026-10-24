@@ -7,8 +7,8 @@ import {
 import { UiProvider } from '../../src/core/provider.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
-const picked = new Date(2024, 8, 14);
-const shipped = new Date(2024, 8, 21);
+const picked = '2024-09-14';
+const shipped = '2024-09-21';
 
 function Facts({
   layout,

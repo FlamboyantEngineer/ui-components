@@ -1,5 +1,6 @@
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
+import { useState } from 'react';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
@@ -54,7 +55,7 @@ describe('EmojiPicker', { timeout: 15_000 }, () => {
     let resolve: (emoji: readonly NativeEmoji[]) => void = () => {};
     const pending = new Promise<readonly NativeEmoji[]>((done) => (resolve = done));
     const loadEmoji = () => pending;
-    const { container, rerender } = render(<EmojiPicker loadEmoji={loadEmoji} />);
+    const { container, unmount } = render(<EmojiPicker loadEmoji={loadEmoji} />);
     const root = container.querySelector('.ui-emoji-picker') as HTMLElement;
     expect(root).toHaveAttribute('data-loading', 'true');
     expect(screen.getByRole('status')).toHaveTextContent('Loading');
@@ -62,13 +63,34 @@ describe('EmojiPicker', { timeout: 15_000 }, () => {
     await act(async () => resolve(fixture));
     expect(root).not.toHaveAttribute('data-loading');
     expect(screen.getByRole('grid')).toBeInTheDocument();
+    unmount();
 
     const failing = () => Promise.reject(new Error('offline'));
-    rerender(<EmojiPicker loadEmoji={failing} />);
+    const view = render(<EmojiPicker loadEmoji={failing} />);
     expect(await screen.findByText('Emoji could not be loaded.')).toHaveClass(
       'ui-emoji-picker__message',
     );
-    expect(root).not.toHaveAttribute('data-loading');
+    expect(view.container.querySelector('.ui-emoji-picker')).not.toHaveAttribute('data-loading');
+  });
+
+  it('UIC-EMOJI-PICKER-1.1 loads once although the host passes a new loader on each render', async () => {
+    const load = vi.fn(loadFixture);
+    function Host() {
+      const [recent, setRecent] = useState<string[]>([]);
+      return (
+        <EmojiPicker
+          loadEmoji={() => load()}
+          recentEmoji={recent}
+          onRecentEmojiChange={setRecent}
+        />
+      );
+    }
+    const { container } = render(<Host />);
+    const grid = await screen.findByRole('grid', { name: 'Smileys & Emotion' });
+    await userEvent.click(within(grid).getByRole('row', { name: 'grinning face' }));
+    expect(await screen.findByRole('grid', { name: 'Recently used' })).toBeInTheDocument();
+    expect(container.querySelector('.ui-emoji-picker')).not.toHaveAttribute('data-loading');
+    expect(load).toHaveBeenCalledTimes(1);
   });
 
   it('UIC-EMOJI-PICKER-1.1 loads the bundled set by default', async () => {
@@ -180,6 +202,22 @@ describe('EmojiPicker', { timeout: 15_000 }, () => {
     expect(onSelect).toHaveBeenCalledTimes(2);
   });
 
+  it('UIC-EMOJI-PICKER-1.4 reports one recent key per emoji, whatever tone the list held', async () => {
+    const onRecentEmojiChange = vi.fn();
+    await renderPicker({ recentEmoji: ['👋🏽', '😀'], onRecentEmojiChange });
+    const grid = screen.getByRole('grid', { name: 'Recently used' });
+    await userEvent.click(within(grid).getByRole('row', { name: 'waving hand' }));
+    expect(onRecentEmojiChange).toHaveBeenCalledWith(['👋', '😀']);
+  });
+
+  it('UIC-EMOJI-PICKER-2.2 shows an emoji named twice in the recent list once', async () => {
+    await renderPicker({ recentEmoji: ['👋', '👋🏽', '😀', '😀'] });
+    expect(cells(screen.getByRole('grid', { name: 'Recently used' }))).toEqual([
+      'waving hand',
+      'grinning face',
+    ]);
+  });
+
   it('UIC-EMOJI-PICKER-1.5 previews the hovered or focused emoji', async () => {
     const { container } = await renderPicker({ recentEmoji: [':otter:'], customEmoji: [otter] });
     const preview = container.querySelector('.ui-emoji-picker__preview') as HTMLElement;
@@ -199,6 +237,27 @@ describe('EmojiPicker', { timeout: 15_000 }, () => {
     expectHooksMatchSpec(container, 'EMOJI-PICKER', {
       slots: ['footer', 'preview', 'preview-emoji', 'preview-label'],
     });
+  });
+
+  it('UIC-EMOJI-PICKER-1.5 redraws only the preview, not the grid, on hover', async () => {
+    const many = parseEmojiData(
+      [
+        'smileys',
+        ...Array.from(
+          { length: 40 },
+          (_, index) => `${String.fromCodePoint(0x1f600 + index)}||face ${index}|face_${index}|`,
+        ),
+      ].join('\n'),
+    );
+    const renderEmoji = vi.fn((unicode: string) => unicode);
+    render(<EmojiPicker loadEmoji={() => Promise.resolve(many)} renderEmoji={renderEmoji} />);
+    const grid = await screen.findByRole('grid', { name: 'Smileys & Emotion' });
+    const rows = within(grid).getAllByRole('row');
+    expect(rows).toHaveLength(40);
+    renderEmoji.mockClear();
+    for (const row of rows.slice(0, 3)) await userEvent.hover(row);
+    expect(screen.getByText('face 2')).toHaveClass('ui-emoji-picker__preview-label');
+    expect(renderEmoji.mock.calls.length).toBeLessThanOrEqual(3);
   });
 
   it('UIC-EMOJI-PICKER-2.1 searches standard and custom emoji and reports the query', async () => {

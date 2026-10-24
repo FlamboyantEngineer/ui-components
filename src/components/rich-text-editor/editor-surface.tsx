@@ -22,7 +22,6 @@ export interface EditorSurfaceProps {
   schema: Schema;
   value: RichTextDocument;
   onChange: (value: RichTextDocument) => void;
-  onBlur: () => void;
   placeholder: string | undefined;
   toolbar: ReactNode;
   children: ReactNode;
@@ -109,7 +108,6 @@ export function EditorSurface(props: EditorSurfaceProps) {
               aria-disabled={control.disabled || undefined}
               aria-placeholder={placeholder}
               tabIndex={control.readOnly && !control.disabled ? 0 : undefined}
-              onBlur={props.onBlur}
             />
             {props.children}
           </div>

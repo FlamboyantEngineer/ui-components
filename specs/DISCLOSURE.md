@@ -80,7 +80,7 @@ Verification: `src/components/disclosure/disclosure.test.tsx`, `e2e/disclosure.s
 
 ### UIC-DISCLOSURE-3.2 - Expanded keys
 
-`expandedKeys` shall control which disclosures are open, `defaultExpandedKeys` start them, and `onExpandedChange` receive the requested set of keys (a `Set<Key>`) after each toggle. A disclosure's own `isExpanded` and `defaultExpanded` give way to the group's keys.
+`expandedKeys` shall control which disclosures are open, `defaultExpandedKeys` start them, and `onExpandedChange` receive the requested set of keys (a `Set<Key>`) after each toggle. Keys are the disclosures' `id`s as given, of the type given: any `Key` names a disclosure, `0` and `''` included. A disclosure's own `isExpanded` and `defaultExpanded` give way to the group's keys.
 
 Implementation: `src/components/disclosure/disclosure.tsx`
 Verification: `src/components/disclosure/disclosure.test.tsx`, `e2e/disclosure.spec.ts`

@@ -23,6 +23,12 @@ describe('IconLabel', () => {
     expect(screen.getByText('Bold').tagName).toBe('STRONG');
   });
 
+  it('UIC-ICON-LABEL-1.1 draws an icon string that names no glyph as text', () => {
+    render(<IconLabel icon="★" label="Starred" />);
+    expect(screen.getByText('★')).toHaveClass('ui-icon');
+    expect(screen.getByText('Starred')).toBeInTheDocument();
+  });
+
   it('UIC-ICON-LABEL-1.2 sizes the icon and publishes the size', () => {
     const { container, rerender } = render(<IconLabel icon="plus" label="Add" />);
     expect(container.firstElementChild).toHaveAttribute('data-size', 'md');

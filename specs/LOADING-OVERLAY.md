@@ -27,7 +27,7 @@ Verification: `src/components/loading-overlay/loading-overlay.test.tsx`
 
 ### UIC-LOADING-OVERLAY-1.4 - Announcements
 
-The card shall be a polite status region (`role="status"`) whose label and description are the announcement. The bar's container, the percentage and the footer are marked `aria-live="off"`, so progress, hint and step changes stay quiet; the percentage is hidden from assistive technology because the bar already exposes the value. The bar is named by `progress['aria-label']`, or else by the card's label.
+The card shall be a polite status region (`role="status"`) whose label and description are the announcement. The bar's container and the footer are marked `aria-live="off"`, so progress, hint and step changes stay quiet, and the percentage is hidden from assistive technology because the bar already exposes the value. The bar is named by `progress['aria-label']`, measured or indeterminate, or else by the card's label.
 
 Implementation: `src/components/loading-overlay/loading-overlay.tsx`
 Verification: `src/components/loading-overlay/loading-overlay.test.tsx`, `e2e/loading-overlay.spec.ts`
@@ -73,9 +73,9 @@ Verification: `src/components/loading-overlay/loading-overlay.test.tsx`, `e2e/lo
 
 ### UIC-LOADING-OVERLAY-3.1 - Blocking while loading
 
-While `isLoading` is true, `LoadingRegion` shall set `aria-busy="true"` and `data-loading` on its root, make its `ui-loading-region__content` inert (no pointer, focus or assistive-technology access) and render a `LoadingOverlay` with the given label, description, hint, progress, step and presentation beside the content. When loading ends, busy and inert are removed and the content is usable again; the overlay leaves once its exit ends ([UIC-LOADING-OVERLAY-2.4](#uic-loading-overlay-24---entering-and-exiting)).
+While `isLoading` is true, `LoadingRegion` shall set `aria-busy="true"` and `data-loading` on its root, make its `ui-loading-region__content` inert (no pointer, focus or assistive-technology access) and render a `LoadingOverlay` with the given label, description, hint, progress, step and presentation beside the content. When loading ends, busy and inert are removed and the content is usable again; the overlay leaves once its exit ends ([UIC-LOADING-OVERLAY-2.4](#uic-loading-overlay-24---entering-and-exiting)). Keyboard focus inside the content when blocking starts moves to the region's root, which is focusable (`tabindex="-1"`) only while blocking, so focus is not lost to the document; when blocking ends, focus returns to the element that had it, unless the reader has moved focus elsewhere meanwhile.
 
-Implementation: `src/components/loading-overlay/loading-overlay.tsx`, `labs/reference/loading-overlay.css`
+Implementation: `src/components/loading-overlay/loading-overlay.tsx`, `src/components/loading-overlay/use-blocked-focus.ts`, `labs/reference/loading-overlay.css`
 Verification: `src/components/loading-overlay/loading-overlay.test.tsx`, `e2e/loading-overlay.spec.ts`
 
 ### UIC-LOADING-OVERLAY-3.2 - Show delay

@@ -13,7 +13,7 @@ Verification: `src/components/text-match/text-match.test.tsx`
 
 ### UIC-TEXT-MATCH-1.2 - Ranges
 
-`findTermRanges(text, terms)` shall return every occurrence of every non-empty term as `{ start, end, term }` ranges into the original text, where `term` is the index of the matching term in `terms`, sorted, with overlapping or touching ranges merged into one that keeps the `term` of the range that starts first. A range that ends right before a combining mark extends over it, so a letter is never split from its accent. No terms, or only empty terms, give no ranges. `textMatchesTerms(text, terms)` shall report whether every term occurs; no terms means no filter, so every text matches, while an empty term matches nothing.
+`findTermRanges(text, terms)` shall return every occurrence of every non-empty term as `{ start, end, term }` ranges into the original text, where `term` is the index of the matching term in `terms`, sorted, with overlapping or touching ranges merged into one that keeps the `term` of the range that starts first. With `ignoreAccents`, a range that ends right before a combining mark extends over it; without it, such a match does not count ([UIC-TEXT-MATCH-1.4](#uic-text-match-14---accent-insensitive-matching)). Either way a letter is never split from its accent. No terms, or only empty terms, give no ranges. `textMatchesTerms(text, terms)` shall report whether every term occurs; no terms means no filter, so every text matches, while an empty term matches nothing.
 
 Implementation: `src/components/text-match/match-ranges.ts`
 Verification: `src/components/text-match/text-match.test.tsx`
@@ -27,7 +27,7 @@ Verification: `src/components/text-match/text-match.test.tsx`, `e2e/text-match.s
 
 ### UIC-TEXT-MATCH-1.4 - Accent-insensitive matching
 
-With `ignoreAccents` (on `TextMatchProvider`, or in the options of `normalizeMatchText`, `splitMatchTerms`, `findTermRanges` and `textMatchesTerms`), matching shall fold each accented letter to its base letter, so `cafe` matches `Café` and `CAFÉ` matches `cafe`. In the text, a character folds only when its base letter has the same length, keeping indexes aligned; a combining mark written as its own character stays. In a query, every accent is dropped. Without `ignoreAccents`, accents count.
+With `ignoreAccents` (on `TextMatchProvider`, or in the options of `normalizeMatchText`, `splitMatchTerms`, `findTermRanges` and `textMatchesTerms`), matching shall fold each accented letter to its base letter, so `cafe` matches `Café` and `CAFÉ` matches `cafe`. In the text, a character folds only when its base letter has the same length, keeping indexes aligned; a combining mark written as its own character stays. In a query, every accent is dropped. Without `ignoreAccents`, accents count, whether the text writes them composed or as combining marks: a match that would stop before a combining mark does not count, so `cafe` matches neither `Café` nor `Cafe` followed by U+0301. A query typed with a different composition than the text still does not match it.
 
 Implementation: `src/components/text-match/match-ranges.ts`, `src/components/text-match/text-match.tsx`
 Verification: `src/components/text-match/text-match.test.tsx`, `e2e/text-match.spec.ts`

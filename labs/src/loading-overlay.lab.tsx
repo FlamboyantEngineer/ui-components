@@ -24,6 +24,13 @@ function cardProps(progress: (typeof progressStates)[number], extras: string): L
 
 function RegionDemo() {
   const [isLoading, setLoading] = useState(false);
+  const [isSaving, setSaving] = useState(false);
+  useEffect(() => {
+    if (!isSaving) return undefined;
+    // Lab-only stand-in for the save finishing.
+    const timer = setTimeout(() => setSaving(false), 1500);
+    return () => clearTimeout(timer);
+  }, [isSaving]);
   return (
     <div data-lab-demo="region">
       <p>
@@ -32,7 +39,7 @@ function RegionDemo() {
         </Button>
       </p>
       <LoadingRegion
-        isLoading={isLoading}
+        isLoading={isLoading || isSaving}
         label="Saving city"
         hint="Writing to the server"
         step={{ current: 1, total: 2 }}
@@ -45,7 +52,9 @@ function RegionDemo() {
             </label>
           </p>
           <p>
-            <Button variant="primary">Apply</Button>
+            <Button variant="primary" onPress={() => setSaving(true)}>
+              Apply
+            </Button>
           </p>
         </div>
       </LoadingRegion>
@@ -140,7 +149,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Blocking a form"
-      description="Start loading to block the form, then stop it. The cover fades in and out with useEnterExit."
+      description="Start loading to block the form, then stop it, or press Apply to save for a moment: focus waits on the region and returns to Apply. The cover fades in and out with useEnterExit."
     >
       <RegionDemo />
     </LabSection>

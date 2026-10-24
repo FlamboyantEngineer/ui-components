@@ -82,6 +82,13 @@ describe('sanitizeHtml', () => {
     expect(clean('<h2>One<h3>Two</h3>')).toBe('<h2>One</h2><h3>Two</h3>');
   });
 
+  it('UIC-HTML-MARKUP-1.3 drops a blocked element whole when it nests one of the same name', () => {
+    expect(sanitizeHtml('<object><object></object><b>fallback</b></object>')).toEqual([]);
+    expect(sanitizeHtml('<svg><svg></svg><b>leak</b></svg><i>kept</i>')).toEqual([
+      { type: 'element', tag: 'i', attributes: {}, children: [{ type: 'text', text: 'kept' }] },
+    ]);
+  });
+
   it('UIC-HTML-MARKUP-1.3 unwraps elements outside the policy and drops dangerous ones with their content', () => {
     expect(clean('<section><article>Kept <font>text</font></article></section>')).toBe('Kept text');
     expect(

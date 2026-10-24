@@ -26,6 +26,8 @@ export interface TextDiffExcerptOptions {
 function shorten(value: string, limit: number, keepEnd: boolean): string {
   const characters = Array.from(value);
   if (characters.length <= limit) return value;
+  // Nothing kept, so no ellipsis either (`slice(-0)` would keep everything).
+  if (limit <= 0) return '';
   return keepEnd
     ? `…${characters.slice(-limit).join('')}`
     : `${characters.slice(0, limit).join('')}…`;

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useDeferredValue, useMemo } from 'react';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
@@ -29,8 +29,8 @@ const hooks = createHooks('json-editor', ['format']);
 /**
  * A field for JSON text: a highlighted code editor whose text must parse, and follow `schema` when
  * given, with problems marked where they are, completions and hover documentation from the schema,
- * and a Format button that rewrites valid text with standard indentation. It commits when it loses
- * focus and when the text is formatted. Blank text is valid unless the field is required.
+ * and a Format button that rewrites valid text with standard indentation. It commits when focus
+ * leaves the field and when the text is formatted. Blank text is valid unless the field is required.
  */
 export function JsonEditor({ size = 'md', ...props }: JsonEditorProps) {
   const strings = useUiStrings();
@@ -42,12 +42,16 @@ export function JsonEditor({ size = 'md', ...props }: JsonEditorProps) {
     check: (value) => check(value).issue,
   });
   const { indent = 2, lineNumbers = true, placeholder, autoCloseBrackets } = rest;
-  const formatted = useMemo(() => formatJson(state.value, indent), [state.value, indent]);
+  // Formatting a large text is slow and only enables the button, so typing never waits for it.
+  const shownValue = useDeferredValue(state.value);
+  const formatted = useMemo(() => formatJson(shownValue, indent), [shownValue, indent]);
+  const isFormattable = formatted !== null && formatted !== shownValue;
   const { diagnostics } = check(state.value);
   const completions = useMemo(() => (schema ? createJsonCompletion(schema) : undefined), [schema]);
   const format = () => {
-    if (formatted === null) return;
-    state.setValue(formatted);
+    const next = formatJson(state.value, indent);
+    if (next === null || next === state.value) return;
+    state.setValue(next);
     state.commit();
   };
   // A disabled editor keeps the button, disabled, so disabling never changes the editor's size.
@@ -56,7 +60,7 @@ export function JsonEditor({ size = 'md', ...props }: JsonEditorProps) {
       className={hooks.slotClass('format')}
       size="xs"
       variant="ghost"
-      isDisabled={state.isDisabled || formatted === null || formatted === state.value}
+      isDisabled={state.isDisabled || !isFormattable}
       onPress={format}
     >
       {strings.format}
@@ -68,6 +72,7 @@ export function JsonEditor({ size = 'md', ...props }: JsonEditorProps) {
       {...field}
       size={size}
       className={mergeClassNames(hooks.className, field.className)}
+      commitOnBlur
     >
       {(control) => (
         <CodeEditor
@@ -83,7 +88,6 @@ export function JsonEditor({ size = 'md', ...props }: JsonEditorProps) {
           isDisabled={control.disabled}
           value={state.value}
           onChange={state.setValue}
-          onBlur={() => state.commit()}
           tokenize={tokenizeJson}
           diagnostics={diagnostics}
           listDiagnostics={false}

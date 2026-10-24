@@ -5,13 +5,25 @@ import { formatAriaKeyShortcuts, type ShortcutChord } from '../shortcut/shortcut
 
 /** Keys `aria-keyshortcuts` names differently from a keyboard event's `key`. */
 const eventKeyNames: Readonly<Record<string, string>> = { ' ': 'Space', '+': 'Plus' };
+const letterOrDigit = /^[a-z0-9]$/i;
+const letterOrDigitCode = /^(?:Key([A-Z])|Digit([0-9]))$/;
+
+/**
+ * The key a press names. A letter or digit key that Shift, Alt (Option) or the layout turned into
+ * another character (`!` for Shift+1, `π` for Option+P) is read from its physical key instead.
+ */
+function readKey(event: Pick<KeyboardEvent, 'key' | 'code'>): string {
+  if (letterOrDigit.test(event.key)) return event.key.toUpperCase();
+  const physical = letterOrDigitCode.exec(event.code ?? '');
+  if (physical) return physical[1] ?? physical[2] ?? '';
+  return eventKeyNames[event.key] ?? (event.key.length === 1 ? event.key.toUpperCase() : event.key);
+}
 
 /** A key press in `aria-keyshortcuts` form: held modifiers in a fixed order, then the key. */
 function describeKeyPress(
-  event: Pick<KeyboardEvent, 'key' | 'ctrlKey' | 'altKey' | 'shiftKey' | 'metaKey'>,
+  event: Pick<KeyboardEvent, 'key' | 'code' | 'ctrlKey' | 'altKey' | 'shiftKey' | 'metaKey'>,
 ) {
-  const key =
-    eventKeyNames[event.key] ?? (event.key.length === 1 ? event.key.toUpperCase() : event.key);
+  const key = readKey(event);
   const held = [
     event.ctrlKey ? 'Control' : '',
     event.altKey ? 'Alt' : '',

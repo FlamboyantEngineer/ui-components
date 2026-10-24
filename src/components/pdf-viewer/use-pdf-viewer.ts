@@ -15,7 +15,7 @@ import { usePdfRotation } from './use-pdf-rotation.js';
 import { usePdfSearch } from './use-pdf-search.js';
 import { usePdfZoom } from './use-pdf-zoom.js';
 import { usePinchZoom } from './use-pinch-zoom.js';
-import { useLatest } from './use-latest.js';
+import { useLatest } from '../../utils/use-latest.js';
 
 interface UsePdfCommandsOptions<V extends PdfViewport, C extends PdfTextContent> {
   view: LoadedPdf<V, C> | null;

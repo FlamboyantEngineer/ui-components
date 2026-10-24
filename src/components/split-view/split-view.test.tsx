@@ -658,6 +658,35 @@ describe('ResizeHandle', () => {
     expect(onChangeEnd).not.toHaveBeenCalled();
   });
 
+  it('UIC-SPLIT-VIEW-3.5 passes pointer and key events to the caller while disabled', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const onKeyDown = vi.fn();
+    const onPointerDown = vi.fn();
+    render(
+      <ResizeHandle
+        orientation="vertical"
+        value={50}
+        minValue={10}
+        maxValue={90}
+        isDisabled
+        aria-label="Resize list"
+        tabIndex={-1}
+        onChange={onChange}
+        onKeyDown={onKeyDown}
+        onPointerDown={onPointerDown}
+      />,
+    );
+    const handle = screen.getByRole('separator', { name: 'Resize list' });
+    act(() => handle.focus());
+    expect(handle).toHaveFocus();
+    await user.keyboard('{ArrowRight}');
+    pointer('pointerDown', handle, { clientX: 100 });
+    expect(onKeyDown).toHaveBeenCalledTimes(1);
+    expect(onPointerDown).toHaveBeenCalledTimes(1);
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
   it('UIC-SPLIT-VIEW-3.4 works alone in pixels and ignores input while disabled', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();

@@ -84,7 +84,10 @@ function breakCycles(graph: Graph): Graph {
   return next.map((targets) => [...targets]);
 }
 
-/** Each node's layer: one more than the deepest layer that leads to it. */
+/**
+ * Each node's layer: one more than the deepest layer that leads to it. The queue advances by index
+ * rather than removing its front, and repeated edges were already merged into sets.
+ */
 function assignLayers(graph: Graph): number[] {
   const incoming = new Array<number>(graph.length).fill(0);
   for (const targets of graph) for (const to of targets) incoming[to]! += 1;

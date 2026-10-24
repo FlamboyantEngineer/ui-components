@@ -1,7 +1,9 @@
-import { useId, useMemo, useRef, useState, type KeyboardEvent } from 'react';
+import { useId, useMemo, useRef, type KeyboardEvent } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { isEditableTarget } from '../../utils/is-editable-target.js';
+import { useStateFor } from '../../utils/use-state-for.js';
 import {
   compareBlocks,
   type BlockComparison,
@@ -45,34 +47,15 @@ export interface RedlineCompareProps<B extends DocumentBlock = DocumentBlock>
   onResolve?: ((resolution: RedlineResolution<B>) => void) | undefined;
 }
 
-/** State that belongs to one comparison and starts over when the documents change. */
-interface ComparisonState<T> {
-  comparison: BlockComparison;
-  value: T;
-}
-
 const noDecisions: Readonly<Record<string, RedlineDecision>> = {};
 
 /** A row the reader can step to and decide on: every difference but a moved block's old position. */
 const isChangeRow = (row: ComparedBlockRow) => row.change !== 'unchanged' && row.move !== 'from';
 
-/** Whether a key press belongs to a text input rather than to the compare. */
-function isWithinTextInput(target: EventTarget): boolean {
-  return Boolean((target as Element).closest?.('input, textarea, select, [contenteditable]'));
-}
-
-function useComparisonState<T>(comparison: BlockComparison, initial: T): [T, (value: T) => void] {
-  const [state, setState] = useState<ComparisonState<T>>({ comparison, value: initial });
-  return [
-    state.comparison === comparison ? state.value : initial,
-    (value) => setState({ comparison, value }),
-  ];
-}
-
 /** Steps between changes and moved blocks' positions, focusing the row it reaches. */
 function useRedlineNavigation(comparison: BlockComparison, baseId: string) {
   const rootRef = useRef<HTMLDivElement>(null);
-  const [current, setCurrent] = useComparisonState<string | null>(comparison, null);
+  const [current, setCurrent] = useStateFor<string | null>(comparison, null);
   const { changes, positions } = useMemo(
     () => ({
       changes: comparison.rows.filter(isChangeRow),
@@ -126,7 +109,7 @@ export function RedlineCompare<B extends DocumentBlock>({
   const baseId = useId();
   const comparison = useMemo(() => compareBlocks(oldBlocks, newBlocks), [oldBlocks, newBlocks]);
   const navigation = useRedlineNavigation(comparison, baseId);
-  const [ownDecisions, setOwnDecisions] = useComparisonState(comparison, noDecisions);
+  const [ownDecisions, setOwnDecisions] = useStateFor(comparison, noDecisions);
   const decisions = resolutions ?? ownDecisions;
   const isSplit = layout === 'split';
   const resolve = (row: ComparedBlockRow<B>, decision: RedlineDecision) => {
@@ -135,7 +118,7 @@ export function RedlineCompare<B extends DocumentBlock>({
     onResolve?.({ decision, row });
   };
   const onKeyDown = (event: KeyboardEvent) => {
-    if (event.altKey || event.ctrlKey || event.metaKey || isWithinTextInput(event.target)) return;
+    if (event.altKey || event.ctrlKey || event.metaKey || isEditableTarget(event.target)) return;
     if (event.key === 'n') navigation.move(1);
     else if (event.key === 'p') navigation.move(-1);
     else return;

@@ -65,11 +65,11 @@ describe('ProblemList', () => {
     const { container } = render(<ProblemList problems={problems} />);
     const [first, second, third] = items(container);
     expect(first?.querySelector('.ui-problem-list__icon [data-glyph="error"]')).not.toBeNull();
-    expect(first).toHaveTextContent('Error: TitleAdd a title.');
+    expect(first).toHaveTextContent('Error: Title Add a title.');
     expect(first?.querySelector('.ui-problem-list__label')).toHaveTextContent('Title');
     expect(first?.querySelector('.ui-problem-list__message')).toHaveTextContent('Add a title.');
     expect(second?.querySelector('[data-glyph="warning"]')).not.toBeNull();
-    expect(second).toHaveTextContent('Warning: BudgetThe budget is unusually high.');
+    expect(second).toHaveTextContent('Warning: Budget The budget is unusually high.');
     expect(third?.querySelector('.ui-problem-list__label')).toBeNull();
     expectHooksMatchSpec(container, 'PROBLEM-LIST', { slots: 'all' });
   });
@@ -85,7 +85,10 @@ describe('ProblemList', () => {
     );
     const [first, second] = items(container);
     expect(second?.querySelector('button')).toBeNull();
-    await user.click(within(first as HTMLElement).getByRole('button'));
+    const jump = within(first as HTMLElement).getByRole('button');
+    expect(jump).toHaveAccessibleName('Error: Title Add a title.');
+    expect(jump.querySelector('div')).toBeNull();
+    await user.click(jump);
     expect(screen.getByRole('textbox', { name: 'Title' })).toHaveFocus();
     rerender(
       <>
@@ -123,8 +126,8 @@ describe('ProblemList', () => {
     await user.click(screen.getByRole('button', { name: 'Save' }));
     expect(screen.getByRole('status')).toHaveTextContent('1 error, 1 warning');
     expect(items(container).map((item) => item.textContent)).toEqual([
-      'Error: NameA value is required.',
-      'Warning: EmailCheck the address.',
+      'Error: Name A value is required.',
+      'Warning: Email Check the address.',
     ]);
     await user.click(within(items(container)[1] as HTMLElement).getByRole('button'));
     expect(screen.getByRole('textbox', { name: 'Email' })).toHaveFocus();

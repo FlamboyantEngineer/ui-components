@@ -48,7 +48,7 @@ test.describe('Number Field lab', () => {
     await lab.expectAccessible();
   });
 
-  test('UIC-NUMBER-FIELD-2.1 UIC-NUMBER-FIELD-2.2 commits on blur, snapping or reporting the value', async ({
+  test('UIC-NUMBER-FIELD-2.1 UIC-NUMBER-FIELD-2.2 UIC-FIELD-1.11 commits on leaving, snapping or reporting the value', async ({
     page,
     lab,
   }) => {
@@ -56,9 +56,16 @@ test.describe('Number Field lab', () => {
     const snap = field(page, 'snap').getByRole('textbox', { name: 'Weight' });
     await snap.fill('12');
     await expect(output(page, 'Committed')).toHaveText('2.5');
+    // Tab reads the typed number and reaches the restore button; leaving the field commits.
     await snap.press('Tab');
     await expect(snap).toHaveValue('10');
+    await expect(field(page, 'snap').getByRole('button', { name: 'Restore Weight' })).toBeFocused();
+    await expect(field(page, 'snap')).toHaveAttribute('data-dirty', 'true');
+    await expect(output(page, 'Committed')).toHaveText('2.5');
+    await page.keyboard.press('Tab');
     await expect(output(page, 'Committed')).toHaveText('10');
+    await expect(field(page, 'snap')).not.toHaveAttribute('data-dirty');
+    expect(await page.evaluate(() => document.activeElement?.localName)).not.toBe('body');
     await snap.fill('3.3');
     await snap.press('Enter');
     await expect(snap).toHaveValue('3.5');

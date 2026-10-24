@@ -254,7 +254,7 @@ describe('SignaturePad', () => {
     expect(root(plain)).toHaveAttribute('data-mode', 'draw');
   });
 
-  it('UIC-SIGNATURE-PAD-3.2 types the name, with blank text as no signature, committing on blur and Enter', async () => {
+  it('UIC-SIGNATURE-PAD-3.2 UIC-FIELD-1.11 types the name, with blank text as no signature, committing on Enter and on leaving the field', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     const onCommit = vi.fn();
@@ -280,6 +280,10 @@ describe('SignaturePad', () => {
     await user.type(input, '  ');
     expect(onChange).toHaveBeenLastCalledWith(null);
     expect(input).toHaveValue('');
+    // Tab from the edited input reaches the restore button; leaving the field commits.
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'Restore Signature' })).toHaveFocus();
+    expect(onCommit).toHaveBeenCalledTimes(1);
     await user.tab();
     expect(onCommit).toHaveBeenLastCalledWith(null);
     expectHooksMatchSpec(container, 'SIGNATURE-PAD', { slots: ['modes', 'input'] });

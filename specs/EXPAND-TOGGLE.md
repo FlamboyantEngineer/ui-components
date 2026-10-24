@@ -55,7 +55,7 @@ Verification: `src/components/expand-toggle/expand-toggle.test.tsx`, `e2e/expand
 
 ### UIC-EXPAND-TOGGLE-1.8 - Loading children
 
-`isPending` shall show Icon Button's busy indicator in place of the chevron, named by `pendingLabel` or the provider's `loading` string, while children load; the toggle keeps its name and focus, publishes `data-pending` and `aria-disabled="true"`, and refuses presses until the caller clears it.
+`isPending` shall show Icon Button's busy indicator in place of the chevron, named by `pendingLabel` or the provider's `loading` string, while children load; the toggle keeps its focus and is named by its name followed by the busy indicator's name ("Expand Loading"), publishes `data-pending` and `aria-disabled="true"`, and refuses presses until the caller clears it.
 
 Implementation: `src/components/expand-toggle/expand-toggle.tsx`
 Verification: `src/components/expand-toggle/expand-toggle.test.tsx`, `e2e/expand-toggle.spec.ts`

@@ -1,7 +1,7 @@
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import type { ReactElement } from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { DateTimeField } from './date-time-field.js';
@@ -355,5 +355,52 @@ describe('DateTimeField calendar', () => {
     expect(text).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/);
     const picked = new Date(text);
     expect(Math.abs(picked.getTime() - Date.now())).toBeLessThan(61_000);
+  });
+
+  describe('with the clock held', () => {
+    afterEach(() => vi.useRealTimers());
+
+    it('UIC-DATE-TIME-FIELD-2.2 reads the clock when Now or Today is pressed, not when the popover opened', async () => {
+      vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(new Date(2026, 3, 13, 9, 0));
+      const user = userEvent.setup();
+      const onCommit = vi.fn();
+      const { unmount } = renderInLocale(
+        <DateTimeField label="When" mode="date-time" onCommit={onCommit} />,
+      );
+      await user.click(screen.getByRole('button', { name: /Calendar/ }));
+      const now = await screen.findByRole('button', { name: 'Now' });
+      vi.setSystemTime(new Date(2026, 3, 13, 9, 7));
+      await user.click(now);
+      expect(onCommit).toHaveBeenLastCalledWith('2026-04-13T09:07');
+      unmount();
+      vi.setSystemTime(new Date(2026, 3, 13, 23, 59));
+      renderInLocale(<DateTimeField label="Due" onCommit={onCommit} />);
+      await user.click(screen.getByRole('button', { name: /Calendar/ }));
+      const today = await screen.findByRole('button', { name: 'Today' });
+      vi.setSystemTime(new Date(2026, 3, 14, 0, 1));
+      await user.click(today);
+      expect(onCommit).toHaveBeenLastCalledWith('2026-04-14');
+    });
+  });
+
+  it('UIC-DATE-TIME-FIELD-2.2 offers no Clear for a required field and disables it without a value', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const { unmount } = renderInLocale(
+      <DateTimeField label="Due" isRequired defaultValue="2026-04-13" onChange={onChange} />,
+    );
+    await user.click(screen.getByRole('button', { name: /Calendar/ }));
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByRole('button', { name: 'Today' })).toBeEnabled();
+    expect(within(dialog).queryByRole('button', { name: 'Clear' })).not.toBeInTheDocument();
+    await user.keyboard('{Escape}');
+    expect(onChange).not.toHaveBeenCalled();
+    unmount();
+    renderInLocale(<DateTimeField label="Due" />);
+    await user.click(screen.getByRole('button', { name: /Calendar/ }));
+    expect(
+      within(await screen.findByRole('dialog')).getByRole('button', { name: 'Clear' }),
+    ).toBeDisabled();
   });
 });

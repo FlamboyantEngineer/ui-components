@@ -255,6 +255,7 @@ function useTreeModel<T extends TreeItemData>(props: TreeProps<T>) {
   );
   const selection = useTreeSelection({
     ...features.selection,
+    selectionMode: parts.aria.selectionMode,
     defaultSelectedKeys,
     items: state.items,
     getChildren: getAllChildren,

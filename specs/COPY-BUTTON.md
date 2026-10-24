@@ -6,7 +6,7 @@
 
 ### UIC-COPY-BUTTON-1.1 - Copying and feedback
 
-Pressing the button by pointer or keyboard shall copy `value`, whitespace included, and call `onCopy` with whether it reached the clipboard. After a successful copy, the `ui-copy-button` root publishes `data-copied`, the button draws the `check` glyph instead of `copy`, and the `ui-copy-button__status` live region (`role="status"`, visually hidden) reads the provider's `copied` string, until `timeout` milliseconds (2000 by default) after the last copy; then all three return to rest and the live region empties. The button keeps its name throughout.
+Pressing the button by pointer or keyboard shall copy `value`, whitespace included, and call `onCopy` with whether it reached the clipboard. After a successful copy, the `ui-copy-button` root publishes `data-copied`, the button draws the `check` glyph instead of `copy`, and the `ui-copy-button__status` live region (`role="status"`, visually hidden) reads the provider's `copied` string, until `timeout` milliseconds (2000 by default) after the last copy; then all three return to rest and the live region empties. Every copy is announced: a copy that repeats the outcome shown still changes the live region (it adds or drops a trailing zero-width space), so a reader who copies again hears it again. The button keeps its name throughout.
 
 If writes overlap, only the latest requested copy changes the feedback; `onCopy` still reports each write's result when it settles.
 

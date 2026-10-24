@@ -52,6 +52,10 @@ export interface DateControlSettings extends DateValueOptions {
   calendarHeading: DateTimeFieldCalendarHeading;
   /** Whether the field would take a value, so the presets it refuses are disabled. */
   isPickable: (value: DateFieldValue) => boolean;
+  /** A required field offers no Clear action. */
+  isRequired: boolean;
+  /** Whether Clear has a value to clear. */
+  canClear: boolean;
 }
 
 /** What every picker of a date-time field receives. */
@@ -219,6 +223,8 @@ export function DateRangeControl(props: DatePickerControlProps) {
     <DateRangePicker<DateValue>
       {...datePickerProps(props)}
       {...useBoundValues(props)}
+      // The field refuses only unavailable ends (UIC-DATE-TIME-FIELD-3.1), so the calendar may span them.
+      allowsNonContiguousRanges
       placeholderValue={usePlaceholderValue(props)}
       value={value}
       onChange={(next) => {

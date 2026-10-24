@@ -29,10 +29,10 @@ Verification: `src/utils/merge-props.test.ts`
 
 ### UIC-COMPOSITION-2.2 - Refs
 
-`mergeRefs(...refs)` shall return one callback ref that hands the element to every ref object and callback given, skips `null` and `undefined` ones, and on detach clears the objects, calls the callbacks with `null`, or runs the cleanup a React 19 callback ref returned instead.
+`mergeRefs(...refs)` shall return one callback ref that hands the element to every ref object and callback given, skips `null` and `undefined` ones, and on detach clears the objects, calls the callbacks with `null`, or runs the cleanup a React 19 callback ref returned instead. Components that keep their own ref beside the caller's `ref` merge them the same way, so a caller's callback ref cleanup runs when the element detaches.
 
-Implementation: `src/utils/merge-props.ts`
-Verification: `src/utils/merge-props.test.ts`
+Implementation: `src/utils/merge-props.ts`, `src/utils/use-forwarded-ref.ts`
+Verification: `src/utils/merge-props.test.ts`, `src/utils/use-forwarded-ref.test.tsx`
 
 ## UIC-COMPOSITION-3 - Slots
 
@@ -49,5 +49,21 @@ Verification: `src/components/card/card.test.tsx`, `e2e/card.spec.ts`
 
 Where a library component renders repeated elements itself, the React keys shall preserve the type of a caller's `Key`: numeric `1` and text `"1"` identify different elements, whose local state stays with them when reordered or removed. Public IDs and callback values retain the caller's original type. Internal compound identities shall encode their parts without delimiter collisions. Self-iterating key iterators retain their values across renders; reusable arrays and Sets continue to reflect caller mutations.
 
-Implementation: `src/utils/to-key-identity.ts`, `src/utils/to-collection-key.ts`, `src/utils/from-collection-key.ts`, `src/utils/collection-selection.ts`, `src/utils/materialize-iterator.ts`, `src/utils/encode-collection-children.tsx`, `src/utils/create-key-index.ts`
+Implementation: `src/utils/to-key-identity.ts`, `src/utils/to-collection-key.ts`, `src/utils/from-collection-key.ts`, `src/utils/collection-selection.ts`, `src/utils/materialize-iterator.ts`, `src/utils/key-collection-children.tsx`, `src/utils/create-key-index.ts`
 Verification: `src/utils/to-key-identity.test.ts`, `src/utils/to-collection-key.test.ts`, `src/utils/from-collection-key.test.ts`, `src/utils/collection-selection.test.ts`, `src/utils/materialize-iterator.test.ts`, `src/utils/create-key-index.test.ts`, `src/components/menu/menu.test.tsx`, `src/components/list-row/list-view.test.tsx`
+
+### UIC-COMPOSITION-4.2 - Collection items behind a host component
+
+A library collection item (`Tab`, `TabPanel`, `Tag`, `ListViewItem`, `ListViewSection`, `MenuItem`, `MenuSection`) shall encode its own `id` into the collection key it hands its building block, so that an item rendered through a host component that forwards its props (React Aria's reuse pattern), written as a child or returned for each of `items` (where the item's `key` or `id` stands in for a missing `id`), is addressed by its `id` like a direct child: selection, default selection, disabled keys, tab panels and every callback (`onAction`, `onSelectionChange`, `onRemove`, renames and moves) use the caller's `id` with its type. A host component that does not pass `id` on to the item leaves it without one. The collection key is opaque: React Aria writes it as the item's `data-key`, which is not the caller's `id` and is not for styling.
+
+Implementation: `src/utils/to-collection-key.ts`, `src/utils/key-collection-children.tsx`, `src/components/tabs/tab.tsx`, `src/components/tabs/tabs.tsx`, `src/components/tag-group/tag-group.tsx`, `src/components/list-row/list-view.tsx`, `src/components/menu/menu-item.tsx`
+Verification: `src/utils/to-collection-key.test.ts`, `src/components/tabs/tab-keys.test.tsx`, `src/components/tag-group/tag-group.test.tsx`, `src/components/list-row/list-view.test.tsx`, `src/components/menu/menu.test.tsx`
+
+## UIC-COMPOSITION-5 - Controlled state
+
+### UIC-COMPOSITION-5.1 - Controllable values
+
+A value a component lets the caller control (`value`/`defaultValue` with `onChange`, or `<thing>`/`default<Thing>` with `on<Thing>Change`) shall follow the caller's value while it is defined and otherwise keep the component's own copy, starting at the default. Setting it updates the own copy only when uncontrolled, and calls the change handler only when the new value differs from the current one (`Object.is`), as React Aria's controlled state does, so setting the current value again reports nothing.
+
+Implementation: `src/core/controllable-state.ts`
+Verification: `src/core/controllable-state.test.ts`

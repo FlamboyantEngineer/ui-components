@@ -8,7 +8,6 @@ import {
 } from '../../primitives/index.js';
 import { measuredProperty, pickDataAttributes } from '../../core/hooks.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
-import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { DragHandle } from '../drag-handle/drag-handle.js';
 import type { TableRowAttributes } from './table.js';
@@ -34,6 +33,12 @@ import { isEditingCell, type CellEditing } from './use-cell-editing.js';
 import type { CellSelection } from './use-cell-selection.js';
 import type { TableDragTrigger } from './use-table-reorder.js';
 import type { TablePinOffsets } from './use-pinned-offsets.js';
+
+/** A row's caller attributes: `false` leaves an attribute out, unlike a root `data-*` prop. */
+function toRowAttributes(attributes: TableRowAttributes | undefined) {
+  const shown = Object.entries(attributes ?? {}).filter(([, value]) => value !== false);
+  return pickDataAttributes(Object.fromEntries(shown));
+}
 
 /** What every row and cell of a table renders from. */
 export interface TableRowModel<T> {
@@ -119,7 +124,7 @@ function describeRangeCell<T extends TableRow>(
   column: TableColumn<T>,
 ) {
   const at = {
-    row: view?.grid.rowIndex.get(toKeyIdentity(row.id)) ?? -1,
+    row: view?.grid.rowIndex.get(toCollectionKey(row.id)) ?? -1,
     column: view?.grid.columnIndex.get(column.id) ?? -1,
   };
   const place = placeInBounds(view?.bounds ?? null, at);
@@ -234,10 +239,10 @@ export function TableDataRow<T extends TableRow>({
   const actionsPin = getColumnPin(structure, 'actions');
   return (
     <Row
-      {...pickDataAttributes(model.getRowAttributes?.(row) ?? {})}
+      {...toRowAttributes(model.getRowAttributes?.(row))}
       id={id}
       textValue={getRowText(row, getRowHeaderColumns(structure.columns))}
-      {...hooks.slot('row', { keyIdentity: toKeyIdentity(row.id) })}
+      {...hooks.slot('row')}
       render={model.dragTrigger === 'handle' ? createHandleRow(structure.isVirtualized) : undefined}
     >
       {structure.hasSelection ? (

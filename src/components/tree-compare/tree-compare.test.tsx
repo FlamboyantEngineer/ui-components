@@ -196,6 +196,19 @@ describe('TreeCompare', () => {
     expect(rowNames()).toContain('Steps');
   });
 
+  it('UIC-TREE-COMPARE-3.1 expands the rows above the differences again when the trees change', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<Compare right={LEFT} />);
+    expect(rowNames()).toEqual(['Introduction', 'Setup', 'Notes']);
+    rerender(<Compare right={RIGHT} />);
+    expect(row('Purpose and scope, changed from Scope')).toBeInTheDocument();
+    await user.click(row('Introduction'));
+    await user.keyboard('{ArrowLeft}');
+    expect(rowNames()).not.toContain('Terms');
+    rerender(<Compare right={RIGHT} isEqual={(a, b) => a.label === b.label} />);
+    expect(rowNames()).not.toContain('Terms');
+  });
+
   it('UIC-TREE-COMPARE-3.2 keeps only the differences and the rows above them', async () => {
     const user = userEvent.setup();
     const onChangesOnlyChange = vi.fn();

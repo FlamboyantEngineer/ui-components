@@ -1,9 +1,11 @@
-import { useRef, type KeyboardEvent, type ReactNode } from 'react';
+import { useMemo, useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps, SelectionProps } from '../../core/events.js';
-import type { BaseProps } from '../../core/props.js';
+import type { BaseProps, Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { isEditableTarget } from '../../utils/is-editable-target.js';
 import { mergeProps, mergeRefs } from '../../utils/merge-props.js';
+import { useLatest } from '../../utils/use-latest.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { DiagramEdges } from './diagram-edges.js';
@@ -11,7 +13,7 @@ import { diagramHooks as hooks } from './diagram-hooks.js';
 import { DiagramMinimap } from './diagram-minimap.js';
 import type { DiagramEdge, DiagramNode, DiagramViewport } from './diagram-model.js';
 import { DiagramNodeView, type DiagramNodeRenderState } from './diagram-node.js';
-import { formatDiagramLink } from './diagram-links.js';
+import { formatDiagramLink, type DiagramLinks } from './diagram-links.js';
 import { DiagramOutline } from './diagram-outline.js';
 import {
   DiagramPaletteContext,
@@ -23,7 +25,11 @@ import { DiagramToolbar, type DiagramView } from './diagram-toolbar.js';
 import type { DiagramEdgeRouting } from './edge-route.js';
 import { useBackgroundPointer } from './use-background-pointer.js';
 import type { DiagramConnection } from './use-diagram-connect.js';
-import { useDiagramController, type DiagramController } from './use-diagram-controller.js';
+import {
+  useDiagramController,
+  type DiagramController,
+  type DiagramMessage,
+} from './use-diagram-controller.js';
 
 export type { DiagramEdge, DiagramNode, DiagramPort, DiagramViewport } from './diagram-model.js';
 export type { DiagramNodeRenderState } from './diagram-node.js';
@@ -94,28 +100,64 @@ export interface DiagramCanvasProps<T = unknown>
   showMinimap?: boolean | undefined;
 }
 
-function isTextEntry(target: EventTarget): boolean {
-  return (
-    target instanceof HTMLElement &&
-    (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))
-  );
-}
-
 /** Each node's description: the labels of the nodes it leads to and comes from. */
-function describeLinks(controller: DiagramController, strings: ReturnType<typeof useUiStrings>) {
-  return (node: DiagramNode) => {
-    const { outgoing, incoming } = controller.links.get(node.id)!;
-    return [
+function describeLinks(
+  links: ReadonlyMap<Key, DiagramLinks>,
+  strings: ReturnType<typeof useUiStrings>,
+): Map<Key, string> {
+  const descriptions = new Map<Key, string>();
+  for (const [id, { outgoing, incoming }] of links) {
+    const parts = [
       outgoing.length > 0
         ? strings.diagramOutgoing(outgoing.map(formatDiagramLink).join(', '))
         : '',
       incoming.length > 0
         ? strings.diagramIncoming(incoming.map(formatDiagramLink).join(', '))
         : '',
-    ]
-      .filter(Boolean)
-      .join(' ');
-  };
+    ];
+    descriptions.set(id, parts.filter(Boolean).join(' '));
+  }
+  return descriptions;
+}
+
+/** The nodes, each rendered again only when its own state changes. */
+function DiagramNodes<T>({
+  controller,
+  renderNode,
+}: Pick<DiagramCanvasProps<T>, 'renderNode'> & { controller: DiagramController }) {
+  const strings = useUiStrings();
+  // The nodes read the latest controller only when the reader acts.
+  const latest = useLatest(controller);
+  const descriptions = useMemo(
+    () => describeLinks(controller.links, strings),
+    [controller.links, strings],
+  );
+  const { selection, moves, connect } = controller;
+  return controller.nodes.map((node) => (
+    <DiagramNodeView
+      key={toKeyIdentity(node.id)}
+      node={node as DiagramNode<T>}
+      controller={latest}
+      registerTarget={controller.registerTarget}
+      isSelected={selection.selected.has(node.id)}
+      isEditing={controller.isEditing}
+      isMoving={moves.preview?.has(node.id) ?? false}
+      connectPort={connect.connecting?.node === node.id ? connect.connecting.port : null}
+      description={descriptions.get(node.id) ?? ''}
+      renderNode={renderNode}
+    />
+  ));
+}
+
+/** The visually hidden live region; each announcement replaces its text node, so it is read. */
+function DiagramStatus({ message }: { message: DiagramMessage }) {
+  return (
+    <VisuallyHidden>
+      <div {...hooks.slot('status')} role="status">
+        {message.id > 0 ? <span key={message.id}>{message.text}</span> : null}
+      </div>
+    </VisuallyHidden>
+  );
 }
 
 /** The pannable, zoomable surface: edges, nodes, the marquee and the minimap. */
@@ -136,18 +178,20 @@ function DiagramViewportArea<T>({
   const { viewport, stepZoom } = controller.view;
   const { marquee, pointerProps } = useBackgroundPointer(controller, selectionMode);
   const { dropProps, isDropTarget } = usePaletteDrop({ ref, palette });
-  const describe = describeLinks(controller, strings);
   const onKeyDown = (event: KeyboardEvent<HTMLElement>) => {
-    if (isTextEntry(event.target) || event.altKey || event.ctrlKey || event.metaKey) return;
+    if (isEditableTarget(event.target, '[role="slider"]')) return;
+    if (event.altKey || event.ctrlKey || event.metaKey) return;
     if (event.key === '+' || event.key === '=') stepZoom(1);
     else if (event.key === '-') stepZoom(-1);
     else return;
     event.preventDefault();
   };
+  // The viewport takes focus, without joining the Tab order, when the last node is removed.
   return (
     <div
       {...hooks.slot('viewport', { dropTarget: isDropTarget })}
       ref={mergeRefs(ref, controller.setViewportElement)}
+      tabIndex={-1}
       style={{ position: 'relative', touchAction: 'none' }}
       {...mergeProps(dropProps, pointerProps, {
         onKeyDown,
@@ -166,15 +210,7 @@ function DiagramViewportArea<T>({
         }}
       >
         <DiagramEdges controller={controller} routing={routing} />
-        {controller.nodes.map((node) => (
-          <DiagramNodeView
-            key={toKeyIdentity(node.id)}
-            node={node as DiagramNode<T>}
-            controller={controller}
-            description={describe(node)}
-            renderNode={renderNode}
-          />
-        ))}
+        <DiagramNodes controller={controller} renderNode={renderNode} />
       </div>
       {controller.nodes.length === 0 ? (
         <p {...hooks.slot('empty')}>{strings.diagramEmpty}</p>
@@ -276,11 +312,7 @@ export function DiagramCanvas<T = unknown>({
           <DiagramOutline controller={controller} />
         )}
       </DiagramPaletteContext.Provider>
-      <VisuallyHidden>
-        <div {...hooks.slot('status')} role="status">
-          {controller.message}
-        </div>
-      </VisuallyHidden>
+      <DiagramStatus message={controller.message} />
     </div>
   );
 }

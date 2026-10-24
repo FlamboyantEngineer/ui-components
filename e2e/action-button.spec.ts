@@ -17,6 +17,22 @@ test.describe('Action Button lab', () => {
     await lab.expectAccessible();
   });
 
+  test('UIC-ACTION-BUTTON-1.2 submits its form once per action', async ({ page, lab }) => {
+    await lab.open('action-button');
+    const send = page.locator('[data-lab-action="submit"]');
+    const submits = page.locator('[data-lab-output="submits"]');
+    await send.click();
+    await expect(send).toHaveAttribute('data-pending', 'true');
+    await expect(submits).toHaveText('1');
+    await send.click({ force: true });
+    await send.press('Enter');
+    await page.locator('[data-lab-action="finish-send"]').click();
+    await expect(send).not.toHaveAttribute('data-pending', 'true');
+    await expect(submits).toHaveText('1');
+    await send.click();
+    await expect(submits).toHaveText('2');
+  });
+
   test('UIC-ACTION-BUTTON-1.3 returns to idle after a rejection and reports it', async ({
     page,
     lab,

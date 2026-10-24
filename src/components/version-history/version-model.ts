@@ -33,7 +33,7 @@ export function isNamedVersion(version: VersionFacts): boolean {
   return (version.label ?? '').trim() !== '';
 }
 
-/** The versions the filter keeps, in their order. */
+/** The versions the filter keeps, in their order; people match by their trimmed name. */
 export function filterVersions<V extends VersionFacts>(
   versions: readonly V[],
   filter: VersionHistoryFilter,
@@ -41,7 +41,7 @@ export function filterVersions<V extends VersionFacts>(
   return versions.filter(
     (version) =>
       (!filter.namedOnly || isNamedVersion(version)) &&
-      (filter.person === null || version.person?.name === filter.person),
+      (filter.person === null || version.person?.name.trim() === filter.person),
   );
 }
 

@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { mergeThreeWay } from '../../utils/three-way-merge.js';
+import { useStateFor } from '../../utils/use-state-for.js';
 import {
   createMergeBlocks,
   createMergeText,
@@ -32,7 +33,6 @@ interface MergeStateOptions {
 
 /** What a merge view holds for one set of texts, starting over when they change. */
 interface MergeState {
-  blocks: readonly MergeBlock[];
   states: readonly ConflictState[];
   current: number | null;
 }
@@ -45,7 +45,7 @@ function createInitialState(blocks: readonly MergeBlock[]): MergeState {
     { length: conflicts },
     (): ConflictState => ({ resolution: 'unresolved' }),
   );
-  return { blocks, states, current: null };
+  return { states, current: null };
 }
 
 function countUnresolved(states: readonly ConflictState[]): number {
@@ -61,11 +61,11 @@ export function useMergeState({ base, ours, theirs, markers, onChange }: MergeSt
     () => createMergeBlocks(mergeThreeWay(base, ours, theirs)),
     [base, ours, theirs],
   );
-  const [stored, setStored] = useState<MergeState>(() => createInitialState(blocks));
-  const state = stored.blocks === blocks ? stored : createInitialState(blocks);
+  const initial = useMemo(() => createInitialState(blocks), [blocks]);
+  const [state, setState] = useStateFor(blocks, initial);
   const resolve = (conflict: number, next: ConflictState) => {
     const states = state.states.map((entry, index) => (index === conflict ? next : entry));
-    setStored({ ...state, states, current: conflict });
+    setState({ states, current: conflict });
     onChange?.({
       text: createMergeText({ blocks, states, markers, hasFinalBreak: finalBreak.test(ours) }),
       resolutions: states.map((entry) => entry.resolution),
@@ -78,6 +78,6 @@ export function useMergeState({ base, ours, theirs, markers, onChange }: MergeSt
     current: state.current,
     unresolved: countUnresolved(state.states),
     resolve,
-    setCurrent: (conflict: number) => setStored({ ...state, current: conflict }),
+    setCurrent: (conflict: number) => setState({ ...state, current: conflict }),
   };
 }

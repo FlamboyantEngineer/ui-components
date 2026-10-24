@@ -6,14 +6,14 @@
 
 ### UIC-COLOR-SWATCH-1.1 - Colour
 
-`ColorSwatch` shall render a React Aria colour swatch (`ui-color-swatch`) filled with `color`, any CSS colour string (`#336699`, `rgb(51, 102, 153)`, `hsl(210, 50%, 40%)`). It is an image (`role="img"`) described as a colour swatch and named by the colour's name in the locale (`dark grayish cyan blue`), or by `colorName` when given; an `aria-label` adds to the name. The fill is React Aria's inline background colour, a value the swatch draws rather than a style.
+`ColorSwatch` shall render a React Aria colour swatch (`ui-color-swatch`) filled with `color`, a colour string React Aria reads: hex with or without alpha (`#336699`, `#369`, `#33669980`), or comma-separated `rgb()`/`rgba()`, `hsl()`/`hsla()` or `hsb()`/`hsba()` (`rgb(51, 102, 153)`, `hsl(210, 50%, 40%)`). It is an image (`role="img"`) described as a colour swatch and named by the colour's name in the locale (`dark grayish cyan blue`), or by `colorName` when given; an `aria-label` adds to the name. The fill is React Aria's inline background colour, a value the swatch draws rather than a style.
 
 Implementation: `src/components/color-swatch/color-swatch.tsx`
 Verification: `src/components/color-swatch/color-swatch.test.tsx`, `e2e/color-swatch.spec.ts`
 
 ### UIC-COLOR-SWATCH-1.2 - Empty swatch
 
-A swatch with no colour (nothing, `null` or empty text) shall be transparent, publish `data-empty` and be named by the provider string `noColor`, so a stylesheet can draw the empty state, such as a checkerboard.
+A swatch with no colour (nothing, `null` or empty text), or with a colour in a notation React Aria does not read (a colour name such as `red`, `transparent`, `currentColor`, `oklch()`, space-separated `rgb()`), shall be transparent, publish `data-empty` and be named by the provider string `noColor`, so a stylesheet can draw the empty state, such as a checkerboard; it never throws.
 
 Implementation: `src/components/color-swatch/color-swatch.tsx`, `src/core/strings.ts`, `labs/reference/color-swatch.css`
 Verification: `src/components/color-swatch/color-swatch.test.tsx`, `e2e/color-swatch.spec.ts`
@@ -36,7 +36,7 @@ Verification: `src/components/color-swatch/color-swatch.test.tsx`
 
 ### UIC-COLOR-SWATCH-2.1 - Swatch list
 
-`ColorSwatchPicker` shall render a React Aria colour swatch picker (`ui-color-swatch-picker`): a single-selection `listbox`, named by its `aria-label` (React Aria's `Color swatches` by default), laid out as a `grid` (the default) or a `stack` and publishing `data-layout`. Each `ColorSwatchPickerItem` is an `option` (`ui-color-swatch-picker__item`) drawing its `color` as a `ColorSwatch`, named by the colour's name in the locale or by `colorName`. The item whose colour equals the picker's `value` (or `defaultValue`), a CSS colour string compared as a colour whatever its spelling, is selected (`aria-selected`, `data-selected`). A disabled item (`isDisabled`) stays listed but cannot be picked.
+`ColorSwatchPicker` shall render a React Aria colour swatch picker (`ui-color-swatch-picker`): a single-selection `listbox`, named by its `aria-label` (React Aria's `Color swatches` by default), laid out as a `grid` (the default) or a `stack` and publishing `data-layout`. Each `ColorSwatchPickerItem` is an `option` (`ui-color-swatch-picker__item`) drawing its `color` as a `ColorSwatch`, named by the colour's name in the locale or by `colorName`. The item whose colour equals the picker's `value` (or `defaultValue`), a CSS colour string compared as a colour whatever its spelling, is selected (`aria-selected`, `data-selected`). A disabled item (`isDisabled`) stays listed but cannot be picked. An item whose `color` React Aria does not read ([UIC-COLOR-SWATCH-1.2](#uic-color-swatch-12---empty-swatch)) is left out, and a `value` or `defaultValue` it does not read counts as no value, instead of throwing.
 
 Implementation: `src/components/color-swatch/color-swatch-picker.tsx`
 Verification: `src/components/color-swatch/color-swatch-picker.test.tsx`, `e2e/color-swatch.spec.ts`

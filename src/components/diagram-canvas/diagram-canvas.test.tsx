@@ -1,5 +1,6 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
+import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import {
@@ -8,7 +9,12 @@ import {
   pipeNodes,
   stubViewportSize,
 } from '../../../test/diagram-fixtures.js';
-import { DiagramCanvas, DiagramPaletteItem, routeDiagramEdge } from './diagram-canvas.js';
+import {
+  DiagramCanvas,
+  DiagramPaletteItem,
+  routeDiagramEdge,
+  type DiagramEdge,
+} from './diagram-canvas.js';
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -434,6 +440,33 @@ describe('DiagramCanvas', () => {
     );
     rerender(<DiagramCanvas nodes={[]} edges={[]} view="outline" />);
     expect(screen.getByText('No nodes')).toHaveClass('ui-diagram-canvas__empty');
+  });
+
+  it('UIC-DIAGRAM-CANVAS-6.4 keeps focus in the outline after removing a connection', async () => {
+    const user = userEvent.setup();
+    const fanEdges: DiagramEdge[] = [
+      { id: 'e1', source: 'pump', target: 'valve' },
+      { id: 'e2', source: 'pump', target: 'tank' },
+    ];
+    function Fan() {
+      const [edges, setEdges] = useState(fanEdges);
+      return (
+        <DiagramCanvas
+          nodes={pipeNodes}
+          edges={edges}
+          onEdgesChange={setEdges}
+          isEditing
+          defaultView="outline"
+        />
+      );
+    }
+    render(<Fan />);
+    await user.click(screen.getByRole('button', { name: 'Remove connection from Pump to Valve' }));
+    expect(screen.getByRole('button', { name: 'Tank' })).toHaveFocus();
+    await user.click(screen.getByRole('button', { name: 'Remove connection from Pump to Tank' }));
+    const outline = screen.getByRole('list', { name: 'Outline' });
+    expect(outline.querySelector('.ui-diagram-canvas__outline-item')).toHaveFocus();
+    expect(screen.getByText('Pump')).toHaveClass('ui-diagram-canvas__outline-label');
   });
 
   it('UIC-DIAGRAM-CANVAS-5.3 adds palette items at the centre of the view in edit mode', async () => {

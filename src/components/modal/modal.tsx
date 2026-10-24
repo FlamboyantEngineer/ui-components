@@ -55,6 +55,8 @@ export interface ModalCancelAction
 export interface ModalRenderProps {
   /** Closes the modal. */
   close: () => void;
+  /** Runs the primary action as a press does, such as from Enter in a field; nothing when it cannot run. */
+  runPrimaryAction: () => void;
 }
 
 /** A pressable trigger and the `Modal` it opens. */
@@ -187,13 +189,7 @@ export function Modal({
     );
   }
   return (
-    <BlockingModal
-      {...dismissal}
-      isOpen={isOpen}
-      defaultOpen={defaultOpen}
-      onOpenChange={onOpenChange}
-      rootProps={rootProps}
-    >
+    <BlockingModal {...dismissal} state={ownState} rootProps={rootProps}>
       {dialog}
     </BlockingModal>
   );

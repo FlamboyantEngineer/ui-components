@@ -55,7 +55,10 @@ function wait(milliseconds: number) {
 /** In-memory folders with callbacks that answer after `delay`; the name "Taken" is refused. */
 function useFolders(delay: number, onAction: (text: string) => void = () => {}) {
   const [folders, setFolders] = useState<readonly Folder[]>(sample);
-  const callbacks: Partial<FolderManagerProps<Folder>> = {
+  const callbacks: Pick<
+    FolderManagerProps<Folder>,
+    'onCreate' | 'onRename' | 'onDelete' | 'onMove'
+  > = {
     onCreate: async ({ name, parentKey }) => {
       await wait(delay);
       if (name === 'Taken') throw new Error('A folder named Taken already exists.');
@@ -146,7 +149,7 @@ function SeveralFolders() {
         folders={folders}
         selectionMode="multiple"
         selectedKeys={selected}
-        onSelectedKeysChange={setSelected}
+        onSelectionChange={(keys) => setSelected([...keys])}
         data-lab-manager="multiple"
         {...callbacks}
       />

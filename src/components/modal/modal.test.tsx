@@ -103,6 +103,31 @@ describe('Modal', () => {
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
 
+    it('UIC-MODAL-1.1 reports the closes it makes inside a ModalTrigger', async () => {
+      const onOpenChange = vi.fn();
+      const onTriggerChange = vi.fn();
+      render(
+        <ModalTrigger onOpenChange={onTriggerChange}>
+          <AriaButton>Details</AriaButton>
+          <Modal title="Details" cancelAction={{ label: 'Done' }} onOpenChange={onOpenChange}>
+            Body
+          </Modal>
+        </ModalTrigger>,
+      );
+      await userEvent.click(screen.getByRole('button', { name: 'Details' }));
+      await screen.findByRole('dialog', { name: 'Details' });
+      expect(onTriggerChange).toHaveBeenLastCalledWith(true);
+      await userEvent.click(screen.getByRole('button', { name: 'Done' }));
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      expect(onOpenChange).toHaveBeenCalledExactlyOnceWith(false);
+      expect(onTriggerChange).toHaveBeenLastCalledWith(false);
+      await userEvent.click(screen.getByRole('button', { name: 'Details' }));
+      await screen.findByRole('dialog', { name: 'Details' });
+      await userEvent.keyboard('{Escape}');
+      expect(onOpenChange).toHaveBeenCalledTimes(2);
+      expect(onOpenChange).toHaveBeenLastCalledWith(false);
+    });
+
     it('UIC-MODAL-1.6 opens from its trigger, reports changes and returns focus', async () => {
       const onOpenChange = vi.fn();
       render(
@@ -969,6 +994,51 @@ describe('Modal', () => {
       await userEvent.keyboard('{Control>}{Enter}{/Control}');
       expect(onPress).toHaveBeenCalledTimes(1);
       expect(onKeyDown.mock.calls.map(([event]) => event.key)).not.toContain('Enter');
+    });
+
+    it('UIC-MODAL-6.3 runs the primary action from the content once, pending, and shows its failure', async () => {
+      const user = userEvent.setup();
+      const save = deferred();
+      const onPress = vi.fn(() => save.promise);
+      const runFromField = ({ runPrimaryAction }: { runPrimaryAction: () => void }) => (
+        <input
+          aria-label="Name"
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' && !event.ctrlKey && !event.metaKey) runPrimaryAction();
+          }}
+        />
+      );
+      const { rerender } = render(
+        <Modal title="Name" isOpen primaryAction={{ label: 'Create', onPress }}>
+          {runFromField}
+        </Modal>,
+      );
+      const action = screen.getByRole('button', { name: 'Create' });
+      await user.click(screen.getByRole('textbox', { name: 'Name' }));
+      await user.keyboard('{Enter}{Enter}{Control>}{Enter}{/Control}');
+      expect(onPress).toHaveBeenCalledTimes(1);
+      expect(action).toHaveAttribute('data-pending', 'true');
+      await act(async () => save.reject(new Error('Name taken')));
+      expect(await screen.findByRole('alert')).toHaveTextContent('Name taken');
+      expect(action).not.toHaveAttribute('data-pending');
+      rerender(
+        <Modal title="Name" isOpen primaryAction={{ label: 'Create', onPress, isDisabled: true }}>
+          {runFromField}
+        </Modal>,
+      );
+      await user.keyboard('{Enter}');
+      rerender(
+        <Modal
+          title="Name"
+          isOpen
+          primaryAction={{ label: 'Create', onPress }}
+          actions={<button type="button">Send</button>}
+        >
+          {runFromField}
+        </Modal>,
+      );
+      await user.keyboard('{Enter}');
+      expect(onPress).toHaveBeenCalledTimes(1);
     });
 
     it('UIC-MODAL-6.1 leaves the shortcut to multiline editors and custom action bars', async () => {

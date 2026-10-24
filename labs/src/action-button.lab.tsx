@@ -73,6 +73,38 @@ function DelayedPending() {
   );
 }
 
+function SubmitForm() {
+  const [submits, setSubmits] = useState(0);
+  const release = useRef<(() => void) | null>(null);
+  return (
+    <form
+      aria-label="Message"
+      onSubmit={(event) => {
+        event.preventDefault();
+        setSubmits((value) => value + 1);
+      }}
+    >
+      <ActionButton
+        type="submit"
+        data-lab-action="submit"
+        onPress={() =>
+          new Promise<void>((resolve) => {
+            release.current = resolve;
+          })
+        }
+      >
+        Send
+      </ActionButton>{' '}
+      <Button data-lab-action="finish-send" onPress={() => release.current?.()}>
+        Finish sending
+      </Button>
+      <p>
+        Submissions: <output data-lab-output="submits">{submits}</output>
+      </p>
+    </form>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -86,6 +118,12 @@ mountLab(
       description="With pendingDelay={1000} the spinner appears only once the action has run for a second, so a quick action never flashes it."
     >
       <DelayedPending />
+    </LabSection>
+    <LabSection
+      title="Form submission"
+      description="A submit action button submits its form with the press that starts the action and refuses repeat submissions until you finish it."
+    >
+      <SubmitForm />
     </LabSection>
     <LabSection title="States">
       <StateMatrix

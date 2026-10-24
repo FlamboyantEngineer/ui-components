@@ -8,7 +8,7 @@ Each file in this directory specifies one component, one family of components, o
 | ------------------------------------ | -------------------------------------------------------------------------------------- |
 | [HOOK-CONTRACT.md](HOOK-CONTRACT.md) | The rules every hook follows: class and attribute naming, inline styles, caller hooks. |
 | [PROVIDER.md](PROVIDER.md)           | `UiProvider`: glyphs, strings, locale, links and storage.                              |
-| [COMPOSITION.md](COMPOSITION.md)     | Swapping elements with `render`, merging props, and slot props.                        |
+| [COMPOSITION.md](COMPOSITION.md)     | Swapping elements with `render`, merging props, slot props and controlled state.       |
 | [COLLECTIONS.md](COLLECTIONS.md)     | Virtualized and incrementally loaded collections.                                      |
 | [PRIMITIVES.md](PRIMITIVES.md)       | The one directory that imports React Aria and its companion packages.                  |
 | [TESTING.md](TESTING.md)             | The testing helpers hosts use to drive the components in their own tests.              |

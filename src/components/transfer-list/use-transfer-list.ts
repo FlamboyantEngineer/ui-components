@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { Key, Selection } from '../../core/props.js';
 import { splitMatchTerms, textMatchesTerms } from '../text-match/text-match.js';
@@ -73,9 +73,11 @@ export function useTransferList(options: TransferListOptions) {
     available: noKeys as Set<Key>,
     chosen: noKeys as Set<Key>,
   });
-  const blocked: ReadonlySet<Key> = isDisabled
-    ? new Set(items.map((item) => item.id))
-    : new Set(disabledKeys ?? []);
+  // A stable set, so the sides' lists keep their rows across unrelated renders.
+  const blocked = useMemo<ReadonlySet<Key>>(
+    () => (isDisabled ? new Set(items.map((item) => item.id)) : new Set(disabledKeys ?? [])),
+    [isDisabled, items, disabledKeys],
+  );
   const byId = new Map(items.map((item) => [item.id, item]));
   const held = new Set(chosen);
   const sides: PerSide<TransferSide> = {

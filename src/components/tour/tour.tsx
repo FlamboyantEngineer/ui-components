@@ -60,21 +60,23 @@ function useTourOpenState({
   return { isOpen: isOpen ?? (ownOpen && isCompleted !== true), complete };
 }
 
-/** The shown step: the caller's when controlled, else our own, back at `defaultStep` after a close. */
+/**
+ * The shown step: the caller's when controlled, else our own, back at `defaultStep` whenever the
+ * tour is closed, however it closed.
+ */
 function useTourStep({
   step,
   defaultStep = 0,
   onStepChange,
-}: Pick<TourProps, 'step' | 'defaultStep' | 'onStepChange'>) {
+  isOpen,
+}: Pick<TourProps, 'step' | 'defaultStep' | 'onStepChange'> & { isOpen: boolean }) {
   const [ownStep, setOwnStep] = useState(defaultStep);
+  if (!isOpen && step === undefined && ownStep !== defaultStep) setOwnStep(defaultStep);
   return {
     step: step ?? ownStep,
     moveTo: (next: number) => {
       if (step === undefined) setOwnStep(next);
       onStepChange?.(next);
-    },
-    reset: () => {
-      if (step === undefined) setOwnStep(defaultStep);
     },
   };
 }
@@ -101,7 +103,12 @@ export function Tour({
   ...rest
 }: TourProps) {
   const open = useTourOpenState({ isOpen: isOpenProp, defaultOpen, onOpenChange, persistKey });
-  const position = useTourStep({ step: stepProp, defaultStep, onStepChange });
+  const position = useTourStep({
+    step: stepProp,
+    defaultStep,
+    onStepChange,
+    isOpen: open.isOpen,
+  });
   const index = Math.min(Math.max(0, Math.trunc(position.step) || 0), steps.length - 1);
   const current = steps[index];
   const isOpen = open.isOpen && current !== undefined;
@@ -112,7 +119,6 @@ export function Tour({
   if (!isOpen) return null;
   const close = (onClose: () => void) => {
     open.complete();
-    position.reset();
     onClose();
   };
   return (

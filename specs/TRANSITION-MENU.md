@@ -20,7 +20,7 @@ Verification: `src/components/transition-menu/transition-menu.test.tsx`, `e2e/tr
 
 ### UIC-TRANSITION-MENU-1.3 - Unavailable transitions
 
-A transition with a `disabledReason` shall be a disabled item showing the reason under its label instead of its description; it cannot be chosen.
+A transition with a `disabledReason` shall be an unavailable item showing the reason under its label instead of its description. It stays reachable by keyboard and is announced as unavailable, with `aria-disabled="true"`, `data-disabled` and the reason in its accessible name (`focusableWhenDisabled`, [UIC-MENU-2.6](MENU.md#uic-menu-26---focusable-disabled-items)). It cannot be chosen: a press, Enter or Space calls nothing, opens no dialog and leaves the menu open.
 
 Implementation: `src/components/transition-menu/transition-menu.tsx`
 Verification: `src/components/transition-menu/transition-menu.test.tsx`, `e2e/transition-menu.spec.ts`
@@ -57,7 +57,7 @@ Verification: `src/components/transition-menu/transition-menu.test.tsx`
 
 ### UIC-TRANSITION-MENU-2.1 - Names and keyboard
 
-The trigger shall be named by the provider's `stateTrigger` string from `label` (the provider's `status` string by default) and the current state, so its name holds the visible state, and report the menu in `aria-haspopup` and `aria-expanded`; the menu is named by the same label. Enter, Space or ArrowDown open the menu with focus on its first available item, arrow keys move between items, skipping unavailable ones, Enter chooses and Escape closes it, returning focus to the trigger (React Aria). A dialog takes focus when it opens and returns it when it closes.
+The trigger shall be named by the provider's `stateTrigger` string from `label` (the provider's `status` string by default) and the current state, so its name holds the visible state, and report the menu in `aria-haspopup` and `aria-expanded`; the menu is named by the same label. Enter, Space or ArrowDown open the menu with focus on its first item, arrow keys, Home and End move between items, reaching unavailable ones so their reason can be read, Enter chooses an available one and Escape closes it, returning focus to the trigger (React Aria). A dialog takes focus when it opens and returns it when it closes.
 
 Implementation: `src/components/transition-menu/transition-menu.tsx`, `src/core/view-strings.ts`
 Verification: `src/components/transition-menu/transition-menu.test.tsx`, `e2e/transition-menu.spec.ts`

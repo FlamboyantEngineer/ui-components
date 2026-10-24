@@ -5,6 +5,7 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
+import { createValueStore, useStoreValue, type ValueStore } from '../../utils/value-store.js';
 import { SearchField } from '../search-field/search-field.js';
 import {
   filterCharacterCategories,
@@ -54,8 +55,12 @@ function getCellKey(section: string, char: string): string {
   return encodeURIComponent(JSON.stringify([section, char]));
 }
 
-/** The decorative preview of the character last hovered or focused: itself, its name and code. */
-function CharacterPreview({ character }: { character: CharacterGridCharacter | null }) {
+/**
+ * The decorative preview of the character last hovered or focused: itself, its name and code. It
+ * reads the active character from a store, so a hover re-renders the preview alone, not the grid.
+ */
+function CharacterPreview({ active }: { active: ValueStore<CharacterGridCharacter | null> }) {
+  const character = useStoreValue(active);
   return (
     <div {...hooks.slot('preview')} aria-hidden="true">
       {character ? (
@@ -69,8 +74,10 @@ function CharacterPreview({ character }: { character: CharacterGridCharacter | n
   );
 }
 
-interface CharacterSectionsProps {
-  label: string;
+interface CharacterSectionsProps extends Pick<
+  AriaLabellingProps,
+  'aria-label' | 'aria-labelledby'
+> {
   sections: readonly CharacterSection[];
   gridRef: RefObject<HTMLDivElement | null>;
   onAction: (key: Key) => void;
@@ -79,17 +86,17 @@ interface CharacterSectionsProps {
 
 /** The grid list: one section per category, headed by its label, one cell per character. */
 function CharacterSections({
-  label,
   sections,
   gridRef,
   onAction,
   onActiveChange,
+  ...labelling
 }: CharacterSectionsProps) {
   return (
     <GridList
       ref={gridRef}
       className={hooks.slotClass('grid')}
-      aria-label={label}
+      {...labelling}
       layout="grid"
       onAction={onAction}
     >
@@ -155,11 +162,12 @@ export function CharacterGrid({
 }: CharacterGridProps) {
   const strings = useUiStrings();
   const [query, setQuery] = useState('');
-  const [active, setActive] = useState<CharacterGridCharacter | null>(null);
+  const [active] = useState(() => createValueStore<CharacterGridCharacter | null>(null));
   const recent = useRecentCharacters(persistKey, categories);
   const { sections, byKey } = useSections(categories, query, recent.characters);
   const gridRef = useRef<HTMLDivElement>(null);
-  const label = rest['aria-label'] ?? strings.characterGrid;
+  const labelledBy = rest['aria-labelledby'];
+  const label = labelledBy ? undefined : (rest['aria-label'] ?? strings.characterGrid);
   const choose = (character: CharacterGridCharacter | undefined) => {
     if (!character) return;
     recent.remember(character);
@@ -178,13 +186,13 @@ export function CharacterGrid({
       {...hooks.root({ className, props: rest, data: { searching: query.trim() !== '' } })}
       id={id}
       role="group"
-      aria-label={rest['aria-labelledby'] ? undefined : label}
-      aria-labelledby={rest['aria-labelledby']}
+      aria-label={label}
+      aria-labelledby={labelledBy}
       aria-describedby={rest['aria-describedby']}
       aria-details={rest['aria-details']}
       onFocus={(event) => {
         const character = byKey.get((event.target as HTMLElement).dataset.key ?? '');
-        if (character) setActive(character);
+        if (character) active.set(character);
       }}
       onKeyDownCapture={moveToGrid}
       onKeyDown={(event) => {
@@ -207,14 +215,15 @@ export function CharacterGrid({
         </div>
       ) : (
         <CharacterSections
-          label={label}
+          aria-label={label}
+          aria-labelledby={labelledBy}
           sections={sections}
           gridRef={gridRef}
           onAction={(key) => choose(byKey.get(key))}
-          onActiveChange={setActive}
+          onActiveChange={active.set}
         />
       )}
-      <CharacterPreview character={active} />
+      <CharacterPreview active={active} />
     </div>
   );
 }

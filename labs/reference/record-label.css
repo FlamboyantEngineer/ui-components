@@ -60,3 +60,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.ui-record-label__accessible-label {
+  white-space: nowrap;
+}

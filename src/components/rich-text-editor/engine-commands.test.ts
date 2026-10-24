@@ -1,5 +1,11 @@
 import { history } from 'prosemirror-history';
-import { EditorState, NodeSelection, TextSelection, type Transaction } from 'prosemirror-state';
+import {
+  AllSelection,
+  EditorState,
+  NodeSelection,
+  TextSelection,
+  type Transaction,
+} from 'prosemirror-state';
 import { describe, expect, it } from 'vitest';
 import type { RichTextNode } from './rich-text-document.js';
 import {
@@ -47,6 +53,11 @@ function run(state: EditorState, command: RichTextCommand): EditorState | null {
 
 function blocks(state: EditorState | null | undefined) {
   return state?.doc.toJSON().content as RichTextNode[];
+}
+
+/** The text of each top-level block. */
+function texts(state: EditorState | null | undefined) {
+  return blocks(state)?.map((block) => block.content?.[0]?.text);
 }
 
 describe('rich-text commands', () => {
@@ -181,7 +192,6 @@ describe('rich-text commands', () => {
     expect(blocks(gone)?.map((block) => block.content?.[0]?.text)).toEqual(['one', 'three']);
     const last = run(stateOf([h(1, 'Only')], 2), { type: 'delete-block' });
     expect(blocks(last)).toEqual([p()]);
-    expect(run(stateOf([p(text('a')), p(text('b'))], 1, 5), { type: 'delete-block' })).toBeNull();
     const ruled = EditorState.create({
       schema,
       doc: schema.nodeFromJSON({
@@ -193,5 +203,60 @@ describe('rich-text commands', () => {
     const moved = run(selected, { type: 'move-block', direction: 'up' });
     expect(blocks(moved)?.[0]?.type).toBe('horizontalRule');
     expect(moved?.selection).toBeInstanceOf(NodeSelection);
+  });
+
+  it('UIC-RICH-TEXT-EDITOR-5.5 moves, duplicates and deletes every block a selection spans', () => {
+    const four = [p(text('one')), p(text('two')), p(text('three')), p(text('four'))];
+    const state = stateOf(four, 2, 8);
+    const down = run(state, { type: 'move-block', direction: 'down' });
+    expect(texts(down)).toEqual(['three', 'one', 'two', 'four']);
+    expect(down?.doc.textBetween(down.selection.from, down.selection.to, '|')).toBe('ne|tw');
+    const up = run(stateOf(four, 7, 13), { type: 'move-block', direction: 'up' });
+    expect(texts(up)).toEqual(['two', 'three', 'one', 'four']);
+    expect(run(stateOf(four, 12, 19), { type: 'move-block', direction: 'down' })).toBeNull();
+    const copy = run(state, { type: 'duplicate-block' });
+    expect(texts(copy)).toEqual(['one', 'two', 'one', 'two', 'three', 'four']);
+    expect(copy?.selection.from).toBe(12);
+    expect(texts(run(state, { type: 'delete-block' }))).toEqual(['three', 'four']);
+    expect(blocks(run(stateOf(four.slice(0, 2), 1, 8), { type: 'delete-block' }))).toEqual([p()]);
+  });
+
+  it('UIC-RICH-TEXT-EDITOR-5.5 acts on every block after a select-all, and moves none', () => {
+    const doc = schema.nodeFromJSON({
+      type: 'doc',
+      content: [p(text('one')), h(1, 'two'), p(text('three'))],
+    });
+    const state = EditorState.create({ schema, doc, selection: new AllSelection(doc) });
+    expect(toEngineCommand({ type: 'move-block', direction: 'down' })(state)).toBe(false);
+    expect(() => run(state, { type: 'move-block', direction: 'down' })).not.toThrow();
+    expect(run(state, { type: 'move-block', direction: 'down' })).toBeNull();
+    expect(run(state, { type: 'move-block', direction: 'up' })).toBeNull();
+    expect(toEngineCommand({ type: 'delete-block' })(state)).toBe(true);
+    expect(blocks(run(state, { type: 'delete-block' }))).toEqual([p()]);
+    const copy = run(state, { type: 'duplicate-block' });
+    expect(texts(copy)).toEqual(['one', 'two', 'three', 'one', 'two', 'three']);
+    expect(copy?.doc.textBetween(copy.selection.from, copy.selection.to, '|')).toBe(
+      'one|two|three',
+    );
+    expect(copy?.selection.from).toBe(doc.content.size + 1);
+    const heading = { type: 'set-block', node: 'heading', attrs: { level: 2 } } as const;
+    expect(isCommandActive(heading, state)).toBe(false);
+    const headings = run(state, heading);
+    expect(blocks(headings)).toEqual([h(2, 'one'), h(2, 'two'), h(2, 'three')]);
+    expect(headings && isCommandActive(heading, headings)).toBe(true);
+  });
+
+  it('UIC-RICH-TEXT-EDITOR-5.2 reports a block type active only when every selected text block has it', () => {
+    const heading = { type: 'set-block', node: 'heading', attrs: { level: 1 } } as const;
+    const mixed = stateOf([h(1, 'a'), p(text('b')), h(1, 'c')], 1, 8);
+    expect(isCommandActive(heading, mixed)).toBe(false);
+    expect(isCommandActive({ type: 'set-block', node: 'paragraph' }, mixed)).toBe(false);
+    expect(isCommandActive(heading, stateOf([h(1, 'a'), h(1, 'c')], 1, 5))).toBe(true);
+    const ruled = EditorState.create({
+      schema,
+      doc: schema.nodeFromJSON({ type: 'doc', content: [{ type: 'horizontalRule' }, p()] }),
+    });
+    const rule = ruled.apply(ruled.tr.setSelection(NodeSelection.create(ruled.doc, 0)));
+    expect(isCommandActive({ type: 'set-block', node: 'paragraph' }, rule)).toBe(false);
   });
 });

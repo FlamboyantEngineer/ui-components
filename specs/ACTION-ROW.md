@@ -27,9 +27,9 @@ Verification: `src/components/action-row/action-row.test.tsx`, `e2e/action-row.s
 
 ### UIC-ACTION-ROW-1.4 - Tooltips
 
-Each action shall show a React Aria tooltip (`ui-action-row__tooltip`) with its `tooltip`, or its label when it has none, on hover and on keyboard focus. The open tooltip describes the button; the accessible name stays the label.
+Each action shall show a React Aria tooltip (`ui-action-row__tooltip`) with its `tooltip`, or its label when it has none, on hover and on keyboard focus. The open tooltip of an action with its own `tooltip` describes the button; a tooltip that only repeats the label does not describe it, as in [Icon Button](ICON-BUTTON.md). The accessible name stays the label.
 
-Implementation: `src/components/action-row/action-row.tsx`
+Implementation: `src/components/action-row/action-row.tsx`, `src/components/action-row/action-row-actions.tsx`
 Verification: `src/components/action-row/action-row.test.tsx`, `e2e/action-row.spec.ts`
 
 ### UIC-ACTION-ROW-1.5 - Action states and attributes

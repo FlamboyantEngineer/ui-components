@@ -20,7 +20,7 @@ Verification: `src/components/inline-edit/inline-edit.test.tsx`, `e2e/inline-edi
 
 ### UIC-INLINE-EDIT-1.3 - The editor
 
-`renderEditor` shall draw the editor from the value being edited (`value`), which starts at the saved value, `onChange` to change it, `commit(value?)` to save it (or the value given, as a select does on a choice), `cancel()`, the `label` that names the editor's control and `isPending`. Without `renderEditor`, a one-line [Text Field](TEXT-FIELD.md) named by `label` in the `control-only` layout edits the value as text, without showing its own dirty state.
+`renderEditor` shall draw the editor from the value being edited (`value`), which starts at the saved value each time the editor opens, through `isEditing` too, `onChange` to change it, `commit(value?)` to save it (or the value given, as a select does on a choice), `cancel()`, the `label` that names the editor's control and `isPending`. Without `renderEditor`, a one-line [Text Field](TEXT-FIELD.md) named by `label` in the `control-only` layout edits the value as text, without showing its own dirty state.
 
 Implementation: `src/components/inline-edit/inline-edit.tsx`
 Verification: `src/components/inline-edit/inline-edit.test.tsx`, `e2e/inline-edit.spec.ts`

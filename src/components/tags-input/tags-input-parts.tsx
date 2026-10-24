@@ -1,4 +1,12 @@
-import { useMemo, useState, type ClipboardEvent, type FocusEvent, type KeyboardEvent } from 'react';
+import {
+  memo,
+  useCallback,
+  useMemo,
+  useState,
+  type ClipboardEvent,
+  type FocusEvent,
+  type KeyboardEvent,
+} from 'react';
 import { Group, Input, useLocale, type Key } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -111,6 +119,34 @@ function TagInputs({
 }
 
 /**
+ * The tags in the library's `TagGroup`. It renders again only when the tags or their state change,
+ * not on each keystroke in the input, so typing stays fast with many tags.
+ */
+const TagsInputTags = memo(function TagsInputTags({
+  tags,
+  label,
+  isDisabled,
+  onRemove,
+}: {
+  tags: ReadonlyArray<KeyedValue<string>>;
+  label: string;
+  isDisabled: boolean;
+  onRemove: ((keys: Set<Key>) => void) | undefined;
+}) {
+  return (
+    <TagGroup
+      className={hooks.slotClass('tags')}
+      aria-label={label}
+      items={tags}
+      onRemove={onRemove}
+      disabledKeys={isDisabled ? tags.map((tag) => tag.key) : undefined}
+    >
+      {(tag) => <Tag id={tag.key}>{tag.value}</Tag>}
+    </TagGroup>
+  );
+});
+
+/**
  * The field's control: the tags in the library's `TagGroup`, then the text input, framed as one
  * box, and a hidden input per tag for the form. Removing a tag returns focus to the input.
  */
@@ -126,13 +162,17 @@ export function TagsInputControl({
   const [slots] = useState<TagsInputSlots>(() => createSlotRegistry());
   const inputRef = useMemo(() => mergeRefs(control.ref, slots.ref('input')), [control.ref, slots]);
   const { focusInput, onInputKeyDown, onTagKeyDownCapture, onBlur } = useEntryKeys(entry, slots);
-  const tags = assignOccurrenceKeys(state.value, (tag) => tag);
+  const tags = useMemo(() => assignOccurrenceKeys(state.value, (tag) => tag), [state.value]);
   const isEditable = !state.isReadOnly && !state.isDisabled;
-  const remove = (removed: Set<Key>) => {
-    state.setValue(tags.filter((tag) => !removed.has(tag.key)).map((tag) => tag.value));
-    state.commit();
-    focusInput();
-  };
+  const { setValue, commit } = state;
+  const remove = useCallback(
+    (removed: Set<Key>) => {
+      setValue(tags.filter((tag) => !removed.has(tag.key)).map((tag) => tag.value));
+      commit();
+      slots.read('input')?.focus();
+    },
+    [tags, setValue, commit, slots],
+  );
   return (
     <>
       <Group
@@ -146,15 +186,12 @@ export function TagsInputControl({
         onKeyDownCapture={onTagKeyDownCapture}
       >
         {tags.length > 0 ? (
-          <TagGroup
-            className={hooks.slotClass('tags')}
-            aria-label={strings.selectedValues(label)}
-            items={tags}
+          <TagsInputTags
+            tags={tags}
+            label={strings.selectedValues(label)}
+            isDisabled={state.isDisabled}
             onRemove={isEditable ? remove : undefined}
-            disabledKeys={state.isDisabled ? tags.map((tag) => tag.key) : undefined}
-          >
-            {(tag) => <Tag id={tag.key}>{tag.value}</Tag>}
-          </TagGroup>
+          />
         ) : null}
         <Input
           {...control}

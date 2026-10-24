@@ -26,8 +26,10 @@ export interface CommentComposerProps extends BaseProps {
   /** The submit button's label. Defaults to the provider's `comment` string. */
   submitLabel?: string | undefined;
   /** Keeps an uncontrolled draft in the provider storage under this key, across remounts. */
+  persistKey?: string | undefined;
+  /** @deprecated Use `persistKey`. */
   storageKey?: string | undefined;
-  /** Refuses typing and submitting. */
+  /** Refuses typing, submitting and cancelling. */
   isDisabled?: boolean | undefined;
   /** Focuses the text box when the composer mounts. */
   autoFocus?: boolean | undefined;
@@ -45,9 +47,9 @@ function useDraft({
   value,
   defaultValue = '',
   onChange,
-  storageKey,
-}: Pick<CommentComposerProps, 'value' | 'defaultValue' | 'onChange' | 'storageKey'>) {
-  const [own, setOwn] = usePersistentState(storageKey, defaultValue);
+  persistKey,
+}: Pick<CommentComposerProps, 'value' | 'defaultValue' | 'onChange' | 'persistKey'>) {
+  const [own, setOwn] = usePersistentState(persistKey, defaultValue);
   const setDraft = (next: string) => {
     if (value === undefined) setOwn(next);
     onChange?.(next);
@@ -93,7 +95,7 @@ function useComposerActions({
   return {
     isPending,
     canSubmit,
-    canCancel: (text !== '' || onCancel !== undefined) && !isPending,
+    canCancel: (text !== '' || onCancel !== undefined) && !isPending && !isDisabled,
     submit,
     cancel,
   };
@@ -113,6 +115,7 @@ export function CommentComposer({
   label,
   placeholder,
   submitLabel,
+  persistKey,
   storageKey,
   isDisabled = false,
   autoFocus,
@@ -120,7 +123,12 @@ export function CommentComposer({
   ...rest
 }: CommentComposerProps) {
   const strings = useUiStrings();
-  const [draft, setDraft] = useDraft({ value, defaultValue, onChange, storageKey });
+  const [draft, setDraft] = useDraft({
+    value,
+    defaultValue,
+    onChange,
+    persistKey: persistKey ?? storageKey,
+  });
   const actions = useComposerActions({ draft, setDraft, onSubmit, onCancel, isDisabled });
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (isSubmitChord(event)) {

@@ -82,4 +82,31 @@ test.describe('Transition Menu lab', () => {
     await lab.open('transition-menu', { theme: 'dark' });
     await lab.expectAccessible();
   });
+
+  test('UIC-TRANSITION-MENU-1.3 UIC-TRANSITION-MENU-2.1 reaches an unavailable transition by keyboard', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('transition-menu');
+    const review = page.locator(cell('state=review menu=with transitions'));
+    const trigger = review.getByRole('button', { name: 'Status, with transitions: In review' });
+    await trigger.focus();
+    await page.keyboard.press('ArrowDown');
+    const menu = page.getByRole('menu', { name: 'Status, with transitions' });
+    await expect(menu.getByRole('menuitem', { name: 'Approve', exact: true })).toBeFocused();
+    await page.keyboard.press('End');
+    const unavailable = menu.getByRole('menuitem', {
+      name: 'Approve and publish Needs a second reviewer',
+    });
+    await expect(unavailable).toBeFocused();
+    await expect(unavailable).toHaveAttribute('aria-disabled', 'true');
+    await page.keyboard.press('Enter');
+    await expect(unavailable).toBeFocused();
+    await expect(page.getByRole('dialog', { name: /^Move to/ })).toHaveCount(0);
+    await expect(review).not.toHaveAttribute('data-pending');
+    await page.keyboard.press('ArrowUp');
+    await expect(menu.getByRole('menuitem', { name: 'Request changes' })).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(trigger).toBeFocused();
+  });
 });

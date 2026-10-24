@@ -8,6 +8,8 @@
 
 `StateTimeline` shall render an ordered list (`<ol>`, the `ui-state-timeline` root) with one `ui-state-timeline__entry` (`<li>`) per entry of `entries`, then one per state of `upcoming`. Each entry holds a decorative `ui-state-timeline__marker` and a `ui-state-timeline__body` whose `ui-state-timeline__header` starts with the state's `label` in a `status` [Badge](BADGE.md) (`ui-state-timeline__state`) of the entry's `tone` (`neutral` by default), which is not a live region.
 
+Numeric and text IDs, such as `1` and `'1'`, identify distinct entries; removing one preserves the other entry's rendered identity.
+
 Implementation: `src/components/state-timeline/state-timeline.tsx`
 Verification: `src/components/state-timeline/state-timeline.test.tsx`, `e2e/state-timeline.spec.ts`
 
@@ -27,7 +29,7 @@ Verification: `src/components/state-timeline/state-timeline.test.tsx`, `e2e/stat
 
 ### UIC-STATE-TIMELINE-1.4 - Current and upcoming states
 
-Each entry shall publish `data-status`: `past` for every change but the last, `current` for the last, and `upcoming` for the states of `upcoming`. The current entry carries `aria-current="step"` and shows the provider's `currentState` text in `ui-state-timeline__current`; each upcoming entry ends its header with the provider's `upcomingState` text, visually hidden.
+Each entry shall publish `data-status`: `past` for every change but the last, `current` for the last, and `upcoming` for the states of `upcoming`. The current entry carries `aria-current="step"` and shows the provider's `currentState` text in `ui-state-timeline__current` after a space; each upcoming entry ends its header with a space and the provider's `upcomingState` text, visually hidden.
 
 Implementation: `src/components/state-timeline/state-timeline.tsx`, `src/core/content-strings.ts`
 Verification: `src/components/state-timeline/state-timeline.test.tsx`, `e2e/state-timeline.spec.ts`

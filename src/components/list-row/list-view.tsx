@@ -21,7 +21,8 @@ import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { toCollectionSelectionProps } from '../../utils/collection-selection.js';
-import { encodeCollectionChildren } from '../../utils/encode-collection-children.js';
+import { keyCollectionChildren } from '../../utils/key-collection-children.js';
+import { toCollectionItemKey } from '../../utils/to-collection-key.js';
 import { useReorderDragAndDrop } from '../../utils/use-reorder-drag-and-drop.js';
 import { Checkbox } from '../checkbox/checkbox.js';
 import { DragHandle } from '../drag-handle/drag-handle.js';
@@ -145,7 +146,7 @@ function ListViewRows<T extends object>(
   return (
     <>
       <Collection items={items} dependencies={dependencies}>
-        {encodeCollectionChildren(children, [ListViewItem, ListViewSection])}
+        {keyCollectionChildren(children)}
       </Collection>
       {onLoadMore ? (
         <GridListLoadMoreItem
@@ -223,6 +224,7 @@ export function ListView<T extends object>({
  * selects with toggles, the row text (`ListRowContent`) and trailing controls.
  */
 export function ListViewItem({
+  id,
   title,
   meta,
   icon,
@@ -236,6 +238,7 @@ export function ListViewItem({
   return (
     <GridListItem
       {...rest}
+      id={toCollectionItemKey(id)}
       textValue={textValue ?? (typeof title === 'string' ? title : undefined)}
       {...itemHooks.root({ className, props: rest, data: { tone } })}
     >
@@ -255,6 +258,7 @@ export function ListViewItem({
 
 /** A titled run of rows in a `ListView` (React Aria `GridListSection` with a header row). */
 export function ListViewSection<T extends object>({
+  id,
   title,
   items,
   dependencies,
@@ -263,10 +267,14 @@ export function ListViewSection<T extends object>({
   ...rest
 }: ListViewSectionProps<T>) {
   return (
-    <GridListSection {...rest} {...sectionHooks.root({ className, props: rest })}>
+    <GridListSection
+      {...rest}
+      id={toCollectionItemKey(id)}
+      {...sectionHooks.root({ className, props: rest })}
+    >
       <GridListHeader className={sectionHooks.slotClass('header')}>{title}</GridListHeader>
       <Collection items={items} dependencies={dependencies}>
-        {encodeCollectionChildren(children, [ListViewItem, ListViewSection])}
+        {keyCollectionChildren(children)}
       </Collection>
     </GridListSection>
   );

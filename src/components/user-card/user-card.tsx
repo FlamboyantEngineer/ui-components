@@ -145,8 +145,9 @@ function CardActions({ actions, onAction }: Pick<UserCardProps, 'actions' | 'onA
 }
 
 /**
- * The card's dialog. React Aria's Dialog takes focus and contains it within its overlay, which a
- * card shown on hover must not do, so there it is a plain dialog element.
+ * The card's dialog. React Aria's Dialog takes focus when it mounts, which suits a card that opens in
+ * an overlay; a card shown on hover or in place must not move focus, so there it is a plain dialog
+ * element.
  */
 function UserCardRoot({
   isLoading,
@@ -154,7 +155,8 @@ function UserCardRoot({
   ...props
 }: BaseProps & { 'aria-label': string; isLoading: boolean; children: ReactNode }) {
   const isPreview = useContext(UserCardPreviewContext);
-  if (isPreview) {
+  const overlay = useContext(OverlayTriggerStateContext);
+  if (isPreview || !overlay) {
     return (
       <section {...props} role="dialog" aria-busy={isLoading || undefined}>
         {children}

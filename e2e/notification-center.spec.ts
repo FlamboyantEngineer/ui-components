@@ -70,8 +70,11 @@ test.describe('Notification Center lab', () => {
     await expect(row('Jon Berg replied')).not.toHaveAttribute('data-unread');
     await row('Lena Ortiz invited you').getByRole('button', { name: 'Accept' }).click();
     await expect(row('Lena Ortiz invited you')).toHaveCount(0);
+    // A row that leaves with focus hands it to a neighbour rather than to the page.
+    await expect(inbox.locator('.ui-notification-list__item :focus')).toHaveCount(1);
     await row('Weekly digest').getByRole('button', { name: 'Dismiss' }).click();
     await expect(row('Weekly digest')).toHaveCount(0);
+    await expect(inbox.locator('.ui-notification-list__dismiss:focus')).toHaveCount(1);
     await inbox.getByRole('radio', { name: /^Unread/ }).click();
     await expect(inbox).toHaveAttribute('data-filter', 'unread');
     await expect(row('Import of Orchard.csv')).toHaveCount(0);

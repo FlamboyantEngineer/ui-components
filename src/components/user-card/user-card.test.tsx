@@ -124,6 +124,30 @@ describe('UserCard', () => {
     expect(screen.getByRole('dialog', { name: 'Profile of Priya Nair' })).toBeInTheDocument();
   });
 
+  it('UIC-USER-CARD-1.5 takes no focus when rendered in place', async () => {
+    const user = userEvent.setup();
+    function Reveal() {
+      const [isShown, setShown] = useState(false);
+      return (
+        <>
+          <button type="button" onClick={() => setShown(true)}>
+            Show details
+          </button>
+          {isShown ? <UserCard name="Maria Santos" actions={actions} /> : null}
+        </>
+      );
+    }
+    render(<Reveal />);
+    const button = screen.getByRole('button', { name: 'Show details' });
+    await user.click(button);
+    const dialog = await screen.findByRole('dialog', { name: 'Maria Santos' });
+    await act(() => new Promise((resolve) => requestAnimationFrame(resolve)));
+    expect(button).toHaveFocus();
+    expect(dialog).not.toHaveAttribute('tabindex');
+    await user.tab();
+    expect(within(dialog).getByRole('button', { name: 'Message' })).toHaveFocus();
+  });
+
   it('UIC-USER-CARD-1.7 shows a skeleton and is busy while the profile loads', () => {
     const { container, rerender } = render(
       <UserCard

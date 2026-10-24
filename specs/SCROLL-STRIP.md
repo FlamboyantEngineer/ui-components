@@ -13,14 +13,14 @@ Verification: `src/utils/use-scroll-strip-overflow.test.ts`, `e2e/scroll-region.
 
 ### UIC-SCROLL-STRIP-1.2 - Measurement
 
-Measurements shall coalesce to one geometry read per animation frame and never read layout synchronously. `syncOverflow` schedules one, for the strip's scroll handler and content changes the host knows of; resizes of the strip or its direct children, children mounting or unmounting and an orientation change resync on their own. Unmounting cancels the pending frame and disconnects the observers.
+Measurements shall coalesce to one geometry read per animation frame and never read layout synchronously. `syncOverflow` schedules one, for the strip's scroll handler and content changes the host knows of; resizes of the strip or its direct children, children mounting or unmounting and an orientation change resync on their own, also for a strip element that mounts after the first render or replaces the first one. Unmounting cancels the pending frame and disconnects the observers.
 
 Implementation: `src/utils/use-scroll-strip-overflow.ts`
 Verification: `src/utils/use-scroll-strip-overflow.test.ts`
 
 ### UIC-SCROLL-STRIP-1.3 - Wheel scrolling
 
-A horizontal strip shall turn wheel input on it into horizontal scrolling along the dominant wheel axis, in pixels, lines (16 pixels) or pages (the visible width), clamped to the scroll range, and call `onWheelScroll` after scrolling. It leaves the wheel alone with Ctrl or Meta held, inside a menu, listbox or dialog open in the strip, at the end it is scrolling toward, and for a vertical strip.
+A horizontal strip shall turn wheel input on it into horizontal scrolling along the dominant wheel axis, in pixels, lines (16 pixels) or pages (the visible width), clamped to the scroll range, and call `onWheelScroll` after scrolling. It leaves the wheel alone with Ctrl or Meta held, inside a menu, listbox or dialog open in the strip, at the end it is scrolling toward, and for a vertical strip. A strip element that mounts after the first render takes wheel input too.
 
 Implementation: `src/utils/use-scroll-strip-overflow.ts`
 Verification: `src/utils/use-scroll-strip-overflow.test.ts`, `e2e/scroll-region.spec.ts`

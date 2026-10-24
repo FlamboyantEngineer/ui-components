@@ -74,6 +74,9 @@ export function useTimelineDrag({
     onMove: move,
     onEnd: (event, active, isCancelled) => {
       if (!isCancelled) move(event, active);
+      // No click follows a cancelled gesture or lost capture to consume the flag, and a stale one
+      // would swallow the next Enter or Space on the item.
+      if (event.type !== 'pointerup') moved.current = false;
       setDragging(false);
       if (!isCancelled && active.days !== 0) {
         onCommit(resolveDragChange(active.origin, active.edge, active.days));

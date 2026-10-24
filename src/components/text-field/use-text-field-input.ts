@@ -92,10 +92,10 @@ export function useTextFieldInput(options: TextFieldInputOptions): TextFieldInpu
       ...hooks.slot('input'),
       placeholder,
       onFocus: () => setIsFocused(true),
+      // The field commits once focus leaves it, so Tab reaches its restore button.
       onBlur: () => {
         setIsFocused(false);
         completion?.model.close();
-        state.commit();
       },
       onKeyDown: createKeyHandler(options, completion),
       onCompositionStart: transform.onCompositionStart,

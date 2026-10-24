@@ -49,7 +49,6 @@ function SignatureInput({ control, state }: Pick<SignatureControlsProps, 'contro
         const text = event.target.value;
         state.setValue(text.trim() === '' ? null : { kind: 'typed', text });
       }}
-      onBlur={() => state.commit()}
       onKeyDown={(event) => {
         if (event.key === 'Enter') state.commit();
       }}
@@ -127,7 +126,12 @@ export function SignaturePad({ allowsTyping = true, ...props }: SignaturePadProp
     }
   };
   return (
-    <Field {...field} {...hooks.root({ className: field.className, data: { mode } })} state={state}>
+    <Field
+      {...field}
+      {...hooks.root({ className: field.className, data: { mode } })}
+      state={state}
+      commitOnBlur
+    >
       {(control) => (
         <SignatureControls
           control={control}

@@ -520,6 +520,29 @@ describe('FolderManager', () => {
     expect(screen.getByRole('button', { name: 'Rename' })).toBeEnabled();
   });
 
+  it('UIC-FOLDER-MANAGER-6.1 reports a multiple selection as a set through onSelectionChange', async () => {
+    const user = userEvent.setup();
+    const onSelectionChange = vi.fn<(keys: Set<Key>) => void>();
+    const onSelectedKeysChange = vi.fn();
+    render(
+      <FolderManager
+        aria-label="Folders"
+        folders={sample}
+        selectionMode="multiple"
+        defaultSelectedKeys={['citrus']}
+        onSelectionChange={onSelectionChange}
+        onSelectedKeysChange={onSelectedKeysChange}
+      />,
+    );
+    await user.keyboard('{Control>}');
+    await user.click(row('Vegetables'));
+    await user.keyboard('{/Control}');
+    expect(onSelectionChange).toHaveBeenCalledTimes(1);
+    expect(onSelectionChange.mock.lastCall![0]).toBeInstanceOf(Set);
+    expect([...onSelectionChange.mock.lastCall![0]]).toEqual(['citrus', 'vegetables']);
+    expect(onSelectedKeysChange).toHaveBeenLastCalledWith(['citrus', 'vegetables']);
+  });
+
   it('UIC-FOLDER-MANAGER-6.2 deletes every selected folder, one after another', async () => {
     const user = userEvent.setup();
     const deleted: Key[] = [];
@@ -574,6 +597,48 @@ describe('FolderManager', () => {
     expect(onMove).not.toHaveBeenCalled();
   });
 
+  it('UIC-FOLDER-MANAGER-6.3 lists the places only when the menu opens', async () => {
+    const user = userEvent.setup();
+    const onMove = vi.fn();
+    let nameReads = 0;
+    const counted = (id: Key, name: string, children?: Folder[]): Folder => ({
+      id,
+      get name() {
+        nameReads += 1;
+        return name;
+      },
+      ...(children ? { children } : {}),
+    });
+    const folders = [
+      counted('fruit', 'Fruit', [counted('citrus', 'Citrus'), counted(1, 'Berries')]),
+      counted('1', 'Vegetables'),
+    ];
+    render(
+      <FolderManager
+        aria-label="Folders"
+        folders={folders}
+        selectionMode="multiple"
+        defaultSelectedKeys={['citrus']}
+        onMove={onMove}
+      />,
+    );
+    nameReads = 0;
+    await user.click(row('Berries'));
+    await user.click(row('Citrus'));
+    expect(nameReads).toBe(0);
+    fireEvent.contextMenu(row('Citrus'));
+    const menu = await screen.findByRole('menu');
+    await user.click(within(menu).getByRole('menuitem', { name: 'Move to' }));
+    const submenu = (await screen.findAllByRole('menu')).at(-1) as HTMLElement;
+    expect(nameReads).toBeGreaterThan(0);
+    await user.click(within(submenu).getByRole('menuitem', { name: 'Vegetables' }));
+    expect(onMove).toHaveBeenCalledExactlyOnceWith({
+      key: 'citrus',
+      targetKey: '1',
+      position: 'inside',
+    });
+  });
+
   it('UIC-FOLDER-MANAGER-6.3 checks each destination depth against the selected subtree', async () => {
     const user = userEvent.setup();
     const onMove = vi.fn();
@@ -624,6 +689,22 @@ describe('FolderManager', () => {
     ]);
     await user.clear(search);
     expect(rowNames()).toEqual(['Fruit', 'Citrus', 'Berries', 'Vegetables']);
+  });
+
+  it('UIC-FOLDER-MANAGER-7.1 expands a collapsed root row to show the matches', async () => {
+    const user = userEvent.setup();
+    render(<Manager filterable rootLabel="All folders" />);
+    await user.click(row('All folders'));
+    await user.keyboard('{ArrowLeft}');
+    expect(rowNames()).toEqual(['All folders']);
+    const search = screen.getByRole('searchbox', { name: 'Filter folders' });
+    await user.type(search, 'cit');
+    expect(rowNames()).toEqual(['All folders', 'Fruit', 'Citrus']);
+    await user.clear(search);
+    await user.type(search, 'plum');
+    expect(screen.getAllByRole('row').map((element) => element.textContent)).toContain(
+      'No results',
+    );
   });
 
   it('UIC-FOLDER-MANAGER-7.1 clears the filter to create a folder', async () => {

@@ -6,21 +6,21 @@
 
 ### UIC-FACET-LIST-1.1 - Heading and values
 
-`FacetList` shall render its `label` as a heading (`ui-facet-list__label`) that names a group of checkboxes (`ui-facet-list__options`, React Aria `CheckboxGroup`), one per option in order (`ui-facet-list__option`), each showing its label (`ui-facet-list__option-label`) and, when the option has a `count`, the count formatted for the locale (`ui-facet-list__count`). A disabled option cannot be ticked.
+`FacetList` shall render its `label` as a heading (`ui-facet-list__label`, role `heading` at the automatic level of [Section Header](SECTION-HEADER.md#uic-section-header-21---automatic-heading-levels)) that names a group of checkboxes (`ui-facet-list__options`, React Aria `CheckboxGroup`), one per option in order (`ui-facet-list__option`), each showing its label (`ui-facet-list__option-label`) and, when the option has a `count`, the count formatted for the locale (`ui-facet-list__count`). A disabled option cannot be ticked.
 
 Implementation: `src/components/facet-list/facet-list.tsx`
 Verification: `src/components/facet-list/facet-list.test.tsx`, `e2e/facet-list.spec.ts`
 
 ### UIC-FACET-LIST-1.2 - Ticked values
 
-`value` with `onChange` shall control the ticked values and `defaultValue` start an uncontrolled list; `onChange` receives the ticked values in option order after each tick.
+`value` with `onChange` shall control the ticked values and `defaultValue` start an uncontrolled list; `onChange` receives the ticked values in option order after each tick, followed by any ticked values no option shows, in their previous order, so a value whose option is gone for now stays ticked.
 
 Implementation: `src/components/facet-list/facet-list.tsx`
 Verification: `src/components/facet-list/facet-list.test.tsx`, `e2e/facet-list.spec.ts`
 
 ### UIC-FACET-LIST-1.3 - Search
 
-A `filterable` list (by default, one with more than 10 options) shall start with a [Search Field](SEARCH-FIELD.md) (`ui-facet-list__search`) named by the provider string `filterLabel` from the label, which narrows the options to those whose label contains the query, ignoring case, shows every match whatever the limit, and shows the provider string `noResults` (`ui-facet-list__empty`) when none matches. Ticked values hidden by the search stay ticked.
+A `filterable` list (by default, one with more than 10 options) shall start with a [Search Field](SEARCH-FIELD.md) (`ui-facet-list__search`) named by the provider string `filterLabel` from the label, which narrows the options to those whose label contains the query, ignoring case, shows every match whatever the limit, and shows the provider string `noResults` (`ui-facet-list__empty`) when none matches. Ticked values hidden by the search stay ticked. The query narrows the options only while the field shows: when the list stops being filterable (its options shrink to 10 or fewer by default), every option shows again and folds as usual.
 
 Implementation: `src/components/facet-list/facet-list.tsx`, `src/components/facet-list/facet-options.ts`
 Verification: `src/components/facet-list/facet-list.test.tsx`, `src/components/facet-list/facet-options.test.ts`, `e2e/facet-list.spec.ts`

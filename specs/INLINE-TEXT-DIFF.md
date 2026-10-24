@@ -13,7 +13,7 @@ Verification: `src/components/inline-text-diff/inline-text-diff.test.tsx`
 
 ### UIC-INLINE-TEXT-DIFF-1.2 - Bounded excerpt
 
-`createInlineTextDiffExcerpt(before, after)` shall return `text`, `removed`, `added` and `text` segments in that order, leaving out empty ones, so a first value is one added run and a cleared value one removed run. Context keeps at most 24 characters on each side (the characters nearest the change) and each run at most 100, a cut marked with `…`; `context` and `run` options change the limits.
+`createInlineTextDiffExcerpt(before, after)` shall return `text`, `removed`, `added` and `text` segments in that order, leaving out empty ones, so a first value is one added run and a cleared value one removed run. Context keeps at most 24 characters on each side (the characters nearest the change) and each run at most 100, a cut marked with `…`; `context` and `run` options change the limits. A limit of 0 keeps none of that text and adds no `…`, so `context: 0` shows the change alone.
 
 Implementation: `src/components/inline-text-diff/text-diff.ts`
 Verification: `src/components/inline-text-diff/inline-text-diff.test.tsx`, `e2e/inline-text-diff.spec.ts`

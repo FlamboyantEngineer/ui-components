@@ -57,4 +57,16 @@ describe('FieldPreviousValue', () => {
     await user.click(button);
     expect(onRestore).not.toHaveBeenCalled();
   });
+
+  it('UIC-FIELD-9.2 names the restore button from the text of content that is not plain text', async () => {
+    const user = userEvent.setup();
+    const onRestore = vi.fn();
+    render(
+      <FieldPreviousValue onRestore={onRestore}>
+        <span>Old</span>
+      </FieldPreviousValue>,
+    );
+    await user.click(screen.getByRole('button', { name: 'Restore Old' }));
+    expect(onRestore).toHaveBeenCalledTimes(1);
+  });
 });

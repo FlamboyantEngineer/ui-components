@@ -10,7 +10,7 @@ import {
   type PdfZoom,
 } from './pdf-zoom.js';
 import type { PdfPagesController } from './use-pdf-pages.js';
-import { useLatest } from './use-latest.js';
+import { useLatest } from '../../utils/use-latest.js';
 
 export interface UsePdfZoomOptions {
   defaultZoom: PdfZoom;

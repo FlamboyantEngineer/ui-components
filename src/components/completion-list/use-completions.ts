@@ -138,17 +138,42 @@ function hideCompletionState(state: CompletionState): CompletionState {
   return state.isOpen ? { ...state, isOpen: false } : state;
 }
 
+/**
+ * The open list while a source's answer to an edit is pending: it stays open, narrowed to the
+ * options that still match the typed text, with its range following the caret, so it does not
+ * blink shut on every keystroke. A caret move, or an edit before the list's start, hides it.
+ */
+function toPendingState(state: CompletionState, lookup: Lookup): CompletionState {
+  if (!state.isOpen || lookup.reason === 'move' || lookup.caret < state.start) {
+    return hideCompletionState(state);
+  }
+  const options = matchCompletions(state.options, lookup.value.slice(state.start, lookup.caret));
+  const active = options.indexOf(state.options[state.activeIndex] as Completion);
+  return {
+    ...state,
+    end: lookup.caret + Math.max(state.end - state.caret, 0),
+    caret: lookup.caret,
+    options,
+    activeIndex: Math.max(active, 0),
+    isOpen: options.length > 0,
+    revision: state.revision + 1,
+  };
+}
+
 function useCompletionState(options: CompletionsOptions) {
   const [state, setState] = useState<CompletionState>(closed);
   const request = useRef(0);
   const latest = useRef({ state, options });
+  // Every commit: callers pass a fresh options object each render.
   useLayoutEffect(() => {
-    const wasLocked = latest.current.options.isLocked;
     latest.current = { state, options };
-    if (!options.isLocked || wasLocked) return;
+  });
+  const { isLocked } = options;
+  useLayoutEffect(() => {
+    if (!isLocked) return;
     request.current += 1;
     setState(hideCompletionState);
-  }, [state, options]);
+  }, [isLocked]);
   useLayoutEffect(
     () => () => {
       request.current += 1;
@@ -197,7 +222,7 @@ function trackCompletions(session: CompletionSession, reason: CompletionReason) 
   };
   const answer = lookUp(current.completions, lookup);
   if (!isPromise(answer)) return show(answer);
-  session.setState(hideCompletionState);
+  session.setState((state) => toPendingState(state, lookup));
   answer.then(show, () => undefined);
 }
 

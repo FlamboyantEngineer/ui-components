@@ -21,7 +21,7 @@ export interface FormProblemSource {
   getProblems(): readonly FormProblem[];
 }
 
-/** The source the form updates: it reads the fields again on each notification. */
+/** The source the form updates: it reads the fields again after each notification, when asked. */
 export interface FormProblemStore extends FormProblemSource {
   notify(): void;
 }
@@ -36,31 +36,58 @@ export function inDocumentOrder(fields: Iterable<FieldRegistration>): FieldRegis
   });
 }
 
-/** A store of the problems the registered fields show. */
+function isSameProblem(left: FormProblem, right: FormProblem | undefined): boolean {
+  const { issue } = left;
+  return (
+    left.key === right?.key &&
+    left.label === right.label &&
+    issue.severity === right.issue.severity &&
+    issue.message === right.issue.message &&
+    issue.validity === right.issue.validity
+  );
+}
+
+/**
+ * A store of the problems the registered fields show. A notification only marks the list stale:
+ * the fields are sorted and read when the list is next asked for, never while no one asks, and an
+ * unchanged list stays the same object.
+ */
 export function createFormProblemStore(fields: ReadonlySet<FieldRegistration>): FormProblemStore {
   const listeners = new Set<() => void>();
   const numbers = new WeakMap<FieldRegistration, number>();
   let next = 0;
   let problems: readonly FormProblem[] = [];
+  let isStale = false;
   const numberOf = (field: FieldRegistration) => {
     if (!numbers.has(field)) numbers.set(field, (next += 1));
     return numbers.get(field) as number;
   };
+  const read = () =>
+    inDocumentOrder(fields).flatMap((field) =>
+      field.getIssues().map((issue, index) => ({
+        key: `${numberOf(field)}-${index}`,
+        label: field.getLabel(),
+        issue,
+        focus: () => field.focus(),
+      })),
+    );
   return {
     subscribe(listener) {
       listeners.add(listener);
       return () => void listeners.delete(listener);
     },
-    getProblems: () => problems,
+    getProblems() {
+      if (!isStale) return problems;
+      isStale = false;
+      const fresh = read();
+      const isSame =
+        fresh.length === problems.length &&
+        fresh.every((problem, index) => isSameProblem(problem, problems[index]));
+      if (!isSame) problems = fresh;
+      return problems;
+    },
     notify() {
-      problems = inDocumentOrder(fields).flatMap((field) =>
-        field.getIssues().map((issue, index) => ({
-          key: `${numberOf(field)}-${index}`,
-          label: field.getLabel(),
-          issue,
-          focus: () => field.focus(),
-        })),
-      );
+      isStale = true;
       for (const listener of listeners) listener();
     },
   };

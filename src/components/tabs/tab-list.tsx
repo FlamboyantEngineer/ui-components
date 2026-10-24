@@ -22,11 +22,10 @@ import { mergeProps, mergeRefs } from '../../utils/merge-props.js';
 import type { ElementRender } from '../../utils/render-element.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import { useScrollStripOverflow } from '../../utils/use-scroll-strip-overflow.js';
-import { encodeCollectionChildren } from '../../utils/encode-collection-children.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
+import { keyCollectionChildren } from '../../utils/key-collection-children.js';
 import { VisibleCollection } from '../overflow-list/overflow-list.js';
 import { TabActionsContext, TabsSharedContext, type TabActions } from './tab-actions.js';
-import { Tab } from './tab.js';
 import { TabBar, useTabOverflow } from './tab-bar.js';
 import { tabsHooks as hooks } from './tab-hooks.js';
 import { useCenterSelectedTab, useListOverflow } from './tab-list-overflow.js';
@@ -269,7 +268,7 @@ export function TabList({
   if (!state) {
     return (
       <TabActionsContext.Provider value={actions}>
-        <AriaTabList {...rest}>{encodeCollectionChildren(rest.children, [Tab])}</AriaTabList>
+        <AriaTabList {...rest}>{keyCollectionChildren(rest.children)}</AriaTabList>
       </TabActionsContext.Provider>
     );
   }

@@ -9,6 +9,7 @@ import {
 import { MetaLine } from '../../src/components/meta-line/meta-line.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import {
+  LinksCase,
   LongListCase,
   ReorderCase,
   SectionsCase,
@@ -210,6 +211,14 @@ mountLab(
           </div>
         )}
       />
+    </LabSection>
+    <LabSection
+      title="List view links"
+      description="Link rows rendered through a host component: a press or Enter follows the row's address. Archive is disabled through the list's disabled keys."
+    >
+      <div style={{ width: 300 }}>
+        <LinksCase />
+      </div>
     </LabSection>
     <LabSection
       title="List view sections"

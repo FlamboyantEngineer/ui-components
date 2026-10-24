@@ -1,4 +1,4 @@
-import { Fragment, type ReactNode } from 'react';
+import { Fragment, useSyncExternalStore, type ReactNode } from 'react';
 import { Keyboard, VisuallyHidden } from '../../primitives/index.js';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
@@ -44,6 +44,15 @@ export interface KeyHintsProps extends BaseProps {
 const hooks = createHooks('shortcut', ['keys', 'chord', 'key', 'text']);
 const hintHooks = createHooks('key-hints', ['hint', 'action']);
 
+const subscribeToNothing = () => () => {};
+/** What detection reports without a browser, so the server and hydration render the same notation. */
+const getServerPlatform = (): ShortcutPlatform => 'linux';
+
+/** The detected platform: the server's notation while hydrating, the browser's once hydrated. */
+export function useDetectedPlatform(): ShortcutPlatform {
+  return useSyncExternalStore(subscribeToNothing, getShortcutPlatform, getServerPlatform);
+}
+
 /** One chord's keycaps with the platform separator between them. */
 function Keycaps({ keys, separator }: { keys: readonly string[]; separator: string }) {
   return keys.map((label, index) => (
@@ -60,7 +69,8 @@ function Keycaps({ keys, separator }: { keys: readonly string[]; separator: stri
  */
 export function Shortcut({ chord, platform, decorative, className, ...rest }: ShortcutProps) {
   const strings = useUiStrings();
-  const resolved = platform ?? getShortcutPlatform();
+  const detected = useDetectedPlatform();
+  const resolved = platform ?? detected;
   const steps = formatShortcutSteps(chord, resolved);
   const [first] = steps;
   if (!first) return null;
@@ -113,4 +123,4 @@ export function KeyHints({ hints, platform, className, ...rest }: KeyHintsProps)
 }
 
 export { formatAriaKeyShortcuts } from './shortcut-format.js';
-export type { ShortcutChord } from './shortcut-format.js';
+export type { ShortcutChord, ShortcutPlatform } from './shortcut-format.js';

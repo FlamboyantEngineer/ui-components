@@ -85,6 +85,20 @@ describe('TreeSelectField', () => {
     ]);
   });
 
+  it('UIC-TREE-SELECT-FIELD-2.3 names the chips from the field label when no label is drawn', () => {
+    render(
+      <TreeSelectField
+        label="Place"
+        labelLayout="control-only"
+        selectionMode="multiple"
+        items={places}
+        getTextValue={getTextValue}
+        defaultValue={['oslo']}
+      />,
+    );
+    expect(screen.getByRole('grid', { name: 'Place selected values' })).toBeInTheDocument();
+  });
+
   it('UIC-TREE-SELECT-FIELD-1.1 UIC-TREE-SELECT-FIELD-2.7 renders a field around a framed trigger', () => {
     const { container } = render(
       <TreeSelectField
@@ -398,6 +412,24 @@ describe('TreeSelectField', () => {
     unmountReadOnly();
     render(<TreeSelectField label="Place" items={places} getTextValue={getTextValue} isDisabled />);
     expect(trigger(/^Place /)).toBeDisabled();
+  });
+
+  it('UIC-TREE-SELECT-FIELD-2.5 reports no opening while read-only', async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    render(
+      <TreeSelectField
+        label="Place"
+        items={places}
+        getTextValue={getTextValue}
+        isReadOnly
+        onOpenChange={onOpenChange}
+      />,
+    );
+    await user.click(trigger(/^Place /));
+    await user.keyboard('{Enter}');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(onOpenChange).not.toHaveBeenCalled();
   });
 
   it('UIC-TREE-SELECT-FIELD-2.6 submits hidden inputs under its name', () => {

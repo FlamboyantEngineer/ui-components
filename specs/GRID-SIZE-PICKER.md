@@ -27,7 +27,7 @@ Verification: `src/components/grid-size-picker/grid-size.test.ts`, `src/componen
 
 ### UIC-GRID-SIZE-PICKER-1.4 - Choosing
 
-A click on a cell shall call `onSelect` with its size as `{ rows, columns }`; Enter or Space in the grid calls it with the previewed size.
+A click on a cell shall call `onSelect` with its size as `{ rows, columns }`; Enter or Space calls it with the size of the focused cell, which is the cell a screen reader announced even when the pointer previews another one.
 
 Implementation: `src/components/grid-size-picker/grid-size-picker.tsx`
 Verification: `src/components/grid-size-picker/grid-size-picker.test.tsx`, `e2e/grid-size-picker.spec.ts`

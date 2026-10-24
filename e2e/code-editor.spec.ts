@@ -217,8 +217,8 @@ test.describe('Code Editor lab', () => {
     );
     await page.keyboard.type(' and b');
     await expect(list.getByRole('option')).toHaveText([
-      'basketThe chosen basket',
-      'fruit.bruisedWhether any fruit is bruised',
+      'basket The chosen basket',
+      'fruit.bruised Whether any fruit is bruised',
     ]);
     await page.keyboard.press('Escape');
     await expect(list).toBeHidden();
@@ -277,7 +277,7 @@ test.describe('Code Editor lab', () => {
     await expect(documentation).toHaveText(/How many fruit are in the basket/);
     await expect(list.getByRole('option').first()).toHaveAccessibleDescription(/How many fruit/);
     await page.keyboard.type('we');
-    await expect(list.getByRole('option')).toHaveText(['weighweigh(unit)']);
+    await expect(list.getByRole('option')).toHaveText(['weigh weigh(unit)']);
     await page.keyboard.press('Enter');
     await page.keyboard.type('kg');
     await expect(input).toHaveValue(/\nlet n = fruit\.weigh\(kg\)$/);
@@ -369,6 +369,36 @@ test.describe('Code Editor lab', () => {
     await expect(tip).toBeHidden();
     await page.keyboard.type('x');
     await expect(problems.locator('.ui-code-editor__mark')).toHaveCount(0);
+  });
+
+  test('UIC-CODE-EDITOR-1.1 submits the source with its form under its name', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('code-editor');
+    const form = page.locator('[data-lab-demo="form"]');
+    const source = form.getByRole('textbox', { name: 'Query source' });
+    await source.focus();
+    await page.keyboard.press('End');
+    await page.keyboard.type(' // ok');
+    await form.getByRole('button', { name: 'Submit' }).click();
+    await expect(form.locator('[data-lab-output="form"]')).toHaveText(
+      'Submitted: let basket = pick(fruit.ripe) // ok',
+    );
+  });
+
+  test('UIC-CODE-EDITOR-6.3 leaves the editor backwards with Shift+Tab right after Escape', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('code-editor');
+    const source = editor(page, 'editing').getByRole('textbox');
+    await source.focus();
+    const before = await source.inputValue();
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('Shift+Tab');
+    await expect(source).not.toBeFocused();
+    await expect(source).toHaveValue(before);
   });
 
   test('UIC-CODE-EDITOR-1.1 passes axe in the dark theme', async ({ page, lab }) => {

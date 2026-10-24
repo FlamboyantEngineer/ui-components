@@ -8,6 +8,7 @@ import {
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
+import { useStoreValue } from '../../utils/value-store.js';
 import { getEmojiLabel } from './emoji-catalog.js';
 import { useEmojiPickerContext } from './emoji-picker-context.js';
 import { EmojiContent } from './emoji-grid.js';
@@ -62,7 +63,8 @@ export function EmojiPickerSearch({ className, ...rest }: EmojiPickerSearchProps
 
 /** The decorative preview of the emoji last hovered or focused, with its label. */
 export function EmojiPickerPreview({ className, ...rest }: EmojiPickerPreviewProps) {
-  const { active, grid } = useEmojiPickerContext();
+  const { activeEmoji, grid } = useEmojiPickerContext();
+  const active = useStoreValue(activeEmoji);
   return (
     <div {...rest} {...hooks.slot('preview', undefined, className)} aria-hidden="true">
       {active ? (

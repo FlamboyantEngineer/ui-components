@@ -31,11 +31,37 @@ describe('describeRelativeTime', () => {
       relation: 'future',
       nextChange: 30 * minute + 1,
     });
-    // 23.7 hours ago switches to days before its rounded hours change.
-    const late = new Date(now.getTime() - 23.7 * hour).toISOString();
+    // 23.4 hours ago reads in hours until its rounded hours would reach 24.
+    const late = new Date(now.getTime() - 23.4 * hour).toISOString();
     expect(describeRelativeTime(late, options)).toMatchObject({
-      relative: '24 hours ago',
-      nextChange: 0.3 * hour + 1,
+      relative: '23 hours ago',
+      nextChange: 0.1 * hour + 1,
+    });
+  });
+
+  it('UIC-RELATIVE-TIME-1.2 moves to the next unit when the rounded count reaches it', () => {
+    const offset = (milliseconds: number) => new Date(now.getTime() + milliseconds).toISOString();
+    expect(describeRelativeTime(offset(-59_700), options)?.relative).toBe('1 minute ago');
+    expect(describeRelativeTime(offset(-(59 * minute + 40_000)), options)?.relative).toBe(
+      '1 hour ago',
+    );
+    expect(describeRelativeTime(offset(-23.7 * hour), options)).toMatchObject({
+      relative: 'yesterday',
+      nextChange: 13.5 * hour,
+    });
+    // A future instant says when it comes near enough to read in the smaller unit.
+    expect(describeRelativeTime(offset(90_000), options)).toMatchObject({
+      relative: 'in 2 minutes',
+      nextChange: 1,
+    });
+    expect(describeRelativeTime(offset(80_000), options)).toMatchObject({
+      relative: 'in 1 minute',
+      nextChange: 20_500 + 1,
+    });
+    expect(describeRelativeTime(offset(59_000), options)?.relative).toBe('in 59 seconds');
+    expect(describeRelativeTime(offset(23.7 * hour), options)).toMatchObject({
+      relative: 'tomorrow',
+      nextChange: 0.2 * hour + 1,
     });
   });
 

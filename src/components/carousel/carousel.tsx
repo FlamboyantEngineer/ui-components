@@ -14,6 +14,7 @@ import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { isEditableTarget } from '../../utils/is-editable-target.js';
 import {
   CarouselControls,
   CarouselPaginationButtons,
@@ -48,12 +49,13 @@ const hooks = createHooks('carousel', ['viewport', 'slide']);
 
 const defaultInterval = 5000;
 
-/** Keys that move between slides, unless pressed with a modifier or inside a control that uses them. */
+/**
+ * Keys that move between slides, unless pressed with a modifier, inside a control that uses them, or
+ * already handled by a widget inside a slide.
+ */
 function resolveSlideKey(event: KeyboardEvent, direction: 'ltr' | 'rtl'): -1 | 1 | 0 {
-  if (event.ctrlKey || event.metaKey || event.altKey) return 0;
-  const target = event.target as Element;
-  if (target.closest('input, textarea, select, [contenteditable="true"], [role="slider"]'))
-    return 0;
+  if (event.defaultPrevented || event.ctrlKey || event.metaKey || event.altKey) return 0;
+  if (isEditableTarget(event.target, '[role="slider"]')) return 0;
   const forward = direction === 'rtl' ? 'ArrowLeft' : 'ArrowRight';
   const backward = direction === 'rtl' ? 'ArrowRight' : 'ArrowLeft';
   return event.key === forward ? 1 : event.key === backward ? -1 : 0;

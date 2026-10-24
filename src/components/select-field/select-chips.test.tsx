@@ -1,7 +1,9 @@
 import { act, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
+import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import type { Key } from '../../core/props.js';
 import { SelectField, type SelectFieldOption } from './select-field.js';
 
 const fruit: SelectFieldOption[] = [
@@ -40,6 +42,19 @@ describe('SelectField chips', () => {
     expectHooksMatchSpec(container, 'SELECT-FIELD', {
       slots: ['chips', 'chip-list', 'chip', 'chip-icon', 'chip-label', 'chip-remove'],
     });
+  });
+
+  it('UIC-SELECT-FIELD-4.1 names the chips from the field label when no label is drawn', () => {
+    render(
+      <SelectField
+        label="Fruit"
+        labelLayout="control-only"
+        selectionMode="multiple"
+        options={fruit}
+        defaultValue={['pear']}
+      />,
+    );
+    expect(chipLabels()).toEqual(['Pear']);
   });
 
   it('UIC-SELECT-FIELD-4.1 moves between chips with the arrow keys', async () => {
@@ -102,24 +117,31 @@ describe('SelectField chips', () => {
   it('UIC-SELECT-FIELD-4.3 marks added chips and restores removed committed values', async () => {
     const user = userEvent.setup();
     const onCommit = vi.fn();
-    const { container } = render(
-      <SelectField
-        label="Fruit"
-        selectionMode="multiple"
-        options={fruit}
-        committedValue={['apple', 'pear']}
-        value={['pear', 'plum']}
-        onCommit={onCommit}
-      />,
-    );
+    // The caller holds the value and takes each change, so a restore commits what it renders.
+    function Picked() {
+      const [value, setValue] = useState<Key[]>(['pear', 'plum']);
+      return (
+        <SelectField
+          label="Fruit"
+          selectionMode="multiple"
+          options={fruit}
+          committedValue={['apple', 'pear']}
+          value={value}
+          onChange={setValue}
+          onCommit={onCommit}
+        />
+      );
+    }
+    const { container } = render(<Picked />);
     const rows = within(chips()).getAllByRole('row');
     expect(rows.map((row) => row.getAttribute('data-change'))).toEqual([null, 'added']);
     const removed = container.querySelector('.ui-select-field__removed');
     expect(removed).toHaveClass('ui-field-previous-value');
     expect(removed?.querySelector('del')).toHaveTextContent('Apple');
     expect(removed?.querySelector('.ui-select-field__chip-icon')).not.toBeNull();
+    expectHooksMatchSpec(container, 'SELECT-FIELD', { slots: ['removed'] });
     await user.click(screen.getByRole('button', { name: 'Restore Apple' }));
     expect(onCommit).toHaveBeenCalledWith(['apple', 'pear', 'plum']);
-    expectHooksMatchSpec(container, 'SELECT-FIELD', { slots: ['removed'] });
+    expect(container.querySelector('.ui-select-field__removed')).toBeNull();
   });
 });

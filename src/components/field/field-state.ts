@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useLayoutEffect, useReducer, useRef, useState } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { useAsyncCheck, type FieldAsyncValidate } from './field-async.js';
 import {
@@ -136,16 +136,52 @@ function useOwnValues<T>({ value, committedValue, defaultValue }: FieldStateOpti
   return { draft, setDraft, committed, setCommitted, history, setHistory };
 }
 
-/** The latest value, committed value, options and lock, so actions in one event see each other. */
-function useLatest<T>(snapshot: {
+interface LatestSnapshot<T> {
   value: T;
   committedValue: T;
   options: FieldStateOptions<T>;
   isLocked: boolean;
-}) {
+  /** A controlled value changed in this event: the value to commit is the one the caller renders. */
+  isUnsettled?: boolean;
+}
+
+/** The latest value, committed value, options and lock, so actions in one event see each other. */
+function useLatest<T>(snapshot: LatestSnapshot<T>) {
   const latest = useRef(snapshot);
   latest.current = snapshot;
   return latest;
+}
+
+/**
+ * Commits the value: right away, or, after a controlled value changed in the same event, once the
+ * caller's value has rendered (a caller may change what it was given, or ignore it), so the
+ * committed value is always one the field shows.
+ */
+function useCommit<T>(
+  latest: { current: LatestSnapshot<T> },
+  setCommitted: (value: T) => void,
+): () => void {
+  const pending = useRef(false);
+  const [, rerender] = useReducer((count: number) => count + 1, 0);
+  const commit = useCallback(() => {
+    const current = latest.current;
+    if (current.isLocked) return;
+    if (current.isUnsettled) {
+      pending.current = true;
+      rerender();
+      return;
+    }
+    if (isFieldValueEqual(current.value, current.committedValue)) return;
+    current.committedValue = current.value;
+    if (current.options.committedValue === undefined) setCommitted(current.value);
+    current.options.onCommit?.(current.value);
+  }, [latest, setCommitted]);
+  useLayoutEffect(() => {
+    if (!pending.current) return;
+    pending.current = false;
+    commit();
+  });
+  return commit;
 }
 
 /**
@@ -200,31 +236,29 @@ export function useFieldState<T>(options: FieldStateOptions<T>): FieldState<T> {
       const current = latest.current;
       if (current.isLocked) return;
       current.value = next;
+      current.isUnsettled = current.options.value !== undefined;
       markChanged();
       if (current.options.value === undefined) setDraft(next);
       current.options.onChange?.(next);
     },
     [latest, setDraft, markChanged],
   );
-  const commit = useCallback(() => {
-    const current = latest.current;
-    if (current.isLocked) return;
-    if (isFieldValueEqual(current.value, current.committedValue)) return;
-    current.committedValue = current.value;
-    if (current.options.committedValue === undefined) setCommitted(current.value);
-    current.options.onCommit?.(current.value);
-  }, [latest, setCommitted]);
+  const commit = useCommit(latest, setCommitted);
 
   const apply = (target: T | undefined) => {
     if (!canApply(latest.current.value, target, isLocked)) return;
     setValue(target as T);
     commit();
   };
+  // A history entry is a value the field showed, `undefined` included.
   const step = (direction: -1 | 1) => {
     if (isLocked || !canStepFieldHistory(history, direction)) return;
     const next = stepFieldHistory(history, direction);
     own.setHistory(next);
-    apply(next.entries[next.index]);
+    const target = next.entries[next.index] as T;
+    if (isFieldValueEqual(latest.current.value, target)) return;
+    setValue(target);
+    commit();
   };
   const canClear = !options.isRequired && canApply(value, options.emptyValue, isLocked);
 
