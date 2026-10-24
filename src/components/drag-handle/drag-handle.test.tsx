@@ -113,6 +113,11 @@ describe('DragHandle', { timeout: 15_000 }, () => {
     expect(screen.getByRole('button', { name: 'Drag Pear' })).toHaveAttribute('tabindex', '0');
   });
 
+  it('UIC-DRAG-HANDLE-1.2 keeps the default for an explicitly undefined excludeFromTabOrder', () => {
+    render(<DragHandle aria-label="Drag Apple" excludeFromTabOrder={undefined} />);
+    expect(screen.getByRole('button', { name: 'Drag Apple' })).toHaveAttribute('tabindex', '-1');
+  });
+
   it('UIC-DRAG-HANDLE-1.3 disables the handle of a row that cannot move', () => {
     const { container } = render(<FruitList />);
     const handle = screen.getByRole('button', { name: 'Drag Fig' });
