@@ -243,4 +243,29 @@ describe('SelectField list', () => {
     expect(screen.getByRole('option', { name: 'Item 999' })).toHaveFocus();
     expectHooksMatchSpec(document.body, 'SELECT-FIELD', { slots: ['listbox', 'option'] });
   });
+
+  it('UIC-SELECT-FIELD-7.3 draws no unchanged option row again while the filter text changes', async () => {
+    vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(160);
+    vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(200);
+    vi.spyOn(HTMLElement.prototype, 'scrollHeight', 'get').mockReturnValue(32);
+    vi.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockReturnValue(200);
+    const user = userEvent.setup();
+    let reads = 0;
+    // A row reads its option's disabled state each time it is drawn, mounted or not.
+    const many = Array.from({ length: 500 }, (_, index) => {
+      const option = { id: `item-${index}`, label: `Item ${index}` };
+      return Object.defineProperty(option, 'isDisabled', {
+        get: () => ((reads += 1), false),
+        enumerable: true,
+      }) as SelectFieldOption;
+    });
+    render(<SelectField label="Fruit" options={many} filterable virtualized />);
+    await user.click(trigger(/Fruit$/));
+    const search = await screen.findByRole('searchbox');
+    expect(reads).toBeGreaterThanOrEqual(many.length);
+    reads = 0;
+    await user.type(search, 'Item 4');
+    expect(screen.getAllByRole('option')[0]).toHaveAccessibleName('Item 4');
+    expect(reads).toBeLessThan(many.length / 10);
+  });
 });

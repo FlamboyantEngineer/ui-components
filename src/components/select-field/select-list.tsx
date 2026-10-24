@@ -1,4 +1,4 @@
-import type { CSSProperties, FocusEvent } from 'react';
+import { useMemo, type CSSProperties, type FocusEvent } from 'react';
 import {
   Autocomplete,
   Input,
@@ -17,7 +17,7 @@ import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { triggerWidthProperty, useLayerZIndex } from '../portal/portal.js';
-import { SelectListItem, type SelectOptionsDisplay } from './select-option.js';
+import { SelectListItems, type SelectOptionsDisplay } from './select-option.js';
 import { flattenSelectItems, type SelectFieldItem } from './select-options.js';
 
 /** The next page of a search's results, loaded when the end of the list scrolls into view. */
@@ -66,15 +66,14 @@ function moveCaretToEnd(event: FocusEvent<HTMLInputElement>) {
 
 function OptionList(props: SelectListProps) {
   const strings = useUiStrings();
-  const { items, more, emptyMessage } = props;
+  const { items, more, emptyMessage, isMultiple, blockedKeys, renderOption } = props;
+  const display = { isMultiple, blockedKeys, renderOption };
   const list = (
     <ListBox
       className={hooks.slotClass('listbox')}
       renderEmptyState={() => <span {...hooks.slot('empty')}>{emptyMessage}</span>}
     >
-      {items.map((item) => (
-        <SelectListItem key={toCollectionKey(item.id)} item={item} display={props} />
-      ))}
+      <SelectListItems items={items} display={display} />
       {more ? (
         <ListBoxLoadMoreItem
           className={hooks.slotClass('load-more')}
@@ -105,11 +104,15 @@ export function SelectList(props: SelectListProps) {
   const { contains } = useFilter({ sensitivity: 'base' });
   const context = useSlottedContext(PopoverContext);
   const contextStyle = typeof context?.style === 'object' ? (context.style as CSSProperties) : {};
-  const descriptions = new Map(
-    flattenSelectItems(props.items).map((option) => [
-      toCollectionKey(option.id),
-      option.description,
-    ]),
+  const descriptions = useMemo(
+    () =>
+      new Map(
+        flattenSelectItems(props.items).map((option) => [
+          toCollectionKey(option.id),
+          option.description,
+        ]),
+      ),
+    [props.items],
   );
   const filter: AutocompleteProps<object>['filter'] = (text, query, node) => {
     const description = descriptions.get(String(node.key));

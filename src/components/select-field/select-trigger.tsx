@@ -16,6 +16,8 @@ export interface SelectTriggerProps {
   ref: Ref<HTMLButtonElement>;
   /** The chosen option of a single select. A multiple select shows its choices as chips. */
   chosen: ChosenSelectOption | null;
+  /** A multiple select's count of its choices (`2 selected`), shown in place of the placeholder. */
+  summary: string | null;
   /** The committed option a single select's edit replaced, shown before the current one. */
   previous: ChosenSelectOption | null;
   placeholder: string;
@@ -45,7 +47,8 @@ function OptionIcon({ option, slot }: { option: ChosenSelectOption; slot: 'value
 
 /**
  * The frame of a select field: the previous value while a single select is dirty, then the trigger
- * with the chosen option's icon and label (or the placeholder) and a chevron, then the clear button. The value element is
+ * with the chosen option's icon and label (a multiple select's count, or the placeholder) and a
+ * chevron, then the clear button. The value element is
  * the one React Aria names the trigger with, so the trigger reads as its value and the field's
  * label; the previous value stays outside the button, readable on its own.
  */
@@ -54,6 +57,7 @@ export function SelectTrigger({
   chosen,
   previous,
   placeholder,
+  summary,
   clearLabel,
   onClear,
   onKeyDownCapture,
@@ -69,11 +73,14 @@ export function SelectTrigger({
       ) : null}
       <AriaButton ref={ref} className={hooks.slotClass('trigger')}>
         <span
-          {...hooks.slot('value', { placeholder: !chosen, missing: chosen?.isMissing })}
+          {...hooks.slot('value', {
+            placeholder: !chosen && !summary,
+            missing: chosen?.isMissing,
+          })}
           id={valueProps?.id}
         >
           {chosen ? <OptionIcon option={chosen} slot="value-icon" /> : null}
-          <span {...hooks.slot('value-label')}>{chosen ? chosen.label : placeholder}</span>
+          <span {...hooks.slot('value-label')}>{chosen?.label ?? summary ?? placeholder}</span>
         </span>
         <Glyph name="chevron-down" className={hooks.slotClass('chevron')} />
       </AriaButton>

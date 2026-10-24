@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { SelectField, type SelectFieldOption } from './select-field.js';
@@ -28,13 +28,18 @@ describe('SelectField limits', () => {
     expect(screen.getByRole('option', { name: 'Fig' })).not.toHaveAttribute('aria-disabled');
     await user.click(screen.getByRole('option', { name: 'Pear' }));
     expect(onCommit).toHaveBeenLastCalledWith(['apple', 'pear']);
-    expect(screen.getByRole('option', { name: 'Fig' })).toHaveAttribute('aria-disabled', 'true');
+    // The list redraws its rows after the commit; under load that can trail the press.
+    await waitFor(() =>
+      expect(screen.getByRole('option', { name: 'Fig' })).toHaveAttribute('aria-disabled', 'true'),
+    );
     expect(screen.getByRole('option', { name: 'Apple' })).not.toHaveAttribute('aria-disabled');
     await user.click(screen.getByRole('option', { name: 'Kiwi' }));
     expect(onCommit).toHaveBeenCalledTimes(1);
     await user.click(screen.getByRole('option', { name: 'Apple' }));
     expect(onCommit).toHaveBeenLastCalledWith(['pear']);
-    expect(screen.getByRole('option', { name: 'Kiwi' })).not.toHaveAttribute('aria-disabled');
+    await waitFor(() =>
+      expect(screen.getByRole('option', { name: 'Kiwi' })).not.toHaveAttribute('aria-disabled'),
+    );
   });
 
   it('UIC-SELECT-FIELD-8.2 disables restoring a removed value while full and ignores single selects', async () => {

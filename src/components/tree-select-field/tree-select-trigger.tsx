@@ -1,7 +1,8 @@
-import { useId, useRef, type ReactNode } from 'react';
+import { useId, useMemo, useRef, type ReactNode } from 'react';
 import { Button as AriaButton, DialogTrigger } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import { Glyph } from '../../core/provider.js';
+import { mergeRefs } from '../../utils/merge-props.js';
 import type { FieldControlProps } from '../field/field.js';
 import { IconButton } from '../icon-button/icon-button.js';
 
@@ -42,16 +43,14 @@ export function TreeSelectTrigger({
 }: TreeSelectTriggerProps) {
   const valueId = useId();
   const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const ref = useMemo(() => mergeRefs(triggerRef, control.ref), [control.ref]);
   const name = control['aria-labelledby'] ?? control.id;
   return (
     <div {...hooks.slot('frame')}>
       <DialogTrigger isOpen={isOpen} onOpenChange={onOpenChange}>
         <AriaButton
           {...hooks.slot('trigger')}
-          ref={(node) => {
-            triggerRef.current = node;
-            control.ref(node);
-          }}
+          ref={ref}
           id={control.id}
           aria-label={control['aria-label']}
           aria-labelledby={`${name} ${valueId}`}

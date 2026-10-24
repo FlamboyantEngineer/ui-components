@@ -48,15 +48,23 @@ function isSeedKey(event: KeyboardEvent<HTMLElement>): boolean {
   return event.currentTarget.contains(event.target as Node);
 }
 
+// One empty set for every list that blocks nothing, so the rows that depend on it stay cached.
+const noBlockedKeys: ReadonlySet<Key> = new Set();
+
 /** The options a multiple select at its `maxValues` blocks: every one it has not chosen. */
 function findBlockedKeys(
   keys: readonly Key[],
   known: readonly { id: Key }[],
   maxValues: number | undefined,
-): Set<Key> {
-  if (maxValues === undefined || keys.length < maxValues) return new Set();
+): ReadonlySet<Key> {
+  if (maxValues === undefined || keys.length < maxValues) return noBlockedKeys;
   const chosen = new Set(keys);
   return new Set(known.map((option) => option.id).filter((key) => !chosen.has(key)));
+}
+
+/** The chosen keys; `''` stands for no value, as a native select's, unless an option has that id. */
+function toChosenKeys(value: SelectKeysValue | undefined, known: readonly { id: Key }[]): Key[] {
+  return value === '' && known.some((option) => option.id === '') ? [''] : toSelectKeys(value);
 }
 
 /**
@@ -68,10 +76,10 @@ export function useSelectModel({ state, isMultiple, ...config }: SelectModelProp
   const search = useSelectSearch(config);
   const isRemote = Boolean(config.loadOptions);
   const known = mergeSelectOptions(flattenSelectItems(config.options), search.seen);
-  const keys = toSelectKeys(state.value);
+  const keys = toChosenKeys(state.value, known);
   const chosen = resolveSelectOptions(keys, known);
   const diff = state.isDirty
-    ? diffSelectKeys(keys, toSelectKeys(state.committedValue))
+    ? diffSelectKeys(keys, toChosenKeys(state.committedValue, known))
     : { added: new Set<Key>(), removed: [] };
   const empty: ChosenSelectOption | null =
     config.emptyLabel && !isMultiple
@@ -79,7 +87,7 @@ export function useSelectModel({ state, isMultiple, ...config }: SelectModelProp
       : null;
   const listed = isRemote ? mergeSelectOptions(chosen, search.results) : config.options;
   const removed = resolveSelectOptions(diff.removed, known);
-  const blockedKeys = isMultiple ? findBlockedKeys(keys, known, config.maxValues) : new Set<Key>();
+  const blockedKeys = isMultiple ? findBlockedKeys(keys, known, config.maxValues) : noBlockedKeys;
   return {
     search: isRemote ? search : null,
     known,
