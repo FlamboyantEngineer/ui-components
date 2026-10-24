@@ -9,8 +9,10 @@ import { IconButton } from '../icon-button/icon-button.js';
 import { ResizeHandle } from '../split-view/split-view.js';
 import {
   NavigationRailContext,
+  collapsedCodec,
   navigationRailHooks as hooks,
   usePersistedValue,
+  widthCodec,
 } from './navigation-rail-state.js';
 
 export interface NavigationRailProps extends BaseProps, AriaLabellingProps {
@@ -160,12 +162,14 @@ export function NavigationRail({
     defaultValue: defaultCollapsed,
     onChange: onCollapsedChange,
     persistKey: persistKey === undefined ? undefined : `${persistKey}:collapsed`,
+    codec: collapsedCodec,
   });
   const [committedWidth, setWidth] = usePersistedValue({
     value: widthProp,
     defaultValue: defaultWidth,
     onChange: onWidthChange,
     persistKey: persistKey === undefined ? undefined : `${persistKey}:width`,
+    codec: widthCodec,
   });
   const [liveWidth, setLiveWidth] = useState<number | null>(null);
   // A stored or controlled width outside the bounds is drawn at the nearest bound.

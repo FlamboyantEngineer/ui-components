@@ -204,6 +204,17 @@ describe('NavigationRail', () => {
     expect(nav().style.getPropertyValue('--ui-navigation-rail-width')).toBe('220px');
   });
 
+  it('UIC-NAVIGATION-RAIL-1.4 falls back to the default for stored values of the wrong type', () => {
+    const storage = createMemoryStorage({ 'rail:width': '"wide"', 'rail:collapsed': '"no"' });
+    render(
+      <UiProvider storage={storage}>
+        <Rail persistKey="rail" isResizable defaultWidth={240} />
+      </UiProvider>,
+    );
+    expect(nav().style.getPropertyValue('--ui-navigation-rail-width')).toBe('240px');
+    expect(nav()).not.toHaveAttribute('data-collapsed');
+  });
+
   it('UIC-NAVIGATION-RAIL-1.5 moves focus with arrows, Home and End, skipping closed groups', async () => {
     const user = userEvent.setup();
     render(<Rail />);

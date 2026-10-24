@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useLayoutEffect, useState } from 'react';
 import { createHooks } from '../../core/hooks.js';
-import { usePersistentState } from '../../core/provider.js';
+import { usePersistentState, type PersistCodec } from '../../core/provider.js';
 
 export interface NavigationRailState {
   /** The rail shows icons only. */
@@ -21,6 +21,8 @@ export interface PersistedValueOptions<T> {
   onChange?: ((value: T) => void) | undefined;
   /** Where the uncontrolled value persists. */
   persistKey: string | undefined;
+  /** Reads and writes the stored value; a stored value it cannot read gives the default. */
+  codec: PersistCodec<T>;
 }
 
 export const navigationRailHooks = createHooks('navigation-rail', [
@@ -44,6 +46,28 @@ export const navigationRailHooks = createHooks('navigation-rail', [
   'group-panel',
 ]);
 
+/** A JSON codec that refuses a stored value `isValid` rejects, so the default applies. */
+function createCheckedCodec<T>(isValid: (value: unknown) => value is T): PersistCodec<T> {
+  return {
+    parse: (raw) => {
+      const value: unknown = JSON.parse(raw);
+      if (!isValid(value)) throw new TypeError('Unexpected stored value');
+      return value;
+    },
+    stringify: (value) => JSON.stringify(value),
+  };
+}
+
+/** The stored collapsed state: a boolean. */
+export const collapsedCodec = createCheckedCodec(
+  (value): value is boolean => typeof value === 'boolean',
+);
+
+/** The stored width: a finite number of pixels. */
+export const widthCodec = createCheckedCodec(
+  (value): value is number => typeof value === 'number' && Number.isFinite(value),
+);
+
 export const NavigationRailContext = createContext<NavigationRailState>({
   isCollapsed: false,
   expand: () => {},
@@ -60,10 +84,12 @@ export function usePersistedValue<T>({
   defaultValue,
   onChange,
   persistKey,
+  codec,
 }: PersistedValueOptions<T>): [T, (next: T) => void] {
   const [own, setOwn] = usePersistentState(
     value === undefined ? persistKey : undefined,
     defaultValue,
+    codec,
   );
   const setValue = useCallback(
     (next: T) => {
