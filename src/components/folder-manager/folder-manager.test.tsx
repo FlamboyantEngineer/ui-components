@@ -597,6 +597,48 @@ describe('FolderManager', () => {
     expect(onMove).not.toHaveBeenCalled();
   });
 
+  it('UIC-FOLDER-MANAGER-6.3 lists the places only when the menu opens', async () => {
+    const user = userEvent.setup();
+    const onMove = vi.fn();
+    let nameReads = 0;
+    const counted = (id: Key, name: string, children?: Folder[]): Folder => ({
+      id,
+      get name() {
+        nameReads += 1;
+        return name;
+      },
+      ...(children ? { children } : {}),
+    });
+    const folders = [
+      counted('fruit', 'Fruit', [counted('citrus', 'Citrus'), counted(1, 'Berries')]),
+      counted('1', 'Vegetables'),
+    ];
+    render(
+      <FolderManager
+        aria-label="Folders"
+        folders={folders}
+        selectionMode="multiple"
+        defaultSelectedKeys={['citrus']}
+        onMove={onMove}
+      />,
+    );
+    nameReads = 0;
+    await user.click(row('Berries'));
+    await user.click(row('Citrus'));
+    expect(nameReads).toBe(0);
+    fireEvent.contextMenu(row('Citrus'));
+    const menu = await screen.findByRole('menu');
+    await user.click(within(menu).getByRole('menuitem', { name: 'Move to' }));
+    const submenu = (await screen.findAllByRole('menu')).at(-1) as HTMLElement;
+    expect(nameReads).toBeGreaterThan(0);
+    await user.click(within(submenu).getByRole('menuitem', { name: 'Vegetables' }));
+    expect(onMove).toHaveBeenCalledExactlyOnceWith({
+      key: 'citrus',
+      targetKey: '1',
+      position: 'inside',
+    });
+  });
+
   it('UIC-FOLDER-MANAGER-6.3 checks each destination depth against the selected subtree', async () => {
     const user = userEvent.setup();
     const onMove = vi.fn();
