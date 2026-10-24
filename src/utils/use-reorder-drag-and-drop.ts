@@ -10,7 +10,7 @@ import {
 import type { Key } from '../core/props.js';
 
 /** A dragged item: its data by media type. */
-export type ReorderDragItem = Record<string, string>;
+type ReorderDragItem = Record<string, string>;
 
 /** Where dragged items would land: on an item, before or after it, or on the collection itself. */
 export type CollectionDropTarget =
@@ -46,10 +46,10 @@ export interface ReorderDragAndDropOptions<Move> {
   /** Draws the collection's drop indicator between items. */
   renderDropIndicator: (target: CollectionDropTarget) => JSX.Element;
   /**
-   * Draws the image that follows the pointer during a drag, from the dragged items, instead of the
+   * Draws the image that follows the pointer during a drag, from the dragged keys, instead of the
    * browser's picture of the dragged element. Read when the hook first renders.
    */
-  renderDragPreview?: ((items: ReorderDragItem[]) => JSX.Element) | undefined;
+  renderDragPreview?: ((keys: ReadonlySet<Key>) => JSX.Element) | undefined;
 }
 
 /** Whether a keydown holds Alt and no other modifier, as a collection's keyboard moves do. */
@@ -94,8 +94,9 @@ export function useReorderDragAndDrop<Move>(
       renderDropIndicator,
       ...(hasPreview
         ? {
-            renderDragPreview: (items: ReorderDragItem[]) =>
-              latest.current.renderDragPreview?.(items) ?? createElement('span'),
+            // React Aria starts the drag, which records its keys, before it draws the preview.
+            renderDragPreview: () =>
+              latest.current.renderDragPreview?.(dragging.current) ?? createElement('span'),
           }
         : {}),
     }),

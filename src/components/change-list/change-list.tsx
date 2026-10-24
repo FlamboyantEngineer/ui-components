@@ -83,7 +83,11 @@ export function ChangeList({
 }: ChangeListProps) {
   const strings = useUiStrings();
   if (changes.length === 0) {
-    return renderEmptyState?.() ?? <EmptyState size="sm" description={strings.noChanges} />;
+    return renderEmptyState ? (
+      renderEmptyState()
+    ) : (
+      <EmptyState size="sm" description={strings.noChanges} />
+    );
   }
   return (
     <DescriptionList

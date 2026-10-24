@@ -148,6 +148,60 @@ describe('PivotTable', { timeout: 20_000 }, () => {
     expect(container.querySelector('tfoot')).toBeNull();
   });
 
+  it('UIC-PIVOT-TABLE-2.3 UIC-PIVOT-TABLE-2.4 marks every cell of the one row without row fields as a total', () => {
+    const { container } = render(
+      <PivotTable
+        aria-label="Sales"
+        records={sales}
+        fields={fields}
+        layout={{ rows: [], columns: ['year'], values: [{ field: 'boxes' }] }}
+      />,
+    );
+    const cells = [
+      ...container.querySelectorAll('tbody .ui-pivot-table__key, tbody .ui-pivot-table__value'),
+    ];
+    expect(cells.map((cell) => `${cell.textContent}:${cell.getAttribute('data-total')}`)).toEqual([
+      'Total:true',
+      '10:true',
+      '1,213:true',
+      '1,223:true',
+    ]);
+  });
+
+  it('UIC-PIVOT-TABLE-2.5 reports and takes group keys that hold spaces as they are', async () => {
+    const user = userEvent.setup();
+    const onExpandedChange = vi.fn();
+    const records = [
+      { region: 'North East', fruit: 'Apple', boxes: 1 },
+      { region: 'South', fruit: 'Pear', boxes: 2 },
+    ];
+    const layout: PivotLayout = { rows: ['region', 'fruit'], columns: [], values: [] };
+    render(
+      <PivotTable
+        aria-label="Spaced"
+        records={records}
+        fields={fields}
+        layout={layout}
+        onExpandedChange={onExpandedChange}
+      />,
+    );
+    const spaced = screen.getByRole('treegrid', { name: 'Spaced' });
+    await user.click(within(spaced).getByRole('button', { name: 'Expand North East' }));
+    expect(onExpandedChange).toHaveBeenLastCalledWith(new Set(['["North East"]']));
+    render(
+      <PivotTable
+        aria-label="Controlled"
+        records={records}
+        fields={fields}
+        layout={layout}
+        expandedKeys={['["North East"]']}
+      />,
+    );
+    const controlled = screen.getByRole('treegrid', { name: 'Controlled' });
+    expect(within(controlled).getByRole('row', { name: /Apple$/ })).toBeInTheDocument();
+    expect(within(controlled).queryByRole('row', { name: /Pear$/ })).not.toBeInTheDocument();
+  });
+
   it('UIC-PIVOT-TABLE-2.5 nests inner groups under expandable outer groups', async () => {
     const user = userEvent.setup();
     const onExpandedChange = vi.fn();

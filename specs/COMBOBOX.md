@@ -259,6 +259,6 @@ Verification: `src/components/combobox/combobox.test.tsx`
 | `data-exiting`                    | state     | `true`                                     | Popover exit animation.                                             |
 | `data-empty`                      | state     | `true`                                     | The list has no options.                                            |
 | `data-collection`                 | state     |                                            | React Aria's collection marker, on the list and options.            |
-| `data-key`                        | state     |                                            | An option's `id` (React Aria).                                      |
+| `data-key`                        | state     |                                            | Opaque collection key (React Aria): not the `id`, not for styling.  |
 | `data-layout`                     | state     | `stack`                                    | Listbox layout (React Aria).                                        |
 | `data-orientation`                | state     | `vertical`                                 | Listbox orientation (React Aria).                                   |

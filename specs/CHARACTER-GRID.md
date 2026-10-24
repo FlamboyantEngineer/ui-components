@@ -80,7 +80,7 @@ Verification: `src/components/character-grid/character-grid.test.tsx`
 | `ui-character-grid__preview-name` | slot      |            | The previewed character's name.                                            |
 | `ui-character-grid__preview-code` | slot      |            | The previewed character's code points.                                     |
 | `data-searching`                  | state     | `true`     | On the root: the search field holds text.                                  |
-| `data-key`                        | attribute |            | On a cell: its key in the grid, written by React Aria.                     |
+| `data-key`                        | attribute |            | Opaque collection key (React Aria): not the character, not for styling.    |
 | `data-collection`                 | attribute |            | React Aria's collection identifier on the grid and cells; not for styling. |
 | `data-orientation`                | attribute | `vertical` | On the grid: its axis (React Aria).                                        |
 | `data-layout`                     | attribute | `grid`     | On the grid: its layout (React Aria).                                      |

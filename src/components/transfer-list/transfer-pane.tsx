@@ -102,8 +102,8 @@ export function TransferPane({
       <ListView
         className={hooks.slotClass('list')}
         aria-labelledby={titleId}
+        aria-describedby={countId}
         items={items}
-        dependencies={[disabledKeys]}
         selectionMode="multiple"
         selectionBehavior="replace"
         selectedKeys={selected}

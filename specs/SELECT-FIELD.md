@@ -267,6 +267,6 @@ Verification: `src/components/select-field/select-model.test.tsx`, `e2e/select-f
 | `data-entering`                       | state     | `true`                                     | Popover entry animation (React Aria).                                    |
 | `data-exiting`                        | state     | `true`                                     | Popover exit animation (React Aria).                                     |
 | `data-collection`                     | state     |                                            | React Aria's collection marker.                                          |
-| `data-key`                            | state     |                                            | An option's or chip's id (React Aria).                                   |
+| `data-key`                            | state     |                                            | Opaque collection key (React Aria): not the `id`, not for styling.       |
 | `data-layout`                         | state     | `stack`                                    | Listbox layout (React Aria).                                             |
 | `data-orientation`                    | state     | `vertical`                                 | Listbox orientation (React Aria).                                        |

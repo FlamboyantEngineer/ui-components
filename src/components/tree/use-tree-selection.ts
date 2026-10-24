@@ -9,7 +9,11 @@ import type { TreeItemData, TreeProps } from './tree.js';
 
 export interface TreeSelectionOptions<T extends TreeItemData> extends Pick<
   TreeProps<T>,
-  'selectedKeys' | 'defaultSelectedKeys' | 'onSelectionChange' | 'selectionPropagation'
+  | 'selectedKeys'
+  | 'defaultSelectedKeys'
+  | 'onSelectionChange'
+  | 'selectionPropagation'
+  | 'selectionMode'
 > {
   items: readonly T[];
   getChildren: (item: T) => readonly T[] | undefined;
@@ -103,15 +107,17 @@ function findIndeterminate<T extends TreeItemData>(
 }
 
 /**
- * React Aria's selection, passed through, or with `selectionPropagation` held by the tree (unless
- * controlled) and cascaded: a row whose selection changes takes its loaded, enabled descendants
+ * React Aria's selection, passed through, or with `selectionPropagation` in multiple selection held
+ * by the tree (unless controlled) and cascaded: a row whose selection changes takes its loaded, enabled descendants
  * along, and then each branch is selected exactly when all its enabled children are.
  */
 export function useTreeSelection<T extends TreeItemData>(
   options: TreeSelectionOptions<T>,
 ): TreeSelection {
-  const { items, getChildren, disabledKeys, selectionPropagation = false } = options;
+  const { items, getChildren, disabledKeys, selectionMode } = options;
   const { selectedKeys, defaultSelectedKeys, onSelectionChange } = options;
+  // A single selection holds one row, so it never cascades.
+  const isPropagating = options.selectionPropagation === true && selectionMode === 'multiple';
   const [own, setOwn] = useState<Selection>(() =>
     defaultSelectedKeys === 'all' ? 'all' : new Set(defaultSelectedKeys ?? []),
   );
@@ -122,17 +128,17 @@ export function useTreeSelection<T extends TreeItemData>(
   const current = selectedKeys === undefined ? own : selectedKeys;
   const selected = useMemo(
     () =>
-      selectionPropagation
+      isPropagating
         ? toKeySet(current === 'all' ? 'all' : new Set(current), { items, cascade })
         : noKeys,
-    [selectionPropagation, current, items, cascade],
+    [isPropagating, current, items, cascade],
   );
   const indeterminate = useMemo(
-    () => (selectionPropagation ? findIndeterminate(items, { selected, cascade }) : noKeys),
-    [selectionPropagation, items, selected, cascade],
+    () => (isPropagating ? findIndeterminate(items, { selected, cascade }) : noKeys),
+    [isPropagating, items, selected, cascade],
   );
   const isIndeterminate = useCallback((key: Key) => indeterminate.has(key), [indeterminate]);
-  if (!selectionPropagation) {
+  if (!isPropagating) {
     return { props: { selectedKeys, defaultSelectedKeys, onSelectionChange }, isIndeterminate };
   }
   return {

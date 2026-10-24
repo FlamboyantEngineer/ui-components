@@ -36,7 +36,7 @@ Verification: `src/components/change-list/change-list.test.tsx`, `e2e/change-lis
 
 ### UIC-CHANGE-LIST-1.5 - List values
 
-A `list` change shall compare its values as lists of texts (a text value is a list of one): an old item the new list lacks is removed, a new item the old list lacks is added, and repeated items match one for one. Items render as a `<ul>` (`ui-change-list__items`) of `ui-change-list__item` elements publishing `data-change` (`added`, `removed` or `unchanged`), an added item's content in an `<ins>` and a removed item's in a `<del>`, each through `renderValue`. `compact` draws the removed items, then the added ones; `detailed` draws the whole old list on the old side and the whole new list on the new side, each in its order.
+A `list` change shall compare its values as lists of texts (a text value is a list of one, an empty or missing value a list of none): an old item the new list lacks is removed, a new item the old list lacks is added, and repeated items match one for one. Items render as a `<ul>` (`ui-change-list__items`) of `ui-change-list__item` elements publishing `data-change` (`added`, `removed` or `unchanged`), an added item's content in an `<ins>` and a removed item's in a `<del>`, each through `renderValue`. `compact` draws the removed items, then the added ones; `detailed` draws the whole old list on the old side and the whole new list on the new side, each in its order.
 
 Implementation: `src/components/change-list/change-values.tsx`, `src/components/change-list/list-changes.ts`
 Verification: `src/components/change-list/change-list.test.tsx`, `e2e/change-list.spec.ts`
@@ -50,7 +50,7 @@ Verification: `src/components/change-list/change-list.test.tsx`, `e2e/change-lis
 
 ### UIC-CHANGE-LIST-1.7 - No changes
 
-With no changes, `ChangeList` shall render what `renderEmptyState` returns, else a small [Empty State](EMPTY-STATE.md) reading the provider's `noChanges` string, instead of the list.
+With no changes, `ChangeList` shall render what `renderEmptyState` returns, `null` included, else a small [Empty State](EMPTY-STATE.md) reading the provider's `noChanges` string, instead of the list.
 
 Implementation: `src/components/change-list/change-list.tsx`, `src/core/history-strings.ts`
 Verification: `src/components/change-list/change-list.test.tsx`

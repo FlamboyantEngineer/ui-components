@@ -5,7 +5,14 @@ import { describe, expect, it, vi } from 'vitest';
 import type { Selection } from '../../core/props.js';
 import { UiProvider } from '../../core/provider.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import { ListView, ListViewItem, ListViewSection, type ListViewMove } from './list-view.js';
+import {
+  ListView,
+  ListViewItem,
+  ListViewSection,
+  type ListViewItemProps,
+  type ListViewMove,
+  type ListViewSectionProps,
+} from './list-view.js';
 
 const fruit = [
   { id: 'apple', name: 'Apple', meta: 'Red' },
@@ -20,6 +27,15 @@ function Reorderable({ onMove }: { onMove: (move: ListViewMove) => void }) {
       {(item) => <ListViewItem title={item.name} />}
     </ListView>
   );
+}
+
+/** Host components around the list's parts, as React Aria's reuse pattern writes them. */
+function FruitRow(props: ListViewItemProps) {
+  return <ListViewItem {...props} />;
+}
+
+function FruitSection(props: ListViewSectionProps<(typeof fruit)[number]>) {
+  return <ListViewSection {...props} />;
 }
 
 describe('ListView', () => {
@@ -189,6 +205,65 @@ describe('ListView', () => {
     expect(screen.getByRole('row', { name: 'Row readable' })).toBeInTheDocument();
   });
 
+  it('UIC-COMPOSITION-4.2 UIC-LIST-ROW-3.1 UIC-LIST-ROW-3.3 keys rows and sections rendered through a host component by their id', async () => {
+    const user = userEvent.setup();
+    const onSelectionChange = vi.fn();
+    render(
+      <ListView
+        aria-label="Fruit"
+        selectionMode="multiple"
+        selectedKeys={['apple', 2]}
+        disabledKeys={['pear']}
+        onSelectionChange={onSelectionChange}
+      >
+        <FruitSection id="orchard" title="Orchard">
+          <FruitRow id="apple" title="Apple" />
+          <FruitRow id="pear" title="Pear" />
+        </FruitSection>
+        <FruitRow id={2} title="Two" />
+        <FruitRow id="2" title="Text two" />
+      </ListView>,
+    );
+    expect(screen.getByRole('row', { name: 'Apple' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('row', { name: 'Two' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('row', { name: 'Pear' })).toHaveAttribute('data-disabled', 'true');
+    const textTwo = screen.getByRole('row', { name: 'Text two' });
+    expect(textTwo).toHaveAttribute('aria-selected', 'false');
+    await user.click(within(textTwo).getByRole('checkbox'));
+    expect(onSelectionChange).toHaveBeenLastCalledWith(new Set(['apple', 2, '2']));
+  });
+
+  it('UIC-COMPOSITION-4.2 UIC-LIST-ROW-3.1 UIC-LIST-ROW-3.3 keys rows a host component draws from items by the item ids', async () => {
+    const user = userEvent.setup();
+    const onSelectionChange = vi.fn();
+    render(
+      <ListView
+        aria-label="Fruit"
+        items={fruit}
+        selectionMode="multiple"
+        defaultSelectedKeys={['banana']}
+        onSelectionChange={onSelectionChange}
+      >
+        {(item) => <FruitRow title={item.name} />}
+      </ListView>,
+    );
+    expect(screen.getByRole('row', { name: 'Banana' })).toHaveAttribute('aria-selected', 'true');
+    await user.click(screen.getByRole('row', { name: 'Cherry' }));
+    expect(onSelectionChange).toHaveBeenLastCalledWith(new Set(['banana', 'cherry']));
+  });
+
+  it('UIC-COMPOSITION-4.2 UIC-LIST-ROW-3.1 reports the item id of a row a host component draws from items', async () => {
+    const user = userEvent.setup();
+    const onAction = vi.fn();
+    render(
+      <ListView aria-label="Fruit" items={fruit} onAction={onAction}>
+        {(item) => <FruitRow title={item.name} />}
+      </ListView>,
+    );
+    await user.click(screen.getByRole('row', { name: 'Cherry' }));
+    expect(onAction).toHaveBeenLastCalledWith('cherry');
+  });
+
   it('UIC-LIST-ROW-3.1 renders a named grid list of rows drawn with the row text', async () => {
     const onAction = vi.fn();
     const { container } = render(
@@ -228,7 +303,7 @@ describe('ListView', () => {
 
   it('UIC-LIST-ROW-3.1 follows a row href through the provider', async () => {
     const navigate = vi.fn();
-    render(
+    const { container } = render(
       <UiProvider navigate={navigate}>
         <ListView aria-label="Pages">
           <ListViewItem id="home" title="Home" href="/home" />
@@ -239,6 +314,7 @@ describe('ListView', () => {
     await userEvent.tab();
     await userEvent.keyboard('{ArrowDown}{Enter}');
     expect(navigate.mock.lastCall?.[0]).toBe('/about');
+    expectHooksMatchSpec(container, 'LIST-ROW');
   });
 
   it('UIC-LIST-ROW-3.2 moves to the row whose text starts with the typed letters', async () => {

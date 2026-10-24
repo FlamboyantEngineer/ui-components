@@ -6,7 +6,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { UiProvider } from '../../core/provider.js';
-import { Tag, TagGroup } from './tag-group.js';
+import { Tag, TagGroup, type TagProps } from './tag-group.js';
 
 interface Fruit {
   id: string;
@@ -37,6 +37,11 @@ function Basket({ onRemove }: { onRemove?: (keys: Set<Key>) => void }) {
 
 function tag(name: string) {
   return screen.getByRole('row', { name });
+}
+
+/** A host component around `Tag`, as React Aria's reuse pattern writes it. */
+function FruitTag(props: TagProps) {
+  return <Tag {...props} />;
 }
 
 describe('TagGroup', () => {
@@ -155,6 +160,49 @@ describe('TagGroup', () => {
       </TagGroup>,
     );
     expect(screen.getAllByRole('row')).toEqual([textual, numeric]);
+  });
+
+  it('UIC-COMPOSITION-4.2 UIC-TAG-GROUP-1.2 UIC-TAG-GROUP-2.3 UIC-TAG-GROUP-2.4 keys tags rendered through a host component by their id', async () => {
+    const user = userEvent.setup();
+    const onSelectionChange = vi.fn();
+    const onRemove = vi.fn();
+    render(
+      <TagGroup
+        aria-label="Fruit"
+        selectionMode="multiple"
+        selectedKeys={['apple']}
+        disabledKeys={['pear']}
+        onSelectionChange={onSelectionChange}
+        onRemove={onRemove}
+      >
+        <FruitTag id="apple">Apple</FruitTag>
+        <FruitTag id="pear">Pear</FruitTag>
+        <FruitTag id={2}>Two</FruitTag>
+      </TagGroup>,
+    );
+    expect(tag('Apple')).toHaveAttribute('aria-selected', 'true');
+    expect(tag('Pear')).toHaveAttribute('data-disabled', 'true');
+    const two = tag('Two');
+    expect(two).toHaveAttribute('aria-selected', 'false');
+    await user.click(two);
+    expect(onSelectionChange).toHaveBeenLastCalledWith(new Set(['apple', 2]));
+    await user.click(within(two).getByRole('button', { name: 'Remove Two' }));
+    expect(onRemove).toHaveBeenLastCalledWith(new Set([2]));
+  });
+
+  it('UIC-COMPOSITION-4.2 UIC-TAG-GROUP-1.2 UIC-TAG-GROUP-2.4 keys tags a host component draws from items by the item ids', () => {
+    render(
+      <TagGroup
+        aria-label="Fruit"
+        items={fruit}
+        selectionMode="single"
+        defaultSelectedKeys={['pear']}
+      >
+        {(item) => <FruitTag>{item.name}</FruitTag>}
+      </TagGroup>,
+    );
+    expect(tag('Pear')).toHaveAttribute('aria-selected', 'true');
+    expect(tag('Apple')).toHaveAttribute('aria-selected', 'false');
   });
 
   it('UIC-TAG-GROUP-1.1 renders a named grid of tag rows', () => {

@@ -5,6 +5,7 @@ import {
   ListView,
   ListViewItem,
   ListViewSection,
+  type ListViewItemProps,
   type ListViewMove,
 } from '../../src/components/list-row/list-view.js';
 
@@ -77,6 +78,22 @@ export function SelectionCase({ selection }: { selection: (typeof selections)[nu
           }
         />
       )}
+    </ListView>
+  );
+}
+
+/** A host component around `ListViewItem`, as React Aria's reuse pattern writes it. */
+function PageRow(props: ListViewItemProps) {
+  return <ListViewItem {...props} />;
+}
+
+/** Link rows drawn through a host component; the list's `disabledKeys` reach them by their id. */
+export function LinksCase() {
+  return (
+    <ListView aria-label="Pages" divided disabledKeys={['archive']}>
+      <PageRow id="overview" title="Overview" meta="Start here" href="#overview" />
+      <PageRow id="guide" title="Guide" meta="Step by step" href="#guide" />
+      <PageRow id="archive" title="Archive" meta="Unavailable" href="#archive" />
     </ListView>
   );
 }

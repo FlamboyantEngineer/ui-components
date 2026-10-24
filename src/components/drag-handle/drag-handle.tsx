@@ -81,11 +81,11 @@ export function armHandleDrag(event: PointerEvent<Element>): void {
  * names it after the row and starts the row's keyboard drag from it; it stays out of the tab
  * sequence, since the collection reaches it with the arrow keys.
  */
-export function DragHandle({ className, ...rest }: DragHandleProps) {
+export function DragHandle({ className, excludeFromTabOrder = true, ...rest }: DragHandleProps) {
   return (
     <AriaButton
-      excludeFromTabOrder
       {...rest}
+      excludeFromTabOrder={excludeFromTabOrder}
       {...hooks.root({ className, props: rest })}
       slot="drag"
     >

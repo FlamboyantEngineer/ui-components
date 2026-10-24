@@ -151,7 +151,7 @@ Verification: `src/components/tree/use-tree-selection.test.tsx`, `e2e/tree.spec.
 
 ### UIC-TREE-5.2 - Selection propagation
 
-With `selectionPropagation` and multiple selection, selecting or deselecting a row shall select or deselect its loaded descendants that are not disabled, and then each branch shall be selected exactly when all its enabled children are. A row that is not selected while a descendant is publishes `data-indeterminate` and its checkbox shows mixed. The tree holds the selection from `defaultSelectedKeys` unless `selectedKeys` controls it, and reports every change to `onSelectionChange` as a set of keys.
+With `selectionPropagation` and multiple selection, selecting or deselecting a row shall select or deselect its loaded descendants that are not disabled, and then each branch shall be selected exactly when all its enabled children are. A row that is not selected while a descendant is publishes `data-indeterminate` and its checkbox shows mixed. The tree holds the selection from `defaultSelectedKeys` unless `selectedKeys` controls it, and reports every change to `onSelectionChange` as a set of keys. In single selection `selectionPropagation` has no effect: a press selects that row alone.
 
 Selection propagation and indeterminate-state calculations shall walk loaded hierarchies without recursive JavaScript calls, including deeply nested branches.
 
@@ -222,5 +222,5 @@ Verification: `src/components/tree/use-tree-rename.test.tsx`, `e2e/tree.spec.ts`
 | `data-pressed`            | state     | `true`                  | A row or button is pressed (React Aria).                                      |
 | `data-dragging`           | state     | `true`                  | The row being dragged (React Aria).                                           |
 | `data-href`               | state     |                         | A link row's destination (React Aria).                                        |
-| `data-key`                | state     |                         | The encoded primitive key for a row; not for styling.                         |
+| `data-key`                | state     |                         | Opaque collection key (React Aria): not the `id`, not for styling.            |
 | `data-collection`         | state     |                         | React Aria's collection id on the tree and its rows; not for styling.         |

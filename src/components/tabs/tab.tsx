@@ -15,6 +15,7 @@ import type { BaseProps, Key, NativeProps } from '../../core/props.js';
 import { mergeProps } from '../../utils/merge-props.js';
 import { normalizeCount } from '../../utils/count.js';
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
+import { toCollectionItemKey } from '../../utils/to-collection-key.js';
 import type { ElementRender } from '../../utils/render-element.js';
 import { Icon, toIconProps, type IconSource } from '../icon/icon.js';
 import {
@@ -225,13 +226,14 @@ function MovableTab({ reorder, ...props }: TabItemProps & { reorder: TabReorder;
  * (`UiProvider` `navigate`) when selected. In a list that takes them it draws a close mark, renames
  * in place, drags and opens a menu of its actions.
  */
-export function Tab(props: TabProps): ReactElement {
+export function Tab({ id, ...props }: TabProps): ReactElement {
   const actions = useContext(TabActionsContext);
   const { reorder } = actions;
-  const { id } = props;
-  return reorder && id !== undefined ? (
-    <MovableTab {...props} id={id} actions={actions} reorder={reorder} />
+  // The list's actions, its panels and its selection all work on the collection key.
+  const key = toCollectionItemKey(id);
+  return reorder && key !== undefined ? (
+    <MovableTab {...props} id={key} actions={actions} reorder={reorder} />
   ) : (
-    <TabItem {...props} actions={actions} />
+    <TabItem {...props} id={key} actions={actions} />
   );
 }

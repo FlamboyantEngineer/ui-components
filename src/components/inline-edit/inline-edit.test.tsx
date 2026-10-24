@@ -124,6 +124,22 @@ describe('InlineEdit', { timeout: 15_000 }, () => {
     expect(textbox()).toHaveFocus();
   });
 
+  it('UIC-INLINE-EDIT-1.2 UIC-INLINE-EDIT-1.3 reopens a controlled editor at the saved value', async () => {
+    const user = userEvent.setup();
+    const onSave = vi.fn();
+    const editor = (isEditing: boolean) => (
+      <InlineEdit label="Title" value="Rye loaf" onSave={onSave} isEditing={isEditing} />
+    );
+    const { rerender } = render(editor(false));
+    rerender(editor(true));
+    await user.clear(textbox());
+    await user.type(textbox(), 'Draft');
+    rerender(editor(false));
+    rerender(editor(true));
+    expect(textbox()).toHaveValue('Rye loaf');
+    expect(onSave).not.toHaveBeenCalled();
+  });
+
   it('UIC-INLINE-EDIT-1.2 opens at first with defaultEditing', () => {
     render(<InlineEdit label="Title" value="Rye loaf" onSave={() => {}} defaultEditing />);
     expect(textbox()).not.toHaveFocus();

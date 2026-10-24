@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react';
+import { keyCollectionChildren } from '../../utils/key-collection-children.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
-import { encodeCollectionChildren } from '../../utils/encode-collection-children.js';
 import { TextMatch } from '../text-match/text-match.js';
 import {
   Menu,
@@ -13,15 +13,14 @@ import {
   type MenuProps,
 } from './menu.js';
 
-/** Prepares explicit menu parts before the collection infers its React keys. */
+/** The menu's parts, keyed by their `id`: its `children`, or the parts drawn from its data entries. */
 export function renderMenuChildren({
   children,
   items,
   highlightMatches,
 }: Pick<MenuProps, 'children' | 'items' | 'highlightMatches'>) {
-  return encodeCollectionChildren(
+  return keyCollectionChildren(
     children ?? (items ? renderMenuEntries(items, highlightMatches ?? false) : null),
-    [MenuItem, MenuSection],
   );
 }
 

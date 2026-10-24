@@ -1,5 +1,5 @@
 import type { Key } from '../../core/props.js';
-import { toKeyIdentity } from '../../utils/to-key-identity.js';
+import { toCollectionKey } from '../../utils/to-collection-key.js';
 import type { TableColumn, TableRow } from './table-rows.js';
 
 /** `cell` selects one cell at a time; `range` also selects rectangles of cells; `none` neither. */
@@ -29,7 +29,7 @@ export interface CellBounds {
 export interface CellGrid<T> {
   rows: readonly T[];
   columns: readonly TableColumn<T>[];
-  /** Row indices by the typed key identity carried by the row element. */
+  /** Row indices by the collection key the row element carries in `data-key`. */
   rowIndex: ReadonlyMap<string, number>;
   columnIndex: ReadonlyMap<string, number>;
 }
@@ -58,7 +58,7 @@ export function createCellGrid<T extends TableRow>(
   return {
     rows,
     columns,
-    rowIndex: new Map(rows.map((row, index) => [toKeyIdentity(row.id), index])),
+    rowIndex: new Map(rows.map((row, index) => [toCollectionKey(row.id), index])),
     columnIndex: new Map(columns.map((column, index) => [column.id, index])),
   };
 }
@@ -78,7 +78,7 @@ export function locateCell<T>(
   grid: CellGrid<T>,
   position: TableCellPosition,
 ): { row: number; column: number } | null {
-  const row = grid.rowIndex.get(toKeyIdentity(position.rowKey));
+  const row = grid.rowIndex.get(toCollectionKey(position.rowKey));
   const column = grid.columnIndex.get(position.columnId);
   return row === undefined || column === undefined ? null : { row, column };
 }
@@ -180,7 +180,7 @@ export function readCellPosition<T extends TableRow>(
   grid: CellGrid<T>,
   cell: HTMLElement,
 ): TableCellPosition | null {
-  const rowKey = cell.closest('[role="row"]')?.getAttribute('data-key-identity');
+  const rowKey = cell.closest('[role="row"]')?.getAttribute('data-key');
   const index = rowKey == null ? undefined : grid.rowIndex.get(rowKey);
   const row = index === undefined ? undefined : grid.rows[index];
   const columnId = cell.dataset['column'];
