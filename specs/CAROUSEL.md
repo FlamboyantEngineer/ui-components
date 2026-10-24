@@ -38,7 +38,7 @@ Verification: `src/components/carousel/carousel.test.tsx`
 
 With focus inside the carousel, Arrow Left and Arrow Right shall show the previous and next slide (mirrored in a right-to-left locale), with the same ends or looping as the buttons. Presses with Control, Command or Alt, presses inside an element that uses the keys itself (an input, a text area, a select, a slider, or editable content with any `contenteditable` value but `false`), and presses a widget inside a slide already handled (its default prevented) are left alone.
 
-Implementation: `src/components/carousel/carousel.tsx`, `src/utils/is-key-owner.ts`
+Implementation: `src/components/carousel/carousel.tsx`, `src/utils/is-editable-target.ts`
 Verification: `src/components/carousel/carousel.test.tsx`, `e2e/carousel.spec.ts`
 
 ### UIC-CAROUSEL-2.2 - Focus follows a hidden slide

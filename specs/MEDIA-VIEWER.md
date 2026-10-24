@@ -29,7 +29,7 @@ Verification: `src/components/media-viewer/media-viewer.test.tsx`, `e2e/media-vi
 
 Inside the viewer, Page Up and Page Down shall show the previous and next item, and so shall Arrow Left and Arrow Right (mirrored in a right-to-left locale), except while focus is in the viewport and the image is wider than it, when the arrows scroll the image; `+` (or `=`) and `-` zoom an image in and out by the zoom control's levels. Presses with Control, Command or Alt, and presses inside an element that uses keys itself (an input, a text area, a select, a slider, or editable content with any `contenteditable` value but `false`), are left alone.
 
-Implementation: `src/components/media-viewer/media-layout.ts`, `src/components/media-viewer/media-viewer.tsx`, `src/components/modal/modal-dialog.tsx`, `src/utils/is-key-owner.ts`
+Implementation: `src/components/media-viewer/media-layout.ts`, `src/components/media-viewer/media-viewer.tsx`, `src/components/modal/modal-dialog.tsx`, `src/utils/is-editable-target.ts`
 Verification: `src/components/media-viewer/media-layout.test.ts`, `src/components/media-viewer/media-viewer.test.tsx`, `e2e/media-viewer.spec.ts`
 
 ## UIC-MEDIA-VIEWER-2 - Images

@@ -72,7 +72,7 @@ Verification: `src/components/diagram-canvas/diagram-canvas.test.tsx`, `e2e/diag
 
 The wheel with Ctrl or Command shall zoom around the pointer; the toolbar's [Zoom Control](ZOOM-CONTROL.md) (`ui-diagram-canvas__zoom`, resetting to 100%) and the `+` and `-` keys anywhere in the viewport, except in a field, a slider or editable content inside a node, step through its levels around the middle of the view. The zoom stays between 25% and 400%.
 
-Implementation: `src/components/diagram-canvas/use-diagram-viewport.ts`, `src/components/diagram-canvas/diagram-toolbar.tsx`, `src/components/diagram-canvas/diagram-canvas.tsx`, `src/utils/is-key-owner.ts`
+Implementation: `src/components/diagram-canvas/use-diagram-viewport.ts`, `src/components/diagram-canvas/diagram-toolbar.tsx`, `src/components/diagram-canvas/diagram-canvas.tsx`, `src/utils/is-editable-target.ts`
 Verification: `src/components/diagram-canvas/diagram-canvas.test.tsx`, `src/components/diagram-canvas/diagram-model.test.ts`, `e2e/diagram-canvas.spec.ts`
 
 ### UIC-DIAGRAM-CANVAS-3.3 - Fitting

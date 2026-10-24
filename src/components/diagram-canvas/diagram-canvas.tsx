@@ -1,10 +1,11 @@
-import { useLayoutEffect, useMemo, useRef, type KeyboardEvent, type ReactNode } from 'react';
+import { useMemo, useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import type { AriaLabellingProps, SelectionProps } from '../../core/events.js';
 import type { BaseProps, Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { isKeyOwner } from '../../utils/is-key-owner.js';
+import { isEditableTarget } from '../../utils/is-editable-target.js';
 import { mergeProps, mergeRefs } from '../../utils/merge-props.js';
+import { useLatest } from '../../utils/use-latest.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { DiagramEdges } from './diagram-edges.js';
@@ -119,22 +120,14 @@ function describeLinks(
   return descriptions;
 }
 
-/** The controller of the latest render, for nodes that read it only when the reader acts. */
-function useLatestController(controller: DiagramController) {
-  const latest = useRef(controller);
-  useLayoutEffect(() => {
-    latest.current = controller;
-  });
-  return latest;
-}
-
 /** The nodes, each rendered again only when its own state changes. */
 function DiagramNodes<T>({
   controller,
   renderNode,
 }: Pick<DiagramCanvasProps<T>, 'renderNode'> & { controller: DiagramController }) {
   const strings = useUiStrings();
-  const latest = useLatestController(controller);
+  // The nodes read the latest controller only when the reader acts.
+  const latest = useLatest(controller);
   const descriptions = useMemo(
     () => describeLinks(controller.links, strings),
     [controller.links, strings],
@@ -186,7 +179,8 @@ function DiagramViewportArea<T>({
   const { marquee, pointerProps } = useBackgroundPointer(controller, selectionMode);
   const { dropProps, isDropTarget } = usePaletteDrop({ ref, palette });
   const onKeyDown = (event: KeyboardEvent<HTMLElement>) => {
-    if (isKeyOwner(event.target) || event.altKey || event.ctrlKey || event.metaKey) return;
+    if (isEditableTarget(event.target, ', [role="slider"]')) return;
+    if (event.altKey || event.ctrlKey || event.metaKey) return;
     if (event.key === '+' || event.key === '=') stepZoom(1);
     else if (event.key === '-') stepZoom(-1);
     else return;

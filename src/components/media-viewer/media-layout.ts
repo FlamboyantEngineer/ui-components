@@ -1,6 +1,6 @@
 // Where a media viewer draws an image: fitted to the stage, zoomed and turned by quarter turns.
 
-import { isKeyOwner } from '../../utils/is-key-owner.js';
+import { isEditableTarget } from '../../utils/is-editable-target.js';
 
 export interface MediaSize {
   width: number;
@@ -70,7 +70,7 @@ export function resolveMediaKey(
   isPanning = false,
 ): MediaKeyCommand | null {
   if (event.ctrlKey || event.metaKey || event.altKey) return null;
-  if (isKeyOwner(event.target)) return null;
+  if (isEditableTarget(event.target, ', [role="slider"]')) return null;
   const fixed = fixedKeys[event.key];
   if (fixed) return fixed;
   if (isPanning) return null;

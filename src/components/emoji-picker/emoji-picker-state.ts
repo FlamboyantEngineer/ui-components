@@ -1,7 +1,6 @@
 import {
   useContext,
   useEffect,
-  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -10,6 +9,7 @@ import {
 } from 'react';
 import { OverlayTriggerStateContext, useLocale } from '../../primitives/index.js';
 import { useControllableState } from '../../core/controllable-state.js';
+import { useLatest } from '../../utils/use-latest.js';
 import { createValueStore, type ValueStore } from '../../utils/value-store.js';
 import {
   addRecentEmoji,
@@ -161,10 +161,7 @@ function buildTabs(emoji: readonly NativeEmoji[], recent: EmojiEntry[], custom: 
  * passes a new function on each render does not load again.
  */
 export function useEmojiData(load: EmojiLoader, loadKey: string): EmojiData {
-  const latest = useRef(load);
-  useLayoutEffect(() => {
-    latest.current = load;
-  });
+  const latest = useLatest(load);
   const [result, setResult] = useState<EmojiData & { loadKey?: string }>({
     emoji: null,
     failed: false,
@@ -178,7 +175,7 @@ export function useEmojiData(load: EmojiLoader, loadKey: string): EmojiData {
     return () => {
       current = false;
     };
-  }, [loadKey]);
+  }, [latest, loadKey]);
   return result.loadKey === loadKey ? result : { emoji: null, failed: false };
 }
 

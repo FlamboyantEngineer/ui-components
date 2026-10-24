@@ -14,7 +14,7 @@ import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { isKeyOwner } from '../../utils/is-key-owner.js';
+import { isEditableTarget } from '../../utils/is-editable-target.js';
 import {
   CarouselControls,
   CarouselPaginationButtons,
@@ -55,7 +55,7 @@ const defaultInterval = 5000;
  */
 function resolveSlideKey(event: KeyboardEvent, direction: 'ltr' | 'rtl'): -1 | 1 | 0 {
   if (event.defaultPrevented || event.ctrlKey || event.metaKey || event.altKey) return 0;
-  if (isKeyOwner(event.target)) return 0;
+  if (isEditableTarget(event.target, ', [role="slider"]')) return 0;
   const forward = direction === 'rtl' ? 'ArrowLeft' : 'ArrowRight';
   const backward = direction === 'rtl' ? 'ArrowRight' : 'ArrowLeft';
   return event.key === forward ? 1 : event.key === backward ? -1 : 0;
