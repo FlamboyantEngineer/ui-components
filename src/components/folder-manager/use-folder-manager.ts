@@ -83,7 +83,10 @@ export interface FolderManagerModel<T extends FolderItem> {
  * The filter query, and a setter that expands the branches holding the new matches, the root row
  * included.
  */
-function useFolderQuery<T extends FolderItem>(folders: readonly T[], rootLabel: string | undefined) {
+function useFolderQuery<T extends FolderItem>(
+  folders: readonly T[],
+  rootLabel: string | undefined,
+) {
   const [query, setQuery] = useState('');
   const terms = useMemo(() => splitMatchTerms(query), [query]);
   const update = (next: string, expansion: FolderExpansion) => {

@@ -111,7 +111,10 @@ test.describe('Modal lab', () => {
     await lab.expectAccessible('.ui-modal');
   });
 
-  test('UIC-MODAL-6.3 runs the primary action once from Enter in a field', async ({ page, lab }) => {
+  test('UIC-MODAL-6.3 runs the primary action once from Enter in a field', async ({
+    page,
+    lab,
+  }) => {
     await lab.open('modal');
     await page.locator('[data-lab-open="save"]').click();
     const city = page.getByRole('textbox', { name: 'City' });

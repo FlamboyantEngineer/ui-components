@@ -215,7 +215,8 @@ function useSelectedView(props: ViewSwitcherProps) {
   );
   const selected = findView(views, chosenKey) ?? findView(views, defaultViewKey) ?? views[0];
   const selectedKey = selected?.id ?? null;
-  const isStale = props.selectedKey === undefined && selectedKey !== null && chosenKey !== selectedKey;
+  const isStale =
+    props.selectedKey === undefined && selectedKey !== null && chosenKey !== selectedKey;
   useEffect(() => {
     if (isStale) select(selectedKey);
   });

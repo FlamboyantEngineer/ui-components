@@ -89,7 +89,9 @@ describe('DropdownMenu', () => {
     );
     expect(screen.getByRole('menu')).toHaveAccessibleName(expect.stringContaining('Clipboard'));
     unmount();
-    const { unmount: unmountSort } = render(<DropdownMenu label="Sort" items={items} defaultOpen />);
+    const { unmount: unmountSort } = render(
+      <DropdownMenu label="Sort" items={items} defaultOpen />,
+    );
     expect(screen.getByRole('menu', { name: 'Sort' })).toBeInTheDocument();
     unmountSort();
     render(

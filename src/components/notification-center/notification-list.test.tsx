@@ -207,21 +207,25 @@ describe('NotificationList', () => {
       );
     }
     const { unmount } = render(<Inbox />);
-    await user.click(within(row('Import finished')).getByRole('button', { name: 'Mark as unread' }));
-    expect(within(row('Import finished')).getByRole('button', { name: 'Mark as read' })).toHaveFocus();
+    await user.click(
+      within(row('Import finished')).getByRole('button', { name: 'Mark as unread' }),
+    );
+    expect(
+      within(row('Import finished')).getByRole('button', { name: 'Mark as read' }),
+    ).toHaveFocus();
     // The only notification of today leaves with its day; focus goes to the next day's row.
     await user.click(within(row('Import finished')).getByRole('button', { name: 'Dismiss' }));
     await waitFor(() =>
-      expect(within(row('Jon Berg replied')).getByRole('button', { name: 'Dismiss' })).toHaveFocus(),
+      expect(
+        within(row('Jon Berg replied')).getByRole('button', { name: 'Dismiss' }),
+      ).toHaveFocus(),
     );
     await user.keyboard('{Enter}');
     await waitFor(() =>
       expect(within(row('Weekly digest')).getByRole('button', { name: 'Dismiss' })).toHaveFocus(),
     );
     await user.keyboard('{Enter}');
-    await waitFor(() =>
-      expect(screen.getByRole('radio', { name: /^All/ })).toHaveFocus(),
-    );
+    await waitFor(() => expect(screen.getByRole('radio', { name: /^All/ })).toHaveFocus());
     unmount();
     render(<Inbox filter="unread" />);
     await user.click(within(row('Jon Berg replied')).getByRole('button', { name: 'Mark as read' }));
