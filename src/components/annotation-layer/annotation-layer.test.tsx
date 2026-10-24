@@ -232,6 +232,21 @@ describe('AnnotationMargin', () => {
     expect(screen.queryByText('number card')).not.toBeInTheDocument();
   });
 
+  it('UIC-ANNOTATION-LAYER-2.1 keeps the marks of numeric and text IDs distinct', () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const entries: Annotation[] = [
+      { id: 1, rects: [{ top: 10, left: 20, width: 10, height: 10 }] },
+      { id: '1', rects: [{ top: 30, left: 20, width: 10, height: 10 }] },
+    ];
+    const { container, rerender } = render(<AnnotationLayer annotations={entries} />);
+    expect(marks(container)).toHaveLength(2);
+    const textMark = marks(container)[1];
+    rerender(<AnnotationLayer annotations={entries.slice(1)} />);
+    expect(marks(container)).toEqual([textMark]);
+    expect(textMark).toHaveStyle({ top: '30px' });
+    expect(error).not.toHaveBeenCalled();
+  });
+
   it('UIC-ANNOTATION-LAYER-2.1 lists a card per annotation in anchor order, orphans last', () => {
     const { container } = render(<Notes defaultActiveId="missing" />);
     const list = screen.getByRole('list', { name: 'Annotations' });
