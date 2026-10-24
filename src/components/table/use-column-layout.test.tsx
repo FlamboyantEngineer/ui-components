@@ -46,7 +46,7 @@ describe('Table column layout', { timeout: 15_000 }, () => {
     expect(trigger).toHaveClass('ui-table__columns-menu');
     expectHooksMatchSpec(container, 'TABLE', { slots: ['toolbar', 'columns-menu'] });
     await user.click(trigger);
-    const menu = screen.getByRole('menu');
+    const menu = await screen.findByRole('menu');
     const items = within(menu).getAllByRole('menuitemcheckbox');
     expect(items.map((item) => item.textContent)).toEqual(['Country', 'People']);
     expect(items[0]).toBeChecked();
@@ -54,7 +54,7 @@ describe('Table column layout', { timeout: 15_000 }, () => {
     expect(headers()).toEqual(['Name', 'People']);
     expect(onColumnLayoutChange).toHaveBeenLastCalledWith({ hidden: ['country'] });
     expect(screen.getByRole('menu')).toBeInTheDocument();
-    await user.click(within(screen.getByRole('menu')).getAllByRole('menuitemcheckbox')[0]!);
+    await user.click(within(await screen.findByRole('menu')).getAllByRole('menuitemcheckbox')[0]!);
     expect(headers()).toEqual(['Name', 'Country', 'People']);
   });
 
@@ -90,7 +90,7 @@ describe('Table column layout', { timeout: 15_000 }, () => {
     const storage: UiStorage = createMemoryStorage();
     const view = renderCities({ persistKey: 'cities' }, storage);
     await user.click(screen.getByRole('button', { name: 'Columns' }));
-    await user.click(screen.getByRole('menuitemcheckbox', { name: 'People' }));
+    await user.click(await screen.findByRole('menuitemcheckbox', { name: 'People' }));
     expect(JSON.parse(storage.getItem('cities:layout') ?? '{}')).toEqual({ hidden: ['people'] });
     view.unmount();
     renderCities({ persistKey: 'cities' }, storage);

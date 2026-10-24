@@ -13,7 +13,7 @@ Verification: `src/components/menubar/menubar.test.tsx`, `e2e/menubar.spec.ts`
 
 ### UIC-MENUBAR-1.2 - Orientation and size
 
-`orientation` (`horizontal`, the default, or `vertical`) shall be published in `data-orientation` and decide which arrow keys move along the bar; menus open below their item at `bottom start` in a row and beside it at `end top` in a column. `size` (`sm`, `md`, the default, or `lg`) shall be published in `data-size` and set the row density of every menu ([UIC-MENU-1.2](MENU.md#uic-menu-12---size)).
+`orientation` (`horizontal`, the default, or `vertical`) shall be published in `data-orientation` and decide which arrow keys move along the bar; menus open below their item at `bottom start` in a row and beside it at `end top` in a column. `size` (`xs`, `sm`, `md`, the default, or `lg`) shall be published in `data-size` and set the row density of every menu (`sm` for an `xs` bar, as for dropdown menu triggers; [UIC-MENU-1.2](MENU.md#uic-menu-12---size)).
 
 Implementation: `src/components/menubar/menubar.tsx`, `labs/reference/menubar.css`
 Verification: `src/components/menubar/menubar.test.tsx`, `e2e/menubar.spec.ts`
@@ -83,7 +83,7 @@ Verification: `src/components/menubar/menubar.test.tsx`, `e2e/menubar.spec.ts`
 | `ui-menubar`          | root      |                          | The `role="menubar"` element.                                             |
 | `ui-menubar__trigger` | slot      |                          | A top-level item: the `<button role="menuitem">` of a `MenubarMenu`.      |
 | `data-orientation`    | attribute | `horizontal`, `vertical` | How the top-level items are laid out.                                     |
-| `data-size`           | attribute | `sm`, `md`, `lg`         | Row density of the bar and its menus.                                     |
+| `data-size`           | attribute | `xs`, `sm`, `md`, `lg`   | Row density of the bar; `xs` menus use `sm`.                              |
 | `data-open`           | state     | `true`                   | On a top-level item while its menu is open.                               |
 | `data-hovered`        | state     | `true`                   | On a top-level item while the pointer is over it (React Aria).            |
 | `data-pressed`        | state     | `true`                   | On a top-level item while pressed or while its menu is open (React Aria). |

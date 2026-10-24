@@ -247,7 +247,7 @@ describe('ActionRow', () => {
     await user.click(more);
     expect(onPress).not.toHaveBeenCalled();
     expect(more).toHaveAttribute('aria-expanded', 'true');
-    const menu = screen.getByRole('menu', { name: 'More actions' });
+    const menu = await screen.findByRole('menu', { name: 'More actions' });
     expect(more).toHaveAttribute('aria-controls', menu.id);
     expect(menu).toHaveAttribute('data-size', 'sm');
     expect(within(menu).getAllByRole('menuitem')).toEqual([
@@ -273,7 +273,7 @@ describe('ActionRow', () => {
     await waitFor(() => expect(more).toHaveFocus());
 
     await user.keyboard('{ArrowDown}');
-    expect(screen.getByRole('menuitem', { name: /Export/ })).toHaveFocus();
+    expect(await screen.findByRole('menuitem', { name: /Export/ })).toHaveFocus();
     await user.keyboard('{ArrowDown}{Enter}');
     expect(onArchive).toHaveBeenCalledTimes(1);
     expect(onAction.mock.calls.map(([key]) => key)).toEqual(['export', 'archive']);
@@ -447,7 +447,7 @@ describe('ActionRow', () => {
       expectHooksMatchSpec(container, 'ACTION-ROW', { slots: ['actions', 'action', 'overflow'] });
 
       await userEvent.click(more);
-      expect(screen.getAllByRole('menuitem').map((item) => item.textContent)).toEqual([
+      expect((await screen.findAllByRole('menuitem')).map((item) => item.textContent)).toEqual([
         'More',
         'Edit',
         'Delete',
@@ -456,11 +456,11 @@ describe('ActionRow', () => {
         'aria-disabled',
         'true',
       );
-      await userEvent.click(screen.getByRole('menuitem', { name: 'Edit' }));
+      await userEvent.click(await screen.findByRole('menuitem', { name: 'Edit' }));
       expect(onEdit).toHaveBeenCalledTimes(1);
 
       await userEvent.click(more);
-      await userEvent.click(screen.getByRole('menuitem', { name: 'More' }));
+      await userEvent.click(await screen.findByRole('menuitem', { name: 'More' }));
       await userEvent.click(await screen.findByRole('menuitem', { name: 'Rename' }));
       expect(onAction.mock.calls[0]?.[0]).toBe('rename');
     } finally {

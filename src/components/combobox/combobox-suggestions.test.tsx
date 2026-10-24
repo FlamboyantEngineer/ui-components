@@ -147,6 +147,18 @@ describe('Combobox suggestions', () => {
     expect(input()).toHaveValue('Lemon');
   });
 
+  it.each(['xs', 'sm', 'md', 'lg'] as const)(
+    'UIC-COMBOBOX-1.2 publishes %s on its portalled suggestion list',
+    async (size) => {
+      const user = userEvent.setup();
+      render(<Combobox aria-label="Fruit" defaultItems={fruit} size={size} />);
+      await user.click(screen.getByRole('button', { name: /Show suggestions/ }));
+      const list = await screen.findByRole('listbox');
+      expect(list.closest('.ui-combobox__popover')).toHaveAttribute('data-size', size);
+      expectHooksMatchSpec(document.body, 'COMBOBOX');
+    },
+  );
+
   it('UIC-COMBOBOX-2.6 opens an empty list with the empty state', async () => {
     const user = userEvent.setup();
     const { rerender } = render(<Combobox aria-label="Fruit" defaultItems={fruit} />);

@@ -111,7 +111,7 @@ describe('Combobox', () => {
     const root = container.querySelector('.ui-combobox');
     expect(root).toHaveAttribute('data-variant', 'default');
     expect(root).toHaveAttribute('data-size', 'md');
-    for (const size of ['sm', 'md', 'lg'] as const) {
+    for (const size of ['xs', 'sm', 'md', 'lg'] as const) {
       rerender(<Combobox aria-label="Fruit" defaultItems={fruit} variant="search" size={size} />);
       expect(root).toHaveAttribute('data-size', size);
       expect(root).toHaveAttribute('data-variant', 'search');

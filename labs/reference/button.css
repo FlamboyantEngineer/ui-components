@@ -3,6 +3,7 @@
 .ui-button {
   position: relative;
   display: inline-flex;
+  vertical-align: middle;
   align-items: center;
   justify-content: center;
   gap: 6px;

@@ -3,6 +3,7 @@
 .ui-icon-button {
   position: relative;
   display: inline-flex;
+  vertical-align: middle;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;

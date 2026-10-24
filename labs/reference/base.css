@@ -183,6 +183,12 @@ body {
   font-weight: 500;
 }
 
+/* Size samples compare control boxes without the field's reserved feedback row. */
+[data-lab-control-sample] .ui-field__message:empty {
+  min-height: 0;
+  margin-top: 0;
+}
+
 @keyframes ref-spin {
   to {
     transform: rotate(360deg);

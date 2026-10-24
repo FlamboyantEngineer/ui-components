@@ -71,8 +71,8 @@
   border-color: var(--ref-accent-ink);
 }
 
-.ui-switch[data-pressed] .ui-switch__thumb {
-  scale: 1.2 1;
+.ui-switch[data-pressed] .ui-switch__track {
+  box-shadow: var(--ref-focus-inset);
 }
 
 .ui-switch[data-focus-visible] .ui-switch__track {

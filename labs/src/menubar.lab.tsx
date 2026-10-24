@@ -10,7 +10,7 @@ import {
 import { Menubar, MenubarMenu } from '../../src/components/menubar/menubar.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
-const sizes = ['sm', 'md', 'lg'] as const;
+const sizes = ['xs', 'sm', 'md', 'lg'] as const;
 const orientations = ['horizontal', 'vertical'] as const;
 
 const fileEntries: MenuEntry[] = [

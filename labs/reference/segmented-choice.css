@@ -36,6 +36,7 @@
   color: var(--ref-text);
   font: inherit;
   font-size: var(--ref-font-size-md);
+  line-height: 1.2;
   cursor: pointer;
   outline: none;
 }

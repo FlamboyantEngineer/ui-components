@@ -6,9 +6,9 @@ import {
   useLocale,
 } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, NativeProps, Orientation } from '../../core/props.js';
+import type { BaseProps, ControlSize, NativeProps, Orientation } from '../../core/props.js';
 import { mergeProps } from '../../utils/merge-props.js';
-import { Menu, MenuOverlay, MenuTrigger, type MenuProps, type MenuSize } from '../menu/menu.js';
+import { Menu, MenuOverlay, MenuTrigger, type MenuProps } from '../menu/menu.js';
 import { MenubarContext, useMenubarContext, useMenubarState } from './menubar-state.js';
 
 export interface MenubarProps
@@ -18,7 +18,7 @@ export interface MenubarProps
   /** Lays the top-level items out in a row (the default) or a column; the arrow keys follow it. */
   orientation?: Orientation | undefined;
   /** Row density of the bar and its menus. Defaults to `md`. */
-  size?: MenuSize | undefined;
+  size?: ControlSize | undefined;
 }
 
 export interface MenubarMenuProps
@@ -44,7 +44,12 @@ export function Menubar({
 }: MenubarProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const { direction } = useLocale();
-  const { context, onKeyDownCapture } = useMenubarState({ rootRef, orientation, size, direction });
+  const { context, onKeyDownCapture } = useMenubarState({
+    rootRef,
+    orientation,
+    size: size === 'xs' ? 'sm' : size,
+    direction,
+  });
   return (
     <div
       {...mergeProps(rest, { ref: rootRef, onKeyDownCapture })}

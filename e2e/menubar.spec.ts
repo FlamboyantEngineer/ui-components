@@ -189,9 +189,10 @@ test.describe('Menubar lab', () => {
     await expect(item(page, 'Delete')).toHaveAttribute('data-tone', 'danger');
   });
 
-  test('UIC-MENUBAR-1.2 lays out rows and columns at three sizes', async ({ page, lab }) => {
+  test('UIC-MENUBAR-1.2 lays out rows and columns at four sizes', async ({ page, lab }) => {
     await lab.open('menubar');
     for (const [size, height] of [
+      ['xs', 20],
       ['sm', 24],
       ['md', 28],
       ['lg', 32],

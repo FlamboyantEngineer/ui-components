@@ -1,7 +1,7 @@
 import { useCallback, useId, useState } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
-import type { BaseProps, Key } from '../../core/props.js';
+import type { BaseProps, ControlSize, Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Avatar, splitAvatarIdentity, type AvatarIdentity } from '../avatar/avatar.js';
 import {
@@ -60,9 +60,10 @@ export interface PeoplePickerProps<M extends ComboboxSelectionMode = 'single'>
       | 'isReadOnly'
       | 'isInvalid'
       | 'isRequired'
-      | 'size'
       | 'searchDelay'
     > {
+  /** Field size. Defaults to `md`. */
+  size?: Extract<ControlSize, 'sm' | 'md' | 'lg'> | undefined;
   /** Searches people and groups as the reader types. Keep it stable: a new loader searches again. */
   loadItems: PeoplePickerLoader;
   /** The person using the app, listed first before a search and marked wherever listed. */

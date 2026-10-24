@@ -178,7 +178,7 @@ describe('RelativeDateField', () => {
     await user.click(screen.getByRole('button', { name: 'Restore Due' }));
     expect(screen.getByRole('button', { name: 'Today Due' })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Due actions' }));
-    await user.click(screen.getByRole('menuitem', { name: 'Clear' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Clear' }));
     expect(onCommit).toHaveBeenLastCalledWith(null);
   });
 

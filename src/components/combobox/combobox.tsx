@@ -2,7 +2,7 @@ import { useMemo, useRef, type ReactNode, type Ref } from 'react';
 import { ComboBox as AriaComboBox, FieldError, Label, Text } from '../../primitives/index.js';
 import type { AriaLabellingProps, OpenStateProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
-import type { BaseProps, Key, Size } from '../../core/props.js';
+import type { BaseProps, ControlSize, Key } from '../../core/props.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import { decodeComboboxValue, encodeComboboxItems, useComboboxValues } from './combobox-values.js';
 import { ComboboxField, ComboboxInputs } from './combobox-field.js';
@@ -15,7 +15,7 @@ import {
 } from './combobox-state.js';
 import { ComboboxSuggestions, type ComboboxOptionRenderer } from './combobox-suggestions.js';
 
-export type ComboboxSize = Extract<Size, 'sm' | 'md' | 'lg'>;
+export type ComboboxSize = ControlSize;
 
 /** `search` leads the field with a search glyph, for a query completed from suggestions. */
 export type ComboboxVariant = 'default' | 'search';
@@ -223,6 +223,7 @@ export function Combobox<M extends ComboboxSelectionMode = 'single'>({
       <ComboboxInputs name={name} isDisabled={isDisabled} isCustom={aria.allowsCustomValue} />
       <ComboboxSuggestions
         {...list}
+        size={size}
         items={suggestions}
         loading={model.loading}
         inputText={model.input.text}

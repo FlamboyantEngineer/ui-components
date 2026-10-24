@@ -35,6 +35,15 @@
   outline: none;
 }
 
+.ui-menubar[data-size='xs'] {
+  font-size: var(--ref-font-size-xs);
+}
+
+.ui-menubar[data-size='xs'] .ui-menubar__trigger {
+  height: var(--ref-control-height-xs);
+  padding: 0 6px;
+}
+
 .ui-menubar[data-size='sm'] {
   font-size: var(--ref-font-size-sm);
 }

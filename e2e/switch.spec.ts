@@ -74,4 +74,32 @@ test.describe('Switch lab', () => {
     );
     await lab.expectAccessible();
   });
+
+  test('UIC-SWITCH-1.1 keeps its thumb circular during mouse presses and the slide', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('switch');
+    const root = page.locator('[data-lab-field="bluetooth"]');
+    const track = root.locator('.ui-switch__track');
+    await track.scrollIntoViewIfNeeded();
+    await track.hover();
+    await page.mouse.down();
+    await expect(root).toHaveAttribute('data-pressed', 'true');
+    const thumb = root.locator('.ui-switch__thumb');
+    const pressed = await box(thumb);
+    expect(pressed.width).toBe(pressed.height);
+    await page.mouse.up();
+    await expect(root.getByRole('switch')).toBeChecked();
+    const frames = await thumb.evaluate(async (element) => {
+      const samples = [];
+      for (let frame = 0; frame < 16; frame += 1) {
+        await new Promise(requestAnimationFrame);
+        const bounds = element.getBoundingClientRect();
+        samples.push({ width: bounds.width, height: bounds.height });
+      }
+      return samples;
+    });
+    expect(frames.every(({ width, height }) => width === height)).toBe(true);
+  });
 });

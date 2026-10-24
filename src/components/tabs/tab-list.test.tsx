@@ -76,7 +76,7 @@ describe('TabList', () => {
     expectHooksMatchSpec(container, 'TABS', { slots: ['bar', 'list', 'tab', 'overflow'] });
 
     await userEvent.click(more);
-    const menu = screen.getByRole('menu');
+    const menu = await screen.findByRole('menu');
     expect(
       within(menu)
         .getAllByRole('menuitem')
@@ -116,6 +116,7 @@ describe('TabList', () => {
     const apple = screen.getByRole('tab', { name: 'Apple' });
     const more = screen.getByRole('button', { name: '3 more items' });
     await user.click(more);
+    await screen.findByRole('menu');
     rerender(<Fruit overflow="menu" isDisabled />);
     expect(more).toBeDisabled();
     const grape = screen.getByRole('menuitem', { name: 'Grape' });
@@ -125,7 +126,7 @@ describe('TabList', () => {
     await user.keyboard('{Escape}');
     rerender(<Fruit overflow="menu" />);
     await user.click(more);
-    await user.click(screen.getByRole('menuitem', { name: 'Grape' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Grape' }));
     expect(screen.getByRole('tab', { name: 'Grape' })).toHaveAttribute('aria-selected', 'true');
   });
 

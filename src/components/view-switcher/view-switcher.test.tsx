@@ -32,7 +32,7 @@ const actionsButton = (name: string) => screen.getByRole('button', { name: `Acti
 
 async function chooseAction(name: string, action: string) {
   await userEvent.click(await screen.findByRole('button', { name: `Actions for ${name}` }));
-  await userEvent.click(screen.getByRole('menuitem', { name: action }));
+  await userEvent.click(await screen.findByRole('menuitem', { name: action }));
 }
 
 describe('ViewSwitcher', { timeout: 20_000 }, () => {
@@ -104,6 +104,7 @@ describe('ViewSwitcher', { timeout: 20_000 }, () => {
       <ViewSwitcher views={views} onSave={onSave} onReset={onReset} onSaveAs={() => {}} />,
     );
     await userEvent.click(actionsButton('All recipes'));
+    await screen.findByRole('menu');
     expect(screen.queryByRole('menuitem', { name: 'Save' })).not.toBeInTheDocument();
     expect(screen.queryByRole('menuitem', { name: 'Reset changes' })).not.toBeInTheDocument();
     await userEvent.keyboard('{Escape}');
@@ -178,6 +179,7 @@ describe('ViewSwitcher', { timeout: 20_000 }, () => {
       />,
     );
     await userEvent.click(actionsButton('All recipes'));
+    await screen.findByRole('menu');
     expect(screen.queryByRole('menuitem', { name: 'Set as default view' })).not.toBeInTheDocument();
     expect(screen.getByRole('menuitem', { name: 'Delete' })).toHaveAttribute(
       'aria-disabled',
@@ -206,7 +208,7 @@ describe('ViewSwitcher', { timeout: 20_000 }, () => {
     expect(container).toHaveTextContent('Rows');
     expectHooksMatchSpec(container, 'VIEW-SWITCHER', { slots: ['bar', 'menu', 'actions'] });
     await userEvent.click(trigger);
-    const menu = screen.getByRole('menu', { name: 'Views' });
+    const menu = await screen.findByRole('menu', { name: 'Views' });
     const items = within(menu).getAllByRole('menuitemradio');
     expect(items.map((item) => item.getAttribute('aria-checked'))).toEqual([
       'true',

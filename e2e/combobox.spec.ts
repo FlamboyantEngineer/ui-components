@@ -10,14 +10,15 @@ function cell(page: Page, variant: string, state: string, size: string): Locator
 }
 
 test.describe('Combobox lab', () => {
-  test('UIC-COMBOBOX-1.1 UIC-COMBOBOX-1.2 draws fields at three sizes with the search variant', async ({
+  test('UIC-COMBOBOX-1.1 UIC-COMBOBOX-1.2 draws fields at four sizes with the search variant', async ({
     page,
     lab,
   }) => {
     await lab.open('combobox');
     const cells = page.locator('table[data-lab-matrix="variant state size"] td[data-lab-cell]');
-    expect(await cells.count()).toBe(2 * 6 * 3);
+    expect(await cells.count()).toBe(2 * 6 * 4);
     for (const [size, height] of [
+      ['xs', 20],
       ['sm', 24],
       ['md', 28],
       ['lg', 32],

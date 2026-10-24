@@ -6,7 +6,7 @@ import { toPdfFileName } from './pdf-commands.js';
 
 async function chooseCommand(name: string) {
   await userEvent.click(screen.getByRole('button', { name: 'More options' }));
-  await userEvent.click(within(screen.getByRole('menu')).getByRole('menuitem', { name }));
+  await userEvent.click(within(await screen.findByRole('menu')).getByRole('menuitem', { name }));
 }
 
 describe('PdfViewer commands', () => {
@@ -31,7 +31,7 @@ describe('PdfViewer commands', () => {
     view.update({ source: '/files/Report.pdf' });
     await waitFor(() => expect(screen.getByRole('button', { name: 'More options' })).toBeEnabled());
     await userEvent.click(screen.getByRole('button', { name: 'More options' }));
-    const menu = screen.getByRole('menu');
+    const menu = await screen.findByRole('menu');
     expect(
       within(menu)
         .getAllByRole('menuitem')

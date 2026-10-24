@@ -155,8 +155,8 @@ describe('InsertMenu', () => {
     const button = screen.getByRole('button', { name: 'Insert' });
     expect(button).toHaveClass('ui-insert-menu-button', 'ui-dropdown-menu', 'caller');
     await user.click(button);
-    expect(screen.getAllByRole('menuitem')).toHaveLength(11);
-    await user.click(screen.getByRole('menuitem', { name: 'Divider' }));
+    expect(await screen.findAllByRole('menuitem')).toHaveLength(11);
+    await user.click(await screen.findByRole('menuitem', { name: 'Divider' }));
     expect(value()?.content?.map((block) => block.type)).toEqual([
       'paragraph',
       'horizontalRule',

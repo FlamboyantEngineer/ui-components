@@ -13,7 +13,7 @@ Verification: `src/components/combobox/combobox.test.tsx`, `e2e/combobox.spec.ts
 
 ### UIC-COMBOBOX-1.2 - Variants and sizes
 
-`variant` (`default` or `search`) and `size` (`sm`, `md` by default, `lg`) shall be published in `data-variant` and `data-size`. The reference sheet draws 26, 32 and 38 pixel high fields.
+`variant` (`default` or `search`) and `size` (`xs`, `sm`, `md` by default, `lg`) shall be published in `data-variant` and `data-size`. The popover shall publish the same `data-size`, so its options, loading, creation and empty rows follow the field's size. The reference sheet draws fields and single-line popup rows at 20, 24, 28 and 32 pixels, with matching type sizes. An `xs` multiple combobox uses the smallest (`sm`) tag-group chips.
 
 Implementation: `src/components/combobox/combobox.tsx`, `labs/reference/combobox.css`
 Verification: `src/components/combobox/combobox.test.tsx`, `e2e/combobox.spec.ts`
@@ -238,7 +238,7 @@ Verification: `src/components/combobox/combobox.test.tsx`
 | `ui-combobox__chip-icon`          | slot      |                                            | A chip's icon (also `ui-icon`).                                     |
 | `ui-combobox__list-header`        | slot      |                                            | The controls above the listbox.                                     |
 | `data-variant`                    | attribute | `default`, `search`                        | Variant.                                                            |
-| `data-size`                       | attribute | `sm`, `md`, `lg`                           | Field size.                                                         |
+| `data-size`                       | attribute | `xs`, `sm`, `md`, `lg`                     | Field and popover size.                                             |
 | `data-layer`                      | attribute | `dropdown`                                 | The popover's overlay layer.                                        |
 | `data-pending`                    | state     | `true`                                     | Suggestions are loading.                                            |
 | `data-focused`                    | state     | `true`                                     | Focused (React Aria; root, input and highlighted option).           |

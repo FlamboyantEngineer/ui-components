@@ -69,9 +69,6 @@ const options = (isLong: boolean): SelectFieldOption[] => [
   { id: 'pear', label: 'Pear' },
 ];
 
-/** Sizes that a control without `xs` leaves out draw nothing. */
-const withoutXs = (size: ControlSize) => (size === 'xs' ? null : size);
-
 const cells: Record<Control, (props: CellProps) => ReactNode> = {
   button: ({ size, isLong }) => (
     <Button size={size} startIcon="plus" endIcon={isLong ? 'chevron-down' : undefined}>
@@ -79,7 +76,12 @@ const cells: Record<Control, (props: CellProps) => ReactNode> = {
     </Button>
   ),
   'icon-button': ({ size, isLong }) => (
-    <IconButton size={size} icon={isLong ? 'more-vertical' : 'plus'} label="Add" />
+    <IconButton
+      variant="secondary"
+      size={size}
+      icon={isLong ? 'more-vertical' : 'plus'}
+      label={isLong ? 'More editing actions' : 'Add'}
+    />
   ),
   'dropdown-menu': ({ size, isLong }) => (
     <DropdownMenu size={size} label={isLong ? 'More editing actions' : 'Edit'} items={entries} />
@@ -98,25 +100,20 @@ const cells: Record<Control, (props: CellProps) => ReactNode> = {
   'search-field': ({ size, isLong }) => (
     <SearchField size={size} label="Search" defaultValue={isLong ? 'A long query, typed' : 'Fig'} />
   ),
-  combobox: ({ size, isLong }) => {
-    const shown = withoutXs(size);
-    return shown ? (
-      <Combobox
-        size={shown}
-        aria-label="Fruit"
-        defaultItems={fruit}
-        defaultInputValue={isLong ? 'A long typed value' : 'Fig'}
-      />
-    ) : null;
-  },
-  menubar: ({ size, isLong }) => {
-    const shown = withoutXs(size);
-    return shown ? (
-      <Menubar aria-label="Editor" size={shown}>
-        <MenubarMenu label={isLong ? 'Preferences' : 'File'} items={entries} />
-      </Menubar>
-    ) : null;
-  },
+  combobox: ({ size, isLong }) => (
+    <Combobox
+      size={size}
+      aria-label="Fruit"
+      defaultItems={fruit}
+      defaultInputValue={isLong ? 'A long typed value' : 'Fig'}
+    />
+  ),
+  menubar: ({ size, isLong }) => (
+    <Menubar aria-label="Editor" size={size}>
+      <MenubarMenu label={isLong ? 'Preferences' : 'File'} items={entries} />
+      <MenubarMenu label="Edit" items={entries} />
+    </Menubar>
+  ),
   'text-field': ({ size, isLong }) => (
     <TextField
       size={size}
@@ -188,7 +185,12 @@ const cells: Record<Control, (props: CellProps) => ReactNode> = {
       size={size}
       label="Fruit"
       labelLayout="control-only"
-      options={[{ value: 'apple', label: isLong ? 'Apple, crisp and sweet' : 'Apple' }]}
+      defaultValue={['apple']}
+      options={[
+        { value: 'apple', label: isLong ? 'Apple, crisp and sweet' : 'Apple' },
+        { value: 'pear', label: isLong ? 'Pear, soft and juicy' : 'Pear' },
+        { value: 'fig', label: 'Fig' },
+      ]}
     />
   ),
   switch: ({ size, isLong }) => (
@@ -199,6 +201,8 @@ const cells: Record<Control, (props: CellProps) => ReactNode> = {
   'radio-group': ({ size, isLong }) => (
     <RadioGroup size={size} label="Fruit" labelLayout="control-only" defaultValue="apple">
       <Radio value="apple">{isLong ? 'Apple, crisp and sweet' : 'Apple'}</Radio>
+      <Radio value="pear">{isLong ? 'Pear, soft and juicy' : 'Pear'}</Radio>
+      <Radio value="fig">Fig</Radio>
     </RadioGroup>
   ),
 };
@@ -207,18 +211,25 @@ mountLab(
   <>
     <LabSection
       title="Every control at every size"
-      description="Each control takes the height of its size, not of its content or the type around it: xs 20, sm 24, md 28 and lg 32 pixels in the reference stylesheet, also inside 24 pixel type with double line height. Controls without an xs size leave that cell empty."
+      description="Compare xs (20), sm (24), md (28) and lg (32 pixels) across each row. Long content changes labels, not height; icon buttons keep a square frame and put their label in a tooltip. Large type enlarges the Aa sample around each control to 24 pixels with double line height; the control keeps its own type and size."
     >
       <StateMatrix
         axes={{ control: controls, content: contents, size: sizes }}
         render={({ control, content, size }) => {
           const Cell = cells[control];
-          const cell = <Cell size={size} isLong={content === 'long'} />;
-          // Type the page sets around a control never changes its height: its size does.
-          return content === 'large type' ? (
-            <div style={{ fontSize: 24, lineHeight: 2 }}>{cell}</div>
-          ) : (
-            cell
+          return (
+            <div
+              data-lab-control-sample={content}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                ...(content === 'large type' ? { fontSize: 24, lineHeight: 2 } : {}),
+              }}
+            >
+              <span aria-hidden="true">Aa</span>
+              <Cell size={size} isLong={content === 'long'} />
+            </div>
           );
         }}
       />

@@ -84,16 +84,23 @@ describe('Menubar', () => {
     );
   });
 
-  it('UIC-MENUBAR-1.2 publishes orientation and size and sizes the menus', async () => {
-    const user = userEvent.setup();
-    render(<Bar orientation="vertical" size="sm" />);
-    const bar = screen.getByRole('menubar');
-    expect(bar).toHaveAttribute('data-orientation', 'vertical');
-    expect(bar).toHaveAttribute('aria-orientation', 'vertical');
-    expect(bar).toHaveAttribute('data-size', 'sm');
-    await user.click(top('Edit'));
-    expect(screen.getByRole('menu', { name: 'Edit' })).toHaveAttribute('data-size', 'sm');
-  });
+  it.each(['xs', 'sm', 'md', 'lg'] as const)(
+    'UIC-MENUBAR-1.2 publishes orientation and %s and sizes the menus',
+    async (size) => {
+      const user = userEvent.setup();
+      render(<Bar orientation="vertical" size={size} />);
+      const bar = screen.getByRole('menubar');
+      expect(bar).toHaveAttribute('data-orientation', 'vertical');
+      expect(bar).toHaveAttribute('aria-orientation', 'vertical');
+      expect(bar).toHaveAttribute('data-size', size);
+      expectHooksMatchSpec(document.body, 'MENUBAR');
+      await user.click(top('Edit'));
+      expect(screen.getByRole('menu', { name: 'Edit' })).toHaveAttribute(
+        'data-size',
+        size === 'xs' ? 'sm' : size,
+      );
+    },
+  );
 
   it('UIC-MENUBAR-1.3 is one tab stop that remembers the item focused last', async () => {
     const user = userEvent.setup();

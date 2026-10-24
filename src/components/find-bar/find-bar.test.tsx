@@ -126,7 +126,7 @@ describe('FindBar', () => {
     const trigger = screen.getByRole('button', { name: 'Find options' });
     expect(trigger).toHaveClass('ui-find-bar__options', 'ui-dropdown-menu');
     await user.click(trigger);
-    const menu = screen.getByRole('menu', { name: 'Find options' });
+    const menu = await screen.findByRole('menu', { name: 'Find options' });
     const words = within(menu).getByRole('menuitemcheckbox', { name: 'Whole words' });
     expect(words).toBeChecked();
     await user.click(within(menu).getByRole('menuitemcheckbox', { name: 'Match case' }));
@@ -223,6 +223,7 @@ describe('FindBar', () => {
     await user.keyboard('{Escape}');
     expect(onClose).toHaveBeenCalledTimes(3);
     await user.click(screen.getByRole('button', { name: 'Find options' }));
+    await screen.findByRole('menu');
     await user.keyboard('{Escape}');
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     expect(onClose).toHaveBeenCalledTimes(3);
