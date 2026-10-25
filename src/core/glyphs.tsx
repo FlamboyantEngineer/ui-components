@@ -1,5 +1,6 @@
 import {
   AdjustmentsHorizontalIcon,
+  ArchiveBoxIcon,
   ArrowDownIcon,
   ArrowDownTrayIcon,
   ArrowLeftIcon,
@@ -26,6 +27,7 @@ import {
   ClockIcon,
   DocumentDuplicateIcon,
   DocumentIcon,
+  DocumentTextIcon,
   EnvelopeIcon,
   EnvelopeOpenIcon,
   ChevronDoubleLeftIcon,
@@ -51,6 +53,7 @@ import {
   MagnifyingGlassIcon,
   MinusIcon,
   MusicalNoteIcon,
+  NewspaperIcon,
   PencilSquareIcon,
   PaperAirplaneIcon,
   PauseIcon,
@@ -82,6 +85,11 @@ import {
   ClipboardDocumentCheckIcon,
   ChatBubbleBottomCenterTextIcon,
   LinkSlashIcon,
+  EllipsisHorizontalCircleIcon,
+  MinusCircleIcon,
+  HandRaisedIcon,
+  NoSymbolIcon,
+  XCircleIcon,
 } from '@heroicons/react/24/outline';
 import type { ComponentType } from 'react';
 
@@ -173,6 +181,9 @@ export const defaultGlyphs = {
   image: PhotoIcon,
   video: FilmIcon,
   audio: MusicalNoteIcon,
+  'file-pdf': NewspaperIcon,
+  'file-archive': ArchiveBoxIcon,
+  'file-text': DocumentTextIcon,
   star: StarIcon,
   adjustments: AdjustmentsHorizontalIcon,
   move: ArrowsUpDownIcon,
@@ -196,6 +207,11 @@ export const defaultGlyphs = {
   'list-task': ClipboardDocumentCheckIcon,
   quote: ChatBubbleBottomCenterTextIcon,
   unlink: LinkSlashIcon,
+  pending: EllipsisHorizontalCircleIcon,
+  skipped: MinusCircleIcon,
+  'hand-raised': HandRaisedIcon,
+  'no-symbol': NoSymbolIcon,
+  'x-circle': XCircleIcon,
 } satisfies Record<string, GlyphComponent>;
 
 export const glyphNames = Object.keys(defaultGlyphs) as GlyphName[];

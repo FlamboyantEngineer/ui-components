@@ -10,6 +10,7 @@ import { CopyButton } from '../../src/components/copy-button/copy-button.js';
 import { IconButton } from '../../src/components/icon-button/icon-button.js';
 import { MessageComposer } from '../../src/components/message-composer/message-composer.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { ChatTranscriptMessageCases } from './chat-transcript-message-cases.js';
 import { samplePicture } from './people-samples.js';
 
 /** A fixed clock, so every time in the matrices reads the same on every day. */
@@ -25,6 +26,7 @@ const texts: Record<ChatMessageStatus, string> = {
   complete: 'The samples from the north field arrived this morning.',
   streaming: 'Checking the delivery notes for the north',
   error: 'The reply could not be finished.',
+  cancelled: 'Checking the delivery notes for the north',
 };
 
 function MatrixMessage({
@@ -226,5 +228,6 @@ mountLab(
         </ChatTranscript>
       </div>
     </LabSection>
+    <ChatTranscriptMessageCases />
   </>,
 );
