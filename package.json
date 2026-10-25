@@ -1,7 +1,7 @@
 {
   "name": "@flamboyantengineer/ui-components",
   "version": "0.0.0",
-  "description": "Unstyled, accessible React components that expose stable styling hooks for a host stylesheet.",
+  "description": "Unstyled, accessible React components that expose documented styling hooks for a host stylesheet.",
   "license": "UNLICENSED",
   "private": false,
   "type": "module",

@@ -18,7 +18,7 @@ A component's hooks are listed only in its own spec. A family spec (for example 
 
 ## File format
 
-- File names are `UPPER-KEBAB.md`, named after the component (`BUTTON.md`, `BUTTON.md`).
+- File names are `UPPER-KEBAB.md`, named after the component (`BUTTON.md`, `MODAL.md`).
 - The first line is a `# Title` heading.
 - Requirements are grouped under `## UIC-<AREA>-<n> - <Group title>` headings. Each requirement is a `### UIC-<AREA>-<n>.<m> - <Title>` heading followed by its statement, then two lines:
 
@@ -27,7 +27,7 @@ A component's hooks are listed only in its own spec. A family spec (for example 
   Verification: `src/components/button/button.test.tsx`, `e2e/button.spec.ts`
   ```
 
-  - `<AREA>` is the spec's name in upper case (`BUTTON`, `ICON-BUTTON`, `HOOKS`, `PROVIDER`).
+  - `<AREA>` is the spec's name in upper case (`BUTTON`, `MODAL`, `HOOKS`, `PROVIDER`).
   - `Implementation:` lists the files that implement the requirement, each in backticks.
   - `Verification:` lists the tests that verify it, each in backticks. At least one of those tests names the requirement ID in a test title or comment.
   - IDs are never reused. A withdrawn requirement keeps its heading with the statement `Withdrawn.` and its last verification.

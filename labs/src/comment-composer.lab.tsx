@@ -101,7 +101,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Stored draft"
-      description="Type, unmount and mount again: the draft comes back from the provider storage. Escape or Cancel clears it."
+      description="With persistKey, type, unmount and mount again: the draft comes back from the provider storage. Escape or Cancel clears it."
     >
       <StoredDraft />
     </LabSection>

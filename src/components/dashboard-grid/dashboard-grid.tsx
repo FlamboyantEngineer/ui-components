@@ -38,8 +38,6 @@ export interface DashboardGridProps extends BaseProps, AriaLabellingProps {
   onLayoutChange?: ((layout: DashboardGridItem[]) => void) | undefined;
   /** Remembers the uncontrolled layout through the provider storage under this key. */
   persistKey?: string | undefined;
-  /** @deprecated Use `persistKey`. */
-  storageKey?: string | undefined;
   /** The columns the layout is laid out on. Defaults to 12. */
   columns?: number | undefined;
   /** Below this width per column, in pixels, the grid shows fewer columns, read only. */
@@ -199,7 +197,6 @@ export function DashboardGrid({
   defaultLayout,
   onLayoutChange,
   persistKey,
-  storageKey,
   columns: columnsProp = 12,
   minColumnWidth,
   rowHeight = 80,
@@ -213,7 +210,7 @@ export function DashboardGrid({
   const [element, setElement] = useState<HTMLDivElement | null>(null);
   const rootRef = useMemo(() => mergeRefs(ref, setElement), [ref]);
   const committed = useDashboardLayout(
-    { layout, defaultLayout, onLayoutChange, persistKey: persistKey ?? storageKey },
+    { layout, defaultLayout, onLayoutChange, persistKey },
     columns,
   );
   const shownColumns = useShownColumns(element, columns, minColumnWidth);

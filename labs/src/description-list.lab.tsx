@@ -113,7 +113,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Formatted values"
-      description="Numbers, currency, dates, lists and ranges formatted for the provider's locale."
+      description="Numbers, currency, ISO 8601 date strings, lists and ranges formatted for the provider's locale."
     >
       <StateMatrix
         axes={{ locale: ['en-US', 'de-DE', 'ja-JP'] }}

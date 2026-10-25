@@ -2,10 +2,11 @@ import { act, fireEvent, render, screen, waitFor, within } from '@testing-librar
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import type { Key } from '../../core/props.js';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, expectTypeOf, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { applyTreeMove } from '../../utils/tree-reorder.js';
 import { FolderManager, type FolderItem, type FolderManagerProps } from './folder-manager.js';
+import type { FolderSelectionMode } from './use-folder-tree.js';
 
 interface Folder extends FolderItem {
   children?: Folder[];
@@ -41,15 +42,18 @@ function insertFolder(folders: readonly Folder[], parentKey: Key | null, folder:
   );
 }
 
-type ManagerProps = Partial<FolderManagerProps<Folder>> & {
+type ManagerProps<M extends FolderSelectionMode> = Partial<FolderManagerProps<Folder, M>> & {
   /** Every callback is applied to the folders unless a test replaces it. */
   editable?: boolean;
 };
 
 /** A manager whose callbacks apply each change to its own folders. */
-function Manager({ editable = true, ...props }: ManagerProps) {
+function Manager<M extends FolderSelectionMode = 'single'>({
+  editable = true,
+  ...props
+}: ManagerProps<M>) {
   const [folders, setFolders] = useState<readonly Folder[]>(sample);
-  const callbacks: Partial<FolderManagerProps<Folder>> = editable
+  const callbacks: Partial<FolderManagerProps<Folder, M>> = editable
     ? {
         onCreate: ({ name, parentKey }) => {
           const id = name.toLowerCase();
@@ -67,7 +71,9 @@ function Manager({ editable = true, ...props }: ManagerProps) {
         onMove: (move) => setFolders((current) => applyTreeMove(current, move)),
       }
     : {};
-  return <FolderManager aria-label="Folders" folders={folders} {...callbacks} {...props} />;
+  return (
+    <FolderManager<Folder, M> aria-label="Folders" folders={folders} {...callbacks} {...props} />
+  );
 }
 
 function row(name: string) {
@@ -498,32 +504,34 @@ describe('FolderManager', () => {
 
   it('UIC-FOLDER-MANAGER-6.1 selects several folders and offers only what applies to them', async () => {
     const user = userEvent.setup();
-    const onSelectedKeysChange = vi.fn();
+    const onSelectionChange = vi.fn<(keys: Set<Key>) => void>();
     render(
       <Manager
         selectionMode="multiple"
         defaultSelectedKeys={['citrus']}
-        onSelectedKeysChange={onSelectedKeysChange}
+        onSelectionChange={onSelectionChange}
       />,
     );
     expect(row('Citrus')).toHaveAttribute('aria-selected', 'true');
     await user.keyboard('{Control>}');
     await user.click(row('Vegetables'));
     await user.keyboard('{/Control}');
-    expect(onSelectedKeysChange).toHaveBeenLastCalledWith(['citrus', 'vegetables']);
+    expect(onSelectionChange).toHaveBeenLastCalledWith(new Set(['citrus', 'vegetables']));
     expect(row('Vegetables')).toHaveAttribute('aria-selected', 'true');
     expect(screen.getByRole('button', { name: 'Rename' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'New folder' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Delete' })).toBeEnabled();
     await user.click(row('Berries'));
-    expect(onSelectedKeysChange).toHaveBeenLastCalledWith(['berries']);
+    expect(onSelectionChange).toHaveBeenLastCalledWith(new Set(['berries']));
     expect(screen.getByRole('button', { name: 'Rename' })).toBeEnabled();
   });
 
   it('UIC-FOLDER-MANAGER-6.1 reports a multiple selection as a set through onSelectionChange', async () => {
+    expectTypeOf<FolderManagerProps<Folder, 'multiple'>>().not.toHaveProperty(
+      'onSelectedKeysChange',
+    );
     const user = userEvent.setup();
     const onSelectionChange = vi.fn<(keys: Set<Key>) => void>();
-    const onSelectedKeysChange = vi.fn();
     render(
       <FolderManager
         aria-label="Folders"
@@ -531,7 +539,6 @@ describe('FolderManager', () => {
         selectionMode="multiple"
         defaultSelectedKeys={['citrus']}
         onSelectionChange={onSelectionChange}
-        onSelectedKeysChange={onSelectedKeysChange}
       />,
     );
     await user.keyboard('{Control>}');
@@ -540,7 +547,6 @@ describe('FolderManager', () => {
     expect(onSelectionChange).toHaveBeenCalledTimes(1);
     expect(onSelectionChange.mock.lastCall![0]).toBeInstanceOf(Set);
     expect([...onSelectionChange.mock.lastCall![0]]).toEqual(['citrus', 'vegetables']);
-    expect(onSelectedKeysChange).toHaveBeenLastCalledWith(['citrus', 'vegetables']);
   });
 
   it('UIC-FOLDER-MANAGER-6.2 deletes every selected folder, one after another', async () => {

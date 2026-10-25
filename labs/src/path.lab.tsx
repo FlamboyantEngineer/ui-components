@@ -12,7 +12,7 @@ mountLab(
   <>
     <LabSection
       title="Content and width"
-      description="Long paths clip at the start and keep the final label visible."
+      description="Long paths clip at the start and keep the final label visible. The full path appears in a tooltip without an expansion control."
     >
       <StateMatrix
         axes={{ content: Object.keys(paths), width: ['auto', '200px'] }}

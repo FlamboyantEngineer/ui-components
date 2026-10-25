@@ -21,5 +21,5 @@ Run `npm run format` to fix formatting. Never weaken a lint rule, the denylist o
 - Build on React Aria Components wherever it has a matching behaviour, imported only through `src/primitives/` (`specs/PRIMITIVES.md`).
 - Never name a host application or its domain terms anywhere in the repository, including commit messages and pull request text. Use neutral sample data in labs and tests.
 - Every behaviour change updates the component's spec (`specs/`), its tests (which name the `UIC-` IDs) and its lab.
-- Hooks are public API: renaming or removing one is a major change. Add a changeset to every pull request that changes the package.
+- APIs and styling hooks are experimental until `1.0.0`: use minor changesets for API additions, removals and reorganizations, and patches for fixes that preserve the API. Remove obsolete APIs and migrate repository usage without deprecation periods, compatibility shims or migration notices. Starting at `1.0.0`, incompatible API or hook changes require a major bump. Add a changeset to every pull request that changes the package.
 - Persisted state goes through the provider storage adapter; never touch `localStorage` from library source.
