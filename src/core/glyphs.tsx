@@ -87,6 +87,9 @@ import {
   LinkSlashIcon,
   EllipsisHorizontalCircleIcon,
   MinusCircleIcon,
+  HandRaisedIcon,
+  NoSymbolIcon,
+  XCircleIcon,
 } from '@heroicons/react/24/outline';
 import type { ComponentType } from 'react';
 
@@ -206,6 +209,9 @@ export const defaultGlyphs = {
   unlink: LinkSlashIcon,
   pending: EllipsisHorizontalCircleIcon,
   skipped: MinusCircleIcon,
+  'hand-raised': HandRaisedIcon,
+  'no-symbol': NoSymbolIcon,
+  'x-circle': XCircleIcon,
 } satisfies Record<string, GlyphComponent>;
 
 export const glyphNames = Object.keys(defaultGlyphs) as GlyphName[];
