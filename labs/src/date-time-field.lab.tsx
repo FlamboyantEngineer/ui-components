@@ -1,3 +1,4 @@
+import { DateStates } from './date-states.js';
 import { useState } from 'react';
 import type { FieldLabelLayout } from '../../src/components/field/field.js';
 import {
@@ -234,6 +235,12 @@ function Form() {
 
 mountLab(
   <>
+    <LabSection
+      title="Highlights and availability"
+      description="Holidays have semantic colors and descriptions; weekends and closed dates are faded, and taken appointments are struck through. Ranges cannot cross unavailable dates."
+    >
+      <DateStates />
+    </LabSection>
     <LabSection title="Modes and states" description="Each mode in every state.">
       <StateMatrix
         axes={{ state: states, mode: modes }}

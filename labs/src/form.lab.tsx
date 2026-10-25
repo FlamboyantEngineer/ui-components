@@ -1,7 +1,7 @@
 import { useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { BooleanField } from '../../src/components/boolean-field/boolean-field.js';
 import { Button } from '../../src/components/button/button.js';
-import { CheckboxGroup } from '../../src/components/checkbox-group/checkbox-group.js';
+import { ChoiceGroup, Choice } from '../../src/components/choice-group/choice-group.js';
 import { Fieldset, type FieldValidationMode } from '../../src/components/field/field.js';
 import { Form } from '../../src/components/form/form.js';
 import { NumberField } from '../../src/components/number-field/number-field.js';
@@ -57,7 +57,13 @@ function Booking() {
         maxValue={8}
         commitBehavior="validate"
       />
-      <CheckboxGroup label="Courses" name="courses" isRequired options={courses} />
+      <ChoiceGroup selectionMode="multiple" label="Courses" name="courses" isRequired>
+        {courses.map((option) => (
+          <Choice key={option.value} value={option.value}>
+            {option.label}
+          </Choice>
+        ))}
+      </ChoiceGroup>
       <BooleanField
         label="Accept the house rules"
         name="rules"

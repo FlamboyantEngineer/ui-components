@@ -3,16 +3,17 @@ import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import { CodeEditor, type CodeEditorProps } from './code-editor.js';
+import { CodeEditor, type CodeEditorSurfaceProps } from './code-editor.js';
 
 function Editor({
   initialValue = '',
   ...props
-}: Omit<CodeEditorProps, 'value'> & { initialValue?: string }) {
+}: Omit<CodeEditorSurfaceProps, 'value' | 'variant'> & { initialValue?: string }) {
   const [value, setValue] = useState(initialValue);
   return (
     <>
       <CodeEditor
+        variant="surface"
         aria-label="Source"
         {...props}
         value={value}

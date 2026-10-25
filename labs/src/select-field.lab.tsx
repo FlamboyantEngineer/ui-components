@@ -1,3 +1,5 @@
+import { treeChoices } from './select-tree.js';
+import { iconsChoices } from './select-icons.js';
 import { useState, type ReactNode } from 'react';
 import type { Key } from '../../src/core/props.js';
 import type { FieldLabelLayout, FieldMenuEntry } from '../../src/components/field/field.js';
@@ -115,9 +117,12 @@ function Output({ name, children }: { name: string; children: ReactNode }) {
 function stateProps(
   state: State,
   multiple: boolean,
-): Partial<SelectFieldProps<SelectFieldSelectionMode>> {
+): Partial<Extract<SelectFieldProps<SelectFieldSelectionMode>, { mode?: 'list' }>> {
   const value = multiple ? ['apple', 'fig'] : 'apple';
-  const props: Record<State, Partial<SelectFieldProps<SelectFieldSelectionMode>>> = {
+  const props: Record<
+    State,
+    Partial<Extract<SelectFieldProps<SelectFieldSelectionMode>, { mode?: 'list' }>>
+  > = {
     resting: { defaultValue: value },
     required: { isRequired: true },
     dirty: { committedValue: multiple ? ['apple', 'pear'] : 'pear', defaultValue: value },
@@ -360,122 +365,136 @@ function Form() {
 
 mountLab(
   <>
-    <LabSection
-      title="Primitive keys"
-      description="Numeric and text ids that read alike remain distinct choices."
-    >
-      <SelectField
-        label="Primitive keys"
-        options={[
-          { id: 1, label: 'Numeric' },
-          { id: '1', label: 'Textual' },
-        ]}
-        selectionMode="multiple"
-        defaultValue={[1, '1']}
-        name="typed-keys"
-      />
-    </LabSection>
-    <LabSection
-      title="Layouts and states"
-      description="A single select in every label layout and state. The dirty cell shows the previous value."
-    >
-      <StateMatrix
-        axes={{ state: states, layout: layouts }}
-        render={({ state, layout }) => <MatrixField state={state} mode="single" layout={layout} />}
-      />
-    </LabSection>
-    <LabSection title="Selection modes" description="Single and multiple selects in every state.">
-      <StateMatrix
-        axes={{ state: states, mode: ['single', 'multiple'] }}
-        render={({ state, mode }) => (
-          <MatrixField
-            state={state}
-            mode={mode as SelectFieldSelectionMode}
-            layout="label-control"
-          />
-        )}
-      />
-    </LabSection>
-    <LabSection title="Picking" description="Press the trigger or use the arrow keys; Enter picks.">
-      <Picking />
-    </LabSection>
-    <LabSection
-      title="Chips"
-      description="A multiple select keeps its list open while toggling and shows its values as chips."
-    >
-      <Chips />
-    </LabSection>
-    <LabSection
-      title="Filtering"
-      description="More than 10 options filter inside the open list; typing on the closed trigger starts the filter."
-    >
-      <SelectField label="Orchard" options={orchard} defaultValue="kiwi" data-lab-field="filter" />
-    </LabSection>
-    <LabSection title="Search" description="Options load as you type at least 2 characters.">
-      <Search />
-    </LabSection>
-    <LabSection
-      title="Width"
-      description="The trigger fits its widest complete option label, capped at the column width."
-    >
-      <div data-lab-column="320" style={{ width: 320 }}>
-        <SelectField label="Short" options={fruit.slice(0, 2)} data-lab-field="short" />
+    {treeChoices}
+    {iconsChoices}
+    <div data-lab-family="list">
+      <LabSection
+        title="Primitive keys"
+        description="Numeric and text ids that read alike remain distinct choices."
+      >
         <SelectField
-          label="Long"
+          label="Primitive keys"
           options={[
-            ...fruit,
-            { id: 'long', label: 'A considerably longer option label than the column' },
+            { id: 1, label: 'Numeric' },
+            { id: '1', label: 'Textual' },
           ]}
-          data-lab-field="long"
+          selectionMode="multiple"
+          defaultValue={[1, '1']}
+          name="typed-keys"
         />
-      </div>
-    </LabSection>
-    <LabSection title="Empty choice" description="A first option that chooses no value.">
-      <SelectField label="Fruit" options={fruit} emptyLabel="None" defaultValue="fig" />
-    </LabSection>
-    <LabSection
-      title="Field menu"
-      description="Clear, Set to default and Help from the field base."
-    >
-      <SelectField
-        label="Fruit"
-        options={fruit}
-        defaultValue="pear"
-        committedValue="apple"
-        menu={menu}
-        help="Right-click the field or use its menu button."
-      />
-    </LabSection>
-    <LabSection title="Groups" description="Headed sections of options.">
-      <Groups />
-    </LabSection>
-    <LabSection title="Custom options" description="renderOption draws each option's content.">
-      <Custom />
-    </LabSection>
-    <LabSection title="Clearing and limits" description="A clear button and a maximum of values.">
-      <Limits />
-    </LabSection>
-    <LabSection
-      title="Virtualized"
-      description="5,000 options; only those in view render, and the arrow keys, Home and End reach any."
-    >
-      <SelectField
-        label="Number"
-        options={numbered}
-        virtualized
-        filterable={false}
-        defaultValue="item-1"
-        data-lab-field="virtualized"
-      />
-    </LabSection>
-    <LabSection
-      title="Paged search"
-      description="Results load a page at a time as the list scrolls."
-    >
-      <Paged />
-    </LabSection>
-    <LabSection title="Forms" description="A named select publishes its values to its form.">
-      <Form />
-    </LabSection>
+      </LabSection>
+      <LabSection
+        title="Layouts and states"
+        description="A single select in every label layout and state. The dirty cell shows the previous value."
+      >
+        <StateMatrix
+          axes={{ state: states, layout: layouts }}
+          render={({ state, layout }) => (
+            <MatrixField state={state} mode="single" layout={layout} />
+          )}
+        />
+      </LabSection>
+      <LabSection title="Selection modes" description="Single and multiple selects in every state.">
+        <StateMatrix
+          axes={{ state: states, mode: ['single', 'multiple'] }}
+          render={({ state, mode }) => (
+            <MatrixField
+              state={state}
+              mode={mode as SelectFieldSelectionMode}
+              layout="label-control"
+            />
+          )}
+        />
+      </LabSection>
+      <LabSection
+        title="Picking"
+        description="Press the trigger or use the arrow keys; Enter picks."
+      >
+        <Picking />
+      </LabSection>
+      <LabSection
+        title="Chips"
+        description="A multiple select keeps its list open while toggling and shows its values as chips."
+      >
+        <Chips />
+      </LabSection>
+      <LabSection
+        title="Filtering"
+        description="More than 10 options filter inside the open list; typing on the closed trigger starts the filter."
+      >
+        <SelectField
+          label="Orchard"
+          options={orchard}
+          defaultValue="kiwi"
+          data-lab-field="filter"
+        />
+      </LabSection>
+      <LabSection title="Search" description="Options load as you type at least 2 characters.">
+        <Search />
+      </LabSection>
+      <LabSection
+        title="Width"
+        description="The trigger fits its widest complete option label, capped at the column width."
+      >
+        <div data-lab-column="320" style={{ width: 320 }}>
+          <SelectField label="Short" options={fruit.slice(0, 2)} data-lab-field="short" />
+          <SelectField
+            label="Long"
+            options={[
+              ...fruit,
+              { id: 'long', label: 'A considerably longer option label than the column' },
+            ]}
+            data-lab-field="long"
+          />
+        </div>
+      </LabSection>
+      <LabSection title="Empty choice" description="A first option that chooses no value.">
+        <SelectField label="Fruit" options={fruit} emptyLabel="None" defaultValue="fig" />
+      </LabSection>
+      <LabSection
+        title="Field menu"
+        description="Clear, Set to default and Help from the field base."
+      >
+        <SelectField
+          label="Fruit"
+          options={fruit}
+          defaultValue="pear"
+          committedValue="apple"
+          menu={menu}
+          help="Right-click the field or use its menu button."
+        />
+      </LabSection>
+      <LabSection title="Groups" description="Headed sections of options.">
+        <Groups />
+      </LabSection>
+      <LabSection title="Custom options" description="renderOption draws each option's content.">
+        <Custom />
+      </LabSection>
+      <LabSection title="Clearing and limits" description="A clear button and a maximum of values.">
+        <Limits />
+      </LabSection>
+      <LabSection
+        title="Virtualized"
+        description="5,000 options; only those in view render, and the arrow keys, Home and End reach any."
+      >
+        <SelectField
+          label="Number"
+          options={numbered}
+          virtualized
+          filterable={false}
+          defaultValue="item-1"
+          data-lab-field="virtualized"
+        />
+      </LabSection>
+      <LabSection
+        title="Paged search"
+        description="Results load a page at a time as the list scrolls."
+      >
+        <Paged />
+      </LabSection>
+      <LabSection title="Forms" description="A named select publishes its values to its form.">
+        <Form />
+      </LabSection>
+    </div>
   </>,
 );

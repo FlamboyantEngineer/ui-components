@@ -1,28 +1,12 @@
-import { useRef, type KeyboardEvent, type ReactNode } from 'react';
-import {
-  Group,
-  Input,
-  NumberField as AriaNumberField,
-  useNumberFormatter,
-} from '../../primitives/index.js';
+import type { ReactNode } from 'react';
+import { useNumberFormatter } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
-import {
-  Field,
-  toAriaControlProps,
-  useFieldControl,
-  type FieldInputProps,
-  type FieldIssue,
-  type FieldState,
-} from '../field/field.js';
-import { snapNumberValue } from './snap-number-value.js';
-import {
-  NumberScrubber,
-  Stepper,
-  createModifierStepHandler,
-  numberFieldHooks as hooks,
-  type NumberSteps,
-} from './number-field-parts.js';
+import { Field, useFieldControl, type FieldInputProps, type FieldIssue } from '../field/field.js';
+import { RadixControl } from './radix-control.js';
+import { formatRadixNumber, type NumberFieldRadix } from './radix-number.js';
+import { DecimalControl } from './decimal-control.js';
+import { numberFieldHooks as hooks, type NumberSteps } from './number-field-parts.js';
 
 /**
  * What a commit does with a value outside the range or off the step: `snap` clamps it into the
@@ -31,6 +15,8 @@ import {
 export type NumberFieldCommitBehavior = 'snap' | 'validate';
 
 export interface NumberFieldProps extends FieldInputProps<number | null> {
+  /** Number base. Nondecimal bases edit integers and show 0b, 0o or 0x prefixes. Defaults to 10. */
+  radix?: NumberFieldRadix | undefined;
   /** The smallest value. */
   minValue?: number | undefined;
   /** The largest value. */
@@ -57,7 +43,23 @@ export interface NumberFieldProps extends FieldInputProps<number | null> {
   showScrubber?: boolean | undefined;
 }
 
+export type NumberControlConfig = Pick<
+  NumberFieldProps,
+  | 'name'
+  | 'minValue'
+  | 'maxValue'
+  | 'step'
+  | 'formatOptions'
+  | 'placeholder'
+  | 'hideStepper'
+  | 'startAdornment'
+  | 'endAdornment'
+  | 'showScrubber'
+  | 'commitBehavior'
+>;
+
 interface NumberRules {
+  radix: NumberFieldRadix;
   minValue?: number | undefined;
   maxValue?: number | undefined;
   step?: number | undefined;
@@ -77,6 +79,12 @@ function isOnStep(value: number, step: number, origin: number): boolean {
 function checkNumber(value: number | null, rules: NumberRules): FieldIssue | null {
   const { minValue, maxValue, step, format, strings } = rules;
   if (value === null) return null;
+  if (rules.radix !== 10 && !Number.isSafeInteger(value))
+    return {
+      severity: 'error',
+      message: strings.stepMismatch(format(1)),
+      validity: 'stepMismatch',
+    };
   if (minValue !== undefined && value < minValue) {
     const message = strings.rangeUnderflow(format(minValue));
     return { severity: 'error', message, validity: 'rangeUnderflow' };
@@ -95,61 +103,6 @@ function checkNumber(value: number | null, rules: NumberRules): FieldIssue | nul
   return null;
 }
 
-/** What the input reads from React Aria's number field state: the parsed number and its commit. */
-interface NumberInputState {
-  numberValue: number;
-  commit(): void;
-}
-
-interface NumberEntryOptions {
-  commitBehavior: NumberFieldCommitBehavior;
-  bounds: Pick<NumberFieldProps, 'minValue' | 'maxValue' | 'step'>;
-  steps: NumberSteps;
-}
-
-/**
- * Takes React Aria's commits into the field, snapped or kept, and commits them, except while the
- * typed text is read on its way out of the input (Tab or blur): the field then commits once focus
- * leaves it, so Tab reaches the restore button. Blur and Enter still snap a value React Aria saw
- * as unchanged, and Shift or Alt with an arrow steps by the larger or smaller step.
- */
-function useNumberEntry(state: FieldState<number | null>, options: NumberEntryOptions) {
-  const { commitBehavior, bounds, steps } = options;
-  const isLeaving = useRef(false);
-  const commit = (value: number) => {
-    const next = commitBehavior === 'snap' ? snapNumberValue(value, bounds) : value;
-    state.setValue(Number.isNaN(next) ? null : next);
-    if (!isLeaving.current) state.commit();
-  };
-  const finishUnchanged = (value: number) => {
-    if (commitBehavior !== 'snap' || value !== state.value) return;
-    if (snapNumberValue(value, bounds) !== value) commit(value);
-  };
-  const modifiedStep = createModifierStepHandler(state, steps);
-  const toInputProps = (input: NumberInputState) => ({
-    onBlurCapture: () => {
-      isLeaving.current = true;
-    },
-    onBlur: () => {
-      finishUnchanged(input.numberValue);
-      isLeaving.current = false;
-    },
-    onKeyDown: (event: KeyboardEvent<HTMLInputElement>) => {
-      modifiedStep(event);
-      if (event.key === 'Enter' && !event.nativeEvent.isComposing) {
-        finishUnchanged(input.numberValue);
-      }
-      // The typed number becomes the value before Tab moves focus, so dirty state is current.
-      if (event.key === 'Tab') {
-        isLeaving.current = true;
-        input.commit();
-        isLeaving.current = false;
-      }
-    },
-  });
-  return { commit, toInputProps };
-}
-
 /**
  * A field for a number, parsed and formatted for the locale, with steppers. It commits when focus
  * leaves the field, on Enter and on each step, and reports a value outside its range or off its
@@ -157,6 +110,7 @@ function useNumberEntry(state: FieldState<number | null>, options: NumberEntryOp
  * scrub handle steps by dragging.
  */
 export function NumberField({
+  radix = 10,
   placeholder,
   hideStepper = false,
   startAdornment,
@@ -175,17 +129,17 @@ export function NumberField({
     emptyValue: null,
     check: (value) =>
       checkNumber(value, {
+        radix,
         minValue,
         maxValue,
         step,
-        format: (number) => formatter.format(number),
+        format: (number) =>
+          radix === 10 ? formatter.format(number) : formatRadixNumber(number, radix),
         strings,
       }),
   });
   const steps: NumberSteps = { step: step ?? 1, smallStep, largeStep, minValue, maxValue };
-  const bounds = { minValue, maxValue, step };
-  const entry = useNumberEntry(state, { commitBehavior, bounds, steps });
-  const data = { hideStepper };
+  const data = { hideStepper, radix };
   return (
     <Field
       {...field}
@@ -193,36 +147,30 @@ export function NumberField({
       state={state}
       commitOnBlur
     >
-      {(control) => (
-        <AriaNumberField
-          {...rest}
-          {...toAriaControlProps(control)}
-          {...hooks.slot('box')}
-          commitBehavior="validate"
-          value={state.value ?? Number.NaN}
-          onChange={entry.commit}
-        >
-          {({ state: inputState }) => (
-            <Group {...hooks.slot('group')}>
-              {hideStepper ? null : (
-                <Stepper slot="decrement" labelledBy={control['aria-labelledby']} />
-              )}
-              {showScrubber ? <NumberScrubber state={state} steps={steps} /> : null}
-              {startAdornment ? <span {...hooks.slot('start')}>{startAdornment}</span> : null}
-              <Input
-                {...hooks.slot('input')}
-                ref={control.ref}
-                placeholder={placeholder}
-                {...entry.toInputProps(inputState)}
-              />
-              {endAdornment ? <span {...hooks.slot('end')}>{endAdornment}</span> : null}
-              {hideStepper ? null : (
-                <Stepper slot="increment" labelledBy={control['aria-labelledby']} />
-              )}
-            </Group>
-          )}
-        </AriaNumberField>
-      )}
+      {(control) => {
+        const config = {
+          ...rest,
+          placeholder,
+          hideStepper,
+          startAdornment,
+          endAdornment,
+          showScrubber,
+          commitBehavior,
+        };
+        return radix === 10 ? (
+          <DecimalControl state={state} control={control} steps={steps} config={config} />
+        ) : (
+          <RadixControl
+            state={state}
+            control={control}
+            radix={radix}
+            steps={steps}
+            config={config}
+          />
+        );
+      }}
     </Field>
   );
 }
+
+export type { NumberFieldRadix } from './radix-number.js';

@@ -230,6 +230,7 @@ export function FormulaBar({
       />
       <Glyph name="formula" className={hooks.slotClass('glyph')} />
       <CodeEditor
+        variant="surface"
         className={hooks.slotClass('editor')}
         aria-label={strings.formulaCellContent}
         aria-describedby={evaluate && cell ? resultId : undefined}

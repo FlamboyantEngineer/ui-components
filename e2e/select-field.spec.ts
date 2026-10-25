@@ -2,19 +2,19 @@ import type { Locator, Page } from '@playwright/test';
 import { expect, test } from './fixtures.js';
 
 function cell(page: Page, state: string, layout: string): Locator {
-  return page.locator(`[data-lab-cell="state=${state} layout=${layout}"]`);
+  return page.locator(`[data-lab-family="list"] [data-lab-cell="state=${state} layout=${layout}"]`);
 }
 
 function modeCell(page: Page, state: string, mode: string): Locator {
-  return page.locator(`[data-lab-cell="state=${state} mode=${mode}"]`);
+  return page.locator(`[data-lab-family="list"] [data-lab-cell="state=${state} mode=${mode}"]`);
 }
 
 function field(page: Page, name: string): Locator {
-  return page.locator(`[data-lab-field="${name}"]`);
+  return page.locator(`[data-lab-family="list"] [data-lab-field="${name}"]`);
 }
 
 function output(page: Page, name: string): Locator {
-  return page.locator(`[data-lab-output="${name}"]`);
+  return page.locator(`[data-lab-family="list"] [data-lab-output="${name}"]`);
 }
 
 async function width(locator: Locator): Promise<number> {
@@ -29,7 +29,9 @@ test.describe('Select Field lab', () => {
     lab,
   }) => {
     await lab.open('select-field');
-    const cells = page.locator('table[data-lab-matrix="state layout"] td[data-lab-cell]');
+    const cells = page.locator(
+      '[data-lab-family="list"] table[data-lab-matrix="state layout"] td[data-lab-cell]',
+    );
     expect(await cells.count()).toBe(8 * 4);
     const resting = cell(page, 'resting', 'label-control');
     await expect(resting.getByRole('button', { name: 'Apple Fruit' })).toHaveAttribute(

@@ -4,7 +4,7 @@ import { createHooks } from '../../core/hooks.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Form } from '../form/form.js';
-import { Radio, RadioGroup } from '../radio-group/radio-group.js';
+import { Choice, ChoiceGroup } from '../choice-group/choice-group.js';
 import { SignaturePad, type SignatureValue } from '../signature-pad/signature-pad.js';
 import { TextField } from '../text-field/text-field.js';
 
@@ -79,17 +79,17 @@ function MeaningChoice({
     );
   }
   return (
-    <RadioGroup label={strings.signatureMeaning} isRequired value={value} onChange={onChange}>
+    <ChoiceGroup label={strings.signatureMeaning} isRequired value={value} onChange={onChange}>
       {meanings.map((meaning) => (
-        <Radio
+        <Choice
           key={toKeyIdentity(meaning.id)}
           value={toKeyIdentity(meaning.id)}
           description={meaning.description}
         >
           {meaning.label}
-        </Radio>
+        </Choice>
       ))}
-    </RadioGroup>
+    </ChoiceGroup>
   );
 }
 

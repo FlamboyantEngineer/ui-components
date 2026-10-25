@@ -48,7 +48,7 @@ describe('DateTimeField availability and presets', () => {
     );
   });
 
-  it('UIC-DATE-TIME-FIELD-3.1 picks a range over unavailable days between available ends', async () => {
+  it('UIC-DATE-TIME-FIELD-3.1 refuses a range over unavailable days between available ends', async () => {
     const user = userEvent.setup();
     const onCommit = vi.fn();
     renderInLocale(
@@ -64,7 +64,7 @@ describe('DateTimeField availability and presets', () => {
     const dialog = await screen.findByRole('dialog');
     await user.click(within(dialog).getByRole('button', { name: /Monday, April 6, 2026/ }));
     await user.click(within(dialog).getByRole('button', { name: /Wednesday, April 15, 2026/ }));
-    expect(onCommit).toHaveBeenLastCalledWith({ start: '2026-04-06', end: '2026-04-15' });
+    expect(onCommit).not.toHaveBeenCalledWith({ start: '2026-04-06', end: '2026-04-15' });
   });
 
   it('UIC-DATE-TIME-FIELD-3.2 offers presets that commit and close, disabling refused ones', async () => {

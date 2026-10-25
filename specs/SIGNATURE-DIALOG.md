@@ -13,7 +13,7 @@ Verification: `src/components/signature-dialog/signature-dialog.test.tsx`, `e2e/
 
 ### UIC-SIGNATURE-DIALOG-1.2 - Meaning
 
-A dialog with one meaning shall state it in `ui-signature-dialog__meaning` after the provider string `signatureMeaning` ("Meaning of signature: Approved"). With several, it shall show a required [Radio Group](RADIO-GROUP.md) of them named by `signatureMeaning`, each radio labelled by the meaning's `label` and described by its `description`, with none chosen at first, so the signer chooses deliberately. Numeric and text meaning ids remain distinct even when they have the same spelling, and signing returns the chosen id with its original type.
+A dialog with one meaning shall state it in `ui-signature-dialog__meaning` after the provider string `signatureMeaning` ("Meaning of signature: Approved"). With several, it shall show a required [Choice Group](CHOICE-GROUP.md) of them named by `signatureMeaning`, each radio labelled by the meaning's `label` and described by its `description`, with none chosen at first, so the signer chooses deliberately. Numeric and text meaning ids remain distinct even when they have the same spelling, and signing returns the chosen id with its original type.
 
 Implementation: `src/components/signature-dialog/signature-form.tsx`
 Verification: `src/components/signature-dialog/signature-dialog.test.tsx`, `e2e/signature-dialog.spec.ts`

@@ -138,14 +138,16 @@ function SegmentedControl({
         isInvalid={aria.isInvalid}
         isReadOnly={aria.isReadOnly}
         isDisabled={aria.isDisabled}
-        isClearable={allowsUnset}
         size={size}
         options={[
+          ...(allowsUnset ? [{ value: 'unset', label: labels.unset }] : []),
           { value: 'false', label: labels.false },
           { value: 'true', label: labels.true },
         ]}
-        value={toKey(state.value) as string | null}
-        onChange={(next) => pick(state, next === null ? null : next === 'true')}
+        value={
+          state.value === null && allowsUnset ? 'unset' : (toKey(state.value) as string | null)
+        }
+        onChange={(next) => pick(state, next === null || next === 'unset' ? null : next === 'true')}
       />
       <FormValue name={name} state={state} />
     </>
@@ -206,7 +208,7 @@ function ToggleButtonControl(props: BooleanControlProps) {
         </FieldPreviousValue>
       ) : null}
       <ToggleButton
-        {...hooks.slot('toggle-button')}
+        {...hooks.slot('toggle-button', { indeterminate: state.value === null })}
         ref={control.ref}
         id={control.id}
         aria-label={control['aria-label']}
@@ -239,7 +241,7 @@ function CheckControl(props: BooleanControlProps) {
     return <Checkbox {...shared} size={size} isIndeterminate={state.value === null} />;
   const caption = switchCaptionOf(state.value, labels);
   return (
-    <Switch {...shared} {...hooks.slot('switch')}>
+    <Switch {...shared} {...hooks.slot('switch', { indeterminate: state.value === null })}>
       <span {...hooks.slot('track')} aria-hidden="true">
         <span {...hooks.slot('thumb')} />
       </span>

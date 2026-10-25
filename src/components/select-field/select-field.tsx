@@ -1,3 +1,5 @@
+import type { TreeItemData } from '../tree/tree.js';
+import { SelectTreeField, type SelectTreeFieldProps } from './select-tree-field.js';
 import type { OpenStateProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { Key } from '../../core/props.js';
@@ -14,13 +16,15 @@ export type SelectFieldValue<M extends SelectFieldSelectionMode = 'single'> = M 
   ? Key[]
   : Key | null;
 
-export interface SelectFieldProps<M extends SelectFieldSelectionMode = 'single'>
+export interface SelectListFieldProps<M extends SelectFieldSelectionMode = 'single'>
   extends FieldInputProps<SelectFieldValue<M>>, OpenStateProps {
   /**
    * The choices, in display order, and groups of them shown as headed sections; a multiple value
    * follows this order. Group ids must differ from option ids.
    */
   options: readonly SelectFieldItem[];
+  /** Flat choices and headed groups. Defaults to `list`. */
+  mode?: 'list' | undefined;
   /** `single` (the default) or `multiple`. */
   selectionMode?: M | undefined;
   /** The trigger's text while nothing is chosen. Defaults to the provider string. */
@@ -56,16 +60,19 @@ const hooks = createHooks('select-field');
  * base's label, validation, dirty state, restore, undo and menu. A multiple select shows its
  * choices as removable chips; a long list or a searched one filters inside the open list.
  */
-export function SelectField<M extends SelectFieldSelectionMode = 'single'>(
-  props: SelectFieldProps<M>,
+function SelectListField<M extends SelectFieldSelectionMode = 'single'>(
+  props: SelectListFieldProps<M>,
 ) {
   const isMultiple = props.selectionMode === 'multiple';
   const empty = (isMultiple ? [] : null) as SelectFieldValue<M>;
-  const { state, field, rest } = useFieldControl<SelectFieldValue<M>, SelectFieldProps<M>>(props, {
-    initialValue: empty,
-    emptyValue: empty,
-  });
-  const { selectionMode = 'single', ...config } = rest;
+  const { state, field, rest } = useFieldControl<SelectFieldValue<M>, SelectListFieldProps<M>>(
+    props,
+    {
+      initialValue: empty,
+      emptyValue: empty,
+    },
+  );
+  const { mode = 'list', selectionMode = 'single', ...config } = rest;
   return (
     <Field
       {...field}
@@ -73,6 +80,7 @@ export function SelectField<M extends SelectFieldSelectionMode = 'single'>(
         className: field.className,
         props: field,
         data: {
+          mode,
           selectionMode,
           icons: flattenSelectItems(config.options).some((option) => option.icon),
         },
@@ -91,6 +99,22 @@ export function SelectField<M extends SelectFieldSelectionMode = 'single'>(
     </Field>
   );
 }
+
+export type SelectFieldMode = 'list' | 'tree';
+export type SelectFieldProps<
+  M extends SelectFieldSelectionMode = 'single',
+  T extends TreeItemData = TreeItemData,
+> = SelectListFieldProps<M> | SelectTreeFieldProps<T, M>;
+
+/** A field choosing one or several values from a list, icon choices or a searchable tree. */
+export function SelectField<
+  M extends SelectFieldSelectionMode = 'single',
+  T extends TreeItemData = TreeItemData,
+>(props: SelectFieldProps<M, T>) {
+  return props.mode === 'tree' ? <SelectTreeField {...props} /> : <SelectListField {...props} />;
+}
+
+export type { SelectFieldValueDisplay } from './select-tree-field.js';
 
 export { SelectControl } from './select-control.js';
 export type { SelectKeysValue } from './select-control.js';

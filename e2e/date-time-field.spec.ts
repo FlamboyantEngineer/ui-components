@@ -132,7 +132,8 @@ test.describe('Date Time Field lab', () => {
     await availability.getByRole('button', { name: /Calendar/ }).click();
     const dialog = page.getByRole('dialog');
     const saturday = dialog.getByRole('button', { name: /Saturday, April 18, 2026/ });
-    await expect(saturday).toHaveCSS('text-decoration-line', 'line-through');
+    await expect(saturday).toHaveCSS('text-decoration-line', 'none');
+    await expect(saturday).toHaveAttribute('aria-disabled', 'true');
     const presets = dialog.locator('.ui-date-time-field__presets');
     const calendar = dialog.locator('.ui-date-time-field__calendar');
     expect((await presets.boundingBox())!.x).toBeLessThan((await calendar.boundingBox())!.x);

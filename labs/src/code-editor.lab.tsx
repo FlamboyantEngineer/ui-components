@@ -1,9 +1,11 @@
+import { jsonExamples } from './code-json.js';
+import { languageExamples } from './code-languages.js';
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import {
   CodeEditor,
   type CodeDiagnostic,
-  type CodeEditorProps,
+  type CodeEditorSurfaceProps,
   type CodeEditorSize,
   type CodeEditorWrap,
   type CodeToken,
@@ -125,7 +127,7 @@ const sizes = ['sm', 'md', 'lg'] as const;
 const states = ['resting', 'numbered', 'invalid', 'warning', 'read-only', 'disabled'] as const;
 const wraps = ['soft', 'off'] as const;
 
-const stateProps: Record<(typeof states)[number], Partial<CodeEditorProps>> = {
+const stateProps: Record<(typeof states)[number], Partial<CodeEditorSurfaceProps>> = {
   resting: {},
   numbered: { lineNumbers: true },
   invalid: { lineNumbers: true, diagnostics: [{ message: 'Unknown name "baskets".', line: 2 }] },
@@ -140,10 +142,11 @@ const stateProps: Record<(typeof states)[number], Partial<CodeEditorProps>> = {
 function Editor({
   initialValue = sample,
   ...props
-}: Omit<CodeEditorProps, 'value'> & { initialValue?: string }) {
+}: Omit<CodeEditorSurfaceProps, 'value' | 'variant'> & { initialValue?: string }) {
   const [value, setValue] = useState(initialValue);
   return (
     <CodeEditor
+      variant="surface"
       aria-label="Source"
       tokenize={tokenize}
       {...props}
@@ -159,6 +162,7 @@ function ToolbarEditor() {
   const lines = value.split('\n').length;
   return (
     <CodeEditor
+      variant="surface"
       aria-label="Sample source"
       data-lab-editor="toolbar"
       tokenize={tokenize}
@@ -188,6 +192,7 @@ function CheckedEditor() {
   const [value, setValue] = useState('let total = (12 + (4 * 3)\nreturn total');
   return (
     <CodeEditor
+      variant="surface"
       aria-label="Checked source"
       data-lab-editor="diagnostics"
       tokenize={tokenize}
@@ -204,6 +209,7 @@ function CompletingEditor() {
   return (
     <>
       <CodeEditor
+        variant="surface"
         aria-label="Source with completions"
         data-lab-editor="completions"
         tokenize={tokenize}
@@ -226,6 +232,7 @@ function EditingEditor() {
   return (
     <>
       <CodeEditor
+        variant="surface"
         aria-label="Editable source"
         data-lab-editor="editing"
         tokenize={tokenize}
@@ -253,6 +260,7 @@ function BoundaryEditor() {
   const [value, setValue] = useState('İ apple APPLE\n([})');
   return (
     <CodeEditor
+      variant="surface"
       aria-label="Boundary source"
       data-lab-editor="boundaries"
       value={value}
@@ -277,6 +285,7 @@ function ProblemsEditor() {
   );
   return (
     <CodeEditor
+      variant="surface"
       aria-label="Source with problems"
       data-lab-editor="problems"
       tokenize={tokenize}
@@ -303,6 +312,7 @@ function FormEditor() {
       }}
     >
       <CodeEditor
+        variant="surface"
         aria-label="Query source"
         name="source"
         tokenize={tokenize}
@@ -334,6 +344,7 @@ const excerpt = [
 function ExcerptEditor() {
   return (
     <CodeEditor
+      variant="surface"
       aria-label="Excerpt"
       data-lab-editor="excerpt"
       tokenize={tokenize}
@@ -351,81 +362,85 @@ function ExcerptEditor() {
 
 mountLab(
   <>
-    <LabSection
-      title="Sizes, wrapping and states"
-      description="Each size against wrapping and the states: line numbers, an error, a warning, read-only and disabled."
-    >
-      <StateMatrix
-        axes={{ wrap: wraps, state: states, size: sizes }}
-        render={({ wrap, state, size }) => (
-          <Editor
-            size={size as CodeEditorSize}
-            wrap={wrap as CodeEditorWrap}
-            {...stateProps[state]}
-          />
-        )}
-      />
-    </LabSection>
-    <LabSection
-      title="Toolbar"
-      description="A caller toolbar with a label, a line count and a Wrap toggle that switches wrapping."
-    >
-      <ToolbarEditor />
-    </LabSection>
-    <LabSection
-      title="Live diagnostics"
-      description="The caller checks the brackets on every change; the list and the gutter follow."
-    >
-      <CheckedEditor />
-    </LabSection>
-    <LabSection
-      title="Completions"
-      description="Type fruit. or b: the list opens at the caret. Arrow keys move, Enter or Tab inserts, Escape closes."
-    >
-      <CompletingEditor />
-    </LabSection>
-    <LabSection
-      title="Editing keys, search and completion sources"
-      description="Tab and Shift+Tab indent by four spaces, Escape then Tab leaves; brackets and quotes pair up; Enter keeps the indentation; the bracket at the caret and its partner are marked. Ctrl+F finds and replaces. Typing or Ctrl+Space asks the source: statements with snippets (Tab moves between fields), or fields after fruit."
-    >
-      <EditingEditor />
-    </LabSection>
-    <LabSection
-      title="Source boundaries"
-      description="Find apple after İ and replace it without shifting the source. The second line has a mismatched nested bracket. Ctrl+Space offers a literal label and an escaped snippet; overlapping diagnostics retain the worst severity."
-    >
-      <BoundaryEditor />
-    </LabSection>
-    <LabSection
-      title="Problems and hover tips"
-      description="Problems are underlined; rest the pointer on one, or on basket or pick, for a tip. F8 and Shift+F8 move between problems."
-    >
-      <ProblemsEditor />
-    </LabSection>
-    <LabSection
-      title="Excerpt"
-      description="Lines 41 to 45 of a longer text, read-only: the gutter starts at 41 and the warning the caller reports at line 43 marks that line. F8 shows its tip."
-    >
-      <ExcerptEditor />
-    </LabSection>
-    <LabSection
-      title="In a form"
-      description="With a name, the form submits the source under it like any text field."
-    >
-      <FormEditor />
-    </LabSection>
-    <LabSection
-      title="Long source"
-      description="Scroll the text: the gutter and the highlighting follow."
-    >
-      <Editor
-        aria-label="Long source"
-        data-lab-editor="long"
-        initialValue={longSource}
-        size="sm"
-        wrap="off"
-        lineNumbers
-      />
-    </LabSection>
+    {jsonExamples}
+    {languageExamples}
+    <div data-lab-family="surface">
+      <LabSection
+        title="Sizes, wrapping and states"
+        description="Each size against wrapping and the states: line numbers, an error, a warning, read-only and disabled."
+      >
+        <StateMatrix
+          axes={{ wrap: wraps, state: states, size: sizes }}
+          render={({ wrap, state, size }) => (
+            <Editor
+              size={size as CodeEditorSize}
+              wrap={wrap as CodeEditorWrap}
+              {...stateProps[state]}
+            />
+          )}
+        />
+      </LabSection>
+      <LabSection
+        title="Toolbar"
+        description="A caller toolbar with a label, a line count and a Wrap toggle that switches wrapping."
+      >
+        <ToolbarEditor />
+      </LabSection>
+      <LabSection
+        title="Live diagnostics"
+        description="The caller checks the brackets on every change; the list and the gutter follow."
+      >
+        <CheckedEditor />
+      </LabSection>
+      <LabSection
+        title="Completions"
+        description="Type fruit. or b: the list opens at the caret. Arrow keys move, Enter or Tab inserts, Escape closes."
+      >
+        <CompletingEditor />
+      </LabSection>
+      <LabSection
+        title="Editing keys, search and completion sources"
+        description="Tab and Shift+Tab indent by four spaces, Escape then Tab leaves; brackets and quotes pair up; Enter keeps the indentation; the bracket at the caret and its partner are marked. Ctrl+F finds and replaces. Typing or Ctrl+Space asks the source: statements with snippets (Tab moves between fields), or fields after fruit."
+      >
+        <EditingEditor />
+      </LabSection>
+      <LabSection
+        title="Source boundaries"
+        description="Find apple after İ and replace it without shifting the source. The second line has a mismatched nested bracket. Ctrl+Space offers a literal label and an escaped snippet; overlapping diagnostics retain the worst severity."
+      >
+        <BoundaryEditor />
+      </LabSection>
+      <LabSection
+        title="Problems and hover tips"
+        description="Problems are underlined; rest the pointer on one, or on basket or pick, for a tip. F8 and Shift+F8 move between problems."
+      >
+        <ProblemsEditor />
+      </LabSection>
+      <LabSection
+        title="Excerpt"
+        description="Lines 41 to 45 of a longer text, read-only: the gutter starts at 41 and the warning the caller reports at line 43 marks that line. F8 shows its tip."
+      >
+        <ExcerptEditor />
+      </LabSection>
+      <LabSection
+        title="In a form"
+        description="With a name, the form submits the source under it like any text field."
+      >
+        <FormEditor />
+      </LabSection>
+      <LabSection
+        title="Long source"
+        description="Scroll the text: the gutter and the highlighting follow."
+      >
+        <Editor
+          aria-label="Long source"
+          data-lab-editor="long"
+          initialValue={longSource}
+          size="sm"
+          wrap="off"
+          lineNumbers
+        />
+      </LabSection>
+    </div>
   </>,
 );
