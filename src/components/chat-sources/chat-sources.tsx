@@ -7,6 +7,7 @@ import { ChatSourceSummary, type ChatSource } from './chat-source-summary.js';
 export type { ChatSource } from './chat-source-summary.js';
 export { ChatCitation } from './chat-citation.js';
 export type { ChatCitationData, ChatCitationProps } from './chat-citation.js';
+export { createCitationOverride } from './markdown-citations.js';
 
 /** The data of a sources list, as a message part carries it. */
 export interface ChatSourcesData {

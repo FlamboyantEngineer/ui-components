@@ -8,6 +8,7 @@ import { prepareStreamingMarkdown } from './markdown-streaming.js';
 import { parseMarkdown } from './parse-markdown.js';
 
 export type { MarkdownNode } from './markdown-nodes.js';
+export { parseMarkdown } from './parse-markdown.js';
 
 export interface MarkdownProps extends BaseProps {
   /** Markdown text, or a document `parseMarkdown` returned, to share one parse with an outline. */
