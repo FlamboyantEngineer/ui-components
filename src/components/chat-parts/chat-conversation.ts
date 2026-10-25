@@ -10,8 +10,11 @@ import type { ChatPart } from './chat-part.js';
 /** A person, or an assistant answering for software. */
 export type ChatParticipantKind = 'person' | 'assistant';
 
-/** Someone taking part in a conversation: their identity, kind and presence. */
-export interface ChatParticipant extends ChatMessageAuthor {
+/**
+ * Someone taking part in a conversation: their identity, kind and presence. The avatar's own
+ * `kind` gives way to the participant's, since a participant is always one person or assistant.
+ */
+export interface ChatParticipant extends Omit<ChatMessageAuthor, 'kind'> {
   id: string;
   kind: ChatParticipantKind;
 }
