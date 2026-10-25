@@ -16,6 +16,7 @@ import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { formatBytes } from '../../utils/format-bytes.js';
 import { mergeRefs } from '../../utils/merge-props.js';
+import { useRemovalFocus } from '../../utils/use-removal-focus.js';
 import { InlineError } from '../inline-error/inline-error.js';
 import { formatMetaLine } from '../meta-line/meta-line.js';
 import {
@@ -34,7 +35,6 @@ import {
 import {
   FileUploadFiles,
   fileUploadHooks as hooks,
-  useRemovalFocus,
   type FileUploadItem,
 } from './file-upload-files.js';
 import { useFileForm } from './file-upload-form.js';
