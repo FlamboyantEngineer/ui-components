@@ -1,29 +1,23 @@
 import type { FocusEvent, ReactNode, Ref } from 'react';
 import { TextArea } from '../../primitives/index.js';
 import type { AriaLabellingProps, KeyboardEventProps } from '../../core/events.js';
-import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
-import { useUiStrings } from '../../core/provider.js';
 import {
   ControlCompletionList,
   type Completion,
   type CompletionListItemState,
   type CompletionSource,
 } from '../completion-list/completion-list.js';
-import { Button } from '../button/button.js';
+import { ComposerFrame } from './composer-frame.js';
+import { composerHooks as hooks } from './composer-hooks.js';
 import { useMessageComposer } from './use-message-composer.js';
 
 /** The chord that sends: Enter (Shift+Enter breaks the line), or Ctrl+Enter (Cmd+Enter on macOS). */
 export type MessageComposerSubmitShortcut = 'Enter' | 'Ctrl+Enter';
 
-export interface MessageComposerProps extends BaseProps, AriaLabellingProps, KeyboardEventProps {
-  /** The text, controlled. */
-  value?: string | undefined;
-  /** The text at first, uncontrolled. */
-  defaultValue?: string | undefined;
-  onChange?: ((value: string) => void) | undefined;
-  /** Called with the text when the reader sends it; the composer then empties. */
-  onSubmit?: ((value: string) => void) | undefined;
+/** The props both composers take: the frame, sending, attaching, editing, recall and the draft. */
+export interface MessageComposerSharedProps
+  extends BaseProps, AriaLabellingProps, KeyboardEventProps {
   /** Called when the reader stops the pending reply; with it, a pending composer offers Stop. */
   onStop?: (() => void) | undefined;
   /** A reply is on its way: sending waits, and Send becomes Stop when `onStop` is set. */
@@ -32,95 +26,75 @@ export interface MessageComposerProps extends BaseProps, AriaLabellingProps, Key
   isDisabled?: boolean | undefined;
   /** Shown while the text is empty. */
   placeholder?: string | undefined;
-  /** The chord that sends. Defaults to `Enter`. */
+  /** The chord that sends. Defaults to `Enter`; on a touch screen Enter breaks the line. */
   submitShortcut?: MessageComposerSubmitShortcut | undefined;
-  /** The rows the text area shows at least. Defaults to 1. */
+  /** The rows the input shows at least. Defaults to 1. */
   minRows?: number | undefined;
-  /** The rows the text area grows to before it scrolls. Defaults to 8. */
+  /** The rows the input grows to before it scrolls. Defaults to 8. */
   maxRows?: number | undefined;
-  /** The most characters the text may hold. */
-  maxLength?: number | undefined;
   /** Sends blank text too, as when attachments carry the message. */
   allowsEmptySubmit?: boolean | undefined;
+  /**
+   * Sends while `isPending` too, for a host that queues the message until the reply ends: the
+   * button is then Send while there is something to send, and Stop otherwise.
+   */
+  allowsPendingSubmit?: boolean | undefined;
+  /** Content above the input and below the banner, such as the files attached to the message. */
+  attachments?: ReactNode;
+  /** A line above everything else, such as the message being replied to or edited. */
+  banner?: ReactNode;
+  /** Tools before the send button, after the built-in attach and emoji buttons. */
+  toolbar?: ReactNode;
+  /** Called with files chosen with the attach button, dropped on the composer or pasted. */
+  onAttach?: ((files: File[]) => void) | undefined;
+  /** Shows a button that opens the emoji picker and inserts the chosen emoji at the caret. */
+  showEmojiPicker?: boolean | undefined;
+  /** Called when the reader cancels an edit, with Cancel or Escape. */
+  onCancel?: (() => void) | undefined;
+  /** Called on the Up arrow in an empty composer, to edit the reader's last message. */
+  onEditLast?: (() => void) | undefined;
+  /** The reader's earlier messages, oldest first, which the Up and Down arrows recall. */
+  history?: readonly string[] | undefined;
+  /** Keeps the uncontrolled draft in the provider's storage under this key. */
+  persistKey?: string | undefined;
+}
+
+export interface MessageComposerProps extends MessageComposerSharedProps {
+  /** The text, controlled. */
+  value?: string | undefined;
+  /** The text at first, uncontrolled. */
+  defaultValue?: string | undefined;
+  onChange?: ((value: string) => void) | undefined;
+  /** Called with the text when the reader sends it; the composer then empties. */
+  onSubmit?: ((value: string) => void) | undefined;
+  /** The message being edited: while set, the composer shows it in place of the draft, with Save and Cancel. */
+  editValue?: string | undefined;
+  /** The most characters the text may hold. */
+  maxLength?: number | undefined;
   /** A vocabulary for the word before the caret, or a source such as `@` mentions. */
   completions?: readonly Completion[] | CompletionSource | undefined;
   /** Draws a completion's content in the list instead of its label and description. */
   renderCompletion?:
     | ((completion: Completion, state: CompletionListItemState) => ReactNode)
     | undefined;
-  /** Content above the text, such as the files attached to the message. */
-  attachments?: ReactNode;
-  /** Tools before the send button, such as an attach button or a menu. */
-  toolbar?: ReactNode;
   onFocus?: ((event: FocusEvent<HTMLTextAreaElement>) => void) | undefined;
   onBlur?: ((event: FocusEvent<HTMLTextAreaElement>) => void) | undefined;
   /** The text area. */
   ref?: Ref<HTMLTextAreaElement> | undefined;
 }
 
-const hooks = createHooks('message-composer', [
-  'attachments',
-  'input',
-  'footer',
-  'toolbar',
-  'action',
-  'completions',
-]);
-
-/** The send button, or Stop while a stoppable reply is pending, as one button that keeps focus. */
-function ComposerAction({
-  isStop,
-  canSubmit,
-  props,
-  onSubmit,
-}: {
-  isStop: boolean;
-  canSubmit: boolean;
-  props: MessageComposerProps;
-  onSubmit: () => void;
-}) {
-  const strings = useUiStrings();
-  return (
-    <Button
-      className={hooks.slotClass('action')}
-      icon={isStop ? 'stop' : 'send'}
-      label={isStop ? strings.stop : strings.send}
-      variant={isStop ? 'secondary' : 'primary'}
-      shortcut={isStop ? undefined : (props.submitShortcut ?? 'Enter')}
-      // A tooltip in both states keeps one button, so keyboard focus on it survives the switch.
-      tooltip={isStop ? strings.stop : undefined}
-      isPending={!isStop && Boolean(props.isPending)}
-      isDisabled={props.isDisabled || (!isStop && !canSubmit)}
-      focusableWhenDisabled={!props.isDisabled}
-      preventFocusOnPress
-      onPress={isStop ? props.onStop : onSubmit}
-    />
-  );
-}
-
 /**
  * A composer for chat messages and comments: a text area that grows with its text and sends on
- * Enter (or Ctrl+Enter), with attachments above it, tools and a send button below, completions
- * such as `@` mentions, and a pending state that offers Stop while a reply streams.
+ * Enter (or Ctrl+Enter), with a banner, attachments above it, attach, emoji and caller tools and a
+ * send button below, completions such as `@` mentions, an edit mode, recall of earlier messages,
+ * a persisted draft, and a pending state that offers Stop while a reply streams.
  */
 export function MessageComposer(props: MessageComposerProps) {
-  const { className, id, attachments, toolbar, completions } = props;
   const composer = useMessageComposer(props);
-  const data = { pending: Boolean(props.isPending), disabled: Boolean(props.isDisabled) };
   return (
-    <div {...hooks.root({ className, props, data })} id={id} ref={composer.rootRef}>
-      {attachments ? <div {...hooks.slot('attachments')}>{attachments}</div> : null}
+    <ComposerFrame props={props} rootRef={composer.rootRef} model={composer.frame}>
       <TextArea {...composer.inputProps} {...hooks.slot('input')} />
-      <div {...hooks.slot('footer')}>
-        {toolbar ? <div {...hooks.slot('toolbar')}>{toolbar}</div> : null}
-        <ComposerAction
-          isStop={Boolean(props.isPending && props.onStop)}
-          canSubmit={composer.canSubmit}
-          props={props}
-          onSubmit={composer.submit}
-        />
-      </div>
-      {completions ? (
+      {props.completions ? (
         <ControlCompletionList
           model={composer.completion.model}
           listId={composer.completion.listId}
@@ -129,6 +103,6 @@ export function MessageComposer(props: MessageComposerProps) {
           className={hooks.slotClass('completions')}
         />
       ) : null}
-    </div>
+    </ComposerFrame>
   );
 }

@@ -83,9 +83,11 @@ describe('RichTextEditor', () => {
       /from '(prosemirror-|@handlewithcare)/.test(readFileSync(join(dir, file), 'utf8')),
     );
     expect(importers.length).toBeGreaterThan(0);
-    expect(importers.every((file) => file.startsWith(join('components', 'rich-text-editor')))).toBe(
-      true,
-    );
+    const owners = [
+      join('components', 'rich-text-editor'),
+      join('components', 'message-composer', 'rich'),
+    ];
+    expect(importers.filter((file) => !owners.some((owner) => file.startsWith(owner)))).toEqual([]);
     expect(getContentOf(renderEditor().container)).toHaveClass('ProseMirror');
   });
 

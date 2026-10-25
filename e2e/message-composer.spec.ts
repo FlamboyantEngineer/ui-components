@@ -1,13 +1,38 @@
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 import { expect, test } from './fixtures.js';
 
 const cell = (page: Page, state: string, part = 'text only') =>
   page.locator(`[data-lab-cell="state=${state} part=${part}"]`);
 
+const richCell = (page: Page, content: string, status: string) =>
+  page.locator(`[data-lab-cell="content=${content} status=${status}"]`);
+
 const composer = (page: Page, name: string) => page.locator(`[data-lab-composer="${name}"]`);
 
+/** Dispatches a paste at the element, carrying files and text as the clipboard would. */
+async function paste(target: Locator, data: { files?: string[]; text?: string; html?: string }) {
+  await target.evaluate((element, { files = [], text, html }) => {
+    const transfer = new DataTransfer();
+    for (const name of files) transfer.items.add(new File(['x'], name, { type: 'text/plain' }));
+    if (text !== undefined) transfer.setData('text/plain', text);
+    if (html !== undefined) transfer.setData('text/html', html);
+    element.dispatchEvent(
+      new ClipboardEvent('paste', { clipboardData: transfer, bubbles: true, cancelable: true }),
+    );
+  }, data);
+}
+
+/** A data transfer carrying one file, for drag events. */
+function fileTransfer(page: Page, name: string) {
+  return page.evaluateHandle((fileName) => {
+    const transfer = new DataTransfer();
+    transfer.items.add(new File(['x'], fileName, { type: 'image/png' }));
+    return transfer;
+  }, name);
+}
+
 test.describe('Message Composer lab', () => {
-  test('UIC-MESSAGE-COMPOSER-1.1 UIC-MESSAGE-COMPOSER-1.3 UIC-MESSAGE-COMPOSER-1.5 UIC-MESSAGE-COMPOSER-2.2 draws each state', async ({
+  test('UIC-MESSAGE-COMPOSER-1.1 UIC-MESSAGE-COMPOSER-1.3 UIC-MESSAGE-COMPOSER-1.5 UIC-MESSAGE-COMPOSER-2.2 UIC-MESSAGE-COMPOSER-3.1 UIC-MESSAGE-COMPOSER-4.2 draws each state', async ({
     page,
     lab,
   }) => {
@@ -23,13 +48,26 @@ test.describe('Message Composer lab', () => {
     await expect(cell(page, 'pending').locator('.ui-button__spinner')).toBeVisible();
     await expect(cell(page, 'stoppable').getByRole('button', { name: 'Stop' })).toBeEnabled();
     await expect(cell(page, 'disabled').getByRole('textbox')).toBeDisabled();
+    await expect(cell(page, 'editing').getByRole('button', { name: 'Save' })).toBeEnabled();
     const full = cell(page, 'draft', 'attachments and tools');
+    const banner = await full.locator('.ui-message-composer__banner').boundingBox();
     const attachment = await full.locator('.ui-message-composer__attachments').boundingBox();
     const input = await full.getByRole('textbox').boundingBox();
     const tools = await full.locator('.ui-message-composer__toolbar').boundingBox();
     const send = await full.getByRole('button', { name: 'Send' }).boundingBox();
+    expect(banner && attachment && banner.y + banner.height <= attachment.y).toBe(true);
     expect(attachment && input && attachment.y + attachment.height <= input.y).toBe(true);
     expect(tools && send && tools.x + tools.width <= send.x).toBe(true);
+    const pills = richCell(page, 'pills', 'ready').locator('.ui-message-composer__pill');
+    await expect(pills).toHaveText(['@Maria Santos', '/summarize']);
+    await expect(
+      richCell(page, 'empty', 'ready').getByRole('textbox', {
+        name: 'Rich message (empty, ready)',
+      }),
+    ).toHaveAttribute('aria-multiline', 'true');
+    await expect(richCell(page, 'code block', 'ready').locator('pre')).toHaveText(
+      'const total = items.length;',
+    );
     await lab.expectAccessible();
   });
 
@@ -58,7 +96,11 @@ test.describe('Message Composer lab', () => {
     await expect(input).toHaveValue('Wait\n');
     await page.keyboard.press('Control+Enter');
     await expect(page.locator('[data-lab-sent="2"]')).toHaveText('Wait\n');
-    await live.getByRole('button', { name: 'Attach a file' }).click();
+    const chooser = page.waitForEvent('filechooser');
+    await live.getByRole('button', { name: 'Attach files' }).click();
+    await (
+      await chooser
+    ).setFiles({ name: 'Photo 1.png', mimeType: 'image/png', buffer: Buffer.from('x') });
     await live.getByRole('button', { name: 'Send', exact: true }).click();
     await expect(page.locator('[data-lab-sent="3"]')).toHaveText(' (Photo 1.png)');
   });
@@ -105,5 +147,283 @@ test.describe('Message Composer lab', () => {
     await page.keyboard.press('Escape');
     await page.keyboard.press('Enter');
     await expect(page.locator('[data-lab-sent="1"]')).toHaveText('Ping @Lena @');
+  });
+
+  test('UIC-MESSAGE-COMPOSER-1.7 breaks the line on Enter on a touch screen', async ({
+    page,
+    lab,
+  }) => {
+    await page.addInitScript(() => {
+      const native = window.matchMedia.bind(window);
+      const coarse = {
+        matches: true,
+        media: '(pointer: coarse)',
+        onchange: null,
+        addEventListener: () => undefined,
+        removeEventListener: () => undefined,
+        addListener: () => undefined,
+        removeListener: () => undefined,
+        dispatchEvent: () => false,
+      };
+      window.matchMedia = (query: string) =>
+        query === coarse.media ? (coarse as MediaQueryList) : native(query);
+    });
+    await lab.open('message-composer');
+    const touch = composer(page, 'touch');
+    const input = touch.getByRole('textbox');
+    await expect(touch.getByRole('button', { name: 'Send' })).toHaveAttribute(
+      'aria-keyshortcuts',
+      'Control+Enter',
+    );
+    await input.click();
+    await page.keyboard.type('One');
+    await page.keyboard.press('Enter');
+    await page.keyboard.type('Two');
+    await expect(input).toHaveValue('One\nTwo');
+    await page.keyboard.press('Control+Enter');
+    await expect(input).toHaveValue('');
+  });
+
+  test('UIC-MESSAGE-COMPOSER-3.2 attaches dropped and pasted files', async ({ page, lab }) => {
+    await lab.open('message-composer');
+    for (const name of ['live', 'assistant']) {
+      const target = composer(page, name);
+      const input = target.getByRole('textbox');
+      const dataTransfer = await fileTransfer(page, `Map ${name}.png`);
+      await input.dispatchEvent('dragenter', { dataTransfer });
+      await expect(target).toHaveAttribute('data-drop-target', 'true');
+      await input.dispatchEvent('dragleave', { dataTransfer });
+      await expect(target).not.toHaveAttribute('data-drop-target');
+      await input.dispatchEvent('dragenter', { dataTransfer });
+      await input.dispatchEvent('drop', { dataTransfer });
+      await expect(target).not.toHaveAttribute('data-drop-target');
+      await expect(target.getByRole('button', { name: `Remove Map ${name}.png` })).toBeVisible();
+      await input.focus();
+      await paste(input, { files: [`Notes ${name}.txt`] });
+      await expect(target.getByRole('button', { name: `Remove Notes ${name}.txt` })).toBeVisible();
+    }
+    await expect(composer(page, 'assistant').getByRole('textbox')).toHaveText('');
+  });
+
+  test('UIC-MESSAGE-COMPOSER-3.5 recalls earlier prompts until one is edited', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('message-composer');
+    const input = composer(page, 'history').getByRole('textbox');
+    await input.click();
+    await page.keyboard.press('ArrowUp');
+    await expect(input).toHaveValue('List the open questions');
+    await page.keyboard.press('ArrowUp');
+    await expect(input).toHaveValue('Summarize the field notes');
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('ArrowDown');
+    await expect(input).toHaveValue('');
+    await page.keyboard.press('ArrowUp');
+    await page.keyboard.type(' now');
+    await page.keyboard.press('ArrowUp');
+    await expect(input).toHaveValue('List the open questions now');
+    await page.keyboard.press('Enter');
+    await page.keyboard.press('ArrowUp');
+    await expect(input).toHaveValue('List the open questions now');
+  });
+
+  test('UIC-MESSAGE-COMPOSER-4.3 UIC-MESSAGE-COMPOSER-4.4 UIC-MESSAGE-COMPOSER-4.8 inserts and removes pills from the keyboard', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('message-composer');
+    const assistant = composer(page, 'assistant');
+    const input = assistant.getByRole('textbox', { name: 'Prompt' });
+    await input.click();
+    await page.keyboard.type('/');
+    const list = page.getByRole('listbox', { name: 'Suggestions' });
+    await expect(list.getByRole('option')).toHaveCount(3);
+    await page.keyboard.press('ArrowDown');
+    await expect(input).toHaveAttribute(
+      'aria-activedescendant',
+      (await list.getByRole('option').nth(1).getAttribute('id')) ?? '',
+    );
+    await page.keyboard.press('Enter');
+    await expect(input.locator('.ui-message-composer__pill')).toHaveText(['/translate']);
+    await page.keyboard.type('this for @jo');
+    await expect(list.getByRole('option')).toHaveText(['Jon Berg Field research']);
+    await expect(page.locator('.ui-message-composer__completions')).not.toHaveAttribute(
+      'data-entering',
+    );
+    await lab.expectAccessible();
+    await page.keyboard.press('Tab');
+    await expect(input.locator('.ui-message-composer__pill')).toHaveText([
+      '/translate',
+      '@Jon Berg',
+    ]);
+    await page.keyboard.press('Backspace');
+    await page.keyboard.press('Backspace');
+    await expect(input.locator('.ui-message-composer__pill')).toHaveText(['/translate']);
+    await expect(assistant.getByRole('status')).toHaveText('Jon Berg removed');
+    await page.keyboard.press('Home');
+    await page.keyboard.press('Delete');
+    await expect(input.locator('.ui-message-composer__pill')).toHaveCount(0);
+    await expect(input).toHaveText(' this for ');
+    await page.keyboard.press('End');
+    await page.keyboard.type('@ma');
+    await page.keyboard.press('Enter');
+    await page.keyboard.press('Enter');
+    await expect(page.locator('[data-lab-sent="1"]')).toHaveText(
+      'this for @Maria Santos (mention maria 10–23)',
+    );
+  });
+
+  test('UIC-MESSAGE-COMPOSER-4.5 UIC-MESSAGE-COMPOSER-4.6 writes code blocks and Markdown without a toolbar', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('message-composer');
+    const input = composer(page, 'assistant').getByRole('textbox');
+    await input.click();
+    await page.keyboard.type('Run');
+    await page.keyboard.press('Shift+Enter');
+    await page.keyboard.type('```');
+    await expect(input.locator('pre.ui-message-composer__code-block')).toBeVisible();
+    await page.keyboard.type('npm test');
+    await page.keyboard.press('Enter');
+    await page.keyboard.type('  --watch');
+    await expect(input.locator('pre')).toHaveText('npm test\n  --watch');
+    await expect(page.locator('[data-lab-sent="1"]')).toHaveCount(0);
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.type('please');
+    await page.keyboard.press('Enter');
+    await expect(page.locator('[data-lab-sent="1"]')).toHaveText(
+      'Run\n```\nnpm test\n  --watch\n```\nplease',
+    );
+    // The lab's reply ends on its own after a moment.
+    await expect(composer(page, 'assistant').getByRole('button', { name: 'Send' })).toBeVisible();
+    await input.click();
+    await page.keyboard.type('```x');
+    await page.keyboard.press('Control+Enter');
+    await expect(page.locator('[data-lab-sent="2"]')).toHaveText('```\nx\n```');
+    await expect(composer(page, 'assistant').getByRole('button', { name: 'Send' })).toBeVisible();
+    await page.keyboard.type('bold');
+    await page.keyboard.press('Control+a');
+    await page.keyboard.press('Control+b');
+    await page.keyboard.press('Control+i');
+    await expect(input).toHaveText('**_bold_**');
+  });
+
+  test('UIC-MESSAGE-COMPOSER-4.7 pastes plain text with its spacing', async ({ page, lab }) => {
+    await lab.open('message-composer');
+    const input = composer(page, 'assistant').getByRole('textbox');
+    await input.click();
+    await paste(input, { text: 'def f():\n    return  1', html: '<b>def</b> f():' });
+    await expect(input.locator('p')).toHaveText(['def f():', '    return  1']);
+    await expect(input.locator('b')).toHaveCount(0);
+    await page.keyboard.press('Enter');
+    await expect(page.locator('[data-lab-sent="1"]')).toHaveText('def f():\n    return  1');
+  });
+
+  test('UIC-MESSAGE-COMPOSER-4.8 never sends the Enter of an input method composition', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('message-composer');
+    const input = composer(page, 'assistant').getByRole('textbox');
+    await input.click();
+    await page.keyboard.type('nihon');
+    await input.evaluate((element) => {
+      element.dispatchEvent(new CompositionEvent('compositionstart', { bubbles: true }));
+      element.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'Enter',
+          isComposing: true,
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+      element.dispatchEvent(new CompositionEvent('compositionend', { bubbles: true, data: '' }));
+      element.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'Enter',
+          keyCode: 229,
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    });
+    await expect(page.locator('[data-lab-sent="1"]')).toHaveCount(0);
+    await page.keyboard.press('Enter');
+    await expect(page.locator('[data-lab-sent="1"]')).toHaveText('nihon');
+  });
+
+  test('UIC-MESSAGE-COMPOSER-3.3 UIC-MESSAGE-COMPOSER-3.4 edits the last message from an empty composer', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('message-composer');
+    const team = composer(page, 'team');
+    const input = team.getByRole('textbox');
+    await input.click();
+    await page.keyboard.type('Lunch at noon?');
+    await page.keyboard.press('Enter');
+    await expect(page.locator('[data-lab-team="1"]')).toContainText('Lunch at noon?');
+    await page.keyboard.press('ArrowUp');
+    await expect(team).toHaveAttribute('data-editing', 'true');
+    await expect(team.locator('.ui-message-composer__banner')).toHaveText('Editing your message');
+    await expect(input).toHaveText('Lunch at noon?');
+    await page.keyboard.press('Escape');
+    await expect(team).not.toHaveAttribute('data-editing');
+    await expect(input).toHaveText('');
+    await page.keyboard.press('ArrowUp');
+    await page.keyboard.type(' Or one?');
+    await page.keyboard.press('Enter');
+    await expect(page.locator('[data-lab-team="1"]')).toContainText(
+      'Lunch at noon? Or one? (edited)',
+    );
+    // The action bar takes the pointer only while the message is hovered or focused.
+    const sent = page.locator('[data-lab-team="1"]');
+    await sent.hover();
+    await sent.getByRole('button', { name: 'Reply' }).click();
+    await expect(team.locator('.ui-message-composer__banner')).toContainText('Replying to');
+    await team.getByRole('button', { name: 'Close' }).click();
+    await expect(team.locator('.ui-message-composer__banner')).toHaveCount(0);
+  });
+
+  test('UIC-MESSAGE-COMPOSER-3.6 keeps each conversation draft with its pills', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('message-composer');
+    const team = composer(page, 'team');
+    await team.getByRole('textbox').click();
+    await page.keyboard.type('Ask @ma');
+    await page.keyboard.press('Enter');
+    await page.keyboard.type('later');
+    await page.getByRole('radio', { name: 'Jon Berg' }).click();
+    await expect(team.getByRole('textbox')).toHaveText('');
+    await page.getByRole('radio', { name: 'Design team' }).click();
+    await expect(team.locator('.ui-message-composer__pill')).toHaveText('@Maria Santos');
+    await expect(team.getByRole('textbox')).toHaveText('Ask @Maria Santos later');
+    await page.reload();
+    await expect(composer(page, 'team').locator('.ui-message-composer__pill')).toHaveText(
+      '@Maria Santos',
+    );
+  });
+
+  test('UIC-MESSAGE-COMPOSER-3.7 inserts an emoji at the caret and returns focus', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('message-composer');
+    const live = composer(page, 'live');
+    const input = live.getByRole('textbox');
+    await input.click();
+    await page.keyboard.type('Lunch?');
+    await page.keyboard.press('ArrowLeft');
+    await live.getByRole('button', { name: 'Insert emoji' }).click();
+    await page.getByRole('searchbox').fill('pizza');
+    await page.getByRole('row', { name: 'pizza' }).click();
+    await expect(input).toHaveValue('Lunch🍕?');
+    await expect(input).toBeFocused();
+    await page.keyboard.type('!');
+    await expect(input).toHaveValue('Lunch🍕!?');
   });
 });

@@ -1,10 +1,14 @@
-import { useRef, type KeyboardEvent, type RefObject, type TextareaHTMLAttributes } from 'react';
-import { useControllableState } from '../../core/controllable-state.js';
+import { useRef, type RefObject, type TextareaHTMLAttributes } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 import { useAutoGrow } from '../../utils/use-auto-grow.js';
 import { useTextCompletions, type TextCompletions } from '../completion-list/completion-list.js';
-import type { MessageComposerProps, MessageComposerSubmitShortcut } from './message-composer.js';
+import type { ComposerFrameModel } from './composer-frame.js';
+import { resolveSubmitShortcut, runComposerKey, useCoarsePointer } from './composer-keys.js';
+import { createMessageCodec } from './composer-message.js';
+import type { MessageComposerProps, MessageComposerSharedProps } from './message-composer.js';
+import { useComposerState, type ComposerFormat } from './use-composer-state.js';
+import { attachPastedFiles } from './use-file-drop.js';
 
 export interface MessageComposerModel {
   rootRef: RefObject<HTMLDivElement | null>;
@@ -13,23 +17,22 @@ export interface MessageComposerModel {
     ref: (node: HTMLTextAreaElement | null) => void;
   };
   completion: TextCompletions;
-  /** The text can be sent now. */
-  canSubmit: boolean;
-  /** Sends the text when it can be sent, then empties the composer. */
-  submit: () => void;
+  /** What the frame around the text area shows and calls. */
+  frame: ComposerFrameModel;
 }
 
-/** Whether a key sends: the shortcut's chord, outside an input method composition. */
-function isSubmitKey(event: KeyboardEvent, shortcut: MessageComposerSubmitShortcut): boolean {
-  if (event.key !== 'Enter' || event.altKey || event.shiftKey || event.nativeEvent.isComposing) {
-    return false;
-  }
-  const hasCommand = event.ctrlKey || event.metaKey;
-  return shortcut === 'Enter' ? !hasCommand : hasCommand;
-}
+const plainFormat: ComposerFormat<string> = {
+  empty: '',
+  toText: (value) => value,
+  fromText: (text) => text,
+  codec: createMessageCodec(
+    (text) => ({ text, tokens: [] }),
+    (message) => message.text,
+  ),
+};
 
-/** The text area's name: the caller's label or labelling element, else the provider's `message`. */
-function toLabelling(props: MessageComposerProps, fallback: string) {
+/** The input's name: the caller's label or labelling element, else the provider's `message`. */
+export function toComposerLabelling(props: MessageComposerSharedProps, fallback: string) {
   const labelledBy = props['aria-labelledby'];
   return {
     'aria-label': labelledBy ? props['aria-label'] : (props['aria-label'] ?? fallback),
@@ -39,57 +42,83 @@ function toLabelling(props: MessageComposerProps, fallback: string) {
   };
 }
 
+/** Inserting text at the text area's caret, and putting the caret after it once focus is back. */
+function useCaretInsertion(
+  inputRef: RefObject<HTMLTextAreaElement | null>,
+  text: { value: string; setValue: (value: string) => void },
+) {
+  const caret = useRef<number | null>(null);
+  return {
+    insertText(inserted: string) {
+      const area = inputRef.current;
+      const start = area?.selectionStart ?? text.value.length;
+      const end = area?.selectionEnd ?? start;
+      caret.current = start + inserted.length;
+      text.setValue(`${text.value.slice(0, start)}${inserted}${text.value.slice(end)}`);
+    },
+    focusInput() {
+      const area = inputRef.current;
+      area?.focus();
+      if (area && caret.current !== null) area.setSelectionRange(caret.current, caret.current);
+      caret.current = null;
+    },
+  };
+}
+
 /**
- * The composer's state: its text, the growing text area, its completions and the send key. The
- * completion list's keys come first, then the send chord, then the caller's keys.
+ * The plain composer: its text, the growing text area, its completions and its keys. The
+ * completion list's keys come first, then the send chord, Escape and the recall arrows, then the
+ * caller's keys.
  */
 export function useMessageComposer(props: MessageComposerProps): MessageComposerModel {
   const { completions, isPending = false, isDisabled = false, minRows = 1, maxRows = 8 } = props;
   const strings = useUiStrings();
-  const [value, setValue] = useControllableState(
-    props.value,
-    props.defaultValue ?? '',
-    props.onChange,
-  );
+  const state = useComposerState({
+    ...props,
+    isBlocked: isDisabled || (isPending && !props.allowsPendingSubmit),
+    format: plainFormat,
+  });
+  const shortcut = resolveSubmitShortcut(props.submitShortcut, useCoarsePointer());
   const rootRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  useAutoGrow(inputRef, { minRows, maxRows, value });
-  const completion = useTextCompletions({ completions, inputRef, isLocked: isDisabled, setValue });
+  useAutoGrow(inputRef, { minRows, maxRows, value: state.value });
+  const completion = useTextCompletions({
+    completions,
+    inputRef,
+    isLocked: isDisabled,
+    setValue: state.setValue,
+  });
   const model = completions ? completion.model : null;
-  const canSubmit = !isDisabled && !isPending && (props.allowsEmptySubmit || value.trim() !== '');
-  const submit = () => {
-    if (!canSubmit) return;
-    props.onSubmit?.(value);
-    setValue('');
-  };
+  const caret = useCaretInsertion(inputRef, state);
+  const keys = { ...state, shortcut, onCancel: props.onCancel };
   const inputProps: MessageComposerModel['inputProps'] = {
     ...(completions ? completion.inputProps : {}),
-    ...toLabelling(props, strings.message),
+    ...toComposerLabelling(props, strings.message),
     ref: mergeRefs(inputRef, props.ref),
-    value,
+    value: state.value,
     rows: minRows,
     placeholder: props.placeholder,
     maxLength: props.maxLength,
     disabled: isDisabled,
     onChange: (event) => {
-      setValue(event.target.value);
+      state.setValue(event.target.value);
       model?.track('input');
     },
     onKeyDown: (event) => {
       if (model?.handleKeyDown(event)) return;
-      if (!isSubmitKey(event, props.submitShortcut ?? 'Enter')) return props.onKeyDown?.(event);
+      if (!runComposerKey(event.nativeEvent, keys)) return props.onKeyDown?.(event);
       event.preventDefault();
-      submit();
     },
     onKeyUp: (event) => {
       model?.handleKeyUp(event);
       props.onKeyUp?.(event);
     },
+    onPaste: (event) => attachPastedFiles(event, isDisabled ? undefined : props.onAttach),
     onFocus: props.onFocus,
     onBlur: (event) => {
       model?.close();
       props.onBlur?.(event);
     },
   };
-  return { rootRef, inputProps, completion, canSubmit, submit };
+  return { rootRef, inputProps, completion, frame: { ...state, shortcut, ...caret } };
 }

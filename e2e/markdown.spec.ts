@@ -141,4 +141,60 @@ test.describe('Markdown lab', () => {
     expect(await page.evaluate(() => (window as { unsafe?: boolean }).unsafe)).toBeUndefined();
     await lab.expectAccessible();
   });
+
+  test('UIC-MARKDOWN-2.11 UIC-MARKDOWN-2.12 streams an answer without raw markers, rendering only the changed block', async ({
+    page,
+    lab,
+  }) => {
+    test.slow();
+    await page.clock.install();
+    await lab.open('markdown');
+    // Time moves only when the test runs the clock, so every step adds exactly one chunk.
+    await page.clock.pauseAt((await page.evaluate(() => Date.now())) + 1000);
+    const demo = page.locator('[data-lab-demo="streaming"]');
+    const stream = demo.locator('[data-lab-stream]');
+    const progress = demo.locator('[data-lab-output="progress"]');
+    await demo.getByRole('button', { name: 'Stream the answer' }).click();
+    await expect(stream).toHaveAttribute('data-streaming', 'true');
+    const total = Number(/of (\d+)/.exec((await progress.textContent()) ?? '')?.[1]);
+    const late: number[] = [];
+    for (let step = 0; step < total; step += 1) {
+      await page.clock.runFor(40);
+      // React commits after the timer fires, so wait for this chunk before reading the page.
+      await expect(progress).toContainText(`Chunk ${step + 1} of`);
+      if ((await stream.getAttribute('data-streaming')) !== 'true') break;
+      expect(await stream.innerText()).not.toMatch(/\*\*|\]\(|```|\|\s*---|^\s*[-#>]\s*$/m);
+      if (step === 40) {
+        await page.evaluate(() => {
+          (window as { firstHeading?: Element | null }).firstHeading =
+            document.querySelector('[data-lab-stream] h2');
+        });
+      }
+      if (await stream.locator('blockquote').count()) {
+        late.push(Number(/· (\d+) nodes/.exec((await progress.textContent()) ?? '')?.[1]));
+      }
+    }
+    await page.clock.runFor(400);
+    await expect(stream).not.toHaveAttribute('data-streaming');
+    // A finished block keeps its element while the rest of the answer streams in.
+    expect(
+      await page.evaluate(
+        () =>
+          (window as { firstHeading?: Element | null }).firstHeading ===
+          document.querySelector('[data-lab-stream] h2'),
+      ),
+    ).toBe(true);
+    expect(late.length).toBeGreaterThan(3);
+    expect(Math.max(...late)).toBeLessThanOrEqual(12);
+    await expect(stream.getByRole('table').getByRole('row')).toHaveCount(6);
+    await expect(stream.getByRole('group', { name: 'console' })).toHaveAttribute(
+      'data-variant',
+      'terminal',
+    );
+    await expect(stream.locator('ol > li')).toHaveCount(3);
+    await expect(stream.locator('.ui-chat-citation')).toHaveCount(2);
+    await expect(demo.getByRole('list', { name: '2 sources' })).toBeVisible();
+    await page.clock.resume();
+    await lab.expectAccessible('[data-lab-demo="streaming"]');
+  });
 });

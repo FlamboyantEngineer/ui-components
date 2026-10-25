@@ -1,5 +1,18 @@
 import { analysisStrings, type AnalysisStrings } from './analysis-strings.js';
+import { chatStrings, type ChatStrings } from './chat-strings.js';
+import { chatActionsStrings, type ChatActionsStrings } from './chat-actions-strings.js';
+import { chatActivityStrings, type ChatActivityStrings } from './chat-activity-strings.js';
+import { chatAttachmentStrings, type ChatAttachmentStrings } from './chat-attachment-strings.js';
+import { chatControllerStrings, type ChatControllerStrings } from './chat-controller-strings.js';
+import { chatListStrings, type ChatListStrings } from './chat-list-strings.js';
+import { chatMessageStrings, type ChatMessageStrings } from './chat-message-strings.js';
+import { chatQuestionStrings, type ChatQuestionStrings } from './chat-question-strings.js';
+import { chatSourcesStrings, type ChatSourcesStrings } from './chat-sources-strings.js';
+import { chatToolStrings, type ChatToolStrings } from './chat-tool-strings.js';
+import { chatWidgetStrings, type ChatWidgetStrings } from './chat-widget-strings.js';
+import { codeStrings, type CodeStrings } from './code-strings.js';
 import { commonStrings, type CommonStrings } from './common-strings.js';
+import { composerStrings, type ComposerStrings } from './composer-strings.js';
 import { contentStrings, type ContentStrings } from './content-strings.js';
 import { dashboardStrings, type DashboardStrings } from './dashboard-strings.js';
 import { diagramStrings, type DiagramStrings } from './diagram-strings.js';
@@ -28,7 +41,20 @@ import { viewStrings, type ViewStrings } from './view-strings.js';
 export interface UiStrings
   extends
     AnalysisStrings,
+    ChatStrings,
+    ChatActionsStrings,
+    ChatActivityStrings,
+    ChatAttachmentStrings,
+    ChatControllerStrings,
+    ChatListStrings,
+    ChatMessageStrings,
+    ChatQuestionStrings,
+    ChatSourcesStrings,
+    ChatToolStrings,
+    ChatWidgetStrings,
+    CodeStrings,
     CommonStrings,
+    ComposerStrings,
     ContentStrings,
     DashboardStrings,
     DiagramStrings,
@@ -52,7 +78,20 @@ export interface UiStrings
 
 export const defaultStrings: UiStrings = {
   ...analysisStrings,
+  ...chatStrings,
+  ...chatActionsStrings,
+  ...chatActivityStrings,
+  ...chatAttachmentStrings,
+  ...chatControllerStrings,
+  ...chatListStrings,
+  ...chatMessageStrings,
+  ...chatQuestionStrings,
+  ...chatSourcesStrings,
+  ...chatToolStrings,
+  ...chatWidgetStrings,
+  ...codeStrings,
   ...commonStrings,
+  ...composerStrings,
   ...contentStrings,
   ...dashboardStrings,
   ...diagramStrings,

@@ -9,6 +9,7 @@ import { Outline } from '../../src/components/outline/outline.js';
 import { SearchField } from '../../src/components/search-field/search-field.js';
 import { TextMatchProvider } from '../../src/components/text-match/text-match.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { StreamingDemo } from './markdown-streaming-demo.js';
 
 const samples = {
   text: [
@@ -212,6 +213,12 @@ mountLab(
       description="renderNode draws a chart from a fenced block, resolves an image source and gives a heading an anchor."
     >
       <Markdown source={overrides} renderNode={renderOverride} data-lab-overrides />
+    </LabSection>
+    <LabSection
+      title="Streaming"
+      description="A long answer streams in chunk by chunk: incomplete emphasis, links, fences and table rows never flash raw markers, code renders through createCodeBlockOverride and [n] markers through createCitationOverride, and only the block a chunk changed renders again."
+    >
+      <StreamingDemo />
     </LabSection>
     <LabSection
       title="Safe content"

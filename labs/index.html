@@ -69,6 +69,7 @@
         <section>
           <h3>Rendered content</h3>
           <ul>
+            <li><a href="code-block.html">Code Block</a> — A block of code with its language, a Copy button, an optional Apply action and a terminal variant.</li>
             <li><a href="html-markup.html">HTML Markup</a> — Renders sanitized HTML as React elements, with links through the provider and element overrides.</li>
             <li><a href="markdown.html">Markdown</a> — Renders Markdown with tables, task lists, code and links through the library's readers.</li>
             <li><a href="qr-code.html">QR Code</a> — Text drawn as a QR code: error correction levels, quiet zones, module sizes, dense and too-long texts, and the encoder's symbol.</li>
@@ -256,11 +257,20 @@
           <ul>
             <li><a href="activity-feed.html">Activity Feed</a> — A chronological feed of events grouped by day, with a filter slot, loading of older events and an empty state.</li>
             <li><a href="approval-panel.html">Approval Panel</a> — Who must decide and where each decision stands, with the approvals needed, reminders and the reader's own decision.</li>
+            <li><a href="chat-activity.html">Chat Activity</a> — An assistant's activity in a reply: reasoning that streams and collapses, a group of steps, a plan and a live status line.</li>
+            <li><a href="chat-attachment.html">Chat Attachment</a> — Message attachments: image thumbnails that open the media viewer, file chips with type glyphs and sizes, upload progress, errors with Retry, and removable composer strips.</li>
+            <li><a href="chat-controller.html">Chat Controller</a> — useChatController drives a fake streaming agent: replies, stop, retry, errors, a queue, approvals, questions and uploads, with the event log beside the conversation.</li>
+            <li><a href="chat-list.html">Chat List</a> — A list of conversations with search, New chat, unread counts, muted state, presence, loading and empty states.</li>
+            <li><a href="chat-message-actions.html">Chat Message Actions</a> — A message's action bar and context menu: copy, ratings with feedback details, reply, react, edit and delete.</li>
+            <li><a href="chat-parts.html">Chat Parts</a> — Renders a message's typed parts: Markdown and plain text with mention and command pills, citations and code, reasoning, tool calls with approvals and renderers, questions, plans, sources, attachments, code, diffs and custom parts, with reasoning and tool calls folded into groups of steps.</li>
+            <li><a href="chat-question.html">Chat Question</a> — An inline card in which an agent asks one or several questions, answered by choice or in the reader's own words, collapsing to a summary.</li>
+            <li><a href="chat-sources.html">Chat Sources</a> — A labelled list of the sources an answer drew on, and inline numbered citations that preview their source.</li>
+            <li><a href="chat-tool-call.html">Chat Tool Call</a> — An assistant's tool call as a collapsible card with its status, arguments and result, and approvals with Approve, Deny with a reason and Always allow.</li>
             <li><a href="chat-transcript.html">Chat Transcript</a> — A conversation log that follows the latest message, with streaming and error states and a jump to latest control.</li>
             <li><a href="comment-composer.html">Comment Composer</a> — A plain-text comment box with submit and cancel, keyboard chords, pending submits and a stored draft.</li>
             <li><a href="comment-thread.html">Comment Thread</a> — A discussion with a quoted anchor, replies, reactions, edit and delete, resolve and reopen, and collapsed long threads.</li>
             <li><a href="decision-control.html">Decision Control</a> — Approve or reject, or a scored vote, with an optional or required comment and an optional signature.</li>
-            <li><a href="message-composer.html">Message Composer</a> — A growing text area that sends on Enter, with attachments, tools, mentions and a Stop button while a reply streams.</li>
+            <li><a href="message-composer.html">Message Composer</a> — A growing text area, or a rich editor with mention and command pills and code blocks, that sends on Enter, with attachments, emoji, edit mode, recall, drafts and a Stop button while a reply streams.</li>
             <li><a href="notification-center.html">Notification Center</a> — A bell with the unread count that opens a notification inbox grouped by day, with read, dismiss and load more.</li>
             <li><a href="reaction-bar.html">Reaction Bar</a> — Reaction chips with counts and who reacted, toggled by the reader, with an emoji picker to add one.</li>
             <li><a href="state-timeline.html">State Timeline</a> — A vertical history of state changes: who moved it, when and why, with the current state marked.</li>
@@ -320,6 +330,12 @@
             <li><a href="redline-compare.html">Redline Compare</a> — Block-level redline of two rich documents with inline word changes, moved blocks, change navigation and accept or reject.</li>
             <li><a href="text-diff.html">Text Diff</a> — The line diff of two texts, unified or side by side, with word changes, folded context, line widgets and change navigation.</li>
             <li><a href="tree-compare.html">Tree Compare</a> — Two hierarchies aligned row by row: added, removed, changed and moved rows, one expansion for both sides, only differences, steps between them and a summary.</li>
+          </ul>
+        </section>
+        <section>
+          <h3>Conversations</h3>
+          <ul>
+            <li><a href="chat.html">Chat</a> — A whole conversation: an assistant that streams, works with tools, asks and waits for approval; chats between people with replies, edits, reactions, receipts and unread; a header with search; and the surfaces it sits in.</li>
           </ul>
         </section>
       </section>
