@@ -133,7 +133,7 @@ Verification: `src/components/message-composer/message-composer.test.tsx`, `src/
 
 ### UIC-MESSAGE-COMPOSER-4.1 - Entry point and engine
 
-`RichMessageComposer` shall be exported only from `@flamboyantengineer/ui-components/message-composer/rich`, with its prop and message types; only modules under `src/components/message-composer/rich/` import ProseMirror and `@handlewithcare/react-prosemirror`, so neither the package root nor `MessageComposer` loads them and applications without the rich mode install none of them. No public declaration exposes their types. The host stylesheet gives the input ProseMirror's required rules, as the reference partial does.
+`RichMessageComposer` shall be exported only from `@flamboyantengineer/ui-components/message-composer/rich`, with its prop and message types; only modules under `src/components/message-composer/rich/` import ProseMirror and `@handlewithcare/react-prosemirror`, so neither the package root nor `MessageComposer` loads them and applications without the rich mode install none of them. `Chat`, which composes the rich mode, is likewise exported only from its own entry point ([UIC-CHAT-1.1](CHAT.md#uic-chat-11---entry-point)). No public declaration exposes their types. The host stylesheet gives the input ProseMirror's required rules, as the reference partial does.
 
 Implementation: `src/components/message-composer/rich/index.ts`, `src/components/message-composer/rich/rich-message-composer.tsx`
 Verification: `src/components/message-composer/message-composer.test.tsx`
