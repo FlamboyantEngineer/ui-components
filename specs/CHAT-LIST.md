@@ -84,7 +84,7 @@ Verification: `src/components/chat-list/chat-list.test.tsx`
 | `ui-chat-list__new`          | slot  |            | The New chat button (also `ui-button`).                        |
 | `ui-chat-list__list`         | slot  |            | The grid list (`role="grid"`).                                 |
 | `ui-chat-list__conversation` | slot  |            | A conversation row (`role="row"`).                             |
-| `ui-chat-list__avatar`       | slot  |            | The decorative avatar, presence avatar or avatar group.        |
+| `ui-chat-list__avatar`       | slot  |            | The decorative avatar, with presence, or avatar group.         |
 | `ui-chat-list__title`        | slot  |            | The title.                                                     |
 | `ui-chat-list__time`         | slot  |            | The time of the last message (also `ui-relative-time`).        |
 | `ui-chat-list__preview`      | slot  |            | The last message, on one line.                                 |
