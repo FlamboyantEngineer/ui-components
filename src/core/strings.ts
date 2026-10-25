@@ -1,4 +1,5 @@
 import { analysisStrings, type AnalysisStrings } from './analysis-strings.js';
+import { chatSourcesStrings, type ChatSourcesStrings } from './chat-sources-strings.js';
 import { codeStrings, type CodeStrings } from './code-strings.js';
 import { commonStrings, type CommonStrings } from './common-strings.js';
 import { contentStrings, type ContentStrings } from './content-strings.js';
@@ -29,6 +30,7 @@ import { viewStrings, type ViewStrings } from './view-strings.js';
 export interface UiStrings
   extends
     AnalysisStrings,
+    ChatSourcesStrings,
     CodeStrings,
     CommonStrings,
     ContentStrings,
@@ -54,6 +56,7 @@ export interface UiStrings
 
 export const defaultStrings: UiStrings = {
   ...analysisStrings,
+  ...chatSourcesStrings,
   ...codeStrings,
   ...commonStrings,
   ...contentStrings,
