@@ -2,7 +2,6 @@ import type { ReactNode } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { Button } from '../button/button.js';
 import { ScrollRegion } from '../scroll-region/scroll-region.js';
 import { TranscriptAnnouncerRegion } from './transcript-announcer.js';
 import { TranscriptContext } from './transcript-context.js';
@@ -16,6 +15,7 @@ import {
 import {
   renderTranscriptItems,
   TranscriptHistory,
+  TranscriptJumpButton,
   TranscriptUnreadBar,
 } from './transcript-parts.js';
 import type { ChatTranscriptScrollMode } from './transcript-runtime.js';
@@ -127,7 +127,7 @@ export function ChatTranscript({
         className={hooks.slotClass('log')}
         onScroll={model.onScroll}
       >
-        {isLoadingOlder ? <TranscriptHistory /> : null}
+        {hasOlder || isLoadingOlder ? <TranscriptHistory isLoading={isLoadingOlder} /> : null}
         {isEmpty ? (
           emptyState ? (
             <div {...hooks.slot('empty')}>{emptyState}</div>
@@ -138,14 +138,7 @@ export function ChatTranscript({
         {scrollMode === 'anchor' ? <div {...hooks.slot('spacer')} ref={runtime.spacer} /> : null}
       </ScrollRegion>
       {ui.isAway ? (
-        <Button
-          className={hooks.slotClass('jump')}
-          size="sm"
-          startIcon="arrow-down"
-          onPress={model.jumpToLatest}
-        >
-          {ui.unseenCount > 0 ? strings.newMessageCount(ui.unseenCount) : strings.jumpToLatest}
-        </Button>
+        <TranscriptJumpButton unseenCount={ui.unseenCount} onJump={model.jumpToLatest} />
       ) : null}
       <TranscriptAnnouncerRegion text={model.announcement} />
     </div>

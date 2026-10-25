@@ -95,6 +95,17 @@ describe('ChatTranscript anchor mode', () => {
     expect(spacer()).toHaveStyle({ height: '30px' });
   });
 
+  it('UIC-CHAT-TRANSCRIPT-1.5 keeps a scroll the reader made before its event arrived', () => {
+    const { rerender } = render(<Chat />);
+    const viewport = getViewport();
+    rerender(<Chat extra={1} />);
+    rerender(<Chat extra={2} streaming />);
+    viewport.scrollTop = 280;
+    layout.heights.set('m8', 120);
+    rerender(<Chat extra={2} streaming />);
+    expect(offsetInViewport(article('m7'))).toBe(20);
+  });
+
   it('UIC-CHAT-TRANSCRIPT-1.5 drops the anchor and the spacer in follow mode', () => {
     const { rerender } = render(<Chat />);
     const viewport = getViewport();

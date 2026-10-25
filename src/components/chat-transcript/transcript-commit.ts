@@ -2,6 +2,7 @@ import { readOffset, type RevealAlignment } from './transcript-geometry.js';
 import {
   isTranscriptMessage,
   readMessageText,
+  resolveMessageKey,
   type TranscriptRuntime,
   type TranscriptSettings,
 } from './transcript-runtime.js';
@@ -107,13 +108,13 @@ export function focusMessage(
 
 /** Scrolls to a newly highlighted message and focuses it, once it is among the children. */
 export function applyHighlight(runtime: TranscriptRuntime, settings: TranscriptSettings) {
-  const id = settings.highlightedMessageId ?? null;
-  if (id === runtime.handledHighlight) return;
-  if (id === null) {
+  const key = resolveMessageKey(runtime, settings.highlightedMessageId) ?? null;
+  if (key === runtime.handledHighlight) return;
+  if (key === null) {
     runtime.handledHighlight = null;
     return;
   }
-  if (!runtime.indexOf.has(id)) return;
-  runtime.handledHighlight = id;
-  focusMessage(runtime, settings, { key: id, align: 'center' });
+  if (!runtime.indexOf.has(key)) return;
+  runtime.handledHighlight = key;
+  focusMessage(runtime, settings, { key, align: 'center' });
 }

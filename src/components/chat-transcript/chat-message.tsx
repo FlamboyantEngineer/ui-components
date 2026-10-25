@@ -116,7 +116,7 @@ export function ChatMessage({
   const { isHovered, isFocusWithin, interactionProps } = useMessageInteraction();
   const labelId = useId();
   const authorName = author ? getDisplayName(author.name, strings.unnamed) : undefined;
-  const transcript = useTranscriptMessage({ authorName, origin, status });
+  const transcript = useTranscriptMessage({ id: rest.id, authorName, origin, status });
   const label = strings.chatMessageLabel(authorName, useAbsoluteTime(time, getNow));
   const startsGroup = groupPosition === 'single' || groupPosition === 'first';
   const [body, own] = splitBodyProps(rest);

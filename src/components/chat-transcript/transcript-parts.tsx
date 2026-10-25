@@ -43,6 +43,22 @@ export function renderTranscriptItems(
   return nodes;
 }
 
+/** The control shown while the reader is away from the bottom, counting what arrived meanwhile. */
+export function TranscriptJumpButton({
+  unseenCount,
+  onJump,
+}: {
+  unseenCount: number;
+  onJump: () => void;
+}) {
+  const strings = useUiStrings();
+  return (
+    <Button className={hooks.slotClass('jump')} size="sm" startIcon="arrow-down" onPress={onJump}>
+      {unseenCount > 0 ? strings.newMessageCount(unseenCount) : strings.jumpToLatest}
+    </Button>
+  );
+}
+
 /** The bar shown while the first unread message is above the view, with a control to jump to it. */
 export function TranscriptUnreadBar({ count, onJump }: { count: number; onJump: () => void }) {
   const strings = useUiStrings();
@@ -57,12 +73,15 @@ export function TranscriptUnreadBar({ count, onJump }: { count: number; onJump: 
   );
 }
 
-/** The indicator above the messages while older ones load. */
-export function TranscriptHistory() {
+/**
+ * The place above the messages while older ones remain, holding the indicator while they load. It
+ * stays while older messages remain, so the indicator appearing never moves the messages.
+ */
+export function TranscriptHistory({ isLoading }: { isLoading: boolean }) {
   const strings = useUiStrings();
   return (
     <div {...hooks.slot('history')}>
-      <Spinner size="sm" label={strings.loadingOlderMessages} />
+      {isLoading ? <Spinner size="sm" label={strings.loadingOlderMessages} /> : null}
     </div>
   );
 }

@@ -79,6 +79,19 @@ function fitSpacer(
   return top;
 }
 
+/** Where the scroll position holds the view: on the anchored message, at the bottom, or free. */
+function resolveHold(
+  sources: ScrollKeeperSources,
+  viewport: HTMLElement,
+  anchorKey: string | null,
+): TranscriptHold {
+  const element = anchorKey === null ? null : sources.element(anchorKey);
+  if (element && Math.abs(resolveTopAlignment(element, viewport) - viewport.scrollTop) <= 1) {
+    return 'anchor';
+  }
+  return readDistanceToBottom(viewport) <= 1 ? 'bottom' : 'free';
+}
+
 /** Scrolls so the message that was first in view sits where it was. */
 function restoreSnapshot(
   sources: ScrollKeeperSources,
@@ -101,27 +114,28 @@ export function createScrollKeeper(sources: ScrollKeeperSources): ScrollKeeper {
   let hold: TranscriptHold = 'bottom';
   let anchorKey: string | null = null;
   let snapshot: ScrollSnapshot | null = null;
+  // Where the keeper last left the scroll position, to notice a scroll it has not heard of yet.
+  let known: number | null = null;
+
+  const classify = () => {
+    const viewport = sources.viewport();
+    if (!viewport) return;
+    hold = resolveHold(sources, viewport, anchorKey);
+    snapshot = readSnapshot(sources, viewport);
+    known = viewport.scrollTop;
+  };
 
   const settle = () => {
     const viewport = sources.viewport();
     if (!viewport) return;
+    // The reader scrolled before the scroll event arrived: their position wins over the hold.
+    if (known !== null && Math.abs(viewport.scrollTop - known) > 1) classify();
     const anchorTop = fitSpacer(sources, viewport, anchorKey);
     if (hold === 'bottom') viewport.scrollTop = viewport.scrollHeight;
     else if (hold === 'anchor' && anchorTop !== null) viewport.scrollTop = anchorTop;
     else restoreSnapshot(sources, viewport, snapshot);
     snapshot = readSnapshot(sources, viewport);
-  };
-
-  const classify = () => {
-    const viewport = sources.viewport();
-    if (!viewport) return;
-    const element = anchorKey === null ? null : sources.element(anchorKey);
-    if (element && Math.abs(resolveTopAlignment(element, viewport) - viewport.scrollTop) <= 1) {
-      hold = 'anchor';
-    } else {
-      hold = readDistanceToBottom(viewport) <= 1 ? 'bottom' : 'free';
-    }
-    snapshot = readSnapshot(sources, viewport);
+    known = viewport.scrollTop;
   };
 
   return {
@@ -151,6 +165,7 @@ export function createScrollKeeper(sources: ScrollKeeperSources): ScrollKeeper {
       hold = 'bottom';
       anchorKey = null;
       snapshot = null;
+      known = null;
       resizeSpacer(sources, 0);
     },
   };

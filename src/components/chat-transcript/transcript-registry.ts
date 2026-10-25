@@ -3,6 +3,8 @@ import type { ChatMessageOrigin, ChatMessageStatus } from './chat-message.js';
 
 /** What a message tells the transcript about itself, for announcements and scrolling. */
 export interface TranscriptMessageEntry {
+  /** The message's own id (its DOM id), when it differs from its child's key. */
+  id: string | undefined;
   /** The author's display name; none for a system notice. */
   authorName: string | undefined;
   /** A plain-text summary to announce; defaults to the message's text. */
@@ -42,6 +44,10 @@ export interface TranscriptRegistry {
   element(key: string): HTMLElement | null;
   /** The key of a message's element. */
   keyOf(element: Element): string | undefined;
+  /** The child key of a message id: the same, unless the message registered its own id. */
+  keyFor(id: string): string;
+  /** The message id of a child key: the message's own id, else the key. */
+  idFor(key: string): string;
   listen(listener: TranscriptEntryListener): () => void;
 }
 
@@ -59,12 +65,18 @@ export function createTranscriptRegistry(): TranscriptRegistry {
   const elements = new Map<string, HTMLElement>();
   const keys = new WeakMap<Element, string>();
   const listeners = new Set<TranscriptEntryListener>();
+  const keysById = new Map<string, string>();
+  const idsByKey = new Map<string, string>();
   return {
     view: createValueStore(emptyView),
     register(key, entry) {
       const previous = entries.get(key);
       entries.set(key, entry);
       registered.add(key);
+      if (entry.id !== undefined && entry.id !== key) {
+        keysById.set(entry.id, key);
+        idsByKey.set(key, entry.id);
+      }
       for (const listener of listeners) listener(key, entry, previous);
     },
     unregister: (key) => entries.delete(key),
@@ -83,6 +95,8 @@ export function createTranscriptRegistry(): TranscriptRegistry {
       const key = keys.get(element);
       return key !== undefined && elements.get(key) === element ? key : undefined;
     },
+    keyFor: (id) => keysById.get(id) ?? id,
+    idFor: (key) => idsByKey.get(key) ?? key,
     listen(listener) {
       listeners.add(listener);
       return () => listeners.delete(listener);

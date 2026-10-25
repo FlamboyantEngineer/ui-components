@@ -62,10 +62,15 @@ export function createWindowModel(): WindowModel {
       });
     },
     range(viewport, feed, keys) {
-      if (viewport.clientHeight <= 0) return resolveTailRange(keys);
+      // A viewport the stylesheet left unbounded is seen through the window at most.
+      const view = Math.min(
+        viewport.clientHeight,
+        feed.ownerDocument.defaultView?.innerHeight ?? 0,
+      );
+      if (view <= 0) return resolveTailRange(keys);
       const feedTop = readOffset(feed, viewport);
-      const top = -feedTop - viewport.clientHeight;
-      const bottom = -feedTop + 2 * viewport.clientHeight;
+      const top = -feedTop - view;
+      const bottom = -feedTop + 2 * view;
       let offset = 0;
       let first: string | undefined;
       let last: string | undefined;

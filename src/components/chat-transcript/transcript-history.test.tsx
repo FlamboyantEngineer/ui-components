@@ -1,4 +1,5 @@
 import { act, render, screen } from '@testing-library/react';
+import { Fragment } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import {
@@ -46,6 +47,7 @@ describe('ChatTranscript history', () => {
     const viewport = getViewport();
     expect(onLoadOlder).not.toHaveBeenCalled();
     expect(screen.getByRole('feed')).not.toHaveAttribute('aria-busy');
+    expect(container.querySelector('.ui-chat-transcript__history')).toBeEmptyDOMElement();
     expect(article('m25')).toHaveAttribute('aria-setsize', '-1');
     scrollViewport(viewport, 150);
     expect(onLoadOlder).toHaveBeenCalledTimes(1);
@@ -63,6 +65,8 @@ describe('ChatTranscript history', () => {
     expect(onLoadOlder).toHaveBeenCalledTimes(1);
     scrollViewport(viewport, 0);
     expect(onLoadOlder).toHaveBeenCalledTimes(2);
+    rerender(<History onLoadOlder={onLoadOlder} first={11} />);
+    expect(container.querySelector('.ui-chat-transcript__history')).toBeNull();
   });
 
   it('UIC-CHAT-TRANSCRIPT-4.1 loads from the start when the messages are short, and not without hasOlder', () => {
@@ -79,14 +83,14 @@ describe('ChatTranscript history', () => {
   it('UIC-CHAT-TRANSCRIPT-4.2 keeps the reader’s place and focus as older messages load', () => {
     const { rerender } = render(<History hasOlder onLoadOlder={() => undefined} />);
     const viewport = getViewport();
-    scrollViewport(viewport, 130);
+    scrollViewport(viewport, 160);
     act(() => article('m24').focus());
     expect(offsetInViewport(article('m24'))).toBe(20);
     rerender(<History hasOlder isLoadingOlder />);
     expect(offsetInViewport(article('m24'))).toBe(20);
     rerender(<History hasOlder first={11} />);
     expect(offsetInViewport(article('m24'))).toBe(20);
-    expect(viewport.scrollTop).toBe(630);
+    expect(viewport.scrollTop).toBe(660);
     expect(article('m24')).toHaveFocus();
     layout.heights.set('m12', 150);
     rerender(<History hasOlder first={11} />);
@@ -112,5 +116,29 @@ describe('ChatTranscript history', () => {
     rerender(<History highlightedMessageId="m15" first={11} />);
     expect(article('m15')).toHaveFocus();
     expect(offsetInViewport(article('m15'))).toBe(75);
+  });
+
+  it('UIC-CHAT-TRANSCRIPT-3.7 knows a message by its own id inside a wrapper without a key', () => {
+    vi.useFakeTimers();
+    const onRead = vi.fn();
+    function Wrapped({ messageId }: { messageId: string }) {
+      return <ChatMessage id={messageId}>Message {messageId}</ChatMessage>;
+    }
+    const thread = (highlighted?: string) => (
+      <ChatTranscript onRead={onRead} highlightedMessageId={highlighted}>
+        {['a', 'b', 'c', 'd', 'e', 'f'].map((name) => (
+          <Fragment key={name}>
+            <div>Day {name}</div>
+            <Wrapped messageId={`w-${name}`} />
+          </Fragment>
+        ))}
+      </ChatTranscript>
+    );
+    const { rerender } = render(thread());
+    act(() => vi.advanceTimersByTime(500));
+    expect(onRead).toHaveBeenLastCalledWith('w-f');
+    rerender(thread('w-a'));
+    expect(article('w-a')).toHaveAttribute('data-highlighted', 'true');
+    expect(article('w-a')).toHaveFocus();
   });
 });

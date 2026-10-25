@@ -1,5 +1,10 @@
 import { findLastVisible, readDistanceToBottom, readOffset } from './transcript-geometry.js';
-import type { TranscriptRuntime, TranscriptSettings, TranscriptUi } from './transcript-runtime.js';
+import {
+  resolveMessageKey,
+  type TranscriptRuntime,
+  type TranscriptSettings,
+  type TranscriptUi,
+} from './transcript-runtime.js';
 import type { WindowRange } from './transcript-window.js';
 
 /** How long the newest message in view must stay the newest before `onRead` hears of it. */
@@ -30,9 +35,10 @@ function isMostlyVisible(element: Element, viewport: HTMLElement): boolean {
 /** Whether the first unread message lies wholly above the view. */
 function resolveUnreadAbove(runtime: TranscriptRuntime, firstUnreadId: string | undefined) {
   const viewport = runtime.viewport.current;
-  const index = firstUnreadId === undefined ? undefined : runtime.indexOf.get(firstUnreadId);
-  if (!viewport || firstUnreadId === undefined || index === undefined) return false;
-  const element = runtime.registry.element(firstUnreadId);
+  const key = resolveMessageKey(runtime, firstUnreadId);
+  const index = key === undefined ? undefined : runtime.indexOf.get(key);
+  if (!viewport || key === undefined || index === undefined) return false;
+  const element = runtime.registry.element(key);
   if (element) return readOffset(element, viewport) + element.getBoundingClientRect().height <= 0;
   const snapshot = runtime.keeper.snapshot();
   const firstInView = snapshot ? runtime.indexOf.get(snapshot.key) : undefined;
@@ -90,7 +96,7 @@ export function noteSeen(runtime: TranscriptRuntime, settings: TranscriptSetting
       runtime.timers.delete('read');
       if (runtime.readKey === null || runtime.readKey === runtime.reportedKey) return;
       runtime.reportedKey = runtime.readKey;
-      onRead(runtime.readKey);
+      onRead(runtime.registry.idFor(runtime.readKey));
     }, READ_DELAY),
   );
 }

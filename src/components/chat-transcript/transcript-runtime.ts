@@ -139,12 +139,17 @@ export function refreshMounted(runtime: TranscriptRuntime) {
   runtime.mounted = { keys, elements };
 }
 
+/** The child key of a message id the host names, if any. */
+export function resolveMessageKey(runtime: TranscriptRuntime, id: string | undefined) {
+  return id === undefined ? undefined : runtime.registry.keyFor(id);
+}
+
 /** Publishes the tab stop, positions and highlight each message reads. */
 export function publishView(runtime: TranscriptRuntime, settings: TranscriptSettings) {
   const keys = listMessageKeys(runtime);
   const active = runtime.activeKey;
   const positions = new Map(keys.map((key, index) => [key, index + 1]));
-  const highlighted = settings.highlightedMessageId ?? null;
+  const highlighted = resolveMessageKey(runtime, settings.highlightedMessageId) ?? null;
   runtime.registry.view.set({
     tabStopKey: active !== null && positions.has(active) ? active : findLastMessageKey(runtime),
     highlightedKey: highlighted !== null && positions.has(highlighted) ? highlighted : null,

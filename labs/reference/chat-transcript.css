@@ -43,9 +43,12 @@
   background: var(--ref-highlight);
 }
 
+/* The place above the messages keeps its height, so the indicator appearing moves nothing. */
 .ui-chat-transcript__history {
   display: flex;
+  align-items: center;
   justify-content: center;
+  min-height: 24px;
   padding-block-end: 12px;
 }
 

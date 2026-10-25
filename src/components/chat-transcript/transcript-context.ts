@@ -12,6 +12,8 @@ import type { TranscriptRegistry, TranscriptView } from './transcript-registry.j
 
 /** What a message registers with the transcript it sits in. */
 export interface TranscriptMessageRegistration {
+  /** The message's id, also its DOM id; the transcript otherwise knows it by its child's key. */
+  id?: string | undefined;
   /** The author's display name, announced as "New message from …"; none for a notice. */
   authorName?: string | undefined;
   /** A plain-text summary to announce; defaults to the text of the message's content. */
@@ -58,6 +60,7 @@ function useViewValue<T>(
  * highlight. Outside a transcript it returns no props.
  */
 export function useTranscriptMessage({
+  id,
   authorName,
   summary,
   origin,
@@ -73,8 +76,10 @@ export function useTranscriptMessage({
     [registry, key],
   );
   useLayoutEffect(() => {
-    if (registry && key !== null) registry.register(key, { authorName, summary, origin, status });
-  }, [registry, key, authorName, summary, origin, status]);
+    if (registry && key !== null) {
+      registry.register(key, { id, authorName, summary, origin, status });
+    }
+  }, [registry, key, id, authorName, summary, origin, status]);
   useLayoutEffect(() => {
     if (!registry || key === null) return undefined;
     return () => {

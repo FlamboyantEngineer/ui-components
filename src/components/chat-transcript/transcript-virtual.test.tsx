@@ -88,11 +88,11 @@ describe('ChatTranscript virtualized', () => {
     rerender(<LongHistory first={1001} last={4001} hasOlder />);
     expect(distanceToBottom(viewport)).toBe(0);
     expect(article('m4001')).not.toBeNull();
-    scrollViewport(viewport, 10_000);
+    scrollViewport(viewport, 10_030);
     expect(offsetInViewport(article('m1201') as HTMLElement)).toBe(0);
     rerender(<LongHistory first={1} last={4001} hasOlder />);
     expect(offsetInViewport(article('m1201') as HTMLElement)).toBe(0);
-    expect(viewport.scrollTop).toBe(60_000);
+    expect(viewport.scrollTop).toBe(60_030);
     rerender(<LongHistory first={1} last={4001} highlightedMessageId="m10" />);
     expect(article('m10')).toHaveFocus();
     expect(article('m10')).toHaveAttribute('data-highlighted', 'true');

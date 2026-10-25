@@ -32,6 +32,7 @@ import {
   publishView,
   refreshMounted,
   resetConversation,
+  resolveMessageKey,
   type TranscriptRuntime,
   type TranscriptSettings,
   type TranscriptUi,
@@ -85,7 +86,8 @@ function collectForced(runtime: TranscriptRuntime, keys: readonly string[], high
 
 /** How many messages there are from the first unread one to the end. */
 function countUnread(runtime: TranscriptRuntime, keys: readonly string[], firstUnreadId?: string) {
-  const start = firstUnreadId === undefined ? -1 : keys.indexOf(firstUnreadId);
+  const key = resolveMessageKey(runtime, firstUnreadId);
+  const start = key === undefined ? -1 : keys.indexOf(key);
   if (start === -1) return 0;
   return keys.slice(start).filter((key) => isTranscriptMessage(runtime, key)).length;
 }
@@ -206,7 +208,11 @@ export function useTranscript({ children, ...options }: TranscriptOptions): Tran
     setRange,
     requestRender,
   });
-  const forced = collectForced(runtime, keys, options.highlightedMessageId);
+  const forced = collectForced(
+    runtime,
+    keys,
+    resolveMessageKey(runtime, options.highlightedMessageId),
+  );
   const mounted = options.virtualized
     ? selectMounted(indexOf, range ?? resolveTailRange(keys), forced)
     : null;
@@ -234,7 +240,7 @@ export function useTranscript({ children, ...options }: TranscriptOptions): Tran
       (key === null ? null : runtime.registry.element(key))?.focus({ preventScroll: true });
     },
     jumpToUnread() {
-      const key = options.firstUnreadId;
+      const key = resolveMessageKey(runtime, options.firstUnreadId);
       if (key !== undefined) focusMessage(runtime, latest.current, { key, align: 'start' });
     },
   };
