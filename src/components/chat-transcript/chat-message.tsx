@@ -1,90 +1,157 @@
-import type { ReactNode } from 'react';
-import { createHooks } from '../../core/hooks.js';
+import { useId, useState, type ReactNode } from 'react';
+import { useFocusWithin, useHover } from '../../primitives/index.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { Avatar, getDisplayName, type AvatarIdentity } from '../avatar/avatar.js';
-import { RelativeTime, type RelativeTimeProps } from '../relative-time/relative-time.js';
+import { mergeProps } from '../../utils/merge-props.js';
+import { getDisplayName, type AvatarIdentity } from '../avatar/avatar.js';
+import type { PresenceAvatarProps } from '../presence-avatar/presence-avatar.js';
+import type { RelativeTimeProps } from '../relative-time/relative-time.js';
+import {
+  ChatMessageAvatar,
+  ChatMessageBody,
+  ChatMessageHeader,
+  chatMessageHooks as hooks,
+  useAbsoluteTime,
+} from './chat-message-parts.js';
+import type { ChatQuoteData } from './chat-quote.js';
 
 /** `sent` by the reader, `received` from someone else (a person or an assistant), or a `system` notice. */
 export type ChatMessageOrigin = 'sent' | 'received' | 'system';
 
-/** `complete`, still `streaming` in, or failed with an `error`. */
-export type ChatMessageStatus = 'complete' | 'streaming' | 'error';
+/** `complete`, still `streaming` in, failed with an `error`, or `cancelled` (stopped) by the reader. */
+export type ChatMessageStatus = 'complete' | 'streaming' | 'error' | 'cancelled';
+
+/** Where a message the reader sent has got to: on its way, sent, delivered, read, or failed. */
+export type ChatMessageDelivery = 'sending' | 'sent' | 'delivered' | 'read' | 'failed';
+
+/** A message's place in a run of messages by one author: alone, or first, middle or last. */
+export type ChatMessageGroupPosition = 'single' | 'first' | 'middle' | 'last';
+
+/** The person or assistant who wrote a message, with their presence when known. */
+export interface ChatMessageAuthor
+  extends AvatarIdentity, Pick<PresenceAvatarProps, 'status' | 'statusLabel'> {}
 
 export interface ChatMessageProps extends BaseProps, Pick<RelativeTimeProps, 'getNow'> {
   /** Who the message is from, relative to the reader. Defaults to `received`. */
   origin?: ChatMessageOrigin | undefined;
-  /** The person or assistant who wrote it, drawn as an avatar and a name. */
-  author?: AvatarIdentity | undefined;
+  /** The person or assistant who wrote it, drawn as an avatar (with their presence) and a name. */
+  author?: ChatMessageAuthor | undefined;
   /** When it was written: an ISO 8601 date and time, read relative to now. */
   time?: string | undefined;
   /** Defaults to `complete`. A streaming message is busy until it completes. */
   status?: ChatMessageStatus | undefined;
+  /** Its place in a run of messages by one author. Defaults to `single`. */
+  groupPosition?: ChatMessageGroupPosition | undefined;
+  /** Where a message the reader sent has got to. */
+  delivery?: ChatMessageDelivery | undefined;
+  /** Why the message or its reply failed, shown as an alert. */
+  error?: string | undefined;
+  /** Retries a failed send or a failed reply; shows a Retry button with `error` or `failed`. */
+  onRetry?: (() => void) | undefined;
+  /** Marks the message as changed after it was sent. */
+  isEdited?: boolean | undefined;
+  /** Replaces the content, quote, reactions and actions with a deleted placeholder. */
+  isDeleted?: boolean | undefined;
+  /** The message this one replies to. */
+  quote?: ChatQuoteData | undefined;
+  /** Called with the quoted message's id when the reader presses the quote. */
+  onQuotePress?: ((messageId: string) => void) | undefined;
+  /** The reactions, usually a `ReactionBar`. */
+  reactions?: ReactNode;
+  /** Who has read up to this message, usually `ChatReadReceipts`. */
+  readers?: ReactNode;
   /** Commands about the message, such as copy or retry. */
   actions?: ReactNode;
   /** The message's content, such as text or rendered markdown. */
   children?: ReactNode;
 }
 
-const hooks = createHooks('chat-message', [
-  'avatar',
-  'body',
-  'header',
-  'author',
-  'time',
-  'content',
-  'actions',
-]);
+/** Splits the props the body under the header shows from the article's own props. */
+function splitBodyProps({
+  quote,
+  onQuotePress,
+  error,
+  onRetry,
+  isEdited,
+  reactions,
+  actions,
+  children,
+  ...own
+}: Omit<ChatMessageProps, 'className'>) {
+  return [
+    { quote, onQuotePress, error, onRetry, isEdited, reactions, actions, children },
+    own,
+  ] as const;
+}
 
-/** The author's name and the time, when either is known. */
-function ChatMessageHeader({
-  author,
-  time,
-  getNow,
-}: Pick<ChatMessageProps, 'author' | 'time' | 'getNow'>) {
-  const strings = useUiStrings();
-  if (!author && !time) return null;
-  return (
-    <div {...hooks.slot('header')}>
-      {author ? (
-        <span {...hooks.slot('author')}>{getDisplayName(author.name, strings.unnamed)}</span>
-      ) : null}
-      {time ? (
-        <RelativeTime value={time} getNow={getNow} className={hooks.slotClass('time')} />
-      ) : null}
-    </div>
-  );
+/** Whether the pointer is over the message and whether focus is inside it, for its hooks. */
+function useMessageInteraction() {
+  const { hoverProps, isHovered } = useHover({});
+  const [isFocusWithin, setFocusWithin] = useState(false);
+  const { focusWithinProps } = useFocusWithin({ onFocusWithinChange: setFocusWithin });
+  return { isHovered, isFocusWithin, interactionProps: mergeProps(hoverProps, focusWithinProps) };
 }
 
 /**
- * One message in a conversation: an `<article>` with the author's avatar and name, a relative
- * time, the content and its actions. A streaming message is busy (`aria-busy`) so assistive
- * technology reads it once it completes.
+ * One message in a conversation: an `<article>` named by its author and absolute time, with the
+ * author's avatar and name at the start of a group, a relative time, the content, its quote,
+ * markers, delivery, error, reactions, readers and actions. A streaming message is busy
+ * (`aria-busy`) so assistive technology reads it once it completes.
  */
 export function ChatMessage({
   origin = 'received',
   author,
   time,
   status = 'complete',
-  actions,
+  groupPosition = 'single',
+  delivery,
+  isDeleted = false,
+  readers,
   getNow,
-  children,
   className,
   ...rest
 }: ChatMessageProps) {
+  const strings = useUiStrings();
+  const { isHovered, isFocusWithin, interactionProps } = useMessageInteraction();
+  const labelId = useId();
+  const authorName = author ? getDisplayName(author.name, strings.unnamed) : undefined;
+  const label = strings.chatMessageLabel(authorName, useAbsoluteTime(time, getNow));
+  const startsGroup = groupPosition === 'single' || groupPosition === 'first';
+  const [body, own] = splitBodyProps(rest);
+  const data = {
+    origin,
+    status,
+    groupPosition,
+    delivery,
+    deleted: isDeleted,
+    hovered: isHovered,
+    focusWithin: isFocusWithin,
+  };
   return (
     <article
-      {...rest}
-      {...hooks.root({ className, data: { origin, status } })}
+      {...mergeProps(own, interactionProps)}
+      {...hooks.root({ className, data })}
       aria-busy={status === 'streaming' || undefined}
+      aria-labelledby={label ? labelId : undefined}
     >
-      {author ? (
-        <Avatar {...author} size="sm" decorative className={hooks.slotClass('avatar')} />
+      {label ? (
+        <span id={labelId} hidden>
+          {label}
+        </span>
       ) : null}
+      {author && startsGroup ? <ChatMessageAvatar author={author} /> : null}
       <div {...hooks.slot('body')}>
-        <ChatMessageHeader author={author} time={time} getNow={getNow} />
-        <div {...hooks.slot('content')}>{children}</div>
-        {actions ? <div {...hooks.slot('actions')}>{actions}</div> : null}
+        <ChatMessageHeader
+          authorName={startsGroup ? authorName : undefined}
+          time={time}
+          getNow={getNow}
+        />
+        {isDeleted ? (
+          <div {...hooks.slot('content')}>{strings.chatMessageDeleted}</div>
+        ) : (
+          <ChatMessageBody {...body} isCancelled={status === 'cancelled'} delivery={delivery} />
+        )}
+        {readers ? <div {...hooks.slot('readers')}>{readers}</div> : null}
       </div>
     </article>
   );
