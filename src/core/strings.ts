@@ -9,6 +9,7 @@ import { chatSourcesStrings, type ChatSourcesStrings } from './chat-sources-stri
 import { chatToolStrings, type ChatToolStrings } from './chat-tool-strings.js';
 import { codeStrings, type CodeStrings } from './code-strings.js';
 import { commonStrings, type CommonStrings } from './common-strings.js';
+import { composerStrings, type ComposerStrings } from './composer-strings.js';
 import { contentStrings, type ContentStrings } from './content-strings.js';
 import { dashboardStrings, type DashboardStrings } from './dashboard-strings.js';
 import { diagramStrings, type DiagramStrings } from './diagram-strings.js';
@@ -47,6 +48,7 @@ export interface UiStrings
     ChatToolStrings,
     CodeStrings,
     CommonStrings,
+    ComposerStrings,
     ContentStrings,
     DashboardStrings,
     DiagramStrings,
@@ -80,6 +82,7 @@ export const defaultStrings: UiStrings = {
   ...chatToolStrings,
   ...codeStrings,
   ...commonStrings,
+  ...composerStrings,
   ...contentStrings,
   ...dashboardStrings,
   ...diagramStrings,
