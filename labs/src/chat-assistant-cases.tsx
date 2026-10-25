@@ -5,7 +5,7 @@ import { Chat } from '../../src/components/chat/index.js';
 import { useChatController } from '../../src/components/chat-controller/index.js';
 import type { ChatMessageData } from '../../src/components/chat-parts/index.js';
 import { Stack } from '../../src/components/layout/layout.js';
-import { Radio, RadioGroup } from '../../src/components/radio-group/radio-group.js';
+import { Choice, ChoiceGroup } from '../../src/components/choice-group/choice-group.js';
 import { agentBehaviours, agents, fakeUpload, type AgentBehaviour } from './chat-agent.js';
 import { forecastRenderer, renderLabPart } from './chat-parts-samples.js';
 import { assistantPeople, plannerId, readerId } from './chat-samples.js';
@@ -60,18 +60,18 @@ function AssistantDemo() {
   });
   return (
     <Stack space="sm" data-lab-demo="assistant">
-      <RadioGroup
+      <ChoiceGroup
         label="Agent behaviour for the next message"
         orientation="horizontal"
         value={behaviour}
         onChange={(value) => setBehaviour((value ?? 'answer') as AgentBehaviour)}
       >
         {Object.entries(agentBehaviours).map(([value, label]) => (
-          <Radio key={value} value={value}>
+          <Choice key={value} value={value}>
             {label}
-          </Radio>
+          </Choice>
         ))}
-      </RadioGroup>
+      </ChoiceGroup>
       <div style={{ height: 620 }}>
         <Chat
           {...controller.props}

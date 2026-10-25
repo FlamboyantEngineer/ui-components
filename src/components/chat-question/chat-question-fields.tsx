@@ -2,7 +2,7 @@ import { useId, type KeyboardEvent } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { Badge } from '../badge/badge.js';
 import { Checkbox } from '../checkbox/checkbox.js';
-import { Radio } from '../radio-group/radio-group.js';
+import { Choice } from '../choice-group/choice-group.js';
 import { TextField } from '../text-field/text-field.js';
 import {
   chatQuestionHooks as hooks,
@@ -104,9 +104,9 @@ export function ChoiceOption({ option, selectionMode, isSelected, isOther }: Cho
       })}
     >
       {selectionMode === 'single' ? (
-        <Radio value={option.id} aria-describedby={describedBy}>
+        <Choice value={option.id} aria-describedby={describedBy}>
           {label}
-        </Radio>
+        </Choice>
       ) : (
         <Checkbox value={option.id} aria-describedby={describedBy}>
           {label}

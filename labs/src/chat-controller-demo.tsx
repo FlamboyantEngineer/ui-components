@@ -15,7 +15,7 @@ import type { ChatMessageData } from '../../src/components/chat-parts/chat-parts
 import { ChatTranscript, ChatTypingIndicator } from '../../src/components/chat-transcript/index.js';
 import { Cluster, Grid, Stack } from '../../src/components/layout/layout.js';
 import { MessageComposer } from '../../src/components/message-composer/message-composer.js';
-import { Radio, RadioGroup } from '../../src/components/radio-group/radio-group.js';
+import { Choice, ChoiceGroup } from '../../src/components/choice-group/choice-group.js';
 import { ScrollRegion } from '../../src/components/scroll-region/scroll-region.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
 import {
@@ -143,18 +143,18 @@ export function ChatControllerDemo() {
   const hasUploaded = props.attachments.some((entry) => entry.status === 'complete');
   return (
     <Stack space="md" data-lab-demo="controller">
-      <RadioGroup
+      <ChoiceGroup
         label="Agent behaviour"
         orientation="horizontal"
         value={scenario}
         onChange={(value) => setScenario((value ?? 'answer') as LabScenario)}
       >
         {Object.entries(scenarios).map(([value, label]) => (
-          <Radio key={value} value={value}>
+          <Choice key={value} value={value}>
             {label}
-          </Radio>
+          </Choice>
         ))}
-      </RadioGroup>
+      </ChoiceGroup>
       <Grid columns={2} space="md">
         <Stack space="sm">
           <div style={{ height: 420 }}>
