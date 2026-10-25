@@ -1,0 +1,154 @@
+/* Chat Attachment: image tiles and file chips, their upload progress, errors and controls, and lists of them. */
+
+.ui-chat-attachment {
+  position: relative;
+  display: inline-grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 4px 8px;
+  box-sizing: border-box;
+  width: 220px;
+  padding: 6px 6px 6px 10px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-surface);
+  color: var(--ref-text);
+  font-size: var(--ref-font-size-md);
+  vertical-align: top;
+}
+
+.ui-chat-attachment:focus-visible {
+  outline: var(--ref-focus-ring);
+  outline-offset: 1px;
+}
+
+.ui-chat-attachment[data-status='error'] {
+  border-color: var(--ref-danger);
+}
+
+.ui-chat-attachment__icon {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  color: var(--ref-muted);
+}
+
+.ui-chat-attachment[data-kind='pdf'] .ui-chat-attachment__icon {
+  color: var(--ref-danger);
+}
+
+.ui-chat-attachment[data-kind='archive'] .ui-chat-attachment__icon {
+  color: var(--ref-warning);
+}
+
+.ui-chat-attachment[data-kind='image'] .ui-chat-attachment__icon {
+  color: var(--ref-accent-ink);
+}
+
+.ui-chat-attachment__name {
+  grid-column: 2;
+  grid-row: 1;
+  overflow: hidden;
+  font-weight: var(--ref-font-weight-medium);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-chat-attachment__size {
+  grid-column: 2;
+  grid-row: 2;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-chat-attachment__download {
+  display: inline-flex;
+  grid-column: 3;
+  grid-row: 1 / span 2;
+  align-items: center;
+  justify-content: center;
+  width: var(--ref-control-height-sm);
+  height: var(--ref-control-height-sm);
+  border-radius: var(--ref-radius-sm);
+}
+
+.ui-chat-attachment__remove {
+  grid-column: 4;
+  grid-row: 1 / span 2;
+}
+
+.ui-chat-attachment__progress,
+.ui-chat-attachment__error {
+  grid-column: 1 / -1;
+}
+
+.ui-chat-attachment__error {
+  font-size: var(--ref-font-size-sm);
+}
+
+/* The message keeps beside its glyph, even in a narrow tile, and Retry wraps below it. */
+.ui-chat-attachment__error .ui-inline-error__message {
+  flex: 1 1 calc(100% - 24px);
+  min-width: 0;
+}
+
+/* An image shows as a tile: the thumbnail fills it and the controls float over its top corners. */
+.ui-chat-attachment[data-display='thumbnail'] {
+  grid-template-columns: minmax(0, 1fr);
+  width: 160px;
+  padding: 0;
+  overflow: hidden;
+}
+
+.ui-chat-attachment__preview {
+  display: block;
+  grid-column: 1;
+  grid-row: 1;
+  height: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+}
+
+.ui-chat-attachment__thumbnail {
+  display: block;
+  grid-column: 1;
+  grid-row: 1;
+  width: 100%;
+  height: 112px;
+  object-fit: cover;
+}
+
+.ui-chat-attachment[data-display='thumbnail'] .ui-chat-attachment__download,
+.ui-chat-attachment[data-display='thumbnail'] .ui-chat-attachment__remove {
+  position: absolute;
+  top: 4px;
+  background: var(--ref-surface);
+  box-shadow: var(--ref-shadow);
+}
+
+.ui-chat-attachment[data-display='thumbnail'] .ui-chat-attachment__download {
+  left: 4px;
+}
+
+.ui-chat-attachment[data-display='thumbnail'] .ui-chat-attachment__remove {
+  right: 4px;
+}
+
+.ui-chat-attachment[data-display='thumbnail'] .ui-chat-attachment__progress,
+.ui-chat-attachment[data-display='thumbnail'] .ui-chat-attachment__error {
+  margin: 0 8px 6px;
+}
+
+.ui-chat-attachment-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ui-chat-attachment-list__item {
+  display: flex;
+}
