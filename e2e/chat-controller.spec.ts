@@ -2,7 +2,7 @@ import type { Page } from '@playwright/test';
 import { expect, test } from './fixtures.js';
 
 const demo = (page: Page) => page.locator('[data-lab-demo="controller"]');
-const transcript = (page: Page) => page.getByRole('log', { name: 'Conversation with the helper' });
+const transcript = (page: Page) => page.getByRole('feed', { name: 'Conversation with the helper' });
 const lastMessage = (page: Page) => transcript(page).getByRole('article').last();
 
 /** Picks the agent's behaviour from the keyboard, clear of the sticky lab toolbar. */
