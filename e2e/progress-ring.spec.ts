@@ -100,3 +100,36 @@ test.describe('ProgressBar circular shape', () => {
     await lab.expectAccessible();
   });
 });
+
+test('UIC-PROGRESS-BAR-11.4 circular indeterminate arcs rotate around the ring center in every size', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('progress-bar');
+  for (const size of ['sm', 'md', 'lg']) {
+    const root = page
+      .locator('[data-lab-family="progress-ring-cases"]')
+      .locator(`[data-lab-cell="state=indeterminate size=${size}"]`);
+    const centers = await root.evaluate((node) => {
+      const ring = node.querySelector('.ui-progress-bar__ring')!;
+      const fill = node.querySelector('.ui-progress-bar__fill')!;
+      const animation = ring.getAnimations()[0]!;
+      animation.pause();
+      return [0, 200, 400, 600].map((time) => {
+        animation.currentTime = time;
+        const outer = ring.getBoundingClientRect(),
+          inner = fill.getBoundingClientRect();
+        return {
+          x: inner.x + inner.width / 2 - outer.x - outer.width / 2,
+          y: inner.y + inner.height / 2 - outer.y - outer.height / 2,
+          fillAnimations: fill.getAnimations().length,
+        };
+      });
+    });
+    for (const center of centers) {
+      expect(center.x).toBeCloseTo(0, 2);
+      expect(center.y).toBeCloseTo(0, 2);
+      expect(center.fillAnimations).toBe(0);
+    }
+  }
+});

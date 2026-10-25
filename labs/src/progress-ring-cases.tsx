@@ -10,7 +10,7 @@ export function ProgressRingCases() {
       <>
         <LabSection
           title="Circular: Sizes and values"
-          description="Empty, partial, full and indeterminate rings."
+          description="Empty, partial, full and indeterminate rings. Each indeterminate arc rotates around its fixed center."
         >
           <StateMatrix
             axes={{ state: states, size: sizes }}
