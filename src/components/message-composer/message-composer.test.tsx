@@ -179,6 +179,31 @@ describe('MessageComposer', () => {
     expect(root(container)).toHaveAttribute('data-pending', 'true');
   });
 
+  it('UIC-MESSAGE-COMPOSER-3.8 sends while pending with allowsPendingSubmit, offering Stop when empty', async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    const onStop = vi.fn();
+    const { container, rerender } = render(
+      <MessageComposer isPending allowsPendingSubmit onSubmit={onSubmit} onStop={onStop} />,
+    );
+    expect(root(container)).toHaveAttribute('data-pending', 'true');
+    const stop = screen.getByRole('button', { name: 'Stop' });
+    await user.click(input());
+    await user.keyboard('Then the dessert');
+    expect(screen.getByRole('button', { name: 'Send' })).toBe(stop);
+    expect(container.querySelector('.ui-icon-button__spinner')).toBeNull();
+    await user.keyboard('{Enter}');
+    expect(onSubmit).toHaveBeenCalledWith('Then the dessert');
+    expect(input()).toHaveValue('');
+    await user.click(screen.getByRole('button', { name: 'Stop' }));
+    expect(onStop).toHaveBeenCalledTimes(1);
+    rerender(<MessageComposer isPending allowsPendingSubmit onSubmit={onSubmit} />);
+    await user.click(input());
+    await user.keyboard('More');
+    await user.click(screen.getByRole('button', { name: 'Send' }));
+    expect(onSubmit).toHaveBeenLastCalledWith('More');
+  });
+
   it('UIC-MESSAGE-COMPOSER-1.4 UIC-MESSAGE-COMPOSER-2.2 disables the text area and every button', () => {
     const { container } = render(
       <MessageComposer

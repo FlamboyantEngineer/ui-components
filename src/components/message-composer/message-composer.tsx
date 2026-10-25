@@ -34,6 +34,11 @@ export interface MessageComposerSharedProps
   maxRows?: number | undefined;
   /** Sends blank text too, as when attachments carry the message. */
   allowsEmptySubmit?: boolean | undefined;
+  /**
+   * Sends while `isPending` too, for a host that queues the message until the reply ends: the
+   * button is then Send while there is something to send, and Stop otherwise.
+   */
+  allowsPendingSubmit?: boolean | undefined;
   /** Content above the input and below the banner, such as the files attached to the message. */
   attachments?: ReactNode;
   /** A line above everything else, such as the message being replied to or edited. */

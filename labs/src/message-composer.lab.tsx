@@ -152,6 +152,31 @@ function Replying() {
   );
 }
 
+/** Sending while the reply runs queues the message; the button is Stop only while empty. */
+function Queueing() {
+  const [isPending, setIsPending] = useState(false);
+  const [queued, setQueued] = useState<string[]>([]);
+  return (
+    <>
+      <MessageComposer
+        aria-label="Follow-up"
+        placeholder="Ask, then ask again while the reply runs"
+        isPending={isPending}
+        allowsPendingSubmit
+        onStop={() => setIsPending(false)}
+        onSubmit={(text) => {
+          if (isPending) setQueued((list) => [...list, text]);
+          else setIsPending(true);
+        }}
+        data-lab-composer="queue"
+      />
+      <p>
+        Queued: <output data-lab-output="queued">{queued.join(' · ') || 'nothing'}</output>
+      </p>
+    </>
+  );
+}
+
 /** Recalls earlier prompts with the arrows, as an assistant chat does. */
 function Recalling() {
   const [history, setHistory] = useState(['Summarize the field notes', 'List the open questions']);
@@ -185,9 +210,10 @@ mountLab(
     </LabSection>
     <LabSection
       title="Stopping a reply"
-      description="Sending starts a pending reply: the same button turns into Stop and keeps keyboard focus."
+      description="Sending starts a pending reply: the same button turns into Stop and keeps keyboard focus. With allowsPendingSubmit (the second composer), Enter still sends while the reply runs, for a host that queues the message; the button is Send while there is text and Stop while there is none."
     >
       <Replying />
+      <Queueing />
     </LabSection>
     <LabSection
       title="Recalling earlier prompts"

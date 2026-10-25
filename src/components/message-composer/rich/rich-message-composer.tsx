@@ -73,7 +73,7 @@ export function RichMessageComposer(props: RichMessageComposerProps) {
   const { isPending = false, isDisabled = false } = props;
   const state = useComposerState({
     ...props,
-    isBlocked: isDisabled || isPending,
+    isBlocked: isDisabled || (isPending && !props.allowsPendingSubmit),
     format: richFormat,
   });
   const shortcut = resolveSubmitShortcut(props.submitShortcut, useCoarsePointer());
