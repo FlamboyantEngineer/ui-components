@@ -378,7 +378,10 @@ test.describe('Message Composer lab', () => {
     await expect(page.locator('[data-lab-team="1"]')).toContainText(
       'Lunch at noon? Or one? (edited)',
     );
-    await page.locator('[data-lab-team="1"]').getByRole('button', { name: 'Reply' }).click();
+    // The action bar takes the pointer only while the message is hovered or focused.
+    const sent = page.locator('[data-lab-team="1"]');
+    await sent.hover();
+    await sent.getByRole('button', { name: 'Reply' }).click();
     await expect(team.locator('.ui-message-composer__banner')).toContainText('Replying to');
     await team.getByRole('button', { name: 'Close' }).click();
     await expect(team.locator('.ui-message-composer__banner')).toHaveCount(0);
