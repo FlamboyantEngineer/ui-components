@@ -149,6 +149,8 @@ test.describe('Markdown lab', () => {
     test.slow();
     await page.clock.install();
     await lab.open('markdown');
+    // Time moves only when the test runs the clock, so every step adds exactly one chunk.
+    await page.clock.pauseAt((await page.evaluate(() => Date.now())) + 1000);
     const demo = page.locator('[data-lab-demo="streaming"]');
     const stream = demo.locator('[data-lab-stream]');
     const progress = demo.locator('[data-lab-output="progress"]');
@@ -158,6 +160,8 @@ test.describe('Markdown lab', () => {
     const late: number[] = [];
     for (let step = 0; step < total; step += 1) {
       await page.clock.runFor(40);
+      // React commits after the timer fires, so wait for this chunk before reading the page.
+      await expect(progress).toContainText(`Chunk ${step + 1} of`);
       if ((await stream.getAttribute('data-streaming')) !== 'true') break;
       expect(await stream.innerText()).not.toMatch(/\*\*|\]\(|```|\|\s*---|^\s*[-#>]\s*$/m);
       if (step === 40) {

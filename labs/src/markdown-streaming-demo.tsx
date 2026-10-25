@@ -67,7 +67,8 @@ export function StreamingDemo() {
   const [count, setCount] = useState(chunks.length);
   const [isRunning, setRunning] = useState(false);
   const calls = useRef(0);
-  const [rendered, setRendered] = useState(0);
+  // The chunk and the nodes it rendered change together, so a reading never pairs one chunk with another's count.
+  const [sample, setSample] = useState({ chunk: chunks.length, rendered: 0 });
   const renderNode = useMemo(() => {
     const codeOverride = createCodeBlockOverride();
     const citationOverride = createCitationOverride(sources);
@@ -84,7 +85,7 @@ export function StreamingDemo() {
   }, [isRunning, isDone]);
   const previousCalls = useRef(0);
   useEffect(() => {
-    setRendered(calls.current - previousCalls.current);
+    setSample({ chunk: count, rendered: calls.current - previousCalls.current });
     previousCalls.current = calls.current;
   }, [count]);
   const isStreaming = isRunning && !isDone;
@@ -100,7 +101,8 @@ export function StreamingDemo() {
           Stream the answer
         </Button>
         <span data-lab-output="progress">
-          Chunk {count} of {chunks.length} · {rendered} nodes rendered for the last chunk
+          Chunk {sample.chunk} of {chunks.length} · {sample.rendered} nodes rendered for the last
+          chunk
         </span>
       </div>
       <Markdown
