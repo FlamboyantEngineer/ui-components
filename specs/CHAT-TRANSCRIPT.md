@@ -203,7 +203,7 @@ Verification: `src/components/chat-transcript/transcript-history.test.tsx`, `e2e
 
 ### UIC-CHAT-TRANSCRIPT-4.3 - Highlighted message
 
-When `highlightedMessageId` names a message (once it is among the children), the transcript shall scroll it to the middle of the view (its top to the top when it is taller than the view), focus it (unless focus is on a control outside the transcript, such as a find box the reader is typing in, which keeps it) and publish `data-highlighted` on it while the prop names it. Changing the prop to another message moves there; the transcript does not clear it.
+When `highlightedMessageId` names a message (once it is among the children), the transcript shall scroll it to the middle of the view (its top to the top when it is taller than the view), focus it (unless the reader is typing in a field outside the transcript, such as a find box, which keeps focus) and publish `data-highlighted` on it while the prop names it. Changing the prop to another message moves there; the transcript does not clear it.
 
 Implementation: `src/components/chat-transcript/transcript-commit.ts`, `src/components/chat-transcript/transcript-runtime.ts`, `src/components/chat-transcript/transcript-context.ts`
 Verification: `src/components/chat-transcript/transcript-history.test.tsx`, `e2e/chat-transcript.spec.ts`

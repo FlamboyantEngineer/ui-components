@@ -118,7 +118,7 @@ describe('ChatTranscript history', () => {
     expect(offsetInViewport(article('m15'))).toBe(75);
   });
 
-  it('UIC-CHAT-TRANSCRIPT-4.3 leaves focus on a control outside, such as a find box', () => {
+  it('UIC-CHAT-TRANSCRIPT-4.3 leaves focus in a field outside, such as a find box', () => {
     const view = (highlighted?: string) => (
       <>
         <input aria-label="Find" />

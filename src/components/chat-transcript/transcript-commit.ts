@@ -1,3 +1,4 @@
+import { isEditableTarget } from '../../utils/is-editable-target.js';
 import { readOffset } from './transcript-geometry.js';
 import {
   isTranscriptMessage,
@@ -107,16 +108,16 @@ export function focusMessage(
   syncWithScroll(runtime, settings);
 }
 
-/** Whether focus may move to a message: it is in the transcript, or on no control at all. */
+/** Whether focus may move to a message: not while the reader types in a field outside. */
 function isFocusFree(runtime: TranscriptRuntime) {
   const active = document.activeElement;
-  if (!active || active === document.body || active === document.documentElement) return true;
-  return Boolean(runtime.viewport.current?.contains(active));
+  if (runtime.viewport.current?.contains(active)) return true;
+  return !isEditableTarget(active);
 }
 
 /**
- * Scrolls to a newly highlighted message once it is among the children, and focuses it unless
- * focus is on a control outside the transcript, such as a find box the reader is typing in.
+ * Scrolls to a newly highlighted message once it is among the children, and focuses it unless the
+ * reader is typing in a field outside the transcript, such as a find box.
  */
 export function applyHighlight(runtime: TranscriptRuntime, settings: TranscriptSettings) {
   const key = resolveMessageKey(runtime, settings.highlightedMessageId) ?? null;
