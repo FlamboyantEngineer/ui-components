@@ -13,7 +13,7 @@ import {
 } from '../../utils/use-scroll-strip-overflow.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import type { IconSource } from '../icon/icon.js';
-import { ScrollStripButton } from '../icon-button/icon-button.js';
+import { ScrollStripButton } from '../button/button.js';
 
 /** `scroll` lets the strip scroll; `menu` moves the tools that do not fit into a "more" menu. */
 export type ToolbarScrollerOverflow = 'scroll' | 'menu';

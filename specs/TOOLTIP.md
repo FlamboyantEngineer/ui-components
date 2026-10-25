@@ -6,7 +6,7 @@
 
 ### UIC-TOOLTIP-1.1 - Trigger and panel
 
-`Tooltip` shall wrap one focusable trigger (a library `Button`, `IconButton` or `Link`) and render its `content` in the `ui-tooltip__content` slot of a panel with `role="tooltip"`, portalled to the end of the document. The panel never takes focus, holds no interactive content and adds no wrapper element around the trigger.
+`Tooltip` shall wrap one focusable trigger (a library `Button`, `Button` or `Link`) and render its `content` in the `ui-tooltip__content` slot of a panel with `role="tooltip"`, portalled to the end of the document. The panel never takes focus, holds no interactive content and adds no wrapper element around the trigger.
 
 Implementation: `src/components/tooltip/tooltip.tsx`
 Verification: `src/components/tooltip/tooltip.test.tsx`, `e2e/tooltip.spec.ts`

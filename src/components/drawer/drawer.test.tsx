@@ -105,7 +105,7 @@ describe('Drawer', () => {
     expect(panel()?.contains(dialog)).toBe(true);
     expect(screen.getByRole('button', { name: 'Close' })).toHaveClass(
       'ui-drawer__close',
-      'ui-icon-button',
+      'ui-button',
     );
     expect(document.querySelector('.ui-drawer__footer')).toHaveTextContent('Apply');
     expectHooksMatchSpec(document.body, 'DRAWER', { slots: 'all', callerAttributes: ['data-lab'] });

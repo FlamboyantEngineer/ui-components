@@ -1,6 +1,6 @@
 # Stat Tile
 
-`StatTile` is a compact metric for dashboards and summaries: a label, a formatted value, its change since the previous period with a trend and a tone that judges it, a secondary line, and room for a small chart such as a [Sparkline](SPARKLINE.md), [Segmented Bar](SEGMENTED-BAR.md) or [Meter](METER.md). It renders a [Card](CARD.md), so it carries the card's hooks, its loading skeleton and its whole-card link or press action.
+`StatTile` is a compact metric for dashboards and summaries: a label, a formatted value, its change since the previous period with a trend and a tone that judges it, a secondary line, and room for a small chart such as a [Sparkline](SPARKLINE.md), [Segmented Bar](SEGMENTED-BAR.md) or [ProgressBar](PROGRESS-BAR.md). It renders a [Card](CARD.md), so it carries the card's hooks, its loading skeleton and its whole-card link or press action.
 
 ## UIC-STAT-TILE-1 - Stat tile
 

@@ -1,17 +1,22 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type Ref } from 'react';
 import { createHooks, mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { normalizeCount } from '../../utils/count.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 import { useInView } from '../../utils/use-in-view.js';
-import { usePendingAction, type ActionButtonProps } from '../action-button/action-button.js';
-import { Button, type ButtonSize, type ButtonVariant } from '../button/button.js';
+import {
+  usePendingAction,
+  type ButtonProps,
+  Button,
+  type ButtonSize,
+  type ButtonVariant,
+} from '../button/button.js';
 
 export interface LoadMoreProps
-  extends
-    Pick<ActionButtonProps, 'onError' | 'isPending' | 'isDisabled' | 'pendingLabel' | 'ref'>,
-    BaseProps {
+  extends Pick<ButtonProps, 'onError' | 'isPending' | 'isDisabled' | 'pendingLabel'>, BaseProps {
+  /** The load button. */
+  ref?: Ref<HTMLButtonElement> | undefined;
   /**
    * Requests the next page. The caller owns cursors, requests and errors. When it returns a promise,
    * the control is pending until the promise settles.

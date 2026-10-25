@@ -4,7 +4,6 @@ import { Button } from '../../src/components/button/button.js';
 import { Chat } from '../../src/components/chat/index.js';
 import { useChatController } from '../../src/components/chat-controller/index.js';
 import { Drawer, DrawerTrigger } from '../../src/components/drawer/drawer.js';
-import { IconButton } from '../../src/components/icon-button/icon-button.js';
 import { Popover, PopoverTrigger } from '../../src/components/popover/popover.js';
 import { agents } from './chat-agent.js';
 import { assistantPeople, plannerId, readerId } from './chat-samples.js';
@@ -51,7 +50,7 @@ function LauncherDemo() {
     >
       <div style={{ position: 'absolute', insetInlineEnd: 16, insetBlockEnd: 16 }}>
         <PopoverTrigger>
-          <IconButton icon="help" label="Chat with the trip planner" variant="primary" />
+          <Button icon="help" label="Chat with the trip planner" variant="primary" />
           <Popover aria-label="Trip planner" placement="top end" data-lab-surface="popover">
             <div style={{ width: 290, height: 460 }}>
               <Chat

@@ -6,7 +6,7 @@ import { useItemDrag } from '../../utils/use-item-drag.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { isMoveChord } from '../../utils/use-reorder-drag-and-drop.js';
 import { ExpandToggle } from '../expand-toggle/expand-toggle.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { boardHooks as hooks } from './board-hooks.js';
 import type { BoardColumnDrag } from './use-board-drag.js';
@@ -86,7 +86,7 @@ export function BoardColumnHeader(props: BoardColumnHeaderProps) {
       data-key={columnKey}
     >
       {drag ? (
-        <IconButton
+        <Button
           icon="drag-handle"
           size="sm"
           label={strings.moveColumn(title)}

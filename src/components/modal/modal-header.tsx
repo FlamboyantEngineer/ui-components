@@ -2,7 +2,7 @@ import { Heading } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 import type { ModalProps } from './modal.js';
 
 export interface ModalHeaderProps extends Pick<
@@ -52,7 +52,7 @@ export function ModalHeader({
         <div {...hooks.slot('header-actions')}>{headerActions}</div>
       )}
       {showCloseButton ? (
-        <IconButton
+        <Button
           icon="close"
           label={strings.close}
           className={hooks.slotClass('close')}

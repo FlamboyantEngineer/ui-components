@@ -5,7 +5,7 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { GlyphName } from '../../core/glyphs.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import type { ChatFeedbackRating, MessageCommands } from './message-commands.js';
 
@@ -54,7 +54,7 @@ function CopyCommand({ state }: { state: MessageCommands }) {
   const announcements = { idle: '', copied: strings.copied, failed: strings.copyFailed };
   return (
     <>
-      <IconButton
+      <Button
         icon={copyGlyphs[state.copyStatus]}
         label={strings.copy}
         size="sm"
@@ -76,7 +76,7 @@ function RatingButton({ state, rating }: { state: MessageCommands; rating: ChatF
   const asksDetails = state.commands.feedbackReasons !== undefined;
   const isOpen = state.open?.overlay === 'feedback' && state.open.anchor === ref;
   return (
-    <IconButton
+    <Button
       ref={ref}
       icon={rating === 'up' ? 'thumbs-up' : 'thumbs-down'}
       label={rating === 'up' ? strings.goodResponse : strings.badResponse}
@@ -95,7 +95,7 @@ function RatingButton({ state, rating }: { state: MessageCommands; rating: ChatF
 function OverlayButton({ state, overlay, icon, label }: OverlayButtonProps) {
   const ref = useRef<HTMLButtonElement>(null);
   return (
-    <IconButton
+    <Button
       ref={ref}
       icon={icon}
       label={label}
@@ -133,7 +133,7 @@ export function MessageActionsBar({ state, children, className, ...rest }: Messa
         </>
       ) : null}
       {commands.onReply ? (
-        <IconButton
+        <Button
           icon="reply"
           label={strings.reply}
           size="sm"
@@ -145,7 +145,7 @@ export function MessageActionsBar({ state, children, className, ...rest }: Messa
         <OverlayButton state={state} overlay="react" icon="emoji" label={strings.addReaction} />
       ) : null}
       {commands.onEdit ? (
-        <IconButton
+        <Button
           icon="edit"
           label={strings.edit}
           size="sm"

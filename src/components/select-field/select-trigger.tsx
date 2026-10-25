@@ -8,7 +8,7 @@ import {
 import { createHooks } from '../../core/hooks.js';
 import { Glyph } from '../../core/provider.js';
 import { FieldPreviousValue } from '../field/field.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 import { Icon, toIconProps } from '../icon/icon.js';
 import type { ChosenSelectOption } from './select-options.js';
 
@@ -87,7 +87,7 @@ export function SelectTrigger({
       {clearLabel ? (
         // Inside the select every button would otherwise take the trigger's props.
         <ButtonContext.Provider value={null}>
-          <IconButton
+          <Button
             className={hooks.slotClass('clear')}
             icon="close"
             label={clearLabel}

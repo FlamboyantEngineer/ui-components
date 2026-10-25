@@ -1,3 +1,4 @@
+import { AvatarGroupPresenceCases } from './avatar-group-presence-cases.js';
 import {
   AvatarGroup,
   type AvatarGroupPerson,
@@ -32,51 +33,55 @@ function windowProps(setup: (typeof windows)[number]) {
 
 mountLab(
   <>
-    <LabSection
-      title="Sizes and variants"
-      description="Six people, at most four visible, filled and outlined."
-    >
-      <StateMatrix
-        axes={{ variant: ['filled', 'outlined'], size: sizes }}
-        render={({ variant, size }) => (
-          <AvatarGroup people={team} maxVisible={4} size={size} variant={variant} />
-        )}
-      />
-    </LabSection>
-    <LabSection
-      title="Maximum and overflow"
-      description="The +N count holds the people past the maximum and is absent at zero."
-    >
-      <StateMatrix
-        axes={{ setup: windows, action: ['none', 'list'] }}
-        render={({ setup, action }) => (
-          <AvatarGroup {...windowProps(setup)} action={action} size="sm" />
-        )}
-      />
-    </LabSection>
-    <LabSection
-      title="Names"
-      description="A caller label, a blank name and a picture that fails to load, which falls back to initials."
-    >
-      <p>
-        <AvatarGroup
-          aria-label="Reviewers"
-          people={[
-            { id: 'a', name: 'Maria Santos' },
-            { id: 'b', name: ' ' },
-            { id: 'c', name: 'Jon Berg', src: brokenPicture },
-          ]}
-          data-lab-group="names"
+    <div data-lab-family="avatar-group-main">
+      <LabSection
+        title="Sizes and variants"
+        description="Six people, at most four visible, filled and outlined."
+      >
+        <StateMatrix
+          axes={{ variant: ['filled', 'outlined'], size: sizes }}
+          render={({ variant, size }) => (
+            <AvatarGroup people={team} maxVisible={4} size={size} variant={variant} />
+          )}
         />
-      </p>
-    </LabSection>
-    <LabSection
-      title="Listing everyone"
-      description="Press the stack, or Tab to it and press Enter: a popover lists everyone with their role. Escape closes it."
-    >
-      <p>
-        Assignees: <AvatarGroup people={team} maxVisible={3} action="list" data-lab-group="list" />
-      </p>
-    </LabSection>
+      </LabSection>
+      <LabSection
+        title="Maximum and overflow"
+        description="The +N count holds the people past the maximum and is absent at zero."
+      >
+        <StateMatrix
+          axes={{ setup: windows, action: ['none', 'list'] }}
+          render={({ setup, action }) => (
+            <AvatarGroup {...windowProps(setup)} action={action} size="sm" />
+          )}
+        />
+      </LabSection>
+      <LabSection
+        title="Names"
+        description="A caller label, a blank name and a picture that fails to load, which falls back to initials."
+      >
+        <p>
+          <AvatarGroup
+            aria-label="Reviewers"
+            people={[
+              { id: 'a', name: 'Maria Santos' },
+              { id: 'b', name: ' ' },
+              { id: 'c', name: 'Jon Berg', src: brokenPicture },
+            ]}
+            data-lab-group="names"
+          />
+        </p>
+      </LabSection>
+      <LabSection
+        title="Listing everyone"
+        description="Press the stack, or Tab to it and press Enter: a popover lists everyone with their role. Escape closes it."
+      >
+        <p>
+          Assignees:{' '}
+          <AvatarGroup people={team} maxVisible={3} action="list" data-lab-group="list" />
+        </p>
+      </LabSection>
+    </div>
+    <AvatarGroupPresenceCases />
   </>,
 );

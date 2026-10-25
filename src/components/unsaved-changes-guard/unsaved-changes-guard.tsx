@@ -14,7 +14,7 @@ import {
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { ConfirmDialog } from '../confirm-dialog/confirm-dialog.js';
+import { Modal } from '../modal/modal.js';
 import {
   createUnsavedChangesStore,
   type UnsavedChangesAction,
@@ -147,6 +147,29 @@ interface LeaveConfirmationProps extends Omit<
   onOpenChange: (isOpen: boolean) => void;
 }
 
+function resolveLeaveActions({
+  canSave,
+  strings,
+  leaveAfter,
+  store,
+}: {
+  canSave: boolean;
+  strings: ReturnType<typeof useUiStrings>;
+  leaveAfter: (run: () => Promise<void>) => (close: () => void) => Promise<void>;
+  store: UnsavedChangesStore;
+}) {
+  return {
+    primaryAction: {
+      label: canSave ? strings.save : strings.discard,
+      pendingLabel: canSave ? strings.saving : undefined,
+      onPress: leaveAfter(canSave ? store.save : store.discard),
+    },
+    secondaryAction: canSave
+      ? { label: strings.discard, onPress: leaveAfter(store.discard) }
+      : undefined,
+  };
+}
+
 /** Save, Discard and Stay when every dirty source can save; otherwise Discard and Stay. */
 function LeaveConfirmation({
   store,
@@ -159,34 +182,29 @@ function LeaveConfirmation({
 }: LeaveConfirmationProps) {
   const strings = useUiStrings();
   const { canSave, labels } = request?.summary ?? summary;
-  const leaveAfter = (run: () => Promise<void>) => async () => {
+  const leaveAfter = (run: () => Promise<void>) => async (close: () => void) => {
     await run();
     request?.settle(true);
+    close();
   };
-  const choices = canSave
-    ? {
-        message: strings.saveBeforeLeaving,
-        confirmLabel: strings.save,
-        pendingLabel: strings.saving,
-        onConfirm: leaveAfter(store.save),
-        secondaryActionLabel: strings.discard,
-        onSecondaryAction: leaveAfter(store.discard),
-      }
-    : {
-        message: strings.discardBeforeLeaving,
-        tone: 'danger' as const,
-        confirmLabel: strings.discard,
-        onConfirm: leaveAfter(store.discard),
-      };
   return (
-    <ConfirmDialog
+    <Modal
       {...rest}
-      {...choices}
+      role="alertdialog"
+      tone={canSave ? 'neutral' : 'danger'}
+      onOpenChange={(next) => {
+        if (!next) request?.settle(false);
+        rest.onOpenChange(next);
+      }}
+      {...resolveLeaveActions({ canSave, strings, leaveAfter, store })}
       className={hooks.root({ className }).className}
       title={request?.title ?? title ?? strings.unsavedChanges}
-      message={request?.message ?? message ?? choices.message}
-      cancelLabel={strings.stay}
-      onCancel={() => request?.settle(false)}
+      description={
+        request?.message ??
+        message ??
+        (canSave ? strings.saveBeforeLeaving : strings.discardBeforeLeaving)
+      }
+      cancelAction={{ label: strings.stay, autoFocus: true }}
     >
       {labels.length > 0 ? (
         <ul {...hooks.slot('list')}>
@@ -195,7 +213,7 @@ function LeaveConfirmation({
           ))}
         </ul>
       ) : null}
-    </ConfirmDialog>
+    </Modal>
   );
 }
 

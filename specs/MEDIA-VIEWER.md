@@ -100,8 +100,8 @@ Verification: `src/components/media-viewer/media-viewer.test.tsx`
 | ---------------------------------- | ----- | --------------- | --------------------------------------------------------------- |
 | `ui-media-viewer`                  | root  |                 | The modal's overlay (also `ui-modal`).                          |
 | `ui-media-viewer__stage`           | slot  |                 | The previous button, the viewport and the next button.          |
-| `ui-media-viewer__previous`        | slot  |                 | The previous button (also `ui-icon-button`).                    |
-| `ui-media-viewer__next`            | slot  |                 | The next button (also `ui-icon-button`).                        |
+| `ui-media-viewer__previous`        | slot  |                 | The previous button (also `ui-button`).                         |
+| `ui-media-viewer__next`            | slot  |                 | The next button (also `ui-button`).                             |
 | `ui-media-viewer__viewport`        | slot  |                 | The focusable area that holds the item and scrolls.             |
 | `ui-media-viewer__canvas`          | slot  |                 | The box of the turned image; sized inline once the image loads. |
 | `ui-media-viewer__image`           | slot  |                 | The image; sized, centred and turned inline.                    |
@@ -110,7 +110,7 @@ Verification: `src/components/media-viewer/media-viewer.test.tsx`
 | `ui-media-viewer__fallback-icon`   | slot  |                 | The fallback's type glyph (also `ui-icon`).                     |
 | `ui-media-viewer__counter`         | slot  |                 | The position in the set.                                        |
 | `ui-media-viewer__zoom`            | slot  |                 | The zoom control (also `ui-zoom-control`).                      |
-| `ui-media-viewer__rotate`          | slot  |                 | The rotate button (also `ui-icon-button`).                      |
+| `ui-media-viewer__rotate`          | slot  |                 | The rotate button (also `ui-button`).                           |
 | `ui-media-viewer__download`        | slot  |                 | The Download link (also `ui-link`).                             |
 | `ui-media-viewer__thumbnails`      | slot  |                 | The thumbnail strip.                                            |
 | `ui-media-viewer__thumbnail`       | slot  |                 | One thumbnail button (also `ui-button`).                        |

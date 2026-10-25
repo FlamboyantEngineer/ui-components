@@ -46,15 +46,17 @@ type ButtonAriaAttributes = Pick<
   | 'aria-current'
 >;
 
-/** The states, handlers and link mode Button and IconButton share. */
+/** The states, handlers and link mode of a Button. */
 export interface ButtonStateProps
   extends
-    PressEventProps,
+    Omit<PressEventProps, 'onPress'>,
     HoverEventProps,
     FocusEventProps,
     KeyboardEventProps,
     AriaLabellingProps,
     ButtonAriaAttributes {
+  /** Runs the command; a returned promise keeps the button pending until it settles. */
+  onPress?: ((event: PressEvent) => unknown) | undefined;
   /** The `<button>`, or the `<a>` of a button with `href`. */
   ref?: Ref<HTMLButtonElement | HTMLAnchorElement> | undefined;
   /** The native button type. Defaults to `button`. */
@@ -208,7 +210,7 @@ function renderPassThrough({
   };
 }
 
-/** The props that only Button and IconButton read, which the building block's button never takes. */
+/** The props that only Button reads, which the building block's button never takes. */
 function omitOwnProps({
   pendingLabel: _pendingLabel,
   defaultSelected: _defaultSelected,
@@ -233,7 +235,7 @@ function statesToggle(
 }
 
 /**
- * Building-block button props for the states Button and IconButton share: a focusable disabled
+ * Building-block button props for Button states: a focusable disabled
  * button stays in the focus order but refuses activation and never submits, and `isSelected` adds
  * `aria-pressed` unless the caller states toggle semantics with `aria-pressed`, `aria-checked` or a
  * `role`. A `shortcut` becomes `aria-keyshortcuts`.
@@ -309,8 +311,9 @@ export function useButtonSelection(
     isSelected: selected,
     'aria-pressed': statesToggle(props) ? ariaPressed : selected,
     onPress: (event: PressEvent) => {
-      onPress?.(event);
+      const result = onPress?.(event);
       setSelected(!selected);
+      return result;
     },
   };
 }

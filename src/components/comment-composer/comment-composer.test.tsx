@@ -1,11 +1,11 @@
 import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, expectTypeOf, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { createMemoryStorage } from '../../core/storage.js';
-import { CommentComposer } from './comment-composer.js';
+import { CommentComposer, type CommentComposerProps } from './comment-composer.js';
 
 describe('CommentComposer', () => {
   it('UIC-COMMENT-COMPOSER-1.1 draws a labelled multi-line text box and a submit button', () => {
@@ -24,29 +24,31 @@ describe('CommentComposer', () => {
   });
 
   it('UIC-COMMENT-COMPOSER-1.2 submits the trimmed text by button or chord, then clears', async () => {
+    const user = userEvent.setup();
     const onSubmit = vi.fn();
     render(<CommentComposer onSubmit={onSubmit} label="Reply" submitLabel="Send" />);
     const box = screen.getByRole('textbox', { name: 'Reply' });
-    await userEvent.type(box, '   ');
+    await user.type(box, '   ');
     expect(screen.getByRole('button', { name: 'Send' })).toBeDisabled();
-    await userEvent.type(box, 'Ripe bananas{Enter}today  ');
+    await user.type(box, 'Ripe bananas{Enter}today  ');
     expect(box).toHaveValue('   Ripe bananas\ntoday  ');
     expect(onSubmit).not.toHaveBeenCalled();
-    await userEvent.click(screen.getByRole('button', { name: 'Send' }));
+    await user.click(screen.getByRole('button', { name: 'Send' }));
     expect(onSubmit).toHaveBeenLastCalledWith('Ripe bananas\ntoday');
     expect(box).toHaveValue('');
-    await userEvent.type(box, 'Pears');
-    await userEvent.keyboard('{Control>}{Enter}{/Control}');
+    await user.type(box, 'Pears');
+    await user.keyboard('{Control>}{Enter}{/Control}');
     expect(onSubmit).toHaveBeenLastCalledWith('Pears');
-    await userEvent.type(box, 'Plums');
-    await userEvent.keyboard('{Meta>}{Enter}{/Meta}');
+    await user.type(box, 'Plums');
+    await user.keyboard('{Meta>}{Enter}{/Meta}');
     expect(onSubmit).toHaveBeenLastCalledWith('Plums');
     expect(onSubmit).toHaveBeenCalledTimes(3);
-    await userEvent.keyboard('{Control>}{Enter}{/Control}');
+    await user.keyboard('{Control>}{Enter}{/Control}');
     expect(onSubmit).toHaveBeenCalledTimes(3);
   });
 
   it('UIC-COMMENT-COMPOSER-1.3 stays pending while a submit settles and keeps the draft on failure', async () => {
+    const user = userEvent.setup();
     let settle: { resolve: () => void; reject: () => void } = {
       resolve: () => {},
       reject: () => {},
@@ -59,22 +61,23 @@ describe('CommentComposer', () => {
     );
     const { container } = render(<CommentComposer onSubmit={onSubmit} />);
     const box = screen.getByRole('textbox');
-    await userEvent.type(box, 'Figs');
-    await userEvent.click(screen.getByRole('button', { name: 'Comment' }));
+    await user.type(box, 'Figs');
+    await user.click(screen.getByRole('button', { name: 'Comment' }));
     const root = container.querySelector('.ui-comment-composer');
     expect(root).toHaveAttribute('data-pending', 'true');
     expect(screen.queryByRole('button', { name: 'Cancel' })).not.toBeInTheDocument();
-    await userEvent.keyboard('{Control>}{Enter}{/Control}');
+    await user.keyboard('{Control>}{Enter}{/Control}');
     expect(onSubmit).toHaveBeenCalledTimes(1);
     await act(async () => settle.reject());
     expect(root).not.toHaveAttribute('data-pending');
     expect(box).toHaveValue('Figs');
-    await userEvent.click(screen.getByRole('button', { name: 'Comment' }));
+    await user.click(screen.getByRole('button', { name: 'Comment' }));
     await act(async () => settle.resolve());
     expect(box).toHaveValue('');
   });
 
   it('UIC-COMMENT-COMPOSER-1.4 cancels by button or Escape, clearing the draft', async () => {
+    const user = userEvent.setup();
     const onCancel = vi.fn();
     const outer = vi.fn();
     const { rerender } = render(
@@ -83,31 +86,32 @@ describe('CommentComposer', () => {
       </div>,
     );
     const box = screen.getByRole('textbox');
-    await userEvent.type(box, 'Kiwi');
-    await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    await user.type(box, 'Kiwi');
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
     expect(box).toHaveValue('');
     expect(screen.queryByRole('button', { name: 'Cancel' })).not.toBeInTheDocument();
-    await userEvent.type(box, 'Lime{Escape}');
+    await user.type(box, 'Lime{Escape}');
     expect(box).toHaveValue('');
     expect(outer).not.toHaveBeenCalled();
     // With nothing to cancel, Escape goes on to the surface around the composer.
-    await userEvent.keyboard('{Escape}');
+    await user.keyboard('{Escape}');
     expect(outer).toHaveBeenCalledTimes(1);
     rerender(
       <div onKeyDown={(event) => event.key === 'Escape' && outer()}>
         <CommentComposer onSubmit={() => {}} onCancel={onCancel} defaultValue="Mango" />
       </div>,
     );
-    await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
     expect(onCancel).toHaveBeenCalledTimes(1);
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('textbox'));
-    await userEvent.keyboard('{Escape}');
+    await user.click(screen.getByRole('textbox'));
+    await user.keyboard('{Escape}');
     expect(onCancel).toHaveBeenCalledTimes(2);
     expect(outer).toHaveBeenCalledTimes(1);
   });
 
   it('UIC-COMMENT-COMPOSER-1.5 takes a controlled, default or stored draft', async () => {
+    const user = userEvent.setup();
     const onChange = vi.fn();
     function Controlled() {
       const [value, setValue] = useState('Apple');
@@ -123,7 +127,7 @@ describe('CommentComposer', () => {
       );
     }
     const { unmount } = render(<Controlled />);
-    await userEvent.type(screen.getByRole('textbox'), 's');
+    await user.type(screen.getByRole('textbox'), 's');
     expect(onChange).toHaveBeenLastCalledWith('Apples');
     expect(screen.getByRole('textbox')).toHaveValue('APPLES');
     unmount();
@@ -131,12 +135,12 @@ describe('CommentComposer', () => {
     const storage = createMemoryStorage();
     const stored = (
       <UiProvider storage={storage}>
-        <CommentComposer storageKey="draft:report" defaultValue="Start" onSubmit={() => {}} />
+        <CommentComposer persistKey="draft:report" defaultValue="Start" onSubmit={() => {}} />
       </UiProvider>
     );
     const { unmount: unmountFirst } = render(stored);
     expect(screen.getByRole('textbox')).toHaveValue('Start');
-    await userEvent.type(screen.getByRole('textbox'), 'ed');
+    await user.type(screen.getByRole('textbox'), 'ed');
     unmountFirst();
     render(stored);
     expect(screen.getByRole('textbox')).toHaveValue('Started');
@@ -144,16 +148,12 @@ describe('CommentComposer', () => {
   });
 
   it('UIC-COMMENT-COMPOSER-1.5 keeps an uncontrolled draft under persistKey', async () => {
+    expectTypeOf<CommentComposerProps>().not.toHaveProperty('storageKey');
     const user = userEvent.setup();
     const storage = createMemoryStorage();
     const stored = (
       <UiProvider storage={storage}>
-        <CommentComposer
-          persistKey="draft:notes"
-          storageKey="draft:old"
-          defaultValue="Plum"
-          onSubmit={() => {}}
-        />
+        <CommentComposer persistKey="draft:notes" defaultValue="Plum" onSubmit={() => {}} />
       </UiProvider>
     );
     const { unmount } = render(stored);
@@ -162,7 +162,6 @@ describe('CommentComposer', () => {
     render(stored);
     expect(screen.getByRole('textbox')).toHaveValue('Plums');
     expect(storage.getItem('draft:notes')).toBe('"Plums"');
-    expect(storage.getItem('draft:old')).toBeNull();
   });
 
   it('UIC-COMMENT-COMPOSER-1.4 UIC-COMMENT-COMPOSER-1.6 offers no cancel while disabled', () => {
@@ -174,6 +173,7 @@ describe('CommentComposer', () => {
   });
 
   it('UIC-COMMENT-COMPOSER-1.6 refuses typing and submitting while disabled', async () => {
+    const user = userEvent.setup();
     const onSubmit = vi.fn();
     const { container } = render(
       <CommentComposer onSubmit={onSubmit} defaultValue="Grapes" isDisabled />,
@@ -184,7 +184,7 @@ describe('CommentComposer', () => {
     );
     expect(screen.getByRole('textbox')).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Comment' })).toBeDisabled();
-    await userEvent.keyboard('{Control>}{Enter}{/Control}');
+    await user.keyboard('{Control>}{Enter}{/Control}');
     expect(onSubmit).not.toHaveBeenCalled();
   });
 

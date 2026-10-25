@@ -389,7 +389,7 @@ describe('TagGroup', () => {
     );
     expect(screen.getByRole('button', { name: 'Drop Apple' })).toHaveClass(
       'ui-tag-group__remove',
-      'ui-icon-button',
+      'ui-button',
     );
   });
 

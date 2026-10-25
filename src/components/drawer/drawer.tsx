@@ -12,7 +12,7 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Size } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 import { useLayerZIndex } from '../portal/portal.js';
 
 /** A pressable trigger and the `Drawer` it opens. */
@@ -84,7 +84,7 @@ function DrawerHeader({ title, showCloseButton, isDisabled, onClose }: DrawerHea
         {title}
       </Heading>
       {showCloseButton ? (
-        <IconButton
+        <Button
           icon="close"
           label={strings.close}
           className={hooks.slotClass('close')}

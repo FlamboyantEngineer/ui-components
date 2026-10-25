@@ -64,10 +64,10 @@ Verification: `src/components/prose-table/prose-table.test.tsx`, `e2e/prose-tabl
 
 ### UIC-PROSE-TABLE-2.5 - Sticky header and scrolling
 
-`stickyHeader` shall publish `data-sticky-header`, from which the stylesheet keeps the heading row at the top of the nearest scrolling ancestor while the rows scroll under it. A table that needs its own scroll area, because it is tall or wider than the text column, is placed in a [Scroll Region](SCROLL-REGION.md); the table renders no scroll container of its own.
+`stickyHeader` shall publish `data-sticky-header`, from which the stylesheet keeps the heading row at the top of the nearest scrolling ancestor while the rows scroll under it. A table that needs its own scroll area, because it is tall or wider than the text column, is placed in a [Scroll Region](SCROLL-REGION.md); the table renders no scroll container of its own. The sticky-header lab shall start its headings at the scroll viewport edge and keep exactly that position from the first pixel of scrolling.
 
 Implementation: `src/components/prose-table/prose-table.tsx`, `labs/reference/prose-table.css`
-Verification: `src/components/prose-table/prose-table.test.tsx`, `e2e/prose-table.spec.ts`
+Verification: `src/components/prose-table/prose-table.test.tsx`, `e2e/prose-table.spec.ts`, `e2e/lab-layout-regressions.spec.ts`
 
 ## Hooks
 

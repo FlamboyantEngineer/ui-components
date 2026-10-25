@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { Button as AriaButton, useLocale } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 import type { CarouselAutoplay } from './use-carousel-autoplay.js';
 
 /** How a carousel lets the reader pick a slide directly. */
@@ -52,7 +52,7 @@ export function CarouselControls({
   return (
     <div {...hooks.slot('controls')}>
       {rotation ? (
-        <IconButton
+        <Button
           ref={rotation.rotationRef}
           icon={rotation.isStopped ? 'play' : 'pause'}
           label={rotation.isStopped ? strings.startSlideRotation : strings.stopSlideRotation}
@@ -62,7 +62,7 @@ export function CarouselControls({
           onPress={rotation.toggle}
         />
       ) : null}
-      <IconButton
+      <Button
         icon={isRtl ? 'chevron-right' : 'chevron-left'}
         label={strings.previousSlide}
         size="sm"
@@ -72,7 +72,7 @@ export function CarouselControls({
         focusableWhenDisabled
         onPress={onPrevious}
       />
-      <IconButton
+      <Button
         icon={isRtl ? 'chevron-left' : 'chevron-right'}
         label={strings.nextSlide}
         size="sm"

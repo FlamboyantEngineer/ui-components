@@ -4,7 +4,7 @@ import { createHooks } from '../../core/hooks.js';
 import { Glyph } from '../../core/provider.js';
 import { mergeRefs } from '../../utils/merge-props.js';
 import type { FieldControlProps } from '../field/field.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 
 export interface TreeSelectTriggerProps {
   control: FieldControlProps;
@@ -68,7 +68,7 @@ export function TreeSelectTrigger({
         {popover}
       </DialogTrigger>
       {clearLabel ? (
-        <IconButton
+        <Button
           className={hooks.slotClass('clear')}
           icon="close"
           label={clearLabel}

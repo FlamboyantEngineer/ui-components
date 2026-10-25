@@ -19,7 +19,7 @@ export interface ButtonGroupRenderState {
 }
 
 export interface ButtonGroupProps extends BaseProps, AriaLabellingProps {
-  /** The buttons: `Button`, `IconButton` or `DropdownMenu` triggers. */
+  /** The buttons: `Button` elements or `DropdownMenu` triggers. */
   children?: ReactNode;
   /** Lays the buttons out in a row or a column. Defaults to `horizontal`. */
   orientation?: Orientation | undefined;

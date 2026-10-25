@@ -3,7 +3,7 @@ import { Input, Label, NumberField } from '../../primitives/index.js';
 import type { GlyphName } from '../../core/glyphs.js';
 import { useUiStrings } from '../../core/provider.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 import { ToolbarScroller } from '../toolbar-scroller/toolbar-scroller.js';
 import { ZoomControl } from '../zoom-control/zoom-control.js';
 import { pdfViewerHooks as hooks } from './styling-hooks.js';
@@ -127,7 +127,7 @@ function PdfViewerPageNav({
   const strings = useUiStrings();
   return (
     <div {...hooks.slot('group')}>
-      <IconButton
+      <Button
         icon="chevron-up"
         label={strings.previousPage}
         size="sm"
@@ -150,7 +150,7 @@ function PdfViewerPageNav({
         <Input className={hooks.slotClass('page-input')} />
       </NumberField>
       <span {...hooks.slot('page-total')}>{strings.ofTotal(pageCount)}</span>
-      <IconButton
+      <Button
         icon="chevron-down"
         label={strings.nextPage}
         size="sm"
@@ -184,7 +184,7 @@ export function PdfViewerToolbar({
     <div {...hooks.slot('toolbar')} onKeyDownCapture={keepCaretKeys} onKeyDown={onKeyDown}>
       <ToolbarScroller aria-label={strings.controlsFor(label)}>
         {leadingActions ? <div {...hooks.slot('leading-actions')}>{leadingActions}</div> : null}
-        <IconButton
+        <Button
           icon="sidebar"
           label={strings.sidebar}
           size="sm"
@@ -200,7 +200,7 @@ export function PdfViewerToolbar({
           isDisabled={!isReady}
         />
         {fitModes.map(({ zoom: fit, glyph, stringKey }) => (
-          <IconButton
+          <Button
             key={fit}
             icon={glyph}
             label={strings[stringKey]}

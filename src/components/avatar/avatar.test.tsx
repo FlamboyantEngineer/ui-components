@@ -320,4 +320,14 @@ describe('Avatar', () => {
     expect(element).toHaveAttribute('data-size', 'md');
     expectHooksMatchSpec(container, 'AVATAR', { callerAttributes: ['data-person'] });
   });
+  it('UIC-AVATAR-4.1 adds optional presence to the same avatar and leaves its surface separate', () => {
+    const { rerender } = render(<Avatar name="Maria Santos" />);
+    const plain = screen.getByRole('img', { name: 'Maria Santos' });
+    expect(plain.querySelector('.ui-avatar__indicator')).toBeNull();
+    rerender(<Avatar name="Maria Santos" status="away" statusLabel="Away" />);
+    const avatar = screen.getByRole('img', { name: 'Maria Santos, Away' });
+    expect(avatar).toHaveAttribute('data-status', 'away');
+    expect(avatar.querySelector('.ui-avatar__surface .ui-avatar__indicator')).toBeNull();
+    expect(avatar.querySelector('.ui-avatar__indicator')).toHaveAttribute('aria-hidden', 'true');
+  });
 });

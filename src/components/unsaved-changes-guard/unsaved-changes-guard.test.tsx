@@ -165,10 +165,7 @@ describe('UnsavedChangesGuard', () => {
       'Profile',
       'Notes',
     ]);
-    expect(document.querySelector('.ui-modal')).toHaveClass(
-      'ui-unsaved-changes-guard',
-      'ui-confirm-dialog',
-    );
+    expect(document.querySelector('.ui-modal')).toHaveClass('ui-unsaved-changes-guard', 'ui-modal');
     expectHooksMatchSpec(document.body, 'UNSAVED-CHANGES-GUARD', { slots: ['list'] });
   });
 
@@ -192,6 +189,8 @@ describe('UnsavedChangesGuard', () => {
   });
 
   it('UIC-UNSAVED-CHANGES-GUARD-2.3 saves every dirty source in turn, pending until they finish', async () => {
+    const user = userEvent.setup();
+
     const first = deferred();
     const calls: string[] = [];
     const { leave } = setup(
@@ -211,7 +210,7 @@ describe('UnsavedChangesGuard', () => {
     const result = leave();
     await screen.findByRole('alertdialog');
     expect(actionNames()).toEqual(['Stay', 'Discard', 'Save']);
-    await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+    await user.click(screen.getByRole('button', { name: 'Save' }));
     expect(calls).toEqual(['profile']);
     expect(document.querySelector('.ui-modal__primary')).toHaveAttribute('data-pending', 'true');
     expect(await settled(result)).toBe('pending');
@@ -222,20 +221,24 @@ describe('UnsavedChangesGuard', () => {
   });
 
   it('UIC-UNSAVED-CHANGES-GUARD-2.3 keeps the reader here when a save fails', async () => {
+    const user = userEvent.setup();
+
     const save = deferred();
     const { leave } = setup(<Source isDirty label="Profile" onSave={() => save.promise} />);
     const result = leave();
     await screen.findByRole('alertdialog');
-    await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+    await user.click(screen.getByRole('button', { name: 'Save' }));
     await act(async () => save.reject(new Error('The server is busy.')));
     expect(await screen.findByRole('alert')).toHaveTextContent('The server is busy.');
     expect(screen.getByRole('alertdialog')).toBeVisible();
     expect(await settled(result)).toBe('pending');
-    await userEvent.click(screen.getByRole('button', { name: 'Stay' }));
+    await user.click(screen.getByRole('button', { name: 'Stay' }));
     await expect(result).resolves.toBe(false);
   });
 
   it('UIC-UNSAVED-CHANGES-GUARD-2.4 discards every dirty source and leaves', async () => {
+    const user = userEvent.setup();
+
     const discards: string[] = [];
     const { leave } = setup(
       <>
@@ -251,12 +254,14 @@ describe('UnsavedChangesGuard', () => {
     );
     const result = leave();
     await screen.findByRole('alertdialog');
-    await userEvent.click(screen.getByRole('button', { name: 'Discard' }));
+    await user.click(screen.getByRole('button', { name: 'Discard' }));
     await expect(result).resolves.toBe(true);
     expect(discards).toEqual(['profile']);
   });
 
   it('UIC-UNSAVED-CHANGES-GUARD-2.4 offers Discard alone, as a danger, when a source cannot save', async () => {
+    const user = userEvent.setup();
+
     const onDiscard = vi.fn();
     const { leave } = setup(
       <>
@@ -271,12 +276,14 @@ describe('UnsavedChangesGuard', () => {
     );
     expect(actionNames()).toEqual(['Stay', 'Discard']);
     expect(document.querySelector('.ui-modal')).toHaveAttribute('data-tone', 'danger');
-    await userEvent.click(screen.getByRole('button', { name: 'Discard' }));
+    await user.click(screen.getByRole('button', { name: 'Discard' }));
     await expect(result).resolves.toBe(true);
     expect(onDiscard).toHaveBeenCalledTimes(1);
   });
 
   it('UIC-UNSAVED-CHANGES-GUARD-2.5 UIC-UNSAVED-CHANGES-GUARD-4.1 stays on Stay or Escape, with focus on Stay', async () => {
+    const user = userEvent.setup();
+
     const onSave = vi.fn();
     const onDiscard = vi.fn();
     const { leave } = setup(
@@ -285,12 +292,12 @@ describe('UnsavedChangesGuard', () => {
     const first = leave();
     await screen.findByRole('alertdialog');
     await waitFor(() => expect(screen.getByRole('button', { name: 'Stay' })).toHaveFocus());
-    await userEvent.click(screen.getByRole('button', { name: 'Stay' }));
+    await user.click(screen.getByRole('button', { name: 'Stay' }));
     await expect(first).resolves.toBe(false);
     await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
     const second = leave();
     await screen.findByRole('alertdialog');
-    await userEvent.keyboard('{Escape}');
+    await user.keyboard('{Escape}');
     await expect(second).resolves.toBe(false);
     expect(onSave).not.toHaveBeenCalled();
     expect(onDiscard).not.toHaveBeenCalled();
@@ -308,6 +315,8 @@ describe('UnsavedChangesGuard', () => {
   });
 
   it('UIC-UNSAVED-CHANGES-GUARD-3.1 lets a nested guard ask about its own sources and stand in its parent', async () => {
+    const user = userEvent.setup();
+
     const outerSave = vi.fn();
     const innerSave = vi.fn();
     let outer!: UnsavedChangesGuardState;
@@ -341,7 +350,7 @@ describe('UnsavedChangesGuard', () => {
       innerResult = inner.confirmLeave();
     });
     expect(await screen.findByRole('alertdialog', { name: 'Close the panel?' })).toBeVisible();
-    await userEvent.click(screen.getByRole('button', { name: 'Stay' }));
+    await user.click(screen.getByRole('button', { name: 'Stay' }));
     await expect(innerResult).resolves.toBe(false);
     await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
 
@@ -353,7 +362,7 @@ describe('UnsavedChangesGuard', () => {
     expect(document.querySelector('.ui-unsaved-changes-guard__list')).toHaveTextContent(
       'Panel notes',
     );
-    await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+    await user.click(screen.getByRole('button', { name: 'Save' }));
     await expect(outerResult).resolves.toBe(true);
     expect(innerSave).toHaveBeenCalledTimes(1);
     expect(outerSave).not.toHaveBeenCalled();

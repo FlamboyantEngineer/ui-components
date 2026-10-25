@@ -5,12 +5,12 @@ import { createHooks, mergeClassNames } from '../../core/hooks.js';
 import type { GlyphName } from '../../core/glyphs.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { IconButton, type IconButtonProps } from '../icon-button/icon-button.js';
+import { Button, type ButtonProps } from '../button/button.js';
 
 export interface ExpandToggleProps
   extends
     Pick<
-      IconButtonProps,
+      ButtonProps,
       'isDisabled' | 'isPending' | 'pendingLabel' | 'excludeFromTabOrder' | 'aria-controls' | 'ref'
     >,
     BaseProps {
@@ -28,7 +28,7 @@ export interface ExpandToggleProps
   /** A constant accessible name. Defaults to the provider's `expand` or `collapse` string, by state. */
   label?: string | undefined;
   /** Box size. Defaults to `sm`. */
-  size?: IconButtonProps['size'];
+  size?: ButtonProps['size'];
 }
 
 const hooks = createHooks('expand-toggle');
@@ -76,7 +76,7 @@ export function ExpandToggle({
   }
 
   return (
-    <IconButton
+    <Button
       {...rest}
       data-expanded={expanded || undefined}
       className={mergeClassNames(hooks.className, className)}

@@ -81,7 +81,7 @@ export interface MenuProps extends BaseProps, AriaLabellingProps, SelectionProps
 
 /** A trigger and the `MenuPopover` it opens. */
 export interface MenuTriggerProps extends OpenStateProps {
-  /** The trigger (a `Button`, an `IconButton` or another pressable), then its `MenuPopover`. */
+  /** The trigger (a `Button`, an `Button` or another pressable), then its `MenuPopover`. */
   children: ReactNode;
 }
 

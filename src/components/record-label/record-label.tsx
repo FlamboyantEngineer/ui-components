@@ -1,11 +1,12 @@
 import type { ReactNode } from 'react';
 import type { AriaLabellingProps } from '../../core/events.js';
-import { createHooks, type HookProps } from '../../core/hooks.js';
+import { createHooks, mergeClassNames, type HookProps } from '../../core/hooks.js';
 import type { BaseProps, Size } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { VisuallyHidden } from '../../primitives/index.js';
 import { Icon, toIconProps, type IconSource } from '../icon/icon.js';
 import { Link } from '../link/link.js';
+import { RecordChipParts } from './record-chip-parts.js';
 import { TruncationTooltip } from '../truncation-tooltip/truncation-tooltip.js';
 
 export type RecordLabelSize = Extract<Size, 'sm' | 'md' | 'lg'>;
@@ -13,7 +14,24 @@ export type RecordLabelSize = Extract<Size, 'sm' | 'md' | 'lg'>;
 /** Why a record cannot be shown: the reader may not see it, or it no longer exists. */
 export type RecordUnavailable = 'restricted' | 'missing';
 
+export type RecordLabelMode = 'label' | 'chip';
+export type RecordLabelLayout = 'inline' | 'stacked';
+
 export interface RecordLabelProps extends BaseProps, AriaLabellingProps {
+  /** Plain label or a chip with metadata and removal. Defaults to `label`. */
+  mode?: RecordLabelMode | undefined;
+  /** The kind of record, shown in chip mode when present. */
+  type?: string | undefined;
+  /** The referenced version, shown in chip mode when present. */
+  version?: string | undefined;
+  /** A status badge or other state shown in chip mode. */
+  state?: ReactNode;
+  /** Chip layout. Defaults to `inline`. */
+  layout?: RecordLabelLayout | undefined;
+  /** Content shown on hover and focus of a linked chip. */
+  preview?: ReactNode;
+  /** Shows the chip's remove action. */
+  onRemove?: (() => void) | undefined;
   /** The record's identifier, such as `REQ-12`. It never breaks from its icon. */
   identifier: string;
   /** The record's name, after the identifier. */
@@ -33,6 +51,7 @@ export interface RecordLabelProps extends BaseProps, AriaLabellingProps {
 }
 
 const hooks = createHooks('record-label', [
+  'label',
   'identity',
   'icon',
   'identifier',
@@ -71,11 +90,28 @@ function resolveLabelling<P extends AriaLabellingProps>(props: P, isLink: boolea
   return { rootProps: unnamed, hiddenText: ariaLabel || undefined };
 }
 
+function resolveRecordHooks({
+  isChipLabel,
+  className,
+  data,
+}: {
+  isChipLabel: boolean;
+  className: string | undefined;
+  data: Record<string, string | boolean | undefined>;
+}) {
+  return isChipLabel
+    ? {
+        ...hooks.slot('label', data),
+        className: mergeClassNames(hooks.slotClass('label'), className),
+      }
+    : hooks.root({ className, data: { ...data, mode: 'label' } });
+}
+
 /**
  * A record named by its icon and identifier, which never break apart, then its name, which gives up
  * width first: cut with a tooltip, or wrapped. With `href` the whole label is a link.
  */
-export function RecordLabel({
+export function RecordLabelText({
   identifier,
   name,
   icon,
@@ -85,8 +121,21 @@ export function RecordLabel({
   truncate = true,
   unavailable,
   className,
+  isChipLabel = false,
   ...rest
-}: RecordLabelProps) {
+}: Pick<
+  RecordLabelProps,
+  | 'identifier'
+  | 'name'
+  | 'icon'
+  | 'size'
+  | 'href'
+  | 'isExternal'
+  | 'truncate'
+  | 'unavailable'
+  | keyof BaseProps
+  | keyof AriaLabellingProps
+> & { isChipLabel?: boolean }) {
   const strings = useUiStrings();
   const glyph = unavailable ? unavailableGlyphs[unavailable] : icon;
   const text = name?.trim();
@@ -96,7 +145,7 @@ export function RecordLabel({
   return (
     <RecordLabelRoot
       {...rootProps}
-      {...hooks.root({ className, props: rest, data: { size, truncate, unavailable } })}
+      {...resolveRecordHooks({ isChipLabel, className, data: { size, truncate, unavailable } })}
       href={link}
       isExternal={isExternal}
     >
@@ -128,5 +177,31 @@ export function RecordLabel({
         </VisuallyHidden>
       )}
     </RecordLabelRoot>
+  );
+}
+
+/** One record reference, as a plain label or a chip with metadata, preview and removal. */
+export function RecordLabel({
+  mode = 'label',
+  type,
+  version,
+  state,
+  layout,
+  preview,
+  onRemove,
+  ...rest
+}: RecordLabelProps) {
+  return mode === 'chip' ? (
+    <RecordChipParts
+      {...rest}
+      type={type}
+      version={version}
+      state={state}
+      layout={layout}
+      preview={preview}
+      onRemove={onRemove}
+    />
+  ) : (
+    <RecordLabelText {...rest} />
   );
 }

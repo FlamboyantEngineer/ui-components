@@ -1,13 +1,12 @@
 import type { ReactNode, Ref } from 'react';
 import type { BaseProps, NativeProps, Orientation } from '../../core/props.js';
-import { clamp } from '../../utils/clamp.js';
 import {
   resolveContainment,
   type LayoutContainmentProps,
   type LayoutSpace,
 } from '../layout/layout.js';
 import { ResizableSplitView } from './resizable-split-view.js';
-import { resolveSplitSeparator, type SplitViewPane } from './split-layout.js';
+import type { SplitViewPane } from './split-layout.js';
 import { splitViewHooks as hooks } from './styling-hooks.js';
 
 // Other components reach the standalone handle through this main module.
@@ -90,32 +89,6 @@ export type SplitViewProps = FixedSplitViewProps | ResizableSplitViewProps;
 
 function isResizable(props: SplitViewProps): props is ResizableSplitViewProps {
   return props.panes !== undefined;
-}
-
-/**
- * The first of two percent panes' size bounds, combining both panes' constraints.
- * @deprecated Not used by `SplitView` and not part of its contract; it will be removed.
- */
-export function resolveSplitBounds(panes: readonly [SplitViewPane, SplitViewPane]): {
-  min: number;
-  max: number;
-} {
-  const { min, max } = resolveSplitSeparator(panes, [50, 50], { index: 0, available: 0 });
-  return { min, max };
-}
-
-/**
- * The first pane's starting size: a stored size, else the default, else half, within the bounds.
- * @deprecated `SplitView` falls back to the defaults when a stored size does not fit instead of
- * clamping it, as this does; it will be removed.
- */
-export function resolveInitialSplitSize(
-  panes: readonly [SplitViewPane, SplitViewPane],
-  defaultSize?: number | null,
-  storedSize?: number | null,
-): number {
-  const { min, max } = resolveSplitBounds(panes);
-  return clamp(storedSize ?? defaultSize ?? 50, min, max);
 }
 
 /**

@@ -1,23 +1,18 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createRef, useState } from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, expectTypeOf, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { createMemoryStorage } from '../../core/storage.js';
+import type * as splitViewApi from './index.js';
 import {
   RESIZE_KEYBOARD_FINE_STEP,
   RESIZE_KEYBOARD_STEP,
   ResizeHandle,
   resolveResizeKeyboardValue,
 } from './resize-handle.js';
-import {
-  SplitView,
-  resolveInitialSplitSize,
-  resolveSplitBounds,
-  type SplitViewHandle,
-  type SplitViewPane,
-} from './split-view.js';
+import { SplitView, type SplitViewHandle, type SplitViewPane } from './split-view.js';
 
 const fruit = ['Apples', 'Bananas', 'Cherries'];
 
@@ -166,19 +161,9 @@ describe('SplitView', () => {
     expect(screen.getByRole('separator', { name: 'Redimensionner' })).toBeInTheDocument();
   });
 
-  it('UIC-SPLIT-VIEW-2.2 combines both panes into the bounds and starts from stored, default or half', () => {
-    expect(resolveSplitBounds(panes)).toEqual({ min: 10, max: 80 });
-    expect(resolveSplitBounds([{}, {}])).toEqual({ min: 10, max: 90 });
-    expect(resolveSplitBounds([{ maxSize: 95 }, { minSize: 30 }])).toEqual({ min: 10, max: 70 });
-    expect(resolveSplitBounds([{ minSize: 5 }, { maxSize: 60 }])).toEqual({ min: 40, max: 90 });
-    expect(resolveSplitBounds([{ minSize: 70 }, { minSize: 50 }])).toEqual({ min: 50, max: 50 });
-    expect(resolveInitialSplitSize(panes, 30)).toBe(30);
-    expect(resolveInitialSplitSize(panes, 30, 55)).toBe(55);
-    expect(resolveInitialSplitSize(panes, 30, 1)).toBe(10);
-    expect(resolveInitialSplitSize(panes, 30, 999)).toBe(80);
-    expect(resolveInitialSplitSize([{}, {}])).toBe(50);
-    expect(resolveInitialSplitSize([{ maxSize: 95 }, { minSize: 30 }], 95)).toBe(70);
-
+  it('UIC-SPLIT-VIEW-2.2 applies pane bounds and the initial size directly', () => {
+    expectTypeOf<typeof splitViewApi>().not.toHaveProperty('resolveSplitBounds');
+    expectTypeOf<typeof splitViewApi>().not.toHaveProperty('resolveInitialSplitSize');
     const { container } = render(resizable());
     const first = container.querySelector<HTMLElement>('[data-pane="first"]')!;
     expect(first.style.flexBasis).toBe('30%');

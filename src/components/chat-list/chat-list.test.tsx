@@ -3,7 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 import { ChatList, type ChatConversation } from './chat-list.js';
 
 const getNow = () => new Date('2026-04-20T10:30:00');
@@ -48,7 +48,7 @@ describe('ChatList', () => {
         conversations={conversations}
         onNew={() => {}}
         renderActions={(conversation) => (
-          <IconButton icon="more" label={`More for ${conversation.title}`} size="sm" />
+          <Button icon="more" label={`More for ${conversation.title}`} size="sm" />
         )}
         getNow={getNow}
         className="host"
@@ -72,7 +72,7 @@ describe('ChatList', () => {
       'The museum opens at nine.',
     );
     expect(ana.querySelector('.ui-chat-list__avatar')).toHaveAttribute('aria-hidden', 'true');
-    expect(ana.querySelector('.ui-presence-avatar')).toHaveAttribute('data-status', 'online');
+    expect(ana.querySelector('.ui-avatar')).toHaveAttribute('data-status', 'online');
     expect(ana).toHaveAttribute('data-unread', 'true');
     expect(ana).not.toHaveAttribute('data-muted');
     expect(trip).toHaveAttribute('data-muted', 'true');
@@ -177,7 +177,7 @@ describe('ChatList', () => {
         <ChatList
           conversations={conversations}
           renderActions={(conversation) => (
-            <IconButton
+            <Button
               icon="more"
               label={`More for ${conversation.title}`}
               size="sm"

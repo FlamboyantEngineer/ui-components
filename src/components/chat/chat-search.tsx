@@ -2,7 +2,7 @@ import { useEffect, useId, useMemo, useRef, useState, type RefObject } from 'rea
 import { useUiStrings } from '../../core/provider.js';
 import type { ChatMessageData } from '../chat-parts/chat-parts.js';
 import { FindBar } from '../find-bar/find-bar.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 import { chatHooks as hooks } from './chat-hooks.js';
 import { findMessageMatches } from './chat-model.js';
 
@@ -78,7 +78,7 @@ export function useChatSearch(messages: readonly ChatMessageData[]): ChatSearchM
 export function ChatSearchToggle({ search }: { search: ChatSearchModel }) {
   const strings = useUiStrings();
   return (
-    <IconButton
+    <Button
       ref={search.toggleRef}
       icon="search"
       label={strings.chatSearch}

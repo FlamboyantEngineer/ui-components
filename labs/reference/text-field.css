@@ -127,7 +127,7 @@
 }
 
 /* Buttons inside the box fit it at every size. */
-.ui-text-field .ui-text-field__reveal.ui-icon-button {
+.ui-text-field .ui-text-field__reveal.ui-button[data-content='icon'] {
   width: calc(var(--ref-field-height) - 4px);
   height: calc(var(--ref-field-height) - 4px);
 }

@@ -3,6 +3,7 @@ import { Button } from '../../src/components/button/button.js';
 import {
   SegmentedBar,
   type SegmentedBarSegment,
+  type SegmentedBarShape,
 } from '../../src/components/segmented-bar/segmented-bar.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
@@ -50,6 +51,31 @@ function RunningChecks() {
   );
 }
 
+function AnimationExample({ shape, animated }: { shape: SegmentedBarShape; animated: boolean }) {
+  const [run, setRun] = useState(0);
+  return (
+    <div style={column(280)} data-lab-animation={`${shape}-${animated ? 'animated' : 'static'}`}>
+      <SegmentedBar
+        key={run}
+        shape={shape}
+        animated={animated}
+        size="lg"
+        label="Checks"
+        segments={checks}
+        total={80}
+        showLegend
+      />
+      {animated ? (
+        <p>
+          <Button size="sm" onPress={() => setRun((value) => value + 1)}>
+            Replay {shape} animation
+          </Button>
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
 mountLab(
   <>
     <LabSection
@@ -67,6 +93,17 @@ mountLab(
               showLegend={legend === 'shown'}
             />
           </div>
+        )}
+      />
+    </LabSection>
+    <LabSection
+      title="One-time sequential animation"
+      description="Opt in with animated: each shape fills once when first visible, in segment order and proportional time across 1.2 seconds. Replay remounts the bar. Reduced motion shows the complete result immediately."
+    >
+      <StateMatrix
+        axes={{ shape: ['linear', 'donut', 'pie'], motion: ['static', 'animated'] }}
+        render={({ shape, motion }) => (
+          <AnimationExample shape={shape} animated={motion === 'animated'} />
         )}
       />
     </LabSection>
@@ -147,6 +184,26 @@ mountLab(
       description="Each run fills the bar toward its total of 12: passes first, then failures."
     >
       <RunningChecks />
+    </LabSection>
+    <LabSection
+      title="Linear, donut and pie"
+      description="The same shares and remainder, in every shape and size, with a shared legend."
+    >
+      <StateMatrix
+        axes={{ shape: ['linear', 'donut', 'pie'], size: ['sm', 'md', 'lg'] }}
+        render={({ shape, size }) => (
+          <div style={column(240)}>
+            <SegmentedBar
+              shape={shape}
+              size={size}
+              label="Checks"
+              segments={checks}
+              total={80}
+              showLegend
+            />
+          </div>
+        )}
+      />
     </LabSection>
   </>,
 );

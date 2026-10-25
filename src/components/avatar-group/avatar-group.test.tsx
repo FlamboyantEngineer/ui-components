@@ -149,4 +149,14 @@ describe('AvatarGroup', () => {
     expect(root(container)).toHaveAttribute('data-row', '4');
     expectHooksMatchSpec(container, 'AVATAR-GROUP', { callerAttributes: ['data-row'] });
   });
+  it('UIC-AVATAR-GROUP-3.1 offers overlapping, spaced and decorative-dot layouts', () => {
+    const { container, rerender } = render(<AvatarGroup people={people} maxVisible={2} />);
+    expect(container.querySelector('.ui-avatar-group')).toHaveAttribute('data-layout', 'stack');
+    rerender(<AvatarGroup people={people} maxVisible={2} layout="strip" />);
+    expect(screen.getByRole('group')).toHaveAttribute('data-layout', 'strip');
+    rerender(<AvatarGroup people={people} maxVisible={2} layout="dots" />);
+    expect(screen.queryByRole('group')).not.toBeInTheDocument();
+    expect(container.querySelectorAll('.ui-avatar-group__dot')).toHaveLength(2);
+    expect(container.querySelector('.ui-avatar-group')).toHaveAttribute('aria-hidden', 'true');
+  });
 });

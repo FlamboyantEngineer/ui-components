@@ -1,12 +1,12 @@
 # Hook Contract
 
-The library ships behaviour and markup, never appearance. Every component exposes **hooks**: stable class names and data attributes that a host stylesheet selects. Hooks are public API. Renaming or removing a hook, an attribute value or a documented custom property is a major version change ([CONTRIBUTING.md](../CONTRIBUTING.md#versioning)).
+The library ships behaviour and markup, never appearance. Every component exposes **hooks**: documented class names and data attributes that a host stylesheet selects. Hooks are public API and experimental until `1.0.0`; API changes use minor changesets during `0.x` development. Starting at `1.0.0`, renaming or removing a hook, an attribute value or a documented custom property requires a major version change ([CONTRIBUTING.md](../CONTRIBUTING.md#versioning)).
 
 ## UIC-HOOKS-1 - Classes
 
 ### UIC-HOOKS-1.1 - Root class
 
-Every component shall put the class `ui-<component>` on its root element, where `<component>` is the component's name in kebab case (`ui-button`, `ui-icon-button`). The root class is always present, whatever props the caller passes.
+Every component shall put the class `ui-<component>` on its root element, where `<component>` is the component's name in kebab case (`ui-button`, `ui-modal`). The root class is always present, whatever props the caller passes.
 
 Implementation: `src/core/hooks.ts`
 Verification: `src/core/hooks.test.ts`

@@ -3,25 +3,21 @@
 import { readTimeInstant } from '../../utils/read-time-instant.js';
 
 /** Both ends of a range of numbers or dates. */
-export interface DescriptionRange<T extends number | string | Date> {
+export interface DescriptionRange<T extends number | string> {
   start: T;
   end: T;
 }
 
 /**
  * A value a row formats for the locale: a number, an ISO 8601 date or date and time text
- * (`2026-05-14`, `2026-05-14T09:30`), a list of texts, or a range of numbers or dates. A `Date`
- * object still formats but is deprecated: it holds an instant, so a calendar date can shift a day
- * with the reader's time zone. Use an ISO 8601 text.
+ * (`2026-05-14`, `2026-05-14T09:30`), a list of texts, or a range of numbers or ISO 8601 texts.
  */
 export type DescriptionValue =
   | number
   | string
-  | Date
   | readonly string[]
   | DescriptionRange<number>
-  | DescriptionRange<string>
-  | DescriptionRange<Date>;
+  | DescriptionRange<string>;
 
 /** `Intl` options for the value's kind: number, date or list formatting. */
 export type DescriptionFormatOptions =
@@ -37,11 +33,11 @@ export interface DescriptionFormatInput {
 
 const defaultDateOptions: Intl.DateTimeFormatOptions = { dateStyle: 'medium' };
 
-type DateValue = string | Date | DescriptionRange<string> | DescriptionRange<Date>;
+type DateValue = string | DescriptionRange<string>;
 
 function isRange(
   value: DescriptionValue,
-): value is DescriptionRange<number> | DescriptionRange<string> | DescriptionRange<Date> {
+): value is DescriptionRange<number> | DescriptionRange<string> {
   return typeof value === 'object' && 'start' in value;
 }
 
@@ -55,15 +51,14 @@ function formatDate(value: DateValue, { locale, formatOptions }: DescriptionForm
     (formatOptions as Intl.DateTimeFormatOptions | undefined) ?? defaultDateOptions,
   );
   const zone = format.resolvedOptions().timeZone;
-  const read = (date: string | Date) =>
-    typeof date === 'string' ? readTimeInstant(date, zone) : date;
-  if (typeof value === 'string' || value instanceof Date) {
+  const read = (date: string) => readTimeInstant(date, zone);
+  if (typeof value === 'string') {
     const date = read(value);
-    return typeof date === 'number' && Number.isNaN(date) ? String(value) : format.format(date);
+    return Number.isNaN(date) ? value : format.format(date);
   }
   const [start, end] = [read(value.start), read(value.end)];
-  if (Number.isNaN(Number(start)) || Number.isNaN(Number(end))) {
-    return `${String(value.start)} – ${String(value.end)}`;
+  if (Number.isNaN(start) || Number.isNaN(end)) {
+    return `${value.start} – ${value.end}`;
   }
   return format.formatRange(start, end);
 }
@@ -91,11 +86,11 @@ export function formatDescriptionValue(
   input: DescriptionFormatInput,
 ): string {
   if (typeof value === 'number') return formatNumber(value, input);
-  if (typeof value === 'string' || value instanceof Date) return formatDate(value, input);
+  if (typeof value === 'string') return formatDate(value, input);
   if (isRange(value)) {
     return typeof value.start === 'number'
       ? formatNumber(value as DescriptionRange<number>, input)
-      : formatDate(value as DescriptionRange<string> | DescriptionRange<Date>, input);
+      : formatDate(value as DescriptionRange<string>, input);
   }
   const options = input.formatOptions as Intl.ListFormatOptions | undefined;
   return new Intl.ListFormat(input.locale, options ?? { type: 'conjunction' }).format(value);

@@ -16,7 +16,9 @@ test.describe('Button lab', () => {
     lab,
   }) => {
     await lab.open('button');
-    const cells = page.locator('table[data-lab-matrix="variant size"] td[data-lab-cell]');
+    const cells = page
+      .locator('[data-lab-family="button-main"]')
+      .locator('table[data-lab-matrix="variant size"] td[data-lab-cell]');
     expect(await cells.count()).toBe(9 * 4);
     for (const [size, height] of [
       ['xs', 20],
@@ -25,6 +27,7 @@ test.describe('Button lab', () => {
       ['lg', 32],
     ] as const) {
       const box = await page
+        .locator('[data-lab-family="button-main"]')
         .locator(`[data-lab-cell="variant=secondary size=${size}"] .ui-button`)
         .boundingBox();
       expect(box?.height).toBe(height);
@@ -36,7 +39,9 @@ test.describe('Button lab', () => {
     lab,
   }) => {
     await lab.open('button');
-    const button = page.locator('[data-lab-cell="variant=primary size=md"] .ui-button');
+    const button = page
+      .locator('[data-lab-family="button-main"]')
+      .locator('[data-lab-cell="variant=primary size=md"] .ui-button');
     await button.focus();
     await page.keyboard.press('Shift+Tab');
     await page.keyboard.press('Tab');
@@ -50,14 +55,18 @@ test.describe('Button lab', () => {
     lab,
   }) => {
     await lab.open('button');
-    const disabled = page.locator('[data-lab-cell="variant=primary state=disabled"] .ui-button');
-    const focusable = page.locator(
-      '[data-lab-cell="variant=primary state=focusable disabled"] .ui-button',
-    );
+    const disabled = page
+      .locator('[data-lab-family="button-main"]')
+      .locator('[data-lab-cell="variant=primary state=disabled"] .ui-button');
+    const focusable = page
+      .locator('[data-lab-family="button-main"]')
+      .locator('[data-lab-cell="variant=primary state=focusable disabled"] .ui-button');
     await expect(disabled).toHaveAttribute('disabled', '');
     await expect(focusable).not.toHaveAttribute('disabled');
     await expect(focusable).toHaveAttribute('aria-disabled', 'true');
-    const selected = page.locator('[data-lab-cell="variant=primary state=selected"] .ui-button');
+    const selected = page
+      .locator('[data-lab-family="button-main"]')
+      .locator('[data-lab-cell="variant=primary state=selected"] .ui-button');
     await selected.focus();
     await page.keyboard.press('Tab');
     await expect(focusable).toBeFocused();
@@ -71,7 +80,9 @@ test.describe('Button lab', () => {
     }) => {
       await lab.open('button', { theme });
       const cell = (hint: string, state: string) =>
-        page.locator(`[data-lab-cell="hint=${hint} state=${state}"] .ui-button`);
+        page
+          .locator('[data-lab-family="button-main"]')
+          .locator(`[data-lab-cell="hint=${hint} state=${state}"] .ui-button`);
       const both = cell('tooltip and shortcut', 'default');
       await expect(both).toHaveAttribute('aria-keyshortcuts', 'Control+Shift+S');
       await expect(cell('tooltip', 'default')).not.toHaveAttribute('aria-keyshortcuts');
@@ -99,10 +110,14 @@ test.describe('Button lab', () => {
     lab,
   }) => {
     await lab.open('button');
-    const link = page.locator('[data-lab-cell="variant=primary link=enabled"] a.ui-button');
+    const link = page
+      .locator('[data-lab-family="button-main"]')
+      .locator('[data-lab-cell="variant=primary link=enabled"] a.ui-button');
     await expect(link).toHaveAttribute('href', '#reports');
     await expect(link).toHaveAttribute('data-variant', 'primary');
-    const disabled = page.locator('[data-lab-cell="variant=primary link=disabled"] .ui-button');
+    const disabled = page
+      .locator('[data-lab-family="button-main"]')
+      .locator('[data-lab-cell="variant=primary link=disabled"] .ui-button');
     await expect(disabled).toHaveJSProperty('tagName', 'SPAN');
     await expect(disabled).toHaveAttribute('aria-disabled', 'true');
     const box = await link.boundingBox();
@@ -119,7 +134,9 @@ test.describe('Button lab', () => {
     lab,
   }) => {
     await lab.open('button');
-    const demo = page.locator('[data-lab-demo="toggles"]');
+    const demo = page
+      .locator('[data-lab-family="button-main"]')
+      .locator('[data-lab-demo="toggles"]');
     const grid = demo.getByRole('button', { name: 'Show grid' });
     await expect(grid).toHaveAttribute('aria-pressed', 'true');
     await grid.focus();
@@ -131,6 +148,8 @@ test.describe('Button lab', () => {
     await pin.click();
     await expect(pin).toHaveAttribute('aria-pressed', 'true');
     await expect(demo.locator('[data-lab-output="pinned"]')).toHaveText('Pinned: yes');
-    await expect(page.locator('[data-lab-swapped]')).toHaveClass(/ui-button/);
+    await expect(
+      page.locator('[data-lab-family="button-main"]').locator('[data-lab-swapped]'),
+    ).toHaveClass(/ui-button/);
   });
 });

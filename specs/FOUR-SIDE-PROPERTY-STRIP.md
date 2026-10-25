@@ -34,17 +34,17 @@ Verification: `src/components/four-side-property-strip/four-side-property-strip.
 
 ### UIC-FOUR-SIDE-PROPERTY-STRIP-1.5 - Values and linked sides
 
-The strip shall hold the sides' values when given `value` with `onChange`, or `defaultValue`: `renderSide` receives each side's `value` and an `onChange` that reports every side's value through `onChange`. `link` (`all`, `pairs`) shall draw a toggle [IconButton](ICON-BUTTON.md) with the `link` glyph after the cells (`ui-four-side-property-strip__link`), named by the provider string `linkSides`, pressed while the sides are linked (`isLinked` with `onLinkedChange`, or `defaultLinked`). While linked, a side's change also sets every other side (`all`) or the opposite side (`pairs`: top with bottom, left with right, or each axis's start with its end), and the row publishes `data-linked`. Linking changes no value until the next edit.
+The strip shall hold the sides' values when given `value` with `onChange`, or `defaultValue`: `renderSide` receives each side's `value` and an `onChange` that reports every side's value through `onChange`. `link` (`all`, `pairs`) shall draw a toggle [Button](BUTTON.md) with the `link` glyph after the cells (`ui-four-side-property-strip__link`), named by the provider string `linkSides`, pressed while the sides are linked (`isLinked` with `onLinkedChange`, or `defaultLinked`). While linked, a side's change also sets every other side (`all`) or the opposite side (`pairs`: top with bottom, left with right, or each axis's start with its end), and the row publishes `data-linked`. Linking changes no value until the next edit.
 
 Implementation: `src/components/four-side-property-strip/four-side-property-strip.tsx`, `src/core/common-strings.ts`, `src/core/glyphs.tsx`, `labs/reference/four-side-property-strip.css`
 Verification: `src/components/four-side-property-strip/four-side-property-strip.test.tsx`, `e2e/four-side-property-strip.spec.ts`
 
 ## Hooks
 
-| Hook                                | Kind      | Values                                                                                     | Description                                              |
-| ----------------------------------- | --------- | ------------------------------------------------------------------------------------------ | -------------------------------------------------------- |
-| `ui-four-side-property-strip`       | root      |                                                                                            | The row (also `ui-property-row`).                        |
-| `ui-four-side-property-strip__side` | slot      |                                                                                            | One side's cell (also `ui-property-strip-cell`).         |
-| `ui-four-side-property-strip__link` | slot      |                                                                                            | The toggle that links the sides (also `ui-icon-button`). |
-| `data-side`                         | attribute | `top`, `bottom`, `left`, `right`, `block-start`, `block-end`, `inline-start`, `inline-end` | On a cell: the side it edits.                            |
-| `data-linked`                       | state     | `true`                                                                                     | The sides are linked.                                    |
+| Hook                                | Kind      | Values                                                                                     | Description                                         |
+| ----------------------------------- | --------- | ------------------------------------------------------------------------------------------ | --------------------------------------------------- |
+| `ui-four-side-property-strip`       | root      |                                                                                            | The row (also `ui-property-row`).                   |
+| `ui-four-side-property-strip__side` | slot      |                                                                                            | One side's cell (also `ui-property-strip-cell`).    |
+| `ui-four-side-property-strip__link` | slot      |                                                                                            | The toggle that links the sides (also `ui-button`). |
+| `data-side`                         | attribute | `top`, `bottom`, `left`, `right`, `block-start`, `block-end`, `inline-start`, `inline-end` | On a cell: the side it edits.                       |
+| `data-linked`                       | state     | `true`                                                                                     | The sides are linked.                               |

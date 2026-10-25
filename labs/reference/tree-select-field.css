@@ -98,7 +98,7 @@
   color: var(--ref-muted);
 }
 
-.ui-tree-select-field__clear.ui-icon-button {
+.ui-tree-select-field__clear.ui-button[data-content='icon'] {
   flex: none;
   width: calc(var(--ref-field-height) - 8px);
   height: calc(var(--ref-field-height) - 8px);

@@ -80,7 +80,7 @@ Verification: `src/components/chat-transcript/chat-message.test.tsx`, `e2e/chat-
 
 ### UIC-CHAT-TRANSCRIPT-2.5 - Author presence
 
-An `author` with a presence `status` shall draw a small [Presence Avatar](PRESENCE-AVATAR.md) with that `status` and `statusLabel` in `ui-chat-message__avatar`, named by the author and the status label (`Maria Santos, Away`), in place of the decorative `Avatar`.
+An `author` with a presence `status` shall draw the small [Avatar](AVATAR.md) in `ui-chat-message__avatar` with that `status` and `statusLabel`, named by the author and the status label (`Maria Santos, Away`), instead of a decorative one.
 
 Implementation: `src/components/chat-transcript/chat-message-parts.tsx`
 Verification: `src/components/chat-transcript/chat-message.test.tsx`

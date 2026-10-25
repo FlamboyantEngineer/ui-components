@@ -2,7 +2,7 @@ import { toErrorMessage } from '../../utils/to-error-message.js';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { OverlayTriggerStateContext } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
-import { runPendingAction } from '../action-button/action-button.js';
+import { runPendingAction } from '../button/button.js';
 import type { ModalAction } from './modal.js';
 
 /** Which built-in footer action runs. */

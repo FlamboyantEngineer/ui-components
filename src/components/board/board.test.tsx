@@ -419,7 +419,7 @@ describe('Board', () => {
   it('UIC-BOARD-3.1 UIC-DRAG-INTERACTIONS-2.3 offers column handles only while the board takes column moves', () => {
     const { container, rerender } = render(<TaskBoard onColumnMove={vi.fn()} />);
     const handle = screen.getByRole('button', { name: 'Move column Doing' });
-    expect(handle).toHaveClass('ui-board__column-handle', 'ui-icon-button');
+    expect(handle).toHaveClass('ui-board__column-handle', 'ui-button');
     expect(container.querySelector('.ui-board__column')).toHaveAttribute('draggable', 'true');
     expectHooksMatchSpec(container, 'BOARD', { slots: ['column-handle'] });
     rerender(<TaskBoard />);

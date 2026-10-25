@@ -3,7 +3,7 @@ import { createHooks } from '../../core/hooks.js';
 import type { ControlSize } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { SlotRef } from '../../utils/slot-registry.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 import { TextMatch } from '../text-match/text-match.js';
 import type { FieldSeverity, FieldState, FieldValidation } from './field-state.js';
 
@@ -179,7 +179,7 @@ export function FieldHelp({
   const strings = useUiStrings();
   return (
     <>
-      <IconButton
+      <Button
         icon="help"
         size={size}
         label={strings.fieldHelp(label)}

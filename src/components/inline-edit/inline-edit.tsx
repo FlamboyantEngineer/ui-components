@@ -4,7 +4,7 @@ import { Button as AriaButton } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 import { InlineError } from '../inline-error/inline-error.js';
 import { TextField } from '../text-field/text-field.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
@@ -96,7 +96,7 @@ function InlineEditActions({
   const strings = useUiStrings();
   return (
     <span {...hooks.slot('actions')}>
-      <IconButton
+      <Button
         icon="check"
         label={strings.save}
         size="sm"
@@ -105,7 +105,7 @@ function InlineEditActions({
         isPending={isPending}
         onPress={onSave}
       />
-      <IconButton
+      <Button
         icon="close"
         label={strings.cancel}
         size="sm"

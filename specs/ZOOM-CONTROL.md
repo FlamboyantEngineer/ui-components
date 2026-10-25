@@ -6,7 +6,7 @@
 
 ### UIC-ZOOM-CONTROL-1.1 - Parts and order
 
-`ZoomControl` shall render a `role="group"` element named by `aria-label`, `aria-labelledby` or the provider's `zoom` string, holding in order: the zoom-out button (`ui-zoom-control__zoom-out`), the slider (`ui-zoom-control__slider`), the zoom-in button (`ui-zoom-control__zoom-in`) and the value (`ui-zoom-control__value`). The built-in buttons are [Icon Buttons](ICON-BUTTON.md) drawing the `minus` and `plus` glyphs, named by the provider's `zoomOut` and `zoomIn` strings.
+`ZoomControl` shall render a `role="group"` element named by `aria-label`, `aria-labelledby` or the provider's `zoom` string, holding in order: the zoom-out button (`ui-zoom-control__zoom-out`), the slider (`ui-zoom-control__slider`), the zoom-in button (`ui-zoom-control__zoom-in`) and the value (`ui-zoom-control__value`). The built-in buttons are [Icon Buttons](BUTTON.md) drawing the `minus` and `plus` glyphs, named by the provider's `zoomOut` and `zoomIn` strings.
 
 Implementation: `src/components/zoom-control/zoom-control.tsx`
 Verification: `src/components/zoom-control/zoom-control.test.tsx`, `e2e/zoom-control.spec.ts`
@@ -41,7 +41,7 @@ Verification: `src/components/zoom-control/zoom-control.test.tsx`, `e2e/zoom-con
 
 ### UIC-ZOOM-CONTROL-1.6 - Reset
 
-With `resetValue`, the control shall render a reset [Icon Button](ICON-BUTTON.md) after the value (`ui-zoom-control__reset`, `restore` glyph, named by the provider's `resetZoom` string) that requests `resetValue`. It is disabled but focusable while the value equals `resetValue`.
+With `resetValue`, the control shall render a reset [Icon Button](BUTTON.md) after the value (`ui-zoom-control__reset`, `restore` glyph, named by the provider's `resetZoom` string) that requests `resetValue`. It is disabled but focusable while the value equals `resetValue`.
 
 Implementation: `src/components/zoom-control/zoom-control.tsx`
 Verification: `src/components/zoom-control/zoom-control.test.tsx`
@@ -76,14 +76,14 @@ Verification: `src/components/zoom-control/zoom-control.test.tsx`, `e2e/zoom-con
 
 ## Hooks
 
-| Hook                        | Kind      | Values                 | Description                                           |
-| --------------------------- | --------- | ---------------------- | ----------------------------------------------------- |
-| `ui-zoom-control`           | root      |                        | The `role="group"` `<div>`.                           |
-| `ui-zoom-control__zoom-out` | slot      |                        | The built-in zoom-out button (also `ui-icon-button`). |
-| `ui-zoom-control__slider`   | slot      |                        | The `<input type="range">` over the levels.           |
-| `ui-zoom-control__zoom-in`  | slot      |                        | The built-in zoom-in button (also `ui-icon-button`).  |
-| `ui-zoom-control__value`    | slot      |                        | The `<output>` showing the percentage.                |
-| `ui-zoom-control__presets`  | slot      |                        | The preset menu trigger (also `ui-dropdown-menu`).    |
-| `ui-zoom-control__reset`    | slot      |                        | The reset button (also `ui-icon-button`).             |
-| `data-size`                 | attribute | `xs`, `sm`, `md`, `lg` | Size of the built-in buttons.                         |
-| `data-disabled`             | state     | `true`                 | The whole control is disabled.                        |
+| Hook                        | Kind      | Values                 | Description                                        |
+| --------------------------- | --------- | ---------------------- | -------------------------------------------------- |
+| `ui-zoom-control`           | root      |                        | The `role="group"` `<div>`.                        |
+| `ui-zoom-control__zoom-out` | slot      |                        | The built-in zoom-out button (also `ui-button`).   |
+| `ui-zoom-control__slider`   | slot      |                        | The `<input type="range">` over the levels.        |
+| `ui-zoom-control__zoom-in`  | slot      |                        | The built-in zoom-in button (also `ui-button`).    |
+| `ui-zoom-control__value`    | slot      |                        | The `<output>` showing the percentage.             |
+| `ui-zoom-control__presets`  | slot      |                        | The preset menu trigger (also `ui-dropdown-menu`). |
+| `ui-zoom-control__reset`    | slot      |                        | The reset button (also `ui-button`).               |
+| `data-size`                 | attribute | `xs`, `sm`, `md`, `lg` | Size of the built-in buttons.                      |
+| `data-disabled`             | state     | `true`                 | The whole control is disabled.                     |

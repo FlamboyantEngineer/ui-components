@@ -62,7 +62,7 @@ test.describe('Chat Message Actions lab', () => {
     const copyBar = bar(page, 'copy');
     await copyBar.getByRole('button', { name: 'Copy' }).click();
     await expect(copyBar).toHaveAttribute('data-copied', 'true');
-    await expect(copyBar.locator('.ui-icon-button__icon')).toHaveAttribute('data-glyph', 'check');
+    await expect(copyBar.locator('.ui-button__icon')).toHaveAttribute('data-glyph', 'check');
     await expect(copyBar.getByRole('status')).toHaveText('Copied');
     expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(
       'Take the 28 tram to the castle, then walk down to the river.',

@@ -3,7 +3,7 @@ import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { useSyncedScroll, type ScrollAnchor } from '../../utils/use-synced-scroll.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 import type { MergeSide } from './merge-blocks.js';
 import { mergeViewHooks as hooks } from './merge-view-hooks.js';
 import { getConflictId, MergeResultPane, type MergeLabels } from './merge-view-result.js';
@@ -84,7 +84,7 @@ function MergeViewHeader(props: {
         {strings.mergeViewConflictCount(unresolved, total)}
       </span>
       <span {...hooks.slot('navigation')}>
-        <IconButton
+        <Button
           icon="chevron-up"
           size="sm"
           label={strings.mergeViewPreviousConflict}
@@ -92,7 +92,7 @@ function MergeViewHeader(props: {
           isDisabled={previous < 0}
           onPress={() => onMove(previous)}
         />
-        <IconButton
+        <Button
           icon="chevron-down"
           size="sm"
           label={strings.mergeViewNextConflict}

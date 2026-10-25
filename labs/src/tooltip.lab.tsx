@@ -1,6 +1,6 @@
 import { Button } from '../../src/components/button/button.js';
 import { Icon } from '../../src/components/icon/icon.js';
-import { IconButton } from '../../src/components/icon-button/icon-button.js';
+
 import { Tooltip, type TooltipVariant } from '../../src/components/tooltip/tooltip.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
@@ -45,7 +45,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Button tooltips"
-      description="The tooltip prop on Button and IconButton, including pending and focusable disabled buttons."
+      description="The tooltip prop on Button and Button, including pending and focusable disabled buttons."
     >
       <StateMatrix
         axes={{
@@ -65,7 +65,7 @@ mountLab(
               Publish
             </Button>
           ) : (
-            <IconButton
+            <Button
               icon="undo"
               label="Undo"
               tooltip={state === 'focusable disabled' ? 'Nothing to undo' : 'Undo the last edit'}

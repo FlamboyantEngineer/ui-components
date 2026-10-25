@@ -48,7 +48,7 @@ Verification: `src/components/chat-attachment/chat-attachment.test.tsx`, `e2e/ch
 
 ### UIC-CHAT-ATTACHMENT-1.7 - Remove
 
-With `onRemove`, the attachment shall end with an `IconButton` (`ui-chat-attachment__remove`, `close` glyph) named by the provider string `removeItem` with the file name, which calls `onRemove`.
+With `onRemove`, the attachment shall end with an icon-only [Button](BUTTON.md) (`ui-chat-attachment__remove`, `close` glyph) named by the provider string `removeItem` with the file name, which calls `onRemove`.
 
 Implementation: `src/components/chat-attachment/chat-attachment.tsx`, `src/core/common-strings.ts`
 Verification: `src/components/chat-attachment/chat-attachment.test.tsx`, `e2e/chat-attachment.spec.ts`
@@ -117,7 +117,7 @@ Verification: `src/components/chat-attachment/chat-attachment-list.test.tsx`
 | `ui-chat-attachment__progress`  | slot  |                                           | The upload's progress (also `ui-progress-bar`).                        |
 | `ui-chat-attachment__error`     | slot  |                                           | The upload's error with Retry (also `ui-inline-error`).                |
 | `ui-chat-attachment__download`  | slot  |                                           | The download link (also `ui-link`).                                    |
-| `ui-chat-attachment__remove`    | slot  |                                           | The remove button (also `ui-icon-button`).                             |
+| `ui-chat-attachment__remove`    | slot  |                                           | The remove button (also `ui-button`).                                  |
 | `data-kind`                     | state | `image`, `pdf`, `archive`, `text`, `file` | On an attachment: the kind of file.                                    |
 | `data-status`                   | state | `uploading`, `complete`, `error`          | On an attachment: where its upload stands.                             |
 | `data-display`                  | state | `thumbnail`, `chip`                       | On an attachment: an image's thumbnail, or a chip with glyph and name. |

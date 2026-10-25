@@ -111,7 +111,7 @@ test.describe('Tooltip lab', () => {
     await lab.expectAccessible();
   });
 
-  test('UIC-BUTTON-1.6 UIC-ICON-BUTTON-1.5 explains pending and focusable disabled buttons', async ({
+  test('UIC-BUTTON-1.6 UIC-BUTTON-11.5 explains pending and focusable disabled buttons', async ({
     page,
     lab,
   }) => {

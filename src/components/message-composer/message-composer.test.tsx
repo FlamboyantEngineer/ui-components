@@ -155,7 +155,7 @@ describe('MessageComposer', () => {
     rerender(<MessageComposer defaultValue="Next" onSubmit={onSubmit} onStop={onStop} />);
     expect(screen.getByRole('button', { name: 'Send' })).toBe(stop);
     rerender(<MessageComposer defaultValue="Next" isPending onSubmit={onSubmit} />);
-    expect(container.querySelector('.ui-icon-button__spinner')).not.toBeNull();
+    expect(container.querySelector('.ui-button__spinner')).not.toBeNull();
     expect(root(container)).toHaveAttribute('data-pending', 'true');
   });
 
@@ -171,7 +171,7 @@ describe('MessageComposer', () => {
     await user.click(input());
     await user.keyboard('Then the dessert');
     expect(screen.getByRole('button', { name: 'Send' })).toBe(stop);
-    expect(container.querySelector('.ui-icon-button__spinner')).toBeNull();
+    expect(container.querySelector('.ui-button__spinner')).toBeNull();
     await user.keyboard('{Enter}');
     expect(onSubmit).toHaveBeenCalledWith('Then the dessert');
     expect(input()).toHaveValue('');

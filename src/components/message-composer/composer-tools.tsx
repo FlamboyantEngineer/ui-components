@@ -2,7 +2,7 @@ import { FileTrigger } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import { useFocusHandback } from '../../utils/use-focus-handback.js';
 import { EmojiPickerTrigger } from '../emoji-picker/emoji-picker.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 import { composerHooks as hooks } from './composer-hooks.js';
 import type { MessageComposerSubmitShortcut } from './message-composer.js';
 
@@ -36,7 +36,7 @@ export function AttachButton({
         if (files.length > 0) onAttach(files);
       }}
     >
-      <IconButton
+      <Button
         className={hooks.slotClass('attach')}
         icon="attach"
         label={strings.attachFiles}
@@ -71,7 +71,7 @@ export function EmojiButton({
         handback.request();
       }}
     >
-      <IconButton
+      <Button
         ref={handback.ref}
         className={hooks.slotClass('emoji')}
         icon="emoji"
@@ -93,7 +93,7 @@ export function CancelButton({
 }) {
   const strings = useUiStrings();
   return (
-    <IconButton
+    <Button
       className={hooks.slotClass('cancel')}
       icon="close"
       label={strings.cancel}
@@ -111,7 +111,7 @@ export function ComposerAction(props: ComposerActionProps) {
   const strings = useUiStrings();
   const isStop = mode === 'stop';
   return (
-    <IconButton
+    <Button
       className={hooks.slotClass('action')}
       icon={mode}
       label={strings[mode]}

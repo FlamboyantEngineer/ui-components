@@ -6,7 +6,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { normalizeCount } from '../../utils/count.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { Badge } from '../badge/badge.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 import { Tooltip } from '../tooltip/tooltip.js';
 import { dockPanelHooks as hooks } from './dock-panel-hooks.js';
 import type { DockPanelPaneProps } from './dock-panel-pane.js';
@@ -88,7 +88,7 @@ function DockPanelLauncher({
   return (
     <span {...hooks.slot('launcher', { selected: isSelected })}>
       <Tooltip content={pane.label} relationship="label" placement={placement}>
-        <IconButton
+        <Button
           ref={buttonRef}
           icon={pane.icon}
           label={pane.label}
@@ -156,7 +156,7 @@ export function DockPanelLaunchers({
           onPress={() => onLaunch(pane.id)}
         />
       ))}
-      <IconButton
+      <Button
         className={hooks.slotClass('toggle')}
         icon={resolveToggleGlyph(position, isOpen, isRtl)}
         label={toggleLabel}

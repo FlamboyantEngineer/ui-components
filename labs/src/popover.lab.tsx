@@ -147,12 +147,19 @@ mountLab(
   <>
     <LabSection
       title="Placements and arrow"
-      description="Each cell opens a popover on that side of its button, with or without an arrow. Escape, the close button or a press outside closes it and focus returns to the button."
+      description="Each cell opens a popover on that side of its button, with consistent spacing even when the browser reserves scrollbar space, with or without an arrow. Escape, the close button or a press outside closes it and focus returns to the button."
     >
       <StateMatrix
         axes={{ placement: placements, arrow: arrows }}
         render={({ placement, arrow }) => (
-          <div style={{ padding: 24 }}>
+          <div
+            style={{
+              paddingBlock: 24,
+              paddingInlineStart: 120,
+              paddingInlineEnd: 24,
+              minWidth: 120,
+            }}
+          >
             <Opener
               label={`Open ${placement}`}
               placement={placement}

@@ -20,7 +20,7 @@ Verification: `src/components/search-field/search-field.test.tsx`, `e2e/search-f
 
 ### UIC-SEARCH-FIELD-1.3 - Clear button
 
-While the box holds text and is editable, it shall show a clear button (`ui-search-field__clear`) after the input: an `IconButton` with the `close` glyph or, with `clearText`, a `Button` showing that text, named by `clearLabel` (the provider string `clearSearch` by default) either way. The button is reached by Tab after the input. Pressing it empties the query (`onChange` with `''`, then `onClear`) and puts focus back in the input. An empty, read-only or disabled box shows no clear button.
+While the box holds text and is editable, it shall show a clear button (`ui-search-field__clear`) after the input: an `Button` with the `close` glyph or, with `clearText`, a `Button` showing that text, named by `clearLabel` (the provider string `clearSearch` by default) either way. The button is reached by Tab after the input. Pressing it empties the query (`onChange` with `''`, then `onClear`) and puts focus back in the input. An empty, read-only or disabled box shows no clear button.
 
 Implementation: `src/components/search-field/search-field.tsx`, `src/core/strings.ts`
 Verification: `src/components/search-field/search-field.test.tsx`, `e2e/search-field.spec.ts`
@@ -72,7 +72,7 @@ Verification: `src/components/search-field/search-field.test.tsx`, `e2e/search-f
 | `ui-search-field__glyph`       | slot      |                                 | The search glyph (also `ui-glyph`).                                 |
 | `ui-search-field__input`       | slot      |                                 | The `<input type="search">`.                                        |
 | `ui-search-field__spinner`     | slot      |                                 | The busy indicator.                                                 |
-| `ui-search-field__clear`       | slot      |                                 | The clear button (also `ui-icon-button`, or `ui-button`).           |
+| `ui-search-field__clear`       | slot      |                                 | The clear button (also `ui-button`, or `ui-button`).                |
 | `ui-search-field__description` | slot      |                                 | The description of the `label-control` layout.                      |
 | `ui-search-field__error`       | slot      |                                 | The error message of the `label-control` layout.                    |
 | `data-size`                    | attribute | `xs`, `sm`, `md`, `lg`          | On the root: box size.                                              |

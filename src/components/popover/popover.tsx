@@ -1,4 +1,4 @@
-import { useContext, type CSSProperties, type ReactNode, type RefObject } from 'react';
+import { useContext, useState, type CSSProperties, type ReactNode, type RefObject } from 'react';
 import {
   Dialog,
   DialogTrigger,
@@ -16,8 +16,9 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 import { useLayerZIndex } from '../portal/portal.js';
+import { usePopoverGutter } from './use-popover-gutter.js';
 
 /** A pressable trigger and the `Popover` it opens. */
 export interface PopoverTriggerProps extends OpenStateProps {
@@ -91,7 +92,7 @@ function PopoverHeader({ title, showCloseButton, onClose }: PopoverHeaderProps) 
         </Heading>
       )}
       {showCloseButton ? (
-        <IconButton
+        <Button
           icon="close"
           label={strings.close}
           size="sm"
@@ -114,8 +115,18 @@ export function PopoverTrigger({ children, ...openState }: PopoverTriggerProps) 
  */
 export function PopoverPanel({ arrowClassName, children, style, ...rest }: PopoverPanelProps) {
   const zIndex = useLayerZIndex('dropdown');
+  const [panel, setPanel] = useState<HTMLElement | null>(null);
+  const gutter = usePopoverGutter(panel);
   return (
-    <AriaPopover {...rest} style={{ ...style, zIndex }}>
+    <AriaPopover
+      {...rest}
+      style={({ placement }) => ({
+        ...style,
+        zIndex,
+        translate: placement === 'left' && gutter > 0 ? `${gutter}px 0` : style?.translate,
+      })}
+      ref={setPanel}
+    >
       {arrowClassName ? <OverlayArrow className={arrowClassName} /> : null}
       {children}
     </AriaPopover>
@@ -132,6 +143,7 @@ export function Popover({
   title,
   showCloseButton = false,
   showArrow = false,
+  offset,
   children,
   id,
   'aria-label': ariaLabel,
@@ -145,6 +157,7 @@ export function Popover({
   return (
     <PopoverPanel
       {...rest}
+      offset={offset ?? (showArrow ? 7 : 8)}
       {...hooks.root({ className, props: rest })}
       arrowClassName={showArrow ? hooks.slotClass('arrow') : undefined}
     >

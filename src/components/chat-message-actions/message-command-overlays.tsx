@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useUiStrings } from '../../core/provider.js';
-import { ConfirmDialog } from '../confirm-dialog/confirm-dialog.js';
 import { EmojiPicker } from '../emoji-picker/emoji-picker.js';
+import { Modal } from '../modal/modal.js';
 import { Popover, PopoverPanel } from '../popover/popover.js';
 import { FeedbackForm } from './feedback-form.js';
 import { actionHooks } from './message-actions-bar.js';
@@ -69,14 +69,21 @@ export function MessageCommandOverlays({ state }: { state: MessageCommands }) {
         </PopoverPanel>
       ) : null}
       {commands.onDelete ? (
-        <ConfirmDialog
+        <Modal
+          role="alertdialog"
           isOpen={open?.overlay === 'delete'}
           onOpenChange={close}
           tone="danger"
           title={strings.deleteMessage}
-          message={strings.deleteMessageDescription}
-          confirmLabel={strings.delete}
-          onConfirm={commands.onDelete}
+          description={strings.deleteMessageDescription}
+          cancelAction={{ autoFocus: true }}
+          primaryAction={{
+            label: strings.delete,
+            onPress: async (closeDialog) => {
+              await commands.onDelete?.();
+              closeDialog();
+            },
+          }}
         />
       ) : null}
     </>

@@ -25,7 +25,7 @@ describe('SelectField clear button', () => {
       />,
     );
     const clear = screen.getByRole('button', { name: 'Clear Fruit' });
-    expect(clear).toHaveClass('ui-select-field__clear', 'ui-icon-button');
+    expect(clear).toHaveClass('ui-select-field__clear', 'ui-button');
     expect(clear.closest('.ui-select-field__frame')).not.toBeNull();
     expect(clear.closest('.ui-select-field__trigger')).toBeNull();
     expectHooksMatchSpec(container, 'SELECT-FIELD', { slots: ['clear'] });

@@ -4,7 +4,6 @@ import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Avatar, splitAvatarIdentity } from '../avatar/avatar.js';
 import { AvatarGroup, type AvatarGroupPerson } from '../avatar-group/avatar-group.js';
 import type { ChatParticipant } from '../chat-parts/chat-parts.js';
-import { PresenceAvatar } from '../presence-avatar/presence-avatar.js';
 import { useHeadingLevel } from '../section-header/section-header.js';
 import { chatHeaderHooks as hooks } from './chat-hooks.js';
 import { toMessageAuthor } from './chat-model.js';
@@ -49,13 +48,13 @@ function HeaderAvatar({ participants }: { participants: readonly ChatParticipant
     );
   }
   const [identity, { status, statusLabel }] = splitAvatarIdentity(toMessageAuthor(only));
-  if (!status?.trim()) return <Avatar {...identity} size="sm" decorative className={className} />;
   return (
-    <PresenceAvatar
+    <Avatar
       {...identity}
       status={status}
       statusLabel={statusLabel}
       size="sm"
+      decorative={!status?.trim()}
       className={className}
     />
   );

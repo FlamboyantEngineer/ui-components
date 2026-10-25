@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { ConfirmDialog } from '../confirm-dialog/confirm-dialog.js';
 import { Modal } from '../modal/modal.js';
+
 import { TextField } from '../text-field/text-field.js';
 
 /** The version a dialog is open for: its key, the name it shows and its current name. */
@@ -33,15 +33,22 @@ export function RestoreVersionDialog({
 }: DialogProps<(key: Key) => void | Promise<unknown>>) {
   const strings = useUiStrings();
   return (
-    <ConfirmDialog
+    <Modal
+      role="alertdialog"
       isOpen={isOpen}
       onOpenChange={(open) => {
         if (!open) onClose();
       }}
       title={strings.restoreVersionTitle(target?.title ?? '')}
-      message={strings.restoreVersionMessage}
-      confirmLabel={strings.restore}
-      onConfirm={() => (target ? onAction(target.key) : undefined)}
+      description={strings.restoreVersionMessage}
+      cancelAction={{ autoFocus: true }}
+      primaryAction={{
+        label: strings.restore,
+        onPress: async (close) => {
+          if (target) await onAction(target.key);
+          close();
+        },
+      }}
     />
   );
 }

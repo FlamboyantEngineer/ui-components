@@ -14,17 +14,6 @@ export interface PathProps extends Omit<
 > {
   /** A `/`-separated string (rooted when it starts with `/`) or a list of labels kept whole. */
   path: string | readonly string[];
-  /**
-   * @deprecated A path adds no control; this draws the tooltip's "Show more" button and a later
-   * major release removes it.
-   */
-  expandable?: boolean | undefined;
-  /** @deprecated See `expandable`. */
-  isExpanded?: boolean | undefined;
-  /** @deprecated See `expandable`. */
-  defaultExpanded?: boolean | undefined;
-  /** @deprecated See `expandable`. */
-  onExpandedChange?: ((isExpanded: boolean) => void) | undefined;
 }
 
 const hooks = createHooks('path', ['text']);
@@ -39,7 +28,7 @@ export function Path({ path, className, ...rest }: PathProps) {
       ? formatPath(path, { rooted: path.trimStart().startsWith('/') })
       : formatPath(path);
   return (
-    <TruncationTooltip {...rest} {...hooks.root({ className, props: rest })}>
+    <TruncationTooltip {...rest} expandable={false} {...hooks.root({ className, props: rest })}>
       <bdi {...hooks.slot('text')} dir="ltr">
         {text}
       </bdi>

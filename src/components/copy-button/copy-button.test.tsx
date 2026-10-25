@@ -20,7 +20,7 @@ describe('CopyButton', () => {
     const button = screen.getByRole('button', { name: 'Copy' });
     const root = container.firstElementChild as HTMLElement;
     expect(root).toHaveClass('ui-copy-button');
-    expect(button).toHaveClass('ui-copy-button__button', 'ui-icon-button');
+    expect(button).toHaveClass('ui-copy-button__button', 'ui-button');
     expect(button.querySelector('[data-glyph]')).toHaveAttribute('data-glyph', 'copy');
     expect(screen.getByRole('status')).toBeEmptyDOMElement();
 

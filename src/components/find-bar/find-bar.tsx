@@ -7,7 +7,7 @@ import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { Button } from '../button/button.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
-import { IconButton } from '../icon-button/icon-button.js';
+
 import { SearchField } from '../search-field/search-field.js';
 
 /** A way of matching the reader can turn on or off, such as matching case or whole words. */
@@ -239,7 +239,7 @@ function FindBarFind({
       <span {...hooks.slot('status')} role="status">
         {describeStatus({ matchCount, currentIndex, isPending }, strings)}
       </span>
-      <IconButton
+      <Button
         className={hooks.slotClass('previous')}
         icon="arrow-up"
         label={strings.previousMatch}
@@ -247,7 +247,7 @@ function FindBarFind({
         isDisabled={!hasMatches}
         onPress={onPrevious}
       />
-      <IconButton
+      <Button
         className={hooks.slotClass('next')}
         icon="arrow-down"
         label={strings.nextMatch}
@@ -316,7 +316,7 @@ export function FindBar({
       {options && options.length > 0 ? <FindBarOptions {...selection} options={options} /> : null}
       {onReplace || onReplaceAll ? <FindBarReplace {...replace} hasMatches={hasMatches} /> : null}
       {onClose ? (
-        <IconButton
+        <Button
           className={hooks.slotClass('close')}
           icon="close"
           label={strings.close}

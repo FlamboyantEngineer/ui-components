@@ -1,0 +1,58 @@
+import type { ReactNode } from 'react';
+import { Button as AriaButton } from '../../primitives/index.js';
+import { createHooks } from '../../core/hooks.js';
+import { useUiStrings } from '../../core/provider.js';
+import type { KeyedValue } from '../../utils/stable-keys.js';
+import { splitAvatarIdentity } from '../avatar/avatar.js';
+import { Popover, PopoverTrigger } from '../popover/popover.js';
+import { UserIdentity } from '../user-identity/user-identity.js';
+import type { AvatarGroupProps, AvatarGroupPerson } from './avatar-group.js';
+
+const hooks = createHooks('avatar-group', ['trigger', 'popover', 'list', 'item']);
+
+function AvatarGroupList({
+  people,
+  colorCount,
+}: Pick<AvatarGroupProps, 'colorCount'> & { people: Array<KeyedValue<AvatarGroupPerson>> }) {
+  return (
+    <ul {...hooks.slot('list')}>
+      {people.map(({ key, value }) => {
+        const [identity, { description }] = splitAvatarIdentity(value);
+        return (
+          <li key={key} {...hooks.slot('item')}>
+            <UserIdentity
+              {...identity}
+              colorCount={colorCount}
+              size="sm"
+              description={description}
+            />
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+/** Opens the full list from the non-interactive stack's content. */
+export function AvatarGroupListTrigger({
+  people,
+  colorCount,
+  children,
+}: Pick<AvatarGroupProps, 'colorCount'> & {
+  people: Array<KeyedValue<AvatarGroupPerson>>;
+  children: ReactNode;
+}) {
+  const strings = useUiStrings();
+  return (
+    <PopoverTrigger>
+      <AriaButton {...hooks.slot('trigger')}>{children}</AriaButton>
+      <Popover
+        title={strings.peopleCount(people.length)}
+        placement="bottom start"
+        className={hooks.slotClass('popover')}
+      >
+        <AvatarGroupList people={people} colorCount={colorCount} />
+      </Popover>
+    </PopoverTrigger>
+  );
+}

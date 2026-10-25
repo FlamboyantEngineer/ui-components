@@ -2,7 +2,7 @@ import type { GlyphName } from '../../core/glyphs.js';
 import type { BaseProps } from '../../core/props.js';
 import type { UiStrings } from '../../core/strings.js';
 import type { IconSource } from '../icon/icon.js';
-import type { IconButtonProps } from '../icon-button/icon-button.js';
+import type { ButtonProps } from '../button/button.js';
 import type { MenuEntry, MenuProps } from '../menu/menu.js';
 
 type StringKey = {
@@ -39,10 +39,7 @@ export type ActionVerb = keyof typeof actionVerbs;
 interface ActionRowActionBase
   extends
     Omit<BaseProps, 'className'>,
-    Pick<
-      IconButtonProps,
-      'isDisabled' | 'isPending' | 'aria-controls' | 'aria-haspopup' | 'onPress'
-    > {
+    Pick<ButtonProps, 'isDisabled' | 'isPending' | 'aria-controls' | 'aria-haspopup' | 'onPress'> {
   /** Tooltip text when it says more than the label (a shortcut, why the action is disabled). */
   tooltip?: string | undefined;
   /** A disclosure's state, published as `aria-expanded`. */
@@ -66,8 +63,9 @@ export interface ActionRowVerbAction extends ActionRowActionBase {
 
 /** An action of the caller's own, drawn before the standard verbs in the order given. */
 export interface ActionRowCustomAction
-  extends ActionRowActionBase, Pick<IconButtonProps, 'icon' | 'label' | 'isSelected' | 'ref'> {
+  extends ActionRowActionBase, Pick<ButtonProps, 'icon' | 'label' | 'isSelected' | 'ref'> {
   verb: 'custom';
+  label: string;
 }
 
 export type ActionRowAction = ActionRowVerbAction | ActionRowCustomAction;

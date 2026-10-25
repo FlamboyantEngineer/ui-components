@@ -4,7 +4,7 @@ import { ChatAttachmentList, type ChatAttachmentData } from '../chat-attachment/
 import type { ChatQueuedMessage } from '../chat-controller/chat-controller.js';
 import type { ChatMessageData, ChatTextToken } from '../chat-parts/chat-parts.js';
 import { ChatQuote, type ChatQuoteData } from '../chat-transcript/chat-transcript.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 import {
   RichMessageComposer,
   type RichMessageComposerProps,
@@ -121,7 +121,7 @@ function ComposerBanner({ id, banner }: { id: string; banner: BannerContent }) {
         {banner.quote ? <ChatQuote {...banner.quote} /> : null}
       </div>
       {banner.onCancel ? (
-        <IconButton
+        <Button
           icon="close"
           label={strings.chatCancelReply}
           size="sm"

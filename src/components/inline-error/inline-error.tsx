@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps, Tone } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { ActionButton } from '../action-button/action-button.js';
+import { Button } from '../button/button.js';
 import { getToneGlyph } from '../banner/banner.js';
 import { Icon } from '../icon/icon.js';
 
@@ -66,7 +66,7 @@ export function InlineError({
       )}
       <div {...hooks.slot('message')}>{children}</div>
       {onRetry ? (
-        <ActionButton
+        <Button
           variant="secondary"
           size="sm"
           className={hooks.slotClass('retry')}
@@ -75,7 +75,7 @@ export function InlineError({
           onError={onRetryError}
         >
           {retryLabel ?? strings.retry}
-        </ActionButton>
+        </Button>
       ) : null}
     </div>
   );

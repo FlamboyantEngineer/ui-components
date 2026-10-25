@@ -45,7 +45,7 @@ test.describe('Message Composer lab', () => {
       'data-pending',
       'true',
     );
-    await expect(cell(page, 'pending').locator('.ui-icon-button__spinner')).toBeVisible();
+    await expect(cell(page, 'pending').locator('.ui-button__spinner')).toBeVisible();
     await expect(cell(page, 'stoppable').getByRole('button', { name: 'Stop' })).toBeEnabled();
     await expect(cell(page, 'disabled').getByRole('textbox')).toBeDisabled();
     await expect(cell(page, 'editing').getByRole('button', { name: 'Save' })).toBeEnabled();

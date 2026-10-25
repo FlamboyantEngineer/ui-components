@@ -2,7 +2,7 @@ import { useId, useRef } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 import { diagramHooks as hooks } from './diagram-hooks.js';
 import type { DiagramNode } from './diagram-model.js';
 import type { DiagramLink } from './diagram-links.js';
@@ -55,7 +55,7 @@ function OutlineLinks({ direction, node, links, controller, onFollow }: OutlineL
               {formatDiagramLink(link)}
             </button>
             {isRemovable ? (
-              <IconButton
+              <Button
                 className={hooks.slotClass('outline-remove')}
                 icon="close"
                 label={strings.diagramRemoveConnection(node.label, link.other.label)}

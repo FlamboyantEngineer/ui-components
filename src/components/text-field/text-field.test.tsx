@@ -282,7 +282,7 @@ describe('TextField', () => {
     const reveal = screen.getByRole('button', { name: 'Show Password' });
     expect(input).toHaveAttribute('type', 'password');
     expect(reveal).toHaveAttribute('aria-pressed', 'false');
-    expect(reveal).toHaveClass('ui-text-field__reveal', 'ui-icon-button');
+    expect(reveal).toHaveClass('ui-text-field__reveal', 'ui-button');
     expect(reveal.querySelector('[data-glyph="eye"]')).not.toBeNull();
     await user.click(input);
     await user.click(reveal);

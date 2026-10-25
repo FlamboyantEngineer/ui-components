@@ -6,7 +6,9 @@ test.describe('Avatar lab', () => {
     lab,
   }) => {
     await lab.open('avatar');
-    const cells = page.locator('table[data-lab-matrix="content variant size"] td[data-lab-cell]');
+    const cells = page
+      .locator('[data-lab-family="avatar-main"]')
+      .locator('table[data-lab-matrix="content variant size"] td[data-lab-cell]');
     expect(await cells.count()).toBe(3 * 2 * 5);
     for (const [size, pixels] of [
       ['xs', 20],
@@ -16,26 +18,30 @@ test.describe('Avatar lab', () => {
       ['fill', 48],
     ] as const) {
       for (const content of ['picture', 'initials', 'group']) {
-        const cell = page.locator(
-          `[data-lab-cell="content=${content} variant=filled size=${size}"]`,
-        );
+        const cell = page
+          .locator('[data-lab-family="avatar-main"]')
+          .locator(`[data-lab-cell="content=${content} variant=filled size=${size}"]`);
         const box = await cell.locator('.ui-avatar').boundingBox();
         expect(box?.width).toBe(pixels);
         expect(box?.height).toBe(pixels);
       }
     }
-    const picture = page.locator('[data-lab-cell="content=picture variant=filled size=md"] img');
+    const picture = page
+      .locator('[data-lab-family="avatar-main"]')
+      .locator('[data-lab-cell="content=picture variant=filled size=md"] img');
     await expect(picture).toHaveClass('ui-avatar__image');
     expect(await picture.evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(
       0,
     );
     await expect(
-      page.locator(
-        '[data-lab-cell="content=initials variant=filled size=md"] .ui-avatar__initials',
-      ),
+      page
+        .locator('[data-lab-family="avatar-main"]')
+        .locator('[data-lab-cell="content=initials variant=filled size=md"] .ui-avatar__initials'),
     ).toHaveText('MS');
     await expect(
-      page.locator('[data-lab-cell="content=group variant=filled size=md"] .ui-avatar__glyph'),
+      page
+        .locator('[data-lab-family="avatar-main"]')
+        .locator('[data-lab-cell="content=group variant=filled size=md"] .ui-avatar__glyph'),
     ).toBeVisible();
   });
 
@@ -46,20 +52,25 @@ test.describe('Avatar lab', () => {
     await lab.open('avatar');
     const fills = new Set<string>();
     for (let slot = 0; slot < 8; slot += 1) {
-      const filled = page.locator(`[data-lab-cell="variant=filled slot=${slot}"] .ui-avatar`);
+      const filled = page
+        .locator('[data-lab-family="avatar-main"]')
+        .locator(`[data-lab-cell="variant=filled slot=${slot}"] .ui-avatar`);
       await expect(filled).toHaveAttribute('data-color', String(slot));
       const fill = await filled
         .locator('.ui-avatar__initials')
         .evaluate((node) => getComputedStyle(node).backgroundColor);
       fills.add(fill);
       const ring = await page
+        .locator('[data-lab-family="avatar-main"]')
         .locator(`[data-lab-cell="variant=outlined slot=${slot}"] .ui-avatar`)
         .evaluate((node) => getComputedStyle(node).borderTopColor);
       expect(ring).toBe(fill);
     }
     expect(fills.size).toBe(8);
     await expect(
-      page.locator('#lab-root .ui-avatar[style], #lab-root .ui-avatar [style]'),
+      page.locator(
+        '[data-lab-family="avatar-main"] .ui-avatar[style], [data-lab-family="avatar-main"] .ui-avatar [style]',
+      ),
     ).toHaveCount(0);
   });
 
@@ -68,10 +79,14 @@ test.describe('Avatar lab', () => {
     lab,
   }) => {
     await lab.open('avatar');
-    const avatar = page.locator('[data-lab-avatar="fallback"]');
+    const avatar = page
+      .locator('[data-lab-family="avatar-main"]')
+      .locator('[data-lab-avatar="fallback"]');
     await expect(avatar.locator('img')).toBeVisible();
     await page.getByRole('button', { name: 'Break the picture' }).click();
-    await expect(page.locator('[data-lab-output="picture"]')).toHaveText('broken');
+    await expect(
+      page.locator('[data-lab-family="avatar-main"]').locator('[data-lab-output="picture"]'),
+    ).toHaveText('broken');
     await expect(avatar.locator('.ui-avatar__initials')).toHaveText('JB');
     await expect(avatar.locator('img')).toHaveCount(0);
     await page.getByRole('button', { name: 'Restore the picture' }).click();
@@ -84,15 +99,24 @@ test.describe('Avatar lab', () => {
     lab,
   }) => {
     await lab.open('avatar');
-    const derived = page.locator('[data-lab-cell="name=jon de berg source=derived"]');
+    const derived = page
+      .locator('[data-lab-family="avatar-main"]')
+      .locator('[data-lab-cell="name=jon de berg source=derived"]');
     await expect(derived.getByRole('img', { name: 'jon de berg' })).toHaveText('JB');
     await expect(
-      page.locator('[data-lab-cell="name=(blank) source=derived"]').getByRole('img'),
+      page
+        .locator('[data-lab-family="avatar-main"]')
+        .locator('[data-lab-cell="name=(blank) source=derived"]')
+        .getByRole('img'),
     ).toHaveAccessibleName('Unnamed');
     await expect(
-      page.locator('[data-lab-cell="name=Plato source=explicit initials"] .ui-avatar'),
+      page
+        .locator('[data-lab-family="avatar-main"]')
+        .locator('[data-lab-cell="name=Plato source=explicit initials"] .ui-avatar'),
     ).toHaveText('AI');
-    const decorative = page.locator('[data-lab-cell="name=Plato source=decorative"] .ui-avatar');
+    const decorative = page
+      .locator('[data-lab-family="avatar-main"]')
+      .locator('[data-lab-cell="name=Plato source=decorative"] .ui-avatar');
     await expect(decorative).toHaveAttribute('aria-hidden', 'true');
     await expect(decorative).not.toHaveAttribute('role');
     await lab.expectAccessible();
@@ -104,6 +128,7 @@ test.describe('Avatar lab', () => {
     await lab.open('avatar');
     const radius = async (shape: string, content: string) =>
       page
+        .locator('[data-lab-family="avatar-main"]')
         .locator(`[data-lab-cell="shape=${shape} content=${content} variant=filled"] .ui-avatar`)
         .evaluate((node) => getComputedStyle(node).borderTopLeftRadius);
     for (const content of ['picture', 'initials', 'group']) {
@@ -112,7 +137,9 @@ test.describe('Avatar lab', () => {
       expect(await radius('square', content)).toBe('0px');
     }
     await expect(
-      page.locator('[data-lab-cell="shape=square content=picture variant=filled"] .ui-avatar'),
+      page
+        .locator('[data-lab-family="avatar-main"]')
+        .locator('[data-lab-cell="shape=square content=picture variant=filled"] .ui-avatar'),
     ).toHaveAttribute('data-shape', 'square');
   });
 
@@ -121,8 +148,12 @@ test.describe('Avatar lab', () => {
     lab,
   }) => {
     await lab.open('avatar');
-    const statuses = page.locator('[data-lab-output="status"]');
-    const avatar = page.locator('[data-lab-avatar="status"]');
+    const statuses = page
+      .locator('[data-lab-family="avatar-main"]')
+      .locator('[data-lab-output="status"]');
+    const avatar = page
+      .locator('[data-lab-family="avatar-main"]')
+      .locator('[data-lab-avatar="status"]');
     await expect(statuses).toHaveText('idle');
     await page.getByRole('button', { name: 'Load a working picture' }).click();
     await expect(statuses).toHaveText('idle, loading, loaded');
@@ -134,7 +165,9 @@ test.describe('Avatar lab', () => {
     await page.getByRole('button', { name: 'Remove the picture' }).click();
     await expect(statuses).toHaveText('idle, loading, loaded, loading, error, idle');
 
-    const picture = page.locator('[data-lab-avatar="attributes"] img');
+    const picture = page
+      .locator('[data-lab-family="avatar-main"]')
+      .locator('[data-lab-avatar="attributes"] img');
     await expect(picture).toHaveAttribute('srcset', /1x, data:image\/svg\+xml,.* 2x$/);
     await expect(picture).toHaveAttribute('referrerpolicy', 'no-referrer');
     await expect(picture).toHaveAttribute('crossorigin', 'anonymous');
@@ -147,6 +180,8 @@ test.describe('Avatar lab', () => {
 
   test('UIC-AVATAR-2.1 renders unstyled without errors', async ({ page, lab }) => {
     await lab.open('avatar', { stylesheet: 'none' });
-    await expect(page.locator('.ui-avatar').first()).toBeVisible();
+    await expect(
+      page.locator('[data-lab-family="avatar-main"]').locator('.ui-avatar').first(),
+    ).toBeVisible();
   });
 });

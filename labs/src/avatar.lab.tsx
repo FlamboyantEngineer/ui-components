@@ -1,3 +1,4 @@
+import { AvatarPresenceCases } from './avatar-presence-cases.js';
 import { useState, type ReactNode } from 'react';
 import {
   Avatar,
@@ -83,101 +84,104 @@ function LoadingStatus() {
 
 mountLab(
   <>
-    <LabSection
-      title="Content, variant and size"
-      description="A picture, initials and a group glyph in each variant and size. The fill size takes a 48px box."
-    >
-      <StateMatrix
-        axes={{ content: ['picture', 'initials', 'group'], variant: variants, size: sizes }}
-        render={({ content, variant, size }) => (
-          <Box size={size}>
+    <div data-lab-family="avatar-main">
+      <LabSection
+        title="Content, variant and size"
+        description="A picture, initials and a group glyph in each variant and size. The fill size takes a 48px box."
+      >
+        <StateMatrix
+          axes={{ content: ['picture', 'initials', 'group'], variant: variants, size: sizes }}
+          render={({ content, variant, size }) => (
+            <Box size={size}>
+              <Avatar
+                name={content === 'group' ? 'Design team' : 'Maria Santos'}
+                kind={content === 'group' ? 'group' : 'person'}
+                src={content === 'picture' ? samplePicture : undefined}
+                variant={variant}
+                size={size}
+              />
+            </Box>
+          )}
+        />
+      </LabSection>
+      <LabSection
+        title="Colour slots"
+        description="Each of the eight slots the reference sheet defines, set with an explicit colour index."
+      >
+        <StateMatrix
+          axes={{ variant: variants, slot: slots }}
+          render={({ variant, slot }) => (
+            <Avatar name="Lena Ortiz" colorIndex={Number(slot)} variant={variant} />
+          )}
+        />
+      </LabSection>
+      <LabSection
+        title="Initials and naming"
+        description="Initials derived from names, explicit initials, a blank name, and a decorative avatar."
+      >
+        <StateMatrix
+          axes={{
+            name: ['Maria Santos', 'jon de berg', 'Plato', 'Émilie Durand', '👋🏽 Team', '(blank)'],
+            source: ['derived', 'explicit initials', 'decorative'],
+          }}
+          render={({ name, source }) => (
             <Avatar
-              name={content === 'group' ? 'Design team' : 'Maria Santos'}
+              name={name === '(blank)' ? '' : name}
+              initials={source === 'explicit initials' ? 'AI' : undefined}
+              decorative={source === 'decorative'}
+            />
+          )}
+        />
+      </LabSection>
+      <LabSection
+        title="Shapes"
+        description="Circles for people; rounded and square corners for bots, organisations and groups."
+      >
+        <StateMatrix
+          axes={{ shape: shapes, content: ['picture', 'initials', 'group'], variant: variants }}
+          render={({ shape, content, variant }) => (
+            <Avatar
+              name={content === 'group' ? 'Design team' : 'Build bot'}
               kind={content === 'group' ? 'group' : 'person'}
               src={content === 'picture' ? samplePicture : undefined}
+              shape={shape}
               variant={variant}
-              size={size}
+              size="lg"
             />
-          </Box>
-        )}
-      />
-    </LabSection>
-    <LabSection
-      title="Colour slots"
-      description="Each of the eight slots the reference sheet defines, set with an explicit colour index."
-    >
-      <StateMatrix
-        axes={{ variant: variants, slot: slots }}
-        render={({ variant, slot }) => (
-          <Avatar name="Lena Ortiz" colorIndex={Number(slot)} variant={variant} />
-        )}
-      />
-    </LabSection>
-    <LabSection
-      title="Initials and naming"
-      description="Initials derived from names, explicit initials, a blank name, and a decorative avatar."
-    >
-      <StateMatrix
-        axes={{
-          name: ['Maria Santos', 'jon de berg', 'Plato', 'Émilie Durand', '👋🏽 Team', '(blank)'],
-          source: ['derived', 'explicit initials', 'decorative'],
-        }}
-        render={({ name, source }) => (
-          <Avatar
-            name={name === '(blank)' ? '' : name}
-            initials={source === 'explicit initials' ? 'AI' : undefined}
-            decorative={source === 'decorative'}
-          />
-        )}
-      />
-    </LabSection>
-    <LabSection
-      title="Shapes"
-      description="Circles for people; rounded and square corners for bots, organisations and groups."
-    >
-      <StateMatrix
-        axes={{ shape: shapes, content: ['picture', 'initials', 'group'], variant: variants }}
-        render={({ shape, content, variant }) => (
-          <Avatar
-            name={content === 'group' ? 'Design team' : 'Build bot'}
-            kind={content === 'group' ? 'group' : 'person'}
-            src={content === 'picture' ? samplePicture : undefined}
-            shape={shape}
-            variant={variant}
-            size="lg"
-          />
-        )}
-      />
-    </LabSection>
-    <LabSection
-      title="Picture attributes"
-      description="A picture with a 2x source, lazy loading, no referrer and an anonymous cross-origin request."
-    >
-      <Avatar
-        name="Jon Berg"
-        size="lg"
-        src={samplePicture}
-        imageProps={{
-          srcSet: `${samplePicture} 1x, ${otherPicture} 2x`,
-          sizes: '40px',
-          loading: 'lazy',
-          referrerPolicy: 'no-referrer',
-          crossOrigin: 'anonymous',
-        }}
-        data-lab-avatar="attributes"
-      />
-    </LabSection>
-    <LabSection
-      title="Loading status"
-      description="Each status the avatar reports, in order: idle without a picture, loading, then loaded or error."
-    >
-      <LoadingStatus />
-    </LabSection>
-    <LabSection
-      title="Picture fallback"
-      description="Break the picture: the initials replace it. Restore it: the new address is tried again."
-    >
-      <PictureFallback />
-    </LabSection>
+          )}
+        />
+      </LabSection>
+      <LabSection
+        title="Picture attributes"
+        description="A picture with a 2x source, lazy loading, no referrer and an anonymous cross-origin request."
+      >
+        <Avatar
+          name="Jon Berg"
+          size="lg"
+          src={samplePicture}
+          imageProps={{
+            srcSet: `${samplePicture} 1x, ${otherPicture} 2x`,
+            sizes: '40px',
+            loading: 'lazy',
+            referrerPolicy: 'no-referrer',
+            crossOrigin: 'anonymous',
+          }}
+          data-lab-avatar="attributes"
+        />
+      </LabSection>
+      <LabSection
+        title="Loading status"
+        description="Each status the avatar reports, in order: idle without a picture, loading, then loaded or error."
+      >
+        <LoadingStatus />
+      </LabSection>
+      <LabSection
+        title="Picture fallback"
+        description="Break the picture: the initials replace it. Restore it: the new address is tried again."
+      >
+        <PictureFallback />
+      </LabSection>
+    </div>
+    <AvatarPresenceCases />
   </>,
 );

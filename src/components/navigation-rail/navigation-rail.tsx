@@ -5,7 +5,7 @@ import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { clamp } from '../../utils/clamp.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 import { ResizeHandle } from '../split-view/split-view.js';
 import {
   NavigationRailContext,
@@ -121,7 +121,7 @@ function RailToggle({ isCollapsed, bodyId, onPress }: RailToggleProps) {
   const label = strings.toggleNavigation(isCollapsed);
   const pointsLeft = isCollapsed === (direction === 'rtl');
   return (
-    <IconButton
+    <Button
       className={hooks.slotClass('toggle')}
       icon={pointsLeft ? 'chevron-double-left' : 'chevron-double-right'}
       label={label}

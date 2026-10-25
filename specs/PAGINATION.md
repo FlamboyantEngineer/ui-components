@@ -1,6 +1,6 @@
 # Pagination
 
-`Pagination` moves through a list shown one page at a time: previous and next buttons around one button per page, with gaps where a long run of pages is skipped. It is built on the library's `Button` and `IconButton` and holds no rows itself; [Table](TABLE.md#uic-table-10---pagination) draws one under a paginated grid.
+`Pagination` moves through a list shown one page at a time: previous and next buttons around one button per page, with gaps where a long run of pages is skipped. It is built on the library's `Button` and `Button` and holds no rows itself; [Table](TABLE.md#uic-table-10---pagination) draws one under a paginated grid.
 
 ## UIC-PAGINATION-1 - Pages
 
@@ -53,8 +53,8 @@ Verification: `src/components/pagination/pagination.test.tsx`
 | `ui-pagination`           | root  |        | The `<nav>` landmark.                                               |
 | `ui-pagination__list`     | slot  |        | The list (`<ul>`).                                                  |
 | `ui-pagination__item`     | slot  |        | One entry (`<li>`).                                                 |
-| `ui-pagination__previous` | slot  |        | The previous button (also `ui-icon-button`).                        |
-| `ui-pagination__next`     | slot  |        | The next button (also `ui-icon-button`).                            |
+| `ui-pagination__previous` | slot  |        | The previous button (also `ui-button`).                             |
+| `ui-pagination__next`     | slot  |        | The next button (also `ui-button`).                                 |
 | `ui-pagination__page`     | slot  |        | One page's button (also `ui-button`).                               |
 | `ui-pagination__ellipsis` | slot  |        | A gap standing for skipped pages.                                   |
 | `data-current`            | state | `true` | The current page's button.                                          |

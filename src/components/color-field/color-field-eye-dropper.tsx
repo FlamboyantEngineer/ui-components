@@ -2,7 +2,7 @@ import { useContext } from 'react';
 import { ColorPickerStateContext, parseColor } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 
 // The EyeDropper API (https://wicg.github.io/eyedropper-api/), which the DOM typings do not have yet.
 interface EyeDropperSample {
@@ -40,7 +40,7 @@ export function ColorFieldEyeDropper() {
     }
   };
   return (
-    <IconButton
+    <Button
       className={hooks.slotClass('eye-dropper')}
       icon="eye-dropper"
       label={strings.pickScreenColor}

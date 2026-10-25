@@ -53,7 +53,7 @@ describe('MessageComposer frame', () => {
     const onAttach = vi.fn();
     const { container } = render(<MessageComposer onAttach={onAttach} />);
     const attach = screen.getByRole('button', { name: 'Attach files' });
-    expect(attach).toHaveClass('ui-icon-button', 'ui-message-composer__attach');
+    expect(attach).toHaveClass('ui-button', 'ui-message-composer__attach');
     const chooser = container.querySelector<HTMLInputElement>('input[type="file"]');
     if (!chooser) throw new Error('no chooser');
     expect(chooser).toHaveAttribute('multiple');

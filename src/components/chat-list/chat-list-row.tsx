@@ -8,7 +8,6 @@ import { Avatar, type AvatarIdentity } from '../avatar/avatar.js';
 import { AvatarGroup } from '../avatar-group/avatar-group.js';
 import { Badge } from '../badge/badge.js';
 import { Icon } from '../icon/icon.js';
-import { PresenceAvatar } from '../presence-avatar/presence-avatar.js';
 import { RelativeTime } from '../relative-time/relative-time.js';
 import { TextMatch } from '../text-match/text-match.js';
 
@@ -84,7 +83,7 @@ function ConversationAvatar({ conversation }: { conversation: ChatConversation }
     return <AvatarGroup people={participants} size="sm" maxVisible={2} />;
   if (!first) return <Avatar name={conversation.title} size="md" decorative />;
   const { id: _id, presence, presenceLabel, ...identity } = first;
-  return <PresenceAvatar {...identity} status={presence} statusLabel={presenceLabel} size="md" />;
+  return <Avatar {...identity} status={presence} statusLabel={presenceLabel} size="md" />;
 }
 
 /**

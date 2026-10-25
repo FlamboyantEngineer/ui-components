@@ -1,11 +1,15 @@
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
 import { UiProvider } from '../../core/provider.js';
 import { createMemoryStorage } from '../../core/storage.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import { DashboardGrid, type DashboardGridItem } from './dashboard-grid.js';
+import {
+  DashboardGrid,
+  type DashboardGridItem,
+  type DashboardGridProps,
+} from './dashboard-grid.js';
 import { DashboardTile } from './dashboard-tile.js';
 
 const titles: Record<string, string> = { visitors: 'Visitors', sales: 'Sales', notes: 'Notes' };
@@ -307,11 +311,12 @@ describe('DashboardGrid', () => {
   });
 
   it('UIC-DASHBOARD-GRID-1.2 remembers an uncontrolled layout through the provider storage', async () => {
+    expectTypeOf<DashboardGridProps>().not.toHaveProperty('storageKey');
     const user = userEvent.setup();
     const storage = createMemoryStorage();
     const view = (
       <UiProvider storage={storage}>
-        <DashboardGrid aria-label="Saved" defaultLayout={layout} storageKey="overview" isEditing>
+        <DashboardGrid aria-label="Saved" defaultLayout={layout} persistKey="overview" isEditing>
           {(item) => <DashboardTile label={titles[item.id]!}>{item.id}</DashboardTile>}
         </DashboardGrid>
       </UiProvider>
@@ -326,25 +331,6 @@ describe('DashboardGrid', () => {
       w: 12,
       h: 1,
     });
-    unmount();
-    render(view);
-    expect(screen.getByRole('group', { name: 'Notes' }).style.gridRow).toBe('4 / span 1');
-  });
-
-  it('UIC-DASHBOARD-GRID-1.2 remembers an uncontrolled layout under a persist key', async () => {
-    const user = userEvent.setup();
-    const storage = createMemoryStorage();
-    const view = (
-      <UiProvider storage={storage}>
-        <DashboardGrid aria-label="Saved" defaultLayout={layout} persistKey="overview" isEditing>
-          {(item) => <DashboardTile label={titles[item.id]!}>{item.id}</DashboardTile>}
-        </DashboardGrid>
-      </UiProvider>
-    );
-    const { unmount } = render(view);
-    screen.getByRole('button', { name: 'Move Notes' }).focus();
-    await user.keyboard('{ArrowDown}');
-    expect(JSON.parse(storage.getItem('overview') ?? '[]')[2]).toMatchObject({ id: 'notes', y: 3 });
     unmount();
     render(view);
     expect(screen.getByRole('group', { name: 'Notes' }).style.gridRow).toBe('4 / span 1');

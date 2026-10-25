@@ -38,7 +38,7 @@ describe('ChatMessage name, presence and grouping', () => {
       </ChatMessage>,
     );
     const avatar = container.querySelector('.ui-chat-message__avatar');
-    expect(avatar).toHaveClass('ui-presence-avatar');
+    expect(avatar).toHaveClass('ui-avatar');
     expect(avatar).toHaveAttribute('data-status', 'away');
     expect(screen.getByRole('img', { name: 'Maria Santos, Away' })).toBeInTheDocument();
     expectHooksMatchSpec(container, 'CHAT-TRANSCRIPT', { slots: ['avatar'] });

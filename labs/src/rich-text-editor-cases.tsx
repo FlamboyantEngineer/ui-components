@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import { IconButton } from '../../src/components/icon-button/icon-button.js';
+
 import {
   BlockHandle,
   FormatToolbar,
@@ -183,7 +183,7 @@ function HighlightButton() {
   const controller = useRichTextController();
   const command = { type: 'toggle-mark', mark: 'highlight' } as const;
   return (
-    <IconButton
+    <Button
       icon="star"
       label="Highlight"
       size="sm"

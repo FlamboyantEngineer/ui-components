@@ -6,7 +6,6 @@ import { Glyph, useUiStrings } from '../../core/provider.js';
 import { describeRelativeTime } from '../../utils/relative-time.js';
 import { Avatar, splitAvatarIdentity } from '../avatar/avatar.js';
 import { Button } from '../button/button.js';
-import { PresenceAvatar } from '../presence-avatar/presence-avatar.js';
 import { RelativeTime } from '../relative-time/relative-time.js';
 import type { ChatMessageAuthor, ChatMessageDelivery, ChatMessageProps } from './chat-message.js';
 import { ChatQuote } from './chat-quote.js';
@@ -62,22 +61,19 @@ export function useAbsoluteTime(
   return describeRelativeTime(time, { now, locale, fallbackAfterDays: 7 })?.absolute;
 }
 
-/** The author's avatar, marked with their presence when they have one. */
+/** The author's avatar, marked and named with their presence when they have one. */
 export function ChatMessageAvatar({ author }: { author: ChatMessageAuthor }) {
   const [identity, { status, statusLabel }] = splitAvatarIdentity(author);
-  const className = hooks.slotClass('avatar');
-  if (status?.trim()) {
-    return (
-      <PresenceAvatar
-        {...identity}
-        status={status}
-        statusLabel={statusLabel}
-        size="sm"
-        className={className}
-      />
-    );
-  }
-  return <Avatar {...identity} size="sm" decorative className={className} />;
+  return (
+    <Avatar
+      {...identity}
+      status={status}
+      statusLabel={statusLabel}
+      size="sm"
+      decorative={!status?.trim()}
+      className={hooks.slotClass('avatar')}
+    />
+  );
 }
 
 /** The author's name (at the start of a group) and the time, when either is shown. */

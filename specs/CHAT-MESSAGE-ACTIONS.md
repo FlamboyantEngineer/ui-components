@@ -1,12 +1,12 @@
 # Chat Message Actions
 
-`ChatMessageActions` is the action bar for a [Chat Transcript](CHAT-TRANSCRIPT.md) message's `actions`: a toolbar of the commands whose callbacks the host gives (Copy, a good or bad rating, Reply, React, Edit and Delete), with the feedback details, the [Emoji Picker](EMOJI-PICKER.md) and the [Confirm Dialog](CONFIRM-DIALOG.md) those commands open. `ChatMessageActionsMenu` offers the same commands in a [Context Menu](CONTEXT-MENU.md) on a secondary click or long press on the message, and hands the message the bar, so both share one state. Which commands suit a message (ratings for an assistant's reply, Edit and Delete for the reader's own message) is the host's choice; the library shows what it is given.
+`ChatMessageActions` is the action bar for a [Chat Transcript](CHAT-TRANSCRIPT.md) message's `actions`: a toolbar of the commands whose callbacks the host gives (Copy, a good or bad rating, Reply, React, Edit and Delete), with the feedback details, the [Emoji Picker](EMOJI-PICKER.md) and the delete confirmation ([Modal](MODAL.md)) those commands open. `ChatMessageActionsMenu` offers the same commands in a [Context Menu](CONTEXT-MENU.md) on a secondary click or long press on the message, and hands the message the bar, so both share one state. Which commands suit a message (ratings for an assistant's reply, Edit and Delete for the reader's own message) is the host's choice; the library shows what it is given.
 
 ## UIC-CHAT-MESSAGE-ACTIONS-1 - Action bar
 
 ### UIC-CHAT-MESSAGE-ACTIONS-1.1 - Commands
 
-`ChatMessageActions` shall render a React Aria `toolbar` (`ui-chat-message-actions`) named by `aria-label`, `aria-labelledby` or else the provider string `messageActions`, holding small ghost [Icon Buttons](ICON-BUTTON.md) in this order, each only when its value or callback is given: Copy (`copyText`, `ui-chat-message-actions__copy`, named `copy`), Good response and Bad response (`onFeedback`, both `ui-chat-message-actions__rating`, named `goodResponse` and `badResponse`), Reply (`onReply`, `ui-chat-message-actions__reply`, named `reply`), React (`onReact`, `ui-chat-message-actions__react`, named `addReaction`), Edit (`onEdit`, `ui-chat-message-actions__edit`, named `edit`) and Delete (`onDelete`, `ui-chat-message-actions__delete`, named `delete`). Without any command it renders nothing.
+`ChatMessageActions` shall render a React Aria `toolbar` (`ui-chat-message-actions`) named by `aria-label`, `aria-labelledby` or else the provider string `messageActions`, holding small ghost icon-only [Buttons](BUTTON.md) in this order, each only when its value or callback is given: Copy (`copyText`, `ui-chat-message-actions__copy`, named `copy`), Good response and Bad response (`onFeedback`, both `ui-chat-message-actions__rating`, named `goodResponse` and `badResponse`), Reply (`onReply`, `ui-chat-message-actions__reply`, named `reply`), React (`onReact`, `ui-chat-message-actions__react`, named `addReaction`), Edit (`onEdit`, `ui-chat-message-actions__edit`, named `edit`) and Delete (`onDelete`, `ui-chat-message-actions__delete`, named `delete`). Without any command it renders nothing.
 
 Implementation: `src/components/chat-message-actions/chat-message-actions.tsx`, `src/components/chat-message-actions/message-actions-bar.tsx`, `src/components/chat-message-actions/message-commands.ts`, `src/core/chat-actions-strings.ts`, `src/core/glyphs.tsx`
 Verification: `src/components/chat-message-actions/chat-message-actions.test.tsx`, `e2e/chat-message-actions.spec.ts`
@@ -80,7 +80,7 @@ Verification: `src/components/chat-message-actions/chat-message-actions.test.tsx
 
 ### UIC-CHAT-MESSAGE-ACTIONS-3.3 - Delete
 
-Delete shall open a `ConfirmDialog` with the `danger` tone, titled `deleteMessage`, described by `deleteMessageDescription`, whose confirm action is named `delete`. Confirming runs `onDelete`, pending while a returned promise settles; Cancel, Escape or a press outside closes it without deleting. Focus returns to the button.
+Delete shall open a [Modal](MODAL.md) alert dialog with the `danger` tone, titled `deleteMessage`, described by `deleteMessageDescription`, whose confirm action is named `delete`. Confirming runs `onDelete`, pending while a returned promise settles; Cancel or Escape closes it without deleting. Focus returns to the button.
 
 Implementation: `src/components/chat-message-actions/message-command-overlays.tsx`
 Verification: `src/components/chat-message-actions/chat-message-actions.test.tsx`, `e2e/chat-message-actions.spec.ts`
@@ -113,13 +113,13 @@ Verification: `src/components/chat-message-actions/chat-message-actions-menu.tes
 | Hook                                        | Kind      | Values                           | Description                                                           |
 | ------------------------------------------- | --------- | -------------------------------- | --------------------------------------------------------------------- |
 | `ui-chat-message-actions`                   | root      |                                  | The toolbar (`role="toolbar"`).                                       |
-| `ui-chat-message-actions__copy`             | slot      |                                  | Copy (also `ui-icon-button`).                                         |
+| `ui-chat-message-actions__copy`             | slot      |                                  | Copy (also `ui-button`).                                              |
 | `ui-chat-message-actions__status`           | slot      |                                  | The visually hidden status that reads the copy's outcome.             |
-| `ui-chat-message-actions__rating`           | slot      |                                  | A rating toggle (also `ui-icon-button`).                              |
-| `ui-chat-message-actions__reply`            | slot      |                                  | Reply (also `ui-icon-button`).                                        |
-| `ui-chat-message-actions__react`            | slot      |                                  | React (also `ui-icon-button`).                                        |
-| `ui-chat-message-actions__edit`             | slot      |                                  | Edit (also `ui-icon-button`).                                         |
-| `ui-chat-message-actions__delete`           | slot      |                                  | Delete (also `ui-icon-button`).                                       |
+| `ui-chat-message-actions__rating`           | slot      |                                  | A rating toggle (also `ui-button`).                                   |
+| `ui-chat-message-actions__reply`            | slot      |                                  | Reply (also `ui-button`).                                             |
+| `ui-chat-message-actions__react`            | slot      |                                  | React (also `ui-button`).                                             |
+| `ui-chat-message-actions__edit`             | slot      |                                  | Edit (also `ui-button`).                                              |
+| `ui-chat-message-actions__delete`           | slot      |                                  | Delete (also `ui-button`).                                            |
 | `ui-chat-message-actions__feedback`         | slot      |                                  | The feedback details popover (also `ui-popover`).                     |
 | `ui-chat-message-actions__reasons`          | slot      |                                  | The group of reason chips.                                            |
 | `ui-chat-message-actions__reason`           | slot      |                                  | A reason chip (also `ui-button`).                                     |

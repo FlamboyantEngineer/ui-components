@@ -15,21 +15,28 @@ const statuses: StepsStatus[] = ['complete', 'current', 'upcoming', 'error', 'sk
 
 /** An import whose steps the reader walks with Back and Next, returning to earlier steps by press. */
 function ImportProgress() {
-  const [current, setCurrent] = useState<Key>('map');
+  const [current, setCurrent] = useState<Key | null>('map');
   const index = importSteps.findIndex((step) => step.id === current);
   const move = (offset: number) => {
-    const next = importSteps[index + offset];
+    const next = importSteps[current === null ? importSteps.length - 1 : index + offset];
     if (next) setCurrent(next.id);
+    else if (offset > 0) setCurrent(null);
   };
   return (
     <div data-lab-demo="import">
-      <Steps items={importSteps} currentId={current} onAction={setCurrent} aria-label="Import" />
-      <p data-lab-current>Current step: {String(current)}</p>
+      <Steps
+        items={importSteps}
+        currentId={current}
+        isComplete={current === null}
+        onAction={setCurrent}
+        aria-label="Import"
+      />
+      <p data-lab-current>Current step: {current === null ? 'Completed' : String(current)}</p>
       <Button size="sm" isDisabled={index === 0} onPress={() => move(-1)}>
         Back
       </Button>{' '}
-      <Button size="sm" isDisabled={index === importSteps.length - 1} onPress={() => move(1)}>
-        Next
+      <Button size="sm" isDisabled={current === null} onPress={() => move(1)}>
+        {current === null ? 'Completed' : index === importSteps.length - 1 ? 'Finish' : 'Next'}
       </Button>
     </div>
   );
@@ -92,6 +99,17 @@ mountLab(
       description="Back and Next move the current step; pressing a completed step returns to it."
     >
       <ImportProgress />
+    </LabSection>
+    <LabSection
+      title="All completed"
+      description="Every marker is complete and no step is current, in full and compact layouts."
+    >
+      <StateMatrix
+        axes={{ complete: ['default', 'compact'], orientation: ['horizontal', 'vertical'] }}
+        render={({ complete, orientation }) => (
+          <Steps items={importSteps} isComplete variant={complete} orientation={orientation} />
+        )}
+      />
     </LabSection>
   </>,
 );

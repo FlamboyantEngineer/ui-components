@@ -3,7 +3,7 @@ import { useEffect, useRef, useState, type FormEvent, type RefObject } from 'rea
 import { useControllableState } from '../../core/controllable-state.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { runPendingAction } from '../action-button/action-button.js';
+import { runPendingAction } from '../button/button.js';
 import type { StepsStatus } from '../steps/steps.js';
 import type { WizardProps, WizardStep } from './wizard.js';
 

@@ -1,6 +1,6 @@
 # User Card
 
-`UserCard` is the identity card of a person or a group: their avatar, name and secondary line, an optional status row, detail rows and actions such as sending a message or opening a profile. It takes plain data and reports actions through a callback. `UserCardTrigger` makes any content, such as an avatar, a name or a [User Identity](USER-IDENTITY.md) row, a button that opens a card in a popover, on press or on hover and focus; [Presence Avatar](PRESENCE-AVATAR.md) and [Presence Strip](PRESENCE-STRIP.md) open cards through it.
+`UserCard` is the identity card of a person or a group: their avatar, name and secondary line, an optional status row, detail rows and actions such as sending a message or opening a profile. It takes plain data and reports actions through a callback. `UserCardTrigger` makes any content, such as an avatar, a name or a [User Identity](USER-IDENTITY.md) row, a button that opens a card in a popover, on press or on hover and focus; [Presence Avatar](AVATAR.md) and [Presence Strip](AVATAR-GROUP.md) open cards through it.
 
 ## UIC-USER-CARD-1 - Card
 

@@ -2,7 +2,7 @@ import { useContext, useLayoutEffect, useRef, type RefObject } from 'react';
 import { useLocale } from '../../primitives/index.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 import { InlineError } from '../inline-error/inline-error.js';
 import { AttachmentRemovalContext } from './attachment-context.js';
 import {
@@ -128,7 +128,7 @@ export function ChatAttachment({
       ) : null}
       {download ? <AttachmentDownload href={download} name={name} /> : null}
       {onRemove ? (
-        <IconButton
+        <Button
           className={hooks.slotClass('remove')}
           icon="close"
           label={strings.removeItem(name)}

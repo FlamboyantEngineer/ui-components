@@ -3,7 +3,7 @@ import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isSafeUrl } from '../../utils/safe-url.js';
 import { Button } from '../button/button.js';
-import { IconButton } from '../icon-button/icon-button.js';
+
 import { Popover, PopoverTrigger } from '../popover/popover.js';
 import { SelectField } from '../select-field/select-field.js';
 import { TextField } from '../text-field/text-field.js';
@@ -38,7 +38,7 @@ export function FormatButtons({ controller, items }: FormatControlProps & { item
         ? { isSelected: controller.isActive(item.command), onChange: run }
         : { onPress: run };
       return (
-        <IconButton
+        <Button
           key={item.id}
           {...toggle}
           icon={item.icon}
@@ -105,7 +105,7 @@ export function LinkButton({ controller, className, onCommand }: OverlayControlP
         setOpen(open);
       }}
     >
-      <IconButton
+      <Button
         icon="link"
         label={strings.link}
         tooltip={strings.link}

@@ -11,7 +11,7 @@ describe('FieldRestoreButton', () => {
       <FieldRestoreButton label="Apple" className="caller" data-value="apple" onPress={() => {}} />,
     );
     const button = screen.getByRole('button', { name: 'Restore Apple' });
-    expect(button).toHaveClass('ui-icon-button', 'ui-field-restore-button', 'caller');
+    expect(button).toHaveClass('ui-button', 'ui-field-restore-button', 'caller');
     expect(button).toHaveAttribute('data-value', 'apple');
     expect(button).toHaveAttribute('data-size', 'md');
     expect(button.querySelector('[data-glyph="restore"]')).not.toBeNull();

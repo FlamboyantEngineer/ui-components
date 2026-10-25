@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { createMemoryStorage } from '../../core/storage.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 import { Tree, type TreeItemState, type TreeProps } from './tree.js';
 
 interface Food {
@@ -86,7 +86,7 @@ describe('Tree', () => {
         renderLabel={(item) => <strong>{item.name}</strong>}
         renderMeta={(item) => (item.id === 'apple' ? 'Red' : null)}
         renderActions={(item) =>
-          item.id === 'pear' ? <IconButton icon="more" label={`More for ${item.name}`} /> : null
+          item.id === 'pear' ? <Button icon="more" label={`More for ${item.name}`} /> : null
         }
       />,
     );
@@ -299,7 +299,7 @@ describe('Tree', () => {
       <FoodTree
         onAction={onAction}
         renderActions={(item) => (
-          <IconButton icon="more" label={`More for ${item.name}`} onPress={() => onMore(item.id)} />
+          <Button icon="more" label={`More for ${item.name}`} onPress={() => onMore(item.id)} />
         )}
       />,
     );

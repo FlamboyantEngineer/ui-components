@@ -80,8 +80,8 @@ Verification: `src/components/formula-bar/formula-bar.test.tsx`
 | `ui-formula-bar`            | root  |        | The `<div>` around the reference box, the buttons and the editor. |
 | `ui-formula-bar__reference` | slot  |        | The reference box `<input>`.                                      |
 | `ui-formula-bar__status`    | slot  |        | The visually hidden status that reads a refused reference.        |
-| `ui-formula-bar__cancel`    | slot  |        | The button that restores the content (also `ui-icon-button`).     |
-| `ui-formula-bar__confirm`   | slot  |        | The button that commits the content (also `ui-icon-button`).      |
+| `ui-formula-bar__cancel`    | slot  |        | The button that restores the content (also `ui-button`).          |
+| `ui-formula-bar__confirm`   | slot  |        | The button that commits the content (also `ui-button`).           |
 | `ui-formula-bar__glyph`     | slot  |        | The decorative formula glyph.                                     |
 | `ui-formula-bar__editor`    | slot  |        | The single-line code editor (also `ui-code-editor`).              |
 | `ui-formula-bar__result`    | slot  |        | The caller's evaluation of the content.                           |

@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { IconButton } from '../../src/components/icon-button/icon-button.js';
+import { Button } from '../../src/components/button/button.js';
 import {
   List,
   ListRow,
@@ -80,7 +80,7 @@ function SearchResults() {
             icon="info"
             isDisabled={city.disabled}
             onPress={() => setOpened(city.title)}
-            trailing={<IconButton icon="more" label={`More about ${city.title}`} size="sm" />}
+            trailing={<Button icon="more" label={`More about ${city.title}`} size="sm" />}
           />
         ))}
       </List>
@@ -100,7 +100,7 @@ function RemovableRows() {
           title={name}
           onPress={() => {}}
           trailing={
-            <IconButton
+            <Button
               icon="close"
               size="sm"
               label={`Remove ${name}`}
@@ -155,7 +155,7 @@ mountLab(
                 leading={content === 'leading' ? <Avatar initials="AL" /> : undefined}
                 trailing={
                   content === 'trailing' ? (
-                    <IconButton icon="more" label="More about Ada Lovelace" size="sm" />
+                    <Button icon="more" label="More about Ada Lovelace" size="sm" />
                   ) : undefined
                 }
               />

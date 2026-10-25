@@ -170,7 +170,7 @@ Verification: `src/components/chat/chat.test.tsx`, `e2e/chat.spec.ts`
 
 ### UIC-CHAT-5.2 - ChatHeader
 
-`ChatHeader` shall render a `ui-chat-header` element holding the participants' avatar (`ui-chat-header__avatar`), then the `title` as a heading (`ui-chat-header__title`) one level below its section's (3 outside a section) with the `status` line under it (`ui-chat-header__status`), both in `ui-chat-header__text`, then the `actions` (`ui-chat-header__actions`). One participant shows as a small `PresenceAvatar` with their presence, or a decorative `Avatar` without one; several show as an `AvatarGroup` of three and a count that lists everyone, their presence in words as each person's second line, when pressed. The status line is shown and kept from assistive technology, since the conversation announces the same news where it happens. It forwards `className`, `id` and caller `data-*` attributes to its root.
+`ChatHeader` shall render a `ui-chat-header` element holding the participants' avatar (`ui-chat-header__avatar`), then the `title` as a heading (`ui-chat-header__title`) one level below its section's (3 outside a section) with the `status` line under it (`ui-chat-header__status`), both in `ui-chat-header__text`, then the `actions` (`ui-chat-header__actions`). One participant shows as a small `Avatar` with their presence, or a decorative one without it; several show as an `AvatarGroup` of three and a count that lists everyone, their presence in words as each person's second line, when pressed. The status line is shown and kept from assistive technology, since the conversation announces the same news where it happens. It forwards `className`, `id` and caller `data-*` attributes to its root.
 
 Implementation: `src/components/chat/chat-header.tsx`
 Verification: `src/components/chat/chat-header.test.tsx`, `e2e/chat.spec.ts`
@@ -196,7 +196,7 @@ Verification: `src/components/chat/chat.test.tsx`
 | Hook                      | Kind  | Values | Description                                                                 |
 | ------------------------- | ----- | ------ | --------------------------------------------------------------------------- |
 | `ui-chat`                 | root  |        | The conversation.                                                           |
-| `ui-chat__search-toggle`  | slot  |        | The header's search button (also `ui-icon-button`).                         |
+| `ui-chat__search-toggle`  | slot  |        | The header's search button (also `ui-button`).                              |
 | `ui-chat__search`         | slot  |        | The search bar under the header (also `ui-find-bar`).                       |
 | `ui-chat__transcript`     | slot  |        | The transcript (also `ui-chat-transcript`).                                 |
 | `ui-chat__typing`         | slot  |        | Who is typing, or the assistant thinking (also `ui-chat-typing-indicator`). |
@@ -206,12 +206,12 @@ Verification: `src/components/chat/chat.test.tsx`
 | `ui-chat__queue-list`     | slot  |        | The ordered list of queued messages.                                        |
 | `ui-chat__queue-item`     | slot  |        | One queued message.                                                         |
 | `ui-chat__queue-text`     | slot  |        | A queued message's text.                                                    |
-| `ui-chat__queue-edit`     | slot  |        | Edit a queued message (also `ui-icon-button`).                              |
-| `ui-chat__queue-remove`   | slot  |        | Remove a queued message (also `ui-icon-button`).                            |
+| `ui-chat__queue-edit`     | slot  |        | Edit a queued message (also `ui-button`).                                   |
+| `ui-chat__queue-remove`   | slot  |        | Remove a queued message (also `ui-button`).                                 |
 | `ui-chat__composer`       | slot  |        | The composer (also `ui-message-composer`).                                  |
 | `ui-chat__banner`         | slot  |        | The reply or edit banner's text, inside the composer's banner.              |
 | `ui-chat__banner-label`   | slot  |        | What the banner is about: replying, or editing.                             |
-| `ui-chat__banner-cancel`  | slot  |        | Cancel reply (also `ui-icon-button`).                                       |
+| `ui-chat__banner-cancel`  | slot  |        | Cancel reply (also `ui-button`).                                            |
 | `data-editing`            | state | `true` | On a queued message the composer edits.                                     |
 | `ui-chat-header`          | root  |        | The header.                                                                 |
 | `ui-chat-header__avatar`  | slot  |        | The participants' avatar or avatar group.                                   |

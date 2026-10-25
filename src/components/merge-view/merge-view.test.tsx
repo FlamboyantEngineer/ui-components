@@ -285,7 +285,7 @@ describe('MergeView', { timeout: 15_000 }, () => {
     );
     const previous = screen.getByRole('button', { name: 'Previous conflict' });
     const next = screen.getByRole('button', { name: 'Next conflict' });
-    expect(previous).toHaveClass('ui-icon-button', 'ui-merge-view__previous');
+    expect(previous).toHaveClass('ui-button', 'ui-merge-view__previous');
     expect(next).toHaveClass('ui-merge-view__next');
     expect(previous).toBeDisabled();
     await user.click(next);

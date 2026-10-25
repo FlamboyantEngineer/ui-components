@@ -206,6 +206,10 @@ test.describe('Drawer lab', () => {
     await expect(cities).toBeFocused();
     await expect(output).toHaveText('open');
     await expect(page.locator('.ui-drawer__panel')).toHaveAttribute('data-position', 'left');
+    // The sheet moves its containing overlay in JavaScript after it gives the dialog focus.
+    await expect(async () => {
+      expect((await boxOf(page.locator('.ui-drawer__panel'))).x).toBe(0);
+    }).toPass();
     await lab.expectAccessible('.ui-drawer');
     await cities.getByRole('button', { name: 'Kyoto' }).click();
     await expect(cities).toHaveCount(0);

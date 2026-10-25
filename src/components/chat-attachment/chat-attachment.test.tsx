@@ -175,7 +175,7 @@ describe('ChatAttachment', () => {
     const onRemove = vi.fn();
     const { container } = render(<ChatAttachment {...report} onRemove={onRemove} />);
     const remove = screen.getByRole('button', { name: 'Remove Trip plan.pdf' });
-    expect(remove).toHaveClass('ui-chat-attachment__remove', 'ui-icon-button');
+    expect(remove).toHaveClass('ui-chat-attachment__remove', 'ui-button');
     expect(remove.querySelector('[data-glyph="close"]')).not.toBeNull();
     await user.click(remove);
     expect(onRemove).toHaveBeenCalledOnce();

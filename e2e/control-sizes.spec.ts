@@ -3,8 +3,8 @@ import { expect, test } from './fixtures.js';
 /** The box whose height each control of the control sizes lab takes from its size. */
 const boxes: Record<string, string> = {
   button: '.ui-button',
-  'icon-button': '.ui-icon-button',
-  'dropdown-menu': ':is(.ui-button, .ui-icon-button)',
+  'button-icon': '.ui-button[data-content="icon"]',
+  'dropdown-menu': ':is(.ui-button, .ui-button[data-content="icon"])',
   'segmented-choice': '.ui-segmented-choice',
   'search-field': '.ui-search-field',
   combobox: '.ui-combobox__field',

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { Key } from '../../src/core/props.js';
-import { IconButton } from '../../src/components/icon-button/icon-button.js';
+import { Button } from '../../src/components/button/button.js';
 import { Tree, type TreeItemState } from '../../src/components/tree/tree.js';
 import { applyTreeMove, type TreeMove } from '../../src/utils/tree-reorder.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
@@ -102,9 +102,7 @@ function SelectionTree() {
         onSelectionChange={(keys) => setSelected(keys === 'all' ? 'all' : [...keys].join(', '))}
         onAction={(key) => setAction(String(key))}
         renderMeta={sizeOf}
-        renderActions={(entry) => (
-          <IconButton icon="more" size="sm" label={`More for ${entry.name}`} />
-        )}
+        renderActions={(entry) => <Button icon="more" size="sm" label={`More for ${entry.name}`} />}
       />
       <p data-lab-output>
         Selected: {selected} · Opened: {action}

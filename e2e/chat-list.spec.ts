@@ -22,7 +22,7 @@ test.describe('Chat List lab', () => {
     );
     await expect(row(page, 'Recipe swap')).toHaveAttribute('data-muted', 'true');
     await expect(row(page, 'Recipe swap').locator('.ui-chat-list__unread')).toContainText('99+');
-    await expect(row(page, 'Ana Lima').locator('.ui-presence-avatar')).toHaveAttribute(
+    await expect(row(page, 'Ana Lima').locator('.ui-avatar')).toHaveAttribute(
       'data-status',
       'active',
     );

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ChatList, type ChatConversation } from '../../src/components/chat-list/chat-list.js';
-import { IconButton } from '../../src/components/icon-button/icon-button.js';
+import { Button } from '../../src/components/button/button.js';
 import { Menu, MenuItem, MenuPopover, MenuTrigger } from '../../src/components/menu/menu.js';
 import { getNow, manyConversations, minutesAgo, rowKinds } from './chat-list-samples.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
@@ -19,7 +19,7 @@ function RowMenu({
 }) {
   return (
     <MenuTrigger>
-      <IconButton icon="more" label={`More for ${conversation.title}`} size="sm" />
+      <Button icon="more" label={`More for ${conversation.title}`} size="sm" />
       <MenuPopover>
         <Menu
           onAction={(key) =>

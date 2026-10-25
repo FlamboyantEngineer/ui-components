@@ -15,7 +15,7 @@ import {
 import { fromCollectionKey } from '../../utils/from-collection-key.js';
 import { createHooks } from '../../core/hooks.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 import type { ControlSize } from '../../core/props.js';
 import { ComboboxChips, type ComboboxChipsProps } from './combobox-chips.js';
 import {
@@ -68,7 +68,7 @@ function ClearButton({ inputRef }: { inputRef: RefObject<HTMLInputElement | null
   const strings = useUiStrings();
   if (!state || state.inputValue === '') return null;
   return (
-    <IconButton
+    <Button
       slot={null}
       icon="close"
       label={strings.clear}

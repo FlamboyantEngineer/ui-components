@@ -13,7 +13,7 @@ import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { useSyncedScroll, type ScrollAnchor } from '../../utils/use-synced-scroll.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 import { ScrollRegion } from '../scroll-region/scroll-region.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import {
@@ -100,7 +100,7 @@ function TextDiffHeader({ added, removed, previous, next, changes, onMove }: Hea
         </VisuallyHidden>
       </span>
       <span {...hooks.slot('navigation')}>
-        <IconButton
+        <Button
           icon="chevron-up"
           size="sm"
           label={strings.textDiffPreviousChange}
@@ -108,7 +108,7 @@ function TextDiffHeader({ added, removed, previous, next, changes, onMove }: Hea
           isDisabled={previous < 0}
           onPress={() => onMove(previous)}
         />
-        <IconButton
+        <Button
           icon="chevron-down"
           size="sm"
           label={strings.textDiffNextChange}

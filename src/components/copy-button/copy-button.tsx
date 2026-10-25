@@ -4,10 +4,10 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { useClipboard, type CopyStatus } from '../../utils/use-clipboard.js';
-import { IconButton, type IconButtonProps } from '../icon-button/icon-button.js';
+import { Button, type ButtonProps } from '../button/button.js';
 
 export interface CopyButtonProps
-  extends Pick<IconButtonProps, 'variant' | 'size' | 'isDisabled'>, BaseProps {
+  extends Pick<ButtonProps, 'variant' | 'size' | 'isDisabled'>, BaseProps {
   /** The text to copy, exactly as given. */
   value: string;
   /** Names the button. Defaults to the provider's `copy` string. */
@@ -57,17 +57,19 @@ export function CopyButton({
       })}
       id={id}
     >
-      <IconButton
+      <Button
         className={hooks.slotClass('button')}
         icon={statusGlyphs[status]}
         label={label ?? strings.copy}
         variant={variant}
         size={size}
         isDisabled={isDisabled}
-        onPress={async () => {
-          const copied = await copy(value);
-          setSettled((count) => count + 1);
-          onCopy?.(copied);
+        onPress={() => {
+          // Each press starts a write; the clipboard hook owns which result stays visible.
+          void copy(value).then((copied) => {
+            setSettled((count) => count + 1);
+            onCopy?.(copied);
+          });
         }}
       />
       <VisuallyHidden elementType="span" className={hooks.slotClass('status')} role="status">

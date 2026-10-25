@@ -105,7 +105,7 @@ Verification: `src/components/menu/menu-item.test.tsx`, `e2e/menu.spec.ts`
 
 ### UIC-MENU-4.1 - Menu trigger
 
-`MenuTrigger` shall hold a trigger (a `Button`, an `IconButton` or another library pressable) and a `MenuPopover`, add no element of its own, and open the popover from the trigger: on press, Enter or Space, and on Arrow Down or Arrow Up, which focus the first or last item. An opening mouse press that stays within the trigger's original bounds until release shall not activate an overlapping menu item; dragging outside those bounds and releasing over an item shall still activate it. The trigger carries `aria-haspopup`, `aria-expanded` and, while open, `aria-controls` naming the menu, which the trigger labels. `isOpen` with `onOpenChange` controls the open state and `defaultOpen` sets it uncontrolled.
+`MenuTrigger` shall hold a trigger (a `Button`, an `Button` or another library pressable) and a `MenuPopover`, add no element of its own, and open the popover from the trigger: on press, Enter or Space, and on Arrow Down or Arrow Up, which focus the first or last item. An opening mouse press that stays within the trigger's original bounds until release shall not activate an overlapping menu item; dragging outside those bounds and releasing over an item shall still activate it. The trigger carries `aria-haspopup`, `aria-expanded` and, while open, `aria-controls` naming the menu, which the trigger labels. `isOpen` with `onOpenChange` controls the open state and `defaultOpen` sets it uncontrolled.
 
 Implementation: `src/components/menu/menu.tsx`, `src/components/menu/menu-trigger-press.tsx`
 Verification: `src/components/menu/menu.test.tsx`, `e2e/menu.spec.ts`
@@ -163,10 +163,10 @@ Verification: `src/components/menu/menu.test.tsx`, `e2e/menu.spec.ts`
 
 ### UIC-MENU-5.3 - Virtualized menu
 
-With `virtualized`, a menu given as children or as data shall render through React Aria's `Virtualizer` with a list layout ([UIC-COLLECTIONS-1.1](COLLECTIONS.md#uic-collections-11---virtualized-rendering)) and publish `data-virtualized`, drawing only the rows in view of its scroll container (its `MenuPopover`, or the page), each `rowHeight` pixels high (by default 24, 28 or 32 at size `sm`, `md` or `lg`, [UIC-COLLECTIONS-1.4](COLLECTIONS.md#uic-collections-14---layout-options)), while keyboard navigation reaches every item and each row keeps its hooks, `aria-setsize` and `aria-posinset`. Filtering and loading more work the same in a virtualized menu.
+With `virtualized`, a menu given as children or as data shall render through React Aria's `Virtualizer` with a list layout ([UIC-COLLECTIONS-1.1](COLLECTIONS.md#uic-collections-11---virtualized-rendering)) and publish `data-virtualized`, drawing only the rows in view of its scroll container (its `MenuPopover`, or the page), each `rowHeight` pixels high (by default 24, 28 or 32 at size `sm`, `md` or `lg`, [UIC-COLLECTIONS-1.4](COLLECTIONS.md#uic-collections-14---layout-options)), while keyboard navigation reaches every item and each row keeps its hooks, `aria-setsize` and `aria-posinset`. Filtering and loading more work the same in a virtualized menu. A virtualized menu shall keep a stable intrinsic width, bounded by the viewport; repeated measurement shall never make it grow wider.
 
 Implementation: `src/components/menu/menu.tsx`
-Verification: `src/components/menu/menu.test.tsx`, `e2e/menu.spec.ts`
+Verification: `src/components/menu/menu.test.tsx`, `e2e/menu.spec.ts`, `e2e/lab-layout-regressions.spec.ts`
 
 ### UIC-MENU-5.4 - Highlighted matches
 

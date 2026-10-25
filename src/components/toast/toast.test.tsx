@@ -412,7 +412,7 @@ describe('Toast', () => {
       queue.add({ title: 'Saved' }, { onClose });
     });
     const close = screen.getByRole('button', { name: 'Close message' });
-    expect(close).toHaveClass('ui-icon-button', 'ui-toast__close');
+    expect(close).toHaveClass('ui-button', 'ui-toast__close');
     await userEvent.click(close);
     expect(onClose).toHaveBeenCalledTimes(1);
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();

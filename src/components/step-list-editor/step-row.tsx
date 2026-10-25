@@ -6,7 +6,7 @@ import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isMoveChord } from '../../utils/use-reorder-drag-and-drop.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 import { TextField } from '../text-field/text-field.js';
 import { isStepDirty, readStepValue, type StepListEditorStep } from './step-list.js';
 import { useStepRowDrag, type StepDrag } from './use-step-drag.js';
@@ -132,7 +132,7 @@ export function StepRow(props: StepRowProps) {
       onKeyDownCapture={onKeyDownCapture}
     >
       {isReadOnly ? null : (
-        <IconButton
+        <Button
           icon="drag-handle"
           size="sm"
           label={strings.moveStep(number)}

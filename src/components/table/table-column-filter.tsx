@@ -8,7 +8,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import { CheckboxGroup } from '../checkbox-group/checkbox-group.js';
 import { DateTimeField, type DateRangeValue } from '../date-time-field/date-time-field.js';
-import { IconButton } from '../icon-button/icon-button.js';
+
 import { Modal } from '../modal/modal.js';
 import { NumberField } from '../number-field/number-field.js';
 import { TextField } from '../text-field/text-field.js';
@@ -128,7 +128,7 @@ export function TableColumnFilter<T extends TableRow>(props: TableColumnFilterPr
   const title = strings.filterLabel(props.label);
   return (
     <DialogTrigger>
-      <IconButton
+      <Button
         icon="filter"
         label={title}
         size="xs"

@@ -2,7 +2,7 @@
 
 import { useState, type CSSProperties } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import { IconButton } from '../../src/components/icon-button/icon-button.js';
+
 import {
   ToolbarRow,
   ToolbarRowGroup,
@@ -22,14 +22,14 @@ function KitchenTools({ name, overflow }: { name: string; overflow: ToolbarRowOv
   return (
     <ToolbarRow aria-label={name} overflow={overflow} justify="start" space="xs">
       <ToolbarRowGroup aria-label={`History, ${name}`} density="attached">
-        <IconButton icon="undo" label="Undo" size="sm" />
-        <IconButton icon="redo" label="Redo" size="sm" />
+        <Button icon="undo" label="Undo" size="sm" />
+        <Button icon="redo" label="Redo" size="sm" />
       </ToolbarRowGroup>
       <ToolbarRowSeparator />
       <ToolbarRowGroup aria-label={`Clipboard, ${name}`}>
-        <IconButton icon="copy" label="Copy" size="sm" />
-        <IconButton icon="edit" label="Edit" size="sm" />
-        <IconButton icon="delete" label="Delete" size="sm" />
+        <Button icon="copy" label="Copy" size="sm" />
+        <Button icon="edit" label="Edit" size="sm" />
+        <Button icon="delete" label="Delete" size="sm" />
       </ToolbarRowGroup>
       <ToolbarRowSeparator />
       <ToolbarRowGroup aria-label={`Recipe, ${name}`}>
@@ -71,9 +71,9 @@ export function AttachedGroups() {
           justify="start"
         >
           <ToolbarRowGroup aria-label={`Zoom steps, ${density}, ${orientation}`} density={density}>
-            <IconButton icon="minus" label="Zoom out" size="sm" />
-            <IconButton icon="refresh" label="Reset zoom" size="sm" />
-            <IconButton icon="plus" label="Zoom in" size="sm" />
+            <Button icon="minus" label="Zoom out" size="sm" />
+            <Button icon="refresh" label="Reset zoom" size="sm" />
+            <Button icon="plus" label="Zoom in" size="sm" />
           </ToolbarRowGroup>
         </ToolbarRow>
       )}
@@ -96,9 +96,9 @@ export function PendingToolbar() {
           justify="start"
           variant="surface"
         >
-          <IconButton icon="undo" label="Undo" size="sm" />
-          <IconButton icon="redo" label="Redo" size="sm" />
-          <IconButton icon="save" label="Save" size="sm" />
+          <Button icon="undo" label="Undo" size="sm" />
+          <Button icon="redo" label="Redo" size="sm" />
+          <Button icon="save" label="Save" size="sm" />
         </ToolbarRow>
         <p data-lab-output="editor">{isStarted ? 'Editor ready.' : 'Editor starting…'}</p>
       </div>

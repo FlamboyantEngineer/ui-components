@@ -145,7 +145,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Remembered layout"
-      description="An uncontrolled grid that keeps its layout through the provider storage when the page reloads."
+      description="With persistKey, an uncontrolled grid keeps its layout through the provider storage when the page reloads."
     >
       <div style={frame(360)} data-lab-demo="stored">
         <DashboardGrid

@@ -4,7 +4,6 @@ import {
   ChatMessage,
   ChatTranscript,
 } from '../../src/components/chat-transcript/chat-transcript.js';
-import { IconButton } from '../../src/components/icon-button/icon-button.js';
 import {
   RichMessageComposer,
   type MessageComposerCommand,
@@ -67,7 +66,7 @@ export function ComposerBanner({
   return (
     <>
       <span>{children}</span>
-      {onClose ? <IconButton icon="close" label="Close" size="xs" onPress={onClose} /> : null}
+      {onClose ? <Button icon="close" label="Close" size="xs" onPress={onClose} /> : null}
     </>
   );
 }

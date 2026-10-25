@@ -5,7 +5,7 @@ import { createHooks, splitDataAttributes } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Badge } from '../badge/badge.js';
 import { Drawer, DrawerTrigger } from '../drawer/drawer.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 import { Popover, PopoverTrigger } from '../popover/popover.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { NotificationList, type NotificationListProps } from './notification-list.js';
@@ -61,7 +61,7 @@ export function NotificationCenter({
     </ArrivalAnnouncerContext>
   );
   const bell = (
-    <IconButton
+    <Button
       icon="bell"
       label={strings.notificationsWithCount(unread)}
       className={hooks.slotClass('trigger')}

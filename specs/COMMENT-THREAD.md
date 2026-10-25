@@ -85,7 +85,7 @@ Verification: `src/components/comment-thread/comment-thread-reply.test.tsx`, `e2
 
 ### UIC-COMMENT-THREAD-2.4 - Deleting
 
-Delete shall open a danger `ConfirmDialog` titled by the provider's `deleteComment` string with the `deleteCommentMessage` message and a `delete` confirm action; confirming calls `onDelete`, and cancelling changes nothing.
+Delete shall open a danger `Modal` titled by the provider's `deleteComment` string with the `deleteCommentMessage` message and a `delete` confirm action; confirming calls `onDelete`, and cancelling changes nothing.
 
 Implementation: `src/components/comment-thread/comment-thread-reply.tsx`
 Verification: `src/components/comment-thread/comment-thread-reply.test.tsx`, `e2e/comment-thread.spec.ts`

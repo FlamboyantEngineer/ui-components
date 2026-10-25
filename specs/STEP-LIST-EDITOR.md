@@ -52,7 +52,7 @@ Verification: `src/components/step-list-editor/step-list-editor.test.tsx`, `e2e/
 
 ### UIC-STEP-LIST-EDITOR-2.4 - Drag and drop
 
-Each step shall start with a drag handle (`ui-step-list-editor__handle`, an [Icon Button](ICON-BUTTON.md) named by the provider string `moveStep` with the step's number). A pointer drag starts only from the handle, which makes its step draggable while it is pressed, so selecting text in a field never drags the step; pressing the handle by keyboard or with a screen reader starts React Aria's keyboard drag. A step is dropped on another step of the same editor, and takes its place: it lands after the target when dragged down and before it when dragged up. The dragged step publishes `data-dragging`, and the step under it `data-drop-target` with `data-position` (`before`, `after`). Steps of another editor and other dragged data are refused.
+Each step shall start with a drag handle (`ui-step-list-editor__handle`, an [Icon Button](BUTTON.md) named by the provider string `moveStep` with the step's number). A pointer drag starts only from the handle, which makes its step draggable while it is pressed, so selecting text in a field never drags the step; pressing the handle by keyboard or with a screen reader starts React Aria's keyboard drag. A step is dropped on another step of the same editor, and takes its place: it lands after the target when dragged down and before it when dragged up. The dragged step publishes `data-dragging`, and the step under it `data-drop-target` with `data-position` (`before`, `after`). Steps of another editor and other dragged data are refused.
 
 Implementation: `src/components/step-list-editor/use-step-drag.ts`, `src/components/step-list-editor/step-row.tsx`, `src/components/step-list-editor/step-list.ts`, `labs/reference/step-list-editor.css`
 Verification: `src/components/step-list-editor/step-list.test.ts`, `src/components/step-list-editor/step-list-editor.test.tsx`, `e2e/step-list-editor.spec.ts`
@@ -98,7 +98,7 @@ Verification: `src/utils/use-focus-request.test.tsx`, `src/components/condition-
 | `ui-step-list-editor__heading` | slot  |                   | One column's label.                                             |
 | `ui-step-list-editor__steps`   | slot  |                   | The ordered list of steps.                                      |
 | `ui-step-list-editor__step`    | slot  |                   | One step (`<li>`).                                              |
-| `ui-step-list-editor__handle`  | slot  |                   | A step's drag handle (also `ui-icon-button`).                   |
+| `ui-step-list-editor__handle`  | slot  |                   | A step's drag handle (also `ui-button`).                        |
 | `ui-step-list-editor__number`  | slot  |                   | A step's number.                                                |
 | `ui-step-list-editor__fields`  | slot  |                   | The group of a step's fields.                                   |
 | `ui-step-list-editor__field`   | slot  |                   | One column's field in a step (also `ui-text-field`).            |

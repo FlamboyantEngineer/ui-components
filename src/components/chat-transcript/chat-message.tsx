@@ -3,8 +3,7 @@ import { useFocusWithin, useHover } from '../../primitives/index.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { mergeProps } from '../../utils/merge-props.js';
-import { getDisplayName, type AvatarIdentity } from '../avatar/avatar.js';
-import type { PresenceAvatarProps } from '../presence-avatar/presence-avatar.js';
+import { getDisplayName, type AvatarIdentity, type AvatarProps } from '../avatar/avatar.js';
 import type { RelativeTimeProps } from '../relative-time/relative-time.js';
 import {
   ChatMessageAvatar,
@@ -30,7 +29,7 @@ export type ChatMessageGroupPosition = 'single' | 'first' | 'middle' | 'last';
 
 /** The person or assistant who wrote a message, with their presence when known. */
 export interface ChatMessageAuthor
-  extends AvatarIdentity, Pick<PresenceAvatarProps, 'status' | 'statusLabel'> {}
+  extends AvatarIdentity, Pick<AvatarProps, 'status' | 'statusLabel'> {}
 
 export interface ChatMessageProps extends BaseProps, Pick<RelativeTimeProps, 'getNow'> {
   /** Who the message is from, relative to the reader. Defaults to `received`. */

@@ -18,7 +18,7 @@ import {
 } from '../../utils/cell-reference.js';
 import { CodeEditor, type CodeTokenizer } from '../code-editor/code-editor.js';
 import type { Completions } from '../completion-list/completion-list.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 
 export interface FormulaBarProps extends BaseProps, AriaLabellingProps {
@@ -148,7 +148,7 @@ function FormulaBarButtons(props: {
   const strings = useUiStrings();
   return (
     <>
-      <IconButton
+      <Button
         icon="close"
         size="sm"
         label={strings.cancel}
@@ -156,7 +156,7 @@ function FormulaBarButtons(props: {
         isDisabled={!props.isDirty}
         onPress={props.onCancel}
       />
-      <IconButton
+      <Button
         icon="check"
         size="sm"
         label={strings.confirm}

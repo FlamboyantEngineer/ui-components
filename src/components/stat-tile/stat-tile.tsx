@@ -33,7 +33,7 @@ export interface StatTileProps
   goal?: StatTileGoal | undefined;
   /** A secondary line under the value and delta, such as the period compared. */
   description?: ReactNode;
-  /** A small chart under the figures, such as a `Sparkline`, `SegmentedBar` or `Meter`. */
+  /** A small chart under the figures, such as a `Sparkline`, `SegmentedBar` or `ProgressBar`. */
   chart?: ReactNode;
 }
 

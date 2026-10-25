@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import { IconButton } from '../../src/components/icon-button/icon-button.js';
+
 import {
   ToolbarScroller,
   type ToolbarScrollerItem,
@@ -37,7 +37,7 @@ function Tools({ names }: { names: string[] }) {
           {name}
         </Button>
       ))}
-      <IconButton icon="more" label="More tools" size="sm" />
+      <Button icon="more" label="More tools" size="sm" />
     </>
   );
 }

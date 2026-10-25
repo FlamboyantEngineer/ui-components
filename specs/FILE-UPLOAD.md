@@ -136,7 +136,7 @@ Verification: `src/components/file-upload/file-upload.test.tsx`
 
 ### UIC-FILE-UPLOAD-3.4 - Removing a file
 
-With `onRemove`, each file shall have an `IconButton` (`ui-file-upload__file-remove`, `close` glyph) named by the provider string `removeItem` with the file name, which calls `onRemove` with the file's `id`. When the owner then drops the file and focus went with its row, focus moves to the next file's remove button, else the previous file's, else the command.
+With `onRemove`, each file shall have an `Button` (`ui-file-upload__file-remove`, `close` glyph) named by the provider string `removeItem` with the file name, which calls `onRemove` with the file's `id`. When the owner then drops the file and focus went with its row, focus moves to the next file's remove button, else the previous file's, else the command.
 
 Implementation: `src/components/file-upload/file-upload-files.tsx`, `src/components/file-upload/file-upload.tsx`, `src/utils/use-removal-focus.ts`, `src/core/strings.ts`
 Verification: `src/components/file-upload/file-upload.test.tsx`, `e2e/file-upload.spec.ts`
@@ -214,7 +214,7 @@ Verification: `src/components/file-upload/file-upload.test.tsx`, `e2e/file-uploa
 | `ui-file-upload__file-progress` | slot      |                                              | A file's upload progress (also `ui-progress-bar`).           |
 | `ui-file-upload__file-error`    | slot      |                                              | A file's upload error (also `ui-inline-error`).              |
 | `ui-file-upload__file-actions`  | slot      |                                              | A file's caller actions, from `renderFileActions`.           |
-| `ui-file-upload__file-remove`   | slot      |                                              | A file's remove button (also `ui-icon-button`).              |
+| `ui-file-upload__file-remove`   | slot      |                                              | A file's remove button (also `ui-button`).                   |
 | `data-variant`                  | attribute | `button`, `dropzone`                         | The command.                                                 |
 | `data-status`                   | state     | `selected`, `uploading`, `complete`, `error` | On a listed file: where its upload stands.                   |
 | `data-change`                   | state     | `added`                                      | On a listed file: an edit added it.                          |

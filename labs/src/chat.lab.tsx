@@ -1,4 +1,4 @@
-import { IconButton } from '../../src/components/icon-button/icon-button.js';
+import { Button } from '../../src/components/button/button.js';
 import { ChatHeader } from '../../src/components/chat/index.js';
 import { ChatAssistantCases } from './chat-assistant-cases.js';
 import { ChatChromeCases } from './chat-chrome-cases.js';
@@ -31,7 +31,7 @@ function HeaderMatrix() {
           title={participants === 'several' ? 'Weekend team' : people[participants][0].name}
           participants={people[participants]}
           status={lines[line]}
-          actions={<IconButton icon="more" label={`More (${participants}, ${line})`} size="sm" />}
+          actions={<Button icon="more" label={`More (${participants}, ${line})`} size="sm" />}
         />
       )}
     />

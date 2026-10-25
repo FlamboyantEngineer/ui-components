@@ -15,7 +15,7 @@ Verification: `src/components/message-composer/message-composer.test.tsx`, `e2e/
 
 ### UIC-MESSAGE-COMPOSER-1.2 - Sending
 
-The send button (`ui-message-composer__action`, an `IconButton` with the `send` glyph named by the provider string `send`) and the submit chord shall call `onSubmit` with the text and then empty the composer (through `onChange` when it is controlled). With `submitShortcut="Enter"` (the default) Enter sends and Shift+Enter breaks the line; with `Ctrl+Enter`, Enter breaks the line. Ctrl+Enter or Cmd+Enter sends with either chord. The chord shows in the button's tooltip and `aria-keyshortcuts`. Blank text is not sent, and the button is disabled (`aria-disabled`, staying focusable so focus survives the switch from Stop), unless `allowsEmptySubmit` is set, as when attachments carry the message. The submit chord never breaks the line, and a key that belongs to an input method composition (including the Enter some browsers report with key code 229 as it ends) does not send. Pressing the button keeps focus in the text area. The keys the composer uses have their default prevented and go no further.
+The send button (`ui-message-composer__action`, a `Button` with the `send` glyph named by the provider string `send`) and the submit chord shall call `onSubmit` with the text and then empty the composer (through `onChange` when it is controlled). With `submitShortcut="Enter"` (the default) Enter sends and Shift+Enter breaks the line; with `Ctrl+Enter`, Enter breaks the line. Ctrl+Enter or Cmd+Enter sends with either chord. The chord shows in the button's tooltip and `aria-keyshortcuts`. Blank text is not sent, and the button is disabled (`aria-disabled`, staying focusable so focus survives the switch from Stop), unless `allowsEmptySubmit` is set, as when attachments carry the message. The submit chord never breaks the line, and a key that belongs to an input method composition (including the Enter some browsers report with key code 229 as it ends) does not send. Pressing the button keeps focus in the text area. The keys the composer uses have their default prevented and go no further.
 
 Implementation: `src/components/message-composer/composer-frame.tsx`, `src/components/message-composer/composer-tools.tsx`, `src/components/message-composer/composer-keys.ts`, `src/components/message-composer/use-composer-state.ts`, `src/core/glyphs.tsx`, `src/core/content-strings.ts`
 Verification: `src/components/message-composer/message-composer.test.tsx`, `e2e/message-composer.spec.ts`
@@ -200,10 +200,10 @@ Verification: `src/components/message-composer/rich/rich-message-composer.test.t
 | `ui-message-composer__code-block`  | slot      |                      | Rich: a code block (`pre`).                                         |
 | `ui-message-composer__footer`      | slot      |                      | The row below the text: the tools and the buttons.                  |
 | `ui-message-composer__toolbar`     | slot      |                      | The attach and emoji buttons and the caller's tools.                |
-| `ui-message-composer__attach`      | slot      |                      | The attach button (also `ui-icon-button`).                          |
-| `ui-message-composer__emoji`       | slot      |                      | The emoji button (also `ui-icon-button`).                           |
-| `ui-message-composer__cancel`      | slot      |                      | The Cancel button of edit mode (also `ui-icon-button`).             |
-| `ui-message-composer__action`      | slot      |                      | The send, stop or save button (also `ui-icon-button`).              |
+| `ui-message-composer__attach`      | slot      |                      | The attach button (also `ui-button`).                               |
+| `ui-message-composer__emoji`       | slot      |                      | The emoji button (also `ui-button`).                                |
+| `ui-message-composer__cancel`      | slot      |                      | The Cancel button of edit mode (also `ui-button`).                  |
+| `ui-message-composer__action`      | slot      |                      | The send, stop or save button (also `ui-button`).                   |
 | `ui-message-composer__completions` | slot      |                      | The completion list's popover (also `ui-completion-list`).          |
 | `data-pending`                     | state     | `true`               | On the root: a reply is on its way.                                 |
 | `data-editing`                     | state     | `true`               | On the root: the composer edits a message.                          |

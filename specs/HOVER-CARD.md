@@ -6,7 +6,7 @@
 
 ### UIC-HOVER-CARD-1.1 - Trigger
 
-`HoverCardTrigger` shall hold one focusable trigger (a library `Link`, `Button` or `IconButton`) and a `HoverCard`, and add no element of its own. The trigger carries `aria-haspopup="dialog"` and `aria-expanded` and, while the card is open, is described by it. Pressing the trigger runs its own action and does not toggle the card.
+`HoverCardTrigger` shall hold one focusable trigger (a library `Link`, `Button` or `Button`) and a `HoverCard`, and add no element of its own. The trigger carries `aria-haspopup="dialog"` and `aria-expanded` and, while the card is open, is described by it. Pressing the trigger runs its own action and does not toggle the card.
 
 Implementation: `src/components/hover-card/hover-card.tsx`
 Verification: `src/components/hover-card/hover-card.test.tsx`, `e2e/hover-card.spec.ts`

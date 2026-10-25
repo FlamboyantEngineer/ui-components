@@ -328,7 +328,7 @@ describe('DockPanel panes', () => {
     const { container } = render(<Panel />);
     const body = container.querySelector('.ui-dock-panel__body')!;
     const toggle = screen.getByRole('button', { name: 'Collapse Details' });
-    expect(toggle).toHaveClass('ui-dock-panel__toggle', 'ui-icon-button');
+    expect(toggle).toHaveClass('ui-dock-panel__toggle', 'ui-button');
     expect(toggle).toHaveAttribute('aria-expanded', 'true');
     expect(toggle).toHaveAttribute('aria-controls', body.id);
     expect(toggle.querySelector('[data-glyph="chevron-double-right"]')).not.toBeNull();

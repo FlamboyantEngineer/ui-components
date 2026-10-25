@@ -2,7 +2,7 @@ import { useId, type RefObject } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { useRemovalFocus } from '../../utils/use-removal-focus.js';
 import type { ChatQueuedMessage } from '../chat-controller/chat-controller.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 import { chatHooks as hooks } from './chat-hooks.js';
 
 export interface ChatQueueProps {
@@ -43,14 +43,14 @@ export function ChatQueue({
             <span {...hooks.slot('queue-text')}>{entry.text}</span>
             {onQueueChange ? (
               <>
-                <IconButton
+                <Button
                   icon="edit"
                   label={strings.chatEditQueued(index + 1)}
                   size="sm"
                   className={hooks.slotClass('queue-edit')}
                   onPress={() => onEdit(entry.id)}
                 />
-                <IconButton
+                <Button
                   ref={(button) => removal.register(entry.id, button)}
                   icon="close"
                   label={strings.chatRemoveQueued(index + 1)}
