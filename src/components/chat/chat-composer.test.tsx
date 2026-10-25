@@ -232,4 +232,33 @@ describe('Chat composer', () => {
     await user.click(screen.getByRole('button', { name: 'Send' }));
     expect(onSend).toHaveBeenCalledWith('', []);
   });
+
+  it('UIC-CHAT-3.6 shows the model picker beside the composer tools and disables it with the composer', async () => {
+    const onModelChange = vi.fn();
+    const modelPicker = {
+      models: [
+        { id: 'swift', label: 'Swift', efforts: [] },
+        { id: 'deep', label: 'Deep' },
+      ],
+      efforts: [{ id: 'high', label: 'High' }],
+      onModelChange,
+    };
+    const { user, container, rerenderWith } = renderChat({ onAttach: vi.fn(), modelPicker });
+    const toolbar = container.querySelector('.ui-message-composer__toolbar') as HTMLElement;
+    const tools = within(toolbar).getAllByRole('button');
+    expect(tools.map((tool) => tool.getAttribute('aria-label'))).toEqual([
+      'Attach files',
+      'Insert emoji',
+      'Model: Swift',
+    ]);
+    expect(tools[2]).toHaveClass('ui-chat-model-picker');
+    await user.click(tools[2] as HTMLElement);
+    const menu = await screen.findByRole('menu');
+    await user.click(within(menu).getByRole('menuitemradio', { name: 'Deep' }));
+    expect(onModelChange).toHaveBeenCalledWith('deep');
+    rerenderWith({ onAttach: vi.fn(), modelPicker, isDisabled: true });
+    expect(screen.getByRole('button', { name: /^Model:/ })).toBeDisabled();
+    rerenderWith({ onAttach: vi.fn(), modelPicker: { ...modelPicker, isDisabled: true } });
+    expect(screen.getByRole('button', { name: /^Model:/ })).toBeDisabled();
+  });
 });

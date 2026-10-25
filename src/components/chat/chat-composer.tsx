@@ -2,6 +2,10 @@ import { useId, useMemo, type KeyboardEvent } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { ChatAttachmentList, type ChatAttachmentData } from '../chat-attachment/chat-attachment.js';
 import type { ChatQueuedMessage } from '../chat-controller/chat-controller.js';
+import {
+  ChatModelPicker,
+  type ChatModelPickerProps,
+} from '../chat-model-picker/chat-model-picker.js';
 import type { ChatMessageData, ChatTextToken } from '../chat-parts/chat-parts.js';
 import { ChatQuote, type ChatQuoteData } from '../chat-transcript/chat-transcript.js';
 import { Button } from '../button/button.js';
@@ -53,6 +57,8 @@ export interface ChatComposerOptions extends Pick<
   onEdit?: ChatMessageTextHandler | undefined;
   /** Sends a reply quoting a message; offers Reply in chats between people. */
   onReply?: ChatMessageTextHandler | undefined;
+  /** Shows a model and effort picker among the composer's tools, disabled with the composer. */
+  modelPicker?: ChatModelPickerProps | undefined;
 }
 
 export interface ChatComposerProps {
@@ -198,10 +204,18 @@ function renderAttachments({ options, state }: ChatComposerProps) {
   );
 }
 
+/** The model and effort picker among the composer's tools, refused while the composer is. */
+function renderModelPicker({ options }: ChatComposerProps) {
+  const { modelPicker, isDisabled } = options;
+  if (!modelPicker) return undefined;
+  return <ChatModelPicker {...modelPicker} isDisabled={isDisabled || modelPicker.isDisabled} />;
+}
+
 /**
  * The queue of follow-ups, then the rich composer: mentions of the other participants, the host's
  * commands, a per-conversation draft, Up to edit the reader's last message (between people) or to
- * recall earlier prompts (with an assistant), the reply and edit banners, attachments, and Stop.
+ * recall earlier prompts (with an assistant), the reply and edit banners, attachments, the model
+ * picker, and Stop.
  */
 export function ChatComposer(props: ChatComposerProps) {
   const { options, state, isAssistantChat } = props;
@@ -243,6 +257,7 @@ export function ChatComposer(props: ChatComposerProps) {
         attachments={renderAttachments(props)}
         allowsEmptySubmit={options.attachments?.some((entry) => entry.status === 'complete')}
         showEmojiPicker={!isAssistantChat}
+        toolbar={renderModelPicker(props)}
         onKeyDown={onKeyDown}
         onSubmit={(message) => submitMessage(props, message)}
       />

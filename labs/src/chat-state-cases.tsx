@@ -8,6 +8,7 @@ import type { ChatMessageData } from '../../src/components/chat-parts/index.js';
 import { UiProvider } from '../../src/core/provider.js';
 import { Cluster } from '../../src/components/layout/layout.js';
 import { agents } from './chat-agent.js';
+import { labEfforts, labModels } from './chat-model-samples.js';
 import { assistantPeople, getLabNow, plannerId, readerId, textMessage } from './chat-samples.js';
 import { LabSection, StateMatrix } from './chrome/index.js';
 
@@ -82,6 +83,7 @@ function StateSample({ state }: { state: ChatState }) {
         textFormat={state === 'plain text' ? 'plain' : undefined}
         isDisabled={state === 'disabled'}
         placeholder="Ask the trip planner…"
+        modelPicker={{ models: labModels, efforts: labEfforts, defaultModel: 'balanced' }}
         onSend={() => undefined}
       />
     </div>
@@ -100,7 +102,7 @@ export function ChatStateCases() {
       </LabSection>
       <LabSection
         title="States"
-        description="Text renders as Markdown by default; textFormat plain shows it as written, line breaks kept. isDisabled refuses new messages while the conversation stays readable. In a right-to-left locale the layout mirrors."
+        description="Text renders as Markdown by default; textFormat plain shows it as written, line breaks kept. isDisabled refuses new messages, and the model picker with them, while the conversation stays readable. In a right-to-left locale the layout mirrors."
       >
         <StateMatrix
           axes={{ state: states }}

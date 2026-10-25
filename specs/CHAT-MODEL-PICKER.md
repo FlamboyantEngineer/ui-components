@@ -1,6 +1,6 @@
 # Chat Model Picker
 
-`ChatModelPicker` is a compact composer tool that shows the model the reader's messages go to and, when that model takes one, its reasoning effort, and opens a menu to choose them. The menu lists the models, each with its description, an optional badge and, for an unavailable model, the reason; then the efforts the chosen model takes. It builds on [Button](BUTTON.md), [Meta Line](META-LINE.md), [Badge](BADGE.md) and the [Menu](MENU.md) family (`MenuTrigger`, `MenuPopover`, `Menu`, `MenuSection`, `MenuItem`). The caller lists the models and efforts and reads the choice, controlled or not, and places it among a composer's tools.
+`ChatModelPicker` is a compact composer tool that shows the model the reader's messages go to and, when that model takes one, its reasoning effort, and opens a menu to choose them. The menu lists the models, each with its description, an optional badge and, for an unavailable model, the reason; then the efforts the chosen model takes. It builds on [Button](BUTTON.md), [Meta Line](META-LINE.md), [Badge](BADGE.md) and the [Menu](MENU.md) family (`MenuTrigger`, `MenuPopover`, `Menu`, `MenuSection`, `MenuItem`). The caller lists the models and efforts and reads the choice, controlled or not; [Chat](CHAT.md) places it among its composer's tools with `modelPicker`.
 
 ## UIC-CHAT-MODEL-PICKER-1 - Trigger
 

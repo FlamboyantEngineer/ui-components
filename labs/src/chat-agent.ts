@@ -179,6 +179,23 @@ const failure: ChatSendFunction = async function* (messages, { signal }) {
   yield { type: 'finish' };
 };
 
+/**
+ * Streams `send`'s reply opened with a line naming the model and effort the message went to, as a
+ * host that reads the picker's choice when the reader sends; a reply without text ends with it.
+ */
+export function withModelNote(send: ChatSendFunction, choice: string): ChatSendFunction {
+  return async function* (messages, context) {
+    let isNoted = false;
+    for await (const event of send(messages, context)) {
+      if (!isNoted && (event.type === 'text-delta' || event.type === 'finish')) {
+        isNoted = true;
+        yield { type: 'text-delta', text: `_Sent to ${choice}._\n\n` };
+      }
+      yield event;
+    }
+  };
+}
+
 export const agents: Record<AgentBehaviour, ChatSendFunction> = {
   answer: answerTrip,
   'approval-awaited': approvalAwaited,
