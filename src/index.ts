@@ -113,6 +113,8 @@ export * from './components/chat-transcript/index.js';
 export * from './components/chat-attachment/index.js';
 export * from './components/chat-question/index.js';
 export * from './components/chat-tool-call/index.js';
+export * from './components/chat-sources/index.js';
+export * from './components/code-block/index.js';
 export * from './components/number-field/index.js';
 export * from './components/slider/index.js';
 export * from './components/boolean-field/index.js';

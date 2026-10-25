@@ -3,7 +3,9 @@ import { chatActivityStrings, type ChatActivityStrings } from './chat-activity-s
 import { chatAttachmentStrings, type ChatAttachmentStrings } from './chat-attachment-strings.js';
 import { chatMessageStrings, type ChatMessageStrings } from './chat-message-strings.js';
 import { chatQuestionStrings, type ChatQuestionStrings } from './chat-question-strings.js';
+import { chatSourcesStrings, type ChatSourcesStrings } from './chat-sources-strings.js';
 import { chatToolStrings, type ChatToolStrings } from './chat-tool-strings.js';
+import { codeStrings, type CodeStrings } from './code-strings.js';
 import { commonStrings, type CommonStrings } from './common-strings.js';
 import { contentStrings, type ContentStrings } from './content-strings.js';
 import { dashboardStrings, type DashboardStrings } from './dashboard-strings.js';
@@ -37,7 +39,9 @@ export interface UiStrings
     ChatAttachmentStrings,
     ChatMessageStrings,
     ChatQuestionStrings,
+    ChatSourcesStrings,
     ChatToolStrings,
+    CodeStrings,
     CommonStrings,
     ContentStrings,
     DashboardStrings,
@@ -66,7 +70,9 @@ export const defaultStrings: UiStrings = {
   ...chatAttachmentStrings,
   ...chatMessageStrings,
   ...chatQuestionStrings,
+  ...chatSourcesStrings,
   ...chatToolStrings,
+  ...codeStrings,
   ...commonStrings,
   ...contentStrings,
   ...dashboardStrings,

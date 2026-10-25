@@ -1,0 +1,80 @@
+/* Chat Sources. A compact numbered list of sources, and superscript citation markers with a preview card. */
+
+.ui-chat-sources {
+  display: grid;
+  gap: 6px;
+}
+
+.ui-chat-sources__label {
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+  font-weight: var(--ref-font-weight-medium);
+}
+
+.ui-chat-sources__list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-inline-start: 1.6em;
+}
+
+.ui-chat-sources__item::marker {
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+
+.ui-chat-sources__item {
+  line-height: 1.4;
+}
+
+.ui-chat-citation__card {
+  display: grid;
+  gap: 2px;
+  line-height: 1.4;
+}
+
+:is(.ui-chat-sources__title, .ui-chat-citation__title) {
+  font-weight: var(--ref-font-weight-medium);
+}
+
+:is(.ui-chat-sources__site, .ui-chat-citation__site) {
+  display: block;
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+
+:is(.ui-chat-sources__snippet, .ui-chat-citation__snippet) {
+  display: -webkit-box;
+  margin: 2px 0 0;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-size: var(--ref-font-size-sm);
+}
+
+/* The marker reads as a small superscript; its new-tab glyph stays out of the running text. */
+
+.ui-chat-citation {
+  margin-inline-start: 1px;
+  font-size: 0.75em;
+  line-height: 1;
+  vertical-align: super;
+}
+
+.ui-chat-citation__marker {
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-chat-citation .ui-link__external-icon {
+  display: none;
+}
+
+.ui-chat-citation.ui-button {
+  color: var(--ref-accent-ink);
+  font-size: 0.75em;
+}
+
+.ui-chat-citation:focus-visible {
+  border-radius: var(--ref-radius-xs);
+  outline: var(--ref-focus-ring);
+}

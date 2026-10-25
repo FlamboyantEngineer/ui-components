@@ -1,0 +1,88 @@
+/* Code Block. A bordered panel: a header row of the title and actions over code that scrolls sideways. */
+
+.ui-code-block {
+  margin: 0 0 0.75em;
+  overflow: hidden;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-surface);
+}
+
+.ui-code-block__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--ref-control-height-sm);
+  padding: 2px 4px 2px 12px;
+  border-bottom: 1px solid var(--ref-border);
+}
+
+.ui-code-block__title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--ref-muted);
+  font-family: var(--ref-mono);
+  font-size: var(--ref-font-size-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-code-block__actions {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 2px;
+}
+
+:is(.ui-code-block__apply, .ui-code-block__copy) {
+  flex: none;
+}
+
+.ui-code-block__code {
+  margin: 0;
+  padding: 10px 12px;
+  overflow-x: auto;
+  font-family: var(--ref-mono);
+  font-size: 0.9em;
+  line-height: 1.45;
+  white-space: pre;
+  tab-size: 2;
+}
+
+.ui-code-block__code[data-overflowing]:focus-visible {
+  outline: var(--ref-focus-ring);
+  outline-offset: calc(-1 * var(--ref-focus-inset));
+}
+
+.ui-code-block__token[data-token='keyword'] {
+  color: var(--ref-accent-ink);
+  font-weight: var(--ref-font-weight-strong);
+}
+
+.ui-code-block__token:is([data-token='string'], [data-token='key']) {
+  color: var(--ref-success);
+}
+
+.ui-code-block__token:is([data-token='number'], [data-token='literal']) {
+  color: var(--ref-warning);
+}
+
+.ui-code-block__token:is([data-token='comment'], [data-token='punctuation']) {
+  color: var(--ref-muted);
+}
+
+.ui-code-block__token[data-token='comment'] {
+  font-style: italic;
+}
+
+/* A terminal block keeps its output muted, and its prompts out of a manual text selection. */
+
+.ui-code-block[data-variant='terminal'] .ui-code-block__line[data-kind='output'] {
+  color: var(--ref-muted);
+}
+
+.ui-code-block__prompt {
+  color: var(--ref-muted);
+  user-select: none;
+}

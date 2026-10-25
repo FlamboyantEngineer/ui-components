@@ -34,11 +34,13 @@
 @import url('reference/chat-activity.css');
 @import url('reference/chat-attachment.css');
 @import url('reference/chat-question.css');
+@import url('reference/chat-sources.css');
 @import url('reference/chat-tool-call.css');
 @import url('reference/chat-transcript.css');
 @import url('reference/checkbox.css');
 @import url('reference/checkbox-group.css');
 @import url('reference/circular-progress.css');
+@import url('reference/code-block.css');
 @import url('reference/code-editor.css');
 @import url('reference/color-field.css');
 @import url('reference/color-swatch.css');
