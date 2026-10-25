@@ -1,5 +1,6 @@
 import { analysisStrings, type AnalysisStrings } from './analysis-strings.js';
 import { commonStrings, type CommonStrings } from './common-strings.js';
+import { composerStrings, type ComposerStrings } from './composer-strings.js';
 import { contentStrings, type ContentStrings } from './content-strings.js';
 import { dashboardStrings, type DashboardStrings } from './dashboard-strings.js';
 import { diagramStrings, type DiagramStrings } from './diagram-strings.js';
@@ -29,6 +30,7 @@ export interface UiStrings
   extends
     AnalysisStrings,
     CommonStrings,
+    ComposerStrings,
     ContentStrings,
     DashboardStrings,
     DiagramStrings,
@@ -53,6 +55,7 @@ export interface UiStrings
 export const defaultStrings: UiStrings = {
   ...analysisStrings,
   ...commonStrings,
+  ...composerStrings,
   ...contentStrings,
   ...dashboardStrings,
   ...diagramStrings,
