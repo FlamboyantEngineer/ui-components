@@ -1,10 +1,10 @@
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, expectTypeOf, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { DescriptionList, DescriptionRow, type DescriptionRowSpan } from './description-list.js';
-import { formatDescriptionValue } from './format-description-value.js';
+import { formatDescriptionValue, type DescriptionValue } from './format-description-value.js';
 
 function Sample(props: { layout?: 'inline' | 'stacked'; columns?: 1 | 2 }) {
   return (
@@ -123,6 +123,8 @@ describe('DescriptionList', () => {
   });
 
   it('UIC-DESCRIPTION-LIST-1.5 formats ISO 8601 dates as calendar dates in any time zone', () => {
+    expectTypeOf<Date>().not.toMatchTypeOf<DescriptionValue>();
+    expectTypeOf<{ start: Date; end: Date }>().not.toMatchTypeOf<DescriptionValue>();
     const medium = (options: Intl.DateTimeFormatOptions = {}) =>
       new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', ...options });
     expect(formatDescriptionValue('2026-05-14', { locale: 'en-US' })).toBe('May 14, 2026');
@@ -133,6 +135,15 @@ describe('DescriptionList', () => {
           formatOptions: { dateStyle: 'medium', timeZone },
         }),
       ).toBe('May 14, 2026');
+      expect(
+        formatDescriptionValue(
+          { start: '2026-05-14', end: '2026-05-21' },
+          {
+            locale: 'en-US',
+            formatOptions: { dateStyle: 'medium', timeZone },
+          },
+        ),
+      ).toBe(medium().formatRange(new Date(2026, 4, 14), new Date(2026, 4, 21)));
     }
     expect(
       formatDescriptionValue('2026-05-14T23:30:00Z', {
@@ -150,8 +161,8 @@ describe('DescriptionList', () => {
   });
 
   it('UIC-DESCRIPTION-LIST-1.5 formats numbers, dates, lists and ranges for the provider locale', () => {
-    const day = new Date(2024, 2, 5);
-    const later = new Date(2024, 2, 9);
+    const day = '2024-03-05';
+    const later = '2024-03-09';
     render(
       <UiProvider locale="de-DE">
         <DescriptionList>
@@ -177,10 +188,13 @@ describe('DescriptionList', () => {
     expect(values).toEqual([
       '1.234,5',
       new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(9.5),
-      new Intl.DateTimeFormat('de-DE', { dateStyle: 'medium' }).format(day),
+      new Intl.DateTimeFormat('de-DE', { dateStyle: 'medium' }).format(new Date(2024, 2, 5)),
       'Apfel, Birne und Pflaume',
       new Intl.NumberFormat('de-DE').formatRange(3, 7),
-      new Intl.DateTimeFormat('de-DE', { dateStyle: 'medium' }).formatRange(day, later),
+      new Intl.DateTimeFormat('de-DE', { dateStyle: 'medium' }).formatRange(
+        new Date(2024, 2, 5),
+        new Date(2024, 2, 9),
+      ),
       'Shown instead',
     ]);
     expect(

@@ -26,8 +26,6 @@ export interface FolderSelectionOptions<M extends FolderSelectionMode = FolderSe
   /** The selected folders, controlled, in multiple selection. */
   selectedKeys?: Iterable<Key> | undefined;
   defaultSelectedKeys?: Iterable<Key> | undefined;
-  /** @deprecated Use `onSelectionChange`, which receives a `Set` in multiple selection. */
-  onSelectedKeysChange?: ((keys: Key[]) => void) | undefined;
 }
 
 export interface FolderExpansion {
@@ -72,7 +70,6 @@ function reportSelection(options: FolderSelectionOptions, keys: Key[]) {
     return;
   }
   onSelectionChange?.(new Set(keys));
-  options.onSelectedKeysChange?.(keys);
 }
 
 /** The selected folders, in single or multiple selection, controlled or held here. */

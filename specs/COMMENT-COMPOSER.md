@@ -34,7 +34,7 @@ Verification: `src/components/comment-composer/comment-composer.test.tsx`, `e2e/
 
 ### UIC-COMMENT-COMPOSER-1.5 - Draft
 
-The draft shall be controlled by `value` with `onChange`, which reports every edit; uncontrolled, it starts at `defaultValue` (empty by default). With `persistKey`, an uncontrolled draft is read from and written to the provider storage under that key ([UIC-PROVIDER-6.1](PROVIDER.md#uic-provider-61---storage-adapter)), so a composer mounted again resumes it. `storageKey` is a deprecated name for `persistKey`, used when `persistKey` is not given.
+The draft shall be controlled by `value` with `onChange`, which reports every edit; uncontrolled, it starts at `defaultValue` (empty by default). With `persistKey`, an uncontrolled draft is read from and written to the provider storage under that key ([UIC-PROVIDER-6.1](PROVIDER.md#uic-provider-61---storage-adapter)), so a composer mounted again resumes it.
 
 Implementation: `src/components/comment-composer/comment-composer.tsx`
 Verification: `src/components/comment-composer/comment-composer.test.tsx`, `e2e/comment-composer.spec.ts`

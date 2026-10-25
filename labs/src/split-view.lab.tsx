@@ -162,7 +162,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Bounds and persistence"
-      description="The first pane stays between 25% and 60%, and its size is restored after a reload."
+      description="Pane bounds keep the first pane between 25% and 60%; persistKey restores its size after a reload."
     >
       <div style={frame(480, 140)} data-lab-split="persisted">
         <SplitView

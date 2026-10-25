@@ -27,8 +27,6 @@ export interface CommentComposerProps extends BaseProps {
   submitLabel?: string | undefined;
   /** Keeps an uncontrolled draft in the provider storage under this key, across remounts. */
   persistKey?: string | undefined;
-  /** @deprecated Use `persistKey`. */
-  storageKey?: string | undefined;
   /** Refuses typing, submitting and cancelling. */
   isDisabled?: boolean | undefined;
   /** Focuses the text box when the composer mounts. */
@@ -116,7 +114,6 @@ export function CommentComposer({
   placeholder,
   submitLabel,
   persistKey,
-  storageKey,
   isDisabled = false,
   autoFocus,
   className,
@@ -127,7 +124,7 @@ export function CommentComposer({
     value,
     defaultValue,
     onChange,
-    persistKey: persistKey ?? storageKey,
+    persistKey,
   });
   const actions = useComposerActions({ draft, setDraft, onSubmit, onCancel, isDisabled });
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {

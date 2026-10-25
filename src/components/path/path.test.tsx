@@ -1,9 +1,9 @@
 import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createRef } from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, expectTypeOf, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import { Path } from './path.js';
+import { Path, type PathProps } from './path.js';
 
 const tooltip = () => document.querySelector<HTMLElement>('[role="tooltip"]');
 
@@ -56,6 +56,10 @@ describe('Path', () => {
   });
 
   it('UIC-PATH-2.4 appends the caller class and forwards id, ref, native and data attributes', () => {
+    expectTypeOf<PathProps>().not.toHaveProperty('expandable');
+    expectTypeOf<PathProps>().not.toHaveProperty('isExpanded');
+    expectTypeOf<PathProps>().not.toHaveProperty('defaultExpanded');
+    expectTypeOf<PathProps>().not.toHaveProperty('onExpandedChange');
     const ref = createRef<HTMLSpanElement>();
     const { container } = render(
       <Path
@@ -95,6 +99,7 @@ describe('Path', () => {
       setBox(short, { cut: false });
       await hover(user, short);
       expect(tooltip()).toBeNull();
+      expect(screen.queryByRole('button', { name: 'Show more' })).not.toBeInTheDocument();
       await hover(user, long);
       const panel = tooltip();
       expect(panel).toHaveTextContent('/Garden/Vegetable beds/North side/Tomatoes');

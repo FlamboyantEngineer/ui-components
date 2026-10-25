@@ -1,4 +1,4 @@
-export { SplitView, resolveInitialSplitSize, resolveSplitBounds } from './split-view.js';
+export { SplitView } from './split-view.js';
 export type {
   FixedSplitViewProps,
   ResizableSplitViewProps,
