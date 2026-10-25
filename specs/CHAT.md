@@ -1,6 +1,6 @@
 # Chat
 
-`Chat` is a whole conversation drawn from the host's messages and callbacks: an optional header with the participants, a search within the conversation and the host's controls; a [Chat Transcript](CHAT-TRANSCRIPT.md) whose messages hold their [Chat Parts](CHAT-PARTS.md) and the [Chat Message Actions](CHAT-MESSAGE-ACTIONS.md) the host allows; who is typing and what the assistant is doing; the queue of follow-ups; and the rich [Message Composer](MESSAGE-COMPOSER.md). It serves assistant chats (an assistant among the participants: streaming, tool calls, approvals, questions, plans) and chats between people (one to one or in groups: delivery, replies, edits, reactions, read receipts, unread messages). It holds no conversation state of its own: the host owns the messages, or spreads a [Chat Controller](CHAT-CONTROLLER.md)'s `props` into it. `Chat` is inline; a host places it in a page, a [Drawer](DRAWER.md) or a [Popover](POPOVER.md). `ChatHeader` is the header, also usable on its own.
+`Chat` is a whole conversation drawn from the host's messages and callbacks: an optional header with the participants, a search within the conversation and the host's controls; a [Chat Transcript](CHAT-TRANSCRIPT.md) whose messages hold their [Chat Parts](CHAT-PARTS.md) and the [Chat Message Actions](CHAT-MESSAGE-ACTIONS.md) the host allows; who is typing and what the assistant is doing; the queue of follow-ups; and the rich [Message Composer](MESSAGE-COMPOSER.md), with an optional [Chat Model Picker](CHAT-MODEL-PICKER.md) among its tools. It serves assistant chats (an assistant among the participants: streaming, tool calls, approvals, questions, plans) and chats between people (one to one or in groups: delivery, replies, edits, reactions, read receipts, unread messages). It holds no conversation state of its own: the host owns the messages, or spreads a [Chat Controller](CHAT-CONTROLLER.md)'s `props` into it. `Chat` is inline; a host places it in a page, a [Drawer](DRAWER.md) or a [Popover](POPOVER.md). `ChatHeader` is the header, also usable on its own.
 
 The conversation's model is [Chat Parts](CHAT-PARTS.md)' `ChatMessageData` and `ChatParticipant`. A conversation is an assistant chat when a participant's `kind` is `assistant`, and a chat between people otherwise.
 
@@ -132,6 +132,13 @@ Verification: `src/components/chat/chat-composer.test.tsx`, `e2e/chat.spec.ts`
 ### UIC-CHAT-3.5 - Attachments
 
 With `onAttach`, the composer shall attach files from its attach button, a drop and a paste ([UIC-MESSAGE-COMPOSER-3.2](MESSAGE-COMPOSER.md#uic-message-composer-32---attaching-files)); without it there is no attach button. The chat's `attachments` show above the input as a `ChatAttachmentList` with `onRemoveAttachment` and `onRetryAttachment`, focus going to the composer when the last one is removed; while one of them is `complete`, the message may be sent without text.
+
+Implementation: `src/components/chat/chat-composer.tsx`
+Verification: `src/components/chat/chat-composer.test.tsx`, `e2e/chat.spec.ts`
+
+### UIC-CHAT-3.6 - Model picker
+
+With `modelPicker`, the composer's tools shall end, after the attach and emoji buttons, with a [Chat Model Picker](CHAT-MODEL-PICKER.md) taking those props, disabled while the chat's `isDisabled` holds as well as with its own `isDisabled`. The chat holds no choice of its own: the host reads the current model and effort, controlled or reported through `onModelChange` and `onEffortChange`, when it sends the reader's message.
 
 Implementation: `src/components/chat/chat-composer.tsx`
 Verification: `src/components/chat/chat-composer.test.tsx`, `e2e/chat.spec.ts`

@@ -6,6 +6,10 @@ import { chatAttachmentStrings, type ChatAttachmentStrings } from './chat-attach
 import { chatControllerStrings, type ChatControllerStrings } from './chat-controller-strings.js';
 import { chatListStrings, type ChatListStrings } from './chat-list-strings.js';
 import { chatMessageStrings, type ChatMessageStrings } from './chat-message-strings.js';
+import {
+  chatModelPickerStrings,
+  type ChatModelPickerStrings,
+} from './chat-model-picker-strings.js';
 import { chatQuestionStrings, type ChatQuestionStrings } from './chat-question-strings.js';
 import { chatSourcesStrings, type ChatSourcesStrings } from './chat-sources-strings.js';
 import { chatToolStrings, type ChatToolStrings } from './chat-tool-strings.js';
@@ -48,6 +52,7 @@ export interface UiStrings
     ChatControllerStrings,
     ChatListStrings,
     ChatMessageStrings,
+    ChatModelPickerStrings,
     ChatQuestionStrings,
     ChatSourcesStrings,
     ChatToolStrings,
@@ -85,6 +90,7 @@ export const defaultStrings: UiStrings = {
   ...chatControllerStrings,
   ...chatListStrings,
   ...chatMessageStrings,
+  ...chatModelPickerStrings,
   ...chatQuestionStrings,
   ...chatSourcesStrings,
   ...chatToolStrings,

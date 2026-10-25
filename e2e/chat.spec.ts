@@ -94,6 +94,31 @@ test.describe('Chat lab', () => {
     await rateAndCopy(page, reply);
   });
 
+  test('UIC-CHAT-3.6 sends each message with the model and effort the picker shows', async ({
+    page,
+  }) => {
+    await openChat(page, 8);
+    const assistant = section(page, 'Assistant, live');
+    const picker = assistant.getByRole('button', { name: /^Model:/ });
+    await expect(picker).toHaveAccessibleName('Model: Balanced, Medium effort');
+    await picker.click();
+    await page.getByRole('menuitemradio', { name: /^Deep/ }).click();
+    await expect(picker).toHaveAccessibleName('Model: Deep, Medium effort');
+    await picker.click();
+    await page.getByRole('menuitemradio', { name: /^High/ }).click();
+    await expect(picker).toHaveAccessibleName('Model: Deep, High effort');
+    await ask(page, 'Fails once', 'Ferry times?');
+    await expect(lastReply(assistant)).toContainText('Sent to Deep, high effort.');
+    await picker.click();
+    await page.getByRole('menuitemradio', { name: /^Classic/ }).click();
+    await expect(picker).toHaveAccessibleName('Model: Classic');
+    await assistant.getByRole('button', { name: 'Retry' }).click();
+    await expect(lastReply(assistant)).toContainText('Sent to Classic.');
+    await expect(lastReply(assistant)).toContainText('ferries cross every 20 minutes');
+    const disabled = section(page, 'States').locator('[data-lab-cell="state=disabled"]');
+    await expect(disabled.getByRole('button', { name: /^Model:/ })).toBeDisabled();
+  });
+
   test('UIC-CHAT-1.4 approves a booking awaited in the stream by keyboard', async ({
     page,
     lab,

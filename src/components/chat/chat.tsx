@@ -143,9 +143,10 @@ function useHeaderStatus({ props, participants }: Omit<ChatModel, 'context'>) {
  * A whole conversation from the host's messages and callbacks: an optional header with the
  * participants, search and the host's controls; the transcript with date separators, grouping, the
  * unread divider, read receipts and each message's parts and commands; who is typing and what the
- * assistant is doing; the queue of follow-ups; and the rich composer. It serves assistant chats
- * (streaming, tool calls, approvals, questions) and chats between people alike, and holds no
- * conversation state of its own: spread a `useChatController`'s `props` into it, or pass your own.
+ * assistant is doing; the queue of follow-ups; and the rich composer, with an optional model
+ * picker among its tools. It serves assistant chats (streaming, tool calls, approvals, questions)
+ * and chats between people alike, and holds no conversation state of its own: spread a
+ * `useChatController`'s `props` into it, or pass your own.
  */
 export function Chat(props: ChatProps) {
   const { messages, participants: list, currentUserId, className, id } = props;

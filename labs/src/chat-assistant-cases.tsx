@@ -6,7 +6,14 @@ import { useChatController } from '../../src/components/chat-controller/index.js
 import type { ChatMessageData } from '../../src/components/chat-parts/index.js';
 import { Stack } from '../../src/components/layout/layout.js';
 import { Choice, ChoiceGroup } from '../../src/components/choice-group/choice-group.js';
-import { agentBehaviours, agents, fakeUpload, type AgentBehaviour } from './chat-agent.js';
+import {
+  agentBehaviours,
+  agents,
+  fakeUpload,
+  withModelNote,
+  type AgentBehaviour,
+} from './chat-agent.js';
+import { describeModelChoice, labEfforts, labModels } from './chat-model-samples.js';
 import { forecastRenderer, renderLabPart } from './chat-parts-samples.js';
 import { assistantPeople, plannerId, readerId } from './chat-samples.js';
 import { LabSection } from './chrome/index.js';
@@ -48,9 +55,12 @@ function useCallbackLog() {
 function AssistantDemo() {
   const [behaviour, setBehaviour] = useState<AgentBehaviour>('answer');
   const [allowed, setAllowed] = useState<readonly string[]>([]);
+  const [model, setModel] = useState('balanced');
+  const [effort, setEffort] = useState('medium');
   const [log, record] = useCallbackLog();
   const controller = useChatController({
-    send: agents[behaviour],
+    // The host reads the picker's current choice when the reader sends; the reply names it.
+    send: withModelNote(agents[behaviour], describeModelChoice(model, effort)),
     currentUserId: readerId,
     assistantId: plannerId,
     initialMessages,
@@ -82,6 +92,14 @@ function AssistantDemo() {
           showSearch
           placeholder="Ask the trip planner…"
           commands={commands}
+          modelPicker={{
+            models: labModels,
+            efforts: labEfforts,
+            model,
+            onModelChange: setModel,
+            effort,
+            onEffortChange: setEffort,
+          }}
           toolRenderers={{ get_weather: forecastRenderer }}
           renderPart={renderLabPart}
           onApplyCode={(code) => record(`applied ${code.split('\n').length} lines`)}
@@ -112,7 +130,7 @@ export function ChatAssistantCases() {
   return (
     <LabSection
       title="Assistant, live"
-      description="A fake trip planner streams through useChatController. Pick what it does with your next message: an answer whose reasoning and tool calls fold into steps (the forecast uses a custom tool renderer) with a live status line, then streamed Markdown with a table, code (Copy and Apply) and citations with their sources; a booking awaited in the stream, or a cancellation answered by a new turn (Approve, Deny with a reason, Always allow); a card of three questions with previews; a plan that advances, then a diff and a terminal block; or a reply that fails once (Retry). Stop ends a reply and keeps its text; messages sent while it runs wait in the queue above the composer, where you can edit or remove them. Attach files (a file named broken… fails its first upload: Retry), press Up in the empty composer to recall earlier prompts, type / for a command, and copy or rate a reply with reasons."
+      description="A fake trip planner streams through useChatController. Pick what it does with your next message: an answer whose reasoning and tool calls fold into steps (the forecast uses a custom tool renderer) with a live status line, then streamed Markdown with a table, code (Copy and Apply) and citations with their sources; a booking awaited in the stream, or a cancellation answered by a new turn (Approve, Deny with a reason, Always allow); a card of three questions with previews; a plan that advances, then a diff and a terminal block; or a reply that fails once (Retry). Stop ends a reply and keeps its text; messages sent while it runs wait in the queue above the composer, where you can edit or remove them. Attach files (a file named broken… fails its first upload: Retry), press Up in the empty composer to recall earlier prompts, type / for a command, and copy or rate a reply with reasons. The model picker beside the send button chooses the model and effort of your next message, and each reply names the ones it was sent with."
     >
       <AssistantDemo />
     </LabSection>
