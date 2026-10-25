@@ -229,6 +229,37 @@ describe('Markdown', () => {
     expectHooksMatchSpec(container, 'MARKDOWN', { callerAttributes: ['data-probe'] });
   });
 
+  it('UIC-MARKDOWN-2.11 renders the end of a streaming source as it will once complete', () => {
+    const { container, rerender } = render(
+      <Markdown source={'Pack **light** and *warm layers, see [the gu'} isStreaming />,
+    );
+    const root = container.firstElementChild as HTMLElement;
+    expect(root).toHaveAttribute('data-streaming', 'true');
+    expect(root.querySelector('em')).toHaveTextContent('warm layers, see the gu');
+    expect(root).not.toHaveTextContent(/[*[]/);
+    const table = '| City | Days |\n|---|--:|\n| Lisbon | 3 |';
+    rerender(<Markdown source={`${table}\n| Por`} isStreaming />);
+    expect(within(screen.getByRole('table')).getAllByRole('row')).toHaveLength(2);
+    rerender(<Markdown source={'Run:\n\n```sh\nnpm test\n`'} isStreaming />);
+    expect(root.querySelector('pre code')?.innerHTML).toBe('npm test');
+    rerender(<Markdown source={'Pack *warm'} />);
+    expect(root).not.toHaveAttribute('data-streaming');
+    expect(root).toHaveTextContent('Pack *warm');
+    expectHooksMatchSpec(container, 'MARKDOWN');
+  });
+
+  it('UIC-MARKDOWN-2.12 keeps the rendered elements, and focus, when a stream ends', async () => {
+    const user = userEvent.setup();
+    const source = 'See [the guide](/guide).\n\nPack light';
+    const { rerender } = render(<Markdown source={source} isStreaming />);
+    const link = screen.getByRole('link', { name: 'the guide' });
+    await user.tab();
+    expect(link).toHaveFocus();
+    rerender(<Markdown source={`${source}.`} isStreaming={false} />);
+    expect(screen.getByRole('link', { name: 'the guide' })).toBe(link);
+    expect(link).toHaveFocus();
+  });
+
   it('UIC-MARKDOWN-3.1 keeps native semantics and never injects raw HTML', () => {
     const { container } = render(
       <Markdown source={'## Notes\n\n<img src=x onerror="alert(1)"><script>alert(1)</script>'} />,
@@ -236,7 +267,12 @@ describe('Markdown', () => {
     expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Notes');
     expect(container.querySelector('script, img')).toBeNull();
     expect(container.querySelector('p')).toHaveTextContent('<img src=x onerror="alert(1)">');
-    for (const file of ['markdown.tsx', 'parse-markdown.ts', 'markdown-inlines.ts']) {
+    for (const file of [
+      'markdown.tsx',
+      'markdown-render.tsx',
+      'parse-markdown.ts',
+      'markdown-inlines.ts',
+    ]) {
       const code = readFileSync(join(process.cwd(), 'src/components/markdown', file), 'utf8');
       expect(code).not.toMatch(/dangerouslySetInnerHTML|innerHTML|DOMParser|document\./);
     }

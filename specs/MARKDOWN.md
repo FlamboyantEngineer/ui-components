@@ -1,6 +1,6 @@
 # Markdown
 
-`Markdown` renders Markdown as React elements, for documentation pages, descriptions, comments and generated answers. `parseMarkdown` reads the text into a plain, frozen document tree without a dependency or the DOM, so it also runs on the server: CommonMark's blocks and inlines (headings, paragraphs, emphasis, code, lists, block quotes, links, images, thematic breaks) and three extensions, tables, task lists and strikethrough. Raw HTML is never interpreted; it shows as text. Tables render through [Prose Table](PROSE-TABLE.md), links through [Link](LINK.md), task items through a read-only [Checkbox](CHECKBOX.md), thematic breaks through [Separator](SEPARATOR.md) and text through [Text Match](TEXT-MATCH.md). Highlighting code and drawing diagrams stay with the caller, through `renderNode`. Stored HTML is shown by [HTML Markup](HTML-MARKUP.md) instead.
+`Markdown` renders Markdown as React elements, for documentation pages, descriptions, comments and generated answers. `parseMarkdown` reads the text into a plain, frozen document tree without a dependency or the DOM, so it also runs on the server: CommonMark's blocks and inlines (headings, paragraphs, emphasis, code, lists, block quotes, links, images, thematic breaks) and three extensions, tables, task lists and strikethrough. Raw HTML is never interpreted; it shows as text. Tables render through [Prose Table](PROSE-TABLE.md), links through [Link](LINK.md), task items through a read-only [Checkbox](CHECKBOX.md), thematic breaks through [Separator](SEPARATOR.md) and text through [Text Match](TEXT-MATCH.md). Highlighting code and drawing diagrams stay with the caller, through `renderNode`. A streaming mode renders an answer that is still arriving. Stored HTML is shown by [HTML Markup](HTML-MARKUP.md) instead.
 
 ## UIC-MARKDOWN-1 - Parsing
 
@@ -94,56 +94,56 @@ Verification: `src/components/markdown/parse-markdown.test.ts`
 
 `Markdown` shall render `source` inside a `<div>` root, each node as its element: `<h1>`–`<h6>`, `<p>`, `<blockquote>`, `<ul>`, `<ol>` (with `start` when it is not 1), `<li>`, `<em>`, `<strong>`, `<del>`, `<br>`, `<img>` with `alt` and `title` in the `ui-markdown__image` slot, and a [Separator](SEPARATOR.md) for a thematic break. The paragraphs of a tight list's items render without `<p>`. The elements are built without recursive calls, so every document `parseMarkdown` returns renders, five thousand nested block quotes included; how deep a tree the host's renderer can mount is its own limit.
 
-Implementation: `src/components/markdown/markdown.tsx`, `labs/reference/markdown.css`
+Implementation: `src/components/markdown/markdown.tsx`, `src/components/markdown/markdown-render.tsx`, `labs/reference/markdown.css`
 Verification: `src/components/markdown/markdown.test.tsx`, `e2e/markdown.spec.ts`
 
 ### UIC-MARKDOWN-2.2 - Heading ids
 
 With `headingIdPrefix`, headings shall carry `id` set to the prefix and their slug, and a link to `#slug` of one of the document's headings shall point to the prefixed id. Without it headings carry no id, so two documents on a page never repeat one.
 
-Implementation: `src/components/markdown/markdown.tsx`
+Implementation: `src/components/markdown/markdown.tsx`, `src/components/markdown/markdown-render.tsx`
 Verification: `src/components/markdown/markdown.test.tsx`, `e2e/markdown.spec.ts`
 
 ### UIC-MARKDOWN-2.3 - Links
 
 Links shall render through [Link](LINK.md), so they navigate through the provider's link renderer and `navigate` ([UIC-PROVIDER-5](PROVIDER.md#uic-provider-5---links)). A link to an absolute `http` or `https` URL opens in a new tab, with Link's safe `rel` and new-tab text; other links stay in the page.
 
-Implementation: `src/components/markdown/markdown.tsx`
+Implementation: `src/components/markdown/markdown.tsx`, `src/components/markdown/markdown-render.tsx`
 Verification: `src/components/markdown/markdown.test.tsx`, `e2e/markdown.spec.ts`
 
 ### UIC-MARKDOWN-2.4 - Code
 
 A code block shall render as `<pre>` in the `ui-markdown__code-block` slot, publishing its language in `data-language`, around a `<code>` holding its text unhighlighted; inline code renders as `<code>` in the `ui-markdown__code` slot.
 
-Implementation: `src/components/markdown/markdown.tsx`, `labs/reference/markdown.css`
+Implementation: `src/components/markdown/markdown-render.tsx`, `labs/reference/markdown.css`
 Verification: `src/components/markdown/markdown.test.tsx`, `e2e/markdown.spec.ts`
 
 ### UIC-MARKDOWN-2.5 - Tables
 
 A table shall render through [Prose Table](PROSE-TABLE.md), its columns aligned as the divider row says.
 
-Implementation: `src/components/markdown/markdown.tsx`
+Implementation: `src/components/markdown/markdown.tsx`, `src/components/markdown/markdown-render.tsx`
 Verification: `src/components/markdown/markdown.test.tsx`, `e2e/markdown.spec.ts`
 
 ### UIC-MARKDOWN-2.6 - Task items
 
 A task item shall render as an `<li>` in the `ui-markdown__task` slot holding a read-only [Checkbox](CHECKBOX.md), ticked when the item is checked and labelled by the item's first paragraph, followed by the item's other blocks.
 
-Implementation: `src/components/markdown/markdown.tsx`, `labs/reference/markdown.css`
+Implementation: `src/components/markdown/markdown-render.tsx`, `labs/reference/markdown.css`
 Verification: `src/components/markdown/markdown.test.tsx`, `e2e/markdown.spec.ts`
 
 ### UIC-MARKDOWN-2.7 - Find highlighting
 
 Text, inline code and code blocks shall render through [Text Match](TEXT-MATCH.md), so a `TextMatchProvider` above the document marks its query, for example from a [Find Bar](FIND-BAR.md).
 
-Implementation: `src/components/markdown/markdown.tsx`
+Implementation: `src/components/markdown/markdown.tsx`, `src/components/markdown/markdown-render.tsx`
 Verification: `src/components/markdown/markdown.test.tsx`, `e2e/markdown.spec.ts`
 
 ### UIC-MARKDOWN-2.8 - Node overrides
 
 `renderNode(node, children)` shall be called once for every node it renders with the node and its rendered children (`null` for a node without children); a return value other than `undefined` replaces the node's rendering, `null` hiding it. A task item's first paragraph labels its checkbox rather than rendering as a paragraph, so it is not passed itself: the item's children are its label's rendered inline nodes followed by its other blocks. Callers use it to highlight code, draw diagrams from fenced code, resolve image sources or add heading anchors.
 
-Implementation: `src/components/markdown/markdown.tsx`
+Implementation: `src/components/markdown/markdown.tsx`, `src/components/markdown/markdown-render.tsx`
 Verification: `src/components/markdown/markdown.test.tsx`, `e2e/markdown.spec.ts`
 
 ### UIC-MARKDOWN-2.9 - Outline
@@ -160,13 +160,33 @@ Verification: `src/components/markdown/markdown.test.tsx`, `src/components/markd
 Implementation: `src/components/markdown/markdown.tsx`
 Verification: `src/components/markdown/markdown.test.tsx`
 
+### UIC-MARKDOWN-2.11 - Streaming: incomplete syntax
+
+While `isStreaming`, the root shall publish `data-streaming`, and a text `source` is prepared before it is parsed so that its end renders as it will once complete, never flashing raw markers where that can be avoided. The parser itself is unchanged, and the preparation is pure text in, text out:
+
+- An unclosed fence already shows as code to the end of its container; inside it, a last line that may yet close the fence (fewer fence characters than the opening) waits.
+- Outside a fence, a last line that cannot be read yet waits: an opening fence whose language may be partial, one or two backticks or tildes, a line of only block markers (a list marker, `#`, `>`, `-`, `=`, `*`, `_`, `+`) or an ordered marker, and a table row. A table row without a divider row under it yet waits too.
+- In the last paragraph, list item or heading (not a table row or indented code), an unclosed code span is closed; emphasis, strong and `~~` strikethrough runs left open are closed before trailing spaces, and a run nothing follows yet is dropped. A run inside a word, after a non-opening character such as `/`, a single `~` or an escaped marker never opens. A link whose destination is still arriving, an unclosed `[` and a bracketed label that ends the text show as their text; a citation number (`[1`, or `[1]` and `[1, 2]` at the end) and a task marker keep their brackets, a partial citation waits; an image or an autolink (`<https://…`) still arriving waits.
+
+Without `isStreaming` the source renders exactly as written. A parsed document `source` is rendered as given.
+
+Implementation: `src/components/markdown/markdown.tsx`, `src/components/markdown/markdown-streaming.ts`, `src/components/markdown/markdown-streaming-inlines.ts`
+Verification: `src/components/markdown/markdown-streaming.test.ts`, `src/components/markdown/markdown-streaming-inlines.test.ts`, `src/components/markdown/markdown.test.tsx`, `e2e/markdown.spec.ts`
+
+### UIC-MARKDOWN-2.12 - Finished blocks
+
+A top-level block the previous render drew in the same rendering context shall keep its element, so React skips it and `renderNode` is not called for its nodes again: without streaming, the same block of the same parsed source; while `isStreaming`, a block whose content (signed without recursive calls) and position match, so each chunk renders only the blocks it changed, usually the last. A new `renderNode`, `headingIdPrefix` or set of heading ids renders every block again, so callers keep `renderNode` stable while streaming (`useMemo` or `useCallback`). The element tree has the same shape with and without streaming, so ending a stream keeps the rendered elements, and focus within them.
+
+Implementation: `src/components/markdown/markdown.tsx`, `src/components/markdown/markdown-block-cache.ts`, `src/components/markdown/markdown-render.tsx`
+Verification: `src/components/markdown/markdown-block-cache.test.tsx`, `src/components/markdown/markdown.test.tsx`, `e2e/markdown.spec.ts`
+
 ## UIC-MARKDOWN-3 - Accessibility
 
 ### UIC-MARKDOWN-3.1 - Native semantics
 
 The document shall keep native semantics: heading levels as written, lists, block quotes, table semantics from Prose Table, images named by their alt text, and task checkboxes named by their text and read-only. Raw HTML is never injected, and the component never sets `innerHTML`.
 
-Implementation: `src/components/markdown/markdown.tsx`
+Implementation: `src/components/markdown/markdown.tsx`, `src/components/markdown/markdown-render.tsx`
 Verification: `src/components/markdown/markdown.test.tsx`, `e2e/markdown.spec.ts`
 
 ## Hooks
@@ -179,3 +199,4 @@ Verification: `src/components/markdown/markdown.test.tsx`, `e2e/markdown.spec.ts
 | `ui-markdown__task`       | slot      |        | A task item's `<li>`, around its Checkbox.  |
 | `ui-markdown__image`      | slot      |        | An `<img>`.                                 |
 | `data-language`           | attribute |        | On a code block, the language of its fence. |
+| `data-streaming`          | state     | `true` | On the root, while `isStreaming`.           |
