@@ -131,8 +131,7 @@ export function ChatMessage({
   };
   return (
     <article
-      {...mergeProps(own, interactionProps)}
-      {...transcript}
+      {...mergeProps(own, interactionProps, transcript)}
       {...hooks.root({ className, data })}
       aria-busy={status === 'streaming' || undefined}
       aria-labelledby={label ? labelId : undefined}

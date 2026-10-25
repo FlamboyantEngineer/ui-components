@@ -1,4 +1,5 @@
 import { act, render, screen, within } from '@testing-library/react';
+import { cloneElement, createRef } from 'react';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -232,5 +233,14 @@ describe('ChatTranscript keyboard', () => {
     act(() => vi.advanceTimersByTime(1));
     expect(within(feed).getByText('Message 4').closest('article')).toHaveFocus();
     expect(viewport.scrollTop).toBe(120);
+  });
+
+  it('UIC-CHAT-TRANSCRIPT-3.7 keeps the ref a wrapper gives the message', () => {
+    const ref = createRef<HTMLElement>();
+    // A wrapper such as the actions menu clones the message with its own ref.
+    const message = cloneElement(<ChatMessage id="m1">Hello</ChatMessage>, { ref } as object);
+    render(<ChatTranscript>{message}</ChatTranscript>);
+    expect(ref.current).toBe(screen.getByRole('article'));
+    expect(ref.current).toHaveAttribute('tabindex', '0');
   });
 });
