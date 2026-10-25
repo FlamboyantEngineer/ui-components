@@ -53,8 +53,10 @@ export function useChatState(conversationId: string | undefined): ChatState {
     current = createState(conversationId);
     setOwn(current);
   }
-  // Focus moves once overlays that pressed a command, such as a context menu, have handed it back.
+  // Focus moves at once, and again once an overlay that ran the command, such as a context menu,
+  // has handed focus back to where it opened.
   const focusComposer = useCallback(() => {
+    composerRef.current?.focus();
     requestAnimationFrame(() => requestAnimationFrame(() => composerRef.current?.focus()));
   }, []);
   const commands = useMemo(() => {
