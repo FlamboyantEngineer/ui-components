@@ -179,3 +179,4 @@ export * from './components/chart/index.js';
 export * from './components/dashboard-grid/index.js';
 export * from './components/diagram-canvas/index.js';
 export * from './components/state-machine-view/index.js';
+export * from './components/chat-activity/index.js';

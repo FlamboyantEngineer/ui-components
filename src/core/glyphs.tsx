@@ -85,6 +85,8 @@ import {
   ClipboardDocumentCheckIcon,
   ChatBubbleBottomCenterTextIcon,
   LinkSlashIcon,
+  EllipsisHorizontalCircleIcon,
+  MinusCircleIcon,
 } from '@heroicons/react/24/outline';
 import type { ComponentType } from 'react';
 
@@ -202,6 +204,8 @@ export const defaultGlyphs = {
   'list-task': ClipboardDocumentCheckIcon,
   quote: ChatBubbleBottomCenterTextIcon,
   unlink: LinkSlashIcon,
+  pending: EllipsisHorizontalCircleIcon,
+  skipped: MinusCircleIcon,
 } satisfies Record<string, GlyphComponent>;
 
 export const glyphNames = Object.keys(defaultGlyphs) as GlyphName[];
