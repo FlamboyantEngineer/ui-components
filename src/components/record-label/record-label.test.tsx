@@ -152,4 +152,27 @@ describe('RecordLabel', () => {
     expect(root(container)).toHaveAttribute('data-size', 'md');
     expectHooksMatchSpec(container, 'RECORD-LABEL', { callerAttributes: ['data-row'] });
   });
+  it('UIC-RECORD-LABEL-3.1 selects plain or chip presentation without changing the record identity', () => {
+    const { rerender } = render(
+      <RecordLabel identifier="DOC-7" name="Field notes" href="/records/7" />,
+    );
+    expect(screen.getByRole('link', { name: 'DOC-7 Field notes' })).toHaveAttribute(
+      'data-mode',
+      'label',
+    );
+    rerender(
+      <RecordLabel
+        mode="chip"
+        identifier="DOC-7"
+        name="Field notes"
+        href="/records/7"
+        version="v2"
+      />,
+    );
+    expect(screen.getByRole('link', { name: 'DOC-7 Field notes' })).toHaveAttribute(
+      'href',
+      '/records/7',
+    );
+    expect(screen.getByText('v2').closest('.ui-record-label')).toHaveAttribute('data-mode', 'chip');
+  });
 });

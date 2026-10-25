@@ -10,7 +10,7 @@ import { createHooks, type HookProps } from '../../core/hooks.js';
 import type { CompletionInputAttributes } from '../completion-list/completion-list.js';
 import { useUiStrings } from '../../core/provider.js';
 import { useAutoGrow, type AutoGrowOptions } from '../../utils/use-auto-grow.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 
 export const textFieldHooks = createHooks('text-field', [
   'box',
@@ -88,7 +88,7 @@ export function TextFieldFrame({
 function RevealButton({ label, isRevealed, isDisabled, onChange }: RevealButtonProps) {
   const strings = useUiStrings();
   return (
-    <IconButton
+    <Button
       className={hooks.slotClass('reveal')}
       icon={isRevealed ? 'eye-slash' : 'eye'}
       label={strings.revealValue(label)}

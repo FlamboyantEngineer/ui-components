@@ -34,10 +34,10 @@ Verification: `src/components/popover/popover.test.tsx`, `e2e/popover.spec.ts`
 
 ### UIC-POPOVER-1.5 - Layering and transitions
 
-The panel shall carry the z-index of the `dropdown` overlay layer ([UIC-PORTAL-2.2](PORTAL.md#uic-portal-22---stacking)) as a functional inline style, so it stacks above modals and drawers and below tooltips and toasts; a `layerZIndex` from `PortalContainerProvider` or `PortalHost` applies. It publishes React Aria's `data-trigger` (`DialogTrigger` inside a trigger), and `data-entering` and `data-exiting` while its entry and exit animations run, staying mounted until the exit animation ends.
+The panel shall carry the z-index of the `dropdown` overlay layer ([UIC-PORTAL-2.2](PORTAL.md#uic-portal-22---stacking)) as a functional inline style, so it stacks above modals and drawers and below tooltips and toasts; a `layerZIndex` from `PortalContainerProvider` or `PortalHost` applies. It publishes React Aria's `data-trigger` (`DialogTrigger` inside a trigger), and `data-entering` and `data-exiting` while its entry and exit animations run, staying mounted until the exit animation ends. The reference placement examples shall reserve enough room for start placement with and without an arrow. Automatic flipping near viewport edges remains enabled; the reference arrow tip meets the trigger with no noticeable gap.
 
 Implementation: `src/components/popover/popover.tsx`, `labs/reference/popover.css`
-Verification: `src/components/popover/popover.test.tsx`, `e2e/popover.spec.ts`
+Verification: `src/components/popover/popover.test.tsx`, `e2e/popover.spec.ts`, `e2e/lab-layout-regressions.spec.ts`
 
 ## UIC-POPOVER-2 - Dismissal and focus
 
@@ -73,7 +73,7 @@ Verification: `src/components/popover/popover.test.tsx`, `e2e/popover.spec.ts`
 
 ### UIC-POPOVER-3.2 - Close button
 
-`showCloseButton` shall add a small `IconButton` in the `ui-popover__close` slot at the end of the header, named by the provider's `close` string and drawing its `close` glyph, that closes the popover like Escape. Without a title or close button there is no header.
+`showCloseButton` shall add a small `Button` in the `ui-popover__close` slot at the end of the header, named by the provider's `close` string and drawing its `close` glyph, that closes the popover like Escape. Without a title or close button there is no header.
 
 Implementation: `src/components/popover/popover.tsx`
 Verification: `src/components/popover/popover.test.tsx`, `e2e/popover.spec.ts`
@@ -101,7 +101,7 @@ Verification: `src/components/popover/popover.test.tsx`
 | `ui-popover__dialog` | slot  |                                  | The `role="dialog"` element.                                |
 | `ui-popover__header` | slot  |                                  | The title and close button row.                             |
 | `ui-popover__title`  | slot  |                                  | The `<h2>` title.                                           |
-| `ui-popover__close`  | slot  |                                  | The header close button (also `ui-icon-button`).            |
+| `ui-popover__close`  | slot  |                                  | The header close button (also `ui-button`).                 |
 | `ui-popover__body`   | slot  |                                  | The body.                                                   |
 | `data-placement`     | state | `top`, `bottom`, `left`, `right` | The resolved side, on the panel and the arrow (React Aria). |
 | `data-trigger`       | state | `DialogTrigger`                  | On the panel inside a `PopoverTrigger`, what opened it.     |

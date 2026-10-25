@@ -1,3 +1,4 @@
+import { ModalConfirmationCases } from './modal-confirmation-cases.js';
 import { useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Modal, ModalTrigger, type ModalProps } from '../../src/components/modal/modal.js';
@@ -299,120 +300,123 @@ function Stacking() {
 
 mountLab(
   <>
-    <LabSection
-      title="Tones and sizes"
-      description="Each cell opens a modal with that tone and size. Escape or Cancel closes it and focus returns to the button."
-    >
-      <StateMatrix
-        axes={{ tone: tones, size: sizes }}
-        render={({ tone, size }) => (
-          <Opener
-            tone={tone}
-            size={size}
-            title={`${tone === 'danger' ? 'Delete' : 'Rename'} Report.pdf`}
-            description={`A ${tone} modal of size ${size}.`}
-            data-lab-modal={`${tone}-${size}`}
-            primaryAction={{
-              label: tone === 'danger' ? 'Delete' : 'Apply',
-              onPress: (close) => close(),
-            }}
-          >
-            <p>Report.pdf, 2 pages, edited yesterday.</p>
-          </Opener>
-        )}
-      />
-    </LabSection>
-    <LabSection
-      title="Footer states"
-      description="Primary disabled, pending, status and error messages, a secondary action, an action with its own variant, a custom action bar and refused dismissal."
-    >
-      <StateMatrix
-        axes={{ state: states, tone: footerTones }}
-        render={({ state, tone }) => (
-          <Opener
-            tone={tone}
-            title="Choose a city"
-            data-lab-modal={`${state}-${tone}`}
-            {...stateProps(state)}
-          >
-            <p>Lisbon, Oslo or Kyoto.</p>
-          </Opener>
-        )}
-      />
-    </LabSection>
-    <LabSection
-      title="Asynchronous primary action"
-      description="Save, Enter in City or Control+Enter runs the same action, which stays pending until Finish request or Fail request in the footer, refusing repeat presses and keys meanwhile; a finished save closes and a failure stays open with the error."
-    >
-      <SaveForm />
-    </LabSection>
-    <LabSection
-      title="Header, body and dismissal"
-      description="A description, header content, a close button, a column body whose text area keeps Control+Enter, and a press outside that closes."
-    >
-      <Opener
-        label="Write a note"
-        title="Note"
-        description="Notes stay on this device."
-        headerActions={<span>Step 1 of 2</span>}
-        showCloseButton
-        isDismissable
-        bodyLayout="column"
-        size="lg"
-        data-lab-modal="note"
-        primaryAction={{ label: 'Post', onPress: (close) => close() }}
+    <div data-lab-family="modal-main">
+      <LabSection
+        title="Tones and sizes"
+        description="Each cell opens a modal with that tone and size. Escape or Cancel closes it and focus returns to the button."
       >
-        <label>
-          Title <input />
-        </label>
-        <label>
-          Text <textarea rows={6} />
-        </label>
-      </Opener>
-    </LabSection>
-    <LabSection
-      title="Stacking"
-      description="A modal opened from a modal stacks above it; a toast-layer notice stays above both."
-    >
-      <Stacking />
-    </LabSection>
-    <LabSection
-      title="Focus targets and guarded dismissal"
-      description="Focus starts in City and moves to the button after the postcard on close. While the message has text, Escape and outside presses are refused; each finished exit is counted."
-    >
-      <GuardedNote />
-    </LabSection>
-    <LabSection
-      title="Non-modal dialog"
-      description="Notes float at the corner without a backdrop; the page field stays usable while they are open, and Escape inside them closes them."
-    >
-      <FloatingNotes />
-    </LabSection>
-    <LabSection
-      title="Unavailable focus targets"
-      description="Initial focus skips hidden and fieldset-disabled fields, and falls back when an explicit target cannot receive focus."
-    >
-      <ModalFocusCases />
-    </LabSection>
-    <LabSection
-      title="Anchored dialog"
-      description="The dialog opens as a popover below its button, on the dropdown layer."
-    >
-      <ModalTrigger>
-        <Button size="sm" data-lab-open="anchored">
-          Rename Report.pdf
-        </Button>
-        <Modal
-          placement="bottom start"
-          title="Rename"
-          data-lab-modal="anchored"
-          primaryAction={{ label: 'Rename', onPress: (close) => close() }}
+        <StateMatrix
+          axes={{ tone: tones, size: sizes }}
+          render={({ tone, size }) => (
+            <Opener
+              tone={tone}
+              size={size}
+              title={`${tone === 'danger' ? 'Delete' : 'Rename'} Report.pdf`}
+              description={`A ${tone} modal of size ${size}.`}
+              data-lab-modal={`${tone}-${size}`}
+              primaryAction={{
+                label: tone === 'danger' ? 'Delete' : 'Apply',
+                onPress: (close) => close(),
+              }}
+            >
+              <p>Report.pdf, 2 pages, edited yesterday.</p>
+            </Opener>
+          )}
+        />
+      </LabSection>
+      <LabSection
+        title="Footer states"
+        description="Primary disabled, pending, status and error messages, a secondary action, an action with its own variant, a custom action bar and refused dismissal."
+      >
+        <StateMatrix
+          axes={{ state: states, tone: footerTones }}
+          render={({ state, tone }) => (
+            <Opener
+              tone={tone}
+              title="Choose a city"
+              data-lab-modal={`${state}-${tone}`}
+              {...stateProps(state)}
+            >
+              <p>Lisbon, Oslo or Kyoto.</p>
+            </Opener>
+          )}
+        />
+      </LabSection>
+      <LabSection
+        title="Asynchronous primary action"
+        description="Save, Enter in City or Control+Enter runs the same action, which stays pending until Finish request or Fail request in the footer, refusing repeat presses and keys meanwhile; a finished save closes and a failure stays open with the error."
+      >
+        <SaveForm />
+      </LabSection>
+      <LabSection
+        title="Header, body and dismissal"
+        description="A description, header content, a close button, a column body whose text area keeps Control+Enter, and a press outside that closes."
+      >
+        <Opener
+          label="Write a note"
+          title="Note"
+          description="Notes stay on this device."
+          headerActions={<span>Step 1 of 2</span>}
+          showCloseButton
+          isDismissable
+          bodyLayout="column"
+          size="lg"
+          data-lab-modal="note"
+          primaryAction={{ label: 'Post', onPress: (close) => close() }}
         >
           <label>
-            Name <input defaultValue="Report.pdf" />
+            Title <input />
           </label>
-        </Modal>
-      </ModalTrigger>
-    </LabSection>
+          <label>
+            Text <textarea rows={6} />
+          </label>
+        </Opener>
+      </LabSection>
+      <LabSection
+        title="Stacking"
+        description="A modal opened from a modal stacks above it; a toast-layer notice stays above both."
+      >
+        <Stacking />
+      </LabSection>
+      <LabSection
+        title="Focus targets and guarded dismissal"
+        description="Focus starts in City and moves to the button after the postcard on close. While the message has text, Escape and outside presses are refused; each finished exit is counted."
+      >
+        <GuardedNote />
+      </LabSection>
+      <LabSection
+        title="Non-modal dialog"
+        description="Notes float at the corner without a backdrop; the page field stays usable while they are open, and Escape inside them closes them."
+      >
+        <FloatingNotes />
+      </LabSection>
+      <LabSection
+        title="Unavailable focus targets"
+        description="Initial focus skips hidden and fieldset-disabled fields, and falls back when an explicit target cannot receive focus."
+      >
+        <ModalFocusCases />
+      </LabSection>
+      <LabSection
+        title="Anchored dialog"
+        description="The dialog opens as a popover below its button, on the dropdown layer."
+      >
+        <ModalTrigger>
+          <Button size="sm" data-lab-open="anchored">
+            Rename Report.pdf
+          </Button>
+          <Modal
+            placement="bottom start"
+            title="Rename"
+            data-lab-modal="anchored"
+            primaryAction={{ label: 'Rename', onPress: (close) => close() }}
+          >
+            <label>
+              Name <input defaultValue="Report.pdf" />
+            </label>
+          </Modal>
+        </ModalTrigger>
+      </LabSection>
+    </div>
+    <ModalConfirmationCases />
   </>,
 );

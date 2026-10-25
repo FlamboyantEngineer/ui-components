@@ -1,6 +1,6 @@
 # Button
 
-`Button` is a labelled command button built on React Aria's `Button`, or with `href` a link drawn as a button. Its `variant` chooses emphasis and chrome, `size` its block size, and it publishes its interaction states plus `data-selected`. An icon-only command is an [Icon Button](ICON-BUTTON.md); an action that runs asynchronous work is an [Action Button](ACTION-BUTTON.md); related buttons sit together in a [Button Group](BUTTON-GROUP.md).
+`Button` renders a labelled or icon-only command, or a link when `href` is given. Promise-returning commands manage their pending state automatically; synchronous commands remain synchronous. Visual emphasis is independent of the action's timing.
 
 ## UIC-BUTTON-1 - Contract
 
@@ -20,7 +20,7 @@ Verification: `src/components/button/button.test.tsx`, `e2e/button.spec.ts`
 
 ### UIC-BUTTON-1.3 - Sizes
 
-`size` shall publish `data-size`: `xs`, `sm`, `md` (the default) or `lg`. The reference sheet draws 22, 26, 32 and 38 pixel blocks.
+`size` shall publish `data-size`: `xs`, `sm`, `md` (the default) or `lg`. The reference sheet draws 20, 24, 28 and 32 pixel blocks.
 
 Implementation: `src/components/button/button.tsx`, `labs/reference/button.css`
 Verification: `src/components/button/button.test.tsx`, `e2e/button.spec.ts`
@@ -118,6 +118,124 @@ With `defaultSelected` or `onChange` the button shall be a toggle: every press (
 Implementation: `src/components/button/button.tsx`, `src/components/button/button-state.tsx`
 Verification: `src/components/button/button.test.tsx`, `e2e/button.spec.ts`
 
+## UIC-BUTTON-11 - Contract
+
+### UIC-BUTTON-11.1 - Icon and name
+
+`Button` shall draw its `icon` (a built-in glyph name or any icon node) as a decorative [Icon](ICON.md) in the `ui-button__icon` slot and name the button with its required `label` through `aria-label`. An empty label is an error.
+
+Implementation: `src/components/button/button.tsx`
+Verification: `src/components/button/button-icon.test.tsx`, `e2e/button-icon.spec.ts`
+
+### UIC-BUTTON-11.2 - Variants and sizes
+
+`variant` (Button's variants, `ghost` by default) and `size` (`xs`, `sm`, `md` by default, `lg`) shall publish `data-variant` and `data-size`. The reference sheet draws square 22, 26, 32 and 38 pixel boxes.
+
+Implementation: `src/components/button/button.tsx`, `labs/reference/button.css`
+Verification: `src/components/button/button-icon.test.tsx`, `e2e/button-icon.spec.ts`
+
+### UIC-BUTTON-11.3 - States
+
+`Button` shall offer Button's states with the same semantics, through the same React Aria wiring: `isDisabled` with optional `focusableWhenDisabled`, `isPending` (an indeterminate progress bar named by `pendingLabel` replaces the icon in the `ui-button__spinner` slot), `isSelected` with toggle semantics, and React Aria's interaction states. While pending, the button is named by its `label` followed by the busy indicator's name ("More Loading"), as React Aria names a pending button that has `aria-label`.
+
+Implementation: `src/components/button/button.tsx`, `src/components/button/button.tsx`
+Verification: `src/components/button/button-icon.test.tsx`, `e2e/button-icon.spec.ts`
+
+### UIC-BUTTON-11.4 - Hooks and caller attributes
+
+`Button` shall carry the hooks below, append the caller's `className`, and forward caller `data-*` attributes, `id` and `ref`.
+
+Implementation: `src/components/button/button.tsx`
+Verification: `src/components/button/button-icon.test.tsx`
+
+### UIC-BUTTON-11.5 - Tooltip
+
+`tooltip` shall show its content in a [Tooltip](TOOLTIP.md) for the button with the same rules as [Button](BUTTON.md)'s `tooltip`: hover and keyboard focus open it, no wrapper element is added, and a natively disabled button shows none unless it is `focusableWhenDisabled`. The tooltip describes the button, unless it only repeats the label (UIC-BUTTON-11.7); `label` stays its accessible name.
+
+Implementation: `src/components/button/button.tsx`, `src/components/tooltip/tooltip.tsx`
+Verification: `src/components/button/button-icon.test.tsx`, `e2e/tooltip.spec.ts`
+
+### UIC-BUTTON-11.6 - Keyboard shortcut
+
+`shortcut` shall work as on [Button](BUTTON.md): `aria-keyshortcuts` and a [Shortcut](SHORTCUT.md) after the hint in the tooltip, never a listener. Because the button shows no text, a shortcut without a `tooltip` shows the `label` before the chord.
+
+Implementation: `src/components/button/button.tsx`, `src/components/button/button.tsx`
+Verification: `src/components/button/button-icon.test.tsx`, `e2e/button-icon.spec.ts`
+
+### UIC-BUTTON-11.7 - Tooltip as the name
+
+A `tooltip` that is exactly the `label`, and shows no shortcut, shall name the button rather than describe it: the open tooltip adds no `aria-describedby`, so a screen reader announces the name once. A caller's own `aria-describedby` stays. A tooltip that says more than the label still describes the button.
+
+Implementation: `src/components/button/button.tsx`, `src/components/button/button-state.tsx`
+Verification: `src/components/button/button-icon.test.tsx`, `e2e/button-icon.spec.ts`
+
+### UIC-BUTTON-11.8 - Toggles, links and swapped elements
+
+`Button` shall take Button's toggle state (`defaultSelected` and `onChange`), its links (`href`, `target`, `rel`: an `<a>` with the same hooks, named by `label`) and its `render` for the `<button>`, with Button's rules ([BUTTON.md](BUTTON.md)).
+
+Implementation: `src/components/button/button.tsx`, `src/components/button/button-state.tsx`
+Verification: `src/components/button/button-icon.test.tsx`, `e2e/button-icon.spec.ts`
+
+## UIC-BUTTON-21 - Pending lifecycle
+
+### UIC-BUTTON-21.1 - Pending while the action runs
+
+When `onPress` returns a promise, `Button` shall be pending (Button's `isPending`: spinner, `data-pending`, `aria-disabled="true"`, visible label kept) from the press until the promise settles. Timing shall not change the visual variant: labelled commands default to `secondary`, icon-only commands to `ghost`.
+
+Implementation: `src/components/button/button-action.tsx`
+Verification: `src/components/button/button-action.test.tsx`, `e2e/button-action.spec.ts`
+
+### UIC-BUTTON-21.2 - No repeat activation
+
+While pending, the button shall refuse further activation by pointer, keyboard or programmatic click, so the action runs once per press until it settles. A `type="submit"` or `type="reset"` action button keeps its type: the press that starts the action submits or resets its form, and the native activation of every later click (pointer, keyboard, implicit submission or programmatic) is cancelled until the action settles, also while `pendingDelay` holds the pending state back.
+
+Implementation: `src/components/button/button-action.tsx`
+Verification: `src/components/button/button-action.test.tsx`, `e2e/button-action.spec.ts`
+
+### UIC-BUTTON-21.3 - Settling
+
+After the action resolves or rejects, the button shall return to its idle state. A rejection shall reach `onError`; without `onError` it is rethrown rather than swallowed.
+
+Implementation: `src/components/button/button-action.tsx`
+Verification: `src/components/button/button-action.test.tsx`, `e2e/button-action.spec.ts`
+
+### UIC-BUTTON-21.4 - Disabled
+
+A disabled action button shall never start its action and shall stay disabled after an action settles.
+
+Implementation: `src/components/button/button-action.tsx`
+Verification: `src/components/button/button-action.test.tsx`
+
+### UIC-BUTTON-21.5 - Controlled pending and pending name
+
+A caller's `isPending` shall override the internal pending state. While pending the button keeps its label, and its busy indicator is named by `pendingLabel`, or the provider's `loading` string; a button named by `aria-label` is named by that label followed by the busy indicator's name, as in Button (UIC-BUTTON-2.2). `runPendingAction` exposes the same lifecycle for hosts that run an action from elsewhere (for example a keyboard shortcut).
+
+Implementation: `src/components/button/button-action.tsx`
+Verification: `src/components/button/button-action.test.tsx`
+
+### UIC-BUTTON-21.6 - Hint and shortcut
+
+`Button` shall pass Button's `tooltip` and `shortcut` through ([BUTTON.md](BUTTON.md)): the tooltip shows the hint and the chord, the button publishes `aria-keyshortcuts`, and both stay while the action is pending. A host that binds the chord runs the action through `runPendingAction`.
+
+Implementation: `src/components/button/button-action.tsx`, `src/components/button/button.tsx`
+Verification: `src/components/button/button-action.test.tsx`, `e2e/button-action.spec.ts`
+
+### UIC-BUTTON-21.7 - Pending delay
+
+`pendingDelay` (milliseconds, 0 by default) shall hold back the pending state, internal or controlled, until the action has run that long, so an action that settles sooner never flashes the spinner. The button refuses repeat presses from the first press either way. An action button is never a link, so it takes no `href`.
+
+Implementation: `src/components/button/button-action.tsx`, `src/utils/use-delayed-flag.ts`
+Verification: `src/components/button/button-action.test.tsx`, `src/utils/use-delayed-flag.test.ts`, `e2e/button-action.spec.ts`
+
+## UIC-BUTTON-3 - Unified options
+
+### UIC-BUTTON-3.1 - Unified commands
+
+Button shall offer icon-only content through icon and an accessible label. Promise-returning presses automatically refuse repeats and manage pending; synchronous presses neither wait nor show a pending state.
+
+Implementation: `src/components/button/button.tsx`
+Verification: `src/components/button/button.test.tsx`
+
 ## Hooks
 
 | Hook                    | Kind      | Values                                                                                  | Description                           |
@@ -129,7 +247,7 @@ Verification: `src/components/button/button.test.tsx`, `e2e/button.spec.ts`
 | `ui-button__spinner`    | slot      |                                                                                         | Busy indicator while pending.         |
 | `data-variant`          | attribute | `primary`, `secondary`, `tertiary`, `danger`, `ghost`, `accent`, `chip`, `link`, `bare` | Emphasis and chrome.                  |
 | `data-size`             | attribute | `xs`, `sm`, `md`, `lg`                                                                  | Block size.                           |
-| `data-content`          | attribute | `label`, `parts`, `sentence`                                                            | How children are laid out.            |
+| `data-content`          | attribute | `label`, `parts`, `sentence`, `icon`                                                    | The content layout.                   |
 | `data-align`            | attribute | `center`, `start`                                                                       | Content alignment.                    |
 | `data-full-width`       | state     | `true`                                                                                  | Fills the container's width.          |
 | `data-selected`         | state     | `true`                                                                                  | The current choice.                   |
@@ -139,3 +257,5 @@ Verification: `src/components/button/button.test.tsx`, `e2e/button.spec.ts`
 | `data-pressed`          | state     | `true`                                                                                  | Being pressed.                        |
 | `data-focused`          | state     | `true`                                                                                  | Focused.                              |
 | `data-focus-visible`    | state     | `true`                                                                                  | Keyboard focus.                       |
+
+| `ui-button__icon` | slot | | The decorative icon in icon-only mode. |

@@ -2,7 +2,7 @@ import type { Ref } from 'react';
 import { Input } from '../../primitives/index.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 import type { FolderEdit } from './use-folder-actions.js';
 
 export interface FolderNameInputProps {
@@ -50,7 +50,7 @@ function ToolButton({
 }) {
   if (!action.isOffered) return null;
   return (
-    <IconButton
+    <Button
       icon={icon}
       label={label}
       size="sm"

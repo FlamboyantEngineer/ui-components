@@ -76,7 +76,7 @@ describe('Banner', () => {
       </form>,
     );
     const dismiss = screen.getByRole('button', { name: 'Dismiss' });
-    expect(dismiss).toHaveClass('ui-icon-button', 'ui-banner__dismiss');
+    expect(dismiss).toHaveClass('ui-button', 'ui-banner__dismiss');
     expect(dismiss).toHaveAttribute('type', 'button');
     await userEvent.click(dismiss);
     expect(onDismiss).toHaveBeenCalledTimes(1);

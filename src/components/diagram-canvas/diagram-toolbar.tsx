@@ -1,5 +1,5 @@
 import { useUiStrings } from '../../core/provider.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 import { SegmentedChoice } from '../segmented-choice/segmented-choice.js';
 import { ZoomControl } from '../zoom-control/zoom-control.js';
 import { diagramHooks as hooks } from './diagram-hooks.js';
@@ -29,7 +29,7 @@ export function DiagramToolbar({ controller, view, onViewChange }: DiagramToolba
             resetValue={100}
             formatOptions={{ maximumFractionDigits: 0 }}
           />
-          <IconButton
+          <Button
             className={hooks.slotClass('fit')}
             icon="expand"
             label={strings.diagramFit}

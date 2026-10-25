@@ -6,6 +6,7 @@ import type { BaseProps, Key, Size, Tone } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { resolveAmountShares } from '../../utils/resolve-amount-shares.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
+import { SegmentedCircle } from './segmented-circle.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 
 export type SegmentedBarSize = Extract<Size, 'sm' | 'md' | 'lg'>;
@@ -22,7 +23,11 @@ export interface SegmentedBarSegment {
   tone?: Tone | undefined;
 }
 
+export type SegmentedBarShape = 'linear' | 'donut' | 'pie';
+
 export interface SegmentedBarProps extends BaseProps, AriaLabellingProps {
+  /** Linear track, donut ring or filled pie. Defaults to linear. */
+  shape?: SegmentedBarShape | undefined;
   /** The parts, in the order they are drawn. */
   segments: readonly SegmentedBarSegment[];
   /** Visible label. Without one, name the bar with `aria-label` or `aria-labelledby`. */
@@ -116,6 +121,7 @@ function SegmentedBarLegend({
 export function SegmentedBar({
   segments,
   label,
+  shape = 'linear',
   total,
   showTotal = true,
   showLegend = false,
@@ -132,7 +138,7 @@ export function SegmentedBar({
   return (
     <div
       {...rest}
-      {...hooks.root({ className, data: { size } })}
+      {...hooks.root({ className, data: { size, shape } })}
       role="group"
       aria-labelledby={hasLabel ? labelId : rest['aria-labelledby']}
     >
@@ -144,17 +150,21 @@ export function SegmentedBar({
       {showTotal ? (
         <span {...hooks.slot('total')}>{strings.totalCount(format.format(resolved.total))}</span>
       ) : null}
-      <div {...hooks.slot('track')} aria-hidden="true">
-        {resolved.segments.map(({ segment, share }) =>
-          share > 0 ? (
-            <div
-              key={toKeyIdentity(segment.id)}
-              {...hooks.slot('segment', { tone: segment.tone ?? 'neutral' })}
-              style={{ width: `${share}%` }}
-            />
-          ) : null,
-        )}
-      </div>
+      {shape === 'linear' ? (
+        <div {...hooks.slot('track')} aria-hidden="true">
+          {resolved.segments.map(({ segment, share }) =>
+            share > 0 ? (
+              <div
+                key={toKeyIdentity(segment.id)}
+                {...hooks.slot('segment', { tone: segment.tone ?? 'neutral' })}
+                style={{ width: `${share}%` }}
+              />
+            ) : null,
+          )}
+        </div>
+      ) : (
+        <SegmentedCircle shape={shape} segments={resolved.segments} />
+      )}
       <SegmentedBarLegend
         segments={resolved.segments}
         formatOptions={formatOptions}

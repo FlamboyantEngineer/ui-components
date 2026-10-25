@@ -27,7 +27,7 @@ describe('Field menu', () => {
       />,
     );
     const trigger = screen.getByRole('button', { name: 'Fruit actions' });
-    expect(trigger).toHaveClass('ui-field__menu', 'ui-dropdown-menu', 'ui-icon-button');
+    expect(trigger).toHaveClass('ui-field__menu', 'ui-dropdown-menu', 'ui-button');
     expect(trigger.querySelector('[data-glyph="more"]')).not.toBeNull();
     expectHooksMatchSpec(container, 'FIELD', { slots: ['menu'] });
     const opened = await openFromButton(user);

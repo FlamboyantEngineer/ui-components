@@ -73,7 +73,7 @@ Verification: `src/components/merge-view/merge-view.test.tsx`, `e2e/merge-view.s
 
 ### UIC-MERGE-VIEW-3.2 - Moving between conflicts
 
-A `ui-merge-view__navigation` element in the header shall hold `ui-merge-view__previous` and `ui-merge-view__next` [Icon Buttons](ICON-BUTTON.md) named by the provider's `mergeViewPreviousConflict` and `mergeViewNextConflict` strings. Before any move, Next goes to the first conflict and Previous is disabled; Previous is disabled at the first conflict and Next at the last, and both without conflicts. Moving to a conflict makes it current, publishing `data-current` on its bodies in the input panes and on its result block, and focuses its editor; a take action or edit also makes its conflict current. The current conflict resets with the texts.
+A `ui-merge-view__navigation` element in the header shall hold `ui-merge-view__previous` and `ui-merge-view__next` [Icon Buttons](BUTTON.md) named by the provider's `mergeViewPreviousConflict` and `mergeViewNextConflict` strings. Before any move, Next goes to the first conflict and Previous is disabled; Previous is disabled at the first conflict and Next at the last, and both without conflicts. Moving to a conflict makes it current, publishing `data-current` on its bodies in the input panes and on its result block, and focuses its editor; a take action or edit also makes its conflict current. The current conflict resets with the texts.
 
 Implementation: `src/components/merge-view/merge-view.tsx`, `src/components/merge-view/merge-view-sides.tsx`, `src/components/merge-view/merge-view-result.tsx`
 Verification: `src/components/merge-view/merge-view.test.tsx`, `e2e/merge-view.spec.ts`
@@ -102,8 +102,8 @@ Verification: `src/components/merge-view/merge-view.test.tsx`
 | `ui-merge-view__header`          | slot      |                                                          | The conflict count and the navigation.                                  |
 | `ui-merge-view__status`          | slot      |                                                          | The `role="status"` count of unresolved conflicts.                      |
 | `ui-merge-view__navigation`      | slot      |                                                          | The previous and next conflict buttons.                                 |
-| `ui-merge-view__previous`        | slot      |                                                          | The previous conflict button (also `ui-icon-button`).                   |
-| `ui-merge-view__next`            | slot      |                                                          | The next conflict button (also `ui-icon-button`).                       |
+| `ui-merge-view__previous`        | slot      |                                                          | The previous conflict button (also `ui-button`).                        |
+| `ui-merge-view__next`            | slot      |                                                          | The next conflict button (also `ui-button`).                            |
 | `ui-merge-view__sides`           | slot      |                                                          | The input panes, side by side.                                          |
 | `ui-merge-view__side`            | slot      |                                                          | A pane: its title and its scrolling area.                               |
 | `ui-merge-view__title`           | slot      |                                                          | A pane's title.                                                         |

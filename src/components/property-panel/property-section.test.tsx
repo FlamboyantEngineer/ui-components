@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { createMemoryStorage } from '../../core/storage.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 import { PropertyCard } from './property-card.js';
 import { PropertyRow } from './property-row.js';
 import { PropertySection } from './property-section.js';
@@ -148,7 +148,7 @@ describe('PropertySection', () => {
     const { container } = render(
       <PropertySection
         title="Notes"
-        actions={<IconButton icon="plus" label="Add note" onPress={onPress} />}
+        actions={<Button icon="plus" label="Add note" onPress={onPress} />}
       >
         <p>Body</p>
       </PropertySection>,

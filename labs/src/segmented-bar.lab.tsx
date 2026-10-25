@@ -148,5 +148,25 @@ mountLab(
     >
       <RunningChecks />
     </LabSection>
+    <LabSection
+      title="Linear, donut and pie"
+      description="The same shares and remainder, in every shape and size, with a shared legend."
+    >
+      <StateMatrix
+        axes={{ shape: ['linear', 'donut', 'pie'], size: ['sm', 'md', 'lg'] }}
+        render={({ shape, size }) => (
+          <div style={column(240)}>
+            <SegmentedBar
+              shape={shape}
+              size={size}
+              label="Checks"
+              segments={checks}
+              total={80}
+              showLegend
+            />
+          </div>
+        )}
+      />
+    </LabSection>
   </>,
 );

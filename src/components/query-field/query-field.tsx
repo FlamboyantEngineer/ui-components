@@ -5,7 +5,7 @@ import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { CodeEditor, type CodeDiagnostic, type CodeTokenizer } from '../code-editor/code-editor.js';
 import type { Completions } from '../completion-list/completion-list.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 
 /** A query language, as the functions that read it. */
 export interface QueryGrammar {
@@ -95,7 +95,7 @@ export function QueryField({
           onKeyDown={onKeyDown}
         />
         {onSubmit ? (
-          <IconButton
+          <Button
             icon="search"
             size="sm"
             label={strings.runQuery}

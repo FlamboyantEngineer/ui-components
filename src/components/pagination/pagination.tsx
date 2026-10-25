@@ -5,7 +5,6 @@ import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { clamp } from '../../utils/clamp.js';
 import { Button } from '../button/button.js';
-import { IconButton } from '../icon-button/icon-button.js';
 
 export interface PaginationProps extends BaseProps {
   /** The number of pages; fewer than one counts as one. */
@@ -91,7 +90,7 @@ export function Pagination({
     >
       <ul {...hooks.slot('list')}>
         <li {...hooks.slot('item')}>
-          <IconButton
+          <Button
             className={hooks.slotClass('previous')}
             icon={isRtl ? 'chevron-right' : 'chevron-left'}
             label={strings.previousPage}
@@ -124,7 +123,7 @@ export function Pagination({
           </li>
         ))}
         <li {...hooks.slot('item')}>
-          <IconButton
+          <Button
             className={hooks.slotClass('next')}
             icon={isRtl ? 'chevron-left' : 'chevron-right'}
             label={strings.nextPage}

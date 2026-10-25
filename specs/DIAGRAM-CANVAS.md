@@ -77,7 +77,7 @@ Verification: `src/components/diagram-canvas/diagram-canvas.test.tsx`, `src/comp
 
 ### UIC-DIAGRAM-CANVAS-3.3 - Fitting
 
-The toolbar's fit button (`ui-diagram-canvas__fit`, an [Icon Button](ICON-BUTTON.md) named by the provider's `diagramFit` string, disabled without nodes) shall centre every node in the view with 24 pixels around them, zoomed as far as fits but never above 100%. Without `viewport` or `defaultViewport`, the canvas fits once the viewport is first measured.
+The toolbar's fit button (`ui-diagram-canvas__fit`, an [Icon Button](BUTTON.md) named by the provider's `diagramFit` string, disabled without nodes) shall centre every node in the view with 24 pixels around them, zoomed as far as fits but never above 100%. Without `viewport` or `defaultViewport`, the canvas fits once the viewport is first measured.
 
 Implementation: `src/components/diagram-canvas/use-diagram-viewport.ts`, `src/components/diagram-canvas/diagram-model.ts`, `src/components/diagram-canvas/diagram-toolbar.tsx`
 Verification: `src/components/diagram-canvas/diagram-canvas.test.tsx`, `src/components/diagram-canvas/diagram-model.test.ts`, `e2e/diagram-canvas.spec.ts`
@@ -185,7 +185,7 @@ Verification: `src/components/diagram-canvas/diagram-node.test.tsx`, `src/compon
 
 ### UIC-DIAGRAM-CANVAS-6.4 - Outline view
 
-The view shall be `view` (controlled) or held from `defaultView` (`canvas`), switched by a [Segmented Choice](SEGMENTED-CHOICE.md) in the toolbar (`ui-diagram-canvas__view-switch`) named by the provider's `diagramView` string, and reported through `onViewChange`. The outline (`ui-diagram-canvas__outline`, a list named by the `diagramOutlineView` string) holds an entry per node (`ui-diagram-canvas__outline-item`, with `data-selected`) showing its label (`ui-diagram-canvas__outline-label`), then the nodes it leads to and comes from (`ui-diagram-canvas__outline-links` with `data-direction` `outgoing` or `incoming`, labelled by `ui-diagram-canvas__outline-links-label` reading `diagramLeadsTo` or `diagramComesFrom`) as buttons (`ui-diagram-canvas__outline-link`) that move focus to that node's entry. In edit mode each outgoing link is followed by an [Icon Button](ICON-BUTTON.md) (`ui-diagram-canvas__outline-remove`) named by `diagramRemoveConnection` that removes the edge through `onEdgesChange` and moves focus to the next link of that list, else the previous one, else the node's entry. The zoom control and fit button show only in the canvas view.
+The view shall be `view` (controlled) or held from `defaultView` (`canvas`), switched by a [Segmented Choice](SEGMENTED-CHOICE.md) in the toolbar (`ui-diagram-canvas__view-switch`) named by the provider's `diagramView` string, and reported through `onViewChange`. The outline (`ui-diagram-canvas__outline`, a list named by the `diagramOutlineView` string) holds an entry per node (`ui-diagram-canvas__outline-item`, with `data-selected`) showing its label (`ui-diagram-canvas__outline-label`), then the nodes it leads to and comes from (`ui-diagram-canvas__outline-links` with `data-direction` `outgoing` or `incoming`, labelled by `ui-diagram-canvas__outline-links-label` reading `diagramLeadsTo` or `diagramComesFrom`) as buttons (`ui-diagram-canvas__outline-link`) that move focus to that node's entry. In edit mode each outgoing link is followed by an [Icon Button](BUTTON.md) (`ui-diagram-canvas__outline-remove`) named by `diagramRemoveConnection` that removes the edge through `onEdgesChange` and moves focus to the next link of that list, else the previous one, else the node's entry. The zoom control and fit button show only in the canvas view.
 
 Implementation: `src/components/diagram-canvas/diagram-links.ts`, `src/components/diagram-canvas/diagram-outline.tsx`, `src/components/diagram-canvas/diagram-toolbar.tsx`
 Verification: `src/components/diagram-canvas/diagram-links.test.ts`, `src/components/diagram-canvas/diagram-canvas.test.tsx`, `e2e/diagram-canvas.spec.ts`
@@ -197,7 +197,7 @@ Verification: `src/components/diagram-canvas/diagram-links.test.ts`, `src/compon
 | `ui-diagram-canvas`                      | root      |                                    | The canvas's `<div role="group">`.                                  |
 | `ui-diagram-canvas__toolbar`             | slot      |                                    | The zoom control, fit button and view switch.                       |
 | `ui-diagram-canvas__zoom`                | slot      |                                    | The zoom control (also `ui-zoom-control`).                          |
-| `ui-diagram-canvas__fit`                 | slot      |                                    | The fit button (also `ui-icon-button`).                             |
+| `ui-diagram-canvas__fit`                 | slot      |                                    | The fit button (also `ui-button`).                                  |
 | `ui-diagram-canvas__view-switch`         | slot      |                                    | The canvas and outline switch (also `ui-segmented-choice`).         |
 | `ui-diagram-canvas__palette`             | slot      |                                    | The palette group.                                                  |
 | `ui-diagram-canvas__palette-item`        | slot      |                                    | A palette item's button.                                            |
@@ -223,7 +223,7 @@ Verification: `src/components/diagram-canvas/diagram-links.test.ts`, `src/compon
 | `ui-diagram-canvas__outline-links`       | slot      |                                    | A node's outgoing or incoming links.                                |
 | `ui-diagram-canvas__outline-links-label` | slot      |                                    | The label of a list of links.                                       |
 | `ui-diagram-canvas__outline-link`        | slot      |                                    | A link's button.                                                    |
-| `ui-diagram-canvas__outline-remove`      | slot      |                                    | The button that removes a link (also `ui-icon-button`).             |
+| `ui-diagram-canvas__outline-remove`      | slot      |                                    | The button that removes a link (also `ui-button`).                  |
 | `ui-diagram-canvas__empty`               | slot      |                                    | The text of a diagram without nodes.                                |
 | `ui-diagram-canvas__status`              | slot      |                                    | The visually hidden live region.                                    |
 | `data-view`                              | attribute | `canvas`, `outline`                | On the root: the view shown.                                        |

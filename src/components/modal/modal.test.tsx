@@ -54,8 +54,10 @@ function Harness({
 }
 
 async function openHarness(props: HarnessProps = {}) {
+  const user = userEvent.setup();
+
   const view = render(<Harness {...props} />);
-  await userEvent.click(screen.getByRole('button', { name: 'Open' }));
+  await user.click(screen.getByRole('button', { name: 'Open' }));
   const dialog = await screen.findByRole(props.role ?? 'dialog');
   return { ...view, dialog, trigger: screen.getByRole('button', { name: 'Open', hidden: true }) };
 }
@@ -77,6 +79,8 @@ describe('Modal', () => {
     });
 
     it('UIC-MODAL-1.1 reports closes, opens uncontrolled from defaultOpen and follows a ModalTrigger', async () => {
+      const user = userEvent.setup();
+
       const onOpenChange = vi.fn();
       const { unmount } = render(
         <Modal title="Draft" defaultOpen onOpenChange={onOpenChange}>
@@ -84,7 +88,7 @@ describe('Modal', () => {
         </Modal>,
       );
       expect(screen.getByRole('dialog', { name: 'Draft' })).toBeInTheDocument();
-      await userEvent.keyboard('{Escape}');
+      await user.keyboard('{Escape}');
       expect(onOpenChange).toHaveBeenCalledWith(false);
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
       unmount();
@@ -97,13 +101,15 @@ describe('Modal', () => {
           </Modal>
         </ModalTrigger>,
       );
-      await userEvent.click(screen.getByRole('button', { name: 'Details' }));
+      await user.click(screen.getByRole('button', { name: 'Details' }));
       expect(await screen.findByRole('dialog', { name: 'Details' })).toBeInTheDocument();
-      await userEvent.click(screen.getByRole('button', { name: 'Done' }));
+      await user.click(screen.getByRole('button', { name: 'Done' }));
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
 
     it('UIC-MODAL-1.1 reports the closes it makes inside a ModalTrigger', async () => {
+      const user = userEvent.setup();
+
       const onOpenChange = vi.fn();
       const onTriggerChange = vi.fn();
       render(
@@ -114,21 +120,23 @@ describe('Modal', () => {
           </Modal>
         </ModalTrigger>,
       );
-      await userEvent.click(screen.getByRole('button', { name: 'Details' }));
+      await user.click(screen.getByRole('button', { name: 'Details' }));
       await screen.findByRole('dialog', { name: 'Details' });
       expect(onTriggerChange).toHaveBeenLastCalledWith(true);
-      await userEvent.click(screen.getByRole('button', { name: 'Done' }));
+      await user.click(screen.getByRole('button', { name: 'Done' }));
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
       expect(onOpenChange).toHaveBeenCalledExactlyOnceWith(false);
       expect(onTriggerChange).toHaveBeenLastCalledWith(false);
-      await userEvent.click(screen.getByRole('button', { name: 'Details' }));
+      await user.click(screen.getByRole('button', { name: 'Details' }));
       await screen.findByRole('dialog', { name: 'Details' });
-      await userEvent.keyboard('{Escape}');
+      await user.keyboard('{Escape}');
       expect(onOpenChange).toHaveBeenCalledTimes(2);
       expect(onOpenChange).toHaveBeenLastCalledWith(false);
     });
 
     it('UIC-MODAL-1.6 opens from its trigger, reports changes and returns focus', async () => {
+      const user = userEvent.setup();
+
       const onOpenChange = vi.fn();
       render(
         <ModalTrigger defaultOpen onOpenChange={onOpenChange}>
@@ -137,13 +145,13 @@ describe('Modal', () => {
         </ModalTrigger>,
       );
       expect(screen.getByRole('dialog', { name: 'Settings' })).toBeInTheDocument();
-      await userEvent.keyboard('{Escape}');
+      await user.keyboard('{Escape}');
       expect(onOpenChange).toHaveBeenLastCalledWith(false);
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
       const trigger = screen.getByRole('button', { name: 'Settings' });
-      await userEvent.click(trigger);
+      await user.click(trigger);
       expect(onOpenChange).toHaveBeenLastCalledWith(true);
-      await userEvent.keyboard('{Escape}');
+      await user.keyboard('{Escape}');
       await waitFor(() => expect(trigger).toHaveFocus());
     });
 
@@ -168,6 +176,8 @@ describe('Modal', () => {
     });
 
     it('UIC-MODAL-1.2 stacks a modal opened from a modal above it, below the tooltip and toast layers', async () => {
+      const user = userEvent.setup();
+
       function Nested() {
         const [inner, setInner] = useState(false);
         return (
@@ -183,7 +193,7 @@ describe('Modal', () => {
         );
       }
       render(<Nested />);
-      await userEvent.click(screen.getByRole('button', { name: 'More' }));
+      await user.click(screen.getByRole('button', { name: 'More' }));
       await screen.findByRole('dialog', { name: 'Inner' });
       const overlays = [...document.querySelectorAll<HTMLElement>('body > .ui-modal')];
       expect(overlays).toHaveLength(2);
@@ -199,9 +209,11 @@ describe('Modal', () => {
     });
 
     it('UIC-MODAL-1.3 hides the page from assistive technology while open', async () => {
+      const user = userEvent.setup();
+
       const { container } = await openHarness({ before: <p>Page text</p> });
       expect(container.closest('[aria-hidden="true"], [inert]')).not.toBeNull();
-      await userEvent.keyboard('{Escape}');
+      await user.keyboard('{Escape}');
       await waitFor(() => expect(container.closest('[aria-hidden="true"], [inert]')).toBeNull());
     });
 
@@ -230,9 +242,11 @@ describe('Modal', () => {
 
   describe('dismissal', () => {
     it('UIC-MODAL-2.1 closes on Escape unless keyboard dismissal is disabled', async () => {
+      const user = userEvent.setup();
+
       const onOpenChange = vi.fn();
       await openHarness({ onOpenChange });
-      await userEvent.keyboard('{Escape}');
+      await user.keyboard('{Escape}');
       expect(onOpenChange).toHaveBeenCalledTimes(1);
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 
@@ -241,12 +255,14 @@ describe('Modal', () => {
           <button type="button">Inside</button>
         </Modal>,
       );
-      await userEvent.keyboard('{Escape}');
+      await user.keyboard('{Escape}');
       expect(onOpenChange).toHaveBeenCalledTimes(1);
       expect(screen.getByRole('dialog', { name: 'Sticky' })).toBeInTheDocument();
     });
 
     it('UIC-MODAL-2.1 leaves Escape to content that handles it and closes only the topmost modal', async () => {
+      const user = userEvent.setup();
+
       const outerChange = vi.fn();
       function Nested() {
         const [inner, setInner] = useState(false);
@@ -268,26 +284,28 @@ describe('Modal', () => {
         );
       }
       render(<Nested />);
-      await userEvent.click(screen.getByRole('button', { name: 'More' }));
+      await user.click(screen.getByRole('button', { name: 'More' }));
       expect(await screen.findByRole('dialog', { name: 'Inner' })).toBeInTheDocument();
-      await userEvent.keyboard('{Escape}');
+      await user.keyboard('{Escape}');
       expect(screen.queryByRole('dialog', { name: 'Inner' })).not.toBeInTheDocument();
       expect(outerChange).not.toHaveBeenCalled();
       const search = screen.getByRole('textbox', { name: 'Search' });
       search.focus();
-      await userEvent.keyboard('{Escape}');
+      await user.keyboard('{Escape}');
       expect(outerChange).not.toHaveBeenCalled();
       expect(screen.getByRole('dialog', { name: 'Outer' })).toBeInTheDocument();
     });
 
     it('UIC-MODAL-2.2 closes on an outside press only when dismissable, and not after a drag from inside', async () => {
+      const user = userEvent.setup();
+
       const onOpenChange = vi.fn();
       const { unmount } = render(
         <Modal title="Fixed" isOpen onOpenChange={onOpenChange}>
           Body
         </Modal>,
       );
-      await userEvent.click(overlay() as HTMLElement);
+      await user.click(overlay() as HTMLElement);
       expect(onOpenChange).not.toHaveBeenCalled();
       unmount();
 
@@ -297,17 +315,19 @@ describe('Modal', () => {
         </Modal>,
       );
       const dialog = screen.getByRole('dialog');
-      await userEvent.pointer([
+      await user.pointer([
         { keys: '[MouseLeft>]', target: dialog },
         { keys: '[/MouseLeft]', target: overlay() as HTMLElement },
       ]);
       expect(onOpenChange).not.toHaveBeenCalled();
-      await userEvent.click(overlay() as HTMLElement);
+      await user.click(overlay() as HTMLElement);
       expect(onOpenChange).toHaveBeenCalledTimes(1);
       expect(onOpenChange).toHaveBeenCalledWith(false);
     });
 
     it('UIC-MODAL-2.3 refuses every dismissal while dismissal is disabled', async () => {
+      const user = userEvent.setup();
+
       const onOpenChange = vi.fn();
       render(
         <Modal
@@ -324,13 +344,15 @@ describe('Modal', () => {
       );
       expect(screen.getByRole('button', { name: 'Cancel' })).toBeDisabled();
       expect(screen.getByRole('button', { name: 'Close' })).toBeDisabled();
-      await userEvent.keyboard('{Escape}');
-      await userEvent.click(overlay() as HTMLElement);
+      await user.keyboard('{Escape}');
+      await user.click(overlay() as HTMLElement);
       expect(onOpenChange).not.toHaveBeenCalled();
-      await userEvent.click(screen.getByRole('button', { name: 'Finish' }));
+      await user.click(screen.getByRole('button', { name: 'Finish' }));
       expect(onOpenChange).toHaveBeenCalledWith(false);
     });
     it('UIC-MODAL-2.4 lets the caller refuse an Escape or an outside press', async () => {
+      const user = userEvent.setup();
+
       const onOpenChange = vi.fn();
       let keep = true;
       const shouldCloseOnEscape = vi.fn(() => !keep);
@@ -352,18 +374,20 @@ describe('Modal', () => {
           </Modal>
         </>,
       );
-      await userEvent.keyboard('{Escape}');
+      await user.keyboard('{Escape}');
       expect(shouldCloseOnEscape).toHaveBeenCalledTimes(1);
-      await userEvent.click(overlay() as HTMLElement);
+      await user.click(overlay() as HTMLElement);
       expect(shouldCloseOnInteractOutside).toHaveBeenCalledWith(overlay());
       expect(onOpenChange).not.toHaveBeenCalled();
       keep = false;
       screen.getByRole('textbox', { name: 'Text' }).focus();
-      await userEvent.keyboard('{Escape}');
+      await user.keyboard('{Escape}');
       expect(onOpenChange).toHaveBeenCalledWith(false);
     });
 
     it('UIC-MODAL-2.4 asks nothing while a dismissal is refused anyway', async () => {
+      const user = userEvent.setup();
+
       const shouldCloseOnEscape = vi.fn(() => true);
       render(
         <Modal
@@ -375,7 +399,7 @@ describe('Modal', () => {
           <input aria-label="Text" />
         </Modal>,
       );
-      await userEvent.keyboard('{Escape}');
+      await user.keyboard('{Escape}');
       expect(shouldCloseOnEscape).not.toHaveBeenCalled();
       expect(screen.getByRole('dialog', { name: 'Sticky' })).toBeInTheDocument();
     });
@@ -383,10 +407,12 @@ describe('Modal', () => {
 
   describe('exit', () => {
     it('UIC-MODAL-1.5 calls onExitComplete once the dialog has closed, not when removed open', async () => {
+      const user = userEvent.setup();
+
       const onExitComplete = vi.fn();
       await openHarness({ onExitComplete });
       expect(onExitComplete).not.toHaveBeenCalled();
-      await userEvent.keyboard('{Escape}');
+      await user.keyboard('{Escape}');
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
       expect(onExitComplete).toHaveBeenCalledTimes(1);
 
@@ -449,6 +475,8 @@ describe('Modal', () => {
     });
 
     it('UIC-MODAL-3.2 wraps Tab inside the dialog and pulls outside focus back', async () => {
+      const user = userEvent.setup();
+
       const { trigger } = await openHarness({
         children: (
           <>
@@ -461,20 +489,22 @@ describe('Modal', () => {
       const firstButton = screen.getByRole('button', { name: 'First' });
       const save = screen.getByRole('button', { name: 'Save' });
       expect(firstButton).toHaveFocus();
-      await userEvent.tab();
+      await user.tab();
       expect(screen.getByRole('button', { name: 'Second' })).toHaveFocus();
       save.focus();
-      await userEvent.tab();
+      await user.tab();
       expect(firstButton).toHaveFocus();
-      await userEvent.tab({ shift: true });
+      await user.tab({ shift: true });
       expect(save).toHaveFocus();
       act(() => trigger.focus());
       expect(screen.getByRole('dialog').contains(document.activeElement)).toBe(true);
     });
 
     it('UIC-MODAL-3.3 returns focus to the trigger on close, and into the modal beneath', async () => {
+      const user = userEvent.setup();
+
       const { trigger } = await openHarness({ primaryAction: { label: 'Save' } });
-      await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+      await user.click(screen.getByRole('button', { name: 'Cancel' }));
       await waitFor(() => expect(trigger).toHaveFocus());
 
       function Nested() {
@@ -492,9 +522,9 @@ describe('Modal', () => {
       }
       render(<Nested />);
       const more = screen.getByRole('button', { name: 'More' });
-      await userEvent.click(more);
+      await user.click(more);
       await screen.findByRole('dialog', { name: 'Inner' });
-      await userEvent.keyboard('{Escape}');
+      await user.keyboard('{Escape}');
       await waitFor(() => expect(more).toHaveFocus());
     });
   });
@@ -531,6 +561,8 @@ describe('Modal', () => {
     });
 
     it('UIC-MODAL-4.2 places header actions after the title and draws an optional close button', async () => {
+      const user = userEvent.setup();
+
       const onOpenChange = vi.fn();
       render(
         <UiProvider strings={{ close: 'Shut' }}>
@@ -554,11 +586,13 @@ describe('Modal', () => {
       expect(screen.getByText('Step 1 of 3').parentElement).toHaveClass('ui-modal__header-actions');
       expect(screen.getByRole('dialog')).toHaveAccessibleName('Import');
       expectHooksMatchSpec(document.body, 'MODAL', { slots: ['header-actions', 'close'] });
-      await userEvent.click(screen.getByRole('button', { name: 'Shut' }));
+      await user.click(screen.getByRole('button', { name: 'Shut' }));
       expect(onOpenChange).toHaveBeenCalledWith(false);
     });
 
     it('UIC-MODAL-4.3 renders the body and passes close to function children', async () => {
+      const user = userEvent.setup();
+
       const onOpenChange = vi.fn();
       render(
         <Modal title="Pick" isOpen onOpenChange={onOpenChange}>
@@ -571,7 +605,7 @@ describe('Modal', () => {
       );
       const body = document.querySelector('.ui-modal__body');
       expect(body).toContainElement(screen.getByRole('button', { name: 'Use Lemon' }));
-      await userEvent.click(screen.getByRole('button', { name: 'Use Lemon' }));
+      await user.click(screen.getByRole('button', { name: 'Use Lemon' }));
       expect(onOpenChange).toHaveBeenCalledWith(false);
     });
   });
@@ -641,6 +675,8 @@ describe('Modal', () => {
     });
 
     it('UIC-MODAL-5.1 hides, shows alone or replaces the built-in buttons', async () => {
+      const user = userEvent.setup();
+
       const onOpenChange = vi.fn();
       const { rerender } = render(
         <Modal
@@ -662,7 +698,7 @@ describe('Modal', () => {
         />,
       );
       expect(screen.getAllByRole('button').map((button) => button.textContent)).toEqual(['Close']);
-      await userEvent.click(screen.getByRole('button', { name: 'Close' }));
+      await user.click(screen.getByRole('button', { name: 'Close' }));
       expect(onOpenChange).toHaveBeenCalledWith(false);
 
       rerender(
@@ -684,6 +720,8 @@ describe('Modal', () => {
     });
 
     it('UIC-MODAL-5.2 passes close to the action and keeps it pending until its promise settles', async () => {
+      const user = userEvent.setup();
+
       const task = deferred();
       const onPress = vi.fn((close: () => void) => task.promise.then(close));
       const onOpenChange = vi.fn();
@@ -697,10 +735,10 @@ describe('Modal', () => {
         />,
       );
       const save = screen.getByRole('button', { name: 'Save' });
-      await userEvent.click(save);
-      await userEvent.click(save);
+      await user.click(save);
+      await user.click(save);
       act(() => save.click());
-      await userEvent.keyboard('{Control>}{Enter}{/Control}');
+      await user.keyboard('{Control>}{Enter}{/Control}');
       expect(onPress).toHaveBeenCalledTimes(1);
       expect(save).toHaveAttribute('data-pending', 'true');
       expect(within(save).getByRole('progressbar', { name: 'Saving' })).toBeInTheDocument();
@@ -743,11 +781,13 @@ describe('Modal', () => {
     });
 
     it('UIC-MODAL-5.2 never runs a disabled action and honours outside pending', async () => {
+      const user = userEvent.setup();
+
       const onPress = vi.fn();
       const { rerender } = render(
         <Modal title="Save" isOpen primaryAction={{ label: 'Save', onPress, isDisabled: true }} />,
       );
-      await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+      await user.click(screen.getByRole('button', { name: 'Save' }));
       expect(onPress).not.toHaveBeenCalled();
 
       rerender(
@@ -759,12 +799,14 @@ describe('Modal', () => {
       );
       const save = screen.getByRole('button', { name: 'Save' });
       expect(save).toHaveAttribute('data-pending', 'true');
-      await userEvent.click(save);
-      await userEvent.keyboard('{Control>}{Enter}{/Control}');
+      await user.click(save);
+      await user.keyboard('{Control>}{Enter}{/Control}');
       expect(onPress).not.toHaveBeenCalled();
     });
 
     it('UIC-MODAL-5.3 announces a failed action and clears it on the next attempt', async () => {
+      const user = userEvent.setup();
+
       let attempts = 0;
       const { rerender } = render(
         <Modal
@@ -780,11 +822,11 @@ describe('Modal', () => {
         />,
       );
       const save = screen.getByRole('button', { name: 'Save' });
-      await userEvent.click(save);
+      await user.click(save);
       expect(screen.getByRole('alert')).toHaveTextContent('Save refused.');
       expect(save).not.toHaveAttribute('data-pending');
       expect(screen.getByRole('dialog')).toBeInTheDocument();
-      await userEvent.click(save);
+      await user.click(save);
       expect(attempts).toBe(2);
       expect(screen.queryByRole('alert')).not.toBeInTheDocument();
 
@@ -797,11 +839,13 @@ describe('Modal', () => {
           />
         </UiProvider>,
       );
-      await userEvent.click(screen.getByRole('button', { name: 'Retry' }));
+      await user.click(screen.getByRole('button', { name: 'Retry' }));
       expect(screen.getByRole('alert')).toHaveTextContent('Something went wrong.');
     });
 
     it('UIC-MODAL-5.4 keeps a late settlement out of a later opening', async () => {
+      const user = userEvent.setup();
+
       const requests = [deferred(), deferred(), deferred()];
       let attempts = 0;
       const onOpenChange = vi.fn();
@@ -832,14 +876,14 @@ describe('Modal', () => {
         );
       }
       render(<Reopen />);
-      await userEvent.click(screen.getByRole('button', { name: 'Save' }));
-      await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+      await user.click(screen.getByRole('button', { name: 'Save' }));
+      await user.click(screen.getByRole('button', { name: 'Cancel' }));
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
       onOpenChange.mockClear();
-      await userEvent.click(screen.getByRole('button', { name: 'Toggle' }));
+      await user.click(screen.getByRole('button', { name: 'Toggle' }));
       const save = await screen.findByRole('button', { name: 'Save' });
       expect(save).not.toHaveAttribute('data-pending');
-      await userEvent.click(save);
+      await user.click(save);
       expect(attempts).toBe(2);
       await act(async () => {
         (requests[0] as ReturnType<typeof deferred>).reject(new Error('Old save refused.'));
@@ -847,7 +891,7 @@ describe('Modal', () => {
       });
       expect(screen.queryByRole('alert')).not.toBeInTheDocument();
       expect(save).toHaveAttribute('data-pending', 'true');
-      await userEvent.keyboard('{Control>}{Enter}{/Control}');
+      await user.keyboard('{Control>}{Enter}{/Control}');
       expect(attempts).toBe(2);
       expect(onOpenChange).not.toHaveBeenCalled();
       await act(async () => {
@@ -858,6 +902,8 @@ describe('Modal', () => {
     });
 
     it('UIC-MODAL-5.4 does not let an earlier opening close a later one', async () => {
+      const user = userEvent.setup();
+
       const first = deferred();
       let attempts = 0;
       function Reopen() {
@@ -883,9 +929,9 @@ describe('Modal', () => {
         );
       }
       render(<Reopen />);
-      await userEvent.click(screen.getByRole('button', { name: 'Save' }));
-      await userEvent.keyboard('{Escape}');
-      await userEvent.click(screen.getByRole('button', { name: 'Reopen' }));
+      await user.click(screen.getByRole('button', { name: 'Save' }));
+      await user.keyboard('{Escape}');
+      await user.click(screen.getByRole('button', { name: 'Reopen' }));
       await screen.findByRole('dialog');
       await act(async () => {
         first.resolve();
@@ -951,6 +997,8 @@ describe('Modal', () => {
     });
 
     it('UIC-MODAL-6.1 runs the enabled primary action, not plain Enter or a disabled one', async () => {
+      const user = userEvent.setup();
+
       const onPress = vi.fn();
       const { rerender } = render(
         <Modal title="Name" isOpen primaryAction={{ label: 'Create', onPress, isDisabled: true }}>
@@ -958,24 +1006,26 @@ describe('Modal', () => {
         </Modal>,
       );
       expect(screen.getByRole('textbox')).toHaveFocus();
-      await userEvent.keyboard('{Control>}{Enter}{/Control}');
+      await user.keyboard('{Control>}{Enter}{/Control}');
       expect(onPress).not.toHaveBeenCalled();
       rerender(
         <Modal title="Name" isOpen primaryAction={{ label: 'Create', onPress }}>
           <input aria-label="Name" />
         </Modal>,
       );
-      await userEvent.keyboard('{Enter}');
+      await user.keyboard('{Enter}');
       expect(onPress).not.toHaveBeenCalled();
-      await userEvent.keyboard('{Control>}{Shift>}{Enter}{/Shift}{/Control}');
+      await user.keyboard('{Control>}{Shift>}{Enter}{/Shift}{/Control}');
       expect(onPress).not.toHaveBeenCalled();
-      await userEvent.keyboard('{Control>}{Enter}{/Control}');
+      await user.keyboard('{Control>}{Enter}{/Control}');
       expect(onPress).toHaveBeenCalledTimes(1);
-      await userEvent.keyboard('{Meta>}{Enter}{/Meta}');
+      await user.keyboard('{Meta>}{Enter}{/Meta}');
       expect(onPress).toHaveBeenCalledTimes(2);
     });
 
     it('UIC-MODAL-6.2 hands the keys the dialog does not handle to onKeyDown', async () => {
+      const user = userEvent.setup();
+
       const onPress = vi.fn();
       const onKeyDown = vi.fn();
       render(
@@ -988,10 +1038,10 @@ describe('Modal', () => {
           <input aria-label="Name" />
         </Modal>,
       );
-      await userEvent.keyboard('{ArrowRight}');
+      await user.keyboard('{ArrowRight}');
       expect(onKeyDown).toHaveBeenCalledWith(expect.objectContaining({ key: 'ArrowRight' }));
       onKeyDown.mockClear();
-      await userEvent.keyboard('{Control>}{Enter}{/Control}');
+      await user.keyboard('{Control>}{Enter}{/Control}');
       expect(onPress).toHaveBeenCalledTimes(1);
       expect(onKeyDown.mock.calls.map(([event]) => event.key)).not.toContain('Enter');
     });

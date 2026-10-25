@@ -88,7 +88,7 @@
 }
 
 /* The clear button fits inside the frame at every size. */
-.ui-search-field .ui-search-field__clear.ui-icon-button {
+.ui-search-field .ui-search-field__clear.ui-button[data-content='icon'] {
   width: calc(var(--ref-search-field-height) - 6px);
   height: calc(var(--ref-search-field-height) - 6px);
 }

@@ -91,7 +91,7 @@
   white-space: nowrap;
 }
 
-.ui-tag-group__remove.ui-icon-button {
+.ui-tag-group__remove.ui-button[data-content='icon'] {
   flex: none;
   width: 16px;
   height: 16px;

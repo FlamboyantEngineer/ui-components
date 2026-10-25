@@ -7,7 +7,7 @@ import { ColorField } from '../../src/components/color-field/color-field.js';
 import { Combobox, type ComboboxItem } from '../../src/components/combobox/combobox.js';
 import { DateTimeField } from '../../src/components/date-time-field/date-time-field.js';
 import { DropdownMenu } from '../../src/components/dropdown-menu/dropdown-menu.js';
-import { IconButton } from '../../src/components/icon-button/icon-button.js';
+
 import { Menubar, MenubarMenu } from '../../src/components/menubar/menubar.js';
 import type { MenuEntry } from '../../src/components/menu/menu.js';
 import { NumberField } from '../../src/components/number-field/number-field.js';
@@ -28,7 +28,7 @@ const sizes = ['xs', 'sm', 'md', 'lg'] as const satisfies readonly ControlSize[]
 const contents = ['short', 'long', 'large type'] as const;
 const controls = [
   'button',
-  'icon-button',
+  'button-icon',
   'dropdown-menu',
   'segmented-choice',
   'search-field',
@@ -75,8 +75,8 @@ const cells: Record<Control, (props: CellProps) => ReactNode> = {
       {isLong ? 'Save every change' : 'Save'}
     </Button>
   ),
-  'icon-button': ({ size, isLong }) => (
-    <IconButton
+  'button-icon': ({ size, isLong }) => (
+    <Button
       variant="secondary"
       size={size}
       icon={isLong ? 'more-vertical' : 'plus'}

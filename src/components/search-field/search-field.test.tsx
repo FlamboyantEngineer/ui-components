@@ -80,7 +80,7 @@ describe('SearchField', () => {
     const input = screen.getByRole('searchbox');
     await user.type(input, 'fig');
     const clear = screen.getByRole('button', { name: 'Clear search' });
-    expect(clear).toHaveClass('ui-search-field__clear', 'ui-icon-button');
+    expect(clear).toHaveClass('ui-search-field__clear', 'ui-button');
     expect(clear.querySelector('[data-glyph="close"]')).not.toBeNull();
     await user.tab();
     expect(clear).toHaveFocus();
@@ -166,7 +166,7 @@ describe('SearchField', () => {
     expect(group).toHaveAttribute('role', 'presentation');
     expect(
       [...(group?.children ?? [])].map((node) => node.getAttribute('class')?.split(' ')[0]),
-    ).toEqual(['ui-glyph', 'ui-search-field__input', 'ui-icon-button']);
+    ).toEqual(['ui-glyph', 'ui-search-field__input', 'ui-button']);
     expectHooksMatchSpec(container, 'SEARCH-FIELD', { slots: ['label', 'group'] });
   });
 

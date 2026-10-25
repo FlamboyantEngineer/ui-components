@@ -5,7 +5,7 @@ import {
   AppFrameBandContent,
 } from '../../src/components/app-frame/app-frame-band.js';
 import { Button } from '../../src/components/button/button.js';
-import { IconButton } from '../../src/components/icon-button/icon-button.js';
+
 import { ToolbarRowGroup } from '../../src/components/layout/toolbar-row.js';
 import { NavigationRail } from '../../src/components/navigation-rail/navigation-rail.js';
 import {
@@ -22,18 +22,18 @@ function Tools() {
   return (
     <>
       <ToolbarRowGroup aria-label="History">
-        <IconButton icon="undo" label="Undo" size="sm" />
-        <IconButton icon="redo" label="Redo" size="sm" />
+        <Button icon="undo" label="Undo" size="sm" />
+        <Button icon="redo" label="Redo" size="sm" />
       </ToolbarRowGroup>
       <ToolbarRowGroup aria-label="Edit" density="attached">
-        <IconButton icon="edit" label="Edit" size="sm" />
-        <IconButton icon="copy" label="Copy" size="sm" />
-        <IconButton icon="delete" label="Delete" size="sm" />
+        <Button icon="edit" label="Edit" size="sm" />
+        <Button icon="copy" label="Copy" size="sm" />
+        <Button icon="delete" label="Delete" size="sm" />
       </ToolbarRowGroup>
       <ToolbarRowGroup aria-label="View">
-        <IconButton icon="search" label="Find" size="sm" />
-        <IconButton icon="filter" label="Filter" size="sm" />
-        <IconButton icon="refresh" label="Refresh" size="sm" />
+        <Button icon="search" label="Find" size="sm" />
+        <Button icon="filter" label="Filter" size="sm" />
+        <Button icon="refresh" label="Refresh" size="sm" />
       </ToolbarRowGroup>
     </>
   );

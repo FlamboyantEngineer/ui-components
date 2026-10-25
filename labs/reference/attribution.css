@@ -10,18 +10,18 @@
   color: var(--ref-text);
 }
 
-.ui-attribution__person {
+.ui-attribution .ui-attribution__person {
   display: inline-flex;
-  align-items: center;
+  align-items: baseline;
   gap: 4px;
-  vertical-align: bottom;
+  vertical-align: baseline;
   color: var(--ref-text);
 }
 
 /* The card trigger reads as the name, not as a button. */
 .ui-attribution__person:is(button) {
   margin: 0;
-  padding: 0 2px;
+  padding: 0;
   border: 0;
   border-radius: var(--ref-radius-xs);
   background: none;

@@ -4,7 +4,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { getFileGlyph } from '../../utils/file-glyph.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { useElementSize } from '../../utils/use-element-size.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 import { Icon } from '../icon/icon.js';
 import { layoutMedia, type MediaSize } from './media-layout.js';
 import {
@@ -105,7 +105,7 @@ export function MediaStage(props: MediaStageProps) {
   return (
     <div {...hooks.slot('stage', { kind: isImage ? 'image' : 'file' })}>
       {hasSiblings ? (
-        <IconButton
+        <Button
           className={hooks.slotClass('previous')}
           icon={isRtl ? 'chevron-right' : 'chevron-left'}
           label={strings.previous}
@@ -130,7 +130,7 @@ export function MediaStage(props: MediaStageProps) {
         )}
       </div>
       {hasSiblings ? (
-        <IconButton
+        <Button
           className={hooks.slotClass('next')}
           icon={isRtl ? 'chevron-left' : 'chevron-right'}
           label={strings.next}

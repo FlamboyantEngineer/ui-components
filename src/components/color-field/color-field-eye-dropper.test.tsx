@@ -38,7 +38,7 @@ describe('ColorField eye dropper', () => {
     );
     const dialog = await openPicker(user);
     const button = within(dialog).getByRole('button', { name: 'Pick a color from the screen' });
-    expect(button).toHaveClass('ui-color-field__eye-dropper', 'ui-icon-button');
+    expect(button).toHaveClass('ui-color-field__eye-dropper', 'ui-button');
     expect(button.querySelector('[data-glyph="eye-dropper"]')).not.toBeNull();
     await user.click(button);
     expect(EyeDropper).toHaveBeenCalledTimes(1);

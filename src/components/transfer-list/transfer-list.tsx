@@ -2,7 +2,7 @@ import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 import { TransferPane, type TransferListItem, type TransferListSide } from './transfer-pane.js';
 import { useTransferList, type TransferSide } from './use-transfer-list.js';
 
@@ -45,7 +45,7 @@ function MoveButtons({ from, side, toLabel, onTransfer }: MoveButtonsProps) {
   const isForward = from === 'available';
   return (
     <>
-      <IconButton
+      <Button
         {...hooks.slot('move', { scope: 'selected', target: isForward ? 'chosen' : 'available' })}
         icon={isForward ? 'chevron-right' : 'chevron-left'}
         label={strings.moveSelectedTo(toLabel)}
@@ -55,7 +55,7 @@ function MoveButtons({ from, side, toLabel, onTransfer }: MoveButtonsProps) {
         isDisabled={side.selected.size === 0}
         onPress={() => onTransfer(from, side.selected)}
       />
-      <IconButton
+      <Button
         {...hooks.slot('move', { scope: 'all', target: isForward ? 'chosen' : 'available' })}
         icon={isForward ? 'chevron-double-right' : 'chevron-double-left'}
         label={strings.moveAllTo(toLabel)}
@@ -112,7 +112,7 @@ export function TransferList({
   const reorderTools = reorderable ? (
     <div {...hooks.slot('reorder')}>
       {(['up', 'down'] as const).map((direction) => (
-        <IconButton
+        <Button
           key={direction}
           icon={direction === 'up' ? 'arrow-up' : 'arrow-down'}
           label={strings.moveItem(direction)}

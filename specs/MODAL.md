@@ -1,6 +1,6 @@
 # Modal
 
-`Modal` is a blocking dialog: a task or decision the reader finishes or cancels before returning to the page beneath. It has a title, an optional description, a body and a footer whose built-in action bar holds Cancel, an optional secondary action and the primary action. It is built on React Aria's `ModalOverlay`, `Modal`, `Dialog` and `Heading`, which provide the focus trap, Escape, outside presses, hiding the page from assistive technology and focus restoration. The same dialog can also float over the page without blocking it, or open as a popover against its trigger (React Aria `Popover`). Imperative callers open modals through [Modal Controller](MODAL-CONTROLLER.md); yes-or-no decisions use [Confirm Dialog](CONFIRM-DIALOG.md).
+`Modal` is a blocking dialog: a task or decision the reader finishes or cancels before returning to the page beneath. It has a title, an optional description, a body and a footer whose built-in action bar holds Cancel, an optional secondary action and the primary action. It is built on React Aria's `ModalOverlay`, `Modal`, `Dialog` and `Heading`, which provide the focus trap, Escape, outside presses, hiding the page from assistive technology and focus restoration. The same dialog can also float over the page without blocking it, or open as a popover against its trigger (React Aria `Popover`). Imperative callers open modals through [Modal Controller](MODAL-CONTROLLER.md); yes-or-no decisions use [Confirm Dialog](MODAL.md).
 
 ## UIC-MODAL-1 - Overlay
 
@@ -140,7 +140,7 @@ Verification: `src/components/modal/modal.test.tsx`, `e2e/modal.spec.ts`
 
 ### UIC-MODAL-5.2 - Action lifecycle
 
-Pressing an action shall call its `onPress` with `close`, which closes this opening of the modal. When `onPress` returns a promise, its button shall be pending ([Action Button](ACTION-BUTTON.md)'s lifecycle: spinner named by `pendingLabel`, `data-pending`, repeat presses refused, even before the pending state renders) until it settles, the other action shall be disabled meanwhile, and Cancel shall stay available. An action with `isDisabled` never runs; `isPending` holds it pending from outside.
+Pressing an action shall call its `onPress` with `close`, which closes this opening of the modal. When `onPress` returns a promise, its button shall be pending ([Action Button](BUTTON.md)'s lifecycle: spinner named by `pendingLabel`, `data-pending`, repeat presses refused, even before the pending state renders) until it settles, the other action shall be disabled meanwhile, and Cancel shall stay available. An action with `isDisabled` never runs; `isPending` holds it pending from outside.
 
 Implementation: `src/components/modal/modal-footer.tsx`, `src/components/modal/use-modal-actions.ts`
 Verification: `src/components/modal/modal.test.tsx`, `e2e/modal.spec.ts`
@@ -214,6 +214,103 @@ With `placement` (a `Placement`), the dialog shall open inside a `ModalTrigger` 
 Implementation: `src/components/modal/modal.tsx`, `src/components/modal/modal-presentations.tsx`, `src/components/popover/popover.tsx`
 Verification: `src/components/modal/modal-presentations.test.tsx`, `e2e/modal.spec.ts`
 
+## UIC-MODAL-21 - Decision
+
+### UIC-MODAL-21.1 - Structure
+
+`confirm(controller, options)` shall use a confirmation helper that renders a `Modal` with `role="alertdialog"`, named by `title`, whose body shows `message` in the `ui-modal__message` slot, describing the dialog, followed by any children. Its footer holds Cancel, labelled by `cancelLabel` or the provider's `cancel` string, and the confirm action, labelled by `confirmLabel` or the provider's `confirm` string.
+
+Implementation: `src/components/modal/modal-confirm.tsx`
+Verification: `src/components/modal/modal-confirm.test.tsx`, `e2e/modal-confirmation.spec.ts`
+
+### UIC-MODAL-21.2 - Outcomes
+
+Confirming shall run `onConfirm` and then close the dialog without calling `onCancel`. When `onConfirm` returns a promise the confirm action is pending until it settles; a rejection keeps the dialog open with the error in its footer ([UIC-MODAL-5.3](MODAL.md#uic-modal-53---failed-actions)). Cancel, Escape and, with `isDismissable`, an outside press shall close it and call `onCancel` once, also inside a `ModalTrigger` or `DialogTrigger` that holds the open state. Every close the dialog makes reports `onOpenChange(false)`.
+
+Implementation: `src/components/modal/modal-confirm.tsx`
+Verification: `src/components/modal/modal-confirm.test.tsx`, `e2e/modal-confirmation.spec.ts`
+
+### UIC-MODAL-21.3 - Safe focus
+
+When the dialog opens, focus shall land on Cancel, the safe choice, or on the confirm action with `autoFocusConfirm`. When it closes, focus returns to the element focused when it opened.
+
+Implementation: `src/components/modal/modal-confirm.tsx`
+Verification: `src/components/modal/modal-confirm.test.tsx`, `e2e/modal-confirmation.spec.ts`
+
+### UIC-MODAL-21.4 - Destructive tone
+
+`tone="danger"` shall mark a destructive or irreversible decision: the modal publishes `data-tone="danger"` and the confirm action uses the `danger` button variant. The default is `neutral`.
+
+Implementation: `src/components/modal/modal-confirm.tsx`
+Verification: `src/components/modal/modal-confirm.test.tsx`, `e2e/modal-confirmation.spec.ts`
+
+### UIC-MODAL-21.5 - Text messages
+
+A message given as a string shall render as text: markup in it is shown, never interpreted.
+
+Implementation: `src/components/modal/modal-confirm.tsx`
+Verification: `src/components/modal/modal-confirm.test.tsx`
+
+### UIC-MODAL-21.6 - Third action
+
+`secondaryActionLabel` shall add a third action between Cancel and the confirm action (the modal's secondary action, `ui-modal__secondary`), for a choice such as "Don't save" beside Cancel and Save. Pressing it shall run `onSecondaryAction` through the same lifecycle as the confirm action (pending while a returned promise runs, open with the error when it rejects) and then close the dialog without calling `onCancel` or `onConfirm`.
+
+Implementation: `src/components/modal/modal-confirm.tsx`
+Verification: `src/components/modal/modal-confirm.test.tsx`, `e2e/modal-confirmation.spec.ts`
+
+### UIC-MODAL-21.7 - News tones and icon
+
+`tone` shall also take `info`, `success` and `warning`, published in the modal's `data-tone`, for a dialog that brings news. The title shall start with a decorative icon (`ui-modal__confirmation-icon`, also `ui-icon`) inside the heading: by default the `info`, `success` or `warning` glyph for those tones and none for `neutral` and `danger`; `icon`, a built-in glyph name or any icon node, replaces it (`icon="error"` with `tone="danger"` marks an error), and `icon={null}` leaves it out. The icon does not change the dialog's name.
+
+Implementation: `src/components/modal/modal-confirm.tsx`, `labs/reference/modal.css`
+Verification: `src/components/modal/modal-confirm.test.tsx`, `e2e/modal-confirmation.spec.ts`
+
+### UIC-MODAL-21.8 - Acknowledgement
+
+`cancelLabel={null}` shall leave Cancel out, for a dialog that only needs acknowledging; focus then starts on the confirm action. Escape and an outside press still close it and call `onCancel`.
+
+Implementation: `src/components/modal/modal-confirm.tsx`
+Verification: `src/components/modal/modal-confirm.test.tsx`
+
+### UIC-MODAL-21.9 - Anchored confirmation
+
+With `placement`, inside a React Aria `DialogTrigger`, the confirmation shall open as a popover against its trigger ([UIC-MODAL-8.2](MODAL.md#uic-modal-82---anchored-dialog)) instead of over the page, for a quick decision next to the control that asked for it. Its dialog takes `role="dialog"`; focus starts on Cancel and returns to the trigger, and the outcomes are those of the modal confirmation.
+
+Implementation: `src/components/modal/modal-confirm.tsx`
+Verification: `src/components/modal/modal-confirm.test.tsx`, `e2e/modal-confirmation.spec.ts`
+
+## UIC-MODAL-22 - Imperative confirmation
+
+### UIC-MODAL-22.1 - Awaiting an answer
+
+`confirm(controller, options)` shall open a `Modal` with `options` through `controller` and return a promise that resolves `true` once the reader confirms and `onConfirm` (if any) succeeds, and `false` when the dialog closes any other way (Cancel, the third action after `onSecondaryAction`, Escape, an outside press, the controller's `closeAll`). The promise settles exactly once and the dialog leaves the controller when it closes.
+
+Implementation: `src/components/modal/modal-confirm.tsx`
+Verification: `src/components/modal/modal-confirm.test.tsx`, `e2e/modal-confirmation.spec.ts`
+
+### UIC-MODAL-22.2 - Alert
+
+`alert(controller, options)` shall open, through `controller`, a `Modal` with `options` (tone `info` by default) and no Cancel, whose one action is labelled by `confirmLabel` or the provider's `ok` string and has focus, and return a promise that resolves once the dialog closes, by that action (after `onConfirm`, if any, succeeds), Escape, an outside press or `closeAll`.
+
+Implementation: `src/components/modal/modal-prompts.tsx`, `src/core/common-strings.ts`
+Verification: `src/components/modal/modal-prompts.test.tsx`, `e2e/modal-confirmation.spec.ts`
+
+### UIC-MODAL-22.3 - Prompt
+
+`prompt(controller, options)` shall open, through `controller`, a `Modal` titled `title`, described by `message`, holding a [Text Field](TEXT-FIELD.md) named by `label` that starts with `defaultValue` and has focus, with Cancel (`cancelLabel`) and a primary action labelled by `confirmLabel` or the provider's `ok` string. It returns a promise that resolves to the field's text when the reader presses the action, presses Enter in the field or Control+Enter, and to `null` when the dialog closes any other way. The promise settles once and the dialog leaves the controller.
+
+Implementation: `src/components/modal/modal-prompts.tsx`
+Verification: `src/components/modal/modal-prompts.test.tsx`, `e2e/modal-confirmation.spec.ts`
+
+## UIC-MODAL-23 - Hooks
+
+### UIC-MODAL-23.1 - Hooks and caller attributes
+
+The Modal confirmation helper shall carry the hooks below on top of the modal's, append the caller's `className`, forward caller `data-*` attributes to the overlay and `id` to the dialog element.
+
+Implementation: `src/components/modal/modal-confirm.tsx`
+Verification: `src/components/modal/modal-confirm.test.tsx`
+
 ## Hooks
 
 | Hook                       | Kind      | Values                                            | Description                                                               |
@@ -226,7 +323,7 @@ Verification: `src/components/modal/modal-presentations.test.tsx`, `e2e/modal.sp
 | `ui-modal__title`          | slot      |                                                   | The `<h2>` title.                                                         |
 | `ui-modal__description`    | slot      |                                                   | The description under the title.                                          |
 | `ui-modal__header-actions` | slot      |                                                   | Caller content at the end of the header.                                  |
-| `ui-modal__close`          | slot      |                                                   | The header close button (also `ui-icon-button`).                          |
+| `ui-modal__close`          | slot      |                                                   | The header close button (also `ui-button`).                               |
 | `ui-modal__body`           | slot      |                                                   | The body.                                                                 |
 | `ui-modal__footer`         | slot      |                                                   | The footer.                                                               |
 | `ui-modal__footer-content` | slot      |                                                   | Caller content at the start of the footer.                                |
@@ -244,3 +341,5 @@ Verification: `src/components/modal/modal-presentations.test.tsx`, `e2e/modal.sp
 | `data-non-modal`           | state     | `true`                                            | On the overlay of a dialog that does not block the page.                  |
 | `data-placement`           | state     | `top`, `bottom`, `left`, `right`, `center`        | On an anchored dialog, the side of the trigger it opened on (React Aria). |
 | `data-trigger`             | state     | `DialogTrigger`                                   | On an anchored dialog, what opened it (React Aria).                       |
+
+| `ui-modal__confirmation-icon` | slot | | The decorative icon leading the title (also `ui-icon`). |

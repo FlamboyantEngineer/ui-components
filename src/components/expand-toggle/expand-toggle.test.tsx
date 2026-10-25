@@ -18,7 +18,7 @@ describe('ExpandToggle', () => {
       <ExpandToggle onExpandedChange={onExpandedChange} aria-controls="fruit-children" />,
     );
     const toggle = screen.getByRole('button');
-    expect(toggle).toHaveClass('ui-icon-button', 'ui-expand-toggle');
+    expect(toggle).toHaveClass('ui-button', 'ui-expand-toggle');
     expect(toggle).toHaveAttribute('aria-expanded', 'false');
     expect(toggle).toHaveAttribute('aria-controls', 'fruit-children');
     expect(toggle).not.toHaveAttribute('data-expanded');
@@ -186,7 +186,7 @@ describe('ExpandToggle', () => {
     expect(toggle).toHaveAttribute('data-pending', 'true');
     expect(toggle).toHaveAttribute('aria-disabled', 'true');
     expect(screen.getByRole('progressbar', { name: 'Loading citrus' })).toHaveClass(
-      'ui-icon-button__spinner',
+      'ui-button__spinner',
     );
     await userEvent.click(toggle);
     expect(onExpandedChange).not.toHaveBeenCalled();

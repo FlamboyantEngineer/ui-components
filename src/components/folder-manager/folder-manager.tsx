@@ -1,8 +1,8 @@
 import { findMaximum } from '../../utils/find-maximum.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { walkTree } from '../../utils/walk-tree.js';
-import type { Key } from '../../core/props.js';
-import type { BaseProps } from '../../core/props.js';
+import type { Key, BaseProps } from '../../core/props.js';
+
 import { useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import { InlineError } from '../inline-error/inline-error.js';

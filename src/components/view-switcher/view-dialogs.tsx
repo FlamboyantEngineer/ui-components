@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { useUiStrings } from '../../core/provider.js';
-import { ConfirmDialog } from '../confirm-dialog/confirm-dialog.js';
 import { Modal } from '../modal/modal.js';
+
 import { TextField } from '../text-field/text-field.js';
 
 /** A dialog a view switcher opens: what it does, and the name it starts from. */
@@ -70,16 +70,23 @@ export function ViewDialogs({ dialog, onClose }: ViewDialogsProps) {
   return (
     <>
       <NameViewDialog dialog={dialog?.type === 'delete' ? null : dialog} onClose={onClose} />
-      <ConfirmDialog
+      <Modal
+        role="alertdialog"
         isOpen={deletion?.isOpen ?? false}
         onOpenChange={(open) => {
           if (!open) onClose();
         }}
         tone="danger"
         title={strings.deleteViewTitle(deletion?.label ?? '')}
-        message={strings.deleteViewMessage}
-        confirmLabel={strings.delete}
-        onConfirm={() => deletion?.onSubmit()}
+        description={strings.deleteViewMessage}
+        cancelAction={{ autoFocus: true }}
+        primaryAction={{
+          label: strings.delete,
+          onPress: async (close) => {
+            await deletion?.onSubmit();
+            close();
+          },
+        }}
       />
     </>
   );

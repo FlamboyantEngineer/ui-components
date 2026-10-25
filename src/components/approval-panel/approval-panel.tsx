@@ -7,7 +7,7 @@ import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { getDisplayName, type AvatarIdentity } from '../avatar/avatar.js';
 import { Badge } from '../badge/badge.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 import { RelativeTime } from '../relative-time/relative-time.js';
 import { useHeadingLevel } from '../section-header/section-header.js';
 import { SegmentedBar } from '../segmented-bar/segmented-bar.js';
@@ -120,7 +120,7 @@ function ApproverActions({ approver, onRemind, onRequestAgain }: ApproverRowProp
     if (!onRemind) return null;
     const label = strings.remindApprover(name);
     return (
-      <IconButton
+      <Button
         icon="bell"
         label={label}
         tooltip={label}
@@ -133,7 +133,7 @@ function ApproverActions({ approver, onRemind, onRequestAgain }: ApproverRowProp
   if (!onRequestAgain) return null;
   const label = strings.requestApprovalAgain(name);
   return (
-    <IconButton
+    <Button
       icon="refresh"
       label={label}
       tooltip={label}

@@ -164,3 +164,24 @@
   border-radius: 50%;
   animation: ref-spin var(--ref-duration-spin) linear infinite;
 }
+
+.ui-button[data-content='icon'] {
+  height: var(--ref-control-height-md);
+  width: var(--ref-control-height-md);
+  padding: 0;
+}
+.ui-button[data-content='icon'][data-size='xs'] {
+  height: var(--ref-control-height-xs);
+  width: var(--ref-control-height-xs);
+}
+.ui-button[data-content='icon'][data-size='sm'] {
+  height: var(--ref-control-height-sm);
+  width: var(--ref-control-height-sm);
+}
+.ui-button[data-content='icon'][data-size='lg'] {
+  height: var(--ref-control-height-lg);
+  width: var(--ref-control-height-lg);
+}
+.ui-button__icon {
+  flex: none;
+}

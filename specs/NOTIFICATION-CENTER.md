@@ -1,6 +1,6 @@
 # Notification Center
 
-`NotificationList` is a notification inbox: a filter between all and unread notifications, Mark all as read, the notifications grouped by day as [List Row](LIST-ROW.md) rows the reader opens, marks read or unread and dismisses, [Load More](LOAD-MORE.md), an [Empty State](EMPTY-STATE.md) and a polite announcement of the notifications that arrive. `NotificationCenter` is a bell [Icon Button](ICON-BUTTON.md) with the unread count in a [Badge](BADGE.md) that opens the list in a [Popover](POPOVER.md), or in a [Drawer](DRAWER.md) on narrow screens. A full-page inbox renders `NotificationList` on its own.
+`NotificationList` is a notification inbox: a filter between all and unread notifications, Mark all as read, the notifications grouped by day as [List Row](LIST-ROW.md) rows the reader opens, marks read or unread and dismisses, [Load More](LOAD-MORE.md), an [Empty State](EMPTY-STATE.md) and a polite announcement of the notifications that arrive. `NotificationCenter` is a bell [Icon Button](BUTTON.md) with the unread count in a [Badge](BADGE.md) that opens the list in a [Popover](POPOVER.md), or in a [Drawer](DRAWER.md) on narrow screens. A full-page inbox renders `NotificationList` on its own.
 
 Each notification is plain data: `id`, a one-line `title`, an optional `description`, the `actor` who caused it (an avatar identity), an `icon` used when there is no actor, its `time` (an ISO 8601 date and time), the `href` it leads to and `isRead`. The caller owns loading, reading and dismissing: the list reports what the reader asks for and draws the items it is given.
 
@@ -31,7 +31,7 @@ Verification: `src/components/notification-center/notification-list.test.tsx`, `
 
 ### UIC-NOTIFICATION-CENTER-1.4 - Row actions
 
-With `onReadChange`, each row shall end with an `IconButton` (`ui-notification-list__read-toggle`) named and hinted by the provider's `markRead` string with the `envelope-open` glyph while unread, or `markUnread` with the `envelope` glyph while read, which calls `onReadChange(id, isRead)` with the opposite state. With `onDismiss`, a `close` `IconButton` (`ui-notification-list__dismiss`) named by the provider's `dismiss` string calls `onDismiss(id)`. `renderActions(item)` draws the caller's controls for a notification, such as Accept and Decline, in `ui-notification-list__item-actions` before them. These controls follow the row's link or button, never inside it. When a row leaves the list while focus is inside it, such as after a dismissal or a read toggle under the unread filter, focus shall move to the same control of the next row, else of the previous row (across days), else to the filter's chosen option, so it never falls to the page.
+With `onReadChange`, each row shall end with an `Button` (`ui-notification-list__read-toggle`) named and hinted by the provider's `markRead` string with the `envelope-open` glyph while unread, or `markUnread` with the `envelope` glyph while read, which calls `onReadChange(id, isRead)` with the opposite state. With `onDismiss`, a `close` `Button` (`ui-notification-list__dismiss`) named by the provider's `dismiss` string calls `onDismiss(id)`. `renderActions(item)` draws the caller's controls for a notification, such as Accept and Decline, in `ui-notification-list__item-actions` before them. These controls follow the row's link or button, never inside it. When a row leaves the list while focus is inside it, such as after a dismissal or a read toggle under the unread filter, focus shall move to the same control of the next row, else of the previous row (across days), else to the filter's chosen option, so it never falls to the page.
 
 Implementation: `src/components/notification-center/notification-row.tsx`, `src/components/notification-center/use-removal-focus.ts`, `src/core/glyphs.tsx`
 Verification: `src/components/notification-center/notification-list.test.tsx`, `e2e/notification-center.spec.ts`
@@ -75,7 +75,7 @@ Verification: `src/components/notification-center/notification-list.test.tsx`
 
 ### UIC-NOTIFICATION-CENTER-2.1 - Bell
 
-`NotificationCenter` shall render a `ui-notification-center` `<span>` holding a `bell` `IconButton` (`ui-notification-center__trigger`) named by the provider's `notificationsWithCount` string for the unread count (`Notifications, 3 unread`, or `Notifications` with none), and an overlay `info` count `Badge` (`ui-notification-center__count`) of that count, capped at `countMax` (99 by default), hidden from assistive technology because the bell's name carries the count, and absent while the count is 0. The count is `unreadCount`, or the number of unread `items`.
+`NotificationCenter` shall render a `ui-notification-center` `<span>` holding a `bell` `Button` (`ui-notification-center__trigger`) named by the provider's `notificationsWithCount` string for the unread count (`Notifications, 3 unread`, or `Notifications` with none), and an overlay `info` count `Badge` (`ui-notification-center__count`) of that count, capped at `countMax` (99 by default), hidden from assistive technology because the bell's name carries the count, and absent while the count is 0. The count is `unreadCount`, or the number of unread `items`.
 
 Implementation: `src/components/notification-center/notification-center.tsx`, `src/core/content-strings.ts`, `src/core/glyphs.tsx`
 Verification: `src/components/notification-center/notification-center.test.tsx`, `e2e/notification-center.spec.ts`
@@ -127,13 +127,13 @@ Verification: `src/components/notification-center/notification-list.test.tsx`, `
 | `ui-notification-list__time`           | slot      |                     | When it happened (also `ui-relative-time`).              |
 | `ui-notification-list__unread`         | slot      |                     | The unread dot (also `ui-badge`).                        |
 | `ui-notification-list__item-actions`   | slot      |                     | The caller's controls for one notification.              |
-| `ui-notification-list__read-toggle`    | slot      |                     | Mark as read or unread (also `ui-icon-button`).          |
-| `ui-notification-list__dismiss`        | slot      |                     | Dismiss (also `ui-icon-button`).                         |
+| `ui-notification-list__read-toggle`    | slot      |                     | Mark as read or unread (also `ui-button`).               |
+| `ui-notification-list__dismiss`        | slot      |                     | Dismiss (also `ui-button`).                              |
 | `ui-notification-list__empty`          | slot      |                     | The empty or loading state (also `ui-empty-state`).      |
 | `ui-notification-list__load-more`      | slot      |                     | Load more (also `ui-load-more`).                         |
 | `ui-notification-list__announcement`   | slot      |                     | The polite status announcing arrivals (visually hidden). |
 | `ui-notification-center`               | root      |                     | The bell and its count (`<span>`).                       |
-| `ui-notification-center__trigger`      | slot      |                     | The bell (also `ui-icon-button`).                        |
+| `ui-notification-center__trigger`      | slot      |                     | The bell (also `ui-button`).                             |
 | `ui-notification-center__count`        | slot      |                     | The unread count over the bell (also `ui-badge`).        |
 | `ui-notification-center__panel`        | slot      |                     | The popover or drawer holding the list.                  |
 | `ui-notification-center__announcement` | slot      |                     | The polite status announcing arrivals (visually hidden). |

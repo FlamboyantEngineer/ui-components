@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import { createHooks, dataAttributes, mergeClassNames } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 import {
   PropertyRow,
   PropertyStrip,
@@ -146,7 +146,7 @@ export function FourSidePropertyStrip<T = string>(props: FourSidePropertyStripPr
           );
         })}
         {link ? (
-          <IconButton
+          <Button
             className={hooks.slotClass('link')}
             icon="link"
             size="sm"

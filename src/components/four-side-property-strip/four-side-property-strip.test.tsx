@@ -155,7 +155,7 @@ describe('FourSidePropertyStrip', () => {
     expect(input('top')).toHaveValue('10');
     expect(input('bottom')).toHaveValue('2');
     const toggle = screen.getByRole('button', { name: 'Link opposite sides' });
-    expect(toggle).toHaveClass('ui-four-side-property-strip__link', 'ui-icon-button');
+    expect(toggle).toHaveClass('ui-four-side-property-strip__link', 'ui-button');
     expect(toggle).toHaveAttribute('aria-pressed', 'false');
     await userEvent.click(toggle);
     expect(onLinkedChange).toHaveBeenLastCalledWith(true);

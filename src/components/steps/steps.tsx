@@ -36,6 +36,8 @@ export interface StepsItem {
 export interface StepsProps extends BaseProps, AriaLabellingProps, Pick<NativeProps<'ol'>, 'ref'> {
   /** The steps, in order. */
   items: readonly StepsItem[];
+  /** Every step is complete, with no current step. Defaults to false. */
+  isComplete?: boolean | undefined;
   /** The step being worked on. */
   currentId?: Key | null | undefined;
   /** How the steps run. Defaults to `horizontal`. */
@@ -55,6 +57,7 @@ interface StepProps {
   isCurrent: boolean;
   isLast: boolean;
   isCompact: boolean;
+  isComplete: boolean;
   isDisabled: boolean;
   onAction: ((id: Key) => void) | undefined;
 }
@@ -91,7 +94,7 @@ function StepMarker({ status, index }: { status: StepsStatus; index: number }) {
 }
 
 /** The label with the status words assistive technology reads after it, then the extra lines. */
-function StepText({ item, status, isCurrent, isCompact }: StepProps) {
+function StepText({ item, status, isCurrent, isCompact, isComplete, isLast }: StepProps) {
   const strings = useUiStrings();
   const settled = status === 'complete' || status === 'error' || status === 'skipped';
   const label = (
@@ -107,7 +110,14 @@ function StepText({ item, status, isCurrent, isCompact }: StepProps) {
   );
   return (
     <span {...hooks.slot('text')}>
-      {isCompact && !isCurrent ? <VisuallyHidden>{label}</VisuallyHidden> : label}
+      {isCompact && !isCurrent ? (
+        <>
+          <VisuallyHidden>{label}</VisuallyHidden>
+          {isComplete && isLast ? strings.stepStatus('complete') : null}
+        </>
+      ) : (
+        label
+      )}
       {item.isOptional && !isCompact ? (
         <>
           {' '}
@@ -161,6 +171,7 @@ function Step(props: StepProps) {
 export function Steps({
   items,
   currentId = null,
+  isComplete = false,
   orientation = 'horizontal',
   variant = 'default',
   onAction,
@@ -175,15 +186,20 @@ export function Steps({
     <ol
       aria-label={named ? undefined : strings.steps}
       {...rest}
-      {...hooks.root({ className, props: rest, data: { orientation, variant } })}
+      {...hooks.root({
+        className,
+        props: rest,
+        data: { orientation, variant, complete: isComplete },
+      })}
     >
       {items.map((item, index) => (
         <Step
           key={toKeyIdentity(item.id)}
           item={item}
           index={index}
-          status={resolveStepStatus(item, index, currentIndex)}
-          isCurrent={index === currentIndex}
+          status={isComplete ? 'complete' : resolveStepStatus(item, index, currentIndex)}
+          isCurrent={!isComplete && index === currentIndex}
+          isComplete={isComplete}
           isLast={index === items.length - 1}
           isCompact={variant === 'compact'}
           isDisabled={isDisabled || Boolean(item.isDisabled)}

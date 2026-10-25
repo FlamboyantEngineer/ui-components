@@ -152,6 +152,8 @@ describe('Steps', () => {
   });
 
   it('UIC-STEPS-2.1 lets the reader return to settled steps', async () => {
+    const user = userEvent.setup();
+
     const onAction = vi.fn();
     const { container } = render(
       <Steps
@@ -165,11 +167,11 @@ describe('Steps', () => {
       'Upload Completed Choose a file',
       'Prepare Skipped',
     ]);
-    await userEvent.click(buttons[0]!);
+    await user.click(buttons[0]!);
     expect(onAction).toHaveBeenCalledWith('upload');
-    await userEvent.tab();
+    await user.tab();
     expect(buttons[1]).toHaveFocus();
-    await userEvent.keyboard('{Enter}');
+    await user.keyboard('{Enter}');
     expect(onAction).toHaveBeenLastCalledWith('prepare');
     expect(itemOf('Review').querySelector('button')).toBeNull();
     expect(itemOf('Import').querySelector('button')).toBeNull();
@@ -183,6 +185,8 @@ describe('Steps', () => {
   });
 
   it('UIC-STEPS-2.2 refuses presses on disabled steps', async () => {
+    const user = userEvent.setup();
+
     const onAction = vi.fn();
     const { container, rerender } = render(
       <Steps
@@ -194,7 +198,7 @@ describe('Steps', () => {
     expect(itemOf('Upload')).toHaveAttribute('data-disabled', 'true');
     const upload = screen.getByRole('button', { name: 'Upload Completed Choose a file' });
     expect(upload).toBeDisabled();
-    await userEvent.click(upload);
+    await user.click(upload);
     expect(onAction).not.toHaveBeenCalled();
     expect(screen.getByRole('button', { name: 'Prepare Completed' })).toBeEnabled();
     rerender(<Steps items={items} currentId="review" onAction={onAction} isDisabled />);
@@ -204,12 +208,14 @@ describe('Steps', () => {
   });
 
   it('UIC-STEPS-2.3 publishes interaction states on pressable steps', async () => {
+    const user = userEvent.setup();
+
     const { container } = render(<Steps items={items} currentId="prepare" onAction={() => {}} />);
     const button = screen.getByRole('button', { name: 'Upload Completed Choose a file' });
-    await userEvent.hover(button);
+    await user.hover(button);
     expect(button).toHaveAttribute('data-hovered', 'true');
-    await userEvent.unhover(button);
-    await userEvent.tab();
+    await user.unhover(button);
+    await user.tab();
     expect(button).toHaveAttribute('data-focused', 'true');
     expect(button).toHaveAttribute('data-focus-visible', 'true');
     expectHooksMatchSpec(container, 'STEPS');
@@ -245,5 +251,19 @@ describe('Steps', () => {
     expect(screen.getByRole('button', { name: 'Prepare [error]' })).toBeInTheDocument();
     expect(itemOf('Review')).toHaveTextContent(/^3Review Optional$/);
     expect(itemOf('Review')).not.toHaveTextContent(/\[/);
+  });
+  it('UIC-STEPS-4.1 completes every step with no current step, including compact lists', () => {
+    const items = [
+      { id: 'one', label: 'Upload' },
+      { id: 'two', label: 'Review' },
+    ];
+    const { container, rerender } = render(<Steps items={items} currentId="two" isComplete />);
+    expect(screen.getAllByRole('listitem').map((item) => item.getAttribute('data-status'))).toEqual(
+      ['complete', 'complete'],
+    );
+    expect(container.querySelector('[aria-current]')).toBeNull();
+    rerender(<Steps items={items} isComplete variant="compact" />);
+    expect(screen.getByRole('list')).toHaveAttribute('data-complete', 'true');
+    expect(screen.getAllByRole('listitem').at(-1)?.textContent).toContain('Completed');
   });
 });

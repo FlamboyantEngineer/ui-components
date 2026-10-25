@@ -45,7 +45,20 @@ describe('SegmentedBar', () => {
     expect(
       bar.querySelectorAll('.ui-segmented-bar__track > .ui-segmented-bar__segment'),
     ).toHaveLength(3);
-    expectHooksMatchSpec(document.body, 'SEGMENTED-BAR', { slots: 'all' });
+    expectHooksMatchSpec(document.body, 'SEGMENTED-BAR', {
+      slots: [
+        'label',
+        'total',
+        'track',
+        'segment',
+        'legend',
+        'item',
+        'swatch',
+        'item-label',
+        'item-value',
+        'item-share',
+      ],
+    });
   });
 
   it('UIC-SEGMENTED-BAR-2.1 lets aria-label or aria-labelledby name the group', () => {
@@ -234,5 +247,24 @@ describe('SegmentedBar', () => {
     );
     await user.tab();
     expect(screen.getByRole('button', { name: 'After' })).toHaveFocus();
+  });
+  it('UIC-SEGMENTED-BAR-3.1 draws the same shares as a donut or a pie and keeps the remainder empty', () => {
+    const { rerender } = render(
+      <SegmentedBar shape="donut" label="Checks" total={40} segments={results} showLegend />,
+    );
+    for (const shape of ['donut', 'pie'] as const) {
+      rerender(
+        <SegmentedBar shape={shape} label="Checks" total={40} segments={results} showLegend />,
+      );
+      const bar = screen.getByRole('group', { name: 'Checks' });
+      expect(bar).toHaveAttribute('data-shape', shape);
+      expect(
+        [...bar.querySelectorAll('.ui-segmented-bar__segment')].map((node) =>
+          node.getAttribute('stroke-dasharray'),
+        ),
+      ).toEqual(['30 70', '7.5 92.5', '12.5 87.5']);
+      expect(entries(bar)).toEqual(['Passed 12 30%', 'Failed 3 7.5%', 'Skipped 5 12.5%']);
+      expectHooksMatchSpec(bar, 'SEGMENTED-BAR', { slots: ['ring', 'track', 'segment'] });
+    }
   });
 });

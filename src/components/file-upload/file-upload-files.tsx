@@ -13,7 +13,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { getFileGlyph } from '../../utils/file-glyph.js';
 import { formatBytes } from '../../utils/format-bytes.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 import { Icon } from '../icon/icon.js';
 import { InlineError } from '../inline-error/inline-error.js';
 import { ProgressBar } from '../progress-bar/progress-bar.js';
@@ -205,7 +205,7 @@ function FileRow({ item, options }: { item: FileUploadItem; options: FileUploadR
       ) : null}
       {isEmptyNode(actions) ? null : <span {...hooks.slot('file-actions')}>{actions}</span>}
       {onRemove ? (
-        <IconButton
+        <Button
           className={hooks.slotClass('file-remove')}
           icon="close"
           label={strings.removeItem(item.name)}

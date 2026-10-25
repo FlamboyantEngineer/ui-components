@@ -1,4 +1,4 @@
-import type { PresencePerson } from '../../src/components/presence-strip/presence-strip.js';
+import type { AvatarGroupPerson } from '../../src/components/avatar-group/avatar-group.js';
 
 /** Inline pictures, so the labs make no network request. */
 export const samplePicture = svgPicture('#0e7490', '#ecfeff');
@@ -8,7 +8,7 @@ export const otherPicture = svgPicture('#9a3412', '#fff7ed');
 export const brokenPicture = 'data:image/png;base64,AAAA';
 
 /** Sample people with caller-chosen statuses. */
-export const samplePeople: readonly PresencePerson[] = [
+export const samplePeople: readonly AvatarGroupPerson[] = [
   { id: 'maria', name: 'Maria Santos', status: 'active', statusLabel: 'Active' },
   { id: 'jon', name: 'Jon Berg', src: samplePicture, status: 'away', statusLabel: 'Away' },
   { id: 'lena', name: 'Lena Ortiz', status: 'busy', statusLabel: 'Busy' },

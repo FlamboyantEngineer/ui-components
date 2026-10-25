@@ -6,7 +6,7 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import type { ButtonSize } from '../button/button.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 import { ZoomPresetMenu, type ZoomPreset } from './zoom-presets.js';
 import { resolveZoomLevels, sortZoomLevels } from './zoom-levels.js';
 
@@ -89,7 +89,7 @@ function useZoomFormatter(formatOptions: Intl.NumberFormatOptions | undefined) {
 /** A built-in button that requests its target zoom, disabled but focusable while it has none. */
 function ZoomButton({ slot, icon, label, target, size, isDisabled, onRequest }: ZoomButtonProps) {
   return (
-    <IconButton
+    <Button
       className={hooks.slotClass(slot)}
       icon={icon}
       label={label}

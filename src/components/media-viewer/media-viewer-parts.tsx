@@ -5,7 +5,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { getFileGlyph } from '../../utils/file-glyph.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { Button } from '../button/button.js';
-import { IconButton } from '../icon-button/icon-button.js';
+
 import { Icon } from '../icon/icon.js';
 import { Link } from '../link/link.js';
 import { ZoomControl } from '../zoom-control/zoom-control.js';
@@ -85,7 +85,7 @@ export function MediaHeaderActions(props: MediaHeaderActionsProps) {
             onChange={props.onZoomChange}
             resetValue={100}
           />
-          <IconButton
+          <Button
             className={hooks.slotClass('rotate')}
             icon="rotate"
             label={strings.rotateClockwise}

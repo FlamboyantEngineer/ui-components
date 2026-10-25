@@ -106,7 +106,7 @@ Verification: `src/components/filter-bar/filter-bar.test.tsx`, `e2e/filter-bar.s
 | `ui-filter-bar__chip-field`    | slot  |        | The field's label in the chip.                                         |
 | `ui-filter-bar__chip-operator` | slot  |        | The operator in the chip.                                              |
 | `ui-filter-bar__chip-value`    | slot  |        | The value in the chip, while the condition has one.                    |
-| `ui-filter-bar__chip-remove`   | slot  |        | The chip's remove button (also `ui-icon-button`).                      |
+| `ui-filter-bar__chip-remove`   | slot  |        | The chip's remove button (also `ui-button`).                           |
 | `ui-filter-bar__editor`        | slot  |        | The editor popover (also `ui-popover`).                                |
 | `ui-filter-bar__operator`      | slot  |        | The operator select in the editor (also `ui-select-field`).            |
 | `ui-filter-bar__value`         | slot  |        | The value control in the editor, or the group of a range's two fields. |

@@ -47,7 +47,7 @@ Verification: `src/components/transfer-list/transfer-list.test.tsx`, `e2e/transf
 
 ### UIC-TRANSFER-LIST-2.2 - Move buttons
 
-The actions shall hold, for each side, an `IconButton` that moves the side's selection to the other side (`ui-transfer-list__move` with `data-scope="selected"`, named by the `moveSelectedTo` string with the other side's title, disabled without a selection) and one that moves every row the side shows and can move (`data-scope="all"`, named by `moveAllTo`, disabled without such a row); `data-target` names the side the items move to. Items moved to the chosen side follow the chosen ones in the order of `items`; items moved back leave the value. The moved items become the selection of the side they land on.
+The actions shall hold, for each side, an `Button` that moves the side's selection to the other side (`ui-transfer-list__move` with `data-scope="selected"`, named by the `moveSelectedTo` string with the other side's title, disabled without a selection) and one that moves every row the side shows and can move (`data-scope="all"`, named by `moveAllTo`, disabled without such a row); `data-target` names the side the items move to. Items moved to the chosen side follow the chosen ones in the order of `items`; items moved back leave the value. The moved items become the selection of the side they land on.
 
 Implementation: `src/components/transfer-list/transfer-list.tsx`, `src/components/transfer-list/use-transfer-list.ts`, `src/components/transfer-list/transfer-moves.ts`
 Verification: `src/components/transfer-list/transfer-moves.test.ts`, `src/components/transfer-list/transfer-list.test.tsx`, `e2e/transfer-list.spec.ts`
@@ -61,7 +61,7 @@ Verification: `src/components/transfer-list/transfer-list.test.tsx`, `e2e/transf
 
 ### UIC-TRANSFER-LIST-2.4 - Reordering
 
-With `reorderable`, the root shall publish `data-reorderable`, the chosen side's rows reorder by drag and drop, by pointer or from each row's drag handle by keyboard ([UIC-LIST-ROW-3.5](LIST-ROW.md#uic-list-row-35---drag-and-drop)), dropped rows landing together in their order, and a `ui-transfer-list__reorder` group under the chosen side's header holds move up and move down `IconButton`s named by the provider's `moveItem` string. They move each selected chosen item one place, passing over the next unselected item, and are disabled while that would move nothing.
+With `reorderable`, the root shall publish `data-reorderable`, the chosen side's rows reorder by drag and drop, by pointer or from each row's drag handle by keyboard ([UIC-LIST-ROW-3.5](LIST-ROW.md#uic-list-row-35---drag-and-drop)), dropped rows landing together in their order, and a `ui-transfer-list__reorder` group under the chosen side's header holds move up and move down `Button`s named by the provider's `moveItem` string. They move each selected chosen item one place, passing over the next unselected item, and are disabled while that would move nothing.
 
 Movement availability shall be derived from neighboring selected and unselected keys without allocating a reordered copy.
 
@@ -95,7 +95,7 @@ Verification: `src/components/transfer-list/transfer-list.test.tsx`
 | `ui-transfer-list__list`    | slot      |                       | A side's rows (also `ui-list-view`).             |
 | `ui-transfer-list__empty`   | slot      |                       | The text of a side without rows to show.         |
 | `ui-transfer-list__actions` | slot      |                       | The move buttons between the sides.              |
-| `ui-transfer-list__move`    | slot      |                       | A move button (also `ui-icon-button`).           |
+| `ui-transfer-list__move`    | slot      |                       | A move button (also `ui-button`).                |
 | `ui-transfer-list__reorder` | slot      |                       | The chosen side's move up and move down buttons. |
 | `data-side`                 | attribute | `available`, `chosen` | On a side: which one.                            |
 | `data-scope`                | attribute | `selected`, `all`     | On a move button: what it moves.                 |

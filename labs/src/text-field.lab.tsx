@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { Button } from '../../src/components/button/button.js';
-import { IconButton } from '../../src/components/icon-button/icon-button.js';
+
 import type { Completion } from '../../src/components/completion-list/completion-list.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
 import { Glyph } from '../../src/core/provider.js';
@@ -109,7 +109,7 @@ function Adornments() {
         defaultValue="example.com"
         startAdornment="https://"
         endAdornment={
-          <IconButton icon="plus" label="Copy address" size="xs" onPress={() => setCopied('yes')} />
+          <Button icon="plus" label="Copy address" size="xs" onPress={() => setCopied('yes')} />
         }
         data-lab-field="website"
       />

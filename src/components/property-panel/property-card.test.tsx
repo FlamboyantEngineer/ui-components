@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 import { PropertyCard } from './property-card.js';
 import { PropertyRow } from './property-row.js';
 
@@ -17,7 +17,7 @@ describe('PropertyCard', () => {
       <PropertyCard
         name="Heading"
         summary="Serif 22"
-        actions={<IconButton icon="undo" label="Reset heading" onPress={onPress} />}
+        actions={<Button icon="undo" label="Reset heading" onPress={onPress} />}
       >
         <PropertyRow label="Font">Serif</PropertyRow>
       </PropertyCard>,

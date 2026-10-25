@@ -51,7 +51,7 @@
   border-end-end-radius: 0;
 }
 
-.ui-button-group[data-density='attached'] > .ui-icon-button[data-variant='ghost'] {
+.ui-button-group[data-density='attached'] > .ui-button[data-content='icon'][data-variant='ghost'] {
   border: 1px solid var(--ref-border);
 }
 

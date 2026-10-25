@@ -12,3 +12,6 @@ export type {
   ModalTone,
   ModalTriggerProps,
 } from './modal.js';
+
+export { confirm, alert, prompt } from './modal.js';
+export type { ConfirmOptions, AlertOptions, PromptOptions } from './modal.js';

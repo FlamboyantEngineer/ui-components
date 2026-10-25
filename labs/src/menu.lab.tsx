@@ -1,7 +1,7 @@
 import { useState, type CSSProperties, type ReactNode } from 'react';
 import type { Key, Selection } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
-import { IconButton } from '../../src/components/icon-button/icon-button.js';
+
 import {
   Menu,
   MenuItem,
@@ -137,7 +137,7 @@ function JsxMenu() {
   return (
     <>
       <MenuTrigger>
-        <IconButton icon="more" label="Edit actions" variant="secondary" />
+        <Button icon="more" label="Edit actions" variant="secondary" />
         <MenuPopover>
           <Menu onAction={onAction}>
             <MenuSection title="Clipboard">

@@ -94,14 +94,14 @@ Verification: `src/components/tabs/tab-list.test.tsx`, `e2e/tabs.spec.ts`
 
 ### UIC-TABS-2.7 - Scroll buttons
 
-With `scrollButtons` a horizontal list that scrolls shall sit in a `ui-tabs__bar` element between two `ui-tabs__scroll-button` [Icon Buttons](ICON-BUTTON.md) (`data-edge` `start` and `end`), each hidden with the native `hidden` attribute while its edge hides no tabs, as the [scroll strip hook](SCROLL-STRIP.md) measures it. Pressing one scrolls the list by 80% of its visible width toward its edge. They are named by the provider's `scrollBackward` and `scrollForward` strings, draw a chevron pointing to their edge (mirrored right to left) and stay out of the tab order, since the arrow keys reach every tab. The vertical wheel also scrolls the list sideways.
+With `scrollButtons` a horizontal list that scrolls shall sit in a `ui-tabs__bar` element between two `ui-tabs__scroll-button` [Icon Buttons](BUTTON.md) (`data-edge` `start` and `end`), each hidden with the native `hidden` attribute while its edge hides no tabs, as the [scroll strip hook](SCROLL-STRIP.md) measures it. Pressing one scrolls the list by 80% of its visible width toward its edge. They are named by the provider's `scrollBackward` and `scrollForward` strings, draw a chevron pointing to their edge (mirrored right to left) and stay out of the tab order, since the arrow keys reach every tab. The vertical wheel also scrolls the list sideways.
 
 Implementation: `src/components/tabs/tab-list.tsx`, `src/utils/use-scroll-strip-overflow.ts`, `labs/reference/tabs.css`
 Verification: `src/components/tabs/tab-list.test.tsx`, `e2e/tabs.spec.ts`
 
 ### UIC-TABS-2.8 - Removable and added tabs
 
-With `onRemove` every tab with an `id` shall draw a close mark in a `ui-tabs__remove` slot and announce `Delete` in `aria-keyshortcuts` (UIC-TABS-3.6). Pressing the mark with a pointer calls `onRemove` with a set holding the tab's `id`, without selecting or focusing the tab; the mark is hidden from assistive technology because Delete or Backspace on the focused tab does the same from the keyboard. The caller removes the tab, and focus moves to a neighbouring tab. With `onAdd` the list draws a `ui-tabs__add` [Icon Button](ICON-BUTTON.md) (`plus`, named by the provider's `addTab` string) after the tabs, in a `ui-tabs__bar` element, that calls it.
+With `onRemove` every tab with an `id` shall draw a close mark in a `ui-tabs__remove` slot and announce `Delete` in `aria-keyshortcuts` (UIC-TABS-3.6). Pressing the mark with a pointer calls `onRemove` with a set holding the tab's `id`, without selecting or focusing the tab; the mark is hidden from assistive technology because Delete or Backspace on the focused tab does the same from the keyboard. The caller removes the tab, and focus moves to a neighbouring tab. With `onAdd` the list draws a `ui-tabs__add` [Icon Button](BUTTON.md) (`plus`, named by the provider's `addTab` string) after the tabs, in a `ui-tabs__bar` element, that calls it.
 
 Implementation: `src/components/tabs/tabs.tsx`, `src/components/tabs/tab-list.tsx`, `labs/reference/tabs.css`
 Verification: `src/components/tabs/tab-list.test.tsx`, `e2e/tabs.spec.ts`
@@ -164,9 +164,9 @@ Verification: `src/components/tabs/tabs.test.tsx`, `e2e/tabs.spec.ts`
 | `ui-tabs`                | root      |                          | The `Tabs` element holding the list and panels.                            |
 | `ui-tabs__bar`           | slot      |                          | The element around a list with a menu, scroll buttons or an add button.    |
 | `ui-tabs__list`          | slot      |                          | The `TabList` (`role="tablist"`).                                          |
-| `ui-tabs__scroll-button` | slot      |                          | A scroll button beside the list (also `ui-icon-button`).                   |
+| `ui-tabs__scroll-button` | slot      |                          | A scroll button beside the list (also `ui-button`).                        |
 | `ui-tabs__overflow`      | slot      |                          | The element holding the menu of hidden tabs.                               |
-| `ui-tabs__add`           | slot      |                          | The add button (also `ui-icon-button`).                                    |
+| `ui-tabs__add`           | slot      |                          | The add button (also `ui-button`).                                         |
 | `ui-tabs__tab`           | slot      |                          | One `Tab` (`role="tab"`, an `<a>` with `href`).                            |
 | `ui-tabs__indicator`     | slot      |                          | The selection indicator inside the selected tab.                           |
 | `ui-tabs__icon`          | slot      |                          | A tab's leading icon (also `ui-icon`).                                     |

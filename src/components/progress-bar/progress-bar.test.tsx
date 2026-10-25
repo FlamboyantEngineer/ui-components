@@ -172,4 +172,29 @@ describe('Spinner', () => {
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
     expect(container.querySelector('.ui-spinner')).toHaveAttribute('aria-hidden', 'true');
   });
+  it('UIC-PROGRESS-BAR-3.1 combines circular appearance with bounded meter semantics', () => {
+    render(
+      <ProgressBar
+        shape="circular"
+        mode="meter"
+        label="Storage"
+        value={40}
+        low={20}
+        high={80}
+        optimum={50}
+        isIndeterminate
+        showValueLabel
+      />,
+    );
+    const meter = screen.getByRole('meter', { name: 'Storage' });
+    expect(meter).toHaveAttribute('aria-valuenow', '40');
+    expect(meter).toHaveAttribute('data-tone', 'success');
+    expect(meter).not.toHaveAttribute('data-indeterminate');
+    expect(meter).not.toHaveAttribute('data-complete');
+    expect(meter.querySelector('.ui-progress-bar__fill')).toHaveAttribute(
+      'stroke-dashoffset',
+      '60',
+    );
+    expect(meter.querySelector('.ui-progress-bar__value')).toHaveTextContent('40%');
+  });
 });

@@ -1,6 +1,6 @@
 # Version History
 
-`VersionHistory` lists the saved versions of a document or record, newest first: named versions and automatic ones titled by their time, each with who saved it and when and an optional summary, the current version marked. The reader selects one version to view it and two to compare them, restores a version after a confirmation, names or renames a version, and filters the list to named versions or to one person's. It builds on [List Row](LIST-ROW.md)'s `ListView` (selection, keyboard navigation, loading more and the empty state), [Dropdown Menu](DROPDOWN-MENU.md), [Confirm Dialog](CONFIRM-DIALOG.md), [Modal](MODAL.md) and [Attribution](ATTRIBUTION.md). The caller owns the versions, shows the selected one or the comparison, and applies restores and renames.
+`VersionHistory` lists the saved versions of a document or record, newest first: named versions and automatic ones titled by their time, each with who saved it and when and an optional summary, the current version marked. The reader selects one version to view it and two to compare them, restores a version after a confirmation, names or renames a version, and filters the list to named versions or to one person's. It builds on [List Row](LIST-ROW.md)'s `ListView` (selection, keyboard navigation, loading more and the empty state), [Dropdown Menu](DROPDOWN-MENU.md), [Confirm Dialog](MODAL.md), [Modal](MODAL.md) and [Attribution](ATTRIBUTION.md). The caller owns the versions, shows the selected one or the comparison, and applies restores and renames.
 
 ## UIC-VERSION-HISTORY-1 - Versions
 
@@ -36,7 +36,7 @@ Verification: `src/components/version-history/version-history.test.tsx`, `e2e/ve
 
 ### UIC-VERSION-HISTORY-1.5 - Restoring a version
 
-With `onRestore`, every enabled version but the current one shall end its row with a menu ([Dropdown Menu](DROPDOWN-MENU.md), an icon button named by the provider's `versionActions` string for the title, `ui-version-history__actions`) offering the provider's `restoreVersion` action. It opens a [Confirm Dialog](CONFIRM-DIALOG.md) titled by the provider's `restoreVersionTitle` for the title, explaining with `restoreVersionMessage` and confirming with `restore`; confirming calls `onRestore` with the version's key and closes the dialog once a returned promise settles, keeping it open with the failure if it rejects. Cancel closes it without a call.
+With `onRestore`, every enabled version but the current one shall end its row with a menu ([Dropdown Menu](DROPDOWN-MENU.md), an icon button named by the provider's `versionActions` string for the title, `ui-version-history__actions`) offering the provider's `restoreVersion` action. It opens a [Confirm Dialog](MODAL.md) titled by the provider's `restoreVersionTitle` for the title, explaining with `restoreVersionMessage` and confirming with `restore`; confirming calls `onRestore` with the version's key and closes the dialog once a returned promise settles, keeping it open with the failure if it rejects. Cancel closes it without a call.
 
 Implementation: `src/components/version-history/version-row.tsx`, `src/components/version-history/version-dialogs.tsx`, `src/core/history-strings.ts`
 Verification: `src/components/version-history/version-history.test.tsx`, `e2e/version-history.spec.ts`

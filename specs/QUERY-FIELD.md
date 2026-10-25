@@ -54,6 +54,6 @@ Verification: `src/components/query-field/query-field.test.tsx`
 | `ui-query-field__label`   | slot  |        | The visible label.                                   |
 | `ui-query-field__control` | slot  |        | Holds the editor and the run button.                 |
 | `ui-query-field__editor`  | slot  |        | The single-line code editor (also `ui-code-editor`). |
-| `ui-query-field__submit`  | slot  |        | The run button (also `ui-icon-button`).              |
+| `ui-query-field__submit`  | slot  |        | The run button (also `ui-button`).                   |
 | `data-invalid`            | state | `true` | The grammar reports an error.                        |
 | `data-disabled`           | state | `true` | The field is disabled.                               |

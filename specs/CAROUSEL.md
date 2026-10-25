@@ -96,22 +96,22 @@ Verification: `src/components/carousel/carousel.test.tsx`
 
 ## Hooks
 
-| Hook                      | Kind      | Values                       | Description                                                       |
-| ------------------------- | --------- | ---------------------------- | ----------------------------------------------------------------- |
-| `ui-carousel`             | root      |                              | The carousel (`<section>`).                                       |
-| `ui-carousel__controls`   | slot      |                              | The rotation, previous and next buttons.                          |
-| `ui-carousel__rotation`   | slot      |                              | The button that stops or starts rotation (also `ui-icon-button`). |
-| `ui-carousel__previous`   | slot      |                              | The previous button (also `ui-icon-button`).                      |
-| `ui-carousel__next`       | slot      |                              | The next button (also `ui-icon-button`).                          |
-| `ui-carousel__viewport`   | slot      |                              | The live region holding the slides.                               |
-| `ui-carousel__slide`      | slot      |                              | Each slide's group.                                               |
-| `ui-carousel__pagination` | slot      |                              | The group of slide pickers.                                       |
-| `ui-carousel__dot`        | slot      |                              | A slide's dot button.                                             |
-| `ui-carousel__thumbnail`  | slot      |                              | A slide's thumbnail button.                                       |
-| `data-pagination`         | attribute | `dots`, `thumbnails`, `none` | How the reader picks a slide directly.                            |
-| `data-rotating`           | state     | `true`                       | The carousel is advancing on its own.                             |
-| `data-current`            | state     | `true`                       | The shown slide, and its dot or thumbnail.                        |
-| `data-hovered`            | state     | `true`                       | Pointer over a dot or thumbnail (React Aria).                     |
-| `data-pressed`            | state     | `true`                       | A dot or thumbnail is pressed (React Aria).                       |
-| `data-focused`            | state     | `true`                       | A dot or thumbnail has focus (React Aria).                        |
-| `data-focus-visible`      | state     | `true`                       | A dot or thumbnail has keyboard focus (React Aria).               |
+| Hook                      | Kind      | Values                       | Description                                                  |
+| ------------------------- | --------- | ---------------------------- | ------------------------------------------------------------ |
+| `ui-carousel`             | root      |                              | The carousel (`<section>`).                                  |
+| `ui-carousel__controls`   | slot      |                              | The rotation, previous and next buttons.                     |
+| `ui-carousel__rotation`   | slot      |                              | The button that stops or starts rotation (also `ui-button`). |
+| `ui-carousel__previous`   | slot      |                              | The previous button (also `ui-button`).                      |
+| `ui-carousel__next`       | slot      |                              | The next button (also `ui-button`).                          |
+| `ui-carousel__viewport`   | slot      |                              | The live region holding the slides.                          |
+| `ui-carousel__slide`      | slot      |                              | Each slide's group.                                          |
+| `ui-carousel__pagination` | slot      |                              | The group of slide pickers.                                  |
+| `ui-carousel__dot`        | slot      |                              | A slide's dot button.                                        |
+| `ui-carousel__thumbnail`  | slot      |                              | A slide's thumbnail button.                                  |
+| `data-pagination`         | attribute | `dots`, `thumbnails`, `none` | How the reader picks a slide directly.                       |
+| `data-rotating`           | state     | `true`                       | The carousel is advancing on its own.                        |
+| `data-current`            | state     | `true`                       | The shown slide, and its dot or thumbnail.                   |
+| `data-hovered`            | state     | `true`                       | Pointer over a dot or thumbnail (React Aria).                |
+| `data-pressed`            | state     | `true`                       | A dot or thumbnail is pressed (React Aria).                  |
+| `data-focused`            | state     | `true`                       | A dot or thumbnail has focus (React Aria).                   |
+| `data-focus-visible`      | state     | `true`                       | A dot or thumbnail has keyboard focus (React Aria).          |

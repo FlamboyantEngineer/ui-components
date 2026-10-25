@@ -27,19 +27,23 @@ describe('Button', () => {
   });
 
   it('UIC-BUTTON-1.1 renders a native button of type button and reports presses', async () => {
+    const user = userEvent.setup();
+
     const onPress = vi.fn();
     render(<Button onPress={onPress}>Save</Button>);
     const button = screen.getByRole('button', { name: 'Save' });
     expect(button.tagName).toBe('BUTTON');
     expect(button).toHaveAttribute('type', 'button');
-    await userEvent.click(button);
+    await user.click(button);
     button.focus();
-    await userEvent.keyboard('{Enter}');
-    await userEvent.keyboard(' ');
+    await user.keyboard('{Enter}');
+    await user.keyboard(' ');
     expect(onPress).toHaveBeenCalledTimes(3);
   });
 
   it('UIC-BUTTON-1.1 submits forms with type submit and passes popup attributes through', async () => {
+    const user = userEvent.setup();
+
     const onSubmit = vi.fn((event: React.FormEvent) => event.preventDefault());
     render(
       <form onSubmit={onSubmit}>
@@ -52,11 +56,13 @@ describe('Button', () => {
     expect(button).toHaveAttribute('aria-haspopup', 'menu');
     expect(button).toHaveAttribute('aria-expanded', 'false');
     expect(button).toHaveAttribute('aria-controls', 'menu-1');
-    await userEvent.click(button);
+    await user.click(button);
     expect(onSubmit).toHaveBeenCalledTimes(1);
   });
 
   it('UIC-BUTTON-1.1 triggers an overlay', async () => {
+    const user = userEvent.setup();
+
     render(
       <DialogTrigger>
         <Button>Details</Button>
@@ -65,7 +71,7 @@ describe('Button', () => {
         </Popover>
       </DialogTrigger>,
     );
-    await userEvent.click(screen.getByRole('button', { name: 'Details' }));
+    await user.click(screen.getByRole('button', { name: 'Details' }));
     expect(await screen.findByRole('dialog', { name: 'Details panel' })).toBeInTheDocument();
   });
 
@@ -263,6 +269,8 @@ describe('Button', () => {
   });
 
   it('UIC-BUTTON-2.1 disables natively, or keeps focus while refusing activation', async () => {
+    const user = userEvent.setup();
+
     const onPress = vi.fn();
     const onSubmit = vi.fn((event: React.FormEvent) => event.preventDefault());
     const { rerender } = render(
@@ -285,17 +293,19 @@ describe('Button', () => {
     expect(focusable).toBeEnabled();
     expect(focusable).toHaveAttribute('aria-disabled', 'true');
     expect(focusable).toHaveAttribute('data-disabled', 'true');
-    await userEvent.tab();
+    await user.tab();
     expect(focusable).toHaveFocus();
-    await userEvent.keyboard('{Enter}');
-    await userEvent.keyboard(' ');
-    await userEvent.click(focusable);
+    await user.keyboard('{Enter}');
+    await user.keyboard(' ');
+    await user.click(focusable);
     expect(onPress).not.toHaveBeenCalled();
     expect(onSubmit).not.toHaveBeenCalled();
     expectHooksMatchSpec(document.body, 'BUTTON');
   });
 
   it('UIC-BUTTON-2.2 keeps focus, icons and label while pending and refuses presses', async () => {
+    const user = userEvent.setup();
+
     const onPress = vi.fn();
     render(
       <Button isPending startIcon="plus" endIcon="chevron-down" onPress={onPress}>
@@ -310,7 +320,7 @@ describe('Button', () => {
     expect(button.querySelector('.ui-button__start-icon')).toBeInTheDocument();
     expect(button.querySelector('.ui-button__end-icon')).toBeInTheDocument();
     expect(button).toHaveTextContent('Saving');
-    await userEvent.click(button);
+    await user.click(button);
     expect(onPress).not.toHaveBeenCalled();
     expectHooksMatchSpec(document.body, 'BUTTON', {
       slots: ['spinner', 'start-icon', 'label', 'end-icon'],
@@ -381,6 +391,8 @@ describe('Button', () => {
   });
 
   it('UIC-BUTTON-1.8 renders through the caller element with its hooks, states and ref', async () => {
+    const user = userEvent.setup();
+
     const onPress = vi.fn();
     const ref = { current: null as HTMLButtonElement | HTMLAnchorElement | null };
     const states: boolean[] = [];
@@ -407,13 +419,15 @@ describe('Button', () => {
     expect(button).toHaveAttribute('data-variant', 'primary');
     expect(button).toHaveAttribute('role', 'menuitemcheckbox');
     expect(button).toHaveAttribute('aria-keyshortcuts', 'Control+B');
-    await userEvent.click(button);
+    await user.click(button);
     expect(onPress).toHaveBeenCalledTimes(1);
     expect(states).toContain(false);
     expectHooksMatchSpec(document.body, 'BUTTON', { callerAttributes: ['data-caller'] });
   });
 
   it('UIC-BUTTON-1.9 renders a link through the provider link renderer with its hooks', async () => {
+    const user = userEvent.setup();
+
     const onPress = vi.fn();
     const renderLink = vi.fn((props: React.ComponentProps<'a'>) => (
       <a {...props} data-router="yes" />
@@ -451,7 +465,7 @@ describe('Button', () => {
       'noopener noreferrer',
     );
     link.addEventListener('click', (event) => event.preventDefault());
-    await userEvent.click(link);
+    await user.click(link);
     expect(onPress).toHaveBeenCalledTimes(1);
     expectHooksMatchSpec(document.body, 'BUTTON', {
       slots: ['label', 'start-icon'],
@@ -460,6 +474,8 @@ describe('Button', () => {
   });
 
   it('UIC-BUTTON-1.9 draws a disabled link as text that cannot be activated', async () => {
+    const user = userEvent.setup();
+
     const onPress = vi.fn();
     render(
       <Button href="/reports" isDisabled onPress={onPress}>
@@ -470,7 +486,7 @@ describe('Button', () => {
     expect(link.tagName).toBe('SPAN');
     expect(link).toHaveAttribute('aria-disabled', 'true');
     expect(link).toHaveAttribute('data-disabled', 'true');
-    await userEvent.click(link);
+    await user.click(link);
     expect(onPress).not.toHaveBeenCalled();
   });
 
@@ -546,6 +562,8 @@ describe('Button', () => {
   });
 
   it('UIC-BUTTON-2.6 toggles its own state from defaultSelected and reports each change', async () => {
+    const user = userEvent.setup();
+
     const onChange = vi.fn();
     render(
       <Button defaultSelected={false} onChange={onChange}>
@@ -555,18 +573,20 @@ describe('Button', () => {
     const button = screen.getByRole('button', { name: 'Bold' });
     expect(button).toHaveAttribute('aria-pressed', 'false');
     expect(button).not.toHaveAttribute('data-selected');
-    await userEvent.click(button);
+    await user.click(button);
     expect(button).toHaveAttribute('aria-pressed', 'true');
     expect(button).toHaveAttribute('data-selected', 'true');
     expect(onChange).toHaveBeenLastCalledWith(true);
     button.focus();
-    await userEvent.keyboard(' ');
+    await user.keyboard(' ');
     expect(button).toHaveAttribute('aria-pressed', 'false');
     expect(onChange).toHaveBeenLastCalledWith(false);
     expectHooksMatchSpec(document.body, 'BUTTON');
   });
 
   it('UIC-BUTTON-1.10 reports press, hover, focus and key handlers and takes focus options', async () => {
+    const user = userEvent.setup();
+
     const events: string[] = [];
     const log = (name: string) => () => events.push(name);
     render(
@@ -593,7 +613,7 @@ describe('Button', () => {
     );
     const report = screen.getByRole('button', { name: 'Report' });
     expect(report).toHaveFocus();
-    await userEvent.keyboard('{Enter}');
+    await user.keyboard('{Enter}');
     expect(events).toEqual(
       expect.arrayContaining([
         'focused true',
@@ -604,19 +624,21 @@ describe('Button', () => {
         'press end',
       ]),
     );
-    await userEvent.hover(report);
-    await userEvent.unhover(report);
+    await user.hover(report);
+    await user.unhover(report);
     expect(events).toEqual(expect.arrayContaining(['hover start', 'hover end']));
     const skipped = screen.getByRole('button', { name: 'Skipped' });
     expect(skipped).toHaveAttribute('tabindex', '-1');
     const input = screen.getByRole('textbox', { name: 'Query' });
     input.focus();
-    await userEvent.click(skipped);
+    await user.click(skipped);
     expect(input).toHaveFocus();
     expect(screen.getByText('Hidden').closest('button')).toHaveAttribute('hidden');
   });
 
   it('UIC-BUTTON-2.6 leaves a controlled toggle to its caller', async () => {
+    const user = userEvent.setup();
+
     const onChange = vi.fn();
     const onPress = vi.fn();
     render(
@@ -625,9 +647,40 @@ describe('Button', () => {
       </Button>,
     );
     const button = screen.getByRole('button', { name: 'Italic' });
-    await userEvent.click(button);
+    await user.click(button);
     expect(onPress).toHaveBeenCalledTimes(1);
     expect(onChange).toHaveBeenCalledWith(false);
     expect(button).toHaveAttribute('aria-pressed', 'true');
+  });
+  it('UIC-BUTTON-3.1 keeps synchronous commands synchronous and awaits icon commands', async () => {
+    const user = userEvent.setup();
+    const sync = vi.fn();
+    let finish!: () => void;
+    const promise = new Promise<void>((resolve) => {
+      finish = resolve;
+    });
+    const run = vi.fn(() => promise);
+    render(
+      <>
+        <Button onPress={sync}>Apply</Button>
+        <Button icon="save" label="Save changes" onPress={run} />
+      </>,
+    );
+    const apply = screen.getByRole('button', { name: 'Apply' });
+    await user.click(apply);
+    await user.click(apply);
+    expect(sync).toHaveBeenCalledTimes(2);
+    expect(apply).not.toHaveAttribute('data-pending');
+    const save = screen.getByRole('button', { name: 'Save changes' });
+    await user.click(save);
+    await user.click(save);
+    expect(run).toHaveBeenCalledTimes(1);
+    expect(save).toHaveAttribute('data-content', 'icon');
+    expect(save).toHaveAttribute('data-pending', 'true');
+    await act(async () => {
+      finish();
+      await promise;
+    });
+    expect(save).not.toHaveAttribute('data-pending');
   });
 });

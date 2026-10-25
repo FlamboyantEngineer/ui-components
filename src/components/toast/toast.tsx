@@ -19,7 +19,7 @@ import { mergeProps } from '../../utils/merge-props.js';
 import { useEnterExit } from '../../utils/use-enter-exit.js';
 import { getToneGlyph } from '../banner/banner.js';
 import { Button } from '../button/button.js';
-import { IconButton } from '../icon-button/icon-button.js';
+
 import { Icon, toIconProps } from '../icon/icon.js';
 import {
   createQueueOverStore,
@@ -197,7 +197,7 @@ function Toast({ toast }: { toast: QueuedToast<ToastContent> }) {
       )}
       <ToastText tone={tone} title={title} description={description} />
       {action ? <ToastActionButton action={action} toastKey={toast.key} /> : null}
-      <IconButton
+      <Button
         slot="close"
         icon="close"
         label={strings.dismiss}

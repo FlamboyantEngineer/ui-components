@@ -8,7 +8,7 @@ import type { UiStrings } from '../../core/strings.js';
 import { useOverflowItems } from '../../utils/use-overflow-items.js';
 import type { ButtonSize } from '../button/button.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
-import { IconButton, type IconButtonProps } from '../icon-button/icon-button.js';
+import { Button, type ButtonProps } from '../button/button.js';
 import {
   Menu,
   MenuPopover,
@@ -35,7 +35,7 @@ export interface ActionRowActionsProps extends Pick<
 const hooks = createHooks('action-row', ['actions', 'action', 'tooltip', 'overflow']);
 
 /** An action without a menu presses and states its own popup; a menu trigger leaves both to the menu. */
-function toPressProps(action: ActionRowAction, hasMenu: boolean): Partial<IconButtonProps> {
+function toPressProps(action: ActionRowAction, hasMenu: boolean): Partial<ButtonProps> {
   if (hasMenu) return {};
   return {
     'aria-expanded': action.isExpanded,
@@ -71,7 +71,7 @@ function renderWithoutDescription(props: JSX.IntrinsicElements['button']): React
 }
 
 /** A custom action's ref and toggle state, which report `aria-pressed` either way once set. */
-function toCustomButtonProps(action: ActionRowAction): Partial<IconButtonProps> {
+function toCustomButtonProps(action: ActionRowAction): Partial<ButtonProps> {
   if (action.verb !== 'custom') return {};
   if (action.isSelected === undefined) return { ref: action.ref };
   return { ref: action.ref, isSelected: action.isSelected, 'aria-pressed': action.isSelected };
@@ -81,7 +81,7 @@ function ActionRowButton({ action, size }: { action: ActionRowAction; size: Butt
   const { icon, label, pendingLabel } = toActionContent(action, useUiStrings());
   const hasMenu = Boolean(action.items?.length);
   const button = (
-    <IconButton
+    <Button
       {...pickDataAttributes(action)}
       {...hooks.slot('action', { verb: action.verb })}
       {...toCustomButtonProps(action)}

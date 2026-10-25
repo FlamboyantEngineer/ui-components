@@ -27,7 +27,7 @@ Verification: `src/components/combobox/combobox.test.tsx`, `e2e/combobox.spec.ts
 
 ### UIC-COMBOBOX-1.4 - Clear button
 
-While the input holds text and the combobox is neither disabled nor read-only, the field shall draw a bare small `IconButton` (`close` glyph, named by the provider string `clear`, also `ui-combobox__clear`) that empties the input and, for a single combobox, the selection, and returns focus to the input; a pointer press keeps focus in the input throughout, so pressing it while the list is open works too. A multiple combobox keeps its chips, which have their own remove buttons, and reports no change.
+While the input holds text and the combobox is neither disabled nor read-only, the field shall draw a bare small `Button` (`close` glyph, named by the provider string `clear`, also `ui-combobox__clear`) that empties the input and, for a single combobox, the selection, and returns focus to the input; a pointer press keeps focus in the input throughout, so pressing it while the list is open works too. A multiple combobox keeps its chips, which have their own remove buttons, and reports no change.
 
 Implementation: `src/components/combobox/combobox.tsx`, `src/components/combobox/combobox-field.tsx`
 Verification: `src/components/combobox/combobox.test.tsx`, `src/components/combobox/combobox-chips.test.tsx`, `e2e/combobox.spec.ts`
@@ -218,7 +218,7 @@ Verification: `src/components/combobox/combobox.test.tsx`
 | `ui-combobox__search-icon`        | slot      |                                            | Leading search glyph of the `search` variant.                       |
 | `ui-combobox__input`              | slot      |                                            | The text input (`role="combobox"`).                                 |
 | `ui-combobox__spinner`            | slot      |                                            | Busy indicator while pending.                                       |
-| `ui-combobox__clear`              | slot      |                                            | The clear button (also `ui-icon-button`).                           |
+| `ui-combobox__clear`              | slot      |                                            | The clear button (also `ui-button`).                                |
 | `ui-combobox__button`             | slot      |                                            | The button that opens the list.                                     |
 | `ui-combobox__description`        | slot      |                                            | Help text.                                                          |
 | `ui-combobox__error`              | slot      |                                            | Error message while invalid.                                        |

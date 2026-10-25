@@ -5,7 +5,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { Avatar, type AvatarIdentity } from '../avatar/avatar.js';
 import { Badge } from '../badge/badge.js';
 import type { IconSource } from '../icon/icon.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 import { ListRow } from '../list-row/list-row.js';
 import { MetaLine } from '../meta-line/meta-line.js';
 import { RelativeTime } from '../relative-time/relative-time.js';
@@ -85,7 +85,7 @@ function RowTrailing({
       )}
       {renderActions ? <span {...hooks.slot('item-actions')}>{renderActions(item)}</span> : null}
       {onReadChange ? (
-        <IconButton
+        <Button
           icon={isRead ? 'envelope' : 'envelope-open'}
           label={readLabel}
           tooltip={readLabel}
@@ -95,7 +95,7 @@ function RowTrailing({
         />
       ) : null}
       {onDismiss ? (
-        <IconButton
+        <Button
           icon="close"
           label={strings.dismiss}
           tooltip={strings.dismiss}

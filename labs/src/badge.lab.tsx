@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Badge, type BadgeTone } from '../../src/components/badge/badge.js';
-import { IconButton } from '../../src/components/icon-button/icon-button.js';
+import { Button } from '../../src/components/button/button.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const tones: BadgeTone[] = ['neutral', 'info', 'success', 'warning', 'danger'];
@@ -21,7 +21,7 @@ function OverlayDemo() {
         data-lab-overlay-host="messages"
         style={{ position: 'relative', display: 'inline-flex' }}
       >
-        <IconButton
+        <Button
           icon="info"
           label={`Messages, ${unread} unread`}
           variant="secondary"
@@ -33,7 +33,7 @@ function OverlayDemo() {
         data-lab-overlay-host="mentions"
         style={{ position: 'relative', display: 'inline-flex' }}
       >
-        <IconButton icon="more" label="Mentions, 3 new" variant="secondary" />
+        <Button icon="more" label="Mentions, 3 new" variant="secondary" />
         <Badge count={3} tone="info" size="sm" placement="overlay" aria-hidden />
       </span>
       <p>
@@ -48,7 +48,7 @@ function ZeroDemo() {
   return (
     <div data-lab-demo="zero">
       <span data-lab-overlay-host="inbox" style={{ position: 'relative', display: 'inline-flex' }}>
-        <IconButton
+        <Button
           icon="check"
           label={`Mark one read, ${unread} unread`}
           variant="secondary"
@@ -64,7 +64,7 @@ function ZeroDemo() {
         />
       </span>{' '}
       <span data-lab-overlay-host="dot" style={{ position: 'relative', display: 'inline-flex' }}>
-        <IconButton icon="users" label="Team, new activity" variant="secondary" />
+        <Button icon="users" label="Team, new activity" variant="secondary" />
         <Badge variant="dot" tone="success" placement="overlay" aria-label="New activity" />
       </span>
       <p>

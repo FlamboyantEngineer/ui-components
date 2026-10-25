@@ -1,6 +1,6 @@
 # View Switcher
 
-`ViewSwitcher` names and switches the saved views of a collection: named settings (filters, sort, grouping, visible properties, layout) the caller stores and applies. The views show as [Tabs](TABS.md), or in a [Dropdown Menu](DROPDOWN-MENU.md) for many views or little room. The selected view carries a modified mark while its current settings differ from its saved ones, and a menu of its actions saves them, saves them as a new view, resets them, renames the view, makes it the default view (marked with a star) or deletes it after a confirmation; each tab offers the same actions for its own view. Naming opens a [Modal](MODAL.md) and deleting a [Confirm Dialog](CONFIRM-DIALOG.md). The values are plain data and the caller persists the views.
+`ViewSwitcher` names and switches the saved views of a collection: named settings (filters, sort, grouping, visible properties, layout) the caller stores and applies. The views show as [Tabs](TABS.md), or in a [Dropdown Menu](DROPDOWN-MENU.md) for many views or little room. The selected view carries a modified mark while its current settings differ from its saved ones, and a menu of its actions saves them, saves them as a new view, resets them, renames the view, makes it the default view (marked with a star) or deletes it after a confirmation; each tab offers the same actions for its own view. Naming opens a [Modal](MODAL.md) and deleting a [Confirm Dialog](MODAL.md). The values are plain data and the caller persists the views.
 
 ## UIC-VIEW-SWITCHER-1 - Views
 
@@ -48,7 +48,7 @@ Verification: `src/components/view-switcher/view-switcher.test.tsx`, `e2e/view-s
 
 ### UIC-VIEW-SWITCHER-1.7 - Default view and deleting
 
-`onDefaultViewChange` shall offer the provider's `setDefaultView` action for every view but the default one, which calls it with the view's `id`. `onDelete` offers the provider's `delete` action (tone `danger`), disabled while only one view is left, which opens a [Confirm Dialog](CONFIRM-DIALOG.md) of tone `danger` titled by `deleteViewTitle` for the label, explaining with `deleteViewMessage`; confirming calls `onDelete` with the `id` and closes it once a returned promise settles.
+`onDefaultViewChange` shall offer the provider's `setDefaultView` action for every view but the default one, which calls it with the view's `id`. `onDelete` offers the provider's `delete` action (tone `danger`), disabled while only one view is left, which opens a [Confirm Dialog](MODAL.md) of tone `danger` titled by `deleteViewTitle` for the label, explaining with `deleteViewMessage`; confirming calls `onDelete` with the `id` and closes it once a returned promise settles.
 
 Implementation: `src/components/view-switcher/view-actions.ts`, `src/components/view-switcher/view-dialogs.tsx`, `src/core/view-strings.ts`
 Verification: `src/components/view-switcher/view-switcher.test.tsx`, `e2e/view-switcher.spec.ts`

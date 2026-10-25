@@ -20,7 +20,7 @@ Verification: `src/components/banner/banner.test.tsx`, `e2e/banner.spec.ts`
 
 ### UIC-BANNER-1.3 - Dismiss
 
-With `onDismiss`, the banner shall draw a small [Icon Button](ICON-BUTTON.md) with the `close` glyph in the `ui-banner__dismiss` slot, named by `dismissLabel` or the provider's `dismiss` string, which calls `onDismiss` once per activation by pointer or keyboard and never submits a form. Removing the banner stays the caller's decision.
+With `onDismiss`, the banner shall draw a small [Icon Button](BUTTON.md) with the `close` glyph in the `ui-banner__dismiss` slot, named by `dismissLabel` or the provider's `dismiss` string, which calls `onDismiss` once per activation by pointer or keyboard and never submits a form. Removing the banner stays the caller's decision.
 
 Implementation: `src/components/banner/banner.tsx`
 Verification: `src/components/banner/banner.test.tsx`, `e2e/banner.spec.ts`
@@ -89,7 +89,7 @@ Verification: `src/components/banner/banner.test.tsx`
 | `ui-banner__title`       | slot      |                                                   | The title.                                     |
 | `ui-banner__description` | slot      |                                                   | The description.                               |
 | `ui-banner__actions`     | slot      |                                                   | The caller's actions.                          |
-| `ui-banner__dismiss`     | slot      |                                                   | The dismiss button (also `ui-icon-button`).    |
+| `ui-banner__dismiss`     | slot      |                                                   | The dismiss button (also `ui-button`).         |
 | `data-tone`              | attribute | `neutral`, `info`, `success`, `warning`, `danger` | Tone and urgency.                              |
 | `data-inline`            | state     | `true`                                            | Rendered as phrasing content.                  |
 | `data-pending`           | state     | `true`                                            | Work in progress.                              |

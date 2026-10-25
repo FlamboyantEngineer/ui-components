@@ -115,7 +115,7 @@
   font-style: italic;
 }
 
-.ui-select-field__clear.ui-icon-button {
+.ui-select-field__clear.ui-button[data-content='icon'] {
   flex: none;
   width: calc(var(--ref-field-height) - 8px);
   height: calc(var(--ref-field-height) - 8px);
@@ -327,7 +327,7 @@
   white-space: nowrap;
 }
 
-.ui-select-field__chip-remove.ui-icon-button {
+.ui-select-field__chip-remove.ui-button[data-content='icon'] {
   width: 16px;
   height: 16px;
   border-radius: 50%;

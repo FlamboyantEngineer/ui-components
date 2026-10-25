@@ -1,183 +1,114 @@
-import { Fragment } from 'react';
-import { Button as AriaButton } from '../../primitives/index.js';
+import type { ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Size } from '../../core/props.js';
-import { useUiStrings } from '../../core/provider.js';
-import { assignOccurrenceKeys, type KeyedValue } from '../../utils/stable-keys.js';
-import {
-  Avatar,
-  getDisplayName,
-  splitAvatarIdentity,
-  type AvatarIdentity,
-  type AvatarProps,
-} from '../avatar/avatar.js';
-import { Popover, PopoverTrigger } from '../popover/popover.js';
-import { UserIdentity } from '../user-identity/user-identity.js';
-import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
+import { assignOccurrenceKeys } from '../../utils/stable-keys.js';
+import type { AvatarIdentity, AvatarProps } from '../avatar/avatar.js';
+import { AvatarGroupPeople } from './avatar-group-people.js';
+import { AvatarGroupListTrigger } from './avatar-group-list.js';
+import { usePresenceLabels, windowPeople } from './avatar-group-window.js';
 
-/** One person in an avatar group. */
-export interface AvatarGroupPerson extends AvatarIdentity {
-  /** Stable id, used to keep each person's element across renders. */
+export interface AvatarGroupPerson
+  extends AvatarIdentity, Pick<AvatarProps, 'status' | 'statusLabel'> {
+  /** Stable identity, retained across reordering and passed to person actions. */
   id: string;
-  /** A secondary line in the list of everyone, such as a role. */
+  /** Secondary text in the full list, such as a role. */
   description?: string | undefined;
 }
-
 export type AvatarGroupSize = Extract<Size, 'xs' | 'sm' | 'md' | 'lg'>;
-
-/** `none` draws the stack only; `list` makes it a button that lists everyone in a popover. */
+export type AvatarGroupLayout = 'stack' | 'strip' | 'dots';
 export type AvatarGroupAction = 'none' | 'list';
+export type AvatarGroupOverflow = 'count' | 'menu';
 
-export interface AvatarGroupProps extends Pick<AvatarProps, 'colorCount' | 'variant'>, BaseProps {
-  /** The people, in the order to stack them. */
+export interface AvatarGroupProps
+  extends BaseProps, Pick<AvatarProps, 'colorCount' | 'variant' | 'nameTooltip' | 'cardTrigger'> {
+  /** The people in display order, including optional presence status. */
   people: readonly AvatarGroupPerson[];
-  /** Show at most this many avatars; the rest join the `+N` count. Defaults to all of them. */
+  /** Maximum visible people; the rest join the overflow count. Defaults to all. */
   maxVisible?: number | undefined;
-  /** Avatar size. Defaults to `md`. */
+  /** Additional people already omitted from the supplied list. */
+  overflowCount?: number | undefined;
+  /** Names announced for the additional overflow count. */
+  hiddenNames?: readonly string[] | undefined;
+  /** Overlapping avatars, a spaced presence strip, or decorative dots. Defaults to stack. */
+  layout?: AvatarGroupLayout | undefined;
+  /** Avatar size. Defaults to md. */
   size?: AvatarGroupSize | undefined;
-  /** What pressing the group does. Defaults to `none`. */
+  /** Lists everyone from the whole group. Person actions apply with none, the default. */
   action?: AvatarGroupAction | undefined;
-  /** Names the group. Defaults to the names of everyone in it. */
+  /** Makes each avatar pressable and reports the selected person. */
+  onAction?: ((id: string) => void) | undefined;
+  /** A person card opened from a visible avatar. */
+  renderCard?: ((person: AvatarGroupPerson) => ReactNode) | undefined;
+  /** Lists the hidden people from the overflow count. Defaults to count. */
+  overflow?: AvatarGroupOverflow | undefined;
+  /** Names the group; defaults to the people it contains. */
   'aria-label'?: string | undefined;
 }
 
-interface AvatarStackProps extends Pick<AvatarGroupProps, 'colorCount' | 'variant' | 'size'> {
-  visible: Array<KeyedValue<AvatarGroupPerson>>;
-  hidden: Array<KeyedValue<AvatarGroupPerson>>;
-  /** Puts hidden commas between the names, for a button named by its content. */
-  isSeparated: boolean;
-}
+const hooks = createHooks('avatar-group');
 
-const hooks = createHooks('avatar-group', [
-  'avatar',
-  'overflow',
-  'trigger',
-  'popover',
-  'list',
-  'item',
-]);
-
-function visibleCount(maxVisible: number | undefined, total: number): number {
-  return maxVisible === undefined || !Number.isFinite(maxVisible)
-    ? total
-    : Math.max(0, Math.trunc(maxVisible));
-}
-
-/** A comma only assistive technology hears, so names read as a list inside a button's name. */
-function Separator() {
-  return (
-    <>
-      <VisuallyHidden elementType="span">,</VisuallyHidden>{' '}
-    </>
-  );
-}
-
-function AvatarStack({ visible, hidden, size, isSeparated, ...avatar }: AvatarStackProps) {
-  const strings = useUiStrings();
-  const hiddenNames = hidden.map(({ value }) => getDisplayName(value.name, strings.unnamed));
-  return (
-    <>
-      {visible.map(({ key, value }, position) => {
-        const [identity] = splitAvatarIdentity(value);
-        return (
-          <Fragment key={key}>
-            {isSeparated && position > 0 ? <Separator /> : null}
-            <Avatar {...identity} {...avatar} size={size} className={hooks.slotClass('avatar')} />
-          </Fragment>
-        );
-      })}
-      {hidden.length > 0 ? (
-        <>
-          {isSeparated && visible.length > 0 ? <Separator /> : null}
-          <span
-            {...hooks.slot('overflow')}
-            role="img"
-            aria-label={strings.morePeople(hidden.length, hiddenNames)}
-          >
-            {`+${hidden.length}`}
-          </span>
-        </>
-      ) : null}
-    </>
-  );
-}
-
-function AvatarGroupList({
-  people,
-  colorCount,
-}: Pick<AvatarGroupProps, 'colorCount'> & { people: Array<KeyedValue<AvatarGroupPerson>> }) {
-  return (
-    <ul {...hooks.slot('list')}>
-      {people.map(({ key, value }) => {
-        const [identity, { description }] = splitAvatarIdentity(value);
-        return (
-          <li key={key} {...hooks.slot('item')}>
-            <UserIdentity
-              {...identity}
-              colorCount={colorCount}
-              size="sm"
-              description={description}
-            />
-          </li>
-        );
-      })}
-    </ul>
-  );
-}
-
-/**
- * An overlapping stack of avatars with a `+N` count past `maxVisible`, named by everyone's names.
- * With `action="list"` the stack is a button that opens a popover listing everyone.
- */
+/** One group of identities, including optional presence, cards, commands and overflow. */
 export function AvatarGroup({
   people,
   maxVisible,
+  overflowCount,
+  hiddenNames,
+  layout = 'stack',
   size = 'md',
   variant,
   colorCount,
+  onAction,
+  renderCard,
+  overflow = 'count',
+  nameTooltip,
+  cardTrigger,
   action = 'none',
   'aria-label': ariaLabel,
   className,
   ...rest
 }: AvatarGroupProps) {
-  const strings = useUiStrings();
-  const keyed = assignOccurrenceKeys(people, (person) => person.id);
-  const limit = visibleCount(maxVisible, keyed.length);
-  const label =
-    ariaLabel?.trim() ||
-    people.map((person) => getDisplayName(person.name, strings.unnamed)).join(', ');
-  if (keyed.length === 0) return null;
-  const stack = {
-    visible: keyed.slice(0, limit),
-    hidden: keyed.slice(limit),
-    size,
-    variant,
-    colorCount,
-  };
-
+  const presence = windowPeople({ people, maxVisible, overflowCount });
+  const labels = usePresenceLabels({
+    people,
+    hiddenNames,
+    ariaLabel,
+    hidden: presence.hidden,
+    overflow: presence.overflow,
+  });
+  if (presence.visible.length === 0 && presence.overflow === 0) return null;
+  const content = (
+    <AvatarGroupPeople
+      presence={presence}
+      labels={labels}
+      layout={layout}
+      size={size}
+      variant={variant}
+      colorCount={colorCount}
+      onAction={onAction}
+      renderCard={renderCard}
+      overflow={overflow}
+      nameTooltip={nameTooltip}
+      cardTrigger={cardTrigger}
+      isList={action === 'list'}
+    />
+  );
   return (
     <span
       {...rest}
-      {...hooks.root({ className, props: rest, data: { size, action } })}
-      role="group"
-      aria-label={label}
+      {...hooks.root({ className, data: { layout, size, overflow, action } })}
+      {...(layout === 'dots'
+        ? { 'aria-hidden': true }
+        : { role: 'group', 'aria-label': labels.group })}
     >
-      {action === 'none' ? (
-        <AvatarStack {...stack} isSeparated={false} />
+      {action === 'list' && layout !== 'dots' ? (
+        <AvatarGroupListTrigger
+          people={assignOccurrenceKeys(people, (person) => person.id)}
+          colorCount={colorCount}
+        >
+          {content}
+        </AvatarGroupListTrigger>
       ) : (
-        <PopoverTrigger>
-          {/* Named by its content, the avatars' and the count's names, so its label holds the visible text. */}
-          <AriaButton {...hooks.slot('trigger')}>
-            <AvatarStack {...stack} isSeparated />
-          </AriaButton>
-          <Popover
-            title={strings.peopleCount(people.length)}
-            placement="bottom start"
-            className={hooks.slotClass('popover')}
-          >
-            <AvatarGroupList people={keyed} colorCount={colorCount} />
-          </Popover>
-        </PopoverTrigger>
+        content
       )}
     </span>
   );

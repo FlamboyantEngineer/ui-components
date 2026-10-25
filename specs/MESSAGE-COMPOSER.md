@@ -13,7 +13,7 @@ Verification: `src/components/message-composer/message-composer.test.tsx`, `e2e/
 
 ### UIC-MESSAGE-COMPOSER-1.2 - Sending
 
-The send button (`ui-message-composer__action`, an `IconButton` with the `send` glyph named by the provider string `send`) and the submit chord shall call `onSubmit` with the text and then empty the composer (through `onChange` when it is controlled). With `submitShortcut="Enter"` (the default) Enter sends and Shift+Enter breaks the line; with `Ctrl+Enter`, Ctrl+Enter or Cmd+Enter sends and Enter breaks the line. The chord shows in the button's tooltip and `aria-keyshortcuts`. Blank text is not sent, and the button is disabled (`aria-disabled`, staying focusable so focus survives the switch from Stop), unless `allowsEmptySubmit` is set, as when attachments carry the message. The submit chord never breaks the line, and an Enter that confirms an input method composition does not send. Pressing the button keeps focus in the text area.
+The send button (`ui-message-composer__action`, an `Button` with the `send` glyph named by the provider string `send`) and the submit chord shall call `onSubmit` with the text and then empty the composer (through `onChange` when it is controlled). With `submitShortcut="Enter"` (the default) Enter sends and Shift+Enter breaks the line; with `Ctrl+Enter`, Ctrl+Enter or Cmd+Enter sends and Enter breaks the line. The chord shows in the button's tooltip and `aria-keyshortcuts`. Blank text is not sent, and the button is disabled (`aria-disabled`, staying focusable so focus survives the switch from Stop), unless `allowsEmptySubmit` is set, as when attachments carry the message. The submit chord never breaks the line, and an Enter that confirms an input method composition does not send. Pressing the button keeps focus in the text area.
 
 Implementation: `src/components/message-composer/message-composer.tsx`, `src/components/message-composer/use-message-composer.ts`, `src/core/glyphs.tsx`, `src/core/content-strings.ts`
 Verification: `src/components/message-composer/message-composer.test.tsx`, `e2e/message-composer.spec.ts`
@@ -71,7 +71,7 @@ Verification: `src/components/message-composer/message-composer.test.tsx`, `e2e/
 | `ui-message-composer__input`       | slot  |        | The text area.                                             |
 | `ui-message-composer__footer`      | slot  |        | The row below the text: the tools and the button.          |
 | `ui-message-composer__toolbar`     | slot  |        | The caller's tools.                                        |
-| `ui-message-composer__action`      | slot  |        | The send or stop button (also `ui-icon-button`).           |
+| `ui-message-composer__action`      | slot  |        | The send or stop button (also `ui-button`).                |
 | `ui-message-composer__completions` | slot  |        | The completion list's popover (also `ui-completion-list`). |
 | `data-pending`                     | state | `true` | On the root: a reply is on its way.                        |
 | `data-disabled`                    | state | `true` | On the root, and on the text area (React Aria): disabled.  |

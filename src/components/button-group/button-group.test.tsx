@@ -4,7 +4,7 @@ import { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { Button } from '../button/button.js';
-import { IconButton } from '../icon-button/icon-button.js';
+
 import { ButtonGroup } from './button-group.js';
 
 describe('ButtonGroup', () => {
@@ -32,7 +32,7 @@ describe('ButtonGroup', () => {
   it('UIC-BUTTON-GROUP-1.2 UIC-BUTTON-GROUP-1.3 publishes density, orientation and justification', () => {
     const { rerender } = render(
       <ButtonGroup aria-label="View">
-        <IconButton icon="undo" label="Undo" />
+        <Button icon="undo" label="Undo" />
       </ButtonGroup>,
     );
     const group = screen.getByRole('group');
@@ -41,7 +41,7 @@ describe('ButtonGroup', () => {
     expect(group).not.toHaveAttribute('data-justified');
     rerender(
       <ButtonGroup aria-label="View" density="attached" orientation="vertical" justified>
-        <IconButton icon="undo" label="Undo" />
+        <Button icon="undo" label="Undo" />
       </ButtonGroup>,
     );
     expect(group).toHaveAttribute('data-density', 'attached');
@@ -49,7 +49,7 @@ describe('ButtonGroup', () => {
     expect(group).toHaveAttribute('data-justified', 'true');
     rerender(
       <ButtonGroup aria-label="View" density="compact">
-        <IconButton icon="undo" label="Undo" />
+        <Button icon="undo" label="Undo" />
       </ButtonGroup>,
     );
     expect(group).toHaveAttribute('data-density', 'compact');

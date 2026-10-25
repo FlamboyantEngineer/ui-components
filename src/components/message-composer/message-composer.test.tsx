@@ -110,7 +110,7 @@ describe('MessageComposer', () => {
     rerender(<MessageComposer defaultValue="Next" onSubmit={onSubmit} onStop={onStop} />);
     expect(screen.getByRole('button', { name: 'Send' })).toBe(stop);
     rerender(<MessageComposer defaultValue="Next" isPending onSubmit={onSubmit} />);
-    expect(container.querySelector('.ui-icon-button__spinner')).not.toBeNull();
+    expect(container.querySelector('.ui-button__spinner')).not.toBeNull();
     expect(root(container)).toHaveAttribute('data-pending', 'true');
   });
 

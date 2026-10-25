@@ -4,7 +4,7 @@ import { Glyph, UiLink, useUiStrings } from '../../core/provider.js';
 import type { UiStrings } from '../../core/strings.js';
 import type { BlockChangeCounts, DocumentBlock, DocumentMark } from '../../utils/compare-blocks.js';
 import { isSafeUrl } from '../../utils/safe-url.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import type { MarkedRun, RedlineWords } from './redline-text.js';
 
@@ -107,7 +107,7 @@ export function RedlineCompareHeader(props: {
     <div {...hooks.slot('header')}>
       <p {...hooks.slot('summary')}>{strings.redlineSummary(props.counts)}</p>
       <span {...hooks.slot('navigation')}>
-        <IconButton
+        <Button
           icon="chevron-up"
           size="sm"
           label={strings.redlinePreviousChange}
@@ -115,7 +115,7 @@ export function RedlineCompareHeader(props: {
           isDisabled={!props.canMove.previous}
           onPress={() => props.onMove(-1)}
         />
-        <IconButton
+        <Button
           icon="chevron-down"
           size="sm"
           label={strings.redlineNextChange}

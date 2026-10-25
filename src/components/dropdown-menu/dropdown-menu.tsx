@@ -11,7 +11,7 @@ import type { BaseProps, Placement } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { Button, type ButtonProps } from '../button/button.js';
 import type { IconSource } from '../icon/icon.js';
-import { IconButton } from '../icon-button/icon-button.js';
+
 import {
   Menu,
   MenuOverlay,
@@ -32,7 +32,7 @@ export interface DropdownMenuProps
   label: ReactNode;
   /** Drawn before the label, or alone when `iconOnly`. */
   icon?: IconSource;
-  /** Draws the trigger as an `IconButton` showing only `icon` (`more` by default). */
+  /** Draws the trigger as an `Button` showing only `icon` (`more` by default). */
   iconOnly?: boolean | undefined;
   /** Draws a caret after the label of a button trigger. Defaults to true. */
   showCaret?: boolean | undefined;
@@ -96,7 +96,7 @@ function DropdownMenuPopover(props: MenuPopoverProps) {
   );
 }
 
-/** The menu button: a `Button` with a caret, or an `IconButton`, publishing the open state. */
+/** The menu button: a `Button` with a caret, or an `Button`, publishing the open state. */
 function DropdownMenuTrigger({
   label,
   icon,
@@ -110,7 +110,7 @@ function DropdownMenuTrigger({
   const props = { ...rest, ...hooks.root({ className, props: rest, data: { open: isOpen } }) };
   if (iconOnly) {
     return (
-      <IconButton
+      <Button
         {...props}
         variant={variant ?? 'ghost'}
         icon={icon ?? 'more'}
@@ -176,7 +176,7 @@ function DropdownSplitButton({
         {label}
       </Button>
       <MenuTrigger isOpen={isOpen} onOpenChange={setOpen}>
-        <IconButton
+        <Button
           {...shared}
           icon="chevron-down"
           label={strings.moreOptions}

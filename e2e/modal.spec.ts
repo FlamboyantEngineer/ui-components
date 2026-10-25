@@ -43,7 +43,9 @@ test.describe('Modal lab', () => {
     const viewport = page.viewportSize();
     for (const tone of ['neutral', 'danger']) {
       for (const [size, width] of [...sizes, ['full', (viewport?.width ?? 0) - 32] as const]) {
-        const button = page.locator(`[data-lab-cell="tone=${tone} size=${size}"] button`);
+        const button = page
+          .locator('[data-lab-family="modal-main"]')
+          .locator(`[data-lab-cell="tone=${tone} size=${size}"] button`);
         await button.click();
         const overlay = page.locator(`.ui-modal[data-lab-modal="${tone}-${size}"]`);
         await expect(overlay).toHaveAttribute('data-tone', tone);
@@ -67,7 +69,7 @@ test.describe('Modal lab', () => {
     lab,
   }) => {
     await lab.open('modal');
-    const opener = page.locator('[data-lab-open="save"]');
+    const opener = page.locator('[data-lab-family="modal-main"]').locator('[data-lab-open="save"]');
     await opener.click();
     const city = page.getByRole('textbox', { name: 'City' });
     await expect(city).toBeFocused();
@@ -88,16 +90,20 @@ test.describe('Modal lab', () => {
     await expect(save).toHaveAttribute('data-pending', 'true');
     await page.keyboard.press('Control+Enter');
     await save.click({ force: true });
-    await expect(page.locator('[data-lab-output="saved"]')).toHaveText('none');
+    await expect(
+      page.locator('[data-lab-family="modal-main"]').locator('[data-lab-output="saved"]'),
+    ).toHaveText('none');
     await page.locator('[data-lab-action="finish"]').click();
     await expect(page.getByRole('dialog')).toHaveCount(0);
-    await expect(page.locator('[data-lab-output="saved"]')).toHaveText('Lisbon');
+    await expect(
+      page.locator('[data-lab-family="modal-main"]').locator('[data-lab-output="saved"]'),
+    ).toHaveText('Lisbon');
     await expect(opener).toBeFocused();
   });
 
   test('UIC-MODAL-5.3 keeps a failed save open with the error', async ({ page, lab }) => {
     await lab.open('modal');
-    await page.locator('[data-lab-open="save"]').click();
+    await page.locator('[data-lab-family="modal-main"]').locator('[data-lab-open="save"]').click();
     await page.getByRole('textbox', { name: 'City' }).fill('Kyoto');
     await page.getByRole('button', { name: 'Save' }).click();
     await expect(page.getByRole('button', { name: 'Save' })).toHaveAttribute(
@@ -116,7 +122,7 @@ test.describe('Modal lab', () => {
     lab,
   }) => {
     await lab.open('modal');
-    await page.locator('[data-lab-open="save"]').click();
+    await page.locator('[data-lab-family="modal-main"]').locator('[data-lab-open="save"]').click();
     const city = page.getByRole('textbox', { name: 'City' });
     await expect(city).toBeFocused();
     await city.fill('Oslo');
@@ -129,7 +135,9 @@ test.describe('Modal lab', () => {
     await expect(page.getByRole('alert')).toHaveText('The list is full.');
     await expect(save).not.toHaveAttribute('data-pending');
     await expect(page.locator('[data-lab-action="fail"]')).toBeDisabled();
-    await expect(page.locator('[data-lab-output="saved"]')).toHaveText('none');
+    await expect(
+      page.locator('[data-lab-family="modal-main"]').locator('[data-lab-output="saved"]'),
+    ).toHaveText('none');
   });
 
   test('UIC-MODAL-1.2 UIC-MODAL-1.3 UIC-MODAL-2.1 UIC-MODAL-2.2 stacks modals below the toast layer', async ({
@@ -137,7 +145,9 @@ test.describe('Modal lab', () => {
     lab,
   }) => {
     await lab.open('modal');
-    const opener = page.locator('[data-lab-open="stack"]');
+    const opener = page
+      .locator('[data-lab-family="modal-main"]')
+      .locator('[data-lab-open="stack"]');
     await opener.click();
     const outer = page.locator('.ui-modal[data-lab-modal="outer"]');
     await expect(outer).toHaveCSS('z-index', '120');
@@ -212,7 +222,10 @@ test.describe('Modal lab', () => {
     lab,
   }) => {
     await lab.open('modal');
-    await page.locator('[data-lab-cell="state=error tone=danger"] button').click();
+    await page
+      .locator('[data-lab-family="modal-main"]')
+      .locator('[data-lab-cell="state=error tone=danger"] button')
+      .click();
     await expect(page.getByRole('alert')).toHaveText('Lisbon is not available.');
     const buttons = page.locator('.ui-modal__actions button');
     await expect(buttons).toHaveText(['Cancel', 'Apply']);
@@ -220,13 +233,19 @@ test.describe('Modal lab', () => {
     await lab.expectAccessible('.ui-modal');
     await page.keyboard.press('Escape');
 
-    await page.locator('[data-lab-cell="state=secondary action tone=neutral"] button').click();
+    await page
+      .locator('[data-lab-family="modal-main"]')
+      .locator('[data-lab-cell="state=secondary action tone=neutral"] button')
+      .click();
     await expect(buttons).toHaveText(['Cancel', 'Discard', 'Save']);
     await page.getByRole('button', { name: 'Discard' }).click();
     await expect(page.getByRole('dialog')).toHaveCount(0);
 
-    await page.locator('[data-lab-cell="state=action variant tone=neutral"] button').click();
-    await expect(page.getByRole('button', { name: 'Remove' })).toHaveAttribute(
+    await page
+      .locator('[data-lab-family="modal-main"]')
+      .locator('[data-lab-cell="state=action variant tone=neutral"] button')
+      .click();
+    await expect(page.getByRole('button', { name: 'Remove', exact: true })).toHaveAttribute(
       'data-variant',
       'danger',
     );
@@ -238,7 +257,9 @@ test.describe('Modal lab', () => {
 
   test('UIC-MODAL-1.1 works without a stylesheet', async ({ page, lab }) => {
     await lab.open('modal', { stylesheet: 'none' });
-    const button = page.locator('[data-lab-cell="tone=neutral size=md"] button');
+    const button = page
+      .locator('[data-lab-family="modal-main"]')
+      .locator('[data-lab-cell="tone=neutral size=md"] button');
     await button.click();
     await expect(page.getByRole('dialog', { name: 'Rename Report.pdf' })).toBeVisible();
     await page.keyboard.press('Escape');
@@ -254,12 +275,18 @@ test.describe('Modal lab', () => {
       expect(page.locator('.ui-modal[data-entering], .ui-modal[data-exiting]')).toHaveCount(0);
     await lab.open('modal', { theme: 'dark' });
     await lab.expectAccessible();
-    await page.locator('[data-lab-cell="state=error tone=danger"] button').click();
+    await page
+      .locator('[data-lab-family="modal-main"]')
+      .locator('[data-lab-cell="state=error tone=danger"] button')
+      .click();
     await expect(page.getByRole('alert')).toHaveText('Lisbon is not available.');
     await settled();
     await lab.expectAccessible('.ui-modal');
     await page.keyboard.press('Escape');
-    await page.locator('[data-lab-cell="state=status tone=neutral"] button').click();
+    await page
+      .locator('[data-lab-family="modal-main"]')
+      .locator('[data-lab-cell="state=status tone=neutral"] button')
+      .click();
     await expect(page.locator('.ui-modal').getByRole('status')).toHaveText('Choose a city.');
     await settled();
     await lab.expectAccessible('.ui-modal');
@@ -268,7 +295,10 @@ test.describe('Modal lab', () => {
   test('UIC-MODAL-1.4 opens the news tones', async ({ page, lab }) => {
     await lab.open('modal');
     for (const tone of ['info', 'success', 'warning']) {
-      await page.locator(`[data-lab-cell="tone=${tone} size=md"] button`).click();
+      await page
+        .locator('[data-lab-family="modal-main"]')
+        .locator(`[data-lab-cell="tone=${tone} size=md"] button`)
+        .click();
       const overlay = page.locator(`.ui-modal[data-lab-modal="${tone}-md"]`);
       await expect(overlay).toHaveAttribute('data-tone', tone);
       await expect(overlay.locator('.ui-modal__panel')).toHaveCSS('border-top-width', '3px');
@@ -282,8 +312,12 @@ test.describe('Modal lab', () => {
     lab,
   }) => {
     await lab.open('modal');
-    const outputs = (name: string) => page.locator(`[data-lab-output="${name}"]`);
-    await page.locator('[data-lab-open="guarded"]').click();
+    const outputs = (name: string) =>
+      page.locator('[data-lab-family="modal-main"]').locator(`[data-lab-output="${name}"]`);
+    await page
+      .locator('[data-lab-family="modal-main"]')
+      .locator('[data-lab-open="guarded"]')
+      .click();
     const dialog = page.getByRole('dialog', { name: 'Postcard' });
     await expect(dialog.getByRole('textbox', { name: 'City' })).toBeFocused();
     await dialog.getByRole('textbox', { name: 'Message' }).fill('Greetings from Oslo');
@@ -298,13 +332,17 @@ test.describe('Modal lab', () => {
     await dialog.getByRole('textbox', { name: 'Message' }).fill('');
     await page.keyboard.press('Escape');
     await expect(dialog).toHaveCount(0);
-    await expect(page.locator('[data-lab-after]')).toBeFocused();
+    await expect(
+      page.locator('[data-lab-family="modal-main"]').locator('[data-lab-after]'),
+    ).toBeFocused();
     await expect(outputs('exits')).toHaveText('1');
   });
 
   test('UIC-MODAL-8.1 floats a non-modal dialog beside a usable page', async ({ page, lab }) => {
     await lab.open('modal');
-    const opener = page.locator('[data-lab-open="floating"]');
+    const opener = page
+      .locator('[data-lab-family="modal-main"]')
+      .locator('[data-lab-open="floating"]');
     await opener.click();
     const overlay = page.locator('.ui-modal[data-lab-modal="floating"]');
     await expect(overlay).toHaveAttribute('data-non-modal', 'true');
@@ -312,7 +350,7 @@ test.describe('Modal lab', () => {
     const note = page.getByRole('dialog', { name: 'Notes' }).getByRole('textbox', { name: 'Note' });
     await expect(note).toBeFocused();
     // The page around the panel takes pointer presses and typing while the dialog is open.
-    const field = page.locator('[data-lab-page-field]');
+    const field = page.locator('[data-lab-family="modal-main"]').locator('[data-lab-page-field]');
     await field.click();
     await page.keyboard.type('Lima');
     await expect(field).toHaveValue('Lima');
@@ -327,7 +365,9 @@ test.describe('Modal lab', () => {
 
   test('UIC-MODAL-8.2 opens an anchored dialog against its button', async ({ page, lab }) => {
     await lab.open('modal');
-    const opener = page.locator('[data-lab-open="anchored"]');
+    const opener = page
+      .locator('[data-lab-family="modal-main"]')
+      .locator('[data-lab-open="anchored"]');
     await opener.click();
     const popover = page.locator('.ui-modal[data-lab-modal="anchored"]');
     await expect(popover).toHaveAttribute('data-layer', 'dropdown');

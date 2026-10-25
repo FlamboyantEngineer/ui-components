@@ -152,7 +152,14 @@ mountLab(
       <StateMatrix
         axes={{ placement: placements, arrow: arrows }}
         render={({ placement, arrow }) => (
-          <div style={{ padding: 24 }}>
+          <div
+            style={{
+              paddingBlock: 24,
+              paddingInlineStart: 120,
+              paddingInlineEnd: 24,
+              minWidth: 120,
+            }}
+          >
             <Opener
               label={`Open ${placement}`}
               placement={placement}

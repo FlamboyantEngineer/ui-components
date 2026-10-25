@@ -30,7 +30,7 @@ export interface ModalContentOptions<T = unknown> extends Omit<
   content?: ReactNode | ((handle: ModalHandle<T>) => ReactNode);
 }
 
-/** What `render` receives to draw a modal of its own (a `ConfirmDialog`, a host composition). */
+/** What `render` receives to draw a modal of its own (a `Modal`, a host composition). */
 export interface ModalEntryRenderProps<T = unknown> {
   /** Always true while the entry renders; pass it to the modal's `isOpen`. */
   isOpen: boolean;
