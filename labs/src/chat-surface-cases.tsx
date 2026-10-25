@@ -61,6 +61,7 @@ function LauncherDemo() {
                 currentUserId={readerId}
                 placeholder="Ask the trip planner…"
                 emptyState={emptyHint}
+                scrollMode="follow"
               />
             </div>
           </Popover>
@@ -74,7 +75,7 @@ export function ChatSurfaceCases() {
   return (
     <LabSection
       title="Surfaces"
-      description="Chat is inline: the host places it. Here the same trip planner opens in a side Drawer, and from a floating launcher button as a Popover; each conversation lives in the host's controller, so closing the surface keeps it."
+      description="Chat is inline: the host places it. Here the same trip planner opens in a side Drawer, and from a floating launcher button as a Popover; each conversation lives in the host's controller, so closing the surface keeps it. The small launcher follows the latest message (scrollMode follow) instead of anchoring your question at the top."
     >
       <DrawerDemo />
       <LauncherDemo />

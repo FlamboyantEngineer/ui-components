@@ -167,6 +167,23 @@ describe('Chat', () => {
     expect(container.querySelector('.ui-chat-transcript__spacer')).not.toBeNull();
   });
 
+  it('UIC-CHAT-1.7 takes the scroll mode, empty state, history and virtualization of the transcript', () => {
+    const { container, rerenderWith } = renderChat({
+      participants: assistantPeople,
+      scrollMode: 'follow',
+      hasOlder: true,
+      isLoadingOlder: true,
+      virtualized: true,
+    });
+    const transcript = container.querySelector('.ui-chat__transcript') as HTMLElement;
+    expect(container.querySelector('.ui-chat-transcript__spacer')).toBeNull();
+    expect(transcript).toHaveAttribute('data-virtualized', 'true');
+    expect(screen.getByRole('progressbar', { name: 'Loading older messages' })).toBeVisible();
+    rerenderWith({ messages: [], emptyState: <p>Ask me anything</p> });
+    expect(screen.getByText('Ask me anything')).toBeVisible();
+    expect(screen.queryByRole('feed')).not.toBeInTheDocument();
+  });
+
   it('UIC-CHAT-4.1 shows who is typing, or the assistant thinking before its first part', () => {
     const { rerenderWith } = renderChat({ typingIds: ['ana', 'sam'] });
     const indicator = () => document.querySelector('.ui-chat__typing') as HTMLElement;

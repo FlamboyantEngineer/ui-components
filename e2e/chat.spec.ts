@@ -233,6 +233,7 @@ test.describe('Chat lab', () => {
     await expect(team.locator('.ui-chat-unread-divider')).toHaveText('New messages');
     await expect(team.locator('.ui-chat-transcript__unread')).toContainText('6 unread');
     await expect(team.getByRole('group', { name: 'Seen by Ana Lopez and Mia Chen' })).toBeVisible();
+    await expect(page.locator('[data-lab-output="team-read"]')).toHaveText('Read up to team-14');
     await team.getByRole('button', { name: 'Jump' }).click();
     await expect(message(team, 'team-9')).toBeFocused();
     await message(team, 'team-10')
