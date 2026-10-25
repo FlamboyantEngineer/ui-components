@@ -1,0 +1,87 @@
+/* Chat Message Actions. The copy status stays visually hidden; a check mark takes the success colour. */
+
+.ui-chat-message-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  transition: opacity var(--ref-duration-fast) ease-out;
+}
+
+/* Inside a message the bar shows on hover and focus, and stays while one of its overlays is open. */
+.ui-chat-message:not(:hover, :focus-within) .ui-chat-message-actions:not([data-open]) {
+  opacity: 0;
+}
+
+.ui-chat-message-actions__copy,
+.ui-chat-message-actions__rating,
+.ui-chat-message-actions__reply,
+.ui-chat-message-actions__react,
+.ui-chat-message-actions__edit,
+.ui-chat-message-actions__delete {
+  color: var(--ref-muted);
+}
+
+.ui-chat-message-actions__rating[data-selected] {
+  color: var(--ref-accent);
+  background: var(--ref-selected);
+}
+
+.ui-chat-message-actions[data-copied] .ui-chat-message-actions__copy {
+  color: var(--ref-success);
+}
+
+.ui-chat-message-actions__status {
+  white-space: nowrap;
+}
+
+.ui-chat-message-actions__feedback {
+  width: min(300px, calc(100vw - 24px));
+}
+
+.ui-chat-message-actions__feedback .ui-popover__body {
+  display: grid;
+  gap: 10px;
+}
+
+.ui-chat-message-actions__reasons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ui-chat-message-actions__reason {
+  border-radius: var(--ref-radius-full);
+}
+
+.ui-chat-message-actions__reason[data-selected] {
+  border-color: var(--ref-accent);
+  background: var(--ref-selected);
+}
+
+.ui-chat-message-actions__comment {
+  width: 100%;
+}
+
+.ui-chat-message-actions__feedback-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.ui-chat-message-actions__emoji-popover .ui-emoji-picker {
+  box-shadow: var(--ref-shadow);
+}
+
+.ui-chat-message-actions__emoji-popover[data-entering] {
+  animation: ref-fade var(--ref-duration-fast) ease-out;
+}
+
+.ui-chat-message-actions__emoji-popover[data-exiting] {
+  animation: ref-fade var(--ref-duration-fast) ease-in reverse;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-chat-message-actions {
+    transition: none;
+  }
+}
