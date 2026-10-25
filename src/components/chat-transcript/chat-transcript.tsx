@@ -82,4 +82,11 @@ export function ChatTranscript({
 }
 
 export { ChatMessage } from './chat-message.js';
-export type { ChatMessageOrigin, ChatMessageProps, ChatMessageStatus } from './chat-message.js';
+export type {
+  ChatMessageAuthor,
+  ChatMessageDelivery,
+  ChatMessageGroupPosition,
+  ChatMessageOrigin,
+  ChatMessageProps,
+  ChatMessageStatus,
+} from './chat-message.js';
