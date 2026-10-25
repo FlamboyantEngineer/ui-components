@@ -178,9 +178,13 @@ test.describe('Chat Message Actions lab', () => {
     await expect(answerBar).toHaveCSS('opacity', '1');
     await dialog.getByRole('button', { name: 'Skip' }).click();
     await expect(log(page, 'conversation')).toHaveText('rating down');
-    // Tab leaves the bar for the next message's commands, which show in turn.
+    // Escape returns to the message and Down moves to the next one, whose commands show in turn
+    // (the transcript's keyboard model: Tab cycles inside a message).
     await answerBar.getByRole('button', { name: 'Bad response' }).focus();
-    await page.keyboard.press('Tab');
+    await page.keyboard.press('Escape');
+    await expect(answer).toBeFocused();
+    await page.keyboard.press('ArrowDown');
+    await expect(message(page, 'ana')).toBeFocused();
     await expect(answerBar).toHaveCSS('opacity', '0');
     await message(page, 'ana')
       .locator('.ui-chat-message-actions')

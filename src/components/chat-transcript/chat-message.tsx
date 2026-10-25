@@ -14,6 +14,7 @@ import {
   useAbsoluteTime,
 } from './chat-message-parts.js';
 import type { ChatQuoteData } from './chat-quote.js';
+import { useTranscriptMessage } from './transcript-context.js';
 
 /** `sent` by the reader, `received` from someone else (a person or an assistant), or a `system` notice. */
 export type ChatMessageOrigin = 'sent' | 'received' | 'system';
@@ -115,6 +116,7 @@ export function ChatMessage({
   const { isHovered, isFocusWithin, interactionProps } = useMessageInteraction();
   const labelId = useId();
   const authorName = author ? getDisplayName(author.name, strings.unnamed) : undefined;
+  const transcript = useTranscriptMessage({ id: rest.id, authorName, origin, status });
   const label = strings.chatMessageLabel(authorName, useAbsoluteTime(time, getNow));
   const startsGroup = groupPosition === 'single' || groupPosition === 'first';
   const [body, own] = splitBodyProps(rest);
@@ -129,7 +131,7 @@ export function ChatMessage({
   };
   return (
     <article
-      {...mergeProps(own, interactionProps)}
+      {...mergeProps(own, interactionProps, transcript)}
       {...hooks.root({ className, data })}
       aria-busy={status === 'streaming' || undefined}
       aria-labelledby={label ? labelId : undefined}

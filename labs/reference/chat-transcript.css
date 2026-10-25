@@ -19,17 +19,64 @@
 }
 
 .ui-chat-transcript__log > .ui-scroll-region__viewport {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
   box-sizing: border-box;
   height: 100%;
   padding: 12px;
+  /* The transcript keeps the reader's place itself; the browser's own anchoring would add to it. */
+  overflow-anchor: none;
 }
 
-.ui-chat-transcript__log > .ui-scroll-region__viewport:focus-visible {
+.ui-chat-transcript__feed {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ui-chat-transcript__feed > :focus-visible {
+  border-radius: var(--ref-radius-lg);
   outline: var(--ref-focus-ring);
-  outline-offset: -2px;
+  outline-offset: 2px;
+}
+
+.ui-chat-transcript__feed > [data-highlighted] {
+  border-radius: var(--ref-radius-lg);
+  background: var(--ref-highlight);
+}
+
+/* The place above the messages keeps its height, so the indicator appearing moves nothing. */
+.ui-chat-transcript__history {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+  padding-block-end: 12px;
+}
+
+/* In anchor mode the spacer keeps the scroll range; the transcript sets its height. */
+.ui-chat-transcript__spacer {
+  flex: none;
+}
+
+.ui-chat-transcript__unread {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 4px 4px 12px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius-full);
+  background: var(--ref-raised);
+  box-shadow: var(--ref-shadow);
+  font-size: var(--ref-font-size-sm);
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+.ui-chat-transcript__announcer {
+  white-space: nowrap;
 }
 
 .ui-chat-transcript__empty {
