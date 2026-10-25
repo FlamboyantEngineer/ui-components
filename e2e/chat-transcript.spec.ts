@@ -1,77 +1,237 @@
 import type { Locator, Page } from '@playwright/test';
 import { expect, test } from './fixtures.js';
 
-const cell = (page: Page, origin: string, status: string) =>
-  page.locator(`[data-lab-cell="origin=${origin} status=${status}"] .ui-chat-message`);
+test.describe('Chat Transcript lab: transcript behaviour', () => {
+  const transcript = (page: Page, name: string) => page.locator(`[data-lab-transcript="${name}"]`);
+  const viewportOf = (page: Page, name: string) =>
+    transcript(page, name).locator('.ui-scroll-region__viewport');
+  const distanceToBottom = (viewport: Locator) =>
+    viewport.evaluate((node) => node.scrollHeight - node.clientHeight - node.scrollTop);
+  /** Where an element's top sits below the top of its transcript's viewport. */
+  const offsetInView = (target: Locator) =>
+    target.evaluate((node) => {
+      const viewport = node.closest('.ui-scroll-region__viewport') as HTMLElement;
+      return node.getBoundingClientRect().top - viewport.getBoundingClientRect().top;
+    });
+  const behaviourSections = [
+    'Keyboard model',
+    'Follow and anchor',
+    'Empty conversation',
+    'Older history',
+    'Highlighted message',
+    'Unread messages',
+    'Virtualized history',
+  ];
 
-/** How far the log's viewport is from its bottom, in pixels. */
-function distanceToBottom(log: Locator): Promise<number> {
-  return log.evaluate((node) => node.scrollHeight - node.clientHeight - node.scrollTop);
-}
-
-test.describe('Chat Transcript lab', () => {
-  test('UIC-CHAT-TRANSCRIPT-2.1 UIC-CHAT-TRANSCRIPT-2.2 draws messages by origin and status', async ({
+  test('UIC-CHAT-TRANSCRIPT-3.1 UIC-CHAT-TRANSCRIPT-3.2 UIC-CHAT-TRANSCRIPT-3.3 moves through the feed by keyboard', async ({
     page,
     lab,
   }) => {
     await lab.open('chat-transcript');
-    const received = cell(page, 'received', 'complete');
-    await expect(received).toHaveAttribute('data-origin', 'received');
-    await expect(received.locator('.ui-chat-message__author')).toHaveText('Helper');
-    await expect(received.locator('.ui-chat-message__time')).toHaveText('18 minutes ago');
-    await expect(received.getByRole('button', { name: 'Copy message' })).toBeVisible();
-    await expect(cell(page, 'sent', 'complete')).toHaveAttribute('data-origin', 'sent');
-    const sentBox = await page.locator('[data-lab-message="1"]').boundingBox();
-    const receivedBox = await page.locator('[data-lab-message="2"]').boundingBox();
-    expect(
-      sentBox && receivedBox && sentBox.x + sentBox.width > receivedBox.x + receivedBox.width,
-    ).toBe(true);
-    expect(sentBox && receivedBox && sentBox.x > receivedBox.x).toBe(true);
-    await expect(cell(page, 'received', 'streaming')).toHaveAttribute('aria-busy', 'true');
-    await expect(cell(page, 'received', 'error')).toHaveAttribute('data-status', 'error');
-    await expect(
-      cell(page, 'received', 'error').getByRole('button', { name: 'Retry' }),
-    ).toBeVisible();
-    await expect(cell(page, 'system', 'complete').locator('.ui-chat-message__header')).toHaveCount(
-      0,
-    );
-    await expect(cell(page, 'system', 'complete')).toHaveText(
-      'Lena Ortiz joined the conversation.',
-    );
+    const feed = page.getByRole('feed', { name: 'Keyboard conversation' });
+    const composer = page.getByRole('textbox', { name: 'Message the planner' });
+    await composer.focus();
+    await page.keyboard.press('Shift+Tab');
+    await expect(feed.locator('#k5')).toBeFocused();
+    await page.keyboard.press('ArrowUp');
+    await page.keyboard.press('ArrowUp');
+    await page.keyboard.press('ArrowUp');
+    await expect(feed.locator('#k2')).toBeFocused();
+    await expect(feed.locator('#k2')).toHaveAttribute('tabindex', '0');
+    const link = feed.getByRole('link', { name: '9:40 ferry' });
+    const copy = feed.getByRole('button', { name: 'Copy message' });
+    await expect(link).toHaveAttribute('tabindex', '-1');
+    await page.keyboard.press('Enter');
+    await expect(link).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(copy).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(link).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(feed.locator('#k2')).toBeFocused();
+    await expect(link).toHaveAttribute('tabindex', '-1');
+    await page.keyboard.press('Home');
+    await expect(feed.locator('#k1')).toBeFocused();
+    await expect
+      .poll(() => viewportOf(page, 'keyboard').evaluate((node) => node.scrollTop))
+      .toBe(0);
+    await page.keyboard.press('End');
+    await expect(feed.locator('#k5')).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(composer).toBeFocused();
   });
 
-  test('UIC-CHAT-TRANSCRIPT-1.1 UIC-CHAT-TRANSCRIPT-1.2 UIC-CHAT-TRANSCRIPT-1.3 follows a streaming reply until the reader scrolls up', async ({
+  test('UIC-CHAT-TRANSCRIPT-3.4 UIC-CHAT-TRANSCRIPT-3.5 pages natively and leaves for the composer on Escape', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-transcript');
+    const feed = page.getByRole('feed', { name: 'Keyboard conversation' });
+    const viewport = viewportOf(page, 'keyboard');
+    const composer = page.getByRole('textbox', { name: 'Message the planner' });
+    await composer.focus();
+    await page.keyboard.press('Shift+Tab');
+    await expect(feed.locator('#k5')).toBeFocused();
+    await page.keyboard.press('PageUp');
+    await page.keyboard.press('PageUp');
+    await expect.poll(() => viewport.evaluate((node) => node.scrollTop)).toBe(0);
+    await expect(feed.locator('#k1')).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(composer).toBeFocused();
+  });
+
+  test('UIC-CHAT-TRANSCRIPT-1.2 UIC-CHAT-TRANSCRIPT-1.3 UIC-CHAT-TRANSCRIPT-3.6 follows a streaming reply and announces it once', async ({
     page,
     lab,
   }) => {
     await page.clock.install();
     await lab.open('chat-transcript');
-    const log = page.getByRole('log', { name: 'Live conversation' });
-    await expect.poll(() => distanceToBottom(log)).toBeLessThanOrEqual(1);
-    const ask = page.getByRole('textbox', { name: 'Ask' });
-    await ask.fill('How were the samples?');
+    const viewport = viewportOf(page, 'follow');
+    await expect.poll(() => distanceToBottom(viewport)).toBeLessThanOrEqual(1);
+    const ask = page.getByRole('textbox', { name: 'Ask in follow mode' });
+    await ask.fill('How do we get to the island?');
     await ask.press('Enter');
-    await page.clock.runFor(2000);
-    await expect(page.locator('[data-lab-message="14"]')).toContainText('The north field');
-    await expect.poll(() => distanceToBottom(log)).toBeLessThanOrEqual(1);
-    await log.evaluate((node) => node.scrollTo({ top: 0 }));
-    const jump = page.getByRole('button', { name: 'Jump to latest' });
+    await page.clock.runFor(1500);
+    await expect(transcript(page, 'follow').locator('#follow-reply-2')).toContainText('morning');
+    await expect.poll(() => distanceToBottom(viewport)).toBeLessThanOrEqual(1);
+    await viewport.evaluate((node) => node.scrollTo({ top: 0 }));
+    const jump = transcript(page, 'follow').getByRole('button', { name: 'Jump to latest' });
     await expect(jump).toBeVisible();
-    await page.clock.runFor(2000);
-    expect(await log.evaluate((node) => node.scrollTop)).toBe(0);
+    await page.clock.runFor(1500);
+    expect(await viewport.evaluate((node) => node.scrollTop)).toBe(0);
     await jump.click();
     await expect(jump).toBeHidden();
-    await expect(log).toBeFocused();
-    await expect.poll(() => distanceToBottom(log)).toBeLessThanOrEqual(1);
-    await page.clock.runFor(2000);
-    await expect.poll(() => distanceToBottom(log)).toBeLessThanOrEqual(1);
-    await page.getByRole('button', { name: 'Stop' }).click();
-    await expect(page.locator('[data-lab-message="14"]')).toHaveAttribute(
-      'data-status',
-      'complete',
+    await expect(transcript(page, 'follow').locator('#follow-reply-2')).toBeFocused();
+    await page.clock.runFor(1000);
+    await expect.poll(() => distanceToBottom(viewport)).toBeLessThanOrEqual(1);
+    await expect(page.locator('[data-lab-announcement="follow"]')).toHaveText(
+      'Last announcement: (none yet)',
     );
-    await page.clock.runFor(2000);
-    await expect(page.locator('[data-lab-message="14"]')).not.toHaveAttribute('aria-busy');
+    // Stopping completes the reply, which is then announced once.
+    await page.getByRole('button', { name: 'Stop' }).first().click();
+    await expect(page.locator('[data-lab-announcement="follow"]')).toHaveText(
+      /^Last announcement: New message from Trip Planner: The morning ferry is/,
+    );
+  });
+
+  test('UIC-CHAT-TRANSCRIPT-1.5 anchors the sent message at the top while the reply fills in', async ({
+    page,
+    lab,
+  }) => {
+    await page.clock.install();
+    await lab.open('chat-transcript');
+    const ask = page.getByRole('textbox', { name: 'Ask in anchor mode' });
+    await ask.fill('Which beach is quietest?');
+    await ask.press('Enter');
+    const sent = transcript(page, 'anchor').locator('#anchor-sent-1');
+    const reply = transcript(page, 'anchor').locator('#anchor-reply-2');
+    await expect.poll(() => offsetInView(sent)).toBeCloseTo(12, 0);
+    await page.clock.runFor(500);
+    await expect(reply).toContainText('morning');
+    const early = await reply.evaluate((node) => node.getBoundingClientRect().height);
+    await expect.poll(() => offsetInView(sent)).toBeCloseTo(12, 0);
+    await page.clock.runFor(1000);
+    await expect
+      .poll(() => reply.evaluate((node) => node.getBoundingClientRect().height))
+      .toBeGreaterThan(early);
+    await expect.poll(() => offsetInView(sent)).toBeCloseTo(12, 0);
+    await expect(
+      transcript(page, 'anchor').getByRole('button', { name: 'Jump to latest' }),
+    ).toBeHidden();
+    await viewportOf(page, 'anchor').evaluate((node) => node.scrollBy({ top: -40 }));
+    await page.clock.runFor(500);
+    await expect.poll(() => offsetInView(sent)).toBeCloseTo(52, 0);
+  });
+
+  test('UIC-CHAT-TRANSCRIPT-4.1 UIC-CHAT-TRANSCRIPT-4.2 loads older history while keeping the place', async ({
+    page,
+    lab,
+  }) => {
+    await page.clock.install();
+    await lab.open('chat-transcript');
+    const viewport = viewportOf(page, 'history');
+    await viewport.evaluate((node) => node.scrollTo({ top: 0 }));
+    await expect(
+      transcript(page, 'history').getByRole('progressbar', { name: 'Loading older messages' }),
+    ).toBeVisible();
+    const first = transcript(page, 'history').locator('#history-m61');
+    const before = await offsetInView(first);
+    await page.clock.runFor(800);
+    await expect(transcript(page, 'history').locator('#history-m41')).toBeAttached();
+    await expect.poll(() => offsetInView(first)).toBeCloseTo(before, 0);
+    await expect(page.locator('[data-lab-announcement="history"]')).toHaveText(
+      /older messages loaded/,
+    );
+  });
+
+  test('UIC-CHAT-TRANSCRIPT-4.3 scrolls to a highlighted message, marks it and focuses it', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-transcript');
+    await page.getByRole('button', { name: 'Show message 3' }).click();
+    const message = transcript(page, 'highlight').locator('#highlight-m3');
+    await expect(message).toBeFocused();
+    await expect(message).toHaveAttribute('data-highlighted', 'true');
+    await expect.poll(() => offsetInView(message)).toBeGreaterThanOrEqual(0);
+    await page.getByRole('button', { name: 'Clear highlight' }).click();
+    await expect(message).not.toHaveAttribute('data-highlighted');
+  });
+
+  test('UIC-CHAT-TRANSCRIPT-4.4 UIC-CHAT-TRANSCRIPT-4.5 counts arrivals and jumps to the first unread message', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-transcript');
+    const unread = transcript(page, 'unread');
+    await expect(page.locator('[data-lab-read="unread"]')).toHaveText('Read up to: unread-m40');
+    const bar = unread.locator('.ui-chat-transcript__unread');
+    await expect(bar).toContainText('12 unread');
+    await bar.getByRole('button', { name: 'Jump' }).click();
+    await expect(unread.locator('#unread-m29')).toBeFocused();
+    await expect
+      .poll(() => offsetInView(unread.locator('.ui-chat-unread-divider')))
+      .toBeCloseTo(12, 0);
+    await expect(bar).toBeHidden();
+    const receive = page
+      .locator('[data-lab-section="Unread messages"]')
+      .getByRole('button', { name: 'Receive a message' });
+    await receive.click();
+    await receive.click();
+    await expect(unread.getByRole('button', { name: '2 new messages' })).toBeVisible();
+  });
+
+  test('UIC-CHAT-TRANSCRIPT-1.6 virtualizes five thousand messages', async ({ page, lab }) => {
+    await lab.open('chat-transcript');
+    const long = transcript(page, 'virtualized');
+    const viewport = viewportOf(page, 'virtualized');
+    await expect.poll(() => long.getByRole('article').count()).toBeLessThan(80);
+    await expect.poll(() => distanceToBottom(viewport)).toBeLessThanOrEqual(1);
+    await expect(long.locator('#long-m5000')).toBeVisible();
+    await long.locator('#long-m5000').focus();
+    await page.keyboard.press('Home');
+    await expect(long.locator('#long-m1')).toBeFocused();
+    await expect.poll(() => viewport.evaluate((node) => node.scrollTop)).toBe(0);
+    await page.keyboard.press('ArrowDown');
+    await expect(long.locator('#long-m2')).toBeFocused();
+    await page.keyboard.press('End');
+    await expect(long.locator('#long-m5000')).toBeFocused();
+    await expect.poll(() => distanceToBottom(viewport)).toBeLessThanOrEqual(1);
+    await viewport.evaluate((node) => node.scrollTo({ top: node.scrollHeight / 2 }));
+    // The message drawn across the middle of the view is mounted.
+    await expect(async () => {
+      const id = await viewport.evaluate((node) => {
+        const box = node.getBoundingClientRect();
+        const middle = box.top + box.height / 2;
+        const hit = [...node.querySelectorAll('article')].find((article) => {
+          const rect = article.getBoundingClientRect();
+          return rect.top <= middle && rect.bottom >= middle;
+        });
+        return hit?.id ?? '';
+      });
+      expect(Number(id.replace('long-m', ''))).toBeGreaterThan(1500);
+    }).toPass();
+    expect(await long.getByRole('article').count()).toBeLessThan(80);
   });
 
   test('UIC-CHAT-TRANSCRIPT-1.1 shows an empty state until the first message', async ({
@@ -79,24 +239,31 @@ test.describe('Chat Transcript lab', () => {
     lab,
   }) => {
     await lab.open('chat-transcript');
-    const transcript = page.locator('[data-lab-transcript="empty"]');
-    await expect(transcript).toHaveAttribute('data-empty', 'true');
-    const log = transcript.getByRole('log', { name: 'New conversation' });
-    await expect(log).toContainText('Ask about the field notes.');
-    await log.getByRole('button', { name: 'List the open questions' }).click();
-    await expect(transcript).not.toHaveAttribute('data-empty');
-    await expect(log.locator('.ui-chat-message__content')).toHaveText('List the open questions');
+    const empty = transcript(page, 'empty');
+    await expect(empty).toHaveAttribute('data-empty', 'true');
+    await expect(empty.getByRole('feed')).toHaveCount(0);
+    await expect(empty.locator('.ui-chat-transcript__empty')).toContainText('Ask the planner');
+    await empty.getByRole('button', { name: 'Find a bakery near the harbour' }).click();
+    await expect(empty).not.toHaveAttribute('data-empty');
+    await expect(
+      empty.getByRole('feed', { name: 'New conversation' }).locator('.ui-chat-message__content'),
+    ).toHaveText('Find a bakery near the harbour');
   });
 
-  test('UIC-CHAT-TRANSCRIPT-1.1 passes axe in both themes', async ({ page, lab }) => {
-    await lab.open('chat-transcript');
-    await lab.expectAccessible();
-    await lab.open('chat-transcript', { theme: 'dark' });
-    await page
-      .getByRole('log', { name: 'Live conversation' })
-      .evaluate((node) => node.scrollTo({ top: 0 }));
-    await expect(page.getByRole('button', { name: 'Jump to latest' })).toBeVisible();
-    await lab.expectAccessible();
+  test('UIC-CHAT-TRANSCRIPT-1.1 passes axe on every behaviour case in both themes', async ({
+    page,
+    lab,
+  }) => {
+    for (const theme of ['light', 'dark']) {
+      await lab.open('chat-transcript', { theme });
+      await viewportOf(page, 'follow').evaluate((node) => node.scrollTo({ top: 0 }));
+      await expect(
+        transcript(page, 'follow').getByRole('button', { name: 'Jump to latest' }),
+      ).toBeVisible();
+      for (const title of behaviourSections) {
+        await lab.expectAccessible(`[data-lab-section="${title}"]`);
+      }
+    }
   });
 });
 
@@ -207,8 +374,8 @@ test.describe('Chat Transcript lab: messages and conversation parts', () => {
     await expect(deleted).toHaveAttribute('data-deleted', 'true');
     await expect(deleted.locator('.ui-chat-message__content')).toHaveText('Message deleted');
     await expect(deleted.locator('.ui-chat-message__actions')).toHaveCount(0);
-    const log = page.getByRole('log', { name: 'Team conversation' });
-    await log.evaluate((node) => node.scrollTo({ top: node.scrollHeight }));
+    const viewport = page.locator('[data-lab-transcript="team"] .ui-scroll-region__viewport');
+    await viewport.evaluate((node) => node.scrollTo({ top: node.scrollHeight }));
     await teamMessage(page, 'm8')
       .getByRole('button', { name: 'Quote from Maria Santos: So let us meet at eight.' })
       .click();
@@ -282,8 +449,8 @@ test.describe('Chat Transcript lab: messages and conversation parts', () => {
     lab,
   }) => {
     await lab.open('chat-transcript');
-    const log = page.getByRole('log', { name: 'Team conversation' });
-    const parts = await log
+    const feed = page.getByRole('feed', { name: 'Team conversation' });
+    const parts = await feed
       .locator('.ui-chat-date-separator, .ui-chat-unread-divider, .ui-chat-message')
       .evaluateAll((nodes) =>
         nodes.map((node) =>
