@@ -1,6 +1,7 @@
-import { useContext, type ReactNode } from 'react';
+import { useContext, useId, type ReactNode } from 'react';
 import {
   CalendarCell,
+  type CalendarDate,
   CalendarGrid,
   CalendarGridBody,
   CalendarGridHeader,
@@ -16,6 +17,7 @@ import { Button } from '../button/button.js';
 
 import { useLayerZIndex } from '../portal/portal.js';
 import { CalendarHeadingSelects } from './date-time-calendar-heading.js';
+import type { DateTimeFieldDateState } from './date-time-field.js';
 import type { DateControlSettings } from './date-time-pickers.js';
 import { currentDateValue, type DateFieldValue, type DateTimeFieldMode } from './date-values.js';
 
@@ -54,12 +56,51 @@ const hooks = createHooks('date-time-field', [
   'action',
 ]);
 
+function DateCell({
+  date,
+  state,
+}: {
+  date: CalendarDate;
+  state: DateTimeFieldDateState | undefined;
+}) {
+  const id = useId();
+  return (
+    <CalendarCell
+      date={date}
+      {...hooks.slot('calendar-cell', { tone: state?.tone, taken: state?.isTaken })}
+      render={(props) => (
+        <div
+          {...props}
+          aria-describedby={
+            [props['aria-describedby'], state?.description ? id : undefined]
+              .filter(Boolean)
+              .join(' ') || undefined
+          }
+        />
+      )}
+    >
+      {({ formattedDate }) => (
+        <>
+          {formattedDate}
+          {state?.description ? (
+            <span id={id} hidden>
+              {state.description}
+            </span>
+          ) : null}
+        </>
+      )}
+    </CalendarCell>
+  );
+}
+
 /** The heading (text or selects) with month navigation, and one grid per visible month. */
 export function CalendarBody({
   months,
   heading,
+  getDateState,
 }: {
   months: number;
+  getDateState?: ((date: string) => DateTimeFieldDateState | undefined) | undefined;
   heading: DateTimeFieldCalendarHeading;
 }) {
   const strings = useUiStrings();
@@ -102,7 +143,10 @@ export function CalendarBody({
               )}
             </CalendarGridHeader>
             <CalendarGridBody className={hooks.slotClass('calendar-body')}>
-              {(date) => <CalendarCell date={date} className={hooks.slotClass('calendar-cell')} />}
+              {(date) => {
+                const state = getDateState?.(date.toString());
+                return <DateCell date={date} state={state} />;
+              }}
             </CalendarGridBody>
           </CalendarGrid>
         ))}

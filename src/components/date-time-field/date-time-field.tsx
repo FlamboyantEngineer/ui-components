@@ -1,4 +1,5 @@
 import { useLocale } from '../../primitives/index.js';
+import type { Tone } from '../../core/props.js';
 import type { OpenStateProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -10,6 +11,7 @@ import {
   type FieldState,
 } from '../field/field.js';
 import type { DateTimeFieldCalendarHeading, DateTimeFieldPreset } from './date-time-calendar.js';
+import { createDateUnavailableCheck } from './date-states.js';
 import { DateFormInputs } from './date-time-form.js';
 import {
   DateControl,
@@ -37,6 +39,17 @@ export type DateTimeFieldValue<M extends DateTimeFieldMode = 'date'> = M extends
   ? DateRangeValue | null
   : string | null;
 
+export interface DateTimeFieldDateState {
+  /** Semantic highlight, styled by the host stylesheet. */
+  tone?: Tone | undefined;
+  /** Accessible explanation of the date's status. */
+  description?: string | undefined;
+  /** Unavailable date, shown faded. */
+  isDisabled?: boolean | undefined;
+  /** Unavailable appointment, shown struck through. */
+  isTaken?: boolean | undefined;
+}
+
 export interface DateTimeFieldProps<M extends DateTimeFieldMode = 'date'>
   extends FieldInputProps<DateTimeFieldValue<M>>, OpenStateProps {
   /** `date` (the default), `time`, `date-time`, `date-range` or `date-time-range`. */
@@ -55,6 +68,8 @@ export interface DateTimeFieldProps<M extends DateTimeFieldMode = 'date'>
   hideTimeZone?: boolean | undefined;
   /** Refuses a `YYYY-MM-DD` date, such as a weekend: the calendar skips it and a typed one is invalid. */
   isDateUnavailable?: ((date: string) => boolean) | undefined;
+  /** Highlights or restricts each ISO calendar date. Disabled and taken dates cannot be selected. */
+  getDateState?: ((date: string) => DateTimeFieldDateState | undefined) | undefined;
   /** Named values offered beside the calendar, such as `Last 7 days`. */
   presets?: readonly DateTimeFieldPreset<NonNullable<DateTimeFieldValue<M>>>[] | undefined;
   /** How the calendar heading shows its month. Defaults to `text`; `select` jumps by month and year. */
@@ -95,7 +110,7 @@ function useDateCheck(props: AnyDateTimeFieldProps, mode: DateTimeFieldMode) {
         issue.bound === 'min' ? strings.dateTooEarly(limit) : strings.dateTooLate(limit);
       return { severity: 'error', message };
     }
-    const isDateUnavailable = props.isDateUnavailable;
+    const isDateUnavailable = createDateUnavailableCheck(props);
     if (isUnavailableValue(value, mode, { ...options, isDateUnavailable })) {
       return { severity: 'error', message: strings.dateUnavailable };
     }
@@ -115,7 +130,8 @@ function toSettings(
     granularity: props.granularity,
     hourCycle: props.hourCycle,
     hideTimeZone: props.hideTimeZone,
-    isDateUnavailable: props.isDateUnavailable,
+    getDateState: props.getDateState,
+    isDateUnavailable: createDateUnavailableCheck(props),
     presets: props.presets ?? [],
     calendarHeading: props.calendarHeading ?? 'text',
     isPickable,

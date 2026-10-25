@@ -3,35 +3,42 @@ import { expect, test } from './fixtures.js';
 /**
  * Labs whose state matrices show one value through every state, so each cell of a row of states
  * must keep the size of the first. Each lab names the states whose cells show other content, and
- * the matrices whose axes vary the content.
+ * the matrices whose axes vary the content. The editor field matrix is scoped to its JSON family;
+ * its embedded surface examples vary diagnostic content and were not part of this field contract.
  */
-const labs: Record<string, { contentStates?: string[]; contentAxes?: string[] }> = {
+const labs: Record<
+  string,
+  { contentStates?: string[]; contentAxes?: string[]; matrixSelector?: string }
+> = {
   button: {},
   'boolean-field': {},
-  'checkbox-group': {},
   'color-field': {},
   'date-time-field': {},
   field: {},
-  'icon-select-field': {},
   'inline-edit': {},
-  'json-editor': { contentStates: ['read-only'] },
+  'code-editor': {
+    contentStates: ['read-only'],
+    matrixSelector: '[data-lab-family="json"] table[data-lab-matrix]',
+  },
   link: { contentStates: ['new tab'] },
   'load-more': {},
   'number-field': {},
   'pin-input': {},
-  'radio-group': {},
+  'choice-group': {},
   'relative-date-field': {},
   'select-field': { contentAxes: ['mode'] },
   slider: {},
   'text-field': {},
   tooltip: {},
-  'tree-select-field': {},
 };
 
-for (const [name, { contentStates = [], contentAxes = [] }] of Object.entries(labs)) {
+for (const [
+  name,
+  { contentStates = [], contentAxes = [], matrixSelector = 'table[data-lab-matrix]' },
+] of Object.entries(labs)) {
   test(`UIC-LABS-3.6 ${name} keeps its size through its states`, async ({ page, lab }) => {
     await lab.open(name);
-    const shifts = await page.locator('table[data-lab-matrix]').evaluateAll(
+    const shifts = await page.locator(matrixSelector).evaluateAll(
       (tables, skip) =>
         tables.flatMap((table) => {
           const axes = (table.getAttribute('data-lab-matrix') ?? '').split(' ');

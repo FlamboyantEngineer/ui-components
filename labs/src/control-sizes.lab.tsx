@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { BooleanField } from '../../src/components/boolean-field/boolean-field.js';
 import { Button } from '../../src/components/button/button.js';
-import { CheckboxGroup } from '../../src/components/checkbox-group/checkbox-group.js';
+
 import { Checkbox } from '../../src/components/checkbox/checkbox.js';
 import { ColorField } from '../../src/components/color-field/color-field.js';
 import { Combobox, type ComboboxItem } from '../../src/components/combobox/combobox.js';
@@ -11,7 +11,7 @@ import { DropdownMenu } from '../../src/components/dropdown-menu/dropdown-menu.j
 import { Menubar, MenubarMenu } from '../../src/components/menubar/menubar.js';
 import type { MenuEntry } from '../../src/components/menu/menu.js';
 import { NumberField } from '../../src/components/number-field/number-field.js';
-import { Radio, RadioGroup } from '../../src/components/radio-group/radio-group.js';
+import { Choice, ChoiceGroup } from '../../src/components/choice-group/choice-group.js';
 import { SearchField } from '../../src/components/search-field/search-field.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
 import {
@@ -42,9 +42,9 @@ const controls = [
   'tags-input',
   'boolean-field',
   'checkbox',
-  'checkbox-group',
+  'choice-group-multiple',
   'switch',
-  'radio-group',
+  'choice-group',
 ] as const;
 
 type Control = (typeof controls)[number];
@@ -180,30 +180,30 @@ const cells: Record<Control, (props: CellProps) => ReactNode> = {
       {isLong ? 'Remember this choice' : 'Ripe'}
     </Checkbox>
   ),
-  'checkbox-group': ({ size, isLong }) => (
-    <CheckboxGroup
+  'choice-group-multiple': ({ size, isLong }) => (
+    <ChoiceGroup
+      selectionMode="multiple"
       size={size}
       label="Fruit"
       labelLayout="control-only"
       defaultValue={['apple']}
-      options={[
-        { value: 'apple', label: isLong ? 'Apple, crisp and sweet' : 'Apple' },
-        { value: 'pear', label: isLong ? 'Pear, soft and juicy' : 'Pear' },
-        { value: 'fig', label: 'Fig' },
-      ]}
-    />
+    >
+      <Choice value="apple">{isLong ? 'Apple, crisp and sweet' : 'Apple'}</Choice>
+      <Choice value="pear">{isLong ? 'Pear, soft and juicy' : 'Pear'}</Choice>
+      <Choice value="fig">Fig</Choice>
+    </ChoiceGroup>
   ),
   switch: ({ size, isLong }) => (
     <Switch size={size} defaultSelected>
       {isLong ? 'Show every hidden column' : 'Wrap'}
     </Switch>
   ),
-  'radio-group': ({ size, isLong }) => (
-    <RadioGroup size={size} label="Fruit" labelLayout="control-only" defaultValue="apple">
-      <Radio value="apple">{isLong ? 'Apple, crisp and sweet' : 'Apple'}</Radio>
-      <Radio value="pear">{isLong ? 'Pear, soft and juicy' : 'Pear'}</Radio>
-      <Radio value="fig">Fig</Radio>
-    </RadioGroup>
+  'choice-group': ({ size, isLong }) => (
+    <ChoiceGroup size={size} label="Fruit" labelLayout="control-only" defaultValue="apple">
+      <Choice value="apple">{isLong ? 'Apple, crisp and sweet' : 'Apple'}</Choice>
+      <Choice value="pear">{isLong ? 'Pear, soft and juicy' : 'Pear'}</Choice>
+      <Choice value="fig">Fig</Choice>
+    </ChoiceGroup>
   ),
 };
 

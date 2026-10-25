@@ -320,3 +320,6 @@ export function ScrollRegion({
 }
 
 export { useScrollSpy } from './use-scroll-spy.js';
+
+export { OverlayScrollbars } from './overlay-scrollbars.js';
+export { useOverlayMetrics } from './use-overlay-metrics.js';

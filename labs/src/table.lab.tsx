@@ -325,12 +325,14 @@ mountLab(
     </LabSection>
     <LabSection
       title="Sticky header"
-      description="The header stays in view in a bounded scroll area."
+      description="Scroll inside this 240-pixel area: the column header stays fixed while the rows move."
     >
       <div data-lab="sticky" style={{ height: 240 }}>
         <Table
           aria-label="Fruit, sticky header"
-          rows={[...fruit, ...fruit.map((row) => ({ ...row, id: `${row.id}-2` }))]}
+          rows={Array.from({ length: 8 }, (_, index) =>
+            fruit.map((row) => ({ ...row, id: `${row.id}-${index}` })),
+          ).flat()}
           columns={columns}
           stickyHeader
           size="sm"

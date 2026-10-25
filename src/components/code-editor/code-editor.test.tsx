@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { matchCompletions, type Completion } from '../completion-list/completion-list.js';
 import { findCompletionQuery } from './completion-match.js';
-import { CodeEditor, type CodeEditorProps, type CodeToken } from './code-editor.js';
+import { CodeEditor, type CodeEditorSurfaceProps, type CodeToken } from './code-editor.js';
 
 const words = /(\s+|[a-z]+|\d+|.)/g;
 
@@ -27,10 +27,11 @@ const vocabulary: Completion[] = [
 function Editor({
   initialValue = '',
   ...props
-}: Omit<CodeEditorProps, 'value'> & { initialValue?: string }) {
+}: Omit<CodeEditorSurfaceProps, 'value' | 'variant'> & { initialValue?: string }) {
   const [value, setValue] = useState(initialValue);
   return (
     <CodeEditor
+      variant="surface"
       aria-label="Source"
       {...props}
       value={value}
@@ -71,7 +72,12 @@ describe('CodeEditor', () => {
 
   it('UIC-CODE-EDITOR-1.2 draws each typed token in a token slot and plain runs as text', () => {
     const { container, rerender } = render(
-      <CodeEditor aria-label="Source" value={'let a = 12\n'} tokenize={tokenize} />,
+      <CodeEditor
+        variant="surface"
+        aria-label="Source"
+        value={'let a = 12\n'}
+        tokenize={tokenize}
+      />,
     );
     const tokens = [...container.querySelectorAll('.ui-code-editor__token')];
     expect(tokens.map((token) => [token.textContent, token.getAttribute('data-token')])).toEqual([
@@ -81,13 +87,15 @@ describe('CodeEditor', () => {
     ]);
     expect(highlight(container)?.textContent).toBe('let a = 12\n\n');
     expectHooksMatchSpec(container, 'CODE-EDITOR', { slots: ['token'] });
-    rerender(<CodeEditor aria-label="Source" value="let a" />);
+    rerender(<CodeEditor variant="surface" aria-label="Source" value="let a" />);
     expect(container.querySelector('.ui-code-editor__token')).toBeNull();
     expect(highlight(container)?.textContent).toBe('let a\n');
   });
 
   it('UIC-CODE-EDITOR-1.3 keeps the highlighted copy and the gutter at the input scroll offset', () => {
-    const { container } = render(<CodeEditor aria-label="Source" value={'a\nb\nc'} lineNumbers />);
+    const { container } = render(
+      <CodeEditor variant="surface" aria-label="Source" value={'a\nb\nc'} lineNumbers />,
+    );
     const input = screen.getByRole('textbox');
     input.scrollTop = 40;
     input.scrollLeft = 12;
@@ -98,12 +106,16 @@ describe('CodeEditor', () => {
   });
 
   it('UIC-CODE-EDITOR-1.4 publishes the size and wraps long lines unless wrapping is off', () => {
-    const { container, rerender } = render(<CodeEditor aria-label="Source" value="" />);
+    const { container, rerender } = render(
+      <CodeEditor variant="surface" aria-label="Source" value="" />,
+    );
     expect(root(container)).toHaveAttribute('data-size', 'md');
     expect(root(container)).toHaveAttribute('data-wrap', 'soft');
     expect(screen.getByRole('textbox')).toHaveAttribute('wrap', 'soft');
     for (const size of ['sm', 'md', 'lg'] as const) {
-      rerender(<CodeEditor aria-label="Source" value="" size={size} wrap="off" />);
+      rerender(
+        <CodeEditor variant="surface" aria-label="Source" value="" size={size} wrap="off" />,
+      );
       expect(root(container)).toHaveAttribute('data-size', size);
       expect(root(container)).toHaveAttribute('data-wrap', 'off');
       expect(screen.getByRole('textbox')).toHaveAttribute('wrap', 'off');
@@ -113,7 +125,12 @@ describe('CodeEditor', () => {
 
   it('UIC-CODE-EDITOR-1.5 shows the toolbar row above the source', () => {
     const { container } = render(
-      <CodeEditor aria-label="Source" value="" toolbar={<button type="button">Run</button>} />,
+      <CodeEditor
+        variant="surface"
+        aria-label="Source"
+        value=""
+        toolbar={<button type="button">Run</button>}
+      />,
     );
     const toolbar = container.querySelector('.ui-code-editor__toolbar');
     expect(toolbar).toContainElement(screen.getByRole('button', { name: 'Run' }));
@@ -180,7 +197,7 @@ describe('CodeEditor', () => {
 
   it('UIC-CODE-EDITOR-2.1 numbers each source line in a hidden gutter', () => {
     const { container } = render(
-      <CodeEditor aria-label="Source" value={'one\n\nthree'} lineNumbers />,
+      <CodeEditor variant="surface" aria-label="Source" value={'one\n\nthree'} lineNumbers />,
     );
     expect(root(container)).toHaveAttribute('data-numbered', 'true');
     const gutter = container.querySelector('.ui-code-editor__gutter');
@@ -200,6 +217,7 @@ describe('CodeEditor', () => {
   it('UIC-CODE-EDITOR-2.3 numbers an excerpt from its first line, and diagnostics follow it', () => {
     const { container } = render(
       <CodeEditor
+        variant="surface"
         aria-label="Source"
         value={'one\ntwo\nthree'}
         lineNumbers
@@ -243,7 +261,9 @@ describe('CodeEditor', () => {
       disconnect() {}
     }
     vi.stubGlobal('ResizeObserver', ReportingObserver);
-    const { container } = render(<CodeEditor aria-label="Source" value="a" lineNumbers />);
+    const { container } = render(
+      <CodeEditor variant="surface" aria-label="Source" value="a" lineNumbers />,
+    );
     const gutter = container.querySelector<HTMLElement>('.ui-code-editor__gutter');
     expect(gutter?.style.getPropertyValue('--ui-code-editor-text-width')).toBe('320px');
     expectHooksMatchSpec(container, 'CODE-EDITOR');
@@ -253,6 +273,7 @@ describe('CodeEditor', () => {
   it('UIC-CODE-EDITOR-3.1 lists diagnostics with their place and describes the input with them', () => {
     const { container } = render(
       <CodeEditor
+        variant="surface"
         aria-label="Source"
         aria-describedby="hint"
         value="x"
@@ -281,7 +302,9 @@ describe('CodeEditor', () => {
   });
 
   it('UIC-CODE-EDITOR-3.1 keeps an empty diagnostics list out of the description', () => {
-    const { container } = render(<CodeEditor aria-label="Source" value="x" diagnostics={[]} />);
+    const { container } = render(
+      <CodeEditor variant="surface" aria-label="Source" value="x" diagnostics={[]} />,
+    );
     expect(container.querySelector('.ui-code-editor__diagnostics')).toBeEmptyDOMElement();
     expect(screen.getByRole('textbox')).not.toHaveAttribute('aria-describedby');
   });
@@ -289,6 +312,7 @@ describe('CodeEditor', () => {
   it('UIC-CODE-EDITOR-3.1 leaves the list out with listDiagnostics false and keeps the marks', () => {
     const { container } = render(
       <CodeEditor
+        variant="surface"
         aria-label="Source"
         value="x = y"
         lineNumbers
@@ -308,12 +332,18 @@ describe('CodeEditor', () => {
 
   it('UIC-CODE-EDITOR-3.2 is invalid while an error is reported, by a diagnostic or the caller', () => {
     const { container, rerender } = render(
-      <CodeEditor aria-label="Source" value="x" diagnostics={[{ message: 'Bad.' }]} />,
+      <CodeEditor
+        variant="surface"
+        aria-label="Source"
+        value="x"
+        diagnostics={[{ message: 'Bad.' }]}
+      />,
     );
     expect(root(container)).toHaveAttribute('data-invalid', 'true');
     expect(screen.getByRole('textbox')).toHaveAttribute('aria-invalid', 'true');
     rerender(
       <CodeEditor
+        variant="surface"
         aria-label="Source"
         value="x"
         diagnostics={[{ message: 'Odd.', severity: 'warning' }]}
@@ -321,7 +351,7 @@ describe('CodeEditor', () => {
     );
     expect(root(container)).not.toHaveAttribute('data-invalid');
     expect(screen.getByRole('textbox')).not.toHaveAttribute('aria-invalid');
-    rerender(<CodeEditor aria-label="Source" value="x" isInvalid />);
+    rerender(<CodeEditor variant="surface" aria-label="Source" value="x" isInvalid />);
     expect(root(container)).toHaveAttribute('data-invalid', 'true');
     expectHooksMatchSpec(container, 'CODE-EDITOR');
   });
@@ -329,6 +359,7 @@ describe('CodeEditor', () => {
   it('UIC-CODE-EDITOR-3.3 marks the worst severity of each line in the gutter', () => {
     const { container } = render(
       <CodeEditor
+        variant="surface"
         aria-label="Source"
         value={'a\nb\nc'}
         lineNumbers
@@ -472,6 +503,7 @@ describe('CodeEditor', () => {
     const ref = createRef<HTMLTextAreaElement>();
     const { container } = render(
       <CodeEditor
+        variant="surface"
         aria-label="Source"
         value=""
         id="source"

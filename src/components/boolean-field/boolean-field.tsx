@@ -17,7 +17,7 @@ export interface BooleanFieldProps extends FieldInputProps<boolean | null> {
   unsetLabel?: string | undefined;
   /**
    * Pressing can return the value to unset (`null`): the checkbox, switch and toggle button cycle
-   * unset, true and false, pressing the selected segment again clears it, and the dropdown lists
+   * unset, true and false, the segmented variant offers an explicit unset segment, and the dropdown lists
    * an unset option.
    */
   allowsUnset?: boolean | undefined;

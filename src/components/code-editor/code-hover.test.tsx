@@ -3,7 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import { CodeEditor, type CodeDiagnostic, type CodeEditorProps } from './code-editor.js';
+import { CodeEditor, type CodeDiagnostic, type CodeEditorSurfaceProps } from './code-editor.js';
 
 const CHARACTER = { width: 10, height: 20 };
 
@@ -34,9 +34,17 @@ function layOutCopy(this: Range): DOMRect {
 function Editor({
   initialValue = 'let total = basket\nreturn totl',
   ...props
-}: Omit<CodeEditorProps, 'value'> & { initialValue?: string }) {
+}: Omit<CodeEditorSurfaceProps, 'value' | 'variant'> & { initialValue?: string }) {
   const [value, setValue] = useState(initialValue);
-  return <CodeEditor aria-label="Source" {...props} value={value} onChange={setValue} />;
+  return (
+    <CodeEditor
+      variant="surface"
+      aria-label="Source"
+      {...props}
+      value={value}
+      onChange={setValue}
+    />
+  );
 }
 
 const problems: CodeDiagnostic[] = [

@@ -6,6 +6,7 @@ import {
   type KeyboardEvent,
   type PointerEvent,
   type RefObject,
+  type ReactNode,
 } from 'react';
 import type { Orientation } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -17,8 +18,12 @@ import type { OverlayMeasurement } from './use-overlay-metrics.js';
 import { useThumbWheel } from './use-thumb-wheel.js';
 
 export interface OverlayScrollbarsProps {
+  /** Tab order of the thumbs; native editable viewports already provide keyboard scrolling. */
+  tabIndex?: 0 | -1 | undefined;
+  /** Decorations inside the vertical track, behind the thumb. */
+  verticalMarks?: ReactNode;
   /** The natively scrolling viewport the thumbs scroll. */
-  viewport: RefObject<HTMLDivElement | null>;
+  viewport: RefObject<HTMLElement | null>;
   /** The viewport's id, which each thumb controls. */
   viewportId: string | undefined;
   /** The viewport's measured geometry and track refs. */
@@ -32,8 +37,9 @@ export interface OverlayScrollbarsProps {
 }
 
 interface ThumbProps {
+  tabIndex?: 0 | -1 | undefined;
   orientation: Orientation;
-  viewport: RefObject<HTMLDivElement | null>;
+  viewport: RefObject<HTMLElement | null>;
   viewportId: string | undefined;
   /** Measured length of the track the thumb travels in. */
   track: number;
@@ -55,6 +61,7 @@ interface FocusProps {
 }
 
 interface TrackProps extends ThumbProps, FocusProps {
+  marks?: ReactNode;
   trackRef: (element: HTMLElement | null) => void;
   /** Show the track; it stays mounted through its exit. */
   isVisible: boolean;
@@ -108,7 +115,7 @@ function scrollViewportTo(thumb: ThumbProps, value: number): void {
  * lost focus, since a removed element fires no blur.
  */
 function useFocusHandback(
-  viewport: RefObject<HTMLDivElement | null>,
+  viewport: RefObject<HTMLElement | null>,
   onFocusChange: FocusProps['onFocusChange'],
 ) {
   const thumb = useRef<HTMLDivElement | null>(null);
@@ -167,7 +174,7 @@ function OverlayThumb({ onFocusChange, ...props }: ThumbProps & FocusProps) {
       aria-valuemin={0}
       aria-valuemax={Math.round(max)}
       aria-valuenow={Math.round(position)}
-      tabIndex={max > 0 ? 0 : -1}
+      tabIndex={max > 0 ? (props.tabIndex ?? 0) : -1}
       hidden={track <= 0}
       style={{
         position: 'absolute',
@@ -199,7 +206,7 @@ function pageTowardPointer(event: PointerEvent<HTMLDivElement>, thumb: ThumbProp
   scrollViewportTo(thumb, clamp(current + (before ? -thumb.page : thumb.page), 0, thumb.max));
 }
 
-function OverlayTrack({ trackRef, isVisible, onFocusChange, ...thumb }: TrackProps) {
+function OverlayTrack({ trackRef, isVisible, onFocusChange, marks, ...thumb }: TrackProps) {
   const element = useRef<HTMLDivElement | null>(null);
   const { isMounted, isEntering, isExiting } = useEnterExit(element, isVisible);
   const setElement = useCallback(
@@ -223,6 +230,7 @@ function OverlayTrack({ trackRef, isVisible, onFocusChange, ...thumb }: TrackPro
       onBlur={() => onFocusChange(false)}
     >
       <OverlayThumb {...thumb} onFocusChange={onFocusChange} />
+      {marks}
     </div>
   );
 }
@@ -239,12 +247,15 @@ export function OverlayScrollbars({
   drawX,
   drawY,
   isVisible,
+  verticalMarks,
+  tabIndex,
 }: OverlayScrollbarsProps) {
   const { metrics, schedule, verticalTrackRef, horizontalTrackRef } = measurement;
   const [isFocused, setFocused] = useState(false);
   const shared = {
     viewport,
     viewportId,
+    tabIndex,
     rtl: metrics.rtl,
     onScrolled: schedule,
     isVisible: isVisible || isFocused,
@@ -255,6 +266,7 @@ export function OverlayScrollbars({
       {drawY ? (
         <OverlayTrack
           {...shared}
+          marks={verticalMarks}
           orientation="vertical"
           trackRef={verticalTrackRef}
           track={metrics.trackY}

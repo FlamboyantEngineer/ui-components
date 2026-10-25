@@ -46,6 +46,10 @@ export interface FieldStrings {
   fieldActions: (label: string) => string;
   /** The message of a number below its minimum, given the formatted minimum. */
   rangeUnderflow: (minimum: string) => string;
+  /** Names the numeric increment button. */
+  numberIncrease: string;
+  /** Names the numeric decrement button. */
+  numberDecrease: string;
   /** The message of a number above its maximum, given the formatted maximum. */
   rangeOverflow: (maximum: string) => string;
   /** The message of a number off its step, given the formatted step. */
@@ -164,6 +168,8 @@ export const fieldStrings: FieldStrings = {
   fieldHelp: (label) => `Help for ${label}`,
   fieldActions: (label) => `${label} actions`,
   rangeUnderflow: (minimum) => `Enter ${minimum} or more.`,
+  numberIncrease: 'Increase',
+  numberDecrease: 'Decrease',
   rangeOverflow: (maximum) => `Enter ${maximum} or less.`,
   stepMismatch: (step) => `Enter a value in steps of ${step}.`,
   clearSearch: 'Clear search',

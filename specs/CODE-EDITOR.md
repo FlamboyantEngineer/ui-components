@@ -1,8 +1,6 @@
 # Code Editor
 
-`CodeEditor` is a lightweight surface for editing source code: a native text area laid over a highlighted copy of the source, so the browser keeps the caret, selection, undo, input methods and screen-reader text while the colours come from the layer behind it. Everything about the language comes from the caller: `tokenize` splits the source into typed tokens, `diagnostics` reports problems (listed, underlined, marked in the gutter and shown in hover tips), `completions` is a vocabulary or a source of completions, and `renderHover` adds hover information. The editor keeps indentation on Enter, can indent with Tab, pair brackets and quotes, matches the bracket at the caret, and can find and replace in a [Find Bar](FIND-BAR.md). It can number lines, from 1 or from the first line of an excerpt, and show a toolbar row. The caller owns the text (`value`, `onChange`). [JSON Editor](JSON-EDITOR.md) builds on it.
-
-The editor stays a text area: it does not fold code and it re-tokenizes and redraws the whole source on each change, so it suits documents of a few thousand lines.
+`CodeEditor` edits source text as a field by default, with `variant="surface"` for embedding inside another field or widget. Basic language presets and custom syntax or tokenizers color a native textarea through an aligned highlight layer. JSON fields include parsing, optional schema validation, completion and formatting. Other languages accept caller diagnostics and completions. The editor provides indentation, paired brackets, bracket matching, find/replace, optional line numbers, custom scrollbars with diagnostic marks, hover information and F8 problem navigation.
 
 ## UIC-CODE-EDITOR-1 - Surface
 
@@ -15,7 +13,7 @@ Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/code-edito
 
 ### UIC-CODE-EDITOR-1.2 - Tokens
 
-`tokenize` shall split the source into tokens that cover it exactly, in order. Each token with a `type` renders in a `ui-code-editor__token` span carrying `data-token` with that type (`keyword`, `string`, …); tokens without one render as plain text. Without `tokenize` the source is one plain run. The copy ends with a line break, so its last line is as tall as the text area's.
+`tokenize` shall split the source into tokens that cover it exactly, in order. Each token with a `type` renders in a `ui-code-editor__token` span carrying `data-token` with that type (`keyword`, `string`, …); tokens without one render as plain text. Without a preset, custom syntax or tokenizer the source is one plain run. The copy ends with a line break, so its last line is as tall as the text area's.
 
 Implementation: `src/components/code-editor/code-layers.tsx`
 Verification: `src/components/code-editor/code-editor.test.tsx`, `e2e/code-editor.spec.ts`
@@ -256,46 +254,192 @@ Escape in the bar, or its Close button, shall close it and return focus to the t
 Implementation: `src/components/code-editor/use-code-search.ts`, `src/components/code-editor/code-search.tsx`
 Verification: `src/components/code-editor/code-search.test.tsx`, `e2e/code-editor.spec.ts`
 
+## UIC-CODE-EDITOR-8 - Field layout and JSON highlighting
+
+### UIC-CODE-EDITOR-8.1 - Field around a code editor
+
+`CodeEditor` shall render a `Field` (root `ui-field`, also `ui-code-editor`) whose control is a `CodeEditor` text area named by the field's label, with line numbers unless `lineNumbers` is `false`, long lines scrolling sideways (`wrap="off"`), the starting height of `size` (`sm`, `md` by default, `lg`, which is also the field's size) and the caller's `placeholder`. It takes the field props (`FieldInputProps<string>`), and the caller's `className`, `id` and `data-*` attributes go on the field's root.
+
+Implementation: `src/components/code-editor/code-field.tsx`
+Verification: `src/components/code-editor/code-json.test.tsx`, `e2e/code-json.spec.ts`
+
+### UIC-CODE-EDITOR-8.2 - Highlighting
+
+The editor shall highlight JSON with code editor tokens covering the text exactly: object keys (`key`), other strings (`string`), numbers (`number`), `true`, `false` and `null` (`literal`), braces, brackets, colons and commas (`punctuation`), and any other character outside whitespace (`invalid`).
+
+Implementation: `src/components/code-editor/json-text.ts`
+Verification: `src/components/code-editor/json-text.test.ts`, `e2e/code-json.spec.ts`
+
+## UIC-CODE-EDITOR-9 - JSON validation
+
+### UIC-CODE-EDITOR-9.1 - Parse errors
+
+Text that does not parse as JSON shall make the field invalid with the provider string `invalidJsonAt` naming the line and column where parsing stopped, or `invalidJson` when the parser does not say. This check runs before the caller's `validate`. Blank text parses as no value: it is valid unless the field is required.
+
+Implementation: `src/components/code-editor/code-field.tsx`, `src/components/code-editor/json-text.ts`, `src/core/strings.ts`
+Verification: `src/components/code-editor/code-json.test.tsx`, `src/components/code-editor/json-text.test.ts`, `e2e/code-json.spec.ts`
+
+### UIC-CODE-EDITOR-9.2 - Error location
+
+The line and column, counted from 1, shall be those of the first token that breaks JSON's grammar (a missing value, a trailing comma, an unclosed bracket at the end of the text). The grammar check also handles deeply nested unfinished containers without recursive calls. When the tokens follow the grammar but the parser still refuses the text (an invalid escape, for example), they are read from the parser's message, which gives either `line L column C` or a character `position`.
+
+Implementation: `src/components/code-editor/json-text.ts`
+Verification: `src/components/code-editor/json-text.test.ts`
+
+### UIC-CODE-EDITOR-9.3 - Error mark
+
+The place where the text stops parsing shall be a code editor diagnostic with the field's message: its token is underlined (UIC-CODE-EDITOR-3.4), its gutter row carries `data-severity="error"`, and the hover tip and F8 read the message. The code editor does not list it again below the source (`listDiagnostics` off), since the field shows it.
+
+Implementation: `src/components/code-editor/json-check.ts`, `src/components/code-editor/code-field.tsx`, `src/components/code-editor/code-editor.tsx`
+Verification: `src/components/code-editor/code-json.test.tsx`, `e2e/code-json.spec.ts`
+
+## UIC-CODE-EDITOR-10 - JSON formatting
+
+### UIC-CODE-EDITOR-10.1 - Format button
+
+An editor that is not read-only shall show a Format button (`ui-code-editor__format`, provider string `format`) in the code editor's toolbar. Pressing it rewrites the text as parsed JSON with `indent` spaces per level (2 by default) and commits it. The button is disabled while the editor is disabled, so disabling never changes its size, and while the text is blank, does not parse or is already formatted; a read-only editor shows none. Working out whether the text is already formatted never holds up typing: the button follows the text once rendering has time to spare, and a press formats the text as it is then.
+
+Implementation: `src/components/code-editor/code-field.tsx`, `src/components/code-editor/json-text.ts`, `src/core/strings.ts`
+Verification: `src/components/code-editor/code-json.test.tsx`, `src/components/code-editor/json-text.test.ts`, `e2e/code-json.spec.ts`
+
+## UIC-CODE-EDITOR-11 - Field behaviour
+
+### UIC-CODE-EDITOR-11.1 - Commit, dirty state and restore
+
+The editor shall commit its text when focus leaves the field (UIC-FIELD-1.11), so Tab from the edited text area reaches the restore button without committing. While the text differs from the committed text the field is dirty and offers its restore button, which puts the committed text back.
+
+Implementation: `src/components/code-editor/code-field.tsx`
+Verification: `src/components/code-editor/code-json.test.tsx`, `e2e/code-json.spec.ts`
+
+### UIC-CODE-EDITOR-11.2 - Undo, redo and menu
+
+Ctrl+Z or Cmd+Z in the editor shall undo the field and Ctrl+Shift+Z, Cmd+Shift+Z or Ctrl+Y redo it, and the field menu shall offer the caller's entries; Clear sets empty text and Set to default the default text.
+
+Implementation: `src/components/code-editor/code-field.tsx`
+Verification: `src/components/code-editor/code-json.test.tsx`
+
+### UIC-CODE-EDITOR-11.3 - Locked editor
+
+A read-only editor shall keep its text and line numbers visible and refuse edits; a disabled editor disables its text area. Neither is ever dirty.
+
+Implementation: `src/components/code-editor/code-field.tsx`
+Verification: `src/components/code-editor/code-json.test.tsx`
+
+## UIC-CODE-EDITOR-13 - JSON schema
+
+### UIC-CODE-EDITOR-13.1 - Schema subset
+
+With `schema`, text that parses shall be checked against this subset of JSON Schema, other keywords being ignored: `type` (one or a list of `object`, `array`, `string`, `number`, `integer`, `boolean`, `null`), `enum`, `const`, `properties`, `required`, `additionalProperties` (`false`, or a schema for the other properties), `items` (one schema for every item), `minimum`, `maximum`, `minLength`, `maxLength` (in characters), `pattern` (a pattern that is not a valid expression is ignored), `minItems` and `maxItems`. Both `enum` and `const` apply when both are given. Structured values compare recursively by value: array order matters, object key order does not, and a repeated object key takes its last value as `JSON.parse` does. Only own entries in `properties` describe keys; prototype names such as `constructor` are ordinary keys. A value of the wrong type or outside its `enum` or `const` is not checked further. Parsing, validation, equality and formatting use explicit container stacks, so valid deep nesting does not exhaust the JavaScript call stack, and a node without an enumeration or constant is not reserialized to validate it. Each problem is an error diagnostic marking the value (a missing property marks the object's `{`, a property `additionalProperties: false` refuses marks its key), with the provider strings `jsonTypeMismatch`, `jsonValueMismatch`, `jsonMissingProperty`, `jsonUnknownProperty`, `jsonTooFewItems`, `jsonTooManyItems`, `rangeUnderflow`, `rangeOverflow`, `tooShort`, `tooLong` and `patternMismatch`. The field reports the first problem in the text with `jsonProblemAt` and its line and column, before the caller's `validate` runs.
+
+Implementation: `src/components/code-editor/json-schema.ts`, `src/components/code-editor/json-tree.ts`, `src/components/code-editor/json-value.ts`, `src/components/code-editor/json-check.ts`, `src/components/code-editor/code-field.tsx`, `src/core/strings.ts`
+Verification: `src/components/code-editor/json-schema.test.ts`, `src/components/code-editor/json-tree.test.ts`, `src/components/code-editor/json-check.test.ts`, `src/components/code-editor/code-json.test.tsx`, `e2e/code-json.spec.ts`
+
+### UIC-CODE-EDITOR-13.2 - Key completion
+
+At a key of an object the schema describes (found through `properties`, `additionalProperties` and `items`, in text that may not parse yet), the editor shall complete with the properties the object does not have yet: the quoted name as label, kind `property`, the allowed types as description and the property's `description` as documentation. Inserting one replaces the key typed so far and adds `: ` and a starting value as a snippet field (UIC-CODE-EDITOR-4.8): the `const`, first `enum` value (including `null`) or the `default`, else `""`, `0`, `false`, `null`, `{}` or `[]` by type; a key already followed by a colon is replaced alone. Serialized keys and starting values preserve literal dollar signs, braces and backslashes instead of interpreting them as snippet fields.
+
+Implementation: `src/components/code-editor/json-complete.ts`, `src/components/code-editor/json-tree.ts`, `src/components/code-editor/json-schema.ts`
+Verification: `src/components/code-editor/json-complete.test.ts`, `src/components/code-editor/json-tree.test.ts`, `src/components/code-editor/code-json.test.tsx`, `e2e/code-json.spec.ts`
+
+### UIC-CODE-EDITOR-13.3 - Value completion
+
+At a value, the editor shall complete with the values its schema lists (`const`, or `enum`), or else `true` and `false` for a boolean, `null` for a null and the `default`, as JSON, with kind `value` and the schema's `description` as documentation. Inserting one replaces the value typed so far with literal JSON, preserving any snippet-like characters in its strings.
+
+Implementation: `src/components/code-editor/json-complete.ts`
+Verification: `src/components/code-editor/json-complete.test.ts`, `src/components/code-editor/code-json.test.tsx`
+
+### UIC-CODE-EDITOR-13.4 - When completions open
+
+Schema completions shall be offered while a key or value is being typed, after a colon and on Ctrl+Space, and never after a complete root value.
+
+Implementation: `src/components/code-editor/json-complete.ts`
+Verification: `src/components/code-editor/json-complete.test.ts`
+
+### UIC-CODE-EDITOR-13.5 - Hover documentation
+
+Resting the pointer on a key or a value shall show the `description` of its schema in the code editor's hover tip (UIC-CODE-EDITOR-3.6), after any problem marked there. JSON escapes in property names are decoded before looking up their schema.
+
+Implementation: `src/components/code-editor/json-complete.ts`, `src/components/code-editor/code-field.tsx`
+Verification: `src/components/code-editor/json-complete.test.ts`, `e2e/code-json.spec.ts`
+
+## UIC-CODE-EDITOR-14 - JSON editing
+
+### UIC-CODE-EDITOR-14.1 - Brackets and indentation
+
+The editor shall mark the bracket at the caret and its partner (UIC-CODE-EDITOR-6.5), pair brackets and quotes with `autoCloseBrackets` (UIC-CODE-EDITOR-6.4) and keep the indentation on Enter with `indent` spaces per level (UIC-CODE-EDITOR-6.2).
+
+Implementation: `src/components/code-editor/code-field.tsx`
+Verification: `src/components/code-editor/code-json.test.tsx`, `e2e/code-json.spec.ts`
+
+## UIC-CODE-EDITOR-12 - Languages and fields
+
+### UIC-CODE-EDITOR-12.1 - Built-in and custom syntax
+
+`language` selects basic highlighting for text (default), JSON, JavaScript, TypeScript, HTML, CSS, SQL, Python or Markdown. These presets highlight syntax without providing a language server. `syntax` accepts ordered `{ type, pattern: RegExp }` rules for another language, preserving regex flags and ignoring empty matches. `tokenize` overrides syntax and language. Every tokenizer preserves source text exactly; token kinds publish `data-token` for the stylesheet.
+
+Implementation: `src/components/code-editor/code-languages.ts`, `src/components/code-editor/code-editor.tsx`
+Verification: `src/components/code-editor/code-languages.test.tsx`
+
+### UIC-CODE-EDITOR-12.2 - Field and surface variants
+
+`variant="field"` is the default: a string field with label, descriptions, validation, dirty state, restore, undo, menu, native form name and commit on blur. `variant="surface"` is a controlled editing surface for composition in another field or widget. JSON field mode provides parsing, optional JSON Schema checks, completions, hover documentation and formatting; other languages accept caller diagnostics and completion sources. Caller errors also make a field invalid.
+
+Implementation: `src/components/code-editor/code-editor.tsx`, `src/components/code-editor/code-field.tsx`, `src/components/code-editor/code-surface.tsx`
+Verification: `src/components/code-editor/code-languages.test.tsx`, `src/components/code-editor/code-json.test.tsx`, `src/components/code-editor/code-editor.test.tsx`
+
+### UIC-CODE-EDITOR-12.3 - Diagnostic scrollbar marks
+
+Multiline surfaces hide native scrollbars and draw the shared custom scrollbars around the native textarea viewport. Colored marks inside the vertical track map each diagnostic line or multiline range to its position in the whole document, including wrapped text and non-default first line numbers. Error marks are red and warning marks amber in the reference stylesheet. The track and thumb preserve pointer drag, paging, wheel and keyboard scrolling, while existing F8 diagnostic navigation remains available. Editor thumbs stay out of the Tab sequence so Tab can reach the field restore controls; focusing a thumb by pointer still enables its scrolling keys. Measurements refresh when text or layout changes; obsolete marks disappear with diagnostics.
+
+Implementation: `src/components/code-editor/code-scrollbars.tsx`, `src/components/scroll-region/overlay-scrollbars.tsx`
+Verification: `e2e/code-overview.spec.ts`
+
 ## Hooks
 
-| Hook                           | Kind      | Values             | Description                                                              |
-| ------------------------------ | --------- | ------------------ | ------------------------------------------------------------------------ |
-| `ui-code-editor`               | root      |                    | The editor's frame.                                                      |
-| `ui-code-editor__toolbar`      | slot      |                    | The toolbar row above the source.                                        |
-| `ui-code-editor__surface`      | slot      |                    | Holds the gutter and the code area.                                      |
-| `ui-code-editor__gutter`       | slot      |                    | The line numbers.                                                        |
-| `ui-code-editor__line`         | slot      |                    | A gutter row.                                                            |
-| `ui-code-editor__line-number`  | slot      |                    | A line's number.                                                         |
-| `ui-code-editor__line-text`    | slot      |                    | A hidden copy of the line that gives the row its wrapped height.         |
-| `ui-code-editor__code`         | slot      |                    | Stacks the highlighted copy and the text area.                           |
-| `ui-code-editor__highlight`    | slot      |                    | The highlighted copy of the source.                                      |
-| `ui-code-editor__token`        | slot      |                    | A typed token in the copy.                                               |
-| `ui-code-editor__mark`         | slot      |                    | Source a diagnostic points at, in the copy.                              |
-| `ui-code-editor__match`        | slot      |                    | A search match, in the copy.                                             |
-| `ui-code-editor__bracket`      | slot      |                    | The bracket at the caret or its partner, in the copy.                    |
-| `ui-code-editor__caret`        | slot      |                    | The empty marker at the caret while the completion list is open.         |
-| `ui-code-editor__input`        | slot      |                    | The text area.                                                           |
-| `ui-code-editor__diagnostics`  | slot      |                    | The diagnostics list.                                                    |
-| `ui-code-editor__diagnostic`   | slot      |                    | One diagnostic, in the list or the hover tip.                            |
-| `ui-code-editor__announcement` | slot      |                    | The visually hidden status that reads a problem out.                     |
-| `ui-code-editor__tooltip`      | slot      |                    | The hover tip popover.                                                   |
-| `ui-code-editor__popover`      | slot      |                    | The completion list (also `ui-completion-list`).                         |
-| `ui-code-editor__search`       | slot      |                    | The find and replace row, a Find Bar beside its own `ui-find-bar` hooks. |
-| `data-size`                    | attribute | `sm`, `md`, `lg`   | Starting height.                                                         |
-| `data-wrap`                    | attribute | `soft`, `off`      | Whether long lines wrap.                                                 |
-| `data-token`                   | attribute |                    | On a token: its type, from the caller's tokenizer.                       |
-| `data-numbered`                | state     | `true`             | The gutter shows.                                                        |
-| `data-single-line`             | state     | `true`             | The source stays on one line (`multiline={false}`).                      |
-| `data-invalid`                 | state     | `true`             | An error is reported (root), or the text area is invalid (React Aria).   |
-| `data-readonly`                | state     | `true`             | Read-only.                                                               |
-| `data-disabled`                | state     | `true`             | Disabled (root, and the text area through React Aria).                   |
-| `data-severity`                | state     | `error`, `warning` | On a diagnostic, a mark or a gutter row: the severity.                   |
-| `data-current`                 | state     | `true`             | On a search match: the current one.                                      |
-| `data-unmatched`               | state     | `true`             | On a bracket: it has no partner.                                         |
-| `data-focused`                 | state     | `true`             | The text area has focus (React Aria).                                    |
-| `data-focus-visible`           | state     | `true`             | Keyboard focus on the text area (React Aria).                            |
-| `data-hovered`                 | state     | `true`             | Pointer over the text area (React Aria).                                 |
-| `data-placement`               | state     |                    | Where the popover sits against the caret (React Aria).                   |
-| `data-entering`                | state     | `true`             | The popover is opening (React Aria).                                     |
-| `data-exiting`                 | state     | `true`             | The popover is closing (React Aria).                                     |
-| `--ui-code-editor-text-width`  | property  |                    | On the gutter: the text area's client width, in pixels.                  |
+| Hook                            | Kind      | Values                                                                                 | Description                                                              |
+| ------------------------------- | --------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `ui-code-editor`                | root      |                                                                                        | The editor's frame.                                                      |
+| `ui-code-editor__toolbar`       | slot      |                                                                                        | The toolbar row above the source.                                        |
+| `ui-code-editor__surface`       | slot      |                                                                                        | Holds the gutter and the code area.                                      |
+| `ui-code-editor__gutter`        | slot      |                                                                                        | The line numbers.                                                        |
+| `ui-code-editor__line`          | slot      |                                                                                        | A gutter row.                                                            |
+| `ui-code-editor__line-number`   | slot      |                                                                                        | A line's number.                                                         |
+| `ui-code-editor__line-text`     | slot      |                                                                                        | A hidden copy of the line that gives the row its wrapped height.         |
+| `ui-code-editor__code`          | slot      |                                                                                        | Stacks the highlighted copy and the text area.                           |
+| `ui-code-editor__highlight`     | slot      |                                                                                        | The highlighted copy of the source.                                      |
+| `ui-code-editor__token`         | slot      |                                                                                        | A typed token in the copy.                                               |
+| `ui-code-editor__mark`          | slot      |                                                                                        | Source a diagnostic points at, in the copy.                              |
+| `ui-code-editor__match`         | slot      |                                                                                        | A search match, in the copy.                                             |
+| `ui-code-editor__bracket`       | slot      |                                                                                        | The bracket at the caret or its partner, in the copy.                    |
+| `ui-code-editor__caret`         | slot      |                                                                                        | The empty marker at the caret while the completion list is open.         |
+| `ui-code-editor__input`         | slot      |                                                                                        | The text area.                                                           |
+| `ui-code-editor__diagnostics`   | slot      |                                                                                        | The diagnostics list.                                                    |
+| `ui-code-editor__diagnostic`    | slot      |                                                                                        | One diagnostic, in the list or the hover tip.                            |
+| `ui-code-editor__announcement`  | slot      |                                                                                        | The visually hidden status that reads a problem out.                     |
+| `ui-code-editor__tooltip`       | slot      |                                                                                        | The hover tip popover.                                                   |
+| `ui-code-editor__popover`       | slot      |                                                                                        | The completion list (also `ui-completion-list`).                         |
+| `ui-code-editor__search`        | slot      |                                                                                        | The find and replace row, a Find Bar beside its own `ui-find-bar` hooks. |
+| `data-size`                     | attribute | `sm`, `md`, `lg`                                                                       | Starting height.                                                         |
+| `data-wrap`                     | attribute | `soft`, `off`                                                                          | Whether long lines wrap.                                                 |
+| `data-token`                    | attribute |                                                                                        | On a token: its type, from the caller's tokenizer.                       |
+| `data-numbered`                 | state     | `true`                                                                                 | The gutter shows.                                                        |
+| `data-single-line`              | state     | `true`                                                                                 | The source stays on one line (`multiline={false}`).                      |
+| `data-invalid`                  | state     | `true`                                                                                 | An error is reported (root), or the text area is invalid (React Aria).   |
+| `data-readonly`                 | state     | `true`                                                                                 | Read-only.                                                               |
+| `data-disabled`                 | state     | `true`                                                                                 | Disabled (root, and the text area through React Aria).                   |
+| `data-severity`                 | state     | `error`, `warning`                                                                     | On a diagnostic, a mark or a gutter row: the severity.                   |
+| `data-current`                  | state     | `true`                                                                                 | On a search match: the current one.                                      |
+| `data-unmatched`                | state     | `true`                                                                                 | On a bracket: it has no partner.                                         |
+| `data-focused`                  | state     | `true`                                                                                 | The text area has focus (React Aria).                                    |
+| `data-focus-visible`            | state     | `true`                                                                                 | Keyboard focus on the text area (React Aria).                            |
+| `data-hovered`                  | state     | `true`                                                                                 | Pointer over the text area (React Aria).                                 |
+| `data-placement`                | state     |                                                                                        | Where the popover sits against the caret (React Aria).                   |
+| `data-entering`                 | state     | `true`                                                                                 | The popover is opening (React Aria).                                     |
+| `data-exiting`                  | state     | `true`                                                                                 | The popover is closing (React Aria).                                     |
+| `--ui-code-editor-text-width`   | property  |                                                                                        | On the gutter: the text area's client width, in pixels.                  |
+| `ui-code-editor__format`        | slot      |                                                                                        | JSON Format button.                                                      |
+| `ui-code-editor__scrollbars`    | slot      |                                                                                        | Custom scrollbars around the native textarea.                            |
+| `ui-code-editor__scroll-marker` | slot      |                                                                                        | Diagnostic range inside the vertical track.                              |
+| `data-variant`                  | attribute | `field`, `surface`                                                                     | Field wrapper or editing surface.                                        |
+| `data-language`                 | attribute | `text`, `json`, `javascript`, `typescript`, `html`, `css`, `sql`, `python`, `markdown` | Basic syntax preset.                                                     |
+| `data-measurement`              | state     | `true`                                                                                 | Gutter used only to measure diagnostic lines.                            |

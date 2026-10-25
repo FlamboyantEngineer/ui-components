@@ -9,7 +9,7 @@
 `SegmentedChoice` shall render one segment per entry of `options`, each a `ui-segmented-choice__segment` button named by its `label` (in the `ui-segmented-choice__label` slot) and publishing its value in `data-value`. The segment whose value equals `value` (or `defaultValue` when uncontrolled) is selected; `null` selects none. Picking another segment shall report its value through `onChange` and, when uncontrolled, select it.
 
 Implementation: `src/components/segmented-choice/segmented-choice.tsx`
-Verification: `src/components/segmented-choice/segmented-choice.test.tsx`, `e2e/segmented-choice.spec.ts`
+Verification: `src/components/segmented-choice/segmented-choice.test.tsx`, `e2e/segmented-choice.spec.ts`, `e2e/boolean-field.spec.ts`
 
 ### UIC-SEGMENTED-CHOICE-1.2 - Icons
 
@@ -20,7 +20,7 @@ Verification: `src/components/segmented-choice/segmented-choice.test.tsx`
 
 ### UIC-SEGMENTED-CHOICE-1.3 - Sizes and sizing
 
-`size` (`xs`, `sm`, `md` by default, `lg`) shall publish `data-size`; the reference sheet draws the whole frame at the control height of that size (UIC-LABS-3.7). `sizing` shall publish `data-sizing`: `equal` (the default) divides the available width evenly between segments, `content` sizes each segment to its label. The label slot publishes its text in `data-label`, so a stylesheet can reserve the width of a heavier selected weight and selecting a segment never resizes it.
+`size` (`xs`, `sm`, `md` by default, `lg`) shall publish `data-size`; the reference sheet draws the whole frame at the control height of that size (UIC-LABS-3.7). `sizing` shall publish `data-sizing`: `equal` (the default) divides the available width evenly between segments, `content` sizes each segment to its label. The label slot publishes its text in `data-label`, so a stylesheet can reserve the width of a heavier selected weight and selecting a segment never resizes it. The reference label reserves room for glyph overhang, so the final glyph remains visible at fractional text widths.
 
 Implementation: `src/components/segmented-choice/segmented-choice.tsx`, `labs/reference/segmented-choice.css`
 Verification: `src/components/segmented-choice/segmented-choice.test.tsx`, `e2e/segmented-choice.spec.ts`

@@ -1,6 +1,6 @@
 /* Code Editor: a transparent text area over the highlighted copy, both with the same metrics. */
 
-.ui-code-editor {
+.ui-code-editor[data-variant='surface'] {
   --ref-code-editor-pad: 8px;
   --ref-code-editor-line: 18px;
 
@@ -15,16 +15,16 @@
   font-size: var(--ref-font-size-md);
 }
 
-.ui-code-editor:focus-within {
+.ui-code-editor[data-variant='surface']:focus-within {
   border-color: var(--ref-focus);
   box-shadow: 0 0 0 1px var(--ref-focus);
 }
 
-.ui-code-editor[data-invalid] {
+.ui-code-editor[data-variant='surface'][data-invalid] {
   border-color: var(--ref-danger);
 }
 
-.ui-code-editor[data-disabled] {
+.ui-code-editor[data-variant='surface'][data-disabled] {
   opacity: var(--ref-disabled-opacity);
 }
 
@@ -297,4 +297,82 @@
   border-bottom: 1px solid var(--ref-border);
   background: var(--ref-surface);
   font-size: var(--ref-font-size-sm);
+}
+
+/* Code fields retain the field layout around their editing surface. */
+
+.ui-code-editor[data-variant='field'] {
+  width: 440px;
+}
+
+.ui-code-editor .ui-field__control > .ui-code-editor {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+}
+
+.ui-code-editor[data-dirty] .ui-code-editor {
+  border-color: var(--ref-dirty);
+}
+
+.ui-code-editor[data-validation='warning'] .ui-code-editor {
+  border-color: var(--ref-warning);
+}
+
+.ui-code-editor[data-readonly] .ui-code-editor {
+  border-style: dashed;
+}
+
+.ui-code-editor__format {
+  margin-inline-start: auto;
+}
+
+.ui-code-editor[data-variant='field'] {
+  border: 0;
+  background: transparent;
+}
+.ui-code-editor__surface {
+  position: relative;
+}
+.ui-code-editor__input {
+  scrollbar-width: none;
+  scrollbar-gutter: auto;
+}
+.ui-code-editor__input::-webkit-scrollbar {
+  display: none;
+}
+.ui-code-editor__highlight {
+  scrollbar-gutter: auto;
+}
+.ui-code-editor__gutter[data-measurement] {
+  width: 0;
+  border: 0;
+  visibility: hidden;
+}
+.ui-code-editor__gutter[data-measurement] .ui-code-editor__line {
+  grid-template-columns: 0 max-content;
+}
+.ui-code-editor__scrollbars {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.ui-code-editor__scrollbars .ui-scroll-region__track {
+  pointer-events: auto;
+}
+.ui-code-editor__scrollbars .ui-scroll-region__thumb {
+  z-index: 1;
+}
+.ui-code-editor__scroll-marker {
+  position: absolute;
+  inset-inline: 0;
+  min-height: 2px;
+  background: var(--ref-danger);
+  pointer-events: none;
+}
+.ui-code-editor__scroll-marker[data-severity='warning'] {
+  background: var(--ref-warning);
+}
+.ui-code-editor__token[data-token='link'] {
+  color: var(--ref-accent-ink);
 }

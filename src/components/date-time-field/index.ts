@@ -6,5 +6,6 @@ export type {
   DateTimeFieldMode,
   DateTimeFieldPreset,
   DateTimeFieldProps,
+  DateTimeFieldDateState,
   DateTimeFieldValue,
 } from './date-time-field.js';

@@ -2,11 +2,13 @@ import type { Locator, Page } from '@playwright/test';
 import { expect, test } from './fixtures.js';
 
 function cell(page: Page, wrap: string, state: string, size: string): Locator {
-  return page.locator(`[data-lab-cell="wrap=${wrap} state=${state} size=${size}"]`);
+  return page.locator(
+    `[data-lab-family="surface"] [data-lab-cell="wrap=${wrap} state=${state} size=${size}"]`,
+  );
 }
 
 function editor(page: Page, name: string): Locator {
-  return page.locator(`[data-lab-editor="${name}"]`);
+  return page.locator(`[data-lab-family="surface"] [data-lab-editor="${name}"]`);
 }
 
 async function box(locator: Locator) {
@@ -212,9 +214,9 @@ test.describe('Code Editor lab', () => {
     await page.keyboard.press('Enter');
     await expect(list).toBeHidden();
     await expect(input).toBeFocused();
-    await expect(page.locator('[data-lab-output="completions"]')).toHaveText(
-      'let total = fruit.ripe',
-    );
+    await expect(
+      page.locator('[data-lab-family="surface"] [data-lab-output="completions"]'),
+    ).toHaveText('let total = fruit.ripe');
     await page.keyboard.type(' and b');
     await expect(list.getByRole('option')).toHaveText([
       'basket The chosen basket',
@@ -256,7 +258,9 @@ test.describe('Code Editor lab', () => {
     await expect(input).toBeFocused();
     await page.keyboard.press('Escape');
     await page.keyboard.press('Tab');
-    await expect(page.locator('[data-lab-after="editing"]')).toBeFocused();
+    await expect(
+      page.locator('[data-lab-family="surface"] [data-lab-after="editing"]'),
+    ).toBeFocused();
   });
 
   test('UIC-CODE-EDITOR-4.6 UIC-CODE-EDITOR-4.7 UIC-CODE-EDITOR-4.8 completes from a source with kinds, documentation and snippets', async ({
@@ -376,7 +380,7 @@ test.describe('Code Editor lab', () => {
     lab,
   }) => {
     await lab.open('code-editor');
-    const form = page.locator('[data-lab-demo="form"]');
+    const form = page.locator('[data-lab-family="surface"] [data-lab-demo="form"]');
     const source = form.getByRole('textbox', { name: 'Query source' });
     await source.focus();
     await page.keyboard.press('End');

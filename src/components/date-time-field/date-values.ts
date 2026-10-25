@@ -108,7 +108,7 @@ function toCalendarDay(
   return value ? toCalendarDate(value).toString() : null;
 }
 
-/** Whether a value, or either end of a range, falls on a date `isDateUnavailable` refuses. */
+/** Whether a value, or any calendar day in its inclusive range, falls on a date `isDateUnavailable` refuses. */
 export function isUnavailableValue(
   value: DateFieldValue,
   mode: DateTimeFieldMode,
@@ -118,10 +118,15 @@ export function isUnavailableValue(
   const single = toSingleMode(mode);
   if (!value || !isDateUnavailable || single === 'time') return false;
   const ends = typeof value === 'string' ? [value] : [value.start, value.end];
-  return ends.some((end) => {
-    const day = toCalendarDay(end, single, options);
-    return day !== null && isDateUnavailable(day);
-  });
+  const days = ends.map((end) => toCalendarDay(end, single, options));
+  if (days.some((day) => day !== null && isDateUnavailable(day))) return true;
+  const start = parseIsoDate(days[0]);
+  const end = parseIsoDate(days[1]);
+  if (!start || !end) return false;
+  for (let day = start.add({ days: 1 }); day.compare(end) < 0; day = day.add({ days: 1 })) {
+    if (isDateUnavailable(day.toString())) return true;
+  }
+  return false;
 }
 
 function toDate(text: string, mode: SingleDateMode, options: DateValueOptions): Date | null {

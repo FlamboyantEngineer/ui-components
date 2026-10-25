@@ -205,3 +205,25 @@ describe('date values', () => {
     );
   });
 });
+
+it('UIC-DATE-TIME-FIELD-3.1 checks interior days through leap dates and zoned date-time ranges', () => {
+  expect(
+    isUnavailableValue({ start: '2028-02-28', end: '2028-03-01' }, 'date-range', {
+      isDateUnavailable: (date) => date === '2028-02-29',
+    }),
+  ).toBe(true);
+  expect(
+    isUnavailableValue(
+      { start: '2026-04-15T15:30:00Z', end: '2026-04-17T02:00:00Z' },
+      'date-time-range',
+      { timeZone: 'Asia/Tokyo', isDateUnavailable: (date) => date === '2026-04-16' },
+    ),
+  ).toBe(true);
+  expect(
+    isUnavailableValue(
+      { start: '2026-04-15T00:30:00Z', end: '2026-04-17T02:00:00Z' },
+      'date-time-range',
+      { timeZone: 'America/New_York', isDateUnavailable: (date) => date === '2026-04-15' },
+    ),
+  ).toBe(true);
+});

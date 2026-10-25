@@ -13,7 +13,7 @@ Verification: `src/components/boolean-field/boolean-field.test.tsx`
 
 ### UIC-BOOLEAN-FIELD-1.2 - Variants
 
-`variant` shall choose the control and publish `data-variant`: `checkbox` (the default) draws a `Checkbox` with no text of its own, mixed while unset; `switch` draws a React Aria switch (`ui-boolean-field__switch`, a `<label>` around a native input with role `switch`) with a track (`ui-boolean-field__track`) and a thumb (`ui-boolean-field__thumb`), on while true; `segmented` draws a `SegmentedChoice` with a false and a true segment, the selected one matching the value and none while unset; `dropdown` draws a select of the named values (UIC-BOOLEAN-FIELD-3.1); `toggle-button` draws a toggle button pressed while true (UIC-BOOLEAN-FIELD-3.2). The checkbox and the segments take the field's `size`.
+`variant` shall choose the control and publish `data-variant`: `checkbox` (the default) draws a `Checkbox` with no text of its own, mixed while unset; `switch` draws a React Aria switch (`ui-boolean-field__switch`, a `<label>` around a native input with role `switch`) with a track (`ui-boolean-field__track`) and a thumb (`ui-boolean-field__thumb`), on while true; `segmented` draws a `SegmentedChoice` with a false and a true segment, the selected one matching the value, with an explicit unset segment when allowsUnset is enabled; `dropdown` draws a select of the named values (UIC-BOOLEAN-FIELD-3.1); `toggle-button` draws a toggle button pressed while true (UIC-BOOLEAN-FIELD-3.2). The checkbox and the segments take the field's `size`.
 
 Implementation: `src/components/boolean-field/boolean-field.tsx`, `src/components/boolean-field/boolean-controls.tsx`, `labs/reference/boolean-field.css`
 Verification: `src/components/boolean-field/boolean-field.test.tsx`, `e2e/boolean-field.spec.ts`
@@ -57,7 +57,7 @@ Verification: `src/components/boolean-field/boolean-field.test.tsx`, `e2e/boolea
 
 ### UIC-BOOLEAN-FIELD-2.2 - Returning to unset
 
-With `allowsUnset`, the checkbox, the switch and the toggle button shall cycle unset, true, false and unset again (`cycleCheckState`), pressing the selected segment again clears the segmented choice, the dropdown lists an unset option (UIC-BOOLEAN-FIELD-3.1), and the field menu's Clear unsets the value. Without it, a press or pick never unsets the value and Clear is unavailable.
+With `allowsUnset`, the checkbox, the switch and the toggle button shall cycle unset, true, false and unset again (`cycleCheckState`), the segmented choice offers an explicit unset segment, the dropdown lists an unset option (UIC-BOOLEAN-FIELD-3.1), and the field menu's Clear unsets the value. Without it, a press or pick never unsets the value and Clear is unavailable.
 
 Implementation: `src/components/boolean-field/boolean-field.tsx`, `src/components/boolean-field/boolean-controls.tsx`, `src/components/checkbox/checkbox.tsx`
 Verification: `src/components/boolean-field/boolean-field.test.tsx`, `e2e/boolean-field.spec.ts`
@@ -99,27 +99,35 @@ While the field is dirty, the dropdown shall show the committed value's option b
 Implementation: `src/components/boolean-field/boolean-controls.tsx`, `src/components/select-field/select-trigger.tsx`
 Verification: `src/components/boolean-field/boolean-field.test.tsx`, `e2e/boolean-field.spec.ts`
 
+### UIC-BOOLEAN-FIELD-3.5 - Explicit tri-state displays
+
+`allowsUnset` offers all three states in every variant. Checkbox, switch and toggle-button cycle unset → true → false → unset. Segmented mode offers an explicit unset segment and dropdown mode an unset option, named by `unsetLabel`. The checkbox is mixed, the switch thumb has a middle position with a caption, and the toggle button shows the unset caption and an indeterminate hook. The reference segmented labels reserve enough width to keep False and other labels fully visible.
+
+Implementation: `src/components/boolean-field/boolean-controls.tsx`, `labs/reference/boolean-field.css`, `labs/reference/segmented-choice.css`
+Verification: `src/components/boolean-field/boolean-tristate.test.tsx`, `e2e/boolean-field.spec.ts`
+
 ## Hooks
 
-| Hook                               | Kind      | Values                                                         | Description                                                                               |
-| ---------------------------------- | --------- | -------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| `ui-boolean-field`                 | root      |                                                                | The field's root (also `ui-field`).                                                       |
-| `ui-boolean-field__switch`         | slot      |                                                                | The switch's `<label>`, around its input.                                                 |
-| `ui-boolean-field__track`          | slot      |                                                                | The switch track.                                                                         |
-| `ui-boolean-field__thumb`          | slot      |                                                                | The switch thumb, inside the track.                                                       |
-| `ui-boolean-field__caption`        | slot      |                                                                | The switch caption, or the toggle button's name of the value.                             |
-| `ui-boolean-field__toggle-button`  | slot      |                                                                | The toggle button (`aria-pressed`).                                                       |
-| `ui-boolean-field__previous`       | slot      |                                                                | The committed value's name before a dirty toggle button (also `ui-field-previous-value`). |
-| `ui-boolean-field__form-value`     | slot      |                                                                | The hidden input of a named segmented choice, dropdown or toggle button.                  |
-| `data-variant`                     | attribute | `checkbox`, `switch`, `segmented`, `dropdown`, `toggle-button` | On the root: how the value is drawn.                                                      |
-| `data-value`                       | state     | `true`, `false`, `unset`                                       | On the root: the value.                                                                   |
-| `data-selected`                    | state     | `true`                                                         | On the switch or toggle button: on (React Aria).                                          |
-| `data-pressed`                     | state     | `true`                                                         | On the switch or toggle button: being pressed (React Aria).                               |
-| `data-hovered`                     | state     | `true`                                                         | On the switch or toggle button: under the pointer (React Aria).                           |
-| `data-focused`                     | state     | `true`                                                         | On the switch or toggle button: focused (React Aria).                                     |
-| `data-focus-visible`               | state     | `true`                                                         | On the switch or toggle button: focused from the keyboard (React Aria).                   |
-| `data-disabled`                    | state     | `true`                                                         | On the switch or toggle button: disabled (React Aria).                                    |
-| `data-readonly`                    | state     | `true`                                                         | On the switch: read-only (React Aria).                                                    |
-| `data-invalid`                     | state     | `true`                                                         | On the switch: invalid (React Aria).                                                      |
-| `data-required`                    | state     | `true`                                                         | On the switch: a value is required (React Aria).                                          |
-| `--ui-boolean-field-caption-width` | property  |                                                                | On the toggle button's caption: the width of its widest name, in pixels.                  |
+| Hook                               | Kind      | Values                                                         | Description                                                                                 |
+| ---------------------------------- | --------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `ui-boolean-field`                 | root      |                                                                | The field's root (also `ui-field`).                                                         |
+| `ui-boolean-field__switch`         | slot      |                                                                | The switch's `<label>`, around its input.                                                   |
+| `ui-boolean-field__track`          | slot      |                                                                | The switch track.                                                                           |
+| `ui-boolean-field__thumb`          | slot      |                                                                | The switch thumb, inside the track.                                                         |
+| `ui-boolean-field__caption`        | slot      |                                                                | The switch caption, or the toggle button's name of the value.                               |
+| `ui-boolean-field__toggle-button`  | slot      |                                                                | The toggle button (`aria-pressed`).                                                         |
+| `ui-boolean-field__previous`       | slot      |                                                                | The committed value's name before a dirty toggle button (also `ui-field-previous-value`).   |
+| `ui-boolean-field__form-value`     | slot      |                                                                | The hidden input of a named segmented choice, dropdown or toggle button.                    |
+| `data-variant`                     | attribute | `checkbox`, `switch`, `segmented`, `dropdown`, `toggle-button` | On the root: how the value is drawn.                                                        |
+| `data-value`                       | state     | `true`, `false`, `unset`                                       | On the root: the value.                                                                     |
+| `data-selected`                    | state     | `true`                                                         | On the switch or toggle button: on (React Aria).                                            |
+| `data-pressed`                     | state     | `true`                                                         | On the switch or toggle button: being pressed (React Aria).                                 |
+| `data-hovered`                     | state     | `true`                                                         | On the switch or toggle button: under the pointer (React Aria).                             |
+| `data-focused`                     | state     | `true`                                                         | On the switch or toggle button: focused (React Aria).                                       |
+| `data-focus-visible`               | state     | `true`                                                         | On the switch or toggle button: focused from the keyboard (React Aria).                     |
+| `data-disabled`                    | state     | `true`                                                         | On the switch or toggle button: disabled (React Aria).                                      |
+| `data-readonly`                    | state     | `true`                                                         | On the switch: read-only (React Aria).                                                      |
+| `data-invalid`                     | state     | `true`                                                         | On the switch: invalid (React Aria).                                                        |
+| `data-required`                    | state     | `true`                                                         | On the switch: a value is required (React Aria).                                            |
+| `--ui-boolean-field-caption-width` | property  |                                                                | On the toggle button's caption: the width of its widest name, in pixels.                    |
+| `data-indeterminate`               | state     | `true`                                                         | On the switch and toggle button while unset; the reference switch thumb sits in the middle. |

@@ -192,3 +192,31 @@ test.describe('List Row lab', () => {
     await lab.expectAccessible();
   });
 });
+
+test('UIC-LIST-ROW-4.7 keeps row handles and checkboxes left of vertically centered content', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('list-row');
+  const rows = page.locator('[data-lab-reorder] .ui-list-view-item');
+  const count = await rows.count();
+  expect(count).toBeGreaterThan(0);
+  let controls = 0;
+  for (let index = 0; index < count; index += 1) {
+    const row = rows.nth(index);
+    const content = await row.locator('.ui-list-row-content').boundingBox();
+    if (!content) throw new Error('Row content not rendered');
+    for (const control of await row
+      .locator('.ui-list-view-item__checkbox, .ui-list-view-item__drag-handle')
+      .all()) {
+      const box = await control.boundingBox();
+      if (!box) throw new Error('Row control not rendered');
+      expect(box.x + box.width).toBeLessThanOrEqual(content.x);
+      expect(Math.abs(box.y + box.height / 2 - content.y - content.height / 2)).toBeLessThanOrEqual(
+        1,
+      );
+      controls += 1;
+    }
+  }
+  expect(controls).toBeGreaterThan(0);
+});

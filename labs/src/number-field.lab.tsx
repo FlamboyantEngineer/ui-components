@@ -1,3 +1,4 @@
+import { Radices } from './number-radices.js';
 import { useState, type ReactNode } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { NumberField } from '../../src/components/number-field/number-field.js';
@@ -219,6 +220,12 @@ function FineSteps() {
 
 mountLab(
   <>
+    <LabSection
+      title="Number bases and units"
+      description="The same numeric value in decimal, binary, octal and hexadecimal, with optional byte units. Nondecimal bases edit integers."
+    >
+      <Radices />
+    </LabSection>
     <LabSection
       title="Layouts and states"
       description="Every label layout against every state, with and without step buttons."

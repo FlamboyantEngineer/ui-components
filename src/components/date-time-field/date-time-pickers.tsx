@@ -16,6 +16,7 @@ import {
   TimeField,
   type DateValue,
 } from '../../primitives/index.js';
+import type { DateTimeFieldDateState } from './date-time-field.js';
 import { useMemo, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import { Glyph } from '../../core/provider.js';
@@ -48,6 +49,7 @@ export interface DateControlSettings extends DateValueOptions {
   hideTimeZone?: boolean | undefined;
   /** Refuses `YYYY-MM-DD` dates in the calendar and marks typed ones invalid. */
   isDateUnavailable?: ((date: string) => boolean) | undefined;
+  getDateState?: ((date: string) => DateTimeFieldDateState | undefined) | undefined;
   presets: readonly DateTimeFieldPreset<DateFieldValue>[];
   calendarHeading: DateTimeFieldCalendarHeading;
   /** Whether the field would take a value, so the presets it refuses are disabled. */
@@ -198,7 +200,11 @@ export function DateControl(props: DatePickerControlProps) {
       </DateGroup>
       <CalendarPopover mode={mode} settings={settings} onPick={onPick}>
         <Calendar className={hooks.slotClass('calendar')}>
-          <CalendarBody months={1} heading={settings.calendarHeading} />
+          <CalendarBody
+            getDateState={settings.getDateState}
+            months={1}
+            heading={settings.calendarHeading}
+          />
         </Calendar>
       </CalendarPopover>
     </DatePicker>
@@ -223,8 +229,6 @@ export function DateRangeControl(props: DatePickerControlProps) {
     <DateRangePicker<DateValue>
       {...datePickerProps(props)}
       {...useBoundValues(props)}
-      // The field refuses only unavailable ends (UIC-DATE-TIME-FIELD-3.1), so the calendar may span them.
-      allowsNonContiguousRanges
       placeholderValue={usePlaceholderValue(props)}
       value={value}
       onChange={(next) => {
@@ -244,7 +248,11 @@ export function DateRangeControl(props: DatePickerControlProps) {
       </DateGroup>
       <CalendarPopover mode={mode} settings={settings} onPick={onPick}>
         <RangeCalendar className={hooks.slotClass('calendar')} visibleDuration={{ months: 2 }}>
-          <CalendarBody months={2} heading={settings.calendarHeading} />
+          <CalendarBody
+            getDateState={settings.getDateState}
+            months={2}
+            heading={settings.calendarHeading}
+          />
         </RangeCalendar>
       </CalendarPopover>
     </DateRangePicker>
