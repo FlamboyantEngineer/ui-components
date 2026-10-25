@@ -8,7 +8,7 @@ import {
   DisclosurePanel,
   DisclosureTitle,
 } from '../../src/components/disclosure/disclosure.js';
-import { IconButton } from '../../src/components/icon-button/icon-button.js';
+
 import { HeadingLevelContext } from '../../src/components/section-header/section-header.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
@@ -71,12 +71,7 @@ function CustomHeader() {
       <Disclosure indicatorPosition="end" defaultExpanded>
         <DisclosureHeader>
           <DisclosureTitle>Delivery address</DisclosureTitle>
-          <IconButton
-            icon="edit"
-            label="Edit address"
-            size="sm"
-            onPress={() => setEdits(edits + 1)}
-          />
+          <Button icon="edit" label="Edit address" size="sm" onPress={() => setEdits(edits + 1)} />
         </DisclosureHeader>
         <DisclosurePanel role="region">
           <p>12 Harbour Road, Porto</p>

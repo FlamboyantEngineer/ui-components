@@ -43,7 +43,7 @@ test.describe('Dropdown Menu lab', () => {
   }) => {
     await lab.open('dropdown-menu');
     const trigger = page.locator('[data-lab-cell="state=icon only size=md"] .ui-dropdown-menu');
-    await expect(trigger).toHaveClass(/ui-icon-button/);
+    await expect(trigger).toHaveClass(/ui-button/);
     await expect(trigger).toHaveAccessibleName('More options');
     const box = await trigger.boundingBox();
     expect(box?.width).toBe(28);

@@ -10,7 +10,7 @@ import {
 import { keyCollectionChildren } from '../../utils/key-collection-children.js';
 import { toCollectionItemKey } from '../../utils/to-collection-key.js';
 import { useUiStrings } from '../../core/provider.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 
 export type TagGroupSize = Extract<Size, 'sm' | 'md' | 'lg'>;
 
@@ -116,7 +116,7 @@ export function Tag({ id, children, tone, textValue, className, ...rest }: TagPr
         <>
           <span {...hooks.slot('label')}>{children}</span>
           {allowsRemoving && !isDisabled ? (
-            <IconButton
+            <Button
               slot="remove"
               icon="close"
               label={strings.remove}

@@ -1,8 +1,15 @@
 import type { ReactNode, Ref } from 'react';
-import { Label, ProgressBar as AriaProgressBar } from '../../primitives/index.js';
+import {
+  Label,
+  ProgressBar as AriaProgressBar,
+  Meter as AriaMeter,
+} from '../../primitives/index.js';
 import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks, type ComponentHooks } from '../../core/hooks.js';
 import type { BaseProps, Size, Tone } from '../../core/props.js';
+import type { ElementRender } from '../../utils/render-element.js';
+import { ProgressRing } from './progress-ring.js';
+import { resolveMeterTone } from './progress-meter.js';
 import { clamp } from '../../utils/clamp.js';
 
 export type ProgressBarSize = Extract<Size, 'sm' | 'md' | 'lg'>;
@@ -24,7 +31,22 @@ export interface ProgressRangeProps {
   formatOptions?: Intl.NumberFormatOptions | undefined;
 }
 
+export type ProgressBarShape = 'linear' | 'circular';
+export type ProgressBarMode = 'progress' | 'meter';
+
 export interface ProgressBarProps extends BaseProps, AriaLabellingProps, ProgressRangeProps {
+  /** Draws a linear track or a circular ring. Defaults to `linear`. */
+  shape?: ProgressBarShape | undefined;
+  /** Work toward completion or a measured quantity. Defaults to `progress`. */
+  mode?: ProgressBarMode | undefined;
+  /** ProgressBar thresholds judge the value's tone unless `tone` is explicit. */
+  low?: number | undefined;
+  /** The lower end of the high meter region. Defaults to the maximum. */
+  high?: number | undefined;
+  /** The best meter value, used to judge its tone. Defaults to the range midpoint. */
+  optimum?: number | undefined;
+  /** Replaces the root with the caller's element and receives its measured values. */
+  render?: ElementRender<'div', ProgressValues> | undefined;
   /** Work is under way but unmeasured: no value or value text. */
   isIndeterminate?: boolean | undefined;
   /** Visible label. Without one, name the indicator with `aria-label` or `aria-labelledby`. */
@@ -54,6 +76,7 @@ export interface ProgressValues {
   percentage: number | undefined;
   /** The formatted value, or `valueLabel`. */
   valueText: string | undefined;
+  /** The indicator represents unmeasured work. Always false for a meter. */
   isIndeterminate: boolean;
 }
 
@@ -74,7 +97,7 @@ export interface ProgressTextProps extends Pick<ProgressBarProps, 'label'> {
   values: ProgressValues;
 }
 
-const hooks = createHooks('progress-bar', ['label', 'value', 'track', 'fill']);
+const hooks = createHooks('progress-bar', ['label', 'value', 'track', 'fill', 'ring']);
 const spinnerHooks = createHooks('spinner');
 
 function toFinite(value: number | undefined, fallback: number): number {
@@ -105,24 +128,55 @@ function isComplete(range: ReturnType<typeof resolveProgressRange>): boolean {
 export function ProgressRoot({
   hooks: rootHooks,
   size,
-  tone = 'neutral',
+  tone,
+  mode = 'progress',
+  shape = 'linear',
+  low,
+  high,
+  optimum,
   isIndeterminate = false,
   value,
   minValue,
   maxValue,
   className,
+  render,
+  children,
   ...rest
 }: ProgressRootProps) {
   const range = resolveProgressRange({ value, minValue, maxValue });
-  const complete = !isIndeterminate && isComplete(range);
-  const data = { size, tone, indeterminate: isIndeterminate, complete };
+  const indeterminate = mode === 'progress' && isIndeterminate;
+  const complete = mode === 'progress' && !indeterminate && isComplete(range);
+  const judged =
+    tone ??
+    (mode === 'meter' ? resolveMeterTone(range, { low, high, optimum }) : undefined) ??
+    'neutral';
+  const data = { size, tone: judged, mode, shape, indeterminate, complete };
+  const Root = mode === 'meter' ? AriaMeter : AriaProgressBar;
   return (
-    <AriaProgressBar
+    <Root
       {...rest}
       {...rootHooks.root({ className, data })}
       {...range}
-      isIndeterminate={isIndeterminate}
-    />
+      {...(mode === 'progress' ? { isIndeterminate: indeterminate } : {})}
+      render={
+        render
+          ? (props, state) =>
+              render(props, {
+                percentage: state.percentage,
+                valueText: state.valueText,
+                isIndeterminate: indeterminate,
+              })
+          : undefined
+      }
+    >
+      {(state: Pick<ProgressValues, 'percentage' | 'valueText'>) =>
+        children({
+          percentage: state.percentage,
+          valueText: state.valueText,
+          isIndeterminate: indeterminate,
+        })
+      }
+    </Root>
   );
 }
 
@@ -146,12 +200,13 @@ export function ProgressText({
 /** A bar showing how much of a known amount of work is done, or that work is under way. */
 export function ProgressBar({
   label,
-  showValueLabel = true,
+  shape = 'linear',
+  showValueLabel = shape === 'linear',
   size = 'md',
   ...rest
 }: ProgressBarProps) {
   return (
-    <ProgressRoot {...rest} hooks={hooks} size={size}>
+    <ProgressRoot {...rest} shape={shape} hooks={hooks} size={size}>
       {(values) => (
         <>
           <ProgressText
@@ -160,12 +215,16 @@ export function ProgressBar({
             showValueLabel={showValueLabel}
             values={values}
           />
-          <div {...hooks.slot('track')}>
-            <div
-              {...hooks.slot('fill')}
-              style={values.isIndeterminate ? undefined : { width: `${values.percentage ?? 0}%` }}
-            />
-          </div>
+          {shape === 'circular' ? (
+            <ProgressRing gap={values.isIndeterminate ? 75 : 100 - (values.percentage ?? 0)} />
+          ) : (
+            <div {...hooks.slot('track')}>
+              <div
+                {...hooks.slot('fill')}
+                style={values.isIndeterminate ? undefined : { width: `${values.percentage ?? 0}%` }}
+              />
+            </div>
+          )}
         </>
       )}
     </ProgressRoot>
@@ -191,3 +250,5 @@ export function Spinner({ size = 'md', label, className, ...rest }: SpinnerProps
     />
   );
 }
+
+export { resolveMeterTone } from './progress-meter.js';

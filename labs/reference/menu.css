@@ -2,7 +2,7 @@
 
 .ui-menu-popover {
   box-sizing: border-box;
-  min-width: 180px;
+  min-width: min(180px, calc(100vw - 18px));
   overflow: auto;
   border: 1px solid var(--ref-border);
   border-radius: var(--ref-radius);
@@ -17,7 +17,7 @@
   display: grid;
   gap: 1px;
   box-sizing: border-box;
-  min-width: 180px;
+  min-width: min(180px, calc(100vw - 18px));
   padding: 4px;
   border: 1px solid var(--ref-border);
   border-radius: var(--ref-radius);
@@ -237,4 +237,13 @@
 
 .ui-menu-popover[data-layer='context-menu'] {
   min-width: 160px;
+}
+
+.ui-menu[data-virtualized] {
+  display: block;
+  max-width: calc(100vw - 18px);
+  padding: 0;
+}
+.ui-menu-popover {
+  max-width: calc(100vw - 16px);
 }

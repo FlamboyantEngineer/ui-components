@@ -85,6 +85,73 @@ Verification: `src/components/avatar/avatar.test.tsx`, `e2e/avatar.spec.ts`
 Implementation: `src/components/avatar/avatar.tsx`
 Verification: `src/components/avatar/avatar.test.tsx`
 
+## UIC-AVATAR-11 - Contract
+
+### UIC-AVATAR-11.1 - Avatar and status
+
+`Avatar` shall draw an `Avatar` in the `ui-avatar__surface` slot, passing it `name`, `src`, `imageProps`, `initials`, `colorKey`, `colorIndex`, `colorCount`, `kind` and `shape` ([AVATAR.md](AVATAR.md)). A non-blank `status` shall be published, trimmed, in `data-status` on the root, together with a decorative `ui-avatar__indicator` element the stylesheet can draw as a badge. Without a status neither renders.
+
+Implementation: `src/components/avatar/avatar.tsx`
+Verification: `src/components/avatar/avatar-presence.test.tsx`, `e2e/avatar-presence.spec.ts`
+
+### UIC-AVATAR-11.2 - Accessible name
+
+The avatar shall be the `role="img"` that names the person: by the trimmed `name` (or the provider's `unnamed` string when it is blank), joined with the trimmed `statusLabel` through the provider's `nameWithStatus` string when a status label is given (`Maria Santos, Away`). The root adds no role or label of its own, so a pressable root takes its name from that image and its visible initials never conflict with a separate label. The one exception is a static avatar with a name tooltip ([UIC-AVATAR-11.7](#uic-avatar-27---name-tooltip)).
+
+Implementation: `src/components/avatar/avatar.tsx`, `src/components/avatar/avatar.tsx`, `src/core/strings.ts`
+Verification: `src/components/avatar/avatar-presence.test.tsx`, `e2e/avatar-presence.spec.ts`
+
+### UIC-AVATAR-11.3 - Pressing
+
+With `onPress`, the root shall be a React Aria button: one tab stop that calls `onPress` once for a click, Enter or Space, takes focus when clicked, does not repeat for a held key, and publishes React Aria's `data-hovered`, `data-pressed`, `data-focused` and `data-focus-visible` states. Without `onPress`, `card` or `nameTooltip` the root is a plain `<span>` with no tab stop.
+
+Implementation: `src/components/avatar/avatar.tsx`
+Verification: `src/components/avatar/avatar-presence.test.tsx`, `e2e/avatar-presence.spec.ts`
+
+### UIC-AVATAR-11.4 - Sizes
+
+`size` (`xs`, `sm`, `md` by default, `lg`) shall publish `data-size` on the root and size the avatar to match.
+
+Implementation: `src/components/avatar/avatar.tsx`, `labs/reference/avatar.css`
+Verification: `src/components/avatar/avatar-presence.test.tsx`, `e2e/avatar-presence.spec.ts`
+
+### UIC-AVATAR-11.5 - Hooks and caller attributes
+
+`Avatar` shall carry the hooks below, append the caller's `className`, and forward caller `data-*` attributes and `id` to its root.
+
+Implementation: `src/components/avatar/avatar.tsx`
+Verification: `src/components/avatar/avatar-presence.test.tsx`
+
+### UIC-AVATAR-11.6 - Person card
+
+With `card`, the root shall be a `UserCardTrigger` ([USER-CARD.md](USER-CARD.md)), also carrying the `ui-user-card__trigger` class: a button that opens the card in a popover for a click, Enter or Space, still calls `onPress`, keeps the hooks and the accessible name above, and returns focus to the avatar when the card closes. `cardTrigger` is the trigger's `trigger` ([UIC-AVATAR-11.8](#uic-avatar-28---card-on-hover)).
+
+Implementation: `src/components/avatar/avatar.tsx`, `src/components/user-card/user-card.tsx`
+Verification: `src/components/avatar/avatar-presence.test.tsx`, `e2e/avatar-presence.spec.ts`
+
+### UIC-AVATAR-11.7 - Name tooltip
+
+With `nameTooltip`, the presence avatar shall show its accessible name (`Maria Santos, Away`) in a `Tooltip` ([TOOLTIP.md](TOOLTIP.md)) when the pointer rests on it and when keyboard focus reaches it. The tooltip is visual: the trigger's description stays empty, so the name is read once. A pressable avatar or card trigger keeps its name from the image. A static avatar becomes a React Aria `Focusable` image instead, one tab stop with `role="img"` named by that text and a decorative avatar inside, so keyboard users can reach the tooltip too. An avatar whose card opens on hover shows no tooltip, since the card names the person.
+
+Implementation: `src/components/avatar/avatar.tsx`, `labs/reference/avatar.css`
+Verification: `src/components/avatar/avatar-presence.test.tsx`, `e2e/avatar-presence.spec.ts`
+
+### UIC-AVATAR-11.8 - Card on hover
+
+With `card` and `cardTrigger="hover"`, the card shall open on hover and keyboard focus after the preview delays, or on a long press, without moving focus, as a `UserCardTrigger` with `trigger="hover"` does ([UIC-USER-CARD-2.3](USER-CARD.md#uic-user-card-23---opening-on-hover-and-focus)). Pressing the avatar still calls `onPress`.
+
+Implementation: `src/components/avatar/avatar.tsx`, `src/components/user-card/user-card.tsx`
+Verification: `src/components/avatar/avatar-presence.test.tsx`, `e2e/avatar-presence.spec.ts`
+
+## UIC-AVATAR-4 - Unified options
+
+### UIC-AVATAR-4.1 - Optional presence
+
+Avatar shall publish an optional status and its decorative indicator outside the clipped surface. Its root announces the name and optional human-readable status, and also handles cards, commands and name tooltips.
+
+Implementation: `src/components/avatar/avatar.tsx`
+Verification: `src/components/avatar/avatar.test.tsx`, `e2e/unified-options.spec.ts`
+
 ## Hooks
 
 | Hook                  | Kind      | Values                         | Description                                               |
@@ -99,3 +166,11 @@ Verification: `src/components/avatar/avatar.test.tsx`
 | `data-shape`          | attribute | `circle`, `rounded`, `square`  | The avatar's corners.                                     |
 | `data-color`          | attribute |                                | The colour slot, an integer from `0` to `colorCount - 1`. |
 | `data-loading`        | state     | `true`                         | While the picture loads.                                  |
+
+| `ui-avatar__surface` | slot | | The clipped picture or initials; the status dot sits outside it. |
+| `ui-avatar__indicator` | slot | | The decorative status badge, when there is a status. |
+| `data-status` | attribute | | The caller's status word (`active`, `away`, `idle`, …). |
+| `data-hovered` | state | `true` | While the pointer is over a pressable avatar (React Aria). |
+| `data-pressed` | state | `true` | While a pressable avatar is pressed (React Aria). |
+| `data-focused` | state | `true` | While a pressable avatar has focus (React Aria). |
+| `data-focus-visible` | state | `true` | While it has keyboard focus (React Aria). |

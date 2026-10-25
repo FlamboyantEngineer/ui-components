@@ -5,7 +5,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { normalizeCount } from '../../utils/count.js';
 import { Button } from '../button/button.js';
 import { EmojiPickerTrigger, type EmojiPickerProps } from '../emoji-picker/emoji-picker.js';
-import { IconButton } from '../icon-button/icon-button.js';
+
 import { Tooltip } from '../tooltip/tooltip.js';
 
 /** The reactions with one emoji. */
@@ -129,7 +129,7 @@ export function ReactionBar({
             add(selection.kind === 'native' ? selection.unicode : `:${selection.emoji.shortcode}:`)
           }
         >
-          <IconButton
+          <Button
             icon="emoji"
             label={strings.addReaction}
             size="sm"

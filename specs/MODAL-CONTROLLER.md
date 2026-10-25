@@ -1,6 +1,6 @@
 # Modal Controller
 
-`createModalController` creates an imperative store of open modals, for code that opens a modal from outside a render tree or without owning its open state: an event handler deep in a tool, a keyboard command, a non-React module. The host creates a controller, renders `ModalHost` with it once, and hands the controller to whatever opens modals. Each opening returns a handle to close or update it and a promise of its result. The library keeps no controller of its own; every controller is an instance its host creates. Each modal is a [Modal](MODAL.md), or any modal the caller draws. [Confirm Dialog](CONFIRM-DIALOG.md#uic-confirm-dialog-2---imperative-confirmation) builds awaitable helpers on it: `confirm` for a yes-or-no answer, `alert` for an acknowledgement and `prompt` for a line of text.
+`createModalController` creates an imperative store of open modals, for code that opens a modal from outside a render tree or without owning its open state: an event handler deep in a tool, a keyboard command, a non-React module. The host creates a controller, renders `ModalHost` with it once, and hands the controller to whatever opens modals. Each opening returns a handle to close or update it and a promise of its result. The library keeps no controller of its own; every controller is an instance its host creates. Each modal is a [Modal](MODAL.md), or any modal the caller draws. [Confirm Dialog](MODAL.md#uic-modal-22---imperative-confirmation) builds awaitable helpers on it: `confirm` for a yes-or-no answer, `alert` for an acknowledgement and `prompt` for a line of text.
 
 ## UIC-MODAL-CONTROLLER-1 - Controller
 
@@ -13,7 +13,7 @@ Verification: `src/components/modal-controller/modal-controller.test.tsx`
 
 ### UIC-MODAL-CONTROLLER-1.2 - Opening
 
-`open(options)` shall add a modal above every open one and return its handle, with an `id` unique within the controller and `isOpen` true. With modal options, the entry renders a `Modal` with those props and `content` as its body; `content` given as a function receives the handle. With `render`, the entry calls it with `isOpen`, `onOpenChange`, `close` and the handle, and renders what it returns, so a caller can open a modal of its own (for example a [Confirm Dialog](CONFIRM-DIALOG.md)).
+`open(options)` shall add a modal above every open one and return its handle, with an `id` unique within the controller and `isOpen` true. With modal options, the entry renders a `Modal` with those props and `content` as its body; `content` given as a function receives the handle. With `render`, the entry calls it with `isOpen`, `onOpenChange`, `close` and the handle, and renders what it returns, so a caller can open a modal of its own (for example a [Confirm Dialog](MODAL.md)).
 
 Implementation: `src/components/modal-controller/modal-controller.tsx`
 Verification: `src/components/modal-controller/modal-controller.test.tsx`, `e2e/modal-controller.spec.ts`

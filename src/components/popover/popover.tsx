@@ -16,7 +16,7 @@ import { createHooks } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 import { useLayerZIndex } from '../portal/portal.js';
 
 /** A pressable trigger and the `Popover` it opens. */
@@ -91,7 +91,7 @@ function PopoverHeader({ title, showCloseButton, onClose }: PopoverHeaderProps) 
         </Heading>
       )}
       {showCloseButton ? (
-        <IconButton
+        <Button
           icon="close"
           label={strings.close}
           size="sm"
@@ -132,6 +132,7 @@ export function Popover({
   title,
   showCloseButton = false,
   showArrow = false,
+  offset,
   children,
   id,
   'aria-label': ariaLabel,
@@ -145,6 +146,7 @@ export function Popover({
   return (
     <PopoverPanel
       {...rest}
+      offset={offset ?? (showArrow ? 7 : 8)}
       {...hooks.root({ className, props: rest })}
       arrowClassName={showArrow ? hooks.slotClass('arrow') : undefined}
     >

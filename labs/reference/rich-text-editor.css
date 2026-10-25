@@ -281,7 +281,7 @@
   height: 14px;
 }
 
-.ui-block-handle__menu.ui-icon-button {
+.ui-block-handle__menu.ui-button[data-content='icon'] {
   width: 18px;
   min-width: 18px;
   padding: 0;

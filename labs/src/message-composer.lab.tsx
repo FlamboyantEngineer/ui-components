@@ -8,7 +8,7 @@ import {
   createTriggerCompletions,
   type Completion,
 } from '../../src/components/completion-list/completion-list.js';
-import { IconButton } from '../../src/components/icon-button/icon-button.js';
+
 import { MessageComposer } from '../../src/components/message-composer/message-composer.js';
 import { UserIdentity } from '../../src/components/user-identity/user-identity.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
@@ -61,7 +61,7 @@ function StateSample({
       onStop={state === 'stoppable' ? () => undefined : undefined}
       isDisabled={state === 'disabled'}
       attachments={withParts ? <Attachment name="Report.pdf" /> : undefined}
-      toolbar={withParts ? <IconButton icon="plus" label="Attach a file" size="sm" /> : undefined}
+      toolbar={withParts ? <Button icon="plus" label="Attach a file" size="sm" /> : undefined}
       onSubmit={() => undefined}
     />
   );
@@ -105,7 +105,7 @@ function Composing() {
         }
         toolbar={
           <>
-            <IconButton
+            <Button
               icon="plus"
               label="Attach a file"
               size="sm"

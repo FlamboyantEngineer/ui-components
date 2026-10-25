@@ -118,7 +118,7 @@ describe('Popover', () => {
     render(<Standalone />);
     await userEvent.click(screen.getByRole('button', { name: 'Show' }));
     const close = await screen.findByRole('button', { name: 'Close' });
-    expect(close).toHaveClass('ui-popover__close', 'ui-icon-button');
+    expect(close).toHaveClass('ui-popover__close', 'ui-button');
     expect(panel()).not.toHaveAttribute('data-trigger');
     await userEvent.click(close);
     expect(onOpenChange).toHaveBeenLastCalledWith(false);

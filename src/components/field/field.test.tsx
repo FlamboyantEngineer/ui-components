@@ -91,7 +91,7 @@ describe('Field', () => {
     const user = userEvent.setup();
     const { container } = render(<TextField help="Ripe fruit only." />);
     const button = screen.getByRole('button', { name: 'Help for Fruit' });
-    expect(button).toHaveClass('ui-field__help', 'ui-icon-button');
+    expect(button).toHaveClass('ui-field__help', 'ui-button');
     expect(button).toHaveAccessibleDescription('Ripe fruit only.');
     expect(button.querySelector('[data-glyph="help"]')).not.toBeNull();
     await user.tab();

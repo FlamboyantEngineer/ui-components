@@ -120,7 +120,7 @@ describe('ReactionBar', () => {
         />,
       );
       const add = screen.getByRole('button', { name: 'Add reaction' });
-      expect(add).toHaveClass('ui-icon-button', 'ui-reaction-bar__add');
+      expect(add).toHaveClass('ui-button', 'ui-reaction-bar__add');
       await userEvent.click(add);
       const picker = await screen.findByRole('dialog', { name: 'Emoji picker' });
       const grids = await within(picker).findAllByRole('grid');

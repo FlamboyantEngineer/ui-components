@@ -34,7 +34,6 @@
 @import url('reference/chat-transcript.css');
 @import url('reference/checkbox.css');
 @import url('reference/checkbox-group.css');
-@import url('reference/circular-progress.css');
 @import url('reference/code-editor.css');
 @import url('reference/color-field.css');
 @import url('reference/color-swatch.css');
@@ -44,7 +43,6 @@
 @import url('reference/comment-thread.css');
 @import url('reference/completion-list.css');
 @import url('reference/condition-builder.css');
-@import url('reference/confirm-dialog.css');
 @import url('reference/copy-button.css');
 @import url('reference/dashboard-grid.css');
 @import url('reference/date-time-field.css');
@@ -75,7 +73,6 @@
 @import url('reference/hover-card.css');
 @import url('reference/html-markup.css');
 @import url('reference/icon.css');
-@import url('reference/icon-button.css');
 @import url('reference/icon-label.css');
 @import url('reference/icon-select-field.css');
 @import url('reference/inline-edit.css');
@@ -95,7 +92,6 @@
 @import url('reference/merge-view.css');
 @import url('reference/message-composer.css');
 @import url('reference/meta-line.css');
-@import url('reference/meter.css');
 @import url('reference/modal.css');
 @import url('reference/navigation-rail.css');
 @import url('reference/notification-center.css');
@@ -111,8 +107,6 @@
 @import url('reference/pivot-table.css');
 @import url('reference/popover.css');
 @import url('reference/portal.css');
-@import url('reference/presence-avatar.css');
-@import url('reference/presence-strip.css');
 @import url('reference/problem-list.css');
 @import url('reference/progress-bar.css');
 @import url('reference/property-filter.css');
@@ -124,7 +118,6 @@
 @import url('reference/query-field.css');
 @import url('reference/radio-group.css');
 @import url('reference/reaction-bar.css');
-@import url('reference/record-chip.css');
 @import url('reference/record-header.css');
 @import url('reference/record-label.css');
 @import url('reference/redline-compare.css');

@@ -27,7 +27,7 @@ Verification: `src/components/inline-error/inline-error.test.tsx`, `e2e/inline-e
 
 ### UIC-INLINE-ERROR-1.4 - Disabled and pending recovery
 
-`isRetryDisabled` shall disable the recovery button so activation does nothing. When `onRetry` returns a promise, the button shall be pending ([Action Button](ACTION-BUTTON.md)) and refuse repeat activation until the promise settles; a rejection reaches `onRetryError`, or is rethrown without it. The caller owns the request and clears the error.
+`isRetryDisabled` shall disable the recovery button so activation does nothing. When `onRetry` returns a promise, the button shall be pending ([Action Button](BUTTON.md)) and refuse repeat activation until the promise settles; a rejection reaches `onRetryError`, or is rethrown without it. The caller owns the request and clears the error.
 
 Implementation: `src/components/inline-error/inline-error.tsx`
 Verification: `src/components/inline-error/inline-error.test.tsx`

@@ -1,6 +1,6 @@
 # Unsaved Changes Guard
 
-`UnsavedChangesGuard` is the one way to protect unsaved edits. Editors under it register their changes with `useUnsavedChanges({ isDirty, label, onSave, onDiscard })`. Code that leaves (a client-side route change, a tab switch, closing a panel or a dialog) awaits `confirmLeave()` from `useUnsavedChangesGuard()`: it resolves at once while nothing is dirty, and otherwise asks the reader in a [Confirm Dialog](CONFIRM-DIALOG.md) to save, discard or stay, then resolves whether to go on. While anything is dirty the browser also confirms closing or reloading the page. A guard inside another asks about its own editors alone and stands in its parent for them, so a panel can protect its edits while the page still protects everything.
+`UnsavedChangesGuard` is the one way to protect unsaved edits. Editors under it register their changes with `useUnsavedChanges({ isDirty, label, onSave, onDiscard })`. Code that leaves (a client-side route change, a tab switch, closing a panel or a dialog) awaits `confirmLeave()` from `useUnsavedChangesGuard()`: it resolves at once while nothing is dirty, and otherwise asks the reader in a [Confirm Dialog](MODAL.md) to save, discard or stay, then resolves whether to go on. While anything is dirty the browser also confirms closing or reloading the page. A guard inside another asks about its own editors alone and stands in its parent for them, so a panel can protect its edits while the page still protects everything.
 
 ## UIC-UNSAVED-CHANGES-GUARD-1 - Registration
 
@@ -36,7 +36,7 @@ Verification: `src/components/unsaved-changes-guard/unsaved-changes-guard.test.t
 
 ### UIC-UNSAVED-CHANGES-GUARD-2.2 - The question
 
-Otherwise `confirmLeave(options)` shall open a `ConfirmDialog` titled by `options.title`, the guard's `title` or the provider's `unsavedChanges` string, and described by `options.message`, the guard's `message` or the provider's question: `saveBeforeLeaving` when Save is offered, `discardBeforeLeaving` otherwise. Under the message, the `ui-unsaved-changes-guard__list` list names the labels of the dirty editors in registration order; editors without a label are left out, and the list is left out when none has one. The dialog keeps what it showed when it was asked while it closes.
+Otherwise `confirmLeave(options)` shall open a `Modal` titled by `options.title`, the guard's `title` or the provider's `unsavedChanges` string, and described by `options.message`, the guard's `message` or the provider's question: `saveBeforeLeaving` when Save is offered, `discardBeforeLeaving` otherwise. Under the message, the `ui-unsaved-changes-guard__list` list names the labels of the dirty editors in registration order; editors without a label are left out, and the list is left out when none has one. The dialog keeps what it showed when it was asked while it closes.
 
 Implementation: `src/components/unsaved-changes-guard/unsaved-changes-guard.tsx`, `src/core/common-strings.ts`
 Verification: `src/components/unsaved-changes-guard/unsaved-changes-guard.test.tsx`, `e2e/unsaved-changes-guard.spec.ts`
@@ -84,7 +84,7 @@ Verification: `src/components/unsaved-changes-guard/unsaved-changes-guard.test.t
 
 The question shall be an alert dialog named by its title and described by its message, with focus on Stay when it opens, so Enter or Space never throws work away by accident; Escape stays. Focus returns to the element focused when it opened.
 
-Implementation: `src/components/unsaved-changes-guard/unsaved-changes-guard.tsx`, `src/components/confirm-dialog/confirm-dialog.tsx`
+Implementation: `src/components/unsaved-changes-guard/unsaved-changes-guard.tsx`, `src/components/modal/modal-confirm.tsx`
 Verification: `src/components/unsaved-changes-guard/unsaved-changes-guard.test.tsx`, `e2e/unsaved-changes-guard.spec.ts`
 
 ### UIC-UNSAVED-CHANGES-GUARD-4.2 - Hooks and caller attributes
@@ -96,7 +96,7 @@ Verification: `src/components/unsaved-changes-guard/unsaved-changes-guard.test.t
 
 ## Hooks
 
-| Hook                             | Kind | Values | Description                                                                 |
-| -------------------------------- | ---- | ------ | --------------------------------------------------------------------------- |
-| `ui-unsaved-changes-guard`       | root |        | The question's modal overlay, alongside `ui-modal` and `ui-confirm-dialog`. |
-| `ui-unsaved-changes-guard__list` | slot |        | The list of the dirty editors' labels (`<ul>`).                             |
+| Hook                             | Kind | Values | Description                                                        |
+| -------------------------------- | ---- | ------ | ------------------------------------------------------------------ |
+| `ui-unsaved-changes-guard`       | root |        | The question's modal overlay, alongside `ui-modal` and `ui-modal`. |
+| `ui-unsaved-changes-guard__list` | slot |        | The list of the dirty editors' labels (`<ul>`).                    |

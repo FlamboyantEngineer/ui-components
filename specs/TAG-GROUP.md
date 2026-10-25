@@ -57,7 +57,7 @@ Verification: `src/components/tag-group/tag-group.test.tsx`, `e2e/tag-group.spec
 
 ### UIC-TAG-GROUP-2.2 - Removal
 
-With `onRemove`, each enabled tag shall publish `data-allows-removing` and end with a remove button (`ui-tag-group__remove`, an `IconButton` with the `close` glyph named by the provider string `remove` read with the tag's name, "Remove Apple"). Pressing it, or Delete or Backspace on a focused tag, calls `onRemove` with the set of keys to remove: that tag's, or every selected tag's when the focused tag is selected. When the caller removes the focused tag, focus moves to a neighbouring tag. Without `onRemove`, tags draw no remove button, ignore Delete and Backspace and stay focusable, so a read-only set stays readable and navigable.
+With `onRemove`, each enabled tag shall publish `data-allows-removing` and end with a remove button (`ui-tag-group__remove`, an `Button` with the `close` glyph named by the provider string `remove` read with the tag's name, "Remove Apple"). Pressing it, or Delete or Backspace on a focused tag, calls `onRemove` with the set of keys to remove: that tag's, or every selected tag's when the focused tag is selected. When the caller removes the focused tag, focus moves to a neighbouring tag. Without `onRemove`, tags draw no remove button, ignore Delete and Backspace and stay focusable, so a read-only set stays readable and navigable.
 
 Implementation: `src/components/tag-group/tag-group.tsx`, `src/core/strings.ts`
 Verification: `src/components/tag-group/tag-group.test.tsx`, `e2e/tag-group.spec.ts`
@@ -86,7 +86,7 @@ Verification: `src/components/tag-group/tag-group.test.tsx`
 | `ui-tag-group__list`   | slot      |                                                   | The list of tags (`role="grid"`, or `group` while empty).                 |
 | `ui-tag-group__tag`    | slot      |                                                   | One tag (`role="row"`).                                                   |
 | `ui-tag-group__label`  | slot      |                                                   | A tag's content.                                                          |
-| `ui-tag-group__remove` | slot      |                                                   | A tag's remove button (also `ui-icon-button`).                            |
+| `ui-tag-group__remove` | slot      |                                                   | A tag's remove button (also `ui-button`).                                 |
 | `ui-tag-group__empty`  | slot      |                                                   | The empty state inside the list.                                          |
 | `data-size`            | attribute | `sm`, `md`, `lg`                                  | On the root: the tags' scale.                                             |
 | `data-tone`            | attribute | `neutral`, `info`, `success`, `warning`, `danger` | On a tag: its tone.                                                       |

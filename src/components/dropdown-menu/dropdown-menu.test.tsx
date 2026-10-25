@@ -38,14 +38,14 @@ describe('DropdownMenu', () => {
       <DropdownMenu label="More actions" iconOnly items={items} />,
     );
     const trigger = screen.getByRole('button', { name: 'More actions' });
-    expect(trigger).toHaveClass('ui-icon-button', 'ui-dropdown-menu');
+    expect(trigger).toHaveClass('ui-button', 'ui-dropdown-menu');
     expect(trigger).toHaveAttribute('data-variant', 'ghost');
-    expect(trigger.querySelector('.ui-icon-button__icon')).toHaveAttribute('data-glyph', 'more');
+    expect(trigger.querySelector('.ui-button__icon')).toHaveAttribute('data-glyph', 'more');
     expect(trigger.querySelector('.ui-dropdown-menu__caret')).toBeNull();
     expectHooksMatchSpec(container, 'DROPDOWN-MENU');
     rerender(<DropdownMenu label="Options" iconOnly icon="more-vertical" items={items} />);
     expect(
-      screen.getByRole('button', { name: 'Options' }).querySelector('.ui-icon-button__icon'),
+      screen.getByRole('button', { name: 'Options' }).querySelector('.ui-button__icon'),
     ).toHaveAttribute('data-glyph', 'more-vertical');
   });
 
@@ -218,7 +218,7 @@ describe('DropdownMenu', () => {
     expect(action).toHaveAttribute('id', 'save-action');
     expect(ref.current).toBe(action);
     expect(action).not.toHaveAttribute('aria-haspopup');
-    expect(toggle).toHaveClass('ui-icon-button', 'ui-dropdown-menu__toggle');
+    expect(toggle).toHaveClass('ui-button', 'ui-dropdown-menu__toggle');
     for (const button of [action, toggle]) {
       expect(button).toHaveAttribute('data-variant', 'primary');
       expect(button).toHaveAttribute('data-size', 'sm');

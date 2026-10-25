@@ -43,7 +43,7 @@ Verification: `src/components/toolbar-scroller/toolbar-scroller.test.tsx`, `e2e/
 
 ### UIC-TOOLBAR-SCROLLER-2.3 - Scroll buttons
 
-Unless `scrollButtons` is `false`, the scroller shall render a scroll button per edge (`ui-toolbar-scroller__scroll-button`, an [Icon Button](ICON-BUTTON.md) with `data-edge` `start` or `end`), hidden with the native `hidden` attribute while its edge hides nothing. Pressing one scrolls the strip by 80% of its visible width toward that edge. The buttons are named by the provider's `scrollBackward` and `scrollForward` strings, draw a chevron pointing to their edge (mirrored right-to-left), sit outside the toolbar and stay out of the tab order, because keyboard users reach every tool with the arrow keys. With `scrollButtons={false}` only the fades mark hidden tools.
+Unless `scrollButtons` is `false`, the scroller shall render a scroll button per edge (`ui-toolbar-scroller__scroll-button`, an [Icon Button](BUTTON.md) with `data-edge` `start` or `end`), hidden with the native `hidden` attribute while its edge hides nothing. Pressing one scrolls the strip by 80% of its visible width toward that edge. The buttons are named by the provider's `scrollBackward` and `scrollForward` strings, draw a chevron pointing to their edge (mirrored right-to-left), sit outside the toolbar and stay out of the tab order, because keyboard users reach every tool with the arrow keys. With `scrollButtons={false}` only the fades mark hidden tools.
 
 Implementation: `src/components/toolbar-scroller/toolbar-scroller.tsx`
 Verification: `src/components/toolbar-scroller/toolbar-scroller.test.tsx`, `e2e/toolbar-scroller.spec.ts`
@@ -87,7 +87,7 @@ Verification: `src/components/toolbar-scroller/toolbar-scroller.test.tsx`, `e2e/
 | `ui-toolbar-scroller__item`          | slot      |                  | One kept tool, with `overflow="menu"`.                  |
 | `ui-toolbar-scroller__overflow`      | slot      |                  | The element holding the menu of hidden tools.           |
 | `ui-toolbar-scroller__fade`          | slot      |                  | A decorative fade over one edge.                        |
-| `ui-toolbar-scroller__scroll-button` | slot      |                  | A scroll button (also `ui-icon-button`).                |
+| `ui-toolbar-scroller__scroll-button` | slot      |                  | A scroll button (also `ui-button`).                     |
 | `data-edge`                          | attribute | `start`, `end`   | The edge a fade or scroll button belongs to.            |
 | `data-overflow`                      | attribute | `scroll`, `menu` | What happens to tools that do not fit.                  |
 | `data-overflow-start`                | state     | `true`           | Content is hidden past the start edge.                  |

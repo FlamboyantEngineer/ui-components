@@ -88,8 +88,8 @@ Verification: `src/components/inline-edit/inline-edit.test.tsx`, `e2e/inline-edi
 | `ui-inline-edit__editor`      | slot  |        | The editor, its buttons and its error, while editing.  |
 | `ui-inline-edit__control`     | slot  |        | The element around the caller's editor.                |
 | `ui-inline-edit__actions`     | slot  |        | The save and cancel buttons.                           |
-| `ui-inline-edit__save`        | slot  |        | The save button (also `ui-icon-button`).               |
-| `ui-inline-edit__cancel`      | slot  |        | The cancel button (also `ui-icon-button`).             |
+| `ui-inline-edit__save`        | slot  |        | The save button (also `ui-button`).                    |
+| `ui-inline-edit__cancel`      | slot  |        | The cancel button (also `ui-button`).                  |
 | `ui-inline-edit__error`       | slot  |        | Why the last save failed (also `ui-inline-error`).     |
 | `data-editing`                | state | `true` | The editor is open.                                    |
 | `data-pending`                | state | `true` | A save is running.                                     |

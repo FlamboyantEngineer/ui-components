@@ -1,6 +1,6 @@
 # Load More
 
-`LoadMore` is one control that fetches the next page of a collection, beside a list, a table or a conversation, on press or as it scrolls into view. A React Aria collection loads pages with its own sentinel instead ([COLLECTIONS.md](COLLECTIONS.md)). The caller owns cursors, requests, errors and adding the fetched items. It is a [Button](BUTTON.md) with an [Action Button](ACTION-BUTTON.md)'s pending lifecycle for promise-returning requests, so it renders Button's markup and hooks plus its own root class.
+`LoadMore` is one control that fetches the next page of a collection, beside a list, a table or a conversation, on press or as it scrolls into view. A React Aria collection loads pages with its own sentinel instead ([COLLECTIONS.md](COLLECTIONS.md)). The caller owns cursors, requests, errors and adding the fetched items. It is a [Button](BUTTON.md) with an [Action Button](BUTTON.md)'s pending lifecycle for promise-returning requests, so it renders Button's markup and hooks plus its own root class.
 
 ## UIC-LOAD-MORE-1 - Contract
 

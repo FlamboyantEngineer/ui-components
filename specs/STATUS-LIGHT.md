@@ -1,6 +1,6 @@
 # Status Light
 
-`StatusLight` names a status with a coloured dot beside a short label, such as a service state (`Running`, `Stopped`) or a person's presence (`Away`). The label carries the meaning; the dot's colour repeats it. It reuses the presence vocabulary of [Presence Avatar](PRESENCE-AVATAR.md) (`active`, `away`, `busy`, `idle`) so a presence state can show on its own, labelled from the provider's strings. A [Badge](BADGE.md) with the `status` variant is a tinted pill with a dot; its `dot` variant is a bare marker.
+`StatusLight` names a status with a coloured dot beside a short label, such as a service state (`Running`, `Stopped`) or a person's presence (`Away`). The label carries the meaning; the dot's colour repeats it. It reuses the presence vocabulary of [Presence Avatar](AVATAR.md) (`active`, `away`, `busy`, `idle`) so a presence state can show on its own, labelled from the provider's strings. A [Badge](BADGE.md) with the `status` variant is a tinted pill with a dot; its `dot` variant is a bare marker.
 
 ## UIC-STATUS-LIGHT-1 - Status light
 

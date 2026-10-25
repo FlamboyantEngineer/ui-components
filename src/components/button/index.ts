@@ -1,4 +1,4 @@
-export { Button } from './button.js';
+export { Button, runPendingAction } from './button.js';
 export type {
   ButtonAlign,
   ButtonContent,

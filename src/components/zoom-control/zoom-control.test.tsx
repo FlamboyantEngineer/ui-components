@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 import {
   ZoomControl,
   defaultZoomLevels,
@@ -34,7 +34,7 @@ describe('ZoomControl', () => {
     ]);
     const zoomOut = screen.getByRole('button', { name: 'Zoom out' });
     const zoomIn = screen.getByRole('button', { name: 'Zoom in' });
-    expect(zoomOut).toHaveClass('ui-icon-button');
+    expect(zoomOut).toHaveClass('ui-button');
     expect(zoomOut.querySelector('[data-glyph]')).toHaveAttribute('data-glyph', 'minus');
     expect(zoomIn.querySelector('[data-glyph]')).toHaveAttribute('data-glyph', 'plus');
     expect(value(container)).toHaveTextContent('100%');
@@ -222,7 +222,7 @@ describe('ZoomControl', () => {
     expect(container.querySelector('.ui-zoom-control__reset')).toBeNull();
     rerender(<ZoomControl levels={levels} value={150} resetValue={100} onChange={onChange} />);
     const reset = screen.getByRole('button', { name: 'Reset zoom' });
-    expect(reset).toHaveClass('ui-icon-button', 'ui-zoom-control__reset');
+    expect(reset).toHaveClass('ui-button', 'ui-zoom-control__reset');
     expect(reset.querySelector('[data-glyph]')).toHaveAttribute('data-glyph', 'restore');
     expect(screen.getByRole('group').lastElementChild).toBe(reset);
     await userEvent.click(reset);
@@ -258,8 +258,8 @@ describe('ZoomControl', () => {
       <ZoomControl
         levels={levels}
         value={100}
-        zoomOutButton={<IconButton icon="minus" label="Shrink" id="shrink" />}
-        zoomInButton={<IconButton icon="plus" label="Grow" id="grow" />}
+        zoomOutButton={<Button icon="minus" label="Shrink" id="shrink" />}
+        zoomInButton={<Button icon="plus" label="Grow" id="grow" />}
       />,
     );
     const group = screen.getByRole('group');
@@ -306,7 +306,7 @@ describe('ZoomControl', () => {
       />,
     );
     const trigger = screen.getByRole('button', { name: 'Zoom presets' });
-    expect(trigger).toHaveClass('ui-zoom-control__presets', 'ui-dropdown-menu', 'ui-icon-button');
+    expect(trigger).toHaveClass('ui-zoom-control__presets', 'ui-dropdown-menu', 'ui-button');
     expect(trigger).toHaveAttribute('data-size', 'sm');
     expect(trigger.querySelector('[data-glyph]')).toHaveAttribute('data-glyph', 'chevron-down');
     const order = Array.from(container.querySelectorAll('.ui-zoom-control > *'), (part) =>

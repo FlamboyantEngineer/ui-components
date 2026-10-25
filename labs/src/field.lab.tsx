@@ -15,7 +15,7 @@ import {
   type FieldStateOptions,
   type FieldValidationMode,
 } from '../../src/components/field/field.js';
-import { IconButton } from '../../src/components/icon-button/icon-button.js';
+
 import { TextMatchProvider } from '../../src/components/text-match/text-match.js';
 import type { Key } from '../../src/core/props.js';
 import { useUiStrings } from '../../src/core/provider.js';
@@ -174,8 +174,8 @@ function UndoToolbar() {
   return (
     <>
       <div role="toolbar" aria-label="Edit">
-        <IconButton icon="undo" label="Undo" preventFocusOnPress onPress={() => run('undo')} />
-        <IconButton icon="redo" label="Redo" preventFocusOnPress onPress={() => run('redo')} />
+        <Button icon="undo" label="Undo" preventFocusOnPress onPress={() => run('undo')} />
+        <Button icon="redo" label="Redo" preventFocusOnPress onPress={() => run('redo')} />
       </div>
       <SampleField label="Fruit" options={{ defaultValue: 'Fig' }} data-lab-field="fruit" />
       <SampleField label="City" options={{ defaultValue: 'Oslo' }} data-lab-field="city" />

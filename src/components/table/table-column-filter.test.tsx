@@ -48,7 +48,7 @@ describe('Table column filters', { timeout: 20_000 }, () => {
     const { container } = renderFruit({ onFilterChange });
     const button = screen.getByRole('button', { name: 'Filter name' });
     expect(button.querySelector('[data-glyph]')).toHaveAttribute('data-glyph', 'filter');
-    expect(button).toHaveClass('ui-table__column-filter', 'ui-icon-button');
+    expect(button).toHaveClass('ui-table__column-filter', 'ui-button');
     const { user, dialog } = await openFilter('Name');
     expect(dialog.closest('.ui-table__column-filter-dialog')).not.toBeNull();
     await user.type(within(dialog).getByRole('textbox', { name: 'Contains' }), 'err');

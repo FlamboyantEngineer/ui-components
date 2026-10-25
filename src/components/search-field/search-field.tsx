@@ -18,7 +18,6 @@ import type {
   FieldTextInputProps,
   FieldValidationBehavior,
 } from '../field/field.js';
-import { IconButton } from '../icon-button/icon-button.js';
 
 export type SearchFieldSize = Extract<Size, 'xs' | 'sm' | 'md' | 'lg'>;
 
@@ -110,7 +109,7 @@ function ClearButton({ label, text, onPress }: { label: string; text?: string; o
           {text}
         </Button>
       ) : (
-        <IconButton {...shared} icon="close" label={label} />
+        <Button {...shared} icon="close" label={label} />
       )}
     </ButtonContext.Provider>
   );

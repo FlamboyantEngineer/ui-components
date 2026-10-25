@@ -59,8 +59,7 @@
             <li><a href="inline-text-diff.html">Inline Text Diff</a> — A change to a text value shown inline as removed and added runs.</li>
             <li><a href="meta-line.html">Meta Line</a> — Inline metadata entries separated by a middot, skipping empty entries.</li>
             <li><a href="prose-table.html">Prose Table</a> — A static table of headings and rows that takes the typography of the text around it.</li>
-            <li><a href="record-chip.html">Record Chip</a> — An inline reference to a record with its version, kind, state, preview and remove button.</li>
-            <li><a href="record-label.html">Record Label</a> — A record's icon and identifier, which never break apart, then its name.</li>
+            <li><a href="record-label.html">Record Label</a> — Plain record labels and chips with optional metadata, previews and removal.</li>
             <li><a href="relative-time.html">Relative Time</a> — A timestamp read relative to now that keeps itself current and shows the absolute date in a tooltip.</li>
             <li><a href="section-header.html">Section Header</a> — Section titles with supporting text and actions, standalone or naming their section.</li>
             <li><a href="shortcut.html">Shortcut</a> — Keyboard chords in each platform notation, with readable text and key legends.</li>
@@ -79,10 +78,8 @@
         <section>
           <h3>People</h3>
           <ul>
-            <li><a href="avatar.html">Avatar</a> — A picture, or initials on a stable colour slot, with a fallback when the picture fails.</li>
-            <li><a href="avatar-group.html">Avatar Group</a> — An overlapping stack of avatars with a +N overflow: sizes, maximum counts, names for assistive technology and a popover listing everyone.</li>
-            <li><a href="presence-avatar.html">Presence Avatar</a> — One present person's avatar marked with a caller-chosen status, optionally pressable.</li>
-            <li><a href="presence-strip.html">Presence Strip</a> — The people present as avatars or dots, with a +N count past the visible maximum.</li>
+            <li><a href="avatar.html">Avatar</a> — Person and group identities with pictures, initials, optional presence, actions, name tooltips and person cards.</li>
+            <li><a href="avatar-group.html">Avatar Group</a> — Overlapping stacks, spaced presence strips and decorative dots with cards, status and overflow.</li>
             <li><a href="user-card.html">User Card</a> — A person's identity card with status, details and actions, opened from any avatar or name.</li>
             <li><a href="user-identity.html">User Identity</a> — A decorative avatar, a display name and an optional secondary line.</li>
           </ul>
@@ -91,14 +88,12 @@
           <h3>Feedback and status</h3>
           <ul>
             <li><a href="banner.html">Banner</a> — Inline messages with tones, actions, dismissal and announcements.</li>
-            <li><a href="circular-progress.html">Circular Progress</a> — A compact ring for ratios in dense cells, at three sizes.</li>
             <li><a href="empty-state.html">Empty State</a> — Empty, loading and error notices that stand in for missing content.</li>
             <li><a href="inline-error.html">Inline Error</a> — Compact alerts for failed operations with optional recovery.</li>
             <li><a href="loading-overlay.html">Loading Overlay</a> — A status card, the cover that blocks a loading surface and a region that makes its content inert.</li>
-            <li><a href="meter.html">Meter</a> — A quantity within a known range: sizes, tones, worded values and tones judged by low, high and optimum thresholds.</li>
-            <li><a href="progress-bar.html">Progress Bar</a> — Determinate and indeterminate progress bars at three sizes, plus the decorative spinner.</li>
+            <li><a href="progress-bar.html">Progress Bar</a> — Linear and circular progress or measured quantities, with ranges, thresholds, status and spinners.</li>
             <li><a href="save-status.html">Save Status</a> — An editor's save status, announced politely, with retry after a failed save.</li>
-            <li><a href="segmented-bar.html">Segmented Bar</a> — A bar split into proportional segments: sizes, tones, totals with a remainder, a visible legend and a unit format.</li>
+            <li><a href="segmented-bar.html">Segmented Bar</a> — Parts of a whole as a linear track, donut ring or pie, with counts, shares and an optional legend.</li>
             <li><a href="skeleton.html">Skeleton</a> — Placeholders for loading content: blocks in each shape, text lines, and a loading region that keeps real content's layout until it loads.</li>
             <li><a href="status-light.html">Status Light</a> — A coloured dot beside a status label: tones, sizes, presence states with default labels, a processing state and dot-only lights.</li>
             <li><a href="toast.html">Toast</a> — Transient messages in four tones, drawn in place and pushed to a live region.</li>
@@ -107,14 +102,12 @@
         <section>
           <h3>Actions</h3>
           <ul>
-            <li><a href="action-button.html">Action Button</a> — A button whose asynchronous action keeps it pending until it settles.</li>
             <li><a href="action-row.html">Action Row</a> — A row of icon-button actions described as data, with fixed verbs, order and tooltips.</li>
-            <li><a href="button.html">Button</a> — Every variant, size and state of the labelled command button, with icons and content layouts.</li>
+            <li><a href="button.html">Button</a> — Labelled and icon-only commands, visual variants and automatic pending states for asynchronous actions.</li>
             <li><a href="button-group.html">Button Group</a> — Related buttons and icon buttons in a labelled group: spaced, compact or attached, in a row or a column, and justified.</li>
             <li><a href="copy-button.html">Copy Button</a> — An icon button that copies a value and confirms it with a check mark and an announcement.</li>
             <li><a href="dropdown-menu.html">Dropdown Menu</a> — A button or icon button that opens a menu.</li>
             <li><a href="expand-toggle.html">Expand Toggle</a> — A chevron button that expands and collapses a row, with an aligned placeholder for leaves.</li>
-            <li><a href="icon-button.html">Icon Button</a> — Every variant, size and state of the icon-only command button.</li>
             <li><a href="link.html">Link</a> — Links in running text and on their own: emphasis, underline policy, new tabs, client-side navigation and pressable links.</li>
             <li><a href="load-more.html">Load More</a> — A paging control with remaining counts and a pending state.</li>
             <li><a href="segmented-choice.html">Segmented Choice</a> — Picks one of a few mutually exclusive values of a setting from a run of segments.</li>
@@ -141,20 +134,19 @@
             <li><a href="disclosure.html">Disclosure</a> — Collapsible sections and accordions: a titled trigger with a start or end indicator, its panel, custom headers with actions, and groups that open one or many.</li>
             <li><a href="pagination.html">Pagination</a> — Previous and next buttons around page buttons, with gaps for skipped pages.</li>
             <li><a href="path.html">Path</a> — One line of location text truncated from the start so the final label stays visible.</li>
-            <li><a href="steps.html">Steps</a> — An ordered list of a task's steps with where each one stands, the current one marked.</li>
+            <li><a href="steps.html">Steps</a> — A task in ordered steps, including an all-completed state, compact layouts and returning to a reached step.</li>
             <li><a href="tabs.html">Tabs</a> — Switches between peer sections of one surface, with icons, counts, links and overflow scrolling.</li>
           </ul>
         </section>
         <section>
           <h3>Overlays</h3>
           <ul>
-            <li><a href="confirm-dialog.html">Confirm Dialog</a> — A yes-or-no decision in an alert dialog, rendered declaratively or awaited through a controller.</li>
             <li><a href="context-menu.html">Context Menu</a> — Menus opened at the pointer, from the keyboard, by a long touch or through a controller.</li>
             <li><a href="drawer.html">Drawer</a> — A panel sliding in from a viewport edge: positions, sizes, header and footer, dismissal options, snap points and nested drawers.</li>
             <li><a href="hover-card.html">Hover Card</a> — A card of extra content shown on hover and focus of its trigger: delays, placements, arrow, interactive content and controlled state.</li>
             <li><a href="menu.html">Menu</a> — Menu items, sections, selection and submenus, standalone and opened from a button.</li>
             <li><a href="menubar.html">Menubar</a> — A row or column of top-level items that each open a menu, with menubar keyboard and pointer behaviour.</li>
-            <li><a href="modal.html">Modal</a> — A blocking dialog with a title, a body and Cancel, secondary and primary actions.</li>
+            <li><a href="modal.html">Modal</a> — Dialog presentations with footer actions, asynchronous work and confirmation, alert and prompt helpers.</li>
             <li><a href="modal-controller.html">Modal Controller</a> — Opens, stacks, updates and closes modals imperatively through a controller and its host.</li>
             <li><a href="popover.html">Popover</a> — A dialog floating against its trigger: placements, arrow, title and close button, non-modal, custom anchor and controlled state.</li>
             <li><a href="tooltip.html">Tooltip</a> — Hover and focus hints for controls, in two variants and every placement.</li>

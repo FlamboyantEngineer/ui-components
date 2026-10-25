@@ -5,7 +5,7 @@ import { useActiveAfter, useDelayedFlag } from './use-delayed-flag.js';
 afterEach(() => vi.useRealTimers());
 
 describe('useDelayedFlag', () => {
-  it('UIC-ACTION-BUTTON-1.7 UIC-LOADING-OVERLAY-3.2 waits again after activation or delay changes', () => {
+  it('UIC-BUTTON-21.7 UIC-LOADING-OVERLAY-3.2 waits again after activation or delay changes', () => {
     vi.useFakeTimers();
     const { result, rerender } = renderHook(({ active, delay }) => useDelayedFlag(active, delay), {
       initialProps: { active: true, delay: 100 },
@@ -54,7 +54,7 @@ describe('useDelayedFlag', () => {
     expect(result.current).toBe(true);
   });
 
-  it('UIC-ACTION-BUTTON-1.7 UIC-LOADING-OVERLAY-3.2 clears a pending timer when deactivated or unmounted', () => {
+  it('UIC-BUTTON-21.7 UIC-LOADING-OVERLAY-3.2 clears a pending timer when deactivated or unmounted', () => {
     vi.useFakeTimers();
     const { result, rerender, unmount } = renderHook(({ active }) => useDelayedFlag(active, 100), {
       initialProps: { active: true },
@@ -72,7 +72,7 @@ describe('useDelayedFlag', () => {
 });
 
 describe('useActiveAfter', () => {
-  it('UIC-ACTION-BUTTON-1.7 UIC-LOADING-OVERLAY-3.2 follows the flag at once without a delay and after it with one', () => {
+  it('UIC-BUTTON-21.7 UIC-LOADING-OVERLAY-3.2 follows the flag at once without a delay and after it with one', () => {
     vi.useFakeTimers();
     const { result, rerender } = renderHook(({ active, delay }) => useActiveAfter(active, delay), {
       initialProps: { active: true, delay: 0 },

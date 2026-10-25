@@ -98,7 +98,7 @@ Verification: `src/components/board/board-moves.test.ts`, `e2e/board.spec.ts`
 
 ### UIC-BOARD-3.1 - Dragging columns
 
-With `onColumnMove`, each column header shall start with a drag handle (`ui-board__column-handle`, an [IconButton](ICON-BUTTON.md) named by the provider's `moveColumn` string with the title), and the reader shall drag a column header onto another by pointer (React Aria's `useDrag` and `useDrop`): the dragged column takes the target's slot, reported as one `onColumnMove({ key, targetKey, position })`, `after` when it comes from the start side and `before` otherwise. The dragged header publishes `data-dragging` and the header under it `data-drop-target` with `data-position`. Without `onColumnMove` no handle renders and no header drags.
+With `onColumnMove`, each column header shall start with a drag handle (`ui-board__column-handle`, an [Button](BUTTON.md) named by the provider's `moveColumn` string with the title), and the reader shall drag a column header onto another by pointer (React Aria's `useDrag` and `useDrop`): the dragged column takes the target's slot, reported as one `onColumnMove({ key, targetKey, position })`, `after` when it comes from the start side and `before` otherwise. The dragged header publishes `data-dragging` and the header under it `data-drop-target` with `data-position`. Without `onColumnMove` no handle renders and no header drags.
 
 Implementation: `src/components/board/board-column-header.tsx`, `src/components/board/use-board-drag.ts`, `src/components/board/board-moves.ts`
 Verification: `src/components/board/board.test.tsx`, `src/components/board/board-moves.test.ts`, `e2e/board.spec.ts`
@@ -126,7 +126,7 @@ Verification: `src/components/board/board.test.tsx`, `e2e/board.spec.ts`
 | `ui-board`                  | root      |                   | The board (`role="group"`).                                                          |
 | `ui-board__columns`         | slot      |                   | The row of column headers.                                                           |
 | `ui-board__column`          | slot      |                   | A column header.                                                                     |
-| `ui-board__column-handle`   | slot      |                   | A column's drag handle (also `ui-icon-button`).                                      |
+| `ui-board__column-handle`   | slot      |                   | A column's drag handle (also `ui-button`).                                           |
 | `ui-board__column-toggle`   | slot      |                   | A column's collapse toggle (also `ui-expand-toggle`).                                |
 | `ui-board__column-title`    | slot      |                   | A column's title.                                                                    |
 | `ui-board__column-count`    | slot      |                   | A column's card count, against its limit.                                            |

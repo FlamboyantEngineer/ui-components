@@ -56,7 +56,7 @@ describe('NotificationCenter', () => {
     expect(root).toHaveAttribute('data-lab', 'bell');
     expect(root).toHaveAttribute('data-presentation', 'popover');
     expect(bell()).toHaveAccessibleName('Notifications, 2 unread');
-    expect(bell()).toHaveClass('ui-notification-center__trigger', 'ui-icon-button');
+    expect(bell()).toHaveClass('ui-notification-center__trigger', 'ui-button');
     expect(bell().querySelector('[data-glyph="bell"]')).not.toBeNull();
     const count = root.querySelector('.ui-notification-center__count');
     expect(count).toHaveClass('ui-badge');

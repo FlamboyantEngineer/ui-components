@@ -7,7 +7,7 @@ import {
   type ChatMessageStatus,
 } from '../../src/components/chat-transcript/chat-transcript.js';
 import { CopyButton } from '../../src/components/copy-button/copy-button.js';
-import { IconButton } from '../../src/components/icon-button/icon-button.js';
+
 import { MessageComposer } from '../../src/components/message-composer/message-composer.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { samplePicture } from './people-samples.js';
@@ -217,10 +217,7 @@ mountLab(
             Two crates were cold.
           </ChatMessage>
           <ChatMessage origin="received">One was warm.</ChatMessage>
-          <ChatMessage
-            origin="received"
-            actions={<IconButton icon="copy" label="Copy" size="sm" />}
-          >
+          <ChatMessage origin="received" actions={<Button icon="copy" label="Copy" size="sm" />}>
             The warm crate goes back for a second reading.
           </ChatMessage>
         </ChatTranscript>

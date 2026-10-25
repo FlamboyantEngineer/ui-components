@@ -117,7 +117,7 @@ Verification: `src/components/select-field/select-chips.test.tsx`, `e2e/select-f
 
 ### UIC-SELECT-FIELD-4.2 - Removing a chip
 
-On an editable select each chip shall end with a remove button (`ui-select-field__chip-remove`, an `IconButton` with the `close` glyph named by the provider string `remove` read with the chip's label); pressing it, or Delete or Backspace on a focused chip, removes that value and commits without opening the list. A read-only or disabled select's chips stay focusable and offer no removal.
+On an editable select each chip shall end with a remove button (`ui-select-field__chip-remove`, an `Button` with the `close` glyph named by the provider string `remove` read with the chip's label); pressing it, or Delete or Backspace on a focused chip, removes that value and commits without opening the list. A read-only or disabled select's chips stay focusable and offer no removal.
 
 Implementation: `src/components/select-field/select-chips.tsx`, `src/core/strings.ts`
 Verification: `src/components/select-field/select-chips.test.tsx`, `e2e/select-field.spec.ts`
@@ -195,7 +195,7 @@ Verification: `src/components/select-field/select-list.test.tsx`, `e2e/select-fi
 
 ### UIC-SELECT-FIELD-8.1 - Clear button
 
-With `isClearable`, while the field can be cleared (editable, not required and holding a value, UIC-FIELD-2.5) the frame shall end with a clear button (`ui-select-field__clear`, an `IconButton` with the `close` glyph named by the provider string `clearValue` from the label, `Clear Fruit`) outside the trigger. Pressing it sets the empty value (`null`, or an empty list for a multiple select) and commits it without opening the list, then moves focus to the trigger.
+With `isClearable`, while the field can be cleared (editable, not required and holding a value, UIC-FIELD-2.5) the frame shall end with a clear button (`ui-select-field__clear`, an `Button` with the `close` glyph named by the provider string `clearValue` from the label, `Clear Fruit`) outside the trigger. Pressing it sets the empty value (`null`, or an empty list for a multiple select) and commits it without opening the list, then moves focus to the trigger.
 
 Implementation: `src/components/select-field/select-trigger.tsx`, `src/components/select-field/select-control.tsx`, `src/core/strings.ts`
 Verification: `src/components/select-field/select-trigger.test.tsx`, `e2e/select-field.spec.ts`
@@ -215,7 +215,7 @@ Verification: `src/components/select-field/select-model.test.tsx`, `e2e/select-f
 | `ui-select-field__select`             | slot      |                                            | React Aria's select wrapper; carries the measured label width.           |
 | `ui-select-field__frame`              | slot      |                                            | Holds the previous value and the trigger.                                |
 | `ui-select-field__trigger`            | slot      |                                            | The trigger button.                                                      |
-| `ui-select-field__clear`              | slot      |                                            | The clear button after the trigger (also `ui-icon-button`).              |
+| `ui-select-field__clear`              | slot      |                                            | The clear button after the trigger (also `ui-button`).                   |
 | `ui-select-field__previous`           | slot      |                                            | A single select's previous value (also `ui-field-previous-value`).       |
 | `ui-select-field__value`              | slot      |                                            | The chosen option or the placeholder; names the trigger.                 |
 | `ui-select-field__value-icon`         | slot      |                                            | The chosen (or previous) option's icon (also `ui-icon`).                 |
@@ -241,7 +241,7 @@ Verification: `src/components/select-field/select-model.test.tsx`, `e2e/select-f
 | `ui-select-field__chip`               | slot      |                                            | One chosen value.                                                        |
 | `ui-select-field__chip-icon`          | slot      |                                            | A chip's or removed value's icon (also `ui-icon`).                       |
 | `ui-select-field__chip-label`         | slot      |                                            | A chip's label.                                                          |
-| `ui-select-field__chip-remove`        | slot      |                                            | A chip's remove button (also `ui-icon-button`).                          |
+| `ui-select-field__chip-remove`        | slot      |                                            | A chip's remove button (also `ui-button`).                               |
 | `ui-select-field__removed`            | slot      |                                            | A removed committed value (also `ui-field-previous-value`).              |
 | `data-selection-mode`                 | attribute | `single`, `multiple`                       | On the root (and React Aria's options): how many values the field takes. |
 | `data-layer`                          | attribute | `dropdown`                                 | The popover's overlay layer.                                             |

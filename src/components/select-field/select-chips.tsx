@@ -6,7 +6,7 @@ import { createHooks } from '../../core/hooks.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { FieldPreviousValue } from '../field/field.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 import { Icon, toIconProps } from '../icon/icon.js';
 import type { ChosenSelectOption } from './select-options.js';
 
@@ -84,7 +84,7 @@ export function SelectChips({
                     <ChipIcon option={option} />
                     <span {...hooks.slot('chip-label')}>{option.label}</span>
                     {allowsRemoving ? (
-                      <IconButton
+                      <Button
                         slot="remove"
                         icon="close"
                         label={strings.remove}

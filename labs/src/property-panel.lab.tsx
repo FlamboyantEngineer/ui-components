@@ -2,7 +2,7 @@ import { useId, useState, type ReactNode } from 'react';
 import type { Key } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
 import { Field, useFieldState } from '../../src/components/field/field.js';
-import { IconButton } from '../../src/components/icon-button/icon-button.js';
+
 import {
   PropertyCard,
   PropertyGroup,
@@ -108,7 +108,7 @@ function RowSample({ state }: { state: (typeof rowStates)[number] }) {
       description={state === 'description and actions' ? 'The width of the frame.' : undefined}
       actions={
         state === 'description and actions' ? (
-          <IconButton icon="restore" label="Reset width" size="sm" />
+          <Button icon="restore" label="Reset width" size="sm" />
         ) : undefined
       }
     />
@@ -126,7 +126,7 @@ function SectionSample({ state, name }: { state: (typeof sectionStates)[number];
       meta={state === 'description and meta' ? 'shared' : undefined}
       actions={
         state === 'actions' ? (
-          <IconButton icon="plus" label={`Add colour to ${name}`} size="sm" />
+          <Button icon="plus" label={`Add colour to ${name}`} size="sm" />
         ) : undefined
       }
     >
@@ -151,7 +151,7 @@ function CardSample({ state, name }: { state: (typeof cardStates)[number]; name:
       isOverridden={state === 'overridden'}
       actions={
         state === 'actions' ? (
-          <IconButton icon="undo" label={`Reset heading in ${name}`} size="sm" />
+          <Button icon="undo" label={`Reset heading in ${name}`} size="sm" />
         ) : undefined
       }
     >
@@ -165,9 +165,9 @@ function StripSample({ variant, name }: { variant: 'separate' | 'segmented'; nam
     <>
       <PropertyRow label="Style">
         <PropertyIconGroup aria-label={`Style in ${name}`} variant={variant}>
-          <IconButton icon="check" label="Checked" size="sm" isSelected />
-          <IconButton icon="minus" label="Mixed" size="sm" />
-          <IconButton icon="close" label="Cleared" size="sm" />
+          <Button icon="check" label="Checked" size="sm" isSelected />
+          <Button icon="minus" label="Mixed" size="sm" />
+          <Button icon="close" label="Cleared" size="sm" />
         </PropertyIconGroup>
       </PropertyRow>
       <PropertyRow label="Spacing" unit="pt" keywords={['Before', 'After']}>

@@ -11,7 +11,7 @@ import type {
   TreeChangeCounts,
 } from '../../utils/compare-trees.js';
 import { Icon } from '../icon/icon.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 import { Switch } from '../switch/switch.js';
 
 /** Which tree a cell shows. */
@@ -94,7 +94,7 @@ export function TreeCompareToolbar(props: {
       >
         {strings.treeChangesOnly}
       </Switch>
-      <IconButton
+      <Button
         className={hooks.slotClass('previous')}
         icon="chevron-up"
         label={strings.treePreviousChange}
@@ -103,7 +103,7 @@ export function TreeCompareToolbar(props: {
         isDisabled={!props.hasChanges}
         onPress={() => props.onStep(-1)}
       />
-      <IconButton
+      <Button
         className={hooks.slotClass('next')}
         icon="chevron-down"
         label={strings.treeNextChange}
@@ -169,7 +169,7 @@ export function TreeCompareRowContent<T extends CompareTreeNode>(props: {
 export function TreeCompareJump(props: { isOldPosition: boolean; onPress: () => void }) {
   const strings = useUiStrings();
   return (
-    <IconButton
+    <Button
       className={hooks.slotClass('jump')}
       icon={props.isOldPosition ? 'arrow-right' : 'arrow-left'}
       label={props.isOldPosition ? strings.treeGoToNewPosition : strings.treeGoToOldPosition}

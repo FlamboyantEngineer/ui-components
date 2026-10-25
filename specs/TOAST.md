@@ -96,7 +96,7 @@ Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`
 
 ### UIC-TOAST-3.4 - Dismiss
 
-Every toast shall have an [Icon Button](ICON-BUTTON.md) in the `ui-toast__close` slot, named by the provider's `dismiss` string, that closes it.
+Every toast shall have an [Icon Button](BUTTON.md) in the `ui-toast__close` slot, named by the provider's `dismiss` string, that closes it.
 
 Implementation: `src/components/toast/toast.tsx`
 Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`
@@ -151,7 +151,7 @@ Verification: `src/components/toast/toast.test.tsx`, `e2e/toast.spec.ts`
 | `ui-toast__title`       | slot      |                                        | The title.                                        |
 | `ui-toast__description` | slot      |                                        | The description, when set.                        |
 | `ui-toast__action`      | slot      |                                        | The action button (also `ui-button`).             |
-| `ui-toast__close`       | slot      |                                        | The dismiss button (also `ui-icon-button`).       |
+| `ui-toast__close`       | slot      |                                        | The dismiss button (also `ui-button`).            |
 | `data-tone`             | attribute | `info`, `success`, `warning`, `danger` | The toast's tone.                                 |
 | `data-swipe-direction`  | attribute | `up`, `down`, `left`, `right`          | The direction that dismisses the toast.           |
 | `data-pending`          | state     | `true`                                 | Work in progress.                                 |

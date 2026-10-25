@@ -223,3 +223,34 @@
 .ui-modal__primary {
   min-width: 72px;
 }
+
+/* Confirm Dialog, on top of Modal */
+
+.ui-modal .ui-modal__body {
+  padding-top: 4px;
+}
+
+.ui-modal__message {
+  margin: 0;
+}
+
+.ui-modal__confirmation-icon {
+  margin-inline-end: 4px;
+  vertical-align: -3px;
+}
+
+.ui-modal[data-tone='info'] .ui-modal__confirmation-icon {
+  color: var(--ref-info);
+}
+
+.ui-modal[data-tone='success'] .ui-modal__confirmation-icon {
+  color: var(--ref-success);
+}
+
+.ui-modal[data-tone='warning'] .ui-modal__confirmation-icon {
+  color: var(--ref-warning);
+}
+
+.ui-modal[data-tone='danger'] .ui-modal__confirmation-icon {
+  color: var(--ref-danger);
+}

@@ -7,7 +7,7 @@ import { useControllableState } from '../../core/controllable-state.js';
 import type { BaseProps, Key, Tone } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
-import { IconButton } from '../icon-button/icon-button.js';
+
 import { SegmentedChoice } from '../segmented-choice/segmented-choice.js';
 import { CalendarMonth } from './calendar-month.js';
 import { CalendarWeek } from './calendar-week.js';
@@ -95,14 +95,14 @@ function CalendarToolbar(props: {
       <Button size="sm" className={hooks.slotClass('today')} onPress={() => onMove(0)}>
         {strings.today}
       </Button>
-      <IconButton
+      <Button
         icon={isRightToLeft ? 'chevron-right' : 'chevron-left'}
         size="sm"
         label={strings.previousRange(mode)}
         className={hooks.slotClass('previous')}
         onPress={() => onMove(-1)}
       />
-      <IconButton
+      <Button
         icon={isRightToLeft ? 'chevron-left' : 'chevron-right'}
         size="sm"
         label={strings.nextRange(mode)}

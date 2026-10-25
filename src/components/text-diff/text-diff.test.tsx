@@ -252,7 +252,7 @@ describe('TextDiff', () => {
     const { container, rerender } = render(<TextDiff oldText={oldText} newText={newText} />);
     const previous = screen.getByRole('button', { name: 'Previous change' });
     const next = screen.getByRole('button', { name: 'Next change' });
-    expect(previous).toHaveClass('ui-icon-button', 'ui-text-diff__previous');
+    expect(previous).toHaveClass('ui-button', 'ui-text-diff__previous');
     expect(next).toHaveClass('ui-text-diff__next');
     expect(previous).toBeDisabled();
     await user.click(next);

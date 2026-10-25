@@ -10,7 +10,7 @@ import {
   type CompletionListItemState,
   type CompletionSource,
 } from '../completion-list/completion-list.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 import { useMessageComposer } from './use-message-composer.js';
 
 /** The chord that sends: Enter (Shift+Enter breaks the line), or Ctrl+Enter (Cmd+Enter on macOS). */
@@ -81,7 +81,7 @@ function ComposerAction({
 }) {
   const strings = useUiStrings();
   return (
-    <IconButton
+    <Button
       className={hooks.slotClass('action')}
       icon={isStop ? 'stop' : 'send'}
       label={isStop ? strings.stop : strings.send}

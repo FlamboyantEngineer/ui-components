@@ -5,7 +5,7 @@ import type { BaseProps, NativeProps, Tone } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 import { Icon, toIconProps, type IconSource } from '../icon/icon.js';
 
 export type BannerTone = Tone;
@@ -88,7 +88,7 @@ function BannerDismiss({
 }) {
   const strings = useUiStrings();
   return (
-    <IconButton
+    <Button
       icon="close"
       label={label ?? strings.dismiss}
       size="sm"

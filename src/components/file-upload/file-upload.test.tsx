@@ -341,7 +341,7 @@ describe('FileUpload', () => {
       <FileUpload label="Attachments" files={items} onRemove={onRemove} onSelect={() => {}} />,
     );
     const remove = screen.getByRole('button', { name: 'Remove Photo.png' });
-    expect(remove).toHaveClass('ui-file-upload__file-remove', 'ui-icon-button');
+    expect(remove).toHaveClass('ui-file-upload__file-remove', 'ui-button');
     expect(remove.querySelector('[data-glyph="close"]')).not.toBeNull();
     await user.click(remove);
     expect(onRemove).toHaveBeenCalledWith('b');

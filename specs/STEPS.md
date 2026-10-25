@@ -92,6 +92,15 @@ A settled step's label shall end with the provider's `stepStatus` words (`Comple
 Implementation: `src/components/steps/steps.tsx`, `src/core/common-strings.ts`
 Verification: `src/components/steps/steps.test.tsx`, `e2e/steps.spec.ts`
 
+## UIC-STEPS-4 - Unified options
+
+### UIC-STEPS-4.1 - All complete
+
+isComplete shall mark every step complete, with no current step. Compact mode shall show Completed at the last marker; completed steps remain pressable when onAction is supplied.
+
+Implementation: `src/components/steps/steps.tsx`
+Verification: `src/components/steps/steps.test.tsx`, `e2e/unified-options.spec.ts`
+
 ## Hooks
 
 | Hook                    | Kind      | Values                                                | Description                                                       |
@@ -114,3 +123,5 @@ Verification: `src/components/steps/steps.test.tsx`, `e2e/steps.spec.ts`
 | `data-pressed`          | state     | `true`                                                | A pressable step is being pressed.                                |
 | `data-focused`          | state     | `true`                                                | A pressable step is focused.                                      |
 | `data-focus-visible`    | state     | `true`                                                | A pressable step has keyboard focus.                              |
+
+| `data-complete` | state | `true` | Every step is complete and no step is current. |

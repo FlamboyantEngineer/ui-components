@@ -163,7 +163,7 @@ describe('Combobox', () => {
     );
     expect(input()).toHaveValue('Banana');
     const clear = screen.getByRole('button', { name: 'Clear fruit' });
-    expect(clear).toHaveClass('ui-icon-button', 'ui-combobox__clear');
+    expect(clear).toHaveClass('ui-button', 'ui-combobox__clear');
     expect(clear).toHaveAttribute('data-variant', 'bare');
     expectHooksMatchSpec(container, 'COMBOBOX', { slots: ['clear'] });
     await user.click(clear);

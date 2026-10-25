@@ -245,7 +245,7 @@
   background: var(--ref-selected);
 }
 
-.ui-date-time-field__calendar-nav.ui-icon-button {
+.ui-date-time-field__calendar-nav.ui-button[data-content='icon'] {
   flex: none;
 }
 

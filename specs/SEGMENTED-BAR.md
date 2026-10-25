@@ -1,6 +1,6 @@
 # Segmented Bar
 
-`SegmentedBar` splits one bar into proportional segments, such as passed, failed and skipped checks, covered and uncovered requirements, or space used by kind of file. It shares the [Meter](METER.md) and [Progress Bar](PROGRESS-BAR.md) vocabulary (`label`, `track`, `data-size`, `data-tone`), so a host draws all three as one family. The bar itself is decorative: a list of every segment's label, count and share carries its meaning, read only by assistive technology or shown as a legend.
+`SegmentedBar` splits one bar into proportional segments, such as passed, failed and skipped checks, covered and uncovered requirements, or space used by kind of file. It shares the [ProgressBar](PROGRESS-BAR.md) and [Progress Bar](PROGRESS-BAR.md) vocabulary (`label`, `track`, `data-size`, `data-tone`), so a host draws all three as one family. The bar itself is decorative: a list of every segment's label, count and share carries its meaning, read only by assistive technology or shown as a legend.
 
 ## UIC-SEGMENTED-BAR-1 - Segmented bar
 
@@ -71,6 +71,15 @@ A segmented bar shall take no tab stop and handle no keys or pointer input.
 Implementation: `src/components/segmented-bar/segmented-bar.tsx`
 Verification: `src/components/segmented-bar/segmented-bar.test.tsx`
 
+## UIC-SEGMENTED-BAR-3 - Unified options
+
+### UIC-SEGMENTED-BAR-3.1 - Circular shares
+
+shape shall select linear (default), donut or pie. Both circular forms draw the same ordered shares from twelve oclock clockwise, keep any remainder empty, retain the accessible summary and support the same size steps as circular progress.
+
+Implementation: `src/components/segmented-bar/segmented-bar.tsx`
+Verification: `src/components/segmented-bar/segmented-bar.test.tsx`, `e2e/unified-options.spec.ts`
+
 ## Hooks
 
 | Hook                           | Kind      | Values                                            | Description                                              |
@@ -88,3 +97,7 @@ Verification: `src/components/segmented-bar/segmented-bar.test.tsx`
 | `ui-segmented-bar__item-share` | slot      |                                                   | The segment's share of the whole, as a percentage.       |
 | `data-size`                    | attribute | `sm`, `md`, `lg`                                  | Track thickness.                                         |
 | `data-tone`                    | attribute | `neutral`, `info`, `success`, `warning`, `danger` | A segment's tone, on its track segment and legend entry. |
+
+| `ui-segmented-bar__ring` | slot | | The SVG of a donut or pie. |
+
+| `data-shape` | attribute | `linear`, `donut`, `pie` | Share appearance. |

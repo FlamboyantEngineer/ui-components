@@ -6,6 +6,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { Icon, toIconProps, type IconSource } from '../icon/icon.js';
 import { Shortcut, useDetectedPlatform } from '../shortcut/shortcut.js';
 import { Tooltip } from '../tooltip/tooltip.js';
+import { useButtonAction, type ButtonActionProps } from './button-action.js';
 import {
   toAriaButtonProps,
   toAriaLinkProps,
@@ -28,11 +29,11 @@ export type ButtonVariant =
 export type ButtonSize = Extract<Size, 'xs' | 'sm' | 'md' | 'lg'>;
 
 /** `label` wraps children in one label slot; `parts` lays them out directly; `sentence` lets a prose label wrap. */
-export type ButtonContent = 'label' | 'parts' | 'sentence';
+export type ButtonContent = 'label' | 'parts' | 'sentence' | 'icon';
 
 export type ButtonAlign = 'center' | 'start';
 
-export interface ButtonProps extends ButtonStateProps, BaseProps {
+export interface ButtonProps extends ButtonStateProps, ButtonActionProps, BaseProps {
   /** Emphasis and chrome. Defaults to `secondary`. */
   variant?: ButtonVariant | undefined;
   /** Block size. Defaults to `md`. */
@@ -43,6 +44,10 @@ export interface ButtonProps extends ButtonStateProps, BaseProps {
   content?: ButtonContent | undefined;
   /** Where content sits on the button's width. Defaults to `center`. */
   align?: ButtonAlign | undefined;
+  /** Shows an icon-only button. Name it with `label` or `aria-label`. */
+  icon?: IconSource;
+  /** The accessible name of an icon-only button. */
+  label?: string | undefined;
   /** An icon before the label. */
   startIcon?: IconSource;
   /** An icon after the label. */
@@ -66,10 +71,10 @@ type ButtonHint = Pick<ButtonProps, 'tooltip' | 'shortcut'>;
 
 type ButtonPartsProps = Pick<
   ButtonProps,
-  'children' | 'content' | 'startIcon' | 'endIcon' | 'isPending' | 'pendingLabel'
+  'children' | 'content' | 'icon' | 'startIcon' | 'endIcon' | 'isPending' | 'pendingLabel'
 >;
 
-const hooks = createHooks('button', ['spinner', 'start-icon', 'label', 'end-icon']);
+const hooks = createHooks('button', ['spinner', 'start-icon', 'label', 'end-icon', 'icon']);
 
 /** The busy indicator of a pending button: an indeterminate progress bar React Aria announces. */
 export function ButtonSpinner({ className, label }: ButtonSpinnerProps) {
@@ -86,6 +91,7 @@ export function ButtonSpinner({ className, label }: ButtonSpinnerProps) {
 function ButtonParts({
   children,
   content,
+  icon,
   startIcon,
   endIcon,
   isPending,
@@ -99,7 +105,13 @@ function ButtonParts({
       {startIcon ? (
         <Icon {...toIconProps(startIcon)} className={hooks.slotClass('start-icon')} />
       ) : null}
-      {content === 'parts' ? children : <span {...hooks.slot('label')}>{children}</span>}
+      {icon ? (
+        <Icon {...toIconProps(icon)} className={hooks.slotClass('icon')} />
+      ) : content === 'parts' ? (
+        children
+      ) : (
+        <span {...hooks.slot('label')}>{children}</span>
+      )}
       {endIcon ? <Icon {...toIconProps(endIcon)} className={hooks.slotClass('end-icon')} /> : null}
     </>
   );
@@ -124,50 +136,104 @@ function isEmptyHint(tooltip: ReactNode): boolean {
   return tooltip == null || tooltip === false || tooltip === '';
 }
 
+/** The icon mode owns its accessible name and defaults, independently of action timing. */
+function resolveButtonPresentation(
+  props: Pick<
+    ButtonProps,
+    'icon' | 'label' | 'aria-label' | 'tooltip' | 'shortcut' | 'variant' | 'content'
+  >,
+) {
+  const isIcon = props.icon !== undefined;
+  const name = props.label ?? props['aria-label'];
+  if (isIcon && !name?.trim()) throw new Error('An icon-only Button requires a non-empty label.');
+  const hint = props.tooltip ?? (isIcon && props.shortcut ? name : undefined);
+  return {
+    isIcon,
+    name,
+    hint,
+    variant: props.variant ?? (isIcon ? 'ghost' : 'secondary'),
+    content: isIcon ? 'icon' : props.content,
+    isTooltipName: isIcon && hint === name && !props.shortcut,
+  };
+}
+
 /** A labelled command button, or a link drawn as one with `href`. */
 export function Button({
-  variant = 'secondary',
+  variant,
   size = 'md',
   children,
   content = 'label',
   align = 'center',
+  icon,
+  label,
   startIcon,
   endIcon,
   fullWidth = false,
   tooltip,
   className,
+  onError,
+  pendingDelay,
   ...rest
 }: ButtonProps) {
+  const presentation = resolveButtonPresentation({
+    icon,
+    label,
+    tooltip,
+    variant,
+    content,
+    shortcut: rest.shortcut,
+    'aria-label': rest['aria-label'],
+  });
   const selection = useButtonSelection(rest);
-  const options = { platform: useDetectedPlatform() };
+  const action = useButtonAction({ ...rest, ...selection, onError, pendingDelay });
+  const options = { platform: useDetectedPlatform(), isTooltipName: presentation.isTooltipName };
   const isLink = rest.href !== undefined;
   const hookProps = hooks.root({
     className,
     props: rest,
-    data: { variant, size, content, align, selected: !isLink && selection.isSelected, fullWidth },
+    data: {
+      variant: presentation.variant,
+      size,
+      content: presentation.content,
+      align,
+      selected: !isLink && selection.isSelected,
+      fullWidth,
+    },
   });
   const parts = (
     <ButtonParts
       content={content}
+      icon={icon}
       startIcon={startIcon}
       endIcon={endIcon}
-      isPending={!isLink && rest.isPending}
+      isPending={!isLink && action.isPending}
       pendingLabel={rest.pendingLabel}
     >
       {children}
     </ButtonParts>
   );
   const element = isLink ? (
-    <AriaLink {...toAriaLinkProps(rest, options)} {...hookProps}>
+    <AriaLink
+      {...toAriaLinkProps(rest, options)}
+      {...hookProps}
+      aria-label={presentation.isIcon ? presentation.name : rest['aria-label']}
+    >
       {parts}
     </AriaLink>
   ) : (
-    <AriaButton {...toAriaButtonProps({ ...rest, ...selection }, options)} {...hookProps}>
+    <AriaButton
+      {...toAriaButtonProps({ ...rest, ...selection, ...action }, options)}
+      {...hookProps}
+      aria-label={presentation.isIcon ? presentation.name : rest['aria-label']}
+    >
       {parts}
     </AriaButton>
   );
-  return withTooltip(element, { tooltip, shortcut: rest.shortcut });
+  return withTooltip(element, { tooltip: presentation.hint, shortcut: rest.shortcut });
 }
 
 export { toAriaButtonProps, toAriaLinkProps, useButtonSelection } from './button-state.js';
 export type { ButtonRenderState } from './button-state.js';
+
+export { runPendingAction, usePendingAction } from './button-action.js';
+export { ScrollStripButton } from './scroll-strip-button.js';

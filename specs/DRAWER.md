@@ -82,7 +82,7 @@ Verification: `src/components/drawer/drawer.test.tsx`, `e2e/drawer.spec.ts`
 
 ### UIC-DRAWER-4.1 - Title and close button
 
-`title` shall render as the dialog's level-2 heading in the `ui-drawer__title` slot of the `ui-drawer__header` row and name the dialog. `showCloseButton` shall add an `IconButton` in the `ui-drawer__close` slot at the end of the header, named by the provider's `close` string and drawing its `close` glyph, that closes the drawer like Escape.
+`title` shall render as the dialog's level-2 heading in the `ui-drawer__title` slot of the `ui-drawer__header` row and name the dialog. `showCloseButton` shall add an `Button` in the `ui-drawer__close` slot at the end of the header, named by the provider's `close` string and drawing its `close` glyph, that closes the drawer like Escape.
 
 Implementation: `src/components/drawer/drawer.tsx`
 Verification: `src/components/drawer/drawer.test.tsx`, `e2e/drawer.spec.ts`
@@ -127,7 +127,7 @@ Verification: `src/components/drawer/drawer.test.tsx`, `e2e/drawer.spec.ts`
 | `ui-drawer__dialog`    | slot      |                                                            | The `role="dialog"` element filling the panel.                      |
 | `ui-drawer__header`    | slot      |                                                            | The header row.                                                     |
 | `ui-drawer__title`     | slot      |                                                            | The `<h2>` title.                                                   |
-| `ui-drawer__close`     | slot      |                                                            | The header close button (also `ui-icon-button`).                    |
+| `ui-drawer__close`     | slot      |                                                            | The header close button (also `ui-button`).                         |
 | `ui-drawer__body`      | slot      |                                                            | The body.                                                           |
 | `ui-drawer__footer`    | slot      |                                                            | The footer.                                                         |
 | `data-size`            | attribute | `sm`, `md`, `lg`                                           | On the overlay, the panel's extent away from its edge.              |

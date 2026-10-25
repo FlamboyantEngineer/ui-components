@@ -5,7 +5,7 @@ import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import type { ButtonSize } from '../button/button.js';
-import { IconButton } from '../icon-button/icon-button.js';
+import { Button } from '../button/button.js';
 import { ActionRowActions, createClearKey } from './action-row-actions.js';
 import { orderActions, type ActionRowAction } from './action-verbs.js';
 
@@ -50,7 +50,7 @@ function SelectionStatus({
   return (
     <div {...hooks.slot('selection')}>
       {onClear ? (
-        <IconButton
+        <Button
           {...hooks.slot('clear')}
           icon="close"
           label={strings.clearSelection}

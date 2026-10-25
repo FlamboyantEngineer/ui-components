@@ -18,7 +18,7 @@ A component's hooks are listed only in its own spec. A family spec (for example 
 
 ## File format
 
-- File names are `UPPER-KEBAB.md`, named after the component (`BUTTON.md`, `ICON-BUTTON.md`).
+- File names are `UPPER-KEBAB.md`, named after the component (`BUTTON.md`, `BUTTON.md`).
 - The first line is a `# Title` heading.
 - Requirements are grouped under `## UIC-<AREA>-<n> - <Group title>` headings. Each requirement is a `### UIC-<AREA>-<n>.<m> - <Title>` heading followed by its statement, then two lines:
 

@@ -1,6 +1,6 @@
 # Expand Toggle
 
-`ExpandToggle` is the chevron button that expands and collapses a row or region, built on [Icon Button](ICON-BUTTON.md). In a list of rows where only some can expand, the others keep an empty box of the same size so their labels stay aligned. Inside a React Aria `Disclosure` it is the disclosure's trigger, paired with its panel.
+`ExpandToggle` is the chevron button that expands and collapses a row or region, built on [Icon Button](BUTTON.md). In a list of rows where only some can expand, the others keep an empty box of the same size so their labels stay aligned. Inside a React Aria `Disclosure` it is the disclosure's trigger, paired with its panel.
 
 ## UIC-EXPAND-TOGGLE-1 - Contract
 
@@ -62,9 +62,9 @@ Verification: `src/components/expand-toggle/expand-toggle.test.tsx`, `e2e/expand
 
 ## Hooks
 
-| Hook               | Kind      | Values                 | Description                                                  |
-| ------------------ | --------- | ---------------------- | ------------------------------------------------------------ |
-| `ui-expand-toggle` | root      |                        | The toggle button (also `ui-icon-button`), or the empty box. |
-| `data-size`        | attribute | `xs`, `sm`, `md`, `lg` | Box size.                                                    |
-| `data-expanded`    | state     | `true`                 | Expanded.                                                    |
-| `data-leaf`        | state     | `true`                 | The empty box of a row that cannot expand.                   |
+| Hook               | Kind      | Values                 | Description                                             |
+| ------------------ | --------- | ---------------------- | ------------------------------------------------------- |
+| `ui-expand-toggle` | root      |                        | The toggle button (also `ui-button`), or the empty box. |
+| `data-size`        | attribute | `xs`, `sm`, `md`, `lg` | Box size.                                               |
+| `data-expanded`    | state     | `true`                 | Expanded.                                               |
+| `data-leaf`        | state     | `true`                 | The empty box of a row that cannot expand.              |

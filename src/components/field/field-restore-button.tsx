@@ -1,9 +1,9 @@
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
-import { IconButton, type IconButtonProps } from '../icon-button/icon-button.js';
+import { Button, type ButtonProps } from '../button/button.js';
 
 export interface FieldRestoreButtonProps extends Omit<
-  IconButtonProps,
+  ButtonProps,
   'icon' | 'label' | 'preventFocusOnPress'
 > {
   /** What the button restores, a field or a value; it is named `Restore <label>`. */
@@ -19,7 +19,7 @@ const hooks = createHooks('field-restore-button');
 export function FieldRestoreButton({ label, className, ...rest }: FieldRestoreButtonProps) {
   const strings = useUiStrings();
   return (
-    <IconButton
+    <Button
       {...rest}
       {...hooks.root({ className, props: rest })}
       icon="restore"

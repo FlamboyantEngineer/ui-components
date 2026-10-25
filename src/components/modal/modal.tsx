@@ -205,3 +205,8 @@ export function ModalTrigger({ children, ...openState }: ModalTriggerProps) {
 
 export { isModalPrimaryShortcut } from './modal-shortcut.js';
 export type { ModalFocusTarget } from './modal-focus.js';
+
+export { confirm } from './modal-confirm.js';
+export type { ConfirmOptions } from './modal-confirm.js';
+export { alert, prompt } from './modal-prompts.js';
+export type { AlertOptions, PromptOptions } from './modal-prompts.js';

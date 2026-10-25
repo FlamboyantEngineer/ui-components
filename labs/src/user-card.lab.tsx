@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Avatar } from '../../src/components/avatar/avatar.js';
 import { Button } from '../../src/components/button/button.js';
-import { PresenceStrip } from '../../src/components/presence-strip/presence-strip.js';
+import { AvatarGroup } from '../../src/components/avatar-group/avatar-group.js';
 import { UserCard, UserCardTrigger } from '../../src/components/user-card/user-card.js';
 import { UserIdentity } from '../../src/components/user-identity/user-identity.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
@@ -65,7 +65,8 @@ function Triggers() {
         </UserCardTrigger>
       </p>
       <p>
-        <PresenceStrip
+        <AvatarGroup
+          layout="strip"
           people={samplePeople}
           maxVisible={4}
           size="sm"

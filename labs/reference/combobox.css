@@ -96,7 +96,7 @@
   animation: ref-spin var(--ref-duration-spin) linear infinite;
 }
 
-.ui-combobox :is(.ui-combobox__clear.ui-icon-button, .ui-combobox__button) {
+.ui-combobox :is(.ui-combobox__clear.ui-button[data-content='icon'], .ui-combobox__button) {
   flex: none;
   width: calc(var(--ref-combobox-height) - 6px);
   height: calc(var(--ref-combobox-height) - 6px);

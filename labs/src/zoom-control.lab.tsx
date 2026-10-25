@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { IconButton } from '../../src/components/icon-button/icon-button.js';
+import { Button } from '../../src/components/button/button.js';
 import { ZoomControl, type ZoomPreset } from '../../src/components/zoom-control/zoom-control.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
@@ -100,7 +100,7 @@ function CallerSteps() {
         value={zoom}
         onChange={setZoom}
         zoomOutButton={
-          <IconButton
+          <Button
             icon="minus"
             label="Shrink page"
             size="sm"
@@ -109,7 +109,7 @@ function CallerSteps() {
           />
         }
         zoomInButton={
-          <IconButton
+          <Button
             icon="plus"
             label="Grow page"
             size="sm"

@@ -27,7 +27,7 @@ Verification: `src/components/field/field.test.tsx`
 
 ### UIC-FIELD-1.4 - Help
 
-`help` shall draw a help button (`ui-field__help`, an `IconButton` with the `help` glyph) after the control, named by the provider string `fieldHelp` from the label (`Help for <label>`). The button shows the help in a `Tooltip` on hover and keyboard focus, and a hidden copy of the help describes the button, so the help is announced when the button is reached even before the tooltip opens.
+`help` shall draw a help button (`ui-field__help`, an `Button` with the `help` glyph) after the control, named by the provider string `fieldHelp` from the label (`Help for <label>`). The button shows the help in a `Tooltip` on hover and keyboard focus, and a hidden copy of the help describes the button, so the help is announced when the button is reached even before the tooltip opens.
 
 Implementation: `src/components/field/field-parts.tsx`, `src/core/strings.ts`
 Verification: `src/components/field/field.test.tsx`, `e2e/field.spec.ts`
@@ -210,7 +210,7 @@ Verification: `src/components/field/field.test.tsx`, `e2e/field.spec.ts`
 
 ### UIC-FIELD-4.2 - Restore button
 
-`FieldRestoreButton` shall be an `IconButton` with the `restore` glyph named by the provider string `restoreValue` from its `label`, whose pointer press does not move focus. It takes the `IconButton` props (`onPress`, `isDisabled`, `size`, `className`, `data-*`) and works from the keyboard like any button.
+`FieldRestoreButton` shall be an `Button` with the `restore` glyph named by the provider string `restoreValue` from its `label`, whose pointer press does not move focus. It takes the `Button` props (`onPress`, `isDisabled`, `size`, `className`, `data-*`) and works from the keyboard like any button.
 
 Implementation: `src/components/field/field-restore-button.tsx`, `src/core/strings.ts`
 Verification: `src/components/field/field-restore-button.test.tsx`
@@ -369,8 +369,8 @@ Verification: `src/components/field/fieldset.test.tsx`, `src/components/field/fi
 | `ui-field__required`             | slot      |                                                                         | The asterisk of a required field, inside the label.              |
 | `ui-field__colon`                | slot      |                                                                         | The colon of the `label-colon-control` layout, inside the label. |
 | `ui-field__control`              | slot      |                                                                         | Holds the control.                                               |
-| `ui-field__help`                 | slot      |                                                                         | The help button (also `ui-icon-button`).                         |
-| `ui-field__menu`                 | slot      |                                                                         | The menu button (also `ui-dropdown-menu` and `ui-icon-button`).  |
+| `ui-field__help`                 | slot      |                                                                         | The help button (also `ui-button`).                              |
+| `ui-field__menu`                 | slot      |                                                                         | The menu button (also `ui-dropdown-menu` and `ui-button`).       |
 | `ui-field__decoration`           | slot      |                                                                         | The host's badges and marks.                                     |
 | `ui-field__description`          | slot      |                                                                         | The description.                                                 |
 | `ui-field__message`              | slot      |                                                                         | The validation message; empty while valid.                       |
@@ -385,7 +385,7 @@ Verification: `src/components/field/fieldset.test.tsx`, `src/components/field/fi
 | `data-filled`                    | state     | `true`                                                                  | The value is not empty.                                          |
 | `data-focused`                   | state     | `true`                                                                  | Focus is inside the field, popovers it opens included.           |
 | `data-severity`                  | state     | `error`, `warning`                                                      | On the message: the severity of the message shown.               |
-| `ui-field-restore-button`        | root      |                                                                         | A restore button (also `ui-icon-button`).                        |
+| `ui-field-restore-button`        | root      |                                                                         | A restore button (also `ui-button`).                             |
 | `ui-field-previous-value`        | root      |                                                                         | A previous-value marker.                                         |
 | `ui-field-previous-value__value` | slot      |                                                                         | The previous value, in a `<del>` element.                        |
 | `ui-fieldset`                    | root      |                                                                         | A fieldset's `<fieldset>`.                                       |

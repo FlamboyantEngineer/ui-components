@@ -57,7 +57,7 @@ Verification: `src/components/find-bar/find-bar.test.tsx`, `e2e/find-bar.spec.ts
 
 ### UIC-FIND-BAR-2.2 - Hooks and caller attributes
 
-`FindBar` shall carry the hooks below, append the caller's `className` to its root and forward caller `data-*` attributes and `id` to it. Its parts keep their own components' hooks (`ui-search-field`, `ui-icon-button`, `ui-button`, `ui-dropdown-menu`) beside the slot classes.
+`FindBar` shall carry the hooks below, append the caller's `className` to its root and forward caller `data-*` attributes and `id` to it. Its parts keep their own components' hooks (`ui-search-field`, `ui-button`, `ui-button`, `ui-dropdown-menu`) beside the slot classes.
 
 Implementation: `src/components/find-bar/find-bar.tsx`
 Verification: `src/components/find-bar/find-bar.test.tsx`

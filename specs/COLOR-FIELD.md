@@ -103,7 +103,7 @@ Verification: `src/components/color-field/color-field-panel.test.tsx`, `e2e/colo
 
 ### UIC-COLOR-FIELD-4.2 - Eye dropper
 
-With `allowsEyeDropper`, where the browser has the EyeDropper API, the picker shall draw an eye dropper button (`ui-color-field__eye-dropper`, an `IconButton` with the `eye-dropper` glyph named by the provider string `pickScreenColor`). Pressing it opens the browser's eye dropper; a sampled colour sets the value like any change in the picker, and a dismissed one changes nothing. Where the browser has no eye dropper, no button is drawn.
+With `allowsEyeDropper`, where the browser has the EyeDropper API, the picker shall draw an eye dropper button (`ui-color-field__eye-dropper`, an `Button` with the `eye-dropper` glyph named by the provider string `pickScreenColor`). Pressing it opens the browser's eye dropper; a sampled colour sets the value like any change in the picker, and a dismissed one changes nothing. Where the browser has no eye dropper, no button is drawn.
 
 Implementation: `src/components/color-field/color-field-eye-dropper.tsx`, `src/core/glyphs.tsx`, `src/core/strings.ts`
 Verification: `src/components/color-field/color-field-eye-dropper.test.tsx`, `e2e/color-field.spec.ts`
@@ -136,7 +136,7 @@ Verification: `src/components/color-field/color-field-entry.test.tsx`, `e2e/colo
 | `ui-color-field__hex`         | slot  |                                                                                        | The hex colour field around its input.                                            |
 | `ui-color-field__channel`     | slot  |                                                                                        | A channel's number field around its input.                                        |
 | `ui-color-field__input`       | slot  |                                                                                        | The hex, channel or typed input.                                                  |
-| `ui-color-field__eye-dropper` | slot  |                                                                                        | The eye dropper button (also `ui-icon-button`).                                   |
+| `ui-color-field__eye-dropper` | slot  |                                                                                        | The eye dropper button (also `ui-button`).                                        |
 | `ui-color-field__swatches`    | slot  |                                                                                        | The preset swatches (also `ui-color-swatch-picker`).                              |
 | `ui-color-field__clear`       | slot  |                                                                                        | The Clear button (also `ui-button`).                                              |
 | `data-placeholder`            | state | `true`                                                                                 | On the text: no colour is set, so it shows the placeholder.                       |

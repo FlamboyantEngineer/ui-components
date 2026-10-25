@@ -1,6 +1,6 @@
 # Action Row
 
-`ActionRow` draws a row of actions described as data, each as an [Icon Button](ICON-BUTTON.md) with a tooltip. Standard verbs carry a fixed glyph, label and place; custom actions name their own icon and label. Any action can open a [Menu](MENU.md) of typed items. Optional lead content (a title, a filter, a status line) sits before the actions. The actions can form one React Aria toolbar, collapse into a "more" menu when they do not fit, and the row can serve as a collection's selection bar.
+`ActionRow` draws a row of actions described as data, each as an [Icon Button](BUTTON.md) with a tooltip. Standard verbs carry a fixed glyph, label and place; custom actions name their own icon and label. Any action can open a [Menu](MENU.md) of typed items. Optional lead content (a title, a filter, a status line) sits before the actions. The actions can form one React Aria toolbar, collapse into a "more" menu when they do not fit, and the row can serve as a collection's selection bar.
 
 ## UIC-ACTION-ROW-1 - Actions
 
@@ -27,7 +27,7 @@ Verification: `src/components/action-row/action-row.test.tsx`, `e2e/action-row.s
 
 ### UIC-ACTION-ROW-1.4 - Tooltips
 
-Each action shall show a React Aria tooltip (`ui-action-row__tooltip`) with its `tooltip`, or its label when it has none, on hover and on keyboard focus. The open tooltip of an action with its own `tooltip` describes the button; a tooltip that only repeats the label does not describe it, as in [Icon Button](ICON-BUTTON.md). The accessible name stays the label.
+Each action shall show a React Aria tooltip (`ui-action-row__tooltip`) with its `tooltip`, or its label when it has none, on hover and on keyboard focus. The open tooltip of an action with its own `tooltip` describes the button; a tooltip that only repeats the label does not describe it, as in [Icon Button](BUTTON.md). The accessible name stays the label.
 
 Implementation: `src/components/action-row/action-row.tsx`, `src/components/action-row/action-row-actions.tsx`
 Verification: `src/components/action-row/action-row.test.tsx`, `e2e/action-row.spec.ts`
@@ -87,7 +87,7 @@ Verification: `src/components/action-row/action-row.test.tsx`, `e2e/action-row.s
 
 ### UIC-ACTION-ROW-3.1 - Selected count and clearing
 
-With `selectedCount` the row shall be a collection's selection bar: it renders only while the count is above zero, publishes `data-selection`, and draws a `ui-action-row__selection` slot before the lead holding a `ui-action-row__clear` [Icon Button](ICON-BUTTON.md) (`close`, named by the provider's `clearSelection` string, when `onClearSelection` is set) and a `ui-action-row__count` status (`role="status"`) with the provider's `selectedCount` text, so a change of count is announced. Pressing the clear button, or Escape inside the row that nothing in it handled, calls `onClearSelection`. The row's actions are the bulk actions.
+With `selectedCount` the row shall be a collection's selection bar: it renders only while the count is above zero, publishes `data-selection`, and draws a `ui-action-row__selection` slot before the lead holding a `ui-action-row__clear` [Icon Button](BUTTON.md) (`close`, named by the provider's `clearSelection` string, when `onClearSelection` is set) and a `ui-action-row__count` status (`role="status"`) with the provider's `selectedCount` text, so a change of count is announced. Pressing the clear button, or Escape inside the row that nothing in it handled, calls `onClearSelection`. The row's actions are the bulk actions.
 
 Implementation: `src/components/action-row/action-row.tsx`, `src/components/action-row/action-row-actions.tsx`, `labs/reference/action-row.css`
 Verification: `src/components/action-row/action-row.test.tsx`, `e2e/action-row.spec.ts`
@@ -98,12 +98,12 @@ Verification: `src/components/action-row/action-row.test.tsx`, `e2e/action-row.s
 | -------------------------- | --------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
 | `ui-action-row`            | root      |                                                                                 | The row `<div>`.                                                          |
 | `ui-action-row__selection` | slot      |                                                                                 | The selected count and its clear button.                                  |
-| `ui-action-row__clear`     | slot      |                                                                                 | The clear button (also `ui-icon-button`).                                 |
+| `ui-action-row__clear`     | slot      |                                                                                 | The clear button (also `ui-button`).                                      |
 | `ui-action-row__count`     | slot      |                                                                                 | The selected count (`role="status"`).                                     |
 | `ui-action-row__lead`      | slot      |                                                                                 | The lead content, before the actions.                                     |
 | `ui-action-row__actions`   | slot      |                                                                                 | The `<div>` holding the action buttons (`role="toolbar"` with `toolbar`). |
 | `ui-action-row__overflow`  | slot      |                                                                                 | The element holding the menu of hidden actions.                           |
-| `ui-action-row__action`    | slot      |                                                                                 | One action button (also `ui-icon-button`).                                |
+| `ui-action-row__action`    | slot      |                                                                                 | One action button (also `ui-button`).                                     |
 | `ui-action-row__tooltip`   | slot      |                                                                                 | An action's tooltip.                                                      |
 | `data-size`                | attribute | `xs`, `sm`, `md`, `lg`                                                          | Size of the action buttons.                                               |
 | `data-overflow`            | attribute | `visible`, `menu`                                                               | What happens to actions that do not fit.                                  |

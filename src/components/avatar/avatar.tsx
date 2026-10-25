@@ -1,10 +1,14 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps, Size } from '../../core/props.js';
 import { Glyph, useUiStrings } from '../../core/provider.js';
 import { getColorIndex } from '../../utils/color-index.js';
 import { getInitials } from '../../utils/initials.js';
+import type { PressEvent } from '../../core/events.js';
 import { toImageProps } from '../icon/icon.js';
+import { AvatarRoot } from './avatar-root.js';
+import { Tooltip } from '../tooltip/tooltip.js';
+import type { UserCardTriggerType } from '../user-card/user-card.js';
 
 /** Circle size. `fill` takes the whole box its container gives it. */
 export type AvatarSize = Extract<Size, 'xs' | 'sm' | 'md' | 'lg'> | 'fill';
@@ -48,6 +52,18 @@ export interface AvatarIdentity {
 }
 
 export interface AvatarProps extends AvatarIdentity, BaseProps {
+  /** Optional presence status, such as active, away, busy or idle. */
+  status?: string | undefined;
+  /** Human-readable status added to the accessible name. */
+  statusLabel?: string | undefined;
+  /** Makes the avatar a pressable command. */
+  onPress?: ((event: PressEvent) => void) | undefined;
+  /** A person card opened by this avatar. */
+  card?: ReactNode;
+  /** Defaults to press; hover also opens on keyboard focus. */
+  cardTrigger?: UserCardTriggerType | undefined;
+  /** Shows the accessible name in a tooltip, also reachable with the keyboard. */
+  nameTooltip?: boolean | undefined;
   /** Defaults to `md`. */
   size?: AvatarSize | undefined;
   /** Defaults to `filled`. */
@@ -72,7 +88,7 @@ interface AvatarPicture {
 /** The number of colour slots a derived colour is spread over unless `colorCount` says otherwise. */
 export const DEFAULT_AVATAR_COLOR_COUNT = 8;
 
-const hooks = createHooks('avatar', ['image', 'initials', 'glyph']);
+const hooks = createHooks('avatar', ['image', 'initials', 'glyph', 'surface', 'indicator']);
 
 function paletteSize(colorCount: number | undefined): number {
   return colorCount !== undefined && Number.isFinite(colorCount) && colorCount >= 1
@@ -180,6 +196,27 @@ export function resolveAvatarColor(
   return getColorIndex(key, slots);
 }
 
+/** The full name, including optional status, is shared by the root and its name tooltip. */
+function useAvatarPresentation(
+  props: Pick<
+    AvatarProps,
+    'name' | 'label' | 'statusLabel' | 'nameTooltip' | 'card' | 'cardTrigger' | 'onPress'
+  >,
+) {
+  const strings = useUiStrings();
+  const displayName = getDisplayName(props.name, strings.unnamed);
+  const accessibleName =
+    props.label?.trim() ||
+    (props.statusLabel?.trim()
+      ? strings.nameWithStatus(displayName, props.statusLabel.trim())
+      : displayName);
+  return {
+    accessibleName,
+    surfaceProps: toImageProps(props.card || props.onPress ? accessibleName : undefined),
+    hasTooltip: props.nameTooltip && !(props.card && props.cardTrigger === 'hover'),
+  };
+}
+
 /** A person's picture, or their initials on a stable colour slot; a group glyph for a group. */
 export function Avatar(props: AvatarProps) {
   const [
@@ -191,16 +228,29 @@ export function Avatar(props: AvatarProps) {
       label,
       decorative,
       onLoadingStatusChange,
+      status,
+      statusLabel,
+      onPress,
+      card,
+      cardTrigger,
+      nameTooltip,
       className,
       ...rest
     },
   ] = splitAvatarIdentity(props);
-  const strings = useUiStrings();
   const picture = useAvatarPicture(pictureOf(identity), onLoadingStatusChange);
   const color = resolveAvatarColor(identity, colorCount);
-  const accessibleName = label?.trim() || getDisplayName(identity.name, strings.unnamed);
-  return (
-    <span
+  const { accessibleName, hasTooltip, surfaceProps } = useAvatarPresentation({
+    name: identity.name,
+    label,
+    statusLabel,
+    nameTooltip,
+    card,
+    cardTrigger,
+    onPress,
+  });
+  const element = (
+    <AvatarRoot
       {...rest}
       {...hooks.root({
         className,
@@ -211,11 +261,21 @@ export function Avatar(props: AvatarProps) {
           shape: identity.shape ?? 'circle',
           color,
           loading: picture.status === 'loading',
+          status: status?.trim() || undefined,
         },
       })}
-      {...toImageProps(decorative ? undefined : accessibleName)}
+      imageLabel={decorative ? undefined : accessibleName}
+      onPress={onPress}
+      card={card}
+      cardTrigger={cardTrigger}
+      isFocusable={Boolean(hasTooltip)}
+      aria-describedby={hasTooltip ? '' : undefined}
     >
-      <AvatarContent identity={identity} picture={picture} />
-    </span>
+      <span {...hooks.slot('surface')} {...surfaceProps}>
+        <AvatarContent identity={identity} picture={picture} />
+      </span>
+      {status?.trim() ? <span {...hooks.slot('indicator')} aria-hidden="true" /> : null}
+    </AvatarRoot>
   );
+  return hasTooltip ? <Tooltip content={accessibleName}>{element}</Tooltip> : element;
 }

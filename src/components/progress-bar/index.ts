@@ -1,6 +1,9 @@
-export { ProgressBar, Spinner } from './progress-bar.js';
+export { ProgressBar, Spinner, resolveMeterTone } from './progress-bar.js';
 export type {
   ProgressBarProps,
+  ProgressBarShape,
+  ProgressBarMode,
+  ProgressValues,
   ProgressRangeProps,
   ProgressBarSize,
   ProgressBarTone,

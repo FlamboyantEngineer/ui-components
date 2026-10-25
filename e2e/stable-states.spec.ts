@@ -6,7 +6,7 @@ import { expect, test } from './fixtures.js';
  * the matrices whose axes vary the content.
  */
 const labs: Record<string, { contentStates?: string[]; contentAxes?: string[] }> = {
-  'action-button': {},
+  button: {},
   'boolean-field': {},
   'checkbox-group': {},
   'color-field': {},

@@ -6,7 +6,7 @@ Every file in `src/`, `labs/src/`, `test/` and `e2e/` follows these rules; tests
 
 **N1. Files and directories are kebab-case.** A component lives in `src/components/<name>/` and its main module is `<name>.tsx` (or `<name>.ts` for a component family's pure model). Helpers beside it are named for what they do (`parse-svg-markup.ts`, `layers.ts`). **(enforced)**
 
-**N2. One name per component, everywhere.** The directory name in PascalCase is the component (`icon-button/` → `IconButton`); the spec is `specs/ICON-BUTTON.md`; the lab is `labs/icon-button.html`; the browser test is `e2e/icon-button.spec.ts`; the reference partial is `labs/reference/icon-button.css`; the root hook class is `ui-icon-button`. **(enforced)**
+**N2. One name per component, everywhere.** The directory name in PascalCase is the component (`icon-button/` → `Button`); the spec is `specs/BUTTON.md`; the lab is `labs/icon-button.html`; the browser test is `e2e/button-icon.spec.ts`; the reference partial is `labs/reference/button.css`; the root hook class is `ui-button`. **(enforced)**
 
 **N3. Components are PascalCase nouns without prefixes** (`Button`, not `UiButton` or `BaseButton`). Parts of a family start with the family's name or its noun (`Tabs` → `TabList`, `Tab`, `TabPanel`). **(enforced: naming convention)**
 
@@ -53,7 +53,7 @@ export interface ButtonProps
 
 **(enforced: every exported component's props include `BaseProps`, except providers, hosts and controllers that render no element of their own; `npm run check:public-types` fails on any public declaration that exposes a building block)**
 
-**I3. Specialise by composition.** A specialised component renders the general one with fixed props (`ActionButton` renders `Button`); it does not copy its markup or logic. Shared behaviour that two components need lives in one exported helper or hook, never in two copies.
+**I3. Specialise by composition.** A specialised component renders the general one with fixed props (`Button` renders `Button`); it does not copy its markup or logic. Shared behaviour that two components need lives in one exported helper or hook, never in two copies.
 
 **I4. Forward, do not filter.** Spread the remaining props onto the wrapped component or root element, and let `createHooks(...).root({ className, props, data })` merge hook classes and caller attributes. Hook values the component writes win over caller attributes of the same name.
 

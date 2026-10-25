@@ -13,7 +13,7 @@ import {
 import { createHooks } from '../../core/hooks.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
-import { IconButton } from '../icon-button/icon-button.js';
+
 import { useLayerZIndex } from '../portal/portal.js';
 import { CalendarHeadingSelects } from './date-time-calendar-heading.js';
 import type { DateControlSettings } from './date-time-pickers.js';
@@ -67,7 +67,7 @@ export function CalendarBody({
     <>
       {/* The month navigation is no page banner, wherever the calendar is drawn. */}
       <header {...hooks.slot('calendar-header')} role="none">
-        <IconButton
+        <Button
           slot="previous"
           icon="chevron-left"
           label={strings.previous}
@@ -79,7 +79,7 @@ export function CalendarBody({
         ) : (
           <Heading className={hooks.slotClass('calendar-heading')} />
         )}
-        <IconButton
+        <Button
           slot="next"
           icon="chevron-right"
           label={strings.next}

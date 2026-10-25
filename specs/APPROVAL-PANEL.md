@@ -43,7 +43,7 @@ Verification: `src/components/approval-panel/approval-panel.test.tsx`, `e2e/appr
 
 ### UIC-APPROVAL-PANEL-1.6 - Remind and request again
 
-With `onRemind`, each pending approver's row shall end with a `bell` `IconButton` (`ui-approval-panel__remind`) named and hinted by the provider's `remindApprover` string for their name, which calls `onRemind(id)`. With `onRequestAgain`, each approver who decided gets a `refresh` `IconButton` (`ui-approval-panel__request-again`) named by `requestApprovalAgain`, which calls `onRequestAgain(id)`.
+With `onRemind`, each pending approver's row shall end with a `bell` `Button` (`ui-approval-panel__remind`) named and hinted by the provider's `remindApprover` string for their name, which calls `onRemind(id)`. With `onRequestAgain`, each approver who decided gets a `refresh` `Button` (`ui-approval-panel__request-again`) named by `requestApprovalAgain`, which calls `onRequestAgain(id)`.
 
 Implementation: `src/components/approval-panel/approval-panel.tsx`, `src/core/content-strings.ts`
 Verification: `src/components/approval-panel/approval-panel.test.tsx`, `e2e/approval-panel.spec.ts`
@@ -87,8 +87,8 @@ Verification: `src/components/approval-panel/approval-panel.test.tsx`, `e2e/appr
 | `ui-approval-panel__decision`      | slot  |                                                | The decision (also `ui-badge`).                           |
 | `ui-approval-panel__time`          | slot  |                                                | When they decided (also `ui-relative-time`).              |
 | `ui-approval-panel__comment`       | slot  |                                                | What they said.                                           |
-| `ui-approval-panel__remind`        | slot  |                                                | Remind a pending approver (also `ui-icon-button`).        |
-| `ui-approval-panel__request-again` | slot  |                                                | Ask an approver again (also `ui-icon-button`).            |
+| `ui-approval-panel__remind`        | slot  |                                                | Remind a pending approver (also `ui-button`).             |
+| `ui-approval-panel__request-again` | slot  |                                                | Ask an approver again (also `ui-button`).                 |
 | `ui-approval-panel__actions`       | slot  |                                                | The reader's own decision.                                |
 | `data-outcome`                     | state | `pending`, `approved`, `rejected`              | Where the whole approval stands (on the root).            |
 | `data-decision`                    | state | `pending`, `approved`, `rejected`, `abstained` | An approver's decision (on an approver).                  |

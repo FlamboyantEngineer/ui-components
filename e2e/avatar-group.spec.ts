@@ -12,7 +12,9 @@ test.describe('Avatar Group lab', () => {
       ['md', 32],
       ['lg', 40],
     ] as const) {
-      const cell = page.locator(`[data-lab-cell="variant=filled size=${size}"]`);
+      const cell = page
+        .locator('[data-lab-family="avatar-group-main"]')
+        .locator(`[data-lab-cell="variant=filled size=${size}"]`);
       const avatars = cell.locator('.ui-avatar-group__avatar');
       await expect(avatars).toHaveCount(4);
       await expect(cell.locator('.ui-avatar-group__overflow')).toHaveText('+2');
@@ -22,10 +24,14 @@ test.describe('Avatar Group lab', () => {
       // Each avatar starts before the previous one ends.
       expect((second?.x ?? 0) - (first?.x ?? 0)).toBeLessThan(pixels);
     }
-    const none = page.locator('[data-lab-cell="setup=max 0 action=none"]');
+    const none = page
+      .locator('[data-lab-family="avatar-group-main"]')
+      .locator('[data-lab-cell="setup=max 0 action=none"]');
     await expect(none.locator('.ui-avatar-group__avatar')).toHaveCount(0);
     await expect(none.locator('.ui-avatar-group__overflow')).toHaveText('+6');
-    const one = page.locator('[data-lab-cell="setup=one person action=none"]');
+    const one = page
+      .locator('[data-lab-family="avatar-group-main"]')
+      .locator('[data-lab-cell="setup=one person action=none"]');
     await expect(one.locator('.ui-avatar-group__overflow')).toHaveCount(0);
   });
 
@@ -34,7 +40,9 @@ test.describe('Avatar Group lab', () => {
     lab,
   }) => {
     await lab.open('avatar-group');
-    const cell = page.locator('[data-lab-cell="setup=max 3 action=none"]');
+    const cell = page
+      .locator('[data-lab-family="avatar-group-main"]')
+      .locator('[data-lab-cell="setup=max 3 action=none"]');
     const group = cell.getByRole('group');
     await expect(group).toHaveAccessibleName(
       'Maria Santos, Jon Berg, Lena Ortiz, Sam Okafor, Priya Nair, Tom Li',
@@ -43,7 +51,9 @@ test.describe('Avatar Group lab', () => {
       group.getByRole('img', { name: '3 more people: Sam Okafor, Priya Nair, Tom Li' }),
     ).toHaveText('+3');
     await expect(group.getByRole('img', { name: 'Jon Berg' })).toBeVisible();
-    const names = page.locator('[data-lab-group="names"]');
+    const names = page
+      .locator('[data-lab-family="avatar-group-main"]')
+      .locator('[data-lab-group="names"]');
     await expect(names).toHaveAccessibleName('Reviewers');
     await expect(names.getByRole('img', { name: 'Unnamed' })).toBeVisible();
     await expect(names.locator('.ui-avatar__initials').last()).toHaveText('JB');
@@ -54,7 +64,9 @@ test.describe('Avatar Group lab', () => {
     lab,
   }) => {
     await lab.open('avatar-group');
-    const group = page.locator('[data-lab-group="list"]');
+    const group = page
+      .locator('[data-lab-family="avatar-group-main"]')
+      .locator('[data-lab-group="list"]');
     await expect(group).toHaveAccessibleName(
       'Maria Santos, Jon Berg, Lena Ortiz, Sam Okafor, Priya Nair, Tom Li',
     );

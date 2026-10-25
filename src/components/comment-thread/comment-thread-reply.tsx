@@ -4,7 +4,7 @@ import type { BaseProps, Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { getDisplayName, type AvatarIdentity } from '../avatar/avatar.js';
 import { CommentComposer } from '../comment-composer/comment-composer.js';
-import { ConfirmDialog } from '../confirm-dialog/confirm-dialog.js';
+import { Modal } from '../modal/modal.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
 import type { MenuEntry } from '../menu/menu.js';
 import { RelativeTime } from '../relative-time/relative-time.js';
@@ -154,14 +154,21 @@ function CommentMenu({
         onAction={runAction}
       />
       {onDelete ? (
-        <ConfirmDialog
+        <Modal
+          role="alertdialog"
           isOpen={isConfirming}
           onOpenChange={setIsConfirming}
           tone="danger"
           title={strings.deleteComment}
-          message={strings.deleteCommentMessage}
-          confirmLabel={strings.delete}
-          onConfirm={onDelete}
+          description={strings.deleteCommentMessage}
+          cancelAction={{ autoFocus: true }}
+          primaryAction={{
+            label: strings.delete,
+            onPress: (close) => {
+              onDelete();
+              close();
+            },
+          }}
         />
       ) : null}
     </>

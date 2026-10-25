@@ -7,7 +7,7 @@ test.describe('Copy Button lab', () => {
       page.locator(
         `[data-lab-cell="state=${state} variant=${variant} size=${size}"] .ui-copy-button__button`,
       );
-    await expect(button('rest', 'ghost', 'md')).toHaveClass(/ui-icon-button/);
+    await expect(button('rest', 'ghost', 'md')).toHaveClass(/ui-button/);
     await expect(button('rest', 'secondary', 'sm')).toHaveAttribute('data-variant', 'secondary');
     await expect(button('disabled', 'ghost', 'lg')).toBeDisabled();
     const sizes = await Promise.all(
@@ -36,14 +36,14 @@ test.describe('Copy Button lab', () => {
     const status = root.locator('.ui-copy-button__status');
     await expect(status).toHaveAttribute('role', 'status');
     await expect(status).toHaveText('');
-    await expect(button.locator('.ui-icon-button__icon')).toHaveAttribute('data-glyph', 'copy');
+    await expect(button.locator('.ui-button__icon')).toHaveAttribute('data-glyph', 'copy');
 
     await button.focus();
     await page.keyboard.press('Enter');
     await expect(root).toHaveAttribute('data-copied', 'true');
     await expect(status).toHaveText('Copied');
     await expect(button).toHaveAccessibleName('Copy the order number');
-    await expect(button.locator('.ui-icon-button__icon')).toHaveAttribute('data-glyph', 'check');
+    await expect(button.locator('.ui-button__icon')).toHaveAttribute('data-glyph', 'check');
     await expect(demo.locator('[data-lab-output="outcome"]')).toHaveText('Last copy: copied');
     expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('ORD-2026-0417');
     await expect(button).toBeFocused();
@@ -53,7 +53,7 @@ test.describe('Copy Button lab', () => {
     await page.clock.runFor(1);
     await expect(root).not.toHaveAttribute('data-copied');
     await expect(status).toHaveText('');
-    await expect(button.locator('.ui-icon-button__icon')).toHaveAttribute('data-glyph', 'copy');
+    await expect(button.locator('.ui-button__icon')).toHaveAttribute('data-glyph', 'copy');
 
     // Axe times itself with timers, so the clock runs again before checking the copied state.
     await page.clock.resume();

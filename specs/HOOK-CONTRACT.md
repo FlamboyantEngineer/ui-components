@@ -6,7 +6,7 @@ The library ships behaviour and markup, never appearance. Every component expose
 
 ### UIC-HOOKS-1.1 - Root class
 
-Every component shall put the class `ui-<component>` on its root element, where `<component>` is the component's name in kebab case (`ui-button`, `ui-icon-button`). The root class is always present, whatever props the caller passes.
+Every component shall put the class `ui-<component>` on its root element, where `<component>` is the component's name in kebab case (`ui-button`, `ui-button`). The root class is always present, whatever props the caller passes.
 
 Implementation: `src/core/hooks.ts`
 Verification: `src/core/hooks.test.ts`

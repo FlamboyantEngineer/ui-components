@@ -9,31 +9,29 @@ import {
 } from './hooks.js';
 
 describe('createHooks', () => {
-  const hooks = createHooks('icon-button', ['glyph', 'label']);
+  const hooks = createHooks('button', ['glyph', 'label']);
 
   it('UIC-HOOKS-1.1 puts the root class on the root element', () => {
-    expect(hooks.className).toBe('ui-icon-button');
-    expect(hooks.root().className).toBe('ui-icon-button');
+    expect(hooks.className).toBe('ui-button');
+    expect(hooks.root().className).toBe('ui-button');
   });
 
   it('UIC-HOOKS-1.1 rejects names that are not kebab case', () => {
-    expect(() => createHooks('IconButton')).toThrow();
+    expect(() => createHooks('Button')).toThrow();
     expect(() => createHooks('button', ['Label' as 'label'])).toThrow();
   });
 
   it('UIC-HOOKS-1.2 builds slot classes from declared slots', () => {
-    expect(hooks.slot('glyph').className).toBe('ui-icon-button__glyph');
-    expect(hooks.slotClass('label')).toBe('ui-icon-button__label');
+    expect(hooks.slot('glyph').className).toBe('ui-button__glyph');
+    expect(hooks.slotClass('label')).toBe('ui-button__label');
     expect(hooks.slot('label', { truncated: true })).toEqual({
-      className: 'ui-icon-button__label',
+      className: 'ui-button__label',
       'data-truncated': 'true',
     });
   });
 
   it('UIC-HOOKS-1.3 appends the caller class after the root class', () => {
-    expect(hooks.root({ className: 'toolbar-action' }).className).toBe(
-      'ui-icon-button toolbar-action',
-    );
+    expect(hooks.root({ className: 'toolbar-action' }).className).toBe('ui-button toolbar-action');
   });
 
   it('UIC-HOOKS-2.1 publishes options as data attributes', () => {
@@ -47,7 +45,7 @@ describe('createHooks', () => {
     const props = { 'data-testid': 'save', 'data-variant': 'caller', id: 'x', onClick: () => {} };
     const root = hooks.root({ props, data: { variant: 'primary' } });
     expect(root).toEqual({
-      className: 'ui-icon-button',
+      className: 'ui-button',
       'data-testid': 'save',
       'data-variant': 'primary',
     });
@@ -64,7 +62,7 @@ describe('createHooks', () => {
       data: { disabled: false, loading: undefined, 'data-focus-visible': null },
     });
     expect(root).toEqual({
-      className: 'ui-icon-button',
+      className: 'ui-button',
       'data-disabled': undefined,
       'data-loading': undefined,
       'data-focus-visible': undefined,

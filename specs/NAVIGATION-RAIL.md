@@ -13,7 +13,7 @@ Verification: `src/components/navigation-rail/navigation-rail.test.tsx`, `e2e/na
 
 ### UIC-NAVIGATION-RAIL-1.2 - Collapse
 
-The header shall end with a small [Icon Button](ICON-BUTTON.md) in the `ui-navigation-rail__toggle` slot, labelled and hinted by the provider's `toggleNavigation` string (`Collapse navigation`, `Expand navigation` while collapsed), with `aria-expanded` and `aria-controls` naming the body. Its glyph points to the inline start while the rail is expanded (`chevron-double-left` left to right) and to the inline end while collapsed. Pressing it collapses or expands the rail, published as `data-collapsed`; `isCollapsed`, `defaultCollapsed` (false) and `onCollapsedChange` make the state controllable. The button keeps focus across the change.
+The header shall end with a small [Icon Button](BUTTON.md) in the `ui-navigation-rail__toggle` slot, labelled and hinted by the provider's `toggleNavigation` string (`Collapse navigation`, `Expand navigation` while collapsed), with `aria-expanded` and `aria-controls` naming the body. Its glyph points to the inline start while the rail is expanded (`chevron-double-left` left to right) and to the inline end while collapsed. Pressing it collapses or expands the rail, published as `data-collapsed`; `isCollapsed`, `defaultCollapsed` (false) and `onCollapsedChange` make the state controllable. The button keeps focus across the change.
 
 Implementation: `src/components/navigation-rail/navigation-rail.tsx`, `src/components/navigation-rail/navigation-rail-state.ts`, `src/core/common-strings.ts`
 Verification: `src/components/navigation-rail/navigation-rail.test.tsx`, `e2e/navigation-rail.spec.ts`
@@ -105,7 +105,7 @@ Verification: `src/components/navigation-rail/navigation-rail.test.tsx`
 | ----------------------------------- | -------- | ------ | ------------------------------------------------------------------- |
 | `ui-navigation-rail`                | root     |        | The rail's `<nav>`.                                                 |
 | `ui-navigation-rail__header`        | slot     |        | The header content and the collapse button.                         |
-| `ui-navigation-rail__toggle`        | slot     |        | The collapse button (also `ui-icon-button`).                        |
+| `ui-navigation-rail__toggle`        | slot     |        | The collapse button (also `ui-button`).                             |
 | `ui-navigation-rail__body`          | slot     |        | The sections.                                                       |
 | `ui-navigation-rail__footer`        | slot     |        | The footer content.                                                 |
 | `ui-navigation-rail__resize-handle` | slot     |        | The handle at the inline end (also `ui-resize-handle`).             |

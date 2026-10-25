@@ -7,7 +7,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { useOverflowItems } from '../../utils/use-overflow-items.js';
 import { scrollStripPage, type ScrollStripState } from '../../utils/use-scroll-strip-overflow.js';
 import { DropdownMenu } from '../dropdown-menu/dropdown-menu.js';
-import { IconButton, ScrollStripButton } from '../icon-button/icon-button.js';
+import { Button, ScrollStripButton } from '../button/button.js';
 import { TabsSharedContext, type TabListModel } from './tab-actions.js';
 import { tabsHooks as hooks } from './tab-hooks.js';
 
@@ -107,7 +107,7 @@ export function TabBar({
         </div>
       ) : null}
       {onAdd ? (
-        <IconButton
+        <Button
           {...hooks.slot('add')}
           icon="plus"
           label={strings.addTab}

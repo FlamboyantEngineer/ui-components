@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { Key, Selection } from '../../src/core/props.js';
-import { IconButton } from '../../src/components/icon-button/icon-button.js';
+import { Button } from '../../src/components/button/button.js';
 import {
   ListView,
   ListViewItem,
@@ -73,9 +73,7 @@ export function SelectionCase({ selection }: { selection: (typeof selections)[nu
           title={item.name}
           meta={item.meta}
           tone={item.id === 'elderberry' ? 'danger' : undefined}
-          trailing={
-            <IconButton icon="more" size="sm" label={`More about ${item.name} ${selection}`} />
-          }
+          trailing={<Button icon="more" size="sm" label={`More about ${item.name} ${selection}`} />}
         />
       )}
     </ListView>
