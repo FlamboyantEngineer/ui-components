@@ -4,12 +4,26 @@ This repository is a standalone React component library. Read [README.md](README
 
 ## Gates
 
-Run these before every commit; all must pass:
+Before every commit, run the checks that cover your change, not the full suites. All of them must pass:
 
 ```sh
-npm run check       # lint, format, typecheck, no-reference, specs, labs, unit tests, build, labs build, package
-npm run test:labs   # Playwright against the built labs (needs `npm run build:labs` first)
+npm run lint && npm run format:check && npm run typecheck
+npm run check:references && npm run check:specs && npm run check:labs && npm run check:structure
+npm run test:changed   # unit tests related to your changes since origin/dev
 ```
+
+- `npm run test:changed` runs `vitest --changed` against `origin/dev`. It covers uncommitted changes and every test that reaches a changed module through its imports. A change to a shared module, such as `src/core`, `src/primitives` or a widely used util, therefore selects many tests; that is expected. A change to `package.json` or the Vitest config reruns everything, so for those changes run the tests of what you touched by path instead (`npx vitest run test/package.test.ts`). Compare with another base with `npx vitest run --changed <ref>`.
+- Browser tests: run `npm run build:labs`. Then, for each component, lab (`labs/src/<name>*.tsx`), reference partial (`labs/reference/<name>.css`) or browser test you changed, run its specs and that lab's cross-lab checks:
+
+  ```sh
+  npx playwright test e2e/<name>.spec.ts e2e/<name>-*.spec.ts
+  npx playwright test e2e/accessibility.spec.ts -g " <name> (renders|passes)"
+  ```
+
+  A change to the lab harness (`labs/src/chrome/`, `scripts/*lab*`, `e2e/fixtures.ts`, `playwright.config.ts`) also runs `e2e/lab-harness.spec.ts` and the whole `e2e/accessibility.spec.ts`.
+
+- Changes to exports, public types, entry points or package contents also run `npm run build && npm run check:public-types && npm run check:package`.
+- Do not run `npm test`, `npm run check` or `npm run test:labs` routinely. CI runs the full suites on every pull request. Run them locally only for a release pull request (`dev` to `main`), when a change reaches across most of the library and the targeted runs cannot show it is safe, or when asked.
 
 Run `npm run format` to fix formatting. Never weaken a lint rule, the denylist or a check to get green.
 

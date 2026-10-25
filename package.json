@@ -55,6 +55,7 @@
     "format:check": "prettier --check .",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
+    "test:changed": "vitest run --changed origin/dev --passWithNoTests",
     "test:watch": "vitest",
     "test:labs": "playwright test",
     "check:references": "node scripts/check-references.mjs",
