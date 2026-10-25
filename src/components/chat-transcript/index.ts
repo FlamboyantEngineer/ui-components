@@ -4,4 +4,5 @@ export type {
   ChatMessageProps,
   ChatMessageStatus,
   ChatTranscriptProps,
+  ChatTranscriptScrollMode,
 } from './chat-transcript.js';

@@ -1,44 +1,23 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import {
+  getViewport,
+  installTranscriptLayout,
+  scrollViewport,
+  uninstallTranscriptLayout,
+} from '../../../test/transcript-layout-fixtures.js';
 import { ChatMessage, ChatTranscript } from './chat-transcript.js';
 
-/** The log viewport's layout, which jsdom does not compute. */
-const geometry = { clientHeight: 100, scrollHeight: 100 };
-const scrollTops = new WeakMap<Element, number>();
-
-function isViewport(element: Element): boolean {
-  return element.classList.contains('ui-scroll-region__viewport');
-}
+let layout: ReturnType<typeof installTranscriptLayout>;
 
 beforeEach(() => {
-  geometry.clientHeight = 100;
-  geometry.scrollHeight = 100;
-  for (const key of ['clientHeight', 'scrollHeight'] as const) {
-    Object.defineProperty(HTMLElement.prototype, key, {
-      configurable: true,
-      get(this: HTMLElement) {
-        return isViewport(this) ? geometry[key] : 0;
-      },
-    });
-  }
-  Object.defineProperty(HTMLElement.prototype, 'scrollTop', {
-    configurable: true,
-    get(this: HTMLElement) {
-      return scrollTops.get(this) ?? 0;
-    },
-    set(this: HTMLElement, value: number) {
-      const range = Math.max(0, geometry.scrollHeight - geometry.clientHeight);
-      scrollTops.set(this, isViewport(this) ? Math.min(Math.max(0, value), range) : 0);
-    },
-  });
+  layout = installTranscriptLayout({ viewportHeight: 100, messageHeight: 100 });
 });
 
 afterEach(() => {
-  for (const key of ['clientHeight', 'scrollHeight', 'scrollTop']) {
-    Reflect.deleteProperty(HTMLElement.prototype, key);
-  }
+  uninstallTranscriptLayout();
 });
 
 const getNow = () => new Date('2026-04-20T10:30:00');
@@ -48,7 +27,7 @@ function Conversation({ count }: { count: number }) {
   return (
     <ChatTranscript emptyState="Ask a question to start.">
       {Array.from({ length: count }, (_, index) => (
-        <ChatMessage key={index} author={maria} getNow={getNow}>
+        <ChatMessage key={index} id={`m${index + 1}`} author={maria} getNow={getNow}>
           Message {index + 1}
         </ChatMessage>
       ))}
@@ -56,90 +35,82 @@ function Conversation({ count }: { count: number }) {
   );
 }
 
-const log = () => screen.getByRole('log', { name: 'Conversation' });
-
-/** Lets the log's mutation observer see new messages. */
-async function settle() {
-  await act(async () => undefined);
-}
-
-function scrollLogTo(top: number) {
-  log().scrollTop = top;
-  fireEvent.scroll(log());
-}
+const feed = () => screen.getByRole('feed', { name: 'Conversation' });
 
 describe('ChatTranscript', () => {
-  it('UIC-CHAT-TRANSCRIPT-1.1 is a focusable named log that shows an empty state without messages', () => {
+  it('UIC-CHAT-TRANSCRIPT-1.1 is a named feed of articles, not a live region, with an empty state', () => {
     const { container, rerender } = render(<Conversation count={0} />);
     const transcript = container.querySelector('.ui-chat-transcript');
     expect(transcript).toHaveAttribute('data-empty', 'true');
-    expect(log()).toHaveAttribute('tabindex', '0');
-    expect(log()).toHaveTextContent('Ask a question to start.');
+    expect(screen.queryByRole('feed')).not.toBeInTheDocument();
+    expect(container.querySelector('.ui-chat-transcript__empty')).toHaveTextContent(
+      'Ask a question to start.',
+    );
     expect(container.querySelector('.ui-chat-transcript__log')).toHaveClass('ui-scroll-region');
-    expectHooksMatchSpec(container, 'CHAT-TRANSCRIPT', { slots: ['log', 'empty'] });
+    expectHooksMatchSpec(container, 'CHAT-TRANSCRIPT', { slots: ['log', 'empty', 'announcer'] });
     rerender(<Conversation count={2} />);
     expect(transcript).not.toHaveAttribute('data-empty');
-    expect(screen.getAllByRole('article')).toHaveLength(2);
+    expect(screen.queryByRole('log')).not.toBeInTheDocument();
+    expect(feed()).not.toHaveAttribute('aria-live');
+    expect(feed()).toHaveClass('ui-chat-transcript__feed');
+    expect(within(feed()).getAllByRole('article')).toHaveLength(2);
     expect(container.querySelector('.ui-chat-transcript__empty')).toBeNull();
+    expectHooksMatchSpec(container, 'CHAT-TRANSCRIPT', { slots: ['log', 'feed'] });
   });
 
-  it('UIC-CHAT-TRANSCRIPT-1.2 follows new messages at the bottom until the reader scrolls up', async () => {
-    geometry.scrollHeight = 300;
+  it('UIC-CHAT-TRANSCRIPT-1.2 follows new and growing messages at the bottom until the reader scrolls up', () => {
     const { rerender } = render(<Conversation count={3} />);
-    await settle();
-    expect(log().scrollTop).toBe(200);
-    fireEvent.scroll(log());
-    geometry.scrollHeight = 400;
+    const viewport = getViewport();
+    expect(viewport.scrollTop).toBe(200);
     rerender(<Conversation count={4} />);
-    await settle();
-    expect(log().scrollTop).toBe(300);
-    fireEvent.scroll(log());
-    scrollLogTo(120);
-    geometry.scrollHeight = 500;
+    expect(viewport.scrollTop).toBe(300);
+    layout.heights.set('m4', 250);
+    rerender(<Conversation count={4} />);
+    expect(viewport.scrollTop).toBe(450);
+    scrollViewport(viewport, 120);
     rerender(<Conversation count={5} />);
-    await settle();
-    expect(log().scrollTop).toBe(120);
+    expect(viewport.scrollTop).toBe(120);
   });
 
-  it('UIC-CHAT-TRANSCRIPT-1.3 jumps back to the latest message and follows again', async () => {
+  it('UIC-CHAT-TRANSCRIPT-1.3 jumps back to the latest message, focuses it and follows again', async () => {
     const user = userEvent.setup();
-    geometry.scrollHeight = 300;
     const { container, rerender } = render(<Conversation count={3} />);
-    await settle();
+    const viewport = getViewport();
     expect(screen.queryByRole('button', { name: 'Jump to latest' })).not.toBeInTheDocument();
-    scrollLogTo(50);
+    scrollViewport(viewport, 50);
     const jump = screen.getByRole('button', { name: 'Jump to latest' });
     expectHooksMatchSpec(container, 'CHAT-TRANSCRIPT', { slots: ['jump'] });
-    geometry.scrollHeight = 400;
-    rerender(<Conversation count={4} />);
-    await settle();
-    expect(log().scrollTop).toBe(50);
     await user.click(jump);
-    expect(log().scrollTop).toBe(300);
-    expect(log()).toHaveFocus();
-    expect(screen.queryByRole('button', { name: 'Jump to latest' })).not.toBeInTheDocument();
-    fireEvent.scroll(log());
-    geometry.scrollHeight = 500;
-    rerender(<Conversation count={5} />);
-    await settle();
-    expect(log().scrollTop).toBe(400);
-    scrollLogTo(10);
+    expect(viewport.scrollTop).toBe(200);
+    expect(screen.getAllByRole('article').at(-1)).toHaveFocus();
+    expect(jump).not.toBeInTheDocument();
+    rerender(<Conversation count={4} />);
+    expect(viewport.scrollTop).toBe(300);
+    scrollViewport(viewport, 10);
     expect(screen.getByRole('button', { name: 'Jump to latest' })).toBeInTheDocument();
-    scrollLogTo(400);
+    scrollViewport(viewport, 300);
     expect(screen.queryByRole('button', { name: 'Jump to latest' })).not.toBeInTheDocument();
   });
 
-  it('UIC-CHAT-TRANSCRIPT-1.4 forwards attributes to the root and names the log', () => {
+  it('UIC-CHAT-TRANSCRIPT-1.4 forwards attributes to the root and names the feed', () => {
     const { container } = render(
-      <ChatTranscript id="chat" className="caller" data-testid="probe" aria-label="Support chat">
-        <ChatMessage>Hello</ChatMessage>
+      <ChatTranscript
+        id="chat"
+        className="caller"
+        data-testid="probe"
+        aria-label="Support chat"
+        aria-describedby="hint"
+      >
+        <ChatMessage id="m1">Hello</ChatMessage>
       </ChatTranscript>,
     );
     const transcript = container.querySelector('.ui-chat-transcript');
     expect(transcript).toHaveAttribute('id', 'chat');
     expect(transcript).toHaveClass('caller');
     expect(transcript).toHaveAttribute('data-testid', 'probe');
-    expect(screen.getByRole('log', { name: 'Support chat' })).toBeInTheDocument();
+    expect(transcript).not.toHaveAttribute('data-virtualized');
+    const named = screen.getByRole('feed', { name: 'Support chat' });
+    expect(named).toHaveAttribute('aria-describedby', 'hint');
     expectHooksMatchSpec(container, 'CHAT-TRANSCRIPT', { callerAttributes: ['data-testid'] });
   });
 });

@@ -4,6 +4,7 @@ import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Avatar, getDisplayName, type AvatarIdentity } from '../avatar/avatar.js';
 import { RelativeTime, type RelativeTimeProps } from '../relative-time/relative-time.js';
+import { useTranscriptMessage } from './transcript-context.js';
 
 /** `sent` by the reader, `received` from someone else (a person or an assistant), or a `system` notice. */
 export type ChatMessageOrigin = 'sent' | 'received' | 'system';
@@ -72,9 +73,16 @@ export function ChatMessage({
   className,
   ...rest
 }: ChatMessageProps) {
+  const strings = useUiStrings();
+  const transcript = useTranscriptMessage({
+    authorName: author ? getDisplayName(author.name, strings.unnamed) : undefined,
+    origin,
+    status,
+  });
   return (
     <article
       {...rest}
+      {...transcript}
       {...hooks.root({ className, data: { origin, status } })}
       aria-busy={status === 'streaming' || undefined}
     >
