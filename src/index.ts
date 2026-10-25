@@ -117,6 +117,7 @@ export * from './components/chat-sources/index.js';
 export * from './components/code-block/index.js';
 export * from './components/chat-message-actions/index.js';
 export * from './components/chat-list/index.js';
+export * from './components/chat-controller/index.js';
 export * from './components/number-field/index.js';
 export * from './components/slider/index.js';
 export * from './components/boolean-field/index.js';
