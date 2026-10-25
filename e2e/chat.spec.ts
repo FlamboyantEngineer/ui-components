@@ -289,13 +289,13 @@ test.describe('Chat lab', () => {
   test('UIC-CHAT-1.2 opens in a drawer and from a floating launcher', async ({ page, lab }) => {
     await lab.open('chat');
     const surfaces = section(page, 'Surfaces');
-    await surfaces.getByRole('button', { name: 'Open the trip planner' }).first().click();
+    await surfaces.getByRole('button', { name: 'Open the trip planner' }).click();
     const drawer = page.getByRole('dialog', { name: 'Trip planner' });
     await expect(drawer.getByText('Ask about trains, weather or where to eat.')).toBeVisible();
     await expect(page.locator('[data-lab-surface="drawer"]')).not.toHaveAttribute('data-entering');
     await lab.expectAccessible('[data-lab-surface="drawer"]');
     await page.keyboard.press('Escape');
-    await surfaces.locator('[data-lab-demo="launcher"]').getByRole('button').click();
+    await surfaces.getByRole('button', { name: 'Chat with the trip planner' }).click();
     const popover = page.getByRole('dialog', { name: 'Trip planner' });
     await expect(popover.getByRole('textbox', { name: 'Message' })).toBeVisible();
     await lab.expectAccessible('[data-lab-surface="popover"]');

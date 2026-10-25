@@ -27,7 +27,7 @@ function DrawerDemo() {
     <DrawerTrigger>
       <Button size="sm">Open the trip planner</Button>
       <Drawer title="Trip planner" size="md" showCloseButton data-lab-surface="drawer">
-        <div style={{ height: '70vh' }}>
+        <div style={{ height: 'calc(100vh - 140px)' }}>
           <Chat
             {...controller.props}
             aria-label="Conversation with the trip planner"
@@ -51,9 +51,9 @@ function LauncherDemo() {
     >
       <div style={{ position: 'absolute', insetInlineEnd: 16, insetBlockEnd: 16 }}>
         <PopoverTrigger>
-          <IconButton icon="help" label="Open the trip planner" variant="primary" />
+          <IconButton icon="help" label="Chat with the trip planner" variant="primary" />
           <Popover aria-label="Trip planner" placement="top end" data-lab-surface="popover">
-            <div style={{ width: 360, height: 460 }}>
+            <div style={{ width: 290, height: 460 }}>
               <Chat
                 {...controller.props}
                 aria-label="Conversation with the trip planner"
