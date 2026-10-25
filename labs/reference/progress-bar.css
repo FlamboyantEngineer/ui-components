@@ -59,7 +59,7 @@
   background: var(--ref-danger);
 }
 
-.ui-progress-bar[data-indeterminate] .ui-progress-bar__fill {
+.ui-progress-bar[data-shape='linear'][data-indeterminate] .ui-progress-bar__fill {
   width: 40%;
   animation: ref-progress-slide var(--ref-duration-loop) ease-in-out infinite;
 }
@@ -158,6 +158,8 @@
 
 .ui-progress-bar[data-shape='circular'][data-indeterminate] .ui-progress-bar__ring {
   animation: ref-spin var(--ref-duration-spin) linear infinite;
+  transform-box: view-box;
+  transform-origin: center;
 }
 
 .ui-progress-bar[data-shape='circular'] .ui-progress-bar__label {

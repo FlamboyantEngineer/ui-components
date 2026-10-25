@@ -1,6 +1,9 @@
+import type { CSSProperties, Ref } from 'react';
 import { createHooks } from '../../core/hooks.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
-import type { SegmentedBarSegment, SegmentedBarShape } from './segmented-bar.js';
+import type { SegmentedBarShape } from './segmented-bar.js';
+import { toSegmentProperties, type SegmentedPart } from './segmented-layout.js';
+import type { SegmentedAnimationState } from './use-segmented-animation.js';
 
 const hooks = createHooks('segmented-bar', ['ring', 'track', 'segment']);
 
@@ -8,18 +11,29 @@ const hooks = createHooks('segmented-bar', ['ring', 'track', 'segment']);
 export function SegmentedCircle({
   shape,
   segments,
+  animationState,
+  style,
+  ref,
 }: {
   shape: Exclude<SegmentedBarShape, 'linear'>;
-  segments: readonly { segment: SegmentedBarSegment; share: number }[];
+  segments: readonly SegmentedPart[];
+  animationState: SegmentedAnimationState;
+  style: CSSProperties;
+  ref: Ref<SVGSVGElement>;
 }) {
-  let offset = 0;
   const radius = shape === 'pie' ? 8 : 13;
   return (
-    <svg {...hooks.slot('ring')} viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+    <svg
+      {...hooks.slot('ring', { animationState })}
+      style={style}
+      ref={ref}
+      viewBox="0 0 32 32"
+      aria-hidden="true"
+      focusable="false"
+    >
       <circle {...hooks.slot('track')} cx="16" cy="16" r={radius} fill="none" />
-      {segments.map(({ segment, share }) => {
-        const start = offset;
-        offset += share;
+      {segments.map((part) => {
+        const { segment, share, start } = part;
         return share > 0 ? (
           <circle
             key={toKeyIdentity(segment.id)}
@@ -32,6 +46,7 @@ export function SegmentedCircle({
             strokeDasharray={`${share} ${100 - share}`}
             strokeDashoffset={-start}
             transform="rotate(-90 16 16)"
+            style={toSegmentProperties(part)}
           />
         ) : null;
       })}

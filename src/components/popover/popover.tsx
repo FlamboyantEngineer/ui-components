@@ -1,4 +1,4 @@
-import { useContext, type CSSProperties, type ReactNode, type RefObject } from 'react';
+import { useContext, useState, type CSSProperties, type ReactNode, type RefObject } from 'react';
 import {
   Dialog,
   DialogTrigger,
@@ -18,6 +18,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Button } from '../button/button.js';
 import { useLayerZIndex } from '../portal/portal.js';
+import { usePopoverGutter } from './use-popover-gutter.js';
 
 /** A pressable trigger and the `Popover` it opens. */
 export interface PopoverTriggerProps extends OpenStateProps {
@@ -114,8 +115,18 @@ export function PopoverTrigger({ children, ...openState }: PopoverTriggerProps) 
  */
 export function PopoverPanel({ arrowClassName, children, style, ...rest }: PopoverPanelProps) {
   const zIndex = useLayerZIndex('dropdown');
+  const [panel, setPanel] = useState<HTMLElement | null>(null);
+  const gutter = usePopoverGutter(panel);
   return (
-    <AriaPopover {...rest} style={{ ...style, zIndex }}>
+    <AriaPopover
+      {...rest}
+      style={({ placement }) => ({
+        ...style,
+        zIndex,
+        translate: placement === 'left' && gutter > 0 ? `${gutter}px 0` : style?.translate,
+      })}
+      ref={setPanel}
+    >
       {arrowClassName ? <OverlayArrow className={arrowClassName} /> : null}
       {children}
     </AriaPopover>

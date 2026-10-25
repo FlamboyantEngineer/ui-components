@@ -107,12 +107,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .ui-segmented-bar__segment {
-    transition: none;
-  }
-}
-
 .ui-segmented-bar:not([data-shape='linear']) {
   display: inline-flex;
   flex-wrap: wrap;
@@ -157,4 +151,62 @@
 }
 .ui-segmented-bar__ring .ui-segmented-bar__segment[data-tone='danger'] {
   stroke: var(--ref-danger);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .ui-segmented-bar [data-animation-state='waiting'] .ui-segmented-bar__segment {
+    visibility: hidden;
+  }
+
+  .ui-segmented-bar [data-animation-state='running'] .ui-segmented-bar__segment {
+    animation-duration: calc(
+      var(--ref-duration-loop) * var(--ui-segment-share) / var(--ui-segment-total)
+    );
+    animation-delay: calc(
+      var(--ref-duration-loop) * var(--ui-segment-start) / var(--ui-segment-total)
+    );
+    animation-timing-function: linear;
+    animation-fill-mode: both;
+    animation-iteration-count: 1;
+  }
+
+  .ui-segmented-bar__track[data-animation-state='running'] > .ui-segmented-bar__segment {
+    animation-name: ref-segmented-linear;
+    transform-origin: left center;
+  }
+
+  .ui-segmented-bar:dir(rtl)
+    .ui-segmented-bar__track[data-animation-state='running']
+    > .ui-segmented-bar__segment {
+    transform-origin: right center;
+  }
+
+  .ui-segmented-bar__ring[data-animation-state='running'] .ui-segmented-bar__segment {
+    animation-name: ref-segmented-arc;
+  }
+}
+
+@keyframes ref-segmented-linear {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes ref-segmented-arc {
+  from {
+    stroke-dasharray: 0px 100px;
+  }
+  to {
+    stroke-dasharray: calc(var(--ui-segment-share) * 1px)
+      calc((100 - var(--ui-segment-share)) * 1px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-segmented-bar .ui-segmented-bar__segment {
+    transition: none;
+  }
 }

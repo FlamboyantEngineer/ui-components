@@ -92,6 +92,15 @@ Verification: `src/components/popover/popover.test.tsx`
 Implementation: `src/components/popover/popover.tsx`
 Verification: `src/components/popover/popover.test.tsx`
 
+## UIC-POPOVER-6 - Reserved scrollbar space
+
+### UIC-POPOVER-6.1 - Consistent anchor spacing
+
+A popover shall keep the same configured gap on every side with and without an arrow when scroll locking reserves a scrollbar gutter. Right-based positions against the document shall account for its actual containing width; positions inside another containing block shall use that block's geometry. Resizing shall update the correction without changing focus, dismissal or flipping behaviour.
+
+Implementation: `src/components/popover/popover.tsx`, `src/components/popover/use-popover-gutter.ts`
+Verification: `src/components/popover/use-popover-gutter.test.tsx`, `e2e/popover.spec.ts`
+
 ## Hooks
 
 | Hook                 | Kind  | Values                           | Description                                                 |

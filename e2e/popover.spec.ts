@@ -220,3 +220,43 @@ test.describe('Popover lab', () => {
     await lab.expectAccessible();
   });
 });
+
+for (const mode of ['no arrow', 'arrow']) {
+  test(`UIC-POPOVER-6.1 keeps ${mode} gaps consistent with reserved scrollbar space`, async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('popover');
+    await page.addStyleTag({ content: 'html { scrollbar-gutter: stable; }' });
+    for (const [placement, side] of sides) {
+      const trigger = page.locator(`[data-lab-cell="placement=${placement} arrow=${mode}"] button`);
+      await trigger.click();
+      const panel = page.locator(`.ui-popover[data-lab-popover="${placement}-${mode}"]`);
+      await expect(panel).toHaveAttribute('data-placement', side);
+      await expect(panel).not.toHaveAttribute('data-entering');
+      await expect(async () => {
+        const [box, anchor] = await Promise.all([boxOf(panel), boxOf(trigger)]);
+        const gap =
+          side === 'left'
+            ? anchor.x - box.x - box.width
+            : side === 'right'
+              ? box.x - anchor.x - anchor.width
+              : side === 'top'
+                ? anchor.y - box.y - box.height
+                : box.y - anchor.y - anchor.height;
+        expect(Math.abs(gap - (mode === 'arrow' ? 7 : 8))).toBeLessThanOrEqual(1.1);
+      }).toPass();
+      if (placement === 'start') {
+        await page.setViewportSize({ width: 1380, height: 800 });
+        await expect(async () => {
+          const [box, anchor] = await Promise.all([boxOf(panel), boxOf(trigger)]);
+          expect(
+            Math.abs(anchor.x - box.x - box.width - (mode === 'arrow' ? 7 : 8)),
+          ).toBeLessThanOrEqual(1.1);
+        }).toPass();
+      }
+      await page.keyboard.press('Escape');
+      await expect(panel).toHaveCount(0);
+    }
+  });
+}

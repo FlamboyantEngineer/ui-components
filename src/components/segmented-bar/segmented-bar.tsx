@@ -4,9 +4,9 @@ import type { AriaLabellingProps } from '../../core/events.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, Key, Size, Tone } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
-import { resolveAmountShares } from '../../utils/resolve-amount-shares.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
-import { SegmentedCircle } from './segmented-circle.js';
+import { resolveSegmentedBar, type SegmentedPart } from './segmented-layout.js';
+import { SegmentedTrack } from './segmented-track.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 
 export type SegmentedBarSize = Extract<Size, 'sm' | 'md' | 'lg'>;
@@ -28,6 +28,8 @@ export type SegmentedBarShape = 'linear' | 'donut' | 'pie';
 export interface SegmentedBarProps extends BaseProps, AriaLabellingProps {
   /** Linear track, donut ring or filled pie. Defaults to linear. */
   shape?: SegmentedBarShape | undefined;
+  /** Fill the segments once on first visibility; the host stylesheet chooses the motion. Defaults to false. */
+  animated?: boolean | undefined;
   /** The parts, in the order they are drawn. */
   segments: readonly SegmentedBarSegment[];
   /** Visible label. Without one, name the bar with `aria-label` or `aria-labelledby`. */
@@ -46,13 +48,6 @@ export interface SegmentedBarProps extends BaseProps, AriaLabellingProps {
   ref?: Ref<HTMLDivElement> | undefined;
 }
 
-/** A segment with its amount made truthful and its percentage of the whole. */
-interface ResolvedSegment {
-  segment: SegmentedBarSegment;
-  value: number;
-  share: number;
-}
-
 const hooks = createHooks('segmented-bar', [
   'label',
   'total',
@@ -68,29 +63,13 @@ const hooks = createHooks('segmented-bar', [
 
 const shareFormat: Intl.NumberFormatOptions = { style: 'percent', maximumFractionDigits: 1 };
 
-/** Each segment's truthful amount and share, and the whole they are shares of. */
-function resolveSegmentedBar(
-  segments: readonly SegmentedBarSegment[],
-  total?: number,
-): { total: number; segments: ResolvedSegment[] } {
-  const resolved = resolveAmountShares(segments, (segment) => segment.value, total);
-  return {
-    total: resolved.total,
-    segments: resolved.amounts.map(({ item, value, share }) => ({
-      segment: item,
-      value,
-      share: share * 100,
-    })),
-  };
-}
-
 /** The legend list: each segment's label, count and share, visible or read only by assistive technology. */
 function SegmentedBarLegend({
   segments,
   formatOptions,
   isVisible,
 }: {
-  segments: readonly ResolvedSegment[];
+  segments: readonly SegmentedPart[];
   formatOptions: Intl.NumberFormatOptions | undefined;
   isVisible: boolean;
 }) {
@@ -122,6 +101,7 @@ export function SegmentedBar({
   segments,
   label,
   shape = 'linear',
+  animated = false,
   total,
   showTotal = true,
   showLegend = false,
@@ -138,7 +118,7 @@ export function SegmentedBar({
   return (
     <div
       {...rest}
-      {...hooks.root({ className, data: { size, shape } })}
+      {...hooks.root({ className, data: { size, shape, animated } })}
       role="group"
       aria-labelledby={hasLabel ? labelId : rest['aria-labelledby']}
     >
@@ -150,21 +130,7 @@ export function SegmentedBar({
       {showTotal ? (
         <span {...hooks.slot('total')}>{strings.totalCount(format.format(resolved.total))}</span>
       ) : null}
-      {shape === 'linear' ? (
-        <div {...hooks.slot('track')} aria-hidden="true">
-          {resolved.segments.map(({ segment, share }) =>
-            share > 0 ? (
-              <div
-                key={toKeyIdentity(segment.id)}
-                {...hooks.slot('segment', { tone: segment.tone ?? 'neutral' })}
-                style={{ width: `${share}%` }}
-              />
-            ) : null,
-          )}
-        </div>
-      ) : (
-        <SegmentedCircle shape={shape} segments={resolved.segments} />
-      )}
+      <SegmentedTrack shape={shape} segments={resolved.segments} animated={animated} />
       <SegmentedBarLegend
         segments={resolved.segments}
         formatOptions={formatOptions}
