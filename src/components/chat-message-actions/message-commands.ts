@@ -26,6 +26,8 @@ export interface ChatMessageCommandProps extends Pick<
 > {
   /** The text Copy puts on the clipboard. Without it there is no Copy. */
   copyText?: string | undefined;
+  /** Called once Copy has put `copyText` on the clipboard. */
+  onCopy?: (() => void) | undefined;
   /** The current rating, controlled (`null` for none). Left out, the actions keep it. */
   feedback?: ChatFeedbackRating | null | undefined;
   /** Called with each rating, its reasons and comment, or a cleared rating. Shows the ratings. */
@@ -98,6 +100,7 @@ export function hasCommands(commands: ChatMessageCommandProps): boolean {
 export function splitCommands<T extends ChatMessageCommandProps>(props: T) {
   const {
     copyText,
+    onCopy,
     feedback,
     onFeedback,
     feedbackReasons,
@@ -113,6 +116,7 @@ export function splitCommands<T extends ChatMessageCommandProps>(props: T) {
   } = props;
   const commands: ChatMessageCommandProps = {
     copyText,
+    onCopy,
     feedback,
     onFeedback,
     feedbackReasons,
@@ -128,12 +132,15 @@ export function splitCommands<T extends ChatMessageCommandProps>(props: T) {
   return [commands, rest] as const;
 }
 
-/** Copies `copyText` and counts finished copies. */
-function useCopyCommand(copyText: string | undefined) {
+/** Copies `copyText`, counts finished copies and reports a copy that reached the clipboard. */
+function useCopyCommand({ copyText, onCopy }: ChatMessageCommandProps) {
   const clipboard = useClipboard();
   const [copies, setCopies] = useState(0);
   const copy = () => {
-    void clipboard.copy(copyText ?? '').then(() => setCopies((count) => count + 1));
+    void clipboard.copy(copyText ?? '').then((isCopied) => {
+      setCopies((count) => count + 1);
+      if (isCopied) onCopy?.();
+    });
   };
   return { copy, copies, copyStatus: clipboard.status };
 }
@@ -154,7 +161,7 @@ export function useMessageCommands(commands: ChatMessageCommandProps): MessageCo
     commands,
     rating,
     open,
-    ...useCopyCommand(commands.copyText),
+    ...useCopyCommand(commands),
     rate(next, anchor) {
       if (rating === next) {
         setOpen(null);

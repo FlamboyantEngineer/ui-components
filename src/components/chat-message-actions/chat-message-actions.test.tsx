@@ -100,12 +100,14 @@ describe('ChatMessageActions', () => {
   it('UIC-CHAT-MESSAGE-ACTIONS-1.3 copies the text and shows and announces the outcome', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
-    render(<ChatMessageActions copyText="  Lisbon in May " />);
+    const onCopy = vi.fn();
+    render(<ChatMessageActions copyText="  Lisbon in May " onCopy={onCopy} />);
     const toolbar = screen.getByRole('toolbar');
     const copy = screen.getByRole('button', { name: 'Copy' });
     expect(screen.getByRole('status')).toBeEmptyDOMElement();
     await user.click(copy);
     expect(await navigator.clipboard.readText()).toBe('  Lisbon in May ');
+    expect(onCopy).toHaveBeenCalledTimes(1);
     expect(toolbar).toHaveAttribute('data-copied', 'true');
     expect(copy.querySelector('[data-glyph]')).toHaveAttribute('data-glyph', 'check');
     expect(screen.getByRole('status')).toHaveTextContent('Copied');
@@ -118,10 +120,12 @@ describe('ChatMessageActions', () => {
   it('UIC-CHAT-MESSAGE-ACTIONS-1.3 shows and announces a refused copy', async () => {
     const user = userEvent.setup();
     vi.spyOn(navigator.clipboard, 'writeText').mockRejectedValue(new Error('Denied'));
-    render(<ChatMessageActions copyText="Secret" />);
+    const onCopy = vi.fn();
+    render(<ChatMessageActions copyText="Secret" onCopy={onCopy} />);
     const copy = screen.getByRole('button', { name: 'Copy' });
     await user.click(copy);
     await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Copy failed'));
+    expect(onCopy).not.toHaveBeenCalled();
     expect(copy.querySelector('[data-glyph]')).toHaveAttribute('data-glyph', 'error');
   });
 
