@@ -78,6 +78,19 @@ describe('ChatReasoning', () => {
     expect(screen.getByRole('button', { name: 'Thought for a moment' })).toBeInTheDocument();
   });
 
+  it('UIC-CHAT-ACTIVITY-1.4 streams Markdown, rendering incomplete syntax as it will end', () => {
+    const { container, rerender } = render(
+      <ChatReasoning text="Comparing the **cheap" status="streaming" />,
+    );
+    const text = container.querySelector('.ui-chat-reasoning__text');
+    expect(text).toHaveAttribute('data-streaming', 'true');
+    expect(within(text as HTMLElement).getByText('cheap').tagName).toBe('STRONG');
+    rerender(<ChatReasoning text="Comparing the **cheap**" status="complete" />);
+    expect(container.querySelector('.ui-chat-reasoning__text')).not.toHaveAttribute(
+      'data-streaming',
+    );
+  });
+
   it('UIC-CHAT-ACTIVITY-1.4 renders plain text as written', () => {
     const { container } = render(
       <ChatReasoning text={thinking} status="streaming" format="plain" />,

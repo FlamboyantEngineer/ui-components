@@ -29,7 +29,7 @@ Verification: `src/components/chat-activity/chat-reasoning.test.tsx`, `src/compo
 
 ### UIC-CHAT-ACTIVITY-1.4 - Format
 
-`ChatReasoning` shall render its `text` as Markdown through the [Markdown](MARKDOWN.md) component by default (`format="markdown"`; the text slot is then also `ui-markdown`), and as plain text in a `<div>` with `format="plain"`, where Markdown syntax shows as written.
+`ChatReasoning` shall render its `text` as Markdown through the [Markdown](MARKDOWN.md) component by default (`format="markdown"`; the text slot is then also `ui-markdown`), in Markdown's streaming mode while its `status` is `streaming`, so incomplete syntax at the end of the text renders as it will once complete ([UIC-MARKDOWN-2.11](MARKDOWN.md#uic-markdown-211---streaming-incomplete-syntax)); and as plain text in a `<div>` with `format="plain"`, where Markdown syntax shows as written.
 
 Implementation: `src/components/chat-activity/chat-reasoning.tsx`
 Verification: `src/components/chat-activity/chat-reasoning.test.tsx`, `e2e/chat-activity.spec.ts`
