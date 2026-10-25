@@ -1,0 +1,10 @@
+---
+'@flamboyantengineer/ui-components': minor
+---
+
+Add message actions and a conversation list for chats.
+
+- `ChatMessageActions` (new): the action bar for a message's `actions`, a React Aria toolbar of the commands whose callbacks are given: Copy (`copyText`, with the copied state and a polite announcement), Good and Bad response (`feedback`, `onFeedback`), Reply (`onReply`), React (`onReact`, an `EmojiPicker` taking `customEmoji`, `recentEmoji`, `onRecentEmojiChange` and `loadEmoji`), Edit (`onEdit`) and Delete (`onDelete`, after a `ConfirmDialog`). With `feedbackReasons`, a rating opens feedback details with reason chips and an optional comment, reported as `onFeedback({ rating, reasons, comment })`; choosing the rating again clears it. Hooks: `ui-chat-message-actions` and its slots, `data-open` while an overlay is open, `data-copied`, `data-rating`.
+- `ChatMessageActionsMenu` (new): offers the same commands in a context menu on a secondary click, a long press, the Context Menu key or Shift+F10 on a message, and hands the message the action bar through its `children` function so both share one state.
+- `ChatList` (new): a list of conversations on React Aria's grid list with a search field (built-in filtering by title and last message, or `onSearchChange`), a New chat button (`onNew`), single selection (`selectedId`, `onSelectionChange`), rows with an avatar, participants and presence, title, relative time, last message, muted mark, unread count and the host's `renderActions`, placeholder rows while `isLoading`, and an `emptyState`. Hooks: `ui-chat-list` and its slots, `data-loading`, `data-unread`, `data-muted`.
+- Glyphs `thumbs-up`, `thumbs-down`, `reply` and `bell-slash`; strings for the actions (`messageActions`, `goodResponse`, `badResponse`, `messageFeedback`, `feedbackDetails`, `feedbackReasons`, `feedbackComment`, `submitFeedback`, `deleteMessage`, `deleteMessageDescription`) and the list (`conversations`, `searchConversations`, `newChat`, `noConversations`, `noMatchingConversations`, `loadingConversations`, `unreadMessages`, `conversationMuted`, `conversationLabel`).

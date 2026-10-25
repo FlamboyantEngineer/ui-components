@@ -26,12 +26,40 @@
   color: var(--ref-muted);
 }
 
+.ui-message-composer[data-editing] {
+  border-color: var(--ref-accent);
+}
+
+/* A drag carrying files is over the composer: it shows where they will land. */
+.ui-message-composer[data-drop-target] {
+  border-style: dashed;
+  border-color: var(--ref-focus);
+  background: color-mix(in srgb, var(--ref-focus) var(--ref-tint-subtle), var(--ref-surface));
+}
+
+.ui-message-composer__banner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 4px 6px;
+  border-inline-start: 2px solid var(--ref-accent);
+  border-radius: var(--ref-radius-sm);
+  background: var(--ref-canvas);
+  color: var(--ref-muted);
+  font-size: var(--ref-font-size-sm);
+}
+
 .ui-message-composer__attachments {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
 }
 
+/*
+ * The text area, or the rich composer's editable text box. ProseMirror needs the white-space,
+ * wrapping and ligature rules on its content element (from prosemirror-view/style/prosemirror.css).
+ */
 .ui-message-composer__input {
   box-sizing: border-box;
   width: 100%;
@@ -45,10 +73,69 @@
   line-height: 20px;
   resize: none;
   outline: none;
+  overflow-y: auto;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+  white-space: break-spaces;
+  font-variant-ligatures: none;
+  font-feature-settings: 'liga' 0;
 }
 
 .ui-message-composer__input::placeholder {
   color: var(--ref-muted);
+}
+
+.ui-message-composer__input p {
+  margin: 0;
+}
+
+.ui-message-composer__input.ProseMirror-hideselection *::selection {
+  background: transparent;
+}
+
+.ui-message-composer__input.ProseMirror-hideselection {
+  caret-color: transparent;
+}
+
+.ui-message-composer__input img.ProseMirror-separator {
+  display: inline !important;
+  border: none !important;
+  margin: 0 !important;
+}
+
+/* The empty rich composer's first line shows the placeholder. */
+.ui-message-composer__placeholder::before {
+  content: attr(data-placeholder);
+  float: inline-start;
+  height: 0;
+  color: var(--ref-muted);
+  pointer-events: none;
+}
+
+/* A mention or a command: one atomic pill in the text. */
+.ui-message-composer__pill {
+  padding: 0 4px;
+  border-radius: var(--ref-radius-sm);
+  background: color-mix(in srgb, var(--ref-accent) var(--ref-tint-subtle), var(--ref-surface));
+  color: var(--ref-text);
+  font-weight: var(--ref-font-weight-medium);
+  white-space: nowrap;
+}
+
+.ui-message-composer__pill[data-kind='command'] {
+  background: color-mix(in srgb, var(--ref-info) var(--ref-tint-subtle), var(--ref-surface));
+  font-family: var(--ref-mono);
+}
+
+.ui-message-composer__code-block {
+  margin: 2px 0;
+  padding: 4px 8px;
+  border: 1px solid var(--ref-border);
+  border-radius: var(--ref-radius-sm);
+  background: var(--ref-canvas);
+  font-family: var(--ref-mono);
+  font-size: var(--ref-font-size-sm);
+  white-space: pre-wrap;
 }
 
 .ui-message-composer__footer {
@@ -65,6 +152,9 @@
   gap: 4px;
 }
 
+.ui-message-composer__attach,
+.ui-message-composer__emoji,
+.ui-message-composer__cancel,
 .ui-message-composer__action {
   flex: none;
 }

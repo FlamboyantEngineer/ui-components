@@ -1,6 +1,7 @@
 // Each component also has its own entry point: @flamboyantengineer/ui-components/<component>.
 // The rich-text editor family is exported only from its entry point (`/rich-text-editor`), since it
-// imports its optional peers (ProseMirror) and the root must load without them. The testing helpers
+// imports its optional peers (ProseMirror) and the root must load without them; so is the message
+// composer's rich mode (`/message-composer/rich`). The testing helpers
 // are exported only from `/testing` for the same reason (Testing Library).
 export * from './core/index.js';
 export * from './components/icon/index.js';
@@ -113,6 +114,10 @@ export * from './components/chat-transcript/index.js';
 export * from './components/chat-attachment/index.js';
 export * from './components/chat-question/index.js';
 export * from './components/chat-tool-call/index.js';
+export * from './components/chat-sources/index.js';
+export * from './components/code-block/index.js';
+export * from './components/chat-message-actions/index.js';
+export * from './components/chat-list/index.js';
 export * from './components/number-field/index.js';
 export * from './components/slider/index.js';
 export * from './components/boolean-field/index.js';

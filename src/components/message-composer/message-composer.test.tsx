@@ -1,7 +1,9 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
+import { existsSync, readFileSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
 import { createRef, useState } from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { createTriggerCompletions, type Completion } from '../completion-list/completion-list.js';
 import { MessageComposer, type MessageComposerProps } from './message-composer.js';
@@ -9,6 +11,38 @@ import { MessageComposer, type MessageComposerProps } from './message-composer.j
 const input = () => screen.getByRole<HTMLTextAreaElement>('textbox');
 const action = () => screen.getByRole('button');
 const root = (container: HTMLElement) => container.querySelector('.ui-message-composer');
+
+/** Every module a module loads through relative imports, itself included. */
+function collectImports(file: string, seen = new Set<string>()): Set<string> {
+  if (seen.has(file)) return seen;
+  seen.add(file);
+  const source = readFileSync(file, 'utf8');
+  for (const [, path = ''] of source.matchAll(/from '(\.[^']+)\.js'/g)) {
+    const base = resolve(dirname(file), path);
+    const next = [`${base}.ts`, `${base}.tsx`].find(existsSync);
+    if (next) collectImports(next, seen);
+  }
+  return seen;
+}
+
+/** The packages the modules a module loads import. */
+function collectPackages(entry: string): string[] {
+  const files = [...collectImports(join(process.cwd(), entry))];
+  return files.flatMap((file) =>
+    [...readFileSync(file, 'utf8').matchAll(/from '([^.'][^']*)'/g)].map(([, name = '']) => name),
+  );
+}
+
+/** Makes the primary pointer coarse, as on a touch screen. */
+function stubCoarsePointer() {
+  vi.stubGlobal('matchMedia', (query: string) => ({
+    matches: query === '(pointer: coarse)',
+    addEventListener: () => undefined,
+    removeEventListener: () => undefined,
+  }));
+}
+
+afterEach(() => vi.unstubAllGlobals());
 
 const people: Completion[] = [
   { label: 'Maria Santos', insertText: '@Maria ' },
@@ -92,6 +126,37 @@ describe('MessageComposer', () => {
     expect(onSubmit).toHaveBeenLastCalledWith('');
   });
 
+  it('UIC-MESSAGE-COMPOSER-1.2 sends on Ctrl+Enter with the Enter chord and never during a composition', async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    render(<MessageComposer defaultValue="こんにちは" onSubmit={onSubmit} />);
+    await user.click(input());
+    // eslint-disable-next-line testing-library/prefer-user-event -- user-event cannot set isComposing on a keydown
+    fireEvent.keyDown(input(), { key: 'Enter', isComposing: true });
+    // eslint-disable-next-line testing-library/prefer-user-event -- the Enter some browsers report as a composition ends
+    fireEvent.keyDown(input(), { key: 'Enter', keyCode: 229 });
+    expect(onSubmit).not.toHaveBeenCalled();
+    await user.keyboard('{Control>}{Enter}{/Control}');
+    expect(onSubmit).toHaveBeenCalledWith('こんにちは');
+  });
+
+  it('UIC-MESSAGE-COMPOSER-1.7 breaks the line on Enter on a touch screen and sends on Ctrl+Enter', async () => {
+    stubCoarsePointer();
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    render(<MessageComposer defaultValue="One" onSubmit={onSubmit} />);
+    expect(action()).toHaveAttribute(
+      'aria-keyshortcuts',
+      expect.stringMatching(/^(Control|Meta)\+Enter$/),
+    );
+    await user.click(input());
+    await user.keyboard('{End}{Enter}Two');
+    expect(input()).toHaveValue('One\nTwo');
+    expect(onSubmit).not.toHaveBeenCalled();
+    await user.keyboard('{Control>}{Enter}{/Control}');
+    expect(onSubmit).toHaveBeenCalledWith('One\nTwo');
+  });
+
   it('UIC-MESSAGE-COMPOSER-1.3 waits while pending and offers Stop with onStop', async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
@@ -114,11 +179,21 @@ describe('MessageComposer', () => {
     expect(root(container)).toHaveAttribute('data-pending', 'true');
   });
 
-  it('UIC-MESSAGE-COMPOSER-1.4 disables the text area and the button', () => {
-    const { container } = render(<MessageComposer defaultValue="Hi" isDisabled />);
+  it('UIC-MESSAGE-COMPOSER-1.4 UIC-MESSAGE-COMPOSER-2.2 disables the text area and every button', () => {
+    const { container } = render(
+      <MessageComposer
+        defaultValue="Hi"
+        isDisabled
+        editValue="Hello"
+        onAttach={() => undefined}
+        showEmojiPicker
+      />,
+    );
     expect(root(container)).toHaveAttribute('data-disabled', 'true');
     expect(input()).toBeDisabled();
-    expect(action()).toBeDisabled();
+    for (const name of ['Attach files', 'Insert emoji', 'Cancel', 'Save']) {
+      expect(screen.getByRole('button', { name })).toBeDisabled();
+    }
   });
 
   it('UIC-MESSAGE-COMPOSER-1.5 shows attachments above and tools before the button', () => {
@@ -163,6 +238,18 @@ describe('MessageComposer', () => {
     expect(onSubmit).not.toHaveBeenCalled();
     await user.keyboard('now{Enter}');
     expect(onSubmit).toHaveBeenCalledWith('Ask @Jon now');
+  });
+
+  it('UIC-MESSAGE-COMPOSER-4.1 keeps the rich engine out of the package root and the plain composer', () => {
+    const engine = /^(prosemirror-|@handlewithcare\/)/;
+    expect(collectPackages('src/index.ts').filter((name) => engine.test(name))).toEqual([]);
+    const rich = collectPackages('src/components/message-composer/rich/index.ts');
+    expect(rich.filter((name) => engine.test(name))).toContain('prosemirror-state');
+    const entry = readFileSync(
+      join(process.cwd(), 'src/components/message-composer/rich/index.ts'),
+      'utf8',
+    );
+    expect(entry).toMatch(/export \{ RichMessageComposer \}/);
   });
 
   it('UIC-MESSAGE-COMPOSER-2.1 forwards attributes to the root and the ref and handlers to the text area', async () => {
