@@ -1,5 +1,0 @@
----
-'@flamboyantengineer/ui-components': minor
----
-
-Chat messages and conversation parts. `ChatMessage` gains a name from its author and absolute time, `groupPosition` (grouped messages hide the avatar and name and show their time on hover and focus), `data-hovered` and `data-focus-within` hooks for an actions bar shown on hover and keyboard focus, author presence, `delivery` with Retry for a failed send, a `cancelled` status shown as "Stopped", `error` with Retry as an alert, `isEdited`, `isDeleted` (a "Message deleted" placeholder), `quote` with `onQuotePress`, and `reactions` and `readers` slots. New parts: `ChatQuote`, `ChatDateSeparator` ("Today", "Yesterday", a full date), `ChatUnreadDivider` ("New messages"), `ChatTypingIndicator` (plural-correct "is typing" text, an assistant "thinking" variant, a polite status, dot hooks to animate) and `ChatReadReceipts` ("Seen by …" with a popover listing every reader). `groupChatMessages` turns messages into date separators, the unread divider and grouped messages, breaking groups on a time gap, a date change in the reader's time zone, a system notice or a failed send.
