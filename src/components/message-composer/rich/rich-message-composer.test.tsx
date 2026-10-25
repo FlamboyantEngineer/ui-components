@@ -288,6 +288,23 @@ describe('RichMessageComposer', () => {
     expect(keys).toEqual(['!']);
   });
 
+  it('UIC-MESSAGE-COMPOSER-3.8 sends while pending with allowsPendingSubmit and offers Stop once empty', async () => {
+    const onStop = vi.fn();
+    const { user, onSubmit } = renderComposer({
+      defaultValue: { text: 'And a dessert', tokens: [] },
+      isPending: true,
+      allowsPendingSubmit: true,
+      onStop,
+    });
+    const action = screen.getByRole('button', { name: 'Send' });
+    await user.click(box());
+    await user.keyboard('{Enter}');
+    expect(onSubmit).toHaveBeenCalledWith({ text: 'And a dessert', tokens: [] });
+    expect(screen.getByRole('button', { name: 'Stop' })).toBe(action);
+    await user.click(action);
+    expect(onStop).toHaveBeenCalledTimes(1);
+  });
+
   it('UIC-MESSAGE-COMPOSER-3.5 recalls earlier prompts as text until the reader edits one', async () => {
     const onChange = vi.fn();
     const { user } = renderComposer({ history: ['Plan a trip', '```\nls\n```'], onChange });

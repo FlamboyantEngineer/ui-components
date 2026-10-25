@@ -40,6 +40,13 @@ export interface TranscriptSettings {
 }
 
 /** The transcript's long-lived state, outside React: elements, scroll keeping and bookkeeping. */
+/** A message to bring into view; `focus: false` leaves focus where it is. */
+export interface RevealTarget {
+  key: string;
+  align: RevealAlignment;
+  focus?: boolean | undefined;
+}
+
 export interface TranscriptRuntime {
   registry: TranscriptRegistry;
   keeper: ScrollKeeper;
@@ -58,7 +65,7 @@ export interface TranscriptRuntime {
   /** Children mounted at least once, so a child that never registered is known not to be a message. */
   seen: Set<string>;
   activeKey: string | null;
-  pendingFocus: { key: string; align: RevealAlignment } | null;
+  pendingFocus: RevealTarget | null;
   /** Arrivals out of view since the reader scrolled away. */
   unseen: Set<string>;
   /** Arrivals still streaming, announced once they complete. */

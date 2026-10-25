@@ -1,37 +1,17 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { existsSync, readFileSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { createRef, useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { collectPackages } from '../../../test/module-imports.js';
 import { createTriggerCompletions, type Completion } from '../completion-list/completion-list.js';
 import { MessageComposer, type MessageComposerProps } from './message-composer.js';
 
 const input = () => screen.getByRole<HTMLTextAreaElement>('textbox');
 const action = () => screen.getByRole('button');
 const root = (container: HTMLElement) => container.querySelector('.ui-message-composer');
-
-/** Every module a module loads through relative imports, itself included. */
-function collectImports(file: string, seen = new Set<string>()): Set<string> {
-  if (seen.has(file)) return seen;
-  seen.add(file);
-  const source = readFileSync(file, 'utf8');
-  for (const [, path = ''] of source.matchAll(/from '(\.[^']+)\.js'/g)) {
-    const base = resolve(dirname(file), path);
-    const next = [`${base}.ts`, `${base}.tsx`].find(existsSync);
-    if (next) collectImports(next, seen);
-  }
-  return seen;
-}
-
-/** The packages the modules a module loads import. */
-function collectPackages(entry: string): string[] {
-  const files = [...collectImports(join(process.cwd(), entry))];
-  return files.flatMap((file) =>
-    [...readFileSync(file, 'utf8').matchAll(/from '([^.'][^']*)'/g)].map(([, name = '']) => name),
-  );
-}
 
 /** Makes the primary pointer coarse, as on a touch screen. */
 function stubCoarsePointer() {
@@ -177,6 +157,31 @@ describe('MessageComposer', () => {
     rerender(<MessageComposer defaultValue="Next" isPending onSubmit={onSubmit} />);
     expect(container.querySelector('.ui-icon-button__spinner')).not.toBeNull();
     expect(root(container)).toHaveAttribute('data-pending', 'true');
+  });
+
+  it('UIC-MESSAGE-COMPOSER-3.8 sends while pending with allowsPendingSubmit, offering Stop when empty', async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    const onStop = vi.fn();
+    const { container, rerender } = render(
+      <MessageComposer isPending allowsPendingSubmit onSubmit={onSubmit} onStop={onStop} />,
+    );
+    expect(root(container)).toHaveAttribute('data-pending', 'true');
+    const stop = screen.getByRole('button', { name: 'Stop' });
+    await user.click(input());
+    await user.keyboard('Then the dessert');
+    expect(screen.getByRole('button', { name: 'Send' })).toBe(stop);
+    expect(container.querySelector('.ui-icon-button__spinner')).toBeNull();
+    await user.keyboard('{Enter}');
+    expect(onSubmit).toHaveBeenCalledWith('Then the dessert');
+    expect(input()).toHaveValue('');
+    await user.click(screen.getByRole('button', { name: 'Stop' }));
+    expect(onStop).toHaveBeenCalledTimes(1);
+    rerender(<MessageComposer isPending allowsPendingSubmit onSubmit={onSubmit} />);
+    await user.click(input());
+    await user.keyboard('More');
+    await user.click(screen.getByRole('button', { name: 'Send' }));
+    expect(onSubmit).toHaveBeenLastCalledWith('More');
   });
 
   it('UIC-MESSAGE-COMPOSER-1.4 UIC-MESSAGE-COMPOSER-2.2 disables the text area and every button', () => {

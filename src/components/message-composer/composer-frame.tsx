@@ -1,12 +1,6 @@
 import type { ReactNode, RefObject } from 'react';
 import { composerHooks as hooks } from './composer-hooks.js';
-import {
-  AttachButton,
-  CancelButton,
-  ComposerAction,
-  EmojiButton,
-  type ComposerActionMode,
-} from './composer-tools.js';
+import { AttachButton, CancelButton, ComposerAction, EmojiButton } from './composer-tools.js';
 import type {
   MessageComposerSharedProps,
   MessageComposerSubmitShortcut,
@@ -32,9 +26,11 @@ export interface ComposerFrameProps {
   children: ReactNode;
 }
 
-function toActionMode(props: MessageComposerSharedProps, isEditing: boolean): ComposerActionMode {
-  if (isEditing) return 'save';
-  return props.isPending && props.onStop ? 'stop' : 'send';
+function toActionMode(props: MessageComposerSharedProps, model: ComposerFrameModel) {
+  if (model.isEditing) return 'save';
+  // A composer that sends while pending offers Stop only while there is nothing to send.
+  const isSending = props.allowsPendingSubmit && model.canSubmit;
+  return props.isPending && props.onStop && !isSending ? 'stop' : 'send';
 }
 
 /** The built-in tools (attach, emoji) and the caller's, before the button. */
@@ -82,9 +78,9 @@ export function ComposerFrame({ props, rootRef, model, children }: ComposerFrame
           <CancelButton onCancel={props.onCancel} isDisabled={isDisabled} />
         ) : null}
         <ComposerAction
-          mode={toActionMode(props, model.isEditing)}
+          mode={toActionMode(props, model)}
           canSubmit={model.canSubmit}
-          isPending={Boolean(props.isPending)}
+          isPending={Boolean(props.isPending) && !props.allowsPendingSubmit}
           isDisabled={isDisabled}
           shortcut={model.shortcut}
           onSubmit={model.submit}

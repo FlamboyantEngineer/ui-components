@@ -1,8 +1,10 @@
-import { readOffset, type RevealAlignment } from './transcript-geometry.js';
+import { isEditableTarget } from '../../utils/is-editable-target.js';
+import { readOffset } from './transcript-geometry.js';
 import {
   isTranscriptMessage,
   readMessageText,
   resolveMessageKey,
+  type RevealTarget,
   type TranscriptRuntime,
   type TranscriptSettings,
 } from './transcript-runtime.js';
@@ -91,7 +93,7 @@ function resolveRevealTarget(runtime: TranscriptRuntime, element: HTMLElement) {
 export function focusMessage(
   runtime: TranscriptRuntime,
   settings: TranscriptSettings,
-  target: { key: string; align: RevealAlignment },
+  target: RevealTarget,
 ) {
   const element = runtime.registry.element(target.key);
   if (!element) {
@@ -102,11 +104,21 @@ export function focusMessage(
   runtime.pendingFocus = null;
   const revealed = target.align === 'start' ? resolveRevealTarget(runtime, element) : element;
   runtime.keeper.reveal(revealed, target.align);
-  element.focus({ preventScroll: true });
+  if (target.focus !== false) element.focus({ preventScroll: true });
   syncWithScroll(runtime, settings);
 }
 
-/** Scrolls to a newly highlighted message and focuses it, once it is among the children. */
+/** Whether focus may move to a message: not while the reader types in a field outside. */
+function isFocusFree(runtime: TranscriptRuntime) {
+  const active = document.activeElement;
+  if (runtime.viewport.current?.contains(active)) return true;
+  return !isEditableTarget(active);
+}
+
+/**
+ * Scrolls to a newly highlighted message once it is among the children, and focuses it unless the
+ * reader is typing in a field outside the transcript, such as a find box.
+ */
 export function applyHighlight(runtime: TranscriptRuntime, settings: TranscriptSettings) {
   const key = resolveMessageKey(runtime, settings.highlightedMessageId) ?? null;
   if (key === runtime.handledHighlight) return;
@@ -116,5 +128,5 @@ export function applyHighlight(runtime: TranscriptRuntime, settings: TranscriptS
   }
   if (!runtime.indexOf.has(key)) return;
   runtime.handledHighlight = key;
-  focusMessage(runtime, settings, { key, align: 'center' });
+  focusMessage(runtime, settings, { key, align: 'center', focus: isFocusFree(runtime) });
 }

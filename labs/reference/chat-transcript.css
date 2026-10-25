@@ -38,9 +38,10 @@
   outline-offset: 2px;
 }
 
+/* A light tint on the canvas, so the muted time and markers on the message stay readable. */
 .ui-chat-transcript__feed > [data-highlighted] {
   border-radius: var(--ref-radius-lg);
-  background: var(--ref-highlight);
+  background: color-mix(in srgb, var(--ref-warning) var(--ref-tint), var(--ref-canvas));
 }
 
 /* The place above the messages keeps its height, so the indicator appearing moves nothing. */

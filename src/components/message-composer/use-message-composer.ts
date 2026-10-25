@@ -75,7 +75,7 @@ export function useMessageComposer(props: MessageComposerProps): MessageComposer
   const strings = useUiStrings();
   const state = useComposerState({
     ...props,
-    isBlocked: isDisabled || isPending,
+    isBlocked: isDisabled || (isPending && !props.allowsPendingSubmit),
     format: plainFormat,
   });
   const shortcut = resolveSubmitShortcut(props.submitShortcut, useCoarsePointer());

@@ -9,6 +9,7 @@ import { chatMessageStrings, type ChatMessageStrings } from './chat-message-stri
 import { chatQuestionStrings, type ChatQuestionStrings } from './chat-question-strings.js';
 import { chatSourcesStrings, type ChatSourcesStrings } from './chat-sources-strings.js';
 import { chatToolStrings, type ChatToolStrings } from './chat-tool-strings.js';
+import { chatWidgetStrings, type ChatWidgetStrings } from './chat-widget-strings.js';
 import { codeStrings, type CodeStrings } from './code-strings.js';
 import { commonStrings, type CommonStrings } from './common-strings.js';
 import { composerStrings, type ComposerStrings } from './composer-strings.js';
@@ -50,6 +51,7 @@ export interface UiStrings
     ChatQuestionStrings,
     ChatSourcesStrings,
     ChatToolStrings,
+    ChatWidgetStrings,
     CodeStrings,
     CommonStrings,
     ComposerStrings,
@@ -86,6 +88,7 @@ export const defaultStrings: UiStrings = {
   ...chatQuestionStrings,
   ...chatSourcesStrings,
   ...chatToolStrings,
+  ...chatWidgetStrings,
   ...codeStrings,
   ...commonStrings,
   ...composerStrings,

@@ -68,6 +68,7 @@ const messages: DemoMessage[] = [
     text: 'Take the 28 tram to the castle, then walk down to the river.',
     commands: (log) => ({
       copyText: 'Take the 28 tram to the castle, then walk down to the river.',
+      onCopy: () => log('copied the answer'),
       onFeedback: (feedback) => log(describeFeedback(feedback)),
       feedbackReasons,
     }),

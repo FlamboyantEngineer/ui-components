@@ -22,7 +22,7 @@ Verification: `src/components/message-composer/message-composer.test.tsx`, `e2e/
 
 ### UIC-MESSAGE-COMPOSER-1.3 - Pending and stopping
 
-While `isPending`, the root shall publish `data-pending` and the composer sends nothing, while the text stays editable for the next message. With `onStop`, the same button becomes Stop (the `stop` glyph, named by the provider string `stop`) and calls `onStop`, so keyboard focus on it stays put; without `onStop` it shows the pending spinner.
+While `isPending`, the root shall publish `data-pending` and the composer sends nothing (unless `allowsPendingSubmit`, [UIC-MESSAGE-COMPOSER-3.8](#uic-message-composer-38---sending-while-a-reply-is-pending)), while the text stays editable for the next message. With `onStop`, the same button becomes Stop (the `stop` glyph, named by the provider string `stop`) and calls `onStop`, so keyboard focus on it stays put; without `onStop` it shows the pending spinner.
 
 Implementation: `src/components/message-composer/composer-frame.tsx`, `src/components/message-composer/composer-tools.tsx`
 Verification: `src/components/message-composer/message-composer.test.tsx`, `e2e/message-composer.spec.ts`
@@ -122,11 +122,18 @@ With `showEmojiPicker`, the toolbar shall hold an emoji button (`ui-message-comp
 Implementation: `src/components/message-composer/composer-tools.tsx`, `src/components/message-composer/use-message-composer.ts`, `src/components/message-composer/rich/rich-content.tsx`, `src/utils/use-focus-handback.ts`, `src/core/composer-strings.ts`
 Verification: `src/components/message-composer/composer-frame.test.tsx`, `e2e/message-composer.spec.ts`
 
+### UIC-MESSAGE-COMPOSER-3.8 - Sending while a reply is pending
+
+With `allowsPendingSubmit`, a pending composer shall send as it does when not pending (Enter, the chord, the button), for a host that queues the message until the reply ends. Its one action button is then Send (without the pending spinner) while there is something to send, and Stop (with `onStop`) while there is not, so keyboard focus on it stays put as it switches.
+
+Implementation: `src/components/message-composer/composer-frame.tsx`, `src/components/message-composer/use-message-composer.ts`, `src/components/message-composer/rich/rich-message-composer.tsx`
+Verification: `src/components/message-composer/message-composer.test.tsx`, `src/components/message-composer/rich/rich-message-composer.test.tsx`
+
 ## UIC-MESSAGE-COMPOSER-4 - Rich mode
 
 ### UIC-MESSAGE-COMPOSER-4.1 - Entry point and engine
 
-`RichMessageComposer` shall be exported only from `@flamboyantengineer/ui-components/message-composer/rich`, with its prop and message types; only modules under `src/components/message-composer/rich/` import ProseMirror and `@handlewithcare/react-prosemirror`, so neither the package root nor `MessageComposer` loads them and applications without the rich mode install none of them. No public declaration exposes their types. The host stylesheet gives the input ProseMirror's required rules, as the reference partial does.
+`RichMessageComposer` shall be exported only from `@flamboyantengineer/ui-components/message-composer/rich`, with its prop and message types; only modules under `src/components/message-composer/rich/` import ProseMirror and `@handlewithcare/react-prosemirror`, so neither the package root nor `MessageComposer` loads them and applications without the rich mode install none of them. `Chat`, which composes the rich mode, is likewise exported only from its own entry point ([UIC-CHAT-1.1](CHAT.md#uic-chat-11---entry-point)). No public declaration exposes their types. The host stylesheet gives the input ProseMirror's required rules, as the reference partial does.
 
 Implementation: `src/components/message-composer/rich/index.ts`, `src/components/message-composer/rich/rich-message-composer.tsx`
 Verification: `src/components/message-composer/message-composer.test.tsx`

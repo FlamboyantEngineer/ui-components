@@ -118,6 +118,22 @@ describe('ChatTranscript history', () => {
     expect(offsetInViewport(article('m15'))).toBe(75);
   });
 
+  it('UIC-CHAT-TRANSCRIPT-4.3 leaves focus in a field outside, such as a find box', () => {
+    const view = (highlighted?: string) => (
+      <>
+        <input aria-label="Find" />
+        <History highlightedMessageId={highlighted} />
+      </>
+    );
+    const { rerender } = render(view());
+    const find = screen.getByRole('textbox', { name: 'Find' });
+    act(() => find.focus());
+    rerender(view('m23'));
+    expect(article('m23')).toHaveAttribute('data-highlighted', 'true');
+    expect(offsetInViewport(article('m23'))).toBe(75);
+    expect(find).toHaveFocus();
+  });
+
   it('UIC-CHAT-TRANSCRIPT-3.7 knows a message by its own id inside a wrapper without a key', () => {
     vi.useFakeTimers();
     const onRead = vi.fn();
