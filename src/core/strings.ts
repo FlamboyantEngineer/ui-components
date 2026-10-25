@@ -1,6 +1,8 @@
 import { analysisStrings, type AnalysisStrings } from './analysis-strings.js';
+import { chatActionsStrings, type ChatActionsStrings } from './chat-actions-strings.js';
 import { chatActivityStrings, type ChatActivityStrings } from './chat-activity-strings.js';
 import { chatAttachmentStrings, type ChatAttachmentStrings } from './chat-attachment-strings.js';
+import { chatListStrings, type ChatListStrings } from './chat-list-strings.js';
 import { chatMessageStrings, type ChatMessageStrings } from './chat-message-strings.js';
 import { chatQuestionStrings, type ChatQuestionStrings } from './chat-question-strings.js';
 import { chatSourcesStrings, type ChatSourcesStrings } from './chat-sources-strings.js';
@@ -35,8 +37,10 @@ import { viewStrings, type ViewStrings } from './view-strings.js';
 export interface UiStrings
   extends
     AnalysisStrings,
+    ChatActionsStrings,
     ChatActivityStrings,
     ChatAttachmentStrings,
+    ChatListStrings,
     ChatMessageStrings,
     ChatQuestionStrings,
     ChatSourcesStrings,
@@ -66,8 +70,10 @@ export interface UiStrings
 
 export const defaultStrings: UiStrings = {
   ...analysisStrings,
+  ...chatActionsStrings,
   ...chatActivityStrings,
   ...chatAttachmentStrings,
+  ...chatListStrings,
   ...chatMessageStrings,
   ...chatQuestionStrings,
   ...chatSourcesStrings,

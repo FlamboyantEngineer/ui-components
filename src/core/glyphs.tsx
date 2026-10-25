@@ -21,6 +21,7 @@ import {
   ArrowsUpDownIcon,
   Bars2Icon,
   BellIcon,
+  BellSlashIcon,
   CalendarIcon,
   CheckCircleIcon,
   CheckIcon,
@@ -47,6 +48,8 @@ import {
   FilmIcon,
   FolderIcon,
   FunnelIcon,
+  HandThumbDownIcon,
+  HandThumbUpIcon,
   InformationCircleIcon,
   LinkIcon,
   LockClosedIcon,
@@ -212,6 +215,10 @@ export const defaultGlyphs = {
   'hand-raised': HandRaisedIcon,
   'no-symbol': NoSymbolIcon,
   'x-circle': XCircleIcon,
+  'thumbs-up': HandThumbUpIcon,
+  'thumbs-down': HandThumbDownIcon,
+  reply: ArrowUturnLeftIcon,
+  'bell-slash': BellSlashIcon,
 } satisfies Record<string, GlyphComponent>;
 
 export const glyphNames = Object.keys(defaultGlyphs) as GlyphName[];
