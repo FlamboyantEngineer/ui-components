@@ -91,7 +91,7 @@ Verification: `src/components/date-time-field/date-time-field.test.tsx`, `e2e/da
 
 ### UIC-DATE-TIME-FIELD-3.1 - Unavailable dates
 
-`isDateUnavailable(date)`, called with the `YYYY-MM-DD` date a day or value falls on (in the field's time zone for a zoned value), shall refuse dates such as weekends or booked days: the calendar marks them `data-unavailable` and does not pick them, and a value typed on such a date (either end of a range) stays on screen, uncommitted, while the field is invalid with the provider string `dateUnavailable`. Only a range's ends are refused: the calendar picks, and the field keeps, a range whose ends are available whatever days it spans. A value outside the bounds reports the bound instead.
+`isDateUnavailable(date)`, called with the `YYYY-MM-DD` date a day or value falls on (in the field's time zone for a zoned value), shall refuse dates such as weekends or booked days: the calendar marks them `data-unavailable` and does not pick them, and a value typed on such a date (any day in a range) stays on screen, uncommitted, while the field is invalid with the provider string `dateUnavailable`. Only a range's ends are refused: the calendar picks, and the field keeps, a range whose ends are available whatever days it spans. A value outside the bounds reports the bound instead.
 
 Implementation: `src/components/date-time-field/date-time-field.tsx`, `src/components/date-time-field/date-values.ts`, `src/components/date-time-field/date-time-pickers.tsx`, `src/core/strings.ts`
 Verification: `src/components/date-time-field/date-time-presets.test.tsx`, `src/components/date-time-field/date-values.test.ts`, `e2e/date-time-field.spec.ts`
@@ -139,6 +139,13 @@ Verification: `src/components/date-time-field/date-time-zones.test.tsx`, `src/co
 
 Implementation: `src/components/date-time-field/date-time-form.tsx`, `src/components/date-time-field/date-time-field.tsx`
 Verification: `src/components/date-time-field/date-time-form.test.tsx`
+
+### UIC-DATE-TIME-FIELD-3.5 - Calendar date states
+
+`getDateState(isoDate)` returns an optional `{ tone, description, isDisabled, isTaken }` for each ISO calendar day. Semantic tones are neutral, info, success, warning and danger; the stylesheet chooses their colors. The description is exposed to assistive technology. Disabled and taken dates are unavailable in the calendar, typed input, quick presets and every day of an inclusive range. Taken dates are struck through by the reference stylesheet. Disabled dates and dates outside the viewed month are faded without a strike-through. Highlights can coexist with unavailability.
+
+Implementation: `src/components/date-time-field/date-time-field.tsx`, `src/components/date-time-field/date-time-calendar.tsx`, `src/components/date-time-field/date-values.ts`
+Verification: `src/components/date-time-field/date-states.test.tsx`, `e2e/date-states.spec.ts`
 
 ## Hooks
 
@@ -204,3 +211,5 @@ Verification: `src/components/date-time-field/date-time-form.test.tsx`
 | `data-selection-mode`                         | state     | `single`                                                                                          | On a heading select's option (React Aria).                              |
 | `data-layout`                                 | state     | `stack`                                                                                           | On a heading select's list (React Aria).                                |
 | `data-orientation`                            | state     | `vertical`                                                                                        | On a heading select's list (React Aria).                                |
+| `data-tone`                                   | attribute | `neutral`, `info`, `success`, `warning`, `danger`                                                 | Calendar cell highlight.                                                |
+| `data-taken`                                  | state     | `true`                                                                                            | Calendar cell is taken and unavailable.                                 |

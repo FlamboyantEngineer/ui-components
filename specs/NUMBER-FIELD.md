@@ -87,26 +87,43 @@ Verification: `src/components/number-field/number-field.test.tsx`, `e2e/number-f
 Implementation: `src/components/number-field/number-field.tsx`, `src/components/number-field/number-field-parts.tsx`, `src/core/glyphs.tsx`, `labs/reference/number-field.css`
 Verification: `src/components/number-field/number-field.test.tsx`, `e2e/number-field.spec.ts`
 
+## UIC-NUMBER-FIELD-4 - Number bases
+
+### UIC-NUMBER-FIELD-4.1 - Radix input
+
+`radix` is 10 by default, or 2, 8 or 16. Decimal input retains locale formatting and fractional precision. Nondecimal input edits safe integers, accepts an optional matching prefix and either case, and displays 0b, 0o or 0x after the sign. A malformed entry or fraction restores the previous formatted value on commit. Empty input is null. Changing the base preserves the numeric value.
+
+Implementation: `src/components/number-field/number-field.tsx`, `src/components/number-field/radix-control.tsx`, `src/components/number-field/radix-number.ts`
+Verification: `src/components/number-field/radix-number.test.ts`, `src/components/number-field/number-radix.test.tsx`, `e2e/number-radix.spec.ts`
+
+### UIC-NUMBER-FIELD-4.2 - Numeric behavior and units
+
+Each base preserves numeric values, range and step behavior, modifier stepping, scrubbing, disabled/read-only state, validation, restore and field history. Nondecimal spinbuttons report the numeric value and formatted value text to assistive technology and submit the decimal numeric value under `name`. External fractional or unsafe values remain visible and invalid. `startAdornment` and `endAdornment` combine units with every base; Intl format options apply to decimal input.
+
+Implementation: `src/components/number-field/number-field.tsx`, `src/components/number-field/radix-control.tsx`
+Verification: `src/components/number-field/number-radix.test.tsx`, `e2e/number-radix.spec.ts`
+
 ## Hooks
 
-| Hook                         | Kind  | Values | Description                                                    |
-| ---------------------------- | ----- | ------ | -------------------------------------------------------------- |
-| `ui-number-field`            | root  |        | The field's root (also `ui-field`).                            |
-| `ui-number-field__box`       | slot  |        | The React Aria number field element.                           |
-| `ui-number-field__group`     | slot  |        | The group around the input and the step buttons.               |
-| `ui-number-field__decrement` | slot  |        | The decrement button.                                          |
-| `ui-number-field__scrubber`  | slot  |        | The scrub handle.                                              |
-| `ui-number-field__start`     | slot  |        | The start adornment.                                           |
-| `ui-number-field__input`     | slot  |        | The text input.                                                |
-| `ui-number-field__end`       | slot  |        | The end adornment.                                             |
-| `ui-number-field__increment` | slot  |        | The increment button.                                          |
-| `data-hide-stepper`          | state | `true` | On the root: the step buttons are left out.                    |
-| `data-invalid`               | state | `true` | On the box, the group and the input: invalid (React Aria).     |
-| `data-required`              | state | `true` | On the box: a value is required (React Aria).                  |
-| `data-readonly`              | state | `true` | On the box and the group: read-only (React Aria).              |
-| `data-disabled`              | state | `true` | On the box, the group, the input and the buttons (React Aria). |
-| `data-hovered`               | state | `true` | On the group, the input and the buttons: hovered (React Aria). |
-| `data-focus-within`          | state | `true` | On the group: focus is inside it (React Aria).                 |
-| `data-focused`               | state | `true` | On the input and the buttons: focused (React Aria).            |
-| `data-focus-visible`         | state | `true` | On the group, the input and the buttons (React Aria).          |
-| `data-pressed`               | state | `true` | On the buttons: being pressed (React Aria).                    |
+| Hook                         | Kind      | Values               | Description                                                    |
+| ---------------------------- | --------- | -------------------- | -------------------------------------------------------------- |
+| `ui-number-field`            | root      |                      | The field's root (also `ui-field`).                            |
+| `ui-number-field__box`       | slot      |                      | The React Aria number field element.                           |
+| `ui-number-field__group`     | slot      |                      | The group around the input and the step buttons.               |
+| `ui-number-field__decrement` | slot      |                      | The decrement button.                                          |
+| `ui-number-field__scrubber`  | slot      |                      | The scrub handle.                                              |
+| `ui-number-field__start`     | slot      |                      | The start adornment.                                           |
+| `ui-number-field__input`     | slot      |                      | The text input.                                                |
+| `ui-number-field__end`       | slot      |                      | The end adornment.                                             |
+| `ui-number-field__increment` | slot      |                      | The increment button.                                          |
+| `data-hide-stepper`          | state     | `true`               | On the root: the step buttons are left out.                    |
+| `data-invalid`               | state     | `true`               | On the box, the group and the input: invalid (React Aria).     |
+| `data-required`              | state     | `true`               | On the box: a value is required (React Aria).                  |
+| `data-readonly`              | state     | `true`               | On the box and the group: read-only (React Aria).              |
+| `data-disabled`              | state     | `true`               | On the box, the group, the input and the buttons (React Aria). |
+| `data-hovered`               | state     | `true`               | On the group, the input and the buttons: hovered (React Aria). |
+| `data-focus-within`          | state     | `true`               | On the group: focus is inside it (React Aria).                 |
+| `data-focused`               | state     | `true`               | On the input and the buttons: focused (React Aria).            |
+| `data-focus-visible`         | state     | `true`               | On the group, the input and the buttons (React Aria).          |
+| `data-pressed`               | state     | `true`               | On the buttons: being pressed (React Aria).                    |
+| `data-radix`                 | attribute | `2`, `8`, `10`, `16` | Number base on root.                                           |

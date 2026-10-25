@@ -8,6 +8,8 @@ export type {
   SelectFieldOptionState,
   SelectFieldPage,
   SelectFieldProps,
+  SelectFieldMode,
+  SelectFieldValueDisplay,
   SelectFieldSelectionMode,
   SelectFieldValue,
 } from './select-field.js';

@@ -127,6 +127,8 @@ export function ReorderCase() {
     <div data-lab-reorder>
       <ListView
         aria-label="Reorderable fruit"
+        selectionMode="multiple"
+        selectionBehavior="toggle"
         items={rows}
         reorder={{ onMove: (move) => setRows((current) => applyMove(current, move)) }}
         divided

@@ -1,6 +1,6 @@
 # Select Field
 
-`SelectField` chooses one value, or several, from a list the caller defines. It is a field control: it composes the field base ([FIELD.md](FIELD.md)) for its label, layout, description, help, validation, dirty state, restore, undo and menu, around React Aria's `Select`, `ListBox` and, for filterable lists, `Autocomplete` and `SearchField`. The closed field is a framed trigger showing the chosen option (its icon and label) or a placeholder; the options open in a popover. A multiple select keeps its trigger and shows its choices as removable chips below it (React Aria `TagGroup`). Options may be grouped under headings, drawn by the caller and virtualized for very long lists. Long lists filter inside the open list, and `loadOptions` replaces the local filter with the caller's asynchronous search, page by page as the list scrolls. A clear button and a maximum number of values are optional. A select commits only values its options define; a list whose typed text may itself become the value is a [Combobox](COMBOBOX.md). The [Boolean Field](BOOLEAN-FIELD.md)'s `dropdown` variant draws the same control, bound to its own field state.
+`SelectField` chooses one or several values, with `selectionMode="single"` or `"multiple"`. `mode="list"` (the default) accepts flat icon/text options and headed groups through `options`; `mode="tree"` accepts hierarchical `items`, text and child accessors, lazy loading, selection propagation and label/path display. Both modes provide the field's validation, dirty state, restore, undo, forms and menu. Icons belong to ordinary options.
 
 ## UIC-SELECT-FIELD-1 - Field
 
@@ -207,6 +207,130 @@ Verification: `src/components/select-field/select-trigger.test.tsx`, `e2e/select
 Implementation: `src/components/select-field/select-model.ts`, `src/components/select-field/select-option.tsx`, `src/components/select-field/select-chips.tsx`
 Verification: `src/components/select-field/select-model.test.tsx`, `e2e/select-field.spec.ts`
 
+## UIC-SELECT-FIELD-9 - Trigger and popover
+
+### UIC-SELECT-FIELD-9.1 - Structure
+
+`mode="tree"` accepts hierarchical `items`, `getTextValue`, optional `getChildren`, lazy-child accessors and selection propagation. It renders a `Field` (`ui-select-field`, also `ui-field`) whose control is a frame (`ui-select-field__frame`) holding the trigger button (`ui-select-field__trigger`) and, when shown, the clear button. The trigger shows the value (`ui-select-field__value`), or the `placeholder` (default: the provider's `selectPlaceholder`) with `data-placeholder` while nothing is chosen, and a chevron (`ui-select-field__chevron`); it is named by the field's label and its value. The root publishes `data-selection-mode` (`single`, `multiple`) and `data-value-display` (`label`, `path`).
+
+Implementation: `src/components/select-field/select-tree-field.tsx`, `src/components/select-field/tree-select-trigger.tsx`
+Verification: `src/components/select-field/select-tree-field.test.tsx`, `e2e/select-tree.spec.ts`
+
+### UIC-SELECT-FIELD-9.2 - Popover
+
+Pressing the trigger shall open a popover (`ui-select-field__popover`) below it, publishing the trigger's width as `--ui-trigger-width`, holding a dialog (`ui-select-field__dialog`) named by the field's label, with a [Search Field](SEARCH-FIELD.md) (`ui-select-field__search`) named by the provider's `filterLabel` string with the label, which takes focus, and a `Tree` in its `picker` variant (`ui-select-field__tree`) named by the label, its chosen rows selected. Every opening starts afresh: the search is empty and the tree opens with the ancestors of the chosen nodes expanded. Escape, or a press outside, closes the popover and returns focus to the trigger; Escape in the tree closes it rather than clearing a multiple choice. The open state follows `isOpen`, `defaultOpen` and `onOpenChange`.
+
+Indexing the loaded hierarchy shall use an explicit traversal stack. Opening at multiple selected nodes shall collect their distinct ancestors without revisiting shared parent paths.
+
+Implementation: `src/components/select-field/tree-select-control.tsx`, `src/components/select-field/tree-select-popover.tsx`, `src/components/select-field/tree-index.ts`
+Verification: `src/components/select-field/tree-index.test.ts`, `src/components/select-field/select-tree-field.test.tsx`, `e2e/select-tree.spec.ts`
+
+### UIC-SELECT-FIELD-9.3 - Single choice
+
+In a single choice, pressing a row, or Enter or Space on the focused row, shall make its node the value, commit it and close the popover; doing so on the chosen row keeps the value and closes the popover. Pressing the expand button only expands or collapses its row.
+
+Implementation: `src/components/select-field/tree-select-control.tsx`, `src/components/select-field/tree-select-popover.tsx`
+Verification: `src/components/select-field/select-tree-field.test.tsx`, `e2e/select-tree.spec.ts`
+
+### UIC-SELECT-FIELD-9.4 - Value display
+
+With `valueDisplay` `label` (the default), a chosen node shall read as its text value (`getTextValue`); with `path`, as the text values of its ancestors and itself joined like a [Path](PATH.md) (`Europe/Norway/Oslo`). The trigger and the chips both follow it.
+
+Label display shall read only the selected node’s text; path display reads its ancestors too.
+
+Implementation: `src/components/select-field/tree-select-control.tsx`
+Verification: `src/components/select-field/select-tree-field.test.tsx`, `e2e/select-tree.spec.ts`
+
+### UIC-SELECT-FIELD-9.5 - Unloaded values
+
+A chosen key that matches no loaded node shall read as the key itself, with `data-missing` on the value or its chip, until its node loads.
+
+Implementation: `src/components/select-field/tree-select-control.tsx`
+Verification: `src/components/select-field/select-tree-field.test.tsx`
+
+## UIC-SELECT-FIELD-10 - Search, multiple choice and states
+
+### UIC-SELECT-FIELD-10.1 - Search
+
+Text in the search field shall filter the tree as `Tree`'s `filterText` does: the rows whose text value holds every word show with their ancestors, expanded, and their descendants. Down in the search field moves focus to the tree's first row. A tree with no row to show reads the provider's `noResults` string while it filters, else `noItems`.
+
+Implementation: `src/components/select-field/tree-select-popover.tsx`
+Verification: `src/components/select-field/select-tree-field.test.tsx`, `e2e/select-tree.spec.ts`
+
+### UIC-SELECT-FIELD-10.2 - Multiple choice
+
+With `selectionMode` `multiple`, the value shall be the list of chosen keys in reading order, each row draws a checkbox, the popover stays open while the reader chooses, and every change commits at once. With `selectionPropagation` (the default), choosing a node chooses its loaded descendants and a node is chosen exactly when all its loaded children are, as in `Tree`; without it each row is chosen on its own. The trigger reads the provider's `selectedCount` string for the chips shown.
+
+Implementation: `src/components/select-field/tree-select-control.tsx`, `src/components/select-field/tree-select-popover.tsx`, `src/components/select-field/tree-index.ts`
+Verification: `src/components/select-field/tree-index.test.ts`, `src/components/select-field/select-tree-field.test.tsx`, `e2e/select-tree.spec.ts`
+
+### UIC-SELECT-FIELD-10.3 - Chips
+
+A multiple choice shall show its chosen nodes after the frame as a `TagGroup` (`ui-select-field__chips`) named by the provider's `selectedValues` string with the label, one `Tag` (`ui-select-field__chip`) per chosen key, or with `selectionPropagation` per chosen branch (a chosen node whose ancestors are not chosen). While the field is editable each chip can be removed by its button, Delete or Backspace; removing a chip removes its key and, with `selectionPropagation`, its descendants and ancestors, and commits.
+
+Collapsing and removing selected branches shall reuse shared ancestor checks rather than materializing an ancestor array for each selected key.
+
+Implementation: `src/components/select-field/tree-select-control.tsx`, `src/components/select-field/tree-index.ts`
+Verification: `src/components/select-field/tree-index.test.ts`, `src/components/select-field/select-tree-field.test.tsx`, `e2e/select-tree.spec.ts`
+
+### UIC-SELECT-FIELD-10.4 - Lazy branches
+
+`hasChildItems` and `onLoadChildren` shall pass to the tree, so a branch whose children are not loaded expands to a loading row and loads them ([Tree](TREE.md)); the field indexes the nodes again when the caller's `items` grow.
+
+Implementation: `src/components/select-field/tree-select-popover.tsx`, `src/components/select-field/tree-select-control.tsx`
+Verification: `src/components/select-field/select-tree-field.test.tsx`, `e2e/select-tree.spec.ts`
+
+### UIC-SELECT-FIELD-10.5 - Clear, read-only and disabled
+
+With `isClearable`, while the value can be cleared, a clear `Button` (`ui-select-field__clear`) named by the provider's `clearValue` string with the label shall follow the trigger; pressing it clears and commits the value and focuses the trigger. A read-only field does not open, calls no `onOpenChange` when pressed, and its chips cannot be removed; a disabled field's trigger is disabled.
+
+Implementation: `src/components/select-field/tree-select-control.tsx`, `src/components/select-field/tree-select-trigger.tsx`
+Verification: `src/components/select-field/select-tree-field.test.tsx`
+
+### UIC-SELECT-FIELD-10.6 - Forms
+
+With `name`, the field shall render hidden inputs under that name: one per chosen key for a multiple choice, and one holding the key or an empty entry for a single choice, disabled while the field is. Numeric and text keys with the same spelling remain distinct as inputs are reordered.
+
+Implementation: `src/components/select-field/tree-select-control.tsx`
+Verification: `src/components/select-field/select-tree-field.test.tsx`
+
+### UIC-SELECT-FIELD-10.7 - Hooks and caller attributes
+
+`SelectField` shall carry the hooks below and the field base's, append the caller's `className` and forward caller `data-*` attributes and `id` to its root.
+
+Implementation: `src/components/select-field/select-tree-field.tsx`, `labs/reference/select-field.css`
+Verification: `src/components/select-field/select-tree-field.test.tsx`
+
+## UIC-SELECT-FIELD-11 - Icon options
+
+### UIC-SELECT-FIELD-11.1 - Icon options
+
+List options may include an `icon`, a built-in glyph name or any icon node. The open list draws an icon before the label when present, and a single-selection trigger shows the chosen option's icon. Icon options support the same single and multiple selection modes as text options.
+
+Implementation: `src/components/select-field/select-field.tsx`
+Verification: `src/components/select-field/select-icons.test.tsx`, `e2e/select-icons.spec.ts`
+
+### UIC-SELECT-FIELD-11.2 - Filtering
+
+Icon options follow the ordinary list filtering behavior: filtering is automatic for more than ten options or remote search. Explicit `filterable={false}` hides the filter, and `filterable` shows it for a short list.
+
+Implementation: `src/components/select-field/select-field.tsx`
+Verification: `src/components/select-field/select-icons.test.tsx`
+
+### UIC-SELECT-FIELD-11.3 - No-icon choice
+
+With `emptyLabel` (for example `No icon`), the list shall start with an option of that label that stands for no value: the trigger shows it while the value is `null`, and picking it commits `null`.
+
+Implementation: `src/components/select-field/select-field.tsx`, `src/components/select-field/select-control.tsx`
+Verification: `src/components/select-field/select-icons.test.tsx`, `e2e/select-icons.spec.ts`
+
+### UIC-SELECT-FIELD-11.4 - Hooks and caller attributes
+
+Icon choices use the ordinary `ui-select-field` root and slots, append the caller's className, forward caller data attributes and use the same clear, custom-rendering and virtualization options.
+
+Implementation: `src/components/select-field/select-field.tsx`
+Verification: `src/components/select-field/select-icons.test.tsx`
+
 ## Hooks
 
 | Hook                                  | Kind      | Values                                     | Description                                                              |
@@ -263,10 +387,14 @@ Verification: `src/components/select-field/select-model.test.tsx`, `e2e/select-f
 | `data-empty`                          | state     | `true`                                     | An empty list or filter (React Aria).                                    |
 | `data-allows-removing`                | state     | `true`                                     | A removable chip (React Aria).                                           |
 | `data-placement`                      | state     | `top`, `bottom`, `left`, `right`, `center` | Side of the trigger the popover opened on (React Aria).                  |
-| `data-trigger`                        | state     | `Select`                                   | What opened the popover (React Aria).                                    |
+| `data-trigger`                        | state     | `Select`, `DialogTrigger`                  | What opened the popover (React Aria).                                    |
 | `data-entering`                       | state     | `true`                                     | Popover entry animation (React Aria).                                    |
 | `data-exiting`                        | state     | `true`                                     | Popover exit animation (React Aria).                                     |
 | `data-collection`                     | state     |                                            | React Aria's collection marker.                                          |
 | `data-key`                            | state     |                                            | Opaque collection key (React Aria): not the `id`, not for styling.       |
 | `data-layout`                         | state     | `stack`                                    | Listbox layout (React Aria).                                             |
 | `data-orientation`                    | state     | `vertical`                                 | Listbox orientation (React Aria).                                        |
+| `ui-select-field__dialog`             | slot      |                                            | The dialog inside the popover.                                           |
+| `ui-select-field__tree`               | slot      |                                            | The tree (also `ui-tree`).                                               |
+| `data-value-display`                  | attribute | `label`, `path`                            | On the root: how chosen nodes read.                                      |
+| `data-mode`                           | attribute | `list`, `tree`                             | Choice presentation.                                                     |

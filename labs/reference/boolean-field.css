@@ -179,3 +179,11 @@
     transition: none;
   }
 }
+
+.ui-boolean-field__switch[data-indeterminate] .ui-boolean-field__thumb {
+  inset-inline-start: 9px;
+}
+.ui-boolean-field__toggle-button[data-indeterminate] {
+  border-style: dashed;
+  background: var(--ref-hover);
+}

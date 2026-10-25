@@ -33,6 +33,7 @@ export interface CodeHighlightProps {
 }
 
 export interface CodeGutterProps {
+  measurement?: boolean | undefined;
   lines: readonly string[];
   /** The number of the first row. */
   firstLineNumber: number;
@@ -69,6 +70,9 @@ export const codeEditorHooks = createHooks('code-editor', [
   'tooltip',
   'popover',
   'search',
+  'format',
+  'scrollbars',
+  'scroll-marker',
 ]);
 
 const hooks = codeEditorHooks;
@@ -108,6 +112,7 @@ export function CodeHighlight({ segments, caretRef, highlightRef }: CodeHighligh
  */
 export function CodeGutter({
   lines,
+  measurement,
   firstLineNumber,
   severities,
   textWidth,
@@ -115,7 +120,7 @@ export function CodeGutter({
 }: CodeGutterProps) {
   return (
     <div
-      {...hooks.slot('gutter')}
+      {...hooks.slot('gutter', { measurement })}
       ref={gutterRef}
       aria-hidden="true"
       style={

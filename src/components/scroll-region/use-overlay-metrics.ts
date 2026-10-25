@@ -24,7 +24,7 @@ export interface OverlayMetrics {
 }
 
 export interface OverlayMetricsOptions {
-  viewport: RefObject<HTMLDivElement | null>;
+  viewport: RefObject<HTMLElement | null>;
   /** Overlay mode is on; otherwise nothing is measured. */
   enabled: boolean;
   /** Measure registered headers and keep the vertical thumb below them. */

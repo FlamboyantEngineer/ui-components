@@ -2,7 +2,7 @@ import { useEffect, type RefObject } from 'react';
 
 interface ThumbWheelOptions {
   /** The viewport the thumb scrolls. */
-  viewport: RefObject<HTMLDivElement | null>;
+  viewport: RefObject<HTMLElement | null>;
   /** Visible length of the viewport, for wheel deltas given in pages. */
   page: number;
   /** The viewport is right to left. */
@@ -40,7 +40,7 @@ function canScrollBy(element: HTMLElement, { left, top, rtl }: ScrollStep): bool
  * edge the wheel scrolls the page, as a native scrollbar's does.
  */
 export function useThumbWheel(
-  thumb: RefObject<HTMLDivElement | null>,
+  thumb: RefObject<HTMLElement | null>,
   { viewport, page, rtl }: ThumbWheelOptions,
 ): void {
   useEffect(() => {

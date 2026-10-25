@@ -71,7 +71,7 @@ test.describe('Boolean Field lab', () => {
     const segmented = field(page, 'unset-segmented');
     await segmented.getByRole('radio', { name: 'False' }).click();
     await expect(output(page, 'Value')).toHaveText('false');
-    await segmented.getByRole('radio', { name: 'False' }).click();
+    await segmented.getByRole('radio', { name: 'Inherited' }).click();
     await expect(output(page, 'Value')).toHaveText('unset');
     await expect(field(page, 'captioned').locator('.ui-boolean-field__caption')).toHaveText('No');
   });
@@ -210,4 +210,28 @@ test.describe('Boolean Field lab', () => {
     await expect(page.getByRole('listbox')).toBeVisible();
     await lab.expectAccessible('.ui-select-field__popover');
   });
+});
+
+test('UIC-BOOLEAN-FIELD-3.5 UIC-SEGMENTED-CHOICE-1.3 keeps the False label glyphs inside the segmented label', async ({
+  page,
+  lab,
+}) => {
+  await lab.open('boolean-field');
+  const label = cell(page, 'segmented', 'resting').locator('.ui-segmented-choice__label', {
+    hasText: 'False',
+  });
+  await expect(async () => {
+    const fits = await label.evaluate((element) => {
+      const style = getComputedStyle(element);
+      const context = document.createElement('canvas').getContext('2d')!;
+      context.font = style.font;
+      const text = context.measureText(element.textContent ?? '');
+      const width = element.getBoundingClientRect().width;
+      return (
+        text.actualBoundingBoxRight + parseFloat(style.paddingLeft) <= width &&
+        text.actualBoundingBoxLeft <= parseFloat(style.paddingLeft)
+      );
+    });
+    expect(fits).toBe(true);
+  }).toPass();
 });

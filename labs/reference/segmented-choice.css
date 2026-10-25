@@ -116,6 +116,7 @@
   position: relative;
   display: inline-grid;
   min-width: 0;
+  padding-inline: 1px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

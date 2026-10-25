@@ -206,7 +206,7 @@ describe('BooleanField', () => {
         onChange={(value) => changes.push(value)}
       />,
     );
-    await user.click(screen.getByRole('radio', { name: 'True' }));
+    await user.click(screen.getByRole('radio', { name: 'Unset' }));
     expect(changes.at(-1)).toBe(null);
     unmountSegmented();
 

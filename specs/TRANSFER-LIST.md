@@ -1,6 +1,6 @@
 # Transfer List
 
-`TransferList` chooses an ordered subset of items between two lists side by side: the available items and the chosen ones. Each side filters its rows, counts them and selects several; buttons between the sides move the selection or every shown item across, a double click or Enter moves a row, and the chosen side can be reordered. Each side is a [List View](LIST-ROW.md#uic-list-row-3---list-view). A short set of choices belongs in a [Checkbox Group](CHECKBOX-GROUP.md), and a choice from a long list without an order in a multiple [Select Field](SELECT-FIELD.md).
+`TransferList` chooses an ordered subset of items between two lists side by side: the available items and the chosen ones. Each side filters its rows, counts them and selects several; buttons between the sides move the selection or every shown item across, a double click or Enter moves a row, and the chosen side can be reordered. Each side is a [List View](LIST-ROW.md#uic-list-row-3---list-view). A short set of choices belongs in a [Checkbox Group](CHOICE-GROUP.md), and a choice from a long list without an order in a multiple [Select Field](SELECT-FIELD.md).
 
 ## UIC-TRANSFER-LIST-1 - Sides
 
@@ -81,6 +81,13 @@ Verification: `src/components/transfer-list/transfer-list.test.tsx`
 
 Implementation: `src/components/transfer-list/transfer-list.tsx`, `labs/reference/transfer-list.css`
 Verification: `src/components/transfer-list/transfer-list.test.tsx`
+
+### UIC-TRANSFER-LIST-3.4 - Leading row controls
+
+Row checkboxes and drag handles precede all content in a horizontal row, vertically centered beside the title, metadata, icons and trailing actions. The reference stylesheet applies flex layout to the row itself because React Aria's generated grid cell uses display: contents. This stays true in narrow panes and during selection or dragging.
+
+Implementation: `labs/reference/list-row.css`
+Verification: `e2e/transfer-list.spec.ts`
 
 ## Hooks
 

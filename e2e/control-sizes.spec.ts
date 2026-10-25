@@ -17,9 +17,9 @@ const boxes: Record<string, string> = {
   'tags-input': '.ui-tags-input__group',
   'boolean-field': '.ui-boolean-field__toggle-button',
   checkbox: '.ui-checkbox',
-  'checkbox-group': '.ui-checkbox',
+  'choice-group-multiple': '.ui-checkbox',
   switch: '.ui-switch',
-  'radio-group': '.ui-radio__button',
+  'choice-group': '.ui-choice__button',
 };
 
 test('UIC-LABS-3.7 every control takes the height of its size, not of its content or type', async ({
@@ -82,13 +82,15 @@ test('UIC-LABS-3.7 checkbox and radio groups show independent and exclusive choi
   lab,
 }) => {
   await lab.open('control-sizes');
-  const checkboxes = page.locator('[data-lab-cell="control=checkbox-group content=short size=md"]');
+  const checkboxes = page.locator(
+    '[data-lab-cell="control=choice-group-multiple content=short size=md"]',
+  );
   await expect(checkboxes.getByRole('checkbox')).toHaveCount(3);
   await checkboxes.getByRole('checkbox', { name: 'Pear' }).focus();
   await page.keyboard.press('Space');
   await expect(checkboxes.getByRole('checkbox', { name: 'Apple' })).toBeChecked();
   await expect(checkboxes.getByRole('checkbox', { name: 'Pear' })).toBeChecked();
-  const radios = page.locator('[data-lab-cell="control=radio-group content=short size=md"]');
+  const radios = page.locator('[data-lab-cell="control=choice-group content=short size=md"]');
   await expect(radios.getByRole('radio')).toHaveCount(3);
   await radios.getByRole('radio', { name: 'Apple' }).focus();
   await page.keyboard.press('ArrowDown');

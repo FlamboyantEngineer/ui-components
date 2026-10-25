@@ -81,6 +81,7 @@ export function QueryField({
       </label>
       <div {...hooks.slot('control')}>
         <CodeEditor
+          variant="surface"
           id={inputId}
           className={hooks.slotClass('editor')}
           multiline={false}

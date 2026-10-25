@@ -166,6 +166,13 @@ Verification: `src/components/list-row/list-view.test.tsx`, `e2e/list-row.spec.t
 Implementation: `src/components/list-row/list-view.tsx`, `labs/reference/list-row.css`
 Verification: `src/components/list-row/list-view.test.tsx`, `e2e/list-row.spec.ts`
 
+### UIC-LIST-ROW-4.7 - Leading row controls
+
+Row checkboxes and drag handles precede all content in a horizontal row, vertically centered beside the title, metadata, icons and trailing actions. The reference stylesheet applies flex layout to the row itself because React Aria's generated grid cell uses display: contents. This stays true in narrow panes and during selection or dragging.
+
+Implementation: `labs/reference/list-row.css`
+Verification: `e2e/list-row.spec.ts`
+
 ## Hooks
 
 | Hook                             | Kind      | Values                     | Description                                                        |

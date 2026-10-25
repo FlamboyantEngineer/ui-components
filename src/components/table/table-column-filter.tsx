@@ -6,7 +6,7 @@ import {
 } from '../../primitives/index.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
-import { CheckboxGroup } from '../checkbox-group/checkbox-group.js';
+import { ChoiceGroup, Choice } from '../choice-group/choice-group.js';
 import { DateTimeField, type DateRangeValue } from '../date-time-field/date-time-field.js';
 
 import { Modal } from '../modal/modal.js';
@@ -96,13 +96,19 @@ function TableFilterField<T extends TableRow>(props: TableColumnFilterProps<T>) 
         label: option,
       }));
       return (
-        <CheckboxGroup
+        <ChoiceGroup
+          selectionMode="multiple"
           label={label}
-          options={options}
           value={ticked}
           committedValue={ticked}
           onChange={onChange}
-        />
+        >
+          {options.map((option) => (
+            <Choice key={option.value} value={option.value}>
+              {option.label}
+            </Choice>
+          ))}
+        </ChoiceGroup>
       );
     }
     default: {
