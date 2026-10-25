@@ -43,7 +43,13 @@ export const LAB_TIERS = [
   },
   {
     tier: 'Widgets',
-    groups: ['Media and pickers', 'Charts and diagrams', 'Planning', 'Documents and code'],
+    groups: [
+      'Media and pickers',
+      'Charts and diagrams',
+      'Planning',
+      'Documents and code',
+      'Conversations',
+    ],
   },
 ];
 
