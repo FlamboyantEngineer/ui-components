@@ -15,6 +15,9 @@ import {
 } from './code-block-content.js';
 import { useHorizontalOverflow } from './use-horizontal-overflow.js';
 
+export { createCodeBlockOverride } from './markdown-code-block.js';
+export type { CodeBlockOverrideOptions } from './markdown-code-block.js';
+
 /** `code` shows source; `terminal` shows commands after a prompt and their output. */
 export type CodeBlockVariant = 'code' | 'terminal';
 

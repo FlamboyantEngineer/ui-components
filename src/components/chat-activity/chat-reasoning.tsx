@@ -53,7 +53,7 @@ export function ChatReasoning({
       data={{ status, format }}
     >
       {format === 'markdown' ? (
-        <Markdown source={text} className={hooks.slotClass('text')} />
+        <Markdown source={text} isStreaming={isStreaming} className={hooks.slotClass('text')} />
       ) : (
         <div {...hooks.slot('text')}>{text}</div>
       )}
