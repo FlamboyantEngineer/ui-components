@@ -25,6 +25,7 @@ const texts: Record<ChatMessageStatus, string> = {
   complete: 'The samples from the north field arrived this morning.',
   streaming: 'Checking the delivery notes for the north',
   error: 'The reply could not be finished.',
+  cancelled: 'Checking the delivery notes for the north',
 };
 
 function MatrixMessage({
