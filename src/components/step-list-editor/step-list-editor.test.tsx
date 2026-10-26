@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import {
   StepListEditor,
   type StepListEditorColumn,
@@ -42,7 +43,7 @@ function Controlled(
 }
 
 const step = (number: number) => screen.getByRole('group', { name: `Step ${number}` });
-const stepItem = (number: number) => step(number).closest('li')!;
+const stepItem = (number: number) => requireDefined(step(number).closest('li'));
 const field = (number: number, name: string) => within(step(number)).getByRole('textbox', { name });
 const idsOf = (list: readonly StepListEditorStep[] | undefined) => list?.map(({ id }) => id);
 
@@ -129,7 +130,7 @@ describe('StepListEditor', { timeout: 15_000 }, () => {
 
     await runAction(user, 1, 'Insert step above');
     next = onValue.mock.lastCall?.[0];
-    expect(idsOf(next)?.slice(1)).toEqual(['open', 'type', 'save', next[4]!.id]);
+    expect(idsOf(next)?.slice(1)).toEqual(['open', 'type', 'save', requireDefined(next[4]).id]);
     expect(field(1, 'Action')).toHaveFocus();
 
     await runAction(user, 2, 'Insert step below');
@@ -145,7 +146,7 @@ describe('StepListEditor', { timeout: 15_000 }, () => {
     render(<Controlled onValue={onValue} />);
     await runAction(user, 1, 'Duplicate');
     let next = onValue.mock.lastCall?.[0] as StepListEditorStep[];
-    expect(next[1]?.values).toEqual(steps[0]!.values);
+    expect(next[1]?.values).toEqual(requireDefined(steps[0]).values);
     expect(new Set(idsOf(next)).size).toBe(next.length);
     expect(field(2, 'Action')).toHaveFocus();
 
@@ -225,7 +226,7 @@ describe('StepListEditor', { timeout: 15_000 }, () => {
   it('UIC-STEP-LIST-EDITOR-3.1 marks steps, fields and the list that differ from the committed steps', () => {
     const edited = [
       { id: 'open', values: { action: 'Open the page', expected: 'The form shows' } },
-      steps[1]!,
+      requireDefined(steps[1]),
       { id: 'new', values: { action: 'Close' } },
     ];
     const { container } = render(
@@ -245,7 +246,7 @@ describe('StepListEditor', { timeout: 15_000 }, () => {
     const { rerender } = render(
       <StepListEditor
         columns={columns}
-        value={[steps[1]!, steps[0]!, steps[2]!]}
+        value={[requireDefined(steps[1]), requireDefined(steps[0]), requireDefined(steps[2])]}
         committedValue={steps}
       />,
     );

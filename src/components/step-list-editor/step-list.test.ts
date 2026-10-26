@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { requireDefined } from '../../utils/require-defined.js';
 import {
   insertStep,
   isStepDirty,
@@ -30,8 +31,8 @@ describe('step list edits', () => {
     expect(typed[1]).toEqual({ id: 'b', values: { action: 'Paste' } });
     expect(typed[0]).toBe(steps[0]);
     expect(ids(removeStep(steps, 'b'))).toEqual(['a', 'c']);
-    expect(readStepValue(steps[1]!, 'data')).toBe('ada');
-    expect(readStepValue(steps[0]!, 'data')).toBe('');
+    expect(readStepValue(requireDefined(steps[1]), 'data')).toBe('ada');
+    expect(readStepValue(requireDefined(steps[0]), 'data')).toBe('');
   });
 
   it('UIC-STEP-LIST-EDITOR-2.2 UIC-STEP-LIST-EDITOR-2.3 moves a step one place, never past the ends', () => {
@@ -75,14 +76,26 @@ describe('step list edits', () => {
 
   it('UIC-STEP-LIST-EDITOR-3.1 compares steps and lists with their committed versions', () => {
     const columns = ['action', 'data'];
-    expect(isStepDirty(steps[0]!, { id: 'a', values: { action: 'Open', data: '' } }, columns)).toBe(
-      false,
-    );
-    expect(isStepDirty(steps[0]!, { id: 'a', values: { action: 'Close' } }, columns)).toBe(true);
-    expect(isStepDirty(steps[0]!, undefined, columns)).toBe(true);
+    expect(
+      isStepDirty(
+        requireDefined(steps[0]),
+        { id: 'a', values: { action: 'Open', data: '' } },
+        columns,
+      ),
+    ).toBe(false);
+    expect(
+      isStepDirty(requireDefined(steps[0]), { id: 'a', values: { action: 'Close' } }, columns),
+    ).toBe(true);
+    expect(isStepDirty(requireDefined(steps[0]), undefined, columns)).toBe(true);
     expect(isStepListDirty(steps, steps, columns)).toBe(false);
     expect(isStepListDirty(steps.slice(0, 2), steps, columns)).toBe(true);
-    expect(isStepListDirty([steps[1]!, steps[0]!, steps[2]!], steps, columns)).toBe(true);
+    expect(
+      isStepListDirty(
+        [requireDefined(steps[1]), requireDefined(steps[0]), requireDefined(steps[2])],
+        steps,
+        columns,
+      ),
+    ).toBe(true);
     expect(isStepListDirty(updateStep(steps, { id: 'c', values: {} }), steps, columns)).toBe(true);
   });
 });

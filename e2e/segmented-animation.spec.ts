@@ -9,7 +9,8 @@ async function pauseSequence(drawing: Locator) {
       animation.currentTime = 0;
     });
     return animations.map((animation) => {
-      const timing = animation.effect!.getComputedTiming();
+      if (!animation.effect) throw new Error('An animation has no effect.');
+      const timing = animation.effect.getComputedTiming();
       return {
         duration: Number(timing.duration),
         delay: timing.delay,

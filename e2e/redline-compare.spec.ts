@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures.js';
+import { requireDefined } from '../src/utils/require-defined.js';
 
 const cell = (id: string) => `[data-lab-cell="${id}"] .ui-redline-compare`;
 
@@ -13,8 +14,8 @@ test.describe('Redline Compare lab', () => {
     await expect(rows.nth(1)).toHaveAttribute('data-change', 'changed');
     await expect(rows.nth(1).locator('del')).toHaveText(['nine', 'five']);
     await expect(rows.nth(1).locator('ins')).toHaveText(['eight', 'six']);
-    const deleted = (await rows.nth(1).locator('del').first().boundingBox())!;
-    const inserted = (await rows.nth(1).locator('ins').first().boundingBox())!;
+    const deleted = requireDefined(await rows.nth(1).locator('del').first().boundingBox());
+    const inserted = requireDefined(await rows.nth(1).locator('ins').first().boundingBox());
     expect(Math.abs(deleted.y - inserted.y)).toBeLessThan(2);
     expect(inserted.x).toBeGreaterThan(deleted.x);
     const written = page.locator(cell('content=written layout=inline'));
@@ -41,8 +42,8 @@ test.describe('Redline Compare lab', () => {
     await expect(oldCell.locator('del')).toHaveText(['nine', 'five']);
     await expect(oldCell.locator('ins')).toHaveCount(0);
     await expect(newCell.locator('ins')).toHaveText(['eight', 'six']);
-    const oldBox = (await oldCell.boundingBox())!;
-    const newBox = (await newCell.boundingBox())!;
+    const oldBox = requireDefined(await oldCell.boundingBox());
+    const newBox = requireDefined(await newCell.boundingBox());
     expect(newBox.x).toBeGreaterThanOrEqual(oldBox.x + oldBox.width - 1);
     expect(Math.abs(oldBox.y - newBox.y)).toBeLessThan(1);
     const written = page.locator(cell('content=written layout=split'));

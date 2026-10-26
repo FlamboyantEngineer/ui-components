@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { UiProvider } from '../../core/provider.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { FacetList, type FacetListOption } from './facet-list.js';
 
 const cities: FacetListOption[] = [
@@ -41,7 +42,7 @@ describe('FacetList', () => {
   it('UIC-FACET-LIST-1.1 shows no count for a value without one and formats counts for the locale', () => {
     render(
       <UiProvider locale="de-DE">
-        <FacetList label="City" options={[cities[0]!, cities[5]!]} />
+        <FacetList label="City" options={[requireDefined(cities[0]), requireDefined(cities[5])]} />
       </UiProvider>,
     );
     expect(screen.getByRole('checkbox', { name: 'Lisbon, 1.280' })).toBeInTheDocument();
@@ -116,7 +117,7 @@ describe('FacetList', () => {
     render(
       <FacetList
         label="City"
-        options={[cities[1]!, { value: 'bergen', label: 'Bergen' }]}
+        options={[requireDefined(cities[1]), { value: 'bergen', label: 'Bergen' }]}
         value={['oslo', 'lima']}
         onChange={onChange}
       />,
@@ -180,7 +181,7 @@ describe('FacetList', () => {
     expect(root).toHaveAttribute('id', 'city');
     expect(root).toHaveClass('ui-facet-list', 'custom');
     expect(root).toHaveAttribute('data-testid', 'facet');
-    act(() => screen.getAllByRole('checkbox')[0]!.focus());
+    act(() => requireDefined(screen.getAllByRole('checkbox')[0]).focus());
     expectHooksMatchSpec(container, 'FACET-LIST', { callerAttributes: ['data-testid'] });
   });
 });

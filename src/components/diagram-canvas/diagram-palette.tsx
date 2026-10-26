@@ -65,10 +65,15 @@ export function usePaletteDrop({
     ref,
     isDisabled: !palette.isEnabled,
     getDropOperation: (types) => (types.has(paletteDragType) ? 'copy' : 'cancel'),
-    onDrop: async (event) => {
+    onDrop: (event) => {
       for (const item of event.items) {
         if (item.kind === 'text' && item.types.has(paletteDragType)) {
-          palette.add(await item.getText(paletteDragType), { x: event.x, y: event.y });
+          const point = { x: event.x, y: event.y };
+          // A drop whose text cannot be read adds nothing.
+          void item.getText(paletteDragType).then(
+            (type) => palette.add(type, point),
+            () => undefined,
+          );
           return;
         }
       }

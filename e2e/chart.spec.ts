@@ -1,5 +1,6 @@
 import type { Page } from '@playwright/test';
 import { expect, test } from './fixtures.js';
+import { requireDefined } from '../src/utils/require-defined.js';
 
 test('UIC-CHART-2.1 UIC-CHART-3.1 UIC-CHART-3.2 keeps numeric and text identities distinct after reordering', async ({
   page,
@@ -61,7 +62,7 @@ test.describe('Chart lab', () => {
     const [first, second] = await stacked
       .locator('.ui-bar-chart__bar')
       .evaluateAll((bars) => bars.slice(0, 2).map((bar) => bar.getBoundingClientRect()));
-    expect(Math.abs(first!.right - second!.left)).toBeLessThan(1.5);
+    expect(Math.abs(requireDefined(first).right - requireDefined(second).left)).toBeLessThan(1.5);
     await lab.expectAccessible();
   });
 

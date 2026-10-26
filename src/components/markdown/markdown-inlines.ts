@@ -2,6 +2,7 @@
 // autolinks and line breaks, with CommonMark's delimiter and bracket rules (specs/MARKDOWN.md).
 
 import { decodeEntities } from '../../utils/markup.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { isSafeUrl } from '../../utils/safe-url.js';
 import {
   isEscapable,
@@ -190,7 +191,7 @@ function closeBracket(state: InlineState): boolean {
   for (const node of nodes) items.push({ kind: 'node', node });
   if (!bracket.isImage) {
     for (let index = 0; index < at; index += 1) {
-      const item = items[index]!;
+      const item = requireDefined(items[index]);
       if (item.kind === 'bracket') item.isActive = false;
     }
   }

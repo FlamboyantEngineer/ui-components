@@ -2,6 +2,7 @@ import { act, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { DonutChart, type DonutChartSegment } from './donut-chart.js';
 
 const sold: DonutChartSegment[] = [
@@ -18,7 +19,7 @@ describe('DonutChart', () => {
     render(<DonutChart label="Fruit sold" segments={sold} />);
     const figure = screen.getByRole('figure', { name: 'Fruit sold' });
     expect(figure).toHaveClass('ui-chart', 'ui-donut-chart');
-    const plot = figure.querySelector('.ui-chart__plot')!;
+    const plot = requireDefined(figure.querySelector('.ui-chart__plot'));
     expect([plot.getAttribute('width'), plot.getAttribute('height')]).toEqual(['160', '160']);
     expect(slices().map((slice) => slice.getAttribute('data-series'))).toEqual(['0', '1', '2']);
     expect(slices()[1]).toHaveAttribute('data-tone', 'success');

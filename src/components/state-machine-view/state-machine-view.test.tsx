@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import {
   StateMachineView,
   type StateMachineState,
@@ -109,7 +110,8 @@ describe('StateMachineView', () => {
     const { container, rerender } = render(
       <StateMachineView states={states} transitions={transitions} currentState="shipped" />,
     );
-    const marker = (name: string) => state(name).querySelector('.ui-state-machine-view__state')!;
+    const marker = (name: string) =>
+      requireDefined(state(name).querySelector('.ui-state-machine-view__state'));
     expect(marker('Placed')).toHaveAttribute('data-initial', 'true');
     expect(
       marker('Placed').querySelector('.ui-state-machine-view__initial-marker'),
@@ -151,7 +153,7 @@ describe('StateMachineView', () => {
     expect(at('Delivered')[1]).toBe(468);
     rerender(
       <StateMachineView
-        states={[{ ...states[0]!, x: 500, y: 600 }, ...states.slice(1)]}
+        states={[{ ...requireDefined(states[0]), x: 500, y: 600 }, ...states.slice(1)]}
         transitions={transitions}
       />,
     );
@@ -184,7 +186,7 @@ describe('StateMachineView', () => {
     render(<EditableMachine onStatesChange={onStatesChange} onTransitionAdd={onTransitionAdd} />);
     act(() => state('Paid').focus());
     await userEvent.keyboard('{ArrowDown}');
-    const moved = onStatesChange.mock.lastCall![0] as StateMachineState[];
+    const moved = requireDefined(onStatesChange.mock.lastCall)[0] as StateMachineState[];
     expect(moved.find((item) => item.id === 'paid')).toMatchObject({
       label: 'Paid',
       x: 260,
@@ -202,12 +204,9 @@ describe('StateMachineView', () => {
     expect(onTransitionAdd).toHaveBeenCalledWith({ from: 'cancelled', to: 'placed' });
     act(() => state('Shipped').focus());
     await userEvent.keyboard('{Delete}');
-    expect(onStatesChange.mock.lastCall![0].map((item: StateMachineState) => item.id)).toEqual([
-      'placed',
-      'paid',
-      'delivered',
-      'cancelled',
-    ]);
+    expect(
+      requireDefined(onStatesChange.mock.lastCall)[0].map((item: StateMachineState) => item.id),
+    ).toEqual(['placed', 'paid', 'delivered', 'cancelled']);
     expect(screen.queryByText('ship')).not.toBeInTheDocument();
     expect(screen.getByText('pay')).toBeInTheDocument();
   });

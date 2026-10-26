@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { Button } from '../button/button.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import type {
@@ -154,8 +155,10 @@ export function getChangeRowId(
 ): string {
   const [removed] = block.removed;
   const [added] = block.added;
-  if (!isSplit) return getRowId(baseId, 'both', (removed ?? added)!.key);
-  return added ? getRowId(baseId, 'new', added.key) : getRowId(baseId, 'old', removed!.key);
+  if (!isSplit) return getRowId(baseId, 'both', requireDefined(removed ?? added).key);
+  return added
+    ? getRowId(baseId, 'new', added.key)
+    : getRowId(baseId, 'old', requireDefined(removed).key);
 }
 
 /** Both texts in one table: each change's removed lines, then its added lines. */

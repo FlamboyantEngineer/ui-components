@@ -165,7 +165,11 @@ describe('DragHandle', { timeout: 15_000 }, () => {
     vi.useFakeTimers();
     try {
       const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
-      const nextFrame = () => act(() => vi.advanceTimersToNextFrame());
+      const nextFrame = () => {
+        act(() => {
+          vi.advanceTimersToNextFrame();
+        });
+      };
       const { unmount } = render(<HandleRows isHandleOnly={false} />);
       const appleCell = cell('Apple');
       await press(user, screen.getByText('Apple'), { x: 60 });

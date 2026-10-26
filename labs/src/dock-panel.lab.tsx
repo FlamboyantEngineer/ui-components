@@ -1,6 +1,7 @@
 import { useState, type CSSProperties, type ReactNode } from 'react';
 import { DockPanel, DockPanelPane } from '../../src/components/dock-panel/dock-panel.js';
 import type { Key } from '../../src/core/props.js';
+import { requireDefined } from '../../src/utils/require-defined.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 type Position = 'start' | 'end' | 'bottom';
@@ -51,7 +52,7 @@ function Frame({
 const people = ['Maria Santos', 'Kenji Watanabe', 'Amara Okafor'];
 
 function MatrixPanel({ position, state }: { position: Position; state: string }) {
-  const name = `${position[0]!.toUpperCase()}${position.slice(1)} ${state}`;
+  const name = `${requireDefined(position[0]).toUpperCase()}${position.slice(1)} ${state}`;
   return (
     <DockPanel
       label={name}

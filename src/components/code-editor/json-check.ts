@@ -3,6 +3,7 @@
 
 import type { UiStrings } from '../../core/strings.js';
 import { findLineStarts } from '../../utils/find-line-starts.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import type { CodeDiagnostic } from './code-editor.js';
 import type { FieldIssue } from '../field/field.js';
 import { validateJsonSchema, type JsonSchema } from './json-schema.js';
@@ -23,10 +24,10 @@ function placeOf(starts: readonly number[], offset: number) {
   let high = starts.length;
   while (low + 1 < high) {
     const middle = Math.floor((low + high) / 2);
-    if (starts[middle]! <= offset) low = middle;
+    if (requireDefined(starts[middle]) <= offset) low = middle;
     else high = middle;
   }
-  return { line: low + 1, column: offset - starts[low]! + 1 };
+  return { line: low + 1, column: offset - requireDefined(starts[low]) + 1 };
 }
 
 function checkParse(source: string, strings: UiStrings): JsonCheck | null {

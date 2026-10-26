@@ -5,6 +5,7 @@ import {
   type ScrollRegionProps,
 } from '../../src/components/scroll-region/scroll-region.js';
 import { useScrollSpy } from '../../src/components/scroll-region/use-scroll-spy.js';
+import { requireDefined } from '../../src/utils/require-defined.js';
 import { useScrollStripOverflow } from '../../src/utils/use-scroll-strip-overflow.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
@@ -160,7 +161,10 @@ function Log() {
         <button
           type="button"
           onClick={() =>
-            setLines((current) => [...current, cities[current.length % cities.length]!])
+            setLines((current) => [
+              ...current,
+              requireDefined(cities[current.length % cities.length]),
+            ])
           }
         >
           Add arrival

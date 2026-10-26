@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import {
   ProjectionContent,
   ProjectionOutlet,
@@ -189,8 +190,8 @@ describe('AppFrame', () => {
     expect(screen.getByRole('region', { name: 'Host tools' })).toHaveTextContent('Ruler');
     const frames = container.querySelectorAll('.ui-app-frame');
     expect(frames).toHaveLength(2);
-    const outer = frames[0]!;
-    const inner = frames[1]!;
+    const outer = requireDefined(frames[0]);
+    const inner = requireDefined(frames[1]);
     expect(outer.querySelector(':scope > .ui-app-frame__start-panel')).toHaveTextContent(
       'Outer outline',
     );

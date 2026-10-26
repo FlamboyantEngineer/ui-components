@@ -92,7 +92,9 @@ describe('Field focus', () => {
       await act(async () => input.focus());
       expect(field).toHaveAttribute('data-focused', 'true');
       dispatchFocus('focusout', input, after);
-      act(() => vi.advanceTimersByTime(0));
+      act(() => {
+        vi.advanceTimersByTime(0);
+      });
       expect(field).not.toHaveAttribute('data-focused');
     } finally {
       vi.useRealTimers();

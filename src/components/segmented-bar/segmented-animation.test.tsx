@@ -1,6 +1,7 @@
 import { act, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { SegmentedBar, type SegmentedBarShape } from './segmented-bar.js';
 
 class VisibilityObserver {
@@ -81,7 +82,7 @@ describe('SegmentedBar entry animation', () => {
       );
       const { rerender } = render(view(0));
       const bar = screen.getByRole('group', { name: 'Parts' });
-      const drawing = bar.querySelector('[data-animation-state]')!;
+      const drawing = requireDefined(bar.querySelector('[data-animation-state]'));
       expect(bar).toHaveAttribute('data-animated', 'true');
       expect(drawing).toHaveAttribute('data-animation-state', 'waiting');
       expect(within(bar).getAllByRole('listitem')[0]).toHaveTextContent('First 3 37.5%');
@@ -108,7 +109,7 @@ describe('SegmentedBar entry animation', () => {
   it('UIC-SEGMENTED-BAR-4.2 exposes ordered geometry, skipping zero shares', () => {
     render(<SegmentedBar label="Parts" segments={segments} total={8} />);
     const bar = screen.getByRole('group', { name: 'Parts' });
-    const drawing = bar.querySelector<HTMLElement>('[data-animation-state]')!;
+    const drawing = requireDefined(bar.querySelector<HTMLElement>('[data-animation-state]'));
     expect(drawing.style.getPropertyValue('--ui-segment-total')).toBe('50');
     const parts = [...bar.querySelectorAll<HTMLElement>('.ui-segmented-bar__segment')];
     expect(

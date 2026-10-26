@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { PivotLayout } from '../../utils/pivot.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { applyFieldMove, createFieldCards, setValueAggregate } from './pivot-fields.js';
 
 const fields = [
@@ -32,13 +33,17 @@ describe('pivot field cards', () => {
     ]);
     const twice = createFieldCards(fields, { ...layout, values: [{ field: 'region' }] });
     expect(twice.map((card) => card.id).slice(-2)).toEqual(['year', 'values:region:5']);
-    expect(cards[4]!.value).toEqual({ index: 0, value: { field: 'boxes', aggregate: 'sum' } });
-    expect(createFieldCards(fields, { rows: ['size'], columns: [], values: [] })[5]!.field).toEqual(
-      {
-        id: 'size',
-        label: 'size',
-      },
-    );
+    expect(requireDefined(cards[4]).value).toEqual({
+      index: 0,
+      value: { field: 'boxes', aggregate: 'sum' },
+    });
+    expect(
+      requireDefined(createFieldCards(fields, { rows: ['size'], columns: [], values: [] })[5])
+        .field,
+    ).toEqual({
+      id: 'size',
+      label: 'size',
+    });
   });
 
   it('UIC-PIVOT-TABLE-3.3 moves fields between and within zones', () => {
@@ -88,7 +93,7 @@ describe('pivot field cards', () => {
       'a',
       'values:a:3:2',
     ]);
-    const duplicate = cards.at(-1)!;
+    const duplicate = requireDefined(cards.at(-1));
     const next = applyFieldMove(current, offered, {
       key: duplicate.id,
       column: 'columns',

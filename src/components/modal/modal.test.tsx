@@ -830,12 +830,13 @@ describe('Modal', () => {
       expect(attempts).toBe(2);
       expect(screen.queryByRole('alert')).not.toBeInTheDocument();
 
+      const offline: unknown = 'offline';
       rerender(
         <UiProvider strings={{ actionFailed: 'Something went wrong.' }}>
           <Modal
             title="Save"
             isOpen
-            primaryAction={{ label: 'Retry', onPress: () => Promise.reject('offline') }}
+            primaryAction={{ label: 'Retry', onPress: () => Promise.reject(offline) }}
           />
         </UiProvider>,
       );

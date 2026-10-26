@@ -4,6 +4,7 @@ import { createRef, type ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { MIN_THUMB_SIZE, THUMB_ARROW_STEP } from './overlay-scrollbars.js';
 import { ScrollRegion, useScrollRegionHeaderRef } from './scroll-region.js';
 import { readScrollEdges } from './use-scroll-edges.js';
@@ -164,8 +165,8 @@ describe('ScrollRegion', () => {
         <p>Apple</p>
       </ScrollRegion>,
     );
-    const root = container.firstElementChild!;
-    const viewport = root.firstElementChild!;
+    const root = requireDefined(container.firstElementChild);
+    const viewport = requireDefined(root.firstElementChild);
     expect(root).toHaveClass('ui-scroll-region', 'caller');
     expect(root).toHaveAttribute('data-testid', 'region');
     expect(root).not.toHaveAttribute('id');
@@ -185,13 +186,13 @@ describe('ScrollRegion', () => {
         <p>Apple</p>
       </ScrollRegion>,
     );
-    expect(container.firstElementChild!.firstElementChild).toBe(viewport);
+    expect(requireDefined(container.firstElementChild).firstElementChild).toBe(viewport);
     expect((container.firstElementChild as HTMLElement).hidden).toBe(true);
   });
 
   it('UIC-SCROLL-REGION-1.2 publishes its axis, scroll chaining, scrollbar mode, containment and grid', () => {
     const { container, rerender } = render(<ScrollRegion>Text</ScrollRegion>);
-    const root = container.firstElementChild!;
+    const root = requireDefined(container.firstElementChild);
     expect(root).toHaveAttribute('data-axis', 'y');
     expect(root).toHaveAttribute('data-overscroll', 'contain');
     expect(root).toHaveAttribute('data-scrollbar', 'native');
@@ -252,16 +253,16 @@ describe('ScrollRegion', () => {
     );
     flushFrames();
     flushFrames();
-    const root = container.firstElementChild!;
-    const viewport = document.getElementById('region')!;
+    const root = requireDefined(container.firstElementChild);
+    const viewport = requireDefined(document.getElementById('region'));
     expect(viewport).toHaveAttribute('tabindex', '0');
     expect(root).toHaveAttribute('data-scrollbar', 'overlay');
     expect(root).toHaveAttribute('data-overflow-y', 'true');
     expect(root).not.toHaveAttribute('data-overflow-x');
-    const track = container.querySelector<HTMLElement>('.ui-scroll-region__track')!;
+    const track = requireDefined(container.querySelector<HTMLElement>('.ui-scroll-region__track'));
     expect(track).toHaveAttribute('data-orientation', 'vertical');
     expect(track.style.pointerEvents).toBe('');
-    const vertical = thumb('region')!;
+    const vertical = requireDefined(thumb('region'));
     expect(vertical).toHaveClass('ui-scroll-region__thumb');
     expect(vertical.style.pointerEvents).toBe('auto');
     expect(vertical.style.top).toBe('0px');
@@ -285,12 +286,12 @@ describe('ScrollRegion', () => {
         Content
       </ScrollRegion>,
     );
-    const viewport = document.getElementById('wide')!;
+    const viewport = requireDefined(document.getElementById('wide'));
     viewport.style.direction = 'rtl';
     fireEvent.scroll(viewport);
     flushFrames();
     flushFrames();
-    const horizontal = thumb('wide', 'horizontal')!;
+    const horizontal = requireDefined(thumb('wide', 'horizontal'));
     // Track 110, thumb max(24, 110 * 100 / 400) = 27.5, at the right end at scroll start.
     expect(horizontal.style.width).toBe('27.5px');
     expect(horizontal.style.left).toBe('82.5px');
@@ -326,11 +327,11 @@ describe('ScrollRegion', () => {
     );
     flushFrames();
     flushFrames();
-    const first = document.getElementById('first')!;
-    const second = document.getElementById('second')!;
+    const first = requireDefined(document.getElementById('first'));
+    const second = requireDefined(document.getElementById('second'));
     const firstRoot = container.children[0] as HTMLElement;
     expect(firstRoot.style.getPropertyValue('--ui-scroll-region-header-size')).toBe('20px');
-    const vertical = thumb('first')!;
+    const vertical = requireDefined(thumb('first'));
     expect(vertical).toHaveAccessibleName('Faire défiler');
     expect(vertical).toHaveAttribute('aria-valuemin', '0');
     expect(vertical).toHaveAttribute('aria-valuemax', '200');
@@ -374,10 +375,10 @@ describe('ScrollRegion', () => {
     );
     flushFrames();
     flushFrames();
-    const viewport = document.getElementById('region')!;
+    const viewport = requireDefined(document.getElementById('region'));
     const scrollBy = vi.fn();
     viewport.scrollBy = scrollBy as typeof viewport.scrollBy;
-    const vertical = thumb('region')!;
+    const vertical = requireDefined(thumb('region'));
     let captured: number | null = null;
     Object.assign(vertical, {
       setPointerCapture: (id: number) => {
@@ -418,12 +419,12 @@ describe('ScrollRegion', () => {
     );
     flushFrames();
     flushFrames();
-    const viewport = document.getElementById('region')!;
+    const viewport = requireDefined(document.getElementById('region'));
     trackScrollTop(viewport);
     viewport.scrollBy = vi.fn(({ top = 0 }: ScrollToOptions) => {
       viewport.scrollTop += top;
     }) as typeof viewport.scrollBy;
-    const vertical = thumb('region')!;
+    const vertical = requireDefined(thumb('region'));
     // A cancelled wheel event does not scroll the page.
     expect(fireEvent.wheel(vertical, { deltaY: 40 })).toBe(false);
     expect(viewport.scrollTop).toBe(40);
@@ -467,7 +468,7 @@ describe('ScrollRegion', () => {
         <div>Three rows</div>
       </ScrollRegion>,
     );
-    const viewport = document.getElementById('region')!;
+    const viewport = requireDefined(document.getElementById('region'));
     viewport.getBoundingClientRect = () => ({ top: 50, bottom: 450, height: 400 }) as DOMRect;
     screen.getByText('Three rows').getBoundingClientRect = () =>
       ({ top: 50, bottom: 200, height: 150 }) as DOMRect;
@@ -494,8 +495,8 @@ describe('ScrollRegion', () => {
     );
     flushFrames();
     flushFrames();
-    const viewport = document.getElementById('region')!;
-    const vertical = thumb('region')!;
+    const viewport = requireDefined(document.getElementById('region'));
+    const vertical = requireDefined(thumb('region'));
     act(() => vertical.focus());
     geometry.scrollHeight = 80;
     resizeAll();
@@ -522,7 +523,7 @@ describe('ScrollRegion', () => {
     flushFrames();
     flushFrames();
     expect(thumb('region')).not.toBeNull();
-    const viewport = document.getElementById('region')!;
+    const viewport = requireDefined(document.getElementById('region'));
     geometry.scrollHeight = 80;
     await act(async () => viewport.append(document.createElement('p')));
     flushFrames();
@@ -543,11 +544,13 @@ describe('ScrollRegion', () => {
     const { container, rerender } = render(<ScrollRegion id="notes" overview={markers} />);
     flushFrames();
     const root = container.firstElementChild as HTMLElement;
-    const viewport = document.getElementById('notes')!;
+    const viewport = requireDefined(document.getElementById('notes'));
     expect(root).toHaveAttribute('data-overview', 'true');
     const image = root.style.getPropertyValue('--ui-scroll-region-overview-image');
     expect(image).toContain('red 50% 52%');
-    const layer = container.querySelector<HTMLElement>('.ui-scroll-region__overview')!;
+    const layer = requireDefined(
+      container.querySelector<HTMLElement>('.ui-scroll-region__overview'),
+    );
     expect(layer).toHaveAttribute('aria-hidden', 'true');
     expect(layer.style.height).toBe('100px');
     expect(layer.style.pointerEvents).toBe('none');
@@ -643,17 +646,23 @@ describe('ScrollRegion', () => {
         </ScrollRegion>,
       );
       flushFrames();
-      const root = container.firstElementChild!;
+      const root = requireDefined(container.firstElementChild);
       expect(root).toHaveAttribute('data-scrollbar-visibility', 'scroll');
       expect(root).toHaveAttribute('data-overflow-y', 'true');
       expect(container.querySelector('.ui-scroll-region__track')).toBeNull();
-      fireEvent.scroll(document.getElementById('log')!);
+      fireEvent.scroll(requireDefined(document.getElementById('log')));
       expect(container.querySelector('.ui-scroll-region__track')).not.toBeNull();
-      act(() => vi.advanceTimersByTime(399));
-      fireEvent.scroll(document.getElementById('log')!);
-      act(() => vi.advanceTimersByTime(399));
+      act(() => {
+        vi.advanceTimersByTime(399);
+      });
+      fireEvent.scroll(requireDefined(document.getElementById('log')));
+      act(() => {
+        vi.advanceTimersByTime(399);
+      });
       expect(container.querySelector('.ui-scroll-region__track')).not.toBeNull();
-      act(() => vi.advanceTimersByTime(1));
+      act(() => {
+        vi.advanceTimersByTime(1);
+      });
       expect(container.querySelector('.ui-scroll-region__track')).toBeNull();
     } finally {
       vi.useRealTimers();
@@ -675,7 +684,7 @@ describe('ScrollRegion', () => {
         </ScrollRegion>,
       );
       flushFrames();
-      const root = container.firstElementChild!;
+      const root = requireDefined(container.firstElementChild);
       const track = () => container.querySelector('.ui-scroll-region__track');
       expect(track()).toBeNull();
       // A touch pointer enters as it goes down.
@@ -688,20 +697,26 @@ describe('ScrollRegion', () => {
       expect(track()).not.toBeNull();
       await user.unhover(root);
       expect(root).not.toHaveAttribute('data-hovering');
-      act(() => vi.advanceTimersByTime(599));
+      act(() => {
+        vi.advanceTimersByTime(599);
+      });
       expect(track()).not.toBeNull();
-      act(() => vi.advanceTimersByTime(1));
+      act(() => {
+        vi.advanceTimersByTime(1);
+      });
       expect(track()).toBeNull();
 
       // eslint-disable-next-line testing-library/prefer-user-event -- user-event has no pen pointer
       fireEvent.pointerEnter(root, { pointerType: 'pen' });
       flushFrames();
-      act(() => thumb('menu')!.focus());
+      act(() => requireDefined(thumb('menu')).focus());
       // eslint-disable-next-line testing-library/prefer-user-event -- user-event has no pen pointer
       fireEvent.pointerLeave(root, { pointerType: 'pen' });
-      act(() => vi.advanceTimersByTime(1000));
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
       expect(track()).not.toBeNull();
-      act(() => thumb('menu')!.blur());
+      act(() => requireDefined(thumb('menu')).blur());
       expect(track()).toBeNull();
     } finally {
       vi.useRealTimers();
@@ -719,11 +734,13 @@ describe('ScrollRegion', () => {
         </ScrollRegion>,
       );
       flushFrames();
-      const viewport = document.getElementById('log')!;
+      const viewport = requireDefined(document.getElementById('log'));
       const track = () => container.querySelector('.ui-scroll-region__track');
       fireEvent.scroll(viewport);
-      act(() => thumb('log')!.focus());
-      act(() => vi.advanceTimersByTime(1000));
+      act(() => requireDefined(thumb('log')).focus());
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
       expect(track()).not.toBeNull();
       geometry.scrollHeight = 80;
       resizeAll();
@@ -731,7 +748,9 @@ describe('ScrollRegion', () => {
       expect(viewport).toHaveFocus();
       geometry.scrollHeight = 300;
       resizeAll();
-      act(() => vi.advanceTimersByTime(1000));
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
       expect(track()).toBeNull();
     } finally {
       vi.useRealTimers();
@@ -761,12 +780,14 @@ describe('ScrollRegion', () => {
       );
       flushFrames();
       animate = true;
-      fireEvent.scroll(document.getElementById('feed')!);
-      const track = container.querySelector('.ui-scroll-region__track')!;
+      fireEvent.scroll(requireDefined(document.getElementById('feed')));
+      const track = requireDefined(container.querySelector('.ui-scroll-region__track'));
       expect(track).toHaveAttribute('data-entering', 'true');
       await act(async () => finish());
       expect(track).not.toHaveAttribute('data-entering');
-      act(() => vi.advanceTimersByTime(600));
+      act(() => {
+        vi.advanceTimersByTime(600);
+      });
       expect(track).toHaveAttribute('data-exiting', 'true');
       expectHooksMatchSpec(container, 'SCROLL-REGION', { slots: ['viewport', 'track', 'thumb'] });
       await act(async () => finish());
@@ -789,11 +810,11 @@ describe('ScrollRegion', () => {
         Short
       </ScrollRegion>,
     );
-    expect(thumb('note')!.style.height).toBe('0px');
+    expect(requireDefined(thumb('note')).style.height).toBe('0px');
     flushFrames();
     flushFrames();
     expect(container.firstElementChild).not.toHaveAttribute('data-overflow-y');
-    const vertical = thumb('note')!;
+    const vertical = requireDefined(thumb('note'));
     expect(vertical).toHaveAttribute('tabindex', '-1');
     expect(vertical).toHaveAttribute('aria-valuemax', '0');
     expect(vertical.style.height).toBe(`${tracks.vertical}px`);
@@ -815,10 +836,10 @@ describe('ScrollRegion', () => {
     );
     flushFrames();
     flushFrames();
-    const viewport = document.getElementById('long')!;
+    const viewport = requireDefined(document.getElementById('long'));
     trackScrollTop(viewport);
-    const track = container.querySelector<HTMLElement>('.ui-scroll-region__track')!;
-    const vertical = thumb('long')!;
+    const track = requireDefined(container.querySelector<HTMLElement>('.ui-scroll-region__track'));
+    const vertical = requireDefined(thumb('long'));
     vertical.getBoundingClientRect = () => ({ top: 40, left: 0, bottom: 60 }) as DOMRect;
     const press = (target: HTMLElement, clientY: number, keys = '[MouseLeft]') =>
       user.pointer({ keys, target, coords: { clientY } });
@@ -844,7 +865,7 @@ describe('ScrollRegion', () => {
     });
     const { container, rerender } = render(<ScrollRegion id="edges">Rows</ScrollRegion>);
     const root = container.firstElementChild as HTMLElement;
-    const viewport = document.getElementById('edges')!;
+    const viewport = requireDefined(document.getElementById('edges'));
     trackScrollTop(viewport);
     expect(root).not.toHaveAttribute('data-overflow-y-start');
     expect(root).toHaveAttribute('data-overflow-y-end', 'true');
@@ -899,13 +920,15 @@ describe('ScrollRegion', () => {
     const geometry = { clientHeight: 100, scrollHeight: 100, clientWidth: 120, scrollWidth: 120 };
     viewports.set('grow', geometry);
     const { container } = render(<ScrollRegion id="grow">Rows</ScrollRegion>);
-    const root = container.firstElementChild!;
+    const root = requireDefined(container.firstElementChild);
     expect(root).not.toHaveAttribute('data-overflow-y-end');
     geometry.scrollHeight = 180;
     resizeAll();
     expect(root).toHaveAttribute('data-overflow-y-end', 'true');
     geometry.scrollHeight = 100;
-    await act(async () => document.getElementById('grow')!.append(document.createElement('p')));
+    await act(async () =>
+      requireDefined(document.getElementById('grow')).append(document.createElement('p')),
+    );
     expect(root).not.toHaveAttribute('data-overflow-y-end');
   });
 
@@ -923,10 +946,12 @@ describe('ScrollRegion', () => {
           Rows
         </ScrollRegion>,
       );
-      const root = container.firstElementChild!;
-      fireEvent.scroll(document.getElementById('busy')!);
+      const root = requireDefined(container.firstElementChild);
+      fireEvent.scroll(requireDefined(document.getElementById('busy')));
       expect(root).toHaveAttribute('data-scrolling', 'true');
-      act(() => vi.advanceTimersByTime(200));
+      act(() => {
+        vi.advanceTimersByTime(200);
+      });
       expect(root).not.toHaveAttribute('data-scrolling');
       await user.hover(root);
       expect(root).toHaveAttribute('data-hovering', 'true');
@@ -952,7 +977,7 @@ describe('ScrollRegion', () => {
         Posts
       </ScrollRegion>,
     );
-    const viewport = document.getElementById('feed')!;
+    const viewport = requireDefined(document.getElementById('feed'));
     trackScrollTop(viewport);
     expect(onTopReached).not.toHaveBeenCalled();
     scrollTo(viewport, 120);
@@ -973,7 +998,7 @@ describe('ScrollRegion', () => {
         Messages
       </ScrollRegion>,
     );
-    const viewport = document.getElementById('chat')!;
+    const viewport = requireDefined(document.getElementById('chat'));
     trackScrollTop(viewport);
     rerender(
       <ScrollRegion id="chat" stickToBottom onBottomReached={onBottomReached}>

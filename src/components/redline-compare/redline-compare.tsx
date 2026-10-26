@@ -3,6 +3,7 @@ import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEditableTarget } from '../../utils/is-editable-target.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { useStateFor } from '../../utils/use-state-for.js';
 import {
   compareBlocks,
@@ -156,7 +157,7 @@ export function RedlineCompare<B extends DocumentBlock>({
             onResolve={
               onResolve && isChangeRow(row) ? (decision) => resolve(row, decision) : undefined
             }
-            onJump={() => navigation.goTo(row.counterpartKey!)}
+            onJump={() => navigation.goTo(requireDefined(row.counterpartKey))}
           />
         ))}
       </ol>

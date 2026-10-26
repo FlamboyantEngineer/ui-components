@@ -1,4 +1,5 @@
 import { useImperativeHandle, useRef, useState, type Ref } from 'react';
+import { requireDefined } from '../../utils/require-defined.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { createHooks } from '../../core/hooks.js';
 import type { Key } from '../../core/props.js';
@@ -153,7 +154,7 @@ export function SignatureForm({
   const [typedUserName, setTypedUserName] = useState('');
   const [password, setPassword] = useState('');
   const [meaning, setMeaning] = useState(
-    meanings.length === 1 ? toKeyIdentity(meanings[0]!.id) : null,
+    meanings.length === 1 ? toKeyIdentity(requireDefined(meanings[0]).id) : null,
   );
   const [reasonText, setReasonText] = useState('');
   const [signature, setSignature] = useState<SignatureValue | null>(null);

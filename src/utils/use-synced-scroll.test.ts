@@ -1,5 +1,6 @@
 import { renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { requireDefined } from './require-defined.js';
 import { mapScrollOffset, useSyncedScroll, type ScrollAnchor } from './use-synced-scroll.js';
 
 function createContainer(scrollHeight: number, clientHeight = 100): HTMLElement {
@@ -113,7 +114,7 @@ describe('useSyncedScroll', () => {
     const containers = [createContainer(300), createContainer(400), createContainer(500)];
     const getAnchors = vi.fn((_container: HTMLElement) => anchors([0, 100, 200]));
     renderHook(() => useSyncedScroll(containers, { getAnchors }));
-    scrollTo(containers[0]!, 100);
+    scrollTo(requireDefined(containers[0]), 100);
     for (const container of containers) expect(container.scrollTop).toBe(100);
     expect(getAnchors.mock.calls.map(([container]) => container)).toEqual(containers);
   });

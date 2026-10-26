@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import type { Key } from '../../core/props.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { ViewSwitcher, type ViewSwitcherView } from './view-switcher.js';
 
 const views: ViewSwitcherView[] = [
@@ -54,7 +55,7 @@ describe('ViewSwitcher', { timeout: 20_000 }, () => {
     expect(tabs().map((tab) => tab.textContent)).toEqual(['All recipes', 'Quick meals', 'Baking']);
     expect(tabs()[0]).toHaveClass('ui-view-switcher__tab');
     expect(tabs()[0]).toHaveAttribute('aria-selected', 'true');
-    expect(tabs()[0]!.querySelector('[data-glyph="folder"]')).not.toBeNull();
+    expect(requireDefined(tabs()[0]).querySelector('[data-glyph="folder"]')).not.toBeNull();
     const panel = screen.getByRole('tabpanel');
     expect(panel).toHaveClass('ui-view-switcher__panel');
     expect(panel).toHaveTextContent('Rows');
@@ -72,14 +73,14 @@ describe('ViewSwitcher', { timeout: 20_000 }, () => {
       <ViewSwitcher views={views} defaultViewKey="quick" onSelectionChange={onSelectionChange} />,
     );
     expect(tabs()[1]).toHaveAttribute('aria-selected', 'true');
-    await user.click(tabs()[2]!);
+    await user.click(requireDefined(tabs()[2]));
     expect(onSelectionChange).toHaveBeenLastCalledWith('baking');
     expect(tabs()[2]).toHaveAttribute('aria-selected', 'true');
     rerender(
       <ViewSwitcher views={views} selectedKey="all" onSelectionChange={onSelectionChange} />,
     );
     expect(tabs()[0]).toHaveAttribute('aria-selected', 'true');
-    await user.click(tabs()[1]!);
+    await user.click(requireDefined(tabs()[1]));
     expect(onSelectionChange).toHaveBeenLastCalledWith('quick');
     expect(tabs()[0]).toHaveAttribute('aria-selected', 'true');
   });
@@ -90,11 +91,11 @@ describe('ViewSwitcher', { timeout: 20_000 }, () => {
     );
     expect(container.firstElementChild).toHaveAttribute('data-dirty', 'true');
     expect(
-      tabs()[0]!.querySelector('.ui-view-switcher__default [data-glyph="star"]'),
+      requireDefined(tabs()[0]).querySelector('.ui-view-switcher__default [data-glyph="star"]'),
     ).not.toBeNull();
     expect(tabs()[0]).toHaveAccessibleName('All recipes Default view');
     expect(tabs()[1]).toHaveAccessibleName('Quick meals Modified');
-    expect(tabs()[0]!.querySelector('.ui-view-switcher__modified')).toBeNull();
+    expect(requireDefined(tabs()[0]).querySelector('.ui-view-switcher__modified')).toBeNull();
     expectHooksMatchSpec(container, 'VIEW-SWITCHER', { slots: ['default', 'modified'] });
   });
 
@@ -170,7 +171,7 @@ describe('ViewSwitcher', { timeout: 20_000 }, () => {
     await userEvent.type(field, 'Everything{Enter}');
     expect(onRename).toHaveBeenCalledWith('all', 'Everything');
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
-    fireEvent.contextMenu(tabs()[2]!);
+    fireEvent.contextMenu(requireDefined(tabs()[2]));
     await userEvent.click(await screen.findByRole('menuitem', { name: 'Rename' }));
     expect(screen.getByRole('textbox', { name: /^View name/ })).toHaveValue('Baking');
   });
@@ -281,7 +282,7 @@ describe('ViewSwitcher', { timeout: 20_000 }, () => {
       'false',
     ]);
     expect(items[0]).toHaveTextContent('Default view');
-    await userEvent.click(items[2]!);
+    await userEvent.click(requireDefined(items[2]));
     expect(onSelectionChange).toHaveBeenCalledWith('baking');
     expect(screen.getByRole('button', { name: 'Baking Modified' })).toBeInTheDocument();
   });
@@ -289,7 +290,7 @@ describe('ViewSwitcher', { timeout: 20_000 }, () => {
   it('UIC-VIEW-SWITCHER-2.1 names the list and moves between views by keyboard', async () => {
     render(<ViewSwitcher views={views} aria-label="Recipe views" onRename={() => {}} />);
     const list = screen.getByRole('tablist', { name: 'Recipe views' });
-    tabs()[0]!.focus();
+    requireDefined(tabs()[0]).focus();
     await userEvent.keyboard('{ArrowRight}');
     expect(tabs()[1]).toHaveFocus();
     expect(tabs()[1]).toHaveAttribute('aria-selected', 'true');

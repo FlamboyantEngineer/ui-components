@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { SearchField } from '../search-field/search-field.js';
 import {
   FilterBar,
@@ -63,21 +64,25 @@ describe('FilterBar', () => {
     expect(chips[0]).toHaveAttribute('data-field', 'genre');
     expect(chips[0]).not.toHaveAttribute('data-incomplete');
     expect(chips[1]).toHaveAttribute('data-incomplete', 'true');
-    const button = within(chips[0]!).getByRole('button', {
+    const button = within(requireDefined(chips[0])).getByRole('button', {
       name: 'Genre is any of History, Travel',
     });
     expect(button).toHaveAttribute('aria-expanded', 'false');
-    expect(chips[0]!.querySelector('.ui-filter-bar__chip-field')).toHaveTextContent('Genre');
-    expect(chips[0]!.querySelector('.ui-filter-bar__chip-operator')).toHaveTextContent('is any of');
-    expect(chips[0]!.querySelector('.ui-filter-bar__chip-value')).toHaveTextContent(
+    expect(requireDefined(chips[0]).querySelector('.ui-filter-bar__chip-field')).toHaveTextContent(
+      'Genre',
+    );
+    expect(
+      requireDefined(chips[0]).querySelector('.ui-filter-bar__chip-operator'),
+    ).toHaveTextContent('is any of');
+    expect(requireDefined(chips[0]).querySelector('.ui-filter-bar__chip-value')).toHaveTextContent(
       'History, Travel',
     );
     expect(
-      within(chips[1]!).getByRole('button', { name: 'Pages is at least' }),
+      within(requireDefined(chips[1])).getByRole('button', { name: 'Pages is at least' }),
     ).toBeInTheDocument();
-    expect(chips[1]!.querySelector('.ui-filter-bar__chip-value')).toBeNull();
+    expect(requireDefined(chips[1]).querySelector('.ui-filter-bar__chip-value')).toBeNull();
     expect(
-      within(chips[0]!).getByRole('button', {
+      within(requireDefined(chips[0])).getByRole('button', {
         name: 'Remove filter Genre is any of History, Travel',
       }),
     ).toHaveClass('ui-filter-bar__chip-remove');

@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import {
   MappingTable,
   type MappingTableColumn,
@@ -45,7 +46,8 @@ function Controlled(
   );
 }
 
-const row = (key: string) => document.querySelector(`.ui-mapping-table__row[data-key="${key}"]`)!;
+const row = (key: string) =>
+  requireDefined(document.querySelector(`.ui-mapping-table__row[data-key="${key}"]`));
 const choice = (column: string) =>
   screen.getByRole('button', { name: new RegExp(`Import ${column} as`) });
 

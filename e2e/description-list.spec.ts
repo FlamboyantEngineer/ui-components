@@ -1,5 +1,6 @@
 import type { Locator } from '@playwright/test';
 import { expect, test } from './fixtures.js';
+import { requireDefined } from '../src/utils/require-defined.js';
 
 async function rects(locator: Locator) {
   return locator.evaluateAll((nodes) => nodes.map((node) => node.getBoundingClientRect().toJSON()));
@@ -80,16 +81,20 @@ test.describe('Description List lab', () => {
         `[data-lab-cell="layout=${layout} columns=4"] .ui-description-list`,
       );
       const rows = (await rects(list.locator('.ui-description-list__row'))) as DOMRect[];
-      const listBox = (await list.boundingBox())!;
+      const listBox = requireDefined(await list.boundingBox());
       expect(new Set(rows.slice(0, 4).map((box) => Math.round(box.top))).size).toBe(1);
-      const [single, pair, full] = [rows[0]!, rows[4]!, rows[5]!];
+      const [single, pair, full] = [
+        requireDefined(rows[0]),
+        requireDefined(rows[4]),
+        requireDefined(rows[5]),
+      ];
       expect(pair.width).toBeGreaterThan(single.width * 1.8);
       expect(Math.round(full.width)).toBe(Math.round(listBox.width));
       expect(full.top).toBeGreaterThan(pair.top);
     }
     const three = page.locator('[data-lab-cell="layout=inline columns=3"] .ui-description-list');
     const rows = (await rects(three.locator('.ui-description-list__row'))) as DOMRect[];
-    expect(rows[3]!.top).toBeGreaterThan(rows[0]!.top);
+    expect(requireDefined(rows[3]).top).toBeGreaterThan(requireDefined(rows[0]).top);
   });
 
   test('UIC-DESCRIPTION-LIST-1.5 formats values for the provider locale', async ({ page, lab }) => {

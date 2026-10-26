@@ -1,5 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import { expect, test } from './fixtures.js';
+import { requireDefined } from '../src/utils/require-defined.js';
 
 function section(page: Page, title: string): Locator {
   return page.locator(`[data-lab-section="${title}"]`);
@@ -176,7 +177,10 @@ test.describe('Combobox lab', () => {
     await page.keyboard.press('ArrowDown');
     const first = list.getByRole('option', { name: /^Apple/ });
     await expect(first).toHaveAttribute('data-focused', 'true');
-    await expect(input).toHaveAttribute('aria-activedescendant', (await first.getAttribute('id'))!);
+    await expect(input).toHaveAttribute(
+      'aria-activedescendant',
+      requireDefined(await first.getAttribute('id')),
+    );
     await expect(async () => expect(await page.evaluate(() => scrollY)).toBe(scroll)).toPass();
     await page.keyboard.press('Escape');
     await expect(list).toBeHidden();

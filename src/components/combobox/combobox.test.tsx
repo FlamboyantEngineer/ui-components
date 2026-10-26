@@ -4,6 +4,7 @@ import { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { Combobox, type ComboboxItem } from './combobox.js';
 
 const fruit: ComboboxItem[] = [
@@ -48,7 +49,7 @@ describe('Combobox', () => {
     await user.click(await screen.findByRole('option', { name: 'Textual' }));
     expect(onChange).toHaveBeenLastCalledWith('1');
     expect(input()).toHaveValue('Textual');
-    expect(new FormData(container.querySelector('form')!).get('types')).toBe('1');
+    expect(new FormData(requireDefined(container.querySelector('form'))).get('types')).toBe('1');
   });
 
   it.each(['isReadOnly', 'isDisabled'] as const)(
@@ -179,7 +180,7 @@ describe('Combobox', () => {
     await user.type(input(), 'ba');
     expect(await screen.findByRole('listbox')).toBeInTheDocument();
     // The open list hides the rest of the field from assistive technology, so find the hook.
-    await user.click(container.querySelector<HTMLElement>('.ui-combobox__clear')!);
+    await user.click(requireDefined(container.querySelector<HTMLElement>('.ui-combobox__clear')));
     expect(input()).toHaveValue('');
     expect(input()).toHaveFocus();
   });
@@ -248,7 +249,7 @@ describe('Combobox', () => {
         </form>,
       );
       expect(input()).toHaveValue('');
-      expect(new FormData(container.querySelector('form')!).get('fruit')).toBe('');
+      expect(new FormData(requireDefined(container.querySelector('form'))).get('fruit')).toBe('');
     },
   );
 
@@ -269,7 +270,8 @@ describe('Combobox', () => {
       </form>
     );
     const { container, rerender } = render(field('missing', 'Quince'));
-    const submitted = () => new FormData(container.querySelector('form')!).get('fruit');
+    const submitted = () =>
+      new FormData(requireDefined(container.querySelector('form'))).get('fruit');
     expect(input()).toHaveValue('Quince');
     expect(submitted()).toBe('Quince');
     rerender(field('other', 'Kumquat'));
@@ -305,7 +307,9 @@ describe('Combobox', () => {
     await user.click(await screen.findByRole('option', { name: 'Textual' }));
     expect(onChange).toHaveBeenLastCalledWith('1');
     expect(input()).toHaveValue('Textual');
-    expect(new FormData(container.querySelector('form')!).get('kind')).toBe('Textual');
+    expect(new FormData(requireDefined(container.querySelector('form'))).get('kind')).toBe(
+      'Textual',
+    );
   });
 
   it('UIC-COMBOBOX-2.8 appends caller classes and forwards data attributes and the ref', () => {

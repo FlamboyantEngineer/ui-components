@@ -5,6 +5,7 @@ import {
   type StateTimelineEntry,
   type StateTimelineState,
 } from '../../src/components/state-timeline/state-timeline.js';
+import { requireDefined } from '../../src/utils/require-defined.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { samplePicture } from './people-samples.js';
 
@@ -56,7 +57,7 @@ const lifecycle: StateTimelineState[] = [
 /** A task moved through its states on the real clock, with a note on each move. */
 function LiveTask() {
   const [entries, setEntries] = useState<StateTimelineEntry[]>([
-    { ...lifecycle[0]!, time: new Date().toISOString(), person: maria },
+    { ...requireDefined(lifecycle[0]), time: new Date().toISOString(), person: maria },
   ]);
   const next = lifecycle[entries.length];
   return (

@@ -1,6 +1,7 @@
 // The blocks a merge view draws from the chunks of `mergeThreeWay`: each side's numbered lines per
 // chunk, conflicts numbered in order, and the result text from the conflicts' resolutions.
 
+import { requireDefined } from '../../utils/require-defined.js';
 import type { MergeChunk } from '../../utils/three-way-merge.js';
 
 /** A side of a merge view's input: our text, the common base or their text. */
@@ -119,7 +120,7 @@ export function createMergeText(options: {
   const { blocks, states, markers, hasFinalBreak } = options;
   const parts = blocks.flatMap((block) => {
     if (block.conflict === null) return getCleanLines(block.chunk);
-    const text = getConflictText(block.chunk, states[block.conflict]!, markers);
+    const text = getConflictText(block.chunk, requireDefined(states[block.conflict]), markers);
     return text === '' ? [] : [text];
   });
   const text = parts.join('\n');

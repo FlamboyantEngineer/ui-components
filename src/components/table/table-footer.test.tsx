@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { Table, type TableProps } from './table.js';
 import type { TableColumn } from './table-rows.js';
 
@@ -57,7 +58,7 @@ describe('Table summary row', { timeout: 15_000 }, () => {
     expect(row.querySelector('[role="checkbox"], input')).toBeNull();
     await user.click(screen.getByRole('checkbox', { name: 'Select All' }));
     expect(row).toHaveAttribute('aria-selected', 'false');
-    await user.click(cells[1]!);
+    await user.click(requireDefined(cells[1]));
     await user.keyboard('{Enter}');
     expect(onRowAction).not.toHaveBeenCalled();
     expectHooksMatchSpec(container, 'TABLE', { slots: ['footer', 'footer-row', 'footer-cell'] });

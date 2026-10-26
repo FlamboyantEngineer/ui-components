@@ -9,6 +9,7 @@ import {
   pipeNodes,
   stubViewportSize,
 } from '../../../test/diagram-fixtures.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import {
   DiagramCanvas,
   DiagramPaletteItem,
@@ -25,11 +26,11 @@ function node(name: string) {
 }
 
 function viewportOf(container: HTMLElement) {
-  return container.querySelector<HTMLElement>('.ui-diagram-canvas__viewport')!;
+  return requireDefined(container.querySelector<HTMLElement>('.ui-diagram-canvas__viewport'));
 }
 
 function contentOf(container: HTMLElement) {
-  return container.querySelector<HTMLElement>('.ui-diagram-canvas__content')!;
+  return requireDefined(container.querySelector<HTMLElement>('.ui-diagram-canvas__content'));
 }
 
 describe('DiagramCanvas', () => {
@@ -165,9 +166,9 @@ describe('DiagramCanvas', () => {
     expect(ports).toHaveLength(3);
     expect(ports[0]).toHaveAttribute('aria-hidden', 'true');
     expect(ports[0]).toHaveAttribute('data-side', 'right');
-    expect(ports[0]!.style).toMatchObject({ left: '100%', top: '50%' });
-    expect(ports[2]!.style).toMatchObject({ left: '100%', top: '25%' });
-    expect(ports[1]!.style).toMatchObject({ left: '0px', top: '50%' });
+    expect(requireDefined(ports[0]).style).toMatchObject({ left: '100%', top: '50%' });
+    expect(requireDefined(ports[2]).style).toMatchObject({ left: '100%', top: '25%' });
+    expect(requireDefined(ports[1]).style).toMatchObject({ left: '0px', top: '50%' });
     rerender(<DiagramCanvas nodes={pipeNodes} edges={pipeEdges} isEditing />);
     expect(screen.getByRole('button', { name: 'Pump, outlet' })).toHaveClass(
       'ui-diagram-canvas__port',
@@ -194,15 +195,14 @@ describe('DiagramCanvas', () => {
         port: { side: 'left', position: 0.5 },
       },
     });
-    expect(edges[0]!.querySelector('.ui-diagram-canvas__edge-path')).toHaveAttribute(
+    expect(requireDefined(edges[0]).querySelector('.ui-diagram-canvas__edge-path')).toHaveAttribute(
       'd',
       expected.path,
     );
-    expect(edges[0]!.querySelector('.ui-diagram-canvas__edge-arrow')).toHaveAttribute(
-      'd',
-      expected.arrow,
-    );
-    expect(edges[0]!.querySelector('.ui-diagram-canvas__edge-hit')).toHaveAttribute(
+    expect(
+      requireDefined(edges[0]).querySelector('.ui-diagram-canvas__edge-arrow'),
+    ).toHaveAttribute('d', expected.arrow);
+    expect(requireDefined(edges[0]).querySelector('.ui-diagram-canvas__edge-hit')).toHaveAttribute(
       'd',
       expected.path,
     );
@@ -311,12 +311,12 @@ describe('DiagramCanvas', () => {
     // The nodes span 460 × 260 pixels; with 24 pixels around them that is 508 × 308.
     const zoom = (400 / 508) * 100;
     expect(onViewportChange).toHaveBeenCalledTimes(1);
-    expect(onViewportChange.mock.calls[0]![0].zoom).toBeCloseTo(zoom);
+    expect(requireDefined(onViewportChange.mock.calls[0])[0].zoom).toBeCloseTo(zoom);
     expect(contentOf(container).style.transform).toMatch(/scale\(0\.787/);
     fireEvent.wheel(viewportOf(container), { deltaY: 50 });
     await userEvent.click(screen.getByRole('button', { name: 'Fit to view' }));
-    expect(onViewportChange.mock.lastCall![0].zoom).toBeCloseTo(zoom);
-    expect(onViewportChange.mock.lastCall![0].x).toBeCloseTo(
+    expect(requireDefined(onViewportChange.mock.lastCall)[0].zoom).toBeCloseTo(zoom);
+    expect(requireDefined(onViewportChange.mock.lastCall)[0].x).toBeCloseTo(
       (400 - 508 * (zoom / 100)) / 2 + 24 * (zoom / 100),
     );
   });
@@ -362,13 +362,15 @@ describe('DiagramCanvas', () => {
         onViewportChange={onViewportChange}
       />,
     );
-    const minimap = container.querySelector<SVGSVGElement>('.ui-diagram-canvas__minimap')!;
+    const minimap = requireDefined(
+      container.querySelector<SVGSVGElement>('.ui-diagram-canvas__minimap'),
+    );
     expect(minimap).toHaveAttribute('aria-hidden', 'true');
     expect(minimap).toHaveAttribute('viewBox', '-40 -40 540 380');
     const rects = minimap.querySelectorAll('.ui-diagram-canvas__minimap-node');
     expect(rects).toHaveLength(3);
     expect(rects[0]).toHaveAttribute('data-selected', 'true');
-    const visible = minimap.querySelector('.ui-diagram-canvas__minimap-viewport')!;
+    const visible = requireDefined(minimap.querySelector('.ui-diagram-canvas__minimap-viewport'));
     expect(visible).toHaveAttribute('width', '400');
     vi.spyOn(minimap, 'getBoundingClientRect').mockReturnValue(new DOMRect(0, 0, 540, 380));
     await user.pointer({
@@ -406,12 +408,14 @@ describe('DiagramCanvas', () => {
     expect(
       items.map((item) => item.querySelector('.ui-diagram-canvas__outline-label')?.textContent),
     ).toEqual(['Pump', 'Valve', 'Tank']);
-    const valve = items[1]!;
+    const valve = requireDefined(items[1]);
     expect(within(valve).getByRole('list', { name: 'Leads to' })).toHaveTextContent('Tank');
     expect(within(valve).getByRole('list', { name: 'Comes from' })).toHaveTextContent(
       'Pump (flow)',
     );
-    await userEvent.click(within(items[0]!).getByRole('button', { name: 'Valve (flow)' }));
+    await userEvent.click(
+      within(requireDefined(items[0])).getByRole('button', { name: 'Valve (flow)' }),
+    );
     expect(valve).toHaveFocus();
     expect(screen.queryByRole('button', { name: /Remove connection/ })).not.toBeInTheDocument();
     expectHooksMatchSpec(container, 'DIAGRAM-CANVAS', {

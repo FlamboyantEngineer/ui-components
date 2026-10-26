@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import type { Selection } from '../../core/props.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { Tree, type TreeProps } from './tree.js';
 import { useTreeSelection } from './use-tree-selection.js';
 
@@ -63,13 +64,13 @@ describe('Tree selection', () => {
       }),
     );
     act(() => result.current.props.onSelectionChange?.(new Set(['19999'])));
-    const selected = onSelectionChange.mock.lastCall![0] as Set<string>;
+    const selected = requireDefined(onSelectionChange.mock.lastCall)[0] as Set<string>;
     expect(selected.size).toBe(20000);
     expect(selected.has('0')).toBe(true);
     const clearedRoot = new Set(selected);
     clearedRoot.delete('0');
     act(() => result.current.props.onSelectionChange?.(clearedRoot));
-    expect(onSelectionChange.mock.lastCall![0]).toEqual(new Set());
+    expect(requireDefined(onSelectionChange.mock.lastCall)[0]).toEqual(new Set());
   });
 
   it('UIC-TREE-5.2 marks deeply nested partial selections without changing controlled keys', () => {

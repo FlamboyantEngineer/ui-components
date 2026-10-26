@@ -1,3 +1,4 @@
+import { requireDefined } from '../../utils/require-defined.js';
 import type { JsonNode } from './json-tree.js';
 
 interface ValuePair {
@@ -26,7 +27,7 @@ function appendObjectPairs({ node, value }: ValuePair, pending: ValuePair[]): bo
 export function isJsonValueEqual(node: JsonNode, value: unknown): boolean {
   const pending: ValuePair[] = [{ node, value }];
   while (pending.length > 0) {
-    const pair = pending.pop()!;
+    const pair = requireDefined(pending.pop());
     const { node: current, value: expected } = pair;
     if (current.kind === 'scalar') {
       if (current.value !== expected) return false;
@@ -67,7 +68,7 @@ export function stringifyJsonValue(value: unknown, indent = 0): string {
   };
   append(value);
   while (stack.length > 0) {
-    const frame = stack.at(-1)!;
+    const frame = requireDefined(stack.at(-1));
     const entry = frame.entries[frame.index];
     if (!entry) {
       padding = padding.slice(0, Math.max(0, padding.length - gap.length));

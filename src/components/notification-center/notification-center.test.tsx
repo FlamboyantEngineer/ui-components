@@ -2,6 +2,7 @@ import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { NotificationCenter } from './notification-center.js';
 import type { NotificationItem } from './notification-list.js';
 
@@ -99,7 +100,9 @@ describe('NotificationCenter', () => {
     // Caller attributes stay on the bell's root.
     expect(list).not.toHaveAttribute('data-lab');
     await waitFor(() => expect(dialog.contains(document.activeElement)).toBe(true));
-    await userEvent.click(within(dialog).getAllByRole('button', { name: 'Mark as read' })[0]!);
+    await userEvent.click(
+      requireDefined(within(dialog).getAllByRole('button', { name: 'Mark as read' })[0]),
+    );
     expect(onReadChange).toHaveBeenCalledWith('n1', true);
     expectHooksMatchSpec(document.body, 'NOTIFICATION-CENTER', {
       slots: ['panel', 'trigger'],

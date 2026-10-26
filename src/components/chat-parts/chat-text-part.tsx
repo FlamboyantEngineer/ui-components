@@ -3,6 +3,7 @@
 // (specs/CHAT-PARTS.md, UIC-CHAT-PARTS-2).
 
 import { Fragment, useMemo, type ReactNode } from 'react';
+import { requireDefined } from '../../utils/require-defined.js';
 import { useLatest } from '../../utils/use-latest.js';
 import { createCitationOverride, type ChatSource } from '../chat-sources/chat-sources.js';
 import { createCodeBlockOverride } from '../code-block/code-block.js';
@@ -74,7 +75,7 @@ function PlainText({ part, getReference }: Pick<ChatTextPartViewProps, 'part' | 
     <div {...hooks.slot('text', { format: 'plain' })}>
       {splitTextTokens(part.text, tokens).map((piece, at) =>
         typeof piece === 'number' ? (
-          <TokenPill key={at} token={tokens[piece]!} getReference={getReference} />
+          <TokenPill key={at} token={requireDefined(tokens[piece])} getReference={getReference} />
         ) : (
           <PlainLines key={at} text={piece} />
         ),
@@ -99,7 +100,7 @@ function createTokenOverride({
     if (pieces.every((piece) => typeof piece === 'string')) return renderNode(node, children);
     return pieces.map((piece, at) =>
       typeof piece === 'number' ? (
-        <TokenPill key={at} token={tokens[piece]!} getReference={getReference} />
+        <TokenPill key={at} token={requireDefined(tokens[piece])} getReference={getReference} />
       ) : (
         <Fragment key={at}>
           {renderNode({ type: 'text', text: piece }, null) ?? <TextMatch>{piece}</TextMatch>}

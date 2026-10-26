@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { createEngine, renderViewer } from '../../../test/pdf-fixtures.js';
+import { requireDefined } from '../../utils/require-defined.js';
 
 describe('PdfViewer document', () => {
   it('UIC-PDF-VIEWER-1.5 opens the document with the loader options', async () => {
@@ -78,7 +79,7 @@ describe('PdfViewer document', () => {
     const field = await screen.findByLabelText('Password');
     await userEvent.type(field, 'pear');
     // The engine answers on a later task, so the check is still running right after submitting.
-    act(() => void fireEvent.submit(field.closest('form')!));
+    act(() => void fireEvent.submit(requireDefined(field.closest('form'))));
     expect(screen.getByRole('button', { name: /Open/ })).toHaveAttribute('aria-disabled', 'true');
     await screen.findByText('The password is incorrect. Try again.');
     expect(screen.getByRole('button', { name: 'Open' })).not.toHaveAttribute('aria-disabled');

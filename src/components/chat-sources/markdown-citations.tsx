@@ -2,6 +2,7 @@
 // UIC-MARKDOWN-2.8).
 
 import type { ReactNode } from 'react';
+import { requireDefined } from '../../utils/require-defined.js';
 import type { MarkdownNode } from '../markdown/markdown.js';
 import { TextMatch } from '../text-match/text-match.js';
 import { ChatCitation } from './chat-citation.js';
@@ -45,7 +46,11 @@ export function createCitationOverride(sources: readonly ChatSource[]) {
       typeof piece === 'string'
         ? [<TextMatch key={at}>{piece}</TextMatch>]
         : piece.map((index) => (
-            <ChatCitation key={`${at}-${index}`} source={sources[index - 1]!} index={index} />
+            <ChatCitation
+              key={`${at}-${index}`}
+              source={requireDefined(sources[index - 1])}
+              index={index}
+            />
           )),
     );
   };

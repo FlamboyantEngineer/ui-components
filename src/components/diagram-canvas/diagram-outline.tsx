@@ -1,6 +1,7 @@
 import { useId, useRef } from 'react';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { Button } from '../button/button.js';
 import { diagramHooks as hooks } from './diagram-hooks.js';
@@ -87,7 +88,7 @@ export function DiagramOutline({ controller }: DiagramOutlineProps) {
   return (
     <ul {...hooks.slot('outline')} aria-label={strings.diagramOutlineView}>
       {controller.nodes.map((node) => {
-        const links = controller.links.get(node.id)!;
+        const links = requireDefined(controller.links.get(node.id));
         const shared = { node, controller, onFollow };
         return (
           <li

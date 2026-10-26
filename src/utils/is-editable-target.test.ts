@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { isEditableTarget } from './is-editable-target.js';
+import { requireDefined } from './require-defined.js';
 
 function element(markup: string, selector: string): Element {
   const host = document.createElement('div');
   host.innerHTML = markup;
-  return host.querySelector(selector)!;
+  return requireDefined(host.querySelector(selector));
 }
 
 describe('isEditableTarget', () => {

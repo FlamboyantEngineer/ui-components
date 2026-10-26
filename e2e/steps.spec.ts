@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures.js';
+import { requireDefined } from '../src/utils/require-defined.js';
 
 const cell = (id: string) => `[data-lab-cell="${id}"] .ui-steps`;
 
@@ -33,7 +34,7 @@ test.describe('Steps lab', () => {
     const horizontal = page.locator(cell('variant=default orientation=horizontal'));
     const vertical = page.locator(cell('variant=default orientation=vertical'));
     const box = async (list: typeof horizontal, index: number) =>
-      (await list.locator('.ui-steps__marker').nth(index).boundingBox())!;
+      requireDefined(await list.locator('.ui-steps__marker').nth(index).boundingBox());
     expect((await box(horizontal, 1)).x).toBeGreaterThan((await box(horizontal, 0)).x);
     expect(Math.round((await box(horizontal, 1)).y)).toBe(Math.round((await box(horizontal, 0)).y));
     expect((await box(vertical, 1)).y).toBeGreaterThan((await box(vertical, 0)).y);

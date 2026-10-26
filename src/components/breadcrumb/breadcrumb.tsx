@@ -176,7 +176,7 @@ function renderCrumbs(
   >,
   overflow: CrumbOverflow,
 ): ReactNode[] {
-  const crumbs: ReactNode[] = items.map((item, index) => (
+  const crumbs: ReactElement[] = items.map((item, index) => (
     <Crumb
       key={toKeyIdentity(toCrumbKey(item, index))}
       item={item}

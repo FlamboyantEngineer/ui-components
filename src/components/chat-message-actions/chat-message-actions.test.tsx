@@ -111,7 +111,9 @@ describe('ChatMessageActions', () => {
     expect(toolbar).toHaveAttribute('data-copied', 'true');
     expect(copy.querySelector('[data-glyph]')).toHaveAttribute('data-glyph', 'check');
     expect(screen.getByRole('status')).toHaveTextContent('Copied');
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     expect(toolbar).not.toHaveAttribute('data-copied');
     expect(copy.querySelector('[data-glyph]')).toHaveAttribute('data-glyph', 'copy');
     expect(screen.getByRole('status')).toBeEmptyDOMElement();

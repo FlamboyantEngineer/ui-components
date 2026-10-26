@@ -2,6 +2,7 @@
 
 import type { Key } from '../core/props.js';
 import { diffSequences } from './diff.js';
+import { requireDefined } from './require-defined.js';
 import { walkTree } from './walk-tree.js';
 
 /** A node of a compared hierarchy. Its children are nodes of the same type. */
@@ -140,9 +141,14 @@ function* alignSiblings<T extends CompareTreeNode>(
   for (const { kind, items } of diffSequences(ids(left), ids(right))) {
     for (const id of items) {
       if (kind === 'equal')
-        yield pairRow(comparison.left.get(id)!, comparison.right.get(id)!, comparison);
-      else if (kind === 'delete') yield leftRow(comparison.left.get(id)!, comparison);
-      else yield rightRow(comparison.right.get(id)!, comparison);
+        yield pairRow(
+          requireDefined(comparison.left.get(id)),
+          requireDefined(comparison.right.get(id)),
+          comparison,
+        );
+      else if (kind === 'delete')
+        yield leftRow(requireDefined(comparison.left.get(id)), comparison);
+      else yield rightRow(requireDefined(comparison.right.get(id)), comparison);
     }
   }
 }
@@ -155,7 +161,7 @@ function alignRows<T extends CompareTreeNode>(
   const rows: Array<ComparedTreeRow<T>> = [];
   const stack = [{ rows, entries: alignSiblings(left, right, comparison) }];
   while (stack.length > 0) {
-    const frame = stack.at(-1)!;
+    const frame = requireDefined(stack.at(-1));
     const next = frame.entries.next();
     if (next.done) {
       stack.pop();

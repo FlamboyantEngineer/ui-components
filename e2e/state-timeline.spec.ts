@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures.js';
+import { requireDefined } from '../src/utils/require-defined.js';
 
 const cell = (id: string) => `[data-lab-cell="${id}"] .ui-state-timeline`;
 
@@ -73,7 +74,9 @@ test.describe('State Timeline lab', () => {
       'past',
     ]);
     const box = async (index: number) =>
-      (await descending.locator('.ui-state-timeline__marker').nth(index).boundingBox())!;
+      requireDefined(
+        await descending.locator('.ui-state-timeline__marker').nth(index).boundingBox(),
+      );
     expect((await box(1)).y).toBeGreaterThan((await box(0)).y);
     expect(Math.round((await box(1)).x)).toBe(Math.round((await box(0)).x));
   });

@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { UiProvider } from '../../core/provider.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { MergeView } from './merge-view.js';
 
 const base = ['flour', 'sugar', 'eggs', 'milk', 'salt', 'bake'].join('\n');
@@ -10,9 +11,9 @@ const ours = ['flour', 'brown sugar', 'eggs', 'oat milk', 'salt', 'bake'].join('
 const theirs = ['flour', 'sugar', 'eggs', 'cream', 'butter', 'salt', 'bake hot'].join('\n');
 
 const side = (container: HTMLElement, name: string) =>
-  container.querySelector<HTMLElement>(`.ui-merge-view__side[data-side="${name}"]`)!;
+  requireDefined(container.querySelector<HTMLElement>(`.ui-merge-view__side[data-side="${name}"]`));
 const viewport = (container: HTMLElement, name: string) =>
-  side(container, name).querySelector<HTMLElement>('.ui-scroll-region__viewport')!;
+  requireDefined(side(container, name).querySelector<HTMLElement>('.ui-scroll-region__viewport'));
 const lineTexts = (scope: Element) =>
   [...scope.querySelectorAll('.ui-merge-view__line .ui-merge-view__content')].map(
     (cell) => cell.textContent,
@@ -31,7 +32,7 @@ describe('MergeView', { timeout: 15_000 }, () => {
     const root = screen.getByRole('group', { name: 'Recipe merge' });
     expect(root).toHaveClass('ui-merge-view');
     expect(root).toHaveAttribute('data-show-base', 'true');
-    const sides = container.querySelector('.ui-merge-view__sides')!;
+    const sides = requireDefined(container.querySelector('.ui-merge-view__sides'));
     expect(
       [...sides.querySelectorAll('.ui-merge-view__side')].map((pane) =>
         pane.getAttribute('data-side'),
@@ -54,7 +55,7 @@ describe('MergeView', { timeout: 15_000 }, () => {
       />,
     );
     expect(root).not.toHaveAttribute('data-show-base');
-    expect(side(container, 'base')).toBeNull();
+    expect(container.querySelector('.ui-merge-view__side[data-side="base"]')).toBeNull();
     expect(screen.getByRole('group', { name: 'Mine' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Take Shared' })).toBeInTheDocument();
     expectHooksMatchSpec(container, 'MERGE-VIEW', {
@@ -74,7 +75,7 @@ describe('MergeView', { timeout: 15_000 }, () => {
       'unchanged',
       'theirs',
     ]);
-    expect(chunks[3]!.tagName).toBe('TBODY');
+    expect(requireDefined(chunks[3]).tagName).toBe('TBODY');
     expect(lineTexts(oursPane)).toEqual([
       'flour',
       'brown sugar',
@@ -92,13 +93,13 @@ describe('MergeView', { timeout: 15_000 }, () => {
       'salt',
       'bake hot',
     ]);
-    const conflictRows = [...chunks[3]!.querySelectorAll('tr')];
+    const conflictRows = [...requireDefined(chunks[3]).querySelectorAll('tr')];
     expect(conflictRows.map((row) => row.className)).toEqual([
       'ui-merge-view__line',
       'ui-merge-view__filler',
     ]);
     expect(conflictRows[1]).toHaveAttribute('aria-hidden', 'true');
-    const oatMilk = conflictRows[0]!;
+    const oatMilk = requireDefined(conflictRows[0]);
     expect(oatMilk).toHaveAttribute('data-change', 'conflict');
     expect(oatMilk.querySelector('.ui-merge-view__number')).toHaveTextContent('4');
     expect(oatMilk.querySelector('.ui-merge-view__number span')).toHaveAttribute(
@@ -152,7 +153,9 @@ describe('MergeView', { timeout: 15_000 }, () => {
       'unchanged',
       'theirs',
     ]);
-    expect(blocks[1]!.querySelector('pre.ui-merge-view__text')).toHaveTextContent('brown sugar');
+    expect(requireDefined(blocks[1]).querySelector('pre.ui-merge-view__text')).toHaveTextContent(
+      'brown sugar',
+    );
     expect(blocks[5]).toHaveTextContent('bake hot');
     const conflict = screen.getByRole('group', { name: 'Conflict 1 of 1' });
     expect(conflict).toBe(blocks[3]);
@@ -264,9 +267,9 @@ describe('MergeView', { timeout: 15_000 }, () => {
     const status = screen.getByRole('status');
     expect(status).toHaveClass('ui-merge-view__status');
     expect(status).toHaveTextContent('2 of 2 conflicts unresolved');
-    await user.click(screen.getAllByRole('button', { name: 'Take Ours' })[0]!);
+    await user.click(requireDefined(screen.getAllByRole('button', { name: 'Take Ours' })[0]));
     expect(status).toHaveTextContent('1 of 2 conflicts unresolved');
-    await user.click(screen.getAllByRole('button', { name: 'Take Theirs' })[1]!);
+    await user.click(requireDefined(screen.getAllByRole('button', { name: 'Take Theirs' })[1]));
     expect(status).toHaveTextContent('All 2 conflicts resolved');
     rerender(<MergeView base={base} ours={ours} theirs={base} />);
     expect(status).toHaveTextContent('No conflicts');
@@ -305,7 +308,7 @@ describe('MergeView', { timeout: 15_000 }, () => {
     expect(next).toBeDisabled();
     await user.click(previous);
     expect(screen.getByRole('textbox', { name: 'Result of conflict 1' })).toHaveFocus();
-    await user.click(screen.getAllByRole('button', { name: 'Take Theirs' })[1]!);
+    await user.click(requireDefined(screen.getAllByRole('button', { name: 'Take Theirs' })[1]));
     expect(screen.getByRole('group', { name: 'Conflict 2 of 2' })).toHaveAttribute(
       'data-current',
       'true',
@@ -328,7 +331,7 @@ describe('MergeView', { timeout: 15_000 }, () => {
         aria-describedby="hint"
       />,
     );
-    const root = container.firstElementChild!;
+    const root = requireDefined(container.firstElementChild);
     expect(root).toHaveClass('ui-merge-view', 'recipe');
     expect(root).toHaveAttribute('id', 'merge');
     expect(root).toHaveAttribute('data-testid', 'merge-view');

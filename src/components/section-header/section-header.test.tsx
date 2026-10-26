@@ -2,6 +2,7 @@ import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { Card } from '../card/card.js';
 import {
   HeadingLevelContext,
@@ -27,15 +28,17 @@ describe('SectionHeader', () => {
         actions={<button type="button">Add tree</button>}
       />,
     );
-    const header = container.firstElementChild!;
+    const header = requireDefined(container.firstElementChild);
     expect(header.tagName).toBe('HEADER');
     expect(header).toHaveClass('ui-section-header');
     const [content, actions] = Array.from(header.children);
     expect(content).toHaveClass('ui-section-header__content');
-    expect(content!.querySelector('.ui-section-header__title')).toHaveTextContent('Orchard');
-    expect(content!.querySelector('.ui-section-header__description')).toHaveTextContent(
-      'Apples and pears',
+    expect(requireDefined(content).querySelector('.ui-section-header__title')).toHaveTextContent(
+      'Orchard',
     );
+    expect(
+      requireDefined(content).querySelector('.ui-section-header__description'),
+    ).toHaveTextContent('Apples and pears');
     expect(actions).toHaveClass('ui-section-header__actions');
     expect(actions).toContainElement(screen.getByRole('button', { name: 'Add tree' }));
     expectHooksMatchSpec(container, 'SECTION-HEADER', {
@@ -143,7 +146,7 @@ describe('SectionHeader', () => {
         Trees
       </Section>,
     );
-    const region = container.firstElementChild!;
+    const region = requireDefined(container.firstElementChild);
     expect(region).toHaveAttribute('data-space', 'sm');
     expect(region).toHaveAttribute('data-grow', 'true');
     expect(region).toHaveAttribute('data-fill', 'true');
@@ -240,16 +243,15 @@ describe('SectionHeader', () => {
     expect(card).toHaveAttribute('data-variant', 'panel');
     expect(card).toHaveAttribute('data-density', 'compact');
     expect(card.querySelectorAll('header')).toHaveLength(1);
-    const header = card.querySelector('header')!;
+    const header = requireDefined(card.querySelector('header'));
     expect(Array.from(header.children, (part) => part.className)).toEqual([
       'ui-card__heading',
       'ui-card__actions',
     ]);
     const heading = within(card).getByRole('heading', { level: 4, name: 'Trips' });
-    expect(Array.from(heading.parentElement!.children, (part) => part.className)).toEqual([
-      'ui-card__title',
-      'ui-card__description',
-    ]);
+    expect(
+      Array.from(requireDefined(heading.parentElement).children, (part) => part.className),
+    ).toEqual(['ui-card__title', 'ui-card__description']);
     expect(within(section).getByRole('heading', { level: 4 }).id).not.toBe(heading.id);
     expect(card).toHaveAttribute('aria-labelledby', heading.id);
     await user.click(within(card).getByRole('button', { name: 'Add trip' }));

@@ -1,6 +1,7 @@
 // Folds the consecutive reasoning and tool calls of a message into groups of steps, and reads
 // how a group stands (specs/CHAT-PARTS.md, UIC-CHAT-PARTS-5).
 
+import { requireDefined } from '../../utils/require-defined.js';
 import type { ChatPart, ChatReasoningPart, ChatToolCallPart } from './chat-part.js';
 
 /** A part that can be a step of a group: reasoning or a tool call. */
@@ -45,7 +46,7 @@ export function groupChatParts(parts: readonly ChatPart[]): ChatPartsItem[] {
   let start = 0;
   while (start < parts.length) {
     let end = start;
-    while (end < parts.length && isStepPart(parts[end]!)) end += 1;
+    while (end < parts.length && isStepPart(requireDefined(parts[end]))) end += 1;
     const steps = parts.slice(start, end) as ChatStepPart[];
     const [first] = steps;
     if (first && (steps.length > 1 || end < parts.length)) {

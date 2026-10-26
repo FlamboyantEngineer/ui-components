@@ -5,6 +5,7 @@ import {
   type DocumentBlock,
   type DocumentMark,
 } from './compare-blocks.js';
+import { requireDefined } from './require-defined.js';
 
 const p = (text: string, id?: DocumentBlock['id']): DocumentBlock => ({
   type: 'paragraph',
@@ -36,14 +37,30 @@ describe('compareBlocks', () => {
   it('UIC-REDLINE-COMPARE-1.3 links moves between typed and delimiter-containing ids in both directions', () => {
     const blocks = [p('Number', 1), p('String', '1'), p('Delimited', 'x|id:y'), p('Keep', 'keep')];
     for (const [before, after] of [
-      [blocks, [blocks[1]!, blocks[2]!, blocks[3]!, blocks[0]!]],
-      [[blocks[1]!, blocks[2]!, blocks[3]!, blocks[0]!], blocks],
+      [
+        blocks,
+        [
+          requireDefined(blocks[1]),
+          requireDefined(blocks[2]),
+          requireDefined(blocks[3]),
+          requireDefined(blocks[0]),
+        ],
+      ],
+      [
+        [
+          requireDefined(blocks[1]),
+          requireDefined(blocks[2]),
+          requireDefined(blocks[3]),
+          requireDefined(blocks[0]),
+        ],
+        blocks,
+      ],
     ]) {
-      const { rows, counts } = compareBlocks(before!, after!);
+      const { rows, counts } = compareBlocks(requireDefined(before), requireDefined(after));
       expect(counts).toEqual({ added: 0, removed: 0, changed: 0, moved: 1 });
       expect(new Set(rows.map((row) => row.key)).size).toBe(rows.length);
-      const from = rows.find((row) => row.move === 'from')!;
-      const to = rows.find((row) => row.move === 'to')!;
+      const from = requireDefined(rows.find((row) => row.move === 'from'));
+      const to = requireDefined(rows.find((row) => row.move === 'to'));
       expect(from.oldBlock?.id).toBe(1);
       expect(to.newBlock?.id).toBe(1);
       expect(from.counterpartKey).toBe(to.key);
@@ -63,7 +80,7 @@ describe('compareBlocks', () => {
       repeated.map((_, index) => [index, index + 129]),
     );
     for (const row of moved) {
-      const from = rows.find((candidate) => candidate.key === row.counterpartKey)!;
+      const from = requireDefined(rows.find((candidate) => candidate.key === row.counterpartKey));
       expect(from.counterpartKey).toBe(row.key);
     }
   });
@@ -92,13 +109,13 @@ describe('compareBlocks', () => {
     );
     expect(summarize(rows)).toEqual(['unchanged:0:0', 'changed:1:1', 'unchanged:2:2']);
     expect(rows[1]).toMatchObject({ oldIndex: 1, newIndex: 1, isTypeChanged: false });
-    expect(rows[1]!.words).toEqual([
+    expect(requireDefined(rows[1]).words).toEqual([
       { kind: 'equal', text: 'Keep the oven ' },
       { kind: 'delete', text: 'hot' },
       { kind: 'insert', text: 'warm' },
       { kind: 'equal', text: '.' },
     ]);
-    expect(rows[0]!.words).toBeUndefined();
+    expect(requireDefined(rows[0]).words).toBeUndefined();
     expect(counts).toEqual({ added: 0, removed: 0, changed: 1, moved: 0 });
   });
 
@@ -152,10 +169,14 @@ describe('compareBlocks', () => {
       'unchanged:2:1',
       'moved-to:0:2',
     ]);
-    expect(rows[0]).toMatchObject({ oldIndex: 0, counterpartKey: rows[3]!.key });
+    expect(rows[0]).toMatchObject({ oldIndex: 0, counterpartKey: requireDefined(rows[3]).key });
     expect(rows[0]).not.toHaveProperty('newBlock');
-    expect(rows[3]).toMatchObject({ oldIndex: 0, newIndex: 2, counterpartKey: rows[0]!.key });
-    expect(rows[3]!.words?.map((hunk) => hunk.kind)).toEqual(['equal', 'insert']);
+    expect(rows[3]).toMatchObject({
+      oldIndex: 0,
+      newIndex: 2,
+      counterpartKey: requireDefined(rows[0]).key,
+    });
+    expect(requireDefined(rows[3]).words?.map((hunk) => hunk.kind)).toEqual(['equal', 'insert']);
     expect(counts).toEqual({ added: 0, removed: 0, changed: 0, moved: 1 });
   });
 

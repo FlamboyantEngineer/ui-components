@@ -9,6 +9,7 @@ import type {
   ChatToolRenderer,
 } from '../../src/components/chat-parts/index.js';
 import type { ChatSource } from '../../src/components/chat-sources/index.js';
+import { requireDefined } from '../../src/utils/require-defined.js';
 import { kindSamples, tripAttachments } from './chat-attachment-samples.js';
 import { ForecastCard, recipeArgs, recipeResult } from './chat-tool-call-samples.js';
 import { labRecords } from './reference-samples.js';
@@ -171,7 +172,11 @@ export const partSamples = {
   files: [
     {
       type: 'files',
-      attachments: [tripAttachments[0]!, kindSamples.pdf, { ...kindSamples.text, status: 'error' }],
+      attachments: [
+        requireDefined(tripAttachments[0]),
+        kindSamples.pdf,
+        { ...kindSamples.text, status: 'error' },
+      ],
     },
   ],
   code: [

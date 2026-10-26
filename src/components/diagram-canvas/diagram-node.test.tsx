@@ -3,6 +3,7 @@ import { userEvent, type UserEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { EditableDiagram, pipeEdges, pipeNodes } from '../../../test/diagram-fixtures.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { DiagramCanvas } from './diagram-canvas.js';
 
 afterEach(() => {
@@ -64,7 +65,7 @@ describe('DiagramCanvas nodes', () => {
     expect(node('Pump').style).toMatchObject({ left: '0px', top: '0px' });
     expect(onNodesChange).not.toHaveBeenCalled();
     onSelectionChange.mockClear();
-    const viewport = container.querySelector('.ui-diagram-canvas__viewport')!;
+    const viewport = requireDefined(container.querySelector('.ui-diagram-canvas__viewport'));
     await press(user, viewport, { shiftKey: true });
     await user.pointer({ target: viewport, coords: { clientX: 240, clientY: 110 } });
     expect(container.querySelector('.ui-diagram-canvas__marquee')).not.toBeNull();
@@ -85,7 +86,10 @@ describe('DiagramCanvas nodes', () => {
     expect(node('Pump')).toHaveAttribute('data-selected', 'true');
     await press(user, node('Tank'), { shiftKey: true });
     expect(onSelectionChange).toHaveBeenLastCalledWith(new Set(['pump', 'tank']));
-    await press(user, container.querySelectorAll('.ui-diagram-canvas__edge-hit')[0]!);
+    await press(
+      user,
+      requireDefined(container.querySelectorAll('.ui-diagram-canvas__edge-hit')[0]),
+    );
     expect(onSelectionChange).toHaveBeenLastCalledWith(new Set(['e1']));
     expect(container.querySelector('.ui-diagram-canvas__edge')).toHaveAttribute(
       'data-selected',
@@ -99,7 +103,7 @@ describe('DiagramCanvas nodes', () => {
     expect(onSelectionChange).toHaveBeenLastCalledWith(new Set(['valve']));
     await userEvent.keyboard('{Shift>} {/Shift}');
     expect(onSelectionChange).toHaveBeenLastCalledWith(new Set());
-    const viewport = container.querySelector('.ui-diagram-canvas__viewport')!;
+    const viewport = requireDefined(container.querySelector('.ui-diagram-canvas__viewport'));
     await press(user, node('Pump'));
     await release(user, node('Pump'));
     await press(user, viewport);
@@ -162,10 +166,12 @@ describe('DiagramCanvas nodes', () => {
         onSelectionChange={onSelectionChange}
       />,
     );
-    const viewport = container.querySelector('.ui-diagram-canvas__viewport')!;
+    const viewport = requireDefined(container.querySelector('.ui-diagram-canvas__viewport'));
     await press(user, viewport, { clientX: 100, clientY: 0, shiftKey: true });
     await user.pointer({ target: viewport, coords: { clientX: 240, clientY: 110 } });
-    const marquee = container.querySelector<HTMLElement>('.ui-diagram-canvas__marquee')!;
+    const marquee = requireDefined(
+      container.querySelector<HTMLElement>('.ui-diagram-canvas__marquee'),
+    );
     expect(marquee.style).toMatchObject({
       left: '100px',
       top: '0px',
@@ -192,11 +198,9 @@ describe('DiagramCanvas nodes', () => {
     await release(user, node('Pump'));
     expect(onNodesChange).toHaveBeenCalledTimes(1);
     expect(
-      onNodesChange.mock.calls[0]![0].map(({ id, x, y }: { id: string; x: number; y: number }) => [
-        id,
-        x,
-        y,
-      ]),
+      requireDefined(onNodesChange.mock.calls[0])[0].map(
+        ({ id, x, y }: { id: string; x: number; y: number }) => [id, x, y],
+      ),
     ).toEqual([
       ['pump', 20, 10],
       ['valve', 300, 0],
@@ -235,7 +239,11 @@ describe('DiagramCanvas nodes', () => {
     );
     await drag(user, node('Pump'), { clientX: 23, clientY: 7 });
     await release(user, node('Pump'));
-    expect(onNodesChange.mock.calls[0]![0][0]).toMatchObject({ id: 'pump', x: 11.5, y: 3.5 });
+    expect(requireDefined(onNodesChange.mock.calls[0])[0][0]).toMatchObject({
+      id: 'pump',
+      x: 11.5,
+      y: 3.5,
+    });
   });
 
   it('UIC-DIAGRAM-CANVAS-4.4 moves a focused node by grid steps with the arrow keys', async () => {
@@ -243,12 +251,12 @@ describe('DiagramCanvas nodes', () => {
     render(<EditableDiagram onNodesChange={onNodesChange} gridSize={20} />);
     act(() => node('Valve').focus());
     await userEvent.keyboard('{ArrowRight}');
-    expect(onNodesChange.mock.lastCall![0][1]).toMatchObject({ x: 320, y: 0 });
+    expect(requireDefined(onNodesChange.mock.lastCall)[0][1]).toMatchObject({ x: 320, y: 0 });
     expect(status()).toHaveTextContent('Valve moved');
     await userEvent.keyboard('{Shift>}{ArrowDown}{/Shift}');
-    expect(onNodesChange.mock.lastCall![0][1]).toMatchObject({ x: 320, y: 100 });
+    expect(requireDefined(onNodesChange.mock.lastCall)[0][1]).toMatchObject({ x: 320, y: 100 });
     await userEvent.keyboard('{ArrowLeft}{ArrowUp}');
-    expect(onNodesChange.mock.lastCall![0][1]).toMatchObject({ x: 300, y: 80 });
+    expect(requireDefined(onNodesChange.mock.lastCall)[0][1]).toMatchObject({ x: 300, y: 80 });
     expect(node('Valve')).toHaveFocus();
   });
 
@@ -319,7 +327,7 @@ describe('DiagramCanvas nodes', () => {
     const spoken: Element[] = [];
     for (let move = 0; move < 3; move += 1) {
       await user.keyboard('{ArrowRight}');
-      spoken.push(status()!.firstElementChild!);
+      spoken.push(requireDefined(requireDefined(status()).firstElementChild));
     }
     expect(spoken.map((element) => element.textContent)).toEqual([
       'Valve moved',
@@ -337,9 +345,11 @@ describe('DiagramCanvas nodes', () => {
       y: Math.floor(index / 6) * 100,
       label: `Node ${index}`,
     }));
-    const edges = nodes
-      .slice(1)
-      .map((item, index) => ({ id: `e${index}`, source: nodes[index]!.id, target: item.id }));
+    const edges = nodes.slice(1).map((item, index) => ({
+      id: `e${index}`,
+      source: requireDefined(nodes[index]).id,
+      target: item.id,
+    }));
     const renderNode = vi.fn((item: { label: string }) => item.label);
     render(<EditableDiagram nodes={nodes} edges={edges} renderNode={renderNode} />);
     renderNode.mockClear();
@@ -425,7 +435,7 @@ describe('DiagramCanvas nodes', () => {
     expect(onConnect).not.toHaveBeenCalled();
     act(() => outlet.focus());
     await userEvent.keyboard('{Enter}');
-    const viewport = container.querySelector('.ui-diagram-canvas__viewport')!;
+    const viewport = requireDefined(container.querySelector('.ui-diagram-canvas__viewport'));
     await press(user, viewport);
     await release(user, viewport);
     expect(root).not.toHaveAttribute('data-connecting');

@@ -1,6 +1,7 @@
 import { act, createElement, useRef, type ReactElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
+import { requireDefined } from './require-defined.js';
 import { useScrollStripOverflow, type ScrollStripState } from './use-scroll-strip-overflow.js';
 
 let frames: Map<number, FrameRequestCallback>;
@@ -99,7 +100,7 @@ test('UIC-SCROLL-STRIP-1.1 UIC-SCROLL-STRIP-1.2 coalesces measurements per frame
   const counter = { reads: 0 };
   try {
     await commit(root, createElement(Strip, { orientation: 'horizontal' }));
-    const strip = document.querySelector<HTMLDivElement>('[data-testid="strip"]')!;
+    const strip = requireDefined(document.querySelector<HTMLDivElement>('[data-testid="strip"]'));
     defineGeometry(strip, geometry, counter);
 
     for (let index = 0; index < 50; index += 1) {
@@ -169,10 +170,10 @@ test('UIC-SCROLL-STRIP-1.3 turns wheel input into horizontal scrolling, except i
   const root = createRoot(document.body.appendChild(document.createElement('div')));
   try {
     await commit(root, createElement(Strip));
-    const strip = document.querySelector<HTMLDivElement>('[data-testid="strip"]')!;
+    const strip = requireDefined(document.querySelector<HTMLDivElement>('[data-testid="strip"]'));
     const geometry = { position: 0, visible: 100, total: 300 };
     defineGeometry(strip, geometry, { reads: 0 });
-    const button = strip.querySelector('button')!;
+    const button = requireDefined(strip.querySelector('button'));
 
     const scrolled = wheel(button, { deltaY: 40 });
     expect(scrolled.defaultPrevented).toBe(true);
@@ -192,7 +193,8 @@ test('UIC-SCROLL-STRIP-1.3 turns wheel input into horizontal scrolling, except i
 
     expect(wheel(button, { deltaY: -10, ctrlKey: true }).defaultPrevented).toBe(false);
     expect(
-      wheel(strip.querySelector('[data-testid="item"]')!, { deltaY: -10 }).defaultPrevented,
+      wheel(requireDefined(strip.querySelector('[data-testid="item"]')), { deltaY: -10 })
+        .defaultPrevented,
     ).toBe(false);
     expect(geometry.position).toBe(200);
   } finally {
@@ -210,7 +212,7 @@ test('UIC-SCROLL-STRIP-1.4 reports and scrolls a right-to-left strip from its in
   const root = createRoot(document.body.appendChild(document.createElement('div')));
   try {
     await commit(root, createElement(Strip));
-    const strip = document.querySelector<HTMLDivElement>('[data-testid="strip"]')!;
+    const strip = requireDefined(document.querySelector<HTMLDivElement>('[data-testid="strip"]'));
     strip.style.direction = 'rtl';
     const geometry = { position: 0, visible: 100, total: 300 };
     defineGeometry(strip, geometry, { reads: 0 });
@@ -243,7 +245,7 @@ test('UIC-SCROLL-STRIP-1.3 leaves a vertical strip to native wheel scrolling', a
   const root = createRoot(document.body.appendChild(document.createElement('div')));
   try {
     await commit(root, createElement(Strip));
-    const strip = document.querySelector<HTMLDivElement>('[data-testid="strip"]')!;
+    const strip = requireDefined(document.querySelector<HTMLDivElement>('[data-testid="strip"]'));
     defineGeometry(strip, { position: 0, visible: 100, total: 300 }, { reads: 0 });
     expect(wheel(strip, { deltaY: 40 }).defaultPrevented).toBe(false);
   } finally {
@@ -264,7 +266,7 @@ test('UIC-SCROLL-STRIP-1.2 UIC-SCROLL-STRIP-1.3 follows a strip that mounts afte
   try {
     await commit(root, createElement(Strip, { isShown: false }));
     await commit(root, createElement(Strip, { isShown: true }));
-    const strip = document.querySelector<HTMLDivElement>('[data-testid="strip"]')!;
+    const strip = requireDefined(document.querySelector<HTMLDivElement>('[data-testid="strip"]'));
     const geometry = { position: 0, visible: 100, total: 300 };
     defineGeometry(strip, geometry, { reads: 0 });
     await flush();

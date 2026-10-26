@@ -64,6 +64,22 @@ The Testing Library and jest-dom plugins lint every test. These rules are off on
 
 **T20. Retry combobox typing from an empty input.** On a loaded runner the first keys can land before the list opens. Clear the input, focus it and type inside one `toPass` block, so a retry starts over rather than appending.
 
+## Assertions
+
+Adapted from the agent-rules testing set ([coding-rules/README.md](coding-rules/README.md)).
+
+**T21. Assert what a caller or reader can observe:** rendered roles, names and hooks, and the calls a callback prop receives. Do not assert private function names, call counts or internal call order unless the spec requires them.
+
+**T22. Mock at a module or network boundary,** never the module under test.
+
+**T23. A snapshot is never the only assertion** for logic or markup.
+
+**T24. Build test data with a small factory or a shared fixture** (`test/*-fixtures.tsx`) instead of copying a large fixture between files.
+
+**T25. Cover the failure paths a change introduces or touches:** invalid, empty, disabled, read-only and error states, where they exist.
+
+**T26. Never weaken an assertion or skip a test to make it pass.** Fix the code, or change the spec requirement and its test together.
+
 ## Testing helpers
 
 Hosts test their screens with the helpers in `@flamboyantengineer/ui-components/testing` ([specs/TESTING.md](../specs/TESTING.md)). The library's own tests may use them too; a helper that a host would need belongs there rather than in a test fixture.

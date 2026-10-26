@@ -414,10 +414,16 @@ describe('ListRow', () => {
     expect(link).toHaveAttribute('rel', 'noopener noreferrer');
     expect(screen.getByRole('link', { name: 'Other' })).toHaveAttribute('rel', 'external');
     const click = new MouseEvent('click', { bubbles: true, cancelable: true, ctrlKey: true });
-    act(() => link.dispatchEvent(click));
+    act(() => {
+      link.dispatchEvent(click);
+    });
     expect(click.defaultPrevented).toBe(false);
-    act(() => link.dispatchEvent(new MouseEvent('auxclick', { bubbles: true, button: 1 })));
-    act(() => link.dispatchEvent(new MouseEvent('auxclick', { bubbles: true, button: 2 })));
+    act(() => {
+      link.dispatchEvent(new MouseEvent('auxclick', { bubbles: true, button: 1 }));
+    });
+    act(() => {
+      link.dispatchEvent(new MouseEvent('auxclick', { bubbles: true, button: 2 }));
+    });
     expect(pressed).toEqual(['press', 'middle']);
   });
 

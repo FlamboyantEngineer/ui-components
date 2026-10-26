@@ -2,6 +2,7 @@
 // percent pane (the flexible one) takes what the others leave, and collapsible panes snap shut.
 
 import { clamp } from '../../utils/clamp.js';
+import { requireDefined } from '../../utils/require-defined.js';
 
 /** `percent`: a share of the space pixel panes leave. `pixel`: a fixed size the split keeps. */
 export type SplitViewPaneUnit = 'percent' | 'pixel';
@@ -142,7 +143,7 @@ function fillCollapsed(
 ): number[] {
   const collapsed = bounds[flexible]?.collapsedSize ?? 0;
   next[flexible] = collapsed;
-  const nearest = givers.find((index) => !isShut(bounds[index]!, next[index] ?? 0));
+  const nearest = givers.find((index) => !isShut(requireDefined(bounds[index]), next[index] ?? 0));
   if (nearest === undefined) return next;
   next[nearest] = (next[nearest] ?? 0) + 100 - collapsed - sumOtherShares(bounds, next, flexible);
   return next;
@@ -313,7 +314,7 @@ export function expandSplitPane(
   const total = current + (sizes[neighbour] ?? 0);
   const opened = Math.max(pane.min, Math.min(target, total - giver.min));
   next[index] = Math.min(opened, total);
-  next[neighbour] = total - next[index]!;
+  next[neighbour] = total - requireDefined(next[index]);
   return next;
 }
 

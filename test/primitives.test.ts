@@ -2,8 +2,10 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { ESLint } from 'eslint';
+import tseslint from 'typescript-eslint';
 import { describe, expect, it } from 'vitest';
 import * as primitives from '../src/primitives/index.js';
+import { requireDefined } from '../src/utils/require-defined.js';
 
 const root = process.cwd();
 const primitivesDir = join(root, 'src', 'primitives');
@@ -31,7 +33,7 @@ function names(list: string) {
     .split(',')
     .map((part) => part.trim().replace(/^type\s+/, ''))
     .filter(Boolean)
-    .map((part) => part.split(/\s+as\s+/)[0]!);
+    .map((part) => requireDefined(part.split(/\s+as\s+/)[0]));
 }
 
 function areaExports() {
@@ -49,7 +51,8 @@ function areaExports() {
   return { areas, exported };
 }
 
-const eslint = new ESLint({ cwd: root });
+// Probe files are not on disk, so the type-aware rules, which need the TypeScript program, are off.
+const eslint = new ESLint({ cwd: root, overrideConfig: tseslint.configs.disableTypeChecked });
 // Built from parts so the repository scan below does not match this file.
 const probe = `import { Button } from '${'react-aria'}-components';\nexport const Probe = Button;\n`;
 

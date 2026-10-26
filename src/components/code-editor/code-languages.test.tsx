@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
+import { requireDefined } from '../../utils/require-defined.js';
 import { CodeEditor } from './code-editor.js';
 import { createCodeTokenizer, resolveCodeTokenizer } from './code-languages.js';
 
@@ -17,7 +18,9 @@ describe('CodeEditor languages', () => {
       markdown: '# Fruit\n**Pear** and `plum`',
     } as const;
     for (const [language, source] of Object.entries(samples)) {
-      const tokenize = resolveCodeTokenizer({ language: language as keyof typeof samples })!;
+      const tokenize = requireDefined(
+        resolveCodeTokenizer({ language: language as keyof typeof samples }),
+      );
       const tokens = tokenize(source);
       expect(tokens.map((token) => token.text).join('')).toBe(source);
       expect(tokens.some((token) => token.type)).toBe(true);

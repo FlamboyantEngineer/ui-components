@@ -2,6 +2,7 @@
 // paired lines from `diffWords`, and unchanged runs folded down to their context.
 
 import { diffLines, diffWords, type WordDiffHunk } from '../../utils/diff.js';
+import { requireDefined } from '../../utils/require-defined.js';
 
 /** How a line of a text diff changed. */
 export type TextDiffChange = 'added' | 'removed' | 'unchanged';
@@ -199,7 +200,13 @@ export function createSplitRows(blocks: readonly DiffBlock[], options: FoldOptio
       return Array.from({ length }, (_, index) => {
         const old = block.removed[index] ?? null;
         const next = block.added[index] ?? null;
-        return { kind: 'line', key: (old ?? next)!.key, old, new: next, change: block.change };
+        return {
+          kind: 'line',
+          key: requireDefined(old ?? next).key,
+          old,
+          new: next,
+          change: block.change,
+        };
       });
     }
     const line = (entry: DiffLine): SplitLineRow => ({

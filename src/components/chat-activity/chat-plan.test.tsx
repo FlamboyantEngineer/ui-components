@@ -1,6 +1,7 @@
 import { act, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import type { ChatPlanStep, ChatPlanStepStatus } from './chat-activity.js';
 import { ChatPlan } from './chat-plan.js';
 
@@ -16,7 +17,7 @@ const allStatuses: ChatPlanStep[] = [
 
 /** The plan's steps with the given statuses, in order. */
 function withStatuses(...statuses: ChatPlanStepStatus[]): ChatPlanStep[] {
-  return statuses.map((status, index) => ({ ...allStatuses[index]!, status }));
+  return statuses.map((status, index) => ({ ...requireDefined(allStatuses[index]), status }));
 }
 
 describe('ChatPlan', () => {
@@ -86,11 +87,14 @@ describe('ChatPlan', () => {
       'Reserve the museum Failed',
       'Find a café Skipped',
     ]);
-    const current = items[1]!;
+    const current = requireDefined(items[1]);
     expect(current).toHaveAttribute('aria-current', 'step');
     expect(current.querySelector('.ui-chat-plan__spinner')).toHaveAttribute('aria-hidden', 'true');
     expect(items[0]).not.toHaveAttribute('aria-current');
-    expect(items[0]!.querySelector('.ui-chat-plan__glyph')).toHaveAttribute('aria-hidden', 'true');
+    expect(requireDefined(items[0]).querySelector('.ui-chat-plan__glyph')).toHaveAttribute(
+      'aria-hidden',
+      'true',
+    );
   });
 
   it('UIC-CHAT-ACTIVITY-3.4 announces status changes politely, at most once every two seconds', () => {
@@ -99,17 +103,25 @@ describe('ChatPlan', () => {
       <ChatPlan steps={withStatuses('in-progress', 'pending', 'pending')} />,
     );
     const status = screen.getByRole('status');
-    act(() => vi.advanceTimersByTime(0));
+    act(() => {
+      vi.advanceTimersByTime(0);
+    });
     expect(status).toHaveTextContent('');
     rerender(<ChatPlan steps={withStatuses('done', 'in-progress', 'pending')} />);
     expect(status).toHaveTextContent('Book the hotel: done. Compare trains: in progress');
     rerender(<ChatPlan steps={withStatuses('done', 'done', 'pending')} />);
-    act(() => vi.advanceTimersByTime(1000));
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
     rerender(<ChatPlan steps={withStatuses('done', 'done', 'in-progress')} />);
     expect(status).toHaveTextContent('Book the hotel: done. Compare trains: in progress');
-    act(() => vi.advanceTimersByTime(999));
+    act(() => {
+      vi.advanceTimersByTime(999);
+    });
     expect(status).toHaveTextContent('Book the hotel: done. Compare trains: in progress');
-    act(() => vi.advanceTimersByTime(1));
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
     expect(status).toHaveTextContent('Compare trains: done. Pack the bags: in progress');
   });
 
@@ -118,16 +130,24 @@ describe('ChatPlan', () => {
     const { rerender } = render(<ChatPlan steps={withStatuses('in-progress')} />);
     const status = screen.getByRole('status');
     rerender(<ChatPlan steps={withStatuses('in-progress', 'pending')} />);
-    act(() => vi.advanceTimersByTime(3000));
+    act(() => {
+      vi.advanceTimersByTime(3000);
+    });
     expect(status).toHaveTextContent('');
     rerender(<ChatPlan steps={withStatuses('failed', 'pending')} />);
     expect(status).toHaveTextContent('Book the hotel: failed');
     const first = status.firstElementChild;
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     rerender(<ChatPlan steps={withStatuses('in-progress', 'pending')} />);
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     rerender(<ChatPlan steps={withStatuses('failed', 'pending')} />);
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     expect(status).toHaveTextContent('Book the hotel: failed');
     expect(status.firstElementChild).not.toBe(first);
   });

@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures.js';
+import { requireDefined } from '../src/utils/require-defined.js';
 
 const cell = (id: string) => `[data-lab-cell="${id}"] .ui-record-header`;
 
@@ -17,9 +18,13 @@ test.describe('Record Header lab', () => {
       '2 days ago by Maria Santos · Kitchen tools',
     );
     await expect(complete.getByRole('button', { name: 'Delete' })).toBeVisible();
-    const identity = (await complete.locator('.ui-record-header__identity').boundingBox())!;
-    const title = (await complete.locator('.ui-record-header__title').boundingBox())!;
-    const actions = (await complete.locator('.ui-record-header__actions').boundingBox())!;
+    const identity = requireDefined(
+      await complete.locator('.ui-record-header__identity').boundingBox(),
+    );
+    const title = requireDefined(await complete.locator('.ui-record-header__title').boundingBox());
+    const actions = requireDefined(
+      await complete.locator('.ui-record-header__actions').boundingBox(),
+    );
     expect(identity.y).toBeLessThan(title.y);
     expect(actions.x).toBeGreaterThan(title.x);
   });

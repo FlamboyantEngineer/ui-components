@@ -1,6 +1,7 @@
 // The timeline's rows: groups with children, flattened to the rows on screen (specs/TIMELINE.md).
 
 import type { Key } from '../../core/props.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { walkTree } from '../../utils/walk-tree.js';
 
 /** A row of the timeline; a row with children is a group that collapses. */
@@ -32,7 +33,7 @@ export function flattenTimelineRows(
   const result: VisibleRow[] = [];
   const stack = [{ rows, index: 0 }];
   while (stack.length > 0) {
-    const frame = stack.at(-1)!;
+    const frame = requireDefined(stack.at(-1));
     const row = frame.rows[frame.index++];
     if (!row) {
       stack.pop();
@@ -41,7 +42,7 @@ export function flattenTimelineRows(
     const hasChildren = (row.children?.length ?? 0) > 0;
     const isExpanded = hasChildren && (expandedKeys?.has(row.id) ?? true);
     result.push({ row, level: stack.length, hasChildren, isExpanded });
-    if (isExpanded) stack.push({ rows: row.children!, index: 0 });
+    if (isExpanded) stack.push({ rows: requireDefined(row.children), index: 0 });
   }
   return result;
 }

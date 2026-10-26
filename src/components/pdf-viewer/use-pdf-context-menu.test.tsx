@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { pointsToPixels, renderReady } from '../../../test/pdf-fixtures.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { findBoxAtPoint, type PdfPagePoint } from './page-geometry.js';
 
 /** The client rectangle every selected range reports in these tests. */
@@ -12,7 +13,7 @@ function selectText(node: Node, start: number, end: number) {
   const range = document.createRange();
   range.setStart(node, start);
   range.setEnd(node, end);
-  const selection = document.getSelection()!;
+  const selection = requireDefined(document.getSelection());
   selection.removeAllRanges();
   selection.addRange(range);
 }
@@ -47,7 +48,7 @@ describe('PdfViewer context menu', () => {
 
   it('UIC-PDF-VIEWER-8.1 never opens the browser menu over the pages and opens none without entries', async () => {
     const { container } = await renderReady();
-    const canvas = container.querySelector('canvas')!;
+    const canvas = requireDefined(container.querySelector('canvas'));
     expect(fireEvent.contextMenu(canvas, { clientX: 10, clientY: 10 })).toBe(false);
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
@@ -74,7 +75,7 @@ describe('PdfViewer context menu', () => {
     ]);
     const { container } = await renderReady({ defaultZoom: 100, getSelectionMenuItems });
     const run = runOf(container, 'The apple harvest began');
-    selectText(run.firstChild!, 4, 17);
+    selectText(requireDefined(run.firstChild), 4, 17);
     fireEvent.contextMenu(run, { clientX: 50, clientY: 90 });
     expect(menuItems()).toEqual(['Copy', 'Mark selection']);
     expect(getSelectionMenuItems).toHaveBeenCalledWith({
@@ -94,7 +95,7 @@ describe('PdfViewer context menu', () => {
     expect(await navigator.clipboard.readText()).toBe('apple harvest');
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
 
-    selectText(run.firstChild!, 4, 17);
+    selectText(requireDefined(run.firstChild), 4, 17);
     fireEvent.contextMenu(run, { clientX: 50, clientY: 90 });
     await user.click(screen.getByRole('menuitem', { name: 'Mark selection' }));
     expect(onMark).toHaveBeenCalledTimes(1);
@@ -107,7 +108,7 @@ describe('PdfViewer context menu', () => {
     const outside = document.createElement('p');
     outside.textContent = 'Plums ripen late.';
     document.body.append(outside);
-    selectText(outside.firstChild!, 0, 5);
+    selectText(requireDefined(outside.firstChild), 0, 5);
     const run = runOf(container, 'Markets');
     fireEvent.contextMenu(run);
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
@@ -117,8 +118,8 @@ describe('PdfViewer context menu', () => {
     // Text inside the scroller but on no page can still be copied.
     const stray = document.createElement('span');
     stray.textContent = 'Loose text';
-    container.querySelector('.ui-pdf-viewer__scroller')!.append(stray);
-    selectText(stray.firstChild!, 0, 5);
+    requireDefined(container.querySelector('.ui-pdf-viewer__scroller')).append(stray);
+    selectText(requireDefined(stray.firstChild), 0, 5);
     fireEvent.contextMenu(stray);
     expect(menuItems()).toEqual(['Copy']);
     expect(getSelectionMenuItems).not.toHaveBeenCalled();
@@ -130,7 +131,7 @@ describe('PdfViewer context menu', () => {
       findBoxAtPoint(marks, point) ? [{ id: 'remove', label: 'Remove mark' }] : [],
     );
     const { container } = await renderReady({ defaultZoom: 100, getPageMenuItems });
-    const secondPage = container.querySelectorAll('.ui-pdf-viewer__page')[1]!;
+    const secondPage = requireDefined(container.querySelectorAll('.ui-pdf-viewer__page')[1]);
     fireEvent.contextMenu(secondPage, { clientX: 40, clientY: 80 });
     expect(getPageMenuItems).toHaveBeenLastCalledWith({
       pageIndex: 1,
@@ -142,7 +143,7 @@ describe('PdfViewer context menu', () => {
 
     fireEvent.contextMenu(secondPage, { clientX: 400, clientY: 400 });
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
-    fireEvent.contextMenu(container.querySelector('.ui-pdf-viewer__pages')!);
+    fireEvent.contextMenu(requireDefined(container.querySelector('.ui-pdf-viewer__pages')));
     expect(getPageMenuItems).toHaveBeenCalledTimes(2);
   });
 });

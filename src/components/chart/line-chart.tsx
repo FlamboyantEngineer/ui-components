@@ -4,6 +4,7 @@ import type { AriaLabellingProps } from '../../core/events.js';
 import { mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { Chart, type ChartSeries, type ChartViewProps } from './chart.js';
 import { ChartAxis } from './chart-axis.js';
 import { chartHooks, lineChartHooks } from './chart-hooks.js';
@@ -71,6 +72,11 @@ interface LinePlotProps {
   format: Intl.NumberFormat;
 }
 
+/** The hook data that ties a line, area or point to its series. */
+function toSeriesData(series: readonly LineChartSeries[], index: number) {
+  return { series: index, tone: requireDefined(series[index]).tone };
+}
+
 /** The axes, areas, lines and points, each point a focusable value with a tooltip. */
 function LinePlot({ geometry, width, height, series, variant, format }: LinePlotProps) {
   const strings = useUiStrings();
@@ -78,7 +84,7 @@ function LinePlot({ geometry, width, height, series, variant, format }: LinePlot
   const all = lines.flatMap((line) => line.points);
   const points = useChartPoints(all);
   const active = all.find((point) => point.key === points.activeKey);
-  const seriesData = (index: number) => ({ series: index, tone: series[index]!.tone });
+  const activeSeries = active ? requireDefined(series[active.series]) : undefined;
   return (
     <>
       <svg
@@ -105,7 +111,7 @@ function LinePlot({ geometry, width, height, series, variant, format }: LinePlot
           ? lines.map((line) => (
               <path
                 key={`area:${line.series}`}
-                {...lineChartHooks.slot('area', seriesData(line.series))}
+                {...lineChartHooks.slot('area', toSeriesData(series, line.series))}
                 d={line.area}
               />
             ))
@@ -113,7 +119,7 @@ function LinePlot({ geometry, width, height, series, variant, format }: LinePlot
         {lines.map((line) => (
           <path
             key={`line:${line.series}`}
-            {...lineChartHooks.slot('line', seriesData(line.series))}
+            {...lineChartHooks.slot('line', toSeriesData(series, line.series))}
             d={line.line}
             fill="none"
           />
@@ -122,13 +128,13 @@ function LinePlot({ geometry, width, height, series, variant, format }: LinePlot
           <circle
             key={point.key}
             {...lineChartHooks.slot('point', {
-              ...seriesData(point.series),
+              ...toSeriesData(series, point.series),
               active: point.key === points.activeKey,
             })}
             {...points.getPointProps(point)}
             role="img"
             aria-label={strings.chartValue(
-              series[point.series]!.label,
+              requireDefined(series[point.series]).label,
               xAxis.format(point.at),
               format.format(point.value),
             )}
@@ -142,9 +148,9 @@ function LinePlot({ geometry, width, height, series, variant, format }: LinePlot
         activeKey={points.activeKey}
         anchor={points.anchor}
         title={active ? xAxis.format(active.at) : ''}
-        label={active ? series[active.series]!.label : ''}
+        label={activeSeries?.label ?? ''}
         series={active?.series ?? 0}
-        tone={active ? series[active.series]!.tone : undefined}
+        tone={activeSeries?.tone}
         value={active ? format.format(active.value) : ''}
       />
     </>

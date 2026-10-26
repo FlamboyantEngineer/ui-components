@@ -4,6 +4,7 @@ import type { AriaLabellingProps } from '../../core/events.js';
 import { mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { Chart, type ChartSeries, type ChartViewProps } from './chart.js';
 import { chartHooks, donutChartHooks } from './chart-hooks.js';
 import { ChartLegend, useHiddenKeys, type ChartHiddenKeysProps } from './chart-legend.js';
@@ -68,7 +69,7 @@ function DonutPlot({
         viewBox={`0 0 ${diameter} ${diameter}`}
       >
         {slices.map((slice) => {
-          const segment = segments[slice.series]!;
+          const segment = requireDefined(segments[slice.series]);
           return (
             <path
               key={slice.key}
@@ -102,9 +103,9 @@ function DonutPlot({
       <ChartTooltip
         activeKey={points.activeKey}
         anchor={points.anchor}
-        label={active ? segments[active.series]!.label : ''}
+        label={active ? requireDefined(segments[active.series]).label : ''}
         series={active?.series ?? 0}
-        tone={active ? segments[active.series]!.tone : undefined}
+        tone={active ? requireDefined(segments[active.series]).tone : undefined}
         value={
           active
             ? `${formats.value.format(active.value)} (${formats.share.format(active.share)})`
@@ -154,7 +155,7 @@ export function DonutChart({
   const generated = largest
     ? strings.donutSummary(
         formats.value.format(geometry.total),
-        segments[largest.series]!.label,
+        requireDefined(segments[largest.series]).label,
         formats.share.format(largest.share),
       )
     : strings.noData;

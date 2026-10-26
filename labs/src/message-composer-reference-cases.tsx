@@ -13,6 +13,7 @@ import {
   RichMessageComposer,
   type MessageComposerMessage,
 } from '../../src/components/message-composer/rich/index.js';
+import { requireDefined } from '../../src/utils/require-defined.js';
 import { LabSection } from './chrome/index.js';
 import { SentMessage } from './message-composer-rich-cases.js';
 import { getLabReference, labRecords, referenceMenuItems } from './reference-samples.js';
@@ -24,7 +25,7 @@ const draftText = 'Please review TRIP-4 and NOTE-12 first';
 /** A draft with two references among the words, as the host might store or restore it. */
 const referenceDraft: MessageComposerMessage = {
   text: draftText,
-  tokens: [trip!, note!].map((record) => {
+  tokens: [requireDefined(trip), requireDefined(note)].map((record) => {
     const start = draftText.indexOf(record.label);
     return {
       start,

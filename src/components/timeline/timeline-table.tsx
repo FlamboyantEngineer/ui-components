@@ -2,6 +2,7 @@ import { useDateFormatter, useNumberFormatter } from '../../primitives/index.js'
 import type { Key, Selection, SelectionMode } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { clamp } from '../../utils/clamp.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { Table, type TableProps } from '../table/table.js';
 import { readTimelineItem, type TimelineItem } from './timeline-geometry.js';
 import { timelineHooks as hooks } from './timeline-hooks.js';
@@ -36,7 +37,12 @@ function toEntries(rows: readonly TimelineRow[], items: readonly TimelineItem[])
       const index = rowIndex.get(item.rowId);
       if (!read || index === undefined) return [];
       const progress = read.kind === 'bar' ? item.progress : undefined;
-      const entry = { id: item.id, name: item.label, row: rowOrder[index]!.row.label, progress };
+      const entry = {
+        id: item.id,
+        name: item.label,
+        row: requireDefined(rowOrder[index]).row.label,
+        progress,
+      };
       return [
         { index, entry: { ...entry, start: read.start, end: read.kind === 'bar' ? read.end : '' } },
       ];

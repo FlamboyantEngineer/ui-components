@@ -2,6 +2,7 @@ import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { Chart } from './chart.js';
 import { ChartAxis } from './chart-axis.js';
 import { ChartLegend } from './chart-legend.js';
@@ -183,7 +184,7 @@ describe('ChartLegend', () => {
       'success',
     );
     expect(items[0]).toHaveAccessibleName('Apples');
-    await user.click(items[0]!);
+    await user.click(requireDefined(items[0]));
     expect(onHiddenKeysChange).toHaveBeenLastCalledWith(new Set(['apples', 'plums']));
     expect(items[0]).toHaveAttribute('aria-pressed', 'false');
     expectHooksMatchSpec(document.body, 'CHART', {
@@ -266,31 +267,31 @@ describe('ChartAxis', () => {
         <ChartAxis position="bottom" ticks={ticks} offset={100} range={[10, 110]} gridLength={80} />
       </svg>,
     );
-    const axis = container.querySelector('.ui-chart-axis')!;
+    const axis = requireDefined(container.querySelector('.ui-chart-axis'));
     expect(axis).toHaveAttribute('data-position', 'bottom');
     expect(axis).toHaveAttribute('aria-hidden', 'true');
-    const line = axis.querySelector('.ui-chart-axis__line')!;
+    const line = requireDefined(axis.querySelector('.ui-chart-axis__line'));
     expect(['x1', 'y1', 'x2', 'y2'].map((name) => line.getAttribute(name))).toEqual([
       '10',
       '100',
       '110',
       '100',
     ]);
-    const tick = axis.querySelectorAll('.ui-chart-axis__tick')[1]!;
+    const tick = requireDefined(axis.querySelectorAll('.ui-chart-axis__tick')[1]);
     expect(['x1', 'y1', 'x2', 'y2'].map((name) => tick.getAttribute(name))).toEqual([
       '110',
       '100',
       '110',
       '104',
     ]);
-    const label = axis.querySelectorAll('.ui-chart-axis__label')[1]!;
+    const label = requireDefined(axis.querySelectorAll('.ui-chart-axis__label')[1]);
     expect([
       label.getAttribute('x'),
       label.getAttribute('y'),
       label.getAttribute('text-anchor'),
     ]).toEqual(['110', '108', 'middle']);
     expect(label).toHaveTextContent('5');
-    const grid = axis.querySelectorAll('.ui-chart-axis__grid')[0]!;
+    const grid = requireDefined(axis.querySelectorAll('.ui-chart-axis__grid')[0]);
     expect(['x1', 'y1', 'x2', 'y2'].map((name) => grid.getAttribute(name))).toEqual([
       '10',
       '100',
@@ -315,17 +316,17 @@ describe('ChartAxis', () => {
         />
       </svg>,
     );
-    const axis = container.querySelector('.ui-chart-axis')!;
+    const axis = requireDefined(container.querySelector('.ui-chart-axis'));
     expect(axis).toHaveClass('caller');
     expect(axis).toHaveAttribute('data-testid', 'axis');
     expect(axis.querySelector('.ui-chart-axis__grid')).toBeNull();
-    const label = axis.querySelectorAll('.ui-chart-axis__label')[0]!;
+    const label = requireDefined(axis.querySelectorAll('.ui-chart-axis__label')[0]);
     expect([
       label.getAttribute('x'),
       label.getAttribute('y'),
       label.getAttribute('text-anchor'),
     ]).toEqual(['32', '10', 'end']);
-    const tick = axis.querySelectorAll('.ui-chart-axis__tick')[0]!;
+    const tick = requireDefined(axis.querySelectorAll('.ui-chart-axis__tick')[0]);
     expect([tick.getAttribute('x1'), tick.getAttribute('x2')]).toEqual(['40', '36']);
   });
 });

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { requireDefined } from '../../utils/require-defined.js';
 import {
   countChanges,
   createDiffBlocks,
@@ -60,19 +61,19 @@ describe('text diff rows', () => {
       'Bake for twelve minutes\nPlate the dish\nGarnish',
     );
     if (block?.kind !== 'change') throw new Error('expected a change');
-    expect(block.removed[0]!.words).toEqual([
+    expect(requireDefined(block.removed[0]).words).toEqual([
       { text: 'Bake for ', isChanged: false },
       { text: 'ten', isChanged: true },
       { text: ' minutes', isChanged: false },
     ]);
-    expect(block.added[0]!.words).toEqual([
+    expect(requireDefined(block.added[0]).words).toEqual([
       { text: 'Bake for ', isChanged: false },
       { text: 'twelve', isChanged: true },
       { text: ' minutes', isChanged: false },
     ]);
-    expect(block.removed[1]!.words).toBeNull();
-    expect(block.added[1]!.words).toBeNull();
-    expect(block.added[2]!.words).toBeNull();
+    expect(requireDefined(block.removed[1]).words).toBeNull();
+    expect(requireDefined(block.added[1]).words).toBeNull();
+    expect(requireDefined(block.added[2]).words).toBeNull();
   });
 
   it('UIC-TEXT-DIFF-1.3 lists a change as its removed lines, then its added lines', () => {

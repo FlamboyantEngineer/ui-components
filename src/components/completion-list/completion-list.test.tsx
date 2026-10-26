@@ -4,6 +4,7 @@ import { useRef, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import type { Key } from '../../core/props.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import {
   CompletionList,
   getCompletionOptionId,
@@ -56,7 +57,9 @@ describe('CompletionList', () => {
     );
     expect(document.getElementById(getCompletionOptionId('people', '1'))).toBe(textual);
     expect(textual).toHaveAttribute('aria-selected', 'true');
-    rerender(<Harness items={[items[1]!, items[0]!]} activeKey={1} />);
+    rerender(
+      <Harness items={[requireDefined(items[1]), requireDefined(items[0])]} activeKey={1} />,
+    );
     expect(screen.getAllByRole('option')).toEqual([textual, numeric]);
     expect(numeric).toHaveAttribute('aria-selected', 'true');
   });

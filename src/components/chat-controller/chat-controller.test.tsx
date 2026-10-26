@@ -7,6 +7,7 @@ import {
   settle,
   textMessage,
 } from '../../../test/chat-controller-fixtures.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { ChatMessage, ChatTranscript } from '../chat-transcript/chat-transcript.js';
 import { ChatToolCall } from '../chat-tool-call/chat-tool-call.js';
 import { useChatController, type ChatSendFunction } from './chat-controller.js';
@@ -110,7 +111,8 @@ describe('useChatController runs', () => {
     expect(result.current.messages[1]).toMatchObject({ status: 'error', error: 'Network down.' });
 
     const silent: ChatSendFunction = () => {
-      throw 'nope';
+      const thrown: unknown = 'nope';
+      throw thrown;
     };
     const view = renderController({ send: silent });
     act(() => view.result.current.send('Plan dinner'));
@@ -164,7 +166,12 @@ describe('useChatController runs', () => {
     act(() => result.current.send('Second'));
     act(() => result.current.send('Third'));
     const [second, third] = result.current.queue;
-    act(() => result.current.props.onQueueChange([{ ...third!, text: 'Third, edited' }, second!]));
+    act(() =>
+      result.current.props.onQueueChange([
+        { ...requireDefined(third), text: 'Third, edited' },
+        requireDefined(second),
+      ]),
+    );
     expect(result.current.queue.map((entry) => entry.text)).toEqual(['Third, edited', 'Second']);
     act(() => result.current.stop());
     await settle();

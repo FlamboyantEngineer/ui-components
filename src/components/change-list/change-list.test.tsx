@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { UiProvider } from '../../core/provider.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { ChangeList, type ChangeListChange } from './change-list.js';
 import { compareLists, resolveChangeKind } from './list-changes.js';
 
@@ -110,14 +111,12 @@ describe('ChangeList', () => {
     const { container, rerender } = render(<ChangeList changes={changes} />);
     const diff = value(rows(container)[1]).querySelector('.ui-change-list__text');
     expect(diff).toHaveClass('ui-inline-text-diff');
-    expect([...diff!.querySelectorAll('del')].map((node) => node.textContent)).toEqual([
-      'bread',
-      'an hour',
-    ]);
-    expect([...diff!.querySelectorAll('ins')].map((node) => node.textContent)).toEqual([
-      'loaf',
-      'forty minutes',
-    ]);
+    expect(
+      [...requireDefined(diff).querySelectorAll('del')].map((node) => node.textContent),
+    ).toEqual(['bread', 'an hour']);
+    expect(
+      [...requireDefined(diff).querySelectorAll('ins')].map((node) => node.textContent),
+    ).toEqual(['loaf', 'forty minutes']);
     rerender(<ChangeList changes={changes} variant="detailed" />);
     const [before, after] = value(rows(container)[1]).querySelectorAll('.ui-change-list__text');
     expect(before).toHaveTextContent('Bake the bread for an hour.');
@@ -174,7 +173,7 @@ describe('ChangeList', () => {
     rerender(<ChangeList changes={changes} variant="detailed" />);
     const sides = value(rows(container)[2]).querySelectorAll('.ui-change-list__side');
     const read = (side: Element | undefined) =>
-      [...side!.querySelectorAll('.ui-change-list__item')].map((item) =>
+      [...requireDefined(side).querySelectorAll('.ui-change-list__item')].map((item) =>
         [item.getAttribute('data-change'), item.textContent].join(' '),
       );
     expect(read(sides[0])).toEqual(['unchanged citrus', 'unchanged sweet', 'removed winter']);
@@ -209,9 +208,13 @@ describe('ChangeList', () => {
     const { container } = render(
       <ChangeList
         changes={[
-          { ...changes[0]!, person: { name: 'Jon Berg' }, time: '2026-04-20T10:00:00' },
-          { ...changes[3]!, time: '2026-04-19' },
-          changes[4]!,
+          {
+            ...requireDefined(changes[0]),
+            person: { name: 'Jon Berg' },
+            time: '2026-04-20T10:00:00',
+          },
+          { ...requireDefined(changes[3]), time: '2026-04-19' },
+          requireDefined(changes[4]),
         ]}
         getNow={getNow}
         showAvatar

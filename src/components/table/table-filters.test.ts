@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { requireDefined } from '../../utils/require-defined.js';
 import {
   filterTableRows,
   isEmptyFilterValue,
@@ -78,10 +79,10 @@ describe('table filter helpers', () => {
   });
 
   it('UIC-TABLE-2.8 lists a set filter its options, else the sorted distinct values', () => {
-    expect(listFilterOptions(fruit, columns[1]!)).toEqual(['Red', 'Yellow']);
+    expect(listFilterOptions(fruit, requireDefined(columns[1]))).toEqual(['Red', 'Yellow']);
     expect(
       listFilterOptions(fruit, { id: 'colour', filter: { type: 'set', options: ['Green'] } }),
     ).toEqual(['Green']);
-    expect(listFilterOptions(fruit, columns[2]!)).toEqual(['30', '100', '120']);
+    expect(listFilterOptions(fruit, requireDefined(columns[2]))).toEqual(['30', '100', '120']);
   });
 });

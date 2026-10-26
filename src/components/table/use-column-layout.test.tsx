@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { createMemoryStorage, type UiStorage } from '../../core/storage.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { Table, type TableProps } from './table.js';
 import type { TableColumn } from './table-rows.js';
 
@@ -50,11 +51,13 @@ describe('Table column layout', { timeout: 15_000 }, () => {
     const items = within(menu).getAllByRole('menuitemcheckbox');
     expect(items.map((item) => item.textContent)).toEqual(['Country', 'People']);
     expect(items[0]).toBeChecked();
-    await user.click(items[0]!);
+    await user.click(requireDefined(items[0]));
     expect(headers()).toEqual(['Name', 'People']);
     expect(onColumnLayoutChange).toHaveBeenLastCalledWith({ hidden: ['country'] });
     expect(screen.getByRole('menu')).toBeInTheDocument();
-    await user.click(within(await screen.findByRole('menu')).getAllByRole('menuitemcheckbox')[0]!);
+    await user.click(
+      requireDefined(within(await screen.findByRole('menu')).getAllByRole('menuitemcheckbox')[0]),
+    );
     expect(headers()).toEqual(['Name', 'Country', 'People']);
   });
 
@@ -80,9 +83,9 @@ describe('Table column layout', { timeout: 15_000 }, () => {
     );
     expect(headers()).toEqual(['Country', 'Name', 'People']);
     renderCities({ defaultColumnLayout: { hidden: ['people', 'name'] } });
-    expect(screen.getAllByRole('grid')[1]!.querySelectorAll('[role="columnheader"]')).toHaveLength(
-      1,
-    );
+    expect(
+      requireDefined(screen.getAllByRole('grid')[1]).querySelectorAll('[role="columnheader"]'),
+    ).toHaveLength(1);
   });
 
   it('UIC-TABLE-8.3 persists the layout under its key and restores it on mount', async () => {

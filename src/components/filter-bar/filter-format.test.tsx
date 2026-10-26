@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { UiProvider } from '../../core/provider.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { joinFilterConditionText, useFilterConditionText } from './filter-format.js';
 import type { FilterCondition, FilterField } from './filter-model.js';
 
@@ -22,7 +23,11 @@ const fields: Record<string, FilterField> = {
 
 function Text({ condition }: { condition: FilterCondition }) {
   const read = useFilterConditionText();
-  return <output>{joinFilterConditionText(read(condition, fields[condition.field]!))}</output>;
+  return (
+    <output>
+      {joinFilterConditionText(read(condition, requireDefined(fields[condition.field])))}
+    </output>
+  );
 }
 
 const cases: Array<[FilterCondition, string]> = [

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { requireDefined } from '../../utils/require-defined.js';
 import {
   findBoxAtPoint,
   findPageIndex,
@@ -23,7 +24,7 @@ function createPages() {
     '<div><span role="presentation">Pear trees</span></div>';
   document.body.append(column);
   const [first, second] = [...column.children] as HTMLElement[];
-  return { column, first: first!, second: second! };
+  return { column, first: requireDefined(first), second: requireDefined(second) };
 }
 
 function selectAcross(start: Node, end: Node, rects: DOMRect[], bounds: DOMRect): Range {
@@ -68,7 +69,7 @@ describe('page geometry', () => {
       [0, first],
       [1, second],
     ]);
-    expect(findPageIndex(second.querySelector('span')!.firstChild, pages)).toBe(1);
+    expect(findPageIndex(requireDefined(second.querySelector('span')).firstChild, pages)).toBe(1);
     expect(findPageIndex(first, pages)).toBe(0);
     expect(findPageIndex(column, pages)).toBe(-1);
     expect(findPageIndex(null, pages)).toBe(-1);
@@ -85,8 +86,8 @@ describe('page geometry', () => {
       [0, first],
       [1, second],
     ]);
-    const start = first.querySelector('span')!.firstChild!;
-    const end = second.querySelector('span')!.firstChild!;
+    const start = requireDefined(requireDefined(first.querySelector('span')).firstChild);
+    const end = requireDefined(requireDefined(second.querySelector('span')).firstChild);
     const bounds = rect(10, 50, 200, 900);
     const range = selectAcross(start, end, [rect(40, 50, 100, 12), bounds], bounds);
     expect(locateRange(range, pages, 2)).toEqual({

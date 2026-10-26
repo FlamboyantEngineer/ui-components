@@ -1,6 +1,7 @@
 // Mention and command tokens in a text part: listed, split out of plain text, and carried through
 // Markdown as markers that text nodes turn back into pills (specs/CHAT-PARTS.md, UIC-CHAT-PARTS-2.4).
 
+import { requireDefined } from '../../utils/require-defined.js';
 import { walkTree } from '../../utils/walk-tree.js';
 import { parseMarkdown, type MarkdownNode } from '../markdown/markdown.js';
 import type { ChatTextToken } from './chat-part.js';
@@ -76,7 +77,7 @@ function writeTokenMarkers(
   return splitTextTokens(text, tokens)
     .map((piece) => {
       if (typeof piece === 'string') return piece;
-      const { start, end } = tokens[piece]!;
+      const { start, end } = requireDefined(tokens[piece]);
       return literal.has(piece) ? text.slice(start, end) : `${markerStart}${piece}${markerEnd}`;
     })
     .join('');

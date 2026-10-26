@@ -1,3 +1,4 @@
+import { requireDefined } from '../../utils/require-defined.js';
 /** How an edge runs between its ends: a straight line, horizontal and vertical runs, or a curve. */
 export type DiagramEdgeRouting = 'straight' | 'orthogonal' | 'bezier';
 
@@ -259,7 +260,8 @@ function findOrthogonalCorners(from: Anchor, to: Anchor): DiagramPoint[] {
 /** Drops repeated points and points in the middle of a straight run. */
 function simplifyPolyline(points: readonly DiagramPoint[]): DiagramPoint[] {
   const distinct = points.filter(
-    (point, index) => index === 0 || length(subtract(point, points[index - 1]!)) > 1e-6,
+    (point, index) =>
+      index === 0 || length(subtract(point, requireDefined(points[index - 1]))) > 1e-6,
   );
   return distinct.filter((point, index) => {
     const before = distinct[index - 1];
@@ -275,7 +277,9 @@ function simplifyPolyline(points: readonly DiagramPoint[]): DiagramPoint[] {
 
 /** The point halfway along a polyline. */
 function findPolylineMiddle(points: readonly DiagramPoint[]): DiagramPoint {
-  const segments = points.slice(1).map((point, index) => [points[index]!, point] as const);
+  const segments = points
+    .slice(1)
+    .map((point, index) => [requireDefined(points[index]), point] as const);
   let remaining = segments.reduce((total, [a, b]) => total + length(subtract(b, a)), 0) / 2;
   for (const [a, b] of segments) {
     const size = length(subtract(b, a));
@@ -287,8 +291,8 @@ function findPolylineMiddle(points: readonly DiagramPoint[]): DiagramPoint {
 
 function routePolyline(points: readonly DiagramPoint[]): DiagramRoute {
   const simple = simplifyPolyline(points);
-  const last = simple.at(-1)!;
-  const before = simple.at(-2) ?? simple[0]!;
+  const last = requireDefined(simple.at(-1));
+  const before = simple.at(-2) ?? requireDefined(simple[0]);
   return {
     path: simple
       .map((point, index) => `${index === 0 ? 'M' : 'L'} ${formatPoint(point)}`)

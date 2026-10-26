@@ -27,11 +27,12 @@ npm run test:changed   # unit tests related to your changes since origin/dev
 - Changes to exports, public types, entry points or package contents also run `npm run build && npm run check:public-types && npm run check:package`.
 - Do not run `npm test`, `npm run check` or `npm run test:labs` routinely. CI runs the full suites on every pull request. Run them locally only for a release pull request (`dev` to `main`), when a change reaches across most of the library and the targeted runs cannot show it is safe, or when asked.
 
-Run `npm run format` to fix formatting. Never weaken a lint rule, the denylist or a check to get green.
+`npm run lint` runs type-aware rules and gives ESLint a 6 GB heap; give it a few minutes. Run `npm run format` to fix formatting. Never weaken a lint rule, the denylist or a check to get green.
 
 ## Rules
 
 - Follow [docs/CODING-GUIDELINES.md](docs/CODING-GUIDELINES.md). `npm run check` enforces the rules it can (lint and `check:structure`); review enforces the rest.
+- The TypeScript, Node scripts, security and design rules (`TS`, `R`, `SEC`, `D`) and testing rules `T21` to `T26` are adapted from MIT-licensed rule sets recorded in [docs/coding-rules/README.md](docs/coding-rules/README.md). Read the vendored [design guidance](docs/coding-rules/a-philosophy-of-software-design.mini.md) before designing a module or API.
 - Write tests by [docs/TESTING-GUIDELINES.md](docs/TESTING-GUIDELINES.md): TypeScript tests beside the source that name their `UIC-` IDs, role and label queries through `screen`, `userEvent.setup()`, and no test ids.
 - Components emit hooks only (`specs/HOOK-CONTRACT.md`): hook classes, data attributes and documented `--ui-*` measured properties. No CSS, no visual inline styles, no styling dependency.
 - Build on React Aria Components wherever it has a matching behaviour, imported only through `src/primitives/` (`specs/PRIMITIVES.md`).

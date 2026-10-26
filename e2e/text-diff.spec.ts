@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures.js';
+import { requireDefined } from '../src/utils/require-defined.js';
 
 const cell = (id: string) => `[data-lab-cell="${id}"] .ui-text-diff`;
 
@@ -23,8 +24,8 @@ test.describe('Text Diff lab', () => {
     await expect(rows.nth(2).locator('.ui-text-diff__word')).toHaveText(['and lime ']);
     await expect(rows.nth(2).locator('.ui-text-diff__marker')).toContainText('Added, new line 1');
     await expect(rows.nth(4).locator('.ui-text-diff__number')).toHaveText(['3', '3']);
-    const marker = (await rows.nth(0).locator('.ui-text-diff__marker').boundingBox())!;
-    const text = (await rows.nth(0).locator('.ui-text-diff__text').boundingBox())!;
+    const marker = requireDefined(await rows.nth(0).locator('.ui-text-diff__marker').boundingBox());
+    const text = requireDefined(await rows.nth(0).locator('.ui-text-diff__text').boundingBox());
     expect(text.x).toBeGreaterThan(marker.x);
   });
 
@@ -38,8 +39,8 @@ test.describe('Text Diff lab', () => {
     const newPane = diff.locator('.ui-text-diff__pane[data-side="new"]');
     await expect(diff.getByRole('group', { name: 'Before' })).toBeVisible();
     await expect(diff.getByRole('group', { name: 'After' })).toBeVisible();
-    const oldBox = (await oldPane.boundingBox())!;
-    const newBox = (await newPane.boundingBox())!;
+    const oldBox = requireDefined(await oldPane.boundingBox());
+    const newBox = requireDefined(await newPane.boundingBox());
     expect(newBox.x).toBeGreaterThanOrEqual(oldBox.x + oldBox.width - 1);
     const oldRows = oldPane.locator('tr');
     const newRows = newPane.locator('tr');
@@ -47,8 +48,8 @@ test.describe('Text Diff lab', () => {
     await expect(newRows).toHaveCount(11);
     await expect(oldPane.locator('.ui-text-diff__filler')).toHaveCount(1);
     for (const index of [0, 5, 8, 10]) {
-      const left = (await oldRows.nth(index).boundingBox())!;
-      const right = (await newRows.nth(index).boundingBox())!;
+      const left = requireDefined(await oldRows.nth(index).boundingBox());
+      const right = requireDefined(await newRows.nth(index).boundingBox());
       expect(Math.abs(left.y - right.y)).toBeLessThan(1);
     }
   });
@@ -114,8 +115,8 @@ test.describe('Text Diff lab', () => {
     );
     const line = newPane.locator('.ui-text-diff__line', { hasText: 'blind for 20' });
     const widget = newPane.locator('.ui-text-diff__widget').first();
-    const lineBox = (await line.boundingBox())!;
-    const widgetBox = (await widget.boundingBox())!;
+    const lineBox = requireDefined(await line.boundingBox());
+    const widgetBox = requireDefined(await widget.boundingBox());
     expect(Math.abs(widgetBox.y - (lineBox.y + lineBox.height))).toBeLessThan(2);
 
     await newPane.evaluate((element) => {

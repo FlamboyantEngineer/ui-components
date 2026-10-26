@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Key } from '../../core/props.js';
 import { UiProvider } from '../../core/provider.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import {
   AnnotationLayer,
   AnnotationMargin,
@@ -184,7 +185,7 @@ describe('AnnotationLayer', () => {
     // A card activates its own annotation, so press one whose annotation is not under the point.
     await user.pointer({
       keys: '[MouseLeft]',
-      target: cards(container)[1]!,
+      target: requireDefined(cards(container)[1]),
       coords: { clientX: 80, clientY: 120 },
     });
     expect(onActiveChange).not.toHaveBeenCalledWith('figure');

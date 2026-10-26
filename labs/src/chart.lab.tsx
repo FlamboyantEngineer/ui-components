@@ -9,6 +9,7 @@ import { LineChart, type LineChartSeries } from '../../src/components/chart/line
 import type { Key } from '../../src/core/props.js';
 import { createBandScale } from '../../src/utils/band-scale.js';
 import { createLinearScale } from '../../src/utils/linear-scale.js';
+import { requireDefined } from '../../src/utils/require-defined.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const box = (width: number): CSSProperties => ({ width });
@@ -44,15 +45,15 @@ const burndown: LineChartSeries[] = [
   {
     id: 'remaining',
     label: 'Remaining',
-    points: sprintDays.map((x, index) => ({ x, y: remaining[index]! })),
+    points: sprintDays.map((x, index) => ({ x, y: requireDefined(remaining[index]) })),
   },
   {
     id: 'ideal',
     label: 'Ideal',
     tone: 'neutral',
     points: [
-      { x: sprintDays[0]!, y: 40 },
-      { x: sprintDays.at(-1)!, y: 0 },
+      { x: requireDefined(sprintDays[0]), y: 40 },
+      { x: requireDefined(sprintDays.at(-1)), y: 0 },
     ],
   },
 ];
@@ -63,7 +64,7 @@ const buildTimes: LineChartSeries[] = [
     label: 'Build minutes',
     points: [1201, 1202, 1203, 1204, 1205, 1206, 1207, 1208].map((x, index) => ({
       x,
-      y: [6.2, 6.8, 6.1, 7.4, 9.2, 8.1, 7.3, 6.9][index]!,
+      y: requireDefined([6.2, 6.8, 6.1, 7.4, 9.2, 8.1, 7.3, 6.9][index]),
     })),
   },
 ];
@@ -105,7 +106,7 @@ function CustomDrawing() {
       data-lab-demo="custom"
       table={{
         columns: ['Room', ...hours],
-        rows: rooms.map((room, index) => [room, ...usage[index]!.map(String)]),
+        rows: rooms.map((room, index) => [room, ...requireDefined(usage[index]).map(String)]),
       }}
       legend={
         <ChartLegend
@@ -125,10 +126,14 @@ function CustomDrawing() {
                 <rect
                   key={`${room}-${hour}`}
                   role="img"
-                  aria-label={`${room}, ${hour}: ${usage[row]![column]} people`}
-                  data-lab-shade={Math.round(shade.map(usage[row]![column]!))}
+                  aria-label={`${room}, ${hour}: ${requireDefined(usage[row])[column]} people`}
+                  data-lab-shade={Math.round(
+                    shade.map(requireDefined(requireDefined(usage[row])[column])),
+                  )}
                   fill="currentColor"
-                  fillOpacity={0.1 + 0.2 * shade.map(usage[row]![column]!)}
+                  fillOpacity={
+                    0.1 + 0.2 * shade.map(requireDefined(requireDefined(usage[row])[column]))
+                  }
                   x={columns.map(hour)}
                   y={rows.map(room)}
                   width={columns.bandwidth}

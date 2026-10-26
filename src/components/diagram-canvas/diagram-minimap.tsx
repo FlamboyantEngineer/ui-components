@@ -1,4 +1,5 @@
 import type { PointerEvent } from 'react';
+import { requireDefined } from '../../utils/require-defined.js';
 import { usePointerDrag } from '../../utils/use-pointer-drag.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { diagramHooks as hooks } from './diagram-hooks.js';
@@ -40,7 +41,9 @@ export function DiagramMinimap({ controller }: DiagramMinimapProps) {
     width: (size?.width ?? 0) / factor,
     height: (size?.height ?? 0) / factor,
   };
-  const viewBox = findDiagramBounds([...nodes.map(resolveNodeRect), visible], minimapPadding)!;
+  const viewBox = requireDefined(
+    findDiagramBounds([...nodes.map(resolveNodeRect), visible], minimapPadding),
+  );
   const centreAt = (event: PointerEvent<SVGSVGElement>) => {
     const point = toViewBoxPoint(event.currentTarget, viewBox, {
       x: event.clientX,

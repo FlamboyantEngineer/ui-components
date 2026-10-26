@@ -6,6 +6,7 @@ import {
 } from '../../src/components/media-viewer/media-viewer.js';
 import { PdfViewer } from '../../src/components/pdf-viewer/pdf-viewer.js';
 import type { Key } from '../../src/core/props.js';
+import { requireDefined } from '../../src/utils/require-defined.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { loadEngine, sampleUrl, workerSrc } from './pdf-viewer-cases.js';
 
@@ -61,8 +62,8 @@ const mixed: MediaViewerItem[] = [
 ];
 
 const typed: MediaViewerItem[] = [
-  { ...photos[0]!, id: 1 },
-  { ...photos[1]!, id: '1' },
+  { ...requireDefined(photos[0]), id: 1 },
+  { ...requireDefined(photos[1]), id: '1' },
 ];
 const sets = { photos, mixed, single: [photos[2] as MediaViewerItem], typed } as const;
 type SetName = keyof typeof sets;

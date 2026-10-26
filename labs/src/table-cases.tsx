@@ -11,6 +11,7 @@ import type {
 } from '../../src/components/table/table-columns.js';
 import type { TableFilter } from '../../src/components/table/table-filters.js';
 import type { TableColumn } from '../../src/components/table/table-rows.js';
+import { requireDefined } from '../../src/utils/require-defined.js';
 
 interface Produce {
   id: string;
@@ -234,7 +235,7 @@ export function CallerFilter() {
       <Table
         aria-label="Produce, filtered by the caller"
         rows={rows}
-        columns={[filterColumns[0]!, filterColumns[1]!]}
+        columns={[requireDefined(filterColumns[0]), requireDefined(filterColumns[1])]}
         filterable
         filterLabel="Names starting with"
         filter={filter}

@@ -1,5 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import { expect, test } from './fixtures.js';
+import { requireDefined } from '../src/utils/require-defined.js';
 
 function plant(page: Page): Locator {
   return page.locator('[data-lab-field="plant"]');
@@ -14,7 +15,7 @@ function part(page: Page, name: string): Locator {
 }
 
 async function centreOf(locator: Locator) {
-  const box = (await locator.boundingBox())!;
+  const box = requireDefined(await locator.boundingBox());
   return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
 }
 
@@ -22,7 +23,7 @@ async function centreOf(locator: Locator) {
 async function viewportBox(page: Page) {
   const viewport = plant(page).locator('.ui-diagram-canvas__viewport');
   await viewport.scrollIntoViewIfNeeded();
-  return (await viewport.boundingBox())!;
+  return requireDefined(await viewport.boundingBox());
 }
 
 test.describe('Diagram Canvas lab', () => {
@@ -112,7 +113,7 @@ test.describe('Diagram Canvas lab', () => {
     await expect(minimap.locator('.ui-diagram-canvas__minimap-node')).toHaveCount(5);
     const content = plant(page).locator('.ui-diagram-canvas__content');
     const before = await content.evaluate((node) => node.style.transform);
-    const box = (await minimap.boundingBox())!;
+    const box = requireDefined(await minimap.boundingBox());
     await page.mouse.click(box.x + 8, box.y + 8);
     await expect.poll(() => content.evaluate((node) => node.style.transform)).not.toBe(before);
     await expect(output(page, 'zoom')).toHaveText('100%');

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import type { CellCoordinates } from '../../utils/cell-reference.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import type { CodeTokenizer } from '../code-editor/code-editor.js';
 import { FormulaBar } from './formula-bar.js';
 
@@ -190,7 +191,7 @@ describe('FormulaBar', () => {
     const { container } = render(
       <FormulaBar cell={{ row: 2, column: 1 }} value="=1+1" evaluate={evaluate} />,
     );
-    const result = container.querySelector('.ui-formula-bar__result')!;
+    const result = requireDefined(container.querySelector('.ui-formula-bar__result'));
     expect(result).toHaveTextContent('Result 4');
     expect(evaluate).toHaveBeenLastCalledWith('=1+1', { row: 2, column: 1 });
     expect(contentBox()).toHaveAccessibleDescription('Result 4');
@@ -218,7 +219,7 @@ describe('FormulaBar', () => {
     const { container } = render(
       <FormulaBar cell={null} value="" className="host" id="bar" data-testid="formula" />,
     );
-    const root = container.firstElementChild!;
+    const root = requireDefined(container.firstElementChild);
     expect(root).toHaveClass('ui-formula-bar', 'host');
     expect(root).toHaveAttribute('id', 'bar');
     expect(root).toHaveAttribute('data-testid', 'formula');

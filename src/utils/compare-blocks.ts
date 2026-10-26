@@ -2,6 +2,7 @@
 
 import type { Key } from '../core/props.js';
 import { diffSequences, diffWords, type WordDiffHunk } from './diff.js';
+import { requireDefined } from './require-defined.js';
 import { toKeyIdentity } from './to-key-identity.js';
 
 /** The kind of a document block. */
@@ -131,7 +132,7 @@ function findMoves<B extends DocumentBlock>(alignment: Alignment<B>, runs: reado
   const waiting = new Map<string, number[]>();
   for (const run of runs) {
     for (const index of run.inserted) {
-      const block = newBlocks[index]!;
+      const block = requireDefined(newBlocks[index]);
       if (block.id === undefined && block.text.trim() === '') continue;
       const identity = toIdentity(block);
       const indices = waiting.get(identity);
@@ -142,7 +143,7 @@ function findMoves<B extends DocumentBlock>(alignment: Alignment<B>, runs: reado
   for (const indices of waiting.values()) indices.reverse();
   for (const run of runs) {
     for (const index of run.deleted) {
-      const target = waiting.get(toIdentity(oldBlocks[index]!))?.pop();
+      const target = waiting.get(toIdentity(requireDefined(oldBlocks[index])))?.pop();
       if (target === undefined) continue;
       movedTo.set(index, target);
       movedFrom.set(target, index);
@@ -169,12 +170,12 @@ function* pairSimilar<B extends DocumentBlock>(alignment: Alignment<B>, run: Cha
   const isFree = (block: B) => block.id === undefined;
   let from = 0;
   for (let deleted = 0; deleted < run.deleted.length; deleted += 1) {
-    const oldIndex = run.deleted[deleted]!;
-    const oldBlock = oldBlocks[oldIndex]!;
+    const oldIndex = requireDefined(run.deleted[deleted]);
+    const oldBlock = requireDefined(oldBlocks[oldIndex]);
     if (!isFree(oldBlock) || movedTo.has(oldIndex)) continue;
     for (let inserted = from; inserted < run.inserted.length; inserted += 1) {
-      const newIndex = run.inserted[inserted]!;
-      const newBlock = newBlocks[newIndex]!;
+      const newIndex = requireDefined(run.inserted[inserted]);
+      const newBlock = requireDefined(newBlocks[newIndex]);
       if (!isFree(newBlock) || movedFrom.has(newIndex)) continue;
       if (measureSimilarity(oldBlock.text, newBlock.text) < similarityThreshold) continue;
       yield [deleted, inserted] as const;
@@ -209,8 +210,8 @@ function pairRow<B extends DocumentBlock>(
   alignment: Alignment<B>,
   [oldIndex, newIndex]: [number, number],
 ): ComparedBlockRow<B> {
-  const oldBlock = alignment.oldBlocks[oldIndex]!;
-  const newBlock = alignment.newBlocks[newIndex]!;
+  const oldBlock = requireDefined(alignment.oldBlocks[oldIndex]);
+  const newBlock = requireDefined(alignment.newBlocks[newIndex]);
   const versions = compareVersions(oldBlock, newBlock);
   const isChanged = versions.words || versions.isTypeChanged || versions.isFormatChanged;
   if (isChanged) alignment.counts.changed += 1;
@@ -224,7 +225,7 @@ function oldRow<B extends DocumentBlock>(
   alignment: Alignment<B>,
   oldIndex: number,
 ): ComparedBlockRow<B> {
-  const oldBlock = alignment.oldBlocks[oldIndex]!;
+  const oldBlock = requireDefined(alignment.oldBlocks[oldIndex]);
   const target = alignment.movedTo.get(oldIndex);
   const unchanged = { isTypeChanged: false, isFormatChanged: false };
   if (target === undefined) {
@@ -232,7 +233,7 @@ function oldRow<B extends DocumentBlock>(
     const key = toRowKey(oldBlock, 'old', oldIndex);
     return { key, change: 'removed', oldBlock, oldIndex, ...unchanged };
   }
-  const counterpartKey = toRowKey(alignment.newBlocks[target]!, 'new', target);
+  const counterpartKey = toRowKey(requireDefined(alignment.newBlocks[target]), 'new', target);
   const key = `moved-from:${toRowKey(oldBlock, 'old', oldIndex)}`;
   return { key, change: 'moved', oldBlock, oldIndex, move: 'from', counterpartKey, ...unchanged };
 }
@@ -242,7 +243,7 @@ function newRow<B extends DocumentBlock>(
   alignment: Alignment<B>,
   newIndex: number,
 ): ComparedBlockRow<B> {
-  const newBlock = alignment.newBlocks[newIndex]!;
+  const newBlock = requireDefined(alignment.newBlocks[newIndex]);
   const key = toRowKey(newBlock, 'new', newIndex);
   const source = alignment.movedFrom.get(newIndex);
   if (source === undefined) {
@@ -257,7 +258,7 @@ function newRow<B extends DocumentBlock>(
     };
   }
   alignment.counts.moved += 1;
-  const oldBlock = alignment.oldBlocks[source]!;
+  const oldBlock = requireDefined(alignment.oldBlocks[source]);
   const counterpartKey = `moved-from:${toRowKey(oldBlock, 'old', source)}`;
   const versions = compareVersions(oldBlock, newBlock);
   return {
@@ -282,12 +283,19 @@ function runRows<B extends DocumentBlock>(alignment: Alignment<B>, run: ChangeRu
   let deleted = 0;
   let inserted = 0;
   const flush = (oldEnd: number, newEnd: number) => {
-    for (; deleted < oldEnd; deleted += 1) rows.push(oldRow(alignment, run.deleted[deleted]!));
-    for (; inserted < newEnd; inserted += 1) rows.push(newRow(alignment, run.inserted[inserted]!));
+    for (; deleted < oldEnd; deleted += 1)
+      rows.push(oldRow(alignment, requireDefined(run.deleted[deleted])));
+    for (; inserted < newEnd; inserted += 1)
+      rows.push(newRow(alignment, requireDefined(run.inserted[inserted])));
   };
   for (const [oldOffset, newOffset] of pairSimilar(alignment, run)) {
     flush(oldOffset, newOffset);
-    rows.push(pairRow(alignment, [run.deleted[oldOffset]!, run.inserted[newOffset]!]));
+    rows.push(
+      pairRow(alignment, [
+        requireDefined(run.deleted[oldOffset]),
+        requireDefined(run.inserted[newOffset]),
+      ]),
+    );
     deleted += 1;
     inserted += 1;
   }

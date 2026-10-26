@@ -1,5 +1,6 @@
 // The lines, areas and points of a line chart and its scales (specs/CHART.md).
 
+import { requireDefined } from '../../utils/require-defined.js';
 import { summarizeNumbers } from '../../utils/summarize-numbers.js';
 import { clamp } from '../../utils/clamp.js';
 import { createLinearScale, type LinearScale, type ScaleTick } from '../../utils/linear-scale.js';
@@ -88,7 +89,7 @@ function toPaths(runs: readonly LinePoint[][], baseline: number) {
   const line = paths.join('');
   const area = runs
     .map((run, index) => {
-      return `${paths[index]}L${run.at(-1)!.x},${baseline}L${run[0]!.x},${baseline}Z`;
+      return `${paths[index]}L${requireDefined(run.at(-1)).x},${baseline}L${requireDefined(run[0]).x},${baseline}Z`;
     })
     .join('');
   return { line, area };
@@ -121,7 +122,7 @@ function layOutSeries(
       y: roundCoordinate(scales.y(point.y)),
     };
     drawn.push(laid);
-    runs.at(-1)!.push(laid);
+    requireDefined(runs.at(-1)).push(laid);
   }
   return { runs: runs.filter((run) => run.length > 0), points: drawn };
 }

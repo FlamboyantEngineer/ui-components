@@ -1,5 +1,6 @@
 import type { Locator } from '@playwright/test';
 import { expect, test } from './fixtures.js';
+import { requireDefined } from '../src/utils/require-defined.js';
 
 async function box(locator: Locator) {
   const rect = await locator.boundingBox();
@@ -73,11 +74,13 @@ test.describe('Layout lab', () => {
     await lab.open('layout');
     const three = page.locator(`${cell('Grid', 'columns=3 space=2xl')} .ui-grid > *`);
     const [a, b, c, d] = await Promise.all([0, 1, 2, 3].map((index) => box(three.nth(index))));
-    expect(a!.y).toBe(b!.y);
-    expect(b!.y).toBe(c!.y);
-    expect(d!.x).toBe(a!.x);
-    expect(d!.y).toBeGreaterThan(a!.y);
-    expect(Math.round(b!.x - (a!.x + a!.width))).toBe(16);
+    expect(requireDefined(a).y).toBe(requireDefined(b).y);
+    expect(requireDefined(b).y).toBe(requireDefined(c).y);
+    expect(requireDefined(d).x).toBe(requireDefined(a).x);
+    expect(requireDefined(d).y).toBeGreaterThan(requireDefined(a).y);
+    expect(Math.round(requireDefined(b).x - (requireDefined(a).x + requireDefined(a).width))).toBe(
+      16,
+    );
 
     for (const [width, columns] of [
       ['360', 2],
@@ -230,9 +233,17 @@ test.describe('Layout lab', () => {
     const children = stack.locator(':scope > *');
     await expect(stack.locator('.ui-stack__divider')).toHaveCount(2);
     const [first, divider, second] = await Promise.all([0, 1, 2].map((i) => box(children.nth(i))));
-    expect(Math.round(divider!.height)).toBe(1);
-    expect(Math.round(divider!.y - (first!.y + first!.height))).toBe(16);
-    expect(Math.round(second!.y - (divider!.y + divider!.height))).toBe(16);
+    expect(Math.round(requireDefined(divider).height)).toBe(1);
+    expect(
+      Math.round(
+        requireDefined(divider).y - (requireDefined(first).y + requireDefined(first).height),
+      ),
+    ).toBe(16);
+    expect(
+      Math.round(
+        requireDefined(second).y - (requireDefined(divider).y + requireDefined(divider).height),
+      ),
+    ).toBe(16);
     const cluster = page.locator(`${cell('Dividers', 'primitive=cluster space=md')} .ui-cluster`);
     const rule = await box(cluster.locator('.ui-cluster__divider').first());
     expect(Math.round(rule.width)).toBe(1);
@@ -360,10 +371,10 @@ test.describe('Layout lab', () => {
     expect(await row.evaluate((node) => node.getBoundingClientRect().height)).toBeGreaterThan(20);
     // The text's place in its frame, which scrolling the page does not change.
     const offset = () =>
-      text.evaluate(
-        (node) =>
-          node.getBoundingClientRect().top - node.parentElement!.getBoundingClientRect().top,
-      );
+      text.evaluate((node) => {
+        if (!node.parentElement) throw new Error('The text has no frame.');
+        return node.getBoundingClientRect().top - node.parentElement.getBoundingClientRect().top;
+      });
     const before = await offset();
     await expect(demo.getByRole('button', { name: 'Undo' })).toHaveCount(0);
     await demo.getByRole('button', { name: 'Start editor' }).click();

@@ -1,3 +1,4 @@
+import { requireDefined } from './require-defined.js';
 // A1-style cell references (specs/FORMULA-BAR.md): column letters, then the row number.
 
 /** A cell of a grid by zero-based row and column indices. */
@@ -39,5 +40,5 @@ export function formatCellReference({ row, column }: CellCoordinates): string {
 export function parseCellReference(text: string): CellCoordinates | null {
   const match = referencePattern.exec(text.trim());
   if (!match) return null;
-  return { row: Number(match[2]) - 1, column: parseColumnLetters(match[1]!) };
+  return { row: Number(match[2]) - 1, column: parseColumnLetters(requireDefined(match[1])) };
 }

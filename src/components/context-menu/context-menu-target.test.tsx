@@ -127,7 +127,9 @@ describe('ContextMenuTrigger', () => {
     expect(await isPrevented('contextmenu', () => rightClick(user, input))).toBe(false);
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     await user.pointer({ keys: '[TouchA>]', target: input });
-    act(() => vi.advanceTimersByTime(500));
+    act(() => {
+      vi.advanceTimersByTime(500);
+    });
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     await user.pointer({ keys: '[/TouchA]', target: input });
     expect(await isPrevented('contextmenu', () => rightClick(user, screen.getByText('Row')))).toBe(
@@ -150,19 +152,27 @@ describe('ContextMenuTrigger', () => {
       { keys: '[TouchA>]', target, coords: point },
       { pointerName: 'TouchA', target, coords: { ...point, clientX: 70 } },
     ]);
-    act(() => vi.advanceTimersByTime(500));
+    act(() => {
+      vi.advanceTimersByTime(500);
+    });
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     await user.pointer({ keys: '[/TouchA]', target });
 
     await user.pointer({ keys: '[MouseLeft>]', target, coords: point });
-    act(() => vi.advanceTimersByTime(500));
+    act(() => {
+      vi.advanceTimersByTime(500);
+    });
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     await user.pointer({ keys: '[/MouseLeft]', target });
 
     await user.pointer({ keys: '[TouchA>]', target, coords: point });
-    act(() => vi.advanceTimersByTime(499));
+    act(() => {
+      vi.advanceTimersByTime(499);
+    });
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
-    act(() => vi.advanceTimersByTime(1));
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
     expect(screen.getByRole('menu')).toBeInTheDocument();
     expect(popover()?.style.left).toBe('40px');
     expect(fireEvent.contextMenu(target, { clientX: 200, clientY: 200 })).toBe(false);
@@ -211,16 +221,24 @@ describe('ContextMenuTrigger', () => {
     const { rerender } = render(menu(false));
     const target = screen.getByText('Report.pdf');
     await user.pointer({ keys: '[TouchA>]', target });
-    act(() => vi.advanceTimersByTime(499));
+    act(() => {
+      vi.advanceTimersByTime(499);
+    });
     rerender(menu(true));
-    act(() => vi.advanceTimersByTime(500));
+    act(() => {
+      vi.advanceTimersByTime(500);
+    });
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     rerender(menu(false));
-    act(() => vi.advanceTimersByTime(500));
+    act(() => {
+      vi.advanceTimersByTime(500);
+    });
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     await user.pointer({ keys: '[/TouchA]', target });
     await user.pointer({ keys: '[TouchA>]', target });
-    act(() => vi.advanceTimersByTime(500));
+    act(() => {
+      vi.advanceTimersByTime(500);
+    });
     expect(screen.getByRole('menu')).toBeInTheDocument();
   });
 

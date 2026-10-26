@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures.js';
+import { requireDefined } from '../src/utils/require-defined.js';
 
 const PART_ROWS = [
   'Frame set',
@@ -46,10 +47,10 @@ test.describe('Tree Compare lab', () => {
       'changed',
     );
     const [left, right] = await changed.locator('.ui-tree-compare__cell').all();
-    await expect(left!).toHaveText('Frame, aluminium');
-    await expect(right!).toHaveText('Frame, carbon');
-    const leftBox = (await left!.boundingBox())!;
-    const rightBox = (await right!.boundingBox())!;
+    await expect(requireDefined(left)).toHaveText('Frame, aluminium');
+    await expect(requireDefined(right)).toHaveText('Frame, carbon');
+    const leftBox = requireDefined(await requireDefined(left).boundingBox());
+    const rightBox = requireDefined(await requireDefined(right).boundingBox());
     expect(rightBox.x).toBeGreaterThan(leftBox.x + leftBox.width);
     expect(Math.abs(rightBox.y - leftBox.y)).toBeLessThan(2);
     const added = tree.getByRole('row', { name: 'Cockpit, added' });
