@@ -105,7 +105,7 @@ describe('MenuPopover and SubmenuTrigger', () => {
     await waitFor(() => expect(share).toHaveFocus());
     expect(screen.queryByRole('menuitem', { name: 'Mail' })).not.toBeInTheDocument();
     await user.keyboard('{ArrowRight}{Escape}');
-    expect(share).toHaveFocus();
+    await waitFor(() => expect(share).toHaveFocus());
     expect(screen.getAllByRole('menu')).toHaveLength(1);
     await user.keyboard('{ArrowRight}{ArrowDown}{Enter}');
     expect(actionKeys(onAction)).toEqual(['chat']);
