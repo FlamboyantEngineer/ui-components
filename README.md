@@ -11,23 +11,24 @@ The library is preparing its initial `0.1.0` release. APIs and styling hooks are
 
 ## Install
 
-Publishing targets GitHub Packages as `@flamboyantengineer/ui-components` with restricted access.
+Each release is a `v<version>` tag in this repository, on a commit that holds the built package, so installing it needs no build or source checkout. The repository is private, so git needs a token that can read it.
 
-1. Create a token that can read the package:
-   - **Locally:** a classic personal access token with the `read:packages` scope, from an account that can read `FlamboyantEngineer/ui-components`.
-   - **In GitHub Actions of another repository:** add that repository under the package's **Manage Actions access** settings, give the job `permissions: packages: read`, and use `secrets.GITHUB_TOKEN`.
-2. Point the `@flamboyantengineer` scope at GitHub Packages in the consuming project's `.npmrc`:
-
-   ```ini
-   @flamboyantengineer:registry=https://npm.pkg.github.com
-   //npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}
-   ```
-
-3. Install an exact version with the token in `NODE_AUTH_TOKEN`:
+1. Create a token that can read `FlamboyantEngineer/ui-components`:
+   - **Locally:** a fine-grained personal access token with read access to the repository's contents (or a classic token with the `repo` scope).
+   - **In GitHub Actions of another repository:** a token with read access to this repository, stored as a secret of the consuming repository (the consuming job's own `GITHUB_TOKEN` cannot read other private repositories).
+2. Let git use the token from the environment:
 
    ```sh
-   NODE_AUTH_TOKEN=<token> npm install --save-exact @flamboyantengineer/ui-components
+   git config --global url."https://x-access-token:${GITHUB_TOKEN}@github.com/FlamboyantEngineer/".insteadOf "https://github.com/FlamboyantEngineer/"
    ```
+
+3. Install an exact version by its tag:
+
+   ```sh
+   npm install --save-exact "git+https://github.com/FlamboyantEngineer/ui-components.git#v0.1.0"
+   ```
+
+   The lockfile records the tag's commit. The tarball is also attached to the tag's GitHub Release.
 
 `react` and `react-dom` 19 are peer dependencies.
 

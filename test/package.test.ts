@@ -10,7 +10,8 @@ const manifest = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'u
   dependencies: Record<string, string>;
   peerDependencies: Record<string, string>;
   peerDependenciesMeta?: Record<string, { optional?: boolean }>;
-  publishConfig: { registry: string };
+  private: boolean;
+  publishConfig?: unknown;
 };
 
 describe('package manifest', () => {
@@ -41,8 +42,9 @@ describe('package manifest', () => {
     ).toEqual([]);
   });
 
-  it('publishes to GitHub Packages with React as the only required peer', () => {
-    expect(manifest.publishConfig.registry).toBe('https://npm.pkg.github.com');
+  it('releases through git tags, not a registry, with React as the only required peer', () => {
+    expect(manifest.private).toBe(true);
+    expect(manifest.publishConfig).toBeUndefined();
     const isOptional = (name: string) => manifest.peerDependenciesMeta?.[name]?.optional === true;
     expect(
       Object.keys(manifest.peerDependencies)

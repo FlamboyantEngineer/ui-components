@@ -3,15 +3,11 @@
   "version": "0.0.0",
   "description": "Unstyled, accessible React components that expose documented styling hooks for a host stylesheet.",
   "license": "UNLICENSED",
-  "private": false,
+  "private": true,
   "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/FlamboyantEngineer/ui-components.git"
-  },
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com",
-    "access": "restricted"
   },
   "engines": {
     "node": ">=22.0.0"
@@ -66,7 +62,7 @@
     "check": "npm run lint && npm run format:check && npm run typecheck && npm run check:references && npm run check:specs && npm run check:labs && npm run check:structure && npm test && npm run build && npm run check:public-types && npm run build:labs && npm run check:package",
     "new:lab": "node scripts/new-lab.mjs",
     "changeset": "changeset",
-    "release": "npm run build && npm run build:labs && npm run check:package && changeset publish",
+    "release": "node scripts/release.mjs",
     "check:structure": "node scripts/check-structure.mjs"
   },
   "peerDependencies": {
