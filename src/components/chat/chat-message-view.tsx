@@ -34,6 +34,7 @@ export type ChatPartOptions = Pick<
   | 'onAlwaysAllow'
   | 'onAnswerQuestion'
   | 'onDismissQuestion'
+  | 'questionAnsweredMark'
   | 'onApplyCode'
   | 'renderPart'
 >;

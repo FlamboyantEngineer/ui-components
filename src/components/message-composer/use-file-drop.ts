@@ -16,6 +16,12 @@ function carriesFiles(event: DragEvent): boolean {
   return Array.from(event.dataTransfer?.types ?? []).includes('Files');
 }
 
+/** The files chosen in the system file chooser, handed to `onAttach` when there are any. */
+export function attachChosenFiles(list: FileList | null, onAttach: (files: File[]) => void): void {
+  const files = list ? Array.from(list) : [];
+  if (files.length > 0) onAttach(files);
+}
+
 /** The files a paste carries, handed to `onAttach` instead of pasting; whether there were any. */
 export function attachPastedFiles(
   event: { clipboardData: DataTransfer | null; preventDefault: () => void },

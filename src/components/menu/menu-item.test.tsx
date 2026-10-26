@@ -1,5 +1,6 @@
 import { render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
+import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { MenuButton, actionKeys, fruitEntries, openMenu } from '../../../test/menu-fixtures.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
@@ -278,6 +279,97 @@ describe('MenuItem, MenuSection and MenuSeparator', () => {
       'aria-disabled',
       'true',
     );
+  });
+
+  it('UIC-MENU-2.7 draws a check item of its own among actions and leaves flipping it to the caller', async () => {
+    const user = userEvent.setup();
+    const onAction = vi.fn();
+    const states: MenuItemRenderState[] = [];
+    function ViewMenu() {
+      const [isWrapped, setWrapped] = useState(false);
+      return (
+        <MenuButton aria-label="View" onAction={onAction}>
+          <MenuSection title="Text">
+            <MenuItem id="refresh">Refresh</MenuItem>
+            <MenuItem
+              id="wrap"
+              isSelected={isWrapped}
+              shouldCloseOnSelect={false}
+              onAction={() => setWrapped((value) => !value)}
+            >
+              Wrap lines
+            </MenuItem>
+            <MenuItem id="ruler" isSelected>
+              {(state) => {
+                states.push(state);
+                return 'Ruler';
+              }}
+            </MenuItem>
+          </MenuSection>
+        </MenuButton>
+      );
+    }
+    render(<ViewMenu />);
+    await openMenu(user);
+    expect(screen.getByRole('menuitem', { name: 'Refresh' })).toBeInTheDocument();
+    const wrap = screen.getByRole('menuitemcheckbox', { name: 'Wrap lines' });
+    expect(wrap).not.toBeChecked();
+    expect(wrap).not.toHaveAttribute('data-selected');
+    expect(wrap.querySelector('.ui-menu-item__check')).toBeEmptyDOMElement();
+    await user.click(wrap);
+    expect(wrap).toBeChecked();
+    expect(wrap).toHaveAttribute('data-selected', 'true');
+    expect(wrap.querySelector('.ui-menu-item__check [data-glyph="check"]')).not.toBeNull();
+    expect(screen.getByRole('menu', { name: 'View' })).toBeInTheDocument();
+    expect(actionKeys(onAction)).toEqual(['wrap']);
+    await user.keyboard(' ');
+    expect(wrap).not.toBeChecked();
+    expect(screen.getByRole('menuitemcheckbox', { name: 'Ruler' })).toBeChecked();
+    expect(states.at(-1)).toMatchObject({ isSelected: true, selectionMode: 'none' });
+    expectHooksMatchSpec(document.body, 'MENU', { slots: ['check', 'header', 'label'] });
+    await user.click(screen.getByRole('menuitem', { name: 'Refresh' }));
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+  });
+
+  it('UIC-MENU-2.7 keeps a disabled check item focusable and leaves a selection its own checks', async () => {
+    const user = userEvent.setup();
+    const onAction = vi.fn();
+    render(
+      <MenuButton
+        aria-label="Options"
+        onAction={onAction}
+        items={[
+          {
+            id: 'sync',
+            label: 'Sync',
+            isSelected: true,
+            isDisabled: true,
+            focusableWhenDisabled: true,
+          },
+          {
+            type: 'section',
+            id: 'sort',
+            title: 'Sort',
+            selectionMode: 'single',
+            selectedKeys: ['name'],
+            items: [
+              { id: 'name', label: 'Name' },
+              { id: 'date', label: 'Date', isSelected: true },
+            ],
+          },
+        ]}
+      />,
+    );
+    screen.getByRole('button', { name: 'Actions' }).focus();
+    await user.keyboard('{ArrowDown}');
+    const sync = await screen.findByRole('menuitemcheckbox', { name: 'Sync' });
+    await waitFor(() => expect(sync).toHaveFocus());
+    expect(sync).toBeChecked();
+    expect(sync).toHaveAttribute('aria-disabled', 'true');
+    await user.keyboard('{Enter}');
+    expect(onAction).not.toHaveBeenCalled();
+    expect(screen.getByRole('menuitemradio', { name: 'Name' })).toBeChecked();
+    expect(screen.getByRole('menuitemradio', { name: 'Date' })).not.toBeChecked();
   });
 
   it('UIC-MENU-2.4 draws pending placeholders and replaces them in the open menu', async () => {

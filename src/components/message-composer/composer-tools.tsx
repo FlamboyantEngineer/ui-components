@@ -5,6 +5,7 @@ import { EmojiPickerTrigger } from '../emoji-picker/emoji-picker.js';
 import { Button } from '../button/button.js';
 import { composerHooks as hooks } from './composer-hooks.js';
 import type { MessageComposerSubmitShortcut } from './message-composer.js';
+import { attachChosenFiles } from './use-file-drop.js';
 
 /** What the action button does: send, stop the pending reply, or save the edited message. */
 export type ComposerActionMode = 'send' | 'stop' | 'save';
@@ -29,13 +30,7 @@ export function AttachButton({
 }) {
   const strings = useUiStrings();
   return (
-    <FileTrigger
-      allowsMultiple
-      onSelect={(list) => {
-        const files = list ? Array.from(list) : [];
-        if (files.length > 0) onAttach(files);
-      }}
-    >
+    <FileTrigger allowsMultiple onSelect={(list) => attachChosenFiles(list, onAttach)}>
       <Button
         className={hooks.slotClass('attach')}
         icon="attach"

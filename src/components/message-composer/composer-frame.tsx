@@ -1,5 +1,7 @@
 import type { ReactNode, RefObject } from 'react';
 import { composerHooks as hooks } from './composer-hooks.js';
+import { ComposerMenu } from './composer-menu.js';
+import type { MessageComposerToken } from './composer-message.js';
 import { AttachButton, CancelButton, ComposerAction, EmojiButton } from './composer-tools.js';
 import type {
   MessageComposerSharedProps,
@@ -16,6 +18,8 @@ export interface ComposerFrameModel {
   shortcut: MessageComposerSubmitShortcut;
   /** Inserts text at the caret, as a chosen emoji. */
   insertText: (text: string) => void;
+  /** Inserts a mention or command at the caret: a pill in the rich composer, its text in the plain one. */
+  insertPill: (pill: Pick<MessageComposerToken, 'kind' | 'id' | 'label'>) => void;
   focusInput: () => void;
 }
 
@@ -34,14 +38,28 @@ function toActionMode(props: MessageComposerSharedProps, model: ComposerFrameMod
   return props.isPending && props.onStop && !isSending ? 'stop' : 'send';
 }
 
-/** The built-in tools (attach, emoji) and the caller's, before the button. */
-function ComposerToolbar({ props, model }: Pick<ComposerFrameProps, 'props' | 'model'>) {
-  const { onAttach, showEmojiPicker, toolbar } = props;
+/** The built-in tools (the menu or the attach button, then emoji) and the caller's, before the button. */
+function ComposerToolbar({
+  props,
+  model,
+  rootRef,
+}: Pick<ComposerFrameProps, 'props' | 'model' | 'rootRef'>) {
+  const { menu, onAttach, showEmojiPicker, toolbar } = props;
   const isDisabled = Boolean(props.isDisabled);
-  if (!onAttach && !showEmojiPicker && !toolbar) return null;
+  if (!menu && !onAttach && !showEmojiPicker && !toolbar) return null;
   return (
     <div {...hooks.slot('toolbar')}>
-      {onAttach ? <AttachButton onAttach={onAttach} isDisabled={isDisabled} /> : null}
+      {menu ? (
+        <ComposerMenu
+          menu={menu}
+          anchorRef={rootRef}
+          model={model}
+          onAttach={onAttach}
+          isDisabled={isDisabled}
+        />
+      ) : onAttach ? (
+        <AttachButton onAttach={onAttach} isDisabled={isDisabled} />
+      ) : null}
       {showEmojiPicker ? (
         <EmojiButton
           onInsert={model.insertText}
@@ -56,7 +74,7 @@ function ComposerToolbar({ props, model }: Pick<ComposerFrameProps, 'props' | 'm
 
 /**
  * The composer around its input: the banner, the attachments, the input, then the tools, Cancel
- * while editing and the action button. Files dragged onto it or attached go to `onAttach`.
+ * while editing and the action button. Files dragged onto it, pasted or chosen go to `onAttach`.
  */
 export function ComposerFrame({ props, rootRef, model, children }: ComposerFrameProps) {
   const { className, id, banner, attachments } = props;
@@ -75,7 +93,7 @@ export function ComposerFrame({ props, rootRef, model, children }: ComposerFrame
       {attachments ? <div {...hooks.slot('attachments')}>{attachments}</div> : null}
       {children}
       <div {...hooks.slot('footer')}>
-        <ComposerToolbar props={props} model={model} />
+        <ComposerToolbar props={props} model={model} rootRef={rootRef} />
         {model.isEditing ? (
           <CancelButton onCancel={props.onCancel} isDisabled={isDisabled} />
         ) : null}

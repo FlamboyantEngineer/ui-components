@@ -61,6 +61,8 @@ describe('ChatQuestion answering', () => {
     expect(submit).toHaveClass('ui-chat-question__submit');
     expect(submit.closest('.ui-chat-question__actions')).not.toBeNull();
     expect(submit).toHaveAttribute('aria-disabled', 'true');
+    // The question's tab comes first; Tab moves on into its answer.
+    await user.tab();
     await user.tab();
     await user.tab();
     expect(submit).toHaveFocus();
@@ -204,7 +206,7 @@ describe('ChatQuestion answering', () => {
 });
 
 describe('ChatQuestion with several questions', () => {
-  it('UIC-CHAT-QUESTION-3.1 asks one question at a time behind chips and a progress hint', async () => {
+  it('UIC-CHAT-QUESTION-3.1 UIC-CHAT-QUESTION-3.2 asks one question at a time behind tabs and a counter', async () => {
     const user = userEvent.setup();
     const { container } = render(
       <ChatQuestion
@@ -217,28 +219,30 @@ describe('ChatQuestion with several questions', () => {
     );
     const root = screen.getByRole('group', { name: `3 questions: ${databaseQuestion.question}` });
     expect(root).toHaveAttribute('data-stepped', 'true');
-    const steps = screen.getByRole('list', { name: 'Questions' });
-    expect(steps).toHaveClass('ui-chat-question__steps');
-    const chips = within(steps).getAllByRole('listitem');
-    expect(chips.map((chip) => chip.textContent)).toEqual(['Database', 'Features', 'Question 3']);
-    expect(chips[0]).toHaveAttribute('aria-current', 'step');
-    expect(chips[0]).toHaveAttribute('data-current', 'true');
-    expect(chips[1]).not.toHaveAttribute('aria-current');
-    expect(container.querySelector('.ui-chat-question__progress')).toHaveTextContent(
-      'Question 1 of 3',
-    );
-    expect(container.querySelector('.ui-chat-question__header')).toBeNull();
+    const tabList = screen.getByRole('tablist', { name: 'Questions' });
+    expect(tabList.closest('.ui-chat-question__tabs')).toHaveClass('ui-tabs');
+    const tabs = within(tabList).getAllByRole('tab');
+    expect(tabs.map((tab) => tab.textContent)).toEqual(['Database', 'Features', 'Question 3']);
+    expect(tabs[0]).toHaveClass('ui-chat-question__tab', 'ui-tabs__tab');
+    expect(tabs[0]).toHaveAttribute('aria-selected', 'true');
+    expect(tabs[1]).toHaveAttribute('aria-selected', 'false');
+    const counter = container.querySelector('.ui-chat-question__progress') as HTMLElement;
+    expect(within(counter).getByText('1/3')).toHaveAttribute('aria-hidden', 'true');
+    expect(within(counter).getByText('Question 1 of 3')).toBeInTheDocument();
+    const panel = screen.getByRole('tabpanel');
+    expect(panel).toHaveClass('ui-chat-question__panel');
+    expect(panel).toContainElement(screen.getByRole('radiogroup'));
     expect(screen.getAllByRole('radiogroup')).toHaveLength(1);
     expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
-    expect(chips[0]).not.toHaveAttribute('data-answered');
+    expect(tabs[0]).not.toHaveAttribute('data-answered');
     await user.click(screen.getByRole('radio', { name: 'SQLite' }));
-    expect(chips[0]).toHaveAttribute('data-answered', 'true');
+    expect(tabs[0]).toHaveAttribute('data-answered', 'true');
     expectHooksMatchSpec(container, 'CHAT-QUESTION', {
-      slots: ['steps', 'step', 'progress', 'item', 'question', 'actions', 'next', 'dismiss'],
+      slots: ['tabs', 'tab', 'progress', 'panel', 'item', 'question', 'actions', 'next'],
     });
   });
 
-  it('UIC-CHAT-QUESTION-3.2 offers Back and Next, keeping the drafts, and Submit on the last question', async () => {
+  it('UIC-CHAT-QUESTION-3.5 offers Back and Next, keeping the drafts, and Submit on the last question', async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
     render(<ChatQuestion id="ask" questions={three} status="pending" onSubmit={onSubmit} />);
@@ -252,6 +256,7 @@ describe('ChatQuestion with several questions', () => {
     await user.click(screen.getByRole('radio', { name: 'SQLite' }));
     await user.click(screen.getByRole('button', { name: 'Next' }));
     expect(screen.getByText('Question 2 of 3')).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Features' })).toHaveAttribute('aria-selected', 'true');
     await user.click(screen.getByRole('checkbox', { name: 'Search' }));
     const back = screen.getByRole('button', { name: 'Back' });
     expect(back).toHaveClass('ui-chat-question__back');
@@ -270,9 +275,10 @@ describe('ChatQuestion with several questions', () => {
     ]);
   });
 
-  it('UIC-CHAT-QUESTION-3.2 hints why Next is unavailable', async () => {
+  it('UIC-CHAT-QUESTION-3.5 hints why Next is unavailable', async () => {
     const user = userEvent.setup();
     render(<ChatQuestion id="ask" questions={three} status="pending" onSubmit={vi.fn()} />);
+    await user.tab();
     await user.tab();
     await user.tab();
     expect(screen.getByRole('button', { name: 'Next' })).toHaveFocus();
@@ -281,10 +287,12 @@ describe('ChatQuestion with several questions', () => {
     );
   });
 
-  it('UIC-CHAT-QUESTION-3.3 UIC-CHAT-QUESTION-2.4 moves focus to each question’s answer as the reader steps', async () => {
+  it('UIC-CHAT-QUESTION-3.6 UIC-CHAT-QUESTION-2.4 moves focus to each question’s answer as the reader steps', async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
     render(<ChatQuestion id="ask" questions={three} status="pending" onSubmit={onSubmit} />);
+    await user.tab();
+    expect(screen.getByRole('tab', { name: 'Database' })).toHaveFocus();
     await user.tab();
     await user.keyboard('{ArrowDown}');
     await user.tab();

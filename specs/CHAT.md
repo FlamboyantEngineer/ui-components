@@ -36,7 +36,7 @@ Verification: `src/components/chat/chat.test.tsx`, `src/components/chat/chat-mod
 
 ### UIC-CHAT-1.5 - Parts
 
-Each message's content shall be its `parts` drawn by `ChatParts` with the message's id as `messageId`, streaming while the message's status is `streaming`, and the chat's `textFormat`, `expandsActivity`, `toolRenderers`, `onApprove`, `onDeny`, `onAlwaysAllow`, `onAnswerQuestion`, `onDismissQuestion`, `onApplyCode` and `renderPart`. The chat keeps the reader's open and closed choices of each message's parts and passes them back as `expandedParts`, so they survive the message being unmounted and mounted again, as in a virtualized history. `onAnswerQuestion` and `onDismissQuestion` may return a promise, which the question card awaits ([UIC-CHAT-QUESTION-2.7](CHAT-QUESTION.md)); without `onAnswerQuestion` question cards are read-only. When `conversationId` changes, every message's parts start afresh, so a card's drafts and unsettled request never carry over to another conversation, even where message and part ids repeat. Pass stable callbacks: the messages that did not change then do not render again while a reply streams.
+Each message's content shall be its `parts` drawn by `ChatParts` with the message's id as `messageId`, streaming while the message's status is `streaming`, and the chat's `textFormat`, `expandsActivity`, `toolRenderers`, `onApprove`, `onDeny`, `onAlwaysAllow`, `onAnswerQuestion`, `onDismissQuestion`, `questionAnsweredMark`, `onApplyCode` and `renderPart`. The chat keeps the reader's open and closed choices of each message's parts and passes them back as `expandedParts`, so they survive the message being unmounted and mounted again, as in a virtualized history. `onAnswerQuestion` and `onDismissQuestion` may return a promise, which the question card awaits ([UIC-CHAT-QUESTION-2.7](CHAT-QUESTION.md)); without `onAnswerQuestion` question cards are read-only. When `conversationId` changes, every message's parts start afresh, so a card's drafts and unsettled request never carry over to another conversation, even where message and part ids repeat. Pass stable callbacks: the messages that did not change then do not render again while a reply streams.
 
 Implementation: `src/components/chat/chat-message-view.tsx`, `src/components/chat/use-chat-state.ts`, `src/components/chat/use-message-context.ts`
 Verification: `src/components/chat/chat.test.tsx`
@@ -131,14 +131,14 @@ Verification: `src/components/chat/chat-composer.test.tsx`, `e2e/chat.spec.ts`
 
 ### UIC-CHAT-3.5 - Attachments
 
-With `onAttach`, the composer shall attach files from its attach button, a drop and a paste ([UIC-MESSAGE-COMPOSER-3.2](MESSAGE-COMPOSER.md#uic-message-composer-32---attaching-files)); without it there is no attach button. The chat's `attachments` show above the input as a `ChatAttachmentList` with `onRemoveAttachment` and `onRetryAttachment`, focus going to the composer when the last one is removed; while one of them is `complete`, the message may be sent without text.
+With `onAttach`, the composer shall attach files from its attach button, a drop and a paste ([UIC-MESSAGE-COMPOSER-3.2](MESSAGE-COMPOSER.md#uic-message-composer-32---attaching-files)); without it there is no attach button. With `composerMenu`, the menu's "+" button takes the attach button's place, and the host's menu item attaches files ([UIC-CHAT-3.9](#uic-chat-39---composer-menu)). The chat's `attachments` show above the input as a `ChatAttachmentList` with `onRemoveAttachment` and `onRetryAttachment`, focus going to the composer when the last one is removed; while one of them is `complete`, the message may be sent without text.
 
 Implementation: `src/components/chat/chat-composer.tsx`
 Verification: `src/components/chat/chat-composer.test.tsx`, `e2e/chat.spec.ts`
 
 ### UIC-CHAT-3.6 - Model picker
 
-With `modelPicker`, the composer's tools shall end, after the attach and emoji buttons and the host's tools ([UIC-CHAT-3.8](#uic-chat-38---host-tools)), with a [Chat Model Picker](CHAT-MODEL-PICKER.md) taking those props, disabled while the chat's `isDisabled` holds as well as with its own `isDisabled`. The chat holds no choice of its own: the host reads the current model and effort, controlled or reported through `onModelChange` and `onEffortChange`, when it sends the reader's message.
+With `modelPicker`, the composer's tools shall end, after the "+" menu or attach button, the emoji button and the host's tools ([UIC-CHAT-3.8](#uic-chat-38---host-tools)), with a [Chat Model Picker](CHAT-MODEL-PICKER.md) taking those props, disabled while the chat's `isDisabled` holds as well as with its own `isDisabled`. The chat holds no choice of its own: the host reads the current model and effort, controlled or reported through `onModelChange` and `onEffortChange`, when it sends the reader's message.
 
 Implementation: `src/components/chat/chat-composer.tsx`
 Verification: `src/components/chat/chat-composer.test.tsx`, `e2e/chat.spec.ts`
@@ -152,10 +152,17 @@ Verification: `src/components/chat/chat-submit.test.tsx`, `src/components/messag
 
 ### UIC-CHAT-3.8 - Host tools
 
-`composerToolbar` shall render the host's controls, such as a checkbox that authorizes the request, among the composer's tools after the attach and emoji buttons and before the model picker, then Send or Stop, so a host adds controls without replacing the composer. The tools wrap onto further lines in a narrow composer, while Send and Stop keep their place at the end of the footer.
+`composerToolbar` shall render the host's controls, such as a checkbox that authorizes the request, among the composer's tools after the "+" menu or attach button and the emoji button, and before the model picker, then Send or Stop, so a host adds controls without replacing the composer. The tools wrap onto further lines in a narrow composer, while Send and Stop keep their place at the end of the footer.
 
 Implementation: `src/components/chat/chat-composer.tsx`, `labs/reference/message-composer.css`
 Verification: `src/components/chat/chat-submit.test.tsx`, `e2e/chat.spec.ts`
+
+### UIC-CHAT-3.9 - Composer menu
+
+With `composerMenu`, the composer shall show that menu ([UIC-MESSAGE-COMPOSER-5](MESSAGE-COMPOSER.md#uic-message-composer-5---menu)): its tools start with the "+" button in place of the attach button, then the emoji button (between people), the host's `composerToolbar`, the model picker, then Send or Stop. The items act on the chat's composer: the text and pills they insert are part of the message `onSend` receives, `attachFiles` hands the chosen files to `onAttach`, and toggles report to the host, which holds their state. The button is disabled while the chat's `isDisabled` holds.
+
+Implementation: `src/components/chat/chat-composer.tsx`
+Verification: `src/components/chat/chat-composer.test.tsx`, `e2e/chat-host.spec.ts`
 
 ## UIC-CHAT-4 - Activity and receipts
 

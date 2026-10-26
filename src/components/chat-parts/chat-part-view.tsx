@@ -31,6 +31,7 @@ export interface PartContext extends Pick<
   | 'onAlwaysAllow'
   | 'onAnswerQuestion'
   | 'onDismissQuestion'
+  | 'questionAnsweredMark'
   | 'onRetryAttachment'
   | 'onApplyCode'
   | 'renderPart'
@@ -99,7 +100,7 @@ function ToolCallView({ part, context }: PartViewProps<ChatToolCallPart>) {
 }
 
 function QuestionView({ part, context }: PartViewProps<ChatQuestionPart>) {
-  const { onAnswerQuestion, onDismissQuestion } = context;
+  const { onAnswerQuestion, onDismissQuestion, questionAnsweredMark } = context;
   return (
     <ChatQuestion
       id={context.toDomId(part.id)}
@@ -108,6 +109,7 @@ function QuestionView({ part, context }: PartViewProps<ChatQuestionPart>) {
       answers={part.answers}
       onSubmit={onAnswerQuestion && ((answers) => onAnswerQuestion(part.id, answers))}
       onDismiss={onDismissQuestion && (() => onDismissQuestion(part.id))}
+      answeredMark={questionAnsweredMark}
     />
   );
 }

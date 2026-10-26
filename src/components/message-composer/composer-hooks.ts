@@ -10,6 +10,8 @@ export const composerHooks = createHooks('message-composer', [
   'code-block',
   'footer',
   'toolbar',
+  'menu-button',
+  'menu',
   'attach',
   'emoji',
   'cancel',

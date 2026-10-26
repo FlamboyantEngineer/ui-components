@@ -17,15 +17,13 @@ interface QuestionItemProps {
   isRevealed: boolean;
   /** Called on Enter in an answer field. */
   onEnter: () => void;
-  /** Draws the header chip; a stepped card lists the headers as its steps instead. */
-  showsHeader: boolean;
   /** The question's element, where focus lands when the reader steps to it. */
   ref?: Ref<HTMLDivElement> | undefined;
 }
 
 /**
- * One question: its header chip, its text, and its answer: options as radios or checkboxes, or a
- * field for the reader's own words.
+ * One question: its text, and its answer: options as radios or checkboxes, or a field for the
+ * reader's own words. Its header labels its tab.
  */
 export function QuestionItem({
   item,
@@ -34,13 +32,11 @@ export function QuestionItem({
   isReadOnly,
   isRevealed,
   onEnter,
-  showsHeader,
   ref,
 }: QuestionItemProps) {
   const questionId = useId();
   return (
     <div {...hooks.slot('item', { selectionMode: item.selectionMode })} ref={ref}>
-      {showsHeader && item.header ? <span {...hooks.slot('header')}>{item.header}</span> : null}
       <p {...hooks.slot('question')} id={questionId}>
         {item.question}
       </p>
