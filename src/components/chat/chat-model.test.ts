@@ -81,6 +81,22 @@ describe('chat model', () => {
     expect(toMessageText(edited)).toEqual({ text: '@Ana Lopez hi', tokens: [bare[0]] });
   });
 
+  it('UIC-CHAT-3.2 UIC-CHAT-3.10 keeps a reference token as it is both ways', () => {
+    const reference: ChatTextToken = {
+      start: 0,
+      end: 6,
+      kind: 'reference',
+      id: '7c2e4f10-9b1a',
+      label: 'TRIP-4',
+      recordType: 'itinerary',
+    };
+    expect(toDisplayTokens([reference])).toEqual([reference]);
+    expect(toComposerTokens([reference])).toEqual([reference]);
+    const sent = { ...message('e', 'sam', { text: 'TRIP-4' }) };
+    sent.parts = [{ type: 'text', text: 'TRIP-4', tokens: [reference] }];
+    expect(toMessageText(sent)).toEqual({ text: 'TRIP-4', tokens: [reference] });
+  });
+
   it('UIC-CHAT-2.5 finds the reader’s last message they may edit', () => {
     const messages = [
       message('a', 'sam'),

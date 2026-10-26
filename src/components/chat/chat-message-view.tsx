@@ -38,6 +38,7 @@ export type ChatPartOptions = Pick<
   | 'questionAnsweredMark'
   | 'onApplyCode'
   | 'renderPart'
+  | 'getReference'
 >;
 
 /** What every message of a chat shares; it keeps its identity while the chat's options do. */

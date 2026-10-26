@@ -10,6 +10,7 @@ import type { ComposerState } from '../use-composer-state.js';
 import { attachPastedFiles } from '../use-file-drop.js';
 import { createComposerPlugins, createComposerState, pastePlainText } from './composer-commands.js';
 import { parseComposerMessage, serializeComposerDocument } from './composer-markdown.js';
+import { ComposerPillContext, composerNodeViews } from './composer-pill.js';
 import { composerSchema, type PillAttributes } from './composer-schema.js';
 import { RichComposerContent } from './rich-content.js';
 import type { RichMessageComposerProps } from './rich-message-composer.js';
@@ -109,16 +110,23 @@ export function RichComposerEditor(editor: RichComposerEditorProps) {
     (current: EditorState) => decoratePlaceholder(current, placeholder),
     [placeholder],
   );
+  const pills = useMemo(
+    () => ({ getReference: props.getReference, isEditable }),
+    [props.getReference, isEditable],
+  );
   return (
-    <ProseMirror
-      state={synced.state}
-      dispatchTransaction={synced.dispatchTransaction}
-      editable={() => isEditable}
-      decorations={decorations}
-      handlePaste={paste.handlePaste}
-      handleDrop={paste.handleDrop}
-    >
-      <RichComposerContent {...editor} />
-    </ProseMirror>
+    <ComposerPillContext.Provider value={pills}>
+      <ProseMirror
+        nodeViewComponents={composerNodeViews}
+        state={synced.state}
+        dispatchTransaction={synced.dispatchTransaction}
+        editable={() => isEditable}
+        decorations={decorations}
+        handlePaste={paste.handlePaste}
+        handleDrop={paste.handleDrop}
+      >
+        <RichComposerContent {...editor} />
+      </ProseMirror>
+    </ComposerPillContext.Provider>
   );
 }

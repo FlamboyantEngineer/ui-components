@@ -35,6 +35,7 @@ export interface PartContext extends Pick<
   | 'onRetryAttachment'
   | 'onApplyCode'
   | 'renderPart'
+  | 'getReference'
   | 'expandsActivity'
 > {
   textFormat: ChatTextFormat;
@@ -153,6 +154,7 @@ export function ChatPartView({ part, context }: PartViewProps<ChatPart>): ReactN
           part={part}
           format={part.format ?? context.textFormat}
           renderNode={context.renderNode}
+          getReference={context.getReference}
         />
       );
     case 'reasoning':

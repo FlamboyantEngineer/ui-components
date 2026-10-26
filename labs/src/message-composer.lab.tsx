@@ -17,6 +17,7 @@ import {
   RichComposerSections,
 } from './message-composer-rich-cases.js';
 import { createLabComposerMenu, ComposerMenuSection } from './message-composer-menu-cases.js';
+import { ReferenceComposerSection } from './message-composer-reference-cases.js';
 import { TeamChatSection } from './message-composer-team-cases.js';
 
 const states = ['empty', 'draft', 'pending', 'stoppable', 'disabled', 'editing'] as const;
@@ -228,6 +229,7 @@ mountLab(
       <Recalling />
     </LabSection>
     <RichComposerSections />
+    <ReferenceComposerSection />
     <TeamChatSection />
     <LabSection
       title="Touch screens"

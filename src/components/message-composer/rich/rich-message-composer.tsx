@@ -1,5 +1,6 @@
 import { useCallback, useRef, type FocusEvent, type Ref } from 'react';
 import type { AvatarIdentity } from '../../avatar/avatar.js';
+import type { RecordLabelResolver } from '../../record-label/record-label.js';
 import { ComposerFrame } from '../composer-frame.js';
 import { resolveSubmitShortcut, useCoarsePointer } from '../composer-keys.js';
 import {
@@ -51,6 +52,8 @@ export interface RichMessageComposerProps extends MessageComposerSharedProps {
   mentions?: readonly MessageComposerMention[] | undefined;
   /** The commands `/` inserts. */
   commands?: readonly MessageComposerCommand[] | undefined;
+  /** Looks up how a record reference's chip shows its record: name, icon, link, preview or unavailability. */
+  getReference?: RecordLabelResolver | undefined;
   onFocus?: ((event: FocusEvent<HTMLDivElement>) => void) | undefined;
   onBlur?: ((event: FocusEvent<HTMLDivElement>) => void) | undefined;
   /** The editable text box. */
@@ -69,7 +72,7 @@ const richFormat: ComposerFormat<MessageComposerMessage> = {
 
 /**
  * `MessageComposer`'s rich mode, on ProseMirror: mentions and commands as atomic pills chosen from
- * the completion list or inserted by a menu item, Markdown as typed with code blocks after three
+ * the completion list or inserted by a menu item, record references as atomic record chips, Markdown as typed with code blocks after three
  * backticks and Ctrl+B or Ctrl+I wrapping the selection, plain-text paste, and the plain composer's
  * frame, sending, attaching, editing, recall and draft. It sends Markdown text with the pills'
  * token ranges.

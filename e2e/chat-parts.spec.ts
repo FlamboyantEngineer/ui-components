@@ -29,6 +29,22 @@ test.describe('Chat Parts lab', () => {
     await lab.expectAccessible('[data-lab-section="Text and tokens"]');
   });
 
+  test('UIC-CHAT-PARTS-2.5 draws record references as chips in both formats', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-parts');
+    for (const format of ['markdown', 'plain']) {
+      const references = cell(page, `content=references format=${format}`);
+      const chips = references.locator('.ui-chat-parts__token[data-kind="reference"]');
+      await expect(chips).toHaveCount(4);
+      await expect(chips.first().getByRole('link')).toHaveText('TRIP-4 Lisbon weekend');
+      await expect(chips.nth(2)).toHaveText('Missing item');
+      await expect(chips.nth(3)).toHaveText('Restricted item');
+    }
+    await lab.expectAccessible('[data-lab-section="Text and tokens"]');
+  });
+
   test('UIC-CHAT-PARTS-2.2 UIC-CHAT-PARTS-5.2 streams an answer: the steps run, collapse, and the citations preview', async ({
     page,
     lab,
