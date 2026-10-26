@@ -186,7 +186,6 @@ const typingCases = {
   one: { names: ['Ana Lopez'] },
   two: { names: ['Ana Lopez', 'Ben Okoro'] },
   'three or more': { names: ['Ana Lopez', 'Ben Okoro', 'Cy Park'] },
-  thinking: { names: ['Helper'], variant: 'thinking' },
   nobody: { names: [] },
 } as const;
 

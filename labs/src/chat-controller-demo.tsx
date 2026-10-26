@@ -12,7 +12,7 @@ import {
   type ChatUploadFunction,
 } from '../../src/components/chat-controller/chat-controller.js';
 import type { ChatMessageData } from '../../src/components/chat-parts/chat-parts.js';
-import { ChatTranscript, ChatTypingIndicator } from '../../src/components/chat-transcript/index.js';
+import { ChatTranscript } from '../../src/components/chat-transcript/index.js';
 import { Cluster, Grid, Stack } from '../../src/components/layout/layout.js';
 import { MessageComposer } from '../../src/components/message-composer/message-composer.js';
 import { Choice, ChoiceGroup } from '../../src/components/choice-group/choice-group.js';
@@ -164,8 +164,10 @@ export function ChatControllerDemo() {
               ))}
             </ChatTranscript>
           </div>
-          {isThinking ? <ChatTypingIndicator variant="thinking" names={['Helper']} /> : null}
-          <ChatStatusLine text={chat.statusText ?? ''} isRunning={chat.statusText !== undefined} />
+          <ChatStatusLine
+            text={chat.statusText}
+            isRunning={isThinking || chat.statusText !== undefined}
+          />
           <QueueList queue={chat.queue} onQueueChange={props.onQueueChange} />
           <MessageComposer
             aria-label="Message the helper"

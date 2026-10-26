@@ -103,12 +103,25 @@ test.describe('Chat Activity lab', () => {
     lab,
   }) => {
     await lab.open('chat-activity');
-    const running = cell(page, 'running=running');
+    const running = cell(page, 'running=running content=text');
     await expect(running.locator('.ui-chat-status-line__text')).toHaveText(
       'Searching trains to Porto…',
     );
     await expect(running.getByRole('status')).toHaveText('Searching trains to Porto…');
-    await expect(cell(page, 'running=stopped').locator('.ui-chat-status-line')).toHaveCount(0);
+    const thinking = cell(page, 'running=running content=thinking');
+    await expect(thinking.locator('.ui-chat-status-line__text')).toHaveText('Thinking…');
+    await expect(thinking.locator('.ui-chat-status-line__text')).toHaveCSS(
+      'animation-name',
+      /shimmer/,
+    );
+    const icon = cell(page, 'running=running content=icon');
+    await expect(icon.locator('.ui-chat-status-line__icon .ui-icon')).toBeVisible();
+    await expect(icon.locator('.ui-chat-status-line__spinner')).toHaveCount(0);
+    for (const content of ['text', 'thinking', 'icon']) {
+      await expect(
+        cell(page, `running=stopped content=${content}`).locator('.ui-chat-status-line'),
+      ).toHaveCount(0);
+    }
     await lab.expectAccessible('[data-lab-section="Status line"]');
   });
 

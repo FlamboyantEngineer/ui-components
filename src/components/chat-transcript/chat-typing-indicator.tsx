@@ -3,17 +3,9 @@ import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { getDisplayName } from '../avatar/avatar.js';
 
-/** People `typing` a message, or an assistant `thinking` before its reply's first words. */
-export type ChatTypingIndicatorVariant = 'typing' | 'thinking';
-
 export interface ChatTypingIndicatorProps extends BaseProps {
-  /**
-   * Who is typing, in the order they started; for `thinking`, the assistant's name first. Nobody
-   * typing leaves the indicator empty.
-   */
+  /** Who is typing, in the order they started. Nobody typing leaves the indicator empty. */
   names?: readonly string[] | undefined;
-  /** Defaults to `typing`. */
-  variant?: ChatTypingIndicatorVariant | undefined;
 }
 
 const hooks = createHooks('chat-typing-indicator', ['dots', 'dot', 'text']);
@@ -22,27 +14,17 @@ const dotKeys = ['first', 'second', 'third'] as const;
 
 /**
  * Says who is typing (`Ana is typing…`, `Ana and Ben are typing…`, `Ana and 2 others are
- * typing…`) or that an assistant is thinking, beside three decorative dots a stylesheet animates.
- * It is a polite status: keep it mounted, empty while nobody types, so changes are announced.
+ * typing…`) beside three decorative dots a stylesheet animates. It is a polite status: keep it
+ * mounted, empty while nobody types, so changes are announced.
  */
-export function ChatTypingIndicator({
-  names = [],
-  variant = 'typing',
-  className,
-  ...rest
-}: ChatTypingIndicatorProps) {
+export function ChatTypingIndicator({ names = [], className, ...rest }: ChatTypingIndicatorProps) {
   const strings = useUiStrings();
   const displayNames = names.map((name) => getDisplayName(name, strings.unnamed));
-  const text =
-    variant === 'thinking'
-      ? strings.chatThinking(displayNames[0])
-      : displayNames.length > 0
-        ? strings.chatTyping(displayNames)
-        : null;
+  const text = displayNames.length > 0 ? strings.chatTyping(displayNames) : null;
   return (
     <div
       {...rest}
-      {...hooks.root({ className, props: rest, data: { variant, empty: text === null } })}
+      {...hooks.root({ className, props: rest, data: { empty: text === null } })}
       role="status"
     >
       {text === null ? null : (

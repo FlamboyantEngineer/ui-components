@@ -1,6 +1,7 @@
 // Pure helpers of the chat widget: who wrote what, what a message says, and who read it.
 
 import { splitMatchTerms, textMatchesTerms } from '../text-match/text-match.js';
+import type { ChatStatusLineActivity } from '../chat-activity/chat-activity.js';
 import { isAwaitingReader } from '../chat-controller/chat-controller.js';
 import type { ChatMessageData, ChatParticipant, ChatTextToken } from '../chat-parts/chat-parts.js';
 import type {
@@ -150,15 +151,26 @@ export function listTypingNames(
   });
 }
 
-/** The assistant whose reply has started but shows nothing yet, while a reply runs. */
-export function findThinkingAssistant(
-  messages: readonly ChatMessageData[],
-  participants: ChatParticipantIndex,
-): ChatParticipant | undefined {
-  const last = messages.at(-1);
-  if (!last?.authorId || last.status !== 'streaming' || last.parts.length > 0) return undefined;
-  const author = participants.get(last.authorId);
-  return author?.kind === 'assistant' ? author : undefined;
+/**
+ * Until what the thinking line of a reply that streams shows: its first `content`, its `text`, or
+ * its `end`, writing alongside the text.
+ */
+export type ChatThinkingUntil = 'content' | 'text' | 'end';
+
+/**
+ * What the assistant does in a reply that streams, if its thinking line shows: `thinking` while
+ * the reply shows nothing yet or says what it does, and, depending on `until`, while its latest
+ * part is not text; `writing` while text streams in, until the `end`.
+ */
+export function toThinkingActivity(
+  message: ChatMessageData,
+  until: ChatThinkingUntil,
+): ChatStatusLineActivity | undefined {
+  if (toDisplayStatus(message) !== 'streaming') return undefined;
+  if (message.statusText || message.parts.length === 0) return 'thinking';
+  if (until === 'content') return undefined;
+  if (message.parts.at(-1)?.type !== 'text') return 'thinking';
+  return until === 'end' ? 'writing' : undefined;
 }
 
 /** What the assistant is doing in the reply that streams, if it says. */

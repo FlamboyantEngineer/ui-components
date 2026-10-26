@@ -35,6 +35,7 @@ export interface PartContext extends Pick<
   | 'onRetryAttachment'
   | 'onApplyCode'
   | 'renderPart'
+  | 'expandsActivity'
 > {
   textFormat: ChatTextFormat;
   renderNode: MarkdownNodeRenderer;
@@ -63,10 +64,12 @@ function ReasoningView({ part, context }: PartViewProps<ChatReasoningPart>) {
   return (
     <ChatReasoning
       text={part.text}
+      title={part.title}
       status={part.status}
       durationMs={part.durationMs}
       isExpanded={expansion.expanded[part.id]}
       onExpandedChange={(isExpanded) => expansion.setExpanded(part.id, isExpanded)}
+      expandsAutomatically={context.expandsActivity}
     />
   );
 }

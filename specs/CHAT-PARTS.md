@@ -61,7 +61,7 @@ Verification: `src/components/chat-parts/chat-text-part.test.tsx`, `src/componen
 
 ### UIC-CHAT-PARTS-3.1 - Reasoning
 
-A reasoning part shall render as `ChatReasoning` with its `text`, `status` and `durationMs`, its Markdown streaming while the reasoning does ([UIC-CHAT-ACTIVITY-1.4](CHAT-ACTIVITY.md#uic-chat-activity-14---format)).
+A reasoning part shall render as `ChatReasoning` with its `text`, `title`, `status` and `durationMs`, opening on its own while it streams unless `expandsActivity` is false, its Markdown streaming while the reasoning does ([UIC-CHAT-ACTIVITY-1.4](CHAT-ACTIVITY.md#uic-chat-activity-14---format)).
 
 Implementation: `src/components/chat-parts/chat-part-view.tsx`
 Verification: `src/components/chat-parts/chat-part-view.test.tsx`
@@ -142,7 +142,7 @@ Verification: `src/components/chat-parts/chat-parts-grouping.test.ts`, `src/comp
 
 ### UIC-CHAT-PARTS-5.2 - Running and duration
 
-A group shall run (`ChatSteps`' `isRunning`: open, "Working…") while `isStreaming` is true and either it ends the message or one of its steps is still at work (reasoning streaming, a tool call `pending` or `running`); otherwise it has ended and collapses, unless the reader chose otherwise or a call in it waits for approval ([UIC-CHAT-PARTS-5.3](#uic-chat-parts-53---approvals-in-a-group)) or failed ([UIC-CHAT-PARTS-5.4](#uic-chat-parts-54---failures-in-a-group)). So a group of successful steps collapses once the answer after it starts streaming. Its duration is the sum of its steps' `durationMs`, or none when no step has one.
+A group shall run (`ChatSteps`' `isRunning`: open, "Working…") while `isStreaming` is true and either it ends the message or one of its steps is still at work (reasoning streaming, a tool call `pending` or `running`); otherwise it has ended and collapses, unless the reader chose otherwise or a call in it waits for approval ([UIC-CHAT-PARTS-5.3](#uic-chat-parts-53---approvals-in-a-group)) or failed ([UIC-CHAT-PARTS-5.4](#uic-chat-parts-54---failures-in-a-group)). So a group of successful steps collapses once the answer after it starts streaming. With `expandsActivity` false a running group stays closed until the reader opens it. While its latest step is reasoning that streams, the group is labelled by that reasoning's `title`, when it has one. Its duration is the sum of its steps' `durationMs`, or none when no step has one.
 
 Implementation: `src/components/chat-parts/chat-parts.tsx`, `src/components/chat-parts/chat-parts-grouping.ts`
 Verification: `src/components/chat-parts/chat-parts-grouping.test.ts`, `src/components/chat-parts/chat-parts.test.tsx`, `e2e/chat-parts.spec.ts`

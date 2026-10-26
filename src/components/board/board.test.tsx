@@ -1,12 +1,21 @@
-import { act, render, screen, waitFor, within } from '@testing-library/react';
+import {
+  act,
+  createEvent,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { useState } from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { useState, type ReactNode } from 'react';
+import { describe, expect, expectTypeOf, it, vi } from 'vitest';
 import { createMemoryStorage } from '../../core/storage.js';
 import { UiProvider } from '../../core/provider.js';
 import type { Key } from '../../core/props.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
-import { Board, type BoardProps } from './board.js';
+import { Button } from '../button/button.js';
+import { Board, type BoardColumn, type BoardProps } from './board.js';
 import {
   applyBoardMove,
   applyColumnMove,
@@ -21,7 +30,7 @@ interface Task {
   lane: string;
 }
 
-const columns = [
+const columns: BoardColumn[] = [
   { id: 'todo', title: 'To do' },
   { id: 'doing', title: 'Doing', limit: 1 },
   { id: 'done', title: 'Done', limit: 5 },
@@ -38,6 +47,10 @@ const tasks: Task[] = [
 ];
 
 type TaskBoardProps = Partial<BoardProps<Task>>;
+
+const sortAction = (column: BoardColumn, onPress?: () => void) => (
+  <Button size="sm" icon="sort-none" label={`Sort ${column.title}`} onPress={onPress} />
+);
 
 function TaskBoard(props: TaskBoardProps) {
   return (
@@ -481,5 +494,92 @@ describe('Board', () => {
     await user.keyboard('{Alt>}{ArrowLeft}{/Alt}{Alt>}{ArrowLeft}{/Alt}');
     expect(titles()).toEqual(['To do', 'Doing', 'Done']);
     expect(onColumnMove).toHaveBeenCalledTimes(2);
+  });
+
+  it("UIC-BOARD-1.9 draws each column's actions from its own column entry, or no slot", () => {
+    expectTypeOf<NonNullable<BoardProps<Task>['renderColumnActions']>>().toEqualTypeOf<
+      (column: BoardColumn) => ReactNode
+    >();
+    const renderColumnActions = vi.fn((column: BoardColumn) =>
+      column.id === 'done' ? null : sortAction(column),
+    );
+    const { container, rerender } = render(
+      <TaskBoard onColumnMove={vi.fn()} renderColumnActions={renderColumnActions} />,
+    );
+    expect(renderColumnActions.mock.calls.map(([column]) => column)).toEqual(
+      expect.arrayContaining(columns),
+    );
+    expect(renderColumnActions.mock.calls.every(([column]) => columns.includes(column))).toBe(true);
+    const headers = [...container.querySelectorAll('.ui-board__column')];
+    const slots = headers.map((header) => header.querySelector('.ui-board__column-actions'));
+    expect(slots[0]?.previousElementSibling).toHaveClass('ui-board__column-count');
+    expect(within(slots[1] as HTMLElement).getByRole('button')).toHaveAccessibleName('Sort Doing');
+    expect(slots[2]).toBeNull();
+    expectHooksMatchSpec(container, 'BOARD', { slots: ['column-handle', 'column-actions'] });
+    rerender(<TaskBoard />);
+    expect(container.querySelector('.ui-board__column-actions')).toBeNull();
+  });
+
+  it('UIC-BOARD-1.9 reaches actions by keyboard without collapsing the column or activating a card', async () => {
+    const user = userEvent.setup();
+    const onSort = vi.fn();
+    const onAction = vi.fn();
+    const onCollapsedColumnsChange = vi.fn();
+    const { container } = render(
+      <TaskBoard
+        columns={columns.slice(0, 1)}
+        defaultCollapsedColumns={[]}
+        onAction={onAction}
+        onCollapsedColumnsChange={onCollapsedColumnsChange}
+        renderColumnActions={(column) => sortAction(column, () => onSort(column.id))}
+      />,
+    );
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'Collapse To do' })).toHaveFocus();
+    await user.tab();
+    const sort = screen.getByRole('button', { name: 'Sort To do' });
+    expect(sort).toHaveFocus();
+    await user.keyboard('{Enter}');
+    await user.keyboard(' ');
+    await user.click(sort);
+    expect(onSort).toHaveBeenCalledTimes(3);
+    expect(onSort).toHaveBeenLastCalledWith('todo');
+    expect(onCollapsedColumnsChange).not.toHaveBeenCalled();
+    expect(onAction).not.toHaveBeenCalled();
+    expect(container.querySelector('.ui-board__column')).not.toHaveAttribute('data-collapsed');
+  });
+
+  it('UIC-BOARD-1.9 keeps the actions of a collapsed column', () => {
+    render(<TaskBoard defaultCollapsedColumns={['doing']} renderColumnActions={sortAction} />);
+    expect(screen.getByRole('button', { name: 'Expand Doing' })).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Sort Doing' })).toBeVisible();
+  });
+
+  it('UIC-BOARD-1.9 UIC-BOARD-3.1 refuses a column drag that starts in the actions', async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <TaskBoard onColumnMove={vi.fn()} renderColumnActions={sortAction} />,
+    );
+    const header = container.querySelector('.ui-board__column') as HTMLElement;
+    await user.pointer({
+      keys: '[MouseLeft>]',
+      target: screen.getByRole('button', { name: 'Sort To do' }),
+    });
+    const refused = createEvent.dragStart(header);
+    fireEvent(header, refused);
+    expect(refused.defaultPrevented).toBe(true);
+    expect(header).not.toHaveAttribute('data-dragging');
+    await user.pointer({ keys: '[/MouseLeft]' });
+    await user.pointer({ keys: '[MouseLeft>]', target: screen.getByText('To do') });
+    const dataTransfer = {
+      clearData: () => {},
+      setData: () => {},
+      setDragImage: () => {},
+      items: { add: () => {} },
+    };
+    const allowed = createEvent.dragStart(header, { dataTransfer });
+    fireEvent(header, allowed);
+    expect(allowed.defaultPrevented).toBe(false);
+    await user.pointer({ keys: '[/MouseLeft]' });
   });
 });

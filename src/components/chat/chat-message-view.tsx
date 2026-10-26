@@ -1,5 +1,6 @@
-import { memo } from 'react';
+import { memo, type ReactNode } from 'react';
 import { useUiStrings } from '../../core/provider.js';
+import { ChatStatusLine } from '../chat-activity/chat-activity.js';
 import { ChatMessageActionsMenu } from '../chat-message-actions/chat-message-actions.js';
 import { ChatParts, type ChatMessageData, type ChatPartsProps } from '../chat-parts/chat-parts.js';
 import {
@@ -11,6 +12,7 @@ import {
 } from '../chat-transcript/chat-transcript.js';
 import { ReactionBar } from '../reaction-bar/reaction-bar.js';
 import { toMessageCommands, type ChatCommandContext } from './chat-commands.js';
+import { chatHooks as hooks } from './chat-hooks.js';
 import { toMessageVariant, type ChatMessageDisplayOptions } from './chat-message-display.js';
 import {
   readMessageText,
@@ -18,12 +20,15 @@ import {
   toExcerpt,
   toMessageAuthor,
   toMessageOrigin,
+  toThinkingActivity,
+  type ChatThinkingUntil,
 } from './chat-model.js';
 
 /** The `ChatParts` options a chat passes to every message unchanged. */
 export type ChatPartOptions = Pick<
   ChatPartsProps,
   | 'textFormat'
+  | 'expandsActivity'
   | 'toolRenderers'
   | 'onApprove'
   | 'onDeny'
@@ -42,6 +47,9 @@ export interface ChatMessageContext extends ChatCommandContext {
   parts: ChatPartOptions;
   getNow: (() => Date) | undefined;
   onRetry: ((messageId: string) => void) | undefined;
+  thinkingText: string | undefined;
+  thinkingIcon: ReactNode;
+  thinkingUntil: ChatThinkingUntil;
   onQuotePress: (messageId: string) => void;
   onExpandedPartsChange: (messageId: string, expanded: Record<string, boolean>) => void;
 }
@@ -82,6 +90,20 @@ function MessageReactions({ message, context }: Pick<ChatMessageViewProps, 'mess
     <ReactionBar
       reactions={message.reactions ?? []}
       onToggle={canReact ? (emoji, isReacted) => react(message.id, emoji, isReacted) : undefined}
+    />
+  );
+}
+
+/** What the assistant is thinking or doing in its reply that streams, while it does. */
+function ThinkingLine({ message, context }: Pick<ChatMessageViewProps, 'message' | 'context'>) {
+  const activity = toThinkingActivity(message, context.thinkingUntil);
+  if (!activity) return null;
+  return (
+    <ChatStatusLine
+      className={hooks.slotClass('status')}
+      text={message.statusText || context.thinkingText}
+      icon={context.thinkingIcon}
+      activity={activity}
     />
   );
 }
@@ -145,6 +167,9 @@ export const ChatMessageView = memo(function ChatMessageView({
             expandedParts={expandedParts}
             onExpandedPartsChange={(expanded) => context.onExpandedPartsChange(id, expanded)}
           />
+          {participant?.kind === 'assistant' ? (
+            <ThinkingLine message={message} context={context} />
+          ) : null}
         </ChatMessage>
       )}
     </ChatMessageActionsMenu>

@@ -6,6 +6,7 @@ import {
   ChatSteps,
   type ChatReasoningFormat,
 } from '../../src/components/chat-activity/index.js';
+import { Icon } from '../../src/components/icon/icon.js';
 import { Switch } from '../../src/components/switch/switch.js';
 import { LabToolCall, planSteps, reasoningText } from './chat-activity-samples.js';
 import { ActivitySimulation } from './chat-activity-simulation.js';
@@ -142,12 +143,16 @@ mountLab(
     </LabSection>
     <LabSection
       title="Status line"
-      description="A live line while the assistant works; nothing once it stops."
+      description="A live line while the assistant works, its text shimmering: what it does, Thinking… without a text, or an icon in place of the busy indicator; nothing once it stops."
     >
       <StateMatrix
-        axes={{ running: ['running', 'stopped'] }}
-        render={({ running }) => (
-          <ChatStatusLine text="Searching trains to Porto…" isRunning={running === 'running'} />
+        axes={{ running: ['running', 'stopped'], content: ['text', 'thinking', 'icon'] }}
+        render={({ running, content }) => (
+          <ChatStatusLine
+            text={content === 'text' ? 'Searching trains to Porto…' : undefined}
+            icon={content === 'icon' ? <Icon glyph="search" size="sm" /> : undefined}
+            isRunning={running === 'running'}
+          />
         )}
       />
     </LabSection>

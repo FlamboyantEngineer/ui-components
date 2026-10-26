@@ -157,6 +157,36 @@ test.describe('Board lab', () => {
     expect(await titles(board)).toEqual(['Doing', 'Review', 'To do', 'Done']);
   });
 
+  test('UIC-BOARD-1.9 runs column actions by keyboard and pointer without moving the column', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('board');
+    const board = demo(page, 'moves');
+    const output = board.locator('[data-lab-output]');
+    await board.getByRole('button', { name: 'Collapse Doing' }).focus();
+    await page.keyboard.press('Tab');
+    const menu = board.getByRole('button', { name: 'Doing actions' });
+    await expect(menu).toBeFocused();
+    await page.keyboard.press('Enter');
+    await page.getByRole('menuitem', { name: 'Sort by title' }).press('Enter');
+    await expect(output).toHaveText('Sorted Doing');
+    await expect(cards(board, 'Doing')).toHaveText(['Fit a spice shelfBlocked', 'Trim the hedge']);
+    await expect(board.locator('.ui-board__column[data-collapsed]')).toHaveCount(0);
+    const header = (title: string) => board.locator('.ui-board__column').filter({ hasText: title });
+    await board
+      .getByRole('button', { name: 'Done actions' })
+      .dragTo(header('Doing'), { targetPosition: { x: 120, y: 20 } });
+    expect(await titles(board)).toEqual(['To do', 'Doing', 'Review', 'Done']);
+    await expect(output).toHaveText('Sorted Doing');
+    await expect(board.locator('[data-dragging], [data-drop-target]')).toHaveCount(0);
+    await board.getByRole('button', { name: 'Review actions' }).click();
+    await page.getByRole('menuitem', { name: 'Clear column' }).click();
+    await expect(output).toHaveText('Cleared Review');
+    await expect(board.getByRole('grid', { name: 'Review' })).toHaveAttribute('data-empty', 'true');
+    await lab.expectAccessible('[data-lab-demo="moves"]');
+  });
+
   test('UIC-BOARD-1.6 adds a card to the cell whose button is pressed', async ({ page, lab }) => {
     await lab.open('board');
     const board = demo(page, 'moves');
