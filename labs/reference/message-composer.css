@@ -123,6 +123,13 @@
   font-family: var(--ref-mono);
 }
 
+/* A record reference: the record chip draws itself, so the pill adds nothing around it. */
+.ui-message-composer__pill[data-kind='reference'] {
+  padding: 0;
+  background: none;
+  font-weight: inherit;
+}
+
 .ui-message-composer__code-block {
   margin: 2px 0;
   padding: 4px 8px;

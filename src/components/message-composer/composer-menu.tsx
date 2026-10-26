@@ -26,11 +26,11 @@ export interface MessageComposerHelpers {
   /** Inserts text at the caret in place of the selection; focus returns after it once the menu closes. */
   insertText: (text: string) => void;
   /**
-   * Inserts a mention or command at the caret, followed by a space: a pill in the rich composer
-   * (its text in a code block), its text (`@label`, `/label`) in the plain composer. Focus returns
-   * after it once the menu closes.
+   * Inserts a mention, command or record reference at the caret, followed by a space: a pill or a
+   * record chip in the rich composer (its text in a code block), its text (`@label`, `/label`,
+   * `label`) in the plain composer. Focus returns after it once the menu closes.
    */
-  insertPill: (pill: Pick<MessageComposerToken, 'kind' | 'id' | 'label'>) => void;
+  insertPill: (pill: Pick<MessageComposerToken, 'kind' | 'id' | 'label' | 'recordType'>) => void;
   /** Opens the system file chooser for several files; the chosen files go to `onAttach`, without which it does nothing. */
   attachFiles: () => void;
   /** Moves focus to the input once the menu closes. */

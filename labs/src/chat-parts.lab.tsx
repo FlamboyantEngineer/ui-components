@@ -6,6 +6,8 @@ import {
   bookingCall,
   linesText,
   partSamples,
+  referenceText,
+  referenceTokens,
   partTypes,
   renderLabPart,
   searchCall,
@@ -13,6 +15,7 @@ import {
   tokenText,
 } from './chat-parts-samples.js';
 import { StreamedAnswer } from './chat-parts-stream.js';
+import { getLabReference } from './reference-samples.js';
 
 const stepStates = [
   'running',
@@ -56,6 +59,7 @@ const ignore = () => undefined;
 
 const textCases = {
   tokens: { text: tokenText, tokens: textTokens },
+  references: { text: referenceText, tokens: referenceTokens },
   lines: { text: linesText, tokens: undefined },
 };
 
@@ -83,13 +87,17 @@ mountLab(
     </LabSection>
     <LabSection
       title="Text and tokens"
-      description="Text renders as Markdown by default, or as written with its line breaks in plain format. Mention and command tokens show as pills in both; a token inside code stays as written."
+      description="Text renders as Markdown by default, or as written with its line breaks in plain format. Mention and command tokens show as pills in both; a token inside code stays as written. Record references show as record chips whose name, link and preview come from the host's getReference lookup by id, a missing and a restricted record among them."
     >
       <StateMatrix
-        axes={{ content: ['tokens', 'lines'], format: ['markdown', 'plain'] }}
+        axes={{ content: ['tokens', 'references', 'lines'], format: ['markdown', 'plain'] }}
         render={({ content, format }) => (
           <div style={{ width: 300 }}>
-            <ChatParts parts={[{ type: 'text', ...textCases[content] }]} textFormat={format} />
+            <ChatParts
+              parts={[{ type: 'text', ...textCases[content] }]}
+              textFormat={format}
+              getReference={getLabReference}
+            />
           </div>
         )}
       />

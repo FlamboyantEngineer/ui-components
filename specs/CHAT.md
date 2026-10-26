@@ -117,7 +117,7 @@ Verification: `src/components/chat/chat-composer.test.tsx`, `e2e/chat.spec.ts`
 
 ### UIC-CHAT-3.2 - Mention and command tokens
 
-`Chat` shall send each token with its trigger in its `label` (`@Ana Lopez`, `/summarize`), the text the message's pill shows ([UIC-CHAT-PARTS-2.4](CHAT-PARTS.md#uic-chat-parts-24---mention-and-command-tokens)), and give the composer a message's or queued message's tokens by their bare labels when it edits them.
+`Chat` shall send each token with its trigger in its `label` (`@Ana Lopez`, `/summarize`), the text the message's pill shows ([UIC-CHAT-PARTS-2.4](CHAT-PARTS.md#uic-chat-parts-24---mention-and-command-tokens)), and give the composer a message's or queued message's tokens by their bare labels when it edits them. A record reference has no trigger: it goes out and comes back with its `id`, `label` and `recordType` unchanged, through `onSend`, `onReply`, `onEdit`, `onQueueChange`, the conversation's stored draft and a refused send.
 
 Implementation: `src/components/chat/chat-model.ts`, `src/components/chat/chat-composer.tsx`
 Verification: `src/components/chat/chat-model.test.ts`, `src/components/chat/chat-composer.test.tsx`
@@ -170,6 +170,13 @@ With `composerMenu`, the composer shall show that menu ([UIC-MESSAGE-COMPOSER-5]
 
 Implementation: `src/components/chat/chat-composer.tsx`
 Verification: `src/components/chat/chat-composer.test.tsx`, `e2e/chat-host.spec.ts`
+
+### UIC-CHAT-3.10 - Record references
+
+With `getReference`, `Chat` shall draw the record chips of reference tokens with it in the composer ([UIC-MESSAGE-COMPOSER-4.9](MESSAGE-COMPOSER.md#uic-message-composer-49---record-references)) and in every message ([UIC-CHAT-PARTS-2.5](CHAT-PARTS.md#uic-chat-parts-25---record-references)). References come into the composer from the menu's `insertPill` ([UIC-CHAT-3.9](#uic-chat-39---composer-menu)) or a message being edited. A quote's excerpt and copied text read a reference as its label.
+
+Implementation: `src/components/chat/chat-composer.tsx`, `src/components/chat/use-message-context.ts`, `src/components/chat/chat-model.ts`
+Verification: `src/components/chat/chat-composer.test.tsx`, `src/components/chat/chat-model.test.ts`, `e2e/chat.spec.ts`
 
 ## UIC-CHAT-4 - Activity and receipts
 

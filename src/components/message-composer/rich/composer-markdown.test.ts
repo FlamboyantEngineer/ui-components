@@ -1,6 +1,8 @@
+import { Fragment, Slice } from 'prosemirror-model';
 import { describe, expect, it } from 'vitest';
 import type { MessageComposerMessage } from '../composer-message.js';
 import { parseComposerMessage, serializeComposerDocument } from './composer-markdown.js';
+import { composerSchema } from './composer-schema.js';
 
 const message: MessageComposerMessage = {
   text: '/summarize the notes for @Maria Santos\n\n```ts\nconst a = 1;\n  indented\n```\nthanks',
@@ -40,5 +42,40 @@ describe('rich composer Markdown', () => {
     expect(serializeComposerDocument(empty)).toEqual({ text: '', tokens: [] });
     const block = { text: '```\n\n```', tokens: [] };
     expect(serializeComposerDocument(parseComposerMessage(block))).toEqual(block);
+  });
+
+  it('UIC-MESSAGE-COMPOSER-4.9 reads and writes references with their identity, record type and edits around them', () => {
+    const references: MessageComposerMessage = {
+      text: 'TRIP-4 and NOTE-12\nTRIP-4',
+      tokens: [
+        { start: 0, end: 6, kind: 'reference', id: 'a1', label: 'TRIP-4', recordType: 'itinerary' },
+        { start: 11, end: 18, kind: 'reference', id: 'b2', label: 'NOTE-12' },
+        {
+          start: 19,
+          end: 25,
+          kind: 'reference',
+          id: 'a1',
+          label: 'TRIP-4',
+          recordType: 'itinerary',
+        },
+      ],
+    };
+    const doc = parseComposerMessage(references);
+    expect(doc.child(0).child(0).attrs).toMatchObject({
+      kind: 'reference',
+      recordType: 'itinerary',
+    });
+    const written = serializeComposerDocument(doc);
+    expect(written).toEqual(references);
+    expect(written.tokens[1]).not.toHaveProperty('recordType');
+    const edited = serializeComposerDocument(
+      doc.replace(1, 1, new Slice(Fragment.from(composerSchema.text('See ')), 0, 0)),
+    );
+    expect(edited.text).toBe('See TRIP-4 and NOTE-12\nTRIP-4');
+    expect(edited.tokens.map(({ start, end, id }) => [start, end, id])).toEqual([
+      [4, 10, 'a1'],
+      [15, 22, 'b2'],
+      [23, 29, 'a1'],
+    ]);
   });
 });

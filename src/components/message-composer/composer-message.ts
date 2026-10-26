@@ -1,21 +1,24 @@
-// The message a composer holds: Markdown text and the mentions and commands placed in it.
+// The message a composer holds: Markdown text and the mentions, commands and record references
+// placed in it.
 
 import type { PersistCodec } from '../../core/provider.js';
 
-/** What a pill in the message stands for. */
-export type MessageComposerTokenKind = 'mention' | 'command';
+/** What a pill in the message stands for: a person, a command, or a record the host names. */
+export type MessageComposerTokenKind = 'mention' | 'command' | 'reference';
 
-/** A mention or command in the message's text, by its range. */
+/** A mention, command or record reference in the message's text, by its range. */
 export interface MessageComposerToken {
   /** Where the pill's text starts in `text`. */
   start: number;
   /** Where it ends in `text`, exclusive. */
   end: number;
   kind: MessageComposerTokenKind;
-  /** The mentioned person's or the command's id. */
+  /** The mentioned person's, the command's or the referenced record's id. */
   id: string;
-  /** The person's or the command's label, without the trigger character. */
+  /** The person's or the command's label, without the trigger character, or the reference's text. */
   label: string;
+  /** A reference's record kind or scope, as the host names it. */
+  recordType?: string | undefined;
 }
 
 /** A composed message: Markdown text, and the pills in it as token ranges. */
@@ -24,11 +27,14 @@ export interface MessageComposerMessage {
   tokens: MessageComposerToken[];
 }
 
-/** The character that opens a token's completions and starts its text. */
+/** The character that opens a token's completions and starts its text; a reference has none. */
 export const tokenTriggers: Readonly<Record<MessageComposerTokenKind, string>> = {
   mention: '@',
   command: '/',
+  reference: '',
 };
+
+const tokenKinds: ReadonlySet<unknown> = new Set(Object.keys(tokenTriggers));
 
 export const emptyMessage: MessageComposerMessage = { text: '', tokens: [] };
 
@@ -37,9 +43,10 @@ function isToken(value: unknown): value is MessageComposerToken {
   return (
     typeof token?.start === 'number' &&
     typeof token.end === 'number' &&
-    (token.kind === 'mention' || token.kind === 'command') &&
+    tokenKinds.has(token.kind) &&
     typeof token.id === 'string' &&
-    typeof token.label === 'string'
+    typeof token.label === 'string' &&
+    (token.recordType === undefined || typeof token.recordType === 'string')
   );
 }
 

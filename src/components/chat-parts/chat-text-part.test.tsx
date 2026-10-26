@@ -199,4 +199,61 @@ describe('ChatParts text', () => {
     expect(plain?.querySelectorAll('br')).toHaveLength(1);
     expect(plain).toHaveTextContent('Hi Ana Lopez/plan the **trip**');
   });
+
+  it('UIC-CHAT-PARTS-2.5 UIC-RECORD-LABEL-3.2 shows references as record chips the host looks up by id, in both formats', () => {
+    const text = 'Compare **TRIP-4** with NOTE-12';
+    const tokens: ChatTextToken[] = [
+      tokenOver(text, 'TRIP-4', {
+        kind: 'reference',
+        id: 'trip-uuid',
+        label: 'TRIP-4',
+        recordType: 'itinerary',
+      }),
+      tokenOver(text, 'NOTE-12', { kind: 'reference', id: 'note-uuid', label: 'NOTE-12' }),
+    ];
+    const getReference = vi.fn((reference: { id: string }) =>
+      reference.id === 'trip-uuid'
+        ? { name: 'Lisbon weekend', href: '/trips/4' }
+        : { unavailable: 'restricted' as const },
+    );
+    const { container } = render(
+      <>
+        <ChatParts parts={[{ type: 'text', text, tokens }]} getReference={getReference} />
+        <ChatParts
+          parts={[{ type: 'text', text, tokens, format: 'plain' }]}
+          getReference={getReference}
+        />
+      </>,
+    );
+    expect(getReference).toHaveBeenCalledWith({
+      id: 'trip-uuid',
+      label: 'TRIP-4',
+      recordType: 'itinerary',
+    });
+    expect(getReference).toHaveBeenCalledWith({ id: 'note-uuid', label: 'NOTE-12' });
+    const pills = container.querySelectorAll('.ui-chat-parts__token[data-kind="reference"]');
+    expect(pills).toHaveLength(4);
+    expect(pills[0]?.closest('strong')).not.toBeNull();
+    expect(screen.getAllByRole('link', { name: 'TRIP-4 Lisbon weekend' })[0]).toHaveAttribute(
+      'href',
+      '/trips/4',
+    );
+    expect(pills[1]?.querySelector('.ui-record-label')).toHaveAttribute(
+      'data-unavailable',
+      'restricted',
+    );
+    expect(pills[1]).toHaveTextContent('Restricted item');
+  });
+
+  it('UIC-CHAT-PARTS-2.5 shows a reference as its label without a lookup, and never as markup', () => {
+    const text = 'See <b>X</b>';
+    const tokens: ChatTextToken[] = [
+      tokenOver(text, '<b>X</b>', { kind: 'reference', id: 'x', label: '<b>X</b>' }),
+    ];
+    const { container } = render(<ChatParts parts={[{ type: 'text', text, tokens }]} />);
+    const pill = container.querySelector('.ui-chat-parts__token[data-kind="reference"]');
+    expect(pill).toHaveTextContent('<b>X</b>');
+    expect(pill?.querySelector('b')).toBeNull();
+    expect(pill?.querySelector('a')).toBeNull();
+  });
 });

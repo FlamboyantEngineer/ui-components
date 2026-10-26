@@ -32,6 +32,13 @@
   font-family: var(--ref-mono);
 }
 
+/* A record reference: the record chip draws itself, so the token adds nothing around it. */
+.ui-chat-parts__token[data-kind='reference'] {
+  padding: 0;
+  background: none;
+  font-weight: inherit;
+}
+
 .ui-chat-parts__diff {
   display: flex;
   flex-direction: column;

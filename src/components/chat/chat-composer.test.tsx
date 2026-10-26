@@ -118,6 +118,56 @@ describe('Chat composer', () => {
     expect(container.querySelector('.ui-chat__banner')).toBeNull();
   });
 
+  it('UIC-CHAT-3.10 UIC-CHAT-3.2 draws references from getReference and sends and edits them by id', async () => {
+    const trip = {
+      kind: 'reference',
+      id: 'trip-uuid',
+      label: 'TRIP-4',
+      recordType: 'trip',
+    } as const;
+    const note = { kind: 'reference', id: 'note-uuid', label: 'NOTE-12' } as const;
+    const own = message('r1', 'sam');
+    own.parts = [{ type: 'text', text: 'Review TRIP-4', tokens: [{ start: 7, end: 13, ...trip }] }];
+    const getReference = (reference: { id: string }) =>
+      reference.id === 'trip-uuid' ? { name: 'Lisbon weekend', href: '/trips/4' } : undefined;
+    const menu = {
+      sections: [
+        {
+          id: 'references',
+          title: 'References',
+          items: [
+            {
+              id: 'note',
+              label: 'Reference NOTE-12',
+              onAction: (composer: { insertPill: (pill: typeof note) => void }) =>
+                composer.insertPill(note),
+            },
+          ],
+        },
+      ],
+    };
+    const { user, onEdit, onSend } = renderChat({
+      messages: [message('a', 'ana'), own],
+      getReference,
+      composerMenu: menu,
+    });
+    expect(
+      within(article('r1')).getByRole('link', { name: 'TRIP-4 Lisbon weekend' }),
+    ).toHaveAttribute('href', '/trips/4');
+    await user.click(box());
+    await user.keyboard('{ArrowUp}');
+    expect(within(box()).getByRole('link', { name: 'TRIP-4 Lisbon weekend' })).toBeVisible();
+    await user.keyboard('!{Enter}');
+    expect(onEdit).toHaveBeenCalledWith('r1', 'Review TRIP-4!', [{ start: 7, end: 13, ...trip }]);
+    await user.click(screen.getByRole('button', { name: 'Add and more' }));
+    await user.click(
+      within(await screen.findByRole('menu')).getByRole('menuitem', { name: 'Reference NOTE-12' }),
+    );
+    await waitFor(() => expect(box()).toHaveFocus());
+    await user.keyboard('{Enter}');
+    expect(onSend).toHaveBeenCalledWith('NOTE-12 ', [{ start: 0, end: 7, ...note }]);
+  });
+
   it('UIC-CHAT-2.5 edits from the action and Escape leaves the edit', async () => {
     const own = message('o2', 'sam', { text: 'Bring tea' });
     const { user, onEdit, container } = renderChat({ messages: [own] });

@@ -1,18 +1,14 @@
-// The rich composer's document: lines of text and pills, and code blocks. It has no marks: the
-// text is Markdown as typed.
+// The rich composer's document: lines of text and pills (mentions, commands and record
+// references), and code blocks. It has no marks: the text is Markdown as typed.
 
 import { Schema, type Node, type NodeSpec } from 'prosemirror-model';
 import { composerHooks as hooks } from '../composer-hooks.js';
-import { tokenTriggers, type MessageComposerTokenKind } from '../composer-message.js';
+import { tokenTriggers, type MessageComposerToken } from '../composer-message.js';
 
 /** What a pill node carries. */
-export interface PillAttributes {
-  kind: MessageComposerTokenKind;
-  id: string;
-  label: string;
-}
+export type PillAttributes = Pick<MessageComposerToken, 'kind' | 'id' | 'label' | 'recordType'>;
 
-/** A pill's text: its trigger character and its label, such as `@Maria Santos`. */
+/** A pill's text: its trigger character and its label, such as `@Maria Santos`; a reference's label. */
 export function getPillText(node: Node): string {
   const { kind, label } = node.attrs as PillAttributes;
   return `${tokenTriggers[kind]}${label}`;
@@ -24,7 +20,12 @@ const pill: NodeSpec = {
   atom: true,
   selectable: false,
   draggable: false,
-  attrs: { kind: { default: 'mention' }, id: { default: '' }, label: { default: '' } },
+  attrs: {
+    kind: { default: 'mention' },
+    id: { default: '' },
+    label: { default: '' },
+    recordType: { default: undefined },
+  },
   leafText: getPillText,
   toDOM: (node) => [
     'span',

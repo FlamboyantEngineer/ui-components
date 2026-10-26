@@ -11,6 +11,7 @@ import type {
 import type { ChatSource } from '../../src/components/chat-sources/index.js';
 import { kindSamples, tripAttachments } from './chat-attachment-samples.js';
 import { ForecastCard, recipeArgs, recipeResult } from './chat-tool-call-samples.js';
+import { labRecords } from './reference-samples.js';
 
 export const tripSources: ChatSource[] = [
   {
@@ -48,6 +49,19 @@ export const textTokens: ChatTextToken[] = [
   tokenOver(tokenText, '@Ana Lopez', { kind: 'mention', id: 'ana', label: '@Ana Lopez' }),
   { start: codeMention, end: codeMention + 4, kind: 'mention', id: 'ana', label: '@Ana Lopez' },
 ];
+
+export const referenceText =
+  'Compare TRIP-4 with NOTE-12, and drop NOTE-9.\nTRIP-2 stays as it is.';
+
+/** References to the lab's records, a missing and a restricted one among them, by their ids. */
+export const referenceTokens: ChatTextToken[] = labRecords.map((record) =>
+  tokenOver(referenceText, record.label, {
+    kind: 'reference',
+    id: record.id,
+    label: record.label,
+    recordType: record.recordType,
+  }),
+);
 
 export const linesText =
   'Saturday: the river walk\nSunday: the market, then lunch\n\nBack by 18:00';

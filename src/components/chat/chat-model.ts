@@ -75,11 +75,12 @@ export function toExcerpt(text: string): string {
   return line.length > excerptLength ? `${line.slice(0, excerptLength - 1).trimEnd()}…` : line;
 }
 
-const triggers = { mention: '@', command: '/' } as const;
+const triggers = { mention: '@', command: '/', reference: '' } as const;
 
 /**
  * Tokens as a message shows them: the composer names a pill by its bare label (`Ana Lopez`), while
- * a message's token label is the pill's text, trigger included (`@Ana Lopez`).
+ * a message's token label is the pill's text, trigger included (`@Ana Lopez`). A reference has no
+ * trigger.
  */
 export function toDisplayTokens(tokens: readonly ChatTextToken[]): ChatTextToken[] {
   return tokens.map((token) => {
@@ -90,11 +91,12 @@ export function toDisplayTokens(tokens: readonly ChatTextToken[]): ChatTextToken
 
 /** Tokens as the composer edits them, by their bare labels. */
 export function toComposerTokens(tokens: readonly ChatTextToken[]): ChatTextToken[] {
-  return tokens.map((token) =>
-    token.label.startsWith(triggers[token.kind])
-      ? { ...token, label: token.label.slice(1) }
-      : token,
-  );
+  return tokens.map((token) => {
+    const trigger = triggers[token.kind];
+    return trigger && token.label.startsWith(trigger)
+      ? { ...token, label: token.label.slice(trigger.length) }
+      : token;
+  });
 }
 
 /** A message's first text part with its tokens, as the composer edits it. */

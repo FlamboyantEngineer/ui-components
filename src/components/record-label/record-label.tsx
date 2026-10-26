@@ -50,6 +50,27 @@ export interface RecordLabelProps extends BaseProps, AriaLabellingProps {
   unavailable?: RecordUnavailable | undefined;
 }
 
+/** A record a message refers to, as its reference token carries it. */
+export interface RecordLabelReference {
+  /** The record's identity, opaque to the library. */
+  id: string;
+  /** The text the reference shows: the chip's identifier. */
+  label: string;
+  /** The record's kind or scope, as the host names it. */
+  recordType?: string | undefined;
+}
+
+/** How the host shows a referenced record: what its chip draws besides the identifier. */
+export type RecordLabelPresentation = Pick<
+  RecordLabelProps,
+  'name' | 'icon' | 'href' | 'isExternal' | 'unavailable' | 'type' | 'version' | 'state' | 'preview'
+>;
+
+/** Looks up how a referenced record shows, each time its chip is drawn. */
+export type RecordLabelResolver = (
+  reference: RecordLabelReference,
+) => RecordLabelPresentation | undefined;
+
 const hooks = createHooks('record-label', [
   'label',
   'identity',

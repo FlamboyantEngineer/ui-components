@@ -50,6 +50,7 @@ export interface ChatComposerOptions extends Pick<
   | 'submitShortcut'
   | 'minRows'
   | 'maxRows'
+  | 'getReference'
 > {
   /**
    * Sends the reader's message with its mentions and commands. Without it there is no composer. A
@@ -263,6 +264,7 @@ export function ChatComposer(props: ChatComposerProps) {
         allowsPendingSubmit={options.onQueueChange !== undefined}
         mentions={mentions}
         commands={options.commands}
+        getReference={options.getReference}
         history={isAssistantChat ? options.history : undefined}
         onEditLast={toEditLast(props)}
         persistKey={options.conversationId ? `chat-draft:${options.conversationId}` : undefined}

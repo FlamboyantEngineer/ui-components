@@ -7,6 +7,11 @@ import { composerSchema as schema, getPillText, type PillAttributes } from './co
 const OPENING_FENCE = /^```([^`\s]*)$/;
 const CLOSING_FENCE = '```';
 
+/** A pill's token without its range: `recordType` only when the pill has one. */
+function toPillToken({ kind, id, label, recordType }: PillAttributes) {
+  return { kind, id, label, ...(recordType === undefined ? {} : { recordType }) };
+}
+
 /** Lines of text written one after another, with the tokens placed in them. */
 function createWriter() {
   const lines: string[] = [];
@@ -38,9 +43,9 @@ function writeParagraph(writer: Writer, block: Node) {
       text += child.text ?? '';
       return;
     }
-    const { kind, id, label } = child.attrs as PillAttributes;
     const pillText = getPillText(child);
-    placed.push({ kind, id, label, start: text.length, end: text.length + pillText.length });
+    const token = toPillToken(child.attrs as PillAttributes);
+    placed.push({ ...token, start: text.length, end: text.length + pillText.length });
     text += pillText;
   });
   const start = writer.line(text);
@@ -72,8 +77,7 @@ function parseLine(line: string, start: number, tokens: MessageComposerToken[]) 
     const offset = token.start - start;
     if (offset < at) continue;
     if (offset > at) children.push(schema.text(line.slice(at, offset)));
-    const { kind, id, label } = token;
-    children.push(schema.node('pill', { kind, id, label }));
+    children.push(schema.node('pill', toPillToken(token)));
     at = token.end - start;
   }
   if (at < line.length) children.push(schema.text(line.slice(at)));

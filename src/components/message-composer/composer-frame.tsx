@@ -19,7 +19,7 @@ export interface ComposerFrameModel {
   /** Inserts text at the caret, as a chosen emoji. */
   insertText: (text: string) => void;
   /** Inserts a mention or command at the caret: a pill in the rich composer, its text in the plain one. */
-  insertPill: (pill: Pick<MessageComposerToken, 'kind' | 'id' | 'label'>) => void;
+  insertPill: (pill: Pick<MessageComposerToken, 'kind' | 'id' | 'label' | 'recordType'>) => void;
   focusInput: () => void;
 }
 

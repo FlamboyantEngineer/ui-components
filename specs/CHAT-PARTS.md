@@ -57,6 +57,13 @@ Each of a text part's `tokens` shall show its `label` as a pill (`ui-chat-parts_
 Implementation: `src/components/chat-parts/chat-text-part.tsx`, `src/components/chat-parts/chat-text-tokens.ts`
 Verification: `src/components/chat-parts/chat-text-part.test.tsx`, `src/components/chat-parts/chat-text-tokens.test.ts`, `e2e/chat-parts.spec.ts`
 
+### UIC-CHAT-PARTS-2.5 - Record references
+
+A token of kind `reference` (an opaque record `id`, its `label` and an optional host `recordType`) shall show in its pill (`data-kind` `reference`), in both formats and wherever UIC-CHAT-PARTS-2.4 places pills, a [Record Label](RECORD-LABEL.md) chip whose identifier is the label, with what `getReference({ id, label, recordType })` returns for it (its name, icon, link, kind, version, state, preview, or that it is missing or restricted); without `getReference`, or when it returns nothing, the chip shows only the label. The parts never fetch the record, and a link reaches it through the provider's link renderer. The label and the host's values render as text, never as markup.
+
+Implementation: `src/components/chat-parts/chat-text-part.tsx`, `src/components/chat-parts/chat-parts.tsx`
+Verification: `src/components/chat-parts/chat-text-part.test.tsx`, `e2e/chat-parts.spec.ts`
+
 ## UIC-CHAT-PARTS-3 - Agent parts
 
 ### UIC-CHAT-PARTS-3.1 - Reasoning
@@ -172,12 +179,12 @@ Verification: `src/components/chat-parts/chat-parts.test.tsx`
 
 ## Hooks
 
-| Hook                        | Kind      | Values               | Description                                                                  |
-| --------------------------- | --------- | -------------------- | ---------------------------------------------------------------------------- |
-| `ui-chat-parts`             | root      |                      | The parts' `<div>`.                                                          |
-| `ui-chat-parts__text`       | slot      |                      | A text part: the Markdown root (also `ui-markdown`) or a plain-text `<div>`. |
-| `ui-chat-parts__token`      | slot      |                      | A mention or command pill, showing the token's label.                        |
-| `ui-chat-parts__diff`       | slot      |                      | A diff part: its title and its `TextDiff`.                                   |
-| `ui-chat-parts__diff-title` | slot      |                      | A diff part's title.                                                         |
-| `data-format`               | attribute | `markdown`, `plain`  | On a text part: how it renders.                                              |
-| `data-kind`                 | attribute | `mention`, `command` | On a token: what it stands for.                                              |
+| Hook                        | Kind      | Values                            | Description                                                                  |
+| --------------------------- | --------- | --------------------------------- | ---------------------------------------------------------------------------- |
+| `ui-chat-parts`             | root      |                                   | The parts' `<div>`.                                                          |
+| `ui-chat-parts__text`       | slot      |                                   | A text part: the Markdown root (also `ui-markdown`) or a plain-text `<div>`. |
+| `ui-chat-parts__token`      | slot      |                                   | A token's pill: a mention's or command's label, or a reference's chip.       |
+| `ui-chat-parts__diff`       | slot      |                                   | A diff part: its title and its `TextDiff`.                                   |
+| `ui-chat-parts__diff-title` | slot      |                                   | A diff part's title.                                                         |
+| `data-format`               | attribute | `markdown`, `plain`               | On a text part: how it renders.                                              |
+| `data-kind`                 | attribute | `mention`, `command`, `reference` | On a token: what it stands for.                                              |

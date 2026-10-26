@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import type { BaseProps } from '../../core/props.js';
 import { ChatSteps } from '../chat-activity/chat-activity.js';
+import type { RecordLabelResolver } from '../record-label/record-label.js';
 import type {
   ChatQuestionAnswer,
   ChatQuestionAnsweredMark,
@@ -94,6 +95,8 @@ export interface ChatPartsProps extends BaseProps {
   onApplyCode?: ((code: string, part: ChatCodePart) => void) | undefined;
   /** Draws a custom part; without it custom parts render nothing. */
   renderPart?: ((part: ChatCustomPart) => ReactNode) | undefined;
+  /** Looks up how a record reference token's chip shows its record: name, icon, link, preview or unavailability. */
+  getReference?: RecordLabelResolver | undefined;
   /** The reader's open and closed choices by part id or group key (controlled). */
   expandedParts?: Readonly<Record<string, boolean>> | undefined;
   /** Receives the choices each time the reader opens or closes a part or group. */
