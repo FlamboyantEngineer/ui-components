@@ -9,7 +9,7 @@ import type { ChatState } from './use-chat-state.js';
 
 /** The chat props every message reads. */
 export interface ChatMessageOptions
-  extends ChatPartOptions, Pick<ChatComposerOptions, 'onEdit' | 'onReply'> {
+  extends ChatPartOptions, Pick<ChatComposerOptions, 'conversationId' | 'onEdit' | 'onReply'> {
   currentUserId: string;
   getNow?: (() => Date) | undefined;
   onRetry?: ((messageId: string) => void) | undefined;
@@ -89,12 +89,12 @@ export function useMessageContext(
       onDismissQuestion,
     ],
   );
-  const { currentUserId, getNow, feedbackReasons } = options;
+  const { conversationId, currentUserId, getNow, feedbackReasons } = options;
   const { jumpTo, setExpandedParts } = state;
   return useMemo(
     () => ({
       ...{ handlers, currentUserId, isAssistantChat, participants, feedbackReasons },
-      ...{ parts, getNow, onRetry },
+      ...{ conversationId, parts, getNow, onRetry },
       onQuotePress: jumpTo,
       onExpandedPartsChange: setExpandedParts,
     }),
@@ -104,6 +104,7 @@ export function useMessageContext(
       isAssistantChat,
       participants,
       feedbackReasons,
+      conversationId,
       parts,
       getNow,
       onRetry,

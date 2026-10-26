@@ -73,10 +73,12 @@ export interface ChatPartsProps extends BaseProps {
   onDeny?: ((callId: string, reason?: string) => void) | undefined;
   /** Always allows a tool call's tool; shows Always allow. */
   onAlwaysAllow?: ((callId: string) => void) | undefined;
-  /** Receives the reader's answers to a question part. */
-  onAnswerQuestion?: ((questionId: string, answers: ChatQuestionAnswer[]) => void) | undefined;
-  /** Dismisses a question part; shows Dismiss. */
-  onDismissQuestion?: ((questionId: string) => void) | undefined;
+  /** Receives the reader's answers to a question part; a promise is awaited. Without it, read-only. */
+  onAnswerQuestion?:
+    | ((questionId: string, answers: ChatQuestionAnswer[]) => void | Promise<unknown>)
+    | undefined;
+  /** Dismisses a question part; shows Dismiss. A returned promise is awaited. */
+  onDismissQuestion?: ((questionId: string) => void | Promise<unknown>) | undefined;
   /** Retries a failed attachment upload; shows Retry. */
   onRetryAttachment?: ((id: string) => void) | undefined;
   /** Shows Apply on code: a code part, or a fenced block in text (passed as a code part). */

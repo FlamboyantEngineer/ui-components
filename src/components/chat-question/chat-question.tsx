@@ -8,6 +8,7 @@ import {
   type ChatQuestionData,
 } from './chat-question-model.js';
 import { PendingQuestions } from './chat-question-pending.js';
+import { useQuestionRequest } from './chat-question-request.js';
 import { QuestionDismissal, QuestionSummary } from './chat-question-summary.js';
 
 export type {
@@ -22,10 +23,14 @@ export type {
 export interface ChatQuestionProps extends BaseProps, ChatQuestionData {
   /** Identifies the card, and is its root element's id. */
   id: string;
-  /** Receives the answers, one per question in order, when the reader submits. */
-  onSubmit?: ((answers: ChatQuestionAnswer[]) => void) | undefined;
-  /** Draws a Dismiss button that calls this. */
-  onDismiss?: (() => void) | undefined;
+  /**
+   * Receives the answers, one per question in order, when the reader submits. A returned promise
+   * locks the card until it settles; a rejection keeps the answers and shows why. Without it a
+   * pending card is read-only.
+   */
+  onSubmit?: ((answers: ChatQuestionAnswer[]) => void | Promise<unknown>) | undefined;
+  /** Draws a Dismiss button that calls this; a returned promise is awaited like `onSubmit`'s. */
+  onDismiss?: (() => void | Promise<unknown>) | undefined;
 }
 
 /**
@@ -53,8 +58,9 @@ function useSettledFocus(status: ChatQuestionData['status']) {
 /**
  * An inline card in which an agent asks the reader one or several questions: a `group` named from
  * the first question, answered by radios, checkboxes or the reader's own words and submitted
- * together. A pending card announces itself politely once; an answered card sums up the answers
- * and a dismissed one says so.
+ * together, read-only without `onSubmit`. A pending card announces itself politely once and is
+ * locked while the answers or the dismissal it sent are unsettled; an answered card sums up the
+ * answers and a dismissed one says so.
  */
 export function ChatQuestion({
   id,
@@ -74,9 +80,11 @@ export function ChatQuestion({
   const first = questions[0]?.question;
   const name = first === undefined ? undefined : strings.questionAsked(first, questions.length);
   const isPending = status === 'pending';
+  const request = useQuestionRequest(isPending ? id : undefined);
+  const data = { status, stepped: questions.length > 1, submitting: request.running !== null };
   return (
     <div
-      {...hooks.root({ className, props: rest, data: { status, stepped: questions.length > 1 } })}
+      {...hooks.root({ className, props: rest, data })}
       id={id}
       ref={rootRef}
       role="group"
@@ -85,17 +93,25 @@ export function ChatQuestion({
     >
       {isPending ? (
         <PendingQuestions
+          key={id}
           questions={questions}
-          onSubmit={(given) => {
-            settle();
-            onSubmit?.(given);
-          }}
+          running={request.running}
+          failure={request.failure}
+          onSubmit={
+            onSubmit &&
+            ((given) =>
+              request.run('submit', () => {
+                settle();
+                return onSubmit(given);
+              }))
+          }
           onDismiss={
             onDismiss &&
-            (() => {
-              settle();
-              onDismiss();
-            })
+            (() =>
+              request.run('dismiss', () => {
+                settle();
+                return onDismiss();
+              }))
           }
         />
       ) : null}

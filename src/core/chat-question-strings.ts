@@ -20,6 +20,8 @@ export interface ChatQuestionStrings {
   questionAnswerToContinue: string;
   /** Explains why Submit is unavailable: a question has no answer yet. */
   questionAnswerAllToSubmit: string;
+  /** Says the reader's answers did not reach the agent, when the failure gives no message. */
+  questionSubmitFailed: string;
   /** Names the preview of an option, by the option's label. */
   questionPreview: (label: string) => string;
   /** Announces a new card by its first question and how many questions it asks. */
@@ -51,6 +53,7 @@ export const chatQuestionStrings: ChatQuestionStrings = {
   questionProgress: (position, count) => `Question ${position} of ${count}`,
   questionAnswerToContinue: 'Answer this question to continue.',
   questionAnswerAllToSubmit: 'Answer every question to submit.',
+  questionSubmitFailed: 'The answers could not be sent. Try again.',
   questionPreview: (label) => `Preview of ${label}`,
   questionAsked: (question, count) =>
     count === 1 ? `Question: ${question}` : `${count} questions: ${question}`,

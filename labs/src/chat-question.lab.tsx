@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import {
   ChatQuestion,
@@ -32,6 +32,9 @@ const modeQuestions: Record<'single' | 'multiple' | 'none', ChatQuestionItem> = 
   none: { ...nameQuestion, question: 'What should the soup be called?' },
 };
 
+/** How long the asynchronous host takes to answer a request. */
+const hostDelay = 1200;
+
 /** A card that writes what it submitted under itself, as a caller would record it. */
 function Recorded({ name, questions }: { name: string; questions: ChatQuestionItem[] }) {
   const [record, setRecord] = useState('');
@@ -45,6 +48,51 @@ function Recorded({ name, questions }: { name: string; questions: ChatQuestionIt
         data-lab-demo={name}
       />
       <p data-lab-record={name}>{record}</p>
+    </div>
+  );
+}
+
+function wait(milliseconds: number) {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
+
+/**
+ * A host that takes a moment to accept the answers: it refuses the first attempt, so the card keeps
+ * every answer and shows why, and accepts the retry, settling the card. Dismiss is accepted after
+ * the same moment.
+ */
+function AsyncCard() {
+  const [status, setStatus] = useState<ChatQuestionStatus>('pending');
+  const [answers, setAnswers] = useState<ChatQuestionAnswer[]>([]);
+  const [record, setRecord] = useState('');
+  const attempts = useRef(0);
+  return (
+    <div>
+      <ChatQuestion
+        id="ask-async"
+        questions={[databaseQuestion, nameQuestion]}
+        status={status}
+        answers={answers}
+        onSubmit={async (given) => {
+          attempts.current += 1;
+          const attempt = attempts.current;
+          setRecord(`Attempt ${attempt} sent`);
+          await wait(hostDelay);
+          if (attempt === 1) {
+            setRecord('Attempt 1 refused');
+            throw new Error('The helper did not receive the answers. Try again.');
+          }
+          setRecord(`Attempt ${attempt} accepted`);
+          setAnswers(given);
+          setStatus('answered');
+        }}
+        onDismiss={async () => {
+          await wait(hostDelay);
+          setStatus('dismissed');
+        }}
+        data-lab-demo="async"
+      />
+      <p data-lab-record="async">{record}</p>
     </div>
   );
 }
@@ -151,6 +199,23 @@ mountLab(
       description="Answer or dismiss the card: it collapses to its summary and the submitted answers show below. Ask again brings a fresh card."
     >
       <InteractiveCard />
+    </LabSection>
+    <LabSection
+      title="Asynchronous answers"
+      description="The host takes a moment to accept: the card is locked and Submit (or Dismiss) shows its spinner meanwhile, and pressing again sends nothing. The first Submit is refused: every answer and the question shown stay, and the error is announced. The retry is accepted and the host settles the card."
+    >
+      <AsyncCard />
+    </LabSection>
+    <LabSection
+      title="Read-only"
+      description="Without onSubmit a pending card is read-only: its options and fields take no changes and there is no Submit, while Next steps through the questions."
+    >
+      <ChatQuestion
+        id="ask-read-only"
+        questions={setupQuestions}
+        status="pending"
+        data-lab-demo="read-only"
+      />
     </LabSection>
   </>,
 );
