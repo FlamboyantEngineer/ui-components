@@ -20,6 +20,13 @@ The published package shall contain the lab pages, `labs/reference.css` and the 
 Implementation: `package.json`, `scripts/check-package.mjs`, `scripts/check-references.mjs`
 Verification: `test/package.test.ts`, `test/check-references.test.ts`
 
+### UIC-LABS-1.3 - Local start
+
+`npm run labs` shall bring a checkout's labs up to date before serving them with the supplied server, passing its server options through: it runs `npm ci` when the dependencies are missing or `package-lock.json` changed since the last install, and `npm run build:labs` after an install, when the labs are not built, or when a lab source (the library and lab sources, the reference partials, the samples, the installed dependencies, the package and TypeScript configuration and the labs build scripts) changed, was added or was removed since the last build. It leaves a `node_modules` linked from another checkout alone. `--dry-run` prints the steps it would run, or that the labs are up to date, without running them or serving.
+
+Implementation: `scripts/start-labs.mjs`, `package.json`
+Verification: `test/start-labs.test.ts`
+
 ## UIC-LABS-2 - Chrome
 
 ### UIC-LABS-2.1 - Stylesheet picker

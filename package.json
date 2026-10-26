@@ -49,7 +49,7 @@
   "scripts": {
     "build": "node scripts/clean.mjs dist && tsc -p tsconfig.build.json",
     "build:labs": "node scripts/build-labs.mjs",
-    "labs": "node scripts/serve-labs.mjs",
+    "labs": "node scripts/start-labs.mjs",
     "lint": "eslint . --max-warnings=0",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
