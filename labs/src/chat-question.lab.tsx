@@ -3,6 +3,7 @@ import { Button } from '../../src/components/button/button.js';
 import {
   ChatQuestion,
   type ChatQuestionAnswer,
+  type ChatQuestionAnsweredMark,
   type ChatQuestionItem,
   type ChatQuestionStatus,
 } from '../../src/components/chat-question/chat-question.js';
@@ -16,6 +17,7 @@ import {
   setupAnswers,
   setupQuestions,
   toppingsQuestion,
+  tripQuestions,
 } from './chat-question-samples.js';
 
 const statuses = [
@@ -36,7 +38,15 @@ const modeQuestions: Record<'single' | 'multiple' | 'none', ChatQuestionItem> = 
 const hostDelay = 1200;
 
 /** A card that writes what it submitted under itself, as a caller would record it. */
-function Recorded({ name, questions }: { name: string; questions: ChatQuestionItem[] }) {
+function Recorded({
+  name,
+  questions,
+  answeredMark,
+}: {
+  name: string;
+  questions: ChatQuestionItem[];
+  answeredMark?: ChatQuestionAnsweredMark;
+}) {
   const [record, setRecord] = useState('');
   return (
     <div>
@@ -45,6 +55,7 @@ function Recorded({ name, questions }: { name: string; questions: ChatQuestionIt
         questions={questions}
         status="pending"
         onSubmit={(answers) => setRecord(JSON.stringify(answers))}
+        answeredMark={answeredMark}
         data-lab-demo={name}
       />
       <p data-lab-record={name}>{record}</p>
@@ -190,9 +201,24 @@ mountLab(
     </LabSection>
     <LabSection
       title="Several questions"
-      description="Three questions asked one at a time, with chips, a progress hint, Back and Next. Stepping moves focus to the next answer, and Enter in a text field steps on or submits."
+      description="Three questions asked one at a time behind tabs, with the counter at the end of their row. Press any tab, answered or not, to show its question (focus stays on the tab, and the arrow keys move between tabs); Back and Next step as before, Next waiting for an answer, and move focus to the answer. Enter in a text field steps on or submits. An answered question's tab shows a check."
     >
       <Recorded name="stepped" questions={[databaseQuestion, featuresQuestion, nameQuestion]} />
+    </LabSection>
+    <LabSection
+      title="Answered marks"
+      description="answeredMark chooses how an answered question's tab shows it: icon (the default) draws a check before the label; style draws nothing, leaving data-answered to the stylesheet, which colours the tab here. Either way the tab is described as Answered."
+    >
+      <Recorded name="mark-icon" questions={setupQuestions} />
+      <Recorded name="mark-style" questions={setupQuestions} answeredMark="style" />
+    </LabSection>
+    <LabSection
+      title="Many questions"
+      description="Seven questions in a narrow card: the tabs scroll, with buttons at an edge that hides tabs, and the selected tab stays in view."
+    >
+      <div style={{ maxWidth: 360 }}>
+        <Recorded name="many" questions={tripQuestions} />
+      </div>
     </LabSection>
     <LabSection
       title="Interactive"
@@ -208,7 +234,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Read-only"
-      description="Without onSubmit a pending card is read-only: its options and fields take no changes and there is no Submit, while Next steps through the questions."
+      description="Without onSubmit a pending card is read-only: its options and fields take no changes and there is no Submit, while the tabs and Next step through the questions."
     >
       <ChatQuestion
         id="ask-read-only"

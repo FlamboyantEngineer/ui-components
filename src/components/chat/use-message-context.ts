@@ -72,10 +72,12 @@ export function useMessageContext(
   );
   const { textFormat, toolRenderers, renderPart, onApplyCode } = options;
   const { onApprove, onDeny, onAlwaysAllow, onAnswerQuestion, onDismissQuestion } = options;
+  const { questionAnsweredMark } = options;
   const parts = useMemo(
     () => ({
       ...{ textFormat, toolRenderers, renderPart, onApplyCode },
       ...{ onApprove, onDeny, onAlwaysAllow, onAnswerQuestion, onDismissQuestion },
+      questionAnsweredMark,
     }),
     [
       textFormat,
@@ -87,6 +89,7 @@ export function useMessageContext(
       onAlwaysAllow,
       onAnswerQuestion,
       onDismissQuestion,
+      questionAnsweredMark,
     ],
   );
   const { conversationId, currentUserId, getNow, feedbackReasons } = options;

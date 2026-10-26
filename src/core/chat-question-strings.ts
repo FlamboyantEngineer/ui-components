@@ -10,12 +10,16 @@ export interface ChatQuestionStrings {
   questionAnswerPlaceholder: string;
   /** Marks the option the agent recommends. */
   questionRecommended: string;
-  /** Names the list of a card's questions. */
+  /** Names the tabs of a card's questions. */
   questionSteps: string;
   /** Stands in for the short label of a question that has none, by its position from 1. */
   questionStep: (position: number) => string;
-  /** Where the reader is in a card that asks its questions one at a time. */
+  /** Where the reader is in a card's questions, as read out. */
   questionProgress: (position: number, count: number) => string;
+  /** Where the reader is in a card's questions, as the counter after the tabs shows it. */
+  questionCounter: (position: number, count: number) => string;
+  /** Describes the tab of a question that has an answer. */
+  questionAnsweredTab: string;
   /** Explains why Next is unavailable: the shown question has no answer yet. */
   questionAnswerToContinue: string;
   /** Explains why Submit is unavailable: a question has no answer yet. */
@@ -51,6 +55,8 @@ export const chatQuestionStrings: ChatQuestionStrings = {
   questionSteps: 'Questions',
   questionStep: (position) => `Question ${position}`,
   questionProgress: (position, count) => `Question ${position} of ${count}`,
+  questionCounter: (position, count) => `${position}/${count}`,
+  questionAnsweredTab: 'Answered',
   questionAnswerToContinue: 'Answer this question to continue.',
   questionAnswerAllToSubmit: 'Answer every question to submit.',
   questionSubmitFailed: 'The answers could not be sent. Try again.',

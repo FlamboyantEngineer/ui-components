@@ -1,19 +1,19 @@
 # Chat Question
 
-`ChatQuestion` is an inline card in which an agent asks the reader one or several questions inside a conversation. Each question is answered by one option (radios), any options (checkboxes) or the reader's own words; options may carry a description, a "Recommended" badge and a Markdown preview, and a question may offer "Other" with a field for the reader's own words. Several questions are asked one at a time, with chips, a progress hint, Back and Next. Submit sends every answer at once, and the host may accept them asynchronously: the card is locked while they are sent and keeps every answer when they are refused. Without an answer handler a pending card is read-only. Once answered the card collapses to a summary of the answers; once dismissed it says so. The card takes the `ChatQuestionData` fields of a message part, so a conversation renders it by spreading the part's data.
+`ChatQuestion` is an inline card in which an agent asks the reader one or several questions inside a conversation. Each question is answered by one option (radios), any options (checkboxes) or the reader's own words; options may carry a description, a "Recommended" badge and a Markdown preview, and a question may offer "Other" with a field for the reader's own words. A pending card shows its questions as tabs with a counter, one question at a time; the reader picks any question by its tab or steps with Back and Next. Submit sends every answer at once, and the host may accept them asynchronously: the card is locked while they are sent and keeps every answer when they are refused. Without an answer handler a pending card is read-only. Once answered the card collapses to a summary of the answers; once dismissed it says so. The card takes the `ChatQuestionData` fields of a message part, so a conversation renders it by spreading the part's data.
 
 ## UIC-CHAT-QUESTION-1 - Card and questions
 
 ### UIC-CHAT-QUESTION-1.1 - Card
 
-`ChatQuestion` shall render a `ui-chat-question` root with `role="group"`, named by its first question through the provider's `questionAsked` string (`Question: <first question>`, or `3 questions: <first question>` for several), so the name differs from the question group inside it; its `id` is the card's `id`. It takes the data fields `id`, `questions`, `status` and `answers` (`ChatQuestionData`), `onSubmit` and `onDismiss`, publishes `status` as `data-status` (`pending`, `answered` or `dismissed`), `data-stepped` while it holds more than one question and `data-submitting` while a request it sent is unsettled (UIC-CHAT-QUESTION-2.7).
+`ChatQuestion` shall render a `ui-chat-question` root with `role="group"`, named by its first question through the provider's `questionAsked` string (`Question: <first question>`, or `3 questions: <first question>` for several), so the name differs from the question group inside it; its `id` is the card's `id`. It takes the data fields `id`, `questions`, `status` and `answers` (`ChatQuestionData`), `onSubmit`, `onDismiss` and `answeredMark` ([UIC-CHAT-QUESTION-3.4](#uic-chat-question-34---answered-tabs)), publishes `status` as `data-status` (`pending`, `answered` or `dismissed`), `data-stepped` while it holds more than one question, `data-submitting` while a request it sent is unsettled (UIC-CHAT-QUESTION-2.7) and `answeredMark` as `data-answered-mark`.
 
 Implementation: `src/components/chat-question/chat-question.tsx`, `src/components/chat-question/chat-question-model.ts`, `labs/reference/chat-question.css`
 Verification: `src/components/chat-question/chat-question.test.tsx`, `e2e/chat-question.spec.ts`
 
 ### UIC-CHAT-QUESTION-1.2 - Question
 
-A pending card shall show its question in `ui-chat-question__item`, which publishes the question's `selectionMode` as `data-selection-mode` (`single`, `multiple` or `none`) and holds the question's text in a paragraph (`ui-chat-question__question`) and then its answer. A card with one question draws the question's `header` before the text as a chip (`ui-chat-question__header`).
+A pending card shall show its question in `ui-chat-question__item`, which publishes the question's `selectionMode` as `data-selection-mode` (`single`, `multiple` or `none`) and holds the question's text in a paragraph (`ui-chat-question__question`) and then its answer. The question's `header` labels its tab ([UIC-CHAT-QUESTION-3.1](#uic-chat-question-31---tabs)).
 
 Implementation: `src/components/chat-question/chat-question-item.tsx`, `labs/reference/chat-question.css`
 Verification: `src/components/chat-question/chat-question.test.tsx`, `e2e/chat-question.spec.ts`
@@ -134,23 +134,44 @@ Verification: `src/components/chat-question/chat-question-request.test.tsx`
 
 ## UIC-CHAT-QUESTION-3 - Several questions
 
-### UIC-CHAT-QUESTION-3.1 - Steps
+### UIC-CHAT-QUESTION-3.1 - Tabs
 
-A pending card with more than one question shall show one question at a time, starting with the first, after a list of chips (`ui-chat-question__steps`, an ordered list named by the provider's `questionSteps` string) holding one `ui-chat-question__step` per question with its `header`, or `questionStep` from its position when it has none. The shown question's chip publishes `data-current` and `aria-current="step"`, and every answered question's chip publishes `data-answered`. A progress hint (`ui-chat-question__progress`, `questionProgress`, such as "Question 2 of 3") follows the chips.
+A pending card shall show one question at a time, starting with the first, in a [Tabs](TABS.md) family (`ui-chat-question__tabs`, small): a tab list named by the provider's `questionSteps` string with one tab (`ui-chat-question__tab`) per question, labelled by its `header`, or `questionStep` from its position when it has none, then the counter (`ui-chat-question__progress`), then the shown question in the selected tab's panel (`ui-chat-question__panel`). The shown question's tab is selected (`data-selected`, `aria-selected="true"`). The tabs keep one tab stop: the arrow keys, Home and End move to a tab and show its question at once. A tab list that does not fit scrolls, with scroll buttons at an edge that hides tabs (UIC-TABS-2.7), keeping the selected tab in view. A card with one question shows one tab and the counter "1/1" too.
 
-Implementation: `src/components/chat-question/chat-question-pending.tsx`, `src/core/chat-question-strings.ts`
-Verification: `src/components/chat-question/chat-question-pending.test.tsx`, `e2e/chat-question.spec.ts`
+Implementation: `src/components/chat-question/chat-question-tabs.tsx`, `src/components/chat-question/chat-question-pending.tsx`, `labs/reference/chat-question.css`
+Verification: `src/components/chat-question/chat-question-tabs.test.tsx`, `e2e/chat-question.spec.ts`
 
-### UIC-CHAT-QUESTION-3.2 - Back and Next
+### UIC-CHAT-QUESTION-3.2 - Counter
 
-A stepped card shall draw a Back [Button](BUTTON.md) (`ui-chat-question__back`, the provider's `back` string) on every question but the first, and a primary Next button (`ui-chat-question__next`, `next`) on every question but the last, where Submit takes its place. Next is unavailable but focusable (`aria-disabled="true"`) while the shown question has no answer and hints why in a tooltip (`questionAnswerToContinue`). The reader's choices and words are kept when they step back and forth.
+The counter shall follow the tab list on its row and show the shown question's position and the number of questions through the provider's `questionCounter` string ("2/3"), hidden from assistive technology, which reads `questionProgress` ("Question 2 of 3") instead.
+
+Implementation: `src/components/chat-question/chat-question-tabs.tsx`, `src/core/chat-question-strings.ts`
+Verification: `src/components/chat-question/chat-question-tabs.test.tsx`, `e2e/chat-question.spec.ts`
+
+### UIC-CHAT-QUESTION-3.3 - Choosing a question
+
+Pressing any question's tab, at any time, shall show that question, answered or not and wherever it sits: the tabs never wait for an answer, and stay usable while the card is read-only or a request runs, so the reader can look through the questions. Focus stays on the tab, and the reader's choices and words are kept for every question.
+
+Implementation: `src/components/chat-question/chat-question-tabs.tsx`, `src/components/chat-question/chat-question-pending.tsx`
+Verification: `src/components/chat-question/chat-question-tabs.test.tsx`, `e2e/chat-question.spec.ts`
+
+### UIC-CHAT-QUESTION-3.4 - Answered tabs
+
+Every answered question's tab shall publish `data-answered` and take the provider's `questionAnsweredTab` string ("Answered") as its accessible description. `answeredMark` chooses what else marks it: `icon` (the default) draws a check glyph before the label (the tab's `ui-tabs__icon`); `style` draws nothing more, leaving `data-answered`, with the root's `data-answered-mark="style"`, to the stylesheet. `ChatParts` takes it as `questionAnsweredMark` for its question parts, and `Chat` passes it on.
+
+Implementation: `src/components/chat-question/chat-question-tabs.tsx`, `src/components/chat-question/chat-question.tsx`, `src/components/chat-parts/chat-part-view.tsx`, `labs/reference/chat-question.css`
+Verification: `src/components/chat-question/chat-question-tabs.test.tsx`, `e2e/chat-question.spec.ts`
+
+### UIC-CHAT-QUESTION-3.5 - Back and Next
+
+A card with more than one question shall draw a Back [Button](BUTTON.md) (`ui-chat-question__back`, the provider's `back` string) on every question but the first, and a primary Next button (`ui-chat-question__next`, `next`) on every question but the last, where Submit takes its place. Next is unavailable but focusable (`aria-disabled="true"`) while the shown question has no answer and hints why in a tooltip (`questionAnswerToContinue`). Back and Next select the tab of the question they show. The reader's choices and words are kept when they step back and forth.
 
 Implementation: `src/components/chat-question/chat-question-pending.tsx`
 Verification: `src/components/chat-question/chat-question-pending.test.tsx`, `e2e/chat-question.spec.ts`
 
-### UIC-CHAT-QUESTION-3.3 - Focus on step
+### UIC-CHAT-QUESTION-3.6 - Focus on step
 
-Stepping to another question by Back, Next or Enter shall move focus to that question's answer: its chosen radio, else its first radio, checkbox or text field, so the reader answers each question from the keyboard without searching for it.
+Stepping to another question by Back, Next or Enter shall move focus to that question's answer: its chosen radio, else its first radio, checkbox or text field, so the reader answers each question from the keyboard without searching for it. Choosing a question by its tab leaves focus on the tab.
 
 Implementation: `src/components/chat-question/chat-question-pending.tsx`
 Verification: `src/components/chat-question/chat-question-pending.test.tsx`, `e2e/chat-question.spec.ts`
@@ -199,11 +220,11 @@ Verification: `src/components/chat-question/chat-question.test.tsx`
 | Hook                                 | Kind      | Values                             | Description                                                              |
 | ------------------------------------ | --------- | ---------------------------------- | ------------------------------------------------------------------------ |
 | `ui-chat-question`                   | root      |                                    | The card (`role="group"`).                                               |
-| `ui-chat-question__steps`            | slot      |                                    | The chips of a stepped card (`<ol>`).                                    |
-| `ui-chat-question__step`             | slot      |                                    | One question's chip (`<li>`).                                            |
-| `ui-chat-question__progress`         | slot      |                                    | The progress hint of a stepped card.                                     |
+| `ui-chat-question__tabs`             | slot      |                                    | The questions' tabs, the counter and the panel (also `ui-tabs`).         |
+| `ui-chat-question__tab`              | slot      |                                    | One question's tab (also `ui-tabs__tab`).                                |
+| `ui-chat-question__progress`         | slot      |                                    | The counter after the tabs.                                              |
+| `ui-chat-question__panel`            | slot      |                                    | The shown question's panel (also `ui-tabs__panel`).                      |
 | `ui-chat-question__item`             | slot      |                                    | The shown question.                                                      |
-| `ui-chat-question__header`           | slot      |                                    | The header chip of a card with one question.                             |
 | `ui-chat-question__question`         | slot      |                                    | The question's text.                                                     |
 | `ui-chat-question__answer`           | slot      |                                    | The options, the Other field and the preview.                            |
 | `ui-chat-question__options`          | slot      |                                    | The radio group or checkbox group.                                       |
@@ -228,6 +249,7 @@ Verification: `src/components/chat-question/chat-question.test.tsx`
 | `data-status`                        | attribute | `pending`, `answered`, `dismissed` | On the root: whether the card asks or sums up.                           |
 | `data-stepped`                       | state     | `true`                             | On the root: more than one question, asked one at a time while pending.  |
 | `data-submitting`                    | state     | `true`                             | On the root: the answers or the dismissal sent are unsettled.            |
+| `data-answered-mark`                 | attribute | `icon`, `style`                    | On the root: how answered tabs are marked.                               |
 | `data-selection-mode`                | attribute | `single`, `multiple`, `none`       | On the item: how the question is answered.                               |
 | `data-has-preview`                   | state     | `true`                             | On the answer: an option has a preview.                                  |
 | `data-orientation`                   | attribute | `vertical`                         | On the radio group: the arrow-key axis (React Aria).                     |
@@ -235,5 +257,4 @@ Verification: `src/components/chat-question/chat-question.test.tsx`
 | `data-selected`                      | state     | `true`                             | On an option: chosen or ticked.                                          |
 | `data-recommended`                   | state     | `true`                             | On an option: the agent recommends it.                                   |
 | `data-other`                         | state     | `true`                             | On an option: the Other choice.                                          |
-| `data-current`                       | state     | `true`                             | On a chip: the shown question.                                           |
-| `data-answered`                      | state     | `true`                             | On a chip: the question has an answer.                                   |
+| `data-answered`                      | state     | `true`                             | On a tab: the question has an answer.                                    |
