@@ -1,7 +1,7 @@
 import { act, screen, waitFor, within } from '@testing-library/react';
 import { readFileSync } from 'node:fs';
 import { join, sep } from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   article,
   assistantPeople,
@@ -12,7 +12,7 @@ import {
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { collectImports, collectPackages } from '../../../test/module-imports.js';
 import { installEditorDom } from '../../../test/rich-text-fixtures.js';
-import type { ChatMessageData } from '../chat-parts/chat-parts.js';
+import type { ChatMessageData, ChatPart } from '../chat-parts/chat-parts.js';
 
 installEditorDom();
 
@@ -34,6 +34,31 @@ const awaiting: ChatMessageData = {
     },
   ],
 };
+
+/** A reply that asks one question, as card `ask` of message `r2`. */
+function askingReply(question: string, labels: [string, string]): ChatMessageData {
+  return {
+    id: 'r2',
+    authorId: 'helper',
+    createdAt: '2026-04-20T10:02:00',
+    status: 'complete',
+    parts: [
+      {
+        type: 'question',
+        id: 'ask',
+        status: 'pending',
+        questions: [
+          {
+            id: 'pace',
+            question,
+            selectionMode: 'single',
+            options: labels.map((label) => ({ id: label.toLowerCase(), label })),
+          },
+        ],
+      },
+    ],
+  };
+}
 
 describe('Chat', () => {
   it('UIC-CHAT-1.1 ships from its own entry point and stays out of the package root', () => {
@@ -121,6 +146,41 @@ describe('Chat', () => {
     expect(approvals).toEqual(['book']);
   });
 
+  it('UIC-CHAT-1.5 awaits answers through onAnswerQuestion and keeps cards to their conversation', async () => {
+    const accepted = new Promise<void>(() => {});
+    const onAnswerQuestion = vi
+      .fn<(id: string, answers: unknown) => Promise<void>>()
+      .mockRejectedValueOnce(new Error('The helper is offline.'))
+      .mockReturnValueOnce(accepted)
+      .mockResolvedValue(undefined);
+    const trip = askingReply('How full should each day be?', ['Calm', 'Packed']);
+    const { user, rerenderWith } = renderChat({ ...assistantChat, messages: [trip] });
+    expect(screen.queryByRole('button', { name: 'Submit' })).not.toBeInTheDocument();
+    const props = { ...assistantChat, conversationId: 'trip', messages: [trip], onAnswerQuestion };
+    rerenderWith(props);
+    await user.click(screen.getByRole('radio', { name: 'Packed' }));
+    await user.click(screen.getByRole('button', { name: 'Submit' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('The helper is offline.');
+    expect(screen.getByRole('radio', { name: 'Packed' })).toBeChecked();
+    await user.click(screen.getByRole('button', { name: 'Submit' }));
+    expect(onAnswerQuestion).toHaveBeenLastCalledWith('ask', [
+      { questionId: 'pace', optionIds: ['packed'] },
+    ]);
+    expect(document.getElementById('r2-ask')).toHaveAttribute('data-submitting', 'true');
+    const other = askingReply('When should the tour start?', ['Morning', 'Evening']);
+    rerenderWith({ ...props, conversationId: 'tour', messages: [other] });
+    const card = document.getElementById('r2-ask');
+    expect(card).not.toHaveAttribute('data-submitting');
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(screen.queryByRole('radio', { checked: true })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('radio', { name: 'Evening' }));
+    await user.click(screen.getByRole('button', { name: 'Submit' }));
+    expect(onAnswerQuestion).toHaveBeenCalledTimes(3);
+    expect(onAnswerQuestion).toHaveBeenLastCalledWith('ask', [
+      { questionId: 'pace', optionIds: ['evening'] },
+    ]);
+  });
+
   it('UIC-CHAT-1.5 keeps the reader’s open and closed parts across remounts', async () => {
     const thought: ChatMessageData = {
       ...message('t1', 'helper'),
@@ -136,6 +196,59 @@ describe('Chat', () => {
     expect(toggle()).toBeNull();
     rerenderWith({ ...assistantChat, messages: [thought] });
     expect(toggle()).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  it('UIC-CHAT-1.5 UIC-CHAT-PARTS-5.4 keeps a failed call discoverable once the final answer arrives', async () => {
+    const steps = (hotels: 'running' | 'failed'): ChatPart[] => [
+      {
+        type: 'reasoning',
+        id: 'plan',
+        text: 'Trains first.',
+        status: 'complete',
+        durationMs: 1000,
+      },
+      {
+        type: 'tool-call',
+        id: 'trains',
+        name: 'search_trains',
+        label: 'Search trains',
+        status: 'succeeded',
+        durationMs: 1000,
+      },
+      {
+        type: 'tool-call',
+        id: 'hotels',
+        name: 'search_hotels',
+        label: 'Search hotels',
+        status: hotels,
+        error: hotels === 'failed' ? 'The hotel service timed out.' : undefined,
+      },
+    ];
+    const running = {
+      ...message('w1', 'helper'),
+      status: 'streaming' as const,
+      parts: steps('running'),
+    };
+    const final: ChatMessageData = {
+      ...running,
+      status: 'complete',
+      parts: [...steps('failed'), { type: 'text', text: 'Take the 8:05; no hotel answered.' }],
+    };
+    const { user, rerenderWith } = renderChat({ ...assistantChat, messages: [running] });
+    const group = () => within(article('w1')).getByRole('button', { name: /· 3 steps$/ });
+    expect(group()).toHaveAccessibleName('Working… · 3 steps');
+    await user.click(group());
+    expect(group()).toHaveAttribute('aria-expanded', 'false');
+    rerenderWith({ ...assistantChat, messages: [final] });
+    expect(group()).toHaveAccessibleName('Worked for 2 s · 3 steps');
+    expect(group()).toHaveAttribute('aria-expanded', 'true');
+    expect(within(article('w1')).getByRole('alert')).toHaveTextContent(
+      'The hotel service timed out.',
+    );
+    await user.click(group());
+    rerenderWith({ ...assistantChat, messages: [] });
+    rerenderWith({ ...assistantChat, messages: [final] });
+    expect(group()).toHaveAttribute('aria-expanded', 'false');
   });
 
   it('UIC-CHAT-1.6 separates days, marks the first unread message and groups by author', () => {

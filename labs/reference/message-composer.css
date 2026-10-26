@@ -134,9 +134,10 @@
   white-space: pre-wrap;
 }
 
+/* The tools wrap onto further lines in a narrow composer; the action button keeps the last place. */
 .ui-message-composer__footer {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: flex-end;
   gap: 4px;
 }
@@ -144,8 +145,10 @@
 .ui-message-composer__toolbar {
   display: flex;
   flex: 1 1 auto;
+  flex-wrap: wrap;
   align-items: center;
   gap: 4px;
+  min-width: 0;
 }
 
 .ui-message-composer__attach,

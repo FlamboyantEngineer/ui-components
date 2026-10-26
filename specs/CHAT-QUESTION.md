@@ -1,12 +1,12 @@
 # Chat Question
 
-`ChatQuestion` is an inline card in which an agent asks the reader one or several questions inside a conversation. Each question is answered by one option (radios), any options (checkboxes) or the reader's own words; options may carry a description, a "Recommended" badge and a Markdown preview, and a question may offer "Other" with a field for the reader's own words. Several questions are asked one at a time, with chips, a progress hint, Back and Next. Submit sends every answer at once. Once answered the card collapses to a summary of the answers; once dismissed it says so. The card takes the `ChatQuestionData` fields of a message part, so a conversation renders it by spreading the part's data.
+`ChatQuestion` is an inline card in which an agent asks the reader one or several questions inside a conversation. Each question is answered by one option (radios), any options (checkboxes) or the reader's own words; options may carry a description, a "Recommended" badge and a Markdown preview, and a question may offer "Other" with a field for the reader's own words. Several questions are asked one at a time, with chips, a progress hint, Back and Next. Submit sends every answer at once, and the host may accept them asynchronously: the card is locked while they are sent and keeps every answer when they are refused. Without an answer handler a pending card is read-only. Once answered the card collapses to a summary of the answers; once dismissed it says so. The card takes the `ChatQuestionData` fields of a message part, so a conversation renders it by spreading the part's data.
 
 ## UIC-CHAT-QUESTION-1 - Card and questions
 
 ### UIC-CHAT-QUESTION-1.1 - Card
 
-`ChatQuestion` shall render a `ui-chat-question` root with `role="group"`, named by its first question through the provider's `questionAsked` string (`Question: <first question>`, or `3 questions: <first question>` for several), so the name differs from the question group inside it; its `id` is the card's `id`. It takes the data fields `id`, `questions`, `status` and `answers` (`ChatQuestionData`), `onSubmit` and `onDismiss`, publishes `status` as `data-status` (`pending`, `answered` or `dismissed`) and `data-stepped` while it holds more than one question.
+`ChatQuestion` shall render a `ui-chat-question` root with `role="group"`, named by its first question through the provider's `questionAsked` string (`Question: <first question>`, or `3 questions: <first question>` for several), so the name differs from the question group inside it; its `id` is the card's `id`. It takes the data fields `id`, `questions`, `status` and `answers` (`ChatQuestionData`), `onSubmit` and `onDismiss`, publishes `status` as `data-status` (`pending`, `answered` or `dismissed`), `data-stepped` while it holds more than one question and `data-submitting` while a request it sent is unsettled (UIC-CHAT-QUESTION-2.7).
 
 Implementation: `src/components/chat-question/chat-question.tsx`, `src/components/chat-question/chat-question-model.ts`, `labs/reference/chat-question.css`
 Verification: `src/components/chat-question/chat-question.test.tsx`, `e2e/chat-question.spec.ts`
@@ -71,28 +71,28 @@ Verification: `src/components/chat-question/chat-question-model.test.ts`, `src/c
 
 ### UIC-CHAT-QUESTION-2.2 - Submit
 
-A pending card shall draw a primary Submit [Button](BUTTON.md) (`ui-chat-question__submit`, the provider's `questionSubmit` string) in `ui-chat-question__actions`, after the last question in a stepped card. Until every question is answered it is unavailable but focusable (`aria-disabled="true"`) and hints why in a tooltip (`questionAnswerAllToSubmit`). Pressing it calls `onSubmit` with one answer per question, in order. The card stays pending until its `status` changes.
+A pending card with `onSubmit` shall draw a primary Submit [Button](BUTTON.md) (`ui-chat-question__submit`, the provider's `questionSubmit` string) in `ui-chat-question__actions`, after the last question in a stepped card. Until every question is answered it is unavailable but focusable (`aria-disabled="true"`) and hints why in a tooltip (`questionAnswerAllToSubmit`). Pressing it calls `onSubmit` with one answer per question, in order. The card stays pending until its `status` changes.
 
 Implementation: `src/components/chat-question/chat-question-pending.tsx`, `src/core/chat-question-strings.ts`
 Verification: `src/components/chat-question/chat-question-pending.test.tsx`, `e2e/chat-question.spec.ts`
 
 ### UIC-CHAT-QUESTION-2.3 - Dismiss
 
-With `onDismiss`, a pending card shall end its actions with a ghost Dismiss [Button](BUTTON.md) (`ui-chat-question__dismiss`, the provider's `dismiss` string) that calls it. Without `onDismiss` there is no Dismiss button.
+With `onDismiss`, a pending card shall end its actions with a ghost Dismiss [Button](BUTTON.md) (`ui-chat-question__dismiss`, the provider's `dismiss` string) that calls it, whether or not the card can be answered. A promise it returns is awaited as the answers are (UIC-CHAT-QUESTION-2.7, UIC-CHAT-QUESTION-2.8). Without `onDismiss` there is no Dismiss button.
 
-Implementation: `src/components/chat-question/chat-question-pending.tsx`
-Verification: `src/components/chat-question/chat-question-pending.test.tsx`, `e2e/chat-question.spec.ts`
+Implementation: `src/components/chat-question/chat-question-pending.tsx`, `src/components/chat-question/chat-question-request.ts`
+Verification: `src/components/chat-question/chat-question-pending.test.tsx`, `src/components/chat-question/chat-question-request.test.tsx`, `e2e/chat-question.spec.ts`
 
 ### UIC-CHAT-QUESTION-2.4 - Enter in an answer field
 
-Enter without a modifier, outside an input method's composition, in the free-text field or the Other field shall go on as the primary button would: to the next question, or from the last question submit, or, when an earlier question is still open, to it. While the shown question has no answer, Enter instead shows the field's validation.
+Enter without a modifier, outside an input method's composition, in the free-text field or the Other field of a card that can be answered and sends nothing (UIC-CHAT-QUESTION-2.7, UIC-CHAT-QUESTION-2.9) shall go on as the primary button would: to the next question, or from the last question submit, or, when an earlier question is still open, to it. While the shown question has no answer, Enter instead shows the field's validation.
 
 Implementation: `src/components/chat-question/chat-question-fields.tsx`, `src/components/chat-question/chat-question-pending.tsx`
 Verification: `src/components/chat-question/chat-question-pending.test.tsx`, `e2e/chat-question.spec.ts`
 
 ### UIC-CHAT-QUESTION-2.5 - Validation
 
-The free-text and Other fields shall be required fields (UIC-FIELD-3.1) that show their validation once focus leaves them or Enter asks for an answer they lack: the message renders in the field's message slot, is announced, and the input reports `aria-invalid` and `aria-errormessage`. Their committed value follows their value, so they are never dirty: they draw no restore button and leave Escape to the conversation around them.
+The free-text and Other fields shall be required fields (UIC-FIELD-3.1), except while read-only (UIC-CHAT-QUESTION-2.7, UIC-CHAT-QUESTION-2.9), that show their validation once focus leaves them or Enter asks for an answer they lack: the message renders in the field's message slot, is announced, and the input reports `aria-invalid` and `aria-errormessage`. Their committed value follows their value, so they are never dirty: they draw no restore button and leave Escape to the conversation around them.
 
 Implementation: `src/components/chat-question/chat-question-fields.tsx`
 Verification: `src/components/chat-question/chat-question-pending.test.tsx`, `e2e/chat-question.spec.ts`
@@ -103,6 +103,34 @@ When the reader's Submit or Dismiss is followed by the card leaving `pending`, f
 
 Implementation: `src/components/chat-question/chat-question.tsx`
 Verification: `src/components/chat-question/chat-question-pending.test.tsx`
+
+### UIC-CHAT-QUESTION-2.7 - Submitting
+
+`onSubmit` and `onDismiss` may return a promise. From the press (or Enter) until it settles, the card shall be submitting: the root publishes `data-submitting`, the button pressed is pending ([Button](BUTTON.md)'s `isPending`: it keeps focus and refuses presses), the other actions are unavailable, and the answers are read-only (a read-only radio or checkbox group publishes `data-readonly` and `aria-readonly`; a field that has focus keeps it). One request runs at a time: a second press or Enter sends nothing, including before the submitting state renders. When the promise resolves the card is no longer submitting and keeps the answers as given, staying pending until the host changes its `status`. A callback that returns no promise leaves no submitting state.
+
+Implementation: `src/components/chat-question/chat-question-request.ts`, `src/components/chat-question/chat-question.tsx`, `src/components/chat-question/chat-question-pending.tsx`, `src/components/chat-question/chat-question-choices.tsx`, `src/components/chat-question/chat-question-fields.tsx`, `labs/reference/chat-question.css`
+Verification: `src/components/chat-question/chat-question-request.test.tsx`, `e2e/chat-question.spec.ts`
+
+### UIC-CHAT-QUESTION-2.8 - Refused requests
+
+When `onSubmit` or `onDismiss` throws or its promise rejects, the card shall keep every option chosen, every word typed (Other's included) and the question shown, and show why in an [Inline Error](INLINE-ERROR.md) (`ui-chat-question__error`, an assertive alert) before the actions: the error's message, else the provider's `questionSubmitFailed` string for answers or the common `actionFailed` string for a dismissal. The actions are available again, so the reader can retry; the message stays until the next request.
+
+Implementation: `src/components/chat-question/chat-question-request.ts`, `src/components/chat-question/chat-question-pending.tsx`, `src/core/chat-question-strings.ts`, `labs/reference/chat-question.css`
+Verification: `src/components/chat-question/chat-question-request.test.tsx`, `e2e/chat-question.spec.ts`
+
+### UIC-CHAT-QUESTION-2.9 - Read-only card
+
+A pending card without `onSubmit` shall be read-only: its options and fields show without taking changes (`data-readonly`, `aria-readonly`, `readonly`), a field asks for no answer, Enter does nothing and there is no Submit. A stepped read-only card offers Next on every question but the last, so the reader can read each question. A card with one question and no `onDismiss` draws no actions.
+
+Implementation: `src/components/chat-question/chat-question-pending.tsx`, `src/components/chat-question/chat-question-choices.tsx`, `src/components/chat-question/chat-question-fields.tsx`
+Verification: `src/components/chat-question/chat-question-request.test.tsx`, `e2e/chat-question.spec.ts`
+
+### UIC-CHAT-QUESTION-2.10 - Scope
+
+The reader's drafts, the question shown and the card's requests shall belong to the card's `id` while it is pending. A card that changes `id` starts afresh with no drafts, the first question and no request; a request that settles after the card changed `id`, left `pending` or unmounted changes nothing, so it never marks, fails or unlocks another card.
+
+Implementation: `src/components/chat-question/chat-question-request.ts`, `src/components/chat-question/chat-question.tsx`
+Verification: `src/components/chat-question/chat-question-request.test.tsx`
 
 ## UIC-CHAT-QUESTION-3 - Several questions
 
@@ -154,7 +182,7 @@ Verification: `src/components/chat-question/chat-question.test.tsx`
 
 ### UIC-CHAT-QUESTION-5.1 - Strings
 
-Every string the card renders shall come from the provider: its own in `src/core/chat-question-strings.ts`, with counts and lists formed by functions, and `back`, `next` and `dismiss` from the common strings.
+Every string the card renders shall come from the provider: its own in `src/core/chat-question-strings.ts`, with counts and lists formed by functions, and `back`, `next`, `dismiss` and `actionFailed` from the common strings.
 
 Implementation: `src/core/chat-question-strings.ts`, `src/core/strings.ts`
 Verification: `src/components/chat-question/chat-question.test.tsx`
@@ -168,41 +196,44 @@ Verification: `src/components/chat-question/chat-question.test.tsx`
 
 ## Hooks
 
-| Hook                                 | Kind      | Values                             | Description                                                             |
-| ------------------------------------ | --------- | ---------------------------------- | ----------------------------------------------------------------------- |
-| `ui-chat-question`                   | root      |                                    | The card (`role="group"`).                                              |
-| `ui-chat-question__steps`            | slot      |                                    | The chips of a stepped card (`<ol>`).                                   |
-| `ui-chat-question__step`             | slot      |                                    | One question's chip (`<li>`).                                           |
-| `ui-chat-question__progress`         | slot      |                                    | The progress hint of a stepped card.                                    |
-| `ui-chat-question__item`             | slot      |                                    | The shown question.                                                     |
-| `ui-chat-question__header`           | slot      |                                    | The header chip of a card with one question.                            |
-| `ui-chat-question__question`         | slot      |                                    | The question's text.                                                    |
-| `ui-chat-question__answer`           | slot      |                                    | The options, the Other field and the preview.                           |
-| `ui-chat-question__options`          | slot      |                                    | The radio group or checkbox group.                                      |
-| `ui-chat-question__option`           | slot      |                                    | One option: its radio or checkbox and description.                      |
-| `ui-chat-question__recommended`      | slot      |                                    | The "Recommended" badge (also `ui-badge`).                              |
-| `ui-chat-question__description`      | slot      |                                    | An option's description.                                                |
-| `ui-chat-question__other`            | slot      |                                    | The field for the words given for Other (also `ui-text-field`).         |
-| `ui-chat-question__text`             | slot      |                                    | The field of a free-text question (also `ui-text-field`).               |
-| `ui-chat-question__preview`          | slot      |                                    | The preview of the focused or chosen option.                            |
-| `ui-chat-question__actions`          | slot      |                                    | Back, Next or Submit, and Dismiss.                                      |
-| `ui-chat-question__back`             | slot      |                                    | The Back button (also `ui-button`).                                     |
-| `ui-chat-question__next`             | slot      |                                    | The Next button (also `ui-button`).                                     |
-| `ui-chat-question__submit`           | slot      |                                    | The Submit button (also `ui-button`).                                   |
-| `ui-chat-question__dismiss`          | slot      |                                    | The Dismiss button (also `ui-button`).                                  |
-| `ui-chat-question__announcement`     | slot      |                                    | The visually hidden status that announces a pending card.               |
-| `ui-chat-question__summary`          | slot      |                                    | The answers of an answered card (`<dl>`).                               |
-| `ui-chat-question__summary-item`     | slot      |                                    | One question and its answer.                                            |
-| `ui-chat-question__summary-question` | slot      |                                    | The question's text (`<dt>`).                                           |
-| `ui-chat-question__summary-answer`   | slot      |                                    | What the reader answered (`<dd>`).                                      |
-| `ui-chat-question__status`           | slot      |                                    | "Dismissed" on a dismissed card.                                        |
-| `data-status`                        | attribute | `pending`, `answered`, `dismissed` | On the root: whether the card asks or sums up.                          |
-| `data-stepped`                       | state     | `true`                             | On the root: more than one question, asked one at a time while pending. |
-| `data-selection-mode`                | attribute | `single`, `multiple`, `none`       | On the item: how the question is answered.                              |
-| `data-has-preview`                   | state     | `true`                             | On the answer: an option has a preview.                                 |
-| `data-orientation`                   | attribute | `vertical`                         | On the radio group: the arrow-key axis (React Aria).                    |
-| `data-selected`                      | state     | `true`                             | On an option: chosen or ticked.                                         |
-| `data-recommended`                   | state     | `true`                             | On an option: the agent recommends it.                                  |
-| `data-other`                         | state     | `true`                             | On an option: the Other choice.                                         |
-| `data-current`                       | state     | `true`                             | On a chip: the shown question.                                          |
-| `data-answered`                      | state     | `true`                             | On a chip: the question has an answer.                                  |
+| Hook                                 | Kind      | Values                             | Description                                                              |
+| ------------------------------------ | --------- | ---------------------------------- | ------------------------------------------------------------------------ |
+| `ui-chat-question`                   | root      |                                    | The card (`role="group"`).                                               |
+| `ui-chat-question__steps`            | slot      |                                    | The chips of a stepped card (`<ol>`).                                    |
+| `ui-chat-question__step`             | slot      |                                    | One question's chip (`<li>`).                                            |
+| `ui-chat-question__progress`         | slot      |                                    | The progress hint of a stepped card.                                     |
+| `ui-chat-question__item`             | slot      |                                    | The shown question.                                                      |
+| `ui-chat-question__header`           | slot      |                                    | The header chip of a card with one question.                             |
+| `ui-chat-question__question`         | slot      |                                    | The question's text.                                                     |
+| `ui-chat-question__answer`           | slot      |                                    | The options, the Other field and the preview.                            |
+| `ui-chat-question__options`          | slot      |                                    | The radio group or checkbox group.                                       |
+| `ui-chat-question__option`           | slot      |                                    | One option: its radio or checkbox and description.                       |
+| `ui-chat-question__recommended`      | slot      |                                    | The "Recommended" badge (also `ui-badge`).                               |
+| `ui-chat-question__description`      | slot      |                                    | An option's description.                                                 |
+| `ui-chat-question__other`            | slot      |                                    | The field for the words given for Other (also `ui-text-field`).          |
+| `ui-chat-question__text`             | slot      |                                    | The field of a free-text question (also `ui-text-field`).                |
+| `ui-chat-question__preview`          | slot      |                                    | The preview of the focused or chosen option.                             |
+| `ui-chat-question__error`            | slot      |                                    | Why the last request failed (also `ui-inline-error`).                    |
+| `ui-chat-question__actions`          | slot      |                                    | Back, Next or Submit, and Dismiss.                                       |
+| `ui-chat-question__back`             | slot      |                                    | The Back button (also `ui-button`).                                      |
+| `ui-chat-question__next`             | slot      |                                    | The Next button (also `ui-button`).                                      |
+| `ui-chat-question__submit`           | slot      |                                    | The Submit button (also `ui-button`).                                    |
+| `ui-chat-question__dismiss`          | slot      |                                    | The Dismiss button (also `ui-button`).                                   |
+| `ui-chat-question__announcement`     | slot      |                                    | The visually hidden status that announces a pending card.                |
+| `ui-chat-question__summary`          | slot      |                                    | The answers of an answered card (`<dl>`).                                |
+| `ui-chat-question__summary-item`     | slot      |                                    | One question and its answer.                                             |
+| `ui-chat-question__summary-question` | slot      |                                    | The question's text (`<dt>`).                                            |
+| `ui-chat-question__summary-answer`   | slot      |                                    | What the reader answered (`<dd>`).                                       |
+| `ui-chat-question__status`           | slot      |                                    | "Dismissed" on a dismissed card.                                         |
+| `data-status`                        | attribute | `pending`, `answered`, `dismissed` | On the root: whether the card asks or sums up.                           |
+| `data-stepped`                       | state     | `true`                             | On the root: more than one question, asked one at a time while pending.  |
+| `data-submitting`                    | state     | `true`                             | On the root: the answers or the dismissal sent are unsettled.            |
+| `data-selection-mode`                | attribute | `single`, `multiple`, `none`       | On the item: how the question is answered.                               |
+| `data-has-preview`                   | state     | `true`                             | On the answer: an option has a preview.                                  |
+| `data-orientation`                   | attribute | `vertical`                         | On the radio group: the arrow-key axis (React Aria).                     |
+| `data-readonly`                      | state     | `true`                             | On the options: read-only while submitting or unanswerable (React Aria). |
+| `data-selected`                      | state     | `true`                             | On an option: chosen or ticked.                                          |
+| `data-recommended`                   | state     | `true`                             | On an option: the agent recommends it.                                   |
+| `data-other`                         | state     | `true`                             | On an option: the Other choice.                                          |
+| `data-current`                       | state     | `true`                             | On a chip: the shown question.                                           |
+| `data-answered`                      | state     | `true`                             | On a chip: the question has an answer.                                   |

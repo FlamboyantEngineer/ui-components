@@ -20,6 +20,8 @@ interface QuestionChoicesProps {
   item: ChatQuestionItem;
   draft: QuestionDraft;
   onDraftChange: (draft: QuestionDraft) => void;
+  /** Shows the choices and the Other field without letting the reader change them. */
+  isReadOnly: boolean;
   /** The id of the question's text, which names the group. */
   labelId: string;
   /** Shows the Other field's validation now. */
@@ -31,6 +33,7 @@ interface QuestionChoicesProps {
 interface ChoiceGroupProps {
   item: ChatQuestionItem;
   draft: QuestionDraft;
+  isReadOnly: boolean;
   labelId: string;
   /** The value that stands for Other. */
   otherValue: string;
@@ -45,7 +48,11 @@ function readFocusedValue(target: EventTarget): string | null {
 }
 
 /** The question's options, then Other when it allows one, each as a radio or a checkbox. */
-function ChoiceOptions({ item, draft, otherValue }: Omit<ChoiceGroupProps, 'labelId' | 'onPick'>) {
+function ChoiceOptions({
+  item,
+  draft,
+  otherValue,
+}: Pick<ChoiceGroupProps, 'item' | 'draft' | 'otherValue'>) {
   const strings = useUiStrings();
   const mode = item.selectionMode === 'multiple' ? 'multiple' : 'single';
   return (
@@ -72,13 +79,14 @@ function ChoiceOptions({ item, draft, otherValue }: Omit<ChoiceGroupProps, 'labe
 
 /** A radio group (one option) or a checkbox group (any options), named by the question. */
 function ChoiceGroup(props: ChoiceGroupProps) {
-  const { item, draft, labelId, otherValue, onPick } = props;
+  const { item, draft, isReadOnly, labelId, otherValue, onPick } = props;
   const options = <ChoiceOptions item={item} draft={draft} otherValue={otherValue} />;
   if (item.selectionMode === 'multiple') {
     return (
       <AriaCheckboxGroup
         {...hooks.slot('options')}
         aria-labelledby={labelId}
+        isReadOnly={isReadOnly}
         value={draft.isOther ? [...draft.optionIds, otherValue] : [...draft.optionIds]}
         onChange={(values) => onPick(pickMultiple(draft, values, otherValue))}
       >
@@ -90,6 +98,7 @@ function ChoiceGroup(props: ChoiceGroupProps) {
     <AriaRadioGroup
       {...hooks.slot('options')}
       aria-labelledby={labelId}
+      isReadOnly={isReadOnly}
       value={draft.isOther ? otherValue : (draft.optionIds[0] ?? null)}
       onChange={(value) => onPick(pickSingle(draft, value, otherValue))}
     >
@@ -117,6 +126,7 @@ export function QuestionChoices({
   item,
   draft,
   onDraftChange,
+  isReadOnly,
   labelId,
   isRevealed,
   onEnter,
@@ -149,6 +159,7 @@ export function QuestionChoices({
       <ChoiceGroup
         item={item}
         draft={draft}
+        isReadOnly={isReadOnly}
         labelId={labelId}
         otherValue={otherValue}
         onPick={pick}
@@ -159,6 +170,7 @@ export function QuestionChoices({
           label={strings.questionOtherAnswer}
           draft={draft}
           onDraftChange={onDraftChange}
+          isReadOnly={isReadOnly}
           isRevealed={isRevealed}
           onEnter={onEnter}
           autoFocus={focusesOther}

@@ -82,7 +82,7 @@ Verification: `src/components/chat-parts/chat-part-view.test.tsx`, `e2e/chat-par
 
 ### UIC-CHAT-PARTS-3.4 - Questions
 
-A question part shall render as a `ChatQuestion` card with its data. Submitting calls `onAnswerQuestion` with the part's `id` and the answers; Dismiss shows only with `onDismissQuestion`, which receives the part's `id`.
+A question part shall render as a `ChatQuestion` card with its data. Submitting calls `onAnswerQuestion` with the part's `id` and the answers, and the card awaits a promise it returns ([UIC-CHAT-QUESTION-2.7](CHAT-QUESTION.md)); without `onAnswerQuestion` the card is read-only ([UIC-CHAT-QUESTION-2.9](CHAT-QUESTION.md)). Dismiss shows only with `onDismissQuestion`, which receives the part's `id` and is awaited likewise.
 
 Implementation: `src/components/chat-parts/chat-part-view.tsx`
 Verification: `src/components/chat-parts/chat-part-view.test.tsx`
@@ -142,17 +142,24 @@ Verification: `src/components/chat-parts/chat-parts-grouping.test.ts`, `src/comp
 
 ### UIC-CHAT-PARTS-5.2 - Running and duration
 
-A group shall run (`ChatSteps`' `isRunning`: open, "Working…") while `isStreaming` is true and either it ends the message or one of its steps is still at work (reasoning streaming, a tool call `pending` or `running`); otherwise it has ended and collapses, unless the reader chose otherwise. So a group collapses once the answer after it starts streaming. Its duration is the sum of its steps' `durationMs`, or none when no step has one.
+A group shall run (`ChatSteps`' `isRunning`: open, "Working…") while `isStreaming` is true and either it ends the message or one of its steps is still at work (reasoning streaming, a tool call `pending` or `running`); otherwise it has ended and collapses, unless the reader chose otherwise or a call in it waits for approval ([UIC-CHAT-PARTS-5.3](#uic-chat-parts-53---approvals-in-a-group)) or failed ([UIC-CHAT-PARTS-5.4](#uic-chat-parts-54---failures-in-a-group)). So a group of successful steps collapses once the answer after it starts streaming. Its duration is the sum of its steps' `durationMs`, or none when no step has one.
 
 Implementation: `src/components/chat-parts/chat-parts.tsx`, `src/components/chat-parts/chat-parts-grouping.ts`
 Verification: `src/components/chat-parts/chat-parts-grouping.test.ts`, `src/components/chat-parts/chat-parts.test.tsx`, `e2e/chat-parts.spec.ts`
 
 ### UIC-CHAT-PARTS-5.3 - Approvals in a group
 
-A group holding a tool call whose approval waits (`approval-requested` without a decision) shall be open without the reader's choice, even once the message no longer streams. When a call in a group the reader closed starts waiting for approval, the group opens as if the reader had opened it (`onExpandedPartsChange` receives the group as open), so the request never hides in a collapsed group and the group does not collapse under the reader's focus once they decide; closing it again is the reader's choice and holds.
+A group holding a tool call whose approval waits (`approval-requested` without a decision) shall be open without the reader's choice, even once the message no longer streams. When a call in a group the reader closed starts waiting for approval, or already waits as `ChatParts` mounts, the group opens as if the reader had opened it (`onExpandedPartsChange` receives the group as open), so the request never hides in a collapsed group and the group does not collapse under the reader's focus once they decide; closing it again is the reader's choice and holds.
 
 Implementation: `src/components/chat-parts/chat-parts.tsx`, `src/components/chat-parts/use-parts-expansion.ts`
 Verification: `src/components/chat-parts/chat-parts.test.tsx`
+
+### UIC-CHAT-PARTS-5.4 - Failures in a group
+
+A group holding a failed tool call (`failed`) shall be open without the reader's choice, even once the run has ended and the answer follows it, so the failure stays discoverable among the successful steps; a group without a failed call or a waiting approval still collapses once its run ends. When a call newly fails, including in the update that ends the run, its group and its card open where the reader closed them, as if the reader had opened them (`onExpandedPartsChange` receives them as open); otherwise the failed card opens itself ([UIC-CHAT-TOOL-CALL-3.1](CHAT-TOOL-CALL.md#uic-chat-tool-call-31---expanded-state)). Closing the group or the card again is the reader's choice and holds over later renders, until another call newly fails. A call that has already failed when `ChatParts` mounts, as in loaded history or a remount under virtualization, has not newly failed: its group is open only by default, so a closed choice kept in `expandedParts` holds.
+
+Implementation: `src/components/chat-parts/chat-parts.tsx`, `src/components/chat-parts/chat-parts-grouping.ts`, `src/components/chat-parts/use-parts-expansion.ts`
+Verification: `src/components/chat-parts/chat-parts.test.tsx`, `src/components/chat-parts/chat-parts-grouping.test.ts`, `src/components/chat/chat.test.tsx`, `e2e/chat-parts.spec.ts`
 
 ## UIC-CHAT-PARTS-6 - Expansion
 

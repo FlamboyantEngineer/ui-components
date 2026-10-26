@@ -1,7 +1,8 @@
 /*
  * Chat Question: a card of questions. The options sit in a column with their descriptions under
  * the labels, and the preview of the focused or chosen option sits beside them, or below them on
- * a narrow card. Chips and the progress hint lead a stepped card; the actions close it.
+ * a narrow card. Chips and the progress hint lead a stepped card; the actions close it, after
+ * the error of a refused request.
  */
 
 .ui-chat-question {
@@ -154,6 +155,16 @@
 
 .ui-chat-question__preview > .ui-markdown > :last-child {
   margin-bottom: 0;
+}
+
+/* Why the last request failed spans the card, just above the actions that retry it. */
+.ui-chat-question__error {
+  align-self: stretch;
+}
+
+/* The answers being sent are locked; the pending button carries its own spinner. */
+.ui-chat-question[data-submitting] .ui-chat-question__answer {
+  cursor: progress;
 }
 
 .ui-chat-question__actions {

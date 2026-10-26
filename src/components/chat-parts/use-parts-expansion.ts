@@ -1,5 +1,5 @@
 // Which reasoning, tool calls and groups of steps of a message are open, as the reader chose
-// (specs/CHAT-PARTS.md, UIC-CHAT-PARTS-5.3 and UIC-CHAT-PARTS-6.1).
+// (specs/CHAT-PARTS.md, UIC-CHAT-PARTS-5.3, UIC-CHAT-PARTS-5.4 and UIC-CHAT-PARTS-6.1).
 
 import { useEffect, useRef, useState } from 'react';
 import { useLatest } from '../../utils/use-latest.js';
@@ -20,10 +20,14 @@ export interface PartsExpansion {
   expand: (keys: readonly string[]) => void;
 }
 
-/** A group of steps and the tool calls in it that wait for the reader's approval. */
-export interface AwaitingGroup {
-  key: string;
-  callIds: readonly string[];
+/** Something in a message that calls for the reader, such as a tool call that waits or failed. */
+export interface PartsReveal {
+  /** Names it, so it reveals once, when it arrives, and not on every render. */
+  id: string;
+  /** The keys of the group and part that show it, opened where the reader closed them. */
+  keys: readonly string[];
+  /** It also reveals when present as the parts mount, rather than only when it arrives later. */
+  isRevealedOnMount: boolean;
 }
 
 /** The reader's choices: the caller's when `expandedParts` is given, else kept here. */
@@ -46,21 +50,25 @@ export function usePartsExpansion({
 }
 
 /**
- * Opens a group the reader closed when a tool call in it starts waiting for approval, so the
- * request never hides in a collapsed group. The group then stays open, as if the reader had opened
- * it, so it does not collapse under the reader's focus once they decide; closing it again holds.
+ * Opens the groups and parts the reader closed when something in them newly calls for the reader,
+ * so it never hides in a collapsed group. They then stay open, as if the reader had opened them, so
+ * they do not collapse once the run moves on or under the reader's focus once they decide; closing
+ * them again holds until something else arrives. The reveals of one render open in one update, so
+ * none overwrites another, and through `expand`, so a controlled record receives them.
  */
-export function useApprovalReveal(groups: readonly AwaitingGroup[], expansion: PartsExpansion) {
-  const seen = useRef<ReadonlySet<string>>(new Set());
-  const latest = useLatest({ groups, expansion });
-  const signature = groups.map((group) => `${group.key}=${group.callIds.join(',')}`).join(';');
+export function usePartsReveal(reveals: readonly PartsReveal[], expansion: PartsExpansion) {
+  const seen = useRef<ReadonlySet<string> | undefined>(undefined);
+  const latest = useLatest({ reveals, expansion });
+  const signature = reveals.map((reveal) => reveal.id).join(';');
   useEffect(() => {
-    const { groups: current, expansion: state } = latest.current;
-    const closed = current.filter(
-      (group) =>
-        state.expanded[group.key] === false && group.callIds.some((id) => !seen.current.has(id)),
-    );
-    seen.current = new Set(current.flatMap((group) => group.callIds));
-    if (closed.length > 0) state.expand(closed.map((group) => group.key));
+    const { reveals: current, expansion: state } = latest.current;
+    const previous =
+      seen.current ??
+      new Set(current.filter((reveal) => !reveal.isRevealedOnMount).map((reveal) => reveal.id));
+    seen.current = new Set(current.map((reveal) => reveal.id));
+    const closed = current
+      .filter((reveal) => !previous.has(reveal.id))
+      .flatMap((reveal) => reveal.keys.filter((key) => state.expanded[key] === false));
+    if (closed.length > 0) state.expand(closed);
   }, [signature, latest]);
 }

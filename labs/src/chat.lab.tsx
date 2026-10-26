@@ -4,6 +4,7 @@ import { ChatAssistantCases } from './chat-assistant-cases.js';
 import { ChatChromeCases } from './chat-chrome-cases.js';
 import { ChatEverythingCases } from './chat-everything-cases.js';
 import { ChatGroupCases } from './chat-group-cases.js';
+import { ChatHostCases } from './chat-host-cases.js';
 import { ChatPeopleCases } from './chat-people-cases.js';
 import { ana, ben, mia, planner } from './chat-samples.js';
 import { ChatStateCases } from './chat-state-cases.js';
@@ -43,6 +44,7 @@ mountLab(
   <>
     <ChatEverythingCases />
     <ChatAssistantCases />
+    <ChatHostCases />
     <ChatPeopleCases />
     <ChatGroupCases />
     <ChatChromeCases />

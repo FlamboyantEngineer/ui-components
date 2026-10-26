@@ -84,6 +84,7 @@ export const chatQuestionHooks = createHooks('chat-question', [
   'other',
   'text',
   'preview',
+  'error',
   'actions',
   'back',
   'next',

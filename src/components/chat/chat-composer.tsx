@@ -1,4 +1,4 @@
-import { useId, useMemo, type KeyboardEvent } from 'react';
+import { useId, useMemo, type KeyboardEvent, type ReactNode } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { ChatAttachmentList, type ChatAttachmentData } from '../chat-attachment/chat-attachment.js';
 import type { ChatQueuedMessage } from '../chat-controller/chat-controller.js';
@@ -18,29 +18,53 @@ import {
   findLastOwnText,
   readMessageText,
   toComposerTokens,
-  toDisplayTokens,
   toExcerpt,
   toMessageText,
   type ChatMessageText,
   type ChatParticipantIndex,
 } from './chat-model.js';
 import { ChatQueue } from './chat-queue.js';
+import { submitMessage } from './chat-submit.js';
 import type { ChatState } from './use-chat-state.js';
 
-/** Sends a text with its mentions and commands about a message: an edit or a reply. */
+/**
+ * Sends a text with its mentions and commands about a message: an edit or a reply. A returned
+ * promise holds the composer's message until it settles, as `onSend` does.
+ */
 export type ChatMessageTextHandler = (
   messageId: string,
   text: string,
   tokens: readonly ChatTextToken[],
-) => void;
+) => void | Promise<unknown>;
 
 /** The chat props the composer reads. */
 export interface ChatComposerOptions extends Pick<
   RichMessageComposerProps,
-  'isPending' | 'onStop' | 'isDisabled' | 'placeholder' | 'commands' | 'history' | 'onAttach'
+  | 'isPending'
+  | 'onStop'
+  | 'isDisabled'
+  | 'placeholder'
+  | 'commands'
+  | 'history'
+  | 'onAttach'
+  | 'submitShortcut'
+  | 'minRows'
+  | 'maxRows'
 > {
-  /** Sends the reader's message with its mentions and commands. Without it there is no composer. */
-  onSend?: ((text: string, tokens?: readonly ChatTextToken[]) => void) | undefined;
+  /**
+   * Sends the reader's message with its mentions and commands. Without it there is no composer. A
+   * returned promise holds the message, its tokens and the quote until it settles: they clear once
+   * it resolves, and stay for another try when it rejects.
+   */
+  onSend?:
+    | ((text: string, tokens?: readonly ChatTextToken[]) => void | Promise<unknown>)
+    | undefined;
+  /** Called when `onSend`, `onReply` or `onEdit` throws or its promise rejects; the composer keeps the message. Without it the error is rethrown. */
+  onSendError?: ((error: unknown) => void) | undefined;
+  /** Sends a blank message too, as when context the host adds carries the request; a complete attachment allows it as well. */
+  allowsEmptySubmit?: boolean | undefined;
+  /** The host's controls among the composer's tools, before the model picker. */
+  composerToolbar?: ReactNode;
   /** Names the conversation, so the composer keeps its draft in the provider's storage. */
   conversationId?: string | undefined;
   /** Messages waiting for the running reply to end, shown above the composer. */
@@ -55,7 +79,7 @@ export interface ChatComposerOptions extends Pick<
   onRetryAttachment?: ((id: string) => void) | undefined;
   /** Saves the reader's edit of their message; offers Edit on their messages in chats between people. */
   onEdit?: ChatMessageTextHandler | undefined;
-  /** Sends a reply quoting a message; offers Reply in chats between people. */
+  /** Sends a reply quoting a message; offers Reply on every message between people, and on finished messages with text in an assistant chat. */
   onReply?: ChatMessageTextHandler | undefined;
   /** Shows a model and effort picker among the composer's tools, disabled with the composer. */
   modelPicker?: ChatModelPickerProps | undefined;
@@ -139,28 +163,6 @@ function ComposerBanner({ id, banner }: { id: string; banner: BannerContent }) {
   );
 }
 
-/** Sends the composer's message as an edit, a queued message's new text, a reply or a new message. */
-function submitMessage({ options, state }: ChatComposerProps, message: ComposerMessage) {
-  const { editing, replyingId } = state;
-  const { text } = message;
-  const tokens = toDisplayTokens(message.tokens);
-  if (editing?.kind === 'message') {
-    options.onEdit?.(editing.id, text, tokens);
-    state.cancelEdit();
-  } else if (editing) {
-    const queue = options.queue ?? noQueue;
-    options.onQueueChange?.(
-      queue.map((entry) => (entry.id === editing.id ? { ...entry, text, tokens } : entry)),
-    );
-    state.cancelEdit();
-  } else if (replyingId !== null && options.onReply) {
-    options.onReply(replyingId, text, tokens);
-    state.cancelReply();
-  } else {
-    options.onSend?.(text, tokens);
-  }
-}
-
 /** The people `@` mentions: every participant but the reader. */
 function useMentions({ participants, currentUserId }: ChatComposerProps) {
   return useMemo(
@@ -204,11 +206,24 @@ function renderAttachments({ options, state }: ChatComposerProps) {
   );
 }
 
-/** The model and effort picker among the composer's tools, refused while the composer is. */
-function renderModelPicker({ options }: ChatComposerProps) {
-  const { modelPicker, isDisabled } = options;
-  if (!modelPicker) return undefined;
-  return <ChatModelPicker {...modelPicker} isDisabled={isDisabled || modelPicker.isDisabled} />;
+/** The host's tools, then the model and effort picker, refused while the composer is. */
+function renderTools({ options }: ChatComposerProps) {
+  const { composerToolbar, modelPicker, isDisabled } = options;
+  if (!composerToolbar && !modelPicker) return undefined;
+  return (
+    <>
+      {composerToolbar}
+      {modelPicker ? (
+        <ChatModelPicker {...modelPicker} isDisabled={isDisabled || modelPicker.isDisabled} />
+      ) : null}
+    </>
+  );
+}
+
+/** Blank messages send when the host allows them or a complete attachment carries the message. */
+function allowsEmptySubmit({ options }: ChatComposerProps) {
+  const hasFile = options.attachments?.some((entry) => entry.status === 'complete');
+  return Boolean(options.allowsEmptySubmit || hasFile);
 }
 
 /**
@@ -255,11 +270,15 @@ export function ChatComposer(props: ChatComposerProps) {
         aria-describedby={banner ? bannerId : undefined}
         onAttach={options.onAttach}
         attachments={renderAttachments(props)}
-        allowsEmptySubmit={options.attachments?.some((entry) => entry.status === 'complete')}
+        allowsEmptySubmit={allowsEmptySubmit(props)}
+        submitShortcut={options.submitShortcut}
+        minRows={options.minRows}
+        maxRows={options.maxRows}
         showEmojiPicker={!isAssistantChat}
-        toolbar={renderModelPicker(props)}
+        toolbar={renderTools(props)}
         onKeyDown={onKeyDown}
         onSubmit={(message) => submitMessage(props, message)}
+        onSubmitError={options.onSendError}
       />
     </>
   );

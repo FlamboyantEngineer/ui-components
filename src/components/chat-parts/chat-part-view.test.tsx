@@ -133,6 +133,8 @@ describe('ChatParts part views', () => {
     const onDismissQuestion = vi.fn();
     const { rerender } = render(<ChatParts parts={[question]} />);
     expect(screen.queryByRole('button', { name: 'Dismiss' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Submit' })).not.toBeInTheDocument();
+    expect(screen.getByRole('radiogroup')).toHaveAttribute('aria-readonly', 'true');
     rerender(
       <ChatParts
         parts={[question]}
@@ -147,6 +149,19 @@ describe('ChatParts part views', () => {
     ]);
     await user.click(screen.getByRole('button', { name: 'Dismiss' }));
     expect(onDismissQuestion).toHaveBeenCalledWith('ask-1');
+  });
+
+  it('UIC-CHAT-PARTS-3.4 lets the card await the answers the host accepts asynchronously', async () => {
+    const user = userEvent.setup();
+    const onAnswerQuestion = vi.fn(() => new Promise<void>(() => {}));
+    const { container } = render(
+      <ChatParts parts={[question]} messageId="m7" onAnswerQuestion={onAnswerQuestion} />,
+    );
+    await user.click(screen.getByRole('radio', { name: 'Fish' }));
+    await user.click(screen.getByRole('button', { name: 'Submit' }));
+    await user.click(screen.getByRole('button', { name: 'Submit' }));
+    expect(onAnswerQuestion).toHaveBeenCalledTimes(1);
+    expect(container.querySelector('#m7-ask-1')).toHaveAttribute('data-submitting', 'true');
   });
 
   it('UIC-CHAT-PARTS-4.1 UIC-CHAT-PARTS-4.2 renders plans and sources', () => {

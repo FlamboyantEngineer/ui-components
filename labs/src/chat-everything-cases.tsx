@@ -64,9 +64,10 @@ function FeatureList() {
         reasons, and search the conversation from the header.
       </li>
       <li>
-        <strong>Not here:</strong> with an assistant in the conversation, Chat offers the
-        assistant&apos;s commands rather than Reply, React, Edit, Delete and the emoji picker; try
-        those in Between two people and Group conversation.
+        <strong>Quotes:</strong> hover any finished message and press Reply to quote it to the team;
+        Escape or Cancel reply drops the quote. With an assistant in the conversation, React, Edit,
+        Delete and the emoji picker stay with chats between people: try them in Between two people
+        and Group conversation.
       </li>
     </ul>
   );

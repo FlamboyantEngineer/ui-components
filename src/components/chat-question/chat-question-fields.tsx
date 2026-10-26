@@ -17,6 +17,8 @@ interface QuestionTextFieldProps {
   label: string;
   draft: QuestionDraft;
   onDraftChange: (draft: QuestionDraft) => void;
+  /** Shows the words without letting the reader change them, and asks for none. */
+  isReadOnly: boolean;
   /** Shows the field's validation now rather than once focus leaves it. */
   isRevealed: boolean;
   /** Called on Enter, to go on to the next question or submit. */
@@ -48,6 +50,7 @@ export function QuestionTextField({
   label,
   draft,
   onDraftChange,
+  isReadOnly,
   isRevealed,
   onEnter,
   autoFocus,
@@ -62,7 +65,8 @@ export function QuestionTextField({
       value={draft.otherText}
       committedValue={draft.otherText}
       onChange={(otherText) => onDraftChange({ ...draft, otherText })}
-      isRequired
+      isReadOnly={isReadOnly}
+      isRequired={!isReadOnly}
       validationMode={isRevealed ? 'immediate' : 'blur'}
       autoFocus={autoFocus}
       onKeyDown={(event) => {

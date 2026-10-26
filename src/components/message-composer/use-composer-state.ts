@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { usePersistentState, type PersistCodec } from '../../core/provider.js';
+import { useSubmission } from './use-submission.js';
 
 /** How a composer reads its value as text and turns text back into its value. */
 export interface ComposerFormat<T> {
@@ -14,7 +15,8 @@ export interface ComposerStateOptions<T> {
   value?: T | undefined;
   defaultValue?: T | undefined;
   onChange?: ((value: T) => void) | undefined;
-  onSubmit?: ((value: T) => void) | undefined;
+  onSubmit?: ((value: T) => void | Promise<unknown>) | undefined;
+  onSubmitError?: ((error: unknown) => void) | undefined;
   persistKey?: string | undefined;
   editValue?: T | undefined;
   history?: readonly string[] | undefined;
@@ -35,6 +37,8 @@ export interface ComposerState<T> {
   isEditing: boolean;
   /** The value can be sent now. */
   canSubmit: boolean;
+  /** A sent message waits for the host to accept it. */
+  isSubmitting: boolean;
   /** Sends the value when it can be sent, then empties the draft (an edit stays for the host). */
   submit: () => void;
   /** Steps through the history, or asks to edit the last message; whether the key was used. */
@@ -108,11 +112,14 @@ export function useComposerState<T>(options: ComposerStateOptions<T>): ComposerS
   const [draft, setDraft] = useDraft(options);
   const [edit, setEdit] = useEditedMessage(editValue, format.empty);
   const [recalled, setRecalled] = useState<Recalled | null>(null);
+  const submission = useSubmission({ ...options, draft, setDraft });
   const isEditing = editValue !== undefined;
   const value = isEditing ? edit : draft;
   const text = format.toText(value);
   const canSubmit =
-    !options.isBlocked && (Boolean(options.allowsEmptySubmit) || text.trim() !== '');
+    !options.isBlocked &&
+    !submission.isSubmitting &&
+    (Boolean(options.allowsEmptySubmit) || text.trim() !== '');
   const recall = (direction: RecallDirection): boolean => {
     const current = recalled && text === recalled.text ? recalled : null;
     if (isEditing || (!current && text !== '')) return false;
@@ -131,11 +138,11 @@ export function useComposerState<T>(options: ComposerStateOptions<T>): ComposerS
     setValue: isEditing ? setEdit : setDraft,
     isEditing,
     canSubmit,
+    isSubmitting: submission.isSubmitting,
     submit: () => {
       if (!canSubmit) return;
-      options.onSubmit?.(value);
       setRecalled(null);
-      if (!isEditing) setDraft(format.empty);
+      submission.send(value, !isEditing);
     },
     recall,
   };

@@ -11,6 +11,7 @@ import { useFileDrop } from './use-file-drop.js';
 export interface ComposerFrameModel {
   isEditing: boolean;
   canSubmit: boolean;
+  isSubmitting: boolean;
   submit: () => void;
   shortcut: MessageComposerSubmitShortcut;
   /** Inserts text at the caret, as a chosen emoji. */
@@ -65,6 +66,7 @@ export function ComposerFrame({ props, rootRef, model, children }: ComposerFrame
     pending: Boolean(props.isPending),
     disabled: isDisabled,
     editing: model.isEditing,
+    submitting: model.isSubmitting,
     dropTarget: drop.isDropTarget,
   };
   return (

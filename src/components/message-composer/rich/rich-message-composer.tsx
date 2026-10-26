@@ -39,8 +39,11 @@ export interface RichMessageComposerProps extends MessageComposerSharedProps {
   defaultValue?: MessageComposerMessage | undefined;
   /** Called with the message after each edit. */
   onChange?: ((value: MessageComposerMessage) => void) | undefined;
-  /** Called with the message when the reader sends it; the composer then empties. */
-  onSubmit?: ((value: MessageComposerMessage) => void) | undefined;
+  /**
+   * Called with the message when the reader sends it; the composer then empties. A returned
+   * promise holds sending until it settles, and the composer empties once it resolves.
+   */
+  onSubmit?: ((value: MessageComposerMessage) => void | Promise<unknown>) | undefined;
   /** The message being edited: while set, the composer shows it in place of the draft, with Save and Cancel. */
   editValue?: MessageComposerMessage | undefined;
   /** The people `@` mentions. */
