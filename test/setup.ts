@@ -19,11 +19,31 @@ afterEach(() => {
   cleanup();
 });
 
+// Window functions tests replace with fakes, kept to hand back to the next file.
+const windowFunctions = [
+  'requestAnimationFrame',
+  'cancelAnimationFrame',
+  'ResizeObserver',
+  'IntersectionObserver',
+  'matchMedia',
+  'scrollTo',
+];
+const savedWindow =
+  typeof window === 'undefined'
+    ? []
+    : windowFunctions.map(
+        (key) => [key, (window as unknown as Record<string, unknown>)[key]] as const,
+      );
+
 // Hands the next file a clean document: no live regions, leftover portals, document attributes,
-// stored values or fake clock from this one.
+// stored values, window fakes or fake clock from this one.
 afterAll(() => {
   vi.useRealTimers();
   if (typeof document === 'undefined') return;
+  for (const [key, value] of savedWindow) {
+    if (value === undefined) Reflect.deleteProperty(window, key);
+    else Object.assign(window, { [key]: value });
+  }
   document.body.replaceChildren();
   document.head.replaceChildren();
   for (const element of [document.documentElement, document.body]) {

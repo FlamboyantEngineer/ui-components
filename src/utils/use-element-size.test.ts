@@ -70,8 +70,10 @@ function installFrames(view: Window): Frames {
   };
 }
 
+// Saved as values and written back: the fakes are written through the window's own setters, which
+// a restored property descriptor would not undo for the files that run after this one.
 const saved = ['ResizeObserver', 'requestAnimationFrame', 'cancelAnimationFrame'].map(
-  (key) => [key, Object.getOwnPropertyDescriptor(window, key)] as const,
+  (key) => [key, (window as unknown as Record<string, unknown>)[key]] as const,
 );
 const roots: Root[] = [];
 const sizes: Array<ElementSize | null> = [];
@@ -89,9 +91,9 @@ afterEach(async () => {
   await act(async () => {
     for (const root of roots.splice(0)) root.unmount();
   });
-  for (const [key, descriptor] of saved) {
-    if (descriptor) Object.defineProperty(window, key, descriptor);
-    else Reflect.deleteProperty(window, key);
+  for (const [key, value] of saved) {
+    if (value === undefined) Reflect.deleteProperty(window, key);
+    else Object.assign(window, { [key]: value });
   }
   vi.unstubAllGlobals();
   document.body.replaceChildren();
