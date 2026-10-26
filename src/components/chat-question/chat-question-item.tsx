@@ -11,6 +11,8 @@ interface QuestionItemProps {
   item: ChatQuestionItem;
   draft: QuestionDraft;
   onDraftChange: (draft: QuestionDraft) => void;
+  /** Shows the answer without letting the reader change it. */
+  isReadOnly: boolean;
   /** Shows the validation of the question's fields now. */
   isRevealed: boolean;
   /** Called on Enter in an answer field. */
@@ -29,6 +31,7 @@ export function QuestionItem({
   item,
   draft,
   onDraftChange,
+  isReadOnly,
   isRevealed,
   onEnter,
   showsHeader,
@@ -47,6 +50,7 @@ export function QuestionItem({
           label={item.question}
           draft={draft}
           onDraftChange={onDraftChange}
+          isReadOnly={isReadOnly}
           isRevealed={isRevealed}
           onEnter={onEnter}
         />
@@ -55,6 +59,7 @@ export function QuestionItem({
           item={item}
           draft={draft}
           onDraftChange={onDraftChange}
+          isReadOnly={isReadOnly}
           labelId={questionId}
           isRevealed={isRevealed}
           onEnter={onEnter}

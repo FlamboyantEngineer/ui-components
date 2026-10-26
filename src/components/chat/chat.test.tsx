@@ -1,7 +1,7 @@
 import { act, screen, waitFor, within } from '@testing-library/react';
 import { readFileSync } from 'node:fs';
 import { join, sep } from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   article,
   assistantPeople,
@@ -34,6 +34,31 @@ const awaiting: ChatMessageData = {
     },
   ],
 };
+
+/** A reply that asks one question, as card `ask` of message `r2`. */
+function askingReply(question: string, labels: [string, string]): ChatMessageData {
+  return {
+    id: 'r2',
+    authorId: 'helper',
+    createdAt: '2026-04-20T10:02:00',
+    status: 'complete',
+    parts: [
+      {
+        type: 'question',
+        id: 'ask',
+        status: 'pending',
+        questions: [
+          {
+            id: 'pace',
+            question,
+            selectionMode: 'single',
+            options: labels.map((label) => ({ id: label.toLowerCase(), label })),
+          },
+        ],
+      },
+    ],
+  };
+}
 
 describe('Chat', () => {
   it('UIC-CHAT-1.1 ships from its own entry point and stays out of the package root', () => {
@@ -119,6 +144,41 @@ describe('Chat', () => {
     expect(document.getElementById('r1-book')).toHaveClass('ui-chat-tool-call');
     await user.click(screen.getByRole('button', { name: 'Approve' }));
     expect(approvals).toEqual(['book']);
+  });
+
+  it('UIC-CHAT-1.5 awaits answers through onAnswerQuestion and keeps cards to their conversation', async () => {
+    const accepted = new Promise<void>(() => {});
+    const onAnswerQuestion = vi
+      .fn<(id: string, answers: unknown) => Promise<void>>()
+      .mockRejectedValueOnce(new Error('The helper is offline.'))
+      .mockReturnValueOnce(accepted)
+      .mockResolvedValue(undefined);
+    const trip = askingReply('How full should each day be?', ['Calm', 'Packed']);
+    const { user, rerenderWith } = renderChat({ ...assistantChat, messages: [trip] });
+    expect(screen.queryByRole('button', { name: 'Submit' })).not.toBeInTheDocument();
+    const props = { ...assistantChat, conversationId: 'trip', messages: [trip], onAnswerQuestion };
+    rerenderWith(props);
+    await user.click(screen.getByRole('radio', { name: 'Packed' }));
+    await user.click(screen.getByRole('button', { name: 'Submit' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('The helper is offline.');
+    expect(screen.getByRole('radio', { name: 'Packed' })).toBeChecked();
+    await user.click(screen.getByRole('button', { name: 'Submit' }));
+    expect(onAnswerQuestion).toHaveBeenLastCalledWith('ask', [
+      { questionId: 'pace', optionIds: ['packed'] },
+    ]);
+    expect(document.getElementById('r2-ask')).toHaveAttribute('data-submitting', 'true');
+    const other = askingReply('When should the tour start?', ['Morning', 'Evening']);
+    rerenderWith({ ...props, conversationId: 'tour', messages: [other] });
+    const card = document.getElementById('r2-ask');
+    expect(card).not.toHaveAttribute('data-submitting');
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(screen.queryByRole('radio', { checked: true })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('radio', { name: 'Evening' }));
+    await user.click(screen.getByRole('button', { name: 'Submit' }));
+    expect(onAnswerQuestion).toHaveBeenCalledTimes(3);
+    expect(onAnswerQuestion).toHaveBeenLastCalledWith('ask', [
+      { questionId: 'pace', optionIds: ['evening'] },
+    ]);
   });
 
   it('UIC-CHAT-1.5 keeps the reader’s open and closed parts across remounts', async () => {

@@ -82,7 +82,7 @@ Verification: `src/components/chat-parts/chat-part-view.test.tsx`, `e2e/chat-par
 
 ### UIC-CHAT-PARTS-3.4 - Questions
 
-A question part shall render as a `ChatQuestion` card with its data. Submitting calls `onAnswerQuestion` with the part's `id` and the answers; Dismiss shows only with `onDismissQuestion`, which receives the part's `id`.
+A question part shall render as a `ChatQuestion` card with its data. Submitting calls `onAnswerQuestion` with the part's `id` and the answers, and the card awaits a promise it returns ([UIC-CHAT-QUESTION-2.7](CHAT-QUESTION.md)); without `onAnswerQuestion` the card is read-only ([UIC-CHAT-QUESTION-2.9](CHAT-QUESTION.md)). Dismiss shows only with `onDismissQuestion`, which receives the part's `id` and is awaited likewise.
 
 Implementation: `src/components/chat-parts/chat-part-view.tsx`
 Verification: `src/components/chat-parts/chat-part-view.test.tsx`

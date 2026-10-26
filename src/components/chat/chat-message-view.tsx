@@ -35,6 +35,8 @@ export type ChatPartOptions = Pick<
 
 /** What every message of a chat shares; it keeps its identity while the chat's options do. */
 export interface ChatMessageContext extends ChatCommandContext {
+  /** The conversation shown; its parts start afresh when it changes. */
+  conversationId: string | undefined;
   parts: ChatPartOptions;
   getNow: (() => Date) | undefined;
   onRetry: ((messageId: string) => void) | undefined;
@@ -124,6 +126,8 @@ export const ChatMessageView = memo(function ChatMessageView({
           actions={actions}
         >
           <ChatParts
+            // A card's drafts and requests belong to one conversation, even where ids repeat.
+            key={context.conversationId}
             {...context.parts}
             parts={message.parts}
             messageId={id}

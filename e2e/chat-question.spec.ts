@@ -217,4 +217,78 @@ test.describe('Chat Question lab', () => {
     await expect(stepped.getByRole('radiogroup', { name: database })).toBeVisible();
     await expect(stepped.getByRole('group', { name: features })).toHaveCount(0);
   });
+
+  test('UIC-CHAT-QUESTION-2.7 UIC-CHAT-QUESTION-2.8 keeps every answer when the host refuses them, then accepts a retry', async ({
+    page,
+    lab,
+  }) => {
+    await page.clock.install();
+    await lab.open('chat-question');
+    await page.clock.pauseAt(Date.now() + 1000);
+    const card = demo(page, 'async');
+    const record = page.locator('[data-lab-record="async"]');
+    await card.getByText('Other', { exact: true }).click();
+    await expect(card.getByRole('textbox', { name: 'Other answer' })).toBeFocused();
+    await page.keyboard.type('Redis');
+    await card.getByRole('button', { name: 'Next' }).click();
+    const name = card.getByRole('textbox', { name: appName });
+    await expect(name).toBeFocused();
+    await page.keyboard.type('Pocket Notes');
+    const submit = card.getByRole('button', { name: /^Submit/ });
+    await submit.click();
+    await expect(card).toHaveAttribute('data-submitting', 'true');
+    await expect(submit).toHaveAttribute('data-pending', 'true');
+    await expect(submit).toBeFocused();
+    await expect(name).toHaveAttribute('readonly', '');
+    await page.keyboard.press('Enter');
+    await expect(record).toHaveText('Attempt 1 sent');
+    await page.clock.runFor(1200);
+    await expect(card.getByRole('alert')).toHaveText(
+      'The helper did not receive the answers. Try again.',
+    );
+    await expect(record).toHaveText('Attempt 1 refused');
+    await expect(card).not.toHaveAttribute('data-submitting');
+    await expect(submit).toBeFocused();
+    await expect(card.locator('.ui-chat-question__progress')).toHaveText('Question 2 of 2');
+    await expect(name).toHaveValue('Pocket Notes');
+    // Axe times itself with timers, so the clock runs again before checking the refused state.
+    await page.clock.resume();
+    await lab.expectAccessible('[data-lab-section="Asynchronous answers"]');
+    await card.getByRole('button', { name: 'Back' }).click();
+    await expect(card.getByRole('radio', { name: 'Other' })).toBeChecked();
+    await expect(card.getByRole('textbox', { name: 'Other answer' })).toHaveValue('Redis');
+    await card.getByRole('button', { name: 'Next' }).click();
+    await submit.click();
+    await expect(card).toHaveAttribute('data-status', 'answered');
+    await expect(record).toHaveText('Attempt 2 accepted');
+    await expect(card.getByRole('definition')).toHaveText([
+      'You chose Redis',
+      'You answered: Pocket Notes',
+    ]);
+    await expect(card).toBeFocused();
+  });
+
+  test('UIC-CHAT-QUESTION-2.9 reads a card without an answer handler, which takes no answer', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-question');
+    const card = demo(page, 'read-only');
+    const group = card.getByRole('radiogroup', { name: database });
+    await expect(group).toHaveAttribute('aria-readonly', 'true');
+    await card.getByText('MySQL', { exact: true }).click();
+    await expect(card.getByRole('radio', { name: 'MySQL' })).not.toBeChecked();
+    const sqlite = card.getByRole('radio', { name: 'SQLite' });
+    await sqlite.focus();
+    await page.keyboard.press('Space');
+    await expect(sqlite).not.toBeChecked();
+    await page.keyboard.press('Tab');
+    await expect(card.getByRole('button', { name: 'Next' })).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(card.getByRole('checkbox', { name: 'Sign-in' })).toBeFocused();
+    await card.getByRole('button', { name: 'Next' }).click();
+    await expect(card.getByRole('textbox', { name: appName })).toHaveAttribute('readonly', '');
+    await expect(card.getByRole('button', { name: 'Submit' })).toHaveCount(0);
+    await lab.expectAccessible('[data-lab-section="Read-only"]');
+  });
 });

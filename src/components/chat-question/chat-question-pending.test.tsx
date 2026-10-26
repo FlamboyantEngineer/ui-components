@@ -78,7 +78,9 @@ describe('ChatQuestion answering', () => {
 
   it('UIC-CHAT-QUESTION-2.2 counts Other as unanswered until it has words', async () => {
     const user = userEvent.setup();
-    render(<ChatQuestion id="ask" questions={[databaseQuestion]} status="pending" />);
+    render(
+      <ChatQuestion id="ask" questions={[databaseQuestion]} status="pending" onSubmit={vi.fn()} />,
+    );
     await user.click(screen.getByRole('radio', { name: 'Other' }));
     expect(submitButton()).toHaveAttribute('aria-disabled', 'true');
     await user.type(await screen.findByRole('textbox', { name: 'Other answer' }), '   ');
@@ -149,7 +151,7 @@ describe('ChatQuestion answering', () => {
     const onKeyDown = vi.fn();
     render(
       <div onKeyDown={(event) => onKeyDown(event.key)}>
-        <ChatQuestion id="ask" questions={[databaseQuestion]} status="pending" />
+        <ChatQuestion id="ask" questions={[databaseQuestion]} status="pending" onSubmit={vi.fn()} />
       </div>,
     );
     await user.click(screen.getByRole('radio', { name: 'Other' }));
@@ -270,7 +272,7 @@ describe('ChatQuestion with several questions', () => {
 
   it('UIC-CHAT-QUESTION-3.2 hints why Next is unavailable', async () => {
     const user = userEvent.setup();
-    render(<ChatQuestion id="ask" questions={three} status="pending" />);
+    render(<ChatQuestion id="ask" questions={three} status="pending" onSubmit={vi.fn()} />);
     await user.tab();
     await user.tab();
     expect(screen.getByRole('button', { name: 'Next' })).toHaveFocus();
@@ -311,7 +313,7 @@ describe('ChatQuestion with several questions', () => {
 
   it('UIC-CHAT-QUESTION-2.4 steps on with Enter in the Other field of an earlier question', async () => {
     const user = userEvent.setup();
-    render(<ChatQuestion id="ask" questions={three} status="pending" />);
+    render(<ChatQuestion id="ask" questions={three} status="pending" onSubmit={vi.fn()} />);
     await user.click(screen.getByRole('radio', { name: 'Other' }));
     const field = await screen.findByRole('textbox', { name: 'Other answer' });
     await waitFor(() => expect(field).toHaveFocus());
