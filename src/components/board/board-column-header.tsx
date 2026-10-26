@@ -1,4 +1,10 @@
-import { useRef, type KeyboardEvent } from 'react';
+import {
+  useRef,
+  type DragEvent,
+  type KeyboardEvent,
+  type PointerEvent,
+  type ReactNode,
+} from 'react';
 import { useLocale } from '../../primitives/index.js';
 import type { Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
@@ -28,11 +34,15 @@ export interface BoardColumnHeaderProps {
   drag: BoardColumnDrag | null;
   /** Moves the column one place toward the start (-1) or the end (1) by keyboard. */
   onStep: (key: Key, step: -1 | 1) => void;
+  /** The caller's controls drawn at the end of the header, or nothing. */
+  actions: ReactNode;
 }
 
 const steps: Readonly<Record<string, -1 | 1>> = { ArrowLeft: -1, ArrowRight: 1 };
 
 const columnShortcuts = 'Alt+ArrowLeft Alt+ArrowRight';
+
+const isEmptyNode = (node: ReactNode) => node === undefined || node === null || node === false;
 
 /** A column header's drag and drop: it drags, and takes drops of another column of the board. */
 function useColumnHeaderDrag({
@@ -41,6 +51,7 @@ function useColumnHeaderDrag({
   drag,
 }: Pick<BoardColumnHeaderProps, 'columnKey' | 'title' | 'drag'>) {
   const ref = useRef<HTMLDivElement>(null);
+  const pressedInActions = useRef(false);
   const { dragProps, startDrag, describedBy, isDragging, dropPosition } = useItemDrag({
     ref,
     key: columnKey,
@@ -51,16 +62,31 @@ function useColumnHeaderDrag({
     resolveMove: () => drag?.resolveDrop(columnKey) ?? null,
     onMove: (move) => drag?.onMove(move),
   });
-  return { ref, props: dragProps, startDrag, describedBy, isDragging, dropPosition };
+  // The whole header is the native drag source, so a pointer that went down in the caller's actions
+  // would drag the column: the drag is refused before React Aria starts it.
+  const props = {
+    ...dragProps,
+    onPointerDownCapture: (event: PointerEvent) => {
+      const target = event.target instanceof Element ? event.target : null;
+      pressedInActions.current = !!target?.closest(`.${hooks.slotClass('column-actions')}`);
+    },
+    onDragStartCapture: (event: DragEvent) => {
+      if (!pressedInActions.current) return;
+      event.preventDefault();
+      event.stopPropagation();
+    },
+  };
+  return { ref, props, startDrag, describedBy, isDragging, dropPosition };
 }
 
 /**
  * A board column's header: a drag handle while the board takes column moves (Alt+Arrow keys move
- * the column too), a collapse toggle, the title and the card count against the column's limit.
+ * the column too), a collapse toggle, the title, the card count against the column's limit and the
+ * caller's actions.
  */
 export function BoardColumnHeader(props: BoardColumnHeaderProps) {
   const { columnKey, title, titleId, count, limit, isOverLimit, isCollapsed } = props;
-  const { onCollapsedChange, drag, onStep } = props;
+  const { onCollapsedChange, drag, onStep, actions } = props;
   const strings = useUiStrings();
   const { direction } = useLocale();
   const header = useColumnHeaderDrag({ columnKey, title, drag });
@@ -110,6 +136,7 @@ export function BoardColumnHeader(props: BoardColumnHeaderProps) {
         <span aria-hidden="true">{limit === undefined ? count : `${count}/${limit}`}</span>
         <VisuallyHidden elementType="span">{strings.cardCount(count, limit)}</VisuallyHidden>
       </span>
+      {isEmptyNode(actions) ? null : <div {...hooks.slot('column-actions')}>{actions}</div>}
     </div>
   );
 }

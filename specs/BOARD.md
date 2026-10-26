@@ -1,6 +1,6 @@
 # Board
 
-`Board` lays cards out in columns, one per value of a grouping the owner chooses (a status, a stage, an owner), optionally repeated in lanes (swimlanes) for a second grouping. Each column has a header with its title, its card count against an optional limit and a collapse toggle; each lane has a header with its title, its count and a collapse toggle. Every cell (one column in one lane) is a React Aria grid list of the caller's card content. Cards move within and between cells by pointer or keyboard drag and drop and by Alt+Arrow keys, and columns reorder, each move reported as plain data for the owner to apply, as for [Tree reordering](TREE-REORDER.md) and [List View](LIST-ROW.md#uic-list-row-35---drag-and-drop). Long cells virtualize ([COLLECTIONS.md](COLLECTIONS.md)).
+`Board` lays cards out in columns, one per value of a grouping the owner chooses (a status, a stage, an owner), optionally repeated in lanes (swimlanes) for a second grouping. Each column has a header with its title, its card count against an optional limit, a collapse toggle and optional caller actions; each lane has a header with its title, its count and a collapse toggle. Every cell (one column in one lane) is a React Aria grid list of the caller's card content. Cards move within and between cells by pointer or keyboard drag and drop and by Alt+Arrow keys, and columns reorder, each move reported as plain data for the owner to apply, as for [Tree reordering](TREE-REORDER.md) and [List View](LIST-ROW.md#uic-list-row-35---drag-and-drop). Long cells virtualize ([COLLECTIONS.md](COLLECTIONS.md)).
 
 Pointer ownership and drag lifecycle cleanup follow the shared [drag interaction contract](DRAG-INTERACTIONS.md).
 
@@ -61,6 +61,13 @@ Verification: `src/components/board/board.test.tsx`, `e2e/board.spec.ts`
 
 Implementation: `src/components/board/board.tsx`, `src/components/board/board-hooks.ts`
 Verification: `src/components/board/board.test.tsx`
+
+### UIC-BOARD-1.9 - Column actions
+
+With `renderColumnActions`, each column header shall end with a `ui-board__column-actions` slot holding what the callback returns for that column, called with the column's own entry of `columns`; a column for which it returns `null`, `undefined` or `false`, and every column without the callback, renders no slot. The slot follows the title and count in reading and tab order, also in a collapsed column, and its controls stay keyboard accessible. Pressing or activating a control in the slot never collapses the column or activates a card, and a pointer drag that starts in the slot never drags the column while the board takes column moves.
+
+Implementation: `src/components/board/board.tsx`, `src/components/board/board-column-header.tsx`, `labs/reference/board.css`
+Verification: `src/components/board/board.test.tsx`, `e2e/board.spec.ts`
 
 ## UIC-BOARD-2 - Card moves
 
@@ -130,6 +137,7 @@ Verification: `src/components/board/board.test.tsx`, `e2e/board.spec.ts`
 | `ui-board__column-toggle`   | slot      |                   | A column's collapse toggle (also `ui-expand-toggle`).                                |
 | `ui-board__column-title`    | slot      |                   | A column's title.                                                                    |
 | `ui-board__column-count`    | slot      |                   | A column's card count, against its limit.                                            |
+| `ui-board__column-actions`  | slot      |                   | The caller's controls at the end of a column header.                                 |
 | `ui-board__lane`            | slot      |                   | A lane (`role="group"`).                                                             |
 | `ui-board__lane-header`     | slot      |                   | A lane's header.                                                                     |
 | `ui-board__lane-toggle`     | slot      |                   | A lane's collapse toggle (also `ui-expand-toggle`).                                  |
