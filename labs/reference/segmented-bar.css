@@ -50,24 +50,9 @@
   transition: width var(--ref-duration);
 }
 
-.ui-segmented-bar__item[data-tone='info'] .ui-segmented-bar__swatch,
-.ui-segmented-bar__segment[data-tone='info'] {
-  background: var(--ref-info);
-}
-
-.ui-segmented-bar__item[data-tone='success'] .ui-segmented-bar__swatch,
-.ui-segmented-bar__segment[data-tone='success'] {
-  background: var(--ref-success);
-}
-
-.ui-segmented-bar__item[data-tone='warning'] .ui-segmented-bar__swatch,
-.ui-segmented-bar__segment[data-tone='warning'] {
-  background: var(--ref-warning);
-}
-
-.ui-segmented-bar__item[data-tone='danger'] .ui-segmented-bar__swatch,
-.ui-segmented-bar__segment[data-tone='danger'] {
-  background: var(--ref-danger);
+.ui-segmented-bar__item:not([data-tone='neutral']) .ui-segmented-bar__swatch,
+.ui-segmented-bar__segment:not([data-tone='neutral']) {
+  background: var(--ref-tone);
 }
 
 .ui-segmented-bar__legend {
@@ -140,17 +125,8 @@
 .ui-segmented-bar[data-shape='pie'] .ui-segmented-bar__ring {
   stroke-width: 16;
 }
-.ui-segmented-bar__ring .ui-segmented-bar__segment[data-tone='info'] {
-  stroke: var(--ref-info);
-}
-.ui-segmented-bar__ring .ui-segmented-bar__segment[data-tone='success'] {
-  stroke: var(--ref-success);
-}
-.ui-segmented-bar__ring .ui-segmented-bar__segment[data-tone='warning'] {
-  stroke: var(--ref-warning);
-}
-.ui-segmented-bar__ring .ui-segmented-bar__segment[data-tone='danger'] {
-  stroke: var(--ref-danger);
+.ui-segmented-bar__ring .ui-segmented-bar__segment:not([data-tone='neutral']) {
+  stroke: var(--ref-tone);
 }
 
 @media (prefers-reduced-motion: no-preference) {

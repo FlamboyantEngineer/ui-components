@@ -158,18 +158,6 @@
   height: 14px;
 }
 
-.ui-relation-matrix__cell[data-tone='info'] .ui-relation-matrix__mark {
-  background: var(--ref-info);
-}
-
-.ui-relation-matrix__cell[data-tone='success'] .ui-relation-matrix__mark {
-  background: var(--ref-success);
-}
-
-.ui-relation-matrix__cell[data-tone='warning'] .ui-relation-matrix__mark {
-  background: var(--ref-warning);
-}
-
-.ui-relation-matrix__cell[data-tone='danger'] .ui-relation-matrix__mark {
-  background: var(--ref-danger);
+.ui-relation-matrix__cell[data-tone] .ui-relation-matrix__mark {
+  background: var(--ref-tone);
 }

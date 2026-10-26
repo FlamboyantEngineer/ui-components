@@ -94,16 +94,8 @@
   box-shadow: var(--ref-focus-halo), var(--ref-shadow);
 }
 
-.ui-toast[data-tone='success'] {
-  border-inline-start-color: var(--ref-success);
-}
-
-.ui-toast[data-tone='warning'] {
-  border-inline-start-color: var(--ref-warning);
-}
-
-.ui-toast[data-tone='danger'] {
-  border-inline-start-color: var(--ref-danger);
+.ui-toast:is([data-tone='success'], [data-tone='warning'], [data-tone='danger']) {
+  border-inline-start-color: var(--ref-tone);
 }
 
 .ui-toast__icon {
@@ -111,16 +103,8 @@
   color: var(--ref-info);
 }
 
-.ui-toast[data-tone='success'] .ui-toast__icon {
-  color: var(--ref-success);
-}
-
-.ui-toast[data-tone='warning'] .ui-toast__icon {
-  color: var(--ref-warning);
-}
-
-.ui-toast[data-tone='danger'] .ui-toast__icon {
-  color: var(--ref-danger);
+.ui-toast:is([data-tone='success'], [data-tone='warning'], [data-tone='danger']) .ui-toast__icon {
+  color: var(--ref-tone);
 }
 
 .ui-toast__spinner {

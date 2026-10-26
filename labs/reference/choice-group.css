@@ -24,24 +24,24 @@
 }
 
 .ui-choice {
-  --ref-choice-group-size: 16px;
+  --ref-choice-group-size: var(--ref-mark-size-md);
   font-size: var(--ref-font-size-md);
   /* Its own line height, so the type around it never makes the row taller than its size. */
   line-height: 1.25;
 }
 
 .ui-choice-group[data-size='xs'] .ui-choice {
-  --ref-choice-group-size: 12px;
+  --ref-choice-group-size: var(--ref-mark-size-xs);
   font-size: var(--ref-font-size-xs);
 }
 
 .ui-choice-group[data-size='sm'] .ui-choice {
-  --ref-choice-group-size: 14px;
+  --ref-choice-group-size: var(--ref-mark-size-sm);
   font-size: var(--ref-font-size-sm);
 }
 
 .ui-choice-group[data-size='lg'] .ui-choice {
-  --ref-choice-group-size: 18px;
+  --ref-choice-group-size: var(--ref-mark-size-lg);
   font-size: var(--ref-font-size);
 }
 

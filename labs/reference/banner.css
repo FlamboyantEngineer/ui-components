@@ -18,21 +18,9 @@
   outline: var(--ref-focus-ring);
   outline-offset: 2px;
 }
-.ui-banner[data-tone='info'] {
-  border-color: color-mix(in srgb, var(--ref-info) var(--ref-tint-border), var(--ref-canvas));
-  background: color-mix(in srgb, var(--ref-info) var(--ref-tint-subtle), var(--ref-canvas));
-}
-.ui-banner[data-tone='success'] {
-  border-color: color-mix(in srgb, var(--ref-success) var(--ref-tint-border), var(--ref-canvas));
-  background: color-mix(in srgb, var(--ref-success) var(--ref-tint-subtle), var(--ref-canvas));
-}
-.ui-banner[data-tone='warning'] {
-  border-color: color-mix(in srgb, var(--ref-warning) var(--ref-tint-border), var(--ref-canvas));
-  background: color-mix(in srgb, var(--ref-warning) var(--ref-tint-subtle), var(--ref-canvas));
-}
-.ui-banner[data-tone='danger'] {
-  border-color: color-mix(in srgb, var(--ref-danger) var(--ref-tint-border), var(--ref-canvas));
-  background: color-mix(in srgb, var(--ref-danger) var(--ref-tint-subtle), var(--ref-canvas));
+.ui-banner:not([data-tone='neutral']) {
+  border-color: color-mix(in srgb, var(--ref-tone) var(--ref-tint-border), var(--ref-canvas));
+  background: color-mix(in srgb, var(--ref-tone) var(--ref-tint-subtle), var(--ref-canvas));
 }
 .ui-banner[data-entering] {
   animation: ref-banner-enter var(--ref-duration) ease-out;
@@ -57,19 +45,7 @@
 
 .ui-banner__icon {
   margin-block-start: 1px;
-  color: var(--ref-muted);
-}
-.ui-banner[data-tone='info'] .ui-banner__icon {
-  color: var(--ref-info);
-}
-.ui-banner[data-tone='success'] .ui-banner__icon {
-  color: var(--ref-success);
-}
-.ui-banner[data-tone='warning'] .ui-banner__icon {
-  color: var(--ref-warning);
-}
-.ui-banner[data-tone='danger'] .ui-banner__icon {
-  color: var(--ref-danger);
+  color: var(--ref-tone);
 }
 
 .ui-banner__content {

@@ -86,6 +86,12 @@
   --ref-category-6: #bf3989;
   --ref-category-7: var(--ref-muted);
 
+  /* The box of a checkbox or a radio, by control size. */
+  --ref-mark-size-xs: 12px;
+  --ref-mark-size-sm: 14px;
+  --ref-mark-size-md: 16px;
+  --ref-mark-size-lg: 18px;
+
   /* Shape */
   --ref-radius-xs: 2px;
   --ref-radius-sm: 4px;
@@ -167,6 +173,26 @@
   --ref-category-6: #f778ba;
 
   color-scheme: dark;
+}
+
+/*
+ * Tones: an element that publishes data-tone takes its tone's colour in --ref-tone, for its own
+ * rules and its slots'. Neutral is the muted text colour.
+ */
+[data-tone] {
+  --ref-tone: var(--ref-muted);
+}
+[data-tone='info'] {
+  --ref-tone: var(--ref-info);
+}
+[data-tone='success'] {
+  --ref-tone: var(--ref-success);
+}
+[data-tone='warning'] {
+  --ref-tone: var(--ref-warning);
+}
+[data-tone='danger'] {
+  --ref-tone: var(--ref-danger);
 }
 
 body {

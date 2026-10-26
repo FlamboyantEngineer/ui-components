@@ -4,7 +4,7 @@
  */
 
 .ui-checkbox {
-  --ref-checkbox-box: 16px;
+  --ref-checkbox-box: var(--ref-mark-size-md);
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -17,19 +17,19 @@
 }
 
 .ui-checkbox[data-size='xs'] {
-  --ref-checkbox-box: 12px;
+  --ref-checkbox-box: var(--ref-mark-size-xs);
   min-height: var(--ref-control-height-xs);
   font-size: var(--ref-font-size-xs);
 }
 
 .ui-checkbox[data-size='sm'] {
-  --ref-checkbox-box: 14px;
+  --ref-checkbox-box: var(--ref-mark-size-sm);
   min-height: var(--ref-control-height-sm);
   font-size: var(--ref-font-size-sm);
 }
 
 .ui-checkbox[data-size='lg'] {
-  --ref-checkbox-box: 18px;
+  --ref-checkbox-box: var(--ref-mark-size-lg);
   min-height: var(--ref-control-height-lg);
   font-size: var(--ref-font-size);
 }

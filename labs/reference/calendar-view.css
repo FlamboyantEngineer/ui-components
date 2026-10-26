@@ -149,24 +149,9 @@
   cursor: pointer;
 }
 
-.ui-calendar-view__event[data-tone='info'] {
-  border-inline-start-color: var(--ref-info);
-  background: color-mix(in srgb, var(--ref-info) var(--ref-tint), var(--ref-canvas));
-}
-
-.ui-calendar-view__event[data-tone='success'] {
-  border-inline-start-color: var(--ref-success);
-  background: color-mix(in srgb, var(--ref-success) var(--ref-tint), var(--ref-canvas));
-}
-
-.ui-calendar-view__event[data-tone='warning'] {
-  border-inline-start-color: var(--ref-warning);
-  background: color-mix(in srgb, var(--ref-warning) var(--ref-tint), var(--ref-canvas));
-}
-
-.ui-calendar-view__event[data-tone='danger'] {
-  border-inline-start-color: var(--ref-danger);
-  background: color-mix(in srgb, var(--ref-danger) var(--ref-tint), var(--ref-canvas));
+.ui-calendar-view__event:not([data-tone='neutral']) {
+  border-inline-start-color: var(--ref-tone);
+  background: color-mix(in srgb, var(--ref-tone) var(--ref-tint), var(--ref-canvas));
 }
 
 .ui-calendar-view__event[data-continues-before] {
@@ -272,18 +257,6 @@
   white-space: normal;
 }
 
-.ui-calendar-view__timed .ui-calendar-view__event[data-tone='info'] {
-  border-inline-start-color: var(--ref-info);
-}
-
-.ui-calendar-view__timed .ui-calendar-view__event[data-tone='success'] {
-  border-inline-start-color: var(--ref-success);
-}
-
-.ui-calendar-view__timed .ui-calendar-view__event[data-tone='warning'] {
-  border-inline-start-color: var(--ref-warning);
-}
-
-.ui-calendar-view__timed .ui-calendar-view__event[data-tone='danger'] {
-  border-inline-start-color: var(--ref-danger);
+.ui-calendar-view__timed .ui-calendar-view__event:not([data-tone='neutral']) {
+  border-inline-start-color: var(--ref-tone);
 }

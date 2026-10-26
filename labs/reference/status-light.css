@@ -15,7 +15,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--ref-muted);
+  background: var(--ref-tone);
 }
 
 .ui-status-light[data-size='sm'] {
@@ -40,22 +40,6 @@
 
 .ui-status-light__label {
   min-width: 0;
-}
-
-.ui-status-light[data-tone='info'] .ui-status-light__dot {
-  background: var(--ref-info);
-}
-
-.ui-status-light[data-tone='success'] .ui-status-light__dot {
-  background: var(--ref-success);
-}
-
-.ui-status-light[data-tone='warning'] .ui-status-light__dot {
-  background: var(--ref-warning);
-}
-
-.ui-status-light[data-tone='danger'] .ui-status-light__dot {
-  background: var(--ref-danger);
 }
 
 /* Presence states match the presence avatar's indicator. */

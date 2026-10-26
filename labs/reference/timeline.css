@@ -131,8 +131,6 @@
 }
 
 .ui-timeline__item {
-  --ref-timeline-tone: var(--ref-muted);
-
   box-sizing: border-box;
   display: flex;
   align-items: center;
@@ -140,14 +138,9 @@
   height: 22px;
   margin: 0;
   padding: 0 8px;
-  border: 1px solid
-    color-mix(in srgb, var(--ref-timeline-tone) var(--ref-tint-border), var(--ref-canvas));
+  border: 1px solid color-mix(in srgb, var(--ref-tone) var(--ref-tint-border), var(--ref-canvas));
   border-radius: var(--ref-radius-sm);
-  background: color-mix(
-    in srgb,
-    var(--ref-timeline-tone) var(--ref-tint-subtle),
-    var(--ref-canvas)
-  );
+  background: color-mix(in srgb, var(--ref-tone) var(--ref-tint-subtle), var(--ref-canvas));
   color: var(--ref-text);
   font: inherit;
   font-size: var(--ref-font-size-sm);
@@ -155,22 +148,6 @@
   white-space: nowrap;
   overflow: hidden;
   cursor: default;
-}
-
-.ui-timeline__item[data-tone='info'] {
-  --ref-timeline-tone: var(--ref-info);
-}
-
-.ui-timeline__item[data-tone='success'] {
-  --ref-timeline-tone: var(--ref-success);
-}
-
-.ui-timeline__item[data-tone='warning'] {
-  --ref-timeline-tone: var(--ref-warning);
-}
-
-.ui-timeline__item[data-tone='danger'] {
-  --ref-timeline-tone: var(--ref-danger);
 }
 
 .ui-timeline__item[aria-pressed] {
@@ -205,11 +182,7 @@
   position: absolute;
   inset-block: 0;
   inset-inline-start: 0;
-  background: color-mix(
-    in srgb,
-    var(--ref-timeline-tone) var(--ref-tint-strong),
-    var(--ref-canvas)
-  );
+  background: color-mix(in srgb, var(--ref-tone) var(--ref-tint-strong), var(--ref-canvas));
 }
 
 .ui-timeline__item-label {
@@ -234,7 +207,7 @@
 }
 
 .ui-timeline__item:hover .ui-timeline__handle {
-  background: color-mix(in srgb, var(--ref-timeline-tone) var(--ref-tint-border), transparent);
+  background: color-mix(in srgb, var(--ref-tone) var(--ref-tint-border), transparent);
 }
 
 /* A milestone is a diamond centred on its day, with its label beside it. */
@@ -254,14 +227,9 @@
   position: absolute;
   inset: 1px;
   transform: rotate(45deg);
-  border: 1px solid
-    color-mix(in srgb, var(--ref-timeline-tone) var(--ref-tint-solid), var(--ref-canvas));
+  border: 1px solid color-mix(in srgb, var(--ref-tone) var(--ref-tint-solid), var(--ref-canvas));
   border-radius: var(--ref-radius-xs);
-  background: color-mix(
-    in srgb,
-    var(--ref-timeline-tone) var(--ref-tint-border),
-    var(--ref-canvas)
-  );
+  background: color-mix(in srgb, var(--ref-tone) var(--ref-tint-border), var(--ref-canvas));
 }
 
 .ui-timeline__item[data-kind='milestone'][data-selected] {

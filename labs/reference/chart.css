@@ -142,24 +142,12 @@
   --ref-chart-series: var(--ref-category-7);
 }
 
+:is(.ui-chart, .ui-chart-legend, .ui-chart__tooltip) [data-series][data-tone] {
+  --ref-chart-series: var(--ref-tone);
+}
+
 :is(.ui-chart, .ui-chart-legend, .ui-chart__tooltip) [data-series][data-tone='neutral'] {
   --ref-chart-series: var(--ref-border-strong);
-}
-
-:is(.ui-chart, .ui-chart-legend, .ui-chart__tooltip) [data-series][data-tone='info'] {
-  --ref-chart-series: var(--ref-info);
-}
-
-:is(.ui-chart, .ui-chart-legend, .ui-chart__tooltip) [data-series][data-tone='success'] {
-  --ref-chart-series: var(--ref-success);
-}
-
-:is(.ui-chart, .ui-chart-legend, .ui-chart__tooltip) [data-series][data-tone='warning'] {
-  --ref-chart-series: var(--ref-warning);
-}
-
-:is(.ui-chart, .ui-chart-legend, .ui-chart__tooltip) [data-series][data-tone='danger'] {
-  --ref-chart-series: var(--ref-danger);
 }
 
 /* Drawn values: filled marks with a canvas edge and a focus ring for keyboard focus. */

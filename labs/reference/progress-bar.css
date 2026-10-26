@@ -47,16 +47,9 @@
   background: var(--ref-success);
 }
 
-.ui-progress-bar[data-tone='success'] .ui-progress-bar__fill {
-  background: var(--ref-success);
-}
-
-.ui-progress-bar[data-tone='warning'] .ui-progress-bar__fill {
-  background: var(--ref-warning);
-}
-
-.ui-progress-bar[data-tone='danger'] .ui-progress-bar__fill {
-  background: var(--ref-danger);
+.ui-progress-bar:is([data-tone='success'], [data-tone='warning'], [data-tone='danger'])
+  .ui-progress-bar__fill {
+  background: var(--ref-tone);
 }
 
 .ui-progress-bar[data-shape='linear'][data-indeterminate] .ui-progress-bar__fill {
@@ -144,16 +137,13 @@
 }
 
 .ui-progress-bar[data-shape='circular'][data-complete] .ui-progress-bar__fill,
-.ui-progress-bar[data-shape='circular'][data-tone='success'] .ui-progress-bar__fill {
-  stroke: var(--ref-success);
-}
-
-.ui-progress-bar[data-shape='circular'][data-tone='warning'] .ui-progress-bar__fill {
-  stroke: var(--ref-warning);
-}
-
-.ui-progress-bar[data-shape='circular'][data-tone='danger'] .ui-progress-bar__fill {
-  stroke: var(--ref-danger);
+.ui-progress-bar[data-shape='circular']:is(
+    [data-tone='success'],
+    [data-tone='warning'],
+    [data-tone='danger']
+  )
+  .ui-progress-bar__fill {
+  stroke: var(--ref-tone);
 }
 
 .ui-progress-bar[data-shape='circular'][data-indeterminate] .ui-progress-bar__ring {

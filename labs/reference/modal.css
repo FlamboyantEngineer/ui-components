@@ -57,22 +57,10 @@
   max-height: none;
 }
 
-.ui-modal[data-tone='danger'] .ui-modal__panel {
-  border-top: 3px solid var(--ref-danger);
-}
+/* Every tone but neutral marks the panel's top edge. */
 
-/* News tones mark the panel's top edge, as danger does. */
-
-.ui-modal[data-tone='info'] .ui-modal__panel {
-  border-top: 3px solid var(--ref-info);
-}
-
-.ui-modal[data-tone='success'] .ui-modal__panel {
-  border-top: 3px solid var(--ref-success);
-}
-
-.ui-modal[data-tone='warning'] .ui-modal__panel {
-  border-top: 3px solid var(--ref-warning);
+.ui-modal:not([data-tone='neutral']) .ui-modal__panel {
+  border-top: 3px solid var(--ref-tone);
 }
 
 /* A non-modal dialog leaves the page visible: no backdrop, and the panel floats at the end corner. */
@@ -239,18 +227,6 @@
   vertical-align: -3px;
 }
 
-.ui-modal[data-tone='info'] .ui-modal__confirmation-icon {
-  color: var(--ref-info);
-}
-
-.ui-modal[data-tone='success'] .ui-modal__confirmation-icon {
-  color: var(--ref-success);
-}
-
-.ui-modal[data-tone='warning'] .ui-modal__confirmation-icon {
-  color: var(--ref-warning);
-}
-
-.ui-modal[data-tone='danger'] .ui-modal__confirmation-icon {
-  color: var(--ref-danger);
+.ui-modal:not([data-tone='neutral']) .ui-modal__confirmation-icon {
+  color: var(--ref-tone);
 }
