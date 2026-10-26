@@ -31,10 +31,14 @@ export const test = base.extend<{ lab: LabFixture }>({
         await waitForLab(page);
       },
       async expectAccessible(selector = '#lab-root') {
-        // Keep every violation; trim node details we do not inspect in other results.
+        // Keep every violation; trim node details we do not inspect in other results. A page
+        // without embedded frames runs axe in place, several times faster than the default, which
+        // finishes each run in a second page; a page with frames keeps the default, which also
+        // scans frames that cannot run scripts.
         const results = await new AxeBuilder({ page })
           .include(selector)
           .options({ resultTypes: ['violations'] })
+          .setLegacyMode(page.frames().length === 1)
           .analyze();
         expect(results.violations.map((violation) => `${violation.id}: ${violation.help}`)).toEqual(
           [],
