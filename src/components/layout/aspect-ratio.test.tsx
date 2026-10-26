@@ -1,6 +1,7 @@
 import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { AspectRatio, type AspectRatioValue } from './aspect-ratio.js';
 
 describe('AspectRatio', () => {
@@ -10,7 +11,7 @@ describe('AspectRatio', () => {
         <img alt="" src="data:," />
       </AspectRatio>,
     );
-    const box = container.firstElementChild!;
+    const box = requireDefined(container.firstElementChild);
     expect(box.tagName).toBe('DIV');
     expect(box).toHaveClass('ui-aspect-ratio', 'caller');
     expect(box).toHaveAttribute('id', 'map');

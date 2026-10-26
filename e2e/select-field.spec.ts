@@ -1,5 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import { expect, test } from './fixtures.js';
+import { requireDefined } from '../src/utils/require-defined.js';
 
 function cell(page: Page, state: string, layout: string): Locator {
   return page.locator(`[data-lab-family="list"] [data-lab-cell="state=${state} layout=${layout}"]`);
@@ -106,7 +107,9 @@ test.describe('Select Field lab', () => {
     await expect(popover).toHaveAttribute('data-placement', 'bottom');
     const triggerBox = await trigger.boundingBox();
     const popoverBox = await popover.boundingBox();
-    expect(popoverBox!.y).toBeGreaterThanOrEqual(triggerBox!.y + triggerBox!.height);
+    expect(requireDefined(popoverBox).y).toBeGreaterThanOrEqual(
+      requireDefined(triggerBox).y + requireDefined(triggerBox).height,
+    );
     await expect(page.getByRole('option', { name: 'Apple Crisp and sweet' })).toBeVisible();
     await page.keyboard.press('ArrowDown');
     await page.keyboard.press('ArrowDown');

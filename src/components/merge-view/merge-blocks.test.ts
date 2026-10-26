@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { requireDefined } from '../../utils/require-defined.js';
 import { mergeThreeWay } from '../../utils/three-way-merge.js';
 import {
   createMergeBlocks,
@@ -23,19 +24,23 @@ describe('merge blocks', () => {
       ['conflict', 0, 2],
       ['unchanged', null, 1],
     ]);
-    const conflict = blocks[3]!;
+    const conflict = requireDefined(blocks[3]);
     expect(conflict.lines.theirs).toEqual([
       { number: 4, text: 'cream', change: 'conflict' },
       { number: 5, text: 'butter', change: 'conflict' },
     ]);
     expect(conflict.lines.ours).toEqual([{ number: 4, text: 'oat milk', change: 'conflict' }]);
-    expect(blocks[4]!.lines.theirs[0]).toEqual({ number: 6, text: 'salt', change: 'unchanged' });
-    const clean = blocks[1]!.lines;
-    expect([clean.ours[0]!.change, clean.base[0]!.change, clean.theirs[0]!.change]).toEqual([
-      'changed',
-      'changed',
-      'unchanged',
-    ]);
+    expect(requireDefined(blocks[4]).lines.theirs[0]).toEqual({
+      number: 6,
+      text: 'salt',
+      change: 'unchanged',
+    });
+    const clean = requireDefined(blocks[1]).lines;
+    expect([
+      requireDefined(clean.ours[0]).change,
+      requireDefined(clean.base[0]).change,
+      requireDefined(clean.theirs[0]).change,
+    ]).toEqual(['changed', 'changed', 'unchanged']);
   });
 
   it('UIC-MERGE-VIEW-2.1 merges a clean chunk to the side that changed it', () => {
@@ -44,13 +49,13 @@ describe('merge blocks', () => {
       ['a', 'B', 'c'].join('\n'),
       ['a', 'b', 'C'].join('\n'),
     );
-    expect(getCleanLines(first!)).toEqual(['a']);
-    expect(getCleanLines(second!)).toEqual(['B']);
-    expect(getCleanLines(third!)).toEqual(['C']);
+    expect(getCleanLines(requireDefined(first))).toEqual(['a']);
+    expect(getCleanLines(requireDefined(second))).toEqual(['B']);
+    expect(getCleanLines(requireDefined(third))).toEqual(['C']);
   });
 
   it('UIC-MERGE-VIEW-2.2 UIC-MERGE-VIEW-2.3 gives a conflict the text of its resolution', () => {
-    const conflict = mergeThreeWay(base, ours, theirs)[3]!;
+    const conflict = requireDefined(mergeThreeWay(base, ours, theirs)[3]);
     const text = (state: ConflictState) => getConflictText(conflict, state, markers);
     expect(text({ resolution: 'unresolved' })).toBe(
       ['<<<<<<< Ours', 'oat milk', '=======', 'cream', 'butter', '>>>>>>> Theirs'].join('\n'),

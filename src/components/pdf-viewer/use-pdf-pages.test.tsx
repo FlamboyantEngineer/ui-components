@@ -1,11 +1,12 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { requireDefined } from '../../utils/require-defined.js';
 import { usePdfPages } from './use-pdf-pages.js';
 
 function createScroller() {
   const frame = document.body.appendChild(document.createElement('iframe'));
-  const owner = frame.contentDocument!;
-  const view = frame.contentWindow!;
+  const owner = requireDefined(frame.contentDocument);
+  const view = requireDefined(frame.contentWindow);
   const scroller = owner.body.appendChild(owner.createElement('div'));
   scroller.getBoundingClientRect = () => DOMRect.fromRect({ width: 100, height: 100 });
   Object.defineProperties(scroller, {

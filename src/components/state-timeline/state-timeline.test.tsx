@@ -4,6 +4,7 @@ import { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { UiProvider } from '../../core/provider.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { StateTimeline, type StateTimelineEntry } from './state-timeline.js';
 
 const getNow = () => new Date(2026, 3, 20, 10, 30);
@@ -126,7 +127,7 @@ describe('StateTimeline', () => {
     // Words stay apart in the text itself, without a stylesheet's spacing.
     expect(rows[2]).toHaveTextContent('Approved Now');
     expect(rows[3]).toHaveTextContent('Released Later');
-    expect(within(rows[3]!).getByText('Later').style.position).toBe('absolute');
+    expect(within(requireDefined(rows[3])).getByText('Later').style.position).toBe('absolute');
     expect(rows[1]).not.toHaveTextContent('Later');
   });
 

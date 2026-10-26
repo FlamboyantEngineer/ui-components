@@ -1,5 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import { expect, test } from './fixtures.js';
+import { requireDefined } from '../src/utils/require-defined.js';
 
 function field(page: Page, name: string): Locator {
   return page.locator(`[data-lab-field="${name}"]`);
@@ -35,7 +36,9 @@ test.describe('State Machine View lab', () => {
     ).toBeVisible();
     const closed = await stateOf(cell('resting', 'vertical'), 'Closed').boundingBox();
     const open = await stateOf(cell('resting', 'vertical'), 'Open').boundingBox();
-    expect(open!.y).toBeGreaterThan(closed!.y + closed!.height);
+    expect(requireDefined(open).y).toBeGreaterThan(
+      requireDefined(closed).y + requireDefined(closed).height,
+    );
     await lab.expectAccessible();
   });
 
@@ -76,8 +79,8 @@ test.describe('State Machine View lab', () => {
     await stateOf(door, 'Locked').focus();
     await page.keyboard.press('Shift+ArrowDown');
     await expect
-      .poll(async () => (await stateOf(door, 'Locked').boundingBox())!.y)
-      .toBeGreaterThan(before!.y);
+      .poll(async () => requireDefined(await stateOf(door, 'Locked').boundingBox()).y)
+      .toBeGreaterThan(requireDefined(before).y);
     await page.keyboard.press('Delete');
     await expect(output(page, 'states')).toHaveText('Closed, Open');
     await expect(output(page, 'transitions')).toHaveText('closed→open, open→closed');

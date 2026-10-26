@@ -1,6 +1,7 @@
 import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { Contents, EmbeddedFrame, InlineContents } from './wrappers.js';
 
 describe('Wrappers', () => {
@@ -13,7 +14,7 @@ describe('Wrappers', () => {
         <InlineContents>Kiwi</InlineContents>
       </>,
     );
-    const input = container.querySelector('input')!;
+    const input = requireDefined(container.querySelector('input'));
     rerender(
       <>
         <Contents hidden>
@@ -23,15 +24,15 @@ describe('Wrappers', () => {
       </>,
     );
     const [contents, inline] = Array.from(container.children) as HTMLElement[];
-    expect(contents!.hidden).toBe(true);
-    expect(inline!.hidden).toBe(true);
+    expect(requireDefined(contents).hidden).toBe(true);
+    expect(requireDefined(inline).hidden).toBe(true);
     expect(container.querySelector('input')).toBe(input);
     expectHooksMatchSpec(container, 'LAYOUT');
   });
 
   it('UIC-LAYOUT-3.2 sandboxes the embedded frame unless permissions are granted and names it by title', () => {
     const { container, rerender } = render(<EmbeddedFrame title="Report.pdf" src="about:blank" />);
-    const frame = () => container.querySelector('iframe')!;
+    const frame = () => requireDefined(container.querySelector('iframe'));
     expect(frame()).toHaveAttribute('sandbox', '');
     expect(frame()).toHaveAttribute('title', 'Report.pdf');
     rerender(<EmbeddedFrame title="Report.pdf" sandbox="allow-scripts" />);

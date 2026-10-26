@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { UiProvider } from '../../core/provider.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { TextDiff, type TextDiffLine } from './text-diff.js';
 
 const oldText = ['Preheat the oven.', 'Mix flour and sugar.', 'Add two eggs.', 'Bake.'].join('\n');
@@ -17,9 +18,9 @@ const lineRows = (scope: Element) => [
   ...scope.querySelectorAll<HTMLElement>('.ui-text-diff__line'),
 ];
 const pane = (container: HTMLElement, side: string) =>
-  container.querySelector<HTMLElement>(`.ui-text-diff__pane[data-side="${side}"]`)!;
+  requireDefined(container.querySelector<HTMLElement>(`.ui-text-diff__pane[data-side="${side}"]`));
 const viewport = (container: HTMLElement, side: string) =>
-  pane(container, side).querySelector<HTMLElement>('.ui-scroll-region__viewport')!;
+  requireDefined(pane(container, side).querySelector<HTMLElement>('.ui-scroll-region__viewport'));
 const texts = (rows: HTMLElement[]) =>
   rows.map((row) => row.querySelector('.ui-text-diff__text')?.textContent);
 
@@ -56,9 +57,15 @@ describe('TextDiff', () => {
     expect(numbers[1]).toEqual(['old:2', 'new:']);
     expect(numbers[3]).toEqual(['old:', 'new:2']);
     expect(numbers[4]).toEqual(['old:4', 'new:3']);
-    expect(rows[1]!.querySelector('.ui-text-diff__text')!.tagName).toBe('DEL');
-    expect(rows[3]!.querySelector('.ui-text-diff__text')!.tagName).toBe('INS');
-    expect(rows[0]!.querySelector('.ui-text-diff__text')!.tagName).toBe('SPAN');
+    expect(
+      requireDefined(requireDefined(rows[1]).querySelector('.ui-text-diff__text')).tagName,
+    ).toBe('DEL');
+    expect(
+      requireDefined(requireDefined(rows[3]).querySelector('.ui-text-diff__text')).tagName,
+    ).toBe('INS');
+    expect(
+      requireDefined(requireDefined(rows[0]).querySelector('.ui-text-diff__text')).tagName,
+    ).toBe('SPAN');
     expect(pane(container, 'both').querySelectorAll('table.ui-text-diff__table')).toHaveLength(1);
     expectHooksMatchSpec(container, 'TEXT-DIFF', {
       slots: ['header', 'pane', 'table', 'line', 'number', 'marker', 'content', 'text'],
@@ -70,16 +77,16 @@ describe('TextDiff', () => {
     const rows = lineRows(container);
     const words = (row: HTMLElement) =>
       [...row.querySelectorAll('.ui-text-diff__word')].map((word) => word.textContent);
-    expect(words(rows[1]!)).toEqual([]);
-    expect(words(rows[3]!)).toEqual(['brown ']);
-    expect(words(rows[2]!)).toEqual([]);
+    expect(words(requireDefined(rows[1]))).toEqual([]);
+    expect(words(requireDefined(rows[3]))).toEqual(['brown ']);
+    expect(words(requireDefined(rows[2]))).toEqual([]);
     expectHooksMatchSpec(container, 'TEXT-DIFF', { slots: ['word'] });
   });
 
   it('UIC-TEXT-DIFF-1.4 sets the sides beside each other, padding the shorter one', () => {
     const { container } = render(<TextDiff oldText={oldText} newText={newText} layout="split" />);
     expect(container.firstElementChild).toHaveAttribute('data-layout', 'split');
-    const panes = container.querySelector('.ui-text-diff__panes')!;
+    const panes = requireDefined(container.querySelector('.ui-text-diff__panes'));
     expect(
       [...panes.querySelectorAll('.ui-text-diff__pane')].map((p) => p.getAttribute('data-side')),
     ).toEqual(['old', 'new']);
@@ -106,8 +113,11 @@ describe('TextDiff', () => {
       'Bake.',
       'Cool.',
     ]);
-    expect(oldRows[1]!.querySelectorAll('.ui-text-diff__number')).toHaveLength(1);
-    expect(oldRows[1]!.querySelector('.ui-text-diff__number')).toHaveAttribute('data-side', 'old');
+    expect(requireDefined(oldRows[1]).querySelectorAll('.ui-text-diff__number')).toHaveLength(1);
+    expect(requireDefined(oldRows[1]).querySelector('.ui-text-diff__number')).toHaveAttribute(
+      'data-side',
+      'old',
+    );
     expectHooksMatchSpec(container, 'TEXT-DIFF', { slots: ['panes', 'pane', 'filler'] });
   });
 
@@ -117,7 +127,7 @@ describe('TextDiff', () => {
     ) {
       const scroller = this.closest<HTMLElement>('.ui-scroll-region__viewport');
       if (this.tagName !== 'TR' || !scroller) return { top: 0 } as DOMRect;
-      const index = [...this.parentElement!.children].indexOf(this);
+      const index = [...requireDefined(this.parentElement).children].indexOf(this);
       return { top: index * 20 - scroller.scrollTop } as DOMRect;
     });
     vi.spyOn(HTMLElement.prototype, 'scrollHeight', 'get').mockReturnValue(1000);
@@ -158,7 +168,7 @@ describe('TextDiff', () => {
     ]);
     const buttons = screen.getAllByRole('button', { name: 'Show 7 more lines' });
     expect(buttons[0]).toHaveClass('ui-button', 'ui-text-diff__expand');
-    await user.click(buttons[0]!);
+    await user.click(requireDefined(buttons[0]));
     expect(lineRows(container)).toHaveLength(15);
     expect(lineRows(container)[0]).toHaveFocus();
     expect(container.querySelectorAll('.ui-text-diff__fold')).toHaveLength(1);
@@ -177,11 +187,13 @@ describe('TextDiff', () => {
         <TextDiff oldText={longOld} newText={longNew} layout="split" />
       </UiProvider>,
     );
-    const oldFold = pane(container, 'old').querySelector('.ui-text-diff__fold')!;
+    const oldFold = requireDefined(pane(container, 'old').querySelector('.ui-text-diff__fold'));
     expect(within(oldFold as HTMLElement).queryByRole('button')).not.toBeInTheDocument();
     expect(oldFold.querySelector('[aria-hidden="true"]')).toHaveTextContent('7 hidden');
     await user.click(
-      within(pane(container, 'new')).getAllByRole('button', { name: '7 hidden' })[1]!,
+      requireDefined(
+        within(pane(container, 'new')).getAllByRole('button', { name: '7 hidden' })[1],
+      ),
     );
     const revealed = lineRows(pane(container, 'new')).find((row) =>
       row.textContent?.includes('Step 14'),
@@ -207,8 +219,8 @@ describe('TextDiff', () => {
       'Comment on “Add two eggs.”',
       'Comment on “Cool.”',
     ]);
-    expect(widgets[0]!.previousElementSibling).toBe(lineRows(container)[2]);
-    expect(widgets[0]!.querySelector('td')).toHaveAttribute('colspan', '4');
+    expect(requireDefined(widgets[0]).previousElementSibling).toBe(lineRows(container)[2]);
+    expect(requireDefined(widgets[0]).querySelector('td')).toHaveAttribute('colspan', '4');
     rerender(
       <TextDiff
         oldText={oldText}
@@ -227,7 +239,7 @@ describe('TextDiff', () => {
       'Note Preheat the oven.',
       'Note Bake.',
     ]);
-    expect(oldWidgets[0]!.querySelector('td')).toHaveAttribute('colspan', '3');
+    expect(requireDefined(oldWidgets[0]).querySelector('td')).toHaveAttribute('colspan', '3');
     expectHooksMatchSpec(container, 'TEXT-DIFF', { slots: ['widget'] });
   });
 
@@ -324,13 +336,13 @@ describe('TextDiff', () => {
     const { container } = render(<TextDiff oldText={oldText} newText={newText} />);
     const rows = lineRows(container);
     const label = (row: HTMLElement) => row.querySelector('.ui-visually-hidden')?.textContent;
-    expect(label(rows[0]!)).toBe('Unchanged, old line 1, new line 1');
-    expect(label(rows[1]!)).toBe('Removed, old line 2');
-    expect(label(rows[3]!)).toBe('Added, new line 2');
-    expect(rows[3]!.querySelector('.ui-text-diff__marker [aria-hidden="true"]')).toHaveTextContent(
-      '+',
-    );
-    expect(rows[3]!.querySelector('.ui-text-diff__number span')).toHaveAttribute(
+    expect(label(requireDefined(rows[0]))).toBe('Unchanged, old line 1, new line 1');
+    expect(label(requireDefined(rows[1]))).toBe('Removed, old line 2');
+    expect(label(requireDefined(rows[3]))).toBe('Added, new line 2');
+    expect(
+      requireDefined(rows[3]).querySelector('.ui-text-diff__marker [aria-hidden="true"]'),
+    ).toHaveTextContent('+');
+    expect(requireDefined(rows[3]).querySelector('.ui-text-diff__number span')).toHaveAttribute(
       'aria-hidden',
       'true',
     );
@@ -339,7 +351,7 @@ describe('TextDiff', () => {
       <TextDiff oldText={oldText} newText={newText} layout="split" />,
     );
     const newRows = lineRows(pane(split, 'new'));
-    expect(label(newRows[0]!)).toBe('Unchanged, new line 1');
+    expect(label(requireDefined(newRows[0]))).toBe('Unchanged, new line 1');
     expect(split.querySelector('.ui-text-diff__filler')).toHaveAttribute('aria-hidden', 'true');
   });
 

@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { requireDefined } from '../../utils/require-defined.js';
 import { filterTableRows } from './table-filters.js';
 import {
   applyTableMove,
@@ -83,7 +84,7 @@ describe('table row helpers', () => {
   });
 
   it('UIC-TABLE-2.5 keeps rows whose text holds every term, ignoring case', () => {
-    expect(getRowText(fruit[0]!, columns)).toBe('Banana 120');
+    expect(getRowText(requireDefined(fruit[0]), columns)).toBe('Banana 120');
     expect(getRowText({ id: 7, name: '', weight: Number.NaN, tags: [] }, [{ id: 'tags' }])).toBe(
       '7',
     );

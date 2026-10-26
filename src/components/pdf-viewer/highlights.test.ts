@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { requireDefined } from '../../utils/require-defined.js';
 import { highlightTextRuns } from './highlights.js';
 
 function createRuns(texts: string[]) {
@@ -46,7 +47,7 @@ describe('highlightTextRuns', () => {
     const [run] = createRuns([text]);
     expect(run).toBeDefined();
     const highlighted = highlightTextRuns({
-      runs: [run!],
+      runs: [requireDefined(run)],
       texts: [text],
       ranges: Array.from({ length: count }, (_, index) => ({
         run: 0,

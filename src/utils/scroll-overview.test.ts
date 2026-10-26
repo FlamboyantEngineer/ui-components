@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { requireDefined } from './require-defined.js';
 import {
   SCROLL_OVERVIEW_MIN_MARKER,
   buildScrollOverviewImage,
@@ -75,15 +76,17 @@ describe('scroll overview', () => {
     expect(resolveLayeredScrollOverviewSegments([...layers].reverse(), 100, 1000)).toEqual(
       expected,
     );
-    expect(resolveLayeredScrollOverviewSegments([layers[1]!], 100, 1000)).toEqual(
-      resolveScrollOverviewSegments(layers[1]!.markers, 100, 1000),
+    expect(resolveLayeredScrollOverviewSegments([requireDefined(layers[1])], 100, 1000)).toEqual(
+      resolveScrollOverviewSegments(requireDefined(layers[1]).markers, 100, 1000),
     );
   });
 
   it('UIC-SCROLL-REGION-3.3 gives three coincident layers a third each, even with repeated colours', () => {
     const layers = ['a', 'b', 'c'].map((name, index) => ({
       name,
-      markers: [{ top: 0, height: 1, color: ['red', 'red', 'blue'][index]!, priority: 0 }],
+      markers: [
+        { top: 0, height: 1, color: requireDefined(['red', 'red', 'blue'][index]), priority: 0 },
+      ],
     }));
     expect(resolveLayeredScrollOverviewSegments(layers, 100, 1000)[0]?.color).toBe(
       'color-mix(in srgb, color-mix(in srgb, red 50%, red) 66.66666666666666%, blue)',

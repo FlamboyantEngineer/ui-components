@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures.js';
+import { requireDefined } from '../src/utils/require-defined.js';
 
 const cell = (id: string) => `[data-lab-cell="${id}"] .ui-version-history`;
 
@@ -29,8 +30,10 @@ test.describe('Version History lab', () => {
       'Added the cooling step',
     );
     await expect(rows.nth(5)).toHaveAttribute('aria-disabled', 'true');
-    const checkbox = (await rows.nth(1).getByRole('checkbox').boundingBox())!;
-    const label = (await rows.nth(1).locator('.ui-version-history__label').boundingBox())!;
+    const checkbox = requireDefined(await rows.nth(1).getByRole('checkbox').boundingBox());
+    const label = requireDefined(
+      await rows.nth(1).locator('.ui-version-history__label').boundingBox(),
+    );
     expect(checkbox.x).toBeLessThan(label.x);
   });
 

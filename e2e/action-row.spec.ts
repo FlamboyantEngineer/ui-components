@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures.js';
+import { requireDefined } from '../src/utils/require-defined.js';
 
 test.describe('Action Row lab', () => {
   test('UIC-ACTION-ROW-1.1 UIC-ACTION-ROW-1.3 draws custom actions, then verbs in their fixed order', async ({
@@ -74,7 +75,13 @@ test.describe('Action Row lab', () => {
       await expect(menu.getByRole('menuitem')).toHaveCount(5);
       const [button, list] = await Promise.all([more.boundingBox(), menu.boundingBox()]);
       // The menu aligns with the button's end, flipping above it when there is no room below.
-      expect(Math.abs(list!.x + list!.width - (button!.x + button!.width))).toBeLessThanOrEqual(1);
+      expect(
+        Math.abs(
+          requireDefined(list).x +
+            requireDefined(list).width -
+            (requireDefined(button).x + requireDefined(button).width),
+        ),
+      ).toBeLessThanOrEqual(1);
       await lab.expectAccessible('[role="menu"]');
       await menu.getByRole('menuitem', { name: /Export/ }).click();
       await expect(row.locator('[data-lab-output="last"]')).toHaveText('export');

@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures.js';
+import { requireDefined } from '../src/utils/require-defined.js';
 
 test.describe('Zoom Control lab', () => {
   test('UIC-ZOOM-CONTROL-1.1 UIC-ZOOM-CONTROL-1.5 UIC-ZOOM-CONTROL-1.9 draws the parts in order at four sizes', async ({
@@ -21,9 +22,9 @@ test.describe('Zoom Control lab', () => {
       const value = await group.locator('output').boundingBox();
       expect(zoomOut?.width).toBe(edge);
       expect(zoomIn?.height).toBe(edge);
-      expect(zoomOut!.x).toBeLessThan(slider!.x);
-      expect(slider!.x).toBeLessThan(zoomIn!.x);
-      expect(zoomIn!.x).toBeLessThan(value!.x);
+      expect(requireDefined(zoomOut).x).toBeLessThan(requireDefined(slider).x);
+      expect(requireDefined(slider).x).toBeLessThan(requireDefined(zoomIn).x);
+      expect(requireDefined(zoomIn).x).toBeLessThan(requireDefined(value).x);
     }
     await expect(page.locator('[data-lab-cell="state=between levels size=sm"] output')).toHaveText(
       '137.5%',
@@ -88,8 +89,8 @@ test.describe('Zoom Control lab', () => {
       const trigger = control.getByRole('button', { name: 'Zoom presets' });
       const value = await control.locator('output.ui-zoom-control__value').boundingBox();
       const triggerBox = await trigger.boundingBox();
-      expect(triggerBox!.x).toBeGreaterThan(value!.x);
-      expect(triggerBox!.width).toBe(24);
+      expect(requireDefined(triggerBox).x).toBeGreaterThan(requireDefined(value).x);
+      expect(requireDefined(triggerBox).width).toBe(24);
 
       await trigger.click();
       const menu = page.getByRole('menu', { name: 'Zoom presets' });

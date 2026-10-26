@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { createRef } from 'react';
 import { describe, expect, expectTypeOf, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { Path, type PathProps } from './path.js';
 
 const tooltip = () => document.querySelector<HTMLElement>('[role="tooltip"]');
@@ -90,10 +91,12 @@ describe('Path', () => {
           <Path path="/Garden" />
         </>,
       );
-      const long = screen
-        .getByText('/Garden/Vegetable beds/North side/Tomatoes')
-        .closest<HTMLElement>('.ui-path')!;
-      const short = screen.getByText('/Garden').closest<HTMLElement>('.ui-path')!;
+      const long = requireDefined(
+        screen
+          .getByText('/Garden/Vegetable beds/North side/Tomatoes')
+          .closest<HTMLElement>('.ui-path'),
+      );
+      const short = requireDefined(screen.getByText('/Garden').closest<HTMLElement>('.ui-path'));
       expect(long).toHaveClass('ui-path', 'ui-truncation-tooltip');
       setBox(long, { cut: true });
       setBox(short, { cut: false });

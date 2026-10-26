@@ -1,6 +1,7 @@
 import { act, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import type { ChatPlanStep, ChatPlanStepStatus } from './chat-activity.js';
 import { ChatPlan } from './chat-plan.js';
 
@@ -16,7 +17,7 @@ const allStatuses: ChatPlanStep[] = [
 
 /** The plan's steps with the given statuses, in order. */
 function withStatuses(...statuses: ChatPlanStepStatus[]): ChatPlanStep[] {
-  return statuses.map((status, index) => ({ ...allStatuses[index]!, status }));
+  return statuses.map((status, index) => ({ ...requireDefined(allStatuses[index]), status }));
 }
 
 describe('ChatPlan', () => {
@@ -86,11 +87,14 @@ describe('ChatPlan', () => {
       'Reserve the museum Failed',
       'Find a café Skipped',
     ]);
-    const current = items[1]!;
+    const current = requireDefined(items[1]);
     expect(current).toHaveAttribute('aria-current', 'step');
     expect(current.querySelector('.ui-chat-plan__spinner')).toHaveAttribute('aria-hidden', 'true');
     expect(items[0]).not.toHaveAttribute('aria-current');
-    expect(items[0]!.querySelector('.ui-chat-plan__glyph')).toHaveAttribute('aria-hidden', 'true');
+    expect(requireDefined(items[0]).querySelector('.ui-chat-plan__glyph')).toHaveAttribute(
+      'aria-hidden',
+      'true',
+    );
   });
 
   it('UIC-CHAT-ACTIVITY-3.4 announces status changes politely, at most once every two seconds', () => {

@@ -2,6 +2,7 @@ import { act, render, renderHook, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { requireDefined } from './require-defined.js';
 import { useFocusRequest } from './use-focus-request.js';
 
 function Editor({
@@ -153,8 +154,8 @@ describe('useFocusRequest', () => {
 
   it('UIC-STEP-LIST-EDITOR-4.2 uses the focused element document for frames and user cancellation', async () => {
     const frame = document.body.appendChild(document.createElement('iframe'));
-    const owner = frame.contentDocument!;
-    const view = frame.contentWindow!;
+    const owner = requireDefined(frame.contentDocument);
+    const view = requireDefined(frame.contentWindow);
     const input = owner.body.appendChild(owner.createElement('input'));
     const requestFrame = vi.fn(() => 0);
     const cancelFrame = vi.fn();

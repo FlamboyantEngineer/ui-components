@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { Table } from './table.js';
 import type { TableColumn } from './table-rows.js';
 import type { TableCellEdit } from './use-cell-editing.js';
@@ -86,7 +87,7 @@ describe('Table cell editing', { timeout: 15_000 }, () => {
     expect(within(text).getByRole('textbox', { name: 'Weight' })).toHaveValue('20');
     expect(within(numeric).queryByRole('textbox')).not.toBeInTheDocument();
     await user.keyboard('{Control>}a{/Control}25{Enter}');
-    expect(onCellEdit.mock.lastCall![0]).toMatchObject({
+    expect(requireDefined(onCellEdit.mock.lastCall)[0]).toMatchObject({
       row: { id: '1' },
       columnId: 'weight',
       value: 25,

@@ -2,6 +2,7 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import {
   DisplayOptions,
   type DisplayOptionsProperty,
@@ -40,7 +41,7 @@ async function open(name = 'Display') {
 }
 
 const lastValue = (onChange: ReturnType<typeof vi.fn>) =>
-  onChange.mock.lastCall![0] as DisplayOptionsValue;
+  requireDefined(onChange.mock.lastCall)[0] as DisplayOptionsValue;
 
 describe('DisplayOptions model', () => {
   it('UIC-DISPLAY-OPTIONS-1.2 starts with every property, ungrouped and unsorted', () => {
@@ -173,14 +174,16 @@ describe('DisplayOptions', { timeout: 20_000 }, () => {
     ]);
     expect(rows[0]).toHaveClass('ui-display-options__property');
     expect(rows.map((row) => row.getAttribute('data-shown'))).toEqual(['true', 'true', null, null]);
-    expect(rows[0]!.querySelector('.ui-list-view-item__drag-handle')).not.toBeNull();
-    const author = within(rows[3]!).getByRole('checkbox', { name: 'Show Author' });
+    expect(requireDefined(rows[0]).querySelector('.ui-list-view-item__drag-handle')).not.toBeNull();
+    const author = within(requireDefined(rows[3])).getByRole('checkbox', { name: 'Show Author' });
     expect(author.closest('.ui-display-options__visibility')).toHaveClass('ui-checkbox');
     expect(author).not.toBeChecked();
-    expect(within(rows[0]!).getByRole('checkbox', { name: 'Show Cooking time' })).toBeChecked();
+    expect(
+      within(requireDefined(rows[0])).getByRole('checkbox', { name: 'Show Cooking time' }),
+    ).toBeChecked();
     await userEvent.click(author);
     expect(lastValue(onChange).properties).toEqual(['time', 'title', 'author']);
-    await userEvent.click(rows[0]!);
+    await userEvent.click(requireDefined(rows[0]));
     expect(lastValue(onChange).properties).toEqual(['title']);
   });
 

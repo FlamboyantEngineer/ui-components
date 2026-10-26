@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { requireDefined } from '../../utils/require-defined.js';
 import { formatDiagramLink, indexDiagramLinks } from './diagram-links.js';
 
 const nodes = [
@@ -22,8 +23,8 @@ describe('indexDiagramLinks', () => {
       },
     }));
     const links = indexDiagramLinks(many, edges);
-    expect(links.get(0)!.outgoing).toHaveLength(1);
-    expect(links.get(999)!.incoming).toHaveLength(1);
+    expect(requireDefined(links.get(0)).outgoing).toHaveLength(1);
+    expect(requireDefined(links.get(999)).incoming).toHaveLength(1);
     expect(reads).toBeLessThanOrEqual(edges.length * 4);
   });
 
@@ -36,20 +37,22 @@ describe('indexDiagramLinks', () => {
       { id: 5, source: 'missing', target: 'b' },
     ];
     const links = indexDiagramLinks(nodes, edges);
-    expect(links.get('a')!.outgoing.map(formatDiagramLink)).toEqual([
+    expect(requireDefined(links.get('a')).outgoing.map(formatDiagramLink)).toEqual([
       'Blue (First)',
       'Alpha',
       'Blue',
     ]);
-    expect(links.get('a')!.incoming.map((link) => link.edge.id)).toEqual([2]);
-    expect(links.get('b')!.incoming.map((link) => link.edge.id)).toEqual([1, 3]);
+    expect(requireDefined(links.get('a')).incoming.map((link) => link.edge.id)).toEqual([2]);
+    expect(requireDefined(links.get('b')).incoming.map((link) => link.edge.id)).toEqual([1, 3]);
     expect(indexDiagramLinks(nodes, []).get('b')).toEqual({ outgoing: [], incoming: [] });
   });
 
   it('UIC-DIAGRAM-CANVAS-6.1 UIC-DIAGRAM-CANVAS-6.4 refreshes labels and removed connections from new input', () => {
     const updated = nodes.map((node) => ({ ...node, label: `${node.label} changed` }));
     const links = indexDiagramLinks(updated, [{ id: 1, source: 'b', target: 'a' }]);
-    expect(links.get('b')!.outgoing.map(formatDiagramLink)).toEqual(['Alpha changed']);
-    expect(links.get('a')!.outgoing).toEqual([]);
+    expect(requireDefined(links.get('b')).outgoing.map(formatDiagramLink)).toEqual([
+      'Alpha changed',
+    ]);
+    expect(requireDefined(links.get('a')).outgoing).toEqual([]);
   });
 });

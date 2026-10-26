@@ -6,6 +6,7 @@ import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import type { Key } from '../../core/props.js';
 import type { CompareTreeNode } from '../../utils/compare-trees.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { TreeCompare, type TreeCompareProps } from './tree-compare.js';
 
 interface Section extends CompareTreeNode {
@@ -134,7 +135,7 @@ describe('TreeCompare', () => {
           leftLabel="Version 1"
           rightLabel="Version 2"
           isEqual={(left, right) => left.label.toLowerCase() === right.label.toLowerCase()}
-          right={[{ ...RIGHT[0]!, label: 'INTRODUCTION' }, ...RIGHT.slice(1)]}
+          right={[{ ...requireDefined(RIGHT[0]), label: 'INTRODUCTION' }, ...RIGHT.slice(1)]}
           renderLabel={(node, side) => <em>{`${side}: ${node.label}`}</em>}
         />
       </UiProvider>,
@@ -245,7 +246,9 @@ describe('TreeCompare', () => {
     expect(row('Notes, removed')).toHaveFocus();
     await user.keyboard('{Shift>}{F7}{/Shift}');
     expect(row('Tools, moved away')).toHaveFocus();
-    await user.click(row('Appendix, added').querySelector('.ui-tree-compare__marker')!);
+    await user.click(
+      requireDefined(row('Appendix, added').querySelector('.ui-tree-compare__marker')),
+    );
     expect(rowNames()).not.toContain('Tools, moved here');
     await user.click(next);
     expect(row('Tools, moved here')).toHaveFocus();

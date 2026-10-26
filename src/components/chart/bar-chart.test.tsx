@@ -2,6 +2,7 @@ import { act, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { BarChart, type BarChartSeries } from './bar-chart.js';
 
 const months = ['Jan', 'Feb', 'Mar'];
@@ -45,9 +46,11 @@ describe('BarChart', () => {
 
   it('UIC-CHART-4.6 UIC-CHART-5.2 sizes the drawing and leaves room for the value labels', () => {
     render(<BarChart aria-label="Crates" categories={months} series={crates} height={200} />);
-    const plot = document.querySelector('.ui-chart__plot')!;
+    const plot = requireDefined(document.querySelector('.ui-chart__plot'));
     expect([plot.getAttribute('width'), plot.getAttribute('height')]).toEqual(['480', '200']);
-    const valueAxis = document.querySelector('.ui-chart-axis[data-position="left"]')!;
+    const valueAxis = requireDefined(
+      document.querySelector('.ui-chart-axis[data-position="left"]'),
+    );
     expect(valueAxis.querySelector('.ui-chart-axis__line')).toHaveAttribute('x1', '26');
     expect(
       [...valueAxis.querySelectorAll('.ui-chart-axis__label')].map((label) => label.textContent),
@@ -143,12 +146,12 @@ describe('BarChart', () => {
     });
     await user.keyboard('{Escape}');
     expect(tooltip()).toBeNull();
-    await user.hover(second!);
+    await user.hover(requireDefined(second));
     expect(tooltip()?.querySelector('.ui-chart__tooltip-swatch')).toHaveAttribute(
       'data-tone',
       'success',
     );
-    await user.unhover(second!);
+    await user.unhover(requireDefined(second));
     expect(tooltip()).toBeNull();
   });
 
@@ -162,7 +165,7 @@ describe('BarChart', () => {
       </div>,
     );
     act(() => screen.getByRole('button', { name: 'Elsewhere' }).focus());
-    await user.hover(bars()[1]!);
+    await user.hover(requireDefined(bars()[1]));
     expect(tooltip()).not.toBeNull();
     await user.keyboard('{Escape}');
     expect(tooltip()).toBeNull();

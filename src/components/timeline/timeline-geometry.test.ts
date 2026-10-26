@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { requireDefined } from '../../utils/require-defined.js';
 import {
   createTimelineAxis,
   isDependencyConflict,
@@ -22,17 +23,22 @@ const items: TimelineItem[] = [
 
 describe('timeline geometry', () => {
   it('UIC-TIMELINE-1.5 UIC-TIMELINE-1.6 reads items with a last day never before the first', () => {
-    expect(readTimelineItem(items[0]!)).toEqual({
+    expect(readTimelineItem(requireDefined(items[0]))).toEqual({
       id: 'a',
       kind: 'bar',
       start: '2026-03-04',
       end: '2026-03-10',
     });
-    expect(readTimelineItem(items[1]!)).toMatchObject({ kind: 'milestone', end: '2026-04-15' });
-    const backwards = { ...items[0]!, end: '2026-03-01' };
+    expect(readTimelineItem(requireDefined(items[1]))).toMatchObject({
+      kind: 'milestone',
+      end: '2026-04-15',
+    });
+    const backwards = { ...requireDefined(items[0]), end: '2026-03-01' };
     expect(readTimelineItem(backwards)?.end).toBe('2026-03-04');
-    expect(readTimelineItem({ ...items[0]!, end: undefined })?.end).toBe('2026-03-04');
-    expect(readTimelineItem({ ...items[0]!, start: 'soon' })).toBeNull();
+    expect(readTimelineItem({ ...requireDefined(items[0]), end: undefined })?.end).toBe(
+      '2026-03-04',
+    );
+    expect(readTimelineItem({ ...requireDefined(items[0]), start: 'soon' })).toBeNull();
   });
 
   it('UIC-TIMELINE-1.2 keeps a readable range and otherwise pads the items to whole units', () => {
@@ -75,7 +81,7 @@ describe('timeline geometry', () => {
       start: '2026-01-01',
       end: '2026-09-04',
     });
-    expect(resolveTimelineRange({ ...options, items: [unordered[1]!] })).toEqual({
+    expect(resolveTimelineRange({ ...options, items: [requireDefined(unordered[1])] })).toEqual({
       start: '2026-03-09',
       end: '2026-03-11',
     });

@@ -14,6 +14,7 @@ import {
   stubLayout,
   type TestLink,
 } from '../../../test/pdf-fixtures.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { ProjectionOutlet, ProjectionProvider } from '../projection/projection.js';
 import { PdfViewer } from './pdf-viewer.js';
 
@@ -141,7 +142,7 @@ describe('PdfViewer', () => {
     expect(engine.TextLayer).toHaveBeenCalledWith(
       expect.objectContaining({
         container: layer,
-        textContentSource: createTextContent(sampleLines[0]!),
+        textContentSource: createTextContent(requireDefined(sampleLines[0])),
         viewport: expect.objectContaining({ scale: 2 }),
       }),
     );
@@ -380,7 +381,7 @@ describe('PdfViewer', () => {
     const { container } = await renderReady({ defaultZoom: 75, renderPageOverlay });
     const overlays = container.querySelectorAll<HTMLElement>('.ui-pdf-viewer__overlay');
     expect(overlays).toHaveLength(3);
-    const first = overlays[0]!;
+    const first = requireDefined(overlays[0]);
     expect(first.parentElement).toHaveClass('ui-pdf-viewer__page');
     expect(first.previousElementSibling).toHaveClass('ui-pdf-viewer__annotation-layer');
     expect(first.previousElementSibling?.previousElementSibling).toHaveClass(

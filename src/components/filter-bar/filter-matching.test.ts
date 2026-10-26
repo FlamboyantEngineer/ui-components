@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { requireDefined } from '../../utils/require-defined.js';
 import { createFilterMatcher, matchesFilterCondition } from './filter-matching.js';
 import type { FilterCondition, FilterField, FilterValue } from './filter-model.js';
 
@@ -14,7 +15,7 @@ const fields: Record<string, FilterField> = {
 function test(field: string, operator: FilterCondition['operator'], value: FilterValue) {
   const condition = { field, operator, value };
   return (recordValue: Parameters<typeof matchesFilterCondition>[0]) =>
-    matchesFilterCondition(recordValue, condition, fields[field]!);
+    matchesFilterCondition(recordValue, condition, requireDefined(fields[field]));
 }
 
 describe('filter matching', () => {

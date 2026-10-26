@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { requireDefined } from '../../utils/require-defined.js';
 import { observeViewport } from './observe-viewport.js';
 
 class FakeResizeObserver {
@@ -60,7 +61,7 @@ describe('observeViewport', () => {
     element.replaceChildren(...Array.from({ length: 1000 }, () => document.createElement('p')));
     const measure = vi.fn();
     const current = observeViewport(element, window, { measure, subtree: true });
-    const observer = FakeResizeObserver.instances[0]!;
+    const observer = requireDefined(FakeResizeObserver.instances[0]);
     expect(observer.observe).toHaveBeenCalledTimes(1001);
     for (let index = 0; index < 100; index += 1) mutate();
     resize();
@@ -88,7 +89,7 @@ describe('observeViewport', () => {
       measure: vi.fn(),
       getExtraTargets: () => extras,
     });
-    const observer = FakeResizeObserver.instances[0]!;
+    const observer = requireDefined(FakeResizeObserver.instances[0]);
     expect(observer.observe.mock.calls).toEqual([[element], [first], [second], [header]]);
     element.replaceChildren(second, third);
     extras = [third, track, track];

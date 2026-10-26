@@ -2,6 +2,7 @@ import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { IconLabel } from './icon-label.js';
 
 describe('IconLabel', () => {
@@ -56,7 +57,7 @@ describe('IconLabel', () => {
     try {
       const text = 'A long label that the stylesheet cuts';
       const { container } = render(<IconLabel icon="info" label={text} truncate />);
-      const label = container.querySelector<HTMLElement>('.ui-icon-label__label')!;
+      const label = requireDefined(container.querySelector<HTMLElement>('.ui-icon-label__label'));
       expect(label).toHaveClass('ui-truncation-tooltip');
       Object.defineProperty(label, 'clientWidth', { configurable: true, value: 80 });
       Object.defineProperty(label, 'scrollWidth', { configurable: true, value: 240 });

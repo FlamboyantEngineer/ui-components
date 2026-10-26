@@ -6,6 +6,7 @@ import {
   type LineDiffHunk,
   type WordDiffHunk,
 } from './diff.js';
+import { requireDefined } from './require-defined.js';
 
 function lcsLength(a: readonly string[], b: readonly string[]): number {
   let previous = new Array<number>(b.length + 1).fill(0);
@@ -13,12 +14,14 @@ function lcsLength(a: readonly string[], b: readonly string[]): number {
     const row = [0];
     b.forEach((other, index) => {
       row.push(
-        token === other ? previous[index]! + 1 : Math.max(previous[index + 1]!, row[index]!),
+        token === other
+          ? requireDefined(previous[index]) + 1
+          : Math.max(requireDefined(previous[index + 1]), requireDefined(row[index])),
       );
     });
     previous = row;
   }
-  return previous[b.length]!;
+  return requireDefined(previous[b.length]);
 }
 
 function sideOf(hunks: LineDiffHunk[], side: 'old' | 'new'): string[] {
@@ -86,7 +89,9 @@ describe('diffLines', () => {
     const pool = ['a', 'b', 'c', 'd'];
     for (let round = 0; round < 300; round += 1) {
       const make = () =>
-        Array.from({ length: Math.floor(random() * 12) }, () => pool[Math.floor(random() * 4)]!);
+        Array.from({ length: Math.floor(random() * 12) }, () =>
+          requireDefined(pool[Math.floor(random() * 4)]),
+        );
       const oldLines = make();
       const newLines = make();
       const hunks = diffLines(oldLines.join('\n'), newLines.join('\n'));
@@ -169,7 +174,9 @@ describe('diffWords', () => {
     const words = ['pear', 'plum', ' ', ',', 'fig'];
     for (let round = 0; round < 200; round += 1) {
       const make = () =>
-        Array.from({ length: Math.floor(random() * 10) }, () => words[Math.floor(random() * 5)]!)
+        Array.from({ length: Math.floor(random() * 10) }, () =>
+          requireDefined(words[Math.floor(random() * 5)]),
+        )
           .join('')
           .trim();
       const before = make();

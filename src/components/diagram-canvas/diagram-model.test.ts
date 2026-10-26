@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { requireDefined } from '../../utils/require-defined.js';
 import {
   findConnectedNode,
   findDiagramBounds,
@@ -30,8 +31,18 @@ const edges: DiagramEdge[] = [
 
 describe('diagram model', () => {
   it('UIC-DIAGRAM-CANVAS-1.2 sizes nodes by default and bounds them', () => {
-    expect(resolveNodeRect(nodes[0]!)).toEqual({ x: 200, y: 200, width: 160, height: 48 });
-    expect(resolveNodeRect(nodes[4]!)).toEqual({ x: 180, y: 400, width: 100, height: 30 });
+    expect(resolveNodeRect(requireDefined(nodes[0]))).toEqual({
+      x: 200,
+      y: 200,
+      width: 160,
+      height: 48,
+    });
+    expect(resolveNodeRect(requireDefined(nodes[4]))).toEqual({
+      x: 180,
+      y: 400,
+      width: 100,
+      height: 30,
+    });
     expect(findDiagramBounds(nodes.slice(3).map(resolveNodeRect), 10)).toEqual({
       x: 170,
       y: -10,
@@ -140,7 +151,7 @@ describe('diagram model', () => {
     ]);
     expect(offsets.get('comma-first')).toBe(0);
     expect(offsets.get('comma-last')).toBe(0);
-    expect(Math.abs(offsets.get('quoted')!)).toBe(12);
+    expect(Math.abs(requireDefined(offsets.get('quoted')))).toBe(12);
     expect(offsets.get('quoted-back')).toBe(offsets.get('quoted'));
   });
   it('UIC-DIAGRAM-CANVAS-2.3 keeps a large parallel group centred in edge order', () => {

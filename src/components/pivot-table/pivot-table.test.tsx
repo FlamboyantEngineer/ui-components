@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import type { PivotLayout } from '../../utils/pivot.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { PivotTable, type PivotTableField } from './pivot-table.js';
 
 const sales = [
@@ -311,7 +312,7 @@ describe('PivotTable', { timeout: 20_000 }, () => {
       values: [{ field: 'boxes' }],
     });
     expect(screen.getByRole('treegrid', { name: 'Sales' })).toBeInTheDocument();
-    expect(headerTexts(container).at(-1)![0]).toBe('Fruit / Region');
+    expect(requireDefined(headerTexts(container).at(-1))[0]).toBe('Fruit / Region');
   });
 
   it('UIC-PIVOT-TABLE-3.4 picks a value aggregation from its card', async () => {
@@ -343,7 +344,7 @@ describe('PivotTable', { timeout: 20_000 }, () => {
       'Average',
     ]);
     await user.click(screen.getByRole('option', { name: 'Maximum' }));
-    expect(onLayoutChange.mock.lastCall![0].values[0]).toEqual({
+    expect(requireDefined(onLayoutChange.mock.lastCall)[0].values[0]).toEqual({
       field: 'boxes',
       aggregate: 'max',
     });
@@ -361,7 +362,7 @@ describe('PivotTable', { timeout: 20_000 }, () => {
         data-testid="pivot"
       />,
     );
-    const root = container.firstElementChild!;
+    const root = requireDefined(container.firstElementChild);
     expect(root).toHaveClass('ui-pivot-table', 'report');
     expect(root).toHaveAttribute('id', 'pivot');
     expect(root).toHaveAttribute('data-testid', 'pivot');

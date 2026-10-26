@@ -77,7 +77,7 @@ Adapted from the agent-rules TypeScript set ([coding-rules/README.md](coding-rul
 
 **TS2. No `any`.** Use `unknown` and narrow it; wrap a third-party `any` at the boundary that receives it. **(enforced: `@typescript-eslint/no-explicit-any`)**
 
-**TS3. No non-null assertions (`value!`).** Narrow the value, restructure so the type proves it, or throw an `Error` where the invariant would break. **(enforced: `@typescript-eslint/no-non-null-assertion`, except in tests for now)**
+**TS3. No non-null assertions (`value!`).** Narrow the value, restructure so the type proves it, or throw an `Error` where the invariant would break. **(enforced: `@typescript-eslint/no-non-null-assertion`)**
 
 **TS4. No `@ts-ignore` or `@ts-nocheck`.** A `@ts-expect-error` carries a description of what removes it. **(enforced: `@typescript-eslint/ban-ts-comment`)**
 

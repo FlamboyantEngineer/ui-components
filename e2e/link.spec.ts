@@ -1,5 +1,6 @@
 import type { Locator } from '@playwright/test';
 import { expect, test } from './fixtures.js';
+import { requireDefined } from '../src/utils/require-defined.js';
 
 const style = (locator: Locator, property: string) =>
   locator.evaluate((node, name) => getComputedStyle(node).getPropertyValue(name), property);
@@ -77,8 +78,12 @@ test.describe('Link lab', () => {
     expect(label?.width ?? 0).toBeLessThanOrEqual(1);
     const box = await link.boundingBox();
     const glyph = await icon.boundingBox();
-    expect(glyph!.x).toBeGreaterThan(box!.x + box!.width / 2);
-    expect(glyph!.x + glyph!.width).toBeLessThanOrEqual(box!.x + box!.width + 1);
+    expect(requireDefined(glyph).x).toBeGreaterThan(
+      requireDefined(box).x + requireDefined(box).width / 2,
+    );
+    expect(requireDefined(glyph).x + requireDefined(glyph).width).toBeLessThanOrEqual(
+      requireDefined(box).x + requireDefined(box).width + 1,
+    );
     await expect(
       page.locator('[data-lab-demo="prose"]').getByRole('link', {
         name: 'seasonal produce guide (opens in a new tab)',

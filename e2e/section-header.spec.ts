@@ -1,5 +1,6 @@
 import type { Locator } from '@playwright/test';
 import { expect, test } from './fixtures.js';
+import { requireDefined } from '../src/utils/require-defined.js';
 
 async function box(locator: Locator) {
   const rect = await locator.boundingBox();
@@ -36,7 +37,10 @@ test.describe('Section Header lab', () => {
     const region = page.getByRole('region', { name: 'Meadow, 2xl gap', exact: true });
     await expect(region).toBeVisible();
     const heading = region.getByRole('heading', { name: 'Meadow, 2xl gap' });
-    await expect(region).toHaveAttribute('aria-labelledby', (await heading.getAttribute('id'))!);
+    await expect(region).toHaveAttribute(
+      'aria-labelledby',
+      requireDefined(await heading.getAttribute('id')),
+    );
     const header = await box(region.locator('.ui-section-header'));
     const body = await box(region.locator('p'));
     expect(Math.round(body.y - (header.y + header.height))).toBe(16);
@@ -95,7 +99,10 @@ test.describe('Section Header lab', () => {
 
       const region = page.getByRole('region', { name: 'Harbour, card 420', exact: true });
       const heading = region.getByRole('heading', { level: 3 });
-      await expect(region).toHaveAttribute('aria-labelledby', (await heading.getAttribute('id'))!);
+      await expect(region).toHaveAttribute(
+        'aria-labelledby',
+        requireDefined(await heading.getAttribute('id')),
+      );
       const narrow = page.locator('[data-lab-frame="card 220"]');
       expect(await narrow.evaluate((node) => node.scrollWidth <= node.clientWidth)).toBe(true);
       expect((await metrics('card 220')).besideText).toBe(false);

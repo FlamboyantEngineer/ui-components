@@ -1,5 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import { expect, test } from './fixtures.js';
+import { requireDefined } from '../src/utils/require-defined.js';
 
 function cell(page: Page, state: string, mode: string): Locator {
   return page.locator(`[data-lab-cell="state=${state} mode=${mode}"]`);
@@ -51,7 +52,7 @@ test.describe('Date Time Field lab', () => {
     await expect(dialog).toBeVisible();
     const groupBox = await group.boundingBox();
     const dialogBox = await dialog.boundingBox();
-    expect(dialogBox!.y).toBeGreaterThan(groupBox!.y);
+    expect(requireDefined(dialogBox).y).toBeGreaterThan(requireDefined(groupBox).y);
     await expect(dialog.getByRole('grid', { name: /April 2026/ })).toBeVisible();
     await expect(dialog.getByRole('button', { name: /April 13, 2026/ })).toBeFocused();
     await page.keyboard.press('ArrowRight');
@@ -136,7 +137,9 @@ test.describe('Date Time Field lab', () => {
     await expect(saturday).toHaveAttribute('aria-disabled', 'true');
     const presets = dialog.locator('.ui-date-time-field__presets');
     const calendar = dialog.locator('.ui-date-time-field__calendar');
-    expect((await presets.boundingBox())!.x).toBeLessThan((await calendar.boundingBox())!.x);
+    expect(requireDefined(await presets.boundingBox()).x).toBeLessThan(
+      requireDefined(await calendar.boundingBox()).x,
+    );
     await expect(dialog.getByRole('button', { name: 'A Saturday' })).toBeDisabled();
     await expect(dialog.getByRole('button', { name: 'Last year' })).toBeDisabled();
     await lab.expectAccessible('.ui-date-time-field__popover');

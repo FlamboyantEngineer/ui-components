@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { compareBlocks, type DocumentBlock } from '../../utils/compare-blocks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { createRedlineWords, cutAtMarks, type RedlineWords } from './redline-text.js';
 
 const flatten = (words: RedlineWords[]) =>
@@ -43,7 +44,7 @@ describe('createRedlineWords', () => {
   const [row] = compareBlocks([oldBlock], [newBlock]).rows;
 
   it('UIC-REDLINE-COMPARE-2.1 draws kept, deleted and inserted words inline', () => {
-    expect(flatten(createRedlineWords(row!, 'both'))).toEqual([
+    expect(flatten(createRedlineWords(requireDefined(row), 'both'))).toEqual([
       'equal:Bake the |tart ',
       'removed:hot',
       'added:warm',
@@ -52,12 +53,12 @@ describe('createRedlineWords', () => {
   });
 
   it('UIC-REDLINE-COMPARE-2.2 keeps deleted words on the old side and inserted on the new', () => {
-    expect(flatten(createRedlineWords(row!, 'old'))).toEqual([
+    expect(flatten(createRedlineWords(requireDefined(row), 'old'))).toEqual([
       'equal:Bake| the tart ',
       'removed:hot',
       'equal:.',
     ]);
-    expect(flatten(createRedlineWords(row!, 'new'))).toEqual([
+    expect(flatten(createRedlineWords(requireDefined(row), 'new'))).toEqual([
       'equal:Bake the |tart ',
       'added:warm',
       'equal:.',
@@ -65,13 +66,15 @@ describe('createRedlineWords', () => {
   });
 
   it('UIC-REDLINE-COMPARE-2.3 takes deleted words’ marks from the old block and the rest from the new', () => {
-    const words = createRedlineWords(row!, 'both');
-    expect(words[0]!.runs.map((run) => run.marks.map((mark) => mark.type))).toEqual([
+    const words = createRedlineWords(requireDefined(row), 'both');
+    expect(requireDefined(words[0]).runs.map((run) => run.marks.map((mark) => mark.type))).toEqual([
       [],
       ['italic'],
     ]);
-    expect(words[1]!.runs[0]!.marks).toEqual([]);
-    expect(words[2]!.runs[0]!.marks.map((mark) => mark.type)).toEqual(['italic']);
+    expect(requireDefined(requireDefined(words[1]).runs[0]).marks).toEqual([]);
+    expect(requireDefined(requireDefined(words[2]).runs[0]).marks.map((mark) => mark.type)).toEqual(
+      ['italic'],
+    );
   });
 
   it('UIC-REDLINE-COMPARE-2.1 draws added and removed blocks whole', () => {
@@ -80,11 +83,11 @@ describe('createRedlineWords', () => {
       [{ type: 'code', text: 'x = 1' }],
     );
     const [removed, added] = rows;
-    expect(flatten(createRedlineWords(removed!, 'both'))).toEqual(['removed:Gone']);
-    expect(flatten(createRedlineWords(removed!, 'old'))).toEqual(['removed:Gone']);
-    expect(createRedlineWords(removed!, 'new')).toEqual([]);
-    expect(flatten(createRedlineWords(added!, 'both'))).toEqual(['added:x = 1']);
-    expect(createRedlineWords(added!, 'old')).toEqual([]);
+    expect(flatten(createRedlineWords(requireDefined(removed), 'both'))).toEqual(['removed:Gone']);
+    expect(flatten(createRedlineWords(requireDefined(removed), 'old'))).toEqual(['removed:Gone']);
+    expect(createRedlineWords(requireDefined(removed), 'new')).toEqual([]);
+    expect(flatten(createRedlineWords(requireDefined(added), 'both'))).toEqual(['added:x = 1']);
+    expect(createRedlineWords(requireDefined(added), 'old')).toEqual([]);
   });
 
   it('UIC-REDLINE-COMPARE-2.2 draws a moved block only at its own position on each side', () => {
@@ -98,8 +101,8 @@ describe('createRedlineWords', () => {
         { id: 'm', type: 'paragraph', text: 'Moved text now' },
       ],
     );
-    const from = rows[0]!;
-    const to = rows[2]!;
+    const from = requireDefined(rows[0]);
+    const to = requireDefined(rows[2]);
     expect(flatten(createRedlineWords(from, 'both'))).toEqual(['equal:Moved text']);
     expect(flatten(createRedlineWords(from, 'old'))).toEqual(['equal:Moved text']);
     expect(createRedlineWords(from, 'new')).toEqual([]);

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { layoutLayeredGraph, type LayeredLayoutNode } from './layered-layout.js';
+import { requireDefined } from './require-defined.js';
 
 const box = (id: string): LayeredLayoutNode => ({ id, width: 100, height: 40 });
 
@@ -43,7 +44,7 @@ describe('layoutLayeredGraph', () => {
       nodeGap: 20,
       layerGap: 50,
     });
-    const at = (id: string) => positions.find((position) => position.id === id)!;
+    const at = (id: string) => requireDefined(positions.find((position) => position.id === id));
     expect(at('a')).toEqual({ id: 'a', x: 0, y: 0, layer: 0 });
     expect(at('b')).toEqual({ id: 'b', x: 0, y: 60, layer: 0 });
     expect(at('y')).toMatchObject({ x: 150, y: 0, layer: 1 });

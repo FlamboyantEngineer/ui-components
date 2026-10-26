@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures.js';
+import { requireDefined } from '../src/utils/require-defined.js';
 
 const cell = (id: string) => `[data-lab-cell="${id}"] .ui-wizard`;
 
@@ -31,9 +32,9 @@ test.describe('Wizard lab', () => {
       'complete',
     );
     const stepsBox = async (id: string) =>
-      (await page.locator(`${cell(id)} .ui-wizard__steps`).boundingBox())!;
+      requireDefined(await page.locator(`${cell(id)} .ui-wizard__steps`).boundingBox());
     const formBox = async (id: string) =>
-      (await page.locator(`${cell(id)} .ui-wizard__form`).boundingBox())!;
+      requireDefined(await page.locator(`${cell(id)} .ui-wizard__form`).boundingBox());
     const above = 'step=two orientation=horizontal';
     expect((await formBox(above)).y).toBeGreaterThan((await stepsBox(above)).y);
     const beside = 'step=two orientation=vertical';

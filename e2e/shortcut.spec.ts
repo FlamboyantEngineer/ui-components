@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures.js';
+import { requireDefined } from '../src/utils/require-defined.js';
 
 test.describe('Shortcut lab', () => {
   test('UIC-SHORTCUT-1.2 UIC-SHORTCUT-2.1 draws each notation as keycaps on one line', async ({
@@ -74,8 +75,8 @@ test.describe('Shortcut lab', () => {
       const [first, second] = await chords.evaluateAll((nodes) =>
         nodes.map((node) => node.getBoundingClientRect().toJSON() as DOMRect),
       );
-      expect(Math.round(first!.top)).toBe(Math.round(second!.top));
-      expect(second!.left - first!.right).toBeGreaterThanOrEqual(4);
+      expect(Math.round(requireDefined(first).top)).toBe(Math.round(requireDefined(second).top));
+      expect(requireDefined(second).left - requireDefined(first).right).toBeGreaterThanOrEqual(4);
     }
     const snapshot = await page
       .locator('[data-lab-cell="sequence=G I platform=linux"]')

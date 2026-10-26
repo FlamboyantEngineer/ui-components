@@ -2,6 +2,7 @@ import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { ChatSources, type ChatSource } from './chat-sources.js';
 
 const sources: ChatSource[] = [
@@ -47,21 +48,31 @@ describe('ChatSources', () => {
   it('UIC-CHAT-SOURCES-1.2 shows each title, site and snippet the source has', () => {
     render(<ChatSources sources={sources} />);
     const [weather, rail, notes] = screen.getAllByRole('listitem');
-    const external = within(weather!).getByRole('link', { name: /Lisbon weather by month/ });
+    const external = within(requireDefined(weather)).getByRole('link', {
+      name: /Lisbon weather by month/,
+    });
     expect(external).toHaveAttribute('href', 'https://www.example.com/lisbon/weather');
     expect(external).toHaveAttribute('target', '_blank');
     expect(external).toHaveClass('ui-chat-sources__title', 'ui-link');
-    expect(weather!.querySelector('.ui-chat-sources__site')).toHaveTextContent('example.com');
-    expect(weather!.querySelector('p.ui-chat-sources__snippet')).toHaveTextContent(
+    expect(requireDefined(weather).querySelector('.ui-chat-sources__site')).toHaveTextContent(
+      'example.com',
+    );
+    expect(requireDefined(weather).querySelector('p.ui-chat-sources__snippet')).toHaveTextContent(
       'Summers are dry and sunny',
     );
-    const internal = within(rail!).getByRole('link', { name: 'Coastal rail timetable' });
+    const internal = within(requireDefined(rail)).getByRole('link', {
+      name: 'Coastal rail timetable',
+    });
     expect(internal).not.toHaveAttribute('target');
-    expect(rail!.querySelector('.ui-chat-sources__site')).toHaveTextContent('Rail guide');
-    expect(rail!.querySelector('.ui-chat-sources__snippet')).toBeNull();
-    expect(within(notes!).queryByRole('link')).not.toBeInTheDocument();
-    expect(notes!.querySelector('.ui-chat-sources__title')).toHaveTextContent('Trip notes.md');
-    expect(notes!.querySelector('.ui-chat-sources__site')).toBeNull();
+    expect(requireDefined(rail).querySelector('.ui-chat-sources__site')).toHaveTextContent(
+      'Rail guide',
+    );
+    expect(requireDefined(rail).querySelector('.ui-chat-sources__snippet')).toBeNull();
+    expect(within(requireDefined(notes)).queryByRole('link')).not.toBeInTheDocument();
+    expect(requireDefined(notes).querySelector('.ui-chat-sources__title')).toHaveTextContent(
+      'Trip notes.md',
+    );
+    expect(requireDefined(notes).querySelector('.ui-chat-sources__site')).toBeNull();
   });
 
   it('UIC-CHAT-SOURCES-1.3 carries its hooks, the caller class, id and data attributes', () => {

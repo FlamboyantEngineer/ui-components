@@ -2,6 +2,7 @@ import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import type { ChatPart, ChatReasoningPart, ChatToolCallPart } from './chat-part.js';
 import { ChatParts } from './chat-parts.js';
 
@@ -25,7 +26,9 @@ const call = (overrides: Partial<ChatToolCallPart> = {}): ChatToolCallPart => ({
 const answer = (text: string): ChatPart => ({ type: 'text', text, status: 'streaming' });
 
 const stepsTrigger = (container: HTMLElement) =>
-  within(container.querySelector('.ui-chat-steps') as HTMLElement).getAllByRole('button')[0]!;
+  requireDefined(
+    within(container.querySelector('.ui-chat-steps') as HTMLElement).getAllByRole('button')[0],
+  );
 
 const trains = call({ id: 'c1', label: 'Search trains', status: 'succeeded', durationMs: 800 });
 const hotels = (status: ChatToolCallPart['status'], id = 'c2') =>
@@ -361,10 +364,10 @@ describe('ChatParts', () => {
       );
       const { container, rerender } = render(view('running', 'running'));
       const [first, second] = [...container.querySelectorAll<HTMLElement>('.ui-chat-steps')].map(
-        (group) => within(group).getAllByRole('button')[0]!,
+        (group) => requireDefined(within(group).getAllByRole('button')[0]),
       );
-      await user.click(first!);
-      await user.click(second!);
+      await user.click(requireDefined(first));
+      await user.click(requireDefined(second));
       rerender(view('approval-requested', 'failed'));
       expect(first).toHaveAttribute('aria-expanded', 'true');
       expect(second).toHaveAttribute('aria-expanded', 'true');

@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { ToolbarRow, ToolbarRowGroup, ToolbarRowSeparator } from './toolbar-row.js';
 
 describe('ToolbarRow', () => {
@@ -118,7 +119,7 @@ describe('ToolbarRow', () => {
       'data-orientation',
       'vertical',
     );
-    const rule = container.querySelector('.ui-toolbar-row__separator')!;
+    const rule = requireDefined(container.querySelector('.ui-toolbar-row__separator'));
     expect(rule.tagName).toBe('HR');
     expect(rule).toHaveAttribute('data-orientation', 'horizontal');
   });
@@ -147,7 +148,7 @@ describe('ToolbarRow', () => {
         <button type="button">Juice</button>
       </ToolbarRow>,
     );
-    const root = container.querySelector('.ui-toolbar-row')!;
+    const root = requireDefined(container.querySelector('.ui-toolbar-row'));
     expect(root).toHaveAttribute('data-overflow', 'scroll');
     expect(root).toHaveAttribute('data-wrap', 'nowrap');
     expect(root).toHaveAttribute('data-owner', 'kitchen');
@@ -197,7 +198,7 @@ describe('ToolbarRow', () => {
         </button>
       </ToolbarRow>,
     );
-    const row = container.querySelector('.ui-toolbar-row')!;
+    const row = requireDefined(container.querySelector('.ui-toolbar-row'));
     expect(row).toHaveAttribute('data-pending', 'true');
     expect(row).toHaveAttribute('inert');
     expectHooksMatchSpec(container, 'LAYOUT');

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { requireDefined } from '../../utils/require-defined.js';
 import type { FilterField } from '../filter-bar/filter-bar.js';
 import {
   copyConditionNode,
@@ -50,7 +51,7 @@ describe('condition tree', () => {
     expect(ids(moveConditionNode(tree, 'c', -1))).toEqual(['a', ['g', ['c', 'b']], 'd']);
     expect(ids(moveConditionNode(tree, 'd', 1))).toEqual(ids(tree));
     let count = 0;
-    const copy = copyConditionNode(tree.rules[1]!, () => `copy-${(count += 1)}`);
+    const copy = copyConditionNode(requireDefined(tree.rules[1]), () => `copy-${(count += 1)}`);
     expect(copy).toEqual({
       type: 'group',
       id: 'copy-1',

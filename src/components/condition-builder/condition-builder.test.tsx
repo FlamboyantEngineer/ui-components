@@ -3,6 +3,7 @@ import { userEvent, type UserEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import type { FilterField } from '../filter-bar/filter-bar.js';
 import {
   ConditionBuilder,
@@ -63,12 +64,12 @@ function Controlled({
 }
 
 // Rules are named by their position in their group; the first match is the outermost.
-const rule = (name: string) => screen.getAllByRole('group', { name })[0]!;
+const rule = (name: string) => requireDefined(screen.getAllByRole('group', { name })[0]);
 const ruleIds = (group: ConditionGroup): unknown[] =>
   group.rules.map((node) => (node.type === 'group' ? ruleIds(node) : node.id));
 // A node's own menu button is the last one inside it; a group's first is its own.
 const menuOf = (container: HTMLElement, index = -1) =>
-  within(container).getAllByRole('button', { name: 'Actions' }).at(index)!;
+  requireDefined(within(container).getAllByRole('button', { name: 'Actions' }).at(index));
 
 /** Opens a node's menu and returns it, so its items are found without searching the page. */
 async function openActions(user: UserEvent, container: HTMLElement, index?: number) {
@@ -80,7 +81,10 @@ async function openActions(user: UserEvent, container: HTMLElement, index?: numb
 const either = tree.rules[1] as ConditionGroup;
 const moved: ConditionGroup = {
   ...tree,
-  rules: [tree.rules[0]!, { ...either, rules: [either.rules[1]!, either.rules[0]!] }],
+  rules: [
+    requireDefined(tree.rules[0]),
+    { ...either, rules: [requireDefined(either.rules[1]), requireDefined(either.rules[0])] },
+  ],
 };
 const duplicated: ConditionGroup = {
   ...moved,
@@ -158,14 +162,14 @@ describe('ConditionBuilder', () => {
       { type: 'rule', id: expect.any(String), field: 'title', operator: 'contains', value: '' },
     ]);
     expect(within(rule('Rule 1')).getByRole('button', { name: /Field/ })).toHaveFocus();
-    await user.click(screen.getAllByRole('button', { name: 'Add group' })[0]!);
+    await user.click(requireDefined(screen.getAllByRole('button', { name: 'Add group' })[0]));
     const grouped = onChange.mock.lastCall?.[0] as ConditionGroup;
     expect(grouped.rules[1]).toMatchObject({
       type: 'group',
       combinator: 'and',
       rules: [{ type: 'rule', field: 'title' }],
     });
-    const ids = [grouped.rules[0]!.id, grouped.rules[1]!.id];
+    const ids = [requireDefined(grouped.rules[0]).id, requireDefined(grouped.rules[1]).id];
     expect(new Set(ids).size).toBe(2);
     expect(within(rule('Group')).getByRole('button', { name: /Field/ })).toHaveFocus();
   });
@@ -254,7 +258,7 @@ describe('ConditionBuilder', () => {
       'title',
     ]);
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
-    const moved = screen.getAllByRole('group', { name: 'Rule 2' }).at(-1)!;
+    const moved = requireDefined(screen.getAllByRole('group', { name: 'Rule 2' }).at(-1));
     expect(within(moved).getByRole('button', { name: 'Actions' })).toHaveFocus();
   });
 

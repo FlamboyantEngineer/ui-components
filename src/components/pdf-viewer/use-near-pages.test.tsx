@@ -1,5 +1,6 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { requireDefined } from '../../utils/require-defined.js';
 import { useNearPages } from './use-near-pages.js';
 
 function createObserver() {
@@ -29,7 +30,7 @@ function createObserver() {
 
 function createScroller(Observer: unknown) {
   const frame = document.body.appendChild(document.createElement('iframe'));
-  const owner = frame.contentDocument!;
+  const owner = requireDefined(frame.contentDocument);
   Object.defineProperty(frame.contentWindow, 'IntersectionObserver', {
     configurable: true,
     value: Observer,

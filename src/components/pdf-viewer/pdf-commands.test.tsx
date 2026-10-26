@@ -2,6 +2,7 @@ import { act, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createEngine, renderReady, renderViewer } from '../../../test/pdf-fixtures.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { toPdfFileName } from './pdf-commands.js';
 
 async function chooseCommand(name: string) {
@@ -75,20 +76,20 @@ describe('PdfViewer commands', () => {
     await renderReady({}, engine);
     await chooseCommand('Print');
     await waitFor(() => expect(blobs).toHaveLength(1));
-    const frame = document.querySelector('iframe')!;
+    const frame = requireDefined(document.querySelector('iframe'));
     expect(frame).toHaveAttribute('aria-hidden', 'true');
     expect(frame.style).toMatchObject({ position: 'fixed', visibility: 'hidden', width: '0px' });
-    const frameWindow = frame.contentWindow!;
+    const frameWindow = requireDefined(frame.contentWindow);
     const print = vi.fn();
     frameWindow.print = print;
     for (let page = 0; page < 3; page += 1) {
       await waitFor(() => expect(blobs).toHaveLength(page + 1));
       act(() => blobs[page]?.());
     }
-    const frameDocument = frame.contentDocument!;
+    const frameDocument = requireDefined(frame.contentDocument);
     await waitFor(() => expect(frameDocument.images).toHaveLength(3));
     expect(frameDocument.body).toBeNull();
-    const image = frameDocument.images[0]!;
+    const image = requireDefined(frameDocument.images[0]);
     expect(image.src).toBe('blob:page-1');
     expect(image.parentElement?.style.height).toBe('100vh');
     expect(engine.render).toHaveBeenCalledWith(

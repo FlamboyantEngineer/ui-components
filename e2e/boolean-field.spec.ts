@@ -223,7 +223,8 @@ test('UIC-BOOLEAN-FIELD-3.5 UIC-SEGMENTED-CHOICE-1.3 keeps the False label glyph
   await expect(async () => {
     const fits = await label.evaluate((element) => {
       const style = getComputedStyle(element);
-      const context = document.createElement('canvas').getContext('2d')!;
+      const context = document.createElement('canvas').getContext('2d');
+      if (!context) throw new Error('No 2D canvas context.');
       context.font = style.font;
       const text = context.measureText(element.textContent ?? '');
       const width = element.getBoundingClientRect().width;

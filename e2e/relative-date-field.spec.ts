@@ -1,5 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import { expect, test } from './fixtures.js';
+import { requireDefined } from '../src/utils/require-defined.js';
 
 function field(page: Page, name: string): Locator {
   return page.locator(`[data-lab-field="${name}"]`);
@@ -81,7 +82,9 @@ test.describe('Relative Date Field lab', () => {
     const listbox = popover.getByRole('listbox');
     const calendar = popover.locator('.ui-relative-date-field__calendar');
     await expect(calendar.getByRole('grid', { name: /April 2026/ })).toBeVisible();
-    expect((await calendar.boundingBox())!.x).toBeGreaterThan((await listbox.boundingBox())!.x);
+    expect(requireDefined(await calendar.boundingBox()).x).toBeGreaterThan(
+      requireDefined(await listbox.boundingBox()).x,
+    );
     await lab.expectAccessible('.ui-relative-date-field__popover');
     await page.keyboard.press('Tab');
     await expect(calendar.getByRole('button', { name: 'Previous' })).toBeFocused();

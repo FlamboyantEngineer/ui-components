@@ -2,6 +2,7 @@ import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import {
   TransitionMenu,
   type TransitionMenuState,
@@ -110,7 +111,10 @@ describe('TransitionMenu', { timeout: 15_000 }, () => {
       'neutral',
       'success',
     ]);
-    expect(items[0]!.querySelector('.ui-status-light')).toHaveAttribute('data-tone', 'warning');
+    expect(requireDefined(items[0]).querySelector('.ui-status-light')).toHaveAttribute(
+      'data-tone',
+      'warning',
+    );
     expect(items[0]).toHaveTextContent('Assigns it to you');
     expect(items[3]).toHaveAttribute('aria-disabled', 'true');
     expect(items[3]).toHaveTextContent('Add a reviewer first');

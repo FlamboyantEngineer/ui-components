@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { describe, expect, it } from 'vitest';
+import { requireDefined } from '../../utils/require-defined.js';
 import { signMarkdownNode } from './markdown-block-cache.js';
 import type { MarkdownNode } from './markdown-nodes.js';
 import { Markdown } from './markdown.js';
@@ -48,7 +49,7 @@ describe('useMarkdownBlocks', () => {
     const chunks = streamChunks();
     const { counts, renderNode } = createCounter();
     const { rerender } = render(
-      <Markdown source={chunks[0]!} isStreaming renderNode={renderNode} />,
+      <Markdown source={requireDefined(chunks[0])} isStreaming renderNode={renderNode} />,
     );
     for (const source of chunks.slice(1)) {
       rerender(<Markdown source={source} isStreaming renderNode={renderNode} />);
@@ -63,14 +64,18 @@ describe('useMarkdownBlocks', () => {
   it('UIC-MARKDOWN-2.12 renders every block again without streaming, or for a new renderNode', () => {
     const chunks = streamChunks();
     const plain = createCounter();
-    const { rerender } = render(<Markdown source={chunks[0]!} renderNode={plain.renderNode} />);
+    const { rerender } = render(
+      <Markdown source={requireDefined(chunks[0])} renderNode={plain.renderNode} />,
+    );
     for (const source of chunks.slice(1)) {
       rerender(<Markdown source={source} renderNode={plain.renderNode} />);
     }
     const written = chunks.map((source) => source.split('\n\n').length);
     expect(plain.counts.calls).toBe(written.reduce((sum, count) => sum + count, 0));
     const next = createCounter();
-    rerender(<Markdown source={chunks.at(-1)!} isStreaming renderNode={next.renderNode} />);
+    rerender(
+      <Markdown source={requireDefined(chunks.at(-1))} isStreaming renderNode={next.renderNode} />,
+    );
     expect(next.counts.calls).toBe(paragraphs.length);
   });
 
@@ -101,9 +106,11 @@ describe('useMarkdownBlocks', () => {
 describe('signMarkdownNode', () => {
   it('UIC-MARKDOWN-2.12 signs blocks by their content, without recursive calls', () => {
     const [first, second, third] = parseMarkdown('A *b*\n\nA *b*\n\nA **b**').children;
-    expect(signMarkdownNode(first!)).toBe(signMarkdownNode(second!));
-    expect(signMarkdownNode(first!)).not.toBe(signMarkdownNode(third!));
-    const deep = parseMarkdown('>'.repeat(5000) + ' deep').children[0]!;
+    expect(signMarkdownNode(requireDefined(first))).toBe(signMarkdownNode(requireDefined(second)));
+    expect(signMarkdownNode(requireDefined(first))).not.toBe(
+      signMarkdownNode(requireDefined(third)),
+    );
+    const deep = requireDefined(parseMarkdown('>'.repeat(5000) + ' deep').children[0]);
     expect(signMarkdownNode(deep)).toContain('"deep"');
   });
 });

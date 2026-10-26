@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { NumberField } from './number-field.js';
 
 describe('NumberField bases', () => {
@@ -28,7 +29,9 @@ describe('NumberField bases', () => {
     await user.clear(input);
     await user.type(input, '0xff{Enter}');
     expect(onCommit).toHaveBeenLastCalledWith(255);
-    expect(new FormData(container.querySelector('form')!).get('capacity')).toBe('255');
+    expect(new FormData(requireDefined(container.querySelector('form'))).get('capacity')).toBe(
+      '255',
+    );
     await user.keyboard('{ArrowUp}');
     expect(input).toHaveValue('0x100');
     expectHooksMatchSpec(container, 'NUMBER-FIELD', { slots: ['input', 'end'] });
