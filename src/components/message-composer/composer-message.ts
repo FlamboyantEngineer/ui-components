@@ -2,6 +2,7 @@
 // placed in it.
 
 import type { PersistCodec } from '../../core/provider.js';
+import { createJsonCodec } from '../../utils/json-codec.js';
 
 /** What a pill in the message stands for: a person, a command, or a record the host names. */
 export type MessageComposerTokenKind = 'mention' | 'command' | 'reference';
@@ -73,12 +74,12 @@ export function createMessageCodec<T>(
   toMessage: (value: T) => MessageComposerMessage,
   fromMessage: (message: MessageComposerMessage) => T,
 ): PersistCodec<T> {
+  const codec = createJsonCodec((value): MessageComposerMessage => {
+    if (!isMessage(value)) throw new Error('Not a stored message.');
+    return value;
+  });
   return {
-    stringify: (value) => JSON.stringify(toMessage(value)),
-    parse: (raw) => {
-      const value: unknown = JSON.parse(raw);
-      if (!isMessage(value)) throw new Error('Not a stored message.');
-      return fromMessage(value);
-    },
+    stringify: (value) => codec.stringify(toMessage(value)),
+    parse: (raw) => fromMessage(codec.parse(raw)),
   };
 }

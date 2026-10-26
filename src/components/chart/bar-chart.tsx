@@ -17,7 +17,7 @@ import { resolvePlotBox } from './chart-layout.js';
 import { ChartAxis } from './chart-axis.js';
 import { barChartHooks, chartHooks } from './chart-hooks.js';
 import { ChartLegend, useHiddenKeys, type ChartHiddenKeysProps } from './chart-legend.js';
-import { ChartTooltip, useChartPoints } from './chart-points.js';
+import { ChartPlot, useChartPoints } from './chart-points.js';
 import { useValueSummary } from './chart-summary.js';
 import { useChartFrame, useLabelMargin } from './use-chart-box.js';
 
@@ -89,55 +89,49 @@ function BarPlot({
     ? { position: 'bottom' as const, offset: plot.bottom, range: [plot.left, plot.right] as const }
     : { position: 'left' as const, offset: plot.left, range: [plot.top, plot.bottom] as const };
   return (
-    <>
-      <svg
-        {...chartHooks.slot('plot')}
-        role="group"
-        width={width}
-        height={height}
-        viewBox={`0 0 ${width} ${height}`}
-      >
-        <ChartAxis
-          {...valueAxis}
-          ticks={values.ticks()}
-          gridLength={isVertical ? plot.right - plot.left : plot.bottom - plot.top}
-        />
-        <ChartAxis {...categoryAxis} ticks={bands.ticks()} />
-        {bars.map((bar) => {
-          const entry = requireDefined(series[bar.series]);
-          return (
-            <rect
-              key={bar.key}
-              {...barChartHooks.slot('bar', {
-                series: bar.series,
-                tone: entry.tone,
-                active: bar.key === points.activeKey,
-              })}
-              {...points.getPointProps(bar)}
-              role="img"
-              aria-label={strings.chartValue(
-                entry.label,
-                requireDefined(categories[bar.index]),
-                format.format(bar.value),
-              )}
-              x={bar.x}
-              y={bar.y}
-              width={bar.width}
-              height={bar.height}
-            />
-          );
-        })}
-      </svg>
-      <ChartTooltip
-        activeKey={points.activeKey}
-        anchor={points.anchor}
-        title={active ? requireDefined(categories[active.index]) : ''}
-        label={active ? requireDefined(series[active.series]).label : ''}
-        series={active?.series ?? 0}
-        tone={active ? requireDefined(series[active.series]).tone : undefined}
-        value={active ? format.format(active.value) : ''}
+    <ChartPlot
+      width={width}
+      height={height}
+      points={points}
+      tooltip={{
+        title: active ? requireDefined(categories[active.index]) : '',
+        label: active ? requireDefined(series[active.series]).label : '',
+        series: active?.series ?? 0,
+        tone: active ? requireDefined(series[active.series]).tone : undefined,
+        value: active ? format.format(active.value) : '',
+      }}
+    >
+      <ChartAxis
+        {...valueAxis}
+        ticks={values.ticks()}
+        gridLength={isVertical ? plot.right - plot.left : plot.bottom - plot.top}
       />
-    </>
+      <ChartAxis {...categoryAxis} ticks={bands.ticks()} />
+      {bars.map((bar) => {
+        const entry = requireDefined(series[bar.series]);
+        return (
+          <rect
+            key={bar.key}
+            {...barChartHooks.slot('bar', {
+              series: bar.series,
+              tone: entry.tone,
+              active: bar.key === points.activeKey,
+            })}
+            {...points.getPointProps(bar)}
+            role="img"
+            aria-label={strings.chartValue(
+              entry.label,
+              requireDefined(categories[bar.index]),
+              format.format(bar.value),
+            )}
+            x={bar.x}
+            y={bar.y}
+            width={bar.width}
+            height={bar.height}
+          />
+        );
+      })}
+    </ChartPlot>
   );
 }
 

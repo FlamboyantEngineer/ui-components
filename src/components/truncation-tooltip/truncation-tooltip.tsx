@@ -20,6 +20,7 @@ import { useControllableState } from '../../core/controllable-state.js';
 import { createHooks } from '../../core/hooks.js';
 import type { BaseProps, NativeProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { tabbableSelector } from '../../utils/tabbable.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import { useResizeObserver } from '../../utils/use-resize-observer.js';
 import { Button } from '../button/button.js';
@@ -52,10 +53,6 @@ interface TruncationState extends TooltipTriggerState {
 }
 
 const hooks = createHooks('truncation-tooltip', ['panel', 'toggle']);
-
-/** Elements that take focus; keyboard focus on the nearest one holding the text reveals the tooltip. */
-const focusableSelector =
-  'a[href], button, input, select, textarea, summary, [tabindex], [contenteditable="true"]';
 
 /** Whether an element's content is cut by its box (an inline ellipsis or a line clamp). */
 function isTruncated(element: Element): boolean {
@@ -104,7 +101,7 @@ function useFocusReveal(ref: RefObject<HTMLElement | null>, { open, close }: Tru
   const isVisible = useRef(isFocusVisible);
   isVisible.current = isFocusVisible;
   useEffect(() => {
-    const target = ref.current?.closest<HTMLElement>(focusableSelector);
+    const target = ref.current?.closest<HTMLElement>(tabbableSelector);
     if (!target) return;
     const onFocus = () => {
       if (isVisible.current) open();

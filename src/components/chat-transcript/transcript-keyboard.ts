@@ -1,12 +1,8 @@
 import type { FocusEvent, KeyboardEvent } from 'react';
+import { listTabbables } from '../../utils/tabbable.js';
 import type { RevealAlignment } from './transcript-geometry.js';
 import type { TranscriptRegistry } from './transcript-registry.js';
-import {
-  findOwner,
-  listTabbable,
-  type TabbablesManager,
-  type TranscriptOwner,
-} from './transcript-tabbables.js';
+import { findOwner, type TabbablesManager, type TranscriptOwner } from './transcript-tabbables.js';
 
 /** What the keyboard model needs from the transcript. */
 export interface TranscriptNavigation {
@@ -42,7 +38,7 @@ function resolveMove(
 /** Enter moves into the message's first control, which puts its controls in the tab order. */
 function enterMessage(event: KeyboardEvent, owner: TranscriptOwner, nav: TranscriptNavigation) {
   nav.tabbables.enter(owner.key);
-  const [first] = listTabbable(owner.element);
+  const [first] = listTabbables(owner.element);
   if (!first) {
     nav.tabbables.enter(null);
     return;
@@ -119,7 +115,7 @@ export function handleTranscriptTab(event: KeyboardEvent<HTMLElement>, nav: Tran
   const target = event.target as Element;
   const owner = findOwner(target, event.currentTarget, nav.registry);
   if (!owner || target === owner.element) return;
-  const next = resolveTabTarget(target, listTabbable(owner.element), event.shiftKey);
+  const next = resolveTabTarget(target, listTabbables(owner.element), event.shiftKey);
   if (!next) return;
   event.preventDefault();
   event.stopPropagation();

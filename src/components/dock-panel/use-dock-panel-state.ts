@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import type { Key } from '../../core/props.js';
-import { usePersistentState, type PersistCodec } from '../../core/provider.js';
+import { usePersistentState } from '../../core/provider.js';
 import { clamp } from '../../utils/clamp.js';
+import { createJsonCodec } from '../../utils/json-codec.js';
+import { isKey } from '../../utils/is-key.js';
 
 /** The panel state a `persistKey` saves: each value the caller does not control. */
 export interface DockPanelStoredState {
@@ -42,28 +44,20 @@ export interface DockPanelState {
   commitSize: (size: number) => void;
 }
 
-function isKey(value: unknown): value is Key {
-  return typeof value === 'string' || typeof value === 'number';
-}
-
 function isSize(value: unknown): value is number {
   return typeof value === 'number' && Number.isFinite(value);
 }
 
 /** Reads a stored panel state, refusing anything that is not one so the defaults apply. */
-const storedStateCodec: PersistCodec<DockPanelStoredState> = {
-  parse(raw) {
-    const value: unknown = JSON.parse(raw);
-    if (typeof value !== 'object' || value === null) throw new Error('Not a panel state');
-    const { selectedKey, isExpanded, size } = value as Record<string, unknown>;
-    return {
-      selectedKey: isKey(selectedKey) ? selectedKey : undefined,
-      isExpanded: typeof isExpanded === 'boolean' ? isExpanded : undefined,
-      size: isSize(size) ? size : undefined,
-    };
-  },
-  stringify: (state) => JSON.stringify(state),
-};
+const storedStateCodec = createJsonCodec((value): DockPanelStoredState => {
+  if (typeof value !== 'object' || value === null) throw new Error('Not a panel state');
+  const { selectedKey, isExpanded, size } = value as Record<string, unknown>;
+  return {
+    selectedKey: isKey(selectedKey) ? selectedKey : undefined,
+    isExpanded: typeof isExpanded === 'boolean' ? isExpanded : undefined,
+    size: isSize(size) ? size : undefined,
+  };
+});
 
 /** The first candidate that names an enabled pane, else the first enabled pane. */
 function resolveSelectedKey(candidates: readonly unknown[], enabledKeys: readonly Key[]) {

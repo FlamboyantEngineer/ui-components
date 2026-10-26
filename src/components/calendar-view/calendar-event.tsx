@@ -6,7 +6,7 @@ import { Button } from '../button/button.js';
 import { Popover, PopoverTrigger } from '../popover/popover.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
-import type { PlacedEvent } from './calendar-layout.js';
+import type { PlacedEvent, WeekSegment } from './calendar-layout.js';
 import { calendarViewHooks as hooks } from './calendar-view-hooks.js';
 import type { CalendarFormat } from './use-calendar-format.js';
 
@@ -27,6 +27,16 @@ export interface CalendarEventButtonProps {
   continuesAfter?: boolean | undefined;
   /** Its geometry: a bar's width across days, or a timed block's place in its day. */
   style?: CSSProperties | undefined;
+}
+
+export interface CalendarEventLanesProps {
+  /** The bars that may start in this day's column. */
+  segments: readonly WeekSegment[];
+  column: number;
+  laneCount: number;
+  context: CalendarEventContext;
+  isTabbable: boolean;
+  time: CalendarEventButtonProps['time'];
 }
 
 export interface CalendarMoreEventsProps {
@@ -127,4 +137,34 @@ export function CalendarMoreEvents({
       </Popover>
     </PopoverTrigger>
   );
+}
+
+/**
+ * A day's bars, lane by lane: the bar that starts in its column, else a spacer where a bar from an
+ * earlier day passes or the lane is empty, so the lanes line up across the week.
+ */
+export function CalendarEventLanes({
+  segments,
+  column,
+  laneCount,
+  context,
+  isTabbable,
+  time,
+}: CalendarEventLanesProps) {
+  return Array.from({ length: laneCount }, (_, lane) => {
+    const segment = segments.find((entry) => entry.lane === lane && entry.column === column);
+    if (!segment) return <div key={lane} aria-hidden="true" {...hooks.slot('spacer')} />;
+    return (
+      <CalendarEventButton
+        key={lane}
+        placed={segment.placed}
+        context={context}
+        isTabbable={isTabbable}
+        time={time}
+        continuesBefore={segment.continuesBefore}
+        continuesAfter={segment.continuesAfter}
+        style={{ width: `${segment.span * 100}%` }}
+      />
+    );
+  });
 }
