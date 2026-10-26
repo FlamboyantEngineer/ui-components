@@ -18,7 +18,7 @@ import { tripSources } from './chat-parts-samples.js';
 /** A reply after one event of its stream. */
 export type ReplyFrame = Pick<ChatMessageData, 'parts' | 'status' | 'statusText'>;
 
-export interface ReplyStreamProps {
+interface ReplyStreamProps {
   /** The reply after each event. */
   frames: readonly ReplyFrame[];
   /** Names the demo, as its `data-lab-demo`. */

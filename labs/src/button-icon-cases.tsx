@@ -1,20 +1,6 @@
-import type { ButtonVariant } from '../../src/components/button/button.js';
 import { Button } from '../../src/components/button/button.js';
+import { buttonSizes, buttonStates, buttonVariants } from './button-axes.js';
 import { LabSection, StateMatrix } from './chrome/index.js';
-
-const variants: ButtonVariant[] = [
-  'primary',
-  'secondary',
-  'tertiary',
-  'danger',
-  'ghost',
-  'accent',
-  'chip',
-  'link',
-  'bare',
-];
-const sizes = ['xs', 'sm', 'md', 'lg'] as const;
-const states = ['default', 'selected', 'disabled', 'focusable disabled', 'pending'] as const;
 
 export function ButtonIconCases() {
   return (
@@ -22,7 +8,7 @@ export function ButtonIconCases() {
       <>
         <LabSection title="Icon-only: Variants and sizes">
           <StateMatrix
-            axes={{ variant: variants, size: sizes }}
+            axes={{ variant: buttonVariants, size: buttonSizes }}
             render={({ variant, size }) => (
               <Button icon="more" label="More actions" variant={variant} size={size} />
             )}
@@ -30,7 +16,7 @@ export function ButtonIconCases() {
         </LabSection>
         <LabSection title="Icon-only: States">
           <StateMatrix
-            axes={{ variant: variants, state: states }}
+            axes={{ variant: buttonVariants, state: buttonStates }}
             render={({ variant, state }) => (
               <Button
                 icon="close"
@@ -49,7 +35,7 @@ export function ButtonIconCases() {
           description="Without a hint, the tooltip names the command before its shortcut, since the button shows no text."
         >
           <StateMatrix
-            axes={{ hint: ['shortcut', 'tooltip and shortcut'], size: sizes }}
+            axes={{ hint: ['shortcut', 'tooltip and shortcut'], size: buttonSizes }}
             render={({ hint, size }) => (
               <Button
                 icon="undo"

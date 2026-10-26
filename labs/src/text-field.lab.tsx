@@ -1,10 +1,11 @@
-import { useState, type ReactNode } from 'react';
+import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 
 import type { Completion } from '../../src/components/completion-list/completion-list.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
 import { Glyph } from '../../src/core/provider.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabOutput } from './lab-output.js';
 import {
   fieldLayouts,
   fieldStates,
@@ -13,14 +14,6 @@ import {
 } from './field-states.js';
 
 const lines = ['single', 'multiline'] as const;
-
-function Output({ name, children }: { name: string; children: ReactNode }) {
-  return (
-    <p>
-      {name}: <output data-lab-output={name}>{children}</output>
-    </p>
-  );
-}
 
 function Sample({
   state,
@@ -64,8 +57,8 @@ function CommitAndRevert() {
         onCommit={setCommitted}
         data-lab-field="note"
       />
-      <Output name="Committed">{committed}</Output>
-      <Output name="Escape on the surface">{surface}</Output>
+      <LabOutput name="Committed">{committed}</LabOutput>
+      <LabOutput name="Escape on the surface">{surface}</LabOutput>
     </div>
   );
 }
@@ -87,7 +80,7 @@ function DirtyAndRestore() {
         data-lab-field="dirty"
       />
       <Button onPress={() => setSaved(value)}>Save</Button>
-      <Output name="Saved">{saved}</Output>
+      <LabOutput name="Saved">{saved}</LabOutput>
     </>
   );
 }
@@ -114,7 +107,7 @@ function Adornments() {
         data-lab-field="website"
       />
       <TextField label="Weight note" startAdornment={<Glyph name="info" />} endAdornment="kg" />
-      <Output name="Copied">{copied}</Output>
+      <LabOutput name="Copied">{copied}</LabOutput>
     </>
   );
 }
@@ -142,7 +135,7 @@ function TransformedInput() {
         transformInput={toIdentifier}
         data-lab-field="identifier"
       />
-      <Output name="Code">{code || 'none'}</Output>
+      <LabOutput name="Code">{code || 'none'}</LabOutput>
     </>
   );
 }
@@ -168,7 +161,7 @@ function DisplayedSum() {
         displayValue={sumOf(value)}
         data-lab-field="sum"
       />
-      <Output name="Value">{value}</Output>
+      <LabOutput name="Value">{value}</LabOutput>
     </>
   );
 }
@@ -203,7 +196,7 @@ function CompletedCities() {
         )}
         data-lab-field="drawn-completions"
       />
-      <Output name="completions">{committed}</Output>
+      <LabOutput name="completions">{committed}</LabOutput>
     </>
   );
 }

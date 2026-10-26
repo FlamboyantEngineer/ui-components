@@ -23,7 +23,7 @@ export interface LabReplier {
   replies: readonly string[];
 }
 
-export interface PeopleHostOptions {
+interface PeopleHostOptions {
   initialMessages: readonly ChatMessageData[];
   replier?: LabReplier | undefined;
 }
@@ -37,7 +37,7 @@ interface PeopleMessage {
 }
 
 /** The reactions with the reader's reaction to `emoji` added or taken back. */
-export function toggleReaction(
+function toggleReaction(
   reactions: readonly ReactionEntry[] = [],
   emoji: string,
   isReacted: boolean,

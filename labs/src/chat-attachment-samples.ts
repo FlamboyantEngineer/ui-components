@@ -14,7 +14,7 @@ function textFile(text: string): string {
   return `data:text/plain,${encodeURIComponent(text)}`;
 }
 
-export const harbour = scene(1600, 900, '#93c5fd', '#1e3a8a');
+const harbour = scene(1600, 900, '#93c5fd', '#1e3a8a');
 const tower = scene(700, 1200, '#fecaca', '#7f1d1d');
 const meadow = scene(1200, 1200, '#bbf7d0', '#166534');
 const dunes = scene(1400, 800, '#fde68a', '#92400e');

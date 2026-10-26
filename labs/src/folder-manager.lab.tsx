@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useState } from 'react';
 import type { Key } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
 import {
@@ -9,6 +9,7 @@ import {
 import { Modal } from '../../src/components/modal/modal.js';
 import { applyTreeMove } from '../../src/utils/tree-reorder.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabOutput } from './lab-output.js';
 
 interface Folder extends FolderItem {
   children?: Folder[];
@@ -107,14 +108,6 @@ function MatrixCell({ state, root }: { state: string; root: string }) {
   );
 }
 
-function Output({ name, children }: { name: string; children: ReactNode }) {
-  return (
-    <p>
-      {name}: <output data-lab-output={name}>{children}</output>
-    </p>
-  );
-}
-
 function ManagedFolders() {
   const [last, setLast] = useState('none');
   const [selected, setSelected] = useState<Key | null>('fruit');
@@ -131,8 +124,8 @@ function ManagedFolders() {
         data-lab-manager="managed"
         {...callbacks}
       />
-      <Output name="Selected">{selected === null ? 'none' : String(selected)}</Output>
-      <Output name="Action">{last}</Output>
+      <LabOutput name="Selected">{selected === null ? 'none' : String(selected)}</LabOutput>
+      <LabOutput name="Action">{last}</LabOutput>
     </>
   );
 }
@@ -153,8 +146,8 @@ function SeveralFolders() {
         data-lab-manager="multiple"
         {...callbacks}
       />
-      <Output name="Selection">{selected.map(String).join(', ') || 'none'}</Output>
-      <Output name="Bulk action">{last}</Output>
+      <LabOutput name="Selection">{selected.map(String).join(', ') || 'none'}</LabOutput>
+      <LabOutput name="Bulk action">{last}</LabOutput>
     </>
   );
 }
@@ -227,7 +220,7 @@ function PickFolder() {
       >
         Choose folder
       </Button>
-      <Output name="Chosen">{chosen === null ? 'none' : String(chosen)}</Output>
+      <LabOutput name="Chosen">{chosen === null ? 'none' : String(chosen)}</LabOutput>
       <Modal
         isOpen={isOpen}
         onOpenChange={setOpen}

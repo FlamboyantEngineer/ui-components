@@ -6,24 +6,12 @@ import {
   type RelativeDateRange,
 } from '../../src/components/relative-date-field/relative-date-field.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
-
-const layouts = ['label-control', 'control-label', 'label-colon-control', 'control-only'] as const;
-const states = [
-  'resting',
-  'required',
-  'dirty',
-  'invalid',
-  'warning',
-  'pending',
-  'read-only',
-  'disabled',
-] as const;
-type State = (typeof states)[number];
+import { fieldLayouts, fieldStates, type FieldStateName } from './field-states.js';
 
 /** A fixed clock, so every label in the lab reads the same on every day. */
 const getNow = () => new Date(2026, 3, 20, 10, 30);
 
-const stateProps: Record<State, Partial<RelativeDateFieldProps>> = {
+const stateProps: Record<FieldStateName, Partial<RelativeDateFieldProps>> = {
   resting: { defaultValue: '2026-04-21' },
   required: { isRequired: true },
   dirty: { committedValue: '2026-04-20' },
@@ -40,7 +28,7 @@ const stateProps: Record<State, Partial<RelativeDateFieldProps>> = {
   disabled: { defaultValue: '2026-04-21', isDisabled: true },
 };
 
-function MatrixField({ state, layout }: { state: State; layout: FieldLabelLayout }) {
+function MatrixField({ state, layout }: { state: FieldStateName; layout: FieldLabelLayout }) {
   const [value, setValue] = useState<string | null>('2026-04-27');
   const controlled = state === 'dirty' ? { value, onChange: setValue } : {};
   return (
@@ -143,7 +131,7 @@ mountLab(
       description="Every label layout against every state, against a clock fixed at 20 April 2026, 10:30."
     >
       <StateMatrix
-        axes={{ state: states, layout: layouts }}
+        axes={{ state: fieldStates, layout: fieldLayouts }}
         render={({ state, layout }) => <MatrixField state={state} layout={layout} />}
       />
     </LabSection>

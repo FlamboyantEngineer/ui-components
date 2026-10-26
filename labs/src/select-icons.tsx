@@ -7,19 +7,7 @@ import {
   type SelectFieldProps,
 } from '../../src/components/select-field/select-field.js';
 import { LabSection, StateMatrix } from './chrome/index.js';
-
-const layouts = ['label-control', 'control-label', 'label-colon-control', 'control-only'] as const;
-const states = [
-  'resting',
-  'required',
-  'dirty',
-  'invalid',
-  'warning',
-  'pending',
-  'read-only',
-  'disabled',
-] as const;
-type State = (typeof states)[number];
+import { fieldLayouts, fieldStates, type FieldStateName } from './field-states.js';
 
 const square = (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
@@ -35,7 +23,7 @@ const symbols: SelectFieldOption[] = [
   { id: 'square', label: 'Square', icon: square },
 ];
 
-const stateProps: Record<State, Partial<Extract<SelectFieldProps, { mode?: 'list' }>>> = {
+const stateProps: Record<FieldStateName, Partial<Extract<SelectFieldProps, { mode?: 'list' }>>> = {
   resting: { defaultValue: 'info' },
   required: { isRequired: true },
   dirty: { committedValue: 'warning' },
@@ -52,7 +40,7 @@ const stateProps: Record<State, Partial<Extract<SelectFieldProps, { mode?: 'list
   disabled: { defaultValue: 'info', isDisabled: true },
 };
 
-function MatrixField({ state, layout }: { state: State; layout: FieldLabelLayout }) {
+function MatrixField({ state, layout }: { state: FieldStateName; layout: FieldLabelLayout }) {
   const [value, setValue] = useState<Key | null>('info');
   const controlled = state === 'dirty' ? { value, onChange: setValue } : {};
   return (
@@ -93,7 +81,7 @@ export const iconsChoices = (
       description="Every label layout against every state, with a no-icon choice."
     >
       <StateMatrix
-        axes={{ state: states, layout: layouts }}
+        axes={{ state: fieldStates, layout: fieldLayouts }}
         render={({ state, layout }) => <MatrixField state={state} layout={layout} />}
       />
     </LabSection>

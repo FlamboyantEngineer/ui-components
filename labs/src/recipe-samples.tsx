@@ -6,7 +6,7 @@ import type {
   DisplayOptionsValue,
 } from '../../src/components/display-options/display-options.js';
 
-export interface Recipe {
+interface Recipe {
   id: string;
   title: string;
   cuisine: string;

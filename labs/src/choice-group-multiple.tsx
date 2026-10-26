@@ -1,7 +1,8 @@
-import { useState, type ReactNode } from 'react';
+import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { ChoiceGroup, Choice } from '../../src/components/choice-group/choice-group.js';
 import { LabSection, StateMatrix } from './chrome/index.js';
+import { LabOutput } from './lab-output.js';
 import {
   fieldLayouts,
   fieldStates,
@@ -21,14 +22,6 @@ const toppings: Array<{ value: string; label: string; isDisabled?: boolean }> = 
   { value: 'peppers', label: 'Peppers' },
   { value: 'truffle', label: 'Truffle (sold out)', isDisabled: true },
 ];
-
-function Output({ name, children }: { name: string; children: ReactNode }) {
-  return (
-    <p>
-      {name}: <output data-lab-output={name}>{children}</output>
-    </p>
-  );
-}
 
 function Sample({
   state,
@@ -74,7 +67,7 @@ function SelectAll() {
           </Choice>
         ))}
       </ChoiceGroup>
-      <Output name="Toppings">{value.join(', ') || 'none'}</Output>
+      <LabOutput name="Toppings">{value.join(', ') || 'none'}</LabOutput>
     </>
   );
 }
@@ -111,7 +104,7 @@ function SavedGroup() {
       </ChoiceGroup>
       <Button onPress={() => setSaved(value)}>Save</Button>
       <Button type="submit">Submit</Button>
-      <Output name="Submitted">{submitted}</Output>
+      <LabOutput name="Submitted">{submitted}</LabOutput>
     </form>
   );
 }

@@ -3,7 +3,7 @@ import {
   type DateTimeFieldDateState,
 } from '../../src/components/date-time-field/date-time-field.js';
 
-export function getCalendarState(date: string): DateTimeFieldDateState | undefined {
+function getCalendarState(date: string): DateTimeFieldDateState | undefined {
   if (date === '2026-04-10') return { tone: 'success', description: 'Spring holiday' };
   if (date === '2026-04-14')
     return { tone: 'danger', isDisabled: true, description: 'Closed for a holiday' };

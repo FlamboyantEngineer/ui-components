@@ -1,9 +1,10 @@
 import { Radices } from './number-radices.js';
-import { useState, type ReactNode } from 'react';
+import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { NumberField } from '../../src/components/number-field/number-field.js';
 import { UiProvider } from '../../src/core/provider.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabOutput } from './lab-output.js';
 import {
   fieldLayouts,
   fieldStates,
@@ -12,14 +13,6 @@ import {
 } from './field-states.js';
 
 const steppers = ['shown', 'hidden'] as const;
-
-function Output({ name, children }: { name: string; children: ReactNode }) {
-  return (
-    <p>
-      {name}: <output data-lab-output={name}>{children}</output>
-    </p>
-  );
-}
 
 function Sample({
   state,
@@ -73,7 +66,7 @@ function Commit() {
         maxValue={10}
         data-lab-field="external"
       />
-      <Output name="Committed">{committed === null ? 'empty' : committed}</Output>
+      <LabOutput name="Committed">{committed === null ? 'empty' : committed}</LabOutput>
     </>
   );
 }
@@ -127,7 +120,7 @@ function SavedField() {
         data-lab-field="dirty"
       />
       <Button onPress={() => setSaved(value)}>Save</Button>
-      <Output name="Saved">{saved === null ? 'empty' : saved}</Output>
+      <LabOutput name="Saved">{saved === null ? 'empty' : saved}</LabOutput>
     </>
   );
 }
@@ -173,7 +166,7 @@ function LockedScrub() {
         onCommit={setCommitted}
       />
       <Button onPress={() => setReadOnly(false)}>Unlock</Button>
-      <Output name="Scrub committed">{committed === null ? 'empty' : committed}</Output>
+      <LabOutput name="Scrub committed">{committed === null ? 'empty' : committed}</LabOutput>
     </div>
   );
 }
@@ -195,7 +188,7 @@ function FastSteps() {
         onCommit={setCommitted}
         data-lab-field="fast"
       />
-      <Output name="Opacity">{committed === null ? 'empty' : committed}</Output>
+      <LabOutput name="Opacity">{committed === null ? 'empty' : committed}</LabOutput>
     </>
   );
 }
@@ -213,7 +206,7 @@ function FineSteps() {
         onCommit={setCommitted}
         data-lab-field="fine"
       />
-      <Output name="Fine committed">{committed}</Output>
+      <LabOutput name="Fine committed">{committed}</LabOutput>
     </>
   );
 }

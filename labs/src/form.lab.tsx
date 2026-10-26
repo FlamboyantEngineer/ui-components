@@ -1,4 +1,4 @@
-import { useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
 import { BooleanField } from '../../src/components/boolean-field/boolean-field.js';
 import { Button } from '../../src/components/button/button.js';
 import { ChoiceGroup, Choice } from '../../src/components/choice-group/choice-group.js';
@@ -8,6 +8,7 @@ import { NumberField } from '../../src/components/number-field/number-field.js';
 import { Switch } from '../../src/components/switch/switch.js';
 import { TextField } from '../../src/components/text-field/text-field.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabOutput } from './lab-output.js';
 
 const modes = [
   'immediate',
@@ -21,14 +22,6 @@ const courses = [
   { value: 'main', label: 'Main' },
   { value: 'dessert', label: 'Dessert' },
 ];
-
-function Output({ name, children }: { name: string; children: ReactNode }) {
-  return (
-    <p>
-      {name}: <output data-lab-output={name}>{children}</output>
-    </p>
-  );
-}
 
 /** The submitted entries, as `name=value` pairs. */
 function readEntries(event: FormEvent<HTMLFormElement>): string {
@@ -74,7 +67,7 @@ function Booking() {
       <Button type="submit" variant="primary">
         Book
       </Button>
-      <Output name="Booking">{submitted}</Output>
+      <LabOutput name="Booking">{submitted}</LabOutput>
     </Form>
   );
 }
@@ -105,7 +98,7 @@ function SignUp() {
         data-lab-field="username"
       />
       <Button type="submit">Sign up</Button>
-      <Output name="Sign up">{status}</Output>
+      <LabOutput name="Sign up">{status}</LabOutput>
     </Form>
   );
 }
@@ -117,7 +110,7 @@ function Newsletter() {
     <Form aria-label="Newsletter" onSubmit={(event) => setSubmitted(readEntries(event))}>
       <TextField label="Email" name="email" type="email" isRequired data-lab-field="email" />
       <Button type="submit">Subscribe</Button>
-      <Output name="Newsletter">{submitted}</Output>
+      <LabOutput name="Newsletter">{submitted}</LabOutput>
     </Form>
   );
 }
@@ -140,7 +133,7 @@ function Delivery() {
         <TextField label="City" name="city" isRequired />
       </Fieldset>
       <Button type="submit">Continue</Button>
-      <Output name="Delivery">{submitted}</Output>
+      <LabOutput name="Delivery">{submitted}</LabOutput>
     </Form>
   );
 }
@@ -160,7 +153,7 @@ function OutsideSubmit() {
         <TextField label="Note" name="note" isRequired data-lab-field="note" />
       </Form>
       <Button onPress={() => form.current?.requestSubmit()}>Submit from outside</Button>
-      <Output name="Note">{submitted}</Output>
+      <LabOutput name="Note">{submitted}</LabOutput>
     </>
   );
 }

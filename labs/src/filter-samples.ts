@@ -2,7 +2,7 @@ import type { FilterField, FilterRecordValue } from '../../src/components/filter
 import { samplePicture } from './people-samples.js';
 
 /** A book in a sample catalogue, filtered by the filter bar and condition builder labs. */
-export interface SampleBook {
+interface SampleBook {
   title: string;
   pages: number;
   published: string;

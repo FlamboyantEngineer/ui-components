@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import {
   ChatAttachment,
@@ -13,6 +13,7 @@ import {
   tripAttachments,
 } from './chat-attachment-samples.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabOutput } from './lab-output.js';
 
 const statuses = [
   'complete',
@@ -36,14 +37,6 @@ const statusData: Record<MatrixStatus, Partial<ChatAttachmentData>> = {
 /** Each step of a simulated upload adds this share. */
 const uploadStep = 0.25;
 
-function Output({ name, children }: { name: string; children: ReactNode }) {
-  return (
-    <p>
-      {name}: <output data-lab-output={name}>{children}</output>
-    </p>
-  );
-}
-
 /** Every kind in every status, removable or not; Retry and Remove report what they would do. */
 function Matrix() {
   const [last, setLast] = useState('none');
@@ -62,7 +55,7 @@ function Matrix() {
           );
         }}
       />
-      <Output name="action">{last}</Output>
+      <LabOutput name="action">{last}</LabOutput>
     </>
   );
 }
@@ -146,7 +139,7 @@ function ComposerStrip() {
           uploads.clear();
         }}
       />
-      <Output name="sent">{sent}</Output>
+      <LabOutput name="sent">{sent}</LabOutput>
     </div>
   );
 }
@@ -167,7 +160,7 @@ function StandalonePreview() {
   return (
     <div data-lab-demo="standalone">
       <ChatAttachment {...kindSamples.image} onPreview={() => setPreviews((count) => count + 1)} />
-      <Output name="previews">{previews}</Output>
+      <LabOutput name="previews">{previews}</LabOutput>
     </div>
   );
 }

@@ -1,18 +1,11 @@
-import { useState, type ReactNode } from 'react';
+import { useState } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Switch } from '../../src/components/switch/switch.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabOutput } from './lab-output.js';
 
 const values = ['off', 'on'] as const;
 const states = ['resting', 'read-only', 'disabled'] as const;
-
-function Output({ name, children }: { name: string; children: ReactNode }) {
-  return (
-    <p>
-      {name}: <output data-lab-output={name}>{children}</output>
-    </p>
-  );
-}
 
 /** A settings list: each switch applies at once and reports its state. */
 function Settings() {
@@ -26,7 +19,7 @@ function Settings() {
       <Switch isSelected={bluetooth} onChange={setBluetooth} data-lab-field="bluetooth">
         Bluetooth
       </Switch>
-      <Output name="Settings">{`Wi-Fi ${wifi ? 'on' : 'off'}, Bluetooth ${bluetooth ? 'on' : 'off'}`}</Output>
+      <LabOutput name="Settings">{`Wi-Fi ${wifi ? 'on' : 'off'}, Bluetooth ${bluetooth ? 'on' : 'off'}`}</LabOutput>
     </>
   );
 }
@@ -49,7 +42,7 @@ function FormValue() {
         Push
       </Switch>
       <Button type="submit">Save</Button>
-      <Output name="Submitted">{submitted}</Output>
+      <LabOutput name="Submitted">{submitted}</LabOutput>
     </form>
   );
 }

@@ -1,4 +1,4 @@
-import { useState, type CSSProperties, type ReactNode } from 'react';
+import { useState, type CSSProperties } from 'react';
 import type { Key, Selection } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
 
@@ -15,6 +15,7 @@ import {
 } from '../../src/components/menu/menu.js';
 import { Portal, PortalHost } from '../../src/components/portal/portal.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabOutput } from './lab-output.js';
 import { MenuKeyCase } from './menu-key-case.js';
 
 const sizes = ['sm', 'md', 'lg'] as const;
@@ -114,20 +115,12 @@ const fileEntries: MenuEntry[] = [
   },
 ];
 
-function Feedback({ name, children }: { name: string; children: ReactNode }) {
-  return (
-    <p>
-      {name}: <output data-lab-output={name}>{children}</output>
-    </p>
-  );
-}
-
 function DataMenu() {
   const [last, setLast] = useState('none');
   return (
     <>
       <MenuButton label="File" items={fileEntries} onAction={(key) => setLast(String(key))} />
-      <Feedback name="File action">{last}</Feedback>
+      <LabOutput name="File action">{last}</LabOutput>
     </>
   );
 }
@@ -165,7 +158,7 @@ function JsxMenu() {
           </Menu>
         </MenuPopover>
       </MenuTrigger>
-      <Feedback name="Edit action">{last}</Feedback>
+      <LabOutput name="Edit action">{last}</LabOutput>
     </>
   );
 }
@@ -201,8 +194,8 @@ function SelectionMenu() {
           <MenuItem id="owner">Owner</MenuItem>
         </MenuSection>
       </MenuButton>
-      <Feedback name="Sort">{list(sort)}</Feedback>
-      <Feedback name="Columns">{list(columns)}</Feedback>
+      <LabOutput name="Sort">{list(sort)}</LabOutput>
+      <LabOutput name="Columns">{list(columns)}</LabOutput>
     </>
   );
 }
@@ -235,9 +228,9 @@ function CheckItemMenu() {
           Show ruler
         </MenuItem>
       </MenuButton>
-      <Feedback name="Editor action">{last}</Feedback>
-      <Feedback name="Wrap lines">{isWrapped ? 'on' : 'off'}</Feedback>
-      <Feedback name="Show ruler">{showsRuler ? 'on' : 'off'}</Feedback>
+      <LabOutput name="Editor action">{last}</LabOutput>
+      <LabOutput name="Wrap lines">{isWrapped ? 'on' : 'off'}</LabOutput>
+      <LabOutput name="Show ruler">{showsRuler ? 'on' : 'off'}</LabOutput>
     </>
   );
 }
@@ -257,7 +250,7 @@ function FilterableMenu() {
         items={cityEntries}
         onAction={(key) => setLast(String(key))}
       />
-      <Feedback name="Move action">{last}</Feedback>
+      <LabOutput name="Move action">{last}</LabOutput>
     </>
   );
 }
@@ -291,7 +284,7 @@ function PagedMenu() {
           }, 500);
         }}
       />
-      <Feedback name="Loaded">{count}</Feedback>
+      <LabOutput name="Loaded">{count}</LabOutput>
     </>
   );
 }
@@ -337,7 +330,7 @@ function VirtualizedPagedMenu() {
           }, 500);
         }}
       />
-      <Feedback name="Loaded">{count}</Feedback>
+      <LabOutput name="Loaded">{count}</LabOutput>
     </>
   );
 }

@@ -1,19 +1,12 @@
-import { useState, type ReactNode } from 'react';
+import { useState } from 'react';
 import { SearchField } from '../../src/components/search-field/search-field.js';
 import { Switch } from '../../src/components/switch/switch.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabOutput } from './lab-output.js';
 
 const sizes = ['sm', 'md'] as const;
 const states = ['empty', 'filled', 'read-only', 'disabled'] as const;
 const fruit = ['Apple', 'Apricot', 'Banana', 'Cherry', 'Fig', 'Grape', 'Lemon', 'Mango', 'Pear'];
-
-function Output({ name, children }: { name: string; children: ReactNode }) {
-  return (
-    <p>
-      {name}: <output data-lab-output={name}>{children}</output>
-    </p>
-  );
-}
 
 function FilterList() {
   const [query, setQuery] = useState('');
@@ -34,7 +27,7 @@ function FilterList() {
           <li key={name}>{name}</li>
         ))}
       </ul>
-      <Output name="Submitted">{submitted}</Output>
+      <LabOutput name="Submitted">{submitted}</LabOutput>
     </>
   );
 }

@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useState } from 'react';
 import type { Key, Selection } from '../../src/core/props.js';
 import {
   Tag,
@@ -7,6 +7,7 @@ import {
   type TagTone,
 } from '../../src/components/tag-group/tag-group.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabOutput } from './lab-output.js';
 
 interface Fruit {
   id: string;
@@ -27,14 +28,6 @@ const fruit: Fruit[] = [
   { id: 'pear', name: 'Pear' },
   { id: 'plum', name: 'Plum' },
 ];
-
-function Output({ name, children }: { name: string; children: ReactNode }) {
-  return (
-    <p>
-      {name}: <output data-lab-output={name}>{children}</output>
-    </p>
-  );
-}
 
 function StateSample({ state, size }: { state: (typeof states)[number]; size: TagGroupSize }) {
   const items = state === 'empty' ? [] : fruit.slice(0, 2);
@@ -67,7 +60,7 @@ function Basket() {
       >
         {(item) => <Tag id={item.id}>{item.name}</Tag>}
       </TagGroup>
-      <Output name="Basket">{items.map((item) => item.name).join(', ') || 'empty'}</Output>
+      <LabOutput name="Basket">{items.map((item) => item.name).join(', ') || 'empty'}</LabOutput>
       <button type="button" onClick={() => setItems(fruit)}>
         Refill
       </button>
@@ -97,7 +90,7 @@ function Picker() {
       >
         {(item) => <Tag id={item.id}>{item.name}</Tag>}
       </TagGroup>
-      <Output name="Selected">{names.join(', ') || 'none'}</Output>
+      <LabOutput name="Selected">{names.join(', ') || 'none'}</LabOutput>
     </>
   );
 }

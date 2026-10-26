@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useState } from 'react';
 import { Badge } from '../../src/components/badge/badge.js';
 import { Button } from '../../src/components/button/button.js';
 import {
@@ -20,18 +20,8 @@ import { TextMatchProvider } from '../../src/components/text-match/text-match.js
 import type { Key } from '../../src/core/props.js';
 import { useUiStrings } from '../../src/core/provider.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
-
-const layouts = ['label-control', 'control-label', 'label-colon-control', 'control-only'] as const;
-const states = [
-  'resting',
-  'required',
-  'dirty',
-  'invalid',
-  'warning',
-  'pending',
-  'read-only',
-  'disabled',
-] as const;
+import { LabOutput } from './lab-output.js';
+import { fieldLayouts, fieldStates, type FieldStateName } from './field-states.js';
 
 const modes = [
   'immediate',
@@ -97,7 +87,7 @@ function SampleField({ options, start, ...field }: SampleFieldProps) {
   );
 }
 
-const stateOptions: Record<(typeof states)[number], FieldStateOptions<string>> = {
+const stateOptions: Record<FieldStateName, FieldStateOptions<string>> = {
   resting: { defaultValue: 'Apple' },
   required: { defaultValue: '', isRequired: true },
   dirty: { committedValue: 'Apple' },
@@ -107,14 +97,6 @@ const stateOptions: Record<(typeof states)[number], FieldStateOptions<string>> =
   'read-only': { defaultValue: 'Apple', isReadOnly: true },
   disabled: { defaultValue: 'Apple', isDisabled: true },
 };
-
-function Output({ name, children }: { name: string; children: ReactNode }) {
-  return (
-    <p>
-      {name}: <output data-lab-output={name}>{children}</output>
-    </p>
-  );
-}
 
 /** The committed value is the caller's: Save commits it, and the field stays dirty until then. */
 function DirtyAndRestore() {
@@ -132,7 +114,7 @@ function DirtyAndRestore() {
         )}
       </Field>
       <Button onPress={() => state.commit()}>Save</Button>
-      <Output name="Committed">{committed}</Output>
+      <LabOutput name="Committed">{committed}</LabOutput>
     </>
   );
 }
@@ -142,7 +124,7 @@ function RemovedValues() {
   const removed = ['Apple', 'Pear', 'Plum'].filter((value) => !values.includes(value));
   return (
     <>
-      <Output name="Values">{values.join(', ')}</Output>
+      <LabOutput name="Values">{values.join(', ')}</LabOutput>
       <ul>
         {removed.map((value) => (
           <li key={value}>
@@ -179,7 +161,7 @@ function UndoToolbar() {
       </div>
       <SampleField label="Fruit" options={{ defaultValue: 'Fig' }} data-lab-field="fruit" />
       <SampleField label="City" options={{ defaultValue: 'Oslo' }} data-lab-field="city" />
-      <Output name="Toolbar">{last}</Output>
+      <LabOutput name="Toolbar">{last}</LabOutput>
     </>
   );
 }
@@ -204,7 +186,7 @@ function MenuField() {
         help="Right-click the field or use its menu button."
         data-lab-field="menu"
       />
-      <Output name="Menu">{last}</Output>
+      <LabOutput name="Menu">{last}</LabOutput>
     </>
   );
 }
@@ -269,7 +251,7 @@ mountLab(
       description="Every label layout against every state. Control-only keeps the label for the control's name."
     >
       <StateMatrix
-        axes={{ state: states, layout: layouts }}
+        axes={{ state: fieldStates, layout: fieldLayouts }}
         render={({ state, layout }) => (
           <SampleField
             label="Fruit"

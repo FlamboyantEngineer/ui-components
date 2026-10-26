@@ -1,8 +1,9 @@
-import { useState, type FormEvent, type ReactNode } from 'react';
+import { useState, type FormEvent } from 'react';
 import { Button } from '../../src/components/button/button.js';
 import { Form } from '../../src/components/form/form.js';
 import { TagsInput } from '../../src/components/tags-input/tags-input.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabOutput } from './lab-output.js';
 import {
   fieldLayouts,
   fieldStates,
@@ -18,14 +19,6 @@ const samples: SampleValues<string[]> = {
   warning: ['Lime'],
   empty: [],
 };
-
-function Output({ name, children }: { name: string; children: ReactNode }) {
-  return (
-    <p>
-      {name}: <output data-lab-output={name}>{children}</output>
-    </p>
-  );
-}
 
 function formatTags(tags: readonly string[]): string {
   return tags.length > 0 ? tags.join(' | ') : 'none';
@@ -55,7 +48,7 @@ function Entry() {
         onChange={setTags}
         data-lab-field="entry"
       />
-      <Output name="Ingredients">{formatTags(tags)}</Output>
+      <LabOutput name="Ingredients">{formatTags(tags)}</LabOutput>
     </>
   );
 }
@@ -80,7 +73,7 @@ function Limits() {
         allowsDuplicates
         data-lab-field="duplicates"
       />
-      <Output name="Labels">{formatTags(labels)}</Output>
+      <LabOutput name="Labels">{formatTags(labels)}</LabOutput>
     </>
   );
 }
@@ -97,7 +90,7 @@ function Draft() {
         onInputChange={setText}
         data-lab-field="draft"
       />
-      <Output name="Draft">{text === '' ? 'empty' : text}</Output>
+      <LabOutput name="Draft">{text === '' ? 'empty' : text}</LabOutput>
     </>
   );
 }
@@ -118,7 +111,7 @@ function DirtyAndRestore() {
         data-lab-field="dirty"
       />
       <Button onPress={() => setSaved(value)}>Save</Button>
-      <Output name="Saved">{formatTags(saved)}</Output>
+      <LabOutput name="Saved">{formatTags(saved)}</LabOutput>
     </>
   );
 }
@@ -137,7 +130,7 @@ function InForm() {
       <Button type="submit" variant="primary">
         Plan
       </Button>
-      <Output name="Submitted">{submitted}</Output>
+      <LabOutput name="Submitted">{submitted}</LabOutput>
     </Form>
   );
 }

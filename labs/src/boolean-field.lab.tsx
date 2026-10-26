@@ -1,9 +1,10 @@
-import { useState, type ReactNode } from 'react';
+import { useState } from 'react';
 import {
   BooleanField,
   type BooleanFieldVariant,
 } from '../../src/components/boolean-field/boolean-field.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
+import { LabOutput } from './lab-output.js';
 import {
   fieldLayouts,
   fieldStates,
@@ -18,14 +19,6 @@ const variants = [
   'dropdown',
   'toggle-button',
 ] as const satisfies readonly BooleanFieldVariant[];
-
-function Output({ name, children }: { name: string; children: ReactNode }) {
-  return (
-    <p>
-      {name}: <output data-lab-output={name}>{children}</output>
-    </p>
-  );
-}
 
 function Sample({
   state,
@@ -101,7 +94,7 @@ function Unset() {
           data-lab-field={`unset-${variant}`}
         />
       ))}
-      <Output name="Value">{value === null ? 'unset' : String(value)}</Output>
+      <LabOutput name="Value">{value === null ? 'unset' : String(value)}</LabOutput>
     </>
   );
 }
@@ -137,8 +130,8 @@ function Saved() {
         data-lab-field="dirty-toggle"
       />
       <button type="submit">Save</button>
-      <Output name="Saved">{String(saved.ripe)}</Output>
-      <Output name="Saved fresh">{String(saved.fresh)}</Output>
+      <LabOutput name="Saved">{String(saved.ripe)}</LabOutput>
+      <LabOutput name="Saved fresh">{String(saved.fresh)}</LabOutput>
     </form>
   );
 }

@@ -7,7 +7,7 @@ import {
 import { samplePicture } from './people-samples.js';
 
 /** One message of the behaviour cases. */
-export interface SampleMessage {
+interface SampleMessage {
   id: string;
   origin: ChatMessageOrigin;
   text: string;
@@ -16,7 +16,6 @@ export interface SampleMessage {
 
 export const reader = { name: 'Maria Santos', colorKey: 'maria' };
 export const planner = { name: 'Trip Planner', src: samplePicture, colorKey: 'planner' };
-export const ana = { name: 'Ana Lopez', colorKey: 'ana' };
 
 const sentences = [
   'Which ferry gets us to the island before noon?',
@@ -31,7 +30,7 @@ const sentences = [
  * A deterministic message for position `index`, alternating between the reader and the planner,
  * its id prefixed by the case it belongs to.
  */
-export function sampleMessage(prefix: string, index: number): SampleMessage {
+function sampleMessage(prefix: string, index: number): SampleMessage {
   return {
     id: `${prefix}-m${index + 1}`,
     origin: index % 2 === 0 ? 'sent' : 'received',

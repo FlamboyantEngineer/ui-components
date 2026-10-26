@@ -23,7 +23,7 @@ const text = (value: string, marks?: RichTextDocument['marks']) => ({
 });
 const paragraph = (...content: ReturnType<typeof text>[]) => ({ type: 'paragraph', content });
 
-export const recipe: RichTextDocument = {
+const recipe: RichTextDocument = {
   type: 'doc',
   content: [
     { type: 'heading', attrs: { level: 1 }, content: [text('Orchard crumble')] },

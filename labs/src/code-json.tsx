@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useState } from 'react';
 import type { Key } from '../../src/core/props.js';
 import { Button } from '../../src/components/button/button.js';
 import type { CodeEditorSize } from '../../src/components/code-editor/code-editor.js';
@@ -9,18 +9,9 @@ import {
   type JsonSchema,
 } from '../../src/components/code-editor/code-editor.js';
 import { LabSection, StateMatrix } from './chrome/index.js';
+import { LabOutput } from './lab-output.js';
+import { fieldLayouts, fieldStates, type FieldStateName } from './field-states.js';
 
-const layouts = ['label-control', 'control-label', 'label-colon-control', 'control-only'] as const;
-const states = [
-  'resting',
-  'required',
-  'dirty',
-  'invalid',
-  'warning',
-  'pending',
-  'read-only',
-  'disabled',
-] as const;
 const sizes = ['sm', 'md', 'lg'] as const;
 
 const basket = '{\n  "fruit": "Apple",\n  "count": 12\n}';
@@ -32,7 +23,7 @@ function checkBasket(value: string): FieldIssue | null {
     : { severity: 'warning', message: 'The basket names no fruit.' };
 }
 
-const stateProps: Record<(typeof states)[number], Partial<CodeEditorFieldProps>> = {
+const stateProps: Record<FieldStateName, Partial<CodeEditorFieldProps>> = {
   resting: { defaultValue: basket },
   required: { defaultValue: '', isRequired: true, placeholder: '{ "fruit": "…" }' },
   dirty: { committedValue: basket },
@@ -64,14 +55,6 @@ function Sample({ label = 'Basket', start, ...props }: SampleProps) {
   );
 }
 
-function Output({ name, children }: { name: string; children: ReactNode }) {
-  return (
-    <p>
-      {name}: <output data-lab-output={name}>{children}</output>
-    </p>
-  );
-}
-
 /**
  * The committed text is the caller's: it stays dirty until a commit (leaving the field or Format)
  * saves it.
@@ -95,8 +78,8 @@ function SavedEditor() {
         onMenuAction={(key: Key) => setLast(String(key))}
         data-lab-editor="saved"
       />
-      <Output name="Committed">{committed}</Output>
-      <Output name="Menu">{last}</Output>
+      <LabOutput name="Committed">{committed}</LabOutput>
+      <LabOutput name="Menu">{last}</LabOutput>
     </>
   );
 }
@@ -182,7 +165,7 @@ export const jsonExamples = (
       description="Every label layout against every field state, including a parse error and a warning from the caller's check."
     >
       <StateMatrix
-        axes={{ state: states, layout: layouts }}
+        axes={{ state: fieldStates, layout: fieldLayouts }}
         render={({ state, layout }) => (
           <Sample
             labelLayout={layout as FieldLabelLayout}

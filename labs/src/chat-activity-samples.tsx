@@ -14,7 +14,7 @@ export const planSteps: readonly ChatPlanStep[] = [
   { id: 'cafe', label: 'Find a café near the station', status: 'skipped' },
 ];
 
-export interface LabToolCallProps {
+interface LabToolCallProps {
   label: string;
   isRunning?: boolean;
 }
