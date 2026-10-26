@@ -148,25 +148,6 @@ button.ui-avatar-group__overflow[data-focus-visible] {
   min-width: 180px;
 }
 
-.ui-avatar-group[data-size='xs'] .ui-avatar-group__overflow {
-  min-width: 20px;
-  height: 20px;
-  padding: 0 2px;
-  font-size: var(--ref-font-size-2xs);
-}
-
-.ui-avatar-group[data-size='sm'] .ui-avatar-group__overflow {
-  min-width: 24px;
-  height: 24px;
-  font-size: var(--ref-font-size-2xs);
-}
-
-.ui-avatar-group[data-size='lg'] .ui-avatar-group__overflow {
-  min-width: 40px;
-  height: 40px;
-  font-size: var(--ref-font-size-md);
-}
-
 .ui-avatar-group[data-layout='dots'] {
   gap: 3px;
 }

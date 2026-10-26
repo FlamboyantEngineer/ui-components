@@ -345,17 +345,13 @@
   color: var(--ref-text);
   box-shadow: inset 0 -2px var(--ref-info);
 }
-.ui-date-time-field__calendar-cell:not([data-selected])[data-tone='success'] {
-  color: var(--ref-success);
-  box-shadow: inset 0 -2px var(--ref-success);
-}
-.ui-date-time-field__calendar-cell:not([data-selected])[data-tone='warning'] {
-  color: var(--ref-warning);
-  box-shadow: inset 0 -2px var(--ref-warning);
-}
-.ui-date-time-field__calendar-cell:not([data-selected])[data-tone='danger'] {
-  color: var(--ref-danger);
-  box-shadow: inset 0 -2px var(--ref-danger);
+.ui-date-time-field__calendar-cell:not([data-selected]):is(
+    [data-tone='success'],
+    [data-tone='warning'],
+    [data-tone='danger']
+  ) {
+  color: var(--ref-tone);
+  box-shadow: inset 0 -2px var(--ref-tone);
 }
 .ui-date-time-field__calendar-cell:not([data-selected])[data-tone='neutral'] {
   background: var(--ref-hover);

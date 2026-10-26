@@ -251,8 +251,8 @@
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  width: 16px;
-  height: 16px;
+  width: var(--ref-mark-size-md);
+  height: var(--ref-mark-size-md);
   border: 1px solid var(--ref-border-strong);
   border-radius: var(--ref-radius-sm);
   background: var(--ref-canvas);

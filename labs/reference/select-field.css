@@ -47,11 +47,6 @@
   outline: none;
 }
 
-/* Room for an option icon and its gap, whichever option is chosen. */
-.ui-select-field[data-icons] .ui-select-field__trigger {
-  width: calc(var(--ui-select-field-label-width, 96px) + 62px);
-}
-
 .ui-select-field__trigger[data-hovered] {
   border-color: var(--ref-border-strong);
 }
@@ -484,6 +479,7 @@
   width: 18px;
   height: 18px;
 }
+/* Room for an option icon and its gap, whichever option is chosen. */
 .ui-select-field[data-icons] .ui-select-field__trigger {
   width: calc(var(--ui-select-field-label-width, 96px) + 64px);
 }

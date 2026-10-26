@@ -47,24 +47,9 @@
   padding-inline-end: 3px;
 }
 
-.ui-tag-group__tag[data-tone='info'] {
-  border-color: color-mix(in srgb, var(--ref-info) var(--ref-tint-border), var(--ref-canvas));
-  background: color-mix(in srgb, var(--ref-info) var(--ref-tint-subtle), var(--ref-canvas));
-}
-
-.ui-tag-group__tag[data-tone='success'] {
-  border-color: color-mix(in srgb, var(--ref-success) var(--ref-tint-border), var(--ref-canvas));
-  background: color-mix(in srgb, var(--ref-success) var(--ref-tint-subtle), var(--ref-canvas));
-}
-
-.ui-tag-group__tag[data-tone='warning'] {
-  border-color: color-mix(in srgb, var(--ref-warning) var(--ref-tint-border), var(--ref-canvas));
-  background: color-mix(in srgb, var(--ref-warning) var(--ref-tint-subtle), var(--ref-canvas));
-}
-
-.ui-tag-group__tag[data-tone='danger'] {
-  border-color: color-mix(in srgb, var(--ref-danger) var(--ref-tint-border), var(--ref-canvas));
-  background: color-mix(in srgb, var(--ref-danger) var(--ref-tint-subtle), var(--ref-canvas));
+.ui-tag-group__tag:not([data-tone='neutral']) {
+  border-color: color-mix(in srgb, var(--ref-tone) var(--ref-tint-border), var(--ref-canvas));
+  background: color-mix(in srgb, var(--ref-tone) var(--ref-tint-subtle), var(--ref-canvas));
 }
 
 .ui-tag-group__tag[data-hovered] {
