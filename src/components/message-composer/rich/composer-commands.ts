@@ -20,6 +20,7 @@ import {
   type Plugin,
 } from 'prosemirror-state';
 import type { EditorView } from 'prosemirror-view';
+import { tokenTriggers } from '../composer-message.js';
 import type { PillAttributes } from './composer-schema.js';
 
 /** Whether the caret or selection is in a code block. */
@@ -54,6 +55,32 @@ export function findAdjacentPill(state: EditorState, side: -1 | 1) {
   if (node?.type.name !== 'pill') return null;
   const from = side < 0 ? selection.from - node.nodeSize : selection.from;
   return { from, to: from + node.nodeSize, label: (node.attrs as PillAttributes).label };
+}
+
+/** Replaces `from`–`to` with a pill, followed by a space unless one follows already. */
+export function replaceWithPill(
+  view: EditorView,
+  range: { from: number; to: number },
+  pill: PillAttributes,
+): void {
+  const { state } = view;
+  const node = state.schema.nodes.pill?.create(pill);
+  if (!node) return;
+  const after = Math.min(range.to + 1, state.doc.content.size);
+  const hasSpaceAfter = state.doc.textBetween(range.to, after, '\n', '\n') === ' ';
+  const content = hasSpaceAfter ? [node] : [node, state.schema.text(' ')];
+  view.dispatch(state.tr.replaceWith(range.from, range.to, content).scrollIntoView());
+}
+
+/** Puts a pill in place of the selection; in a code block, where pills do not occur, its text. */
+export function insertPillAtSelection(view: EditorView, pill: PillAttributes): void {
+  const { state } = view;
+  if (!isInCode(state)) {
+    replaceWithPill(view, state.selection, pill);
+    return;
+  }
+  const text = `${tokenTriggers[pill.kind]}${pill.label} `;
+  view.dispatch(state.tr.insertText(text).scrollIntoView());
 }
 
 /**

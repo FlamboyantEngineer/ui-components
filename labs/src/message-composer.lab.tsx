@@ -16,10 +16,13 @@ import {
   ComposerBanner,
   RichComposerSections,
 } from './message-composer-rich-cases.js';
+import { createLabComposerMenu, ComposerMenuSection } from './message-composer-menu-cases.js';
 import { TeamChatSection } from './message-composer-team-cases.js';
 
 const states = ['empty', 'draft', 'pending', 'stoppable', 'disabled', 'editing'] as const;
-const parts = ['text only', 'attachments and tools'] as const;
+const parts = ['text only', 'attachments and tools', 'menu and tools'] as const;
+
+const matrixMenu = createLabComposerMenu({ isPlanning: false, onPlanningChange: () => undefined });
 
 const people: Completion[] = [
   { label: 'Maria Santos', description: 'Design', insertText: '@Maria ', kind: 'person' },
@@ -43,6 +46,7 @@ function StateSample({
   part: (typeof parts)[number];
 }) {
   const withParts = part === 'attachments and tools';
+  const withMenu = part === 'menu and tools';
   const isEditing = state === 'editing';
   return (
     <MessageComposer
@@ -61,10 +65,11 @@ function StateSample({
         ) : undefined
       }
       attachments={withParts ? <AttachmentChip name="Report.pdf" /> : undefined}
-      onAttach={withParts ? () => undefined : undefined}
-      showEmojiPicker={withParts}
+      onAttach={withParts || withMenu ? () => undefined : undefined}
+      menu={withMenu ? matrixMenu : undefined}
+      showEmojiPicker={withParts || withMenu}
       toolbar={
-        withParts ? (
+        withParts || withMenu ? (
           <Button size="sm" variant="ghost">
             Tone
           </Button>
@@ -195,7 +200,7 @@ mountLab(
   <>
     <LabSection
       title="States"
-      description="Empty and with a draft; pending (the spinner), pending with Stop, disabled, and editing a message (Save and Cancel); with a banner, attachments above, and the attach, emoji and caller tools beside the button."
+      description="Empty and with a draft; pending (the spinner), pending with Stop, disabled, and editing a message (Save and Cancel); with a banner, attachments above, and the attach, emoji and caller tools beside the button; or with the + menu in place of the attach button."
     >
       <StateMatrix
         axes={{ state: states, part: parts }}
@@ -208,6 +213,7 @@ mountLab(
     >
       <Composing />
     </LabSection>
+    <ComposerMenuSection />
     <LabSection
       title="Stopping a reply"
       description="Sending starts a pending reply: the same button turns into Stop and keeps keyboard focus. With allowsPendingSubmit (the second composer), Enter still sends while the reply runs, for a host that queues the message; the button is Send while there is text and Stop while there is none."

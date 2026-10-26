@@ -13,7 +13,13 @@ import { VisuallyHidden } from '../../visually-hidden/visually-hidden.js';
 import { composerHooks as hooks } from '../composer-hooks.js';
 import { isComposingKey, runComposerKey, type ComposerKeyActions } from '../composer-keys.js';
 import { toComposerLabelling } from '../use-message-composer.js';
-import { findAdjacentPill, isInCode, syncSelectionFromDom } from './composer-commands.js';
+import {
+  findAdjacentPill,
+  insertPillAtSelection,
+  isInCode,
+  syncSelectionFromDom,
+} from './composer-commands.js';
+import type { PillAttributes } from './composer-schema.js';
 import type { RichComposerEditorProps, RichEditorHandle } from './rich-editor.js';
 import type { MessageComposerMention } from './rich-message-composer.js';
 import { useRichCompletions, type RichCompletionItem } from './use-rich-completions.js';
@@ -39,18 +45,21 @@ function useRowLimits(ref: RefObject<HTMLElement | null>, minRows: number, maxRo
   });
 }
 
-/** Gives the frame's tools a way to insert text at the caret and to focus the editor. */
+/** Gives the frame's tools a way to insert text or a pill at the caret and to focus the editor. */
 function useEditorHandle(handleRef: RefObject<RichEditorHandle | null>) {
   const insertText = useEditorEventCallback((view, text: string) => {
     view.dispatch(view.state.tr.insertText(text).scrollIntoView());
   });
+  const insertPill = useEditorEventCallback((view, pill: PillAttributes) =>
+    insertPillAtSelection(view, pill),
+  );
   const focus = useEditorEventCallback((view) => view.focus());
   useLayoutEffect(() => {
-    handleRef.current = { insertText, focus };
+    handleRef.current = { insertText, insertPill, focus };
     return () => {
       handleRef.current = null;
     };
-  }, [handleRef, insertText, focus]);
+  }, [handleRef, insertText, insertPill, focus]);
 }
 
 /** A key the composer used: the editor and the caller's handlers do not see it. */

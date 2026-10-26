@@ -5,7 +5,11 @@ import { useAutoGrow } from '../../utils/use-auto-grow.js';
 import { useTextCompletions, type TextCompletions } from '../completion-list/completion-list.js';
 import type { ComposerFrameModel } from './composer-frame.js';
 import { resolveSubmitShortcut, runComposerKey, useCoarsePointer } from './composer-keys.js';
-import { createMessageCodec } from './composer-message.js';
+import {
+  createMessageCodec,
+  tokenTriggers,
+  type MessageComposerToken,
+} from './composer-message.js';
 import type { MessageComposerProps, MessageComposerSharedProps } from './message-composer.js';
 import { useComposerState, type ComposerFormat } from './use-composer-state.js';
 import { attachPastedFiles } from './use-file-drop.js';
@@ -42,19 +46,26 @@ export function toComposerLabelling(props: MessageComposerSharedProps, fallback:
   };
 }
 
-/** Inserting text at the text area's caret, and putting the caret after it once focus is back. */
+/**
+ * Inserting text at the text area's caret, and putting the caret after it once focus is back. A
+ * mention or command goes in as its text, since the plain composer has no pills.
+ */
 function useCaretInsertion(
   inputRef: RefObject<HTMLTextAreaElement | null>,
   text: { value: string; setValue: (value: string) => void },
 ) {
   const caret = useRef<number | null>(null);
+  const insertText = (inserted: string) => {
+    const area = inputRef.current;
+    const start = area?.selectionStart ?? text.value.length;
+    const end = area?.selectionEnd ?? start;
+    caret.current = start + inserted.length;
+    text.setValue(`${text.value.slice(0, start)}${inserted}${text.value.slice(end)}`);
+  };
   return {
-    insertText(inserted: string) {
-      const area = inputRef.current;
-      const start = area?.selectionStart ?? text.value.length;
-      const end = area?.selectionEnd ?? start;
-      caret.current = start + inserted.length;
-      text.setValue(`${text.value.slice(0, start)}${inserted}${text.value.slice(end)}`);
+    insertText,
+    insertPill(pill: Pick<MessageComposerToken, 'kind' | 'label'>) {
+      insertText(`${tokenTriggers[pill.kind]}${pill.label} `);
     },
     focusInput() {
       const area = inputRef.current;

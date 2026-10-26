@@ -74,4 +74,50 @@ test.describe('Chat lab host controls', () => {
     await toolbar.getByText('Ask about the selection').click();
     await expect(send).not.toHaveAttribute('aria-disabled');
   });
+
+  test('UIC-CHAT-3.9 UIC-CHAT-3.8 starts the tools with the + menu and sends what its items add', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat');
+    await host(page).getByText('Refuse the next message', { exact: true }).click();
+    const toolbar = host(page).locator('.ui-message-composer__toolbar');
+    await expect(toolbar.locator(':scope > *').first()).toHaveClass(
+      /ui-message-composer__menu-button/,
+    );
+    await expect(toolbar.getByRole('button', { name: 'Attach files' })).toHaveCount(0);
+    const text = (await toolbar.textContent()) ?? '';
+    expect(text.indexOf('Allow changes')).toBeLessThan(text.indexOf('Balanced'));
+    const plus = toolbar.getByRole('button', { name: 'Add and more' });
+    const menu = page.getByRole('menu', { name: 'Add and more' });
+    await plus.click();
+    await menu.getByRole('menuitemcheckbox', { name: /^Plan mode/ }).click();
+    await expect(menu.getByRole('menuitemcheckbox', { name: /^Plan mode/ })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+    await menu.getByRole('menuitem', { name: /^Insert a goal prompt/ }).click();
+    await expect(composer(page)).toBeFocused();
+    await page.keyboard.type('reach the coast by noon ');
+    await plus.click();
+    await menu.getByRole('menuitem', { name: /^Calendar/ }).click();
+    await expect(composer(page).locator('.ui-message-composer__pill')).toHaveText(['/calendar']);
+    const chooser = page.waitForEvent('filechooser');
+    await plus.click();
+    await menu.getByRole('menuitem', { name: /^Attach files/ }).click();
+    await (
+      await chooser
+    ).setFiles({ name: 'Timetable.pdf', mimeType: 'application/pdf', buffer: Buffer.from('x') });
+    const files = host(page).getByRole('list', { name: 'Attachments' });
+    await expect(files).toContainText('Timetable.pdf');
+    await composer(page).focus();
+    await page.keyboard.press('Control+Enter');
+    const sent = host(page).locator('article').filter({ hasText: 'Goal: reach the coast by noon' });
+    await expect(sent).toHaveCount(1);
+    await expect(sent).toContainText('/calendar');
+    await expect(host(page).locator('article').filter({ hasText: 'First the steps' })).toHaveCount(
+      1,
+    );
+    await expect(files).toHaveCount(0);
+  });
 });

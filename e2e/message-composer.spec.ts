@@ -408,6 +408,124 @@ test.describe('Message Composer lab', () => {
     );
   });
 
+  test('UIC-MESSAGE-COMPOSER-5.1 UIC-MESSAGE-COMPOSER-5.2 opens the + menu upward from its button with its categories', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('message-composer');
+    const disabled = cell(page, 'disabled', 'menu and tools');
+    await expect(disabled.getByRole('button', { name: 'Add and more' })).toBeDisabled();
+    const target = composer(page, 'menu');
+    const tools = target.locator('.ui-message-composer__toolbar');
+    await expect(tools.locator(':scope > *').first()).toHaveClass(
+      /ui-message-composer__menu-button/,
+    );
+    await expect(target.getByRole('button', { name: 'Attach files' })).toHaveCount(0);
+    const plus = target.getByRole('button', { name: 'Add and more' });
+    await plus.scrollIntoViewIfNeeded();
+    await plus.click();
+    const menu = page.getByRole('menu', { name: 'Add and more' });
+    const popover = page.locator('.ui-menu-popover').filter({ has: menu });
+    await expect(popover).toHaveAttribute('data-placement', 'top');
+    await expect(popover).not.toHaveAttribute('data-entering');
+    const surface = await popover.boundingBox();
+    const button = await plus.boundingBox();
+    expect(surface && button && surface.y + surface.height <= button.y + 1, 'above').toBe(true);
+    expect(surface && button && Math.abs(surface.x - button.x) <= 1, 'at the start').toBe(true);
+    await expect(menu.getByRole('group')).toHaveCount(2);
+    await expect(menu.locator('.ui-menu-section__header')).toHaveText(['Add', 'Integrations']);
+    const calendar = menu.getByRole('menuitem', { name: /^Calendar/ });
+    await expect(calendar).toHaveAccessibleName(/^Calendar\s*Shared schedule\s*Alt C$/);
+    await expect(calendar.locator('.ui-menu-item__icon')).toBeVisible();
+    const label = await calendar.locator('.ui-menu-item__label').boundingBox();
+    const note = await calendar.locator('.ui-menu-item__description').boundingBox();
+    expect(label && note && Math.abs(label.y - note.y) < 4 && note.x > label.x, 'one line').toBe(
+      true,
+    );
+    const voice = menu.getByRole('menuitem', {
+      name: 'Record a voice note Allow the microphone first',
+    });
+    await expect(voice).toHaveAttribute('aria-disabled', 'true');
+    expect(await menu.evaluate((element) => element.scrollHeight > element.clientHeight)).toBe(
+      true,
+    );
+    await lab.expectAccessible('.ui-menu-popover');
+    await menu.getByRole('menuitem', { name: 'Files Team drive' }).click();
+    const files = page.getByRole('menu', { name: /^Files/ });
+    await expect(files.getByRole('menuitem', { name: 'Report.pdf Edited today' })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(files).toHaveCount(0);
+    await page.keyboard.press('Escape');
+    await expect(menu).toHaveCount(0);
+    await expect(plus).toBeFocused();
+  });
+
+  test('UIC-MESSAGE-COMPOSER-5.3 UIC-MESSAGE-COMPOSER-5.4 inserts at the caret, attaches files and flips a toggle from the menu', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('message-composer');
+    const target = composer(page, 'menu');
+    const input = target.getByRole('textbox');
+    const plus = target.getByRole('button', { name: 'Add and more' });
+    const menu = page.getByRole('menu', { name: 'Add and more' });
+    await input.click();
+    await page.keyboard.type('Weekend. ');
+    await plus.click();
+    const plan = menu.getByRole('menuitemcheckbox', { name: /^Plan mode/ });
+    await plan.click();
+    await expect(plan).toHaveAttribute('aria-checked', 'true');
+    await expect(menu).toBeVisible();
+    await expect(page.locator('[data-lab-output="plan"]')).toHaveText('on');
+    await menu.getByRole('menuitem', { name: /^Insert a goal prompt/ }).click();
+    await expect(menu).toHaveCount(0);
+    await expect(input).toBeFocused();
+    await page.keyboard.type('a calm trip ');
+    await expect(input).toHaveValue('Weekend. Goal: a calm trip ');
+    await plus.click();
+    await menu.getByRole('menuitem', { name: /^Calendar/ }).click();
+    await expect(input).toHaveValue('Weekend. Goal: a calm trip /calendar ');
+    await expect(input).toBeFocused();
+    const chooser = page.waitForEvent('filechooser');
+    await plus.click();
+    await menu.getByRole('menuitem', { name: /^Attach files/ }).click();
+    await (
+      await chooser
+    ).setFiles({ name: 'Map.png', mimeType: 'image/png', buffer: Buffer.from('x') });
+    await expect(target.getByRole('button', { name: 'Remove Map.png' })).toBeVisible();
+    await input.focus();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('[data-lab-output="menu-sent"]')).toHaveText(
+      'Weekend. Goal: a calm trip /calendar + Map.png',
+    );
+  });
+
+  test('UIC-MESSAGE-COMPOSER-5.5 UIC-MESSAGE-COMPOSER-5.3 searches the rich composer menu and inserts a command pill', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('message-composer');
+    const target = composer(page, 'menu-search');
+    const input = target.getByRole('textbox');
+    await input.click();
+    await page.keyboard.type('Check ');
+    await target.getByRole('button', { name: 'Add and more' }).click();
+    await expect(page.getByRole('searchbox', { name: 'Search' })).toBeFocused();
+    await page.keyboard.type('inbox');
+    const menu = page.getByRole('menu', { name: 'Add and more' });
+    await expect(menu.getByRole('menuitem')).toHaveText([/^Mail/]);
+    await expect(menu.locator('.ui-menu-section__header')).toHaveText(['Integrations']);
+    await page.keyboard.press('Enter');
+    await expect(menu).toHaveCount(0);
+    await expect(input.locator('.ui-message-composer__pill')).toHaveText(['/mail']);
+    await expect(input).toBeFocused();
+    await page.keyboard.type('for the dates');
+    await page.keyboard.press('Enter');
+    await expect(page.locator('[data-lab-output="menu-search-sent"]')).toHaveText(
+      'Check /mail for the dates (command mail 6–11)',
+    );
+  });
+
   test('UIC-MESSAGE-COMPOSER-3.7 inserts an emoji at the caret and returns focus', async ({
     page,
     lab,

@@ -65,6 +65,8 @@ export interface ChatComposerOptions extends Pick<
   allowsEmptySubmit?: boolean | undefined;
   /** The host's controls among the composer's tools, before the model picker. */
   composerToolbar?: ReactNode;
+  /** The composer's "+" menu, first among its tools in place of the attach button; disabled with it. */
+  composerMenu?: RichMessageComposerProps['menu'];
   /** Names the conversation, so the composer keeps its draft in the provider's storage. */
   conversationId?: string | undefined;
   /** Messages waiting for the running reply to end, shown above the composer. */
@@ -229,8 +231,8 @@ function allowsEmptySubmit({ options }: ChatComposerProps) {
 /**
  * The queue of follow-ups, then the rich composer: mentions of the other participants, the host's
  * commands, a per-conversation draft, Up to edit the reader's last message (between people) or to
- * recall earlier prompts (with an assistant), the reply and edit banners, attachments, the model
- * picker, and Stop.
+ * recall earlier prompts (with an assistant), the reply and edit banners, attachments, the "+"
+ * menu, the host's tools, the model picker, and Stop.
  */
 export function ChatComposer(props: ChatComposerProps) {
   const { options, state, isAssistantChat } = props;
@@ -269,6 +271,7 @@ export function ChatComposer(props: ChatComposerProps) {
         banner={banner ? <ComposerBanner id={bannerId} banner={banner} /> : undefined}
         aria-describedby={banner ? bannerId : undefined}
         onAttach={options.onAttach}
+        menu={options.composerMenu}
         attachments={renderAttachments(props)}
         allowsEmptySubmit={allowsEmptySubmit(props)}
         submitShortcut={options.submitShortcut}

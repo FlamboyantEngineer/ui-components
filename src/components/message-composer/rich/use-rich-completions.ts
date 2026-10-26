@@ -12,6 +12,7 @@ import {
   type CompletionListItem,
 } from '../../completion-list/completion-list.js';
 import { tokenTriggers, type MessageComposerTokenKind } from '../composer-message.js';
+import { replaceWithPill } from './composer-commands.js';
 import type { MessageComposerCommand, MessageComposerMention } from './rich-message-composer.js';
 
 /** A mention or command offered in the list. */
@@ -87,14 +88,9 @@ function matchItems(items: readonly RichCompletionItem[], range: TriggerRange) {
 /** Replaces the trigger and query with a pill and a space after it. */
 function insertPill(view: EditorView, item: RichCompletionItem) {
   const range = findTrigger(view.state);
-  const pill = view.state.schema.nodes.pill;
-  if (!range || !pill) return;
+  if (!range) return;
   const { id, label } = item.source;
-  const node = pill.create({ kind: item.kind, id, label });
-  const hasSpaceAfter = view.state.doc.textBetween(range.to, range.to + 1, '\n', '\n') === ' ';
-  const content = hasSpaceAfter ? [node] : [node, view.state.schema.text(' ')];
-  const tr = view.state.tr.replaceWith(range.from, range.to, content);
-  view.dispatch(tr.scrollIntoView());
+  replaceWithPill(view, range, { kind: item.kind, id, label });
 }
 
 /**
