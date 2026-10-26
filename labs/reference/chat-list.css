@@ -20,7 +20,8 @@
   border-bottom: 1px solid var(--ref-border);
 }
 
-.ui-chat-list__search {
+/* Wins over the search field's own fixed width, so the field shrinks to leave room for New chat. */
+.ui-chat-list__header > .ui-chat-list__search {
   flex: 1 1 0;
   width: auto;
   min-width: 0;
