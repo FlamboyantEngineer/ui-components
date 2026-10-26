@@ -39,14 +39,24 @@ function toActionMode(props: MessageComposerSharedProps, model: ComposerFrameMod
 }
 
 /** The built-in tools (the menu or the attach button, then emoji) and the caller's, before the button. */
-function ComposerToolbar({ props, model }: Pick<ComposerFrameProps, 'props' | 'model'>) {
+function ComposerToolbar({
+  props,
+  model,
+  rootRef,
+}: Pick<ComposerFrameProps, 'props' | 'model' | 'rootRef'>) {
   const { menu, onAttach, showEmojiPicker, toolbar } = props;
   const isDisabled = Boolean(props.isDisabled);
   if (!menu && !onAttach && !showEmojiPicker && !toolbar) return null;
   return (
     <div {...hooks.slot('toolbar')}>
       {menu ? (
-        <ComposerMenu menu={menu} model={model} onAttach={onAttach} isDisabled={isDisabled} />
+        <ComposerMenu
+          menu={menu}
+          anchorRef={rootRef}
+          model={model}
+          onAttach={onAttach}
+          isDisabled={isDisabled}
+        />
       ) : onAttach ? (
         <AttachButton onAttach={onAttach} isDisabled={isDisabled} />
       ) : null}
@@ -83,7 +93,7 @@ export function ComposerFrame({ props, rootRef, model, children }: ComposerFrame
       {attachments ? <div {...hooks.slot('attachments')}>{attachments}</div> : null}
       {children}
       <div {...hooks.slot('footer')}>
-        <ComposerToolbar props={props} model={model} />
+        <ComposerToolbar props={props} model={model} rootRef={rootRef} />
         {model.isEditing ? (
           <CancelButton onCancel={props.onCancel} isDisabled={isDisabled} />
         ) : null}

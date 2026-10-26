@@ -91,6 +91,12 @@ test.describe('Chat lab host controls', () => {
     const plus = toolbar.getByRole('button', { name: 'Add and more' });
     const menu = page.getByRole('menu', { name: 'Add and more' });
     await plus.click();
+    const menuBox = await menu.boundingBox();
+    const frameBox = await host(page).locator('.ui-chat__composer').boundingBox();
+    expect(
+      menuBox && frameBox && menuBox.y + menuBox.height <= frameBox.y + 1,
+      'the menu opens above the composer',
+    ).toBe(true);
     await menu.getByRole('menuitemcheckbox', { name: /^Plan mode/ }).click();
     await expect(menu.getByRole('menuitemcheckbox', { name: /^Plan mode/ })).toHaveAttribute(
       'aria-checked',

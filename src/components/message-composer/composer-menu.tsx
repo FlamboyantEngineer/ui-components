@@ -1,7 +1,7 @@
 // The composer's "+" menu: the host's categories of items, whose actions get the composer's helpers
 // (specs/MESSAGE-COMPOSER.md, UIC-MESSAGE-COMPOSER-5).
 
-import { useRef, type ReactElement } from 'react';
+import { useRef, type ReactElement, type RefObject } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { useFocusHandback } from '../../utils/use-focus-handback.js';
 import { Button } from '../button/button.js';
@@ -9,6 +9,7 @@ import type { IconSource } from '../icon/icon.js';
 import {
   Menu,
   MenuItem,
+  MenuOverlay,
   MenuPopover,
   MenuSection,
   MenuTrigger,
@@ -81,6 +82,8 @@ export interface MessageComposerMenu {
 
 export interface ComposerMenuProps {
   menu: MessageComposerMenu;
+  /** The composer's root, which the menu opens against. */
+  anchorRef: RefObject<HTMLElement | null>;
   model: Pick<ComposerFrameModel, 'insertText' | 'insertPill' | 'focusInput'>;
   onAttach: ((files: File[]) => void) | undefined;
   isDisabled: boolean;
@@ -136,7 +139,7 @@ function renderItem(item: MessageComposerMenuItem, helpers: MessageComposerHelpe
  * the menu has closed and given focus back to the button. The file chooser behind `attachFiles` is a
  * hidden file input, since the press that opens it is the host's menu item rather than a button.
  */
-export function ComposerMenu({ menu, model, onAttach, isDisabled }: ComposerMenuProps) {
+export function ComposerMenu({ menu, anchorRef, model, onAttach, isDisabled }: ComposerMenuProps) {
   const strings = useUiStrings();
   const handback = useFocusHandback(model.focusInput);
   const chooserRef = useRef<HTMLInputElement>(null);
@@ -169,7 +172,8 @@ export function ComposerMenu({ menu, model, onAttach, isDisabled }: ComposerMenu
           size="sm"
           isDisabled={isDisabled}
         />
-        <MenuPopover placement="top start">
+        {/* Above the whole composer, as its completion list opens, rather than over its input. */}
+        <MenuOverlay placement="top start" triggerRef={anchorRef}>
           <Menu className={hooks.slotClass('menu')} filterable={menu.filterable}>
             {menu.sections.map((section) => (
               <MenuSection key={section.id} id={section.id} title={section.title}>
@@ -177,7 +181,7 @@ export function ComposerMenu({ menu, model, onAttach, isDisabled }: ComposerMenu
               </MenuSection>
             ))}
           </Menu>
-        </MenuPopover>
+        </MenuOverlay>
       </MenuTrigger>
       {onAttach ? (
         <input
