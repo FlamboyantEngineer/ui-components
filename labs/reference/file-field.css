@@ -5,10 +5,6 @@
 }
 
 /* The held files stay readable while disabled: the command and remove buttons dim themselves. */
-.ui-file-field[data-disabled] {
-  opacity: 1;
-}
-
 .ui-file-field[data-disabled] .ui-file-upload__file {
   border-style: dashed;
 }

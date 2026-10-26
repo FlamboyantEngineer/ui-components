@@ -317,14 +317,19 @@
   font-size: var(--ref-font-size-xs);
 }
 
+.ui-property-strip-cell > input:focus-visible {
+  border-color: var(--ref-focus);
+  outline: var(--ref-focus-ring-thin);
+}
+
 .ui-property-strip-cell > input {
   box-sizing: border-box;
   width: 48px;
-  height: 26px;
+  height: var(--ref-control-height-sm);
   padding: 0 6px;
-  border: 1px solid var(--ref-border);
+  border: 1px solid var(--ref-field-border);
   border-radius: var(--ref-radius);
-  background: var(--ref-canvas);
+  background: var(--ref-field-fill);
   color: inherit;
   font: inherit;
 }

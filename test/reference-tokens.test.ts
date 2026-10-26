@@ -162,6 +162,31 @@ describe('reference token check', () => {
     expect(result.stderr).not.toMatch(/card\.css:3|pill\.css/);
   });
 
+  it('UIC-LABS-3.8 rings a focused field frame with the thin focus token, never by hand', () => {
+    const focus = `${base}:root { --ref-focus: var(--ref-accent); --ref-focus-ring-thin: 1px solid var(--ref-focus); }`;
+    const common = `.ui-card { color: var(--ref-text); background: var(--ref-canvas); border-radius: var(--ref-radius); font-size: var(--ref-font-size-sm); }`;
+    const result = check(
+      {
+        'card.css': `.ui-card:focus-within { border-color: var(--ref-focus); box-shadow: 0 0 0 1px var(--ref-focus); }
+.ui-card__input:focus { outline: 2px solid var(--ref-focus); }
+${common}`,
+      },
+      focus,
+    );
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('card.css:1: box-shadow builds a focus ring by hand');
+    expect(result.stderr).toContain('card.css:2: outline builds a focus ring by hand');
+    const valid = check(
+      {
+        'card.css': `.ui-card:focus-within { border-color: var(--ref-focus); outline: var(--ref-focus-ring-thin); }
+${common}`,
+      },
+      focus,
+    );
+    expect(valid.stderr).toBe('');
+    expect(valid.status).toBe(0);
+  });
+
   it('UIC-LABS-3.5 rejects unused, undefined, misnamed and duplicated tokens', () => {
     const result = check(
       {

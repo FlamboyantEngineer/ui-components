@@ -218,10 +218,6 @@
 }
 
 /* A disabled slider dims its track and output only; its label keeps full contrast. */
-.ui-slider[data-disabled] {
-  opacity: 1;
-}
-
 .ui-slider__box[data-disabled] {
   opacity: var(--ref-disabled-opacity);
 }

@@ -14,9 +14,9 @@
   box-sizing: border-box;
   height: var(--ref-field-height);
   padding: 0 4px 0 8px;
-  border: 1px solid var(--ref-border);
+  border: 1px solid var(--ref-field-border);
   border-radius: var(--ref-radius);
-  background: var(--ref-canvas);
+  background: var(--ref-field-fill);
 }
 
 .ui-date-time-field[data-mode='time'] .ui-date-time-field__group {
@@ -25,7 +25,7 @@
 
 .ui-date-time-field__group:is([data-focus-within], :focus-within) {
   border-color: var(--ref-focus);
-  box-shadow: 0 0 0 1px var(--ref-focus);
+  outline: var(--ref-focus-ring-thin);
 }
 
 .ui-date-time-field[data-dirty] .ui-date-time-field__group {
@@ -42,6 +42,12 @@
 
 .ui-date-time-field[data-readonly] .ui-date-time-field__group {
   border-style: dashed;
+  background: var(--ref-field-fill-inactive);
+}
+
+.ui-date-time-field[data-disabled] .ui-date-time-field__group {
+  background: var(--ref-field-fill-inactive);
+  color: var(--ref-muted);
 }
 
 .ui-date-time-field__previous {
@@ -109,6 +115,7 @@
 }
 
 .ui-date-time-field__button[data-disabled] {
+  color: var(--ref-muted);
   cursor: not-allowed;
 }
 
