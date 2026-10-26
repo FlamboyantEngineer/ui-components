@@ -78,6 +78,7 @@ export function useEverythingChat(record: (line: string) => void) {
       if (isForPlanner(tokens)) props.onSend(text, tokens);
       else team.send({ text, tokens, attachments: takeUploads(props) });
     },
+    onReply: team.onReply,
     onRetry: (id: string) => {
       const message = props.messages.find((entry) => entry.id === id);
       if (message?.delivery === 'failed') team.onRetry(id);

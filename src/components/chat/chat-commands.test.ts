@@ -73,6 +73,7 @@ describe('message commands', () => {
       'feedbackReasons',
       'onCopy',
       'onFeedback',
+      'onReply',
     ]);
     expect(commands.copyText).toBe('Text of r');
     commands.onCopy?.();
@@ -82,8 +83,29 @@ describe('message commands', () => {
     expect(offered(toMessageCommands(message('s', 'sam'), context))).toEqual([
       'copyText',
       'onCopy',
+      'onReply',
     ]);
     expect(toMessageCommands({ ...reply, status: 'streaming' }, context)).toEqual({});
+  });
+
+  it('UIC-CHAT-2.1 UIC-CHAT-2.4 quotes finished messages with text in an assistant chat, and no more', () => {
+    const { context, handlers } = createContext({ isAssistantChat: true });
+    const own = toMessageCommands(message('s', 'sam'), context);
+    own.onReply?.();
+    expect(handlers.reply).toHaveBeenCalledWith('s');
+    expect(own).not.toHaveProperty('onEdit');
+    expect(own).not.toHaveProperty('onDelete');
+    expect(own).not.toHaveProperty('onReact');
+    const filesOnly = { ...message('f', 'sam'), parts: [] };
+    expect(toMessageCommands(filesOnly, context)).toEqual({});
+    for (const status of ['streaming', 'error', 'cancelled'] as const) {
+      const unfinished = message('u', 'helper', { status });
+      expect(toMessageCommands(unfinished, context)).not.toHaveProperty('onReply');
+    }
+    const withoutReply = createContext({ isAssistantChat: true, handlers: { copy: vi.fn() } });
+    expect(toMessageCommands(message('s', 'sam'), withoutReply.context)).not.toHaveProperty(
+      'onReply',
+    );
   });
 
   it('UIC-CHAT-2.3 UIC-CHAT-2.5 UIC-CHAT-2.6 binds the commands to the message', () => {

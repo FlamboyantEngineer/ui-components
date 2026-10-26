@@ -59,7 +59,7 @@ Verification: `src/components/chat/chat.test.tsx`, `e2e/chat.spec.ts`
 
 ### UIC-CHAT-2.1 - Commands offered
 
-Each message shall offer, through `ChatMessageActionsMenu` (an action bar and a context menu), only the commands whose callback the chat has, and none on a deleted message or a notice: Copy (`onCopy`) and the ratings (`onFeedback`, on an assistant's messages) once the message's status is `complete`; and in chats between people only, Reply (`onReply`) and React (`onReact`) on every message, and Edit (`onEdit`, on the reader's messages that have text) and Delete (`onDelete`) on the reader's own messages. An assistant chat never offers Reply, React, Edit or Delete.
+Each message shall offer, through `ChatMessageActionsMenu` (an action bar and a context menu), only the commands whose callback the chat has, and none on a deleted message or a notice: Copy (`onCopy`) and the ratings (`onFeedback`, on an assistant's messages) once the message's status is `complete`; in chats between people, Reply (`onReply`) and React (`onReact`) on every message, and Edit (`onEdit`, on the reader's messages that have text) and Delete (`onDelete`) on the reader's own messages; and in an assistant chat, Reply (`onReply`) on every message that has text once its status is `complete`, the reader's and the assistant's alike, so the reader can quote an answer in a follow-up. An assistant chat never offers React, Edit or Delete. A host names Reply as it likes, for example Quote, through the provider strings `reply`, `chatReplyingTo` and `chatCancelReply`.
 
 Implementation: `src/components/chat/chat-commands.ts`, `src/components/chat/chat-message-view.tsx`, `src/components/chat/use-message-context.ts`
 Verification: `src/components/chat/chat-commands.test.ts`, `src/components/chat/chat.test.tsx`
@@ -80,7 +80,7 @@ Verification: `src/components/chat/chat-commands.test.ts`, `src/components/chat/
 
 ### UIC-CHAT-2.4 - Reply
 
-Reply shall move focus to the composer and show above its input a banner (`ui-chat__banner`) that reads the provider string `chatReplyingTo` (`ui-chat__banner-label`) and quotes the message (`ChatQuote`, its author and an excerpt of its text), with a Cancel reply button (`ui-chat__banner-cancel`, the `close` glyph, the `chatCancelReply` string); the banner describes the input. Cancel reply, or Escape in the composer, ends the reply. Sending while replying calls `onReply` with the replied message's id, the text and its tokens instead of `onSend`. A message whose `replyTo` names a loaded message shows its quote; pressing the quote highlights that message ([UIC-CHAT-TRANSCRIPT-4.3](CHAT-TRANSCRIPT.md)) and moves focus to it.
+Reply shall move focus to the composer and show above its input a banner (`ui-chat__banner`) that reads the provider string `chatReplyingTo` (`ui-chat__banner-label`) and quotes the message (`ChatQuote`, its author and an excerpt of its text), with a Cancel reply button (`ui-chat__banner-cancel`, the `close` glyph, the `chatCancelReply` string); the banner describes the input. Cancel reply, or Escape in the composer, ends the reply. Sending while replying calls `onReply` with the replied message's id, the text and its tokens instead of `onSend`, and the reply ends once the host accepts it ([UIC-CHAT-3.7](#uic-chat-37---accepting-a-message)). Reply works the same in an assistant chat. A message whose `replyTo` names a loaded message shows its quote; pressing the quote highlights that message ([UIC-CHAT-TRANSCRIPT-4.3](CHAT-TRANSCRIPT.md)) and moves focus to it.
 
 Implementation: `src/components/chat/chat-composer.tsx`, `src/components/chat/chat-message-view.tsx`, `src/components/chat/use-chat-state.ts`
 Verification: `src/components/chat/chat-composer.test.tsx`, `e2e/chat.spec.ts`
@@ -103,7 +103,7 @@ Verification: `src/components/chat/chat-commands.test.ts`
 
 ### UIC-CHAT-3.1 - Composer
 
-With `onSend`, `Chat` shall end with a `RichMessageComposer` (`ui-chat__composer`) that sends through `onSend` with the text and its tokens; without `onSend` there is no composer. It takes the chat's `placeholder`, `isDisabled`, `isPending` and `onStop`; `@` mentions the participants other than the reader and `/` inserts the chat's `commands`. With a `conversationId` it keeps its draft in the provider's storage under `chat-draft:<conversationId>`, so each conversation has its own draft. In a chat between people it offers the emoji picker.
+With `onSend`, `Chat` shall end with a `RichMessageComposer` (`ui-chat__composer`) that sends through `onSend` with the text and its tokens; without `onSend` there is no composer. It takes the chat's `placeholder`, `isDisabled`, `isPending` and `onStop`; `@` mentions the participants other than the reader and `/` inserts the chat's `commands`. With a `conversationId` it keeps its draft in the provider's storage under `chat-draft:<conversationId>`, so each conversation has its own draft. In a chat between people it offers the emoji picker. It takes the chat's `submitShortcut`, `minRows` and `maxRows`, and sends a blank message while `allowsEmptySubmit` holds, as when context the host adds carries the request, or while an attachment is complete ([UIC-CHAT-3.5](#uic-chat-35---attachments)); without them it behaves as the composer's defaults say.
 
 Implementation: `src/components/chat/chat-composer.tsx`
 Verification: `src/components/chat/chat-composer.test.tsx`, `e2e/chat.spec.ts`
@@ -138,10 +138,24 @@ Verification: `src/components/chat/chat-composer.test.tsx`, `e2e/chat.spec.ts`
 
 ### UIC-CHAT-3.6 - Model picker
 
-With `modelPicker`, the composer's tools shall end, after the attach and emoji buttons, with a [Chat Model Picker](CHAT-MODEL-PICKER.md) taking those props, disabled while the chat's `isDisabled` holds as well as with its own `isDisabled`. The chat holds no choice of its own: the host reads the current model and effort, controlled or reported through `onModelChange` and `onEffortChange`, when it sends the reader's message.
+With `modelPicker`, the composer's tools shall end, after the attach and emoji buttons and the host's tools ([UIC-CHAT-3.8](#uic-chat-38---host-tools)), with a [Chat Model Picker](CHAT-MODEL-PICKER.md) taking those props, disabled while the chat's `isDisabled` holds as well as with its own `isDisabled`. The chat holds no choice of its own: the host reads the current model and effort, controlled or reported through `onModelChange` and `onEffortChange`, when it sends the reader's message.
 
 Implementation: `src/components/chat/chat-composer.tsx`
 Verification: `src/components/chat/chat-composer.test.tsx`, `e2e/chat.spec.ts`
+
+### UIC-CHAT-3.7 - Accepting a message
+
+`onSend`, `onReply` and `onEdit` may return a promise that resolves once the host accepts the message (a request is stored, for example) and rejects when it does not. While it is pending, the composer publishes `data-submitting` and sends nothing more from that conversation's draft, however often the reader presses Send or the chord ([UIC-MESSAGE-COMPOSER-3.9](MESSAGE-COMPOSER.md#uic-message-composer-39---accepting-a-message)); the reader may keep typing. Once it resolves, the draft empties unless the reader has changed it since, and the reply or the edit ends. When it rejects, or the callback throws, the text, its tokens and the reply's quote stay for another try, and `onSendError` receives the error (without `onSendError` the error is rethrown). A message settles in the conversation it was sent from: switching `conversationId` while it is pending neither clears nor restores another conversation's draft, reply or edit, and returning to the conversation finds its draft emptied once the message was accepted, or kept. A callback that returns nothing is accepted at once, as before. Acceptance is not the reply that follows: once accepted, `isPending` and `onStop` govern the running reply.
+
+Implementation: `src/components/chat/chat-submit.ts`, `src/components/chat/use-chat-state.ts`, `src/components/message-composer/use-submission.ts`
+Verification: `src/components/chat/chat-submit.test.tsx`, `src/components/message-composer/use-submission.test.tsx`
+
+### UIC-CHAT-3.8 - Host tools
+
+`composerToolbar` shall render the host's controls, such as a checkbox that authorizes the request, among the composer's tools after the attach and emoji buttons and before the model picker, then Send or Stop, so a host adds controls without replacing the composer. The tools wrap onto further lines in a narrow composer, while Send and Stop keep their place at the end of the footer.
+
+Implementation: `src/components/chat/chat-composer.tsx`, `labs/reference/message-composer.css`
+Verification: `src/components/chat/chat-submit.test.tsx`, `e2e/chat.spec.ts`
 
 ## UIC-CHAT-4 - Activity and receipts
 

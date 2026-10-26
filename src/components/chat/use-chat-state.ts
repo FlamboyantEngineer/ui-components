@@ -27,6 +27,10 @@ export interface ChatState extends Omit<ChatOwnState, 'conversationId'> {
   cancelEdit: () => void;
   startReply: (messageId: string) => void;
   cancelReply: () => void;
+  /** Ends the reply to a message once its sending is accepted, if the chat still shows that conversation and reply. */
+  endReply: (conversationId: string | undefined, messageId: string) => void;
+  /** Ends an edit once its sending is accepted, if the chat still shows that conversation and edit. */
+  endEdit: (conversationId: string | undefined, editing: ChatEditing) => void;
   jumpTo: (messageId: string) => void;
   setExpandedParts: (messageId: string, expanded: Record<string, boolean>) => void;
   focusComposer: () => void;
@@ -72,6 +76,20 @@ export function useChatState(conversationId: string | undefined): ChatState {
         focusComposer();
       },
       cancelReply: () => update({ replyingId: null }),
+      endReply: (scope: string | undefined, messageId: string) =>
+        setOwn((state) =>
+          state.conversationId === scope && state.replyingId === messageId
+            ? { ...state, replyingId: null }
+            : state,
+        ),
+      endEdit: (scope: string | undefined, editing: ChatEditing) =>
+        setOwn((state) =>
+          state.conversationId === scope &&
+          state.editing?.kind === editing.kind &&
+          state.editing.id === editing.id
+            ? { ...state, editing: null }
+            : state,
+        ),
       jumpTo: (jumpedId: string) => update({ jumpedId }),
       setExpandedParts: (messageId: string, parts: Record<string, boolean>) =>
         setOwn((state) => ({ ...state, expanded: { ...state.expanded, [messageId]: parts } })),

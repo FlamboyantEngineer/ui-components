@@ -34,6 +34,8 @@ export interface MessageComposerSharedProps
   maxRows?: number | undefined;
   /** Sends blank text too, as when attachments carry the message. */
   allowsEmptySubmit?: boolean | undefined;
+  /** Called when `onSubmit` throws or its promise rejects; the composer keeps the message. Without it the error is rethrown. */
+  onSubmitError?: ((error: unknown) => void) | undefined;
   /**
    * Sends while `isPending` too, for a host that queues the message until the reply ends: the
    * button is then Send while there is something to send, and Stop otherwise.
@@ -65,8 +67,11 @@ export interface MessageComposerProps extends MessageComposerSharedProps {
   /** The text at first, uncontrolled. */
   defaultValue?: string | undefined;
   onChange?: ((value: string) => void) | undefined;
-  /** Called with the text when the reader sends it; the composer then empties. */
-  onSubmit?: ((value: string) => void) | undefined;
+  /**
+   * Called with the text when the reader sends it; the composer then empties. A returned promise
+   * holds sending until it settles, and the composer empties once it resolves.
+   */
+  onSubmit?: ((value: string) => void | Promise<void>) | undefined;
   /** The message being edited: while set, the composer shows it in place of the draft, with Save and Cancel. */
   editValue?: string | undefined;
   /** The most characters the text may hold. */

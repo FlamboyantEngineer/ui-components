@@ -76,10 +76,21 @@ function toPeopleCommands(
   };
 }
 
+/** Reply, quoting a finished message that has text: in chats with an assistant. */
+function toQuoteCommands(
+  message: ChatMessageData,
+  context: ChatCommandContext,
+): ChatMessageCommandProps {
+  const { reply } = context.handlers;
+  const isFinished = (message.status ?? 'complete') === 'complete';
+  if (!reply || !isFinished || !readMessageText(message)) return {};
+  return { onReply: () => reply(message.id) };
+}
+
 /**
  * The commands a message offers: none for a deleted message or a notice; Copy and the ratings once
- * a reply has finished; and in chats without an assistant, Reply, React, and Edit and Delete on the
- * reader's own messages.
+ * a reply has finished; in chats without an assistant, Reply, React, and Edit and Delete on the
+ * reader's own messages; and in chats with one, Reply on finished messages that have text.
  */
 export function toMessageCommands(
   message: ChatMessageData,
@@ -88,6 +99,8 @@ export function toMessageCommands(
   if (message.isDeleted || !message.authorId) return {};
   return {
     ...toReplyCommands(message, context),
-    ...(context.isAssistantChat ? {} : toPeopleCommands(message, context)),
+    ...(context.isAssistantChat
+      ? toQuoteCommands(message, context)
+      : toPeopleCommands(message, context)),
   };
 }

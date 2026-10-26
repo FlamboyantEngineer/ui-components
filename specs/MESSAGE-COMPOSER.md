@@ -129,6 +129,13 @@ With `allowsPendingSubmit`, a pending composer shall send as it does when not pe
 Implementation: `src/components/message-composer/composer-frame.tsx`, `src/components/message-composer/use-message-composer.ts`, `src/components/message-composer/rich/rich-message-composer.tsx`
 Verification: `src/components/message-composer/message-composer.test.tsx`, `src/components/message-composer/rich/rich-message-composer.test.tsx`
 
+### UIC-MESSAGE-COMPOSER-3.9 - Accepting a message
+
+`onSubmit` may return a promise that settles once the host accepts the message or refuses it. While it is pending, the root publishes `data-submitting`, the action button is disabled (`aria-disabled`, staying focusable) and the composer sends nothing more from the same draft, however often the reader presses it or the chord; the text stays editable. Once the promise resolves, the draft empties (through `onChange` when it is controlled) unless the reader has changed it since. When it rejects, or `onSubmit` throws, the message stays, the composer may send again, and `onSubmitError` receives the error (without `onSubmitError` the error is rethrown). With `persistKey`, a message belongs to the draft it was sent from: under another key the composer is not held, and once the message is accepted only its own key's stored draft empties, if it still holds that message. An `onSubmit` that returns nothing is accepted at once. An edit settles the same way, and stays for the host to end.
+
+Implementation: `src/components/message-composer/use-submission.ts`, `src/components/message-composer/use-composer-state.ts`, `src/components/message-composer/composer-frame.tsx`
+Verification: `src/components/message-composer/use-submission.test.tsx`
+
 ## UIC-MESSAGE-COMPOSER-4 - Rich mode
 
 ### UIC-MESSAGE-COMPOSER-4.1 - Entry point and engine
@@ -208,6 +215,7 @@ Verification: `src/components/message-composer/rich/rich-message-composer.test.t
 | `data-pending`                     | state     | `true`               | On the root: a reply is on its way.                                 |
 | `data-editing`                     | state     | `true`               | On the root: the composer edits a message.                          |
 | `data-drop-target`                 | state     | `true`               | On the root: a drag carrying files is over the composer.            |
+| `data-submitting`                  | state     | `true`               | On the root: a sent message waits for the host to accept it.        |
 | `data-disabled`                    | state     | `true`               | On the root, and on the input (React Aria): disabled.               |
 | `data-focused`                     | state     | `true`               | On the input: focused (React Aria).                                 |
 | `data-focus-visible`               | state     | `true`               | On the input: focused from the keyboard (React Aria).               |
