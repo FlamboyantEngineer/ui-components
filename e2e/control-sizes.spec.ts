@@ -141,16 +141,21 @@ test('UIC-DROPDOWN-MENU-1.4 opening a dropdown preserves page scrolling', async 
     width: document.documentElement.clientWidth,
   }));
   await page.keyboard.press('Enter');
-  await expect(page.getByRole('menu', { name: 'Edit' })).toBeVisible();
+  const menu = page.getByRole('menu', { name: 'Edit' });
+  await expect(menu).toBeVisible();
   expect(
     await page.evaluate(() => ({
       overflow: getComputedStyle(document.documentElement).overflowY,
       width: document.documentElement.clientWidth,
     })),
   ).toEqual(before);
+  const gap = async () =>
+    Math.round((await menu.boundingBox())!.y - (await trigger.boundingBox())!.y);
+  const offset = await gap();
   const top = await page.evaluate(() => window.scrollY);
   await page.mouse.move(600, 500);
   await page.mouse.wheel(0, 200);
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(top);
-  await expect(page.getByRole('menu', { name: 'Edit' })).toHaveCount(0);
+  await expect(menu).toBeVisible();
+  await expect.poll(gap).toBe(offset);
 });
