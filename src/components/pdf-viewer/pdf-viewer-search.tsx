@@ -6,7 +6,7 @@ import { pdfViewerHooks as hooks } from './styling-hooks.js';
 import type { PdfSearchOptions } from './pdf-search.js';
 import type { PdfSearchState } from './use-pdf-search.js';
 
-export interface PdfViewerSearchProps {
+interface PdfViewerSearchProps {
   search: PdfSearchState;
   /** The find field's input, which Ctrl + F focuses. */
   fieldRef: RefObject<HTMLInputElement | null>;

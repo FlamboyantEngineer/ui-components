@@ -17,7 +17,7 @@ import {
 } from './edge-route.js';
 import type { DiagramController } from './use-diagram-controller.js';
 
-export interface DiagramEdgesProps {
+interface DiagramEdgesProps {
   controller: DiagramController;
   routing: DiagramEdgeRouting;
 }

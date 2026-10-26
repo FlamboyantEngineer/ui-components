@@ -5,7 +5,7 @@ import type { MessageComposerSubmitShortcut } from './message-composer.js';
 import type { RecallDirection } from './use-composer-state.js';
 
 /** What the composer reads from a native key event. */
-export type ComposerKey = Pick<
+type ComposerKey = Pick<
   KeyboardEvent,
   'key' | 'keyCode' | 'altKey' | 'shiftKey' | 'ctrlKey' | 'metaKey' | 'isComposing'
 >;

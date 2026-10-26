@@ -9,7 +9,7 @@ import type { RelationMatrixIndex } from './relation-matrix-model.js';
 import type { MatrixColumnTracks } from './matrix-window.js';
 import type { MatrixPosition } from './matrix-navigation.js';
 
-export interface RelationMatrixHeaderProps {
+interface RelationMatrixHeaderProps {
   headerRef: RefObject<HTMLDivElement | null>;
   cornerRef: RefObject<HTMLDivElement | null>;
   columns: readonly RelationMatrixItem[];

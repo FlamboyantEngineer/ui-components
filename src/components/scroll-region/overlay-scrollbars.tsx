@@ -17,7 +17,7 @@ import { scrollRegionHooks as hooks } from './styling-hooks.js';
 import type { OverlayMeasurement } from './use-overlay-metrics.js';
 import { useThumbWheel } from './use-thumb-wheel.js';
 
-export interface OverlayScrollbarsProps {
+interface OverlayScrollbarsProps {
   /** Tab order of the thumbs; native editable viewports already provide keyboard scrolling. */
   tabIndex?: 0 | -1 | undefined;
   /** Decorations inside the vertical track, behind the thumb. */

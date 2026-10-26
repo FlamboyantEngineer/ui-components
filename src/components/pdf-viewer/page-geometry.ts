@@ -37,7 +37,7 @@ export interface PdfPagePoint<V extends PdfViewport = PdfViewport> extends PdfPa
 }
 
 /** Where a page's bitmap starts in the browser viewport, and how many CSS pixels one point spans. */
-export interface PageFrame {
+interface PageFrame {
   origin: PdfPoint;
   scale: number;
 }

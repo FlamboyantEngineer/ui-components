@@ -38,7 +38,7 @@ interface ToastStackValue {
 }
 
 /** A toast's place in its stack. */
-export interface ToastStackPosition {
+interface ToastStackPosition {
   /** 0 for the newest visible toast. */
   index: number;
   /** The summed height of the newer visible toasts, in pixels. */

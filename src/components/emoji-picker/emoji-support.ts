@@ -1,7 +1,7 @@
 import { useLayoutEffect, useState, type RefObject } from 'react';
 
 /** What the platform draws, as far as a canvas can tell. */
-export interface EmojiSupport {
+interface EmojiSupport {
   /** The newest Emoji version the platform draws, or `undefined` when it cannot tell. */
   version: number | undefined;
   /** Whether it draws country flags rather than their letters. */

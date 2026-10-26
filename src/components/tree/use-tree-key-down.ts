@@ -6,10 +6,7 @@ import type { TreeItemData, TreeProps } from './tree.js';
 import type { TreeRename } from './use-tree-rename.js';
 import type { TreeReorder } from './use-tree-reorder.js';
 
-export interface TreeKeyDownOptions<T extends TreeItemData> extends Pick<
-  TreeProps<T>,
-  'onItemKeyDown'
-> {
+interface TreeKeyDownOptions<T extends TreeItemData> extends Pick<TreeProps<T>, 'onItemKeyDown'> {
   /** Reordering, while the tree is reorderable. */
   reordering: TreeReorder | null;
   /** In-place renaming, while the owner takes renames. */

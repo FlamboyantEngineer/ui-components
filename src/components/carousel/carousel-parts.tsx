@@ -8,7 +8,7 @@ import type { CarouselAutoplay } from './use-carousel-autoplay.js';
 /** How a carousel lets the reader pick a slide directly. */
 export type CarouselPagination = 'dots' | 'thumbnails' | 'none';
 
-export interface CarouselControlsProps {
+interface CarouselControlsProps {
   /** The slide element the buttons change. */
   viewportId: string;
   canGoPrevious: boolean;
@@ -19,7 +19,7 @@ export interface CarouselControlsProps {
   rotation?: Pick<CarouselAutoplay, 'isStopped' | 'toggle' | 'rotationRef'> | undefined;
 }
 
-export interface CarouselPaginationProps {
+interface CarouselPaginationProps {
   pagination: Exclude<CarouselPagination, 'none'>;
   count: number;
   index: number;

@@ -14,9 +14,9 @@ import { tabsHooks as hooks } from './tab-hooks.js';
 type Edge = 'start' | 'end';
 
 /** Which tabs a menu list keeps, and the elements that measure them. */
-export type TabOverflow = ReturnType<typeof useTabOverflow>;
+type TabOverflow = ReturnType<typeof useTabOverflow>;
 
-export interface TabBarProps {
+interface TabBarProps {
   state: TabListModel;
   orientation: Orientation;
   isMenu: boolean;

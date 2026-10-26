@@ -19,7 +19,7 @@ interface SlashRange {
 }
 
 /** The caret marker's place in the surface, in pixels. */
-export interface CaretPlace {
+interface CaretPlace {
   left: number;
   top: number;
   height: number;

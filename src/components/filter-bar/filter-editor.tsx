@@ -26,9 +26,9 @@ import {
 export type FilterEditorLabelLayout = 'label-control' | 'control-only';
 
 /** The parts of a condition editor the host component gives its own slot classes. */
-export type FilterEditorSlot = 'operator' | 'value';
+type FilterEditorSlot = 'operator' | 'value';
 
-export interface FilterConditionFieldsProps {
+interface FilterConditionFieldsProps {
   field: FilterField;
   condition: FilterCondition;
   onChange: (condition: FilterCondition) => void;

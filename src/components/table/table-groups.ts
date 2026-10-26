@@ -60,12 +60,12 @@ export interface TableGroupNode<T> {
 export type TableBodyNode<T> = TableNode<T> | TableGroupNode<T>;
 
 /** A grouping level resolved against the columns, with the direction its groups are ordered in. */
-export interface ResolvedGrouping<T> extends TableGrouping<T> {
+interface ResolvedGrouping<T> extends TableGrouping<T> {
   direction: SortDirection;
 }
 
 /** The key prefix of group header rows, kept out of row actions, selection and moves. */
-export const groupKeyPrefix = 'ui-table-group:';
+const groupKeyPrefix = 'ui-table-group:';
 
 /** Whether a node is a group header row. */
 export function isGroupNode<T>(node: TableBodyNode<T>): node is TableGroupNode<T> {
@@ -73,7 +73,7 @@ export function isGroupNode<T>(node: TableBodyNode<T>): node is TableGroupNode<T
 }
 
 /** Whether a value counts as no value: absent, null or empty text. */
-export function isEmptyCellValue(value: TableCellValue): boolean {
+function isEmptyCellValue(value: TableCellValue): boolean {
   return value === null || value === undefined || value === '';
 }
 

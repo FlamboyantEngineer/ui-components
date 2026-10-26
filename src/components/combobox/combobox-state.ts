@@ -5,7 +5,7 @@ import type { OpenStateProps } from '../../core/events.js';
 import { flattenOptions, type ComboboxCompletion, type ComboboxItem } from './combobox-options.js';
 import { useComboboxSearch, useEmptyContent, type ComboboxLoader } from './combobox-search.js';
 
-export interface InputTextOptions {
+interface InputTextOptions {
   inputValue?: string | undefined;
   defaultInputValue?: string | undefined;
   onInputChange?: ((text: string) => void) | undefined;

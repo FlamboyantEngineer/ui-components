@@ -58,8 +58,8 @@ export interface DiagramViewport {
 
 export type DiagramDirection = 'up' | 'down' | 'left' | 'right';
 
-export const defaultNodeWidth = 160;
-export const defaultNodeHeight = 48;
+const defaultNodeWidth = 160;
+const defaultNodeHeight = 48;
 const parallelSpacing = 24;
 
 /** The node's box, with the default size where it has none. */

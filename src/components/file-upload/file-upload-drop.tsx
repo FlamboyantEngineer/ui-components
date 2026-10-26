@@ -15,7 +15,7 @@ import type { DraggedItem } from './file-rules.js';
 import { fileUploadHooks as hooks } from './file-upload-files.js';
 
 /** How the owner names a command: the names it gives come before the command's own text. */
-export type CommandNaming = Pick<AriaLabellingProps, 'aria-label' | 'aria-labelledby'>;
+type CommandNaming = Pick<AriaLabellingProps, 'aria-label' | 'aria-labelledby'>;
 
 /** What both commands draw from: the label, the help and error ids, the chooser and the intake. */
 export interface CommandProps {
@@ -55,7 +55,7 @@ export interface DroppedDirectory {
 }
 
 /** Something else dropped, such as text, which the upload ignores. */
-export interface DroppedText {
+interface DroppedText {
   kind: 'text';
 }
 

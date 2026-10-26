@@ -4,7 +4,7 @@ import { resolveZoomPercent } from './pdf-zoom.js';
 import { useLatest } from '../../utils/use-latest.js';
 import type { PdfZoomState } from './use-pdf-zoom.js';
 
-export interface UsePinchZoomOptions {
+interface UsePinchZoomOptions {
   /** The engine of the open document, whose touch manager tells pinches from drags. */
   engine: Pick<PdfEngine, 'TouchManager'> | null;
   scrollerRef: RefObject<HTMLElement | null>;

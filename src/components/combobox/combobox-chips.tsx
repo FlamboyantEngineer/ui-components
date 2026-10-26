@@ -48,7 +48,7 @@ function useChosenOptions(options: readonly ComboboxOption[]): ComboboxOption[] 
   return keys.map((key) => next.get(key) ?? { id: key, label: String(key) });
 }
 
-export interface ChipsLabelOptions {
+interface ChipsLabelOptions {
   /** The combobox's label. */
   label: ReactNode;
   /** The combobox's own naming. */

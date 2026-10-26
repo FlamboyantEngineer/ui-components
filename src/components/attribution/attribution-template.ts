@@ -1,7 +1,7 @@
 // Splits an attribution template (`Edited {time} by {person}`) into literal text and its parts.
 
 /** One piece of a template: literal text, the time or the person. */
-export type AttributionSegment =
+type AttributionSegment =
   | { kind: 'text'; text: string; offset: number }
   | { kind: 'time' | 'person'; offset: number };
 

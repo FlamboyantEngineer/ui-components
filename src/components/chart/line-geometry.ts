@@ -22,7 +22,7 @@ export interface LineChartPoint {
 }
 
 /** A drawn series: its position among the chart's series and its points. */
-export interface LineGeometrySeries {
+interface LineGeometrySeries {
   series: number;
   points: readonly LineChartPoint[];
 }
@@ -43,7 +43,7 @@ export interface LineGeometryInput {
 }
 
 /** A drawn value. */
-export interface LinePoint {
+interface LinePoint {
   key: string;
   series: number;
   /** Its position among its series' drawn values, in x order. */
@@ -55,7 +55,7 @@ export interface LinePoint {
 }
 
 /** One series' line through its values, the area under it and its points. */
-export interface LinePath {
+interface LinePath {
   series: number;
   line: string;
   area: string;

@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { useAsyncList } from '../primitives/index.js';
 
 /** One page of a search's results; a `cursor` means another page follows. */
-export interface RemoteSearchPage<T> {
+interface RemoteSearchPage<T> {
   items: readonly T[];
   /** Passed back to the loader to fetch the next page; absent on the last page. */
   cursor?: string | undefined;
@@ -18,7 +18,7 @@ export type RemoteSearchLoader<T> = (
   cursor?: string,
 ) => Promise<RemoteSearchPage<T>>;
 
-export interface RemoteSearchOptions<T> {
+interface RemoteSearchOptions<T> {
   /** Without a loader nothing is searched. */
   load?: RemoteSearchLoader<T> | undefined;
   /** Shortest trimmed query that runs a search. Defaults to 1. */

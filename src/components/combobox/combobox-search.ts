@@ -24,7 +24,7 @@ export type ComboboxLoader = (
   cursor?: string,
 ) => Promise<readonly ComboboxItem[] | ComboboxPage>;
 
-export interface ComboboxSearchOptions {
+interface ComboboxSearchOptions {
   loadItems?: ComboboxLoader | undefined;
   minSearchLength?: number | undefined;
   searchDelay?: number | undefined;
@@ -35,7 +35,7 @@ export interface ComboboxSearchOptions {
 }
 
 /** What the combobox draws while its list holds no option. */
-export interface ComboboxEmptyOptions {
+interface ComboboxEmptyOptions {
   search: RemoteSearch<ComboboxItem> | null;
   renderEmptyState: (() => ReactNode) | undefined;
 }

@@ -18,7 +18,7 @@ import { formatVersionTime, isNamedVersion } from './version-model.js';
 /** A version menu's actions. */
 export type VersionAction = 'rename' | 'restore';
 
-export interface VersionRowContext extends Pick<
+interface VersionRowContext extends Pick<
   AttributionProps,
   'showAvatar' | 'fallbackAfterDays' | 'getNow'
 > {
@@ -50,7 +50,7 @@ export const versionHistoryHooks = createHooks('version-history', [
 const hooks = versionHistoryHooks;
 
 /** The version as a dialog target: its key, its title and its own name. */
-export function toVersionTarget(
+function toVersionTarget(
   version: VersionHistoryVersion,
   context: Pick<VersionRowContext, 'locale' | 'strings'>,
 ): VersionDialogTarget {

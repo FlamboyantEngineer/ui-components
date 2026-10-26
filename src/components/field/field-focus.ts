@@ -2,14 +2,14 @@
 
 import { useEffect, useLayoutEffect, useRef, useState, type FocusEvent } from 'react';
 
-export interface FieldFocusOptions {
+interface FieldFocusOptions {
   getRoot: () => HTMLElement | null;
   getControl: () => HTMLElement | null;
   /** Called once focus has left the field: its control, its buttons and the popovers they open. */
   onLeave: () => void;
 }
 
-export interface FieldFocus {
+interface FieldFocus {
   isFocused: boolean;
   onFocus: (event: FocusEvent) => void;
   onBlur: (event: FocusEvent) => void;

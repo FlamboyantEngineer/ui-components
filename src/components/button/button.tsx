@@ -61,7 +61,7 @@ export interface ButtonProps extends ButtonStateProps, ButtonActionProps, BasePr
   tooltip?: ReactNode;
 }
 
-export interface ButtonSpinnerProps extends Pick<BaseProps, 'className'> {
+interface ButtonSpinnerProps extends Pick<BaseProps, 'className'> {
   /** Names the busy indicator. Defaults to the provider's `loading` string. */
   label?: string | undefined;
 }
@@ -118,7 +118,7 @@ function ButtonParts({
 }
 
 /** Wraps a button in a `Tooltip` when it has a hint or a shortcut, which follows the hint. */
-export function withTooltip(button: ReactNode, { tooltip, shortcut }: ButtonHint) {
+function withTooltip(button: ReactNode, { tooltip, shortcut }: ButtonHint) {
   const keys = shortcut && toKeyShortcuts(shortcut) ? <Shortcut chord={shortcut} /> : null;
   const hint = isEmptyHint(tooltip) ? null : tooltip;
   if (hint === null && keys === null) return button;

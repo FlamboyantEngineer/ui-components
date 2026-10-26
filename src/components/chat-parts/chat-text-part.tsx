@@ -28,7 +28,7 @@ import {
 /** A Markdown `renderNode`. */
 export type MarkdownNodeRenderer = (node: MarkdownNode, children: ReactNode) => ReactNode;
 
-export interface ChatTextPartViewProps {
+interface ChatTextPartViewProps {
   part: ChatTextPart;
   format: ChatTextFormat;
   /** The message's Markdown overrides, stable across renders. */

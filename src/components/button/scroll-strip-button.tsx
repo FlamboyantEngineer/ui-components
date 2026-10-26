@@ -3,7 +3,7 @@ import type { BaseProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { Button } from './button.js';
 
-export interface ScrollStripButtonProps extends BaseProps {
+interface ScrollStripButtonProps extends BaseProps {
   edge: 'start' | 'end';
   isHidden: boolean;
   onPress: (edge: 'start' | 'end') => void;

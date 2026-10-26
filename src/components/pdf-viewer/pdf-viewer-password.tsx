@@ -5,7 +5,7 @@ import { TextField } from '../text-field/text-field.js';
 import { pdfViewerHooks as hooks } from './styling-hooks.js';
 import type { PdfPasswordRequest } from './use-pdf-document.js';
 
-export interface PdfViewerPasswordProps {
+interface PdfViewerPasswordProps {
   request: PdfPasswordRequest;
 }
 

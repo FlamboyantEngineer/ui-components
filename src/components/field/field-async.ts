@@ -7,7 +7,7 @@ import { toIssueList, type FieldIssue, type FieldIssues } from './field-validati
 /** A check that may wait (for a server): it receives the value and a signal that aborts it. */
 export type FieldAsyncValidate<T> = (value: T, signal: AbortSignal) => Promise<FieldIssues>;
 
-export interface AsyncCheckOptions<T> {
+interface AsyncCheckOptions<T> {
   validateAsync: FieldAsyncValidate<T> | undefined;
   /** How long the value must stay unchanged before the check runs, in milliseconds. */
   debounce: number;
@@ -15,7 +15,7 @@ export interface AsyncCheckOptions<T> {
   isSkipped: boolean;
 }
 
-export interface AsyncCheck {
+interface AsyncCheck {
   /** The issues the check found for the current value. */
   issues: FieldIssue[];
   /** The current value waits for its check or is being checked. */

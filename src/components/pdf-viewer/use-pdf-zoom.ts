@@ -12,7 +12,7 @@ import {
 import type { PdfPagesController } from './use-pdf-pages.js';
 import { useLatest } from '../../utils/use-latest.js';
 
-export interface UsePdfZoomOptions {
+interface UsePdfZoomOptions {
   defaultZoom: PdfZoom;
   /** Page sizes in points; a fit holds for the largest. */
   sizes: readonly PdfSize[];

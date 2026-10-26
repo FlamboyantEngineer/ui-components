@@ -2,7 +2,7 @@ import { createValueStore, type ValueStore } from '../../utils/value-store.js';
 import type { ChatMessageOrigin, ChatMessageStatus } from './chat-message.js';
 
 /** What a message tells the transcript about itself, for announcements and scrolling. */
-export interface TranscriptMessageEntry {
+interface TranscriptMessageEntry {
   /** The message's own id (its DOM id), when it differs from its child's key. */
   id: string | undefined;
   /** The author's display name; none for a system notice. */
@@ -26,7 +26,7 @@ export interface TranscriptView {
 }
 
 /** Called when a message registers or changes what it tells the transcript. */
-export type TranscriptEntryListener = (
+type TranscriptEntryListener = (
   key: string,
   entry: TranscriptMessageEntry,
   previous: TranscriptMessageEntry | undefined,

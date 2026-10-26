@@ -50,7 +50,7 @@ interface TriggerLabelProps {
 }
 
 /** The tooltip panel, inside a `TooltipTrigger` or driven through `TooltipTriggerStateContext`. */
-export interface TooltipPanelProps extends Pick<TooltipProps, 'placement'>, TooltipPanelBaseProps {
+interface TooltipPanelProps extends Pick<TooltipProps, 'placement'>, TooltipPanelBaseProps {
   /** The panel's look. */
   variant: TooltipVariant;
   /** The hint. */

@@ -4,7 +4,7 @@ import { mergeRefs } from '../../utils/merge-props.js';
 import { useElementSize } from '../../utils/use-element-size.js';
 import { useWidestTextWidth } from '../../utils/use-widest-text-width.js';
 
-export interface ChartFrame {
+interface ChartFrame {
   /** The drawing width: the frame's measured width, or 480 pixels before it is measured. */
   width: number;
   /** The frame element, once mounted. */

@@ -7,7 +7,7 @@ import { defaultZoomLevels, findNextZoomLevel } from '../zoom-control/zoom-contr
 import { fitDiagramViewport, zoomDiagramViewport, type DiagramViewport } from './diagram-model.js';
 import type { DiagramPoint, DiagramRect } from './edge-route.js';
 
-export interface DiagramViewportOptions {
+interface DiagramViewportOptions {
   viewport: DiagramViewport | undefined;
   defaultViewport: DiagramViewport | undefined;
   onViewportChange: ((viewport: DiagramViewport) => void) | undefined;
@@ -32,7 +32,7 @@ export interface DiagramViewportState {
   size: { width: number; height: number } | null;
 }
 
-export const diagramZoomRange = [
+const diagramZoomRange = [
   requireDefined(defaultZoomLevels[0]),
   requireDefined(defaultZoomLevels[defaultZoomLevels.length - 1]),
 ] as const;

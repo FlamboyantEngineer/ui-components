@@ -5,7 +5,7 @@ import { useLatest } from '../../utils/use-latest.js';
 import type { PdfPagesController } from './use-pdf-pages.js';
 import type { PdfZoomState } from './use-pdf-zoom.js';
 
-export interface UsePdfKeyboardOptions {
+interface UsePdfKeyboardOptions {
   isReady: boolean;
   zoom: Pick<PdfZoomState, 'zoom' | 'percent' | 'setZoom'>;
   /** The zoom Ctrl + 0 returns to. */

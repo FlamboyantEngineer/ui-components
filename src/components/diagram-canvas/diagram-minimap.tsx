@@ -7,7 +7,7 @@ import { findDiagramBounds, resolveNodeRect } from './diagram-model.js';
 import type { DiagramPoint, DiagramRect } from './edge-route.js';
 import type { DiagramController } from './use-diagram-controller.js';
 
-export interface DiagramMinimapProps {
+interface DiagramMinimapProps {
   controller: DiagramController;
 }
 

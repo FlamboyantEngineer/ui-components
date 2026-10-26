@@ -22,7 +22,7 @@ import {
 } from './pin-value.js';
 
 /** How the cells look and what they take. */
-export interface PinCellOptions {
+interface PinCellOptions {
   length: number;
   type: PinInputType;
   mask: boolean;
@@ -31,7 +31,7 @@ export interface PinCellOptions {
   autoComplete: InputHTMLAttributes<HTMLInputElement>['autoComplete'];
 }
 
-export interface PinInputCellsProps {
+interface PinInputCellsProps {
   control: FieldControlProps;
   state: FieldState<string>;
   cells: PinCellOptions;

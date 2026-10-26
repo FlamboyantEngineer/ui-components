@@ -1,5 +1,5 @@
 /** What a conversation row of a chat list says about the conversation, in reading order. */
-export interface ChatConversationLabelParts {
+interface ChatConversationLabelParts {
   /** The conversation's title. */
   title: string;
   /** The other person's presence, read after their name in a one-to-one conversation. */

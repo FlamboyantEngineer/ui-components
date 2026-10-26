@@ -27,7 +27,7 @@ export interface PopoverTriggerProps extends OpenStateProps {
 }
 
 /** The floating panel the library's anchored overlays share, carrying the caller's hooks. */
-export interface PopoverPanelProps
+interface PopoverPanelProps
   extends
     BaseProps,
     OverlayPositionProps,

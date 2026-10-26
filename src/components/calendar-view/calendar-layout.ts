@@ -37,7 +37,7 @@ export interface WeekSegment {
 }
 
 /** A timed event within one day: its vertical extent and its share of the day's width, in percent. */
-export interface DayBlock {
+interface DayBlock {
   placed: PlacedEvent;
   top: number;
   height: number;

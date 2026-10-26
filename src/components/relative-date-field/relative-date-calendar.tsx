@@ -16,7 +16,7 @@ import {
   type RelativeDateValue,
 } from './relative-date.js';
 
-export interface PresetCalendarProps {
+interface PresetCalendarProps {
   kind: RelativeDateKind;
   value: RelativeDateValue | null;
   bounds: RelativeDateBounds;

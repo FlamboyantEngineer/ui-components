@@ -2,7 +2,7 @@
 // animation frame whenever the viewport, its children or other watched elements resize, or its
 // content changes.
 
-export interface ViewportObserverOptions {
+interface ViewportObserverOptions {
   /** Reads the layout; called at most once per animation frame. */
   measure: () => void;
   /** Elements watched besides the viewport and its children, read again on every content change. */
@@ -11,7 +11,7 @@ export interface ViewportObserverOptions {
   subtree?: boolean | undefined;
 }
 
-export interface ViewportObserver {
+interface ViewportObserver {
   /** Schedules a measurement for the next animation frame. */
   schedule: () => void;
   /** Watches the current set of elements again and schedules a measurement. */

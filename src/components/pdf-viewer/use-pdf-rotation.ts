@@ -3,7 +3,7 @@ import type { PdfTextContent, PdfViewport } from './pdf-engine.js';
 import { createViewportCache, type LoadedPdf } from './use-pdf-document.js';
 import type { PdfPagesController } from './use-pdf-pages.js';
 
-export interface UsePdfRotationOptions<
+interface UsePdfRotationOptions<
   V extends PdfViewport = PdfViewport,
   C extends PdfTextContent = PdfTextContent,
 > {
@@ -11,7 +11,7 @@ export interface UsePdfRotationOptions<
   pages: Pick<PdfPagesController, 'captureAnchor' | 'restoreAnchor'>;
 }
 
-export interface PdfRotationState<
+interface PdfRotationState<
   V extends PdfViewport = PdfViewport,
   C extends PdfTextContent = PdfTextContent,
 > {

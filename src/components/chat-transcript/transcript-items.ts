@@ -8,7 +8,7 @@ export interface TranscriptItem {
 }
 
 /** What changed in the children since the last commit. */
-export interface TranscriptChange {
+interface TranscriptChange {
   /** Nothing survived (or nothing was there before the first commit): a fresh conversation. */
   isReset: boolean;
   /** Keys added after the first surviving one: what arrived. */

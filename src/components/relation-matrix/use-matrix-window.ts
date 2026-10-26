@@ -8,7 +8,7 @@ import {
 } from './matrix-window.js';
 import type { MatrixPosition } from './matrix-navigation.js';
 
-export interface MatrixWindowOptions {
+interface MatrixWindowOptions {
   /** The scroll container. */
   root: RefObject<HTMLDivElement | null>;
   /** The header row, whose height the rows start below. */
@@ -25,7 +25,7 @@ export interface MatrixWindowOptions {
 }
 
 /** The rows and columns a matrix renders and the tracks that place the columns. */
-export interface MatrixWindow {
+interface MatrixWindow {
   rows: readonly number[];
   columns: readonly number[];
   tracks: MatrixColumnTracks;

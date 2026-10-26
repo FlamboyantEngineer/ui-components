@@ -25,14 +25,14 @@ export interface CodeDiagnostic {
   severity?: FieldSeverity | undefined;
 }
 
-export interface CodeHighlightProps {
+interface CodeHighlightProps {
   /** The tokens cut at the decorations, with the caret marker (`null`) that anchors popovers. */
   segments: ReadonlyArray<CodeSegment | null>;
   caretRef: Ref<HTMLSpanElement>;
   highlightRef: Ref<HTMLPreElement>;
 }
 
-export interface CodeGutterProps {
+interface CodeGutterProps {
   measurement?: boolean | undefined;
   lines: readonly string[];
   /** The number of the first row. */
@@ -44,7 +44,7 @@ export interface CodeGutterProps {
   gutterRef: Ref<HTMLDivElement>;
 }
 
-export interface CodeDiagnosticsProps {
+interface CodeDiagnosticsProps {
   id: string;
   diagnostics: readonly CodeDiagnostic[];
 }

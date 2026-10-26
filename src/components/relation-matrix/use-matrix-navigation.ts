@@ -10,7 +10,7 @@ import { useFocusWithin, useLocale } from '../../primitives/index.js';
 import { mergeProps } from '../../utils/merge-props.js';
 import { clampMatrixPosition, moveMatrixFocus, type MatrixPosition } from './matrix-navigation.js';
 
-export interface MatrixNavigationOptions {
+interface MatrixNavigationOptions {
   root: RefObject<HTMLDivElement | null>;
   rowCount: number;
   columnCount: number;
@@ -19,7 +19,7 @@ export interface MatrixNavigationOptions {
 }
 
 /** A matrix grid's focused cell (its single tab stop) and the props that move it. */
-export interface MatrixNavigation {
+interface MatrixNavigation {
   focus: MatrixPosition;
   isFocusWithin: boolean;
   gridProps: {
@@ -34,7 +34,7 @@ const actionKeys = new Set(['Enter', ' ']);
 const defaultPage = 10;
 
 /** The selector of the cell at `position`, through the grid's row and column indices. */
-export function selectMatrixCell({ row, column }: MatrixPosition): string {
+function selectMatrixCell({ row, column }: MatrixPosition): string {
   return `[role="row"][aria-rowindex="${row + 2}"] > [aria-colindex="${column + 2}"]`;
 }
 

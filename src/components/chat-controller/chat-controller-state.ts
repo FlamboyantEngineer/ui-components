@@ -111,7 +111,7 @@ export interface ChatEngineContext {
 }
 
 /** A promise with its settle functions. */
-export interface Deferred<T> {
+interface Deferred<T> {
   promise: Promise<T>;
   resolve: (value: T) => void;
   reject: (reason: unknown) => void;

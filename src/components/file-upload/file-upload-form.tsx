@@ -12,7 +12,7 @@ import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { InlineError } from '../inline-error/inline-error.js';
 import { fileUploadHooks as hooks, type FileUploadItem } from './file-upload-files.js';
 
-export interface FileFormInputProps {
+interface FileFormInputProps {
   /** The form field name the files are submitted under. */
   name: string | undefined;
   /** The upload is required and lists no file, so a form submit is refused. */
@@ -25,7 +25,7 @@ export interface FileFormInputProps {
   onInvalid: () => void;
 }
 
-export interface FileFormOptions {
+interface FileFormOptions {
   name?: string | undefined;
   isRequired?: boolean | undefined;
   isInvalid?: boolean | undefined;
@@ -38,7 +38,7 @@ export interface FileFormOptions {
 }
 
 /** An upload's part in a form: its hidden input, its error message and whether it is invalid. */
-export interface FileForm {
+interface FileForm {
   input: ReactNode;
   /** The error message element, if any. */
   message: ReactNode;
@@ -58,13 +58,7 @@ function isSameFiles(held: readonly File[], files: readonly File[]): boolean {
  * cannot set an input's files (no `DataTransfer`) submits none. The files are set again only when
  * they change, or when a form reset emptied the input, not on every render.
  */
-export function FileFormInput({
-  name,
-  isRequired,
-  isDisabled,
-  files,
-  onInvalid,
-}: FileFormInputProps) {
+function FileFormInput({ name, isRequired, isDisabled, files, onInvalid }: FileFormInputProps) {
   const ref = useRef<HTMLInputElement>(null);
   const held = useRef<readonly File[]>([]);
   useLayoutEffect(() => {

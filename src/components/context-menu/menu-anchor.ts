@@ -5,7 +5,7 @@ import { createOverlayPointRect } from '../../utils/overlay-position.js';
 import type { MenuOverlayProps } from '../menu/menu.js';
 import { isElementAnchor, type MenuAnchor } from './menu-controller.js';
 
-export interface MenuAnchorOptions {
+interface MenuAnchorOptions {
   anchor: MenuAnchor | null;
   /** Placement against an element anchor. */
   placement: Placement;
@@ -13,7 +13,7 @@ export interface MenuAnchorOptions {
   owner: RefObject<Element | null>;
 }
 
-export type MenuAnchorProps = Pick<
+type MenuAnchorProps = Pick<
   MenuOverlayProps,
   'triggerRef' | 'getTargetRect' | 'placement' | 'offset'
 >;

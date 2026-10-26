@@ -35,7 +35,7 @@ export interface CellGrid<T> {
 }
 
 /** Where a cell of a range sits: inside it, and on which of its edges. */
-export interface RangeCellPlace {
+interface RangeCellPlace {
   isInRange: boolean;
   isTop: boolean;
   isBottom: boolean;
@@ -64,7 +64,7 @@ export function createCellGrid<T extends TableRow>(
 }
 
 /** The cell at row and column indices, if both are in the grid. */
-export function getCellPosition<T extends TableRow>(
+function getCellPosition<T extends TableRow>(
   grid: CellGrid<T>,
   at: { row: number; column: number },
 ): TableCellPosition | null {

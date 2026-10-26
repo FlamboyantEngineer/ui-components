@@ -14,7 +14,7 @@ import { composerHooks as hooks } from '../composer-hooks.js';
 import { getPillText, type PillAttributes } from './composer-schema.js';
 
 /** What the editor's pills draw with. */
-export interface ComposerPillOptions {
+interface ComposerPillOptions {
   getReference: RecordLabelResolver | undefined;
   isEditable: boolean;
 }

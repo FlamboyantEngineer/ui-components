@@ -23,7 +23,7 @@ import { SelectTrigger } from './select-trigger.js';
 
 export type { SelectConfig, SelectKeysValue } from './select-model.js';
 
-export interface SelectControlProps extends SelectConfig {
+interface SelectControlProps extends SelectConfig {
   control: FieldControlProps;
   state: FieldState<SelectKeysValue>;
   /** The field's label, which names the chips and the clear button. */

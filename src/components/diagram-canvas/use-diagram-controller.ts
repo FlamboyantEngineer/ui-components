@@ -26,7 +26,7 @@ export interface DiagramTarget {
   port?: string | undefined;
 }
 
-export interface DiagramControllerOptions {
+interface DiagramControllerOptions {
   nodes: readonly DiagramNode[];
   edges: readonly DiagramEdge[];
   isEditing: boolean;

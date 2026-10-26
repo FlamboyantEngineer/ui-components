@@ -8,7 +8,7 @@ import type { ChatPart, ChatReasoningPart, ChatToolCallPart } from './chat-part.
 export type ChatStepPart = ChatReasoningPart | ChatToolCallPart;
 
 /** A part shown on its own, keyed for rendering. */
-export interface ChatPartItem {
+interface ChatPartItem {
   kind: 'part';
   key: string;
   part: ChatPart;
@@ -23,7 +23,7 @@ export interface ChatStepsItem {
 
 export type ChatPartsItem = ChatPartItem | ChatStepsItem;
 
-export function isStepPart(part: ChatPart): part is ChatStepPart {
+function isStepPart(part: ChatPart): part is ChatStepPart {
   return part.type === 'reasoning' || part.type === 'tool-call';
 }
 
@@ -33,7 +33,7 @@ export function toPartKey(part: ChatPart, index: number): string {
 }
 
 /** The key a group of steps is rendered and expanded under. */
-export function toStepsKey(first: ChatStepPart): string {
+function toStepsKey(first: ChatStepPart): string {
   return `steps:${first.id}`;
 }
 

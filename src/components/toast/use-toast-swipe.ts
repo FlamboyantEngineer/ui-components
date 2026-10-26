@@ -9,7 +9,7 @@ import { measuredProperty } from '../../core/hooks.js';
 /** The direction a toast is swiped to dismiss it. */
 export type ToastSwipeDirection = 'up' | 'down' | 'left' | 'right';
 
-export interface ToastSwipeOptions {
+interface ToastSwipeOptions {
   direction: ToastSwipeDirection;
   /** Pixels a release must pass to dismiss. */
   threshold: number;

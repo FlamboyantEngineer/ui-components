@@ -26,7 +26,7 @@ export interface CardActionOptions {
   onAction?: (() => void) | undefined;
 }
 
-export interface CardAction {
+interface CardAction {
   /** Whether the card has an action. */
   isActionable: boolean;
   /** Receives the action element, whether the card drew it or a custom header slotted it. */

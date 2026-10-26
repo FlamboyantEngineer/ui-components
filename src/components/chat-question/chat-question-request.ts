@@ -6,7 +6,7 @@ import { toErrorMessage } from '../../utils/to-error-message.js';
 /** The requests a card sends its host: the reader's answers, or their dismissal. */
 export type QuestionRequestKind = 'submit' | 'dismiss';
 
-export interface QuestionRequest {
+interface QuestionRequest {
   /** The request whose promise has not settled. */
   running: QuestionRequestKind | null;
   /** Why the last request failed, until the next one. */

@@ -20,10 +20,7 @@ import {
 } from '../menu/menu.js';
 import { toActionContent, type ActionRowAction } from './action-verbs.js';
 
-export interface ActionRowActionsProps extends Pick<
-  AriaLabellingProps,
-  'aria-label' | 'aria-labelledby'
-> {
+interface ActionRowActionsProps extends Pick<AriaLabellingProps, 'aria-label' | 'aria-labelledby'> {
   actions: readonly ActionRowAction[];
   size: ButtonSize;
   /** Draws the actions as one toolbar. */

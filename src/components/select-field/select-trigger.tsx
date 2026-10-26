@@ -12,7 +12,7 @@ import { Button } from '../button/button.js';
 import { Icon, toIconProps } from '../icon/icon.js';
 import type { ChosenSelectOption } from './select-options.js';
 
-export interface SelectTriggerProps {
+interface SelectTriggerProps {
   ref: Ref<HTMLButtonElement>;
   /** The chosen option of a single select. A multiple select shows its choices as chips. */
   chosen: ChosenSelectOption | null;

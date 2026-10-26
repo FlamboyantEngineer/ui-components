@@ -21,7 +21,7 @@ import { SelectListItems, type SelectOptionsDisplay } from './select-option.js';
 import { flattenSelectItems, type SelectFieldItem } from './select-options.js';
 
 /** The next page of a search's results, loaded when the end of the list scrolls into view. */
-export interface SelectListMore {
+interface SelectListMore {
   isLoading: boolean;
   onLoadMore: () => void;
 }

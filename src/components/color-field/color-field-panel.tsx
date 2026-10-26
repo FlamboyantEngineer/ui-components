@@ -15,7 +15,7 @@ import { ColorChannelInputs, ColorFormatChoice } from './color-field-channels.js
 import { ColorFieldEyeDropper } from './color-field-eye-dropper.js';
 import { hasAlpha, type ColorFieldFormat } from './color-values.js';
 
-export interface ColorFieldPanelProps {
+interface ColorFieldPanelProps {
   label: string;
   state: FieldState<string | null>;
   format: ColorFieldFormat;

@@ -5,7 +5,7 @@ import { diagramHooks as hooks } from './diagram-hooks.js';
 import type { DiagramNode, DiagramPort } from './diagram-model.js';
 import type { DiagramController, DiagramTarget } from './use-diagram-controller.js';
 
-export interface DiagramPortViewProps {
+interface DiagramPortViewProps {
   node: DiagramNode;
   port: DiagramPort;
   /** The canvas's latest controller, read when the reader acts. */

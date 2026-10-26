@@ -11,7 +11,7 @@ import type { ChatMessageOrigin, ChatMessageStatus } from './chat-message.js';
 import type { TranscriptRegistry, TranscriptView } from './transcript-registry.js';
 
 /** What a message registers with the transcript it sits in. */
-export interface TranscriptMessageRegistration {
+interface TranscriptMessageRegistration {
   /** The message's id, also its DOM id; the transcript otherwise knows it by its child's key. */
   id?: string | undefined;
   /** The author's display name, announced as "New message from …"; none for a notice. */
@@ -23,7 +23,7 @@ export interface TranscriptMessageRegistration {
 }
 
 /** Props a message spreads on its `<article>` so the transcript can find, focus and mark it. */
-export interface TranscriptMessageProps {
+interface TranscriptMessageProps {
   ref?: RefCallback<HTMLElement> | undefined;
   tabIndex?: number | undefined;
   'aria-posinset'?: number | undefined;

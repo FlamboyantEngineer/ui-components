@@ -1,7 +1,7 @@
 import { useRef, useState, type KeyboardEvent, type RefObject } from 'react';
 import { useFocusRequest } from '../../utils/use-focus-request.js';
 
-export interface ToolCallApprovalOptions {
+interface ToolCallApprovalOptions {
   /** The call waits for the reader's decision. */
   isPending: boolean;
   onApprove?: (() => void) | undefined;

@@ -14,7 +14,7 @@ export interface CalendarDayContext {
   renderDay: ((day: CalendarViewDay) => ReactNode) | undefined;
 }
 
-export interface CalendarDayCellProps {
+interface CalendarDayCellProps {
   day: string;
   context: CalendarDayContext;
   /** The events that cover the day. */

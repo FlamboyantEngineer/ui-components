@@ -22,7 +22,7 @@ export interface RelationColumn<T> {
   selectedKey: Key | null;
 }
 
-export interface RelationColumnsOptions<T extends { id: Key }> {
+interface RelationColumnsOptions<T extends { id: Key }> {
   item: T;
   path: RelationColumnsPath;
   getRelated: (item: T, direction: RelationDirection) => readonly T[];

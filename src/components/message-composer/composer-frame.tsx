@@ -23,7 +23,7 @@ export interface ComposerFrameModel {
   focusInput: () => void;
 }
 
-export interface ComposerFrameProps {
+interface ComposerFrameProps {
   props: MessageComposerSharedProps;
   rootRef: RefObject<HTMLDivElement | null>;
   model: ComposerFrameModel;

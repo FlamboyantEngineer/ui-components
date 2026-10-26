@@ -2,7 +2,7 @@
 
 import { useLayoutEffect, useRef, type RefObject } from 'react';
 
-export interface BlockedFocusOptions {
+interface BlockedFocusOptions {
   /** The region's root, which holds focus while the content is blocked. */
   rootRef: RefObject<HTMLElement | null>;
   /** The content that turns inert. */

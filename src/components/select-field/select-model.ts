@@ -37,7 +37,7 @@ export interface SelectConfig {
   autoFocus?: boolean | undefined;
 }
 
-export interface SelectModelProps extends SelectConfig {
+interface SelectModelProps extends SelectConfig {
   state: FieldState<SelectKeysValue>;
   isMultiple: boolean;
 }

@@ -55,7 +55,7 @@ export interface ChatMessageContext extends ChatCommandContext {
   onExpandedPartsChange: (messageId: string, expanded: Record<string, boolean>) => void;
 }
 
-export interface ChatMessageViewProps {
+interface ChatMessageViewProps {
   message: ChatMessageData;
   groupPosition: ChatMessageGroupPosition;
   /** The message this one replies to, when it is loaded. */

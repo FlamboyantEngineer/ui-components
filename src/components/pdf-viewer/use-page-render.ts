@@ -12,7 +12,7 @@ import {
 } from './pdf-engine.js';
 import type { LoadedPdf } from './use-pdf-document.js';
 
-export interface UsePageRenderOptions<
+interface UsePageRenderOptions<
   V extends PdfViewport = PdfViewport,
   C extends PdfTextContent = PdfTextContent,
 > {
@@ -29,13 +29,13 @@ export interface UsePageRenderOptions<
   linkService: PdfLinkService;
 }
 
-export interface CanvasPixels {
+interface CanvasPixels {
   width: number;
   height: number;
 }
 
 /** A page to draw and the viewport to draw it at. */
-export interface PageBitmap<V extends PdfViewport, C extends PdfTextContent> {
+interface PageBitmap<V extends PdfViewport, C extends PdfTextContent> {
   loaded: LoadedPdf<V, C>;
   page: PdfPage<V, C>;
   viewport: V;

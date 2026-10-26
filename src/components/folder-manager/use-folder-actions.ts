@@ -27,7 +27,7 @@ export interface FolderCallbacks<T extends FolderItem> {
   getDeleteBlockedReason?: ((folder: T) => string | null | undefined) | undefined;
 }
 
-export interface FolderActionsOptions<T extends FolderItem> extends FolderCallbacks<T> {
+interface FolderActionsOptions<T extends FolderItem> extends FolderCallbacks<T> {
   folders: readonly T[];
   /** Selects a folder (`null`: no folder) after a create or delete. */
   select: (key: Key | null) => void;

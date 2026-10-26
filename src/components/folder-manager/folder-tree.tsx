@@ -20,7 +20,7 @@ import {
 } from './folder-model.js';
 import type { FolderManagerModel } from './use-folder-manager.js';
 
-export interface FolderTreeProps<T extends FolderItem> {
+interface FolderTreeProps<T extends FolderItem> {
   model: FolderManagerModel<T>;
   folders: readonly T[];
   'aria-label': string | undefined;

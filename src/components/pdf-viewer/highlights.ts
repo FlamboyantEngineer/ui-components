@@ -1,7 +1,7 @@
 import { pdfViewerHooks } from './styling-hooks.js';
 import type { PdfMatchRange } from './pdf-search.js';
 
-export interface HighlightTextRunsOptions {
+interface HighlightTextRunsOptions {
   /** The text layer's run elements. */
   runs: readonly HTMLElement[];
   /** Each run's original text. */
@@ -9,7 +9,7 @@ export interface HighlightTextRunsOptions {
   ranges: readonly PdfMatchRange[];
 }
 
-export interface HighlightedTextRuns {
+interface HighlightedTextRuns {
   /** The element of the current match, when this layer holds it. */
   current: HTMLElement | null;
   /** Puts every touched run back to its original text. */

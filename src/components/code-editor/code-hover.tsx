@@ -21,7 +21,7 @@ export interface MarkedDiagnostic {
   range: CodeRange;
 }
 
-export interface CodeHoverOptions {
+interface CodeHoverOptions {
   inputRef: RefObject<HTMLTextAreaElement | null>;
   highlightRef: RefObject<HTMLPreElement | null>;
   marked: readonly MarkedDiagnostic[];
@@ -38,7 +38,7 @@ interface ReadCopy {
 }
 
 /** What the tooltip shows, and the on-screen rectangle it points at. */
-export interface CodeHoverTip {
+interface CodeHoverTip {
   offset: number;
   rect: DOMRect;
   diagnostics: CodeDiagnostic[];
@@ -57,7 +57,7 @@ export interface CodeHoverModel {
   close(): void;
 }
 
-export interface CodeHoverTooltipProps {
+interface CodeHoverTooltipProps {
   model: CodeHoverModel;
   inputRef: RefObject<HTMLTextAreaElement | null>;
 }

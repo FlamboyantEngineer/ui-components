@@ -8,7 +8,7 @@ const listParents: ReadonlySet<LayoutElement> = new Set(['ul', 'ol']);
 const phrasingParents: ReadonlySet<LayoutElement> = new Set(['a', 'label', 'p', 'span']);
 
 /** The element of a divider that is valid between the children of `parent`. */
-export function resolveDividerElement(parent: LayoutElement): 'li' | 'span' | 'div' {
+function resolveDividerElement(parent: LayoutElement): 'li' | 'span' | 'div' {
   if (listParents.has(parent)) return 'li';
   return phrasingParents.has(parent) ? 'span' : 'div';
 }

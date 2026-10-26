@@ -24,7 +24,7 @@ import {
   type ComboboxOption,
 } from './combobox-options.js';
 
-export interface ComboboxFieldProps {
+interface ComboboxFieldProps {
   variant: 'default' | 'search';
   size: ControlSize;
   placeholder: string | undefined;
@@ -40,7 +40,7 @@ export interface ComboboxFieldProps {
 }
 
 /** What inline completion needs: the options it completes from and where it reports. */
-export interface InlineCompletion {
+interface InlineCompletion {
   options: readonly ComboboxOption[];
   onComplete: (completion: ComboboxCompletion | null) => void;
 }

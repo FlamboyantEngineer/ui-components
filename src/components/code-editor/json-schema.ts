@@ -44,7 +44,7 @@ export interface JsonSchema {
 }
 
 /** A value that breaks the schema, and the text to mark. */
-export interface JsonSchemaIssue {
+interface JsonSchemaIssue {
   message: string;
   start: number;
   end: number;

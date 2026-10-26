@@ -9,7 +9,7 @@ import {
 } from './table-columns.js';
 import type { TableColumn } from './table-rows.js';
 
-export interface ColumnLayoutOptions<T> {
+interface ColumnLayoutOptions<T> {
   columns: readonly TableColumn<T>[];
   /** Controlled layout. */
   columnLayout?: TableColumnLayout | undefined;

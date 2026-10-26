@@ -12,13 +12,13 @@ import { timelineHooks as hooks } from './timeline-hooks.js';
 import type { ItemPredecessors, PlacedItem } from './timeline-layout.js';
 import { useTimelineDrag } from './use-timeline-drag.js';
 
-export interface TimelineItemSelection {
+interface TimelineItemSelection {
   isSelectable: boolean;
   isSelected: boolean;
   onToggle: (id: Key) => void;
 }
 
-export interface TimelineItemButtonProps {
+interface TimelineItemButtonProps {
   placed: PlacedItem;
   predecessors: ItemPredecessors | undefined;
   scale: TimelineScale;

@@ -38,7 +38,7 @@ export interface PivotTableRow {
   order: number;
 }
 
-export interface PivotColumnsOptions {
+interface PivotColumnsOptions {
   result: PivotResult;
   layout: PivotLayout;
   fields: readonly PivotTableField[];
@@ -50,7 +50,7 @@ type PivotTableColumn = TableProps<PivotTableRow>['columns'][number];
 
 type PivotTableColumnGroup = NonNullable<TableProps<PivotTableRow>['columnGroups']>[number];
 
-export interface PivotColumns {
+interface PivotColumns {
   columns: PivotTableColumn[];
   groups: PivotTableColumnGroup[];
 }

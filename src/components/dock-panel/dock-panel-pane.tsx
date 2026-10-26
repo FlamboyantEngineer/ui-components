@@ -27,7 +27,7 @@ export interface DockPanelPaneProps extends Omit<BaseProps, 'id'> {
 }
 
 /** What an `DockPanel` tells each of its panes. */
-export interface DockPanelPaneContextValue {
+interface DockPanelPaneContextValue {
   /** The pane element's id, which its launcher controls. */
   elementId: string;
   /** The pane is not the open one: it stays mounted, hidden and inert. */

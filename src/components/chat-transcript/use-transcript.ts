@@ -41,7 +41,7 @@ import { focusAfterPaging, noteSeen, syncWithScroll } from './transcript-sync.js
 import { resolveTailRange, selectMounted, type WindowRange } from './transcript-window.js';
 
 /** The transcript's props that drive its behaviour. */
-export type TranscriptOptions = Omit<
+type TranscriptOptions = Omit<
   TranscriptSettings,
   'strings' | 'announcer' | 'setUi' | 'setRange' | 'requestRender'
 > & { children: ReactNode };

@@ -1,6 +1,6 @@
 import { useRef, useState, type DragEvent } from 'react';
 
-export interface FileDrop {
+interface FileDrop {
   /** A drag carrying files is over the composer. */
   isDropTarget: boolean;
   /** Handlers for the composer's root. */

@@ -13,7 +13,7 @@ type FieldSlots = SlotRegistry<'root' | 'control'>;
 type ValidatableElement = HTMLElement & Pick<HTMLInputElement, 'setCustomValidity'>;
 
 /** Whether the value has an error or is still being checked; a disabled field never blocks. */
-export function isFieldBlocking(state: FieldState<unknown>): boolean {
+function isFieldBlocking(state: FieldState<unknown>): boolean {
   const { status } = state.realtimeValidation;
   return !state.isDisabled && (status === 'invalid' || status === 'pending');
 }

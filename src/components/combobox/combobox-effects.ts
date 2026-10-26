@@ -2,7 +2,7 @@ import { useContext, useEffect, useLayoutEffect, type RefObject } from 'react';
 import { ComboBoxStateContext } from '../../primitives/index.js';
 import { findFirstOptionKey, type ComboboxCompletion } from './combobox-options.js';
 
-export interface AutoHighlightOptions {
+interface AutoHighlightOptions {
   /** Highlight the first enabled option whenever the list is open and nothing is highlighted. */
   autoHighlight: boolean;
   /** The inline completion, whose option is highlighted while the input shows it. */

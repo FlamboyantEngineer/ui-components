@@ -7,7 +7,7 @@ import { readTimeInstant } from '../../utils/read-time-instant.js';
 /** Where a value sits along a line chart's x axis: an ISO 8601 date or date-time, or a number. */
 export type LineChartX = string | number;
 
-export interface LineXAxisOptions {
+interface LineXAxisOptions {
   /** Every x value drawn. */
   values: readonly LineChartX[];
   /** The positions the lowest and highest values map to. */

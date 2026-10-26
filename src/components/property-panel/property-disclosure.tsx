@@ -15,7 +15,7 @@ export interface PropertyExpansionProps {
   onExpandedChange?: ((isExpanded: boolean) => void) | undefined;
 }
 
-export interface ScopedExpansionOptions {
+interface ScopedExpansionOptions {
   /** Whether a query is active. */
   isFiltering: boolean;
   /** Whether the part is expanded while a query is active. */
@@ -27,7 +27,7 @@ export interface ScopedExpansionOptions {
   persistKey?: string | undefined;
 }
 
-export interface ScopedExpansion {
+interface ScopedExpansion {
   isExpanded: boolean;
   onExpandedChange: (isExpanded: boolean) => void;
 }

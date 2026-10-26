@@ -8,7 +8,7 @@ export interface ListItemChange {
 }
 
 /** Both sides of a list change, each item marked. */
-export interface ListChanges {
+interface ListChanges {
   /** The old items in their order: `removed` or `unchanged`. */
   before: ListItemChange[];
   /** The new items in their order: `added` or `unchanged`. */
@@ -16,7 +16,7 @@ export interface ListChanges {
 }
 
 /** What happened to a property: it got a value, lost it, or its value changed. */
-export type ChangeKind = 'added' | 'removed' | 'changed';
+type ChangeKind = 'added' | 'removed' | 'changed';
 
 /** Whether a value is unset: nullish, an empty text or an empty list. */
 export function isBlankValue(value: string | readonly string[] | null | undefined): boolean {

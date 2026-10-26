@@ -1,4 +1,4 @@
-export interface AmountShare<T> {
+interface AmountShare<T> {
   item: T;
   value: number;
   /** The item's share of the whole, from 0 to 1. */

@@ -46,7 +46,7 @@ const definitionPattern =
   /^\[((?:[^\\[\]]|\\.){1,999})\]:[ \t]*(<[^<>\n]*>|\S+)(?:[ \t]+("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|\((?:[^()\\]|\\.)*\)))?[ \t]*$/;
 
 /** An inline array filled after the block pass, when every link definition is known. */
-export function deferInlines(context: BlockContext, text: string): MarkdownInline[] {
+function deferInlines(context: BlockContext, text: string): MarkdownInline[] {
   const target: MarkdownInline[] = [];
   context.inlines.push({ target, text });
   return target;

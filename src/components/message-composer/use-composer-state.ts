@@ -11,7 +11,7 @@ export interface ComposerFormat<T> {
   codec: PersistCodec<T>;
 }
 
-export interface ComposerStateOptions<T> {
+interface ComposerStateOptions<T> {
   value?: T | undefined;
   defaultValue?: T | undefined;
   onChange?: ((value: T) => void) | undefined;

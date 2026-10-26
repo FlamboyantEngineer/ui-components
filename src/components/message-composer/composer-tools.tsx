@@ -8,9 +8,9 @@ import type { MessageComposerSubmitShortcut } from './message-composer.js';
 import { attachChosenFiles } from './use-file-drop.js';
 
 /** What the action button does: send, stop the pending reply, or save the edited message. */
-export type ComposerActionMode = 'send' | 'stop' | 'save';
+type ComposerActionMode = 'send' | 'stop' | 'save';
 
-export interface ComposerActionProps {
+interface ComposerActionProps {
   mode: ComposerActionMode;
   canSubmit: boolean;
   isPending: boolean;

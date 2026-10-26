@@ -18,7 +18,7 @@ export interface FileFieldItem {
 }
 
 /** The files an edit added to the committed files, and the committed files it removed. */
-export interface FileFieldChanges {
+interface FileFieldChanges {
   added: ReadonlySet<Key>;
   removed: readonly FileFieldItem[];
 }

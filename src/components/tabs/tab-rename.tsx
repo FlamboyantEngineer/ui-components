@@ -53,7 +53,7 @@ interface TabRenameFieldProps {
   listRef: RefObject<HTMLElement | null>;
 }
 
-export interface TabRenameOverlayProps {
+interface TabRenameOverlayProps {
   rename: TabRename | null;
   state: TabListModel;
   listRef: RefObject<HTMLElement | null>;

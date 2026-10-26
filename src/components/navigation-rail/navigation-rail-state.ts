@@ -5,7 +5,7 @@ import { createHooks } from '../../core/hooks.js';
 import { usePersistentState, type PersistCodec } from '../../core/provider.js';
 import { createJsonCodec } from '../../utils/json-codec.js';
 
-export interface NavigationRailState {
+interface NavigationRailState {
   /** The rail shows icons only. */
   isCollapsed: boolean;
   /** Expands a collapsed rail, as pressing a group in it does. */
@@ -13,9 +13,9 @@ export interface NavigationRailState {
 }
 
 /** Counts the current items inside a group, so the group can say it holds the current page. */
-export type CurrentItemRegistry = () => () => void;
+type CurrentItemRegistry = () => () => void;
 
-export interface PersistedValueOptions<T> {
+interface PersistedValueOptions<T> {
   /** The controlled value, which storage never overrides. */
   value: T | undefined;
   defaultValue: T;

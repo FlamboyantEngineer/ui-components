@@ -18,7 +18,7 @@ import { clamp } from '../../utils/clamp.js';
 import { useForwardedRef } from '../../utils/use-forwarded-ref.js';
 import type { ListHandle } from './list-row.js';
 
-export interface ListNavigationOptions {
+interface ListNavigationOptions {
   /** The class of the rows' primary controls, the elements navigation moves between. */
   primaryClass: string;
   /** Called on ArrowUp from the first row. */
@@ -30,7 +30,7 @@ export interface ListNavigationOptions {
 }
 
 /** How rows join a list's single tab stop. */
-export interface RowRegistry {
+interface RowRegistry {
   register(id: string, node: HTMLElement): () => void;
   subscribe(id: string, listener: () => void): () => void;
   getActiveId(): string | null;
@@ -38,7 +38,7 @@ export interface RowRegistry {
 }
 
 /** What a list puts on its `<ul>` and gives its rows. */
-export interface ListNavigation {
+interface ListNavigation {
   registry: RowRegistry;
   setRef: (node: HTMLUListElement | null) => void;
   onKeyDown: (event: KeyboardEvent<HTMLUListElement>) => void;

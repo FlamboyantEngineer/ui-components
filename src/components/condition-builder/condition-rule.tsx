@@ -10,7 +10,7 @@ import { ConditionActions } from './condition-actions.js';
 import { conditionBuilderHooks as hooks, useConditionBuilder } from './condition-context.js';
 import type { ConditionRule } from './condition-tree.js';
 
-export interface ConditionRuleRowProps {
+interface ConditionRuleRowProps {
   rule: ConditionRule;
   index: number;
   count: number;

@@ -9,7 +9,7 @@ import { findTopBlocks } from './block-commands.js';
 import { useRichTextEditorContext } from './rich-text-context.js';
 
 /** The block a handle serves and where it sits, with the handle's own focus and drag state. */
-export interface BlockTarget {
+interface BlockTarget {
   /** The block's position in the document. */
   pos: number;
   /** The block's top edge in the surface, in pixels. */

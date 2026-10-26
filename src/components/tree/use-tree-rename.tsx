@@ -15,10 +15,9 @@ import { useUiStrings } from '../../core/provider.js';
 import type { TreeItemData, TreeProps } from './tree.js';
 import { treeHooks as hooks } from './tree-hooks.js';
 
-export type TreeRenameOptions<T extends TreeItemData> = Pick<
-  TreeProps<T>,
-  'onRename' | 'canRename'
-> & { getTextValue: (item: T) => string };
+type TreeRenameOptions<T extends TreeItemData> = Pick<TreeProps<T>, 'onRename' | 'canRename'> & {
+  getTextValue: (item: T) => string;
+};
 
 /** A tree's in-place rename, while the owner takes renames. */
 export interface TreeRename<T> {

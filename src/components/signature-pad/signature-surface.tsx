@@ -13,7 +13,7 @@ import {
   type SignaturePoint,
 } from './signature-path.js';
 
-export interface SignatureSurfaceProps {
+interface SignatureSurfaceProps {
   control: FieldControlProps;
   /** The drawing shown, or `null` for an empty pad. */
   drawing: DrawnSignature | null;

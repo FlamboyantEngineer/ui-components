@@ -18,7 +18,7 @@ export type CollectionDropTarget =
   | { type: 'item'; key: Key; dropPosition: 'before' | 'after' | 'on' };
 
 /** A drop target on an item. */
-export type CollectionItemDropTarget = Extract<CollectionDropTarget, { type: 'item' }>;
+type CollectionItemDropTarget = Extract<CollectionDropTarget, { type: 'item' }>;
 
 /**
  * The drag and drop options a collection hands to its building block's `useDragAndDrop`: one move
@@ -36,7 +36,7 @@ export interface CollectionDragAndDropOptions {
 }
 
 /** How a reorderable collection turns drops into moves. */
-export interface ReorderDragAndDropOptions<Move> {
+interface ReorderDragAndDropOptions<Move> {
   /** The move a drop of `keys` on `target` makes, or `null` where nothing may land. */
   resolveMove: (target: CollectionDropTarget, keys: ReadonlySet<Key>) => Move | null;
   /** Reports the move of an accepted drop. */

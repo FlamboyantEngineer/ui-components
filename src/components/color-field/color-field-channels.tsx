@@ -4,7 +4,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { SegmentedChoice } from '../segmented-choice/segmented-choice.js';
 import { describeFormatInputs, type ColorFieldFormat } from './color-values.js';
 
-export interface ColorFormatChoiceProps {
+interface ColorFormatChoiceProps {
   format: ColorFieldFormat;
   /** The formats offered; fewer than two draw nothing. */
   formats: readonly ColorFieldFormat[];

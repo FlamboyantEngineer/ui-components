@@ -2,12 +2,12 @@
 // that place the rendered ones.
 
 /** A run of indices, `start` included and `end` excluded. */
-export interface MatrixSpan {
+interface MatrixSpan {
   start: number;
   end: number;
 }
 
-export interface MatrixSpanOptions {
+interface MatrixSpanOptions {
   /** How far the items are scrolled under the pinned headers, in pixels. */
   offset: number;
   /** The length of the axis in view, in pixels. */
@@ -26,7 +26,7 @@ export interface MatrixColumnTracks {
   lines: ReadonlyMap<number, number>;
 }
 
-export interface MatrixColumnTracksOptions {
+interface MatrixColumnTracksOptions {
   /** The rendered column indices, ascending. */
   indices: readonly number[];
   /** The number of columns. */

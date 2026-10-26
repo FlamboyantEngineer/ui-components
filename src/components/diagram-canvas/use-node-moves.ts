@@ -9,7 +9,7 @@ import {
 } from './diagram-model.js';
 import type { DiagramPoint } from './edge-route.js';
 
-export interface NodeMovesOptions {
+interface NodeMovesOptions {
   nodes: readonly DiagramNode[];
   edges: readonly DiagramEdge[];
   selected: ReadonlySet<Key>;

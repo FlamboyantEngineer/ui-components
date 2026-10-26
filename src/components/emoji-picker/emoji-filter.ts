@@ -1,7 +1,7 @@
 import type { EmojiCategory, NativeEmoji } from './emoji-catalog.js';
 
 /** Which standard emoji a picker offers. */
-export interface EmojiFilterOptions {
+interface EmojiFilterOptions {
   /** The standard categories to offer, in order. Defaults to all of them, in data order. */
   categories?: readonly EmojiCategory[] | undefined;
   /** The newest Emoji version to offer; emoji without a version always stay. */

@@ -10,7 +10,7 @@ import {
   type CodeSelection,
 } from './code-editing.js';
 
-export interface CodeKeysOptions {
+interface CodeKeysOptions {
   inputRef: RefObject<HTMLTextAreaElement | null>;
   applyEdit: (edit: CodeEdit) => void;
   /** Spaces per indentation level. */

@@ -17,7 +17,7 @@ export type RelativeTimeRelation = 'past' | 'present' | 'future';
 /** An `Intl.DateTimeFormat` date or time style. */
 export type RelativeTimeStyle = 'full' | 'long' | 'medium' | 'short';
 
-export interface RelativeTimeOptions {
+interface RelativeTimeOptions {
   /** The moment the value is read against. */
   now: Date;
   locale: string;
@@ -29,7 +29,7 @@ export interface RelativeTimeOptions {
   timeStyle?: RelativeTimeStyle | undefined;
 }
 
-export interface RelativeTimeText {
+interface RelativeTimeText {
   /**
    * The value relative to now as Intl words it mid-sentence (`yesterday`, `in 2 hours`), or the
    * absolute text once the value is `fallbackAfterDays` away.

@@ -9,7 +9,7 @@ import { Button } from '../button/button.js';
 import { VisuallyHidden } from '../visually-hidden/visually-hidden.js';
 import type { ChatFeedbackRating, MessageCommands } from './message-commands.js';
 
-export interface MessageActionsBarProps extends BaseProps, AriaLabellingProps {
+interface MessageActionsBarProps extends BaseProps, AriaLabellingProps {
   state: MessageCommands;
   /** The overlays, when the bar owns them. */
   children?: ReactNode;

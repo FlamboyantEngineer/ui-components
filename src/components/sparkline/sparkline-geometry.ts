@@ -9,14 +9,14 @@ import { createLinearScale } from '../../utils/linear-scale.js';
 export type SparklineMarker = 'min' | 'max' | 'last';
 
 /** A drawn value: its index in the series and where it sits in the box. */
-export interface SparklinePoint {
+interface SparklinePoint {
   index: number;
   value: number;
   x: number;
   y: number;
 }
 
-export interface SparklineGeometryInput {
+interface SparklineGeometryInput {
   values: readonly number[];
   width: number;
   height: number;

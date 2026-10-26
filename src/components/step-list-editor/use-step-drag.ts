@@ -53,7 +53,7 @@ function armStep(event: PressEvent): void {
 }
 
 /** A step's drag and drop: props for the step and its handle, and its states. */
-export interface StepRowDrag {
+interface StepRowDrag {
   ref: RefObject<HTMLLIElement | null>;
   /** Spread on the step: it drags and takes drops. */
   props: HTMLAttributes<HTMLLIElement>;

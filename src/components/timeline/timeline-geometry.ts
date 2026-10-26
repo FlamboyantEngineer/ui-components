@@ -80,13 +80,13 @@ export interface TimelineAxis {
 }
 
 /** A cell of a scale header row: the unit's first day (or the range's) and its extent, in pixels. */
-export interface TimelineScaleCell {
+interface TimelineScaleCell {
   start: string;
   left: number;
   width: number;
 }
 
-export interface ConnectorPoints {
+interface ConnectorPoints {
   x1: number;
   y1: number;
   x2: number;
@@ -116,7 +116,7 @@ export const timelineScales: Readonly<Record<TimelineScale, ScalePlan>> = {
 };
 
 /** Whether a text is a real `YYYY-MM-DD` date. */
-export function isTimelineDate(text: string | undefined): text is string {
+function isTimelineDate(text: string | undefined): text is string {
   return text !== undefined && floorToTimeUnit(text, 'day') === text;
 }
 

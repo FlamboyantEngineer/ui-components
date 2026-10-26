@@ -12,7 +12,7 @@ import { getWeekDays } from './calendar-days.js';
 import { calendarViewHooks as hooks } from './calendar-view-hooks.js';
 import type { CalendarGrid } from './use-calendar-grid.js';
 
-export interface CalendarWeekProps {
+interface CalendarWeekProps {
   events: readonly PlacedEvent[];
   grid: CalendarGrid;
   titleId: string;

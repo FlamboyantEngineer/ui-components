@@ -6,7 +6,7 @@ import { useLayoutEffect, useRef, type RefObject } from 'react';
 /** An element to focus: a ref, or a function asked for the element when focus moves. */
 export type FocusTarget = RefObject<HTMLElement | null> | (() => HTMLElement | null | undefined);
 
-export interface FocusReturnOptions {
+interface FocusReturnOptions {
   /** The container whose removal returns focus. */
   containerRef: RefObject<HTMLElement | null>;
   /** The caller's choice of where focus goes when the container leaves the page. */

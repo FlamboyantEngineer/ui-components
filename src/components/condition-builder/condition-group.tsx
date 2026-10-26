@@ -6,7 +6,7 @@ import { conditionBuilderHooks as hooks, useConditionBuilder } from './condition
 import { ConditionRuleRow } from './condition-rule.js';
 import type { ConditionCombinator, ConditionGroup } from './condition-tree.js';
 
-export interface ConditionGroupViewProps {
+interface ConditionGroupViewProps {
   group: ConditionGroup;
   /** 1 for the root group. */
   depth: number;

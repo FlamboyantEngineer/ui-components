@@ -11,7 +11,7 @@ import { findJsonError } from './json-text.js';
 import { parseJsonTree } from './json-tree.js';
 
 /** The problems to mark in the editor, and the one the field reports. */
-export interface JsonCheck {
+interface JsonCheck {
   diagnostics: CodeDiagnostic[];
   issue: FieldIssue | null;
 }

@@ -16,7 +16,7 @@ import {
 export type BarChartLayout = 'grouped' | 'stacked';
 
 /** A drawn series: its position among the chart's series and one value per category. */
-export interface BarGeometrySeries {
+interface BarGeometrySeries {
   series: number;
   values: readonly number[];
 }
@@ -38,7 +38,7 @@ export interface BarGeometryInput {
 }
 
 /** One drawn bar. */
-export interface BarRect {
+interface BarRect {
   key: string;
   series: number;
   /** The category's position. */

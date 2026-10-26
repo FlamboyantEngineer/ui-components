@@ -15,7 +15,7 @@ import type {
 import { textDiffHooks as hooks } from './text-diff-hooks.js';
 
 /** The side a table draws: the old text, the new text, or both in one unified table. */
-export type TableSide = 'old' | 'new' | 'both';
+type TableSide = 'old' | 'new' | 'both';
 
 export interface TableOptions {
   /** Prefix of the rows' ids. */

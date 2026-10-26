@@ -19,7 +19,7 @@ export type LinkVariant = 'primary' | 'secondary';
 export type LinkUnderline = 'always' | 'hover' | 'none';
 
 /** The states a link passes to `render` with its element's props. */
-export interface LinkRenderState {
+interface LinkRenderState {
   /** The link has `aria-current`. */
   isCurrent: boolean;
   /** The pointer is over the link. */

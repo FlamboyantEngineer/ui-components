@@ -18,7 +18,7 @@ import {
   type DisplayOptionsValue,
 } from './display-options-model.js';
 
-export interface DisplayOptionsSectionProps {
+interface DisplayOptionsSectionProps {
   properties: readonly DisplayOptionsProperty[];
   value: DisplayOptionsValue;
   onChange: (value: DisplayOptionsValue) => void;

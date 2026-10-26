@@ -11,7 +11,7 @@ import {
 } from './transfer-moves.js';
 import type { TransferListItem, TransferListSide } from './transfer-pane.js';
 
-export interface TransferListOptions {
+interface TransferListOptions {
   items: readonly TransferListItem[];
   value: readonly Key[] | undefined;
   defaultValue: readonly Key[] | undefined;

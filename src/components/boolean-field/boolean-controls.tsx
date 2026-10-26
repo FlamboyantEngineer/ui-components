@@ -25,14 +25,14 @@ export type BooleanFieldVariant =
   | 'toggle-button';
 
 /** The names of the three states, and whether the caller named true or false. */
-export interface BooleanLabels {
+interface BooleanLabels {
   true: string;
   false: string;
   unset: string;
   hasCustom: boolean;
 }
 
-export interface BooleanControlProps {
+interface BooleanControlProps {
   control: FieldControlProps;
   state: FieldState<boolean | null>;
   variant: BooleanFieldVariant;

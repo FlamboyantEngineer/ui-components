@@ -5,7 +5,7 @@ import type { ChatQueuedMessage } from '../chat-controller/chat-controller.js';
 import { Button } from '../button/button.js';
 import { chatHooks as hooks } from './chat-hooks.js';
 
-export interface ChatQueueProps {
+interface ChatQueueProps {
   queue: readonly ChatQueuedMessage[];
   /** Replaces the queue; without it the queued messages cannot be edited or removed. */
   onQueueChange: ((queue: readonly ChatQueuedMessage[]) => void) | undefined;

@@ -7,7 +7,7 @@ import { toCollectionKey } from '../../utils/to-collection-key.js';
 import type { CompareTreeNode } from '../../utils/compare-trees.js';
 import { findNextChange, type TreeCompareRowIndex } from './tree-compare-rows.js';
 
-export interface TreeCompareNavigationOptions<T extends CompareTreeNode> {
+interface TreeCompareNavigationOptions<T extends CompareTreeNode> {
   index: TreeCompareRowIndex<T>;
   expandedKeys: ReadonlySet<Key>;
   setExpandedKeys: (keys: Set<Key>) => void;

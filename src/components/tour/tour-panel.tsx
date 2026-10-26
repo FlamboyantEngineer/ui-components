@@ -5,7 +5,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { Button } from '../button/button.js';
 
-export interface TourPanelProps {
+interface TourPanelProps {
   /** The dialog's id. */
   id?: string | undefined;
   /** The shown step's index. */

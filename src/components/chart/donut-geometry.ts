@@ -4,12 +4,12 @@ import { roundCoordinate } from './chart-layout.js';
 import { resolveAmountShares } from '../../utils/resolve-amount-shares.js';
 
 /** A drawn segment: its position among the chart's segments and its value. */
-export interface DonutGeometryValue {
+interface DonutGeometryValue {
   series: number;
   value: number;
 }
 
-export interface DonutGeometryInput {
+interface DonutGeometryInput {
   /** The segments drawn, without the hidden ones. */
   values: readonly DonutGeometryValue[];
   /** The outer diameter, in pixels. */
@@ -17,7 +17,7 @@ export interface DonutGeometryInput {
 }
 
 /** One drawn slice. */
-export interface DonutSlice {
+interface DonutSlice {
   key: string;
   series: number;
   /** Its position among the drawn slices. */

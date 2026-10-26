@@ -41,7 +41,7 @@ export interface CompletionRange {
 /** Why the completions are looked up: an edit, a caret move or the reader's request. */
 export type CompletionReason = 'input' | 'move' | 'explicit';
 
-export interface CompletionsOptions {
+interface CompletionsOptions {
   completions: Completions | undefined;
   inputRef: RefObject<HTMLInputElement | HTMLTextAreaElement | null>;
   /** A read-only or disabled control offers nothing. */

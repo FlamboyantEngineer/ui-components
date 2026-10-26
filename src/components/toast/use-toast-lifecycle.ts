@@ -4,7 +4,7 @@ import { useEffect, useSyncExternalStore } from 'react';
 import type { ToastLifecycle, ToastSnapshot } from './toast-queue.js';
 
 /** The building block's timer of a shown toast, which region hover and focus also pause. */
-export interface ToastTimer {
+interface ToastTimer {
   reset: (delay: number) => void;
   pause: () => void;
   /** Runs on with the time that remained; resuming a running timer starts a second timeout. */

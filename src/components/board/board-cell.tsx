@@ -38,7 +38,7 @@ export interface BoardCellOptions<T> {
   reveals: Set<BoardCardReveal>;
 }
 
-export interface BoardCellProps<T> {
+interface BoardCellProps<T> {
   address: BoardCellAddress;
   /** The cell's cards, in order. */
   items: readonly T[];

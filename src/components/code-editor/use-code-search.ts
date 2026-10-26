@@ -2,7 +2,7 @@ import { useLayoutEffect, useMemo, useRef, useState, type RefObject } from 'reac
 import type { CodeEdit } from './code-editing.js';
 import { findMatches, type CodeRange } from './code-ranges.js';
 
-export interface CodeSearchOptions {
+interface CodeSearchOptions {
   value: string;
   inputRef: RefObject<HTMLTextAreaElement | null>;
   applyEdit: (edit: CodeEdit) => void;

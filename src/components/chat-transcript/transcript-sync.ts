@@ -8,9 +8,9 @@ import {
 import type { WindowRange } from './transcript-window.js';
 
 /** How long the newest message in view must stay the newest before `onRead` hears of it. */
-export const READ_DELAY = 500;
+const READ_DELAY = 500;
 /** How long scrolling must pause after Page Up or Page Down before focus follows. */
-export const PAGE_SETTLE_DELAY = 150;
+const PAGE_SETTLE_DELAY = 150;
 
 function isSameRange(left: WindowRange | null, right: WindowRange | null): boolean {
   return left?.first === right?.first && left?.last === right?.last;

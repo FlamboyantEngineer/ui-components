@@ -8,7 +8,7 @@ import type { MergeChunk } from '../../utils/three-way-merge.js';
 export type MergeSide = 'ours' | 'base' | 'theirs';
 
 /** How a side's line relates to the base: left alone, changed cleanly, or part of a conflict. */
-export type MergeLineChange = 'unchanged' | 'changed' | 'conflict';
+type MergeLineChange = 'unchanged' | 'changed' | 'conflict';
 
 /**
  * How a conflict was resolved: not yet, by taking our lines, their lines, ours then theirs, the

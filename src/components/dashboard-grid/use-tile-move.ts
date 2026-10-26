@@ -11,7 +11,7 @@ export interface CellStep {
   row: number;
 }
 
-export interface TileMoveOptions {
+interface TileMoveOptions {
   item: DashboardGridItem;
   kind: TileMoveKind;
   /** The grid's columns, which a resize never reaches past. */

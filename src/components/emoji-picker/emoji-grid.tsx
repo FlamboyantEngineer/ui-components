@@ -10,7 +10,7 @@ import {
   type SkinTone,
 } from './emoji-catalog.js';
 
-export interface EmojiGridProps extends BaseProps {
+interface EmojiGridProps extends BaseProps {
   /** The visible label that names the grid. */
   label: string;
   entries: readonly EmojiEntry[];

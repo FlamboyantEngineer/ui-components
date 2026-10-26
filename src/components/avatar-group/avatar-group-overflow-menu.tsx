@@ -7,7 +7,7 @@ import { Menu, MenuItem, MenuPopover, MenuTrigger } from '../menu/menu.js';
 import { UserIdentity } from '../user-identity/user-identity.js';
 import type { AvatarGroupPerson } from './avatar-group.js';
 
-export interface AvatarGroupOverflowMenuProps extends Pick<AvatarProps, 'colorCount'> {
+interface AvatarGroupOverflowMenuProps extends Pick<AvatarProps, 'colorCount'> {
   /** The `+N` count. */
   count: number;
   /** Names the button: the count and the names it hides. */

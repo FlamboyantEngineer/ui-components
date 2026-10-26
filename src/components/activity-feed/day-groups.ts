@@ -8,7 +8,7 @@ import {
 } from '../../utils/calendar-day.js';
 
 /** A run of entries from one calendar day. */
-export interface DayGroup<T> {
+interface DayGroup<T> {
   /** The day as `YYYY-MM-DD`, or an empty string for entries whose time cannot be read. */
   day: string;
   /** The day's heading: `Today`, `Yesterday`, `Tomorrow`, or the date. */
@@ -16,7 +16,7 @@ export interface DayGroup<T> {
   items: T[];
 }
 
-export interface DayGroupOptions {
+interface DayGroupOptions {
   /** The moment `Today` is read against. */
   now: Date;
   locale: string;

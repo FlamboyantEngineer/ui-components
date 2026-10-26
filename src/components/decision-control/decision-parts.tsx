@@ -48,7 +48,7 @@ export interface DecisionControlDetails {
   signature: SignatureDetails | null;
 }
 
-export interface DecisionSubmission {
+interface DecisionSubmission {
   isPending: boolean;
   isSigning: boolean;
   setSigning: (isSigning: boolean) => void;

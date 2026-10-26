@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import type { Key } from '../../core/props.js';
 import { usePersistentState } from '../../core/provider.js';
 
-export interface CollapsedKeysOptions {
+interface CollapsedKeysOptions {
   /** The collapsed keys, controlled. */
   value: Iterable<Key> | undefined;
   /** The keys collapsed at first, uncontrolled. */

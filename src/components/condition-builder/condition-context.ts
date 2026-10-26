@@ -16,7 +16,7 @@ export interface ConditionBuilderActions {
   addGroup(groupId: string): void;
 }
 
-export interface ConditionBuilderContextValue {
+interface ConditionBuilderContextValue {
   fields: readonly FilterField[];
   maxDepth: number;
   validate: ConditionRuleValidator | undefined;

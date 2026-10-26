@@ -7,7 +7,7 @@ import { isThenable } from '../../utils/is-thenable.js';
 import { useLatest } from '../../utils/use-latest.js';
 import type { ComposerFormat } from './use-composer-state.js';
 
-export interface SubmissionOptions<T> {
+interface SubmissionOptions<T> {
   onSubmit?: ((value: T) => void | Promise<unknown>) | undefined;
   onSubmitError?: ((error: unknown) => void) | undefined;
   persistKey?: string | undefined;
@@ -16,7 +16,7 @@ export interface SubmissionOptions<T> {
   setDraft: (next: T) => void;
 }
 
-export interface Submission<T> {
+interface Submission<T> {
   /** A message sent from this draft waits for the host to accept it. */
   isSubmitting: boolean;
   /** Sends the value; with `clearsDraft`, empties the draft once the host has accepted it. */

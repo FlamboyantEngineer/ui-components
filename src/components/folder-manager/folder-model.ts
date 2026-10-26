@@ -28,7 +28,7 @@ export interface FolderNode<T extends FolderItem> {
   isLazy: boolean;
 }
 
-export interface FolderNodeOptions {
+interface FolderNodeOptions {
   /** Wraps the folders in a root row with this label. */
   rootLabel?: string | undefined;
   /** Adds a draft row as the last child of this folder (`null`: at the top). */

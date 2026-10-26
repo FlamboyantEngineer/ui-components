@@ -17,7 +17,7 @@ import { getMonthWeeks, isSameMonth } from './calendar-days.js';
 import { calendarViewHooks as hooks } from './calendar-view-hooks.js';
 import type { CalendarGrid } from './use-calendar-grid.js';
 
-export interface CalendarMonthProps {
+interface CalendarMonthProps {
   events: readonly PlacedEvent[];
   grid: CalendarGrid;
   titleId: string;

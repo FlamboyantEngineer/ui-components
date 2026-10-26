@@ -11,7 +11,7 @@ export type JsonNode =
   | { kind: 'scalar'; start: number; end: number; value: string | number | boolean | null };
 
 /** An object member: its key, the key's text range and its value. */
-export interface JsonPropertyNode {
+interface JsonPropertyNode {
   key: string;
   start: number;
   end: number;

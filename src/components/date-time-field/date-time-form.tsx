@@ -1,6 +1,6 @@
 import type { DateFieldValue } from './date-values.js';
 
-export interface DateFormNames {
+interface DateFormNames {
   /** The form name of a single value. */
   name?: string | undefined;
   /** The form names of a range's ends. */

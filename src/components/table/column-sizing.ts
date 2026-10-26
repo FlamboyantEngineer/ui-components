@@ -17,7 +17,7 @@ export interface TableColumnSizing {
 }
 
 /** A column's pixel bounds. */
-export interface TableColumnBounds {
+interface TableColumnBounds {
   /** Narrowest width in pixels. */
   minWidth?: number | undefined;
   /** Widest width in pixels, never below `minWidth`. */

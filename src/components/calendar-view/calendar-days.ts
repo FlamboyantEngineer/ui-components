@@ -12,7 +12,7 @@ import {
 import type { CalendarViewMode } from './calendar-view.js';
 
 /** A shift of a day by whole days, weeks or months. */
-export interface DayShift {
+interface DayShift {
   days?: number | undefined;
   weeks?: number | undefined;
   months?: number | undefined;

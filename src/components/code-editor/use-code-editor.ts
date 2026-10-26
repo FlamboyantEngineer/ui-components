@@ -12,13 +12,13 @@ import { useCodeKeys } from './use-code-keys.js';
 import { useCodeSearch, type CodeSearchModel } from './use-code-search.js';
 import { useCodeSnippet, type CodeSnippetSession } from './use-code-snippet.js';
 
-export interface CodeLayers {
+interface CodeLayers {
   input: RefObject<HTMLTextAreaElement | null>;
   highlight: RefObject<HTMLPreElement | null>;
   gutter: RefObject<HTMLDivElement | null>;
 }
 
-export interface CodeEditorOptions {
+interface CodeEditorOptions {
   value: string;
   onChange: ((value: string) => void) | undefined;
   tokenize: CodeTokenizer | undefined;

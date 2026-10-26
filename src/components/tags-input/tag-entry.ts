@@ -17,7 +17,7 @@ export interface TagRules {
 }
 
 /** The outcome of entering text: the tags it adds and what stays in the input. */
-export interface TagEntry {
+interface TagEntry {
   added: string[];
   /** The text left in the input: the refused tags, then what follows the last delimiter. */
   inputValue: string;

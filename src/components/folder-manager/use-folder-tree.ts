@@ -11,7 +11,7 @@ export type FolderSelectionMode = 'single' | 'multiple';
  * What `onSelectionChange` receives: the set of selected folders in multiple selection, as React
  * Aria reports it, else the selected folder (`null`: none).
  */
-export type FolderSelectionHandler<M extends FolderSelectionMode> = [M] extends ['multiple']
+type FolderSelectionHandler<M extends FolderSelectionMode> = [M] extends ['multiple']
   ? (keys: Set<Key>) => void
   : (key: Key | null) => void;
 

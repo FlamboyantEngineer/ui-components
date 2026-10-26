@@ -19,7 +19,7 @@ export interface PdfCommands {
   download(): void;
 }
 
-export interface PdfViewerToolbarProps {
+interface PdfViewerToolbarProps {
   label: string;
   isReady: boolean;
   zoom: PdfZoomState;

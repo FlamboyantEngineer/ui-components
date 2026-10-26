@@ -3,7 +3,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { Icon } from '../icon/icon.js';
 import { tableHooks as hooks } from './table-hooks.js';
 
-export interface TableSearchProps {
+interface TableSearchProps {
   /** Accessible name and placeholder. */
   label: string;
   value: string;

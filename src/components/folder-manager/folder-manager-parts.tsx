@@ -5,7 +5,7 @@ import { useUiStrings } from '../../core/provider.js';
 import { Button } from '../button/button.js';
 import type { FolderEdit } from './use-folder-actions.js';
 
-export interface FolderNameInputProps {
+interface FolderNameInputProps {
   edit: FolderEdit;
   /** The message that describes the field while an attempt was refused. */
   messageId: string | undefined;
@@ -14,7 +14,7 @@ export interface FolderNameInputProps {
 }
 
 /** A toolbar action: the button is drawn only when the action is offered. */
-export interface FolderToolAction {
+interface FolderToolAction {
   isOffered: boolean;
   isDisabled: boolean;
   /** Why the action is unavailable, shown as the button's tooltip. */

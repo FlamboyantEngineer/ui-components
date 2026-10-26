@@ -35,7 +35,7 @@ export interface ItemPredecessors {
   hasConflict: boolean;
 }
 
-export interface TimelineConnector {
+interface TimelineConnector {
   key: string;
   path: string;
   hasConflict: boolean;
@@ -48,7 +48,7 @@ export interface TimelineLayout {
   predecessors: Map<Key, ItemPredecessors>;
 }
 
-export interface TimelineLayoutOptions {
+interface TimelineLayoutOptions {
   axis: TimelineAxis;
   rows: readonly VisibleRow[];
   items: readonly TimelineItem[];

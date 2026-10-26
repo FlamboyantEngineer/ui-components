@@ -9,16 +9,16 @@ import {
 } from './transcript-geometry.js';
 
 /** Where the view is held: at the bottom, on the anchored message, or where the reader left it. */
-export type TranscriptHold = 'bottom' | 'anchor' | 'free';
+type TranscriptHold = 'bottom' | 'anchor' | 'free';
 
 /** The first message in view and how far below the viewport's top it sits. */
-export interface ScrollSnapshot {
+interface ScrollSnapshot {
   key: string;
   offset: number;
 }
 
 /** The elements the keeper measures, read when it needs them. */
-export interface ScrollKeeperSources {
+interface ScrollKeeperSources {
   viewport(): HTMLElement | null;
   spacer(): HTMLElement | null;
   element(key: string): HTMLElement | null;

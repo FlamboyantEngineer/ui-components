@@ -10,7 +10,7 @@ import { TextField } from '../text-field/text-field.js';
 import { getBlockItems, type FormatItem } from './format-items.js';
 import type { RichTextController } from './rich-text-controller.js';
 
-export interface FormatControlProps {
+interface FormatControlProps {
   controller: RichTextController;
 }
 

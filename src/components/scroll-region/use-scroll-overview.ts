@@ -7,7 +7,7 @@ import {
 } from '../../utils/scroll-overview.js';
 import { observeViewport } from './observe-viewport.js';
 
-export interface ScrollOverviewOptions {
+interface ScrollOverviewOptions {
   markers: readonly ScrollOverviewMarker[] | undefined;
   /** Named marker layers; they replace `markers`. */
   layers: readonly ScrollOverviewLayer[] | undefined;

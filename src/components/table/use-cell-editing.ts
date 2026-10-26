@@ -17,7 +17,7 @@ export interface TableCellEdit<T> {
 }
 
 /** The cell being edited, by its row's collection key and column id, with its initial typed character. */
-export interface TableEditingCell {
+interface TableEditingCell {
   rowKey: string;
   columnId: string;
   /** The character typed on the cell that opened its editor, which replaces the cell's text. */

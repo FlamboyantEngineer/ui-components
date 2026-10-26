@@ -14,7 +14,7 @@ import {
 import type { PdfSize } from './pdf-zoom.js';
 import { useLatest } from '../../utils/use-latest.js';
 
-export type PdfDocumentStatus = 'loading' | 'password' | 'ready' | 'error';
+type PdfDocumentStatus = 'loading' | 'password' | 'ready' | 'error';
 
 /** An opened document: the engine that opened it, its pages and their text. */
 export interface LoadedPdf<
@@ -38,7 +38,7 @@ export interface LoadedPdf<
   getViewport(pageIndex: number, scale: number): V | undefined;
 }
 
-export interface UsePdfDocumentOptions<
+interface UsePdfDocumentOptions<
   V extends PdfViewport = PdfViewport,
   C extends PdfTextContent = PdfTextContent,
 > {

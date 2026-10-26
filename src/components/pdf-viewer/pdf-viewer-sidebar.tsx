@@ -8,7 +8,7 @@ import type { PdfOutlineNode, PdfTextContent, PdfViewport } from './pdf-engine.j
 import { PdfViewerThumbnails } from './pdf-viewer-thumbnails.js';
 import type { LoadedPdf } from './use-pdf-document.js';
 
-export interface PdfViewerSidebarProps<
+interface PdfViewerSidebarProps<
   V extends PdfViewport = PdfViewport,
   C extends PdfTextContent = PdfTextContent,
 > {

@@ -8,7 +8,7 @@ import { readTimelineItem, type TimelineItem } from './timeline-geometry.js';
 import { timelineHooks as hooks } from './timeline-hooks.js';
 import { flattenTimelineRows, type TimelineRow } from './timeline-rows.js';
 
-export interface TimelineTableProps {
+interface TimelineTableProps {
   label: string | undefined;
   labelledBy: string | undefined;
   rows: readonly TimelineRow[];

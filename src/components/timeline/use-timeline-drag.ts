@@ -7,7 +7,7 @@ import {
   type TimelineItemChange,
 } from './timeline-geometry.js';
 
-export interface TimelineDragOptions {
+interface TimelineDragOptions {
   read: ReadItem;
   dayWidth: number;
   isEditable: boolean;

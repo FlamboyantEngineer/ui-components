@@ -34,7 +34,7 @@ export interface DateRangeValue {
 export type DateFieldValue = string | DateRangeValue | null;
 
 /** A single value's mode. */
-export type SingleDateMode = 'date' | 'time' | 'date-time';
+type SingleDateMode = 'date' | 'time' | 'date-time';
 
 /** The settings that decide how a value's text reads and is written. */
 export interface DateValueOptions {

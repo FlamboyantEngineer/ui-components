@@ -28,7 +28,7 @@ export interface TableColumnMove {
 }
 
 /** One cell of the group header row: a group over a run of columns, or a gap over ungrouped ones. */
-export interface TableGroupCell {
+interface TableGroupCell {
   key: string;
   group: TableColumnGroup | null;
   span: number;

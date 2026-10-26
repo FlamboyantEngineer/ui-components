@@ -12,7 +12,7 @@ export interface ScrollEdges {
   xEnd: number;
 }
 
-export interface ScrollEdgesOptions {
+interface ScrollEdgesOptions {
   /** Measure at all; a region that scrolls on no axis has no edges. */
   enabled: boolean;
   /** Keep the viewport at the bottom while the reader is there. */

@@ -50,7 +50,7 @@ export interface BoardLayout {
   openColumns: readonly Key[];
 }
 
-export interface BoardLayoutOptions<T> {
+interface BoardLayoutOptions<T> {
   columns: readonly Key[];
   /** The lanes in order, or `[null]` for a board without lanes. */
   lanes: readonly (Key | null)[];

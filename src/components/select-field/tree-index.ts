@@ -5,7 +5,7 @@ import type { Key } from '../../core/props.js';
 import { requireDefined } from '../../utils/require-defined.js';
 
 /** A loaded node: the item, its parent's key (`null` at the top) and its place in reading order. */
-export interface TreeIndexEntry<T> {
+interface TreeIndexEntry<T> {
   item: T;
   parent: Key | null;
   order: number;

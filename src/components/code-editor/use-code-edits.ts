@@ -1,7 +1,7 @@
 import { useCallback, useLayoutEffect, useRef, type RefObject } from 'react';
 import type { CodeEdit, CodeSelection } from './code-editing.js';
 
-export interface CodeEditsOptions {
+interface CodeEditsOptions {
   inputRef: RefObject<HTMLTextAreaElement | null>;
   value: string;
   onChange: ((value: string) => void) | undefined;

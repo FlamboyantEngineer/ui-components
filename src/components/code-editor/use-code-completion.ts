@@ -11,7 +11,7 @@ import type { CodeRange } from './code-ranges.js';
 import { findCompletionQuery, indentInsertion, parseSnippet } from './completion-match.js';
 import type { CodeSnippetSession } from './use-code-snippet.js';
 
-export interface CodeCompletionOptions {
+interface CodeCompletionOptions {
   completions: Completions | undefined;
   inputRef: RefObject<HTMLTextAreaElement | null>;
   /** A read-only or disabled editor offers nothing. */

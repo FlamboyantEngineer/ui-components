@@ -23,7 +23,7 @@ export interface OverlayMetrics {
   trackY: number;
 }
 
-export interface OverlayMetricsOptions {
+interface OverlayMetricsOptions {
   viewport: RefObject<HTMLElement | null>;
   /** Overlay mode is on; otherwise nothing is measured. */
   enabled: boolean;

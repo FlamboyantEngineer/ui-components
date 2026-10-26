@@ -4,20 +4,20 @@ import type { Key } from '../../core/props.js';
 import { requireDefined } from '../../utils/require-defined.js';
 
 /** A card to place: the top of its anchor in the margin (`null` when the anchor is gone) and its height. */
-export interface CardInput {
+interface CardInput {
   id: Key;
   anchorTop: number | null;
   height: number;
 }
 
 /** Where a card goes, in pixels from the top of the margin. */
-export interface CardPlacement {
+interface CardPlacement {
   id: Key;
   top: number;
   isOrphaned: boolean;
 }
 
-export interface StackOptions {
+interface StackOptions {
   /** The card kept level with its anchor; the others move away from it. */
   activeId: Key | null;
   /** Space kept between two cards, in pixels. */

@@ -41,7 +41,7 @@ export interface ChatConversation {
   isMuted?: boolean | undefined;
 }
 
-export interface ChatListRowProps {
+interface ChatListRowProps {
   conversation: ChatConversation;
   renderActions: ((conversation: ChatConversation) => ReactNode) | undefined;
   getNow: () => Date;

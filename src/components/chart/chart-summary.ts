@@ -1,7 +1,7 @@
 import { summarizeNumbers } from '../../utils/summarize-numbers.js';
 import { useUiStrings } from '../../core/provider.js';
 
-export interface ValueSummaryOptions {
+interface ValueSummaryOptions {
   /** The drawn values; those that are not finite numbers are left out. */
   values: readonly number[];
   /** How many series are drawn. */

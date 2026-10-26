@@ -6,7 +6,7 @@ import { toAriaControlProps, type FieldControlProps, type FieldState } from '../
 import { colorFieldHooks as hooks } from './color-field-panel.js';
 import { formatColor, storeColorText, type ColorFieldFormat } from './color-values.js';
 
-export interface ColorEntryProps {
+interface ColorEntryProps {
   control: FieldControlProps;
   state: FieldState<string | null>;
   label: string;

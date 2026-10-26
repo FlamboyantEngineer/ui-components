@@ -57,7 +57,7 @@ export interface FilterCondition {
 }
 
 /** The shape of value an operator takes on a field type. */
-export type FilterValueKind =
+type FilterValueKind =
   | 'none'
   | 'text'
   | 'number'

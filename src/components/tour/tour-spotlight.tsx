@@ -3,7 +3,7 @@ import { createHooks } from '../../core/hooks.js';
 import { autoUpdateOverlay } from '../../utils/overlay-auto-update.js';
 import { Portal } from '../portal/portal.js';
 
-export interface TourSpotlightProps {
+interface TourSpotlightProps {
   /** The element the step points at; without one the spotlight is an empty point at the centre. */
   target: Element | null;
   /** The spotlight element once rendered, which anchors the popover of a step without a target. */

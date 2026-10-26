@@ -4,7 +4,7 @@ import { requireDefined } from '../../utils/require-defined.js';
 import type { CodeRange } from './code-ranges.js';
 
 /** A snippet's text with its fields' defaults, and where each field sits in it. */
-export interface ParsedSnippet {
+interface ParsedSnippet {
   text: string;
   fields: CodeRange[];
 }

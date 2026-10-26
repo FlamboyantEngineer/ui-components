@@ -31,7 +31,7 @@ export function useThumbnail(src: string | undefined) {
   };
 }
 
-export interface AttachmentThumbnailProps {
+interface AttachmentThumbnailProps {
   src: string;
   name: string;
   onPreview: (() => void) | undefined;
@@ -59,7 +59,7 @@ export function AttachmentThumbnail({ src, name, onPreview, onError }: Attachmen
   );
 }
 
-export interface AttachmentChipProps {
+interface AttachmentChipProps {
   glyph: GlyphName;
   name: string;
   size: number | undefined;
