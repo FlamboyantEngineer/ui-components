@@ -201,6 +201,13 @@ A token of kind `reference` shall stand for a record the host names: `id` is its
 Implementation: `src/components/message-composer/composer-message.ts`, `src/components/message-composer/rich/composer-pill.tsx`, `src/components/message-composer/rich/composer-schema.ts`, `src/components/message-composer/rich/composer-markdown.ts`, `src/components/message-composer/rich/rich-editor.tsx`
 Verification: `src/components/message-composer/rich/composer-pill.test.tsx`, `src/components/message-composer/rich/composer-markdown.test.ts`, `e2e/message-composer.spec.ts`
 
+### UIC-MESSAGE-COMPOSER-4.10 - Inserting from outside the composer
+
+`handleRef` shall receive a `MessageComposerHandle` for the host's own controls, such as a "+" button beside a record in a sidebar. `insertToken({ kind, id, label, recordType? })` adds the token to the draft as a pill (a record reference as its chip, UIC-MESSAGE-COMPOSER-4.9), in one transaction that is an undo step of its own, without replacing anything: at the caret, or where the caret was when the text box lost focus; after the selection when there is one, keeping the selected text; at the end of the draft when the text box has had no caret since the draft was shown (on mount, after sending, recalling or a change of `persistKey`); and on a new line after a code block when the caret is in one. A space separates the pill from a word right before it, and one follows it unless a space does already. The text box then takes focus with the caret after the pill, and `onChange` reports the message. It returns `inserted`, or changes nothing and returns why: `disabled` with `isDisabled`, `editing` while `editValue` is set, `submitting` while a sent message waits for the host to accept it (UIC-MESSAGE-COMPOSER-3.9), or `unavailable` when the editor is not mounted. While a reply is pending the pill goes in as typing does. `getDraft()` returns the draft as it is now, `{ text, tokens }`, also while another message is being edited, so a host can tell which tokens the draft holds; removing a pill reports through `onChange` like any edit.
+
+Implementation: `src/components/message-composer/rich/use-composer-handle.ts`, `src/components/message-composer/rich/composer-commands.ts`, `src/components/message-composer/rich/rich-content.tsx`
+Verification: `src/components/message-composer/rich/use-composer-handle.test.tsx`
+
 ## UIC-MESSAGE-COMPOSER-5 - Menu
 
 ### UIC-MESSAGE-COMPOSER-5.1 - Menu button

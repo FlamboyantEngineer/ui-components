@@ -33,6 +33,8 @@ export type RecallDirection = 'older' | 'newer';
 export interface ComposerState<T> {
   /** What the input shows: the message being edited, else the draft. */
   value: T;
+  /** The draft, also while another message is being edited. */
+  draft: T;
   setValue: (next: T) => void;
   isEditing: boolean;
   /** The value can be sent now. */
@@ -135,6 +137,7 @@ export function useComposerState<T>(options: ComposerStateOptions<T>): ComposerS
   };
   return {
     value,
+    draft,
     setValue: isEditing ? setEdit : setDraft,
     isEditing,
     canSubmit,

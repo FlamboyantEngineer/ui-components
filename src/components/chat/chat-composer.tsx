@@ -1,4 +1,4 @@
-import { useId, useMemo, type KeyboardEvent, type ReactNode } from 'react';
+import { useId, useMemo, useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import { ChatAttachmentList, type ChatAttachmentData } from '../chat-attachment/chat-attachment.js';
 import type { ChatQueuedMessage } from '../chat-controller/chat-controller.js';
@@ -11,8 +11,10 @@ import { ChatQuote, type ChatQuoteData } from '../chat-transcript/chat-transcrip
 import { Button } from '../button/button.js';
 import {
   RichMessageComposer,
+  type MessageComposerHandle,
   type RichMessageComposerProps,
 } from '../message-composer/rich/rich-message-composer.js';
+import { useChatComposerHandle, type ChatDraftOptions } from './chat-composer-handle.js';
 import { chatHooks as hooks } from './chat-hooks.js';
 import {
   findLastOwnText,
@@ -38,20 +40,23 @@ export type ChatMessageTextHandler = (
 ) => void | Promise<unknown>;
 
 /** The chat props the composer reads. */
-export interface ChatComposerOptions extends Pick<
-  RichMessageComposerProps,
-  | 'isPending'
-  | 'onStop'
-  | 'isDisabled'
-  | 'placeholder'
-  | 'commands'
-  | 'history'
-  | 'onAttach'
-  | 'submitShortcut'
-  | 'minRows'
-  | 'maxRows'
-  | 'getReference'
-> {
+export interface ChatComposerOptions
+  extends
+    ChatDraftOptions,
+    Pick<
+      RichMessageComposerProps,
+      | 'isPending'
+      | 'onStop'
+      | 'isDisabled'
+      | 'placeholder'
+      | 'commands'
+      | 'history'
+      | 'onAttach'
+      | 'submitShortcut'
+      | 'minRows'
+      | 'maxRows'
+      | 'getReference'
+    > {
   /**
    * Sends the reader's message with its mentions and commands. Without it there is no composer. A
    * returned promise holds the message, its tokens and the quote until it settles: they clear once
@@ -241,6 +246,14 @@ export function ChatComposer(props: ChatComposerProps) {
   const editValue = useEditValue(props);
   const banner = useBanner(props);
   const mentions = useMentions(props);
+  const composerRef = useRef<MessageComposerHandle>(null);
+  const reportDraft = useChatComposerHandle({
+    handleRef: options.composerHandleRef,
+    composerRef,
+    conversationId: options.conversationId,
+    onDraftChange: options.onDraftChange,
+    focusComposer: state.focusComposer,
+  });
   if (!options.onSend) return null;
   const onKeyDown = (event: KeyboardEvent) => {
     if (event.key === 'Escape' && state.replyingId !== null) state.cancelReply();
@@ -256,6 +269,8 @@ export function ChatComposer(props: ChatComposerProps) {
       />
       <RichMessageComposer
         ref={state.setComposer}
+        handleRef={composerRef}
+        onChange={reportDraft}
         className={hooks.slotClass('composer')}
         placeholder={options.placeholder}
         isDisabled={options.isDisabled}

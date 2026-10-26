@@ -128,4 +128,45 @@ test.describe('Chat lab host controls', () => {
     );
     await expect(files).toHaveCount(0);
   });
+
+  test('UIC-CHAT-3.11 inserts sidebar records at the caret, skips one already there, and sends them in a new and an existing conversation', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat');
+    const section = page.locator('[data-lab-section="Records from a sidebar"]');
+    const input = section.getByRole('textbox', { name: 'Message' });
+    const pills = input.locator('.ui-message-composer__pill');
+    const add = (label: string) =>
+      section.getByRole('button', { name: `Add ${label} to the message` });
+    await input.click();
+    await page.keyboard.type('Please check first');
+    for (let step = 0; step < 6; step += 1) await page.keyboard.press('ArrowLeft');
+    await add('TRIP-4').focus();
+    await page.keyboard.press('Enter');
+    await expect(input).toBeFocused();
+    await expect(pills).toHaveCount(1);
+    await expect(pills.first()).toHaveAttribute('data-kind', 'reference');
+    await expect(input).toHaveText(/^Please check .+ first$/);
+    await add('TRIP-4').click();
+    await expect(section.getByRole('status').last()).toHaveText(
+      'TRIP-4 is already in the message.',
+    );
+    await expect(pills).toHaveCount(1);
+    await add('NOTE-12').click();
+    await expect(pills).toHaveCount(2);
+    await page.keyboard.press('Control+z');
+    await expect(pills).toHaveCount(1);
+    await add('NOTE-12').click();
+    await page.keyboard.press('Enter');
+    await expect(section.getByText('Looking at TRIP-4, NOTE-12.', { exact: true })).toBeVisible();
+    await expect(input).toHaveText('');
+
+    await section.getByRole('radio', { name: 'Existing conversation' }).click();
+    await expect(section.getByText('Add the records you want me to look at.')).toBeVisible();
+    await add('NOTE-9').click();
+    await expect(input).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(section.getByText('Looking at NOTE-9.', { exact: true })).toBeVisible();
+  });
 });

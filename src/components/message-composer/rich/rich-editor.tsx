@@ -19,6 +19,8 @@ import type { RichMessageComposerProps } from './rich-message-composer.js';
 export interface RichEditorHandle {
   insertText: (text: string) => void;
   insertPill: (pill: PillAttributes) => void;
+  /** Adds a pill at the caret, or after the selection, as its own undo step. */
+  addPill: (pill: PillAttributes) => void;
   focus: () => void;
 }
 

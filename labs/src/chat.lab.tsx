@@ -9,6 +9,7 @@ import { ChatHostCases } from './chat-host-cases.js';
 import { ChatPeopleCases } from './chat-people-cases.js';
 import { ChatReferenceCases } from './chat-reference-cases.js';
 import { ana, ben, mia, planner } from './chat-samples.js';
+import { ChatSidebarCases } from './chat-sidebar-cases.js';
 import { ChatStateCases } from './chat-state-cases.js';
 import { ChatSurfaceCases } from './chat-surface-cases.js';
 import { ChatThinkingCases } from './chat-thinking-cases.js';
@@ -52,6 +53,7 @@ mountLab(
     <ChatThinkingStyles />
     <ChatHostCases />
     <ChatReferenceCases />
+    <ChatSidebarCases />
     <ChatPeopleCases />
     <ChatGroupCases />
     <ChatChromeCases />

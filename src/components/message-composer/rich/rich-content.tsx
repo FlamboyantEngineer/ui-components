@@ -15,6 +15,7 @@ import { isComposingKey, runComposerKey, type ComposerKeyActions } from '../comp
 import { toComposerLabelling } from '../use-message-composer.js';
 import {
   findAdjacentPill,
+  insertPillAtCaret,
   insertPillAtSelection,
   isInCode,
   syncSelectionFromDom,
@@ -45,7 +46,10 @@ function useRowLimits(ref: RefObject<HTMLElement | null>, minRows: number, maxRo
   });
 }
 
-/** Gives the frame's tools a way to insert text or a pill at the caret and to focus the editor. */
+/**
+ * Gives the frame's tools a way to insert text or a pill at the caret and to focus the editor, and
+ * the composer's handle a way to add a pill at the caret.
+ */
 function useEditorHandle(handleRef: RefObject<RichEditorHandle | null>) {
   const insertText = useEditorEventCallback((view, text: string) => {
     view.dispatch(view.state.tr.insertText(text).scrollIntoView());
@@ -53,13 +57,16 @@ function useEditorHandle(handleRef: RefObject<RichEditorHandle | null>) {
   const insertPill = useEditorEventCallback((view, pill: PillAttributes) =>
     insertPillAtSelection(view, pill),
   );
+  const addPill = useEditorEventCallback((view, pill: PillAttributes) =>
+    insertPillAtCaret(view, pill),
+  );
   const focus = useEditorEventCallback((view) => view.focus());
   useLayoutEffect(() => {
-    handleRef.current = { insertText, insertPill, focus };
+    handleRef.current = { insertText, insertPill, addPill, focus };
     return () => {
       handleRef.current = null;
     };
-  }, [handleRef, insertText, insertPill, focus]);
+  }, [handleRef, insertText, insertPill, addPill, focus]);
 }
 
 /** A key the composer used: the editor and the caller's handlers do not see it. */
