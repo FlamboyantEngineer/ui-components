@@ -1,6 +1,7 @@
 import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { GridItem, type GridItemOffset, type GridItemSpan } from './grid-item.js';
 import { Grid } from './layout.js';
 
@@ -13,7 +14,7 @@ describe('GridItem', () => {
         </GridItem>
       </Grid>,
     );
-    const item = container.querySelector('.ui-grid-item')!;
+    const item = requireDefined(container.querySelector('.ui-grid-item'));
     expect(item.tagName).toBe('DIV');
     expect(item).toHaveClass('ui-grid-item', 'caller');
     expect(item).toHaveAttribute('id', 'cell');

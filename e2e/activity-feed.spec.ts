@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures.js';
+import { requireDefined } from '../src/utils/require-defined.js';
 
 const cell = (id: string) => `[data-lab-cell="${id}"] .ui-activity-feed`;
 
@@ -31,8 +32,8 @@ test.describe('Activity Feed lab', () => {
     const dates = page.locator('[data-lab-cell="fallback=1 day"] .ui-activity-feed__time');
     await expect(dates.last()).toHaveText(/^Apr 14, 2026/);
     const markers = feed.locator('.ui-activity-feed__marker');
-    const first = (await markers.nth(0).boundingBox())!;
-    const second = (await markers.nth(1).boundingBox())!;
+    const first = requireDefined(await markers.nth(0).boundingBox());
+    const second = requireDefined(await markers.nth(1).boundingBox());
     expect(Math.round(first.x)).toBe(Math.round(second.x));
     expect(second.y).toBeGreaterThan(first.y);
   });

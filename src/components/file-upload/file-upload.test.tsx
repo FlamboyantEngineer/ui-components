@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import {
   readDroppedFiles,
   type DroppedDirectory,
@@ -73,7 +74,9 @@ describe('FileUpload', () => {
     const props = { label: 'Files', files, onSelect: () => undefined };
     const { container, rerender } = render(<FileUpload {...props} />);
     const [numeric, textual] = container.querySelectorAll('.ui-file-upload__file');
-    rerender(<FileUpload {...props} files={[files[1]!, files[0]!]} />);
+    rerender(
+      <FileUpload {...props} files={[requireDefined(files[1]), requireDefined(files[0])]} />,
+    );
     expect([...container.querySelectorAll('.ui-file-upload__file')]).toEqual([textual, numeric]);
     expect(numeric).toHaveTextContent('Numeric.txt');
     expect(textual).toHaveTextContent('Textual.txt');

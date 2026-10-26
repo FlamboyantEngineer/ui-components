@@ -9,6 +9,7 @@ import {
   stubLayout,
   type TestLink,
 } from '../../../test/pdf-fixtures.js';
+import { requireDefined } from '../../utils/require-defined.js';
 
 const links: Record<number, TestLink[]> = {
   0: [
@@ -28,7 +29,7 @@ describe('PdfViewer links', () => {
     const { container } = await renderReady({ defaultZoom: 100 }, engine);
     const layers = container.querySelectorAll<HTMLElement>('.ui-pdf-viewer__annotation-layer');
     expect(layers).toHaveLength(3);
-    const first = layers[0]!;
+    const first = requireDefined(layers[0]);
     expect(first.previousElementSibling).toHaveClass('ui-pdf-viewer__text-layer');
     expect(first.style).toMatchObject({
       position: 'absolute',

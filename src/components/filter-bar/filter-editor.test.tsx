@@ -2,6 +2,7 @@ import { act, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import { requireDefined } from '../../utils/require-defined.js';
 import { FilterConditionFields, type FilterEditorLabelLayout } from './filter-editor.js';
 import type { FilterCondition, FilterField } from './filter-model.js';
 
@@ -43,7 +44,7 @@ function Editor({
   return (
     <div role="group" aria-label="Editor">
       <FilterConditionFields
-        field={fields[condition.field]!}
+        field={requireDefined(fields[condition.field])}
         condition={condition}
         onChange={(next) => {
           setCondition(next);
@@ -177,7 +178,7 @@ describe('FilterConditionFields', () => {
 
   it('UIC-FILTER-BAR-2.2 names the chosen people of a person value before any search', () => {
     render(<Editor initial={{ field: 'readers', operator: 'any-of', value: ['maria'] }} />);
-    const chips = slot('value')!.querySelector('.ui-combobox__chips');
+    const chips = requireDefined(slot('value')).querySelector('.ui-combobox__chips');
     expect(chips).toHaveTextContent('Maria Santos');
     expect(chips).not.toHaveTextContent('maria');
   });

@@ -1,5 +1,6 @@
 import type { Page } from '@playwright/test';
 import { expect, test } from './fixtures.js';
+import { requireDefined } from '../src/utils/require-defined.js';
 
 const overview = (page: Page) => page.locator('[data-lab-demo="overview"]');
 const layout = (page: Page) => overview(page).locator('[data-lab-output="layout"]');
@@ -15,7 +16,7 @@ test.describe('Dashboard Grid lab', () => {
     const tile = grid.getByRole('group', { name: 'Visitors', exact: true });
     const handle = grid.getByRole('button', { name: 'Move Visitors' });
     await handle.hover();
-    const bounds = (await handle.boundingBox())!;
+    const bounds = requireDefined(await handle.boundingBox());
     await page.mouse.down();
     await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2 + 120, {
       steps: 4,
@@ -44,8 +45,10 @@ test.describe('Dashboard Grid lab', () => {
     const visitors = grid.getByRole('group', { name: 'Visitors', exact: true });
     const orders = grid.getByRole('group', { name: 'Orders', exact: true });
     const [left, right] = await Promise.all([visitors.boundingBox(), orders.boundingBox()]);
-    expect(right!.x).toBeGreaterThan(left!.x + left!.width);
-    expect(Math.round(right!.y)).toBe(Math.round(left!.y));
+    expect(requireDefined(right).x).toBeGreaterThan(
+      requireDefined(left).x + requireDefined(left).width,
+    );
+    expect(Math.round(requireDefined(right).y)).toBe(Math.round(requireDefined(left).y));
     await expect(grid.getByRole('button', { name: 'Move Visitors' })).toBeVisible();
     await expect(grid.getByRole('button', { name: 'Resize Visitors' })).toBeVisible();
     await overview(page).getByRole('button', { name: 'Done editing' }).click();
@@ -60,11 +63,11 @@ test.describe('Dashboard Grid lab', () => {
   }) => {
     await lab.open('dashboard-grid');
     const grid = overview(page).getByRole('group', { name: 'Overview' });
-    const width = (await grid.boundingBox())!.width;
+    const width = requireDefined(await grid.boundingBox()).width;
     const step = (width + 12) / 12;
     const handle = grid.getByRole('button', { name: 'Move Visitors' });
     await handle.hover();
-    const box = (await handle.boundingBox())!;
+    const box = requireDefined(await handle.boundingBox());
     const start = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
     await page.mouse.down();
     await page.mouse.move(start.x + step, start.y, { steps: 4 });

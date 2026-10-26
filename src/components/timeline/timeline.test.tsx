@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { UiProvider } from '../../core/provider.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { Timeline, type TimelineItem, type TimelineProps, type TimelineRow } from './timeline.js';
 
 const rows: TimelineRow[] = [
@@ -159,7 +160,7 @@ describe('Timeline', () => {
   });
   it('UIC-TIMELINE-1.1 UIC-TIMELINE-1.10 renders the chart parts and the hooks of its spec', () => {
     const { container } = renderTimeline({ dependencies: [{ from: 'measure', to: 'quote' }] });
-    const root = container.querySelector('.ui-timeline')!;
+    const root = requireDefined(container.querySelector('.ui-timeline'));
     expect(root).toHaveAttribute('data-scale', 'day');
     expect(root).toHaveAttribute('data-view', 'chart');
     const canvas = root.querySelector(
@@ -224,7 +225,7 @@ describe('Timeline', () => {
 
   it('UIC-TIMELINE-1.3 labels two scale rows by zoom level and draws gridlines', () => {
     const { container, rerender } = renderTimeline();
-    const tier = (name: string) => container.querySelector(`[data-tier="${name}"]`)!;
+    const tier = (name: string) => requireDefined(container.querySelector(`[data-tier="${name}"]`));
     expect(tier('major')).toHaveAttribute('data-unit', 'month');
     expect(tier('major')).toHaveTextContent('March 2026');
     expect(tier('minor')).toHaveAttribute('data-unit', 'day');
@@ -263,7 +264,7 @@ describe('Timeline', () => {
     ]);
     expect(labels[0]).toHaveAttribute('data-group', 'true');
     expect(labels[0]).toHaveAttribute('data-expanded', 'true');
-    expect(labels[0]!.style.height).toBe('36px');
+    expect(requireDefined(labels[0]).style.height).toBe('36px');
     await user.click(screen.getByRole('button', { name: 'Planning' }));
     expect(onExpandedChange).toHaveBeenLastCalledWith(new Set());
     expect(screen.getByRole('button', { name: 'Planning' })).toHaveAttribute(
@@ -304,7 +305,7 @@ describe('Timeline', () => {
         { from: 'quote', to: 'walls' },
       ],
     });
-    const layer = container.querySelector('.ui-timeline__connectors')!;
+    const layer = requireDefined(container.querySelector('.ui-timeline__connectors'));
     expect(layer).toHaveAttribute('aria-hidden', 'true');
     expect(layer).toHaveAttribute('width', '992');
     const paths = layer.querySelectorAll('.ui-timeline__connector');
@@ -317,7 +318,7 @@ describe('Timeline', () => {
 
   it('UIC-TIMELINE-1.8 marks today inside the range only', () => {
     const { container, rerender } = renderTimeline();
-    const marker = container.querySelector<HTMLElement>('.ui-timeline__today')!;
+    const marker = requireDefined(container.querySelector<HTMLElement>('.ui-timeline__today'));
     expect(marker.style.left).toBe(`${10 * 32 + 16}px`);
     expect(marker).toHaveAttribute('aria-hidden', 'true');
     rerender(
@@ -328,7 +329,8 @@ describe('Timeline', () => {
 
   it('UIC-TIMELINE-1.9 UIC-TIMELINE-4.3 pins the scale and row list and hides decorations', () => {
     const { container } = renderTimeline();
-    const part = (slot: string) => container.querySelector<HTMLElement>(`.ui-timeline__${slot}`)!;
+    const part = (slot: string) =>
+      requireDefined(container.querySelector<HTMLElement>(`.ui-timeline__${slot}`));
     expect(part('corner')).toHaveStyle({
       position: 'sticky',
       top: '0px',
@@ -360,14 +362,14 @@ describe('Timeline', () => {
       end: '2026-03-08',
     });
     expect(bar).not.toHaveAttribute('data-dragging');
-    const end = bar.querySelector('[data-edge="end"]')!;
+    const end = requireDefined(bar.querySelector('[data-edge="end"]'));
     await drag(user, end, 200, 248);
     expect(onItemChange).toHaveBeenLastCalledWith({
       id: 'measure',
       start: '2026-03-04',
       end: '2026-03-11',
     });
-    await drag(user, bar.querySelector('[data-edge="start"]')!, 200, 400);
+    await drag(user, requireDefined(bar.querySelector('[data-edge="start"]')), 200, 400);
     expect(onItemChange).toHaveBeenLastCalledWith({
       id: 'measure',
       start: '2026-03-11',
@@ -540,11 +542,11 @@ describe('Timeline', () => {
       .getAllByRole('rowheader')
       .map((cell) => cell.textContent);
     expect(names).toEqual(['Measure rooms', 'Get quotes', 'Paint walls', 'Handover']);
-    const first = within(table).getAllByRole('row')[1]!;
+    const first = requireDefined(within(table).getAllByRole('row')[1]);
     expect(first).toHaveTextContent('Survey');
     expect(first).toHaveTextContent('Mar 2, 2026');
     expect(first).toHaveTextContent('40%');
-    await user.click(within(table).getAllByRole('checkbox')[2]!);
+    await user.click(requireDefined(within(table).getAllByRole('checkbox')[2]));
     expect(onSelectionChange).toHaveBeenLastCalledWith(new Set(['quote']));
   });
 

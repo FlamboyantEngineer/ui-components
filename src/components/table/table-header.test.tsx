@@ -1,6 +1,7 @@
 import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { Table, type TableProps } from './table.js';
 import type { TableColumn, TableColumnGroup } from './index.js';
 
@@ -33,9 +34,11 @@ function renderFruit(props: Partial<TableProps<Fruit>> = {}) {
 describe('Table column groups', { timeout: 15_000 }, () => {
   it('UIC-TABLE-8.7 draws a group row over runs of grouped columns', () => {
     const { container } = renderFruit({ selectionMode: 'multiple', renderRowActions: () => null });
-    const rows = within(container.querySelector('thead')!).getAllByRole('row', { hidden: true });
+    const rows = within(requireDefined(container.querySelector('thead'))).getAllByRole('row', {
+      hidden: true,
+    });
     expect(rows).toHaveLength(2);
-    const cells = [...rows[0]!.children] as HTMLElement[];
+    const cells = [...requireDefined(rows[0]).children] as HTMLElement[];
     expect(
       cells.map((cell) => [cell.tagName, cell.textContent, cell.getAttribute('colspan')]),
     ).toEqual([
@@ -54,7 +57,7 @@ describe('Table column groups', { timeout: 15_000 }, () => {
 
   it('UIC-TABLE-8.7 splits a group whose columns are moved apart', () => {
     const { container } = renderFruit({ columnLayout: { order: ['weight', 'name', 'price'] } });
-    const row = container.querySelector('thead tr')!;
+    const row = requireDefined(container.querySelector('thead tr'));
     expect([...row.children].map((cell) => cell.textContent)).toEqual([
       'Measures',
       '',

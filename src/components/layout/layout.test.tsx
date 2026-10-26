@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { createRef } from 'react';
 import { describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import {
   Cluster,
   FlexRow,
@@ -83,7 +84,7 @@ describe('Layout primitives', () => {
       const element = container.querySelector(`.${hook}`);
       expect(element?.tagName, hook).toBe(tag);
     }
-    const stack = container.querySelector('.ui-stack')!;
+    const stack = requireDefined(container.querySelector('.ui-stack'));
     expect(Array.from(stack.children, (child) => child.className.split(' ')[0])).toEqual([
       'ui-flex-row',
       'ui-inline-field',
@@ -107,7 +108,7 @@ describe('Layout primitives', () => {
         </Stack>
       </>,
     );
-    const form = container.querySelector('form')!;
+    const form = requireDefined(container.querySelector('form'));
     expect(form).toHaveClass('ui-stack');
     expect(form).toHaveAttribute('action', '/save');
     expect(container.querySelector('nav')).toHaveClass('ui-cluster');
@@ -131,7 +132,7 @@ describe('Layout primitives', () => {
         Apple
       </Stack>,
     );
-    const root = container.firstElementChild!;
+    const root = requireDefined(container.firstElementChild);
     expect(ref.current).toBe(root);
     expect(root).toHaveClass('ui-stack', 'caller');
     expect(root).toHaveAttribute('id', 'fruit');
@@ -153,7 +154,7 @@ describe('Layout options', () => {
         Plum
       </Stack>,
     );
-    const stack = container.firstElementChild!;
+    const stack = requireDefined(container.firstElementChild);
     expect(stack).toHaveAttribute('data-divided', 'true');
     expect([...stack.children].map((child) => child.className || child.tagName)).toEqual([
       'P',
@@ -298,7 +299,7 @@ describe('Layout options', () => {
 
   it('UIC-LAYOUT-2.3 publishes grid columns and the fit minimum only for fit', () => {
     const { container, rerender } = render(<Grid />);
-    const grid = () => container.firstElementChild!;
+    const grid = () => requireDefined(container.firstElementChild);
     expect(grid()).toHaveAttribute('data-columns', '2');
     expect(grid()).not.toHaveAttribute('data-min-column-width');
     for (const columns of [1, 2, 3, 4, 6, 12, 'none'] as const) {
@@ -388,7 +389,7 @@ describe('StatusBar', () => {
         <span>Saved</span>
       </StatusBar>,
     );
-    const bar = container.firstElementChild!;
+    const bar = requireDefined(container.firstElementChild);
     expect(bar.tagName).toBe('FOOTER');
     expect(bar).toHaveAttribute('data-space', 'xs');
     expect(bar).toHaveAttribute('data-justify', 'between');

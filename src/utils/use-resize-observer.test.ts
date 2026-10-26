@@ -1,6 +1,7 @@
 import { act, createElement, createRef, type ReactElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
+import { requireDefined } from './require-defined.js';
 import { useResizeObserver, type ResizeObserverTargets } from './use-resize-observer.js';
 
 class FakeObserver {
@@ -81,7 +82,7 @@ test('UIC-MEASUREMENT-1.1 shares one observer across refs, keeps it for fresh ar
   }
   await commit(root, createElement(Panel, { version: 0 }));
   expect(FakeObserver.instances).toHaveLength(1);
-  const observer = FakeObserver.instances[0]!;
+  const observer = requireDefined(FakeObserver.instances[0]);
   expect([...observer.elements]).toEqual([refs[0].current, refs[1].current]);
   expect(observer.boxes).toEqual([{ box: 'content-box' }, { box: 'content-box' }]);
 
@@ -97,7 +98,7 @@ test('UIC-MEASUREMENT-1.1 shares one observer across refs, keeps it for fresh ar
   expect(callbacks[1]).toHaveBeenCalledWith(entries, observer);
 
   await commit(root, createElement(Panel, { version: 1 }));
-  expect(observer.elements.has(refs[1].current!)).toBe(true);
+  expect(observer.elements.has(requireDefined(refs[1].current))).toBe(true);
 });
 
 test('UIC-MEASUREMENT-1.2 target functions swap elements, and no targets disconnects and silences late reports', async () => {
@@ -113,7 +114,7 @@ test('UIC-MEASUREMENT-1.2 target functions swap elements, and no targets disconn
   expect(FakeObserver.instances).toHaveLength(0);
   target = first;
   await render();
-  const observer = FakeObserver.instances[0]!;
+  const observer = requireDefined(FakeObserver.instances[0]);
   target = second;
   await render();
   expect(FakeObserver.instances).toHaveLength(1);
@@ -127,8 +128,8 @@ test('UIC-MEASUREMENT-1.2 target functions swap elements, and no targets disconn
 
   target = first;
   await render();
-  const next = FakeObserver.instances[1]!;
-  await act(async () => roots.pop()!.unmount());
+  const next = requireDefined(FakeObserver.instances[1]);
+  await act(async () => requireDefined(roots.pop()).unmount());
   expect(next.disconnected).toBe(true);
   next.report();
   expect(callback).not.toHaveBeenCalled();
@@ -137,9 +138,9 @@ test('UIC-MEASUREMENT-1.2 target functions swap elements, and no targets disconn
 test('UIC-MEASUREMENT-1.3 observes iframe content with the iframe window and skips windows without an observer', async () => {
   const root = newRoot();
   const iframe = document.body.appendChild(document.createElement('iframe'));
-  const inner = iframe.contentDocument!.body;
+  const inner = requireDefined(iframe.contentDocument).body;
   class FrameObserver extends FakeObserver {}
-  Object.defineProperty(iframe.contentWindow!, 'ResizeObserver', {
+  Object.defineProperty(requireDefined(iframe.contentWindow), 'ResizeObserver', {
     configurable: true,
     value: FrameObserver,
   });
@@ -154,11 +155,11 @@ test('UIC-MEASUREMENT-1.3 observes iframe content with the iframe window and ski
   framed.report();
   expect(callback).toHaveBeenCalledTimes(1);
 
-  Reflect.deleteProperty(iframe.contentWindow!, 'ResizeObserver');
+  Reflect.deleteProperty(requireDefined(iframe.contentWindow), 'ResizeObserver');
   await commit(root, createElement(Watch, { targets, onResize: callback }));
   expect(framed.disconnected).toBe(true);
   expect(FakeObserver.instances).toHaveLength(2);
-  await act(async () => roots.pop()!.unmount());
+  await act(async () => requireDefined(roots.pop()).unmount());
   expect(outer.disconnected).toBe(true);
 });
 

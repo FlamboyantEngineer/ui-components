@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { capturePointer } from './pointer-drag.js';
+import { requireDefined } from './require-defined.js';
 import { usePointerDrag } from './use-pointer-drag.js';
 
 interface GestureProps {
@@ -145,7 +146,7 @@ describe('usePointerDrag', () => {
     await user.pointer({ keys: '[/TouchA]' });
     expect(onEnd).toHaveBeenCalledExactlyOnceWith(false);
     expect(capture).toHaveBeenCalledTimes(1);
-    expect(release).toHaveBeenCalledExactlyOnceWith(onStart.mock.calls[0]![0]);
+    expect(release).toHaveBeenCalledExactlyOnceWith(requireDefined(onStart.mock.calls[0])[0]);
   });
 
   it('UIC-DRAG-INTERACTIONS-1.3 cancels once for cancellation or lost capture and ignores later endings', async () => {
@@ -156,7 +157,7 @@ describe('usePointerDrag', () => {
     const button = screen.getByRole('button', { name: 'Move' });
     const { release } = observeCapture(button);
     await user.pointer({ keys: '[MouseLeft>]', target: button });
-    const pointerId = onStart.mock.calls[0]![0];
+    const pointerId = requireDefined(onStart.mock.calls[0])[0];
     fireEvent.pointerCancel(button, { pointerId });
     fireEvent.lostPointerCapture(button, { pointerId });
     await user.pointer({ keys: '[/MouseLeft]' });

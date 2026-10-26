@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures.js';
+import { requireDefined } from '../src/utils/require-defined.js';
 
 const cell = (id: string) => `[data-lab-cell="${id}"] .ui-change-list`;
 
@@ -36,9 +37,9 @@ test.describe('Change List lab', () => {
       'weekend',
       'slow',
     ]);
-    const label = (await rows.nth(0).locator('dt').boundingBox())!;
-    const old = (await rows.nth(0).locator('del').boundingBox())!;
-    const next = (await rows.nth(0).locator('ins').boundingBox())!;
+    const label = requireDefined(await rows.nth(0).locator('dt').boundingBox());
+    const old = requireDefined(await rows.nth(0).locator('del').boundingBox());
+    const next = requireDefined(await rows.nth(0).locator('ins').boundingBox());
     expect(old.x).toBeGreaterThan(label.x + label.width);
     expect(next.x).toBeGreaterThan(old.x + old.width);
     expect(Math.abs(next.y - old.y)).toBeLessThan(4);
@@ -56,8 +57,8 @@ test.describe('Change List lab', () => {
       'Before Draft',
       'After Approved',
     ]);
-    const before = (await status.locator('[data-side="before"]').boundingBox())!;
-    const after = (await status.locator('[data-side="after"]').boundingBox())!;
+    const before = requireDefined(await status.locator('[data-side="before"]').boundingBox());
+    const after = requireDefined(await status.locator('[data-side="after"]').boundingBox());
     expect(after.y).toBeGreaterThanOrEqual(before.y + before.height - 1);
     await expect(list.locator('.ui-change-list__empty')).toHaveText(['Empty', 'Empty']);
     const attributed = page.locator(cell('avatar=avatar variant=compact'));

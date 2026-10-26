@@ -2,6 +2,7 @@ import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { LineChart, type LineChartSeries } from './line-chart.js';
 
 const defects: LineChartSeries[] = [
@@ -64,7 +65,8 @@ describe('LineChart', () => {
     expect(areas.map((area) => area.getAttribute('data-series'))).toEqual(['0', '1']);
     expect(areas[0]?.getAttribute('d')).toMatch(/Z$/);
     expect(
-      areas[1]!.compareDocumentPosition(lines()[0]!) & Node.DOCUMENT_POSITION_FOLLOWING,
+      requireDefined(areas[1]).compareDocumentPosition(requireDefined(lines()[0])) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
     expectHooksMatchSpec(document.body, 'CHART', { slots: ['ui-line-chart__area'] });
   });

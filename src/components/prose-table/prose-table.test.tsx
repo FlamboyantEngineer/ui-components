@@ -1,6 +1,7 @@
 import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { ProseTable } from './prose-table.js';
 
 const header = [
@@ -110,7 +111,7 @@ describe('ProseTable', () => {
         footer={[{ key: 'total', cells: [{ key: 'fruit', content: 'Two fruits' }] }]}
       />,
     );
-    const table = container.querySelector('table')!;
+    const table = requireDefined(container.querySelector('table'));
     expect(table.lastElementChild?.tagName).toBe('TFOOT');
     const cells = table.querySelectorAll('tfoot td');
     expect([...cells].map((cell) => cell.textContent)).toEqual(['Two fruits', '']);
@@ -121,7 +122,7 @@ describe('ProseTable', () => {
   it('UIC-PROSE-TABLE-2.3 renders the cells of a row header column as row headers', () => {
     render(
       <ProseTable
-        header={[{ ...header[0]!, isRowHeader: true }, header[1]!]}
+        header={[{ ...requireDefined(header[0]), isRowHeader: true }, requireDefined(header[1])]}
         rows={rows}
         footer={[{ key: 'total', cells: [{ key: 'fruit', content: 'Total' }] }]}
       />,
@@ -136,7 +137,7 @@ describe('ProseTable', () => {
   it('UIC-PROSE-TABLE-2.4 publishes a column alignment on its heading and cells', () => {
     const { container } = render(
       <ProseTable
-        header={[header[0]!, { key: 'weight', content: 'Weight', align: 'end' }]}
+        header={[requireDefined(header[0]), { key: 'weight', content: 'Weight', align: 'end' }]}
         rows={[...rows, { key: 'plum', cells: [{ key: 'fruit', content: 'Plum' }] }]}
         footer={[{ key: 'total', cells: [{ key: 'fruit', content: 'Total' }] }]}
       />,
@@ -147,7 +148,7 @@ describe('ProseTable', () => {
     expect(container.querySelector('thead th')).not.toHaveAttribute('data-align');
     for (const align of ['start', 'center'] as const) {
       const { container: other } = render(
-        <ProseTable header={[{ ...header[0]!, align }]} rows={rows} />,
+        <ProseTable header={[{ ...requireDefined(header[0]), align }]} rows={rows} />,
       );
       expect(other.querySelector('tbody td')).toHaveAttribute('data-align', align);
     }

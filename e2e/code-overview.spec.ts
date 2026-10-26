@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures.js';
+import { requireDefined } from '../src/utils/require-defined.js';
 
 test('UIC-CODE-EDITOR-12.3 paints diagnostic marks inside a usable custom scrollbar track', async ({
   page,
@@ -15,14 +16,16 @@ test('UIC-CODE-EDITOR-12.3 paints diagnostic marks inside a usable custom scroll
   await expect(async () => {
     const geometry = await marks.evaluateAll((elements) =>
       elements.map((e) => {
+        const track = e.parentElement;
+        if (!track) throw new Error('A scroll marker has no track.');
         const r = e.getBoundingClientRect();
-        const t = e.parentElement!.getBoundingClientRect();
+        const t = track.getBoundingClientRect();
         return { offset: (r.y - t.y) / t.height, inside: r.x >= t.x && r.right <= t.right };
       }),
     );
     expect(geometry.every((mark) => mark.inside)).toBe(true);
-    expect(geometry[0]!.offset).toBeCloseTo(11 / 90, 1);
-    expect(geometry[2]!.offset).toBeCloseTo(75 / 90, 1);
+    expect(requireDefined(geometry[0]).offset).toBeCloseTo(11 / 90, 1);
+    expect(requireDefined(geometry[2]).offset).toBeCloseTo(75 / 90, 1);
   }).toPass();
   await thumb.focus();
   await thumb.press('End');
@@ -50,8 +53,9 @@ test('UIC-CODE-EDITOR-12.3 remeasures wrapped diagnostic lines and excerpt posit
   const input = field.getByRole('textbox', { name: 'Located diagnostics' });
   const mark = field.locator('.ui-code-editor__scroll-marker').first();
   const initial = await mark.evaluate((e) => {
-    const r = e.getBoundingClientRect();
-    return (r.y - e.parentElement!.getBoundingClientRect().y) / e.parentElement!.clientHeight;
+    const track = e.parentElement;
+    if (!track) throw new Error('The scroll marker has no track.');
+    return (e.getBoundingClientRect().y - track.getBoundingClientRect().y) / track.clientHeight;
   });
   await input.fill(
     [
@@ -64,11 +68,12 @@ test('UIC-CODE-EDITOR-12.3 remeasures wrapped diagnostic lines and excerpt posit
   await page.setViewportSize({ width: 400, height: 900 });
   await expect(async () => {
     const geometry = await field.evaluate((root) => {
-      const input = root.querySelector('textarea')!;
-      const gutter = root.querySelector<HTMLElement>('.ui-code-editor__gutter')!;
-      const line = gutter.children[11]!;
-      const mark = root.querySelector<HTMLElement>('.ui-code-editor__scroll-marker')!;
-      const track = mark.parentElement!;
+      const input = root.querySelector('textarea');
+      const gutter = root.querySelector<HTMLElement>('.ui-code-editor__gutter');
+      const line = gutter?.children[11];
+      const mark = root.querySelector<HTMLElement>('.ui-code-editor__scroll-marker');
+      const track = mark?.parentElement;
+      if (!input || !gutter || !line || !mark || !track) throw new Error('The editor is missing.');
       return {
         expected:
           (line.getBoundingClientRect().top -

@@ -5,6 +5,7 @@ import { beforeAll, describe, expect, it, vi } from 'vitest';
 import type { Key } from '../../core/props.js';
 import { UiProvider } from '../../core/provider.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import {
   VersionHistory,
   type VersionHistoryFilter,
@@ -39,7 +40,7 @@ const versions: VersionHistoryVersion[] = [
 const rows = () => screen.getAllByRole('row');
 const titles = () =>
   rows().map((row) => row.querySelector('.ui-version-history__label')?.textContent);
-const checkbox = (index: number) => within(rows()[index]!).getByRole('checkbox');
+const checkbox = (index: number) => within(requireDefined(rows()[index])).getByRole('checkbox');
 
 beforeAll(() => {
   if (typeof Element.prototype.getAnimations !== 'function') {
@@ -48,7 +49,9 @@ beforeAll(() => {
 });
 
 async function openMenu(index: number) {
-  await userEvent.click(within(rows()[index]!).getByRole('button', { name: /^Actions for/ }));
+  await userEvent.click(
+    within(requireDefined(rows()[index])).getByRole('button', { name: /^Actions for/ }),
+  );
   return screen.findByRole('menu');
 }
 
@@ -97,15 +100,17 @@ describe('VersionHistory', { timeout: 15_000 }, () => {
       null,
     ]);
     expect(rows()[0]).toHaveAttribute('data-current', 'true');
-    expect(rows()[0]!.querySelector('.ui-version-history__current')).toHaveTextContent('Current');
+    expect(
+      requireDefined(rows()[0]).querySelector('.ui-version-history__current'),
+    ).toHaveTextContent('Current');
     expect(container.querySelectorAll('.ui-version-history__current')).toHaveLength(1);
-    expect(rows()[1]!.querySelector('.ui-version-history__attribution')).toHaveTextContent(
-      '18 hours ago by JBJon Berg',
-    );
-    expect(rows()[1]!.querySelector('.ui-version-history__summary')).toHaveTextContent(
-      'Tightened the introduction',
-    );
-    expect(rows()[0]!.querySelector('.ui-version-history__summary')).toBeNull();
+    expect(
+      requireDefined(rows()[1]).querySelector('.ui-version-history__attribution'),
+    ).toHaveTextContent('18 hours ago by JBJon Berg');
+    expect(
+      requireDefined(rows()[1]).querySelector('.ui-version-history__summary'),
+    ).toHaveTextContent('Tightened the introduction');
+    expect(requireDefined(rows()[0]).querySelector('.ui-version-history__summary')).toBeNull();
     expectHooksMatchSpec(container, 'VERSION-HISTORY', { slots: ['current', 'summary'] });
   });
 
@@ -121,9 +126,9 @@ describe('VersionHistory', { timeout: 15_000 }, () => {
     );
     expect(rows()[1]).toHaveAttribute('aria-selected', 'true');
     await userEvent.click(checkbox(2));
-    expect([...onSelectionChange.mock.lastCall![0]]).toEqual(['v4', 'v3']);
-    await userEvent.click(rows()[0]!);
-    expect([...onSelectionChange.mock.lastCall![0]]).toEqual(['v3', 'v5']);
+    expect([...requireDefined(onSelectionChange.mock.lastCall)[0]]).toEqual(['v4', 'v3']);
+    await userEvent.click(requireDefined(rows()[0]));
+    expect([...requireDefined(onSelectionChange.mock.lastCall)[0]]).toEqual(['v3', 'v5']);
     expect(rows().map((row) => row.getAttribute('aria-selected'))).toEqual([
       'true',
       'false',
@@ -182,9 +187,11 @@ describe('VersionHistory', { timeout: 15_000 }, () => {
       <VersionHistory versions={versions} currentKey="v5" getNow={getNow} onRestore={onRestore} />,
     );
     expect(
-      within(rows()[0]!).queryByRole('button', { name: /^Actions for/ }),
+      within(requireDefined(rows()[0])).queryByRole('button', { name: /^Actions for/ }),
     ).not.toBeInTheDocument();
-    const trigger = within(rows()[1]!).getByRole('button', { name: 'Actions for Final draft' });
+    const trigger = within(requireDefined(rows()[1])).getByRole('button', {
+      name: 'Actions for Final draft',
+    });
     expect(trigger.closest('.ui-version-history__actions')).not.toBeNull();
     expectHooksMatchSpec(container, 'VERSION-HISTORY', { slots: ['actions'] });
     await openMenu(1);
@@ -253,7 +260,9 @@ describe('VersionHistory', { timeout: 15_000 }, () => {
         }),
     );
     render(<VersionHistory versions={versions} currentKey="v5" onRename={onRename} />);
-    await user.click(within(rows()[0]!).getByRole('button', { name: /^Actions for/ }));
+    await user.click(
+      within(requireDefined(rows()[0])).getByRole('button', { name: /^Actions for/ }),
+    );
     await user.click(await screen.findByRole('menuitem', { name: 'Name this version' }));
     const dialog = await screen.findByRole('dialog', { name: 'Name this version' });
     const action = within(dialog).getByRole('button', { name: 'Save' });
@@ -335,9 +344,9 @@ describe('VersionHistory', { timeout: 15_000 }, () => {
     );
     expect(rows()[2]).toHaveAttribute('aria-disabled', 'true');
     expect(
-      within(rows()[2]!).queryByRole('button', { name: /^Actions for/ }),
+      within(requireDefined(rows()[2])).queryByRole('button', { name: /^Actions for/ }),
     ).not.toBeInTheDocument();
-    await userEvent.click(rows()[2]!);
+    await userEvent.click(requireDefined(rows()[2]));
     expect(rows()[2]).not.toHaveAttribute('aria-selected', 'true');
   });
 
@@ -413,10 +422,10 @@ describe('VersionHistory', { timeout: 15_000 }, () => {
     await userEvent.keyboard(' ');
     expect(rows()[1]).toHaveAttribute('aria-selected', 'true');
     await userEvent.keyboard('{ArrowRight}');
-    expect(within(rows()[1]!).getByRole('checkbox')).toHaveFocus();
+    expect(within(requireDefined(rows()[1])).getByRole('checkbox')).toHaveFocus();
     await userEvent.keyboard('{ArrowRight}');
     expect(
-      within(rows()[1]!).getByRole('button', { name: 'Actions for Final draft' }),
+      within(requireDefined(rows()[1])).getByRole('button', { name: 'Actions for Final draft' }),
     ).toHaveFocus();
     expect(grid).toBeInTheDocument();
     rerender(

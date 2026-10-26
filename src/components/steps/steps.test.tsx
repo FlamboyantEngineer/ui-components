@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { I18nProvider } from '../../primitives/index.js';
 import { UiProvider } from '../../core/provider.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { Steps, type StepsItem } from './steps.js';
 
 const items: StepsItem[] = [
@@ -50,8 +51,8 @@ describe('Steps', () => {
     rerender(
       <Steps
         items={[
-          { ...items[0]!, status: 'error' },
-          { ...items[1]!, status: 'skipped' },
+          { ...requireDefined(items[0]), status: 'error' },
+          { ...requireDefined(items[1]), status: 'skipped' },
           ...items.slice(2),
         ]}
         currentId="review"
@@ -64,7 +65,10 @@ describe('Steps', () => {
 
   it('UIC-STEPS-1.3 marks the current step even when it failed', () => {
     const { container } = render(
-      <Steps items={[items[0]!, { ...items[1]!, status: 'error' }]} currentId="prepare" />,
+      <Steps
+        items={[requireDefined(items[0]), { ...requireDefined(items[1]), status: 'error' }]}
+        currentId="prepare"
+      />,
     );
     const current = itemOf('Prepare');
     expect(current).toHaveAttribute('aria-current', 'step');
@@ -80,10 +84,10 @@ describe('Steps', () => {
       <I18nProvider locale="ar-EG">
         <Steps
           items={[
-            items[0]!,
-            { ...items[1]!, status: 'error' },
-            { ...items[2]!, status: 'skipped' },
-            items[3]!,
+            requireDefined(items[0]),
+            { ...requireDefined(items[1]), status: 'error' },
+            { ...requireDefined(items[2]), status: 'skipped' },
+            requireDefined(items[3]),
           ]}
           currentId="import"
         />
@@ -157,7 +161,11 @@ describe('Steps', () => {
     const onAction = vi.fn();
     const { container } = render(
       <Steps
-        items={[items[0]!, { ...items[1]!, status: 'skipped' }, ...items.slice(2)]}
+        items={[
+          requireDefined(items[0]),
+          { ...requireDefined(items[1]), status: 'skipped' },
+          ...items.slice(2),
+        ]}
         currentId="review"
         onAction={onAction}
       />,
@@ -167,7 +175,7 @@ describe('Steps', () => {
       'Upload Completed Choose a file',
       'Prepare Skipped',
     ]);
-    await user.click(buttons[0]!);
+    await user.click(requireDefined(buttons[0]));
     expect(onAction).toHaveBeenCalledWith('upload');
     await user.tab();
     expect(buttons[1]).toHaveFocus();
@@ -190,7 +198,7 @@ describe('Steps', () => {
     const onAction = vi.fn();
     const { container, rerender } = render(
       <Steps
-        items={[{ ...items[0]!, isDisabled: true }, ...items.slice(1)]}
+        items={[{ ...requireDefined(items[0]), isDisabled: true }, ...items.slice(1)]}
         currentId="review"
         onAction={onAction}
       />,
@@ -239,7 +247,11 @@ describe('Steps', () => {
     render(
       <UiProvider strings={{ stepStatus: (status) => `[${status}]` }}>
         <Steps
-          items={[items[0]!, { ...items[1]!, status: 'error' }, ...items.slice(2)]}
+          items={[
+            requireDefined(items[0]),
+            { ...requireDefined(items[1]), status: 'error' },
+            ...items.slice(2),
+          ]}
           currentId="review"
           onAction={() => {}}
         />

@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { HeadingLevelContext } from '../section-header/section-header.js';
 import { RecordHeader } from './record-header.js';
 
@@ -96,8 +97,10 @@ describe('RecordHeader', { timeout: 15_000 }, () => {
         actions={<button type="button">Share</button>}
       />,
     );
-    const parts = [...(container.firstElementChild?.children ?? [])].map(
-      (part) => part.className.split(' ').find((name) => name.startsWith('ui-record-header__'))!,
+    const parts = [...(container.firstElementChild?.children ?? [])].map((part) =>
+      requireDefined(
+        part.className.split(' ').find((name) => name.startsWith('ui-record-header__')),
+      ),
     );
     expect(parts).toEqual([
       'ui-record-header__identity',

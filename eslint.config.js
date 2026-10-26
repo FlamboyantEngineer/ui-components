@@ -130,12 +130,6 @@ export default tseslint.config(
     },
   },
   {
-    // TS3 is phased in: tests keep their non-null assertions until they are migrated.
-    name: 'ui-components/typescript/tests',
-    files: ['src/**/*.test.{ts,tsx}', 'test/**/*.{ts,tsx}', 'e2e/**/*.ts'],
-    rules: { '@typescript-eslint/no-non-null-assertion': 'off' },
-  },
-  {
     files: ['src/**/*.{ts,tsx}', 'labs/src/**/*.{ts,tsx}', 'test/**/*.{ts,tsx}'],
     plugins: { 'react-hooks': reactHooks },
     rules: {

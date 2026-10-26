@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { Table, type TableProps } from './table.js';
 import type { TableColumn } from './table-rows.js';
 import type { TableCellEdit } from './use-cell-editing.js';
@@ -235,7 +236,7 @@ describe('Table spreadsheet mode', { timeout: 20_000 }, () => {
     const onBatch = vi.fn();
     render(<Sheet onBatch={onBatch} columns={uncheckedColumns} />);
     await user.click(cell('Apple', 'count'));
-    const handle = document.querySelector('.ui-table__fill-handle')!;
+    const handle = requireDefined(document.querySelector('.ui-table__fill-handle'));
     await user.pointer([{ keys: '[MouseLeft>]', target: handle }, { target: cell('Fig', 'note') }]);
     expect(document.querySelector('[data-fill-target]')).not.toBeNull();
     fireEvent.pointerCancel(handle, { pointerId: 1 });

@@ -2,6 +2,7 @@ import { act, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { useRef, useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { requireDefined } from '../../utils/require-defined.js';
 import {
   ControlCompletionList,
   matchCompletions,
@@ -201,8 +202,8 @@ describe('Completions engine', () => {
     const { rerender } = render(<Notes {...props} />);
     await user.click(input());
     await user.keyboard('ap');
-    const choose = model!.apply;
-    const option = model!.options[0]!;
+    const choose = requireDefined(model).apply;
+    const option = requireDefined(requireDefined(model).options[0]);
     rerender(<Notes {...props} isLocked />);
     act(() => choose(option));
     expect(onInsert).not.toHaveBeenCalled();
@@ -220,8 +221,8 @@ describe('Completions engine', () => {
     );
     await user.click(input());
     await user.keyboard('ap');
-    const choose = model!.apply;
-    const option = model!.options[0]!;
+    const choose = requireDefined(model).apply;
+    const option = requireDefined(requireDefined(model).options[0]);
     act(() => {
       choose(option);
       choose(option);

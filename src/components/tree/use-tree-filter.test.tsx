@@ -2,6 +2,7 @@ import { render, renderHook, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { Tree, type TreeProps } from './tree.js';
 import { useTreeFilter } from './use-tree-filter.js';
 
@@ -57,9 +58,9 @@ describe('Tree filtering', () => {
     expect(visited).toHaveLength(20000);
     expect(visited.slice(0, 3)).toEqual(['0', '1', '2']);
     expect(visited.at(-1)).toBe('Match');
-    let current = result.current.items[0]!;
+    let current = requireDefined(result.current.items[0]);
     for (let index = 1; index < 20000; index += 1) {
-      current = result.current.getChildren(current)![0]!;
+      current = requireDefined(requireDefined(result.current.getChildren(current))[0]);
       expect(current.id).toBe(String(index));
     }
   });

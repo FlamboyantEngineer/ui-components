@@ -4,6 +4,7 @@ import { createRef } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { UiProvider } from '../../core/provider.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { ActivityFeed, type ActivityFeedItem } from './activity-feed.js';
 import { groupByDay } from './day-groups.js';
 
@@ -70,23 +71,27 @@ describe('ActivityFeed', () => {
       <ActivityFeed items={items} groupBy="none" getNow={getNow} fallbackAfterDays={3} />,
     );
     const entries = screen.getAllByRole('listitem');
-    const marker = (index: number) => entries[index]!.querySelector('.ui-activity-feed__marker');
+    const marker = (index: number) =>
+      requireDefined(entries[index]).querySelector('.ui-activity-feed__marker');
     expect(marker(0)).toHaveAttribute('aria-hidden', 'true');
     expect(marker(0)?.querySelector('.ui-avatar')).toHaveTextContent('MS');
     expect(marker(2)?.querySelector('.ui-icon')).not.toBeNull();
     expect(marker(2)?.querySelector('.ui-avatar')).toBeNull();
-    const time = (index: number) => entries[index]!.querySelector('.ui-activity-feed__time');
+    const time = (index: number) =>
+      requireDefined(entries[index]).querySelector('.ui-activity-feed__time');
     expect(time(0)).toHaveClass('ui-relative-time');
     expect(time(0)).toHaveTextContent('5 minutes ago');
     expect(time(0)).toHaveAttribute('datetime', '2026-04-20T10:25:00');
     expect(time(3)).toHaveTextContent(/^Apr 14, 2026$/);
     expect(time(4)).toHaveTextContent('Unknown time');
     expect(
-      entries[0]!.querySelector('.ui-activity-feed__body > .ui-activity-feed__detail'),
+      requireDefined(entries[0]).querySelector(
+        '.ui-activity-feed__body > .ui-activity-feed__detail',
+      ),
     ).toHaveTextContent('Looks good to me.');
-    expect(entries[1]!.querySelector('.ui-activity-feed__detail')).toBeNull();
-    expect(entries[2]!.querySelector('.ui-activity-feed__actor')).toBeNull();
-    expect(entries[3]!.querySelector('.ui-activity-feed__target')).toBeNull();
+    expect(requireDefined(entries[1]).querySelector('.ui-activity-feed__detail')).toBeNull();
+    expect(requireDefined(entries[2]).querySelector('.ui-activity-feed__actor')).toBeNull();
+    expect(requireDefined(entries[3]).querySelector('.ui-activity-feed__target')).toBeNull();
     expectHooksMatchSpec(container, 'ACTIVITY-FEED', { slots: ['time', 'detail'] });
   });
 
@@ -107,7 +112,7 @@ describe('ActivityFeed', () => {
       'Maria Santos commented on Report.pdf',
       'Jon Berg renamed Budget',
     ]);
-    expect(headings[0]!.closest('li')).toHaveClass('ui-activity-feed__group');
+    expect(requireDefined(headings[0]).closest('li')).toHaveClass('ui-activity-feed__group');
     expectHooksMatchSpec(container, 'ACTIVITY-FEED', { slots: ['group', 'day', 'entries'] });
     rerender(<ActivityFeed items={items} getNow={getNow} headingLevel={4} />);
     expect(screen.getAllByRole('heading', { level: 4 })).toHaveLength(4);

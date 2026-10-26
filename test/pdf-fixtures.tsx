@@ -15,6 +15,7 @@ import {
   type PdfTouchManagerOptions,
 } from '../src/components/pdf-viewer/pdf-engine.js';
 import { PdfViewer, type PdfViewerProps } from '../src/components/pdf-viewer/pdf-viewer.js';
+import { requireDefined } from '../src/utils/require-defined.js';
 
 export const sampleLines = [
   ['Seasonal Report', 'The apple harvest began', 'and the pear harvest followed.'],
@@ -161,7 +162,7 @@ export function createEngine({
   const getData = vi.fn(async () => new Uint8Array([37, 80, 68, 70]));
   const pdf = {
     numPages: pages.length,
-    getPage: async (pageNumber: number) => pages[pageNumber - 1]!,
+    getPage: async (pageNumber: number) => requireDefined(pages[pageNumber - 1]),
     getOutline: vi.fn(async () => outline),
     getDestination: vi.fn(async (name: string) => destinations[name] ?? null),
     getPageIndex: vi.fn(async (ref: { num: number }) => ref.num),
@@ -289,7 +290,10 @@ export function stubIntersectionObserver() {
     observed,
     /** Reports pages as near the view or not. */
     report(pageIndexes: readonly number[], isIntersecting: boolean) {
-      const entries = pageIndexes.map((index) => ({ target: observed[index]!, isIntersecting }));
+      const entries = pageIndexes.map((index) => ({
+        target: requireDefined(observed[index]),
+        isIntersecting,
+      }));
       observers[0]?.(entries);
     },
   };

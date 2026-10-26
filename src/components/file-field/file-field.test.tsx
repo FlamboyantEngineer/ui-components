@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import type { FileUploadItem } from '../file-upload/file-upload.js';
 import { FileField, type FileFieldItem, type FileFieldProps } from './file-field.js';
 
@@ -44,7 +45,9 @@ describe('FileField', () => {
     ];
     const { container, rerender } = render(<Attachments name="files" value={value} />);
     const [numeric, textual] = container.querySelectorAll('input[type="hidden"][name="files"]');
-    rerender(<Attachments name="files" value={[value[1]!, value[0]!]} />);
+    rerender(
+      <Attachments name="files" value={[requireDefined(value[1]), requireDefined(value[0])]} />,
+    );
     expect([...container.querySelectorAll('input[type="hidden"][name="files"]')]).toEqual([
       textual,
       numeric,

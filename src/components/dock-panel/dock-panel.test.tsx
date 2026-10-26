@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { createMemoryStorage, type UiStorage } from '../../core/storage.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { Section } from '../section-header/section-header.js';
 import { DockPanel, DockPanelPane, type DockPanelProps } from './dock-panel.js';
 
@@ -113,7 +114,7 @@ async function settleDrawer() {
 }
 
 function root(container: HTMLElement) {
-  return container.querySelector<HTMLElement>('.ui-dock-panel')!;
+  return requireDefined(container.querySelector<HTMLElement>('.ui-dock-panel'));
 }
 
 /** A pane by its label, shown or hidden. */
@@ -198,7 +199,7 @@ describe('DockPanel structure', () => {
     const people = within(toolbar).getByRole('button', { name: 'People' });
     expect(people).toHaveAttribute('aria-expanded', 'false');
     expect(people).toHaveAccessibleDescription('3 items');
-    const count = toolbar.querySelector('.ui-dock-panel__count')!;
+    const count = requireDefined(toolbar.querySelector('.ui-dock-panel__count'));
     expect(count).toHaveClass('ui-badge');
     expect(count).toHaveTextContent('3');
     expect(count).toHaveAttribute('aria-hidden', 'true');
@@ -228,7 +229,7 @@ describe('DockPanel structure', () => {
     const files = pane('Files');
     expect(files.tagName).toBe('SECTION');
     expect(files).toHaveClass('ui-dock-panel__pane');
-    const header = files.querySelector('.ui-dock-panel__header')!;
+    const header = requireDefined(files.querySelector('.ui-dock-panel__header'));
     expect(header).toHaveClass('ui-action-row');
     expect(within(files).getByRole('heading', { level: 3, name: 'Recent files' })).toHaveClass(
       'ui-dock-panel__title',
@@ -310,7 +311,7 @@ describe('DockPanel panes', () => {
       <Panel defaultExpanded={false} onExpandedChange={onExpandedChange} />,
     );
     const panel = root(container);
-    const body = container.querySelector('.ui-dock-panel__body')!;
+    const body = requireDefined(container.querySelector('.ui-dock-panel__body'));
     expect(panel).not.toHaveAttribute('data-expanded');
     expect(body).not.toBeVisible();
     expect(screen.queryByRole('separator')).not.toBeInTheDocument();
@@ -326,7 +327,7 @@ describe('DockPanel panes', () => {
 
   it('UIC-DOCK-PANEL-2.2 flips the panel with the toggle, which points toward its edge', async () => {
     const { container } = render(<Panel />);
-    const body = container.querySelector('.ui-dock-panel__body')!;
+    const body = requireDefined(container.querySelector('.ui-dock-panel__body'));
     const toggle = screen.getByRole('button', { name: 'Collapse Details' });
     expect(toggle).toHaveClass('ui-dock-panel__toggle', 'ui-button');
     expect(toggle).toHaveAttribute('aria-expanded', 'true');
@@ -450,7 +451,7 @@ describe('DockPanel size', () => {
     expect(separator).toHaveAttribute('aria-orientation', 'vertical');
     expect(separator).toHaveAttribute(
       'aria-controls',
-      container.querySelector('.ui-dock-panel__body')!.id,
+      requireDefined(container.querySelector('.ui-dock-panel__body')).id,
     );
     expect(separator).toHaveAttribute('aria-valuenow', '320');
     expect(separator).toHaveAttribute('aria-valuemin', '200');
@@ -514,9 +515,12 @@ describe('DockPanel persistence', () => {
       { keys: '[MouseLeft>]', target: separator, coords: { clientX: 500 } },
       { coords: { clientX: 460 } },
     ]);
-    expect(JSON.parse(storage.getItem('side')!)).toEqual({ selectedKey: 'people' });
+    expect(JSON.parse(requireDefined(storage.getItem('side')))).toEqual({ selectedKey: 'people' });
     await user.pointer({ keys: '[/MouseLeft]', target: separator, coords: { clientX: 460 } });
-    expect(JSON.parse(storage.getItem('side')!)).toEqual({ selectedKey: 'people', size: 360 });
+    expect(JSON.parse(requireDefined(storage.getItem('side')))).toEqual({
+      selectedKey: 'people',
+      size: 360,
+    });
     await user.click(screen.getByRole('button', { name: 'Collapse Details' }));
     unmount();
     const { container } = render(persisted(storage));

@@ -2,6 +2,7 @@ import { fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { armElementDrag, listenPointerRelease } from './pointer-drag.js';
+import { requireDefined } from './require-defined.js';
 
 describe('native drag lifecycle', () => {
   it('UIC-DRAG-INTERACTIONS-2.2 ignores another pointer and reports cancellation separately from release', async () => {
@@ -48,7 +49,7 @@ describe('native drag lifecycle', () => {
       </>,
     );
     const frame = screen.getByTitle<HTMLIFrameElement>('Inner');
-    const document = frame.contentDocument!;
+    const document = requireDefined(frame.contentDocument);
     const button = document.createElement('button');
     button.textContent = 'Inner';
     document.body.append(button);

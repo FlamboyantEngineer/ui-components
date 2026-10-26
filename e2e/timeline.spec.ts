@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures.js';
+import { requireDefined } from '../src/utils/require-defined.js';
 
 test.describe('Timeline lab', () => {
   test('UIC-TIMELINE-1.1 UIC-TIMELINE-1.3 UIC-TIMELINE-1.5 lays out every zoom level on the scale', async ({
@@ -41,7 +42,9 @@ test.describe('Timeline lab', () => {
     await expect(plan.locator('.ui-timeline__connector[data-conflict]')).toHaveCount(1);
     const today = await plan.locator('.ui-timeline__today').boundingBox();
     const quotes = await plan.getByRole('button', { name: 'Collect quotes' }).boundingBox();
-    expect(today!.x).toBeGreaterThan(quotes!.x + quotes!.width);
+    expect(requireDefined(today).x).toBeGreaterThan(
+      requireDefined(quotes).x + requireDefined(quotes).width,
+    );
     const rewire = plan.getByRole('button', { name: 'Rewire' });
     await expect(rewire).toHaveAttribute('data-conflict', 'true');
     await expect(rewire).toHaveAccessibleDescription(
@@ -55,7 +58,7 @@ test.describe('Timeline lab', () => {
     const plan = page.locator('[data-lab-demo="plan"]');
     const bar = plan.getByRole('button', { name: 'Strip kitchen' });
     await bar.scrollIntoViewIfNeeded();
-    const box = (await bar.boundingBox())!;
+    const box = requireDefined(await bar.boundingBox());
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
     await page.mouse.down();
     await page.mouse.move(box.x + box.width / 2 + 35, box.y + box.height / 2, { steps: 5 });
@@ -66,7 +69,7 @@ test.describe('Timeline lab', () => {
     );
     await expect(bar).not.toHaveAttribute('data-dragging');
     await expect(plan.locator('[data-lab-demo="selection"]')).toHaveText('Selected: 0');
-    const moved = (await bar.boundingBox())!;
+    const moved = requireDefined(await bar.boundingBox());
     expect(Math.round(moved.x - box.x)).toBe(32);
     await page.mouse.move(moved.x + moved.width - 2, moved.y + moved.height / 2);
     await page.mouse.down();
@@ -112,10 +115,16 @@ test.describe('Timeline lab', () => {
     const viewport = plan.locator('.ui-timeline__viewport');
     const header = plan.locator('.ui-timeline__header');
     const list = plan.locator('.ui-timeline__list');
-    const before = { header: (await header.boundingBox())!, list: (await list.boundingBox())! };
+    const before = {
+      header: requireDefined(await header.boundingBox()),
+      list: requireDefined(await list.boundingBox()),
+    };
     await viewport.evaluate((node) => node.scrollTo({ left: 600, top: 120 }));
     await expect.poll(() => viewport.evaluate((node) => node.scrollTop)).toBeGreaterThan(0);
-    const after = { header: (await header.boundingBox())!, list: (await list.boundingBox())! };
+    const after = {
+      header: requireDefined(await header.boundingBox()),
+      list: requireDefined(await list.boundingBox()),
+    };
     expect(after.header.y).toBeCloseTo(before.header.y, 0);
     expect(after.list.x).toBeCloseTo(before.list.x, 0);
     await viewport.evaluate((node) => node.scrollTo({ left: 0, top: 0 }));

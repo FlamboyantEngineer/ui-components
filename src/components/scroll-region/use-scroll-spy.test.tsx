@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { useRef } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { requireDefined } from '../../utils/require-defined.js';
 import { ScrollRegion } from './scroll-region.js';
 import { resolveScrollSpy, useScrollSpy } from './use-scroll-spy.js';
 
@@ -50,7 +51,7 @@ describe('useScrollSpy', () => {
   it('UIC-SCROLL-REGION-4.5 reports the last section whose top reached the viewport top', () => {
     Object.assign(sectionTops, { apples: 100, pears: 400, plums: 700 });
     const { rerender } = render(<Contents ids={['apples', 'pears', 'plums']} />);
-    const viewport = document.getElementById('chapters')!;
+    const viewport = requireDefined(document.getElementById('chapters'));
     stubLayout(viewport);
     fireEvent.scroll(viewport);
     expect(toc()).toHaveTextContent('apples');
@@ -70,7 +71,7 @@ describe('useScrollSpy', () => {
   it('UIC-SCROLL-REGION-4.5 starts at the first section and skips missing ids', () => {
     Object.assign(sectionTops, { apples: 300, pears: 600, plums: 900 });
     render(<Contents ids={['missing', 'apples', 'pears']} />);
-    const viewport = document.getElementById('chapters')!;
+    const viewport = requireDefined(document.getElementById('chapters'));
     stubLayout(viewport);
     fireEvent.scroll(viewport);
     expect(toc()).toHaveTextContent('apples');
@@ -93,7 +94,7 @@ describe('useScrollSpy', () => {
     );
     Object.assign(sectionTops, { apples: 100, pears: 400, plums: 700 });
     render(<Contents ids={['apples', 'pears', 'plums']} />);
-    const viewport = document.getElementById('chapters')!;
+    const viewport = requireDefined(document.getElementById('chapters'));
     stubLayout(viewport);
     viewportBox.top = 400;
     act(() => callbacks.forEach((callback) => callback()));

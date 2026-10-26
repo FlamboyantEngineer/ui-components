@@ -5,6 +5,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { Link, useLocale } from '../primitives/index.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../test/hooks.js';
+import { requireDefined } from '../utils/require-defined.js';
 import { defaultGlyphs, glyphNames, type GlyphComponentProps } from './glyphs.js';
 import {
   Glyph,
@@ -247,7 +248,7 @@ describe('storage', () => {
       </UiProvider>,
     );
     const [, button] = screen.getAllByRole('button');
-    await userEvent.click(button!);
+    await userEvent.click(requireDefined(button));
     expect(button).toHaveTextContent('Count 1');
   });
 });

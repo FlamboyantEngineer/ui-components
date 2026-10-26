@@ -384,7 +384,8 @@ test.describe('Scroll Region lab', () => {
     await expect(toc.locator('[aria-current="location"]')).toHaveText('Orchards');
     const viewport = page.getByRole('region', { name: 'Chapters text' });
     await viewport.evaluate((node) => {
-      const target = node.querySelector('#chapter-meadows')!;
+      const target = node.querySelector('#chapter-meadows');
+      if (!target) throw new Error('No Meadows chapter.');
       node.scrollTop += target.getBoundingClientRect().top - node.getBoundingClientRect().top;
     });
     await expect(toc.locator('[aria-current="location"]')).toHaveText('Meadows');

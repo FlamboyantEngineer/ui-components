@@ -5,6 +5,7 @@ import {
   parseIsoDateTime,
   parseIsoTime,
 } from '../../primitives/index.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import {
   currentDateValue,
   findBoundIssue,
@@ -38,23 +39,27 @@ describe('date values', () => {
 
   it('UIC-DATE-TIME-FIELD-1.2 writes each kind back as the text it was read from', () => {
     for (const text of ['2026-04-13', '2026-12-31']) {
-      expect(formatIsoDate(parseIsoDate(text)!)).toBe(text);
+      expect(formatIsoDate(requireDefined(parseIsoDate(text)))).toBe(text);
     }
-    expect(formatIsoDate(parseIsoTime('07:05')!)).toBe('07:05');
-    expect(formatIsoDate(parseIsoTime('07:05:09')!, 'second')).toBe('07:05:09');
-    expect(formatIsoDate(parseIsoDateTime('2026-04-13T13:45')!)).toBe('2026-04-13T13:45');
-    expect(formatIsoDate(parseIsoDateTime('2026-04-13T13:45:30')!, 'second')).toBe(
+    expect(formatIsoDate(requireDefined(parseIsoTime('07:05')))).toBe('07:05');
+    expect(formatIsoDate(requireDefined(parseIsoTime('07:05:09')), 'second')).toBe('07:05:09');
+    expect(formatIsoDate(requireDefined(parseIsoDateTime('2026-04-13T13:45')))).toBe(
+      '2026-04-13T13:45',
+    );
+    expect(formatIsoDate(requireDefined(parseIsoDateTime('2026-04-13T13:45:30')), 'second')).toBe(
       '2026-04-13T13:45:30',
     );
     const zoned = '2026-04-13T12:00:00+09:00[Asia/Tokyo]';
-    expect(formatIsoDate(parseIsoDateTime(zoned, 'Asia/Tokyo')!)).toBe(zoned);
+    expect(formatIsoDate(requireDefined(parseIsoDateTime(zoned, 'Asia/Tokyo')))).toBe(zoned);
   });
 
   it('UIC-DATE-TIME-FIELD-1.2 reads an offset or zoned text as the local wall time of its instant', () => {
     const moment = new Date(2026, 3, 13, 13, 45);
-    expect(formatIsoDate(parseIsoDateTime(moment.toISOString())!)).toBe(toFloating(moment));
+    expect(formatIsoDate(requireDefined(parseIsoDateTime(moment.toISOString())))).toBe(
+      toFloating(moment),
+    );
     const zoned = `${moment.toISOString().slice(0, 19)}+00:00[UTC]`;
-    expect(formatIsoDate(parseIsoDateTime(zoned)!)).toBe(toFloating(moment));
+    expect(formatIsoDate(requireDefined(parseIsoDateTime(zoned)))).toBe(toFloating(moment));
   });
 
   it('UIC-DATE-TIME-FIELD-2.2 gives the current date and the current minute', () => {
@@ -142,10 +147,10 @@ describe('date values', () => {
   });
 
   it('UIC-DATE-TIME-FIELD-4.1 writes seconds at the second granularity and drops finer parts', () => {
-    expect(formatIsoDate(parseIsoTime('07:05:09')!, 'second')).toBe('07:05:09');
-    expect(formatIsoDate(parseIsoTime('07:05:09')!)).toBe('07:05');
-    expect(formatIsoDate(parseIsoTime('07:05:09')!, 'hour')).toBe('07:00');
-    expect(formatIsoDate(parseIsoDateTime('2026-04-13T13:45:30')!, 'hour')).toBe(
+    expect(formatIsoDate(requireDefined(parseIsoTime('07:05:09')), 'second')).toBe('07:05:09');
+    expect(formatIsoDate(requireDefined(parseIsoTime('07:05:09')))).toBe('07:05');
+    expect(formatIsoDate(requireDefined(parseIsoTime('07:05:09')), 'hour')).toBe('07:00');
+    expect(formatIsoDate(requireDefined(parseIsoDateTime('2026-04-13T13:45:30')), 'hour')).toBe(
       '2026-04-13T13:00',
     );
     const current = currentDateValue('date-time', { granularity: 'second' });
@@ -167,13 +172,16 @@ describe('date values', () => {
     expect(tokyo('2026-04-13T05:00:00+02:00[Europe/Paris]')).toBe(noon);
     expect(tokyo('2026-04-13T12:00')).toBe(noon);
     expect(tokyo('2026-04-13')).toBeNull();
-    expect(formatIsoDate(parseIsoDateTime('2026-04-13T12:00:45', 'Asia/Tokyo')!, 'second')).toBe(
-      '2026-04-13T12:00:45+09:00[Asia/Tokyo]',
-    );
+    expect(
+      formatIsoDate(
+        requireDefined(parseIsoDateTime('2026-04-13T12:00:45', 'Asia/Tokyo')),
+        'second',
+      ),
+    ).toBe('2026-04-13T12:00:45+09:00[Asia/Tokyo]');
     // A wall time the clocks skip reads as the time after the gap.
-    expect(formatIsoDate(parseIsoDateTime('2026-03-29T02:30', 'Europe/Paris')!)).toBe(
-      '2026-03-29T03:30:00+02:00[Europe/Paris]',
-    );
+    expect(
+      formatIsoDate(requireDefined(parseIsoDateTime('2026-03-29T02:30', 'Europe/Paris'))),
+    ).toBe('2026-03-29T03:30:00+02:00[Europe/Paris]');
     expect(
       plain(formatDateValue(noon, 'date-time', { locale: 'en-US', timeZone: 'Asia/Tokyo' })),
     ).toBe('Apr 13, 2026, 12:00 PM');

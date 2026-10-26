@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { requireDefined } from '../../utils/require-defined.js';
 import { buildTableNodes, filterTableNodes, sortTableNodes, type TableNode } from './table-tree.js';
 
 interface Place {
@@ -72,7 +73,7 @@ describe('table tree helpers', () => {
     while (level.length > 0) {
       expect(level).toHaveLength(1);
       expect(level[0]?.id).toBe(String(depth));
-      level = level[0]!.children;
+      level = requireDefined(level[0]).children;
       depth += 1;
     }
     expect(depth).toBe(20_000);

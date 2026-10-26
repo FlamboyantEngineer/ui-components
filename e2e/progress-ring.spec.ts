@@ -111,9 +111,10 @@ test('UIC-PROGRESS-BAR-11.4 circular indeterminate arcs rotate around the ring c
       .locator('[data-lab-family="progress-ring-cases"]')
       .locator(`[data-lab-cell="state=indeterminate size=${size}"]`);
     const centers = await root.evaluate((node) => {
-      const ring = node.querySelector('.ui-progress-bar__ring')!;
-      const fill = node.querySelector('.ui-progress-bar__fill')!;
-      const animation = ring.getAnimations()[0]!;
+      const ring = node.querySelector('.ui-progress-bar__ring');
+      const fill = node.querySelector('.ui-progress-bar__fill');
+      const animation = ring?.getAnimations()[0];
+      if (!ring || !fill || !animation) throw new Error('The ring is not animating.');
       animation.pause();
       return [0, 200, 400, 600].map((time) => {
         animation.currentTime = time;

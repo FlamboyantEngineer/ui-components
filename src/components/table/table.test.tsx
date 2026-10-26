@@ -4,6 +4,7 @@ import { useState } from 'react';
 import type { Selection, SortDescriptor } from '../../core/props.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { Table } from './table.js';
 import type { TableColumn } from './table-rows.js';
 
@@ -111,7 +112,7 @@ describe('Table', { timeout: 15_000 }, () => {
       <Table
         aria-label="Fruit"
         rows={fruit}
-        columns={[columns[1]!, { ...columns[0]!, isRowHeader: true }]}
+        columns={[requireDefined(columns[1]), { ...requireDefined(columns[0]), isRowHeader: true }]}
       />,
     );
     expect(names()).toEqual(['Banana', 'Apple', 'Cherry']);
@@ -300,14 +301,14 @@ describe('Table', { timeout: 15_000 }, () => {
     expect(boxes).toHaveLength(4);
     expect(boxes[0]).toHaveAccessibleName('Select All');
     expect(boxes[1]).toHaveAccessibleName('Select Banana');
-    await user.click(boxes[1]!);
+    await user.click(requireDefined(boxes[1]));
     expect(new Set(onSelectionChange.mock.lastCall?.[0])).toEqual(new Set(['banana']));
     const selectAll = container.querySelector('th .ui-table__checkbox') as HTMLElement;
     expect(selectAll).toHaveAttribute('data-indeterminate', 'true');
     expect(selectAll.querySelector('[data-glyph="minus"]')).not.toBeNull();
     expect(screen.getAllByRole('row')[1]).toHaveAttribute('data-selected', 'true');
     expect(container.querySelector('td [data-glyph="check"]')).not.toBeNull();
-    await user.click(boxes[0]!);
+    await user.click(requireDefined(boxes[0]));
     expect(onSelectionChange.mock.lastCall?.[0]).toBe('all');
     expect(screen.getByRole('row', { name: 'Cherry' })).toHaveAttribute('aria-selected', 'false');
     expectHooksMatchSpec(container, 'TABLE', { slots: ['checkbox', 'checkbox-box'] });

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ana, helper, message, people, reader } from '../../../test/chat-fixtures.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import type { ChatMessageData, ChatTextToken } from '../chat-parts/chat-parts.js';
 import {
   findLastOwnText,
@@ -77,7 +78,7 @@ describe('chat model', () => {
     expect(toDisplayTokens(shown)).toEqual(shown);
     expect(toComposerTokens(shown)).toEqual(bare);
     const edited = { ...message('e', 'sam', { text: '@Ana Lopez hi' }) };
-    edited.parts = [{ type: 'text', text: '@Ana Lopez hi', tokens: [shown[0]!] }];
+    edited.parts = [{ type: 'text', text: '@Ana Lopez hi', tokens: [requireDefined(shown[0])] }];
     expect(toMessageText(edited)).toEqual({ text: '@Ana Lopez hi', tokens: [bare[0]] });
   });
 

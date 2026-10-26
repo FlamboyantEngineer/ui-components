@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { I18nProvider } from '../../primitives/index.js';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { SegmentedChoice, type SegmentedChoiceOption } from './segmented-choice.js';
 
 const views: SegmentedChoiceOption[] = [
@@ -280,7 +281,11 @@ describe('SegmentedChoice', () => {
     rerender(
       <SegmentedChoice
         aria-label="View"
-        options={[views[0]!, { ...views[1]!, isDisabled: true }, views[2]!]}
+        options={[
+          requireDefined(views[0]),
+          { ...requireDefined(views[1]), isDisabled: true },
+          requireDefined(views[2]),
+        ]}
         value="day"
         onChange={onChange}
       />,

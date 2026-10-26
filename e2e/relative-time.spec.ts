@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures.js';
+import { requireDefined } from '../src/utils/require-defined.js';
 
 const cell = (id: string) => `[data-lab-cell="${id}"] .ui-relative-time`;
 
@@ -117,7 +118,7 @@ test.describe('Relative Time lab', () => {
     await expect(times).toHaveCount(20);
     const before = await times.first().textContent();
     await page.clock.runFor(10_000);
-    await expect(times.first()).not.toHaveText(before!);
+    await expect(times.first()).not.toHaveText(requireDefined(before));
     await expect(times).toHaveText(Array(20).fill(await times.first().textContent()));
     await page.clock.resume();
   });

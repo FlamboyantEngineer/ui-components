@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures.js';
+import { requireDefined } from '../src/utils/require-defined.js';
 
 test.describe('Sparkline lab', () => {
   test('UIC-SCALES-1.1 UIC-SCALES-1.3 UIC-SCALES-1.5 UIC-SCALES-2.3 UIC-SCALES-2.4 handles extreme scale domains', async ({
@@ -78,8 +79,8 @@ test.describe('Sparkline lab', () => {
       return (frame?.y ?? 0) + (frame?.height ?? 0) - (marker?.y ?? 0);
     };
     const [north, south, east] = await Promise.all(['North', 'South', 'East'].map(lastHeight));
-    expect(east).toBeGreaterThan(north!);
-    expect(north).toBeGreaterThan(south!);
+    expect(east).toBeGreaterThan(requireDefined(north));
+    expect(north).toBeGreaterThan(requireDefined(south));
     const ticks = page.locator('[data-lab-demo="ticks"] [data-lab-tick]');
     await expect(ticks).toHaveText(['Feb 2026', 'Mar 2026']);
     await expect(page.locator('[data-lab-demo="ticks"] p')).toHaveText(

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import type { Key } from '../../core/props.js';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { SelectField, type SelectFieldOption } from './select-field.js';
 
 const fruit: SelectFieldOption[] = [
@@ -48,7 +49,10 @@ describe('SelectField field', () => {
     await user.click(screen.getByRole('button', { name: '1 selected Types' }));
     await user.click(screen.getByRole('option', { name: 'Textual' }));
     expect(onChange).toHaveBeenLastCalledWith([1, '1']);
-    expect(new FormData(container.querySelector('form')!).getAll('types')).toEqual(['1', '1']);
+    expect(new FormData(requireDefined(container.querySelector('form'))).getAll('types')).toEqual([
+      '1',
+      '1',
+    ]);
   });
 
   it.each(['isReadOnly', 'isDisabled'] as const)(

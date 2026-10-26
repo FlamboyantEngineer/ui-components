@@ -4,6 +4,7 @@ import { useState } from 'react';
 import type { Key } from '../../core/props.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { Combobox, type ComboboxOption } from './combobox.js';
 
 const cities: ComboboxOption[] = ['Paris', 'Lima', 'Oslo', 'Lisbon'].map((name) => ({
@@ -91,7 +92,7 @@ describe('Combobox chips', () => {
     const combobox = screen.getByRole('combobox', { name: 'Cities' });
     await user.type(combobox, 'pa');
     // The open list hides the rest of the field from assistive technology, so find the hook.
-    await user.click(container.querySelector<HTMLElement>('.ui-combobox__clear')!);
+    await user.click(requireDefined(container.querySelector<HTMLElement>('.ui-combobox__clear')));
     expect(combobox).toHaveValue('');
     expect(combobox).toHaveFocus();
     expect(onChange).not.toHaveBeenCalled();

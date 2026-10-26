@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { pivot, type PivotLayout, type PivotRow } from './pivot.js';
+import { requireDefined } from './require-defined.js';
 
 const sales = [
   { region: 'North', fruit: 'Apple', year: 2025, boxes: 10, price: 2 },
@@ -33,7 +34,7 @@ describe('pivot', () => {
       { key: '[2024]', path: [2024] },
       { key: '[2025]', path: [2025] },
     ]);
-    const north = result.rows[0]!;
+    const north = requireDefined(result.rows[0]);
     expect(north).toMatchObject({
       key: '["North"]',
       field: 'region',
@@ -47,7 +48,7 @@ describe('pivot', () => {
       cells: { '[2024]': [6], '[2025]': [10] },
       total: [16],
     });
-    expect(north.children[1]!.cells).toEqual({ '[2024]': [4] });
+    expect(requireDefined(north.children[1]).cells).toEqual({ '[2024]': [4] });
   });
 
   it('UIC-PIVOT-TABLE-1.1 orders keys numerically, naturally, false first and empty last', () => {
@@ -114,9 +115,9 @@ describe('pivot', () => {
     });
     expect(result.columns).toEqual([{ key: '[]', path: [] }]);
     const [north, south, empty] = result.rows;
-    expect(north!.total).toEqual([20, 3, 2, 3, 2.5, 2]);
-    expect(south!.total).toEqual([8, 2, 1.5, 4, 2.75, 2]);
-    expect(empty!.total).toEqual([1, 1, null, null, null, 1]);
+    expect(requireDefined(north).total).toEqual([20, 3, 2, 3, 2.5, 2]);
+    expect(requireDefined(south).total).toEqual([8, 2, 1.5, 4, 2.75, 2]);
+    expect(requireDefined(empty).total).toEqual([1, 1, null, null, null, 1]);
     expect(
       pivot([{ x: 'a' }], { rows: [], columns: [], values: [{ field: 'x' }] }).grandTotal,
     ).toEqual([null]);
@@ -128,7 +129,7 @@ describe('pivot', () => {
       columns: ['year'],
       values: [{ field: 'price', aggregate: 'average' }],
     });
-    expect(result.rows[0]!.total).toEqual([2.5]);
+    expect(requireDefined(result.rows[0]).total).toEqual([2.5]);
     expect(result.totals).toEqual({ '[2024]': [2.75], '[2025]': [2.5] });
     expect(result.grandTotal).toEqual([2.6]);
     const empty = pivot([], layout);

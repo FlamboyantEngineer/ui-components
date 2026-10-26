@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { UiProvider } from '../../core/provider.js';
 import { compareBlocks, type DocumentBlock } from '../../utils/compare-blocks.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { RedlineCompare } from './redline-compare.js';
 
 const before: DocumentBlock[] = [
@@ -42,7 +43,7 @@ const rowsOf = (container: HTMLElement) => [
 describe('RedlineCompare', () => {
   it('UIC-REDLINE-COMPARE-2.1 draws an inline redline with inserted and deleted words', () => {
     const { container } = render(<RedlineCompare oldBlocks={before} newBlocks={after} />);
-    const root = container.firstElementChild!;
+    const root = requireDefined(container.firstElementChild);
     expect(root).toHaveAttribute('data-layout', 'inline');
     expect(container.querySelector('ol.ui-redline-compare__rows')).not.toBeNull();
     const rows = rowsOf(container);
@@ -56,24 +57,27 @@ describe('RedlineCompare', () => {
       ['changed', null],
       ['added', null],
     ]);
-    const serves = rows[1]!;
+    const serves = requireDefined(rows[1]);
     expect(serves.querySelector('del.ui-redline-compare__word')).toHaveTextContent('8');
     expect(serves.querySelector('del')).toHaveAttribute('data-change', 'removed');
     expect(serves.querySelector('ins.ui-redline-compare__word')).toHaveTextContent('10');
     expect(serves.querySelector('ins')).toHaveAttribute('data-change', 'added');
     expect(serves.querySelector('.ui-redline-compare__block')).toHaveTextContent('Serves 810.');
-    expect(rows[0]!.querySelector('.ui-redline-compare__block')).toHaveAttribute(
+    expect(requireDefined(rows[0]).querySelector('.ui-redline-compare__block')).toHaveAttribute(
       'data-type',
       'heading',
     );
-    expect(rows[0]!.querySelector('.ui-redline-compare__block')).toHaveAttribute('data-level', '1');
-    expect(rows[0]!.querySelector('.ui-redline-compare__cell')).toHaveAttribute(
+    expect(requireDefined(rows[0]).querySelector('.ui-redline-compare__block')).toHaveAttribute(
+      'data-level',
+      '1',
+    );
+    expect(requireDefined(rows[0]).querySelector('.ui-redline-compare__cell')).toHaveAttribute(
       'data-side',
       'both',
     );
-    expect(rows[2]!.querySelector('ins, del')).toBeNull();
+    expect(requireDefined(rows[2]).querySelector('ins, del')).toBeNull();
     expect(rows[2]).toHaveTextContent('Chill the pastry.');
-    expect(rows[7]!.querySelector('ins')).toHaveTextContent('Add zest.');
+    expect(requireDefined(rows[7]).querySelector('ins')).toHaveTextContent('Add zest.');
     expect(container.querySelector('.ui-redline-compare__columns')).toBeNull();
     expectHooksMatchSpec(container, 'REDLINE-COMPARE', {
       slots: ['header', 'summary', 'rows', 'row', 'marker', 'cell', 'block', 'word', 'notes'],
@@ -86,7 +90,7 @@ describe('RedlineCompare', () => {
     );
     const [row] = rowsOf(container);
     expect(row).toHaveAttribute('data-change', 'removed');
-    expect(row!.querySelector('del')).toHaveTextContent('Gone now');
+    expect(requireDefined(row).querySelector('del')).toHaveTextContent('Gone now');
   });
 
   it('UIC-REDLINE-COMPARE-2.2 sets the old and new cells side by side', () => {
@@ -104,16 +108,16 @@ describe('RedlineCompare', () => {
     const cells = (row: HTMLElement) => [
       ...row.querySelectorAll<HTMLElement>('.ui-redline-compare__cell'),
     ];
-    const [oldCell, newCell] = cells(rows[1]!);
+    const [oldCell, newCell] = cells(requireDefined(rows[1]));
     expect(oldCell).toHaveAttribute('data-side', 'old');
     expect(oldCell).toHaveTextContent('Serves 8.');
-    expect(oldCell!.querySelector('ins')).toBeNull();
+    expect(requireDefined(oldCell).querySelector('ins')).toBeNull();
     expect(newCell).toHaveTextContent('Serves 10.');
-    expect(newCell!.querySelector('del')).toBeNull();
-    expect(cells(rows[7]!)[0]).toHaveAttribute('data-empty', 'true');
-    expect(cells(rows[2]!)[1]).toHaveAttribute('data-empty', 'true');
-    expect(cells(rows[5]!)[0]).toHaveAttribute('data-empty', 'true');
-    expect(cells(rows[5]!)[1]).toHaveTextContent('Chill the pastry well.');
+    expect(requireDefined(newCell).querySelector('del')).toBeNull();
+    expect(cells(requireDefined(rows[7]))[0]).toHaveAttribute('data-empty', 'true');
+    expect(cells(requireDefined(rows[2]))[1]).toHaveAttribute('data-empty', 'true');
+    expect(cells(requireDefined(rows[5]))[0]).toHaveAttribute('data-empty', 'true');
+    expect(cells(requireDefined(rows[5]))[1]).toHaveTextContent('Chill the pastry well.');
     expectHooksMatchSpec(container, 'REDLINE-COMPARE', { slots: ['columns', 'column-label'] });
   });
 
@@ -150,14 +154,14 @@ describe('RedlineCompare', () => {
         <RedlineCompare oldBlocks={[block]} newBlocks={[block]} />
       </UiProvider>,
     );
-    const link = container.querySelector('a.ui-redline-compare__mark')!;
+    const link = requireDefined(container.querySelector('a.ui-redline-compare__mark'));
     expect(link).toHaveAttribute('href', '/guide');
     expect(link).toHaveAttribute('data-routed', 'yes');
     expect(link).toHaveAttribute('data-mark', 'link');
     expect(link.querySelector('strong > code')).toHaveTextContent('guide');
     expect(link.closest('strong')).toBeNull();
     expect(container.querySelector('u[data-mark="underline"]')).toHaveTextContent('or');
-    const unsafe = container.querySelector('span[data-mark="link"]')!;
+    const unsafe = requireDefined(container.querySelector('span[data-mark="link"]'));
     expect(unsafe).not.toHaveAttribute('href');
     expect(unsafe.querySelector('s[data-mark="strike"]')).toHaveTextContent('this');
     expectHooksMatchSpec(container, 'REDLINE-COMPARE', {
@@ -169,19 +173,22 @@ describe('RedlineCompare', () => {
   it('UIC-REDLINE-COMPARE-2.4 marks changes and notes kind and format changes', () => {
     const { container } = render(<RedlineCompare oldBlocks={before} newBlocks={after} />);
     const rows = rowsOf(container);
-    const marker = (row: HTMLElement) => row.querySelector('.ui-redline-compare__marker')!;
-    expect(marker(rows[0]!)).toHaveTextContent('Unchanged: Heading 1');
-    expect(marker(rows[0]!).querySelector('.ui-glyph')).toBeNull();
-    expect(marker(rows[1]!)).toHaveTextContent('Changed: Paragraph');
-    expect(marker(rows[1]!).querySelector('[data-glyph="edit"]')).not.toBeNull();
-    expect(marker(rows[2]!)).toHaveTextContent('Moved away: Paragraph');
-    expect(marker(rows[5]!)).toHaveTextContent('Moved here: Paragraph');
-    expect(marker(rows[5]!).querySelector('[data-glyph="move"]')).not.toBeNull();
-    expect(marker(rows[7]!).querySelector('[data-glyph="plus"]')).not.toBeNull();
-    const typeNote = rows[3]!.querySelector('[data-note="type"]');
+    const marker = (row: HTMLElement) =>
+      requireDefined(row.querySelector('.ui-redline-compare__marker'));
+    expect(marker(requireDefined(rows[0]))).toHaveTextContent('Unchanged: Heading 1');
+    expect(marker(requireDefined(rows[0])).querySelector('.ui-glyph')).toBeNull();
+    expect(marker(requireDefined(rows[1]))).toHaveTextContent('Changed: Paragraph');
+    expect(marker(requireDefined(rows[1])).querySelector('[data-glyph="edit"]')).not.toBeNull();
+    expect(marker(requireDefined(rows[2]))).toHaveTextContent('Moved away: Paragraph');
+    expect(marker(requireDefined(rows[5]))).toHaveTextContent('Moved here: Paragraph');
+    expect(marker(requireDefined(rows[5])).querySelector('[data-glyph="move"]')).not.toBeNull();
+    expect(marker(requireDefined(rows[7])).querySelector('[data-glyph="plus"]')).not.toBeNull();
+    const typeNote = requireDefined(rows[3]).querySelector('[data-note="type"]');
     expect(typeNote).toHaveTextContent('Paragraph became Quote');
-    expect(rows[6]!.querySelector('[data-note="format"]')).toHaveTextContent('Formatting changed');
-    expect(rows[1]!.querySelector('.ui-redline-compare__notes')).toBeNull();
+    expect(requireDefined(rows[6]).querySelector('[data-note="format"]')).toHaveTextContent(
+      'Formatting changed',
+    );
+    expect(requireDefined(rows[1]).querySelector('.ui-redline-compare__notes')).toBeNull();
     expectHooksMatchSpec(container, 'REDLINE-COMPARE', { slots: ['note', 'jump'] });
   });
 
@@ -189,10 +196,14 @@ describe('RedlineCompare', () => {
     const user = userEvent.setup();
     const { container } = render(<RedlineCompare oldBlocks={before} newBlocks={after} />);
     const rows = rowsOf(container);
-    await user.click(within(rows[2]!).getByRole('button', { name: 'Go to new position' }));
+    await user.click(
+      within(requireDefined(rows[2])).getByRole('button', { name: 'Go to new position' }),
+    );
     expect(rows[5]).toHaveFocus();
     expect(rows[5]).toHaveAttribute('data-current', 'true');
-    await user.click(within(rows[5]!).getByRole('button', { name: 'Go to old position' }));
+    await user.click(
+      within(requireDefined(rows[5])).getByRole('button', { name: 'Go to old position' }),
+    );
     expect(rows[2]).toHaveFocus();
     expect(rows[5]).toHaveAttribute('data-current', 'true');
   });
@@ -242,26 +253,30 @@ describe('RedlineCompare', () => {
       <RedlineCompare oldBlocks={before} newBlocks={after} onResolve={onResolve} />,
     );
     const rows = rowsOf(container);
-    expect(rows[0]!.querySelector('.ui-redline-compare__actions')).toBeNull();
-    expect(rows[2]!.querySelector('.ui-redline-compare__actions')).toBeNull();
+    expect(requireDefined(rows[0]).querySelector('.ui-redline-compare__actions')).toBeNull();
+    expect(requireDefined(rows[2]).querySelector('.ui-redline-compare__actions')).toBeNull();
     expect(container.querySelectorAll('.ui-redline-compare__actions')).toHaveLength(5);
-    const accept = within(rows[1]!).getByRole('button', { name: 'Accept' });
+    const accept = within(requireDefined(rows[1])).getByRole('button', { name: 'Accept' });
     expect(accept).toHaveAccessibleDescription('Changed: Paragraph');
     await user.click(accept);
     expect(onResolve).toHaveBeenCalledTimes(1);
-    const [{ decision, row }] = onResolve.mock.calls[0]!;
+    const [{ decision, row }] = requireDefined(onResolve.mock.calls[0]);
     expect(decision).toBe('accepted');
     expect(row).toMatchObject({ change: 'changed', oldIndex: 1, newIndex: 1 });
-    expect(row.key).toBe(compareBlocks(before, after).rows[1]!.key);
+    expect(row.key).toBe(requireDefined(compareBlocks(before, after).rows[1]).key);
     expect(rows[1]).toHaveAttribute('data-resolution', 'accepted');
     expect(accept).toHaveAttribute('aria-pressed', 'true');
     await user.click(accept);
     expect(onResolve).toHaveBeenCalledTimes(1);
-    await user.click(within(rows[1]!).getByRole('button', { name: 'Reject' }));
+    await user.click(within(requireDefined(rows[1])).getByRole('button', { name: 'Reject' }));
     expect(onResolve).toHaveBeenLastCalledWith(expect.objectContaining({ decision: 'rejected' }));
     expect(rows[1]).toHaveAttribute('data-resolution', 'rejected');
-    await user.click(within(rows[5]!).getByRole('button', { name: 'Reject' }));
-    expect(onResolve.mock.calls[2]![0].row).toMatchObject({ move: 'to', oldIndex: 2, newIndex: 4 });
+    await user.click(within(requireDefined(rows[5])).getByRole('button', { name: 'Reject' }));
+    expect(requireDefined(onResolve.mock.calls[2])[0].row).toMatchObject({
+      move: 'to',
+      oldIndex: 2,
+      newIndex: 4,
+    });
     expectHooksMatchSpec(container, 'REDLINE-COMPARE', { slots: ['actions', 'accept', 'reject'] });
   });
 
@@ -272,13 +287,13 @@ describe('RedlineCompare', () => {
       <RedlineCompare
         oldBlocks={before}
         newBlocks={after}
-        resolutions={{ [compareBlocks(before, after).rows[7]!.key]: 'rejected' }}
+        resolutions={{ [requireDefined(compareBlocks(before, after).rows[7]).key]: 'rejected' }}
         onResolve={onResolve}
       />,
     );
     const rows = rowsOf(container);
     expect(rows[7]).toHaveAttribute('data-resolution', 'rejected');
-    await user.click(within(rows[7]!).getByRole('button', { name: 'Accept' }));
+    await user.click(within(requireDefined(rows[7])).getByRole('button', { name: 'Accept' }));
     expect(onResolve).toHaveBeenCalledWith(expect.objectContaining({ decision: 'accepted' }));
     expect(rows[7]).toHaveAttribute('data-resolution', 'rejected');
     rerender(<RedlineCompare oldBlocks={before} newBlocks={after} />);
@@ -290,7 +305,9 @@ describe('RedlineCompare', () => {
     const { container, rerender } = render(
       <RedlineCompare oldBlocks={before} newBlocks={after} onResolve={() => {}} />,
     );
-    await user.click(within(rowsOf(container)[7]!).getByRole('button', { name: 'Accept' }));
+    await user.click(
+      within(requireDefined(rowsOf(container)[7])).getByRole('button', { name: 'Accept' }),
+    );
     expect(rowsOf(container)[7]).toHaveAttribute('data-resolution', 'accepted');
     rerender(<RedlineCompare oldBlocks={before} newBlocks={[...after]} onResolve={() => {}} />);
     expect(rowsOf(container)[7]).not.toHaveAttribute('data-resolution');
@@ -329,7 +346,7 @@ describe('RedlineCompare', () => {
         data-layout="caller"
       />,
     );
-    const root = container.firstElementChild!;
+    const root = requireDefined(container.firstElementChild);
     expect(root).toHaveClass('ui-redline-compare', 'host');
     expect(root).toHaveAttribute('id', 'compare');
     expect(root).toHaveAttribute('data-testid', 'redline');

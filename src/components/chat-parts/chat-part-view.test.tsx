@@ -2,6 +2,7 @@ import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import type { ChatPart, ChatQuestionPart, ChatToolCallPart } from './chat-part.js';
 import { ChatParts, type ChatToolRenderer } from './chat-parts.js';
 
@@ -129,7 +130,7 @@ describe('ChatParts part views', () => {
     await user.click(within(card).getByRole('button', { name: 'Keep menu-v1' }));
     expect(onApprove).toHaveBeenCalledWith('call-1');
     expect(within(card).queryByText('Arguments')).not.toBeInTheDocument();
-    const [, handlers] = render_.mock.lastCall!;
+    const [, handlers] = requireDefined(render_.mock.lastCall);
     expect(handlers.onDeny).toBeUndefined();
     expect(handlers.onAlwaysAllow).toBeUndefined();
   });

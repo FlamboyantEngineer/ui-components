@@ -1,6 +1,7 @@
 import { toCollectionKey } from '../src/utils/to-collection-key.js';
 import type { Page } from '@playwright/test';
 import { expect, test } from './fixtures.js';
+import { requireDefined } from '../src/utils/require-defined.js';
 
 function spreadsheet(page: Page) {
   const root = page.locator('[data-lab-demo="spreadsheet"]');
@@ -37,8 +38,8 @@ test.describe('Formula Bar lab', () => {
     await sheet.cell(6, 'D').click();
     await expect(sheet.content).toHaveValue('=SUM(D2:D5)');
     await expect(sheet.result).toHaveText('Result 13.4');
-    const bar = (await sheet.root.locator('.ui-formula-bar').boundingBox())!;
-    const grid = (await sheet.root.getByRole('grid').boundingBox())!;
+    const bar = requireDefined(await sheet.root.locator('.ui-formula-bar').boundingBox());
+    const grid = requireDefined(await sheet.root.getByRole('grid').boundingBox());
     expect(bar.y + bar.height).toBeLessThanOrEqual(grid.y + 1);
   });
 

@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
+import { requireDefined } from '../../utils/require-defined.js';
 import type { CodeToken } from '../code-editor/code-editor.js';
 import { Markdown } from '../markdown/markdown.js';
 import { createCodeBlockOverride } from './markdown-code-block.js';
@@ -52,9 +53,9 @@ describe('createCodeBlockOverride', () => {
     const { container } = render(<Markdown source={answer} renderNode={codeOverride} />);
     expect(container.querySelectorAll('.ui-code-block__token')).toHaveLength(1);
     const [, script, indented] = screen.getAllByRole('button', { name: 'Insert' });
-    await user.click(script!);
+    await user.click(requireDefined(script));
     expect(onApply).toHaveBeenCalledWith('const trail = plan("coast");', 'ts');
-    await user.click(indented!);
+    await user.click(requireDefined(indented));
     expect(onApply).toHaveBeenLastCalledWith('indented()', null);
   });
 

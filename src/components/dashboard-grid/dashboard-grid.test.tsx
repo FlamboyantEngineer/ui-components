@@ -5,6 +5,7 @@ import { afterEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
 import { UiProvider } from '../../core/provider.js';
 import { createMemoryStorage } from '../../core/storage.js';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import {
   DashboardGrid,
   type DashboardGridItem,
@@ -38,7 +39,7 @@ function Board(props: {
       minColumnWidth={props.minColumnWidth}
     >
       {(item) => (
-        <DashboardTile label={titles[item.id]!} minRowSpan={2}>
+        <DashboardTile label={requireDefined(titles[item.id])} minRowSpan={2}>
           <p>{titles[item.id]} content</p>
         </DashboardTile>
       )}
@@ -317,7 +318,9 @@ describe('DashboardGrid', () => {
     const view = (
       <UiProvider storage={storage}>
         <DashboardGrid aria-label="Saved" defaultLayout={layout} persistKey="overview" isEditing>
-          {(item) => <DashboardTile label={titles[item.id]!}>{item.id}</DashboardTile>}
+          {(item) => (
+            <DashboardTile label={requireDefined(titles[item.id])}>{item.id}</DashboardTile>
+          )}
         </DashboardGrid>
       </UiProvider>
     );
@@ -396,7 +399,7 @@ describe('DashboardGrid', () => {
       DOMRect.fromRect({ width: 1200, height: 400 }),
     );
     const renderTile = vi.fn((item: DashboardGridItem) => (
-      <DashboardTile label={titles[item.id]!}>{item.id}</DashboardTile>
+      <DashboardTile label={requireDefined(titles[item.id])}>{item.id}</DashboardTile>
     ));
     render(
       <DashboardGrid aria-label="Overview" defaultLayout={layout} isEditing>

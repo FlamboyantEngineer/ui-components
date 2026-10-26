@@ -1,5 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import { expect, test } from './fixtures.js';
+import { requireDefined } from '../src/utils/require-defined.js';
 
 /** Draws one stroke across the area through points given as fractions of its box. */
 async function drawStroke(page: Page, area: Locator, points: Array<[number, number]>) {
@@ -8,7 +9,7 @@ async function drawStroke(page: Page, area: Locator, points: Array<[number, numb
   if (!box) throw new Error('The drawing area has no box');
   const at = ([x, y]: [number, number]) => [box.x + x * box.width, box.y + y * box.height] as const;
   const [first, ...rest] = points;
-  await page.mouse.move(...at(first!));
+  await page.mouse.move(...at(requireDefined(first)));
   await page.mouse.down();
   for (const point of rest) await page.mouse.move(...at(point), { steps: 4 });
   await page.mouse.up();
@@ -146,10 +147,11 @@ test.describe('Signature Pad lab', () => {
     await lab.open('signature-pad', { theme: 'dark' });
     const stroke = page.locator('[data-lab-cell="mode=draw"] .ui-signature-pad__stroke').first();
     await expect(stroke).toBeVisible();
-    const colors = await stroke.evaluate((node) => ({
-      stroke: getComputedStyle(node).stroke,
-      text: getComputedStyle(node.closest('.ui-signature-pad')!).color,
-    }));
+    const colors = await stroke.evaluate((node) => {
+      const pad = node.closest('.ui-signature-pad');
+      if (!pad) throw new Error('The stroke is outside a signature pad.');
+      return { stroke: getComputedStyle(node).stroke, text: getComputedStyle(pad).color };
+    });
     expect(colors.stroke).toBe(colors.text);
     await lab.expectAccessible();
   });

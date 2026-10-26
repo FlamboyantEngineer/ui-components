@@ -1,6 +1,7 @@
 import { act, render, screen } from '@testing-library/react';
 import { useRef } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { requireDefined } from '../../utils/require-defined.js';
 import { getCompletionOptionId } from './completion-option-id.js';
 import { useActiveCompletion } from './use-active-completion.js';
 
@@ -53,7 +54,7 @@ describe('useActiveCompletion', () => {
       vi.stubGlobal('cancelAnimationFrame', cancel);
       const { rerender } = render(<Harness activeKey="first" outer={outer} />);
       const list = screen.getByRole('listbox', { name: 'Cities' });
-      const container = outer ? list.parentElement! : list;
+      const container = outer ? requireDefined(list.parentElement) : list;
       Object.defineProperties(container, {
         clientHeight: { value: 100 },
         scrollHeight: { value: 400 },

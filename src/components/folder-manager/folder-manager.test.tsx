@@ -4,6 +4,7 @@ import { useState } from 'react';
 import type { Key } from '../../core/props.js';
 import { describe, expect, expectTypeOf, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { applyTreeMove } from '../../utils/tree-reorder.js';
 import { FolderManager, type FolderItem, type FolderManagerProps } from './folder-manager.js';
 import type { FolderSelectionMode } from './use-folder-tree.js';
@@ -545,8 +546,11 @@ describe('FolderManager', () => {
     await user.click(row('Vegetables'));
     await user.keyboard('{/Control}');
     expect(onSelectionChange).toHaveBeenCalledTimes(1);
-    expect(onSelectionChange.mock.lastCall![0]).toBeInstanceOf(Set);
-    expect([...onSelectionChange.mock.lastCall![0]]).toEqual(['citrus', 'vegetables']);
+    expect(requireDefined(onSelectionChange.mock.lastCall)[0]).toBeInstanceOf(Set);
+    expect([...requireDefined(onSelectionChange.mock.lastCall)[0]]).toEqual([
+      'citrus',
+      'vegetables',
+    ]);
   });
 
   it('UIC-FOLDER-MANAGER-6.2 deletes every selected folder, one after another', async () => {

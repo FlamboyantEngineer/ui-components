@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { Form } from '../form/form.js';
 import { SignaturePad, type DrawnSignature, type SignatureValue } from './signature-pad.js';
 
@@ -14,7 +15,7 @@ const drawing: DrawnSignature = {
 };
 
 function root(container: HTMLElement) {
-  return container.querySelector<HTMLElement>('.ui-field')!;
+  return requireDefined(container.querySelector<HTMLElement>('.ui-field'));
 }
 
 function surface() {
@@ -22,7 +23,9 @@ function surface() {
 }
 
 function canvas(container: HTMLElement) {
-  const element = container.querySelector<SVGSVGElement>('.ui-signature-pad__canvas')!;
+  const element = requireDefined(
+    container.querySelector<SVGSVGElement>('.ui-signature-pad__canvas'),
+  );
   vi.spyOn(element, 'getBoundingClientRect').mockReturnValue({
     left: 100,
     top: 50,
@@ -53,11 +56,14 @@ function pointer(type: PointerType, target: Element, init: PointerEventInit = {}
 /** Draws one stroke through canvas positions given in client pixels. */
 function drawStroke(target: Element, points: Array<[number, number]>) {
   const [first, ...rest] = points;
-  pointer('pointerDown', target, { clientX: first![0], clientY: first![1] });
+  pointer('pointerDown', target, {
+    clientX: requireDefined(first)[0],
+    clientY: requireDefined(first)[1],
+  });
   for (const [clientX, clientY] of rest.slice(0, -1)) {
     pointer('pointerMove', target, { clientX, clientY });
   }
-  const last = rest.at(-1) ?? first!;
+  const last = rest.at(-1) ?? requireDefined(first);
   pointer('pointerUp', target, { clientX: last[0], clientY: last[1] });
 }
 
@@ -220,7 +226,7 @@ describe('SignaturePad', () => {
     expect(undo).toBeDisabled();
     expect(clear).toBeDisabled();
     render(<SignaturePad label="Second" defaultValue={drawing} onCommit={onCommit} />);
-    await user.click(screen.getAllByRole('button', { name: 'Clear' })[1]!);
+    await user.click(requireDefined(screen.getAllByRole('button', { name: 'Clear' })[1]));
     expect(onCommit).toHaveBeenLastCalledWith(null);
   });
 

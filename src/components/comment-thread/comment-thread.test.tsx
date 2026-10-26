@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { CommentThreadReply } from './comment-thread-reply.js';
 import { CommentThread } from './comment-thread.js';
 
@@ -17,7 +18,7 @@ function replies(count: number) {
   return Array.from({ length: count }, (_, index) => (
     <CommentThreadReply
       key={index}
-      author={people[index % 2] ?? people[0]!}
+      author={people[index % 2] ?? requireDefined(people[0])}
       time={now}
       text={`Comment ${index + 1}`}
     />

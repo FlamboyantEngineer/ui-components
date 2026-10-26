@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures.js';
+import { requireDefined } from '../src/utils/require-defined.js';
 
 /** The box whose height each control of the control sizes lab takes from its size. */
 const boxes: Record<string, string> = {
@@ -150,7 +151,9 @@ test('UIC-DROPDOWN-MENU-1.4 opening a dropdown preserves page scrolling', async 
     })),
   ).toEqual(before);
   const gap = async () =>
-    Math.round((await menu.boundingBox())!.y - (await trigger.boundingBox())!.y);
+    Math.round(
+      requireDefined(await menu.boundingBox()).y - requireDefined(await trigger.boundingBox()).y,
+    );
   const offset = await gap();
   const top = await page.evaluate(() => window.scrollY);
   await page.mouse.move(600, 500);

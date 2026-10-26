@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { compareTrees, type CompareTreeNode, type ComparedTreeRow } from './compare-trees.js';
+import { requireDefined } from './require-defined.js';
 
 const node = (id: string, label: string, children?: CompareTreeNode[]): CompareTreeNode => ({
   id,
@@ -32,11 +33,11 @@ describe('compareTrees', () => {
         [a, b, c, reserved, alsoReserved],
       ],
     ]) {
-      const { rows, counts } = compareTrees(left!, right!);
+      const { rows, counts } = compareTrees(requireDefined(left), requireDefined(right));
       expect(counts.moved).toBe(1);
       expect(new Set(rows.map((row) => row.id)).size).toBe(rows.length);
-      const from = rows.find((row) => row.change === 'moved' && row.left)!;
-      const to = rows.find((row) => row.change === 'moved' && row.right)!;
+      const from = requireDefined(rows.find((row) => row.change === 'moved' && row.left));
+      const to = requireDefined(rows.find((row) => row.change === 'moved' && row.right));
       expect(from.id).toBe('moved-from:a:3');
       expect(from.counterpartId).toBe(to.id);
       expect(to.counterpartId).toBe(from.id);
@@ -57,7 +58,7 @@ describe('compareTrees', () => {
       let rows = comparison.rows;
       let last: ComparedTreeRow | undefined;
       while (rows.length === 1) {
-        last = rows[0]!;
+        last = requireDefined(rows[0]);
         depth += 1;
         rows = last.children;
       }
@@ -93,8 +94,8 @@ describe('compareTrees', () => {
       '  apple unchanged Apple|Apple',
       '  pear changed Pears|Pear',
     ]);
-    expect(rows[0]!.left).toBe(left[0]);
-    expect(rows[0]!.right).toBe(right[0]);
+    expect(requireDefined(rows[0]).left).toBe(left[0]);
+    expect(requireDefined(rows[0]).right).toBe(right[0]);
     expect(counts).toEqual({ added: 0, removed: 0, changed: 1, moved: 0 });
     const lenient = compareTrees(left, right, {
       isEqual: (a, b) => a.label.startsWith(b.label),
@@ -147,8 +148,8 @@ describe('compareTrees', () => {
       '    seed unchanged Seed|Seed',
       '    skin added -|Skin',
     ]);
-    const from = rows[0]!.children[1]!;
-    const to = rows[1]!.children[0]!;
+    const from = requireDefined(requireDefined(rows[0]).children[1]);
+    const to = requireDefined(requireDefined(rows[1]).children[0]);
     expect(from.counterpartId).toBe('fig');
     expect(to.counterpartId).toBe('moved-from:fig');
     expect(counts).toEqual({ added: 1, removed: 0, changed: 0, moved: 1 });

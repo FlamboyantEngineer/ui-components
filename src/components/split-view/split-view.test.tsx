@@ -5,6 +5,7 @@ import { describe, expect, expectTypeOf, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
 import { createMemoryStorage } from '../../core/storage.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import type * as splitViewApi from './index.js';
 import {
   RESIZE_KEYBOARD_FINE_STEP,
@@ -45,7 +46,7 @@ function resizable(extra: Partial<Parameters<typeof SplitView>[0]> = {}) {
 
 /** Gives the split a measured size and records pointer capture on the separator. */
 function prepareDrag(container: HTMLElement, size = { width: 1000, height: 500 }) {
-  const root = container.querySelector<HTMLElement>('.ui-split-view')!;
+  const root = requireDefined(container.querySelector<HTMLElement>('.ui-split-view'));
   Object.defineProperties(root, {
     clientWidth: { configurable: true, value: size.width },
     clientHeight: { configurable: true, value: size.height },
@@ -80,7 +81,7 @@ describe('SplitView', () => {
         <p>Bananas</p>
       </SplitView>,
     );
-    const root = container.firstElementChild!;
+    const root = requireDefined(container.firstElementChild);
     expect(root).toHaveClass('ui-split-view');
     expect(root).toHaveAttribute('data-orientation', 'horizontal');
     expect(root).toHaveAttribute('data-ratio', 'equal');
@@ -111,7 +112,7 @@ describe('SplitView', () => {
 
   it('UIC-SPLIT-VIEW-1.2 fills and clips by default and takes growth', () => {
     const { container, rerender } = render(<SplitView />);
-    const root = container.firstElementChild!;
+    const root = requireDefined(container.firstElementChild);
     expect(root).toHaveAttribute('data-fill', 'true');
     expect(root).toHaveAttribute('data-clip', 'true');
     expect(root).not.toHaveAttribute('data-grow');
@@ -128,7 +129,7 @@ describe('SplitView', () => {
 
   it('UIC-SPLIT-VIEW-2.1 renders two panes around a named separator that controls both', () => {
     const { container, rerender } = render(resizable());
-    const root = container.firstElementChild!;
+    const root = requireDefined(container.firstElementChild);
     expect(root).toHaveAttribute('data-resizable', 'true');
     const [first, handle, second] = Array.from(root.children);
     expect(first).toHaveClass('ui-split-view__pane');
@@ -150,9 +151,9 @@ describe('SplitView', () => {
       </UiProvider>,
     );
     const generated = screen.getByRole('separator', { name: 'Resize fruit list' });
-    const [firstId, secondId] = generated.getAttribute('aria-controls')!.split(' ');
-    expect(document.getElementById(firstId!)).toHaveTextContent('Apples');
-    expect(document.getElementById(secondId!)).toHaveTextContent('Bananas');
+    const [firstId, secondId] = requireDefined(generated.getAttribute('aria-controls')).split(' ');
+    expect(document.getElementById(requireDefined(firstId))).toHaveTextContent('Apples');
+    expect(document.getElementById(requireDefined(secondId))).toHaveTextContent('Bananas');
     rerender(
       <UiProvider strings={{ resize: 'Redimensionner' }}>
         <SplitView panes={[{}, {}]}>{[<p key="a">Apples</p>, <p key="b">Bananas</p>]}</SplitView>
@@ -165,7 +166,7 @@ describe('SplitView', () => {
     expectTypeOf<typeof splitViewApi>().not.toHaveProperty('resolveSplitBounds');
     expectTypeOf<typeof splitViewApi>().not.toHaveProperty('resolveInitialSplitSize');
     const { container } = render(resizable());
-    const first = container.querySelector<HTMLElement>('[data-pane="first"]')!;
+    const first = requireDefined(container.querySelector<HTMLElement>('[data-pane="first"]'));
     expect(first.style.flexBasis).toBe('30%');
     const separator = screen.getByRole('separator');
     expect(separator).toHaveAttribute('aria-valuenow', '30');
@@ -205,9 +206,9 @@ describe('SplitView', () => {
     expect(onSizeChangeEnd).toHaveBeenLastCalledWith(45);
     expect(screen.getByRole('status')).toHaveTextContent('45');
     expect(separator).toHaveAttribute('aria-valuenow', '45');
-    expect(container.querySelector<HTMLElement>('[data-pane="first"]')!.style.flexBasis).toBe(
-      '45%',
-    );
+    expect(
+      requireDefined(container.querySelector<HTMLElement>('[data-pane="first"]')).style.flexBasis,
+    ).toBe('45%');
   });
 
   it('UIC-SPLIT-VIEW-2.3 keeps an uncontrolled size that ignores a later default', async () => {
@@ -256,7 +257,7 @@ describe('SplitView panes', () => {
     const { container } = render(
       threePanes({ separatorLabel: (index: number) => `Resize ${fruit[index]}` }),
     );
-    const root = container.firstElementChild!;
+    const root = requireDefined(container.firstElementChild);
     expect(Array.from(root.children, (child) => child.getAttribute('role') ?? child.id)).toEqual([
       'a',
       'separator',
@@ -264,15 +265,15 @@ describe('SplitView panes', () => {
       'separator',
       'c',
     ]);
-    const [a, b, c] = ['a', 'b', 'c'].map((id) => document.getElementById(id)!);
+    const [a, b, c] = ['a', 'b', 'c'].map((id) => requireDefined(document.getElementById(id)));
     expect(a).toHaveAttribute('data-pane', 'first');
     expect(b).toHaveAttribute('data-pane', 'second');
     expect(c).not.toHaveAttribute('data-pane');
     expect(c).toHaveAttribute('data-flexible', 'true');
     expect(a).not.toHaveAttribute('data-flexible');
-    expect(a!.style.flexBasis).toBe('20%');
-    expect(b!.style.flexBasis).toBe('30%');
-    expect(c!.style.flexBasis).toBe('');
+    expect(requireDefined(a).style.flexBasis).toBe('20%');
+    expect(requireDefined(b).style.flexBasis).toBe('30%');
+    expect(requireDefined(c).style.flexBasis).toBe('');
     const first = screen.getByRole('separator', { name: 'Resize Apples' });
     const second = screen.getByRole('separator', { name: 'Resize Bananas' });
     expect(first).toHaveAttribute('aria-controls', 'a b');
@@ -283,8 +284,8 @@ describe('SplitView panes', () => {
 
     second.focus();
     await user.keyboard('{End}');
-    expect(b!.style.flexBasis).toBe('70%');
-    expect(a!.style.flexBasis).toBe('20%');
+    expect(requireDefined(b).style.flexBasis).toBe('70%');
+    expect(requireDefined(a).style.flexBasis).toBe('20%');
     expect(first).toHaveAttribute('aria-valuemax', '80');
   });
 
@@ -296,12 +297,12 @@ describe('SplitView panes', () => {
       return threePanes({ sizes, onSizesChange: setSizes, onSizesChangeEnd });
     }
     render(<Controlled />);
-    const separator = screen.getAllByRole('separator')[0]!;
+    const separator = requireDefined(screen.getAllByRole('separator')[0]);
     separator.focus();
     await user.keyboard('{ArrowRight}');
     expect(onSizesChangeEnd).toHaveBeenLastCalledWith([25, 25, 50]);
     expect(separator).toHaveAttribute('aria-valuenow', '25');
-    expect(document.getElementById('b')!.style.flexBasis).toBe('25%');
+    expect(requireDefined(document.getElementById('b')).style.flexBasis).toBe('25%');
   });
 
   it('UIC-SPLIT-VIEW-2.4 saves the sizes of three panes as a list and ignores ones that do not fit', async () => {
@@ -311,7 +312,7 @@ describe('SplitView panes', () => {
       <UiProvider storage={storage}>{threePanes({ persistKey: 'trio' })}</UiProvider>,
     );
     expect(screen.getAllByRole('separator')[0]).toHaveAttribute('aria-valuenow', '40');
-    screen.getAllByRole('separator')[1]!.focus();
+    requireDefined(screen.getAllByRole('separator')[1]).focus();
     await user.keyboard('{ArrowRight}');
     expect(storage.getItem('trio')).toBe('[40,25,35]');
     unmount();
@@ -330,8 +331,8 @@ describe('SplitView panes', () => {
         {[<p key="a">Tools</p>, <p key="b">Canvas</p>]}
       </SplitView>,
     );
-    const rail = document.getElementById('rail')!;
-    const main = document.getElementById('main')!;
+    const rail = requireDefined(document.getElementById('rail'));
+    const main = requireDefined(document.getElementById('main'));
     expect(rail.style.flexBasis).toBe('240px');
     expect(main).toHaveAttribute('data-flexible', 'true');
     const { handle } = prepareDrag(container);
@@ -353,10 +354,10 @@ describe('SplitView panes', () => {
         {[<p key="a">List</p>, <p key="b">Aside</p>]}
       </SplitView>,
     );
-    const list = document.getElementById('list')!;
+    const list = requireDefined(document.getElementById('list'));
     expect(list).toHaveAttribute('data-flexible', 'true');
-    expect(document.getElementById('aside')!.style.flexBasis).toBe('200px');
-    const trailing = screen.getAllByRole('separator')[1]!;
+    expect(requireDefined(document.getElementById('aside')).style.flexBasis).toBe('200px');
+    const trailing = requireDefined(screen.getAllByRole('separator')[1]);
     expect(trailing).toHaveAttribute('aria-valuenow', '200');
     trailing.focus();
     await user.keyboard('{ArrowRight}');
@@ -377,7 +378,7 @@ describe('SplitView panes', () => {
         {[<p key="a">List</p>, <button key="b">Detail</button>]}
       </SplitView>,
     );
-    const detail = document.getElementById('detail')!;
+    const detail = requireDefined(document.getElementById('detail'));
     const { handle } = prepareDrag(container);
     expect(handle).toHaveAttribute('aria-valuemax', '100');
     pointer('pointerDown', handle, { clientX: 600 });
@@ -424,7 +425,7 @@ describe('SplitView panes', () => {
     expect(separator).toHaveAttribute('aria-valuemin', '5');
     separator.focus();
     await user.keyboard('{Home}');
-    const rail = document.getElementById('rail')!;
+    const rail = requireDefined(document.getElementById('rail'));
     expect(rail).toHaveAttribute('data-collapsed', 'true');
     expect(rail).not.toHaveAttribute('inert');
     expect(rail.style.flexBasis).toBe('5%');
@@ -441,14 +442,14 @@ describe('SplitView panes', () => {
       }),
     );
     const [first, second] = screen.getAllByRole('separator');
-    act(() => handleRef.current!.collapse(1));
+    act(() => requireDefined(handleRef.current).collapse(1));
     expect(document.getElementById('b')).toHaveAttribute('data-collapsed', 'true');
     expect(onSizesChangeEnd).toHaveBeenLastCalledWith([20, 0, 80]);
-    act(() => handleRef.current!.collapse(0));
+    act(() => requireDefined(handleRef.current).collapse(0));
     expect(onSizesChangeEnd).toHaveBeenCalledTimes(1);
-    act(() => handleRef.current!.expand(1));
+    act(() => requireDefined(handleRef.current).expand(1));
     expect(onSizesChangeEnd).toHaveBeenLastCalledWith([20, 30, 50]);
-    act(() => handleRef.current!.resize([50, 25, 25]));
+    act(() => requireDefined(handleRef.current).resize([50, 25, 25]));
     expect(first).toHaveAttribute('aria-valuenow', '50');
     expect(second).toHaveAttribute('aria-valuenow', '25');
   });
@@ -554,7 +555,9 @@ describe('ResizeHandle', () => {
     expect(capture.id).toBe(7);
     expect(handle).toHaveAttribute('data-resizing', 'true');
     expect(root).toHaveAttribute('data-resizing', 'true');
-    const shield = container.querySelector<HTMLElement>('.ui-resize-handle__shield')!;
+    const shield = requireDefined(
+      container.querySelector<HTMLElement>('.ui-resize-handle__shield'),
+    );
     expect(shield).toHaveAttribute('data-orientation', 'vertical');
     expect(shield).toHaveAttribute('aria-hidden', 'true');
     expect(shield.style.position).toBe('fixed');
@@ -565,9 +568,9 @@ describe('ResizeHandle', () => {
     pointer('pointerMove', handle, { clientX: 300 });
     expect(handle).toHaveAttribute('aria-valuenow', '50');
     expect(onSizeChange).toHaveBeenLastCalledWith(50);
-    expect(container.querySelector<HTMLElement>('[data-pane="first"]')!.style.flexBasis).toBe(
-      '50%',
-    );
+    expect(
+      requireDefined(container.querySelector<HTMLElement>('[data-pane="first"]')).style.flexBasis,
+    ).toBe('50%');
     pointer('pointerMove', handle, { clientX: 900 });
     expect(handle).toHaveAttribute('aria-valuenow', '80');
 
@@ -753,7 +756,7 @@ describe('ResizeHandle', () => {
         />
       </>,
     );
-    const root = container.firstElementChild!;
+    const root = requireDefined(container.firstElementChild);
     expect(ref.current).toBe(root);
     expect(root).toHaveClass('ui-split-view', 'caller');
     expect(root).toHaveAttribute('data-testid', 'split');

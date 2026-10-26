@@ -5,6 +5,7 @@ import { ESLint } from 'eslint';
 import tseslint from 'typescript-eslint';
 import { describe, expect, it } from 'vitest';
 import * as primitives from '../src/primitives/index.js';
+import { requireDefined } from '../src/utils/require-defined.js';
 
 const root = process.cwd();
 const primitivesDir = join(root, 'src', 'primitives');
@@ -32,7 +33,7 @@ function names(list: string) {
     .split(',')
     .map((part) => part.trim().replace(/^type\s+/, ''))
     .filter(Boolean)
-    .map((part) => part.split(/\s+as\s+/)[0]!);
+    .map((part) => requireDefined(part.split(/\s+as\s+/)[0]));
 }
 
 function areaExports() {

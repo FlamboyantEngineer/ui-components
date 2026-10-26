@@ -1,6 +1,7 @@
 import { act, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { createEngine, renderReady } from '../../../test/pdf-fixtures.js';
+import { requireDefined } from '../../utils/require-defined.js';
 
 describe('PdfViewer pinch zoom', () => {
   it('UIC-PDF-VIEWER-3.6 scales the pages with a pinch, zooms when it ends and scrolls with a drag', async () => {
@@ -10,7 +11,7 @@ describe('PdfViewer pinch zoom', () => {
     const options = engine.touch.options;
     if (!options) throw new Error('no touch manager');
     expect(options.container).toBe(screen.getByRole('document'));
-    const column = container.querySelector<HTMLElement>('.ui-pdf-viewer__pages')!;
+    const column = requireDefined(container.querySelector<HTMLElement>('.ui-pdf-viewer__pages'));
 
     act(() => options.onPinching([30, 40], 100, 150));
     expect(column.style.transform).toBe('scale(1.5)');
@@ -48,8 +49,10 @@ describe('PdfViewer pinch zoom', () => {
     const engine = createEngine();
     const onZoomChange = vi.fn();
     const view = await renderReady({ defaultZoom: 100, onZoomChange }, engine);
-    const options = engine.touch.options!;
-    const column = view.container.querySelector<HTMLElement>('.ui-pdf-viewer__pages')!;
+    const options = requireDefined(engine.touch.options);
+    const column = requireDefined(
+      view.container.querySelector<HTMLElement>('.ui-pdf-viewer__pages'),
+    );
     const scroller = screen.getByRole('document');
     scroller.scrollTop = 100;
     act(() => options.onPinching([30, 40], 100, 200));
@@ -70,14 +73,16 @@ describe('PdfViewer pinch zoom', () => {
 
     view.update({ source: '/files/Next.pdf', defaultZoom: 100, onZoomChange });
     await waitFor(() => expect(engine.touch.options).not.toBe(options));
-    const next = engine.touch.options!;
+    const next = requireDefined(engine.touch.options);
     act(() => {
       next.onPinching([30, 40], 100, 150);
       next.onPinchEnd();
     });
     expect(onZoomChange).toHaveBeenLastCalledWith(150);
     act(() => next.onPinching([30, 40], 100, 200));
-    const nextColumn = view.container.querySelector<HTMLElement>('.ui-pdf-viewer__pages')!;
+    const nextColumn = requireDefined(
+      view.container.querySelector<HTMLElement>('.ui-pdf-viewer__pages'),
+    );
     view.unmount();
     expect(nextColumn.style.transform).toBe('');
     expect(nextColumn.style.transformOrigin).toBe('');

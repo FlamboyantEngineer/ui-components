@@ -4,6 +4,7 @@ import { useState } from 'react';
 import type { Key, Selection } from '../../core/props.js';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { UiProvider } from '../../core/provider.js';
 import { Tag, TagGroup, type TagProps } from './tag-group.js';
@@ -155,7 +156,7 @@ describe('TagGroup', () => {
     await user.click(within(textual).getByRole('button', { name: 'Remove Textual' }));
     expect(onRemove).toHaveBeenCalledWith(new Set(['1']));
     rerender(
-      <TagGroup {...props} items={[items[1]!, items[0]!]}>
+      <TagGroup {...props} items={[requireDefined(items[1]), requireDefined(items[0])]}>
         {(item) => <Tag id={item.id}>{item.label}</Tag>}
       </TagGroup>,
     );

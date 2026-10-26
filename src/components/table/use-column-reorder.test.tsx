@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { expectHooksMatchSpec } from '../../../test/hooks.js';
 import { UiProvider } from '../../core/provider.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { Table, type TableProps } from './table.js';
 import type { TableColumn } from './table-rows.js';
 
@@ -102,7 +103,7 @@ describe('Table column reordering', { timeout: 15_000 }, () => {
   it('UIC-TABLE-8.4 drops a dragged label before or after another header', () => {
     const onColumnLayoutChange = vi.fn();
     renderCities({ onColumnLayoutChange });
-    const label = header('Country').querySelector('.ui-table__column-label')!;
+    const label = requireDefined(header('Country').querySelector('.ui-table__column-label'));
     expect(label).toHaveAttribute('draggable', 'true');
     const people = header('People');
     box(people, 300, 100);
@@ -120,7 +121,7 @@ describe('Table column reordering', { timeout: 15_000 }, () => {
 
   it('UIC-TABLE-8.4 refuses drops beside a column pinned to another edge', () => {
     renderCities();
-    const label = header('Name').querySelector('.ui-table__column-label')!;
+    const label = requireDefined(header('Name').querySelector('.ui-table__column-label'));
     const code = header('Code');
     box(code, 0, 80);
     dragEvent('dragStart', label);

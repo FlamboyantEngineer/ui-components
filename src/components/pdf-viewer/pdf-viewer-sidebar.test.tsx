@@ -9,6 +9,7 @@ import {
   renderViewer,
   stubLayout,
 } from '../../../test/pdf-fixtures.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import type { PdfOutlineNode } from './pdf-engine.js';
 
 const outline: PdfOutlineNode[] = [
@@ -102,9 +103,13 @@ describe('PdfViewer sidebar', () => {
       'Page 3',
     ]);
     expect(options[0]).toHaveAttribute('aria-selected', 'true');
-    expect(within(options[1]!).getByText('2')).toHaveClass('ui-pdf-viewer__thumbnail-label');
+    expect(within(requireDefined(options[1])).getByText('2')).toHaveClass(
+      'ui-pdf-viewer__thumbnail-label',
+    );
 
-    const canvas = options[1]!.querySelector<HTMLCanvasElement>('canvas')!;
+    const canvas = requireDefined(
+      requireDefined(options[1]).querySelector<HTMLCanvasElement>('canvas'),
+    );
     expect(canvas).toHaveClass('ui-pdf-viewer__thumbnail-canvas');
     expect(canvas.style.width).toBe('96px');
     expect(Number.parseFloat(canvas.style.height)).toBeCloseTo(
@@ -123,7 +128,7 @@ describe('PdfViewer sidebar', () => {
       slots: ['sidebar', 'thumbnails', 'thumbnail', 'thumbnail-canvas', 'thumbnail-label'],
     });
 
-    await userEvent.click(options[2]!);
+    await userEvent.click(requireDefined(options[2]));
     expect(screen.getByRole('document').scrollTop).toBe(1600);
     expect(screen.getByLabelText('Page')).toHaveValue('3');
     expect(options[2]).toHaveAttribute('aria-selected', 'true');
