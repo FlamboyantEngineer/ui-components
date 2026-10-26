@@ -99,17 +99,25 @@ describe('ChatPlan', () => {
       <ChatPlan steps={withStatuses('in-progress', 'pending', 'pending')} />,
     );
     const status = screen.getByRole('status');
-    act(() => vi.advanceTimersByTime(0));
+    act(() => {
+      vi.advanceTimersByTime(0);
+    });
     expect(status).toHaveTextContent('');
     rerender(<ChatPlan steps={withStatuses('done', 'in-progress', 'pending')} />);
     expect(status).toHaveTextContent('Book the hotel: done. Compare trains: in progress');
     rerender(<ChatPlan steps={withStatuses('done', 'done', 'pending')} />);
-    act(() => vi.advanceTimersByTime(1000));
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
     rerender(<ChatPlan steps={withStatuses('done', 'done', 'in-progress')} />);
     expect(status).toHaveTextContent('Book the hotel: done. Compare trains: in progress');
-    act(() => vi.advanceTimersByTime(999));
+    act(() => {
+      vi.advanceTimersByTime(999);
+    });
     expect(status).toHaveTextContent('Book the hotel: done. Compare trains: in progress');
-    act(() => vi.advanceTimersByTime(1));
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
     expect(status).toHaveTextContent('Compare trains: done. Pack the bags: in progress');
   });
 
@@ -118,16 +126,24 @@ describe('ChatPlan', () => {
     const { rerender } = render(<ChatPlan steps={withStatuses('in-progress')} />);
     const status = screen.getByRole('status');
     rerender(<ChatPlan steps={withStatuses('in-progress', 'pending')} />);
-    act(() => vi.advanceTimersByTime(3000));
+    act(() => {
+      vi.advanceTimersByTime(3000);
+    });
     expect(status).toHaveTextContent('');
     rerender(<ChatPlan steps={withStatuses('failed', 'pending')} />);
     expect(status).toHaveTextContent('Book the hotel: failed');
     const first = status.firstElementChild;
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     rerender(<ChatPlan steps={withStatuses('in-progress', 'pending')} />);
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     rerender(<ChatPlan steps={withStatuses('failed', 'pending')} />);
-    act(() => vi.advanceTimersByTime(2000));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     expect(status).toHaveTextContent('Book the hotel: failed');
     expect(status.firstElementChild).not.toBe(first);
   });

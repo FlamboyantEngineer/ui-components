@@ -4,6 +4,7 @@ import { Table } from '../../src/components/table/table.js';
 import type { TableCellRange } from '../../src/components/table/table-cell-range.js';
 import type { TableColumn } from '../../src/components/table/table-rows.js';
 import { formatCellReference, type CellCoordinates } from '../../src/utils/cell-reference.js';
+import { requireDefined } from '../../src/utils/require-defined.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import {
   evaluateCell,
@@ -30,7 +31,12 @@ const startRows: SheetRow[] = [
   ['Sum', '=SUM(B2:B5)', '', '=SUM(D2:D5)'],
 ].map((values, index) => ({
   id: `row-${index + 1}`,
-  cells: { A: values[0]!, B: values[1]!, C: values[2]!, D: values[3]! },
+  cells: {
+    A: requireDefined(values[0]),
+    B: requireDefined(values[1]),
+    C: requireDefined(values[2]),
+    D: requireDefined(values[3]),
+  },
 }));
 
 /** Every row's contents by A1 reference, as the evaluator reads them. */
@@ -63,7 +69,7 @@ function Spreadsheet() {
     setRows((current) =>
       current.map((entry, index) =>
         index === at.row
-          ? { ...entry, cells: { ...entry.cells, [letters[at.column]!]: value } }
+          ? { ...entry, cells: { ...entry.cells, [requireDefined(letters[at.column])]: value } }
           : entry,
       ),
     );
@@ -82,7 +88,9 @@ function Spreadsheet() {
     <div data-lab-demo="spreadsheet">
       <FormulaBar
         cell={cell}
-        value={cell ? rows[cell.row]!.cells[letters[cell.column]!] : ''}
+        value={
+          cell ? requireDefined(rows[cell.row]).cells[requireDefined(letters[cell.column])] : ''
+        }
         rowCount={rows.length}
         columnCount={letters.length}
         tokenize={tokenizeFormula}
@@ -90,7 +98,10 @@ function Spreadsheet() {
         evaluate={(content, at) => evaluateAt(content, cells, at)}
         onCommit={(value, at) => write(at, value)}
         onCellChange={(at) => {
-          const position = { rowKey: rows[at.row]!.id, columnId: letters[at.column]! };
+          const position = {
+            rowKey: requireDefined(rows[at.row]).id,
+            columnId: requireDefined(letters[at.column]),
+          };
           setRange({ anchor: position, focus: position });
         }}
       />

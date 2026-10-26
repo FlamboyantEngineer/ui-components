@@ -2,6 +2,7 @@
 // the clock keeps a single timeout for the earliest one.
 
 import { useEffect, useReducer } from 'react';
+import { requireDefined } from '../../utils/require-defined.js';
 
 type Wake = () => void;
 
@@ -28,7 +29,7 @@ function removeWake(wake: Wake): number | undefined {
   const at = wakeTimes.get(wake);
   if (at === undefined) return undefined;
   wakeTimes.delete(wake);
-  const count = wakeCounts.get(at)!;
+  const count = requireDefined(wakeCounts.get(at));
   if (count === 1) wakeCounts.delete(at);
   else wakeCounts.set(at, count - 1);
   return at;

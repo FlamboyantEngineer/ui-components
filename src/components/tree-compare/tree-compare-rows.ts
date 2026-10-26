@@ -3,6 +3,7 @@
 import type { Key } from '../../core/props.js';
 import type { UiStrings } from '../../core/strings.js';
 import type { CompareTreeNode, ComparedTreeRow } from '../../utils/compare-trees.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { walkTree } from '../../utils/walk-tree.js';
 
 /** The rows in reading order, with each row's position and ancestors, whatever is expanded. */
@@ -77,7 +78,7 @@ export function findNextChange<T extends CompareTreeNode>(
   let at = current ?? (step === 1 ? -1 : index.order.length);
   for (let checked = 0; checked < index.order.length; checked += 1) {
     at = (at + step + index.order.length) % index.order.length;
-    const row = index.order[at]!;
+    const row = requireDefined(index.order[at]);
     if (row.change !== 'unchanged') return row;
   }
   return undefined;

@@ -11,6 +11,7 @@ import {
   type TimelineView,
 } from '../../src/components/timeline/timeline.js';
 import type { Key } from '../../src/core/props.js';
+import { requireDefined } from '../../src/utils/require-defined.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const today = '2026-03-11';
@@ -166,7 +167,7 @@ const planDependencies = [
 
 const scaleOptions = (['day', 'week', 'month', 'quarter'] as const).map((value) => ({
   value,
-  label: value[0]!.toUpperCase() + value.slice(1),
+  label: requireDefined(value[0]).toUpperCase() + value.slice(1),
 }));
 
 const viewOptions = [

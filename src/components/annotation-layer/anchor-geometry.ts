@@ -1,6 +1,7 @@
 // Anchor rectangles in the layer's own coordinates, measured from elements, and hit testing.
 
 import type { Key } from '../../core/props.js';
+import { requireDefined } from '../../utils/require-defined.js';
 
 /** A rectangle in pixels from the top left corner of the layer's content. */
 export interface AnnotationRect {
@@ -69,7 +70,7 @@ export function isSameMeasurement(
     const other = b.get(id);
     if (!other || other.length !== rects.length) return false;
     const isSame = rects.every((rect, index) => {
-      const next = other[index]!;
+      const next = requireDefined(other[index]);
       return (
         rect.top === next.top &&
         rect.left === next.left &&

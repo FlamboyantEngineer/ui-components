@@ -98,19 +98,29 @@ describe('ChatTranscript unread', () => {
     const onRead = vi.fn();
     const { rerender } = render(<Thread count={10} onRead={onRead} />);
     const viewport = getViewport();
-    act(() => vi.advanceTimersByTime(499));
+    act(() => {
+      vi.advanceTimersByTime(499);
+    });
     expect(onRead).not.toHaveBeenCalled();
-    act(() => vi.advanceTimersByTime(1));
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
     expect(onRead).toHaveBeenLastCalledWith('m10');
     scrollViewport(viewport, 0);
     rerender(<Thread count={12} onRead={onRead} />);
-    act(() => vi.advanceTimersByTime(1000));
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
     expect(onRead).toHaveBeenCalledTimes(1);
     act(() => article('m11').focus());
-    act(() => vi.advanceTimersByTime(500));
+    act(() => {
+      vi.advanceTimersByTime(500);
+    });
     expect(onRead).toHaveBeenLastCalledWith('m11');
     scrollViewport(viewport, viewport.scrollHeight);
-    act(() => vi.advanceTimersByTime(500));
+    act(() => {
+      vi.advanceTimersByTime(500);
+    });
     expect(onRead).toHaveBeenLastCalledWith('m12');
     expect(onRead).toHaveBeenCalledTimes(3);
   });

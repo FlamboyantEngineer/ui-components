@@ -1,8 +1,13 @@
 // @vitest-environment node
 import { ESLint } from 'eslint';
+import tseslint from 'typescript-eslint';
 import { describe, expect, it } from 'vitest';
 
-const eslint = new ESLint({ cwd: process.cwd() });
+// Probe files are not on disk, so the type-aware rules, which need the TypeScript program, are off.
+const eslint = new ESLint({
+  cwd: process.cwd(),
+  overrideConfig: tseslint.configs.disableTypeChecked,
+});
 
 async function ruleIds(code: string, filePath = 'src/components/probe/probe.tsx') {
   const [result] = await eslint.lintText(code, { filePath });

@@ -6,6 +6,7 @@ import {
   type TransitionMenuTransition,
 } from '../../src/components/transition-menu/transition-menu.js';
 import type { Key } from '../../src/core/props.js';
+import { requireDefined } from '../../src/utils/require-defined.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const states: TransitionMenuState[] = [
@@ -59,7 +60,7 @@ function DocumentState() {
   const run = (change: TransitionMenuChange) =>
     new Promise<void>((resolve) => {
       window.setTimeout(() => {
-        const target = states.find((entry) => entry.id === change.to)!;
+        const target = requireDefined(states.find((entry) => entry.id === change.to));
         setState(change.to);
         setLog((entries) => [
           ...entries,

@@ -5,6 +5,7 @@ import {
 } from '../../src/components/activity-feed/activity-feed.js';
 import { ChangeList } from '../../src/components/change-list/change-list.js';
 import { SegmentedChoice } from '../../src/components/segmented-choice/segmented-choice.js';
+import { requireDefined } from '../../src/utils/require-defined.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 import { samplePicture } from './people-samples.js';
 
@@ -86,7 +87,7 @@ function olderPage(page: number): KindedEvent[] {
     const day = 13 - page * 2 - Math.floor(index / 2);
     return {
       id: `older-${page}-${index}`,
-      person: [maria, jon, lena][index]!,
+      person: requireDefined([maria, jon, lena][index]),
       action: index === 1 ? 'commented on' : 'edited',
       target: `Requirement ${page * 3 + index + 1}`,
       time: `2026-04-${String(day).padStart(2, '0')}T${10 + index}:00:00`,

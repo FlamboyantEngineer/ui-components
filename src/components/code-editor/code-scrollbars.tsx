@@ -1,4 +1,5 @@
 import { useEffect, useState, type RefObject } from 'react';
+import { requireDefined } from '../../utils/require-defined.js';
 import { OverlayScrollbars, useOverlayMetrics } from '../scroll-region/scroll-region.js';
 import { codeEditorHooks as hooks, type CodeDiagnostic } from './code-layers.js';
 
@@ -20,15 +21,17 @@ function measureMarks({ input, gutter, diagnostics }: CodeScrollbarsProps): Code
   const viewport = input.current;
   const lines = gutter.current?.children;
   if (!viewport || !lines || viewport.scrollHeight <= viewport.clientHeight) return [];
-  const origin = gutter.current!.getBoundingClientRect().top - gutter.current!.scrollTop;
+  const origin =
+    requireDefined(gutter.current).getBoundingClientRect().top -
+    requireDefined(gutter.current).scrollTop;
   return diagnostics.flatMap((diagnostic) => {
     const start = diagnostic.line === undefined ? undefined : lines[diagnostic.line - 1];
     if (!start) return [];
     const end =
       lines[
         Math.max(
-          diagnostic.line! - 1,
-          Math.min(lines.length - 1, (diagnostic.endLine ?? diagnostic.line!) - 1),
+          requireDefined(diagnostic.line) - 1,
+          Math.min(lines.length - 1, (diagnostic.endLine ?? requireDefined(diagnostic.line)) - 1),
         )
       ] ?? start;
     const top = start.getBoundingClientRect().top - origin;

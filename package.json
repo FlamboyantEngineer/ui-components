@@ -46,7 +46,7 @@
     "build": "node scripts/clean.mjs dist && tsc -p tsconfig.build.json",
     "build:labs": "node scripts/build-labs.mjs",
     "labs": "node scripts/start-labs.mjs",
-    "lint": "eslint . --max-warnings=0",
+    "lint": "node --max-old-space-size=6144 node_modules/eslint/bin/eslint.js . --max-warnings=0",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "tsc -p tsconfig.json --noEmit",

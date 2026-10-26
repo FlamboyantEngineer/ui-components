@@ -1,4 +1,5 @@
 import { createDropIndicator } from '../../utils/create-drop-indicator.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { toCollectionKey } from '../../utils/to-collection-key.js';
 import { createKeyIndex } from '../../utils/create-key-index.js';
@@ -122,7 +123,7 @@ function useCellDragAndDrop(
       getItems: (dragged) =>
         [...dragged].map((key) => ({
           [drag.dragType]: String(key),
-          'text/plain': drag.getTextValue(keys.get(String(key))!),
+          'text/plain': drag.getTextValue(requireDefined(keys.get(String(key)))),
         })),
       getAllowedDropOperations: () => ['move'],
       acceptedDragTypes: [drag.dragType],

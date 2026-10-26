@@ -11,6 +11,7 @@ import type {
   PivotRow,
   PivotValue,
 } from '../../utils/pivot.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import type { TableProps } from '../table/table.js';
 import { findField } from './pivot-fields.js';
 import { pivotTableHooks as hooks } from './pivot-table-hooks.js';
@@ -88,7 +89,11 @@ function Value({ value, isTotal }: { value: string; isTotal: boolean }) {
 function columnLabel(column: PivotColumn, options: PivotColumnsOptions): string {
   return column.path
     .map((key, index) =>
-      formatKey(findField(options.fields, options.layout.columns[index]!), key, options.strings),
+      formatKey(
+        findField(options.fields, requireDefined(options.layout.columns[index])),
+        key,
+        options.strings,
+      ),
     )
     .join(' / ');
 }

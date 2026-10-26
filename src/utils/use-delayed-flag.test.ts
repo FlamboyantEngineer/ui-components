@@ -10,23 +10,33 @@ describe('useDelayedFlag', () => {
     const { result, rerender } = renderHook(({ active, delay }) => useDelayedFlag(active, delay), {
       initialProps: { active: true, delay: 100 },
     });
-    act(() => vi.advanceTimersByTime(99));
+    act(() => {
+      vi.advanceTimersByTime(99);
+    });
     expect(result.current).toBe(false);
-    act(() => vi.advanceTimersByTime(1));
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
     expect(result.current).toBe(true);
 
     rerender({ active: true, delay: 200 });
     expect(result.current).toBe(false);
-    act(() => vi.advanceTimersByTime(199));
+    act(() => {
+      vi.advanceTimersByTime(199);
+    });
     expect(result.current).toBe(false);
-    act(() => vi.advanceTimersByTime(1));
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
     expect(result.current).toBe(true);
 
     rerender({ active: false, delay: 200 });
     expect(result.current).toBe(false);
     rerender({ active: true, delay: 200 });
     expect(result.current).toBe(false);
-    act(() => vi.advanceTimersByTime(200));
+    act(() => {
+      vi.advanceTimersByTime(200);
+    });
     expect(result.current).toBe(true);
   });
 
@@ -35,14 +45,18 @@ describe('useDelayedFlag', () => {
     const { result, rerender } = renderHook(({ delay }) => useDelayedFlag(true, delay), {
       initialProps: { delay: 100 as number | undefined },
     });
-    act(() => vi.advanceTimersByTime(100));
+    act(() => {
+      vi.advanceTimersByTime(100);
+    });
     expect(result.current).toBe(true);
     rerender({ delay: undefined });
     expect(result.current).toBe(false);
     expect(vi.getTimerCount()).toBe(0);
     rerender({ delay: 100 });
     expect(result.current).toBe(false);
-    act(() => vi.advanceTimersByTime(100));
+    act(() => {
+      vi.advanceTimersByTime(100);
+    });
     expect(result.current).toBe(true);
   });
 
@@ -50,7 +64,9 @@ describe('useDelayedFlag', () => {
     vi.useFakeTimers();
     const { result } = renderHook(() => useDelayedFlag(true, 0));
     expect(result.current).toBe(false);
-    act(() => vi.advanceTimersByTime(0));
+    act(() => {
+      vi.advanceTimersByTime(0);
+    });
     expect(result.current).toBe(true);
   });
 
@@ -59,10 +75,14 @@ describe('useDelayedFlag', () => {
     const { result, rerender, unmount } = renderHook(({ active }) => useDelayedFlag(active, 100), {
       initialProps: { active: true },
     });
-    act(() => vi.advanceTimersByTime(50));
+    act(() => {
+      vi.advanceTimersByTime(50);
+    });
     rerender({ active: false });
     expect(vi.getTimerCount()).toBe(0);
-    act(() => vi.advanceTimersByTime(100));
+    act(() => {
+      vi.advanceTimersByTime(100);
+    });
     expect(result.current).toBe(false);
     rerender({ active: true });
     expect(vi.getTimerCount()).toBe(1);
@@ -83,7 +103,9 @@ describe('useActiveAfter', () => {
     expect(result.current).toBe(false);
     rerender({ active: true, delay: 100 });
     expect(result.current).toBe(false);
-    act(() => vi.advanceTimersByTime(100));
+    act(() => {
+      vi.advanceTimersByTime(100);
+    });
     expect(result.current).toBe(true);
     rerender({ active: false, delay: 100 });
     expect(result.current).toBe(false);

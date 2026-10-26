@@ -258,12 +258,18 @@ describe('Carousel', () => {
     const viewport = container.querySelector('.ui-carousel__viewport');
     expect(root(container)).toHaveAttribute('data-rotating', 'true');
     expect(viewport).toHaveAttribute('aria-live', 'off');
-    act(() => vi.advanceTimersByTime(1999));
+    act(() => {
+      vi.advanceTimersByTime(1999);
+    });
     expect(shown(container)).toBe('Lisbon');
-    act(() => vi.advanceTimersByTime(1));
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
     expect(shown(container)).toBe('Oslo');
     for (const city of ['Kyoto', 'Quito', 'Lisbon']) {
-      act(() => vi.advanceTimersByTime(2000));
+      act(() => {
+        vi.advanceTimersByTime(2000);
+      });
       expect(shown(container)).toBe(city);
     }
     expectHooksMatchSpec(container, 'CAROUSEL', { slots: ['rotation'] });
@@ -285,19 +291,27 @@ describe('Carousel', () => {
       'aria-live',
       'polite',
     );
-    act(() => vi.advanceTimersByTime(3000));
+    act(() => {
+      vi.advanceTimersByTime(3000);
+    });
     expect(shown(container)).toBe('Lisbon');
     await user.unhover(carousel);
-    act(() => vi.advanceTimersByTime(1000));
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
     expect(shown(container)).toBe('Oslo');
 
     act(() => screen.getByRole('button', { name: 'Next slide' }).focus());
-    act(() => vi.advanceTimersByTime(3000));
+    act(() => {
+      vi.advanceTimersByTime(3000);
+    });
     expect(shown(container)).toBe('Oslo');
     act(() => screen.getByRole('button', { name: 'Stop automatic slide show' }).focus());
     expect(carousel).toHaveAttribute('data-rotating', 'true');
     act(() => (document.activeElement as HTMLElement).blur());
-    act(() => vi.advanceTimersByTime(1000));
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
     expect(shown(container)).toBe('Kyoto');
   });
 
@@ -317,12 +331,16 @@ describe('Carousel', () => {
     expect(start.querySelector('[data-glyph]')).toHaveAttribute('data-glyph', 'play');
     await user.unhover(start);
     act(() => (document.activeElement as HTMLElement | null)?.blur());
-    act(() => vi.advanceTimersByTime(5000));
+    act(() => {
+      vi.advanceTimersByTime(5000);
+    });
     expect(shown(container)).toBe('Lisbon');
     await user.click(start);
     await user.unhover(start);
     act(() => (document.activeElement as HTMLElement | null)?.blur());
-    act(() => vi.advanceTimersByTime(1000));
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
     expect(shown(container)).toBe('Oslo');
   });
 
@@ -335,7 +353,9 @@ describe('Carousel', () => {
       </Carousel>,
     );
     expect(screen.getByRole('button', { name: 'Start automatic slide show' })).toBeInTheDocument();
-    act(() => vi.advanceTimersByTime(20000));
+    act(() => {
+      vi.advanceTimersByTime(20000);
+    });
     expect(shown(container)).toBe('Lisbon');
     expect(root(container)).not.toHaveAttribute('data-rotating');
   });

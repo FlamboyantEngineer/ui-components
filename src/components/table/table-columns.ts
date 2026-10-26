@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { requireDefined } from '../../utils/require-defined.js';
 import type { TableColumn, TableColumnPin } from './table-rows.js';
 
 /** What the reader changes about the columns: their order and which ones are hidden. */
@@ -100,7 +101,7 @@ export function stepColumnMove(
 ): TableColumnMove | null {
   const index = columns.findIndex((column) => column.id === id);
   const target = index === -1 ? undefined : columns[index + step];
-  if (!target || pinRank(target) !== pinRank(columns[index]!)) return null;
+  if (!target || pinRank(target) !== pinRank(requireDefined(columns[index]))) return null;
   return { id, targetId: target.id, position: step === 1 ? 'after' : 'before' };
 }
 

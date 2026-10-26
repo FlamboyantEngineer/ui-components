@@ -2,6 +2,7 @@ import { useLayoutEffect, useRef, useState, type KeyboardEvent, type ReactNode }
 import type { AriaLabellingProps } from '../../core/events.js';
 import type { BaseProps, Key } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { useResizeObserver } from '../../utils/use-resize-observer.js';
 import { useAnnotationContext } from './annotation-context.js';
@@ -129,7 +130,10 @@ export function AnnotationMargin({
             }}
             onKeyDown={(event) => onKeyDown(event, index)}
           >
-            {renderCard(byId.get(card.id)!, { isActive, isOrphaned: card.isOrphaned })}
+            {renderCard(requireDefined(byId.get(card.id)), {
+              isActive,
+              isOrphaned: card.isOrphaned,
+            })}
           </div>
         );
       })}

@@ -1,6 +1,7 @@
 // Places annotation cards in a margin beside their anchors without overlap (specs/ANNOTATION-LAYER.md).
 
 import type { Key } from '../../core/props.js';
+import { requireDefined } from '../../utils/require-defined.js';
 
 /** A card to place: the top of its anchor in the margin (`null` when the anchor is gone) and its height. */
 export interface CardInput {
@@ -35,29 +36,31 @@ export function stackAnnotationCards(
 ): CardPlacement[] {
   const anchored = cards
     .filter((card) => card.anchorTop !== null)
-    .sort((a, b) => a.anchorTop! - b.anchorTop!);
-  const tops = anchored.map((card) => card.anchorTop!);
+    .sort((a, b) => requireDefined(a.anchorTop) - requireDefined(b.anchorTop));
+  const tops = anchored.map((card) => requireDefined(card.anchorTop));
   const active = Math.max(
     0,
     anchored.findIndex((card) => card.id === activeId),
   );
   for (let index = active - 1; index >= 0; index -= 1) {
-    const below = tops[index + 1]! - gap - anchored[index]!.height;
-    tops[index] = Math.min(tops[index]!, below);
+    const below = requireDefined(tops[index + 1]) - gap - requireDefined(anchored[index]).height;
+    tops[index] = Math.min(requireDefined(tops[index]), below);
   }
   // Downwards from the margin's top: cards that did not fit above the active one push it down.
   tops[0] = Math.max(0, tops[0] ?? 0);
   for (let index = 1; index < anchored.length; index += 1) {
-    const above = tops[index - 1]! + anchored[index - 1]!.height + gap;
-    tops[index] = Math.max(tops[index]!, above);
+    const above =
+      requireDefined(tops[index - 1]) + requireDefined(anchored[index - 1]).height + gap;
+    tops[index] = Math.max(requireDefined(tops[index]), above);
   }
   const placements = anchored.map((card, index) => ({
     id: card.id,
-    top: tops[index]!,
+    top: requireDefined(tops[index]),
     isOrphaned: false,
   }));
   let bottom = placements.reduce(
-    (end, placement, index) => Math.max(end, placement.top + anchored[index]!.height + gap),
+    (end, placement, index) =>
+      Math.max(end, placement.top + requireDefined(anchored[index]).height + gap),
     0,
   );
   for (const card of cards) {

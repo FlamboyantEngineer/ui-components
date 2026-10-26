@@ -1,3 +1,4 @@
+import { requireDefined } from './require-defined.js';
 interface TreeFrame<T, U> {
   items: Iterator<[number, T]>;
   mapped: U[];
@@ -13,7 +14,7 @@ export function mapTree<T, U>(
 ): U[] {
   const frames: Array<TreeFrame<T, U>> = [{ items: items.entries(), mapped: [] }];
   while (frames.length > 0) {
-    const frame = frames.at(-1)!;
+    const frame = requireDefined(frames.at(-1));
     const next = frame.items.next();
     if (!next.done) {
       const [index, item] = next.value;
@@ -27,8 +28,8 @@ export function mapTree<T, U>(
     }
     frames.pop();
     if (frames.length === 0) return frame.mapped;
-    const result = transform(frame.item!, frame.mapped, frame.index!);
-    if (result !== null) frames.at(-1)!.mapped.push(result);
+    const result = transform(requireDefined(frame.item), frame.mapped, requireDefined(frame.index));
+    if (result !== null) requireDefined(frames.at(-1)).mapped.push(result);
   }
   return [];
 }

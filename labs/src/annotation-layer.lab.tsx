@@ -9,6 +9,7 @@ import { Button } from '../../src/components/button/button.js';
 import { CommentThread } from '../../src/components/comment-thread/comment-thread.js';
 import { CommentThreadReply } from '../../src/components/comment-thread/comment-thread-reply.js';
 import type { Key } from '../../src/core/props.js';
+import { requireDefined } from '../../src/utils/require-defined.js';
 import { LabSection, StateMatrix, mountLab } from './chrome/index.js';
 
 const maria = { name: 'Maria Santos', colorKey: 'maria' };
@@ -47,7 +48,7 @@ function createAnnotations(prefix: string): Annotation[] {
 }
 
 function renderCard(annotation: Annotation, { isActive, isOrphaned }: AnnotationCardState) {
-  const note = noteText[String(annotation.id)]!;
+  const note = requireDefined(noteText[String(annotation.id)]);
   return (
     <CommentThread
       aria-label={`Note on ${note.quote}`}

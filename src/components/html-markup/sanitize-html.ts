@@ -1,6 +1,7 @@
 // An allowlist HTML sanitizer that returns a plain, frozen tree instead of markup
 // (specs/HTML-MARKUP.md). It never touches the DOM, so it also runs on the server.
 
+import { requireDefined } from '../../utils/require-defined.js';
 import { defaultUrlSchemes, isSafeUrl } from '../../utils/safe-url.js';
 import { buildHtmlTree, type RawElement, type RawNode } from './html-tree.js';
 
@@ -124,12 +125,12 @@ function filterNodes(nodes: readonly RawNode[], policy: HtmlPolicy): HtmlNode[] 
   const elements = new Set(policy.elements);
   const levels: FilterLevel[] = [{ iterator: nodes[Symbol.iterator](), output, element: null }];
   while (levels.length > 0) {
-    const level = levels.at(-1)!;
+    const level = requireDefined(levels.at(-1));
     const next = level.iterator.next();
     if (next.done) {
       levels.pop();
       if (level.element) {
-        levels.at(-1)!.output.push(
+        requireDefined(levels.at(-1)).output.push(
           Object.freeze({
             type: 'element',
             tag: level.element.tag,

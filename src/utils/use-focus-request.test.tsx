@@ -51,7 +51,9 @@ describe('useFocusRequest', () => {
     const added = screen.getByRole('textbox', { name: 'item-1' });
     expect(added).not.toHaveFocus();
     rerender(<Editor blockFrames={0} />);
-    act(() => vi.advanceTimersToNextFrame());
+    act(() => {
+      vi.advanceTimersToNextFrame();
+    });
     expect(added).toHaveFocus();
     act(() => {
       vi.advanceTimersToNextFrame();
@@ -59,7 +61,9 @@ describe('useFocusRequest', () => {
     });
     // Focus that moved away after the element held it is left alone.
     act(() => screen.getByRole('button', { name: 'Add' }).focus());
-    act(() => vi.advanceTimersToNextFrame());
+    act(() => {
+      vi.advanceTimersToNextFrame();
+    });
     expect(screen.getByRole('button', { name: 'Add' })).toHaveFocus();
   });
 
@@ -73,7 +77,9 @@ describe('useFocusRequest', () => {
     // A retry is still pending to confirm focus held; the reader presses elsewhere first.
     // Pressing the button focuses it, as the browser does on mousedown.
     await user.pointer({ keys: '[MouseLeft>]', target: add });
-    act(() => vi.advanceTimersToNextFrame());
+    act(() => {
+      vi.advanceTimersToNextFrame();
+    });
     expect(add).toHaveFocus();
   });
 
@@ -83,9 +89,13 @@ describe('useFocusRequest', () => {
     const { rerender } = render(<Editor hideAdded />);
     await user.click(screen.getByRole('button', { name: 'Add' }));
     expect(screen.queryByRole('textbox', { name: 'item-1' })).not.toBeInTheDocument();
-    act(() => vi.advanceTimersToNextFrame());
+    act(() => {
+      vi.advanceTimersToNextFrame();
+    });
     rerender(<Editor />);
-    act(() => vi.advanceTimersToNextFrame());
+    act(() => {
+      vi.advanceTimersToNextFrame();
+    });
     expect(screen.getByRole('textbox', { name: 'item-1' })).toHaveFocus();
   });
 
@@ -95,7 +105,9 @@ describe('useFocusRequest', () => {
     const { result, rerender } = renderHook(() => useFocusRequest());
     act(() => result.current(target));
     rerender();
-    act(() => vi.advanceTimersByTime(16 * 100));
+    act(() => {
+      vi.advanceTimersByTime(16 * 100);
+    });
     expect(target).toHaveBeenCalledTimes(60);
     expect(vi.getTimerCount()).toBe(0);
   });

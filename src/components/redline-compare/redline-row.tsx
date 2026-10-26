@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { useUiStrings } from '../../core/provider.js';
 import type { BlockChange, ComparedBlockRow } from '../../utils/compare-blocks.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { Button } from '../button/button.js';
 import {
   RedlineBlock,
@@ -126,7 +127,7 @@ export function RedlineRow({
   const labelId = `${rowId}-label`;
   const label = strings.redlineRow(
     row.move ? (`moved-${row.move}` as const) : (row.change as Exclude<BlockChange, 'moved'>),
-    nameBlockType((row.newBlock ?? row.oldBlock)!, strings),
+    nameBlockType(requireDefined(row.newBlock ?? row.oldBlock), strings),
   );
   return (
     <li

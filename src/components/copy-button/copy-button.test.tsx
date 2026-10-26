@@ -33,7 +33,9 @@ describe('CopyButton', () => {
     expect(screen.getByRole('status')).toHaveTextContent('Copied');
     expectHooksMatchSpec(container, 'COPY-BUTTON', { slots: 'all' });
 
-    act(() => vi.advanceTimersByTime(1000));
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
     expect(root).not.toHaveAttribute('data-copied');
     expect(button.querySelector('[data-glyph]')).toHaveAttribute('data-glyph', 'copy');
     expect(screen.getByRole('status')).toBeEmptyDOMElement();

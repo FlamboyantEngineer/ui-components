@@ -82,7 +82,7 @@ function SelectListField<M extends SelectFieldSelectionMode = 'single'>(
         data: {
           mode,
           selectionMode,
-          icons: flattenSelectItems(config.options).some((option) => option.icon),
+          icons: flattenSelectItems(config.options).some((option) => Boolean(option.icon)),
         },
       })}
       state={state}

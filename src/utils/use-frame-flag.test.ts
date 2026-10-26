@@ -14,7 +14,9 @@ describe('useFrameFlag', () => {
     const { result } = renderHook(() => useFrameFlag(true, owner));
     expect(result.current).toBe(false);
     owner.current = document.body;
-    act(() => vi.advanceTimersToNextFrame());
+    act(() => {
+      vi.advanceTimersToNextFrame();
+    });
     expect(result.current).toBe(true);
   });
 
@@ -25,13 +27,17 @@ describe('useFrameFlag', () => {
       initialProps: { active: true },
     });
     expect(result.current).toBe(false);
-    act(() => vi.advanceTimersToNextFrame());
+    act(() => {
+      vi.advanceTimersToNextFrame();
+    });
     expect(result.current).toBe(true);
     rerender({ active: false });
     expect(result.current).toBe(false);
     rerender({ active: true });
     expect(result.current).toBe(false);
-    act(() => vi.advanceTimersToNextFrame());
+    act(() => {
+      vi.advanceTimersToNextFrame();
+    });
     expect(result.current).toBe(true);
   });
 
@@ -43,7 +49,9 @@ describe('useFrameFlag', () => {
     });
     rerender({ active: false });
     expect(vi.getTimerCount()).toBe(0);
-    act(() => vi.advanceTimersToNextFrame());
+    act(() => {
+      vi.advanceTimersToNextFrame();
+    });
     expect(result.current).toBe(false);
     rerender({ active: true });
     expect(vi.getTimerCount()).toBe(1);

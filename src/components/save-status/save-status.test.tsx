@@ -90,7 +90,9 @@ describe('SaveStatus', () => {
     vi.useFakeTimers();
     render(<SaveStatus phase="saved" hideSavedAfter={0} />);
     expect(screen.getByRole('status')).toHaveTextContent('Saved');
-    act(() => vi.advanceTimersByTime(0));
+    act(() => {
+      vi.advanceTimersByTime(0);
+    });
     expect(screen.getByRole('status')).toBeEmptyDOMElement();
   });
 

@@ -22,7 +22,7 @@ function Editing(props: Partial<MessageComposerProps>) {
         onCancel={() => setEditValue(undefined)}
         onEditLast={() => setEditValue('Lunch at noon?')}
         onSubmit={(value) => {
-          props.onSubmit?.(value);
+          void props.onSubmit?.(value);
           setEditValue(undefined);
         }}
       />

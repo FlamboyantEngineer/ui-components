@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import { useControllableState } from '../../core/controllable-state.js';
 import { clamp } from '../../utils/clamp.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { useElementSize } from '../../utils/use-element-size.js';
 import { defaultZoomLevels, findNextZoomLevel } from '../zoom-control/zoom-control.js';
 import { fitDiagramViewport, zoomDiagramViewport, type DiagramViewport } from './diagram-model.js';
@@ -32,8 +33,8 @@ export interface DiagramViewportState {
 }
 
 export const diagramZoomRange = [
-  defaultZoomLevels[0]!,
-  defaultZoomLevels[defaultZoomLevels.length - 1]!,
+  requireDefined(defaultZoomLevels[0]),
+  requireDefined(defaultZoomLevels[defaultZoomLevels.length - 1]),
 ] as const;
 
 const fitPadding = 24;

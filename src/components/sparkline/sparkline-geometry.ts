@@ -1,5 +1,6 @@
 // The paths and marked points of a sparkline, from its values and box (specs/SPARKLINE.md).
 
+import { requireDefined } from '../../utils/require-defined.js';
 import { summarizeNumbers } from '../../utils/summarize-numbers.js';
 import { clamp } from '../../utils/clamp.js';
 import { createLinearScale } from '../../utils/linear-scale.js';
@@ -60,20 +61,20 @@ function toLine(run: readonly SparklinePoint[]): string {
 }
 
 function toArea(run: readonly SparklinePoint[], baseline: number): string {
-  const first = run[0]!;
-  const last = run[run.length - 1]!;
+  const first = requireDefined(run[0]);
+  const last = requireDefined(run[run.length - 1]);
   return `${toLine(run)}L${last.x},${baseline}L${first.x},${baseline}Z`;
 }
 
 function findMarkedPoints(points: readonly SparklinePoint[]): SparklineGeometry['points'] {
   if (points.length === 0) return {};
-  let min = points[0]!;
-  let max = points[0]!;
+  let min = requireDefined(points[0]);
+  let max = requireDefined(points[0]);
   for (const point of points) {
     if (point.value < min.value) min = point;
     if (point.value > max.value) max = point;
   }
-  return { min, max, last: points[points.length - 1]! };
+  return { min, max, last: requireDefined(points[points.length - 1]) };
 }
 
 /**

@@ -3,6 +3,7 @@
 import type { CodeToken } from '../../src/components/code-editor/code-editor.js';
 import type { Completion } from '../../src/components/completion-list/completion-list.js';
 import { formatCellReference, parseCellReference } from '../../src/utils/cell-reference.js';
+import { requireDefined } from '../../src/utils/require-defined.js';
 
 /** Raw cell contents by A1 reference. */
 export type SheetCells = Readonly<Record<string, string>>;
@@ -67,7 +68,7 @@ function evaluateExpression(expression: string, readCell: (reference: string) =>
     const values: number[] = [];
     do {
       const token = tokens[index] ?? '';
-      if (token.includes(':')) values.push(...expandRange(take()!).map(readCell));
+      if (token.includes(':')) values.push(...expandRange(requireDefined(take())).map(readCell));
       else values.push(sum());
     } while (tokens[index] === ',' && take());
     expect(')');

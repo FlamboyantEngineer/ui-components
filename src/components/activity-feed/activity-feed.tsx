@@ -6,6 +6,7 @@ import type { BaseProps, Key, NativeProps } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
 import { isEmptyNode } from '../../utils/is-empty-node.js';
 import { capitalizeText } from '../../utils/relative-time.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import { toKeyIdentity } from '../../utils/to-key-identity.js';
 import { Avatar, getDisplayName, type AvatarIdentity } from '../avatar/avatar.js';
 import { EmptyState } from '../empty-state/empty-state.js';
@@ -149,7 +150,10 @@ function DayGroups({
   return groups.map((group, index) => {
     const headingId = `${baseId}-${index}`;
     return (
-      <li key={`${group.day}:${toKeyIdentity(group.items[0]!.id)}`} {...hooks.slot('group')}>
+      <li
+        key={`${group.day}:${toKeyIdentity(requireDefined(group.items[0]).id)}`}
+        {...hooks.slot('group')}
+      >
         <Heading {...hooks.slot('day')} id={headingId}>
           {group.label}
         </Heading>

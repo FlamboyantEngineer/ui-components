@@ -1,4 +1,5 @@
 import type { Key } from '../../core/props.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import type { DiagramEdge, DiagramNode } from './diagram-model.js';
 
 /** An edge seen from one end, with the node at the other end. */
@@ -22,8 +23,8 @@ export function indexDiagramLinks(nodes: readonly DiagramNode[], edges: readonly
     const source = byId.get(edge.source);
     const target = byId.get(edge.target);
     if (!source || !target) continue;
-    links.get(source.id)!.outgoing.push({ edge, other: target });
-    links.get(target.id)!.incoming.push({ edge, other: source });
+    requireDefined(links.get(source.id)).outgoing.push({ edge, other: target });
+    requireDefined(links.get(target.id)).incoming.push({ edge, other: source });
   }
   return links;
 }

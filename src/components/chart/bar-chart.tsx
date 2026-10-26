@@ -4,6 +4,7 @@ import type { AriaLabellingProps } from '../../core/events.js';
 import { mergeClassNames } from '../../core/hooks.js';
 import type { BaseProps, Orientation } from '../../core/props.js';
 import { useUiStrings } from '../../core/provider.js';
+import { requireDefined } from '../../utils/require-defined.js';
 import {
   createBarValueScale,
   resolveBarGeometry,
@@ -103,7 +104,7 @@ function BarPlot({
         />
         <ChartAxis {...categoryAxis} ticks={bands.ticks()} />
         {bars.map((bar) => {
-          const entry = series[bar.series]!;
+          const entry = requireDefined(series[bar.series]);
           return (
             <rect
               key={bar.key}
@@ -116,7 +117,7 @@ function BarPlot({
               role="img"
               aria-label={strings.chartValue(
                 entry.label,
-                categories[bar.index]!,
+                requireDefined(categories[bar.index]),
                 format.format(bar.value),
               )}
               x={bar.x}
@@ -130,10 +131,10 @@ function BarPlot({
       <ChartTooltip
         activeKey={points.activeKey}
         anchor={points.anchor}
-        title={active ? categories[active.index]! : ''}
-        label={active ? series[active.series]!.label : ''}
+        title={active ? requireDefined(categories[active.index]) : ''}
+        label={active ? requireDefined(series[active.series]).label : ''}
         series={active?.series ?? 0}
-        tone={active ? series[active.series]!.tone : undefined}
+        tone={active ? requireDefined(series[active.series]).tone : undefined}
         value={active ? format.format(active.value) : ''}
       />
     </>

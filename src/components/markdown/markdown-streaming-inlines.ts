@@ -1,3 +1,4 @@
+import { requireDefined } from '../../utils/require-defined.js';
 // Closes the inline syntax a streaming paragraph leaves open, so its end renders as it will once
 // complete instead of flashing raw markers (specs/MARKDOWN.md, UIC-MARKDOWN-2.11). Pure text in,
 // text out: the parser stays as it is.
@@ -41,11 +42,11 @@ function findCodeSpans(text: string): { spans: Span[]; open: Span | null } {
     .map((match) => ({ start: match.index, end: match.index + match[0].length }));
   const spans: Span[] = [];
   for (let index = 0; index < runs.length; index += 1) {
-    const opener = runs[index]!;
+    const opener = requireDefined(runs[index]);
     const length = opener.end - opener.start;
     const closer = runs.findIndex((run, at) => at > index && run.end - run.start === length);
     if (closer === -1) return { spans, open: opener };
-    spans.push({ start: opener.start, end: runs[closer]!.end });
+    spans.push({ start: opener.start, end: requireDefined(runs[closer]).end });
     index = closer;
   }
   return { spans, open: null };
@@ -130,7 +131,7 @@ function repairLinks(source: string): string {
       const isImage = masked[at - 1] === '!' && !isEscaped(masked, at - 1);
       open.push({ start: isImage ? at - 1 : at, label: at + 1, isImage });
     } else if (masked[at] === ']' && open.length > 0) {
-      const bracket = open.pop()!;
+      const bracket = requireDefined(open.pop());
       const repaired = repairClosedBracket(text, bracket, at);
       if (repaired !== null) return dropOpenBrackets(repaired, open);
       if (masked[at + 1] === '(') at = findDestinationEnd(masked, at + 2);
@@ -183,7 +184,8 @@ function closeEmphasis(text: string): string {
       if (canOpen) stack.push(run);
       continue;
     }
-    const missing = stack[at]!.end - stack[at]!.start - (run.end - run.start);
+    const missing =
+      requireDefined(stack[at]).end - requireDefined(stack[at]).start - (run.end - run.start);
     stack.length = at;
     // A closing run still arriving at the end gets the rest of its length.
     if (missing > 0 && masked.slice(run.end).trim() === '') {

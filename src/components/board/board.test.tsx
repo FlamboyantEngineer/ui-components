@@ -422,7 +422,9 @@ describe('Board', () => {
       await user.keyboard('{Alt>}{ArrowRight}{/Alt}');
       const other = screen.getByRole('row', { name: 'Bake bread' });
       await user.click(other);
-      act(() => vi.advanceTimersByTime(16 * 5));
+      act(() => {
+        vi.advanceTimersByTime(16 * 5);
+      });
       expect(other).toHaveFocus();
     } finally {
       vi.useRealTimers();

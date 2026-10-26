@@ -135,13 +135,19 @@ describe('CodeEditor problems and hover tips', () => {
     await user.pointer({ target: input(), coords: { clientX: 125, clientY: 5 } });
     expect(screen.getByRole('tooltip')).toHaveTextContent('basket: the chosen basket');
     await user.pointer({ target: input(), coords: { clientX: 25, clientY: 5 } });
-    act(() => vi.advanceTimersByTime(100));
+    act(() => {
+      vi.advanceTimersByTime(100);
+    });
     expect(tooltip()).not.toBeNull();
     await user.hover(tooltip() as HTMLElement);
-    act(() => vi.advanceTimersByTime(300));
+    act(() => {
+      vi.advanceTimersByTime(300);
+    });
     expect(tooltip()).not.toBeNull();
     await user.unhover(tooltip() as HTMLElement);
-    act(() => vi.advanceTimersByTime(300));
+    act(() => {
+      vi.advanceTimersByTime(300);
+    });
     expect(tooltip()).toBeNull();
   });
 

@@ -35,6 +35,22 @@ const PRIMITIVES_MODULES = {
   message: 'Labs use the public API, not src/primitives (UIC-PRIMITIVES-1.4).',
 };
 
+// TypeScript rules TS2 to TS11 (docs/CODING-GUIDELINES.md). They load the TypeScript program, so
+// `npm run lint` gives ESLint a 6 GB heap.
+const TYPED_FILES = [
+  'src/**/*.{ts,tsx}',
+  'labs/src/**/*.{ts,tsx}',
+  'test/**/*.{ts,tsx}',
+  'e2e/**/*.ts',
+  '*.config.ts',
+];
+// Vitest and Playwright load their configuration through its default export.
+const DEFAULT_EXPORT_LOADERS = ['*.config.ts'];
+const ENUM_SYNTAX = {
+  selector: 'TSEnumDeclaration',
+  message: 'Use a string-literal union or an `as const` object instead of `enum` (TS6).',
+};
+
 export default tseslint.config(
   {
     ignores: [
@@ -59,6 +75,65 @@ export default tseslint.config(
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_', ignoreRestSiblings: true },
       ],
     },
+  },
+  {
+    name: 'ui-components/typescript',
+    files: TYPED_FILES,
+    languageOptions: {
+      parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname },
+    },
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/no-non-null-assertion': 'error',
+      '@typescript-eslint/ban-ts-comment': [
+        'error',
+        {
+          'ts-expect-error': 'allow-with-description',
+          'ts-ignore': true,
+          'ts-nocheck': true,
+          'ts-check': false,
+          minimumDescriptionLength: 10,
+        },
+      ],
+      '@typescript-eslint/switch-exhaustiveness-check': [
+        'error',
+        { considerDefaultExhaustiveForUnions: true },
+      ],
+      '@typescript-eslint/no-floating-promises': 'error',
+      '@typescript-eslint/no-misused-promises': 'error',
+      '@typescript-eslint/only-throw-error': 'error',
+      '@typescript-eslint/prefer-promise-reject-errors': [
+        'error',
+        { allowThrowingAny: true, allowThrowingUnknown: true },
+      ],
+      'preserve-caught-error': 'error',
+      'no-restricted-syntax': ['error', ENUM_SYNTAX],
+    },
+  },
+  {
+    name: 'ui-components/typescript/default-exports',
+    files: TYPED_FILES,
+    ignores: DEFAULT_EXPORT_LOADERS,
+    rules: {
+      'no-restricted-exports': [
+        'error',
+        {
+          restrictDefaultExports: {
+            direct: true,
+            named: true,
+            defaultFrom: true,
+            namedFrom: true,
+            namespaceFrom: true,
+          },
+        },
+      ],
+    },
+  },
+  {
+    // TS3 is phased in: tests keep their non-null assertions until they are migrated.
+    name: 'ui-components/typescript/tests',
+    files: ['src/**/*.test.{ts,tsx}', 'test/**/*.{ts,tsx}', 'e2e/**/*.ts'],
+    rules: { '@typescript-eslint/no-non-null-assertion': 'off' },
   },
   {
     files: ['src/**/*.{ts,tsx}', 'labs/src/**/*.{ts,tsx}', 'test/**/*.{ts,tsx}'],
@@ -132,7 +207,7 @@ export default tseslint.config(
           selector: 'ClassExpression',
           message: 'Use function components and plain functions (I1).',
         },
-        { selector: 'ExportDefaultDeclaration', message: 'Use named exports (S3).' },
+        ENUM_SYNTAX,
       ],
       '@typescript-eslint/naming-convention': [
         'error',
@@ -189,6 +264,7 @@ export default tseslint.config(
           selector: 'CallExpression[callee.name=/ByTestId$/]',
           message: 'Query by role, label or text, or by a documented hook, not by test id.',
         },
+        ENUM_SYNTAX,
       ],
     },
   },
