@@ -10,6 +10,7 @@ export type {
   ChatMessageAuthor,
   ChatMessageDelivery,
   ChatMessageGroupPosition,
+  ChatMessageVariant,
 } from './chat-message.js';
 export { ChatQuote } from './chat-quote.js';
 export type { ChatQuoteData, ChatQuoteProps } from './chat-quote.js';

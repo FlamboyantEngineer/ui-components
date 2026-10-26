@@ -224,6 +224,35 @@
   opacity: 1;
 }
 
+/* Without avatars a grouped message lines up with the first one at the edge. */
+.ui-chat-message[data-avatar-hidden]:is(
+    [data-group-position='middle'],
+    [data-group-position='last']
+  ) {
+  padding-inline: 0;
+}
+
+/* A plain message is text on the page; a plain reply takes the whole width. */
+.ui-chat-message[data-variant='plain'] .ui-chat-message__content {
+  padding: 0;
+  border-radius: 0;
+  background: none;
+}
+
+.ui-chat-message[data-variant='plain'][data-origin='received'] {
+  align-self: stretch;
+  max-width: none;
+}
+
+.ui-chat-message[data-variant='plain'][data-origin='received']:is(
+    [data-group-position='middle'],
+    [data-group-position='last']
+  )
+  .ui-chat-message__header {
+  inset-block: 0 auto;
+  inset-inline: auto 0;
+}
+
 /* The actions float over the bubble's corner while the message is hovered or holds focus. */
 .ui-chat-message__actions {
   position: absolute;

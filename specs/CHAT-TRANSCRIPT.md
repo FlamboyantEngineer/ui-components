@@ -134,6 +134,13 @@ Verification: `src/components/chat-transcript/chat-message.test.tsx`, `e2e/chat-
 Implementation: `src/components/chat-transcript/chat-message.tsx`, `src/components/chat-transcript/chat-message-parts.tsx`
 Verification: `src/components/chat-transcript/chat-message.test.tsx`, `e2e/chat-transcript.spec.ts`
 
+### UIC-CHAT-TRANSCRIPT-2.13 - Avatar, name and background
+
+`showAvatar={false}` shall leave out the avatar and publish `data-avatar-hidden`, so a stylesheet lines grouped messages up without the avatar's space; `showAuthorName={false}` shall leave out the author's name, the header keeping the time. Both default to `true`, and the message's name keeps the author either way (UIC-CHAT-TRANSCRIPT-2.4). `ChatMessage` shall publish `variant` as `data-variant`: `bubble` (the default), whose content the reference stylesheet draws on a background, or `plain`, whose content it draws as text on the page without a background, a plain `received` message taking the transcript's whole width.
+
+Implementation: `src/components/chat-transcript/chat-message.tsx`, `labs/reference/chat-transcript.css`
+Verification: `src/components/chat-transcript/chat-message.test.tsx`, `e2e/chat-display.spec.ts`
+
 ## UIC-CHAT-TRANSCRIPT-3 - Navigation and announcements
 
 ### UIC-CHAT-TRANSCRIPT-3.1 - One tab stop
@@ -322,6 +329,8 @@ Verification: `src/components/chat-transcript/chat-grouping.test.ts`
 | `ui-chat-message__actions`        | slot      |                                                  | The message's actions.                                                                          |
 | `data-origin`                     | attribute | `sent`, `received`, `system`                     | On a message: who it is from, relative to the reader.                                           |
 | `data-status`                     | attribute | `complete`, `streaming`, `error`, `cancelled`    | On a message: whether it is complete.                                                           |
+| `data-variant`                    | attribute | `bubble`, `plain`                                | On a message: its content on a background, or as plain text.                                    |
+| `data-avatar-hidden`              | state     | `true`                                           | On a message: the caller hides the author's avatar.                                             |
 | `ui-chat-message__quote`          | slot      |                                                  | The quoted message (also `ui-chat-quote`).                                                      |
 | `ui-chat-message__footer`         | slot      |                                                  | The edited and stopped markers and the delivery status, after the content.                      |
 | `ui-chat-message__edited`         | slot      |                                                  | The edited marker.                                                                              |

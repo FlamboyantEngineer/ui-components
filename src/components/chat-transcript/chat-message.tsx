@@ -24,6 +24,9 @@ export type ChatMessageStatus = 'complete' | 'streaming' | 'error' | 'cancelled'
 /** Where a message the reader sent has got to: on its way, sent, delivered, read, or failed. */
 export type ChatMessageDelivery = 'sending' | 'sent' | 'delivered' | 'read' | 'failed';
 
+/** How a message's content is drawn: in a `bubble` with a background, or `plain` text on the page. */
+export type ChatMessageVariant = 'bubble' | 'plain';
+
 /** A message's place in a run of messages by one author: alone, or first, middle or last. */
 export type ChatMessageGroupPosition = 'single' | 'first' | 'middle' | 'last';
 
@@ -36,6 +39,12 @@ export interface ChatMessageProps extends BaseProps, Pick<RelativeTimeProps, 'ge
   origin?: ChatMessageOrigin | undefined;
   /** The person or assistant who wrote it, drawn as an avatar (with their presence) and a name. */
   author?: ChatMessageAuthor | undefined;
+  /** Shows the author's avatar at the start of a group. Defaults to `true`. */
+  showAvatar?: boolean | undefined;
+  /** Shows the author's name at the start of a group. Defaults to `true`; the message's name keeps it. */
+  showAuthorName?: boolean | undefined;
+  /** Draws the content in a `bubble` (the default) or as `plain` text. */
+  variant?: ChatMessageVariant | undefined;
   /** When it was written: an ISO 8601 date and time, read relative to now. */
   time?: string | undefined;
   /** Defaults to `complete`. A streaming message is busy until it completes. */
@@ -84,6 +93,25 @@ function splitBodyProps({
   ] as const;
 }
 
+/** What the message shows: the author's avatar and name lead a group unless hidden, and its variant. */
+function resolveDisplay({
+  author,
+  groupPosition,
+  showAvatar = true,
+  showAuthorName = true,
+  variant = 'bubble',
+}: Pick<ChatMessageProps, 'author' | 'showAvatar' | 'showAuthorName' | 'variant'> & {
+  groupPosition: ChatMessageGroupPosition;
+}) {
+  const startsGroup = groupPosition === 'single' || groupPosition === 'first';
+  return {
+    avatar: startsGroup && showAvatar ? author : undefined,
+    showsName: startsGroup && showAuthorName,
+    variant,
+    avatarHidden: !showAvatar,
+  };
+}
+
 /** Whether the pointer is over the message and whether focus is inside it, for its hooks. */
 function useMessageInteraction() {
   const { hoverProps, isHovered } = useHover({});
@@ -94,13 +122,16 @@ function useMessageInteraction() {
 
 /**
  * One message in a conversation: an `<article>` named by its author and absolute time, with the
- * author's avatar and name at the start of a group, a relative time, the content, its quote,
- * markers, delivery, error, reactions, readers and actions. A streaming message is busy
- * (`aria-busy`) so assistive technology reads it once it completes.
+ * author's avatar and name at the start of a group (unless hidden), a relative time, the content
+ * in a bubble or plain, its quote, markers, delivery, error, reactions, readers and actions. A
+ * streaming message is busy (`aria-busy`) so assistive technology reads it once it completes.
  */
 export function ChatMessage({
   origin = 'received',
   author,
+  showAvatar,
+  showAuthorName,
+  variant,
   time,
   status = 'complete',
   groupPosition = 'single',
@@ -117,9 +148,10 @@ export function ChatMessage({
   const authorName = author ? getDisplayName(author.name, strings.unnamed) : undefined;
   const transcript = useTranscriptMessage({ id: rest.id, authorName, origin, status });
   const label = strings.chatMessageLabel(authorName, useAbsoluteTime(time, getNow));
-  const startsGroup = groupPosition === 'single' || groupPosition === 'first';
+  const display = resolveDisplay({ author, groupPosition, showAvatar, showAuthorName, variant });
   const [body, own] = splitBodyProps(rest);
   const data = {
+    variant: display.variant,
     origin,
     status,
     groupPosition,
@@ -127,6 +159,7 @@ export function ChatMessage({
     deleted: isDeleted,
     hovered: isHovered,
     focusWithin: isFocusWithin,
+    avatarHidden: display.avatarHidden,
   };
   return (
     <article
@@ -140,10 +173,10 @@ export function ChatMessage({
           {label}
         </span>
       ) : null}
-      {author && startsGroup ? <ChatMessageAvatar author={author} /> : null}
+      {display.avatar ? <ChatMessageAvatar author={display.avatar} /> : null}
       <div {...hooks.slot('body')}>
         <ChatMessageHeader
-          authorName={startsGroup ? authorName : undefined}
+          authorName={display.showsName ? authorName : undefined}
           time={time}
           getNow={getNow}
         />
