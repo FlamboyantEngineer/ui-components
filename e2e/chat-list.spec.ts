@@ -119,4 +119,26 @@ test.describe('Chat List lab', () => {
       cell(page, 'state=selected').getByRole('row', { name: /^Lisbon trip/ }),
     ).toHaveAttribute('aria-selected', 'true');
   });
+
+  test('UIC-CHAT-LIST-1.6 UIC-CHAT-LIST-1.7 keeps the search and New chat inside a narrow list', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat-list');
+    for (const state of ['loading', 'empty', 'custom-empty', 'selected']) {
+      const list = cell(page, `state=${state}`);
+      const bounds = await list.evaluate((element) => {
+        const box = element.getBoundingClientRect();
+        const header = element.querySelector('.ui-chat-list__header') as HTMLElement;
+        const parts = [...header.children].map((part) => part.getBoundingClientRect());
+        return {
+          right: box.right,
+          partsRight: Math.max(...parts.map((part) => part.right)),
+          overflows: header.scrollWidth > header.clientWidth,
+        };
+      });
+      expect(bounds.overflows, state).toBe(false);
+      expect(bounds.partsRight, state).toBeLessThanOrEqual(bounds.right);
+    }
+  });
 });
