@@ -222,6 +222,7 @@ describe('ChatMessageActions', () => {
     await user.click(within(dialog).getByRole('button', { name: 'Skip' }));
     expect(onFeedback).toHaveBeenLastCalledWith({ rating: 'up', reasons: [] });
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    await waitFor(() => expect(up).toHaveFocus());
     const down = screen.getByRole('button', { name: 'Bad response' });
     await user.click(down);
     await screen.findByRole('dialog', { name: 'What went wrong?' });

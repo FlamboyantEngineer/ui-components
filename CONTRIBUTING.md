@@ -5,7 +5,7 @@
 - `dev` is the integration branch. Work happens on short-lived branches cut from `dev` and merged back into `dev` by pull request.
 - `main` is always releasable. It is updated only from `dev`, through a reviewed release pull request once the full checks pass on `dev`.
 - Before a pull request merges, both check runs must pass:
-  - `npm run check`: lint, format, typecheck, the no-reference check, specs, labs, structure, unit tests, build, public types, labs build and package contents.
+  - `npm run check`: lint, format, typecheck, the no-reference check, specs, labs, structure, unit tests, build, public types, labs build and package contents. `scripts/check.mjs` runs them side by side in two stages and prints each one's output when it fails; lint, Prettier and the typecheck keep caches in `node_modules/.cache/`.
   - `npm run test:labs`: Playwright against the built labs (run `npm run build:labs` first).
 - Locally, run the checks that cover your change ([AGENTS.md](AGENTS.md#gates) lists them): `npm run test:changed` runs only the unit tests related to your changes since `origin/dev`, and each changed component's browser tests run by name.
 - Every pull request that changes the published package adds a changeset (`npx changeset`).

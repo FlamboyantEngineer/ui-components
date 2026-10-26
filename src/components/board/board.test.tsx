@@ -140,6 +140,8 @@ describe('Board', () => {
     const moved = within(grid('Text column')).getByRole('row', { name: 'Text card' });
     await waitFor(() => expect(moved).toHaveFocus());
     const handle = screen.getByRole('button', { name: 'Move column Text column' });
+    // A key press ends the card move's focus retries, as the person's next key would.
+    await user.keyboard('{Shift}');
     handle.focus();
     await user.keyboard('{Alt>}{ArrowLeft}{/Alt}');
     await waitFor(() => expect(handle).toHaveFocus());
