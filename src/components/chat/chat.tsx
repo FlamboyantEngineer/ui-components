@@ -33,6 +33,12 @@ import { useMessageContext, type ChatMessageOptions } from './use-message-contex
 export { ChatHeader } from './chat-header.js';
 export type { ChatHeaderProps } from './chat-header.js';
 export type { ChatMessageTextHandler } from './chat-composer.js';
+export type {
+  ChatComposerHandle,
+  ChatComposerInsertOptions,
+  ChatComposerInsertResult,
+  ChatDraft,
+} from './chat-composer-handle.js';
 export type { ChatThinkingUntil } from './chat-model.js';
 
 export interface ChatProps

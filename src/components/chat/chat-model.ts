@@ -90,7 +90,9 @@ export function toDisplayTokens(tokens: readonly ChatTextToken[]): ChatTextToken
 }
 
 /** Tokens as the composer edits them, by their bare labels. */
-export function toComposerTokens(tokens: readonly ChatTextToken[]): ChatTextToken[] {
+export function toComposerTokens<T extends Pick<ChatTextToken, 'kind' | 'label'>>(
+  tokens: readonly T[],
+): T[] {
   return tokens.map((token) => {
     const trigger = triggers[token.kind];
     return trigger && token.label.startsWith(trigger)

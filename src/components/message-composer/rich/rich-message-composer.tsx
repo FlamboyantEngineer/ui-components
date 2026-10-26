@@ -12,6 +12,9 @@ import type { MessageComposerSharedProps } from '../message-composer.js';
 import { useComposerState, type ComposerFormat } from '../use-composer-state.js';
 import type { PillAttributes } from './composer-schema.js';
 import { RichComposerEditor, type RichEditorHandle } from './rich-editor.js';
+import { useComposerHandle, type MessageComposerHandle } from './use-composer-handle.js';
+
+export type { MessageComposerHandle, MessageComposerInsertResult } from './use-composer-handle.js';
 
 /** A person `@` can mention: shown with their avatar in the list, then as a pill. */
 export interface MessageComposerMention extends Pick<
@@ -58,6 +61,8 @@ export interface RichMessageComposerProps extends MessageComposerSharedProps {
   onBlur?: ((event: FocusEvent<HTMLDivElement>) => void) | undefined;
   /** The editable text box. */
   ref?: Ref<HTMLDivElement> | undefined;
+  /** Receives `insertToken` and `getDraft`, for the host's own controls outside the composer. */
+  handleRef?: Ref<MessageComposerHandle> | undefined;
 }
 
 const richFormat: ComposerFormat<MessageComposerMessage> = {
@@ -90,6 +95,7 @@ export function RichMessageComposer(props: RichMessageComposerProps) {
   const insertText = useCallback((text: string) => handleRef.current?.insertText(text), []);
   const insertPill = useCallback((pill: PillAttributes) => handleRef.current?.insertPill(pill), []);
   const focusInput = useCallback(() => handleRef.current?.focus(), []);
+  useComposerHandle({ handleRef: props.handleRef, editorRef: handleRef, state, isDisabled });
   return (
     <ComposerFrame
       props={props}

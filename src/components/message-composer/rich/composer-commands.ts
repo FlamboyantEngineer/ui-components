@@ -8,7 +8,7 @@ import {
   newlineInCode,
   splitBlock,
 } from 'prosemirror-commands';
-import { history, redo, undo } from 'prosemirror-history';
+import { closeHistory, history, redo, undo } from 'prosemirror-history';
 import { inputRules, textblockTypeInputRule, undoInputRule } from 'prosemirror-inputrules';
 import { keymap } from 'prosemirror-keymap';
 import { Fragment, Slice, type Node, type Schema } from 'prosemirror-model';
@@ -81,6 +81,43 @@ export function insertPillAtSelection(view: EditorView, pill: PillAttributes): v
   }
   const text = `${tokenTriggers[pill.kind]}${pill.label} `;
   view.dispatch(state.tr.insertText(text).scrollIntoView());
+}
+
+/** Whether the text right before `pos` in its line is a character other than a space. */
+function followsWord(state: EditorState, pos: number): boolean {
+  const $pos = state.doc.resolve(pos);
+  if ($pos.parentOffset === 0) return false;
+  return !/\s/.test(state.doc.textBetween(pos - 1, pos, '\n', '\n'));
+}
+
+/**
+ * Puts a pill at the caret, or after the selection, keeping the selected text: a space separates
+ * it from a word before it, and one follows unless a space does already. In a code block, where
+ * pills do not occur, the pill goes on a new line after the block. The insertion is one step of
+ * the undo history of its own, and the caret ends after it.
+ */
+export function insertPillAtCaret(view: EditorView, pill: PillAttributes): void {
+  const { state } = view;
+  const { pill: pillType, paragraph } = state.schema.nodes;
+  if (!pillType || !paragraph) return;
+  const node = pillType.create(pill);
+  const space = state.schema.text(' ');
+  const $to = Selection.near(state.doc.resolve(state.selection.to), -1).$to;
+  const tr = closeHistory(state.tr);
+  if ($to.parent.type.spec.code) {
+    const at = $to.after();
+    tr.insert(at, paragraph.create(null, [node, space]));
+    tr.setSelection(TextSelection.create(tr.doc, at + 1 + node.nodeSize + 1));
+  } else {
+    const at = $to.pos;
+    const hasSpaceAfter = state.doc.textBetween(at, Math.min(at + 1, $to.end()), '\n') === ' ';
+    const before = followsWord(state, at) ? [space] : [];
+    const content = [...before, node, ...(hasSpaceAfter ? [] : [space])];
+    tr.insert(at, content);
+    const caret = at + before.length + node.nodeSize + 1;
+    tr.setSelection(TextSelection.create(tr.doc, caret));
+  }
+  view.dispatch(tr.scrollIntoView());
 }
 
 /**

@@ -178,6 +178,13 @@ With `getReference`, `Chat` shall draw the record chips of reference tokens with
 Implementation: `src/components/chat/chat-composer.tsx`, `src/components/chat/use-message-context.ts`, `src/components/chat/chat-model.ts`
 Verification: `src/components/chat/chat-composer.test.tsx`, `src/components/chat/chat-model.test.ts`, `e2e/chat.spec.ts`
 
+### UIC-CHAT-3.11 - Inserting from outside the chat
+
+`composerHandleRef` shall receive a `ChatComposerHandle` bound to the conversation the chat shows, so a host's own control, such as a "+" button beside a record in a sidebar, adds a token to that conversation's draft without replacing the composer. `insertToken({ kind, id, label, recordType? }, { conversationId })` takes the token as `onSend` sends it, such as a record reference ([UIC-CHAT-3.10](#uic-chat-310---record-references)), and inserts it as [UIC-MESSAGE-COMPOSER-4.10](MESSAGE-COMPOSER.md#uic-message-composer-410---inserting-from-outside-the-composer) says, keeping the text, the other pills and the reply's quote, then moves focus to the composer as the chat's own commands do. It returns `inserted`, or changes nothing and returns why: `other-conversation` when the chat no longer shows the conversation the handle was made for or the one `conversationId` names (a delayed callback never reaches another conversation's draft), `disabled`, `editing` while a message or a queued message is edited, `submitting` while a sent message waits for acceptance ([UIC-CHAT-3.7](#uic-chat-37---accepting-a-message)), or `unavailable` without `onSend`. While a reply runs it inserts. `getDraft()` returns the shown conversation's draft, `{ conversationId, text, tokens }`, and `onDraftChange` receives it when it loads (on mount and on each change of `conversationId`) and after each edit, so the host can skip a token already in the draft and see when one is removed; nothing is deduplicated across conversations or the message history.
+
+Implementation: `src/components/chat/chat-composer-handle.ts`, `src/components/chat/chat-composer.tsx`
+Verification: `src/components/chat/chat-composer-handle.test.tsx`, `e2e/chat-host.spec.ts`
+
 ## UIC-CHAT-4 - Activity and receipts
 
 ### UIC-CHAT-4.1 - Typing
