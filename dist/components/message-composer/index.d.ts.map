@@ -1,0 +1,1 @@
+{"version":3,"file":"index.d.ts","sourceRoot":"","sources":["../../../src/components/message-composer/index.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,eAAe,EAAE,MAAM,uBAAuB,CAAC;AACxD,YAAY,EAAE,oBAAoB,EAAE,6BAA6B,EAAE,MAAM,uBAAuB,CAAC;AACjG,YAAY,EACV,sBAAsB,EACtB,mBAAmB,EACnB,uBAAuB,EACvB,0BAA0B,GAC3B,MAAM,oBAAoB,CAAC;AAC5B,YAAY,EAAE,oBAAoB,EAAE,wBAAwB,EAAE,MAAM,uBAAuB,CAAC"}

@@ -1,0 +1,2 @@
+export declare const textDiffHooks: import("../../core/hooks.js").ComponentHooks<"number" | "header" | "summary" | "table" | "line" | "marker" | "text" | "expand" | "count" | "previous" | "next" | "navigation" | "content" | "pane" | "panes" | "word" | "fold" | "filler" | "widget">;
+//# sourceMappingURL=text-diff-hooks.d.ts.map

@@ -1,0 +1,1 @@
+import{a as o}from"./chunk-B5FIXUGC.js";import{b as t}from"./chunk-6DHFEWGX.js";var r=t(o(),1);function n(e){let i=(0,r.useId)().replace(/[^a-z0-9]/gi,"");return`application/x-ui-${e}-${i}`.toLowerCase()}export{n as a};

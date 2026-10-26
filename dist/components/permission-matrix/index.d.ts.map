@@ -1,0 +1,1 @@
+{"version":3,"file":"index.d.ts","sourceRoot":"","sources":["../../../src/components/permission-matrix/index.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,gBAAgB,EAAE,MAAM,wBAAwB,CAAC;AAC1D,YAAY,EACV,qBAAqB,EACrB,0BAA0B,EAC1B,qBAAqB,EACrB,oBAAoB,GACrB,MAAM,wBAAwB,CAAC;AAChC,OAAO,EAAE,qBAAqB,EAAE,MAAM,wBAAwB,CAAC;AAC/D,YAAY,EAAE,sBAAsB,EAAE,qBAAqB,EAAE,MAAM,wBAAwB,CAAC"}

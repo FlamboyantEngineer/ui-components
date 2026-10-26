@@ -1,0 +1,1 @@
+import{a,c as i}from"./chunk-2BNT62D6.js";import{J as o}from"./chunk-B5FIXUGC.js";function s(t,r){let n=a(t);if(n)return o(n,r).toDate().getTime();let e=i(t,r);return e&&"timeZone"in e?e.toDate().getTime():Number.NaN}export{s as a};

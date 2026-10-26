@@ -1,0 +1,1 @@
+function i(t){return typeof t=="number"&&Number.isFinite(t)&&t>0?t:0}function c(t,l,b){let s=0,n=0,o=t.map(e=>{let r=i(l(e));return s+=r,n=Math.max(n,r),{item:e,value:r,share:0}}),u=Math.max(i(b),s),m=1,a=u;Number.isFinite(u)||(m=n,a=o.reduce((e,{value:r})=>e+r/m,0));for(let e of o)e.share=a>0?e.value/m/a:0;return{amounts:o,total:u}}export{c as a};

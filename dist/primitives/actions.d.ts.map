@@ -1,0 +1,1 @@
+{"version":3,"file":"actions.d.ts","sourceRoot":"","sources":["../../src/primitives/actions.ts"],"names":[],"mappings":"AAEA,OAAO,EACL,MAAM,EACN,aAAa,EACb,WAAW,EACX,KAAK,EACL,QAAQ,EACR,eAAe,EACf,IAAI,EACJ,SAAS,EACT,YAAY,EACZ,iBAAiB,EACjB,OAAO,GACR,MAAM,uBAAuB,CAAC;AAC/B,YAAY,EAAE,WAAW,EAAE,aAAa,EAAE,SAAS,EAAE,UAAU,EAAE,MAAM,uBAAuB,CAAC;AAC/F,OAAO,EAAE,QAAQ,EAAE,MAAM,qBAAqB,CAAC"}

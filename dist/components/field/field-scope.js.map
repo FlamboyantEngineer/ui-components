@@ -1,0 +1,1 @@
+{"version":3,"file":"field-scope.js","sourceRoot":"","sources":["../../../src/components/field/field-scope.ts"],"names":[],"mappings":"AAAA,iEAAiE;AAEjE,OAAO,EAAE,aAAa,EAAE,UAAU,EAAE,MAAM,OAAO,CAAC;AAoDlD,qEAAqE;AACrE,MAAM,CAAC,MAAM,iBAAiB,GAAG,aAAa,CAAa,EAAE,CAAC,CAAC;AAE/D,MAAM,UAAU,aAAa;IAC3B,OAAO,UAAU,CAAC,iBAAiB,CAAC,CAAC;AACvC,CAAC"}

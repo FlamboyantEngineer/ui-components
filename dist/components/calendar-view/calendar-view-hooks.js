@@ -1,0 +1,29 @@
+import { createHooks } from '../../core/hooks.js';
+/** The hook classes every module of the calendar view writes (specs/CALENDAR-VIEW.md). */
+export const calendarViewHooks = createHooks('calendar-view', [
+    'toolbar',
+    'today',
+    'previous',
+    'next',
+    'title',
+    'views',
+    'grid',
+    'weekdays',
+    'weekday',
+    'week',
+    'gutter',
+    'hour',
+    'day',
+    'day-number',
+    'day-content',
+    'events',
+    'all-day',
+    'timed',
+    'event',
+    'event-time',
+    'event-title',
+    'spacer',
+    'more',
+    'more-list',
+]);
+//# sourceMappingURL=calendar-view-hooks.js.map

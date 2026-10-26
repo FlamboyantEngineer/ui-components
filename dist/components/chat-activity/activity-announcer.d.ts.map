@@ -1,0 +1,1 @@
+{"version":3,"file":"activity-announcer.d.ts","sourceRoot":"","sources":["../../../src/components/chat-activity/activity-announcer.tsx"],"names":[],"mappings":"AAMA,MAAM,WAAW,sBAAsB;IACrC,sEAAsE;IACtE,OAAO,EAAE,MAAM,CAAC;IAChB,yCAAyC;IACzC,UAAU,CAAC,EAAE,CAAC,MAAM,IAAI,CAAC,GAAG,SAAS,CAAC;CACvC;AA4CD;;;;GAIG;AACH,wBAAgB,iBAAiB,CAAC,KAAK,EAAE,sBAAsB,+BAO9D"}

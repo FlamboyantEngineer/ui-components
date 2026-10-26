@@ -1,0 +1,82 @@
+import { useLayoutEffect, useState } from 'react';
+/** One emoji each Emoji version introduced, newest first. */
+const versionProbes = [
+    [17, '\u{1FAEA}'],
+    [16, '\u{1FAE9}'],
+    [15.1, '\u{1F642}‍↔️'],
+    [15, '\u{1FAE8}'],
+    [14, '\u{1FAE0}'],
+    [13.1, '\u{1F636}‍\u{1F32B}️'],
+    [13, '\u{1F972}'],
+    [12.1, '\u{1F9D1}‍\u{1F9B0}'],
+    [12, '\u{1F971}'],
+    [11, '\u{1F970}'],
+    [5, '\u{1F929}'],
+    [4, '\u{1F471}‍♀️'],
+    [3, '\u{1F923}'],
+    [2, '\u{1F5E8}️'],
+    [1, '\u{1F600}'],
+];
+const flagProbe = '\u{1F1EB}\u{1F1F7}';
+const probeSize = 16;
+const unknownSupport = { version: undefined, countryFlags: true };
+const measured = new Map();
+function drawProbe(context, glyph, colour) {
+    context.clearRect(0, 0, probeSize * 2, probeSize);
+    context.fillStyle = colour;
+    context.fillText(glyph, 0, 0);
+    return context.getImageData(0, 0, probeSize * 2, probeSize).data;
+}
+/**
+ * Whether `glyph` draws as one colour emoji: something is drawn, the fill colour does not change it
+ * (a missing glyph or plain letters take the fill colour), and it is no wider than one emoji (an
+ * unknown sequence draws as its parts side by side).
+ */
+function isDrawn(context, glyph, emojiWidth) {
+    const red = drawProbe(context, glyph, '#ff0000');
+    const blue = drawProbe(context, glyph, '#0000ff');
+    if (!red.some((value) => value > 0))
+        return false;
+    if (red.some((value, index) => value !== blue[index]))
+        return false;
+    return context.measureText(glyph).width <= emojiWidth * 1.5;
+}
+function measureSupport(fontFamily) {
+    const canvas = new OffscreenCanvas(probeSize * 2, probeSize);
+    const context = canvas.getContext('2d', { willReadFrequently: true });
+    if (!context)
+        return unknownSupport;
+    context.font = `${probeSize}px ${fontFamily || 'sans-serif'}`;
+    context.textBaseline = 'top';
+    const emojiWidth = context.measureText('\u{1F600}').width;
+    const newest = versionProbes.find(([, glyph]) => isDrawn(context, glyph, emojiWidth));
+    // Without even the oldest emoji there is no colour emoji font to judge by.
+    if (!newest)
+        return unknownSupport;
+    return { version: newest[0], countryFlags: isDrawn(context, flagProbe, emojiWidth) };
+}
+/** What the platform draws in a font, measured once per font family on a canvas. */
+export function detectEmojiSupport(fontFamily) {
+    if (typeof OffscreenCanvas === 'undefined')
+        return unknownSupport;
+    let support = measured.get(fontFamily);
+    if (!support) {
+        support = measureSupport(fontFamily);
+        measured.set(fontFamily, support);
+    }
+    return support;
+}
+/**
+ * What the platform draws in the font of the element in `ref`, measured before the first paint, or
+ * `null` until then. Without `isEnabled` nothing is measured and nothing is left out.
+ */
+export function useEmojiSupport(ref, isEnabled) {
+    const [support, setSupport] = useState(null);
+    useLayoutEffect(() => {
+        if (!isEnabled)
+            return;
+        setSupport(detectEmojiSupport(ref.current ? getComputedStyle(ref.current).fontFamily : ''));
+    }, [isEnabled, ref]);
+    return isEnabled ? support : unknownSupport;
+}
+//# sourceMappingURL=emoji-support.js.map

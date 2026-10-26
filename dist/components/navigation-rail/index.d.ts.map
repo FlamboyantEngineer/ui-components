@@ -1,0 +1,1 @@
+{"version":3,"file":"index.d.ts","sourceRoot":"","sources":["../../../src/components/navigation-rail/index.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,cAAc,EAAE,MAAM,sBAAsB,CAAC;AACtD,YAAY,EAAE,mBAAmB,EAAE,MAAM,sBAAsB,CAAC;AAChE,OAAO,EACL,mBAAmB,EACnB,kBAAkB,EAClB,qBAAqB,GACtB,MAAM,4BAA4B,CAAC;AACpC,YAAY,EACV,wBAAwB,EACxB,uBAAuB,EACvB,0BAA0B,GAC3B,MAAM,4BAA4B,CAAC"}

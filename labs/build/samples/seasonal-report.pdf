@@ -1,0 +1,186 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R /Outlines 12 0 R /Dests << /markets [10 0 R /XYZ null 548 null] /varieties [8 0 R /XYZ null 548 null] >> >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [6 0 R 8 0 R 10 0 R] /Count 3 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>
+endobj
+5 0 obj
+<< /Length 509 >>
+stream
+BT
+/F2 20 Tf
+48 520 Td
+(Seasonal Report) Tj
+ET
+BT
+/F1 12 Tf
+48 480 Td
+(Orchards across the valley had a strong year.) Tj
+ET
+BT
+/F1 12 Tf
+48 458 Td
+(The apple harvest began in early September) Tj
+ET
+BT
+/F1 12 Tf
+48 436 Td
+(and the pear harvest followed two weeks later.) Tj
+ET
+BT
+/F1 12 Tf
+48 414 Td
+(Rain in spring helped the young trees grow.) Tj
+ET
+BT
+/F1 12 Tf
+48 392 Td
+(See the markets on page 3.) Tj
+ET
+BT
+/F1 12 Tf
+48 370 Td
+(Visit example.com for more.) Tj
+ET
+BT
+/F1 9 Tf
+48 40 Td
+(Page 1 of 3) Tj
+ET
+endstream
+endobj
+6 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 420 595] /Contents 5 0 R /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Annots [18 0 R 19 0 R] >>
+endobj
+7 0 obj
+<< /Length 360 >>
+stream
+BT
+/F2 20 Tf
+48 520 Td
+(Varieties) Tj
+ET
+BT
+/F1 12 Tf
+48 480 Td
+(Apple: crisp, sweet and easy to store.) Tj
+ET
+BT
+/F1 12 Tf
+48 458 Td
+(Pear: soft, with a short harvest window.) Tj
+ET
+BT
+/F1 12 Tf
+48 436 Td
+(Plum: dark skin and a tart finish.) Tj
+ET
+BT
+/F1 12 Tf
+48 414 Td
+(Cherry: the first fruit of the season.) Tj
+ET
+BT
+/F1 9 Tf
+48 40 Td
+(Page 2 of 3) Tj
+ET
+endstream
+endobj
+8 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 420 595] /Contents 7 0 R /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> >>
+endobj
+9 0 obj
+<< /Length 299 >>
+stream
+BT
+/F2 20 Tf
+48 520 Td
+(Markets) Tj
+ET
+BT
+/F1 12 Tf
+48 480 Td
+(Fruit was sold in Lisbon, Oslo and Kyoto.) Tj
+ET
+BT
+/F1 12 Tf
+48 458 Td
+(Prices stayed steady through the autumn.) Tj
+ET
+BT
+/F1 12 Tf
+48 436 Td
+(Next year the harvest is expected to grow.) Tj
+ET
+BT
+/F1 9 Tf
+48 40 Td
+(Page 3 of 3) Tj
+ET
+endstream
+endobj
+10 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 420 595] /Contents 9 0 R /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> >>
+endobj
+11 0 obj
+<< /Title (Seasonal Report) /Producer (Lab sample) >>
+endobj
+12 0 obj
+<< /Type /Outlines /First 13 0 R /Last 15 0 R /Count 5 >>
+endobj
+13 0 obj
+<< /Title (Seasonal Report) /Parent 12 0 R /Next 14 0 R /Dest [6 0 R /XYZ null 595 null] >>
+endobj
+14 0 obj
+<< /Title (Varieties) /Parent 12 0 R /Prev 13 0 R /Next 15 0 R /First 16 0 R /Last 17 0 R /Count 2 /Dest /varieties >>
+endobj
+15 0 obj
+<< /Title (Markets) /Parent 12 0 R /Prev 14 0 R /Dest /markets >>
+endobj
+16 0 obj
+<< /Title (Apple) /Parent 14 0 R /Next 17 0 R /Dest [8 0 R /XYZ null 494 null] >>
+endobj
+17 0 obj
+<< /Title (Plum) /Parent 14 0 R /Prev 16 0 R /Dest [8 0 R /XYZ null 450 null] >>
+endobj
+18 0 obj
+<< /Type /Annot /Subtype /Link /Rect [46 388 202 404] /Border [0 0 0] /Dest /markets >>
+endobj
+19 0 obj
+<< /Type /Annot /Subtype /Link /Rect [46 366 205 382] /Border [0 0 0] /A << /S /URI /URI (https://example.com/) >> >>
+endobj
+xref
+0 20
+0000000000 65535 f 
+0000000009 00000 n 
+0000000163 00000 n 
+0000000233 00000 n 
+0000000330 00000 n 
+0000000432 00000 n 
+0000000991 00000 n 
+0000001151 00000 n 
+0000001561 00000 n 
+0000001697 00000 n 
+0000002046 00000 n 
+0000002183 00000 n 
+0000002253 00000 n 
+0000002327 00000 n 
+0000002435 00000 n 
+0000002570 00000 n 
+0000002652 00000 n 
+0000002750 00000 n 
+0000002847 00000 n 
+0000002951 00000 n 
+trailer
+<< /Size 20 /Root 1 0 R /Info 11 0 R >>
+startxref
+3085
+%%EOF

@@ -1,0 +1,1 @@
+{"version":3,"file":"use-forwarded-ref.d.ts","sourceRoot":"","sources":["../../src/utils/use-forwarded-ref.ts"],"names":[],"mappings":"AAAA,OAAO,EAAmB,KAAK,GAAG,EAAE,KAAK,WAAW,EAAE,KAAK,SAAS,EAAE,MAAM,OAAO,CAAC;AAGpF;;;GAGG;AACH,wBAAgB,eAAe,CAAC,CAAC,EAAE,GAAG,EAAE,GAAG,CAAC,CAAC,CAAC,GAAG,SAAS,GAAG,CAAC,SAAS,CAAC,CAAC,GAAG,IAAI,CAAC,EAAE,WAAW,CAAC,CAAC,CAAC,CAAC,CAIjG"}

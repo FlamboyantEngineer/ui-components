@@ -1,0 +1,3 @@
+/** The viewer's hook classes, shared by the modules that draw its parts. */
+export declare const pdfViewerHooks: import("../../core/hooks.js").ComponentHooks<"canvas" | "sidebar" | "actions" | "page" | "pages" | "outline" | "password" | "thumbnails" | "match" | "group" | "toolbar" | "overlay" | "thumbnail" | "stage" | "leading-actions" | "page-field" | "page-label" | "page-input" | "page-total" | "thumbnail-canvas" | "thumbnail-label" | "scroller" | "text-layer" | "annotation-layer">;
+//# sourceMappingURL=styling-hooks.d.ts.map

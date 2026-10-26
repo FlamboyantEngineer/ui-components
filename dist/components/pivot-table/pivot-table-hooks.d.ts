@@ -1,0 +1,2 @@
+export declare const pivotTableHooks: import("../../core/hooks.js").ComponentHooks<"key" | "value" | "table" | "field" | "aggregate" | "chooser" | "field-label">;
+//# sourceMappingURL=pivot-table-hooks.d.ts.map

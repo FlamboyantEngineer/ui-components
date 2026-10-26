@@ -1,0 +1,19 @@
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { createHooks } from '../../core/hooks.js';
+import { useUiStrings } from '../../core/provider.js';
+import { ActivityAnnouncer } from './activity-announcer.js';
+const hooks = createHooks('chat-status-line', ['spinner', 'icon', 'text']);
+/**
+ * One line saying what an assistant is doing while it works ("Thinking…" unless told otherwise),
+ * with a decorative busy indicator or the caller's icon; while it writes, the indicator alone. Its
+ * text is announced politely as it changes, at most once every two seconds; the visible text stays
+ * out of the accessibility tree so the reader hears it once. The line is gone once the work ends.
+ */
+export function ChatStatusLine({ text, icon, activity = 'thinking', isRunning = true, className, ...rest }) {
+    const strings = useUiStrings();
+    if (!isRunning)
+        return null;
+    const label = activity === 'writing' ? '' : text || strings.chatThinking;
+    return (_jsxs("div", { ...rest, ...hooks.root({ className, props: rest, data: { activity } }), children: [icon === undefined ? (_jsx("span", { ...hooks.slot('spinner'), "aria-hidden": "true" })) : (_jsx("span", { ...hooks.slot('icon'), "aria-hidden": "true", children: icon })), label ? (_jsx("span", { ...hooks.slot('text'), "aria-hidden": "true", children: label })) : null, _jsx(ActivityAnnouncer, { message: label })] }));
+}
+//# sourceMappingURL=chat-status-line.js.map

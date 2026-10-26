@@ -1,0 +1,1 @@
+function e(u){let m={count:0,sum:0,min:1/0,max:-1/0};for(let n of u)typeof n!="number"||!Number.isFinite(n)||(m.count+=1,m.sum+=n,m.min=Math.min(m.min,n),m.max=Math.max(m.max,n));return m}export{e as a};

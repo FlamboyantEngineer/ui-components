@@ -1,0 +1,1 @@
+function s(m,a,p){let e=[{items:m.entries(),mapped:[]}];for(;e.length>0;){let n=e.at(-1),t=n.items.next();if(!t.done){let[d,i]=t.value;e.push({items:(a(i)??[]).entries(),mapped:[],item:i,index:d});continue}if(e.pop(),e.length===0)return n.mapped;let r=p(n.item,n.mapped,n.index);r!==null&&e.at(-1).mapped.push(r)}return[]}export{s as a};

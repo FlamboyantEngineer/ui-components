@@ -1,0 +1,3 @@
+/** The hook classes every module of the calendar view writes (specs/CALENDAR-VIEW.md). */
+export declare const calendarViewHooks: import("../../core/hooks.js").ComponentHooks<"title" | "more" | "week" | "hour" | "day" | "previous" | "next" | "today" | "views" | "grid" | "toolbar" | "spacer" | "gutter" | "event" | "weekdays" | "weekday" | "day-number" | "day-content" | "events" | "all-day" | "timed" | "event-time" | "event-title" | "more-list">;
+//# sourceMappingURL=calendar-view-hooks.d.ts.map

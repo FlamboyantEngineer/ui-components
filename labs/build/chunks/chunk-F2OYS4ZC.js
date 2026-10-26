@@ -1,0 +1,1 @@
+import{a as s}from"./chunk-B5FIXUGC.js";import{b as n}from"./chunk-6DHFEWGX.js";var u=n(s(),1);function l(e){let r=e,o=new Set;return{get:()=>r,set:t=>{if(!Object.is(t,r)){r=t;for(let i of o)i()}},subscribe:t=>(o.add(t),()=>o.delete(t))}}function a(e){return(0,u.useSyncExternalStore)(e.subscribe,e.get,e.get)}export{l as a,a as b};

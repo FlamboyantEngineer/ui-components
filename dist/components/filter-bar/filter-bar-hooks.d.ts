@@ -1,0 +1,2 @@
+export declare const filterBarHooks: import("../../core/hooks.js").ComponentHooks<"value" | "search" | "operator" | "clear" | "add" | "list" | "chip" | "chip-remove" | "editor" | "chip-button" | "chip-field" | "chip-operator" | "chip-value">;
+//# sourceMappingURL=filter-bar-hooks.d.ts.map

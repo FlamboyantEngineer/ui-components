@@ -1,0 +1,1 @@
+{"version":3,"file":"diagram-minimap.d.ts","sourceRoot":"","sources":["../../../src/components/diagram-canvas/diagram-minimap.tsx"],"names":[],"mappings":"AAMA,OAAO,KAAK,EAAE,iBAAiB,EAAE,MAAM,6BAA6B,CAAC;AAErE,MAAM,WAAW,mBAAmB;IAClC,UAAU,EAAE,iBAAiB,CAAC;CAC/B;AAiBD;;;;GAIG;AACH,wBAAgB,cAAc,CAAC,EAAE,UAAU,EAAE,EAAE,mBAAmB,sCA4DjE"}

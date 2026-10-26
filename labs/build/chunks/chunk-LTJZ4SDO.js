@@ -1,0 +1,1 @@
+function i(t,e={}){let n=(typeof t=="string"?t.split("/"):t??[]).map(r=>r.trim()).filter(Boolean);return n.length===0?e.emptyLabel??(e.rooted?"/":""):`${e.rooted?"/":""}${n.join("/")}`}export{i as a};

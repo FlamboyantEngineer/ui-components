@@ -1,0 +1,1 @@
+{"version":3,"file":"use-drag-type.js","sourceRoot":"","sources":["../../src/utils/use-drag-type.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,KAAK,EAAE,MAAM,OAAO,CAAC;AAE9B,0FAA0F;AAC1F,MAAM,UAAU,WAAW,CAAC,KAAa;IACvC,MAAM,EAAE,GAAG,KAAK,EAAE,CAAC,OAAO,CAAC,aAAa,EAAE,EAAE,CAAC,CAAC;IAC9C,OAAO,oBAAoB,KAAK,IAAI,EAAE,EAAE,CAAC,WAAW,EAAE,CAAC;AACzD,CAAC"}

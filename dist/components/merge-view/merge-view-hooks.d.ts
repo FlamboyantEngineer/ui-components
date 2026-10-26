@@ -1,0 +1,2 @@
+export declare const mergeViewHooks: import("../../core/hooks.js").ComponentHooks<"number" | "header" | "table" | "title" | "line" | "marker" | "text" | "status" | "previous" | "next" | "actions" | "navigation" | "block" | "content" | "blocks" | "pane" | "side" | "sides" | "editor" | "filler" | "resolution" | "chunk" | "conflict-header" | "conflict-title" | "take">;
+//# sourceMappingURL=merge-view-hooks.d.ts.map

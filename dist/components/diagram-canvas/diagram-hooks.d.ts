@@ -1,0 +1,2 @@
+export declare const diagramHooks: import("../../core/hooks.js").ComponentHooks<"status" | "node" | "empty" | "zoom" | "outline" | "marquee" | "toolbar" | "content" | "edges" | "edge" | "fit" | "viewport" | "view-switch" | "palette" | "palette-item" | "edge-path" | "edge-arrow" | "edge-hit" | "edge-label" | "connection-preview" | "node-label" | "port" | "minimap" | "minimap-node" | "minimap-viewport" | "outline-item" | "outline-label" | "outline-links" | "outline-links-label" | "outline-link" | "outline-remove">;
+//# sourceMappingURL=diagram-hooks.d.ts.map

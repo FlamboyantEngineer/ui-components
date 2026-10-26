@@ -1,0 +1,3 @@
+/** The hook classes every module of the timeline writes (specs/TIMELINE.md). */
+export declare const timelineHooks: import("../../core/hooks.js").ComponentHooks<"body" | "canvas" | "header" | "progress" | "table" | "toggle" | "row" | "today" | "list" | "item" | "viewport" | "handle" | "item-label" | "connector" | "corner" | "scale-row" | "scale-cell" | "row-label" | "row-name" | "gridline" | "connectors">;
+//# sourceMappingURL=timeline-hooks.d.ts.map

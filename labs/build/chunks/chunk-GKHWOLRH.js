@@ -1,0 +1,1 @@
+import{a as s}from"./chunk-B5FIXUGC.js";import{b as l}from"./chunk-6DHFEWGX.js";var e=l(s(),1);function m(t,n){let[u,r]=(0,e.useState)(!1);return(0,e.useLayoutEffect)(()=>{if(r(!1),!t)return;let a=n.current?.ownerDocument.defaultView??window,o=!0,f=a.requestAnimationFrame(()=>{o&&r(!0)});return()=>{o=!1,a.cancelAnimationFrame(f)}},[t,n]),t&&u}export{m as a};

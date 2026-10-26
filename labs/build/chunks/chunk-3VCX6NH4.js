@@ -1,0 +1,1 @@
+function*i(o,l){let e=[o[Symbol.iterator]()];for(;e.length>0;){let n=e.at(-1).next();if(n.done){e.pop();continue}yield n.value;let t=l(n.value);t?.length&&e.push(t[Symbol.iterator]())}}export{i as a};

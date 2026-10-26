@@ -1,0 +1,3 @@
+/** The hook classes every module of the board writes (specs/BOARD.md). */
+export declare const boardHooks: import("../../core/hooks.js").ComponentHooks<"column" | "columns" | "empty" | "add" | "cell" | "card" | "drop-indicator" | "cells" | "column-handle" | "column-toggle" | "column-title" | "column-count" | "column-actions" | "lane" | "lane-header" | "lane-toggle" | "lane-title" | "lane-count" | "cards" | "card-handle" | "card-content">;
+//# sourceMappingURL=board-hooks.d.ts.map

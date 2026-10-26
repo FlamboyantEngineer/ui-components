@@ -1,0 +1,1 @@
+{"version":3,"file":"message-command-overlays.d.ts","sourceRoot":"","sources":["../../../src/components/chat-message-actions/message-command-overlays.tsx"],"names":[],"mappings":"AAOA,OAAO,KAAK,EAAE,eAAe,EAAsB,MAAM,uBAAuB,CAAC;AAYjF;;;GAGG;AACH,wBAAgB,sBAAsB,CAAC,EAAE,KAAK,EAAE,EAAE;IAAE,KAAK,EAAE,eAAe,CAAA;CAAE,+BAmE3E"}

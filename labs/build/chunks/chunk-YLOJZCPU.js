@@ -1,0 +1,1 @@
+import{a as s}from"./chunk-B5FIXUGC.js";import{b as r}from"./chunk-6DHFEWGX.js";var o=r(s(),1);function v(t,e){let[u,a]=(0,o.useState)({owner:t,value:e});return[u.owner===t?u.value:e,n=>a({owner:t,value:n})]}export{v as a};

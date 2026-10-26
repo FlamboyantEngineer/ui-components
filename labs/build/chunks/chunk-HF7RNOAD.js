@@ -1,0 +1,1 @@
+var s=Object.freeze(["http","https","mailto","tel"]),a=/^([a-z][a-z0-9+.-]*):/i;function c(o,n=s){let r=[...o].filter(e=>e>" "&&e!=="\x7F").join(""),t=a.exec(r)?.[1]?.toLowerCase();return t===void 0||n.some(e=>e.toLowerCase()===t)}export{s as a,c as b};

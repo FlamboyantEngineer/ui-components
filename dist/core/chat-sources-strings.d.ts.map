@@ -1,0 +1,1 @@
+{"version":3,"file":"chat-sources-strings.d.ts","sourceRoot":"","sources":["../../src/core/chat-sources-strings.ts"],"names":[],"mappings":"AAAA,6CAA6C;AAC7C,MAAM,WAAW,kBAAkB;IACjC,+CAA+C;IAC/C,gBAAgB,EAAE,CAAC,KAAK,EAAE,MAAM,KAAK,MAAM,CAAC;IAC5C,mEAAmE;IACnE,iBAAiB,EAAE,CAAC,KAAK,EAAE,MAAM,EAAE,KAAK,EAAE,MAAM,KAAK,MAAM,CAAC;CAC7D;AAED,eAAO,MAAM,kBAAkB,EAAE,kBAGhC,CAAC"}

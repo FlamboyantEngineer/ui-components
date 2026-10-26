@@ -1,0 +1,3 @@
+/** The hooks of a tool call, shared by its modules. */
+export declare const toolCallHooks: import("../../core/hooks.js").ComponentHooks<"body" | "label" | "part" | "error" | "copy" | "status" | "empty" | "heading" | "actions" | "action" | "badge" | "disclosure" | "reason" | "json" | "status-glyph" | "duration" | "part-header" | "part-title" | "approval" | "prompt" | "deny-form" | "decision">;
+//# sourceMappingURL=tool-call-hooks.d.ts.map

@@ -1,0 +1,3 @@
+export declare const chatHooks: import("../../core/hooks.js").ComponentHooks<"search" | "status" | "banner" | "queue" | "composer" | "search-toggle" | "transcript" | "typing" | "queue-label" | "queue-list" | "queue-item" | "queue-text" | "queue-edit" | "queue-remove" | "banner-label" | "banner-cancel">;
+export declare const chatHeaderHooks: import("../../core/hooks.js").ComponentHooks<"title" | "text" | "status" | "actions" | "avatar">;
+//# sourceMappingURL=chat-hooks.d.ts.map

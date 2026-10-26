@@ -1,0 +1,3 @@
+export { PeoplePicker } from './people-picker.js';
+export type { PeoplePickerLoader, PeoplePickerPage, PeoplePickerPerson, PeoplePickerProps, } from './people-picker.js';
+//# sourceMappingURL=index.d.ts.map

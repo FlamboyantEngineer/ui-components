@@ -1,0 +1,1 @@
+import{a as u}from"./chunk-B5FIXUGC.js";import{b as n}from"./chunk-6DHFEWGX.js";var r=n(u(),1);function o(){let e=(0,r.useId)(),t=(0,r.useRef)(0);return()=>(t.current+=1,`${e}${t.current}`)}export{o as a};

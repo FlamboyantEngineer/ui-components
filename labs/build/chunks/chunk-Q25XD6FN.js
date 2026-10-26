@@ -1,0 +1,1 @@
+function u(n){if(!(typeof n!="number"||!Number.isFinite(n)))return Math.max(0,Math.floor(n))}function i(n,{max:r,more:o=!1}={}){let e=u(n);if(e===void 0)return"";let t=typeof r=="number"&&r>=0?u(r):void 0;return t!==void 0&&e>t?`${t}+`:o?`${e}+`:String(e)}export{u as a,i as b};
