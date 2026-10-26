@@ -54,6 +54,7 @@ describe('ContextMenu', () => {
     act(() => controller.open({ x: 1, y: 1 }));
     expect(screen.getByRole('dialog', { name: 'Cell actions' })).toBeInTheDocument();
     expect(screen.getByRole('menu', { name: 'Cell actions' })).toBeInTheDocument();
+    expect(document.documentElement.style.overflow).toBe('hidden');
   });
 
   it('UIC-CONTEXT-MENU-2.2 anchors to an element and shows its Menu child', async () => {

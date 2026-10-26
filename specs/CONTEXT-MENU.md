@@ -41,7 +41,7 @@ Verification: `src/components/context-menu/context-menu-target.test.tsx`, `e2e/c
 
 ### UIC-CONTEXT-MENU-1.6 - Target and menu
 
-`ContextMenuTrigger`'s first child shall be the target element, which receives the trigger's event handlers and a ref; its own handlers and ref keep working, and it keeps its own role and name. The remaining children (a `Menu`) are the menu. The menu and its popover (a React Aria dialog) are named by `aria-label`, by default the provider string `contextMenu`, unless the `Menu` has its own `aria-label`; the popover takes `className`, `id` and caller `data-*` attributes and sits on the `context-menu` layer.
+`ContextMenuTrigger`'s first child shall be the target element, which receives the trigger's event handlers and a ref; its own handlers and ref keep working, and it keeps its own role and name. The remaining children (a `Menu`) are the menu. The menu and its popover (a React Aria dialog that, like a platform context menu, holds the page still while open) are named by `aria-label`, by default the provider string `contextMenu`, unless the `Menu` has its own `aria-label`; the popover takes `className`, `id` and caller `data-*` attributes and sits on the `context-menu` layer.
 
 Implementation: `src/components/context-menu/context-menu.tsx`, `src/components/context-menu/context-menu-target.ts`, `src/core/strings.ts`
 Verification: `src/components/context-menu/context-menu-target.test.tsx`, `src/components/context-menu/context-menu.test.tsx`
