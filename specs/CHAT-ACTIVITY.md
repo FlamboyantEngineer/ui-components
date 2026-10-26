@@ -1,6 +1,6 @@
 # Chat Activity
 
-The activity family shows what an assistant does while it answers, as parts of a reply in a [Chat Transcript](CHAT-TRANSCRIPT.md). `ChatReasoning` is the assistant's reasoning: open while it streams in, collapsed to how long it took once complete. `ChatSteps` folds the consecutive reasoning and tool calls of one reply into one group: open while the run goes on, collapsed to a summary once it ends. `ChatPlan` is the assistant's plan, an ordered list of steps that each say where they stand. `ChatStatusLine` is one live line saying what the assistant is doing now. The family has no `ChatActivity` component; `chat-activity.ts` holds the data types the parts take (`ChatReasoningData`, `ChatPlanData`, `ChatPlanStep`) and the values they derive from them.
+The activity family shows what an assistant does while it answers, as parts of a reply in a [Chat Transcript](CHAT-TRANSCRIPT.md). `ChatReasoning` is the assistant's reasoning: open while it streams in, collapsed to how long it took once complete. `ChatSteps` folds the consecutive reasoning and tool calls of one reply into one group: open while the run goes on, collapsed to a summary once it ends. `ChatPlan` is the assistant's plan, an ordered list of steps that each say where they stand. `ChatStatusLine` is one live line saying what the assistant is thinking or doing now. The family has no `ChatActivity` component; `chat-activity.ts` holds the data types the parts take (`ChatReasoningData`, `ChatPlanData`, `ChatPlanStep`) and the values they derive from them.
 
 `ChatReasoning` and `ChatSteps` are disclosures without a heading (React Aria `Disclosure`), so a reply's activity does not add to the page's outline. Unlike a `Disclosure`, they open and close on their own as the work progresses, until the reader chooses.
 
@@ -15,7 +15,7 @@ Verification: `src/components/chat-activity/chat-reasoning.test.tsx`, `e2e/chat-
 
 ### UIC-CHAT-ACTIVITY-1.2 - Streaming
 
-While its `status` is `streaming`, `ChatReasoning` shall be open, labelled by the provider string `chatReasoningStreaming` ("Thinking…"), with a decorative busy indicator (`ui-chat-reasoning__spinner`) after the label, and its panel shall be busy (`aria-busy="true"`) while the text streams in.
+While its `status` is `streaming`, `ChatReasoning` shall be open, labelled by its `title` (what the reasoning is about now, such as "Checking opening hours"), else the provider string `chatReasoningStreaming` ("Thinking…"), with a decorative busy indicator (`ui-chat-reasoning__spinner`) after the label, and its panel shall be busy (`aria-busy="true"`) while the text streams in. With `expandsAutomatically` false it stays closed while it streams, until the reader opens it; it is busy and labelled the same.
 
 Implementation: `src/components/chat-activity/chat-reasoning.tsx`, `src/components/chat-activity/activity-disclosure.tsx`, `src/core/chat-activity-strings.ts`
 Verification: `src/components/chat-activity/chat-reasoning.test.tsx`, `e2e/chat-activity.spec.ts`
@@ -59,7 +59,7 @@ Verification: `src/components/chat-activity/chat-steps.test.tsx`, `e2e/chat-acti
 
 ### UIC-CHAT-ACTIVITY-2.2 - Running
 
-While `isRunning`, `ChatSteps` shall be open, with a decorative busy indicator (`ui-chat-steps__spinner`) after its label, which is the provider string `chatStepsRunning` with the number of steps ("Working… · 3 steps", "Working… · 1 step"). The number of steps is `stepCount`, else the number of children.
+While `isRunning`, `ChatSteps` shall be open, with a decorative busy indicator (`ui-chat-steps__spinner`) after its label, which is its `title` (what the run is doing now), else the provider string `chatStepsRunning` with the number of steps ("Working… · 3 steps", "Working… · 1 step"). The number of steps is `stepCount`, else the number of children. With `expandsAutomatically` false it stays closed while it runs, until the reader opens it.
 
 Implementation: `src/components/chat-activity/chat-steps.tsx`, `src/core/chat-activity-strings.ts`
 Verification: `src/components/chat-activity/chat-steps.test.tsx`, `e2e/chat-activity.spec.ts`
@@ -126,7 +126,7 @@ Verification: `src/components/chat-activity/chat-plan.test.tsx`
 
 ### UIC-CHAT-ACTIVITY-4.1 - Line
 
-While `isRunning` (the default), `ChatStatusLine` shall render a `ui-chat-status-line` root holding a decorative busy indicator (`ui-chat-status-line__spinner`) and its `text` (`ui-chat-status-line__text`), such as "Searching trains…". The visible text stays out of the accessibility tree, which hears it through the announcement ([UIC-CHAT-ACTIVITY-4.2](#uic-chat-activity-42---announcements)). Once `isRunning` is false the line renders nothing.
+While `isRunning` (the default), `ChatStatusLine` shall render a `ui-chat-status-line` root holding a decorative busy indicator (`ui-chat-status-line__spinner`), or the caller's `icon` in its place (`ui-chat-status-line__icon`, hidden from assistive technology), and its `text` (`ui-chat-status-line__text`), such as "Searching trains…". Without a `text`, or with an empty one, it reads the provider string `chatThinking` ("Thinking…"). A stylesheet may animate the text, such as a shimmer of colour across it, or the icon, and should stop under reduced motion. The visible text stays out of the accessibility tree, which hears it through the announcement ([UIC-CHAT-ACTIVITY-4.2](#uic-chat-activity-42---announcements)). The root publishes `activity` as `data-activity`: with `thinking` (the default) it shows as above; with `writing` (the assistant writes its answer) it shows the busy indicator or icon alone, without text, and announces nothing. Once `isRunning` is false the line renders nothing.
 
 Implementation: `src/components/chat-activity/chat-status-line.tsx`
 Verification: `src/components/chat-activity/chat-status-line.test.tsx`, `e2e/chat-activity.spec.ts`
@@ -173,10 +173,12 @@ Verification: `src/components/chat-activity/chat-status-line.test.tsx`
 | `ui-chat-plan__label`          | slot      |                                                                                | A step's label.                                                                    |
 | `ui-chat-status-line`          | root      |                                                                                | The status line's `<div>`.                                                         |
 | `ui-chat-status-line__spinner` | slot      |                                                                                | The decorative busy indicator.                                                     |
-| `ui-chat-status-line__text`    | slot      |                                                                                | What the assistant is doing.                                                       |
+| `ui-chat-status-line__icon`    | slot      |                                                                                | The caller's decorative icon, in place of the busy indicator.                      |
+| `ui-chat-status-line__text`    | slot      |                                                                                | What the assistant is thinking or doing.                                           |
 | `data-status`                  | attribute | `streaming`, `complete`, `pending`, `in-progress`, `done`, `failed`, `skipped` | On reasoning: whether it streams. On a plan step: where it stands.                 |
 | `data-format`                  | attribute | `markdown`, `plain`                                                            | On reasoning: how its text renders.                                                |
 | `data-running`                 | state     | `true`                                                                         | On a group of steps: the run goes on.                                              |
+| `data-activity`                | attribute | `thinking`, `writing`                                                          | On a status line: whether the assistant thinks or writes.                          |
 | `data-expanded`                | state     | `true`                                                                         | On reasoning or a group of steps: the panel shows (React Aria).                    |
 | `data-focus-visible-within`    | state     | `true`                                                                         | On reasoning, a group of steps or their panel: keyboard focus inside (React Aria). |
 | `data-hovered`                 | state     | `true`                                                                         | On a trigger, while the pointer is over it (React Aria).                           |

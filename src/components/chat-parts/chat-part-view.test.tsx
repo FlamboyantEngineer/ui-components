@@ -49,6 +49,27 @@ describe('ChatParts part views', () => {
     );
   });
 
+  it('UIC-CHAT-PARTS-3.1 labels streaming reasoning by its title, closed without expandsActivity', () => {
+    render(
+      <ChatParts
+        parts={[
+          {
+            type: 'reasoning',
+            id: 'r1',
+            text: 'Hm',
+            title: 'Comparing menus',
+            status: 'streaming',
+          },
+        ]}
+        expandsActivity={false}
+      />,
+    );
+    expect(screen.getByRole('button', { name: 'Comparing menus' })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
+  });
+
   it('UIC-CHAT-PARTS-3.2 calls the approval callbacks with the call id', async () => {
     const user = userEvent.setup();
     const onApprove = vi.fn();

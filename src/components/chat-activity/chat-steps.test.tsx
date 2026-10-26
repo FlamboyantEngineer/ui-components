@@ -45,6 +45,19 @@ describe('ChatSteps', () => {
     });
   });
 
+  it('UIC-CHAT-ACTIVITY-2.2 labels a running group by its title, and stays closed when it does not expand automatically', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(
+      <Steps isRunning title="Checking opening hours" expandsAutomatically={false} />,
+    );
+    const trigger = screen.getByRole('button', { name: 'Checking opening hours' });
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await user.click(trigger);
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    rerender(<Steps title="Checking opening hours" durationMs={3000} />);
+    expect(screen.getByRole('button', { name: 'Worked for 3 s · 3 steps' })).toBe(trigger);
+  });
+
   it('UIC-CHAT-ACTIVITY-2.2 reads stepCount, in the singular for one step', () => {
     const { rerender } = render(<Steps isRunning stepCount={1} />);
     expect(screen.getByRole('button', { name: 'Working… · 1 step' })).toBeInTheDocument();

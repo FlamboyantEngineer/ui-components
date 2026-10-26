@@ -48,6 +48,26 @@ describe('ChatReasoning', () => {
     });
   });
 
+  it('UIC-CHAT-ACTIVITY-1.2 labels streaming reasoning by its title, and stays closed when it does not expand automatically', async () => {
+    const user = userEvent.setup();
+    const { container, rerender } = render(
+      <ChatReasoning
+        text={thinking}
+        title="Comparing fares"
+        status="streaming"
+        expandsAutomatically={false}
+      />,
+    );
+    const trigger = screen.getByRole('button', { name: 'Comparing fares' });
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    expect(trigger.querySelector('.ui-chat-reasoning__spinner')).not.toBeNull();
+    await user.click(trigger);
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    rerender(<ChatReasoning text={thinking} title="Comparing fares" status="complete" />);
+    expect(screen.getByRole('button', { name: 'Thought for a moment' })).toBe(trigger);
+    expectHooksMatchSpec(container, 'CHAT-ACTIVITY');
+  });
+
   it('UIC-CHAT-ACTIVITY-1.3 collapses once complete, labelled with how long it took', () => {
     const { container, rerender } = render(<ChatReasoning text={thinking} status="streaming" />);
     rerender(<ChatReasoning text={thinking} status="complete" durationMs={4400} />);

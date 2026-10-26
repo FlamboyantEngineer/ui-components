@@ -1,6 +1,6 @@
 # Chat
 
-`Chat` is a whole conversation drawn from the host's messages and callbacks: an optional header with the participants, a search within the conversation and the host's controls; a [Chat Transcript](CHAT-TRANSCRIPT.md) whose messages hold their [Chat Parts](CHAT-PARTS.md) and the [Chat Message Actions](CHAT-MESSAGE-ACTIONS.md) the host allows; who is typing and what the assistant is doing; the queue of follow-ups; and the rich [Message Composer](MESSAGE-COMPOSER.md), with an optional [Chat Model Picker](CHAT-MODEL-PICKER.md) among its tools. It serves assistant chats (an assistant among the participants: streaming, tool calls, approvals, questions, plans) and chats between people (one to one or in groups: delivery, replies, edits, reactions, read receipts, unread messages). It holds no conversation state of its own: the host owns the messages, or spreads a [Chat Controller](CHAT-CONTROLLER.md)'s `props` into it. `Chat` is inline; a host places it in a page, a [Drawer](DRAWER.md) or a [Popover](POPOVER.md). `ChatHeader` is the header, also usable on its own.
+`Chat` is a whole conversation drawn from the host's messages and callbacks: an optional header with the participants, a search within the conversation and the host's controls; a [Chat Transcript](CHAT-TRANSCRIPT.md) whose messages hold their [Chat Parts](CHAT-PARTS.md) and the [Chat Message Actions](CHAT-MESSAGE-ACTIONS.md) the host allows, a streaming reply saying what the assistant is thinking or doing; who is typing; the queue of follow-ups; and the rich [Message Composer](MESSAGE-COMPOSER.md), with an optional [Chat Model Picker](CHAT-MODEL-PICKER.md) among its tools. It serves assistant chats (an assistant among the participants: streaming, tool calls, approvals, questions, plans) and chats between people (one to one or in groups: delivery, replies, edits, reactions, read receipts, unread messages). It holds no conversation state of its own: the host owns the messages, or spreads a [Chat Controller](CHAT-CONTROLLER.md)'s `props` into it. `Chat` is inline; a host places it in a page, a [Drawer](DRAWER.md) or a [Popover](POPOVER.md). `ChatHeader` is the header, also usable on its own.
 
 The conversation's model is [Chat Parts](CHAT-PARTS.md)' `ChatMessageData` and `ChatParticipant`. A conversation is an assistant chat when a participant's `kind` is `assistant`, and a chat between people otherwise.
 
@@ -15,7 +15,7 @@ Verification: `src/components/chat/chat.test.tsx`
 
 ### UIC-CHAT-1.2 - Layout
 
-`Chat` shall render a `ui-chat` root holding, in order: the header ([UIC-CHAT-5.1](#uic-chat-51---header)), the search bar while open ([UIC-CHAT-5.3](#uic-chat-53---search)), the transcript (`ui-chat__transcript`), the typing indicator (`ui-chat__typing`, [UIC-CHAT-4.1](#uic-chat-41---typing-and-thinking)), the status line (`ui-chat__status`, [UIC-CHAT-4.2](#uic-chat-42---status-line)), the queue ([UIC-CHAT-3.4](#uic-chat-34---queue-of-follow-ups)) and the composer ([UIC-CHAT-3.1](#uic-chat-31---composer)). The transcript's feed is named by the caller's `aria-label` or `aria-labelledby`, else by `title`, else by the provider string `conversation`; `aria-describedby` and `aria-details` go to it too. The typing indicator and the status line sit outside the feed, which holds only messages and their separators.
+`Chat` shall render a `ui-chat` root holding, in order: the header ([UIC-CHAT-5.1](#uic-chat-51---header)), the search bar while open ([UIC-CHAT-5.3](#uic-chat-53---search)), the transcript (`ui-chat__transcript`), the typing indicator (`ui-chat__typing`, [UIC-CHAT-4.1](#uic-chat-41---typing)), the queue ([UIC-CHAT-3.4](#uic-chat-34---queue-of-follow-ups)) and the composer ([UIC-CHAT-3.1](#uic-chat-31---composer)). The transcript's feed is named by the caller's `aria-label` or `aria-labelledby`, else by `title`, else by the provider string `conversation`; `aria-describedby` and `aria-details` go to it too. The typing indicator sits outside the feed, which holds only messages and their separators; what the assistant is thinking or doing shows inside its reply ([UIC-CHAT-4.2](#uic-chat-42---thinking)).
 
 Implementation: `src/components/chat/chat.tsx`
 Verification: `src/components/chat/chat.test.tsx`, `e2e/chat.spec.ts`
@@ -36,7 +36,7 @@ Verification: `src/components/chat/chat.test.tsx`, `src/components/chat/chat-mod
 
 ### UIC-CHAT-1.5 - Parts
 
-Each message's content shall be its `parts` drawn by `ChatParts` with the message's id as `messageId`, streaming while the message's status is `streaming`, and the chat's `textFormat`, `toolRenderers`, `onApprove`, `onDeny`, `onAlwaysAllow`, `onAnswerQuestion`, `onDismissQuestion`, `questionAnsweredMark`, `onApplyCode` and `renderPart`. The chat keeps the reader's open and closed choices of each message's parts and passes them back as `expandedParts`, so they survive the message being unmounted and mounted again, as in a virtualized history. `onAnswerQuestion` and `onDismissQuestion` may return a promise, which the question card awaits ([UIC-CHAT-QUESTION-2.7](CHAT-QUESTION.md)); without `onAnswerQuestion` question cards are read-only. When `conversationId` changes, every message's parts start afresh, so a card's drafts and unsettled request never carry over to another conversation, even where message and part ids repeat. Pass stable callbacks: the messages that did not change then do not render again while a reply streams.
+Each message's content shall be its `parts` drawn by `ChatParts` with the message's id as `messageId`, streaming while the message's status is `streaming`, and the chat's `textFormat`, `expandsActivity`, `toolRenderers`, `onApprove`, `onDeny`, `onAlwaysAllow`, `onAnswerQuestion`, `onDismissQuestion`, `questionAnsweredMark`, `onApplyCode` and `renderPart`. The chat keeps the reader's open and closed choices of each message's parts and passes them back as `expandedParts`, so they survive the message being unmounted and mounted again, as in a virtualized history. `onAnswerQuestion` and `onDismissQuestion` may return a promise, which the question card awaits ([UIC-CHAT-QUESTION-2.7](CHAT-QUESTION.md)); without `onAnswerQuestion` question cards are read-only. When `conversationId` changes, every message's parts start afresh, so a card's drafts and unsettled request never carry over to another conversation, even where message and part ids repeat. Pass stable callbacks: the messages that did not change then do not render again while a reply streams.
 
 Implementation: `src/components/chat/chat-message-view.tsx`, `src/components/chat/use-chat-state.ts`, `src/components/chat/use-message-context.ts`
 Verification: `src/components/chat/chat.test.tsx`
@@ -173,19 +173,19 @@ Verification: `src/components/chat/chat-composer.test.tsx`, `e2e/chat-host.spec.
 
 ## UIC-CHAT-4 - Activity and receipts
 
-### UIC-CHAT-4.1 - Typing and thinking
+### UIC-CHAT-4.1 - Typing
 
-The typing indicator (`ChatTypingIndicator`) shall show the assistant as thinking (`thinking` variant, with its name) while the last message is an assistant's reply that streams and has no parts yet, and otherwise the names of the participants in `typingIds`, the reader left out. It stays mounted, empty, while nobody types.
+The typing indicator (`ChatTypingIndicator`) shall show the names of the participants in `typingIds`, the reader left out, whether or not an assistant is thinking. It stays mounted, empty, while nobody types.
 
 Implementation: `src/components/chat/chat.tsx`, `src/components/chat/chat-model.ts`
 Verification: `src/components/chat/chat.test.tsx`, `src/components/chat/chat-model.test.ts`
 
-### UIC-CHAT-4.2 - Status line
+### UIC-CHAT-4.2 - Thinking
 
-The status line (`ChatStatusLine`) shall show the `statusText` of the last message while it streams, and nothing otherwise.
+An assistant's reply that streams shall end with a status line (`ChatStatusLine`, `ui-chat__status`) while the assistant thinks or acts, as long as `thinkingUntil` asks: while the reply has no parts yet and whenever it has a `statusText`, always; while its latest part is not text (reasoning or a tool call, for example), unless `thinkingUntil` is `content`. With `thinkingUntil` `end` the line also shows while the reply's text streams in, as the `writing` activity: the busy indicator or `thinkingIcon` alone, without text. `thinkingUntil` defaults to `text`. While thinking, the line reads the reply's `statusText`, else the chat's `thinkingText`, else the provider string `chatThinking` ("Thinking…"), and shows `thinkingIcon`, when given, in place of its busy indicator. It is gone once the reply's text streams in without a `statusText` (unless `thinkingUntil` is `end`), once the reply ends, and while it waits for the reader (it then shows as `complete`, [UIC-CHAT-1.4](#uic-chat-14---message-states)).
 
-Implementation: `src/components/chat/chat.tsx`, `src/components/chat/chat-model.ts`
-Verification: `src/components/chat/chat.test.tsx`, `e2e/chat.spec.ts`
+Implementation: `src/components/chat/chat-message-view.tsx`, `src/components/chat/chat-model.ts`
+Verification: `src/components/chat/chat.test.tsx`, `src/components/chat/chat-model.test.ts`, `e2e/chat.spec.ts`
 
 ### UIC-CHAT-4.3 - Read receipts
 
@@ -228,29 +228,29 @@ Verification: `src/components/chat/chat.test.tsx`
 
 ## Hooks
 
-| Hook                      | Kind  | Values | Description                                                                 |
-| ------------------------- | ----- | ------ | --------------------------------------------------------------------------- |
-| `ui-chat`                 | root  |        | The conversation.                                                           |
-| `ui-chat__search-toggle`  | slot  |        | The header's search button (also `ui-button`).                              |
-| `ui-chat__search`         | slot  |        | The search bar under the header (also `ui-find-bar`).                       |
-| `ui-chat__transcript`     | slot  |        | The transcript (also `ui-chat-transcript`).                                 |
-| `ui-chat__typing`         | slot  |        | Who is typing, or the assistant thinking (also `ui-chat-typing-indicator`). |
-| `ui-chat__status`         | slot  |        | What the assistant is doing (also `ui-chat-status-line`).                   |
-| `ui-chat__queue`          | slot  |        | The queue of follow-ups above the composer.                                 |
-| `ui-chat__queue-label`    | slot  |        | The queue's label, with its count.                                          |
-| `ui-chat__queue-list`     | slot  |        | The ordered list of queued messages.                                        |
-| `ui-chat__queue-item`     | slot  |        | One queued message.                                                         |
-| `ui-chat__queue-text`     | slot  |        | A queued message's text.                                                    |
-| `ui-chat__queue-edit`     | slot  |        | Edit a queued message (also `ui-button`).                                   |
-| `ui-chat__queue-remove`   | slot  |        | Remove a queued message (also `ui-button`).                                 |
-| `ui-chat__composer`       | slot  |        | The composer (also `ui-message-composer`).                                  |
-| `ui-chat__banner`         | slot  |        | The reply or edit banner's text, inside the composer's banner.              |
-| `ui-chat__banner-label`   | slot  |        | What the banner is about: replying, or editing.                             |
-| `ui-chat__banner-cancel`  | slot  |        | Cancel reply (also `ui-button`).                                            |
-| `data-editing`            | state | `true` | On a queued message the composer edits.                                     |
-| `ui-chat-header`          | root  |        | The header.                                                                 |
-| `ui-chat-header__avatar`  | slot  |        | The participants' avatar or avatar group.                                   |
-| `ui-chat-header__text`    | slot  |        | The title and the status line.                                              |
-| `ui-chat-header__title`   | slot  |        | The title, a heading.                                                       |
-| `ui-chat-header__status`  | slot  |        | Who is typing, or what the assistant is doing.                              |
-| `ui-chat-header__actions` | slot  |        | The search button and the host's controls.                                  |
+| Hook                      | Kind  | Values | Description                                                                       |
+| ------------------------- | ----- | ------ | --------------------------------------------------------------------------------- |
+| `ui-chat`                 | root  |        | The conversation.                                                                 |
+| `ui-chat__search-toggle`  | slot  |        | The header's search button (also `ui-button`).                                    |
+| `ui-chat__search`         | slot  |        | The search bar under the header (also `ui-find-bar`).                             |
+| `ui-chat__transcript`     | slot  |        | The transcript (also `ui-chat-transcript`).                                       |
+| `ui-chat__typing`         | slot  |        | Who is typing (also `ui-chat-typing-indicator`).                                  |
+| `ui-chat__status`         | slot  |        | In a reply: what the assistant is thinking or doing (also `ui-chat-status-line`). |
+| `ui-chat__queue`          | slot  |        | The queue of follow-ups above the composer.                                       |
+| `ui-chat__queue-label`    | slot  |        | The queue's label, with its count.                                                |
+| `ui-chat__queue-list`     | slot  |        | The ordered list of queued messages.                                              |
+| `ui-chat__queue-item`     | slot  |        | One queued message.                                                               |
+| `ui-chat__queue-text`     | slot  |        | A queued message's text.                                                          |
+| `ui-chat__queue-edit`     | slot  |        | Edit a queued message (also `ui-button`).                                         |
+| `ui-chat__queue-remove`   | slot  |        | Remove a queued message (also `ui-button`).                                       |
+| `ui-chat__composer`       | slot  |        | The composer (also `ui-message-composer`).                                        |
+| `ui-chat__banner`         | slot  |        | The reply or edit banner's text, inside the composer's banner.                    |
+| `ui-chat__banner-label`   | slot  |        | What the banner is about: replying, or editing.                                   |
+| `ui-chat__banner-cancel`  | slot  |        | Cancel reply (also `ui-button`).                                                  |
+| `data-editing`            | state | `true` | On a queued message the composer edits.                                           |
+| `ui-chat-header`          | root  |        | The header.                                                                       |
+| `ui-chat-header__avatar`  | slot  |        | The participants' avatar or avatar group.                                         |
+| `ui-chat-header__text`    | slot  |        | The title and the status line.                                                    |
+| `ui-chat-header__title`   | slot  |        | The title, a heading.                                                             |
+| `ui-chat-header__status`  | slot  |        | Who is typing, or what the assistant is doing.                                    |
+| `ui-chat-header__actions` | slot  |        | The search button and the host's controls.                                        |

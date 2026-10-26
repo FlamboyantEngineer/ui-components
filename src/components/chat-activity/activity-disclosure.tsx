@@ -22,6 +22,8 @@ export interface ActivityExpansionProps {
   defaultExpanded?: boolean | undefined;
   /** Receives each state the reader requests, also while controlled. */
   onExpandedChange?: ((isExpanded: boolean) => void) | undefined;
+  /** Opens on its own while the work goes on; without it, it stays closed until the reader opens it. Defaults to `true`. */
+  expandsAutomatically?: boolean | undefined;
 }
 
 /** The slots the shared frame draws. */
@@ -51,12 +53,13 @@ function useActivityExpansion({
   isExpanded,
   defaultExpanded,
   onExpandedChange,
+  expandsAutomatically = true,
 }: ActivityExpansionProps & { isActive: boolean }) {
   const [choice, setChoice] = useState(defaultExpanded);
   const [isFocusWithin, setFocusWithin] = useState(false);
   const { focusWithinProps } = useFocusWithin({ onFocusWithinChange: setFocusWithin });
   return {
-    isExpanded: isExpanded ?? choice ?? (isActive || isFocusWithin),
+    isExpanded: isExpanded ?? choice ?? ((expandsAutomatically && isActive) || isFocusWithin),
     onExpandedChange(next: boolean) {
       setChoice(next);
       onExpandedChange?.(next);
@@ -78,6 +81,7 @@ export function ActivityDisclosure({
   isExpanded,
   defaultExpanded,
   onExpandedChange,
+  expandsAutomatically,
   className,
   children,
   ...rest
@@ -87,6 +91,7 @@ export function ActivityDisclosure({
     isExpanded,
     defaultExpanded,
     onExpandedChange,
+    expandsAutomatically,
   });
   const glyph = useExpandGlyph(expansion.isExpanded);
   return (

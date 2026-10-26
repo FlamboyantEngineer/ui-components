@@ -132,7 +132,6 @@ const sampleArguments: Partial<Record<keyof UiStrings, readonly unknown[]>> = {
   chatDelivery: ['read'],
   chatQuoteLabel: ['Ana Lopez', 'Shall we leave at nine?'],
   chatTyping: [['Ana', 'Ben', 'Chloé']],
-  chatThinking: ['Helper'],
   chatSeenBy: [['Ana', 'Ben', 'Chloé', 'Dev']],
   questionProgress: [2, 3],
   questionPreview: ['A quiet room'],

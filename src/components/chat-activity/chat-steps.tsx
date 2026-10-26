@@ -8,6 +8,8 @@ import { toWholeSeconds } from './chat-activity.js';
 export interface ChatStepsProps extends Omit<BaseProps, 'id'>, ActivityExpansionProps {
   /** The run goes on: the group is open and busy. Defaults to `false`. */
   isRunning?: boolean | undefined;
+  /** What the run is doing now, such as its reasoning's latest heading; labels it while it runs. */
+  title?: string | undefined;
   /** How long the run took, in milliseconds, once it ended. */
   durationMs?: number | undefined;
   /** How many steps the group holds. Defaults to the number of children. */
@@ -20,11 +22,13 @@ const hooks = createHooks('chat-steps', ['trigger', 'indicator', 'label', 'spinn
 
 /**
  * The consecutive reasoning and tool calls of one reply folded into one disclosure. While the run
- * goes on it is open, labelled "Working…" with the number of steps; once the run ends it collapses,
+ * goes on it is open (unless it does not expand automatically), labelled by its `title` or "Working…"
+ * with the number of steps; once the run ends it collapses,
  * labelled with how long it took. The reader's own choice wins over both.
  */
 export function ChatSteps({
   isRunning = false,
+  title,
   durationMs,
   stepCount,
   children,
@@ -34,7 +38,7 @@ export function ChatSteps({
   const strings = useUiStrings();
   const count = stepCount ?? Children.toArray(children).length;
   const label = isRunning
-    ? strings.chatStepsRunning(count)
+    ? title || strings.chatStepsRunning(count)
     : strings.chatStepsComplete(count, toWholeSeconds(durationMs));
   return (
     <ActivityDisclosure

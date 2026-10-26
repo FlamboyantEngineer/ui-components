@@ -57,11 +57,6 @@
   overflow-wrap: anywhere;
 }
 
-.ui-chat-reasoning[data-status='streaming'] .ui-chat-reasoning__label,
-.ui-chat-steps[data-running] > .ui-chat-steps__trigger .ui-chat-steps__label {
-  color: var(--ref-text);
-}
-
 /* React Aria sets the panel's measured height while it opens and closes, then auto or 0px. */
 .ui-chat-reasoning__panel,
 .ui-chat-steps__panel {
@@ -215,7 +210,8 @@
   text-decoration: line-through;
 }
 
-/* Status line: one muted line after a turning ring. */
+/* Status line: one muted line after a turning ring or the host's icon, which pulses; while the
+   assistant writes, the ring or icon alone. */
 .ui-chat-status-line {
   display: flex;
   align-items: center;
@@ -225,9 +221,75 @@
   font-size: var(--ref-font-size-sm);
 }
 
+.ui-chat-status-line__icon {
+  display: inline-flex;
+  flex: none;
+  animation: ref-chat-status-pulse var(--ref-duration-loop) ease-in-out infinite alternate;
+}
+
 .ui-chat-status-line__text {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Work in progress reads as a brighter band of colour sweeping across muted text: the status line,
+   streaming reasoning and a running group of steps. It holds still for reduced motion and forced
+   colours: the status line muted, the labels in the text colour. */
+.ui-chat-status-line__text,
+.ui-chat-reasoning[data-status='streaming'] .ui-chat-reasoning__label,
+.ui-chat-steps[data-running] > .ui-chat-steps__trigger .ui-chat-steps__label {
+  background: linear-gradient(
+      90deg,
+      var(--ref-muted) 0%,
+      var(--ref-muted) 35%,
+      var(--ref-text) 50%,
+      var(--ref-muted) 65%,
+      var(--ref-muted) 100%
+    )
+    0 0 / 300% 100%;
+  background-clip: text;
+  color: transparent;
+  animation: ref-chat-status-shimmer calc(var(--ref-duration-loop) * 2) linear infinite;
+}
+
+@keyframes ref-chat-status-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+
+  to {
+    background-position: 0 0;
+  }
+}
+
+@keyframes ref-chat-status-pulse {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  to {
+    opacity: 0.55;
+    transform: scale(0.85);
+  }
+}
+
+@media (prefers-reduced-motion: reduce), (forced-colors: active) {
+  .ui-chat-status-line__text,
+  .ui-chat-reasoning[data-status='streaming'] .ui-chat-reasoning__label,
+  .ui-chat-steps[data-running] > .ui-chat-steps__trigger .ui-chat-steps__label {
+    background: none;
+    color: var(--ref-text);
+    animation: none;
+  }
+
+  .ui-chat-status-line__text {
+    color: inherit;
+  }
+
+  .ui-chat-status-line__icon {
+    animation: none;
+  }
 }

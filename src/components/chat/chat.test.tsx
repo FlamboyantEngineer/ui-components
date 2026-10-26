@@ -297,26 +297,82 @@ describe('Chat', () => {
     expect(screen.queryByRole('feed')).not.toBeInTheDocument();
   });
 
-  it('UIC-CHAT-4.1 shows who is typing, or the assistant thinking before its first part', () => {
+  it('UIC-CHAT-4.1 shows who is typing, also while the assistant thinks', () => {
     const { rerenderWith } = renderChat({ typingIds: ['ana', 'sam'] });
     const indicator = () => document.querySelector('.ui-chat__typing') as HTMLElement;
     expect(indicator()).toHaveTextContent('Ana Lopez is typing…');
+    expect(indicator()).not.toHaveAttribute('data-variant');
     const thinking = { ...message('r', 'helper'), parts: [], status: 'streaming' as const };
     rerenderWith({ ...assistantChat, messages: [thinking] });
-    expect(indicator()).toHaveAttribute('data-variant', 'thinking');
-    expect(indicator()).toHaveTextContent('Trip helper is thinking…');
-    rerenderWith({ ...assistantChat, messages: [] });
     expect(indicator()).toHaveAttribute('data-empty', 'true');
   });
 
-  it('UIC-CHAT-4.2 UIC-CHAT-5.1 shows the streaming reply’s status in the status line and the header', () => {
+  it('UIC-CHAT-4.2 shows the assistant thinking inside its reply until the text streams in', () => {
+    const thinking: ChatMessageData = { ...message('r', 'helper'), parts: [], status: 'streaming' };
+    const { rerenderWith } = renderChat({ ...assistantChat, messages: [thinking] });
+    const line = () => article('r').querySelector('.ui-chat__status');
+    expect(line()).toHaveClass('ui-chat-status-line');
+    expect(line()).toHaveTextContent('Thinking…');
+    expect(line()?.querySelector('.ui-chat-status-line__spinner')).not.toBeNull();
+    const icon = <svg />;
+    rerenderWith({
+      ...assistantChat,
+      messages: [thinking],
+      thinkingText: 'Pondering…',
+      thinkingIcon: icon,
+    });
+    expect(line()).toHaveTextContent('Pondering…');
+    expect(line()?.querySelector('.ui-chat-status-line__icon svg')).not.toBeNull();
+    expect(line()?.querySelector('.ui-chat-status-line__spinner')).toBeNull();
+    const writing = { ...thinking, parts: [{ type: 'text' as const, text: 'Two days' }] };
+    rerenderWith({ ...assistantChat, messages: [writing], thinkingText: 'Pondering…' });
+    expect(line()).toBeNull();
+    const searching = { ...writing, statusText: 'Searching trains…' };
+    rerenderWith({ ...assistantChat, messages: [searching], thinkingText: 'Pondering…' });
+    expect(line()).toHaveTextContent('Searching trains…');
+    rerenderWith({ ...assistantChat, messages: [{ ...searching, status: 'complete' }] });
+    expect(line()).toBeNull();
+  });
+
+  it('UIC-CHAT-4.2 shows thinking until the first content, or writes alongside the text until the end', () => {
+    const reasoning = { type: 'reasoning', id: 'why', text: 'Hm', status: 'streaming' } as const;
+    const thinking: ChatMessageData = {
+      ...message('r', 'helper'),
+      parts: [reasoning],
+      status: 'streaming',
+    };
+    const { rerenderWith } = renderChat({
+      ...assistantChat,
+      messages: [thinking],
+      thinkingUntil: 'content',
+      expandsActivity: false,
+    });
+    const line = () => article('r').querySelector('.ui-chat__status');
+    expect(line()).toBeNull();
+    expect(screen.getByRole('button', { name: 'Thinking…' })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
+    const writing = { ...thinking, parts: [{ type: 'text' as const, text: 'Two days' }] };
+    rerenderWith({ ...assistantChat, messages: [writing], thinkingUntil: 'end' });
+    expect(line()).toHaveAttribute('data-activity', 'writing');
+    expect(line()?.querySelector('.ui-chat-status-line__text')).toBeNull();
+    rerenderWith({
+      ...assistantChat,
+      messages: [{ ...writing, status: 'complete' }],
+      thinkingUntil: 'end',
+    });
+    expect(line()).toBeNull();
+  });
+
+  it('UIC-CHAT-4.2 UIC-CHAT-5.1 shows the streaming reply’s status in the reply and the header', () => {
     const working = { ...awaiting, parts: [], statusText: 'Searching trains…' };
     const { container, rerenderWith } = renderChat({
       ...assistantChat,
       title: 'Trip helper',
       messages: [working],
     });
-    expect(container.querySelector('.ui-chat__status')).toHaveTextContent('Searching trains…');
+    expect(article('r1').querySelector('.ui-chat__status')).toHaveTextContent('Searching trains…');
     expect(container.querySelector('.ui-chat-header__status')).toHaveTextContent(
       'Searching trains…',
     );
