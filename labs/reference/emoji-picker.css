@@ -32,14 +32,14 @@
   align-items: center;
   flex: none;
   margin: 8px 8px 4px;
-  border: 1px solid var(--ref-border);
-  border-radius: var(--ref-radius-sm);
-  background: var(--ref-canvas);
+  border: 1px solid var(--ref-field-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-field-fill);
 }
 
 .ui-emoji-picker__search:focus-within {
   border-color: var(--ref-focus);
-  box-shadow: 0 0 0 1px var(--ref-focus);
+  outline: var(--ref-focus-ring-thin);
 }
 
 .ui-emoji-picker__search-input {

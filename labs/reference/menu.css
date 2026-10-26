@@ -186,19 +186,19 @@
 .ui-menu__search-input {
   box-sizing: border-box;
   width: 100%;
-  height: 28px;
+  height: var(--ref-control-height-md);
   padding: 0 8px;
-  border: 1px solid var(--ref-border);
-  border-radius: var(--ref-radius-sm);
-  background: var(--ref-canvas);
-  color: var(--ref-text);
+  border: 1px solid var(--ref-field-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-field-fill);
+  color: inherit;
   font: inherit;
   outline: none;
 }
 
 .ui-menu__search-input:focus {
   border-color: var(--ref-focus);
-  box-shadow: 0 0 0 1px var(--ref-focus);
+  outline: var(--ref-focus-ring-thin);
 }
 
 .ui-menu__search-input::placeholder {

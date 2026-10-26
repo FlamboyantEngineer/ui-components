@@ -1,12 +1,9 @@
 /* Select Field: a framed trigger as wide as its widest option, capped at the control slot. */
 
 /* A disabled select dims its trigger only; its chips keep full contrast. */
-.ui-select-field[data-disabled] {
-  opacity: 1;
-}
-
 .ui-select-field[data-disabled] .ui-select-field__trigger {
-  opacity: var(--ref-disabled-opacity);
+  background: var(--ref-field-fill-inactive);
+  color: var(--ref-muted);
 }
 
 .ui-select-field .ui-field__control {
@@ -40,9 +37,9 @@
   box-sizing: border-box;
   height: var(--ref-field-height);
   padding: 0 8px;
-  border: 1px solid var(--ref-border);
+  border: 1px solid var(--ref-field-border);
   border-radius: var(--ref-radius);
-  background: var(--ref-canvas);
+  background: var(--ref-field-fill);
   color: inherit;
   font: inherit;
   text-align: start;
@@ -62,7 +59,7 @@
 .ui-select-field__trigger[data-focus-visible],
 .ui-select-field__select[data-open] .ui-select-field__trigger {
   border-color: var(--ref-focus);
-  box-shadow: 0 0 0 1px var(--ref-focus);
+  outline: var(--ref-focus-ring-thin);
 }
 
 .ui-select-field[data-dirty] .ui-select-field__trigger {
@@ -79,6 +76,7 @@
 
 .ui-select-field[data-readonly] .ui-select-field__trigger {
   border-style: dashed;
+  background: var(--ref-field-fill-inactive);
   cursor: default;
 }
 
@@ -152,11 +150,11 @@
   flex: 1 1 auto;
   min-width: 0;
   box-sizing: border-box;
-  height: 26px;
-  padding: 0 6px;
-  border: 1px solid var(--ref-border);
-  border-radius: var(--ref-radius-sm);
-  background: var(--ref-canvas);
+  height: var(--ref-control-height-md);
+  padding: 0 8px;
+  border: 1px solid var(--ref-field-border);
+  border-radius: var(--ref-radius);
+  background: var(--ref-field-fill);
   color: inherit;
   font: inherit;
   outline: none;
@@ -164,6 +162,7 @@
 
 .ui-select-field__search-input[data-focused] {
   border-color: var(--ref-focus);
+  outline: var(--ref-focus-ring-thin);
 }
 
 .ui-select-field__loading {
@@ -341,12 +340,9 @@
 /* Tree Select Field: a framed trigger like a select's, opening a panel with a search and a tree. */
 
 /* A disabled field dims its trigger only; its chips keep full contrast. */
-.ui-select-field[data-mode='tree'][data-disabled] {
-  opacity: 1;
-}
-
 .ui-select-field[data-mode='tree'][data-disabled] .ui-select-field__trigger {
-  opacity: var(--ref-disabled-opacity);
+  background: var(--ref-field-fill-inactive);
+  color: var(--ref-muted);
 }
 
 .ui-select-field[data-mode='tree'] .ui-field__control {
@@ -373,9 +369,9 @@
   box-sizing: border-box;
   height: var(--ref-field-height);
   padding: 0 8px;
-  border: 1px solid var(--ref-border);
+  border: 1px solid var(--ref-field-border);
   border-radius: var(--ref-radius);
-  background: var(--ref-canvas);
+  background: var(--ref-field-fill);
   color: inherit;
   font: inherit;
   text-align: start;
@@ -390,7 +386,7 @@
 .ui-select-field[data-mode='tree'] .ui-select-field__trigger[data-focus-visible],
 .ui-select-field[data-mode='tree'] .ui-select-field__trigger[aria-expanded='true'] {
   border-color: var(--ref-focus);
-  box-shadow: 0 0 0 1px var(--ref-focus);
+  outline: var(--ref-focus-ring-thin);
 }
 
 .ui-select-field[data-mode='tree'][data-dirty] .ui-select-field__trigger {
@@ -407,6 +403,7 @@
 
 .ui-select-field[data-mode='tree'][data-readonly] .ui-select-field__trigger {
   border-style: dashed;
+  background: var(--ref-field-fill-inactive);
   cursor: default;
 }
 

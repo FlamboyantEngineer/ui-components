@@ -19,23 +19,19 @@
   box-sizing: border-box;
   flex: none;
   width: 72px;
-  height: 28px;
+  height: var(--ref-control-height-md);
   padding: 0 6px;
-  border: 1px solid var(--ref-border-strong);
+  border: 1px solid var(--ref-field-border);
   border-radius: var(--ref-radius);
-  background: var(--ref-canvas);
-  color: var(--ref-text);
+  background: var(--ref-field-fill);
+  color: inherit;
   font: var(--ref-font-size-md) var(--ref-mono);
   text-align: center;
 }
 
-.ui-formula-bar__reference[data-hovered] {
-  border-color: var(--ref-text);
-}
-
-.ui-formula-bar__reference[data-focus-visible] {
-  outline: var(--ref-focus-ring);
-  outline-offset: 1px;
+.ui-formula-bar__reference[data-focused] {
+  border-color: var(--ref-focus);
+  outline: var(--ref-focus-ring-thin);
 }
 
 .ui-formula-bar[data-dirty] .ui-formula-bar__editor.ui-code-editor {
@@ -44,11 +40,11 @@
 
 .ui-formula-bar__reference[data-invalid] {
   border-color: var(--ref-danger);
-  box-shadow: 0 0 0 1px var(--ref-danger);
 }
 
 .ui-formula-bar__reference[data-disabled] {
-  opacity: var(--ref-disabled-opacity);
+  background: var(--ref-field-fill-inactive);
+  color: var(--ref-muted);
 }
 
 .ui-formula-bar__status {

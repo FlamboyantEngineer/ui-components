@@ -104,6 +104,16 @@
   --ref-control-height-md: 28px;
   --ref-control-height-lg: 32px;
 
+  /*
+   * Field frames: the box a value is typed or picked in, in every field, search box, editor and
+   * composer. A frame takes the field fill and border while it takes input and the inactive fill
+   * once disabled (with muted text) or read-only (with a dashed border); focus turns its border to
+   * --ref-focus with --ref-focus-ring-thin around it, and validation and dirty marks colour it.
+   */
+  --ref-field-border: var(--ref-border);
+  --ref-field-fill: var(--ref-canvas);
+  --ref-field-fill-inactive: var(--ref-surface);
+
   /* Focus */
   --ref-focus: var(--ref-accent-ink);
   --ref-focus-ring: 2px solid var(--ref-focus);

@@ -32,9 +32,9 @@
   box-sizing: border-box;
   max-width: 280px;
   padding: 0 6px 0 8px;
-  border: 1px solid var(--ref-border);
+  border: 1px solid var(--ref-field-border);
   border-radius: var(--ref-radius);
-  background: var(--ref-canvas);
+  background: var(--ref-field-fill);
   color: var(--ref-muted);
 }
 .ui-table__filter-icon {
@@ -42,7 +42,7 @@
 }
 .ui-table__filter:focus-within {
   border-color: var(--ref-focus);
-  box-shadow: 0 0 0 1px var(--ref-focus);
+  outline: var(--ref-focus-ring-thin);
 }
 .ui-table__filter-input {
   flex: 1 1 auto;
@@ -426,12 +426,11 @@
   min-height: 28px;
   padding: 0 6px;
   border: 1px solid var(--ref-focus);
-  border-radius: var(--ref-radius-sm);
-  background: var(--ref-canvas);
+  border-radius: var(--ref-radius);
+  background: var(--ref-field-fill);
   color: var(--ref-text);
   font: inherit;
-  outline: none;
-  box-shadow: 0 0 0 1px var(--ref-focus);
+  outline: var(--ref-focus-ring-thin);
 }
 
 .ui-table__detail-row {

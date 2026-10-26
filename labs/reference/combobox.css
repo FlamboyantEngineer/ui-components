@@ -27,9 +27,9 @@
   box-sizing: border-box;
   min-height: var(--ref-combobox-height);
   padding: 0 4px 0 8px;
-  border: 1px solid var(--ref-border);
+  border: 1px solid var(--ref-field-border);
   border-radius: var(--ref-radius);
-  background: var(--ref-canvas);
+  background: var(--ref-field-fill);
 }
 
 .ui-combobox[data-size='xs'],
@@ -52,7 +52,7 @@
 
 .ui-combobox__field[data-focus-within] {
   border-color: var(--ref-focus);
-  box-shadow: 0 0 0 1px var(--ref-focus);
+  outline: var(--ref-focus-ring-thin);
 }
 
 .ui-combobox__field[data-invalid] {
@@ -61,10 +61,12 @@
 
 .ui-combobox[data-readonly] .ui-combobox__field {
   border-style: dashed;
+  background: var(--ref-field-fill-inactive);
 }
 
 .ui-combobox[data-disabled] .ui-combobox__field {
-  opacity: var(--ref-disabled-opacity);
+  background: var(--ref-field-fill-inactive);
+  color: var(--ref-muted);
 }
 
 .ui-combobox__search-icon {

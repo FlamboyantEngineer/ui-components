@@ -141,11 +141,7 @@ for (const declaration of declarations) {
       `${where(declaration)}: literal duration in ${property}; use --ref-duration or --ref-duration-fast`,
     );
   }
-  if (
-    /^(?:outline|box-shadow)$/.test(property) &&
-    /\dpx\s+\w*\s*var\(--ref-focus\)/.test(value) &&
-    !/^0 0 0 1px var\(--ref-focus\)$/.test(value)
-  ) {
+  if (/^(?:outline|box-shadow)$/.test(property) && /\dpx\s+\w*\s*var\(--ref-focus\)/.test(value)) {
     problems.push(
       `${where(declaration)}: ${property} builds a focus ring by hand; use a --ref-focus-* token`,
     );

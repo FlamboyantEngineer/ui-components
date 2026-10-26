@@ -12,9 +12,9 @@
   box-sizing: border-box;
   height: var(--ref-field-height);
   padding: 0 8px;
-  border: 1px solid var(--ref-border);
+  border: 1px solid var(--ref-field-border);
   border-radius: var(--ref-radius);
-  background: var(--ref-canvas);
+  background: var(--ref-field-fill);
   color: inherit;
   font: inherit;
   cursor: pointer;
@@ -29,13 +29,18 @@
   outline: var(--ref-focus-ring-thin);
 }
 
+.ui-color-field[data-disabled] :is(.ui-color-field__trigger, .ui-color-field__group) {
+  background: var(--ref-field-fill-inactive);
+  color: var(--ref-muted);
+}
+
 .ui-color-field__trigger[data-disabled] {
   cursor: not-allowed;
 }
 
 .ui-color-field[data-readonly] .ui-color-field__trigger {
   border-style: dashed;
-  background: var(--ref-surface);
+  background: var(--ref-field-fill-inactive);
 }
 
 .ui-color-field[data-dirty] .ui-color-field__trigger {
@@ -165,11 +170,11 @@
   flex: 1 1 auto;
   min-width: 0;
   box-sizing: border-box;
-  height: 28px;
+  height: var(--ref-control-height-md);
   padding: 0 8px;
-  border: 1px solid var(--ref-border);
+  border: 1px solid var(--ref-field-border);
   border-radius: var(--ref-radius);
-  background: var(--ref-canvas);
+  background: var(--ref-field-fill);
   color: inherit;
   font: var(--ref-font-size-sm) var(--ref-mono);
 }
@@ -197,9 +202,9 @@
   align-items: center;
   box-sizing: border-box;
   height: var(--ref-field-height);
-  border: 1px solid var(--ref-border);
+  border: 1px solid var(--ref-field-border);
   border-radius: var(--ref-radius);
-  background: var(--ref-canvas);
+  background: var(--ref-field-fill);
 }
 
 .ui-color-field__group:focus-within {
@@ -237,7 +242,7 @@
 
 .ui-color-field[data-readonly] .ui-color-field__group {
   border-style: dashed;
-  background: var(--ref-surface);
+  background: var(--ref-field-fill-inactive);
 }
 
 .ui-color-field[data-validation='invalid'] .ui-color-field__group {

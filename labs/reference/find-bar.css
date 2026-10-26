@@ -31,22 +31,18 @@
   flex: 1 1 140px;
   min-width: 100px;
   max-width: 260px;
-  height: 26px;
+  height: var(--ref-control-height-sm);
   padding: 0 8px;
-  border: 1px solid var(--ref-border-strong);
+  border: 1px solid var(--ref-field-border);
   border-radius: var(--ref-radius-full);
-  background: var(--ref-canvas);
-  color: var(--ref-text);
+  background: var(--ref-field-fill);
+  color: inherit;
   font: inherit;
 }
 
-.ui-find-bar__replacement[data-hovered] {
-  border-color: var(--ref-text);
-}
-
-.ui-find-bar__replacement[data-focus-visible] {
-  outline: var(--ref-focus-ring);
-  outline-offset: 1px;
+.ui-find-bar__replacement[data-focused] {
+  border-color: var(--ref-focus);
+  outline: var(--ref-focus-ring-thin);
 }
 
 .ui-find-bar__previous,

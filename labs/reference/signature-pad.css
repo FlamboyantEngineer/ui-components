@@ -16,15 +16,15 @@
   width: 300px;
   max-width: 100%;
   aspect-ratio: 3 / 1;
-  border: 1px solid var(--ref-border);
+  border: 1px solid var(--ref-field-border);
   border-radius: var(--ref-radius);
-  background: var(--ref-canvas);
+  background: var(--ref-field-fill);
   cursor: crosshair;
 }
 
 .ui-signature-pad__surface:focus-visible {
-  outline: var(--ref-focus-ring);
-  outline-offset: 1px;
+  border-color: var(--ref-focus);
+  outline: var(--ref-focus-ring-thin);
 }
 
 .ui-signature-pad__canvas {
@@ -50,9 +50,9 @@
   max-width: 100%;
   height: 40px;
   padding: 0 10px;
-  border: 1px solid var(--ref-border);
+  border: 1px solid var(--ref-field-border);
   border-radius: var(--ref-radius);
-  background: var(--ref-canvas);
+  background: var(--ref-field-fill);
   color: inherit;
   font: italic var(--ref-font-size-xl)/1 var(--ref-script);
 }
@@ -83,20 +83,12 @@
 
 .ui-signature-pad[data-readonly] :is(.ui-signature-pad__surface, .ui-signature-pad__input) {
   border-style: dashed;
-  background: var(--ref-surface);
+  background: var(--ref-field-fill-inactive);
   cursor: default;
-}
-
-/* The label names an image rather than a native control, so it keeps full contrast when disabled. */
-.ui-signature-pad[data-disabled] {
-  opacity: 1;
-}
-
-.ui-signature-pad[data-disabled] .ui-field__label {
-  color: var(--ref-muted);
 }
 
 .ui-signature-pad[data-disabled] :is(.ui-signature-pad__surface, .ui-signature-pad__input) {
   cursor: not-allowed;
-  opacity: var(--ref-disabled-opacity);
+  background: var(--ref-field-fill-inactive);
+  color: var(--ref-muted);
 }

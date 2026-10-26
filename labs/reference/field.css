@@ -77,9 +77,9 @@
   box-sizing: border-box;
   height: var(--ref-field-height);
   padding: 0 8px;
-  border: 1px solid var(--ref-border);
+  border: 1px solid var(--ref-field-border);
   border-radius: var(--ref-radius);
-  background: var(--ref-canvas);
+  background: var(--ref-field-fill);
   color: inherit;
   font: inherit;
 }
@@ -103,10 +103,12 @@
 
 .ui-field[data-readonly] .ui-field__control > :is(input, textarea) {
   border-style: dashed;
+  background: var(--ref-field-fill-inactive);
 }
 
-.ui-field[data-disabled] {
-  opacity: var(--ref-disabled-opacity);
+.ui-field[data-disabled] .ui-field__control > :is(input, textarea) {
+  background: var(--ref-field-fill-inactive);
+  color: var(--ref-muted);
 }
 
 .ui-field__help,

@@ -14,9 +14,9 @@
   box-sizing: border-box;
   height: var(--ref-field-height);
   overflow: hidden;
-  border: 1px solid var(--ref-border);
+  border: 1px solid var(--ref-field-border);
   border-radius: var(--ref-radius);
-  background: var(--ref-canvas);
+  background: var(--ref-field-fill);
 }
 
 .ui-number-field__group[data-focus-within] {
@@ -94,9 +94,14 @@
   border-color: var(--ref-warning);
 }
 
+.ui-number-field[data-disabled] .ui-number-field__group {
+  background: var(--ref-field-fill-inactive);
+  color: var(--ref-muted);
+}
+
 .ui-number-field[data-readonly] .ui-number-field__group {
   border-style: dashed;
-  background: var(--ref-surface);
+  background: var(--ref-field-fill-inactive);
 }
 
 /* The scrub handle drags sideways; literal affixes sit beside the number. */

@@ -5,24 +5,20 @@
   gap: 4px;
   box-sizing: border-box;
   padding: 6px;
-  border: 1px solid var(--ref-border-strong);
+  border: 1px solid var(--ref-field-border);
   border-radius: var(--ref-radius);
-  background: var(--ref-canvas);
+  background: var(--ref-field-fill);
   color: var(--ref-text);
   font: var(--ref-font-size)/1.4 var(--ref-font);
 }
 
 .ui-message-composer:focus-within {
-  outline: var(--ref-focus-ring);
-  outline-offset: -1px;
+  border-color: var(--ref-focus);
+  outline: var(--ref-focus-ring-thin);
 }
 
 .ui-message-composer[data-disabled] {
-  border-color: var(--ref-border);
-  background: var(--ref-surface);
-}
-
-.ui-message-composer[data-disabled] .ui-message-composer__input {
+  background: var(--ref-field-fill-inactive);
   color: var(--ref-muted);
 }
 
@@ -34,7 +30,7 @@
 .ui-message-composer[data-drop-target] {
   border-style: dashed;
   border-color: var(--ref-focus);
-  background: color-mix(in srgb, var(--ref-focus) var(--ref-tint-subtle), var(--ref-canvas));
+  background: color-mix(in srgb, var(--ref-focus) var(--ref-tint-subtle), var(--ref-field-fill));
 }
 
 .ui-message-composer__banner {

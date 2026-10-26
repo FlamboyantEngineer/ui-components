@@ -109,3 +109,10 @@ Every single-line control in the reference stylesheet shall take its height from
 
 Implementation: `labs/reference/base.css`, `labs/reference/field.css`, `labs/reference/button.css`, `scripts/check-reference-tokens.mjs`, `labs/src/control-sizes.lab.tsx`
 Verification: `test/reference-tokens.test.ts`, `e2e/control-sizes.spec.ts`
+
+### UIC-LABS-3.8 - Field frames
+
+Every field frame in the reference stylesheet, the box a value is typed or picked in (fields, search boxes, comboboxes, pickers, rich text and code editors, message composers, and the inputs of find bars, formula bars, menus, tables and property strips), shall draw from the field frame tokens in `labs/reference/base.css`, so every frame reads alike: `--ref-field-fill` with a `1px solid var(--ref-field-border)` border while it takes input, and `--ref-field-fill-inactive` once read-only, with a dashed border, or disabled, with muted text. A disabled field marks its frame rather than fading: neither the field nor the frame lowers its opacity, so the fill stays visibly grey and the label keeps full contrast. Controls without a frame (checkboxes, radios, switches, sliders) keep `--ref-disabled-opacity`. A focused frame turns its border to `--ref-focus` with `--ref-focus-ring-thin` around it, and `scripts/check-reference-tokens.mjs` rejects a focus ring built by hand. Validation and dirty marks colour the frame's border, and the frame's height comes from the control scale ([UIC-LABS-3.7](#uic-labs-37---control-scale)).
+
+Implementation: `labs/reference/base.css`, `labs/reference/field.css`, `labs/reference/text-field.css`, `labs/reference/message-composer.css`, `scripts/check-reference-tokens.mjs`
+Verification: `e2e/field-frames.spec.ts`, `test/reference-tokens.test.ts`
