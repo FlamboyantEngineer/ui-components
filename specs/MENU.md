@@ -38,7 +38,7 @@ Verification: `src/components/menu/menu.test.tsx`, `e2e/menu.spec.ts`
 
 ### UIC-MENU-2.1 - Anatomy
 
-`MenuItem` shall draw, in order: the selection check (`ui-menu-item__check`, only in a menu or section that allows selection), its `icon` (a built-in glyph name or any icon node) as a decorative `Icon` in `ui-menu-item__icon`, its label in `ui-menu-item__label`, which names the item, its `description` in `ui-menu-item__description`, its `shortcut` as a `Shortcut` in `ui-menu-item__shortcut` ([SHORTCUT.md](SHORTCUT.md)), and for a submenu trigger a chevron pointing in the reading direction in `ui-menu-item__submenu-indicator`. The item is named by its text: the label, then the description and the shortcut's readable words, each read once, so its accessible name holds all the text it shows.
+`MenuItem` shall draw, in order: the selection check (`ui-menu-item__check`, only in a menu or section that allows selection, or on a check item, [UIC-MENU-2.7](#uic-menu-27---check-items)), its `icon` (a built-in glyph name or any icon node) as a decorative `Icon` in `ui-menu-item__icon`, its label in `ui-menu-item__label`, which names the item, its `description` in `ui-menu-item__description`, its `shortcut` as a `Shortcut` in `ui-menu-item__shortcut` ([SHORTCUT.md](SHORTCUT.md)), and for a submenu trigger a chevron pointing in the reading direction in `ui-menu-item__submenu-indicator`. The item is named by its text: the label, then the description and the shortcut's readable words, each read once, so its accessible name holds all the text it shows.
 
 Implementation: `src/components/menu/menu-item.tsx`, `labs/reference/menu.css`
 Verification: `src/components/menu/menu-item.test.tsx`, `e2e/menu.spec.ts`
@@ -76,6 +76,13 @@ Verification: `src/components/menu/menu-item.test.tsx`, `e2e/menu.spec.ts`
 With `isDisabled` and `focusableWhenDisabled`, `MenuItem` shall stay in keyboard navigation (arrow keys, Home, End, type-to-select and hover reach it) so a reader can find it and read why it is unavailable, as the WAI-ARIA Authoring Practices allow for disabled menu items. It carries `aria-disabled="true"` and `data-disabled`, its `description` (for example the reason it is unavailable) stays part of its accessible name, and custom content receives `isDisabled: true`. It refuses activation: a press, Enter or Space, including Enter in a filterable menu's search field while it is highlighted, calls no `onAction` or press handler, changes no selection, follows no `href` and leaves the menu open. It does not apply to an item disabled through the menu's `disabledKeys`, to a pending item, or to the item of a `SubmenuTrigger`, which stays out of reach because hovering or the arrow key would still open its submenu.
 
 Implementation: `src/components/menu/menu-item.tsx`, `src/components/menu/menu.tsx`
+Verification: `src/components/menu/menu-item.test.tsx`, `e2e/menu.spec.ts`
+
+### UIC-MENU-2.7 - Check items
+
+With `isSelected` (true or false), in a menu or section without `selectionMode`, `MenuItem` shall be a check item of its own among plain items, such as a "Wrap lines" toggle: a `menuitemcheckbox` with `aria-checked`, publishing `data-selected` while checked, its check slot drawing the check glyph while checked. Activating it calls `onAction` like any item, for the caller to flip `isSelected`, and closes the menu unless `shouldCloseOnSelect={false}` keeps it open. Custom content receives its state as `isSelected`. With `isDisabled` and `focusableWhenDisabled` it stays reachable and refuses activation ([UIC-MENU-2.6](#uic-menu-26---focusable-disabled-items)). A check item is not a link. In a menu or section with `selectionMode`, the selection owns the item's check and `isSelected` does nothing.
+
+Implementation: `src/components/menu/menu-item.tsx`
 Verification: `src/components/menu/menu-item.test.tsx`, `e2e/menu.spec.ts`
 
 ## UIC-MENU-3 - Sections, separators and selection
@@ -190,7 +197,7 @@ Verification: `src/components/menu/menu.test.tsx`, `e2e/menu.spec.ts`
 | `ui-menu__load-more-spinner`      | slot      |                                                                               | The busy indicator of the loading row.                              |
 | `data-collection`                 | state     |                                                                               | React Aria's collection marker, on the menu and its items.          |
 | `ui-menu-item`                    | root      |                                                                               | One item (`menuitem`, `menuitemradio` or `menuitemcheckbox`).       |
-| `ui-menu-item__check`             | slot      |                                                                               | Selection check, in selectable menus; holds the glyph when checked. |
+| `ui-menu-item__check`             | slot      |                                                                               | Selection check, also on check items; holds the glyph when checked. |
 | `ui-menu-item__icon`              | slot      |                                                                               | Leading icon (also `ui-icon`).                                      |
 | `ui-menu-item__spinner`           | slot      |                                                                               | Busy indicator of a pending item.                                   |
 | `ui-menu-item__label`             | slot      |                                                                               | The label.                                                          |

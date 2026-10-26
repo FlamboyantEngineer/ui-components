@@ -10,6 +10,7 @@ import {
 } from '../completion-list/completion-list.js';
 import { ComposerFrame } from './composer-frame.js';
 import { composerHooks as hooks } from './composer-hooks.js';
+import type { MessageComposerMenu } from './composer-menu.js';
 import { useMessageComposer } from './use-message-composer.js';
 
 /** The chord that sends: Enter (Shift+Enter breaks the line), or Ctrl+Enter (Cmd+Enter on macOS). */
@@ -45,9 +46,14 @@ export interface MessageComposerSharedProps
   attachments?: ReactNode;
   /** A line above everything else, such as the message being replied to or edited. */
   banner?: ReactNode;
-  /** Tools before the send button, after the built-in attach and emoji buttons. */
+  /** Tools before the send button, after the built-in menu or attach button and the emoji button. */
   toolbar?: ReactNode;
-  /** Called with files chosen with the attach button, dropped on the composer or pasted. */
+  /**
+   * Shows a "+" button at the start of the toolbar, in place of the attach button, that opens this
+   * menu above the composer; its items act through the composer's helpers.
+   */
+  menu?: MessageComposerMenu | undefined;
+  /** Called with files chosen with the attach button or a menu item, dropped on the composer or pasted. */
   onAttach?: ((files: File[]) => void) | undefined;
   /** Shows a button that opens the emoji picker and inserts the chosen emoji at the caret. */
   showEmojiPicker?: boolean | undefined;
@@ -90,8 +96,8 @@ export interface MessageComposerProps extends MessageComposerSharedProps {
 
 /**
  * A composer for chat messages and comments: a text area that grows with its text and sends on
- * Enter (or Ctrl+Enter), with a banner, attachments above it, attach, emoji and caller tools and a
- * send button below, completions such as `@` mentions, an edit mode, recall of earlier messages,
+ * Enter (or Ctrl+Enter), with a banner, attachments above it, a "+" menu or attach button, emoji and
+ * caller tools and a send button below, completions such as `@` mentions, an edit mode, recall of earlier messages,
  * a persisted draft, and a pending state that offers Stop while a reply streams.
  */
 export function MessageComposer(props: MessageComposerProps) {

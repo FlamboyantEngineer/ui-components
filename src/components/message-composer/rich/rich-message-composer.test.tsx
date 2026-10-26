@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -136,6 +136,79 @@ describe('RichMessageComposer', () => {
         { start: 27, end: 40, ...maria },
       ],
     });
+  });
+
+  it('UIC-MESSAGE-COMPOSER-5.3 inserts a pill and text from the menu at the caret and gives focus back after them', async () => {
+    const { user, onSubmit } = renderComposer({
+      menu: {
+        sections: [
+          {
+            id: 'add',
+            title: 'Add',
+            items: [
+              {
+                id: 'summarize',
+                label: 'Summarize',
+                onAction: (composer) =>
+                  composer.insertPill({ kind: 'command', id: 'summarize', label: 'summarize' }),
+              },
+              {
+                id: 'notes',
+                label: 'Insert the notes',
+                onAction: (composer) => composer.insertText('the notes'),
+              },
+            ],
+          },
+        ],
+      },
+    });
+    const choose = async (name: string) => {
+      await user.click(screen.getByRole('button', { name: 'Add and more' }));
+      await user.click(within(await screen.findByRole('menu')).getByRole('menuitem', { name }));
+      await waitFor(() => expect(box()).toHaveFocus());
+    };
+    await user.click(box());
+    await user.keyboard('Please ');
+    await choose('Summarize');
+    const pill = box().querySelector('.ui-message-composer__pill');
+    expect(pill).toHaveTextContent('/summarize');
+    expect(pill).toHaveAttribute('data-kind', 'command');
+    await choose('Insert the notes');
+    await user.keyboard('{Enter}');
+    expect(onSubmit).toHaveBeenCalledWith({
+      text: 'Please /summarize the notes',
+      tokens: [{ start: 7, end: 17, kind: 'command', id: 'summarize', label: 'summarize' }],
+    });
+  });
+
+  it('UIC-MESSAGE-COMPOSER-5.3 inserts a pill as its text in a code block', async () => {
+    const { user, onSubmit } = renderComposer({
+      menu: {
+        sections: [
+          {
+            id: 'add',
+            title: 'Add',
+            items: [
+              {
+                id: 'maria',
+                label: 'Maria Santos',
+                onAction: (composer) => composer.insertPill(maria),
+              },
+            ],
+          },
+        ],
+      },
+    });
+    await user.click(box());
+    await user.keyboard('```');
+    await user.click(screen.getByRole('button', { name: 'Add and more' }));
+    await user.click(
+      within(await screen.findByRole('menu')).getByRole('menuitem', { name: 'Maria Santos' }),
+    );
+    await waitFor(() => expect(box()).toHaveFocus());
+    expect(box().querySelector('.ui-message-composer__pill')).toBeNull();
+    await user.keyboard('{Control>}{Enter}{/Control}');
+    expect(onSubmit).toHaveBeenCalledWith({ text: '```\n@Maria Santos \n```', tokens: [] });
   });
 
   it('UIC-MESSAGE-COMPOSER-4.4 closes the list with Escape until the next edit and opens nothing in a word', async () => {

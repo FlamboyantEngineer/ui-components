@@ -13,6 +13,7 @@ import { installEditorDom } from '../../../test/rich-text-fixtures.js';
 import { UiProvider } from '../../core/provider.js';
 import { createMemoryStorage } from '../../core/storage.js';
 import type { ChatQueuedMessage } from '../chat-controller/chat-controller.js';
+import type { ChatProps } from './chat.js';
 
 installEditorDom();
 
@@ -260,5 +261,49 @@ describe('Chat composer', () => {
     expect(screen.getByRole('button', { name: /^Model:/ })).toBeDisabled();
     rerenderWith({ onAttach: vi.fn(), modelPicker: { ...modelPicker, isDisabled: true } });
     expect(screen.getByRole('button', { name: /^Model:/ })).toBeDisabled();
+  });
+
+  it('UIC-CHAT-3.9 forwards the + menu first among the tools in place of the attach button, disabled with the composer', async () => {
+    const onSelectedChange = vi.fn();
+    const composerMenu: ChatProps['composerMenu'] = {
+      sections: [
+        {
+          id: 'add',
+          title: 'Add',
+          items: [
+            {
+              id: 'goal',
+              label: 'Insert a goal prompt',
+              onAction: (composer) => composer.insertText('Goal: a calm weekend'),
+            },
+            { id: 'plan', label: 'Plan mode', isSelected: false, onSelectedChange },
+          ],
+        },
+      ],
+    };
+    const { user, container, onSend, rerenderWith } = renderChat({
+      onAttach: vi.fn(),
+      composerMenu,
+      composerToolbar: <button>Allow changes</button>,
+      modelPicker: { models: [{ id: 'swift', label: 'Swift' }] },
+    });
+    const toolbar = container.querySelector('.ui-message-composer__toolbar') as HTMLElement;
+    const tools = within(toolbar).getAllByRole('button');
+    expect(tools.map((tool) => tool.getAttribute('aria-label') ?? tool.textContent)).toEqual([
+      'Add and more',
+      'Insert emoji',
+      'Allow changes',
+      'Model: Swift',
+    ]);
+    await user.click(screen.getByRole('button', { name: 'Add and more' }));
+    const menu = await screen.findByRole('menu', { name: 'Add and more' });
+    await user.click(within(menu).getByRole('menuitemcheckbox', { name: 'Plan mode' }));
+    expect(onSelectedChange).toHaveBeenCalledWith(true);
+    await user.click(within(menu).getByRole('menuitem', { name: 'Insert a goal prompt' }));
+    await waitFor(() => expect(box()).toHaveFocus());
+    await user.keyboard('{Enter}');
+    expect(onSend).toHaveBeenCalledWith('Goal: a calm weekend', []);
+    rerenderWith({ composerMenu, isDisabled: true });
+    expect(screen.getByRole('button', { name: 'Add and more' })).toBeDisabled();
   });
 });

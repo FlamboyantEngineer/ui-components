@@ -1,6 +1,6 @@
 # Message Composer
 
-`MessageComposer` writes a chat message or a comment: a text area that grows with its text and sends on Enter (Shift+Enter breaks the line) or on Ctrl+Enter, with a banner (the message being replied to or edited) and the message's attachments above it, the attach and emoji buttons, the caller's tools and a send button below it, completions such as `@` mentions ([Completion List](COMPLETION-LIST.md)), an edit mode with Save and Cancel, recall of earlier messages with the arrows, a draft kept in the provider's storage, and a pending state that turns Send into Stop while a reply streams. It sits below a [Chat Transcript](CHAT-TRANSCRIPT.md) or a comment thread.
+`MessageComposer` writes a chat message or a comment: a text area that grows with its text and sends on Enter (Shift+Enter breaks the line) or on Ctrl+Enter, with a banner (the message being replied to or edited) and the message's attachments above it, a "+" menu of the host's actions or the attach button, the emoji button, the caller's tools and a send button below it, completions such as `@` mentions ([Completion List](COMPLETION-LIST.md)), an edit mode with Save and Cancel, recall of earlier messages with the arrows, a draft kept in the provider's storage, and a pending state that turns Send into Stop while a reply streams. It sits below a [Chat Transcript](CHAT-TRANSCRIPT.md) or a comment thread.
 
 `RichMessageComposer` is its rich mode, on [ProseMirror](https://prosemirror.net) and `@handlewithcare/react-prosemirror`, which stay optional peer dependencies: it is exported only from its own entry point, `@flamboyantengineer/ui-components/message-composer/rich`, so the package root and `MessageComposer` load without them. It shares the plain composer's frame, sending, attaching, editing, recall and draft, and adds mentions and commands as atomic pills, Markdown as typed with code blocks, and plain-text paste. It sends Markdown text with the pills' token ranges.
 
@@ -29,17 +29,17 @@ Verification: `src/components/message-composer/message-composer.test.tsx`, `e2e/
 
 ### UIC-MESSAGE-COMPOSER-1.4 - Disabled
 
-With `isDisabled`, the root shall publish `data-disabled`, the text area is natively disabled, the send, attach, emoji and Cancel buttons are disabled, and dropped or pasted files are ignored.
+With `isDisabled`, the root shall publish `data-disabled`, the text area is natively disabled, the send, attach, emoji and Cancel buttons and the menu's "+" button are disabled, and dropped or pasted files are ignored.
 
-Implementation: `src/components/message-composer/composer-frame.tsx`, `src/components/message-composer/use-message-composer.ts`
-Verification: `src/components/message-composer/message-composer.test.tsx`
+Implementation: `src/components/message-composer/composer-frame.tsx`, `src/components/message-composer/use-message-composer.ts`, `src/components/message-composer/composer-menu.tsx`
+Verification: `src/components/message-composer/message-composer.test.tsx`, `src/components/message-composer/composer-menu.test.tsx`
 
 ### UIC-MESSAGE-COMPOSER-1.5 - Attachments and tools
 
-`attachments` shall render above the text area in `ui-message-composer__attachments`, and `toolbar` before the button in `ui-message-composer__toolbar`, after the built-in attach and emoji buttons, inside the row below the text area (`ui-message-composer__footer`). The toolbar renders only when it holds a tool.
+`attachments` shall render above the text area in `ui-message-composer__attachments`, and `toolbar` before the button in `ui-message-composer__toolbar`, inside the row below the text area (`ui-message-composer__footer`). The toolbar holds, in order: the menu's "+" button ([UIC-MESSAGE-COMPOSER-5.1](#uic-message-composer-51---menu-button)) or else the attach button, the emoji button, then `toolbar`. It renders only when it holds a tool.
 
 Implementation: `src/components/message-composer/composer-frame.tsx`
-Verification: `src/components/message-composer/message-composer.test.tsx`, `e2e/message-composer.spec.ts`
+Verification: `src/components/message-composer/message-composer.test.tsx`, `src/components/message-composer/composer-menu.test.tsx`, `e2e/message-composer.spec.ts`
 
 ### UIC-MESSAGE-COMPOSER-1.6 - Completions
 
@@ -66,10 +66,10 @@ Verification: `src/components/message-composer/message-composer.test.tsx`, `src/
 
 ### UIC-MESSAGE-COMPOSER-2.2 - Accessibility
 
-The input shall be named by `aria-label`, `aria-labelledby` or else the provider string `message`, and keep its text box role; the send and stop button is named by its command, and the built-in tools by the provider strings `attachFiles`, `insertEmoji`, `save` and `cancel`.
+The input shall be named by `aria-label`, `aria-labelledby` or else the provider string `message`, and keep its text box role; the send and stop button is named by its command, and the built-in tools by the provider strings `attachFiles`, `insertEmoji`, `composerMenu` (the menu's "+" button), `save` and `cancel`.
 
-Implementation: `src/components/message-composer/use-message-composer.ts`, `src/components/message-composer/composer-tools.tsx`, `src/core/content-strings.ts`, `src/core/composer-strings.ts`
-Verification: `src/components/message-composer/message-composer.test.tsx`, `e2e/message-composer.spec.ts`
+Implementation: `src/components/message-composer/use-message-composer.ts`, `src/components/message-composer/composer-tools.tsx`, `src/components/message-composer/composer-menu.tsx`, `src/core/content-strings.ts`, `src/core/composer-strings.ts`
+Verification: `src/components/message-composer/message-composer.test.tsx`, `src/components/message-composer/composer-menu.test.tsx`, `e2e/message-composer.spec.ts`
 
 ## UIC-MESSAGE-COMPOSER-3 - Conversations
 
@@ -82,10 +82,10 @@ Verification: `src/components/message-composer/composer-frame.test.tsx`, `e2e/me
 
 ### UIC-MESSAGE-COMPOSER-3.2 - Attaching files
 
-With `onAttach`, the toolbar shall start with an attach button (`ui-message-composer__attach`, the `attach` glyph, named by the provider string `attachFiles`) that opens the system file chooser for several files, and `onAttach` receives the chosen files. Files dragged onto the composer and dropped there, and files pasted into the input, reach `onAttach` too, instead of the input: while a drag that carries files is over the composer, its root publishes `data-drop-target`. Drags and pastes of text are left to the input. The caller renders the attached files in `attachments`.
+With `onAttach` and without `menu`, the toolbar shall start with an attach button (`ui-message-composer__attach`, the `attach` glyph, named by the provider string `attachFiles`) that opens the system file chooser for several files, and `onAttach` receives the chosen files. With `menu`, the menu's "+" button takes the attach button's place, and the host's menu item opens the chooser through the `attachFiles` helper ([UIC-MESSAGE-COMPOSER-5.3](#uic-message-composer-53---actions)). Files dragged onto the composer and dropped there, and files pasted into the input, reach `onAttach` too, instead of the input: while a drag that carries files is over the composer, its root publishes `data-drop-target`. Drags and pastes of text are left to the input. The caller renders the attached files in `attachments`.
 
 Implementation: `src/components/message-composer/composer-tools.tsx`, `src/components/message-composer/use-file-drop.ts`, `src/components/message-composer/use-message-composer.ts`, `src/components/message-composer/rich/rich-editor.tsx`, `src/core/glyphs.tsx`, `src/core/composer-strings.ts`
-Verification: `src/components/message-composer/composer-frame.test.tsx`, `src/components/message-composer/rich/rich-message-composer.test.tsx`, `e2e/message-composer.spec.ts`
+Verification: `src/components/message-composer/composer-frame.test.tsx`, `src/components/message-composer/composer-menu.test.tsx`, `src/components/message-composer/rich/rich-message-composer.test.tsx`, `e2e/message-composer.spec.ts`
 
 ### UIC-MESSAGE-COMPOSER-3.3 - Edit mode
 
@@ -194,6 +194,43 @@ The send button and the submit chord (UIC-MESSAGE-COMPOSER-1.2 and 1.7) shall ca
 Implementation: `src/components/message-composer/rich/rich-content.tsx`, `src/components/message-composer/composer-keys.ts`
 Verification: `src/components/message-composer/rich/rich-message-composer.test.tsx`, `e2e/message-composer.spec.ts`
 
+## UIC-MESSAGE-COMPOSER-5 - Menu
+
+### UIC-MESSAGE-COMPOSER-5.1 - Menu button
+
+With `menu` (`{ sections, filterable? }`), both composers shall start their toolbar with a "+" button (`ui-message-composer__menu-button`, a `Button` with the `plus` glyph named by the provider string `composerMenu`) in place of the attach button, before the emoji button and the caller's tools. It is a menu button ([UIC-MENU-4.1](MENU.md#uic-menu-41---menu-trigger)) that opens the menu (`ui-message-composer__menu`, a [Menu](MENU.md) in a `MenuPopover`) above the composer, against its root and aligned with its start, as its completion list opens ([UIC-MESSAGE-COMPOSER-1.6](#uic-message-composer-16---completions)), or below it when there is no room above; Escape or a press outside closes it and focus returns to the button. Each of `sections` (`{ id, title, items }`) is a group under its `title` heading, holding its items in order, and the menu scrolls when it is taller than its room. The button is disabled with the composer. Section and item ids are unique within the menu.
+
+Implementation: `src/components/message-composer/composer-menu.tsx`, `src/components/message-composer/composer-frame.tsx`, `src/core/glyphs.tsx`, `src/core/composer-strings.ts`, `labs/reference/message-composer.css`
+Verification: `src/components/message-composer/composer-menu.test.tsx`, `e2e/message-composer.spec.ts`
+
+### UIC-MESSAGE-COMPOSER-5.2 - Items
+
+Each item (`{ id, label, description?, icon?, shortcut?, isDisabled?, disabledReason?, isSelected?, onSelectedChange?, items?, onAction? }`) shall draw as a menu item ([UIC-MENU-2.1](MENU.md#uic-menu-21---anatomy)): its `icon` (a built-in glyph name or any icon node), its `label`, its `description` as a note after the label, and its `shortcut` as a hint for a key the host handles itself, its accessible name holding them all. An item with `items` opens a submenu of those items ([UIC-MENU-4.5](MENU.md#uic-menu-45---submenus)), also `ui-message-composer__menu`. With `isDisabled`, an item stays listed and reachable by the arrow keys but refuses activation ([UIC-MENU-2.6](MENU.md#uic-menu-26---focusable-disabled-items)), and shows `disabledReason`, when given, in place of its description, so a reader hears or sees why it is unavailable.
+
+Implementation: `src/components/message-composer/composer-menu.tsx`
+Verification: `src/components/message-composer/composer-menu.test.tsx`, `e2e/message-composer.spec.ts`
+
+### UIC-MESSAGE-COMPOSER-5.3 - Actions
+
+Choosing an item shall call its `onAction` with the composer's helpers, then close the menu with every open submenu. `insertText(text)` inserts the text at the caret in place of the selection. `insertPill({ kind, id, label })` inserts a mention or command followed by a space: in the rich composer as a pill ([UIC-MESSAGE-COMPOSER-4.3](#uic-message-composer-43---pills)), sent as a token, and in a code block or the plain composer as its text (`@label`, `/label`). After either, once the menu has closed and given focus back to its button, focus returns to the input with the caret after the insertion. `attachFiles()` opens the system file chooser for several files and hands the chosen files to `onAttach` ([UIC-MESSAGE-COMPOSER-3.2](#uic-message-composer-32---attaching-files)). `focusInput()` moves focus to the input once the menu has closed.
+
+Implementation: `src/components/message-composer/composer-menu.tsx`, `src/components/message-composer/use-message-composer.ts`, `src/components/message-composer/rich/rich-message-composer.tsx`, `src/components/message-composer/rich/rich-content.tsx`, `src/components/message-composer/rich/composer-commands.ts`, `src/components/message-composer/use-file-drop.ts`
+Verification: `src/components/message-composer/composer-menu.test.tsx`, `src/components/message-composer/rich/rich-message-composer.test.tsx`, `e2e/message-composer.spec.ts`
+
+### UIC-MESSAGE-COMPOSER-5.4 - Toggles
+
+An item with `isSelected` (true or false) shall be a toggle the host controls, such as a plan mode: a check item ([UIC-MENU-2.7](MENU.md#uic-menu-27---check-items), `menuitemcheckbox` with `aria-checked`) among the other items. Choosing it calls `onSelectedChange` with the new state, then `onAction`, and keeps the menu open, so the reader can flip several.
+
+Implementation: `src/components/message-composer/composer-menu.tsx`
+Verification: `src/components/message-composer/composer-menu.test.tsx`, `e2e/message-composer.spec.ts`
+
+### UIC-MESSAGE-COMPOSER-5.5 - Search
+
+With `filterable` (off by default), the menu shall lead with a search field ([UIC-MENU-5.1](MENU.md#uic-menu-51---filterable-menu)), focused when the menu opens, that keeps the items whose label or description contains the typed text, ignoring case and accents, and hides the sections it leaves empty; while nothing matches it shows the provider's `noResults` string.
+
+Implementation: `src/components/message-composer/composer-menu.tsx`
+Verification: `src/components/message-composer/composer-menu.test.tsx`, `e2e/message-composer.spec.ts`
+
 ## Hooks
 
 | Hook                               | Kind      | Values               | Description                                                         |
@@ -206,7 +243,9 @@ Verification: `src/components/message-composer/rich/rich-message-composer.test.t
 | `ui-message-composer__pill`        | slot      |                      | Rich: a mention or command in the text.                             |
 | `ui-message-composer__code-block`  | slot      |                      | Rich: a code block (`pre`).                                         |
 | `ui-message-composer__footer`      | slot      |                      | The row below the text: the tools and the buttons.                  |
-| `ui-message-composer__toolbar`     | slot      |                      | The attach and emoji buttons and the caller's tools.                |
+| `ui-message-composer__toolbar`     | slot      |                      | The menu or attach button, the emoji button and the caller's tools. |
+| `ui-message-composer__menu-button` | slot      |                      | The "+" button that opens the menu (also `ui-button`).              |
+| `ui-message-composer__menu`        | slot      |                      | The menu the "+" button opens and its submenus (also `ui-menu`).    |
 | `ui-message-composer__attach`      | slot      |                      | The attach button (also `ui-button`).                               |
 | `ui-message-composer__emoji`       | slot      |                      | The emoji button (also `ui-button`).                                |
 | `ui-message-composer__cancel`      | slot      |                      | The Cancel button of edit mode (also `ui-button`).                  |

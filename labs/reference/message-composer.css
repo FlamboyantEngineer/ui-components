@@ -151,11 +151,49 @@
   min-width: 0;
 }
 
+.ui-message-composer__menu-button,
 .ui-message-composer__attach,
 .ui-message-composer__emoji,
 .ui-message-composer__cancel,
 .ui-message-composer__action {
   flex: none;
+}
+
+/*
+ * The menu the "+" button opens above the composer: categories that scroll, each item an icon, its
+ * label and a muted note after it on one line, then its shortcut, submenu arrow or toggle check.
+ */
+.ui-message-composer__menu {
+  width: min(440px, calc(100vw - 18px));
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.ui-message-composer__menu .ui-menu-item {
+  flex-wrap: nowrap;
+}
+
+.ui-message-composer__menu .ui-menu-item__label {
+  flex: 0 1 auto;
+}
+
+.ui-message-composer__menu .ui-menu-item .ui-menu-item__description {
+  order: 0;
+  flex: 1 1 0;
+  min-width: 0;
+  padding-inline-start: 0;
+}
+
+/* A toggle's check sits at the end of its row, so every icon lines up. */
+.ui-message-composer__menu .ui-menu-item__check {
+  order: 1;
+}
+
+.ui-message-composer__menu .ui-menu-item__shortcut,
+.ui-message-composer__menu .ui-menu-item__submenu-indicator,
+.ui-message-composer__menu .ui-menu-item__check {
+  flex: none;
+  margin-inline-start: auto;
 }
 
 .ui-message-composer__completions {

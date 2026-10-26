@@ -228,6 +228,37 @@ test.describe('Menu lab', () => {
     await expect(area.locator('[data-lab-output="Sort"]')).toHaveText('date');
   });
 
+  test('UIC-MENU-2.7 flips check items of their own among actions and keeps the menu open', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('menu');
+    await expect(
+      page.locator('[data-lab-cell="state=check item size=md"] .ui-menu-item'),
+    ).toHaveAttribute('aria-checked', 'true');
+    const area = section(page, 'Check items');
+    const trigger = area.getByRole('button', { name: 'Editor' });
+    await trigger.focus();
+    await page.keyboard.press('ArrowDown');
+    const menu = page.getByRole('menu', { name: 'Editor' });
+    const wrap = menu.getByRole('menuitemcheckbox', { name: 'Wrap lines' });
+    await expect(wrap).toHaveAttribute('aria-checked', 'false');
+    await page.keyboard.press('ArrowDown');
+    await expect(wrap).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(wrap).toHaveAttribute('aria-checked', 'true');
+    await expect(wrap.locator('.ui-menu-item__check svg')).toBeVisible();
+    await expect(area.locator('[data-lab-output="Wrap lines"]')).toHaveText('on');
+    await menu.getByRole('menuitemcheckbox', { name: 'Show ruler' }).click();
+    await expect(area.locator('[data-lab-output="Show ruler"]')).toHaveText('off');
+    await expect(popovers(page)).not.toHaveAttribute('data-entering');
+    await lab.expectAccessible('.ui-menu-popover');
+    await menu.getByRole('menuitem', { name: 'Reload' }).click();
+    await expect(popovers(page)).toHaveCount(0);
+    await expect(area.locator('[data-lab-output="Editor action"]')).toHaveText('reload');
+    await expect(trigger).toBeFocused();
+  });
+
   test('UIC-MENU-4.3 fits a long menu to the viewport and scrolls it', async ({ page, lab }) => {
     await page.setViewportSize({ width: 800, height: 500 });
     await lab.open('menu');

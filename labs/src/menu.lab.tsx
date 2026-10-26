@@ -64,6 +64,7 @@ function stateMenu(state: string): MenuProps {
     focusableWhenDisabled: state === 'focusable disabled',
     description: state === 'focusable disabled' ? 'Nothing to archive' : undefined,
     isPending: state === 'pending',
+    isSelected: state === 'check item' ? true : undefined,
   };
   const selection: MenuProps = {
     selectionMode: 'single',
@@ -202,6 +203,41 @@ function SelectionMenu() {
       </MenuButton>
       <Feedback name="Sort">{list(sort)}</Feedback>
       <Feedback name="Columns">{list(columns)}</Feedback>
+    </>
+  );
+}
+
+/** Actions with two check items of their own, which keep the menu open while flipped. */
+function CheckItemMenu() {
+  const [isWrapped, setWrapped] = useState(false);
+  const [showsRuler, setShowsRuler] = useState(true);
+  const [last, setLast] = useState('none');
+  return (
+    <>
+      <MenuButton label="Editor" onAction={(key) => setLast(String(key))}>
+        <MenuItem id="reload" icon="refresh">
+          Reload
+        </MenuItem>
+        <MenuItem
+          id="wrap"
+          isSelected={isWrapped}
+          shouldCloseOnSelect={false}
+          onAction={() => setWrapped((value) => !value)}
+        >
+          Wrap lines
+        </MenuItem>
+        <MenuItem
+          id="ruler"
+          isSelected={showsRuler}
+          shouldCloseOnSelect={false}
+          onAction={() => setShowsRuler((value) => !value)}
+        >
+          Show ruler
+        </MenuItem>
+      </MenuButton>
+      <Feedback name="Editor action">{last}</Feedback>
+      <Feedback name="Wrap lines">{isWrapped ? 'on' : 'off'}</Feedback>
+      <Feedback name="Show ruler">{showsRuler ? 'on' : 'off'}</Feedback>
     </>
   );
 }
@@ -350,7 +386,7 @@ mountLab(
     </LabSection>
     <LabSection
       title="Item states by size"
-      description="Tone, disabled, focusable disabled (Tab reaches it and it shows why it is unavailable, but refuses activation), pending and selection. Hover, press and keyboard focus show on interaction."
+      description="Tone, disabled, focusable disabled (Tab reaches it and it shows why it is unavailable, but refuses activation), pending, selection and a checked check item of its own. Hover, press and keyboard focus show on interaction."
     >
       <StateMatrix
         axes={{
@@ -362,6 +398,7 @@ mountLab(
             'pending',
             'selected',
             'unselected',
+            'check item',
           ],
           size: sizes,
         }}
@@ -385,6 +422,12 @@ mountLab(
       description="A single-choice section and a multiple-choice section; choosing in the multiple-choice section keeps the menu open."
     >
       <SelectionMenu />
+    </LabSection>
+    <LabSection
+      title="Check items"
+      description="Wrap lines and Show ruler are check items of their own among plain actions, without a selection: each flips its state and keeps the menu open, while Reload runs and closes it."
+    >
+      <CheckItemMenu />
     </LabSection>
     <LabSection
       title="Long menu"

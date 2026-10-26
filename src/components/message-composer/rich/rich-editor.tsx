@@ -10,13 +10,14 @@ import type { ComposerState } from '../use-composer-state.js';
 import { attachPastedFiles } from '../use-file-drop.js';
 import { createComposerPlugins, createComposerState, pastePlainText } from './composer-commands.js';
 import { parseComposerMessage, serializeComposerDocument } from './composer-markdown.js';
-import { composerSchema } from './composer-schema.js';
+import { composerSchema, type PillAttributes } from './composer-schema.js';
 import { RichComposerContent } from './rich-content.js';
 import type { RichMessageComposerProps } from './rich-message-composer.js';
 
 /** What the frame's tools call on the editor. */
 export interface RichEditorHandle {
   insertText: (text: string) => void;
+  insertPill: (pill: PillAttributes) => void;
   focus: () => void;
 }
 
