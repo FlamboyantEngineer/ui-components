@@ -408,7 +408,7 @@ test.describe('Message Composer lab', () => {
     );
   });
 
-  test('UIC-MESSAGE-COMPOSER-5.1 UIC-MESSAGE-COMPOSER-5.2 opens the + menu upward from its button with its categories', async ({
+  test('UIC-MESSAGE-COMPOSER-5.1 UIC-MESSAGE-COMPOSER-5.2 opens the + menu above the composer with its categories', async ({
     page,
     lab,
   }) => {
@@ -422,16 +422,17 @@ test.describe('Message Composer lab', () => {
     );
     await expect(target.getByRole('button', { name: 'Attach files' })).toHaveCount(0);
     const plus = target.getByRole('button', { name: 'Add and more' });
-    await plus.scrollIntoViewIfNeeded();
+    // The composer at the bottom of the window, where it sits in a conversation.
+    await target.evaluate((element) => element.scrollIntoView({ block: 'end' }));
     await plus.click();
     const menu = page.getByRole('menu', { name: 'Add and more' });
     const popover = page.locator('.ui-menu-popover').filter({ has: menu });
     await expect(popover).toHaveAttribute('data-placement', 'top');
     await expect(popover).not.toHaveAttribute('data-entering');
     const surface = await popover.boundingBox();
-    const button = await plus.boundingBox();
-    expect(surface && button && surface.y + surface.height <= button.y + 1, 'above').toBe(true);
-    expect(surface && button && Math.abs(surface.x - button.x) <= 1, 'at the start').toBe(true);
+    const frame = await target.boundingBox();
+    expect(surface && frame && surface.y + surface.height <= frame.y + 1, 'above').toBe(true);
+    expect(surface && frame && Math.abs(surface.x - frame.x) <= 1, 'at the start').toBe(true);
     await expect(menu.getByRole('group')).toHaveCount(2);
     await expect(menu.locator('.ui-menu-section__header')).toHaveText(['Add', 'Integrations']);
     const calendar = menu.getByRole('menuitem', { name: /^Calendar/ });

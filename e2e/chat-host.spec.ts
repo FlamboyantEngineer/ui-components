@@ -90,6 +90,8 @@ test.describe('Chat lab host controls', () => {
     expect(text.indexOf('Allow changes')).toBeLessThan(text.indexOf('Balanced'));
     const plus = toolbar.getByRole('button', { name: 'Add and more' });
     const menu = page.getByRole('menu', { name: 'Add and more' });
+    // The composer at the bottom of the window, where it sits in a conversation.
+    await plus.evaluate((element) => element.scrollIntoView({ block: 'end' }));
     await plus.click();
     const menuBox = await menu.boundingBox();
     const frameBox = await host(page).locator('.ui-chat__composer').boundingBox();
