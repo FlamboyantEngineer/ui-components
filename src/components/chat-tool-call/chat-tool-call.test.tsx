@@ -53,6 +53,7 @@ describe('ChatToolCall', () => {
         'disclosure',
         'heading',
         'status-glyph',
+        'summary',
         'label',
         'status',
         'duration',
@@ -66,6 +67,32 @@ describe('ChatToolCall', () => {
       ],
       callerAttributes: ['data-testid'],
     });
+  });
+
+  it('UIC-CHAT-TOOL-CALL-1.1 holds the label, status, duration and badge in the summary beside the glyph', () => {
+    const { container } = render(
+      <ChatToolCall
+        id="call-long"
+        name="plan_weekend"
+        label="Compare the morning and afternoon trains for Saturday"
+        status="succeeded"
+        durationMs={2300}
+        approval={{ isAutoApproved: true }}
+      />,
+    );
+    const title = getToolCallTrigger(container).querySelector('.ui-disclosure__title');
+    const [glyph, summary] = Array.from(title?.children ?? []);
+    expect(glyph).toHaveClass('ui-chat-tool-call__status-glyph');
+    expect(summary).toHaveClass('ui-chat-tool-call__summary');
+    expect(Array.from(summary?.children ?? []).map((part) => part.classList[0])).toEqual([
+      'ui-chat-tool-call__label',
+      'ui-chat-tool-call__status',
+      'ui-chat-tool-call__duration',
+      'ui-badge',
+    ]);
+    expect(summary).toHaveTextContent(
+      'Compare the morning and afternoon trains for Saturday Done 2.3 s2.3 seconds Auto-approved',
+    );
   });
 
   it('UIC-CHAT-TOOL-CALL-1.2 derives the label from the name when none is given', () => {

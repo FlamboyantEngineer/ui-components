@@ -205,6 +205,28 @@ mountLab(
       </div>
     </LabSection>
     <LabSection
+      title="Long label"
+      description="A label too long for one line wraps beside the status glyph, which stays on the first line, and the status, duration and badge follow its last word."
+    >
+      <StateMatrix
+        axes={{ 'long label': ['succeeded', 'running', 'failed'] }}
+        render={({ 'long label': status }) => (
+          <div style={{ width: 360 }}>
+            <ChatToolCall
+              id={`long-label-${status}`}
+              name="plan_weekend"
+              label="Compare the morning and afternoon trains from Lisbon to Porto for Saturday, keeping seats together"
+              status={status}
+              args={{ from: 'Lisbon', to: 'Porto', day: 'Saturday' }}
+              error={status === 'failed' ? 'The timetable service did not answer.' : undefined}
+              durationMs={status === 'running' ? undefined : 2300}
+              approval={status === 'succeeded' ? { isAutoApproved: true } : undefined}
+            />
+          </div>
+        )}
+      />
+    </LabSection>
+    <LabSection
       title="Interactive approval"
       description="Decide with the buttons or the keyboard: Ctrl+Enter (Cmd+Enter on macOS) approves, Escape focuses Deny. Approving runs the tool; Deny asks for an optional reason. Ask again resets the call."
     >
