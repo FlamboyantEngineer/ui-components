@@ -5,6 +5,7 @@ import { useUiStrings } from '../../core/provider.js';
 import {
   chatQuestionHooks as hooks,
   type ChatQuestionAnswer,
+  type ChatQuestionAnsweredMark,
   type ChatQuestionData,
 } from './chat-question-model.js';
 import { PendingQuestions } from './chat-question-pending.js';
@@ -13,6 +14,7 @@ import { QuestionDismissal, QuestionSummary } from './chat-question-summary.js';
 
 export type {
   ChatQuestionAnswer,
+  ChatQuestionAnsweredMark,
   ChatQuestionData,
   ChatQuestionItem,
   ChatQuestionOption,
@@ -31,6 +33,11 @@ export interface ChatQuestionProps extends BaseProps, ChatQuestionData {
   onSubmit?: ((answers: ChatQuestionAnswer[]) => void | Promise<unknown>) | undefined;
   /** Draws a Dismiss button that calls this; a returned promise is awaited like `onSubmit`'s. */
   onDismiss?: (() => void | Promise<unknown>) | undefined;
+  /**
+   * How the tab of an answered question shows it: `icon` (the default) draws a check before its
+   * label; `style` draws nothing, leaving the tab's `data-answered` to the stylesheet.
+   */
+  answeredMark?: ChatQuestionAnsweredMark | undefined;
 }
 
 /**
@@ -69,6 +76,7 @@ export function ChatQuestion({
   answers,
   onSubmit,
   onDismiss,
+  answeredMark = 'icon',
   className,
   ...rest
 }: ChatQuestionProps) {
@@ -81,7 +89,12 @@ export function ChatQuestion({
   const name = first === undefined ? undefined : strings.questionAsked(first, questions.length);
   const isPending = status === 'pending';
   const request = useQuestionRequest(isPending ? id : undefined);
-  const data = { status, stepped: questions.length > 1, submitting: request.running !== null };
+  const data = {
+    status,
+    stepped: questions.length > 1,
+    submitting: request.running !== null,
+    answeredMark,
+  };
   return (
     <div
       {...hooks.root({ className, props: rest, data })}
@@ -97,6 +110,7 @@ export function ChatQuestion({
           questions={questions}
           running={request.running}
           failure={request.failure}
+          answeredMark={answeredMark}
           onSubmit={
             onSubmit &&
             ((given) =>

@@ -112,6 +112,23 @@ export const toppingsQuestion: ChatQuestionItem = {
 
 export const setupQuestions = [databaseQuestion, featuresQuestion, nameQuestion];
 
+/** Seven questions, more tabs than a narrow card shows at once. */
+export const tripQuestions: ChatQuestionItem[] = [
+  'Destination',
+  'Dates',
+  'Travellers',
+  'Budget',
+  'Lodging',
+  'Transport',
+  'Activities',
+].map((header, index) => ({
+  id: `trip-${index + 1}`,
+  question: `Any preference for the ${header.toLowerCase()}?`,
+  header,
+  selectionMode: 'none',
+  options: [],
+}));
+
 export const setupAnswers: ChatQuestionAnswer[] = [
   { questionId: 'database', optionIds: ['postgres'] },
   { questionId: 'features', optionIds: ['search', 'export'], otherText: 'Offline mode' },

@@ -9,10 +9,12 @@ import {
   isQuestionAnswered,
   toAnswer,
   type ChatQuestionAnswer,
+  type ChatQuestionAnsweredMark,
   type ChatQuestionItem,
   type QuestionDraft,
 } from './chat-question-model.js';
 import type { QuestionRequestKind } from './chat-question-request.js';
+import { QuestionTabs } from './chat-question-tabs.js';
 
 type Drafts = Readonly<Record<string, QuestionDraft>>;
 
@@ -25,6 +27,7 @@ interface PendingQuestionsProps {
   running: QuestionRequestKind | null;
   /** Why the last request failed. */
   failure: string | null;
+  answeredMark: ChatQuestionAnsweredMark;
 }
 
 interface QuestionActionsProps {
@@ -46,35 +49,6 @@ function focusAnswer(element: HTMLElement | null) {
     element?.querySelector<HTMLInputElement>('input[type="radio"]:checked') ??
     element?.querySelector<HTMLInputElement>('input:not([type="hidden"])');
   target?.focus();
-}
-
-/** The chips of a stepped card: each question's header, the shown one current. */
-function QuestionSteps({
-  questions,
-  drafts,
-  step,
-}: {
-  questions: readonly ChatQuestionItem[];
-  drafts: Drafts;
-  step: number;
-}) {
-  const strings = useUiStrings();
-  return (
-    <ol {...hooks.slot('steps')} aria-label={strings.questionSteps}>
-      {questions.map((item, index) => (
-        <li
-          key={item.id}
-          {...hooks.slot('step', {
-            current: index === step,
-            answered: isQuestionAnswered(item, drafts[item.id]),
-          })}
-          aria-current={index === step ? 'step' : undefined}
-        >
-          {item.header || strings.questionStep(index + 1)}
-        </li>
-      ))}
-    </ol>
-  );
 }
 
 /** A primary button that stays focusable while unavailable, with a hint saying why. */
@@ -170,15 +144,14 @@ function QuestionActions(props: QuestionActionsProps) {
 }
 
 /**
- * A pending card: one question, or several asked one at a time behind chips and a progress hint,
- * with the reader's drafts, Back, Next, Submit and Dismiss, and why the last request failed.
- * Stepping moves focus to the answer of the question shown; Enter in an answer field steps on, or
- * submits from the last question. Without `onSubmit`, or while a request runs, the answers are
- * read-only; a read-only card steps through its questions without answers.
+ * A pending card: its questions as tabs with a counter, the shown question, the reader's drafts,
+ * Back, Next, Submit and Dismiss, and why the last request failed. Any tab shows its question and
+ * keeps focus; Back and Next move focus to the answer of the question they show; Enter in an answer
+ * field steps on, or submits from the last question. Without `onSubmit`, or while a request runs,
+ * the answers are read-only; a read-only card steps through its questions without answers.
  */
 export function PendingQuestions(props: PendingQuestionsProps) {
-  const { questions, onSubmit, onDismiss, running, failure } = props;
-  const strings = useUiStrings();
+  const { questions, onSubmit, onDismiss, running, failure, answeredMark } = props;
   const [drafts, setDrafts] = useState<Drafts>({});
   const [step, setStep] = useState(0);
   const [revealed, setRevealed] = useState<ReadonlySet<string>>(() => new Set());
@@ -190,7 +163,6 @@ export function PendingQuestions(props: PendingQuestionsProps) {
     focusAnswer(itemRef.current);
   }, [step]);
   const current = questions[step];
-  const isStepped = questions.length > 1;
   const canAnswer = onSubmit !== undefined && running === null;
   const firstOpen = questions.findIndex((item) => !isQuestionAnswered(item, drafts[item.id]));
   const isStepAnswered = current ? isQuestionAnswered(current, drafts[current.id]) : true;
@@ -208,25 +180,26 @@ export function PendingQuestions(props: PendingQuestionsProps) {
   };
   return (
     <>
-      {isStepped ? <QuestionSteps questions={questions} drafts={drafts} step={step} /> : null}
-      {isStepped ? (
-        <span {...hooks.slot('progress')}>
-          {strings.questionProgress(step + 1, questions.length)}
-        </span>
-      ) : null}
-      {current ? (
-        <QuestionItem
-          key={current.id}
-          ref={itemRef}
-          item={current}
-          draft={drafts[current.id] ?? emptyDraft}
-          onDraftChange={(draft) => setDrafts((all) => ({ ...all, [current.id]: draft }))}
-          isReadOnly={!canAnswer}
-          isRevealed={revealed.has(current.id)}
-          onEnter={advance}
-          showsHeader={!isStepped}
-        />
-      ) : null}
+      <QuestionTabs
+        questions={questions}
+        drafts={drafts}
+        step={step}
+        answeredMark={answeredMark}
+        onSelect={setStep}
+      >
+        {current ? (
+          <QuestionItem
+            key={current.id}
+            ref={itemRef}
+            item={current}
+            draft={drafts[current.id] ?? emptyDraft}
+            onDraftChange={(draft) => setDrafts((all) => ({ ...all, [current.id]: draft }))}
+            isReadOnly={!canAnswer}
+            isRevealed={revealed.has(current.id)}
+            onEnter={advance}
+          />
+        ) : null}
+      </QuestionTabs>
       {failure ? <InlineError className={hooks.slotClass('error')}>{failure}</InlineError> : null}
       <QuestionActions
         step={step}

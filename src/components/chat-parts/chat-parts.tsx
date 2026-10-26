@@ -1,7 +1,10 @@
 import type { ReactNode } from 'react';
 import type { BaseProps } from '../../core/props.js';
 import { ChatSteps } from '../chat-activity/chat-activity.js';
-import type { ChatQuestionAnswer } from '../chat-question/chat-question.js';
+import type {
+  ChatQuestionAnswer,
+  ChatQuestionAnsweredMark,
+} from '../chat-question/chat-question.js';
 import type {
   ChatCodePart,
   ChatCustomPart,
@@ -80,6 +83,8 @@ export interface ChatPartsProps extends BaseProps {
     | undefined;
   /** Dismisses a question part; shows Dismiss. A returned promise is awaited. */
   onDismissQuestion?: ((questionId: string) => void | Promise<unknown>) | undefined;
+  /** How a question part's tabs mark an answered question: `icon` (the default) or `style`. */
+  questionAnsweredMark?: ChatQuestionAnsweredMark | undefined;
   /** Retries a failed attachment upload; shows Retry. */
   onRetryAttachment?: ((id: string) => void) | undefined;
   /** Shows Apply on code: a code part, or a fenced block in text (passed as a code part). */
