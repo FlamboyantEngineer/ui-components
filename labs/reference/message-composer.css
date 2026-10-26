@@ -7,7 +7,7 @@
   padding: 6px;
   border: 1px solid var(--ref-border-strong);
   border-radius: var(--ref-radius);
-  background: var(--ref-surface);
+  background: var(--ref-canvas);
   color: var(--ref-text);
   font: var(--ref-font-size)/1.4 var(--ref-font);
 }
@@ -19,7 +19,7 @@
 
 .ui-message-composer[data-disabled] {
   border-color: var(--ref-border);
-  background: var(--ref-canvas);
+  background: var(--ref-surface);
 }
 
 .ui-message-composer[data-disabled] .ui-message-composer__input {
@@ -34,7 +34,7 @@
 .ui-message-composer[data-drop-target] {
   border-style: dashed;
   border-color: var(--ref-focus);
-  background: color-mix(in srgb, var(--ref-focus) var(--ref-tint-subtle), var(--ref-surface));
+  background: color-mix(in srgb, var(--ref-focus) var(--ref-tint-subtle), var(--ref-canvas));
 }
 
 .ui-message-composer__banner {
@@ -45,7 +45,7 @@
   padding: 4px 6px;
   border-inline-start: 2px solid var(--ref-accent);
   border-radius: var(--ref-radius-sm);
-  background: var(--ref-canvas);
+  background: var(--ref-surface);
   color: var(--ref-muted);
   font-size: var(--ref-font-size-sm);
 }
@@ -132,7 +132,7 @@
   padding: 4px 8px;
   border: 1px solid var(--ref-border);
   border-radius: var(--ref-radius-sm);
-  background: var(--ref-canvas);
+  background: var(--ref-surface);
   font-family: var(--ref-mono);
   font-size: var(--ref-font-size-sm);
   white-space: pre-wrap;

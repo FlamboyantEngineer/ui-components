@@ -1,15 +1,39 @@
 // A host for the Chat lab's conversations between people: it owns the messages, walks a sent
-// message through its delivery, shows the other person typing and has them answer.
+// message through its delivery, shows the other person typing and has them answer, and loads
+// older history.
 
 import { useEffect, useRef, useState } from 'react';
-import type { ChatMessageData, ChatTextToken } from '../../src/components/chat-parts/index.js';
+import type { ChatAttachmentData } from '../../src/components/chat-attachment/chat-attachment.js';
+import type {
+  ChatMessageData,
+  ChatPart,
+  ChatTextToken,
+} from '../../src/components/chat-parts/index.js';
 import type { ReactionEntry } from '../../src/components/reaction-bar/index.js';
 import { nextLabId, nowIso, reader, sentMessage } from './chat-samples.js';
 
+/** Replaces the conversation from the one it holds, as React state or a chat controller does. */
+export type LabSetMessages = (
+  update: (messages: readonly ChatMessageData[]) => readonly ChatMessageData[],
+) => void;
+
+/** Who answers each message the reader sends, and what they say in turn. */
+export interface LabReplier {
+  id: string;
+  replies: readonly string[];
+}
+
 export interface PeopleHostOptions {
   initialMessages: readonly ChatMessageData[];
-  /** Who answers each message the reader sends, and what they say in turn. */
-  replier?: { id: string; replies: readonly string[] } | undefined;
+  replier?: LabReplier | undefined;
+}
+
+/** A message the reader sends to people: its text and tokens, what it replies to, its files. */
+interface PeopleMessage {
+  text: string;
+  tokens?: readonly ChatTextToken[] | undefined;
+  replyTo?: string | undefined;
+  attachments?: readonly ChatAttachmentData[] | undefined;
 }
 
 /** The reactions with the reader's reaction to `emoji` added or taken back. */
@@ -44,9 +68,26 @@ function useTimers() {
   };
 }
 
-/** The conversation and every callback a chat between people needs. */
-export function usePeopleHost({ initialMessages, replier }: PeopleHostOptions) {
-  const [messages, setMessages] = useState<readonly ChatMessageData[]>(initialMessages);
+/** The reader's message, sending: its files, then its text with the mentions and commands. */
+function toSentMessage(outgoing: PeopleMessage): ChatMessageData {
+  const { text, tokens = [], replyTo, attachments = [] } = outgoing;
+  const message = sentMessage(text, tokens, { delivery: 'sending', replyTo });
+  if (attachments.length === 0) return message;
+  const files: ChatPart = { type: 'files', attachments: [...attachments] };
+  return { ...message, parts: text ? [files, ...message.parts] : [files] };
+}
+
+/**
+ * Every callback a chat between people needs, over messages the caller keeps: sending walks a
+ * message through its delivery while the replier types and answers.
+ */
+export function usePeopleCallbacks({
+  setMessages,
+  replier,
+}: {
+  setMessages: LabSetMessages;
+  replier?: LabReplier | undefined;
+}) {
   const [typingIds, setTypingIds] = useState<string[]>([]);
   const replies = useRef(0);
   const later = useTimers();
@@ -69,17 +110,17 @@ export function usePeopleHost({ initialMessages, replier }: PeopleHostOptions) {
     later(1100, () => update(id, (message) => ({ ...message, delivery: 'delivered' })));
     answer(id);
   };
-  const send = (text: string, tokens: readonly ChatTextToken[] = [], replyTo?: string) => {
-    const message = sentMessage(text, tokens, { delivery: 'sending', replyTo });
+  const send = (outgoing: PeopleMessage) => {
+    const message = toSentMessage(outgoing);
     setMessages((list) => [...list, message]);
     deliver(message.id);
   };
   return {
-    messages,
-    setMessages,
     typingIds,
-    onSend: (text: string, tokens?: readonly ChatTextToken[]) => send(text, tokens),
-    onReply: (id: string, text: string, tokens: readonly ChatTextToken[]) => send(text, tokens, id),
+    send,
+    onSend: (text: string, tokens?: readonly ChatTextToken[]) => send({ text, tokens }),
+    onReply: (id: string, text: string, tokens: readonly ChatTextToken[]) =>
+      send({ text, tokens, replyTo: id }),
     onRetry: (id: string) => {
       update(id, (message) => ({ ...message, delivery: 'sending' }));
       deliver(id);
@@ -98,5 +139,33 @@ export function usePeopleHost({ initialMessages, replier }: PeopleHostOptions) {
         reactions: toggleReaction(message.reactions, emoji, isReacted),
       })),
     onDelete: (id: string) => update(id, (message) => ({ ...message, isDeleted: true })),
+  };
+}
+
+/** The conversation and every callback a chat between people needs. */
+export function usePeopleHost({ initialMessages, replier }: PeopleHostOptions) {
+  const [messages, setMessages] = useState<readonly ChatMessageData[]>(initialMessages);
+  return { messages, setMessages, ...usePeopleCallbacks({ setMessages, replier }) };
+}
+
+/** Older pages of history, newest page first, each loading into the conversation after a moment. */
+export function useOlderHistory(
+  pages: readonly (readonly ChatMessageData[])[],
+  setMessages: LabSetMessages,
+) {
+  const [loaded, setLoaded] = useState(0);
+  const [isLoadingOlder, setLoadingOlder] = useState(false);
+  const later = useTimers();
+  return {
+    hasOlder: loaded < pages.length,
+    isLoadingOlder,
+    onLoadOlder: () => {
+      setLoadingOlder(true);
+      later(700, () => {
+        setMessages((list) => [...(pages[loaded] ?? []), ...list]);
+        setLoaded((count) => count + 1);
+        setLoadingOlder(false);
+      });
+    },
   };
 }

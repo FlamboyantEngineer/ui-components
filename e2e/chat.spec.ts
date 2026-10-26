@@ -328,6 +328,76 @@ test.describe('Chat lab', () => {
   });
 });
 
+test.describe('Chat lab, everything in one chat', () => {
+  const everything = (page: Page) => section(page, 'Everything in one chat');
+
+  test('UIC-CHAT-1.6 UIC-CHAT-6.1 shows the team and the planner together, accessible in both themes', async ({
+    page,
+    lab,
+  }) => {
+    for (const theme of ['light', 'dark']) {
+      await lab.open('chat', theme === 'dark' ? { theme } : {});
+      const chat = everything(page);
+      await expect(chat.locator('.ui-chat-unread-divider')).toHaveText('New messages');
+      await expect(message(chat, 'all-4').locator('.ui-reaction-bar')).toBeVisible();
+      await expect(message(chat, 'all-7').locator('.ui-chat-message__edited')).toHaveText('Edited');
+      await expect(message(chat, 'all-8')).toHaveAttribute('data-deleted', 'true');
+      await expect(message(chat, 'all-10')).toHaveAttribute('data-delivery', 'failed');
+      await expect(message(chat, 'all-3').locator('.ui-chat-attachment__preview')).toHaveCount(2);
+      await lab.expectAccessible('[data-lab-section="Everything in one chat"]');
+    }
+  });
+
+  test('UIC-CHAT-3.6 UIC-CHAT-3.2 sends a command to the planner, whose streamed reply names the chosen model', async ({
+    page,
+  }) => {
+    await openChat(page, 8);
+    const chat = everything(page);
+    const picker = chat.getByRole('button', { name: /^Model:/ });
+    await expect(picker).toHaveAccessibleName('Model: Balanced, Medium effort');
+    await picker.click();
+    await page.getByRole('menuitemradio', { name: /^Deep/ }).click();
+    await expect(picker).toHaveAccessibleName('Model: Deep, Medium effort');
+    await composer(chat).click();
+    await page.keyboard.type('/summ');
+    const suggestions = page.getByRole('listbox', { name: 'Suggestions' });
+    await expect(suggestions.getByRole('option')).toHaveText([/^\/summarize/]);
+    await page.keyboard.press('Enter');
+    await page.keyboard.type('the weekend');
+    await page.keyboard.press('Enter');
+    const sent = chat.locator('article', { hasText: 'the weekend' });
+    await expect(sent.locator('.ui-chat-parts__token')).toHaveText('/summarize');
+    const reply = lastReply(chat);
+    await expect(reply).toHaveAttribute('data-status', 'complete');
+    await expect(reply).toContainText('Sent to Deep, medium effort.');
+    await expect(reply).toContainText('You chose /summarize, so here it is in short.');
+    await expect(reply.getByRole('button', { name: /^Worked for/ })).toBeVisible();
+    await expect(reply.getByRole('table')).toBeVisible();
+    await expect(
+      reply.getByRole('link', { name: 'Source 1: Lisbon weather in spring' }),
+    ).toBeVisible();
+  });
+
+  test('UIC-CHAT-1.4 UIC-CHAT-2.4 retries a message to the team, which Ana reads and answers, and jumps to a quote', async ({
+    page,
+    lab,
+  }) => {
+    await lab.open('chat');
+    const chat = everything(page);
+    const failed = message(chat, 'all-10');
+    await failed.getByRole('button', { name: 'Retry' }).click();
+    await expect(chat.locator('.ui-chat__typing')).toContainText('Ana Lopez');
+    await expect(chat.locator('.ui-chat-header__status')).toContainText('Ana Lopez');
+    await expect(failed).toHaveAttribute('data-delivery', 'read');
+    await expect(lastReply(chat)).toContainText('On it!');
+    await message(chat, 'all-12')
+      .getByRole('button', { name: /^Quote from Sam Reed/ })
+      .click();
+    await expect(message(chat, 'all-9')).toHaveAttribute('data-highlighted', 'true');
+    await expect(message(chat, 'all-9')).toBeFocused();
+  });
+});
+
 /** Rates a finished reply with a reason and copies it, checking what the host receives. */
 async function rateAndCopy(page: Page, reply: Locator) {
   await page.context().grantPermissions(['clipboard-read', 'clipboard-write'], {
